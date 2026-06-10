@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active RC preparation. Updated: 2026-06-09.
+Status: active RC preparation. Updated: 2026-06-10.
 
 Keep this file short. Durable behavior belongs in `spec/`; completed history belongs in git
 history, not in agent archives.
@@ -14,7 +14,7 @@ Blockers:
 
 | Lane | Status | Next proof |
 | --- | --- | --- |
-| WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits split DRP2 packets for buffer-backed point/pixel positions, basic marker, segment/path with cap/join controls, primitive, RGBA8 image, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, basic sphere, panzoom, a 3D sphere + textured mesh/arcball proof, and portable C scenario/frame-callback proof for `feature_timer_animation`. Native scenario runner has requirements, portable event/post-frame hooks, and `feature_pick_point`/`feature_pick_marker`/`feature_pick_hover`/`feature_selection`/`image_probe` migrated off `native_view` as query/readback-shaped scenario proofs. Browser-live WASM demos cover point picking, marker picking, point hover, point selection, and sampled image probe. The frame artifact refactor is complete: scene emission returns artifact-owned stream snapshots, WASM/WebGPU consumes artifact packet spans, JSON is debug/fixture-only, and retained scene mutation no longer depends on raw emitted stream lifetime. Recent WebGPU example promotions added retained live routes and smoke/COMPAT evidence for categorical legend, annotation readout, linked probe/colorbar, scientific plotting, vector, wind field, and isolines. | Continue the manifest-backed WebGPU matrix with one focused checkpoint at a time. Next recommended checkpoint: add explicit `feature_builtin_shapes_2d` smoke/COMPAT evidence, then continue through already-live examples that lack targeted browser-smoke rows before promoting new planned examples. |
+| WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits split DRP2 packets for buffer-backed point/pixel positions, basic marker, segment/path with cap/join controls, primitive, RGBA8 image, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, basic sphere, panzoom, a 3D sphere + textured mesh/arcball proof, and portable C scenario/frame-callback proof for `feature_timer_animation`. Native scenario runner has requirements, portable event/post-frame hooks, and query/readback-shaped scenario proofs. Browser-live routes now cover 23 examples: basic scene, timer animation, triangulation, builtin shapes 2D/3D, isolines, animation tracks, OBJ loading, picking, pixel/sphere/mesh selection, image probe, compute buffer animation, colorbar, scale bars, categorical legend, annotation readout, linked probe/colorbar, scientific plotting, vector, and wind field. The frame artifact refactor is complete: scene emission returns artifact-owned stream snapshots, WASM/WebGPU consumes artifact packet spans, JSON is debug/fixture-only, and retained scene mutation no longer depends on raw emitted stream lifetime. | Next recommended checkpoint: promote `showcase_gpu_particle_smoke` as the browser compute particle proof, including a documented particle budget and native Vulkan evidence where available. Then promote high-value planned rows in dependency clusters instead of one-off examples: panel/panzoom basics, axes/text/image/color-scale examples, simple visual-family examples, and composed showcases that only need already-current primitives. |
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04; native GPU execution skipped in this shell because Vulkan instance creation failed. | Record native Vulkan execution evidence in a Vulkan-capable environment and capture a release artifact from `examples/c/showcases/gpu_particle_smoke.c`. |
 | Qt/PyQt hosted path | Native Qt hosting has an optional example path; PyQt needs a native Qt bridge because current PyQt6 wheels do not expose `QVulkanInstance::setVkInstance()` or `vkInstance()`. | Implement the optional `datoviz_qtbridge` provider from `spec/scene/integration/QT_HOST_BRIDGE.md` and prove the PyQt hosted example. |
 | v0.3 visible parity audit | Missing. | Table each visible capability as fixed, deferred, or external/GSP. |
@@ -43,8 +43,10 @@ accepting NumPy arrays for policy-declared data arguments. Source of truth:
    current subset diagnostics, compute particles, narrow request/query/readback,
    manifest-backed example classification, and browser/runner smoke evidence. Live gallery routes
    must reuse the same C example or portable C scenario as native validation; browser code is host
-   glue only. Keep automated browser smoke to one basic runtime route and one query/readback route;
-   broad `wasm-*` sampler pages are development aids, not the public promotion surface.
+   glue only. Keep automated browser smoke representative rather than exhaustive: a basic runtime
+   route, a query/readback route, a compute route, and a few targeted smoke rows for newly promoted
+   capability clusters are enough. Broad `wasm-*` sampler pages are development aids, not the
+   public promotion surface.
 4. **Compute+graphics:** minimal DRP2 sync objects/barriers, native compute-to-render proof,
    WebGPU parity diagnostics, and a C-first particle-advection gallery target that becomes the
    browser compute proof once the WASM scenario host can drive it.
@@ -66,11 +68,12 @@ pattern is: export/reuse the canonical C scenario, register it in `src/wasm/scen
 `src/wasm/CMakeLists.txt` only if not already registered, add or verify
 `examples/webgpu/live_examples.js`, update `examples/c/MANIFEST.yaml` and generated docs when a
 status changes, add targeted stream-shape assertions in `tools/wasm_scene_smoke.mjs`, add a live
-route check in `tools/webgpu_browser_smoke.mjs`, record the local result in
-`examples/webgpu/COMPAT.md`, then validate with the narrow native example, `node --check`,
-`python3 tools/check_example_manifests.py`, `just wasm-scene-smoke`, `just webgpu-browser-smoke`,
-and `git diff --check`. Headless browser runs may exit successfully while skipping live routes with
-the known external WebGPU instance-loss diagnostic before scene rendering; record that honestly.
+route check in `tools/webgpu_browser_smoke.mjs` only when the route exercises a new capability or
+protects a release blocker, record the local result in `examples/webgpu/COMPAT.md`, then validate
+with the narrow native example, `node --check`, `python3 tools/check_example_manifests.py`,
+`just wasm-scene-smoke`, `just webgpu-browser-smoke`, and `git diff --check`. Headless browser runs
+may exit successfully while skipping live routes with the known external WebGPU instance-loss
+diagnostic before scene rendering; record that honestly.
 
 When adding visible capability work, prefer gallery-proof improvements first, then vector visual
 polish, label query hardening, explanatory layout proof, and optional experimental splats only if

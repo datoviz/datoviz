@@ -3,7 +3,7 @@
 Execution Status:
 
 - Status: canonical parity plan for future implementation
-- Updated on: 2026-06-08
+- Updated on: 2026-06-10
 - Purpose: define the route from the current experimental browser subset to broad native
   Vulkan/WASM WebGPU scene parity
 - Scope: scene features, visual families, WASM ABI expansion, DRP2/WebGPU runtime parity,
@@ -46,7 +46,7 @@ Required RC browser capabilities:
 2. current core visual families already promoted to WebGPU;
 3. frame callbacks and animation;
 4. scene buffers and buffer-backed visual attributes;
-5. compute-to-render for the particle showcase;
+5. compute-to-render for the compact buffer-animation example now, then the particle showcase;
 6. request/query/readback for a narrow interaction slice;
 7. example manifest metadata distinguishing `webgpu-live`, `webgpu-planned`,
    `webgpu-deferred`, and `native-only`;
@@ -115,15 +115,21 @@ The current browser path and portable-scenario path prove:
 14. one 3D sphere + textured mesh scene with camera and arcball input;
 15. WebGPU runner execution for the committed DRP2 fixture subset;
 16. semantic negative-fixture parity in the WebGPU runner;
-17. compute and `ResourceBarrier` at DRP2 fixture level;
+17. compute and `ResourceBarrier` at DRP2 fixture level and through the browser-live
+    `feature_compute_buffer_animation` route;
 18. browser evidence through `examples/webgpu/examples.html` and `examples/webgpu/fixtures.html`.
 19. one portable C scenario host proof for `feature_timer_animation`, including browser-driven frame
     callbacks, browser pointer/wheel event delivery, and retained point updates;
 20. native scenario-runner requirement diagnostics plus portable event/post-frame hooks;
 21. `feature_picking` and `image_probe` are query/readback-shaped portable scenarios.
-22. browser-live WASM query/readback routes for `feature_picking` and `feature_image_probe`,
-    including split DRP2 query packets, WebGPU readback, retained hover/selection result-state
-    updates, and one sampled image probe.
+22. browser-live WASM query/readback routes for `feature_picking`, pixel selection, sphere
+    selection, mesh instance selection, and `feature_image_probe`, including split DRP2 query
+    packets, WebGPU readback, retained hover/selection result-state updates, and one sampled image
+    probe;
+23. browser-live annotation/layout routes for colorbar, scale bars, categorical legend, annotation
+    readout, linked probe/colorbar, scientific plotting, and wind field;
+24. browser-live geometry/showcase routes for basic scene, triangulation, builtin shapes 2D/3D,
+    animation tracks, OBJ loading, isolines, and vector.
 
 This is an experimental subset, not native Vulkan feature parity.
 
@@ -237,33 +243,32 @@ into that family until earlier rows are stable.
 | --- | --- | --- | --- | --- |
 | point | retained scene visual | point visual with buffer-backed attrs and compute-written positions current | current | keep buffer-backed attr and compute evidence |
 | primitive | retained triangle-list visual | triangle-list visual | current | keep fixture/browser evidence and diagnostics |
-| image | retained RGBA/scalar image paths | RGBA8 image and sampled image probe current, scalar/colormap broader coverage later | current/rc-target | keep image-probe evidence; add scalar/colormap variants after colorbar path is stable |
+| image | retained RGBA/scalar image paths | RGBA8 image, sampled image probe, scalar image/colorbar showcase routes current; broader colormap examples later | current/rc-target | keep image-probe/colorbar evidence; add standalone scalar/colormap variants after gallery coverage is stable |
 | mesh | basic/textured/lit mesh paths | basic, textured, and material-controlled mesh current | current | keep texture-sampling and material-update evidence; broaden only with additional shader/material models |
 | pixel | retained pixel visual | dense and buffer-backed 2D pixel visual | current | keep fixture/browser evidence |
 | marker | retained marker visual | built-in marker subset and item picking current | current | keep built-in marker and query/readback evidence |
-| segment/path/stroke | retained path and stroke-shaped paths | segment/path cap-join controls current; broader subpath/vector parity future | current/future | keep cap/join evidence; settle subpath/vector policy and browser proof later |
+| segment/path/stroke | retained path and stroke-shaped paths | segment/path cap-join controls current; vector lowering through segment/path current; broader subpath parity future | current/future | keep cap/join and vector evidence; settle subpath policy and browser proof later |
 | text/glyph | retained text and glyph visuals | low-level atlas glyph and semantic bitmap text current | current | keep glyph/text evidence; richer shaping, font packaging, and layout remain future work |
 | labels | label field and readback paths | label rendering current; label probe future unless chosen for a later slice | current/future | texture/label formats, query/readback, diagnostics |
 | sphere | sphere impostor visual | basic sphere impostor current; raycast/depth/material parity future | current/future | keep WGSL/browser evidence; promote native-depth and material variants later |
 | volume | volume visual and query paths | reduced volume/slice subset | future | 3D texture limits, sampling shaders, memory diagnostics |
 | splat | experimental splat visual | explicit experimental subset | future | sorting/blending/WBOIT policy and memory limits |
-| vector | planned/polish lane | vector arrows/glyphs | future | native family stabilization first |
+| vector | retained vector visual lowered through segment/path draws | straight and curved vector routes current | current | keep lowering evidence and promote richer arrowhead/styling variants only after gallery proof remains stable |
 
 
 ## Annotation And Layout Matrix
 
-Basic retained 2D axes have already been promoted through the bitmap text subset. Remaining
-annotation/layout features should be promoted after the example host and current compute/query
-browser-live slices stay stable.
+Basic retained 2D axes, colorbars, scale bars, categorical legends, annotation readouts, and
+several composed annotation workflows have browser-live routes through the bitmap text/glyph subset.
 
 | Feature | WASM/WebGPU target | Status | Required work |
 | --- | --- | --- | --- |
 | axes/ticks | 2D axes with ticks, grid lines, and bitmap text labels | current | keep browser smoke evidence and broaden layout reserve semantics later |
-| colorbar | continuous scalar colorbar | deferred | scalar image/field color mapping, text labels |
-| categorical legend | simple swatches and labels | deferred | legend semantics, text subset |
-| scale bar | 2D scale bar with label | deferred | panzoom/domain update path and text subset |
-| annotation/readout | anchored text/readout | deferred | text subset, picking/probe update path |
-| overlay cards | basic panel-anchored overlays | deferred | layout and text subset |
+| colorbar | continuous scalar colorbar | current | keep scalar image, ramp primitive, tick segment, and glyph-label evidence |
+| categorical legend | simple swatches and labels | current | keep marker/text legend evidence |
+| scale bar | 2D scale bar with label | current | keep panzoom/domain update and glyph-label evidence |
+| annotation/readout | anchored text/readout | current | keep target/readout and linked probe/colorbar evidence |
+| overlay cards | basic panel-anchored overlays | rc-target | promote only after panel/overlay layout diagnostics are stable |
 
 
 ## Interaction And Feature Matrix
@@ -320,8 +325,9 @@ Current proof:
 6. browser WebGPU rendering through the live gallery route;
 7. `wasm-scene-smoke` and `webgpu-browser-smoke` coverage.
 
-Start with a browser particle count such as `32k` or `64k`, then raise after browser memory and
-frame-time evidence is available.
+Next step: promote `showcase_gpu_particle_smoke` through the same path with a documented browser
+particle count such as `32k` or `64k`, then raise after browser memory and frame-time evidence is
+available.
 
 ### Phase 3: Request/Query/Readback RC Slice
 
@@ -355,7 +361,7 @@ Required work:
 Promote visuals in this order:
 
 1. labels;
-2. axes/colorbars/legends/scale bars/annotations;
+2. remaining panel/panzoom/axes/text/image examples that compose already-current primitives;
 3. richer text shaping/layout beyond the bitmap string subset;
 4. sphere native-depth/material variants and reduced volume;
 5. experimental splat and advanced techniques.

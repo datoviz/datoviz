@@ -14,14 +14,25 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 
 ## RC Promotion Target
 
-Current proof counts remain the fixture/dashboard truth until new browser evidence is recorded.
-The first portable scenario/frame-callback slice is current for `feature_timer_animation`; compute
-buffer animation and the promoted query/readback selection routes now have browser-live evidence.
+Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
+now has 23 promoted routes backed by canonical C examples or portable C scenarios:
+`feature_basic_scene`, `feature_timer_animation`, `feature_triangulation_polygon`,
+`feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`, `feature_isolines`,
+`feature_animation_tracks`, `feature_compute_buffer_animation`, `feature_obj_loading`,
+`feature_picking`, `feature_selection_pixel`, `feature_selection_sphere`,
+`feature_selection_mesh_instances`, `image_probe`, `colorbar`, `scale_bar`, `scalebar_units`,
+`feature_legend_categorical`, `annotation_readout`, `linked_panels_probe_colorbar`,
+`scientific_plotting_workflow`, `visual_vector`, and `showcase_wind_field`.
+
 Remaining RC promotions are:
 
-1. broaden the portable scenario host from `feature_timer_animation` to website examples;
-2. manifest-backed example classification as `webgpu-live`, `webgpu-planned`,
-   `webgpu-deferred`, or `native-only`.
+1. promote `showcase_gpu_particle_smoke` as the browser compute particle proof with a documented
+   particle budget;
+2. continue planned example clusters that reuse already-current primitives, especially
+   panel/panzoom basics, axes/text/image/color-scale examples, simple visual-family examples, and
+   composed showcases;
+3. keep native-only and deferred diagnostics explicit, and classify lab-only manifest entries only
+   if they become public gallery routes.
 
 Do not move broader live-example coverage into the supported/current section until
 `wasm-scene-smoke`, `webgpu-browser-smoke`, and any relevant native/DRP2 checks have recorded

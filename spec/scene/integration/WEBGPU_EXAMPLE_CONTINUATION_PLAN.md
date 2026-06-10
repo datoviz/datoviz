@@ -2,8 +2,8 @@
 
 Execution Status:
 
-- Status: completed on 2026-06-09
-- Updated on: 2026-06-09
+- Status: completed first continuation batch; superseded by `agents/now/STATUS.md`
+- Updated on: 2026-06-10
 - Scope: remaining `webgpu-planned` examples after the first live gallery promotion batches
 
 
@@ -16,7 +16,7 @@ native validation.
 
 ## Current Live Baseline
 
-The live WebGPU gallery already covers:
+The live WebGPU gallery now covers:
 
 1. `feature_basic_scene`
 2. `feature_timer_animation`
@@ -32,6 +32,19 @@ The live WebGPU gallery already covers:
 12. `feature_selection_mesh_instances`
 13. `feature_compute_buffer_animation`
 14. `image_probe`
+15. `colorbar`
+16. `scale_bar`
+17. `scalebar_units`
+18. `feature_legend_categorical`
+19. `annotation_readout`
+20. `linked_panels_probe_colorbar`
+21. `scientific_plotting_workflow`
+22. `visual_vector`
+23. `showcase_wind_field`
+
+The next active handoff is not in this completed file. Use `agents/now/STATUS.md`: promote
+`showcase_gpu_particle_smoke` as the browser compute particle proof, then work through planned
+example clusters that reuse already-current primitives.
 
 
 ## Completed Plan

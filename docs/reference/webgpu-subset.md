@@ -27,11 +27,14 @@ Supported visual and interaction families:
 - primitive triangle-list visuals;
 - RGBA8 2D image visuals;
 - basic retained 2D axes with ticks, grid lines, and bitmap text labels;
+- scalar colorbar, scale bar, categorical legend, and anchored readout examples lowered through
+  primitive, segment, marker, and glyph/text draws;
 - basic signed 2D categorical labels visuals;
 - low-level atlas-backed glyph visuals;
 - semantic bitmap text visuals lowered through glyph atlas draws;
 - basic, textured, and material-controlled mesh visuals;
 - basic sphere visuals;
+- vector visuals lowered through segment/path draws;
 - 2D panzoom controller input;
 - one basic 3D sphere + textured mesh scene with camera and arcball controller input.
 
@@ -43,17 +46,14 @@ Supported browser pages:
   arcball;
 - `examples/webgpu/examples.html?demo=wasm-timer-animation`: first portable C scenario host proof,
   running `feature_timer_animation` through WASM frame callbacks and retained point updates;
-- `examples/webgpu/examples.html?demo=wasm-pick-point`: first portable query/readback browser
-  route for `feature_pick_point`, including browser-live point query readback and retained
-  selection/hover result-state updates;
-- `examples/webgpu/examples.html?demo=wasm-pick-marker`: marker item query/readback through the
-  same portable scenario and artifact-backed result-state path;
-- `examples/webgpu/examples.html?demo=wasm-pick-hover`: point hover query/readback with retained
-  hover item-state updates;
-- `examples/webgpu/examples.html?demo=wasm-selection`: point query/readback with retained selection
-  item-state updates;
+- `examples/webgpu/examples.html?demo=wasm-picking`: combined portable query/readback sampler for
+  point picking, marker picking, hover, and selection through the artifact-backed result-state path;
 - `examples/webgpu/examples.html?demo=wasm-image-probe`: sampled image pixel probe through the
   query/readback path;
+- `examples/webgpu/live.html?id=...`: public live gallery routes generated from canonical C
+  examples and portable C scenarios, currently covering 23 promoted examples including colorbar,
+  scale bars, categorical legend, annotation readout, linked probe/colorbar, scientific plotting,
+  vector, wind field, isolines, selection routes, and compute buffer animation;
 - `examples/webgpu/fixtures.html`: DRP2 fixture dashboard for the pure browser WebGPU runner,
   retained runtime stress checks, and WASM scene smoke rows.
 
@@ -95,7 +95,7 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | Setup/update/frame resource model | active through split binary packets and retained browser runtime state |
 | WGSL shader modules | supported and required for portable browser execution |
 | Vulkan-specific modules and presentation | unsupported in WASM; native-only |
-| Scene visual parity | limited to point/pixel dense and buffer-backed positions, basic marker, segment/path cap-join controls, primitive, RGBA8 image, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, and basic sphere demos |
+| Scene visual parity | limited to point/pixel dense and buffer-backed positions, basic marker, segment/path cap-join controls, primitive, RGBA8/scalar image routes, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, basic sphere, and vector-lowered routes |
 | Controller parity | limited to panzoom and one 3D arcball proof |
 | Portable scenario host parity | first `feature_timer_animation` C scenario and browser frame-callback proof are current; broad example-host coverage remains an RC target |
 | Compute-to-render parity | DRP2 fixture, native scene proof, and `feature_compute_buffer_animation` browser-live route are current |
@@ -126,9 +126,9 @@ The browser path intentionally does not support:
 - custom shader APIs;
 - browser-live scene query/readback beyond the promoted point/marker/hover/pixel-selection/
   sphere-selection/mesh-instance-selection/image-probe slice;
-- colorbars, scale bars, volume, unsigned/rich labels, path subpath controls, broad stroke/vector
-  parity, sphere raycast/depth/material parity, full query parity, and advanced technique parity in
-  the WASM scene demos;
+- volume, unsigned/rich labels, path subpath controls, broad stroke/vector styling parity, sphere
+  raycast/depth/material parity, full query parity, and advanced technique parity in the WASM scene
+  demos;
 - zero-copy payload transport;
 - stable public JS/TS bindings for the WASM scene ABI.
 
@@ -136,16 +136,20 @@ The browser path intentionally does not support:
 
 Promote browser scene features in this order unless a release blocker changes the priority:
 
-1. add manifest-driven browser routes for broader promoted portable scenarios;
-2. legend and readout-style overlays;
-3. richer labels, including unsigned label variants and palette/category updates;
-4. broader vector/path parity, including path subpaths and stroke edge cases;
-5. volume rendering.
+1. promote `showcase_gpu_particle_smoke` as the browser compute particle proof with a documented
+   particle budget;
+2. promote panel/panzoom basics and axis/text/image/color-scale examples that reuse already-current
+   primitive, segment/path, image, glyph/text, and panzoom support;
+3. promote simple visual-family examples so the gallery has a live route for each current visual
+   family;
+4. add richer labels, including unsigned label variants and palette/category updates;
+5. broaden vector/path parity, including path subpaths and stroke edge cases;
+6. add reduced volume rendering only after texture-3D memory and diagnostics are explicit.
 
 Each promoted item must reuse the retained native scene path, add the narrow WASM ABI surface it
-needs, extend `tools/wasm_scene_smoke.mjs`, update the 2D or 3D browser demo, and record proof in
-this document plus `examples/webgpu/COMPAT.md`. Planned RC targets must not be described as current
-support until browser smoke evidence lands.
+needs, extend `tools/wasm_scene_smoke.mjs`, add or verify the public live route or development
+sampler it needs, and record proof in this document plus `examples/webgpu/COMPAT.md`. Planned RC
+targets must not be described as current support until browser smoke evidence lands.
 
 Deferred DRP2 commands remain outside the active browser subset:
 
@@ -228,9 +232,9 @@ Expected manual results for the current subset:
 - live picking: pointer delivery, async readback, and retained hover/selection state update;
 - live image probe: sampled image query/readback renders and reports probe state.
 
-`just webgpu-browser-smoke` automates the minimal live basic and query checks with headless Chrome
-when Chrome/Chromium is available locally. It writes transient PNG evidence under
-`build/webgpu-browser-smoke/`.
+`just webgpu-browser-smoke` automates representative live basic, query/readback, compute, and
+targeted promoted-route checks with headless Chrome when Chrome/Chromium is available locally. It
+writes transient PNG evidence under `build/webgpu-browser-smoke/`.
 
 Last local release proof recorded on 2026-06-04:
 
