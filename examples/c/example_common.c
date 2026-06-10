@@ -156,6 +156,16 @@ void example_outpath(const char* exe, const char* name, char* out, size_t size)
     if (name == NULL || out == NULL || size == 0)
         return;
 
+    const char* capture_dir = getenv("DVZ_CAPTURE_DIR");
+    const char* capture_basename = getenv("DVZ_CAPTURE_BASENAME");
+    const char* dot = strrchr(name, '.');
+    if (capture_dir != NULL && capture_dir[0] != '\0' && capture_basename != NULL &&
+        capture_basename[0] != '\0' && dot != NULL && dot[1] != '\0')
+    {
+        dvz_snprintf(out, size, "%s/%s%s", capture_dir, capture_basename, dot);
+        return;
+    }
+
     const char* slash = exe != NULL ? strrchr(exe, '/') : NULL;
     if (slash != NULL)
     {

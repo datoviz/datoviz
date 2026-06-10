@@ -729,6 +729,10 @@ examples:
     lane: features
     source: examples/c/features/offscreen_capture.c
     validation: smoke+screenshot
+    capture:
+      mode: custom
+      size: 640x480
+      reason: exact-pixel offscreen capture writes its PNG through dvz_view_capture_png()
     data:
       kind: synthetic
     portability: native-only

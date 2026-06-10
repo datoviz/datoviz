@@ -4,10 +4,14 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
+import hashlib
+import json
 import os
 import platform
 import subprocess
 import sys
+import time
 import zlib
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,7 +24,23 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "examples/c/MANIFEST.yaml"
 DEFAULT_BUILD_DIR = ROOT / "build"
 DEFAULT_IMAGE_DIR = ROOT / "docs/images/gallery"
+DEFAULT_CACHE_DIR = ROOT / "build/gallery-cache/native"
 PUBLIC_LANES = ("visuals", "features", "composites", "showcases")
+GLOBAL_FINGERPRINT_PATHS = (
+    ROOT / "CMakeLists.txt",
+    ROOT / "examples/c/CMakeLists.txt",
+    ROOT / "examples/c/MANIFEST.yaml",
+    ROOT / "include",
+    ROOT / "src",
+    ROOT / "shaders",
+)
+SHARED_EXAMPLE_PATHS = (
+    ROOT / "examples/c/example_common.c",
+    ROOT / "examples/c/example_common.h",
+    ROOT / "examples/c/example_style.c",
+    ROOT / "examples/c/example_style.h",
+    ROOT / "examples/c/runner",
+)
 CATEGORY_TO_LANE = {
     "visual": "visuals",
     "feature": "features",
@@ -63,6 +83,143 @@ def split_values(values: list[str]) -> set[str]:
     }
 
 
+def parse_jobs(value: str) -> int:
+    if value == "auto":
+        cpus = os.cpu_count() or 1
+        return max(1, min(cpus, 4))
+    try:
+        jobs = int(value)
+    except ValueError as exc:
+        raise ValueError(f"invalid --jobs value: {value!r}") from exc
+    if jobs < 1:
+        raise ValueError("--jobs must be >= 1")
+    return jobs
+
+
+def iter_files(path: Path) -> list[Path]:
+    if path.is_file():
+        return [path]
+    if not path.is_dir():
+        return []
+    ignored = {
+        "__pycache__",
+        ".cache",
+        ".git",
+        "build",
+        "site",
+    }
+    files: list[Path] = []
+    for child in path.rglob("*"):
+        if any(part in ignored for part in child.parts):
+            continue
+        if child.is_file() and child.suffix in {
+            ".c",
+            ".h",
+            ".glsl",
+            ".vert",
+            ".frag",
+            ".comp",
+            ".wgsl",
+            ".cmake",
+            ".txt",
+            ".yaml",
+            ".yml",
+        }:
+            files.append(child)
+    return files
+
+
+def hash_files(paths: list[Path]) -> str:
+    digest = hashlib.sha256()
+    for path in sorted({item.resolve() for root in paths for item in iter_files(root)}):
+        try:
+            rel = path.relative_to(ROOT)
+            data = path.read_bytes()
+        except OSError:
+            continue
+        digest.update(str(rel).encode("utf8"))
+        digest.update(b"\0")
+        digest.update(data)
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def cache_path(example: CaptureExample, cache_dir: Path) -> Path:
+    return cache_dir / example.lane / f"{example.id}.json"
+
+
+def load_cache(path: Path) -> dict:
+    try:
+        with path.open("r", encoding="utf8") as f:
+            payload = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def write_cache(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf8")
+
+
+def input_hash_for(example: CaptureExample, global_hash: str, build_dir: Path) -> str:
+    digest = hashlib.sha256()
+    digest.update(global_hash.encode("ascii"))
+    fields = (
+        example.id,
+        example.lane,
+        example.source,
+        example.validation,
+        example.capture_mode,
+        example.capture_reason,
+        f"{example.expected_width}x{example.expected_height}",
+        str(command_for(example, build_dir)),
+    )
+    for field in fields:
+        digest.update(field.encode("utf8"))
+        digest.update(b"\0")
+    source = ROOT / example.source
+    if source.exists():
+        digest.update(source.read_bytes())
+    return digest.hexdigest()
+
+
+def current_cache_hit(
+    example: CaptureExample,
+    args: argparse.Namespace,
+    input_hash: str,
+) -> tuple[bool, str]:
+    png = output_path(example, args.image_dir)
+    payload = load_cache(cache_path(example, args.cache_dir))
+    if not png.exists():
+        return False, "missing"
+    if payload.get("input_hash") != input_hash:
+        return False, "stale"
+    try:
+        png_hash = file_sha256(png)
+    except OSError:
+        return False, "missing"
+    if payload.get("png_hash") != png_hash:
+        return False, "changed outside cache"
+    if args.skip_nonblank_check:
+        return True, str(png.relative_to(ROOT))
+    ok, detail = png_dimensions(png)
+    if not ok:
+        return False, detail
+    expected = f"{example.expected_width}x{example.expected_height}"
+    if detail != expected:
+        return False, f"expected {expected}, got {detail}"
+    return True, f"cached {detail}"
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
@@ -87,6 +244,22 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--list", action="store_true", help="list matching captures without running")
     parser.add_argument("--dry-run", action="store_true", help="print commands without running")
+    parser.add_argument(
+        "--cache",
+        action="store_true",
+        help="skip captures whose cached fingerprint and output PNG are current",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="recapture even when the cache says the image is current",
+    )
+    parser.add_argument(
+        "--jobs",
+        default="1",
+        help="parallel capture jobs, or 'auto' for a conservative default",
+    )
+    parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE_DIR)
     parser.add_argument(
         "--skip-nonblank-check",
         action="store_true",
@@ -225,6 +398,29 @@ def png_is_nonblank(path: Path, expected_size: tuple[int, int]) -> tuple[bool, s
     return True, f"{width}x{height}"
 
 
+def png_dimensions(path: Path) -> tuple[bool, str]:
+    if not path.exists():
+        return False, "missing"
+    if path.stat().st_size < 1024:
+        return False, "too small"
+    try:
+        data = path.read_bytes()[:33]
+    except OSError as exc:
+        return False, str(exc)
+    if not data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return False, "not a PNG"
+    if len(data) < 33 or data[12:16] != b"IHDR":
+        return False, "missing PNG IHDR"
+    width, height, bit_depth, color_type, _, _, interlace = unpack(">IIBBBBB", data[16:29])
+    if width < 32 or height < 32:
+        return False, f"unexpected size {width}x{height}"
+    if bit_depth != 8 or interlace != 0:
+        return False, "unsupported PNG format for validation"
+    if color_type not in (0, 2, 4, 6):
+        return False, "unsupported PNG color type for validation"
+    return True, f"{width}x{height}"
+
+
 def png_extrema(path: Path) -> tuple[int, int, dict[str, list[tuple[int, int]] | tuple[int, int]]]:
     data = path.read_bytes()
     if not data.startswith(b"\x89PNG\r\n\x1a\n"):
@@ -349,15 +545,22 @@ def uses_scenario_runner(example: CaptureExample) -> bool:
     return "dvz_scenario_run_native_cli" in source
 
 
-def capture_one(example: CaptureExample, args: argparse.Namespace) -> tuple[bool, str]:
+def capture_one(
+    example: CaptureExample, args: argparse.Namespace, input_hash: str | None = None
+) -> tuple[bool, str, str]:
     exe = executable_path(example, args.build_dir)
     png = output_path(example, args.image_dir)
     if not exe.is_file():
-        return False, f"missing executable: {exe.relative_to(ROOT)}"
+        return False, "failed", f"missing executable: {exe.relative_to(ROOT)}"
     if example.capture_mode == "scenario" and not uses_scenario_runner(example):
-        return False, "public gallery captures must use dvz_scenario_run_native_cli()"
+        return False, "failed", "public gallery captures must use dvz_scenario_run_native_cli()"
     if example.capture_mode != "scenario" and not example.capture_reason:
-        return False, "custom capture mode requires capture.reason in the manifest"
+        return False, "failed", "custom capture mode requires capture.reason in the manifest"
+
+    if args.cache and not args.force and input_hash is not None:
+        hit, detail = current_cache_hit(example, args, input_hash)
+        if hit:
+            return True, "cached", detail
 
     env = os.environ.copy()
     apply_runtime_env(env)
@@ -368,19 +571,48 @@ def capture_one(example: CaptureExample, args: argparse.Namespace) -> tuple[bool
     cmd = command_for(example, args.build_dir)
     if args.dry_run:
         rel_png = png.relative_to(ROOT)
-        return True, f"dry-run: {' '.join(cmd)} -> {rel_png}"
+        return True, "dry-run", f"dry-run: {' '.join(cmd)} -> {rel_png}"
+
+    previous_png_hash = None
+    if png.exists():
+        try:
+            previous_png_hash = file_sha256(png)
+        except OSError:
+            previous_png_hash = None
 
     result = subprocess.run(cmd, cwd=ROOT, env=env, check=False)
     if result.returncode != 0:
-        return False, f"exit {result.returncode}"
+        return False, "failed", f"exit {result.returncode}"
 
     if args.skip_nonblank_check:
-        return True, str(png.relative_to(ROOT))
+        detail = str(png.relative_to(ROOT))
+    else:
+        ok, detail = png_is_nonblank(png, (example.expected_width, example.expected_height))
+        if not ok:
+            return False, "failed", detail
 
-    ok, detail = png_is_nonblank(png, (example.expected_width, example.expected_height))
-    if not ok:
-        return False, detail
-    return True, detail
+    png_hash = file_sha256(png)
+    status = "new"
+    if previous_png_hash is not None:
+        status = "unchanged" if previous_png_hash == png_hash else "changed"
+
+    if args.cache and input_hash is not None:
+        payload = {
+            "example_id": example.id,
+            "lane": example.lane,
+            "source": example.source,
+            "command": command_for(example, args.build_dir),
+            "output": str(png.relative_to(ROOT)),
+            "capture_mode": example.capture_mode,
+            "capture_size": f"{example.expected_width}x{example.expected_height}",
+            "input_hash": input_hash,
+            "png_hash": png_hash,
+            "previous_png_hash": previous_png_hash,
+            "status": status,
+            "timestamp": int(time.time()),
+        }
+        write_cache(cache_path(example, args.cache_dir), payload)
+    return True, status, detail
 
 
 def print_examples(examples: list[CaptureExample], args: argparse.Namespace) -> None:
@@ -390,6 +622,12 @@ def print_examples(examples: list[CaptureExample], args: argparse.Namespace) -> 
         exe_display = exe.relative_to(ROOT) if exe.is_relative_to(ROOT) else exe
         size = f"{example.expected_width}x{example.expected_height}"
         print(f"{example.id:32} {example.lane:10} {size:10} {exe_display} -> {png}")
+
+
+def capture_task(payload: tuple[int, CaptureExample, argparse.Namespace, str | None]):
+    index, example, args, input_hash = payload
+    ok, status, detail = capture_one(example, args, input_hash)
+    return index, example, ok, status, detail
 
 
 def main() -> int:
@@ -417,15 +655,43 @@ def main() -> int:
         print_examples(selected, args)
         return 0
 
+    try:
+        jobs = parse_jobs(args.jobs)
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+
+    global_hash = ""
+    input_hashes: dict[str, str] = {}
+    if args.cache:
+        global_hash = hash_files(list(GLOBAL_FINGERPRINT_PATHS) + list(SHARED_EXAMPLE_PATHS))
+        input_hashes = {
+            example.id: input_hash_for(example, global_hash, args.build_dir) for example in selected
+        }
+
     failures = 0
-    for index, example in enumerate(selected, 1):
+    counts: dict[str, int] = {}
+    tasks = [
+        (index, example, args, input_hashes.get(example.id))
+        for index, example in enumerate(selected, 1)
+    ]
+    if jobs == 1 or len(tasks) == 1:
+        results = [capture_task(task) for task in tasks]
+    else:
+        with concurrent.futures.ProcessPoolExecutor(max_workers=jobs) as executor:
+            results = list(executor.map(capture_task, tasks))
+        results.sort(key=lambda item: item[0])
+
+    for index, example, ok, status, detail in results:
+        counts[status] = counts.get(status, 0) + 1
         print(f"[{index}/{len(selected)}] {example.id} ({example.lane})")
-        ok, detail = capture_one(example, args)
         marker = "ok" if ok else "fail"
-        print(f"  {marker}: {detail}")
+        print(f"  {marker} {status}: {detail}")
         if not ok:
             failures += 1
 
+    summary = ", ".join(f"{key}={counts[key]}" for key in sorted(counts))
+    print(f"summary: {summary}")
     if args.landing:
         print("note: the WebGPU landing card needs a separate browser-smoke screenshot.")
     return 1 if failures else 0

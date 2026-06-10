@@ -1109,6 +1109,9 @@ webgpu-browser-smoke: wasm-scene-build
     @node tools/webgpu_browser_smoke.mjs
 #
 
+webgpu-gallery-check: wasm-scene-smoke webgpu-browser-smoke
+#
+
 wasm-env-check:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -2007,6 +2010,23 @@ gallery-screenshots filter="": && gallery
 [positional-arguments]
 capture-gallery *args: build
     @python3 tools/capture_gallery.py "$@"
+
+
+# Refresh v0.4 gallery screenshots and generated docs with cached native captures.
+[positional-arguments]
+gallery-refresh *args: build
+    @python3 tools/capture_gallery.py --all-screenshot --cache --jobs auto "$@"
+    @python tools/build_gallery.py
+    @python3 tools/build_examples_manifest.py
+    @python3 tools/build_capabilities.py
+    @python3 tools/check_gallery_media.py
+    @git diff --check
+
+
+# Check that gallery screenshots exist, are nonblank, and match cached fingerprints.
+[positional-arguments]
+check-gallery-media *args:
+    @python3 tools/check_gallery_media.py "$@"
 
 
 # Capture the native C screenshots used by the local v0.4 landing prototype.
