@@ -2077,7 +2077,8 @@ examples:
     data:
       kind: simulated
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=showcase_gpu_particle_smoke
       requirements:
         - scene-buffers
         - storage-buffers

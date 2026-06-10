@@ -25,7 +25,6 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/input.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "runner/scenario_runner.h"
@@ -38,7 +37,11 @@
 
 #define WIDTH                   1600u
 #define HEIGHT                  1200u
+#ifdef DVZ_EXAMPLE_NO_APP
+#define PARTICLE_COUNT          32768u
+#else
 #define PARTICLE_COUNT          262144u
+#endif
 #define WORKGROUP_SIZE          128u
 #define COMPUTE_SOURCE_CAPACITY 8192u
 #define SIM_SPEED               0.65f
@@ -82,6 +85,14 @@ typedef struct ParticleState
     uint64_t mouse_timestamp;
     char compute_glsl[COMPUTE_SOURCE_CAPACITY];
 } ParticleState;
+
+
+
+/*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_showcase_gpu_particle_smoke_scenario(void);
 
 
 
@@ -178,6 +189,93 @@ static const char* COMPUTE_GLSL_MAIN =
     "    velocities.v[j + 1u] = v.y;\n"
     "    velocities.v[j + 2u] = 0.0;\n"
     "    ages.age[i] = age;\n"
+    "}\n";
+
+static const char* COMPUTE_WGSL =
+    "struct Params {\n"
+    "    sim0: vec4f,\n"
+    "    sim1: vec4f,\n"
+    "    sim2: vec4f,\n"
+    "}\n"
+    "@group(0) @binding(0) var<storage, read> params: Params;\n"
+    "@group(0) @binding(1) var<storage, read_write> positions: array<f32>;\n"
+    "@group(0) @binding(2) var<storage, read_write> velocities: array<f32>;\n"
+    "@group(0) @binding(3) var<storage, read_write> ages: array<f32>;\n"
+    "fn hash_u32(x_in: u32) -> u32 {\n"
+    "    var x = x_in;\n"
+    "    x = x ^ (x >> 16u);\n"
+    "    x = x * 0x7feb352du;\n"
+    "    x = x ^ (x >> 15u);\n"
+    "    x = x * 0x846ca68bu;\n"
+    "    x = x ^ (x >> 16u);\n"
+    "    return x;\n"
+    "}\n"
+    "fn hash01(x: u32) -> f32 {\n"
+    "    return f32(hash_u32(x) & 0x00ffffffu) / 16777216.0;\n"
+    "}\n"
+    "fn source_pos(i: u32, t: f32) -> vec2f {\n"
+    "    let epoch = u32(floor(t * 18.0));\n"
+    "    let a = hash01(i * 1664525u + epoch * 1013904223u);\n"
+    "    let b = hash01(i * 22695477u + epoch * 1103515245u);\n"
+    "    let plume = 0.17 * sin(0.43 * t) + 0.06 * sin(1.31 * t);\n"
+    "    return vec2f(plume + (a * 2.0 - 1.0) * 0.18, -1.03 + b * 0.13);\n"
+    "}\n"
+    "fn curl_flow(p: vec2f, t: f32) -> vec2f {\n"
+    "    let c1 = cos(3.0 * p.x + 2.1 * p.y + 0.63 * t);\n"
+    "    let c2 = cos(-2.4 * p.x + 3.7 * p.y - 0.41 * t);\n"
+    "    let c3 = cos(5.3 * p.x - 1.9 * p.y + 0.27 * t);\n"
+    "    let grad = vec2f(3.0 * c1 - 2.4 * c2 + 5.3 * c3,\n"
+    "                     2.1 * c1 + 3.7 * c2 - 1.9 * c3);\n"
+    "    let curl = vec2f(grad.y, -grad.x);\n"
+    "    let rise = vec2f(0.10 * sin(2.2 * p.y + 0.7 * t), 0.78);\n"
+    "    let focus = vec2f(-0.12 * p.x, -0.04 * p.y);\n"
+    "    return 0.18 * curl + rise + focus;\n"
+    "}\n"
+    "@compute @workgroup_size(128)\n"
+    "fn main(@builtin(global_invocation_id) global_id: vec3u) {\n"
+    "    let i = global_id.x;\n"
+    "    let count = u32(params.sim0.z);\n"
+    "    if (i >= count) { return; }\n"
+    "    let t = params.sim0.x;\n"
+    "    let dt = params.sim0.y;\n"
+    "    let mouse_active = params.sim0.w;\n"
+    "    let mouse = params.sim1.xy;\n"
+    "    let mouse_v = params.sim1.zw;\n"
+    "    let mouse_radius = params.sim2.x;\n"
+    "    let hover_swirl = params.sim2.z;\n"
+    "    let j = 3u * i;\n"
+    "    var x = vec2f(positions[j + 0u], positions[j + 1u]);\n"
+    "    var v = vec2f(velocities[j + 0u], velocities[j + 1u]);\n"
+    "    var age = ages[i] + dt;\n"
+    "    let flow = curl_flow(x, t);\n"
+    "    v = mix(v, flow, clamp(dt * 2.6, 0.0, 1.0));\n"
+    "    v += 0.020 * vec2f(sin(17.0 * x.y + f32(i & 255u) * 0.017 + t),\n"
+    "                       cos(19.0 * x.x + f32((i >> 8u) & 255u) * 0.013 - t));\n"
+    "    if (mouse_active > 0.5) {\n"
+    "        let d = x - mouse;\n"
+    "        let dist = length(d);\n"
+    "        let influence = 1.0 - smoothstep(0.0, mouse_radius, dist);\n"
+    "        let dir = d / max(dist, 0.001);\n"
+    "        let tangent = vec2f(-dir.y, dir.x);\n"
+    "        let mouse_dt = clamp(dt * 8.0, 0.0, 0.16);\n"
+    "        v += mouse_dt * influence * hover_swirl * (tangent + 0.25 * mouse_v);\n"
+    "        let speed = length(v);\n"
+    "        if (speed > 2.4) { v *= 2.4 / speed; }\n"
+    "    }\n"
+    "    v *= pow(0.986, dt / (1.0 / 120.0));\n"
+    "    x += dt * v;\n"
+    "    if (x.y > 1.10 || abs(x.x) > 1.18 || x.y < -1.12 || age > 4.6) {\n"
+    "        x = source_pos(i, t);\n"
+    "        v = vec2f(0.03 * sin(f32(i) * 0.11), 0.42 + 0.10 * hash01(i + u32(t * 97.0)));\n"
+    "        age = 0.0;\n"
+    "    }\n"
+    "    positions[j + 0u] = x.x;\n"
+    "    positions[j + 1u] = x.y;\n"
+    "    positions[j + 2u] = 0.0;\n"
+    "    velocities[j + 0u] = v.x;\n"
+    "    velocities[j + 1u] = v.y;\n"
+    "    velocities[j + 2u] = 0.0;\n"
+    "    ages[i] = age;\n"
     "}\n";
 
 
@@ -368,27 +466,16 @@ static void _params_for_state(const ParticleState* state, float dt, vec4 params[
 }
 
 
-static void _particle_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+static void _particle_pointer(
+    ParticleState* state, const DvzScenarioPointerEvent* event, uint32_t width, uint32_t height)
 {
-    (void)router;
-    ParticleState* state = (ParticleState*)user_data;
     if (state == NULL || event == NULL)
         return;
-    if (event->type == DVZ_POINTER_EVENT_WHEEL || event->type == DVZ_POINTER_EVENT_NONE)
+    if (event->type == DVZ_SCENARIO_POINTER_WHEEL || event->type == DVZ_SCENARIO_POINTER_NONE)
         return;
 
-    uint32_t width = WIDTH;
-    uint32_t height = HEIGHT;
-    DvzInputResizeEvent resize = {0};
-    if (dvz_input_router_last_resize(router, &resize) && resize.window_width > 0 &&
-        resize.window_height > 0)
-    {
-        width = resize.window_width;
-        height = resize.window_height;
-    }
-
     vec2 pos = {0};
-    _window_to_sim(event->pos[0], event->pos[1], width, height, pos);
+    _window_to_sim(event->x, event->y, width, height, pos);
 
     vec2 raw_velocity = {0};
     if (state->mouse_valid && event->timestamp_ns > state->mouse_timestamp)
@@ -415,13 +502,15 @@ static void _particle_pointer(DvzInputRouter* router, const DvzPointerEvent* eve
 }
 
 
-static void _particle_frame(DvzView* win, void* user_data)
+static void _scenario_frame(DvzScenarioContext* ctx, void* user_data)
 {
     ParticleState* state = (ParticleState*)user_data;
-    if (state == NULL || state->scene == NULL || state->params == NULL)
+    if (ctx == NULL || state == NULL || state->params == NULL)
         return;
 
-    const float wall_dt = (float)dvz_scene_clock_dt(state->scene);
+    float wall_dt = (float)ctx->dt;
+    if (wall_dt <= 0.0f)
+        wall_dt = 1.0f / 60.0f;
     const float sim_dt = _clampf(wall_dt, 0.0f, SIM_MAX_DT) * SIM_SPEED;
     state->sim_time += sim_dt;
     if (state->mouse_valid)
@@ -435,7 +524,15 @@ static void _particle_frame(DvzView* win, void* user_data)
     vec4 params[3] = {0};
     _params_for_state(state, sim_dt, params);
     (void)dvz_scene_buffer_set_data(state->params, params, sizeof(params));
-    dvz_view_request_frame(win);
+}
+
+
+static void _scenario_event(DvzScenarioContext* ctx, const DvzScenarioEvent* event, void* user)
+{
+    if (ctx == NULL || event == NULL || event->kind != DVZ_SCENARIO_EVENT_POINTER)
+        return;
+    _particle_pointer(
+        (ParticleState*)user, &event->content.pointer, ctx->logical_width, ctx->logical_height);
 }
 
 
@@ -547,8 +644,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzSceneComputeDesc compute_desc = dvz_scene_compute_desc();
     compute_desc.label = "gpu_particle_smoke";
+#ifdef DVZ_EXAMPLE_NO_APP
+    compute_desc.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+    compute_desc.shader_source = COMPUTE_WGSL;
+#else
     compute_desc.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     compute_desc.shader_source = state->compute_glsl;
+#endif
     compute_desc.dispatch[0] = (PARTICLE_COUNT + WORKGROUP_SIZE - 1u) / WORKGROUP_SIZE;
     compute_desc.dispatch[1] = 1;
     compute_desc.dispatch[2] = 1;
@@ -587,24 +689,6 @@ cleanup:
 
 
 
-static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
-{
-    (void)ctx;
-    (void)app;
-    ParticleState* state = (ParticleState*)user;
-    if (state == NULL || view == NULL)
-        return true;
-
-    DvzInputRouter* router = dvz_view_input(view);
-    if (router != NULL)
-        dvz_input_subscribe_pointer(router, _particle_pointer, state);
-    dvz_view_set_frame_callback(view, _particle_frame, state);
-    dvz_view_request_frame(view);
-    return true;
-}
-
-
-
 static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 {
     (void)ctx;
@@ -613,7 +697,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 
 
 
-static DvzScenarioSpec _gpu_particle_smoke_scenario(void)
+DvzScenarioSpec dvz_showcase_gpu_particle_smoke_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "showcase_gpu_particle_smoke",
@@ -621,16 +705,22 @@ static DvzScenarioSpec _gpu_particle_smoke_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_SCENE_BUFFERS |
+                        DVZ_SCENARIO_REQ_STORAGE_BUFFERS | DVZ_SCENARIO_REQ_SCENE_COMPUTE |
+                        DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
-        .native_view = _scenario_native_view,
+        .frame = _scenario_frame,
+        .event = _scenario_event,
         .destroy = _scenario_destroy,
     };
 }
 
 
 
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _gpu_particle_smoke_scenario();
+    DvzScenarioSpec spec = dvz_showcase_gpu_particle_smoke_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

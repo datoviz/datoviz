@@ -51,9 +51,9 @@ Supported browser pages:
 - `examples/webgpu/examples.html?demo=wasm-image-probe`: sampled image pixel probe through the
   query/readback path;
 - `examples/webgpu/live.html?id=...`: public live gallery routes generated from canonical C
-  examples and portable C scenarios, currently covering 23 promoted examples including colorbar,
+  examples and portable C scenarios, currently covering 24 promoted examples including colorbar,
   scale bars, categorical legend, annotation readout, linked probe/colorbar, scientific plotting,
-  vector, wind field, isolines, selection routes, and compute buffer animation;
+  vector, wind field, isolines, selection routes, compute buffer animation, and GPU particle smoke;
 - `examples/webgpu/fixtures.html`: DRP2 fixture dashboard for the pure browser WebGPU runner,
   retained runtime stress checks, and WASM scene smoke rows.
 
@@ -98,7 +98,7 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | Scene visual parity | limited to point/pixel dense and buffer-backed positions, basic marker, segment/path cap-join controls, primitive, RGBA8/scalar image routes, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, basic sphere, and vector-lowered routes |
 | Controller parity | limited to panzoom and one 3D arcball proof |
 | Portable scenario host parity | first `feature_timer_animation` C scenario and browser frame-callback proof are current; broad example-host coverage remains an RC target |
-| Compute-to-render parity | DRP2 fixture, native scene proof, and `feature_compute_buffer_animation` browser-live route are current |
+| Compute-to-render parity | DRP2 fixture, native scene proof, `feature_compute_buffer_animation`, and `showcase_gpu_particle_smoke` browser-live routes are current |
 | Query/picking/readback scene parity | point and marker item picking, point hover, point selection, sphere selection, mesh instance selection, and one sampled image probe are browser-live |
 
 Any future feature promoted into the browser subset must update the scene emitter, DRP2 schema or
@@ -136,15 +136,13 @@ The browser path intentionally does not support:
 
 Promote browser scene features in this order unless a release blocker changes the priority:
 
-1. promote `showcase_gpu_particle_smoke` as the browser compute particle proof with a documented
-   particle budget;
-2. promote panel/panzoom basics and axis/text/image/color-scale examples that reuse already-current
+1. promote panel/panzoom basics and axis/text/image/color-scale examples that reuse already-current
    primitive, segment/path, image, glyph/text, and panzoom support;
-3. promote simple visual-family examples so the gallery has a live route for each current visual
+2. promote simple visual-family examples so the gallery has a live route for each current visual
    family;
-4. add richer labels, including unsigned label variants and palette/category updates;
-5. broaden vector/path parity, including path subpaths and stroke edge cases;
-6. add reduced volume rendering only after texture-3D memory and diagnostics are explicit.
+3. add richer labels, including unsigned label variants and palette/category updates;
+4. broaden vector/path parity, including path subpaths and stroke edge cases;
+5. add reduced volume rendering only after texture-3D memory and diagnostics are explicit.
 
 Each promoted item must reuse the retained native scene path, add the narrow WASM ABI surface it
 needs, extend `tools/wasm_scene_smoke.mjs`, add or verify the public live route or development

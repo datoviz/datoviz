@@ -30,6 +30,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/timer_animation.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/triangulation_polygon.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/linked_probe_colorbar.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/gpu_particle_smoke.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/scientific_plotting.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/wind_field.c
     ${PROJECT_SOURCE_DIR}/examples/c/visuals/vector.c

@@ -10,7 +10,8 @@ scene API compute-to-graphics particle smoke showcase.
 - Status: `experimental`
 - Source: [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c)
 - Agent copy-safe: `false`
-- WebGPU status: `webgpu-planned`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=showcase_gpu_particle_smoke`](/examples/webgpu/live.html?id=showcase_gpu_particle_smoke)
 - WebGPU requirements: `scene-buffers`, `storage-buffers`, `scene-compute`, `point`, `alpha-blending`
 - Build: `just example-c showcases/gpu_particle_smoke`
 - Smoke: `./build/examples/c/showcases/gpu_particle_smoke --png`
@@ -32,6 +33,14 @@ _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared separately from this page and should not be staged without explicit approval.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=showcase_gpu_particle_smoke" title="GPU Particle Smoke WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=showcase_gpu_particle_smoke).
 
 ## Source
 

@@ -1705,6 +1705,7 @@ try {
     "scientific_plotting_workflow",
     "visual_vector",
     "showcase_wind_field",
+    "showcase_gpu_particle_smoke",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -1722,7 +1723,7 @@ try {
         `${id} did not declare query readback`,
       );
     }
-    if (id === "feature_compute_buffer_animation") {
+    if (id === "feature_compute_buffer_animation" || id === "showcase_gpu_particle_smoke") {
       requireOk(
         (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 5)) !== 0,
         `${id} did not declare scene buffers`,
@@ -2441,6 +2442,58 @@ try {
     );
   } finally {
     Module._dvz_wasm_api_scene_destroy(computeAnimationScene);
+  }
+
+  const particleIndex = scenarioIndex(Module, "showcase_gpu_particle_smoke");
+  const particleScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
+  requireOk(particleScene !== 0, "particle smoke scenario scene creation failed");
+  try {
+    expectStatus(
+      Module._dvz_wasm_api_set_canvas_format(particleScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+      0,
+      "particle smoke scenario canvas format",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_scenario_create(particleScene, particleIndex),
+      0,
+      "particle smoke scenario create",
+    );
+    expectNoDiagnostics(Module, particleScene, "particle smoke scenario create diagnostics");
+    const particleFigure = Module._dvz_wasm_api_scenario_figure(particleScene);
+    requireOk(particleFigure !== 0, "particle smoke scenario has no figure");
+    const initialParticle = emitStream(
+      Module, particleScene, particleFigure, "particle smoke initial");
+    expectWriteCommands(initialParticle.stream, "particle smoke initial");
+    requireOk(
+      initialParticle.stream.commands.some((command) => command.cmd === "CreateComputePipeline"),
+      "particle smoke initial did not create a compute pipeline",
+    );
+    requireOk(
+      initialParticle.stream.commands.some((command) => command.cmd === "DispatchWorkgroups"),
+      "particle smoke initial did not dispatch workgroups",
+    );
+    requireOk(
+      initialParticle.stream.commands.some(
+        (command) =>
+          command.cmd === "ResourceBarrier" &&
+          command.src_stage === "COMPUTE" &&
+          command.dst_stage === "VERTEX_INPUT",
+      ),
+      "particle smoke initial did not barrier compute output for vertex input",
+    );
+    expectStatus(
+      Module._dvz_wasm_api_scenario_frame(particleScene, 1 / 60, 1 / 60),
+      0,
+      "particle smoke scenario frame",
+    );
+    const splitParticle = emitIncrementalPacketStream(
+      Module, particleScene, particleFigure, "particle smoke split packet frame");
+    requireOk(
+      splitParticle.frame.decoded.commands.some((command) => command.cmd === "DispatchWorkgroups"),
+      "particle smoke frame packet did not dispatch workgroups",
+    );
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(particleScene);
   }
 
   const positions = new Float32Array([-0.75, -0.45, 0, -0.35, 0.35, 0, 0.05, -0.1, 0, 0.42, 0.5, 0, 0.72, -0.35, 0]);

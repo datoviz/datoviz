@@ -34,18 +34,18 @@ Current source-of-truth files:
 
 As of 2026-06-10:
 
-1. Manifest counts: `23 webgpu-live`, `58 webgpu-planned`, `12 webgpu-deferred`,
+1. Manifest counts: `24 webgpu-live`, `57 webgpu-planned`, `12 webgpu-deferred`,
    `13 native-only`, and `8` lab-only entries without WebGPU status.
 2. Live routes cover basic scene, timer animation, triangulation, builtin shapes 2D/3D, isolines,
    animation tracks, OBJ loading, picking, pixel/sphere/mesh selection, image probe, compute buffer
-   animation, colorbar, scale bars, categorical legend, annotation readout, linked probe/colorbar,
-   scientific plotting, vector, and wind field.
+   animation, GPU particle smoke, colorbar, scale bars, categorical legend, annotation readout,
+   linked probe/colorbar, scientific plotting, vector, and wind field.
 3. The browser runtime consumes artifact-backed split DRP2 setup/update/frame packets. JSON is
    debug/fixture-only.
 4. Query/readback is intentionally narrow: point/marker picking, point hover/selection,
    pixel/sphere/mesh selection, and one sampled image probe.
-5. Compute-to-render is proven by `feature_compute_buffer_animation`. The browser particle showcase
-   is the next compute proof.
+5. Compute-to-render is proven by `feature_compute_buffer_animation` and the browser
+   `showcase_gpu_particle_smoke` route, which uses a `32k` browser particle budget.
 
 Current browser-supported building blocks:
 
@@ -87,8 +87,8 @@ Do not block v0.4 on browser equivalents for:
 
 WebGPU support is good enough for v0.4 RC when:
 
-1. `showcase_gpu_particle_smoke` is live in browser WebGPU with a documented particle budget, or an
-   explicit native/browser compute blocker is recorded in `examples/webgpu/COMPAT.md`;
+1. `showcase_gpu_particle_smoke` stays live in browser WebGPU with its documented `32k` particle
+   budget, or an explicit native/browser compute blocker is recorded in `examples/webgpu/COMPAT.md`;
 2. request/query/readback remains live for picking, selection, and one image probe;
 3. representative live examples exist for every current browser visual family;
 4. panel, panzoom, axes, text, image, colorbar, scale-bar, legend, readout, and simple composition
@@ -102,9 +102,9 @@ WebGPU support is good enough for v0.4 RC when:
 
 ### 1. Compute Particle Proof
 
-Promote `showcase_gpu_particle_smoke` after the compact `feature_compute_buffer_animation` route.
-Record browser particle count, native Vulkan evidence when available, and any known headless WebGPU
-instance-loss skips honestly.
+Current: `showcase_gpu_particle_smoke` is the live browser compute particle route at `32k`
+particles. Keep native Vulkan evidence and any known headless WebGPU instance-loss skips recorded
+honestly.
 
 ### 2. Simple Visual-Family Batch
 
@@ -151,7 +151,7 @@ orbit-camera-only paths, and postprocess techniques.
 | Core visual families | current | promote standalone gallery examples for every current family |
 | Annotations/layout | current/rc-target | broaden panel, axes, text, guide, overlay, and color-scale routes |
 | Query/readback | current narrow slice | keep picking/selection/probe evidence; defer full query parity |
-| Compute | compact proof current | promote `showcase_gpu_particle_smoke` |
+| Compute | compact proof and particle route current | keep particle budget/evidence current |
 | Controllers | panzoom/arcball current | keep fly/turntable/orbit camera deferred unless needed by a live showcase |
 | Volume/splat/postprocess | deferred | keep diagnostics explicit; do not expand before RC unless required |
 

@@ -120,6 +120,12 @@ export const LIVE_EXAMPLES = [
     label: "Wind Field",
     scenarioId: "showcase_wind_field",
   },
+  {
+    id: "showcase_gpu_particle_smoke",
+    label: "GPU Particle Smoke",
+    scenarioId: "showcase_gpu_particle_smoke",
+    animate: true,
+  },
 ];
 
 export function liveExampleById(id) {

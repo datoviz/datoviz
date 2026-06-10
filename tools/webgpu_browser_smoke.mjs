@@ -571,7 +571,14 @@ async function smokeWasmPage(page, baseUrl, path, expectedStatus, screenshotPath
   return { initialStatus, interactiveStatus };
 }
 
-async function smokeAnimatedWasmPage(page, baseUrl, path, expectedStatus, screenshotPath) {
+async function smokeAnimatedWasmPage(
+  page,
+  baseUrl,
+  path,
+  expectedStatus,
+  screenshotPath,
+  expectedScenarioId = 'feature_timer_animation',
+) {
   await page.navigate(`${baseUrl}${path}`);
   requireOk(
     await page.evaluate('typeof navigator.gpu === "object"'),
@@ -592,7 +599,7 @@ async function smokeAnimatedWasmPage(page, baseUrl, path, expectedStatus, screen
     const scene = window.__datovizWasmScene;
     const session = window.__datovizWasmSession;
     if (scene?.runtime?.stream?.name !== "drp2_packet_set") return false;
-    if (scene?.scenario?.id !== "feature_timer_animation") return false;
+    if (scene?.scenario?.id !== ${JSON.stringify(expectedScenarioId)}) return false;
     return (scene.runtime.packetFrameIndex > ${Number(initialFrame)} + 1) && session?.animationFrame !== 0;
   })()`, 15000);
   requireOk(animatedFrame, `${path}: scenario animation did not advance`);
@@ -786,6 +793,7 @@ async function main() {
     let wasmVector = null;
     let wasmWindField = null;
     let wasmIsolines = null;
+    let wasmParticleSmoke = null;
     try {
       wasmBasic = await smokeAnimatedWasmPage(
         page,
@@ -965,6 +973,21 @@ async function main() {
       }
       console.log(skipLine(`WebGPU live isolines smoke: headless WebGPU instance loss (${error.message})`));
     }
+    try {
+      wasmParticleSmoke = await smokeAnimatedWasmPage(
+        page,
+        baseUrl,
+        '/examples/webgpu/live.html?id=showcase_gpu_particle_smoke',
+        'Rendered GPU Particle Smoke',
+        join(artifactsDir, 'webgpu_live_gpu_particle_smoke.png'),
+        'showcase_gpu_particle_smoke',
+      );
+    } catch (error) {
+      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        throw error;
+      }
+      console.log(skipLine(`WebGPU live particle-smoke: headless WebGPU instance loss (${error.message})`));
+    }
     if (wasmBasic !== null) {
       console.log(passLine(`live basic: ${wasmBasic.initialStatus}; initial_frame=${wasmBasic.initialFrame}`));
     }
@@ -1008,6 +1031,9 @@ async function main() {
     }
     if (wasmIsolines !== null) {
       console.log(passLine(`live isolines: ${wasmIsolines.initialStatus}`));
+    }
+    if (wasmParticleSmoke !== null) {
+      console.log(passLine(`live particle-smoke: ${wasmParticleSmoke.initialStatus}`));
     }
     console.log(`Wrote ${artifactsDir}`);
   } finally {
