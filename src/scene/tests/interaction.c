@@ -3273,6 +3273,7 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
         {
             found_data_attach = true;
             AT(panel->visuals[i].controller_mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL);
+            AT(panel->visuals[i].coord_space == DVZ_COORD_DATA);
         }
     }
     AT(found_data_attach);
