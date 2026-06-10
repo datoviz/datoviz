@@ -1395,6 +1395,24 @@ function expectLightingScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "WriteBuffer").length >= 6, `${label}: expected sphere and material buffer uploads`);
 }
 
+function expectTexturedPlanetScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  const mesh = expectPipeline(
+    stream,
+    `${label} textured mesh`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.mesh",
+  );
+  expectDepthPipeline(mesh, `${label} textured mesh`);
+  requireOk(
+    mesh.bind_group_layout_ids.length >= 2,
+    `${label}: expected material or texture bind group layouts on mesh pipeline`,
+  );
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected textured mesh draw`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected planet texture upload`);
+  requireOk(commandsOf(stream, "WriteBuffer").length >= 4, `${label}: expected mesh and material uploads`);
+}
+
 function expectLinkedProbeColorbarScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -2168,6 +2186,7 @@ try {
     "technique_depth_test",
     "feature_material_mesh",
     "feature_lighting",
+    "textured_terrain_or_planet",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3112,6 +3131,11 @@ try {
       "feature_lighting",
       "lighting",
       (stream, label) => expectLightingScenarioStreamShape(stream, label),
+    ],
+    [
+      "textured_terrain_or_planet",
+      "textured planets",
+      (stream, label) => expectTexturedPlanetScenarioStreamShape(stream, label),
     ],
   ];
   for (const [id, label, expectShape] of panelAndAxesScenarios) {

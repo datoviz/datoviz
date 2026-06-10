@@ -61,7 +61,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 65
+#define DVZ_WASM_API_SCENARIO_COUNT 66
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
@@ -133,6 +133,7 @@ DvzScenarioSpec dvz_showcase_linked_panel_axes_scenario(void);
 DvzScenarioSpec dvz_showcase_scalebar_measurement_scenario(void);
 DvzScenarioSpec dvz_showcase_scientific_plotting_scenario(void);
 DvzScenarioSpec dvz_showcase_surface_grid_scenario(void);
+DvzScenarioSpec dvz_showcase_textured_planet_scenario(void);
 DvzScenarioSpec dvz_showcase_us_state_choropleth_scenario(void);
 DvzScenarioSpec dvz_showcase_wind_field_scenario(void);
 DvzScenarioSpec dvz_visual_glyph_scenario(void);
@@ -536,6 +537,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_example_material_mesh_scenario();
     case 64:
         return dvz_example_lighting_scenario();
+    case 65:
+        return dvz_showcase_textured_planet_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

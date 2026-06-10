@@ -35,7 +35,9 @@
 #include "_alloc.h"
 #include "datoviz/fileio.h"
 #include "datoviz/geom.h"
+#ifndef DVZ_EXAMPLE_NO_MAIN
 #include "datoviz/gui.h"
+#endif
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "runner/scenario_runner.h"
@@ -116,6 +118,14 @@ typedef struct TexturedPlanetState
     bool auto_rotate;
     float spin_speed;
 } TexturedPlanetState;
+
+
+
+/*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_showcase_textured_planet_scenario(void);
 
 
 
@@ -516,6 +526,7 @@ static bool _state_apply_planet(TexturedPlanetState* state, bool report_error)
 
 
 
+#ifndef DVZ_EXAMPLE_NO_MAIN
 /**
  * Build live GUI controls for the textured planet example.
  *
@@ -571,6 +582,7 @@ static void _textured_planet_gui(DvzGui* gui, DvzView* win, void* user_data)
     if (spin_changed)
         _state_apply_spin(state);
 }
+#endif
 
 
 
@@ -719,6 +731,7 @@ cleanup:
 
 
 
+#ifndef DVZ_EXAMPLE_NO_MAIN
 static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
 {
     (void)ctx;
@@ -734,6 +747,7 @@ static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView*
     dvz_view_set_gui_callback(view, _textured_planet_gui, state);
     return true;
 }
+#endif
 
 
 
@@ -753,7 +767,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 
 
 
-static DvzScenarioSpec _textured_planet_scenario(void)
+DvzScenarioSpec dvz_showcase_textured_planet_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "textured_terrain_or_planet",
@@ -762,15 +776,19 @@ static DvzScenarioSpec _textured_planet_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .init = _scenario_init,
+#ifndef DVZ_EXAMPLE_NO_MAIN
         .native_view = _scenario_native_view,
+#endif
         .destroy = _scenario_destroy,
     };
 }
 
 
 
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _textured_planet_scenario();
+    DvzScenarioSpec spec = dvz_showcase_textured_planet_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

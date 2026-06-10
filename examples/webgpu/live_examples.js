@@ -225,6 +225,11 @@ export const LIVE_EXAMPLES = [
     scenarioId: "feature_lighting",
   },
   {
+    id: "textured_terrain_or_planet",
+    label: "Textured Planets",
+    scenarioId: "textured_terrain_or_planet",
+  },
+  {
     id: "feature_panel_multi",
     label: "Multiple Panels",
     scenarioId: "feature_panel_multi",

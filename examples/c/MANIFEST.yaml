@@ -392,12 +392,14 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=textured_terrain_or_planet
       requirements:
         - mesh
         - sampled-field
         - texture
         - arcball
+        - material
     agent_copy_safe: true
 
   - id: feature_material_mesh

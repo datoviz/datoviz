@@ -1120,6 +1120,12 @@ async function main() {
         'material-mesh',
       ],
       ['feature_lighting', 'Lighting', 'webgpu_live_lighting.png', 'lighting'],
+      [
+        'textured_terrain_or_planet',
+        'Textured Planets',
+        'webgpu_live_textured_planets.png',
+        'textured-planets',
+      ],
     ];
     for (const [id, label, filename, shortLabel] of promotedLiveRoutes) {
       try {

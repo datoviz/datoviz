@@ -61,6 +61,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/scientific_plotting.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/surface_grid.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/choropleth.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/textured_planet.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/wind_field.c
     ${PROJECT_SOURCE_DIR}/examples/c/visuals/glyph.c
     ${PROJECT_SOURCE_DIR}/examples/c/visuals/image.c
@@ -120,5 +121,11 @@ endif()
 if(NOT DVZ_WASM_CHOROPLETH_BUNDLE STREQUAL "")
     target_link_options(datoviz_wasm_scene PRIVATE
         "SHELL:--preload-file ${DVZ_WASM_CHOROPLETH_BUNDLE}@data/examples/us_state_choropleth/prepared"
+    )
+endif()
+
+if(EXISTS "${PROJECT_SOURCE_DIR}/data/assets/textures")
+    target_link_options(datoviz_wasm_scene PRIVATE
+        "SHELL:--preload-file ${PROJECT_SOURCE_DIR}/data/assets/textures@data/assets/textures"
     )
 endif()
