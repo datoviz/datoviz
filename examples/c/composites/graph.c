@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* graph - semantic two-community graph composite with bridge edges.
+/* graph - deterministic brain-connectivity graph composite with community labels.
  *
  * Scenario: composite_graph
  * Style: feature composite, graphite_cyan, 1600x1200 capture target
@@ -20,7 +20,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <math.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -38,15 +37,109 @@
 
 #define WIDTH  1600u
 #define HEIGHT 1200u
-#define COMMUNITY_COUNT 2u
-#define COMMUNITY_SIZE  11u
-#define RING_COUNT      (COMMUNITY_SIZE - 1u)
-#define BRIDGE_COUNT    2u
-#define NODE_COUNT      (COMMUNITY_COUNT * COMMUNITY_SIZE + BRIDGE_COUNT)
-#define INTRA_EDGE_COUNT  (COMMUNITY_COUNT * RING_COUNT * 2u)
-#define BRIDGE_EDGE_COUNT 8u
-#define EDGE_COUNT        (INTRA_EDGE_COUNT + BRIDGE_EDGE_COUNT)
-#define PI 3.14159265358979323846
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct BrainCommunity
+{
+    const char* label;
+    DvzColor color;
+    float label_x;
+    float label_y;
+} BrainCommunity;
+
+
+typedef struct BrainNode
+{
+    const char* label;
+    uint32_t community;
+    dvec3 position;
+    uint64_t semantic_id;
+    float strength;
+} BrainNode;
+
+
+typedef struct BrainEdge
+{
+    uint32_t source;
+    uint32_t target;
+    uint64_t semantic_id;
+    float weight;
+    bool bridge;
+} BrainEdge;
+
+
+
+/*************************************************************************************************/
+/*  Data                                                                                         */
+/*************************************************************************************************/
+
+static const BrainCommunity COMMUNITIES[] = {
+    {.label = "Visual", .color = {65, 201, 226, 255}, .label_x = 250.0f, .label_y = 238.0f},
+    {.label = "Motor", .color = {246, 185, 72, 255}, .label_x = 1192.0f, .label_y = 250.0f},
+    {.label = "Memory", .color = {234, 104, 91, 255}, .label_x = 712.0f, .label_y = 966.0f},
+};
+
+
+static const BrainNode NODES[] = {
+    {.label = "V1", .community = 0, .position = {-1.05, +0.42, 0.0}, .semantic_id = 101, .strength = 0.88f},
+    {.label = "V2", .community = 0, .position = {-0.80, +0.62, 0.0}, .semantic_id = 102, .strength = 0.72f},
+    {.label = "V4", .community = 0, .position = {-0.55, +0.42, 0.0}, .semantic_id = 103, .strength = 0.76f},
+    {.label = "LGN", .community = 0, .position = {-0.92, +0.12, 0.0}, .semantic_id = 104, .strength = 0.66f},
+    {.label = "MT", .community = 0, .position = {-0.62, +0.12, 0.0}, .semantic_id = 105, .strength = 0.70f},
+    {.label = "M1", .community = 1, .position = {+0.55, +0.45, 0.0}, .semantic_id = 201, .strength = 0.86f},
+    {.label = "S1", .community = 1, .position = {+0.82, +0.62, 0.0}, .semantic_id = 202, .strength = 0.78f},
+    {.label = "SMA", .community = 1, .position = {+1.05, +0.36, 0.0}, .semantic_id = 203, .strength = 0.70f},
+    {.label = "PMd", .community = 1, .position = {+0.70, +0.15, 0.0}, .semantic_id = 204, .strength = 0.67f},
+    {.label = "Thal", .community = 1, .position = {+1.00, +0.08, 0.0}, .semantic_id = 205, .strength = 0.80f},
+    {.label = "HPC-L", .community = 2, .position = {-0.30, -0.55, 0.0}, .semantic_id = 301, .strength = 0.84f},
+    {.label = "HPC-R", .community = 2, .position = {+0.00, -0.78, 0.0}, .semantic_id = 302, .strength = 0.82f},
+    {.label = "Ent", .community = 2, .position = {-0.58, -0.70, 0.0}, .semantic_id = 303, .strength = 0.63f},
+    {.label = "PCC", .community = 2, .position = {+0.34, -0.50, 0.0}, .semantic_id = 304, .strength = 0.74f},
+    {.label = "Amy", .community = 2, .position = {+0.55, -0.72, 0.0}, .semantic_id = 305, .strength = 0.60f},
+};
+
+
+static const BrainEdge EDGES[] = {
+    {.source = 0, .target = 1, .semantic_id = 1001, .weight = 0.84f, .bridge = false},
+    {.source = 1, .target = 2, .semantic_id = 1002, .weight = 0.76f, .bridge = false},
+    {.source = 0, .target = 3, .semantic_id = 1003, .weight = 0.62f, .bridge = false},
+    {.source = 3, .target = 4, .semantic_id = 1004, .weight = 0.58f, .bridge = false},
+    {.source = 2, .target = 4, .semantic_id = 1005, .weight = 0.71f, .bridge = false},
+    {.source = 0, .target = 4, .semantic_id = 1006, .weight = 0.66f, .bridge = false},
+    {.source = 5, .target = 6, .semantic_id = 2001, .weight = 0.82f, .bridge = false},
+    {.source = 6, .target = 7, .semantic_id = 2002, .weight = 0.70f, .bridge = false},
+    {.source = 5, .target = 8, .semantic_id = 2003, .weight = 0.64f, .bridge = false},
+    {.source = 8, .target = 9, .semantic_id = 2004, .weight = 0.68f, .bridge = false},
+    {.source = 7, .target = 9, .semantic_id = 2005, .weight = 0.74f, .bridge = false},
+    {.source = 5, .target = 9, .semantic_id = 2006, .weight = 0.60f, .bridge = false},
+    {.source = 10, .target = 11, .semantic_id = 3001, .weight = 0.86f, .bridge = false},
+    {.source = 10, .target = 12, .semantic_id = 3002, .weight = 0.72f, .bridge = false},
+    {.source = 11, .target = 13, .semantic_id = 3003, .weight = 0.66f, .bridge = false},
+    {.source = 12, .target = 14, .semantic_id = 3004, .weight = 0.57f, .bridge = false},
+    {.source = 13, .target = 14, .semantic_id = 3005, .weight = 0.61f, .bridge = false},
+    {.source = 10, .target = 13, .semantic_id = 3006, .weight = 0.64f, .bridge = false},
+    {.source = 2, .target = 5, .semantic_id = 4001, .weight = 0.48f, .bridge = true},
+    {.source = 4, .target = 8, .semantic_id = 4002, .weight = 0.42f, .bridge = true},
+    {.source = 1, .target = 6, .semantic_id = 4003, .weight = 0.35f, .bridge = true},
+    {.source = 3, .target = 12, .semantic_id = 4004, .weight = 0.44f, .bridge = true},
+    {.source = 4, .target = 10, .semantic_id = 4005, .weight = 0.39f, .bridge = true},
+    {.source = 8, .target = 13, .semantic_id = 4006, .weight = 0.50f, .bridge = true},
+    {.source = 9, .target = 14, .semantic_id = 4007, .weight = 0.46f, .bridge = true},
+    {.source = 5, .target = 13, .semantic_id = 4008, .weight = 0.37f, .bridge = true},
+};
+
+
+enum
+{
+    COMMUNITY_COUNT = sizeof(COMMUNITIES) / sizeof(COMMUNITIES[0]),
+    NODE_COUNT = sizeof(NODES) / sizeof(NODES[0]),
+    EDGE_COUNT = sizeof(EDGES) / sizeof(EDGES[0]),
+};
 
 
 
@@ -69,47 +162,29 @@ static bool _configure_panel(DvzPanel* panel)
                                         .top = 0.06f});
     if (!ok)
         return false;
-    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, -1.60, 1.60);
+    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, -1.42, 1.42);
     if (rc != 0)
         return false;
-    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.10, 1.10);
+    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.02, 0.92);
     return rc == 0;
 }
 
 
 
 /**
- * Fill a deterministic clustered graph layout.
+ * Fill node positions from the fixed brain-region table.
  *
  * @param positions output node positions
  */
 static void _make_positions(dvec3 positions[NODE_COUNT])
 {
-    static const dvec2 centers[COMMUNITY_COUNT] = {
-        {-0.70, +0.00},
-        {+0.70, +0.00},
-    };
-
-    for (uint32_t c = 0; c < COMMUNITY_COUNT; c++)
+    ANN(positions);
+    for (uint32_t i = 0; i < NODE_COUNT; i++)
     {
-        const uint32_t base = c * COMMUNITY_SIZE;
-        positions[base][0] = centers[c][0];
-        positions[base][1] = centers[c][1];
-        positions[base][2] = 0.0;
-        for (uint32_t i = 0; i < RING_COUNT; i++)
-        {
-            const double angle = 2.0 * PI * (double)i / (double)RING_COUNT + 0.18 * (double)c;
-            const double radius = 0.38;
-            positions[base + 1 + i][0] = centers[c][0] + radius * cos(angle);
-            positions[base + 1 + i][1] = centers[c][1] + radius * sin(angle);
-            positions[base + 1 + i][2] = 0.0;
-        }
+        positions[i][0] = NODES[i].position[0];
+        positions[i][1] = NODES[i].position[1];
+        positions[i][2] = NODES[i].position[2];
     }
-
-    positions[22][0] = -0.08;
-    positions[22][1] = +0.36;
-    positions[23][0] = +0.08;
-    positions[23][1] = -0.36;
 }
 
 
@@ -133,24 +208,14 @@ static void _make_edges(uint32_t endpoints[2 * EDGE_COUNT], uint32_t* bridge_fir
     ANN(bridge_first_edge);
 
     uint32_t edge_count = 0;
-    for (uint32_t c = 0; c < COMMUNITY_COUNT; c++)
+    *bridge_first_edge = EDGE_COUNT;
+    for (uint32_t i = 0; i < EDGE_COUNT; i++)
     {
-        const uint32_t base = c * COMMUNITY_SIZE;
-        for (uint32_t i = 0; i < RING_COUNT; i++)
-        {
-            _push_edge(endpoints, &edge_count, base, base + 1 + i);
-            _push_edge(endpoints, &edge_count, base + 1 + i, base + 1 + ((i + 1) % RING_COUNT));
-        }
+        if (EDGES[i].bridge && *bridge_first_edge == EDGE_COUNT)
+            *bridge_first_edge = i;
+        ASSERT(!EDGES[i].bridge || i >= *bridge_first_edge);
+        _push_edge(endpoints, &edge_count, EDGES[i].source, EDGES[i].target);
     }
-
-    *bridge_first_edge = edge_count;
-
-    static const uint32_t bridge_edges[2 * BRIDGE_EDGE_COUNT] = {
-        0, 22, 11, 23, 22, 23, 22, 11, //
-        23, 0,  1,  12, 6,  17, 22, 17,
-    };
-    for (uint32_t i = 0; i < BRIDGE_EDGE_COUNT; i++)
-        _push_edge(endpoints, &edge_count, bridge_edges[2 * i], bridge_edges[2 * i + 1]);
 
     ASSERT(edge_count == EDGE_COUNT);
 }
@@ -159,14 +224,15 @@ static void _make_edges(uint32_t endpoints[2 * EDGE_COUNT], uint32_t* bridge_fir
 
 static void _make_bridge_controls(
     dvec3 positions[NODE_COUNT], const uint32_t endpoints[2 * EDGE_COUNT],
-    uint32_t bridge_first_edge, dvec3 control0[BRIDGE_EDGE_COUNT], dvec3 control1[BRIDGE_EDGE_COUNT])
+    uint32_t bridge_first_edge, uint32_t bridge_count, dvec3 control0[EDGE_COUNT],
+    dvec3 control1[EDGE_COUNT])
 {
     ANN(positions);
     ANN(endpoints);
     ANN(control0);
     ANN(control1);
 
-    for (uint32_t i = 0; i < BRIDGE_EDGE_COUNT; i++)
+    for (uint32_t i = 0; i < bridge_count; i++)
     {
         const uint32_t edge_index = bridge_first_edge + i;
         const uint32_t source = endpoints[2 * edge_index + 0];
@@ -177,7 +243,7 @@ static void _make_bridge_controls(
         const double ty = positions[target][1];
         const double dx = tx - sx;
         const double dy = ty - sy;
-        const double bend = (i % 2 == 0 ? 1.0 : -1.0) * 0.18;
+        const double bend = (i % 2 == 0 ? 1.0 : -1.0) * (0.14 + 0.08 * EDGES[edge_index].weight);
 
         control0[i][0] = sx + 0.36 * dx - bend * dy;
         control0[i][1] = sy + 0.36 * dy + bend * dx;
@@ -186,6 +252,28 @@ static void _make_bridge_controls(
         control1[i][1] = sy + 0.64 * dy + bend * dx;
         control1[i][2] = 0.0;
     }
+}
+
+
+
+/**
+ * Add fixed labels describing the graph dataset and communities.
+ *
+ * @param panel panel receiving labels
+ * @return whether all labels were added
+ */
+static bool _add_graph_labels(DvzPanel* panel)
+{
+    ANN(panel);
+    if (!example_add_panel_label(panel, "Brain connectivity: 15 regions / 26 weighted links", 28.0f, 24.0f))
+        return false;
+    for (uint32_t i = 0; i < COMMUNITY_COUNT; i++)
+    {
+        if (!example_add_panel_label(panel, COMMUNITIES[i].label, COMMUNITIES[i].label_x,
+                                     COMMUNITIES[i].label_y))
+            return false;
+    }
+    return true;
 }
 
 
@@ -227,9 +315,9 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
     uint64_t node_ids[NODE_COUNT] = {0};
     uint64_t edge_ids[EDGE_COUNT] = {0};
     for (uint32_t i = 0; i < NODE_COUNT; i++)
-        node_ids[i] = 1000 + i;
+        node_ids[i] = NODES[i].semantic_id;
     for (uint32_t i = 0; i < EDGE_COUNT; i++)
-        edge_ids[i] = 2000 + i;
+        edge_ids[i] = EDGES[i].semantic_id;
     rc = dvz_graph_node_ids(graph, 0, NODE_COUNT, node_ids);
     if (rc != 0)
         return false;
@@ -241,12 +329,10 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
     float node_sizes[NODE_COUNT] = {0};
     for (uint32_t i = 0; i < NODE_COUNT; i++)
     {
-        const bool hub = i == 0 || i == COMMUNITY_SIZE;
-        const bool bridge = i >= COMMUNITY_COUNT * COMMUNITY_SIZE;
-        node_colors[i] = bridge ? (DvzColor){231, 98, 82, 255} :
-                         hub    ? (DvzColor){255, 198, 80, 255} :
-                                  (DvzColor){46, 190, 210, 255};
-        node_sizes[i] = bridge ? 34.0f : hub ? 38.0f : 22.0f;
+        const uint32_t community = NODES[i].community;
+        ASSERT(community < COMMUNITY_COUNT);
+        node_colors[i] = COMMUNITIES[community].color;
+        node_sizes[i] = 18.0f + 24.0f * NODES[i].strength;
     }
     rc = dvz_graph_node_colors(graph, 0, NODE_COUNT, node_colors);
     if (rc != 0)
@@ -259,10 +345,11 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
     float edge_widths[EDGE_COUNT] = {0};
     for (uint32_t i = 0; i < EDGE_COUNT; i++)
     {
-        const bool bridge = i >= bridge_first_edge;
-        edge_colors[i] =
-            bridge ? (DvzColor){231, 98, 82, 215} : (DvzColor){150, 220, 235, 115};
-        edge_widths[i] = bridge ? 3.6f : 1.7f;
+        const bool bridge = EDGES[i].bridge;
+        const uint32_t community = NODES[EDGES[i].source].community;
+        edge_colors[i] = bridge ? (DvzColor){222, 236, 244, 180} : COMMUNITIES[community].color;
+        edge_colors[i].a = bridge ? 185u : 105u;
+        edge_widths[i] = 1.1f + 4.2f * EDGES[i].weight;
     }
     rc = dvz_graph_edge_colors(graph, 0, EDGE_COUNT, edge_colors);
     if (rc != 0)
@@ -278,14 +365,17 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
     if (rc != 0)
         return false;
 
-    dvec3 control0[BRIDGE_EDGE_COUNT] = {0};
-    dvec3 control1[BRIDGE_EDGE_COUNT] = {0};
-    _make_bridge_controls(positions, edges, bridge_first_edge, control0, control1);
-    rc = dvz_graph_edge_controls(
-        graph, bridge_first_edge, BRIDGE_EDGE_COUNT, (const dvec3*)control0,
-        (const dvec3*)control1);
-    if (rc != 0)
-        return false;
+    const uint32_t bridge_count = EDGE_COUNT - bridge_first_edge;
+    if (bridge_count > 0)
+    {
+        dvec3 control0[EDGE_COUNT] = {0};
+        dvec3 control1[EDGE_COUNT] = {0};
+        _make_bridge_controls(positions, edges, bridge_first_edge, bridge_count, control0, control1);
+        rc = dvz_graph_edge_controls(
+            graph, bridge_first_edge, bridge_count, (const dvec3*)control0, (const dvec3*)control1);
+        if (rc != 0)
+            return false;
+    }
 
     DvzComposite* composite = dvz_graph_composite(graph, 0);
     if (composite == NULL)
@@ -293,7 +383,9 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
     rc = dvz_panel_add_composite(
         panel, composite, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
                                                 .z_layer = 0});
-    return rc == 0;
+    if (rc != 0)
+        return false;
+    return _add_graph_labels(panel);
 }
 
 

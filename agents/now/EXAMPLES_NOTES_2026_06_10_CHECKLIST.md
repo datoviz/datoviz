@@ -109,6 +109,6 @@ build/smoke where supported.
 
 - [x] `composites/graph`: choose a deterministic scientific graph, preferably brain connectivity or
   protein interaction.
-- [ ] `composites/graph`: keep helper structs and data example-local.
-- [ ] `composites/graph`: do not promote a new public `DvzGraph` API in this batch.
-- [ ] `composites/graph`: include meaningful community labels and stable visual styling.
+- [x] `composites/graph`: keep helper structs and data example-local.
+- [x] `composites/graph`: do not promote a new public `DvzGraph` API in this batch.
+- [x] `composites/graph`: include meaningful community labels and stable visual styling.
