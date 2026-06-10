@@ -1,0 +1,211 @@
+# v0.4 C API reference generation policy.
+#
+# This file classifies exported C symbols into public documentation pages. Keep this policy broad
+# enough to avoid per-symbol churn, but explicit enough that newly exported headers cannot land in
+# public docs without an intentional module/status decision.
+
+pages:
+  scene:
+    title: Scene API
+    output: docs/reference/c-api/scene.md
+    status: supported
+    summary: Retained figures, panels, cameras, controllers, scene objects, queries, and frame artifacts.
+    headers:
+      - include/datoviz/scene/**
+      - include/datoviz/controller/**
+      - include/datoviz/controller.h
+    prefixes:
+      - anim
+      - axis
+      - camera
+      - colorbar
+      - colormap
+      - controller
+      - figure
+      - frame
+      - grid
+      - guide
+      - labels
+      - legend
+      - overlay
+      - panel
+      - scene
+      - scale
+      - selection
+      - text
+      - track
+
+  visuals:
+    title: Visuals And Composites API
+    output: docs/reference/c-api/visuals.md
+    status: supported
+    summary: Retained visual families, semantic composites, visual styles, and visual data setters.
+    headers:
+      - include/datoviz/scene.h
+      - include/datoviz/geom.h
+      - include/datoviz/geom/**
+    prefixes:
+      - composite
+      - depth
+      - edl
+      - glyph
+      - graph
+      - image
+      - marker
+      - material
+      - mesh
+      - msaa
+      - path
+      - phong
+      - pixel
+      - point
+      - polygon
+      - primitive
+      - sampled
+      - segment
+      - sphere
+      - splat
+      - ssao
+      - standard
+      - symbol
+      - vector
+      - visual
+      - volume
+
+  app:
+    title: App, Window, And I/O API
+    output: docs/reference/c-api/app.md
+    status: supported
+    summary: Native app loop, windows, canvases, input routing, GUI hooks, frame streams, capture, and video.
+    headers:
+      - include/datoviz/app.h
+      - include/datoviz/canvas.h
+      - include/datoviz/canvas/**
+      - include/datoviz/window.h
+      - include/datoviz/window/**
+      - include/datoviz/input.h
+      - include/datoviz/input/**
+      - include/datoviz/stream.h
+      - include/datoviz/stream/**
+      - include/datoviz/runner.h
+      - include/datoviz/runner/**
+      - include/datoviz/gui.h
+      - include/datoviz/gui/**
+      - include/datoviz/imgui.h
+      - include/datoviz/video.h
+    prefixes:
+      - app
+      - canvas
+      - gui
+      - input
+      - keyboard
+      - pointer
+      - stream
+      - video
+      - view
+      - window
+
+  drp2:
+    title: DRP2 API
+    output: docs/reference/c-api/drp2.md
+    status: advanced/unstable
+    summary: Datoviz Rendering Protocol command streams, packets, recording, and runtime integration.
+    headers:
+      - include/datoviz/drp2.h
+      - include/datoviz/drp2/**
+    prefixes:
+      - drp2
+
+  runtime:
+    title: Runtime And Utilities API
+    output: docs/reference/c-api/runtime.md
+    status: advanced/unstable
+    summary: Lower-level Vulkan, vklite, math, geometry, file, data-structure, thread, and utility APIs.
+    headers:
+      - include/datoviz/common.h
+      - include/datoviz/common/**
+      - include/datoviz/ds.h
+      - include/datoviz/ds/**
+      - include/datoviz/dvzmath.h
+      - include/datoviz/fileio.h
+      - include/datoviz/fileio/**
+      - include/datoviz/font.h
+      - include/datoviz/gpu/**
+      - include/datoviz/math/**
+      - include/datoviz/thread.h
+      - include/datoviz/thread/**
+      - include/datoviz/vk.h
+      - include/datoviz/vk/**
+      - include/datoviz/vklite.h
+      - include/datoviz/vklite/**
+    prefixes:
+      - allocation
+      - allocator
+      - array
+      - barrier
+      - barriers
+      - bezier
+      - box
+      - buffer
+      - circular
+      - cmd
+      - compile
+      - cond
+      - container
+      - deq
+      - device
+      - dmat4
+      - dvec3
+      - dvec4
+      - easing
+      - error
+      - fifo
+      - file
+      - font
+      - geom
+      - geometry
+      - gpu
+      - graphics
+      - image
+      - images
+      - instance
+      - interop
+      - interpolate
+      - list
+      - load
+      - make
+      - map
+      - mock
+      - mutex
+      - obj
+      - parse
+      - prng
+      - queue
+      - queues
+      - rand
+      - read
+      - rendering
+      - resource
+      - sampler
+      - slots
+      - stats
+      - submit
+      - surface
+      - swapchain
+      - tessellate
+      - tessellated
+      - thread
+      - time
+      - triangulate
+      - triangulation
+      - vec3
+      - version
+      - write
+
+types:
+  output: docs/reference/c-api/types.md
+  title: C Types
+  summary: Public enums, records, opaque handles, and callback typedefs grouped by C API page.
+
+hidden_headers:
+  - include/datoviz/datoviz.h

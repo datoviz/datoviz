@@ -1,253 +1,383 @@
-# C API generator
+#!/usr/bin/env python3
+"""Generate the v0.4 C API reference from extracted public API metadata."""
 
-# Imports
-# -------------------------------------------------------------------------------------------------
+from __future__ import annotations
 
+import argparse
+import fnmatch
 import json
 import re
 from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
-from textwrap import indent
+from textwrap import dedent
 
-from bindings.generate_ctypes import _callback_typedefs, _ctype_for_type
-
-# Constants
-# -------------------------------------------------------------------------------------------------
-
-API_PATH = Path('build/bindings/datoviz_api.json')
-OUTPUT_PATH = Path('docs/reference/api_c.md')
+import yaml
 
 
-SECTION_NAMES = {
-    'functions': 'Functions',
-    'visuals': 'Visual functions',
-    'gui': 'GUI functions',
-    'protocol': 'Datoviz Rendering Protocol functions',
-}
+ROOT = Path(__file__).resolve().parents[1]
+API_PATH = ROOT / "build/bindings/datoviz_api.json"
+POLICY_PATH = ROOT / "spec/api/C_API_REFERENCE_POLICY.yaml"
+DOCS_ROOT = ROOT / "docs"
+SUMMARY_PATH = ROOT / "build/docs/c-api-reference-summary.json"
+
+PARAM_RE = re.compile(r"^@param\s+(?P<name>\w+)\s*(?P<doc>.*)$")
+RETURN_RE = re.compile(r"^@returns?\s+(?P<doc>.*)$")
 
 
-# Classification
-# -------------------------------------------------------------------------------------------------
+@dataclass(frozen=True)
+class PagePolicy:
+    key: str
+    title: str
+    output: Path
+    status: str
+    summary: str
+    headers: tuple[str, ...]
+    prefixes: tuple[str, ...]
 
 
-PARAM_RE = re.compile(r'^@param\s+(?P<name>\w+)\s*(?P<doc>.*)$')
-RETURN_RE = re.compile(r'^@returns?\s+(?P<doc>.*)$')
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--api", type=Path, default=API_PATH)
+    parser.add_argument("--policy", type=Path, default=POLICY_PATH)
+    parser.add_argument("--summary", type=Path, default=SUMMARY_PATH)
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="validate classification without writing generated Markdown",
+    )
+    return parser.parse_args()
 
 
-def classify_header(header_name):
-    path = Path(header_name)
-    name = path.name
-    if name == 'drp2.h' or '/drp2/' in header_name:
-        return 'protocol'
-    elif name in {'gui.h', 'imgui.h'}:
-        return 'gui'
-    elif name == 'datoviz_visuals.h':
-        return 'visuals'
-    else:
-        return 'functions'
+def load_json(path: Path) -> dict:
+    if not path.exists():
+        raise FileNotFoundError(f"{path} not found; run the binding extraction pipeline first")
+    return json.loads(path.read_text(encoding="utf8"))
 
 
-def group_by_section_and_object(api):
-    sections = {
-        'functions': defaultdict(list),
-        'visuals': defaultdict(list),
-        'gui': defaultdict(list),
-        'protocol': defaultdict(list),
-    }
-
-    for fn in api.get('functions', []):
-        name = fn['name']
-        if not name.startswith('dvz_'):
-            continue
-        header = fn.get('location', {}).get('file') or ''
-        section = classify_header(header)
-        parts = name[4:].split('_', 1)
-        obj = parts[0] if len(parts) > 1 else 'misc'
-        obj = obj.title()
-        sections[section][obj].append(fn)
-
-    return sections
+def load_policy(path: Path) -> tuple[list[PagePolicy], dict, tuple[str, ...]]:
+    raw = yaml.safe_load(path.read_text(encoding="utf8")) or {}
+    pages = []
+    for key, entry in (raw.get("pages") or {}).items():
+        pages.append(
+            PagePolicy(
+                key=str(key),
+                title=str(entry["title"]),
+                output=ROOT / str(entry["output"]),
+                status=str(entry["status"]),
+                summary=str(entry["summary"]),
+                headers=tuple(str(item) for item in entry.get("headers", ())),
+                prefixes=tuple(str(item) for item in entry.get("prefixes", ())),
+            )
+        )
+    return pages, raw.get("types") or {}, tuple(str(item) for item in raw.get("hidden_headers", ()))
 
 
-# Formatting
-# -------------------------------------------------------------------------------------------------
+def header_of(item: dict) -> str:
+    return str((item.get("location") or {}).get("file") or "")
 
 
-def _type_name(type_info):
-    return type_info.get('qualtype') or type_info.get('canonical') or 'void'
+def symbol_prefix(name: str) -> str:
+    if name.startswith("dvz_"):
+        name = name[4:]
+    return name.split("_", 1)[0]
 
 
-def _clean_doc(raw):
-    raw = (raw or '').strip()
-    if raw.startswith('/**'):
+def header_matches(header: str, patterns: tuple[str, ...]) -> bool:
+    return any(fnmatch.fnmatch(header, pattern) for pattern in patterns)
+
+
+def classify_symbol(item: dict, pages: list[PagePolicy], hidden_headers: tuple[str, ...]) -> str | None:
+    header = header_of(item)
+    if header_matches(header, hidden_headers):
+        return None
+
+    prefix = symbol_prefix(str(item.get("name", "")))
+    for page in pages:
+        if prefix in page.prefixes:
+            return page.key
+    for page in pages:
+        if header_matches(header, page.headers):
+            return page.key
+    return None
+
+
+def clean_doc(raw: str | None) -> list[str]:
+    raw = (raw or "").strip()
+    if raw.startswith("/**"):
         raw = raw[3:]
-    if raw.endswith('*/'):
+    if raw.endswith("*/"):
         raw = raw[:-2]
     lines = []
     for line in raw.splitlines():
         line = line.strip()
-        if line.startswith('*'):
+        if line.startswith("*"):
             line = line[1:].strip()
         lines.append(line)
     return lines
 
 
-def _doc_parts(raw):
-    text = []
-    params = {}
-    ret = ''
-    for line in _clean_doc(raw):
+def doc_parts(raw: str | None) -> tuple[str, dict[str, str], str]:
+    text: list[str] = []
+    params: dict[str, str] = {}
+    ret = ""
+    for line in clean_doc(raw):
         if not line:
             if text and text[-1]:
-                text.append('')
+                text.append("")
             continue
         param_match = PARAM_RE.match(line)
         if param_match:
-            params[param_match.group('name')] = param_match.group('doc').strip()
+            params[param_match.group("name")] = param_match.group("doc").strip()
             continue
         return_match = RETURN_RE.match(line)
         if return_match:
-            ret = return_match.group('doc').strip()
+            ret = return_match.group("doc").strip()
             continue
-        if line.startswith('@'):
+        if line.startswith("@"):
             continue
         text.append(line)
     while text and not text[-1]:
         text.pop()
-    return '\n'.join(text), params, ret
+    return "\n".join(text), params, ret
 
 
-def _doc_context(api):
-    records = {record['name'] for record in api.get('records', []) if record.get('name')}
-    enums = {enum['name'] for enum in api.get('enums', []) if enum.get('name')}
-    callbacks = set(_callback_typedefs(api))
-    return records, enums, callbacks
+def type_name(type_info: dict | None) -> str:
+    if not type_info:
+        return "void"
+    return str(type_info.get("qualtype") or type_info.get("canonical") or "void")
 
 
-def _python_type(type_info, ctx):
-    records, enums, callbacks = ctx
-    return _ctype_for_type(type_info, records, enums, callbacks=callbacks) or 'ctypes.c_void_p'
+def c_signature(fn: dict) -> str:
+    result = type_name(fn.get("result"))
+    args = fn.get("parameters") or []
+    if not args:
+        return f"{result} {fn['name']}(void);"
+
+    lines = [f"{result} {fn['name']}("]
+    for index, arg in enumerate(args):
+        suffix = "," if index + 1 < len(args) else ""
+        lines.append(f"    {type_name(arg.get('type'))} {arg.get('name', '')}{suffix}")
+    lines.append(");")
+    return "\n".join(lines)
 
 
-def format_signature_py(fn, ctx):
-    _, _, ret_desc = _doc_parts(fn.get('doc', ''))
-    ret_type = _python_type(fn.get('result', {'qualtype': 'void'}), ctx)
-    if ret_desc:
-        ret_desc = f'  # returns {ret_desc} : {ret_type}'
-    lines = [f'dvz.{fn["name"][4:]}({ret_desc}']
-    _, param_docs, _ = _doc_parts(fn.get('doc', ''))
-    for arg in fn.get('parameters', []):
-        name = arg.get('name', '')
-        doc = param_docs.get(name, '')
-        pytype = _python_type(arg.get('type', {}), ctx)
-        if name:
-            lines.append(f'    {name},  # {doc} : {pytype}')
-    lines.append(')')
-    return '\n'.join(lines)
+def generated_header(title: str, summary: str | None = None) -> list[str]:
+    lines = [
+        f"# {title}",
+        "",
+        "<!-- WARNING: generated by tools/build_api_c.py from build/bindings/datoviz_api.json -->",
+        "",
+    ]
+    if summary:
+        lines.extend([summary, ""])
+    return lines
 
 
-def format_signature_c(fn):
+def format_function(fn: dict) -> list[str]:
+    doc, param_docs, ret_doc = doc_parts(fn.get("doc"))
+    header = header_of(fn)
+    lines = [f"### `{fn['name']}()`", ""]
+    if doc:
+        lines.extend([doc, ""])
+    lines.extend(
+        [
+            f"```c title=\"{fn['name']}\"",
+            c_signature(fn),
+            "```",
+            "",
+        ]
+    )
+    if ret_doc or fn.get("parameters"):
+        lines.extend(["| Field | Type | Description |", "| --- | --- | --- |"])
+        if ret_doc:
+            lines.append(f"| return | `{type_name(fn.get('result'))}` | {ret_doc} |")
+        for arg in fn.get("parameters") or []:
+            name = str(arg.get("name", ""))
+            lines.append(
+                f"| `{name}` | `{type_name(arg.get('type'))}` | {param_docs.get(name, '')} |"
+            )
+        lines.append("")
+    if header:
+        line = (fn.get("location") or {}).get("line")
+        location = f"`{header}`"
+        if line:
+            location += f":{line}"
+        lines.extend([f"_Declared in {location}._", ""])
+    return lines
+
+
+def object_group(name: str) -> str:
+    prefix = symbol_prefix(name)
+    return prefix.replace("_", " ").title()
+
+
+def render_page(page: PagePolicy, functions: list[dict]) -> None:
+    lines = generated_header(page.title, page.summary)
+    lines.extend(
+        [
+            f"!!! info \"Status: {page.status}\"",
+            "",
+            "    This generated page lists exported C functions classified by the v0.4 C API",
+            "    reference policy. Raw Python `ctypes` call forms are documented separately.",
+            "",
+            f"Functions: {len(functions)}",
+            "",
+            "## Symbol Index",
+            "",
+            "| Function | Header |",
+            "| --- | --- |",
+        ]
+    )
+    for fn in sorted(functions, key=lambda item: item["name"]):
+        lines.append(f"| [`{fn['name']}()`](#{fn['name']}) | `{header_of(fn)}` |")
+    lines.append("")
+
+    grouped: dict[str, list[dict]] = defaultdict(list)
+    for fn in functions:
+        grouped[object_group(str(fn["name"]))].append(fn)
+    for group in sorted(grouped):
+        lines.extend([f"## {group}", ""])
+        for fn in sorted(grouped[group], key=lambda item: item["name"]):
+            lines.extend(format_function(fn))
+
+    page.output.parent.mkdir(parents=True, exist_ok=True)
+    page.output.write_text("\n".join(lines).rstrip() + "\n", encoding="utf8")
+
+
+def type_signature(record: dict) -> str:
+    name = str(record.get("name", ""))
+    if record.get("opaque"):
+        return f"typedef struct {name} {name};"
+    kind = str(record.get("kind") or "struct")
+    fields = []
+    for field in record.get("fields") or []:
+        fields.append(f"    {type_name(field.get('type'))} {field.get('name', '')};")
+    return f"{kind} {name} {{\n" + "\n".join(fields) + "\n};"
+
+
+def enum_signature(enum: dict) -> str:
     lines = []
-
-    _, _, ret_desc = _doc_parts(fn.get('doc', ''))
-    ret_type = _type_name(fn.get('result', {'qualtype': 'void'}))
-    if ret_desc:
-        ret_desc = '  // returns ' + ret_desc
-    lines.append(f'{ret_type} {fn["name"]}({ret_desc}')
-
-    _, param_docs, _ = _doc_parts(fn.get('doc', ''))
-    args = fn.get('parameters', [])
-    for arg in args:
-        dtype = _type_name(arg.get('type', {}))
-        name = arg.get('name', '')
-        doc = param_docs.get(name, '')
-        lines.append(f'    {dtype} {name},  // {doc}')
-    if args:
-        lines[-1] = lines[-1].rstrip(',')  # remove trailing comma
-    lines.append(');')
-    return '\n'.join(lines)
+    for value in enum.get("values") or []:
+        lines.append(f"{value['name']} = {value['value']},")
+    return "\n".join(lines)
 
 
-def format_function(fn, ctx):
-    docstring, _, _ = _doc_parts(fn.get('doc', ''))
-    out = [f'#### `{fn["name"]}()`\n']
-    if docstring:
-        out.append(docstring + '\n')
-    out.append('=== "C"\n')
-    out.append('    ```c\n' + indent(format_signature_c(fn), '    ') + '\n    ```')
-    out.append('=== "Python"\n')
-    out.append('    ```python\n' + indent(format_signature_py(fn, ctx), '    ') + '\n    ```')
-    return '\n'.join(out) + '\n---\n'
+def render_types(types_policy: dict, pages: list[PagePolicy], records: dict, enums: dict) -> None:
+    output = ROOT / str(types_policy["output"])
+    title = str(types_policy.get("title", "C Types"))
+    summary = str(types_policy.get("summary", ""))
+    lines = generated_header(title, summary)
+
+    for page in pages:
+        page_records = sorted(records.get(page.key, []), key=lambda item: item.get("name", ""))
+        page_enums = sorted(enums.get(page.key, []), key=lambda item: item.get("name", ""))
+        if not page_records and not page_enums:
+            continue
+        lines.extend([f"## {page.title}", ""])
+        if page_enums:
+            lines.extend(["### Enums", ""])
+            for enum in page_enums:
+                lines.extend(
+                    [
+                        f"#### `{enum['name']}`",
+                        "",
+                        "```c",
+                        enum_signature(enum),
+                        "```",
+                        "",
+                    ]
+                )
+        if page_records:
+            lines.extend(["### Records", ""])
+            for record in page_records:
+                lines.extend(
+                    [
+                        f"#### `{record['name']}`",
+                        "",
+                        "```c",
+                        type_signature(record),
+                        "```",
+                        "",
+                    ]
+                )
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text("\n".join(lines).rstrip() + "\n", encoding="utf8")
 
 
-def format_enum(name, enum_data):
-    values = '\n'.join(f'{value["name"]} = {value["value"]}' for value in enum_data['values'])
-    return f'### `{name}`\n```c\n{values}\n```' + '\n\n---\n'
+def validate_classification(kind: str, items: list[dict], pages: list[PagePolicy], hidden_headers: tuple[str, ...]) -> tuple[dict, list[str]]:
+    by_page: dict[str, list[dict]] = defaultdict(list)
+    missing = []
+    for item in items:
+        name = str(item.get("name", ""))
+        if kind == "functions" and not name.startswith("dvz_"):
+            continue
+        page_key = classify_symbol(item, pages, hidden_headers)
+        if page_key is None:
+            if not header_matches(header_of(item), hidden_headers):
+                missing.append(f"{name} ({header_of(item)})")
+            continue
+        by_page[page_key].append(item)
+    return by_page, missing
 
 
-def format_struct(name, struct_data):
-    if struct_data.get('opaque'):
-        body = f'typedef struct {name} {name};'
-    else:
-        fields = '\n'.join(
-            f'    {_type_name(field.get("type", {}))} {field["name"]};'
-            for field in struct_data.get('fields', [])
-        )
-        body = f'{struct_data.get("kind", "struct")} {name} {{\n{fields}\n}};'
-    return f'### `{name}`\n```c\n{body}\n```' + '\n\n---\n'
+def write_summary(path: Path, pages: list[PagePolicy], functions: dict, records: dict, enums: dict) -> None:
+    summary = {
+        "pages": {
+            page.key: {
+                "title": page.title,
+                "status": page.status,
+                "functions": len(functions.get(page.key, [])),
+                "records": len(records.get(page.key, [])),
+                "enums": len(enums.get(page.key, [])),
+            }
+            for page in pages
+        }
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf8")
 
 
-def format_define(name, value):
-    return f'### `{name}`\n```c\n#define {name} {value}\n```' + '\n\n---\n'
+def main() -> int:
+    args = parse_args()
+    api = load_json(args.api)
+    pages, types_policy, hidden_headers = load_policy(args.policy)
+
+    functions, missing_functions = validate_classification(
+        "functions", api.get("functions", []), pages, hidden_headers
+    )
+    records, missing_records = validate_classification(
+        "records", api.get("records", []), pages, hidden_headers
+    )
+    enums, missing_enums = validate_classification("enums", api.get("enums", []), pages, hidden_headers)
+
+    missing = {
+        "functions": missing_functions,
+        "records": missing_records,
+        "enums": missing_enums,
+    }
+    missing = {key: value for key, value in missing.items() if value}
+    if missing:
+        print("Unclassified public API symbols:")
+        for key, values in missing.items():
+            print(f"  {key}: {len(values)}")
+            for value in values[:20]:
+                print(f"    {value}")
+            if len(values) > 20:
+                print("    ...")
+        return 1
+
+    if not args.check:
+        for page in pages:
+            render_page(page, sorted(functions.get(page.key, []), key=lambda item: item["name"]))
+        render_types(types_policy, pages, records, enums)
+        write_summary(args.summary, pages, functions, records, enums)
+
+    total_functions = sum(len(items) for items in functions.values())
+    print(f"C API reference classification OK: {total_functions} functions, {len(pages)} pages")
+    return 0
 
 
-# Main function
-# -------------------------------------------------------------------------------------------------
-
-
-def build_api_c():
-    data = json.loads(API_PATH.read_text())
-    out = ['# C API Reference']
-
-    sections = group_by_section_and_object(data)
-    ctx = _doc_context(data)
-
-    for section_key in ['functions', 'visuals', 'gui', 'protocol']:
-        header = SECTION_NAMES[section_key]
-        out.append(f'\n## {header}')
-        for obj in sorted(sections[section_key]):
-            out.append(f'\n### {obj}')
-            for fn in sorted(sections[section_key][obj], key=lambda f: f['name']):
-                out.append(format_function(fn, ctx))
-
-    # Enums
-    enums = {enum['name']: enum for enum in data.get('enums', [])}
-    if enums:
-        out.append('\n## Enumerations')
-        for name in sorted(enums):
-            out.append(format_enum(name, enums[name]))
-
-    # Structs
-    structs = {record['name']: record for record in data.get('records', [])}
-    if structs:
-        out.append(
-            '\n## Structures\n\n> **Note**: The information about these structures is provided for reference only, do not use them in production as the structures may change with each release.\n\n'
-        )
-        for name in sorted(structs):
-            out.append(format_struct(name, structs[name]))
-
-    # # Defines
-    # defines = {}
-    # for contents in data.values():
-    #     defines.update(contents.get('defines', {}))
-    # if defines:
-    #     out.append('\n## Defines')
-    #     for name in sorted(defines):
-    #         out.append(format_define(name, defines[name]))
-
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_PATH.write_text('\n\n'.join(out), encoding='utf-8')
-
-
-if __name__ == '__main__':
-    build_api_c()
+if __name__ == "__main__":
+    raise SystemExit(main())
