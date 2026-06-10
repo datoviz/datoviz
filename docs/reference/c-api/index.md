@@ -1,19 +1,30 @@
 # C API
 
-Status: generated reference plus hand-written usage notes.
+Status: v0.4 C API overview plus generated module reference.
 
 The v0.4 C API is the primary Datoviz API surface. User-facing examples and tutorials should prefer
 the retained scene/app path unless they are explicitly about DRP2, vklite, Vulkan, or another
 advanced subsystem.
 
-The exhaustive generated outline is [../api_c.md](../api_c.md). It is generated from parsed public
-headers and the binding extraction artifact:
+The generated module reference is split by v0.4 API role:
+
+| Page | Scope |
+| --- | --- |
+| [Scene API](scene.md) | Retained figures, panels, controllers, scene objects, queries, and frame artifacts. |
+| [Visuals and composites API](visuals.md) | Visual families, semantic composites, visual styles, and visual data setters. |
+| [App, window, and I/O API](app.md) | Native app loop, windows, canvases, input, GUI hooks, capture, and video. |
+| [DRP2 API](drp2.md) | Advanced Datoviz Rendering Protocol command streams, packets, recording, and runtime integration. |
+| [Runtime and utilities API](runtime.md) | Advanced Vulkan, vklite, math, geometry, data-structure, thread, and utility APIs. |
+| [C types](types.md) | Public enums, records, opaque handles, and callback typedefs grouped by reference page. |
+
+The reference is generated from parsed public headers and the binding extraction artifact:
 
 ```text
 build/bindings/datoviz_api.json
 ```
 
-Do not hand-edit generated reference output or maintain exhaustive symbol tables in prose.
+Do not hand-edit generated reference output or maintain exhaustive symbol tables in prose. Update
+`spec/api/C_API_REFERENCE_POLICY.yaml` and rerun `just api-docs` instead.
 
 
 ## Scene Frame Artifacts
@@ -62,7 +73,7 @@ in v0.4. Use `dvz_figure_emit_frame()` and retrieve the artifact projection need
 
 ## Generated Coverage
 
-The generated outline covers:
+The generated module pages cover:
 
 1. public headers under `include/datoviz/`;
 2. exported functions and signatures;

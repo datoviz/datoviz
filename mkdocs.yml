@@ -155,7 +155,14 @@ nav:
       - Platform support: 'reference/platform-support.md'
       - Build options: 'reference/build-options.md'
     - API:
-      - C API: 'reference/c-api/index.md'
+      - C API:
+        - Overview: 'reference/c-api/index.md'
+        - Scene: 'reference/c-api/scene.md'
+        - Visuals and composites: 'reference/c-api/visuals.md'
+        - App, window, and I/O: 'reference/c-api/app.md'
+        - DRP2: 'reference/c-api/drp2.md'
+        - Runtime and utilities: 'reference/c-api/runtime.md'
+        - C types: 'reference/c-api/types.md'
       - Raw ctypes: 'reference/ctypes.md'
       - DRP2: 'reference/drp2/index.md'
     - Scene Reference:

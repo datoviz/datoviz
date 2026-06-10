@@ -94,7 +94,7 @@ def classify_symbol(item: dict, pages: list[PagePolicy], hidden_headers: tuple[s
 
     prefix = symbol_prefix(str(item.get("name", "")))
     for page in pages:
-        if prefix in page.prefixes:
+        if header_matches(header, page.headers) and prefix in page.prefixes:
             return page.key
     for page in pages:
         if header_matches(header, page.headers):
@@ -212,6 +212,10 @@ def object_group(name: str) -> str:
     return prefix.replace("_", " ").title()
 
 
+def symbol_anchor(name: str) -> str:
+    return name.lower()
+
+
 def render_page(page: PagePolicy, functions: list[dict]) -> None:
     lines = generated_header(page.title, page.summary)
     lines.extend(
@@ -230,7 +234,7 @@ def render_page(page: PagePolicy, functions: list[dict]) -> None:
         ]
     )
     for fn in sorted(functions, key=lambda item: item["name"]):
-        lines.append(f"| [`{fn['name']}()`](#{fn['name']}) | `{header_of(fn)}` |")
+        lines.append(f"| [`{fn['name']}()`](#{symbol_anchor(fn['name'])}) | `{header_of(fn)}` |")
     lines.append("")
 
     grouped: dict[str, list[dict]] = defaultdict(list)

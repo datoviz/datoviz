@@ -2059,8 +2059,15 @@ check-example-manifests:
 # Documentation
 # -------------------------------------------------------------------------------------------------
 
-doc: #gallery #headers
-    @python tools/build_api_c.py
+doc: api-docs #gallery #headers
+#
+
+api-docs:
+    @python3 tools/build_api_c.py
+#
+
+check-api-docs:
+    @python3 tools/build_api_c.py --check
 #
 
 docs-assets:
