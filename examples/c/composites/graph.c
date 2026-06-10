@@ -20,8 +20,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <float.h>
+#include <math.h>
+#include <stdint.h>
 
 #include "_assertions.h"
 #include "datoviz/controller/panzoom.h"
@@ -132,6 +134,15 @@ static const BrainEdge EDGES[] = {
 };
 
 
+typedef struct BrainBounds
+{
+    double xmin;
+    double xmax;
+    double ymin;
+    double ymax;
+} BrainBounds;
+
+
 enum
 {
     COMMUNITY_COUNT = sizeof(COMMUNITIES) / sizeof(COMMUNITIES[0]),
@@ -144,6 +155,123 @@ enum
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+static void _bounds_add(BrainBounds* bounds, double x, double y)
+{
+    ANN(bounds);
+    if (x < bounds->xmin)
+        bounds->xmin = x;
+    if (x > bounds->xmax)
+        bounds->xmax = x;
+    if (y < bounds->ymin)
+        bounds->ymin = y;
+    if (y > bounds->ymax)
+        bounds->ymax = y;
+}
+
+
+
+static void _default_edge_controls(const dvec3 p0, const dvec3 p3, dvec3 c0, dvec3 c1)
+{
+    ANN(p0);
+    ANN(p3);
+    ANN(c0);
+    ANN(c1);
+
+    const double dx = p3[0] - p0[0];
+    const double dy = p3[1] - p0[1];
+    const double dz = p3[2] - p0[2];
+    const double length = sqrt(dx * dx + dy * dy);
+    const double bend = length > 0 ? 0.18 * length : 0.0;
+    const double nx = length > 0 ? -dy / length : 0.0;
+    const double ny = length > 0 ? dx / length : 0.0;
+
+    c0[0] = p0[0] + dx / 3.0 + nx * bend;
+    c0[1] = p0[1] + dy / 3.0 + ny * bend;
+    c0[2] = p0[2] + dz / 3.0;
+    c1[0] = p0[0] + 2.0 * dx / 3.0 + nx * bend;
+    c1[1] = p0[1] + 2.0 * dy / 3.0 + ny * bend;
+    c1[2] = p0[2] + 2.0 * dz / 3.0;
+}
+
+
+
+static void _bridge_edge_controls(uint32_t edge_index, uint32_t bridge_index, dvec3 c0, dvec3 c1)
+{
+    ASSERT(edge_index < EDGE_COUNT);
+    ANN(c0);
+    ANN(c1);
+
+    const BrainEdge* edge = &EDGES[edge_index];
+    const dvec3* source = &NODES[edge->source].position;
+    const dvec3* target = &NODES[edge->target].position;
+    const double sx = (*source)[0];
+    const double sy = (*source)[1];
+    const double tx = (*target)[0];
+    const double ty = (*target)[1];
+    const double dx = tx - sx;
+    const double dy = ty - sy;
+    const double bend = (bridge_index % 2 == 0 ? 1.0 : -1.0) * (0.14 + 0.08 * edge->weight);
+
+    c0[0] = sx + 0.36 * dx - bend * dy;
+    c0[1] = sy + 0.36 * dy + bend * dx;
+    c0[2] = 0.0;
+    c1[0] = sx + 0.64 * dx - bend * dy;
+    c1[1] = sy + 0.64 * dy + bend * dx;
+    c1[2] = 0.0;
+}
+
+
+
+static void _bounds_add_cubic(
+    BrainBounds* bounds, const dvec3 p0, const dvec3 c0, const dvec3 c1, const dvec3 p3)
+{
+    ANN(bounds);
+    ANN(p0);
+    ANN(c0);
+    ANN(c1);
+    ANN(p3);
+
+    for (uint32_t i = 0; i <= 32; i++)
+    {
+        const double t = (double)i / 32.0;
+        const double u = 1.0 - t;
+        const double uu = u * u;
+        const double tt = t * t;
+        const double x =
+            uu * u * p0[0] + 3.0 * uu * t * c0[0] + 3.0 * u * tt * c1[0] + tt * t * p3[0];
+        const double y =
+            uu * u * p0[1] + 3.0 * uu * t * c0[1] + 3.0 * u * tt * c1[1] + tt * t * p3[1];
+        _bounds_add(bounds, x, y);
+    }
+}
+
+
+
+static BrainBounds _graph_bounds(void)
+{
+    BrainBounds bounds = {.xmin = DBL_MAX, .xmax = -DBL_MAX, .ymin = DBL_MAX, .ymax = -DBL_MAX};
+    for (uint32_t i = 0; i < NODE_COUNT; i++)
+        _bounds_add(&bounds, NODES[i].position[0], NODES[i].position[1]);
+
+    uint32_t bridge_index = 0;
+    for (uint32_t i = 0; i < EDGE_COUNT; i++)
+    {
+        const BrainEdge* edge = &EDGES[i];
+        const dvec3* p0 = &NODES[edge->source].position;
+        const dvec3* p3 = &NODES[edge->target].position;
+        dvec3 c0 = {0};
+        dvec3 c1 = {0};
+        if (edge->bridge)
+            _bridge_edge_controls(i, bridge_index++, c0, c1);
+        else
+            _default_edge_controls(*p0, *p3, c0, c1);
+        _bounds_add_cubic(&bounds, *p0, c0, c1, *p3);
+    }
+    return bounds;
+}
+
+
 
 /**
  * Configure the panel used by the graph composite example.
@@ -161,11 +289,12 @@ static bool _configure_panel(DvzPanel* panel)
     if (!ok)
         return false;
 
+    const BrainBounds bounds = _graph_bounds();
     DvzPanelDomainFit fit = dvz_panel_domain_fit();
     fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
-    fit.x = (DvzDataDomain){.min = -1.34, .max = +1.34};
-    fit.y = (DvzDataDomain){.min = -1.08, .max = +0.92};
-    fit.padding = 0.03;
+    fit.x = (DvzDataDomain){.min = bounds.xmin, .max = bounds.xmax};
+    fit.y = (DvzDataDomain){.min = bounds.ymin, .max = bounds.ymax};
+    fit.padding = 0.14;
     return dvz_panel_set_domain_fit(panel, &fit) == 0;
 }
 
@@ -235,22 +364,9 @@ static void _make_bridge_controls(
     for (uint32_t i = 0; i < bridge_count; i++)
     {
         const uint32_t edge_index = bridge_first_edge + i;
-        const uint32_t source = endpoints[2 * edge_index + 0];
-        const uint32_t target = endpoints[2 * edge_index + 1];
-        const double sx = positions[source][0];
-        const double sy = positions[source][1];
-        const double tx = positions[target][0];
-        const double ty = positions[target][1];
-        const double dx = tx - sx;
-        const double dy = ty - sy;
-        const double bend = (i % 2 == 0 ? 1.0 : -1.0) * (0.14 + 0.08 * EDGES[edge_index].weight);
-
-        control0[i][0] = sx + 0.36 * dx - bend * dy;
-        control0[i][1] = sy + 0.36 * dy + bend * dx;
-        control0[i][2] = 0.0;
-        control1[i][0] = sx + 0.64 * dx - bend * dy;
-        control1[i][1] = sy + 0.64 * dy + bend * dx;
-        control1[i][2] = 0.0;
+        ASSERT(endpoints[2 * edge_index + 0] == EDGES[edge_index].source);
+        ASSERT(endpoints[2 * edge_index + 1] == EDGES[edge_index].target);
+        _bridge_edge_controls(edge_index, i, control0[i], control1[i]);
     }
 }
 
@@ -360,6 +476,7 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
         return false;
     rc = dvz_panel_add_composite(
         panel, composite, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
+                                                .coord_space = DVZ_COORD_DATA,
                                                 .z_layer = 0});
     return rc == 0;
 }
@@ -383,7 +500,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(_add_graph(ctx->scene, panel), "graph setup failed");
 
     DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
-    panzoom_desc.controller_flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
     DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, &panzoom_desc, DVZ_DIM_MASK_XY);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
     (void)panzoom;
