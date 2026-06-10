@@ -11,7 +11,7 @@ retained labels visual with a small deterministic integer sampled field.
 - Source: [`examples/c/visuals/labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/labels.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=visual_labels"><code>examples/webgpu/live.html?id=visual_labels</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=visual_labels"><code>examples/webgpu/live.html?id=visual_labels</code></a>
 - WebGPU requirements: `labels`, `categorical-scale`, `panzoom`
 - Build: `just example-c visuals/labels`
 - Smoke: `./build/examples/c/visuals/labels --png`
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=visual_labels" title="Labels WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=visual_labels" title="Labels WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=visual_labels">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=visual_labels">Open the live WebGPU example</a>.
 
 ## Source
 

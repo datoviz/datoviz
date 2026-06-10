@@ -11,7 +11,7 @@ scalar image pixel-query proof with a live probe marker.
 - Source: [`examples/c/features/image_probe.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/image_probe.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=image_probe"><code>examples/webgpu/live.html?id=image_probe</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=image_probe"><code>examples/webgpu/live.html?id=image_probe</code></a>
 - WebGPU requirements: `image`, `query-readback`, `frame-callbacks`
 - Build: `just example-c features/image_probe`
 - Smoke: `./build/examples/c/features/image_probe --png`
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=image_probe" title="Image Probe WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=image_probe" title="Image Probe WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=image_probe">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=image_probe">Open the live WebGPU example</a>.
 
 ## Source
 

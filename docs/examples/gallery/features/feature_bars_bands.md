@@ -11,7 +11,7 @@ retained bars and uncertainty band plot helpers.
 - Source: [`examples/c/features/bars_bands.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bars_bands.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=feature_bars_bands"><code>examples/webgpu/live.html?id=feature_bars_bands</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_bars_bands"><code>examples/webgpu/live.html?id=feature_bars_bands</code></a>
 - WebGPU requirements: `primitive`, `segment`, `axes`, `panzoom`
 - Build: `just example-c features/bars_bands`
 - Smoke: `./build/examples/c/features/bars_bands --png`
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=feature_bars_bands" title="Bars And Bands WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=feature_bars_bands" title="Bars And Bands WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=feature_bars_bands">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=feature_bars_bands">Open the live WebGPU example</a>.
 
 ## Source
 

@@ -11,7 +11,7 @@ deterministic multi-signal retained path visual.
 - Source: [`examples/c/visuals/path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/path.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=visual_path"><code>examples/webgpu/live.html?id=visual_path</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=visual_path"><code>examples/webgpu/live.html?id=visual_path</code></a>
 - WebGPU requirements: `path`, `panzoom`
 - Build: `just example-c visuals/path`
 - Smoke: `./build/examples/c/visuals/path --png`
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=visual_path" title="Path WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=visual_path" title="Path WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=visual_path">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=visual_path">Open the live WebGPU example</a>.
 
 ## Source
 

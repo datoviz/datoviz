@@ -11,7 +11,7 @@ deterministic scalar sampled field rendered with the retained image visual.
 - Source: [`examples/c/visuals/image.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=visual_image"><code>examples/webgpu/live.html?id=visual_image</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=visual_image"><code>examples/webgpu/live.html?id=visual_image</code></a>
 - WebGPU requirements: `image`, `sampled-field`, `panzoom`
 - Build: `just example-c visuals/image`
 - Smoke: `./build/examples/c/visuals/image --png`
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=visual_image" title="Image WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=visual_image" title="Image WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=visual_image">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=visual_image">Open the live WebGPU example</a>.
 
 ## Source
 

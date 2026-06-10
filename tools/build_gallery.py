@@ -294,6 +294,17 @@ def site_relative_url(page_path: str | Path, target: str) -> str:
     return posixpath.relpath(normalized, page_parent)
 
 
+def site_html_relative_url(page_path: str | Path, target: str) -> str:
+    if re.match(r"^[a-z][a-z0-9+.-]*:", target):
+        return target
+    normalized = target.lstrip("/")
+    page = Path(page_path)
+    page_dir = page.with_suffix("").as_posix() if page.suffix == ".md" else page.as_posix()
+    if page_dir in ("", "."):
+        return normalized
+    return posixpath.relpath(normalized, page_dir)
+
+
 def docs_site_path(docs_dir: Path, page_path: str | Path) -> str:
     full_path = docs_dir / page_path
     try:
@@ -347,7 +358,7 @@ def render_source_tabs(example: Example) -> list[str]:
 def render_webgpu_live(example: Example, page_path: str | Path) -> list[str]:
     if example.webgpu_status != "webgpu-live" or not example.webgpu_site_route:
         return []
-    route = site_relative_url(page_path, example.webgpu_site_route)
+    route = site_html_relative_url(page_path, example.webgpu_site_route)
     return [
         "## Live WebGPU",
         "",
@@ -630,7 +641,7 @@ def render_webgpu_matrix(examples: list[Example], docs_dir: Path) -> None:
         requirements = ", ".join(f"`{requirement}`" for requirement in example.webgpu_requirements)
         route = (
             html_link(
-                site_relative_url(page_path, example.webgpu_site_route),
+                site_html_relative_url(page_path, example.webgpu_site_route),
                 example.webgpu_route,
                 code=True,
             )
@@ -673,7 +684,7 @@ def render_example_page(
         if example.webgpu_route:
             metadata.append(
                 f"- WebGPU live route: "
-                f"{html_link(site_relative_url(page_path, example.webgpu_site_route), example.webgpu_route, code=True)}"
+                f"{html_link(site_html_relative_url(page_path, example.webgpu_site_route), example.webgpu_route, code=True)}"
             )
         if example.webgpu_requirements:
             requirements = ", ".join(f"`{requirement}`" for requirement in example.webgpu_requirements)

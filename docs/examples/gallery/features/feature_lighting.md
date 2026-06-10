@@ -11,7 +11,7 @@ compare lit sphere clusters with different material and light settings.
 - Source: [`examples/c/features/lighting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/lighting.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=feature_lighting"><code>examples/webgpu/live.html?id=feature_lighting</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_lighting"><code>examples/webgpu/live.html?id=feature_lighting</code></a>
 - WebGPU requirements: `sphere`, `material`, `lighting`, `arcball`
 - Build: `just example-c features/lighting`
 - Smoke: `./build/examples/c/features/lighting --png`
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=feature_lighting" title="Lighting WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=feature_lighting" title="Lighting WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=feature_lighting">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=feature_lighting">Open the live WebGPU example</a>.
 
 ## Source
 

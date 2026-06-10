@@ -11,7 +11,7 @@ deterministic path with retained 2D axes and tick labels.
 - Source: [`examples/c/features/axes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axes_2d.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=path_axes_2d"><code>examples/webgpu/live.html?id=path_axes_2d</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=path_axes_2d"><code>examples/webgpu/live.html?id=path_axes_2d</code></a>
 - WebGPU requirements: `path`, `axes`, `text`, `panzoom`
 - Build: `just example-c features/axes_2d`
 - Smoke: `./build/examples/c/features/axes_2d --png`
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=path_axes_2d" title="Path With 2D Axes WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=path_axes_2d" title="Path With 2D Axes WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=path_axes_2d">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=path_axes_2d">Open the live WebGPU example</a>.
 
 ## Source
 

@@ -11,7 +11,7 @@ bind a panzoom controller to one panel with a simple 2D visual.
 - Source: [`examples/c/features/panzoom.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=feature_panzoom"><code>examples/webgpu/live.html?id=feature_panzoom</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panzoom"><code>examples/webgpu/live.html?id=feature_panzoom</code></a>
 - WebGPU requirements: `controller`, `panzoom`, `point`
 - Build: `just example-c features/panzoom`
 - Smoke: `./build/examples/c/features/panzoom --png`
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=feature_panzoom" title="Panzoom WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=feature_panzoom" title="Panzoom WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=feature_panzoom">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=feature_panzoom">Open the live WebGPU example</a>.
 
 ## Source
 

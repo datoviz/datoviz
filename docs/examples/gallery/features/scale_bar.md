@@ -11,7 +11,7 @@ minimal retained scale bar attached to one 2D panel.
 - Source: [`examples/c/features/scalebar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=scale_bar"><code>examples/webgpu/live.html?id=scale_bar</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=scale_bar"><code>examples/webgpu/live.html?id=scale_bar</code></a>
 - WebGPU requirements: `scale-bar`, `text`, `panzoom`
 - Build: `just example-c features/scalebar`
 - Smoke: `./build/examples/c/features/scalebar --png`
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=scale_bar" title="Scale Bar WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=scale_bar" title="Scale Bar WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=scale_bar">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=scale_bar">Open the live WebGPU example</a>.
 
 ## Source
 

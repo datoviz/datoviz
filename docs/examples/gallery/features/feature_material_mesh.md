@@ -11,7 +11,7 @@ retained mesh visuals with explicit material parameters.
 - Source: [`examples/c/features/material_mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/material_mesh.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=feature_material_mesh"><code>examples/webgpu/live.html?id=feature_material_mesh</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_material_mesh"><code>examples/webgpu/live.html?id=feature_material_mesh</code></a>
 - WebGPU requirements: `mesh`, `material`, `lighting`, `arcball`
 - Build: `just example-c features/material_mesh`
 - Smoke: `./build/examples/c/features/material_mesh --png`
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=feature_material_mesh" title="Mesh Materials WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=feature_material_mesh" title="Mesh Materials WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=feature_material_mesh">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=feature_material_mesh">Open the live WebGPU example</a>.
 
 ## Source
 

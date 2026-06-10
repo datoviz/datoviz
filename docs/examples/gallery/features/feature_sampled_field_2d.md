@@ -11,7 +11,7 @@ scene-owned 2D sampled field bound to an image visual.
 - Source: [`examples/c/features/sampled_field_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_2d.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=feature_sampled_field_2d"><code>examples/webgpu/live.html?id=feature_sampled_field_2d</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_sampled_field_2d"><code>examples/webgpu/live.html?id=feature_sampled_field_2d</code></a>
 - WebGPU requirements: `sampled-field`, `image`, `colormap`
 - Build: `just example-c features/sampled_field_2d`
 - Smoke: `./build/examples/c/features/sampled_field_2d --png`
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=feature_sampled_field_2d" title="2D Sampled Field WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=feature_sampled_field_2d" title="2D Sampled Field WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=feature_sampled_field_2d">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=feature_sampled_field_2d">Open the live WebGPU example</a>.
 
 ## Source
 

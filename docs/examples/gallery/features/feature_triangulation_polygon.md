@@ -11,7 +11,7 @@ polygon triangulation with derived edge overlay.
 - Source: [`examples/c/features/triangulation_polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/triangulation_polygon.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=feature_triangulation_polygon"><code>examples/webgpu/live.html?id=feature_triangulation_polygon</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_triangulation_polygon"><code>examples/webgpu/live.html?id=feature_triangulation_polygon</code></a>
 - WebGPU requirements: `primitive`, `segment`
 - Build: `just example-c features/triangulation_polygon`
 - Smoke: `./build/examples/c/features/triangulation_polygon --png`
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=feature_triangulation_polygon" title="Polygon Triangulation WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=feature_triangulation_polygon" title="Polygon Triangulation WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=feature_triangulation_polygon">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=feature_triangulation_polygon">Open the live WebGPU example</a>.
 
 ## Source
 

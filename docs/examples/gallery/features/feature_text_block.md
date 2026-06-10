@@ -11,7 +11,7 @@ compact retained text block with stable screen placement.
 - Source: [`examples/c/features/text_block.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/text_block.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=feature_text_block"><code>examples/webgpu/live.html?id=feature_text_block</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_text_block"><code>examples/webgpu/live.html?id=feature_text_block</code></a>
 - WebGPU requirements: `text`, `glyph-atlas`
 - Build: `just example-c features/text_block`
 - Smoke: `./build/examples/c/features/text_block --png`
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=feature_text_block" title="Text Block WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=feature_text_block" title="Text Block WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=feature_text_block">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=feature_text_block">Open the live WebGPU example</a>.
 
 ## Source
 

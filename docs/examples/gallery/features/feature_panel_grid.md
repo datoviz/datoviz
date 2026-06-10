@@ -11,7 +11,7 @@ four grid-owned panels with clipped panel-local content.
 - Source: [`examples/c/features/panel_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_grid.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=feature_panel_grid"><code>examples/webgpu/live.html?id=feature_panel_grid</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_grid"><code>examples/webgpu/live.html?id=feature_panel_grid</code></a>
 - WebGPU requirements: `panel-grid`, `point`
 - Build: `just example-c features/panel_grid`
 - Smoke: `./build/examples/c/features/panel_grid --png`
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=feature_panel_grid" title="Panel Grid WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=feature_panel_grid" title="Panel Grid WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=feature_panel_grid">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=feature_panel_grid">Open the live WebGPU example</a>.
 
 ## Source
 

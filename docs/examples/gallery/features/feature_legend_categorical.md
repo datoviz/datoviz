@@ -11,7 +11,7 @@ tentative retained categorical legend proof.
 - Source: [`examples/c/features/legend_categorical.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c)
 - Agent copy-safe: `false`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=feature_legend_categorical"><code>examples/webgpu/live.html?id=feature_legend_categorical</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_legend_categorical"><code>examples/webgpu/live.html?id=feature_legend_categorical</code></a>
 - WebGPU requirements: `legend`, `categorical-scale`, `marker`, `text`
 - Build: `just example-c features/legend_categorical`
 - Smoke: `./build/examples/c/features/legend_categorical --png`
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=feature_legend_categorical" title="Categorical Legend WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=feature_legend_categorical" title="Categorical Legend WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=feature_legend_categorical">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=feature_legend_categorical">Open the live WebGPU example</a>.
 
 ## Source
 

@@ -11,7 +11,7 @@ CPU contour extraction rendered as retained segment overlays.
 - Source: [`examples/c/features/isolines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/isolines.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=feature_isolines"><code>examples/webgpu/live.html?id=feature_isolines</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_isolines"><code>examples/webgpu/live.html?id=feature_isolines</code></a>
 - WebGPU requirements: `mesh`, `segment`, `controller`, `arcball`
 - Build: `just example-c features/isolines`
 - Smoke: `./build/examples/c/features/isolines --png`
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=feature_isolines" title="Isolines WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=feature_isolines" title="Isolines WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=feature_isolines">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=feature_isolines">Open the live WebGPU example</a>.
 
 ## Source
 

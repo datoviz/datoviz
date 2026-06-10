@@ -11,7 +11,7 @@ retained marker visual with deterministic symbol, fill, stroke, and size variati
 - Source: [`examples/c/visuals/marker.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/marker.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=visual_marker"><code>examples/webgpu/live.html?id=visual_marker</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=visual_marker"><code>examples/webgpu/live.html?id=visual_marker</code></a>
 - WebGPU requirements: `marker`, `panzoom`
 - Build: `just example-c visuals/marker`
 - Smoke: `./build/examples/c/visuals/marker --png`
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=visual_marker" title="Marker WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=visual_marker" title="Marker WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=visual_marker">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=visual_marker">Open the live WebGPU example</a>.
 
 ## Source
 

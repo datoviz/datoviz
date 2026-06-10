@@ -11,7 +11,7 @@ scene compute pass with independent circular point motion.
 - Source: [`examples/c/features/compute_buffer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/compute_buffer_animation.c)
 - Agent copy-safe: `false`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=feature_compute_buffer_animation"><code>examples/webgpu/live.html?id=feature_compute_buffer_animation</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_compute_buffer_animation"><code>examples/webgpu/live.html?id=feature_compute_buffer_animation</code></a>
 - WebGPU requirements: `scene-buffers`, `storage-buffers`, `scene-compute`, `point`
 - Build: `just example-c features/compute_buffer_animation`
 - Smoke: `./build/examples/c/features/compute_buffer_animation --png`
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=feature_compute_buffer_animation" title="Compute Buffer Animation WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=feature_compute_buffer_animation" title="Compute Buffer Animation WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=feature_compute_buffer_animation">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=feature_compute_buffer_animation">Open the live WebGPU example</a>.
 
 ## Source
 

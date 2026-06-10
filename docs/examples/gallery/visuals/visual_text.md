@@ -11,7 +11,7 @@ retained semantic text objects lowered to glyph visuals.
 - Source: [`examples/c/visuals/text.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=visual_text"><code>examples/webgpu/live.html?id=visual_text</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=visual_text"><code>examples/webgpu/live.html?id=visual_text</code></a>
 - WebGPU requirements: `text`, `glyph-atlas`
 - Build: `just example-c visuals/text`
 - Smoke: `./build/examples/c/visuals/text --png`
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=visual_text" title="Text WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=visual_text" title="Text WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=visual_text">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=visual_text">Open the live WebGPU example</a>.
 
 ## Source
 

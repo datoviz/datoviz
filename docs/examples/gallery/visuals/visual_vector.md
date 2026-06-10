@@ -11,7 +11,7 @@ retained straight and curved vector visual example.
 - Source: [`examples/c/visuals/vector.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/vector.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=visual_vector"><code>examples/webgpu/live.html?id=visual_vector</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=visual_vector"><code>examples/webgpu/live.html?id=visual_vector</code></a>
 - WebGPU requirements: `vector`, `path`, `panzoom`
 - Build: `just example-c visuals/vector`
 - Smoke: `./build/examples/c/visuals/vector --png`
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=visual_vector" title="Vector WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=visual_vector" title="Vector WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=visual_vector">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=visual_vector">Open the live WebGPU example</a>.
 
 ## Source
 

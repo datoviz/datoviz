@@ -11,7 +11,7 @@ retained lit indexed cube mesh.
 - Source: [`examples/c/visuals/mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/mesh.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=visual_mesh"><code>examples/webgpu/live.html?id=visual_mesh</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=visual_mesh"><code>examples/webgpu/live.html?id=visual_mesh</code></a>
 - WebGPU requirements: `mesh`, `indexed-geometry`, `arcball`
 - Build: `just example-c visuals/mesh`
 - Smoke: `./build/examples/c/visuals/mesh --png`
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=visual_mesh" title="Mesh WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=visual_mesh" title="Mesh WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=visual_mesh">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=visual_mesh">Open the live WebGPU example</a>.
 
 ## Source
 

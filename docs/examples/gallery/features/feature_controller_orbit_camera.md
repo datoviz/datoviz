@@ -11,7 +11,7 @@ orbit-camera controller attached to a small 3D mesh.
 - Source: [`examples/c/features/controller_orbit_camera.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_orbit_camera.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=feature_controller_orbit_camera"><code>examples/webgpu/live.html?id=feature_controller_orbit_camera</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_controller_orbit_camera"><code>examples/webgpu/live.html?id=feature_controller_orbit_camera</code></a>
 - WebGPU requirements: `controller`, `orbit-camera`, `mesh`
 - Build: `just example-c features/controller_orbit_camera`
 - Smoke: `./build/examples/c/features/controller_orbit_camera --png`
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=feature_controller_orbit_camera" title="Orbit Camera Controller WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=feature_controller_orbit_camera" title="Orbit Camera Controller WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=feature_controller_orbit_camera">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=feature_controller_orbit_camera">Open the live WebGPU example</a>.
 
 ## Source
 

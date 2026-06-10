@@ -11,7 +11,7 @@ histogram, guide annotations, stacked traces, and error bands.
 - Source: [`examples/c/showcases/scientific_plotting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scientific_plotting.c)
 - Agent copy-safe: `false`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=scientific_plotting_workflow"><code>examples/webgpu/live.html?id=scientific_plotting_workflow</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=scientific_plotting_workflow"><code>examples/webgpu/live.html?id=scientific_plotting_workflow</code></a>
 - WebGPU requirements: `axes`, `primitive`, `segment`, `path`, `text`, `panzoom`
 - Build: `just example-c showcases/scientific_plotting`
 - Smoke: `./build/examples/c/showcases/scientific_plotting --png`
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=scientific_plotting_workflow" title="Scientific Plotting Workflow WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=scientific_plotting_workflow" title="Scientific Plotting Workflow WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=scientific_plotting_workflow">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=scientific_plotting_workflow">Open the live WebGPU example</a>.
 
 ## Source
 

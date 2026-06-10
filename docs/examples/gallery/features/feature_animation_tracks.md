@@ -11,7 +11,7 @@ retained track-backed visual transform animation.
 - Source: [`examples/c/features/animation_tracks.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/animation_tracks.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=feature_animation_tracks"><code>examples/webgpu/live.html?id=feature_animation_tracks</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_animation_tracks"><code>examples/webgpu/live.html?id=feature_animation_tracks</code></a>
 - WebGPU requirements: `mesh`, `frame-callbacks`, `controller`, `arcball`
 - Build: `just example-c features/animation_tracks`
 - Smoke: `./build/examples/c/features/animation_tracks --png`
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=feature_animation_tracks" title="Animation Tracks WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=feature_animation_tracks" title="Animation Tracks WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=feature_animation_tracks">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=feature_animation_tracks">Open the live WebGPU example</a>.
 
 ## Source
 

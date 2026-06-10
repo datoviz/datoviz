@@ -11,7 +11,7 @@ low-level font atlas glyph quads, distinct from retained semantic text.
 - Source: [`examples/c/visuals/glyph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/glyph.c)
 - Agent copy-safe: `false`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=visual_glyph"><code>examples/webgpu/live.html?id=visual_glyph</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=visual_glyph"><code>examples/webgpu/live.html?id=visual_glyph</code></a>
 - WebGPU requirements: `glyph`, `glyph-atlas`, `sdf`
 - Build: `just example-c visuals/glyph`
 - Smoke: `./build/examples/c/visuals/glyph --png`
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=visual_glyph" title="Font Atlas Glyphs WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=visual_glyph" title="Font Atlas Glyphs WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=visual_glyph">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=visual_glyph">Open the live WebGPU example</a>.
 
 ## Source
 

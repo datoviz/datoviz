@@ -11,7 +11,7 @@ one explicit panel rectangle with panel chrome and one visual.
 - Source: [`examples/c/features/panel_single.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_single.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../webgpu/live.html?id=feature_panel_single"><code>examples/webgpu/live.html?id=feature_panel_single</code></a>
+- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_single"><code>examples/webgpu/live.html?id=feature_panel_single</code></a>
 - WebGPU requirements: `panel`, `point`
 - Build: `just example-c features/panel_single`
 - Smoke: `./build/examples/c/features/panel_single --png`
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../webgpu/live.html?id=feature_panel_single" title="Single Panel WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../../webgpu/live.html?id=feature_panel_single" title="Single Panel WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-<a href="../../webgpu/live.html?id=feature_panel_single">Open the live WebGPU example</a>.
+<a href="../../../webgpu/live.html?id=feature_panel_single">Open the live WebGPU example</a>.
 
 ## Source
 
