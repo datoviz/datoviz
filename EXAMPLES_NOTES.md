@@ -10,9 +10,6 @@
 - showcases/surface_grid
     i'm not sure if the lighting at the bottom of the grid is correct
 
-- showcases/synthetic_mouse
-    there is a fake mesh apparently, again, ensure the example fails if the data is not available, NOT simulated data
-
 - showcases/textured_planet
     initially the camera rotates slowly, but if i rotate the camera with the mouse and then stop, the automatic rotation of the camera stops too. I would like it to continue as before
 
@@ -36,9 +33,6 @@
 
 - features/builtin_shapes_3d
     good but not well balanced in terms of symmetry, the objects on the scene
-
-- features/compute_buffer_animation
-    works but stops unless the mouse moves in the window, a problem with app request frame or something
 
 - features/controller_arcball
     we need a XZ reference plane grid
@@ -69,9 +63,6 @@
 
 - features/material_mesh
     i would like different panels with the same mesh but different materials, and linked orbit camera across the panels. also with panel legends
-
-- features/orientation_gizmo
-    there was a much nicer 3D gizmo in the legacy examples no? also, when rotating the arcball and releasing the mouse, the gizmo slightly shifts whereas the model does not so it is not accurate.
 
 - features/overlay_card
     the visual shown is very weird, just show a simple curve or something
