@@ -146,6 +146,46 @@ export const LIVE_EXAMPLES = [
     label: "Primitive",
     scenarioId: "visual_primitive",
   },
+  {
+    id: "visual_segment",
+    label: "Segment",
+    scenarioId: "visual_segment",
+  },
+  {
+    id: "visual_path",
+    label: "Path",
+    scenarioId: "visual_path",
+  },
+  {
+    id: "visual_image",
+    label: "Image",
+    scenarioId: "visual_image",
+  },
+  {
+    id: "visual_mesh",
+    label: "Mesh",
+    scenarioId: "visual_mesh",
+  },
+  {
+    id: "sphere_impostor",
+    label: "Sphere",
+    scenarioId: "sphere_impostor",
+  },
+  {
+    id: "visual_text",
+    label: "Text",
+    scenarioId: "visual_text",
+  },
+  {
+    id: "visual_glyph",
+    label: "Glyph",
+    scenarioId: "visual_glyph",
+  },
+  {
+    id: "visual_labels",
+    label: "Labels",
+    scenarioId: "visual_labels",
+  },
 ];
 
 export function liveExampleById(id) {

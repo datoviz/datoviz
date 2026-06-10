@@ -45,6 +45,14 @@ static const float TAU = 6.28318530718f;
 
 
 /*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_visual_sphere_scenario(void);
+
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
@@ -163,10 +171,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     EXAMPLE_CHECK(_add_spheres(ctx->scene, panel), "sphere visual setup failed");
 
+#ifndef DVZ_EXAMPLE_NO_APP
     DvzMsaaDesc msaa_desc = dvz_msaa_desc();
     msaa_desc.sample_count = 8;
     msaa_desc.alpha_to_coverage = true;
     (void)dvz_panel_set_msaa(panel, &msaa_desc);
+#endif
 
     DvzController* arcball_controller = dvz_arcball(ctx->scene, NULL);
     EXAMPLE_CHECK(arcball_controller != NULL, "dvz_arcball() failed");
@@ -189,7 +199,7 @@ cleanup:
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _sphere_scenario(void)
+DvzScenarioSpec dvz_visual_sphere_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "sphere_impostor",
@@ -214,8 +224,10 @@ static DvzScenarioSpec _sphere_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _sphere_scenario();
+    DvzScenarioSpec spec = dvz_visual_sphere_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

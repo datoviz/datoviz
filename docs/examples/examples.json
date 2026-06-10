@@ -2066,7 +2066,7 @@
       "source": "examples/c/composites/graph.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c",
       "page": "gallery/composites/composite_graph.md",
-      "summary": "semantic two-community graph composite with bridge edges.",
+      "summary": "deterministic brain-connectivity graph composite with community labels.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c composites/graph",
       "smoke_command": "./build/examples/c/composites/graph --png",

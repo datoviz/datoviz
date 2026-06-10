@@ -10,7 +10,8 @@ deterministic 3D impostor-sphere cluster with depth, radius, and color variation
 - Status: `supported`
 - Source: [`examples/c/visuals/sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c)
 - Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=sphere_impostor`](/examples/webgpu/live.html?id=sphere_impostor)
 - WebGPU requirements: `sphere`, `arcball`
 - Build: `just example-c visuals/sphere`
 - Smoke: `./build/examples/c/visuals/sphere --png`
@@ -32,6 +33,14 @@ _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared separately from this page and should not be staged without explicit approval.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=sphere_impostor" title="Sphere WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=sphere_impostor).
 
 ## Source
 

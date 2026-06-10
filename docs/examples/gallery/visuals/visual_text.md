@@ -10,7 +10,8 @@ retained semantic text objects lowered to glyph visuals.
 - Status: `supported`
 - Source: [`examples/c/visuals/text.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c)
 - Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=visual_text`](/examples/webgpu/live.html?id=visual_text)
 - WebGPU requirements: `text`, `glyph-atlas`
 - Build: `just example-c visuals/text`
 - Smoke: `./build/examples/c/visuals/text --png`
@@ -32,6 +33,14 @@ _Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared separately from this page and should not be staged without explicit approval.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=visual_text" title="Text WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=visual_text).
 
 ## Source
 

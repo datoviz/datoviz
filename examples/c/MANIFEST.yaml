@@ -1632,7 +1632,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=visual_segment
       requirements:
         - segment
         - panzoom
@@ -1683,7 +1684,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=visual_path
       requirements:
         - path
         - panzoom
@@ -1706,7 +1708,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=visual_image
       requirements:
         - image
         - sampled-field
@@ -1731,7 +1734,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=visual_mesh
       requirements:
         - mesh
         - indexed-geometry
@@ -1757,7 +1761,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=sphere_impostor
       requirements:
         - sphere
         - arcball
@@ -1806,7 +1811,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=visual_text
       requirements:
         - text
         - glyph-atlas
@@ -1829,7 +1835,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=visual_glyph
       requirements:
         - glyph
         - glyph-atlas
@@ -1855,7 +1862,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=visual_labels
       requirements:
         - labels
         - categorical-scale

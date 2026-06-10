@@ -34,13 +34,13 @@ Current source-of-truth files:
 
 As of 2026-06-10:
 
-1. Manifest counts: `28 webgpu-live`, `53 webgpu-planned`, `12 webgpu-deferred`,
+1. Manifest counts: `36 webgpu-live`, `45 webgpu-planned`, `12 webgpu-deferred`,
    `13 native-only`, and `8` lab-only entries without WebGPU status.
 2. Live routes cover basic scene, timer animation, triangulation, builtin shapes 2D/3D, isolines,
    animation tracks, OBJ loading, picking, pixel/sphere/mesh selection, image probe, compute buffer
-   animation, GPU particle smoke, standalone point/pixel/marker/primitive visuals, colorbar, scale
-   bars, categorical legend, annotation readout, linked probe/colorbar, scientific plotting, vector,
-   and wind field.
+   animation, GPU particle smoke, standalone visual-family routes, colorbar, scale bars,
+   categorical legend, annotation readout, linked probe/colorbar, scientific plotting, vector, and
+   wind field.
 3. The browser runtime consumes artifact-backed split DRP2 setup/update/frame packets. JSON is
    debug/fixture-only.
 4. Query/readback is intentionally narrow: point/marker picking, point hover/selection,
@@ -109,14 +109,13 @@ honestly.
 
 ### 2. Simple Visual-Family Batch
 
-Promote standalone examples for already-current families before composed showcases:
+Current: standalone browser routes exist for every already-current family:
 
 `point_2d`, `visual_pixel`, `visual_marker`, `visual_primitive`, `visual_segment`, `visual_path`,
 `visual_image`, `visual_mesh`, `sphere_impostor`, `visual_text`, `visual_glyph`, and
 `visual_labels`.
 
-These should be mostly mechanical because their primitives already exist in the WASM scene smoke
-path.
+Keep these routes in smoke coverage while moving promotion effort to composed examples.
 
 ### 3. Panel And Annotation Basics
 

@@ -51,6 +51,14 @@ static const float SDF_EDGE_PX = 3.5f;
 
 
 /*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_visual_glyph_scenario(void);
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
@@ -384,7 +392,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _glyph_scenario(void)
+DvzScenarioSpec dvz_visual_glyph_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "visual_glyph",
@@ -410,8 +418,10 @@ static DvzScenarioSpec _glyph_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _glyph_scenario();
+    DvzScenarioSpec spec = dvz_visual_glyph_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

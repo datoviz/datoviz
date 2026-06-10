@@ -51,10 +51,11 @@ Supported browser pages:
 - `examples/webgpu/examples.html?demo=wasm-image-probe`: sampled image pixel probe through the
   query/readback path;
 - `examples/webgpu/live.html?id=...`: public live gallery routes generated from canonical C
-  examples and portable C scenarios, currently covering 28 promoted examples including standalone
-  point, pixel, marker, and primitive visuals, colorbar, scale bars, categorical legend, annotation
-  readout, linked probe/colorbar, scientific plotting, vector, wind field, isolines, selection
-  routes, compute buffer animation, and GPU particle smoke;
+  examples and portable C scenarios, currently covering 36 promoted examples including standalone
+  point, pixel, marker, primitive, segment, path, image, mesh, sphere, text, glyph, and labels
+  visuals, colorbar, scale bars, categorical legend, annotation readout, linked probe/colorbar,
+  scientific plotting, vector, wind field, isolines, selection routes, compute buffer animation, and
+  GPU particle smoke;
 - `examples/webgpu/fixtures.html`: DRP2 fixture dashboard for the pure browser WebGPU runner,
   retained runtime stress checks, and WASM scene smoke rows.
 
@@ -139,11 +140,9 @@ Promote browser scene features in this order unless a release blocker changes th
 
 1. promote panel/panzoom basics and axis/text/image/color-scale examples that reuse already-current
    primitive, segment/path, image, glyph/text, and panzoom support;
-2. promote simple visual-family examples so the gallery has a live route for each current visual
-   family;
-3. add richer labels, including unsigned label variants and palette/category updates;
-4. broaden vector/path parity, including path subpaths and stroke edge cases;
-5. add reduced volume rendering only after texture-3D memory and diagnostics are explicit.
+2. add richer labels, including unsigned label variants and palette/category updates;
+3. broaden vector/path parity, including path subpaths and stroke edge cases;
+4. add reduced volume rendering only after texture-3D memory and diagnostics are explicit.
 
 Each promoted item must reuse the retained native scene path, add the narrow WASM ABI surface it
 needs, extend `tools/wasm_scene_smoke.mjs`, add or verify the public live route or development

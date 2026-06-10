@@ -1710,6 +1710,14 @@ try {
     "visual_pixel",
     "visual_marker",
     "visual_primitive",
+    "visual_segment",
+    "visual_path",
+    "visual_image",
+    "visual_mesh",
+    "sphere_impostor",
+    "visual_text",
+    "visual_glyph",
+    "visual_labels",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -2457,6 +2465,9 @@ try {
       0,
       "particle smoke scenario canvas format",
     );
+    setCapabilities(
+      Module, particleScene, 4096, 4, 8, 256 * 1024 * 1024, 256, 8,
+      "particle smoke scenario capabilities");
     expectStatus(
       Module._dvz_wasm_api_scenario_create(particleScene, particleIndex),
       0,
@@ -2505,6 +2516,14 @@ try {
     ["visual_pixel", "pixel visual"],
     ["visual_marker", "marker visual"],
     ["visual_primitive", "primitive visual"],
+    ["visual_segment", "segment visual"],
+    ["visual_path", "path visual"],
+    ["visual_image", "image visual"],
+    ["visual_mesh", "mesh visual"],
+    ["sphere_impostor", "sphere visual"],
+    ["visual_text", "text visual"],
+    ["visual_glyph", "glyph visual"],
+    ["visual_labels", "labels visual"],
   ];
   for (const [id, label] of standaloneVisuals) {
     const index = scenarioIndex(Module, id);
@@ -2516,6 +2535,9 @@ try {
         0,
         `${label} scenario canvas format`,
       );
+      setCapabilities(
+        Module, visualScene, 4096, 4, 8, 256 * 1024 * 1024, 256, 8,
+        `${label} scenario capabilities`);
       expectStatus(
         Module._dvz_wasm_api_scenario_create(visualScene, index),
         0,

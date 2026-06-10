@@ -791,6 +791,8 @@ async function main() {
     let wasmLinkedProbe = null;
     let wasmScientific = null;
     let wasmVector = null;
+    let wasmSegment = null;
+    let wasmLabels = null;
     let wasmWindField = null;
     let wasmIsolines = null;
     let wasmParticleSmoke = null;
@@ -946,6 +948,34 @@ async function main() {
       console.log(skipLine(`WebGPU live vector smoke: headless WebGPU instance loss (${error.message})`));
     }
     try {
+      wasmSegment = await smokeWasmPage(
+        page,
+        baseUrl,
+        '/examples/webgpu/live.html?id=visual_segment',
+        'Rendered Segment',
+        join(artifactsDir, 'webgpu_live_visual_segment.png'),
+      );
+    } catch (error) {
+      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        throw error;
+      }
+      console.log(skipLine(`WebGPU live segment smoke: headless WebGPU instance loss (${error.message})`));
+    }
+    try {
+      wasmLabels = await smokeWasmPage(
+        page,
+        baseUrl,
+        '/examples/webgpu/live.html?id=visual_labels',
+        'Rendered Labels',
+        join(artifactsDir, 'webgpu_live_visual_labels.png'),
+      );
+    } catch (error) {
+      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        throw error;
+      }
+      console.log(skipLine(`WebGPU live labels smoke: headless WebGPU instance loss (${error.message})`));
+    }
+    try {
       wasmWindField = await smokeWasmPage(
         page,
         baseUrl,
@@ -1025,6 +1055,12 @@ async function main() {
     }
     if (wasmVector !== null) {
       console.log(passLine(`live vector: ${wasmVector.initialStatus}`));
+    }
+    if (wasmSegment !== null) {
+      console.log(passLine(`live segment: ${wasmSegment.initialStatus}`));
+    }
+    if (wasmLabels !== null) {
+      console.log(passLine(`live labels: ${wasmLabels.initialStatus}`));
     }
     if (wasmWindField !== null) {
       console.log(passLine(`live wind-field: ${wasmWindField.initialStatus}`));

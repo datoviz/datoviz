@@ -61,7 +61,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 28
+#define DVZ_WASM_API_SCENARIO_COUNT 36
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
@@ -106,10 +106,18 @@ DvzScenarioSpec dvz_showcase_linked_probe_colorbar_scenario(void);
 DvzScenarioSpec dvz_showcase_gpu_particle_smoke_scenario(void);
 DvzScenarioSpec dvz_showcase_scientific_plotting_scenario(void);
 DvzScenarioSpec dvz_showcase_wind_field_scenario(void);
+DvzScenarioSpec dvz_visual_glyph_scenario(void);
+DvzScenarioSpec dvz_visual_image_scenario(void);
+DvzScenarioSpec dvz_visual_labels_scenario(void);
 DvzScenarioSpec dvz_visual_marker_scenario(void);
+DvzScenarioSpec dvz_visual_mesh_scenario(void);
+DvzScenarioSpec dvz_visual_path_scenario(void);
 DvzScenarioSpec dvz_visual_pixel_scenario(void);
 DvzScenarioSpec dvz_visual_point_scenario(void);
 DvzScenarioSpec dvz_visual_primitive_scenario(void);
+DvzScenarioSpec dvz_visual_segment_scenario(void);
+DvzScenarioSpec dvz_visual_sphere_scenario(void);
+DvzScenarioSpec dvz_visual_text_scenario(void);
 DvzScenarioSpec dvz_visual_vector_scenario(void);
 
 
@@ -425,6 +433,22 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_visual_marker_scenario();
     case 27:
         return dvz_visual_primitive_scenario();
+    case 28:
+        return dvz_visual_segment_scenario();
+    case 29:
+        return dvz_visual_path_scenario();
+    case 30:
+        return dvz_visual_image_scenario();
+    case 31:
+        return dvz_visual_mesh_scenario();
+    case 32:
+        return dvz_visual_sphere_scenario();
+    case 33:
+        return dvz_visual_text_scenario();
+    case 34:
+        return dvz_visual_glyph_scenario();
+    case 35:
+        return dvz_visual_labels_scenario();
     default:
         return (DvzScenarioSpec){0};
     }
