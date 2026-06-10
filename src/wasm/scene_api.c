@@ -61,7 +61,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 67
+#define DVZ_WASM_API_SCENARIO_COUNT 68
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
@@ -84,6 +84,7 @@
 DvzVisual* _scene_text_visual(DvzScene* scene, uint32_t flags);
 
 DvzScenarioSpec dvz_example_annotation_readout_scenario(void);
+DvzScenarioSpec dvz_example_alpha_blending_scenario(void);
 DvzScenarioSpec dvz_example_animation_tracks_scenario(void);
 DvzScenarioSpec dvz_example_axes_2d_scenario(void);
 DvzScenarioSpec dvz_example_axis_labels_scenario(void);
@@ -535,12 +536,14 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
     case 62:
         return dvz_example_depth_test_scenario();
     case 63:
-        return dvz_example_material_mesh_scenario();
+        return dvz_example_alpha_blending_scenario();
     case 64:
-        return dvz_example_lighting_scenario();
+        return dvz_example_material_mesh_scenario();
     case 65:
-        return dvz_showcase_textured_planet_scenario();
+        return dvz_example_lighting_scenario();
     case 66:
+        return dvz_showcase_textured_planet_scenario();
+    case 67:
         return dvz_showcase_protein_scenario();
     default:
         return (DvzScenarioSpec){0};

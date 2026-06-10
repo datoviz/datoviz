@@ -179,6 +179,9 @@ function mapStoreOp(storeOp) {
   if (storeOp === undefined || storeOp === "store" || storeOp === "discard") {
     return storeOp ?? "store";
   }
+  if (storeOp === "dont_care") {
+    return "discard";
+  }
   throw new Error(`unsupported store_op: ${storeOp}`);
 }
 

@@ -149,6 +149,10 @@ bool _emitter_prepare_render_multi(
         DvzAlphaMode alpha_mode = render->u.render.visual_metadata[i].has_metadata
                                       ? render->u.render.visual_metadata[i].alpha_mode
                                       : DVZ_ALPHA_OPAQUE;
+        DvzSceneBlendPolicy blend_policy =
+            render->u.render.visual_metadata[i].has_draw_contract
+                ? (DvzSceneBlendPolicy)render->u.render.visual_metadata[i].draw_blend_policy
+                : DVZ_SCENE_BLEND_POLICY_NONE;
         bool query_shader_applied = false;
         if (render->u.render.picking && cfg != NULL)
         {
@@ -451,7 +455,11 @@ bool _emitter_prepare_render_multi(
                     ok = dvz_drp2_stream_pipeline_set_color_target(
                         stream, 0, cfg->color_target_format);
                 }
-                if (ok && (_scene_alpha_mode_is_blended(alpha_mode) || segment_coverage_blend))
+                bool source_over_blend =
+                    blend_policy == DVZ_SCENE_BLEND_POLICY_SOURCE_OVER ||
+                    blend_policy == DVZ_SCENE_BLEND_POLICY_SEGMENT_COVERAGE ||
+                    segment_coverage_blend;
+                if (ok && source_over_blend)
                 {
                     ok = dvz_drp2_stream_pipeline_set_color_blend(
                         stream, 0, VK_BLEND_FACTOR_SRC_ALPHA,

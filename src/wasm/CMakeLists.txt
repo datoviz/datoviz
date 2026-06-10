@@ -13,6 +13,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/composites/polygon.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/annotation_readout.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/animation_tracks.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/alpha_blending.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/axes_2d.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/axis_labels.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/bars_bands.c

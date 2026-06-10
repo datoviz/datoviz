@@ -1113,6 +1113,7 @@ async function main() {
         'us-state-choropleth',
       ],
       ['technique_depth_test', 'Depth Test Toggle', 'webgpu_live_depth_test.png', 'depth-test'],
+      ['alpha_blending', 'Alpha Blending', 'webgpu_live_alpha_blending.png', 'alpha-blending'],
       [
         'feature_material_mesh',
         'Mesh Materials',

@@ -1189,11 +1189,11 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=alpha_blending
       requirements:
         - alpha-blending
         - primitive
-        - marker
     agent_copy_safe: true
 
   - id: panel_background

@@ -1356,6 +1356,33 @@ function expectDepthTestScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "Draw").length >= 2, `${label}: expected point draws`);
 }
 
+function expectAlphaBlendingScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  const pipeline = expectPipeline(
+    stream,
+    `${label} primitive`,
+    (candidate) =>
+      candidate.builtin_pipeline === "scene.primitive" &&
+      candidate.color_targets?.[0]?.blend !== undefined,
+  );
+  const target = pipeline.color_targets?.[0];
+  requireOk(target?.blend !== undefined, `${label}: expected primitive color-target blend state`);
+  requireOk(
+    target.blend.color.src_factor === 6 &&
+      target.blend.color.dst_factor === 7 &&
+      target.blend.color.operation === 0,
+    `${label}: unexpected source-over color blend state`,
+  );
+  requireOk(
+    target.blend.alpha.src_factor === 1 &&
+      target.blend.alpha.dst_factor === 7 &&
+      target.blend.alpha.operation === 0,
+    `${label}: unexpected source-over alpha blend state`,
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected blended primitive draw`);
+}
+
 function expectMaterialMeshScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -2207,6 +2234,7 @@ try {
     "feature_update_visual_data",
     "feature_visibility",
     "technique_depth_test",
+    "feature_alpha_blending",
     "feature_material_mesh",
     "feature_lighting",
     "textured_terrain_or_planet",
@@ -3145,6 +3173,11 @@ try {
       "technique_depth_test",
       "depth test",
       (stream, label) => expectDepthTestScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_alpha_blending",
+      "alpha blending",
+      (stream, label) => expectAlphaBlendingScenarioStreamShape(stream, label),
     ],
     [
       "feature_material_mesh",

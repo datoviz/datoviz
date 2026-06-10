@@ -215,6 +215,11 @@ export const LIVE_EXAMPLES = [
     scenarioId: "technique_depth_test",
   },
   {
+    id: "alpha_blending",
+    label: "Alpha Blending",
+    scenarioId: "feature_alpha_blending",
+  },
+  {
     id: "feature_material_mesh",
     label: "Mesh Materials",
     scenarioId: "feature_material_mesh",
