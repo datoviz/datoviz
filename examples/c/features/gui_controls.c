@@ -27,6 +27,7 @@
 #include "datoviz/gui.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "example_gui_controls.h"
 #include "example_style.h"
 
 
@@ -51,6 +52,13 @@ typedef struct GuiControlsState
     float diameter;
     float color[4];
     bool visible;
+    DvzExampleGuiMaterialControls material;
+    DvzExampleGuiMsaaControls msaa;
+    DvzExampleGuiEdlControls edl;
+    DvzExampleGuiSsaoControls ssao;
+    float light_direction[3];
+    float clip_min[3];
+    float clip_max[3];
 } GuiControlsState;
 
 
@@ -111,6 +119,14 @@ static void _gui_controls_callback(DvzGui* gui, DvzView* view, void* user_data)
         changed |= dvz_gui_slider_float(gui, "Diameter", &state->diameter, 8.0f, 96.0f);
         changed |= dvz_gui_color_edit4(gui, "Color", state->color, 0);
         visible_changed |= dvz_gui_checkbox(gui, "Visible", &state->visible);
+        dvz_gui_separator_text(gui, "Reusable wrappers");
+        (void)dvz_example_gui_vec3(
+            gui, "Light direction", state->light_direction, -1.0f, 1.0f, "%.2f");
+        (void)dvz_example_gui_material(gui, &state->material);
+        (void)dvz_example_gui_msaa(gui, &state->msaa);
+        (void)dvz_example_gui_edl(gui, &state->edl);
+        (void)dvz_example_gui_ssao(gui, &state->ssao);
+        (void)dvz_example_gui_clip_box(gui, "Clip box", state->clip_min, state->clip_max);
     }
     dvz_gui_end(gui);
 
@@ -151,6 +167,51 @@ int main(int argc, char** argv)
         .diameter = 42.0f,
         .color = {0.28f, 0.78f, 1.00f, 1.00f},
         .visible = true,
+        .material =
+            {
+                .ambient = 0.32f,
+                .diffuse = 0.84f,
+                .specular = 0.22f,
+                .shininess = 34.0f,
+                .roughness = 0.42f,
+                .rim_strength = 0.18f,
+            },
+        .msaa =
+            {
+                .enabled = true,
+                .samples = 4.0f,
+                .min_samples = 2.0f,
+                .max_samples = 8.0f,
+            },
+        .edl =
+            {
+                .enabled = true,
+                .radius = 2.0f,
+                .strength = 45.0f,
+                .depth_scale = 1.0f,
+            },
+        .ssao =
+            {
+                .enabled = true,
+                .blur = true,
+                .radius = 1.2f,
+                .strength = 2.2f,
+                .bias = 0.02f,
+                .power = 1.3f,
+                .min_visibility = 0.35f,
+                .samples = 24.0f,
+                .min_samples = 4.0f,
+                .max_samples = 32.0f,
+                .blur_radius = 6.0f,
+                .blur_radius_max = 12.0f,
+                .blur_depth_sigma = 0.65f,
+                .blur_normal_sigma = 0.35f,
+                .show_blur_sigmas = true,
+                .show_debug_view = true,
+            },
+        .light_direction = {-0.35f, -0.55f, 0.75f},
+        .clip_min = {0.05f, 0.05f, 0.05f},
+        .clip_max = {0.95f, 0.95f, 0.95f},
     };
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},

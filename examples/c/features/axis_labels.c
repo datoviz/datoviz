@@ -130,7 +130,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_graphite_cyan_set_panel_background(panel);
 
     bool ok = dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.18f, .right = 0.08f, .bottom = 0.19f,
+        panel, &(DvzPanelLayoutReserve){.left = 0.14f, .right = 0.08f, .bottom = 0.15f,
                                         .top = 0.08f});
     if (!ok)
         return false;
@@ -168,9 +168,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!example_graphite_cyan_apply_axis_style(y_axis, true, &style))
         return false;
 
-    if (!dvz_axis_set_plot_margins(x_axis, 0.30f, 0.22f, 0.34f, 0.26f))
+    if (!dvz_axis_set_plot_margins(x_axis, 0.18f, 0.12f, 0.18f, 0.12f))
         return false;
-    if (!dvz_axis_set_plot_margins(y_axis, 0.30f, 0.22f, 0.34f, 0.26f))
+    if (!dvz_axis_set_plot_margins(y_axis, 0.18f, 0.12f, 0.18f, 0.12f))
         return false;
     if (!dvz_axis_set_grid(x_axis, true))
         return false;

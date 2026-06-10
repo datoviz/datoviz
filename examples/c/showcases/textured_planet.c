@@ -707,7 +707,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         });
     EXAMPLE_CHECK(flyover != NULL, "dvz_anim_camera_motion() failed");
     dvz_anim_set_interaction_policy(
-        flyover, orbit_controller, DVZ_ANIM_INTERACTION_STOP, 0.0);
+        flyover, orbit_controller, DVZ_ANIM_INTERACTION_RESUME_AFTER_IDLE, 0.9);
     dvz_anim_start(flyover, 0.0);
 
     ok = true;

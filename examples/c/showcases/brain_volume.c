@@ -937,9 +937,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = 1.35f;
-    camera_desc.eye[1] = -2.60f;
-    camera_desc.eye[2] = 1.65f;
+    camera_desc.eye[0] = -1.55f;
+    camera_desc.eye[1] = +2.45f;
+    camera_desc.eye[2] = 1.58f;
     camera_desc.up[1] = 0.0f;
     camera_desc.up[2] = 1.0f;
     camera_desc.fov_y = 0.72f;
@@ -1030,7 +1030,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(
         dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) == 0,
         "dvz_scenario_bind_controller() failed");
-    dvz_arcball_set(arcball, (vec3){+0.42f, -0.26f, +0.16f});
+    dvz_arcball_set(arcball, (vec3){-0.42f, +0.26f, -0.16f});
 
     ok = true;
 cleanup:

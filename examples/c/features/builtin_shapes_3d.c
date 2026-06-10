@@ -125,7 +125,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             ctx->scene, panel,
             dvz_geom_cube(&(DvzGeometryCubeDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
-                .center = {-1.25, +0.05, 0.00},
+                .center = {-0.92, +0.42, 0.00},
                 .size = 0.42,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
             })) &&
@@ -133,7 +133,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             ctx->scene, panel,
             dvz_geom_sphere(&(DvzGeometrySphereDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
-                .center = {-0.55, +0.05, 0.02},
+                .center = {+0.00, +0.42, 0.02},
                 .radius = 0.27,
                 .rings = 18,
                 .sectors = 36,
@@ -143,7 +143,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             ctx->scene, panel,
             dvz_geom_cylinder(&(DvzGeometryCylinderDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryCylinderDesc),
-                .center = {+0.18, +0.05, 0.00},
+                .center = {+0.92, +0.42, 0.00},
                 .radius = 0.18,
                 .height = 0.62,
                 .sectors = 32,
@@ -153,7 +153,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             ctx->scene, panel,
             dvz_geom_cone(&(DvzGeometryConeDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryConeDesc),
-                .center = {+0.86, +0.05, 0.00},
+                .center = {-0.92, -0.42, 0.00},
                 .radius = 0.25,
                 .height = 0.66,
                 .sectors = 32,
@@ -163,7 +163,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             ctx->scene, panel,
             dvz_geom_torus(&(DvzGeometryTorusDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryTorusDesc),
-                .center = {-0.34, -0.70, 0.05},
+                .center = {+0.00, -0.42, 0.05},
                 .major_radius = 0.28,
                 .minor_radius = 0.08,
                 .rings = 36,
@@ -174,7 +174,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             ctx->scene, panel,
             dvz_geom_arrow(&(DvzGeometryArrowDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryArrowDesc),
-                .center = {+0.56, -0.70, 0.02},
+                .center = {+0.92, -0.42, 0.02},
                 .length = 0.78,
                 .shaft_radius = 0.055,
                 .head_radius = 0.15,

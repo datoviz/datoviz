@@ -198,8 +198,8 @@ static DvzAnnotation* _add_readout(DvzPanel* panel, const vec3 position)
     placement.position[0] = anchor_px[0];
     placement.position[1] = anchor_px[1];
     placement.position[2] = position[2];
-    placement.offset[0] = 10.0f;
-    placement.offset[1] = -10.0f;
+    placement.offset[0] = 28.0f;
+    placement.offset[1] = -24.0f;
     placement.text_anchor[0] = 0.0f;
     placement.text_anchor[1] = 0.5f;
     placement.has_text_anchor = true;

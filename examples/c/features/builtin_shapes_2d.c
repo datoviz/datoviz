@@ -24,6 +24,7 @@
 #include <stdint.h>
 
 #include "_assertions.h"
+#include "datoviz/controller/panzoom.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
 #include "example_style.h"
@@ -187,8 +188,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             })) &&
         _add_geometry(ctx->scene, panel, _hole_polygon());
 
-    DvzController* controller = dvz_panzoom(ctx->scene, NULL);
+    DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
+    panzoom_desc.controller_flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
+    DvzController* controller = dvz_panzoom(ctx->scene, &panzoom_desc);
     if (controller == NULL)
+        return false;
+    DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
+    if (panzoom == NULL)
         return false;
     return ok && dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XY) == 0;
 }

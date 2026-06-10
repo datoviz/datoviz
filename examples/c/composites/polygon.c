@@ -24,6 +24,7 @@
 #include <stdbool.h>
 
 #include "_assertions.h"
+#include "datoviz/controller/panzoom.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
@@ -59,10 +60,10 @@ static bool _configure_panel(DvzPanel* panel)
                                         .top = 0.06f});
     if (!ok)
         return false;
-    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, -2.4, 3.6);
+    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, -2.55, 3.25);
     if (rc != 0)
         return false;
-    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.4, 1.7);
+    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.55, 1.35);
     return rc == 0;
 }
 
@@ -229,7 +230,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(_add_holed_polygon(ctx->scene, panel), "holed polygon setup failed");
     EXAMPLE_CHECK(_add_polygon_set(ctx->scene, panel), "polygon set setup failed");
 
-    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
+    panzoom_desc.controller_flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, &panzoom_desc, DVZ_DIM_MASK_XY);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
     (void)panzoom;
 

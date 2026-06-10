@@ -48,7 +48,7 @@
 typedef struct VisibilityState
 {
     DvzVisual* hidden_point;
-    bool revealed;
+    bool visible;
 } VisibilityState;
 
 
@@ -164,7 +164,7 @@ error:
 
 
 /**
- * Reveal the initially hidden middle point once after one second.
+ * Toggle the middle point at 2 Hz.
  *
  * @param ctx scenario context
  * @param user scenario state
@@ -175,10 +175,11 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
         return;
 
     VisibilityState* state = (VisibilityState*)user;
-    if (!state->revealed && ctx->time >= 1.0)
+    const bool visible = ((uint32_t)(ctx->time * 2.0)) % 2u == 0u;
+    if (visible != state->visible)
     {
-        dvz_visual_set_visible(state->hidden_point, true);
-        state->revealed = true;
+        dvz_visual_set_visible(state->hidden_point, visible);
+        state->visible = visible;
     }
 }
 

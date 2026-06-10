@@ -117,13 +117,13 @@ static bool _add_surface(DvzScene* scene, DvzPanel* panel, const DvzGeometry* ge
     if (mesh == NULL)
         return false;
     DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = 0.30f;
-    material.light_direction[1] = -0.44f;
-    material.light_direction[2] = 0.84f;
-    material.phong.ambient = 0.30f;
-    material.phong.diffuse = 0.82f;
-    material.phong.specular = 0.24f;
-    material.phong.shininess = 36.0f;
+    material.light_direction[0] = -0.22f;
+    material.light_direction[1] = -0.58f;
+    material.light_direction[2] = 0.78f;
+    material.phong.ambient = 0.38f;
+    material.phong.diffuse = 0.76f;
+    material.phong.specular = 0.16f;
+    material.phong.shininess = 24.0f;
     if (dvz_visual_set_material(mesh, &material) != 0)
         return false;
     if (dvz_mesh_set_geometry(mesh, geometry) != 0)
@@ -160,7 +160,7 @@ static bool _add_wireframe(
     if (starts == NULL || ends == NULL || colors == NULL || widths == NULL)
         goto error;
 
-    const DvzColor wire_color = dvz_color_rgba(18, 24, 30, 190);
+    const DvzColor wire_color = dvz_color_rgba(214, 234, 238, 92);
     for (uint32_t i = 0; i < edges->edge_count; i++)
     {
         const DvzGeometryEdge* edge = &edges->edges[i];
@@ -173,7 +173,7 @@ static bool _add_wireframe(
         ends[i][1] = (float)p1[1];
         ends[i][2] = (float)(p1[2] + 0.003);
         colors[i] = wire_color;
-        widths[i] = 1.45f;
+        widths[i] = 1.10f;
     }
 
     DvzVisual* wire = dvz_segment(scene, 0);

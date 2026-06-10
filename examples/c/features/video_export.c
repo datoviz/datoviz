@@ -10,9 +10,9 @@
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/video_export
- * Run:    ./build/examples/c/features/video_export --live
+ * Run:    ./build/examples/c/features/video_export
  * Live:   ./build/examples/c/features/video_export --live
- * Video:  ./build/examples/c/features/video_export --live-record 120
+ * Video:  ./build/examples/c/features/video_export
  * Hidden: ./build/examples/c/features/video_export --offscreen-record 120
  */
 
@@ -243,5 +243,14 @@ static DvzScenarioSpec _video_export_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = _video_export_scenario();
+    if (argc <= 1)
+    {
+        DvzRunnerConfig config = dvz_runner_config(&spec);
+        config.presentation = DVZ_RUNNER_PRESENT_OFFSCREEN;
+        config.capture_kind = DVZ_RUNNER_CAPTURE_VIDEO;
+        config.capture.video_capture_mode = DVZ_VIDEO_CAPTURE_CPU_READBACK;
+        config.frame_count = 120u;
+        return dvz_scenario_run_native(&spec, &config) == 0 ? 0 : 1;
+    }
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

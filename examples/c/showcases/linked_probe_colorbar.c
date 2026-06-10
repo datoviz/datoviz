@@ -529,7 +529,7 @@ static DvzText* _add_readout(DvzPanel* panel)
 
     DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
     DvzTextStyle style = dvz_text_style();
-    style.size_px = 21.0f;
+    style.size_px = 20.0f;
     style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.color[0] = color.r;
     style.color[1] = color.g;
@@ -541,8 +541,8 @@ static DvzText* _add_readout(DvzPanel* panel)
     DvzTextPlacement placement = dvz_text_placement();
     placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
     placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
-    placement.position[0] = 96.0f;
-    placement.position[1] = 38.0f;
+    placement.position[0] = 78.0f;
+    placement.position[1] = 56.0f;
     placement.position[2] = 0.0f;
     placement.text_anchor[0] = 0.0f;
     placement.text_anchor[1] = 0.5f;
@@ -574,7 +574,7 @@ static bool _add_panel_label(DvzPanel* panel, const char* label, ExampleStyleCol
         return false;
     DvzColor color = example_graphite_cyan_color(role);
     DvzTextStyle style = dvz_text_style();
-    style.size_px = 24.0f;
+    style.size_px = 22.0f;
     style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.color[0] = color.r;
     style.color[1] = color.g;
@@ -913,8 +913,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
     EXAMPLE_CHECK(grid != NULL, "dvz_figure_grid() failed");
     ok = dvz_grid_set_margins(
-        grid, &(DvzPanelReserve){.left_px = 38.0f, .right_px = 30.0f, .top_px = 28.0f,
-                                 .bottom_px = 32.0f});
+        grid, &(DvzPanelReserve){.left_px = 42.0f, .right_px = 34.0f, .top_px = 46.0f,
+                                 .bottom_px = 34.0f});
     EXAMPLE_CHECK(ok, "dvz_grid_set_margins() failed");
     ok = dvz_grid_set_gutter(grid, 28.0f, 0.0f);
     EXAMPLE_CHECK(ok, "dvz_grid_set_gutter() failed");
@@ -928,11 +928,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     ok = dvz_panel_set_layout_reserve(
         source, &(DvzPanelLayoutReserve){.left = 0.11f, .right = 0.04f, .bottom = 0.10f,
-                                        .top = 0.10f});
+                                        .top = 0.13f});
     EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve(source) failed");
     ok = dvz_panel_set_layout_reserve(
         derived_panel, &(DvzPanelLayoutReserve){.left = 0.11f, .right = 0.16f, .bottom = 0.10f,
-                                               .top = 0.10f});
+                                               .top = 0.13f});
     EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve(derived) failed");
 
     ok = _set_image_domain(source);

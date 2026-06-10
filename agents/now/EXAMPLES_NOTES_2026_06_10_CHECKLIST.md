@@ -80,25 +80,25 @@ changed-example build/smoke where supported.
 Validation: `git diff --check`, `just build`, focused scene/example tests where available, plus
 changed-example build/smoke where supported.
 
-- [ ] `showcases/brain_volume`: change the default view to the other side.
-- [ ] `showcases/linked_probe_colorbar`: improve top-left text contrast.
-- [ ] `showcases/linked_probe_colorbar`: add more top padding and avoid clipping at the top border.
-- [ ] `showcases/surface_grid`: inspect and tune bottom-grid lighting/material.
-- [ ] `showcases/textured_planet`: automatic camera motion should resume or continue after mouse
+- [x] `showcases/brain_volume`: change the default view to the other side.
+- [x] `showcases/linked_probe_colorbar`: improve top-left text contrast.
+- [x] `showcases/linked_probe_colorbar`: add more top padding and avoid clipping at the top border.
+- [x] `showcases/surface_grid`: inspect and tune bottom-grid lighting/material.
+- [x] `showcases/textured_planet`: automatic camera motion should resume or continue after mouse
   interaction.
-- [ ] `composites/polygon`: use fixed/equal aspect.
-- [ ] `composites/polygon`: ensure all polygons are initially visible.
-- [ ] `features/annotation_readout`: increase label/readout offset so the first character is visible
+- [x] `composites/polygon`: use fixed/equal aspect.
+- [x] `composites/polygon`: ensure all polygons are initially visible.
+- [x] `features/annotation_readout`: increase label/readout offset so the first character is visible
   and there is no point overlap.
-- [ ] `features/axis_labels`: remove the odd small bordered-panel appearance or make it intentional.
-- [ ] `features/builtin_shapes_2d`: enforce fixed/equal aspect.
-- [ ] `features/builtin_shapes_3d`: rebalance object layout for symmetry.
-- [ ] `features/gui_controls`: show more Datoviz GUI wrapper capabilities, preferably reusing
+- [x] `features/axis_labels`: remove the odd small bordered-panel appearance or make it intentional.
+- [x] `features/builtin_shapes_2d`: enforce fixed/equal aspect.
+- [x] `features/builtin_shapes_3d`: rebalance object layout for symmetry.
+- [x] `features/gui_controls`: show more Datoviz GUI wrapper capabilities, preferably reusing
   wrappers from `examples/c/example_gui_controls.c`.
-- [ ] `features/overlay_card`: replace the odd visual with a simple curve or similarly clear
+- [x] `features/overlay_card`: replace the odd visual with a simple curve or similarly clear
   signal.
-- [ ] `features/visibility`: toggle visibility on and off at 2 Hz.
-- [ ] `features/video_export`: plain run should record a short video and stop automatically, using
+- [x] `features/visibility`: toggle visibility on and off at 2 Hz.
+- [x] `features/video_export`: plain run should record a short video and stop automatically, using
   an example-specific default instead of changing all scenario defaults.
 
 

@@ -22,6 +22,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <math.h>
 
 #include "datoviz/scene.h"
 #include "example_style.h"
@@ -61,9 +62,8 @@ static bool _add_signal(DvzScene* scene, DvzPanel* panel)
         const float t = PATH_COUNT > 1u ? (float)i / (float)(PATH_COUNT - 1u) : 0.0f;
         const float x = -0.86f + 1.72f * t;
         positions[i][0] = x;
-        positions[i][1] = 0.32f * (float)(t > 0.58f) +
-                          0.18f * (float)(t < 0.58f) +
-                          0.20f * (float)(t - 0.5f);
+        positions[i][1] = 0.16f * sinf(6.2831853f * (1.6f * t + 0.08f)) +
+                          0.10f * cosf(6.2831853f * (3.1f * t - 0.15f));
         positions[i][2] = 0.0f;
         colors[i] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
         colors[i].a = 235u;
@@ -85,7 +85,7 @@ static bool _add_signal(DvzScene* scene, DvzPanel* panel)
     if (dvz_panel_add_visual(panel, path, NULL) != 0)
         return false;
 
-    const vec3 point_pos[POINT_COUNT] = {{0.18f, 0.43f, 0.0f}};
+    const vec3 point_pos[POINT_COUNT] = {{0.22f, 0.13f, 0.0f}};
     const DvzColor point_color[POINT_COUNT] = {
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING)};
     const float diameters[POINT_COUNT] = {42.0f};
