@@ -45,11 +45,19 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+typedef enum BrainLabelSide
+{
+    BRAIN_LABEL_SIDE_TOP,
+    BRAIN_LABEL_SIDE_BOTTOM,
+} BrainLabelSide;
+
+
 typedef struct BrainCommunity
 {
     const char* label;
     DvzColor color;
-    dvec3 label_position;
+    BrainLabelSide label_side;
+    double label_gap_ratio;
 } BrainCommunity;
 
 
@@ -79,9 +87,18 @@ typedef struct BrainEdge
 /*************************************************************************************************/
 
 static const BrainCommunity COMMUNITIES[] = {
-    {.label = "Visual", .color = {65, 201, 226, 255}, .label_position = {-0.78, +0.72, 0.0}},
-    {.label = "Motor", .color = {246, 185, 72, 255}, .label_position = {+0.78, +0.72, 0.0}},
-    {.label = "Memory", .color = {234, 104, 91, 255}, .label_position = {+0.00, -1.00, 0.0}},
+    {.label = "Visual",
+     .color = {65, 201, 226, 255},
+     .label_side = BRAIN_LABEL_SIDE_TOP,
+     .label_gap_ratio = 0.20},
+    {.label = "Motor",
+     .color = {246, 185, 72, 255},
+     .label_side = BRAIN_LABEL_SIDE_TOP,
+     .label_gap_ratio = 0.20},
+    {.label = "Memory",
+     .color = {234, 104, 91, 255},
+     .label_side = BRAIN_LABEL_SIDE_BOTTOM,
+     .label_gap_ratio = 1.20},
 };
 
 
@@ -166,7 +183,7 @@ static bool _configure_panel(DvzPanel* panel)
     DvzPanelDomainFit fit = dvz_panel_domain_fit();
     fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
     fit.x = (DvzDataDomain){.min = -1.34, .max = +1.34};
-    fit.y = (DvzDataDomain){.min = -1.08, .max = +0.92};
+    fit.y = (DvzDataDomain){.min = -1.18, .max = +0.92};
     fit.padding = 0.03;
     return dvz_panel_set_domain_fit(panel, &fit) == 0;
 }
@@ -187,6 +204,53 @@ static void _make_positions(dvec3 positions[NODE_COUNT])
         positions[i][1] = NODES[i].position[1];
         positions[i][2] = NODES[i].position[2];
     }
+}
+
+
+
+static void _community_label_placement(uint32_t community, double position[3])
+{
+    ASSERT(community < COMMUNITY_COUNT);
+    ANN(position);
+
+    bool found = false;
+    double min_x = 0.0;
+    double max_x = 0.0;
+    double min_y = 0.0;
+    double max_y = 0.0;
+    for (uint32_t i = 0; i < NODE_COUNT; i++)
+    {
+        if (NODES[i].community != community)
+            continue;
+        const double x = NODES[i].position[0];
+        const double y = NODES[i].position[1];
+        if (!found)
+        {
+            min_x = max_x = x;
+            min_y = max_y = y;
+            found = true;
+        }
+        else
+        {
+            if (x < min_x)
+                min_x = x;
+            if (x > max_x)
+                max_x = x;
+            if (y < min_y)
+                min_y = y;
+            if (y > max_y)
+                max_y = y;
+        }
+    }
+    ASSERT(found);
+
+    const BrainCommunity* community_desc = &COMMUNITIES[community];
+    const double height = max_y - min_y;
+    const double gap = height * community_desc->label_gap_ratio;
+    position[0] = 0.5 * (min_x + max_x);
+    position[1] =
+        community_desc->label_side == BRAIN_LABEL_SIDE_BOTTOM ? min_y - gap : max_y + gap;
+    position[2] = 0.0;
 }
 
 
@@ -296,9 +360,7 @@ static bool _add_graph_labels(DvzPanel* panel)
         desc.style.color[3] = 245u;
         desc.placement.mode = DVZ_TEXT_PLACEMENT_DATA;
         desc.placement.anchor = DVZ_SCENE_ANCHOR_DATA;
-        desc.placement.position[0] = COMMUNITIES[i].label_position[0];
-        desc.placement.position[1] = COMMUNITIES[i].label_position[1];
-        desc.placement.position[2] = COMMUNITIES[i].label_position[2];
+        _community_label_placement(i, desc.placement.position);
         desc.placement.text_anchor[0] = 0.5f;
         desc.placement.text_anchor[1] = 0.5f;
         desc.placement.has_text_anchor = true;
