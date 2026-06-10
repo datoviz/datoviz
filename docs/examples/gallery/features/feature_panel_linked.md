@@ -10,7 +10,8 @@ two panels with bidirectional linked X panzoom state.
 - Status: `supported`
 - Source: [`examples/c/features/panel_linked.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_linked.c)
 - Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=feature_panel_linked`](/examples/webgpu/live.html?id=feature_panel_linked)
 - WebGPU requirements: `panel-grid`, `linked-panels`, `panzoom`, `point`
 - Build: `just example-c features/panel_linked`
 - Smoke: `./build/examples/c/features/panel_linked --png`
@@ -28,6 +29,14 @@ two panels with bidirectional linked X panzoom state.
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=feature_panel_linked" title="Linked Panels WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_panel_linked).
 
 ## Source
 

@@ -10,7 +10,8 @@ screen-space data readout over a simple panel visual.
 - Status: `supported`
 - Source: [`examples/c/features/overlay_card.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/overlay_card.c)
 - Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=feature_overlay_card`](/examples/webgpu/live.html?id=feature_overlay_card)
 - WebGPU requirements: `overlay`, `text`, `primitive`
 - Build: `just example-c features/overlay_card`
 - Smoke: `./build/examples/c/features/overlay_card --png`
@@ -28,6 +29,14 @@ screen-space data readout over a simple panel visual.
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=feature_overlay_card" title="Overlay Card WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_overlay_card).
 
 ## Source
 

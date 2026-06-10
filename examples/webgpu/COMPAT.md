@@ -15,7 +15,7 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
-now has 41 promoted routes backed by canonical C examples or portable C scenarios:
+now has 54 promoted routes backed by canonical C examples or portable C scenarios:
 `feature_basic_scene`, `feature_timer_animation`, `feature_triangulation_polygon`,
 `feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`, `feature_isolines`,
 `feature_animation_tracks`, `feature_compute_buffer_animation`, `feature_obj_loading`,
@@ -24,14 +24,18 @@ now has 41 promoted routes backed by canonical C examples or portable C scenario
 `feature_legend_categorical`, `annotation_readout`, `linked_panels_probe_colorbar`,
 `scientific_plotting_workflow`, `visual_vector`, `showcase_wind_field`,
 `showcase_gpu_particle_smoke`, `feature_panel_single`, `feature_panel_grid`, `feature_panzoom`,
-`path_axes_2d`, `feature_axis_labels`, `visual_point`, `visual_pixel`, `visual_marker`,
-`visual_primitive`, `visual_segment`, `visual_path`, `visual_image`, `visual_mesh`,
-`sphere_impostor`, `visual_text`, `visual_glyph`, and `visual_labels`.
+`path_axes_2d`, `feature_axis_labels`, `feature_panel_multi`, `feature_panel_linked`,
+`feature_text_block`, `feature_overlay_card`, `feature_guide_lines`, `feature_guide_spans`,
+`feature_bars_bands`, `feature_controller_fly`, `feature_controller_turntable`,
+`feature_controller_orbit_camera`, `feature_sampled_field_2d`, `colormap_scale`,
+`panel_background`, `visual_point`, `visual_pixel`, `visual_marker`, `visual_primitive`,
+`visual_segment`, `visual_path`, `visual_image`, `visual_mesh`, `sphere_impostor`, `visual_text`,
+`visual_glyph`, and `visual_labels`.
 
 Remaining RC promotions are:
 
-1. continue planned example clusters that reuse already-current primitives, especially
-   panel/panzoom basics, axes/text/image/color-scale examples, and composed showcases;
+1. continue planned example clusters that reuse already-current primitives, especially composed
+   showcases;
 2. keep native-only and deferred diagnostics explicit, and classify lab-only manifest entries only
    if they become public gallery routes.
 
@@ -54,6 +58,22 @@ and `just wasm-scene-smoke` passed with all standalone visual routes registered 
 table; `just webgpu-browser-smoke` completed with the known headless external WebGPU instance-loss
 skip at `QueueSubmit` for live routes, including the new `visual_segment` and `visual_labels`
 samples.
+
+Recorded local panel/annotation/controller promotion proof on 2026-06-10: `just wasm-scene-smoke`
+passed with `feature_panel_multi`, `feature_panel_linked`, `feature_text_block`,
+`feature_overlay_card`, `feature_guide_lines`, `feature_guide_spans`, `feature_bars_bands`,
+`feature_controller_fly`, `feature_controller_turntable`, and
+`feature_controller_orbit_camera` registered in the WASM scenario table and covered by targeted
+stream-shape checks; `just webgpu-browser-smoke` exited successfully in this shell with the known
+headless external WebGPU instance-loss skip at `QueueSubmit` for all ten new live routes; native
+PNG smokes passed for all ten examples.
+
+Recorded local image/color-scale promotion proof on 2026-06-10: `just wasm-scene-smoke` passed
+with `feature_sampled_field_2d`, `feature_colormap_scale`, and `feature_panel_background`
+registered in the WASM scenario table and covered by targeted stream-shape checks; `just
+webgpu-browser-smoke` exited successfully in this shell with the known headless external WebGPU
+instance-loss skip at `QueueSubmit` for all three new live routes; native PNG smokes passed for all
+three examples.
 
 
 ## Fixture Dashboard

@@ -10,7 +10,8 @@ scene-owned 2D sampled field bound to an image visual.
 - Status: `supported`
 - Source: [`examples/c/features/sampled_field_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_2d.c)
 - Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=feature_sampled_field_2d`](/examples/webgpu/live.html?id=feature_sampled_field_2d)
 - WebGPU requirements: `sampled-field`, `image`, `colormap`
 - Build: `just example-c features/sampled_field_2d`
 - Smoke: `./build/examples/c/features/sampled_field_2d --png`
@@ -28,6 +29,14 @@ scene-owned 2D sampled field bound to an image visual.
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=feature_sampled_field_2d" title="2D Sampled Field WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_sampled_field_2d).
 
 ## Source
 

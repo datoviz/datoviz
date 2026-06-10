@@ -152,6 +152,71 @@ export const LIVE_EXAMPLES = [
     scenarioId: "feature_axis_labels",
   },
   {
+    id: "feature_sampled_field_2d",
+    label: "2D Sampled Field",
+    scenarioId: "feature_sampled_field_2d",
+  },
+  {
+    id: "colormap_scale",
+    label: "Scalar Color Scale",
+    scenarioId: "feature_colormap_scale",
+  },
+  {
+    id: "panel_background",
+    label: "Panel Background",
+    scenarioId: "feature_panel_background",
+  },
+  {
+    id: "feature_panel_multi",
+    label: "Multiple Panels",
+    scenarioId: "feature_panel_multi",
+  },
+  {
+    id: "feature_panel_linked",
+    label: "Linked Panels",
+    scenarioId: "feature_panel_linked",
+  },
+  {
+    id: "feature_text_block",
+    label: "Text Block",
+    scenarioId: "feature_text_block",
+  },
+  {
+    id: "feature_overlay_card",
+    label: "Overlay Card",
+    scenarioId: "feature_overlay_card",
+  },
+  {
+    id: "feature_guide_lines",
+    label: "Guide Lines",
+    scenarioId: "feature_guide_lines",
+  },
+  {
+    id: "feature_guide_spans",
+    label: "Guide Spans",
+    scenarioId: "feature_guide_spans",
+  },
+  {
+    id: "feature_bars_bands",
+    label: "Bars And Bands",
+    scenarioId: "feature_bars_bands",
+  },
+  {
+    id: "feature_controller_fly",
+    label: "Fly Controller",
+    scenarioId: "feature_controller_fly",
+  },
+  {
+    id: "feature_controller_turntable",
+    label: "Turntable Controller",
+    scenarioId: "feature_controller_turntable",
+  },
+  {
+    id: "feature_controller_orbit_camera",
+    label: "Orbit Camera Controller",
+    scenarioId: "feature_controller_orbit_camera",
+  },
+  {
     id: "point_2d",
     label: "Point",
     scenarioId: "visual_point",

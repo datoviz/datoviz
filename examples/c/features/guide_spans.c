@@ -32,6 +32,14 @@
 
 
 /*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_example_guide_spans_scenario(void);
+
+
+
+/*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
@@ -301,7 +309,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _guide_spans_scenario(void)
+DvzScenarioSpec dvz_example_guide_spans_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_guide_spans",
@@ -309,6 +317,7 @@ static DvzScenarioSpec _guide_spans_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM,
         .init = _scenario_init,
         .event = _scenario_event,
         .destroy = _scenario_destroy,
@@ -328,8 +337,10 @@ static DvzScenarioSpec _guide_spans_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _guide_spans_scenario();
+    DvzScenarioSpec spec = dvz_example_guide_spans_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

@@ -1063,6 +1063,53 @@ async function main() {
       }
       console.log(skipLine(`WebGPU live axis-labels smoke: headless WebGPU instance loss (${error.message})`));
     }
+    const promotedLiveRoutes = [
+      ['feature_panel_multi', 'Multiple Panels', 'webgpu_live_panel_multi.png', 'multi-panel'],
+      ['feature_panel_linked', 'Linked Panels', 'webgpu_live_panel_linked.png', 'linked-panel'],
+      ['feature_text_block', 'Text Block', 'webgpu_live_text_block.png', 'text-block'],
+      ['feature_overlay_card', 'Overlay Card', 'webgpu_live_overlay_card.png', 'overlay-card'],
+      ['feature_guide_lines', 'Guide Lines', 'webgpu_live_guide_lines.png', 'guide-lines'],
+      ['feature_guide_spans', 'Guide Spans', 'webgpu_live_guide_spans.png', 'guide-spans'],
+      ['feature_bars_bands', 'Bars And Bands', 'webgpu_live_bars_bands.png', 'bars-bands'],
+      ['feature_controller_fly', 'Fly Controller', 'webgpu_live_controller_fly.png', 'fly-controller'],
+      [
+        'feature_controller_turntable',
+        'Turntable Controller',
+        'webgpu_live_controller_turntable.png',
+        'turntable-controller',
+      ],
+      [
+        'feature_controller_orbit_camera',
+        'Orbit Camera Controller',
+        'webgpu_live_controller_orbit_camera.png',
+        'orbit-camera-controller',
+      ],
+      [
+        'feature_sampled_field_2d',
+        '2D Sampled Field',
+        'webgpu_live_sampled_field_2d.png',
+        'sampled-field-2d',
+      ],
+      ['colormap_scale', 'Scalar Color Scale', 'webgpu_live_colormap_scale.png', 'colormap-scale'],
+      ['panel_background', 'Panel Background', 'webgpu_live_panel_background.png', 'panel-background'],
+    ];
+    for (const [id, label, filename, shortLabel] of promotedLiveRoutes) {
+      try {
+        const result = await smokeWasmPage(
+          page,
+          baseUrl,
+          `/examples/webgpu/live.html?id=${id}`,
+          `Rendered ${label}`,
+          join(artifactsDir, filename),
+        );
+        console.log(passLine(`live ${shortLabel}: ${result.initialStatus}`));
+      } catch (error) {
+        if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+          throw error;
+        }
+        console.log(skipLine(`WebGPU live ${shortLabel} smoke: headless WebGPU instance loss (${error.message})`));
+      }
+    }
     if (wasmBasic !== null) {
       console.log(passLine(`live basic: ${wasmBasic.initialStatus}; initial_frame=${wasmBasic.initialFrame}`));
     }

@@ -61,7 +61,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 41
+#define DVZ_WASM_API_SCENARIO_COUNT 54
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
@@ -90,8 +90,15 @@ DvzScenarioSpec dvz_example_axis_labels_scenario(void);
 DvzScenarioSpec dvz_example_basic_scene_scenario(void);
 DvzScenarioSpec dvz_example_builtin_shapes_2d_scenario(void);
 DvzScenarioSpec dvz_example_builtin_shapes_3d_scenario(void);
+DvzScenarioSpec dvz_example_bars_bands_scenario(void);
 DvzScenarioSpec dvz_example_colorbar_scenario(void);
+DvzScenarioSpec dvz_example_colormap_scale_scenario(void);
 DvzScenarioSpec dvz_example_compute_buffer_animation_scenario(void);
+DvzScenarioSpec dvz_example_controller_fly_scenario(void);
+DvzScenarioSpec dvz_example_controller_orbit_camera_scenario(void);
+DvzScenarioSpec dvz_example_controller_turntable_scenario(void);
+DvzScenarioSpec dvz_example_guide_lines_scenario(void);
+DvzScenarioSpec dvz_example_guide_spans_scenario(void);
 DvzScenarioSpec dvz_example_timer_animation_scenario(void);
 DvzScenarioSpec dvz_example_triangulation_polygon_scenario(void);
 DvzScenarioSpec dvz_example_picking_scenario(void);
@@ -99,7 +106,11 @@ DvzScenarioSpec dvz_example_image_probe_scenario(void);
 DvzScenarioSpec dvz_example_isolines_scenario(void);
 DvzScenarioSpec dvz_example_legend_categorical_scenario(void);
 DvzScenarioSpec dvz_example_obj_loading_scenario(void);
+DvzScenarioSpec dvz_example_overlay_card_scenario(void);
+DvzScenarioSpec dvz_example_panel_background_scenario(void);
 DvzScenarioSpec dvz_example_panel_grid_scenario(void);
+DvzScenarioSpec dvz_example_panel_linked_scenario(void);
+DvzScenarioSpec dvz_example_panel_multi_scenario(void);
 DvzScenarioSpec dvz_example_panel_single_scenario(void);
 DvzScenarioSpec dvz_example_panzoom_scenario(void);
 DvzScenarioSpec dvz_example_scalebar_scenario(void);
@@ -107,6 +118,8 @@ DvzScenarioSpec dvz_example_scalebar_units_scenario(void);
 DvzScenarioSpec dvz_example_selection_mesh_instances_scenario(void);
 DvzScenarioSpec dvz_example_selection_pixel_scenario(void);
 DvzScenarioSpec dvz_example_selection_sphere_scenario(void);
+DvzScenarioSpec dvz_example_sampled_field_2d_scenario(void);
+DvzScenarioSpec dvz_example_text_block_scenario(void);
 DvzScenarioSpec dvz_showcase_linked_probe_colorbar_scenario(void);
 DvzScenarioSpec dvz_showcase_gpu_particle_smoke_scenario(void);
 DvzScenarioSpec dvz_showcase_scientific_plotting_scenario(void);
@@ -464,6 +477,32 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_visual_glyph_scenario();
     case 40:
         return dvz_visual_labels_scenario();
+    case 41:
+        return dvz_example_panel_multi_scenario();
+    case 42:
+        return dvz_example_panel_linked_scenario();
+    case 43:
+        return dvz_example_text_block_scenario();
+    case 44:
+        return dvz_example_overlay_card_scenario();
+    case 45:
+        return dvz_example_guide_lines_scenario();
+    case 46:
+        return dvz_example_guide_spans_scenario();
+    case 47:
+        return dvz_example_bars_bands_scenario();
+    case 48:
+        return dvz_example_controller_fly_scenario();
+    case 49:
+        return dvz_example_controller_turntable_scenario();
+    case 50:
+        return dvz_example_controller_orbit_camera_scenario();
+    case 51:
+        return dvz_example_sampled_field_2d_scenario();
+    case 52:
+        return dvz_example_colormap_scale_scenario();
+    case 53:
+        return dvz_example_panel_background_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

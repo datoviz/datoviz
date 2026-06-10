@@ -14,16 +14,27 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/animation_tracks.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/axes_2d.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/axis_labels.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/bars_bands.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/basic_scene.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/builtin_shapes_2d.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/builtin_shapes_3d.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/colorbar.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/colormap_scale.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/compute_buffer_animation.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/controller_fly.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/controller_orbit_camera.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/controller_turntable.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/guide_lines.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/guide_spans.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/image_probe.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/isolines.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/legend_categorical.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/obj_loading.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/overlay_card.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/panel_background.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_grid.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/panel_linked.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/panel_multi.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_single.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panzoom.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/picking.c
@@ -32,6 +43,8 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_sphere.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/scalebar.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/scalebar_units.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/sampled_field_2d.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/text_block.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/timer_animation.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/triangulation_polygon.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/linked_probe_colorbar.c

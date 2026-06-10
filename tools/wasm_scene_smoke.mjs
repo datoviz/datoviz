@@ -1006,6 +1006,22 @@ function expectPanelScenarioStreamShape(stream, label, { minViewports = 1, point
   expectWriteCommands(stream, label);
 }
 
+function expectLinkedPanelScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  requireOk(commandsOf(stream, "SetViewport").length >= 2, `${label}: expected linked panel viewports`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 2, `${label}: expected linked panel scissors`);
+  expectPipeline(
+    stream,
+    `${label} paths`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.path",
+  );
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 2, `${label}: expected linked path draws`);
+  expectWriteCommands(stream, label);
+}
+
 function expectPanzoomScenarioStreamShape(stream, label) {
   expectPanelScenarioStreamShape(stream, label, { minViewports: 1, pointInstances: 64 });
 }
@@ -1065,6 +1081,113 @@ function expectAxisLabelsScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected guide or axis draw`);
   requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected label draws`);
   requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
+}
+
+function expectTextBlockScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  expectPipeline(
+    stream,
+    `${label} text`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected text draw`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
+}
+
+function expectOverlayCardScenarioStreamShape(stream, label) {
+  expectTextBlockScenarioStreamShape(stream, label);
+  expectPipeline(
+    stream,
+    `${label} overlay card`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.primitive",
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 3, `${label}: expected signal, card, and text draws`);
+}
+
+function expectGuideLineScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(
+    stream,
+    `${label} guides`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.segment",
+  );
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected guide line draw`);
+}
+
+function expectGuideSpanScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(
+    stream,
+    `${label} spans`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.primitive",
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected guide span draw`);
+}
+
+function expectBarsBandsScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(
+    stream,
+    `${label} bars and bands`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.primitive",
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected bar or band draw`);
+}
+
+function expectControllerMeshScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(
+    stream,
+    `${label} mesh`,
+    (pipeline) =>
+      pipeline.builtin_pipeline === "scene.mesh" ||
+      pipeline.builtin_pipeline === "scene.primitive",
+  );
+  requireOk(
+    commandsOf(stream, "Draw").length + commandsOf(stream, "DrawIndexed").length >= 1,
+    `${label}: expected mesh draw`,
+  );
+}
+
+function expectSampledField2DScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(
+    stream,
+    `${label} image`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.image",
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected image draw`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected field texture upload`);
+}
+
+function expectColormapScaleScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(
+    stream,
+    `${label} points`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.point",
+  );
+  expectDraw(stream, 6, 5, `${label} scalar points`);
+}
+
+function expectPanelBackgroundScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(
+    stream,
+    `${label} primitive`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.primitive",
+  );
+  requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected primitive draw`);
 }
 
 function expectLinkedProbeColorbarScenarioStreamShape(stream, label) {
@@ -1816,6 +1939,19 @@ try {
     "visual_text",
     "visual_glyph",
     "visual_labels",
+    "feature_panel_multi",
+    "feature_panel_linked",
+    "feature_text_block",
+    "feature_overlay_card",
+    "feature_guide_lines",
+    "feature_guide_spans",
+    "feature_bars_bands",
+    "feature_controller_fly",
+    "feature_controller_turntable",
+    "feature_controller_orbit_camera",
+    "feature_sampled_field_2d",
+    "feature_colormap_scale",
+    "feature_panel_background",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -2637,6 +2773,74 @@ try {
       "feature_axis_labels",
       "axis labels",
       (stream, label) => expectAxisLabelsScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_panel_multi",
+      "multi-panel",
+      (stream, label) => expectPanelScenarioStreamShape(stream, label, {
+        minViewports: 2,
+        pointInstances: 48,
+      }),
+    ],
+    [
+      "feature_panel_linked",
+      "linked-panel",
+      (stream, label) => expectLinkedPanelScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_text_block",
+      "text block",
+      (stream, label) => expectTextBlockScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_overlay_card",
+      "overlay card",
+      (stream, label) => expectOverlayCardScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_guide_lines",
+      "guide lines",
+      (stream, label) => expectGuideLineScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_guide_spans",
+      "guide spans",
+      (stream, label) => expectGuideSpanScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_bars_bands",
+      "bars bands",
+      (stream, label) => expectBarsBandsScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_controller_fly",
+      "fly controller",
+      (stream, label) => expectControllerMeshScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_controller_turntable",
+      "turntable controller",
+      (stream, label) => expectControllerMeshScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_controller_orbit_camera",
+      "orbit camera controller",
+      (stream, label) => expectControllerMeshScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_sampled_field_2d",
+      "sampled field 2d",
+      (stream, label) => expectSampledField2DScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_colormap_scale",
+      "colormap scale",
+      (stream, label) => expectColormapScaleScenarioStreamShape(stream, label),
+    ],
+    [
+      "feature_panel_background",
+      "panel background",
+      (stream, label) => expectPanelBackgroundScenarioStreamShape(stream, label),
     ],
   ];
   for (const [id, label, expectShape] of panelAndAxesScenarios) {

@@ -118,7 +118,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_panel_multi
       requirements:
         - panel-grid
         - multi-panel
@@ -137,7 +138,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_panel_linked
       requirements:
         - panel-grid
         - linked-panels
@@ -195,7 +197,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_sampled_field_2d
       requirements:
         - sampled-field
         - image
@@ -231,7 +234,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_text_block
       requirements:
         - text
         - glyph-atlas
@@ -248,7 +252,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_overlay_card
       requirements:
         - overlay
         - text
@@ -349,7 +354,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_controller_fly
       requirements:
         - controller
         - fly
@@ -367,7 +373,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_controller_turntable
       requirements:
         - controller
         - turntable
@@ -663,7 +670,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_guide_lines
       requirements:
         - segment
         - overlay
@@ -681,7 +689,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_guide_spans
       requirements:
         - primitive
         - overlay
@@ -699,7 +708,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_bars_bands
       requirements:
         - primitive
         - segment
@@ -794,12 +804,13 @@ examples:
     validation: smoke+interaction+screenshot
     data:
       kind: synthetic
-    portability: native-only
     webgpu:
-      status: webgpu-deferred
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=feature_controller_orbit_camera
       requirements:
         - controller
         - orbit-camera
+        - mesh
     agent_copy_safe: true
 
   - id: feature_visual_transform
@@ -1056,11 +1067,11 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=colormap_scale
       requirements:
         - colormap
-        - sampled-field
-        - image
+        - point
     agent_copy_safe: true
 
   - id: annotation_readout
@@ -1182,7 +1193,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=panel_background
       requirements:
         - panel-background
         - primitive

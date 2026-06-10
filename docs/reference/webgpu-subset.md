@@ -36,7 +36,8 @@ Supported visual and interaction families:
 - basic sphere visuals;
 - vector visuals lowered through segment/path draws;
 - 2D panzoom controller input;
-- one basic 3D sphere + textured mesh scene with camera and arcball controller input.
+- 3D arcball, fly, turntable, and orbit-camera controller examples lowered through the shared
+  scene/controller path.
 
 Supported browser pages:
 
@@ -51,11 +52,13 @@ Supported browser pages:
 - `examples/webgpu/examples.html?demo=wasm-image-probe`: sampled image pixel probe through the
   query/readback path;
 - `examples/webgpu/live.html?id=...`: public live gallery routes generated from canonical C
-  examples and portable C scenarios, currently covering 41 promoted examples including standalone
+  examples and portable C scenarios, currently covering 54 promoted examples including standalone
   point, pixel, marker, primitive, segment, path, image, mesh, sphere, text, glyph, and labels
-  visuals, panel single/grid basics, panzoom, path axes, axis labels, colorbar, scale bars,
-  categorical legend, annotation readout, linked probe/colorbar, scientific plotting, vector, wind
-  field, isolines, selection routes, compute buffer animation, and GPU particle smoke;
+  visuals, panel single/grid/multi/linked basics, panzoom, path axes, axis labels, text block,
+  overlay card, guide lines/spans, bars/bands, sampled-field/image color-scale examples, panel
+  background, colorbar, scale bars, categorical legend, annotation readout, fly/turntable/orbit
+  controller examples, linked probe/colorbar, scientific plotting, vector, wind field, isolines,
+  selection routes, compute buffer animation, and GPU particle smoke;
 - `examples/webgpu/fixtures.html`: DRP2 fixture dashboard for the pure browser WebGPU runner,
   retained runtime stress checks, and WASM scene smoke rows.
 
@@ -97,9 +100,9 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | Setup/update/frame resource model | active through split binary packets and retained browser runtime state |
 | WGSL shader modules | supported and required for portable browser execution |
 | Vulkan-specific modules and presentation | unsupported in WASM; native-only |
-| Scene visual parity | limited to point/pixel dense and buffer-backed positions, basic marker, segment/path cap-join controls, primitive, RGBA8/scalar image routes, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, basic sphere, and vector-lowered routes |
-| Controller parity | limited to panzoom and one 3D arcball proof |
-| Portable scenario host parity | first `feature_timer_animation` C scenario and browser frame-callback proof are current; broad example-host coverage remains an RC target |
+| Scene visual parity | limited to point/pixel dense and buffer-backed positions, basic marker, segment/path cap-join controls, primitive, RGBA8/scalar image routes, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, basic sphere, vector-lowered routes, and composed layout/annotation examples built from those families |
+| Controller parity | panzoom, arcball, fly, turntable, and orbit-camera examples are live; full native controller parity remains out of scope |
+| Portable scenario host parity | broad live-example coverage is current for the promoted RC subset; native-only host and app semantics remain outside WASM |
 | Compute-to-render parity | DRP2 fixture, native scene proof, `feature_compute_buffer_animation`, and `showcase_gpu_particle_smoke` browser-live routes are current |
 | Query/picking/readback scene parity | point and marker item picking, point hover, point selection, sphere selection, mesh instance selection, and one sampled image probe are browser-live |
 
@@ -138,8 +141,7 @@ The browser path intentionally does not support:
 
 Promote browser scene features in this order unless a release blocker changes the priority:
 
-1. promote panel/panzoom basics and axis/text/image/color-scale examples that reuse already-current
-   primitive, segment/path, image, glyph/text, and panzoom support;
+1. promote composed showcase routes after their component families have focused live proof;
 2. add richer labels, including unsigned label variants and palette/category updates;
 3. broaden vector/path parity, including path subpaths and stroke edge cases;
 4. add reduced volume rendering only after texture-3D memory and diagnostics are explicit.

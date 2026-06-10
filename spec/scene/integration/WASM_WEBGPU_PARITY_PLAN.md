@@ -34,13 +34,15 @@ Current source-of-truth files:
 
 As of 2026-06-10:
 
-1. Manifest counts: `36 webgpu-live`, `45 webgpu-planned`, `12 webgpu-deferred`,
+1. Manifest counts: `54 webgpu-live`, `28 webgpu-planned`, `11 webgpu-deferred`,
    `13 native-only`, and `8` lab-only entries without WebGPU status.
 2. Live routes cover basic scene, timer animation, triangulation, builtin shapes 2D/3D, isolines,
    animation tracks, OBJ loading, picking, pixel/sphere/mesh selection, image probe, compute buffer
-   animation, GPU particle smoke, standalone visual-family routes, colorbar, scale bars,
-   categorical legend, annotation readout, linked probe/colorbar, scientific plotting, vector, and
-   wind field.
+   animation, GPU particle smoke, standalone visual-family routes, panel single/grid/multi/linked
+   basics, panzoom, axes, text block, overlay card, guide lines/spans, bars/bands, sampled-field
+   and colormap-scale routes, panel background, fly/turntable/orbit controller examples, colorbar,
+   scale bars, categorical legend, annotation readout, linked probe/colorbar, scientific plotting,
+   vector, and wind field.
 3. The browser runtime consumes artifact-backed split DRP2 setup/update/frame packets. JSON is
    debug/fixture-only.
 4. Query/readback is intentionally narrow: point/marker picking, point hover/selection,
@@ -54,8 +56,8 @@ Current browser-supported building blocks:
 | --- | --- |
 | Transport | artifact-backed split DRP2 packets, borrowed spans copied/executed before release |
 | Visuals | point, pixel, basic marker, segment/path cap-join subset, primitive, RGBA8/scalar image routes, glyph/text, labels, basic/textured/material mesh, sphere, vector lowered through segment/path |
-| Layout/annotations | axes/ticks/grid labels, colorbar, scale bar, categorical legend, annotation readout |
-| Interaction | panzoom, one arcball proof, frame callbacks, narrow async query/readback |
+| Layout/annotations | axes/ticks/grid labels, multi/linked panels, colorbar, scale bar, categorical legend, annotation readout, text block, overlay card, guide lines/spans, bars/bands |
+| Interaction | panzoom, arcball, fly, turntable, orbit-camera examples, frame callbacks, narrow async query/readback |
 | Compute | scene buffers, storage buffers, dispatch, `ResourceBarrier`, compute-to-vertex reuse |
 | Runtime | WebGPU fixture runner, semantic negative diagnostics, retained browser runtime lifecycle |
 
@@ -117,14 +119,18 @@ Current: standalone browser routes exist for every already-current family:
 
 Keep these routes in smoke coverage while moving promotion effort to composed examples.
 
-### 3. Panel And Annotation Basics
+### 3. Panel, Annotation, And Controller Basics
 
-Promote examples that compose current primitives:
+Current: panel, annotation, and requested controller examples that compose current primitives are
+live:
 
 `feature_panel_single`, `feature_panel_grid`, `feature_panel_multi`, `feature_panel_linked`,
-`feature_panzoom`, `path_axes_2d`, `feature_axis_labels`, `feature_sampled_field_2d`,
-`colormap_scale`, `feature_text_block`, `feature_overlay_card`, `feature_guide_lines`,
-`feature_guide_spans`, and `feature_bars_bands`.
+`feature_panzoom`, `path_axes_2d`, `feature_axis_labels`, `feature_text_block`,
+`feature_overlay_card`, `feature_guide_lines`, `feature_guide_spans`, `feature_bars_bands`,
+`feature_controller_fly`, `feature_controller_turntable`, and
+`feature_controller_orbit_camera`.
+
+The next RC promotion pass should move to composed showcases.
 
 ### 4. Composed Showcase Pass
 
@@ -139,9 +145,9 @@ stable enough.
 
 Keep these out of the RC browser push unless they become release blockers:
 
-native GUI/capture, video/export, GLFW/app, raw vklite/DRP2 examples, CUDA, dense point-cloud
-GUI/fly workflows, volume-heavy examples, splats, marker symbol-set atlas parity,
-orbit-camera-only paths, and postprocess techniques.
+native GUI/capture, video/export, GLFW/app, raw vklite/DRP2 examples, CUDA, dense point-cloud GUI
+workflows, volume-heavy examples, splats, marker symbol-set atlas parity, and postprocess
+techniques.
 
 
 ## Capability Matrix
@@ -149,10 +155,10 @@ orbit-camera-only paths, and postprocess techniques.
 | Area | RC status | Next action |
 | --- | --- | --- |
 | Core visual families | current | promote standalone gallery examples for every current family |
-| Annotations/layout | current/rc-target | broaden panel, axes, text, guide, overlay, and color-scale routes |
+| Annotations/layout | current/rc-target | promote composed showcases |
 | Query/readback | current narrow slice | keep picking/selection/probe evidence; defer full query parity |
 | Compute | compact proof and particle route current | keep particle budget/evidence current |
-| Controllers | panzoom/arcball current | keep fly/turntable/orbit camera deferred unless needed by a live showcase |
+| Controllers | panzoom/arcball/fly/turntable/orbit examples current | keep broader native controller parity deferred |
 | Volume/splat/postprocess | deferred | keep diagnostics explicit; do not expand before RC unless required |
 
 
