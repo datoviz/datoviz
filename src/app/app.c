@@ -92,6 +92,8 @@
 #define DVZ_APP_CAPTURE_BACKEND_SIZE 64
 #define DVZ_APP_CAPTURE_DEFAULT_FPS 60.0
 #define DVZ_APP_VIEW_POST_CAPACITY 64
+#define DVZ_APP_MIN_LAYOUT_WIDTH  200u
+#define DVZ_APP_MIN_LAYOUT_HEIGHT 200u
 
 
 
@@ -950,6 +952,66 @@ static uint32_t _view_round_size(float value)
     if (value >= (float)UINT32_MAX)
         return UINT32_MAX;
     return (uint32_t)(value + 0.5f);
+}
+
+
+
+/**
+ * Clamp a view size for retained figure layout resolution.
+ *
+ * @param value literal view logical size
+ * @param minimum minimum retained layout size
+ * @return clamped layout size
+ */
+static uint32_t _view_layout_dimension(uint32_t value, uint32_t minimum)
+{
+    if (value == 0)
+        return 0;
+    return value < minimum ? minimum : value;
+}
+
+
+
+/**
+ * Return whether a figure uses retained layout machinery that needs a minimum solve size.
+ *
+ * @param figure figure to inspect
+ * @return whether app/view sizing should clamp retained layout dimensions
+ */
+static bool _view_figure_needs_layout_clamp(const DvzFigure* figure)
+{
+    ANN(figure);
+    if (figure->grid_count > 0)
+        return true;
+    for (uint32_t i = 0; i < figure->panel_count; i++)
+    {
+        if (figure->panels[i].layout_reserve_enabled)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Synchronize a figure with the clamped retained layout size for one view.
+ *
+ * @param win view owning the figure
+ */
+static void _view_sync_figure_layout_size(DvzView* win)
+{
+    ANN(win);
+    if (win->figure == NULL || win->logical_width == 0 || win->logical_height == 0)
+        return;
+
+    uint32_t layout_width = win->logical_width;
+    uint32_t layout_height = win->logical_height;
+    if (_view_figure_needs_layout_clamp(win->figure))
+    {
+        layout_width = _view_layout_dimension(layout_width, DVZ_APP_MIN_LAYOUT_WIDTH);
+        layout_height = _view_layout_dimension(layout_height, DVZ_APP_MIN_LAYOUT_HEIGHT);
+    }
+    dvz_figure_resize(win->figure, layout_width, layout_height);
 }
 
 
@@ -2433,8 +2495,7 @@ static void _app_sync_figure_size(DvzView* win, const DvzStreamFrame* frame)
     ANN(frame);
 
     _view_refresh_size_state(win, frame);
-    if (win->logical_width > 0 && win->logical_height > 0)
-        dvz_figure_resize(win->figure, win->logical_width, win->logical_height);
+    _view_sync_figure_layout_size(win);
 }
 
 
@@ -3512,8 +3573,7 @@ static void _view_apply_desc_state(DvzView* win, const DvzViewDesc* desc)
     _view_update_size_state(
         win, desc->logical_width, desc->logical_height, desc->framebuffer_width,
         desc->framebuffer_height, desc->device_scale, desc->device_scale);
-    if (win->figure != NULL && win->logical_width > 0 && win->logical_height > 0)
-        dvz_figure_resize(win->figure, win->logical_width, win->logical_height);
+    _view_sync_figure_layout_size(win);
 }
 
 
@@ -4013,8 +4073,7 @@ int dvz_view_emit_resize(
     _view_update_size_state(
         win, window_width, window_height, framebuffer_width, framebuffer_height, content_scale_x,
         content_scale_y);
-    if (win->figure != NULL && win->logical_width > 0 && win->logical_height > 0)
-        dvz_figure_resize(win->figure, win->logical_width, win->logical_height);
+    _view_sync_figure_layout_size(win);
     dvz_view_request_frame(win);
     return 0;
 #else
@@ -4911,7 +4970,7 @@ int dvz_view_resize_scaled(
     _view_update_size_state(
         win, logical_width, logical_height, framebuffer_width, framebuffer_height, device_scale,
         device_scale);
-    dvz_figure_resize(win->figure, logical_width, logical_height);
+    _view_sync_figure_layout_size(win);
     dvz_view_request_frame(win);
     return 0;
 #else

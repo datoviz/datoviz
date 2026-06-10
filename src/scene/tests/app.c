@@ -1413,6 +1413,95 @@ int test_app_view_desc_offscreen_exact_pixels(TstContext* suite, const TstCase* 
 
 
 
+int test_app_offscreen_small_view_clamps_layout(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
+    AT(figure != NULL);
+
+    DvzGrid* grid = dvz_figure_grid(figure, 1, 1);
+    AT(grid != NULL);
+    DvzPanel* panel = dvz_grid_panel(grid, 0, 0);
+    AT(panel != NULL);
+    AT(dvz_panel_set_layout_reserve(
+        panel, &(DvzPanelLayoutReserve){.left = 0.35f, .right = 0.20f, .bottom = 0.30f,
+                                        .top = 0.15f}));
+
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+    vec3 positions[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor colors[1] = {{255, 255, 255, 255}};
+    float sizes[1] = {16.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 1) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 1) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 1) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_small_view_clamps_layout skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+
+    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
+    desc.logical_width = 120;
+    desc.logical_height = 90;
+    DvzView* win = dvz_view(app, figure, &desc);
+    AT(win != NULL);
+
+    uint32_t logical_width = 0;
+    uint32_t logical_height = 0;
+    uint32_t framebuffer_width = 0;
+    uint32_t framebuffer_height = 0;
+    uint32_t figure_width = 0;
+    uint32_t figure_height = 0;
+    dvz_view_logical_size(win, &logical_width, &logical_height);
+    dvz_view_framebuffer_size(win, &framebuffer_width, &framebuffer_height);
+    dvz_figure_size(figure, &figure_width, &figure_height);
+    AT(logical_width == 120);
+    AT(logical_height == 90);
+    AT(framebuffer_width == 120);
+    AT(framebuffer_height == 90);
+    AT(figure_width == 200);
+    AT(figure_height == 200);
+
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    uint32_t capture_width = 0;
+    uint32_t capture_height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(dvz_view_canvas(win), &capture_width, &capture_height, &rgba) == 0);
+    AT(capture_width == 120);
+    AT(capture_height == 90);
+    dvz_free(rgba);
+
+    AT(dvz_view_resize(win, 80, 80) == 0);
+    dvz_view_logical_size(win, &logical_width, &logical_height);
+    dvz_view_framebuffer_size(win, &framebuffer_width, &framebuffer_height);
+    dvz_figure_size(figure, &figure_width, &figure_height);
+    AT(logical_width == 80);
+    AT(logical_height == 80);
+    AT(framebuffer_width == 80);
+    AT(framebuffer_height == 80);
+    AT(figure_width == 200);
+    AT(figure_height == 200);
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 /**
  * Ensure on-demand scheduling sees retained scene mutations without an explicit frame request.
  *
@@ -6908,6 +6997,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen);
     TST_SCENE_APP_SHARED_CASE(test_app_view_desc_offscreen_scale);
     TST_SCENE_APP_SHARED_CASE(test_app_view_desc_offscreen_exact_pixels);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_small_view_clamps_layout);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_scheduler_sees_scene_dirty_without_request);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_frame_callback_enables_continuous_scheduler);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_query_requests_notify_hosted_callback);

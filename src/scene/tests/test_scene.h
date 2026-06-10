@@ -410,6 +410,8 @@ int test_app_view_desc_offscreen_scale(TstContext* suite, const TstCase* item);
 
 int test_app_view_desc_offscreen_exact_pixels(TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_small_view_clamps_layout(TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
     TstContext* suite, const TstCase* item);
 
