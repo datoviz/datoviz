@@ -2006,7 +2006,7 @@ gallery-screenshots filter="": && gallery
     @python tools/build_screenshots.py {{filter}}
 
 
-# Capture v0.4 C gallery screenshots into docs/images/gallery/.
+# Capture v0.4 C gallery screenshots into data/gallery/v0.4/.
 [positional-arguments]
 capture-gallery *args: build
     @python3 tools/capture_gallery.py "$@"

@@ -96,6 +96,7 @@ build*/
 cleaned
 dist
 docs/gallery/
+docs/images/gallery/
 experimental
 joblib
 nightly

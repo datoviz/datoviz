@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capture v0.4 C gallery screenshots into the MkDocs media tree."""
+"""Capture v0.4 C gallery screenshots into the data submodule."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "examples/c/MANIFEST.yaml"
 DEFAULT_BUILD_DIR = ROOT / "build"
-DEFAULT_IMAGE_DIR = ROOT / "docs/images/gallery"
+DEFAULT_IMAGE_DIR = ROOT / "data/gallery/v0.4"
 DEFAULT_CACHE_DIR = ROOT / "build/gallery-cache/native"
 PUBLIC_LANES = ("visuals", "features", "composites", "showcases")
 GLOBAL_FINGERPRINT_PATHS = (

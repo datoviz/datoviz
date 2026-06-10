@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check native gallery screenshots against the manifest and cache metadata."""
+"""Check native gallery screenshots in the data submodule against manifest and cache metadata."""
 
 from __future__ import annotations
 
