@@ -1165,10 +1165,11 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=technique_depth_test
       requirements:
         - depth-test
-        - mesh
+        - point
     agent_copy_safe: true
 
   - id: alpha_blending
@@ -1185,7 +1186,7 @@ examples:
       status: webgpu-planned
       requirements:
         - alpha-blending
-        - point
+        - primitive
         - marker
     agent_copy_safe: true
 

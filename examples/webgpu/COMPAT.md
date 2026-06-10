@@ -15,7 +15,7 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
-now has 62 promoted routes backed by canonical C examples or portable C scenarios:
+now has 63 promoted routes backed by canonical C examples or portable C scenarios:
 `feature_basic_scene`, `feature_timer_animation`, `feature_triangulation_polygon`,
 `feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`, `feature_isolines`,
 `feature_animation_tracks`, `feature_compute_buffer_animation`, `feature_obj_loading`,
@@ -30,10 +30,10 @@ now has 62 promoted routes backed by canonical C examples or portable C scenario
 `feature_controller_orbit_camera`, `feature_sampled_field_2d`, `colormap_scale`,
 `panel_background`, `composite_polygon`, `linked_panels_axes_panzoom`,
 `scalebar_measurement_workflow`, `showcase_surface_grid`, `us_state_choropleth`,
-`feature_update_partial`, `feature_update_visual_data`, `feature_visibility`, `visual_point`,
-`visual_pixel`, `visual_marker`, `visual_primitive`, `visual_segment`, `visual_path`,
-`visual_image`, `visual_mesh`, `sphere_impostor`, `visual_text`, `visual_glyph`, and
-`visual_labels`.
+`feature_update_partial`, `feature_update_visual_data`, `feature_visibility`,
+`technique_depth_test`, `visual_point`, `visual_pixel`, `visual_marker`, `visual_primitive`,
+`visual_segment`, `visual_path`, `visual_image`, `visual_mesh`, `sphere_impostor`, `visual_text`,
+`visual_glyph`, and `visual_labels`.
 
 Remaining RC promotions are:
 
@@ -101,6 +101,14 @@ scenario frame callbacks and visibility-driven draw changes. `just webgpu-browse
 successfully in this shell with the known headless external WebGPU instance-loss skip at
 `QueueSubmit` for all three new animated live routes; native PNG smokes passed for
 `features/update_partial`, `features/update_visual_data`, and `features/visibility`.
+
+Recorded local depth-test promotion proof on 2026-06-10: `just wasm-scene-smoke` passed with
+`technique_depth_test` registered in the WASM scenario table and covered by targeted point
+depth-stencil pipeline checks for depth-enabled and depth-disabled draws. `just
+webgpu-browser-smoke` exited successfully in this shell with the known headless external WebGPU
+instance-loss skip at `QueueSubmit` for the new live route; `just example-c
+features/technique_depth_test --png` passed natively. `alpha_blending` remains planned because its
+current scene stream does not emit a color-target blend state for the primitive pipeline.
 
 
 ## Fixture Dashboard

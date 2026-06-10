@@ -1333,6 +1333,29 @@ function expectVisibilityScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "WriteBuffer").length >= 6, `${label}: expected visible point uploads`);
 }
 
+function expectDepthTestScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  const depthOn = expectPipeline(
+    stream,
+    `${label} depth-enabled point`,
+    (pipeline) =>
+      pipeline.builtin_pipeline === "scene.point" &&
+      pipeline.depth_stencil?.depth_write_enabled === true,
+  );
+  expectDepthPipeline(depthOn, `${label} depth-enabled point`);
+  const depthOff = expectPipeline(
+    stream,
+    `${label} depth-disabled point`,
+    (pipeline) =>
+      pipeline.builtin_pipeline === "scene.point" &&
+      pipeline.depth_stencil?.depth_write_enabled === false,
+  );
+  expectDepthPipeline(depthOff, `${label} depth-disabled point`, false, "always");
+  requireOk(commandsOf(stream, "SetViewport").length >= 2, `${label}: expected comparison panel viewports`);
+  requireOk(commandsOf(stream, "Draw").length >= 2, `${label}: expected point draws`);
+}
+
 function expectLinkedProbeColorbarScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -2103,6 +2126,7 @@ try {
     "feature_update_partial",
     "feature_update_visual_data",
     "feature_visibility",
+    "technique_depth_test",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3032,6 +3056,11 @@ try {
       "feature_visibility",
       "visual visibility",
       (stream, label) => expectVisibilityScenarioStreamShape(stream, label),
+    ],
+    [
+      "technique_depth_test",
+      "depth test",
+      (stream, label) => expectDepthTestScenarioStreamShape(stream, label),
     ],
   ];
   for (const [id, label, expectShape] of panelAndAxesScenarios) {

@@ -34,7 +34,7 @@ Current source-of-truth files:
 
 As of 2026-06-10:
 
-1. Manifest counts: `62 webgpu-live`, `20 webgpu-planned`, `11 webgpu-deferred`,
+1. Manifest counts: `63 webgpu-live`, `19 webgpu-planned`, `11 webgpu-deferred`,
    `13 native-only`, and `8` lab-only entries without WebGPU status.
 2. Live routes cover basic scene, timer animation, triangulation, builtin shapes 2D/3D, isolines,
    animation tracks, OBJ loading, picking, pixel/sphere/mesh selection, image probe, compute buffer
@@ -43,7 +43,8 @@ As of 2026-06-10:
    and colormap-scale routes, panel background, fly/turntable/orbit controller examples, colorbar,
    scale bars, categorical legend, annotation readout, linked probe/colorbar, scientific plotting,
    vector, wind field, polygon composite, linked panels with axes, scale-bar measurement workflow,
-   surface-grid showcase, U.S. state choropleth, and retained data update/visibility routes.
+   surface-grid showcase, U.S. state choropleth, retained data update/visibility routes, and
+   depth-test route.
 3. The browser runtime consumes artifact-backed split DRP2 setup/update/frame packets. JSON is
    debug/fixture-only.
 4. Query/readback is intentionally narrow: point/marker picking, point hover/selection,
@@ -60,6 +61,7 @@ Current browser-supported building blocks:
 | Layout/annotations | axes/ticks/grid labels, multi/linked panels, colorbar, scale bar, categorical legend, annotation readout, text block, overlay card, guide lines/spans, bars/bands |
 | Interaction | panzoom, arcball, fly, turntable, orbit-camera examples, frame callbacks, narrow async query/readback |
 | Dynamic retained state | same-shape visual data updates, partial buffer updates, visual visibility changes |
+| Depth state | basic point depth-test on/off comparison |
 | Compute | scene buffers, storage buffers, dispatch, `ResourceBarrier`, compute-to-vertex reuse |
 | Runtime | WebGPU fixture runner, semantic negative diagnostics, retained browser runtime lifecycle |
 

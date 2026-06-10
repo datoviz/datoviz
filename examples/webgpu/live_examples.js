@@ -210,6 +210,11 @@ export const LIVE_EXAMPLES = [
     animate: true,
   },
   {
+    id: "technique_depth_test",
+    label: "Depth Test Toggle",
+    scenarioId: "technique_depth_test",
+  },
+  {
     id: "feature_panel_multi",
     label: "Multiple Panels",
     scenarioId: "feature_panel_multi",

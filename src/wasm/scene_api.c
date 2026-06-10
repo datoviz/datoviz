@@ -61,7 +61,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 62
+#define DVZ_WASM_API_SCENARIO_COUNT 63
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
@@ -124,6 +124,7 @@ DvzScenarioSpec dvz_example_selection_pixel_scenario(void);
 DvzScenarioSpec dvz_example_selection_sphere_scenario(void);
 DvzScenarioSpec dvz_example_sampled_field_2d_scenario(void);
 DvzScenarioSpec dvz_example_text_block_scenario(void);
+DvzScenarioSpec dvz_example_depth_test_scenario(void);
 DvzScenarioSpec dvz_showcase_linked_probe_colorbar_scenario(void);
 DvzScenarioSpec dvz_showcase_gpu_particle_smoke_scenario(void);
 DvzScenarioSpec dvz_showcase_linked_panel_axes_scenario(void);
@@ -527,6 +528,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_example_update_visual_data_scenario();
     case 61:
         return dvz_example_visibility_scenario();
+    case 62:
+        return dvz_example_depth_test_scenario();
     default:
         return (DvzScenarioSpec){0};
     }
