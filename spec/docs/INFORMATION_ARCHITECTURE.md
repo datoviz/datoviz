@@ -61,6 +61,34 @@ for each public visual or feature is a minimal example. How-to pages should grou
 tutorials should wait until the examples they teach are stable.
 
 
+## Live WebGPU Embeds
+
+Live WebGPU examples are a separate runtime surface, not ordinary documentation content. They load
+WASM, WebGPU JavaScript, GPU resources, canvas state, route-specific scenario data, and browser
+event handling. Keep that runtime isolated from MkDocs pages.
+
+Use this structure for public gallery examples:
+
+1. gallery index pages stay screenshot-first and link to detail pages;
+2. detail pages may embed one lazy live WebGPU iframe when the manifest marks the route
+   `webgpu-live`;
+3. every embedded iframe must also have a standalone link to the same route;
+4. browser JavaScript remains host glue for the canonical C example or portable C scenario;
+5. generated route checks must verify that iframe and standalone links resolve under the built site.
+
+The canonical route shape is:
+
+```text
+examples/webgpu/live.html?id=<example-id>
+```
+
+Do not inline the WebGPU runtime directly into generated Markdown pages. Inline integration would
+couple MkDocs rendering to the browser runtime, make ordinary documentation pages heavier, and make
+runtime failures more likely to break page rendering. Iframes are the default boundary because they
+give the WebGPU route its own document, scripts, canvas, query parameters, permissions, and
+debuggable standalone URL.
+
+
 ## Legacy And Unlisted Docs
 
 The current MkDocs configuration excludes legacy or out-of-scope files from the built v0.4 site:

@@ -56,3 +56,22 @@ this:
 
 Use normal `<img>` and `<video>` elements rather than CSS background images so assets can have alt
 text, lazy-loading behavior, validation checks, and useful link previews.
+
+
+## Live WebGPU Examples
+
+Generated gallery detail pages may embed one live WebGPU route in an iframe. This is intentional:
+the WebGPU runtime owns a separate document with its own WASM, scripts, canvas state, query string,
+GPU resources, and browser event handling. The docs page should remain normal MkDocs HTML.
+
+Do not put live WebGPU iframes on gallery index cards. Use screenshots there. On detail pages, keep
+both the iframe and a standalone link to:
+
+```text
+examples/webgpu/live.html?id=<example-id>
+```
+
+When changing route generation, build the site and verify the rendered HTML resolves to
+`/examples/webgpu/live.html`, not a path under `/examples/gallery/`. Raw HTML links and iframe
+sources are not rewritten by MkDocs in the same way as Markdown links, so compute their relative
+paths against the final pretty URL directory.
