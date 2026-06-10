@@ -1999,7 +1999,8 @@ examples:
     data:
       kind: prepared
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=us_state_choropleth
       requirements:
         - composite
         - polygon-set

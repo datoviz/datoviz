@@ -187,6 +187,11 @@ export const LIVE_EXAMPLES = [
     scenarioId: "showcase_surface_grid",
   },
   {
+    id: "us_state_choropleth",
+    label: "U.S. State Choropleth",
+    scenarioId: "us_state_choropleth",
+  },
+  {
     id: "feature_panel_multi",
     label: "Multiple Panels",
     scenarioId: "feature_panel_multi",

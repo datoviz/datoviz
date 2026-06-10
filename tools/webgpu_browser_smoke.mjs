@@ -1106,6 +1106,12 @@ async function main() {
         'scalebar-measurement',
       ],
       ['showcase_surface_grid', 'Surface Grid', 'webgpu_live_surface_grid.png', 'surface-grid'],
+      [
+        'us_state_choropleth',
+        'U.S. State Choropleth',
+        'webgpu_live_us_state_choropleth.png',
+        'us-state-choropleth',
+      ],
     ];
     for (const [id, label, filename, shortLabel] of promotedLiveRoutes) {
       try {

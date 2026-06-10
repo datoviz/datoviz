@@ -1282,6 +1282,33 @@ function expectSurfaceGridScenarioStreamShape(stream, label) {
   );
 }
 
+function expectChoroplethScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(
+    stream,
+    `${label} polygon fill`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.primitive",
+  );
+  expectPipeline(
+    stream,
+    `${label} polygon stroke`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.path",
+  );
+  expectPipeline(
+    stream,
+    `${label} labels`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
+  );
+  requireOk(commandsOf(stream, "SetViewport").length >= 1, `${label}: expected viewport command`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 1, `${label}: expected scissor command`);
+  requireOk(
+    commandsOf(stream, "Draw").length + commandsOf(stream, "DrawIndexed").length >= 4,
+    `${label}: expected polygon, colorbar, and label draws`,
+  );
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
+}
+
 function expectLinkedProbeColorbarScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -2048,6 +2075,7 @@ try {
     "linked_panels_axes_panzoom",
     "scalebar_measurement_workflow",
     "showcase_surface_grid",
+    "us_state_choropleth",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -2957,6 +2985,11 @@ try {
       "showcase_surface_grid",
       "surface grid",
       (stream, label) => expectSurfaceGridScenarioStreamShape(stream, label),
+    ],
+    [
+      "us_state_choropleth",
+      "us state choropleth",
+      (stream, label) => expectChoroplethScenarioStreamShape(stream, label),
     ],
   ];
   for (const [id, label, expectShape] of panelAndAxesScenarios) {

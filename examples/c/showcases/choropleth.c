@@ -114,6 +114,14 @@ typedef struct ChoroplethState
 
 
 /*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_showcase_us_state_choropleth_scenario(void);
+
+
+
+/*************************************************************************************************/
 /*  Bundle loading                                                                               */
 /*************************************************************************************************/
 
@@ -772,7 +780,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _choropleth_scenario(void)
+DvzScenarioSpec dvz_showcase_us_state_choropleth_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "us_state_choropleth",
@@ -798,8 +806,10 @@ static DvzScenarioSpec _choropleth_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _choropleth_scenario();
+    DvzScenarioSpec spec = dvz_showcase_us_state_choropleth_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

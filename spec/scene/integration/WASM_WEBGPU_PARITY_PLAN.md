@@ -34,7 +34,7 @@ Current source-of-truth files:
 
 As of 2026-06-10:
 
-1. Manifest counts: `58 webgpu-live`, `24 webgpu-planned`, `11 webgpu-deferred`,
+1. Manifest counts: `59 webgpu-live`, `23 webgpu-planned`, `11 webgpu-deferred`,
    `13 native-only`, and `8` lab-only entries without WebGPU status.
 2. Live routes cover basic scene, timer animation, triangulation, builtin shapes 2D/3D, isolines,
    animation tracks, OBJ loading, picking, pixel/sphere/mesh selection, image probe, compute buffer
@@ -43,7 +43,7 @@ As of 2026-06-10:
    and colormap-scale routes, panel background, fly/turntable/orbit controller examples, colorbar,
    scale bars, categorical legend, annotation readout, linked probe/colorbar, scientific plotting,
    vector, wind field, polygon composite, linked panels with axes, scale-bar measurement workflow,
-   and surface-grid showcase.
+   surface-grid showcase, and U.S. state choropleth.
 3. The browser runtime consumes artifact-backed split DRP2 setup/update/frame packets. JSON is
    debug/fixture-only.
 4. Query/readback is intentionally narrow: point/marker picking, point hover/selection,
@@ -137,14 +137,13 @@ Keep these routes in smoke coverage while finishing the remaining composed/data-
 
 Current: synthetic composed showcase routes that reuse current primitives are live:
 
-`composite_polygon`, `linked_panels_axes_panzoom`, `scalebar_measurement_workflow`, and
-`showcase_surface_grid`.
+`composite_polygon`, `linked_panels_axes_panzoom`, `scalebar_measurement_workflow`,
+`showcase_surface_grid`, and `us_state_choropleth`.
 
 Remaining planned composed/data-backed routes:
 
-`us_state_choropleth`, `textured_terrain_or_planet`, `protein_arcball_viewer`, and
-`showcase_embedding_atlas` if data packaging, query/readback, and overlay behavior are stable
-enough.
+`textured_terrain_or_planet`, `protein_arcball_viewer`, and `showcase_embedding_atlas` if data
+packaging, query/readback, and overlay behavior are stable enough.
 
 ### 5. Explicit Deferrals
 
