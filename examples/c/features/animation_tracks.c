@@ -26,6 +26,7 @@
 
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -260,6 +261,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (panel_camera == NULL)
         return false;
 
+    if (!example_add_xz_reference_grid(panel, -0.32f, 4.0f))
+        return false;
     if (!_add_animated_cube(ctx, panel, state))
         return false;
     if (!_add_camera_hover(ctx, panel_camera, state))

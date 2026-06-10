@@ -101,6 +101,8 @@ bool example_mesh_geometry(DvzVisual* visual, const DvzGeometry* geometry);
 bool example_panel_pointer_position(
     const DvzPanel* panel, const DvzPointerEvent* event, double* out_x, double* out_y);
 
+bool example_add_xz_reference_grid(DvzPanel* panel, float origin_y, float size);
+
 DvzVisual* example_graphite_cyan_cube_mesh(
     DvzScene* scene,
     double size,

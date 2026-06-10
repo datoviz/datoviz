@@ -126,6 +126,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (panel == NULL)
         return false;
     example_graphite_cyan_set_panel_background(panel);
+    if (!example_add_xz_reference_grid(panel, -0.55f, 5.0f))
+        return false;
     if (!_add_fly_cube(ctx->scene, panel, &state->geometry))
         return false;
 
@@ -141,6 +143,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     desc.up[1] = 0.0f;
     desc.up[2] = 1.0f;
     desc.speed = 0.70f;
+    desc.look_speed = 0.45f;
 
     DvzController* controller = dvz_fly(ctx->scene, &desc);
     if (controller == NULL)

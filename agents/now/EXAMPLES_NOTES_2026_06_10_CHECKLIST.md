@@ -46,12 +46,12 @@ Validation: `git diff --check`, `just build`, focused `just test panzoom`, `just
 Validation: `git diff --check`, `just build`, `just test panzoom_arcball` or narrower controller
 tests when available, plus changed-example build/smoke where supported.
 
-- [ ] `features/animation_tracks`: add an XZ reference grid.
-- [ ] `features/controller_arcball`: add an XZ reference grid.
-- [ ] `features/controller_orbit_camera`: add an XZ reference grid.
-- [ ] `features/controller_turntable`: add an XZ reference grid.
-- [ ] `features/controller_fly`: reduce left-drag look sensitivity with `DvzFlyDesc.look_speed`.
-- [ ] `features/reference_grid`: place the cube directly on the existing finite grid plane.
+- [x] `features/animation_tracks`: add an XZ reference grid.
+- [x] `features/controller_arcball`: add an XZ reference grid.
+- [x] `features/controller_orbit_camera`: add an XZ reference grid.
+- [x] `features/controller_turntable`: add an XZ reference grid.
+- [x] `features/controller_fly`: reduce left-drag look sensitivity with `DvzFlyDesc.look_speed`.
+- [x] `features/reference_grid`: place the cube directly on the existing finite grid plane.
 
 
 ## Linked Panel And Technique Examples

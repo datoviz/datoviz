@@ -126,6 +126,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (panel == NULL)
         return false;
     example_graphite_cyan_set_panel_background(panel);
+    if (!example_add_xz_reference_grid(panel, -0.58f, 4.25f))
+        return false;
     if (!_add_turntable_cube(ctx->scene, panel, &state->geometry))
         return false;
 

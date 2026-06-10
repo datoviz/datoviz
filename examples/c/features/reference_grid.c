@@ -57,7 +57,7 @@ typedef struct ReferenceGridState
 /*************************************************************************************************/
 
 /**
- * Add one lit cube mesh above the reference grid.
+ * Add one lit cube mesh on the reference grid.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
@@ -150,7 +150,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzReferenceGridDesc grid = dvz_reference_grid_desc();
     grid.plane = DVZ_REFERENCE_GRID_XZ;
-    grid.origin[1] = -0.62f;
+    grid.origin[1] = -0.50f;
     grid.size[0] = 4.0f;
     grid.size[1] = 4.0f;
     grid.spacing = 0.25f;

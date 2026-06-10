@@ -334,6 +334,42 @@ bool example_panel_pointer_position(
 
 
 /**
+ * Add a finite XZ reference grid using the shared example palette.
+ *
+ * @param panel target panel
+ * @param origin_y grid plane Y coordinate
+ * @param size grid side length in world units
+ * @return true when the grid was created
+ */
+bool example_add_xz_reference_grid(DvzPanel* panel, float origin_y, float size)
+{
+    if (panel == NULL || size <= 0.0f)
+        return false;
+
+    DvzReferenceGridDesc grid = dvz_reference_grid_desc();
+    grid.plane = DVZ_REFERENCE_GRID_XZ;
+    grid.origin[0] = 0.0f;
+    grid.origin[1] = origin_y;
+    grid.origin[2] = 0.0f;
+    grid.size[0] = size;
+    grid.size[1] = size;
+    grid.spacing = 0.25f;
+    grid.major_every = 4;
+    grid.minor_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
+    grid.minor_color.a = 72u;
+    grid.major_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_MINOR_TICK);
+    grid.major_color.a = 130u;
+    grid.axis_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
+    grid.axis_color.a = 170u;
+    grid.minor_width_px = 1.0f;
+    grid.major_width_px = 1.4f;
+    grid.axis_width_px = 2.0f;
+    grid.depth_test = true;
+    return dvz_reference_grid(panel, &grid) != NULL;
+}
+
+
+/**
  * Create a mesh visual backed by one graphite-cyan colored cube geometry.
  *
  * @param scene scene owning the visual

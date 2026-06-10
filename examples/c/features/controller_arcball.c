@@ -138,6 +138,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera.far = 100.0f;
     if (!dvz_panel_set_camera(panel, &camera))
         return false;
+    if (!example_add_xz_reference_grid(panel, -0.60f, 4.25f))
+        return false;
     if (!_add_arcball_mesh(ctx->scene, panel, &state->geometry))
         return false;
 
