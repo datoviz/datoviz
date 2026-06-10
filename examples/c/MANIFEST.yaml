@@ -893,7 +893,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=linked_panels_axes_panzoom
       requirements:
         - panel-grid
         - linked-panels
@@ -1017,7 +1018,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=scalebar_measurement_workflow
       requirements:
         - scale-bar
         - text
@@ -1939,7 +1941,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=composite_polygon
       requirements:
         - composite
         - polygon-set
@@ -2255,7 +2258,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=showcase_surface_grid
       requirements:
         - mesh
         - segment

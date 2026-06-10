@@ -1092,6 +1092,20 @@ async function main() {
       ],
       ['colormap_scale', 'Scalar Color Scale', 'webgpu_live_colormap_scale.png', 'colormap-scale'],
       ['panel_background', 'Panel Background', 'webgpu_live_panel_background.png', 'panel-background'],
+      ['composite_polygon', 'Polygon Composite', 'webgpu_live_composite_polygon.png', 'composite-polygon'],
+      [
+        'linked_panels_axes_panzoom',
+        'Linked Panels With Axes',
+        'webgpu_live_linked_panels_axes.png',
+        'linked-panels-axes',
+      ],
+      [
+        'scalebar_measurement_workflow',
+        'Scale Bar Measurement Workflow',
+        'webgpu_live_scalebar_measurement.png',
+        'scalebar-measurement',
+      ],
+      ['showcase_surface_grid', 'Surface Grid', 'webgpu_live_surface_grid.png', 'surface-grid'],
     ];
     for (const [id, label, filename, shortLabel] of promotedLiveRoutes) {
       try {

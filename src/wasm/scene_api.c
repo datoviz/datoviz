@@ -61,7 +61,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 54
+#define DVZ_WASM_API_SCENARIO_COUNT 58
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
@@ -94,6 +94,7 @@ DvzScenarioSpec dvz_example_bars_bands_scenario(void);
 DvzScenarioSpec dvz_example_colorbar_scenario(void);
 DvzScenarioSpec dvz_example_colormap_scale_scenario(void);
 DvzScenarioSpec dvz_example_compute_buffer_animation_scenario(void);
+DvzScenarioSpec dvz_composite_polygon_scenario(void);
 DvzScenarioSpec dvz_example_controller_fly_scenario(void);
 DvzScenarioSpec dvz_example_controller_orbit_camera_scenario(void);
 DvzScenarioSpec dvz_example_controller_turntable_scenario(void);
@@ -122,7 +123,10 @@ DvzScenarioSpec dvz_example_sampled_field_2d_scenario(void);
 DvzScenarioSpec dvz_example_text_block_scenario(void);
 DvzScenarioSpec dvz_showcase_linked_probe_colorbar_scenario(void);
 DvzScenarioSpec dvz_showcase_gpu_particle_smoke_scenario(void);
+DvzScenarioSpec dvz_showcase_linked_panel_axes_scenario(void);
+DvzScenarioSpec dvz_showcase_scalebar_measurement_scenario(void);
 DvzScenarioSpec dvz_showcase_scientific_plotting_scenario(void);
+DvzScenarioSpec dvz_showcase_surface_grid_scenario(void);
 DvzScenarioSpec dvz_showcase_wind_field_scenario(void);
 DvzScenarioSpec dvz_visual_glyph_scenario(void);
 DvzScenarioSpec dvz_visual_image_scenario(void);
@@ -503,6 +507,14 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_example_colormap_scale_scenario();
     case 53:
         return dvz_example_panel_background_scenario();
+    case 54:
+        return dvz_composite_polygon_scenario();
+    case 55:
+        return dvz_showcase_linked_panel_axes_scenario();
+    case 56:
+        return dvz_showcase_scalebar_measurement_scenario();
+    case 57:
+        return dvz_showcase_surface_grid_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

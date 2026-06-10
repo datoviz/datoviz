@@ -34,6 +34,14 @@
 
 
 /*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_showcase_scalebar_measurement_scenario(void);
+
+
+
+/*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
@@ -672,7 +680,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 
 
 
-static DvzScenarioSpec _scalebar_measurement_scenario(void)
+DvzScenarioSpec dvz_showcase_scalebar_measurement_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "scalebar_measurement_workflow",
@@ -680,6 +688,10 @@ static DvzScenarioSpec _scalebar_measurement_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_IMAGE_VISUAL |
+                        DVZ_SCENARIO_REQ_TEXT_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
+                        DVZ_SCENARIO_REQ_PANZOOM | DVZ_SCENARIO_REQ_ARCBALL |
+                        DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
         .destroy = _scenario_destroy,
     };
@@ -694,8 +706,10 @@ static DvzScenarioSpec _scalebar_measurement_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _scalebar_measurement_scenario();
+    DvzScenarioSpec spec = dvz_showcase_scalebar_measurement_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

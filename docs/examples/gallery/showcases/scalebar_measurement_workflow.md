@@ -10,7 +10,8 @@ scale-aware overview, detail, and 3D measurement workflow.
 - Status: `supported`
 - Source: [`examples/c/showcases/scalebar_measurement.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scalebar_measurement.c)
 - Agent copy-safe: `false`
-- WebGPU status: `webgpu-planned`
+- WebGPU status: `webgpu-live`
+- WebGPU live route: [`examples/webgpu/live.html?id=scalebar_measurement_workflow`](/examples/webgpu/live.html?id=scalebar_measurement_workflow)
 - WebGPU requirements: `scale-bar`, `text`, `panel-grid`, `mesh`, `panzoom`
 - Build: `just example-c showcases/scalebar_measurement`
 - Smoke: `./build/examples/c/showcases/scalebar_measurement --png`
@@ -32,6 +33,14 @@ scale-aware overview, detail, and 3D measurement workflow.
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
+
+## Live WebGPU
+
+<div class="dvz-webgpu-live" markdown="1">
+<iframe src="/examples/webgpu/live.html?id=scalebar_measurement_workflow" title="Scale Bar Measurement Workflow WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+</div>
+
+[Open the live WebGPU example](/examples/webgpu/live.html?id=scalebar_measurement_workflow).
 
 ## Source
 

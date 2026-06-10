@@ -1190,6 +1190,98 @@ function expectPanelBackgroundScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected primitive draw`);
 }
 
+function expectCompositePolygonScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(
+    stream,
+    `${label} polygon fill`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.primitive",
+  );
+  expectPipeline(
+    stream,
+    `${label} polygon stroke`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.path",
+  );
+  requireOk(
+    commandsOf(stream, "Draw").length + commandsOf(stream, "DrawIndexed").length >= 2,
+    `${label}: expected polygon fill and stroke draws`,
+  );
+}
+
+function expectLinkedPanelsAxesScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  requireOk(commandsOf(stream, "SetViewport").length >= 4, `${label}: expected linked panel viewports`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 4, `${label}: expected linked panel scissors`);
+  expectPipeline(
+    stream,
+    `${label} path`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.path",
+  );
+  expectPipeline(
+    stream,
+    `${label} segments`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.segment",
+  );
+  expectPipeline(
+    stream,
+    `${label} labels`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
+  );
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 2, `${label}: expected path/segment draws`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
+}
+
+function expectScalebarMeasurementScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  requireOk(commandsOf(stream, "SetViewport").length >= 3, `${label}: expected workflow panel viewports`);
+  expectPipeline(
+    stream,
+    `${label} images`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.image",
+  );
+  expectPipeline(
+    stream,
+    `${label} mesh`,
+    (pipeline) =>
+      pipeline.builtin_pipeline === "scene.mesh" ||
+      pipeline.builtin_pipeline === "scene.primitive",
+  );
+  expectPipeline(
+    stream,
+    `${label} labels`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
+  );
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected image or glyph texture upload`);
+  requireOk(
+    commandsOf(stream, "Draw").length + commandsOf(stream, "DrawIndexed").length >= 4,
+    `${label}: expected image, mesh, scale-bar, and label draws`,
+  );
+}
+
+function expectSurfaceGridScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(
+    stream,
+    `${label} mesh`,
+    (pipeline) =>
+      pipeline.builtin_pipeline === "scene.mesh" ||
+      pipeline.builtin_pipeline === "scene.primitive",
+  );
+  expectPipeline(
+    stream,
+    `${label} wireframe`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.segment",
+  );
+  requireOk(
+    commandsOf(stream, "Draw").length + commandsOf(stream, "DrawIndexed").length >= 2,
+    `${label}: expected surface and wireframe draws`,
+  );
+}
+
 function expectLinkedProbeColorbarScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -1952,6 +2044,10 @@ try {
     "feature_sampled_field_2d",
     "feature_colormap_scale",
     "feature_panel_background",
+    "composite_polygon",
+    "linked_panels_axes_panzoom",
+    "scalebar_measurement_workflow",
+    "showcase_surface_grid",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -2841,6 +2937,26 @@ try {
       "feature_panel_background",
       "panel background",
       (stream, label) => expectPanelBackgroundScenarioStreamShape(stream, label),
+    ],
+    [
+      "composite_polygon",
+      "polygon composite",
+      (stream, label) => expectCompositePolygonScenarioStreamShape(stream, label),
+    ],
+    [
+      "linked_panels_axes_panzoom",
+      "linked panels axes",
+      (stream, label) => expectLinkedPanelsAxesScenarioStreamShape(stream, label),
+    ],
+    [
+      "scalebar_measurement_workflow",
+      "scalebar measurement workflow",
+      (stream, label) => expectScalebarMeasurementScenarioStreamShape(stream, label),
+    ],
+    [
+      "showcase_surface_grid",
+      "surface grid",
+      (stream, label) => expectSurfaceGridScenarioStreamShape(stream, label),
     ],
   ];
   for (const [id, label, expectShape] of panelAndAxesScenarios) {

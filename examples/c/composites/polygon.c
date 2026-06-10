@@ -33,6 +33,14 @@
 
 
 /*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_composite_polygon_scenario(void);
+
+
+
+/*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
@@ -243,7 +251,7 @@ cleanup:
 
 
 
-static DvzScenarioSpec _polygon_scenario(void)
+DvzScenarioSpec dvz_composite_polygon_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "composite_polygon",
@@ -251,6 +259,7 @@ static DvzScenarioSpec _polygon_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM,
         .init = _scenario_init,
     };
 }
@@ -261,8 +270,10 @@ static DvzScenarioSpec _polygon_scenario(void)
 /*  Main                                                                                         */
 /*************************************************************************************************/
 
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _polygon_scenario();
+    DvzScenarioSpec spec = dvz_composite_polygon_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

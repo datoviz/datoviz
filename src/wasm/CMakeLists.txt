@@ -10,6 +10,7 @@ add_executable(datoviz_wasm_scene
     scene_api.c
     ${PROJECT_SOURCE_DIR}/examples/c/example_common.c
     ${PROJECT_SOURCE_DIR}/examples/c/example_style.c
+    ${PROJECT_SOURCE_DIR}/examples/c/composites/polygon.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/annotation_readout.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/animation_tracks.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/axes_2d.c
@@ -49,7 +50,10 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/triangulation_polygon.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/linked_probe_colorbar.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/gpu_particle_smoke.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/panel_linked_axes.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/scalebar_measurement.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/scientific_plotting.c
+    ${PROJECT_SOURCE_DIR}/examples/c/showcases/surface_grid.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/wind_field.c
     ${PROJECT_SOURCE_DIR}/examples/c/visuals/glyph.c
     ${PROJECT_SOURCE_DIR}/examples/c/visuals/image.c

@@ -167,6 +167,26 @@ export const LIVE_EXAMPLES = [
     scenarioId: "feature_panel_background",
   },
   {
+    id: "composite_polygon",
+    label: "Polygon Composite",
+    scenarioId: "composite_polygon",
+  },
+  {
+    id: "linked_panels_axes_panzoom",
+    label: "Linked Panels With Axes",
+    scenarioId: "linked_panels_axes_panzoom",
+  },
+  {
+    id: "scalebar_measurement_workflow",
+    label: "Scale Bar Measurement Workflow",
+    scenarioId: "scalebar_measurement_workflow",
+  },
+  {
+    id: "showcase_surface_grid",
+    label: "Surface Grid",
+    scenarioId: "showcase_surface_grid",
+  },
+  {
     id: "feature_panel_multi",
     label: "Multiple Panels",
     scenarioId: "feature_panel_multi",
