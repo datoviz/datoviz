@@ -68,11 +68,13 @@ static bool _configure_panel(DvzPanel* panel)
                                         .top = 0.06f});
     if (!ok)
         return false;
-    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, -2.55, 3.25);
-    if (rc != 0)
-        return false;
-    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.55, 1.35);
-    return rc == 0;
+
+    DvzPanelDomainFit fit = dvz_panel_domain_fit();
+    fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
+    fit.x = (DvzDataDomain){.min = -2.18, .max = +3.06};
+    fit.y = (DvzDataDomain){.min = -0.88, .max = +0.88};
+    fit.padding = 0.05;
+    return dvz_panel_set_domain_fit(panel, &fit) == 0;
 }
 
 

@@ -24,6 +24,7 @@
 #include <stdbool.h>
 
 #include "_assertions.h"
+#include "datoviz/controller/panzoom.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
@@ -48,8 +49,7 @@ typedef struct BrainCommunity
 {
     const char* label;
     DvzColor color;
-    float label_x;
-    float label_y;
+    dvec3 label_position;
 } BrainCommunity;
 
 
@@ -79,9 +79,9 @@ typedef struct BrainEdge
 /*************************************************************************************************/
 
 static const BrainCommunity COMMUNITIES[] = {
-    {.label = "Visual", .color = {65, 201, 226, 255}, .label_x = 250.0f, .label_y = 238.0f},
-    {.label = "Motor", .color = {246, 185, 72, 255}, .label_x = 1192.0f, .label_y = 250.0f},
-    {.label = "Memory", .color = {234, 104, 91, 255}, .label_x = 712.0f, .label_y = 966.0f},
+    {.label = "Visual", .color = {65, 201, 226, 255}, .label_position = {-0.82, +0.86, 0.0}},
+    {.label = "Motor", .color = {246, 185, 72, 255}, .label_position = {+0.82, +0.86, 0.0}},
+    {.label = "Memory", .color = {234, 104, 91, 255}, .label_position = {+0.00, -1.04, 0.0}},
 };
 
 
@@ -162,11 +162,13 @@ static bool _configure_panel(DvzPanel* panel)
                                         .top = 0.06f});
     if (!ok)
         return false;
-    int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, -1.42, 1.42);
-    if (rc != 0)
-        return false;
-    rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.02, 0.92);
-    return rc == 0;
+
+    DvzPanelDomainFit fit = dvz_panel_domain_fit();
+    fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
+    fit.x = (DvzDataDomain){.min = -1.34, .max = +1.34};
+    fit.y = (DvzDataDomain){.min = -1.08, .max = +0.92};
+    fit.padding = 0.03;
+    return dvz_panel_set_domain_fit(panel, &fit) == 0;
 }
 
 
@@ -265,12 +267,38 @@ static void _make_bridge_controls(
 static bool _add_graph_labels(DvzPanel* panel)
 {
     ANN(panel);
-    if (!example_add_panel_label(panel, "Brain connectivity: 15 regions / 26 weighted links", 28.0f, 24.0f))
+
+    DvzLabelDesc title = dvz_label_desc();
+    title.text = "Brain connectivity: 15 regions / 26 weighted links";
+    title.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_TITLE);
+    title.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    title.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    title.placement.position[0] = 28.0f;
+    title.placement.position[1] = 24.0f;
+    title.placement.text_anchor[0] = 0.0f;
+    title.placement.text_anchor[1] = 0.0f;
+    title.placement.has_text_anchor = true;
+    if (dvz_annotation_label(panel, &title) == NULL)
         return false;
+
     for (uint32_t i = 0; i < COMMUNITY_COUNT; i++)
     {
-        if (!example_add_panel_label(panel, COMMUNITIES[i].label, COMMUNITIES[i].label_x,
-                                     COMMUNITIES[i].label_y))
+        DvzLabelDesc desc = dvz_label_desc();
+        desc.text = COMMUNITIES[i].label;
+        desc.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_DATA_LABEL);
+        desc.style.color[0] = COMMUNITIES[i].color.r;
+        desc.style.color[1] = COMMUNITIES[i].color.g;
+        desc.style.color[2] = COMMUNITIES[i].color.b;
+        desc.style.color[3] = 245u;
+        desc.placement.mode = DVZ_TEXT_PLACEMENT_DATA;
+        desc.placement.anchor = DVZ_SCENE_ANCHOR_DATA;
+        desc.placement.position[0] = COMMUNITIES[i].label_position[0];
+        desc.placement.position[1] = COMMUNITIES[i].label_position[1];
+        desc.placement.position[2] = COMMUNITIES[i].label_position[2];
+        desc.placement.text_anchor[0] = 0.5f;
+        desc.placement.text_anchor[1] = 0.5f;
+        desc.placement.has_text_anchor = true;
+        if (dvz_annotation_label(panel, &desc) == NULL)
             return false;
     }
     return true;
@@ -406,7 +434,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(_configure_panel(panel), "panel configuration failed");
     EXAMPLE_CHECK(_add_graph(ctx->scene, panel), "graph setup failed");
 
-    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
+    panzoom_desc.controller_flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, &panzoom_desc, DVZ_DIM_MASK_XY);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
     (void)panzoom;
 
@@ -425,6 +455,7 @@ static DvzScenarioSpec _graph_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM,
         .init = _scenario_init,
     };
 }
