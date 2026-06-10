@@ -18,6 +18,8 @@ scene concepts into C and language bindings.
    policy.
 6. [WASM_PORTABILITY.md](WASM_PORTABILITY.md): public scene API constraints for future
    WASM/WebGPU builds and generated bindings.
+7. [REFERENCE_GRID.md](REFERENCE_GRID.md): v0.4 reference-grid API direction, v0.3 comparison,
+   extent/fade semantics, and implementation staging.
 
 
 ## Related Directories
