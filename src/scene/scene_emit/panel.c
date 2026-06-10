@@ -447,11 +447,15 @@ static bool _scene_visual_is_axis_grid(const DvzPanel* panel, const DvzVisual* v
  * @param visual the visual
  * @return the visual clip rectangle kind
  */
-static DvzFramePlanClipRect _scene_visual_clip_rect(const DvzPanel* panel, const DvzVisual* visual)
+static DvzFramePlanClipRect
+_scene_visual_clip_rect(const DvzPanel* panel, const DvzVisual* visual, const DvzPanelAttach* attach)
 {
     ANN(panel);
     ANN(visual);
+    ANN(attach);
     if (_scene_visual_is_axis_grid(panel, visual))
+        return DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
+    if (visual->type == DVZ_VISUAL_TYPE_GLYPH && attach->coord_space == DVZ_COORD_DATA)
         return DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
     if (visual == panel->background_visual || visual == panel->border_visual ||
         (visual->ops != NULL && visual->ops->panel_clip_rect) ||
@@ -581,7 +585,7 @@ static bool _scene_append_visual_to_render_pass(
             report, "visual %s has no typed FramePlan metadata", visual_id);
         return false;
     }
-    metadata.clip_rect = _scene_visual_clip_rect(panel, visual);
+    metadata.clip_rect = _scene_visual_clip_rect(panel, visual, attach);
     if (metadata.has_volume && volume_occlusion == NULL)
     {
         metadata.volume_occluded = false;

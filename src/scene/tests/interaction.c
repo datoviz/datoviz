@@ -3278,6 +3278,28 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
     }
     AT(found_data_attach);
 
+    DvzFramePlan* plan = dvz_frame_plan("text.data_clip_rect", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    bool found_glyph_plot_clip = false;
+    for (uint32_t node_idx = 0; node_idx < dvz_frame_plan_node_count(plan); node_idx++)
+    {
+        const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, node_idx);
+        ANN(render);
+        if (render->type != DVZ_FRAME_PLAN_NODE_RENDER)
+            continue;
+        for (uint32_t i = 0; i < render->u.render.visual_count; i++)
+        {
+            if (render->u.render.visual_metadata[i].visual_type == DVZ_VISUAL_TYPE_GLYPH)
+            {
+                found_glyph_plot_clip = true;
+                AT(render->u.render.visual_metadata[i].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT);
+            }
+        }
+    }
+    AT(found_glyph_plot_clip);
+    dvz_frame_plan_destroy(plan);
+
     dvz_text_destroy(text);
     AT(text->scene == NULL);
     AT(!text->visual->visible);
