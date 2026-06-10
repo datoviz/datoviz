@@ -395,11 +395,7 @@ bool example_add_panel_label(DvzPanel* panel, const char* label, float x_px, flo
 
     DvzLabelDesc desc = dvz_label_desc();
     desc.text = label;
-    desc.style.size_px = 15.0f;
-    desc.style.color[0] = 222u;
-    desc.style.color[1] = 236u;
-    desc.style.color[2] = 244u;
-    desc.style.color[3] = 245u;
+    desc.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
     desc.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
     desc.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
     desc.placement.position[0] = x_px;

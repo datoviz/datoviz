@@ -41,6 +41,16 @@ typedef enum ExampleStyleColorRole
 } ExampleStyleColorRole;
 
 
+typedef enum ExampleStyleTextRole
+{
+    EXAMPLE_STYLE_TEXT_TITLE,
+    EXAMPLE_STYLE_TEXT_PANEL_LABEL,
+    EXAMPLE_STYLE_TEXT_DATA_LABEL,
+    EXAMPLE_STYLE_TEXT_ANNOTATION,
+    EXAMPLE_STYLE_TEXT_SMALL,
+} ExampleStyleTextRole;
+
+
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
@@ -68,6 +78,8 @@ DvzColor example_graphite_cyan_color(ExampleStyleColorRole role);
 DvzColormap* example_graphite_cyan_colormap(DvzScene* scene);
 
 DvzScale* example_graphite_cyan_color_scale(DvzScene* scene, double min, double max);
+
+DvzTextStyle example_graphite_cyan_text_style(ExampleStyleTextRole role);
 
 void example_graphite_cyan_panel_background(float out_rgba[4]);
 

@@ -143,6 +143,46 @@ DvzScale* example_graphite_cyan_color_scale(DvzScene* scene, double min, double 
 }
 
 
+/**
+ * Return one semantic text style from the graphite-cyan example theme.
+ *
+ * @param role semantic text role
+ * @return text style descriptor
+ */
+DvzTextStyle example_graphite_cyan_text_style(ExampleStyleTextRole role)
+{
+    DvzTextStyle style = dvz_text_style();
+    style.color[0] = 222u;
+    style.color[1] = 236u;
+    style.color[2] = 244u;
+    style.color[3] = 245u;
+
+    switch (role)
+    {
+    case EXAMPLE_STYLE_TEXT_TITLE:
+        style.size_px = 21.0f;
+        break;
+    case EXAMPLE_STYLE_TEXT_PANEL_LABEL:
+        style.size_px = 15.0f;
+        break;
+    case EXAMPLE_STYLE_TEXT_DATA_LABEL:
+        style.size_px = 20.0f;
+        break;
+    case EXAMPLE_STYLE_TEXT_ANNOTATION:
+        style.size_px = 17.0f;
+        break;
+    case EXAMPLE_STYLE_TEXT_SMALL:
+        style.size_px = 12.0f;
+        style.color[3] = 220u;
+        break;
+    default:
+        style.size_px = 15.0f;
+        break;
+    }
+    return style;
+}
+
+
 
 /**
  * Return the graphite-cyan panel background color as normalized RGBA.
