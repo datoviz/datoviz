@@ -1203,6 +1203,10 @@ function expectCompositePolygonScenarioStreamShape(stream, label) {
     `${label} polygon stroke`,
     (pipeline) => pipeline.builtin_pipeline === "scene.path",
   );
+  expectDrawIndexed(stream, 42, 1, `${label} holed polygon fill`);
+  expectDrawIndexed(stream, 84, 1, `${label} holed polygon stroke`);
+  expectDrawIndexed(stream, 36, 1, `${label} polygon-set fills`);
+  expectDrawIndexed(stream, 108, 1, `${label} polygon-set strokes`);
   requireOk(
     commandsOf(stream, "Draw").length + commandsOf(stream, "DrawIndexed").length >= 2,
     `${label}: expected polygon fill and stroke draws`,
