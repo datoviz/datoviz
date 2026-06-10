@@ -11,7 +11,7 @@ retained point visual with full data replacement.
 - Source: [`examples/c/features/update_visual_data.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_visual_data.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=feature_update_visual_data`](/examples/webgpu/live.html?id=feature_update_visual_data)
+- WebGPU live route: <a href="../../webgpu/live.html?id=feature_update_visual_data"><code>examples/webgpu/live.html?id=feature_update_visual_data</code></a>
 - WebGPU requirements: `buffer-update`, `visual-update`, `point`, `frame-callbacks`
 - Build: `just example-c features/update_visual_data`
 - Smoke: `./build/examples/c/features/update_visual_data --png`
@@ -25,7 +25,7 @@ retained point visual with full data replacement.
 
 ## Media
 
-![Visual Data Update](/assets/gallery/v0.4/features/feature_update_visual_data.webp)
+![Visual Data Update](../../../assets/gallery/v0.4/features/feature_update_visual_data.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=feature_update_visual_data" title="Visual Data Update WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=feature_update_visual_data" title="Visual Data Update WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_update_visual_data).
+<a href="../../webgpu/live.html?id=feature_update_visual_data">Open the live WebGPU example</a>.
 
 ## Source
 

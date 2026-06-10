@@ -11,7 +11,7 @@ retained horizontal and vertical guide spans in panel data coordinates.
 - Source: [`examples/c/features/guide_spans.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_spans.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=feature_guide_spans`](/examples/webgpu/live.html?id=feature_guide_spans)
+- WebGPU live route: <a href="../../webgpu/live.html?id=feature_guide_spans"><code>examples/webgpu/live.html?id=feature_guide_spans</code></a>
 - WebGPU requirements: `primitive`, `overlay`, `panzoom`
 - Build: `just example-c features/guide_spans`
 - Smoke: `./build/examples/c/features/guide_spans --png`
@@ -25,7 +25,7 @@ retained horizontal and vertical guide spans in panel data coordinates.
 
 ## Media
 
-![Guide Spans](/assets/gallery/v0.4/features/feature_guide_spans.webp)
+![Guide Spans](../../../assets/gallery/v0.4/features/feature_guide_spans.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=feature_guide_spans" title="Guide Spans WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=feature_guide_spans" title="Guide Spans WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_guide_spans).
+<a href="../../webgpu/live.html?id=feature_guide_spans">Open the live WebGPU example</a>.
 
 ## Source
 

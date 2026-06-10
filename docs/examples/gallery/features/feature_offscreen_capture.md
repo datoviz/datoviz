@@ -24,7 +24,7 @@ render an exact-pixel offscreen view once and write a PNG.
 
 ## Media
 
-![Offscreen Capture](/assets/gallery/v0.4/features/feature_offscreen_capture.webp)
+![Offscreen Capture](../../../assets/gallery/v0.4/features/feature_offscreen_capture.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

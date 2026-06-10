@@ -15,7 +15,7 @@ Coverage: 2 examples (2 supported).
 
 ### [Graph Composite](gallery/composites/composite_graph.md)
 
-![Graph Composite](/assets/gallery/v0.4/composites/composite_graph.webp)
+![Graph Composite](../assets/gallery/v0.4/composites/composite_graph.webp)
 
 `supported` `composites`<br><span>`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`</span>
 
@@ -27,7 +27,7 @@ deterministic brain-connectivity graph composite with community labels.
 
 ### [Polygon Composite](gallery/composites/composite_polygon.md)
 
-![Polygon Composite](/assets/gallery/v0.4/composites/composite_polygon.webp)
+![Polygon Composite](../assets/gallery/v0.4/composites/composite_polygon.webp)
 
 `supported` `composites`<br><span>`composite`, `polygon`, `polygon-set`, `holes`, `panzoom`</span>
 

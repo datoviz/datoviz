@@ -11,7 +11,7 @@ topology-parametric triangles rendered with the retained primitive visual.
 - Source: [`examples/c/visuals/primitive.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/primitive.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=visual_primitive`](/examples/webgpu/live.html?id=visual_primitive)
+- WebGPU live route: <a href="../../webgpu/live.html?id=visual_primitive"><code>examples/webgpu/live.html?id=visual_primitive</code></a>
 - WebGPU requirements: `primitive`
 - Build: `just example-c visuals/primitive`
 - Smoke: `./build/examples/c/visuals/primitive --png`
@@ -29,7 +29,7 @@ topology-parametric triangles rendered with the retained primitive visual.
 
 ## Media
 
-![Primitive](/assets/gallery/v0.4/visuals/visual_primitive.webp)
+![Primitive](../../../assets/gallery/v0.4/visuals/visual_primitive.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=visual_primitive" title="Primitive WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=visual_primitive" title="Primitive WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=visual_primitive).
+<a href="../../webgpu/live.html?id=visual_primitive">Open the live WebGPU example</a>.
 
 ## Source
 

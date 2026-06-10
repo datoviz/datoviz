@@ -11,7 +11,7 @@ linked image panels with one probe readout and shared colorbar.
 - Source: [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c)
 - Agent copy-safe: `false`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=linked_panels_probe_colorbar`](/examples/webgpu/live.html?id=linked_panels_probe_colorbar)
+- WebGPU live route: <a href="../../webgpu/live.html?id=linked_panels_probe_colorbar"><code>examples/webgpu/live.html?id=linked_panels_probe_colorbar</code></a>
 - WebGPU requirements: `panel-grid`, `linked-panels`, `image`, `colorbar`, `query-readback`, `readout`
 - Build: `just example-c showcases/linked_probe_colorbar`
 - Smoke: `./build/examples/c/showcases/linked_probe_colorbar --png`
@@ -29,7 +29,7 @@ linked image panels with one probe readout and shared colorbar.
 
 ## Media
 
-![Linked Probe With Colorbar](/assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)
+![Linked Probe With Colorbar](../../../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=linked_panels_probe_colorbar" title="Linked Probe With Colorbar WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=linked_panels_probe_colorbar" title="Linked Probe With Colorbar WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=linked_panels_probe_colorbar).
+<a href="../../webgpu/live.html?id=linked_panels_probe_colorbar">Open the live WebGPU example</a>.
 
 ## Source
 

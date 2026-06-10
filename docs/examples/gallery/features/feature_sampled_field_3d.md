@@ -24,7 +24,7 @@ scene-owned 3D sampled field bound to a volume visual.
 
 ## Media
 
-![3D Sampled Field](/assets/gallery/v0.4/features/feature_sampled_field_3d.webp)
+![3D Sampled Field](../../../assets/gallery/v0.4/features/feature_sampled_field_3d.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

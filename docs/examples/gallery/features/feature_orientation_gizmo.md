@@ -24,7 +24,7 @@ panel-attached orientation axes linked to an arcball controller.
 
 ## Media
 
-![Orientation Gizmo](/assets/gallery/v0.4/features/feature_orientation_gizmo.webp)
+![Orientation Gizmo](../../../assets/gallery/v0.4/features/feature_orientation_gizmo.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

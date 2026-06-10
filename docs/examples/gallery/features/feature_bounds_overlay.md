@@ -28,7 +28,7 @@ diagnostic retained visual bounds in 2D and 3D panels.
 
 ## Media
 
-![Bounds Overlay](/assets/gallery/v0.4/features/feature_bounds_overlay.webp)
+![Bounds Overlay](../../../assets/gallery/v0.4/features/feature_bounds_overlay.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

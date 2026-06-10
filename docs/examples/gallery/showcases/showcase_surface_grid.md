@@ -11,7 +11,7 @@ generated height-field mesh with a derived wireframe overlay.
 - Source: [`examples/c/showcases/surface_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c)
 - Agent copy-safe: `false`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=showcase_surface_grid`](/examples/webgpu/live.html?id=showcase_surface_grid)
+- WebGPU live route: <a href="../../webgpu/live.html?id=showcase_surface_grid"><code>examples/webgpu/live.html?id=showcase_surface_grid</code></a>
 - WebGPU requirements: `mesh`, `segment`, `arcball`
 - Build: `just example-c showcases/surface_grid`
 - Smoke: `./build/examples/c/showcases/surface_grid --png`
@@ -29,7 +29,7 @@ generated height-field mesh with a derived wireframe overlay.
 
 ## Media
 
-![Surface Grid](/assets/gallery/v0.4/showcases/showcase_surface_grid.webp)
+![Surface Grid](../../../assets/gallery/v0.4/showcases/showcase_surface_grid.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=showcase_surface_grid" title="Surface Grid WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=showcase_surface_grid" title="Surface Grid WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=showcase_surface_grid).
+<a href="../../webgpu/live.html?id=showcase_surface_grid">Open the live WebGPU example</a>.
 
 ## Source
 

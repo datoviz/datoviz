@@ -11,7 +11,7 @@ retained pixel hover and click selection.
 - Source: [`examples/c/features/selection_pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_pixel.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=feature_selection_pixel`](/examples/webgpu/live.html?id=feature_selection_pixel)
+- WebGPU live route: <a href="../../webgpu/live.html?id=feature_selection_pixel"><code>examples/webgpu/live.html?id=feature_selection_pixel</code></a>
 - WebGPU requirements: `pixel`, `controller`, `panzoom`, `query-readback`, `frame-callbacks`
 - Build: `just example-c features/selection_pixel`
 - Smoke: `./build/examples/c/features/selection_pixel --png`
@@ -25,7 +25,7 @@ retained pixel hover and click selection.
 
 ## Media
 
-![Pixel Selection](/assets/gallery/v0.4/features/feature_selection_pixel.webp)
+![Pixel Selection](../../../assets/gallery/v0.4/features/feature_selection_pixel.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=feature_selection_pixel" title="Pixel Selection WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=feature_selection_pixel" title="Pixel Selection WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_selection_pixel).
+<a href="../../webgpu/live.html?id=feature_selection_pixel">Open the live WebGPU example</a>.
 
 ## Source
 

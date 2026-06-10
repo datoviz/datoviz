@@ -105,7 +105,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [Sphere](gallery/visuals/sphere_impostor.md) | [`examples/c/visuals/sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c) | `supported` | `smoke+screenshot` |
 | [Splat](gallery/visuals/visual_splat.md) | [`examples/c/visuals/splat.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/splat.c) | `experimental` | `smoke+screenshot` |
 | [Text](gallery/visuals/visual_text.md) | [`examples/c/visuals/text.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c) | `supported` | `smoke+screenshot` |
-| [Glyph](gallery/visuals/visual_glyph.md) | [`examples/c/visuals/glyph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/glyph.c) | `experimental` | `smoke+screenshot` |
+| [Font Atlas Glyphs](gallery/visuals/visual_glyph.md) | [`examples/c/visuals/glyph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/glyph.c) | `experimental` | `smoke+screenshot` |
 | [Labels](gallery/visuals/visual_labels.md) | [`examples/c/visuals/labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/labels.c) | `supported` | `smoke+screenshot` |
 | [Volume](gallery/visuals/volume.md) | [`examples/c/visuals/volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/volume.c) | `supported` | `smoke+screenshot` |
 | [Polygon Composite](gallery/composites/composite_polygon.md) | [`examples/c/composites/polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c) | `supported` | `smoke+screenshot` |

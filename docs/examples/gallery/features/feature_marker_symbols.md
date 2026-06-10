@@ -28,7 +28,7 @@ marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
 ## Media
 
-![Marker Symbols](/assets/gallery/v0.4/features/feature_marker_symbols.webp)
+![Marker Symbols](../../../assets/gallery/v0.4/features/feature_marker_symbols.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

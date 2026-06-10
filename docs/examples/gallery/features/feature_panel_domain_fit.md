@@ -24,7 +24,7 @@ panel-owned data-domain fit with equal aspect.
 
 ## Media
 
-![Panel Domain Fit](/assets/gallery/v0.4/features/feature_panel_domain_fit.webp)
+![Panel Domain Fit](../../../assets/gallery/v0.4/features/feature_panel_domain_fit.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

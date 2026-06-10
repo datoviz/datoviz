@@ -11,7 +11,7 @@ deterministic 3D impostor-sphere cluster with depth, radius, and color variation
 - Source: [`examples/c/visuals/sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=sphere_impostor`](/examples/webgpu/live.html?id=sphere_impostor)
+- WebGPU live route: <a href="../../webgpu/live.html?id=sphere_impostor"><code>examples/webgpu/live.html?id=sphere_impostor</code></a>
 - WebGPU requirements: `sphere`, `arcball`
 - Build: `just example-c visuals/sphere`
 - Smoke: `./build/examples/c/visuals/sphere --png`
@@ -29,7 +29,7 @@ deterministic 3D impostor-sphere cluster with depth, radius, and color variation
 
 ## Media
 
-![Sphere](/assets/gallery/v0.4/visuals/sphere_impostor.webp)
+![Sphere](../../../assets/gallery/v0.4/visuals/sphere_impostor.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=sphere_impostor" title="Sphere WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=sphere_impostor" title="Sphere WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=sphere_impostor).
+<a href="../../webgpu/live.html?id=sphere_impostor">Open the live WebGPU example</a>.
 
 ## Source
 

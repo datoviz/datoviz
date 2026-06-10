@@ -11,7 +11,7 @@ fixed graphite-cyan panel background behind a simple visual.
 - Source: [`examples/c/features/panel_background.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_background.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=panel_background`](/examples/webgpu/live.html?id=panel_background)
+- WebGPU live route: <a href="../../webgpu/live.html?id=panel_background"><code>examples/webgpu/live.html?id=panel_background</code></a>
 - WebGPU requirements: `panel-background`, `primitive`
 - Build: `just example-c features/panel_background`
 - Smoke: `./build/examples/c/features/panel_background --png`
@@ -25,7 +25,7 @@ fixed graphite-cyan panel background behind a simple visual.
 
 ## Media
 
-![Panel Background](/assets/gallery/v0.4/features/panel_background.webp)
+![Panel Background](../../../assets/gallery/v0.4/features/panel_background.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=panel_background" title="Panel Background WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=panel_background" title="Panel Background WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=panel_background).
+<a href="../../webgpu/live.html?id=panel_background">Open the live WebGPU example</a>.
 
 ## Source
 

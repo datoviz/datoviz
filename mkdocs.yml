@@ -113,10 +113,13 @@ nav:
     - Galleries:
       - Visual gallery: 'examples/visual-gallery.md'
       - Feature gallery: 'examples/feature-gallery.md'
+      - Composites: 'examples/composites.md'
       - Techniques: 'examples/techniques.md'
+      - Advanced examples: 'examples/advanced.md'
     - Release Proof:
       - Showcases: 'examples/showcases.md'
       - Validation gallery: 'examples/validation-gallery.md'
+      - WebGPU matrix: 'examples/webgpu-matrix.md'
   - How-To:
     - Scene And Runtime:
       - Create a scene: 'how-to/create-a-scene.md'
@@ -166,6 +169,7 @@ nav:
       - Errors and logging: 'reference/errors-and-logging.md'
     - Backends:
       - WebGPU subset: 'reference/webgpu-subset.md'
+      - Compute and graphics: 'reference/compute-graphics.md'
   - Explanation:
     - System:
       - Architecture: 'explanation/architecture.md'

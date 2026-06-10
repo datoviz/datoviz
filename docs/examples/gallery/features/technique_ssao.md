@@ -24,7 +24,7 @@ screen-space ambient occlusion on normal-producing mesh geometry.
 
 ## Media
 
-![Screen-Space Ambient Occlusion](/assets/gallery/v0.4/features/technique_ssao.webp)
+![Screen-Space Ambient Occlusion](../../../assets/gallery/v0.4/features/technique_ssao.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

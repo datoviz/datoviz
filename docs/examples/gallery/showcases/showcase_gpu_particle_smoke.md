@@ -11,7 +11,7 @@ scene API compute-to-graphics particle smoke showcase.
 - Source: [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c)
 - Agent copy-safe: `false`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=showcase_gpu_particle_smoke`](/examples/webgpu/live.html?id=showcase_gpu_particle_smoke)
+- WebGPU live route: <a href="../../webgpu/live.html?id=showcase_gpu_particle_smoke"><code>examples/webgpu/live.html?id=showcase_gpu_particle_smoke</code></a>
 - WebGPU requirements: `scene-buffers`, `storage-buffers`, `scene-compute`, `point`, `alpha-blending`
 - Build: `just example-c showcases/gpu_particle_smoke`
 - Smoke: `./build/examples/c/showcases/gpu_particle_smoke --png`
@@ -29,7 +29,7 @@ scene API compute-to-graphics particle smoke showcase.
 
 ## Media
 
-![GPU Particle Smoke](/assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)
+![GPU Particle Smoke](../../../assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=showcase_gpu_particle_smoke" title="GPU Particle Smoke WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=showcase_gpu_particle_smoke" title="GPU Particle Smoke WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=showcase_gpu_particle_smoke).
+<a href="../../webgpu/live.html?id=showcase_gpu_particle_smoke">Open the live WebGPU example</a>.
 
 ## Source
 

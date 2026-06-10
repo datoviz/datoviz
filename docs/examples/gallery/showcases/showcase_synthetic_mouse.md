@@ -38,7 +38,7 @@ animated textured mouse mesh with trajectory and skeleton trails.
 
 ## Media
 
-![Synthetic Mouse](/assets/gallery/v0.4/showcases/showcase_synthetic_mouse.webp)
+![Synthetic Mouse](../../../assets/gallery/v0.4/showcases/showcase_synthetic_mouse.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

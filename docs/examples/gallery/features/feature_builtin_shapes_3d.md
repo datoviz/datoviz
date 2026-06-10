@@ -11,7 +11,7 @@ builtin 3D geometry builders rendered through retained meshes.
 - Source: [`examples/c/features/builtin_shapes_3d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_3d.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=feature_builtin_shapes_3d`](/examples/webgpu/live.html?id=feature_builtin_shapes_3d)
+- WebGPU live route: <a href="../../webgpu/live.html?id=feature_builtin_shapes_3d"><code>examples/webgpu/live.html?id=feature_builtin_shapes_3d</code></a>
 - WebGPU requirements: `mesh`, `controller`, `arcball`
 - Build: `just example-c features/builtin_shapes_3d`
 - Smoke: `./build/examples/c/features/builtin_shapes_3d --png`
@@ -25,7 +25,7 @@ builtin 3D geometry builders rendered through retained meshes.
 
 ## Media
 
-![Builtin Shapes 3D](/assets/gallery/v0.4/features/feature_builtin_shapes_3d.webp)
+![Builtin Shapes 3D](../../../assets/gallery/v0.4/features/feature_builtin_shapes_3d.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=feature_builtin_shapes_3d" title="Builtin Shapes 3D WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=feature_builtin_shapes_3d" title="Builtin Shapes 3D WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_builtin_shapes_3d).
+<a href="../../webgpu/live.html?id=feature_builtin_shapes_3d">Open the live WebGPU example</a>.
 
 ## Source
 

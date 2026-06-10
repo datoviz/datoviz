@@ -11,7 +11,7 @@ deterministic retained pixel visual baseline.
 - Source: [`examples/c/visuals/pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/pixel.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=visual_pixel`](/examples/webgpu/live.html?id=visual_pixel)
+- WebGPU live route: <a href="../../webgpu/live.html?id=visual_pixel"><code>examples/webgpu/live.html?id=visual_pixel</code></a>
 - WebGPU requirements: `pixel`, `panzoom`
 - Build: `just example-c visuals/pixel`
 - Smoke: `./build/examples/c/visuals/pixel --png`
@@ -29,7 +29,7 @@ deterministic retained pixel visual baseline.
 
 ## Media
 
-![Pixel](/assets/gallery/v0.4/visuals/visual_pixel.webp)
+![Pixel](../../../assets/gallery/v0.4/visuals/visual_pixel.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=visual_pixel" title="Pixel WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=visual_pixel" title="Pixel WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=visual_pixel).
+<a href="../../webgpu/live.html?id=visual_pixel">Open the live WebGPU example</a>.
 
 ## Source
 

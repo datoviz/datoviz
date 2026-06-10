@@ -11,7 +11,7 @@ point visual with scalar float colors and one retained color scale.
 - Source: [`examples/c/features/colormap_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colormap_scale.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=colormap_scale`](/examples/webgpu/live.html?id=colormap_scale)
+- WebGPU live route: <a href="../../webgpu/live.html?id=colormap_scale"><code>examples/webgpu/live.html?id=colormap_scale</code></a>
 - WebGPU requirements: `colormap`, `point`
 - Build: `just example-c features/colormap_scale`
 - Smoke: `./build/examples/c/features/colormap_scale --png`
@@ -25,7 +25,7 @@ point visual with scalar float colors and one retained color scale.
 
 ## Media
 
-![Scalar Color Scale](/assets/gallery/v0.4/features/colormap_scale.webp)
+![Scalar Color Scale](../../../assets/gallery/v0.4/features/colormap_scale.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=colormap_scale" title="Scalar Color Scale WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=colormap_scale" title="Scalar Color Scale WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=colormap_scale).
+<a href="../../webgpu/live.html?id=colormap_scale">Open the live WebGPU example</a>.
 
 ## Source
 

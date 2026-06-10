@@ -11,7 +11,7 @@ retained segment visual with independent endpoint-pair strokes.
 - Source: [`examples/c/visuals/segment.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/segment.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=visual_segment`](/examples/webgpu/live.html?id=visual_segment)
+- WebGPU live route: <a href="../../webgpu/live.html?id=visual_segment"><code>examples/webgpu/live.html?id=visual_segment</code></a>
 - WebGPU requirements: `segment`, `panzoom`
 - Build: `just example-c visuals/segment`
 - Smoke: `./build/examples/c/visuals/segment --png`
@@ -29,7 +29,7 @@ retained segment visual with independent endpoint-pair strokes.
 
 ## Media
 
-![Segment](/assets/gallery/v0.4/visuals/visual_segment.webp)
+![Segment](../../../assets/gallery/v0.4/visuals/visual_segment.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=visual_segment" title="Segment WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=visual_segment" title="Segment WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=visual_segment).
+<a href="../../webgpu/live.html?id=visual_segment">Open the live WebGPU example</a>.
 
 ## Source
 

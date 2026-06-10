@@ -11,7 +11,7 @@ portable scenario updating retained point data on runner frames.
 - Source: [`examples/c/features/timer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/timer_animation.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=feature_timer_animation`](/examples/webgpu/live.html?id=feature_timer_animation)
+- WebGPU live route: <a href="../../webgpu/live.html?id=feature_timer_animation"><code>examples/webgpu/live.html?id=feature_timer_animation</code></a>
 - WebGPU requirements: `point`, `frame-callbacks`
 - Build: `just example-c features/timer_animation`
 - Smoke: `./build/examples/c/features/timer_animation --png`
@@ -25,7 +25,7 @@ portable scenario updating retained point data on runner frames.
 
 ## Media
 
-![Timer Animation](/assets/gallery/v0.4/features/feature_timer_animation.webp)
+![Timer Animation](../../../assets/gallery/v0.4/features/feature_timer_animation.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=feature_timer_animation" title="Timer Animation WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=feature_timer_animation" title="Timer Animation WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_timer_animation).
+<a href="../../webgpu/live.html?id=feature_timer_animation">Open the live WebGPU example</a>.
 
 ## Source
 

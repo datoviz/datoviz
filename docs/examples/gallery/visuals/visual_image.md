@@ -11,7 +11,7 @@ deterministic scalar sampled field rendered with the retained image visual.
 - Source: [`examples/c/visuals/image.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=visual_image`](/examples/webgpu/live.html?id=visual_image)
+- WebGPU live route: <a href="../../webgpu/live.html?id=visual_image"><code>examples/webgpu/live.html?id=visual_image</code></a>
 - WebGPU requirements: `image`, `sampled-field`, `panzoom`
 - Build: `just example-c visuals/image`
 - Smoke: `./build/examples/c/visuals/image --png`
@@ -29,7 +29,7 @@ deterministic scalar sampled field rendered with the retained image visual.
 
 ## Media
 
-![Image](/assets/gallery/v0.4/visuals/visual_image.webp)
+![Image](../../../assets/gallery/v0.4/visuals/visual_image.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=visual_image" title="Image WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=visual_image" title="Image WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=visual_image).
+<a href="../../webgpu/live.html?id=visual_image">Open the live WebGPU example</a>.
 
 ## Source
 

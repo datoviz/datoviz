@@ -17,7 +17,7 @@ Coverage: 15 examples (11 supported, 1 experimental, 3 prototype).
 
 ### [Allen Mouse Brain](gallery/showcases/brain_volume.md)
 
-![Allen Mouse Brain](/assets/gallery/v0.4/showcases/brain_volume.webp)
+![Allen Mouse Brain](../assets/gallery/v0.4/showcases/brain_volume.webp)
 
 `prototype` `showcases`<br><span>`scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, ...</span>
 
@@ -29,11 +29,11 @@ local Allen mouse brain RGBA volume and occluded slice.
 
 ### [Embedding Atlas](gallery/showcases/showcase_embedding_atlas.md)
 
-![Embedding Atlas](/assets/gallery/v0.4/showcases/showcase_embedding_atlas.webp)
+![Embedding Atlas](../assets/gallery/v0.4/showcases/showcase_embedding_atlas.webp)
 
 `supported` `showcases`<br><span>`scientific`, `synthetic`, `embedding`, `point`, `panzoom`, ...</span>
 
-interactive synthetic AI embedding atlas.
+interactive prepared AI embedding atlas.
 
 </div>
 
@@ -41,7 +41,7 @@ interactive synthetic AI embedding atlas.
 
 ### [GPU Particle Smoke](gallery/showcases/showcase_gpu_particle_smoke.md)
 
-![GPU Particle Smoke](/assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)
+![GPU Particle Smoke](../assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)
 
 `experimental` `showcases`<br><span>`compute`, `simulation`, `particles`, `point`, `alpha-blending`, ...</span>
 
@@ -65,7 +65,7 @@ linked temporal panels with a spanning summary panel.
 
 ### [Linked Probe With Colorbar](gallery/showcases/linked_panels_probe_colorbar.md)
 
-![Linked Probe With Colorbar](/assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)
+![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)
 
 `supported` `showcases`<br><span>`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, ...</span>
 
@@ -77,7 +77,7 @@ linked image panels with one probe readout and shared colorbar.
 
 ### [Lipid Brain Atlas](gallery/showcases/showcase_lipid_brain_atlas.md)
 
-![Lipid Brain Atlas](/assets/gallery/v0.4/showcases/showcase_lipid_brain_atlas.webp)
+![Lipid Brain Atlas](../assets/gallery/v0.4/showcases/showcase_lipid_brain_atlas.webp)
 
 `prototype` `showcases`<br><span>`scientific`, `real-data`, `lipid-atlas`, `image`, `sampled-field`, ...</span>
 
@@ -89,7 +89,7 @@ section/channel lipid intensity showcase.
 
 ### [Point Cloud](gallery/showcases/point_cloud.md)
 
-![Point Cloud](/assets/gallery/v0.4/showcases/point_cloud.webp)
+![Point Cloud](../assets/gallery/v0.4/showcases/point_cloud.webp)
 
 `supported` `showcases`<br><span>`real-data`, `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, ...</span>
 
@@ -101,7 +101,7 @@ RESEPI RGB LiDAR dense point cloud.
 
 ### [Protein](gallery/showcases/protein_arcball_viewer.md)
 
-![Protein](/assets/gallery/v0.4/showcases/protein_arcball_viewer.webp)
+![Protein](../assets/gallery/v0.4/showcases/protein_arcball_viewer.webp)
 
 `supported` `showcases`<br><span>`scientific`, `real-data`, `molecular`, `sphere`, `arcball`</span>
 
@@ -113,7 +113,7 @@ RCSB PDB protein structure rendered as clustered spheres.
 
 ### [Scale Bar Measurement Workflow](gallery/showcases/scalebar_measurement_workflow.md)
 
-![Scale Bar Measurement Workflow](/assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)
+![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)
 
 `supported` `showcases`<br><span>`workflow`, `scale-bar`, `measurement`, `synthetic`</span>
 
@@ -125,7 +125,7 @@ scale-aware overview, detail, and 3D measurement workflow.
 
 ### [Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md)
 
-![Scientific Plotting Workflow](/assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)
+![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)
 
 `supported` `showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
 
@@ -137,7 +137,7 @@ histogram, guide annotations, stacked traces, and error bands.
 
 ### [Surface Grid](gallery/showcases/showcase_surface_grid.md)
 
-![Surface Grid](/assets/gallery/v0.4/showcases/showcase_surface_grid.webp)
+![Surface Grid](../assets/gallery/v0.4/showcases/showcase_surface_grid.webp)
 
 `supported` `showcases`<br><span>`scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, ...</span>
 
@@ -149,7 +149,7 @@ generated height-field mesh with a derived wireframe overlay.
 
 ### [Synthetic Mouse](gallery/showcases/showcase_synthetic_mouse.md)
 
-![Synthetic Mouse](/assets/gallery/v0.4/showcases/showcase_synthetic_mouse.webp)
+![Synthetic Mouse](../assets/gallery/v0.4/showcases/showcase_synthetic_mouse.webp)
 
 `prototype` `showcases`<br><span>`scientific`, `synthetic`, `textured-mesh`, `animation`, `skeleton`, ...</span>
 
@@ -161,7 +161,7 @@ animated textured mouse mesh with trajectory and skeleton trails.
 
 ### [Textured Planets](gallery/showcases/textured_terrain_or_planet.md)
 
-![Textured Planets](/assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)
+![Textured Planets](../assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)
 
 `supported` `showcases`<br><span>`real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, ...</span>
 
@@ -173,7 +173,7 @@ UV textured planet mesh via dvz_mesh + sampled fields.
 
 ### [U.S. State Choropleth](gallery/showcases/us_state_choropleth.md)
 
-![U.S. State Choropleth](/assets/gallery/v0.4/showcases/us_state_choropleth.webp)
+![U.S. State Choropleth](../assets/gallery/v0.4/showcases/us_state_choropleth.webp)
 
 `supported` `showcases`<br><span>`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, ...</span>
 
@@ -185,7 +185,7 @@ contiguous U.S. state population-density choropleth.
 
 ### [Wind Field](gallery/showcases/showcase_wind_field.md)
 
-![Wind Field](/assets/gallery/v0.4/showcases/showcase_wind_field.webp)
+![Wind Field](../assets/gallery/v0.4/showcases/showcase_wind_field.webp)
 
 `supported` `showcases`<br><span>`scientific`, `synthetic`, `scalar-field`, `vector-field`, `wind-field`, ...</span>
 

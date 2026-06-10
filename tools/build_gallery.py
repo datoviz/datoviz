@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import posixpath
 import re
 import shutil
 from dataclasses import dataclass
@@ -283,13 +284,49 @@ def source_url(example: Example) -> str:
     return f"{SOURCE_BASE_URL}/{example.source}"
 
 
+def site_relative_url(page_path: str | Path, target: str) -> str:
+    if re.match(r"^[a-z][a-z0-9+.-]*:", target):
+        return target
+    normalized = target.lstrip("/")
+    page_parent = Path(page_path).parent.as_posix()
+    if page_parent in ("", "."):
+        return normalized
+    return posixpath.relpath(normalized, page_parent)
+
+
+def docs_site_path(docs_dir: Path, page_path: str | Path) -> str:
+    full_path = docs_dir / page_path
+    try:
+        return full_path.relative_to(ROOT / "docs").as_posix()
+    except ValueError:
+        return Path(page_path).as_posix()
+
+
+def image_url(
+    page_path: str | Path,
+    example: Example,
+    image_url_base: str,
+    image_format: str = DEFAULT_IMAGE_FORMAT,
+) -> str:
+    target = f"{image_url_base.rstrip('/')}/{example.lane}/{example.id}.{image_format}"
+    return site_relative_url(page_path, target)
+
+
+def html_link(href: str, label: str, code: bool = False) -> str:
+    content = f"<code>{label}</code>" if code else label
+    return f'<a href="{href}">{content}</a>'
+
+
 def media_block(
-    example: Example, image_dir: Path, image_url_base: str, image_format: str = DEFAULT_IMAGE_FORMAT
+    page_path: str | Path,
+    example: Example,
+    image_dir: Path,
+    image_url_base: str,
+    image_format: str = DEFAULT_IMAGE_FORMAT,
 ) -> str:
     image = image_dir / example.lane / f"{example.id}.png"
     if image.exists():
-        url = f"{image_url_base.rstrip('/')}/{example.lane}/{example.id}.{image_format}"
-        return f"![{example.title}]({url})"
+        return f"![{example.title}]({image_url(page_path, example, image_url_base, image_format)})"
     return "_Media pending._"
 
 
@@ -307,32 +344,33 @@ def render_source_tabs(example: Example) -> list[str]:
     return lines
 
 
-def render_webgpu_live(example: Example) -> list[str]:
+def render_webgpu_live(example: Example, page_path: str | Path) -> list[str]:
     if example.webgpu_status != "webgpu-live" or not example.webgpu_site_route:
         return []
+    route = site_relative_url(page_path, example.webgpu_site_route)
     return [
         "## Live WebGPU",
         "",
         '<div class="dvz-webgpu-live" markdown="1">',
-        f'<iframe src="{example.webgpu_site_route}" title="{example.title} WebGPU live example" '
+        f'<iframe src="{route}" title="{example.title} WebGPU live example" '
         'loading="lazy" allow="fullscreen; webgpu"></iframe>',
         "</div>",
         "",
-        f"[Open the live WebGPU example]({example.webgpu_site_route}).",
+        f'{html_link(route, "Open the live WebGPU example")}.',
         "",
     ]
 
 
 def render_card(
     example: Example,
-    docs_dir: Path,
+    page_path: str | Path,
     image_dir: Path,
     image_url_base: str,
     image_format: str = DEFAULT_IMAGE_FORMAT,
 ) -> str:
     page = Path(example.page_path)
     href = page.as_posix()
-    media = media_block(example, image_dir, image_url_base, image_format)
+    media = media_block(page_path, example, image_dir, image_url_base, image_format)
     tags = ", ".join(f"`{tag}`" for tag in example.tags[:5])
     if len(example.tags) > 5:
         tags += ", ..."
@@ -369,7 +407,7 @@ def generated_header(title: str) -> list[str]:
 def render_lane_section(
     examples: list[Example],
     lane: str,
-    docs_dir: Path,
+    page_path: str | Path,
     image_dir: Path,
     image_url_base: str,
     image_format: str = DEFAULT_IMAGE_FORMAT,
@@ -381,7 +419,7 @@ def render_lane_section(
     lines.append('<div class="grid cards" markdown="1">')
     lines.append("")
     for example in sorted(lane_examples, key=lambda item: item.title.lower()):
-        lines.append(render_card(example, docs_dir, image_dir, image_url_base, image_format))
+        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
     lines.append("</div>")
     lines.append("")
     return lines
@@ -400,9 +438,10 @@ def render_gallery_page(
     lines = generated_header(config["title"])
     lines.extend(dedent(config["intro"]).strip().splitlines())
     lines.extend(["", f"Coverage: {len(page_examples)} examples ({status_counts(page_examples)}).", ""])
+    page_path = docs_site_path(docs_dir, filename)
     for lane in config["lanes"]:
         lines.extend(
-            render_lane_section(page_examples, lane, docs_dir, image_dir, image_url_base, image_format)
+            render_lane_section(page_examples, lane, page_path, image_dir, image_url_base, image_format)
         )
     write_text(docs_dir / filename, "\n".join(lines))
 
@@ -586,10 +625,15 @@ def render_webgpu_matrix(examples: list[Example], docs_dir: Path) -> None:
             "| --- | --- | --- | --- | --- |",
         ]
     )
+    page_path = docs_site_path(docs_dir, "webgpu-matrix.md")
     for example in classified:
         requirements = ", ".join(f"`{requirement}`" for requirement in example.webgpu_requirements)
         route = (
-            f"[`{example.webgpu_route}`]({example.webgpu_site_route})"
+            html_link(
+                site_relative_url(page_path, example.webgpu_site_route),
+                example.webgpu_route,
+                code=True,
+            )
             if example.webgpu_route
             else ""
         )
@@ -608,6 +652,7 @@ def render_example_page(
     image_url_base: str,
     image_format: str = DEFAULT_IMAGE_FORMAT,
 ) -> None:
+    page_path = docs_site_path(docs_dir, example.page_path)
     lines = generated_header(example.title)
     lines.extend([example.summary, ""])
     metadata = [
@@ -627,7 +672,8 @@ def render_example_page(
         metadata.append(f"- WebGPU status: `{example.webgpu_status}`")
         if example.webgpu_route:
             metadata.append(
-                f"- WebGPU live route: [`{example.webgpu_route}`]({example.webgpu_site_route})"
+                f"- WebGPU live route: "
+                f"{html_link(site_relative_url(page_path, example.webgpu_site_route), example.webgpu_route, code=True)}"
             )
         if example.webgpu_requirements:
             requirements = ", ".join(f"`{requirement}`" for requirement in example.webgpu_requirements)
@@ -660,7 +706,9 @@ def render_example_page(
         for key, value in example.encoding.items():
             lines.append(f"| `{key}` | {value} |")
         lines.append("")
-    lines.extend(["## Media", "", media_block(example, image_dir, image_url_base, image_format), ""])
+    lines.extend(
+        ["## Media", "", media_block(page_path, example, image_dir, image_url_base, image_format), ""]
+    )
     lines.extend(
         [
             "Static screenshots are required before final website publication. Generated media is",
@@ -668,7 +716,7 @@ def render_example_page(
             "",
         ]
     )
-    lines.extend(render_webgpu_live(example))
+    lines.extend(render_webgpu_live(example, page_path))
     lines.extend(render_source_tabs(example))
     write_text(docs_dir / example.page_path, "\n".join(lines))
 

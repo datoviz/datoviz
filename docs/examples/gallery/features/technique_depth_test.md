@@ -11,7 +11,7 @@ side-by-side visual depth-test toggle with overlapping 3D points.
 - Source: [`examples/c/features/technique_depth_test.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_test.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=technique_depth_test`](/examples/webgpu/live.html?id=technique_depth_test)
+- WebGPU live route: <a href="../../webgpu/live.html?id=technique_depth_test"><code>examples/webgpu/live.html?id=technique_depth_test</code></a>
 - WebGPU requirements: `depth-test`, `point`
 - Build: `just example-c features/technique_depth_test`
 - Smoke: `./build/examples/c/features/technique_depth_test --png`
@@ -25,7 +25,7 @@ side-by-side visual depth-test toggle with overlapping 3D points.
 
 ## Media
 
-![Depth Test Toggle](/assets/gallery/v0.4/features/technique_depth_test.webp)
+![Depth Test Toggle](../../../assets/gallery/v0.4/features/technique_depth_test.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=technique_depth_test" title="Depth Test Toggle WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=technique_depth_test" title="Depth Test Toggle WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=technique_depth_test).
+<a href="../../webgpu/live.html?id=technique_depth_test">Open the live WebGPU example</a>.
 
 ## Source
 

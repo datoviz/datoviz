@@ -28,7 +28,7 @@ UV textured planet mesh via dvz_mesh + sampled fields.
 
 ## Media
 
-![Textured Planets](/assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)
+![Textured Planets](../../../assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

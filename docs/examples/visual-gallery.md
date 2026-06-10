@@ -14,13 +14,13 @@ Coverage: 15 examples (13 supported, 2 experimental).
 
 <div class="card" markdown="1">
 
-### [Glyph](gallery/visuals/visual_glyph.md)
+### [Font Atlas Glyphs](gallery/visuals/visual_glyph.md)
 
-![Glyph](/assets/gallery/v0.4/visuals/visual_glyph.webp)
+![Font Atlas Glyphs](../assets/gallery/v0.4/visuals/visual_glyph.webp)
 
-`experimental` `visuals`<br><span>`glyph`, `texture-atlas`, `sdf`, `capture`</span>
+`experimental` `visuals`<br><span>`glyph`, `font-atlas`, `texture-atlas`, `sdf`, `capture`</span>
 
-low-level SDF atlas quads, distinct from font-shaped text and marker symbols.
+low-level font atlas glyph quads, distinct from retained semantic text.
 
 </div>
 
@@ -28,7 +28,7 @@ low-level SDF atlas quads, distinct from font-shaped text and marker symbols.
 
 ### [Image](gallery/visuals/visual_image.md)
 
-![Image](/assets/gallery/v0.4/visuals/visual_image.webp)
+![Image](../assets/gallery/v0.4/visuals/visual_image.webp)
 
 `supported` `visuals`<br><span>`image`, `sampled-field`, `capture`</span>
 
@@ -40,7 +40,7 @@ deterministic scalar sampled field rendered with the retained image visual.
 
 ### [Labels](gallery/visuals/visual_labels.md)
 
-![Labels](/assets/gallery/v0.4/visuals/visual_labels.webp)
+![Labels](../assets/gallery/v0.4/visuals/visual_labels.webp)
 
 `supported` `visuals`<br><span>`labels`, `categorical-scale`, `panzoom`, `capture`</span>
 
@@ -52,7 +52,7 @@ retained labels visual with a small deterministic integer sampled field.
 
 ### [Marker](gallery/visuals/visual_marker.md)
 
-![Marker](/assets/gallery/v0.4/visuals/visual_marker.webp)
+![Marker](../assets/gallery/v0.4/visuals/visual_marker.webp)
 
 `supported` `visuals`<br><span>`marker`, `panzoom`, `capture`</span>
 
@@ -64,7 +64,7 @@ retained marker visual with deterministic symbol, fill, stroke, and size variati
 
 ### [Mesh](gallery/visuals/visual_mesh.md)
 
-![Mesh](/assets/gallery/v0.4/visuals/visual_mesh.webp)
+![Mesh](../assets/gallery/v0.4/visuals/visual_mesh.webp)
 
 `supported` `visuals`<br><span>`mesh`, `indexed-geometry`, `arcball`, `capture`</span>
 
@@ -76,7 +76,7 @@ retained lit indexed cube mesh.
 
 ### [Path](gallery/visuals/visual_path.md)
 
-![Path](/assets/gallery/v0.4/visuals/visual_path.webp)
+![Path](../assets/gallery/v0.4/visuals/visual_path.webp)
 
 `supported` `visuals`<br><span>`path`, `capture`</span>
 
@@ -88,7 +88,7 @@ deterministic multi-signal retained path visual.
 
 ### [Pixel](gallery/visuals/visual_pixel.md)
 
-![Pixel](/assets/gallery/v0.4/visuals/visual_pixel.webp)
+![Pixel](../assets/gallery/v0.4/visuals/visual_pixel.webp)
 
 `supported` `visuals`<br><span>`pixel`, `panzoom`, `capture`</span>
 
@@ -100,7 +100,7 @@ deterministic retained pixel visual baseline.
 
 ### [Point](gallery/visuals/point_2d.md)
 
-![Point](/assets/gallery/v0.4/visuals/point_2d.webp)
+![Point](../assets/gallery/v0.4/visuals/point_2d.webp)
 
 `supported` `visuals`<br><span>`point`, `panzoom`, `capture`</span>
 
@@ -112,7 +112,7 @@ deterministic retained 2D point visual baseline.
 
 ### [Primitive](gallery/visuals/visual_primitive.md)
 
-![Primitive](/assets/gallery/v0.4/visuals/visual_primitive.webp)
+![Primitive](../assets/gallery/v0.4/visuals/visual_primitive.webp)
 
 `supported` `visuals`<br><span>`primitive`, `capture`</span>
 
@@ -124,7 +124,7 @@ topology-parametric triangles rendered with the retained primitive visual.
 
 ### [Segment](gallery/visuals/visual_segment.md)
 
-![Segment](/assets/gallery/v0.4/visuals/visual_segment.webp)
+![Segment](../assets/gallery/v0.4/visuals/visual_segment.webp)
 
 `supported` `visuals`<br><span>`segment`, `panzoom`, `capture`</span>
 
@@ -136,7 +136,7 @@ retained segment visual with independent endpoint-pair strokes.
 
 ### [Sphere](gallery/visuals/sphere_impostor.md)
 
-![Sphere](/assets/gallery/v0.4/visuals/sphere_impostor.webp)
+![Sphere](../assets/gallery/v0.4/visuals/sphere_impostor.webp)
 
 `supported` `visuals`<br><span>`sphere`, `arcball`, `capture`</span>
 
@@ -148,7 +148,7 @@ deterministic 3D impostor-sphere cluster with depth, radius, and color variation
 
 ### [Splat](gallery/visuals/visual_splat.md)
 
-![Splat](/assets/gallery/v0.4/visuals/visual_splat.webp)
+![Splat](../assets/gallery/v0.4/visuals/visual_splat.webp)
 
 `experimental` `visuals`<br><span>`splat`, `panzoom`, `capture`</span>
 
@@ -160,7 +160,7 @@ retained Gaussian splat visual with deterministic screen-space ellipses.
 
 ### [Text](gallery/visuals/visual_text.md)
 
-![Text](/assets/gallery/v0.4/visuals/visual_text.webp)
+![Text](../assets/gallery/v0.4/visuals/visual_text.webp)
 
 `supported` `visuals`<br><span>`text`, `capture`</span>
 
@@ -172,7 +172,7 @@ retained semantic text objects lowered to glyph visuals.
 
 ### [Vector](gallery/visuals/visual_vector.md)
 
-![Vector](/assets/gallery/v0.4/visuals/visual_vector.webp)
+![Vector](../assets/gallery/v0.4/visuals/visual_vector.webp)
 
 `supported` `visuals`<br><span>`vector`, `path`, `panzoom`, `capture`</span>
 
@@ -184,7 +184,7 @@ retained straight and curved vector visual example.
 
 ### [Volume](gallery/visuals/volume.md)
 
-![Volume](/assets/gallery/v0.4/visuals/volume.webp)
+![Volume](../assets/gallery/v0.4/visuals/volume.webp)
 
 `supported` `visuals`<br><span>`sampled-field`, `volume`, `transfer-function`, `boundary-box`, `arcball`, ...</span>
 

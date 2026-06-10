@@ -11,7 +11,7 @@ retained sphere hover and click selection.
 - Source: [`examples/c/features/selection_sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_sphere.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=feature_selection_sphere`](/examples/webgpu/live.html?id=feature_selection_sphere)
+- WebGPU live route: <a href="../../webgpu/live.html?id=feature_selection_sphere"><code>examples/webgpu/live.html?id=feature_selection_sphere</code></a>
 - WebGPU requirements: `sphere`, `arcball`, `query-readback`, `frame-callbacks`
 - Build: `just example-c features/selection_sphere`
 - Smoke: `./build/examples/c/features/selection_sphere --png`
@@ -25,7 +25,7 @@ retained sphere hover and click selection.
 
 ## Media
 
-![Sphere Selection](/assets/gallery/v0.4/features/feature_selection_sphere.webp)
+![Sphere Selection](../../../assets/gallery/v0.4/features/feature_selection_sphere.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=feature_selection_sphere" title="Sphere Selection WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=feature_selection_sphere" title="Sphere Selection WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_selection_sphere).
+<a href="../../webgpu/live.html?id=feature_selection_sphere">Open the live WebGPU example</a>.
 
 ## Source
 

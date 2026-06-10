@@ -11,7 +11,7 @@ synthetic weather-like scalar and vector field showcase.
 - Source: [`examples/c/showcases/wind_field.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/wind_field.c)
 - Agent copy-safe: `false`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=showcase_wind_field`](/examples/webgpu/live.html?id=showcase_wind_field)
+- WebGPU live route: <a href="../../webgpu/live.html?id=showcase_wind_field"><code>examples/webgpu/live.html?id=showcase_wind_field</code></a>
 - WebGPU requirements: `image`, `vector`, `path`, `colorbar`, `panzoom`
 - Build: `just example-c showcases/wind_field`
 - Smoke: `./build/examples/c/showcases/wind_field --png`
@@ -29,7 +29,7 @@ synthetic weather-like scalar and vector field showcase.
 
 ## Media
 
-![Wind Field](/assets/gallery/v0.4/showcases/showcase_wind_field.webp)
+![Wind Field](../../../assets/gallery/v0.4/showcases/showcase_wind_field.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=showcase_wind_field" title="Wind Field WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=showcase_wind_field" title="Wind Field WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=showcase_wind_field).
+<a href="../../webgpu/live.html?id=showcase_wind_field">Open the live WebGPU example</a>.
 
 ## Source
 

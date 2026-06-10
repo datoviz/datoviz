@@ -11,7 +11,7 @@ retained track-backed visual transform animation.
 - Source: [`examples/c/features/animation_tracks.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/animation_tracks.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=feature_animation_tracks`](/examples/webgpu/live.html?id=feature_animation_tracks)
+- WebGPU live route: <a href="../../webgpu/live.html?id=feature_animation_tracks"><code>examples/webgpu/live.html?id=feature_animation_tracks</code></a>
 - WebGPU requirements: `mesh`, `frame-callbacks`, `controller`, `arcball`
 - Build: `just example-c features/animation_tracks`
 - Smoke: `./build/examples/c/features/animation_tracks --png`
@@ -25,7 +25,7 @@ retained track-backed visual transform animation.
 
 ## Media
 
-![Animation Tracks](/assets/gallery/v0.4/features/feature_animation_tracks.webp)
+![Animation Tracks](../../../assets/gallery/v0.4/features/feature_animation_tracks.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=feature_animation_tracks" title="Animation Tracks WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=feature_animation_tracks" title="Animation Tracks WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_animation_tracks).
+<a href="../../webgpu/live.html?id=feature_animation_tracks">Open the live WebGPU example</a>.
 
 ## Source
 

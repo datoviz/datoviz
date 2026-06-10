@@ -24,7 +24,7 @@ side-by-side multisample antialiasing on slanted 3D cube silhouettes.
 
 ## Media
 
-![Multisample Antialiasing](/assets/gallery/v0.4/features/technique_msaa.webp)
+![Multisample Antialiasing](../../../assets/gallery/v0.4/features/technique_msaa.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

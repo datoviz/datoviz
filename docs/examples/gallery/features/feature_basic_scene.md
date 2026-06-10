@@ -11,7 +11,7 @@ smallest runner-backed retained scene with one point visual.
 - Source: [`examples/c/features/basic_scene.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/basic_scene.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=feature_basic_scene`](/examples/webgpu/live.html?id=feature_basic_scene)
+- WebGPU live route: <a href="../../webgpu/live.html?id=feature_basic_scene"><code>examples/webgpu/live.html?id=feature_basic_scene</code></a>
 - WebGPU requirements: `point`
 - Build: `just example-c features/basic_scene`
 - Smoke: `./build/examples/c/features/basic_scene --png`
@@ -25,7 +25,7 @@ smallest runner-backed retained scene with one point visual.
 
 ## Media
 
-![Basic Scene](/assets/gallery/v0.4/features/feature_basic_scene.webp)
+![Basic Scene](../../../assets/gallery/v0.4/features/feature_basic_scene.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -33,10 +33,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=feature_basic_scene" title="Basic Scene WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=feature_basic_scene" title="Basic Scene WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=feature_basic_scene).
+<a href="../../webgpu/live.html?id=feature_basic_scene">Open the live WebGPU example</a>.
 
 ## Source
 

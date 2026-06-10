@@ -27,6 +27,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dry-run", action="store_true", help="list conversions without writing WebP files")
     parser.add_argument("--force", action="store_true", help="rewrite WebP files even when newer than PNGs")
     parser.add_argument("--strict", action="store_true", help="fail when selected PNG inputs are missing")
+    parser.add_argument(
+        "--require-image-dir",
+        action="store_true",
+        help="fail when the source PNG directory is missing",
+    )
+    parser.add_argument(
+        "--quiet-missing",
+        action="store_true",
+        help="summarize missing PNG inputs instead of printing each path",
+    )
     return parser.parse_args()
 
 
@@ -68,6 +78,10 @@ def main() -> int:
     if not 0 <= args.quality <= 100:
         print("--quality must be between 0 and 100")
         return 2
+    if not args.image_dir.exists():
+        print(f"gallery PNG source directory not found: {args.image_dir}")
+        print("Run: git submodule update --init --recursive data")
+        return 2 if args.strict or args.require_image_dir else 0
 
     cwebp = shutil.which("cwebp")
     if cwebp is None and not args.dry_run:
@@ -87,8 +101,9 @@ def main() -> int:
         webp = output_path(example, args.output_dir)
         if not png.exists():
             missing += 1
-            rel_png = png.relative_to(ROOT) if png.is_relative_to(ROOT) else png
-            print(f"missing: {example.id} -> {rel_png}")
+            if not args.quiet_missing:
+                rel_png = png.relative_to(ROOT) if png.is_relative_to(ROOT) else png
+                print(f"missing: {example.id} -> {rel_png}")
             continue
         if not needs_update(png, webp, args.force):
             skipped += 1
@@ -106,6 +121,9 @@ def main() -> int:
 
     action = "would_convert" if args.dry_run else "converted"
     print(f"gallery webp: {action}={converted} skipped={skipped} missing={missing}")
+    if missing and args.strict:
+        print("Missing committed gallery PNGs. If this is a fresh clone, run:")
+        print("  git submodule update --init --recursive data")
     return 1 if missing and args.strict else 0
 
 

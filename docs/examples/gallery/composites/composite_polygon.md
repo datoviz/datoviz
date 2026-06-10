@@ -11,7 +11,7 @@ clean semantic polygon and polygon-set composites.
 - Source: [`examples/c/composites/polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c)
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
-- WebGPU live route: [`examples/webgpu/live.html?id=composite_polygon`](/examples/webgpu/live.html?id=composite_polygon)
+- WebGPU live route: <a href="../../webgpu/live.html?id=composite_polygon"><code>examples/webgpu/live.html?id=composite_polygon</code></a>
 - WebGPU requirements: `composite`, `polygon-set`, `primitive`, `segment`, `panzoom`
 - Build: `just example-c composites/polygon`
 - Smoke: `./build/examples/c/composites/polygon --png`
@@ -29,7 +29,7 @@ clean semantic polygon and polygon-set composites.
 
 ## Media
 
-![Polygon Composite](/assets/gallery/v0.4/composites/composite_polygon.webp)
+![Polygon Composite](../../../assets/gallery/v0.4/composites/composite_polygon.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.
@@ -37,10 +37,10 @@ prepared in the `data` submodule and linked from this page.
 ## Live WebGPU
 
 <div class="dvz-webgpu-live" markdown="1">
-<iframe src="/examples/webgpu/live.html?id=composite_polygon" title="Polygon Composite WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<iframe src="../../webgpu/live.html?id=composite_polygon" title="Polygon Composite WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
 </div>
 
-[Open the live WebGPU example](/examples/webgpu/live.html?id=composite_polygon).
+<a href="../../webgpu/live.html?id=composite_polygon">Open the live WebGPU example</a>.
 
 ## Source
 

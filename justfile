@@ -2063,7 +2063,11 @@ doc: #gallery #headers
     @python tools/build_api_c.py
 #
 
-serve:
+docs-assets:
+    @python3 tools/build_gallery_webp.py --require-image-dir --quiet-missing
+#
+
+serve: docs-assets
     @uv run --with mkdocs-material --with 'mkdocstrings[python]' mkdocs serve -a localhost:8294
 #
 
