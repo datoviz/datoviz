@@ -2164,12 +2164,13 @@ examples:
         - query-readback
         - selection
         - overlay
+      reason: requires prepared generated data; browser promotion must package data rather than use a runtime synthetic fallback
     agent_copy_safe: false
     dataset:
       name: Synthetic embedding atlas
       source: deterministic local generation
       license: generated under repository license
-      preprocessing: python tools/data/prepare_embedding_atlas.py
+      preprocessing: python tools/data/prepare_embedding_atlas.py --force
       cache_prepared_path: .cache/datoviz/examples/embedding_atlas/prepared
     gallery:
       card: section
@@ -2201,13 +2202,13 @@ examples:
         - colorbar
         - panzoom
         - video
-      reason: this showcase depends on large prepared data and video-oriented gallery plumbing
+      reason: this showcase depends on prepared data and video-oriented gallery plumbing; no runtime synthetic fallback is allowed
     agent_copy_safe: false
     dataset:
       name: Lipid Brain Atlas peaks parquet
       source: https://zenodo.org/records/15379499
       license: Zenodo dataset terms apply
-      preprocessing: python tools/data/prepare_lipid_brain_atlas.py
+      preprocessing: python tools/data/prepare_lipid_brain_atlas.py --synthetic --force
       cache_prepared_path: .cache/datoviz/examples/lipid_brain_atlas/prepared
       raw_cache_path: $DVZ_DATASET_CACHE/lipid_brain_atlas/peaks.parquet
     gallery:

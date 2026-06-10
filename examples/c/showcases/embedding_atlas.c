@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* embedding_atlas - interactive synthetic AI embedding atlas.
+/* embedding_atlas - interactive prepared AI embedding atlas.
  *
  * Scenario: showcase_embedding_atlas
  * Style: showcase, graphite_cyan, 1600x1200 capture target
@@ -26,7 +26,6 @@
 /*************************************************************************************************/
 
 #include <inttypes.h>
-#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -52,11 +51,8 @@
 #define EMBEDDING_CLUSTER_PATH     EMBEDDING_CACHE_DIR "/cluster.u16"
 #define EMBEDDING_COLOR_PATH       EMBEDDING_CACHE_DIR "/color.rgba8"
 #define EMBEDDING_MAX_POINTS       200000u
-#define EMBEDDING_FALLBACK_POINTS  2048u
 #define EMBEDDING_CLUSTER_COUNT    6u
 #define QUERY_ID                   31u
-
-static const float TAU = 6.28318530718f;
 
 static const char* CLUSTER_NAMES[EMBEDDING_CLUSTER_COUNT] = {
     "syntax", "vision", "audio", "planning", "retrieval", "control",
@@ -75,7 +71,6 @@ typedef struct EmbeddingAtlasData
     float* diameters;
     uint16_t* clusters;
     uint32_t count;
-    bool cache_loaded;
 } EmbeddingAtlasData;
 
 
@@ -99,107 +94,6 @@ typedef struct EmbeddingAtlasState
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-/**
- * Clamp a float to the unit interval.
- *
- * @param value input value
- * @return clamped value
- */
-static float _clamp01(float value)
-{
-    if (value < 0.0f)
-        return 0.0f;
-    if (value > 1.0f)
-        return 1.0f;
-    return value;
-}
-
-
-/**
- * Convert a normalized float channel to an 8-bit channel.
- *
- * @param value normalized channel value
- * @return clamped 8-bit channel
- */
-static uint8_t _u8(float value)
-{
-    return (uint8_t)(255.0f * _clamp01(value) + 0.5f);
-}
-
-
-/**
- * Return a stable pseudo-random float in [0, 1] for a point id and salt.
- *
- * @param id point id
- * @param salt hash salt
- * @return pseudo-random unit float
- */
-static float _hash01(uint32_t id, uint32_t salt)
-{
-    uint32_t x = id * 747796405u + salt * 2891336453u + 0x9e3779b9u;
-    x ^= x >> 16;
-    x *= 2246822519u;
-    x ^= x >> 13;
-    x *= 3266489917u;
-    x ^= x >> 16;
-    return (float)(x & 0x00ffffffu) / 16777215.0f;
-}
-
-
-/**
- * Return a cluster palette color.
- *
- * @param cluster cluster id
- * @param score local confidence score
- * @return RGBA8 color
- */
-static DvzColor _cluster_color(uint32_t cluster, float score)
-{
-    const DvzColor palette[EMBEDDING_CLUSTER_COUNT] = {
-        {76, 201, 240, 226},
-        {128, 255, 219, 226},
-        {255, 183, 3, 226},
-        {239, 71, 111, 226},
-        {222, 226, 230, 210},
-        {141, 153, 174, 218},
-    };
-    DvzColor color = palette[cluster % EMBEDDING_CLUSTER_COUNT];
-    color.a = _u8(0.66f + 0.28f * score);
-    return color;
-}
-
-
-/**
- * Return one synthetic embedding point in data coordinates.
- *
- * @param id point id
- * @param cluster cluster id
- * @param out_score local score output
- * @param out position output
- */
-static void _synthetic_point(uint32_t id, uint32_t cluster, float* out_score, vec3 out)
-{
-    ANN(out_score);
-    ANN(out);
-
-    const float theta = TAU * (float)cluster / (float)EMBEDDING_CLUSTER_COUNT;
-    const float cx = 0.82f * cosf(theta);
-    const float cy = 0.62f * sinf(theta);
-    const float r = sqrtf(_hash01(id, 17u)) * (0.075f + 0.155f * _hash01(cluster, 31u));
-    const float a = TAU * _hash01(id, 43u);
-    const float stretch = 1.0f + 0.80f * _hash01(cluster, 59u);
-    const float ca = cosf(theta + 0.45f);
-    const float sa = sinf(theta + 0.45f);
-    const float lx = stretch * r * cosf(a);
-    const float ly = 0.42f * r * sinf(a);
-
-    out[0] = cx + ca * lx - sa * ly + 0.035f * sinf(7.0f * cy + 0.013f * (float)id);
-    out[1] = cy + sa * lx + ca * ly + 0.035f * cosf(6.0f * cx + 0.017f * (float)id);
-    out[2] = 0.0f;
-    *out_score = _clamp01(1.0f - r / 0.24f);
-}
-
 
 /**
  * Free loaded embedding data.
@@ -344,51 +238,12 @@ static bool _load_cache(EmbeddingAtlasData* data)
     dvz_free(xy);
 
     data->count = count;
-    data->cache_loaded = true;
     return true;
 }
 
 
 /**
- * Fill an in-memory deterministic fallback embedding atlas.
- *
- * @param data output embedding data
- * @return true on success
- */
-static bool _fill_fallback(EmbeddingAtlasData* data)
-{
-    ANN(data);
-
-    const uint32_t count = EMBEDDING_FALLBACK_POINTS;
-    data->positions = (vec3*)dvz_calloc(count, sizeof(*data->positions));
-    data->colors = (DvzColor*)dvz_calloc(count, sizeof(*data->colors));
-    data->diameters = (float*)dvz_calloc(count, sizeof(*data->diameters));
-    data->clusters = (uint16_t*)dvz_calloc(count, sizeof(*data->clusters));
-    if (
-        data->positions == NULL || data->colors == NULL || data->diameters == NULL ||
-        data->clusters == NULL)
-    {
-        _free_data(data);
-        return false;
-    }
-
-    for (uint32_t i = 0; i < count; i++)
-    {
-        const uint32_t cluster = i % EMBEDDING_CLUSTER_COUNT;
-        float score = 0.0f;
-        _synthetic_point(i, cluster, &score, data->positions[i]);
-        data->colors[i] = _cluster_color(cluster, score);
-        data->diameters[i] = 5.0f + 1.6f * score;
-        data->clusters[i] = (uint16_t)cluster;
-    }
-    data->count = count;
-    data->cache_loaded = false;
-    return true;
-}
-
-
-/**
- * Load prepared cache data, or fall back to a deterministic in-memory atlas.
+ * Load prepared cache data.
  *
  * @param data output embedding data
  * @return true on success
@@ -403,8 +258,8 @@ static bool _load_data(EmbeddingAtlasData* data)
 
     dvz_fprintf(
         stderr, "embedding_atlas: missing prepared cache. Run "
-                "`python tools/data/prepare_embedding_atlas.py --force`; using fallback.\n");
-    return _fill_fallback(data);
+                "`python tools/data/prepare_embedding_atlas.py --force` from the repository root.\n");
+    return false;
 }
 
 
@@ -453,11 +308,10 @@ static void _update_readout(EmbeddingAtlasState* state, const DvzQueryResult* qu
     {
         const uint32_t id = (uint32_t)query->resolved_id;
         const uint32_t cluster = state->data.clusters[id] % EMBEDDING_CLUSTER_COUNT;
-        const char* origin = state->data.cache_loaded ? "cache" : "fallback";
         snprintf(
             text, sizeof(text), "Embedding  item %" PRIu32 "  cluster %s  selected %" PRIu32
-                                "  source %s",
-            id, CLUSTER_NAMES[cluster], dvz_selection_count(state->selection), origin);
+                                "  source prepared",
+            id, CLUSTER_NAMES[cluster], dvz_selection_count(state->selection));
     }
     else
     {

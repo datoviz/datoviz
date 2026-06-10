@@ -67,6 +67,11 @@ capability diagnostics against the same streams used by native runtime execution
 browser gallery example by reimplementing its scene, visual state, animation, picking, selection,
 query/probe, or data semantics in JavaScript.
 
+Example data guardrail: examples that declare prepared, generated, or external data must not
+silently synthesize an in-memory runtime fallback when the expected bundle is absent. Fail with the
+exact preparation command instead. Synthetic/simulated examples remain acceptable only when that
+data source is explicit in the manifest and example contract.
+
 WebGPU example promotion handoff: prefer one commit per example or evidence checkpoint. The current
 pattern is: export/reuse the canonical C scenario, register it in `src/wasm/scene_api.c` and
 `src/wasm/CMakeLists.txt` only if not already registered, add or verify

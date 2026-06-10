@@ -147,8 +147,10 @@ Current: synthetic composed showcase routes that reuse current primitives are li
 
 Remaining planned composed/data-backed routes:
 
-`showcase_embedding_atlas` if data packaging, query/readback, and overlay behavior are stable
-enough.
+`showcase_embedding_atlas` remains planned until prepared data packaging, query/readback, and
+overlay behavior are stable enough. Do not promote data-backed showcase routes by relying on an
+in-memory simulated fallback; examples that expect prepared/generated data should fail with the
+preparation command when the bundle is absent.
 
 ### 5. Explicit Deferrals
 

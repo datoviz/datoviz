@@ -25,7 +25,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -52,17 +51,6 @@
 #define LIPID_MAX_WIDTH  2048u
 #define LIPID_MAX_HEIGHT 2048u
 #define LIPID_MAX_FRAMES 128u
-
-#define FALLBACK_WIDTH    384u
-#define FALLBACK_HEIGHT   240u
-#define FALLBACK_SECTIONS 5u
-#define FALLBACK_CHANNELS 4u
-
-static const float TAU = 6.28318530718f;
-
-static const char* FALLBACK_CHANNEL_NAMES[FALLBACK_CHANNELS] = {
-    "m/z 760.58", "m/z 782.57", "m/z 834.59", "m/z 885.55",
-};
 
 
 
@@ -93,7 +81,6 @@ typedef struct LipidAtlasData
     uint32_t* section_ids;
     float* channel_mz;
     float* values;
-    bool cache_loaded;
 } LipidAtlasData;
 
 
@@ -114,22 +101,6 @@ typedef struct LipidAtlasState
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-/**
- * Clamp a float to the unit interval.
- *
- * @param value input value
- * @return clamped value
- */
-static float _clamp01(float value)
-{
-    if (value < 0.0f)
-        return 0.0f;
-    if (value > 1.0f)
-        return 1.0f;
-    return value;
-}
-
 
 /**
  * Free atlas data arrays.
@@ -159,110 +130,6 @@ static void _free_state(LipidAtlasState* state)
     dvz_free(state->current_values);
     _free_data(&state->data);
     dvz_free(state);
-}
-
-
-/**
- * Return one synthetic brain-section mask value.
- *
- * @param x normalized X in [-1, 1]
- * @param y normalized Y in [-1, 1]
- * @param section section index
- * @return mask value in [0, 1]
- */
-static float _mask(float x, float y, uint32_t section)
-{
-    const float taper = 0.86f - 0.055f * fabsf((float)section - 2.0f);
-    const float left = powf((x + 0.33f) / 0.54f, 2.0f) + powf((y + 0.02f) / taper, 2.0f);
-    const float right = powf((x - 0.33f) / 0.54f, 2.0f) + powf((y + 0.02f) / taper, 2.0f);
-    const float stem = powf(x / 0.28f, 2.0f) + powf((y + 0.70f) / 0.28f, 2.0f);
-    const float m = 1.0f - fminf(fminf(left, right), stem);
-    return powf(_clamp01(m), 0.55f);
-}
-
-
-/**
- * Return one synthetic lipid intensity sample.
- *
- * @param x normalized X in [-1, 1]
- * @param y normalized Y in [-1, 1]
- * @param section section index
- * @param channel channel index
- * @return normalized intensity
- */
-static float _synthetic_value(float x, float y, uint32_t section, uint32_t channel)
-{
-    const float ap = ((float)section - 0.5f * (float)(FALLBACK_SECTIONS - 1u)) /
-                     (float)(FALLBACK_SECTIONS - 1u);
-    const float ridge_center = 0.18f * sinf(1.7f * x + (float)channel);
-    const float ridge = expf(-powf(y - ridge_center, 2.0f) / (0.035f + 0.01f * channel));
-    const float ventricle = expf(-powf(x / 0.20f, 2.0f) - powf((y + 0.02f) / 0.34f, 2.0f));
-    const float lateral =
-        expf(-powf((fabsf(x) - 0.42f) / 0.17f, 2.0f) - powf((y + 0.02f) / 0.42f, 2.0f));
-    const float gradient = 0.5f + 0.5f * sinf((2.0f + 0.2f * channel) * x - 1.4f * y + 0.8f * ap);
-    float value = 0.24f * gradient + (0.36f + 0.08f * channel) * ridge +
-                  (0.18f + 0.04f * section) * lateral - (0.30f - 0.03f * channel) * ventricle;
-    value *= _mask(x, y, section);
-    return _clamp01(value);
-}
-
-
-/**
- * Fill an in-memory deterministic fallback atlas.
- *
- * @param data output atlas data
- * @return true on success
- */
-static bool _fill_fallback(LipidAtlasData* data)
-{
-    ANN(data);
-
-    data->width = FALLBACK_WIDTH;
-    data->height = FALLBACK_HEIGHT;
-    data->sections = FALLBACK_SECTIONS;
-    data->channels = FALLBACK_CHANNELS;
-
-    const uint64_t pixels = (uint64_t)data->width * data->height;
-    const uint64_t total = pixels * data->sections * data->channels;
-    data->section_ids = (uint32_t*)dvz_calloc(data->sections, sizeof(*data->section_ids));
-    data->channel_mz = (float*)dvz_calloc(data->channels, sizeof(*data->channel_mz));
-    data->values = (float*)dvz_calloc(total, sizeof(*data->values));
-    if (data->section_ids == NULL || data->channel_mz == NULL || data->values == NULL)
-    {
-        _free_data(data);
-        return false;
-    }
-
-    for (uint32_t s = 0; s < data->sections; s++)
-        data->section_ids[s] = s;
-    const float mz[FALLBACK_CHANNELS] = {760.58f, 782.57f, 834.59f, 885.55f};
-    memcpy(data->channel_mz, mz, sizeof(mz));
-
-    for (uint32_t s = 0; s < data->sections; s++)
-    {
-        for (uint32_t c = 0; c < data->channels; c++)
-        {
-            float max_value = 1e-6f;
-            float* dst = data->values + ((uint64_t)s * data->channels + c) * pixels;
-            for (uint32_t y = 0; y < data->height; y++)
-            {
-                const float yy = -1.0f + 2.0f * (float)y / (float)(data->height - 1u);
-                for (uint32_t x = 0; x < data->width; x++)
-                {
-                    const float xx = -1.0f + 2.0f * (float)x / (float)(data->width - 1u);
-                    const float value = _synthetic_value(xx, yy, s, c);
-                    dst[(uint64_t)y * data->width + x] = value;
-                    if (value > max_value)
-                        max_value = value;
-                }
-            }
-            for (uint64_t i = 0; i < pixels; i++)
-                dst[i] = _clamp01(dst[i] / max_value);
-        }
-    }
-
-    data->cache_loaded = false;
-    return true;
 }
 
 
@@ -313,7 +180,6 @@ static bool _load_cache(LipidAtlasData* data)
     if (fread(data->values, sizeof(*data->values), pixels * frames, fp) != pixels * frames)
         goto cleanup;
 
-    data->cache_loaded = true;
     ok = true;
 
 cleanup:
@@ -325,7 +191,7 @@ cleanup:
 
 
 /**
- * Load prepared cache data, or fall back to deterministic synthetic data.
+ * Load prepared cache data.
  *
  * @param data output atlas data
  * @return true on success
@@ -340,9 +206,9 @@ static bool _load_data(LipidAtlasData* data)
 
     dvz_fprintf(
         stderr, "lipid_brain_atlas: missing prepared cache. Run "
-                "`python tools/data/prepare_lipid_brain_atlas.py --synthetic --force`; "
-                "using fallback.\n");
-    return _fill_fallback(data);
+                "`python tools/data/prepare_lipid_brain_atlas.py --synthetic --force` "
+                "from the repository root.\n");
+    return false;
 }
 
 
@@ -374,11 +240,6 @@ static void _channel_name(const LipidAtlasData* data, uint32_t channel, char* ou
 {
     ANN(data);
     ANN(out);
-    if (channel < FALLBACK_CHANNELS)
-    {
-        snprintf(out, out_size, "%s", FALLBACK_CHANNEL_NAMES[channel]);
-        return;
-    }
     snprintf(out, out_size, "m/z %.2f", data->channel_mz[channel]);
 }
 
@@ -430,9 +291,8 @@ static bool _set_frame(LipidAtlasState* state, uint32_t section, uint32_t channe
     {
         char text[160] = {0};
         snprintf(
-            text, sizeof(text), "Lipid Brain Atlas  section %u/%u  %s  source %s",
-            section + 1u, state->data.sections, channel_text,
-            state->data.cache_loaded ? "cache" : "fallback");
+            text, sizeof(text), "Lipid Brain Atlas  section %u/%u  %s  source prepared",
+            section + 1u, state->data.sections, channel_text);
         dvz_overlay_card_set_text(state->readout, text);
     }
     return true;

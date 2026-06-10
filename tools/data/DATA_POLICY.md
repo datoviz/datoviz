@@ -121,6 +121,11 @@ Use `fallback` only when synthetic data stands in for a desired external/public 
 temporarily unavailable, too large, or not redistributable. The manifest and provenance should make the
 distinction explicit so loaders, tests, and documentation do not confuse fallback data with the real source.
 
+Runtime examples that declare prepared, generated, or external data must not silently synthesize an
+in-memory stand-in when the expected bundle is missing. They should fail hard and print the exact
+preparation command. Keep simulation/synthetic examples explicit by making generated data the declared
+source, either embedded in the example or produced by a preparation script.
+
 Generated or fallback data must still include stable parameters, seeds when applicable, artifact hashes,
 sizes, validation facts, and provenance notes.
 
