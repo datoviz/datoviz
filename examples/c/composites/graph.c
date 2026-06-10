@@ -271,6 +271,8 @@ static bool _add_graph_labels(DvzPanel* panel)
     DvzLabelDesc title = dvz_label_desc();
     title.text = "Brain connectivity: 15 regions / 26 weighted links";
     title.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_TITLE);
+    title.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    title.style.size_px = 27.0f;
     title.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
     title.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
     title.placement.position[0] = 28.0f;
@@ -286,6 +288,8 @@ static bool _add_graph_labels(DvzPanel* panel)
         DvzLabelDesc desc = dvz_label_desc();
         desc.text = COMMUNITIES[i].label;
         desc.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_DATA_LABEL);
+        desc.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+        desc.style.size_px = 26.0f;
         desc.style.color[0] = COMMUNITIES[i].color.r;
         desc.style.color[1] = COMMUNITIES[i].color.g;
         desc.style.color[2] = COMMUNITIES[i].color.b;
