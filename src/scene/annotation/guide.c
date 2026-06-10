@@ -181,13 +181,53 @@ static void _guide_apply_visual_defaults(DvzVisual* visual, bool blended)
 
 
 
-static void _guide_label_update(DvzAnnotation* label, double x, double y)
+static bool _guide_data_to_panel_pixels(
+    DvzPanel* panel, double x, double y, double x0, double x1, double y0, double y1,
+    float* out_x, float* out_y)
+{
+    ANN(panel);
+    ANN(out_x);
+    ANN(out_y);
+
+    DvzRect plot = {0};
+    if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
+        return false;
+    if (fabs(x1 - x0) <= DBL_EPSILON || fabs(y1 - y0) <= DBL_EPSILON)
+        return false;
+
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    (void)panel_width;
+    (void)panel_height;
+
+    const double tx = (x - x0) / (x1 - x0);
+    const double ty = (y - y0) / (y1 - y0);
+    *out_x = plot.x - panel_x + (float)tx * plot.width;
+    *out_y = plot.y - panel_y + (1.0f - (float)ty) * plot.height;
+    return true;
+}
+
+
+
+static void _guide_label_update(
+    DvzAnnotation* label, DvzPanel* panel, double x, double y, double x0, double x1, double y0,
+    double y1)
 {
     if (label == NULL)
         return;
-    label->placement.mode = DVZ_TEXT_PLACEMENT_DATA;
-    label->placement.position[0] = x;
-    label->placement.position[1] = y;
+
+    float px = 0.0f;
+    float py = 0.0f;
+    if (!_guide_data_to_panel_pixels(panel, x, y, x0, x1, y0, y1, &px, &py))
+        return;
+
+    label->placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    label->placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    label->placement.position[0] = px;
+    label->placement.position[1] = py;
     label->placement.position[2] = 0.0;
     label->dirty_flags |= DVZ_TEXT_DIRTY_PLACEMENT | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
     label->version++;
@@ -202,8 +242,8 @@ static DvzAnnotation* _guide_label_create(DvzPanel* panel, const char* text)
 
     DvzLabelDesc label_desc = dvz_label_desc();
     label_desc.text = text;
-    label_desc.placement.mode = DVZ_TEXT_PLACEMENT_DATA;
-    label_desc.placement.anchor = DVZ_SCENE_ANCHOR_DATA;
+    label_desc.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    label_desc.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
     label_desc.placement.text_anchor[0] = 0.5f;
     label_desc.placement.text_anchor[1] = 0.5f;
     label_desc.placement.has_text_anchor = true;
@@ -230,7 +270,8 @@ static bool _guide_line_upload(DvzGuideLine* guide)
         position_start[0][1] = (float)guide->desc.value;
         position_end[0][0] = (float)x1;
         position_end[0][1] = (float)guide->desc.value;
-        _guide_label_update(guide->label, 0.5 * (x0 + x1), guide->desc.value);
+        _guide_label_update(
+            guide->label, guide->panel, 0.5 * (x0 + x1), guide->desc.value, x0, x1, y0, y1);
     }
     else
     {
@@ -238,7 +279,8 @@ static bool _guide_line_upload(DvzGuideLine* guide)
         position_start[0][1] = (float)y0;
         position_end[0][0] = (float)guide->desc.value;
         position_end[0][1] = (float)y1;
-        _guide_label_update(guide->label, guide->desc.value, 0.5 * (y0 + y1));
+        _guide_label_update(
+            guide->label, guide->panel, guide->desc.value, 0.5 * (y0 + y1), x0, x1, y0, y1);
     }
 
     DvzColor colors[1] = {guide->desc.color};
@@ -278,13 +320,15 @@ static bool _guide_span_upload(DvzGuideSpan* span)
     {
         sy0 = v0;
         sy1 = v1;
-        _guide_label_update(span->label, 0.5 * (x0 + x1), 0.5 * (v0 + v1));
+        _guide_label_update(
+            span->label, span->panel, 0.5 * (x0 + x1), 0.5 * (v0 + v1), x0, x1, y0, y1);
     }
     else
     {
         sx0 = v0;
         sx1 = v1;
-        _guide_label_update(span->label, 0.5 * (v0 + v1), 0.5 * (y0 + y1));
+        _guide_label_update(
+            span->label, span->panel, 0.5 * (v0 + v1), 0.5 * (y0 + y1), x0, x1, y0, y1);
     }
 
     const vec3 positions[6] = {

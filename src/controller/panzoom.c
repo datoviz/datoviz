@@ -625,7 +625,9 @@ bool dvz_panzoom_pointer(DvzPanzoom* pz, const DvzPointerEvent* ev)
                 float w = pz->viewport_size[0];
                 float h = pz->viewport_size[1];
                 float a = w > 0.0f && h > 0.0f ? h / w : 1.0f;
-                shift[1] = -a * shift[0];
+                float s = 0.5f * (shift[0] - shift[1]);
+                shift[0] = s;
+                shift[1] = -a * s;
             }
             dvz_panzoom_zoom_shift(pz, shift, press);
         }

@@ -48,7 +48,8 @@ DvzScenarioSpec dvz_example_picking_scenario(void);
 #define MARKER_COUNT (GRID_COLS * GRID_ROWS + 5)
 #define BASE_SIZE    34.0f
 #define HOVER_SIZE   50.0f
-#define QUERY_ID     1u
+#define QUERY_HOVER_ID 1u
+#define QUERY_CLICK_ID 2u
 #define PI_F         3.14159265358979323846f
 
 
@@ -70,6 +71,9 @@ struct PickingState
     bool cursor_valid;
     double cursor_x;
     double cursor_y;
+    bool pending_click;
+    double click_x;
+    double click_y;
 };
 
 
@@ -172,11 +176,13 @@ static void _picking_pointer(const DvzScenarioPointerEvent* event, void* user_da
     if (event->type == DVZ_SCENARIO_POINTER_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
     {
         if (!state->cursor_valid)
-            return;
-        if (state->has_hover_query)
-            _toggle_marker_selection(state, &state->latest_hover_query);
-        else
+        {
             dvz_selection_clear(state->selection);
+            return;
+        }
+        state->click_x = state->cursor_x;
+        state->click_y = state->cursor_y;
+        state->pending_click = true;
     }
 }
 
@@ -199,7 +205,22 @@ static void _picking_post_frame(DvzScenarioContext* ctx, void* user_data)
     bool saw_marker_query = false;
     while (dvz_scene_poll_query(state->scene, &query))
     {
-        if (query.request_id != QUERY_ID)
+        if (query.request_id == QUERY_CLICK_ID)
+        {
+            if (
+                query.status == DVZ_QUERY_STATUS_HIT && query.hit &&
+                query.visual_family == DVZ_SCENE_VISUAL_FAMILY_MARKER &&
+                query.resolved_target == DVZ_SCENE_TARGET_ITEM && query.resolved_id < MARKER_COUNT)
+            {
+                _toggle_marker_selection(state, &query);
+            }
+            else
+            {
+                dvz_selection_clear(state->selection);
+            }
+            continue;
+        }
+        if (query.request_id != QUERY_HOVER_ID)
             continue;
 
         saw_marker_query = true;
@@ -225,7 +246,7 @@ static void _picking_post_frame(DvzScenarioContext* ctx, void* user_data)
     if (state->cursor_valid)
     {
         DvzQueryRequest request = dvz_query_request();
-        request.request_id = QUERY_ID;
+        request.request_id = QUERY_HOVER_ID;
         request.target = DVZ_SCENE_TARGET_ITEM;
         request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
 
@@ -233,6 +254,17 @@ static void _picking_post_frame(DvzScenarioContext* ctx, void* user_data)
         {
             fprintf(stderr, "dvz_scenario_panel_query() failed\n");
         }
+    }
+    if (state->pending_click)
+    {
+        DvzQueryRequest request = dvz_query_request();
+        request.request_id = QUERY_CLICK_ID;
+        request.target = DVZ_SCENE_TARGET_ITEM;
+        request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
+
+        if (dvz_scenario_panel_query(state->panel, state->click_x, state->click_y, &request) != 0)
+            fprintf(stderr, "dvz_scenario_panel_query(click) failed\n");
+        state->pending_click = false;
     }
 }
 

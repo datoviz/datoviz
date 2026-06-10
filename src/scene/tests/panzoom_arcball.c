@@ -192,6 +192,64 @@ int test_panzoom_zoom_limits(TstContext* suite, const TstCase* item)
 }
 
 
+int test_panzoom_keep_aspect_right_drag_diagonal_boundary(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzPanzoom* right = _dvz_panzoom(800.0f, 600.0f, DVZ_PANZOOM_FLAGS_KEEP_ASPECT);
+    ANN(right);
+    DvzPointerEvent ev = {
+        .type = DVZ_POINTER_EVENT_DRAG,
+        .button = DVZ_POINTER_BUTTON_RIGHT,
+        .content.d.press_pos = {400.0f, 300.0f},
+        .content.d.is_press_valid = true,
+        .pos = {480.0f, 300.0f},
+    };
+    ev.content.d.shift[0] = ev.pos[0] - ev.content.d.press_pos[0];
+    ev.content.d.shift[1] = ev.pos[1] - ev.content.d.press_pos[1];
+    AT(dvz_panzoom_pointer(right, &ev));
+    AT(right->zoom[0] > 1.0f);
+    AT(right->zoom[1] > 1.0f);
+
+    DvzPanzoom* up = _dvz_panzoom(800.0f, 600.0f, DVZ_PANZOOM_FLAGS_KEEP_ASPECT);
+    ANN(up);
+    ev.pos[0] = 400.0f;
+    ev.pos[1] = 220.0f;
+    ev.content.d.shift[0] = ev.pos[0] - ev.content.d.press_pos[0];
+    ev.content.d.shift[1] = ev.pos[1] - ev.content.d.press_pos[1];
+    AT(dvz_panzoom_pointer(up, &ev));
+    AT(up->zoom[0] > 1.0f);
+    AT(up->zoom[1] > 1.0f);
+
+    DvzPanzoom* out = _dvz_panzoom(800.0f, 600.0f, DVZ_PANZOOM_FLAGS_KEEP_ASPECT);
+    ANN(out);
+    ev.pos[0] = 320.0f;
+    ev.pos[1] = 380.0f;
+    ev.content.d.shift[0] = ev.pos[0] - ev.content.d.press_pos[0];
+    ev.content.d.shift[1] = ev.pos[1] - ev.content.d.press_pos[1];
+    AT(dvz_panzoom_pointer(out, &ev));
+    AT(out->zoom[0] < 1.0f);
+    AT(out->zoom[1] < 1.0f);
+
+    DvzPanzoom* boundary = _dvz_panzoom(800.0f, 600.0f, DVZ_PANZOOM_FLAGS_KEEP_ASPECT);
+    ANN(boundary);
+    ev.pos[0] = 480.0f;
+    ev.pos[1] = 380.0f;
+    ev.content.d.shift[0] = ev.pos[0] - ev.content.d.press_pos[0];
+    ev.content.d.shift[1] = ev.pos[1] - ev.content.d.press_pos[1];
+    AT(dvz_panzoom_pointer(boundary, &ev));
+    AC(boundary->zoom[0], 1.0f, 1e-6f);
+    AC(boundary->zoom[1], 1.0f, 1e-6f);
+
+    dvz_panzoom_destroy(right);
+    dvz_panzoom_destroy(up);
+    dvz_panzoom_destroy(out);
+    dvz_panzoom_destroy(boundary);
+    return 0;
+}
+
+
 int test_panzoom_viewport_filters_pointer_events(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -1724,6 +1782,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_panzoom_pan_shift);
     TST_CASE(test_panzoom_zoom_wheel);
     TST_CASE(test_panzoom_zoom_limits);
+    TST_CASE(test_panzoom_keep_aspect_right_drag_diagonal_boundary);
     TST_CASE(test_panzoom_viewport_filters_pointer_events);
     TST_CASE(test_panzoom_double_click_resets);
     TST_CASE(test_panzoom_mvp_identity);

@@ -1839,6 +1839,7 @@ int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstC
     DvzGuideLineDesc line_desc = dvz_guide_line_desc();
     line_desc.color = dvz_color_rgba(76, 201, 240, 220);
     line_desc.stroke_width_px = 3.0f;
+    line_desc.label = "threshold";
     DvzGuideLine* hline = dvz_hline(panel, 0.5, &line_desc);
     ANN(hline);
     AT(scene->guide_line_count == 1);
@@ -1851,6 +1852,7 @@ int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstC
     span_desc.fill_color = dvz_color_rgba(239, 71, 111, 48);
     span_desc.outline_color = dvz_color_rgba(239, 71, 111, 180);
     span_desc.outline_width_px = 2.0f;
+    span_desc.label = "window";
     DvzGuideSpan* vspan = dvz_vspan(panel, 2.0, 4.0, &span_desc);
     ANN(vspan);
     AT(scene->guide_span_count == 1);
@@ -1863,6 +1865,15 @@ int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstC
     AT(dvz_guide_span_visual(vspan, DVZ_PLOT_ROLE_LINE) == NULL);
 
     _scene_prepare_guide_visuals(figure);
+    ANN(hline->label);
+    ANN(vspan->label);
+    AT(hline->label->placement.mode == DVZ_TEXT_PLACEMENT_SCREEN);
+    AT(hline->label->placement.anchor == DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT);
+    AT(vspan->label->placement.mode == DVZ_TEXT_PLACEMENT_SCREEN);
+    AC(hline->label->placement.position[0], 400.0, 1e-4);
+    AC(hline->label->placement.position[1], 225.0, 1e-4);
+    AC(vspan->label->placement.position[0], 240.0, 1e-4);
+    AC(vspan->label->placement.position[1], 300.0, 1e-4);
 
     DvzVisualDataView line_start_view = {0};
     DvzVisualDataView line_end_view = {0};
@@ -1918,6 +1929,12 @@ int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstC
     fill_positions = (const float*)fill_position_view.data;
     AC(fill_positions[0], 5.0f, 1e-6f);
     AC(fill_positions[3], 6.0f, 1e-6f);
+    AT(hline->label->placement.mode == DVZ_TEXT_PLACEMENT_SCREEN);
+    AC(hline->label->placement.position[0], 400.0, 1e-4);
+    AC(hline->label->placement.position[1], 150.0, 1e-4);
+    AT(vspan->label->placement.mode == DVZ_TEXT_PLACEMENT_SCREEN);
+    AC(vspan->label->placement.position[0], 440.0, 1e-4);
+    AC(vspan->label->placement.position[1], 300.0, 1e-4);
 
     dvz_scene_destroy(scene);
     return 0;

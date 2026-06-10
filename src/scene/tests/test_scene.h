@@ -166,6 +166,9 @@ int test_panzoom_zoom_wheel(TstContext* suite, const TstCase* item);
 
 int test_panzoom_zoom_limits(TstContext* suite, const TstCase* item);
 
+int test_panzoom_keep_aspect_right_drag_diagonal_boundary(
+    TstContext* suite, const TstCase* item);
+
 int test_panzoom_viewport_filters_pointer_events(TstContext* suite, const TstCase* item);
 
 int test_panzoom_double_click_resets(TstContext* suite, const TstCase* item);

@@ -49,7 +49,8 @@
 #define GRID_Y         5u
 #define GRID_Z         3u
 #define INSTANCE_COUNT (GRID_X * GRID_Y * GRID_Z)
-#define QUERY_ID       23u
+#define QUERY_HOVER_ID 23u
+#define QUERY_CLICK_ID 24u
 
 static const float TAU = 6.28318530718f;
 
@@ -79,6 +80,9 @@ typedef struct MeshInstanceSelectionState
     bool cursor_valid;
     double cursor_x;
     double cursor_y;
+    bool pending_click;
+    double click_x;
+    double click_y;
 } MeshInstanceSelectionState;
 
 
@@ -229,11 +233,13 @@ static void _selection_mesh_pointer(const DvzScenarioPointerEvent* event, void* 
     if (event->type == DVZ_SCENARIO_POINTER_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
     {
         if (!state->cursor_valid)
-            return;
-        if (state->has_hover_query)
-            _toggle_mesh_selection(state, &state->latest_hover_query);
-        else
+        {
             dvz_selection_clear(state->selection);
+            return;
+        }
+        state->click_x = state->cursor_x;
+        state->click_y = state->cursor_y;
+        state->pending_click = true;
     }
 }
 
@@ -255,7 +261,23 @@ static void _selection_mesh_post_frame(DvzScenarioContext* ctx, void* user_data)
     bool saw_mesh_query = false;
     while (dvz_scene_poll_query(state->scene, &query))
     {
-        if (query.request_id != QUERY_ID)
+        if (query.request_id == QUERY_CLICK_ID)
+        {
+            if (
+                query.status == DVZ_QUERY_STATUS_HIT && query.hit &&
+                query.visual_family == DVZ_SCENE_VISUAL_FAMILY_MESH &&
+                query.resolved_target == DVZ_SCENE_TARGET_ITEM &&
+                query.resolved_id < INSTANCE_COUNT)
+            {
+                _toggle_mesh_selection(state, &query);
+            }
+            else
+            {
+                dvz_selection_clear(state->selection);
+            }
+            continue;
+        }
+        if (query.request_id != QUERY_HOVER_ID)
             continue;
 
         saw_mesh_query = true;
@@ -281,12 +303,23 @@ static void _selection_mesh_post_frame(DvzScenarioContext* ctx, void* user_data)
     if (state->cursor_valid)
     {
         DvzQueryRequest request = dvz_query_request();
-        request.request_id = QUERY_ID;
+        request.request_id = QUERY_HOVER_ID;
         request.target = DVZ_SCENE_TARGET_ITEM;
         request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
 
         if (dvz_scenario_panel_query(state->panel, state->cursor_x, state->cursor_y, &request) != 0)
             fprintf(stderr, "dvz_scenario_panel_query() failed\n");
+    }
+    if (state->pending_click)
+    {
+        DvzQueryRequest request = dvz_query_request();
+        request.request_id = QUERY_CLICK_ID;
+        request.target = DVZ_SCENE_TARGET_ITEM;
+        request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
+
+        if (dvz_scenario_panel_query(state->panel, state->click_x, state->click_y, &request) != 0)
+            fprintf(stderr, "dvz_scenario_panel_query(click) failed\n");
+        state->pending_click = false;
     }
 }
 

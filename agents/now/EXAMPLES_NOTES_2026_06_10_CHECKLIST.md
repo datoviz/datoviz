@@ -24,21 +24,21 @@ reference-grid API and place the cube on the current plane.
 Validation: `git diff --check`, `just build`, focused `just test panzoom`, `just test interaction`,
 `just test query` or narrower scenario/query tests when available.
 
-- [ ] `showcases/choropleth`: aspect-fixed right-drag zoom boundary should be `y = -x`, not `x = 0`.
-- [ ] `showcases/choropleth`: aspect-fixed right-drag zoom should zoom in when dragging right or up.
-- [ ] `features/guide_lines`: keep guide geometry in data space but place labels in screen/panel
+- [x] `showcases/choropleth`: aspect-fixed right-drag zoom boundary should be `y = -x`, not `x = 0`.
+- [x] `showcases/choropleth`: aspect-fixed right-drag zoom should zoom in when dragging right or up.
+- [x] `features/guide_lines`: keep guide geometry in data space but place labels in screen/panel
   space with constant readable size and stable offsets during zoom.
-- [ ] `features/guide_spans`: keep guide geometry in data space but place labels in screen/panel
+- [x] `features/guide_spans`: keep guide geometry in data space but place labels in screen/panel
   space with constant readable size and stable offsets during zoom.
-- [ ] `features/picking`: click selection must query/apply the clicked position instead of stale
+- [x] `features/picking`: click selection must query/apply the clicked position instead of stale
   hover state.
-- [ ] `features/picking`: background click should clear selection.
-- [ ] `features/selection_pixel`: fix click selection and Y-flip/readback behavior without using
+- [x] `features/picking`: background click should clear selection.
+- [x] `features/selection_pixel`: fix click selection and Y-flip/readback behavior without using
   stale hover state.
-- [ ] `features/selection_pixel`: background click should clear selection.
-- [ ] `features/selection_mesh_instances`: fix instance hover/query identity and click selection
+- [x] `features/selection_pixel`: background click should clear selection.
+- [x] `features/selection_mesh_instances`: fix instance hover/query identity and click selection
   without using stale hover state.
-- [ ] `features/selection_mesh_instances`: background click should clear selection.
+- [x] `features/selection_mesh_instances`: background click should clear selection.
 
 
 ## 3D Context Polish
