@@ -29,6 +29,7 @@
 #include "datoviz/input/pointer.h"
 #include "datoviz/input/router.h"
 #include "datoviz/scene.h"
+#include "../_gui.h"
 
 
 
@@ -403,6 +404,14 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     AT(smoke.shown_count > 0);
     AT(smoke.hidden_count > 0);
     AT(!dvz_view_render_enabled(source_win));
+
+    DvzGuiViewportDebugState debug = {};
+    AT(_dvz_gui_viewport_debug_state(smoke.viewport, &debug));
+    AT(debug.has_frame);
+    AT(debug.pending_width == 0);
+    AT(debug.pending_height == 0);
+    AT(debug.displayed_framebuffer_width == debug.requested_framebuffer_width);
+    AT(debug.displayed_framebuffer_height == debug.requested_framebuffer_height);
 
     uint32_t width = 0;
     uint32_t height = 0;

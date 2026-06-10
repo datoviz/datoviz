@@ -138,6 +138,7 @@ struct DvzGuiViewport
     uint32_t pending_width;
     uint32_t pending_height;
     uint32_t pending_stable_frames;
+    uint32_t stale_frame_count;
     bool owns_source;
     bool visible;
     bool has_frame;
@@ -624,6 +625,27 @@ static bool _gui_viewport_ensure_texture(DvzGuiViewport* viewport)
 
 
 /**
+ * Return whether a source frame matches the committed viewport source size.
+ *
+ * @param viewport GUI viewport
+ * @param extent source framebuffer extent
+ * @return whether the frame may become the displayed viewport image
+ */
+static bool _gui_viewport_frame_matches_committed(
+    const DvzGuiViewport* viewport, const VkExtent2D extent)
+{
+    ANN(viewport);
+    if (extent.width == 0 || extent.height == 0)
+        return false;
+    if (viewport->requested_framebuffer_width == 0 || viewport->requested_framebuffer_height == 0)
+        return true;
+    return extent.width == viewport->requested_framebuffer_width &&
+           extent.height == viewport->requested_framebuffer_height;
+}
+
+
+
+/**
  * Receive a live source-canvas image after submission.
  *
  * @param frame live image metadata
@@ -641,6 +663,12 @@ static int _gui_viewport_live_image_callback(
     {
         return 0;
     }
+    if (!_gui_viewport_frame_matches_committed(viewport, frame->extent))
+    {
+        viewport->stale_frame_count++;
+        _gui_request_frame(viewport->gui);
+        return 0;
+    }
     if (viewport->image_view != frame->image_view)
     {
         viewport->texture_dirty = true;
@@ -649,6 +677,7 @@ static int _gui_viewport_live_image_callback(
     }
     viewport->extent = frame->extent;
     viewport->has_frame = true;
+    viewport->stale_frame_count = 0;
     _gui_request_frame(viewport->gui);
     return 0;
 }
@@ -1419,6 +1448,35 @@ void _dvz_gui_render_frame(DvzGui* gui, const DvzStreamFrame* frame)
 
 
 
+/**
+ * Return internal GUI viewport resize/display state for focused regression tests.
+ *
+ * @param viewport GUI viewport
+ * @param out output debug state
+ * @return whether state was copied
+ */
+bool _dvz_gui_viewport_debug_state(
+    const DvzGuiViewport* viewport, DvzGuiViewportDebugState* out)
+{
+    if (viewport == NULL || out == NULL)
+        return false;
+    *out = {};
+    out->requested_width = viewport->requested_width;
+    out->requested_height = viewport->requested_height;
+    out->requested_framebuffer_width = viewport->requested_framebuffer_width;
+    out->requested_framebuffer_height = viewport->requested_framebuffer_height;
+    out->pending_width = viewport->pending_width;
+    out->pending_height = viewport->pending_height;
+    out->pending_stable_frames = viewport->pending_stable_frames;
+    out->displayed_framebuffer_width = viewport->extent.width;
+    out->displayed_framebuffer_height = viewport->extent.height;
+    out->stale_frame_count = viewport->stale_frame_count;
+    out->has_frame = viewport->has_frame;
+    return true;
+}
+
+
+
 /*************************************************************************************************/
 /*  Public functions                                                                             */
 /*************************************************************************************************/
@@ -2163,13 +2221,7 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
         if (width > 0 && height > 0)
             _gui_viewport_request_resize(viewport, width, height);
 
-        bool frame_matches_request =
-            viewport->requested_framebuffer_width == 0 ||
-            viewport->requested_framebuffer_height == 0 ||
-            (viewport->extent.width == viewport->requested_framebuffer_width &&
-             viewport->extent.height == viewport->requested_framebuffer_height);
-
-        if (_gui_viewport_ensure_texture(viewport) && frame_matches_request)
+        if (_gui_viewport_ensure_texture(viewport) && viewport->has_frame)
         {
             ImVec2 image_min = ImGui::GetCursorScreenPos();
             ImVec2 image_max = ImVec2(image_min.x + avail.x, image_min.y + avail.y);

@@ -30,6 +30,23 @@ typedef struct DvzGpuCtx DvzGpuCtx;
 
 
 
+typedef struct DvzGuiViewportDebugState
+{
+    uint32_t requested_width;
+    uint32_t requested_height;
+    uint32_t requested_framebuffer_width;
+    uint32_t requested_framebuffer_height;
+    uint32_t pending_width;
+    uint32_t pending_height;
+    uint32_t pending_stable_frames;
+    uint32_t displayed_framebuffer_width;
+    uint32_t displayed_framebuffer_height;
+    uint32_t stale_frame_count;
+    bool has_frame;
+} DvzGuiViewportDebugState;
+
+
+
 EXTERN_C_ON
 
 /*************************************************************************************************/
@@ -47,5 +64,7 @@ void _dvz_gui_begin_frame(DvzGui* gui, DvzView* view, const DvzStreamFrame* fram
 void _dvz_gui_fps_overlay(
     DvzGui* gui, double fps, double frame_ms, uint32_t frames, double elapsed_s);
 void _dvz_gui_render_frame(DvzGui* gui, const DvzStreamFrame* frame);
+bool _dvz_gui_viewport_debug_state(
+    const DvzGuiViewport* viewport, DvzGuiViewportDebugState* out);
 
 EXTERN_C_OFF
