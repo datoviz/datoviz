@@ -1534,7 +1534,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=point_2d
       requirements:
         - point
         - panzoom
@@ -1558,7 +1559,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=visual_pixel
       requirements:
         - pixel
         - panzoom
@@ -1582,7 +1584,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=visual_marker
       requirements:
         - marker
         - panzoom
@@ -1606,7 +1609,8 @@ examples:
     data:
       kind: synthetic
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=visual_primitive
       requirements:
         - primitive
     agent_copy_safe: true

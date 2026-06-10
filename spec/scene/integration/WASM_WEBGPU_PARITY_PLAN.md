@@ -34,12 +34,13 @@ Current source-of-truth files:
 
 As of 2026-06-10:
 
-1. Manifest counts: `24 webgpu-live`, `57 webgpu-planned`, `12 webgpu-deferred`,
+1. Manifest counts: `28 webgpu-live`, `53 webgpu-planned`, `12 webgpu-deferred`,
    `13 native-only`, and `8` lab-only entries without WebGPU status.
 2. Live routes cover basic scene, timer animation, triangulation, builtin shapes 2D/3D, isolines,
    animation tracks, OBJ loading, picking, pixel/sphere/mesh selection, image probe, compute buffer
-   animation, GPU particle smoke, colorbar, scale bars, categorical legend, annotation readout,
-   linked probe/colorbar, scientific plotting, vector, and wind field.
+   animation, GPU particle smoke, standalone point/pixel/marker/primitive visuals, colorbar, scale
+   bars, categorical legend, annotation readout, linked probe/colorbar, scientific plotting, vector,
+   and wind field.
 3. The browser runtime consumes artifact-backed split DRP2 setup/update/frame packets. JSON is
    debug/fixture-only.
 4. Query/readback is intentionally narrow: point/marker picking, point hover/selection,

@@ -51,9 +51,10 @@ Supported browser pages:
 - `examples/webgpu/examples.html?demo=wasm-image-probe`: sampled image pixel probe through the
   query/readback path;
 - `examples/webgpu/live.html?id=...`: public live gallery routes generated from canonical C
-  examples and portable C scenarios, currently covering 24 promoted examples including colorbar,
-  scale bars, categorical legend, annotation readout, linked probe/colorbar, scientific plotting,
-  vector, wind field, isolines, selection routes, compute buffer animation, and GPU particle smoke;
+  examples and portable C scenarios, currently covering 28 promoted examples including standalone
+  point, pixel, marker, and primitive visuals, colorbar, scale bars, categorical legend, annotation
+  readout, linked probe/colorbar, scientific plotting, vector, wind field, isolines, selection
+  routes, compute buffer animation, and GPU particle smoke;
 - `examples/webgpu/fixtures.html`: DRP2 fixture dashboard for the pure browser WebGPU runner,
   retained runtime stress checks, and WASM scene smoke rows.
 

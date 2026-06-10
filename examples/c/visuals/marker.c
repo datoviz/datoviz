@@ -40,6 +40,14 @@
 
 
 /*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+DvzScenarioSpec dvz_visual_marker_scenario(void);
+
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
@@ -257,7 +265,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _marker_scenario(void)
+DvzScenarioSpec dvz_visual_marker_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "visual_marker",
@@ -282,8 +290,10 @@ static DvzScenarioSpec _marker_scenario(void)
  * @param argv command-line argument vector
  * @return process exit code
  */
+#ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _marker_scenario();
+    DvzScenarioSpec spec = dvz_visual_marker_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
+#endif

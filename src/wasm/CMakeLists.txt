@@ -33,6 +33,10 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/gpu_particle_smoke.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/scientific_plotting.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/wind_field.c
+    ${PROJECT_SOURCE_DIR}/examples/c/visuals/marker.c
+    ${PROJECT_SOURCE_DIR}/examples/c/visuals/pixel.c
+    ${PROJECT_SOURCE_DIR}/examples/c/visuals/point.c
+    ${PROJECT_SOURCE_DIR}/examples/c/visuals/primitive.c
     ${PROJECT_SOURCE_DIR}/examples/c/visuals/vector.c
 )
 

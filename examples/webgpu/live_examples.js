@@ -126,6 +126,26 @@ export const LIVE_EXAMPLES = [
     scenarioId: "showcase_gpu_particle_smoke",
     animate: true,
   },
+  {
+    id: "point_2d",
+    label: "Point",
+    scenarioId: "visual_point",
+  },
+  {
+    id: "visual_pixel",
+    label: "Pixel",
+    scenarioId: "visual_pixel",
+  },
+  {
+    id: "visual_marker",
+    label: "Marker",
+    scenarioId: "visual_marker",
+  },
+  {
+    id: "visual_primitive",
+    label: "Primitive",
+    scenarioId: "visual_primitive",
+  },
 ];
 
 export function liveExampleById(id) {

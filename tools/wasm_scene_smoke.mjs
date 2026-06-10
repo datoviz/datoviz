@@ -1706,6 +1706,10 @@ try {
     "visual_vector",
     "showcase_wind_field",
     "showcase_gpu_particle_smoke",
+    "visual_point",
+    "visual_pixel",
+    "visual_marker",
+    "visual_primitive",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -2494,6 +2498,45 @@ try {
     );
   } finally {
     Module._dvz_wasm_api_scene_destroy(particleScene);
+  }
+
+  const standaloneVisuals = [
+    ["visual_point", "point visual"],
+    ["visual_pixel", "pixel visual"],
+    ["visual_marker", "marker visual"],
+    ["visual_primitive", "primitive visual"],
+  ];
+  for (const [id, label] of standaloneVisuals) {
+    const index = scenarioIndex(Module, id);
+    const visualScene = Module._dvz_wasm_api_scene(smokeSize, smokeSize);
+    requireOk(visualScene !== 0, `${label} scenario scene creation failed`);
+    try {
+      expectStatus(
+        Module._dvz_wasm_api_set_canvas_format(visualScene, DVZ_FORMAT_R8G8B8A8_UNORM),
+        0,
+        `${label} scenario canvas format`,
+      );
+      expectStatus(
+        Module._dvz_wasm_api_scenario_create(visualScene, index),
+        0,
+        `${label} scenario create`,
+      );
+      expectNoDiagnostics(Module, visualScene, `${label} scenario create diagnostics`);
+      const visualFigure = Module._dvz_wasm_api_scenario_figure(visualScene);
+      requireOk(visualFigure !== 0, `${label} scenario has no figure`);
+      const initialVisual = emitStream(Module, visualScene, visualFigure, `${label} initial`);
+      expectWriteCommands(initialVisual.stream, `${label} initial`);
+      requireOk(
+        initialVisual.stream.commands.some((command) => command.cmd === "CreateRenderPipeline"),
+        `${label} initial did not create a render pipeline`,
+      );
+      requireOk(
+        initialVisual.stream.commands.some((command) => command.cmd === "Draw"),
+        `${label} initial did not draw`,
+      );
+    } finally {
+      Module._dvz_wasm_api_scene_destroy(visualScene);
+    }
   }
 
   const positions = new Float32Array([-0.75, -0.45, 0, -0.35, 0.35, 0, 0.05, -0.1, 0, 0.42, 0.5, 0, 0.72, -0.35, 0]);

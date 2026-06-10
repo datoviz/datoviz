@@ -15,15 +15,16 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
-now has 24 promoted routes backed by canonical C examples or portable C scenarios:
+now has 28 promoted routes backed by canonical C examples or portable C scenarios:
 `feature_basic_scene`, `feature_timer_animation`, `feature_triangulation_polygon`,
 `feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`, `feature_isolines`,
 `feature_animation_tracks`, `feature_compute_buffer_animation`, `feature_obj_loading`,
 `feature_picking`, `feature_selection_pixel`, `feature_selection_sphere`,
 `feature_selection_mesh_instances`, `image_probe`, `colorbar`, `scale_bar`, `scalebar_units`,
 `feature_legend_categorical`, `annotation_readout`, `linked_panels_probe_colorbar`,
-`scientific_plotting_workflow`, `visual_vector`, `showcase_wind_field`, and
-`showcase_gpu_particle_smoke`.
+`scientific_plotting_workflow`, `visual_vector`, `showcase_wind_field`,
+`showcase_gpu_particle_smoke`, `visual_point`, `visual_pixel`, `visual_marker`, and
+`visual_primitive`.
 
 Remaining RC promotions are:
 
@@ -363,6 +364,11 @@ Current status as of this note:
   `just example-c showcases/gpu_particle_smoke` passed, and `wasm-scene-smoke` now checks the
   retained particle scenario creates a compute pipeline, dispatches workgroups, and emits a
   compute-to-vertex `ResourceBarrier`.
+- recorded local standalone visual route checkpoint on 2026-06-10: `point_2d`, `visual_pixel`,
+  `visual_marker`, and `visual_primitive` were exported as portable C scenarios, registered as live
+  routes, and added to `wasm-scene-smoke` scenario registration plus initial render-pipeline/draw
+  checks. Full local WASM rebuild remains blocked in this dirty worktree by the unrelated
+  `builtin_shapes_2d.c`/`dvz_panzoom_keep_aspect()` header mismatch.
 - remaining unsupported entries in the committed subset: none
 
 This subset is intentionally labeled as the "WebGPU fixture subset": passing it means the browser
