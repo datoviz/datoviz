@@ -4028,12 +4028,17 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     ANN(stroke);
     AT(dvz_composite_visual_at(composite, 0) == fill);
 
-    AT(dvz_panel_add_composite(panel, composite, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 5}) == 0);
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.z_layer = 5;
+    attach.coord_space = DVZ_COORD_DATA;
+    AT(dvz_panel_add_composite(panel, composite, &attach) == 0);
     AT(panel->visual_count == 2);
     AT(panel->visuals[0].visual == fill);
     AT(panel->visuals[0].z_layer == 5);
+    AT(panel->visuals[0].coord_space == DVZ_COORD_DATA);
     AT(panel->visuals[1].visual == stroke);
     AT(panel->visuals[1].z_layer == 6);
+    AT(panel->visuals[1].coord_space == DVZ_COORD_DATA);
     AT(dvz_panel_add_composite(panel, composite, NULL) == 0);
     AT(panel->visual_count == 2);
 
