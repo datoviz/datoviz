@@ -79,9 +79,9 @@ typedef struct BrainEdge
 /*************************************************************************************************/
 
 static const BrainCommunity COMMUNITIES[] = {
-    {.label = "Visual", .color = {65, 201, 226, 255}, .label_position = {-0.82, +0.86, 0.0}},
-    {.label = "Motor", .color = {246, 185, 72, 255}, .label_position = {+0.82, +0.86, 0.0}},
-    {.label = "Memory", .color = {234, 104, 91, 255}, .label_position = {+0.00, -1.04, 0.0}},
+    {.label = "Visual", .color = {65, 201, 226, 255}, .label_position = {-0.78, +0.72, 0.0}},
+    {.label = "Motor", .color = {246, 185, 72, 255}, .label_position = {+0.78, +0.72, 0.0}},
+    {.label = "Memory", .color = {234, 104, 91, 255}, .label_position = {+0.00, -1.00, 0.0}},
 };
 
 
