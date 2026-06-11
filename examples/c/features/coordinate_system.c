@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* coordinate_system - visual proof of the Datoviz scene coordinate convention.
+/* coordinate_system - interactive 3D RGB-axis proof of the Datoviz scene coordinate convention.
  *
  * Scenario: feature.coordinate_system
  * Style: features, graphite_cyan, 1600x1200 capture target
@@ -13,8 +13,8 @@
  * Run:    ./build/examples/c/features/coordinate_system --live
  * Smoke:  ./build/examples/c/features/coordinate_system --png
  *
- * The right-hand point is +X, the top point is +Y, and the center cyan point marks +Z in front
- * of the larger yellow -Z point at the same X/Y location.
+ * X is red, Y is green, and Z is blue. The live example binds an arcball controller so the axis
+ * triad can be inspected with the mouse.
  */
 
 
@@ -26,6 +26,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "datoviz/geom.h"
+#include "datoviz/math/vec.h"
 #include "datoviz/scene.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
@@ -36,11 +38,10 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH         1600u
-#define HEIGHT        1200u
-#define AXIS_SEGMENTS 6u
-#define AXIS_POINTS   4u
-#define DEPTH_POINTS 1u
+#define WIDTH  1600u
+#define HEIGHT 1200u
+
+static const double AXIS_LENGTH = 1.45;
 
 
 
@@ -57,27 +58,175 @@ DvzScenarioSpec dvz_example_coordinate_system_scenario(void);
 /*************************************************************************************************/
 
 /**
- * Add a screen-placed text label.
+ * Return the standard axis color.
+ *
+ * @param axis axis index, 0=X, 1=Y, 2=Z
+ * @return RGBA color
+ */
+static DvzColor _axis_color(uint32_t axis)
+{
+    switch (axis)
+    {
+    case 0:
+        return dvz_color_rgba(230, 64, 64, 255);
+    case 1:
+        return dvz_color_rgba(52, 190, 88, 255);
+    case 2:
+        return dvz_color_rgba(66, 132, 255, 255);
+    default:
+        return dvz_color_rgba(220, 226, 235, 255);
+    }
+}
+
+
+
+/**
+ * Build an axis transform for a Z-axis arrow.
+ *
+ * @param axis axis index, 0=X, 1=Y, 2=Z
+ * @param out output transform
+ */
+static void _axis_transform(uint32_t axis, dmat4 out)
+{
+    dvz_dmat4_identity(out);
+    if (axis == 0)
+    {
+        out[0][0] = 0.0;
+        out[0][1] = 0.0;
+        out[0][2] = -1.0;
+        out[1][0] = 0.0;
+        out[1][1] = 1.0;
+        out[1][2] = 0.0;
+        out[2][0] = 1.0;
+        out[2][1] = 0.0;
+        out[2][2] = 0.0;
+    }
+    else if (axis == 1)
+    {
+        out[0][0] = 1.0;
+        out[0][1] = 0.0;
+        out[0][2] = 0.0;
+        out[1][0] = 0.0;
+        out[1][1] = 0.0;
+        out[1][2] = -1.0;
+        out[2][0] = 0.0;
+        out[2][1] = 1.0;
+        out[2][2] = 0.0;
+    }
+}
+
+
+
+/**
+ * Upload one geometry as a lit retained mesh and destroy the CPU geometry copy.
+ *
+ * @param scene scene owning the visual
+ * @param panel panel receiving the visual
+ * @param geometry geometry to upload
+ * @return true when the mesh was added
+ */
+static bool _add_geometry(DvzScene* scene, DvzPanel* panel, DvzGeometry* geometry)
+{
+    if (geometry == NULL)
+        return false;
+
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    if (mesh == NULL)
+    {
+        dvz_geometry_destroy(geometry);
+        return false;
+    }
+
+    DvzMaterialDesc material = dvz_phong_material_desc();
+    material.phong.ambient = 0.46f;
+    material.phong.diffuse = 0.70f;
+    material.phong.specular = 0.18f;
+    material.phong.shininess = 18.0f;
+
+    const bool ok = dvz_visual_set_material(mesh, &material) == 0 &&
+                    dvz_mesh_set_geometry(mesh, geometry) == 0 &&
+                    dvz_panel_add_visual(panel, mesh, NULL) == 0;
+    dvz_geometry_destroy(geometry);
+    return ok;
+}
+
+
+
+/**
+ * Add one colored 3D arrow axis.
+ *
+ * @param scene scene owning the visual
+ * @param panel panel receiving the visual
+ * @param axis axis index, 0=X, 1=Y, 2=Z
+ * @return true when the axis was added
+ */
+static bool _add_axis_arrow(DvzScene* scene, DvzPanel* panel, uint32_t axis)
+{
+    DvzGeometry* arrow = dvz_geom_arrow(&(DvzGeometryArrowDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryArrowDesc),
+        .center = {0.0, 0.0, 0.5 * AXIS_LENGTH},
+        .length = AXIS_LENGTH,
+        .shaft_radius = 0.035,
+        .head_radius = 0.105,
+        .head_length = 0.26,
+        .sectors = 64,
+        .color = _axis_color(axis),
+    });
+    if (arrow == NULL)
+        return false;
+
+    dmat4 transform = _DMAT4_IDENTITY_INIT;
+    _axis_transform(axis, transform);
+    if (dvz_geometry_transform(arrow, transform) != 0)
+    {
+        dvz_geometry_destroy(arrow);
+        return false;
+    }
+    return _add_geometry(scene, panel, arrow);
+}
+
+
+
+/**
+ * Add a small origin sphere.
+ *
+ * @param scene scene owning the visual
+ * @param panel panel receiving the visual
+ * @return true when the origin marker was added
+ */
+static bool _add_origin(DvzScene* scene, DvzPanel* panel)
+{
+    return _add_geometry(
+        scene, panel,
+        dvz_geom_sphere(&(DvzGeometrySphereDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
+            .center = {0.0, 0.0, 0.0},
+            .radius = 0.075,
+            .rings = 24,
+            .sectors = 48,
+            .color = dvz_color_rgba(230, 236, 244, 255),
+        }));
+}
+
+
+
+/**
+ * Add one world-positioned axis label.
  *
  * @param panel target panel
- * @param string label text
- * @param x screen X coordinate in logical pixels
- * @param y screen Y coordinate in logical pixels
- * @param size text size in logical pixels
- * @param role graphite-cyan color role
+ * @param string label string
+ * @param position world position
+ * @param color text color
  * @return true when the label was added
  */
-static bool _add_label(
-    DvzPanel* panel, const char* string, float x, float y, float size,
-    ExampleStyleColorRole role)
+static bool _add_label(DvzPanel* panel, const char* string, const double position[3], DvzColor color)
 {
     DvzText* text = dvz_text(panel, 0);
     if (text == NULL)
         return false;
 
-    DvzColor color = example_graphite_cyan_color(role);
     DvzTextStyle style = dvz_text_style();
-    style.size_px = size;
+    style.size_px = 46.0f;
     style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.color[0] = color.r;
     style.color[1] = color.g;
@@ -87,14 +236,16 @@ static bool _add_label(
         return false;
 
     DvzTextPlacement placement = dvz_text_placement();
-    placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
-    placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
-    placement.position[0] = x;
-    placement.position[1] = y;
-    placement.position[2] = 0.0f;
+    placement.mode = DVZ_TEXT_PLACEMENT_WORLD;
+    placement.position[0] = position[0];
+    placement.position[1] = position[1];
+    placement.position[2] = position[2];
+    placement.offset[0] = 0.0f;
+    placement.offset[1] = -8.0f;
     placement.text_anchor[0] = 0.5f;
     placement.text_anchor[1] = 0.5f;
     placement.has_text_anchor = true;
+    placement.depth_test = false;
     dvz_text_set_placement(text, &placement);
     dvz_text_set_string(text, string);
     return true;
@@ -103,198 +254,62 @@ static bool _add_label(
 
 
 /**
- * Add X/Y axes and arrow hints in scene coordinates.
- *
- * @param scene scene owning the visual
- * @param panel panel receiving the visual
- * @return true when all segments were added
- */
-static bool _add_xy_axes(DvzScene* scene, DvzPanel* panel)
-{
-    const vec3 starts[AXIS_SEGMENTS] = {
-        {-0.82f, 0.00f, 0.0f},
-        {0.00f, -0.66f, 0.0f},
-        {0.72f, 0.00f, 0.0f},
-        {0.72f, 0.00f, 0.0f},
-        {0.00f, 0.56f, 0.0f},
-        {0.00f, 0.56f, 0.0f},
-    };
-    const vec3 ends[AXIS_SEGMENTS] = {
-        {+0.82f, 0.00f, 0.0f},
-        {0.00f, +0.66f, 0.0f},
-        {0.62f, +0.08f, 0.0f},
-        {0.62f, -0.08f, 0.0f},
-        {+0.08f, 0.46f, 0.0f},
-        {-0.08f, 0.46f, 0.0f},
-    };
-    DvzColor colors[AXIS_SEGMENTS] = {0};
-    float widths[AXIS_SEGMENTS] = {0};
-    for (uint32_t i = 0; i < AXIS_SEGMENTS; i++)
-    {
-        colors[i] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
-        colors[i].a = 230;
-        widths[i] = i < 2u ? 8.0f : 6.0f;
-    }
-
-    DvzVisual* visual = dvz_segment(scene, 0);
-    if (visual == NULL)
-        return false;
-
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position_start", .data = starts, .item_count = AXIS_SEGMENTS},
-        {.attr_name = "position_end", .data = ends, .item_count = AXIS_SEGMENTS},
-        {.attr_name = "color", .data = colors, .item_count = AXIS_SEGMENTS},
-        {.attr_name = "stroke_width", .data = widths, .item_count = AXIS_SEGMENTS},
-    };
-    if (dvz_visual_set_data_many(visual, updates, 4) != 0)
-        return false;
-    if (dvz_segment_set_caps(visual, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) != 0)
-        return false;
-    if (dvz_visual_set_depth_test(visual, false) != 0)
-        return false;
-    return dvz_panel_add_visual(panel, visual, NULL) == 0;
-}
-
-
-
-/**
- * Add endpoint markers for the X/Y directions.
- *
- * @param scene scene owning the visual
- * @param panel panel receiving the visual
- * @return true when the markers were added
- */
-static bool _add_xy_markers(DvzScene* scene, DvzPanel* panel)
-{
-    const vec3 positions[AXIS_POINTS] = {
-        {-0.72f, 0.00f, 0.0f},
-        {+0.72f, 0.00f, 0.0f},
-        {0.00f, -0.56f, 0.0f},
-        {0.00f, +0.56f, 0.0f},
-    };
-    DvzColor colors[AXIS_POINTS] = {
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_MINOR_TICK),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_MINOR_TICK),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
-    };
-    const float diameters[AXIS_POINTS] = {44.0f, 58.0f, 44.0f, 58.0f};
-
-    DvzVisual* point = dvz_point(scene, 0);
-    if (point == NULL)
-        return false;
-
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = AXIS_POINTS},
-        {.attr_name = "color", .data = colors, .item_count = AXIS_POINTS},
-        {.attr_name = "diameter", .data = diameters, .item_count = AXIS_POINTS},
-    };
-    if (dvz_visual_set_data_many(point, updates, 3) != 0)
-        return false;
-
-    DvzPointStyleDesc style = dvz_point_style_desc();
-    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
-    if (dvz_point_set_style(point, &style) != 0)
-        return false;
-    if (dvz_visual_set_depth_test(point, false) != 0)
-        return false;
-    return dvz_panel_add_visual(panel, point, NULL) == 0;
-}
-
-
-
-/**
- * Add one point used by the overlapping Z front/back proof.
- *
- * @param scene scene owning the visual
- * @param panel panel receiving the visual
- * @param position point center
- * @param diameter point diameter in pixels
- * @param color point color
- * @param z_layer draw layer
- * @return true when the point was added
- */
-static bool _add_z_point(
-    DvzScene* scene, DvzPanel* panel, const vec3 position, float diameter, DvzColor color,
-    int32_t z_layer)
-{
-    vec3 positions[DEPTH_POINTS] = {{position[0], position[1], position[2]}};
-    float diameters[DEPTH_POINTS] = {diameter};
-    DvzColor colors[DEPTH_POINTS] = {color};
-
-    DvzVisual* point = dvz_point(scene, 0);
-    if (point == NULL)
-        return false;
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = DEPTH_POINTS},
-        {.attr_name = "color", .data = colors, .item_count = DEPTH_POINTS},
-        {.attr_name = "diameter", .data = diameters, .item_count = DEPTH_POINTS},
-    };
-    if (dvz_visual_set_data_many(point, updates, 3) != 0)
-        return false;
-
-    DvzPointStyleDesc style = dvz_point_style_desc();
-    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
-    if (dvz_point_set_style(point, &style) != 0)
-        return false;
-    if (dvz_visual_set_depth_test(point, false) != 0)
-        return false;
-
-    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.z_layer = z_layer;
-    return dvz_panel_add_visual(panel, point, &attach) == 0;
-}
-
-
-
-/**
- * Add an overlapping visual pair that marks +Z as the front direction.
- *
- * @param scene scene owning the visual
- * @param panel panel receiving the visual
- * @return true when the points were added
- */
-static bool _add_z_depth_pair(DvzScene* scene, DvzPanel* panel)
-{
-    DvzColor front = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
-    DvzColor back = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
-    return _add_z_point(scene, panel, (vec3){0.0f, 0.0f, -0.24f}, 260.0f, back, 0) &&
-           _add_z_point(scene, panel, (vec3){0.0f, 0.0f, +0.24f}, 170.0f, front, 1);
-}
-
-
-
-/**
- * Add labels that make the visual inspection unambiguous.
+ * Add RGB axis labels at arrow tips.
  *
  * @param panel target panel
  * @return true when all labels were added
  */
-static bool _add_labels(DvzPanel* panel)
+static bool _add_axis_labels(DvzPanel* panel)
 {
-    return _add_label(
-               panel, "Scene coordinates", 800.0f, 112.0f, 64.0f,
-               EXAMPLE_STYLE_COLOR_TEXT) &&
-           _add_label(
-               panel, "-X left", 360.0f, 600.0f, 38.0f,
-               EXAMPLE_STYLE_COLOR_MINOR_TICK) &&
-           _add_label(
-               panel, "+X right", 1240.0f, 600.0f, 42.0f,
-               EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY) &&
-           _add_label(
-               panel, "-Y bottom", 800.0f, 930.0f, 38.0f,
-               EXAMPLE_STYLE_COLOR_MINOR_TICK) &&
-           _add_label(
-               panel, "+Y top", 800.0f, 265.0f, 42.0f,
-               EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY) &&
-           _add_label(
-               panel, "+Z front", 1030.0f, 515.0f, 42.0f,
-               EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY) &&
-           _add_label(
-               panel, "-Z back", 570.0f, 690.0f, 34.0f,
-               EXAMPLE_STYLE_COLOR_WARNING);
+    const double pad = 0.18;
+    const double x[3] = {AXIS_LENGTH + pad, 0.0, 0.0};
+    const double y[3] = {0.0, AXIS_LENGTH + pad, 0.0};
+    const double z[3] = {0.0, 0.0, AXIS_LENGTH + pad};
+    return _add_label(panel, "X", x, _axis_color(0)) && _add_label(panel, "Y", y, _axis_color(1)) &&
+           _add_label(panel, "Z", z, _axis_color(2));
+}
+
+
+
+/**
+ * Set up the default camera used for static smoke captures.
+ *
+ * @param panel target panel
+ * @return true when the camera was set
+ */
+static bool _set_camera(DvzPanel* panel)
+{
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.eye[0] = 2.25f;
+    camera.eye[1] = -2.60f;
+    camera.eye[2] = 2.25f;
+    camera.target[0] = 0.45f;
+    camera.target[1] = 0.45f;
+    camera.target[2] = 0.45f;
+    camera.up[0] = 0.0f;
+    camera.up[1] = 1.0f;
+    camera.up[2] = 0.0f;
+    camera.fov_y = 0.58f;
+    camera.near = 0.05f;
+    camera.far = 100.0f;
+    return dvz_panel_set_camera(panel, &camera) != NULL;
+}
+
+
+
+/**
+ * Attach an arcball controller so the live example is mouse-inspectable.
+ *
+ * @param ctx scenario context
+ * @param panel target panel
+ * @return true when the controller was bound
+ */
+static bool _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel)
+{
+    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    if (controller == NULL)
+        return false;
+    return dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) == 0;
 }
 
 
@@ -326,8 +341,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    return _add_xy_axes(ctx->scene, panel) && _add_xy_markers(ctx->scene, panel) &&
-           _add_z_depth_pair(ctx->scene, panel) && _add_labels(panel);
+    return _set_camera(panel) && _add_axis_arrow(ctx->scene, panel, 0) &&
+           _add_axis_arrow(ctx->scene, panel, 1) && _add_axis_arrow(ctx->scene, panel, 2) &&
+           _add_origin(ctx->scene, panel) && _add_axis_labels(panel) && _bind_arcball(ctx, panel);
 }
 
 
@@ -345,7 +361,9 @@ DvzScenarioSpec dvz_example_coordinate_system_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
-        .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_TEXT_VISUAL,
+        .requirements =
+            DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_TEXT_VISUAL |
+            DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
     };
 }

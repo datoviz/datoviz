@@ -181,10 +181,10 @@ examples:
     webgpu:
       status: webgpu-planned
       requirements:
-        - point
-        - segment
+        - mesh
         - text
-        - depth-test
+        - controller
+        - arcball
     agent_copy_safe: true
 
   - id: feature_axis_labels
