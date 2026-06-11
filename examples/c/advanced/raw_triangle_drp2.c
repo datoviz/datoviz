@@ -197,7 +197,8 @@ int main(int argc, char** argv)
     dvz_drp2_stream_begin_command_encoder(stream, ID_ENC);
 
     /* Render pass: draw into ID_TEX (clear to dark blue-grey). */
-    dvz_drp2_stream_begin_render_pass(stream, ID_RPASS, ID_ENC, ID_TEX);
+    dvz_drp2_stream_begin_render_pass_clear(
+        stream, ID_RPASS, ID_ENC, ID_TEX, 0.05f, 0.05f, 0.08f, 1.0f);
     dvz_drp2_stream_set_pipeline(stream, ID_RPASS, ID_PIPE);
     dvz_drp2_stream_set_vertex_buffer(stream, ID_RPASS, /*slot=*/0, ID_VBUF, /*offset=*/0);
     dvz_drp2_stream_draw(stream, ID_RPASS,
