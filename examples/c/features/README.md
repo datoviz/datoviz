@@ -5,6 +5,7 @@ controllers, sampled fields, picking, probing, selection, retained updates, and 
 techniques.
 
 - `axes_2d.c`: retained numeric axes and tick labels.
+- `coordinate_system.c`: visual proof that X increases right, Y increases up, and Z increases front.
 - `axis_labels.c`: retained axis titles and tick-label placement with plot margins.
 - `sampled_field_2d.c`: scene-owned 2D sampled field bound to an image visual.
 - `sampled_field_3d.c`: scene-owned 3D sampled field bound to a volume visual.

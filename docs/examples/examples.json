@@ -2,11 +2,11 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 106,
+  "count": 107,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 71,
+    "feature": 72,
     "showcase": 15,
     "visual": 15
   },
@@ -14,11 +14,11 @@
     "diagnostic": 1,
     "experimental": 11,
     "prototype": 3,
-    "supported": 91
+    "supported": 92
   },
   "agent_copy_safe": {
     "false": 28,
-    "true": 78
+    "true": 79
   },
   "examples": [
     {
@@ -146,6 +146,27 @@
         "kind": "synthetic"
       },
       "primary_feature": "axes-2d"
+    },
+    {
+      "id": "feature_coordinate_system",
+      "title": "Coordinate System",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/coordinate_system.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/coordinate_system.c",
+      "page": "gallery/features/feature_coordinate_system.md",
+      "summary": "visual proof of the Datoviz scene coordinate convention.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/coordinate_system",
+      "smoke_command": "./build/examples/c/features/coordinate_system --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "coordinate-system"
     },
     {
       "id": "feature_axis_labels",
@@ -2067,7 +2088,7 @@
       "source": "examples/c/composites/graph.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c",
       "page": "gallery/composites/composite_graph.md",
-      "summary": "deterministic brain-connectivity graph composite with community labels.",
+      "summary": "deterministic brain-connectivity graph composite.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c composites/graph",
       "smoke_command": "./build/examples/c/composites/graph --png",
