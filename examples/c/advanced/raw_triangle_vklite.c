@@ -7,7 +7,7 @@
 /* raw_triangle_vklite — vklite draw commands into DvzCanvas.
  *
  * Scenario: advanced_raw_triangle_vklite
- * Style: advanced, native-only, low-level vklite/canvas
+ * Style: advanced, native-only, low-level vklite/canvas, 1600x1200 capture target
  *
  * Shows how to write your own Vulkan draw commands using vklite helpers while
  * letting DvzCanvas manage all presentation plumbing (offscreen images, frame
@@ -43,6 +43,15 @@
 #include "datoviz/vklite.h"
 #include "datoviz/window.h"
 #include "example_common.h"
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define WIDTH  1600u
+#define HEIGHT 1200u
 
 
 
@@ -258,8 +267,8 @@ int main(int argc, char** argv)
     /* Window + canvas (offscreen for both modes) */
     DvzWindowHost* host = dvz_window_host();
     DvzWindowConfig wcfg = dvz_window_config();
-    wcfg.width  = 800;
-    wcfg.height = 600;
+    wcfg.width  = WIDTH;
+    wcfg.height = HEIGHT;
     DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &wcfg);
     if (!window) { fprintf(stderr, "Window creation failed\n"); dvz_gpu_ctx_destroy(ctx); return 1; }
 
