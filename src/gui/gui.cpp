@@ -661,9 +661,11 @@ _gui_viewport_display_ready(const DvzGuiViewport* viewport, uint32_t width, uint
         return false;
     if (width == 0 || height == 0)
         return false;
-    if (viewport->requested_width != width || viewport->requested_height != height)
+    if (!_gui_viewport_frame_matches_committed(viewport, viewport->extent))
         return false;
-    return _gui_viewport_frame_matches_committed(viewport, viewport->extent);
+    if (viewport->requested_width != width || viewport->requested_height != height)
+        return viewport->pending_width == width && viewport->pending_height == height;
+    return true;
 }
 
 
