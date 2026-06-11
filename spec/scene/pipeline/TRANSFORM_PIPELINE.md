@@ -29,6 +29,16 @@ The transform pipeline keeps these concerns separate:
 
 ## Coordinate Spaces
 
+User-facing scene coordinates use a Cartesian, right-handed convention:
+
+1. `+X` points right in the default panel view.
+2. `+Y` points up in the default panel view.
+3. `+Z` points from back to front, toward the default camera.
+
+This is the convention for `DataSpace` and `VisualSpace`. Backend clip-space differences, such as
+Vulkan's framebuffer Y direction and depth range, are handled below the scene layer and are not
+visible to users.
+
 | Space | Meaning |
 |---|---|
 | `DataSpace` | user or domain coordinates: measurement, voxel, geographic, simulation, plot |
@@ -86,6 +96,8 @@ Rules:
 2. `min > max` inverts the axis; ticks follow the declared order from `min` toward `max`.
 3. All visuals using the same panel domain must already share the same data coordinate system; the
    scene does not reconcile mixed physical units.
+4. For ordinary `min < max` linear domains, smaller X values appear to the left, larger X values
+   appear to the right, smaller Y values appear lower, and larger Y values appear higher.
 
 
 ## Coordinate Transform Stage

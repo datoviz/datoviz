@@ -1144,8 +1144,10 @@ dvz_panel_visible_domain(DvzPanel* panel, DvzDim dim, double* out_min, double* o
 /**
  * Normalize tightly packed 3D data positions through the panel X/Y domains.
  *
- * X and Y are mapped from data coordinates into panel visual coordinates in [-1, +1]. Z is copied
- * unchanged. Unset domains fall back to pass-through visual coordinates for that dimension.
+ * X and Y are mapped from data coordinates into panel visual coordinates in [-1, +1]. For ordinary
+ * increasing domains, X increases left to right and Y increases bottom to top. Z is copied
+ * unchanged; positive Z is the default front direction for camera/depth interpretation. Unset
+ * domains fall back to pass-through visual coordinates for that dimension.
  *
  * @param panel the panel
  * @param data_positions tightly packed input positions, 3 floats per item
