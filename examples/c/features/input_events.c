@@ -22,6 +22,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "_assertions.h"
@@ -62,6 +63,286 @@ typedef struct InputEventsState
 /*************************************************************************************************/
 
 /**
+ * Return a human-readable pointer event type label.
+ *
+ * @param type pointer event type
+ * @return stable label
+ */
+static const char* _pointer_event_label(DvzPointerEventType type)
+{
+    switch (type)
+    {
+    case DVZ_POINTER_EVENT_RELEASE:
+        return "release";
+    case DVZ_POINTER_EVENT_PRESS:
+        return "press";
+    case DVZ_POINTER_EVENT_MOVE:
+        return "move";
+    case DVZ_POINTER_EVENT_CLICK:
+        return "click";
+    case DVZ_POINTER_EVENT_DOUBLE_CLICK:
+        return "double-click";
+    case DVZ_POINTER_EVENT_DRAG_START:
+        return "drag-start";
+    case DVZ_POINTER_EVENT_DRAG:
+        return "drag";
+    case DVZ_POINTER_EVENT_DRAG_STOP:
+        return "drag-stop";
+    case DVZ_POINTER_EVENT_WHEEL:
+        return "wheel";
+    case DVZ_POINTER_EVENT_NONE:
+        return "none";
+    case DVZ_POINTER_EVENT_ALL:
+        return "all";
+    default:
+        return "unknown";
+    }
+}
+
+
+
+/**
+ * Return a human-readable pointer button label.
+ *
+ * @param button pointer button
+ * @return stable label
+ */
+static const char* _pointer_button_label(DvzPointerButton button)
+{
+    switch (button)
+    {
+    case DVZ_POINTER_BUTTON_NONE:
+        return "none";
+    case DVZ_POINTER_BUTTON_LEFT:
+        return "left";
+    case DVZ_POINTER_BUTTON_MIDDLE:
+        return "middle";
+    case DVZ_POINTER_BUTTON_RIGHT:
+        return "right";
+    default:
+        return "unknown";
+    }
+}
+
+
+
+/**
+ * Return a human-readable keyboard event type label.
+ *
+ * @param type keyboard event type
+ * @return stable label
+ */
+static const char* _keyboard_event_label(DvzKeyboardEventType type)
+{
+    switch (type)
+    {
+    case DVZ_KEYBOARD_EVENT_NONE:
+        return "none";
+    case DVZ_KEYBOARD_EVENT_PRESS:
+        return "press";
+    case DVZ_KEYBOARD_EVENT_REPEAT:
+        return "repeat";
+    case DVZ_KEYBOARD_EVENT_RELEASE:
+        return "release";
+    default:
+        return "unknown";
+    }
+}
+
+
+
+/**
+ * Return a human-readable key label for common Datoviz key codes.
+ *
+ * @param key key code
+ * @return stable label
+ */
+static const char* _key_label(DvzKeyCode key)
+{
+    if (key >= DVZ_KEY_A && key <= DVZ_KEY_Z)
+    {
+        static const char* const letters[] = {
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+            "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
+        return letters[key - DVZ_KEY_A];
+    }
+    if (key >= DVZ_KEY_0 && key <= DVZ_KEY_9)
+    {
+        static const char* const digits[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+        return digits[key - DVZ_KEY_0];
+    }
+    if (key >= DVZ_KEY_F1 && key <= DVZ_KEY_F25)
+    {
+        static const char* const function_keys[] = {
+            "F1",  "F2",  "F3",  "F4",  "F5",  "F6",  "F7",  "F8",  "F9",
+            "F10", "F11", "F12", "F13", "F14", "F15", "F16", "F17", "F18",
+            "F19", "F20", "F21", "F22", "F23", "F24", "F25"};
+        return function_keys[key - DVZ_KEY_F1];
+    }
+    if (key >= DVZ_KEY_KP_0 && key <= DVZ_KEY_KP_9)
+    {
+        static const char* const keypad_digits[] = {
+            "keypad-0", "keypad-1", "keypad-2", "keypad-3", "keypad-4",
+            "keypad-5", "keypad-6", "keypad-7", "keypad-8", "keypad-9"};
+        return keypad_digits[key - DVZ_KEY_KP_0];
+    }
+
+    switch (key)
+    {
+    case DVZ_KEY_UNKNOWN:
+        return "unknown";
+    case DVZ_KEY_NONE:
+        return "none";
+    case DVZ_KEY_SPACE:
+        return "space";
+    case DVZ_KEY_APOSTROPHE:
+        return "'";
+    case DVZ_KEY_COMMA:
+        return ",";
+    case DVZ_KEY_MINUS:
+        return "-";
+    case DVZ_KEY_PERIOD:
+        return ".";
+    case DVZ_KEY_SLASH:
+        return "/";
+    case DVZ_KEY_SEMICOLON:
+        return ";";
+    case DVZ_KEY_EQUAL:
+        return "=";
+    case DVZ_KEY_LEFT_BRACKET:
+        return "[";
+    case DVZ_KEY_BACKSLASH:
+        return "\\";
+    case DVZ_KEY_RIGHT_BRACKET:
+        return "]";
+    case DVZ_KEY_GRAVE_ACCENT:
+        return "`";
+    case DVZ_KEY_WORLD_1:
+        return "world-1";
+    case DVZ_KEY_WORLD_2:
+        return "world-2";
+    case DVZ_KEY_ESCAPE:
+        return "escape";
+    case DVZ_KEY_ENTER:
+        return "enter";
+    case DVZ_KEY_TAB:
+        return "tab";
+    case DVZ_KEY_BACKSPACE:
+        return "backspace";
+    case DVZ_KEY_INSERT:
+        return "insert";
+    case DVZ_KEY_DELETE:
+        return "delete";
+    case DVZ_KEY_RIGHT:
+        return "right";
+    case DVZ_KEY_LEFT:
+        return "left";
+    case DVZ_KEY_DOWN:
+        return "down";
+    case DVZ_KEY_UP:
+        return "up";
+    case DVZ_KEY_PAGE_UP:
+        return "page-up";
+    case DVZ_KEY_PAGE_DOWN:
+        return "page-down";
+    case DVZ_KEY_HOME:
+        return "home";
+    case DVZ_KEY_END:
+        return "end";
+    case DVZ_KEY_CAPS_LOCK:
+        return "caps-lock";
+    case DVZ_KEY_SCROLL_LOCK:
+        return "scroll-lock";
+    case DVZ_KEY_NUM_LOCK:
+        return "num-lock";
+    case DVZ_KEY_PRINT_SCREEN:
+        return "print-screen";
+    case DVZ_KEY_PAUSE:
+        return "pause";
+    case DVZ_KEY_KP_DECIMAL:
+        return "keypad-decimal";
+    case DVZ_KEY_KP_DIVIDE:
+        return "keypad-divide";
+    case DVZ_KEY_KP_MULTIPLY:
+        return "keypad-multiply";
+    case DVZ_KEY_KP_SUBTRACT:
+        return "keypad-subtract";
+    case DVZ_KEY_KP_ADD:
+        return "keypad-add";
+    case DVZ_KEY_KP_ENTER:
+        return "keypad-enter";
+    case DVZ_KEY_KP_EQUAL:
+        return "keypad-equal";
+    case DVZ_KEY_LEFT_SHIFT:
+        return "left-shift";
+    case DVZ_KEY_LEFT_CONTROL:
+        return "left-control";
+    case DVZ_KEY_LEFT_ALT:
+        return "left-alt";
+    case DVZ_KEY_LEFT_SUPER:
+        return "left-super";
+    case DVZ_KEY_RIGHT_SHIFT:
+        return "right-shift";
+    case DVZ_KEY_RIGHT_CONTROL:
+        return "right-control";
+    case DVZ_KEY_RIGHT_ALT:
+        return "right-alt";
+    case DVZ_KEY_RIGHT_SUPER:
+        return "right-super";
+    case DVZ_KEY_MENU:
+        return "menu";
+    default:
+        return "unknown";
+    }
+}
+
+
+
+/**
+ * Format a modifier mask as a readable joined label.
+ *
+ * @param mods modifier mask
+ * @param out output string
+ * @param out_size output string size
+ */
+static void _format_mods(int mods, char* out, size_t out_size)
+{
+    ANN(out);
+    ASSERT(out_size > 0);
+    out[0] = '\0';
+
+    if (mods == DVZ_KEY_MODIFIER_NONE)
+    {
+        snprintf(out, out_size, "none");
+        return;
+    }
+
+    bool first = true;
+#define ADD_MOD(bit, label)                                                                        \
+    do                                                                                             \
+    {                                                                                              \
+        if ((mods & (bit)) != 0)                                                                   \
+        {                                                                                          \
+            snprintf(out + strlen(out), out_size - strlen(out), "%s%s", first ? "" : "+", label); \
+            first = false;                                                                         \
+        }                                                                                          \
+    } while (0)
+
+    ADD_MOD(DVZ_KEY_MODIFIER_SHIFT, "shift");
+    ADD_MOD(DVZ_KEY_MODIFIER_CONTROL, "control");
+    ADD_MOD(DVZ_KEY_MODIFIER_ALT, "alt");
+    ADD_MOD(DVZ_KEY_MODIFIER_SUPER, "super");
+
+#undef ADD_MOD
+
+    int known = DVZ_KEY_MODIFIER_SHIFT | DVZ_KEY_MODIFIER_CONTROL | DVZ_KEY_MODIFIER_ALT |
+                DVZ_KEY_MODIFIER_SUPER;
+    if ((mods & ~known) != 0)
+        snprintf(
+            out + strlen(out), out_size - strlen(out), "%s0x%x", first ? "" : "+", mods & ~known);
+}
+
+/**
  * Count pointer events received by the view input router.
  *
  * @param router input router
@@ -78,14 +359,18 @@ _input_events_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void
     state->pointer_count++;
     if (state->verbose)
     {
+        char mods[64] = {0};
+        _format_mods(event->mods, mods, sizeof(mods));
         if (event->type == DVZ_POINTER_EVENT_WHEEL)
             dvz_fprintf(
-                stdout, "input_events: wheel dx=%.2f dy=%.2f at x=%.1f y=%.1f\n",
-                event->content.w.dir[0], event->content.w.dir[1], event->pos[0], event->pos[1]);
+                stdout, "input_events: pointer wheel dx=%.2f dy=%.2f x=%.1f y=%.1f mods=%s\n",
+                event->content.w.dir[0], event->content.w.dir[1], event->pos[0], event->pos[1],
+                mods);
         else
             dvz_fprintf(
-                stdout, "input_events: pointer type=%d button=%d x=%.1f y=%.1f\n",
-                (int)event->type, (int)event->button, event->pos[0], event->pos[1]);
+                stdout, "input_events: pointer %s button=%s x=%.1f y=%.1f mods=%s\n",
+                _pointer_event_label(event->type), _pointer_button_label(event->button),
+                event->pos[0], event->pos[1], mods);
     }
 }
 
@@ -107,9 +392,13 @@ _input_events_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, vo
         return;
     state->keyboard_count++;
     if (state->verbose)
+    {
+        char mods[64] = {0};
+        _format_mods(event->mods, mods, sizeof(mods));
         dvz_fprintf(
-            stdout, "input_events: key type=%d key=%d mods=%d\n", (int)event->type,
-            (int)event->key, (int)event->mods);
+            stdout, "input_events: key %s key=%s mods=%s\n", _keyboard_event_label(event->type),
+            _key_label(event->key), mods);
+    }
 }
 
 
