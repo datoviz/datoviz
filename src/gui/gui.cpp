@@ -646,6 +646,29 @@ static bool _gui_viewport_frame_matches_committed(
 
 
 /**
+ * Return whether the last accepted source frame can be displayed in the current ImGui image item.
+ *
+ * @param viewport GUI viewport
+ * @param width snapped content width for this ImGui frame
+ * @param height snapped content height for this ImGui frame
+ * @return whether the texture can be drawn without stretching a stale source frame
+ */
+static bool
+_gui_viewport_display_ready(const DvzGuiViewport* viewport, uint32_t width, uint32_t height)
+{
+    ANN(viewport);
+    if (!viewport->has_frame)
+        return false;
+    if (width == 0 || height == 0)
+        return false;
+    if (viewport->requested_width != width || viewport->requested_height != height)
+        return false;
+    return _gui_viewport_frame_matches_committed(viewport, viewport->extent);
+}
+
+
+
+/**
  * Receive a live source-canvas image after submission.
  *
  * @param frame live image metadata
@@ -1472,6 +1495,8 @@ bool _dvz_gui_viewport_debug_state(
     out->displayed_framebuffer_height = viewport->extent.height;
     out->stale_frame_count = viewport->stale_frame_count;
     out->has_frame = viewport->has_frame;
+    out->display_ready = _gui_viewport_display_ready(
+        viewport, viewport->requested_width, viewport->requested_height);
     return true;
 }
 
@@ -2221,7 +2246,11 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
         if (width > 0 && height > 0)
             _gui_viewport_request_resize(viewport, width, height);
 
-        if (_gui_viewport_ensure_texture(viewport) && viewport->has_frame)
+        const bool display_ready = _gui_viewport_display_ready(viewport, width, height);
+        if (!display_ready && viewport->has_frame)
+            _gui_request_frame(gui);
+
+        if (_gui_viewport_ensure_texture(viewport) && display_ready)
         {
             ImVec2 image_min = ImGui::GetCursorScreenPos();
             ImVec2 image_max = ImVec2(image_min.x + avail.x, image_min.y + avail.y);

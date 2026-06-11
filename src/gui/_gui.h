@@ -43,6 +43,7 @@ typedef struct DvzGuiViewportDebugState
     uint32_t displayed_framebuffer_height;
     uint32_t stale_frame_count;
     bool has_frame;
+    bool display_ready;
 } DvzGuiViewportDebugState;
 
 

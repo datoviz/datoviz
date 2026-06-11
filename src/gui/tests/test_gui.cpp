@@ -408,6 +408,7 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     DvzGuiViewportDebugState debug = {};
     AT(_dvz_gui_viewport_debug_state(smoke.viewport, &debug));
     AT(debug.has_frame);
+    AT(debug.display_ready);
     AT(debug.pending_width == 0);
     AT(debug.pending_height == 0);
     AT(debug.displayed_framebuffer_width == debug.requested_framebuffer_width);
