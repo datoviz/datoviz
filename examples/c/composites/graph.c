@@ -282,20 +282,12 @@ static BrainBounds _graph_bounds(void)
 static bool _configure_panel(DvzPanel* panel)
 {
     ANN(panel);
-    example_graphite_cyan_set_panel_background(panel);
-    bool ok = dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.06f, .right = 0.06f, .bottom = 0.06f,
-                                        .top = 0.06f});
-    if (!ok)
-        return false;
-
     const BrainBounds bounds = _graph_bounds();
-    DvzPanelDomainFit fit = dvz_panel_domain_fit();
-    fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
-    fit.x = (DvzDataDomain){.min = bounds.xmin, .max = bounds.xmax};
-    fit.y = (DvzDataDomain){.min = bounds.ymin, .max = bounds.ymax};
-    fit.padding = 0.14;
-    return dvz_panel_set_domain_fit(panel, &fit) == 0;
+    return example_configure_equal_aspect_panel(
+        panel, (DvzDataDomain){.min = bounds.xmin, .max = bounds.xmax},
+        (DvzDataDomain){.min = bounds.ymin, .max = bounds.ymax}, 0.14,
+        &(DvzPanelLayoutReserve){
+            .left = 0.06f, .right = 0.06f, .bottom = 0.06f, .top = 0.06f});
 }
 
 

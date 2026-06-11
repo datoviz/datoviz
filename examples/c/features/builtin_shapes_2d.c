@@ -27,6 +27,7 @@
 #include "datoviz/controller/panzoom.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -135,7 +136,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     if (panel == NULL)
         return false;
-    example_graphite_cyan_set_panel_background(panel);
+    if (!example_configure_equal_aspect_panel(
+            panel, (DvzDataDomain){.min = -1.05, .max = +1.05},
+            (DvzDataDomain){.min = -0.72, .max = +0.72}, 0.04, NULL))
+        return false;
 
     const bool ok =
         _add_geometry(

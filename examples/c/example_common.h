@@ -22,6 +22,7 @@
 
 #include "_compat.h"
 #include "datoviz/math/types.h"
+#include "datoviz/scene/types.h"
 #include "example_style.h"
 
 
@@ -104,6 +105,13 @@ bool example_panel_pointer_position(
 bool example_add_xz_reference_grid(DvzPanel* panel, float origin_y, float size);
 
 bool example_add_panel_label(DvzPanel* panel, const char* label, float x_px, float y_px);
+
+bool example_configure_equal_aspect_panel(
+    DvzPanel* panel,
+    DvzDataDomain x,
+    DvzDataDomain y,
+    double padding,
+    const DvzPanelLayoutReserve* reserve);
 
 bool example_link_controllers_bidirectional(
     DvzScene* scene, DvzController* a, DvzController* b, uint32_t components);

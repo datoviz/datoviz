@@ -38,6 +38,7 @@
 #include "_compat.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -474,19 +475,11 @@ static bool _configure_panel(DvzPanel* panel, const ChoroplethBundle* bundle)
     ANN(panel);
     ANN(bundle);
 
-    example_graphite_cyan_set_panel_background(panel);
-    bool ok = dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.035f, .right = 0.105f, .bottom = 0.045f,
-                                        .top = 0.095f});
-    if (!ok)
-        return false;
-
-    DvzPanelDomainFit fit = dvz_panel_domain_fit();
-    fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
-    fit.x = (DvzDataDomain){.min = bundle->xmin, .max = bundle->xmax};
-    fit.y = (DvzDataDomain){.min = bundle->ymin, .max = bundle->ymax};
-    fit.padding = 0.035;
-    return dvz_panel_set_domain_fit(panel, &fit) == 0;
+    return example_configure_equal_aspect_panel(
+        panel, (DvzDataDomain){.min = bundle->xmin, .max = bundle->xmax},
+        (DvzDataDomain){.min = bundle->ymin, .max = bundle->ymax}, 0.035,
+        &(DvzPanelLayoutReserve){
+            .left = 0.035f, .right = 0.105f, .bottom = 0.045f, .top = 0.095f});
 }
 
 

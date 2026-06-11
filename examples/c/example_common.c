@@ -408,6 +408,39 @@ bool example_add_panel_label(DvzPanel* panel, const char* label, float x_px, flo
 
 
 /**
+ * Configure a graphite-cyan panel with an equal-aspect data-domain fit.
+ *
+ * @param panel target panel
+ * @param x x data domain
+ * @param y y data domain
+ * @param padding domain fit padding
+ * @param reserve optional layout reserve, or NULL
+ * @return true when the panel was configured
+ */
+bool example_configure_equal_aspect_panel(
+    DvzPanel* panel,
+    DvzDataDomain x,
+    DvzDataDomain y,
+    double padding,
+    const DvzPanelLayoutReserve* reserve)
+{
+    if (panel == NULL)
+        return false;
+
+    example_graphite_cyan_set_panel_background(panel);
+    if (reserve != NULL && !dvz_panel_set_layout_reserve(panel, reserve))
+        return false;
+
+    DvzPanelDomainFit fit = dvz_panel_domain_fit();
+    fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
+    fit.x = x;
+    fit.y = y;
+    fit.padding = padding;
+    return dvz_panel_set_domain_fit(panel, &fit) == 0;
+}
+
+
+/**
  * Link two controllers in both directions using current one-way controller links.
  *
  * @param scene scene owning both controllers
