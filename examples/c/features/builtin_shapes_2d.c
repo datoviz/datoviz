@@ -200,6 +200,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
     if (panzoom == NULL)
         return false;
+    const float aspect = ctx->height > 0 ? (float)ctx->width / (float)ctx->height : 1.0f;
+    dvz_panzoom_zoom(panzoom, (vec2){1.0f, aspect});
+    dvz_panzoom_end(panzoom);
     return ok && dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XY) == 0;
 }
 
