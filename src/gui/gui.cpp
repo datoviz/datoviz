@@ -671,6 +671,29 @@ _gui_viewport_display_ready(const DvzGuiViewport* viewport, uint32_t width, uint
 
 
 /**
+ * Return the last accepted source frame size in logical coordinates.
+ *
+ * @param viewport GUI viewport
+ * @param out output ImGui draw size
+ */
+static void _gui_viewport_last_frame_logical_size(const DvzGuiViewport* viewport, ImVec2* out)
+{
+    ANN(viewport);
+    ANN(out);
+    float scale = _gui_viewport_device_scale(viewport);
+    if (scale <= 0.0f || !isfinite(scale))
+        scale = 1.0f;
+    out->x = viewport->extent.width > 0 ? (float)viewport->extent.width / scale : 1.0f;
+    out->y = viewport->extent.height > 0 ? (float)viewport->extent.height / scale : 1.0f;
+    if (out->x < 1.0f)
+        out->x = 1.0f;
+    if (out->y < 1.0f)
+        out->y = 1.0f;
+}
+
+
+
+/**
  * Receive a live source-canvas image after submission.
  *
  * @param frame live image metadata
@@ -2252,18 +2275,24 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
         if (!display_ready && viewport->has_frame)
             _gui_request_frame(gui);
 
-        if (_gui_viewport_ensure_texture(viewport) && display_ready)
+        if (_gui_viewport_ensure_texture(viewport) && viewport->has_frame)
         {
             ImVec2 image_min = ImGui::GetCursorScreenPos();
-            ImVec2 image_max = ImVec2(image_min.x + avail.x, image_min.y + avail.y);
+            ImVec2 image_size = avail;
+            if (!display_ready)
+                _gui_viewport_last_frame_logical_size(viewport, &image_size);
+            ImVec2 image_max = ImVec2(image_min.x + image_size.x, image_min.y + image_size.y);
             ImGui::PushID(viewport);
             ImGui::InvisibleButton(
                 "image", avail,
                 ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight |
                     ImGuiButtonFlags_MouseButtonMiddle);
             ImGui::PopID();
+            ImGui::PushClipRect(
+                image_min, ImVec2(image_min.x + avail.x, image_min.y + avail.y), true);
             ImGui::GetWindowDrawList()->AddImage(
                 (ImTextureID)viewport->texture, image_min, image_max, ImVec2(0, 0), ImVec2(1, 1));
+            ImGui::PopClipRect();
             _gui_viewport_update_mouse(viewport, image_min, avail);
             if ((viewport->config.viewport_flags & DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT) != 0)
                 _gui_viewport_forward_input(viewport, image_min, avail);
