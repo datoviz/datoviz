@@ -135,8 +135,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
                 .center = {+0.00, +0.42, 0.02},
                 .radius = 0.27,
-                .rings = 18,
-                .sectors = 36,
+                .rings = 36,
+                .sectors = 72,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
             })) &&
         _add_geometry(
@@ -146,7 +146,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
                 .center = {+0.92, +0.42, 0.00},
                 .radius = 0.18,
                 .height = 0.62,
-                .sectors = 32,
+                .sectors = 128,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
             })) &&
         _add_geometry(
@@ -156,7 +156,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
                 .center = {-0.92, -0.42, 0.00},
                 .radius = 0.25,
                 .height = 0.66,
-                .sectors = 32,
+                .sectors = 128,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
             })) &&
         _add_geometry(
@@ -166,8 +166,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
                 .center = {+0.00, -0.42, 0.05},
                 .major_radius = 0.28,
                 .minor_radius = 0.08,
-                .rings = 36,
-                .sectors = 16,
+                .rings = 72,
+                .sectors = 32,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID),
             })) &&
         _add_geometry(
@@ -179,7 +179,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
                 .shaft_radius = 0.055,
                 .head_radius = 0.15,
                 .head_length = 0.25,
-                .sectors = 32,
+                .sectors = 128,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ERROR),
             }));
 
