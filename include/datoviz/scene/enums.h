@@ -166,6 +166,7 @@ typedef enum
     DVZ_CONTROLLER_FIXED = 1, /* visual is unaffected by navigation; identity MVP */
     DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL =
         2, /* apply MVP, keep shader-generated local offsets isotropic */
+    DVZ_CONTROLLER_APPLY_VIEW_PROJ = 3, /* apply view/proj, ignore controller model */
 } DvzControllerMode;
 
 

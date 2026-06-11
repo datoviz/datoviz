@@ -583,6 +583,9 @@ int test_scene_reference_grid_api_and_geometry(TstContext* suite, const TstCase*
     AT(scene->reference_grid_count == 1);
     AT(grid->line_count == 8);
     AT(!dvz_visual_depth_test(grid->visual));
+    AT(panel->visual_count == 1);
+    AT(panel->visuals[0].visual == grid->visual);
+    AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_APPLY_VIEW_PROJ);
 
     DvzVisualDataView start_view = {0};
     DvzVisualDataView end_view = {0};
@@ -617,6 +620,75 @@ int test_scene_reference_grid_api_and_geometry(TstContext* suite, const TstCase*
 
     dvz_reference_grid_destroy(grid);
     AT(!scene->reference_grids[0].active);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_controller_mode_view_proj_strips_panel_model(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 128, 128, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[2] = 3.0f;
+    camera_desc.target[0] = 0.0f;
+    camera_desc.target[1] = 0.0f;
+    camera_desc.target[2] = 0.0f;
+    camera_desc.near = 0.1f;
+    camera_desc.far = 100.0f;
+    AT(dvz_panel_set_camera(panel, &camera_desc) != NULL);
+
+    DvzController* controller = dvz_arcball(scene, NULL);
+    ANN(controller);
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    ANN(arcball);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
+    dvz_arcball_set(arcball, (vec3){0.4f, -0.3f, 0.2f});
+
+    vec3 pos[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor col[1] = {{255, 255, 255, 255}};
+    float size[1] = {4.0f};
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(dvz_visual_set_data(visual, "position", pos, 1) == 0);
+    AT(dvz_visual_set_data(visual, "color", col, 1) == 0);
+    AT(dvz_visual_set_data(visual, "size", size, 1) == 0);
+
+    mat4 local = GLM_MAT4_IDENTITY_INIT;
+    glm_translate(local, (vec3){2.0f, 0.0f, 0.0f});
+    AT(dvz_visual_set_transform(visual, local) == 0);
+
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.controller_mode = DVZ_CONTROLLER_APPLY_VIEW_PROJ;
+    AT(dvz_panel_add_visual(panel, visual, &attach) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("controller.view_proj", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    const DvzFramePlanNode* render = _first_render_with_visual(plan);
+    ANN(render);
+    AT(render->u.render.visual_count == 1);
+    AT(render->u.render.controller_modes[0] == DVZ_CONTROLLER_APPLY_VIEW_PROJ);
+    AT(render->u.render.visual_has_mvp[0]);
+
+    AT(fabsf(render->u.render.apply_mvp.model[0][0] - 1.0f) > 1e-3f);
+    AC(render->u.render.visual_mvp[0].model[0][0], 1.0f, 1e-6f);
+    AC(render->u.render.visual_mvp[0].model[1][1], 1.0f, 1e-6f);
+    AC(render->u.render.visual_mvp[0].model[2][2], 1.0f, 1e-6f);
+    AC(render->u.render.visual_mvp[0].model[3][0], 2.0f, 1e-6f);
+    AC(
+        render->u.render.visual_mvp[0].view[3][2], render->u.render.apply_mvp.view[3][2],
+        1e-6f);
+    AC(
+        render->u.render.visual_mvp[0].proj[0][0], render->u.render.apply_mvp.proj[0][0],
+        1e-6f);
+
+    dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
 }

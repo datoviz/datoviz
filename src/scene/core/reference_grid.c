@@ -409,7 +409,9 @@ DvzReferenceGrid* dvz_reference_grid(DvzPanel* panel, const DvzReferenceGridDesc
         goto fail;
     if (!_reference_grid_rebuild(grid))
         goto fail;
-    if (dvz_panel_add_visual(panel, grid->visual, NULL) != 0)
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.controller_mode = DVZ_CONTROLLER_APPLY_VIEW_PROJ;
+    if (dvz_panel_add_visual(panel, grid->visual, &attach) != 0)
         goto fail;
 
     _scene_notify_request_frame(panel->figure);

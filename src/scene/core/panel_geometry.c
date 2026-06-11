@@ -275,6 +275,10 @@ bool _scene_panel_attachment_mvp(
         glm_mat4_identity(out->proj);
         out->flags = 0;
     }
+    else if (attach->controller_mode == DVZ_CONTROLLER_APPLY_VIEW_PROJ)
+    {
+        glm_mat4_identity(out->model);
+    }
 
     if (attach->coord_space == DVZ_COORD_DATA)
     {

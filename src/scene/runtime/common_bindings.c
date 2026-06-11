@@ -356,17 +356,15 @@ bool _scene_common_bindings_resolve_visual_set(
         return false;
     }
 
-    const char* mode_tag =
-        render->u.render.controller_modes[visual_index] == DVZ_CONTROLLER_FIXED ? "fixed" :
-        render->u.render.controller_modes[visual_index] == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL
-            ? "apply_iso"
-            : "apply";
+    DvzControllerMode mode = render->u.render.controller_modes[visual_index];
+    const char* mode_tag = mode == DVZ_CONTROLLER_FIXED                    ? "fixed" :
+                           mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL    ? "apply_iso" :
+                           mode == DVZ_CONTROLLER_APPLY_VIEW_PROJ          ? "view_proj" :
+                                                                              "apply";
     char tag[160];
     dvz_snprintf(tag, sizeof(tag), "%s_visual_%u", mode_tag, visual_index);
     uint32_t flags =
-        render->u.render.controller_modes[visual_index] == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL
-            ? DVZ_MVP_FLAGS_ISOTROPIC_LOCAL
-            : 0;
+        mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL ? DVZ_MVP_FLAGS_ISOTROPIC_LOCAL : 0;
     return _resolve_common_set(
         emitter, stream, render, common_bgl_id, tag, false, flags,
         &render->u.render.visual_mvp[visual_index], out_bg_id);
@@ -404,15 +402,14 @@ bool _scene_common_bindings_resolve_single_set(
     if (common_bgl_new)
         ok = ok && _create_common_bind_group_layout(stream, common_bgl_id);
 
-    const char* mode_tag =
-        render->u.render.controller_modes[0] == DVZ_CONTROLLER_FIXED                 ? "fixed" :
-        render->u.render.controller_modes[0] == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL ? "apply_iso" :
-                                                                                        "apply";
-    bool fixed = render->u.render.controller_modes[0] == DVZ_CONTROLLER_FIXED;
+    DvzControllerMode mode = render->u.render.controller_modes[0];
+    const char* mode_tag = mode == DVZ_CONTROLLER_FIXED                 ? "fixed" :
+                           mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL ? "apply_iso" :
+                           mode == DVZ_CONTROLLER_APPLY_VIEW_PROJ       ? "view_proj" :
+                                                                           "apply";
+    bool fixed = mode == DVZ_CONTROLLER_FIXED;
     uint32_t mvp_flags =
-        render->u.render.controller_modes[0] == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL
-            ? DVZ_MVP_FLAGS_ISOTROPIC_LOCAL
-            : 0;
+        mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL ? DVZ_MVP_FLAGS_ISOTROPIC_LOCAL : 0;
     uint64_t common_bg_id = 0;
     ok = ok && _resolve_common_set(
                    emitter, stream, render, common_bgl_id, mode_tag, fixed, mvp_flags,

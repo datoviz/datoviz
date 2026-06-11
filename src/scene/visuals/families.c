@@ -67,6 +67,15 @@ static bool _visual_attach_desc_validate(const DvzVisualAttachDesc* desc)
         log_error("invalid visual coordinate space");
         return false;
     }
+    if (
+        desc->controller_mode != DVZ_CONTROLLER_APPLY &&
+        desc->controller_mode != DVZ_CONTROLLER_FIXED &&
+        desc->controller_mode != DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL &&
+        desc->controller_mode != DVZ_CONTROLLER_APPLY_VIEW_PROJ)
+    {
+        log_error("invalid visual controller mode");
+        return false;
+    }
     return true;
 }
 

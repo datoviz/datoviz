@@ -4773,6 +4773,10 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
     attach_desc.coord_space = (DvzVisualCoordSpace)999;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_add_visual(panel, visual, &attach_desc) < 0);
 
+    attach_desc = dvz_visual_attach_desc();
+    attach_desc.controller_mode = (DvzControllerMode)999;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_add_visual(panel, visual, &attach_desc) < 0);
+
     DvzPanelBackgroundDesc background_desc = dvz_panel_background_desc();
     background_desc.struct_size = 0;
     AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_background(panel, &background_desc));

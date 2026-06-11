@@ -512,6 +512,9 @@ int test_scene_panel_destroy_removes_grid_attachment(TstContext* suite, const Ts
 
 int test_scene_reference_grid_api_and_geometry(TstContext* suite, const TstCase* item);
 
+int test_scene_controller_mode_view_proj_strips_panel_model(
+    TstContext* suite, const TstCase* item);
+
 int test_orientation_gizmo_create_place_resize_and_visibility(
     TstContext* suite, const TstCase* item);
 

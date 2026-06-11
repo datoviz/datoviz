@@ -908,7 +908,7 @@ struct DvzVisualAttachDesc
     uint32_t struct_size;
     uint32_t flags;
     int32_t           z_layer;          /* signed; lower draws behind, higher in front; default 0 */
-    DvzControllerMode controller_mode;  /* APPLY (default), FIXED, or shader isotropic local */
+    DvzControllerMode controller_mode;  /* APPLY (default), FIXED, VIEW_PROJ, or isotropic */
     DvzVisualCoordSpace coord_space;    /* VISUAL (default) or DATA/domain coordinates */
 };
 typedef struct DvzVisualAttachDesc DvzVisualAttachDesc;

@@ -156,7 +156,7 @@ attachment contract may also declare coordinate interpretation and optional doma
 |---|---|
 | `coord_space` | `DVZ_COORD_VISUAL` or `DVZ_COORD_DATA`; pixel space is future work |
 | `coord_transform` / `transform_params` | future field: optional pre-normalization transform |
-| `controller_mode` | `DVZ_CONTROLLER_APPLY` or `DVZ_CONTROLLER_FIXED` |
+| `controller_mode` | `DVZ_CONTROLLER_APPLY`, `DVZ_CONTROLLER_FIXED`, or `DVZ_CONTROLLER_APPLY_VIEW_PROJ` |
 | `domain_x/y/z` | future field: `NULL` uses panel domain; non-`NULL` overrides that dimension |
 | `z_layer` | signed draw order; lower draws first; same layer uses insertion order |
 
@@ -168,8 +168,10 @@ Coordinate-space meanings:
 | `DVZ_COORD_DATA` | normalize through panel domains before controller transforms |
 
 `coord_space` and `controller_mode` are independent. Typical combinations include
-`DATA+APPLY` for data visuals and `VISUAL+FIXED` for static overlays. Future `PIXEL+FIXED`
-attachments may cover legends, scale bars, or panel-corner annotations.
+`DATA+APPLY` for data visuals, `VISUAL+FIXED` for static overlays, and
+`VISUAL+APPLY_VIEW_PROJ` for reference aids that follow camera view/projection but ignore
+controller/object model transforms. Future `PIXEL+FIXED` attachments may cover legends, scale bars,
+or panel-corner annotations.
 
 
 ## Dual-Axis And Mixed-Space Overlays
