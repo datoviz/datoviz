@@ -27,7 +27,6 @@
 #include "datoviz/gui.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
-#include "example_gui_controls.h"
 #include "example_style.h"
 
 
@@ -52,13 +51,23 @@ typedef struct GuiControlsState
     float diameter;
     float color[4];
     bool visible;
-    DvzExampleGuiMaterialControls material;
-    DvzExampleGuiMsaaControls msaa;
-    DvzExampleGuiEdlControls edl;
-    DvzExampleGuiSsaoControls ssao;
-    float light_direction[3];
+    bool pulse;
+    int palette;
+    int glyph_count;
+    float opacity;
+    float jitter[2];
+    float contrast[4];
+    bool bloom_enabled;
+    float bloom_radius;
+    float bloom_threshold;
+    bool contour_enabled;
+    float contour_width;
+    float contour_range[2];
+    bool diagnostic_overlay;
+    bool show_histogram;
     float clip_min[3];
     float clip_max[3];
+    float light_direction[3];
 } GuiControlsState;
 
 
@@ -85,7 +94,7 @@ static bool _gui_controls_upload(GuiControlsState* state)
         colors[i].r = (uint8_t)(255.0f * state->color[0]);
         colors[i].g = (uint8_t)(255.0f * state->color[1]);
         colors[i].b = (uint8_t)(255.0f * state->color[2]);
-        colors[i].a = (uint8_t)(255.0f * state->color[3]);
+        colors[i].a = (uint8_t)(255.0f * state->opacity);
         diameters[i] = state->diameter;
     }
 
@@ -114,19 +123,85 @@ static void _gui_controls_callback(DvzGui* gui, DvzView* view, void* user_data)
 
     bool changed = false;
     bool visible_changed = false;
-    if (dvz_gui_begin(gui, "Point controls", NULL, 0))
+    if (dvz_gui_begin(gui, "Widget controls", NULL, 0))
     {
-        changed |= dvz_gui_slider_float(gui, "Diameter", &state->diameter, 8.0f, 96.0f);
-        changed |= dvz_gui_color_edit4(gui, "Color", state->color, 0);
-        visible_changed |= dvz_gui_checkbox(gui, "Visible", &state->visible);
-        dvz_gui_separator_text(gui, "Reusable wrappers");
-        (void)dvz_example_gui_vec3(
-            gui, "Light direction", state->light_direction, -1.0f, 1.0f, "%.2f");
-        (void)dvz_example_gui_material(gui, &state->material);
-        (void)dvz_example_gui_msaa(gui, &state->msaa);
-        (void)dvz_example_gui_edl(gui, &state->edl);
-        (void)dvz_example_gui_ssao(gui, &state->ssao);
-        (void)dvz_example_gui_clip_box(gui, "Clip box", state->clip_min, state->clip_max);
+        dvz_gui_separator_text(gui, "Marker");
+        changed |=
+            dvz_gui_slider_float(gui, "Diameter##gui_controls_marker_diameter", &state->diameter,
+                                 8.0f, 96.0f);
+        changed |= dvz_gui_color_edit4(gui, "Tint##gui_controls_marker_tint", state->color, 0);
+        changed |=
+            dvz_gui_slider_float(gui, "Alpha##gui_controls_marker_alpha", &state->opacity, 0.15f,
+                                 1.0f);
+        visible_changed |=
+            dvz_gui_checkbox(gui, "Visible##gui_controls_marker_visible", &state->visible);
+        (void)dvz_gui_checkbox(gui, "Pulse preview##gui_controls_marker_pulse", &state->pulse);
+
+        dvz_gui_separator_text(gui, "Synthetic data");
+        static const char* const palette_items[] = {"Cyan", "Amber", "Violet", "Slate"};
+        (void)dvz_gui_combo(
+            gui, "Palette##gui_controls_data_palette", &state->palette, palette_items, 4);
+        (void)dvz_gui_slider_int(
+            gui, "Sample count##gui_controls_data_sample_count", &state->glyph_count, 16, 256);
+        (void)dvz_gui_slider_float2(
+            gui, "Jitter XY##gui_controls_data_jitter_xy", state->jitter, -1.0f, 1.0f);
+        (void)dvz_gui_slider_float4(
+            gui, "Contrast curve##gui_controls_data_contrast_curve", state->contrast, 0.0f, 1.0f);
+
+        if (dvz_gui_collapsing_header(gui, "Mock effects##gui_controls_effects_section", 0))
+        {
+            (void)dvz_gui_checkbox(
+                gui, "Bloom enabled##gui_controls_effects_bloom_enabled",
+                &state->bloom_enabled);
+            (void)dvz_gui_slider_float_format(
+                gui, "Bloom radius##gui_controls_effects_bloom_radius", &state->bloom_radius,
+                0.5f, 12.0f, "%.1f px");
+            (void)dvz_gui_slider_float(
+                gui, "Bloom threshold##gui_controls_effects_bloom_threshold",
+                &state->bloom_threshold, 0.0f, 1.0f);
+            (void)dvz_gui_checkbox(
+                gui, "Contours enabled##gui_controls_effects_contours_enabled",
+                &state->contour_enabled);
+            (void)dvz_gui_slider_float(
+                gui, "Contour width##gui_controls_effects_contour_width",
+                &state->contour_width, 0.25f, 5.0f);
+            (void)dvz_gui_slider_range_float(
+                gui, "Contour range##gui_controls_effects_contour_range",
+                &state->contour_range[0], &state->contour_range[1], 0.0f, 1.0f, "%.2f");
+        }
+
+        if (dvz_gui_collapsing_header(gui, "Mock volume##gui_controls_volume_section", 0))
+        {
+            (void)dvz_gui_slider_float3(
+                gui, "Light vector##gui_controls_volume_light_vector", state->light_direction,
+                -1.0f, 1.0f);
+            (void)dvz_gui_range_float(
+                gui, "Clip X##gui_controls_volume_clip_x", &state->clip_min[0],
+                &state->clip_max[0], 0.01f, 0.0f, 1.0f, "%.2f");
+            (void)dvz_gui_range_float(
+                gui, "Clip Y##gui_controls_volume_clip_y", &state->clip_min[1],
+                &state->clip_max[1], 0.01f, 0.0f, 1.0f, "%.2f");
+            (void)dvz_gui_range_float(
+                gui, "Clip Z##gui_controls_volume_clip_z", &state->clip_min[2],
+                &state->clip_max[2], 0.01f, 0.0f, 1.0f, "%.2f");
+        }
+
+        dvz_gui_separator_text(gui, "Diagnostics");
+        (void)dvz_gui_checkbox(
+            gui, "Overlay##gui_controls_diagnostics_overlay", &state->diagnostic_overlay);
+        dvz_gui_same_line(gui, 0.0f, -1.0f);
+        (void)dvz_gui_checkbox(
+            gui, "Histogram##gui_controls_diagnostics_histogram", &state->show_histogram);
+        if (dvz_gui_button(gui, "Reset mock values##gui_controls_diagnostics_reset"))
+        {
+            state->bloom_radius = 3.0f;
+            state->bloom_threshold = 0.62f;
+            state->contour_width = 1.4f;
+            state->contour_range[0] = 0.18f;
+            state->contour_range[1] = 0.82f;
+            state->clip_min[0] = state->clip_min[1] = state->clip_min[2] = 0.05f;
+            state->clip_max[0] = state->clip_max[1] = state->clip_max[2] = 0.95f;
+        }
     }
     dvz_gui_end(gui);
 
@@ -167,51 +242,23 @@ int main(int argc, char** argv)
         .diameter = 42.0f,
         .color = {0.28f, 0.78f, 1.00f, 1.00f},
         .visible = true,
-        .material =
-            {
-                .ambient = 0.32f,
-                .diffuse = 0.84f,
-                .specular = 0.22f,
-                .shininess = 34.0f,
-                .roughness = 0.42f,
-                .rim_strength = 0.18f,
-            },
-        .msaa =
-            {
-                .enabled = true,
-                .samples = 4.0f,
-                .min_samples = 2.0f,
-                .max_samples = 8.0f,
-            },
-        .edl =
-            {
-                .enabled = true,
-                .radius = 2.0f,
-                .strength = 45.0f,
-                .depth_scale = 1.0f,
-            },
-        .ssao =
-            {
-                .enabled = true,
-                .blur = true,
-                .radius = 1.2f,
-                .strength = 2.2f,
-                .bias = 0.02f,
-                .power = 1.3f,
-                .min_visibility = 0.35f,
-                .samples = 24.0f,
-                .min_samples = 4.0f,
-                .max_samples = 32.0f,
-                .blur_radius = 6.0f,
-                .blur_radius_max = 12.0f,
-                .blur_depth_sigma = 0.65f,
-                .blur_normal_sigma = 0.35f,
-                .show_blur_sigmas = true,
-                .show_debug_view = true,
-            },
-        .light_direction = {-0.35f, -0.55f, 0.75f},
+        .pulse = true,
+        .palette = 0,
+        .glyph_count = 96,
+        .opacity = 1.0f,
+        .jitter = {0.12f, -0.08f},
+        .contrast = {0.08f, 0.32f, 0.72f, 0.94f},
+        .bloom_enabled = true,
+        .bloom_radius = 3.0f,
+        .bloom_threshold = 0.62f,
+        .contour_enabled = false,
+        .contour_width = 1.4f,
+        .contour_range = {0.18f, 0.82f},
+        .diagnostic_overlay = false,
+        .show_histogram = true,
         .clip_min = {0.05f, 0.05f, 0.05f},
         .clip_max = {0.95f, 0.95f, 0.95f},
+        .light_direction = {-0.35f, -0.55f, 0.75f},
     };
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
