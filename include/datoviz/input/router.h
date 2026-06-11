@@ -115,7 +115,12 @@ DVZ_EXPORT void dvz_input_router_destroy(DvzInputRouter* router);
 
 
 /**
- * Subscribe to pointer events.
+ * Subscribe to raw pointer events.
+ *
+ * These callbacks receive backend-normalized pointer position, button, and wheel events emitted
+ * directly through `dvz_input_emit_pointer()`. Gesture-derived events such as click, double-click,
+ * drag-start, drag, and drag-stop are emitted on the union input stream; use
+ * `dvz_input_subscribe_event()` when those higher-level pointer events are needed.
  */
 DVZ_EXPORT void
 dvz_input_subscribe_pointer(DvzInputRouter* router, DvzPointerCallback callback, void* user_data);
@@ -222,7 +227,11 @@ DVZ_EXPORT void dvz_input_emit_scale(DvzInputRouter* router, const DvzInputScale
 
 
 /**
- * Subscribe to union-style input events.
+ * Subscribe to routed union-style input events.
+ *
+ * This stream carries pointer, keyboard, resize, and scale events in one callback. When a
+ * `DvzPointerGestureHandler` is attached to the router, this stream also receives
+ * gesture-derived pointer events such as click, double-click, drag-start, drag, and drag-stop.
  */
 DVZ_EXPORT void
 dvz_input_subscribe_event(DvzInputRouter* router, DvzInputCallback callback, void* user_data);

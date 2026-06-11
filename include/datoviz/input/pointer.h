@@ -133,7 +133,11 @@ DVZ_EXPORT void dvz_pointer_emit_wheel(
 
 
 /**
- * Attach the legacy gesture interpreter to the router.
+ * Attach the pointer gesture interpreter to the router.
+ *
+ * The interpreter listens to raw pointer events and emits gesture-derived pointer events on the
+ * router's union input stream. Subscribe with `dvz_input_subscribe_event()` to receive click,
+ * double-click, drag-start, drag, and drag-stop events.
  */
 DVZ_EXPORT DvzPointerGestureHandler* dvz_pointer_gesture_handler(DvzInputRouter* router);
 

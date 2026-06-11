@@ -67,6 +67,20 @@ def on_mouse(ev):
 | `ev.wheel()`       | Vertical wheel scroll amount (float)         |
 
 
+## C input router streams
+
+The C router exposes two pointer-related layers:
+
+| API | Stream | Use case |
+| --- | ------ | -------- |
+| `dvz_input_subscribe_pointer()` | Raw backend-normalized pointer events | Low-level position, button, release, press, move, and wheel handling |
+| `dvz_input_subscribe_event()` | Routed union input events | Consumers that need keyboard, resize, scale, and gesture-derived pointer events in one stream |
+
+When a `DvzPointerGestureHandler` is attached to a router, it listens to the raw pointer stream and
+emits click, double-click, drag-start, drag, and drag-stop pointer events on the routed union stream.
+Controllers and examples that need gestures should subscribe with `dvz_input_subscribe_event()`.
+
+
 ### Example
 
 ```python

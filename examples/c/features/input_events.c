@@ -343,17 +343,13 @@ static void _format_mods(int mods, char* out, size_t out_size)
 }
 
 /**
- * Count pointer events received by the view input router.
+ * Count and log a routed pointer event received by the view input router.
  *
- * @param router input router
  * @param event pointer event
- * @param user_data input example state
+ * @param state input example state
  */
-static void
-_input_events_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+static void _input_events_pointer(const DvzPointerEvent* event, InputEventsState* state)
 {
-    (void)router;
-    InputEventsState* state = (InputEventsState*)user_data;
     if (state == NULL || event == NULL)
         return;
     state->pointer_count++;
@@ -377,17 +373,13 @@ _input_events_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void
 
 
 /**
- * Count keyboard events received by the view input router.
+ * Count and log a routed keyboard event received by the view input router.
  *
- * @param router input router
  * @param event keyboard event
- * @param user_data input example state
+ * @param state input example state
  */
-static void
-_input_events_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, void* user_data)
+static void _input_events_keyboard(const DvzKeyboardEvent* event, InputEventsState* state)
 {
-    (void)router;
-    InputEventsState* state = (InputEventsState*)user_data;
     if (state == NULL || event == NULL)
         return;
     state->keyboard_count++;
@@ -404,17 +396,13 @@ _input_events_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, vo
 
 
 /**
- * Count resize events received by the view input router.
+ * Count and log a routed resize event received by the view input router.
  *
- * @param router input router
  * @param event resize event
- * @param user_data input example state
+ * @param state input example state
  */
-static void
-_input_events_resize(DvzInputRouter* router, const DvzInputResizeEvent* event, void* user_data)
+static void _input_events_resize(const DvzInputResizeEvent* event, InputEventsState* state)
 {
-    (void)router;
-    InputEventsState* state = (InputEventsState*)user_data;
     if (state == NULL || event == NULL)
         return;
     state->resize_count++;
@@ -423,6 +411,42 @@ _input_events_resize(DvzInputRouter* router, const DvzInputResizeEvent* event, v
             stdout, "input_events: resize framebuffer=%ux%u window=%ux%u scale=%.2fx%.2f\n",
             event->framebuffer_width, event->framebuffer_height, event->window_width,
             event->window_height, event->content_scale_x, event->content_scale_y);
+}
+
+
+
+/**
+ * Count routed input events received by the view input router.
+ *
+ * The union event stream is the canonical stream for consumers that need high-level pointer
+ * gestures: the raw pointer callbacks receive backend-normalized pointer events, while the gesture
+ * handler emits click, double-click, drag-start, drag, and drag-stop events here.
+ *
+ * @param router input router
+ * @param event routed input event
+ * @param user_data input example state
+ */
+static void _input_events_event(DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
+{
+    (void)router;
+    InputEventsState* state = (InputEventsState*)user_data;
+    if (state == NULL || event == NULL)
+        return;
+
+    switch (event->type)
+    {
+    case DVZ_INPUT_EVENT_POINTER:
+        _input_events_pointer(&event->content.pointer, state);
+        break;
+    case DVZ_INPUT_EVENT_KEYBOARD:
+        _input_events_keyboard(&event->content.keyboard, state);
+        break;
+    case DVZ_INPUT_EVENT_RESIZE:
+        _input_events_resize(&event->content.resize, state);
+        break;
+    default:
+        break;
+    }
 }
 
 
@@ -459,9 +483,7 @@ static void _subscribe_events(DvzInputRouter* router, InputEventsState* state)
 {
     ANN(router);
     ANN(state);
-    dvz_input_subscribe_pointer(router, _input_events_pointer, state);
-    dvz_input_subscribe_keyboard(router, _input_events_keyboard, state);
-    dvz_input_subscribe_resize(router, _input_events_resize, state);
+    dvz_input_subscribe_event(router, _input_events_event, state);
 }
 
 
@@ -476,9 +498,7 @@ static void _unsubscribe_events(DvzInputRouter* router, InputEventsState* state)
 {
     ANN(router);
     ANN(state);
-    dvz_input_unsubscribe_pointer(router, _input_events_pointer, state);
-    dvz_input_unsubscribe_keyboard(router, _input_events_keyboard, state);
-    dvz_input_unsubscribe_resize(router, _input_events_resize, state);
+    dvz_input_unsubscribe_event(router, _input_events_event, state);
 }
 
 
