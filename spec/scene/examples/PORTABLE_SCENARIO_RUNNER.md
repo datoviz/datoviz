@@ -136,6 +136,7 @@ struct DvzScenarioSpec
     uint32_t height;
     double fps;
     uint64_t requirements;
+    bool continuous_frames;
 
     DvzScenarioInitFn init;
     DvzScenarioFrameFn frame;
@@ -685,8 +686,8 @@ Example manifests should distinguish:
 6. `browser-only`: exists specifically to test browser integration.
 
 Each `webgpu-live` or `webgpu-planned` row should list requirement tags such as
-`point`, `mesh`, `panzoom`, `frame-callbacks`, `scene-buffers`, `scene-compute`, and
-`query-readback`.
+`point`, `mesh`, `panzoom`, `frame-callbacks`, `continuous-frames`, `scene-buffers`,
+`scene-compute`, and `query-readback`.
 
 
 ## Implementation Plan

@@ -556,6 +556,7 @@ examples:
         - scene-buffers
         - storage-buffers
         - scene-compute
+        - continuous-frames
         - point
     agent_copy_safe: false
     gallery:

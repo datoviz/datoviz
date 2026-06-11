@@ -12,7 +12,7 @@ scene compute pass with independent circular point motion.
 - Agent copy-safe: `false`
 - WebGPU status: `webgpu-live`
 - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_compute_buffer_animation"><code>examples/webgpu/live.html?id=feature_compute_buffer_animation</code></a>
-- WebGPU requirements: `scene-buffers`, `storage-buffers`, `scene-compute`, `point`
+- WebGPU requirements: `scene-buffers`, `storage-buffers`, `scene-compute`, `continuous-frames`, `point`
 - Build: `just example-c features/compute_buffer_animation`
 - Smoke: `./build/examples/c/features/compute_buffer_animation --png`
 - Validation: `smoke+screenshot`

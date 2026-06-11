@@ -255,7 +255,9 @@ DvzScenarioSpec dvz_example_compute_buffer_animation_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_SCENE_BUFFERS |
-                        DVZ_SCENARIO_REQ_STORAGE_BUFFERS | DVZ_SCENARIO_REQ_SCENE_COMPUTE,
+                        DVZ_SCENARIO_REQ_STORAGE_BUFFERS | DVZ_SCENARIO_REQ_SCENE_COMPUTE |
+                        DVZ_SCENARIO_REQ_CONTINUOUS_FRAMES,
+        .continuous_frames = true,
         .init = _scenario_init,
     };
 }

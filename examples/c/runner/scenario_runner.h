@@ -94,6 +94,7 @@ typedef enum DvzScenarioRequirement
     DVZ_SCENARIO_REQ_PANZOOM = 1ull << 13,
     DVZ_SCENARIO_REQ_ARCBALL = 1ull << 14,
     DVZ_SCENARIO_REQ_PIXEL_VISUAL = 1ull << 15,
+    DVZ_SCENARIO_REQ_CONTINUOUS_FRAMES = 1ull << 16,
 } DvzScenarioRequirement;
 
 
@@ -224,6 +225,7 @@ typedef struct DvzScenarioSpec
     uint32_t height;
     double fps;
     uint64_t requirements;
+    bool continuous_frames;
 
     DvzScenarioInitFn init;
     DvzScenarioFrameFn frame;

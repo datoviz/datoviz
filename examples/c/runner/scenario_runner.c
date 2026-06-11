@@ -100,6 +100,7 @@ static const RunnerRequirementName REQ_NAMES[] = {
     {DVZ_SCENARIO_REQ_CONTROLLER, "controller"},
     {DVZ_SCENARIO_REQ_PANZOOM, "panzoom"},
     {DVZ_SCENARIO_REQ_ARCBALL, "arcball"},
+    {DVZ_SCENARIO_REQ_CONTINUOUS_FRAMES, "continuous-frames"},
 };
 
 static const uint32_t REQ_NAME_COUNT = sizeof(REQ_NAMES) / sizeof(REQ_NAMES[0]);
@@ -270,6 +271,8 @@ static uint64_t _effective_requirements(
     const DvzScenarioSpec* spec, const DvzRunnerConfig* config)
 {
     uint64_t requirements = spec != NULL ? spec->requirements : 0;
+    if (spec != NULL && spec->continuous_frames)
+        requirements |= DVZ_SCENARIO_REQ_CONTINUOUS_FRAMES;
     if (spec != NULL && spec->frame != NULL)
         requirements |= DVZ_SCENARIO_REQ_FRAME_CALLBACKS;
     if (spec != NULL && spec->post_frame != NULL)
@@ -384,12 +387,13 @@ static void _timer_callback(DvzAnimation* animation, double t, double dt, void* 
 {
     (void)animation;
     RunnerFrameState* state = (RunnerFrameState*)user_data;
-    if (state == NULL || state->spec == NULL || state->ctx == NULL || state->spec->frame == NULL)
+    if (state == NULL || state->spec == NULL || state->ctx == NULL)
         return;
 
     state->ctx->time = t;
     state->ctx->dt = dt;
-    state->spec->frame(state->ctx, state->user);
+    if (state->spec->frame != NULL)
+        state->spec->frame(state->ctx, state->user);
     state->ctx->frame_index++;
 }
 
@@ -784,7 +788,7 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         goto cleanup;
     }
 
-    if (spec->frame != NULL)
+    if (spec->frame != NULL || spec->continuous_frames)
     {
         frame_state.spec = spec;
         frame_state.ctx = &ctx;

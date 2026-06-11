@@ -82,9 +82,9 @@ native desktop runtime facilities. Example metadata should classify browser stat
 | `browser-only` | Exists specifically to test browser integration rather than normal scene portability. |
 
 `webgpu-live` and `webgpu-planned` rows should list requirement tags such as `point`, `mesh`,
-`panzoom`, `arcball`, `frame-callbacks`, `scene-buffers`, `scene-compute`, `query-readback`,
-`native-capture`, `gui`, `video`, and `cuda`. Public docs and generated gallery pages should derive
-their live-example matrix from metadata instead of hand-maintained prose.
+`panzoom`, `arcball`, `frame-callbacks`, `continuous-frames`, `scene-buffers`, `scene-compute`,
+`query-readback`, `native-capture`, `gui`, `video`, and `cuda`. Public docs and generated gallery
+pages should derive their live-example matrix from metadata instead of hand-maintained prose.
 
 The gallery is the preferred user-visible validation surface for WebGPU examples. A
 `webgpu-live` entry means the browser route is implemented from the same canonical C example or

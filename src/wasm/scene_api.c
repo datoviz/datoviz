@@ -72,7 +72,7 @@
      DVZ_SCENARIO_REQ_IMAGE_VISUAL | DVZ_SCENARIO_REQ_TEXT_VISUAL |                                  \
      DVZ_SCENARIO_REQ_SCENE_BUFFERS | DVZ_SCENARIO_REQ_STORAGE_BUFFERS |                            \
      DVZ_SCENARIO_REQ_SCENE_COMPUTE | DVZ_SCENARIO_REQ_QUERY_READBACK |                              \
-     DVZ_SCENARIO_REQ_FRAME_CALLBACKS |                                                             \
+     DVZ_SCENARIO_REQ_FRAME_CALLBACKS | DVZ_SCENARIO_REQ_CONTINUOUS_FRAMES |                         \
      DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM | DVZ_SCENARIO_REQ_ARCBALL)
 
 
@@ -578,6 +578,8 @@ static const char* _requirement_name(uint64_t bit)
         return "query-readback";
     case DVZ_SCENARIO_REQ_FRAME_CALLBACKS:
         return "frame-callbacks";
+    case DVZ_SCENARIO_REQ_CONTINUOUS_FRAMES:
+        return "continuous-frames";
     case DVZ_SCENARIO_REQ_NATIVE_CAPTURE:
         return "native-capture";
     case DVZ_SCENARIO_REQ_NATIVE_VIEW:
@@ -598,6 +600,8 @@ static const char* _requirement_name(uint64_t bit)
 static uint64_t _scenario_effective_requirements(const DvzScenarioSpec* spec)
 {
     uint64_t requirements = spec != NULL ? spec->requirements : 0;
+    if (spec != NULL && spec->continuous_frames)
+        requirements |= DVZ_SCENARIO_REQ_CONTINUOUS_FRAMES;
     if (spec != NULL && spec->frame != NULL)
         requirements |= DVZ_SCENARIO_REQ_FRAME_CALLBACKS;
     if (spec != NULL && spec->post_frame != NULL)

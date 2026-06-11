@@ -2273,6 +2273,12 @@ try {
         (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 7)) !== 0,
         `${id} did not declare scene compute`,
       );
+      if (id === "feature_compute_buffer_animation") {
+        requireOk(
+          (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 16)) !== 0,
+          `${id} did not declare continuous frames`,
+        );
+      }
     }
   }
   const timerScenarioIndex = scenarioIndex(Module, "feature_timer_animation");
