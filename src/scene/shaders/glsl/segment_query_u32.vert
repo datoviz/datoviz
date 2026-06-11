@@ -25,22 +25,57 @@ layout(location = 1) out float fragLength;
 layout(location = 2) out float fragLineWidth;
 layout(location = 3) flat out uint fragId;
 
+const float CLIP_EPS = 1e-5;
+
 vec2 clipToPixel(vec4 clip)
 {
-    vec2 ndc = clip.xy / max(abs(clip.w), 1e-6);
+    vec2 ndc = clip.xy / max(clip.w, CLIP_EPS);
     return (ndc * 0.5 + 0.5) * viewport.rect.zw;
 }
 
-vec4 pixelToClip(vec2 pixel, float depth)
+vec4 pixelToClip(vec2 pixel, vec4 clip)
 {
     vec2 ndc = pixel / max(viewport.rect.zw, vec2(1.0)) * 2.0 - 1.0;
-    return vec4(ndc, depth, 1.0);
+    return vec4(ndc * clip.w, clip.z, clip.w);
+}
+
+bool clipSegmentPlane(inout vec4 startClip, inout vec4 endClip, float startDist, float endDist)
+{
+    if (startDist < 0.0 && endDist < 0.0)
+        return false;
+    if (startDist < 0.0 || endDist < 0.0)
+    {
+        float t = startDist / (startDist - endDist);
+        vec4 clipped = mix(startClip, endClip, clamp(t, 0.0, 1.0));
+        if (startDist < 0.0)
+            startClip = clipped;
+        else
+            endClip = clipped;
+    }
+    return true;
+}
+
+bool clipSegmentToView(inout vec4 startClip, inout vec4 endClip)
+{
+    if (!clipSegmentPlane(startClip, endClip, startClip.w - CLIP_EPS, endClip.w - CLIP_EPS))
+        return false;
+    return clipSegmentPlane(startClip, endClip, startClip.z, endClip.z);
 }
 
 void main()
 {
     vec4 startClip = transform(inPositionStart);
     vec4 endClip = transform(inPositionEnd);
+    if (!clipSegmentToView(startClip, endClip))
+    {
+        gl_Position = vec4(2.0, 2.0, 1.0, 1.0);
+        fragCoord = vec2(0.0);
+        fragLength = 0.0;
+        fragLineWidth = 0.0;
+        fragId = 0u;
+        return;
+    }
+
     vec2 startPx = clipToPixel(startClip);
     vec2 endPx = clipToPixel(endClip);
 
@@ -61,7 +96,7 @@ void main()
     float endHalfWidth = dvz_stroke_cap_half_width(endCap, strokeWidth);
     int vertex = gl_VertexIndex & 3;
     vec2 pixel = startPx;
-    float depth = startClip.z / max(abs(startClip.w), 1e-6);
+    vec4 clip = startClip;
 
     if (vertex == 0)
     {
@@ -77,16 +112,16 @@ void main()
     {
         pixel = endPx + tangent * endExtension - normal * endHalfWidth;
         fragCoord = vec2(lengthPx + endExtension, -endHalfWidth);
-        depth = endClip.z / max(abs(endClip.w), 1e-6);
+        clip = endClip;
     }
     else
     {
         pixel = endPx + tangent * endExtension + normal * endHalfWidth;
         fragCoord = vec2(lengthPx + endExtension, endHalfWidth);
-        depth = endClip.z / max(abs(endClip.w), 1e-6);
+        clip = endClip;
     }
 
-    gl_Position = pixelToClip(pixel, depth);
+    gl_Position = pixelToClip(pixel, clip);
     fragLength = lengthPx;
     fragLineWidth = strokeWidth;
     fragId = inId;
