@@ -152,6 +152,7 @@ DvzScale* example_graphite_cyan_color_scale(DvzScene* scene, double min, double 
 DvzTextStyle example_graphite_cyan_text_style(ExampleStyleTextRole role)
 {
     DvzTextStyle style = dvz_text_style();
+    style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.color[0] = 222u;
     style.color[1] = 236u;
     style.color[2] = 244u;

@@ -26,6 +26,7 @@
 
 #include "_assertions.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -259,51 +260,6 @@ static bool _set_domain(DvzPanel* panel, double x0, double x1, double y0, double
 
 
 /**
- * Add a compact data-positioned label annotation.
- *
- * @param panel target panel
- * @param text label text
- * @param x X data coordinate
- * @param y Y data coordinate
- * @param offset_x screen-space X offset
- * @param offset_y screen-space Y offset
- * @param color text color
- * @return true when the label was created
- */
-static bool _add_data_label(
-    DvzPanel* panel, const char* text, double x, double y, float offset_x, float offset_y,
-    DvzColor color)
-{
-    DvzTextStyle style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
-    style.size_px = 15.0f;
-    style.color[0] = color.r;
-    style.color[1] = color.g;
-    style.color[2] = color.b;
-    style.color[3] = 235u;
-
-    DvzTextPlacement placement = dvz_text_placement();
-    placement.mode = DVZ_TEXT_PLACEMENT_DATA;
-    placement.position[0] = x;
-    placement.position[1] = y;
-    placement.position[2] = 0.0;
-    placement.offset[0] = offset_x;
-    placement.offset[1] = offset_y;
-    placement.text_anchor[0] = 0.5f;
-    placement.text_anchor[1] = 0.5f;
-    placement.has_text_anchor = true;
-    placement.depth_test = false;
-
-    return dvz_annotation_label(
-               panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc),
-                          .text = text,
-                          .style = style,
-                          .placement = placement,
-                      }) != NULL;
-}
-
-
-
-/**
  * Add the autocorrelogram panel using bars and guide annotations.
  *
  * @param scene scene owning visuals
@@ -347,10 +303,15 @@ static bool _add_autocorrelogram(DvzScene* scene, DvzPanel* panel)
         return false;
 
     DvzColor text = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
-    return _add_data_label(panel, "bi-side refractory", 0.0, 118.0, 0.0f, 0.0f, text) &&
-           _add_data_label(
-               panel, "baseline", -34.0, 38.0, 0.0f, -14.0f,
-               example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY));
+    text.a = 235u;
+    DvzColor baseline_text = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
+    baseline_text.a = 235u;
+    return example_add_data_label(
+               panel, "bi-side refractory", (vec3){0.0f, 118.0f, 0.0f}, 0.0f, 0.0f,
+               EXAMPLE_STYLE_TEXT_PANEL_LABEL, text) &&
+           example_add_data_label(
+               panel, "baseline", (vec3){-34.0f, 38.0f, 0.0f}, 0.0f, -14.0f,
+               EXAMPLE_STYLE_TEXT_PANEL_LABEL, baseline_text);
 }
 
 

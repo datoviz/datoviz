@@ -136,6 +136,15 @@ bool example_add_panel_label(DvzPanel* panel, const char* label, float x_px, flo
 
 bool example_add_default_panel_label(DvzPanel* panel, const char* label);
 
+bool example_add_data_label(
+    DvzPanel* panel,
+    const char* label,
+    const vec3 position,
+    float offset_x,
+    float offset_y,
+    ExampleStyleTextRole role,
+    DvzColor color);
+
 bool example_configure_equal_aspect_panel(
     DvzPanel* panel,
     DvzDataDomain x,

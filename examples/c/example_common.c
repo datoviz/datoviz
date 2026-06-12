@@ -642,6 +642,46 @@ bool example_add_default_panel_label(DvzPanel* panel, const char* label)
 
 
 /**
+ * Add a compact data-positioned label using the shared graphite-cyan text style.
+ *
+ * @param panel target panel
+ * @param label label text
+ * @param position data coordinate
+ * @param offset_x screen-space X offset
+ * @param offset_y screen-space Y offset
+ * @param role semantic text role
+ * @param color text color
+ * @return true when the label was created
+ */
+bool example_add_data_label(
+    DvzPanel* panel, const char* label, const vec3 position, float offset_x, float offset_y,
+    ExampleStyleTextRole role, DvzColor color)
+{
+    if (panel == NULL || label == NULL || label[0] == '\0' || position == NULL)
+        return false;
+
+    DvzLabelDesc desc = dvz_label_desc();
+    desc.text = label;
+    desc.style = example_graphite_cyan_text_style(role);
+    desc.style.color[0] = color.r;
+    desc.style.color[1] = color.g;
+    desc.style.color[2] = color.b;
+    desc.style.color[3] = color.a;
+    desc.placement.mode = DVZ_TEXT_PLACEMENT_DATA;
+    desc.placement.position[0] = position[0];
+    desc.placement.position[1] = position[1];
+    desc.placement.position[2] = position[2];
+    desc.placement.offset[0] = offset_x;
+    desc.placement.offset[1] = offset_y;
+    desc.placement.text_anchor[0] = 0.5f;
+    desc.placement.text_anchor[1] = 0.5f;
+    desc.placement.has_text_anchor = true;
+    desc.placement.depth_test = false;
+    return dvz_annotation_label(panel, &desc) != NULL;
+}
+
+
+/**
  * Configure a graphite-cyan panel with an equal-aspect data-domain fit.
  *
  * @param panel target panel
