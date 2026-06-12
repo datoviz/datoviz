@@ -25,6 +25,7 @@
 
 #include "_assertions.h"
 #include "datoviz/geom.h"
+#include "datoviz/math/vec.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
@@ -77,6 +78,53 @@ static bool _add_geometry(DvzScene* scene, DvzPanel* panel, DvzGeometry* geometr
 }
 
 
+/**
+ * Orient one Z-axis builtin geometry so its local axis follows scene +Y.
+ *
+ * @param geometry target geometry
+ * @param center final scene-space center
+ * @return true on success
+ */
+static bool _orient_z_axis_shape_y_up(DvzGeometry* geometry, const dvec3 center)
+{
+    if (geometry == NULL)
+        return false;
+
+    dmat4 transform = _DMAT4_IDENTITY_INIT;
+    transform[1][1] = 0.0;
+    transform[1][2] = -1.0;
+    transform[2][1] = +1.0;
+    transform[2][2] = 0.0;
+    transform[3][0] = center[0];
+    transform[3][1] = center[1];
+    transform[3][2] = center[2];
+    return dvz_geometry_transform(geometry, transform) == 0;
+}
+
+
+
+/**
+ * Orient one Z-axis builtin geometry to scene +Y, upload it, and release the CPU copy.
+ *
+ * @param scene scene owning the visual
+ * @param panel target panel
+ * @param geometry origin-centered Z-axis geometry to orient and upload
+ * @param center final scene-space center
+ * @return true when the mesh was added
+ */
+static bool
+_add_y_up_geometry(DvzScene* scene, DvzPanel* panel, DvzGeometry* geometry, const dvec3 center)
+{
+    if (!_orient_z_axis_shape_y_up(geometry, center))
+    {
+        if (geometry != NULL)
+            dvz_geometry_destroy(geometry);
+        return false;
+    }
+    return _add_geometry(scene, panel, geometry);
+}
+
+
 
 /*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
@@ -104,7 +152,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    if (example_set_default_3d_camera(panel, 1.35f) == NULL)
+    DvzCameraDesc camera = example_default_3d_camera_desc(1.35f);
+    camera.eye[0] = 0.0f;
+    if (dvz_panel_set_camera(panel, &camera) == NULL)
         return false;
 
     const bool ok =
@@ -112,7 +162,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             ctx->scene, panel,
             dvz_geom_cube(&(DvzGeometryCubeDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
-                .center = {-0.92, +0.42, 0.00},
+                .center = {-0.92, 0.00, +0.42},
                 .size = 0.42,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
             })) &&
@@ -120,55 +170,55 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             ctx->scene, panel,
             dvz_geom_sphere(&(DvzGeometrySphereDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
-                .center = {+0.00, +0.42, 0.02},
+                .center = {+0.00, 0.02, +0.42},
                 .radius = 0.27,
                 .rings = 36,
                 .sectors = 72,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
             })) &&
-        _add_geometry(
+        _add_y_up_geometry(
             ctx->scene, panel,
             dvz_geom_cylinder(&(DvzGeometryCylinderDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryCylinderDesc),
-                .center = {+0.92, +0.42, 0.00},
                 .radius = 0.18,
                 .height = 0.62,
                 .sectors = 128,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
-            })) &&
-        _add_geometry(
+            }),
+            (dvec3){+0.92, 0.00, +0.42}) &&
+        _add_y_up_geometry(
             ctx->scene, panel,
             dvz_geom_cone(&(DvzGeometryConeDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryConeDesc),
-                .center = {-0.92, -0.42, 0.00},
                 .radius = 0.25,
                 .height = 0.66,
                 .sectors = 128,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
-            })) &&
-        _add_geometry(
+            }),
+            (dvec3){-0.92, 0.00, -0.42}) &&
+        _add_y_up_geometry(
             ctx->scene, panel,
             dvz_geom_torus(&(DvzGeometryTorusDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryTorusDesc),
-                .center = {+0.00, -0.42, 0.05},
                 .major_radius = 0.28,
                 .minor_radius = 0.08,
                 .rings = 72,
                 .sectors = 32,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID),
-            })) &&
-        _add_geometry(
+            }),
+            (dvec3){+0.00, 0.05, -0.42}) &&
+        _add_y_up_geometry(
             ctx->scene, panel,
             dvz_geom_arrow(&(DvzGeometryArrowDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryArrowDesc),
-                .center = {+0.92, -0.42, 0.02},
                 .length = 0.78,
                 .shaft_radius = 0.055,
                 .head_radius = 0.15,
                 .head_length = 0.25,
                 .sectors = 128,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ERROR),
-            }));
+            }),
+            (dvec3){+0.92, 0.02, -0.42});
 
     DvzController* controller = dvz_arcball(ctx->scene, NULL);
     if (controller == NULL)
@@ -178,7 +228,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
-    example_set_default_arcball(arcball);
+    dvz_arcball_set(arcball, (vec3){0.0f, 0.0f, 0.0f});
     return ok;
 }
 
