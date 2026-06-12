@@ -72,6 +72,13 @@ typedef enum
 
 typedef enum
 {
+    DVZ_TRACK_TOPOLOGY_OPEN,
+    DVZ_TRACK_TOPOLOGY_CLOSED,
+} DvzTrackTopology;
+
+
+typedef enum
+{
     DVZ_TRANSFORM_ORDER_TRS,
 } DvzTransformOrder;
 
@@ -169,6 +176,7 @@ struct DvzTrackKeyframesDesc
     const double* times;
     const void* values;
     DvzTrackRepeat repeat;
+    DvzTrackTopology topology;
     DvzTrackInterpolation interpolation;
     DvzTrackTangentMode tangents;
     float tension;

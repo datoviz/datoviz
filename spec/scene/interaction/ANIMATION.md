@@ -103,6 +103,12 @@ typedef enum
     DVZ_TRACK_INTERP_SLERP,
     DVZ_TRACK_INTERP_MONOTONE_CUBIC,
 } DvzTrackInterpolation;
+
+typedef enum
+{
+    DVZ_TRACK_TOPOLOGY_OPEN,
+    DVZ_TRACK_TOPOLOGY_CLOSED,
+} DvzTrackTopology;
 ```
 
 Required first-wave constructors:
@@ -148,6 +154,7 @@ struct DvzTrackKeyframesDesc
     const void* values;
 
     DvzTrackRepeat repeat;
+    DvzTrackTopology topology;
     DvzTrackInterpolation interpolation;
     DvzTrackTangentMode tangents;
 
@@ -167,6 +174,11 @@ Implementation order:
 
 Constructors should copy input arrays by default. Add a borrow flag only if profiling shows copying
 keyframes is a real cost.
+
+Closed keyframe topology does not infer an implicit closing segment. Authors provide explicit timing
+by duplicating the first value at the final timestamp. `DVZ_TRACK_TOPOLOGY_CLOSED` then makes
+Catmull-Rom interpolation use cyclic control points at the first and final segments so the duplicated
+endpoint has the correct tangent context.
 
 
 ## Track Time

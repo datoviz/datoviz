@@ -60,6 +60,7 @@ struct DvzTrack
     DvzTrackKind kind;
     DvzTrackType type;
     DvzTrackRepeat repeat;
+    DvzTrackTopology topology;
     DvzTrackInterpolation interpolation;
     double duration;
     float value[4];
@@ -249,6 +250,29 @@ static void _track_catmull(
                  (u3 - 2.0f * u2 + u) * m1 + (-2.0f * u3 + 3.0f * u2) * p2[i] +
                  (u3 - u2) * m2;
     }
+}
+
+
+
+static const float* _track_catmull_neighbor(const DvzTrack* track, uint32_t k, int32_t offset)
+{
+    ANN(track);
+    ANN(track->values);
+    uint32_t n = _track_type_components(track->type);
+    uint32_t i = 0;
+
+    if (track->topology == DVZ_TRACK_TOPOLOGY_CLOSED && track->count > 3)
+    {
+        uint32_t unique_count = track->count - 1;
+        i = (uint32_t)(((int32_t)k + offset + (int32_t)unique_count) % (int32_t)unique_count);
+        return &track->values[i * n];
+    }
+
+    if (offset < 0)
+        i = k > 0 ? k - 1 : k;
+    else
+        i = k + 2 < track->count ? k + 2 : k + 1;
+    return &track->values[i * n];
 }
 
 
@@ -873,6 +897,7 @@ DvzTrack* dvz_track_keyframes(const DvzTrackKeyframesDesc* desc)
     track->kind = DVZ_TRACK_KIND_KEYFRAMES;
     track->type = desc->type;
     track->repeat = desc->repeat;
+    track->topology = desc->topology;
     track->interpolation = desc->interpolation;
     track->count = desc->count;
     track->tension = desc->tension;
@@ -1023,8 +1048,8 @@ bool dvz_track_eval(const DvzTrack* track, double t, void* out)
             memcpy(value, p1, _track_type_size(track->type));
         else if (track->interpolation == DVZ_TRACK_INTERP_CATMULL_ROM)
         {
-            const float* p0 = &track->values[(k > 0 ? k - 1 : k) * n];
-            const float* p3 = &track->values[(k + 2 < track->count ? k + 2 : k + 1) * n];
+            const float* p0 = _track_catmull_neighbor(track, k, -1);
+            const float* p3 = _track_catmull_neighbor(track, k, +2);
             _track_catmull(p0, p1, p2, p3, n, u, track->tension, value);
         }
         else if (track->interpolation == DVZ_TRACK_INTERP_SLERP && track->type == DVZ_TRACK_QUAT)

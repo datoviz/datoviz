@@ -565,6 +565,31 @@ int test_scene_animation_tracks(TstContext* suite, const TstCase* item)
     AC(p[0], 15.0f, 1e-6f);
     AC(p[1], 0.0f, 1e-6f);
 
+    double loop_times[] = {0.0, 1.0, 2.0, 3.0};
+    float loop_values[] = {
+        0.0f, 0.0f, //
+        1.0f, 0.0f, //
+        1.0f, 1.0f, //
+        0.0f, 0.0f,
+    };
+    DvzTrack* closed_keyframes = dvz_track_keyframes(&(DvzTrackKeyframesDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzTrackKeyframesDesc),
+        .type = DVZ_TRACK_VEC2,
+        .count = 4,
+        .times = loop_times,
+        .values = loop_values,
+        .repeat = DVZ_TRACK_REPEAT_LOOP,
+        .topology = DVZ_TRACK_TOPOLOGY_CLOSED,
+        .interpolation = DVZ_TRACK_INTERP_CATMULL_ROM,
+    });
+    ANN(closed_keyframes);
+    AT(dvz_track_eval(closed_keyframes, 0.5, p));
+    AC(p[0], 0.4375f, 1e-6f);
+    AC(p[1], -0.125f, 1e-6f);
+    AT(dvz_track_eval(closed_keyframes, 2.5, p));
+    AC(p[0], 0.4375f, 1e-6f);
+    AC(p[1], 0.5625f, 1e-6f);
+
     DvzTrack* circle = dvz_track_circle3(&(DvzTrackCircle3Desc){
         DVZ_STRUCT_INIT_FIELDS(DvzTrackCircle3Desc),
         .center = {0.0f, 0.0f, 0.0f},
@@ -587,6 +612,7 @@ int test_scene_animation_tracks(TstContext* suite, const TstCase* item)
 
     dvz_track_destroy(rotation);
     dvz_track_destroy(circle);
+    dvz_track_destroy(closed_keyframes);
     dvz_track_destroy(keyframes);
     dvz_track_destroy(linear);
     dvz_track_destroy(constant);
