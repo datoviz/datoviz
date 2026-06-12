@@ -182,9 +182,10 @@ examples:
       status: webgpu-planned
       requirements:
         - mesh
+        - reference-grid
         - text
         - controller
-        - arcball
+        - orbit-camera
     agent_copy_safe: true
 
   - id: feature_axis_labels
