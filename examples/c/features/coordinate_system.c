@@ -312,9 +312,9 @@ static bool _add_axis_labels(DvzPanel* panel)
 static bool _set_camera(DvzPanel* panel)
 {
     DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 3.15f;
-    camera.eye[1] = 2.35f;
-    camera.eye[2] = 3.15f;
+    camera.eye[0] = 1.15f;
+    camera.eye[1] = 2.75f;
+    camera.eye[2] = 3.75f;
     camera.target[0] = 0.0f;
     camera.target[1] = 0.0f;
     camera.target[2] = 0.0f;
