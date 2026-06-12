@@ -104,6 +104,8 @@ void main()
 
     float strokeWidth = max(inLineWidth, 0.0);
     float halfWidth = dvz_stroke_outer_half_width(strokeWidth);
+    int joinType = int(round(material.params.z));
+    float miterLimit = max(material.params.w, 1.0);
     float lengthPx = length(p2 - p1);
     vec2 miterStart = safeNormalize(n0 + n1, n1);
     vec2 miterEnd = safeNormalize(n1 + n2, n1);
@@ -111,6 +113,12 @@ void main()
     float denomEnd = dot(miterEnd, n1);
     float lengthStart = denomStart > 1e-3 ? halfWidth / denomStart : halfWidth;
     float lengthEnd = denomEnd > 1e-3 ? halfWidth / denomEnd : halfWidth;
+    float miterLengthLimit = max(miterLimit * (strokeWidth * 0.5) + 2.0, halfWidth);
+    float nonMiterScale = mix(1.0, 2.5, smoothstep(12.0, 48.0, strokeWidth));
+    float nonMiterLengthLimit = max(nonMiterScale * (strokeWidth * 0.5) + 2.0, halfWidth);
+    float joinLengthLimit = joinType == 0 ? miterLengthLimit : nonMiterLengthLimit;
+    lengthStart = min(lengthStart, joinLengthLimit);
+    lengthEnd = min(lengthEnd, joinLengthLimit);
 
     int capType = endpointEnd ? int(round(material.params.y)) : int(round(material.params.x));
     vec2 pixel = p1;

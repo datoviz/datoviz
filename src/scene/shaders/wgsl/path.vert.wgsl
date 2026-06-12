@@ -122,13 +122,21 @@ fn main(input: VertexIn) -> VertexOut {
 
     let stroke_width = max(input.line_width, 0.0);
     let half_width = stroke_outer_half_width(stroke_width);
+    let join_type = i32(material.params.z + 0.5);
+    let miter_limit = max(material.params.w, 1.0);
     let length_px = length(p2 - p1);
     let miter_start = safe_normalize(n0 + n1, n1);
     let miter_end = safe_normalize(n1 + n2, n1);
     let denom_start = dot(miter_start, n1);
     let denom_end = dot(miter_end, n1);
-    let length_start = select(half_width, half_width / denom_start, denom_start > 1e-3);
-    let length_end = select(half_width, half_width / denom_end, denom_end > 1e-3);
+    var length_start = select(half_width, half_width / denom_start, denom_start > 1e-3);
+    var length_end = select(half_width, half_width / denom_end, denom_end > 1e-3);
+    let miter_length_limit = max(miter_limit * (stroke_width * 0.5) + 2.0, half_width);
+    let non_miter_scale = mix(1.0, 2.5, smoothstep(12.0, 48.0, stroke_width));
+    let non_miter_length_limit = max(non_miter_scale * (stroke_width * 0.5) + 2.0, half_width);
+    let join_length_limit = select(non_miter_length_limit, miter_length_limit, join_type == 0);
+    length_start = min(length_start, join_length_limit);
+    length_end = min(length_end, join_length_limit);
 
     let cap_type = select(i32(material.params.x + 0.5), i32(material.params.y + 0.5), endpoint_end);
     var output: VertexOut;
