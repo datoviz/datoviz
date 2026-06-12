@@ -13,6 +13,7 @@ layout(location = 3) in float fragLineWidth;
 layout(location = 4) in float fragHasPrev;
 layout(location = 5) in float fragHasNext;
 layout(location = 6) in vec2 fragBevelDistance;
+layout(location = 7) in float fragJoinSplitDistance;
 
 layout(location = 0) out vec4 outColor;
 
@@ -94,6 +95,12 @@ void main()
         joinType == 2 && fragHasPrev >= 0.5 && fragCoord.x < bevelExtent;
     bool endBevel =
         joinType == 2 && fragHasNext >= 0.5 && fragCoord.x > fragLength - bevelExtent;
+    bool startJoin = fragHasPrev >= 0.5 && fragCoord.x < bevelExtent;
+    bool endJoin = fragHasNext >= 0.5 && fragCoord.x > fragLength - bevelExtent;
+    bool outerJoin = (startJoin && fragBevelDistance.x > -bevelClip) ||
+                     (endJoin && fragBevelDistance.y > -bevelClip);
+    if (joinType == 2 && outerJoin && fragJoinSplitDistance < 0.0)
+        discard;
     if (startBevel)
     {
         if (fragBevelDistance.x > abs(distance) + bevelClip)

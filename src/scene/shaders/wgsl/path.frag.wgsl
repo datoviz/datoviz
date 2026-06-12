@@ -8,6 +8,7 @@ struct FragmentIn {
     @location(4) has_prev: f32,
     @location(5) has_next: f32,
     @location(6) bevel_distance: vec2f,
+    @location(7) join_split_distance: f32,
 }
 
 fn stroke_alpha(distance: f32, line_width: f32) -> f32 {
@@ -119,6 +120,13 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
     let start_bevel = join_type == 2 && input.has_prev >= 0.5 && input.coord.x < bevel_extent;
     let end_bevel = join_type == 2 && input.has_next >= 0.5 &&
         input.coord.x > input.length_px - bevel_extent;
+    let start_join = input.has_prev >= 0.5 && input.coord.x < bevel_extent;
+    let end_join = input.has_next >= 0.5 && input.coord.x > input.length_px - bevel_extent;
+    let outer_join = (start_join && input.bevel_distance.x > -bevel_clip) ||
+        (end_join && input.bevel_distance.y > -bevel_clip);
+    if (join_type == 2 && outer_join && input.join_split_distance < 0.0) {
+        discard;
+    }
     if (start_bevel) {
         if (input.bevel_distance.x > abs(distance) + bevel_clip) {
             distance = input.bevel_distance.x - bevel_clip;

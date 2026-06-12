@@ -20,6 +20,7 @@ struct VertexOut {
     @location(4) has_prev: f32,
     @location(5) has_next: f32,
     @location(6) bevel_distance: vec2f,
+    @location(7) join_split_distance: f32,
 }
 
 const SIDE_NEGATIVE: u32 = 0x01u;
@@ -149,6 +150,7 @@ fn main(input: VertexIn) -> VertexOut {
     output.position = pixel_to_clip(pixel, curr_clip.z / max(abs(curr_clip.w), 1e-6));
     output.color = input.color;
     output.bevel_distance = vec2f(-half_width, -half_width);
+    output.join_split_distance = half_width;
     if (has_prev && has_next) {
         let turn = dir_in.x * dir_out.y - dir_in.y * dir_out.x;
         let outer_side = select(1.0, -1.0, turn > 0.0);
@@ -156,6 +158,9 @@ fn main(input: VertexIn) -> VertexOut {
         let bevel_end = curr_px + normal_out * outer_side * half_width;
         let bevel_distance = side * outer_side * line_distance(bevel_start, bevel_end, pixel);
         output.bevel_distance = vec2f(bevel_distance, bevel_distance);
+        let split_dir = safe_normalize(dir_in + dir_out, tangent);
+        let owner_side = select(1.0, -1.0, endpoint_end);
+        output.join_split_distance = owner_side * dot(pixel - curr_px, split_dir);
     }
     if (has_prev && has_next && (join_type == 1 || join_type == 2)) {
         let segment_start_px = select(curr_px, prev_px, endpoint_end);

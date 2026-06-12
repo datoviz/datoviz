@@ -30,6 +30,7 @@ layout(location = 3) out float fragLineWidth;
 layout(location = 4) out float fragHasPrev;
 layout(location = 5) out float fragHasNext;
 layout(location = 6) out vec2 fragBevelDistance;
+layout(location = 7) out float fragJoinSplitDistance;
 
 const uint SIDE_NEGATIVE = 0x01u;
 const uint ENDPOINT_END = 0x02u;
@@ -132,6 +133,7 @@ void main()
 
     fragColor = inColor;
     fragBevelDistance = vec2(-halfWidth);
+    fragJoinSplitDistance = halfWidth;
     if (hasPrev && hasNext)
     {
         float turn = dirIn.x * dirOut.y - dirIn.y * dirOut.x;
@@ -140,6 +142,9 @@ void main()
         vec2 bevelEnd = currPx + outerSide * normalOut * halfWidth;
         float bevelDistance = side * outerSide * lineDistance(bevelStart, bevelEnd, pixel);
         fragBevelDistance = vec2(bevelDistance);
+        vec2 splitDir = safeNormalize(dirIn + dirOut, tangent);
+        float ownerSide = endpointEnd ? -1.0 : +1.0;
+        fragJoinSplitDistance = ownerSide * dot(pixel - currPx, splitDir);
     }
     if (hasPrev && hasNext && (joinType == 1 || joinType == 2))
     {
