@@ -159,8 +159,15 @@ int test_panzoom_zoom_wheel(TstContext* suite, const TstCase* item)
     AT(pz2->zoom[0] < 1.0f);
     AT(pz2->zoom[1] < 1.0f);
 
+    DvzPanzoom* x_only = _dvz_panzoom(800.0f, 800.0f, DVZ_PANZOOM_FLAGS_FIXED_Y);
+    dvz_panzoom_zoom_wheel(x_only, (vec2){0.0f, 1.0f}, (vec2){400.0f, 400.0f});
+    AT(x_only->zoom[0] > 1.0f);
+    AC(x_only->zoom[1], 1.0f, 1e-6f);
+    AC(x_only->pan[1], 0.0f, 1e-6f);
+
     dvz_panzoom_destroy(pz);
     dvz_panzoom_destroy(pz2);
+    dvz_panzoom_destroy(x_only);
     return 0;
 }
 
