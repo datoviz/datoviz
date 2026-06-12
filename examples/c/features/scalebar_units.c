@@ -187,7 +187,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!_add_time_scalebar(ctx->scene, panel))
         return false;
 
-    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
+    panzoom_desc.controller_flags = DVZ_PANZOOM_FLAGS_FIXED_Y;
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, &panzoom_desc, DVZ_DIM_MASK_XY);
     return panzoom != NULL;
 }
 
