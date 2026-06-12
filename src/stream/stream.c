@@ -77,6 +77,8 @@ static void stream_reset_frame(DvzStreamFrame* frame)
     frame->image_view_borrowed = false;
     frame->command_buffer_borrowed = false;
     frame->handles_dirty = false;
+    frame->resource_generation = 0;
+    frame->image_valid = false;
     frame->memory_fd = -1;
     frame->wait_semaphore_fd = -1;
 }

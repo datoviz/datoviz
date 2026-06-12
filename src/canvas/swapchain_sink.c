@@ -73,6 +73,7 @@ struct DvzCanvasSwapchainSlot
     VkImageLayout swapchain_layout;
     VkExtent2D offscreen_extent;
     uint32_t image_index;
+    uint64_t resource_generation;
     int memory_fd;
     bool ready;
     bool commands_recording;
@@ -97,6 +98,7 @@ struct DvzCanvasSwapchain
     DvzCanvasSwapchainSlot* active_slot;
     uint32_t queue_family;
     uint64_t export_serial;
+    uint64_t resource_generation;
     VkFormat frame_format;
     DvzCanvasPresentRuntimeState runtime_state;
     int32_t test_fail_slot_index;
@@ -536,6 +538,9 @@ static bool canvas_slot_init(
     slot->swapchain_layout = VK_IMAGE_LAYOUT_UNDEFINED;
     slot->offscreen_extent = extent;
     slot->handles_dirty = handles_changed;
+    slot->resource_generation = ++swapchain->resource_generation;
+    if (slot->resource_generation == 0)
+        slot->resource_generation = ++swapchain->resource_generation;
     slot->commands_recording = false;
     slot->memory_fd = -1;
 
@@ -1291,6 +1296,9 @@ static void canvas_frame_from_slot(
     frame->image_view_borrowed = true;
     frame->command_buffer_borrowed = true;
     frame->handles_dirty = slot->handles_dirty;
+    frame->resource_generation = slot->resource_generation;
+    frame->image_valid = frame->image != VK_NULL_HANDLE && frame->image_view != VK_NULL_HANDLE &&
+                         frame->extent.width > 0 && frame->extent.height > 0;
     frame->memory_fd = slot->memory_fd;
     frame->wait_semaphore_fd = -1;
 }

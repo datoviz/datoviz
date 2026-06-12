@@ -381,6 +381,9 @@ static int canvas_offscreen_create_resources(DvzCanvas* canvas, VkExtent2D exten
     canvas->offscreen_layout = VK_IMAGE_LAYOUT_UNDEFINED;
     canvas->offscreen_extent = extent;
     canvas->offscreen_format = format;
+    canvas->offscreen_resource_generation++;
+    if (canvas->offscreen_resource_generation == 0)
+        canvas->offscreen_resource_generation = 1;
     canvas->offscreen_ready = true;
     return 0;
 }
@@ -432,6 +435,9 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
     frame->image_borrowed = true;
     frame->image_view_borrowed = true;
     frame->command_buffer_borrowed = true;
+    frame->resource_generation = canvas->offscreen_resource_generation;
+    frame->image_valid = frame->image != VK_NULL_HANDLE && frame->image_view != VK_NULL_HANDLE &&
+                         frame->extent.width > 0 && frame->extent.height > 0;
     frame->memory = VK_NULL_HANDLE;
     frame->memory_size = 0;
     frame->memory_fd = canvas->offscreen_memory_fd;
@@ -1081,6 +1087,7 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     canvas->primary_sink_attached = false;
     canvas->offscreen_memory_fd = -1;
     canvas->offscreen_ready = false;
+    canvas->offscreen_resource_generation = 0;
     canvas->offscreen_runtime_state = DVZ_CANVAS_OFFSCREEN_STATE_UNINITIALIZED;
     canvas->test_force_wait_semaphore_export_failure = false;
     canvas->test_force_offscreen_submit_status = -1;

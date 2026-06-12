@@ -109,6 +109,8 @@ static int canvas_live_image_submit(DvzStreamSink* sink, uint64_t wait_value)
         .command_buffer = state->frame.command_buffer,
         .extent = state->frame.extent,
         .handles_dirty = state->frame.handles_dirty,
+        .resource_generation = state->frame.resource_generation,
+        .image_valid = state->frame.image_valid,
         .memory_fd = state->frame.memory_fd,
         .wait_semaphore_fd = state->frame.wait_semaphore_fd,
     };

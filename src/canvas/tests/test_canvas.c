@@ -36,6 +36,7 @@
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/swapchain.h"
 #include "datoviz/window.h"
+#include "datoviz/window/backend.h"
 #include "_test_canvas_probe.h"
 #include "test_canvas.h"
 #include "testing.h"
@@ -48,8 +49,11 @@ typedef struct CanvasLiveProbeState
 {
     uint32_t callback_count;
     uint64_t last_wait_value;
+    uint64_t last_resource_generation;
     uint32_t non_monotonic_wait_count;
     uint32_t zero_extent_count;
+    uint32_t invalid_image_count;
+    uint32_t generation_change_count;
 } CanvasLiveProbeState;
 
 
@@ -125,9 +129,19 @@ static int canvas_live_probe_callback(const DvzCanvasLiveImageFrame* frame, void
         state->non_monotonic_wait_count++;
     }
     state->last_wait_value = frame->wait_value;
+    if (state->last_resource_generation > 0 &&
+        frame->resource_generation != state->last_resource_generation)
+    {
+        state->generation_change_count++;
+    }
+    state->last_resource_generation = frame->resource_generation;
     if (frame->extent.width == 0 || frame->extent.height == 0)
     {
         state->zero_extent_count++;
+    }
+    if (!frame->image_valid || frame->resource_generation == 0)
+    {
+        state->invalid_image_count++;
     }
     return 0;
 }
@@ -1381,6 +1395,98 @@ offscreen_live_wait_cleanup:
 
 
 /**
+ * Validate live-image resource generations advance only when offscreen resources are recreated.
+ */
+static int test_canvas_offscreen_live_generation_on_resize(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const char* skip_reason = NULL;
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
+    DvzWindowHost* host = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+
+    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    {
+        goto offscreen_generation_cleanup;
+    }
+
+    host = dvz_window_host();
+    ANN(host);
+
+    DvzWindowConfig window_cfg = dvz_window_config();
+    window_cfg.title = "canvas-offscreen-live-generation-test";
+    window_cfg.width = 320;
+    window_cfg.height = 240;
+    window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &window_cfg);
+    if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_OFFSCREEN)
+    {
+        skip_reason = "headless window creation failed";
+        goto offscreen_generation_cleanup;
+    }
+
+    DvzCanvasConfig cfg = dvz_canvas_config();
+    cfg.window = window;
+    cfg.device = device;
+    cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    cfg.timing_history = 4;
+    canvas = dvz_canvas_create(&cfg);
+    AT(canvas != NULL);
+
+    CanvasLiveProbeState probe = {0};
+    DvzCanvasLiveImageSinkConfig live_cfg = {
+        DVZ_STRUCT_INIT_FIELDS(DvzCanvasLiveImageSinkConfig),
+        .callback = canvas_live_probe_callback,
+        .user_data = &probe,
+    };
+    AT(dvz_canvas_configure_live_image_sink(canvas, true, &live_cfg) == 0);
+
+    for (uint32_t i = 0; i < 2; ++i)
+    {
+        AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+    }
+    AT(probe.callback_count == 2);
+    AT(probe.invalid_image_count == 0);
+    AT(probe.generation_change_count == 0);
+    uint64_t first_generation = probe.last_resource_generation;
+    AT(first_generation > 0);
+
+    dvz_window_backend_emit_resize(window, 400, 300, 400, 300, 1.0f, 1.0f);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_canvas_submit(canvas) == 0);
+    AT(probe.callback_count == 3);
+    AT(probe.invalid_image_count == 0);
+    AT(probe.generation_change_count == 1);
+    AT(probe.last_resource_generation > first_generation);
+
+offscreen_generation_cleanup:
+    if (skip_reason != NULL)
+    {
+        tst_skip(suite, skip_reason);
+    }
+    if (canvas != NULL)
+    {
+        dvz_canvas_destroy(canvas);
+    }
+    if (window != NULL)
+    {
+        dvz_window_destroy(window);
+    }
+    if (host != NULL)
+    {
+        dvz_window_host_destroy(host);
+    }
+    canvas_test_destroy_instance_device(instance, device);
+    return 0;
+}
+
+
+
+/**
  * Validate offscreen stream ordering: start() once per stream lifecycle and no update() calls.
  */
 static int test_canvas_offscreen_start_update_order_across_rebuild(TstContext* suite, const TstCase* item)
@@ -1755,6 +1861,9 @@ int test_canvas(TstSuite* suite)
         TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(
         test_canvas_offscreen_live_wait_monotonic_across_rebuild, TST_CANVAS_VK_RES,
+        TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_offscreen_live_generation_on_resize, TST_CANVAS_VK_RES,
         TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(
         test_canvas_offscreen_start_update_order_across_rebuild, TST_CANVAS_VK_RES,

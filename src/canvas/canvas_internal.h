@@ -110,6 +110,7 @@ struct DvzCanvas
     uint32_t offscreen_queue_family;
     VkExtent2D offscreen_extent;
     VkFormat offscreen_format;
+    uint64_t offscreen_resource_generation;
     int offscreen_memory_fd;
     bool offscreen_ready;
     DvzCanvasOffscreenRuntimeState offscreen_runtime_state;

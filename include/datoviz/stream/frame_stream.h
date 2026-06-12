@@ -84,6 +84,8 @@ typedef struct DvzStreamFrame
     bool image_view_borrowed;
     bool command_buffer_borrowed;
     bool handles_dirty;
+    uint64_t resource_generation;
+    bool image_valid;
     int memory_fd;
     int wait_semaphore_fd;
 } DvzStreamFrame;
