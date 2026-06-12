@@ -74,12 +74,10 @@ typedef struct ControllerFlyState
  */
 static bool _add_fly_cube(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_geometry)
 {
-    const ExampleStyleColorRole face_roles[6] = {
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY, EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_WARNING,        EXAMPLE_STYLE_COLOR_ERROR,
-        EXAMPLE_STYLE_COLOR_TEXT,           EXAMPLE_STYLE_COLOR_MINOR_TICK,
-    };
-    DvzVisual* visual = example_graphite_cyan_cube_mesh(scene, 1.10, face_roles, out_geometry);
+    ExampleStyleColorRole face_roles[6] = {0};
+    example_controller_cube_face_roles(face_roles);
+    DvzVisual* visual = example_graphite_cyan_cube_mesh(
+        scene, example_controller_cube_size(), face_roles, out_geometry);
     if (visual == NULL)
         return false;
 
@@ -123,22 +121,25 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (panel == NULL)
         return false;
     example_graphite_cyan_set_panel_background(panel);
-    if (!example_add_default_xz_reference_grid(panel, -0.55f))
+    if (example_set_controller_camera(panel) == NULL)
+        return false;
+    if (!example_add_default_xz_reference_grid(panel, example_controller_grid_origin_y()))
         return false;
     if (!_add_fly_cube(ctx->scene, panel, &state->geometry))
         return false;
 
     DvzFlyDesc desc = dvz_fly_desc();
+    DvzCameraDesc camera = example_controller_camera_desc();
     desc.mode = DVZ_FLY_MODE_PLANE;
-    desc.position[0] = -0.36f;
-    desc.position[1] = +3.80f;
-    desc.position[2] = +1.34f;
-    desc.target[0] = 0.00f;
-    desc.target[1] = 0.00f;
-    desc.target[2] = 0.22f;
-    desc.up[0] = 0.0f;
-    desc.up[1] = 1.0f;
-    desc.up[2] = 0.0f;
+    desc.position[0] = camera.eye[0];
+    desc.position[1] = camera.eye[1];
+    desc.position[2] = camera.eye[2];
+    desc.target[0] = camera.target[0];
+    desc.target[1] = camera.target[1];
+    desc.target[2] = camera.target[2];
+    desc.up[0] = camera.up[0];
+    desc.up[1] = camera.up[1];
+    desc.up[2] = camera.up[2];
     desc.speed = 0.70f;
     desc.look_speed = 0.45f;
 
@@ -150,9 +151,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
-    dvz_fly_move_forward(fly, +0.34f);
-    dvz_fly_move_right(fly, +0.18f);
-    dvz_fly_move_up(fly, +0.08f);
     return true;
 }
 

@@ -23,6 +23,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
@@ -74,15 +75,10 @@ typedef struct ControllerTurntableState
  */
 static bool _add_turntable_cube(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_geometry)
 {
-    const ExampleStyleColorRole face_roles[6] = {
-        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-        EXAMPLE_STYLE_COLOR_WARNING,
-        EXAMPLE_STYLE_COLOR_ERROR,
-        EXAMPLE_STYLE_COLOR_TEXT,
-        EXAMPLE_STYLE_COLOR_MINOR_TICK,
-    };
-    DvzVisual* visual = example_graphite_cyan_cube_mesh(scene, 1.16, face_roles, out_geometry);
+    ExampleStyleColorRole face_roles[6] = {0};
+    example_controller_cube_face_roles(face_roles);
+    DvzVisual* visual = example_graphite_cyan_cube_mesh(
+        scene, example_controller_cube_size(), face_roles, out_geometry);
     if (visual == NULL)
         return false;
 
@@ -126,19 +122,31 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (panel == NULL)
         return false;
     example_graphite_cyan_set_panel_background(panel);
-    if (!example_add_default_xz_reference_grid(panel, -0.58f))
+    if (example_set_controller_camera(panel) == NULL)
+        return false;
+    if (!example_add_default_xz_reference_grid(panel, example_controller_grid_origin_y()))
         return false;
     if (!_add_turntable_cube(ctx->scene, panel, &state->geometry))
         return false;
 
     DvzTurntableDesc desc = dvz_turntable_desc();
+    DvzCameraDesc camera = example_controller_camera_desc();
     desc.controller_flags = DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE;
-    desc.up[0] = 0.0f;
-    desc.up[1] = 1.0f;
-    desc.up[2] = 0.0f;
-    desc.distance = 3.65f;
-    desc.yaw = -0.50f;
-    desc.pitch = -0.28f;
+    desc.pivot[0] = camera.target[0];
+    desc.pivot[1] = camera.target[1];
+    desc.pivot[2] = camera.target[2];
+    desc.up[0] = camera.up[0];
+    desc.up[1] = camera.up[1];
+    desc.up[2] = camera.up[2];
+    vec3 front = {
+        camera.target[0] - camera.eye[0],
+        camera.target[1] - camera.eye[1],
+        camera.target[2] - camera.eye[2],
+    };
+    desc.distance =
+        sqrtf(front[0] * front[0] + front[1] * front[1] + front[2] * front[2]);
+    desc.yaw = atan2f(-front[2], -front[0]);
+    desc.pitch = asinf(front[1] / desc.distance);
     desc.min_pitch = -0.72f;
     desc.max_pitch = +0.72f;
     desc.min_distance = 2.40f;
@@ -152,8 +160,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
-    dvz_turntable_orbit(turntable, +0.42f, +0.24f);
-    dvz_turntable_dolly(turntable, -0.30f);
     return true;
 }
 

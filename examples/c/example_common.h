@@ -108,6 +108,16 @@ DvzCameraDesc example_default_3d_camera_desc(float extent);
 
 DvzCamera* example_set_default_3d_camera(DvzPanel* panel, float extent);
 
+DvzCameraDesc example_controller_camera_desc(void);
+
+DvzCamera* example_set_controller_camera(DvzPanel* panel);
+
+float example_controller_grid_origin_y(void);
+
+double example_controller_cube_size(void);
+
+void example_controller_cube_face_roles(ExampleStyleColorRole out[6]);
+
 void example_default_light_direction(vec3 out);
 
 DvzMaterialDesc example_default_phong_material_desc(void);

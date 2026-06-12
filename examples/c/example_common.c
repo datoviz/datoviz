@@ -390,6 +390,87 @@ DvzCamera* example_set_default_3d_camera(DvzPanel* panel, float extent)
 
 
 /**
+ * Return the shared initial camera for controller feature examples.
+ *
+ * @return camera descriptor
+ */
+DvzCameraDesc example_controller_camera_desc(void)
+{
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.eye[0] = 0.0f;
+    camera.eye[1] = +1.5f;
+    camera.eye[2] = +2.5f;
+    camera.target[0] = 0.0f;
+    camera.target[1] = 0.0f;
+    camera.target[2] = +0.3f;
+    camera.up[0] = 0.0f;
+    camera.up[1] = 1.0f;
+    camera.up[2] = 0.0f;
+    camera.fov_y = 0.66f;
+    camera.near = 0.05f;
+    camera.far = 100.0f;
+    return camera;
+}
+
+
+/**
+ * Apply the shared initial camera for controller feature examples.
+ *
+ * @param panel target panel
+ * @return scene-owned camera, or NULL on error
+ */
+DvzCamera* example_set_controller_camera(DvzPanel* panel)
+{
+    if (panel == NULL)
+        return NULL;
+
+    DvzCameraDesc camera = example_controller_camera_desc();
+    return dvz_panel_set_camera(panel, &camera);
+}
+
+
+/**
+ * Return the shared XZ reference-grid height for controller feature examples.
+ *
+ * @return Y coordinate of the grid plane
+ */
+float example_controller_grid_origin_y(void)
+{
+    return -0.55f;
+}
+
+
+/**
+ * Return the shared cube size for controller feature examples.
+ *
+ * @return cube edge length
+ */
+double example_controller_cube_size(void)
+{
+    return 1.10;
+}
+
+
+/**
+ * Return the shared cube face color roles for controller feature examples.
+ *
+ * @param out six output color roles
+ */
+void example_controller_cube_face_roles(ExampleStyleColorRole out[6])
+{
+    if (out == NULL)
+        return;
+
+    out[0] = EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY;
+    out[1] = EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY;
+    out[2] = EXAMPLE_STYLE_COLOR_WARNING;
+    out[3] = EXAMPLE_STYLE_COLOR_ERROR;
+    out[4] = EXAMPLE_STYLE_COLOR_TEXT;
+    out[5] = EXAMPLE_STYLE_COLOR_MINOR_TICK;
+}
+
+
+/**
  * Return the default example light direction.
  *
  * @param out output light direction

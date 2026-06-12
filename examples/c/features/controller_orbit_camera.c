@@ -74,12 +74,10 @@ typedef struct ControllerOrbitCameraState
  */
 static bool _add_orbit_camera_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_geometry)
 {
-    const ExampleStyleColorRole face_roles[6] = {
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY, EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_WARNING,        EXAMPLE_STYLE_COLOR_ERROR,
-        EXAMPLE_STYLE_COLOR_TEXT,           EXAMPLE_STYLE_COLOR_MINOR_TICK,
-    };
-    DvzVisual* visual = example_graphite_cyan_cube_mesh(scene, 1, face_roles, out_geometry);
+    ExampleStyleColorRole face_roles[6] = {0};
+    example_controller_cube_face_roles(face_roles);
+    DvzVisual* visual = example_graphite_cyan_cube_mesh(
+        scene, example_controller_cube_size(), face_roles, out_geometry);
     if (visual == NULL)
         return false;
 
@@ -124,9 +122,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    if (example_set_default_3d_camera(panel, 1.0f) == NULL)
+    if (example_set_controller_camera(panel) == NULL)
         return false;
-    if (!example_add_default_xz_reference_grid(panel, -0.50f))
+    if (!example_add_default_xz_reference_grid(panel, example_controller_grid_origin_y()))
         return false;
     if (!_add_orbit_camera_mesh(ctx->scene, panel, &state->geometry))
         return false;
@@ -134,16 +132,17 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzOrbitCameraDesc desc = dvz_orbit_camera_desc();
     desc.width = (float)ctx->width;
     desc.height = (float)ctx->height;
-    desc.pivot[0] = 0.0f;
-    desc.pivot[1] = 0.0f;
-    desc.pivot[2] = 0.0f;
+    DvzCameraDesc camera = example_controller_camera_desc();
+    desc.pivot[0] = camera.target[0];
+    desc.pivot[1] = camera.target[1];
+    desc.pivot[2] = camera.target[2];
     DvzController* controller = dvz_orbit_camera(ctx->scene, &desc);
     if (controller == NULL)
         return false;
     DvzOrbitCamera* orbit = dvz_controller_orbit_camera(controller);
     if (orbit == NULL)
         return false;
-    dvz_orbit_camera_pivot(orbit, (vec3){0.0f, 0.0f, 0.0f});
+    dvz_orbit_camera_pivot(orbit, camera.target);
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
     return true;
