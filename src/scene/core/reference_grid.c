@@ -125,23 +125,32 @@ static bool _reference_grid_basis(const DvzReferenceGridDesc* desc, vec3 out_u, 
 
 
 /**
- * Return the number of intervals for one grid axis.
+ * Return the integer lattice range for one grid axis.
  *
  * @param size axis size
  * @param spacing grid spacing
- * @param out output interval count
- * @return whether the interval count is valid
+ * @param first output first lattice index
+ * @param last output last lattice index
+ * @return whether the lattice range is valid
  */
-static bool _reference_grid_intervals(float size, float spacing, uint32_t* out)
+static bool _reference_grid_lattice_range(
+    float size, float spacing, int32_t* first, int32_t* last)
 {
-    ANN(out);
+    ANN(first);
+    ANN(last);
     if (!isfinite(size) || !isfinite(spacing) || size <= 0.0f || spacing <= 0.0f)
         return false;
-    const float intervals_f = floorf(size / spacing + 0.5f);
-    if (!isfinite(intervals_f) || intervals_f < 1.0f ||
-        intervals_f > (float)DVZ_REFERENCE_GRID_MAX_INTERVALS)
+    const float half = 0.5f * size;
+    const float first_f = ceilf(-half / spacing);
+    const float last_f = floorf(+half / spacing);
+    if (!isfinite(first_f) || !isfinite(last_f) || last_f < first_f)
         return false;
-    *out = (uint32_t)intervals_f;
+    const float count_f = last_f - first_f + 1.0f;
+    if (!isfinite(count_f) || count_f < 1.0f ||
+        count_f > (float)(DVZ_REFERENCE_GRID_MAX_INTERVALS + 1u))
+        return false;
+    *first = (int32_t)first_f;
+    *last = (int32_t)last_f;
     return true;
 }
 
@@ -182,26 +191,62 @@ static void _reference_grid_append_line(
 
 
 /**
+ * Return whether one grid coordinate lies on a major interval from the grid origin.
+ *
+ * @param coord plane-local coordinate relative to the grid origin
+ * @param step major-grid step
+ * @return whether the coordinate is major
+ */
+static bool _reference_grid_coord_is_major(float coord, float step)
+{
+    if (!isfinite(coord) || !isfinite(step) || step <= 0.0f)
+        return false;
+    const float nearest = roundf(coord / step);
+    const float distance = fabsf(coord - nearest * step);
+    const float tolerance = 1e-5f * fmaxf(1.0f, fabsf(step));
+    return distance <= tolerance;
+}
+
+
+
+/**
+ * Return whether one grid coordinate lies on the grid origin.
+ *
+ * @param coord plane-local coordinate relative to the grid origin
+ * @param spacing grid spacing
+ * @return whether the coordinate is the origin line
+ */
+static bool _reference_grid_coord_is_origin(float coord, float spacing)
+{
+    if (!isfinite(coord) || !isfinite(spacing) || spacing <= 0.0f)
+        return false;
+    const float tolerance = 1e-5f * fmaxf(1.0f, fabsf(spacing));
+    return fabsf(coord) <= tolerance;
+}
+
+
+
+/**
  * Return style for one grid line.
  *
  * @param desc descriptor
- * @param index interval index
- * @param intervals interval count
+ * @param coord plane-local coordinate relative to the grid origin
  * @param out_color output color
  * @param out_width output width
  * @return whether this line should be emitted
  */
 static bool _reference_grid_line_style(
-    const DvzReferenceGridDesc* desc, uint32_t index, uint32_t intervals, DvzColor* out_color,
-    float* out_width)
+    const DvzReferenceGridDesc* desc, float coord, DvzColor* out_color, float* out_width)
 {
     ANN(desc);
     ANN(out_color);
     ANN(out_width);
-    const bool axis = desc->show_axes && intervals % 2 == 0 && index == intervals / 2;
+    const float major_step = desc->spacing * (float)desc->major_every;
     const bool major =
         desc->show_major && desc->major_every > 0 &&
-        (index % desc->major_every == 0 || index == intervals);
+        _reference_grid_coord_is_major(coord, major_step);
+    const bool axis =
+        desc->show_axes && major && _reference_grid_coord_is_origin(coord, desc->spacing);
 
     if (axis)
     {
@@ -237,10 +282,12 @@ static bool _reference_grid_rebuild(DvzReferenceGrid* grid)
     ANN(grid->visual);
     DvzReferenceGridDesc* desc = &grid->desc;
 
-    uint32_t intervals_u = 0;
-    uint32_t intervals_v = 0;
-    if (!_reference_grid_intervals(desc->size[0], desc->spacing, &intervals_u) ||
-        !_reference_grid_intervals(desc->size[1], desc->spacing, &intervals_v))
+    int32_t first_u = 0;
+    int32_t last_u = 0;
+    int32_t first_v = 0;
+    int32_t last_v = 0;
+    if (!_reference_grid_lattice_range(desc->size[0], desc->spacing, &first_u, &last_u) ||
+        !_reference_grid_lattice_range(desc->size[1], desc->spacing, &first_v, &last_v))
         return false;
 
     vec3 axis_u = {0};
@@ -248,7 +295,9 @@ static bool _reference_grid_rebuild(DvzReferenceGrid* grid)
     if (!_reference_grid_basis(desc, axis_u, axis_v))
         return false;
 
-    const uint32_t capacity = intervals_u + intervals_v + 2;
+    const uint32_t count_u = (uint32_t)(last_u - first_u + 1);
+    const uint32_t count_v = (uint32_t)(last_v - first_v + 1);
+    const uint32_t capacity = count_u + count_v;
     vec3* starts = (vec3*)dvz_calloc(capacity, sizeof(vec3));
     vec3* ends = (vec3*)dvz_calloc(capacity, sizeof(vec3));
     DvzColor* colors = (DvzColor*)dvz_calloc(capacity, sizeof(DvzColor));
@@ -260,14 +309,14 @@ static bool _reference_grid_rebuild(DvzReferenceGrid* grid)
     const float half_u = 0.5f * desc->size[0];
     const float half_v = 0.5f * desc->size[1];
 
-    for (uint32_t i = 0; i <= intervals_u; i++)
+    for (int32_t i = first_u; i <= last_u; i++)
     {
+        const float u = desc->spacing * (float)i;
         DvzColor color = {0};
         float width = 0.0f;
-        if (!_reference_grid_line_style(desc, i, intervals_u, &color, &width))
+        if (!_reference_grid_line_style(desc, u, &color, &width))
             continue;
 
-        const float u = -half_u + desc->spacing * (float)i;
         vec3 p0 = {0};
         vec3 p1 = {0};
         for (uint32_t d = 0; d < 3; d++)
@@ -278,14 +327,14 @@ static bool _reference_grid_rebuild(DvzReferenceGrid* grid)
         _reference_grid_append_line(starts, ends, colors, widths, &count, p0, p1, color, width);
     }
 
-    for (uint32_t i = 0; i <= intervals_v; i++)
+    for (int32_t i = first_v; i <= last_v; i++)
     {
+        const float v = desc->spacing * (float)i;
         DvzColor color = {0};
         float width = 0.0f;
-        if (!_reference_grid_line_style(desc, i, intervals_v, &color, &width))
+        if (!_reference_grid_line_style(desc, v, &color, &width))
             continue;
 
-        const float v = -half_v + desc->spacing * (float)i;
         vec3 p0 = {0};
         vec3 p1 = {0};
         for (uint32_t d = 0; d < 3; d++)
