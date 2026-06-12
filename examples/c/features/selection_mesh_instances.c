@@ -377,16 +377,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         goto error;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = 0.10f;
-    camera_desc.eye[1] = -4.30f;
-    camera_desc.eye[2] = 2.40f;
-    camera_desc.up[1] = 0.0f;
-    camera_desc.up[2] = 1.0f;
-    camera_desc.fov_y = 0.62f;
-    camera_desc.near = 0.05f;
-    camera_desc.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera_desc))
+    if (example_set_default_3d_camera(panel, 1.4f) == NULL)
         goto error;
 
     const ExampleStyleColorRole face_roles[6] = {
@@ -402,15 +393,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         goto error;
     dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM);
 
-    DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = 0.24f;
-    material.light_direction[1] = -0.48f;
-    material.light_direction[2] = 0.84f;
-    material.phong.ambient = 0.28f;
-    material.phong.diffuse = 0.78f;
-    material.phong.specular = 0.34f;
-    material.phong.shininess = 42.0f;
-    if (dvz_visual_set_material(visual, &material) != 0)
+    if (!example_apply_default_phong_material(visual))
         goto error;
 
     DvzSelection* selection = dvz_selection(
@@ -458,7 +441,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         goto error;
     if (dvz_scenario_bind_controller(ctx, panel, arcball_controller, DVZ_DIM_MASK_XYZ) != 0)
         goto error;
-    dvz_arcball_set(arcball, (vec3){+0.58f, -0.20f, +0.26f});
+    example_set_default_arcball(arcball);
 
     state->scene = ctx->scene;
     state->panel = panel;

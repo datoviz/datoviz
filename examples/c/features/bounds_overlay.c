@@ -27,6 +27,7 @@
 
 #include "_assertions.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -214,16 +215,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_graphite_cyan_set_panel_background(panel_2d);
     example_graphite_cyan_set_panel_background(panel_3d);
 
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 0.0f;
-    camera.eye[1] = -2.9f;
-    camera.eye[2] = 2.1f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
-    camera.fov_y = 0.72f;
-    camera.near = 0.05f;
-    camera.far = 100.0f;
-    if (!dvz_panel_set_camera(panel_3d, &camera))
+    if (example_set_default_3d_camera(panel_3d, 1.0f) == NULL)
         return false;
 
     if (!_add_points(ctx->scene, panel_2d))
@@ -248,7 +240,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     DvzArcball* arcball_state = dvz_controller_arcball(arcball);
     if (arcball_state != NULL)
-        dvz_arcball_set(arcball_state, (vec3){+0.44f, -0.18f, +0.20f});
+        example_set_default_arcball(arcball_state);
     return true;
 }
 

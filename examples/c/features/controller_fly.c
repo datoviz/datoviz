@@ -83,15 +83,7 @@ static bool _add_fly_cube(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_ge
     if (visual == NULL)
         return false;
 
-    DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = -0.20f;
-    material.light_direction[1] = -0.42f;
-    material.light_direction[2] = +0.72f;
-    material.phong.ambient = 0.30f;
-    material.phong.diffuse = 0.76f;
-    material.phong.specular = 0.14f;
-    material.phong.shininess = 20.0f;
-    if (dvz_visual_set_material(visual, &material) != 0)
+    if (!example_apply_default_phong_material(visual))
         return false;
 
     return dvz_panel_add_visual(panel, visual, NULL) == 0;
@@ -131,7 +123,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (panel == NULL)
         return false;
     example_graphite_cyan_set_panel_background(panel);
-    if (!example_add_xz_reference_grid(panel, -0.55f, 5.0f))
+    if (!example_add_default_xz_reference_grid(panel, -0.55f))
         return false;
     if (!_add_fly_cube(ctx->scene, panel, &state->geometry))
         return false;

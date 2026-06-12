@@ -33,6 +33,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -297,16 +298,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         goto error;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = 0.12f;
-    camera_desc.eye[1] = -3.20f;
-    camera_desc.eye[2] = 0.78f;
-    camera_desc.up[1] = 0.0f;
-    camera_desc.up[2] = 1.0f;
-    camera_desc.fov_y = 0.56f;
-    camera_desc.near = 0.05f;
-    camera_desc.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera_desc))
+    if (example_set_default_3d_camera(panel, 1.0f) == NULL)
         goto error;
 
     DvzVisual* visual = dvz_sphere(ctx->scene, DVZ_SPHERE_FLAGS_LIGHTING);
@@ -316,8 +308,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (dvz_sphere_mode(visual, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
         goto error;
 
-    DvzMaterialDesc material = dvz_standard_material_desc();
-    if (dvz_visual_set_material(visual, &material) != 0)
+    if (!example_apply_default_standard_material(visual))
         goto error;
 
     DvzSelection* selection = dvz_selection(
@@ -370,7 +361,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         goto error;
     if (dvz_scenario_bind_controller(ctx, panel, arcball_controller, DVZ_DIM_MASK_XYZ) != 0)
         goto error;
-    dvz_arcball_set(arcball, (vec3){+0.55f, -0.18f, +0.22f});
+    example_set_default_arcball(arcball);
 
     state->scene = ctx->scene;
     state->panel = panel;

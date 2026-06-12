@@ -26,6 +26,7 @@
 
 #include "_alloc.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -207,16 +208,7 @@ static bool _configure_volume(DvzScene* scene, DvzVisual* visual, DvzVolumeRende
  */
 static bool _set_camera(DvzPanel* panel)
 {
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 1.55f;
-    camera.eye[1] = -2.70f;
-    camera.eye[2] = 1.30f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
-    camera.fov_y = 0.68f;
-    camera.near = 0.05f;
-    camera.far = 100.0f;
-    return dvz_panel_set_camera(panel, &camera) != NULL;
+    return example_set_default_3d_camera(panel, 1.0f) != NULL;
 }
 
 

@@ -26,6 +26,7 @@
 
 #include "_alloc.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -175,12 +176,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         goto error;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 1.65f;
-    camera.eye[1] = -2.85f;
-    camera.eye[2] = 1.35f;
-    camera.fov_y = 0.68f;
-    if (dvz_panel_set_camera(panel, &camera) == NULL)
+    if (example_set_default_3d_camera(panel, 1.0f) == NULL)
         goto error;
 
     DvzSampledField* field = dvz_sampled_field(
