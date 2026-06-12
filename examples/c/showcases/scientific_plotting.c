@@ -226,7 +226,7 @@ static bool _configure_panel(DvzPanel* panel, float left_px, float bottom_px)
 {
     example_graphite_cyan_set_panel_background(panel);
     if (!dvz_panel_set_reserve(
-            panel, &(DvzPanelReserve){.left_px = left_px, .right_px = 36.0f, .top_px = 42.0f,
+            panel, &(DvzPanelReserve){.left_px = left_px, .right_px = 30.0f, .top_px = 24.0f,
                                       .bottom_px = bottom_px}))
         return false;
 
@@ -301,7 +301,6 @@ static bool _add_autocorrelogram(DvzScene* scene, DvzPanel* panel)
     DvzGuideLineDesc zero = dvz_guide_line_desc();
     zero.color = dvz_color_rgba(255, 183, 3, 220);
     zero.stroke_width_px = 2.0f;
-    zero.label = "lag 0";
     return dvz_vline(panel, 0.0, &zero) != NULL;
 }
 
@@ -481,9 +480,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (correlogram == NULL || mean_error == NULL || stacked == NULL)
         return false;
 
-    if (!_configure_panel(correlogram, 116.0f, 104.0f) ||
-        !_configure_panel(mean_error, 104.0f, 104.0f) ||
-        !_configure_panel(stacked, 44.0f, 110.0f))
+    if (!_configure_panel(correlogram, 104.0f, 76.0f) ||
+        !_configure_panel(mean_error, 92.0f, 76.0f) ||
+        !_configure_panel(stacked, 44.0f, 76.0f))
         return false;
 
     if (!_set_domain(correlogram, -50.0, 50.0, 0.0, 125.0))

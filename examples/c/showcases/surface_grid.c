@@ -29,6 +29,7 @@
 #include "_assertions.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -276,14 +277,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         goto error;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 1.85f;
-    camera.eye[1] = 1.45f;
-    camera.eye[2] = 2.55f;
-    camera.fov_y = 0.64f;
-    camera.near = 0.05f;
-    camera.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera))
+    if (example_set_default_3d_camera(panel, 1.80f) == NULL)
         goto error;
 
     if (!_add_surface(ctx->scene, panel, state->geometry))
@@ -297,8 +291,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         goto error;
     DvzArcball* arcball = dvz_controller_arcball(controller);
-    if (arcball != NULL)
-        dvz_arcball_set(arcball, (vec3){+0.54f, -0.10f, +0.20f});
+    if (arcball == NULL)
+        goto error;
+    example_set_default_arcball(arcball);
     return true;
 
 error:
