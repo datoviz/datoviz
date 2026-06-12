@@ -274,7 +274,6 @@ Recommended public naming:
 DvzOrientationGizmo
 dvz_panel_orientation_gizmo(panel, &desc)
 dvz_orientation_gizmo_set_visible(gizmo, visible)
-dvz_orientation_gizmo_set_source(gizmo, controller_or_camera)
 dvz_orientation_gizmo_set_layout(gizmo, &layout)
 ```
 
@@ -282,9 +281,13 @@ The descriptor should cover:
 
 1. anchor corner or normalized panel-local rectangle;
 2. pixel or panel-relative size;
-3. source controller or camera binding;
-4. visibility;
-5. optional axis length and style knobs.
+3. visibility;
+
+The source is the panel passed at creation time. The gizmo is passive: during frame preparation it
+observes that panel's effective rendered orientation, including camera/view context and any bound
+controller model transform.
+
+4. optional axis length and style knobs.
 
 The implementation should lower the triad to ordinary generated mesh geometry. Geometry generation
 belongs in `geom` through `dvz_geom_gizmo_axes()` once that generator lands; scene/app owns inset

@@ -60,10 +60,11 @@ DvzControllerLink* dvz_controller_link(
 ```
 
 The link components are semantic state components such as `ROTATION`, `PAN`, `ZOOM`,
-`EXTENT_X`, `EXTENT_Y`, and eventually camera-oriented components. For example, an orientation
-gizmo should have its own arcball controller linked one-way from the main arcball by `ROTATION`
-only. It should not share the main arcball handle, because the inset needs independent viewport,
-camera-basis, and pan/zoom behavior.
+`EXTENT_X`, `EXTENT_Y`, and eventually camera-oriented components. Links are appropriate when two
+interactive controllers intentionally share part of their editable navigation state. Passive
+retained helpers such as orientation gizmos should instead observe the source panel's effective
+frame-preparation state, because the rendered orientation includes both controller model state and
+camera/view context.
 
 No panzoom-specific or arcball-specific linked-panels API is needed.
 
@@ -128,9 +129,10 @@ camera navigation values.
 A shared controller must not own one canonical native viewport. Different panels bound to the same
 controller may have different sizes and positions.
 
-When panel-local evaluation context differs meaningfully, prefer distinct controllers plus a
-component link over sharing one handle. Arcball orientation gizmos are the canonical case: the main
-view may pan and zoom while the inset controller receives only orientation and remains centered.
+When panel-local evaluation context differs meaningfully but both panels remain interactive, prefer
+distinct controllers plus a component link over sharing one handle. Passive inspectors and retained
+helpers should not manufacture private controllers just to observe another panel; they should query
+the source panel state during frame preparation.
 
 
 ## Axis Pull Model
@@ -234,8 +236,8 @@ Implementation of this decision should include tests or examples for:
 7. scene destruction freeing shared controllers once,
 8. panel destruction not destroying shared controllers,
 9. typed state get/set rejecting the wrong controller family,
-10. arcball rotation-only link keeping an orientation gizmo centered while the source arcball is
-    panned or zoomed,
+10. arcball rotation-only link keeping a distinct linked arcball panel centered while the source
+    arcball is panned or zoomed,
 11. link destruction or source/target controller destruction stopping propagation cleanly.
 
 

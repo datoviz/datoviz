@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* orientation_gizmo - panel-attached orientation axes linked to an arcball controller.
+/* orientation_gizmo - panel-attached orientation axes following the panel's rendered orientation.
  *
  * Scenario: feature.orientation_gizmo
  * Style: features, graphite_cyan, 1600x1200 capture target
