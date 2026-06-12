@@ -22,6 +22,10 @@ lane in the active C tree: tests own regressions, and lab owns temporary diagnos
 Use manifest tags, not folders, for `workflow`, `scientific`, `real-data`, `simulated`,
 `interactive`, `offscreen`, `technique`, and domain labels.
 
+Feature examples are living API documentation. Keep the demonstrated `dvz_*` calls visible in the
+example file itself; use `example_*` helpers only for staging, theme, capture, data generation, and
+other boilerplate that is not the feature being shown.
+
 ## Metadata
 
 `MANIFEST.yaml` indexes the current public/lab examples using the canonical scenario IDs from
