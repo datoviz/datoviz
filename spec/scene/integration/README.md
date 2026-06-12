@@ -23,14 +23,16 @@ threads, high-DPI windows, or custom user-provided visual families.
    real-time Datoviz visualization.
 9. [NVDEC_VIDEO_SOURCE_PLAN.md](NVDEC_VIDEO_SOURCE_PLAN.md): future low-level video source and
    NVIDIA hardware-decode plan for image/sampled-field workflows.
-10. [ENTRY_POINTS.md](ENTRY_POINTS.md): low-level and hybrid public integration lanes for canvas,
+10. [TIMED_MEDIA_SYNC.md](TIMED_MEDIA_SYNC.md): future synchronized video, audio, events, and
+    signal timing model for scientific playback and analysis.
+11. [ENTRY_POINTS.md](ENTRY_POINTS.md): low-level and hybrid public integration lanes for canvas,
    vklite, DRP2, scene export, and full scene/app usage.
-11. [WEBGPU_WASM.md](WEBGPU_WASM.md): experimental browser WebGPU and WASM scene integration
+12. [WEBGPU_WASM.md](WEBGPU_WASM.md): experimental browser WebGPU and WASM scene integration
     contract.
-12. [WASM_WEBGPU_PARITY_PLAN.md](WASM_WEBGPU_PARITY_PLAN.md): implementation plan for broad
+13. [WASM_WEBGPU_PARITY_PLAN.md](WASM_WEBGPU_PARITY_PLAN.md): implementation plan for broad
     native Vulkan and WASM/WebGPU scene parity.
-13. [future](future/README.md): Android, iOS, and touch pressure notes.
-14. [napari](napari/README.md): informative napari adapter guidance and historical PoC notes.
+14. [future](future/README.md): Android, iOS, and touch pressure notes.
+15. [napari](napari/README.md): informative napari adapter guidance and historical PoC notes.
 
 
 ## Active Proposal Inputs
