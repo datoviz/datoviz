@@ -1250,6 +1250,23 @@ int test_orbit_camera_drag_axes_match_upright_planet(TstContext* suite, const Ts
     AT(eye[2] < -1e-3f);
     AC(up[0], 0.0f, 1e-5f);
 
+    camera_desc = dvz_camera_desc();
+    camera_desc.eye[0] = 0.0f;
+    camera_desc.eye[1] = 1.2f;
+    camera_desc.eye[2] = 1.25f;
+    camera_desc.up[0] = 0.0f;
+    camera_desc.up[1] = 1.0f;
+    camera_desc.up[2] = 0.0f;
+    dvz_camera_set_view(camera, camera_desc.eye, camera_desc.target, camera_desc.up);
+    dvz_orbit_camera_set_camera(orbit, camera);
+    AT(dvz_orbit_camera_pointer(orbit, &horizontal));
+
+    dvz_camera_get_view(camera, eye, target, up);
+    AC(eye[1], 1.2f, 1e-5f);
+    AC(up[0], 0.0f, 1e-5f);
+    AC(up[1], 1.0f, 1e-5f);
+    AC(up[2], 0.0f, 1e-5f);
+
     dvz_orbit_camera_destroy(orbit);
     dvz_camera_destroy(camera);
     return 0;
