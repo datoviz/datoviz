@@ -39,6 +39,7 @@
 #define SYMBOL_PIXELS 48u
 #define ROW_COUNT     5u
 #define ROW_SYMBOLS   5u
+#define ROW_LABEL_X   -0.88f
 
 
 
@@ -414,14 +415,14 @@ static bool _add_symbol_row(
 
 
 /**
- * Add a retained screen-space row label.
+ * Add a retained data-space row label.
  *
  * @param panel panel receiving the text object
  * @param label row label
- * @param y_px panel-local screen-space y position
+ * @param y row data-space y coordinate
  * @return true on success
  */
-static bool _add_row_label(DvzPanel* panel, const char* label, float y_px)
+static bool _add_row_label(DvzPanel* panel, const char* label, float y)
 {
     if (panel == NULL || label == NULL)
         return false;
@@ -442,10 +443,10 @@ static bool _add_row_label(DvzPanel* panel, const char* label, float y_px)
         return false;
 
     DvzTextPlacement placement = dvz_text_placement();
-    placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
-    placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
-    placement.position[0] = 90.0f;
-    placement.position[1] = y_px;
+    placement.mode = DVZ_TEXT_PLACEMENT_DATA;
+    placement.position[0] = ROW_LABEL_X;
+    placement.position[1] = y;
+    placement.position[2] = 0.0;
     placement.text_anchor[0] = 0.0f;
     placement.text_anchor[1] = 0.5f;
     placement.has_text_anchor = true;
@@ -514,13 +515,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     };
     const DvzSymbolId* row_ids[ROW_COUNT] = {builtin_ids, bitmap_ids, sdf_ids, msdf_ids, svg_ids};
     const char* row_labels[ROW_COUNT] = {"built-in", "bitmap pin", "SDF", "MSDF", "SVG path"};
-    const float label_y_px[ROW_COUNT] = {205.0f, 400.0f, 600.0f, 795.0f, 990.0f};
     for (uint32_t row = 0; row < ROW_COUNT; row++)
     {
         if (!_add_symbol_row(
                 ctx->scene, panel, symbol_set, row_ids[row], row, row_y[row], row_roles[row]))
             return false;
-        if (!_add_row_label(panel, row_labels[row], label_y_px[row]))
+        if (!_add_row_label(panel, row_labels[row], row_y[row]))
             return false;
     }
 
