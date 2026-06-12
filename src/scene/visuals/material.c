@@ -48,7 +48,7 @@ void _material_params_default(DvzSceneMaterialParams* params)
     ANN(params);
     dvz_memset(params, sizeof(DvzSceneMaterialParams), 0, sizeof(DvzSceneMaterialParams));
     params->light_direction[0] = -0.45f;
-    params->light_direction[1] = -0.35f;
+    params->light_direction[1] = +0.35f;
     params->light_direction[2] = 0.82f;
     params->params[0] = 0.24f;
     params->params[1] = 0.82f;
@@ -84,7 +84,7 @@ DvzMaterialDesc dvz_material_desc(void)
         .alpha_mode = DVZ_ALPHA_OPAQUE,
         .opacity = 1.0f,
         .base_color_factor = {1.0f, 1.0f, 1.0f, 1.0f},
-        .light_direction = {-0.45f, -0.35f, 0.82f},
+        .light_direction = {-0.45f, +0.35f, 0.82f},
         .phong = {.ambient = 0.24f, .diffuse = 0.82f, .specular = 0.24f, .shininess = 26.0f},
         .standard = {.roughness = 0.62f, .specular = 0.34f, .rim_strength = 0.10f},
     };

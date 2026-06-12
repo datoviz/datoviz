@@ -9176,7 +9176,7 @@ int test_scene_visual_internal_material_state(TstContext* suite, const TstCase* 
     AT(mesh->material.alpha_mode == DVZ_ALPHA_OPAQUE);
     AT(mesh->material.opacity == 1.0f);
     AT(mesh->material.light_direction[0] == -0.45f);
-    AT(mesh->material.light_direction[1] == -0.35f);
+    AT(mesh->material.light_direction[1] == +0.35f);
     AT(mesh->material.light_direction[2] == 0.82f);
     AT(mesh->material.ambient == 0.24f);
     AT(mesh->material.diffuse == 0.82f);
@@ -9298,7 +9298,7 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     AT(defaults.base_color_factor[0] == 1.0f);
     AT(defaults.base_color_factor[3] == 1.0f);
     AT(defaults.light_direction[0] == -0.45f);
-    AT(defaults.light_direction[1] == -0.35f);
+    AT(defaults.light_direction[1] == +0.35f);
     AT(defaults.light_direction[2] == 0.82f);
     AT(defaults.phong.ambient == 0.24f);
     AT(defaults.phong.diffuse == 0.82f);

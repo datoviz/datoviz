@@ -2297,7 +2297,7 @@ _Declared in `include/datoviz/scene.h`:2030._
 Return default visual material options.
 
 The default material is the fast Phong model with opaque alpha, full opacity, a white base-color
-factor, light direction `(-0.45, -0.35, 0.82)`, ambient `0.24`, diffuse `0.82`, specular
+factor, light direction `(-0.45, 0.35, 0.82)`, ambient `0.24`, diffuse `0.82`, specular
 `0.24`, and shininess `26`.
 
 ```c title="dvz_material_desc"
@@ -4786,7 +4786,7 @@ _Declared in `include/datoviz/scene.h`:869._
 Return default standard visual material options.
 
 The descriptor uses `DVZ_MATERIAL_MODEL_STANDARD` with opaque alpha, full opacity, a white
-base-color factor, light direction `(-0.45, -0.35, 0.82)`, roughness `0.62`, specular `0.34`,
+base-color factor, light direction `(-0.45, 0.35, 0.82)`, roughness `0.62`, specular `0.34`,
 metallic `0`, no emissive contribution, and rim contribution `0.10`.
 
 ```c title="dvz_standard_material_desc"
