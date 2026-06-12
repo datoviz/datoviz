@@ -121,7 +121,7 @@ void main()
     }
     else if (joinType == 2)
     {
-        float bevelLengthLimit = max(4.0 * halfWidth, halfWidth + 2.0);
+        float bevelLengthLimit = max(2.25 * halfWidth, halfWidth + 2.0);
         lengthStart = min(lengthStart, bevelLengthLimit);
         lengthEnd = min(lengthEnd, bevelLengthLimit);
     }
