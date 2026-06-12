@@ -13,8 +13,8 @@
  * Run:    ./build/examples/c/features/coordinate_system --live
  * Smoke:  ./build/examples/c/features/coordinate_system --png
  *
- * X is red, Y is green, and Z is blue. The live example binds an arcball controller so the axis
- * triad can be inspected with the mouse.
+ * X is red, Y is green, and Z is blue. The live example binds an orbit-camera controller so the
+ * axis triad and reference grid can be inspected with the mouse.
  */
 
 
@@ -42,6 +42,8 @@
 #define HEIGHT 1200u
 
 static const double AXIS_LENGTH = 1.45;
+static const float GRID_SIZE = 10.0f;
+static const float GRID_SPACING = 0.25f;
 
 
 
@@ -211,6 +213,35 @@ static bool _add_origin(DvzScene* scene, DvzPanel* panel)
 
 
 /**
+ * Add a muted XZ reference grid through the origin.
+ *
+ * @param panel panel receiving the grid
+ * @return true when the grid was added
+ */
+static bool _add_reference_grid(DvzPanel* panel)
+{
+    DvzReferenceGridDesc grid = dvz_reference_grid_desc();
+    grid.plane = DVZ_REFERENCE_GRID_XZ;
+    grid.origin[0] = 0.0f;
+    grid.origin[1] = 0.0f;
+    grid.origin[2] = 0.0f;
+    grid.size[0] = GRID_SIZE;
+    grid.size[1] = GRID_SIZE;
+    grid.spacing = GRID_SPACING;
+    grid.major_every = 4;
+    grid.minor_color = dvz_color_rgba(74, 86, 98, 95);
+    grid.major_color = dvz_color_rgba(116, 132, 148, 145);
+    grid.axis_color = dvz_color_rgba(176, 190, 204, 185);
+    grid.minor_width_px = 1.0f;
+    grid.major_width_px = 1.5f;
+    grid.axis_width_px = 2.0f;
+    grid.depth_test = true;
+    return dvz_reference_grid(panel, &grid) != NULL;
+}
+
+
+
+/**
  * Add one world-positioned axis label.
  *
  * @param panel target panel
@@ -219,7 +250,8 @@ static bool _add_origin(DvzScene* scene, DvzPanel* panel)
  * @param color text color
  * @return true when the label was added
  */
-static bool _add_label(DvzPanel* panel, const char* string, const double position[3], DvzColor color)
+static bool
+_add_label(DvzPanel* panel, const char* string, const double position[3], DvzColor color)
 {
     DvzText* text = dvz_text(panel, 0);
     if (text == NULL)
@@ -265,8 +297,8 @@ static bool _add_axis_labels(DvzPanel* panel)
     const double x[3] = {AXIS_LENGTH + pad, 0.0, 0.0};
     const double y[3] = {0.0, AXIS_LENGTH + pad, 0.0};
     const double z[3] = {0.0, 0.0, AXIS_LENGTH + pad};
-    return _add_label(panel, "X", x, _axis_color(0)) && _add_label(panel, "Y", y, _axis_color(1)) &&
-           _add_label(panel, "Z", z, _axis_color(2));
+    return _add_label(panel, "X", x, _axis_color(0)) &&
+           _add_label(panel, "Y", y, _axis_color(1)) && _add_label(panel, "Z", z, _axis_color(2));
 }
 
 
@@ -280,16 +312,16 @@ static bool _add_axis_labels(DvzPanel* panel)
 static bool _set_camera(DvzPanel* panel)
 {
     DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 2.25f;
-    camera.eye[1] = -2.60f;
-    camera.eye[2] = 2.25f;
-    camera.target[0] = 0.45f;
-    camera.target[1] = 0.45f;
-    camera.target[2] = 0.45f;
+    camera.eye[0] = 3.15f;
+    camera.eye[1] = 2.35f;
+    camera.eye[2] = 3.15f;
+    camera.target[0] = 0.0f;
+    camera.target[1] = 0.0f;
+    camera.target[2] = 0.0f;
     camera.up[0] = 0.0f;
     camera.up[1] = 1.0f;
     camera.up[2] = 0.0f;
-    camera.fov_y = 0.58f;
+    camera.fov_y = 0.74f;
     camera.near = 0.05f;
     camera.far = 100.0f;
     return dvz_panel_set_camera(panel, &camera) != NULL;
@@ -298,17 +330,28 @@ static bool _set_camera(DvzPanel* panel)
 
 
 /**
- * Attach an arcball controller so the live example is mouse-inspectable.
+ * Attach an orbit-camera controller so the live example is mouse-inspectable.
  *
  * @param ctx scenario context
  * @param panel target panel
  * @return true when the controller was bound
  */
-static bool _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel)
+static bool _bind_orbit_camera(DvzScenarioContext* ctx, DvzPanel* panel)
 {
-    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    DvzOrbitCameraDesc desc = dvz_orbit_camera_desc();
+    desc.width = (float)ctx->width;
+    desc.height = (float)ctx->height;
+    desc.pivot[0] = 0.0f;
+    desc.pivot[1] = 0.0f;
+    desc.pivot[2] = 0.0f;
+
+    DvzController* controller = dvz_orbit_camera(ctx->scene, &desc);
     if (controller == NULL)
         return false;
+    DvzOrbitCamera* orbit = dvz_controller_orbit_camera(controller);
+    if (orbit == NULL)
+        return false;
+    dvz_orbit_camera_pivot(orbit, (vec3){0.0f, 0.0f, 0.0f});
     return dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) == 0;
 }
 
@@ -341,9 +384,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    return _set_camera(panel) && _add_axis_arrow(ctx->scene, panel, 0) &&
-           _add_axis_arrow(ctx->scene, panel, 1) && _add_axis_arrow(ctx->scene, panel, 2) &&
-           _add_origin(ctx->scene, panel) && _add_axis_labels(panel) && _bind_arcball(ctx, panel);
+    return _set_camera(panel) && _add_reference_grid(panel) &&
+           _add_axis_arrow(ctx->scene, panel, 0) && _add_axis_arrow(ctx->scene, panel, 1) &&
+           _add_axis_arrow(ctx->scene, panel, 2) && _add_origin(ctx->scene, panel) &&
+           _add_axis_labels(panel) && _bind_orbit_camera(ctx, panel);
 }
 
 
@@ -361,9 +405,8 @@ DvzScenarioSpec dvz_example_coordinate_system_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
-        .requirements =
-            DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_TEXT_VISUAL |
-            DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_ARCBALL,
+        .requirements = DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_TEXT_VISUAL |
+                        DVZ_SCENARIO_REQ_CONTROLLER,
         .init = _scenario_init,
     };
 }
