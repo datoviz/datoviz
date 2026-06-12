@@ -38,6 +38,10 @@ DVZ_EXPORT DvzTextStyle dvz_text_style(void);
 /**
  * Return the default retained text placement.
  *
+ * The default is panel-local screen placement. Use `DVZ_TEXT_PLACEMENT_DATA` when text should stay
+ * anchored to panel data coordinates; `DvzTextPlacement::offset` remains a logical-pixel offset in
+ * every placement mode.
+ *
  * @return default text placement
  */
 DVZ_EXPORT DvzTextPlacement dvz_text_placement(void);

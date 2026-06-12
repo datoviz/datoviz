@@ -3255,6 +3255,7 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
         &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
             .mode = DVZ_TEXT_PLACEMENT_DATA,
             .position = {0.25, -0.5, 0.1},
+            .offset = {12.0f, -6.0f},
             .text_anchor = {0.0f, 0.0f},
             .has_text_anchor = true,
             .depth_test = true,
@@ -3265,6 +3266,12 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
     ANN(positions);
     AC(positions[0], 0.25f, 1e-6f);
     AC(positions[1], -0.5f, 1e-6f);
+    DvzVisualDataView bounds_view = {0};
+    AT(dvz_visual_data(text->visual, "bounds", &bounds_view) == 0);
+    const float* bounds = bounds_view.data;
+    ANN(bounds);
+    AC(bounds[0], 12.0f, 1e-6f);
+    AC(bounds[1], -6.0f, 1e-6f);
     AT(text->visual->depth_test_enabled);
     bool found_data_attach = false;
     for (uint32_t i = 0; i < panel->visual_count; i++)
@@ -3277,6 +3284,19 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
         }
     }
     AT(found_data_attach);
+
+    dvz_figure_resize(figure, 800, 600);
+    _scene_prepare_text_visuals(figure);
+    AT(dvz_visual_data(text->visual, "position", &position_view) == 0);
+    positions = position_view.data;
+    ANN(positions);
+    AC(positions[0], 0.25f, 1e-6f);
+    AC(positions[1], -0.5f, 1e-6f);
+    AT(dvz_visual_data(text->visual, "bounds", &bounds_view) == 0);
+    bounds = bounds_view.data;
+    ANN(bounds);
+    AC(bounds[0], 12.0f, 1e-6f);
+    AC(bounds[1], -6.0f, 1e-6f);
 
     DvzFramePlan* plan = dvz_frame_plan("text.data_clip_rect", 0);
     ANN(plan);

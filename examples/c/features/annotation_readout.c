@@ -112,18 +112,12 @@ static bool _add_points(
     ANN(colors);
     ANN(diameters);
 
-    vec3 visual_positions[POINT_COUNT] = {{0}};
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data_positions, (float*)visual_positions, POINT_COUNT);
-    if (rc != 0)
-        return false;
-
     DvzVisual* points = dvz_point(scene, 0);
     if (points == NULL)
         return false;
 
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = visual_positions, .item_count = POINT_COUNT},
+        {.attr_name = "position", .data = data_positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
         {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
     };
@@ -136,34 +130,10 @@ static bool _add_points(
     if (dvz_point_set_style(points, &style) != 0)
         return false;
 
-    return dvz_panel_add_visual(panel, points, NULL) == 0;
-}
-
-
-
-/**
- * Convert one data-space point to a panel-local pixel anchor.
- *
- * @param panel target panel
- * @param x data X coordinate
- * @param y data Y coordinate
- * @param out_px output panel-local pixel anchor
- * @return true when conversion succeeded
- */
-static bool _data_to_panel_pixel(DvzPanel* panel, double x, double y, float out_px[2])
-{
-    ANN(panel);
-    ANN(out_px);
-
-    DvzRect plot = {0};
-    if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
-        return false;
-
-    const double tx = x / 10.0;
-    const double ty = (y + 1.0) / 2.0;
-    out_px[0] = plot.x + (float)tx * plot.width;
-    out_px[1] = plot.y + (1.0f - (float)ty) * plot.height;
-    return true;
+    return dvz_panel_add_visual(
+               panel, points,
+               &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
+                   .coord_space = DVZ_COORD_DATA}) == 0;
 }
 
 
@@ -188,15 +158,10 @@ static DvzAnnotation* _add_readout(DvzPanel* panel, const vec3 position)
     style.color[2] = text.b;
     style.color[3] = 255u;
 
-    float anchor_px[2] = {0};
-    if (!_data_to_panel_pixel(panel, position[0], position[1], anchor_px))
-        return NULL;
-
     DvzTextPlacement placement = dvz_text_placement();
-    placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
-    placement.anchor = DVZ_SCENE_ANCHOR_SCREEN;
-    placement.position[0] = anchor_px[0];
-    placement.position[1] = anchor_px[1];
+    placement.mode = DVZ_TEXT_PLACEMENT_DATA;
+    placement.position[0] = position[0];
+    placement.position[1] = position[1];
     placement.position[2] = position[2];
     placement.offset[0] = 28.0f;
     placement.offset[1] = -24.0f;
