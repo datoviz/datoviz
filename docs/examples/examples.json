@@ -304,7 +304,7 @@
       "source": "examples/c/features/orientation_gizmo.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/orientation_gizmo.c",
       "page": "gallery/features/feature_orientation_gizmo.md",
-      "summary": "panel-attached orientation axes linked to an arcball controller.",
+      "summary": "panel-attached orientation axes following the panel's rendered orientation.",
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/orientation_gizmo",
       "smoke_command": "./build/examples/c/features/orientation_gizmo --png",
