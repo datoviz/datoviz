@@ -1603,7 +1603,7 @@ int test_arcball_camera_view_preserves_drag_anchor(TstContext* suite, const TstC
 
 
 /**
- * Check that wheel events update arcball zoom and model scale.
+ * Check that wheel events update arcball zoom and projection scale.
  *
  * @param suite test suite
  * @param item test item
@@ -1641,7 +1641,16 @@ int test_arcball_zoom_wheel(TstContext* suite, const TstCase* item)
     dvz_arcball_zoom(arc, 2.5f);
     mat4 model = GLM_MAT4_IDENTITY_INIT;
     dvz_arcball_model(arc, model);
-    AT(fabsf(model[0][0] - 2.5f) < 1e-5f);
+    AT(fabsf(model[0][0] - 1.0f) < 1e-5f);
+
+    DvzMVP mvp = {0};
+    glm_mat4_identity(mvp.model);
+    glm_mat4_identity(mvp.view);
+    glm_mat4_identity(mvp.proj);
+    dvz_arcball_mvp(arc, &mvp);
+    AT(fabsf(mvp.model[0][0] - 1.0f) < 1e-5f);
+    AT(fabsf(mvp.proj[0][0] - 2.5f) < 1e-5f);
+    AT(fabsf(mvp.proj[1][1] - 2.5f) < 1e-5f);
 
     DvzPointerEvent reset = {.type = DVZ_POINTER_EVENT_DOUBLE_CLICK};
     AT(dvz_arcball_pointer(arc, &reset));
@@ -1653,7 +1662,7 @@ int test_arcball_zoom_wheel(TstContext* suite, const TstCase* item)
 
 
 /**
- * Check that right-drag pans the arcball rotation center.
+ * Check that right-drag pans the arcball camera/projection.
  *
  * @param suite test suite
  * @param item test item
@@ -1690,8 +1699,18 @@ int test_arcball_pan_right_drag(TstContext* suite, const TstCase* item)
 
     mat4 model = GLM_MAT4_IDENTITY_INIT;
     dvz_arcball_model(arc, model);
-    AT(fabsf(model[3][0] - 0.2f) < 1e-5f);
-    AT(fabsf(model[3][1] - 0.2f) < 1e-5f);
+    AT(fabsf(model[3][0]) < 1e-5f);
+    AT(fabsf(model[3][1]) < 1e-5f);
+
+    DvzMVP mvp = {0};
+    glm_mat4_identity(mvp.model);
+    glm_mat4_identity(mvp.view);
+    glm_mat4_identity(mvp.proj);
+    dvz_arcball_mvp(arc, &mvp);
+    AT(fabsf(mvp.model[3][0]) < 1e-5f);
+    AT(fabsf(mvp.model[3][1]) < 1e-5f);
+    AT(fabsf(mvp.proj[3][0] - 0.2f) < 1e-5f);
+    AT(fabsf(mvp.proj[3][1] - 0.2f) < 1e-5f);
 
     DvzPointerEvent stop = {
         .type = DVZ_POINTER_EVENT_DRAG_STOP,
