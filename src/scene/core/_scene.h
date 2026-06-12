@@ -1012,6 +1012,13 @@ struct DvzOrientationGizmo
     DvzController* controller;
     DvzControllerLink* link;
     DvzVisual* axes_visual;
+    DvzVisual* rings_visual;
+    vec3* axes_positions;
+    vec3* axes_normals;
+    DvzColor* axes_colors;
+    vec3* ring_positions;
+    DvzColor* ring_colors;
+    float* ring_widths;
     DvzOrientationGizmoDesc desc;
     bool active;
     bool visible;

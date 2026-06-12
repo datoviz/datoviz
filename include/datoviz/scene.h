@@ -668,8 +668,8 @@ DVZ_EXPORT DvzOrientationGizmoDesc dvz_orientation_gizmo_desc(void);
 /**
  * Create a passive orientation gizmo attached to one source panel.
  *
- * The first v0.4 slice links the gizmo to an arcball controller and renders a fixed-size inset
- * axis triad with existing retained segment visuals.
+ * The gizmo links to an arcball controller and renders a fixed-size inset triad with lit mesh
+ * arrows, a central hub, and orientation rings.
  *
  * @param panel source panel
  * @param desc descriptor, or NULL for defaults

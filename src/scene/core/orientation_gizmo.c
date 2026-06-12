@@ -18,6 +18,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
@@ -33,6 +34,57 @@
 /*************************************************************************************************/
 
 #define DVZ_ORIENTATION_GIZMO_DESC_KNOWN_FLAGS 0u
+
+#define GIZMO_SEGMENTS          40u
+#define GIZMO_AXIS_COUNT        3u
+#define GIZMO_RING_SEGMENTS     96u
+#define GIZMO_CYLINDER_VERTICES (GIZMO_SEGMENTS * 6u)
+#define GIZMO_CONE_VERTICES     (GIZMO_SEGMENTS * 6u)
+#define GIZMO_RING_POINTS       (GIZMO_RING_SEGMENTS + 1u)
+#define GIZMO_HUB_VERTICES      36u
+#define GIZMO_AXES_VERTICES                                                                  \
+    (GIZMO_AXIS_COUNT * (GIZMO_CYLINDER_VERTICES + GIZMO_CONE_VERTICES) + GIZMO_HUB_VERTICES)
+#define GIZMO_RINGS_POINTS (GIZMO_AXIS_COUNT * GIZMO_RING_POINTS)
+
+static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct GizmoMesh
+{
+    vec3* positions;
+    vec3* normals;
+    DvzColor* colors;
+    uint32_t count;
+    uint32_t capacity;
+} GizmoMesh;
+
+
+typedef struct GizmoPath
+{
+    vec3* positions;
+    DvzColor* colors;
+    float* stroke_widths;
+    uint32_t count;
+    uint32_t capacity;
+} GizmoPath;
+
+
+typedef struct GizmoGeometry
+{
+    float shaft_length;
+    float tip_length;
+    float shaft_radius;
+    float tip_radius;
+    float hub_half_size;
+    float ring_radius;
+    float ring_stroke_width;
+    DvzColor colors[GIZMO_AXIS_COUNT];
+} GizmoGeometry;
 
 
 
@@ -133,6 +185,513 @@ static bool _orientation_gizmo_panel_desc(
 
 
 /**
+ * Fill the orthonormal basis for one gizmo axis.
+ *
+ * @param axis axis index, where 0 is X, 1 is Y, and 2 is Z
+ * @param dir output axis direction
+ * @param u output first radial basis vector
+ * @param v output second radial basis vector
+ */
+static void _gizmo_axis_basis(uint32_t axis, vec3 dir, vec3 u, vec3 v)
+{
+    ANN(dir);
+    ANN(u);
+    ANN(v);
+
+    dir[0] = dir[1] = dir[2] = 0.0f;
+    u[0] = u[1] = u[2] = 0.0f;
+    v[0] = v[1] = v[2] = 0.0f;
+
+    if (axis == 0)
+    {
+        dir[0] = 1.0f;
+        u[1] = 1.0f;
+        v[2] = 1.0f;
+    }
+    else if (axis == 1)
+    {
+        dir[1] = 1.0f;
+        u[2] = 1.0f;
+        v[0] = 1.0f;
+    }
+    else
+    {
+        dir[2] = 1.0f;
+        u[0] = 1.0f;
+        v[1] = 1.0f;
+    }
+}
+
+
+/**
+ * Resolve geometry controls from the public descriptor.
+ *
+ * @param desc public orientation-gizmo descriptor
+ * @return geometry controls
+ */
+static GizmoGeometry _gizmo_geometry(const DvzOrientationGizmoDesc* desc)
+{
+    ANN(desc);
+    const float length = desc->axis_length;
+    return (GizmoGeometry){
+        .shaft_length = 0.78f * length,
+        .tip_length = 0.22f * length,
+        .shaft_radius = 0.024f * length,
+        .tip_radius = 0.074f * length,
+        .hub_half_size = 0.052f * length,
+        .ring_radius = 0.66f * length,
+        .ring_stroke_width = fmaxf(1.0f, 0.78f * desc->axis_width_px),
+        .colors =
+            {
+                desc->x_color,
+                desc->y_color,
+                desc->z_color,
+            },
+    };
+}
+
+
+/**
+ * Add two scaled vectors.
+ *
+ * @param a first input vector
+ * @param a_scale scale applied to the first vector
+ * @param b second input vector
+ * @param b_scale scale applied to the second vector
+ * @param out output vector
+ */
+static void _vec3_add_scaled(const vec3 a, float a_scale, const vec3 b, float b_scale, vec3 out)
+{
+    ANN(a);
+    ANN(b);
+    ANN(out);
+
+    out[0] = a_scale * a[0] + b_scale * b[0];
+    out[1] = a_scale * a[1] + b_scale * b[1];
+    out[2] = a_scale * a[2] + b_scale * b[2];
+}
+
+
+/**
+ * Normalize a vector, falling back to +Z for degenerate inputs.
+ *
+ * @param v vector to normalize in place
+ */
+static void _normalize3(vec3 v)
+{
+    ANN(v);
+
+    const float len2 = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
+    if (len2 <= 0.0f)
+    {
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[2] = 1.0f;
+        return;
+    }
+
+    const float inv_len = 1.0f / sqrtf(len2);
+    v[0] *= inv_len;
+    v[1] *= inv_len;
+    v[2] *= inv_len;
+}
+
+
+/**
+ * Append one lit vertex to the gizmo mesh.
+ *
+ * @param mesh target mesh arrays
+ * @param position vertex position
+ * @param normal vertex normal
+ * @param color vertex color
+ * @return true when the vertex was appended
+ */
+static bool
+_gizmo_vertex(GizmoMesh* mesh, const vec3 position, const vec3 normal, const DvzColor color)
+{
+    ANN(mesh);
+    ANN(position);
+    ANN(normal);
+    if (mesh->count >= mesh->capacity)
+        return false;
+
+    dvz_memcpy(mesh->positions[mesh->count], sizeof(vec3), position, sizeof(vec3));
+    dvz_memcpy(mesh->normals[mesh->count], sizeof(vec3), normal, sizeof(vec3));
+    mesh->colors[mesh->count] = color;
+    mesh->count++;
+    return true;
+}
+
+
+/**
+ * Append a triangle to the gizmo mesh.
+ *
+ * @param mesh target mesh arrays
+ * @param p0 first vertex position
+ * @param n0 first vertex normal
+ * @param p1 second vertex position
+ * @param n1 second vertex normal
+ * @param p2 third vertex position
+ * @param n2 third vertex normal
+ * @param color triangle color
+ * @return true when the triangle was appended
+ */
+static bool _gizmo_triangle(
+    GizmoMesh* mesh, const vec3 p0, const vec3 n0, const vec3 p1, const vec3 n1, const vec3 p2,
+    const vec3 n2, const DvzColor color)
+{
+    ANN(mesh);
+    ANN(p0);
+    ANN(n0);
+    ANN(p1);
+    ANN(n1);
+    ANN(p2);
+    ANN(n2);
+    return _gizmo_vertex(mesh, p0, n0, color) && _gizmo_vertex(mesh, p1, n1, color) &&
+           _gizmo_vertex(mesh, p2, n2, color);
+}
+
+
+/**
+ * Compute a circular radial vector from an axis basis.
+ *
+ * @param u first radial basis vector
+ * @param v second radial basis vector
+ * @param angle angle in radians
+ * @param radius radial scale
+ * @param out output vector
+ */
+static void _gizmo_radial_at(const vec3 u, const vec3 v, float angle, float radius, vec3 out)
+{
+    ANN(u);
+    ANN(v);
+    ANN(out);
+
+    const float c = cosf(angle);
+    const float s = sinf(angle);
+    out[0] = radius * (c * u[0] + s * v[0]);
+    out[1] = radius * (c * u[1] + s * v[1]);
+    out[2] = radius * (c * u[2] + s * v[2]);
+}
+
+
+/**
+ * Compute a point on one oriented axis.
+ *
+ * @param dir axis direction
+ * @param radial radial offset
+ * @param distance distance along the axis
+ * @param out output point
+ */
+static void _gizmo_axis_point(const vec3 dir, const vec3 radial, float distance, vec3 out)
+{
+    ANN(dir);
+    ANN(radial);
+    ANN(out);
+
+    out[0] = distance * dir[0] + radial[0];
+    out[1] = distance * dir[1] + radial[1];
+    out[2] = distance * dir[2] + radial[2];
+}
+
+
+/**
+ * Append one colored cylindrical shaft.
+ *
+ * @param mesh target mesh arrays
+ * @param geometry gizmo geometry controls
+ * @param axis axis index
+ * @return true when all shaft triangles were appended
+ */
+static bool _gizmo_append_shaft(GizmoMesh* mesh, const GizmoGeometry* geometry, uint32_t axis)
+{
+    ANN(mesh);
+    ANN(geometry);
+
+    vec3 dir = {0};
+    vec3 u = {0};
+    vec3 v = {0};
+    _gizmo_axis_basis(axis, dir, u, v);
+    const DvzColor color = geometry->colors[axis % GIZMO_AXIS_COUNT];
+
+    for (uint32_t i = 0; i < GIZMO_SEGMENTS; i++)
+    {
+        const float a0 = TAU * (float)i / (float)GIZMO_SEGMENTS;
+        const float a1 = TAU * (float)(i + 1u) / (float)GIZMO_SEGMENTS;
+
+        vec3 r0 = {0};
+        vec3 r1 = {0};
+        _gizmo_radial_at(u, v, a0, geometry->shaft_radius, r0);
+        _gizmo_radial_at(u, v, a1, geometry->shaft_radius, r1);
+
+        vec3 n0 = {r0[0], r0[1], r0[2]};
+        vec3 n1 = {r1[0], r1[1], r1[2]};
+        _normalize3(n0);
+        _normalize3(n1);
+
+        vec3 p00 = {0};
+        vec3 p01 = {0};
+        vec3 p10 = {0};
+        vec3 p11 = {0};
+        _gizmo_axis_point(dir, r0, 0.0f, p00);
+        _gizmo_axis_point(dir, r1, 0.0f, p01);
+        _gizmo_axis_point(dir, r0, geometry->shaft_length, p10);
+        _gizmo_axis_point(dir, r1, geometry->shaft_length, p11);
+
+        if (!_gizmo_triangle(mesh, p00, n0, p11, n1, p10, n0, color))
+            return false;
+        if (!_gizmo_triangle(mesh, p00, n0, p01, n1, p11, n1, color))
+            return false;
+    }
+    return true;
+}
+
+
+/**
+ * Append one colored conical arrow tip.
+ *
+ * @param mesh target mesh arrays
+ * @param geometry gizmo geometry controls
+ * @param axis axis index
+ * @return true when all cone triangles were appended
+ */
+static bool _gizmo_append_tip(GizmoMesh* mesh, const GizmoGeometry* geometry, uint32_t axis)
+{
+    ANN(mesh);
+    ANN(geometry);
+
+    vec3 dir = {0};
+    vec3 u = {0};
+    vec3 v = {0};
+    _gizmo_axis_basis(axis, dir, u, v);
+    const DvzColor color = geometry->colors[axis % GIZMO_AXIS_COUNT];
+
+    vec3 apex = {0};
+    vec3 base_center = {0};
+    _gizmo_axis_point(dir, (vec3){0}, geometry->shaft_length + geometry->tip_length, apex);
+    _gizmo_axis_point(dir, (vec3){0}, geometry->shaft_length, base_center);
+
+    for (uint32_t i = 0; i < GIZMO_SEGMENTS; i++)
+    {
+        const float a0 = TAU * (float)i / (float)GIZMO_SEGMENTS;
+        const float a1 = TAU * (float)(i + 1u) / (float)GIZMO_SEGMENTS;
+
+        vec3 r0 = {0};
+        vec3 r1 = {0};
+        _gizmo_radial_at(u, v, a0, geometry->tip_radius, r0);
+        _gizmo_radial_at(u, v, a1, geometry->tip_radius, r1);
+
+        vec3 p0 = {0};
+        vec3 p1 = {0};
+        _gizmo_axis_point(dir, r0, geometry->shaft_length, p0);
+        _gizmo_axis_point(dir, r1, geometry->shaft_length, p1);
+
+        vec3 n0 = {0};
+        vec3 n1 = {0};
+        _vec3_add_scaled(
+            r0, 1.0f / geometry->tip_radius, dir, geometry->tip_radius / geometry->tip_length,
+            n0);
+        _vec3_add_scaled(
+            r1, 1.0f / geometry->tip_radius, dir, geometry->tip_radius / geometry->tip_length,
+            n1);
+        _normalize3(n0);
+        _normalize3(n1);
+
+        vec3 apex_normal = {0};
+        _vec3_add_scaled(n0, 0.5f, n1, 0.5f, apex_normal);
+        _normalize3(apex_normal);
+
+        vec3 cap_normal = {-dir[0], -dir[1], -dir[2]};
+        if (!_gizmo_triangle(mesh, p0, n0, p1, n1, apex, apex_normal, color))
+            return false;
+        if (!_gizmo_triangle(mesh, p1, cap_normal, p0, cap_normal, base_center, cap_normal, color))
+            return false;
+    }
+    return true;
+}
+
+
+/**
+ * Append the small white cube at the gizmo origin.
+ *
+ * @param mesh target mesh arrays
+ * @param geometry gizmo geometry controls
+ * @return true when all hub triangles were appended
+ */
+static bool _gizmo_append_hub(GizmoMesh* mesh, const GizmoGeometry* geometry)
+{
+    ANN(mesh);
+    ANN(geometry);
+
+    const float s = geometry->hub_half_size;
+    const DvzColor color = {238, 240, 244, 255};
+    const vec3 p[8] = {
+        {-s, -s, -s}, {+s, -s, -s}, {+s, +s, -s}, {-s, +s, -s},
+        {-s, -s, +s}, {+s, -s, +s}, {+s, +s, +s}, {-s, +s, +s},
+    };
+    const uint32_t faces[6][4] = {
+        {1, 5, 6, 2}, {4, 0, 3, 7}, {2, 6, 7, 3}, {4, 5, 1, 0}, {5, 4, 7, 6}, {0, 1, 2, 3},
+    };
+    const vec3 normals[6] = {
+        {+1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, +1.0f, 0.0f},
+        {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, +1.0f}, {0.0f, 0.0f, -1.0f},
+    };
+
+    for (uint32_t i = 0; i < 6u; i++)
+    {
+        const uint32_t* f = faces[i];
+        if (!_gizmo_triangle(
+                mesh, p[f[0]], normals[i], p[f[1]], normals[i], p[f[2]], normals[i], color))
+            return false;
+        if (!_gizmo_triangle(
+                mesh, p[f[0]], normals[i], p[f[2]], normals[i], p[f[3]], normals[i], color))
+            return false;
+    }
+    return true;
+}
+
+
+/**
+ * Append one path point to the gizmo rings.
+ *
+ * @param path target path arrays
+ * @param position point position
+ * @param color point color
+ * @param stroke_width stroke width in pixels
+ * @return true when the point was appended
+ */
+static bool
+_gizmo_path_point(GizmoPath* path, const vec3 position, const DvzColor color, float stroke_width)
+{
+    ANN(path);
+    ANN(position);
+    if (path->count >= path->capacity)
+        return false;
+
+    dvz_memcpy(path->positions[path->count], sizeof(vec3), position, sizeof(vec3));
+    path->colors[path->count] = color;
+    path->stroke_widths[path->count] = stroke_width;
+    path->count++;
+    return true;
+}
+
+
+/**
+ * Fill the retained mesh buffers for the lit gizmo axes and hub.
+ *
+ * @param mesh target mesh arrays
+ * @param geometry gizmo geometry controls
+ * @return true when the mesh was fully generated
+ */
+static bool _gizmo_build_axes(GizmoMesh* mesh, const GizmoGeometry* geometry)
+{
+    ANN(mesh);
+    ANN(geometry);
+
+    mesh->count = 0;
+
+    for (uint32_t axis = 0; axis < GIZMO_AXIS_COUNT; axis++)
+    {
+        if (!_gizmo_append_shaft(mesh, geometry, axis))
+            return false;
+        if (!_gizmo_append_tip(mesh, geometry, axis))
+            return false;
+    }
+
+    if (!_gizmo_append_hub(mesh, geometry))
+        return false;
+
+    return mesh->count == GIZMO_AXES_VERTICES;
+}
+
+
+/**
+ * Fill the retained path buffers for the orientation rings.
+ *
+ * @param path target path arrays
+ * @param geometry gizmo geometry controls
+ * @return true when the path was fully generated
+ */
+static bool _gizmo_build_rings(GizmoPath* path, const GizmoGeometry* geometry)
+{
+    ANN(path);
+    ANN(geometry);
+
+    path->count = 0;
+
+    for (uint32_t axis = 0; axis < GIZMO_AXIS_COUNT; axis++)
+    {
+        vec3 dir = {0};
+        vec3 u = {0};
+        vec3 v = {0};
+        _gizmo_axis_basis(axis, dir, u, v);
+        DvzColor color = geometry->colors[axis % GIZMO_AXIS_COUNT];
+        color.a = 255;
+
+        for (uint32_t i = 0; i < GIZMO_RING_POINTS; i++)
+        {
+            const float angle =
+                TAU * (float)(i % GIZMO_RING_SEGMENTS) / (float)GIZMO_RING_SEGMENTS;
+            vec3 p = {0};
+            _gizmo_radial_at(u, v, angle, geometry->ring_radius, p);
+            if (!_gizmo_path_point(path, p, color, geometry->ring_stroke_width))
+                return false;
+        }
+    }
+    return path->count == GIZMO_RINGS_POINTS;
+}
+
+
+/**
+ * Release cached geometry arrays for one gizmo.
+ *
+ * @param gizmo orientation gizmo
+ */
+static void _orientation_gizmo_free_geometry(DvzOrientationGizmo* gizmo)
+{
+    ANN(gizmo);
+    dvz_free(gizmo->axes_positions);
+    dvz_free(gizmo->axes_normals);
+    dvz_free(gizmo->axes_colors);
+    dvz_free(gizmo->ring_positions);
+    dvz_free(gizmo->ring_colors);
+    dvz_free(gizmo->ring_widths);
+    gizmo->axes_positions = NULL;
+    gizmo->axes_normals = NULL;
+    gizmo->axes_colors = NULL;
+    gizmo->ring_positions = NULL;
+    gizmo->ring_colors = NULL;
+    gizmo->ring_widths = NULL;
+}
+
+
+/**
+ * Allocate cached geometry arrays for one gizmo.
+ *
+ * @param gizmo orientation gizmo
+ * @return true on success
+ */
+static bool _orientation_gizmo_alloc_geometry(DvzOrientationGizmo* gizmo)
+{
+    ANN(gizmo);
+    gizmo->axes_positions = (vec3*)dvz_calloc(GIZMO_AXES_VERTICES, sizeof(vec3));
+    gizmo->axes_normals = (vec3*)dvz_calloc(GIZMO_AXES_VERTICES, sizeof(vec3));
+    gizmo->axes_colors = (DvzColor*)dvz_calloc(GIZMO_AXES_VERTICES, sizeof(DvzColor));
+    gizmo->ring_positions = (vec3*)dvz_calloc(GIZMO_RINGS_POINTS, sizeof(vec3));
+    gizmo->ring_colors = (DvzColor*)dvz_calloc(GIZMO_RINGS_POINTS, sizeof(DvzColor));
+    gizmo->ring_widths = (float*)dvz_calloc(GIZMO_RINGS_POINTS, sizeof(float));
+
+    if (gizmo->axes_positions != NULL && gizmo->axes_normals != NULL &&
+        gizmo->axes_colors != NULL && gizmo->ring_positions != NULL &&
+        gizmo->ring_colors != NULL && gizmo->ring_widths != NULL)
+        return true;
+
+    _orientation_gizmo_free_geometry(gizmo);
+    return false;
+}
+
+
+/**
  * Refresh one gizmo inset panel layout from its placement.
  *
  * @param gizmo orientation gizmo
@@ -162,39 +721,63 @@ static bool _orientation_gizmo_refresh_layout(DvzOrientationGizmo* gizmo)
 
 
 /**
- * Populate the retained segment visual for one gizmo.
+ * Populate the retained mesh and path visuals for one gizmo.
  *
  * @param gizmo orientation gizmo
  * @return whether data upload succeeded
  */
-static bool _orientation_gizmo_update_axes(DvzOrientationGizmo* gizmo)
+static bool _orientation_gizmo_update_geometry(DvzOrientationGizmo* gizmo)
 {
     ANN(gizmo);
     ANN(gizmo->axes_visual);
-    vec3 start[3] = {{0}};
-    vec3 end[3] = {
-        {gizmo->desc.axis_length, 0.0f, 0.0f},
-        {0.0f, gizmo->desc.axis_length, 0.0f},
-        {0.0f, 0.0f, gizmo->desc.axis_length},
-    };
-    DvzColor color[3] = {
-        gizmo->desc.x_color,
-        gizmo->desc.y_color,
-        gizmo->desc.z_color,
-    };
-    float width[3] = {
-        gizmo->desc.axis_width_px,
-        gizmo->desc.axis_width_px,
-        gizmo->desc.axis_width_px,
-    };
+    ANN(gizmo->rings_visual);
+    ANN(gizmo->axes_positions);
+    ANN(gizmo->axes_normals);
+    ANN(gizmo->axes_colors);
+    ANN(gizmo->ring_positions);
+    ANN(gizmo->ring_colors);
+    ANN(gizmo->ring_widths);
 
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position_start", .data = start, .item_count = 3},
-        {.attr_name = "position_end", .data = end, .item_count = 3},
-        {.attr_name = "color", .data = color, .item_count = 3},
-        {.attr_name = "stroke_width", .data = width, .item_count = 3},
+    const GizmoGeometry geometry = _gizmo_geometry(&gizmo->desc);
+    GizmoMesh axes = {
+        .positions = gizmo->axes_positions,
+        .normals = gizmo->axes_normals,
+        .colors = gizmo->axes_colors,
+        .capacity = GIZMO_AXES_VERTICES,
     };
-    return dvz_visual_set_data_many(gizmo->axes_visual, updates, 4) == 0;
+    GizmoPath rings = {
+        .positions = gizmo->ring_positions,
+        .colors = gizmo->ring_colors,
+        .stroke_widths = gizmo->ring_widths,
+        .capacity = GIZMO_RINGS_POINTS,
+    };
+    if (!_gizmo_build_axes(&axes, &geometry))
+        return false;
+    if (!_gizmo_build_rings(&rings, &geometry))
+        return false;
+
+    DvzVisualDataUpdate axes_updates[] = {
+        {.attr_name = "position", .data = gizmo->axes_positions, .item_count = axes.count},
+        {.attr_name = "normal", .data = gizmo->axes_normals, .item_count = axes.count},
+        {.attr_name = "color", .data = gizmo->axes_colors, .item_count = axes.count},
+    };
+    if (dvz_visual_set_data_many(gizmo->axes_visual, axes_updates, 3) != 0)
+        return false;
+
+    DvzVisualDataUpdate ring_updates[] = {
+        {.attr_name = "position", .data = gizmo->ring_positions, .item_count = rings.count},
+        {.attr_name = "color", .data = gizmo->ring_colors, .item_count = rings.count},
+        {.attr_name = "stroke_width", .data = gizmo->ring_widths, .item_count = rings.count},
+    };
+    if (dvz_visual_set_data_many(gizmo->rings_visual, ring_updates, 3) != 0)
+        return false;
+
+    const uint32_t ring_subpaths[GIZMO_AXIS_COUNT] = {
+        GIZMO_RING_POINTS,
+        GIZMO_RING_POINTS,
+        GIZMO_RING_POINTS,
+    };
+    return dvz_path_set_subpaths(gizmo->rings_visual, GIZMO_AXIS_COUNT, ring_subpaths) == 0;
 }
 
 
@@ -306,14 +889,37 @@ DvzOrientationGizmo* dvz_orientation_gizmo(
         goto fail;
     dvz_panel_set_background_color(gizmo->panel, 0.0f, 0.0f, 0.0f, 0.0f);
 
-    gizmo->axes_visual = dvz_segment(scene, 0);
+    if (!_orientation_gizmo_alloc_geometry(gizmo))
+        goto fail;
+
+    gizmo->axes_visual = dvz_mesh(scene, 0);
     if (gizmo->axes_visual == NULL)
         goto fail;
-    if (dvz_segment_set_caps(gizmo->axes_visual, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_TRIANGLE_OUT) != 0)
+    gizmo->rings_visual = dvz_path(scene, 0);
+    if (gizmo->rings_visual == NULL)
         goto fail;
-    if (!_orientation_gizmo_update_axes(gizmo))
+    if (dvz_path_set_caps(gizmo->rings_visual, DVZ_SEGMENT_CAP_NONE, DVZ_SEGMENT_CAP_NONE) != 0)
         goto fail;
+    if (dvz_path_set_join(gizmo->rings_visual, DVZ_PATH_JOIN_MITER, 4.0f) != 0)
+        goto fail;
+    if (!_orientation_gizmo_update_geometry(gizmo))
+        goto fail;
+
+    DvzMaterialDesc material = dvz_phong_material_desc();
+    material.light_direction[0] = 0.35f;
+    material.light_direction[1] = 0.45f;
+    material.light_direction[2] = 0.82f;
+    material.phong.ambient = 0.24f;
+    material.phong.diffuse = 0.82f;
+    material.phong.specular = 0.38f;
+    material.phong.shininess = 48.0f;
+    if (dvz_visual_set_material(gizmo->axes_visual, &material) != 0)
+        goto fail;
+
     dvz_visual_set_visible(gizmo->axes_visual, resolved.show_axes);
+    dvz_visual_set_visible(gizmo->rings_visual, resolved.show_axes);
+    if (dvz_panel_add_visual(gizmo->panel, gizmo->rings_visual, NULL) != 0)
+        goto fail;
     if (dvz_panel_add_visual(gizmo->panel, gizmo->axes_visual, NULL) != 0)
         goto fail;
 
@@ -353,8 +959,11 @@ void dvz_orientation_gizmo_destroy(DvzOrientationGizmo* gizmo)
         dvz_controller_destroy(gizmo->controller);
     if (gizmo->axes_visual != NULL)
         dvz_visual_set_visible(gizmo->axes_visual, false);
+    if (gizmo->rings_visual != NULL)
+        dvz_visual_set_visible(gizmo->rings_visual, false);
     if (gizmo->panel != NULL)
         dvz_panel_destroy(gizmo->panel);
+    _orientation_gizmo_free_geometry(gizmo);
     dvz_memset(gizmo, sizeof(DvzOrientationGizmo), 0, sizeof(DvzOrientationGizmo));
     _scene_notify_request_frame(figure);
 }
@@ -375,6 +984,8 @@ void dvz_orientation_gizmo_set_visible(DvzOrientationGizmo* gizmo, bool visible)
     gizmo->visible = visible;
     if (gizmo->axes_visual != NULL)
         dvz_visual_set_visible(gizmo->axes_visual, visible && gizmo->desc.show_axes);
+    if (gizmo->rings_visual != NULL)
+        dvz_visual_set_visible(gizmo->rings_visual, visible && gizmo->desc.show_axes);
     gizmo->version = gizmo->version == UINT64_MAX ? 1 : gizmo->version + 1;
     _scene_notify_request_frame(gizmo->source_panel != NULL ? gizmo->source_panel->figure : NULL);
 }

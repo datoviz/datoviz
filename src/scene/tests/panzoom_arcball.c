@@ -778,6 +778,13 @@ int test_orientation_gizmo_create_place_resize_and_visibility(
     ANN(gizmo);
     ANN(gizmo->panel);
     ANN(gizmo->axes_visual);
+    ANN(gizmo->rings_visual);
+    ANN(gizmo->axes_positions);
+    ANN(gizmo->axes_normals);
+    ANN(gizmo->axes_colors);
+    ANN(gizmo->ring_positions);
+    ANN(gizmo->ring_colors);
+    ANN(gizmo->ring_widths);
     ANN(gizmo->controller);
     ANN(gizmo->link);
     AT(gizmo->source_controller == controller);
@@ -797,9 +804,11 @@ int test_orientation_gizmo_create_place_resize_and_visibility(
     dvz_orientation_gizmo_set_visible(gizmo, false);
     AT(!gizmo->visible);
     AT(!gizmo->axes_visual->visible);
+    AT(!gizmo->rings_visual->visible);
     dvz_orientation_gizmo_set_visible(gizmo, true);
     AT(gizmo->visible);
     AT(gizmo->axes_visual->visible);
+    AT(gizmo->rings_visual->visible);
 
     dvz_orientation_gizmo_destroy(gizmo);
     AT(!scene->orientation_gizmos[0].active);
