@@ -131,6 +131,8 @@ struct DvzGuiViewport
     VkImage image;
     VkImageView image_view;
     VkExtent2D extent;
+    uint64_t resource_generation;
+    bool image_valid;
     uint32_t requested_width;
     uint32_t requested_height;
     uint32_t requested_framebuffer_width;
@@ -678,7 +680,7 @@ _gui_viewport_display_ready(const DvzGuiViewport* viewport, uint32_t width, uint
 static bool _gui_viewport_display_drawable(const DvzGuiViewport* viewport)
 {
     ANN(viewport);
-    return viewport->has_frame && viewport->image_view != VK_NULL_HANDLE &&
+    return viewport->has_frame && viewport->image_valid && viewport->image_view != VK_NULL_HANDLE &&
            viewport->extent.width > 0 && viewport->extent.height > 0;
 }
 
@@ -720,18 +722,23 @@ static int _gui_viewport_live_image_callback(
     ANN(frame);
     DvzGuiViewport* viewport = (DvzGuiViewport*)user_data;
     ANN(viewport);
-    if (frame->image_view == VK_NULL_HANDLE || frame->extent.width == 0 ||
-        frame->extent.height == 0)
+    if (!frame->image_valid || frame->image_view == VK_NULL_HANDLE || frame->extent.width == 0 ||
+        frame->extent.height == 0 || frame->resource_generation == 0)
     {
         return 0;
     }
-    if (viewport->image_view != frame->image_view)
+    if (
+        viewport->image_view != frame->image_view ||
+        viewport->resource_generation != frame->resource_generation)
     {
-        viewport->texture_dirty = true;
+        _gui_viewport_remove_texture(viewport);
         viewport->image_view = frame->image_view;
         viewport->image = frame->image;
+        viewport->resource_generation = frame->resource_generation;
+        viewport->texture_dirty = true;
     }
     viewport->extent = frame->extent;
+    viewport->image_valid = true;
     viewport->has_frame = true;
     viewport->stale_frame_count = _gui_viewport_frame_matches_committed(viewport, frame->extent) ?
                                       0 :
@@ -1529,8 +1536,10 @@ bool _dvz_gui_viewport_debug_state(
     out->pending_stable_frames = viewport->pending_stable_frames;
     out->displayed_framebuffer_width = viewport->extent.width;
     out->displayed_framebuffer_height = viewport->extent.height;
+    out->displayed_resource_generation = viewport->resource_generation;
     out->stale_frame_count = viewport->stale_frame_count;
     out->has_frame = viewport->has_frame;
+    out->image_valid = viewport->image_valid;
     out->display_ready = _gui_viewport_display_ready(
         viewport, viewport->requested_width, viewport->requested_height);
     out->display_drawable = _gui_viewport_display_drawable(viewport);

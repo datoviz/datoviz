@@ -106,6 +106,13 @@ struct DvzCanvas
     DvzImageViews* offscreen_views;
     VkImageLayout offscreen_layout;
     VkCommandBuffer offscreen_command_buffer;
+    VkImage retired_offscreen_image;
+    VkImageView retired_offscreen_view;
+    DvzAllocation* retired_offscreen_alloc;
+    DvzImages* retired_offscreen_images;
+    DvzImageViews* retired_offscreen_views;
+    VkCommandBuffer retired_offscreen_command_buffer;
+    int retired_offscreen_memory_fd;
     VkQueue offscreen_queue;
     uint32_t offscreen_queue_family;
     VkExtent2D offscreen_extent;

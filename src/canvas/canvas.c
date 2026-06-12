@@ -288,6 +288,93 @@ static void canvas_offscreen_destroy_resources(DvzCanvas* canvas)
 
 
 
+/**
+ * Destroy the previous offscreen resource generation after a replacement frame is published.
+ *
+ * @param canvas canvas owning the retired resources
+ */
+static void canvas_offscreen_destroy_retired_resources(DvzCanvas* canvas)
+{
+    if (canvas == NULL || canvas->retired_offscreen_image == VK_NULL_HANDLE)
+        return;
+
+    dvz_device_wait(canvas->device);
+    if (canvas->retired_offscreen_views != NULL)
+    {
+        dvz_image_views_destroy(canvas->retired_offscreen_views);
+        dvz_image_views_free(canvas->retired_offscreen_views);
+        canvas->retired_offscreen_views = NULL;
+    }
+    if (canvas->retired_offscreen_images != NULL)
+    {
+        dvz_images_free(canvas->retired_offscreen_images);
+        canvas->retired_offscreen_images = NULL;
+    }
+    if (canvas->allocator != NULL && canvas->retired_offscreen_alloc != NULL)
+    {
+        dvz_allocator_destroy_image(
+            canvas->allocator, canvas->retired_offscreen_alloc, canvas->retired_offscreen_image);
+        dvz_allocation_free(canvas->retired_offscreen_alloc);
+        canvas->retired_offscreen_alloc = NULL;
+    }
+    canvas->retired_offscreen_image = VK_NULL_HANDLE;
+    canvas->retired_offscreen_view = VK_NULL_HANDLE;
+    if (canvas->retired_offscreen_command_buffer != VK_NULL_HANDLE)
+    {
+        dvz_command_buffer_free(
+            canvas->device, canvas->offscreen_queue_family,
+            canvas->retired_offscreen_command_buffer);
+        canvas->retired_offscreen_command_buffer = VK_NULL_HANDLE;
+    }
+#if OS_UNIX
+    if (canvas->retired_offscreen_memory_fd >= 0)
+    {
+        close(canvas->retired_offscreen_memory_fd);
+        canvas->retired_offscreen_memory_fd = -1;
+    }
+#endif
+}
+
+
+
+/**
+ * Move the current offscreen resources into the retired slot during a resize/recreate.
+ *
+ * The live-image consumer may still hold a descriptor for the previous generation until the next
+ * valid live-image callback, so resources are retained across the replacement frame publication.
+ *
+ * @param canvas canvas owning the active offscreen resources
+ */
+static void canvas_offscreen_retire_resources(DvzCanvas* canvas)
+{
+    if (!canvas || !canvas->offscreen_ready)
+        return;
+
+    canvas_offscreen_destroy_retired_resources(canvas);
+    canvas->retired_offscreen_image = canvas->offscreen_image;
+    canvas->retired_offscreen_view = canvas->offscreen_view;
+    canvas->retired_offscreen_alloc = canvas->offscreen_alloc;
+    canvas->retired_offscreen_images = canvas->offscreen_images;
+    canvas->retired_offscreen_views = canvas->offscreen_views;
+    canvas->retired_offscreen_command_buffer = canvas->offscreen_command_buffer;
+    canvas->retired_offscreen_memory_fd = canvas->offscreen_memory_fd;
+
+    canvas->offscreen_image = VK_NULL_HANDLE;
+    canvas->offscreen_view = VK_NULL_HANDLE;
+    canvas->offscreen_alloc = NULL;
+    canvas->offscreen_images = NULL;
+    canvas->offscreen_views = NULL;
+    canvas->offscreen_command_buffer = VK_NULL_HANDLE;
+    canvas->offscreen_memory_fd = -1;
+    canvas->offscreen_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    canvas->offscreen_extent = (VkExtent2D){0, 0};
+    canvas->offscreen_format = VK_FORMAT_UNDEFINED;
+    canvas->offscreen_ready = false;
+    canvas_offscreen_transition(canvas, DVZ_CANVAS_OFFSCREEN_STATE_UNINITIALIZED, "resources retired");
+}
+
+
+
 static int canvas_offscreen_create_resources(DvzCanvas* canvas, VkExtent2D extent, VkFormat format)
 {
     ANN(canvas);
@@ -401,7 +488,7 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
         !canvas->offscreen_ready || canvas->offscreen_extent.width != extent.width ||
         canvas->offscreen_extent.height != extent.height || canvas->offscreen_format != format)
     {
-        canvas_offscreen_destroy_resources(canvas);
+        canvas_offscreen_retire_resources(canvas);
         if (canvas_offscreen_create_resources(canvas, extent, format) != 0)
         {
             return -1;
@@ -1086,6 +1173,7 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     canvas->stream_started = false;
     canvas->primary_sink_attached = false;
     canvas->offscreen_memory_fd = -1;
+    canvas->retired_offscreen_memory_fd = -1;
     canvas->offscreen_ready = false;
     canvas->offscreen_resource_generation = 0;
     canvas->offscreen_runtime_state = DVZ_CANVAS_OFFSCREEN_STATE_UNINITIALIZED;
@@ -1182,6 +1270,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
         dvz_stream_sink_registry_destroy(canvas->sink_registry);
         canvas->sink_registry = NULL;
     }
+    canvas_offscreen_destroy_retired_resources(canvas);
     canvas_offscreen_destroy_resources(canvas);
     canvas_destroy_timeline(canvas);
     canvas_destroy_allocator(canvas);
@@ -1415,6 +1504,7 @@ int dvz_canvas_submit(DvzCanvas* canvas)
         if (result == 0)
         {
             canvas_offscreen_transition(canvas, DVZ_CANVAS_OFFSCREEN_STATE_READY, "submit done");
+            canvas_offscreen_destroy_retired_resources(canvas);
         }
         else
         {
