@@ -115,19 +115,28 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
     let miter_limit = max(material.params.w, 1.0);
     let miter_clip = (miter_limit - 1.0) * (input.line_width * 0.5) + aa;
     let bevel_clip = aa;
-    if (input.coord.x < 0.0 && input.has_prev >= 0.5 && (join_type == 0 || join_type == 2)) {
-        let clip_distance = select(miter_clip, bevel_clip, join_type == 2);
-        if (input.bevel_distance.x > abs(distance) + clip_distance) {
-            distance = input.bevel_distance.x - clip_distance;
+    let bevel_extent = max(input.line_width, 0.0) * 0.5 + 2.0;
+    let start_bevel = join_type == 2 && input.has_prev >= 0.5 && input.coord.x < bevel_extent;
+    let end_bevel = join_type == 2 && input.has_next >= 0.5 &&
+        input.coord.x > input.length_px - bevel_extent;
+    if (start_bevel) {
+        if (input.bevel_distance.x > abs(distance) + bevel_clip) {
+            distance = input.bevel_distance.x - bevel_clip;
         }
         alpha = stroke_alpha(distance, input.line_width);
-    } else if (
-        input.coord.x > input.length_px && input.has_next >= 0.5 &&
-        (join_type == 0 || join_type == 2)
-    ) {
-        let clip_distance = select(miter_clip, bevel_clip, join_type == 2);
-        if (input.bevel_distance.y > abs(distance) + clip_distance) {
-            distance = input.bevel_distance.y - clip_distance;
+    } else if (end_bevel) {
+        if (input.bevel_distance.y > abs(distance) + bevel_clip) {
+            distance = input.bevel_distance.y - bevel_clip;
+        }
+        alpha = stroke_alpha(distance, input.line_width);
+    } else if (input.coord.x < 0.0 && input.has_prev >= 0.5 && join_type == 0) {
+        if (input.bevel_distance.x > abs(distance) + miter_clip) {
+            distance = input.bevel_distance.x - miter_clip;
+        }
+        alpha = stroke_alpha(distance, input.line_width);
+    } else if (input.coord.x > input.length_px && input.has_next >= 0.5 && join_type == 0) {
+        if (input.bevel_distance.y > abs(distance) + miter_clip) {
+            distance = input.bevel_distance.y - miter_clip;
         }
         alpha = stroke_alpha(distance, input.line_width);
     }

@@ -390,6 +390,8 @@ int test_scene_path_line_width_emit_glsl(TstContext* suite, const TstCase* item)
 
 int test_scene_path_repeated_endpoint_closes_subpath(TstContext* suite, const TstCase* item);
 
+int test_scene_path_closed_star_cache_adjacency(TstContext* suite, const TstCase* item);
+
 int test_scene_image_glsl_executes(TstContext* suite, const TstCase* item);
 
 int test_scene_image_emit_wgsl(TstContext* suite, const TstCase* item);
@@ -1103,6 +1105,8 @@ int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* ite
 int test_app_offscreen_path_join_has_no_center_gap(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_path_join_modes_are_ordered(TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_path_closed_star_seam_has_pixels(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_pixel_square_has_nonblank_pixels(TstContext* suite, const TstCase* item);
 

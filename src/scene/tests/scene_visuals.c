@@ -2749,6 +2749,91 @@ int test_scene_path_repeated_endpoint_closes_subpath(TstContext* suite, const Ts
 }
 
 
+/**
+ * Verify sharp closed-ring sentinels keep both seam-side adjacency points.
+ *
+ * @param suite the active test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_scene_path_closed_star_cache_adjacency(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_path(scene, 0);
+    AT(visual != NULL);
+
+    enum
+    {
+        STAR_POINT_COUNT = 11,
+    };
+    const float tau = 6.28318530718f;
+    vec3 positions[STAR_POINT_COUNT] = {{0}};
+    DvzColor colors[STAR_POINT_COUNT] = {{0}};
+    float stroke_widths[STAR_POINT_COUNT] = {0};
+    for (uint32_t i = 0; i < STAR_POINT_COUNT; i++)
+    {
+        const uint32_t k = i % 10u;
+        const float radius = (k % 2u) == 0u ? 0.45f : 0.14f;
+        const float a = -0.25f * tau + tau * (float)k / 10.0f;
+        positions[i][0] = radius * cosf(a);
+        positions[i][1] = radius * sinf(a);
+        positions[i][2] = 0.0f;
+        colors[i] = (DvzColor){255, 255, 255, 255};
+        stroke_widths[i] = 10.0f;
+    }
+
+    uint32_t subpath = STAR_POINT_COUNT;
+    AT(dvz_visual_set_data(visual, "position", positions, STAR_POINT_COUNT) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, STAR_POINT_COUNT) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width", stroke_widths, STAR_POINT_COUNT) == 0);
+    AT(dvz_path_set_subpaths(visual, 1, &subpath) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.path.closed_star", 0);
+    AT(plan != NULL);
+    _scene_emit_visual_uploads(figure, plan, NULL);
+
+    const uint32_t has_prev = 0x04u;
+    const uint32_t has_next = 0x08u;
+    const uint32_t subpath_start = 0x10u;
+    const uint32_t subpath_end = 0x20u;
+    const DvzPathGpuCache* cache = &_visual_family_state(visual)->path.gpu;
+    AT(cache->segment_count == STAR_POINT_COUNT - 1);
+    AT(cache->vertex_count == 4u * (STAR_POINT_COUNT - 1u));
+
+    const uint32_t first_start = cache->path_flags[0];
+    AT((first_start & has_prev) != 0);
+    AT((first_start & has_next) != 0);
+    AT((first_start & subpath_start) == 0);
+    AC(cache->position_prev[0], positions[STAR_POINT_COUNT - 2][0], 1e-6);
+    AC(cache->position_prev[1], positions[STAR_POINT_COUNT - 2][1], 1e-6);
+    AC(cache->position_next[0], positions[1][0], 1e-6);
+    AC(cache->position_next[1], positions[1][1], 1e-6);
+
+    const uint32_t last_end_index = 4u * (STAR_POINT_COUNT - 2u) + 2u;
+    const uint32_t last_end = cache->path_flags[last_end_index];
+    AT((last_end & has_prev) != 0);
+    AT((last_end & has_next) != 0);
+    AT((last_end & subpath_end) == 0);
+    AC(cache->position_prev[3u * last_end_index + 0u], positions[STAR_POINT_COUNT - 2][0], 1e-6);
+    AC(cache->position_prev[3u * last_end_index + 1u], positions[STAR_POINT_COUNT - 2][1], 1e-6);
+    AC(cache->position_next[3u * last_end_index + 0u], positions[1][0], 1e-6);
+    AC(cache->position_next[3u * last_end_index + 1u], positions[1][1], 1e-6);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_image_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

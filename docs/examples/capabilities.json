@@ -3,11 +3,11 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 107,
+  "example_count": 108,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 72,
+    "feature": 73,
     "showcase": 15,
     "visual": 15
   },
@@ -15,11 +15,11 @@
     "diagnostic": 1,
     "experimental": 11,
     "prototype": 3,
-    "supported": 92
+    "supported": 93
   },
   "agent_copy_safe": {
     "false": 28,
-    "true": 79
+    "true": 80
   },
   "capabilities": {
     "composites": {
@@ -155,7 +155,7 @@
         ]
       },
       "synthetic": {
-        "count": 98,
+        "count": 99,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -561,6 +561,15 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/bezier_curve_path.c",
             "page": "gallery/features/feature_bezier_curve_path.md"
+          },
+          {
+            "id": "feature_path_join_stress",
+            "title": "Path Join Stress",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/path_join_stress.c",
+            "page": "gallery/features/feature_path_join_stress.md"
           },
           {
             "id": "linked_panels_axes_panzoom",
@@ -1698,6 +1707,20 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/panel_single.c",
             "page": "gallery/features/feature_panel_single.md"
+          }
+        ]
+      },
+      "path-join-stress": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_path_join_stress",
+            "title": "Path Join Stress",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/path_join_stress.c",
+            "page": "gallery/features/feature_path_join_stress.md"
           }
         ]
       },

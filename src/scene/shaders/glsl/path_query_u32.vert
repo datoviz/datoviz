@@ -108,7 +108,7 @@ void main()
         miter = safeNormalize(normalIn + normalOut, segmentNormal);
         float denom = dot(miter, segmentNormal);
         miterScale = denom > 1e-3 ? 1.0 / denom : 1.0;
-        if (joinType == 1 || joinType == 2)
+        if (joinType == 1)
             normal = miter * miterScale;
         else if (joinType == 0 && miterScale <= miterLimit)
             normal = miter * miterScale;
@@ -138,10 +138,7 @@ void main()
         vec2 bevelStart = currPx + outerSide * normalIn * halfWidth;
         vec2 bevelEnd = currPx + outerSide * normalOut * halfWidth;
         float bevelDistance = side * outerSide * lineDistance(bevelStart, bevelEnd, pixel);
-        if (endpointEnd)
-            fragBevelDistance.y = bevelDistance;
-        else
-            fragBevelDistance.x = bevelDistance;
+        fragBevelDistance = vec2(bevelDistance);
     }
     if (hasPrev && hasNext && (joinType == 1 || joinType == 2))
     {

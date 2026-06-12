@@ -89,18 +89,33 @@ void main()
     float miterLimit = max(material.params.w, 1.0);
     float miterClip = (miterLimit - 1.0) * (fragLineWidth * 0.5) + aa;
     float bevelClip = aa;
-    if (fragCoord.x < 0.0 && fragHasPrev >= 0.5 && (joinType == 0 || joinType == 2))
+    float bevelExtent = max(fragLineWidth, 0.0) * 0.5 + 2.0;
+    bool startBevel =
+        joinType == 2 && fragHasPrev >= 0.5 && fragCoord.x < bevelExtent;
+    bool endBevel =
+        joinType == 2 && fragHasNext >= 0.5 && fragCoord.x > fragLength - bevelExtent;
+    if (startBevel)
     {
-        float clipDistance = joinType == 2 ? bevelClip : miterClip;
-        if (fragBevelDistance.x > abs(distance) + clipDistance)
-            distance = fragBevelDistance.x - clipDistance;
+        if (fragBevelDistance.x > abs(distance) + bevelClip)
+            distance = fragBevelDistance.x - bevelClip;
         alpha = dvz_stroke_alpha(distance, fragLineWidth);
     }
-    else if (fragCoord.x > fragLength && fragHasNext >= 0.5 && (joinType == 0 || joinType == 2))
+    else if (endBevel)
     {
-        float clipDistance = joinType == 2 ? bevelClip : miterClip;
-        if (fragBevelDistance.y > abs(distance) + clipDistance)
-            distance = fragBevelDistance.y - clipDistance;
+        if (fragBevelDistance.y > abs(distance) + bevelClip)
+            distance = fragBevelDistance.y - bevelClip;
+        alpha = dvz_stroke_alpha(distance, fragLineWidth);
+    }
+    else if (fragCoord.x < 0.0 && fragHasPrev >= 0.5 && joinType == 0)
+    {
+        if (fragBevelDistance.x > abs(distance) + miterClip)
+            distance = fragBevelDistance.x - miterClip;
+        alpha = dvz_stroke_alpha(distance, fragLineWidth);
+    }
+    else if (fragCoord.x > fragLength && fragHasNext >= 0.5 && joinType == 0)
+    {
+        if (fragBevelDistance.y > abs(distance) + miterClip)
+            distance = fragBevelDistance.y - miterClip;
         alpha = dvz_stroke_alpha(distance, fragLineWidth);
     }
     if (alpha <= 0.0)

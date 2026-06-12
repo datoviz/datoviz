@@ -2637,6 +2637,129 @@ int test_app_offscreen_path_join_modes_are_ordered(TstContext* suite, const TstC
 }
 
 
+/**
+ * Count red-dominant pixels in a square capture neighborhood.
+ *
+ * @param rgba captured RGBA8 pixels
+ * @param width capture width
+ * @param height capture height
+ * @param cx center x pixel coordinate
+ * @param cy center y pixel coordinate
+ * @param radius square half-size in pixels
+ * @return red-dominant pixel count
+ */
+static uint32_t _app_red_neighborhood_count(
+    const uint8_t* rgba, uint32_t width, uint32_t height, uint32_t cx, uint32_t cy,
+    uint32_t radius)
+{
+    ANN(rgba);
+    uint32_t count = 0;
+    const uint32_t x0 = cx > radius ? cx - radius : 0;
+    const uint32_t y0 = cy > radius ? cy - radius : 0;
+    const uint32_t x1 = cx + radius < width ? cx + radius : width - 1u;
+    const uint32_t y1 = cy + radius < height ? cy + radius : height - 1u;
+    for (uint32_t y = y0; y <= y1; y++)
+    {
+        for (uint32_t x = x0; x <= x1; x++)
+        {
+            const uint8_t* px = _pixel_at(rgba, width, height, x, y);
+            if (px[0] > 100 && px[0] > px[1] + 45 && px[0] > px[2] + 45)
+                count++;
+        }
+    }
+    return count;
+}
+
+
+
+/**
+ * Ensure a closed sharp star ring draws pixels at the repeated-endpoint seam.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_path_closed_star_seam_has_pixels(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 128, 128, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzVisual* visual = dvz_path(scene, 0);
+    AT(visual != NULL);
+    enum
+    {
+        STAR_POINT_COUNT = 11,
+    };
+    const float tau = 6.28318530718f;
+    vec3 positions[STAR_POINT_COUNT] = {{0}};
+    DvzColor colors[STAR_POINT_COUNT] = {{0}};
+    float widths[STAR_POINT_COUNT] = {0};
+    for (uint32_t i = 0; i < STAR_POINT_COUNT; i++)
+    {
+        const uint32_t k = i % 10u;
+        const float radius = (k % 2u) == 0u ? 0.56f : 0.17f;
+        const float a = -0.25f * tau + tau * (float)k / 10.0f;
+        positions[i][0] = radius * cosf(a);
+        positions[i][1] = radius * sinf(a);
+        positions[i][2] = 0.0f;
+        colors[i] = (DvzColor){255, 0, 0, 255};
+        widths[i] = 30.0f;
+    }
+    uint32_t subpath = STAR_POINT_COUNT;
+    AT(dvz_visual_set_data(visual, "position", positions, STAR_POINT_COUNT) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, STAR_POINT_COUNT) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width", widths, STAR_POINT_COUNT) == 0);
+    AT(dvz_path_set_subpaths(visual, 1, &subpath) == 0);
+    AT(dvz_path_set_join(visual, DVZ_PATH_JOIN_ROUND, 4.0f) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_path_closed_star_seam_has_pixels skipped: GPU context creation "
+            "failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 128, 128);
+    AT(win != NULL);
+    dvz_app_run(app, 1);
+
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 128);
+    AT(height == 128);
+
+    const uint32_t x = width / 2u;
+    const uint32_t y_a = (uint32_t)((1.0f - positions[0][1]) * 0.5f * (float)(height - 1u));
+    const uint32_t y_b = (uint32_t)((1.0f + positions[0][1]) * 0.5f * (float)(height - 1u));
+    const uint32_t seam_count_a = _app_red_neighborhood_count(rgba, width, height, x, y_a, 5);
+    const uint32_t seam_count_b = _app_red_neighborhood_count(rgba, width, height, x, y_b, 5);
+    AT(seam_count_a > 0 || seam_count_b > 0);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Ensure pixel visuals render nonblank square marks through the offscreen app path.
@@ -7024,6 +7147,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_path_join_has_no_center_gap);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_path_join_modes_are_ordered);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_path_closed_star_seam_has_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pixel_square_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_points_edl_renders);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_points_edl_changes_pixels);

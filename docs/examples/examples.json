@@ -2,11 +2,11 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 107,
+  "count": 108,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 72,
+    "feature": 73,
     "showcase": 15,
     "visual": 15
   },
@@ -14,11 +14,11 @@
     "diagnostic": 1,
     "experimental": 11,
     "prototype": 3,
-    "supported": 92
+    "supported": 93
   },
   "agent_copy_safe": {
     "false": 28,
-    "true": 79
+    "true": 80
   },
   "examples": [
     {
@@ -975,6 +975,27 @@
         "kind": "synthetic"
       },
       "primary_feature": "bezier-curve-path"
+    },
+    {
+      "id": "feature_path_join_stress",
+      "title": "Path Join Stress",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/path_join_stress.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/path_join_stress.c",
+      "page": "gallery/features/feature_path_join_stress.md",
+      "summary": "acute stroked path joins for visual regression inspection.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/path_join_stress",
+      "smoke_command": "./build/examples/c/features/path_join_stress --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "path-join-stress"
     },
     {
       "id": "linked_panels_axes_panzoom",

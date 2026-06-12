@@ -126,7 +126,7 @@ fn main(input: VertexIn) -> VertexOut {
         miter = safe_normalize(normal_in + normal_out, segment_normal);
         let denom = dot(miter, segment_normal);
         miter_scale = select(1.0, 1.0 / denom, denom > 1e-3);
-        if (join_type == 1 || join_type == 2) {
+        if (join_type == 1) {
             normal = miter * miter_scale;
         } else if (join_type == 0 && miter_scale <= miter_limit) {
             normal = miter * miter_scale;
@@ -155,11 +155,7 @@ fn main(input: VertexIn) -> VertexOut {
         let bevel_start = curr_px + normal_in * outer_side * half_width;
         let bevel_end = curr_px + normal_out * outer_side * half_width;
         let bevel_distance = side * outer_side * line_distance(bevel_start, bevel_end, pixel);
-        if (endpoint_end) {
-            output.bevel_distance.y = bevel_distance;
-        } else {
-            output.bevel_distance.x = bevel_distance;
-        }
+        output.bevel_distance = vec2f(bevel_distance, bevel_distance);
     }
     if (has_prev && has_next && (join_type == 1 || join_type == 2)) {
         let segment_start_px = select(curr_px, prev_px, endpoint_end);
