@@ -71,8 +71,10 @@ static bool _add_geometry(DvzScene* scene, DvzPanel* panel, DvzGeometry* geometr
         dvz_geometry_destroy(geometry);
         return false;
     }
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_COORD_DATA;
     const bool ok = dvz_mesh_set_geometry(mesh, geometry) == 0 &&
-                    dvz_panel_add_visual(panel, mesh, NULL) == 0;
+                    dvz_panel_add_visual(panel, mesh, &attach) == 0;
     dvz_geometry_destroy(geometry);
     return ok;
 }
@@ -197,12 +199,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzController* controller = dvz_panzoom(ctx->scene, &panzoom_desc);
     if (controller == NULL)
         return false;
-    DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
-    if (panzoom == NULL)
-        return false;
-    const float aspect = ctx->height > 0 ? (float)ctx->width / (float)ctx->height : 1.0f;
-    dvz_panzoom_zoom(panzoom, (vec2){1.0f, aspect});
-    dvz_panzoom_end(panzoom);
     return ok && dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XY) == 0;
 }
 

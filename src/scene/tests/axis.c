@@ -1379,6 +1379,19 @@ static int test_panel_domain_fit(TstContext* suite, const TstCase* item)
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
     AT(fabs(min + (1.0 / 6.0)) < 1e-9);
     AT(fabs(max - (7.0 / 6.0)) < 1e-9);
+    double x_min = 0.0;
+    double x_max = 0.0;
+    double y_min = 0.0;
+    double y_max = 0.0;
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &x_min, &x_max));
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &y_min, &y_max));
+    DvzRect plot = {0};
+    AT(dvz_panel_plot_rect_px(panel, &plot));
+    AT(plot.width > 0.0f);
+    AT(plot.height > 0.0f);
+    const double x_units_per_px = (x_max - x_min) / (double)plot.width;
+    const double y_units_per_px = (y_max - y_min) / (double)plot.height;
+    AT(fabs(x_units_per_px - y_units_per_px) < 1e-9);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 10.0, 20.0) == 0);
     AT(dvz_panel_set_layout_reserve(panel, NULL));
