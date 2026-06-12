@@ -74,9 +74,7 @@ typedef struct AnimationTracksState
  * @return uploaded mesh visual, or NULL on error
  */
 static DvzVisual* _graphite_cyan_cube_mesh(
-    DvzScene* scene,
-    double size,
-    const ExampleStyleColorRole face_roles[6],
+    DvzScene* scene, double size, const ExampleStyleColorRole face_roles[6],
     DvzGeometry** out_geometry)
 {
     if (out_geometry != NULL)
@@ -177,8 +175,11 @@ _add_camera_hover(DvzScenarioContext* ctx, DvzCamera* camera, AnimationTracksSta
 
     static const double times[] = {0.0, 1.2, 2.4, 3.6, 4.8};
     static const vec3 eyes[] = {
-        {+0.00f, -3.25f, +1.35f}, {+1.45f, -2.55f, +1.70f}, {+2.45f, -0.20f, +1.18f},
-        {-1.15f, +2.70f, +1.58f}, {+0.00f, -3.25f, +1.35f},
+        {-2, 2, +2}, //
+        {+2, 2, +2}, //
+        {+2, 2, -2}, //
+        {-2, 2, -2}, //
+        {-2, 2, +2},
     };
 
     DvzTrackKeyframesDesc eye_desc = dvz_track_keyframes_desc();
@@ -189,6 +190,11 @@ _add_camera_hover(DvzScenarioContext* ctx, DvzCamera* camera, AnimationTracksSta
     eye_desc.repeat = DVZ_TRACK_REPEAT_LOOP;
     eye_desc.interpolation = DVZ_TRACK_INTERP_CATMULL_ROM;
     state->camera_eye = dvz_track_keyframes(&eye_desc);
+    // state->camera_eye = dvz_track_constant(&(DvzTrackConstantDesc){
+    //     DVZ_STRUCT_INIT_FIELDS(DvzTrackConstantDesc),
+    //     .type = DVZ_TRACK_VEC3,
+    //     .value = (float[3]){0.0f, 0.0f, 0.0f},
+    // });
     if (state->camera_eye == NULL)
         return false;
 
@@ -204,13 +210,13 @@ _add_camera_hover(DvzScenarioContext* ctx, DvzCamera* camera, AnimationTracksSta
     camera_motion.target = state->camera_target;
     camera_motion.up_mode = DVZ_CAMERA_UP_WORLD;
     camera_motion.up[0] = 0.0f;
-    camera_motion.up[1] = 0.0f;
-    camera_motion.up[2] = 1.0f;
+    camera_motion.up[1] = 1.0f;
+    camera_motion.up[2] = 0.0f;
     state->camera_animation = dvz_anim_camera_motion(ctx->scene, camera, &camera_motion);
     if (state->camera_animation == NULL)
         return false;
 
-    dvz_anim_set_speed(state->camera_animation, 1.0f);
+    dvz_anim_set_speed(state->camera_animation, 0.5f);
     dvz_anim_start(state->camera_animation, 0.0);
     return true;
 }
@@ -249,11 +255,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_graphite_cyan_set_panel_background(panel);
 
     DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 0.0f;
-    camera.eye[1] = -3.30f;
-    camera.eye[2] = 1.35f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
+    camera.eye[0] = -2;
+    camera.eye[1] = 2;
+    camera.eye[2] = +2;
+    camera.up[1] = 1.0f;
+    camera.up[2] = 0.0f;
     camera.fov_y = 0.66f;
     camera.near = 0.05f;
     camera.far = 100.0f;
