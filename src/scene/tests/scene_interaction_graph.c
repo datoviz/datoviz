@@ -664,6 +664,14 @@ int test_scene_controller_mode_view_proj_strips_panel_model(
     ANN(arcball);
     AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
     dvz_arcball_set(arcball, (vec3){0.4f, -0.3f, 0.2f});
+    dvz_arcball_zoom(arcball, 1.8f);
+    dvz_arcball_pan(arcball, (vec2){0.25f, -0.15f});
+
+    DvzMVP camera_mvp = {0};
+    glm_mat4_identity(camera_mvp.model);
+    glm_mat4_identity(camera_mvp.view);
+    glm_mat4_identity(camera_mvp.proj);
+    dvz_camera_mvp(panel->camera, &camera_mvp);
 
     vec3 pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor col[1] = {{255, 255, 255, 255}};
@@ -691,6 +699,8 @@ int test_scene_controller_mode_view_proj_strips_panel_model(
     AT(render->u.render.visual_has_mvp[0]);
 
     AT(fabsf(render->u.render.apply_mvp.model[0][0] - 1.0f) > 1e-3f);
+    AT(render->u.render.apply_mvp.proj[0][0] > camera_mvp.proj[0][0]);
+    AT(fabsf(render->u.render.apply_mvp.proj[2][0] - camera_mvp.proj[2][0]) > 1e-3f);
     AC(render->u.render.visual_mvp[0].model[0][0], 1.0f, 1e-6f);
     AC(render->u.render.visual_mvp[0].model[1][1], 1.0f, 1e-6f);
     AC(render->u.render.visual_mvp[0].model[2][2], 1.0f, 1e-6f);
@@ -700,6 +710,12 @@ int test_scene_controller_mode_view_proj_strips_panel_model(
         1e-6f);
     AC(
         render->u.render.visual_mvp[0].proj[0][0], render->u.render.apply_mvp.proj[0][0],
+        1e-6f);
+    AC(
+        render->u.render.visual_mvp[0].proj[3][0], render->u.render.apply_mvp.proj[3][0],
+        1e-6f);
+    AC(
+        render->u.render.visual_mvp[0].proj[2][0], render->u.render.apply_mvp.proj[2][0],
         1e-6f);
 
     dvz_frame_plan_destroy(plan);
