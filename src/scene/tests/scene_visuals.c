@@ -3677,6 +3677,82 @@ int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* ite
 
 
 /**
+ * Verify point-like overlay padding follows the active panzoom extent.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_panel_bounds_overlay_visual_panzoom_padding(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzController* controller = dvz_panzoom(scene, NULL);
+    ANN(controller);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) == 0);
+    DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
+    ANN(panzoom);
+    dvz_panzoom_zoom(panzoom, (vec2){0.5f, 0.5f});
+
+    DvzVisual* points = dvz_point(scene, 0);
+    ANN(points);
+    vec3 positions[2] = {{-1.0f, -1.0f, 0.0f}, {+1.0f, +1.0f, 0.0f}};
+    float diameters[2] = {20.0f, 20.0f};
+    AT(dvz_visual_set_data(points, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(points, "diameter", diameters, 2) == 0);
+    AT(dvz_panel_add_visual(panel, points, NULL) == 0);
+
+    AT(dvz_panel_set_bounds_visible(panel, true) == 0);
+    _scene_prepare_bounds_visuals(figure);
+
+    DvzVisual* overlay = panel->bounds_visual;
+    ANN(overlay);
+    int start_idx = _attr_index(overlay, "position_start");
+    int end_idx = _attr_index(overlay, "position_end");
+    AT(start_idx >= 0);
+    AT(end_idx >= 0);
+    AT(overlay->attrs[start_idx].item_count == 4);
+    const float* starts = (const float*)overlay->attrs[start_idx].data;
+    const float* ends = (const float*)overlay->attrs[end_idx].data;
+    ANN(starts);
+    ANN(ends);
+
+    float min_x = +FLT_MAX;
+    float max_x = -FLT_MAX;
+    float min_y = +FLT_MAX;
+    float max_y = -FLT_MAX;
+    for (uint32_t i = 0; i < overlay->attrs[start_idx].item_count; i++)
+    {
+        min_x = fminf(min_x, starts[3 * i + 0]);
+        min_x = fminf(min_x, ends[3 * i + 0]);
+        max_x = fmaxf(max_x, starts[3 * i + 0]);
+        max_x = fmaxf(max_x, ends[3 * i + 0]);
+        min_y = fminf(min_y, starts[3 * i + 1]);
+        min_y = fminf(min_y, ends[3 * i + 1]);
+        max_y = fmaxf(max_y, starts[3 * i + 1]);
+        max_y = fmaxf(max_y, ends[3 * i + 1]);
+    }
+
+    AC(min_x, -1.2f, 1e-6);
+    AC(max_x, +1.2f, 1e-6);
+    AC(min_y, -1.4f, 1e-6);
+    AC(max_y, +1.4f, 1e-6);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Verify sphere overlays use conservative wire bounds while public bounds remain exact.
  *
  * @param suite the active test suite

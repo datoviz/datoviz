@@ -342,8 +342,24 @@ static bool _bounds_overlay_units_per_px(
         _scene_panel_plot_visual_rect(panel, visual);
         if (!(visual[1] > visual[0]) || !(visual[3] > visual[2]))
             return false;
-        *out_x = ((double)visual[1] - (double)visual[0]) / (double)plot_width;
-        *out_y = ((double)visual[3] - (double)visual[2]) / (double)plot_height;
+
+        float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
+        if (!_scene_panel_panzoom_extent(panel, extent))
+            return false;
+        const double extent_x0 =
+            0.5 * ((double)extent[0] + (double)extent[1]) +
+            0.5 * (double)visual[0] * ((double)extent[1] - (double)extent[0]);
+        const double extent_x1 =
+            0.5 * ((double)extent[0] + (double)extent[1]) +
+            0.5 * (double)visual[1] * ((double)extent[1] - (double)extent[0]);
+        const double extent_y0 =
+            0.5 * ((double)extent[2] + (double)extent[3]) +
+            0.5 * (double)visual[2] * ((double)extent[3] - (double)extent[2]);
+        const double extent_y1 =
+            0.5 * ((double)extent[2] + (double)extent[3]) +
+            0.5 * (double)visual[3] * ((double)extent[3] - (double)extent[2]);
+        *out_x = fabs(extent_x1 - extent_x0) / (double)plot_width;
+        *out_y = fabs(extent_y1 - extent_y0) / (double)plot_height;
         return isfinite(*out_x) && isfinite(*out_y);
     }
 
