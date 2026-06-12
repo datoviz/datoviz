@@ -131,7 +131,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
-    example_set_default_arcball(arcball);
+    dvz_arcball_set(arcball, (vec3){+0.56f, -0.16f, +0.24f});
     return true;
 }
 
