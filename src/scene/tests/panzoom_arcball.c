@@ -675,6 +675,32 @@ int test_controller_link_arcball_rotation_only_keeps_target_centered(
     ANN(main_panel);
     ANN(gizmo_panel);
 
+    DvzCameraDesc main_camera_desc = dvz_camera_desc();
+    main_camera_desc.eye[0] = 1.8f;
+    main_camera_desc.eye[1] = -2.2f;
+    main_camera_desc.eye[2] = 1.5f;
+    main_camera_desc.target[0] = 0.0f;
+    main_camera_desc.target[1] = 0.0f;
+    main_camera_desc.target[2] = 0.0f;
+    main_camera_desc.up[0] = 0.0f;
+    main_camera_desc.up[1] = 0.0f;
+    main_camera_desc.up[2] = 1.0f;
+    DvzCamera* main_camera = dvz_panel_set_camera(main_panel, &main_camera_desc);
+    ANN(main_camera);
+
+    DvzCameraDesc gizmo_camera_desc = dvz_camera_desc();
+    gizmo_camera_desc.eye[0] = 0.0f;
+    gizmo_camera_desc.eye[1] = 0.0f;
+    gizmo_camera_desc.eye[2] = 3.0f;
+    gizmo_camera_desc.target[0] = 0.0f;
+    gizmo_camera_desc.target[1] = 0.0f;
+    gizmo_camera_desc.target[2] = 0.0f;
+    gizmo_camera_desc.up[0] = 0.0f;
+    gizmo_camera_desc.up[1] = 1.0f;
+    gizmo_camera_desc.up[2] = 0.0f;
+    DvzCamera* gizmo_camera = dvz_panel_set_camera(gizmo_panel, &gizmo_camera_desc);
+    ANN(gizmo_camera);
+
     DvzController* main_controller = dvz_arcball(scene, NULL);
     DvzController* gizmo_controller = dvz_arcball(scene, NULL);
     ANN(main_controller);
@@ -718,11 +744,11 @@ int test_controller_link_arcball_rotation_only_keeps_target_centered(
     };
     dvz_input_emit_event(router, &drag);
 
-    AT(_test_mat4_close(main_arcball->mat, gizmo_arcball->mat, 1e-5f));
-    AC(main_arcball->rotation[0], gizmo_arcball->rotation[0], 1e-6f);
-    AC(main_arcball->rotation[1], gizmo_arcball->rotation[1], 1e-6f);
-    AC(main_arcball->rotation[2], gizmo_arcball->rotation[2], 1e-6f);
-    AC(main_arcball->rotation[3], gizmo_arcball->rotation[3], 1e-6f);
+    DvzMVP main_mvp = {0};
+    DvzMVP gizmo_mvp = {0};
+    _scene_panel_apply_mvp(main_panel, &main_mvp);
+    _scene_panel_apply_mvp(gizmo_panel, &gizmo_mvp);
+    AT(_test_mat4_close(main_mvp.model, gizmo_mvp.model, 1e-5f));
     AC(gizmo_arcball->pan[0], 0.0f, 1e-6f);
     AC(gizmo_arcball->pan[1], 0.0f, 1e-6f);
     AC(gizmo_arcball->zoom, 1.0f, 1e-6f);
@@ -738,7 +764,9 @@ int test_controller_link_arcball_rotation_only_keeps_target_centered(
     };
     dvz_input_emit_event(router, &drag_stop);
 
-    AT(_test_mat4_close(main_arcball->mat, gizmo_arcball->mat, 1e-5f));
+    _scene_panel_apply_mvp(main_panel, &main_mvp);
+    _scene_panel_apply_mvp(gizmo_panel, &gizmo_mvp);
+    AT(_test_mat4_close(main_mvp.model, gizmo_mvp.model, 1e-5f));
     AC(main_arcball->rotation[0], gizmo_arcball->rotation[0], 1e-6f);
     AC(main_arcball->rotation[1], gizmo_arcball->rotation[1], 1e-6f);
     AC(main_arcball->rotation[2], gizmo_arcball->rotation[2], 1e-6f);

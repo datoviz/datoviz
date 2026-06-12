@@ -438,8 +438,10 @@ static void _scene_controller_link_copy_arcball(
     ANN(target);
     if ((components & DVZ_CONTROLLER_LINK_ROTATION) != 0)
     {
-        glm_mat4_copy(source->mat, target->mat);
-        glm_vec4_copy(source->rotation, target->rotation);
+        mat4 model = GLM_MAT4_IDENTITY_INIT;
+        dvz_arcball_model(source, model);
+        glm_mat4_copy(model, target->mat);
+        glm_quat_identity(target->rotation);
         target->interacting = source->interacting;
     }
     if ((components & DVZ_CONTROLLER_LINK_PAN) != 0)
@@ -761,6 +763,7 @@ static bool _scene_panel_dispatch_pointer_controller(
     _scene_panel_pixel_rect(panel, &x, &y, &w, &h);
 
     bool consumed = false;
+    bool links_propagated = false;
     switch (controller->type)
     {
     case DVZ_CONTROLLER_TYPE_PANZOOM:
@@ -811,6 +814,11 @@ static bool _scene_panel_dispatch_pointer_controller(
             _dvz_arcball_clear_view(arcball);
         }
         consumed = dvz_arcball_pointer(arcball, &local);
+        if (consumed)
+        {
+            _scene_controller_links_propagate_from(controller);
+            links_propagated = true;
+        }
         glm_vec2_copy(old_size, arcball->viewport_size);
         glm_mat4_copy(old_view, arcball->view);
         arcball->has_view = old_has_view;
@@ -881,7 +889,8 @@ static bool _scene_panel_dispatch_pointer_controller(
     }
     if (consumed)
     {
-        _scene_controller_links_propagate_from(controller);
+        if (!links_propagated)
+            _scene_controller_links_propagate_from(controller);
         _scene_notify_controller_figures(controller);
     }
     return consumed;
