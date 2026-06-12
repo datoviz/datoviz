@@ -53,49 +53,6 @@ typedef struct ReferenceGridState
 
 
 /*************************************************************************************************/
-/*  Helpers                                                                                      */
-/*************************************************************************************************/
-
-/**
- * Add one lit cube mesh on the reference grid.
- *
- * @param scene scene owning the visual
- * @param panel panel receiving the visual
- * @param out_geometry geometry handle for cleanup on failure before upload completes
- * @return true on success
- */
-static bool _add_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_geometry)
-{
-    const ExampleStyleColorRole face_roles[6] = {
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_WARNING,
-        EXAMPLE_STYLE_COLOR_ERROR,
-        EXAMPLE_STYLE_COLOR_TEXT,
-        EXAMPLE_STYLE_COLOR_MINOR_TICK,
-    };
-    DvzVisual* visual = example_graphite_cyan_cube_mesh(scene, 1.0, face_roles, out_geometry);
-    if (visual == NULL)
-        return false;
-
-    mat4 transform = {
-        {1.0f, 0.0f, 0.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f, 1.0f, 0.0f},
-        {0.0f, 0.0f, 0.52f, 1.0f},
-    };
-    if (dvz_visual_set_transform(visual, transform) != 0)
-        return false;
-
-    if (!example_apply_default_phong_material(visual))
-        return false;
-
-    return dvz_panel_add_visual(panel, visual, NULL) == 0;
-}
-
-
-
-/*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
 
@@ -141,17 +98,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (dvz_reference_grid(panel, &grid) == NULL)
         return false;
 
-    if (!_add_mesh(ctx->scene, panel, &state->geometry))
-        return false;
-
-    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    DvzController* controller = dvz_orbit_camera(ctx->scene, NULL);
     if (controller == NULL)
         return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
-    DvzArcball* arcball = dvz_controller_arcball(controller);
-    if (arcball != NULL)
-        example_set_default_arcball(arcball);
     return true;
 }
 
