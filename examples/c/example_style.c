@@ -165,6 +165,10 @@ DvzTextStyle example_graphite_cyan_text_style(ExampleStyleTextRole role)
     case EXAMPLE_STYLE_TEXT_PANEL_LABEL:
         style.size_px = 15.0f;
         break;
+    case EXAMPLE_STYLE_TEXT_LEGEND_LABEL:
+        style.size_px = 26.0f;
+        style.color[3] = 235u;
+        break;
     case EXAMPLE_STYLE_TEXT_DATA_LABEL:
         style.size_px = 20.0f;
         break;

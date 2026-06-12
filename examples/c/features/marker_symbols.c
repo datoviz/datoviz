@@ -36,10 +36,10 @@
 
 #define WIDTH         1600u
 #define HEIGHT        1200u
-#define SYMBOL_PIXELS 48u
+#define SYMBOL_PIXELS 96u
 #define ROW_COUNT     5u
 #define ROW_SYMBOLS   5u
-#define ROW_LABEL_X   -0.88f
+#define ROW_LABEL_X   -0.78f
 
 
 
@@ -432,13 +432,11 @@ static bool _add_row_label(DvzPanel* panel, const char* label, float y)
         return false;
 
     DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
-    DvzTextStyle style = dvz_text_style();
+    DvzTextStyle style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_LEGEND_LABEL);
     style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
-    style.size_px = 22.0f;
     style.color[0] = color.r;
     style.color[1] = color.g;
     style.color[2] = color.b;
-    style.color[3] = 230u;
     if (dvz_text_set_style(text, &style) != 0)
         return false;
 
