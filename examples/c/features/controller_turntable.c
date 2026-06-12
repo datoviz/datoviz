@@ -89,7 +89,7 @@ static bool _add_turntable_cube(DvzScene* scene, DvzPanel* panel, DvzGeometry** 
     DvzMaterialDesc material = dvz_phong_material_desc();
     material.light_direction[0] = -0.28f;
     material.light_direction[1] = -0.22f;
-    material.light_direction[2] = +0.78f;
+    material.light_direction[2] = -0.78f;
     material.phong.ambient = 0.26f;
     material.phong.diffuse = 0.80f;
     material.phong.specular = 0.18f;
@@ -142,11 +142,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzTurntableDesc desc = dvz_turntable_desc();
     desc.controller_flags = DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE;
     desc.up[0] = 0.0f;
-    desc.up[1] = 0.0f;
-    desc.up[2] = 1.0f;
+    desc.up[1] = 1.0f;
+    desc.up[2] = 0.0f;
     desc.distance = 3.65f;
     desc.yaw = -0.50f;
-    desc.pitch = +0.28f;
+    desc.pitch = -0.28f;
     desc.min_pitch = -0.72f;
     desc.max_pitch = +0.72f;
     desc.min_distance = 2.40f;

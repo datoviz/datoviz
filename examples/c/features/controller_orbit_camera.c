@@ -79,7 +79,7 @@ static bool _add_orbit_camera_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry
         EXAMPLE_STYLE_COLOR_WARNING,        EXAMPLE_STYLE_COLOR_ERROR,
         EXAMPLE_STYLE_COLOR_TEXT,           EXAMPLE_STYLE_COLOR_MINOR_TICK,
     };
-    DvzVisual* visual = example_graphite_cyan_cube_mesh(scene, 1.18, face_roles, out_geometry);
+    DvzVisual* visual = example_graphite_cyan_cube_mesh(scene, 1, face_roles, out_geometry);
     if (visual == NULL)
         return false;
 
@@ -134,16 +134,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = 0.0f;
-    camera.eye[1] = -3.2f;
-    camera.eye[2] = 1.25f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
+    camera.eye[1] = 1.2f;
+    camera.eye[2] = 3.0f;
+    camera.up[1] = 1.0f;
+    camera.up[2] = 0.0f;
     camera.fov_y = 0.66f;
     camera.near = 0.05f;
     camera.far = 100.0f;
     if (!dvz_panel_set_camera(panel, &camera))
         return false;
-    if (!example_add_xz_reference_grid(panel, -0.60f, 4.25f))
+    if (!example_add_xz_reference_grid(panel, -0.50f, 10.0f))
         return false;
     if (!_add_orbit_camera_mesh(ctx->scene, panel, &state->geometry))
         return false;

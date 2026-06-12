@@ -37,6 +37,7 @@
 #define WIDTH        1600u
 #define HEIGHT       1200u
 #define SPHERE_COUNT 9u
+#define LABEL_SIZE   18.0f
 
 
 
@@ -63,18 +64,13 @@ DvzScenarioSpec dvz_example_lighting_scenario(void);
 static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel, uint32_t variant)
 {
     vec3 positions[SPHERE_COUNT] = {
-        {-1.02f, -0.36f, -0.20f},
-        {-0.52f, -0.36f, +0.05f},
-        {+0.00f, -0.36f, +0.18f},
-        {+0.52f, -0.36f, +0.05f},
-        {+1.02f, -0.36f, -0.20f},
-        {-0.72f, +0.28f, -0.06f},
-        {-0.20f, +0.28f, +0.16f},
-        {+0.34f, +0.28f, +0.12f},
-        {+0.86f, +0.28f, -0.08f},
+        {-1.02f, -0.36f, -0.20f}, {-0.52f, -0.36f, +0.05f}, {+0.00f, -0.36f, +0.18f},
+        {+0.52f, -0.36f, +0.05f}, {+1.02f, -0.36f, -0.20f}, {-0.72f, +0.28f, -0.06f},
+        {-0.20f, +0.28f, +0.16f}, {+0.34f, +0.28f, +0.12f}, {+0.86f, +0.28f, -0.08f},
     };
-    const float radii[SPHERE_COUNT] = {
-        0.150f, 0.170f, 0.190f, 0.170f, 0.150f, 0.165f, 0.205f, 0.185f, 0.155f};
+    const float c = 0.35;
+    const float radii[SPHERE_COUNT] = {0.150f * c, 0.170f * c, 0.190f * c, 0.170f * c, 0.150f * c,
+                                       0.165f * c, 0.205f * c, 0.185f * c, 0.155f * c};
     DvzColor colors[SPHERE_COUNT] = {
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
@@ -96,9 +92,9 @@ static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel, uint32_t variant)
     DvzMaterialDesc material = dvz_standard_material_desc();
     if (variant == 0u)
     {
-        material.light_direction[0] = -0.34f;
+        material.light_direction[0] = +0.34f;
         material.light_direction[1] = -0.46f;
-        material.light_direction[2] = +0.82f;
+        material.light_direction[2] = -0.82f;
         material.standard.roughness = 0.86f;
         material.standard.specular = 0.12f;
         material.standard.rim_strength = 0.05f;
@@ -107,7 +103,7 @@ static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel, uint32_t variant)
     {
         material.light_direction[0] = +0.12f;
         material.light_direction[1] = -0.70f;
-        material.light_direction[2] = +0.62f;
+        material.light_direction[2] = -0.62f;
         material.standard.roughness = 0.42f;
         material.standard.specular = 0.60f;
         material.standard.rim_strength = 0.18f;
@@ -115,8 +111,8 @@ static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel, uint32_t variant)
     else
     {
         material.light_direction[0] = +0.62f;
-        material.light_direction[1] = +0.18f;
-        material.light_direction[2] = +0.76f;
+        material.light_direction[1] = -0.18f;
+        material.light_direction[2] = -0.76f;
         material.standard.roughness = 0.24f;
         material.standard.specular = 0.78f;
         material.standard.rim_strength = 0.42f;
@@ -132,6 +128,35 @@ static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel, uint32_t variant)
     if (dvz_visual_set_data_many(visual, updates, 3) != 0)
         return false;
     return dvz_panel_add_visual(panel, visual, NULL) == 0;
+}
+
+
+/**
+ * Add one high-quality MSDF label to a lighting comparison panel.
+ *
+ * @param panel panel receiving the label
+ * @param label label text
+ * @return true on success
+ */
+static bool _add_lighting_label(DvzPanel* panel, const char* label)
+{
+    if (panel == NULL || label == NULL || label[0] == '\0')
+        return false;
+
+    DvzLabelDesc desc = dvz_label_desc();
+    desc.text = label;
+    desc.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
+    desc.style.size_px = LABEL_SIZE;
+    desc.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    desc.style.color[3] = 255u;
+    desc.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    desc.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    desc.placement.position[0] = 20.0f;
+    desc.placement.position[1] = 20.0f;
+    desc.placement.text_anchor[0] = 0.0f;
+    desc.placement.text_anchor[1] = 0.0f;
+    desc.placement.has_text_anchor = true;
+    return dvz_annotation_label(panel, &desc) != NULL;
 }
 
 
@@ -162,30 +187,30 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (grid == NULL)
         return false;
     if (!dvz_grid_set_margins(
-            grid, &(DvzPanelReserve){.left_px = 34.0f, .right_px = 34.0f, .top_px = 40.0f,
-                                     .bottom_px = 40.0f}))
+            grid, &(DvzPanelReserve){
+                      .left_px = 34.0f, .right_px = 34.0f, .top_px = 40.0f, .bottom_px = 40.0f}))
         return false;
     if (!dvz_grid_set_gutter(grid, 24.0f, 0.0f))
         return false;
 
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = 0.0f;
-    camera.eye[1] = -4.10f;
-    camera.eye[2] = 1.45f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
+    camera.eye[1] = 1.10f;
+    camera.eye[2] = 3.45f;
+    camera.up[1] = 1.0f;
+    camera.up[2] = 0.0f;
     camera.fov_y = 0.66f;
     camera.near = 0.05f;
     camera.far = 100.0f;
     DvzController* controllers[3] = {0};
-    const char* labels[3] = {"matte key light", "glossy side light", "rim highlight"};
+    const char* labels[3] = {"Matte key light", "Glossy side light", "Rim highlight"};
     for (uint32_t i = 0; i < 3u; i++)
     {
         DvzPanel* panel = dvz_grid_panel(grid, 0, i);
         if (panel == NULL)
             return false;
         example_graphite_cyan_set_panel_background(panel);
-        if (!example_add_panel_label(panel, labels[i], 18.0f, 18.0f))
+        if (!_add_lighting_label(panel, labels[i]))
             return false;
         if (!dvz_panel_set_camera(panel, &camera))
             return false;
@@ -200,7 +225,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             return false;
         if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
             return false;
-        dvz_arcball_set(arcball, (vec3){+0.46f, -0.12f, +0.18f});
+        // dvz_arcball_set(arcball, (vec3){+0.46f, -0.12f, +0.18f});
         controllers[i] = controller;
     }
     for (uint32_t i = 1; i < 3u; i++)

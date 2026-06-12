@@ -38,6 +38,7 @@
 
 #define WIDTH  1600u
 #define HEIGHT 1200u
+#define LABEL_SIZE 18.0f
 
 
 
@@ -91,6 +92,35 @@ static bool _add_material_cube(
     if (dvz_visual_set_material(visual, material) != 0)
         return false;
     return dvz_panel_add_visual(panel, visual, NULL) == 0;
+}
+
+
+/**
+ * Add one high-quality MSDF label to a material comparison panel.
+ *
+ * @param panel panel receiving the label
+ * @param label label text
+ * @return true on success
+ */
+static bool _add_material_label(DvzPanel* panel, const char* label)
+{
+    if (panel == NULL || label == NULL || label[0] == '\0')
+        return false;
+
+    DvzLabelDesc desc = dvz_label_desc();
+    desc.text = label;
+    desc.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
+    desc.style.size_px = LABEL_SIZE;
+    desc.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    desc.style.color[3] = 255u;
+    desc.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    desc.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    desc.placement.position[0] = 20.0f;
+    desc.placement.position[1] = 20.0f;
+    desc.placement.text_anchor[0] = 0.0f;
+    desc.placement.text_anchor[1] = 0.0f;
+    desc.placement.has_text_anchor = true;
+    return dvz_annotation_label(panel, &desc) != NULL;
 }
 
 
@@ -160,7 +190,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     rim.standard.rim_strength = 0.30f;
 
     const DvzMaterialDesc* materials[3] = {&matte, &glossy, &rim};
-    const char* labels[3] = {"matte phong", "glossy phong", "standard rim"};
+    const char* labels[3] = {"Matte Phong", "Glossy Phong", "Standard rim"};
     DvzController* controllers[3] = {0};
     for (uint32_t i = 0; i < 3u; i++)
     {
@@ -168,7 +198,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         if (panel == NULL)
             return false;
         example_graphite_cyan_set_panel_background(panel);
-        if (!example_add_panel_label(panel, labels[i], 18.0f, 18.0f))
+        if (!_add_material_label(panel, labels[i]))
             return false;
         if (!dvz_panel_set_camera(panel, &camera))
             return false;

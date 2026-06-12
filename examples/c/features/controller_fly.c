@@ -75,12 +75,9 @@ typedef struct ControllerFlyState
 static bool _add_fly_cube(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_geometry)
 {
     const ExampleStyleColorRole face_roles[6] = {
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_WARNING,
-        EXAMPLE_STYLE_COLOR_ERROR,
-        EXAMPLE_STYLE_COLOR_TEXT,
-        EXAMPLE_STYLE_COLOR_MINOR_TICK,
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY, EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        EXAMPLE_STYLE_COLOR_WARNING,        EXAMPLE_STYLE_COLOR_ERROR,
+        EXAMPLE_STYLE_COLOR_TEXT,           EXAMPLE_STYLE_COLOR_MINOR_TICK,
     };
     DvzVisual* visual = example_graphite_cyan_cube_mesh(scene, 1.10, face_roles, out_geometry);
     if (visual == NULL)
@@ -142,14 +139,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzFlyDesc desc = dvz_fly_desc();
     desc.mode = DVZ_FLY_MODE_PLANE;
     desc.position[0] = -0.36f;
-    desc.position[1] = -3.80f;
+    desc.position[1] = +3.80f;
     desc.position[2] = +1.34f;
     desc.target[0] = 0.00f;
     desc.target[1] = 0.00f;
     desc.target[2] = 0.22f;
     desc.up[0] = 0.0f;
-    desc.up[1] = 0.0f;
-    desc.up[2] = 1.0f;
+    desc.up[1] = 1.0f;
+    desc.up[2] = 0.0f;
     desc.speed = 0.70f;
     desc.look_speed = 0.45f;
 

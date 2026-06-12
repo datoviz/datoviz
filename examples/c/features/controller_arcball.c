@@ -67,21 +67,18 @@ typedef struct ControllerArcballState
 static bool _add_arcball_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_geometry)
 {
     const ExampleStyleColorRole face_roles[6] = {
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_WARNING,
-        EXAMPLE_STYLE_COLOR_ERROR,
-        EXAMPLE_STYLE_COLOR_TEXT,
-        EXAMPLE_STYLE_COLOR_MINOR_TICK,
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY, EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        EXAMPLE_STYLE_COLOR_WARNING,        EXAMPLE_STYLE_COLOR_ERROR,
+        EXAMPLE_STYLE_COLOR_TEXT,           EXAMPLE_STYLE_COLOR_MINOR_TICK,
     };
     DvzVisual* visual = example_graphite_cyan_cube_mesh(scene, 1.18, face_roles, out_geometry);
     if (visual == NULL)
         return false;
 
     DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = -0.18f;
+    material.light_direction[0] = 0.18f;
     material.light_direction[1] = -0.36f;
-    material.light_direction[2] = +0.74f;
+    material.light_direction[2] = -0.74f;
     material.phong.ambient = 0.28f;
     material.phong.diffuse = 0.78f;
     material.phong.specular = 0.16f;
@@ -129,16 +126,15 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = 0.0f;
-    camera.eye[1] = -3.0f;
+    camera.eye[1] = 3.0f;
     camera.eye[2] = 1.30f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
+    camera.up[1] = 1.0f;
     camera.fov_y = 0.68f;
     camera.near = 0.05f;
     camera.far = 100.0f;
     if (!dvz_panel_set_camera(panel, &camera))
         return false;
-    if (!example_add_xz_reference_grid(panel, -0.60f, 4.25f))
+    if (!example_add_xz_reference_grid(panel, -0.60f, 10))
         return false;
     if (!_add_arcball_mesh(ctx->scene, panel, &state->geometry))
         return false;
@@ -151,7 +147,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
-    dvz_arcball_set(arcball, (vec3){+0.58f, -0.16f, +0.32f});
+    // dvz_arcball_set(arcball, (vec3){+0.58f, -0.16f, +0.32f});
     return true;
 }
 
