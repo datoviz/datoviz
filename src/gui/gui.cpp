@@ -50,6 +50,7 @@
 #define DVZ_GUI_VIEWPORT_DEFAULT_MIN_HEIGHT 32u
 #define DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_STEP 8u
 #define DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_DELAY_FRAMES 2u
+#define DVZ_GUI_VIEWPORT_RETIRED_TEXTURE_CAPACITY 64u
 #define DVZ_GUI_CONFIG_KNOWN_FLAGS 0u
 #define DVZ_GUI_VIEWPORT_CONFIG_KNOWN_FLAGS 0u
 #define DVZ_FONT_DEFAULTS_KNOWN_FLAGS 0u
@@ -128,6 +129,8 @@ struct DvzGuiViewport
     DvzGuiViewportConfig config;
     VkSampler sampler;
     VkDescriptorSet texture;
+    VkDescriptorSet retired_textures[DVZ_GUI_VIEWPORT_RETIRED_TEXTURE_CAPACITY];
+    uint32_t retired_texture_count;
     VkImage image;
     VkImageView image_view;
     VkExtent2D extent;
@@ -577,21 +580,53 @@ static bool _gui_viewport_create_sampler(DvzGuiViewport* viewport)
 
 
 
+static void _gui_viewport_free_texture(DvzGui* gui, VkDescriptorSet texture)
+{
+    if (gui == NULL || !gui->vulkan_initialized || texture == VK_NULL_HANDLE)
+        return;
+    _gui_set_current(gui);
+    ImGui_ImplVulkan_RemoveTexture(texture);
+}
+
+
+
+static void _gui_viewport_collect_retired_textures(DvzGuiViewport* viewport, bool wait_idle)
+{
+    ANN(viewport);
+    if (viewport->retired_texture_count == 0)
+        return;
+
+    DvzGui* gui = viewport->gui;
+    if (gui != NULL && wait_idle)
+    {
+        VkDevice device = dvz_device_handle(gui->device);
+        if (device != VK_NULL_HANDLE)
+            vkDeviceWaitIdle(device);
+    }
+    for (uint32_t i = 0; i < viewport->retired_texture_count; i++)
+        _gui_viewport_free_texture(gui, viewport->retired_textures[i]);
+    viewport->retired_texture_count = 0;
+}
+
+
+
 /**
- * Remove the ImGui descriptor for a viewport image.
+ * Retire the current ImGui descriptor for a viewport image.
+ *
+ * Submitted GUI command buffers may still reference the descriptor, so actual descriptor-set
+ * freeing is deferred until a known idle point.
  *
  * @param viewport GUI viewport
  */
-static void _gui_viewport_remove_texture(DvzGuiViewport* viewport)
+static void _gui_viewport_retire_texture(DvzGuiViewport* viewport)
 {
     ANN(viewport);
     if (viewport->texture == VK_NULL_HANDLE)
         return;
-    if (viewport->gui != NULL && viewport->gui->vulkan_initialized)
-    {
-        _gui_set_current(viewport->gui);
-        ImGui_ImplVulkan_RemoveTexture(viewport->texture);
-    }
+    if (viewport->retired_texture_count >= DVZ_GUI_VIEWPORT_RETIRED_TEXTURE_CAPACITY)
+        _gui_viewport_collect_retired_textures(viewport, true);
+    if (viewport->retired_texture_count < DVZ_GUI_VIEWPORT_RETIRED_TEXTURE_CAPACITY)
+        viewport->retired_textures[viewport->retired_texture_count++] = viewport->texture;
     viewport->texture = VK_NULL_HANDLE;
 }
 
@@ -616,7 +651,7 @@ static bool _gui_viewport_ensure_texture(DvzGuiViewport* viewport)
     if (!viewport->texture_dirty && viewport->texture != VK_NULL_HANDLE)
         return true;
 
-    _gui_viewport_remove_texture(viewport);
+    _gui_viewport_retire_texture(viewport);
     _gui_set_current(gui);
     viewport->texture = ImGui_ImplVulkan_AddTexture(
         viewport->sampler, viewport->image_view, VK_IMAGE_LAYOUT_GENERAL);
@@ -731,7 +766,7 @@ static int _gui_viewport_live_image_callback(
         viewport->image_view != frame->image_view ||
         viewport->resource_generation != frame->resource_generation)
     {
-        _gui_viewport_remove_texture(viewport);
+        _gui_viewport_retire_texture(viewport);
         viewport->image_view = frame->image_view;
         viewport->image = frame->image;
         viewport->resource_generation = frame->resource_generation;
@@ -961,7 +996,8 @@ static void _gui_viewport_destroy(DvzGuiViewport* viewport, bool detach)
         (void)dvz_canvas_configure_live_image_sink(viewport->canvas, false, NULL);
     if (viewport->source != NULL && viewport->owns_source)
         dvz_view_set_render_enabled(viewport->source, false);
-    _gui_viewport_remove_texture(viewport);
+    _gui_viewport_retire_texture(viewport);
+    _gui_viewport_collect_retired_textures(viewport, true);
     if (gui != NULL && viewport->sampler != VK_NULL_HANDLE)
     {
         VkDevice device = dvz_device_handle(gui->device);
