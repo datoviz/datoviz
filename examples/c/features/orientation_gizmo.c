@@ -135,7 +135,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_set_default_arcball(arcball);
 
     DvzOrientationGizmoDesc gizmo = dvz_orientation_gizmo_desc();
-    gizmo.source_controller = controller;
     gizmo.placement = dvz_placement_panel_corner(
         DVZ_HORIZONTAL_ANCHOR_RIGHT, DVZ_VERTICAL_ANCHOR_BOTTOM, 150, 150, -18, -18);
     return dvz_orientation_gizmo(panel, &gizmo) != NULL;

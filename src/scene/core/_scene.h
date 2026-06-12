@@ -1008,9 +1008,6 @@ struct DvzOrientationGizmo
     DvzScene* scene;
     DvzPanel* source_panel;
     DvzPanel* panel;
-    DvzController* source_controller;
-    DvzController* controller;
-    DvzControllerLink* link;
     DvzVisual* axes_visual;
     DvzVisual* rings_visual;
     vec3* axes_positions;

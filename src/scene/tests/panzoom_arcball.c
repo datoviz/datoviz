@@ -794,9 +794,25 @@ int test_orientation_gizmo_create_place_resize_and_visibility(
     DvzPanel* panel = dvz_panel_full(figure);
     ANN(panel);
 
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[0] = 1.8f;
+    camera_desc.eye[1] = -2.2f;
+    camera_desc.eye[2] = 1.5f;
+    camera_desc.target[0] = 0.0f;
+    camera_desc.target[1] = 0.0f;
+    camera_desc.target[2] = 0.0f;
+    camera_desc.up[0] = 0.0f;
+    camera_desc.up[1] = 0.0f;
+    camera_desc.up[2] = 1.0f;
+    DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
+    ANN(camera);
+
     DvzController* controller = dvz_arcball(scene, NULL);
     ANN(controller);
     AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    ANN(arcball);
+    dvz_arcball_set(arcball, (vec3){0.35f, -0.20f, 0.15f});
 
     DvzOrientationGizmoDesc desc = dvz_orientation_gizmo_desc();
     desc.placement = dvz_placement_panel_corner(
@@ -813,14 +829,80 @@ int test_orientation_gizmo_create_place_resize_and_visibility(
     ANN(gizmo->ring_positions);
     ANN(gizmo->ring_colors);
     ANN(gizmo->ring_widths);
-    ANN(gizmo->controller);
-    ANN(gizmo->link);
-    AT(gizmo->source_controller == controller);
     AT(scene->orientation_gizmo_count == 1);
+    bool axes_attached = false;
+    bool rings_attached = false;
+    for (uint32_t vi = 0; vi < gizmo->panel->visual_count; vi++)
+    {
+        if (gizmo->panel->visuals[vi].visual == gizmo->axes_visual)
+        {
+            axes_attached = true;
+            AT(gizmo->panel->visuals[vi].controller_mode == DVZ_CONTROLLER_APPLY_VIEW_PROJ);
+        }
+        if (gizmo->panel->visuals[vi].visual == gizmo->rings_visual)
+        {
+            rings_attached = true;
+            AT(gizmo->panel->visuals[vi].controller_mode == DVZ_CONTROLLER_APPLY_VIEW_PROJ);
+        }
+    }
+    AT(axes_attached);
+    AT(rings_attached);
     AC(gizmo->panel->desc.x, 0.834f, 1e-6f);
     AC(gizmo->panel->desc.y, 0.7925f, 1e-6f);
     AC(gizmo->panel->desc.width, 0.15f, 1e-6f);
     AC(gizmo->panel->desc.height, 0.1875f, 1e-6f);
+
+    _scene_prepare_orientation_gizmos(figure);
+    DvzMVP source_mvp = {0};
+    DvzMVP gizmo_mvp = {0};
+    _scene_panel_apply_mvp(panel, &source_mvp);
+    _scene_panel_apply_mvp(gizmo->panel, &gizmo_mvp);
+    mat4 source_view = GLM_MAT4_IDENTITY_INIT;
+    mat4 source_model = GLM_MAT4_IDENTITY_INIT;
+    mat4 gizmo_view = GLM_MAT4_IDENTITY_INIT;
+    mat4 inv_gizmo_view = GLM_MAT4_IDENTITY_INIT;
+    mat4 expected = GLM_MAT4_IDENTITY_INIT;
+    mat4 tmp = GLM_MAT4_IDENTITY_INIT;
+    for (uint32_t col = 0; col < 3; col++)
+    {
+        for (uint32_t row = 0; row < 3; row++)
+        {
+            source_view[col][row] = source_mvp.view[col][row];
+            source_model[col][row] = source_mvp.model[col][row];
+            gizmo_view[col][row] = gizmo_mvp.view[col][row];
+        }
+    }
+    glm_mat4_inv(gizmo_view, inv_gizmo_view);
+    glm_mat4_mul(source_view, source_model, tmp);
+    glm_mat4_mul(inv_gizmo_view, tmp, expected);
+    mat4 axes_transform = GLM_MAT4_IDENTITY_INIT;
+    mat4 rings_transform = GLM_MAT4_IDENTITY_INIT;
+    AT(dvz_visual_get_transform(gizmo->axes_visual, axes_transform) == 0);
+    AT(dvz_visual_get_transform(gizmo->rings_visual, rings_transform) == 0);
+    AT(_test_mat4_close(axes_transform, expected, 1e-5f));
+    AT(_test_mat4_close(rings_transform, expected, 1e-5f));
+
+    dvz_arcball_reset(arcball);
+    _scene_prepare_orientation_gizmos(figure);
+    _scene_panel_apply_mvp(panel, &source_mvp);
+    _scene_panel_apply_mvp(gizmo->panel, &gizmo_mvp);
+    glm_mat4_identity(source_view);
+    glm_mat4_identity(source_model);
+    glm_mat4_identity(gizmo_view);
+    for (uint32_t col = 0; col < 3; col++)
+    {
+        for (uint32_t row = 0; row < 3; row++)
+        {
+            source_view[col][row] = source_mvp.view[col][row];
+            source_model[col][row] = source_mvp.model[col][row];
+            gizmo_view[col][row] = gizmo_mvp.view[col][row];
+        }
+    }
+    glm_mat4_inv(gizmo_view, inv_gizmo_view);
+    glm_mat4_mul(source_view, source_model, tmp);
+    glm_mat4_mul(inv_gizmo_view, tmp, expected);
+    AT(dvz_visual_get_transform(gizmo->axes_visual, axes_transform) == 0);
+    AT(_test_mat4_close(axes_transform, expected, 1e-5f));
 
     dvz_figure_resize(figure, 1200, 900);
     _scene_prepare_orientation_gizmos(figure);

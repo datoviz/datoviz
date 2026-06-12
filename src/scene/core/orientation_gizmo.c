@@ -26,6 +26,7 @@
 #include "core/orientation_gizmo_internal.h"
 #include "core/scene_notify_internal.h"
 #include "datoviz/scene.h"
+#include "_visual_internal.h"
 
 
 
@@ -113,24 +114,6 @@ static bool _orientation_gizmo_desc_validate(const DvzOrientationGizmoDesc* desc
 
 
 /**
- * Resolve the source controller for one gizmo.
- *
- * @param source_panel source panel
- * @param desc descriptor
- * @return source controller, or NULL if unavailable
- */
-static DvzController* _orientation_gizmo_source_controller(
-    DvzPanel* source_panel, const DvzOrientationGizmoDesc* desc)
-{
-    ANN(source_panel);
-    ANN(desc);
-    if (desc->source_controller != NULL)
-        return desc->source_controller;
-    return dvz_panel_controller(source_panel, DVZ_DIM_X);
-}
-
-
-/**
  * Resolve the inset panel descriptor from the source panel and placement.
  *
  * @param source_panel source panel
@@ -180,6 +163,104 @@ static bool _orientation_gizmo_panel_desc(
         .width = rect.width / figure_rect.width,
         .height = rect.height / figure_rect.height,
     };
+    return true;
+}
+
+
+/**
+ * Copy the linear rotation block from one matrix into an identity transform.
+ *
+ * @param src source matrix
+ * @param out destination rotation transform
+ */
+static void _gizmo_rotation_matrix(const mat4 src, mat4 out)
+{
+    ANN(src);
+    ANN(out);
+    glm_mat4_identity(out);
+    for (uint32_t col = 0; col < 3; col++)
+        for (uint32_t row = 0; row < 3; row++)
+            out[col][row] = src[col][row];
+}
+
+
+/**
+ * Return whether two retained transforms are close enough to avoid churn.
+ *
+ * @param a first matrix
+ * @param b second matrix
+ * @return whether matrices are nearly equal
+ */
+static bool _gizmo_mat4_close(const mat4 a, const mat4 b)
+{
+    ANN(a);
+    ANN(b);
+    for (uint32_t col = 0; col < 4; col++)
+        for (uint32_t row = 0; row < 4; row++)
+            if (fabsf(a[col][row] - b[col][row]) > 1e-6f)
+                return false;
+    return true;
+}
+
+
+/**
+ * Set a visual-local transform from frame preparation without request-frame recursion.
+ *
+ * @param visual visual to update
+ * @param transform retained local transform
+ */
+static void _gizmo_set_visual_transform(DvzVisual* visual, const mat4 transform)
+{
+    ANN(visual);
+    ANN(transform);
+
+    if (visual->has_local_transform && _gizmo_mat4_close(visual->local_transform, transform))
+        return;
+
+    for (uint32_t col = 0; col < 4; col++)
+        for (uint32_t row = 0; row < 4; row++)
+            visual->local_transform[col][row] = transform[col][row];
+    visual->has_local_transform = true;
+    _visual_bump_version(&visual->local_transform_version);
+}
+
+
+/**
+ * Synchronize one gizmo transform with its source panel's effective rendered orientation.
+ *
+ * @param gizmo orientation gizmo
+ * @return whether synchronization succeeded
+ */
+static bool _orientation_gizmo_sync_transform(DvzOrientationGizmo* gizmo)
+{
+    ANN(gizmo);
+    if (
+        !gizmo->active || gizmo->source_panel == NULL || gizmo->panel == NULL ||
+        gizmo->axes_visual == NULL || gizmo->rings_visual == NULL)
+    {
+        return false;
+    }
+
+    DvzMVP source_mvp = {0};
+    DvzMVP gizmo_mvp = {0};
+    _scene_panel_apply_mvp(gizmo->source_panel, &source_mvp);
+    _scene_panel_apply_mvp(gizmo->panel, &gizmo_mvp);
+
+    mat4 source_view = GLM_MAT4_IDENTITY_INIT;
+    mat4 source_model = GLM_MAT4_IDENTITY_INIT;
+    mat4 gizmo_view = GLM_MAT4_IDENTITY_INIT;
+    mat4 inv_gizmo_view = GLM_MAT4_IDENTITY_INIT;
+    mat4 source_effective = GLM_MAT4_IDENTITY_INIT;
+    mat4 transform = GLM_MAT4_IDENTITY_INIT;
+    _gizmo_rotation_matrix(source_mvp.view, source_view);
+    _gizmo_rotation_matrix(source_mvp.model, source_model);
+    _gizmo_rotation_matrix(gizmo_mvp.view, gizmo_view);
+    glm_mat4_inv(gizmo_view, inv_gizmo_view);
+    glm_mat4_mul(source_view, source_model, source_effective);
+    glm_mat4_mul(inv_gizmo_view, source_effective, transform);
+
+    _gizmo_set_visual_transform(gizmo->axes_visual, transform);
+    _gizmo_set_visual_transform(gizmo->rings_visual, transform);
     return true;
 }
 
@@ -795,7 +876,6 @@ DvzOrientationGizmoDesc dvz_orientation_gizmo_desc(void)
 {
     return (DvzOrientationGizmoDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzOrientationGizmoDesc),
-        .source_controller = NULL,
         .placement =
             (DvzPlacement){
                 .space = DVZ_PLACEMENT_SPACE_PANEL,
@@ -836,13 +916,6 @@ DvzOrientationGizmo* dvz_orientation_gizmo(
         return NULL;
 
     DvzScene* scene = panel->figure->scene;
-    DvzController* source_controller = _orientation_gizmo_source_controller(panel, &resolved);
-    if (source_controller == NULL || source_controller->scene != scene ||
-        source_controller->type != DVZ_CONTROLLER_TYPE_ARCBALL)
-    {
-        log_error("orientation gizmo requires an arcball source controller");
-        return NULL;
-    }
 
     DvzOrientationGizmo* gizmo = NULL;
     for (uint32_t i = 0; i < scene->orientation_gizmo_count; i++)
@@ -862,7 +935,6 @@ DvzOrientationGizmo* dvz_orientation_gizmo(
     dvz_memset(gizmo, sizeof(DvzOrientationGizmo), 0, sizeof(DvzOrientationGizmo));
     gizmo->scene = scene;
     gizmo->source_panel = panel;
-    gizmo->source_controller = source_controller;
     gizmo->desc = resolved;
     gizmo->active = true;
     gizmo->visible = true;
@@ -918,20 +990,14 @@ DvzOrientationGizmo* dvz_orientation_gizmo(
 
     dvz_visual_set_visible(gizmo->axes_visual, resolved.show_axes);
     dvz_visual_set_visible(gizmo->rings_visual, resolved.show_axes);
-    if (dvz_panel_add_visual(gizmo->panel, gizmo->rings_visual, NULL) != 0)
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.controller_mode = DVZ_CONTROLLER_APPLY_VIEW_PROJ;
+    if (dvz_panel_add_visual(gizmo->panel, gizmo->rings_visual, &attach) != 0)
         goto fail;
-    if (dvz_panel_add_visual(gizmo->panel, gizmo->axes_visual, NULL) != 0)
+    if (dvz_panel_add_visual(gizmo->panel, gizmo->axes_visual, &attach) != 0)
         goto fail;
 
-    gizmo->controller = dvz_arcball(scene, NULL);
-    if (gizmo->controller == NULL)
-        goto fail;
-    if (dvz_panel_bind_controller(gizmo->panel, gizmo->controller, DVZ_DIM_MASK_XYZ) != 0)
-        goto fail;
-    gizmo->link = dvz_controller_link(
-        scene, source_controller, gizmo->controller, DVZ_CONTROLLER_LINK_ROTATION,
-        DVZ_CONTROLLER_LINK_ONE_WAY);
-    if (gizmo->link == NULL)
+    if (!_orientation_gizmo_sync_transform(gizmo))
         goto fail;
 
     _scene_notify_request_frame(panel->figure);
@@ -953,10 +1019,6 @@ void dvz_orientation_gizmo_destroy(DvzOrientationGizmo* gizmo)
     if (gizmo == NULL || !gizmo->active)
         return;
     DvzFigure* figure = gizmo->source_panel != NULL ? gizmo->source_panel->figure : NULL;
-    if (gizmo->link != NULL)
-        dvz_controller_link_destroy(gizmo->link);
-    if (gizmo->controller != NULL)
-        dvz_controller_destroy(gizmo->controller);
     if (gizmo->axes_visual != NULL)
         dvz_visual_set_visible(gizmo->axes_visual, false);
     if (gizmo->rings_visual != NULL)
@@ -1007,5 +1069,6 @@ void _scene_prepare_orientation_gizmos(DvzFigure* figure)
         if (!gizmo->active || gizmo->source_panel == NULL || gizmo->source_panel->figure != figure)
             continue;
         (void)_orientation_gizmo_refresh_layout(gizmo);
+        (void)_orientation_gizmo_sync_transform(gizmo);
     }
 }

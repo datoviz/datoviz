@@ -575,7 +575,6 @@ struct DvzOrientationGizmoDesc
 {
     uint32_t struct_size;
     uint32_t flags;
-    DvzController* source_controller;
     DvzPlacement placement;
     bool show_axes;
     float axis_length;
