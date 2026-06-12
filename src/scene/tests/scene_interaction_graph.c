@@ -699,8 +699,8 @@ int test_scene_controller_mode_view_proj_strips_panel_model(
     AT(render->u.render.visual_has_mvp[0]);
 
     AT(fabsf(render->u.render.apply_mvp.model[0][0] - 1.0f) > 1e-3f);
-    AT(render->u.render.apply_mvp.proj[0][0] > camera_mvp.proj[0][0]);
-    AT(fabsf(render->u.render.apply_mvp.proj[2][0] - camera_mvp.proj[2][0]) > 1e-3f);
+    AT(fabsf(render->u.render.apply_mvp.view[3][0] - camera_mvp.view[3][0]) > 1e-3f);
+    AT(fabsf(render->u.render.apply_mvp.view[3][2] - camera_mvp.view[3][2]) > 1e-3f);
     AC(render->u.render.visual_mvp[0].model[0][0], 1.0f, 1e-6f);
     AC(render->u.render.visual_mvp[0].model[1][1], 1.0f, 1e-6f);
     AC(render->u.render.visual_mvp[0].model[2][2], 1.0f, 1e-6f);
@@ -709,14 +709,13 @@ int test_scene_controller_mode_view_proj_strips_panel_model(
         render->u.render.visual_mvp[0].view[3][2], render->u.render.apply_mvp.view[3][2],
         1e-6f);
     AC(
+        render->u.render.visual_mvp[0].view[3][0], render->u.render.apply_mvp.view[3][0],
+        1e-6f);
+    AC(
         render->u.render.visual_mvp[0].proj[0][0], render->u.render.apply_mvp.proj[0][0],
         1e-6f);
-    AC(
-        render->u.render.visual_mvp[0].proj[3][0], render->u.render.apply_mvp.proj[3][0],
-        1e-6f);
-    AC(
-        render->u.render.visual_mvp[0].proj[2][0], render->u.render.apply_mvp.proj[2][0],
-        1e-6f);
+    AC(render->u.render.apply_mvp.proj[0][0], camera_mvp.proj[0][0], 1e-6f);
+    AC(render->u.render.apply_mvp.proj[2][0], camera_mvp.proj[2][0], 1e-6f);
 
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);

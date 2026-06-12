@@ -170,7 +170,7 @@ static void _arcball_pan_drag(DvzArcball* arcball, vec2 shift_px)
 
 
 /**
- * Apply screen-space camera pan/zoom to an MVP projection matrix.
+ * Apply camera pan/dolly to an MVP view matrix.
  *
  * @param arcball arcball controller
  * @param mvp target MVP
@@ -180,19 +180,12 @@ static void _arcball_camera_mvp(DvzArcball* arcball, DvzMVP* mvp)
     ANN(arcball);
     ANN(mvp);
 
-    mat4 scale = GLM_MAT4_IDENTITY_INIT;
-    scale[0][0] = arcball->zoom;
-    scale[1][1] = arcball->zoom;
-
     mat4 translate = GLM_MAT4_IDENTITY_INIT;
-    glm_translate_make(translate, (vec3){arcball->pan[0], arcball->pan[1], 0.0f});
+    glm_translate_make(translate, (vec3){arcball->pan[0], arcball->pan[1], logf(arcball->zoom)});
 
-    mat4 nav = GLM_MAT4_IDENTITY_INIT;
-    glm_mat4_mul(translate, scale, nav);
-
-    mat4 proj = GLM_MAT4_IDENTITY_INIT;
-    glm_mat4_copy(mvp->proj, proj);
-    glm_mat4_mul(nav, proj, mvp->proj);
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    glm_mat4_copy(mvp->view, view);
+    glm_mat4_mul(translate, view, mvp->view);
 }
 
 

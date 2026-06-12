@@ -65,8 +65,8 @@ struct DvzArcball
     vec4 rotation;   /* in-flight quaternion (while dragging); same layout as cglm versor */
     vec3 constrain;  /* constrain axis; null if no constraint */
     mat4 view;        /* optional camera view used to interpret drag axes */
-    float zoom;      /* uniform camera/projection zoom factor */
-    vec2 pan;        /* panel-plane camera/projection pan offset */
+    float zoom;      /* multiplicative camera dolly factor */
+    vec2 pan;        /* camera view-plane pan offset */
     vec2 pan_center; /* committed pan baseline used during right/middle drag */
     bool has_view;   /* true when view carries a camera-space drag basis */
     bool interacting; /* true while the pointer is controlling the arcball */
@@ -140,7 +140,7 @@ DVZ_EXPORT void dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, vec3 a
 
 
 /**
- * Set the uniform camera/projection zoom factor.
+ * Set the camera dolly factor.
  *
  * @param arcball arcball controller
  * @param zoom uniform zoom factor
@@ -149,7 +149,7 @@ DVZ_EXPORT void dvz_arcball_zoom(DvzArcball* arcball, float zoom);
 
 
 /**
- * Set the panel-plane camera/projection pan offset.
+ * Set the camera view-plane pan offset.
  *
  * @param arcball arcball controller
  * @param pan panel-plane pan offset
@@ -198,7 +198,7 @@ DVZ_EXPORT void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_
 /**
  * Compute the model matrix (accumulated × in-flight rotation).
  *
- * Arcball pan and zoom are camera/projection state and are not included here.
+ * Arcball pan and zoom are camera view state and are not included here.
  */
 DVZ_EXPORT void dvz_arcball_model(DvzArcball* arcball, mat4 model);
 
@@ -213,7 +213,7 @@ DVZ_EXPORT void dvz_arcball_end(DvzArcball* arcball);
 
 /**
  * Fill the MVP struct from the current arcball state.
- * Rotation is applied to the model matrix; pan and zoom are applied to projection.
+ * Rotation is applied to the model matrix; pan and zoom are applied to view.
  */
 DVZ_EXPORT void dvz_arcball_mvp(DvzArcball* arcball, DvzMVP* mvp);
 
