@@ -131,12 +131,15 @@ fn main(input: VertexIn) -> VertexOut {
     let denom_end = dot(miter_end, n1);
     var length_start = select(half_width, half_width / denom_start, denom_start > 1e-3);
     var length_end = select(half_width, half_width / denom_end, denom_end > 1e-3);
-    let miter_length_limit = max(miter_limit * (stroke_width * 0.5) + 2.0, half_width);
-    let non_miter_scale = mix(1.0, 2.5, smoothstep(12.0, 48.0, stroke_width));
-    let non_miter_length_limit = max(non_miter_scale * (stroke_width * 0.5) + 2.0, half_width);
-    let join_length_limit = select(non_miter_length_limit, miter_length_limit, join_type == 0);
-    length_start = min(length_start, join_length_limit);
-    length_end = min(length_end, join_length_limit);
+    if (join_type == 0) {
+        let miter_length_limit = max(miter_limit * (stroke_width * 0.5) + 2.0, half_width);
+        length_start = min(length_start, miter_length_limit);
+        length_end = min(length_end, miter_length_limit);
+    } else if (join_type == 2) {
+        let bevel_length_limit = max(2.25 * half_width, half_width + 2.0);
+        length_start = min(length_start, bevel_length_limit);
+        length_end = min(length_end, bevel_length_limit);
+    }
 
     let cap_type = select(i32(material.params.x + 0.5), i32(material.params.y + 0.5), endpoint_end);
     var output: VertexOut;
