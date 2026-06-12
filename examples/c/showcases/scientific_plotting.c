@@ -226,7 +226,7 @@ static bool _configure_panel(DvzPanel* panel, float left_px, float bottom_px)
 {
     example_graphite_cyan_set_panel_background(panel);
     if (!dvz_panel_set_reserve(
-            panel, &(DvzPanelReserve){.left_px = left_px, .right_px = 30.0f, .top_px = 24.0f,
+            panel, &(DvzPanelReserve){.left_px = left_px, .right_px = 24.0f, .top_px = 16.0f,
                                       .bottom_px = bottom_px}))
         return false;
 
@@ -255,6 +255,50 @@ static bool _set_domain(DvzPanel* panel, double x0, double x1, double y0, double
 {
     return dvz_panel_set_domain(panel, DVZ_DIM_X, x0, x1) == 0 &&
            dvz_panel_set_domain(panel, DVZ_DIM_Y, y0, y1) == 0;
+}
+
+
+/**
+ * Add a compact data-positioned label annotation.
+ *
+ * @param panel target panel
+ * @param text label text
+ * @param x X data coordinate
+ * @param y Y data coordinate
+ * @param offset_x screen-space X offset
+ * @param offset_y screen-space Y offset
+ * @param color text color
+ * @return true when the label was created
+ */
+static bool _add_data_label(
+    DvzPanel* panel, const char* text, double x, double y, float offset_x, float offset_y,
+    DvzColor color)
+{
+    DvzTextStyle style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
+    style.size_px = 15.0f;
+    style.color[0] = color.r;
+    style.color[1] = color.g;
+    style.color[2] = color.b;
+    style.color[3] = 235u;
+
+    DvzTextPlacement placement = dvz_text_placement();
+    placement.mode = DVZ_TEXT_PLACEMENT_DATA;
+    placement.position[0] = x;
+    placement.position[1] = y;
+    placement.position[2] = 0.0;
+    placement.offset[0] = offset_x;
+    placement.offset[1] = offset_y;
+    placement.text_anchor[0] = 0.5f;
+    placement.text_anchor[1] = 0.5f;
+    placement.has_text_anchor = true;
+    placement.depth_test = false;
+
+    return dvz_annotation_label(
+               panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc),
+                          .text = text,
+                          .style = style,
+                          .placement = placement,
+                      }) != NULL;
 }
 
 
@@ -287,21 +331,26 @@ static bool _add_autocorrelogram(DvzScene* scene, DvzPanel* panel)
     span_desc.fill_color = dvz_color_rgba(239, 71, 111, 42);
     span_desc.outline_color = dvz_color_rgba(239, 71, 111, 165);
     span_desc.outline_width_px = 1.5f;
-    span_desc.label = "bi-side refractory";
     if (dvz_vspan(panel, -2.0, 2.0, &span_desc) == NULL)
         return false;
 
     DvzGuideLineDesc baseline = dvz_guide_line_desc();
     baseline.color = dvz_color_rgba(128, 255, 219, 220);
     baseline.stroke_width_px = 2.25f;
-    baseline.label = "baseline";
     if (dvz_hline(panel, 38.0, &baseline) == NULL)
         return false;
 
     DvzGuideLineDesc zero = dvz_guide_line_desc();
     zero.color = dvz_color_rgba(255, 183, 3, 220);
     zero.stroke_width_px = 2.0f;
-    return dvz_vline(panel, 0.0, &zero) != NULL;
+    if (dvz_vline(panel, 0.0, &zero) == NULL)
+        return false;
+
+    DvzColor text = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
+    return _add_data_label(panel, "bi-side refractory", 0.0, 118.0, 0.0f, 0.0f, text) &&
+           _add_data_label(
+               panel, "baseline", -34.0, 38.0, 0.0f, -14.0f,
+               example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY));
 }
 
 
@@ -468,10 +517,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (grid == NULL)
         return false;
     if (!dvz_grid_set_margins(
-            grid, &(DvzPanelReserve){.left_px = 34.0f, .right_px = 34.0f, .top_px = 26.0f,
-                                     .bottom_px = 30.0f}))
+            grid, &(DvzPanelReserve){.left_px = 24.0f, .right_px = 24.0f, .top_px = 18.0f,
+                                     .bottom_px = 24.0f}))
         return false;
-    if (!dvz_grid_set_gutter(grid, 28.0f, 26.0f))
+    if (!dvz_grid_set_gutter(grid, 24.0f, 20.0f))
         return false;
 
     DvzPanel* correlogram = dvz_grid_panel(grid, 0, 0);
@@ -480,9 +529,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (correlogram == NULL || mean_error == NULL || stacked == NULL)
         return false;
 
-    if (!_configure_panel(correlogram, 104.0f, 76.0f) ||
-        !_configure_panel(mean_error, 92.0f, 76.0f) ||
-        !_configure_panel(stacked, 44.0f, 76.0f))
+    if (!_configure_panel(correlogram, 96.0f, 66.0f) ||
+        !_configure_panel(mean_error, 84.0f, 66.0f) ||
+        !_configure_panel(stacked, 38.0f, 66.0f))
         return false;
 
     if (!_set_domain(correlogram, -50.0, 50.0, 0.0, 125.0))
