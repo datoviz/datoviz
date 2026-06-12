@@ -12,7 +12,7 @@ layout(location = 2) in float fragLength;
 layout(location = 3) in float fragLineWidth;
 layout(location = 4) in float fragHasPrev;
 layout(location = 5) in float fragHasNext;
-layout(location = 6) in float fragBevelDistance;
+layout(location = 6) in vec2 fragBevelDistance;
 
 layout(location = 0) out vec4 outColor;
 
@@ -33,24 +33,52 @@ void main()
     float distance = fragCoord.y;
     float alpha = dvz_stroke_alpha(distance, fragLineWidth);
     int joinType = int(round(material.params.z));
+    float aa = 1.0;
     if (fragCoord.x < 0.0)
     {
-        if (!(fragHasPrev >= 0.5 && joinType == 2))
+        if (fragHasPrev >= 0.5)
         {
-            int capType = fragHasPrev < 0.5 ? int(round(material.params.x)) : joinType;
-            if (fragHasPrev >= 0.5 && joinType == 0)
-                capType = 5;
+            if (joinType == 1)
+            {
+                distance = length(fragCoord);
+                alpha = dvz_stroke_alpha(distance, fragLineWidth);
+            }
+            else if (joinType == 0)
+            {
+                int capType = 5;
+                alpha = dvz_stroke_cap_alpha(capType, -fragCoord.x, fragCoord.y, fragLineWidth);
+                distance =
+                    dvz_stroke_cap_distance(capType, fragCoord.x, fragCoord.y, fragLineWidth);
+            }
+        }
+        else
+        {
+            int capType = int(round(material.params.x));
             alpha = dvz_stroke_cap_alpha(capType, -fragCoord.x, fragCoord.y, fragLineWidth);
             distance = dvz_stroke_cap_distance(capType, fragCoord.x, fragCoord.y, fragLineWidth);
         }
     }
     else if (fragCoord.x > fragLength)
     {
-        if (!(fragHasNext >= 0.5 && joinType == 2))
+        if (fragHasNext >= 0.5)
         {
-            int capType = fragHasNext < 0.5 ? int(round(material.params.y)) : joinType;
-            if (fragHasNext >= 0.5 && joinType == 0)
-                capType = 5;
+            if (joinType == 1)
+            {
+                distance = length(fragCoord - vec2(fragLength, 0.0));
+                alpha = dvz_stroke_alpha(distance, fragLineWidth);
+            }
+            else if (joinType == 0)
+            {
+                int capType = 5;
+                alpha = dvz_stroke_cap_alpha(
+                    capType, fragCoord.x - fragLength, fragCoord.y, fragLineWidth);
+                distance = dvz_stroke_cap_distance(
+                    capType, fragCoord.x - fragLength, fragCoord.y, fragLineWidth);
+            }
+        }
+        else
+        {
+            int capType = int(round(material.params.y));
             alpha = dvz_stroke_cap_alpha(
                 capType, fragCoord.x - fragLength, fragCoord.y, fragLineWidth);
             distance = dvz_stroke_cap_distance(
@@ -58,14 +86,22 @@ void main()
         }
     }
 
-    float bevelExtent = max(fragLineWidth, 0.0) * 0.5 + 2.0;
-    bool bevelOverhang = joinType == 2 &&
-                         ((fragCoord.x < bevelExtent && fragHasPrev >= 0.5) ||
-                          (fragCoord.x > fragLength - bevelExtent && fragHasNext >= 0.5));
-    if (bevelOverhang)
+    float miterLimit = max(material.params.w, 1.0);
+    float miterClip = (miterLimit - 1.0) * (fragLineWidth * 0.5) + aa;
+    float bevelClip = aa;
+    if (fragCoord.x < 0.0 && fragHasPrev >= 0.5 && (joinType == 0 || joinType == 2))
     {
-        float bevelDistance = max(abs(distance), fragBevelDistance - 1.0);
-        alpha = dvz_stroke_alpha(bevelDistance, fragLineWidth);
+        float clipDistance = joinType == 2 ? bevelClip : miterClip;
+        if (fragBevelDistance.x > abs(distance) + clipDistance)
+            distance = fragBevelDistance.x - clipDistance;
+        alpha = dvz_stroke_alpha(distance, fragLineWidth);
+    }
+    else if (fragCoord.x > fragLength && fragHasNext >= 0.5 && (joinType == 0 || joinType == 2))
+    {
+        float clipDistance = joinType == 2 ? bevelClip : miterClip;
+        if (fragBevelDistance.y > abs(distance) + clipDistance)
+            distance = fragBevelDistance.y - clipDistance;
+        alpha = dvz_stroke_alpha(distance, fragLineWidth);
     }
     if (alpha <= 0.0)
         discard;

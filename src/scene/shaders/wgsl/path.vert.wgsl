@@ -19,7 +19,7 @@ struct VertexOut {
     @location(3) line_width: f32,
     @location(4) has_prev: f32,
     @location(5) has_next: f32,
-    @location(6) bevel_distance: f32,
+    @location(6) bevel_distance: vec2f,
 }
 
 const SIDE_NEGATIVE: u32 = 0x01u;
@@ -43,6 +43,14 @@ fn safe_normalize(v: vec2f, fallback: vec2f) -> vec2f {
         return fallback;
     }
     return v / n;
+}
+
+fn line_distance(p0: vec2f, p1: vec2f, p: vec2f) -> f32 {
+    let v = p1 - p0;
+    let l2 = max(dot(v, v), 1e-6);
+    let u = dot(p - p0, v) / l2;
+    let h = p0 + u * v;
+    return length(p - h);
 }
 
 fn stroke_outer_half_width(line_width: f32) -> f32 {
@@ -140,19 +148,18 @@ fn main(input: VertexIn) -> VertexOut {
     var output: VertexOut;
     output.position = pixel_to_clip(pixel, curr_clip.z / max(abs(curr_clip.w), 1e-6));
     output.color = input.color;
-    output.bevel_distance = -half_width;
-    if (has_prev && has_next && join_type == 2) {
+    output.bevel_distance = vec2f(-half_width, -half_width);
+    if (has_prev && has_next) {
         let turn = dir_in.x * dir_out.y - dir_in.y * dir_out.x;
         let outer_side = select(1.0, -1.0, turn > 0.0);
         let bevel_start = curr_px + normal_in * outer_side * half_width;
         let bevel_end = curr_px + normal_out * outer_side * half_width;
-        let bevel_dir = safe_normalize(bevel_end - bevel_start, segment_normal);
-        var bevel_normal = vec2f(-bevel_dir.y, bevel_dir.x);
-        let outer_miter = curr_px + miter * outer_side * miter_scale * half_width;
-        if (dot(outer_miter - bevel_start, bevel_normal) < 0.0) {
-            bevel_normal = -bevel_normal;
+        let bevel_distance = side * outer_side * line_distance(bevel_start, bevel_end, pixel);
+        if (endpoint_end) {
+            output.bevel_distance.y = bevel_distance;
+        } else {
+            output.bevel_distance.x = bevel_distance;
         }
-        output.bevel_distance = dot(pixel - bevel_start, bevel_normal);
     }
     if (has_prev && has_next && (join_type == 1 || join_type == 2)) {
         let segment_start_px = select(curr_px, prev_px, endpoint_end);

@@ -7,7 +7,7 @@ struct FragmentIn {
     @location(3) line_width: f32,
     @location(4) has_prev: f32,
     @location(5) has_next: f32,
-    @location(6) bevel_distance: f32,
+    @location(6) bevel_distance: vec2f,
 }
 
 fn stroke_alpha(distance: f32, line_width: f32) -> f32 {
@@ -75,21 +75,36 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
     var distance = input.coord.y;
     var alpha = stroke_alpha(distance, input.line_width);
     let join_type = i32(material.params.z + 0.5);
+    let aa = 1.0;
     if (input.coord.x < 0.0) {
-        if (!(input.has_prev >= 0.5 && join_type == 2)) {
-            var cap_type = select(i32(material.params.x + 0.5), join_type, input.has_prev >= 0.5);
-            if (input.has_prev >= 0.5 && join_type == 0) {
-                cap_type = 5;
+        if (input.has_prev >= 0.5) {
+            if (join_type == 1) {
+                distance = length(input.coord);
+                alpha = stroke_alpha(distance, input.line_width);
+            } else if (join_type == 0) {
+                let cap_type = 5;
+                alpha = stroke_cap_alpha(cap_type, -input.coord.x, input.coord.y, input.line_width);
+                distance = stroke_cap_distance(cap_type, input.coord.x, input.coord.y, input.line_width);
             }
+        } else {
+            let cap_type = i32(material.params.x + 0.5);
             alpha = stroke_cap_alpha(cap_type, -input.coord.x, input.coord.y, input.line_width);
             distance = stroke_cap_distance(cap_type, input.coord.x, input.coord.y, input.line_width);
         }
     } else if (input.coord.x > input.length_px) {
-        if (!(input.has_next >= 0.5 && join_type == 2)) {
-            var cap_type = select(i32(material.params.y + 0.5), join_type, input.has_next >= 0.5);
-            if (input.has_next >= 0.5 && join_type == 0) {
-                cap_type = 5;
+        if (input.has_next >= 0.5) {
+            if (join_type == 1) {
+                distance = length(input.coord - vec2f(input.length_px, 0.0));
+                alpha = stroke_alpha(distance, input.line_width);
+            } else if (join_type == 0) {
+                let cap_type = 5;
+                alpha = stroke_cap_alpha(
+                    cap_type, input.coord.x - input.length_px, input.coord.y, input.line_width);
+                distance = stroke_cap_distance(
+                    cap_type, input.coord.x - input.length_px, input.coord.y, input.line_width);
             }
+        } else {
+            let cap_type = i32(material.params.y + 0.5);
             alpha = stroke_cap_alpha(
                 cap_type, input.coord.x - input.length_px, input.coord.y, input.line_width);
             distance = stroke_cap_distance(
@@ -97,13 +112,24 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
         }
     }
 
-    let bevel_extent = max(input.line_width, 0.0) * 0.5 + 2.0;
-    let bevel_overhang = join_type == 2 &&
-        ((input.coord.x < bevel_extent && input.has_prev >= 0.5) ||
-         (input.coord.x > input.length_px - bevel_extent && input.has_next >= 0.5));
-    if (bevel_overhang) {
-        let bevel_distance = max(abs(distance), input.bevel_distance - 1.0);
-        alpha = stroke_alpha(bevel_distance, input.line_width);
+    let miter_limit = max(material.params.w, 1.0);
+    let miter_clip = (miter_limit - 1.0) * (input.line_width * 0.5) + aa;
+    let bevel_clip = aa;
+    if (input.coord.x < 0.0 && input.has_prev >= 0.5 && (join_type == 0 || join_type == 2)) {
+        let clip_distance = select(miter_clip, bevel_clip, join_type == 2);
+        if (input.bevel_distance.x > abs(distance) + clip_distance) {
+            distance = input.bevel_distance.x - clip_distance;
+        }
+        alpha = stroke_alpha(distance, input.line_width);
+    } else if (
+        input.coord.x > input.length_px && input.has_next >= 0.5 &&
+        (join_type == 0 || join_type == 2)
+    ) {
+        let clip_distance = select(miter_clip, bevel_clip, join_type == 2);
+        if (input.bevel_distance.y > abs(distance) + clip_distance) {
+            distance = input.bevel_distance.y - clip_distance;
+        }
+        alpha = stroke_alpha(distance, input.line_width);
     }
     if (alpha <= 0.0) {
         discard;

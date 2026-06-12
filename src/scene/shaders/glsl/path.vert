@@ -29,7 +29,7 @@ layout(location = 2) out float fragLength;
 layout(location = 3) out float fragLineWidth;
 layout(location = 4) out float fragHasPrev;
 layout(location = 5) out float fragHasNext;
-layout(location = 6) out float fragBevelDistance;
+layout(location = 6) out vec2 fragBevelDistance;
 
 const uint SIDE_NEGATIVE = 0x01u;
 const uint ENDPOINT_END = 0x02u;
@@ -54,6 +54,15 @@ vec2 safeNormalize(vec2 v, vec2 fallback)
     if (n <= 1e-6)
         return fallback;
     return v / n;
+}
+
+float lineDistance(vec2 p0, vec2 p1, vec2 p)
+{
+    vec2 v = p1 - p0;
+    float l2 = max(dot(v, v), 1e-6);
+    float u = dot(p - p0, v) / l2;
+    vec2 h = p0 + u * v;
+    return length(p - h);
 }
 
 void main()
@@ -122,19 +131,18 @@ void main()
     gl_Position = pixelToClip(pixel, currClip.z / max(abs(currClip.w), 1e-6));
 
     fragColor = inColor;
-    fragBevelDistance = -halfWidth;
-    if (hasPrev && hasNext && joinType == 2)
+    fragBevelDistance = vec2(-halfWidth);
+    if (hasPrev && hasNext)
     {
         float turn = dirIn.x * dirOut.y - dirIn.y * dirOut.x;
-        float outerSide = turn > 0.0 ? -1.0 : 1.0;
-        vec2 bevelStart = currPx + normalIn * outerSide * halfWidth;
-        vec2 bevelEnd = currPx + normalOut * outerSide * halfWidth;
-        vec2 bevelDir = safeNormalize(bevelEnd - bevelStart, segmentNormal);
-        vec2 bevelNormal = vec2(-bevelDir.y, bevelDir.x);
-        vec2 outerMiter = currPx + miter * outerSide * miterScale * halfWidth;
-        if (dot(outerMiter - bevelStart, bevelNormal) < 0.0)
-            bevelNormal = -bevelNormal;
-        fragBevelDistance = dot(pixel - bevelStart, bevelNormal);
+        float outerSide = turn > 0.0 ? -1.0 : +1.0;
+        vec2 bevelStart = currPx + outerSide * normalIn * halfWidth;
+        vec2 bevelEnd = currPx + outerSide * normalOut * halfWidth;
+        float bevelDistance = side * outerSide * lineDistance(bevelStart, bevelEnd, pixel);
+        if (endpointEnd)
+            fragBevelDistance.y = bevelDistance;
+        else
+            fragBevelDistance.x = bevelDistance;
     }
     if (hasPrev && hasNext && (joinType == 1 || joinType == 2))
     {
