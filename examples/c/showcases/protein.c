@@ -558,7 +558,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     (void)dvz_visual_set_material(selection, &material);
 
     DvzVisualDataUpdate sphere_updates[] = {
-        {.attr_name = "position", .data = state->atoms.positions, .item_count = state->atoms.count},
+        {.attr_name = "position",
+         .data = state->atoms.positions,
+         .item_count = state->atoms.count},
         {.attr_name = "color", .data = state->atoms.colors, .item_count = state->atoms.count},
         {.attr_name = "radius", .data = state->scaled_radii, .item_count = state->atoms.count},
     };
@@ -581,21 +583,17 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         "selection upload failed");
 
 #ifndef DVZ_EXAMPLE_NO_MAIN
-    DvzMsaaDesc msaa_desc = dvz_msaa_desc();
-    msaa_desc.sample_count = 16;
-    msaa_desc.alpha_to_coverage = true;
-    (void)dvz_panel_set_msaa(panel, &msaa_desc);
-
-    DvzSsaoDesc ssao_desc = {DVZ_STRUCT_INIT_FIELDS(DvzSsaoDesc),
+    DvzSsaoDesc ssao_desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzSsaoDesc),
         .radius = 0.72f,
         .strength = 1.82f,
         .bias = 0.007f,
         .power = 2.45f,
         .min_visibility = 0.42f,
-        .blur_radius = 10.0f,
+        .blur_radius = 5.0f,
         .blur_depth_sigma = 0.65f,
         .blur_normal_sigma = 0.35f,
-        .sample_count = 32,
+        .sample_count = 16,
         .blur_enabled = true,
     };
     (void)dvz_panel_set_ssao(panel, &ssao_desc);
@@ -629,7 +627,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_visual_spin_stop(&state->selection_spin);
     example_visual_spin_stop(&state->crosshair_spin);
 
-    dvz_fprintf(stderr, "loaded %" PRIu32 " atoms from %s\n", state->atoms.count, state->atoms.path);
+    dvz_fprintf(
+        stderr, "loaded %" PRIu32 " atoms from %s\n", state->atoms.count, state->atoms.path);
     ok = true;
 cleanup:
     return ok;
