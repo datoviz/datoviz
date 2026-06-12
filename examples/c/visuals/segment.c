@@ -35,10 +35,10 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH         1600u
-#define HEIGHT        1200u
-#define SEGMENT_COUNT      24u
-#define SEGMENTS_PER_BAND  8u
+#define WIDTH             1600u
+#define HEIGHT            1200u
+#define SEGMENT_COUNT     24u
+#define SEGMENTS_PER_BAND 8u
 
 static const float TAU = 6.28318530718f;
 
@@ -124,7 +124,7 @@ static void _fill_segments(
         ends[i][1] = cy + dy;
         ends[i][2] = 0.0f;
         colors[i] = _segment_color(i);
-        widths[i] = 2.0f + 1.4f * (float)((i + band) % 5u);
+        widths[i] = 2.0f + 5.0f * (float)((i + band) % 5u);
     }
 }
 
