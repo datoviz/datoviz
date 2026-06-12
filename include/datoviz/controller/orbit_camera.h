@@ -7,6 +7,8 @@
 /*************************************************************************************************/
 /*  Orbit camera controller                                                                      */
 /*************************************************************************************************/
+/* Camera-state orbit around a pivot. Intended for camera-centric navigation where the attached
+ * camera pose is the primary state and the pivot defines the temporary orbit target. */
 
 #pragma once
 

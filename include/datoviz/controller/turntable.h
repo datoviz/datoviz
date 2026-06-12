@@ -7,6 +7,8 @@
 /*************************************************************************************************/
 /*  Turntable controller                                                                         */
 /*************************************************************************************************/
+/* World-up constrained camera orbit around a pivot. Intended for upright object or scene
+ * inspection where yaw, pitch/elevation, distance, and optional pivot pan remain predictable. */
 
 #pragma once
 

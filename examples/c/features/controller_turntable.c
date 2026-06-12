@@ -8,6 +8,9 @@
  *
  * Scenario: feature.controller_turntable
  * Style: features, graphite_cyan, 1600x1200 capture target
+ * Intent: demonstrate stable world-up orbit around a fixed pivot, with pitch/distance clamps and
+ * no roll. The opening view is shared with other controller examples, but the interaction model is
+ * the upright object-inspection pattern.
  *
  * Build:  just example-c features/controller_turntable
  * Run:    ./build/examples/c/features/controller_turntable --live

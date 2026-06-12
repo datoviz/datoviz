@@ -8,6 +8,9 @@
  *
  * Scenario: feature.controller_orbit_camera
  * Style: features, graphite_cyan, 1600x1200 capture target
+ * Intent: demonstrate camera-state orbit around an explicit pivot. The opening view is shared
+ * with other controller examples, but the interaction model is camera-centric navigation around a
+ * target rather than a stable-up turntable inspection rig.
  *
  * Build:  just example-c features/controller_orbit_camera
  * Run:    ./build/examples/c/features/controller_orbit_camera --live
