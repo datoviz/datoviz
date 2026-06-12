@@ -126,7 +126,7 @@ static bool _add_surface(DvzScene* scene, DvzPanel* panel, const DvzGeometry* ge
         return false;
     DvzMaterialDesc material = dvz_phong_material_desc();
     material.light_direction[0] = -0.22f;
-    material.light_direction[1] = -0.58f;
+    material.light_direction[1] = +0.58f;
     material.light_direction[2] = 0.78f;
     material.phong.ambient = 0.38f;
     material.phong.diffuse = 0.76f;
@@ -278,10 +278,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = 1.85f;
-    camera.eye[1] = -2.55f;
-    camera.eye[2] = 1.45f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
+    camera.eye[1] = 1.45f;
+    camera.eye[2] = 2.55f;
     camera.fov_y = 0.64f;
     camera.near = 0.05f;
     camera.far = 100.0f;

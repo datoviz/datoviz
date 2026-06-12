@@ -112,10 +112,8 @@ static bool _set_depth_camera(DvzPanel* panel)
 {
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[0] = 0.00f;
-    camera_desc.eye[1] = -3.10f;
-    camera_desc.eye[2] = 0.38f;
-    camera_desc.up[1] = 0.0f;
-    camera_desc.up[2] = 1.0f;
+    camera_desc.eye[1] = 0.38f;
+    camera_desc.eye[2] = 3.10f;
     camera_desc.fov_y = 0.50f;
     camera_desc.near = 0.05f;
     camera_desc.far = 100.0f;

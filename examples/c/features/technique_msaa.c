@@ -127,10 +127,8 @@ static bool _set_camera(DvzPanel* panel)
 {
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = +0.10f;
-    camera.eye[1] = -3.10f;
-    camera.eye[2] = +1.20f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
+    camera.eye[1] = +1.20f;
+    camera.eye[2] = +3.10f;
     camera.fov_y = 0.54f;
     camera.near = 0.05f;
     camera.far = 100.0f;

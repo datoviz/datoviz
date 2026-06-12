@@ -67,8 +67,8 @@
 #define STAR_RADIUS 48.0f
 
 #define SUN_DIR_X -0.80f
-#define SUN_DIR_Y -0.55f
-#define SUN_DIR_Z +0.22f
+#define SUN_DIR_Y +0.22f
+#define SUN_DIR_Z +0.55f
 
 
 
@@ -615,10 +615,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[0] = 0.0f;
-    camera_desc.eye[1] = -3.0f;
-    camera_desc.eye[2] = 0.0f;
-    camera_desc.up[1] = 0.0f;
-    camera_desc.up[2] = 1.0f;
+    camera_desc.eye[1] = 0.0f;
+    camera_desc.eye[2] = 3.0f;
     camera_desc.fov_y = 0.72f;
     camera_desc.near = 0.05f;
     camera_desc.far = 100.0f;
@@ -687,15 +685,15 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     EXAMPLE_CHECK(
         example_visual_spin(
-            ctx->scene, visual, (vec3){0.0f, 0.0f, 1.0f}, state->spin_speed, NULL,
+            ctx->scene, visual, (vec3){0.0f, 1.0f, 0.0f}, state->spin_speed, NULL,
             &state->spin),
         "example_visual_spin(planet) failed");
     example_visual_spin_start(&state->spin, 0.0);
 
     state->flyover_eye = dvz_track_circle3(&(DvzTrackCircle3Desc){
         DVZ_STRUCT_INIT_FIELDS(DvzTrackCircle3Desc),
-        .center = {0.0f, 0.34f, 0.28f},
-        .normal = {0.38f, 0.20f, 0.90f},
+        .center = {0.0f, 0.28f, -0.34f},
+        .normal = {0.38f, 0.90f, -0.20f},
         .radius = 3.15f,
         .phase = 1.35f,
         .speed_rad_per_sec = -0.018f,
@@ -715,7 +713,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             .eye = state->flyover_eye,
             .target = state->flyover_target,
             .up_mode = DVZ_CAMERA_UP_WORLD,
-            .up = {0.0f, 0.0f, 1.0f},
+            .up = {0.0f, 1.0f, 0.0f},
         });
     EXAMPLE_CHECK(flyover != NULL, "dvz_anim_camera_motion() failed");
     dvz_anim_set_interaction_policy(

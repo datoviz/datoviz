@@ -345,7 +345,7 @@ bool example_panel_pointer_position(
 
 
 /**
- * Return the default Z-up perspective camera for 3D gallery examples.
+ * Return the default perspective camera for 3D gallery examples.
  *
  * @param extent approximate scene extent in world units
  * @return camera descriptor
@@ -399,9 +399,9 @@ void example_default_light_direction(vec3 out)
     if (out == NULL)
         return;
 
-    out[0] = +0.20f;
-    out[1] = -0.36f;
-    out[2] = -0.74f;
+    out[0] = -0.45f;
+    out[1] = +0.35f;
+    out[2] = +0.82f;
 }
 
 

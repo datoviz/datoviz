@@ -93,7 +93,7 @@ static bool _add_sphere_lattice(DvzScene* scene, DvzPanel* panel, bool cue_enabl
 
     DvzMaterialDesc material = dvz_standard_material_desc();
     material.light_direction[0] = -0.32f;
-    material.light_direction[1] = -0.55f;
+    material.light_direction[1] = +0.55f;
     material.light_direction[2] = +0.76f;
     material.standard.roughness = 0.46f;
     material.standard.specular = 0.44f;
@@ -131,10 +131,8 @@ static bool _set_camera(DvzPanel* panel)
 {
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = 0.0f;
-    camera.eye[1] = -3.45f;
-    camera.eye[2] = 1.05f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
+    camera.eye[1] = 1.05f;
+    camera.eye[2] = 3.45f;
     camera.fov_y = 0.58f;
     camera.near = 0.05f;
     camera.far = 100.0f;

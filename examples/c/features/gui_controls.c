@@ -258,7 +258,7 @@ int main(int argc, char** argv)
         .show_histogram = true,
         .clip_min = {0.05f, 0.05f, 0.05f},
         .clip_max = {0.95f, 0.95f, 0.95f},
-        .light_direction = {-0.35f, -0.55f, 0.75f},
+        .light_direction = {-0.35f, +0.55f, 0.75f},
     };
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},

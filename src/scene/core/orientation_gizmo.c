@@ -294,14 +294,11 @@ DvzOrientationGizmo* dvz_orientation_gizmo(
 
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = 0.0f;
-    camera.eye[1] = -3.0f;
-    camera.eye[2] = 0.0f;
+    camera.eye[1] = 0.0f;
+    camera.eye[2] = 3.0f;
     camera.target[0] = 0.0f;
     camera.target[1] = 0.0f;
     camera.target[2] = 0.0f;
-    camera.up[0] = 0.0f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
     camera.fov_y = 0.64f;
     camera.near = 0.05f;
     camera.far = 20.0f;

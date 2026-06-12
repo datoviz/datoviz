@@ -938,10 +938,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[0] = -1.55f;
-    camera_desc.eye[1] = +2.45f;
-    camera_desc.eye[2] = 1.58f;
-    camera_desc.up[1] = 0.0f;
-    camera_desc.up[2] = 1.0f;
+    camera_desc.eye[1] = 1.58f;
+    camera_desc.eye[2] = -2.45f;
     camera_desc.fov_y = 0.72f;
     camera_desc.near = 0.01f;
     camera_desc.far = 100.0f;

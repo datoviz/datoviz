@@ -380,7 +380,7 @@ _add_mesh(DvzScene* scene, DvzPanel* panel, MouseState* state, DvzSampledField* 
 
     DvzMaterialDesc material = dvz_phong_material_desc();
     material.light_direction[0] = -0.30f;
-    material.light_direction[1] = -0.45f;
+    material.light_direction[1] = +0.45f;
     material.light_direction[2] = +0.80f;
     material.phong.ambient = 0.38f;
     material.phong.diffuse = 0.74f;
@@ -708,10 +708,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = 2.2f;
-    camera.eye[1] = -4.4f;
-    camera.eye[2] = 2.0f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
+    camera.eye[1] = 2.0f;
+    camera.eye[2] = 4.4f;
     camera.fov_y = 0.58f;
     camera.near = 0.05f;
     camera.far = 100.0f;

@@ -93,8 +93,8 @@ static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel, uint32_t variant)
     if (variant == 0u)
     {
         material.light_direction[0] = +0.34f;
-        material.light_direction[1] = -0.46f;
-        material.light_direction[2] = -0.82f;
+        material.light_direction[1] = +0.46f;
+        material.light_direction[2] = +0.82f;
         material.standard.roughness = 0.86f;
         material.standard.specular = 0.12f;
         material.standard.rim_strength = 0.05f;
@@ -102,8 +102,8 @@ static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel, uint32_t variant)
     else if (variant == 1u)
     {
         material.light_direction[0] = +0.12f;
-        material.light_direction[1] = -0.70f;
-        material.light_direction[2] = -0.62f;
+        material.light_direction[1] = +0.70f;
+        material.light_direction[2] = +0.62f;
         material.standard.roughness = 0.42f;
         material.standard.specular = 0.60f;
         material.standard.rim_strength = 0.18f;
@@ -111,8 +111,8 @@ static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel, uint32_t variant)
     else
     {
         material.light_direction[0] = +0.62f;
-        material.light_direction[1] = -0.18f;
-        material.light_direction[2] = -0.76f;
+        material.light_direction[1] = +0.18f;
+        material.light_direction[2] = +0.76f;
         material.standard.roughness = 0.24f;
         material.standard.specular = 0.78f;
         material.standard.rim_strength = 0.42f;

@@ -266,7 +266,7 @@ Example: rotating a planet or molecule:
 
 ```c
 DvzTrack* spin = dvz_track_rotation(&(DvzTrackRotationDesc){
-    .axis = {0, 0, 1},
+    .axis = {0, 1, 0},
     .speed_rad_per_sec = 0.12f,
 });
 
@@ -317,8 +317,8 @@ Example: a tilted offset planet flyover, opposite the planet spin:
 
 ```c
 DvzTrack* eye = dvz_track_circle3(&(DvzTrackCircle3Desc){
-    .center = {0.0f, -0.45f, 0.25f},
-    .normal = {0.25f, 0.0f, 1.0f},
+    .center = {0.0f, 0.25f, 0.45f},
+    .normal = {0.25f, 1.0f, 0.0f},
     .radius = 2.8f,
     .phase = 0.0f,
     .speed_rad_per_sec = -0.025f,
@@ -333,7 +333,7 @@ DvzCameraMotionDesc motion = dvz_camera_motion_desc();
 motion.eye = eye;
 motion.target = target;
 motion.up_mode = DVZ_CAMERA_UP_WORLD;
-glm_vec3_copy((vec3){0, 0, 1}, motion.up);
+glm_vec3_copy((vec3){0, 1, 0}, motion.up);
 
 DvzAnimation* flyover = dvz_anim_camera_motion(scene, camera, &motion);
 ```
