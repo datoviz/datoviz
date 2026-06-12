@@ -563,13 +563,13 @@
             "page": "gallery/features/feature_bezier_curve_path.md"
           },
           {
-            "id": "feature_path_join_stress",
-            "title": "Path Join Stress",
+            "id": "feature_path_join",
+            "title": "Path Join",
             "category": "feature",
             "status": "supported",
             "agent_copy_safe": true,
-            "source": "examples/c/features/path_join_stress.c",
-            "page": "gallery/features/feature_path_join_stress.md"
+            "source": "examples/c/features/path_join.c",
+            "page": "gallery/features/feature_path_join.md"
           },
           {
             "id": "linked_panels_axes_panzoom",
@@ -1710,17 +1710,17 @@
           }
         ]
       },
-      "path-join-stress": {
+      "path-join": {
         "count": 1,
         "examples": [
           {
-            "id": "feature_path_join_stress",
-            "title": "Path Join Stress",
+            "id": "feature_path_join",
+            "title": "Path Join",
             "category": "feature",
             "status": "supported",
             "agent_copy_safe": true,
-            "source": "examples/c/features/path_join_stress.c",
-            "page": "gallery/features/feature_path_join_stress.md"
+            "source": "examples/c/features/path_join.c",
+            "page": "gallery/features/feature_path_join.md"
           }
         ]
       },

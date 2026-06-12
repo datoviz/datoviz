@@ -977,25 +977,25 @@
       "primary_feature": "bezier-curve-path"
     },
     {
-      "id": "feature_path_join_stress",
-      "title": "Path Join Stress",
+      "id": "feature_path_join",
+      "title": "Path Join",
       "category": "feature",
       "lane": "features",
       "stage": "v0.4_required",
       "status": "supported",
-      "source": "examples/c/features/path_join_stress.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/path_join_stress.c",
-      "page": "gallery/features/feature_path_join_stress.md",
+      "source": "examples/c/features/path_join.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/path_join.c",
+      "page": "gallery/features/feature_path_join.md",
       "summary": "acute stroked path joins for visual regression inspection.",
       "validation": "smoke+screenshot",
-      "build_command": "just example-c features/path_join_stress",
-      "smoke_command": "./build/examples/c/features/path_join_stress --png",
+      "build_command": "just example-c features/path_join",
+      "smoke_command": "./build/examples/c/features/path_join --png",
       "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
       },
-      "primary_feature": "path-join-stress"
+      "primary_feature": "path-join"
     },
     {
       "id": "linked_panels_axes_panzoom",

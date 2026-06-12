@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* path_join_stress - acute stroked path joins for visual regression inspection.
+/* path_join - acute stroked path joins for visual regression inspection.
  *
- * Scenario: feature_path_join_stress
+ * Scenario: feature_path_join
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
- * Build:  just example-c features/path_join_stress
- * Run:    ./build/examples/c/features/path_join_stress --live
- * Smoke:  ./build/examples/c/features/path_join_stress --png
+ * Build:  just example-c features/path_join
+ * Run:    ./build/examples/c/features/path_join --live
+ * Smoke:  ./build/examples/c/features/path_join --png
  */
 
 
@@ -35,13 +35,13 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH          1600u
-#define HEIGHT         1200u
-#define MAX_POINTS     96u
-#define MAX_SUBPATHS   4u
-#define JOIN_COUNT     3u
-#define STAR_POINTS    5u
-#define CLOSED_POINTS  (2u * STAR_POINTS + 1u)
+#define WIDTH         1600u
+#define HEIGHT        1200u
+#define MAX_POINTS    96u
+#define MAX_SUBPATHS  4u
+#define JOIN_COUNT    3u
+#define STAR_POINTS   5u
+#define CLOSED_POINTS (2u * STAR_POINTS + 1u)
 
 static const float TAU = 6.28318530718f;
 
@@ -51,7 +51,7 @@ static const float TAU = 6.28318530718f;
 /*  Function prototypes                                                                          */
 /*************************************************************************************************/
 
-DvzScenarioSpec dvz_example_path_join_stress_scenario(void);
+DvzScenarioSpec dvz_example_path_join_scenario(void);
 
 
 
@@ -141,11 +141,7 @@ static void _append_zigzag_path(
 {
     const uint32_t first = *count;
     const vec2 pts[] = {
-        {-0.25f, -0.10f},
-        {-0.10f, +0.14f},
-        {+0.03f, -0.12f},
-        {+0.16f, +0.13f},
-        {+0.27f, -0.10f},
+        {-0.25f, -0.10f}, {-0.10f, +0.14f}, {+0.03f, -0.12f}, {+0.16f, +0.13f}, {+0.27f, -0.10f},
     };
     for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(pts); i++)
         _append_point(
@@ -235,8 +231,8 @@ static void _append_closed_star_path(
  * @param color base stroke color
  * @return true when the visual was added
  */
-static bool _add_join_column(
-    DvzScene* scene, DvzPanel* panel, DvzPathJoin join, float cx, DvzColor color)
+static bool
+_add_join_column(DvzScene* scene, DvzPanel* panel, DvzPathJoin join, float cx, DvzColor color)
 {
     ANN(scene);
     ANN(panel);
@@ -255,14 +251,14 @@ static bool _add_join_column(
 
     _append_v_path(
         positions, colors, widths, &count, subpaths, &subpath_count, cx, +0.61f, translucent,
-        58.0f);
+        48.0f);
     _append_zigzag_path(
         positions, colors, widths, &count, subpaths, &subpath_count, cx, +0.19f, translucent,
-        46.0f);
+        36.0f);
     _append_open_star_path(
-        positions, colors, widths, &count, subpaths, &subpath_count, cx, -0.23f, opaque, 38.0f);
+        positions, colors, widths, &count, subpaths, &subpath_count, cx, -0.23f, opaque, 28.0f);
     _append_closed_star_path(
-        positions, colors, widths, &count, subpaths, &subpath_count, cx, -0.67f, opaque, 32.0f);
+        positions, colors, widths, &count, subpaths, &subpath_count, cx, -0.67f, opaque, 22.0f);
 
     DvzVisual* visual = dvz_path(scene, 0);
     if (visual == NULL)
@@ -296,7 +292,7 @@ static bool _add_join_column(
 /*************************************************************************************************/
 
 /**
- * Initialize the path join stress scenario.
+ * Initialize the path join scenario.
  *
  * @param ctx scenario context
  * @param out_user scenario state output
@@ -342,15 +338,15 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
 
 /**
- * Return the path join stress scenario specification.
+ * Return the path join scenario specification.
  *
  * @return scenario specification
  */
-DvzScenarioSpec dvz_example_path_join_stress_scenario(void)
+DvzScenarioSpec dvz_example_path_join_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_path_join_stress",
-        .title = "path_join_stress",
+        .id = "feature_path_join",
+        .title = "path_join",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
@@ -365,7 +361,7 @@ DvzScenarioSpec dvz_example_path_join_stress_scenario(void)
 /*************************************************************************************************/
 
 /**
- * Run the path join stress example through the native scenario runner.
+ * Run the path join example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -374,7 +370,7 @@ DvzScenarioSpec dvz_example_path_join_stress_scenario(void)
 #ifndef DVZ_EXAMPLE_NO_MAIN
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = dvz_example_path_join_stress_scenario();
+    DvzScenarioSpec spec = dvz_example_path_join_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }
 #endif
