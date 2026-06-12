@@ -137,7 +137,7 @@ _add_animated_cube(DvzScenarioContext* ctx, DvzPanel* panel, AnimationTracksStat
     rotation_desc.axis[0] = 0.35f;
     rotation_desc.axis[1] = 0.85f;
     rotation_desc.axis[2] = 0.25f;
-    rotation_desc.speed_rad_per_sec = 1.0f;
+    rotation_desc.speed_rad_per_sec = -1.0f;
     state->rotation = dvz_track_rotation(&rotation_desc);
     if (state->rotation == NULL)
         return false;

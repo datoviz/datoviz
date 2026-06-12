@@ -192,7 +192,8 @@ void example_outpath(const char* exe, const char* name, char* out, size_t size)
  * @param size output buffer size
  * @return whether DVZR recording was requested
  */
-bool example_recording_path(int argc, char** argv, const char* default_path, char* out, size_t size)
+bool example_recording_path(
+    int argc, char** argv, const char* default_path, char* out, size_t size)
 {
     if (argc < 2 || argv == NULL || default_path == NULL || out == NULL || size == 0)
         return false;
@@ -356,14 +357,14 @@ DvzCameraDesc example_default_3d_camera_desc(float extent)
 
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = -0.18f * extent;
-    camera.eye[1] = -3.05f * extent;
-    camera.eye[2] = +1.28f * extent;
+    camera.eye[1] = +2.0f * extent;
+    camera.eye[2] = +2.0f * extent;
     camera.target[0] = 0.0f;
     camera.target[1] = 0.0f;
     camera.target[2] = 0.0f;
     camera.up[0] = 0.0f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
+    camera.up[1] = 1.0f;
+    camera.up[2] = 0.0f;
     camera.fov_y = 0.66f;
     camera.near = 0.05f;
     camera.far = 100.0f * extent;
@@ -398,9 +399,9 @@ void example_default_light_direction(vec3 out)
     if (out == NULL)
         return;
 
-    out[0] = -0.20f;
+    out[0] = +0.20f;
     out[1] = -0.36f;
-    out[2] = +0.74f;
+    out[2] = -0.74f;
 }
 
 
@@ -413,9 +414,9 @@ DvzMaterialDesc example_default_phong_material_desc(void)
 {
     DvzMaterialDesc material = dvz_phong_material_desc();
     example_default_light_direction(material.light_direction);
-    material.phong.ambient = 0.28f;
-    material.phong.diffuse = 0.80f;
-    material.phong.specular = 0.18f;
+    material.phong.ambient = 0.5f;
+    material.phong.diffuse = 0.8f;
+    material.phong.specular = 0.3f;
     material.phong.shininess = 24.0f;
     return material;
 }
@@ -514,7 +515,7 @@ bool example_add_xz_reference_grid(DvzPanel* panel, float origin_y, float size)
  */
 bool example_add_default_xz_reference_grid(DvzPanel* panel, float origin_y)
 {
-    return example_add_xz_reference_grid(panel, origin_y, 5.0f);
+    return example_add_xz_reference_grid(panel, origin_y, 8.0f);
 }
 
 
@@ -570,10 +571,7 @@ bool example_add_default_panel_label(DvzPanel* panel, const char* label)
  * @return true when the panel was configured
  */
 bool example_configure_equal_aspect_panel(
-    DvzPanel* panel,
-    DvzDataDomain x,
-    DvzDataDomain y,
-    double padding,
+    DvzPanel* panel, DvzDataDomain x, DvzDataDomain y, double padding,
     const DvzPanelLayoutReserve* reserve)
 {
     if (panel == NULL)
@@ -653,9 +651,7 @@ void example_set_default_arcball(DvzArcball* arcball)
  * @return uploaded mesh visual, or NULL on error
  */
 DvzVisual* example_graphite_cyan_cube_mesh(
-    DvzScene* scene,
-    double size,
-    const ExampleStyleColorRole face_roles[6],
+    DvzScene* scene, double size, const ExampleStyleColorRole face_roles[6],
     DvzGeometry** out_geometry)
 {
     if (out_geometry != NULL)
@@ -705,12 +701,8 @@ DvzVisual* example_graphite_cyan_cube_mesh(
  * @return true on success
  */
 bool example_visual_spin(
-    DvzScene* scene,
-    DvzVisual* visual,
-    vec3 axis,
-    float speed_rad_per_sec,
-    DvzController* controller,
-    DvzExampleVisualSpin* out)
+    DvzScene* scene, DvzVisual* visual, vec3 axis, float speed_rad_per_sec,
+    DvzController* controller, DvzExampleVisualSpin* out)
 {
     if (scene == NULL || visual == NULL || out == NULL)
         return false;
