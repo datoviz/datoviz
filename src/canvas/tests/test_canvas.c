@@ -1444,6 +1444,14 @@ static int test_canvas_offscreen_live_generation_on_resize(TstContext* suite, co
     };
     AT(dvz_canvas_configure_live_image_sink(canvas, true, &live_cfg) == 0);
 
+    CanvasRefreshProbeState refresh_probe = {
+        .awaiting_refresh = false,
+        .saw_update_since_refresh = false,
+        .latest_memory_fd = -1,
+        .latest_wait_semaphore_fd = -1,
+    };
+    AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &refresh_probe) == 0);
+
     for (uint32_t i = 0; i < 2; ++i)
     {
         AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
@@ -1452,6 +1460,8 @@ static int test_canvas_offscreen_live_generation_on_resize(TstContext* suite, co
     AT(probe.callback_count == 2);
     AT(probe.invalid_image_count == 0);
     AT(probe.generation_change_count == 0);
+    AT(refresh_probe.start_count >= 1);
+    AT(refresh_probe.update_count == 0);
     uint64_t first_generation = probe.last_resource_generation;
     AT(first_generation > 0);
 
@@ -1462,6 +1472,10 @@ static int test_canvas_offscreen_live_generation_on_resize(TstContext* suite, co
     AT(probe.invalid_image_count == 0);
     AT(probe.generation_change_count == 1);
     AT(probe.last_resource_generation > first_generation);
+    AT(refresh_probe.update_count == 1);
+    AT(refresh_probe.latest_handles_dirty);
+    AT(refresh_probe.latest_extent.width == 400);
+    AT(refresh_probe.latest_extent.height == 300);
 
 offscreen_generation_cleanup:
     if (skip_reason != NULL)

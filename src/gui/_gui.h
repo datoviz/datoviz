@@ -50,6 +50,9 @@ typedef struct DvzGuiViewportDebugState
 } DvzGuiViewportDebugState;
 
 
+typedef int (*DvzGuiViewportResolveCallback)(DvzView* view, void* user_data);
+
+
 
 EXTERN_C_ON
 
@@ -65,6 +68,8 @@ bool _dvz_gui_config_validate(const DvzGuiConfig* config);
 void _dvz_gui_destroy(DvzGui* gui);
 void _dvz_gui_set_callback(DvzGui* gui, DvzGuiCallback callback, void* user_data);
 void _dvz_gui_begin_frame(DvzGui* gui, DvzView* view, const DvzStreamFrame* frame);
+bool _dvz_gui_resolve_viewports(
+    DvzGui* gui, DvzGuiViewportResolveCallback callback, void* user_data);
 void _dvz_gui_fps_overlay(
     DvzGui* gui, double fps, double frame_ms, uint32_t frames, double elapsed_s);
 void _dvz_gui_render_frame(DvzGui* gui, const DvzStreamFrame* frame);

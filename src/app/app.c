@@ -3081,6 +3081,30 @@ static void _app_render_gui_frame(DvzView* win, const DvzStreamFrame* frame)
     if (win->gui != NULL)
         _dvz_gui_render_frame(win->gui, frame);
 }
+
+
+
+/**
+ * Render one GUI viewport source view synchronously during strict GUI viewport resolution.
+ *
+ * @param source offscreen source view
+ * @param user_data parent app
+ * @return 0 on success, negative on failure
+ */
+static int _app_resolve_gui_viewport(DvzView* source, void* user_data)
+{
+    ANN(source);
+    DvzApp* app = (DvzApp*)user_data;
+    ANN(app);
+    dvz_view_set_render_enabled(source, true);
+    int rc = dvz_view_render_once(source);
+    if (rc != DVZ_CANVAS_FRAME_READY)
+        return -1;
+    DvzDevice* device = dvz_gpu_ctx_device(app->gpu_ctx);
+    if (device != NULL)
+        dvz_device_wait(device);
+    return 0;
+}
 #endif
 
 
@@ -3109,6 +3133,11 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
             _dvz_gui_fps_overlay(
                 win->gui, win->fps, win->fps_frame_ms, win->fps_last_sample_frames,
                 win->fps_last_sample_elapsed_s);
+        }
+        if (!_dvz_gui_resolve_viewports(win->gui, _app_resolve_gui_viewport, app))
+        {
+            log_error("_app_draw failed to resolve strict GUI viewports");
+            return;
         }
     }
 #endif

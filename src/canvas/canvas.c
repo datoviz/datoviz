@@ -484,9 +484,10 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
     VkExtent2D extent = canvas->surface ? canvas->surface->extent : (VkExtent2D){0, 0};
     VkFormat format =
         canvas->cfg.color_format != VK_FORMAT_UNDEFINED ? canvas->cfg.color_format : DVZ_DEFAULT_COLOR_FORMAT;
-    if (
+    bool resource_recreated =
         !canvas->offscreen_ready || canvas->offscreen_extent.width != extent.width ||
-        canvas->offscreen_extent.height != extent.height || canvas->offscreen_format != format)
+        canvas->offscreen_extent.height != extent.height || canvas->offscreen_format != format;
+    if (resource_recreated)
     {
         canvas_offscreen_retire_resources(canvas);
         if (canvas_offscreen_create_resources(canvas, extent, format) != 0)
@@ -528,7 +529,7 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
     frame->memory = VK_NULL_HANDLE;
     frame->memory_size = 0;
     frame->memory_fd = canvas->offscreen_memory_fd;
-    frame->handles_dirty = false;
+    frame->handles_dirty = resource_recreated;
     dvz_commands_free(cmds);
     return 0;
 }
@@ -1376,15 +1377,17 @@ int dvz_canvas_frame(DvzCanvas* canvas)
     bool stream_started_now = !stream_was_started && canvas->stream_started;
     if (canvas_is_offscreen_mode(canvas))
     {
-        // Offscreen contract: frame metadata stays stable within a stream lifecycle, so canvas
-        // never routes per-frame metadata through stream->update() in this mode.
         if (stream_started_now && frame->handles_dirty)
         {
             frame->handles_dirty = false;
         }
         else if (frame->handles_dirty)
         {
-            log_warn("offscreen frame reported dirty handles; clearing without stream update");
+            if (dvz_stream_update(canvas->stream, frame) != 0)
+            {
+                log_error("failed to refresh offscreen canvas stream frame handles");
+                return -1;
+            }
             frame->handles_dirty = false;
         }
     }

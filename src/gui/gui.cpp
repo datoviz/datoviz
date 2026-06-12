@@ -144,8 +144,17 @@ struct DvzGuiViewport
     uint32_t pending_height;
     uint32_t pending_stable_frames;
     uint32_t stale_frame_count;
+    uint32_t frame_request_width;
+    uint32_t frame_request_height;
+    uint32_t frame_request_framebuffer_width;
+    uint32_t frame_request_framebuffer_height;
+    ImDrawList* frame_draw_list;
+    ImVec2 frame_image_min;
+    ImVec2 frame_image_max;
     bool owns_source;
     bool visible;
+    bool frame_visible;
+    bool frame_resolved;
     bool has_frame;
     bool texture_dirty;
     bool keyboard_focused;
@@ -167,6 +176,8 @@ struct DvzGuiViewport
 
 static void _gui_request_frame(DvzGui* gui);
 static bool _gui_update_followup_frame_state(DvzGui* gui);
+static bool _gui_viewport_ensure_texture(DvzGuiViewport* viewport);
+static bool _gui_viewport_display_drawable(const DvzGuiViewport* viewport);
 
 
 
@@ -434,6 +445,73 @@ static void _gui_viewport_set_visible(DvzGuiViewport* viewport, bool visible)
         (viewport->config.viewport_flags & DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN) != 0;
     const bool enabled = visible || !viewport->has_frame || render_hidden;
     dvz_view_set_render_enabled(viewport->source, enabled);
+}
+
+
+/**
+ * Clear the current ImGui-frame presentation request for a viewport.
+ *
+ * @param viewport GUI viewport
+ */
+static void _gui_viewport_reset_frame_request(DvzGuiViewport* viewport)
+{
+    ANN(viewport);
+    viewport->frame_visible = false;
+    viewport->frame_resolved = false;
+    viewport->frame_request_width = 0;
+    viewport->frame_request_height = 0;
+    viewport->frame_request_framebuffer_width = 0;
+    viewport->frame_request_framebuffer_height = 0;
+    viewport->frame_draw_list = NULL;
+    viewport->frame_image_min = ImVec2(0.0f, 0.0f);
+    viewport->frame_image_max = ImVec2(0.0f, 0.0f);
+}
+
+
+
+/**
+ * Return whether the currently published source image exactly satisfies this frame's request.
+ *
+ * @param viewport GUI viewport
+ * @return whether the live image matches the requested framebuffer extent
+ */
+static bool _gui_viewport_frame_matches_request(const DvzGuiViewport* viewport)
+{
+    ANN(viewport);
+    if (!viewport->frame_visible)
+        return false;
+    if (!viewport->has_frame || !viewport->image_valid)
+        return false;
+    if (viewport->frame_request_framebuffer_width == 0 ||
+        viewport->frame_request_framebuffer_height == 0)
+    {
+        return false;
+    }
+    return viewport->extent.width == viewport->frame_request_framebuffer_width &&
+           viewport->extent.height == viewport->frame_request_framebuffer_height;
+}
+
+
+
+/**
+ * Draw a strictly resolved viewport image into the recorded ImGui item rect.
+ *
+ * @param viewport GUI viewport
+ */
+static void _gui_viewport_draw_resolved(DvzGuiViewport* viewport)
+{
+    ANN(viewport);
+    if (!viewport->frame_visible || viewport->frame_draw_list == NULL)
+        return;
+    if (!_gui_viewport_frame_matches_request(viewport))
+        return;
+    if (!_gui_viewport_display_drawable(viewport) || !_gui_viewport_ensure_texture(viewport))
+        return;
+
+    viewport->frame_draw_list->AddImage(
+        (ImTextureID)viewport->texture, viewport->frame_image_min, viewport->frame_image_max,
+        ImVec2(0, 0), ImVec2(1, 1));
+    viewport->frame_resolved = true;
 }
 
 
@@ -722,29 +800,6 @@ static bool _gui_viewport_display_drawable(const DvzGuiViewport* viewport)
 
 
 /**
- * Return the last accepted source frame size in logical coordinates.
- *
- * @param viewport GUI viewport
- * @param out output ImGui draw size
- */
-static void _gui_viewport_last_frame_logical_size(const DvzGuiViewport* viewport, ImVec2* out)
-{
-    ANN(viewport);
-    ANN(out);
-    float scale = _gui_viewport_device_scale(viewport);
-    if (scale <= 0.0f || !isfinite(scale))
-        scale = 1.0f;
-    out->x = viewport->extent.width > 0 ? (float)viewport->extent.width / scale : 1.0f;
-    out->y = viewport->extent.height > 0 ? (float)viewport->extent.height / scale : 1.0f;
-    if (out->x < 1.0f)
-        out->x = 1.0f;
-    if (out->y < 1.0f)
-        out->y = 1.0f;
-}
-
-
-
-/**
  * Receive a live source-canvas image after submission.
  *
  * @param frame live image metadata
@@ -811,63 +866,6 @@ static void _gui_viewport_resize_source(DvzGuiViewport* viewport, uint32_t width
     viewport->requested_framebuffer_width = framebuffer_width;
     viewport->requested_framebuffer_height = framebuffer_height;
     viewport->stale_frame_count = 0;
-    if (viewport->canvas != NULL)
-    {
-        DvzCanvasLiveImageSinkConfig cfg = dvz_canvas_live_image_sink_config();
-        cfg.callback = _gui_viewport_live_image_callback;
-        cfg.user_data = viewport;
-        (void)dvz_canvas_configure_live_image_sink(viewport->canvas, false, NULL);
-        if (dvz_canvas_configure_live_image_sink(viewport->canvas, true, &cfg) != 0)
-            log_error("failed to rebuild Datoviz GUI viewport live-image sink after resize");
-    }
-}
-
-
-
-/**
- * Request a source resize after the docked content size has stabilized.
- *
- * @param viewport GUI viewport
- * @param width new source width
- * @param height new source height
- */
-static void _gui_viewport_request_resize(DvzGuiViewport* viewport, uint32_t width, uint32_t height)
-{
-    ANN(viewport);
-    if (viewport->requested_width == width && viewport->requested_height == height)
-    {
-        viewport->pending_width = 0;
-        viewport->pending_height = 0;
-        viewport->pending_stable_frames = 0;
-        return;
-    }
-
-    if (viewport->requested_width == 0 || viewport->requested_height == 0 ||
-        viewport->config.resize_delay_frames == 0)
-    {
-        _gui_viewport_resize_source(viewport, width, height);
-        viewport->pending_width = 0;
-        viewport->pending_height = 0;
-        viewport->pending_stable_frames = 0;
-        return;
-    }
-
-    if (viewport->pending_width != width || viewport->pending_height != height)
-    {
-        viewport->pending_width = width;
-        viewport->pending_height = height;
-        viewport->pending_stable_frames = 0;
-        return;
-    }
-
-    viewport->pending_stable_frames++;
-    if (viewport->pending_stable_frames >= viewport->config.resize_delay_frames)
-    {
-        _gui_viewport_resize_source(viewport, width, height);
-        viewport->pending_width = 0;
-        viewport->pending_height = 0;
-        viewport->pending_stable_frames = 0;
-    }
 }
 
 
@@ -1445,6 +1443,8 @@ void _dvz_gui_begin_frame(DvzGui* gui, DvzView* win, const DvzStreamFrame* frame
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+    for (DvzGuiViewport* viewport = gui->viewports; viewport != NULL; viewport = viewport->next)
+        _gui_viewport_reset_frame_request(viewport);
     if (
         ImGui::IsMouseClicked(ImGuiMouseButton_Left) ||
         ImGui::IsMouseClicked(ImGuiMouseButton_Right) ||
@@ -1457,6 +1457,57 @@ void _dvz_gui_begin_frame(DvzGui* gui, DvzView* win, const DvzStreamFrame* frame
     _gui_submit_dockspace(gui);
     if (gui->callback != NULL)
         gui->callback(gui, win, gui->callback_user_data);
+}
+
+
+
+/**
+ * Resolve all visible GUI viewport presentation requests for the current ImGui frame.
+ *
+ * @param gui GUI overlay
+ * @param callback callback rendering one offscreen source view synchronously
+ * @param user_data opaque callback user data
+ * @return whether all visible viewport requests were resolved exactly
+ */
+bool _dvz_gui_resolve_viewports(
+    DvzGui* gui, DvzGuiViewportResolveCallback callback, void* user_data)
+{
+    ANN(gui);
+    _gui_set_current(gui);
+    bool ok = true;
+    for (DvzGuiViewport* viewport = gui->viewports; viewport != NULL; viewport = viewport->next)
+    {
+        if (!viewport->frame_visible)
+            continue;
+        if (viewport->source == NULL)
+        {
+            ok = false;
+            continue;
+        }
+
+        _gui_viewport_resize_source(
+            viewport, viewport->frame_request_width, viewport->frame_request_height);
+        if (!_gui_viewport_frame_matches_request(viewport))
+        {
+            if (callback == NULL || callback(viewport->source, user_data) < 0)
+            {
+                ok = false;
+                continue;
+            }
+        }
+        if (!_gui_viewport_frame_matches_request(viewport))
+        {
+            log_error(
+                "Datoviz GUI viewport unresolved: requested %ux%u framebuffer, got %ux%u",
+                viewport->frame_request_framebuffer_width,
+                viewport->frame_request_framebuffer_height,
+                viewport->extent.width, viewport->extent.height);
+            ok = false;
+            continue;
+        }
+        _gui_viewport_draw_resolved(viewport);
+    }
+    return ok;
 }
 
 
@@ -2325,39 +2376,31 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
             avail.x, viewport->config.min_width, viewport->config.resize_step);
         uint32_t height = _gui_viewport_dimension(
             avail.y, viewport->config.min_height, viewport->config.resize_step);
-        if (width > 0 && height > 0)
-            _gui_viewport_request_resize(viewport, width, height);
+        ImVec2 image_min = ImGui::GetCursorScreenPos();
+        ImVec2 image_max = ImVec2(image_min.x + avail.x, image_min.y + avail.y);
+        ImGui::PushID(viewport);
+        ImGui::InvisibleButton(
+            "image", avail,
+            ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight |
+                ImGuiButtonFlags_MouseButtonMiddle);
+        ImGui::PopID();
+        _gui_viewport_update_mouse(viewport, image_min, avail);
+        if ((viewport->config.viewport_flags & DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT) != 0)
+            _gui_viewport_forward_input(viewport, image_min, avail);
 
-        const bool display_ready = _gui_viewport_display_ready(viewport, width, height);
-        if (!display_ready && viewport->has_frame)
+        float scale = _gui_viewport_device_scale(viewport);
+        viewport->frame_visible = width > 0 && height > 0;
+        viewport->frame_request_width = width;
+        viewport->frame_request_height = height;
+        viewport->frame_request_framebuffer_width = _gui_viewport_scale_dimension(width, scale);
+        viewport->frame_request_framebuffer_height = _gui_viewport_scale_dimension(height, scale);
+        viewport->frame_draw_list = ImGui::GetWindowDrawList();
+        viewport->frame_image_min = image_min;
+        viewport->frame_image_max = image_max;
+        if (viewport->frame_visible)
+        {
             _gui_request_frame(gui);
-
-        if (_gui_viewport_display_drawable(viewport) && _gui_viewport_ensure_texture(viewport))
-        {
-            ImVec2 image_min = ImGui::GetCursorScreenPos();
-            ImVec2 image_size = avail;
-            if (!display_ready)
-                _gui_viewport_last_frame_logical_size(viewport, &image_size);
-            ImVec2 image_max = ImVec2(image_min.x + image_size.x, image_min.y + image_size.y);
-            ImGui::PushID(viewport);
-            ImGui::InvisibleButton(
-                "image", avail,
-                ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight |
-                    ImGuiButtonFlags_MouseButtonMiddle);
-            ImGui::PopID();
-            ImGui::PushClipRect(
-                image_min, ImVec2(image_min.x + avail.x, image_min.y + avail.y), true);
-            ImGui::GetWindowDrawList()->AddImage(
-                (ImTextureID)viewport->texture, image_min, image_max, ImVec2(0, 0), ImVec2(1, 1));
-            ImGui::PopClipRect();
-            _gui_viewport_update_mouse(viewport, image_min, avail);
-            if ((viewport->config.viewport_flags & DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT) != 0)
-                _gui_viewport_forward_input(viewport, image_min, avail);
             shown = true;
-        }
-        else
-        {
-            ImGui::Dummy(avail);
         }
     }
     ImGui::End();
