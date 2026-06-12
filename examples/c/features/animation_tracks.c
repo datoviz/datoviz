@@ -187,14 +187,10 @@ _add_camera_hover(DvzScenarioContext* ctx, DvzCamera* camera, AnimationTracksSta
     eye_desc.count = DVZ_ARRAY_COUNT(times);
     eye_desc.times = times;
     eye_desc.values = eyes;
+    eye_desc.topology = DVZ_TRACK_TOPOLOGY_CLOSED;
     eye_desc.repeat = DVZ_TRACK_REPEAT_LOOP;
     eye_desc.interpolation = DVZ_TRACK_INTERP_CATMULL_ROM;
     state->camera_eye = dvz_track_keyframes(&eye_desc);
-    // state->camera_eye = dvz_track_constant(&(DvzTrackConstantDesc){
-    //     DVZ_STRUCT_INIT_FIELDS(DvzTrackConstantDesc),
-    //     .type = DVZ_TRACK_VEC3,
-    //     .value = (float[3]){0.0f, 0.0f, 0.0f},
-    // });
     if (state->camera_eye == NULL)
         return false;
 
@@ -274,19 +270,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!_add_camera_hover(ctx, panel_camera, state))
         return false;
 
-    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    DvzController* controller = dvz_orbit_camera(ctx->scene, NULL);
     if (controller == NULL)
-        return false;
-    DvzArcball* arcball = dvz_controller_arcball(controller);
-    if (arcball == NULL)
         return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
-    dvz_arcball_set(arcball, (vec3){+0.42f, -0.18f, +0.20f});
     dvz_anim_set_interaction_policy(
-        state->visual_animation, controller, DVZ_ANIM_INTERACTION_RESUME_AFTER_IDLE, 0.8);
-    dvz_anim_set_interaction_policy(
-        state->camera_animation, controller, DVZ_ANIM_INTERACTION_RESUME_AFTER_IDLE, 0.8);
+        state->camera_animation, controller, DVZ_ANIM_INTERACTION_PAUSE, 0);
     return true;
 }
 
@@ -329,7 +319,7 @@ DvzScenarioSpec dvz_example_animation_tracks_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .requirements = DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_FRAME_CALLBACKS |
-                        DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_ARCBALL,
+                        DVZ_SCENARIO_REQ_CONTROLLER,
         .init = _scenario_init,
         .destroy = _scenario_destroy,
     };
