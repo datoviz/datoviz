@@ -1467,7 +1467,8 @@ typedef struct DvzPathStrokeGpuCache DvzPathStrokeGpuCache;
 struct DvzPathStrokeGpuCache
 {
     float* position_prev;
-    float* position_curr;
+    float* position_start;
+    float* position_end;
     float* position_next;
     DvzColor* color;
     float* line_width;

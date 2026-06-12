@@ -118,6 +118,7 @@ bool _scene_visual_meta_is_stroked_path(
     return _scene_visual_resource_lookup_label(state, meta->position_start_id) != 0 &&
            _scene_visual_resource_lookup_label(state, meta->position_id) != 0 &&
            _scene_visual_resource_lookup_label(state, meta->position_end_id) != 0 &&
+           _scene_visual_resource_lookup_label(state, meta->position_next_id) != 0 &&
            _scene_visual_resource_lookup_label(state, meta->line_width_id) != 0 &&
            _scene_visual_resource_lookup_label(state, meta->path_flags_id) != 0 &&
            _scene_visual_resource_lookup_label(state, meta->path_distance_id) != 0 &&

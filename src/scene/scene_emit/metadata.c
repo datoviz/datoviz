@@ -120,6 +120,10 @@ bool _scene_visual_frame_plan_metadata(
             sizeof(metadata->position_end_id)))
         return false;
     if (!_scene_attr_resource_key(
+            figure, visual, visual_index, "position_next", metadata->position_next_id,
+            sizeof(metadata->position_next_id)))
+        return false;
+    if (!_scene_attr_resource_key(
             figure, visual, visual_index, "color", metadata->color_id, sizeof(metadata->color_id)))
         return false;
     if (!_scene_attr_resource_key(
@@ -201,6 +205,10 @@ bool _scene_visual_frame_plan_metadata(
         if (!_scene_visual_attr_resource_key(
                 figure, visual, visual_index, "path_distance", metadata->path_distance_id,
                 sizeof(metadata->path_distance_id)))
+            return false;
+        if (!_scene_visual_attr_resource_key(
+                figure, visual, visual_index, "position_next", metadata->position_next_id,
+                sizeof(metadata->position_next_id)))
             return false;
     }
     if (stroke || _scene_visual_needs_material_params(visual))

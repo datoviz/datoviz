@@ -16,12 +16,13 @@ layout(set = 1, binding = 0) uniform SceneMaterial {
 } material;
 
 layout(location = 0) in vec3 inPositionPrev;
-layout(location = 1) in vec3 inPositionCurr;
-layout(location = 2) in vec3 inPositionNext;
-layout(location = 3) in vec4 inColor;
-layout(location = 4) in float inLineWidth;
-layout(location = 5) in uint inPathFlags;
-layout(location = 6) in float inPathDistance;
+layout(location = 1) in vec3 inPositionStart;
+layout(location = 2) in vec3 inPositionEnd;
+layout(location = 3) in vec3 inPositionNext;
+layout(location = 4) in vec4 inColor;
+layout(location = 5) in float inLineWidth;
+layout(location = 6) in uint inPathFlags;
+layout(location = 7) in float inPathDistance;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 fragCoord;
@@ -66,6 +67,13 @@ float lineDistance(vec2 p0, vec2 p1, vec2 p)
     return length(p - h);
 }
 
+float computeU(vec2 p0, vec2 p1, vec2 p)
+{
+    vec2 v = p1 - p0;
+    float l = max(length(v), 1e-6);
+    return dot(p - p0, v) / l;
+}
+
 void main()
 {
     bool sideNegative = (inPathFlags & SIDE_NEGATIVE) != 0u;
@@ -74,89 +82,86 @@ void main()
     bool hasNext = (inPathFlags & HAS_NEXT) != 0u;
     float side = sideNegative ? -1.0 : 1.0;
 
-    vec4 prevClip = transform(inPositionPrev);
-    vec4 currClip = transform(inPositionCurr);
-    vec4 nextClip = transform(inPositionNext);
-    vec2 prevPx = clipToPixel(prevClip);
-    vec2 currPx = clipToPixel(currClip);
-    vec2 nextPx = clipToPixel(nextClip);
+    vec4 p0Clip = transform(inPositionPrev);
+    vec4 p1Clip = transform(inPositionStart);
+    vec4 p2Clip = transform(inPositionEnd);
+    vec4 p3Clip = transform(inPositionNext);
+    vec2 p0 = clipToPixel(p0Clip);
+    vec2 p1 = clipToPixel(p1Clip);
+    vec2 p2 = clipToPixel(p2Clip);
+    vec2 p3 = clipToPixel(p3Clip);
 
-    vec2 dirIn = safeNormalize(currPx - prevPx, vec2(1.0, 0.0));
-    vec2 dirOut = safeNormalize(nextPx - currPx, dirIn);
+    vec2 v0 = safeNormalize(p1 - p0, vec2(1.0, 0.0));
+    vec2 v1 = safeNormalize(p2 - p1, v0);
+    vec2 v2 = safeNormalize(p3 - p2, v1);
     if (!hasPrev)
-        dirIn = dirOut;
+        v0 = v1;
     if (!hasNext)
-        dirOut = dirIn;
-    vec2 normalIn = vec2(-dirIn.y, dirIn.x);
-    vec2 normalOut = vec2(-dirOut.y, dirOut.x);
+        v2 = v1;
+    vec2 n0 = vec2(-v0.y, v0.x);
+    vec2 n1 = vec2(-v1.y, v1.x);
+    vec2 n2 = vec2(-v2.y, v2.x);
 
     float strokeWidth = max(inLineWidth, 0.0);
     float halfWidth = dvz_stroke_outer_half_width(strokeWidth);
-    int joinType = int(round(material.params.z));
-    float miterLimit = max(material.params.w, 1.0);
-
-    vec2 tangent = endpointEnd ? dirIn : dirOut;
-    vec2 segmentNormal = endpointEnd ? normalIn : normalOut;
-    float lengthPx = endpointEnd ? length(currPx - prevPx) : length(nextPx - currPx);
-    float along = endpointEnd ? lengthPx : 0.0;
-    float tangentOffset = 0.0;
-
-    vec2 normal = segmentNormal;
-    vec2 miter = segmentNormal;
-    float miterScale = 1.0;
-    if (hasPrev && hasNext)
-    {
-        miter = safeNormalize(normalIn + normalOut, segmentNormal);
-        float denom = dot(miter, segmentNormal);
-        miterScale = denom > 1e-3 ? 1.0 / denom : 1.0;
-        if (joinType == 0 || joinType == 1 || (joinType == 2 && miterScale <= miterLimit))
-            normal = miter * miterScale;
-    }
+    float lengthPx = length(p2 - p1);
+    vec2 miterStart = safeNormalize(n0 + n1, n1);
+    vec2 miterEnd = safeNormalize(n1 + n2, n1);
+    float denomStart = dot(miterStart, n1);
+    float denomEnd = dot(miterEnd, n1);
+    float lengthStart = denomStart > 1e-3 ? halfWidth / denomStart : halfWidth;
+    float lengthEnd = denomEnd > 1e-3 ? halfWidth / denomEnd : halfWidth;
 
     int capType = endpointEnd ? int(round(material.params.y)) : int(round(material.params.x));
-    float capHalfWidth = halfWidth;
-    if (!hasPrev && !endpointEnd)
+    vec2 pixel = p1;
+    if (!endpointEnd)
     {
-        tangentOffset = -dvz_stroke_cap_extension(capType, strokeWidth);
-        capHalfWidth = dvz_stroke_cap_half_width(capType, strokeWidth);
-    }
-    else if (!hasNext && endpointEnd)
-    {
-        tangentOffset = dvz_stroke_cap_extension(capType, strokeWidth);
-        capHalfWidth = dvz_stroke_cap_half_width(capType, strokeWidth);
-    }
-
-    vec2 pixel = currPx + normal * side * capHalfWidth + tangent * tangentOffset;
-    gl_Position = pixelToClip(pixel, currClip.z / max(abs(currClip.w), 1e-6));
-
-    fragColor = inColor;
-    fragBevelDistance = vec2(-halfWidth);
-    fragJoinSplitDistance = halfWidth;
-    if (hasPrev && hasNext)
-    {
-        float turn = dirIn.x * dirOut.y - dirIn.y * dirOut.x;
-        float outerSide = turn > 0.0 ? -1.0 : +1.0;
-        vec2 bevelStart = currPx + outerSide * normalIn * halfWidth;
-        vec2 bevelEnd = currPx + outerSide * normalOut * halfWidth;
-        float bevelDistance = side * outerSide * lineDistance(bevelStart, bevelEnd, pixel);
-        if (endpointEnd)
-            fragBevelDistance.y = bevelDistance;
+        if (!hasPrev)
+        {
+            float capExtension = dvz_stroke_cap_extension(capType, strokeWidth);
+            float capHalfWidth = dvz_stroke_cap_half_width(capType, strokeWidth);
+            pixel = p1 - capExtension * v1 + side * capHalfWidth * n1;
+            fragCoord = vec2(-capExtension, side * capHalfWidth);
+        }
         else
-            fragBevelDistance.x = bevelDistance;
-        vec2 splitDir = safeNormalize(dirIn + dirOut, tangent);
-        float ownerSide = endpointEnd ? -1.0 : +1.0;
-        fragJoinSplitDistance = ownerSide * dot(pixel - currPx, splitDir);
-    }
-    if (hasPrev && hasNext)
-    {
-        vec2 segmentStartPx = endpointEnd ? prevPx : currPx;
-        fragCoord =
-            vec2(dot(pixel - segmentStartPx, tangent), dot(pixel - currPx, segmentNormal));
+        {
+            pixel = p1 + side * lengthStart * miterStart;
+            fragCoord = vec2(computeU(p1, p2, pixel), side * halfWidth);
+        }
     }
     else
     {
-        fragCoord = vec2(along + tangentOffset, side * capHalfWidth);
+        if (!hasNext)
+        {
+            float capExtension = dvz_stroke_cap_extension(capType, strokeWidth);
+            float capHalfWidth = dvz_stroke_cap_half_width(capType, strokeWidth);
+            pixel = p2 + capExtension * v1 + side * capHalfWidth * n1;
+            fragCoord = vec2(lengthPx + capExtension, side * capHalfWidth);
+        }
+        else
+        {
+            pixel = p2 + side * lengthEnd * miterEnd;
+            fragCoord = vec2(computeU(p1, p2, pixel), side * halfWidth);
+        }
     }
+
+    float depth = endpointEnd ? p2Clip.z / max(abs(p2Clip.w), 1e-6)
+                              : p1Clip.z / max(abs(p1Clip.w), 1e-6);
+    gl_Position = pixelToClip(pixel, depth);
+
+    fragColor = inColor;
+    fragBevelDistance = vec2(-halfWidth);
+    fragJoinSplitDistance = 0.0;
+    float turnStart = v0.x * v1.y - v0.y * v1.x;
+    float turnEnd = v1.x * v2.y - v1.y * v2.x;
+    float d0 = turnStart > 0.0 ? -1.0 : +1.0;
+    float d1 = turnEnd > 0.0 ? -1.0 : +1.0;
+    float startDistance = lineDistance(p1 + d0 * n0 * halfWidth, p1 + d0 * n1 * halfWidth, pixel);
+    float endDistance = lineDistance(p2 + d1 * n1 * halfWidth, p2 + d1 * n2 * halfWidth, pixel);
+    fragBevelDistance.x = hasPrev ? (endpointEnd ? -startDistance : side * d0 * startDistance)
+                                  : -startDistance;
+    fragBevelDistance.y = hasNext ? (endpointEnd ? -side * d1 * endDistance : -endDistance)
+                                  : -endDistance;
     fragLength = lengthPx;
     fragLineWidth = strokeWidth;
     fragHasPrev = hasPrev ? 1.0 : 0.0;

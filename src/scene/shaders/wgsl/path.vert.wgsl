@@ -3,12 +3,13 @@
 
 struct VertexIn {
     @location(0) position_prev: vec3f,
-    @location(1) position_curr: vec3f,
-    @location(2) position_next: vec3f,
-    @location(3) color: vec4f,
-    @location(4) line_width: f32,
-    @location(5) path_flags: u32,
-    @location(6) path_distance: f32,
+    @location(1) position_start: vec3f,
+    @location(2) position_end: vec3f,
+    @location(3) position_next: vec3f,
+    @location(4) color: vec4f,
+    @location(5) line_width: f32,
+    @location(6) path_flags: u32,
+    @location(7) path_distance: f32,
 }
 
 struct VertexOut {
@@ -54,6 +55,12 @@ fn line_distance(p0: vec2f, p1: vec2f, p: vec2f) -> f32 {
     return length(p - h);
 }
 
+fn compute_u(p0: vec2f, p1: vec2f, p: vec2f) -> f32 {
+    let v = p1 - p0;
+    let l = max(length(v), 1e-6);
+    return dot(p - p0, v) / l;
+}
+
 fn stroke_outer_half_width(line_width: f32) -> f32 {
     return max(line_width, 0.0) * 0.5 + 1.5;
 }
@@ -91,85 +98,78 @@ fn main(input: VertexIn) -> VertexOut {
     let has_next = (input.path_flags & HAS_NEXT) != 0u;
     let side = select(1.0, -1.0, side_negative);
 
-    let prev_clip = transform(input.position_prev);
-    let curr_clip = transform(input.position_curr);
-    let next_clip = transform(input.position_next);
-    let prev_px = clip_to_pixel(prev_clip);
-    let curr_px = clip_to_pixel(curr_clip);
-    let next_px = clip_to_pixel(next_clip);
+    let p0_clip = transform(input.position_prev);
+    let p1_clip = transform(input.position_start);
+    let p2_clip = transform(input.position_end);
+    let p3_clip = transform(input.position_next);
+    let p0 = clip_to_pixel(p0_clip);
+    let p1 = clip_to_pixel(p1_clip);
+    let p2 = clip_to_pixel(p2_clip);
+    let p3 = clip_to_pixel(p3_clip);
 
-    var dir_in = safe_normalize(curr_px - prev_px, vec2f(1.0, 0.0));
-    var dir_out = safe_normalize(next_px - curr_px, dir_in);
+    var v0 = safe_normalize(p1 - p0, vec2f(1.0, 0.0));
+    let v1 = safe_normalize(p2 - p1, v0);
+    var v2 = safe_normalize(p3 - p2, v1);
     if (!has_prev) {
-        dir_in = dir_out;
+        v0 = v1;
     }
     if (!has_next) {
-        dir_out = dir_in;
+        v2 = v1;
     }
-    let normal_in = vec2f(-dir_in.y, dir_in.x);
-    let normal_out = vec2f(-dir_out.y, dir_out.x);
+    let n0 = vec2f(-v0.y, v0.x);
+    let n1 = vec2f(-v1.y, v1.x);
+    let n2 = vec2f(-v2.y, v2.x);
 
     let stroke_width = max(input.line_width, 0.0);
     let half_width = stroke_outer_half_width(stroke_width);
-    let join_type = i32(material.params.z + 0.5);
-    let miter_limit = max(material.params.w, 1.0);
-
-    let tangent = select(dir_out, dir_in, endpoint_end);
-    let segment_normal = select(normal_out, normal_in, endpoint_end);
-    let length_px = select(length(next_px - curr_px), length(curr_px - prev_px), endpoint_end);
-    let along = select(0.0, length_px, endpoint_end);
-    var tangent_offset = 0.0;
-
-    var normal = segment_normal;
-    var miter = segment_normal;
-    var miter_scale = 1.0;
-    if (has_prev && has_next) {
-        miter = safe_normalize(normal_in + normal_out, segment_normal);
-        let denom = dot(miter, segment_normal);
-        miter_scale = select(1.0, 1.0 / denom, denom > 1e-3);
-        if (join_type == 0 || join_type == 1 || (join_type == 2 && miter_scale <= miter_limit)) {
-            normal = miter * miter_scale;
-        }
-    }
+    let length_px = length(p2 - p1);
+    let miter_start = safe_normalize(n0 + n1, n1);
+    let miter_end = safe_normalize(n1 + n2, n1);
+    let denom_start = dot(miter_start, n1);
+    let denom_end = dot(miter_end, n1);
+    let length_start = select(half_width, half_width / denom_start, denom_start > 1e-3);
+    let length_end = select(half_width, half_width / denom_end, denom_end > 1e-3);
 
     let cap_type = select(i32(material.params.x + 0.5), i32(material.params.y + 0.5), endpoint_end);
-    var cap_half_width = half_width;
-    if (!has_prev && !endpoint_end) {
-        tangent_offset = -stroke_cap_extension(cap_type, stroke_width);
-        cap_half_width = stroke_cap_half_width(cap_type, stroke_width);
-    } else if (!has_next && endpoint_end) {
-        tangent_offset = stroke_cap_extension(cap_type, stroke_width);
-        cap_half_width = stroke_cap_half_width(cap_type, stroke_width);
-    }
-
-    let pixel = curr_px + normal * side * cap_half_width + tangent * tangent_offset;
-
     var output: VertexOut;
-    output.position = pixel_to_clip(pixel, curr_clip.z / max(abs(curr_clip.w), 1e-6));
+    var pixel = p1;
+    if (!endpoint_end) {
+        if (!has_prev) {
+            let cap_extension = stroke_cap_extension(cap_type, stroke_width);
+            let cap_half_width = stroke_cap_half_width(cap_type, stroke_width);
+            pixel = p1 - cap_extension * v1 + side * cap_half_width * n1;
+            output.coord = vec2f(-cap_extension, side * cap_half_width);
+        } else {
+            pixel = p1 + side * length_start * miter_start;
+            output.coord = vec2f(compute_u(p1, p2, pixel), side * half_width);
+        }
+    } else {
+        if (!has_next) {
+            let cap_extension = stroke_cap_extension(cap_type, stroke_width);
+            let cap_half_width = stroke_cap_half_width(cap_type, stroke_width);
+            pixel = p2 + cap_extension * v1 + side * cap_half_width * n1;
+            output.coord = vec2f(length_px + cap_extension, side * cap_half_width);
+        } else {
+            pixel = p2 + side * length_end * miter_end;
+            output.coord = vec2f(compute_u(p1, p2, pixel), side * half_width);
+        }
+    }
+    let depth = select(
+        p1_clip.z / max(abs(p1_clip.w), 1e-6),
+        p2_clip.z / max(abs(p2_clip.w), 1e-6),
+        endpoint_end);
+    output.position = pixel_to_clip(pixel, depth);
     output.color = input.color;
     output.bevel_distance = vec2f(-half_width, -half_width);
-    output.join_split_distance = half_width;
-    if (has_prev && has_next) {
-        let turn = dir_in.x * dir_out.y - dir_in.y * dir_out.x;
-        let outer_side = select(1.0, -1.0, turn > 0.0);
-        let bevel_start = curr_px + normal_in * outer_side * half_width;
-        let bevel_end = curr_px + normal_out * outer_side * half_width;
-        let bevel_distance = side * outer_side * line_distance(bevel_start, bevel_end, pixel);
-        if (endpoint_end) {
-            output.bevel_distance.y = bevel_distance;
-        } else {
-            output.bevel_distance.x = bevel_distance;
-        }
-        let split_dir = safe_normalize(dir_in + dir_out, tangent);
-        let owner_side = select(1.0, -1.0, endpoint_end);
-        output.join_split_distance = owner_side * dot(pixel - curr_px, split_dir);
-    }
-    if (has_prev && has_next) {
-        let segment_start_px = select(curr_px, prev_px, endpoint_end);
-        output.coord = vec2f(dot(pixel - segment_start_px, tangent), dot(pixel - curr_px, segment_normal));
-    } else {
-        output.coord = vec2f(along + tangent_offset, side * cap_half_width);
-    }
+    output.join_split_distance = 0.0;
+    let turn_start = v0.x * v1.y - v0.y * v1.x;
+    let turn_end = v1.x * v2.y - v1.y * v2.x;
+    let d0 = select(1.0, -1.0, turn_start > 0.0);
+    let d1 = select(1.0, -1.0, turn_end > 0.0);
+    let start_distance = line_distance(p1 + d0 * n0 * half_width, p1 + d0 * n1 * half_width, pixel);
+    let end_distance = line_distance(p2 + d1 * n1 * half_width, p2 + d1 * n2 * half_width, pixel);
+    output.bevel_distance.x = select(-start_distance, select(side * d0 * start_distance, -start_distance, endpoint_end), has_prev);
+    output.bevel_distance.y = select(-end_distance, select(-end_distance, -side * d1 * end_distance, endpoint_end), has_next);
     output.length_px = length_px;
     output.line_width = stroke_width;
     output.has_prev = select(0.0, 1.0, has_prev);

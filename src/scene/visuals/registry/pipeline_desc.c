@@ -159,10 +159,10 @@ void _scene_visual_pipeline_desc_apply_query_pick(
         pipeline->strides[2] = sizeof(uint32_t);
         pipeline->formats[2] = VK_FORMAT_R32_UINT;
     }
-    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_PATH && pipeline->attr_count > 3)
+    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_PATH && pipeline->attr_count > 4)
     {
-        pipeline->strides[3] = sizeof(uint32_t);
-        pipeline->formats[3] = VK_FORMAT_R32_UINT;
+        pipeline->strides[4] = sizeof(uint32_t);
+        pipeline->formats[4] = VK_FORMAT_R32_UINT;
     }
     else if (visual->kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE && pipeline->attr_count > 1)
     {

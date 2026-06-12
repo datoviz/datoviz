@@ -266,7 +266,9 @@ bool _path_stroke_cache_rebuild(DvzVisual* visual)
     if (!_path_stroke_cache_resize(
             (void**)&cache->position_prev, vertex_count, 3 * sizeof(float)) ||
         !_path_stroke_cache_resize(
-            (void**)&cache->position_curr, vertex_count, 3 * sizeof(float)) ||
+            (void**)&cache->position_start, vertex_count, 3 * sizeof(float)) ||
+        !_path_stroke_cache_resize(
+            (void**)&cache->position_end, vertex_count, 3 * sizeof(float)) ||
         !_path_stroke_cache_resize(
             (void**)&cache->position_next, vertex_count, 3 * sizeof(float)) ||
         !_path_stroke_cache_resize((void**)&cache->color, vertex_count, sizeof(DvzColor)) ||
@@ -295,16 +297,16 @@ bool _path_stroke_cache_rebuild(DvzVisual* visual)
         {
             uint64_t i0 = offset + i;
             uint64_t i1 = i0 + 1;
+            uint64_t prev_idx = _path_stroke_prev_index(i0, offset, length, closed);
+            uint64_t next_idx = _path_stroke_next_index(i1, offset, length, closed);
+            bool has_prev = prev_idx != i0;
+            bool has_next = next_idx != i1;
             float edge_length = _path_stroke_point_distance(position, i0, i1);
             for (uint32_t j = 0; j < 4; j++)
             {
                 bool endpoint_end = j >= 2;
                 bool side_negative = j == 1 || j == 2;
                 uint64_t point_idx = endpoint_end ? i1 : i0;
-                uint64_t prev_idx = _path_stroke_prev_index(point_idx, offset, length, closed);
-                uint64_t next_idx = _path_stroke_next_index(point_idx, offset, length, closed);
-                bool has_prev = prev_idx != point_idx;
-                bool has_next = next_idx != point_idx;
                 bool subpath_start = !closed && point_idx == offset;
                 bool subpath_end = !closed && point_idx + 1 == offset + length;
                 uint64_t dst = 4 * segment + j;
@@ -312,7 +314,10 @@ bool _path_stroke_cache_rebuild(DvzVisual* visual)
                     &cache->position_prev[3 * dst], 3 * sizeof(float), &position[3 * prev_idx],
                     3 * sizeof(float));
                 dvz_memcpy(
-                    &cache->position_curr[3 * dst], 3 * sizeof(float), &position[3 * point_idx],
+                    &cache->position_start[3 * dst], 3 * sizeof(float), &position[3 * i0],
+                    3 * sizeof(float));
+                dvz_memcpy(
+                    &cache->position_end[3 * dst], 3 * sizeof(float), &position[3 * i1],
                     3 * sizeof(float));
                 dvz_memcpy(
                     &cache->position_next[3 * dst], 3 * sizeof(float), &position[3 * next_idx],

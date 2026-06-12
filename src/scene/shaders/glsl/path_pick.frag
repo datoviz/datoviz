@@ -33,22 +33,12 @@ void main()
     float aa = 1.0;
     if (fragCoord.x < 0.0)
     {
-        if (fragHasPrev >= 0.5)
+        if (fragHasPrev >= 0.5 && joinType == 1)
         {
-            if (joinType == 1)
-            {
-                distance = length(fragCoord);
-                alpha = dvz_stroke_alpha(distance, fragLineWidth);
-            }
-            else if (joinType == 0)
-            {
-                int capType = 5;
-                alpha = dvz_stroke_cap_alpha(capType, -fragCoord.x, fragCoord.y, fragLineWidth);
-                distance =
-                    dvz_stroke_cap_distance(capType, fragCoord.x, fragCoord.y, fragLineWidth);
-            }
+            distance = length(fragCoord);
+            alpha = dvz_stroke_alpha(distance, fragLineWidth);
         }
-        else
+        else if (fragHasPrev < 0.5)
         {
             int capType = int(round(material.params.x));
             alpha = dvz_stroke_cap_alpha(capType, -fragCoord.x, fragCoord.y, fragLineWidth);
@@ -57,23 +47,12 @@ void main()
     }
     else if (fragCoord.x > fragLength)
     {
-        if (fragHasNext >= 0.5)
+        if (fragHasNext >= 0.5 && joinType == 1)
         {
-            if (joinType == 1)
-            {
-                distance = length(fragCoord - vec2(fragLength, 0.0));
-                alpha = dvz_stroke_alpha(distance, fragLineWidth);
-            }
-            else if (joinType == 0)
-            {
-                int capType = 5;
-                alpha = dvz_stroke_cap_alpha(
-                    capType, fragCoord.x - fragLength, fragCoord.y, fragLineWidth);
-                distance = dvz_stroke_cap_distance(
-                    capType, fragCoord.x - fragLength, fragCoord.y, fragLineWidth);
-            }
+            distance = length(fragCoord - vec2(fragLength, 0.0));
+            alpha = dvz_stroke_alpha(distance, fragLineWidth);
         }
-        else
+        else if (fragHasNext < 0.5)
         {
             int capType = int(round(material.params.y));
             alpha = dvz_stroke_cap_alpha(
@@ -86,17 +65,8 @@ void main()
     float miterLimit = max(material.params.w, 1.0);
     float miterClip = (miterLimit - 1.0) * (fragLineWidth * 0.5) + aa;
     float bevelClip = aa;
-    float bevelExtent = max(fragLineWidth, 0.0) * 0.5 + 2.0;
-    bool startBevel =
-        joinType == 2 && fragHasPrev >= 0.5 && fragCoord.x < bevelExtent;
-    bool endBevel =
-        joinType == 2 && fragHasNext >= 0.5 && fragCoord.x > fragLength - bevelExtent;
-    bool startJoin = fragHasPrev >= 0.5 && fragCoord.x < bevelExtent;
-    bool endJoin = fragHasNext >= 0.5 && fragCoord.x > fragLength - bevelExtent;
-    bool outerJoin = (startJoin && fragBevelDistance.x > -bevelClip) ||
-                     (endJoin && fragBevelDistance.y > -bevelClip);
-    if (joinType == 2 && outerJoin && fragJoinSplitDistance < 0.0)
-        discard;
+    bool startBevel = joinType == 2 && fragCoord.x < 0.0 && fragHasPrev >= 0.5;
+    bool endBevel = joinType == 2 && fragCoord.x > fragLength && fragHasNext >= 0.5;
     if (startBevel)
     {
         if (fragBevelDistance.x > abs(distance) + bevelClip)

@@ -158,48 +158,54 @@ bool _path_stroke_upload_payloads(
     };
     out_payloads[1] = (DvzVisualUploadPayload){
         .name = "position",
-        .data = cache->position_curr,
+        .data = cache->position_start,
         .item_size = 3 * sizeof(float),
         .item_count = cache->vertex_count,
     };
     out_payloads[2] = (DvzVisualUploadPayload){
         .name = "position_end",
-        .data = cache->position_next,
+        .data = cache->position_end,
         .item_size = 3 * sizeof(float),
         .item_count = cache->vertex_count,
     };
     out_payloads[3] = (DvzVisualUploadPayload){
+        .name = "position_next",
+        .data = cache->position_next,
+        .item_size = 3 * sizeof(float),
+        .item_count = cache->vertex_count,
+    };
+    out_payloads[4] = (DvzVisualUploadPayload){
         .name = "color",
         .data = cache->color,
         .item_size = sizeof(DvzColor),
         .item_count = cache->vertex_count,
     };
-    out_payloads[4] = (DvzVisualUploadPayload){
+    out_payloads[5] = (DvzVisualUploadPayload){
         .name = "line_width",
         .data = cache->line_width,
         .item_size = sizeof(float),
         .item_count = cache->vertex_count,
     };
-    out_payloads[5] = (DvzVisualUploadPayload){
+    out_payloads[6] = (DvzVisualUploadPayload){
         .name = "path_flags",
         .data = cache->path_flags,
         .item_size = sizeof(uint32_t),
         .item_count = cache->vertex_count,
     };
-    out_payloads[6] = (DvzVisualUploadPayload){
+    out_payloads[7] = (DvzVisualUploadPayload){
         .name = "path_distance",
         .data = cache->path_distance,
         .item_size = sizeof(float),
         .item_count = cache->vertex_count,
     };
-    out_payloads[7] = (DvzVisualUploadPayload){
+    out_payloads[8] = (DvzVisualUploadPayload){
         .name = "index",
         .data = cache->indices,
         .item_size = sizeof(uint32_t),
         .item_count = cache->index_count,
         .index = true,
     };
-    *out_count = 8;
+    *out_count = 9;
     return true;
 }
 

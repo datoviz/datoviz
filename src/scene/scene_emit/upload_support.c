@@ -52,6 +52,8 @@ DvzFramePlanResourceRole _scene_attr_frame_plan_role(const char* attr_name)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_START;
     if (strcmp(attr_name, "position_end") == 0)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_END;
+    if (strcmp(attr_name, "position_next") == 0)
+        return DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_NEXT;
     if (strcmp(attr_name, "color") == 0)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR;
     if (strcmp(attr_name, "size") == 0)

@@ -131,7 +131,8 @@ void _path_stroke_gpu_cache_free(DvzPathGpuCache* cache)
     if (cache == NULL)
         return;
     dvz_free(cache->position_prev);
-    dvz_free(cache->position_curr);
+    dvz_free(cache->position_start);
+    dvz_free(cache->position_end);
     dvz_free(cache->position_next);
     dvz_free(cache->color);
     dvz_free(cache->line_width);

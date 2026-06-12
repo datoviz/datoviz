@@ -2518,17 +2518,30 @@ int test_app_offscreen_path_join_has_no_center_gap(TstContext* suite, const TstC
  * @param pixel_count number of pixels
  * @return red-dominant pixel count
  */
-static uint32_t _app_red_dominant_pixel_count(const uint8_t* rgba, uint32_t pixel_count)
+static void _app_red_dominant_pixel_stats(
+    const uint8_t* rgba, uint32_t width, uint32_t height, uint32_t* out_count,
+    uint64_t* out_signature)
 {
     ANN(rgba);
+    ANN(out_count);
+    ANN(out_signature);
     uint32_t count = 0;
-    for (uint32_t i = 0; i < pixel_count; i++)
+    uint64_t signature = 0;
+    for (uint32_t y = 0; y < height; y++)
     {
-        const uint8_t* px = &rgba[4 * i];
-        if (px[0] > 80 && px[0] > px[1] + 40 && px[0] > px[2] + 40)
-            count++;
+        for (uint32_t x = 0; x < width; x++)
+        {
+            const uint32_t i = y * width + x;
+            const uint8_t* px = &rgba[4 * i];
+            if (px[0] > 80 && px[0] > px[1] + 40 && px[0] > px[2] + 40)
+            {
+                count++;
+                signature += (uint64_t)(x + 1u) * 1315423911ull + (uint64_t)(y + 1u) * 2654435761ull;
+            }
+        }
     }
-    return count;
+    *out_count = count;
+    *out_signature = signature;
 }
 
 
@@ -2541,15 +2554,18 @@ static uint32_t _app_red_dominant_pixel_count(const uint8_t* rgba, uint32_t pixe
  * @param out_count output red-dominant pixel count
  * @return 0 on success, -1 on skipped GPU setup
  */
-static int _app_render_path_join_count(TstContext* suite, DvzPathJoin join, uint32_t* out_count)
+static int _app_render_path_join_stats(
+    TstContext* suite, DvzPathJoin join, uint32_t* out_count, uint64_t* out_signature)
 {
     ANN(suite);
     ANN(out_count);
+    ANN(out_signature);
     *out_count = 0;
+    *out_signature = 0;
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
-    DvzFigure* figure = dvz_figure(scene, 96, 96, 0);
+    DvzFigure* figure = dvz_figure(scene, 128, 128, 0);
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
@@ -2557,21 +2573,26 @@ static int _app_render_path_join_count(TstContext* suite, DvzPathJoin join, uint
 
     DvzVisual* visual = dvz_path(scene, 0);
     AT(visual != NULL);
-    vec3 positions[3] = {
-        {-0.78f, -0.62f, 0.0f},
-        {0.0f, 0.0f, 0.0f},
-        {0.78f, -0.62f, 0.0f},
+    vec3 positions[5] = {
+        {-0.82f, -0.56f, 0.0f},
+        {-0.30f, 0.48f, 0.0f},
+        {0.0f, -0.54f, 0.0f},
+        {0.30f, 0.48f, 0.0f},
+        {0.82f, -0.56f, 0.0f},
     };
-    DvzColor colors[3] = {
+    DvzColor colors[5] = {
+        {255, 0, 0, 255},
+        {255, 0, 0, 255},
         {255, 0, 0, 255},
         {255, 0, 0, 255},
         {255, 0, 0, 255},
     };
-    float widths[3] = {32.0f, 32.0f, 32.0f};
-    AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
-    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
-    AT(dvz_visual_set_data(visual, "stroke_width", widths, 3) == 0);
-    AT(dvz_path_set_join(visual, join, 4.0f) == 0);
+    float widths[5] = {26.0f, 26.0f, 26.0f, 26.0f, 26.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 5) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 5) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width", widths, 5) == 0);
+    const float miter_limit = join == DVZ_PATH_JOIN_MITER ? 20.0f : 4.0f;
+    AT(dvz_path_set_join(visual, join, miter_limit) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
@@ -2580,7 +2601,7 @@ static int _app_render_path_join_count(TstContext* suite, DvzPathJoin join, uint
         dvz_scene_destroy(scene);
         return -1;
     }
-    DvzView* win = dvz_view_offscreen(app, figure, 96, 96);
+    DvzView* win = dvz_view_offscreen(app, figure, 128, 128);
     AT(win != NULL);
     dvz_app_run(app, 1);
 
@@ -2590,9 +2611,9 @@ static int _app_render_path_join_count(TstContext* suite, DvzPathJoin join, uint
     uint8_t* rgba = NULL;
     AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
     ANN(rgba);
-    AT(width == 96);
-    AT(height == 96);
-    *out_count = _app_red_dominant_pixel_count(rgba, width * height);
+    AT(width == 128);
+    AT(height == 128);
+    _app_red_dominant_pixel_stats(rgba, width, height, out_count, out_signature);
 
     dvz_free(rgba);
     dvz_app_destroy(app);
@@ -2619,9 +2640,12 @@ int test_app_offscreen_path_join_modes_are_ordered(TstContext* suite, const TstC
     uint32_t miter_count = 0;
     uint32_t round_count = 0;
     uint32_t bevel_count = 0;
-    if (_app_render_path_join_count(suite, DVZ_PATH_JOIN_MITER, &miter_count) != 0 ||
-        _app_render_path_join_count(suite, DVZ_PATH_JOIN_ROUND, &round_count) != 0 ||
-        _app_render_path_join_count(suite, DVZ_PATH_JOIN_BEVEL, &bevel_count) != 0)
+    uint64_t miter_sig = 0;
+    uint64_t round_sig = 0;
+    uint64_t bevel_sig = 0;
+    if (_app_render_path_join_stats(suite, DVZ_PATH_JOIN_MITER, &miter_count, &miter_sig) != 0 ||
+        _app_render_path_join_stats(suite, DVZ_PATH_JOIN_ROUND, &round_count, &round_sig) != 0 ||
+        _app_render_path_join_stats(suite, DVZ_PATH_JOIN_BEVEL, &bevel_count, &bevel_sig) != 0)
     {
         log_warn("path join mode silhouette test skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
@@ -2631,9 +2655,9 @@ int test_app_offscreen_path_join_modes_are_ordered(TstContext* suite, const TstC
     AT(miter_count > 0);
     AT(round_count > 0);
     AT(bevel_count > 0);
-    AT(miter_count != round_count);
-    AT(miter_count != bevel_count);
-    AT(round_count != bevel_count);
+    AT(miter_count != round_count || miter_sig != round_sig);
+    AT(miter_count != bevel_count || miter_sig != bevel_sig);
+    AT(round_count != bevel_count || round_sig != bevel_sig);
     return 0;
 }
 

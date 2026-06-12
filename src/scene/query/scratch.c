@@ -52,6 +52,8 @@ void _scene_query_scratch_destroy(DvzSceneQueryScratch* plan)
     plan->query_position_curr = NULL;
     dvz_free(plan->query_position_end);
     plan->query_position_end = NULL;
+    dvz_free(plan->query_position_next);
+    plan->query_position_next = NULL;
     dvz_free(plan->query_line_width);
     plan->query_line_width = NULL;
     dvz_free(plan->query_path_flags);

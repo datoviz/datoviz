@@ -343,6 +343,10 @@ bool _stroke_query_build(
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "query0_position_end", 0, position_bytes, "position_end",
                    out_plan->scratch.query_position_end) &&
+         (!desc->path_stroke ||
+          dvz_frame_plan_upload_bytes(
+              plan, "query0_position_next", 0, position_bytes, "position_next",
+              out_plan->scratch.query_position_next)) &&
          dvz_frame_plan_upload_bytes(
              plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.query_ids) &&
          dvz_frame_plan_upload_bytes(
@@ -383,6 +387,10 @@ bool _stroke_query_build(
     if (desc->path_stroke)
         dvz_strlcpy(metadata.position_id, "query0_position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.position_end_id, "query0_position_end", sizeof(metadata.position_end_id));
+    if (desc->path_stroke)
+        dvz_strlcpy(
+            metadata.position_next_id, "query0_position_next",
+            sizeof(metadata.position_next_id));
     dvz_strlcpy(metadata.color_id, "query0_id", sizeof(metadata.color_id));
     dvz_strlcpy(metadata.line_width_id, "query0_line_width", sizeof(metadata.line_width_id));
     dvz_strlcpy(metadata.index_id, "query0_index", sizeof(metadata.index_id));
@@ -668,6 +676,9 @@ bool _path_stroke_query_geometry(
             "path",
             (void**)&scratch->query_position_end, vertex_count, 3 * sizeof(float)) ||
         !_stroke_query_alloc(
+            "path",
+            (void**)&scratch->query_position_next, vertex_count, 3 * sizeof(float)) ||
+        !_stroke_query_alloc(
             "path", (void**)&scratch->query_ids, vertex_count, sizeof(uint32_t)) ||
         !_stroke_query_alloc(
             "path", (void**)&scratch->query_line_width, vertex_count, sizeof(float)) ||
@@ -695,16 +706,16 @@ bool _path_stroke_query_geometry(
         {
             uint64_t i0 = offset + i;
             uint64_t i1 = i0 + 1;
+            uint64_t prev_idx = _path_query_prev_index(i0, offset, length, closed);
+            uint64_t next_idx = _path_query_next_index(i1, offset, length, closed);
+            bool has_prev = prev_idx != i0;
+            bool has_next = next_idx != i1;
             float edge_length = _path_query_point_distance(position, i0, i1);
             for (uint32_t j = 0; j < 4; j++)
             {
                 bool endpoint_end = j >= 2;
                 bool side_negative = j == 1 || j == 2;
                 uint64_t point_idx = endpoint_end ? i1 : i0;
-                uint64_t prev_idx = _path_query_prev_index(point_idx, offset, length, closed);
-                uint64_t next_idx = _path_query_next_index(point_idx, offset, length, closed);
-                bool has_prev = prev_idx != point_idx;
-                bool has_next = next_idx != point_idx;
                 bool subpath_start = !closed && point_idx == offset;
                 bool subpath_end = !closed && point_idx + 1 == offset + length;
                 uint64_t dst = 4 * segment + j;
@@ -713,9 +724,12 @@ bool _path_stroke_query_geometry(
                     &position[3 * prev_idx], 3 * sizeof(float));
                 dvz_memcpy(
                     &scratch->query_position_curr[3 * dst], 3 * sizeof(float),
-                    &position[3 * point_idx], 3 * sizeof(float));
+                    &position[3 * i0], 3 * sizeof(float));
                 dvz_memcpy(
                     &scratch->query_position_end[3 * dst], 3 * sizeof(float),
+                    &position[3 * i1], 3 * sizeof(float));
+                dvz_memcpy(
+                    &scratch->query_position_next[3 * dst], 3 * sizeof(float),
                     &position[3 * next_idx], 3 * sizeof(float));
                 scratch->query_ids[dst] = (uint32_t)segment + 1u;
                 scratch->query_line_width[dst] = line_width[point_idx];

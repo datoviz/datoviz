@@ -117,6 +117,7 @@ struct DvzSceneQueryScratch
     float* query_position_start;
     float* query_position_curr;
     float* query_position_end;
+    float* query_position_next;
     float* query_line_width;
     uint32_t* query_path_flags;
     float* query_path_distance;

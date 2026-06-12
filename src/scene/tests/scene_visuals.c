@@ -708,8 +708,8 @@ int test_scene_vector_curved_emit_glsl(TstContext* suite, const TstCase* item)
             if (label != NULL && strstr(label, "_pipe_pathg") == label)
             {
                 found_pipeline = true;
-                AT(cmd->u.create_render_pipeline.binding_count == 7);
-                AT(cmd->u.create_render_pipeline.attr_count == 7);
+                AT(cmd->u.create_render_pipeline.binding_count == 8);
+                AT(cmd->u.create_render_pipeline.attr_count == 8);
             }
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
@@ -723,7 +723,7 @@ int test_scene_vector_curved_emit_glsl(TstContext* suite, const TstCase* item)
     AT(found_pipeline);
     AT(found_set_index);
     AT(found_draw_indexed);
-    AT(set_vertex_buffer_count == 7);
+    AT(set_vertex_buffer_count == 8);
     AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneMaterialParams)) >= 1);
 
     _test_scene_stream_destroy(stream);
@@ -2646,8 +2646,8 @@ int test_scene_path_line_width_emit_glsl(TstContext* suite, const TstCase* item)
             {
                 found_pipeline = true;
                 AT(cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-                AT(cmd->u.create_render_pipeline.binding_count == 7);
-                AT(cmd->u.create_render_pipeline.attr_count == 7);
+                AT(cmd->u.create_render_pipeline.binding_count == 8);
+                AT(cmd->u.create_render_pipeline.attr_count == 8);
             }
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
@@ -2664,7 +2664,7 @@ int test_scene_path_line_width_emit_glsl(TstContext* suite, const TstCase* item)
     AT(found_set_index);
     AT(found_draw_indexed);
     AT(found_material_bg);
-    AT(set_vertex_buffer_count == 7);
+    AT(set_vertex_buffer_count == 8);
 
     _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
@@ -2734,12 +2734,24 @@ int test_scene_path_repeated_endpoint_closes_subpath(TstContext* suite, const Ts
     AT((first_start & subpath_start) == 0);
     AC(cache->position_prev[0], positions[3][0], 1e-6);
     AC(cache->position_prev[1], positions[3][1], 1e-6);
+    AC(cache->position_start[0], positions[0][0], 1e-6);
+    AC(cache->position_start[1], positions[0][1], 1e-6);
+    AC(cache->position_end[0], positions[1][0], 1e-6);
+    AC(cache->position_end[1], positions[1][1], 1e-6);
+    AC(cache->position_next[0], positions[2][0], 1e-6);
+    AC(cache->position_next[1], positions[2][1], 1e-6);
 
     const uint32_t last_end_index = 4 * 3 + 2;
     const uint32_t last_end = cache->path_flags[last_end_index];
     AT((last_end & has_prev) != 0);
     AT((last_end & has_next) != 0);
     AT((last_end & subpath_end) == 0);
+    AC(cache->position_prev[3 * last_end_index + 0], positions[2][0], 1e-6);
+    AC(cache->position_prev[3 * last_end_index + 1], positions[2][1], 1e-6);
+    AC(cache->position_start[3 * last_end_index + 0], positions[3][0], 1e-6);
+    AC(cache->position_start[3 * last_end_index + 1], positions[3][1], 1e-6);
+    AC(cache->position_end[3 * last_end_index + 0], positions[4][0], 1e-6);
+    AC(cache->position_end[3 * last_end_index + 1], positions[4][1], 1e-6);
     AC(cache->position_next[3 * last_end_index + 0], positions[1][0], 1e-6);
     AC(cache->position_next[3 * last_end_index + 1], positions[1][1], 1e-6);
 
@@ -2815,16 +2827,24 @@ int test_scene_path_closed_star_cache_adjacency(TstContext* suite, const TstCase
     AT((first_start & subpath_start) == 0);
     AC(cache->position_prev[0], positions[STAR_POINT_COUNT - 2][0], 1e-6);
     AC(cache->position_prev[1], positions[STAR_POINT_COUNT - 2][1], 1e-6);
-    AC(cache->position_next[0], positions[1][0], 1e-6);
-    AC(cache->position_next[1], positions[1][1], 1e-6);
+    AC(cache->position_start[0], positions[0][0], 1e-6);
+    AC(cache->position_start[1], positions[0][1], 1e-6);
+    AC(cache->position_end[0], positions[1][0], 1e-6);
+    AC(cache->position_end[1], positions[1][1], 1e-6);
+    AC(cache->position_next[0], positions[2][0], 1e-6);
+    AC(cache->position_next[1], positions[2][1], 1e-6);
 
     const uint32_t last_end_index = 4u * (STAR_POINT_COUNT - 2u) + 2u;
     const uint32_t last_end = cache->path_flags[last_end_index];
     AT((last_end & has_prev) != 0);
     AT((last_end & has_next) != 0);
     AT((last_end & subpath_end) == 0);
-    AC(cache->position_prev[3u * last_end_index + 0u], positions[STAR_POINT_COUNT - 2][0], 1e-6);
-    AC(cache->position_prev[3u * last_end_index + 1u], positions[STAR_POINT_COUNT - 2][1], 1e-6);
+    AC(cache->position_prev[3u * last_end_index + 0u], positions[STAR_POINT_COUNT - 3][0], 1e-6);
+    AC(cache->position_prev[3u * last_end_index + 1u], positions[STAR_POINT_COUNT - 3][1], 1e-6);
+    AC(cache->position_start[3u * last_end_index + 0u], positions[STAR_POINT_COUNT - 2][0], 1e-6);
+    AC(cache->position_start[3u * last_end_index + 1u], positions[STAR_POINT_COUNT - 2][1], 1e-6);
+    AC(cache->position_end[3u * last_end_index + 0u], positions[STAR_POINT_COUNT - 1][0], 1e-6);
+    AC(cache->position_end[3u * last_end_index + 1u], positions[STAR_POINT_COUNT - 1][1], 1e-6);
     AC(cache->position_next[3u * last_end_index + 0u], positions[1][0], 1e-6);
     AC(cache->position_next[3u * last_end_index + 1u], positions[1][1], 1e-6);
 

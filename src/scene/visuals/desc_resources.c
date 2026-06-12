@@ -77,6 +77,8 @@ static const char* _resource_role_tag(DvzFramePlanResourceRole role)
         return "position_start";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_END:
         return "position_end";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_NEXT:
+        return "position_next";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR:
         return "color";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE:
@@ -244,6 +246,9 @@ bool _emitter_resolve_render_vertex_buffers(
                     return false;
                 if (!_append_resource_key(
                         &emitter->resources, meta->position_end_id, out_ids, out_count, true))
+                    return false;
+                if (!_append_resource_key(
+                        &emitter->resources, meta->position_next_id, out_ids, out_count, true))
                     return false;
             }
             else if (segment_like)
