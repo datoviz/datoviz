@@ -117,7 +117,20 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     }
     example_graphite_cyan_set_panel_background(panel);
 
-    if (example_set_default_3d_camera(panel, 0.75f) == NULL)
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.eye[0] = 1.35f;
+    camera.eye[1] = -1.75f;
+    camera.eye[2] = 1.35f;
+    camera.target[0] = 0.0f;
+    camera.target[1] = 0.0f;
+    camera.target[2] = 0.0f;
+    camera.up[0] = 0.0f;
+    camera.up[1] = 0.0f;
+    camera.up[2] = 1.0f;
+    camera.fov_y = 0.66f;
+    camera.near = 0.05f;
+    camera.far = 100.0f;
+    if (dvz_panel_set_camera(panel, &camera) == NULL)
     {
         dvz_geometry_destroy(geometry);
         return false;
@@ -144,7 +157,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
-    example_set_default_arcball(arcball);
+    dvz_arcball_set(arcball, (vec3){+0.55f, 0.0f, -0.25f});
     return true;
 }
 

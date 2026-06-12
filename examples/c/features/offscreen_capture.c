@@ -7,7 +7,7 @@
 /* offscreen_capture - render an exact-pixel offscreen view once and write a PNG.
  *
  * Scenario: feature.offscreen_capture
- * Style: features, native app
+ * Style: features, graphite_cyan, 1600x1200 capture target
  *
  * Build:  just example-c features/offscreen_capture
  * Run:    ./build/examples/c/features/offscreen_capture
@@ -33,8 +33,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       640u
-#define HEIGHT      480u
+#define WIDTH       1600u
+#define HEIGHT      1200u
 #define POINT_COUNT 4u
 
 
