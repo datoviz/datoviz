@@ -669,6 +669,20 @@ _gui_viewport_display_ready(const DvzGuiViewport* viewport, uint32_t width, uint
 }
 
 
+/**
+ * Return whether the viewport has a drawable source texture for the current ImGui frame.
+ *
+ * @param viewport GUI viewport
+ * @return whether a live-image frame may be drawn
+ */
+static bool _gui_viewport_display_drawable(const DvzGuiViewport* viewport)
+{
+    ANN(viewport);
+    return viewport->has_frame && viewport->image_view != VK_NULL_HANDLE &&
+           viewport->extent.width > 0 && viewport->extent.height > 0;
+}
+
+
 
 /**
  * Return the last accepted source frame size in logical coordinates.
@@ -711,12 +725,6 @@ static int _gui_viewport_live_image_callback(
     {
         return 0;
     }
-    if (!_gui_viewport_frame_matches_committed(viewport, frame->extent))
-    {
-        viewport->stale_frame_count++;
-        _gui_request_frame(viewport->gui);
-        return 0;
-    }
     if (viewport->image_view != frame->image_view)
     {
         viewport->texture_dirty = true;
@@ -725,7 +733,9 @@ static int _gui_viewport_live_image_callback(
     }
     viewport->extent = frame->extent;
     viewport->has_frame = true;
-    viewport->stale_frame_count = 0;
+    viewport->stale_frame_count = _gui_viewport_frame_matches_committed(viewport, frame->extent) ?
+                                      0 :
+                                      viewport->stale_frame_count + 1;
     _gui_request_frame(viewport->gui);
     return 0;
 }
@@ -758,6 +768,7 @@ static void _gui_viewport_resize_source(DvzGuiViewport* viewport, uint32_t width
     viewport->requested_height = height;
     viewport->requested_framebuffer_width = framebuffer_width;
     viewport->requested_framebuffer_height = framebuffer_height;
+    viewport->stale_frame_count = 0;
     if (viewport->canvas != NULL)
     {
         DvzCanvasLiveImageSinkConfig cfg = dvz_canvas_live_image_sink_config();
@@ -1522,6 +1533,7 @@ bool _dvz_gui_viewport_debug_state(
     out->has_frame = viewport->has_frame;
     out->display_ready = _gui_viewport_display_ready(
         viewport, viewport->requested_width, viewport->requested_height);
+    out->display_drawable = _gui_viewport_display_drawable(viewport);
     return true;
 }
 
@@ -2275,7 +2287,7 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
         if (!display_ready && viewport->has_frame)
             _gui_request_frame(gui);
 
-        if (_gui_viewport_ensure_texture(viewport) && viewport->has_frame)
+        if (_gui_viewport_display_drawable(viewport) && _gui_viewport_ensure_texture(viewport))
         {
             ImVec2 image_min = ImGui::GetCursorScreenPos();
             ImVec2 image_size = avail;

@@ -43,6 +43,7 @@ typedef struct GuiViewportSmoke
     uint32_t frame;
     uint32_t shown_count;
     uint32_t hidden_count;
+    uint32_t transition_drawable_count;
 } GuiViewportSmoke;
 
 
@@ -147,6 +148,13 @@ static void _gui_viewport_resize_callback(DvzGui* gui, DvzView* win, void* user_
         smoke->shown_count++;
     else
         smoke->hidden_count++;
+
+    DvzGuiViewportDebugState debug = {};
+    if (_dvz_gui_viewport_debug_state(smoke->viewport, &debug) && debug.display_drawable &&
+        !debug.display_ready)
+    {
+        smoke->transition_drawable_count++;
+    }
     smoke->frame++;
 }
 
@@ -403,11 +411,13 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
 
     AT(smoke.shown_count > 0);
     AT(smoke.hidden_count > 0);
+    AT(smoke.transition_drawable_count > 0);
     AT(!dvz_view_render_enabled(source_win));
 
     DvzGuiViewportDebugState debug = {};
     AT(_dvz_gui_viewport_debug_state(smoke.viewport, &debug));
     AT(debug.has_frame);
+    AT(debug.display_drawable);
     AT(debug.display_ready);
     AT(debug.pending_width == 0);
     AT(debug.pending_height == 0);
