@@ -78,15 +78,7 @@ static bool _add_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_geomet
     if (visual == NULL)
         return false;
 
-    DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = -0.18f;
-    material.light_direction[1] = -0.36f;
-    material.light_direction[2] = +0.74f;
-    material.phong.ambient = 0.28f;
-    material.phong.diffuse = 0.78f;
-    material.phong.specular = 0.16f;
-    material.phong.shininess = 22.0f;
-    if (dvz_visual_set_material(visual, &material) != 0)
+    if (!example_apply_default_phong_material(visual))
         return false;
 
     return dvz_panel_add_visual(panel, visual, NULL) == 0;
@@ -127,16 +119,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 0.0f;
-    camera.eye[1] = -3.0f;
-    camera.eye[2] = 1.30f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
-    camera.fov_y = 0.68f;
-    camera.near = 0.05f;
-    camera.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera))
+    if (example_set_default_3d_camera(panel, 1.0f) == NULL)
         return false;
     if (!_add_mesh(ctx->scene, panel, &state->geometry))
         return false;
@@ -149,7 +132,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
-    dvz_arcball_set(arcball, (vec3){+0.58f, -0.16f, +0.32f});
+    example_set_default_arcball(arcball);
 
     DvzOrientationGizmoDesc gizmo = dvz_orientation_gizmo_desc();
     gizmo.source_controller = controller;

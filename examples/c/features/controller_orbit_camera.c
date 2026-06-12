@@ -83,15 +83,7 @@ static bool _add_orbit_camera_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry
     if (visual == NULL)
         return false;
 
-    DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = -0.20f;
-    material.light_direction[1] = -0.35f;
-    material.light_direction[2] = +0.72f;
-    material.phong.ambient = 0.26f;
-    material.phong.diffuse = 0.80f;
-    material.phong.specular = 0.18f;
-    material.phong.shininess = 26.0f;
-    if (dvz_visual_set_material(visual, &material) != 0)
+    if (!example_apply_default_phong_material(visual))
         return false;
 
     return dvz_panel_add_visual(panel, visual, NULL) == 0;
@@ -132,18 +124,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 0.0f;
-    camera.eye[1] = 1.2f;
-    camera.eye[2] = 3.0f;
-    camera.up[1] = 1.0f;
-    camera.up[2] = 0.0f;
-    camera.fov_y = 0.66f;
-    camera.near = 0.05f;
-    camera.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera))
+    if (example_set_default_3d_camera(panel, 1.0f) == NULL)
         return false;
-    if (!example_add_xz_reference_grid(panel, -0.50f, 10.0f))
+    if (!example_add_default_xz_reference_grid(panel, -0.50f))
         return false;
     if (!_add_orbit_camera_mesh(ctx->scene, panel, &state->geometry))
         return false;

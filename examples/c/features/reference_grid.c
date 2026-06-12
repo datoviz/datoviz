@@ -87,15 +87,7 @@ static bool _add_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_geomet
     if (dvz_visual_set_transform(visual, transform) != 0)
         return false;
 
-    DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = -0.18f;
-    material.light_direction[1] = -0.36f;
-    material.light_direction[2] = +0.74f;
-    material.phong.ambient = 0.28f;
-    material.phong.diffuse = 0.78f;
-    material.phong.specular = 0.18f;
-    material.phong.shininess = 22.0f;
-    if (dvz_visual_set_material(visual, &material) != 0)
+    if (!example_apply_default_phong_material(visual))
         return false;
 
     return dvz_panel_add_visual(panel, visual, NULL) == 0;
@@ -136,16 +128,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 0.0f;
-    camera.eye[1] = -4.0f;
-    camera.eye[2] = 2.10f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
-    camera.fov_y = 0.66f;
-    camera.near = 0.05f;
-    camera.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera))
+    if (example_set_default_3d_camera(panel, 1.3f) == NULL)
         return false;
 
     DvzReferenceGridDesc grid = dvz_reference_grid_desc();
@@ -168,7 +151,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     DvzArcball* arcball = dvz_controller_arcball(controller);
     if (arcball != NULL)
-        dvz_arcball_set(arcball, (vec3){+0.44f, -0.22f, +0.20f});
+        example_set_default_arcball(arcball);
     return true;
 }
 

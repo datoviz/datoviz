@@ -120,16 +120,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = 0.0f;
-    camera_desc.eye[1] = -3.0f;
-    camera_desc.eye[2] = 1.25f;
-    camera_desc.up[1] = 0.0f;
-    camera_desc.up[2] = 1.0f;
-    camera_desc.fov_y = 0.68f;
-    camera_desc.near = 0.05f;
-    camera_desc.far = 100.0f;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
+    EXAMPLE_CHECK(example_set_default_3d_camera(panel, 1.0f), "dvz_panel_set_camera() failed");
 
     EXAMPLE_CHECK(_add_mesh(ctx->scene, panel, &state->geometry), "mesh visual setup failed");
 
@@ -140,7 +131,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(
         dvz_scenario_bind_controller(ctx, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
         "dvz_scenario_bind_controller() failed");
-    dvz_arcball_set(arcball, (vec3){+0.60f, -0.10f, +0.28f});
+    example_set_default_arcball(arcball);
 
     ok = true;
 cleanup:

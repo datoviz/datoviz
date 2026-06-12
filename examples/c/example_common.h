@@ -34,10 +34,12 @@ typedef struct DvzGeometry DvzGeometry;
 typedef struct DvzVisual   DvzVisual;
 typedef struct DvzScene    DvzScene;
 typedef struct DvzPanel    DvzPanel;
+typedef struct DvzCamera   DvzCamera;
 typedef struct DvzApp      DvzApp;
 typedef struct DvzView     DvzView;
 typedef struct DvzPointerEvent DvzPointerEvent;
 typedef struct DvzController DvzController;
+typedef struct DvzArcball    DvzArcball;
 typedef struct DvzAnimation  DvzAnimation;
 typedef struct DvzTrack      DvzTrack;
 typedef struct DvzAppCaptureConfig DvzAppCaptureConfig;
@@ -102,9 +104,27 @@ bool example_mesh_geometry(DvzVisual* visual, const DvzGeometry* geometry);
 bool example_panel_pointer_position(
     const DvzPanel* panel, const DvzPointerEvent* event, double* out_x, double* out_y);
 
+DvzCameraDesc example_default_3d_camera_desc(float extent);
+
+DvzCamera* example_set_default_3d_camera(DvzPanel* panel, float extent);
+
+void example_default_light_direction(vec3 out);
+
+DvzMaterialDesc example_default_phong_material_desc(void);
+
+DvzMaterialDesc example_default_standard_material_desc(void);
+
+bool example_apply_default_phong_material(DvzVisual* visual);
+
+bool example_apply_default_standard_material(DvzVisual* visual);
+
 bool example_add_xz_reference_grid(DvzPanel* panel, float origin_y, float size);
 
+bool example_add_default_xz_reference_grid(DvzPanel* panel, float origin_y);
+
 bool example_add_panel_label(DvzPanel* panel, const char* label, float x_px, float y_px);
+
+bool example_add_default_panel_label(DvzPanel* panel, const char* label);
 
 bool example_configure_equal_aspect_panel(
     DvzPanel* panel,
@@ -115,6 +135,10 @@ bool example_configure_equal_aspect_panel(
 
 bool example_link_controllers_bidirectional(
     DvzScene* scene, DvzController* a, DvzController* b, uint32_t components);
+
+void example_default_arcball_initial(vec3 out);
+
+void example_set_default_arcball(DvzArcball* arcball);
 
 DvzVisual* example_graphite_cyan_cube_mesh(
     DvzScene* scene,

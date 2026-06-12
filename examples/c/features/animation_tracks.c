@@ -128,11 +128,7 @@ _add_animated_cube(DvzScenarioContext* ctx, DvzPanel* panel, AnimationTracksStat
     if (cube == NULL)
         return false;
 
-    DvzMaterialDesc material = dvz_standard_material_desc();
-    material.standard.roughness = 0.38f;
-    material.standard.specular = 0.42f;
-    material.standard.rim_strength = 0.26f;
-    if (dvz_visual_set_material(cube, &material) != 0)
+    if (!example_apply_default_standard_material(cube))
         return false;
     if (dvz_panel_add_visual(panel, cube, NULL) != 0)
         return false;
@@ -263,7 +259,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (panel_camera == NULL)
         return false;
 
-    if (!example_add_xz_reference_grid(panel, -0.32f, 4.0f))
+    if (!example_add_default_xz_reference_grid(panel, -0.32f))
         return false;
     if (!_add_animated_cube(ctx, panel, state))
         return false;

@@ -26,6 +26,7 @@
 #include "_assertions.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -68,12 +69,7 @@ static bool _add_geometry(DvzScene* scene, DvzPanel* panel, DvzGeometry* geometr
         dvz_geometry_destroy(geometry);
         return false;
     }
-    DvzMaterialDesc material = dvz_phong_material_desc();
-    material.phong.ambient = 0.34f;
-    material.phong.diffuse = 0.76f;
-    material.phong.specular = 0.20f;
-    material.phong.shininess = 28.0f;
-    const bool ok = dvz_visual_set_material(mesh, &material) == 0 &&
+    const bool ok = example_apply_default_phong_material(mesh) &&
                     dvz_mesh_set_geometry(mesh, geometry) == 0 &&
                     dvz_panel_add_visual(panel, mesh, NULL) == 0;
     dvz_geometry_destroy(geometry);
@@ -108,16 +104,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 0.35f;
-    camera.eye[1] = -4.10f;
-    camera.eye[2] = 1.70f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
-    camera.fov_y = 0.68f;
-    camera.near = 0.05f;
-    camera.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera))
+    if (example_set_default_3d_camera(panel, 1.35f) == NULL)
         return false;
 
     const bool ok =
@@ -191,7 +178,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
-    dvz_arcball_set(arcball, (vec3){+0.62f, -0.08f, +0.26f});
+    example_set_default_arcball(arcball);
     return ok;
 }
 

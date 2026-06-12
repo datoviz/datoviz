@@ -344,6 +344,132 @@ bool example_panel_pointer_position(
 
 
 /**
+ * Return the default Z-up perspective camera for 3D gallery examples.
+ *
+ * @param extent approximate scene extent in world units
+ * @return camera descriptor
+ */
+DvzCameraDesc example_default_3d_camera_desc(float extent)
+{
+    if (extent <= 0.0f)
+        extent = 1.0f;
+
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.eye[0] = -0.18f * extent;
+    camera.eye[1] = -3.05f * extent;
+    camera.eye[2] = +1.28f * extent;
+    camera.target[0] = 0.0f;
+    camera.target[1] = 0.0f;
+    camera.target[2] = 0.0f;
+    camera.up[0] = 0.0f;
+    camera.up[1] = 0.0f;
+    camera.up[2] = 1.0f;
+    camera.fov_y = 0.66f;
+    camera.near = 0.05f;
+    camera.far = 100.0f * extent;
+    return camera;
+}
+
+
+/**
+ * Apply the default 3D gallery camera to one panel.
+ *
+ * @param panel target panel
+ * @param extent approximate scene extent in world units
+ * @return scene-owned camera, or NULL on error
+ */
+DvzCamera* example_set_default_3d_camera(DvzPanel* panel, float extent)
+{
+    if (panel == NULL)
+        return NULL;
+
+    DvzCameraDesc camera = example_default_3d_camera_desc(extent);
+    return dvz_panel_set_camera(panel, &camera);
+}
+
+
+/**
+ * Return the default example light direction.
+ *
+ * @param out output light direction
+ */
+void example_default_light_direction(vec3 out)
+{
+    if (out == NULL)
+        return;
+
+    out[0] = -0.20f;
+    out[1] = -0.36f;
+    out[2] = +0.74f;
+}
+
+
+/**
+ * Return the default Phong material for lit gallery meshes.
+ *
+ * @return material descriptor
+ */
+DvzMaterialDesc example_default_phong_material_desc(void)
+{
+    DvzMaterialDesc material = dvz_phong_material_desc();
+    example_default_light_direction(material.light_direction);
+    material.phong.ambient = 0.28f;
+    material.phong.diffuse = 0.80f;
+    material.phong.specular = 0.18f;
+    material.phong.shininess = 24.0f;
+    return material;
+}
+
+
+/**
+ * Return the default standard material for lit gallery meshes.
+ *
+ * @return material descriptor
+ */
+DvzMaterialDesc example_default_standard_material_desc(void)
+{
+    DvzMaterialDesc material = dvz_standard_material_desc();
+    example_default_light_direction(material.light_direction);
+    material.standard.roughness = 0.38f;
+    material.standard.specular = 0.42f;
+    material.standard.rim_strength = 0.26f;
+    return material;
+}
+
+
+/**
+ * Apply the default Phong material to one visual.
+ *
+ * @param visual target visual
+ * @return true on success
+ */
+bool example_apply_default_phong_material(DvzVisual* visual)
+{
+    if (visual == NULL)
+        return false;
+
+    DvzMaterialDesc material = example_default_phong_material_desc();
+    return dvz_visual_set_material(visual, &material) == 0;
+}
+
+
+/**
+ * Apply the default standard material to one visual.
+ *
+ * @param visual target visual
+ * @return true on success
+ */
+bool example_apply_default_standard_material(DvzVisual* visual)
+{
+    if (visual == NULL)
+        return false;
+
+    DvzMaterialDesc material = example_default_standard_material_desc();
+    return dvz_visual_set_material(visual, &material) == 0;
+}
+
+
+/**
  * Add a finite XZ reference grid using the shared example palette.
  *
  * @param panel target panel
@@ -380,6 +506,19 @@ bool example_add_xz_reference_grid(DvzPanel* panel, float origin_y, float size)
 
 
 /**
+ * Add the default finite XZ reference grid using the shared example palette.
+ *
+ * @param panel target panel
+ * @param origin_y grid plane Y coordinate
+ * @return true when the grid was created
+ */
+bool example_add_default_xz_reference_grid(DvzPanel* panel, float origin_y)
+{
+    return example_add_xz_reference_grid(panel, origin_y, 5.0f);
+}
+
+
+/**
  * Add a compact fixed panel label.
  *
  * @param panel target panel
@@ -404,6 +543,19 @@ bool example_add_panel_label(DvzPanel* panel, const char* label, float x_px, flo
     desc.placement.text_anchor[1] = 0.0f;
     desc.placement.has_text_anchor = true;
     return dvz_annotation_label(panel, &desc) != NULL;
+}
+
+
+/**
+ * Add a compact fixed panel label at the default top-left position.
+ *
+ * @param panel target panel
+ * @param label label text
+ * @return true when the label was created
+ */
+bool example_add_default_panel_label(DvzPanel* panel, const char* label)
+{
+    return example_add_panel_label(panel, label, 18.0f, 18.0f);
 }
 
 
@@ -456,6 +608,38 @@ bool example_link_controllers_bidirectional(
         return false;
     return dvz_controller_link(scene, a, b, components, DVZ_CONTROLLER_LINK_ONE_WAY) != NULL &&
            dvz_controller_link(scene, b, a, components, DVZ_CONTROLLER_LINK_ONE_WAY) != NULL;
+}
+
+
+/**
+ * Return the default arcball initial angles for 3D gallery examples.
+ *
+ * @param out output initial angles
+ */
+void example_default_arcball_initial(vec3 out)
+{
+    if (out == NULL)
+        return;
+
+    out[0] = +0.56f;
+    out[1] = -0.16f;
+    out[2] = +0.24f;
+}
+
+
+/**
+ * Apply the default arcball initial angles.
+ *
+ * @param arcball target arcball controller state
+ */
+void example_set_default_arcball(DvzArcball* arcball)
+{
+    if (arcball == NULL)
+        return;
+
+    vec3 initial = {0};
+    example_default_arcball_initial(initial);
+    dvz_arcball_set(arcball, initial);
 }
 
 
