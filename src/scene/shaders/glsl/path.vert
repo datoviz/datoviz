@@ -113,12 +113,18 @@ void main()
     float denomEnd = dot(miterEnd, n1);
     float lengthStart = denomStart > 1e-3 ? halfWidth / denomStart : halfWidth;
     float lengthEnd = denomEnd > 1e-3 ? halfWidth / denomEnd : halfWidth;
-    float miterLengthLimit = max(miterLimit * (strokeWidth * 0.5) + 2.0, halfWidth);
-    float nonMiterScale = mix(1.0, 2.5, smoothstep(12.0, 48.0, strokeWidth));
-    float nonMiterLengthLimit = max(nonMiterScale * (strokeWidth * 0.5) + 2.0, halfWidth);
-    float joinLengthLimit = joinType == 0 ? miterLengthLimit : nonMiterLengthLimit;
-    lengthStart = min(lengthStart, joinLengthLimit);
-    lengthEnd = min(lengthEnd, joinLengthLimit);
+    if (joinType == 0)
+    {
+        float miterLengthLimit = max(miterLimit * (strokeWidth * 0.5) + 2.0, halfWidth);
+        lengthStart = min(lengthStart, miterLengthLimit);
+        lengthEnd = min(lengthEnd, miterLengthLimit);
+    }
+    else if (joinType == 2)
+    {
+        float bevelLengthLimit = max(4.0 * halfWidth, halfWidth + 2.0);
+        lengthStart = min(lengthStart, bevelLengthLimit);
+        lengthEnd = min(lengthEnd, bevelLengthLimit);
+    }
 
     int capType = endpointEnd ? int(round(material.params.y)) : int(round(material.params.x));
     vec2 pixel = p1;
