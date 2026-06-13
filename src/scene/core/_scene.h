@@ -794,6 +794,7 @@ bool _scene_panel_attachment_mvp(
     const DvzMVP* apply_mvp, DvzMVP* out);
 bool _scene_panel_view2d_resolve(const DvzPanel* panel, DvzPanelView2DResolved* out);
 bool _scene_panel_panzoom_extent(const DvzPanel* panel, float out[4]);
+void _scene_panel_view_dirty(DvzPanel* panel);
 void _scene_panel_pixel_size(const DvzPanel* panel, float* out_width, float* out_height);
 bool _panel_padding_valid(const DvzPanel* panel, const DvzPanelReserve* padding);
 bool _panel_reserve_valid(const DvzPanel* panel, const DvzPanelReserve* reserve);
@@ -806,7 +807,6 @@ bool _scene_grid_detach_panel(DvzGrid* grid, DvzPanel* panel);
 void _scene_controller_destroy(DvzController* controller);
 bool _scene_panel_sync_fly_pivot_marker(DvzPanel* panel);
 bool _scene_panel_refresh_border(DvzPanel* panel);
-int _scene_panel_apply_domain_fit(DvzPanel* panel);
 void _scene_bars_reset(DvzBars* bars);
 void _scene_band_reset(DvzBand* band);
 

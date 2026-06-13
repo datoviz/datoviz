@@ -1454,8 +1454,11 @@ static int test_panel_domain_fit(TstContext* suite, const TstCase* item)
     AT(dvz_panel_set_view_fit(panel, &fit) == 0);
     dvz_panel_clear_view_fit(panel);
     AT(dvz_panel_set_layout_reserve(panel, &(DvzPanelLayoutReserve){.right = 0.50f}));
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
+    AT(fabs(min - 10.0) < 1e-9);
+    AT(fabs(max - 20.0) < 1e-9);
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
-    AT(fabs(min - 0.0) < 1e-9);
+    AT(fabs(min + 1.0) < 1e-9);
     AT(fabs(max - 1.0) < 1e-9);
 
     dvz_scene_destroy(scene);

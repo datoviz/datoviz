@@ -308,7 +308,7 @@ static bool _panel_update_reserve(DvzPanel* panel)
         return false;
     panel->reserve = next;
     _panel_mark_layout_changed(panel);
-    (void)_scene_panel_apply_domain_fit(panel);
+    _scene_panel_view_dirty(panel);
     return true;
 }
 
@@ -492,7 +492,7 @@ bool dvz_panel_set_padding(DvzPanel* panel, const DvzPanelReserve* padding)
     if (!reserve_changed)
     {
         _panel_mark_layout_changed(panel);
-        (void)_scene_panel_apply_domain_fit(panel);
+        _scene_panel_view_dirty(panel);
     }
     return true;
 }
@@ -582,7 +582,7 @@ bool _scene_panel_refresh_layout_reserve(DvzPanel* panel)
         return false;
     if (!panel->layout_reserve_enabled)
     {
-        (void)_scene_panel_apply_domain_fit(panel);
+        _scene_panel_view_dirty(panel);
         return true;
     }
     DvzPanelLayoutReserve next = panel->layout_reserve;
@@ -602,7 +602,7 @@ bool _scene_panel_refresh_layout_reserve(DvzPanel* panel)
         return false;
     if (_panel_reserve_equal(&panel->base_reserve, &pixel_reserve))
     {
-        (void)_scene_panel_apply_domain_fit(panel);
+        _scene_panel_view_dirty(panel);
         return true;
     }
     panel->base_reserve = pixel_reserve;

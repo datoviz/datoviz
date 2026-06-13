@@ -35,7 +35,6 @@
 
 #define DVZ_AXIS_TICK_POLICY_KNOWN_FLAGS 0u
 #define DVZ_AXIS_STYLE_KNOWN_FLAGS 0u
-#define DVZ_PANEL_VIEW_FIT_KNOWN_FLAGS 0u
 
 
 static bool _axis_tick_policy_validate(const DvzAxisTickPolicy* policy)
@@ -60,33 +59,6 @@ static bool _axis_style_validate(const DvzAxisStyle* style)
         log_error("invalid axis style ABI");
         return false;
     }
-    return true;
-}
-
-
-static bool _panel_view_fit_validate(const DvzPanelViewFit* fit)
-{
-    if (fit == NULL)
-        return true;
-    if (!DVZ_STRUCT_VALID(fit, DvzPanelViewFit, DVZ_PANEL_VIEW_FIT_KNOWN_FLAGS))
-    {
-        log_error("invalid panel view-fit ABI");
-        return false;
-    }
-    if (fit->fit == DVZ_PANEL_VIEW_FIT_NONE)
-        return true;
-    if (fit->fit != DVZ_PANEL_VIEW_FIT_CONTAIN)
-        return false;
-    if (fit->aspect != DVZ_PANEL_VIEW_ASPECT_FREE &&
-        fit->aspect != DVZ_PANEL_VIEW_ASPECT_EQUAL)
-        return false;
-    if (!isfinite(fit->x.min) || !isfinite(fit->x.max) || !isfinite(fit->y.min) ||
-        !isfinite(fit->y.max) || !isfinite(fit->padding))
-        return false;
-    if (!(fit->x.max > fit->x.min) || !(fit->y.max > fit->y.min))
-        return false;
-    if (fit->padding < 0.0)
-        return false;
     return true;
 }
 
@@ -336,110 +308,6 @@ static int _panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max
 int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max)
 {
     return _panel_set_domain(panel, dim, min, max, true);
-}
-
-
-/**
- * Return the default panel view-fit descriptor.
- *
- * @return view-fit descriptor
- */
-DvzPanelViewFit dvz_panel_view_fit(void)
-{
-    return (DvzPanelViewFit){
-        DVZ_STRUCT_INIT_FIELDS(DvzPanelViewFit),
-        .fit = DVZ_PANEL_VIEW_FIT_CONTAIN,
-        .aspect = DVZ_PANEL_VIEW_ASPECT_FREE,
-        .x = {.min = -1.0, .max = +1.0},
-        .y = {.min = -1.0, .max = +1.0},
-        .padding = 0.0,
-    };
-}
-
-
-/**
- * Apply one panel's stored 2D domain-fit policy.
- *
- * @param panel the panel
- * @return 0 on success, -1 on validation error
- */
-int _scene_panel_apply_domain_fit(DvzPanel* panel)
-{
-    if (panel == NULL || !panel->view_fit_enabled)
-        return 0;
-    DvzPanelView2DResolved resolved = {0};
-    if (!_scene_panel_view2d_resolve(panel, &resolved))
-        return -1;
-
-    if (_panel_set_domain(panel, DVZ_DIM_X, resolved.data_x[0], resolved.data_x[1], false) != 0)
-        return -1;
-    if (_panel_set_domain(panel, DVZ_DIM_Y, resolved.data_y[0], resolved.data_y[1], false) != 0)
-        return -1;
-    return 0;
-}
-
-
-/**
- * Set a panel 2D domain-fit policy.
- *
- * @param panel the panel
- * @param fit domain-fit descriptor; NULL clears the fit policy
- * @return 0 on success, -1 on validation error
- */
-int dvz_panel_set_view_fit(DvzPanel* panel, const DvzPanelViewFit* fit)
-{
-    if (panel == NULL)
-        return -1;
-    if (fit == NULL)
-    {
-        panel->view_fit_enabled = false;
-        return 0;
-    }
-    if (!_panel_view_fit_validate(fit))
-        return -1;
-    if (fit->fit == DVZ_PANEL_VIEW_FIT_NONE)
-    {
-        panel->view_fit_enabled = false;
-        return 0;
-    }
-    panel->view_fit = *fit;
-    panel->view_fit_enabled = true;
-    return _scene_panel_apply_domain_fit(panel);
-}
-
-
-/**
- * Clear a panel domain-fit policy without changing the current axis domains.
- *
- * @param panel the panel
- */
-void dvz_panel_clear_view_fit(DvzPanel* panel)
-{
-    if (panel == NULL)
-        return;
-    panel->view_fit_enabled = false;
-}
-
-
-/**
- * Return the current resolved panel VIEW extent before panzoom.
- *
- * @param panel the panel
- * @param out output extent as xmin, xmax, ymin, ymax
- * @return whether the extent was written
- */
-bool dvz_panel_view_extent(DvzPanel* panel, float out[4])
-{
-    if (panel == NULL || out == NULL)
-        return false;
-    DvzPanelView2DResolved resolved = {0};
-    if (!_scene_panel_view2d_resolve(panel, &resolved))
-        return false;
-    out[0] = resolved.view_extent[0];
-    out[1] = resolved.view_extent[1];
-    out[2] = resolved.view_extent[2];
-    out[3] = resolved.view_extent[3];
-    return true;
 }
 
 

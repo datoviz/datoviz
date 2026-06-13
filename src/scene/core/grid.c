@@ -465,7 +465,7 @@ bool _scene_panel_set_desc_internal(DvzPanel* panel, DvzPanelDesc desc)
     }
     (void)_scene_panel_refresh_border(panel);
     _panel_mark_layout_changed(panel);
-    (void)_scene_panel_apply_domain_fit(panel);
+    _scene_panel_view_dirty(panel);
     return true;
 }
 
