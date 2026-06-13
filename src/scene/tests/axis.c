@@ -477,6 +477,135 @@ static bool _axis_test_horizontal_grid_bounds(
 
 
 /**
+ * Return the expected pixel phase for a line width.
+ *
+ * @param width_px line width in pixels
+ * @return zero for even-width lines, 0.5 for odd-width lines
+ */
+static float _axis_test_line_pixel_phase(float width_px)
+{
+    if (!(width_px > 0.0f) || !isfinite(width_px))
+        return 0.5f;
+    uint32_t rounded = (uint32_t)fmaxf(1.0f, floorf(width_px + 0.5f));
+    return (rounded % 2u) == 0u ? 0.0f : 0.5f;
+}
+
+
+/**
+ * Return whether one pixel coordinate lies on the expected line phase.
+ *
+ * @param pixel pixel-space center
+ * @param phase expected pixel phase
+ * @param tolerance accepted pixel-space distance
+ * @return whether the center is snapped
+ */
+static bool _axis_test_pixel_phase_snapped(float pixel, float phase, float tolerance)
+{
+    float snapped = floorf(pixel - phase + 0.5f) + phase;
+    return fabsf(pixel - snapped) <= tolerance;
+}
+
+
+/**
+ * Check that grid quad centers project to stable pixel phases after panzoom.
+ *
+ * @param axis the axis owning the grid visual
+ * @param dim grid-line varying dimension
+ * @param extent full-panel inverse panzoom extent
+ * @return whether every grid line center is pixel-phase snapped
+ */
+static bool
+_axis_test_grid_centers_pixel_snapped(DvzAxis* axis, DvzDim dim, const float extent[4])
+{
+    ANN(axis);
+    ANN(axis->panel);
+    ANN(axis->grid_visual);
+    ANN(extent);
+
+    DvzVisualDataView positions_view = {0};
+    DvzVisualDataView colors_view = {0};
+    int res = dvz_visual_data(axis->grid_visual, "position", &positions_view);
+    ASSERT(res == 0);
+    res = dvz_visual_data(axis->grid_visual, "color", &colors_view);
+    ASSERT(res == 0);
+    const float* positions = (const float*)positions_view.data;
+    const uint8_t* colors = (const uint8_t*)colors_view.data;
+
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(axis->panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    (void)panel_x;
+    (void)panel_y;
+    float pixel_span = dim == DVZ_DIM_X ? panel_width : panel_height;
+    if (!(pixel_span > 0.0f) || !isfinite(pixel_span))
+        return false;
+
+    uint32_t lo_idx = dim == DVZ_DIM_X ? 0 : 2;
+    uint32_t hi_idx = dim == DVZ_DIM_X ? 1 : 3;
+    float range = extent[hi_idx] - extent[lo_idx];
+    if (fabsf(range) <= 1e-12f || !isfinite(range))
+        return false;
+
+    float phase = _axis_test_line_pixel_phase(axis->style.grid_width + 1.0f);
+    uint32_t coord_idx = dim == DVZ_DIM_X ? 0u : 1u;
+    uint32_t checked = 0;
+    for (uint32_t i = 0; i + 5 < positions_view.item_count; i += 6)
+    {
+        if (memcmp(&colors[4 * i], axis->style.grid_color, 4) != 0)
+            continue;
+        float min_coord = positions[3 * i + coord_idx];
+        float max_coord = min_coord;
+        for (uint32_t j = 1; j < 6; j++)
+        {
+            float coord = positions[3 * (i + j) + coord_idx];
+            min_coord = fminf(min_coord, coord);
+            max_coord = fmaxf(max_coord, coord);
+        }
+        float center = 0.5f * (min_coord + max_coord);
+        float displayed = 2.0f * (center - 0.5f * (extent[lo_idx] + extent[hi_idx])) / range;
+        float pixel = 0.5f * (displayed + 1.0f) * pixel_span;
+        if (!_axis_test_pixel_phase_snapped(pixel, phase, 1e-3f))
+            return false;
+        checked++;
+    }
+    return checked > 0;
+}
+
+
+/**
+ * Return a one-pixel source-coordinate tolerance for snapped grid centers.
+ *
+ * @param axis the axis
+ * @param dim visual dimension
+ * @param extent full-panel inverse panzoom extent
+ * @return source-coordinate tolerance
+ */
+static float _axis_test_grid_snap_source_tolerance(
+    DvzAxis* axis, DvzDim dim, const float extent[4])
+{
+    ANN(axis);
+    ANN(axis->panel);
+    ANN(extent);
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(axis->panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    (void)panel_x;
+    (void)panel_y;
+    float pixel_span = dim == DVZ_DIM_X ? panel_width : panel_height;
+    uint32_t lo_idx = dim == DVZ_DIM_X ? 0 : 2;
+    uint32_t hi_idx = dim == DVZ_DIM_X ? 1 : 3;
+    float range = fabsf(extent[hi_idx] - extent[lo_idx]);
+    if (!(pixel_span > 0.0f) || !isfinite(pixel_span) || !(range > 0.0f) || !isfinite(range))
+        return 1e-3f;
+    return 1.1f * range / pixel_span;
+}
+
+
+/**
  * Return whether a fixed major tick exists near one expected center.
  *
  * @param axis the axis
@@ -1694,13 +1823,16 @@ static int test_axis_panzoom_layout_aligns_grid_to_plot(TstContext* suite, const
     AT(fabs(visible_max - expected_max) < 1e-6);
 
     _scene_prepare_axis_visuals(figure);
+    float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
+    AT(_scene_panel_panzoom_extent(panel, extent));
+    float grid_tolerance = _axis_test_grid_snap_source_tolerance(x_axis, DVZ_DIM_X, extent);
     float grid_x = 0.0f;
-    AT(_axis_test_find_vertical_grid_center(x_axis, visual[0], 1e-5f, &grid_x));
-    AT(fabsf(grid_x - visual[0]) < 1e-5f);
+    AT(_axis_test_find_vertical_grid_center(x_axis, visual[0], grid_tolerance, &grid_x));
+    AT(fabsf(grid_x - visual[0]) < grid_tolerance);
     vec3 grid_pos = {grid_x, visual[1], visual[2]};
     float grid_projected_x = 0.0f;
     AT(_axis_test_apply_mvp_coord(&apply_mvp, grid_pos, DVZ_DIM_X, &grid_projected_x));
-    AT(fabsf(grid_projected_x - expected_x) < 1e-5f);
+    AT(fabsf(grid_projected_x - expected_x) < 2e-3f);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1756,15 +1888,69 @@ static int test_axis_grid_uses_plot_source_extent(TstContext* suite, const TstCa
 
     float min_y = 0.0f;
     float max_y = 0.0f;
-    AT(_axis_test_vertical_grid_bounds(x_axis, 0.0f, 1e-5f, &min_y, &max_y));
+    float tol_x = _axis_test_grid_snap_source_tolerance(x_axis, DVZ_DIM_X, visible_extent);
+    float tol_y = _axis_test_grid_snap_source_tolerance(y_axis, DVZ_DIM_Y, visible_extent);
+
+    AT(_axis_test_vertical_grid_bounds(x_axis, 0.0f, tol_x, &min_y, &max_y));
     AT(min_y < visible_extent[2]);
     AT(max_y > visible_extent[3]);
 
     float min_x = 0.0f;
     float max_x = 0.0f;
-    AT(_axis_test_horizontal_grid_bounds(y_axis, 0.0f, 1e-5f, &min_x, &max_x));
+    AT(_axis_test_horizontal_grid_bounds(y_axis, 0.0f, tol_y, &min_x, &max_x));
     AT(min_x < visible_extent[0]);
     AT(max_x > visible_extent[1]);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure panzoomed grid quads land on stable pixel phases to avoid raster shimmer.
+ *
+ * @param suite the test suite
+ * @param item the test case
+ * @return zero on success
+ */
+static int test_axis_grid_centers_snap_after_panzoom(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 1000, 700, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -2.0, 2.0) == 0);
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    ANN(x_axis);
+    ANN(y_axis);
+    AT(dvz_axis_set_grid(x_axis, true));
+    AT(dvz_axis_set_grid(y_axis, true));
+
+    DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
+    ticks.target_count = 6;
+    ticks.min_pixel_spacing = 90.0f;
+    ticks.minor_per_interval = 0;
+    AT(dvz_axis_set_tick_policy(x_axis, &ticks));
+    AT(dvz_axis_set_tick_policy(y_axis, &ticks));
+
+    DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
+    ANN(pz);
+    dvz_panzoom_zoom(pz, (vec2){1.35f, 1.20f});
+    dvz_panzoom_pan(pz, (vec2){0.017f, -0.023f});
+
+    _scene_prepare_axis_visuals(figure);
+    float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
+    AT(_scene_panel_panzoom_extent(panel, extent));
+    AT(_axis_test_grid_centers_pixel_snapped(x_axis, DVZ_DIM_X, extent));
+    AT(_axis_test_grid_centers_pixel_snapped(y_axis, DVZ_DIM_Y, extent));
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1908,20 +2094,24 @@ static int test_axis_raw_visual_panzoom_alignment(TstContext* suite, const TstCa
     AT(_axis_test_apply_mvp_coord(&apply_mvp, visual, DVZ_DIM_Y, &expected_y));
 
     _scene_prepare_axis_visuals(figure);
+    float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
+    AT(_scene_panel_panzoom_extent(panel, extent));
+    float grid_tol_x = _axis_test_grid_snap_source_tolerance(x_axis, DVZ_DIM_X, extent);
+    float grid_tol_y = _axis_test_grid_snap_source_tolerance(y_axis, DVZ_DIM_Y, extent);
     float grid_x = 0.0f;
     float grid_y = 0.0f;
-    AT(_axis_test_find_vertical_grid_center(x_axis, visual[0], 1e-5f, &grid_x));
-    AT(_axis_test_find_horizontal_grid_center(y_axis, visual[1], 1e-5f, &grid_y));
-    AT(fabsf(grid_x - visual[0]) < 1e-5f);
-    AT(fabsf(grid_y - visual[1]) < 1e-5f);
+    AT(_axis_test_find_vertical_grid_center(x_axis, visual[0], grid_tol_x, &grid_x));
+    AT(_axis_test_find_horizontal_grid_center(y_axis, visual[1], grid_tol_y, &grid_y));
+    AT(fabsf(grid_x - visual[0]) < grid_tol_x);
+    AT(fabsf(grid_y - visual[1]) < grid_tol_y);
     vec3 grid_x_pos = {grid_x, visual[1], visual[2]};
     vec3 grid_y_pos = {visual[0], grid_y, visual[2]};
     float grid_projected_x = 0.0f;
     float grid_projected_y = 0.0f;
     AT(_axis_test_apply_mvp_coord(&apply_mvp, grid_x_pos, DVZ_DIM_X, &grid_projected_x));
     AT(_axis_test_apply_mvp_coord(&apply_mvp, grid_y_pos, DVZ_DIM_Y, &grid_projected_y));
-    AT(fabsf(grid_projected_x - expected_x) < 1e-5f);
-    AT(fabsf(grid_projected_y - expected_y) < 1e-5f);
+    AT(fabsf(grid_projected_x - expected_x) < 2e-3f);
+    AT(fabsf(grid_projected_y - expected_y) < 2e-3f);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2015,6 +2205,10 @@ static int test_axis_integer_lattice_panzoom_alignment(TstContext* suite, const 
     dvz_panzoom_pan(pz, (vec2){-0.22f, 0.18f});
 
     _scene_prepare_axis_visuals(figure);
+    float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
+    AT(_scene_panel_panzoom_extent(panel, extent));
+    float grid_tol_x = _axis_test_grid_snap_source_tolerance(x_axis, DVZ_DIM_X, extent);
+    float grid_tol_y = _axis_test_grid_snap_source_tolerance(y_axis, DVZ_DIM_Y, extent);
     DvzMVP apply_mvp = {0};
     _scene_panel_apply_mvp(panel, &apply_mvp);
 
@@ -2056,12 +2250,12 @@ static int test_axis_integer_lattice_panzoom_alignment(TstContext* suite, const 
         if (expected_x < plot[0] || expected_x > plot[1])
             continue;
         float grid_x = 0.0f;
-        AT(_axis_test_find_vertical_grid_center(x_axis, visual[idx][0], 1e-5f, &grid_x));
-        AT(fabsf(grid_x - visual[idx][0]) < 1e-5f);
+        AT(_axis_test_find_vertical_grid_center(x_axis, visual[idx][0], grid_tol_x, &grid_x));
+        AT(fabsf(grid_x - visual[idx][0]) < grid_tol_x);
         vec3 grid_pos = {grid_x, visual[idx][1], visual[idx][2]};
         float grid_projected_x = 0.0f;
         AT(_axis_test_apply_mvp_coord(&apply_mvp, grid_pos, DVZ_DIM_X, &grid_projected_x));
-        AT(fabsf(grid_projected_x - expected_x) < 1e-5f);
+        AT(fabsf(grid_projected_x - expected_x) < 2e-3f);
         x_checks++;
     }
 
@@ -2080,12 +2274,12 @@ static int test_axis_integer_lattice_panzoom_alignment(TstContext* suite, const 
         if (expected_y < plot[2] || expected_y > plot[3])
             continue;
         float grid_y = 0.0f;
-        AT(_axis_test_find_horizontal_grid_center(y_axis, visual[idx][1], 1e-5f, &grid_y));
-        AT(fabsf(grid_y - visual[idx][1]) < 1e-5f);
+        AT(_axis_test_find_horizontal_grid_center(y_axis, visual[idx][1], grid_tol_y, &grid_y));
+        AT(fabsf(grid_y - visual[idx][1]) < grid_tol_y);
         vec3 grid_pos = {visual[idx][0], grid_y, visual[idx][2]};
         float grid_projected_y = 0.0f;
         AT(_axis_test_apply_mvp_coord(&apply_mvp, grid_pos, DVZ_DIM_Y, &grid_projected_y));
-        AT(fabsf(grid_projected_y - expected_y) < 1e-5f);
+        AT(fabsf(grid_projected_y - expected_y) < 2e-3f);
         y_checks++;
     }
 
@@ -2443,6 +2637,8 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
     _scene_panel_plot_visual_rect(panel, plot);
     float visible_extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
     AT(_scene_panel_panzoom_extent(panel, visible_extent));
+    float grid_tol_x = _axis_test_grid_snap_source_tolerance(x_axis, DVZ_DIM_X, visible_extent);
+    float grid_tol_y = _axis_test_grid_snap_source_tolerance(y_axis, DVZ_DIM_Y, visible_extent);
 
     bool checked_x = false;
     for (uint32_t i = 0; i < x_axis->tick_count; i++)
@@ -2452,12 +2648,12 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
             continue;
         float expected_x = data_to_view[0][0] * (float)value + data_to_view[3][0];
         float grid_x = 0.0f;
-        AT(_axis_test_find_vertical_grid_center(x_axis, expected_x, 1e-5f, &grid_x));
-        AT(fabsf(grid_x - expected_x) < 1e-5f);
+        AT(_axis_test_find_vertical_grid_center(x_axis, expected_x, grid_tol_x, &grid_x));
+        AT(fabsf(grid_x - expected_x) < grid_tol_x);
         float grid_min_y = 0.0f;
         float grid_max_y = 0.0f;
         AT(_axis_test_vertical_grid_bounds(
-            x_axis, expected_x, 1e-5f, &grid_min_y, &grid_max_y));
+            x_axis, expected_x, grid_tol_x, &grid_min_y, &grid_max_y));
         AT(grid_min_y < visible_extent[2]);
         AT(grid_max_y > visible_extent[3]);
         float plot_clip_x = 0.0f;
@@ -2479,12 +2675,12 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
             continue;
         float expected_y = data_to_view[1][1] * (float)value + data_to_view[3][1];
         float grid_y = 0.0f;
-        AT(_axis_test_find_horizontal_grid_center(y_axis, expected_y, 1e-5f, &grid_y));
-        AT(fabsf(grid_y - expected_y) < 1e-5f);
+        AT(_axis_test_find_horizontal_grid_center(y_axis, expected_y, grid_tol_y, &grid_y));
+        AT(fabsf(grid_y - expected_y) < grid_tol_y);
         float grid_min_x = 0.0f;
         float grid_max_x = 0.0f;
         AT(_axis_test_horizontal_grid_bounds(
-            y_axis, expected_y, 1e-5f, &grid_min_x, &grid_max_x));
+            y_axis, expected_y, grid_tol_y, &grid_min_x, &grid_max_x));
         AT(grid_min_x < visible_extent[0]);
         AT(grid_max_x > visible_extent[1]);
         float plot_clip_y = 0.0f;
@@ -2533,6 +2729,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_panzoom_visible_domain);
     TST_CASE(test_axis_panzoom_layout_aligns_grid_to_plot);
     TST_CASE(test_axis_grid_uses_plot_source_extent);
+    TST_CASE(test_axis_grid_centers_snap_after_panzoom);
     TST_CASE(test_axis_data_visual_mvp_uses_view_extent_after_resize);
     TST_CASE(test_axis_raw_visual_panzoom_alignment);
     TST_CASE(test_axis_integer_lattice_panzoom_alignment);
