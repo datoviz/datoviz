@@ -158,7 +158,7 @@ static bool _add_2d_scalebar(DvzPanel* panel)
 
 
 /**
- * Attach a world-referenced scale bar to the 3D arcball panel.
+ * Attach a camera-view scale bar to the 3D arcball panel.
  *
  * @param panel panel receiving the annotation
  * @return true on success, false on error
@@ -171,9 +171,8 @@ static bool _add_3d_scalebar(DvzPanel* panel)
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
-            .reference_mode = DVZ_SCALEBAR_REFERENCE_WORLD_POINT,
+            .reference_mode = DVZ_SCALEBAR_REFERENCE_VIEW_PLANE,
             .reference_position = {0.0, 0.0, 0.0},
-            .reference_direction = {1.0, 0.0, 0.0},
             .anchor = DVZ_SCENE_ANCHOR_BOTTOM_RIGHT,
             .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
             .target_length_px = 125.0f,
