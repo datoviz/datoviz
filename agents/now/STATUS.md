@@ -25,6 +25,9 @@ June 10 examples cleanup is closed in git history: shared interaction fixes, 3D 
 technique-panel polish, reviewed visual polish, and graph replacement landed with focused tests and
 native smoke evidence.
 
+Known follow-up: `gui/viewport_resize_hidden_smoke` currently fails. Recheck it during the next GUI
+or runtime resize pass before treating hidden viewport resize coverage as clean.
+
 Closed first slices that should stay in validation: frame artifact scene emission, raw `ctypes`, retained textured mesh, retained
 DATA-coordinate visual attachments, text, 2D axes/ticks, colorbars, labels/readouts, scale bars,
 app/offscreen rendering, broad item/sample query paths, scene visual-boundary checks, WebGPU fixture
