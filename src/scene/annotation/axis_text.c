@@ -45,7 +45,7 @@ static float _axis_text_tick_visual_position(
     double visible_min, double visible_max)
 {
     ANN(axis);
-    if (axis->panel != NULL && axis->panel->view_fit_enabled)
+    if (axis->panel != NULL && axis->panel->view2d_enabled)
     {
         uint32_t lo_idx = axis->dim == DVZ_DIM_X ? 0 : 2;
         uint32_t hi_idx = axis->dim == DVZ_DIM_X ? 1 : 3;

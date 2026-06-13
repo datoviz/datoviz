@@ -541,7 +541,7 @@ int test_scene_visual_local_transform_bounds_and_clear(TstContext* suite, const 
 int test_scene_visual_local_transform_emits_per_visual_mvp(
     TstContext* suite, const TstCase* item);
 
-int test_scene_visual_data_coord_space_tracks_domain_fit_resize(
+int test_scene_visual_data_coord_space_tracks_panel_view2d_resize(
     TstContext* suite, const TstCase* item);
 
 int test_scene_equal_aspect_view_and_panel_coord_spaces(TstContext* suite, const TstCase* item);

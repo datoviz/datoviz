@@ -37,7 +37,7 @@ techniques.
 - `record_replay.c`: experimental DVZR app recording and live replay.
 - `controller_orbit_camera.c`: orbit-camera controller attached to a compact 3D scene.
 - `visual_transform.c`: retained visual-local transform set/get/clear proof.
-- `panel_domain_fit.c`: explicit panel domain fitting and reserved plot layout.
+- `panel_view2d.c`: explicit panel 2D view framing and reserved plot layout.
 - `json_export.c`: experimental scene JSON serialization diagnostic.
 - `bezier_curve_path.c`: CPU-tessellated Bezier curves rendered through retained paths.
 - `isolines.c`: CPU contour extraction rendered as retained segment overlays.

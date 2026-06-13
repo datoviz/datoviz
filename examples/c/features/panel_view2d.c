@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panel_domain_fit - panel-owned data-domain fit with equal aspect.
+/* panel_view2d - panel-owned 2D view framing with equal aspect.
  *
- * Scenario: feature.panel_domain_fit
+ * Scenario: feature.panel_view2d
  * Style: features, graphite_cyan, 1600x1200 capture target
  *
- * Build:  just example-c features/panel_domain_fit
- * Run:    ./build/examples/c/features/panel_domain_fit --live
- * Smoke:  ./build/examples/c/features/panel_domain_fit --png
+ * Build:  just example-c features/panel_view2d
+ * Run:    ./build/examples/c/features/panel_view2d --live
+ * Smoke:  ./build/examples/c/features/panel_view2d --png
  */
 
 
@@ -97,7 +97,7 @@ static bool _add_domain_shape(DvzScene* scene, DvzPanel* panel, DvzColor color)
 
 
 /**
- * Configure axes for the panel-domain fit example.
+ * Configure axes for the panel-view fit example.
  *
  * @param panel target panel
  * @return true when axes were configured
@@ -132,7 +132,7 @@ static bool _add_axes(DvzPanel* panel)
 /*************************************************************************************************/
 
 /**
- * Initialize the panel-domain fit feature example.
+ * Initialize the panel-view fit feature example.
  *
  * @param ctx scenario context
  * @param out_user scenario state output
@@ -181,12 +181,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (dvz_panel_set_domain(free_panel, DVZ_DIM_Y, -1.0, +1.0) != 0)
         return false;
 
-    DvzPanelViewFit fit = dvz_panel_view_fit();
-    fit.x = (DvzDataDomain){.min = -1.0, .max = +1.0};
-    fit.y = (DvzDataDomain){.min = -1.0, .max = +1.0};
-    fit.padding = 0.18;
-    fit.aspect = DVZ_PANEL_VIEW_ASPECT_EQUAL;
-    if (dvz_panel_set_view_fit(fit_panel, &fit) != 0)
+    DvzPanelView2D view = dvz_panel_view2d();
+    view.data_x = (DvzDataDomain){.min = -1.0, .max = +1.0};
+    view.data_y = (DvzDataDomain){.min = -1.0, .max = +1.0};
+    view.padding = 0.18;
+    view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
+    if (dvz_panel_set_view2d(fit_panel, &view) != 0)
         return false;
 
     double x_min = 0.0;
@@ -225,15 +225,15 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
 
 /**
- * Return the panel-domain fit scenario specification.
+ * Return the panel 2D view scenario specification.
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _panel_domain_fit_scenario(void)
+static DvzScenarioSpec _panel_view2d_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "feature_panel_domain_fit",
-        .title = "panel_domain_fit",
+        .id = "feature_panel_view2d",
+        .title = "panel_view2d",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
@@ -248,7 +248,7 @@ static DvzScenarioSpec _panel_domain_fit_scenario(void)
 /*************************************************************************************************/
 
 /**
- * Run the panel-domain fit feature example through the native scenario runner.
+ * Run the panel-view fit feature example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -256,6 +256,6 @@ static DvzScenarioSpec _panel_domain_fit_scenario(void)
  */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _panel_domain_fit_scenario();
+    DvzScenarioSpec spec = _panel_view2d_scenario();
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

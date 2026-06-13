@@ -480,29 +480,29 @@ typedef struct DvzDataDomain DvzDataDomain;
 
 typedef enum
 {
-    DVZ_PANEL_VIEW_FIT_NONE = 0,
-    DVZ_PANEL_VIEW_FIT_CONTAIN,
-} DvzPanelViewFitMode;
+    DVZ_PANEL_VIEW2D_NONE = 0,
+    DVZ_PANEL_VIEW2D_CONTAIN,
+} DvzPanelView2DMode;
 
 
 typedef enum
 {
-    DVZ_PANEL_VIEW_ASPECT_FREE = 0,
-    DVZ_PANEL_VIEW_ASPECT_EQUAL,
-} DvzPanelViewAspectMode;
+    DVZ_PANEL_VIEW2D_ASPECT_FREE = 0,
+    DVZ_PANEL_VIEW2D_ASPECT_EQUAL,
+} DvzPanelView2DAspect;
 
 
-struct DvzPanelViewFit
+struct DvzPanelView2D
 {
     uint32_t struct_size;
     uint32_t flags;
-    DvzPanelViewFitMode fit;
-    DvzPanelViewAspectMode aspect;
-    DvzDataDomain x;
-    DvzDataDomain y;
+    DvzPanelView2DMode mode;
+    DvzPanelView2DAspect aspect;
+    DvzDataDomain data_x;
+    DvzDataDomain data_y;
     double padding;
 };
-typedef struct DvzPanelViewFit DvzPanelViewFit;
+typedef struct DvzPanelView2D DvzPanelView2D;
 
 
 struct DvzAxisTickPolicy

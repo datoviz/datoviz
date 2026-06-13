@@ -1382,7 +1382,7 @@ int test_panel_visible_domain(TstContext* suite, const TstCase* item)
 }
 
 
-static int test_panel_domain_fit(TstContext* suite, const TstCase* item)
+static int test_panel_view2d(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -1394,14 +1394,14 @@ static int test_panel_domain_fit(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzPanelViewFit fit = dvz_panel_view_fit();
-    AT(fit.struct_size == DVZ_STRUCT_SIZE(DvzPanelViewFit));
-    AT(fit.fit == DVZ_PANEL_VIEW_FIT_CONTAIN);
-    AT(fit.aspect == DVZ_PANEL_VIEW_ASPECT_FREE);
-    fit.x = (DvzDataDomain){.min = 0.0, .max = 2.0};
-    fit.y = (DvzDataDomain){.min = 0.0, .max = 1.0};
-    fit.padding = 0.10;
-    AT(dvz_panel_set_view_fit(panel, &fit) == 0);
+    DvzPanelView2D view = dvz_panel_view2d();
+    AT(view.struct_size == DVZ_STRUCT_SIZE(DvzPanelView2D));
+    AT(view.mode == DVZ_PANEL_VIEW2D_CONTAIN);
+    AT(view.aspect == DVZ_PANEL_VIEW2D_ASPECT_FREE);
+    view.data_x = (DvzDataDomain){.min = 0.0, .max = 2.0};
+    view.data_y = (DvzDataDomain){.min = 0.0, .max = 1.0};
+    view.padding = 0.10;
+    AT(dvz_panel_set_view2d(panel, &view) == 0);
 
     double min = 0.0;
     double max = 0.0;
@@ -1412,9 +1412,9 @@ static int test_panel_domain_fit(TstContext* suite, const TstCase* item)
     AT(fabs(min + 0.20) < 1e-9);
     AT(fabs(max - 1.20) < 1e-9);
 
-    fit.padding = 0.0;
-    fit.aspect = DVZ_PANEL_VIEW_ASPECT_EQUAL;
-    AT(dvz_panel_set_view_fit(panel, &fit) == 0);
+    view.padding = 0.0;
+    view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
+    AT(dvz_panel_set_view2d(panel, &view) == 0);
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
     AT(fabs(min - 0.0) < 1e-9);
     AT(fabs(max - 2.0) < 1e-9);
@@ -1451,8 +1451,8 @@ static int test_panel_domain_fit(TstContext* suite, const TstCase* item)
     AT(fabs(min - 10.0) < 1e-9);
     AT(fabs(max - 20.0) < 1e-9);
 
-    AT(dvz_panel_set_view_fit(panel, &fit) == 0);
-    dvz_panel_clear_view_fit(panel);
+    AT(dvz_panel_set_view2d(panel, &view) == 0);
+    dvz_panel_clear_view2d(panel);
     AT(dvz_panel_set_layout_reserve(panel, &(DvzPanelLayoutReserve){.right = 0.50f}));
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
     AT(fabs(min - 10.0) < 1e-9);
@@ -2109,13 +2109,13 @@ int test_axis_descriptor_abi_rejects_invalid_structs(TstContext* suite, const Ts
     style.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_style(axis, &style));
 
-    DvzPanelViewFit fit = dvz_panel_view_fit();
-    fit.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_view_fit(panel, &fit) != 0);
+    DvzPanelView2D view = dvz_panel_view2d();
+    view.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_view2d(panel, &view) != 0);
 
-    fit = dvz_panel_view_fit();
-    fit.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_view_fit(panel, &fit) != 0);
+    view = dvz_panel_view2d();
+    view.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_view2d(panel, &view) != 0);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2141,13 +2141,13 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
     DvzPanel* panel = dvz_panel_full(figure);
     ANN(panel);
 
-    DvzPanelViewFit fit = dvz_panel_view_fit();
-    fit.fit = DVZ_PANEL_VIEW_FIT_CONTAIN;
-    fit.aspect = DVZ_PANEL_VIEW_ASPECT_EQUAL;
-    fit.x = (DvzDataDomain){.min = -1.0, .max = +1.0};
-    fit.y = (DvzDataDomain){.min = -1.0, .max = +1.0};
-    fit.padding = 0.0;
-    AT(dvz_panel_set_view_fit(panel, &fit) == 0);
+    DvzPanelView2D view = dvz_panel_view2d();
+    view.mode = DVZ_PANEL_VIEW2D_CONTAIN;
+    view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
+    view.data_x = (DvzDataDomain){.min = -1.0, .max = +1.0};
+    view.data_y = (DvzDataDomain){.min = -1.0, .max = +1.0};
+    view.padding = 0.0;
+    AT(dvz_panel_set_view2d(panel, &view) == 0);
 
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
@@ -2243,7 +2243,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_plot_margins);
     TST_CASE(test_axis_layout_reserve);
     TST_CASE(test_panel_visible_domain);
-    TST_CASE(test_panel_domain_fit);
+    TST_CASE(test_panel_view2d);
     TST_CASE(test_axis_equal_aspect_axis_alignment);
     TST_CASE(test_axis_panzoom_visible_domain);
     TST_CASE(test_axis_panzoom_layout_aligns_grid_to_plot);

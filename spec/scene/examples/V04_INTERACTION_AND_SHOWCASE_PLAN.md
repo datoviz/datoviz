@@ -19,7 +19,7 @@ Already present in the active tree:
 3. `features/reference_grid.c` and the `DvzReferenceGrid` API exist;
 4. `features/selection_pixel.c`, `features/selection_sphere.c`, and
    `features/selection_mesh_instances.c` exist;
-5. `features/bounds_overlay.c`, `features/gui_viewport.c`, `features/panel_domain_fit.c`, and
+5. `features/bounds_overlay.c`, `features/gui_viewport.c`, `features/panel_view2d.c`, and
    `features/compute_buffer_animation.c` exist;
 6. `showcases/embedding_atlas.c`, `showcases/lipid_brain_atlas.c`, and
    `showcases/synthetic_mouse.c` exist, but some data paths still use generated or fallback data;
@@ -184,23 +184,23 @@ Plan:
    verifies no stale, blank, or wrong-extent frame is reported as a valid viewport image.
 
 
-## Panel Domain Fit Semantics
+## Panel View 2D Semantics
 
-`features/panel_domain_fit` is not primarily a rendering feature; it is a panel-domain policy. The
-current API has only `DVZ_PANEL_VIEW_FIT_CONTAIN` and `DVZ_PANEL_VIEW_ASPECT_EQUAL`.
+`features/panel_view2d` is not primarily a rendering feature; it is a panel-view policy. The
+current API has only `DVZ_PANEL_VIEW2D_CONTAIN` and `DVZ_PANEL_VIEW2D_ASPECT_EQUAL`.
 
 Semantics:
 
-1. the fit policy owns the X and Y visible data domains;
+1. the panel 2D view policy owns the X and Y visible data domains;
 2. padding expands the source domain before fitting;
-3. `DVZ_PANEL_VIEW_ASPECT_EQUAL` expands one domain so one X data unit and one Y data unit occupy
+3. `DVZ_PANEL_VIEW2D_ASPECT_EQUAL` expands one domain so one X data unit and one Y data unit occupy
    the same number of plot pixels;
 4. the policy is re-applied when the panel plot rectangle changes, including layout reserve and
    figure resize changes;
 5. manual pan/zoom can then operate on the resulting visible domain.
 
-For a square-domain example, the content should appear square in the fitted panel. If it does not,
-the example or the domain-fit implementation is wrong.
+For a square-domain example, the content should appear square in the framed panel. If it does not,
+the example or the panel 2D view implementation is wrong.
 
 Needed fit-mode decisions:
 
@@ -450,7 +450,7 @@ affected examples as native-first or WebGPU-planned in metadata.
 1. Fix the small-window `200x200` app/view logical layout clamp and tests.
 2. Fix GUI viewport resize as a synchronized committed resize with last-valid-frame display.
 3. Clarify bounds overlay semantics and update overlay padding/tests for rendered marks.
-4. Rewrite `panel_domain_fit` to visually prove contain/equal-aspect behavior.
+4. Rewrite `panel_view2d` to visually prove contain/equal-aspect behavior.
 5. Update `visuals/glyph` to show font-derived letters through the raw glyph atlas path.
 6. Add `features/text_font_atlas.c`; add `features/symbol_atlas.c` only if the symbol API is ready.
 7. Make `compute_buffer_animation` use explicit continuous scheduling.

@@ -1856,8 +1856,8 @@ struct DvzPanel
     DvzPanelReserve legend_reserve;
     DvzPanelReserve reserve;
     DvzPanelReserve padding;
-    bool view_fit_enabled;
-    DvzPanelViewFit view_fit;
+    bool view2d_enabled;
+    DvzPanelView2D view2d;
 
     DvzPanzoom* panzoom; /* optional pan/zoom controller (owned) */
     DvzArcball* arcball; /* optional arcball controller (owned) */

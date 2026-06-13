@@ -858,20 +858,20 @@ examples:
         - mesh
     agent_copy_safe: true
 
-  - id: feature_panel_domain_fit
-    title: Panel Domain Fit
+  - id: feature_panel_view2d
+    title: Panel View 2D
     stage: v0.4_required
     category: feature
-    primary_feature: panel-domain-fit
+    primary_feature: panel-view2d
     lane: features
-    source: examples/c/features/panel_domain_fit.c
+    source: examples/c/features/panel_view2d.c
     validation: smoke+screenshot
     data:
       kind: synthetic
     webgpu:
       status: webgpu-planned
       requirements:
-        - panel-domain
+        - panel-view
         - panzoom
         - point
     agent_copy_safe: true

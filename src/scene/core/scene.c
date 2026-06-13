@@ -540,8 +540,8 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
     panel->legend_reserve = (DvzPanelReserve){0};
     panel->reserve        = (DvzPanelReserve){0};
     panel->padding        = (DvzPanelReserve){0};
-    panel->view_fit_enabled = false;
-    panel->view_fit = dvz_panel_view_fit();
+    panel->view2d_enabled = false;
+    panel->view2d = dvz_panel_view2d();
     _scene_technique_state_init(&panel->techniques);
     panel->visual_count = 0;
     panel->bounds_visual = NULL;

@@ -47,21 +47,21 @@ Remove compatibility-era names instead of carrying them into the v0.4 release su
 
 Require explicit coordinate-space selection through:
 
-1. `DVZ_COORD_VIEW`: metric panel view coordinates, affected by equal-aspect view fit;
+1. `DVZ_COORD_VIEW`: metric panel view coordinates, affected by equal-aspect panel framing;
 2. `DVZ_COORD_DATA`: data/domain coordinates, mapped through panel DATA -> VIEW;
 3. `DVZ_COORD_PANEL`: normalized panel coordinates, intentionally viewport-shaped.
 
-Keep the current view-fit API names only if they remain clear after the cleanup:
+The release-candidate panel view API names are:
 
 ```c
-DvzPanelViewFit dvz_panel_view_fit(void);
-int dvz_panel_set_view_fit(DvzPanel* panel, const DvzPanelViewFit* fit);
-void dvz_panel_clear_view_fit(DvzPanel* panel);
-bool dvz_panel_view_extent(DvzPanel* panel, float out[4]);
+DvzPanelView2D dvz_panel_view2d(void);
+int dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2D* view);
+void dvz_panel_clear_view2d(DvzPanel* panel);
+bool dvz_panel_view2d_extent(DvzPanel* panel, float out[4]);
 ```
 
-If the term "fit" remains too narrow, rename the descriptor before freezing the public API. Candidate
-names are `DvzPanelView2D` or `DvzPanelFrame2D`.
+The interim "view-fit" names were intentionally renamed because the descriptor now owns framing
+policy, source DATA domains, and resolved panel VIEW extent.
 
 
 ## Derived State Rule
@@ -141,10 +141,10 @@ src/scene/core/panel_view.c
 
 Move or place these responsibilities there:
 
-1. `dvz_panel_view_fit()` or its renamed successor;
-2. `dvz_panel_set_view_fit()`;
-3. `dvz_panel_clear_view_fit()`;
-4. `dvz_panel_view_extent()`;
+1. `dvz_panel_view2d()` or its renamed successor;
+2. `dvz_panel_set_view2d()`;
+3. `dvz_panel_clear_view2d()`;
+4. `dvz_panel_view2d_extent()`;
 5. `_scene_panel_view2d_resolve()`;
 6. resolved visible-domain helpers;
 7. `_scene_panel_data_model()`;
@@ -163,7 +163,7 @@ Keep `src/scene/annotation/axis.c` focused on axes:
 2. axis explicit override state;
 3. tick, grid, label, and visual contribution preparation;
 4. conversion between plot-clip coordinates and fixed overlay coordinates for ticks and labels;
-5. no panel view-fit ownership.
+5. no panel 2D view ownership.
 
 Keep `src/scene/core/controllers.c` focused on controller binding and link propagation through
 resolved panel extents.
@@ -193,7 +193,7 @@ Prefer small commits with focused validation.
    spaces, panel view the owner of aspect, and domain-fit aliases removed.
 2. **Public API break:** delete old domain-fit typedefs, functions, enum values, and
    `DVZ_COORD_VISUAL`; fix compile errors mechanically.
-3. **Core ownership:** add `panel_view.c`, move view-fit APIs and resolver there, and remove view
+3. **Core ownership:** add `panel_view.c`, move panel view APIs and resolver there, and remove view
    policy ownership from axis code.
 4. **Derived-state resolver:** stop writing fitted domains back into panel domain storage; route
    visible-domain, axis, grid, query, and DATA-to-VIEW paths through resolver output.

@@ -18,7 +18,7 @@ navigation state: pan, zoom, limits, interaction baselines, and gesture policy. 
 panel aspect by mutating raw zoom.
 
 During frame planning, each panel evaluates the active controller against its current plot rectangle
-and view-fit policy to produce:
+and panel 2D view policy to produce:
 
 1. the panel apply MVP;
 2. the current visible view extent;
@@ -34,13 +34,12 @@ DataSpace -> ViewSpace -> controller/panel view -> ClipSpace
 
 ## Public Shape
 
-The implemented public API uses panel view-fit names as the primary names and keeps the old
-view-fit names:
+The implemented public API uses panel 2D view names as the release-candidate names:
 
-1. `DvzPanelViewFit`, `DvzPanelViewFitMode`, and `DvzPanelViewAspectMode`;
-2. `dvz_panel_view_fit()`, `dvz_panel_set_view_fit()`, `dvz_panel_clear_view_fit()`, and
-   `dvz_panel_view_extent()`;
-3. domain-fit aliases are removed before the v0.4 release surface.
+1. `DvzPanelView2D`, `DvzPanelView2DMode`, and `DvzPanelView2DAspect`;
+2. `dvz_panel_view2d()`, `dvz_panel_set_view2d()`, `dvz_panel_clear_view2d()`, and
+   `dvz_panel_view2d_extent()`;
+3. domain-fit aliases are not part of the v0.4 release surface.
 
 Coordinate spaces are split so users can choose whether equal aspect applies:
 
@@ -56,9 +55,9 @@ Primary implementation points:
 1. public types: `include/datoviz/scene/types.h`;
 2. coordinate-space enum: `include/datoviz/scene/enums.h`;
 3. public declarations: `include/datoviz/scene.h`;
-4. panel view resolver and attachment MVP composition: `src/scene/core/panel_geometry.c`;
+4. panel geometry and attachment MVP composition: `src/scene/core/panel_geometry.c`;
 5. panel-aware panzoom evaluation: `src/controller/panzoom.c`;
-6. view-fit compatibility wrappers: `src/scene/annotation/axis.c`.
+6. panel 2D view resolver and public panel view API: `src/scene/core/panel_view.c`.
 
 The resolver computes both fitted DATA domains and the base VIEW extent. With equal aspect enabled,
 wide panels use `[-plot_aspect, +plot_aspect] x [-1, +1]`; tall panels use
@@ -72,8 +71,8 @@ with the panel rectangle.
 ## Linked Panels
 
 Linked panzoom panels share semantic controller state, then each panel resolves that state against
-its own plot rectangle and view-fit policy. For different panel aspect ratios, identical X extent,
-identical Y extent, and equal screen scale cannot all hold at once.
+its own plot rectangle and panel 2D view policy. For different panel aspect ratios, identical X
+extent, identical Y extent, and equal screen scale cannot all hold at once.
 
 The implemented priority is:
 
@@ -95,9 +94,8 @@ Focused tests cover:
 5. linked panzoom extent behavior in `src/scene/tests/panzoom_arcball.c`.
 
 
-## Remaining Cleanup
+## Cleanup Status
 
-The core resolver lives in `src/scene/core/panel_geometry.c`, but the public view-fit wrappers and
-domain-fit compatibility wrappers still live in `src/scene/annotation/axis.c`. Moving those wrappers
-to a core panel API file would improve module ownership, but this is cleanup, not active proposal
-work.
+The core resolver and public panel 2D view API live in `src/scene/core/panel_view.c`. Domain-fit
+compatibility aliases and the interim view-fit public names have been removed from the v0.4 release
+surface.

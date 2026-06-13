@@ -283,7 +283,7 @@ static int _panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max
     if (axis == NULL || !isfinite(min) || !isfinite(max) || !(max > min))
         return -1;
     if (clear_fit)
-        panel->view_fit_enabled = false;
+        panel->view2d_enabled = false;
     _axis_init(axis, panel, dim);
     axis->domain = (DvzDataDomain){.min = min, .max = max};
     axis->domain_set = true;
@@ -349,7 +349,7 @@ int dvz_panel_data_to_visual_positions(
     DvzAxis* y_axis = _panel_axis_slot(panel, DVZ_DIM_Y);
     bool has_x = x_axis != NULL && x_axis->panel != NULL && x_axis->domain_set;
     bool has_y = y_axis != NULL && y_axis->panel != NULL && y_axis->domain_set;
-    if (panel->view_fit_enabled)
+    if (panel->view2d_enabled)
     {
         if (!_scene_panel_data_model(panel, data_to_view))
             return -1;
@@ -369,7 +369,7 @@ int dvz_panel_data_to_visual_positions(
         float z = data_positions[3 * i + 2];
         if (!isfinite(x) || !isfinite(y) || !isfinite(z))
             return -1;
-        if (panel->view_fit_enabled)
+        if (panel->view2d_enabled)
         {
             visual_positions[3 * i + 0] = data_to_view[0][0] * x + data_to_view[3][0];
             visual_positions[3 * i + 1] = data_to_view[1][1] * y + data_to_view[3][1];

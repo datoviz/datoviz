@@ -240,11 +240,10 @@ not part of the release surface:
 6. `dvz_panel_set_domain_fit()`;
 7. `dvz_panel_clear_domain_fit()`.
 
-The current release-candidate names for the surviving view/framing surface are
-`DvzPanelViewFit`, `dvz_panel_view_fit()`, `dvz_panel_set_view_fit()`,
-`dvz_panel_clear_view_fit()`, and `dvz_panel_view_extent()`. These names may be revisited in a
-later rename-focused cleanup before API freeze, but the ownership split is already fixed: source
-panel domains are not mutated to apply equal-aspect fit.
+The release-candidate names for the surviving view/framing surface are
+`DvzPanelView2D`, `dvz_panel_view2d()`, `dvz_panel_set_view2d()`,
+`dvz_panel_clear_view2d()`, and `dvz_panel_view2d_extent()`. The ownership split is fixed: source
+panel domains are not mutated to apply equal-aspect framing.
 
 
 ## Opaque Handles Versus Public Structs

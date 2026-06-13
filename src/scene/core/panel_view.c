@@ -31,31 +31,33 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-#define DVZ_PANEL_VIEW_FIT_KNOWN_FLAGS 0u
+#define DVZ_PANEL_VIEW2D_KNOWN_FLAGS 0u
 
 
-static bool _panel_view_fit_validate(const DvzPanelViewFit* fit)
+static bool _panel_view2d_validate(const DvzPanelView2D* view)
 {
-    if (fit == NULL)
+    if (view == NULL)
         return true;
-    if (!DVZ_STRUCT_VALID(fit, DvzPanelViewFit, DVZ_PANEL_VIEW_FIT_KNOWN_FLAGS))
+    if (!DVZ_STRUCT_VALID(view, DvzPanelView2D, DVZ_PANEL_VIEW2D_KNOWN_FLAGS))
     {
-        log_error("invalid panel view-fit ABI");
+        log_error("invalid panel 2D view ABI");
         return false;
     }
-    if (fit->fit == DVZ_PANEL_VIEW_FIT_NONE)
+    if (view->mode == DVZ_PANEL_VIEW2D_NONE)
         return true;
-    if (fit->fit != DVZ_PANEL_VIEW_FIT_CONTAIN)
+    if (view->mode != DVZ_PANEL_VIEW2D_CONTAIN)
         return false;
-    if (fit->aspect != DVZ_PANEL_VIEW_ASPECT_FREE &&
-        fit->aspect != DVZ_PANEL_VIEW_ASPECT_EQUAL)
+    if (view->aspect != DVZ_PANEL_VIEW2D_ASPECT_FREE &&
+        view->aspect != DVZ_PANEL_VIEW2D_ASPECT_EQUAL)
         return false;
-    if (!isfinite(fit->x.min) || !isfinite(fit->x.max) || !isfinite(fit->y.min) ||
-        !isfinite(fit->y.max) || !isfinite(fit->padding))
+    if (
+        !isfinite(view->data_x.min) || !isfinite(view->data_x.max) ||
+        !isfinite(view->data_y.min) || !isfinite(view->data_y.max) ||
+        !isfinite(view->padding))
         return false;
-    if (!(fit->x.max > fit->x.min) || !(fit->y.max > fit->y.min))
+    if (!(view->data_x.max > view->data_x.min) || !(view->data_y.max > view->data_y.min))
         return false;
-    if (fit->padding < 0.0)
+    if (view->padding < 0.0)
         return false;
     return true;
 }
@@ -113,10 +115,10 @@ static bool _scene_panel_source_domains(
     *out_x = (DvzDataDomain){.min = -1.0, .max = +1.0};
     *out_y = (DvzDataDomain){.min = -1.0, .max = +1.0};
 
-    if (panel->view_fit_enabled)
+    if (panel->view2d_enabled)
     {
-        *out_x = panel->view_fit.x;
-        *out_y = panel->view_fit.y;
+        *out_x = panel->view2d.data_x;
+        *out_y = panel->view2d.data_y;
         return true;
     }
 
@@ -136,65 +138,65 @@ static bool _scene_panel_source_domains(
 /*************************************************************************************************/
 
 /**
- * Return the default panel view-fit descriptor.
+ * Return the default panel 2D view descriptor.
  *
- * @return view-fit descriptor
+ * @return panel 2D view descriptor
  */
-DvzPanelViewFit dvz_panel_view_fit(void)
+DvzPanelView2D dvz_panel_view2d(void)
 {
-    return (DvzPanelViewFit){
-        DVZ_STRUCT_INIT_FIELDS(DvzPanelViewFit),
-        .fit = DVZ_PANEL_VIEW_FIT_CONTAIN,
-        .aspect = DVZ_PANEL_VIEW_ASPECT_FREE,
-        .x = {.min = -1.0, .max = +1.0},
-        .y = {.min = -1.0, .max = +1.0},
+    return (DvzPanelView2D){
+        DVZ_STRUCT_INIT_FIELDS(DvzPanelView2D),
+        .mode = DVZ_PANEL_VIEW2D_CONTAIN,
+        .aspect = DVZ_PANEL_VIEW2D_ASPECT_FREE,
+        .data_x = {.min = -1.0, .max = +1.0},
+        .data_y = {.min = -1.0, .max = +1.0},
         .padding = 0.0,
     };
 }
 
 
 /**
- * Set a panel 2D view-fit policy.
+ * Set a panel 2D view policy.
  *
  * @param panel the panel
- * @param fit view-fit descriptor; NULL clears the fit policy
+ * @param view panel 2D view descriptor; NULL clears the view policy
  * @return 0 on success, -1 on validation error
  */
-int dvz_panel_set_view_fit(DvzPanel* panel, const DvzPanelViewFit* fit)
+int dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2D* view)
 {
     if (panel == NULL)
         return -1;
-    if (fit == NULL)
+    if (view == NULL)
     {
-        panel->view_fit_enabled = false;
+        panel->view2d_enabled = false;
         _scene_panel_view_dirty(panel);
         return 0;
     }
-    if (!_panel_view_fit_validate(fit))
+    if (!_panel_view2d_validate(view))
         return -1;
-    if (fit->fit == DVZ_PANEL_VIEW_FIT_NONE)
+    if (view->mode == DVZ_PANEL_VIEW2D_NONE)
     {
-        panel->view_fit_enabled = false;
+        panel->view2d_enabled = false;
         _scene_panel_view_dirty(panel);
         return 0;
     }
-    panel->view_fit = *fit;
-    panel->view_fit_enabled = true;
+    panel->view2d = *view;
+    panel->view2d_enabled = true;
     _scene_panel_view_dirty(panel);
     return 0;
 }
 
 
 /**
- * Clear a panel view-fit policy without changing the current axis domains.
+ * Clear a panel 2D view policy without changing the current axis domains.
  *
  * @param panel the panel
  */
-void dvz_panel_clear_view_fit(DvzPanel* panel)
+void dvz_panel_clear_view2d(DvzPanel* panel)
 {
     if (panel == NULL)
         return;
-    panel->view_fit_enabled = false;
+    panel->view2d_enabled = false;
     _scene_panel_view_dirty(panel);
 }
 
@@ -206,7 +208,7 @@ void dvz_panel_clear_view_fit(DvzPanel* panel)
  * @param out output extent as xmin, xmax, ymin, ymax
  * @return whether the extent was written
  */
-bool dvz_panel_view_extent(DvzPanel* panel, float out[4])
+bool dvz_panel_view2d_extent(DvzPanel* panel, float out[4])
 {
     if (panel == NULL || out == NULL)
         return false;
@@ -257,9 +259,9 @@ bool _scene_panel_view2d_resolve(const DvzPanel* panel, DvzPanelView2DResolved* 
 
     double x_span = xmax - xmin;
     double y_span = ymax - ymin;
-    if (panel->view_fit_enabled)
+    if (panel->view2d_enabled)
     {
-        const double pad = panel->view_fit.padding * fmax(x_span, y_span);
+        const double pad = panel->view2d.padding * fmax(x_span, y_span);
         xmin -= pad;
         xmax += pad;
         ymin -= pad;
@@ -269,7 +271,7 @@ bool _scene_panel_view2d_resolve(const DvzPanel* panel, DvzPanelView2DResolved* 
     }
 
     const bool equal_aspect =
-        panel->view_fit_enabled && panel->view_fit.aspect == DVZ_PANEL_VIEW_ASPECT_EQUAL;
+        panel->view2d_enabled && panel->view2d.aspect == DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
     if (equal_aspect)
     {
         DvzRect plot = {0};
@@ -322,7 +324,7 @@ bool _scene_panel_view2d_resolve(const DvzPanel* panel, DvzPanelView2DResolved* 
 
     float data_extent[4] = {
         out->view_extent[0], out->view_extent[1], out->view_extent[2], out->view_extent[3]};
-    if (!panel->view_fit_enabled)
+    if (!panel->view2d_enabled)
         _scene_panel_plot_visual_rect(panel, data_extent);
 
     const double data_x_span = (double)data_extent[1] - (double)data_extent[0];

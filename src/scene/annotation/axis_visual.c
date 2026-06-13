@@ -180,7 +180,7 @@ static float _axis_tick_visual_position(
     double visible_min, double visible_max)
 {
     ANN(axis);
-    if (axis->panel != NULL && axis->panel->view_fit_enabled)
+    if (axis->panel != NULL && axis->panel->view2d_enabled)
     {
         uint32_t lo_idx = axis->dim == DVZ_DIM_X ? 0 : 2;
         uint32_t hi_idx = axis->dim == DVZ_DIM_X ? 1 : 3;
@@ -396,10 +396,10 @@ void _axis_update_visual(DvzAxis* axis)
     float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
     if (axis->panel != NULL)
         (void)_scene_panel_panzoom_extent(axis->panel, extent);
-    float grid_x0 = axis->panel != NULL && axis->panel->view_fit_enabled ? -1.0f : x0;
-    float grid_x1 = axis->panel != NULL && axis->panel->view_fit_enabled ? +1.0f : x1;
-    float grid_y0 = axis->panel != NULL && axis->panel->view_fit_enabled ? -1.0f : y0;
-    float grid_y1 = axis->panel != NULL && axis->panel->view_fit_enabled ? +1.0f : y1;
+    float grid_x0 = axis->panel != NULL && axis->panel->view2d_enabled ? -1.0f : x0;
+    float grid_x1 = axis->panel != NULL && axis->panel->view2d_enabled ? +1.0f : x1;
+    float grid_y0 = axis->panel != NULL && axis->panel->view2d_enabled ? -1.0f : y0;
+    float grid_y1 = axis->panel != NULL && axis->panel->view2d_enabled ? +1.0f : y1;
     float source_x0 = _axis_inverse_panzoom_coord(extent, 0, 1, grid_x0);
     float source_x1 = _axis_inverse_panzoom_coord(extent, 0, 1, grid_x1);
     float source_y0 = _axis_inverse_panzoom_coord(extent, 2, 3, grid_y0);

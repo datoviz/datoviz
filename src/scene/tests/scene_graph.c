@@ -95,7 +95,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_controller_mode_fixed_emits_separate_mvp);
     TST_CASE(test_scene_visual_local_transform_bounds_and_clear);
     TST_CASE(test_scene_visual_local_transform_emits_per_visual_mvp);
-    TST_CASE(test_scene_visual_data_coord_space_tracks_domain_fit_resize);
+    TST_CASE(test_scene_visual_data_coord_space_tracks_panel_view2d_resize);
     TST_CASE(test_scene_equal_aspect_view_and_panel_coord_spaces);
     TST_CASE(test_scene_mesh_local_transform_without_instances);
     TST_CASE(test_scene_visual_local_transform_family_audit);

@@ -1272,7 +1272,7 @@ int test_scene_visual_local_transform_emits_per_visual_mvp(TstContext* suite, co
 }
 
 
-int test_scene_visual_data_coord_space_tracks_domain_fit_resize(
+int test_scene_visual_data_coord_space_tracks_panel_view2d_resize(
     TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -1282,11 +1282,11 @@ int test_scene_visual_data_coord_space_tracks_domain_fit_resize(
     DvzFigure* figure = dvz_figure(scene, 100, 100, 0);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
 
-    DvzPanelViewFit fit = dvz_panel_view_fit();
-    fit.aspect = DVZ_PANEL_VIEW_ASPECT_EQUAL;
-    fit.x = (DvzDataDomain){.min = 0.0, .max = 10.0};
-    fit.y = (DvzDataDomain){.min = 0.0, .max = 5.0};
-    AT(dvz_panel_set_view_fit(panel, &fit) == 0);
+    DvzPanelView2D view = dvz_panel_view2d();
+    view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
+    view.data_x = (DvzDataDomain){.min = 0.0, .max = 10.0};
+    view.data_y = (DvzDataDomain){.min = 0.0, .max = 5.0};
+    AT(dvz_panel_set_view2d(panel, &view) == 0);
 
     vec3 pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor col[1] = {{255, 255, 255, 255}};
@@ -1341,12 +1341,12 @@ int test_scene_equal_aspect_view_and_panel_coord_spaces(TstContext* suite, const
     DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
 
-    DvzPanelViewFit fit = dvz_panel_view_fit();
-    fit.aspect = DVZ_PANEL_VIEW_ASPECT_EQUAL;
-    AT(dvz_panel_set_view_fit(panel, &fit) == 0);
+    DvzPanelView2D view = dvz_panel_view2d();
+    view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
+    AT(dvz_panel_set_view2d(panel, &view) == 0);
 
     float extent[4] = {0};
-    AT(dvz_panel_view_extent(panel, extent));
+    AT(dvz_panel_view2d_extent(panel, extent));
     AC(extent[0], -2.0f, 1e-6);
     AC(extent[1], +2.0f, 1e-6);
     AC(extent[2], -1.0f, 1e-6);

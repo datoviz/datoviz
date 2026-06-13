@@ -445,7 +445,7 @@ float _axis_forward_panzoom_coord(
 float _axis_data_to_source_visual(const DvzAxis* axis, double value)
 {
     ANN(axis);
-    if (axis->panel != NULL && axis->panel->view_fit_enabled)
+    if (axis->panel != NULL && axis->panel->view2d_enabled)
     {
         mat4 data_to_view = GLM_MAT4_IDENTITY_INIT;
         if (_scene_panel_data_model(axis->panel, data_to_view))
@@ -527,7 +527,7 @@ bool _axis_visible_domain(const DvzAxis* axis, double* out_min, double* out_max)
     _axis_plot_interval(axis, &visual_min, &visual_max);
     float a_view = _axis_inverse_panzoom_coord(extent, lo_idx, hi_idx, visual_min);
     float b_view = _axis_inverse_panzoom_coord(extent, lo_idx, hi_idx, visual_max);
-    if (axis->panel != NULL && axis->panel->view_fit_enabled)
+    if (axis->panel != NULL && axis->panel->view2d_enabled)
     {
         a_view = extent[lo_idx];
         b_view = extent[hi_idx];
