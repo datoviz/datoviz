@@ -134,7 +134,12 @@ bool example_add_default_xz_reference_grid(DvzPanel* panel, float origin_y);
 
 bool example_add_panel_label(DvzPanel* panel, const char* label, float x_px, float y_px);
 
+bool example_add_sized_panel_label(
+    DvzPanel* panel, const char* label, float x_px, float y_px, float size_px);
+
 bool example_add_default_panel_label(DvzPanel* panel, const char* label);
+
+bool example_add_large_panel_label(DvzPanel* panel, const char* label);
 
 bool example_add_data_label(
     DvzPanel* panel,

@@ -161,27 +161,27 @@ DvzTextStyle example_graphite_cyan_text_style(ExampleStyleTextRole role)
     switch (role)
     {
     case EXAMPLE_STYLE_TEXT_TITLE:
-        style.size_px = 21.0f;
+        style.size_px = 28.0f;
         break;
     case EXAMPLE_STYLE_TEXT_PANEL_LABEL:
-        style.size_px = 15.0f;
+        style.size_px = 23.0f;
         break;
     case EXAMPLE_STYLE_TEXT_LEGEND_LABEL:
         style.size_px = 26.0f;
         style.color[3] = 235u;
         break;
     case EXAMPLE_STYLE_TEXT_DATA_LABEL:
-        style.size_px = 20.0f;
+        style.size_px = 22.0f;
         break;
     case EXAMPLE_STYLE_TEXT_ANNOTATION:
-        style.size_px = 17.0f;
+        style.size_px = 20.0f;
         break;
     case EXAMPLE_STYLE_TEXT_SMALL:
-        style.size_px = 12.0f;
+        style.size_px = 16.0f;
         style.color[3] = 220u;
         break;
     default:
-        style.size_px = 15.0f;
+        style.size_px = 23.0f;
         break;
     }
     return style;
@@ -228,8 +228,8 @@ void example_graphite_cyan_set_panel_background(DvzPanel* panel)
 ExampleAxisStyleOptions example_graphite_cyan_axis_options(void)
 {
     return (ExampleAxisStyleOptions){
-        .tick_size_px = 13.0f,
-        .label_size_px = 16.0f,
+        .tick_size_px = 16.0f,
+        .label_size_px = 20.0f,
         .tick_gap_px = 8.0f,
         .x_label_gap_px = 38.0f,
         .y_label_gap_px = 58.0f,

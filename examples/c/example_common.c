@@ -605,12 +605,32 @@ bool example_add_default_xz_reference_grid(DvzPanel* panel, float origin_y)
  */
 bool example_add_panel_label(DvzPanel* panel, const char* label, float x_px, float y_px)
 {
+    return example_add_sized_panel_label(panel, label, x_px, y_px, 0.0f);
+}
+
+
+/**
+ * Add a fixed panel label with an explicit optional text size.
+ *
+ * @param panel target panel
+ * @param label label text
+ * @param x_px panel-local x position
+ * @param y_px panel-local y position
+ * @param size_px optional text size override, or 0 for the shared default
+ * @return true when the label was created
+ */
+bool example_add_sized_panel_label(
+    DvzPanel* panel, const char* label, float x_px, float y_px, float size_px)
+{
     if (panel == NULL || label == NULL || label[0] == '\0')
         return false;
 
     DvzLabelDesc desc = dvz_label_desc();
     desc.text = label;
     desc.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
+    desc.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    if (size_px > 0.0f)
+        desc.style.size_px = size_px;
     desc.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
     desc.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
     desc.placement.position[0] = x_px;
@@ -631,7 +651,20 @@ bool example_add_panel_label(DvzPanel* panel, const char* label, float x_px, flo
  */
 bool example_add_default_panel_label(DvzPanel* panel, const char* label)
 {
-    return example_add_panel_label(panel, label, 18.0f, 18.0f);
+    return example_add_panel_label(panel, label, 20.0f, 20.0f);
+}
+
+
+/**
+ * Add a large fixed panel label at the shared top-left position.
+ *
+ * @param panel target panel
+ * @param label label text
+ * @return true when the label was created
+ */
+bool example_add_large_panel_label(DvzPanel* panel, const char* label)
+{
+    return example_add_sized_panel_label(panel, label, 24.0f, 24.0f, 30.0f);
 }
 
 
@@ -657,6 +690,7 @@ bool example_add_data_label(
     DvzLabelDesc desc = dvz_label_desc();
     desc.text = label;
     desc.style = example_graphite_cyan_text_style(role);
+    desc.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     desc.style.color[0] = color.r;
     desc.style.color[1] = color.g;
     desc.style.color[2] = color.b;
