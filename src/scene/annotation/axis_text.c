@@ -34,6 +34,12 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+static float _axis_text_plot_clip_to_fixed(float value, float plot_min, float plot_max)
+{
+    return plot_min + 0.5f * (value + 1.0f) * (plot_max - plot_min);
+}
+
+
 static float _axis_text_tick_visual_position(
     const DvzAxis* axis, double value, const float extent[4], float plot_min, float plot_max,
     double visible_min, double visible_max)
@@ -44,7 +50,8 @@ static float _axis_text_tick_visual_position(
         uint32_t lo_idx = axis->dim == DVZ_DIM_X ? 0 : 2;
         uint32_t hi_idx = axis->dim == DVZ_DIM_X ? 1 : 3;
         float source = _axis_data_to_source_visual(axis, value);
-        return _axis_forward_panzoom_coord(extent, lo_idx, hi_idx, source);
+        float plot_clip = _axis_forward_panzoom_coord(extent, lo_idx, hi_idx, source);
+        return _axis_text_plot_clip_to_fixed(plot_clip, plot_min, plot_max);
     }
     return _axis_data_to_visual(value, visible_min, visible_max, plot_min, plot_max);
 }

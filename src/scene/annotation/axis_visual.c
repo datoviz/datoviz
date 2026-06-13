@@ -141,6 +141,12 @@ static float _axis_data_to_axis_visual(const DvzAxis* axis, double value)
 }
 
 
+static float _axis_plot_clip_to_fixed(float value, float plot_min, float plot_max)
+{
+    return plot_min + 0.5f * (value + 1.0f) * (plot_max - plot_min);
+}
+
+
 /**
  * Map one data coordinate to the fixed visual coordinate used by axis ticks and labels.
  *
@@ -163,7 +169,8 @@ static float _axis_tick_visual_position(
         uint32_t lo_idx = axis->dim == DVZ_DIM_X ? 0 : 2;
         uint32_t hi_idx = axis->dim == DVZ_DIM_X ? 1 : 3;
         float source = _axis_data_to_source_visual(axis, value);
-        return _axis_forward_panzoom_coord(extent, lo_idx, hi_idx, source);
+        float plot_clip = _axis_forward_panzoom_coord(extent, lo_idx, hi_idx, source);
+        return _axis_plot_clip_to_fixed(plot_clip, plot_min, plot_max);
     }
     return _axis_data_to_visual(value, visible_min, visible_max, plot_min, plot_max);
 }
@@ -373,10 +380,14 @@ void _axis_update_visual(DvzAxis* axis)
     float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
     if (axis->panel != NULL)
         (void)_scene_panel_panzoom_extent(axis->panel, extent);
-    float source_x0 = _axis_inverse_panzoom_coord(extent, 0, 1, x0);
-    float source_x1 = _axis_inverse_panzoom_coord(extent, 0, 1, x1);
-    float source_y0 = _axis_inverse_panzoom_coord(extent, 2, 3, y0);
-    float source_y1 = _axis_inverse_panzoom_coord(extent, 2, 3, y1);
+    float grid_x0 = axis->panel != NULL && axis->panel->view_fit_enabled ? -1.0f : x0;
+    float grid_x1 = axis->panel != NULL && axis->panel->view_fit_enabled ? +1.0f : x1;
+    float grid_y0 = axis->panel != NULL && axis->panel->view_fit_enabled ? -1.0f : y0;
+    float grid_y1 = axis->panel != NULL && axis->panel->view_fit_enabled ? +1.0f : y1;
+    float source_x0 = _axis_inverse_panzoom_coord(extent, 0, 1, grid_x0);
+    float source_x1 = _axis_inverse_panzoom_coord(extent, 0, 1, grid_x1);
+    float source_y0 = _axis_inverse_panzoom_coord(extent, 2, 3, grid_y0);
+    float source_y1 = _axis_inverse_panzoom_coord(extent, 2, 3, grid_y1);
     float scale_x = _axis_panzoom_scale(extent, DVZ_DIM_X);
     float scale_y = _axis_panzoom_scale(extent, DVZ_DIM_Y);
 

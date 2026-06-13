@@ -2165,6 +2165,8 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
     AT(_scene_panel_data_model(panel, data_to_view));
     DvzMVP apply_mvp = {0};
     _scene_panel_apply_mvp(panel, &apply_mvp);
+    float plot[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
+    _scene_panel_plot_visual_rect(panel, plot);
 
     bool checked_x = false;
     for (uint32_t i = 0; i < x_axis->tick_count; i++)
@@ -2176,9 +2178,10 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
         float grid_x = 0.0f;
         AT(_axis_test_find_vertical_grid_center(x_axis, expected_x, 1e-5f, &grid_x));
         AT(fabsf(grid_x - expected_x) < 1e-5f);
-        float fixed_x = 0.0f;
+        float plot_clip_x = 0.0f;
         AT(_axis_test_apply_mvp_coord(
-            &apply_mvp, (vec3){expected_x, 0.0f, 0.0f}, DVZ_DIM_X, &fixed_x));
+            &apply_mvp, (vec3){expected_x, 0.0f, 0.0f}, DVZ_DIM_X, &plot_clip_x));
+        float fixed_x = plot[0] + 0.5f * (plot_clip_x + 1.0f) * (plot[1] - plot[0]);
         float tick_x = 0.0f;
         AT(_axis_test_find_major_tick_center(x_axis, fixed_x, 2e-3f, &tick_x));
         AT(fabsf(tick_x - fixed_x) < 2e-3f);
@@ -2196,9 +2199,10 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
         float grid_y = 0.0f;
         AT(_axis_test_find_horizontal_grid_center(y_axis, expected_y, 1e-5f, &grid_y));
         AT(fabsf(grid_y - expected_y) < 1e-5f);
-        float fixed_y = 0.0f;
+        float plot_clip_y = 0.0f;
         AT(_axis_test_apply_mvp_coord(
-            &apply_mvp, (vec3){0.0f, expected_y, 0.0f}, DVZ_DIM_Y, &fixed_y));
+            &apply_mvp, (vec3){0.0f, expected_y, 0.0f}, DVZ_DIM_Y, &plot_clip_y));
+        float fixed_y = plot[2] + 0.5f * (plot_clip_y + 1.0f) * (plot[3] - plot[2]);
         float tick_y = 0.0f;
         AT(_axis_test_find_major_tick_center(y_axis, fixed_y, 2e-3f, &tick_y));
         AT(fabsf(tick_y - fixed_y) < 2e-3f);
