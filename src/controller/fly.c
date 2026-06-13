@@ -20,8 +20,8 @@
 #include "_assertions.h"
 #include "_controller.h"
 #include "_log.h"
-#include "datoviz/math/_cglm.h"
 #include "datoviz/controller/fly.h"
+#include "datoviz/math/_cglm.h"
 
 
 
@@ -29,16 +29,16 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_FLY_DEFAULT_WIDTH  800.0f
-#define DVZ_FLY_DEFAULT_HEIGHT 600.0f
-#define DVZ_FLY_DEFAULT_SPEED  0.70f
-#define DVZ_FLY_DEFAULT_FAST   5.0f
-#define DVZ_FLY_DEFAULT_SLOW   0.2f
-#define DVZ_FLY_DEFAULT_LOOK   0.7f
-#define DVZ_FLY_DEFAULT_WHEEL  0.04f
-#define DVZ_FLY_VERTICAL_SPEED 0.75f
-#define DVZ_FLY_PITCH_EPS     0.001f
-#define DVZ_FLY_PIVOT_MARKER_S 1.0
+#define DVZ_FLY_DEFAULT_WIDTH    800.0f
+#define DVZ_FLY_DEFAULT_HEIGHT   600.0f
+#define DVZ_FLY_DEFAULT_SPEED    0.70f
+#define DVZ_FLY_DEFAULT_FAST     5.0f
+#define DVZ_FLY_DEFAULT_SLOW     0.2f
+#define DVZ_FLY_DEFAULT_LOOK     0.7f
+#define DVZ_FLY_DEFAULT_WHEEL    0.04f
+#define DVZ_FLY_VERTICAL_SPEED   0.75f
+#define DVZ_FLY_PITCH_EPS        0.001f
+#define DVZ_FLY_PIVOT_MARKER_S   1.0
 #define DVZ_FLY_DESC_KNOWN_FLAGS 0u
 
 
@@ -72,10 +72,7 @@ static float _clampf(float value, float min_value, float max_value)
  * @param v vector
  * @return whether the vector length is non-zero
  */
-static bool _vec3_valid(vec3 v)
-{
-    return glm_vec3_norm(v) > 0.0f;
-}
+static bool _vec3_valid(vec3 v) { return glm_vec3_norm(v) > 0.0f; }
 
 
 
@@ -271,8 +268,7 @@ static void _fly_vectors(const DvzFly* fly, vec3 out_front, vec3 out_right, vec3
  * @param out_right output right movement vector
  * @param out_up output up movement vector
  */
-static void _fly_movement_basis(
-    const DvzFly* fly, vec3 out_forward, vec3 out_right, vec3 out_up)
+static void _fly_movement_basis(const DvzFly* fly, vec3 out_forward, vec3 out_right, vec3 out_up)
 {
     ANN(fly);
     ANN(out_forward);
@@ -549,10 +545,7 @@ DvzFly* _dvz_fly(const DvzFlyDesc* desc)
  * @param desc fly descriptor, or NULL for defaults
  * @return the fly controller, or NULL on allocation failure
  */
-DvzFly* dvz_fly_create(const DvzFlyDesc* desc)
-{
-    return _dvz_fly(desc);
-}
+DvzFly* dvz_fly_create(const DvzFlyDesc* desc) { return _dvz_fly(desc); }
 
 
 

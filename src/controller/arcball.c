@@ -20,8 +20,8 @@
 #include "_assertions.h"
 #include "_controller.h"
 #include "_log.h"
-#include "datoviz/math/_cglm.h"
 #include "datoviz/controller/arcball.h"
+#include "datoviz/math/_cglm.h"
 
 
 
@@ -29,8 +29,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_ARCBALL_ZOOM_MIN        0.02f
-#define DVZ_ARCBALL_ZOOM_MAX       50.00f
+#define DVZ_ARCBALL_ZOOM_MIN         0.01f
+#define DVZ_ARCBALL_ZOOM_MAX         250.00f
 #define DVZ_ARCBALL_DESC_KNOWN_FLAGS 0u
 
 #if defined(__APPLE__)
@@ -193,13 +193,13 @@ static void _arcball_camera_mvp(DvzArcball* arcball, DvzMVP* mvp)
 /*************************************************************************************************/
 /*  Input callback                                                                               */
 /*                                                                                               */
-/*  Subscribed to union events so gesture-derived events (DRAG, DRAG_STOP, DOUBLE_CLICK) are      */
+/*  Subscribed to union events so gesture-derived events (DRAG, DRAG_STOP, DOUBLE_CLICK) are */
 /*  delivered. The pointer-only stream skips those because the gesture handler emits them via    */
 /*  dvz_input_emit_event.                                                                        */
 /*************************************************************************************************/
 
-static void _arcball_input_callback(
-    DvzInputRouter* router, const DvzInputEvent* ev, void* user_data)
+static void
+_arcball_input_callback(DvzInputRouter* router, const DvzInputEvent* ev, void* user_data)
 {
     DvzArcball* arcball = (DvzArcball*)user_data;
     if (ev->type == DVZ_INPUT_EVENT_POINTER)
@@ -527,7 +527,7 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
     ANN(arcball);
     ANN(ev);
 
-    float width  = arcball->viewport_size[0];
+    float width = arcball->viewport_size[0];
     float height = arcball->viewport_size[1];
 
     switch (ev->type)
@@ -568,9 +568,9 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
             };
             dvz_arcball_rotate(arcball, cur_pos, last_pos);
         }
-        else if ((ev->button == DVZ_POINTER_BUTTON_MIDDLE ||
-                  ev->button == DVZ_POINTER_BUTTON_RIGHT) &&
-                 ev->content.d.is_press_valid)
+        else if (
+            (ev->button == DVZ_POINTER_BUTTON_MIDDLE || ev->button == DVZ_POINTER_BUTTON_RIGHT) &&
+            ev->content.d.is_press_valid)
         {
             vec2 shift = {ev->content.d.shift[0], ev->content.d.shift[1]};
             _arcball_pan_drag(arcball, shift);
