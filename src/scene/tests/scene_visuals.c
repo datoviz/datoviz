@@ -697,6 +697,7 @@ int test_scene_vector_curved_emit_glsl(TstContext* suite, const TstCase* item)
     bool found_pipeline = false;
     bool found_set_index = false;
     bool found_draw_indexed = false;
+    bool found_path_distance_buffer = false;
     uint32_t set_vertex_buffer_count = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
@@ -712,6 +713,16 @@ int test_scene_vector_curved_emit_glsl(TstContext* suite, const TstCase* item)
                 AT(cmd->u.create_render_pipeline.attr_count == 8);
             }
         }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BUFFER)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_buffer.id);
+            if (label != NULL && strstr(label, "path_distance") != NULL)
+            {
+                found_path_distance_buffer = true;
+                AT(cmd->u.create_buffer.size == 12 * sizeof(float));
+                AT((cmd->u.create_buffer.usage & DVZ_DRP2_BUFFER_USAGE_VERTEX) != 0);
+            }
+        }
         else if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
             set_vertex_buffer_count++;
         else if (cmd->type == DVZ_DRP2_COMMAND_SET_INDEX_BUFFER)
@@ -721,6 +732,7 @@ int test_scene_vector_curved_emit_glsl(TstContext* suite, const TstCase* item)
     }
 
     AT(found_pipeline);
+    AT(found_path_distance_buffer);
     AT(found_set_index);
     AT(found_draw_indexed);
     AT(set_vertex_buffer_count == 8);
