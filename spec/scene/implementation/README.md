@@ -29,9 +29,12 @@ behavior instead of restating it here.
    artifact-owned execution IR.
 9. [PANEL_VIEW_ARCHITECTURE_PLAN.md](PANEL_VIEW_ARCHITECTURE_PLAN.md): active plan for panel 2D
    view ownership, release-candidate API naming, and resolver-derived fitted domains.
-10. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): retired pointer for the completed
+10. [PLOT_VIEWPORT_DRAW_CONTRACT_PLAN.md](PLOT_VIEWPORT_DRAW_CONTRACT_PLAN.md): active plan for
+   separating per-draw viewport and scissor selection, viewport uniforms, and CPU pixel-basis
+   rules for plot-clipped draws.
+11. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): retired pointer for the completed
    broad scene source split; active work moved to `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`.
-11. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): retired pointer
+12. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): retired pointer
    for the completed architecture queue.
 
 ## Current priorities
@@ -51,5 +54,7 @@ behavior instead of restating it here.
    state.
 10. Use `PANEL_VIEW_ARCHITECTURE_PLAN.md` before changing panel 2D view API names, panel view code,
    or equal-aspect resolver ownership.
-11. Treat `SCENE_CODE_SPLIT_ROADMAP.md` and `SCENE_ARCHITECTURE_COMPLETION_PLAN.md` as retired
+11. Use `PLOT_VIEWPORT_DRAW_CONTRACT_PLAN.md` before changing runtime viewport/scissor emission,
+   plot-clipped draw routing, viewport uniforms, or CPU-expanded pixel geometry for axis grids.
+12. Treat `SCENE_CODE_SPLIT_ROADMAP.md` and `SCENE_ARCHITECTURE_COMPLETION_PLAN.md` as retired
    compatibility links, not active queues.
