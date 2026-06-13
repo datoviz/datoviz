@@ -217,6 +217,36 @@ identity may be recorded in DRP2 metadata for tooling and replay, but the shader
 scene-internal unless a future custom visual family API explicitly exports it.
 
 
+## Panel View And Coordinate Spaces
+
+The public v0.4 coordinate-space surface is:
+
+1. `DVZ_COORD_VIEW`: metric panel view coordinates, affected by panel view/framing policy;
+2. `DVZ_COORD_DATA`: source data/domain coordinates mapped through the panel DATA-to-VIEW model;
+3. `DVZ_COORD_PANEL`: normalized panel coordinates over the full panel rectangle, intentionally
+   viewport-shaped.
+
+`DVZ_COORD_VISUAL` is not part of the v0.4 release surface. Callers must choose the intended
+coordinate space explicitly instead of relying on the v0.4-dev compatibility alias.
+
+Panel 2D aspect policy belongs to the panel view/framing API. Domain-fit compatibility aliases are
+not part of the release surface:
+
+1. `DvzPanelDomainFit`;
+2. `DvzPanelDomainFitMode`;
+3. `DVZ_PANEL_DOMAIN_FIT_*`;
+4. `DVZ_PANEL_DOMAIN_ASPECT_*`;
+5. `dvz_panel_domain_fit()`;
+6. `dvz_panel_set_domain_fit()`;
+7. `dvz_panel_clear_domain_fit()`.
+
+The current release-candidate names for the surviving view/framing surface are
+`DvzPanelViewFit`, `dvz_panel_view_fit()`, `dvz_panel_set_view_fit()`,
+`dvz_panel_clear_view_fit()`, and `dvz_panel_view_extent()`. These names may be revisited in a
+later rename-focused cleanup before API freeze, but the ownership split is already fixed: source
+panel domains are not mutated to apply equal-aspect fit.
+
+
 ## Opaque Handles Versus Public Structs
 
 Use opaque handles for retained scene-owned objects:

@@ -70,7 +70,7 @@ callbacks; see [`../integration/future/TOUCH_SUPPORT.md`](../integration/future/
 
 | Family | Scope | State mutated | Dirty/redraw consequences | Notes |
 |---|---|---|---|---|
-| `PanZoom2DController` | panel-local or shared handle | visible X/Y domain or panzoom state | `PanelTransformDirty`; `AxisLayoutDirty` only when domains/layout-affecting values change; redraw | `DVZ_ASPECT_EQUAL` locks X/Y data-unit-per-pixel ratio; pan remains free. |
+| `PanZoom2DController` | panel-local or shared handle | visible X/Y view extent or panzoom state | `PanelTransformDirty`; `AxisLayoutDirty` only when visible domains/layout-affecting values change; redraw | Equal-aspect view fit is resolved by the panel view/framing layer; controller aspect behavior is gesture policy only. |
 | `Camera3DController` | panel-local or shared handle | camera state | `PanelTransformDirty`; redraw; optional view-dependent overlay invalidation | Fly, arcball/pivot-orbit, and turntable semantics are canonical in [`CAMERA_CONTROLLERS.md`](CAMERA_CONTROLLERS.md). |
 | `GlobeController` | panel-local or shared handle | longitude, latitude, altitude, optional up-vector | `PanelTransformDirty`; redraw | Natural controller for `DVZ_TRANSFORM_GEO_GLOBE`; domain queries return geographic units. |
 | `HoverController` | usually panel-local | pointer position and hover target | redraw when hover-visible state changes; optional style dirtiness | Issues/coalesces pick requests and applies only fresh latest-request-wins results from [`PICKING.md`](PICKING.md). |
@@ -111,10 +111,15 @@ The public binding model is fixed by
 | Lifetime | The scene destroys controllers with the scene; explicit early destruction may exist. |
 | Per-dimension binding | Panels bind controllers per dimension so X, Y, Z, or full camera navigation can be linked independently. |
 | Linking | Sharing one controller handle is valid only when every bound panel should share the full controller state and compatible panel-local evaluation context. Partial synchronization uses explicit controller state links. |
-| Query model | Axes and scene objects pull visible domains from bound controllers during update. If none is bound, the panel uses its full data-space domain. |
+| Query model | Axes and scene objects pull resolved visible DATA domains from the panel view resolver. If no controller is bound, the panel view uses the full fitted data-space domain. |
 
 Domain query values are data-space scalar bounds for ordinary controllers and longitude, latitude,
 or altitude for `GlobeController`.
+
+For 2D panels, the resolver is the single source of truth for converting controller state into
+visible domains. It combines source panel domains, plot-rectangle aspect, panel view policy, and
+controller navigation state. Controllers do not store viewport aspect, fitted DATA domains, or
+DATA-to-VIEW matrices as authoritative state.
 
 
 ## Controller State Links
@@ -123,6 +128,10 @@ Controller links are the authoritative mechanism for partial navigation synchron
 controllers. A link propagates selected semantic components from a source controller to a target
 controller while preserving the target panel's own viewport, camera basis, interaction capture,
 application policy, and unlinked state.
+
+Extent links copy semantic X and/or Y visible extents through the target panel's resolver context.
+Two panels with different plot aspect ratios may therefore share an X extent without sharing the
+derived Y extent required by equal-aspect framing, or vice versa.
 
 Sharing a controller handle remains the simplest full-link path. Use identity sharing only when the
 panels should truly share all semantic controller state. Do not share one mutable controller handle

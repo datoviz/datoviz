@@ -64,6 +64,11 @@ controllers attach to a panel. The plot rect is the default data viewport: data 
 mapped and clipped to it when layout reserve or margins are active. Adornments may use the whole
 panel rect so they can sit outside the axis spines without being clipped by the plot.
 
+Panel view/framing resolution uses the plot rect, not the full panel rect. Equal-aspect 2D view
+policy, framing padding, fitted DATA domains, visible DATA domains, and the DATA-to-VIEW model are
+derived from the panel's source domains and current plot geometry. The source panel domains remain
+unchanged when the plot rect changes because of resize, reserve, or adornment contributions.
+
 This model intentionally separates two concerns that are currently easy to conflate:
 
 1. **Geometry space**: which coordinate system positions a contribution.
@@ -97,13 +102,13 @@ The scene should distinguish these spaces:
 | figure pixels | top-left-origin pixels over the full figure surface |
 | panel pixels | top-left-origin pixels relative to one panel rect |
 | plot pixels | top-left-origin pixels relative to one plot rect |
-| panel visual | normalized `[-1, +1]` coordinates over the panel rect |
-| plot visual | normalized `[-1, +1]` coordinates over the plot rect |
+| panel coordinates | normalized `[-1, +1]` coordinates over the panel rect |
+| view coordinates | metric coordinates in the resolved 2D panel view, rasterized through the plot rect unless explicitly panel-clipped |
 | data | user data coordinates before panel domain normalization |
 
 Text and annotation placement that is panel-attached should use panel pixels unless an explicit
 data or plot placement mode is requested. Data visuals should not use panel pixels directly; they
-should go through data/domain normalization into the plot area.
+should go through data/domain normalization into the resolved view and plot area.
 
 
 ## Clipping Rule
@@ -115,14 +120,20 @@ background. Plot clipping prevents data visuals from drawing into tick-label or 
 
 When layout reserve is nonzero:
 
-1. data visuals should be scissored or clipped to the plot rect,
-2. axis/grid geometry that belongs to the plot should be clipped to the plot rect,
+1. data visuals should be rendered with the plot viewport and plot scissor,
+2. axis/grid geometry that belongs to the plot should use the plot viewport and plot scissor,
 3. labels and explanatory adornments should be clipped to the panel rect,
 4. background visuals may fill the panel rect unless a separate plot-background object is requested.
 
 This means that reserving room for tick labels should not merely move the data-to-visual mapping.
 It must also give frame-plan emission enough information to keep rendered data out of the reserved
 gutter.
+
+Frame-plan emission may begin a panel pass with panel viewport/scissor state, but every plot-clipped
+draw must switch both viewport and scissor to the plot rectangle. When draw order returns to
+panel-coordinate adornments, both viewport and scissor must return to the panel rectangle. Native,
+framebuffer, and WebGPU emission should derive these rectangles from the same frame-plan plot
+descriptor.
 
 
 ## Minimal Implementation Strategy
@@ -133,10 +144,12 @@ Preferred staging:
 
 1. derive panel and plot pixel rectangles from the existing panel descriptor and margin/reserve
    state,
-2. keep data normalization and panel navigation separate from layout solving,
+2. keep source data domains, panel view/framing, and controller navigation separate from layout
+   solving,
 3. add internal geometry-space and clip-space classifications for built-in contributions,
 4. group frame-plan render nodes by compatible viewport/scissor state,
-5. use plot scissor for data visuals and panel scissor for text/adornment visuals,
+5. use plot viewport/scissor for data/view visuals and panel viewport/scissor for text/adornment
+   visuals,
 6. keep public layout API narrow until the model is validated by axes, colorbars, and examples.
 
 This supports the immediate axis-label use case while leaving room for colorbars, legends, and

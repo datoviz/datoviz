@@ -2,9 +2,9 @@
 
 Status: normative v0.4 scene pipeline spec.
 
-This document defines scene coordinate spaces, transform stages, panel domains, attachment-space
-rules, and CPU precision policy. DRP2 should receive visual-ready resources plus panel transform
-state, not scientific coordinate semantics.
+This document defines scene coordinate spaces, transform stages, panel data domains, panel view
+framing, attachment-space rules, and CPU precision policy. DRP2 should receive visual-ready
+resources plus resolved panel transform state, not scientific coordinate semantics.
 
 
 ## Purpose
@@ -19,11 +19,13 @@ The transform pipeline keeps these concerns separate:
 
 ## Core Rules
 
-1. Stage A, data-to-visual normalization, is separate from Stage B, visual-to-panel viewing.
+1. Panel data domains, panel view/framing, and controller navigation are separate concepts.
 2. Data normalization belongs above DRP2 and is usually CPU-side and cached.
-3. Panel navigation belongs to panels/controllers and must not usually re-normalize or reupload
-   visual resources.
-4. All CPU-side normalization and geometry utility operations run in F64; downcast to F32 happens
+3. Panel view/framing resolves 2D aspect policy and DATA-to-VIEW state from panel domains and the
+   plot rectangle.
+4. Controller navigation mutates visible view state and gesture policy; it must not usually
+   re-normalize or reupload visual resources.
+5. All CPU-side normalization and geometry utility operations run in F64; downcast to F32 happens
    only at `UploadNode` time after normalization.
 
 
@@ -42,8 +44,9 @@ visible to users.
 | Space | Meaning |
 |---|---|
 | `DataSpace` | user or domain coordinates: measurement, voxel, geographic, simulation, plot |
-| `VisualSpace` | family-ready coordinates after normalization/layout, shared across panels when possible |
-| `PanelSpace` | after panel-local panzoom, camera, framing, or viewport interpretation |
+| `ViewSpace` | metric 2D panel view coordinates after panel DATA-to-VIEW mapping and view framing |
+| `PanelSpace` | normalized panel coordinates over the full panel rectangle, intentionally viewport-shaped |
+| `VisualSpace` | family-ready coordinates after normalization/layout, used by non-panel-specific or 3D visuals |
 | `ClipSpace` / `NDC` | final render-facing normalized device coordinates |
 
 
@@ -51,11 +54,13 @@ visible to users.
 
 | Stage | Input -> Output | Owner | Invalidated by | Not invalidated by |
 |---|---|---|---|---|
-| A: normalization | `DataSpace` -> `VisualSpace` | scene/resource/family | source data, domain, scale, family interpretation | pan, zoom, camera |
-| B: viewing | `VisualSpace` -> `PanelSpace` -> `NDC` | panel/controller | panzoom, camera, viewport, framing | source data or normalization policy |
+| A: normalization | source data -> family-ready resources | scene/resource/family | source data, scale, family interpretation | pan, zoom, camera |
+| B: panel view | `DataSpace` -> `ViewSpace` and `ViewSpace` -> plot clip | panel view resolver | panel domains, plot rect, view aspect/framing policy | controller pan or zoom that only changes visible extent |
+| C: navigation | `ViewSpace` or `VisualSpace` -> `ClipSpace` / `NDC` | panel/controller | panzoom, camera, viewport, controller state | source data or normalization policy |
 
-`FramePlan` resolves Stage A first when dirty, then combines normalized resources with current
-panel-local transform state before DRP2 emission.
+`FramePlan` resolves Stage A first when dirty, resolves panel view state from panel domains and
+plot geometry, then combines normalized resources with current panel-local transform state before
+DRP2 emission.
 
 
 ## Family Notes
@@ -73,8 +78,10 @@ panel-local transform state before DRP2 emission.
 
 ## Panel Domains
 
-The panel owns a data-space domain per dimension for visuals attached with `DVZ_COORD_DATA` unless a
-per-visual override is provided. `DvzDataDomain` has:
+The panel owns a source data-space domain per dimension for visuals attached with `DVZ_COORD_DATA`
+unless a per-visual override is provided. The panel view resolver may derive fitted and visible
+domains from this source state, but it must not rewrite the source domain to apply view aspect
+policy. `DvzDataDomain` has:
 
 | Field | Description |
 |---|---|
@@ -126,8 +133,8 @@ DataSpace -> coord_transform -> Cartesian DataSpace -> domain normalization -> V
 Zero-initialized params use defaults. Panel domains always refer to the post-transform Cartesian
 space. Polar axes, graticules, map tiling/LOD, and geographic tick formatting are deferred.
 
-The installed v0.4 public ABI supports `coord_space=DVZ_COORD_VISUAL` and
-`coord_space=DVZ_COORD_DATA` in `DvzVisualAttachDesc`. Future pixel-space, domain-override, or
+The installed v0.4 public ABI supports `coord_space=DVZ_COORD_VIEW`, `coord_space=DVZ_COORD_DATA`,
+and `coord_space=DVZ_COORD_PANEL` in `DvzVisualAttachDesc`. Future pixel-space, domain-override, or
 nonlinear transform descriptor fields should be appended to `DvzVisualAttachDesc` or introduced
 through a new growable descriptor with the same `struct_size`/`flags` prologue. v0.4 must reject
 unknown attachment flags or unsupported coordinate-space values rather than accepting no-op
@@ -136,15 +143,16 @@ projection requests.
 
 ## Aspect Ratio
 
-Aspect ratio is a panzoom controller property, not a normalization property.
+Aspect ratio is a panel view/framing property, not a data-domain or controller-storage property.
 
 | Value | Behavior |
 |---|---|
 | `DVZ_ASPECT_FREE` | X and Y scale independently |
 | `DVZ_ASPECT_EQUAL` | zoom uses the same data-unit-per-pixel ratio for X and Y |
 
-The constraint applies after normalization in `VisualSpace`. It represents equal data units only when
-the declared X/Y domains use matching physical extents.
+The constraint is resolved by the panel view resolver using the panel's source DATA domains and the
+current plot rectangle. Controllers may expose gesture policy for preserving equal aspect during
+navigation, but they do not own viewport aspect or rewrite panel domains.
 
 
 ## Visual Attachment
@@ -154,7 +162,7 @@ attachment contract may also declare coordinate interpretation and optional doma
 
 | Field | Rule |
 |---|---|
-| `coord_space` | `DVZ_COORD_VISUAL` or `DVZ_COORD_DATA`; pixel space is future work |
+| `coord_space` | `DVZ_COORD_VIEW`, `DVZ_COORD_DATA`, or `DVZ_COORD_PANEL`; pixel space is future work |
 | `coord_transform` / `transform_params` | future field: optional pre-normalization transform |
 | `controller_mode` | `DVZ_CONTROLLER_APPLY`, `DVZ_CONTROLLER_FIXED`, or `DVZ_CONTROLLER_APPLY_VIEW_PROJ` |
 | `domain_x/y/z` | future field: `NULL` uses panel domain; non-`NULL` overrides that dimension |
@@ -164,12 +172,13 @@ Coordinate-space meanings:
 
 | Value | Meaning |
 |---|---|
-| `DVZ_COORD_VISUAL` | already in panel visual coordinates; current compatibility default |
-| `DVZ_COORD_DATA` | normalize through panel domains before controller transforms |
+| `DVZ_COORD_VIEW` | metric panel view coordinates, affected by equal-aspect panel view fit |
+| `DVZ_COORD_DATA` | mapped through panel DATA domains and the resolved DATA-to-VIEW model |
+| `DVZ_COORD_PANEL` | normalized panel coordinates over the full panel rectangle, intentionally viewport-shaped |
 
 `coord_space` and `controller_mode` are independent. Typical combinations include
-`DATA+APPLY` for data visuals, `VISUAL+FIXED` for static overlays, and
-`VISUAL+APPLY_VIEW_PROJ` for reference aids that follow camera view/projection but ignore
+`DATA+APPLY` for data visuals, `PANEL+FIXED` for static panel overlays, and
+`VIEW+APPLY_VIEW_PROJ` for reference aids that follow camera view/projection but ignore
 controller/object model transforms. Future `PIXEL+FIXED` attachments may cover legends, scale bars,
 or panel-corner annotations.
 

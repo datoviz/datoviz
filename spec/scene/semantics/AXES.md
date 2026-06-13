@@ -27,8 +27,9 @@ panel navigation, and emit renderable scene contributions.
 
 1. Tick selection happens in `DataSpace`.
 2. Label formatting happens from data-space values.
-3. Tick and label geometry are built in `VisualSpace`.
-4. Panel transforms apply after geometry is built.
+3. Grid geometry is built in resolved view/data coordinates and plot-clipped.
+4. Ticks, spines, and labels are fixed overlay geometry positioned in panel-local coordinates after
+   projecting tick anchors through the resolved panel view.
 5. Axes emit ordinary visual-family contributions instead of inventing a parallel render path.
 6. Axes are owned by panels; free-standing axis objects are not supported.
 7. Panel linking is achieved by sharing controllers, not by axis-link APIs.
@@ -38,14 +39,14 @@ panel navigation, and emit renderable scene contributions.
 
 | Step | Space/owner |
 |---|---|
-| determine visible domain | panel controller + bound domain |
+| determine visible domain | panel view resolver output |
 | choose tick values | `DataSpace` |
 | format labels | `DataSpace` values and scale policy |
-| map tick anchors | `DataSpace` -> `VisualSpace` |
+| map tick anchors | `DataSpace` -> resolved `ViewSpace` -> fixed panel interval |
 | build spine/tick/grid/label contributions | derived resources |
 | render/live move | panel transform |
 
-Each tick conceptually carries both its semantic data value and its visual-space anchor.
+Each tick conceptually carries both its semantic data value and its resolved view-space anchor.
 
 
 ## Components And Contributions
@@ -72,16 +73,17 @@ bound domain. Tick generation and formatting must honor both.
 
 ## Visible Domain Selection
 
-Within its bound domain, an axis selects the visible portion by priority:
+Within its bound source domain, an axis selects the visible portion by priority:
 
 | Mode | Behavior |
 |---|---|
 | explicit axis override | user-set axis min/max suppress panzoom tracking |
-| panzoom-linked | default; query controller visible range and invert normalization to data units |
+| panzoom-linked | default; consume the resolved visible DATA domain from the panel view resolver |
 | fit-to-data | one-time initialization that sets controller/domain state, not a live binding |
 
-An axis does not subscribe to panzoom events. During the frame update, it queries the panel
-controller for the current visible domain and decides whether the cached layout remains valid.
+An axis does not subscribe to panzoom events. During the frame update, it queries the panel view
+resolver for the current fitted and visible domains and decides whether the cached layout remains
+valid. Equal-aspect view fit must not be observed as a mutation of the source panel domain.
 
 
 ## Regeneration Policy
@@ -107,6 +109,11 @@ regeneration trigger. Dirty-scope details are canonical in
 Tick generation is deterministic for a given domain, panel state, scale type, target density, label
 readability policy, and tick policy. Formatting depends on original data values, scale, precision,
 and optional user formatters, not low-level render coordinates.
+
+Grid lines should extend slightly beyond the resolved visible plot extent and rely on plot clipping
+instead of endpoint equality at the plot boundary. Tick and label placement that must align with a
+grid line should project the tick value through DATA -> VIEW and then map that view coordinate back
+into the fixed panel overlay interval.
 
 The first required scale models are linear and log. Categorical, datetime, polar, geographic, and
 full 3D placement behavior are deferred until implementation pressure justifies their contracts.
