@@ -482,20 +482,14 @@ typedef enum
 {
     DVZ_PANEL_VIEW_FIT_NONE = 0,
     DVZ_PANEL_VIEW_FIT_CONTAIN,
-    DVZ_PANEL_DOMAIN_FIT_NONE = DVZ_PANEL_VIEW_FIT_NONE,
-    DVZ_PANEL_DOMAIN_FIT_CONTAIN = DVZ_PANEL_VIEW_FIT_CONTAIN,
 } DvzPanelViewFitMode;
-typedef DvzPanelViewFitMode DvzPanelDomainFitMode;
 
 
 typedef enum
 {
     DVZ_PANEL_VIEW_ASPECT_FREE = 0,
     DVZ_PANEL_VIEW_ASPECT_EQUAL,
-    DVZ_PANEL_DOMAIN_ASPECT_FREE = DVZ_PANEL_VIEW_ASPECT_FREE,
-    DVZ_PANEL_DOMAIN_ASPECT_EQUAL = DVZ_PANEL_VIEW_ASPECT_EQUAL,
 } DvzPanelViewAspectMode;
-typedef DvzPanelViewAspectMode DvzPanelDomainAspectMode;
 
 
 struct DvzPanelViewFit
@@ -509,7 +503,6 @@ struct DvzPanelViewFit
     double padding;
 };
 typedef struct DvzPanelViewFit DvzPanelViewFit;
-typedef DvzPanelViewFit DvzPanelDomainFit;
 
 
 struct DvzAxisTickPolicy

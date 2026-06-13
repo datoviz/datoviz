@@ -696,12 +696,12 @@ bool example_configure_equal_aspect_panel(
     if (reserve != NULL && !dvz_panel_set_layout_reserve(panel, reserve))
         return false;
 
-    DvzPanelDomainFit fit = dvz_panel_domain_fit();
-    fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
+    DvzPanelViewFit fit = dvz_panel_view_fit();
+    fit.aspect = DVZ_PANEL_VIEW_ASPECT_EQUAL;
     fit.x = x;
     fit.y = y;
     fit.padding = padding;
-    return dvz_panel_set_domain_fit(panel, &fit) == 0;
+    return dvz_panel_set_view_fit(panel, &fit) == 0;
 }
 
 

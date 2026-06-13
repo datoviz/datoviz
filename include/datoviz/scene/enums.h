@@ -139,7 +139,6 @@ typedef enum
     DVZ_COORD_VIEW   = 0, /* default: metric panel view coordinates */
     DVZ_COORD_DATA   = 1, /* positions are panel data/domain coordinates */
     DVZ_COORD_PANEL  = 2, /* normalized panel coordinates, intentionally viewport-shaped */
-    DVZ_COORD_VISUAL = DVZ_COORD_VIEW, /* v0.4-dev compatibility alias */
 } DvzVisualCoordSpace;
 
 

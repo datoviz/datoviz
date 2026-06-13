@@ -187,13 +187,13 @@ Plan:
 ## Panel Domain Fit Semantics
 
 `features/panel_domain_fit` is not primarily a rendering feature; it is a panel-domain policy. The
-current API has only `DVZ_PANEL_DOMAIN_FIT_CONTAIN` and `DVZ_PANEL_DOMAIN_ASPECT_EQUAL`.
+current API has only `DVZ_PANEL_VIEW_FIT_CONTAIN` and `DVZ_PANEL_VIEW_ASPECT_EQUAL`.
 
 Semantics:
 
 1. the fit policy owns the X and Y visible data domains;
 2. padding expands the source domain before fitting;
-3. `DVZ_PANEL_DOMAIN_ASPECT_EQUAL` expands one domain so one X data unit and one Y data unit occupy
+3. `DVZ_PANEL_VIEW_ASPECT_EQUAL` expands one domain so one X data unit and one Y data unit occupy
    the same number of plot pixels;
 4. the policy is re-applied when the panel plot rectangle changes, including layout reserve and
    figure resize changes;

@@ -181,12 +181,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (dvz_panel_set_domain(free_panel, DVZ_DIM_Y, -1.0, +1.0) != 0)
         return false;
 
-    DvzPanelDomainFit fit = dvz_panel_domain_fit();
+    DvzPanelViewFit fit = dvz_panel_view_fit();
     fit.x = (DvzDataDomain){.min = -1.0, .max = +1.0};
     fit.y = (DvzDataDomain){.min = -1.0, .max = +1.0};
     fit.padding = 0.18;
-    fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
-    if (dvz_panel_set_domain_fit(fit_panel, &fit) != 0)
+    fit.aspect = DVZ_PANEL_VIEW_ASPECT_EQUAL;
+    if (dvz_panel_set_view_fit(fit_panel, &fit) != 0)
         return false;
 
     double x_min = 0.0;

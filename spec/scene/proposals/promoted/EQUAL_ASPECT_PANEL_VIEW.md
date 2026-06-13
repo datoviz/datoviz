@@ -35,20 +35,18 @@ DataSpace -> ViewSpace -> controller/panel view -> ClipSpace
 ## Public Shape
 
 The implemented public API uses panel view-fit names as the primary names and keeps the old
-domain-fit names as v0.4-dev compatibility aliases:
+view-fit names:
 
 1. `DvzPanelViewFit`, `DvzPanelViewFitMode`, and `DvzPanelViewAspectMode`;
 2. `dvz_panel_view_fit()`, `dvz_panel_set_view_fit()`, `dvz_panel_clear_view_fit()`, and
    `dvz_panel_view_extent()`;
-3. `DvzPanelDomainFit` and `dvz_panel_*_domain_fit()` aliases for compatibility during v0.4
-   development.
+3. domain-fit aliases are removed before the v0.4 release surface.
 
 Coordinate spaces are split so users can choose whether equal aspect applies:
 
 1. `DVZ_COORD_VIEW`: metric panel view coordinates, affected by equal-aspect view fit;
 2. `DVZ_COORD_DATA`: data/domain coordinates, mapped through panel DATA -> VIEW;
-3. `DVZ_COORD_PANEL`: normalized panel coordinates, intentionally viewport-shaped;
-4. `DVZ_COORD_VISUAL`: v0.4-dev compatibility alias for `DVZ_COORD_VIEW`.
+3. `DVZ_COORD_PANEL`: normalized panel coordinates, intentionally viewport-shaped.
 
 
 ## Implementation
