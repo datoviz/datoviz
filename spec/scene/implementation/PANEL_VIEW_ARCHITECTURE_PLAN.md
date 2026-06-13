@@ -10,7 +10,9 @@ may break v0.3 and interim v0.4-dev APIs when that produces a cleaner scene arch
 
 Split panel 2D behavior into four separate concepts.
 
-1. **Panel layout** owns panel rect, plot rect, reserve, padding, viewport, and scissor.
+1. **Panel layout** owns panel rect, plot rect, reserve, padding, viewport, and scissor. Panel
+   render passes may start in the panel viewport, but plot-clipped draws must use the plot viewport
+   and plot scissor together.
 2. **Panel data domains** own user semantic bounds per dimension: explicit bounds, fit-to-data, and
    later inverted or log behavior.
 3. **Panel view/framing** owns 2D aspect policy, framing padding, resolved base VIEW extent, fitted
@@ -87,6 +89,48 @@ This keeps resize, panel reserve changes, linked panels, and future domain overr
 on hidden domain rewrites.
 
 
+## Plot Viewport And Clip Contract
+
+Plot clipping is a viewport contract, not only a scissor contract.
+
+Scene emission should preserve these rules:
+
+1. panel render passes begin with the panel viewport and panel scissor;
+2. plot-clipped `VIEW` and `DATA` draws switch to the plot viewport and plot scissor before
+   drawing;
+3. when draw order returns to a panel-clipped or panel-coordinate visual, viewport and scissor must
+   return to the panel rectangle;
+4. fixed overlays, panel backgrounds, borders, and other `DVZ_COORD_PANEL` adornments remain in
+   panel coordinates and do not inherit the plot viewport;
+5. framebuffer, native, and WebGPU emission paths must derive viewport and scissor from the same
+   frame-plan plot descriptor.
+
+This avoids the mixed model where DATA visuals are framed against the plot rectangle but rasterized
+through the full panel viewport. That mixed model preserves visible-domain math in tests while still
+stretching or shifting equal-aspect content at small or heavily reserved plot sizes.
+
+
+## Axis, Grid, And Fixed Overlay Contract
+
+Axes straddle two coordinate conventions and must keep them explicit.
+
+1. grid lines are plot-clipped APPLY geometry and should be generated in the same source
+   `VIEW`/`DATA` coordinates as plot visuals;
+2. ticks, spines, and labels are fixed overlay geometry and should be positioned in panel-local
+   fixed coordinates;
+3. when an axis tick value is projected through DATA -> VIEW -> APPLY for alignment with a grid
+   line, the resulting plot-clip coordinate must be mapped back into the fixed plot interval before
+   emitting tick or label geometry;
+4. boundary grid lines that coincide with visible spines may be suppressed, but non-boundary grid
+   lines must not depend on exact equality with plot clip edges;
+5. grid line endpoints should be generated slightly beyond the resolved visible plot extent and
+   clipped by the plot scissor, using a pixel-derived tolerance rather than a data-domain magic
+   constant.
+
+The last point is important during pan: endpoints generated exactly on a plot viewport boundary can
+fall just outside after floating-point projection and disappear until the user moves by a pixel.
+
+
 ## Module Boundaries
 
 Add a core panel view implementation file:
@@ -118,7 +162,8 @@ Keep `src/scene/annotation/axis.c` focused on axes:
 1. axis creation and ownership;
 2. axis explicit override state;
 3. tick, grid, label, and visual contribution preparation;
-4. no panel view-fit ownership.
+4. conversion between plot-clip coordinates and fixed overlay coordinates for ticks and labels;
+5. no panel view-fit ownership.
 
 Keep `src/scene/core/controllers.c` focused on controller binding and link propagation through
 resolved panel extents.
@@ -173,4 +218,7 @@ Focused coverage should include:
 3. axes/grid tick alignment against resolved visible DATA domains;
 4. `DVZ_COORD_PANEL` stretch behavior;
 5. linked `EXTENT_X` and `EXTENT_Y` behavior across different panel aspect ratios;
-6. compile or header checks proving removed compatibility symbols are absent from the public API.
+6. plot-clipped draw emission uses matching plot viewport and plot scissor;
+7. panning near plot boundaries does not make grid lines disappear or reappear from one-pixel
+   endpoint/clip rounding changes;
+8. compile or header checks proving removed compatibility symbols are absent from the public API.
