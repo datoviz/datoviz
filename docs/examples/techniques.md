@@ -11,7 +11,6 @@ with `technique` tags for filtering.
 | [Textured Mesh](gallery/features/feature_mesh_texture.md) | [`examples/c/features/mesh_texture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/mesh_texture.c) | `supported` |
 | [Mesh Materials](gallery/features/feature_material_mesh.md) | [`examples/c/features/material_mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/material_mesh.c) | `supported` |
 | [Lighting](gallery/features/feature_lighting.md) | [`examples/c/features/lighting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/lighting.c) | `supported` |
-| [Eye-Dome Lighting](gallery/features/technique_edl.md) | [`examples/c/features/technique_edl.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_edl.c) | `supported` |
 | [Screen-Space Ambient Occlusion](gallery/features/technique_ssao.md) | [`examples/c/features/technique_ssao.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_ssao.c) | `supported` |
 | [Multisample Antialiasing](gallery/features/technique_msaa.md) | [`examples/c/features/technique_msaa.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_msaa.c) | `supported` |
 | [Depth Cue](gallery/features/technique_depth_cue.md) | [`examples/c/features/technique_depth_cue.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_cue.c) | `supported` |

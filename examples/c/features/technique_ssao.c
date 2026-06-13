@@ -22,9 +22,14 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "datoviz/gui.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "example_gui_controls.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -42,6 +47,106 @@
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+typedef struct SsaoDemoState
+{
+    DvzPanel* panel;
+    DvzArcball* arcball;
+    DvzExampleGuiSsaoControls ssao;
+    vec3 arcball_angles;
+    vec2 arcball_pan;
+    float arcball_zoom;
+} SsaoDemoState;
+
+
+
+static DvzSsaoDesc _ssao_desc_from_controls(const DvzExampleGuiSsaoControls* controls)
+{
+    DvzSsaoDesc ssao = dvz_ssao_desc();
+    if (controls == NULL)
+        return ssao;
+
+    ssao.radius = controls->radius;
+    ssao.strength = controls->strength;
+    ssao.bias = controls->bias;
+    ssao.power = controls->power;
+    ssao.min_visibility = controls->min_visibility;
+    ssao.sample_count = (uint32_t)(controls->samples + 0.5f);
+    ssao.blur_enabled = controls->blur;
+    ssao.blur_radius = controls->blur_radius;
+    ssao.blur_depth_sigma = controls->blur_depth_sigma;
+    ssao.blur_normal_sigma = controls->blur_normal_sigma;
+    ssao.debug_view = controls->debug_view;
+    return ssao;
+}
+
+
+
+static void _apply_ssao(SsaoDemoState* state)
+{
+    if (state == NULL || state->panel == NULL)
+        return;
+
+    if (!state->ssao.enabled)
+    {
+        (void)dvz_panel_set_ssao(state->panel, NULL);
+        return;
+    }
+
+    DvzSsaoDesc ssao = _ssao_desc_from_controls(&state->ssao);
+    (void)dvz_panel_set_ssao(state->panel, &ssao);
+}
+
+
+
+static void _apply_arcball(SsaoDemoState* state)
+{
+    if (state == NULL || state->arcball == NULL)
+        return;
+
+    dvz_arcball_set(state->arcball, state->arcball_angles);
+    dvz_arcball_zoom(state->arcball, state->arcball_zoom);
+    dvz_arcball_pan(state->arcball, state->arcball_pan);
+}
+
+
+
+static void _sync_arcball_controls(SsaoDemoState* state)
+{
+    if (state == NULL || state->arcball == NULL)
+        return;
+
+    dvz_arcball_angles(state->arcball, state->arcball_angles);
+    state->arcball_zoom = state->arcball->zoom;
+    state->arcball_pan[0] = state->arcball->pan[0];
+    state->arcball_pan[1] = state->arcball->pan[1];
+}
+
+
+
+static void _print_settings(const SsaoDemoState* state)
+{
+    if (state == NULL)
+        return;
+
+    fprintf(stderr, "technique_ssao settings:\n");
+    fprintf(stderr, "dvz_arcball_set(arcball, (vec3){%+.6ff, %+.6ff, %+.6ff});\n",
+            state->arcball_angles[0], state->arcball_angles[1], state->arcball_angles[2]);
+    fprintf(stderr, "dvz_arcball_zoom(arcball, %.6ff);\n", state->arcball_zoom);
+    fprintf(stderr, "dvz_arcball_pan(arcball, (vec2){%+.6ff, %+.6ff});\n",
+            state->arcball_pan[0], state->arcball_pan[1]);
+    fprintf(stderr, "ssao.radius = %.6ff;\n", state->ssao.radius);
+    fprintf(stderr, "ssao.strength = %.6ff;\n", state->ssao.strength);
+    fprintf(stderr, "ssao.bias = %.6ff;\n", state->ssao.bias);
+    fprintf(stderr, "ssao.power = %.6ff;\n", state->ssao.power);
+    fprintf(stderr, "ssao.min_visibility = %.6ff;\n", state->ssao.min_visibility);
+    fprintf(stderr, "ssao.sample_count = %uu;\n", (uint32_t)(state->ssao.samples + 0.5f));
+    fprintf(stderr, "ssao.blur_enabled = %s;\n", state->ssao.blur ? "true" : "false");
+    fprintf(stderr, "ssao.blur_radius = %.6ff;\n", state->ssao.blur_radius);
+    fprintf(stderr, "ssao.blur_depth_sigma = %.6ff;\n", state->ssao.blur_depth_sigma);
+    fprintf(stderr, "ssao.blur_normal_sigma = %.6ff;\n", state->ssao.blur_normal_sigma);
+    fprintf(stderr, "ssao.debug_view = %s;\n", state->ssao.debug_view ? "true" : "false");
+}
 
 /**
  * Bind copied index data to a mesh.
@@ -205,6 +310,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (out_user != NULL)
         *out_user = NULL;
 
+    SsaoDemoState* state = (SsaoDemoState*)calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
+
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
         return false;
@@ -212,6 +323,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     if (panel == NULL)
         return false;
+    state->panel = panel;
     example_graphite_cyan_set_panel_background(panel);
     if (!example_add_panel_label(panel, "SSAO  radius 1.35  blur 9px", 18.0f, 18.0f))
         return false;
@@ -226,21 +338,105 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzArcball* arcball = dvz_controller_arcball(controller);
     if (arcball == NULL)
         return false;
+    state->arcball = arcball;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
-    dvz_arcball_set(arcball, (vec3){+0.54f, -0.20f, +0.20f});
+    state->arcball_angles[0] = +0.54f;
+    state->arcball_angles[1] = -0.20f;
+    state->arcball_angles[2] = +0.20f;
+    state->arcball_zoom = 1.0f;
+    _apply_arcball(state);
 
-    DvzSsaoDesc ssao = dvz_ssao_desc();
-    ssao.radius = 1.35f;
-    ssao.strength = 2.85f;
-    ssao.bias = 0.018f;
-    ssao.power = 1.45f;
-    ssao.min_visibility = 0.30f;
-    ssao.sample_count = 48u;
-    ssao.blur_enabled = true;
-    ssao.blur_radius = 9.0f;
-    ssao.blur_normal_sigma = 0.55f;
-    return dvz_panel_set_ssao(panel, &ssao);
+    state->ssao = (DvzExampleGuiSsaoControls){
+        .enabled = true,
+        .blur = true,
+        .debug_view = false,
+        .show_blur_sigmas = true,
+        .show_debug_view = true,
+        .radius = 1.35f,
+        .strength = 2.85f,
+        .bias = 0.018f,
+        .power = 1.45f,
+        .min_visibility = 0.30f,
+        .samples = 48.0f,
+        .min_samples = 4.0f,
+        .max_samples = 96.0f,
+        .blur_radius = 9.0f,
+        .blur_radius_max = 24.0f,
+        .blur_depth_sigma = 0.65f,
+        .blur_normal_sigma = 0.55f,
+    };
+    _apply_ssao(state);
+    return true;
+}
+
+
+
+static void _ssao_gui(DvzGui* gui, DvzView* view, void* user_data)
+{
+    (void)view;
+    SsaoDemoState* state = (SsaoDemoState*)user_data;
+    if (gui == NULL || state == NULL)
+        return;
+
+    if (dvz_gui_begin(gui, "SSAO calibration", NULL, 0))
+    {
+        dvz_gui_separator_text(gui, "Occlusion");
+        if (dvz_example_gui_ssao(gui, &state->ssao))
+            _apply_ssao(state);
+
+        dvz_gui_separator_text(gui, "Arcball");
+        _sync_arcball_controls(state);
+        bool arcball_changed = false;
+        arcball_changed |=
+            dvz_gui_slider_float3(gui, "Angles", state->arcball_angles, -3.14159f, +3.14159f);
+        arcball_changed |= dvz_gui_slider_float(gui, "Zoom", &state->arcball_zoom, 0.20f, 4.0f);
+        arcball_changed |=
+            dvz_gui_slider_float2(gui, "Pan", state->arcball_pan, -2.0f, +2.0f);
+        if (arcball_changed)
+            _apply_arcball(state);
+
+        if (dvz_gui_button(gui, "Reset arcball"))
+        {
+            state->arcball_angles[0] = +0.54f;
+            state->arcball_angles[1] = -0.20f;
+            state->arcball_angles[2] = +0.20f;
+            state->arcball_zoom = 1.0f;
+            state->arcball_pan[0] = 0.0f;
+            state->arcball_pan[1] = 0.0f;
+            _apply_arcball(state);
+        }
+        dvz_gui_same_line(gui, 0.0f, 8.0f);
+        if (dvz_gui_button(gui, "Print settings"))
+            _print_settings(state);
+    }
+    dvz_gui_end(gui);
+}
+
+
+
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)app;
+    SsaoDemoState* state = (SsaoDemoState*)user;
+    if (
+        ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW || state == NULL ||
+        view == NULL)
+        return true;
+
+    DvzGui* gui = dvz_view_gui(view, NULL);
+    if (gui == NULL)
+        return true;
+    dvz_view_set_gui_callback(view, _ssao_gui, state);
+    return true;
+}
+
+
+
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    free(user);
 }
 
 
@@ -259,6 +455,7 @@ static DvzScenarioSpec _ssao_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .init = _scenario_init,
+        .destroy = _scenario_destroy,
     };
 }
 
@@ -267,6 +464,20 @@ static DvzScenarioSpec _ssao_scenario(void)
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+static bool _cli_wants_live_gui(int argc, char** argv)
+{
+    for (int i = 1; i < argc; i++)
+    {
+        if (argv[i] == NULL)
+            continue;
+        if (strcmp(argv[i], "--live") == 0 || strcmp(argv[i], "--live-record") == 0)
+            return true;
+    }
+    return false;
+}
+
+
 
 /**
  * Run the SSAO feature example through the native scenario runner.
@@ -278,5 +489,7 @@ static DvzScenarioSpec _ssao_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = _ssao_scenario();
+    if (_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

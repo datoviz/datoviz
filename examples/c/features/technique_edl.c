@@ -23,9 +23,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "datoviz/gui.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
+#include "example_gui_controls.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -46,6 +51,120 @@ static const float TAU = 6.28318530718f;
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+typedef struct EdlDemoState
+{
+    DvzPanel* lit_panel;
+    DvzArcball* arcball;
+    DvzExampleGuiEdlControls edl;
+    vec3 arcball_angles;
+    vec2 arcball_pan;
+    float arcball_zoom;
+} EdlDemoState;
+
+
+
+static DvzEdlDesc _edl_desc_from_controls(const DvzExampleGuiEdlControls* controls)
+{
+    DvzEdlDesc edl = dvz_edl_desc();
+    if (controls == NULL)
+        return edl;
+
+    edl.radius = controls->radius;
+    edl.strength = controls->strength;
+    edl.depth_scale = controls->depth_scale;
+    return edl;
+}
+
+
+
+static void _apply_edl(EdlDemoState* state)
+{
+    if (state == NULL || state->lit_panel == NULL)
+        return;
+
+    if (!state->edl.enabled)
+    {
+        (void)dvz_panel_set_edl(state->lit_panel, NULL);
+        return;
+    }
+
+    DvzEdlDesc edl = _edl_desc_from_controls(&state->edl);
+    (void)dvz_panel_set_edl(state->lit_panel, &edl);
+}
+
+
+
+static void _apply_arcball(EdlDemoState* state)
+{
+    if (state == NULL || state->arcball == NULL)
+        return;
+
+    dvz_arcball_set(state->arcball, state->arcball_angles);
+    dvz_arcball_zoom(state->arcball, state->arcball_zoom);
+    dvz_arcball_pan(state->arcball, state->arcball_pan);
+}
+
+
+
+static void _sync_arcball_controls(EdlDemoState* state)
+{
+    if (state == NULL || state->arcball == NULL)
+        return;
+
+    dvz_arcball_angles(state->arcball, state->arcball_angles);
+    state->arcball_zoom = state->arcball->zoom;
+    state->arcball_pan[0] = state->arcball->pan[0];
+    state->arcball_pan[1] = state->arcball->pan[1];
+}
+
+
+
+static void _print_settings(const EdlDemoState* state)
+{
+    if (state == NULL)
+        return;
+
+    fprintf(stderr, "technique_edl settings:\n");
+    fprintf(stderr, "dvz_arcball_set(arcball, (vec3){%+.6ff, %+.6ff, %+.6ff});\n",
+            state->arcball_angles[0], state->arcball_angles[1], state->arcball_angles[2]);
+    fprintf(stderr, "dvz_arcball_zoom(arcball, %.6ff);\n", state->arcball_zoom);
+    fprintf(stderr, "dvz_arcball_pan(arcball, (vec2){%+.6ff, %+.6ff});\n",
+            state->arcball_pan[0], state->arcball_pan[1]);
+    fprintf(stderr, "edl.radius = %.6ff;\n", state->edl.radius);
+    fprintf(stderr, "edl.strength = %.6ff;\n", state->edl.strength);
+    fprintf(stderr, "edl.depth_scale = %.6ff;\n", state->edl.depth_scale);
+}
+
+
+
+static bool _set_camera(DvzPanel* panel)
+{
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.eye[0] = 0.0f;
+    camera.eye[1] = 0.82f;
+    camera.eye[2] = 3.15f;
+    camera.fov_y = 0.62f;
+    camera.near = 0.05f;
+    camera.far = 100.0f;
+    return dvz_panel_set_camera(panel, &camera) != NULL;
+}
+
+
+
+static DvzController* _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel, vec3 angles)
+{
+    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    if (controller == NULL)
+        return NULL;
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    if (arcball == NULL)
+        return NULL;
+    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return NULL;
+    dvz_arcball_set(arcball, angles);
+    return controller;
+}
 
 /**
  * Add one dense depth-rich point cloud to a panel.
@@ -93,6 +212,13 @@ static bool _add_depth_cloud(DvzScene* scene, DvzPanel* panel)
     };
     if (dvz_visual_set_data_many(point, updates, 3) != 0)
         return false;
+    DvzPointStyleDesc style = dvz_point_style_desc();
+    style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
+    style.edge_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_PANEL_BG);
+    style.edge_color.a = 245u;
+    style.stroke_width = 2.0f;
+    if (dvz_point_set_style(point, &style) != 0)
+        return false;
     return dvz_panel_add_visual(panel, point, NULL) == 0;
 }
 
@@ -116,6 +242,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (out_user != NULL)
         *out_user = NULL;
 
+    EdlDemoState* state = (EdlDemoState*)calloc(1, sizeof(*state));
+    if (state == NULL)
+        return false;
+    if (out_user != NULL)
+        *out_user = state;
+
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
         return false;
@@ -134,20 +266,114 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanel* lit = dvz_grid_panel(grid, 0, 1);
     if (plain == NULL || lit == NULL)
         return false;
+    state->lit_panel = lit;
     example_graphite_cyan_set_panel_background(plain);
     example_graphite_cyan_set_panel_background(lit);
     if (!example_add_large_panel_label(plain, "plain depth") ||
         !example_add_large_panel_label(lit, "EDL resolve"))
         return false;
 
+    if (!_set_camera(plain) || !_set_camera(lit))
+        return false;
+    state->arcball_angles[0] = +0.616f;
+    state->arcball_angles[1] = -0.403f;
+    state->arcball_angles[2] = +0.339f;
+    state->arcball_zoom = 1.0f;
+    DvzController* plain_controller = _bind_arcball(ctx, plain, state->arcball_angles);
+    DvzController* lit_controller = _bind_arcball(ctx, lit, state->arcball_angles);
+    if (plain_controller == NULL || lit_controller == NULL)
+        return false;
+    state->arcball = dvz_controller_arcball(plain_controller);
+    if (state->arcball == NULL)
+        return false;
+    if (!example_link_controllers_bidirectional(
+            ctx->scene, plain_controller, lit_controller,
+            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM))
+        return false;
+
     if (!_add_depth_cloud(ctx->scene, plain) || !_add_depth_cloud(ctx->scene, lit))
         return false;
 
-    DvzEdlDesc edl = dvz_edl_desc();
-    edl.radius = 8.0f;
-    edl.strength = 200.0f;
-    edl.depth_scale = 1000.0f;
-    return dvz_panel_set_edl(lit, &edl);
+    state->edl = (DvzExampleGuiEdlControls){
+        .enabled = true,
+        .radius = 6.941f,
+        .strength = 112.941f,
+        .depth_scale = 1.361f,
+    };
+    _apply_edl(state);
+    return true;
+}
+
+
+
+static void _edl_gui(DvzGui* gui, DvzView* view, void* user_data)
+{
+    (void)view;
+    EdlDemoState* state = (EdlDemoState*)user_data;
+    if (gui == NULL || state == NULL)
+        return;
+
+    if (dvz_gui_begin(gui, "EDL calibration", NULL, 0))
+    {
+        dvz_gui_separator_text(gui, "Lighting");
+        if (dvz_example_gui_edl(gui, &state->edl))
+            _apply_edl(state);
+
+        dvz_gui_separator_text(gui, "Arcball");
+        _sync_arcball_controls(state);
+        bool arcball_changed = false;
+        arcball_changed |=
+            dvz_gui_slider_float3(gui, "Angles", state->arcball_angles, -3.14159f, +3.14159f);
+        arcball_changed |= dvz_gui_slider_float(gui, "Zoom", &state->arcball_zoom, 0.20f, 4.0f);
+        arcball_changed |=
+            dvz_gui_slider_float2(gui, "Pan", state->arcball_pan, -2.0f, +2.0f);
+        if (arcball_changed)
+            _apply_arcball(state);
+
+        if (dvz_gui_button(gui, "Reset arcball"))
+        {
+            state->arcball_angles[0] = +0.616f;
+            state->arcball_angles[1] = -0.403f;
+            state->arcball_angles[2] = +0.339f;
+            state->arcball_zoom = 1.0f;
+            state->arcball_pan[0] = 0.0f;
+            state->arcball_pan[1] = 0.0f;
+            _apply_arcball(state);
+        }
+        dvz_gui_same_line(gui, 0.0f, 8.0f);
+        if (dvz_gui_button(gui, "Print settings"))
+        {
+            _sync_arcball_controls(state);
+            _print_settings(state);
+        }
+    }
+    dvz_gui_end(gui);
+}
+
+
+
+static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
+{
+    (void)app;
+    EdlDemoState* state = (EdlDemoState*)user;
+    if (
+        ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW || state == NULL ||
+        view == NULL)
+        return true;
+
+    DvzGui* gui = dvz_view_gui(view, NULL);
+    if (gui == NULL)
+        return true;
+    dvz_view_set_gui_callback(view, _edl_gui, state);
+    return true;
+}
+
+
+
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    free(user);
 }
 
 
@@ -166,6 +392,7 @@ static DvzScenarioSpec _edl_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .init = _scenario_init,
+        .destroy = _scenario_destroy,
     };
 }
 
@@ -174,6 +401,20 @@ static DvzScenarioSpec _edl_scenario(void)
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+static bool _cli_wants_live_gui(int argc, char** argv)
+{
+    for (int i = 1; i < argc; i++)
+    {
+        if (argv[i] == NULL)
+            continue;
+        if (strcmp(argv[i], "--live") == 0 || strcmp(argv[i], "--live-record") == 0)
+            return true;
+    }
+    return false;
+}
+
+
 
 /**
  * Run the Eye-Dome Lighting feature example through the native scenario runner.
@@ -185,5 +426,7 @@ static DvzScenarioSpec _edl_scenario(void)
 int main(int argc, char** argv)
 {
     DvzScenarioSpec spec = _edl_scenario();
+    if (_cli_wants_live_gui(argc, argv))
+        spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
 }

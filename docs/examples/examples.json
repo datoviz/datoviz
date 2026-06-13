@@ -2,11 +2,11 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 107,
+  "count": 106,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 72,
+    "feature": 71,
     "showcase": 15,
     "visual": 15
   },
@@ -14,11 +14,11 @@
     "diagnostic": 1,
     "experimental": 11,
     "prototype": 3,
-    "supported": 92
+    "supported": 91
   },
   "agent_copy_safe": {
     "false": 28,
-    "true": 79
+    "true": 78
   },
   "examples": [
     {
@@ -599,27 +599,6 @@
       "primary_feature": "scene-compute-buffer"
     },
     {
-      "id": "technique_edl",
-      "title": "Eye-Dome Lighting",
-      "category": "feature",
-      "lane": "features",
-      "stage": "v0.4_required",
-      "status": "supported",
-      "source": "examples/c/features/technique_edl.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_edl.c",
-      "page": "gallery/features/technique_edl.md",
-      "summary": "Eye-Dome Lighting applied to a regular 3D sphere lattice.",
-      "validation": "smoke+screenshot",
-      "build_command": "just example-c features/technique_edl",
-      "smoke_command": "./build/examples/c/features/technique_edl --png",
-      "agent_copy_safe": true,
-      "tags": [],
-      "data": {
-        "kind": "synthetic"
-      },
-      "primary_feature": "edl"
-    },
-    {
       "id": "technique_ssao",
       "title": "Screen-Space Ambient Occlusion",
       "category": "feature",
@@ -914,25 +893,25 @@
       "primary_feature": "visual-transform"
     },
     {
-      "id": "feature_panel_domain_fit",
-      "title": "Panel Domain Fit",
+      "id": "feature_panel_view2d",
+      "title": "Panel View 2D",
       "category": "feature",
       "lane": "features",
       "stage": "v0.4_required",
       "status": "supported",
-      "source": "examples/c/features/panel_domain_fit.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_domain_fit.c",
-      "page": "gallery/features/feature_panel_domain_fit.md",
-      "summary": "panel-owned data-domain fit with equal aspect.",
+      "source": "examples/c/features/panel_view2d.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_view2d.c",
+      "page": "gallery/features/feature_panel_view2d.md",
+      "summary": "panel-owned 2D view framing with equal aspect.",
       "validation": "smoke+screenshot",
-      "build_command": "just example-c features/panel_domain_fit",
-      "smoke_command": "./build/examples/c/features/panel_domain_fit --png",
+      "build_command": "just example-c features/panel_view2d",
+      "smoke_command": "./build/examples/c/features/panel_view2d --png",
       "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
       },
-      "primary_feature": "panel-domain-fit"
+      "primary_feature": "panel-view2d"
     },
     {
       "id": "feature_json_export",

@@ -3,11 +3,11 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 107,
+  "example_count": 106,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 72,
+    "feature": 71,
     "showcase": 15,
     "visual": 15
   },
@@ -15,11 +15,11 @@
     "diagnostic": 1,
     "experimental": 11,
     "prototype": 3,
-    "supported": 92
+    "supported": 91
   },
   "agent_copy_safe": {
     "false": 28,
-    "true": 79
+    "true": 78
   },
   "capabilities": {
     "composites": {
@@ -155,7 +155,7 @@
         ]
       },
       "synthetic": {
-        "count": 98,
+        "count": 97,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -401,15 +401,6 @@
             "page": "gallery/features/feature_compute_buffer_animation.md"
           },
           {
-            "id": "technique_edl",
-            "title": "Eye-Dome Lighting",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/technique_edl.c",
-            "page": "gallery/features/technique_edl.md"
-          },
-          {
             "id": "technique_ssao",
             "title": "Screen-Space Ambient Occlusion",
             "category": "feature",
@@ -536,13 +527,13 @@
             "page": "gallery/features/feature_visual_transform.md"
           },
           {
-            "id": "feature_panel_domain_fit",
-            "title": "Panel Domain Fit",
+            "id": "feature_panel_view2d",
+            "title": "Panel View 2D",
             "category": "feature",
             "status": "supported",
             "agent_copy_safe": true,
-            "source": "examples/c/features/panel_domain_fit.c",
-            "page": "gallery/features/feature_panel_domain_fit.md"
+            "source": "examples/c/features/panel_view2d.c",
+            "page": "gallery/features/feature_panel_view2d.md"
           },
           {
             "id": "feature_json_export",
@@ -1337,20 +1328,6 @@
           }
         ]
       },
-      "edl": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "technique_edl",
-            "title": "Eye-Dome Lighting",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/technique_edl.c",
-            "page": "gallery/features/technique_edl.md"
-          }
-        ]
-      },
       "gui-cimgui": {
         "count": 1,
         "examples": [
@@ -1659,20 +1636,6 @@
           }
         ]
       },
-      "panel-domain-fit": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_panel_domain_fit",
-            "title": "Panel Domain Fit",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/panel_domain_fit.c",
-            "page": "gallery/features/feature_panel_domain_fit.md"
-          }
-        ]
-      },
       "panel-grid": {
         "count": 1,
         "examples": [
@@ -1698,6 +1661,20 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/panel_single.c",
             "page": "gallery/features/feature_panel_single.md"
+          }
+        ]
+      },
+      "panel-view2d": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_panel_view2d",
+            "title": "Panel View 2D",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/panel_view2d.c",
+            "page": "gallery/features/feature_panel_view2d.md"
           }
         ]
       },

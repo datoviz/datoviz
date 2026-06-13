@@ -5,7 +5,7 @@
 This page indexes focused C examples for public scene, layout, adornment, interaction,
 update, rendering-technique, and appearance features.
 
-Coverage: 72 examples (66 supported, 5 experimental, 1 diagnostic).
+Coverage: 71 examples (65 supported, 5 experimental, 1 diagnostic).
 
 ## Features
 
@@ -236,18 +236,6 @@ depth-dependent fading applied to a regular 3D sphere lattice.
 `supported` `features`
 
 side-by-side visual depth-test toggle with overlapping 3D points.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Eye-Dome Lighting](gallery/features/technique_edl.md)
-
-![Eye-Dome Lighting](../assets/gallery/v0.4/features/technique_edl.webp)
-
-`supported` `features`
-
-Eye-Dome Lighting applied to a regular 3D sphere lattice.
 
 </div>
 
@@ -541,18 +529,6 @@ fixed graphite-cyan panel background behind a simple visual.
 
 <div class="card" markdown="1">
 
-### [Panel Domain Fit](gallery/features/feature_panel_domain_fit.md)
-
-![Panel Domain Fit](../assets/gallery/v0.4/features/feature_panel_domain_fit.webp)
-
-`supported` `features`
-
-panel-owned data-domain fit with equal aspect.
-
-</div>
-
-<div class="card" markdown="1">
-
 ### [Panel Grid](gallery/features/feature_panel_grid.md)
 
 ![Panel Grid](../assets/gallery/v0.4/features/feature_panel_grid.webp)
@@ -560,6 +536,18 @@ panel-owned data-domain fit with equal aspect.
 `supported` `features`
 
 four grid-owned panels with clipped panel-local content.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Panel View 2D](gallery/features/feature_panel_view2d.md)
+
+_Media pending._
+
+`supported` `features`
+
+panel-owned 2D view framing with equal aspect.
 
 </div>
 
