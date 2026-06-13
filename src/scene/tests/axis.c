@@ -816,19 +816,41 @@ static int test_axis_text_labels(TstContext* suite, const TstCase* item)
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, 1.0) == 0);
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(axis);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    ANN(y_axis);
     AT(dvz_axis_set_label(axis, "Time"));
+    AT(dvz_axis_set_label(y_axis, "Value"));
 
     _scene_prepare_axis_visuals(figure);
     ANN(axis->text_visual);
+    ANN(y_axis->text_visual);
     AT(axis->text_visual->type == DVZ_VISUAL_TYPE_TEXT);
     AT(axis->text_visual->visible);
+    AT(y_axis->text_visual->visible);
     AT(_visual_family_state(axis->text_visual)->text.string_count == axis->tick_count + 1);
     AT(strcmp(_visual_family_state(axis->text_visual)->text.strings[axis->tick_count], "Time") == 0);
+    AT(_visual_family_state(y_axis->text_visual)->text.string_count == y_axis->tick_count + 1);
+    AT(strcmp(
+           _visual_family_state(y_axis->text_visual)->text.strings[y_axis->tick_count],
+           "Value") == 0);
     DvzVisualDataView position_view = {0};
     AT(dvz_visual_data(axis->text_visual, "position", &position_view) == 0);
     AT(position_view.item_count == _visual_family_state(axis->text_visual)->text.string_count);
+    const float* positions = (const float*)position_view.data;
+    float first_x_tick_y = positions[1];
+    float x_label_y = positions[3 * axis->tick_count + 1];
+    AT(x_label_y > first_x_tick_y + axis->style.tick_size_px);
+
+    DvzVisualDataView y_position_view = {0};
+    AT(dvz_visual_data(y_axis->text_visual, "position", &y_position_view) == 0);
+    AT(y_position_view.item_count == _visual_family_state(y_axis->text_visual)->text.string_count);
+    const float* y_positions = (const float*)y_position_view.data;
+    float first_y_tick_x = y_positions[0];
+    float y_label_x = y_positions[3 * y_axis->tick_count + 0];
+    AT(y_label_x < first_y_tick_x - y_axis->style.tick_size_px);
 
     _scene_prepare_text_visuals(figure);
     AT(_visual_family_state(axis->text_visual)->text.glyph_visual != NULL);
@@ -1631,8 +1653,20 @@ static int test_axis_auto_reserve_tracks_label_and_resize(TstContext* suite, con
     DvzPanelReserve reserve = {0};
     AT(dvz_panel_get_reserve(panel, &reserve));
     float wide_left = reserve.left_px;
-    AT(wide_left > 65.0f);
+    float wide_bottom = reserve.bottom_px;
+    AT(wide_left > 70.0f);
     AT(wide_left < 100.0f);
+    AT(wide_bottom > 60.0f);
+    AT(wide_bottom < 85.0f);
+
+    DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
+    ANN(pz);
+    dvz_panzoom_zoom(pz, (vec2){2.75f, 1.80f});
+    dvz_panzoom_pan(pz, (vec2){0.45f, -0.25f});
+    _scene_prepare_axis_visuals(figure);
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(fabsf(reserve.left_px - wide_left) < 1e-3f);
+    AT(fabsf(reserve.bottom_px - wide_bottom) < 1e-3f);
 
     dvz_figure_resize(figure, 360, 600);
     _scene_prepare_axis_visuals(figure);

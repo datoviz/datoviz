@@ -269,6 +269,36 @@ static float _axis_text_size(float value, float fallback)
 }
 
 
+static float _axis_text_tick_gap(const DvzAxis* axis)
+{
+    ANN(axis);
+    return axis->style.tick_gap_px > 0.0f && isfinite(axis->style.tick_gap_px) ?
+               axis->style.tick_gap_px :
+               AXIS_TEXT_TICK_GAP;
+}
+
+
+static float _axis_text_label_gap(const DvzAxis* axis)
+{
+    ANN(axis);
+    return axis->style.label_gap_px > 0.0f && isfinite(axis->style.label_gap_px) ?
+               axis->style.label_gap_px :
+               AXIS_TEXT_LABEL_GAP;
+}
+
+
+static float _axis_text_label_offset(const DvzAxis* axis)
+{
+    ANN(axis);
+    float tick_gap = _axis_text_tick_gap(axis);
+    float label_gap = _axis_text_label_gap(axis);
+    float tick_size = _axis_text_size(axis->style.tick_size_px, AXIS_TEXT_TICK_SIZE);
+    if (axis->dim == DVZ_DIM_X)
+        return tick_gap + tick_size + label_gap;
+    return tick_gap + 2.25f * tick_size + label_gap;
+}
+
+
 /**
  * Rebuild the derived text visual for tick labels and the axis label.
  *
@@ -335,9 +365,7 @@ void _axis_update_text(
         if (axis->dim == DVZ_DIM_X)
         {
             _axis_visual_to_pixels(axis, tick_positions[i], y0, &px, &py);
-            py += axis->style.tick_gap_px > 0.0f && isfinite(axis->style.tick_gap_px) ?
-                      axis->style.tick_gap_px :
-                      AXIS_TEXT_TICK_GAP;
+            py += _axis_text_tick_gap(axis);
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles,
                 label_plan.tick_labels[i], px, py, 0.5f, 0.0f,
@@ -347,9 +375,7 @@ void _axis_update_text(
         else
         {
             _axis_visual_to_pixels(axis, x0, tick_positions[i], &px, &py);
-            px -= axis->style.tick_gap_px > 0.0f && isfinite(axis->style.tick_gap_px) ?
-                      axis->style.tick_gap_px :
-                      AXIS_TEXT_TICK_GAP;
+            px -= _axis_text_tick_gap(axis);
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles,
                 label_plan.tick_labels[i], px, py, 1.0f, 0.5f,
@@ -366,9 +392,7 @@ void _axis_update_text(
         if (axis->dim == DVZ_DIM_X)
         {
             _axis_visual_to_pixels(axis, x1, y0, &px, &py);
-            py += axis->style.label_gap_px > 0.0f && isfinite(axis->style.label_gap_px) ?
-                      axis->style.label_gap_px :
-                      AXIS_TEXT_LABEL_GAP;
+            py += _axis_text_label_offset(axis);
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles,
                 label_plan.offset_label, px, py, 1.0f, 0.0f, offset_size,
@@ -377,9 +401,7 @@ void _axis_update_text(
         else
         {
             _axis_visual_to_pixels(axis, x0, y1, &px, &py);
-            px -= axis->style.label_gap_px > 0.0f && isfinite(axis->style.label_gap_px) ?
-                      axis->style.label_gap_px :
-                      AXIS_TEXT_LABEL_GAP;
+            px -= _axis_text_label_offset(axis);
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles,
                 label_plan.offset_label, px, py, 1.0f, 0.5f, offset_size,
@@ -394,9 +416,7 @@ void _axis_update_text(
         if (axis->dim == DVZ_DIM_X)
         {
             _axis_visual_to_pixels(axis, 0.5f * (x0 + x1), y0, &px, &py);
-            py += axis->style.label_gap_px > 0.0f && isfinite(axis->style.label_gap_px) ?
-                      axis->style.label_gap_px :
-                      AXIS_TEXT_LABEL_GAP;
+            py += _axis_text_label_offset(axis);
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles, axis->label,
                 px, py, 0.5f, 0.0f,
@@ -406,9 +426,7 @@ void _axis_update_text(
         else
         {
             _axis_visual_to_pixels(axis, x0, 0.5f * (y0 + y1), &px, &py);
-            px -= axis->style.label_gap_px > 0.0f && isfinite(axis->style.label_gap_px) ?
-                      axis->style.label_gap_px :
-                      AXIS_TEXT_LABEL_GAP;
+            px -= _axis_text_label_offset(axis);
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles, axis->label,
                 px, py, 0.5f, 0.5f,
