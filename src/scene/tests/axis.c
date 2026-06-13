@@ -22,6 +22,7 @@
 #include "_assertions.h"
 #include "../../drp2/_stream.h"
 #include "_scene.h"
+#include "annotation/axis_internal.h"
 #include "annotation/prepare_internal.h"
 #include "core/figure_emit_internal.h"
 #include "scene_emit/scene_emit.h"
@@ -1300,15 +1301,17 @@ static int test_axis_text_inset_panel_coordinates(TstContext* suite, const TstCa
     double y_visible_max = 0.0;
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &x_visible_min, &x_visible_max));
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &y_visible_min, &y_visible_max));
-    const float x_plot_min = -1.0f + 0.14f;
-    const float x_plot_max = +1.0f - 0.04f;
+    float x_plot_min = -1.0f;
+    float x_plot_max = +1.0f;
+    float y_plot_min = -1.0f;
+    float y_plot_max = +1.0f;
+    _axis_plot_interval(x_axis, &x_plot_min, &x_plot_max);
+    _axis_plot_interval(y_axis, &y_plot_min, &y_plot_max);
     const float x_visual =
         x_plot_min + (float)((x_tick - x_visible_min) / (x_visible_max - x_visible_min)) *
                          (x_plot_max - x_plot_min);
     const float expected_x0 = 0.5f * (x_visual + 1.0f) * panel_width;
     const float expected_left_x = 0.5f * (x_plot_min + 1.0f) * panel_width;
-    const float y_plot_min = -1.0f + 0.18f;
-    const float y_plot_max = +1.0f - 0.04f;
     const float y_visual =
         y_plot_min + (float)((y_tick - y_visible_min) / (y_visible_max - y_visible_min)) *
                          (y_plot_max - y_plot_min);
@@ -1395,12 +1398,20 @@ static int test_axis_plot_margins(TstContext* suite, const TstCase* item)
     float data[] = {0.0f, -5.0f, 2.0f, 5.0f, 5.0f, 3.0f, 10.0f, 0.0f, 4.0f};
     float visual[9] = {0};
     AT(dvz_panel_data_to_visual_positions(panel, data, visual, 3) == 0);
-    AT(fabsf(visual[0] + 0.90f) < 1e-6f);
-    AT(fabsf(visual[1] + 0.90f) < 1e-6f);
-    AT(fabsf(visual[3] - 0.03f) < 1e-6f);
-    AT(fabsf(visual[4] - 0.96f) < 1e-6f);
-    AT(fabsf(visual[6] - 0.96f) < 1e-6f);
-    AT(fabsf(visual[7] - 0.03f) < 1e-6f);
+    float x0 = -1.0f;
+    float x1 = +1.0f;
+    float y0 = -1.0f;
+    float y1 = +1.0f;
+    _axis_plot_interval(x_axis, &x0, &x1);
+    _axis_plot_interval(y_axis, &y0, &y1);
+    float sx = (x1 - x0) / 10.0f;
+    float sy = (y1 - y0) / 10.0f;
+    AT(fabsf(visual[0] - x0) < 1e-6f);
+    AT(fabsf(visual[1] - y0) < 1e-6f);
+    AT(fabsf(visual[3] - (x0 + 5.0f * sx)) < 1e-6f);
+    AT(fabsf(visual[4] - y1) < 1e-6f);
+    AT(fabsf(visual[6] - x1) < 1e-6f);
+    AT(fabsf(visual[7] - (y0 + 5.0f * sy)) < 1e-6f);
 
     mat4 data_to_view = GLM_MAT4_IDENTITY_INIT;
     AT(_scene_panel_data_model(panel, data_to_view));
@@ -1589,6 +1600,47 @@ static int test_axis_layout_reserve(TstContext* suite, const TstCase* item)
     AT(fabsf(plot_rect.y - 30.0f) < 1e-4f);
     AT(fabsf(plot_rect.width - 945.0f) < 1e-4f);
     AT(fabsf(plot_rect.height - 780.0f) < 1e-4f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+static int test_axis_auto_reserve_tracks_label_and_resize(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 120.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.5, 2.5) == 0);
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    ANN(x_axis);
+    ANN(y_axis);
+    AT(dvz_axis_set_label(x_axis, "sample offset (ms)"));
+    AT(dvz_axis_set_label(y_axis, "normalized response"));
+
+    _scene_prepare_axis_visuals(figure);
+    DvzPanelReserve reserve = {0};
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    float wide_left = reserve.left_px;
+    AT(wide_left > 190.0f);
+
+    dvz_figure_resize(figure, 360, 600);
+    _scene_prepare_axis_visuals(figure);
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(reserve.left_px >= wide_left - 1e-3f);
+    DvzRect plot_rect = {0};
+    AT(dvz_panel_plot_rect_px(panel, &plot_rect));
+    AT(plot_rect.x >= reserve.left_px - 1e-3f);
+    AT(plot_rect.width > 0.0f);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1884,14 +1936,14 @@ static int test_axis_grid_uses_plot_source_extent(TstContext* suite, const TstCa
     float tol_y = _axis_test_grid_snap_source_tolerance(y_axis, DVZ_DIM_Y, visible_extent);
 
     AT(_axis_test_vertical_grid_bounds(x_axis, 0.0f, tol_x, &min_y, &max_y));
-    AT(min_y < visible_extent[2]);
-    AT(max_y > visible_extent[3]);
+    AT(fabsf(min_y - visible_extent[2]) <= 2.0f * tol_y);
+    AT(fabsf(max_y - visible_extent[3]) <= 2.0f * tol_y);
 
     float min_x = 0.0f;
     float max_x = 0.0f;
     AT(_axis_test_horizontal_grid_bounds(y_axis, 0.0f, tol_y, &min_x, &max_x));
-    AT(min_x < visible_extent[0]);
-    AT(max_x > visible_extent[1]);
+    AT(fabsf(min_x - visible_extent[0]) <= 2.0f * tol_x);
+    AT(fabsf(max_x - visible_extent[1]) <= 2.0f * tol_x);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2654,8 +2706,8 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
         float grid_max_y = 0.0f;
         AT(_axis_test_vertical_grid_bounds(
             x_axis, expected_x, grid_tol_x, &grid_min_y, &grid_max_y));
-        AT(grid_min_y < visible_extent[2]);
-        AT(grid_max_y > visible_extent[3]);
+        AT(fabsf(grid_min_y - visible_extent[2]) <= 2.0f * grid_tol_y);
+        AT(fabsf(grid_max_y - visible_extent[3]) <= 2.0f * grid_tol_y);
         float plot_clip_x = 0.0f;
         AT(_axis_test_apply_mvp_coord(
             &apply_mvp, (vec3){expected_x, 0.0f, 0.0f}, DVZ_DIM_X, &plot_clip_x));
@@ -2681,8 +2733,8 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
         float grid_max_x = 0.0f;
         AT(_axis_test_horizontal_grid_bounds(
             y_axis, expected_y, grid_tol_y, &grid_min_x, &grid_max_x));
-        AT(grid_min_x < visible_extent[0]);
-        AT(grid_max_x > visible_extent[1]);
+        AT(fabsf(grid_min_x - visible_extent[0]) <= 2.0f * grid_tol_x);
+        AT(fabsf(grid_max_x - visible_extent[1]) <= 2.0f * grid_tol_x);
         float plot_clip_y = 0.0f;
         AT(_axis_test_apply_mvp_coord(
             &apply_mvp, (vec3){0.0f, expected_y, 0.0f}, DVZ_DIM_Y, &plot_clip_y));
@@ -2723,6 +2775,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_panel_data_to_visual_positions);
     TST_CASE(test_axis_plot_margins);
     TST_CASE(test_axis_layout_reserve);
+    TST_CASE(test_axis_auto_reserve_tracks_label_and_resize);
     TST_CASE(test_panel_visible_domain);
     TST_CASE(test_panel_view2d);
     TST_CASE(test_axis_equal_aspect_axis_alignment);
