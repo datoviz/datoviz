@@ -1772,6 +1772,85 @@ static int test_axis_grid_uses_plot_source_extent(TstContext* suite, const TstCa
 
 
 /**
+ * Ensure DATA visuals are authored in view space even when their draw is clipped to the plot.
+ *
+ * @param suite the test suite
+ * @param item the test case
+ * @return zero on success
+ */
+static int test_axis_data_visual_mvp_uses_view_extent_after_resize(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 1600, 1200, 0);
+    ANN(figure);
+
+    DvzGrid* grid = dvz_figure_grid(figure, 1, 2);
+    ANN(grid);
+    AT(dvz_grid_set_margins(
+        grid, &(DvzPanelReserve){.left_px = 46.0f, .right_px = 46.0f, .top_px = 46.0f,
+                                 .bottom_px = 58.0f}));
+    AT(dvz_grid_set_gutter(grid, 34.0f, 0.0f));
+
+    DvzPanel* panel = dvz_grid_panel(grid, 0, 0);
+    ANN(panel);
+    AT(dvz_panel_set_padding(
+        panel, &(DvzPanelReserve){.left_px = 82.0f, .right_px = 22.0f, .bottom_px = 78.0f,
+                                  .top_px = 30.0f}));
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -1.0, +1.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, +1.0) == 0);
+
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(point);
+    vec3 positions[2] = {{-1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}};
+    DvzColor colors[2] = {{0}};
+    float sizes[2] = {8.0f, 8.0f};
+    colors[0] = dvz_color_rgba(120, 240, 220, 255);
+    colors[1] = dvz_color_rgba(120, 240, 220, 255);
+    AT(dvz_visual_set_data(point, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(point, "color", colors, 2) == 0);
+    AT(dvz_visual_set_data(point, "size", sizes, 2) == 0);
+
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_COORD_DATA;
+    AT(dvz_panel_add_visual(panel, point, &attach) == 0);
+
+    dvz_figure_resize(figure, 1605, 1330);
+
+    float plot[4] = {0};
+    _scene_panel_plot_visual_rect(panel, plot);
+    AT(plot[0] > -0.95f);
+    AT(plot[1] < +0.95f);
+
+    DvzFramePlan* plan = dvz_frame_plan("axis.data_mvp.plot_clip.resize", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    AT(dvz_frame_plan_node_count(plan) == 1);
+    const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
+    ANN(render);
+    AT(render->u.render.visual_count == 1);
+    AT(render->u.render.visual_metadata[0].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT);
+    AT(render->u.render.visual_has_mvp[0]);
+
+    DvzMVP visual_mvp = render->u.render.visual_mvp[0];
+    float left_clip = 0.0f;
+    float right_clip = 0.0f;
+    AT(_axis_test_apply_mvp_coord(&visual_mvp, positions[0], DVZ_DIM_X, &left_clip));
+    AT(_axis_test_apply_mvp_coord(&visual_mvp, positions[1], DVZ_DIM_X, &right_clip));
+    AT(fabsf(left_clip + 1.0f) < 1e-5f);
+    AT(fabsf(right_clip - 1.0f) < 1e-5f);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Check that raw visual-space grid lines and points share the same APPLY transform.
  *
  * @param suite the test suite
@@ -2454,6 +2533,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_panzoom_visible_domain);
     TST_CASE(test_axis_panzoom_layout_aligns_grid_to_plot);
     TST_CASE(test_axis_grid_uses_plot_source_extent);
+    TST_CASE(test_axis_data_visual_mvp_uses_view_extent_after_resize);
     TST_CASE(test_axis_raw_visual_panzoom_alignment);
     TST_CASE(test_axis_integer_lattice_panzoom_alignment);
     TST_CASE(test_axis_zoom_out_in_grid_regression);
