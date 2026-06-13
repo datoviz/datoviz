@@ -87,9 +87,9 @@ static bool _add_domain_shape(DvzScene* scene, DvzPanel* panel, DvzColor color)
         return false;
     if (dvz_path_set_join(path, DVZ_PATH_JOIN_ROUND, 4.0f) != 0)
         return false;
-    DvzVisualAttachDesc attach = {DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
-        .coord_space = DVZ_COORD_DATA};
-    if (dvz_panel_add_visual(panel, path, &attach) != 0)
+    DvzVisualAttachDesc path_attach = {
+        DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .coord_space = DVZ_COORD_DATA};
+    if (dvz_panel_add_visual(panel, path, &path_attach) != 0)
         return false;
 
     vec3 starts[GRID_LINES] = {0};
@@ -130,7 +130,10 @@ static bool _add_domain_shape(DvzScene* scene, DvzPanel* panel, DvzColor color)
     };
     if (dvz_visual_set_data_many(grid, grid_updates, 4) != 0)
         return false;
-    return dvz_panel_add_visual(panel, grid, &attach) == 0;
+    DvzVisualAttachDesc frame_attach = {DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
+        .z_layer = -1,
+        .coord_space = DVZ_COORD_DATA};
+    return dvz_panel_add_visual(panel, grid, &frame_attach) == 0;
 }
 
 
@@ -207,9 +210,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     for (uint32_t i = 0; i < 2u; i++)
     {
         example_graphite_cyan_set_panel_background(panels[i]);
-        if (!dvz_panel_set_layout_reserve(
-                panels[i], &(DvzPanelLayoutReserve){.left = 0.13f, .right = 0.05f,
-                                                    .bottom = 0.15f, .top = 0.07f}))
+        if (!dvz_panel_set_padding(
+                panels[i], &(DvzPanelReserve){.left_px = 82.0f, .right_px = 22.0f,
+                                              .bottom_px = 78.0f, .top_px = 30.0f}))
             return false;
         if (!_add_axes(panels[i]))
             return false;
@@ -255,8 +258,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             ctx->scene, fit_panel,
             example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY)))
         return false;
+    DvzPanzoomDesc fit_panzoom = dvz_panzoom_desc();
+    fit_panzoom.controller_flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
     return dvz_scenario_panzoom(ctx, free_panel, NULL, DVZ_DIM_MASK_XY) != NULL &&
-           dvz_scenario_panzoom(ctx, fit_panel, NULL, DVZ_DIM_MASK_XY) != NULL;
+           dvz_scenario_panzoom(ctx, fit_panel, &fit_panzoom, DVZ_DIM_MASK_XY) != NULL;
 }
 
 
