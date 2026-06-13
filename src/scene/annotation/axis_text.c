@@ -34,6 +34,22 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+static float _axis_text_tick_visual_position(
+    const DvzAxis* axis, double value, const float extent[4], float plot_min, float plot_max,
+    double visible_min, double visible_max)
+{
+    ANN(axis);
+    if (axis->panel != NULL && axis->panel->view_fit_enabled)
+    {
+        uint32_t lo_idx = axis->dim == DVZ_DIM_X ? 0 : 2;
+        uint32_t hi_idx = axis->dim == DVZ_DIM_X ? 1 : 3;
+        float source = _axis_data_to_source_visual(axis, value);
+        return _axis_forward_panzoom_coord(extent, lo_idx, hi_idx, source);
+    }
+    return _axis_data_to_visual(value, visible_min, visible_max, plot_min, plot_max);
+}
+
+
 /**
  * Apply the axis text renderer to the derived text visual.
  *
@@ -280,12 +296,15 @@ void _axis_update_text(
     uint32_t visible_tick_count = 0;
     double tick_values[DVZ_SCENE_MAX_AXIS_TICKS] = {0};
     float tick_positions[DVZ_SCENE_MAX_AXIS_TICKS] = {0};
+    float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
+    if (axis->panel != NULL)
+        (void)_scene_panel_panzoom_extent(axis->panel, extent);
     for (uint32_t i = 0; i < axis->tick_count; i++)
     {
         float plot_min = axis->dim == DVZ_DIM_X ? x0 : y0;
         float plot_max = axis->dim == DVZ_DIM_X ? x1 : y1;
-        float p =
-            _axis_data_to_visual(axis->ticks[i], visible_min, visible_max, plot_min, plot_max);
+        float p = _axis_text_tick_visual_position(
+            axis, axis->ticks[i], extent, plot_min, plot_max, visible_min, visible_max);
         if (p < plot_min - 0.0001f || p > plot_max + 0.0001f)
             continue;
 

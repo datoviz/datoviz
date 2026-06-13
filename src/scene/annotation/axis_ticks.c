@@ -431,6 +431,38 @@ float _axis_inverse_panzoom_coord(
 }
 
 
+float _axis_forward_panzoom_coord(
+    const float extent[4], uint32_t lo_idx, uint32_t hi_idx, float value)
+{
+    ANN(extent);
+    float range = extent[hi_idx] - extent[lo_idx];
+    if (fabsf(range) <= 1e-12f || !isfinite(range))
+        return value;
+    return 2.0f * (value - 0.5f * (extent[lo_idx] + extent[hi_idx])) / range;
+}
+
+
+float _axis_data_to_source_visual(const DvzAxis* axis, double value)
+{
+    ANN(axis);
+    if (axis->panel != NULL && axis->panel->view_fit_enabled)
+    {
+        mat4 data_to_view = GLM_MAT4_IDENTITY_INIT;
+        if (_scene_panel_data_model(axis->panel, data_to_view))
+        {
+            uint32_t dim = axis->dim == DVZ_DIM_X ? 0 : 1;
+            return data_to_view[dim][dim] * (float)value + data_to_view[3][dim];
+        }
+    }
+    if (!axis->domain_set)
+        return (float)value;
+    float visual_min = -1.0f;
+    float visual_max = +1.0f;
+    _axis_plot_interval(axis, &visual_min, &visual_max);
+    return _axis_data_to_visual(value, axis->domain.min, axis->domain.max, visual_min, visual_max);
+}
+
+
 /**
  * Map one visual coordinate to data coordinates for an axis.
  *

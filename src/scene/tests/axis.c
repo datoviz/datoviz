@@ -359,6 +359,58 @@ static bool _axis_test_find_horizontal_grid_center(
 
 
 /**
+ * Return whether a fixed major tick exists near one expected center.
+ *
+ * @param axis the axis
+ * @param expected expected fixed visual coordinate
+ * @param tolerance accepted absolute visual-coordinate distance
+ * @param out_coord closest matching tick center, or NULL
+ * @return whether a matching fixed tick was found
+ */
+static bool _axis_test_find_major_tick_center(
+    DvzAxis* axis, float expected, float tolerance, float* out_coord)
+{
+    ANN(axis);
+    ANN(axis->visual);
+    DvzVisualDataView positions_view = {0};
+    DvzVisualDataView colors_view = {0};
+    int res = dvz_visual_data(axis->visual, "position", &positions_view);
+    ASSERT(res == 0);
+    res = dvz_visual_data(axis->visual, "color", &colors_view);
+    ASSERT(res == 0);
+    const float* positions = (const float*)positions_view.data;
+    const uint8_t* colors = (const uint8_t*)colors_view.data;
+    float best = 0.0f;
+    float best_distance = 1e9f;
+    bool found = false;
+    for (uint32_t i = 0; i + 5 < positions_view.item_count; i += 6)
+    {
+        if (memcmp(&colors[4 * i], axis->style.major_tick_color, 4) != 0)
+            continue;
+        float min_coord = positions[3 * i + (uint32_t)axis->dim];
+        float max_coord = min_coord;
+        for (uint32_t j = 1; j < 6; j++)
+        {
+            float coord = positions[3 * (i + j) + (uint32_t)axis->dim];
+            min_coord = fminf(min_coord, coord);
+            max_coord = fmaxf(max_coord, coord);
+        }
+        float center = 0.5f * (min_coord + max_coord);
+        float distance = fabsf(center - expected);
+        if (distance < best_distance)
+        {
+            best_distance = distance;
+            best = center;
+            found = true;
+        }
+    }
+    if (out_coord != NULL)
+        *out_coord = best;
+    return found && best_distance <= tolerance;
+}
+
+
+/**
  * Project one visual-space position with the same MVP uploaded for APPLY visuals.
  *
  * @param mvp panel MVP
@@ -2068,13 +2120,13 @@ int test_axis_descriptor_abi_rejects_invalid_structs(TstContext* suite, const Ts
 
 
 /**
- * Check that equal-aspect data grid lines use the fitted data-to-view transform.
+ * Check that equal-aspect data grid lines and fixed ticks use the fitted data-to-view transform.
  *
  * @param suite the test suite
  * @param item the test case
  * @return zero on success
  */
-static int test_axis_equal_aspect_grid_alignment(TstContext* suite, const TstCase* item)
+static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -2111,6 +2163,8 @@ static int test_axis_equal_aspect_grid_alignment(TstContext* suite, const TstCas
 
     mat4 data_to_view = GLM_MAT4_IDENTITY_INIT;
     AT(_scene_panel_data_model(panel, data_to_view));
+    DvzMVP apply_mvp = {0};
+    _scene_panel_apply_mvp(panel, &apply_mvp);
 
     bool checked_x = false;
     for (uint32_t i = 0; i < x_axis->tick_count; i++)
@@ -2122,6 +2176,12 @@ static int test_axis_equal_aspect_grid_alignment(TstContext* suite, const TstCas
         float grid_x = 0.0f;
         AT(_axis_test_find_vertical_grid_center(x_axis, expected_x, 1e-5f, &grid_x));
         AT(fabsf(grid_x - expected_x) < 1e-5f);
+        float fixed_x = 0.0f;
+        AT(_axis_test_apply_mvp_coord(
+            &apply_mvp, (vec3){expected_x, 0.0f, 0.0f}, DVZ_DIM_X, &fixed_x));
+        float tick_x = 0.0f;
+        AT(_axis_test_find_major_tick_center(x_axis, fixed_x, 2e-3f, &tick_x));
+        AT(fabsf(tick_x - fixed_x) < 2e-3f);
         checked_x = true;
     }
     AT(checked_x);
@@ -2136,6 +2196,12 @@ static int test_axis_equal_aspect_grid_alignment(TstContext* suite, const TstCas
         float grid_y = 0.0f;
         AT(_axis_test_find_horizontal_grid_center(y_axis, expected_y, 1e-5f, &grid_y));
         AT(fabsf(grid_y - expected_y) < 1e-5f);
+        float fixed_y = 0.0f;
+        AT(_axis_test_apply_mvp_coord(
+            &apply_mvp, (vec3){0.0f, expected_y, 0.0f}, DVZ_DIM_Y, &fixed_y));
+        float tick_y = 0.0f;
+        AT(_axis_test_find_major_tick_center(y_axis, fixed_y, 2e-3f, &tick_y));
+        AT(fabsf(tick_y - fixed_y) < 2e-3f);
         checked_y = true;
     }
     AT(checked_y);
@@ -2171,7 +2237,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_layout_reserve);
     TST_CASE(test_panel_visible_domain);
     TST_CASE(test_panel_domain_fit);
-    TST_CASE(test_axis_equal_aspect_grid_alignment);
+    TST_CASE(test_axis_equal_aspect_axis_alignment);
     TST_CASE(test_axis_panzoom_visible_domain);
     TST_CASE(test_axis_panzoom_layout_aligns_grid_to_plot);
     TST_CASE(test_axis_raw_visual_panzoom_alignment);

@@ -137,22 +137,35 @@ static uint32_t _axis_minor_count(const DvzAxis* axis)
  */
 static float _axis_data_to_axis_visual(const DvzAxis* axis, double value)
 {
+    return _axis_data_to_source_visual(axis, value);
+}
+
+
+/**
+ * Map one data coordinate to the fixed visual coordinate used by axis ticks and labels.
+ *
+ * @param axis the axis
+ * @param value data value
+ * @param extent visible source extent
+ * @param plot_min fixed plot interval minimum
+ * @param plot_max fixed plot interval maximum
+ * @param visible_min visible data minimum
+ * @param visible_max visible data maximum
+ * @return fixed visual coordinate
+ */
+static float _axis_tick_visual_position(
+    const DvzAxis* axis, double value, const float extent[4], float plot_min, float plot_max,
+    double visible_min, double visible_max)
+{
     ANN(axis);
     if (axis->panel != NULL && axis->panel->view_fit_enabled)
     {
-        mat4 data_to_view = GLM_MAT4_IDENTITY_INIT;
-        if (_scene_panel_data_model(axis->panel, data_to_view))
-        {
-            uint32_t dim = axis->dim == DVZ_DIM_X ? 0 : 1;
-            return data_to_view[dim][dim] * (float)value + data_to_view[3][dim];
-        }
+        uint32_t lo_idx = axis->dim == DVZ_DIM_X ? 0 : 2;
+        uint32_t hi_idx = axis->dim == DVZ_DIM_X ? 1 : 3;
+        float source = _axis_data_to_source_visual(axis, value);
+        return _axis_forward_panzoom_coord(extent, lo_idx, hi_idx, source);
     }
-    if (!axis->domain_set)
-        return (float)value;
-    float visual_min = -1.0f;
-    float visual_max = +1.0f;
-    _axis_plot_interval(axis, &visual_min, &visual_max);
-    return _axis_data_to_visual(value, axis->domain.min, axis->domain.max, visual_min, visual_max);
+    return _axis_data_to_visual(value, visible_min, visible_max, plot_min, plot_max);
 }
 
 
@@ -382,8 +395,8 @@ void _axis_update_visual(DvzAxis* axis)
     {
         float plot_min = axis->dim == DVZ_DIM_X ? x0 : y0;
         float plot_max = axis->dim == DVZ_DIM_X ? x1 : y1;
-        float p =
-            _axis_data_to_visual(axis->ticks[i], visible_min, visible_max, plot_min, plot_max);
+        float p = _axis_tick_visual_position(
+            axis, axis->ticks[i], extent, plot_min, plot_max, visible_min, visible_max);
         if (p < plot_min - 0.0001f || p > plot_max + 0.0001f)
             continue;
         bool boundary_grid = fabsf(p - plot_min) <= 0.0001f || fabsf(p - plot_max) <= 0.0001f;
@@ -427,8 +440,8 @@ void _axis_update_visual(DvzAxis* axis)
     {
         float plot_min = axis->dim == DVZ_DIM_X ? x0 : y0;
         float plot_max = axis->dim == DVZ_DIM_X ? x1 : y1;
-        float p =
-            _axis_data_to_visual(axis->ticks[i], visible_min, visible_max, plot_min, plot_max);
+        float p = _axis_tick_visual_position(
+            axis, axis->ticks[i], extent, plot_min, plot_max, visible_min, visible_max);
         if (p < plot_min - 0.0001f || p > plot_max + 0.0001f)
             continue;
         if (axis->style.show_major_ticks)
@@ -446,8 +459,8 @@ void _axis_update_visual(DvzAxis* axis)
             for (uint32_t j = 1; j <= minor_count; j++)
             {
                 double value = axis->ticks[i] + (double)j * delta;
-                float mp =
-                    _axis_data_to_visual(value, visible_min, visible_max, plot_min, plot_max);
+                float mp = _axis_tick_visual_position(
+                    axis, value, extent, plot_min, plot_max, visible_min, visible_max);
                 if (mp < plot_min - 0.0001f || mp > plot_max + 0.0001f)
                     continue;
                 _axis_append_tick(

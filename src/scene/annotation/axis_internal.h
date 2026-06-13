@@ -63,6 +63,11 @@ float _axis_data_to_visual(
 float _axis_inverse_panzoom_coord(
     const float extent[4], uint32_t lo_idx, uint32_t hi_idx, float value);
 
+float _axis_forward_panzoom_coord(
+    const float extent[4], uint32_t lo_idx, uint32_t hi_idx, float value);
+
+float _axis_data_to_source_visual(const DvzAxis* axis, double value);
+
 float _axis_panzoom_scale(const float extent[4], DvzDim dim);
 
 bool _axis_visible_domain(const DvzAxis* axis, double* out_min, double* out_max);
