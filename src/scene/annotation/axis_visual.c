@@ -308,6 +308,25 @@ static void _axis_append_tick(
 }
 
 
+/**
+ * Return a source-coordinate overrun for plot-clipped grid endpoints.
+ *
+ * @param source_min visible source minimum
+ * @param source_max visible source maximum
+ * @param pixel_span plot span in pixels
+ * @return source-coordinate padding equivalent to two plot pixels
+ */
+static float _axis_grid_endpoint_padding(float source_min, float source_max, float pixel_span)
+{
+    if (!(pixel_span > 0.0f) || !isfinite(pixel_span))
+        return 0.0f;
+    float source_span = fabsf(source_max - source_min);
+    if (!(source_span > 0.0f) || !isfinite(source_span))
+        return 0.0f;
+    return 2.0f * source_span / pixel_span;
+}
+
+
 
 /**
  * Return whether the retained primitive visual already stores one axis geometry payload.
@@ -407,6 +426,14 @@ void _axis_update_visual(DvzAxis* axis)
     float scale_x = _axis_panzoom_scale(extent, DVZ_DIM_X);
     float scale_y = _axis_panzoom_scale(extent, DVZ_DIM_Y);
     float user_scale = _axis_user_scale(axis);
+    DvzRect plot_px = {0};
+    (void)dvz_panel_plot_rect_px(axis->panel, &plot_px);
+    float source_x_pad = _axis_grid_endpoint_padding(source_x0, source_x1, plot_px.width);
+    float source_y_pad = _axis_grid_endpoint_padding(source_y0, source_y1, plot_px.height);
+    source_x0 -= source_x_pad;
+    source_x1 += source_x_pad;
+    source_y0 -= source_y_pad;
+    source_y1 += source_y_pad;
 
     double visible_min = 0.0;
     double visible_max = 0.0;

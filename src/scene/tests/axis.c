@@ -359,6 +359,124 @@ static bool _axis_test_find_horizontal_grid_center(
 
 
 /**
+ * Return the source-coordinate bounds for a vertical grid line.
+ *
+ * @param axis the X axis
+ * @param expected_x expected grid center
+ * @param tolerance accepted center tolerance
+ * @param out_min_y output minimum y
+ * @param out_max_y output maximum y
+ * @return whether a matching grid line was found
+ */
+static bool _axis_test_vertical_grid_bounds(
+    DvzAxis* axis, float expected_x, float tolerance, float* out_min_y, float* out_max_y)
+{
+    ANN(axis);
+    ANN(axis->grid_visual);
+    ANN(out_min_y);
+    ANN(out_max_y);
+    DvzVisualDataView positions_view = {0};
+    DvzVisualDataView colors_view = {0};
+    int res = dvz_visual_data(axis->grid_visual, "position", &positions_view);
+    ASSERT(res == 0);
+    res = dvz_visual_data(axis->grid_visual, "color", &colors_view);
+    ASSERT(res == 0);
+    const float* positions = (const float*)positions_view.data;
+    const uint8_t* colors = (const uint8_t*)colors_view.data;
+    float best_distance = 1e9f;
+    bool found = false;
+    for (uint32_t i = 0; i + 5 < positions_view.item_count; i += 6)
+    {
+        if (memcmp(&colors[4 * i], axis->style.grid_color, 4) != 0)
+            continue;
+        float min_x = positions[3 * i + 0];
+        float max_x = positions[3 * i + 0];
+        float min_y = positions[3 * i + 1];
+        float max_y = positions[3 * i + 1];
+        for (uint32_t j = 1; j < 6; j++)
+        {
+            min_x = fminf(min_x, positions[3 * (i + j) + 0]);
+            max_x = fmaxf(max_x, positions[3 * (i + j) + 0]);
+            min_y = fminf(min_y, positions[3 * (i + j) + 1]);
+            max_y = fmaxf(max_y, positions[3 * (i + j) + 1]);
+        }
+        float span_x = max_x - min_x;
+        float span_y = max_y - min_y;
+        if (span_x > span_y || span_y <= 1e-6f)
+            continue;
+        float distance = fabsf(0.5f * (min_x + max_x) - expected_x);
+        if (distance < best_distance)
+        {
+            best_distance = distance;
+            *out_min_y = min_y;
+            *out_max_y = max_y;
+            found = true;
+        }
+    }
+    return found && best_distance <= tolerance;
+}
+
+
+/**
+ * Return the source-coordinate bounds for a horizontal grid line.
+ *
+ * @param axis the Y axis
+ * @param expected_y expected grid center
+ * @param tolerance accepted center tolerance
+ * @param out_min_x output minimum x
+ * @param out_max_x output maximum x
+ * @return whether a matching grid line was found
+ */
+static bool _axis_test_horizontal_grid_bounds(
+    DvzAxis* axis, float expected_y, float tolerance, float* out_min_x, float* out_max_x)
+{
+    ANN(axis);
+    ANN(axis->grid_visual);
+    ANN(out_min_x);
+    ANN(out_max_x);
+    DvzVisualDataView positions_view = {0};
+    DvzVisualDataView colors_view = {0};
+    int res = dvz_visual_data(axis->grid_visual, "position", &positions_view);
+    ASSERT(res == 0);
+    res = dvz_visual_data(axis->grid_visual, "color", &colors_view);
+    ASSERT(res == 0);
+    const float* positions = (const float*)positions_view.data;
+    const uint8_t* colors = (const uint8_t*)colors_view.data;
+    float best_distance = 1e9f;
+    bool found = false;
+    for (uint32_t i = 0; i + 5 < positions_view.item_count; i += 6)
+    {
+        if (memcmp(&colors[4 * i], axis->style.grid_color, 4) != 0)
+            continue;
+        float min_x = positions[3 * i + 0];
+        float max_x = positions[3 * i + 0];
+        float min_y = positions[3 * i + 1];
+        float max_y = positions[3 * i + 1];
+        for (uint32_t j = 1; j < 6; j++)
+        {
+            min_x = fminf(min_x, positions[3 * (i + j) + 0]);
+            max_x = fmaxf(max_x, positions[3 * (i + j) + 0]);
+            min_y = fminf(min_y, positions[3 * (i + j) + 1]);
+            max_y = fmaxf(max_y, positions[3 * (i + j) + 1]);
+        }
+        float span_x = max_x - min_x;
+        float span_y = max_y - min_y;
+        if (span_y > span_x || span_x <= 1e-6f)
+            continue;
+        float distance = fabsf(0.5f * (min_y + max_y) - expected_y);
+        if (distance < best_distance)
+        {
+            best_distance = distance;
+            *out_min_x = min_x;
+            *out_max_x = max_x;
+            found = true;
+        }
+    }
+    return found && best_distance <= tolerance;
+}
+
+
+/**
  * Return whether a fixed major tick exists near one expected center.
  *
  * @param axis the axis
@@ -2170,6 +2288,8 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
     _scene_panel_apply_mvp(panel, &apply_mvp);
     float plot[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
     _scene_panel_plot_visual_rect(panel, plot);
+    float visible_extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
+    AT(_scene_panel_panzoom_extent(panel, visible_extent));
 
     bool checked_x = false;
     for (uint32_t i = 0; i < x_axis->tick_count; i++)
@@ -2181,6 +2301,12 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
         float grid_x = 0.0f;
         AT(_axis_test_find_vertical_grid_center(x_axis, expected_x, 1e-5f, &grid_x));
         AT(fabsf(grid_x - expected_x) < 1e-5f);
+        float grid_min_y = 0.0f;
+        float grid_max_y = 0.0f;
+        AT(_axis_test_vertical_grid_bounds(
+            x_axis, expected_x, 1e-5f, &grid_min_y, &grid_max_y));
+        AT(grid_min_y < visible_extent[2]);
+        AT(grid_max_y > visible_extent[3]);
         float plot_clip_x = 0.0f;
         AT(_axis_test_apply_mvp_coord(
             &apply_mvp, (vec3){expected_x, 0.0f, 0.0f}, DVZ_DIM_X, &plot_clip_x));
@@ -2202,6 +2328,12 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
         float grid_y = 0.0f;
         AT(_axis_test_find_horizontal_grid_center(y_axis, expected_y, 1e-5f, &grid_y));
         AT(fabsf(grid_y - expected_y) < 1e-5f);
+        float grid_min_x = 0.0f;
+        float grid_max_x = 0.0f;
+        AT(_axis_test_horizontal_grid_bounds(
+            y_axis, expected_y, 1e-5f, &grid_min_x, &grid_max_x));
+        AT(grid_min_x < visible_extent[0]);
+        AT(grid_max_x > visible_extent[1]);
         float plot_clip_y = 0.0f;
         AT(_axis_test_apply_mvp_coord(
             &apply_mvp, (vec3){0.0f, expected_y, 0.0f}, DVZ_DIM_Y, &plot_clip_y));
