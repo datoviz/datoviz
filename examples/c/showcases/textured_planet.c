@@ -204,6 +204,53 @@ static bool _file_exists(const char* path)
 
 
 /**
+ * Return whether an image has equirectangular planet-map dimensions.
+ *
+ * @param width image width
+ * @param height image height
+ * @return whether the dimensions are exactly 2:1
+ */
+static bool _is_equirectangular_texture(uint32_t width, uint32_t height)
+{
+    return height > 0 && width == 2 * height;
+}
+
+
+
+/**
+ * Remap the generic Z-up UV sphere into the Y-up planet convention.
+ *
+ * The shared geometry helper uses +Z as the polar axis. This showcase presents planets with +Y
+ * as north. The rotation also places the geometry helper's duplicated UV seam on the back side of
+ * the default view, so the original equirectangular `u/v` coordinates remain continuous.
+ *
+ * @param geometry sphere geometry
+ */
+static void _prepare_planet_geometry(DvzGeometry* geometry)
+{
+    ANN(geometry);
+
+    for (uint32_t i = 0; i < geometry->vertex_count; i++)
+    {
+        const double x = geometry->positions[i][0];
+        const double y = geometry->positions[i][1];
+        const double z = geometry->positions[i][2];
+        const double nx = geometry->normals[i][0];
+        const double ny = geometry->normals[i][1];
+        const double nz = geometry->normals[i][2];
+
+        geometry->positions[i][0] = -y;
+        geometry->positions[i][1] = z;
+        geometry->positions[i][2] = -x;
+        geometry->normals[i][0] = -ny;
+        geometry->normals[i][1] = nz;
+        geometry->normals[i][2] = -nx;
+    }
+}
+
+
+
+/**
  * Fill one procedural Earth-like equirectangular RGBA texture.
  *
  * @param pixels output RGBA8 texture buffer
@@ -322,6 +369,18 @@ static bool _create_planet_texture(
     texture->pixels =
         _load_texture(preset->texture_path, preset->fallback_path, &texture->width, &texture->height);
     texture->loaded_from_file = texture->pixels != NULL;
+    if (texture->pixels != NULL && !_is_equirectangular_texture(texture->width, texture->height))
+    {
+        fprintf(
+            stderr,
+            "textured_planet: ignoring %s texture with non-equirectangular dimensions %ux%u\n",
+            preset->label, texture->width, texture->height);
+        dvz_free(texture->pixels);
+        texture->pixels = NULL;
+        texture->width = 0;
+        texture->height = 0;
+        texture->loaded_from_file = false;
+    }
     if (texture->pixels == NULL)
     {
         if (preset->require_texture_file)
@@ -637,6 +696,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         .color = white,
     });
     EXAMPLE_CHECK(sphere != NULL, "dvz_geom_sphere() failed");
+    _prepare_planet_geometry(sphere);
 
     DvzVisual* visual = dvz_mesh(ctx->scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_mesh() failed");
@@ -717,7 +777,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         });
     EXAMPLE_CHECK(flyover != NULL, "dvz_anim_camera_motion() failed");
     dvz_anim_set_interaction_policy(
-        flyover, orbit_controller, DVZ_ANIM_INTERACTION_RESUME_AFTER_IDLE, 0.9);
+        flyover, orbit_controller, DVZ_ANIM_INTERACTION_STOP, 0.0);
     dvz_anim_start(flyover, 0.0);
 
     ok = true;
