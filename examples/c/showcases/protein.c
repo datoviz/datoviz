@@ -59,7 +59,7 @@
 #define DEFAULT_PDB_ID             "6m0j"
 #define DEFAULT_BUNDLE_PATH        "data/examples/proteins/1ubq/prepared"
 #define ROTATION_SPEED_RAD_PER_SEC 0.18f
-#define DEFAULT_ATOM_SCALE         0.78f
+#define DEFAULT_ATOM_SCALE         0.4f
 
 
 
