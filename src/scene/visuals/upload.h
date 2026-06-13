@@ -25,7 +25,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_VISUAL_UPLOAD_PAYLOAD_MAX 8
+#define DVZ_VISUAL_UPLOAD_PAYLOAD_MAX 9
 
 
 

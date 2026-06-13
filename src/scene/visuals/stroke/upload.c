@@ -26,6 +26,13 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+#define PATH_STROKE_UPLOAD_PAYLOAD_COUNT 9u
+_Static_assert(
+    DVZ_VISUAL_UPLOAD_PAYLOAD_MAX >= PATH_STROKE_UPLOAD_PAYLOAD_COUNT,
+    "path stroke upload payload capacity is too small");
+
+
+
 /**
  * Fill segment derived upload payload descriptors.
  *
@@ -205,7 +212,7 @@ bool _path_stroke_upload_payloads(
         .item_count = cache->index_count,
         .index = true,
     };
-    *out_count = 9;
+    *out_count = PATH_STROKE_UPLOAD_PAYLOAD_COUNT;
     return true;
 }
 
