@@ -140,6 +140,7 @@ void _scene_figure_mark_screen_space_dirty(DvzFigure* figure)
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
     {
         DvzPanel* panel = &figure->panels[pi];
+        _panel_mark_layout_changed(panel);
         for (uint32_t vi = 0; vi < panel->visual_count; vi++)
         {
             DvzVisual* visual = panel->visuals[vi].visual;

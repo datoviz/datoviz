@@ -106,6 +106,43 @@ static bool _scene_panel_compose_panzoom(const DvzPanel* panel, DvzPanzoom* out)
 }
 
 
+
+/**
+ * Return the user-controlled scale for one panel.
+ *
+ * @param panel the panel
+ * @return positive finite user scale
+ */
+static float _scene_panel_user_scale(const DvzPanel* panel)
+{
+    ANN(panel);
+    return _scene_scale_or_one(panel->figure != NULL ? panel->figure->user_scale : 1.0f);
+}
+
+
+
+/**
+ * Scale one logical-pixel reserve by the panel user scale.
+ *
+ * @param panel the panel
+ * @param reserve input reserve
+ * @return scaled reserve
+ */
+static DvzPanelReserve _scene_panel_scaled_reserve(
+    const DvzPanel* panel, const DvzPanelReserve* reserve)
+{
+    ANN(panel);
+    ANN(reserve);
+    const float scale = _scene_panel_user_scale(panel);
+    return (DvzPanelReserve){
+        .left_px = reserve->left_px * scale,
+        .right_px = reserve->right_px * scale,
+        .top_px = reserve->top_px * scale,
+        .bottom_px = reserve->bottom_px * scale,
+    };
+}
+
+
 /**
  * Initialize an identity MVP.
  *
@@ -586,6 +623,8 @@ static void _scene_panel_inner_pixel_size(
     float height = 0.0f;
     _scene_panel_pixel_size(panel, &width, &height);
     DvzPanelReserve padding = panel->padding;
+    if (_panel_padding_valid(panel, &padding))
+        padding = _scene_panel_scaled_reserve(panel, &padding);
     if (!_panel_padding_valid(panel, &padding))
         padding = (DvzPanelReserve){0};
 
@@ -619,6 +658,8 @@ void _scene_panel_inner_pixel_rect(
     float panel_height = 0.0f;
     _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
     DvzPanelReserve padding = panel->padding;
+    if (_panel_padding_valid(panel, &padding))
+        padding = _scene_panel_scaled_reserve(panel, &padding);
     if (!_panel_padding_valid(panel, &padding))
         padding = (DvzPanelReserve){0};
 
@@ -641,9 +682,13 @@ void _scene_panel_plot_visual_rect(const DvzPanel* panel, float out[4])
     ANN(panel);
     ANN(out);
     DvzPanelReserve padding = panel->padding;
+    if (_panel_padding_valid(panel, &padding))
+        padding = _scene_panel_scaled_reserve(panel, &padding);
     if (!_panel_padding_valid(panel, &padding))
         padding = (DvzPanelReserve){0};
     DvzPanelReserve reserve = panel->reserve;
+    if (_panel_reserve_valid(panel, &reserve))
+        reserve = _scene_panel_scaled_reserve(panel, &reserve);
     if (!_panel_reserve_valid(panel, &reserve))
         reserve = (DvzPanelReserve){0};
 
@@ -697,6 +742,8 @@ void _scene_panel_plot_pixel_rect(
     _scene_panel_inner_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
 
     DvzPanelReserve reserve = panel->reserve;
+    if (_panel_reserve_valid(panel, &reserve))
+        reserve = _scene_panel_scaled_reserve(panel, &reserve);
     if (!_panel_reserve_valid(panel, &reserve))
         reserve = (DvzPanelReserve){0};
 
@@ -724,6 +771,8 @@ DvzPanelDesc _scene_panel_plot_desc(const DvzPanel* panel)
     float panel_height = 0.0f;
     _scene_panel_inner_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
     DvzPanelReserve reserve = panel->reserve;
+    if (_panel_reserve_valid(panel, &reserve))
+        reserve = _scene_panel_scaled_reserve(panel, &reserve);
     if (!_panel_reserve_valid(panel, &reserve))
         reserve = (DvzPanelReserve){0};
 

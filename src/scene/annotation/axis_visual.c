@@ -60,6 +60,22 @@ static float _axis_tick_length(const DvzAxis* axis, float length_px)
 
 
 /**
+ * Return the user-controlled scale for one axis' panel.
+ *
+ * @param axis the axis
+ * @return positive finite user scale
+ */
+static float _axis_user_scale(const DvzAxis* axis)
+{
+    ANN(axis);
+    if (axis->panel == NULL || axis->panel->figure == NULL)
+        return 1.0f;
+    return _scene_scale_or_one(axis->panel->figure->user_scale);
+}
+
+
+
+/**
  * Return the visual-space size of one pixel for one screen axis.
  *
  * @param axis the axis
@@ -390,6 +406,7 @@ void _axis_update_visual(DvzAxis* axis)
     float source_y1 = _axis_inverse_panzoom_coord(extent, 2, 3, grid_y1);
     float scale_x = _axis_panzoom_scale(extent, DVZ_DIM_X);
     float scale_y = _axis_panzoom_scale(extent, DVZ_DIM_Y);
+    float user_scale = _axis_user_scale(axis);
 
     double visible_min = 0.0;
     double visible_max = 0.0;
@@ -417,13 +434,13 @@ void _axis_update_visual(DvzAxis* axis)
             if (axis->dim == DVZ_DIM_X)
                 _axis_append_line_rect(
                     axis, &grid_vertex_count, grid_positions, grid_colors, source_p, source_y0,
-                    source_p, source_y1, z, axis->style.grid_width, axis->style.grid_color,
-                    scale_x, scale_y, false);
+                    source_p, source_y1, z, axis->style.grid_width * user_scale,
+                    axis->style.grid_color, scale_x, scale_y, false);
             else
                 _axis_append_line_rect(
                     axis, &grid_vertex_count, grid_positions, grid_colors, source_x0, source_p,
-                    source_x1, source_p, z, axis->style.grid_width, axis->style.grid_color,
-                    scale_x, scale_y, false);
+                    source_x1, source_p, z, axis->style.grid_width * user_scale,
+                    axis->style.grid_color, scale_x, scale_y, false);
         }
     }
 
@@ -432,18 +449,18 @@ void _axis_update_visual(DvzAxis* axis)
         if (axis->dim == DVZ_DIM_X)
         {
             float y = y0 + 0.5f * axis->style.spine_width *
-                               _axis_visual_pixel_size(axis, DVZ_DIM_Y);
+                               user_scale * _axis_visual_pixel_size(axis, DVZ_DIM_Y);
             _axis_append_line_rect(
                 axis, &fixed_vertex_count, fixed_positions, fixed_colors, x0, y, x1, y, z,
-                axis->style.spine_width, axis->style.spine_color, 1.0f, 1.0f, true);
+                axis->style.spine_width * user_scale, axis->style.spine_color, 1.0f, 1.0f, true);
         }
         else
         {
             float x = x0 + 0.5f * axis->style.spine_width *
-                               _axis_visual_pixel_size(axis, DVZ_DIM_X);
+                               user_scale * _axis_visual_pixel_size(axis, DVZ_DIM_X);
             _axis_append_line_rect(
                 axis, &fixed_vertex_count, fixed_positions, fixed_colors, x, y0, x, y1, z,
-                axis->style.spine_width, axis->style.spine_color, 1.0f, 1.0f, true);
+                axis->style.spine_width * user_scale, axis->style.spine_color, 1.0f, 1.0f, true);
         }
     }
 
@@ -457,15 +474,15 @@ void _axis_update_visual(DvzAxis* axis)
             continue;
         if (axis->style.show_major_ticks)
         {
-            float len = _axis_tick_length(axis, axis->style.major_tick_length);
+            float len = _axis_tick_length(axis, axis->style.major_tick_length * user_scale);
             _axis_append_tick(
                 axis, &fixed_vertex_count, fixed_positions, fixed_colors, p, x0, y0, z, len,
-                axis->style.major_tick_color, axis->style.major_tick_width);
+                axis->style.major_tick_color, axis->style.major_tick_width * user_scale);
         }
         if (axis->style.show_minor_ticks && i + 1 < axis->tick_count)
         {
             uint32_t minor_count = _axis_minor_count(axis);
-            float len = _axis_tick_length(axis, axis->style.minor_tick_length);
+            float len = _axis_tick_length(axis, axis->style.minor_tick_length * user_scale);
             double delta = (axis->ticks[i + 1] - axis->ticks[i]) / (double)(minor_count + 1);
             for (uint32_t j = 1; j <= minor_count; j++)
             {
@@ -476,7 +493,7 @@ void _axis_update_visual(DvzAxis* axis)
                     continue;
                 _axis_append_tick(
                     axis, &fixed_vertex_count, fixed_positions, fixed_colors, mp, x0, y0, z, len,
-                    axis->style.minor_tick_color, axis->style.minor_tick_width);
+                    axis->style.minor_tick_color, axis->style.minor_tick_width * user_scale);
             }
         }
     }

@@ -209,10 +209,150 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
 
 
 
+/**
+ * Verify user scale affects generated axis segment widths.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_scene_dpi_user_scale_axis_segment_width(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel_full(figure);
+    AT(panel != NULL);
+
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    AT(axis != NULL);
+    DvzAxisStyle style = dvz_axis_style();
+    style.spine_width = 4.0f;
+    style.show_major_ticks = false;
+    style.show_minor_ticks = false;
+    style.show_grid = false;
+    AT(dvz_axis_set_style(axis, &style));
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_glsl = true;
+    caps.supports_color_blending = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 1024 * 1024;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 800;
+    cfg.target_height = 600;
+    cfg.user_scale = 1.0f;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    _test_scene_stream_destroy(stream);
+
+    DvzVisualDataView position_view = {0};
+    AT(dvz_visual_data(axis->visual, "position", &position_view) == 0);
+    AT(position_view.item_count >= 6);
+    const float* positions = (const float*)position_view.data;
+    const float thickness0 = fabsf(positions[7] - positions[1]);
+    AC(thickness0, 2.0f * style.spine_width / 600.0f, 1e-6f);
+
+    cfg.user_scale = 2.0f;
+    dvz_diagnostic_report_init(&report);
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    _test_scene_stream_destroy(stream);
+
+    position_view = (DvzVisualDataView){0};
+    AT(dvz_visual_data(axis->visual, "position", &position_view) == 0);
+    AT(position_view.item_count >= 6);
+    positions = (const float*)position_view.data;
+    const float thickness1 = fabsf(positions[7] - positions[1]);
+    AC(thickness1, 2.0f * style.spine_width * cfg.user_scale / 600.0f, 1e-6f);
+    AC(thickness1, 2.0f * thickness0, 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify user scale affects resolved panel reserves around the plot area.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_scene_dpi_user_scale_panel_margin(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel_full(figure);
+    AT(panel != NULL);
+
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 40.0f, .right_px = 20.0f, .top_px = 30.0f,
+                                  .bottom_px = 10.0f}));
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_glsl = true;
+    caps.supports_color_blending = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 1024 * 1024;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 800;
+    cfg.target_height = 600;
+    cfg.user_scale = 2.0f;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    _test_scene_stream_destroy(stream);
+
+    DvzRect plot = {0};
+    AT(dvz_panel_plot_rect_px(panel, &plot));
+    AC(plot.x, 80.0f, 1e-4f);
+    AC(plot.y, 60.0f, 1e-4f);
+    AC(plot.width, 680.0f, 1e-4f);
+    AC(plot.height, 520.0f, 1e-4f);
+
+    DvzPanelDesc plot_desc = _scene_panel_plot_desc(panel);
+    AC(plot_desc.x, 0.10f, 1e-6f);
+    AC(plot_desc.y, 0.10f, 1e-6f);
+    AC(plot_desc.width, 0.85f, 1e-6f);
+    AC(plot_desc.height, 520.0f / 600.0f, 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_dpi(TstSuite* suite)
 {
     ANN(suite);
     const char* tags = "scene,dpi";
     TST_CASE(test_scene_dpi_physical_viewport_and_screen_scale);
+    TST_CASE(test_scene_dpi_user_scale_axis_segment_width);
+    TST_CASE(test_scene_dpi_user_scale_panel_margin);
     return 0;
 }
