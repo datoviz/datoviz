@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Public C examples in manifest: 106
-- Examples declaring screenshot validation: 92
+- Public C examples in manifest: 107
+- Examples declaring screenshot validation: 93
 - Examples that should have video or motion evidence: 7
 
 ## Commands
@@ -35,6 +35,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [Multiple Panels](gallery/features/feature_panel_multi.md) | [`examples/c/features/panel_multi.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_multi.c) | `supported` | `smoke+interaction+screenshot` |
 | [Linked Panels](gallery/features/feature_panel_linked.md) | [`examples/c/features/panel_linked.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_linked.c) | `supported` | `smoke+interaction+screenshot` |
 | [Path With 2D Axes](gallery/features/path_axes_2d.md) | [`examples/c/features/axes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axes_2d.c) | `supported` | `smoke+screenshot` |
+| [Coordinate System](gallery/features/feature_coordinate_system.md) | [`examples/c/features/coordinate_system.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/coordinate_system.c) | `supported` | `smoke+screenshot` |
 | [Axis Labels](gallery/features/feature_axis_labels.md) | [`examples/c/features/axis_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axis_labels.c) | `supported` | `smoke+screenshot` |
 | [2D Sampled Field](gallery/features/feature_sampled_field_2d.md) | [`examples/c/features/sampled_field_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_2d.c) | `supported` | `smoke+screenshot` |
 | [3D Sampled Field](gallery/features/feature_sampled_field_3d.md) | [`examples/c/features/sampled_field_3d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_3d.c) | `supported` | `smoke+screenshot` |
@@ -66,6 +67,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [Visual Transform](gallery/features/feature_visual_transform.md) | [`examples/c/features/visual_transform.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visual_transform.c) | `supported` | `smoke+screenshot` |
 | [Panel Domain Fit](gallery/features/feature_panel_domain_fit.md) | [`examples/c/features/panel_domain_fit.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_domain_fit.c) | `supported` | `smoke+screenshot` |
 | [Bezier Curve Path](gallery/features/feature_bezier_curve_path.md) | [`examples/c/features/bezier_curve_path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bezier_curve_path.c) | `supported` | `smoke+screenshot` |
+| [Path Join](gallery/features/feature_path_join.md) | [`examples/c/features/path_join.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/path_join.c) | `supported` | `smoke+screenshot` |
 | [Linked Probe With Colorbar](gallery/showcases/linked_panels_probe_colorbar.md) | [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c) | `supported` | `smoke+readback+interaction+screenshot` |
 | [Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md) | [`examples/c/showcases/scientific_plotting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scientific_plotting.c) | `supported` | `smoke+screenshot` |
 | [Scale Bar](gallery/features/scale_bar.md) | [`examples/c/features/scalebar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar.c) | `supported` | `smoke+screenshot` |
@@ -84,7 +86,6 @@ and should be committed through that submodule, not copied into the main reposit
 | [Pixel Selection](gallery/features/feature_selection_pixel.md) | [`examples/c/features/selection_pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_pixel.c) | `supported` | `smoke+interaction+screenshot` |
 | [Sphere Selection](gallery/features/feature_selection_sphere.md) | [`examples/c/features/selection_sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_sphere.c) | `supported` | `smoke+interaction+screenshot` |
 | [Mesh Instance Selection](gallery/features/feature_selection_mesh_instances.md) | [`examples/c/features/selection_mesh_instances.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_mesh_instances.c) | `supported` | `smoke+interaction+screenshot` |
-| [Polygon Triangulation](gallery/features/feature_triangulation_polygon.md) | [`examples/c/features/triangulation_polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/triangulation_polygon.c) | `supported` | `smoke+screenshot` |
 | [Isolines](gallery/features/feature_isolines.md) | [`examples/c/features/isolines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/isolines.c) | `supported` | `smoke+screenshot` |
 | [Builtin Shapes 2D](gallery/features/feature_builtin_shapes_2d.md) | [`examples/c/features/builtin_shapes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_2d.c) | `supported` | `smoke+screenshot` |
 | [Builtin Shapes 3D](gallery/features/feature_builtin_shapes_3d.md) | [`examples/c/features/builtin_shapes_3d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_3d.c) | `supported` | `smoke+screenshot` |

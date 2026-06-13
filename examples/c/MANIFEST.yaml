@@ -1377,25 +1377,6 @@ examples:
         - frame-callbacks
     agent_copy_safe: true
 
-  - id: feature_triangulation_polygon
-    title: Polygon Triangulation
-    stage: v0.4_required
-    category: feature
-    primary_feature: polygon-triangulation
-    lane: features
-    source: examples/c/features/triangulation_polygon.c
-    validation: smoke+screenshot
-    data:
-      kind: synthetic
-    portability: portable-scenario
-    webgpu:
-      status: webgpu-live
-      route: examples/webgpu/live.html?id=feature_triangulation_polygon
-      requirements:
-        - primitive
-        - segment
-    agent_copy_safe: true
-
   - id: feature_isolines
     title: Isolines
     stage: v0.4_required

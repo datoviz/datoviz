@@ -235,8 +235,6 @@ Use `dvz_geometry_edges()` in triangulation examples to display generated triang
 
 Add:
 
-- `examples/c/features/triangulation_polygon.c`: regular polygon with a hole, filled mesh,
-  boundary stroke, and generated triangle-edge overlay.
 - `examples/c/features/triangulation_pslg.c`: once a public PSLG API exists, show input vertices
   and constrained segments versus output triangles.
 - `examples/c/features/isolines.c`: structured surface grid or mesh scalar field with extracted

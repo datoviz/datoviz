@@ -133,7 +133,6 @@ The main remaining polish, promotion, or feature gaps are:
 | `linked_panels_axes_panzoom` | `ready-now` | grid/layout, linked panzoom, axes | Public proof lives in `examples/c/showcases/panel_linked_axes.c`. |
 | `linked_panels_probe_colorbar` | `ready-now` | image probe, colorbar, annotation/readout, linked state | Public proof lives in `examples/c/showcases/linked_probe_colorbar.c`; focused proofs still cover the parts separately in `image_probe`, `colorbar`, and `annotation_readout`. |
 | `feature_picking` | `ready-now` | marker visual, item pick, hover feedback, selection highlight | Public proof lives in `examples/c/features/picking.c`. |
-| `feature_triangulation_polygon` | `ready-now` | polygon triangulation, hole handling, derived edge overlay | Public proof lives in `examples/c/features/triangulation_polygon.c`. |
 | `feature_isolines` | `ready-now` | surface-grid geometry, scalar contours, segment overlay | Public proof lives in `examples/c/features/isolines.c`. |
 | `feature_builtin_shapes_2d` | `ready-now` | 2D geometry builders, polygon with hole | Public proof lives in `examples/c/features/builtin_shapes_2d.c`. |
 | `feature_builtin_shapes_3d` | `ready-now` | cube, sphere, cylinder, cone, torus, arrow builders | Public proof lives in `examples/c/features/builtin_shapes_3d.c`; classic polyhedra remain planned. |
@@ -270,10 +269,9 @@ optional controls for tessellation quality, stroke width, join mode, and overlay
 9. `image_probe`
 10. `linked_panels_probe_colorbar`
 11. `feature_picking`
-12. `feature_triangulation_polygon`
-13. `feature_isolines`
-14. `feature_builtin_shapes_2d`
-15. `feature_builtin_shapes_3d`
+12. `feature_isolines`
+13. `feature_builtin_shapes_2d`
+14. `feature_builtin_shapes_3d`
 16. `feature_obj_loading`
 17. `volume`
 18. `protein_arcball_viewer`

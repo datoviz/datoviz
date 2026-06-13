@@ -51,7 +51,6 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/text_block.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/technique_depth_test.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/timer_animation.c
-    ${PROJECT_SOURCE_DIR}/examples/c/features/triangulation_polygon.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/update_partial.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/update_visual_data.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/visibility.c

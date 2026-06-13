@@ -15,9 +15,9 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
-now has 68 promoted routes backed by canonical C examples or portable C scenarios:
-`feature_basic_scene`, `feature_timer_animation`, `feature_triangulation_polygon`,
-`feature_builtin_shapes_2d`, `feature_builtin_shapes_3d`, `feature_isolines`,
+now has 67 promoted routes backed by canonical C examples or portable C scenarios:
+`feature_basic_scene`, `feature_timer_animation`, `feature_builtin_shapes_2d`,
+`feature_builtin_shapes_3d`, `feature_isolines`,
 `feature_animation_tracks`, `feature_compute_buffer_animation`, `feature_obj_loading`,
 `feature_picking`, `feature_selection_pixel`, `feature_selection_sphere`,
 `feature_selection_mesh_instances`, `image_probe`, `colorbar`, `scale_bar`, `scalebar_units`,

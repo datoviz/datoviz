@@ -3,11 +3,11 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 108,
+  "example_count": 107,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 73,
+    "feature": 72,
     "showcase": 15,
     "visual": 15
   },
@@ -15,11 +15,11 @@
     "diagnostic": 1,
     "experimental": 11,
     "prototype": 3,
-    "supported": 93
+    "supported": 92
   },
   "agent_copy_safe": {
     "false": 28,
-    "true": 80
+    "true": 79
   },
   "capabilities": {
     "composites": {
@@ -155,7 +155,7 @@
         ]
       },
       "synthetic": {
-        "count": 99,
+        "count": 98,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -759,15 +759,6 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/selection_mesh_instances.c",
             "page": "gallery/features/feature_selection_mesh_instances.md"
-          },
-          {
-            "id": "feature_triangulation_polygon",
-            "title": "Polygon Triangulation",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/triangulation_polygon.c",
-            "page": "gallery/features/feature_triangulation_polygon.md"
           },
           {
             "id": "feature_isolines",
@@ -1735,20 +1726,6 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/picking.c",
             "page": "gallery/features/feature_picking.md"
-          }
-        ]
-      },
-      "polygon-triangulation": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_triangulation_polygon",
-            "title": "Polygon Triangulation",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/triangulation_polygon.c",
-            "page": "gallery/features/feature_triangulation_polygon.md"
           }
         ]
       },

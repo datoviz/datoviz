@@ -56,14 +56,6 @@ Minimal target: marker scatter with stable item ids, hover/click pick result, an
 highlight that proves the picked id propagates back into scene styling.
 
 
-## `feature_triangulation_polygon`
-
-CPU polygon triangulation proof using public `geom` helpers.
-
-Minimal target: polygon with one hole, triangulated fill, and derived edge overlay that distinguishes
-boundary from interior triangle edges.
-
-
 ## `feature_isolines`
 
 CPU contour extraction proof using public `geom` helpers.

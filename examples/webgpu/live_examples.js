@@ -11,11 +11,6 @@ export const LIVE_EXAMPLES = [
     animate: true,
   },
   {
-    id: "feature_triangulation_polygon",
-    label: "Polygon Triangulation",
-    scenarioId: "feature_triangulation_polygon",
-  },
-  {
     id: "feature_builtin_shapes_2d",
     label: "Builtin Shapes 2D",
     scenarioId: "feature_builtin_shapes_2d",

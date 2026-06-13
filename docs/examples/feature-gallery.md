@@ -5,7 +5,7 @@
 This page indexes focused C examples for public scene, layout, adornment, interaction,
 update, rendering-technique, and appearance features.
 
-Coverage: 71 examples (65 supported, 5 experimental, 1 diagnostic).
+Coverage: 72 examples (66 supported, 5 experimental, 1 diagnostic).
 
 ## Features
 
@@ -200,6 +200,18 @@ deterministic scalar image with one retained continuous colorbar.
 `experimental` `features`<br><span>`scene-compute`, `storage-buffer`, `point`</span>
 
 scene compute pass with independent circular point motion.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Coordinate System](gallery/features/feature_coordinate_system.md)
+
+_Media pending._
+
+`supported` `features`
+
+interactive 3D RGB-axis proof of the Datoviz scene coordinate convention.
 
 </div>
 
@@ -499,7 +511,7 @@ orbit-camera controller attached to a small 3D mesh.
 
 `supported` `features`
 
-panel-attached orientation axes linked to an arcball controller.
+panel-attached orientation axes following the panel's rendered orientation.
 
 </div>
 
@@ -577,6 +589,18 @@ point visual with one retained data-range update.
 
 <div class="card" markdown="1">
 
+### [Path Join](gallery/features/feature_path_join.md)
+
+_Media pending._
+
+`supported` `features`
+
+acute stroked path joins for visual regression inspection.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Path With 2D Axes](gallery/features/path_axes_2d.md)
 
 ![Path With 2D Axes](../assets/gallery/v0.4/features/path_axes_2d.webp)
@@ -608,18 +632,6 @@ unified retained marker hover and selection proof.
 `supported` `features`
 
 retained pixel hover and click selection.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Polygon Triangulation](gallery/features/feature_triangulation_polygon.md)
-
-![Polygon Triangulation](../assets/gallery/v0.4/features/feature_triangulation_polygon.webp)
-
-`supported` `features`
-
-polygon triangulation with derived edge overlay.
 
 </div>
 

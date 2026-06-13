@@ -40,7 +40,6 @@ techniques.
 - `panel_domain_fit.c`: explicit panel domain fitting and reserved plot layout.
 - `json_export.c`: experimental scene JSON serialization diagnostic.
 - `bezier_curve_path.c`: CPU-tessellated Bezier curves rendered through retained paths.
-- `triangulation_polygon.c`: CPU polygon triangulation with derived mesh-edge overlays.
 - `isolines.c`: CPU contour extraction rendered as retained segment overlays.
 - `builtin_shapes_2d.c`: builtin 2D geometry builders rendered as retained meshes.
 - `builtin_shapes_3d.c`: builtin 3D geometry builders rendered as retained meshes.

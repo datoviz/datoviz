@@ -61,7 +61,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 68
+#define DVZ_WASM_API_SCENARIO_COUNT 67
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
@@ -102,7 +102,6 @@ DvzScenarioSpec dvz_example_controller_turntable_scenario(void);
 DvzScenarioSpec dvz_example_guide_lines_scenario(void);
 DvzScenarioSpec dvz_example_guide_spans_scenario(void);
 DvzScenarioSpec dvz_example_timer_animation_scenario(void);
-DvzScenarioSpec dvz_example_triangulation_polygon_scenario(void);
 DvzScenarioSpec dvz_example_update_partial_scenario(void);
 DvzScenarioSpec dvz_example_update_visual_data_scenario(void);
 DvzScenarioSpec dvz_example_visibility_scenario(void);
@@ -414,136 +413,134 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
     case 1:
         return dvz_example_timer_animation_scenario();
     case 2:
-        return dvz_example_triangulation_polygon_scenario();
-    case 3:
         return dvz_example_builtin_shapes_2d_scenario();
-    case 4:
+    case 3:
         return dvz_example_builtin_shapes_3d_scenario();
-    case 5:
+    case 4:
         return dvz_example_isolines_scenario();
-    case 6:
+    case 5:
         return dvz_example_animation_tracks_scenario();
-    case 7:
+    case 6:
         return dvz_example_obj_loading_scenario();
-    case 8:
+    case 7:
         return dvz_example_picking_scenario();
-    case 9:
+    case 8:
         return dvz_example_selection_pixel_scenario();
-    case 10:
+    case 9:
         return dvz_example_selection_sphere_scenario();
-    case 11:
+    case 10:
         return dvz_example_selection_mesh_instances_scenario();
-    case 12:
+    case 11:
         return dvz_example_compute_buffer_animation_scenario();
-    case 13:
+    case 12:
         return dvz_example_image_probe_scenario();
-    case 14:
+    case 13:
         return dvz_example_colorbar_scenario();
-    case 15:
+    case 14:
         return dvz_example_scalebar_scenario();
-    case 16:
+    case 15:
         return dvz_example_scalebar_units_scenario();
-    case 17:
+    case 16:
         return dvz_example_legend_categorical_scenario();
-    case 18:
+    case 17:
         return dvz_example_annotation_readout_scenario();
-    case 19:
+    case 18:
         return dvz_showcase_linked_probe_colorbar_scenario();
-    case 20:
+    case 19:
         return dvz_showcase_scientific_plotting_scenario();
-    case 21:
+    case 20:
         return dvz_visual_vector_scenario();
-    case 22:
+    case 21:
         return dvz_showcase_wind_field_scenario();
-    case 23:
+    case 22:
         return dvz_showcase_gpu_particle_smoke_scenario();
-    case 24:
+    case 23:
         return dvz_example_panel_single_scenario();
-    case 25:
+    case 24:
         return dvz_example_panel_grid_scenario();
-    case 26:
+    case 25:
         return dvz_example_panzoom_scenario();
-    case 27:
+    case 26:
         return dvz_example_axes_2d_scenario();
-    case 28:
+    case 27:
         return dvz_example_axis_labels_scenario();
-    case 29:
+    case 28:
         return dvz_visual_point_scenario();
-    case 30:
+    case 29:
         return dvz_visual_pixel_scenario();
-    case 31:
+    case 30:
         return dvz_visual_marker_scenario();
-    case 32:
+    case 31:
         return dvz_visual_primitive_scenario();
-    case 33:
+    case 32:
         return dvz_visual_segment_scenario();
-    case 34:
+    case 33:
         return dvz_visual_path_scenario();
-    case 35:
+    case 34:
         return dvz_visual_image_scenario();
-    case 36:
+    case 35:
         return dvz_visual_mesh_scenario();
-    case 37:
+    case 36:
         return dvz_visual_sphere_scenario();
-    case 38:
+    case 37:
         return dvz_visual_text_scenario();
-    case 39:
+    case 38:
         return dvz_visual_glyph_scenario();
-    case 40:
+    case 39:
         return dvz_visual_labels_scenario();
-    case 41:
+    case 40:
         return dvz_example_panel_multi_scenario();
-    case 42:
+    case 41:
         return dvz_example_panel_linked_scenario();
-    case 43:
+    case 42:
         return dvz_example_text_block_scenario();
-    case 44:
+    case 43:
         return dvz_example_overlay_card_scenario();
-    case 45:
+    case 44:
         return dvz_example_guide_lines_scenario();
-    case 46:
+    case 45:
         return dvz_example_guide_spans_scenario();
-    case 47:
+    case 46:
         return dvz_example_bars_bands_scenario();
-    case 48:
+    case 47:
         return dvz_example_controller_fly_scenario();
-    case 49:
+    case 48:
         return dvz_example_controller_turntable_scenario();
-    case 50:
+    case 49:
         return dvz_example_controller_orbit_camera_scenario();
-    case 51:
+    case 50:
         return dvz_example_sampled_field_2d_scenario();
-    case 52:
+    case 51:
         return dvz_example_colormap_scale_scenario();
-    case 53:
+    case 52:
         return dvz_example_panel_background_scenario();
-    case 54:
+    case 53:
         return dvz_composite_polygon_scenario();
-    case 55:
+    case 54:
         return dvz_showcase_linked_panel_axes_scenario();
-    case 56:
+    case 55:
         return dvz_showcase_scalebar_measurement_scenario();
-    case 57:
+    case 56:
         return dvz_showcase_surface_grid_scenario();
-    case 58:
+    case 57:
         return dvz_showcase_us_state_choropleth_scenario();
-    case 59:
+    case 58:
         return dvz_example_update_partial_scenario();
-    case 60:
+    case 59:
         return dvz_example_update_visual_data_scenario();
-    case 61:
+    case 60:
         return dvz_example_visibility_scenario();
-    case 62:
+    case 61:
         return dvz_example_depth_test_scenario();
-    case 63:
+    case 62:
         return dvz_example_alpha_blending_scenario();
-    case 64:
+    case 63:
         return dvz_example_material_mesh_scenario();
-    case 65:
+    case 64:
         return dvz_example_lighting_scenario();
-    case 66:
+    case 65:
         return dvz_showcase_textured_planet_scenario();
-    case 67:
+    case 66:
         return dvz_showcase_protein_scenario();
     default:
         return (DvzScenarioSpec){0};

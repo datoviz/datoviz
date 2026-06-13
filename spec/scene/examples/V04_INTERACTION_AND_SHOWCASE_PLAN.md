@@ -19,8 +19,8 @@ Already present in the active tree:
 3. `features/reference_grid.c` and the `DvzReferenceGrid` API exist;
 4. `features/selection_pixel.c`, `features/selection_sphere.c`, and
    `features/selection_mesh_instances.c` exist;
-5. `features/bounds_overlay.c`, `features/gui_viewport.c`, `features/panel_domain_fit.c`,
-   `features/triangulation_polygon.c`, and `features/compute_buffer_animation.c` exist;
+5. `features/bounds_overlay.c`, `features/gui_viewport.c`, `features/panel_domain_fit.c`, and
+   `features/compute_buffer_animation.c` exist;
 6. `showcases/embedding_atlas.c`, `showcases/lipid_brain_atlas.c`, and
    `showcases/synthetic_mouse.c` exist, but some data paths still use generated or fallback data;
 7. `examples/c/MANIFEST.yaml` contains entries for the active feature and showcase examples.
@@ -451,11 +451,10 @@ affected examples as native-first or WebGPU-planned in metadata.
 2. Fix GUI viewport resize as a synchronized committed resize with last-valid-frame display.
 3. Clarify bounds overlay semantics and update overlay padding/tests for rendered marks.
 4. Rewrite `panel_domain_fit` to visually prove contain/equal-aspect behavior.
-5. Redesign `triangulation_polygon` with a cleaner polygon and clearer triangulation wireframe.
-6. Update `visuals/glyph` to show font-derived letters through the raw glyph atlas path.
-7. Add `features/text_font_atlas.c`; add `features/symbol_atlas.c` only if the symbol API is ready.
-8. Make `compute_buffer_animation` use explicit continuous scheduling.
-9. Replace generated/fallback embedding, lipid, and mouse showcase data with real prepared data.
+5. Update `visuals/glyph` to show font-derived letters through the raw glyph atlas path.
+6. Add `features/text_font_atlas.c`; add `features/symbol_atlas.c` only if the symbol API is ready.
+7. Make `compute_buffer_animation` use explicit continuous scheduling.
+8. Replace generated/fallback embedding, lipid, and mouse showcase data with real prepared data.
 10. Polish orientation gizmo and reference grid usage in 3D showcases.
 11. Update example manifest/catalog metadata, docs, screenshots, and WebGPU subset docs as needed.
 12. Run validation and `git diff --check`.

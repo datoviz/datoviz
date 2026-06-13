@@ -20,10 +20,9 @@ The live WebGPU gallery now covers:
 
 1. `feature_basic_scene`
 2. `feature_timer_animation`
-3. `feature_triangulation_polygon`
-4. `feature_builtin_shapes_2d`
-5. `feature_builtin_shapes_3d`
-6. `feature_isolines`
+3. `feature_builtin_shapes_2d`
+4. `feature_builtin_shapes_3d`
+5. `feature_isolines`
 7. `feature_animation_tracks`
 8. `feature_obj_loading`
 9. `feature_picking`
