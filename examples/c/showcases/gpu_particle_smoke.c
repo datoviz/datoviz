@@ -77,6 +77,7 @@ static const float TAU = 6.28318530718f;
 typedef struct ParticleState
 {
     DvzScene* scene;
+    DvzPanel* panel;
     DvzSceneBuffer* params;
     float sim_time;
     bool mouse_valid;
@@ -350,15 +351,15 @@ static void _limit_vec2(vec2 v, float max_norm)
 }
 
 
-static void _window_to_sim(float x, float y, uint32_t width, uint32_t height, vec2 out)
+static void _panel_to_sim(double x, double y, double width, double height, vec2 out)
 {
-    if (width == 0)
-        width = WIDTH;
-    if (height == 0)
-        height = HEIGHT;
+    if (width <= 0.0)
+        width = (double)WIDTH;
+    if (height <= 0.0)
+        height = (double)HEIGHT;
 
-    const float u = _clamp01(x / (float)width);
-    const float v = _clamp01(y / (float)height);
+    const float u = _clamp01((float)(x / width));
+    const float v = _clamp01((float)(y / height));
     out[0] = 2.0f * u - 1.0f;
     out[1] = 1.0f - 2.0f * v;
 }
@@ -466,16 +467,29 @@ static void _params_for_state(const ParticleState* state, float dt, vec4 params[
 }
 
 
-static void _particle_pointer(
-    ParticleState* state, const DvzScenarioPointerEvent* event, uint32_t width, uint32_t height)
+static void _particle_pointer(ParticleState* state, const DvzScenarioPointerEvent* event)
 {
     if (state == NULL || event == NULL)
         return;
     if (event->type == DVZ_SCENARIO_POINTER_WHEEL || event->type == DVZ_SCENARIO_POINTER_NONE)
         return;
 
+    double x = 0.0;
+    double y = 0.0;
+    if (!dvz_scenario_panel_pointer_position(state->panel, event, &x, &y))
+    {
+        state->mouse_valid = false;
+        state->mouse_velocity[0] = 0.0f;
+        state->mouse_velocity[1] = 0.0f;
+        return;
+    }
+
+    DvzRect rect = {0};
+    if (!dvz_panel_inner_rect_px(state->panel, &rect) || rect.width <= 0.0f || rect.height <= 0.0f)
+        return;
+
     vec2 pos = {0};
-    _window_to_sim(event->x, event->y, width, height, pos);
+    _panel_to_sim(x, y, (double)rect.width, (double)rect.height, pos);
 
     vec2 raw_velocity = {0};
     if (state->mouse_valid && event->timestamp_ns > state->mouse_timestamp)
@@ -531,8 +545,7 @@ static void _scenario_event(DvzScenarioContext* ctx, const DvzScenarioEvent* eve
 {
     if (ctx == NULL || event == NULL || event->kind != DVZ_SCENARIO_EVENT_POINTER)
         return;
-    _particle_pointer(
-        (ParticleState*)user, &event->content.pointer, ctx->logical_width, ctx->logical_height);
+    _particle_pointer((ParticleState*)user, &event->content.pointer);
 }
 
 
@@ -575,6 +588,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
     DvzPanel* panel = dvz_panel(ctx->figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
+    state->panel = panel;
 
     DvzSceneBuffer* position_buffer = _scene_buffer(
         ctx->scene, DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec3),
