@@ -232,50 +232,6 @@ static bool _fill_text_glyphs(
 
 
 /**
- * Add a preview of the generated atlas texture.
- *
- * @param scene scene owning the visual
- * @param panel target panel
- * @param atlas font atlas
- * @return true when the visual was added
- */
-static bool _add_atlas_preview(DvzScene* scene, DvzPanel* panel, const DvzTextAtlas* atlas)
-{
-    ANN(scene);
-    ANN(panel);
-    ANN(atlas);
-
-    DvzTextAtlasInfo info = dvz_text_atlas_info(atlas);
-    const float aspect = info.height > 0 ? (float)info.width / (float)info.height : 1.0f;
-    const float half_h = 0.34f;
-    const float half_w = half_h * aspect;
-    const float cx = +0.42f;
-    const float cy = -0.20f;
-
-    vec3 positions[4] = {
-        {cx - half_w, cy - half_h, 0.0f},
-        {cx - half_w, cy + half_h, 0.0f},
-        {cx + half_w, cy - half_h, 0.0f},
-        {cx + half_w, cy + half_h, 0.0f},
-    };
-    vec2 uv[4] = {{0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}};
-
-    DvzVisual* image = dvz_image(scene, 0);
-    if (image == NULL)
-        return false;
-    if (dvz_visual_set_data(image, "position", positions, 4) != 0)
-        return false;
-    if (dvz_visual_set_data(image, "texcoords", uv, 4) != 0)
-        return false;
-    if (!dvz_visual_set_field(image, "field", dvz_text_atlas_field(atlas)))
-        return false;
-    if (dvz_visual_set_depth_test(image, false) != 0)
-        return false;
-    return dvz_panel_add_visual(panel, image, NULL) == 0;
-}
-
-
-/**
  * Add the raw glyph visual to one panel.
  *
  * @param scene scene owning the visual
@@ -375,8 +331,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     const DvzTextAtlas* atlas = _create_font_atlas(ctx->scene);
     if (atlas == NULL)
-        return false;
-    if (!_add_atlas_preview(ctx->scene, panel, atlas))
         return false;
     return _add_glyphs(ctx->scene, panel, atlas);
 }
