@@ -64,6 +64,8 @@ int test_fly_shift_changes_speed(TstContext* suite, const TstCase* item);
 
 int test_fly_left_drag_updates_view(TstContext* suite, const TstCase* item);
 
+int test_fly_wheel_uses_calm_default_speed(TstContext* suite, const TstCase* item);
+
 int test_fly_router_keyboard_updates_key_state(TstContext* suite, const TstCase* item);
 
 int test_fly_ctrl_and_space_use_same_vertical_speed(TstContext* suite, const TstCase* item);

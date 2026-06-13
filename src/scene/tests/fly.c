@@ -382,6 +382,31 @@ int test_fly_left_drag_updates_view(TstContext* suite, const TstCase* item)
 
 
 
+int test_fly_wheel_uses_calm_default_speed(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzFly* fly = _dvz_fly(NULL);
+    ANN(fly);
+
+    DvzPointerEvent wheel = {
+        .type = DVZ_POINTER_EVENT_WHEEL,
+        .pos = {100.0f, 100.0f},
+        .content.w.dir = {0.0f, 1.0f},
+    };
+    AT(dvz_fly_pointer(fly, &wheel));
+
+    vec3 pos = {0};
+    dvz_fly_get_position(fly, pos);
+    AC(pos[2], 2.96f, 1e-5f);
+
+    dvz_fly_destroy(fly);
+    return 0;
+}
+
+
+
 int test_fly_router_keyboard_updates_key_state(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -440,7 +465,7 @@ int test_fly_ctrl_and_space_use_same_vertical_speed(TstContext* suite, const Tst
 
     vec3 pos = {0};
     dvz_fly_get_position(fly, pos);
-    AC(pos[1], 0.5f, 1e-5f);
+    AC(pos[1], 0.75f, 1e-5f);
 
     DvzKeyboardEvent release_space = {
         .type = DVZ_KEYBOARD_EVENT_RELEASE,
@@ -459,7 +484,7 @@ int test_fly_ctrl_and_space_use_same_vertical_speed(TstContext* suite, const Tst
     dvz_fly_update(fly, 0.5);
 
     dvz_fly_get_position(fly, pos);
-    AC(pos[1], -0.5f, 1e-5f);
+    AC(pos[1], -0.75f, 1e-5f);
 
     dvz_fly_destroy(fly);
     return 0;
@@ -489,7 +514,7 @@ int test_fly_right_drag_moves_vertical_plane(TstContext* suite, const TstCase* i
     vec3 pos = {0};
     dvz_fly_get_position(fly, pos);
     AC(pos[0], 0.5f, 1e-5f);
-    AC(pos[1], 0.3333333f, 1e-5f);
+    AC(pos[1], 0.5f, 1e-5f);
     AC(pos[2], 3.0f, 1e-5f);
 
     dvz_fly_destroy(fly);
@@ -851,6 +876,7 @@ int test_scene_fly(TstSuite* suite)
     TST_CASE(test_fly_wasd_and_arrows_equivalent);
     TST_CASE(test_fly_shift_changes_speed);
     TST_CASE(test_fly_left_drag_updates_view);
+    TST_CASE(test_fly_wheel_uses_calm_default_speed);
     TST_CASE(test_fly_router_keyboard_updates_key_state);
     TST_CASE(test_fly_ctrl_and_space_use_same_vertical_speed);
     TST_CASE(test_fly_right_drag_moves_vertical_plane);

@@ -341,7 +341,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     fly_desc.up[0] = 0.0f;
     fly_desc.up[1] = 1.0f;
     fly_desc.up[2] = 0.0f;
-    fly_desc.speed = 0.55f;
     DvzController* controller = dvz_fly(ctx->scene, &fly_desc);
     EXAMPLE_CHECK(controller != NULL, "dvz_fly() failed");
     DvzFly* fly = dvz_controller_fly(controller);
