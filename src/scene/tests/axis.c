@@ -1708,6 +1708,70 @@ static int test_axis_panzoom_layout_aligns_grid_to_plot(TstContext* suite, const
 
 
 /**
+ * Ensure padded panel grid vertices are authored in plot source space, not panel fixed space.
+ *
+ * @param suite the test suite
+ * @param item the test case
+ * @return zero on success
+ */
+static int test_axis_grid_uses_plot_source_extent(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 1600, 1200, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){46.0f / 1600.0f, 46.0f / 1200.0f, 737.0f / 1600.0f,
+                               1096.0f / 1200.0f});
+    ANN(panel);
+    AT(dvz_panel_set_padding(
+        panel, &(DvzPanelReserve){.left_px = 82.0f, .right_px = 22.0f, .bottom_px = 78.0f,
+                                  .top_px = 30.0f}));
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -1.0, +1.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, +1.0) == 0);
+
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    ANN(x_axis);
+    ANN(y_axis);
+    AT(dvz_axis_set_grid(x_axis, true));
+    AT(dvz_axis_set_grid(y_axis, true));
+
+    DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
+    ticks.target_count = 5;
+    ticks.min_pixel_spacing = 130.0f;
+    ticks.minor_per_interval = 0;
+    AT(dvz_axis_set_tick_policy(x_axis, &ticks));
+    AT(dvz_axis_set_tick_policy(y_axis, &ticks));
+
+    DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
+    ANN(pz);
+    _scene_prepare_axis_visuals(figure);
+
+    float visible_extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
+    AT(_scene_panel_panzoom_extent(panel, visible_extent));
+
+    float min_y = 0.0f;
+    float max_y = 0.0f;
+    AT(_axis_test_vertical_grid_bounds(x_axis, 0.0f, 1e-5f, &min_y, &max_y));
+    AT(min_y < visible_extent[2]);
+    AT(max_y > visible_extent[3]);
+
+    float min_x = 0.0f;
+    float max_x = 0.0f;
+    AT(_axis_test_horizontal_grid_bounds(y_axis, 0.0f, 1e-5f, &min_x, &max_x));
+    AT(min_x < visible_extent[0]);
+    AT(max_x > visible_extent[1]);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Check that raw visual-space grid lines and points share the same APPLY transform.
  *
  * @param suite the test suite
@@ -2389,6 +2453,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_equal_aspect_axis_alignment);
     TST_CASE(test_axis_panzoom_visible_domain);
     TST_CASE(test_axis_panzoom_layout_aligns_grid_to_plot);
+    TST_CASE(test_axis_grid_uses_plot_source_extent);
     TST_CASE(test_axis_raw_visual_panzoom_alignment);
     TST_CASE(test_axis_integer_lattice_panzoom_alignment);
     TST_CASE(test_axis_zoom_out_in_grid_regression);
