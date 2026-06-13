@@ -1631,7 +1631,8 @@ static int test_axis_auto_reserve_tracks_label_and_resize(TstContext* suite, con
     DvzPanelReserve reserve = {0};
     AT(dvz_panel_get_reserve(panel, &reserve));
     float wide_left = reserve.left_px;
-    AT(wide_left > 190.0f);
+    AT(wide_left > 65.0f);
+    AT(wide_left < 100.0f);
 
     dvz_figure_resize(figure, 360, 600);
     _scene_prepare_axis_visuals(figure);

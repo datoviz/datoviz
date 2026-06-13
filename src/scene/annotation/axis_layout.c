@@ -101,7 +101,7 @@ static float _axis_reserve_px(const DvzAxis* axis)
         if (axis->dim == DVZ_DIM_X)
             label_extent = label_gap + label_size;
         else
-            label_extent = label_gap + _axis_text_extent_px(axis->label, label_size);
+            label_extent = label_gap + label_size;
     }
 
     return tick_extent + label_extent + 4.0f;
