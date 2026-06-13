@@ -535,7 +535,7 @@ static void _scene_controller_link_copy_arcball(
         dvz_arcball_model(source, model);
         glm_mat4_copy(model, target->mat);
         glm_quat_identity(target->rotation);
-        target->interacting = source->interacting;
+        target->interacting = false;
     }
     if ((components & DVZ_CONTROLLER_LINK_PAN) != 0)
     {
@@ -575,6 +575,8 @@ static bool _scene_controller_link_apply(DvzControllerLink* link)
         break;
     case DVZ_CONTROLLER_TYPE_ARCBALL:
         if (link->source->arcball == NULL || link->target->arcball == NULL)
+            return false;
+        if (link->target->arcball->interacting && !link->source->arcball->interacting)
             return false;
         _scene_controller_link_copy_arcball(
             link->source->arcball, link->target->arcball, link->components);

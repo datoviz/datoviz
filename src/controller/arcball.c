@@ -29,8 +29,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_ARCBALL_ZOOM_MIN         0.01f
-#define DVZ_ARCBALL_ZOOM_MAX         250.00f
+#define DVZ_ARCBALL_ZOOM_MIN         0.001f
+#define DVZ_ARCBALL_ZOOM_MAX         1000.00f
 #define DVZ_ARCBALL_DESC_KNOWN_FLAGS 0u
 
 #if defined(__APPLE__)

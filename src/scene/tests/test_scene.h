@@ -220,6 +220,9 @@ int test_arcball_panel_input_uses_hidpi_figure_coordinates(
 int test_controller_link_arcball_rotation_only_keeps_target_centered(
     TstContext* suite, const TstCase* item);
 
+int test_controller_link_arcball_bidirectional_does_not_accumulate_drag(
+    TstContext* suite, const TstCase* item);
+
 int test_controller_link_panzoom_extent_x_only(TstContext* suite, const TstCase* item);
 
 int test_controller_link_panzoom_extent_x_equal_aspect_panels(

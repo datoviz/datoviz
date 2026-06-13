@@ -12,7 +12,7 @@ side-by-side visual depth-test toggle with overlapping 3D points.
 - Agent copy-safe: `true`
 - WebGPU status: `webgpu-live`
 - WebGPU live route: <a href="../../../webgpu/live.html?id=technique_depth_test"><code>examples/webgpu/live.html?id=technique_depth_test</code></a>
-- WebGPU requirements: `depth-test`, `point`
+- WebGPU requirements: `depth-test`, `point`, `controller`
 - Build: `just example-c features/technique_depth_test`
 - Smoke: `./build/examples/c/features/technique_depth_test --png`
 - Validation: `smoke+screenshot`

@@ -756,6 +756,8 @@ int test_controller_link_arcball_rotation_only_keeps_target_centered(
     _scene_panel_apply_mvp(main_panel, &main_mvp);
     _scene_panel_apply_mvp(gizmo_panel, &gizmo_mvp);
     AT(_test_mat4_close(main_mvp.model, gizmo_mvp.model, 1e-5f));
+    AT(main_arcball->interacting);
+    AT(!gizmo_arcball->interacting);
     AC(gizmo_arcball->pan[0], 0.0f, 1e-6f);
     AC(gizmo_arcball->pan[1], 0.0f, 1e-6f);
     AC(gizmo_arcball->zoom, 1.0f, 1e-6f);
@@ -783,6 +785,70 @@ int test_controller_link_arcball_rotation_only_keeps_target_centered(
     AC(gizmo_arcball->zoom, 1.0f, 1e-6f);
 
     dvz_input_router_destroy(router);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure all-links propagation does not echo a passive target back into an active arcball.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_controller_link_arcball_bidirectional_does_not_accumulate_drag(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzController* left = dvz_arcball(scene, NULL);
+    DvzController* right = dvz_arcball(scene, NULL);
+    ANN(left);
+    ANN(right);
+    DvzArcball* left_arcball = dvz_controller_arcball(left);
+    DvzArcball* right_arcball = dvz_controller_arcball(right);
+    ANN(left_arcball);
+    ANN(right_arcball);
+
+    DvzControllerLink* left_to_right = dvz_controller_link(
+        scene, left, right,
+        DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM,
+        DVZ_CONTROLLER_LINK_ONE_WAY);
+    DvzControllerLink* right_to_left = dvz_controller_link(
+        scene, right, left,
+        DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM,
+        DVZ_CONTROLLER_LINK_ONE_WAY);
+    ANN(left_to_right);
+    ANN(right_to_left);
+
+    left_arcball->interacting = true;
+    dvz_arcball_rotate(left_arcball, (vec2){0.36f, -0.18f}, (vec2){-0.22f, +0.14f});
+    dvz_arcball_pan(left_arcball, (vec2){0.08f, -0.04f});
+    dvz_arcball_zoom(left_arcball, 1.35f);
+
+    mat4 left_before = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(left_arcball, left_before);
+
+    _dvz_scene_controller_links_propagate(scene);
+    _dvz_scene_controller_links_propagate(scene);
+
+    mat4 left_after = GLM_MAT4_IDENTITY_INIT;
+    mat4 right_after = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(left_arcball, left_after);
+    dvz_arcball_model(right_arcball, right_after);
+
+    AT(_test_mat4_close(left_before, left_after, 1e-5f));
+    AT(_test_mat4_close(left_after, right_after, 1e-5f));
+    AT(left_arcball->interacting);
+    AT(!right_arcball->interacting);
+    AC(left_arcball->zoom, right_arcball->zoom, 1e-6f);
+    AC(left_arcball->pan[0], right_arcball->pan[0], 1e-6f);
+    AC(left_arcball->pan[1], right_arcball->pan[1], 1e-6f);
+
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -2029,6 +2095,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_arcball_scene_binding_uses_panel_input);
     TST_CASE(test_arcball_panel_input_uses_hidpi_figure_coordinates);
     TST_CASE(test_controller_link_arcball_rotation_only_keeps_target_centered);
+    TST_CASE(test_controller_link_arcball_bidirectional_does_not_accumulate_drag);
     TST_CASE(test_orientation_gizmo_create_place_resize_and_visibility);
     TST_CASE(test_controller_link_panzoom_extent_x_only);
     TST_CASE(test_controller_link_panzoom_extent_x_equal_aspect_panels);

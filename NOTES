@@ -1,7 +1,5 @@
-features/panel_domain_fit
-- grid appears in front of the visual, that isn't expected right?
-- panzoom on the right panel is not aspect constrained?
-- when resizing vertically the x axis and the x axis label become clipped by the bottom border
+
+
 
 features/selection_mesh_instances
 - doesn't appear to work
@@ -12,8 +10,6 @@ features/selection_pixel
 features/selection_sphere
 - doesn't appear to work
 
-features/technique_depth_test
-- is kind of broken, redo it properly in 3D, maybe with several sphere meshes?
 
 features/technique_edl
 - i don't see any difference between the two panels
@@ -34,16 +30,9 @@ features/user_scale
 - the axis segment width should also be scaled
 - the margin around the panel should also scale
 
-showcases/gpu_particle_smoke
-- discrepancy between the mouse position and the effect on the panel
 
-showcases/point_cloud
-- two finger scroll on macOS to move the camera is way too sensitive
-- space/control is not sensitive enough
-- i wonder if the speed of ctrl/space vertical scroll shouldn't accelerate when the height absolute value increases? what is standard?
 
-showcases/textured_planet
-- orientation is totally wrong, re-check everything
+
 
 
 implement spec/scene/proposals/active/EQUAL_ASPECT_PANEL_VIEW.md

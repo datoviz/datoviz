@@ -1214,6 +1214,7 @@ examples:
       requirements:
         - depth-test
         - point
+        - controller
     agent_copy_safe: true
 
   - id: alpha_blending

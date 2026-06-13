@@ -14,7 +14,7 @@
  * Smoke:  ./build/examples/c/features/technique_depth_test --png
  *
  * One panel keeps depth testing enabled. The other disables depth testing on the same retained
- * point visual, so the later far point overdraws the nearer point.
+ * point visual, so later far points overdraw nearer points.
  */
 
 
@@ -27,6 +27,7 @@
 #include <stdint.h>
 
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -38,7 +39,7 @@
 
 #define WIDTH       1600u
 #define HEIGHT      1200u
-#define POINT_COUNT 2u
+#define POINT_COUNT 8u
 
 
 
@@ -55,7 +56,7 @@ DvzScenarioSpec dvz_example_depth_test_scenario(void);
 /*************************************************************************************************/
 
 /**
- * Add two overlapping depth-separated points to one panel.
+ * Add overlapping 3D points to one panel.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
@@ -64,17 +65,28 @@ DvzScenarioSpec dvz_example_depth_test_scenario(void);
  */
 static bool _add_depth_points(DvzScene* scene, DvzPanel* panel, bool depth_test_enabled)
 {
+    const float s = 0.15f;
     const vec3 positions[POINT_COUNT] = {
-        {-0.06f, -0.34f, 0.02f},
-        {+0.07f, +0.36f, 0.02f},
+        {-s, -s, +s}, {+s, -s, +s}, {-s, +s, +s}, {+s, +s, +s},
+        {-s, -s, -s}, {+s, -s, -s}, {-s, +s, -s}, {+s, +s, -s},
     };
-    float diameters[POINT_COUNT] = {260.0f, 260.0f};
+    float diameters[POINT_COUNT] = {0};
+    for (uint32_t i = 0; i < POINT_COUNT; i++)
+    {
+        diameters[i] = 100.0f;
+    }
     DvzColor colors[POINT_COUNT] = {
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ERROR),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ERROR),
     };
-    colors[0].a = 248;
-    colors[1].a = 248;
+    for (uint32_t i = 0; i < POINT_COUNT; i++)
+        colors[i].a = 248;
 
     DvzVisual* point = dvz_point(scene, 0);
     if (point == NULL)
@@ -89,11 +101,12 @@ static bool _add_depth_points(DvzScene* scene, DvzPanel* panel, bool depth_test_
         return false;
 
     DvzPointStyleDesc style = dvz_point_style_desc();
-    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
+    style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
+    style.stroke_width = 2.5f;
+    style.edge_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
+    style.edge_color.a = 255;
     if (dvz_point_set_style(point, &style) != 0)
         return false;
-
     if (dvz_visual_set_depth_test(point, depth_test_enabled) != 0)
         return false;
 
@@ -112,12 +125,35 @@ static bool _set_depth_camera(DvzPanel* panel)
 {
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[0] = 0.00f;
-    camera_desc.eye[1] = 0.38f;
-    camera_desc.eye[2] = 3.10f;
-    camera_desc.fov_y = 0.50f;
+    camera_desc.eye[1] = 0.00f;
+    camera_desc.eye[2] = 10.00f;
+    camera_desc.fov_y = 0.20f;
     camera_desc.near = 0.05f;
     camera_desc.far = 100.0f;
     return dvz_panel_set_camera(panel, &camera_desc) != NULL;
+}
+
+
+
+/**
+ * Bind an arcball controller to one comparison panel.
+ *
+ * @param ctx scenario context
+ * @param panel target panel
+ * @return controller, or NULL on failure
+ */
+static DvzController* _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel)
+{
+    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    if (controller == NULL)
+        return NULL;
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    if (arcball == NULL)
+        return NULL;
+    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return NULL;
+    dvz_arcball_set(arcball, (vec3){0.5f, 0.5f, 0.0f});
+    return controller;
 }
 
 
@@ -148,9 +184,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (grid == NULL)
         return false;
     if (!dvz_grid_set_margins(
-            grid,
-            &(DvzPanelReserve){
-                .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}))
+            grid, &(DvzPanelReserve){
+                      .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}))
         return false;
     if (!dvz_grid_set_gutter(grid, 30.0f, 0.0f))
         return false;
@@ -161,10 +196,21 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(depth_on);
     example_graphite_cyan_set_panel_background(depth_off);
+    if (!example_add_panel_label(depth_on, "depth test on", 18.0f, 18.0f) ||
+        !example_add_panel_label(depth_off, "depth test off", 18.0f, 18.0f))
+        return false;
 
     if (!_set_depth_camera(depth_on))
         return false;
     if (!_set_depth_camera(depth_off))
+        return false;
+    DvzController* on_controller = _bind_arcball(ctx, depth_on);
+    DvzController* off_controller = _bind_arcball(ctx, depth_off);
+    if (on_controller == NULL || off_controller == NULL)
+        return false;
+    if (!example_link_controllers_bidirectional(
+            ctx->scene, on_controller, off_controller,
+            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM))
         return false;
     if (!_add_depth_points(ctx->scene, depth_on, true))
         return false;
