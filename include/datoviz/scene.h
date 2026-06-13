@@ -851,7 +851,7 @@ DVZ_EXPORT DvzVisualShaderDesc dvz_visual_shader_desc(void);
  * @param visual the visual
  * @param desc per-visual attachment options (z_layer, controller_mode, coord_space); pass NULL for
  *             defaults (z_layer=0, controller_mode=DVZ_CONTROLLER_APPLY,
- *             coord_space=DVZ_COORD_VISUAL)
+ *             coord_space=DVZ_COORD_VIEW)
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT int dvz_panel_add_visual(
@@ -1093,6 +1093,42 @@ DVZ_EXPORT bool dvz_panel_bounds_visible(const DvzPanel* panel);
  */
 DVZ_EXPORT int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max);
 
+
+/**
+ * Return the default panel view-fit descriptor.
+ *
+ * @return view-fit descriptor
+ */
+DVZ_EXPORT DvzPanelViewFit dvz_panel_view_fit(void);
+
+/**
+ * Set a panel 2D view-fit policy.
+ *
+ * The fit policy owns the controller-visible 2D view extent and fitted DATA domains. With
+ * DVZ_PANEL_VIEW_ASPECT_EQUAL, VIEW and DATA coordinates preserve equal X/Y screen scale under
+ * the current plot rectangle.
+ *
+ * @param panel the panel
+ * @param fit view-fit descriptor; NULL clears the fit policy
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_panel_set_view_fit(DvzPanel* panel, const DvzPanelViewFit* fit);
+
+/**
+ * Clear a panel view-fit policy without changing the current axis domains.
+ *
+ * @param panel the panel
+ */
+DVZ_EXPORT void dvz_panel_clear_view_fit(DvzPanel* panel);
+
+/**
+ * Return the current resolved panel VIEW extent before panzoom.
+ *
+ * @param panel the panel
+ * @param out output extent as xmin, xmax, ymin, ymax
+ * @return whether the extent was written
+ */
+DVZ_EXPORT bool dvz_panel_view_extent(DvzPanel* panel, float out[4]);
 
 /**
  * Return the default panel domain-fit descriptor.

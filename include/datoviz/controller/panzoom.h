@@ -46,6 +46,8 @@ typedef enum
 
 typedef struct DvzPanzoom DvzPanzoom;
 typedef struct DvzMVP DvzMVP;
+typedef struct DvzPanzoomEval DvzPanzoomEval;
+typedef struct DvzPanzoomResolved DvzPanzoomResolved;
 
 
 
@@ -91,6 +93,21 @@ struct DvzPanzoom
     vec2 zoom_lock;
     bool pan_locked[2];
     bool zoom_locked[2];
+};
+
+
+struct DvzPanzoomEval
+{
+    float base_extent[4];
+    float viewport_width;
+    float viewport_height;
+};
+
+
+struct DvzPanzoomResolved
+{
+    DvzMVP mvp;
+    float visible_extent[4];
 };
 
 
@@ -219,6 +236,9 @@ DVZ_EXPORT void dvz_panzoom_end(DvzPanzoom* pz);
  * The model matrix is left untouched.
  */
 DVZ_EXPORT void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp);
+
+DVZ_EXPORT bool dvz_panzoom_resolve(
+    const DvzPanzoom* panzoom, const DvzPanzoomEval* eval, DvzPanzoomResolved* out);
 
 
 

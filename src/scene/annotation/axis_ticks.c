@@ -493,17 +493,40 @@ bool _axis_visible_domain(const DvzAxis* axis, double* out_min, double* out_max)
     float visual_min = -1.0f;
     float visual_max = +1.0f;
     _axis_plot_interval(axis, &visual_min, &visual_max);
-    float a_visual = _axis_inverse_panzoom_coord(extent, lo_idx, hi_idx, visual_min);
-    float b_visual = _axis_inverse_panzoom_coord(extent, lo_idx, hi_idx, visual_max);
+    float a_view = _axis_inverse_panzoom_coord(extent, lo_idx, hi_idx, visual_min);
+    float b_view = _axis_inverse_panzoom_coord(extent, lo_idx, hi_idx, visual_max);
+    if (axis->panel != NULL && axis->panel->view_fit_enabled)
+    {
+        a_view = extent[lo_idx];
+        b_view = extent[hi_idx];
+        DvzPanelView2DResolved resolved = {0};
+        if (_scene_panel_view2d_resolve(axis->panel, &resolved))
+        {
+            double data_min = axis->dim == DVZ_DIM_X ? resolved.data_x[0] : resolved.data_y[0];
+            double data_max = axis->dim == DVZ_DIM_X ? resolved.data_x[1] : resolved.data_y[1];
+            double view_min = (double)resolved.view_extent[lo_idx];
+            double view_max = (double)resolved.view_extent[hi_idx];
+            double scale = (view_max - view_min) / (data_max - data_min);
+            double translate = view_min - scale * data_min;
+            if (isfinite(scale) && fabs(scale) >= AXIS_EPS && isfinite(translate))
+            {
+                double a = ((double)a_view - translate) / scale;
+                double b = ((double)b_view - translate) / scale;
+                *out_min = fmin(a, b);
+                *out_max = fmax(a, b);
+                return isfinite(*out_min) && isfinite(*out_max) && *out_max > *out_min;
+            }
+        }
+    }
     if (!axis->domain_set)
     {
-        *out_min = fmin((double)a_visual, (double)b_visual);
-        *out_max = fmax((double)a_visual, (double)b_visual);
+        *out_min = fmin((double)a_view, (double)b_view);
+        *out_max = fmax((double)a_view, (double)b_view);
         return isfinite(*out_min) && isfinite(*out_max) && *out_max > *out_min;
     }
 
-    double a = _axis_visual_to_data(axis, a_visual);
-    double b = _axis_visual_to_data(axis, b_visual);
+    double a = _axis_visual_to_data(axis, a_view);
+    double b = _axis_visual_to_data(axis, b_view);
     *out_min = fmin(a, b);
     *out_max = fmax(a, b);
     return isfinite(*out_min) && isfinite(*out_max) && *out_max > *out_min;

@@ -354,6 +354,15 @@ typedef struct DvzTextBlock DvzTextBlock;
 typedef void (*DvzSceneRequestFrameCallback)(DvzFigure* figure, void* user_data);
 
 typedef struct DvzSceneRequestFrameSubscription DvzSceneRequestFrameSubscription;
+typedef struct DvzPanelView2DResolved DvzPanelView2DResolved;
+
+struct DvzPanelView2DResolved
+{
+    float view_extent[4];
+    double data_x[2];
+    double data_y[2];
+    mat4 data_to_view;
+};
 
 struct DvzController
 {
@@ -783,6 +792,7 @@ bool _scene_panel_data_model(const DvzPanel* panel, mat4 out);
 bool _scene_panel_attachment_mvp(
     const DvzPanel* panel, const DvzVisual* visual, const DvzPanelAttach* attach,
     const DvzMVP* apply_mvp, DvzMVP* out);
+bool _scene_panel_view2d_resolve(const DvzPanel* panel, DvzPanelView2DResolved* out);
 bool _scene_panel_panzoom_extent(const DvzPanel* panel, float out[4]);
 void _scene_panel_pixel_size(const DvzPanel* panel, float* out_width, float* out_height);
 bool _panel_padding_valid(const DvzPanel* panel, const DvzPanelReserve* padding);
@@ -1846,8 +1856,8 @@ struct DvzPanel
     DvzPanelReserve legend_reserve;
     DvzPanelReserve reserve;
     DvzPanelReserve padding;
-    bool domain_fit_enabled;
-    DvzPanelDomainFit domain_fit;
+    bool view_fit_enabled;
+    DvzPanelViewFit view_fit;
 
     DvzPanzoom* panzoom; /* optional pan/zoom controller (owned) */
     DvzArcball* arcball; /* optional arcball controller (owned) */

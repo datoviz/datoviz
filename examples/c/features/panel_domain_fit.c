@@ -38,7 +38,7 @@
 #define WIDTH       1600u
 #define HEIGHT      1200u
 #define CIRCLE_COUNT 97u
-#define GRID_LINES   10u
+#define GRID_LINES   4u
 
 
 
@@ -47,7 +47,7 @@
 /*************************************************************************************************/
 
 /**
- * Add a unit circle, square frame, and grid in data coordinates.
+ * Add a unit circle and square frame in data coordinates.
  *
  * @param scene scene owning visuals
  * @param panel target panel
@@ -96,21 +96,27 @@ static bool _add_domain_shape(DvzScene* scene, DvzPanel* panel, DvzColor color)
     vec3 ends[GRID_LINES] = {0};
     DvzColor grid_colors[GRID_LINES] = {{0}};
     float grid_widths[GRID_LINES] = {0};
-    for (uint32_t i = 0; i < 5u; i++)
+    const vec3 frame_starts[GRID_LINES] = {
+        {-1.0f, -1.0f, 0.0f},
+        {+1.0f, -1.0f, 0.0f},
+        {+1.0f, +1.0f, 0.0f},
+        {-1.0f, +1.0f, 0.0f},
+    };
+    const vec3 frame_ends[GRID_LINES] = {
+        {+1.0f, -1.0f, 0.0f},
+        {+1.0f, +1.0f, 0.0f},
+        {-1.0f, +1.0f, 0.0f},
+        {-1.0f, -1.0f, 0.0f},
+    };
+    for (uint32_t i = 0; i < GRID_LINES; i++)
     {
-        const float v = -1.0f + 0.5f * (float)i;
-        starts[i][0] = -1.0f;
-        starts[i][1] = v;
-        ends[i][0] = +1.0f;
-        ends[i][1] = v;
-        starts[5u + i][0] = v;
-        starts[5u + i][1] = -1.0f;
-        ends[5u + i][0] = v;
-        ends[5u + i][1] = +1.0f;
+        for (uint32_t j = 0; j < 3u; j++)
+        {
+            starts[i][j] = frame_starts[i][j];
+            ends[i][j] = frame_ends[i][j];
+        }
         grid_colors[i] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
-        grid_colors[5u + i] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
-        grid_widths[i] = v == -1.0f || v == +1.0f ? 3.0f : 1.2f;
-        grid_widths[5u + i] = grid_widths[i];
+        grid_widths[i] = 3.0f;
     }
 
     DvzVisual* grid = dvz_segment(scene, 0);
@@ -146,6 +152,12 @@ static bool _add_axes(DvzPanel* panel)
     if (!example_graphite_cyan_apply_axis_style(x_axis, false, NULL))
         return false;
     if (!example_graphite_cyan_apply_axis_style(y_axis, true, NULL))
+        return false;
+    DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
+    ticks.target_count = 5;
+    ticks.min_pixel_spacing = 130.0f;
+    ticks.minor_per_interval = 0;
+    if (!dvz_axis_set_tick_policy(x_axis, &ticks) || !dvz_axis_set_tick_policy(y_axis, &ticks))
         return false;
     if (!dvz_axis_set_grid(x_axis, true) || !dvz_axis_set_grid(y_axis, true))
         return false;

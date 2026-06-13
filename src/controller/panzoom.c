@@ -596,6 +596,58 @@ void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp)
 }
 
 
+/**
+ * Resolve a panzoom payload against a caller-provided base view extent.
+ *
+ * @param panzoom the panzoom controller
+ * @param eval panel/base extent evaluation parameters
+ * @param out resolved MVP and visible extent
+ * @return whether the payload was resolved
+ */
+bool dvz_panzoom_resolve(
+    const DvzPanzoom* panzoom, const DvzPanzoomEval* eval, DvzPanzoomResolved* out)
+{
+    ANN(panzoom);
+    ANN(eval);
+    ANN(out);
+    const float xmin = eval->base_extent[0];
+    const float xmax = eval->base_extent[1];
+    const float ymin = eval->base_extent[2];
+    const float ymax = eval->base_extent[3];
+    if (
+        !isfinite(xmin) || !isfinite(xmax) || !isfinite(ymin) || !isfinite(ymax) ||
+        !(xmax > xmin) || !(ymax > ymin) || !isfinite(panzoom->zoom[0]) ||
+        !isfinite(panzoom->zoom[1]) || panzoom->zoom[0] <= 0.0f || panzoom->zoom[1] <= 0.0f)
+    {
+        return false;
+    }
+
+    glm_mat4_identity(out->mvp.model);
+    glm_mat4_identity(out->mvp.view);
+    glm_mat4_identity(out->mvp.proj);
+    out->mvp.time  = 0.0f;
+    out->mvp.flags = 0;
+
+    const float cx = 0.5f * (xmin + xmax);
+    const float cy = 0.5f * (ymin + ymax);
+    const float hx = 0.5f * (xmax - xmin);
+    const float hy = 0.5f * (ymax - ymin);
+    const float vx = cx - panzoom->pan[0] * hx;
+    const float vy = cy - panzoom->pan[1] * hy;
+    const float ex = hx / panzoom->zoom[0];
+    const float ey = hy / panzoom->zoom[1];
+
+    glm_lookat((vec3){vx, vy, 2}, (vec3){vx, vy, 0}, (vec3){0, 1, 0}, out->mvp.view);
+    glm_ortho(-ex, +ex, -ey, +ey, -10.0f, 10.0f, out->mvp.proj);
+
+    out->visible_extent[0] = vx - ex;
+    out->visible_extent[1] = vx + ex;
+    out->visible_extent[2] = vy - ey;
+    out->visible_extent[3] = vy + ey;
+    return true;
+}
+
+
 
 bool dvz_panzoom_pointer(DvzPanzoom* pz, const DvzPointerEvent* ev)
 {

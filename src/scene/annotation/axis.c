@@ -35,7 +35,7 @@
 
 #define DVZ_AXIS_TICK_POLICY_KNOWN_FLAGS 0u
 #define DVZ_AXIS_STYLE_KNOWN_FLAGS 0u
-#define DVZ_PANEL_DOMAIN_FIT_KNOWN_FLAGS 0u
+#define DVZ_PANEL_VIEW_FIT_KNOWN_FLAGS 0u
 
 
 static bool _axis_tick_policy_validate(const DvzAxisTickPolicy* policy)
@@ -64,21 +64,21 @@ static bool _axis_style_validate(const DvzAxisStyle* style)
 }
 
 
-static bool _panel_domain_fit_validate(const DvzPanelDomainFit* fit)
+static bool _panel_view_fit_validate(const DvzPanelViewFit* fit)
 {
     if (fit == NULL)
         return true;
-    if (!DVZ_STRUCT_VALID(fit, DvzPanelDomainFit, DVZ_PANEL_DOMAIN_FIT_KNOWN_FLAGS))
+    if (!DVZ_STRUCT_VALID(fit, DvzPanelViewFit, DVZ_PANEL_VIEW_FIT_KNOWN_FLAGS))
     {
-        log_error("invalid panel domain-fit ABI");
+        log_error("invalid panel view-fit ABI");
         return false;
     }
-    if (fit->fit == DVZ_PANEL_DOMAIN_FIT_NONE)
+    if (fit->fit == DVZ_PANEL_VIEW_FIT_NONE)
         return true;
-    if (fit->fit != DVZ_PANEL_DOMAIN_FIT_CONTAIN)
+    if (fit->fit != DVZ_PANEL_VIEW_FIT_CONTAIN)
         return false;
-    if (fit->aspect != DVZ_PANEL_DOMAIN_ASPECT_FREE &&
-        fit->aspect != DVZ_PANEL_DOMAIN_ASPECT_EQUAL)
+    if (fit->aspect != DVZ_PANEL_VIEW_ASPECT_FREE &&
+        fit->aspect != DVZ_PANEL_VIEW_ASPECT_EQUAL)
         return false;
     if (!isfinite(fit->x.min) || !isfinite(fit->x.max) || !isfinite(fit->y.min) ||
         !isfinite(fit->y.max) || !isfinite(fit->padding))
@@ -311,7 +311,7 @@ static int _panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max
     if (axis == NULL || !isfinite(min) || !isfinite(max) || !(max > min))
         return -1;
     if (clear_fit)
-        panel->domain_fit_enabled = false;
+        panel->view_fit_enabled = false;
     _axis_init(axis, panel, dim);
     axis->domain = (DvzDataDomain){.min = min, .max = max};
     axis->domain_set = true;
@@ -340,20 +340,33 @@ int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max)
 
 
 /**
+ * Return the default panel view-fit descriptor.
+ *
+ * @return view-fit descriptor
+ */
+DvzPanelViewFit dvz_panel_view_fit(void)
+{
+    return (DvzPanelViewFit){
+        DVZ_STRUCT_INIT_FIELDS(DvzPanelViewFit),
+        .fit = DVZ_PANEL_VIEW_FIT_CONTAIN,
+        .aspect = DVZ_PANEL_VIEW_ASPECT_FREE,
+        .x = {.min = -1.0, .max = +1.0},
+        .y = {.min = -1.0, .max = +1.0},
+        .padding = 0.0,
+    };
+}
+
+
+/**
  * Return the default panel domain-fit descriptor.
  *
  * @return domain-fit descriptor
  */
 DvzPanelDomainFit dvz_panel_domain_fit(void)
 {
-    return (DvzPanelDomainFit){
-        DVZ_STRUCT_INIT_FIELDS(DvzPanelDomainFit),
-        .fit = DVZ_PANEL_DOMAIN_FIT_CONTAIN,
-        .aspect = DVZ_PANEL_DOMAIN_ASPECT_FREE,
-        .x = {.min = -1.0, .max = +1.0},
-        .y = {.min = -1.0, .max = +1.0},
-        .padding = 0.0,
-    };
+    DvzPanelViewFit fit = dvz_panel_view_fit();
+    fit.struct_size = DVZ_STRUCT_SIZE(DvzPanelDomainFit);
+    return fit;
 }
 
 
@@ -365,55 +378,15 @@ DvzPanelDomainFit dvz_panel_domain_fit(void)
  */
 int _scene_panel_apply_domain_fit(DvzPanel* panel)
 {
-    if (panel == NULL || !panel->domain_fit_enabled)
+    if (panel == NULL || !panel->view_fit_enabled)
         return 0;
-    DvzPanelDomainFit fit = panel->domain_fit;
-    if (!_panel_domain_fit_validate(&fit) || fit.fit == DVZ_PANEL_DOMAIN_FIT_NONE)
+    DvzPanelView2DResolved resolved = {0};
+    if (!_scene_panel_view2d_resolve(panel, &resolved))
         return -1;
 
-    double xmin = fit.x.min;
-    double xmax = fit.x.max;
-    double ymin = fit.y.min;
-    double ymax = fit.y.max;
-    double x_span = xmax - xmin;
-    double y_span = ymax - ymin;
-    double pad = fit.padding * fmax(x_span, y_span);
-    xmin -= pad;
-    xmax += pad;
-    ymin -= pad;
-    ymax += pad;
-    x_span = xmax - xmin;
-    y_span = ymax - ymin;
-
-    if (fit.aspect == DVZ_PANEL_DOMAIN_ASPECT_EQUAL)
-    {
-        DvzRect plot = {0};
-        if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
-            return -1;
-        double plot_aspect = (double)plot.width / (double)plot.height;
-        double data_aspect = x_span / y_span;
-        if (!isfinite(plot_aspect) || !(plot_aspect > 0.0) || !isfinite(data_aspect) ||
-            !(data_aspect > 0.0))
-            return -1;
-        if (data_aspect < plot_aspect)
-        {
-            double target_span = y_span * plot_aspect;
-            double center = 0.5 * (xmin + xmax);
-            xmin = center - 0.5 * target_span;
-            xmax = center + 0.5 * target_span;
-        }
-        else if (data_aspect > plot_aspect)
-        {
-            double target_span = x_span / plot_aspect;
-            double center = 0.5 * (ymin + ymax);
-            ymin = center - 0.5 * target_span;
-            ymax = center + 0.5 * target_span;
-        }
-    }
-
-    if (_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax, false) != 0)
+    if (_panel_set_domain(panel, DVZ_DIM_X, resolved.data_x[0], resolved.data_x[1], false) != 0)
         return -1;
-    if (_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax, false) != 0)
+    if (_panel_set_domain(panel, DVZ_DIM_Y, resolved.data_y[0], resolved.data_y[1], false) != 0)
         return -1;
     return 0;
 }
@@ -426,24 +399,24 @@ int _scene_panel_apply_domain_fit(DvzPanel* panel)
  * @param fit domain-fit descriptor; NULL clears the fit policy
  * @return 0 on success, -1 on validation error
  */
-int dvz_panel_set_domain_fit(DvzPanel* panel, const DvzPanelDomainFit* fit)
+int dvz_panel_set_view_fit(DvzPanel* panel, const DvzPanelViewFit* fit)
 {
     if (panel == NULL)
         return -1;
     if (fit == NULL)
     {
-        panel->domain_fit_enabled = false;
+        panel->view_fit_enabled = false;
         return 0;
     }
-    if (!_panel_domain_fit_validate(fit))
+    if (!_panel_view_fit_validate(fit))
         return -1;
-    if (fit->fit == DVZ_PANEL_DOMAIN_FIT_NONE)
+    if (fit->fit == DVZ_PANEL_VIEW_FIT_NONE)
     {
-        panel->domain_fit_enabled = false;
+        panel->view_fit_enabled = false;
         return 0;
     }
-    panel->domain_fit = *fit;
-    panel->domain_fit_enabled = true;
+    panel->view_fit = *fit;
+    panel->view_fit_enabled = true;
     return _scene_panel_apply_domain_fit(panel);
 }
 
@@ -453,12 +426,55 @@ int dvz_panel_set_domain_fit(DvzPanel* panel, const DvzPanelDomainFit* fit)
  *
  * @param panel the panel
  */
-void dvz_panel_clear_domain_fit(DvzPanel* panel)
+void dvz_panel_clear_view_fit(DvzPanel* panel)
 {
     if (panel == NULL)
         return;
-    panel->domain_fit_enabled = false;
+    panel->view_fit_enabled = false;
 }
+
+
+/**
+ * Return the current resolved panel VIEW extent before panzoom.
+ *
+ * @param panel the panel
+ * @param out output extent as xmin, xmax, ymin, ymax
+ * @return whether the extent was written
+ */
+bool dvz_panel_view_extent(DvzPanel* panel, float out[4])
+{
+    if (panel == NULL || out == NULL)
+        return false;
+    DvzPanelView2DResolved resolved = {0};
+    if (!_scene_panel_view2d_resolve(panel, &resolved))
+        return false;
+    out[0] = resolved.view_extent[0];
+    out[1] = resolved.view_extent[1];
+    out[2] = resolved.view_extent[2];
+    out[3] = resolved.view_extent[3];
+    return true;
+}
+
+
+/**
+ * Set a panel 2D domain-fit policy.
+ *
+ * @param panel the panel
+ * @param fit domain-fit descriptor; NULL clears the fit policy
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_panel_set_domain_fit(DvzPanel* panel, const DvzPanelDomainFit* fit)
+{
+    return dvz_panel_set_view_fit(panel, fit);
+}
+
+
+/**
+ * Clear a panel domain-fit policy without changing the current axis domains.
+ *
+ * @param panel the panel
+ */
+void dvz_panel_clear_domain_fit(DvzPanel* panel) { dvz_panel_clear_view_fit(panel); }
 
 
 /**
@@ -494,14 +510,23 @@ int dvz_panel_data_to_visual_positions(
 {
     if (panel == NULL || data_positions == NULL || visual_positions == NULL)
         return -1;
+    mat4 data_to_view = GLM_MAT4_IDENTITY_INIT;
     DvzAxis* x_axis = _panel_axis_slot(panel, DVZ_DIM_X);
     DvzAxis* y_axis = _panel_axis_slot(panel, DVZ_DIM_Y);
     bool has_x = x_axis != NULL && x_axis->panel != NULL && x_axis->domain_set;
     bool has_y = y_axis != NULL && y_axis->panel != NULL && y_axis->domain_set;
-    if (has_x && fabs(x_axis->domain.max - x_axis->domain.min) < AXIS_EPS)
-        return -1;
-    if (has_y && fabs(y_axis->domain.max - y_axis->domain.min) < AXIS_EPS)
-        return -1;
+    if (panel->view_fit_enabled)
+    {
+        if (!_scene_panel_data_model(panel, data_to_view))
+            return -1;
+    }
+    else
+    {
+        if (has_x && fabs(x_axis->domain.max - x_axis->domain.min) < AXIS_EPS)
+            return -1;
+        if (has_y && fabs(y_axis->domain.max - y_axis->domain.min) < AXIS_EPS)
+            return -1;
+    }
 
     for (uint32_t i = 0; i < count; i++)
     {
@@ -510,29 +535,37 @@ int dvz_panel_data_to_visual_positions(
         float z = data_positions[3 * i + 2];
         if (!isfinite(x) || !isfinite(y) || !isfinite(z))
             return -1;
-        if (has_x)
+        if (panel->view_fit_enabled)
         {
-            float x0 = -1.0f;
-            float x1 = +1.0f;
-            _axis_plot_interval(x_axis, &x0, &x1);
-            visual_positions[3 * i + 0] =
-                _axis_data_to_visual((double)x, x_axis->domain.min, x_axis->domain.max, x0, x1);
+            visual_positions[3 * i + 0] = data_to_view[0][0] * x + data_to_view[3][0];
+            visual_positions[3 * i + 1] = data_to_view[1][1] * y + data_to_view[3][1];
         }
         else
         {
-            visual_positions[3 * i + 0] = x;
-        }
-        if (has_y)
-        {
-            float y0 = -1.0f;
-            float y1 = +1.0f;
-            _axis_plot_interval(y_axis, &y0, &y1);
-            visual_positions[3 * i + 1] =
-                _axis_data_to_visual((double)y, y_axis->domain.min, y_axis->domain.max, y0, y1);
-        }
-        else
-        {
-            visual_positions[3 * i + 1] = y;
+            if (has_x)
+            {
+                float x0 = -1.0f;
+                float x1 = +1.0f;
+                _axis_plot_interval(x_axis, &x0, &x1);
+                visual_positions[3 * i + 0] =
+                    _axis_data_to_visual((double)x, x_axis->domain.min, x_axis->domain.max, x0, x1);
+            }
+            else
+            {
+                visual_positions[3 * i + 0] = x;
+            }
+            if (has_y)
+            {
+                float y0 = -1.0f;
+                float y1 = +1.0f;
+                _axis_plot_interval(y_axis, &y0, &y1);
+                visual_positions[3 * i + 1] =
+                    _axis_data_to_visual((double)y, y_axis->domain.min, y_axis->domain.max, y0, y1);
+            }
+            else
+            {
+                visual_positions[3 * i + 1] = y;
+            }
         }
         visual_positions[3 * i + 2] = z;
     }

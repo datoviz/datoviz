@@ -681,6 +681,7 @@ static bool _scene_append_visual_to_render_pass(
     node->u.render.visual_mvp[slot] = visual_mvp;
     node->u.render.visual_has_mvp[slot] =
         visual->has_local_transform || attach->coord_space == DVZ_COORD_DATA ||
+        attach->coord_space == DVZ_COORD_PANEL ||
         attach->controller_mode == DVZ_CONTROLLER_APPLY_VIEW_PROJ;
     return true;
 }

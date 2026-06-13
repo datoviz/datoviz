@@ -480,29 +480,36 @@ typedef struct DvzDataDomain DvzDataDomain;
 
 typedef enum
 {
-    DVZ_PANEL_DOMAIN_FIT_NONE = 0,
-    DVZ_PANEL_DOMAIN_FIT_CONTAIN,
-} DvzPanelDomainFitMode;
+    DVZ_PANEL_VIEW_FIT_NONE = 0,
+    DVZ_PANEL_VIEW_FIT_CONTAIN,
+    DVZ_PANEL_DOMAIN_FIT_NONE = DVZ_PANEL_VIEW_FIT_NONE,
+    DVZ_PANEL_DOMAIN_FIT_CONTAIN = DVZ_PANEL_VIEW_FIT_CONTAIN,
+} DvzPanelViewFitMode;
+typedef DvzPanelViewFitMode DvzPanelDomainFitMode;
 
 
 typedef enum
 {
-    DVZ_PANEL_DOMAIN_ASPECT_FREE = 0,
-    DVZ_PANEL_DOMAIN_ASPECT_EQUAL,
-} DvzPanelDomainAspectMode;
+    DVZ_PANEL_VIEW_ASPECT_FREE = 0,
+    DVZ_PANEL_VIEW_ASPECT_EQUAL,
+    DVZ_PANEL_DOMAIN_ASPECT_FREE = DVZ_PANEL_VIEW_ASPECT_FREE,
+    DVZ_PANEL_DOMAIN_ASPECT_EQUAL = DVZ_PANEL_VIEW_ASPECT_EQUAL,
+} DvzPanelViewAspectMode;
+typedef DvzPanelViewAspectMode DvzPanelDomainAspectMode;
 
 
-struct DvzPanelDomainFit
+struct DvzPanelViewFit
 {
     uint32_t struct_size;
     uint32_t flags;
-    DvzPanelDomainFitMode fit;
-    DvzPanelDomainAspectMode aspect;
+    DvzPanelViewFitMode fit;
+    DvzPanelViewAspectMode aspect;
     DvzDataDomain x;
     DvzDataDomain y;
     double padding;
 };
-typedef struct DvzPanelDomainFit DvzPanelDomainFit;
+typedef struct DvzPanelViewFit DvzPanelViewFit;
+typedef DvzPanelViewFit DvzPanelDomainFit;
 
 
 struct DvzAxisTickPolicy
@@ -898,7 +905,7 @@ typedef struct DvzLabelsState DvzLabelsState;
  *
  * Passed to dvz_panel_add_visual() to control draw order, controller behavior, and coordinate
  * interpretation for a visual within a panel. Pass NULL to use defaults
- * (z_layer=0, controller_mode=APPLY, coord_space=VISUAL).
+ * (z_layer=0, controller_mode=APPLY, coord_space=VIEW).
  *
  * Spec: spec/scene/pipeline/TRANSFORM_PIPELINE.md "Visual Attachment And Coordinate Space".
  */
@@ -908,7 +915,7 @@ struct DvzVisualAttachDesc
     uint32_t flags;
     int32_t           z_layer;          /* signed; lower draws behind, higher in front; default 0 */
     DvzControllerMode controller_mode;  /* APPLY (default), FIXED, VIEW_PROJ, or isotropic */
-    DvzVisualCoordSpace coord_space;    /* VISUAL (default) or DATA/domain coordinates */
+    DvzVisualCoordSpace coord_space;    /* VIEW (default), DATA/domain, or PANEL coordinates */
 };
 typedef struct DvzVisualAttachDesc DvzVisualAttachDesc;
 

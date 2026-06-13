@@ -138,6 +138,15 @@ static uint32_t _axis_minor_count(const DvzAxis* axis)
 static float _axis_data_to_axis_visual(const DvzAxis* axis, double value)
 {
     ANN(axis);
+    if (axis->panel != NULL && axis->panel->view_fit_enabled)
+    {
+        mat4 data_to_view = GLM_MAT4_IDENTITY_INIT;
+        if (_scene_panel_data_model(axis->panel, data_to_view))
+        {
+            uint32_t dim = axis->dim == DVZ_DIM_X ? 0 : 1;
+            return data_to_view[dim][dim] * (float)value + data_to_view[3][dim];
+        }
+    }
     if (!axis->domain_set)
         return (float)value;
     float visual_min = -1.0f;

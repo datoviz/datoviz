@@ -1306,13 +1306,72 @@ int test_scene_visual_data_coord_space_tracks_domain_fit_resize(
     ANN(wide_render);
     AT(wide_render->u.render.visual_count == 1);
     AT(wide_render->u.render.visual_has_mvp[0]);
-    AC(wide_render->u.render.visual_mvp[0].model[0][0], 0.2f, 1e-6);
+    AC(wide_render->u.render.visual_mvp[0].model[0][0], 0.4f, 1e-6);
     AC(wide_render->u.render.visual_mvp[0].model[1][1], 0.4f, 1e-6);
-    AC(wide_render->u.render.visual_mvp[0].model[3][0], -1.0f, 1e-6);
+    AC(wide_render->u.render.visual_mvp[0].model[3][0], -2.0f, 1e-6);
     AC(wide_render->u.render.visual_mvp[0].model[3][1], -1.0f, 1e-6);
 
     dvz_frame_plan_destroy(wide);
     dvz_frame_plan_destroy(square);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_equal_aspect_view_and_panel_coord_spaces(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+
+    DvzPanelViewFit fit = dvz_panel_view_fit();
+    fit.aspect = DVZ_PANEL_VIEW_ASPECT_EQUAL;
+    AT(dvz_panel_set_view_fit(panel, &fit) == 0);
+
+    float extent[4] = {0};
+    AT(dvz_panel_view_extent(panel, extent));
+    AC(extent[0], -2.0f, 1e-6);
+    AC(extent[1], +2.0f, 1e-6);
+    AC(extent[2], -1.0f, 1e-6);
+    AC(extent[3], +1.0f, 1e-6);
+
+    vec3 pos[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor col[1] = {{255, 255, 255, 255}};
+    float size[1] = {4.0f};
+
+    DvzVisual* view_point = dvz_point(scene, 0);
+    AT(dvz_visual_set_data(view_point, "position", pos, 1) == 0);
+    AT(dvz_visual_set_data(view_point, "color", col, 1) == 0);
+    AT(dvz_visual_set_data(view_point, "size", size, 1) == 0);
+    DvzVisualAttachDesc view_attach = dvz_visual_attach_desc();
+    view_attach.coord_space = DVZ_COORD_VIEW;
+    AT(dvz_panel_add_visual(panel, view_point, &view_attach) == 0);
+
+    DvzVisual* panel_point = dvz_point(scene, 0);
+    AT(dvz_visual_set_data(panel_point, "position", pos, 1) == 0);
+    AT(dvz_visual_set_data(panel_point, "color", col, 1) == 0);
+    AT(dvz_visual_set_data(panel_point, "size", size, 1) == 0);
+    DvzVisualAttachDesc panel_attach = dvz_visual_attach_desc();
+    panel_attach.coord_space = DVZ_COORD_PANEL;
+    AT(dvz_panel_add_visual(panel, panel_point, &panel_attach) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("equal.aspect.view.panel", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
+    ANN(render);
+    AT(render->u.render.visual_count == 2);
+    AC(render->u.render.apply_mvp.proj[0][0], 0.5f, 1e-6);
+    AC(render->u.render.apply_mvp.proj[1][1], 1.0f, 1e-6);
+    AT(!render->u.render.visual_has_mvp[0]);
+    AT(render->u.render.visual_has_mvp[1]);
+    AC(render->u.render.visual_mvp[1].proj[0][0], 1.0f, 1e-6);
+    AC(render->u.render.visual_mvp[1].proj[1][1], 1.0f, 1e-6);
+
+    dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
 }

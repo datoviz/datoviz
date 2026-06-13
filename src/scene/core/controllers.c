@@ -391,9 +391,86 @@ static bool _scene_controller_link_components_valid(
  * @param target target panzoom payload
  * @param components component bitmask
  */
-static void _scene_controller_link_copy_panzoom(
-    DvzPanzoom* source, DvzPanzoom* target, uint32_t components)
+static DvzPanel* _scene_controller_first_panel(DvzScene* scene, const DvzController* controller)
 {
+    if (scene == NULL || controller == NULL)
+        return NULL;
+    for (uint32_t fi = 0; fi < scene->figure_count; fi++)
+    {
+        DvzFigure* figure = &scene->figures[fi];
+        for (uint32_t pi = 0; pi < figure->panel_count; pi++)
+        {
+            DvzPanel* panel = &figure->panels[pi];
+            if (panel->panzoom == controller->panzoom)
+                return panel;
+            for (uint32_t dim = 0; dim < 2; dim++)
+            {
+                if (panel->controllers[dim] == controller)
+                    return panel;
+            }
+        }
+    }
+    return NULL;
+}
+
+
+/**
+ * Copy one resolved extent dimension into a target panzoom payload.
+ *
+ * @param extent source visible extent
+ * @param target_panel target panel
+ * @param target target panzoom payload
+ * @param dim target dimension
+ * @return whether the resolved extent was copied
+ */
+static bool _scene_controller_link_copy_panzoom_extent_dim(
+    const float extent[4], const DvzPanel* target_panel, DvzPanzoom* target, uint32_t dim)
+{
+    ANN(extent);
+    ANN(target_panel);
+    ANN(target);
+    DvzPanelView2DResolved target_view = {0};
+    if (dim > 1 || !_scene_panel_view2d_resolve(target_panel, &target_view))
+        return false;
+
+    const uint32_t lo = dim == 0 ? 0 : 2;
+    const uint32_t hi = dim == 0 ? 1 : 3;
+    const float base_min = target_view.view_extent[lo];
+    const float base_max = target_view.view_extent[hi];
+    const float src_min = extent[lo];
+    const float src_max = extent[hi];
+    if (!(base_max > base_min) || !(src_max > src_min))
+        return false;
+
+    const float base_center = 0.5f * (base_min + base_max);
+    const float base_half = 0.5f * (base_max - base_min);
+    const float src_center = 0.5f * (src_min + src_max);
+    const float src_half = 0.5f * (src_max - src_min);
+    if (!(base_half > 0.0f) || !(src_half > 0.0f))
+        return false;
+
+    target->pan[dim] = (base_center - src_center) / base_half;
+    target->pan_center[dim] = target->pan[dim];
+    target->zoom[dim] = base_half / src_half;
+    target->zoom_center[dim] = target->zoom[dim];
+    return true;
+}
+
+
+/**
+ * Copy selected panzoom state from one controller payload to another.
+ *
+ * @param source_controller source controller
+ * @param target_controller target controller
+ * @param components component bitmask
+ */
+static void _scene_controller_link_copy_panzoom(
+    DvzController* source_controller, DvzController* target_controller, uint32_t components)
+{
+    ANN(source_controller);
+    ANN(target_controller);
+    DvzPanzoom* source = source_controller->panzoom;
+    DvzPanzoom* target = target_controller->panzoom;
     ANN(source);
     ANN(target);
     if ((components & DVZ_CONTROLLER_LINK_PAN) != 0)
@@ -406,19 +483,35 @@ static void _scene_controller_link_copy_panzoom(
         glm_vec2_copy(source->zoom, target->zoom);
         glm_vec2_copy(source->zoom_center, target->zoom_center);
     }
+    DvzPanel* source_panel = _scene_controller_first_panel(source_controller->scene, source_controller);
+    DvzPanel* target_panel = _scene_controller_first_panel(target_controller->scene, target_controller);
+    float source_extent[4] = {0};
+    bool has_resolved_extent =
+        source_panel != NULL && target_panel != NULL &&
+        _scene_panel_panzoom_extent(source_panel, source_extent);
     if ((components & DVZ_CONTROLLER_LINK_EXTENT_X) != 0)
     {
-        target->pan[0] = source->pan[0];
-        target->pan_center[0] = source->pan_center[0];
-        target->zoom[0] = source->zoom[0];
-        target->zoom_center[0] = source->zoom_center[0];
+        if (
+            !has_resolved_extent ||
+            !_scene_controller_link_copy_panzoom_extent_dim(source_extent, target_panel, target, 0))
+        {
+            target->pan[0] = source->pan[0];
+            target->pan_center[0] = source->pan_center[0];
+            target->zoom[0] = source->zoom[0];
+            target->zoom_center[0] = source->zoom_center[0];
+        }
     }
     if ((components & DVZ_CONTROLLER_LINK_EXTENT_Y) != 0)
     {
-        target->pan[1] = source->pan[1];
-        target->pan_center[1] = source->pan_center[1];
-        target->zoom[1] = source->zoom[1];
-        target->zoom_center[1] = source->zoom_center[1];
+        if (
+            !has_resolved_extent ||
+            !_scene_controller_link_copy_panzoom_extent_dim(source_extent, target_panel, target, 1))
+        {
+            target->pan[1] = source->pan[1];
+            target->pan_center[1] = source->pan_center[1];
+            target->zoom[1] = source->zoom[1];
+            target->zoom_center[1] = source->zoom_center[1];
+        }
     }
 }
 
@@ -478,8 +571,7 @@ static bool _scene_controller_link_apply(DvzControllerLink* link)
     case DVZ_CONTROLLER_TYPE_PANZOOM:
         if (link->source->panzoom == NULL || link->target->panzoom == NULL)
             return false;
-        _scene_controller_link_copy_panzoom(
-            link->source->panzoom, link->target->panzoom, link->components);
+        _scene_controller_link_copy_panzoom(link->source, link->target, link->components);
         break;
     case DVZ_CONTROLLER_TYPE_ARCBALL:
         if (link->source->arcball == NULL || link->target->arcball == NULL)

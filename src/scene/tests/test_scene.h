@@ -222,6 +222,9 @@ int test_controller_link_arcball_rotation_only_keeps_target_centered(
 
 int test_controller_link_panzoom_extent_x_only(TstContext* suite, const TstCase* item);
 
+int test_controller_link_panzoom_extent_x_equal_aspect_panels(
+    TstContext* suite, const TstCase* item);
+
 int test_controller_link_validation(TstContext* suite, const TstCase* item);
 
 int test_controller_link_destroy_stops_arcball_propagation(
@@ -537,6 +540,8 @@ int test_scene_visual_local_transform_emits_per_visual_mvp(
 
 int test_scene_visual_data_coord_space_tracks_domain_fit_resize(
     TstContext* suite, const TstCase* item);
+
+int test_scene_equal_aspect_view_and_panel_coord_spaces(TstContext* suite, const TstCase* item);
 
 int test_scene_mesh_local_transform_without_instances(TstContext* suite, const TstCase* item);
 

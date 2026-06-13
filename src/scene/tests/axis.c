@@ -2067,6 +2067,84 @@ int test_axis_descriptor_abi_rejects_invalid_structs(TstContext* suite, const Ts
 }
 
 
+/**
+ * Check that equal-aspect data grid lines use the fitted data-to-view transform.
+ *
+ * @param suite the test suite
+ * @param item the test case
+ * @return zero on success
+ */
+static int test_axis_equal_aspect_grid_alignment(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 1000, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzPanelViewFit fit = dvz_panel_view_fit();
+    fit.fit = DVZ_PANEL_VIEW_FIT_CONTAIN;
+    fit.aspect = DVZ_PANEL_VIEW_ASPECT_EQUAL;
+    fit.x = (DvzDataDomain){.min = -1.0, .max = +1.0};
+    fit.y = (DvzDataDomain){.min = -1.0, .max = +1.0};
+    fit.padding = 0.0;
+    AT(dvz_panel_set_view_fit(panel, &fit) == 0);
+
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    ANN(x_axis);
+    ANN(y_axis);
+    AT(dvz_axis_set_grid(x_axis, true));
+    AT(dvz_axis_set_grid(y_axis, true));
+
+    DvzAxisTickPolicy policy = dvz_axis_tick_policy();
+    policy.target_count = 5;
+    policy.minor_per_interval = 0;
+    AT(dvz_axis_set_tick_policy(x_axis, &policy));
+    AT(dvz_axis_set_tick_policy(y_axis, &policy));
+
+    _scene_prepare_axis_visuals(figure);
+
+    mat4 data_to_view = GLM_MAT4_IDENTITY_INIT;
+    AT(_scene_panel_data_model(panel, data_to_view));
+
+    bool checked_x = false;
+    for (uint32_t i = 0; i < x_axis->tick_count; i++)
+    {
+        double value = x_axis->ticks[i];
+        if (fabs(value - 0.5) > 1e-9)
+            continue;
+        float expected_x = data_to_view[0][0] * (float)value + data_to_view[3][0];
+        float grid_x = 0.0f;
+        AT(_axis_test_find_vertical_grid_center(x_axis, expected_x, 1e-5f, &grid_x));
+        AT(fabsf(grid_x - expected_x) < 1e-5f);
+        checked_x = true;
+    }
+    AT(checked_x);
+
+    bool checked_y = false;
+    for (uint32_t i = 0; i < y_axis->tick_count; i++)
+    {
+        double value = y_axis->ticks[i];
+        if (fabs(value - 0.5) > 1e-9)
+            continue;
+        float expected_y = data_to_view[1][1] * (float)value + data_to_view[3][1];
+        float grid_y = 0.0f;
+        AT(_axis_test_find_horizontal_grid_center(y_axis, expected_y, 1e-5f, &grid_y));
+        AT(fabsf(grid_y - expected_y) < 1e-5f);
+        checked_y = true;
+    }
+    AT(checked_y);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_axis(TstSuite* suite)
 {
     ANN(suite);
@@ -2093,6 +2171,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_layout_reserve);
     TST_CASE(test_panel_visible_domain);
     TST_CASE(test_panel_domain_fit);
+    TST_CASE(test_axis_equal_aspect_grid_alignment);
     TST_CASE(test_axis_panzoom_visible_domain);
     TST_CASE(test_axis_panzoom_layout_aligns_grid_to_plot);
     TST_CASE(test_axis_raw_visual_panzoom_alignment);

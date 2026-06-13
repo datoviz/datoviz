@@ -974,6 +974,62 @@ int test_controller_link_panzoom_extent_x_only(TstContext* suite, const TstCase*
 
 
 /**
+ * Ensure panzoom extent links resolve through each panel's equal-aspect base extent.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_controller_link_panzoom_extent_x_equal_aspect_panels(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 600, 200, 0);
+    DvzPanel* source_panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 2.0f / 3.0f, 1.0f});
+    DvzPanel* target_panel = dvz_panel(figure, (DvzPanelDesc){2.0f / 3.0f, 0.0f, 1.0f / 3.0f, 1.0f});
+    ANN(source_panel);
+    ANN(target_panel);
+
+    DvzPanelViewFit fit = dvz_panel_view_fit();
+    fit.aspect = DVZ_PANEL_VIEW_ASPECT_EQUAL;
+    AT(dvz_panel_set_view_fit(source_panel, &fit) == 0);
+    AT(dvz_panel_set_view_fit(target_panel, &fit) == 0);
+
+    DvzController* source = dvz_panzoom(scene, NULL);
+    DvzController* target = dvz_panzoom(scene, NULL);
+    ANN(source);
+    ANN(target);
+    AT(dvz_panel_bind_controller(source_panel, source, DVZ_DIM_MASK_XY) == 0);
+    AT(dvz_panel_bind_controller(target_panel, target, DVZ_DIM_MASK_XY) == 0);
+
+    DvzPanzoom* source_pz = dvz_controller_panzoom(source);
+    DvzPanzoom* target_pz = dvz_controller_panzoom(target);
+    ANN(source_pz);
+    ANN(target_pz);
+    dvz_panzoom_zoom(source_pz, (vec2){2.0f, 1.0f});
+
+    DvzControllerLink* link = dvz_controller_link(
+        scene, source, target, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
+    ANN(link);
+    AC(target_pz->pan[0], 0.0f, 1e-6f);
+    AC(target_pz->zoom[0], 1.0f, 1e-6f);
+    AC(target_pz->zoom[1], 1.0f, 1e-6f);
+
+    float extent[4] = {0};
+    AT(_scene_panel_panzoom_extent(target_panel, extent));
+    AC(extent[0], -1.0f, 1e-6f);
+    AC(extent[1], +1.0f, 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure invalid controller link combinations are rejected.
  *
  * @param suite the test suite
@@ -1975,6 +2031,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_controller_link_arcball_rotation_only_keeps_target_centered);
     TST_CASE(test_orientation_gizmo_create_place_resize_and_visibility);
     TST_CASE(test_controller_link_panzoom_extent_x_only);
+    TST_CASE(test_controller_link_panzoom_extent_x_equal_aspect_panels);
     TST_CASE(test_controller_link_validation);
     TST_CASE(test_controller_link_destroy_stops_arcball_propagation);
     TST_CASE(test_controller_destroy_detaches_panels_links_and_reuses_slot);

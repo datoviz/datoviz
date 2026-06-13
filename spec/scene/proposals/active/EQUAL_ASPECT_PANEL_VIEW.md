@@ -1,6 +1,6 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-06-11`
+> - **Status:** `IMPLEMENTED IN V0.4-DEV`
+> - **Updated on:** `2026-06-13`
 > - **Purpose:** define the v0.4 API-breaking fix for equal-aspect 2D panels, retained
 >   coordinate-space semantics, panzoom evaluation, linked panels, resize behavior, and axes/grid
 >   alignment.

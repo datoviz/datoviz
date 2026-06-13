@@ -106,6 +106,198 @@ static bool _scene_panel_compose_panzoom(const DvzPanel* panel, DvzPanzoom* out)
 }
 
 
+/**
+ * Initialize an identity MVP.
+ *
+ * @param out output MVP
+ */
+static void _scene_panel_identity_mvp(DvzMVP* out)
+{
+    ANN(out);
+    glm_mat4_identity(out->model);
+    glm_mat4_identity(out->view);
+    glm_mat4_identity(out->proj);
+    out->time  = 0.0f;
+    out->flags = 0;
+}
+
+
+/**
+ * Return a finite positive data domain for one dimension.
+ *
+ * @param domain the source domain
+ * @param out_min output minimum
+ * @param out_max output maximum
+ * @return whether the domain was valid
+ */
+static bool _scene_panel_domain_span(const DvzDataDomain* domain, double* out_min, double* out_max)
+{
+    ANN(domain);
+    ANN(out_min);
+    ANN(out_max);
+    if (!isfinite(domain->min) || !isfinite(domain->max) || !(domain->max > domain->min))
+        return false;
+    *out_min = domain->min;
+    *out_max = domain->max;
+    return true;
+}
+
+
+/**
+ * Resolve the source data domains for one panel view.
+ *
+ * @param panel the panel
+ * @param out_x output X domain
+ * @param out_y output Y domain
+ * @return whether the domains were resolved
+ */
+static bool _scene_panel_source_domains(
+    const DvzPanel* panel, DvzDataDomain* out_x, DvzDataDomain* out_y)
+{
+    ANN(panel);
+    ANN(out_x);
+    ANN(out_y);
+    *out_x = (DvzDataDomain){.min = -1.0, .max = +1.0};
+    *out_y = (DvzDataDomain){.min = -1.0, .max = +1.0};
+
+    if (panel->view_fit_enabled)
+    {
+        *out_x = panel->view_fit.x;
+        *out_y = panel->view_fit.y;
+        return true;
+    }
+
+    const DvzAxis* x_axis = &panel->axes[DVZ_DIM_X];
+    const DvzAxis* y_axis = &panel->axes[DVZ_DIM_Y];
+    if (x_axis->panel != NULL && x_axis->domain_set)
+        *out_x = x_axis->domain;
+    if (y_axis->panel != NULL && y_axis->domain_set)
+        *out_y = y_axis->domain;
+    return true;
+}
+
+
+/**
+ * Resolve one panel's 2D VIEW and DATA mapping state.
+ *
+ * @param panel the panel
+ * @param out output resolved state
+ * @return whether the view was resolved
+ */
+bool _scene_panel_view2d_resolve(const DvzPanel* panel, DvzPanelView2DResolved* out)
+{
+    ANN(panel);
+    ANN(out);
+    out->view_extent[0] = -1.0f;
+    out->view_extent[1] = +1.0f;
+    out->view_extent[2] = -1.0f;
+    out->view_extent[3] = +1.0f;
+    out->data_x[0] = -1.0;
+    out->data_x[1] = +1.0;
+    out->data_y[0] = -1.0;
+    out->data_y[1] = +1.0;
+    glm_mat4_identity(out->data_to_view);
+
+    DvzDataDomain source_x = {0};
+    DvzDataDomain source_y = {0};
+    if (!_scene_panel_source_domains(panel, &source_x, &source_y))
+        return false;
+
+    double xmin = 0.0, xmax = 0.0, ymin = 0.0, ymax = 0.0;
+    if (
+        !_scene_panel_domain_span(&source_x, &xmin, &xmax) ||
+        !_scene_panel_domain_span(&source_y, &ymin, &ymax))
+    {
+        return false;
+    }
+
+    double x_span = xmax - xmin;
+    double y_span = ymax - ymin;
+    if (panel->view_fit_enabled)
+    {
+        const double pad = panel->view_fit.padding * fmax(x_span, y_span);
+        xmin -= pad;
+        xmax += pad;
+        ymin -= pad;
+        ymax += pad;
+        x_span = xmax - xmin;
+        y_span = ymax - ymin;
+    }
+
+    const bool equal_aspect =
+        panel->view_fit_enabled && panel->view_fit.aspect == DVZ_PANEL_VIEW_ASPECT_EQUAL;
+    if (equal_aspect)
+    {
+        DvzRect plot = {0};
+        if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
+            return false;
+        const double plot_aspect = (double)plot.width / (double)plot.height;
+        const double data_aspect = x_span / y_span;
+        if (!isfinite(plot_aspect) || !(plot_aspect > 0.0) || !isfinite(data_aspect) ||
+            !(data_aspect > 0.0))
+        {
+            return false;
+        }
+        if (data_aspect < plot_aspect)
+        {
+            const double target_span = y_span * plot_aspect;
+            const double center = 0.5 * (xmin + xmax);
+            xmin = center - 0.5 * target_span;
+            xmax = center + 0.5 * target_span;
+            x_span = target_span;
+        }
+        else if (data_aspect > plot_aspect)
+        {
+            const double target_span = x_span / plot_aspect;
+            const double center = 0.5 * (ymin + ymax);
+            ymin = center - 0.5 * target_span;
+            ymax = center + 0.5 * target_span;
+            y_span = target_span;
+        }
+
+        if (plot_aspect >= 1.0)
+        {
+            out->view_extent[0] = (float)-plot_aspect;
+            out->view_extent[1] = (float)+plot_aspect;
+            out->view_extent[2] = -1.0f;
+            out->view_extent[3] = +1.0f;
+        }
+        else
+        {
+            out->view_extent[0] = -1.0f;
+            out->view_extent[1] = +1.0f;
+            out->view_extent[2] = (float)(-1.0 / plot_aspect);
+            out->view_extent[3] = (float)(+1.0 / plot_aspect);
+        }
+    }
+
+    out->data_x[0] = xmin;
+    out->data_x[1] = xmax;
+    out->data_y[0] = ymin;
+    out->data_y[1] = ymax;
+
+    const double view_x_span = (double)out->view_extent[1] - (double)out->view_extent[0];
+    const double view_y_span = (double)out->view_extent[3] - (double)out->view_extent[2];
+    const double sx = view_x_span / x_span;
+    const double sy = view_y_span / y_span;
+    const double tx = (double)out->view_extent[0] - sx * xmin;
+    const double ty = (double)out->view_extent[2] - sy * ymin;
+    if (
+        !isfinite(sx) || !isfinite(sy) || !isfinite(tx) || !isfinite(ty) ||
+        fabs(sx) > (double)FLT_MAX || fabs(sy) > (double)FLT_MAX ||
+        fabs(tx) > (double)FLT_MAX || fabs(ty) > (double)FLT_MAX)
+    {
+        return false;
+    }
+
+    out->data_to_view[0][0] = (float)sx;
+    out->data_to_view[1][1] = (float)sy;
+    out->data_to_view[3][0] = (float)tx;
+    out->data_to_view[3][1] = (float)ty;
+    return true;
+}
+
+
 
 /**
  * Return the panel's visible panzoom extent from per-dimension bindings.
@@ -118,16 +310,37 @@ bool _scene_panel_panzoom_extent(const DvzPanel* panel, float out[4])
 {
     ANN(panel);
     ANN(out);
+    DvzPanelView2DResolved view = {0};
+    if (!_scene_panel_view2d_resolve(panel, &view))
+        return false;
+
     DvzPanzoom panzoom = {0};
     if (!_scene_panel_compose_panzoom(panel, &panzoom))
     {
-        out[0] = -1.0f;
-        out[1] = +1.0f;
-        out[2] = -1.0f;
-        out[3] = +1.0f;
-        return true;
+        panzoom.zoom[0] = 1.0f;
+        panzoom.zoom[1] = 1.0f;
     }
-    return dvz_panzoom_extent(&panzoom, out);
+    DvzRect plot = {0};
+    (void)dvz_panel_plot_rect_px(panel, &plot);
+    DvzPanzoomResolved resolved = {0};
+    if (!dvz_panzoom_resolve(
+            &panzoom,
+            &(DvzPanzoomEval){
+                .base_extent = {
+                    view.view_extent[0], view.view_extent[1], view.view_extent[2],
+                    view.view_extent[3]},
+                .viewport_width = plot.width,
+                .viewport_height = plot.height,
+            },
+            &resolved))
+    {
+        return false;
+    }
+    out[0] = resolved.visible_extent[0];
+    out[1] = resolved.visible_extent[1];
+    out[2] = resolved.visible_extent[2];
+    out[3] = resolved.visible_extent[3];
+    return true;
 }
 
 
@@ -142,11 +355,7 @@ void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out)
 {
     ANN(panel);
     ANN(out);
-    glm_mat4_identity(out->model);
-    glm_mat4_identity(out->view);
-    glm_mat4_identity(out->proj);
-    out->time  = 0.0f;
-    out->flags = 0;
+    _scene_panel_identity_mvp(out);
     if (panel->camera != NULL)
     {
         dvz_camera_mvp(panel->camera, out);
@@ -154,8 +363,32 @@ void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out)
     else
     {
         DvzPanzoom panzoom = {0};
-        if (_scene_panel_compose_panzoom(panel, &panzoom))
-            dvz_panzoom_mvp(&panzoom, out);
+        if (!_scene_panel_compose_panzoom(panel, &panzoom))
+        {
+            if (!panel->view_fit_enabled)
+                return;
+            panzoom.zoom[0] = 1.0f;
+            panzoom.zoom[1] = 1.0f;
+        }
+        DvzPanelView2DResolved view = {0};
+        DvzRect plot = {0};
+        (void)dvz_panel_plot_rect_px(panel, &plot);
+        DvzPanzoomResolved resolved = {0};
+        if (
+            _scene_panel_view2d_resolve(panel, &view) &&
+            dvz_panzoom_resolve(
+                &panzoom,
+                &(DvzPanzoomEval){
+                    .base_extent = {
+                        view.view_extent[0], view.view_extent[1], view.view_extent[2],
+                        view.view_extent[3]},
+                    .viewport_width = plot.width,
+                    .viewport_height = plot.height,
+                },
+                &resolved))
+        {
+            *out = resolved.mvp;
+        }
     }
     if (panel->arcball != NULL)
     {
@@ -169,48 +402,25 @@ void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out)
 
 
 /**
- * Resolve the affine data-domain transform for one panel dimension.
+ * Build the old normalized-panel panzoom MVP for PANEL-coordinate attachments.
  *
  * @param panel the panel
- * @param dim axis dimension
- * @param out_scale output scale
- * @param out_translate output translation
- * @return whether the dimension transform was resolved
+ * @param out the destination MVP
  */
-static bool _scene_panel_data_axis_transform(
-    const DvzPanel* panel, DvzDim dim, float* out_scale, float* out_translate)
+static void _scene_panel_apply_panel_mvp(const DvzPanel* panel, DvzMVP* out)
 {
     ANN(panel);
-    ANN(out_scale);
-    ANN(out_translate);
-    *out_scale = 1.0f;
-    *out_translate = 0.0f;
-    if (dim > DVZ_DIM_Y)
-        return true;
-
-    const DvzAxis* axis = &panel->axes[dim];
-    if (axis->panel == NULL || !axis->domain_set)
-        return true;
-
-    const double span = axis->domain.max - axis->domain.min;
-    if (!isfinite(span) || fabs(span) < DBL_EPSILON)
-        return false;
-
-    float visual_min = -1.0f;
-    float visual_max = +1.0f;
-    _axis_plot_interval(axis, &visual_min, &visual_max);
-
-    const double scale = ((double)visual_max - (double)visual_min) / span;
-    const double translate = (double)visual_min - scale * axis->domain.min;
-    if (
-        !isfinite(scale) || !isfinite(translate) || fabs(scale) > (double)FLT_MAX ||
-        fabs(translate) > (double)FLT_MAX)
+    ANN(out);
+    _scene_panel_identity_mvp(out);
+    if (panel->camera != NULL)
     {
-        return false;
+        dvz_camera_mvp(panel->camera, out);
+        return;
     }
-    *out_scale = (float)scale;
-    *out_translate = (float)translate;
-    return true;
+
+    DvzPanzoom panzoom = {0};
+    if (_scene_panel_compose_panzoom(panel, &panzoom))
+        dvz_panzoom_mvp(&panzoom, out);
 }
 
 
@@ -226,20 +436,10 @@ bool _scene_panel_data_model(const DvzPanel* panel, mat4 out)
     ANN(panel);
     ANN(out);
     glm_mat4_identity(out);
-
-    float sx = 1.0f, tx = 0.0f;
-    float sy = 1.0f, ty = 0.0f;
-    if (
-        !_scene_panel_data_axis_transform(panel, DVZ_DIM_X, &sx, &tx) ||
-        !_scene_panel_data_axis_transform(panel, DVZ_DIM_Y, &sy, &ty))
-    {
+    DvzPanelView2DResolved view = {0};
+    if (!_scene_panel_view2d_resolve(panel, &view))
         return false;
-    }
-
-    out[0][0] = sx;
-    out[1][1] = sy;
-    out[3][0] = tx;
-    out[3][1] = ty;
+    glm_mat4_copy(view.data_to_view, out);
     return true;
 }
 
@@ -263,7 +463,9 @@ bool _scene_panel_attachment_mvp(
     ANN(attach);
     ANN(out);
 
-    if (apply_mvp != NULL)
+    if (attach->coord_space == DVZ_COORD_PANEL)
+        _scene_panel_apply_panel_mvp(panel, out);
+    else if (apply_mvp != NULL)
         *out = *apply_mvp;
     else
         _scene_panel_apply_mvp(panel, out);
