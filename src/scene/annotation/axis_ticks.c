@@ -456,10 +456,7 @@ float _axis_data_to_source_visual(const DvzAxis* axis, double value)
     }
     if (!axis->domain_set)
         return (float)value;
-    float visual_min = -1.0f;
-    float visual_max = +1.0f;
-    _axis_plot_interval(axis, &visual_min, &visual_max);
-    return _axis_data_to_visual(value, axis->domain.min, axis->domain.max, visual_min, visual_max);
+    return _axis_data_to_visual(value, axis->domain.min, axis->domain.max, -1.0f, +1.0f);
 }
 
 
@@ -473,13 +470,10 @@ float _axis_data_to_source_visual(const DvzAxis* axis, double value)
 static double _axis_visual_to_data(const DvzAxis* axis, float value)
 {
     ANN(axis);
-    float visual_min = -1.0f;
-    float visual_max = +1.0f;
-    _axis_plot_interval(axis, &visual_min, &visual_max);
-    double denom = (double)visual_max - (double)visual_min;
+    double denom = 2.0;
     if (fabs(denom) < AXIS_EPS)
         return axis->domain.min;
-    double t = ((double)value - (double)visual_min) / denom;
+    double t = ((double)value + 1.0) / denom;
     return axis->domain.min + t * (axis->domain.max - axis->domain.min);
 }
 
@@ -522,11 +516,8 @@ bool _axis_visible_domain(const DvzAxis* axis, double* out_min, double* out_max)
         (void)_scene_panel_panzoom_extent(axis->panel, extent);
     uint32_t lo_idx = axis->dim == DVZ_DIM_X ? 0 : 2;
     uint32_t hi_idx = axis->dim == DVZ_DIM_X ? 1 : 3;
-    float visual_min = -1.0f;
-    float visual_max = +1.0f;
-    _axis_plot_interval(axis, &visual_min, &visual_max);
-    float a_view = _axis_inverse_panzoom_coord(extent, lo_idx, hi_idx, visual_min);
-    float b_view = _axis_inverse_panzoom_coord(extent, lo_idx, hi_idx, visual_max);
+    float a_view = _axis_inverse_panzoom_coord(extent, lo_idx, hi_idx, -1.0f);
+    float b_view = _axis_inverse_panzoom_coord(extent, lo_idx, hi_idx, +1.0f);
     if (axis->panel != NULL && axis->panel->view2d_enabled)
     {
         a_view = extent[lo_idx];

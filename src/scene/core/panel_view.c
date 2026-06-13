@@ -322,17 +322,12 @@ bool _scene_panel_view2d_resolve(const DvzPanel* panel, DvzPanelView2DResolved* 
     out->data_y[0] = ymin;
     out->data_y[1] = ymax;
 
-    float data_extent[4] = {
-        out->view_extent[0], out->view_extent[1], out->view_extent[2], out->view_extent[3]};
-    if (!panel->view2d_enabled)
-        _scene_panel_plot_visual_rect(panel, data_extent);
-
-    const double data_x_span = (double)data_extent[1] - (double)data_extent[0];
-    const double data_y_span = (double)data_extent[3] - (double)data_extent[2];
+    const double data_x_span = (double)out->view_extent[1] - (double)out->view_extent[0];
+    const double data_y_span = (double)out->view_extent[3] - (double)out->view_extent[2];
     const double sx = data_x_span / x_span;
     const double sy = data_y_span / y_span;
-    const double tx = (double)data_extent[0] - sx * xmin;
-    const double ty = (double)data_extent[2] - sy * ymin;
+    const double tx = (double)out->view_extent[0] - sx * xmin;
+    const double ty = (double)out->view_extent[2] - sy * ymin;
     if (
         !isfinite(sx) || !isfinite(sy) || !isfinite(tx) || !isfinite(ty) ||
         fabs(sx) > (double)FLT_MAX || fabs(sy) > (double)FLT_MAX ||

@@ -415,14 +415,10 @@ void _axis_update_visual(DvzAxis* axis)
     float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
     if (axis->panel != NULL)
         (void)_scene_panel_panzoom_extent(axis->panel, extent);
-    float grid_x0 = axis->panel != NULL && axis->panel->view2d_enabled ? -1.0f : x0;
-    float grid_x1 = axis->panel != NULL && axis->panel->view2d_enabled ? +1.0f : x1;
-    float grid_y0 = axis->panel != NULL && axis->panel->view2d_enabled ? -1.0f : y0;
-    float grid_y1 = axis->panel != NULL && axis->panel->view2d_enabled ? +1.0f : y1;
-    float source_x0 = _axis_inverse_panzoom_coord(extent, 0, 1, grid_x0);
-    float source_x1 = _axis_inverse_panzoom_coord(extent, 0, 1, grid_x1);
-    float source_y0 = _axis_inverse_panzoom_coord(extent, 2, 3, grid_y0);
-    float source_y1 = _axis_inverse_panzoom_coord(extent, 2, 3, grid_y1);
+    float source_x0 = _axis_inverse_panzoom_coord(extent, 0, 1, -1.0f);
+    float source_x1 = _axis_inverse_panzoom_coord(extent, 0, 1, +1.0f);
+    float source_y0 = _axis_inverse_panzoom_coord(extent, 2, 3, -1.0f);
+    float source_y1 = _axis_inverse_panzoom_coord(extent, 2, 3, +1.0f);
     float scale_x = _axis_panzoom_scale(extent, DVZ_DIM_X);
     float scale_y = _axis_panzoom_scale(extent, DVZ_DIM_Y);
     float user_scale = _axis_user_scale(axis);

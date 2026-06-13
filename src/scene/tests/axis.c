@@ -1281,6 +1281,13 @@ static int test_axis_plot_margins(TstContext* suite, const TstCase* item)
     AT(fabsf(visual[6] - 0.96f) < 1e-6f);
     AT(fabsf(visual[7] - 0.03f) < 1e-6f);
 
+    mat4 data_to_view = GLM_MAT4_IDENTITY_INIT;
+    AT(_scene_panel_data_model(panel, data_to_view));
+    AT(fabsf(data_to_view[0][0] - 0.20f) < 1e-6f);
+    AT(fabsf(data_to_view[1][1] - 0.20f) < 1e-6f);
+    AT(fabsf(data_to_view[3][0] + 1.0f) < 1e-6f);
+    AT(fabsf(data_to_view[3][1] - 0.0f) < 1e-6f);
+
     AT(!dvz_axis_set_plot_margins(x_axis, -0.10f, 0.0f, 0.0f, 0.0f));
     AT(!dvz_axis_set_plot_margins(x_axis, 1.20f, 0.90f, 0.0f, 0.0f));
 
@@ -1666,25 +1673,23 @@ static int test_axis_panzoom_layout_aligns_grid_to_plot(TstContext* suite, const
 
     float data[] = {0.0f, 0.0f, 0.0f};
     float visual[3] = {0};
-    AT(dvz_panel_data_to_visual_positions(panel, data, visual, 1) == 0);
+    mat4 data_to_view = GLM_MAT4_IDENTITY_INIT;
+    AT(_scene_panel_data_model(panel, data_to_view));
+    visual[0] = data_to_view[0][0] * data[0] + data_to_view[3][0];
+    visual[1] = data_to_view[1][1] * data[1] + data_to_view[3][1];
+    visual[2] = data[2];
     DvzMVP apply_mvp = {0};
     _scene_panel_apply_mvp(panel, &apply_mvp);
     float expected_x = 0.0f;
     AT(_axis_test_apply_mvp_coord(&apply_mvp, visual, DVZ_DIM_X, &expected_x));
 
-    float plot[4] = {0};
-    _scene_panel_plot_visual_rect(panel, plot);
     double visible_min = 0.0;
     double visible_max = 0.0;
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &visible_min, &visible_max));
     double expected_min =
-        10.0 * (((double)plot[0] / (double)pz->zoom[0] - (double)pz->pan[0]) -
-                (double)plot[0]) /
-        ((double)plot[1] - (double)plot[0]);
+        10.0 * (((-1.0 / (double)pz->zoom[0]) - (double)pz->pan[0]) + 1.0) / 2.0;
     double expected_max =
-        10.0 * (((double)plot[1] / (double)pz->zoom[0] - (double)pz->pan[0]) -
-                (double)plot[0]) /
-        ((double)plot[1] - (double)plot[0]);
+        10.0 * (((+1.0 / (double)pz->zoom[0]) - (double)pz->pan[0]) + 1.0) / 2.0;
     AT(fabs(visible_min - expected_min) < 1e-6);
     AT(fabs(visible_max - expected_max) < 1e-6);
 
@@ -1743,13 +1748,11 @@ static int test_axis_raw_visual_panzoom_alignment(TstContext* suite, const TstCa
     dvz_panzoom_zoom(pz, (vec2){2.0f, 2.0f});
     dvz_panzoom_pan(pz, (vec2){0.20f, -0.10f});
 
-    float plot[4] = {0};
-    _scene_panel_plot_visual_rect(panel, plot);
     double visible_min = 0.0;
     double visible_max = 0.0;
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &visible_min, &visible_max));
-    double expected_min = -(double)pz->pan[1] + (double)plot[2] / (double)pz->zoom[1];
-    double expected_max = -(double)pz->pan[1] + (double)plot[3] / (double)pz->zoom[1];
+    double expected_min = -(double)pz->pan[1] - 1.0 / (double)pz->zoom[1];
+    double expected_max = -(double)pz->pan[1] + 1.0 / (double)pz->zoom[1];
     AT(fabs(visible_min - expected_min) < 1e-6);
     AT(fabs(visible_max - expected_max) < 1e-6);
 
@@ -1831,7 +1834,14 @@ static int test_axis_integer_lattice_panzoom_alignment(TstContext* suite, const 
                                         .top = 0.04f}));
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, (double)lattice_max) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, (double)lattice_max) == 0);
-    AT(dvz_panel_data_to_visual_positions(panel, (const float*)data, (float*)visual, count) == 0);
+    mat4 data_to_view = GLM_MAT4_IDENTITY_INIT;
+    AT(_scene_panel_data_model(panel, data_to_view));
+    for (uint32_t idx = 0; idx < count; idx++)
+    {
+        visual[idx][0] = data_to_view[0][0] * data[idx][0] + data_to_view[3][0];
+        visual[idx][1] = data_to_view[1][1] * data[idx][1] + data_to_view[3][1];
+        visual[idx][2] = data[idx][2];
+    }
 
     DvzVisual* point = dvz_point(scene, 0);
     ANN(point);
