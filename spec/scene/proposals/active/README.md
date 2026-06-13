@@ -29,18 +29,16 @@ non-v0.4-blocking roadmaps live in [`../future/`](../future/).
    compute-to-render and optional native CUDA interop slice.
 3. [CAPABILITY_FALLBACK_DESIGN.md](CAPABILITY_FALLBACK_DESIGN.md): fallback knobs and diagnostics
    still need final promotion into validation/adaptation specs.
-4. [EQUAL_ASPECT_PANEL_VIEW.md](EQUAL_ASPECT_PANEL_VIEW.md): API-breaking equal-aspect 2D panel
-   view, coordinate-space, panzoom, linked-panel, and axes/grid architecture.
-5. [SCIENTIFIC_COORDINATE_NORMALIZATION.md](SCIENTIFIC_COORDINATE_NORMALIZATION.md): shared
+4. [SCIENTIFIC_COORDINATE_NORMALIZATION.md](SCIENTIFIC_COORDINATE_NORMALIZATION.md): shared
    normalization-frame and coordinate readback gaps still need final promotion.
-6. [UNITS_AND_TIME_FORMAT_API.md](UNITS_AND_TIME_FORMAT_API.md): shared unit ladders, duration
+5. [UNITS_AND_TIME_FORMAT_API.md](UNITS_AND_TIME_FORMAT_API.md): shared unit ladders, duration
    formatting, datetime axes, and scale-bar/axis unit API.
-7. [POLYGON_PSLG_API_DESIGN.md](POLYGON_PSLG_API_DESIGN.md): polygon/PSLG API remains unsettled.
-8. [RENDER_CONTRACT_RESOLVER.md](RENDER_CONTRACT_RESOLVER.md): render-contract resolution remains
+6. [POLYGON_PSLG_API_DESIGN.md](POLYGON_PSLG_API_DESIGN.md): polygon/PSLG API remains unsettled.
+7. [RENDER_CONTRACT_RESOLVER.md](RENDER_CONTRACT_RESOLVER.md): render-contract resolution remains
    an active API and planning question.
-9. [VISUAL_COMMAND_STREAM.md](VISUAL_COMMAND_STREAM.md): visual command stream remains active
+8. [VISUAL_COMMAND_STREAM.md](VISUAL_COMMAND_STREAM.md): visual command stream remains active
    design pressure.
-10. [VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md](VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md):
+9. [VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md](VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md):
    retained visual-local transform and arcball model/camera target semantics for the textured
    planet cleanup.
 
