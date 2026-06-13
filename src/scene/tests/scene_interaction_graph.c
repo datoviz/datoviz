@@ -1141,20 +1141,34 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 
+    bool saw_plot_viewport = false;
     bool saw_plot_scissor = false;
+    uint32_t viewport_count = 0;
     uint32_t scissor_count = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
-        if (cmd->type != DVZ_DRP2_COMMAND_SET_SCISSOR)
-            continue;
-        scissor_count++;
-        if (fabsf(cmd->u.set_scissor.scissor[0] - plot_rect.x) < 1e-6f &&
-            fabsf(cmd->u.set_scissor.scissor[1] - plot_rect.y) < 1e-6f &&
-            fabsf(cmd->u.set_scissor.scissor[2] - plot_rect.width) < 1e-6f &&
-            fabsf(cmd->u.set_scissor.scissor[3] - plot_rect.height) < 1e-6f)
-            saw_plot_scissor = true;
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_VIEWPORT)
+        {
+            viewport_count++;
+            if (fabsf(cmd->u.set_viewport.viewport[0] - plot_rect.x) < 1e-6f &&
+                fabsf(cmd->u.set_viewport.viewport[1] - plot_rect.y) < 1e-6f &&
+                fabsf(cmd->u.set_viewport.viewport[2] - plot_rect.width) < 1e-6f &&
+                fabsf(cmd->u.set_viewport.viewport[3] - plot_rect.height) < 1e-6f)
+                saw_plot_viewport = true;
+        }
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_SCISSOR)
+        {
+            scissor_count++;
+            if (fabsf(cmd->u.set_scissor.scissor[0] - plot_rect.x) < 1e-6f &&
+                fabsf(cmd->u.set_scissor.scissor[1] - plot_rect.y) < 1e-6f &&
+                fabsf(cmd->u.set_scissor.scissor[2] - plot_rect.width) < 1e-6f &&
+                fabsf(cmd->u.set_scissor.scissor[3] - plot_rect.height) < 1e-6f)
+                saw_plot_scissor = true;
+        }
     }
+    AT(viewport_count >= 2);
+    AT(saw_plot_viewport);
     AT(scissor_count >= 2);
     AT(saw_plot_scissor);
 

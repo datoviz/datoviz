@@ -79,6 +79,7 @@ bool _emitter_emit_render_multi_draws(
                   viewport.height);
 
     DvzPanelDesc active_scissor = viewport;
+    DvzPanelDesc active_viewport = viewport;
     uint64_t last_pipeline = (cache != NULL) ? cache->pipeline_id : 0;
     uint64_t last_bg_set0 = (cache != NULL) ? cache->bg_set0 : 0;
     uint64_t last_bg_set1 = 0;
@@ -89,6 +90,15 @@ bool _emitter_emit_render_multi_draws(
         DvzPanelDesc draw_scissor = viewport;
         if (draws[d].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT && render->u.render.has_plot_desc)
             draw_scissor = _render_desc_framebuffer_rect(&render->u.render.plot_desc, cfg);
+        if (draw_scissor.x != active_viewport.x || draw_scissor.y != active_viewport.y ||
+            draw_scissor.width != active_viewport.width ||
+            draw_scissor.height != active_viewport.height)
+        {
+            ok = ok && dvz_drp2_stream_set_viewport(
+                           stream, render_pass_id, draw_scissor.x, draw_scissor.y,
+                           draw_scissor.width, draw_scissor.height);
+            active_viewport = draw_scissor;
+        }
         if (draw_scissor.x != active_scissor.x || draw_scissor.y != active_scissor.y ||
             draw_scissor.width != active_scissor.width ||
             draw_scissor.height != active_scissor.height)
