@@ -45,19 +45,6 @@ showcases/point_cloud
 showcases/textured_planet
 - orientation is totally wrong, re-check everything
 
-visuals/glyph
-- i do not want to see the atlas on the right at all, just the glyph, the example should really document how to use the low level glyph visual and how to use the atlas, font etc
-
-visuals/vector
-- broken, all magenta panel
-scenario_runner: visual_vector requirements: controller,panzoom
-20:11:33.109 T450 E              app.c:2714: _app_draw runtime execution failed: code=3 (OutOfRange) command=95/101 type=27 (SetVertexBuffer) id=35(v2_path_distance)
-
-
-
-with scalebar in 3D and arcball, the scalebar should only depend on the camera position, and should NOT change when rotating the arcball because that only affects the model matrix
-
-
 
 implement spec/scene/proposals/active/EQUAL_ASPECT_PANEL_VIEW.md
 

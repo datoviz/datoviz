@@ -356,9 +356,9 @@ DvzCameraDesc example_default_3d_camera_desc(float extent)
         extent = 1.0f;
 
     DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = -0.18f * extent;
+    camera.eye[0] = -0.25f * extent;
     camera.eye[1] = +2.0f * extent;
-    camera.eye[2] = +2.0f * extent;
+    camera.eye[2] = +4.0f * extent;
     camera.target[0] = 0.0f;
     camera.target[1] = 0.0f;
     camera.target[2] = 0.0f;
@@ -434,10 +434,7 @@ DvzCamera* example_set_controller_camera(DvzPanel* panel)
  *
  * @return Y coordinate of the grid plane
  */
-float example_controller_grid_origin_y(void)
-{
-    return -0.55f;
-}
+float example_controller_grid_origin_y(void) { return -0.55f; }
 
 
 /**
@@ -445,10 +442,7 @@ float example_controller_grid_origin_y(void)
  *
  * @return cube edge length
  */
-double example_controller_cube_size(void)
-{
-    return 1.10;
-}
+double example_controller_cube_size(void) { return 1.10; }
 
 
 /**
@@ -740,9 +734,9 @@ void example_default_arcball_initial(vec3 out)
     if (out == NULL)
         return;
 
-    out[0] = +0.56f;
-    out[1] = -0.16f;
-    out[2] = +0.24f;
+    // out[0] = +0.56f;
+    // out[1] = -0.16f;
+    // out[2] = +0.24f;
 }
 
 
@@ -758,7 +752,7 @@ void example_set_default_arcball(DvzArcball* arcball)
 
     vec3 initial = {0};
     example_default_arcball_initial(initial);
-    dvz_arcball_set(arcball, initial);
+    dvz_arcball_initial(arcball, initial);
 }
 
 

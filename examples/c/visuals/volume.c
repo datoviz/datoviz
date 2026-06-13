@@ -39,10 +39,10 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       1600u
-#define HEIGHT      1200u
+#define WIDTH        1600u
+#define HEIGHT       1200u
 #define FIELD_SIZE   128u
-#define BOX_SEGMENTS  12u
+#define BOX_SEGMENTS 12u
 
 #define ROTATION_SPEED_RAD_PER_SEC 0.16f
 
@@ -89,10 +89,7 @@ static float _clamp01(float value)
  * @param value normalized value
  * @return clamped 8-bit value
  */
-static uint8_t _u8(float value)
-{
-    return (uint8_t)(255.0f * _clamp01(value) + 0.5f);
-}
+static uint8_t _u8(float value) { return (uint8_t)(255.0f * _clamp01(value) + 0.5f); }
 
 
 
@@ -146,8 +143,8 @@ static float _sample_volume(float x, float y, float z)
     const float g0 = _gyroid_value(x, y, z);
     const float g1 = _gyroid_value(x + 0.035f, y - 0.020f, z + 0.045f);
     const float sheet = expf(-(g0 * g0) / (2.0f * 0.115f * 0.115f));
-    const float shoulder = expf(-((fabsf(g1) - 0.34f) * (fabsf(g1) - 0.34f)) /
-                                (2.0f * 0.135f * 0.135f));
+    const float shoulder =
+        expf(-((fabsf(g1) - 0.34f) * (fabsf(g1) - 0.34f)) / (2.0f * 0.135f * 0.135f));
 
     const float rx = x / 0.92f;
     const float ry = y / 0.86f;
@@ -205,8 +202,8 @@ static bool _attach_transfer(DvzScene* scene, DvzVisual* visual)
     ANN(visual);
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
-                   .kind = DVZ_SCALE_CONTINUOUS});
+        scene,
+        &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     if (scale == NULL)
         return false;
     dvz_scale_set_domain(scale, 0.0, 1.0);
@@ -229,12 +226,9 @@ static bool _attach_transfer(DvzScene* scene, DvzVisual* visual)
     dvz_scale_set_colormap(scale, colormap);
 
     DvzVolumeAlphaStop alpha[7] = {
-        {.position = 0.00, .alpha = 0.00f},
-        {.position = 0.09, .alpha = 0.00f},
-        {.position = 0.18, .alpha = 0.08f},
-        {.position = 0.32, .alpha = 0.32f},
-        {.position = 0.52, .alpha = 0.62f},
-        {.position = 0.74, .alpha = 0.86f},
+        {.position = 0.00, .alpha = 0.00f}, {.position = 0.09, .alpha = 0.00f},
+        {.position = 0.18, .alpha = 0.08f}, {.position = 0.32, .alpha = 0.32f},
+        {.position = 0.52, .alpha = 0.62f}, {.position = 0.74, .alpha = 0.86f},
         {.position = 1.00, .alpha = 0.98f},
     };
     if (dvz_volume_set_alpha_stops(visual, alpha, 7) != 0)
@@ -291,28 +285,12 @@ static bool _add_boundary_box(DvzScene* scene, DvzPanel* panel, DvzVisual** out)
     const float ymin = -0.74f, ymax = +0.74f;
     const float zmin = -1.04f, zmax = +1.04f;
     const vec3 corners[8] = {
-        {xmin, ymin, zmin},
-        {xmax, ymin, zmin},
-        {xmax, ymax, zmin},
-        {xmin, ymax, zmin},
-        {xmin, ymin, zmax},
-        {xmax, ymin, zmax},
-        {xmax, ymax, zmax},
-        {xmin, ymax, zmax},
+        {xmin, ymin, zmin}, {xmax, ymin, zmin}, {xmax, ymax, zmin}, {xmin, ymax, zmin},
+        {xmin, ymin, zmax}, {xmax, ymin, zmax}, {xmax, ymax, zmax}, {xmin, ymax, zmax},
     };
     const uint32_t edges[BOX_SEGMENTS][2] = {
-        {0, 1},
-        {1, 2},
-        {2, 3},
-        {3, 0},
-        {4, 5},
-        {5, 6},
-        {6, 7},
-        {7, 4},
-        {0, 4},
-        {1, 5},
-        {2, 6},
-        {3, 7},
+        {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6},
+        {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7},
     };
 
     vec3 start[BOX_SEGMENTS] = {{0}};
@@ -409,20 +387,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     _fill_volume(data, FIELD_SIZE);
 
     DvzSampledField* field = dvz_sampled_field(
-        ctx->scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
-                   .dim = DVZ_FIELD_DIM_3D,
-                   .format = DVZ_FIELD_FORMAT_R8_UNORM,
-                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
-                   .width = FIELD_SIZE,
-                   .height = FIELD_SIZE,
-                   .depth = FIELD_SIZE});
+        ctx->scene, &(DvzSampledFieldDesc){
+                        DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc), .dim = DVZ_FIELD_DIM_3D,
+                        .format = DVZ_FIELD_FORMAT_R8_UNORM, .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                        .width = FIELD_SIZE, .height = FIELD_SIZE, .depth = FIELD_SIZE});
     EXAMPLE_CHECK(field != NULL, "dvz_sampled_field() failed");
 
     ok = dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                   .data = data,
-                   .bytes_per_row = FIELD_SIZE,
-                   .rows_per_image = FIELD_SIZE});
+        field, &(DvzFieldDataView){
+                   DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = data,
+                   .bytes_per_row = FIELD_SIZE, .rows_per_image = FIELD_SIZE});
     EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data() failed");
     dvz_free(data);
     data = NULL;
@@ -453,12 +427,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     EXAMPLE_CHECK(
         example_visual_spin(
-            ctx->scene, volume, (vec3){0.0f, 0.0f, 1.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            ctx->scene, volume, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
             arcball_controller, &state->volume_spin),
         "example_visual_spin(volume) failed");
     EXAMPLE_CHECK(
         example_visual_spin(
-            ctx->scene, box, (vec3){0.0f, 0.0f, 1.0f}, ROTATION_SPEED_RAD_PER_SEC,
+            ctx->scene, box, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
             arcball_controller, &state->box_spin),
         "example_visual_spin(box) failed");
     example_visual_spin_start(&state->volume_spin, 0.0);
