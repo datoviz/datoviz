@@ -50,8 +50,9 @@
 
 typedef struct SsaoDemoState
 {
-    DvzPanel* panel;
-    DvzArcball* arcball;
+    DvzPanel* ssao_panel;
+    DvzArcball* plain_arcball;
+    DvzArcball* ssao_arcball;
     DvzExampleGuiSsaoControls ssao;
     vec3 arcball_angles;
     vec2 arcball_pan;
@@ -84,42 +85,51 @@ static DvzSsaoDesc _ssao_desc_from_controls(const DvzExampleGuiSsaoControls* con
 
 static void _apply_ssao(SsaoDemoState* state)
 {
-    if (state == NULL || state->panel == NULL)
+    if (state == NULL || state->ssao_panel == NULL)
         return;
 
     if (!state->ssao.enabled)
     {
-        (void)dvz_panel_set_ssao(state->panel, NULL);
+        (void)dvz_panel_set_ssao(state->ssao_panel, NULL);
         return;
     }
 
     DvzSsaoDesc ssao = _ssao_desc_from_controls(&state->ssao);
-    (void)dvz_panel_set_ssao(state->panel, &ssao);
+    (void)dvz_panel_set_ssao(state->ssao_panel, &ssao);
 }
 
 
 
 static void _apply_arcball(SsaoDemoState* state)
 {
-    if (state == NULL || state->arcball == NULL)
+    if (state == NULL)
         return;
 
-    dvz_arcball_set(state->arcball, state->arcball_angles);
-    dvz_arcball_zoom(state->arcball, state->arcball_zoom);
-    dvz_arcball_pan(state->arcball, state->arcball_pan);
+    if (state->plain_arcball != NULL)
+    {
+        dvz_arcball_set(state->plain_arcball, state->arcball_angles);
+        dvz_arcball_zoom(state->plain_arcball, state->arcball_zoom);
+        dvz_arcball_pan(state->plain_arcball, state->arcball_pan);
+    }
+    if (state->ssao_arcball != NULL)
+    {
+        dvz_arcball_set(state->ssao_arcball, state->arcball_angles);
+        dvz_arcball_zoom(state->ssao_arcball, state->arcball_zoom);
+        dvz_arcball_pan(state->ssao_arcball, state->arcball_pan);
+    }
 }
 
 
 
 static void _sync_arcball_controls(SsaoDemoState* state)
 {
-    if (state == NULL || state->arcball == NULL)
+    if (state == NULL || state->plain_arcball == NULL)
         return;
 
-    dvz_arcball_angles(state->arcball, state->arcball_angles);
-    state->arcball_zoom = state->arcball->zoom;
-    state->arcball_pan[0] = state->arcball->pan[0];
-    state->arcball_pan[1] = state->arcball->pan[1];
+    dvz_arcball_angles(state->plain_arcball, state->arcball_angles);
+    state->arcball_zoom = state->plain_arcball->zoom;
+    state->arcball_pan[0] = state->plain_arcball->pan[0];
+    state->arcball_pan[1] = state->plain_arcball->pan[1];
 }
 
 
@@ -291,6 +301,21 @@ static bool _set_camera(DvzPanel* panel)
 }
 
 
+static DvzController* _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel, vec3 angles)
+{
+    DvzController* controller = dvz_arcball(ctx->scene, NULL);
+    if (controller == NULL)
+        return NULL;
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    if (arcball == NULL)
+        return NULL;
+    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return NULL;
+    dvz_arcball_set(arcball, angles);
+    return controller;
+}
+
+
 
 /*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
@@ -320,31 +345,50 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (ctx->figure == NULL)
         return false;
 
-    DvzPanel* panel = dvz_panel_full(ctx->figure);
-    if (panel == NULL)
+    DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
+    if (grid == NULL)
         return false;
-    state->panel = panel;
-    example_graphite_cyan_set_panel_background(panel);
-    if (!example_add_panel_label(panel, "SSAO  radius 1.35  blur 9px", 18.0f, 18.0f))
+    if (!dvz_grid_set_margins(
+            grid, &(DvzPanelReserve){
+                      .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}))
         return false;
-    if (!_set_camera(panel))
-        return false;
-    if (!_add_occlusion_mesh(ctx->scene, panel) || !_add_spheres(ctx->scene, panel))
+    if (!dvz_grid_set_gutter(grid, 30.0f, 0.0f))
         return false;
 
-    DvzController* controller = dvz_arcball(ctx->scene, NULL);
-    if (controller == NULL)
+    DvzPanel* plain = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* ssao_panel = dvz_grid_panel(grid, 0, 1);
+    if (plain == NULL || ssao_panel == NULL)
         return false;
-    DvzArcball* arcball = dvz_controller_arcball(controller);
-    if (arcball == NULL)
+    state->ssao_panel = ssao_panel;
+    example_graphite_cyan_set_panel_background(plain);
+    example_graphite_cyan_set_panel_background(ssao_panel);
+    if (!example_add_large_panel_label(plain, "plain depth") ||
+        !example_add_large_panel_label(ssao_panel, "SSAO resolve"))
         return false;
-    state->arcball = arcball;
-    if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+    if (!_set_camera(plain) || !_set_camera(ssao_panel))
         return false;
-    state->arcball_angles[0] = +0.54f;
-    state->arcball_angles[1] = -0.20f;
-    state->arcball_angles[2] = +0.20f;
+    if (!_add_occlusion_mesh(ctx->scene, plain) || !_add_spheres(ctx->scene, plain) ||
+        !_add_occlusion_mesh(ctx->scene, ssao_panel) || !_add_spheres(ctx->scene, ssao_panel))
+        return false;
+
+    state->arcball_angles[0] = -1.084f;
+    state->arcball_angles[1] = -0.204f;
+    state->arcball_angles[2] = +2.889f;
     state->arcball_zoom = 1.0f;
+    state->arcball_pan[0] = +0.095f;
+    state->arcball_pan[1] = -0.295f;
+    DvzController* plain_controller = _bind_arcball(ctx, plain, state->arcball_angles);
+    DvzController* ssao_controller = _bind_arcball(ctx, ssao_panel, state->arcball_angles);
+    if (plain_controller == NULL || ssao_controller == NULL)
+        return false;
+    state->plain_arcball = dvz_controller_arcball(plain_controller);
+    state->ssao_arcball = dvz_controller_arcball(ssao_controller);
+    if (state->plain_arcball == NULL || state->ssao_arcball == NULL)
+        return false;
+    if (!example_link_controllers_bidirectional(
+            ctx->scene, plain_controller, ssao_controller,
+            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM))
+        return false;
     _apply_arcball(state);
 
     state->ssao = (DvzExampleGuiSsaoControls){
@@ -353,18 +397,18 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         .debug_view = false,
         .show_blur_sigmas = true,
         .show_debug_view = true,
-        .radius = 1.35f,
-        .strength = 2.85f,
-        .bias = 0.018f,
-        .power = 1.45f,
-        .min_visibility = 0.30f,
-        .samples = 48.0f,
+        .radius = 0.316f,
+        .strength = 2.370f,
+        .bias = 0.034f,
+        .power = 3.087f,
+        .min_visibility = 0.235f,
+        .samples = 31.765f,
         .min_samples = 4.0f,
         .max_samples = 96.0f,
-        .blur_radius = 9.0f,
+        .blur_radius = 18.202f,
         .blur_radius_max = 24.0f,
-        .blur_depth_sigma = 0.65f,
-        .blur_normal_sigma = 0.55f,
+        .blur_depth_sigma = 1.089f,
+        .blur_normal_sigma = 0.425f,
     };
     _apply_ssao(state);
     return true;
@@ -398,12 +442,12 @@ static void _ssao_gui(DvzGui* gui, DvzView* view, void* user_data)
 
         if (dvz_gui_button(gui, "Reset arcball"))
         {
-            state->arcball_angles[0] = +0.54f;
-            state->arcball_angles[1] = -0.20f;
-            state->arcball_angles[2] = +0.20f;
+            state->arcball_angles[0] = -1.084f;
+            state->arcball_angles[1] = -0.204f;
+            state->arcball_angles[2] = +2.889f;
             state->arcball_zoom = 1.0f;
-            state->arcball_pan[0] = 0.0f;
-            state->arcball_pan[1] = 0.0f;
+            state->arcball_pan[0] = +0.095f;
+            state->arcball_pan[1] = -0.295f;
             _apply_arcball(state);
         }
         dvz_gui_same_line(gui, 0.0f, 8.0f);

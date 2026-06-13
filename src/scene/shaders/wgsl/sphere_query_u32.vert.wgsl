@@ -45,11 +45,19 @@ fn main(
     let center_view = mvp.view * mvp.model * vec4f(input.position, 1.0);
     let center = transform(input.position);
     let radius = max(transform_radius(input.radius), 1e-6);
-    let radius_px = 0.5 * radius * viewport.rect.w * abs(mvp.proj[0][0]) / max(abs(center.w), 1e-6);
+    let inv_w = 1.0 / max(abs(center.w), 1e-6);
+    let ndc_radius_data = vec2f(
+        radius * abs(mvp.proj[0][0]) * inv_w,
+        radius * abs(mvp.proj[1][1]) * inv_w,
+    );
+    let radius_px = 0.5 * max(
+        ndc_radius_data.x * viewport.rect.z,
+        ndc_radius_data.y * viewport.rect.w,
+    );
     let padded_radius_px = radius_px + 1.5;
-    let ndc_radius = vec2f(
-        2.0 * padded_radius_px / max(viewport.rect.z, 1.0),
-        2.0 * padded_radius_px / max(viewport.rect.w, 1.0),
+    let ndc_radius = ndc_radius_data + vec2f(
+        3.0 / max(viewport.rect.z, 1.0),
+        3.0 / max(viewport.rect.w, 1.0),
     );
 
     var output: VertexOut;
