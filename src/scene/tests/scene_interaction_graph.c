@@ -1122,7 +1122,9 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
     AC(render->u.render.plot_desc.width, plot_desc.width, 1e-6);
     AC(render->u.render.plot_desc.height, plot_desc.height, 1e-6);
     AT(render->u.render.visual_metadata[0].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PANEL);
+    AT(render->u.render.visual_metadata[0].viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PANEL);
     AT(render->u.render.visual_metadata[1].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT);
+    AT(render->u.render.visual_metadata[1].viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PLOT);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
@@ -1143,6 +1145,8 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
 
     bool saw_plot_viewport = false;
     bool saw_plot_scissor = false;
+    bool saw_panel_viewport_uniform = false;
+    bool saw_plot_viewport_uniform = false;
     uint32_t viewport_count = 0;
     uint32_t scissor_count = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
@@ -1157,7 +1161,7 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
                 fabsf(cmd->u.set_viewport.viewport[3] - plot_rect.height) < 1e-6f)
                 saw_plot_viewport = true;
         }
-        if (cmd->type == DVZ_DRP2_COMMAND_SET_SCISSOR)
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_SCISSOR)
         {
             scissor_count++;
             if (fabsf(cmd->u.set_scissor.scissor[0] - plot_rect.x) < 1e-6f &&
@@ -1166,11 +1170,34 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
                 fabsf(cmd->u.set_scissor.scissor[3] - plot_rect.height) < 1e-6f)
                 saw_plot_scissor = true;
         }
+        else if (
+            cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
+            cmd->u.write_buffer.size == sizeof(DvzSceneViewportUniform))
+        {
+            const DvzSceneViewportUniform* viewport =
+                (const DvzSceneViewportUniform*)cmd->u.write_buffer.data_raw;
+            ANN(viewport);
+            if (fabsf(viewport->x) < 1e-6f && fabsf(viewport->y) < 1e-6f &&
+                fabsf(viewport->width - 128.0f) < 1e-6f &&
+                fabsf(viewport->height - 96.0f) < 1e-6f)
+            {
+                saw_panel_viewport_uniform = true;
+            }
+            if (fabsf(viewport->x - plot_rect.x) < 1e-6f &&
+                fabsf(viewport->y - plot_rect.y) < 1e-6f &&
+                fabsf(viewport->width - plot_rect.width) < 1e-6f &&
+                fabsf(viewport->height - plot_rect.height) < 1e-6f)
+            {
+                saw_plot_viewport_uniform = true;
+            }
+        }
     }
     AT(viewport_count >= 2);
     AT(saw_plot_viewport);
     AT(scissor_count >= 2);
     AT(saw_plot_scissor);
+    AT(saw_panel_viewport_uniform);
+    AT(saw_plot_viewport_uniform);
 
     _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);

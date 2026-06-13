@@ -531,14 +531,10 @@ _axis_test_grid_centers_pixel_snapped(DvzAxis* axis, DvzDim dim, const float ext
     const float* positions = (const float*)positions_view.data;
     const uint8_t* colors = (const uint8_t*)colors_view.data;
 
-    float panel_x = 0.0f;
-    float panel_y = 0.0f;
-    float panel_width = 0.0f;
-    float panel_height = 0.0f;
-    _scene_panel_pixel_rect(axis->panel, &panel_x, &panel_y, &panel_width, &panel_height);
-    (void)panel_x;
-    (void)panel_y;
-    float pixel_span = dim == DVZ_DIM_X ? panel_width : panel_height;
+    DvzRect plot_px = {0};
+    if (!dvz_panel_plot_rect_px(axis->panel, &plot_px))
+        return false;
+    float pixel_span = dim == DVZ_DIM_X ? plot_px.width : plot_px.height;
     if (!(pixel_span > 0.0f) || !isfinite(pixel_span))
         return false;
 
@@ -548,7 +544,7 @@ _axis_test_grid_centers_pixel_snapped(DvzAxis* axis, DvzDim dim, const float ext
     if (fabsf(range) <= 1e-12f || !isfinite(range))
         return false;
 
-    float phase = _axis_test_line_pixel_phase(axis->style.grid_width + 1.0f);
+    float phase = _axis_test_line_pixel_phase(axis->style.grid_width);
     uint32_t coord_idx = dim == DVZ_DIM_X ? 0u : 1u;
     uint32_t checked = 0;
     for (uint32_t i = 0; i + 5 < positions_view.item_count; i += 6)
@@ -588,14 +584,10 @@ static float _axis_test_grid_snap_source_tolerance(
     ANN(axis);
     ANN(axis->panel);
     ANN(extent);
-    float panel_x = 0.0f;
-    float panel_y = 0.0f;
-    float panel_width = 0.0f;
-    float panel_height = 0.0f;
-    _scene_panel_pixel_rect(axis->panel, &panel_x, &panel_y, &panel_width, &panel_height);
-    (void)panel_x;
-    (void)panel_y;
-    float pixel_span = dim == DVZ_DIM_X ? panel_width : panel_height;
+    DvzRect plot_px = {0};
+    if (!dvz_panel_plot_rect_px(axis->panel, &plot_px))
+        return 1e-3f;
+    float pixel_span = dim == DVZ_DIM_X ? plot_px.width : plot_px.height;
     uint32_t lo_idx = dim == DVZ_DIM_X ? 0 : 2;
     uint32_t hi_idx = dim == DVZ_DIM_X ? 1 : 3;
     float range = fabsf(extent[hi_idx] - extent[lo_idx]);
@@ -2481,15 +2473,23 @@ static int test_axis_visual_clip_rect_panel(TstContext* suite, const TstCase* it
     AT(render->u.render.visual_count == 3);
     uint32_t panel_clip_count = 0;
     uint32_t plot_clip_count = 0;
+    uint32_t panel_viewport_count = 0;
+    uint32_t plot_viewport_count = 0;
     for (uint32_t i = 0; i < render->u.render.visual_count; i++)
     {
         if (render->u.render.visual_metadata[i].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PANEL)
             panel_clip_count++;
         if (render->u.render.visual_metadata[i].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT)
             plot_clip_count++;
+        if (render->u.render.visual_metadata[i].viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PANEL)
+            panel_viewport_count++;
+        if (render->u.render.visual_metadata[i].viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PLOT)
+            plot_viewport_count++;
     }
     AT(panel_clip_count == 1);
     AT(plot_clip_count == 2);
+    AT(panel_viewport_count == 1);
+    AT(plot_viewport_count == 2);
 
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);

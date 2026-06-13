@@ -65,16 +65,64 @@ static bool _create_common_bind_group_layout(DvzDrp2CommandStream* stream, uint6
 
 
 /**
- * Fill the viewport uniform from a render node.
+ * Fill a viewport uniform from a normalized render rectangle.
  *
  * @param render the render node
+ * @param desc normalized render rectangle
+ * @param out the output viewport uniform
+ */
+static void _viewport_uniform_from_desc(
+    const DvzFramePlanNode* render, const DvzPanelDesc* desc, DvzSceneViewportUniform* out)
+{
+    ANN(render);
+    ANN(desc);
+    ANN(out);
+    float target_width = 1.0f;
+    float target_height = 1.0f;
+    if (render->u.render.has_viewport && render->u.render.desc.width > 0.0f &&
+        render->u.render.desc.height > 0.0f)
+    {
+        target_width = render->u.render.viewport.width / render->u.render.desc.width;
+        target_height = render->u.render.viewport.height / render->u.render.desc.height;
+    }
+    out->x = desc->x * target_width;
+    out->y = desc->y * target_height;
+    out->width = desc->width * target_width;
+    out->height = desc->height * target_height;
+}
+
+
+
+/**
+ * Fill the viewport uniform from a render node and viewport selection.
+ *
+ * @param render the render node
+ * @param selection viewport rectangle selection
  * @param out the output viewport uniform
  */
 static void _viewport_uniform_from_render(
-    const DvzFramePlanNode* render, DvzSceneViewportUniform* out)
+    const DvzFramePlanNode* render, DvzFramePlanViewportRect selection,
+    DvzSceneViewportUniform* out)
 {
     ANN(render);
     ANN(out);
+    if (selection == DVZ_FRAME_PLAN_VIEWPORT_PLOT && render->u.render.has_plot_desc)
+    {
+        _viewport_uniform_from_desc(render, &render->u.render.plot_desc, out);
+        return;
+    }
+    if (selection == DVZ_FRAME_PLAN_VIEWPORT_TARGET)
+    {
+        out->x = 0.0f;
+        out->y = 0.0f;
+        out->width = render->u.render.has_viewport && render->u.render.desc.width > 0.0f
+                         ? render->u.render.viewport.width / render->u.render.desc.width
+                         : 1.0f;
+        out->height = render->u.render.has_viewport && render->u.render.desc.height > 0.0f
+                          ? render->u.render.viewport.height / render->u.render.desc.height
+                          : 1.0f;
+        return;
+    }
     if (render->u.render.has_viewport)
     {
         *out = render->u.render.viewport;
@@ -135,6 +183,7 @@ static void _mvp_uniform_copy(DvzMVP* dst, const DvzMVP* src)
  * @param render the render node
  * @param common_bgl_id the shared common bind group layout id
  * @param mode_tag the controller mode tag
+ * @param viewport_rect viewport rectangle selection
  * @param fixed whether the MVP should be identity
  * @param mvp_flags extra MVP flags to OR into the uploaded uniform
  * @param out_bg_id the resolved bind group id
@@ -142,8 +191,8 @@ static void _mvp_uniform_copy(DvzMVP* dst, const DvzMVP* src)
  */
 static bool _resolve_common_set(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    uint64_t common_bgl_id, const char* mode_tag, bool fixed, uint32_t mvp_flags,
-    const DvzMVP* override_mvp, uint64_t* out_bg_id)
+    uint64_t common_bgl_id, const char* mode_tag, DvzFramePlanViewportRect viewport_rect,
+    bool fixed, uint32_t mvp_flags, const DvzMVP* override_mvp, uint64_t* out_bg_id)
 {
     ANN(emitter);
     ANN(stream);
@@ -155,19 +204,25 @@ static bool _resolve_common_set(
 
     char mvp_buf_key[128], viewport_buf_key[128], bg_key[128];
     char mvp_slot_key[128], viewport_slot_key[128];
+    const char* viewport_tag =
+        viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PLOT     ? "plot" :
+        viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_TARGET   ? "target" :
+                                                            "panel";
     dvz_snprintf(
-        mvp_buf_key, sizeof(mvp_buf_key), "_common_mvp_buf_%s_%s",
-        render->u.render.panel_id, mode_tag);
+        mvp_buf_key, sizeof(mvp_buf_key), "_common_mvp_buf_%s_%s_%s",
+        render->u.render.panel_id, mode_tag, viewport_tag);
     dvz_snprintf(
-        viewport_buf_key, sizeof(viewport_buf_key), "_common_viewport_buf_%s_%s",
-        render->u.render.panel_id, mode_tag);
+        viewport_buf_key, sizeof(viewport_buf_key), "_common_viewport_buf_%s_%s_%s",
+        render->u.render.panel_id, mode_tag, viewport_tag);
     dvz_snprintf(
-        bg_key, sizeof(bg_key), "_common_bg_%s_%s", render->u.render.panel_id, mode_tag);
+        bg_key, sizeof(bg_key), "_common_bg_%s_%s_%s", render->u.render.panel_id, mode_tag,
+        viewport_tag);
     dvz_snprintf(
-        mvp_slot_key, sizeof(mvp_slot_key), "%s_%s", render->u.render.panel_id, mode_tag);
+        mvp_slot_key, sizeof(mvp_slot_key), "%s_%s_%s", render->u.render.panel_id, mode_tag,
+        viewport_tag);
     dvz_snprintf(
-        viewport_slot_key, sizeof(viewport_slot_key), "%s_%s", render->u.render.panel_id,
-        mode_tag);
+        viewport_slot_key, sizeof(viewport_slot_key), "%s_%s_%s", render->u.render.panel_id,
+        mode_tag, viewport_tag);
 
     bool is_new = false;
     uint32_t usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
@@ -235,7 +290,7 @@ static bool _resolve_common_set(
     mvp_src = mvp_slot;
 
     DvzSceneViewportUniform local_viewport = {0};
-    _viewport_uniform_from_render(render, &local_viewport);
+    _viewport_uniform_from_render(render, viewport_rect, &local_viewport);
     DvzSceneViewportUniform* viewport_slot =
         _emitter_viewport_slot(emitter, viewport_slot_key);
     if (viewport_slot == NULL)
@@ -295,62 +350,36 @@ bool _scene_common_bindings_resolve_panel_sets(
     if (is_new)
         ok = ok && _create_common_bind_group_layout(stream, common_bgl_id);
 
-    /* Determine which modes are needed for this panel. */
-    bool needs_apply = false, needs_fixed = false, needs_isotropic = false;
-    for (uint32_t i = 0; i < render->u.render.visual_count; i++)
-    {
-        if (render->u.render.controller_modes[i] == DVZ_CONTROLLER_FIXED)
-            needs_fixed = true;
-        else if (render->u.render.controller_modes[i] == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL)
-            needs_isotropic = true;
-        else
-            needs_apply = true;
-    }
-
-    uint64_t apply_bg_id = 0, fixed_bg_id = 0, isotropic_bg_id = 0;
-    if (needs_apply && ok)
-        ok = _resolve_common_set(
-            emitter, stream, render, common_bgl_id, "apply", false, 0, NULL, &apply_bg_id);
-    if (needs_fixed && ok)
-        ok = _resolve_common_set(
-            emitter, stream, render, common_bgl_id, "fixed", true, 0, NULL, &fixed_bg_id);
-    if (needs_isotropic && ok)
-        ok = _resolve_common_set(
-            emitter, stream, render, common_bgl_id, "apply_iso", false,
-            DVZ_MVP_FLAGS_ISOTROPIC_LOCAL, NULL, &isotropic_bg_id);
-
     if (!ok)
         return false;
     *out_bgl_id = common_bgl_id;
-    *out_apply_bg_id = apply_bg_id;
-    *out_fixed_bg_id = fixed_bg_id;
-    *out_isotropic_bg_id = isotropic_bg_id;
     return true;
 }
 
 
 
 /**
- * Resolve the common bind group for one visual-specific MVP.
+ * Resolve the common bind group for one visual-specific draw.
  *
  * @param emitter the persistent emitter
  * @param stream the DRP2 command stream
  * @param render the render node
  * @param visual_index index in render->visuals
  * @param common_bgl_id the shared common bind group layout id
+ * @param viewport_rect viewport rectangle selection
  * @param out_bg_id resolved bind group id
  * @return whether the common bind group was resolved
  */
 bool _scene_common_bindings_resolve_visual_set(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    uint32_t visual_index, uint64_t common_bgl_id, uint64_t* out_bg_id)
+    uint32_t visual_index, uint64_t common_bgl_id, DvzFramePlanViewportRect viewport_rect,
+    uint64_t* out_bg_id)
 {
     ANN(emitter);
     ANN(stream);
     ANN(render);
     ANN(out_bg_id);
-    if (visual_index >= render->u.render.visual_count ||
-        !render->u.render.visual_has_mvp[visual_index])
+    if (visual_index >= render->u.render.visual_count)
     {
         *out_bg_id = 0;
         return false;
@@ -365,9 +394,13 @@ bool _scene_common_bindings_resolve_visual_set(
     dvz_snprintf(tag, sizeof(tag), "%s_visual_%u", mode_tag, visual_index);
     uint32_t flags =
         mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL ? DVZ_MVP_FLAGS_ISOTROPIC_LOCAL : 0;
+    bool fixed = mode == DVZ_CONTROLLER_FIXED;
+    const DvzMVP* override_mvp =
+        render->u.render.visual_has_mvp[visual_index] ? &render->u.render.visual_mvp[visual_index]
+                                                      : NULL;
     return _resolve_common_set(
-        emitter, stream, render, common_bgl_id, tag, false, flags,
-        &render->u.render.visual_mvp[visual_index], out_bg_id);
+        emitter, stream, render, common_bgl_id, tag, viewport_rect, fixed, flags, override_mvp,
+        out_bg_id);
 }
 
 
@@ -412,8 +445,8 @@ bool _scene_common_bindings_resolve_single_set(
         mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL ? DVZ_MVP_FLAGS_ISOTROPIC_LOCAL : 0;
     uint64_t common_bg_id = 0;
     ok = ok && _resolve_common_set(
-                   emitter, stream, render, common_bgl_id, mode_tag, fixed, mvp_flags,
-                   NULL, &common_bg_id);
+                   emitter, stream, render, common_bgl_id, mode_tag,
+                   DVZ_FRAME_PLAN_VIEWPORT_PANEL, fixed, mvp_flags, NULL, &common_bg_id);
 
     if (!ok)
         return false;

@@ -470,6 +470,39 @@ _scene_visual_clip_rect(const DvzPanel* panel, const DvzVisual* visual, const Dv
 
 
 /**
+ * Return the viewport rectangle one visual should use within its panel render pass.
+ *
+ * @param panel the panel owning the visual attachment
+ * @param visual the visual
+ * @param attach the visual attachment
+ * @return the visual viewport rectangle kind
+ */
+static DvzFramePlanViewportRect _scene_visual_viewport_rect(
+    const DvzPanel* panel, const DvzVisual* visual, const DvzPanelAttach* attach)
+{
+    ANN(panel);
+    ANN(visual);
+    ANN(attach);
+    if (
+        visual == panel->background_visual || visual == panel->border_visual ||
+        (visual->ops != NULL && visual->ops->panel_clip_rect) ||
+        (_scene_visual_is_axis_derived(panel, visual) &&
+         !_scene_visual_is_axis_grid(panel, visual)) ||
+        _scene_visual_is_colorbar_derived(panel, visual) ||
+        _scene_visual_is_legend_derived(panel, visual))
+    {
+        return DVZ_FRAME_PLAN_VIEWPORT_PANEL;
+    }
+    if (_scene_visual_is_axis_grid(panel, visual) || attach->coord_space == DVZ_COORD_DATA ||
+        attach->coord_space == DVZ_COORD_VIEW)
+    {
+        return DVZ_FRAME_PLAN_VIEWPORT_PLOT;
+    }
+    return DVZ_FRAME_PLAN_VIEWPORT_PANEL;
+}
+
+
+/**
  * Return whether the panel has visible scene occluder and occluded targets.
  *
  * @param panel the panel
@@ -586,6 +619,7 @@ static bool _scene_append_visual_to_render_pass(
         return false;
     }
     metadata.clip_rect = _scene_visual_clip_rect(panel, visual, attach);
+    metadata.viewport_rect = _scene_visual_viewport_rect(panel, visual, attach);
     if (metadata.has_volume && volume_occlusion == NULL)
     {
         metadata.volume_occluded = false;

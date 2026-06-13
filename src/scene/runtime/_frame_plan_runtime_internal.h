@@ -82,6 +82,7 @@ struct SceneDrawPacket
     uint64_t bg_set2; /* scene occlusion bg; 0 = none */
     uint64_t bg_set3; /* depth-peel sampled bg; 0 = none */
     DvzFramePlanClipRect clip_rect;
+    DvzFramePlanViewportRect viewport_rect;
     SceneDrawVertexBuffer vertex_buffers[DVZ_SCENE_MAX_NODE_RESOURCES];
     uint32_t vertex_buffer_count;
     uint32_t validation_binding_count;
@@ -292,7 +293,8 @@ bool _scene_draw_packet_init(
     const ConverterState* state, const DvzSceneVisualDesc* visual,
     const DvzSceneVisualPipelineDesc* pipeline, uint64_t pipeline_id, uint64_t bg_set0,
     uint64_t bg_set1, uint64_t bg_set2, uint64_t bg_set3, DvzFramePlanClipRect clip_rect,
-    DvzSceneShaderFormat shader_format, DvzDiagnosticReport* report, SceneDrawPacket* out);
+    DvzFramePlanViewportRect viewport_rect, DvzSceneShaderFormat shader_format,
+    DvzDiagnosticReport* report, SceneDrawPacket* out);
 bool _scene_draw_packet_emit(
     DvzDrp2CommandStream* stream, uint64_t render_pass_id, const SceneDrawPacket* packet);
 bool _emitter_prepare_render_multi(

@@ -126,6 +126,31 @@ bool _emitter_prepare_render_multi(
             break;
         }
 
+        uint64_t vis_bg_set0 = 0;
+        uint64_t vis_bg_set1 = 0;
+        uint64_t vis_bg_set2 = 0;
+        uint64_t vis_bg_set3 = 0;
+        DvzFramePlanViewportRect viewport_rect =
+            render->u.render.visual_metadata[i].has_metadata
+                ? render->u.render.visual_metadata[i].viewport_rect
+                : DVZ_FRAME_PLAN_VIEWPORT_PANEL;
+        DvzSceneVisualBindDesc bind = {0};
+        if (!_scene_visual_bind_desc(&desc, render->u.render.controller_modes[i], &bind))
+        {
+            ok = false;
+            break;
+        }
+        _scene_visual_bind_desc_apply_pass_policy(
+            &bind, render->u.render.pass_role, sampled_depth_id, sampled_depth_is_volume_occlusion,
+            scene_occlusion_depth_id);
+        if (bind.uses_common_set0)
+        {
+            ok = _scene_common_bindings_resolve_visual_set(
+                emitter, stream, render, i, common_bgl_id, viewport_rect, &vis_bg_set0);
+            if (!ok)
+                break;
+        }
+
         DvzSceneVisualShaderDesc shader = {0};
         char* scene_occlusion_fragment_glsl = NULL;
         bool special_pass_handled = false;
@@ -226,6 +251,23 @@ bool _emitter_prepare_render_multi(
         _scene_visual_pipeline_desc_apply_pass_policy(
             &desc, render->u.render.pass_role, force_point_depth, pass_sample_count,
             pass_alpha_to_coverage, &pipeline);
+        if (!pipeline.needs_item_state_style_layout)
+            bind.uses_item_state_style_set1 = false;
+        if (!pipeline.needs_material_layout)
+            bind.uses_material_set1 = false;
+        if (!pipeline.needs_image_layout)
+        {
+            bind.uses_image_set1 = false;
+            bind.uses_textured_mesh_set1 = false;
+        }
+        if (!pipeline.needs_labels_layout)
+            bind.uses_labels_set1 = false;
+        if (!pipeline.needs_glyph_layout)
+            bind.uses_glyph_set1 = false;
+        if (!pipeline.needs_volume_layout)
+            bind.uses_volume_set1 = false;
+        if (!pipeline.needs_scene_occlusion_layout)
+            bind.uses_scene_occlusion_set2 = false;
         if (ok && is_new)
         {
             uint64_t material_bgl_id = 0;
@@ -473,36 +515,7 @@ bool _emitter_prepare_render_multi(
                 _diagnostic(report, "scene render pipeline setup failed");
         }
 
-        /* Bind group at set 0. */
-        uint64_t vis_bg_set0 = 0;
-        uint64_t vis_bg_set1 = 0;
-        uint64_t vis_bg_set2 = 0;
-        uint64_t vis_bg_set3 = 0;
-        DvzSceneVisualBindDesc bind = {0};
-        if (!_scene_visual_bind_desc(&desc, render->u.render.controller_modes[i], &bind))
-        {
-            ok = false;
-            break;
-        }
-        _scene_visual_bind_desc_apply_pass_policy(
-            &bind, render->u.render.pass_role, sampled_depth_id, sampled_depth_is_volume_occlusion,
-            scene_occlusion_depth_id);
-        if (bind.uses_common_set0)
-        {
-            if (render->u.render.visual_has_mvp[i])
-            {
-                ok = _scene_common_bindings_resolve_visual_set(
-                    emitter, stream, render, i, common_bgl_id, &vis_bg_set0);
-                if (!ok)
-                    break;
-            }
-            else if (bind.uses_fixed_common)
-                vis_bg_set0 = fixed_bg_id;
-            else if (bind.controller_mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL)
-                vis_bg_set0 = isotropic_bg_id;
-            else
-                vis_bg_set0 = apply_bg_id;
-        }
+        /* Visual-specific bind groups. */
         if (bind.uses_item_state_style_set1)
         {
             if (bind.material_buffer_id == 0 || bind.item_state_style_buffer_id == 0)
@@ -788,7 +801,8 @@ bool _emitter_prepare_render_multi(
                                              : DVZ_FRAME_PLAN_CLIP_RECT_PANEL;
         ok = _scene_draw_packet_init(
             &emitter->resources, &desc, &pipeline, pipe_id, vis_bg_set0, vis_bg_set1,
-            vis_bg_set2, vis_bg_set3, clip_rect, shader_format, report, &draws[draw_count]);
+            vis_bg_set2, vis_bg_set3, clip_rect, viewport_rect, shader_format, report,
+            &draws[draw_count]);
         if (!ok)
             break;
         draw_count++;

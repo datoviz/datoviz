@@ -285,6 +285,14 @@ typedef enum DvzFramePlanClipRect
 } DvzFramePlanClipRect;
 
 
+typedef enum DvzFramePlanViewportRect
+{
+    DVZ_FRAME_PLAN_VIEWPORT_PANEL = 0,
+    DVZ_FRAME_PLAN_VIEWPORT_PLOT,
+    DVZ_FRAME_PLAN_VIEWPORT_TARGET,
+} DvzFramePlanViewportRect;
+
+
 typedef enum DvzRenderableKind
 {
     DVZ_RENDERABLE_NONE = 0,
@@ -302,6 +310,7 @@ typedef struct DvzFramePlanVisualMeta
 {
     bool has_metadata;
     DvzFramePlanClipRect clip_rect;
+    DvzFramePlanViewportRect viewport_rect;
     uint32_t visual_type;
     uint32_t renderable_kind;
     uint32_t desc_kind;

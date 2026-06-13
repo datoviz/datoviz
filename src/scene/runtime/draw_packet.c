@@ -275,6 +275,7 @@ static bool _draw_packet_fill_vertex_buffers(
  * @param bg_set2 bind group for set 2, or zero
  * @param bg_set3 bind group for set 3, or zero
  * @param clip_rect pass-local clip rectangle selection
+ * @param viewport_rect pass-local viewport rectangle selection
  * @param report optional diagnostic report
  * @param out output draw packet
  * @return whether the packet is valid for DRP2 lowering
@@ -283,7 +284,8 @@ bool _scene_draw_packet_init(
     const ConverterState* state, const DvzSceneVisualDesc* visual,
     const DvzSceneVisualPipelineDesc* pipeline, uint64_t pipeline_id, uint64_t bg_set0,
     uint64_t bg_set1, uint64_t bg_set2, uint64_t bg_set3, DvzFramePlanClipRect clip_rect,
-    DvzSceneShaderFormat shader_format, DvzDiagnosticReport* report, SceneDrawPacket* out)
+    DvzFramePlanViewportRect viewport_rect, DvzSceneShaderFormat shader_format,
+    DvzDiagnosticReport* report, SceneDrawPacket* out)
 {
     ANN(state);
     ANN(visual);
@@ -298,6 +300,7 @@ bool _scene_draw_packet_init(
     out->bg_set2 = bg_set2;
     out->bg_set3 = bg_set3;
     out->clip_rect = clip_rect;
+    out->viewport_rect = viewport_rect;
     DvzSceneVisualDrawDesc draw_desc = {0};
     if (!_scene_visual_draw_desc(visual, shader_format, &draw_desc))
     {

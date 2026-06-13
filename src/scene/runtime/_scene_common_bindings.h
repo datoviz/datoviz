@@ -36,7 +36,8 @@ bool _scene_common_bindings_resolve_panel_sets(
 
 bool _scene_common_bindings_resolve_visual_set(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    uint32_t visual_index, uint64_t common_bgl_id, uint64_t* out_bg_id);
+    uint32_t visual_index, uint64_t common_bgl_id, DvzFramePlanViewportRect viewport_rect,
+    uint64_t* out_bg_id);
 
 bool _scene_common_bindings_resolve_single_set(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,

@@ -48,6 +48,50 @@ DvzPanelDesc _render_desc_framebuffer_rect(
 }
 
 
+/**
+ * Resolve a render-node viewport selection to framebuffer coordinates.
+ *
+ * @param render the render node
+ * @param selection viewport rectangle selection
+ * @param cfg emission configuration carrying target extent
+ * @return framebuffer-coordinate rectangle
+ */
+static DvzPanelDesc _render_viewport_rect(
+    const DvzFramePlanNode* render, DvzFramePlanViewportRect selection,
+    const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(render);
+    if (selection == DVZ_FRAME_PLAN_VIEWPORT_PLOT && render->u.render.has_plot_desc)
+        return _render_desc_framebuffer_rect(&render->u.render.plot_desc, cfg);
+    if (selection == DVZ_FRAME_PLAN_VIEWPORT_TARGET)
+    {
+        float width = cfg != NULL && cfg->target_width > 0 ? (float)cfg->target_width : 1.0f;
+        float height = cfg != NULL && cfg->target_height > 0 ? (float)cfg->target_height : 1.0f;
+        return (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = width, .height = height};
+    }
+    return _render_desc_framebuffer_rect(&render->u.render.desc, cfg);
+}
+
+
+/**
+ * Resolve a render-node scissor selection to framebuffer coordinates.
+ *
+ * @param render the render node
+ * @param selection clip rectangle selection
+ * @param cfg emission configuration carrying target extent
+ * @return framebuffer-coordinate rectangle
+ */
+static DvzPanelDesc _render_scissor_rect(
+    const DvzFramePlanNode* render, DvzFramePlanClipRect selection,
+    const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(render);
+    if (selection == DVZ_FRAME_PLAN_CLIP_RECT_PLOT && render->u.render.has_plot_desc)
+        return _render_desc_framebuffer_rect(&render->u.render.plot_desc, cfg);
+    return _render_desc_framebuffer_rect(&render->u.render.desc, cfg);
+}
+
+
 
 /**
  * Emit one panel's already-prepared draws inside an open render pass.
@@ -87,17 +131,16 @@ bool _emitter_emit_render_multi_draws(
     uint64_t last_bg_set3 = 0;
     for (uint32_t d = 0; ok && d < draw_count; d++)
     {
-        DvzPanelDesc draw_scissor = viewport;
-        if (draws[d].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT && render->u.render.has_plot_desc)
-            draw_scissor = _render_desc_framebuffer_rect(&render->u.render.plot_desc, cfg);
-        if (draw_scissor.x != active_viewport.x || draw_scissor.y != active_viewport.y ||
-            draw_scissor.width != active_viewport.width ||
-            draw_scissor.height != active_viewport.height)
+        DvzPanelDesc draw_viewport = _render_viewport_rect(render, draws[d].viewport_rect, cfg);
+        DvzPanelDesc draw_scissor = _render_scissor_rect(render, draws[d].clip_rect, cfg);
+        if (draw_viewport.x != active_viewport.x || draw_viewport.y != active_viewport.y ||
+            draw_viewport.width != active_viewport.width ||
+            draw_viewport.height != active_viewport.height)
         {
             ok = ok && dvz_drp2_stream_set_viewport(
-                           stream, render_pass_id, draw_scissor.x, draw_scissor.y,
-                           draw_scissor.width, draw_scissor.height);
-            active_viewport = draw_scissor;
+                           stream, render_pass_id, draw_viewport.x, draw_viewport.y,
+                           draw_viewport.width, draw_viewport.height);
+            active_viewport = draw_viewport;
         }
         if (draw_scissor.x != active_scissor.x || draw_scissor.y != active_scissor.y ||
             draw_scissor.width != active_scissor.width ||
