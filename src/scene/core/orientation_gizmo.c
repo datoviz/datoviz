@@ -173,7 +173,7 @@ static bool _orientation_gizmo_panel_desc(
  * @param src source matrix
  * @param out destination rotation transform
  */
-static void _gizmo_rotation_matrix(const mat4 src, mat4 out)
+static void _gizmo_rotation_matrix(mat4 src, mat4 out)
 {
     ANN(src);
     ANN(out);
@@ -191,7 +191,7 @@ static void _gizmo_rotation_matrix(const mat4 src, mat4 out)
  * @param b second matrix
  * @return whether matrices are nearly equal
  */
-static bool _gizmo_mat4_close(const mat4 a, const mat4 b)
+static bool _gizmo_mat4_close(mat4 a, mat4 b)
 {
     ANN(a);
     ANN(b);
@@ -209,7 +209,7 @@ static bool _gizmo_mat4_close(const mat4 a, const mat4 b)
  * @param visual visual to update
  * @param transform retained local transform
  */
-static void _gizmo_set_visual_transform(DvzVisual* visual, const mat4 transform)
+static void _gizmo_set_visual_transform(DvzVisual* visual, mat4 transform)
 {
     ANN(visual);
     ANN(transform);
