@@ -1413,7 +1413,10 @@ int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item)
     dvz_frame_plan_destroy(default_plan);
 
     AT(dvz_panel_set_edl(
-        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
+        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc),
+                   .radius = 2.0f,
+                   .strength = 55.0f,
+                   .depth_scale = 1.0f}));
 
     DvzFramePlan* plan = dvz_frame_plan("figure.edl", 0);
     ANN(plan);
@@ -1509,6 +1512,100 @@ int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item)
     AT(found_edl_bind_group);
 
     _test_scene_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify blended overlays do not suppress an EDL post-process graph pass.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_edl_blended_overlay_runtime_lowering(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* points = dvz_point(scene, 0);
+    AT(points != NULL);
+    vec3 positions[3] = {
+        {-0.35f, -0.20f, 0.1f},
+        {+0.20f, +0.05f, 0.3f},
+        {+0.05f, +0.35f, 0.6f},
+    };
+    DvzColor colors[3] = {
+        {255, 80, 60, 255},
+        {80, 220, 120, 255},
+        {80, 140, 255, 255},
+    };
+    float sizes[3] = {18.0f, 22.0f, 26.0f};
+    AT(dvz_visual_set_data(points, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(points, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(points, "size", sizes, 3) == 0);
+    AT(dvz_panel_add_visual(panel, points, NULL) == 0);
+
+    DvzVisual* overlay = dvz_point(scene, 0);
+    AT(overlay != NULL);
+    vec3 overlay_positions[1] = {{-0.45f, +0.42f, 0.0f}};
+    DvzColor overlay_colors[1] = {{255, 255, 255, 180}};
+    float overlay_sizes[1] = {10.0f};
+    AT(dvz_visual_set_data(overlay, "position", overlay_positions, 1) == 0);
+    AT(dvz_visual_set_data(overlay, "color", overlay_colors, 1) == 0);
+    AT(dvz_visual_set_data(overlay, "size", overlay_sizes, 1) == 0);
+    AT(dvz_visual_set_alpha_mode(overlay, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_panel_add_visual(panel, overlay, NULL) == 0);
+
+    AT(dvz_panel_set_edl(
+        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.edl.label", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+
+    bool found_edl_node = false;
+    bool found_blended_node = false;
+    for (uint32_t i = 0; i < dvz_frame_plan_node_count(plan); i++)
+    {
+        const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, i);
+        ANN(node);
+        if (node->type == DVZ_FRAME_PLAN_NODE_RENDER)
+        {
+            found_edl_node =
+                found_edl_node ||
+                dvz_frame_plan_render_pass_role(node) == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE;
+            found_blended_node =
+                found_blended_node ||
+                dvz_frame_plan_render_pass_role(node) ==
+                    DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND;
+        }
+    }
+    AT(found_edl_node);
+    AT(found_blended_node);
+
+    bool found_edl_pass = false;
+    bool found_blended_pass = false;
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
+    {
+        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
+        ANN(pass);
+        found_edl_pass = found_edl_pass || strcmp(pass->work_label, "edl_resolve") == 0;
+        found_blended_pass =
+            found_blended_pass || strcmp(pass->work_label, "transparent_blend") == 0;
+    }
+    AT(found_edl_pass);
+    AT(found_blended_pass);
+
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;

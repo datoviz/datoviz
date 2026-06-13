@@ -1224,6 +1224,32 @@ bool _scene_emit_panel_render_ex(
                 report, "failed to emit G-buffer FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
+        if (edl_enabled && edl_has_depth_producer)
+        {
+            char edl_params_key[DVZ_SCENE_LABEL_SIZE];
+            if (_scene_edl_params_resource_key(panel_id, edl_params_key, sizeof(edl_params_key)))
+            {
+                _scene_technique_edl_uniform(edl_state, &panel->techniques.edl.uniform);
+                if (dvz_frame_plan_upload_bytes(
+                        plan, edl_params_key, 0, sizeof(DvzSceneEdlUniform), "edl_params",
+                        &panel->techniques.edl.uniform))
+                {
+                    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+                    node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM |
+                                                  DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                                                  DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+                }
+            }
+            if (!_scene_begin_panel_render_pass(
+                    plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE,
+                    &panel_apply_mvp, &panel_viewport, plot_desc, &edl_node) ||
+                !_scene_technique_emit_edl_frame_graph(plan, panel_id))
+            {
+                _scene_emit_graph_report(
+                    report, "failed to emit EDL FramePlan graph for panel %s", panel_id);
+                graph_ok = false;
+            }
+        }
         bool blended_depth_producer = opaque_needs_depth || transparent_needs_depth;
         if (ssao_enabled && gbuffer_node != invalid_node && gbuffer.producer_count > 0)
         {

@@ -754,6 +754,8 @@ int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase
 
 int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item);
 
+int test_scene_edl_blended_overlay_runtime_lowering(TstContext* suite, const TstCase* item);
+
 int test_scene_edl_depth_producer_capabilities(TstContext* suite, const TstCase* item);
 
 int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* item);
