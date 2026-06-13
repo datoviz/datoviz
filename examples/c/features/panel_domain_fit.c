@@ -38,7 +38,6 @@
 #define WIDTH       1600u
 #define HEIGHT      1200u
 #define CIRCLE_COUNT 97u
-#define GRID_LINES   4u
 
 
 
@@ -47,7 +46,7 @@
 /*************************************************************************************************/
 
 /**
- * Add a unit circle and square frame in data coordinates.
+ * Add a unit circle in data coordinates.
  *
  * @param scene scene owning visuals
  * @param panel target panel
@@ -92,48 +91,7 @@ static bool _add_domain_shape(DvzScene* scene, DvzPanel* panel, DvzColor color)
     if (dvz_panel_add_visual(panel, path, &path_attach) != 0)
         return false;
 
-    vec3 starts[GRID_LINES] = {0};
-    vec3 ends[GRID_LINES] = {0};
-    DvzColor grid_colors[GRID_LINES] = {{0}};
-    float grid_widths[GRID_LINES] = {0};
-    const vec3 frame_starts[GRID_LINES] = {
-        {-1.0f, -1.0f, 0.0f},
-        {+1.0f, -1.0f, 0.0f},
-        {+1.0f, +1.0f, 0.0f},
-        {-1.0f, +1.0f, 0.0f},
-    };
-    const vec3 frame_ends[GRID_LINES] = {
-        {+1.0f, -1.0f, 0.0f},
-        {+1.0f, +1.0f, 0.0f},
-        {-1.0f, +1.0f, 0.0f},
-        {-1.0f, -1.0f, 0.0f},
-    };
-    for (uint32_t i = 0; i < GRID_LINES; i++)
-    {
-        for (uint32_t j = 0; j < 3u; j++)
-        {
-            starts[i][j] = frame_starts[i][j];
-            ends[i][j] = frame_ends[i][j];
-        }
-        grid_colors[i] = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
-        grid_widths[i] = 3.0f;
-    }
-
-    DvzVisual* grid = dvz_segment(scene, 0);
-    if (grid == NULL)
-        return false;
-    DvzVisualDataUpdate grid_updates[] = {
-        {.attr_name = "position_start", .data = starts, .item_count = GRID_LINES},
-        {.attr_name = "position_end", .data = ends, .item_count = GRID_LINES},
-        {.attr_name = "color", .data = grid_colors, .item_count = GRID_LINES},
-        {.attr_name = "stroke_width", .data = grid_widths, .item_count = GRID_LINES},
-    };
-    if (dvz_visual_set_data_many(grid, grid_updates, 4) != 0)
-        return false;
-    DvzVisualAttachDesc frame_attach = {DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
-        .z_layer = -1,
-        .coord_space = DVZ_COORD_DATA};
-    return dvz_panel_add_visual(panel, grid, &frame_attach) == 0;
+    return true;
 }
 
 
@@ -226,7 +184,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanelDomainFit fit = dvz_panel_domain_fit();
     fit.x = (DvzDataDomain){.min = -1.0, .max = +1.0};
     fit.y = (DvzDataDomain){.min = -1.0, .max = +1.0};
-    fit.padding = 0.08;
+    fit.padding = 0.18;
     fit.aspect = DVZ_PANEL_DOMAIN_ASPECT_EQUAL;
     if (dvz_panel_set_domain_fit(fit_panel, &fit) != 0)
         return false;
