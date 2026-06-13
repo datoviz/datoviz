@@ -99,8 +99,7 @@ static void _surface_data(double* heights, DvzColor* colors)
             const DvzColor lo = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
             const DvzColor hi = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
             colors[idx] = dvz_color_rgba(
-                (uint8_t)((1.0 - t) * lo.r + t * hi.r),
-                (uint8_t)((1.0 - t) * lo.g + t * hi.g),
+                (uint8_t)((1.0 - t) * lo.r + t * hi.r), (uint8_t)((1.0 - t) * lo.g + t * hi.g),
                 (uint8_t)((1.0 - t) * lo.b + t * hi.b), 235);
         }
     }
@@ -125,15 +124,7 @@ static bool _add_surface(DvzScene* scene, DvzPanel* panel, const DvzGeometry* ge
     DvzVisual* mesh = dvz_mesh(scene, 0);
     if (mesh == NULL)
         return false;
-    DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = -0.22f;
-    material.light_direction[1] = +0.58f;
-    material.light_direction[2] = 0.78f;
-    material.phong.ambient = 0.38f;
-    material.phong.diffuse = 0.76f;
-    material.phong.specular = 0.16f;
-    material.phong.shininess = 24.0f;
-    if (dvz_visual_set_material(mesh, &material) != 0)
+    if (!example_apply_default_phong_material(mesh))
         return false;
     if (dvz_mesh_set_geometry(mesh, geometry) != 0)
         return false;
@@ -169,18 +160,18 @@ static bool _add_wireframe(
     if (starts == NULL || ends == NULL || colors == NULL || widths == NULL)
         goto error;
 
-    const DvzColor wire_color = dvz_color_rgba(214, 234, 238, 92);
+    const DvzColor wire_color = dvz_color_rgba(14, 34, 38, 92);
     for (uint32_t i = 0; i < edges->edge_count; i++)
     {
         const DvzGeometryEdge* edge = &edges->edges[i];
         const double* p0 = geometry->positions[edge->v0];
         const double* p1 = geometry->positions[edge->v1];
         starts[i][0] = (float)p0[0];
-        starts[i][1] = (float)p0[1];
-        starts[i][2] = (float)(p0[2] + 0.003);
+        starts[i][1] = (float)(p0[1] + 0.003);
+        starts[i][2] = (float)p0[2];
         ends[i][0] = (float)p1[0];
-        ends[i][1] = (float)p1[1];
-        ends[i][2] = (float)(p1[2] + 0.003);
+        ends[i][1] = (float)(p1[1] + 0.003);
+        ends[i][2] = (float)p1[2];
         colors[i] = wire_color;
         widths[i] = 1.10f;
     }
@@ -251,10 +242,18 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     desc.cols = SURFACE_COLS;
     desc.heights = heights;
     desc.colors = colors;
-    desc.origin[0] = -1.35;
-    desc.origin[1] = -1.00;
-    desc.col_basis[0] = 2.70 / (double)(SURFACE_COLS - 1u);
-    desc.row_basis[1] = 2.00 / (double)(SURFACE_ROWS - 1u);
+    desc.origin[0] = -2.7;
+    desc.origin[1] = 0.0;
+    desc.origin[2] = +2.00;
+    desc.col_basis[0] = 2 * 2.70 / (double)(SURFACE_COLS - 1u);
+    desc.col_basis[1] = 0.0;
+    desc.col_basis[2] = 0.0;
+    desc.row_basis[0] = 0.0;
+    desc.row_basis[1] = 0.0;
+    desc.row_basis[2] = -2 * 2.00 / (double)(SURFACE_ROWS - 1u);
+    desc.height_axis[0] = 0.0;
+    desc.height_axis[1] = 1.0;
+    desc.height_axis[2] = 0.0;
     desc.height_scale = 1.18;
     state->geometry = dvz_geom_surface_grid(&desc);
     dvz_free(heights);
@@ -338,8 +337,8 @@ DvzScenarioSpec dvz_showcase_surface_grid_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
-        .requirements = DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
-                        DVZ_SCENARIO_REQ_ARCBALL,
+        .requirements =
+            DVZ_SCENARIO_REQ_MESH_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_ARCBALL,
         .init = _scenario_init,
         .destroy = _scenario_destroy,
     };
