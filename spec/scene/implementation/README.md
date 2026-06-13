@@ -27,9 +27,12 @@ behavior instead of restating it here.
 8. [FRAME_ARTIFACT_REFACTOR_PLAN.md](FRAME_ARTIFACT_REFACTOR_PLAN.md): active plan to make
    `DvzSceneFrameArtifact` the single scene emission product while preserving DRP2 streams as the
    artifact-owned execution IR.
-9. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): retired pointer for the completed
+9. [PANEL_VIEW_ARCHITECTURE_PLAN.md](PANEL_VIEW_ARCHITECTURE_PLAN.md): active plan for removing
+   equal-aspect/domain-fit compatibility aliases, separating panel view ownership from axes, and
+   making fitted domains resolver-derived state.
+10. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): retired pointer for the completed
    broad scene source split; active work moved to `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`.
-10. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): retired pointer
+11. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): retired pointer
    for the completed architecture queue.
 
 ## Current priorities
@@ -47,5 +50,7 @@ behavior instead of restating it here.
 9. Use `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md` before adding new root-level visual switches,
    family-private includes from generic code, or family-specific fields to generic retained visual
    state.
-10. Treat `SCENE_CODE_SPLIT_ROADMAP.md` and `SCENE_ARCHITECTURE_COMPLETION_PLAN.md` as retired
+10. Use `PANEL_VIEW_ARCHITECTURE_PLAN.md` before removing panel domain-fit compatibility aliases,
+   moving panel view code, or changing equal-aspect resolver ownership.
+11. Treat `SCENE_CODE_SPLIT_ROADMAP.md` and `SCENE_ARCHITECTURE_COMPLETION_PLAN.md` as retired
    compatibility links, not active queues.
