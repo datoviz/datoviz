@@ -231,8 +231,8 @@ ExampleAxisStyleOptions example_graphite_cyan_axis_options(void)
         .tick_size_px = 16.0f,
         .label_size_px = 20.0f,
         .tick_gap_px = 8.0f,
-        .x_label_gap_px = 38.0f,
-        .y_label_gap_px = 58.0f,
+        .x_label_gap_px = 0.0f,
+        .y_label_gap_px = 0.0f,
         .minor_tick_alpha = 220,
         .grid_alpha = 160,
     };

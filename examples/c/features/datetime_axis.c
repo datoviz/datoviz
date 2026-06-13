@@ -143,12 +143,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    bool ok = dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.12f, .right = 0.06f, .bottom = 0.16f,
-                                        .top = 0.06f});
-    if (!ok)
-        return false;
-
     int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 8.0);
     if (rc != 0)
         return false;
@@ -164,7 +158,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzVisual* path = dvz_path(ctx->scene, 0);
     if (path == NULL)
         return false;
-    ok = _upload_path(path, visual_positions, colors, widths, SAMPLE_COUNT);
+    bool ok = _upload_path(path, visual_positions, colors, widths, SAMPLE_COUNT);
     if (!ok)
         return false;
     rc = dvz_panel_add_visual(panel, path, NULL);

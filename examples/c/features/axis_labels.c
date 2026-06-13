@@ -75,12 +75,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    bool ok = dvz_panel_set_layout_reserve(
-        panel,
-        &(DvzPanelLayoutReserve){.left = 0.14f, .right = 0.08f, .bottom = 0.15f, .top = 0.08f});
-    if (!ok)
-        return false;
-
     if (dvz_panel_set_domain(panel, DVZ_DIM_X, -40.0, 120.0) != 0)
         return false;
     if (dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.5, 2.5) != 0)
@@ -104,18 +98,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     style.tick_size_px = 14.0f;
     style.label_size_px = 20.0f;
     style.tick_gap_px = 10.0f;
-    style.x_label_gap_px = 48.0f;
-    style.y_label_gap_px = 70.0f;
     style.grid_alpha = 130u;
     if (!example_graphite_cyan_apply_axis_style(x_axis, false, &style))
         return false;
     if (!example_graphite_cyan_apply_axis_style(y_axis, true, &style))
         return false;
 
-    if (!dvz_axis_set_plot_margins(x_axis, 0.18f, 0.12f, 0.18f, 0.12f))
-        return false;
-    if (!dvz_axis_set_plot_margins(y_axis, 0.18f, 0.12f, 0.18f, 0.12f))
-        return false;
     if (!dvz_axis_set_grid(x_axis, true))
         return false;
     if (!dvz_axis_set_grid(y_axis, true))
