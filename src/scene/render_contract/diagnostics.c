@@ -131,11 +131,17 @@ static bool _scene_pass_contract_validate_technique(
 
     case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
     case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
+    {
+        uint32_t color_index = 0;
         for (uint32_t i = 0; i < contract->attachment_count; i++)
         {
             attachment = &contract->attachments[i];
-            if (attachment->role == DVZ_SCENE_ATTACHMENT_COLOR &&
-                attachment->format != VK_FORMAT_R16G16B16A16_SFLOAT)
+            if (attachment->role != DVZ_SCENE_ATTACHMENT_COLOR)
+                continue;
+            uint32_t expected_format =
+                color_index < 2 ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R32G32_SFLOAT;
+            color_index++;
+            if (attachment->format != expected_format)
             {
                 _contract_report(report, "depth peel color attachment has invalid format");
                 ok = false;
@@ -158,6 +164,7 @@ static bool _scene_pass_contract_validate_technique(
             ok = false;
         }
         break;
+    }
 
     case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
         if (contract->draw_count != 0 || contract->color_attachment_count != 1 ||

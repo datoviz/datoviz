@@ -693,7 +693,7 @@ static int _depth_peel_frame_plan_graph(DvzFramePlan** out)
         DvzFrameGraphResource resource = {0};
         dvz_strlcpy(resource.id, color_ids[i], sizeof(resource.id));
         resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        resource.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        resource.format = i < 2 ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R32G32_SFLOAT;
         resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         resource.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
                                DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
@@ -887,8 +887,7 @@ static int _depth_peel_emit_pipeline_setup(DvzDrp2CommandStream* stream)
         stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_target(
         stream, 1, VK_FORMAT_R16G16B16A16_SFLOAT));
-    AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 2, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 2, VK_FORMAT_R32G32_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, VK_COMPARE_OP_LESS_OR_EQUAL));
     AT(dvz_drp2_stream_pipeline_set_raster_state(
         stream, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE));
@@ -906,8 +905,7 @@ static int _depth_peel_emit_pipeline_setup(DvzDrp2CommandStream* stream)
         stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_target(
         stream, 1, VK_FORMAT_R16G16B16A16_SFLOAT));
-    AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 2, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 2, VK_FORMAT_R32G32_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, VK_COMPARE_OP_LESS_OR_EQUAL));
     AT(dvz_drp2_stream_pipeline_set_raster_state(
         stream, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE));

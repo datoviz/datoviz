@@ -92,7 +92,7 @@ bool _scene_technique_emit_depth_peel_frame_graph(
         DvzFrameGraphResource resource = {0};
         dvz_strlcpy(resource.id, peel_ids[i], sizeof(resource.id));
         resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        resource.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        resource.format = i < 2 ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R32G32_SFLOAT;
         resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         resource.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
                                DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;

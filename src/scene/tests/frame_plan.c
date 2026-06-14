@@ -1920,7 +1920,7 @@ int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* 
         DvzFrameGraphResource resource = {0};
         dvz_strlcpy(resource.id, color_ids[i], sizeof(resource.id));
         resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        resource.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        resource.format = i < 2 ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R32G32_SFLOAT;
         resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         resource.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
                                DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
@@ -2022,9 +2022,13 @@ int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* 
     AT(dvz_frame_plan_graph_pass_count(plan) == 3 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
 
     const DvzFrameGraphResource* front_accum = dvz_frame_plan_graph_resource_get(plan, 2);
+    const DvzFrameGraphResource* depth_minmax_ping = dvz_frame_plan_graph_resource_get(plan, 4);
     ANN(front_accum);
+    ANN(depth_minmax_ping);
     AT(strcmp(front_accum->id, "panel0.peel.front_accum") == 0);
     AT(front_accum->format == VK_FORMAT_R16G16B16A16_SFLOAT);
+    AT(strcmp(depth_minmax_ping->id, "panel0.peel.depth_minmax_ping") == 0);
+    AT(depth_minmax_ping->format == VK_FORMAT_R32G32_SFLOAT);
     AT(
         (front_accum->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT) != 0);
     AT((front_accum->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED) != 0);

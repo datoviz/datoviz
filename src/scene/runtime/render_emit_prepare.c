@@ -460,7 +460,7 @@ bool _emitter_prepare_render_multi(
                      dvz_drp2_stream_pipeline_set_color_target(
                          stream, 1, VK_FORMAT_R16G16B16A16_SFLOAT) &&
                      dvz_drp2_stream_pipeline_set_color_target(
-                         stream, 2, VK_FORMAT_R16G16B16A16_SFLOAT) &&
+                         stream, 2, VK_FORMAT_R32G32_SFLOAT) &&
                      dvz_drp2_stream_pipeline_set_color_blend(
                          stream, 0, VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA, VK_BLEND_FACTOR_ONE,
                          VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA,

@@ -1143,12 +1143,13 @@ bool _emitter_prepare_depth_peel_targets(
             continue;
 
         uint64_t texture_id = 0;
+        uint32_t format = resource->format;
+        if ((resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT) != 0)
+            format = VK_FORMAT_D32_SFLOAT;
+        if (format == 0)
+            format = VK_FORMAT_R16G16B16A16_SFLOAT;
         ok = _graph_resolve_texture_2d(
-            emitter, stream, plan, cfg, resource, width, height,
-            (resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT) != 0
-                ? VK_FORMAT_D32_SFLOAT
-                : VK_FORMAT_R16G16B16A16_SFLOAT,
-            &texture_id);
+            emitter, stream, plan, cfg, resource, width, height, format, &texture_id);
         ok = ok && _graph_runtime_targets_add(&out->graph, resource->id, texture_id);
         if (ok && (resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT) != 0)
             out->depth_id = texture_id;

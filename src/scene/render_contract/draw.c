@@ -194,7 +194,7 @@ void _draw_blend_target_contracts(
         {
             targets[i] = (DvzSceneBlendTargetContract){
                 .target_index = i,
-                .format = VK_FORMAT_R16G16B16A16_SFLOAT,
+                .format = i < 2 ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R32G32_SFLOAT,
                 .blend_enabled = true,
                 .src_color_blend_factor = i == 0 ? VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA :
                                                     VK_BLEND_FACTOR_ONE,
