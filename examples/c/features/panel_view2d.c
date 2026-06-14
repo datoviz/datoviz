@@ -26,6 +26,7 @@
 
 #include "_assertions.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -168,10 +169,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     for (uint32_t i = 0; i < 2u; i++)
     {
         example_graphite_cyan_set_panel_background(panels[i]);
-        if (!dvz_panel_set_padding(
-                panels[i], &(DvzPanelReserve){.left_px = 82.0f, .right_px = 22.0f,
-                                              .bottom_px = 78.0f, .top_px = 30.0f}))
-            return false;
         if (!_add_axes(panels[i]))
             return false;
     }
@@ -181,12 +178,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (dvz_panel_set_domain(free_panel, DVZ_DIM_Y, -1.0, +1.0) != 0)
         return false;
 
-    DvzPanelView2D view = dvz_panel_view2d();
-    view.data_x = (DvzDataDomain){.min = -1.0, .max = +1.0};
-    view.data_y = (DvzDataDomain){.min = -1.0, .max = +1.0};
-    view.padding = 0.18;
-    view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
-    if (dvz_panel_set_view2d(fit_panel, &view) != 0)
+    if (!example_configure_equal_aspect_panel(
+            fit_panel, (DvzDataDomain){.min = -1.0, .max = +1.0},
+            (DvzDataDomain){.min = -1.0, .max = +1.0}, 0.18, NULL))
         return false;
 
     double x_min = 0.0;
