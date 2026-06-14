@@ -1,22 +1,22 @@
-# Datoviz v0.4 Documentation
+# Datoviz
 
-Datoviz v0.4 is a C-first GPU rendering engine for scientific visualization. It provides a native
-scene and app layer, a backend-facing DRP2 command stream, a Vulkan runtime, and raw generated
-`ctypes` bindings for low-level Python integration.
+Datoviz is a GPU rendering engine for scientific visualization, written in C/C++ and built on
+Vulkan. It renders large datasets — millions of points, images, meshes — at interactive frame rates,
+and supports both windowed and offscreen modes.
 
-Datoviz is the engine layer. Use Datoviz directly when you need a native C API, embedding,
-offscreen rendering, replayable render streams, backend work, or exact control over retained visual
-resources. Use VisPy2/GSP for high-level scientific plotting.
+It is a low-level engine intended for developers who need direct control: embedding in a native
+application, building a higher-level plotting library on top, or generating replayable render
+streams. High-level scientific plotting belongs in VisPy2/GSP, which uses Datoviz as one of its
+backends.
 
 
-## Start Here
+## Get Started
 
-- [What is Datoviz?](start/what-is-datoviz.md) explains the v0.4 scope.
-- [Choose your layer](start/choose-your-layer.md) separates Datoviz, raw `ctypes`, DRP2, GSP, and
-  VisPy2.
-- [Install](start/install.md) and [build from source](start/build-from-source.md) cover setup.
-- [First C program](start/first-c-program.md) is the intended first runnable path.
-- [Project status](start/project-status.md) lists supported, experimental, and deferred areas.
+- [What is Datoviz?](start/what-is-datoviz.md) — scope, goals, and what it is not.
+- [Choose your layer](start/choose-your-layer.md) — when to use the C API, DRP2, raw `ctypes`, or VisPy2/GSP.
+- [Install](start/install.md) and [build from source](start/build-from-source.md).
+- [First C program](start/first-c-program.md) — the recommended starting point.
+- [Project status](start/project-status.md) — what is supported, experimental, or deferred in v0.4.
 
 
 ## Main Sections
@@ -25,33 +25,26 @@ resources. Use VisPy2/GSP for high-level scientific plotting.
 
 -   **Tutorials**
 
-    Follow the first scene, interactive window, offscreen capture, and composed workflow pages.
+    Step-by-step walkthroughs: first scene, interactive window, offscreen capture.
 
     [:octicons-arrow-right-24: Tutorials](tutorials/index.md)
 
 -   **Examples**
 
-    Browse executable release proof generated from the C example manifest.
+    Runnable C examples covering the main visual types and scene configurations.
 
     [:octicons-arrow-right-24: Examples](examples/index.md)
 
 -   **Reference**
 
-    Check feature status, platform support, C API, raw bindings, DRP2, and backend notes.
+    C API, feature status, platform support, DRP2, and raw bindings.
 
     [:octicons-arrow-right-24: Reference](reference/index.md)
 
 -   **Explanation**
 
-    Read the scene model, runtime boundary, frame lifecycle, and GSP/VisPy2 positioning.
+    Scene model, frame lifecycle, runtime boundary, and backend architecture.
 
     [:octicons-arrow-right-24: Explanation](explanation/architecture.md)
 
 </div>
-
-
-## Public Website Prototype
-
-A local-only future root landing page prototype lives at [Landing](landing/index.md). It is not part
-of the current public deployment plan and should stay local until v0.4 reaches a usable public
-documentation state.
