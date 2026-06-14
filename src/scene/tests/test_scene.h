@@ -926,6 +926,9 @@ int test_scene_point_query_misses_empty_pixel(TstContext* suite, const TstCase* 
 
 int test_scene_pixel_query_accepts_square_corner(TstContext* suite, const TstCase* item);
 
+int test_scene_pixel_query_preserves_vertical_item_orientation(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_marker_query_accepts_bbox_corner(TstContext* suite, const TstCase* item);
 
 int test_scene_sphere_query_resolves_item(TstContext* suite, const TstCase* item);
