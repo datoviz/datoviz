@@ -28,6 +28,25 @@
 /*************************************************************************************************/
 
 /**
+ * Shift an MVP so a request NDC coordinate lands on the readback target NDC.
+ *
+ * @param mvp the MVP to update
+ * @param delta request-target delta in query NDC coordinates
+ */
+static void _query_recenter_mvp(DvzMVP* mvp, const vec2 delta)
+{
+    ANN(mvp);
+    ANN(delta);
+    for (uint32_t col = 0; col < 4; col++)
+    {
+        mvp->proj[col][0] -= delta[0] * mvp->proj[col][3];
+        mvp->proj[col][1] -= delta[1] * mvp->proj[col][3];
+    }
+}
+
+
+
+/**
  * Destroy a synthetic query frame plan wrapper.
  *
  * @param plan the plan wrapper
@@ -168,8 +187,7 @@ void _dvz_scene_query_apply_render_state(
         1.0f - 1.0f / (float)target_height,
     };
     vec2 delta = {request_ndc[0] - target_ndc[0], -request_ndc[1] - target_ndc[1]};
-    mvp.proj[3][0] -= delta[0];
-    mvp.proj[3][1] -= delta[1];
+    _query_recenter_mvp(&mvp, delta);
     render->u.render.has_mvp = true;
     render->u.render.apply_mvp = mvp;
     render->u.render.has_viewport = true;

@@ -182,6 +182,12 @@ static void _selection_sphere_pointer(const DvzScenarioPointerEvent* event, void
 
     state->cursor_valid = dvz_scenario_panel_pointer_position(
         state->panel, event, &state->cursor_x, &state->cursor_y);
+    if (state->cursor_valid)
+    {
+        DvzRect rect = {0};
+        if (dvz_panel_inner_rect_px(state->panel, &rect) && rect.height > 0.0f)
+            state->cursor_y = (double)rect.height - state->cursor_y;
+    }
     if (event->type == DVZ_SCENARIO_POINTER_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
     {
         if (!state->cursor_valid)

@@ -933,6 +933,12 @@ int test_scene_marker_query_accepts_bbox_corner(TstContext* suite, const TstCase
 
 int test_scene_sphere_query_resolves_item(TstContext* suite, const TstCase* item);
 
+int test_scene_sphere_query_resolves_camera_arcball_item(
+    TstContext* suite, const TstCase* item);
+
+int test_scene_sphere_query_preserves_camera_arcball_y_orientation(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_segment_query_resolves_item(TstContext* suite, const TstCase* item);
 
 int test_scene_path_query_resolves_item(TstContext* suite, const TstCase* item);
