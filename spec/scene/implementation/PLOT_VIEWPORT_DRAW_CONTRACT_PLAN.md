@@ -1,6 +1,11 @@
 # Plot Viewport Draw Contract Plan
 
-Status: active implementation plan.
+Status: implemented for native scene/DRP2 emission; WebGPU adapter parity tightened.
+
+Implementation note, June 2026: native frame-plan metadata, DRP2 draw packets, runtime
+viewport/scissor emission, viewport uniforms, and axis grid plot-pixel basis are implemented. The
+remaining maintenance burden is validation: keep WebGPU fixture/live paths accepting non-full
+`SetViewport`/`SetScissor`, and keep the manual grid-shimmer smoke in release evidence.
 
 This plan records the fix direction after the `path_axes_2d` grid shimmer regression. The
 regression was bisected to `1c951c6b6` (`Use plot viewport for plot-clipped draws`). That commit
@@ -105,24 +110,24 @@ width guard may be useful as a final rasterization policy, but it should not hid
 plot pixel-basis mismatch.
 
 
-## Implementation Sequence
+## Implementation Status
 
-Prefer small commits with visible validation after each step.
+Prefer small commits with visible validation for future follow-up work.
 
-1. **Frame-plan ABI:** add `DvzFramePlanViewportRect` to render visual metadata and draw packets,
-   defaulting to `PANEL` for compatibility where needed.
-2. **Scene routing:** set viewport and scissor metadata independently in `scene_emit/panel.c`.
-   Keep existing `clip_rect` decisions but add explicit viewport decisions.
-3. **Runtime emission:** update `render_emit_draws.c` to switch viewport from `viewport_rect` and
+1. **Frame-plan ABI:** done. `DvzFramePlanViewportRect` is stored in render visual metadata and
+   draw packets, with panel defaults for missing metadata.
+2. **Scene routing:** done. `scene_emit/panel.c` sets `viewport_rect` and `clip_rect`
+   independently.
+3. **Runtime emission:** done. `render_emit_draws.c` switches viewport from `viewport_rect` and
    scissor from `clip_rect`.
-4. **Viewport uniform:** ensure draw resource preparation uploads the viewport uniform matching the
-   selected viewport rectangle.
-5. **Axis grid basis:** make axis grid stroke width, endpoint padding, and optional snapping use
-   plot pixels when the grid viewport is plot; keep fixed axis visuals on panel pixels.
-6. **Remove workaround:** revert or replace the diagnostic raster-stability commit once the
-   viewport contract fixes the live grid shimmer.
-7. **WebGPU parity:** mirror viewport/scissor independence in WebGPU fixture/run paths before
-   promoting the behavior as fixed across backends.
+4. **Viewport uniform:** done. Common bind groups are keyed by viewport selection and upload the
+   matching viewport uniform.
+5. **Axis grid basis:** done. Axis grid widths and snapping use plot-pixel basis; fixed axis
+   visuals continue to use panel-pixel basis.
+6. **Remove workaround:** resolved by the plot-pixel basis and pixel-phase grid snapping tests.
+   Do not reintroduce larger endpoint margins or broad stroke inflation as a substitute.
+7. **WebGPU parity:** active validation surface. The tracked WebGPU runner applies dynamic
+   viewport/scissor commands, and the DVZR adapter must preserve non-full rectangles.
 
 
 ## Validation
@@ -143,6 +148,10 @@ just example-c features/axes_2d --live
 ```
 
 Pan slowly by a few pixels. Grid lines should neither disappear nor change apparent thickness.
+
+Known unrelated validation note: `gui/viewport_resize_hidden_smoke` may fail with
+`smoke.transition_drawable_count > 0` in this branch. Track that under GUI viewport resize work; it
+is not evidence against this draw-contract implementation.
 
 Focused automated coverage:
 

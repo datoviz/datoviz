@@ -525,15 +525,26 @@ def _convert_command(
                 "depth_clear_value": float(command.get("clear_depth", 1)),
             }
         return [out]
-    if op in {"SetViewport", "SetScissor"}:
-        if (
-            float(command.get("x", 0)) == 0
-            and float(command.get("y", 0)) == 0
-            and float(command.get("width", 1)) == 1
-            and float(command.get("height", 1)) == 1
-        ):
-            return []
-        raise ValueError(f"{op} is only supported for full normalized extent in this adapter")
+    if op == "SetViewport":
+        return [{
+            "cmd": "SetViewport",
+            "pass_id": ids.map(int(command["pass_id"])),
+            "x": float(command.get("x", 0)),
+            "y": float(command.get("y", 0)),
+            "width": float(command["width"]),
+            "height": float(command["height"]),
+            "min_depth": float(command.get("min_depth", 0)),
+            "max_depth": float(command.get("max_depth", 1)),
+        }]
+    if op == "SetScissor":
+        return [{
+            "cmd": "SetScissor",
+            "pass_id": ids.map(int(command["pass_id"])),
+            "x": float(command.get("x", 0)),
+            "y": float(command.get("y", 0)),
+            "width": float(command["width"]),
+            "height": float(command["height"]),
+        }]
     if op == "SetPipeline":
         return [{"cmd": "SetPipeline", "pass_id": ids.map(int(command["pass_id"])), "pipeline_id": ids.map(int(command["pipeline_id"]))}]
     if op == "SetBindGroup":

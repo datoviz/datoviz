@@ -68,14 +68,20 @@ globalThis.atob = (value) => Buffer.from(value, 'base64').toString('binary');
 globalThis.btoa = (value) => Buffer.from(value, 'binary').toString('base64');
 
 let createdBufferCount = 0;
+let observedViewports = [];
+let observedScissors = [];
 
 const pass = () => ({
   setPipeline() {},
   setVertexBuffer() {},
   setIndexBuffer() {},
   setBindGroup() {},
-  setViewport() {},
-  setScissorRect() {},
+  setViewport(x, y, width, height, minDepth, maxDepth) {
+    observedViewports.push({ x, y, width, height, minDepth, maxDepth });
+  },
+  setScissorRect(x, y, width, height) {
+    observedScissors.push({ x, y, width, height });
+  },
   setBlendConstant() {},
   setStencilReference() {},
   draw() {},
@@ -791,6 +797,8 @@ async function main() {
     entry.startsWith('/') ? entry.slice(1) : entry,
   );
 
+  observedViewports = [];
+  observedScissors = [];
   await executeDrp2Stream(device, context, 'bgra8unorm', {
     commands: [
       ...header,
@@ -804,14 +812,14 @@ async function main() {
       {
         cmd: 'SetViewport',
         pass_id: 2,
-        x: 0,
-        y: 0,
+        x: 1,
+        y: 2,
         width: 4,
-        height: 4,
-        min_depth: 0,
-        max_depth: 1,
+        height: 5,
+        min_depth: 0.25,
+        max_depth: 0.75,
       },
-      { cmd: 'SetScissor', pass_id: 2, x: 0, y: 0, width: 4, height: 4 },
+      { cmd: 'SetScissor', pass_id: 2, x: 2, y: 3, width: 5, height: 6 },
       { cmd: 'SetBlendConstant', pass_id: 2, color: { r: 0, g: 0, b: 0, a: 1 } },
       { cmd: 'SetStencilReference', pass_id: 2, reference: 1 },
       { cmd: 'EndRenderPass', pass_id: 2 },
@@ -819,6 +827,26 @@ async function main() {
       { cmd: 'QueueSubmit', command_buffer_id: 3 },
     ],
   }, { canvas: fakeCanvas });
+  if (
+    observedViewports.length !== 1 ||
+    observedViewports[0].x !== 1 ||
+    observedViewports[0].y !== 2 ||
+    observedViewports[0].width !== 4 ||
+    observedViewports[0].height !== 5 ||
+    observedViewports[0].minDepth !== 0.25 ||
+    observedViewports[0].maxDepth !== 0.75
+  ) {
+    throw new Error(`SetViewport arguments were not forwarded: ${JSON.stringify(observedViewports)}`);
+  }
+  if (
+    observedScissors.length !== 1 ||
+    observedScissors[0].x !== 2 ||
+    observedScissors[0].y !== 3 ||
+    observedScissors[0].width !== 5 ||
+    observedScissors[0].height !== 6
+  ) {
+    throw new Error(`SetScissor arguments were not forwarded: ${JSON.stringify(observedScissors)}`);
+  }
 
   await expectFailure(
     executeDrp2Stream,
