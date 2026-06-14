@@ -46,7 +46,8 @@
 #define WIDTH        1600u
 #define HEIGHT       1200u
 #define SPHERE_COUNT 54u
-#define QUERY_ID     17u
+#define QUERY_HOVER_ID 17u
+#define QUERY_CLICK_ID 18u
 
 static const float TAU = 6.28318530718f;
 
@@ -72,6 +73,9 @@ typedef struct SphereSelectionState
     bool cursor_valid;
     double cursor_x;
     double cursor_y;
+    bool pending_click;
+    double click_x;
+    double click_y;
 } SphereSelectionState;
 
 
@@ -181,11 +185,13 @@ static void _selection_sphere_pointer(const DvzScenarioPointerEvent* event, void
     if (event->type == DVZ_SCENARIO_POINTER_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
     {
         if (!state->cursor_valid)
-            return;
-        if (state->has_hover_query)
-            _toggle_sphere_selection(state, &state->latest_hover_query);
-        else
+        {
             dvz_selection_clear(state->selection);
+            return;
+        }
+        state->click_x = state->cursor_x;
+        state->click_y = state->cursor_y;
+        state->pending_click = true;
     }
 }
 
@@ -207,7 +213,22 @@ static void _selection_sphere_post_frame(DvzScenarioContext* ctx, void* user_dat
     bool saw_sphere_query = false;
     while (dvz_scene_poll_query(state->scene, &query))
     {
-        if (query.request_id != QUERY_ID)
+        if (query.request_id == QUERY_CLICK_ID)
+        {
+            if (
+                query.status == DVZ_QUERY_STATUS_HIT && query.hit &&
+                query.visual_family == DVZ_SCENE_VISUAL_FAMILY_SPHERE &&
+                query.resolved_target == DVZ_SCENE_TARGET_ITEM && query.resolved_id < SPHERE_COUNT)
+            {
+                _toggle_sphere_selection(state, &query);
+            }
+            else
+            {
+                dvz_selection_clear(state->selection);
+            }
+            continue;
+        }
+        if (query.request_id != QUERY_HOVER_ID)
             continue;
 
         saw_sphere_query = true;
@@ -233,12 +254,23 @@ static void _selection_sphere_post_frame(DvzScenarioContext* ctx, void* user_dat
     if (state->cursor_valid)
     {
         DvzQueryRequest request = dvz_query_request();
-        request.request_id = QUERY_ID;
+        request.request_id = QUERY_HOVER_ID;
         request.target = DVZ_SCENE_TARGET_ITEM;
         request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
 
         if (dvz_scenario_panel_query(state->panel, state->cursor_x, state->cursor_y, &request) != 0)
             fprintf(stderr, "dvz_scenario_panel_query() failed\n");
+    }
+    if (state->pending_click)
+    {
+        DvzQueryRequest request = dvz_query_request();
+        request.request_id = QUERY_CLICK_ID;
+        request.target = DVZ_SCENE_TARGET_ITEM;
+        request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
+
+        if (dvz_scenario_panel_query(state->panel, state->click_x, state->click_y, &request) != 0)
+            fprintf(stderr, "dvz_scenario_panel_query(click) failed\n");
+        state->pending_click = false;
     }
 }
 
