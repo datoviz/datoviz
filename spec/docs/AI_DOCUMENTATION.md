@@ -210,6 +210,22 @@ Avoid diagnostics that only expose backend handles, Vulkan error strings, or ass
 when the failure can be described in scene terms.
 
 
+## One Version For Both Humans and LLMs
+
+Do not write two versions of documentation — one for humans and one for LLMs. Write one version
+that serves both. The qualities that make a page good for an LLM (precise language, consistent
+structure, unambiguous function signatures, complete minimal examples) are also what make a page
+good for a human expert. The only human-specific additions are: a readable introductory sentence
+or two, screenshots, and narrative flow where it helps orientation. An LLM is not harmed by these.
+
+Concretely: never write a paragraph that is intentionally terse or jargon-heavy "for the LLM."
+Write clear prose for the human reader. The LLM will parse it correctly. If a paragraph reads
+poorly to a human, rewrite it — do not excuse it as "LLM context."
+
+The Start Here page (`docs/start/index.md`) is the primary LLM entry point. Its opening
+paragraphs are also the first thing a human sees. They must work for both.
+
+
 ## LLM-Friendly Page Design
 
 Use stable, machine-retrievable structure:
