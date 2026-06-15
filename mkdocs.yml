@@ -88,26 +88,15 @@ hooks:
   - tools/mkdocs_hooks.py
 nav:
   - Home: 'index.md'
-  - Start:
-    - Overview:
-      - What is Datoviz: 'start/what-is-datoviz.md'
-      - Choose your layer: 'start/choose-your-layer.md'
-      - Project status: 'start/project-status.md'
-    - Setup:
-      - Install: 'start/install.md'
-      - Build from source: 'start/build-from-source.md'
-    - First Steps:
-      - First C program: 'start/first-c-program.md'
-  - Tutorials:
-    - Overview: 'tutorials/index.md'
-    - Basics:
-      - First scene: 'tutorials/first-scene.md'
-      - Interactive window: 'tutorials/interactive-window.md'
-      - Offscreen capture: 'tutorials/offscreen-capture.md'
-    - Scene Workflows:
-      - Image, colorbar, and probe: 'tutorials/image-colorbar-probe.md'
-      - Mesh with arcball: 'tutorials/mesh-arcball.md'
-      - Multi-panel figure: 'tutorials/multi-panel-figure.md'
+  - Get Started:
+    - Start Here: 'start/index.md'
+    - Install: 'start/install.md'
+    - Build from source: 'start/build-from-source.md'
+    - Quickstart: 'start/quickstart.md'
+    - Interactive window: 'start/interactive-window.md'
+    - Offscreen capture: 'start/offscreen-capture.md'
+    - Project status: 'start/project-status.md'
+    - AI-assisted workflow: 'start/ai-workflow.md'
   - Examples:
     - Overview: 'examples/index.md'
     - Galleries:
@@ -142,6 +131,10 @@ nav:
       - Use arcball: 'how-to/use-arcball.md'
       - Pick and probe: 'how-to/pick-and-probe.md'
       - Select items: 'how-to/select-items.md'
+    - Guides:
+      - Image, colorbar, and probe: 'how-to/image-colorbar-probe.md'
+      - Mesh with arcball: 'how-to/mesh-arcball.md'
+      - Multi-panel figure: 'how-to/multi-panel-figure.md'
     - Integration And Debugging:
       - Embed in Qt: 'how-to/embed-in-qt.md'
       - Use raw ctypes: 'how-to/use-raw-ctypes.md'
@@ -160,11 +153,9 @@ nav:
         - Scene: 'reference/c-api/scene.md'
         - Visuals and composites: 'reference/c-api/visuals.md'
         - App, window, and I/O: 'reference/c-api/app.md'
-        - DRP2: 'reference/c-api/drp2.md'
         - Runtime and utilities: 'reference/c-api/runtime.md'
         - C types: 'reference/c-api/types.md'
       - Raw ctypes: 'reference/ctypes.md'
-      - DRP2: 'reference/drp2/index.md'
     - Scene Reference:
       - Objects and lifetimes: 'reference/objects-and-lifetimes.md'
       - Visual families: 'reference/visual-families/index.md'
@@ -177,41 +168,37 @@ nav:
     - Backends:
       - WebGPU subset: 'reference/webgpu-subset.md'
       - Compute and graphics: 'reference/compute-graphics.md'
-  - Explanation:
-    - System:
-      - Architecture: 'explanation/architecture.md'
+  - Advanced:
+    - Architecture:
+      - Architecture overview: 'explanation/architecture.md'
       - Why Datoviz: 'explanation/why-datoviz.md'
       - GSP and VisPy2 boundary: 'explanation/gsp-vispy2-boundary.md'
-    - Scene:
       - Scene model: 'explanation/scene-model.md'
       - Figure, panel, visual model: 'explanation/figure-panel-visual-model.md'
       - Coordinate systems: 'explanation/coordinate-systems.md'
       - Interaction model: 'explanation/interaction-model.md'
-    - Runtime:
+    - Internals:
       - Scene to DRP2 runtime: 'explanation/scene-to-drp2-runtime.md'
       - Frame lifecycle: 'explanation/frame-lifecycle.md'
       - Retained resources: 'explanation/retained-resources.md'
       - Invalidation and caching: 'explanation/invalidation-and-caching.md'
       - GPU resource ownership: 'explanation/gpu-resource-ownership.md'
-    - Advanced:
       - Query, pick, and probe model: 'explanation/query-pick-probe-model.md'
       - Performance model: 'explanation/performance-model.md'
       - Portability and WebGPU: 'explanation/portability-webgpu.md'
-  - Contributors:
-    - Orientation:
+    - Lower Layers:
+      - vklite: 'advanced/vklite.md'
+      - Canvas and stream API: 'advanced/canvas.md'
+      - WebGPU renderer: 'advanced/webgpu-renderer.md'
+    - Contributors:
       - Architecture map: 'contributors/architecture-map.md'
       - Build and test: 'contributors/build-and-test.md'
       - Coding style: 'contributors/coding-style.md'
-    - Documentation:
       - Docs authoring: 'contributors/docs-authoring.md'
       - AI agents: 'contributors/ai-agents.md'
       - Agent quickstart: 'contributors/agent-quickstart.md'
-      - Example selection by capability: 'contributors/example-selection-by-capability.md'
       - Adding examples: 'contributors/adding-examples.md'
-    - Development:
       - Adding a visual: 'contributors/adding-a-visual.md'
-      - Adding a DRP2 command: 'contributors/adding-a-drp2-command.md'
-      - Adding a WebGPU fixture: 'contributors/adding-a-webgpu-fixture.md'
       - Release validation: 'contributors/release-validation.md'
 not_in_nav: |
   _old/*
