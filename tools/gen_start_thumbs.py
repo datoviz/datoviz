@@ -26,26 +26,26 @@ THUMBS: list[tuple[str, str, tuple[int, int, int, int]]] = [
     # ── Visual families (order matches tools/visuals_catalog.yaml) ────────────
 
     # 0D
-    # pixel: dense dot grid content=(71,190,1529,1009) — center 4:3
-    ("v_pixel",   "visuals/visual_pixel.png",      (200,  150, 1400, 1050)),
+    # pixel: 5x zoom into center patch — individual dots clearly visible
+    ("v_pixel",   "visuals/visual_pixel.png",      (680,  510,  920,  690)),
     # point: spiral galaxy content=(36,134,1504,1072) — tight 4:3
     ("v_point",   "visuals/point_2d.png",           ( 20,   35, 1520, 1160)),
     # marker: cols 1-3 (x=152-622), rows 1-2 (y=297-624) — 6 symbols, large
     ("v_marker",  "visuals/visual_marker.png",      (130,  270,  650,  660)),
 
     # 1D
-    # segment: scattered segments content=(101,189,1571,1014) — center 4:3
-    ("v_segment", "visuals/visual_segment.png",     (200,  150, 1400, 1050)),
+    # segment: 2.4x zoom, upper-right cluster
+    ("v_segment", "visuals/visual_segment.png",     (550,  200, 1050,  575)),
     # path: 3 wavy lines content=(100,275,1499,932) — center zoom to 4:3
     ("v_path",    "visuals/visual_path.png",        (303,  230, 1296,  975)),
-    # vector: flow field content=(61,154,1531,1038) — center 4:3
-    ("v_vector",  "visuals/visual_vector.png",      (200,  150, 1400, 1050)),
+    # vector: 2x zoom into center field
+    ("v_vector",  "visuals/visual_vector.png",      (500,  375, 1100,  825)),
 
     # 2D
     # image: blue texture — trim dark border
     ("v_image",   "visuals/visual_image.png",       (100,  100, 1500, 1100)),
-    # glyph: content=(384,339,1207,861) — tight 4:3
-    ("v_glyph",   "visuals/visual_glyph.png",       (360,  280, 1220,  925)),
+    # glyph: cols 1-2 (x=385-830), rows 1-2 (y=339-631) — 4 symbols, large
+    ("v_glyph",   "visuals/visual_glyph.png",       (360,  312,  805,  646)),
     # text: content=(134,183,1263,745) — left text block
     ("v_text",    "visuals/visual_text.png",        (100,  155,  920,  770)),
     # primitive: colorful triangles content=(33,108,1535,1151) — tight 4:3
@@ -58,8 +58,8 @@ THUMBS: list[tuple[str, str, tuple[int, int, int, int]]] = [
     ("v_volume",  "visuals/volume.png",             (200,   50, 1400,  950)),
     # sphere: 2x zoom into central cluster
     ("v_sphere",  "visuals/sphere_impostor.png",    (500,  325, 1100,  775)),
-    # splat: content=(146,194,1509,1007) — center 4:3
-    ("v_splat",   "visuals/visual_splat.png",       (200,  150, 1400, 1050)),
+    # splat: 2x zoom into central swirl
+    ("v_splat",   "visuals/visual_splat.png",       (527,  395, 1127,  845)),
 
     # ── "I want to…" table ────────────────────────────────────────────────────
     ("f_panzoom",  "features/path_axes_2d.png",               (200,  100, 1400, 1000)),
