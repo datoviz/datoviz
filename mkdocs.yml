@@ -6,7 +6,7 @@ site_description: 'Datoviz v0.4: C-first GPU rendering engine for scientific vis
 site_author: Cyrille Rossant
 exclude_docs: |
   README.md
-  quickstart.md
+  quickstart_old.md
   architecture/*
   blog/*
   discussions/*
@@ -207,7 +207,19 @@ not_in_nav: |
   discussions/*
   landing/*
   examples/gallery/*
+  examples/webgpu/COMPAT.md
   gallery/*
   guide/*
   tasks/*
   visuals/*
+  start/choose-your-layer.md
+  start/first-c-program.md
+  start/what-is-datoviz.md
+  tutorials/index.md
+  tutorials/first-scene.md
+  reference/c-api/drp2.md
+  reference/drp2/index.md
+  contributors/adding-a-drp2-command.md
+  contributors/adding-a-webgpu-fixture.md
+  contributors/example-selection-by-capability.md
+  quickstart_old.md
