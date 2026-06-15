@@ -38,6 +38,7 @@ taxonomy:
 
 folders:
   public:
+    - examples/c/start
     - examples/c/features
     - examples/c/visuals
     - examples/c/composites
@@ -2514,6 +2515,18 @@ examples:
     lane: lab
     source: examples/c/lab/replay_dvzr.c
     validation: manual
+
+  - id: start_scatter
+    title: Scatter Plot
+    lane: start
+    source: examples/c/start/scatter.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-deferred
+    agent_copy_safe: true
 
   - id: lab_scalebar_2d_3d
     title: Scale Bar 2D/3D Lab

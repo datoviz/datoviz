@@ -224,6 +224,8 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(advanced raw_triangle_drp2 advanced/raw_triangle_drp2.c)
     dvz_add_example(advanced external_surface_glfw advanced/external_surface_glfw.c)
 
+    dvz_add_example(start scatter start/scatter.c)
+
     dvz_add_example(lab axis_lattice_smoke lab/axis_lattice_smoke.c)
     dvz_add_example(lab point_stress lab/point_stress.c)
     dvz_add_example(lab protein_viewer lab/protein_viewer.c)

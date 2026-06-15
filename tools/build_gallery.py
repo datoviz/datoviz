@@ -21,7 +21,7 @@ DEFAULT_IMAGE_DIR = ROOT / "data/gallery/v0.4"
 DEFAULT_IMAGE_URL_BASE = "/assets/gallery/v0.4"
 DEFAULT_IMAGE_FORMAT = "webp"
 SOURCE_BASE_URL = "https://github.com/datoviz/datoviz/blob/v0.4-dev"
-PUBLIC_LANES = ("visuals", "features", "composites", "showcases", "advanced")
+PUBLIC_LANES = ("start", "visuals", "features", "composites", "showcases", "advanced")
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
 PYTHON_SOURCE_BY_ID = {}
 

@@ -2035,6 +2035,12 @@ gallery-webp *args:
     @python3 tools/build_gallery_webp.py "$@"
 
 
+# Capture screenshots for the Start Here / Get Started documentation pages.
+capture-start: build
+    @python3 tools/capture_gallery.py --lane start
+    @python3 tools/build_gallery_webp.py --lane start
+
+
 # Capture the native C screenshots used by the local v0.4 landing prototype.
 capture-landing: build
     @python3 tools/capture_gallery.py --landing

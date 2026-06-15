@@ -128,6 +128,12 @@ Complete standalone examples. See the [Quickstart](quickstart.md) for a fuller w
     }
     ```
 
+---
+
+![Scatter plot — 10 000 random colored points with pan/zoom](../assets/gallery/v0.4/start/start_scatter.webp)
+
+---
+
 **Offscreen render to PNG**
 
 === "Python"

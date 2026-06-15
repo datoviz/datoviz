@@ -25,7 +25,7 @@ DEFAULT_MANIFEST = ROOT / "examples/c/MANIFEST.yaml"
 DEFAULT_BUILD_DIR = ROOT / "build"
 DEFAULT_IMAGE_DIR = ROOT / "data/gallery/v0.4"
 DEFAULT_CACHE_DIR = ROOT / "build/gallery-cache/native"
-PUBLIC_LANES = ("visuals", "features", "composites", "showcases")
+PUBLIC_LANES = ("start", "visuals", "features", "composites", "showcases")
 GLOBAL_FINGERPRINT_PATHS = (
     ROOT / "CMakeLists.txt",
     ROOT / "examples/c/CMakeLists.txt",

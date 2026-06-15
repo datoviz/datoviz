@@ -118,7 +118,7 @@ argument type is identical to the C API. NumPy arrays are passed as `c_void_p` p
 
 A dark window containing 10,000 colored dots of varying size. Drag to pan, scroll to zoom.
 
-<!-- SCREENSHOT_PLACEHOLDER -->
+![10 000 colored dots in an interactive window with pan-and-zoom](../assets/gallery/v0.4/start/start_scatter.webp)
 
 
 ## Next steps
