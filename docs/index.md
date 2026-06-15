@@ -1,21 +1,15 @@
 # Datoviz
 
-Datoviz is a GPU rendering engine for scientific visualization, written in C/C++ and built on
-Vulkan. It renders large datasets — millions of points, images, meshes — at interactive frame rates,
-and supports both windowed and offscreen modes.
+**GPU scientific visualization at any scale — explore millions of data points in 2D and 3D**
 
-It is a low-level engine intended for developers who need direct control: embedding in a native
-application, building a higher-level plotting library on top, or generating replayable render
-streams. High-level scientific plotting belongs in VisPy2/GSP, which uses Datoviz as one of its
-backends.
+C and Python API · Vulkan and WebGPU · Desktop and browser
 
 
 ## Get Started
 
-- [What is Datoviz?](start/what-is-datoviz.md) — scope, goals, and what it is not.
-- [Choose your layer](start/choose-your-layer.md) — when to use the C API, DRP2, raw `ctypes`, or VisPy2/GSP.
+- [Start Here](start/index.md) — what datoviz is, capability map, and how to use it with AI assistance.
 - [Install](start/install.md) and [build from source](start/build-from-source.md).
-- [First C program](start/first-c-program.md) — the recommended starting point.
+- [Quickstart](start/quickstart.md) — rendering in 10 minutes.
 - [Project status](start/project-status.md) — what is supported, experimental, or deferred in v0.4.
 
 
@@ -23,28 +17,28 @@ backends.
 
 <div class="grid cards" markdown="1">
 
--   **Tutorials**
-
-    Step-by-step walkthroughs: first scene, interactive window, offscreen capture.
-
-    [:octicons-arrow-right-24: Tutorials](tutorials/index.md)
-
 -   **Examples**
 
-    Runnable C examples covering the main visual types and scene configurations.
+    Gallery of visual families, features, showcases, and advanced examples.
 
     [:octicons-arrow-right-24: Examples](examples/index.md)
 
+-   **How-To**
+
+    Task-oriented guides: add a colorbar, go offscreen, add ImGui controls, and more.
+
+    [:octicons-arrow-right-24: How-To](how-to/create-a-scene.md)
+
 -   **Reference**
 
-    C API, feature status, platform support, DRP2, and raw bindings.
+    C API, visual family parameters, feature status, platform support, and raw ctypes.
 
     [:octicons-arrow-right-24: Reference](reference/index.md)
 
--   **Explanation**
+-   **Advanced**
 
-    Scene model, frame lifecycle, runtime boundary, and backend architecture.
+    Architecture, internals, lower layers (vklite, canvas), and contributor docs.
 
-    [:octicons-arrow-right-24: Explanation](explanation/architecture.md)
+    [:octicons-arrow-right-24: Advanced](explanation/architecture.md)
 
 </div>
