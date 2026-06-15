@@ -502,9 +502,54 @@ their system copies of vendored dependencies. Add a CMake option:
 option(DVZ_VENDORED_DEPS "Use bundled (vendored) copies of freetype, zlib, etc." ON)
 ```
 
-When `OFF`, replace `add_subdirectory(external/freetype)` etc. with
-`find_package(Freetype REQUIRED)` equivalents. This flag is `ON` by default (preserving
-current build-from-source behaviour) and `OFF` in conda/brew/deb build recipes.
+When `OFF`, replace the relevant `add_subdirectory(external/...)` calls with
+`find_package(...)` equivalents. This flag is `ON` by default (preserving current
+build-from-source behaviour) and `OFF` in conda/brew/deb build recipes.
+
+### Vendored dependency audit
+
+An agent audited `CMakeLists.txt` and all `external/` subdirectories to determine which
+dependencies are replaceable. Results:
+
+| Library | Version | Type | Replaceable? | `find_package()` call | Notes |
+|---|---|---|---|---|---|
+| **glfw** | 3.4.0 | shared/static lib | **Yes** | `find_package(glfw3 REQUIRED)` | Universally packaged. Target alias `glfw::glfw`. Wayland disabled in vendored build — system package fine on X11/macOS/Windows. **Highest priority.** |
+| **kvazaar** | 2.3.2 | static lib | **Yes** | `find_package(kvazaar REQUIRED)` or `pkg_check_modules` | Available as `libkvazaar-dev` on Debian/Ubuntu; on conda-forge. Target `kvazaar::kvazaar`. |
+| **mimalloc** | 3.0.10 | static lib | **Yes** | `find_package(mimalloc REQUIRED)` | Ships a CMake config; conda-forge and vcpkg have it. Used only in Release builds. Target `mimalloc-static`. |
+| **cglm** | 0.9.6 | header-only/static | **Maybe** | `find_package(cglm REQUIRED)` | conda-forge and some distros have `cglm-dev`. Low effort to support. |
+| **msdf-atlas-gen** | 1.4.0 | static lib | **Maybe** | `find_package(msdf-atlas-gen CONFIG QUIET)` | CMakeLists already tries `find_package` fallback. vcpkg/conda; rare in apt. |
+| **shaderc** headers | v2024.4 | header-only | **Yes** | via Vulkan SDK | Only headers vendored; `.so`/`.lib` comes from the Vulkan SDK already. |
+| **Vulkan headers** | — | header-only | **Yes** | `find_package(Vulkan REQUIRED)` | Standard Vulkan SDK. |
+| **volk** | 330 | static (meta-loader) | **No** | — | Tightly integrated Vulkan meta-loader. System packages are rare; API coupling is exact. **Must stay vendored.** |
+| **cimgui** | docking branch | static lib | **No** | — | Requires the *docking branch* specifically — checked at configure time. No system package ships this variant. **Must stay vendored.** |
+| **vk_mem_alloc.h** | 3.4.0-dev | header+cpp stub | **No** | — | Compiled as a `.cpp` stub inside datoviz. No stable system target. **Must stay vendored.** |
+| **stb_image.h** | — | header-only | **No** | — | Single-header; no system CMake target. Stay vendored. |
+| **tiny_obj_loader.h** | 2.0.0 | header-only | **No** | — | Single-header; no system package. Stay vendored. |
+| **fpng** | — | header+impl | **No** | — | Niche fast-path PNG encoder; no system package. Stay vendored. |
+| **minimp4.h** | — | header-only | **No** | — | Single-header MP4 muxer; no system package. Stay vendored. |
+| **earcut.hpp** | — | header-only | **No** | — | Single-header polygon triangulator; no system package. Stay vendored. |
+| **tinycthread** | — | header+impl | **No** | — | Tiny pthreads wrapper; no system package. Stay vendored. |
+| **b64** | — | static (small) | **No** | — | No standard CMake package. Stay vendored. |
+| **memorymeasure** | — | header+impl | **No** | — | Internal utility. Stay vendored. |
+
+**Summary:** `DVZ_VENDORED_DEPS=OFF` needs to gate replacement of **glfw**, **kvazaar**,
+**mimalloc**, and optionally **cglm** and **msdf-atlas-gen**. Everything else must stay vendored
+(niche, single-header, or architecturally coupled like volk/cimgui). Freetype and ZLIB are
+already system-first (no vendored copy in `external/`).
+
+**Pattern for each replaceable dep in CMakeLists.txt:**
+```cmake
+if(DVZ_VENDORED_DEPS)
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+    add_subdirectory(external/glfw)
+else()
+    find_package(glfw3 REQUIRED)
+    if(NOT TARGET glfw::glfw AND TARGET glfw)
+        add_library(glfw::glfw ALIAS glfw)
+    endif()
+endif()
+```
 
 ---
 
