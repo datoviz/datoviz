@@ -112,3 +112,50 @@ img[alt*=gpuopen] {
         min-height: 420px;
     }
 }
+
+/* ── Visual families grid (Start Here page) ─────────────────────────────── */
+.vf-grid {
+    margin: 1.5rem 0;
+}
+.vf-group {
+    margin-bottom: 1.75rem;
+}
+.vf-dim-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--md-default-fg-color--light);
+    margin-bottom: 0.6rem;
+}
+.vf-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
+}
+.vf-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 6px;
+    overflow: hidden;
+    text-decoration: none !important;
+    border: 1px solid transparent;
+    transition: border-color 0.15s, transform 0.15s;
+}
+.vf-card:hover {
+    border-color: var(--md-accent-fg-color);
+    transform: translateY(-2px);
+}
+.vf-card img {
+    width: 100%;
+    display: block;
+    border-radius: 5px 5px 0 0;
+}
+.vf-card span {
+    font-size: 0.78rem;
+    padding: 4px 6px;
+    color: var(--md-default-fg-color);
+    text-align: center;
+    width: 100%;
+}

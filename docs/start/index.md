@@ -14,33 +14,58 @@ meantime, an LLM can write the ctypes code for you. See [AI-assisted workflow](a
 
 ## I want to display…
 
-| I want to display… | Go to |
-| --- | --- |
-| Scatter plot / point cloud | [Point visual](../reference/visual-families/point.md) |
-| Line / path / trajectory | [Path visual](../reference/visual-families/path.md) |
-| Mesh / surface | [Mesh visual](../reference/visual-families/mesh.md) |
-| Volume / 3D scalar field | [Volume visual](../reference/visual-families/volume.md) |
-| Image / texture | [Image visual](../reference/visual-families/image.md) |
-| Text / labels | [Text visual](../reference/visual-families/text.md) |
-| Markers / symbols | [Marker visual](../reference/visual-families/marker.md) |
-| Spheres (3D impostor) | [Sphere visual](../reference/visual-families/sphere.md) |
-| All visual families | [Visual families reference](../reference/visual-families/index.md) |
+<div class="vf-grid">
+<div class="vf-group">
+<div class="vf-dim-label">0D — point-like</div>
+<div class="vf-cards">
+<a class="vf-card" href="../reference/visual-families/pixel/"><img src="../assets/gallery/v0.4/thumbs/v_pixel.webp" alt="Pixel"><span>Pixel</span></a>
+<a class="vf-card" href="../reference/visual-families/point/"><img src="../assets/gallery/v0.4/thumbs/v_point.webp" alt="Point"><span>Point</span></a>
+<a class="vf-card" href="../reference/visual-families/marker/"><img src="../assets/gallery/v0.4/thumbs/v_marker.webp" alt="Marker"><span>Marker</span></a>
+</div>
+</div>
+<div class="vf-group">
+<div class="vf-dim-label">1D — line-like</div>
+<div class="vf-cards">
+<a class="vf-card" href="../reference/visual-families/segment/"><img src="../assets/gallery/v0.4/thumbs/v_segment.webp" alt="Segment"><span>Segment</span></a>
+<a class="vf-card" href="../reference/visual-families/path/"><img src="../assets/gallery/v0.4/thumbs/v_path.webp" alt="Path"><span>Path</span></a>
+<a class="vf-card" href="../reference/visual-families/"><img src="../assets/gallery/v0.4/thumbs/v_vector.webp" alt="Vector"><span>Vector</span></a>
+</div>
+</div>
+<div class="vf-group">
+<div class="vf-dim-label">2D — planar</div>
+<div class="vf-cards">
+<a class="vf-card" href="../reference/visual-families/image/"><img src="../assets/gallery/v0.4/thumbs/v_image.webp" alt="Image"><span>Image</span></a>
+<a class="vf-card" href="../reference/visual-families/glyph/"><img src="../assets/gallery/v0.4/thumbs/v_glyph.webp" alt="Glyph"><span>Glyph</span></a>
+<a class="vf-card" href="../reference/visual-families/text/"><img src="../assets/gallery/v0.4/thumbs/v_text.webp" alt="Text"><span>Text</span></a>
+<a class="vf-card" href="../reference/visual-families/primitive/"><img src="../assets/gallery/v0.4/thumbs/v_primitive.webp" alt="Primitive"><span>Primitive</span></a>
+</div>
+</div>
+<div class="vf-group">
+<div class="vf-dim-label">3D — volumetric</div>
+<div class="vf-cards">
+<a class="vf-card" href="../reference/visual-families/mesh/"><img src="../assets/gallery/v0.4/thumbs/v_mesh.webp" alt="Mesh"><span>Mesh</span></a>
+<a class="vf-card" href="../reference/visual-families/volume/"><img src="../assets/gallery/v0.4/thumbs/v_volume.webp" alt="Volume"><span>Volume</span></a>
+<a class="vf-card" href="../reference/visual-families/sphere/"><img src="../assets/gallery/v0.4/thumbs/v_sphere.webp" alt="Sphere"><span>Sphere</span></a>
+<a class="vf-card" href="../reference/visual-families/splat/"><img src="../assets/gallery/v0.4/thumbs/v_splat.webp" alt="Splat"><span>Splat</span></a>
+</div>
+</div>
+</div>
 
 
 ## I want to…
 
-| I want to… | Go to |
-| --- | --- |
-| Pan and zoom | [Use panzoom](../how-to/use-panzoom.md) |
-| Rotate in 3D | [Use arcball](../how-to/use-arcball.md) |
-| Render offscreen / headless | [Render offscreen](../how-to/render-offscreen.md) |
-| Capture a PNG | [Capture an image](../how-to/capture-an-image.md) |
-| Add a colorbar | [Add colorbars](../how-to/add-colorbars.md) |
-| Add axes | [Add axes](../how-to/add-axes.md) |
-| Pick / probe data | [Pick and probe](../how-to/pick-and-probe.md) |
-| Update data in real time | [Update visual data](../how-to/update-visual-data.md) |
-| Add multiple panels | [Create multiple panels](../how-to/create-multiple-panels.md) |
-| Run in the browser | [WebGPU / WASM](../advanced/webgpu-renderer.md) |
+| | I want to… | Go to |
+| --- | --- | --- |
+| ![](../assets/gallery/v0.4/thumbs/f_panzoom.webp){width=120} | Pan and zoom | [Use panzoom](../how-to/use-panzoom.md) |
+| ![](../assets/gallery/v0.4/thumbs/f_arcball.webp){width=120} | Rotate in 3D | [Use arcball](../how-to/use-arcball.md) |
+| ![](../assets/gallery/v0.4/thumbs/f_capture.webp){width=120} | Render offscreen / headless | [Render offscreen](../how-to/render-offscreen.md) |
+| ![](../assets/gallery/v0.4/thumbs/f_capture.webp){width=120} | Capture a PNG | [Capture an image](../how-to/capture-an-image.md) |
+| ![](../assets/gallery/v0.4/thumbs/f_colorbar.webp){width=120} | Add a colorbar | [Add colorbars](../how-to/add-colorbars.md) |
+| ![](../assets/gallery/v0.4/thumbs/f_axes.webp){width=120} | Add axes | [Add axes](../how-to/add-axes.md) |
+| ![](../assets/gallery/v0.4/thumbs/f_pick.webp){width=120} | Pick / probe data | [Pick and probe](../how-to/pick-and-probe.md) |
+| ![](../assets/gallery/v0.4/thumbs/f_realtime.webp){width=120} | Update data in real time | [Update visual data](../how-to/update-visual-data.md) |
+| ![](../assets/gallery/v0.4/thumbs/f_panels.webp){width=120} | Add multiple panels | [Create multiple panels](../how-to/create-multiple-panels.md) |
+| | Run in the browser | [WebGPU / WASM](../advanced/webgpu-renderer.md) |
 
 
 ## I want to use layer…
@@ -58,6 +83,8 @@ meantime, an LLM can write the ctypes code for you. See [AI-assisted workflow](a
 Complete standalone examples. See the [Quickstart](quickstart.md) for a fuller walkthrough.
 
 **Scatter plot — 10k random points with pan/zoom**
+
+![Scatter plot — 10 000 random colored points with pan/zoom](../assets/gallery/v0.4/start/start_scatter.webp)
 
 === "Python"
 
@@ -127,10 +154,6 @@ Complete standalone examples. See the [Quickstart](quickstart.md) for a fuller w
         return 0;
     }
     ```
-
----
-
-![Scatter plot — 10 000 random colored points with pan/zoom](../assets/gallery/v0.4/start/start_scatter.webp)
 
 ---
 
