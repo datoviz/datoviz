@@ -1,6 +1,61 @@
 # Datoviz v0.4 Documentation Plan
 
-Status: active documentation roadmap. Updated: 2026-06-03.
+Status: active documentation roadmap. Updated: 2026-06-15.
+
+
+## Next Steps (agent-ready, in priority order)
+
+Decisions behind these tasks are in `spec/docs/V04_DOCUMENTATION_DECISIONS.md`. Read that first.
+
+### 1. `wind_globe.c` showcase example
+Spec: `spec/scene/examples/scenarios/WIND_GLOBE.md`. Self-contained, fully specced.
+Earth mesh + wind vector arrows + streamlines in 3D, arcball controller, dark background.
+Extends `showcases/textured_planet.c` and `showcases/wind_field.c`.
+Output: 1600×900 PNG hero screenshot.
+
+### 2. Doc restructure — MkDocs nav
+Reorganize `mkdocs.yml` and `docs/` from the current 7-section Diataxis structure to the
+5-section structure decided in `V04_DOCUMENTATION_DECISIONS.md`:
+Get Started / Examples / How-To / Reference / Advanced.
+Reconcile `spec/docs/INFORMATION_ARCHITECTURE.md` with `V04_DOCUMENTATION_DECISIONS.md`.
+Move existing pages into the new structure; stub missing pages.
+
+### 3. Start Here + Quickstart pages
+Write two new pages:
+- `docs/start/index.md` — orientation page serving both humans and LLMs: what datoviz is,
+  capability→URL map, task→URL map, layer→URL map, 3-4 minimal inline code patterns.
+  This is the page the prompt widget links to as primary context.
+- `docs/start/quickstart.md` — "rendering in 10 minutes": scatter plot, 10k random 3D points,
+  pan/zoom controller. C version first, Python ctypes version immediately below or in a tab.
+  Zero external data dependencies — synthetic random data only.
+
+### 4. Visual family pages
+Bring each visual family page to the standard template:
+description, parameter table, minimal C example, minimal ctypes example, screenshot.
+Visual families: point, primitive, image, mesh, path, segment, marker, sphere, volume,
+pixel, glyph, text, label, splat.
+Screenshots come from existing `data/gallery/v0.4/visuals/` assets where available.
+
+### 5. Prompt widget
+Static JavaScript widget embedded in the docs site. No backend, no LLM, fully deterministic.
+Free text input → structured header/footer wrapping the user's text → copy button +
+"Open in Claude" / "Open in ChatGPU" links.
+Depends on: Start Here page existing (its URL is injected into the prompt header).
+Spec: see AI-Assisted Workflow section in `V04_DOCUMENTATION_DECISIONS.md`.
+
+### 6. Pyodide live playground
+Pyodide-based Python editor in the docs. User writes Python, it calls the existing
+`datoviz_wasm_scene.mjs` WASM module via Pyodide JS FFI, renders via the existing WebGPU runtime.
+Architecture and constraints: see Live Playground section in `V04_DOCUMENTATION_DECISIONS.md`.
+Depends on: nothing — WASM build already exists and is unmodified.
+Status: RC milestone.
+
+### 7. Hero image composition
+Pillow script that composites four real datoviz screenshots onto the graphite background.
+Reference: `docs/assets/references/hero_reference_panels.jpg`.
+Depends on: wind_globe.c render (task 1), signal traces + ImGui screenshot (TBD).
+Signal traces: use existing `scientific_plotting_workflow` bottom panel as base, or create a
+dedicated new showcase with visible ImGui controls.
 
 Keep API, scene, DRP2, and documentation architecture contracts in `spec/`. Keep this file focused
 on release documentation gates.
