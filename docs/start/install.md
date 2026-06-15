@@ -1,28 +1,85 @@
 # Install
 
-Datoviz v0.4 installation documentation is being rebuilt around the C engine and raw binding
-surface.
+Datoviz v0.4 is in active development and not yet available as a release package. The only
+path today is building from source.
+
+Release packages — pip wheel and system packages — will be published with the v0.4 release
+candidate. The v0.3 stable release remains available on PyPI in the meantime.
 
 
-## Current Development Branch
+## Prerequisites
 
-For this branch, build from source when testing v0.4 APIs:
+| Requirement | Notes |
+| --- | --- |
+| Git | for cloning with submodules |
+| CMake 3.20+ | build system |
+| GCC 12+ or Clang 15+ | C/C++ compiler |
+| Ninja | recommended build backend |
+| [`just`](https://github.com/casey/just) | command runner used by all build targets |
+| Python 3.8+ | for ctypes bindings and tools |
+| NumPy | required by the Python package |
+| Vulkan-capable GPU | integrated or discrete from the last ~10 years |
+
+On **Ubuntu 24.04**, install system dependencies with:
 
 ```bash
+sudo apt install build-essential cmake curl gcc git ccache ninja-build \
+  xorg-dev clang-format patchelf tree libfreetype-dev
+
+# Install just
+curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
+```
+
+On **macOS**, install with Homebrew:
+
+```bash
+xcode-select --install
+brew install cmake just ninja
+```
+
+
+## Clone and Build
+
+```bash
+git clone https://github.com/datoviz/datoviz.git --recursive
+cd datoviz
+git checkout v0.4-dev
 just build
+just build   # a known first-build issue may require a second pass
 ```
 
-Run the focused validation loop for the area you touch:
+Install as a Python package (editable):
 
 ```bash
-just test scene
+pip install -e .
 ```
 
-Use [Build from source](build-from-source.md) for the current source-tree workflow.
+
+## Verify
+
+```bash
+just test
+```
+
+For focused test runs:
+
+```bash
+just test scene    # scene-layer tests only
+just test drp2     # render-stream tests only
+```
+
+Some GPU and window tests need the repository runtime environment. On systems using `direnv`:
+
+```bash
+direnv exec . just test scene
+```
 
 
-## Release Packages
+## Run an Example
 
-The latest stable public release remains from the v0.3 line until v0.4 release candidates are
-published. v0.4 package and wheel instructions will be finalized with the release candidate
-documentation.
+```bash
+just example-c visuals/point
+./build/examples/c/visuals/point --live
+```
+
+See [Quickstart](quickstart.md) for a walkthrough of this example.
