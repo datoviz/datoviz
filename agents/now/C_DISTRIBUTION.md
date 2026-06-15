@@ -1,0 +1,543 @@
+# C/C++ Distribution and Integration — Agent Handoff
+
+## Goal
+
+Make datoviz a first-class C/C++ library that users can install (via pip, conda, brew, or system
+package) and immediately use from their own C/C++ projects without cloning the datoviz repo. The
+Python wheel is the primary distribution vehicle for v0.4; other channels follow.
+
+---
+
+## Decisions already made
+
+- **`datoviz-config` script** is the pkg-config equivalent for Linux/macOS/MinGW. It emits
+  `-I`/`-L` flags. MSVC users use CMake `find_package` instead — no MSVC flag syntax needed.
+- **Dynamic linking only** for `libdatoviz` itself. No static build of datoviz.
+- **Vendored deps (freetype, zlib, etc.)**: statically linked into `libdatoviz` for pip wheels
+  (self-contained, no conflicts). Dynamically linked against the host package manager's copies
+  for conda-forge, Homebrew, deb, rpm, spack (those package managers own the ABI).
+- **DLL placement on Windows**: CMake post-build copy command (documented snippet). Not PATH.
+- **FetchContent support**: add `PROJECT_IS_TOP_LEVEL` guards in CMakeLists so datoviz can be
+  pulled as a subdirectory dependency without installing.
+- **Umbrella header**: `include/datoviz/datoviz.h` already exists. Update it to include `app.h`
+  (currently missing) and fix the 5 sub-headers missing `EXTERN_C_ON` guards (see work item 1b).
+  Users write `#include <datoviz/datoviz.h>`. Also provide `#include <datoviz.h>` via a
+  top-level forwarding header at `include/datoviz.h`.
+- **MSVC support**: after RC, before final v0.4 release. pip wheel with `.dll` + `.lib` +
+  headers. CMake `find_package` is the documented integration path.
+- **Windows paths in scope**: WSL2 (document only, no engineering), MinGW64 (works today),
+  MSVC (wheel + docs after RC).
+- **vcpkg port / conan**: post-v0.4.
+
+---
+
+## Distribution channel tiers
+
+| Channel | Audience | Dep linking | Engineering | Timeline |
+|---|---|---|---|---|
+| pip / PyPI (Linux, macOS) | Python users | static vendored | already planned | v0.4 RC |
+| pip / PyPI (MinGW wheel) | Windows Python users | static vendored | already planned | v0.4 RC |
+| pip / PyPI (MSVC wheel) | Windows C/Python native | static vendored | CI job + `.lib` | v0.4 final |
+| conda-forge | Scientific Python ecosystem | dynamic (conda's libs) | `meta.yaml` feedstock | v0.4 final |
+| Homebrew | macOS C/C++ developers | dynamic (brew's libs) | `Formula/datoviz.rb` | v0.4 final |
+| apt / .deb | Ubuntu/Debian, headless CI | dynamic (system libs) | `debian/` packaging | v0.4 final |
+| rpm / .rpm | Fedora, RHEL, openSUSE | dynamic (system libs) | `.spec` file | post-v0.4 |
+| vcpkg port | Windows/cross-platform C++ | vcpkg manages | `portfile.cmake` | post-v0.4 |
+| conan | C++ build system users | conan manages | `conanfile.py` | post-v0.4 |
+| Spack | HPC clusters, national labs | dynamic (spack's libs) | `package.py` | post-v0.4 |
+| nix / nixpkgs | Reproducibility-focused devs | nix manages | `default.nix` | community |
+| winget / chocolatey | Windows end users | bundled installer | installer + manifest | post-v0.4 |
+| Docker / container image | Headless CI, cloud rendering | bundled | `Dockerfile` (partial) | post-v0.4 |
+
+**Why `.deb` in v0.4 final:** Ubuntu is datoviz's primary Linux target, it's what CI runs, and
+it's the cleanest story for "install datoviz system-wide and use from C without Python". The
+justfile already has partial `.deb`/pkg build machinery. Pull it up.
+
+**Why Spack matters:** datoviz's scientific visualization audience overlaps heavily with HPC
+users (national labs, universities). Spack is the dominant package manager on clusters where pip
+is not available. A `package.py` recipe is ~50 lines and unlocks that entire community.
+
+---
+
+## Work items
+
+### 1a. Fix umbrella header
+
+**Current state:** `include/datoviz/datoviz.h` exists but is missing `app.h`.
+
+**Fix:** add `#include "app.h"` to `include/datoviz/datoviz.h`.
+
+**Also add:** a top-level forwarding header `include/datoviz.h` containing only:
+```c
+#pragma once
+#include "datoviz/datoviz.h"
+```
+This lets users write either `#include <datoviz.h>` or `#include <datoviz/datoviz.h>`.
+
+The CMakeLists install rule `install(DIRECTORY include/ DESTINATION include)` already covers
+both files.
+
+**Docs:** update all "minimal code patterns" examples to use `#include <datoviz.h>` once this
+exists.
+
+---
+
+### 1b. Fix missing `EXTERN_C_ON` guards
+
+Five sub-headers declare exported functions (`DVZ_EXPORT`) but are missing `EXTERN_C_ON` /
+`EXTERN_C_OFF` wrappers. C++ consumers including these directly (or via the umbrella) will get
+linker errors without the guards.
+
+Files to fix — add `EXTERN_C_ON` after the `#pragma once` / includes block, and `EXTERN_C_OFF`
+at end of file:
+
+- `include/datoviz/math/vec.h` — 15 exported functions
+- `include/datoviz/math/parallel.h` — 4 exported functions
+- `include/datoviz/vk/device.h` — 19 exported functions
+- `include/datoviz/vk/gpu.h` — 3 exported functions
+- `include/datoviz/common/version.h` — 1 exported function
+
+Pattern (follow `scene.h` lines 44 and 3461 as the reference):
+```c
+// after all #includes:
+EXTERN_C_ON
+
+// ... declarations ...
+
+EXTERN_C_OFF
+```
+
+`EXTERN_C_ON` / `EXTERN_C_OFF` are defined in `include/datoviz/common/macros.h` and expand to
+`extern "C" {` / `}` under C++, nothing under C.
+
+---
+
+### 2. `datoviz-config` console script
+
+**File to create:** `datoviz/cli.py`
+
+```python
+"""datoviz-config — emit compiler/linker flags for building against the installed datoviz."""
+import sys
+from pathlib import Path
+
+_PKG = Path(__file__).parent
+
+
+def main():
+    args = set(sys.argv[1:])
+    if not args or "--help" in args:
+        print("Usage: datoviz-config [--cflags] [--libs] [--cmake-dir] [--prefix]")
+        return
+    if "--prefix" in args:
+        print(_PKG)
+    if "--cflags" in args:
+        print(f"-I{_PKG / 'include'}")
+    if "--libs" in args:
+        print(f"-L{_PKG} -ldatoviz")
+    if "--cmake-dir" in args:
+        print(_PKG / "lib" / "cmake" / "datoviz")
+```
+
+**Register in `pyproject.toml`:**
+```toml
+[project.scripts]
+datoviz-config = "datoviz.cli:main"
+```
+
+**Usage the user sees (Linux / macOS / MSYS2):**
+```bash
+gcc scatter.c $(datoviz-config --cflags --libs) -o scatter
+./scatter
+```
+
+**Note for MSVC users:** `datoviz-config` does not emit MSVC-compatible flags (`/I`, `/LIBPATH:`).
+MSVC users should use the CMake `find_package` path (see work item 4). Document this explicitly.
+
+---
+
+### 3. Bundle headers into the wheel
+
+During the wheel build, copy `include/` into `datoviz/include/`. The existing `package-data`
+glob does not cover subdirectories.
+
+**Change in `pyproject.toml`:**
+```toml
+[tool.setuptools.package-data]
+datoviz = ["lib*", "*.so", "*.dll", "*.dylib", "*.json", "include/**/*.h"]
+```
+
+**Wheel build hook:** the CMake install step (or a `setup.py` hook) must copy
+`include/` → `datoviz/include/` before the wheel is assembled. Check `wheels.yml` — if it does
+`cmake --install`, the install rule already handles this. If not, add an explicit copy step.
+
+---
+
+### 4. Bundle CMake files into the wheel
+
+**Goal:** `find_package(datoviz)` works after `pip install datoviz`:
+```bash
+cmake -B build -Ddatoviz_DIR=$(datoviz-config --cmake-dir)
+```
+
+**What to bundle:** a hand-written relocatable `DatovizConfig.cmake` into
+`datoviz/lib/cmake/datoviz/`. Do NOT use the auto-generated `DatovizTargets.cmake` — it has
+absolute build-tree paths baked into `IMPORTED_LOCATION` that break after pip installs to an
+arbitrary site-packages location.
+
+**Hand-written `cmake/DatovizConfig.cmake.wheel` (new file in the repo):**
+```cmake
+cmake_minimum_required(VERSION 3.21)
+
+# Resolve the wheel root (three levels up from this file's location:
+# site-packages/datoviz/lib/cmake/datoviz/ -> site-packages/datoviz/)
+get_filename_component(_dvz_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+
+if(NOT TARGET datoviz::datoviz)
+    add_library(datoviz::datoviz SHARED IMPORTED)
+    set_target_properties(datoviz::datoviz PROPERTIES
+        IMPORTED_LOCATION             "${_dvz_root}/libdatoviz${CMAKE_SHARED_LIBRARY_SUFFIX}"
+        IMPORTED_IMPLIB               "${_dvz_root}/datoviz.lib"   # MSVC only, ignored elsewhere
+        INTERFACE_INCLUDE_DIRECTORIES "${_dvz_root}/include"
+        INTERFACE_LINK_OPTIONS        "$<$<PLATFORM_ID:Linux>:-Wl,-rpath,${_dvz_root}>"
+    )
+endif()
+```
+
+This file is installed into the wheel at `datoviz/lib/cmake/datoviz/DatovizConfig.cmake` by the
+wheel build step (not by `cmake --install`, which writes the build-tree version).
+
+**Add to `package-data`:**
+```toml
+datoviz = [..., "lib/cmake/datoviz/*.cmake"]
+```
+
+---
+
+### 5. Rpath — runtime library finding
+
+The compiled binary must find `libdatoviz` at runtime without `LD_LIBRARY_PATH` / `DYLD_LIBRARY_PATH`.
+
+**Linux:** handled by `INTERFACE_LINK_OPTIONS` in the wheel's `DatovizConfig.cmake` (see item 4).
+For the `datoviz-config --libs` path, append the rpath flag:
+```python
+if "--libs" in args:
+    rpath = f"-Wl,-rpath,{_PKG}" if sys.platform.startswith("linux") else ""
+    print(f"-L{_PKG} -ldatoviz {rpath}".strip())
+```
+
+**macOS:** verify `libdatoviz.dylib` install name is `@rpath/libdatoviz.dylib` (not an absolute
+path). Check with `otool -D build/src/libdatoviz.dylib`. The wheel build runs `install_name_tool`
+— confirm it sets the install name correctly, not just the rpath. Add `-Wl,-rpath,<_PKG>` to the
+`datoviz-config --libs` output on macOS too.
+
+**Windows:** no rpath. See sections 7 and 8 for DLL placement.
+
+---
+
+### 6. FetchContent support
+
+Wrap install rules, test targets, and example targets in `PROJECT_IS_TOP_LEVEL` guards so
+downstream CMake projects can use `FetchContent_MakeAvailable(datoviz)` without triggering
+tests and installs.
+
+Requires bumping minimum CMake from 3.20 → 3.21 (when `PROJECT_IS_TOP_LEVEL` was introduced).
+
+```cmake
+# In top-level CMakeLists.txt, guard these blocks:
+if(PROJECT_IS_TOP_LEVEL)
+    add_subdirectory(examples/c)
+    include(CTest)
+    add_subdirectory(tests)
+    install(...)
+endif()
+```
+
+FetchContent consumer pattern:
+```cmake
+include(FetchContent)
+FetchContent_Declare(datoviz
+    GIT_REPOSITORY https://github.com/datoviz/datoviz.git
+    GIT_TAG v0.4.0
+)
+FetchContent_MakeAvailable(datoviz)
+target_link_libraries(myapp PRIVATE datoviz::datoviz)
+```
+
+**Note in docs:** FetchContent compiles datoviz from source — slow, requires the full toolchain
+(Vulkan SDK, cmake, ninja, etc.). Prefer the pip wheel for most users.
+
+---
+
+### 7. Windows — MinGW64
+
+**Current state:** CI builds with MinGW64 and produces `datoviz.dll`. This path works today.
+
+**DLL placement for CMake users** — document this snippet in `docs/guide/c-cmake-integration.md`:
+```cmake
+add_custom_command(TARGET myapp POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "$<TARGET_FILE:datoviz::datoviz>"
+        "$<TARGET_FILE_DIR:myapp>"
+)
+```
+
+**MinGW runtime DLLs:** `libgcc_s_seh-1.dll`, `libstdc++-6.dll`, `libwinpthread-1.dll` must be
+present alongside the user's binary. Options: bundle them in the wheel (already done in
+justfile), or document that the user needs MinGW on PATH. Confirm which approach the wheel takes
+and document it.
+
+**datoviz-config on MSYS2:** works as-is (emits GCC-compatible `-I`/`-L` flags). Users run it
+in an MSYS2 terminal.
+
+---
+
+### 8. Windows — MSVC (after RC, before final v0.4)
+
+**What's needed for the pip wheel:**
+- Build `datoviz.dll` + `datoviz.lib` (import library) with MSVC + vcpkg static triplet
+  (`x64-windows-static-md`) so the wheel is self-contained with no vcpkg runtime DLL deps.
+- Bundle `datoviz.dll`, `datoviz.lib`, headers, and cmake files in the wheel under `datoviz/`.
+- The wheel `DatovizConfig.cmake` already handles `IMPORTED_IMPLIB` (see item 4).
+
+**vcpkg static triplet:** using `x64-windows-static-md` statically links freetype, zlib etc.
+into `datoviz.dll` itself. This avoids bundling a dozen vcpkg DLLs alongside every user binary.
+Verify no LGPL libs are being statically linked (freetype is MIT/FTL, zlib is zlib license —
+both fine for static linking).
+
+**CI:** add an MSVC wheel build job to `wheels.yml` (`windows-latest` runner, Visual Studio).
+The `just msvc` recipe already exists; wire it into wheel assembly.
+
+**DLL placement:** same `add_custom_command` snippet as MinGW (section 7).
+
+**`datoviz-config` on MSVC:** explicitly not supported for MSVC flag syntax. Document:
+"On Windows with MSVC, use `find_package(datoviz)` with CMake."
+
+---
+
+### 9. Windows — WSL2
+
+**Engineering required:** none.
+
+**Documentation only** — add a "Windows via WSL2" section to `docs/start/install.md`:
+
+1. Run `wsl --install` in PowerShell (Windows 11 or Windows 10 21H2+, build 19044+)
+2. Install Ubuntu 24.04 from the Microsoft Store
+3. GPU passthrough: works automatically with recent Intel/AMD/NVIDIA drivers (WSL2 Vulkan via
+   WDDM 2.x / WSLg). No extra configuration needed on Windows 11.
+4. Then follow the Linux install path exactly.
+
+WSL2 is the recommended Windows path until the native MSVC wheel stabilises.
+
+---
+
+### 10. conda-forge
+
+**What:** a conda-forge feedstock — a separate GitHub repo (`datoviz-feedstock`) with a
+`recipe/meta.yaml`. conda-forge maintainers or datoviz contributors submit it to the
+`conda-forge/staged-recipes` repo.
+
+**Key points:**
+- Link dynamically against conda's `freetype`, `zlib`, `libvulkan`, etc. — do not vendor.
+- Declare them as `host:` and `run:` dependencies in `meta.yaml`.
+- The CMakeLists must support `-DDVZ_VENDORED_DEPS=OFF` (or equivalent) to skip building
+  internal copies and use `find_package(Freetype)`, `find_package(ZLIB)` etc. from the
+  conda environment. Add this flag if it doesn't exist.
+- The conda package installs `libdatoviz.so` + headers to the conda prefix, making
+  `find_package(datoviz)` work automatically for C/C++ packages that depend on it.
+- The Python package in conda should be a thin wrapper that loads the conda-prefix lib,
+  not a bundled wheel.
+
+**Timeline:** v0.4 final. Requires a stable release tag first.
+
+---
+
+### 11. Homebrew
+
+**What:** a `Formula/datoviz.rb` submitted to homebrew-core (or a tap for initial release).
+
+**Key points:**
+- Link dynamically against `brew`'s `freetype`, `libpng`, etc.
+- Same `-DDVZ_VENDORED_DEPS=OFF` CMake flag requirement as conda.
+- Homebrew formula builds from source tarball (`url` pointing to the GitHub release).
+- Installs to `$(brew --prefix)/lib/libdatoviz.dylib` and `$(brew --prefix)/include/datoviz/`.
+- `datoviz-config` is not installed by Homebrew — instead, the standard `pkg-config` path works
+  if datoviz ships a `datoviz.pc` file (see below).
+- Consider generating `datoviz.pc` from a `datoviz.pc.in` template in CMakeLists:
+  ```cmake
+  configure_file(cmake/datoviz.pc.in datoviz.pc @ONLY)
+  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/datoviz.pc"
+      DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+  ```
+
+**Timeline:** v0.4 final.
+
+---
+
+### 12. apt / .deb (Ubuntu/Debian)
+
+**What:** a `.deb` package installable via `apt`. Primary target: Ubuntu 24.04 LTS.
+
+**Why v0.4 final, not post:** Ubuntu is datoviz's primary CI platform. The justfile already has
+partial pkg/deb build machinery. A `.deb` enables `sudo apt install datoviz` — the cleanest
+path for C-only users who don't want Python involved at all.
+
+**Key points:**
+- `debian/` directory with `control`, `rules`, `changelog`, `copyright`.
+- Dynamic linking against Ubuntu's `libfreetype-dev`, `zlib1g-dev`, etc.
+- Install `libdatoviz.so` to `/usr/lib/x86_64-linux-gnu/`, headers to `/usr/include/datoviz/`,
+  `datoviz.pc` to `/usr/lib/x86_64-linux-gnu/pkgconfig/`, cmake files to
+  `/usr/lib/cmake/datoviz/`.
+- The existing GitHub Actions Ubuntu runner makes CI validation straightforward.
+- Consider publishing to a PPA (Personal Package Archive) on Launchpad for Ubuntu users before
+  getting into the official Ubuntu/Debian archive.
+
+**Timeline:** v0.4 final.
+
+---
+
+### 13. rpm / .rpm (Fedora, RHEL, openSUSE)
+
+Similar to `.deb` but for the RPM ecosystem. A `.spec` file drives the build.
+
+Install paths follow RPM conventions: `%{_libdir}`, `%{_includedir}`, `%{_libdir}/pkgconfig/`,
+`%{_libdir}/cmake/datoviz/`.
+
+**Timeline:** post-v0.4. Lower priority than `.deb` for datoviz's current audience.
+
+---
+
+### 14. pkg-config file (`datoviz.pc`)
+
+Needed by Homebrew and `.deb`/`.rpm` users (who won't have `datoviz-config` from pip).
+
+**New file: `cmake/datoviz.pc.in`:**
+```
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: datoviz
+Description: GPU rendering engine for scientific visualization
+Version: @PROJECT_VERSION@
+Libs: -L${libdir} -ldatoviz
+Cflags: -I${includedir}
+```
+
+**In CMakeLists.txt:**
+```cmake
+configure_file(cmake/datoviz.pc.in datoviz.pc @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/datoviz.pc"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+```
+
+This is independent of the wheel. System-installed datoviz (via brew, apt, etc.) exposes
+`pkg-config --cflags --libs datoviz` automatically.
+
+---
+
+### 15. Spack
+
+A `package.py` recipe submitted to the Spack package repository.
+
+**Why:** datoviz's scientific visualization audience overlaps heavily with HPC users at national
+labs and universities. Spack is the dominant package manager on clusters where pip is unavailable
+or unreliable. A `package.py` is ~50 lines and unlocks that entire community.
+
+```python
+class Datoviz(CMakePackage):
+    """GPU rendering engine for scientific visualization."""
+    homepage = "https://datoviz.org"
+    url = "https://github.com/datoviz/datoviz/archive/v0.4.0.tar.gz"
+    version("0.4.0", sha256="...")
+    depends_on("freetype")
+    depends_on("zlib")
+    depends_on("vulkan-loader")
+    def cmake_args(self):
+        return [self.define("DVZ_VENDORED_DEPS", False)]
+```
+
+**Timeline:** post-v0.4. Requires the same `-DDVZ_VENDORED_DEPS=OFF` flag as conda/brew.
+
+---
+
+### 16. Documentation pages to write/update
+
+**`docs/start/install.md`** — restructure to cover all paths:
+- pip (Linux/macOS/Windows-MinGW) — primary
+- conda (`conda install -c conda-forge datoviz`) — once feedstock is live
+- Homebrew (`brew install datoviz`) — once formula is live
+- apt (`sudo apt install datoviz`) — once PPA/package is live
+- Windows via WSL2 (step-by-step, see item 9)
+- Windows native MinGW64 (note MSYS2 requirement)
+- Windows native MSVC (note "coming in v0.4 final")
+- Build from source (existing content, keep)
+
+**`docs/start/index.md`** (minimal code patterns) — under the C tab add:
+```bash
+# After: pip install datoviz  (or brew/apt/conda)
+gcc scatter.c $(datoviz-config --cflags --libs) -o scatter
+./scatter
+# On Windows (MSVC): use CMake find_package — see guide
+```
+
+**New page: `docs/guide/c-integration.md`**
+- The `datoviz-config` one-liner (Linux/macOS/MSYS2)
+- Full `CMakeLists.txt` example for `find_package` path (all platforms)
+- Full `CMakeLists.txt` example for `FetchContent` path
+- The DLL post-build copy snippet for Windows
+- `pkg-config` path for system installs
+
+Add to `mkdocs.yml` nav under the Guide section.
+
+---
+
+## CMake flag needed across non-pip channels
+
+conda-forge, Homebrew, apt, rpm, and Spack all need datoviz to link dynamically against
+their system copies of vendored dependencies. Add a CMake option:
+
+```cmake
+option(DVZ_VENDORED_DEPS "Use bundled (vendored) copies of freetype, zlib, etc." ON)
+```
+
+When `OFF`, replace `add_subdirectory(external/freetype)` etc. with
+`find_package(Freetype REQUIRED)` equivalents. This flag is `ON` by default (preserving
+current build-from-source behaviour) and `OFF` in conda/brew/deb build recipes.
+
+---
+
+## Implementation order
+
+1. `EXTERN_C_ON` guards on 5 sub-headers (1b) — prerequisite for C++ consumers, do first
+2. Fix umbrella header: add `app.h`, add top-level `include/datoviz.h` forwarder (1a)
+3. `datoviz-config` script + pyproject.toml entry point (2) — independent
+4. `datoviz.pc.in` + CMakeLists install rule (14) — independent, needed for brew/apt
+5. `DVZ_VENDORED_DEPS` CMake flag (this section) — needed for conda/brew/apt
+6. Bundle headers into wheel + verify `package-data` (3) — depends on 1a
+7. Hand-written relocatable wheel `DatovizConfig.cmake` (4) — independent, test locally
+8. Rpath in `datoviz-config` output (5) — depends on 3
+9. FetchContent `PROJECT_IS_TOP_LEVEL` guards + CMake bump to 3.21 (6) — independent
+10. `.deb` packaging (12) — depends on 4, 5, 14
+11. Homebrew formula (11) — depends on 4, 5, 14; needs release tag
+12. conda-forge feedstock (10) — depends on 5; needs release tag
+13. MSVC wheel CI job (8) — after RC
+14. rpm spec file (13), Spack recipe (15) — post-v0.4
+15. Documentation pages (16) — can be written in parallel; mark unfinished sections as "coming soon"
+
+## Testing the full path
+
+After each platform is wired up, validate with a minimal out-of-tree smoke test:
+
+```bash
+# pip wheel smoke test
+python -m venv /tmp/dvz-test
+/tmp/dvz-test/bin/pip install dist/datoviz-*.whl
+export PATH="/tmp/dvz-test/bin:$PATH"
+gcc scatter.c $(datoviz-config --cflags --libs) -o /tmp/scatter
+/tmp/scatter
+```
+
+Add this as a CI job in `wheels.yml` (post-wheel-build, per platform). Equivalent tests for
+the brew and deb paths once those are live.
