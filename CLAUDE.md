@@ -5,7 +5,9 @@
 **`docs/architecture/next_scene_examples.md`** — next scene+app examples: `hello_scatter.c`
 is done; `hello_triangle.c` and `hello_texture.c` each need a new visual constructor first.
 
-For broader v0.4 direction, see `agents/now/V0_4_NEXT_STEPS.md`.
+For C/C++ distribution (pip wheel, conda, brew, apt, MSVC, `datoviz-config`, `DVZ_VENDORED_DEPS`,
+`extern "C"` guard fixes), see `agents/now/C_DISTRIBUTION.md` — items 1–4 in the implementation
+order are unblocked and ready to pick up.
 
 ## Git commits
 
