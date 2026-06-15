@@ -62,9 +62,8 @@ Complete standalone examples. See the [Quickstart](quickstart.md) for a fuller w
 === "Python"
 
     ```python
-    import ctypes
     import numpy as np
-    import datoviz.raw as dvz
+    import datoviz as dvz
 
     N = 10_000
     pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
@@ -76,19 +75,16 @@ Complete standalone examples. See the [Quickstart](quickstart.md) for a fuller w
     scene = dvz.dvz_scene()
     figure = dvz.dvz_figure(scene, 800, 600, 0)
     panel = dvz.dvz_panel_full(figure)
-    dvz.dvz_panel_panzoom(panel)
+    controller = dvz.dvz_panzoom(scene, None)
+    dvz.dvz_panel_bind_controller(panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
 
     visual = dvz.dvz_point(scene, 0)
-    dvz.dvz_visual_set_data(visual, b"position", ctypes.cast(pos.ctypes.data, ctypes.c_void_p), N)
-    dvz.dvz_visual_set_data(visual, b"color", ctypes.cast(color.ctypes.data, ctypes.c_void_p), N)
-    dvz.dvz_visual_set_data(visual, b"size", ctypes.cast(sizes.ctypes.data, ctypes.c_void_p), N)
+    dvz.dvz_visual_set_data(visual, "position", pos)
+    dvz.dvz_visual_set_data(visual, "color", color)
+    dvz.dvz_visual_set_data(visual, "size", sizes)
     dvz.dvz_panel_add_visual(panel, visual, None)
 
-    app = dvz.dvz_app(scene)
-    view = dvz.dvz_view_glfw(app, figure, 800, 600, b"Scatter plot")
-    dvz.dvz_app_run(app, 0)
-    dvz.dvz_app_destroy(app)
-    dvz.dvz_scene_destroy(scene)
+    dvz.run(scene, figure, title="Scatter plot")
     ```
 
 === "C"
@@ -114,7 +110,8 @@ Complete standalone examples. See the [Quickstart](quickstart.md) for a fuller w
         DvzScene* scene = dvz_scene();
         DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
         DvzPanel* panel = dvz_panel_full(figure);
-        dvz_panel_panzoom(panel);
+        DvzController* controller = dvz_panzoom(scene, NULL);
+        dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY);
 
         DvzVisual* visual = dvz_point(scene, 0);
         dvz_visual_set_data(visual, "position", pos, N);
@@ -136,9 +133,8 @@ Complete standalone examples. See the [Quickstart](quickstart.md) for a fuller w
 === "Python"
 
     ```python
-    import ctypes
     import numpy as np
-    import datoviz.raw as dvz
+    import datoviz as dvz
 
     N = 1000
     pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
@@ -151,17 +147,12 @@ Complete standalone examples. See the [Quickstart](quickstart.md) for a fuller w
     panel = dvz.dvz_panel_full(figure)
 
     visual = dvz.dvz_point(scene, 0)
-    dvz.dvz_visual_set_data(visual, b"position", ctypes.cast(pos.ctypes.data, ctypes.c_void_p), N)
-    dvz.dvz_visual_set_data(visual, b"color", ctypes.cast(color.ctypes.data, ctypes.c_void_p), N)
-    dvz.dvz_visual_set_data(visual, b"size", ctypes.cast(sizes.ctypes.data, ctypes.c_void_p), N)
+    dvz.dvz_visual_set_data(visual, "position", pos)
+    dvz.dvz_visual_set_data(visual, "color", color)
+    dvz.dvz_visual_set_data(visual, "size", sizes)
     dvz.dvz_panel_add_visual(panel, visual, None)
 
-    app = dvz.dvz_app(scene)
-    view = dvz.dvz_view_offscreen(app, figure, 800, 600)
-    dvz.dvz_app_run(app, 1)
-    dvz.dvz_view_capture_png(view, b"output.png")
-    dvz.dvz_app_destroy(app)
-    dvz.dvz_scene_destroy(scene)
+    dvz.capture(scene, figure, path="output.png")
     ```
 
 === "C"
