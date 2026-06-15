@@ -147,6 +147,10 @@ def on_page_markdown(markdown, page, config, files):
 def on_pre_build(**kwargs):
     # build_gallery()
     remove_example_docstrings()
+    import sys
+    sys.path.insert(0, str(CURDIR))
+    import gen_start_thumbs
+    gen_start_thumbs.generate()
 
 
 def on_files(files, config):

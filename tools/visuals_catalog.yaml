@@ -1,0 +1,110 @@
+# Canonical visual family catalog for Datoviz v0.4
+#
+# Single source of truth for visual ordering, grouping, and metadata.
+# Consumed by: docs/start/index.md grid, gallery generators, doc scripts, agents.
+#
+# thumb: stem of build/gallery-webp/v0.4/thumbs/{thumb}.webp
+# png:   stem of data/gallery/v0.4/visuals/{png}.png
+# ref:   path relative to docs/ (no leading slash)
+
+groups:
+
+  - id: 0d
+    label: "0D"
+    description: "Point-like"
+    visuals:
+      - id: pixel
+        name: Pixel
+        png: visual_pixel
+        thumb: v_pixel
+        ref: reference/visual-families/pixel.md
+
+      - id: point
+        name: Point
+        png: point_2d
+        thumb: v_point
+        ref: reference/visual-families/point.md
+
+      - id: marker
+        name: Marker
+        png: visual_marker
+        thumb: v_marker
+        ref: reference/visual-families/marker.md
+
+  - id: 1d
+    label: "1D"
+    description: "Line-like"
+    visuals:
+      - id: segment
+        name: Segment
+        png: visual_segment
+        thumb: v_segment
+        ref: reference/visual-families/segment.md
+
+      - id: path
+        name: Path
+        png: visual_path
+        thumb: v_path
+        ref: reference/visual-families/path.md
+
+      - id: vector
+        name: Vector
+        png: visual_vector
+        thumb: v_vector
+        ref: reference/visual-families/index.md
+
+  - id: 2d
+    label: "2D"
+    description: "Planar"
+    visuals:
+      - id: image
+        name: Image
+        png: visual_image
+        thumb: v_image
+        ref: reference/visual-families/image.md
+
+      - id: glyph
+        name: Glyph
+        png: visual_glyph
+        thumb: v_glyph
+        ref: reference/visual-families/glyph.md
+
+      - id: text
+        name: Text
+        png: visual_text
+        thumb: v_text
+        ref: reference/visual-families/text.md
+
+      - id: primitive
+        name: Primitive
+        png: visual_primitive
+        thumb: v_primitive
+        ref: reference/visual-families/primitive.md
+
+  - id: 3d
+    label: "3D"
+    description: "Volumetric"
+    visuals:
+      - id: mesh
+        name: Mesh
+        png: visual_mesh
+        thumb: v_mesh
+        ref: reference/visual-families/mesh.md
+
+      - id: volume
+        name: Volume
+        png: volume
+        thumb: v_volume
+        ref: reference/visual-families/volume.md
+
+      - id: sphere
+        name: Sphere
+        png: sphere_impostor
+        thumb: v_sphere
+        ref: reference/visual-families/sphere.md
+
+      - id: splat
+        name: Splat
+        png: visual_splat
+        thumb: v_splat
+        ref: reference/visual-families/splat.md

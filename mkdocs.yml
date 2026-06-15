@@ -2,6 +2,8 @@ site_name: Datoviz v0.4 Documentation
 site_url: https://datoviz.org
 repo_url: https://github.com/datoviz/datoviz
 docs_dir: docs
+watch:
+  - build/gallery-webp/v0.4
 site_description: 'Datoviz v0.4: C-first GPU rendering engine for scientific visualization'
 site_author: Cyrille Rossant
 exclude_docs: |
