@@ -51,21 +51,25 @@ meantime, an LLM can write the ctypes code for you. See [AI-assisted workflow](a
 </div>
 </div>
 
+[All visual families →](../reference/visual-families/index.md)
+
 
 ## I want to…
 
-| | I want to… | Go to |
-| --- | --- | --- |
-| ![](../assets/gallery/v0.4/thumbs/f_panzoom.webp){width=120} | Pan and zoom | [Use panzoom](../how-to/use-panzoom.md) |
-| ![](../assets/gallery/v0.4/thumbs/f_arcball.webp){width=120} | Rotate in 3D | [Use arcball](../how-to/use-arcball.md) |
-| ![](../assets/gallery/v0.4/thumbs/f_capture.webp){width=120} | Render offscreen / headless | [Render offscreen](../how-to/render-offscreen.md) |
-| ![](../assets/gallery/v0.4/thumbs/f_capture.webp){width=120} | Capture a PNG | [Capture an image](../how-to/capture-an-image.md) |
-| ![](../assets/gallery/v0.4/thumbs/f_colorbar.webp){width=120} | Add a colorbar | [Add colorbars](../how-to/add-colorbars.md) |
-| ![](../assets/gallery/v0.4/thumbs/f_axes.webp){width=120} | Add axes | [Add axes](../how-to/add-axes.md) |
-| ![](../assets/gallery/v0.4/thumbs/f_pick.webp){width=120} | Pick / probe data | [Pick and probe](../how-to/pick-and-probe.md) |
-| ![](../assets/gallery/v0.4/thumbs/f_realtime.webp){width=120} | Update data in real time | [Update visual data](../how-to/update-visual-data.md) |
-| ![](../assets/gallery/v0.4/thumbs/f_panels.webp){width=120} | Add multiple panels | [Create multiple panels](../how-to/create-multiple-panels.md) |
-| | Run in the browser | [WebGPU / WASM](../advanced/webgpu-renderer.md) |
+<div class="vf-grid">
+<div class="vf-cards">
+<a class="vf-card" href="../how-to/use-panzoom/"><img src="../assets/gallery/v0.4/thumbs/f_panzoom.webp" alt="Pan and zoom"><span>Pan and zoom</span></a>
+<a class="vf-card" href="../how-to/use-arcball/"><img src="../assets/gallery/v0.4/thumbs/f_arcball.webp" alt="Rotate in 3D"><span>Rotate in 3D</span></a>
+<a class="vf-card" href="../how-to/add-colorbars/"><img src="../assets/gallery/v0.4/thumbs/f_colorbar.webp" alt="Add a colorbar"><span>Add a colorbar</span></a>
+<a class="vf-card" href="../how-to/add-axes/"><img src="../assets/gallery/v0.4/thumbs/f_axes.webp" alt="Add axes"><span>Add axes</span></a>
+<a class="vf-card" href="../how-to/pick-and-probe/"><img src="../assets/gallery/v0.4/thumbs/f_pick.webp" alt="Pick and probe"><span>Pick and probe</span></a>
+<a class="vf-card" href="../how-to/create-multiple-panels/"><img src="../assets/gallery/v0.4/thumbs/f_panels.webp" alt="Multiple panels"><span>Multiple panels</span></a>
+<a class="vf-card" href="../how-to/update-visual-data/"><img src="../assets/gallery/v0.4/thumbs/f_realtime.webp" alt="Update data"><span>Update data</span></a>
+<a class="vf-card" href="../how-to/render-offscreen/"><img src="../assets/gallery/v0.4/thumbs/f_capture.webp" alt="Render offscreen"><span>Render offscreen</span></a>
+</div>
+</div>
+
+[Capture a PNG →](../how-to/capture-an-image.md) · [Run in the browser →](../advanced/webgpu-renderer.md) · [All how-to guides →](../how-to/index.md) · [Feature gallery →](../examples/feature-gallery.md)
 
 
 ## I want to use layer…
