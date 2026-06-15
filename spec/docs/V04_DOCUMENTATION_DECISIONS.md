@@ -99,7 +99,6 @@ consistent structure, unambiguous function signatures, minimal working examples.
 A static JavaScript widget embedded on the docs site (no backend, no LLM, fully deterministic).
 
 - Free text input: user describes what they want in natural language
-- Minimal optional hints (checkboxes) to help select injected context chunks
 - Output: user's text wrapped in a structured header/footer containing:
   - One-paragraph datoviz v0.4 context description
   - Links to the LLM entry point page and relevant sub-pages
