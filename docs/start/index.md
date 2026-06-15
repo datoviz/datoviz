@@ -1,13 +1,15 @@
 # Start Here
 
-Datoviz v0.4 is a GPU scientific visualization engine written in C, designed for rendering
-millions of data points in 2D and 3D at interactive frame rates on desktop and in the browser.
-Its primary user-facing layer is the **scene API** (`dvz_scene`, `dvz_figure`, `dvz_panel`,
-`dvz_visual`, `dvz_app`), accessible from C and from Python via raw `ctypes` bindings generated
-directly from the C headers. Datoviz is not a high-level plotting library: it does not provide
-`plot()`, `scatter()`, or `imshow()` calls. Those belong to VisPy2/GSP, which uses Datoviz as
-one rendering backend. Use Datoviz directly when you want GPU-level control, offscreen rendering,
-custom visual data pipelines, or browser deployment via WebGPU.
+Datoviz is a GPU rendering engine for scientific visualization — built for scientists and
+developers who need to explore large datasets interactively. Render millions of points, meshes,
+volumes, and time series in 2D and 3D, at interactive frame rates, on the desktop or in the
+browser.
+
+You use it from **C** or **Python** (via `ctypes`). There is no `plot()` or `scatter()` — those
+belong to [VisPy2/GSP](../explanation/gsp-vispy2-boundary.md), which builds on Datoviz.
+If you want GPU-level control, offscreen rendering, or browser deployment, you are in the right
+place. If you are waiting for a high-level Python plotting API, VisPy2 is coming — and in the
+meantime, an LLM can write the ctypes code for you. See [AI-assisted workflow](ai-workflow.md).
 
 
 ## I want to display…
