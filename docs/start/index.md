@@ -8,7 +8,7 @@ browser.
 You use it from **C** or **Python** (via `ctypes`). There is no `plot()` or `scatter()` — those
 belong to [VisPy2/GSP](../explanation/gsp-vispy2-boundary.md), which builds on Datoviz.
 If you want GPU-level control, offscreen rendering, or browser deployment, you are in the right
-place. If you are waiting for a high-level Python plotting API, VisPy2 is coming — and in the
+place. If you are waiting for a high-level Python plotting API, VisPy2 is coming this Fall — and in the
 meantime, an LLM can write the ctypes code for you. See [AI-assisted workflow](ai-workflow.md).
 
 
@@ -55,73 +55,151 @@ meantime, an LLM can write the ctypes code for you. See [AI-assisted workflow](a
 
 ## Minimal code patterns
 
-These four patterns cover the most common starting points. All use Python `ctypes` via
-`import datoviz.raw as dvz`. For the C equivalents, see the [Quickstart](quickstart.md).
+Complete standalone examples. See the [Quickstart](quickstart.md) for a fuller walkthrough.
 
-**Create a scene and open a window**
+**Scatter plot — 10k random points with pan/zoom**
 
-```python
-import ctypes
-import datoviz.raw as dvz
+=== "Python"
 
-scene = dvz.dvz_scene()
-figure = dvz.dvz_figure(scene, 800, 600, 0)
-panel = dvz.dvz_panel_full(figure)
-app = dvz.dvz_app(scene)
-view = dvz.dvz_view_glfw(app, figure, 800, 600, b"Datoviz")
-dvz.dvz_app_run(app, 0)
-dvz.dvz_app_destroy(app)
-dvz.dvz_scene_destroy(scene)
-```
+    ```python
+    import ctypes
+    import numpy as np
+    import datoviz.raw as dvz
 
-**Add a visual and set data**
+    N = 10_000
+    pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
+    pos[:, 2] = 0.0
+    color = np.random.uniform(0, 1, (N, 4)).astype(np.float32)
+    color[:, 3] = 1.0
+    sizes = np.full(N, 5.0, dtype=np.float32)
 
-```python
-import ctypes
-import numpy as np
-import datoviz.raw as dvz
+    scene = dvz.dvz_scene()
+    figure = dvz.dvz_figure(scene, 800, 600, 0)
+    panel = dvz.dvz_panel_full(figure)
+    dvz.dvz_panel_panzoom(panel)
 
-N = 1000
-pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
-pos[:, 2] = 0.0
-sizes = np.full(N, 8.0, dtype=np.float32)
+    visual = dvz.dvz_point(scene, 0)
+    dvz.dvz_visual_set_data(visual, b"position", ctypes.cast(pos.ctypes.data, ctypes.c_void_p), N)
+    dvz.dvz_visual_set_data(visual, b"color", ctypes.cast(color.ctypes.data, ctypes.c_void_p), N)
+    dvz.dvz_visual_set_data(visual, b"size", ctypes.cast(sizes.ctypes.data, ctypes.c_void_p), N)
+    dvz.dvz_panel_add_visual(panel, visual, None)
 
-visual = dvz.dvz_point(scene, 0)
-dvz.dvz_visual_set_data(
-    visual, b"position", ctypes.cast(pos.ctypes.data, ctypes.c_void_p), N)
-dvz.dvz_visual_set_data(
-    visual, b"diameter", ctypes.cast(sizes.ctypes.data, ctypes.c_void_p), N)
-dvz.dvz_panel_add_visual(panel, visual, None)
-```
+    app = dvz.dvz_app(scene)
+    view = dvz.dvz_view_glfw(app, figure, 800, 600, b"Scatter plot")
+    dvz.dvz_app_run(app, 0)
+    dvz.dvz_app_destroy(app)
+    dvz.dvz_scene_destroy(scene)
+    ```
 
-**Update data in a timer callback**
+=== "C"
 
-```python
-import ctypes
-import datoviz.raw as dvz
+    ```c
+    #include <stdlib.h>
+    #include "datoviz/scene.h"
 
-# Assumes scene, figure, panel, visual, and app are already created.
-# Use Host from datoviz.host for async event-loop integration.
-# For a simple frame-driven update, call dvz_visual_set_data() before dvz_app_run().
-```
+    int main(void) {
+        int N = 10000;
+        float pos[N * 3], color[N * 4], size[N];
+        for (int i = 0; i < N; i++) {
+            pos[3*i+0] = (float)rand()/RAND_MAX * 2 - 1;
+            pos[3*i+1] = (float)rand()/RAND_MAX * 2 - 1;
+            pos[3*i+2] = 0;
+            color[4*i+0] = (float)rand()/RAND_MAX;
+            color[4*i+1] = (float)rand()/RAND_MAX;
+            color[4*i+2] = (float)rand()/RAND_MAX;
+            color[4*i+3] = 1.0f;
+            size[i] = 5.0f;
+        }
 
-**Capture offscreen to PNG**
+        DvzScene* scene = dvz_scene();
+        DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+        DvzPanel* panel = dvz_panel_full(figure);
+        dvz_panel_panzoom(panel);
 
-```python
-import ctypes
-import datoviz.raw as dvz
+        DvzVisual* visual = dvz_point(scene, 0);
+        dvz_visual_set_data(visual, "position", pos, N);
+        dvz_visual_set_data(visual, "color", color, N);
+        dvz_visual_set_data(visual, "size", size, N);
+        dvz_panel_add_visual(panel, visual, NULL);
 
-scene = dvz.dvz_scene()
-figure = dvz.dvz_figure(scene, 800, 600, 0)
-panel = dvz.dvz_panel_full(figure)
-# ... add visuals and data ...
-app = dvz.dvz_app(scene)
-view = dvz.dvz_view_offscreen(app, figure, 800, 600)
-dvz.dvz_app_run(app, 1)
-dvz.dvz_view_capture_png(view, b"output.png")
-dvz.dvz_app_destroy(app)
-dvz.dvz_scene_destroy(scene)
-```
+        DvzApp* app = dvz_app(scene);
+        dvz_view_glfw(app, figure, 800, 600, "Scatter plot");
+        dvz_app_run(app, 0);
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    ```
+
+**Offscreen render to PNG**
+
+=== "Python"
+
+    ```python
+    import ctypes
+    import numpy as np
+    import datoviz.raw as dvz
+
+    N = 1000
+    pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
+    pos[:, 2] = 0.0
+    color = np.ones((N, 4), dtype=np.float32)
+    sizes = np.full(N, 8.0, dtype=np.float32)
+
+    scene = dvz.dvz_scene()
+    figure = dvz.dvz_figure(scene, 800, 600, 0)
+    panel = dvz.dvz_panel_full(figure)
+
+    visual = dvz.dvz_point(scene, 0)
+    dvz.dvz_visual_set_data(visual, b"position", ctypes.cast(pos.ctypes.data, ctypes.c_void_p), N)
+    dvz.dvz_visual_set_data(visual, b"color", ctypes.cast(color.ctypes.data, ctypes.c_void_p), N)
+    dvz.dvz_visual_set_data(visual, b"size", ctypes.cast(sizes.ctypes.data, ctypes.c_void_p), N)
+    dvz.dvz_panel_add_visual(panel, visual, None)
+
+    app = dvz.dvz_app(scene)
+    view = dvz.dvz_view_offscreen(app, figure, 800, 600)
+    dvz.dvz_app_run(app, 1)
+    dvz.dvz_view_capture_png(view, b"output.png")
+    dvz.dvz_app_destroy(app)
+    dvz.dvz_scene_destroy(scene)
+    ```
+
+=== "C"
+
+    ```c
+    #include <stdlib.h>
+    #include "datoviz/scene.h"
+
+    int main(void) {
+        int N = 1000;
+        float pos[N * 3], color[N * 4], size[N];
+        for (int i = 0; i < N; i++) {
+            pos[3*i+0] = (float)rand()/RAND_MAX * 2 - 1;
+            pos[3*i+1] = (float)rand()/RAND_MAX * 2 - 1;
+            pos[3*i+2] = 0;
+            color[4*i+0] = color[4*i+1] = color[4*i+2] = color[4*i+3] = 1.0f;
+            size[i] = 8.0f;
+        }
+
+        DvzScene* scene = dvz_scene();
+        DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+        DvzPanel* panel = dvz_panel_full(figure);
+
+        DvzVisual* visual = dvz_point(scene, 0);
+        dvz_visual_set_data(visual, "position", pos, N);
+        dvz_visual_set_data(visual, "color", color, N);
+        dvz_visual_set_data(visual, "size", size, N);
+        dvz_panel_add_visual(panel, visual, NULL);
+
+        DvzApp* app = dvz_app(scene);
+        DvzView* view = dvz_view_offscreen(app, figure, 800, 600);
+        dvz_app_run(app, 1);
+        dvz_view_capture_png(view, "output.png");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    ```
 
 
 ## AI-assisted workflow
