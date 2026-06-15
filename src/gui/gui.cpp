@@ -1627,8 +1627,11 @@ bool _dvz_gui_viewport_debug_state(
     out->stale_frame_count = viewport->stale_frame_count;
     out->has_frame = viewport->has_frame;
     out->image_valid = viewport->image_valid;
-    out->display_ready = _gui_viewport_display_ready(
-        viewport, viewport->requested_width, viewport->requested_height);
+    if (viewport->frame_visible)
+        out->display_ready = _gui_viewport_frame_matches_request(viewport);
+    else
+        out->display_ready = _gui_viewport_display_ready(
+            viewport, viewport->requested_width, viewport->requested_height);
     out->display_drawable = _gui_viewport_display_drawable(viewport);
     return true;
 }
