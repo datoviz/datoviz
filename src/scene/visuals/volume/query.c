@@ -424,6 +424,15 @@ static bool _volume_query_build_sample(
              plan, "volume_query0_texcoords", 0, texcoord_bytes, "texcoords", uvw_attr->data) &&
          dvz_frame_plan_upload_bytes(
              plan, "volume_query0_texture", 0, texture_bytes, "texture", field->data) &&
+         dvz_frame_plan_upload_metadata(
+             plan,
+             &(DvzFramePlanUploadMeta){
+                 .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_3D,
+                 .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+                 .color_role = field->desc.color_role,
+                 .visual_index = UINT32_MAX,
+                 .buffer_index = UINT32_MAX,
+             }) &&
          dvz_frame_plan_upload_set_texture_format(plan, texture_format, bytes_per_texel) &&
          dvz_frame_plan_upload_set_texture_3d_extent(
              plan, field->desc.width, field->desc.height, field->desc.depth) &&
@@ -433,6 +442,15 @@ static bool _volume_query_build_sample(
          dvz_frame_plan_upload_bytes(
              plan, "volume_query0_transfer", 0, sizeof(VOLUME_QUERY_DUMMY_TRANSFER_RGBA),
              "volume_transfer", VOLUME_QUERY_DUMMY_TRANSFER_RGBA) &&
+         dvz_frame_plan_upload_metadata(
+             plan,
+             &(DvzFramePlanUploadMeta){
+                 .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
+                 .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+                 .color_role = DVZ_COLOR_ROLE_SRGB_COLOR,
+                 .visual_index = UINT32_MAX,
+                 .buffer_index = UINT32_MAX,
+             }) &&
          dvz_frame_plan_upload_set_texture_format(plan, VK_FORMAT_R8G8B8A8_UNORM, 4) &&
          dvz_frame_plan_upload_set_texture_extent(plan, 1, 1) &&
          dvz_frame_plan_upload_set_texture_allocation_extent(plan, 1, 1) &&

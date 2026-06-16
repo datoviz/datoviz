@@ -621,6 +621,15 @@ static bool _labels_query_build(
              plan, "labels_query0_texcoords", 0, texcoord_bytes, "texcoords", texcoord_data) &&
          dvz_frame_plan_upload_bytes(
              plan, "labels_query0_texture", 0, texture_bytes, "texture", field->data) &&
+         dvz_frame_plan_upload_metadata(
+             plan,
+             &(DvzFramePlanUploadMeta){
+                 .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
+                 .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+                 .color_role = field->desc.color_role,
+                 .visual_index = UINT32_MAX,
+                 .buffer_index = UINT32_MAX,
+             }) &&
          dvz_frame_plan_upload_set_texture_format(plan, texture_format, bytes_per_texel) &&
          dvz_frame_plan_upload_set_texture_extent(plan, field->desc.width, field->desc.height) &&
          dvz_frame_plan_upload_set_texture_allocation_extent(

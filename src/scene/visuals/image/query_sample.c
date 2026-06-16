@@ -327,6 +327,15 @@ bool _scene_image_query_plan(
                        plan, "query0_texcoords", 0, texcoord_bytes, "texcoords", texcoord_data);
         ok = ok && dvz_frame_plan_upload_bytes(
                        plan, "query0_texture", 0, texture_bytes, "texture", texture_data) &&
+             dvz_frame_plan_upload_metadata(
+                 plan,
+                 &(DvzFramePlanUploadMeta){
+                     .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
+                     .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+                     .color_role = DVZ_COLOR_ROLE_SRGB_COLOR,
+                     .visual_index = UINT32_MAX,
+                     .buffer_index = UINT32_MAX,
+                 }) &&
              dvz_frame_plan_upload_set_texture_extent(plan, texture_width, texture_height) &&
              dvz_frame_plan_upload_set_texture_allocation_extent(
                  plan, texture_width, texture_height);
