@@ -48,6 +48,29 @@ uint64_t _scene_visual_desc_resource(DvzFramePlanEmitter* emitter, const char* k
 }
 
 
+/**
+ * Return color-role metadata for one descriptor resource.
+ *
+ * @param emitter the persistent emitter
+ * @param resource_id the resource id
+ * @return resource color role, or NONE when absent
+ */
+DvzColorRole _scene_visual_desc_resource_color_role(
+    DvzFramePlanEmitter* emitter, uint64_t resource_id)
+{
+    ANN(emitter);
+    if (resource_id == 0)
+        return DVZ_COLOR_ROLE_NONE;
+    for (uint32_t i = 0; i < emitter->resources.count; i++)
+    {
+        const ResourceId* resource = &emitter->resources.resources[i];
+        if (resource->id == resource_id)
+            return resource->color_role;
+    }
+    return DVZ_COLOR_ROLE_NONE;
+}
+
+
 
 /**
  * Append one descriptor vertex-buffer resource.

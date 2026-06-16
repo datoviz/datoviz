@@ -162,9 +162,16 @@ static void _scene_emit_image_like_texture_upload(
 
     dvz_frame_plan_upload_bytes(
         plan, tex_resource_id, 0, payload.byte_size, "texture", payload.data);
-    _scene_attach_upload_metadata(
-        plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
-        DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D, UINT32_MAX, 0);
+    dvz_frame_plan_upload_metadata(
+        plan,
+        &(DvzFramePlanUploadMeta){
+            .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
+            .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+            .color_role = payload.color_role,
+            .visual_type = (uint32_t)visual->type,
+            .visual_index = visual_index,
+            .buffer_index = UINT32_MAX,
+        });
     dvz_frame_plan_upload_set_texture_extent(plan, payload.region.width, payload.region.height);
     dvz_frame_plan_upload_set_texture_allocation_extent(
         plan, payload.allocation_width, payload.allocation_height);

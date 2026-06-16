@@ -61,6 +61,12 @@ typedef struct DvzSceneGlyphUniform
 } DvzSceneGlyphUniform;
 
 
+typedef struct DvzSceneTextureUniform
+{
+    float params[4];
+} DvzSceneTextureUniform;
+
+
 struct SceneDrawVertexBuffer
 {
     uint32_t slot;
@@ -248,12 +254,18 @@ bool _resolve_item_state_style_bind_group_layout(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t* out_id);
 bool _resolve_textured_mesh_bind_group_layout(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t* out_id);
+bool _create_image_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id);
 bool _resolve_item_state_style_bind_group(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id,
     uint64_t material_buffer_id, uint64_t item_state_style_buffer_id, uint64_t* out_id);
 bool _resolve_textured_mesh_bind_group(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id,
-    uint64_t material_buffer_id, uint64_t texture_id, uint64_t sampler_id, uint64_t* out_id);
+    uint64_t material_buffer_id, uint64_t texture_id, uint64_t sampler_id,
+    DvzColorRole color_role, uint64_t* out_id);
+bool _resolve_image_bind_group(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id,
+    uint64_t texture_id, uint64_t sampler_id, bool nearest, DvzColorRole color_role,
+    uint64_t* out_id);
 bool _create_glyph_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id);
 bool _create_labels_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id);
 bool _create_volume_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id);

@@ -36,6 +36,7 @@ typedef struct DvzImageTextureUploadPayload
     uint64_t byte_size;
     uint32_t allocation_width;
     uint32_t allocation_height;
+    DvzColorRole color_role;
 } DvzImageTextureUploadPayload;
 
 

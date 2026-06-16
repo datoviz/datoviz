@@ -8,3 +8,10 @@ fn srgb_to_linear(srgb: vec3f) -> vec3f {
 fn semantic_color_to_linear(color: vec4f) -> vec4f {
     return vec4f(srgb_to_linear(color.rgb), clamp(color.a, 0.0, 1.0));
 }
+
+fn sampled_texture_color_to_linear(color: vec4f, params: vec4f) -> vec4f {
+    if (params.x > 0.5) {
+        return semantic_color_to_linear(color);
+    }
+    return vec4f(color.rgb, clamp(color.a, 0.0, 1.0));
+}

@@ -14,15 +14,14 @@ struct SceneMaterial {
 
 @group(1) @binding(0) var<uniform> material: SceneMaterial;
 
-fn evaluate_scene_material(
-    item_color: vec4f,
+fn evaluate_scene_material_linear_item(
+    linear_item_color: vec4f,
     normal: vec3f,
     world_position: vec3f,
     camera_position: vec3f,
 ) -> vec4f {
     let model = i32(material.model.x + 0.5);
     let opacity = clamp(material.model.y, 0.0, 1.0);
-    let linear_item_color = semantic_color_to_linear(item_color);
     let linear_base_color = semantic_color_to_linear(material.base_color_factor);
     let emissive = srgb_to_linear(material.emissive_rim.rgb);
     let base = linear_item_color.rgb * linear_base_color.rgb;
@@ -53,6 +52,16 @@ fn evaluate_scene_material(
     let rgb = base * (material.params.x + material.params.y * lambert) +
         vec3f(material.params.z * specular);
     return vec4f(clamp(rgb, vec3f(0.0), vec3f(1.0)), alpha);
+}
+
+fn evaluate_scene_material(
+    item_color: vec4f,
+    normal: vec3f,
+    world_position: vec3f,
+    camera_position: vec3f,
+) -> vec4f {
+    return evaluate_scene_material_linear_item(
+        semantic_color_to_linear(item_color), normal, world_position, camera_position);
 }
 
 fn depth_cue_coordinate(cue: vec3f) -> f32 {

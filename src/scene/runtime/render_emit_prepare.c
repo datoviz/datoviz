@@ -306,8 +306,7 @@ bool _emitter_prepare_render_multi(
                     break;
                 }
                 if (is_new)
-                    ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(
-                                   stream, img_bgl_id);
+                    ok = ok && _create_image_bind_group_layout(stream, img_bgl_id);
             }
             if (pipeline.needs_labels_layout && labels_bgl_id == 0)
             {
@@ -589,7 +588,8 @@ bool _emitter_prepare_render_multi(
             uint64_t mesh_bg_id = 0;
             ok = ok && _resolve_textured_mesh_bind_group(
                            emitter, stream, textured_mesh_bgl_id, bind.material_buffer_id,
-                           bind.image_texture_id, img_sampler_linear_id, &mesh_bg_id);
+                           bind.image_texture_id, img_sampler_linear_id, bind.image_color_role,
+                           &mesh_bg_id);
             vis_bg_set1 = mesh_bg_id;
         }
         else if (bind.uses_image_set1)
@@ -604,8 +604,7 @@ bool _emitter_prepare_render_multi(
                     break;
                 }
                 if (is_new)
-                    ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(
-                                   stream, img_bgl_id);
+                    ok = ok && _create_image_bind_group_layout(stream, img_bgl_id);
             }
             uint64_t* img_sampler_id =
                 bind.image_nearest_sampler ? &img_sampler_nearest_id : &img_sampler_linear_id;
@@ -628,22 +627,10 @@ bool _emitter_prepare_render_multi(
                                    stream, *img_sampler_id, filter, filter);
                 }
             }
-            char img_bg_key[64];
-            dvz_snprintf(
-                img_bg_key, sizeof(img_bg_key), bind.image_nearest_sampler ?
-                                                    "_bg_img_nearest_%" PRIu64 :
-                                                    "_bg_img_%" PRIu64,
-                bind.image_texture_id);
-            uint64_t img_bg_id = _obj_id(emitter, img_bg_key, &is_new);
-            if (img_bg_id == 0)
-            {
-                ok = false;
-                break;
-            }
-            if (ok && is_new)
-                ok = ok &&
-                     dvz_drp2_stream_create_texture_sampler_bind_group(
-                         stream, img_bg_id, img_bgl_id, bind.image_texture_id, *img_sampler_id);
+            uint64_t img_bg_id = 0;
+            ok = ok && _resolve_image_bind_group(
+                           emitter, stream, img_bgl_id, bind.image_texture_id, *img_sampler_id,
+                           bind.image_nearest_sampler, bind.image_color_role, &img_bg_id);
             vis_bg_set1 = img_bg_id;
         }
         if (bind.uses_labels_set1)

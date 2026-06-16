@@ -4,6 +4,7 @@
 
 @group(1) @binding(1) var tex: texture_2d<f32>;
 @group(1) @binding(2) var samp: sampler;
+@group(1) @binding(3) var<uniform> texture_params: vec4f;
 
 struct FragmentIn {
     @location(0) color: vec4f,
@@ -16,9 +17,9 @@ struct FragmentIn {
 
 @fragment
 fn main(input: FragmentIn) -> @location(0) vec4f {
-    let texel = textureSample(tex, samp, input.uv);
-    let base = texel * input.color;
-    let shaded = evaluate_scene_material(
+    let texel = sampled_texture_color_to_linear(textureSample(tex, samp, input.uv), texture_params);
+    let base = texel * semantic_color_to_linear(input.color);
+    let shaded = evaluate_scene_material_linear_item(
         base, input.normal, input.world_position, input.camera_position);
     let cue = vec3f(
         input.depth, length(input.camera_position - input.world_position),

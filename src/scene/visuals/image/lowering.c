@@ -110,5 +110,6 @@ bool _scene_image_visual_bind_desc(
     out->uses_image_set1 = caps.uses_image_set;
     out->image_texture_id = visual->image_texture_id;
     out->image_nearest_sampler = visual->image_nearest_sampler;
+    out->image_color_role = visual->image_color_role;
     return true;
 }

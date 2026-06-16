@@ -38,6 +38,9 @@ bool _scene_visual_meta_is_stroked_path(
 
 uint64_t _scene_visual_desc_resource(DvzFramePlanEmitter* emitter, const char* key);
 
+DvzColorRole _scene_visual_desc_resource_color_role(
+    DvzFramePlanEmitter* emitter, uint64_t resource_id);
+
 bool _scene_visual_desc_append_resource(
     DvzFramePlanEmitter* emitter, DvzSceneVisualDesc* out, const char* key,
     const char* missing_error, const char** error);

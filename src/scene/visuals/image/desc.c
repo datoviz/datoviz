@@ -57,6 +57,9 @@ bool _scene_image_visual_desc_from_metadata(
     out->kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
     out->image_pixel_space = meta->image_pixel_space;
     out->image_nearest_sampler = meta->image_nearest_sampler;
+    out->image_color_role = _scene_visual_desc_resource_color_role(emitter, tex_id);
+    if (out->image_color_role == DVZ_COLOR_ROLE_NONE)
+        out->image_color_role = meta->image_color_role;
     out->vbuf_ids[out->vbuf_count++] = uv_id;
     out->image_texture_id = tex_id;
     uint64_t pos_buf = out->vbuf_ids[0];

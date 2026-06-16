@@ -331,6 +331,7 @@ typedef struct DvzFramePlanVisualMeta
     bool has_labels;
     bool image_pixel_space;
     bool image_nearest_sampler;
+    DvzColorRole image_color_role;
     uint32_t field_format;
     uint32_t field_semantic;
     uint32_t field_width;

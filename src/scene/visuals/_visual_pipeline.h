@@ -85,6 +85,7 @@ typedef struct DvzSceneVisualDesc
     uint64_t image_texture_id;
     bool image_pixel_space;
     bool image_nearest_sampler;
+    DvzColorRole image_color_role;
     uint32_t labels_visual_index;
     DvzLabelsState labels_state;
     uint32_t labels_lookup_count;
@@ -208,6 +209,7 @@ typedef struct DvzSceneVisualBindDesc
     bool uses_textured_mesh_set1;
     bool image_nearest_sampler;
     uint64_t image_texture_id;
+    DvzColorRole image_color_role;
     bool uses_labels_set1;
     uint64_t labels_texture_id;
     uint32_t labels_visual_index;

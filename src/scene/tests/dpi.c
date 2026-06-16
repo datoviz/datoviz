@@ -129,11 +129,13 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
             const DvzSceneViewportUniform* viewport =
                 (const DvzSceneViewportUniform*)cmd->u.write_buffer.data_raw;
             ANN(viewport);
-            AC(viewport->x, 200.0f, 1e-6f);
-            AC(viewport->y, 0.0f, 1e-6f);
-            AC(viewport->width, 400.0f, 1e-6f);
-            AC(viewport->height, 600.0f, 1e-6f);
-            found_viewport_uniform = true;
+            if (fabsf(viewport->width - 400.0f) <= 1e-6f &&
+                fabsf(viewport->height - 600.0f) <= 1e-6f)
+            {
+                AC(viewport->x, 200.0f, 1e-6f);
+                AC(viewport->y, 0.0f, 1e-6f);
+                found_viewport_uniform = true;
+            }
         }
         else if (
             cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&

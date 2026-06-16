@@ -47,6 +47,11 @@ bool _image_texture_upload_payload(DvzVisual* visual, DvzImageTextureUploadPaylo
     }
     out->allocation_width = _visual_family_state(visual)->texture.width;
     out->allocation_height = _visual_family_state(visual)->texture.height;
+    const DvzSampledField* field = _visual_family_state(visual)->field;
+    if (field != NULL && field->desc.semantic == DVZ_FIELD_SEMANTIC_COLOR)
+        out->color_role = field->desc.color_role;
+    else
+        out->color_role = DVZ_COLOR_ROLE_SRGB_COLOR;
     return true;
 }
 

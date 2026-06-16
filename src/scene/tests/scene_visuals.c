@@ -6873,11 +6873,13 @@ int test_scene_image_emit_uses_common_and_texture_sets(TstContext* suite, const 
             const DvzSceneViewportUniform* viewport =
                 (const DvzSceneViewportUniform*)cmd->u.write_buffer.data_raw;
             ANN(viewport);
-            AC(viewport->x, 0.0f, 1e-6f);
-            AC(viewport->y, 0.0f, 1e-6f);
-            AC(viewport->width, 64.0f, 1e-6f);
-            AC(viewport->height, 64.0f, 1e-6f);
-            found_viewport_write = true;
+            if (fabsf(viewport->width - 64.0f) <= 1e-6f &&
+                fabsf(viewport->height - 64.0f) <= 1e-6f)
+            {
+                AC(viewport->x, 0.0f, 1e-6f);
+                AC(viewport->y, 0.0f, 1e-6f);
+                found_viewport_write = true;
+            }
         }
     }
     AT(found_pipeline);

@@ -15,11 +15,10 @@ layout(set = 1, binding = 0) uniform SceneMaterial {
     vec4 depthCueExtra;
 } material;
 
-vec4 evaluateSceneMaterial(vec4 itemColor, vec3 normal, vec3 worldPos, vec3 cameraPos)
+vec4 evaluateSceneMaterialLinearItem(vec4 linearItemColor, vec3 normal, vec3 worldPos, vec3 cameraPos)
 {
     int model = int(material.model.x + 0.5);
     float opacity = clamp(material.model.y, 0.0, 1.0);
-    vec4 linearItemColor = semanticColorToLinear(itemColor);
     vec4 linearBaseColor = semanticColorToLinear(material.baseColorFactor);
     vec3 emissive = srgbToLinear(clamp(material.emissiveRim.rgb, 0.0, 1.0));
     vec3 base = linearItemColor.rgb * linearBaseColor.rgb;
@@ -50,6 +49,12 @@ vec4 evaluateSceneMaterial(vec4 itemColor, vec3 normal, vec3 worldPos, vec3 came
     vec3 rgb = base * (material.params.x + material.params.y * lambert) +
                vec3(material.params.z * spec);
     return vec4(clamp(rgb, 0.0, 1.0), alpha);
+}
+
+vec4 evaluateSceneMaterial(vec4 itemColor, vec3 normal, vec3 worldPos, vec3 cameraPos)
+{
+    return evaluateSceneMaterialLinearItem(
+        semanticColorToLinear(itemColor), normal, worldPos, cameraPos);
 }
 
 float depthCueCoordinate(vec3 cue)

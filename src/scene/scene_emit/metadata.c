@@ -86,6 +86,8 @@ bool _scene_visual_frame_plan_metadata(
     metadata->glyph_atlas_encoding = (uint32_t)_visual_family_state(visual)->glyph_atlas_encoding;
     metadata->glyph_distance_range_px = _visual_family_state(visual)->glyph_distance_range_px;
     metadata->scale_index = _scene_scale_index(figure->scene, _visual_family_state(visual)->scale);
+    if (_visual_family_state(visual)->field != NULL)
+        metadata->image_color_role = _visual_family_state(visual)->field->desc.color_role;
     metadata->scene_occluder = visual->scene_occluder;
     metadata->scene_occluded = visual->scene_occluded;
     if (_visual_family_state(visual)->field != NULL)

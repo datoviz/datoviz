@@ -351,6 +351,7 @@ bool _scene_image_query_plan(
         .field_height = texture_height,
         .field_depth = 1,
         .image_nearest_sampler = pending->request.target == DVZ_SCENE_TARGET_PIXEL,
+        .image_color_role = DVZ_COLOR_ROLE_SRGB_COLOR,
     };
     dvz_strlcpy(metadata.position_id, "query0_position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.texcoords_id, "query0_texcoords", sizeof(metadata.texcoords_id));

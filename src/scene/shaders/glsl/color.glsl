@@ -13,4 +13,12 @@ vec4 semanticColorToLinear(vec4 color)
     return vec4(srgbToLinear(clamp(color.rgb, 0.0, 1.0)), clamp(color.a, 0.0, 1.0));
 }
 
+vec4 sampledTextureColorToLinear(vec4 color, vec4 params)
+{
+    if (params.x > 0.5) {
+        return semanticColorToLinear(color);
+    }
+    return vec4(color.rgb, clamp(color.a, 0.0, 1.0));
+}
+
 #endif
