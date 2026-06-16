@@ -207,6 +207,17 @@ Screenshot and raster export APIs return display pixels, not scientific samples:
    a linear-float or data-field query/readback path.
 
 
+## Readback API Naming
+
+Presentation readback names such as `capture`, `screenshot`, `png`, `video`, and `rgba` are reserved
+for display-encoded RGBA8 output unless a function explicitly says otherwise.
+
+Scientific readback APIs must put the color space or data domain in the public name and return a
+matching type. Acceptable future names include forms such as `*_read_linear_rgba_f32()`,
+`*_read_data_field()`, or `*_query_field_values()`. Avoid ambiguous names such as
+`*_read_pixels_rgba()` when the returned values are not display-encoded `DvzColor`/RGBA8 pixels.
+
+
 ## Shader Sampling Contract
 
 The runtime carries a color role from sampled fields or generated texture payloads into texture
