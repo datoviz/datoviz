@@ -36,6 +36,8 @@ int test_math(TstSuite* suite)
     TST_CASE(test_color_layout);
     TST_CASE(test_color_helpers);
     TST_CASE(test_color_linear_roundtrip);
+    TST_CASE(test_color_srgb_u8_to_linear_f32);
+    TST_CASE(test_color_linear_f32_to_srgb_u8);
 
     TST_GROUP("prng");
     TST_CASE(test_prng_1);

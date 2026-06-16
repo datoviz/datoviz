@@ -30,6 +30,10 @@ int test_color_helpers(TstContext* suite, const TstCase* tstitem);
 
 int test_color_linear_roundtrip(TstContext* suite, const TstCase* tstitem);
 
+int test_color_srgb_u8_to_linear_f32(TstContext* suite, const TstCase* tstitem);
+
+int test_color_linear_f32_to_srgb_u8(TstContext* suite, const TstCase* tstitem);
+
 
 
 /*************************************************************************************************/

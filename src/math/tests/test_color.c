@@ -112,3 +112,52 @@ int test_color_linear_roundtrip(TstContext* suite, const TstCase* tstitem)
 
     return 0;
 }
+
+
+
+int test_color_srgb_u8_to_linear_f32(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+    DvzColorf linear = dvz_color_to_linear(dvz_color_rgba(0, 1, 10, 64));
+    AC(linear.r, 0.0f, 1e-7f);
+    AC(linear.g, 0.00030352698f, 1e-7f);
+    AC(linear.b, 0.00303526984f, 1e-7f);
+    AC(linear.a, 64.0f / 255.0f, 1e-7f);
+
+    linear = dvz_color_to_linear(dvz_color_rgba(11, 128, 255, 192));
+    AC(linear.r, 0.00334653576f, 1e-7f);
+    AC(linear.g, 0.21586050011f, 1e-7f);
+    AC(linear.b, 1.0f, 1e-7f);
+    AC(linear.a, 192.0f / 255.0f, 1e-7f);
+
+    return 0;
+}
+
+
+
+int test_color_linear_f32_to_srgb_u8(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+    DvzColor encoded = dvz_color_from_linear(
+        dvz_colorf(0.0f, 0.0031308f, 0.18f, 128.0f / 255.0f));
+    AT(encoded.r == 0);
+    AT(encoded.g == 10);
+    AT(encoded.b == 118);
+    AT(encoded.a == 128);
+
+    encoded = dvz_color_from_linear(dvz_colorf(0.00392156863f, 0.21586050011f, 1.0f, 0.25f));
+    AT(encoded.r == 13);
+    AT(encoded.g == 128);
+    AT(encoded.b == 255);
+    AT(encoded.a == 64);
+
+    encoded = dvz_color_from_linear(dvz_colorf(-1.0f, INFINITY, NAN, 2.0f));
+    AT(encoded.r == 0);
+    AT(encoded.g == 0);
+    AT(encoded.b == 0);
+    AT(encoded.a == 255);
+
+    return 0;
+}
