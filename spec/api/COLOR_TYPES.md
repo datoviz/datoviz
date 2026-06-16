@@ -207,6 +207,25 @@ Screenshot and raster export APIs return display pixels, not scientific samples:
    a linear-float or data-field query/readback path.
 
 
+## Shader Sampling Contract
+
+The runtime carries a color role from sampled fields or generated texture payloads into texture
+creation metadata and shader bind groups. Shaders must apply that role exactly once:
+
+1. `DVZ_COLOR_ROLE_SRGB_COLOR` means sampled RGB is display-encoded sRGB and must be converted to
+   linear RGB before blending, lighting, depth cueing, volume compositing, or multiplication by
+   another semantic color.
+2. `DVZ_COLOR_ROLE_LINEAR_COLOR` means sampled RGB is already linear and must not be sRGB-decoded.
+   Final screenshot/export encoding still happens at the render target boundary.
+3. `DVZ_COLOR_ROLE_DATA` means the texture carries scalar, label, distance-field, normal, or other
+   non-color data. Shaders may interpret it numerically, but must not apply color transfer
+   functions unless a later colormap or palette lookup produces semantic color.
+4. Image, textured-mesh, RGBA volume, bitmap marker, and volume transfer-function shader paths
+   produce linear color before compositing. Glyph atlases, SDF/MSDF marker atlases, label textures,
+   scalar volumes, depth textures, and query targets are data textures.
+5. Alpha is always straight linear coverage. The role affects RGB transfer only.
+
+
 ## Palettes, Colormaps, And Interpolation
 
 Palettes and categorical colors should store `DvzColor`.
