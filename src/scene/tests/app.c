@@ -6362,6 +6362,112 @@ int test_app_offscreen_volume_slice_renders_field(TstContext* suite, const TstCa
 
 
 /**
+ * Ensure RGBA8 volume color fields are decoded before source-over blending.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_volume_rgba_srgb_linear_blend(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzColor dst = {64, 64, 64, 255};
+    DvzColor src = {192, 32, 32, 128};
+    DvzVisual* background = _app_primitive_add_quad(
+        scene, panel, -0.95f, 0.95f, -0.95f, 0.95f, 0.0f, dst, DVZ_ALPHA_OPAQUE, false);
+    AT(background != NULL);
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    ANN(volume);
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    ANN(field);
+    DvzColor voxels[8] = {0};
+    for (uint32_t i = 0; i < 8; i++)
+        voxels[i] = src;
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                   .data = voxels,
+                   .bytes_per_row = 2 * sizeof(DvzColor),
+                   .rows_per_image = 2,
+               }));
+    AT(dvz_visual_set_field(volume, "field", field));
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_SLICE) == 0);
+    AT(dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+
+    DvzColorf dst_linear = dvz_color_to_linear(dst);
+    DvzColorf src_linear = dvz_color_to_linear(src);
+    float alpha = src_linear.a;
+    DvzColor expected = dvz_color_from_linear(dvz_colorf(
+        src_linear.r * alpha + dst_linear.r * (1.0f - alpha),
+        src_linear.g * alpha + dst_linear.g * (1.0f - alpha),
+        src_linear.b * alpha + dst_linear.b * (1.0f - alpha),
+        1.0f));
+    uint8_t naive_r = (uint8_t)((uint32_t)src.r * src.a / 255u +
+                                (uint32_t)dst.r * (255u - src.a) / 255u);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_volume_rgba_srgb_linear_blend skipped: GPU context failed");
+        tst_skip(suite, "GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
+    ANN(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    for (uint32_t frame = 0; frame < 3; frame++)
+    {
+        dvz_app_run(app, 1);
+        if (rgba != NULL)
+            dvz_free(rgba);
+        rgba = NULL;
+        AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+        ANN(rgba);
+    }
+    AT(width == 64);
+    AT(height == 64);
+
+    const uint8_t* center = _pixel_at(rgba, width, height, width / 2, height / 2);
+    AT(abs((int)center[0] - (int)expected.r) <= 16);
+    AT(abs((int)center[1] - (int)expected.g) <= 16);
+    AT(abs((int)center[2] - (int)expected.b) <= 16);
+    AT(abs((int)center[0] - (int)naive_r) > 10);
+    AT(center[3] >= 240);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure MIP volume rendering traverses the 3D field instead of sampling only the middle slice.
  *
  * @param suite the test suite
@@ -7477,6 +7583,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_alpha_over_nonblack_linear);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_colormap_srgb_lut_linear_blend);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_slice_renders_field);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_rgba_srgb_linear_blend);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_mip_renders_bright_slice);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_composite_renders_field);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_label_composite_renders_category);

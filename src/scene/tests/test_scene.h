@@ -1191,6 +1191,8 @@ int test_app_offscreen_colormap_srgb_lut_linear_blend(TstContext* suite, const T
 
 int test_app_offscreen_volume_slice_renders_field(TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_volume_rgba_srgb_linear_blend(TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_volume_mip_renders_bright_slice(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_volume_composite_renders_field(TstContext* suite, const TstCase* item);
