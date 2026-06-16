@@ -55,6 +55,13 @@ Target kinds:
 Targets describe logical format requirements, dimensions/sizing policy, sample count, clear/load/
 store intent, and whether readback is required. They never expose backend handles.
 
+Intermediate color targets are linear. Final display output is sRGB by default. The runtime decides
+whether final linear-to-sRGB encoding is performed by an sRGB-capable target/swapchain or by an
+explicit final encode pass.
+
+Scene-level DRP2 emission must not depend on Vulkan-specific swapchain details. See
+[`../semantics/COLOR_MANAGEMENT.md`](../semantics/COLOR_MANAGEMENT.md).
+
 ## Logical Resources
 
 Resources are referenced by stable scene ids. Each referenced resource records:

@@ -31,6 +31,17 @@ Current supported concepts:
 Lighting is currently visual-owned, not scene-owned. Scene-owned ambient, directional, and point
 lights are future API work and must not be described as required for the active v0.4 slice.
 
+## Linear-Light Arithmetic
+
+Lighting calculations are performed in linear RGB. Material colors, light colors, ambient/diffuse/
+specular terms, and texture colors must be linearized before lighting if they originate from
+sRGB-authored scene values or `srgb_color` textures.
+
+The output of lighting remains linear until the final display or standard image-export encode. PBR
+or future physically based shading paths must also assume linear-light arithmetic.
+
+See [COLOR_MANAGEMENT.md](COLOR_MANAGEMENT.md).
+
 
 ## Future Scene-Owned Lights
 

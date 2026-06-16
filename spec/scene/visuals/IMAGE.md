@@ -160,6 +160,11 @@ All items share the same anchor convention.
 The 2D texture resource. Format must match the declared `texture_mode`.
 All items in the visual sample from the same texture.
 
+The texture resource must declare a color role; see
+[`../semantics/COLOR_MANAGEMENT.md`](../semantics/COLOR_MANAGEMENT.md). Color images, PNG/JPEG
+textures, UI images, and sprite atlases default to `srgb_color`. Scalar images, masks, labels,
+index maps, and scientific textures default to `data`.
+
 
 ### `colormap`
 
@@ -171,6 +176,8 @@ All items in the visual sample from the same texture.
 
 Maps single-channel float texture values to display colors.
 Domain and palette can be updated without re-uploading texture data.
+Transfer textures or colormap tables are sRGB-authored by default and must be sampled or converted
+to linear RGB before compositing.
 
 
 ### `transpose`
@@ -327,6 +334,9 @@ Both set at visual creation time.
 | `heatmap` | single-channel `f32` texture | texture sample mapped via `colormap` | optional, GPU marching squares |
 | `none` | no texture | `color` per-item fill | no |
 
+`rgba` textures default to color role `srgb_color`. `scalar` and `heatmap` textures default to
+color role `data`.
+
 `heatmap` is a scalar colormap display with optional isoline overlay.
 When `isoline_count > 0` the scene adds a marching-squares `ComputeNode` before the render node.
 
@@ -391,7 +401,7 @@ multiple visual instances instead.
 
 ## Follow-Up Pressure
 
-1. Native shader-side scalar lookup should use raw scalar textures, contrast/gamma/opacity
+1. Native shader-side scalar lookup should use raw scalar textures, contrast/scale-power/opacity
    parameters, a colormap palette or transfer texture, and raw-value query semantics.
 2. Image probes should return semantic raw values, data coordinates, visual identity, and
    latest-request-wins hover behavior.

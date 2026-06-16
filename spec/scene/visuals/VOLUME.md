@@ -64,8 +64,12 @@ viewers.
 Rules:
 
 - Scalar fields are single-channel `f32`; RGBA fields are `u8`.
+- Volume fields default to color role `data` unless explicitly declared as color volumes; see
+  [`../semantics/COLOR_MANAGEMENT.md`](../semantics/COLOR_MANAGEMENT.md).
 - `value_range` maps raw scalar value to normalized `t = clamp((v - min) / (max - min), 0, 1)`.
 - `alpha_transfer`, `color_transfer`, and `isosurface_levels` operate on normalized values.
+- Transfer functions and colormaps are sRGB-authored by default. Their RGB outputs are sampled or
+  converted to linear RGB before DVR, MIP, slice compositing, lighting, or transparency.
 - `opacity_scale` applies after transfer lookup or RGBA alpha sampling.
 - `axis_order`/`axis_flip` avoid CPU-side swizzling for common medical/imaging layouts.
 - `crop_min`/`crop_max` are in the same data-space coordinates as bounds.
@@ -110,6 +114,10 @@ Variants are set at visual creation time. `color_mode` applies only to scalar fi
 | scalar + colormap | normalized value -> `color_transfer` -> colormap, opacity from `alpha_transfer` |
 | RGBA | sampled directly, `opacity_scale` applied to A |
 | MIP | maximum scalar along ray, mapped through `color_transfer`; ignores `alpha_transfer` |
+
+Scalar volume textures use color role `data`. RGBA volume textures must explicitly declare whether
+they are `srgb_color`, `linear_color`, or `data`; default scientific RGBA volumes are `data` unless
+the caller declares a color volume.
 
 `render_mode = multiplane` is deferred. In v0.4, MPR viewers can use three separate slice-mode
 volume visuals.

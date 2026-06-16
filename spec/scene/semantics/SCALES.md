@@ -40,7 +40,7 @@ Required fields:
 | `clamp` | `clamp` default or `repeat` for cyclic quantities |
 | `unit` | optional display label only |
 | `palette` | built-in name or custom RGBA stops |
-| `interpolation` | `linear`, `log`, `sqrt`, or `power(gamma)` |
+| `interpolation` | `linear`, `log`, `sqrt`, or `power(power_exponent)` |
 | `center` | optional diverging midpoint for linear interpolation |
 
 Rules:
@@ -50,6 +50,10 @@ Rules:
 - `log` requires `domain_min > 0`; `sqrt` requires `domain_min >= 0`.
 - `unit` affects labels only; no unit algebra is applied.
 - Output is always `rgba_u8`.
+- Built-in colormap tables are authored in sRGB unless explicitly stated otherwise.
+- `rgba_u8` outputs are sRGB-authored semantic colors. Before rendering, RGB channels must be
+  converted to linear RGB for blending, lighting, transparency, and compositing.
+- Alpha remains a linear scalar and is not sRGB-encoded or decoded.
 - Diverging `center` maps to palette `t = 0.5`, uses piecewise-linear normalization, and is ignored
   when interpolation is not linear.
 
@@ -85,6 +89,7 @@ Required per-entry fields:
 Rules:
 
 - Input is `int32`; output is `rgba_u8`.
+- Output colors are sRGB-authored semantic colors; alpha remains linear.
 - No normalization or interpolation is applied.
 - If explicit entries exist, `category_id` maps to the matching retained entry color.
 - If explicit entries do not exist, category id `i` maps to `colors[i % len(colors)]`.
@@ -137,6 +142,15 @@ The setter replaces the retained category table. It is valid only for categorica
 | `interpolation` | `linear` default |
 
 The output alpha is `float32` clamped to `[0, 1]` and is typically multiplied into a base color.
+
+## Data-Domain Transfer Terminology
+
+Scale interpolation terms such as `log`, `sqrt`, and `power(power_exponent)` describe data-domain
+normalization before visual encoding. They are not display gamma correction.
+
+Use `power`, `power_exponent`, or `scale_power` for scale normalization parameters. Avoid naming
+scale-normalization controls `gamma`, because display sRGB encoding is handled once at the final
+output boundary.
 
 ## Attribute Sources
 
@@ -220,6 +234,7 @@ upload time. The fallback is transparent except that:
 
 | Document | Relationship |
 |---|---|
+| `COLOR_MANAGEMENT.md` | sRGB-authored scale colors, linear rendering, and output encoding |
 | `visuals/PIXEL.md` | first family using scalar color mode |
 | `semantics/LEGENDS_AND_COLORBARS.md` | explanatory objects attach to scale identity |
 | `pipeline/ATTRIBUTE_SOURCES.md` | source modes feeding scales |

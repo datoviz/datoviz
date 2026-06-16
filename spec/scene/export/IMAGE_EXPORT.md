@@ -24,6 +24,18 @@ The scene-level contract for still image capture is:
 
 The scene has no knowledge of whether the rendered frame is displayed, saved, or discarded.
 
+Standard PNG screenshots are exported as sRGB-encoded 8-bit RGBA. Scientific readback should support
+explicit output encoding and precision choices, conceptually including:
+
+| Use | Output |
+|---|---|
+| screenshots, docs, standard UI capture | sRGB `u8` RGBA |
+| scientific/export pipelines | linear `f16` or `f32` RGBA |
+
+Export/capture belongs to the app/canvas/runtime layer, not to the scene graph. The scene spec only
+defines the semantic color contract; the runtime chooses the actual framebuffer, encode, and
+readback implementation. See [`../semantics/COLOR_MANAGEMENT.md`](../semantics/COLOR_MANAGEMENT.md).
+
 **Programmatic single-frame render:**
 
 ```text
@@ -153,8 +165,9 @@ The user would not need to specify it explicitly.
    dvz_panel_set_offscreen_size(panel, width, height)
    ```
 
-3. **Format** — the texture format should be `rgba_u8` by default.
-   Passing a `DvzTexture*` created with a float format should give an HDR-capable offscreen target.
+3. **Format** — the texture format should be `rgba_u8` by default for standard sRGB output.
+   Passing a `DvzTexture*` created with a float format should give a linear HDR-capable offscreen
+   target.
 4. **Multiple consumers** — a single offscreen panel texture may be referenced by multiple
    downstream visuals.
 5. **Recursion depth** — more than one level of indirection (A → B → C) is allowed as long
@@ -184,3 +197,4 @@ This remains the intended scene-native path for embedding a rendered panel insid
 | `pipeline/FRAME_PLAN.md` | future offscreen panel ordering in FramePlan |
 | `integration/EXTERNAL_UI.md` | future `dvz_gui_image` offscreen-panel consumption |
 | `pipeline/RESOURCE_MODEL.md` | future offscreen texture as a scene-owned `TextureResource` |
+| `semantics/COLOR_MANAGEMENT.md` | sRGB screenshots, linear scientific readback, and output encoding |

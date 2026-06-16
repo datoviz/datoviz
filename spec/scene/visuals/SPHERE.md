@@ -93,6 +93,11 @@ future semantic target; the active v0.4 public API only implements data-space ra
 2D texture mapped onto each sphere surface. UV coordinates are computed analytically in the
 shader from the surface normal — no per-item texcoords are needed.
 
+Texture resources must declare a color role; see
+[`../semantics/COLOR_MANAGEMENT.md`](../semantics/COLOR_MANAGEMENT.md). Ordinary globe, planet, and
+decorative color textures default to `srgb_color`; linear render inputs use `linear_color`; masks,
+normal-like maps, IDs, and other non-color fields use `data`.
+
 
 ### `texture_projection`
 
@@ -200,7 +205,7 @@ The v0.4 shading model for sphere impostors uses Blinn-Phong.
 The visual parameter block reserves `metallic` and `roughness` fields (zero-initialized, ignored in v0.4)
 for future PBR support, following the same pattern as `mesh`.
 A future `normal_map` texture slot is also reserved.
-See `semantics/LIGHTING.md` for the full upgrade path.
+See `../semantics/LIGHTING.md` for the full upgrade path.
 
 ## Deferred Backlog
 

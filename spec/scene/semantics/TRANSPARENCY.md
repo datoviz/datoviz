@@ -39,6 +39,18 @@ Opaque visuals are never rendered after transparent visuals in the same panel.
 This split is inserted automatically by the scene during frame planning.
 The user does not need to specify pass ordering explicitly.
 
+## Linear Color Contract
+
+Standard alpha blending, order-independent transparency, WBOIT accumulation, revealage, and resolve
+passes operate in linear color space. Accumulation targets such as `rgba_f16` store linear color.
+WBOIT must not accumulate sRGB-encoded colors.
+
+The final transparent/composited output remains linear until final display or standard image-export
+encoding. Alpha, revealage, and transmittance are scalar linear quantities and are not
+gamma-corrected.
+
+See [COLOR_MANAGEMENT.md](COLOR_MANAGEMENT.md).
+
 
 ## Ordinary Source-Over Blending
 

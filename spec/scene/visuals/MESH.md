@@ -169,6 +169,11 @@ transforms and merging multiple shapes into one mesh resource.
 Variants are set at visual creation time. `color_mode = texture` requires `texcoords` and a
 texture resource. `color_mode = scalar` requires a color scale and scalar values.
 
+Texture resources must declare a color role; see
+[`../semantics/COLOR_MANAGEMENT.md`](../semantics/COLOR_MANAGEMENT.md). Ordinary diffuse/albedo
+textures default to `srgb_color`. Linear render inputs and HDR material textures use
+`linear_color`. Normal maps, ID maps, masks, and other non-color sampled fields use `data`.
+
 ## Transform, Stages, And Picking
 
 Transform model and stage participation are standard; see `SHARED_ATTRIBUTES.md`.

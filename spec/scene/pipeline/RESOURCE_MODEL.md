@@ -104,6 +104,23 @@ dimension, resolution, sample format, channel/component type, semantic hints, an
 metadata such as origin, spacing, axes, and units. Visuals borrow fields and layer interpretation on
 top; runtime textures, CPU colorized caches, and derived slice resources are execution artifacts.
 
+Texture-like sampled fields that can be sampled as color or data must declare a color role:
+`srgb_color`, `linear_color`, or `data`. The role is semantic scene metadata and is independent from
+backend texture format. See
+[`../semantics/COLOR_MANAGEMENT.md`](../semantics/COLOR_MANAGEMENT.md).
+
+Default color roles:
+
+| Sampled field use | Default role |
+|---|---|
+| scalar fields, masks, labels, ids, normals, positions, depth-like data | `data` |
+| RGBA PNG/JPEG-like images, UI atlases, diffuse/albedo textures | `srgb_color` |
+| HDR color textures, linear render inputs, generated linear color caches | `linear_color` |
+
+Once the color-role field is implemented, missing roles should be validation errors for new APIs.
+Compatibility wrappers may infer these defaults during the v0.4 transition, but should emit a
+diagnostic so callers can move to explicit roles.
+
 The primary user-facing constructor is `dvz_sampled_field`. Texture convenience calls such as
 `dvz_texture_2d` and `dvz_texture_3d` are transitional wrappers that create sampled fields. See
 [`../proposals/promoted/SAMPLED_FIELD_API_DESIGN.md`](../proposals/promoted/SAMPLED_FIELD_API_DESIGN.md).

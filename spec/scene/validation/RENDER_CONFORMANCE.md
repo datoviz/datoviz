@@ -37,6 +37,15 @@ Example fixture families:
 5. depth-enabled 2D/3D passes, MSAA, EDL, SSAO, transparency, and material variants,
 6. GPU-backed point pick and image probe request paths where output can be made deterministic.
 
+Color-management fixtures should include:
+
+1. known sRGB `rgba_u8` colors proving API-boundary round-trip behavior,
+2. mid-gray ramps that expose missing or double final sRGB encoding,
+3. image and mesh texture fixtures with `srgb_color`, `linear_color`, and `data` sampled fields,
+4. colormap fixtures proving sRGB-authored tables are linearized before compositing,
+5. WBOIT and ordinary alpha blending over non-black backgrounds in linear RGB,
+6. PNG screenshot export as sRGB `u8` RGBA and float readback as explicit linear RGBA.
+
 Fixtures should avoid animation, wall-clock timing, random seeds without explicit initialization,
 and backend-dependent layout defaults. If a fixture needs randomness, it must pin the seed in the
 fixture source.
@@ -194,6 +203,8 @@ Start with a small, stable corpus before expanding:
 4. multi-panel layout with viewport/scissor,
 5. one transparency or postprocess fixture,
 6. one pick/probe readback fixture if deterministic output is available.
+7. one color-management fixture with sRGB input colors, linear compositing, and sRGB screenshot
+   output.
 
 Once the runner, artifact format, update workflow, and failure output are stable, grow the fixture
 matrix toward the full active scene API surface.
