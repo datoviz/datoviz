@@ -34,18 +34,18 @@ THUMBS: list[tuple[str, str, tuple[int, int, int, int]]] = [
     ("v_marker",  "visuals/visual_marker.png",      (130,  270,  650,  660)),
 
     # 1D
-    # segment: show full scene
-    ("v_segment", "visuals/visual_segment.png",     (100,   50, 1500, 1100)),
+    # segment: 2x zoom into center cluster
+    ("v_segment", "visuals/visual_segment.png",     (350,  250,  950,  700)),
     # path: 3 wavy lines content=(100,275,1499,932) — center zoom to 4:3
     ("v_path",    "visuals/visual_path.png",        (303,  230, 1296,  975)),
-    # vector: 2x zoom into center field
-    ("v_vector",  "visuals/visual_vector.png",      (500,  375, 1100,  825)),
+    # vector: 4x zoom into center field
+    ("v_vector",  "visuals/visual_vector.png",      (600,  450, 1000,  750)),
 
     # 2D
     # image: blue texture — trim dark border
     ("v_image",   "visuals/visual_image.png",       (100,  100, 1500, 1100)),
-    # glyph: show full 3x3 grid
-    ("v_glyph",   "visuals/visual_glyph.png",       (150,  200, 1350, 1100)),
+    # glyph: tight crop on the text
+    ("v_glyph",   "visuals/visual_glyph.png",       ( 50,  282,  850,  882)),
     # text: content=(134,183,1263,745) — left text block
     ("v_text",    "visuals/visual_text.png",        (100,  155,  920,  770)),
     # primitive: colorful triangles content=(33,108,1535,1151) — tight 4:3
