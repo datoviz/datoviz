@@ -574,7 +574,9 @@ int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* ite
     AT(query.vector[2] > 0.9);
     AT(query.vector[3] > 0.9);
     AT(query.has_display_rgba);
-    AC(query.display_rgba[0], query.vector[0], 1e-12);
+    AC(query.display_rgba[0], 64.0 / 255.0, 1e-3);
+    AC(query.display_rgba[1], 128.0 / 255.0, 1e-3);
+    AC(query.display_rgba[2], 1.0, 1e-3);
     AT(!dvz_scene_poll_query(scene, &query));
 
     dvz_scene_destroy(scene);
@@ -764,6 +766,15 @@ int test_scene_image_query_linear_color_sample_not_decoded(
     AC(query.vector[2], 128.0 / 255.0, 1e-3);
     AT(query.vector[0] > 0.45);
     AT(query.vector[0] < 0.55);
+    AT(query.has_display_rgba);
+    const DvzColor display = dvz_color_from_linear(dvz_colorf(
+        (float)query.vector[0], (float)query.vector[1], (float)query.vector[2],
+        (float)query.vector[3]));
+    AC(query.display_rgba[0], display.r / 255.0, 1e-3);
+    AC(query.display_rgba[1], display.g / 255.0, 1e-3);
+    AC(query.display_rgba[2], display.b / 255.0, 1e-3);
+    AT(query.display_rgba[0] > query.vector[0]);
+    AT(strcmp(query.label, "linear_rgba") == 0);
     AT(!dvz_scene_poll_query(scene, &query));
 
     dvz_scene_destroy(scene);

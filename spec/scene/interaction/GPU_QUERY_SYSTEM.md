@@ -164,6 +164,12 @@ have been removed from the public contract. They should not return as a parallel
 16. scalar/vector/category fields,
 17. label/unit/scale/readout metadata.
 
+For direct color sample queries, `vector[]` is the sampled value in the query shader's working
+space. For image and direct-RGBA volume samples this means linear RGBA after any required texture
+color-role decode. `display_rgba[]`, when `has_display_rgba` is true, is normalized presentation
+sRGB RGBA suitable for UI swatches or readout decoration. Callers must not treat `display_rgba[]` as
+scientific linear data.
+
 Statuses should distinguish at least:
 
 1. hit,

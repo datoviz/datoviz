@@ -117,6 +117,22 @@ static bool _image_query_static_versions(
 }
 
 
+/**
+ * Return the color role used by image sample query decode.
+ *
+ * @param visual the queried image visual
+ * @return image sample color role
+ */
+static DvzColorRole _image_query_color_role(const DvzVisual* visual)
+{
+    ANN(visual);
+    const DvzSampledField* field = _visual_family_state(visual)->field;
+    if (field != NULL && field->desc.semantic == DVZ_FIELD_SEMANTIC_COLOR)
+        return field->desc.color_role;
+    return DVZ_COLOR_ROLE_SRGB_COLOR;
+}
+
+
 
 /**
  * Return whether retained image-query static uploads must be refreshed.
@@ -375,6 +391,7 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
             .profile = ctx->profile,
             .format = out_plan->format,
             .byte_size = out_plan->byte_size,
+            .color_role = _image_query_color_role(ctx->visual),
         };
         return true;
     }
@@ -524,12 +541,20 @@ static bool _image_query_decode(const DvzSceneQueryDecodeContext* ctx, DvzQueryR
         out_result->resolved_target = target;
         out_result->value_kind = DVZ_QUERY_VALUE_VEC4;
         for (uint32_t i = 0; i < 4; i++)
-        {
             out_result->vector[i] = ctx->bytes[i] / 255.0;
-            out_result->display_rgba[i] = out_result->vector[i];
-        }
+
+        const DvzColor display = dvz_color_from_linear(dvz_colorf(
+            (float)out_result->vector[0], (float)out_result->vector[1],
+            (float)out_result->vector[2], (float)out_result->vector[3]));
+        out_result->display_rgba[0] = display.r / 255.0;
+        out_result->display_rgba[1] = display.g / 255.0;
+        out_result->display_rgba[2] = display.b / 255.0;
+        out_result->display_rgba[3] = display.a / 255.0;
         out_result->has_display_rgba = true;
-        dvz_strlcpy(out_result->label, "rgba", sizeof(out_result->label));
+        if (ctx->plan->schema.color_role == DVZ_COLOR_ROLE_LINEAR_COLOR)
+            dvz_strlcpy(out_result->label, "linear_rgba", sizeof(out_result->label));
+        else
+            dvz_strlcpy(out_result->label, "rgba", sizeof(out_result->label));
         return true;
     }
 

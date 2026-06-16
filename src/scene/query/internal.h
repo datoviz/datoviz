@@ -92,6 +92,7 @@ struct DvzSceneQuerySchema
     DvzQueryProfile profile;
     uint32_t format;
     uint32_t byte_size;
+    DvzColorRole color_role;
 };
 
 struct DvzSceneQueryBuildContext
