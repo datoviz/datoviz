@@ -1778,6 +1778,48 @@ int test_scene_sampled_field_color_role_rejects_invalid_semantics(
 }
 
 
+int test_scene_texture_wrappers_set_explicit_color_roles(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzVisual* rgba_image = dvz_image(scene, 0);
+    ANN(rgba_image);
+    const DvzColor rgba_pixels[4] = {
+        {255, 0, 0, 255},
+        {0, 255, 0, 255},
+        {0, 0, 255, 255},
+        {128, 128, 128, 255},
+    };
+    AT(dvz_visual_set_texture(rgba_image, rgba_pixels, 2, 2) == 0);
+    DvzVisualFamilyState* rgba_state = _visual_family_state(rgba_image);
+    ANN(rgba_state);
+    ANN(rgba_state->field);
+    const DvzSampledFieldDesc* rgba_desc = dvz_sampled_field_get_desc(rgba_state->field);
+    ANN(rgba_desc);
+    AT(rgba_desc->semantic == DVZ_FIELD_SEMANTIC_COLOR);
+    AT(rgba_desc->color_role == DVZ_COLOR_ROLE_SRGB_COLOR);
+
+    DvzVisual* scalar_image = dvz_image(scene, 0);
+    ANN(scalar_image);
+    const float scalar_pixels[4] = {0.0f, 0.25f, 0.5f, 1.0f};
+    AT(dvz_visual_set_texture_f32(scalar_image, scalar_pixels, 2, 2) == 0);
+    DvzVisualFamilyState* scalar_state = _visual_family_state(scalar_image);
+    ANN(scalar_state);
+    ANN(scalar_state->field);
+    const DvzSampledFieldDesc* scalar_desc = dvz_sampled_field_get_desc(scalar_state->field);
+    ANN(scalar_desc);
+    AT(scalar_desc->semantic == DVZ_FIELD_SEMANTIC_SCALAR);
+    AT(scalar_desc->color_role == DVZ_COLOR_ROLE_DATA);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const TstCase* item)
 {
     (void)item;
@@ -4501,6 +4543,7 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_image_visual_binds_colormap_scale);
     TST_CASE(test_scene_sampled_field_color_role_defaults);
     TST_CASE(test_scene_sampled_field_color_role_rejects_invalid_semantics);
+    TST_CASE(test_scene_texture_wrappers_set_explicit_color_roles);
     TST_CASE(test_scene_labels_visual_binds_categorical_scale);
     TST_CASE(test_scene_labels_state_setters);
     TST_CASE(test_scene_visual_scale_rejects_cross_scene_scale);

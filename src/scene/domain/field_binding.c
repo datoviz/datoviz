@@ -49,7 +49,9 @@ static DvzSampledField* _scene_ensure_owned_image_field(
     uint32_t height)
 {
     ANN(visual);
-    DvzSampledField* field = _visual_family_state(visual)->field_owned ? _visual_family_state(visual)->field : NULL;
+    DvzVisualFamilyState* state = _visual_family_state(visual);
+    ANN(state);
+    DvzSampledField* field = state->field_owned ? state->field : NULL;
     if (field != NULL && field->desc.format == format && field->desc.width == width &&
         field->desc.height == height && field->desc.depth == 1)
     {
@@ -60,7 +62,8 @@ static DvzSampledField* _scene_ensure_owned_image_field(
     DvzSampledFieldDesc desc = dvz_sampled_field_desc();
     desc.format = format;
     desc.semantic = semantic;
-    desc.color_role = DVZ_COLOR_ROLE_NONE;
+    desc.color_role =
+        semantic == DVZ_FIELD_SEMANTIC_COLOR ? DVZ_COLOR_ROLE_SRGB_COLOR : DVZ_COLOR_ROLE_DATA;
     desc.width = width;
     desc.height = height;
     field = dvz_sampled_field(visual->scene, &desc);
