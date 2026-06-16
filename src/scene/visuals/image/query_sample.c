@@ -276,28 +276,29 @@ bool _scene_image_query_plan(
     const void* texture_data = NULL;
     uint32_t texture_width = 0;
     uint32_t texture_height = 0;
+    DvzColorRole texture_color_role = DVZ_COLOR_ROLE_SRGB_COLOR;
     if (include_static_uploads && _visual_family_state(visual)->field != NULL && _visual_family_state(visual)->field->data != NULL &&
         _visual_family_state(visual)->field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM)
     {
         texture_data = _visual_family_state(visual)->field->data;
         texture_width = _visual_family_state(visual)->field->desc.width;
         texture_height = _visual_family_state(visual)->field->desc.height;
+        texture_color_role = _visual_family_state(visual)->field->desc.color_role;
     }
     else if (include_static_uploads)
     {
-        DvzFieldRegion upload_region = {0};
-        const void* upload_data = NULL;
-        if (!_scene_prepare_image_texture(visual, &upload_region, &upload_data) ||
-            _visual_family_state(visual)->texture.rgba == NULL || _visual_family_state(visual)->texture.width == 0 ||
+        DvzImageTextureUploadPayload payload = {0};
+        if (!_image_texture_upload_payload(visual, &payload) ||
+            _visual_family_state(visual)->texture.rgba == NULL ||
+            _visual_family_state(visual)->texture.width == 0 ||
             _visual_family_state(visual)->texture.height == 0)
         {
             return false;
         }
-        (void)upload_region;
-        (void)upload_data;
-        texture_data = _visual_family_state(visual)->texture.rgba;
-        texture_width = _visual_family_state(visual)->texture.width;
-        texture_height = _visual_family_state(visual)->texture.height;
+        texture_data = payload.data;
+        texture_width = payload.region.width;
+        texture_height = payload.region.height;
+        texture_color_role = payload.color_role;
     }
 
     uint64_t position_bytes = 0;
@@ -332,7 +333,7 @@ bool _scene_image_query_plan(
                  &(DvzFramePlanUploadMeta){
                      .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
                      .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
-                     .color_role = DVZ_COLOR_ROLE_SRGB_COLOR,
+                     .color_role = texture_color_role,
                      .visual_index = UINT32_MAX,
                      .buffer_index = UINT32_MAX,
                  }) &&
@@ -360,7 +361,7 @@ bool _scene_image_query_plan(
         .field_height = texture_height,
         .field_depth = 1,
         .image_nearest_sampler = pending->request.target == DVZ_SCENE_TARGET_PIXEL,
-        .image_color_role = DVZ_COLOR_ROLE_SRGB_COLOR,
+        .image_color_role = texture_color_role,
     };
     dvz_strlcpy(metadata.position_id, "query0_position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.texcoords_id, "query0_texcoords", sizeof(metadata.texcoords_id));

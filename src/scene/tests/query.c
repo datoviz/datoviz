@@ -18,6 +18,7 @@
 
 #include "_assertions.h"
 #include "../query/internal.h"
+#include "../visuals/image/internal.h"
 #include "datoviz/drp2.h"
 #include "datoviz/scene/panzoom.h"
 #include "datoviz/vk/gpu_ctx.h"
@@ -579,6 +580,89 @@ int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* ite
     dvz_scene_destroy(scene);
     dvz_drp2_runtime_destroy(runtime);
     dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+int test_scene_image_query_plan_preserves_linear_color_role(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    vec3 positions[4] = {
+        {-1.0f, -1.0f, 0.0f},
+        {-1.0f, 1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+    };
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    DvzColor pixels[4] = {
+        {128, 128, 128, 255},
+        {128, 128, 128, 255},
+        {128, 128, 128, 255},
+        {128, 128, 128, 255},
+    };
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .color_role = DVZ_COLOR_ROLE_LINEAR_COLOR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(field);
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                   .data = pixels,
+                   .bytes_per_row = 2 * sizeof(DvzColor),
+                   .rows_per_image = 2,
+               }));
+    AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_field(image, "field", field));
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzPendingQueryRequest pending = {
+        .panel = panel,
+        .x = 32.0,
+        .y = 32.0,
+        .request =
+            (DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest),
+                              .request_id = 3501,
+                              .target = DVZ_SCENE_TARGET_SAMPLE},
+    };
+    DvzSceneQueryScratch scratch = {0};
+    vec2 request_ndc = {0.0f, 0.0f};
+    AT(_scene_image_query_plan(panel, image, &pending, request_ndc, true, &scratch));
+    ANN(scratch.plan);
+
+    char* json = dvz_frame_plan_json(scratch.plan);
+    ANN(json);
+    AT(strstr(json, "\"color_role\": \"linear_color\"") != NULL);
+    AT(strstr(json, "\"color_role\": \"srgb_color\"") == NULL);
+    dvz_frame_plan_json_destroy(json);
+
+    _scene_query_scratch_destroy(&scratch);
+    dvz_scene_destroy(scene);
     return 0;
 }
 
@@ -3617,6 +3701,7 @@ int test_scene_query(TstSuite* suite)
     TST_CASE(test_scene_query_rejects_missing_query_profile);
     TST_CASE(test_scene_query_does_not_auto_select_2xr32_profile);
     TST_CASE(test_scene_query_rejects_family_unsupported_profile);
+    TST_CASE(test_scene_image_query_plan_preserves_linear_color_role);
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_resolves_sample);
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_generated_rect_samples_position);
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_panzoom_samples_transformed_position);
