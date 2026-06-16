@@ -36,6 +36,7 @@ layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 axis_flip;
     vec4 value_range;
     vec4 occlusion;
+    vec4 texture_params;
 } volume;
 
 layout(location = 0) in vec3 fragUVW;
@@ -216,7 +217,9 @@ void main()
         return;
 #else
         vec4 sample_value = texture(sampler3D(tex, samp), texture_uvw(uvw));
-        vec4 mapped = transfer ? sample_value : transfer_value(sample_value.r);
+        vec4 mapped =
+            transfer ? sampledTextureColorToLinear(sample_value, volume.texture_params) :
+                       transfer_value(sample_value.r);
         float density = clamp(mapped.a, 0.0, 1.0);
         vec3 color = mapped.rgb;
         float sample_alpha =

@@ -288,8 +288,8 @@ bool _resolve_volume_dummy_depth(
 bool _resolve_volume_dummy_transfer(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t* out_id);
 void _volume_uniform_from_state(
-    const DvzVolumeState* state, bool transfer_rgba, const DvzVolumeOcclusionDesc* occlusion,
-    DvzSceneVolumeUniform* out);
+    const DvzVolumeState* state, bool transfer_rgba, DvzColorRole color_role,
+    const DvzVolumeOcclusionDesc* occlusion, DvzSceneVolumeUniform* out);
 bool _resolve_volume_bind_group(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bgl_id,
     uint64_t sampler_id, const DvzSceneVisualBindDesc* bind, uint64_t* out_bg_id);

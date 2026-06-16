@@ -101,6 +101,7 @@ typedef struct DvzSceneVisualDesc
     bool point_style_enabled;
     bool has_item_state;
     bool volume_transfer_rgba;
+    DvzColorRole volume_color_role;
     bool scene_occluded;
     DvzSceneOcclusionDesc scene_occlusion;
     bool volume_occluded;
@@ -229,6 +230,7 @@ typedef struct DvzSceneVisualBindDesc
     uint32_t volume_visual_index;
     uint32_t volume_bind_variant;
     bool volume_transfer_rgba;
+    DvzColorRole volume_color_role;
     bool volume_occluded;
     DvzVolumeOcclusionDesc volume_occlusion;
     DvzVolumeState volume_state;

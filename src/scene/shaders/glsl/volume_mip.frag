@@ -27,6 +27,8 @@ layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 axis_order;
     vec4 axis_flip;
     vec4 value_range;
+    vec4 occlusion;
+    vec4 texture_params;
 } volume;
 
 layout(location = 0) in vec3 fragUVW;
@@ -176,7 +178,7 @@ void main()
         if (density > value) {
             value = density;
             color = transfer ?
-                        sample_value.rgb :
+                        sampledTextureColorToLinear(sample_value, volume.texture_params).rgb :
                         semanticColorToLinear(
                             texture(sampler2D(transferTex, samp), vec2(density, 0.5)))
                             .rgb;

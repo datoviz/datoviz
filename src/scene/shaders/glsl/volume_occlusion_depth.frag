@@ -25,6 +25,7 @@ layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 axis_flip;
     vec4 value_range;
     vec4 occlusion;
+    vec4 texture_params;
 } volume;
 
 layout(location = 0) in vec3 fragUVW;

@@ -110,6 +110,8 @@ bool _scene_volume_visual_fill_metadata(
             _visual_family_state(visual)->field->desc.format, _visual_family_state(visual)->field->desc.semantic, _visual_family_state(visual)->field->desc.dim,
             &profile) &&
         _scene_sample_profile_is_direct_rgba(&profile);
+    if (_visual_family_state(visual)->field != NULL)
+        metadata->volume_color_role = _visual_family_state(visual)->field->desc.color_role;
     return true;
 }
 
@@ -146,6 +148,7 @@ bool _scene_volume_visual_bind_desc(
     out->volume_label_lookup_buffer_size = visual->volume_label_lookup_buffer_size;
     out->volume_visual_index = visual->volume_visual_index;
     out->volume_transfer_rgba = visual->volume_transfer_rgba;
+    out->volume_color_role = visual->volume_color_role;
     out->volume_occluded = visual->volume_occluded;
     out->volume_occlusion = visual->volume_occlusion;
     out->volume_state = visual->volume_state;

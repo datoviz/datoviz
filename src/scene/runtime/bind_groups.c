@@ -803,8 +803,8 @@ static bool _resolve_volume_dummy_label_lookup(
  * @param out output uniform payload.
  */
 void _volume_uniform_from_state(
-    const DvzVolumeState* state, bool transfer_rgba, const DvzVolumeOcclusionDesc* occlusion,
-    DvzSceneVolumeUniform* out)
+    const DvzVolumeState* state, bool transfer_rgba, DvzColorRole color_role,
+    const DvzVolumeOcclusionDesc* occlusion, DvzSceneVolumeUniform* out)
 {
     ANN(state);
     ANN(out);
@@ -866,6 +866,7 @@ void _volume_uniform_from_state(
         out->occlusion[2] = 0.20f;
         out->occlusion[3] = 0.0f;
     }
+    out->texture_params[0] = color_role == DVZ_COLOR_ROLE_SRGB_COLOR ? 1.0f : 0.0f;
 }
 
 
@@ -991,7 +992,8 @@ bool _resolve_volume_bind_group(
     if (slot == NULL)
         return false;
     _volume_uniform_from_state(
-        &bind->volume_state, bind->volume_transfer_rgba, &bind->volume_occlusion, slot);
+        &bind->volume_state, bind->volume_transfer_rgba, bind->volume_color_role,
+        &bind->volume_occlusion, slot);
     if (!dvz_drp2_stream_write_buffer_bytes(
             stream, params_buf_id, 0, sizeof(DvzSceneVolumeUniform), slot))
         return false;

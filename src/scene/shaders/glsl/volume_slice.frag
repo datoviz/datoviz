@@ -38,6 +38,7 @@ layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 axis_flip;
     vec4 value_range;
     vec4 occlusion;
+    vec4 texture_params;
 } volume;
 
 layout(location = 0) in vec3 fragUVW;
@@ -280,7 +281,8 @@ void main()
 #else
     vec4 sample_value = texture(sampler3D(tex, samp), texture_uvw(uvw));
     if (volume.clip_min.w > 0.5) {
-        outColor = vec4(sample_value.rgb, sample_value.a * volume.params.x * visibility);
+        vec4 color_value = sampledTextureColorToLinear(sample_value, volume.texture_params);
+        outColor = vec4(color_value.rgb, color_value.a * volume.params.x * visibility);
     } else {
         outColor = transfer_value(sample_value.r);
         outColor.a *= volume.params.x * visibility;

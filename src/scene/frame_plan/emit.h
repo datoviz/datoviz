@@ -90,6 +90,7 @@ struct DvzSceneVolumeUniform
     float axis_flip[4];
     float value_range[4];
     float occlusion[4];
+    float texture_params[4];
 };
 
 struct ResourceId

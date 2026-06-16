@@ -339,6 +339,7 @@ typedef struct DvzFramePlanVisualMeta
     uint32_t field_depth;
     uint32_t scale_index;
     bool volume_transfer_rgba;
+    DvzColorRole volume_color_role;
     bool scene_occluder;
     bool scene_occluded;
     bool has_scene_occlusion;

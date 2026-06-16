@@ -3008,6 +3008,7 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
     AT(metadata.has_volume);
     AT(metadata.field_format == DVZ_FIELD_FORMAT_RGBA8_UNORM);
     AT(metadata.volume_transfer_rgba);
+    AT(metadata.volume_color_role == DVZ_COLOR_ROLE_SRGB_COLOR);
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -3051,6 +3052,7 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
     bool created_dummy_transfer_texture = false;
     bool wrote_dummy_transfer_texture = false;
     bool found_volume_bind_group = false;
+    uint64_t volume_params_buffer_id = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
@@ -3073,6 +3075,8 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
                 const DvzDrp2BindGroupEntry* entry = &cmd->u.create_bind_group.entries[j];
                 if (entry->binding == 0 && entry->resource_id == texture_id)
                     binds_volume_texture = true;
+                if (entry->binding == 2)
+                    volume_params_buffer_id = entry->resource_id;
                 if (entry->binding == 4)
                     binding4_id = entry->resource_id;
             }
@@ -3086,9 +3090,23 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
     }
     AT(found_volume_bind_group);
     AT(transfer_binding_id != 0);
+    AT(volume_params_buffer_id != 0);
+
+    bool wrote_volume_params = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
+            cmd->u.write_buffer.buffer_id == volume_params_buffer_id)
+        {
+            const DvzSceneVolumeUniform* uniform =
+                (const DvzSceneVolumeUniform*)cmd->u.write_buffer.data_raw;
+            ANN(uniform);
+            wrote_volume_params = true;
+            AT(cmd->u.write_buffer.size == sizeof(DvzSceneVolumeUniform));
+            AT(uniform->texture_params[0] == 1.0f);
+            AT(uniform->texture_params[1] == 0.0f);
+        }
         if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE &&
             cmd->u.create_texture.id == transfer_binding_id)
         {
@@ -3116,6 +3134,7 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
     AT(created_rgba_texture);
     AT(created_dummy_transfer_texture);
     AT(wrote_dummy_transfer_texture);
+    AT(wrote_volume_params);
     AT(matched_start_value);
     AT(_visual_family_state(volume)->texture.rgba == NULL);
 
