@@ -239,10 +239,14 @@ DVZ_EXPORT DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas);
 /**
  * Capture the latest presented canvas frame into a caller-provided RGBA buffer.
  *
+ * The returned pixels are screenshot/export pixels: tightly packed RGBA8 with sRGB-encoded RGB
+ * channels and straight linear alpha. Use a dedicated query/readback API for scientific values that
+ * must remain in linear float or data space.
+ *
  * @param canvas canvas handle
  * @param width expected frame width in pixels
  * @param height expected frame height in pixels
- * @param out_rgba destination buffer receiving RGBA8 pixels
+ * @param out_rgba destination buffer receiving sRGB RGBA8 pixels
  * @param out_size size of `out_rgba` in bytes
  * @returns 0 on success or a negative error code
  */
@@ -254,10 +258,14 @@ DVZ_EXPORT int dvz_canvas_capture_rgba_into(
 /**
  * Capture the latest presented canvas frame into a newly allocated RGBA buffer.
  *
+ * The returned pixels are screenshot/export pixels: tightly packed RGBA8 with sRGB-encoded RGB
+ * channels and straight linear alpha. Use a dedicated query/readback API for scientific values that
+ * must remain in linear float or data space.
+ *
  * @param canvas canvas handle
  * @param out_width destination width in pixels
  * @param out_height destination height in pixels
- * @param out_rgba destination pointer receiving an allocated RGBA8 buffer
+ * @param out_rgba destination pointer receiving an allocated sRGB RGBA8 buffer
  * @returns 0 on success or a negative error code
  * @note caller owns `*out_rgba` and must release it with `dvz_free()`
  */
@@ -269,6 +277,9 @@ dvz_canvas_capture_rgba(
 
 /**
  * Capture the latest presented canvas frame and write it to a PNG file.
+ *
+ * PNG capture uses the same screenshot/export contract as dvz_canvas_capture_rgba(): sRGB-encoded
+ * RGBA8 color with straight linear alpha.
  *
  * @param canvas canvas handle
  * @param path output file path

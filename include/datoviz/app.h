@@ -633,7 +633,8 @@ DVZ_EXPORT DvzTurntable* dvz_view_turntable(
  * Capture the last rendered frame and write it to a PNG file.
  *
  * Convenience wrapper around dvz_view_canvas() + dvz_canvas_capture_png().
- * Call after at least one dvz_app_run() iteration.
+ * Call after at least one dvz_app_run() iteration. PNG capture is an sRGB RGBA8 screenshot/export,
+ * not a scientific linear-float readback.
  *
  * @param view the view
  * @param path output file path
@@ -671,7 +672,8 @@ DVZ_EXPORT DvzAppCaptureConfig dvz_app_capture_config_from_env(const char* basen
  * Start configured captures for a view.
  *
  * DVZR capture records emitted app DRP2 frame streams, video capture enables the canvas video
- * sink, and PNG capture is written when dvz_view_capture_stop() is called after rendering.
+ * sink, and PNG capture is written when dvz_view_capture_stop() is called after rendering. PNG and
+ * CPU video capture use sRGB RGBA8 screenshot pixels.
  *
  * @param view the view
  * @param config capture configuration, or NULL for dvz_app_capture_config()
@@ -699,7 +701,7 @@ DVZ_EXPORT int dvz_view_capture_from_env(DvzView* view, const char* basename);
  * Stop active captures started by dvz_view_capture_start().
  *
  * Video capture is disabled, DVZR recordings are closed, and pending PNG capture is written from
- * the last rendered frame.
+ * the last rendered frame as sRGB RGBA8 screenshot pixels.
  *
  * @param view the view
  * @return 0 on success, negative on error

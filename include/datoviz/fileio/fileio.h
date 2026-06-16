@@ -128,23 +128,23 @@ uint8_t* dvz_read_ppm(const char* filename, int* width, int* height);
 
 
 /**
- * Save an image to a PNG file
+ * Save an sRGB RGBA8 image to a PNG file.
  *
  * @param filename path to the PNG file to create
  * @param width width of the image
  * @param height height of the image
- * @param image pointer to an array of 32-bit RGBA values
+ * @param rgba pointer to tightly packed sRGB RGBA8 pixels with straight linear alpha
  */
 int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* rgba);
 
 
 
 /**
- * Compress an image to PNG and write it to a memory buffer.
+ * Compress an sRGB RGB8 image to PNG and write it to a memory buffer.
  *
  * @param width width of the image
  * @param height height of the image
- * @param rgb pointer to an array of 24-bit RGB values
+ * @param rgb pointer to tightly packed sRGB RGB8 pixels
  * @param size pointer to a variable that will contain the size of the buffer
  * @param out pointer to a variable that will contain a pointer to the recorded image
  */

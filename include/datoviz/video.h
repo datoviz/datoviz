@@ -67,7 +67,8 @@ typedef enum
 
 
 
-// CPU readback callback used by video sinks running in CPU capture mode.
+// CPU readback callback used by video sinks running in CPU capture mode. Returned pixels use the
+// screenshot/export contract: tightly packed sRGB RGBA8 with straight linear alpha.
 typedef int (*DvzVideoSinkCaptureFn)(
     void* user_data, uint32_t* out_width, uint32_t* out_height, size_t* out_stride,
     uint8_t** out_rgba);

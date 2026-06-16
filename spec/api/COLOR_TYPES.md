@@ -194,6 +194,19 @@ color management until there is an implementation path and a validation story. T
 explicit, consistent sRGB and linear behavior, not a full CMS.
 
 
+## Capture And Export
+
+Screenshot and raster export APIs return display pixels, not scientific samples:
+
+1. `dvz_canvas_capture_rgba()`, `dvz_canvas_capture_rgba_into()`, PNG capture, and CPU video capture
+   use tightly packed RGBA8 pixels with sRGB-encoded RGB channels.
+2. Captured/exported alpha is straight linear coverage.
+3. Screenshot/export readback is suitable for presentation, visual regression tests, and PNG/video
+   output. It must not be treated as a linear-light or data-space scientific readback.
+4. APIs that need scientific values must expose that explicitly in their name and type, for example
+   a linear-float or data-field query/readback path.
+
+
 ## Palettes, Colormaps, And Interpolation
 
 Palettes and categorical colors should store `DvzColor`.
