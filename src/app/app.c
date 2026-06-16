@@ -2770,7 +2770,7 @@ static void _app_record_stream(
             !dvz_drp2_stream_renderer_hello_reply(setup, "datoviz-drp2-runtime") ||
             !dvz_drp2_stream_create_texture_2d_format_usage(
                 setup, win->target_id, frame->extent.width, frame->extent.height,
-                VK_FORMAT_R8G8B8A8_UNORM,
+                frame->color_format,
                 DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC) ||
             !dvz_drp2_recorder_write_stream(win->recorder, t_present, setup))
         {
@@ -3170,6 +3170,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     cfg.shader_format         = DVZ_SCENE_SHADER_FORMAT_GLSL;
     cfg.external_color_target = true;
     cfg.color_target_id       = win->target_id;
+    cfg.color_target_format   = frame->color_format;
     cfg.target_width          = frame->extent.width;
     cfg.target_height         = frame->extent.height;
     cfg.device_scale_x        = win->device_scale_x > 0.0f ? win->device_scale_x : 1.0f;

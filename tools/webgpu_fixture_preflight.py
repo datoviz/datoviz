@@ -72,12 +72,14 @@ BROWSER_CANVAS_TEXTURE_ID = 0
 
 SUPPORTED_TEXTURE_FORMATS = {
     'bgra8unorm',
+    'bgra8unorm-srgb',
     'depth32float',
     'r16float',
     'r32uint',
     'r32sint',
     'rg32uint',
     'rgba8unorm',
+    'rgba8unorm-srgb',
     'rgba16float',
 }
 

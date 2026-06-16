@@ -162,8 +162,12 @@ static const char* _texture_format_name(uint32_t format)
     case 0:
     case VK_FORMAT_R8G8B8A8_UNORM:
         return "rgba8unorm";
+    case VK_FORMAT_R8G8B8A8_SRGB:
+        return "rgba8unorm-srgb";
     case VK_FORMAT_B8G8R8A8_UNORM:
         return "bgra8unorm";
+    case VK_FORMAT_B8G8R8A8_SRGB:
+        return "bgra8unorm-srgb";
     case VK_FORMAT_R16_SFLOAT:
         return "r16float";
     case VK_FORMAT_R16G16B16A16_SFLOAT:

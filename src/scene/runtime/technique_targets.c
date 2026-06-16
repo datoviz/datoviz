@@ -46,6 +46,14 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+static uint32_t _final_color_target_format(const DvzFramePlanEmitConfig* cfg)
+{
+    return cfg != NULL && cfg->color_target_format != 0 ? cfg->color_target_format
+                                                        : VK_FORMAT_R8G8B8A8_UNORM;
+}
+
+
+
 bool _emitter_prepare_gbuffer_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg, SceneGBufferTargets* out)
@@ -272,12 +280,13 @@ bool _emitter_prepare_edl_targets(
     }
 
     const char* fmt = _shader_format_tag(cfg);
+    uint32_t final_format = _final_color_target_format(cfg);
     char vs_key[32];
     char fs_key[32];
-    char pipe_key[40];
+    char pipe_key[64];
     dvz_snprintf(vs_key, sizeof(vs_key), "_vs_edl_resolve%s", fmt);
     dvz_snprintf(fs_key, sizeof(fs_key), "_fs_edl_resolve%s", fmt);
-    dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_edl_resolve%s", fmt);
+    dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_edl_resolve%s_%u", fmt, final_format);
 
     uint64_t vs_id = _obj_id(emitter, vs_key, &is_new);
     if (vs_id == 0)
@@ -299,8 +308,10 @@ bool _emitter_prepare_edl_targets(
     if (out->resolve_pipeline_id == 0)
         return false;
     if (ok && is_new)
-        ok = ok && dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
-                       stream, out->resolve_pipeline_id, vs_id, fs_id, 0, out->resolve_bgl_id);
+        ok = ok &&
+             dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+                 stream, out->resolve_pipeline_id, vs_id, fs_id, 0, out->resolve_bgl_id) &&
+             dvz_drp2_stream_pipeline_set_color_target(stream, 0, final_format);
     return ok;
 }
 
@@ -745,7 +756,8 @@ bool _emitter_prepare_ssao_targets(
 
     dvz_snprintf(vs_key, sizeof(vs_key), "_vs_ssao_comp%s", fmt);
     dvz_snprintf(fs_key, sizeof(fs_key), "_fs_ssao_comp%s", fmt);
-    dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_ssao_comp%s", fmt);
+    uint32_t final_format = _final_color_target_format(cfg);
+    dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_ssao_comp%s_%u", fmt, final_format);
     vs_id = _obj_id(emitter, vs_key, &is_new);
     if (vs_id == 0)
         return false;
@@ -770,6 +782,7 @@ bool _emitter_prepare_ssao_targets(
         ok = ok &&
              dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
                  stream, out->composite_pipeline_id, vs_id, fs_id, 0, out->composite_bgl_id) &&
+             dvz_drp2_stream_pipeline_set_color_target(stream, 0, final_format) &&
              dvz_drp2_stream_pipeline_set_color_blend(
                  stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
                  VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
@@ -969,12 +982,13 @@ bool _emitter_prepare_wboit_targets(
     }
 
     const char* fmt = _shader_format_tag(cfg);
+    uint32_t final_format = _final_color_target_format(cfg);
     char vs_key[32];
     char fs_key[32];
-    char pipe_key[48];
+    char pipe_key[64];
     dvz_snprintf(vs_key, sizeof(vs_key), "_vs_wboit_resolve%s", fmt);
     dvz_snprintf(fs_key, sizeof(fs_key), "_fs_wboit_resolve%s", fmt);
-    dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_wboit_resolve%s", fmt);
+    dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_wboit_resolve%s_%u", fmt, final_format);
 
     uint64_t vs_id = _obj_id(emitter, vs_key, &is_new);
     if (vs_id == 0)
@@ -1000,6 +1014,7 @@ bool _emitter_prepare_wboit_targets(
         ok = ok &&
              dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
                  stream, out->resolve_pipeline_id, vs_id, fs_id, 0, out->resolve_bgl_id) &&
+             dvz_drp2_stream_pipeline_set_color_target(stream, 0, final_format) &&
              dvz_drp2_stream_pipeline_set_color_blend(
                  stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
                  VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
@@ -1271,12 +1286,13 @@ bool _emitter_prepare_depth_peel_targets(
     }
 
     const char* fmt = _shader_format_tag(cfg);
+    uint32_t final_format = _final_color_target_format(cfg);
     char vs_key[40];
     char fs_key[40];
-    char pipe_key[48];
+    char pipe_key[64];
     dvz_snprintf(vs_key, sizeof(vs_key), "_vs_depth_peel_comp%s", fmt);
     dvz_snprintf(fs_key, sizeof(fs_key), "_fs_depth_peel_comp%s", fmt);
-    dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_depth_peel_comp%s", fmt);
+    dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_depth_peel_comp%s_%u", fmt, final_format);
 
     uint64_t vs_id = _obj_id(emitter, vs_key, &is_new);
     if (vs_id == 0)
@@ -1304,6 +1320,7 @@ bool _emitter_prepare_depth_peel_targets(
         ok = ok &&
              dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
                  stream, out->composite_pipeline_id, vs_id, fs_id, 0, out->composite_bgl_id) &&
+             dvz_drp2_stream_pipeline_set_color_target(stream, 0, final_format) &&
              dvz_drp2_stream_pipeline_set_color_blend(
                  stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
                  VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,

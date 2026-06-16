@@ -764,9 +764,10 @@ static int kvazaar_start(DvzVideoEncoder* enc)
         conversion_threads = 1;
     }
     state->convert_threads = conversion_threads;
-    if (state->format != VK_FORMAT_R8G8B8A8_UNORM)
+    if (state->format != VK_FORMAT_R8G8B8A8_UNORM && state->format != VK_FORMAT_R8G8B8A8_SRGB)
     {
-        log_error("kvazaar backend currently only supports VK_FORMAT_R8G8B8A8_UNORM images");
+        log_error(
+            "kvazaar backend currently only supports VK_FORMAT_R8G8B8A8_UNORM/SRGB images");
         return -1;
     }
     if ((state->width % 2) != 0 || (state->height % 2) != 0)

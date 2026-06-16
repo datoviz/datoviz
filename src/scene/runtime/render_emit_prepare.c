@@ -55,6 +55,7 @@
  * @param cfg optional frame-plan emit configuration.
  * @param pass_has_depth_attachment whether the render pass will carry a depth attachment.
  * @param force_point_depth whether point-like visuals must emit depth writes.
+ * @param color_target_format effective color target format for this render pass.
  * @param sampled_depth_id depth texture sampled by volume shaders, or zero.
  * @param sampled_depth_is_volume_occlusion whether sampled_depth_id is a volume occlusion texture.
  * @param depth_peel_sampled_bgl_id sampled bind-group layout for peel iteration bounds.
@@ -68,7 +69,7 @@
 bool _emitter_prepare_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     const DvzFramePlanEmitConfig* cfg, bool pass_has_depth_attachment, bool force_point_depth,
-    uint64_t sampled_depth_id, bool sampled_depth_is_volume_occlusion,
+    uint32_t color_target_format, uint64_t sampled_depth_id, bool sampled_depth_is_volume_occlusion,
     uint64_t scene_occlusion_depth_id, uint64_t depth_peel_sampled_bgl_id,
     uint64_t depth_peel_sampled_bg_id, uint64_t depth_peel_dummy_bg_id, uint32_t pass_sample_count,
     bool pass_alpha_to_coverage, DvzDiagnosticReport* report, SceneDrawPacket* draws,
@@ -179,10 +180,10 @@ bool _emitter_prepare_render_multi(
                 ? (DvzSceneBlendPolicy)render->u.render.visual_metadata[i].draw_blend_policy
                 : DVZ_SCENE_BLEND_POLICY_NONE;
         bool query_shader_applied = false;
-        if (render->u.render.picking && cfg != NULL)
+        if (render->u.render.picking && color_target_format != 0)
         {
             ok = _scene_visual_shader_desc_apply_query_pick(
-                &desc, cfg->color_target_format, &shader, &query_shader_applied);
+                &desc, color_target_format, &shader, &query_shader_applied);
             if (!ok)
             {
                 _diagnostic(report, "scene query shader descriptor setup failed");
@@ -230,6 +231,13 @@ bool _emitter_prepare_render_multi(
         }
         _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
 
+        if (color_target_format != 0)
+            ok = _runtime_key_appendf(
+                shader.pipeline_key, sizeof(shader.pipeline_key), report, "_fmt%u",
+                color_target_format);
+        if (!ok)
+            break;
+
         uint64_t pipe_id = _obj_id(emitter, shader.pipeline_key, &is_new);
         if (pipe_id == 0)
         {
@@ -245,9 +253,9 @@ bool _emitter_prepare_render_multi(
             ok = false;
             break;
         }
-        if (render->u.render.picking && cfg != NULL)
+        if (render->u.render.picking && color_target_format != 0)
             _scene_visual_pipeline_desc_apply_query_pick(
-                &desc, cfg->color_target_format, &pipeline);
+                &desc, color_target_format, &pipeline);
         _scene_visual_pipeline_desc_apply_pass_policy(
             &desc, render->u.render.pass_role, force_point_depth, pass_sample_count,
             pass_alpha_to_coverage, &pipeline);
@@ -491,10 +499,10 @@ bool _emitter_prepare_render_multi(
             }
             else
             {
-                if (ok && cfg != NULL && cfg->color_target_format != 0)
+                if (ok && color_target_format != 0)
                 {
                     ok = dvz_drp2_stream_pipeline_set_color_target(
-                        stream, 0, cfg->color_target_format);
+                        stream, 0, color_target_format);
                 }
                 bool source_over_blend =
                     blend_policy == DVZ_SCENE_BLEND_POLICY_SOURCE_OVER ||

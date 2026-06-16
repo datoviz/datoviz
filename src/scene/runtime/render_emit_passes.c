@@ -46,6 +46,28 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+static uint32_t _render_pass_color_target_format(
+    const DvzFramePlan* plan, const DvzFrameGraphPass* graph_pass,
+    const DvzFramePlanEmitConfig* cfg)
+{
+    if (graph_pass != NULL && graph_pass->color_attachment_count > 0)
+    {
+        const DvzFrameGraphAttachment* attachment = &graph_pass->color_attachments[0];
+        if (strcmp(attachment->resource_id, "rt") == 0)
+        {
+            return cfg != NULL && cfg->color_target_format != 0 ? cfg->color_target_format :
+                                                                  VK_FORMAT_R8G8B8A8_UNORM;
+        }
+        const DvzFrameGraphResource* resource =
+            _graph_resource_by_id(plan, attachment->resource_id);
+        if (resource != NULL && resource->format != 0)
+            return resource->format;
+    }
+    return cfg != NULL ? cfg->color_target_format : 0;
+}
+
+
+
 /**
  * Return G-buffer targets associated with a panel id.
  *
@@ -387,10 +409,11 @@ bool _emitter_emit_render_multi(
     SceneDrawPacket draws[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
     uint32_t draw_count = 0;
     uint32_t pass_sample_count = _graph_render_pass_sample_count(emitter, plan, graph_pass);
+    uint32_t color_target_format = _render_pass_color_target_format(plan, graph_pass, cfg);
     ok = _emitter_prepare_render_multi(
-        emitter, stream, render, cfg, pass_has_depth_attachment, false, sampled_depth_id, false, 0,
-        0, 0, 0, pass_sample_count, graph_pass != NULL && graph_pass->alpha_to_coverage, report,
-        draws, &draw_count);
+        emitter, stream, render, cfg, pass_has_depth_attachment, false, color_target_format,
+        sampled_depth_id, false, 0, 0, 0, 0, pass_sample_count,
+        graph_pass != NULL && graph_pass->alpha_to_coverage, report, draws, &draw_count);
     if (!ok)
         return false;
 
@@ -476,8 +499,9 @@ bool _emitter_emit_scene_figure_renders(
         batch->render = render;
         uint32_t report_start = dvz_diagnostic_report_count(report);
         ok = _emitter_prepare_render_multi(
-            emitter, stream, render, cfg, needs_depth, false, 0, false, 0, 0, 0, 0, 1, false,
-            report, batch->draws, &batch->draw_count);
+            emitter, stream, render, cfg, needs_depth, false,
+            cfg != NULL ? cfg->color_target_format : 0, 0, false, 0, 0, 0, 0, 1, false, report,
+            batch->draws, &batch->draw_count);
         if (!ok && dvz_diagnostic_report_count(report) == report_start)
             _diagnostic(report, "scene figure render preparation failed");
         if (ok)
@@ -778,7 +802,8 @@ bool _emitter_emit_scene_graph_renders(
                     render_graph_pass->depth_attachment.resource_id, ".edl.depth");
             ok = _emitter_prepare_render_multi(
                 emitter, stream, render, cfg, pass_has_depth_attachment, force_point_depth,
-                sampled_depth_id, sampled_depth_is_volume_occlusion, scene_occlusion_depth_id,
+                _render_pass_color_target_format(plan, render_graph_pass, cfg), sampled_depth_id,
+                sampled_depth_is_volume_occlusion, scene_occlusion_depth_id,
                 depth_peel_sampled_bgl_id, depth_peel_sampled_bg_id, depth_peel_dummy_bg_id,
                 _graph_render_pass_sample_count(emitter, plan, render_graph_pass),
                 render_graph_pass != NULL && render_graph_pass->alpha_to_coverage, report,

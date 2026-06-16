@@ -35,7 +35,9 @@ TEXTURE_USAGE = [
 
 TEXTURE_FORMATS = {
     37: "rgba8unorm",
+    43: "rgba8unorm-srgb",
     44: "bgra8unorm",
+    50: "bgra8unorm-srgb",
     98: "r32uint",
     126: "depth32float",
 }

@@ -26,7 +26,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_DEFAULT_COLOR_FORMAT VK_FORMAT_R8G8B8A8_UNORM
+#define DVZ_DEFAULT_COLOR_FORMAT VK_FORMAT_R8G8B8A8_SRGB
 
 
 
@@ -88,7 +88,9 @@ typedef enum
     DVZ_FORMAT_R8G8B8A8_SNORM = 38,
     DVZ_FORMAT_R8G8B8A8_UINT = 41,
     DVZ_FORMAT_R8G8B8A8_SINT = 42,
+    DVZ_FORMAT_R8G8B8A8_SRGB = 43,
     DVZ_FORMAT_B8G8R8A8_UNORM = 44,
+    DVZ_FORMAT_B8G8R8A8_SRGB = 50,
     DVZ_FORMAT_R16_UNORM = 70,
     DVZ_FORMAT_R16_SNORM = 71,
     DVZ_FORMAT_R32_UINT = 98,

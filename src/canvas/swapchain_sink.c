@@ -219,7 +219,7 @@ static VkFormat canvas_surface_format(const DvzCanvas* canvas)
     {
         return canvas->surface->format;
     }
-    return VK_FORMAT_B8G8R8A8_UNORM;
+    return VK_FORMAT_B8G8R8A8_SRGB;
 }
 
 

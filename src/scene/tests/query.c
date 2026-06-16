@@ -568,8 +568,8 @@ int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* ite
     AT(query.raw_target == DVZ_SCENE_TARGET_SAMPLE);
     AT(query.resolved_target == DVZ_SCENE_TARGET_SAMPLE);
     AT(query.value_kind == DVZ_QUERY_VALUE_VEC4);
-    AC(query.vector[0], 64.0 / 255.0, 1e-3);
-    AC(query.vector[1], 128.0 / 255.0, 1e-3);
+    AC(query.vector[0], 0.05126946, 1e-3);
+    AC(query.vector[1], 0.2158605, 1e-3);
     AT(query.vector[2] > 0.9);
     AT(query.vector[3] > 0.9);
     AT(query.has_display_rgba);

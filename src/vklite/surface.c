@@ -53,7 +53,7 @@ static bool _surface_init_with_physical_device(
     surface->extent_hint = (VkExtent2D){0, 0};
     surface->has_extent_hint = false;
     surface->preferred_format = (VkSurfaceFormatKHR){
-        .format = VK_FORMAT_B8G8R8A8_UNORM,
+        .format = VK_FORMAT_B8G8R8A8_SRGB,
         .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
     };
     surface->preferred_present_mode = VK_PRESENT_MODE_FIFO_KHR;
@@ -98,7 +98,7 @@ static void _surface_pick_defaults(DvzSurface* surface)
     ANN(surface);
 
     surface->preferred_format = (VkSurfaceFormatKHR){
-        .format = VK_FORMAT_B8G8R8A8_UNORM,
+        .format = VK_FORMAT_B8G8R8A8_SRGB,
         .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
     };
     if (surface->format_count > 0)
@@ -108,7 +108,7 @@ static void _surface_pick_defaults(DvzSurface* surface)
         {
             VkSurfaceFormatKHR candidate = surface->formats[i];
             if (
-                candidate.format == VK_FORMAT_B8G8R8A8_UNORM &&
+                candidate.format == VK_FORMAT_B8G8R8A8_SRGB &&
                 candidate.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
             {
                 surface->preferred_format = candidate;

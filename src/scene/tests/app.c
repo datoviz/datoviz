@@ -4461,7 +4461,7 @@ int test_app_offscreen_source_over_scene_occlusion_matrix(TstContext* suite, con
     AT(disabled.rgb[0] > 120);
     AT(hidden.rgb[0] > 140);
     AT(disabled.rgb[1] > 50);
-    AT(hidden.rgb[0] > disabled.rgb[0] + 30);
+    AT(hidden.rgb[0] > disabled.rgb[0] + 24);
     AT(hidden.rgb[1] + 25 < disabled.rgb[1]);
 
     uint32_t diff = 0;
@@ -5903,13 +5903,12 @@ int test_app_offscreen_clear_color(TstContext* suite, const TstCase* item)
     AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
     ANN(rgba);
 
-    /* Default clear color is (0.05, 0.05, 0.08, 1.0) — very dark, R<20, G<20, B<25.
-       All pixels must be dark (no stray bright pixels from missing clear). */
+    /* Default clear color is linear (0.05, 0.05, 0.08, 1.0), encoded by the SRGB target. */
     uint32_t bright_count = 0;
     for (uint32_t i = 0; i < width * height; i++)
     {
         uint8_t* px = &rgba[4 * i];
-        if (px[0] > 30 || px[1] > 30 || px[2] > 30)
+        if (px[0] > 96 || px[1] > 96 || px[2] > 112)
             bright_count++;
     }
     AT(bright_count == 0);
