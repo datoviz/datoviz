@@ -6074,6 +6074,125 @@ int test_app_offscreen_alpha_over_nonblack_linear(TstContext* suite, const TstCa
 }
 
 
+/**
+ * Ensure custom colormap RGBA8 entries are decoded before linear alpha blending.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_colormap_srgb_lut_linear_blend(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzColor dst = {64, 64, 64, 255};
+    DvzColor src = {192, 32, 32, 128};
+    DvzVisual* background = _app_primitive_add_quad(
+        scene, panel, -0.95f, 0.95f, -0.95f, 0.95f, 0.0f, dst, DVZ_ALPHA_OPAQUE, false);
+    AT(background != NULL);
+
+    DvzScale* scale =
+        dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
+                             .kind = DVZ_SCALE_CONTINUOUS});
+    AT(scale != NULL);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+
+    DvzColor colors[2] = {src, src};
+    DvzColormap* colormap = dvz_colormap_custom(scene, "srgb-linear-blend", colors, 2);
+    AT(colormap != NULL);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    AT(image != NULL);
+    vec3 positions[4] = {
+        {-0.75f, -0.75f, 0.0f},
+        {-0.75f, 0.75f, 0.0f},
+        {0.75f, -0.75f, 0.0f},
+        {0.75f, 0.75f, 0.0f},
+    };
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    float values[4 * 4];
+    for (uint32_t i = 0; i < 16; i++)
+        values[i] = 0.5f;
+
+    AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_scale(image, "color", scale) == 0);
+    AT(dvz_visual_set_texture_f32(image, values, 4, 4) == 0);
+    AT(dvz_visual_set_alpha_mode(image, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzColorf dst_linear = dvz_color_to_linear(dst);
+    DvzColorf src_linear = dvz_color_to_linear(src);
+    float alpha = src_linear.a;
+    DvzColor expected = dvz_color_from_linear(dvz_colorf(
+        src_linear.r * alpha + dst_linear.r * (1.0f - alpha),
+        src_linear.g * alpha + dst_linear.g * (1.0f - alpha),
+        src_linear.b * alpha + dst_linear.b * (1.0f - alpha),
+        1.0f));
+
+    uint8_t naive_r = (uint8_t)((uint32_t)src.r * src.a / 255u +
+                                (uint32_t)dst.r * (255u - src.a) / 255u);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_colormap_srgb_lut_linear_blend skipped: GPU context creation "
+            "failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
+    AT(win != NULL);
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    for (uint32_t frame = 0; frame < 3; frame++)
+    {
+        dvz_app_run(app, 1);
+        if (rgba != NULL)
+            dvz_free(rgba);
+        rgba = NULL;
+        AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+        ANN(rgba);
+    }
+    AT(width == 64);
+    AT(height == 64);
+
+    const uint8_t* center = _pixel_at(rgba, width, height, width / 2, height / 2);
+    AT(abs((int)center[0] - (int)expected.r) <= 12);
+    AT(abs((int)center[1] - (int)expected.g) <= 12);
+    AT(abs((int)center[2] - (int)expected.b) <= 12);
+    AT(abs((int)center[0] - (int)naive_r) > 10);
+    AT(center[3] >= 240);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_app_capture_rejects_wrong_dimensions(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -7356,6 +7475,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_clear_color);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_midgray_srgb_readback);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_alpha_over_nonblack_linear);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_colormap_srgb_lut_linear_blend);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_slice_renders_field);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_mip_renders_bright_slice);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_composite_renders_field);

@@ -1184,6 +1184,8 @@ int test_app_offscreen_midgray_srgb_readback(TstContext* suite, const TstCase* i
 
 int test_app_offscreen_alpha_over_nonblack_linear(TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_colormap_srgb_lut_linear_blend(TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_volume_slice_renders_field(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_volume_mip_renders_bright_slice(TstContext* suite, const TstCase* item);
