@@ -1,5 +1,7 @@
 #version 450
 
+#include "color.glsl"
+
 layout(set = 3, binding = 0) uniform texture2D prevDepthMinMax;
 layout(set = 3, binding = 1) uniform sampler samp;
 layout(location = 0) in vec4 fragColor;
@@ -19,8 +21,9 @@ void main()
     if (farDepth < nearDepth - eps || z < nearDepth - eps || z > farDepth + eps)
         discard;
 
-    float a = clamp(fragColor.a, 0.0, 1.0);
-    vec4 color = vec4(fragColor.rgb * a, a);
+    vec4 linearColor = semanticColorToLinear(fragColor);
+    float a = clamp(linearColor.a, 0.0, 1.0);
+    vec4 color = vec4(linearColor.rgb * a, a);
     frontAccum = vec4(0.0);
     backAccum = vec4(0.0);
     depthPair = vec4(-1.0, -1.0, 0.0, 0.0);

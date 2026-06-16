@@ -7,5 +7,6 @@ struct FragmentIn {
 
 @fragment
 fn main(input: FragmentIn) -> @location(0) vec4f {
-    return vec4f(apply_depth_cue(input.color.rgb, input.cue), input.color.a);
+    let color = semantic_color_to_linear(input.color);
+    return vec4f(apply_depth_cue(color.rgb, input.cue), color.a);
 }

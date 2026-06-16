@@ -1,5 +1,7 @@
 #version 450
 
+#include "color.glsl"
+
 #ifdef DVZ_SCENE_OCCLUSION
 #include "scene_occlusion.glsl"
 #endif
@@ -97,7 +99,8 @@ void main()
     }
     if (alpha <= 0.0)
         discard;
-    outColor = vec4(fragColor.rgb, fragColor.a * alpha);
+    vec4 linearColor = semanticColorToLinear(fragColor);
+    outColor = vec4(linearColor.rgb, linearColor.a * alpha);
     if (outColor.a <= 0.0)
         discard;
 #ifdef DVZ_SCENE_OCCLUSION

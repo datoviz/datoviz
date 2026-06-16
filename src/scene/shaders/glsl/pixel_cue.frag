@@ -7,5 +7,6 @@ layout(location = 1) in vec3 fragCue;
 layout(location = 0) out vec4 outColor;
 
 void main() {
-    outColor = vec4(applyDepthCue(fragColor.rgb, fragCue), fragColor.a);
+    vec4 linearColor = semanticColorToLinear(fragColor);
+    outColor = vec4(applyDepthCue(linearColor.rgb, fragCue), linearColor.a);
 }

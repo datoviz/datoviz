@@ -44,8 +44,9 @@ void main()
     if (coverage <= 0.0)
         discard;
 
-    vec4 edgeColor = material.baseColorFactor;
-    vec4 color = filled ? mix(fragColor, edgeColor, strokeMask) : edgeColor;
+    vec4 edgeColor = semanticColorToLinear(material.baseColorFactor);
+    vec4 linearColor = semanticColorToLinear(fragColor);
+    vec4 color = filled ? mix(linearColor, edgeColor, strokeMask) : edgeColor;
     outColor = vec4(color.rgb, color.a * coverage);
 #ifdef DVZ_SCENE_OCCLUSION
     applySceneOcclusion(outColor);

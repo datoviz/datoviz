@@ -82,7 +82,8 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
     if (alpha <= 0.0) {
         discard;
     }
-    let color = vec4f(input.color.rgb, input.color.a * alpha);
+    let linear_color = semantic_color_to_linear(input.color);
+    let color = vec4f(linear_color.rgb, linear_color.a * alpha);
     if (color.a <= 0.0) {
         discard;
     }

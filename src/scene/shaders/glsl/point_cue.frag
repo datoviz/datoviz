@@ -26,5 +26,6 @@ void main() {
     float alpha = pointDiscCoverage(dist);
     if (alpha <= 0.0)
         discard;
-    outColor = vec4(applyDepthCue(fragColor.rgb, fragCue), fragColor.a * alpha);
+    vec4 linearColor = semanticColorToLinear(fragColor);
+    outColor = vec4(applyDepthCue(linearColor.rgb, fragCue), linearColor.a * alpha);
 }

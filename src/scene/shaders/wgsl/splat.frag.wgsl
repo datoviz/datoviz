@@ -1,3 +1,5 @@
+#include "color.wgsl"
+
 struct FragmentIn {
     @location(0) color: vec4f,
     @location(1) offset_px: vec2f,
@@ -25,5 +27,6 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
     if (alpha <= 0.0) {
         discard;
     }
-    return vec4f(input.color.rgb, alpha);
+    let color = semantic_color_to_linear(input.color);
+    return vec4f(color.rgb, alpha);
 }

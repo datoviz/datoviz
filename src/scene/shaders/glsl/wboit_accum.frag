@@ -1,5 +1,7 @@
 #version 450
 
+#include "color.glsl"
+
 #ifdef DVZ_SCENE_OCCLUSION
 #include "scene_occlusion.glsl"
 #endif
@@ -10,7 +12,7 @@ layout(location = 1) out float outWeight;
 
 void main()
 {
-    vec4 color = fragColor;
+    vec4 color = semanticColorToLinear(fragColor);
 #ifdef DVZ_SCENE_OCCLUSION
     applySceneOcclusion(color);
 #endif

@@ -1,6 +1,8 @@
 #ifndef DVZ_SCENE_MATERIAL_GLSL
 #define DVZ_SCENE_MATERIAL_GLSL
 
+#include "color.glsl"
+
 layout(set = 1, binding = 0) uniform SceneMaterial {
     vec4 lightDir;
     vec4 params;
@@ -17,10 +19,13 @@ vec4 evaluateSceneMaterial(vec4 itemColor, vec3 normal, vec3 worldPos, vec3 came
 {
     int model = int(material.model.x + 0.5);
     float opacity = clamp(material.model.y, 0.0, 1.0);
-    vec3 base = itemColor.rgb * material.baseColorFactor.rgb;
-    float alpha = itemColor.a * material.baseColorFactor.a * opacity;
+    vec4 linearItemColor = semanticColorToLinear(itemColor);
+    vec4 linearBaseColor = semanticColorToLinear(material.baseColorFactor);
+    vec3 emissive = srgbToLinear(clamp(material.emissiveRim.rgb, 0.0, 1.0));
+    vec3 base = linearItemColor.rgb * linearBaseColor.rgb;
+    float alpha = linearItemColor.a * linearBaseColor.a * opacity;
     if (model == 0)
-        return vec4(clamp(base + material.emissiveRim.rgb, 0.0, 1.0), alpha);
+        return vec4(clamp(base + emissive, 0.0, 1.0), alpha);
 
     vec3 n = normalize(normal);
     vec3 l = normalize(material.lightDir.xyz);
@@ -37,7 +42,7 @@ vec4 evaluateSceneMaterial(vec4 itemColor, vec3 normal, vec3 worldPos, vec3 came
         float spec = pow(max(dot(n, h), 0.0), shininess) * specularStrength;
         float rim = pow(1.0 - max(dot(n, v), 0.0), 2.0) * rimStrength;
         vec3 diffuse = base * (0.04 + (1.0 - metallic) * lambert);
-        vec3 rgb = diffuse + vec3(spec + rim) + material.emissiveRim.rgb;
+        vec3 rgb = diffuse + vec3(spec + rim) + emissive;
         return vec4(clamp(rgb, 0.0, 1.0), alpha);
     }
 
@@ -83,7 +88,7 @@ vec3 applyDepthCue(vec3 rgb, vec3 cue)
     if (t <= 0.0)
         return rgb;
     if (mode == 1)
-        return mix(rgb, material.depthCueColor.rgb, t);
+        return mix(rgb, srgbToLinear(clamp(material.depthCueColor.rgb, 0.0, 1.0)), t);
     if (mode == 2)
     {
         float luma = dot(rgb, vec3(0.2126, 0.7152, 0.0722));

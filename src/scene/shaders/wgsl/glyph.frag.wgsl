@@ -3,6 +3,8 @@ struct FragmentIn {
     @location(1) color: vec4f,
 }
 
+#include "color.wgsl"
+
 @group(1) @binding(0) var tex: texture_2d<f32>;
 @group(1) @binding(1) var samp: sampler;
 @group(1) @binding(2) var<uniform> glyph: vec4f;
@@ -44,5 +46,6 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
     } else if (encoding == GLYPH_ENCODING_SDF_ALPHA) {
         opacity = distanceOpacity(input.uv, texel.a);
     }
-    return vec4f(input.color.rgb, input.color.a * opacity);
+    let color = semantic_color_to_linear(input.color);
+    return vec4f(color.rgb, color.a * opacity);
 }

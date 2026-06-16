@@ -1,5 +1,7 @@
 #version 450
 
+#include "color.glsl"
+
 #ifdef DVZ_SCENE_OCCLUSION
 #include "scene_occlusion.glsl"
 #endif
@@ -56,7 +58,8 @@ void main()
     {
         opacity = distanceOpacity(texel.a);
     }
-    outColor = vec4(fragColor.rgb, fragColor.a * opacity);
+    vec4 linearColor = semanticColorToLinear(fragColor);
+    outColor = vec4(linearColor.rgb, linearColor.a * opacity);
 #ifdef DVZ_SCENE_OCCLUSION
     applySceneOcclusion(outColor);
 #endif

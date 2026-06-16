@@ -1,3 +1,5 @@
+#include "color.wgsl"
+
 struct FragmentIn {
     @location(0) color: vec4f,
     @location(1) offset_px: vec2f,
@@ -33,7 +35,8 @@ fn main(input: FragmentIn) -> FragmentOut {
 
     let a = clamp(alpha, 0.0, 1.0);
     var output: FragmentOut;
-    output.accum = vec4f(input.color.rgb * a, a);
+    let color = semantic_color_to_linear(input.color);
+    output.accum = vec4f(color.rgb * a, a);
     output.weight = -log(max(1.0 - a, 1e-4));
     return output;
 }

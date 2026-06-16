@@ -14,5 +14,6 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
     if (alpha <= 0.0) {
         discard;
     }
-    return vec4f(apply_depth_cue(input.color.rgb, input.cue), input.color.a * alpha);
+    let color = semantic_color_to_linear(input.color);
+    return vec4f(apply_depth_cue(color.rgb, input.cue), color.a * alpha);
 }

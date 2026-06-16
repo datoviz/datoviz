@@ -138,11 +138,25 @@ static bool _runtime_shader_emit_stage(
         return true;
 
     bool ok = false;
+    char* glsl_variant = NULL;
     if (stage->use_spirv)
+    {
         ok = _emit_shader_spirv(stream, id, stage->stage, stage->spirv_key, stage->glsl, cfg);
+    }
     else
+    {
+        const char* source = stage->source;
+        if (strcmp(stage->format, "glsl") == 0)
+        {
+            glsl_variant = _shader_glsl_variant(stage->source, NULL);
+            if (glsl_variant == NULL)
+                return false;
+            source = glsl_variant;
+        }
         ok = dvz_drp2_stream_create_shader_module_format(
-            stream, id, stage->stage, stage->format, stage->source);
+            stream, id, stage->stage, stage->format, source);
+        _shader_glsl_variant_destroy(glsl_variant);
+    }
 
     if (ok && shader->builtin_family != NULL && shader->builtin_variant != NULL)
     {

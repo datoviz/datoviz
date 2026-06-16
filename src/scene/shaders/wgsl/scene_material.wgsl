@@ -1,3 +1,5 @@
+#include "color.wgsl"
+
 struct SceneMaterial {
     light_direction: vec4f,
     params: vec4f,
@@ -20,10 +22,13 @@ fn evaluate_scene_material(
 ) -> vec4f {
     let model = i32(material.model.x + 0.5);
     let opacity = clamp(material.model.y, 0.0, 1.0);
-    let base = item_color.rgb * material.base_color_factor.rgb;
-    let alpha = item_color.a * material.base_color_factor.a * opacity;
+    let linear_item_color = semantic_color_to_linear(item_color);
+    let linear_base_color = semantic_color_to_linear(material.base_color_factor);
+    let emissive = srgb_to_linear(material.emissive_rim.rgb);
+    let base = linear_item_color.rgb * linear_base_color.rgb;
+    let alpha = linear_item_color.a * linear_base_color.a * opacity;
     if (model == 0) {
-        return vec4f(clamp(base + material.emissive_rim.rgb, vec3f(0.0), vec3f(1.0)), alpha);
+        return vec4f(clamp(base + emissive, vec3f(0.0), vec3f(1.0)), alpha);
     }
 
     let n = normalize(normal);
@@ -40,7 +45,7 @@ fn evaluate_scene_material(
         let specular = pow(max(dot(n, h), 0.0), shininess) * specular_strength;
         let rim = pow(1.0 - max(dot(n, v), 0.0), 2.0) * rim_strength;
         let diffuse = base * (0.04 + (1.0 - metallic) * lambert);
-        let rgb = diffuse + vec3f(specular + rim) + material.emissive_rim.rgb;
+        let rgb = diffuse + vec3f(specular + rim) + emissive;
         return vec4f(clamp(rgb, vec3f(0.0), vec3f(1.0)), alpha);
     }
 
@@ -86,7 +91,7 @@ fn apply_depth_cue(rgb: vec3f, cue: vec3f) -> vec3f {
         return rgb;
     }
     if (mode == 1) {
-        return mix(rgb, material.depth_cue_color.rgb, t);
+        return mix(rgb, srgb_to_linear(material.depth_cue_color.rgb), t);
     }
     if (mode == 2) {
         let luma = dot(rgb, vec3f(0.2126, 0.7152, 0.0722));

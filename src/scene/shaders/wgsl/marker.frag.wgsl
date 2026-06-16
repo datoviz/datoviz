@@ -170,8 +170,9 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
         discard;
     }
 
-    let edge_color = material.base_color_factor;
-    let color = select(edge_color, mix(input.color, edge_color, stroke_mask), filled);
+    let edge_color = semantic_color_to_linear(material.base_color_factor);
+    let input_color = semantic_color_to_linear(input.color);
+    let color = select(edge_color, mix(input_color, edge_color, stroke_mask), filled);
     let out_color = vec4f(color.rgb, color.a * coverage);
     if (out_color.a <= 0.0) {
         discard;

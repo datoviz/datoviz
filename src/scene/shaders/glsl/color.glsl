@@ -1,0 +1,16 @@
+#ifndef DVZ_COLOR_GLSL
+#define DVZ_COLOR_GLSL
+
+vec3 srgbToLinear(vec3 srgb)
+{
+    vec3 lo = srgb / 12.92;
+    vec3 hi = pow((srgb + vec3(0.055)) / 1.055, vec3(2.4));
+    return mix(hi, lo, lessThanEqual(srgb, vec3(0.04045)));
+}
+
+vec4 semanticColorToLinear(vec4 color)
+{
+    return vec4(srgbToLinear(clamp(color.rgb, 0.0, 1.0)), clamp(color.a, 0.0, 1.0));
+}
+
+#endif

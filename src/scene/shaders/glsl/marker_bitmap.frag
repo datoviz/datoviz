@@ -1,5 +1,7 @@
 #version 450
 
+#include "color.glsl"
+
 #ifdef DVZ_SCENE_OCCLUSION
 #include "scene_occlusion.glsl"
 #endif
@@ -28,7 +30,8 @@ void main()
     vec2 markerUV = p * 0.5 + 0.5;
     vec2 uv = mix(fragTexRect.xy, fragTexRect.zw, markerUV);
     vec4 texel = texture(sampler2D(tex, samp), uv);
-    outColor = vec4(fragColor.rgb * texel.rgb, fragColor.a * texel.a);
+    vec4 linearColor = semanticColorToLinear(fragColor);
+    outColor = vec4(linearColor.rgb * texel.rgb, linearColor.a * texel.a);
     if (outColor.a <= 0.0)
         discard;
 #ifdef DVZ_SCENE_OCCLUSION
