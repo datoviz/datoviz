@@ -272,6 +272,9 @@ int test_frame_plan_dynamic_update(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_texture_upload_json_includes_region(TstContext* suite, const TstCase* item);
 
+int test_frame_plan_texture_upload_json_includes_color_role(
+    TstContext* suite, const TstCase* item);
+
 int test_frame_plan_readbacks(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_query_readback_copy_metadata(TstContext* suite, const TstCase* item);
