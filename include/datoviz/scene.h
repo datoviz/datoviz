@@ -886,8 +886,10 @@ DVZ_EXPORT DvzPanelBackgroundDesc dvz_panel_background_desc(void);
  *
  * Backgrounds are rendered as a fixed full-panel visual behind regular visuals. Passing NULL or
  * a descriptor with type DVZ_PANEL_BACKGROUND_NONE clears the current background. Linear gradients
- * use panel-local start and end points in [0, 1]. Image backgrounds accept tightly packed RGBA8
- * pixels and stretch them to the panel rectangle.
+ * use panel-local start and end points in [0, 1]. Background color and gradient float components
+ * are display/sRGB-authored semantic colors; RGB is linearized before rendering arithmetic and
+ * alpha remains linear. Image backgrounds accept tightly packed RGBA8 sRGB color pixels and stretch
+ * them to the panel rectangle.
  *
  * @param panel the panel
  * @param background the background descriptor, or NULL to clear
@@ -913,7 +915,8 @@ DVZ_EXPORT void dvz_panel_clear_background(DvzPanel* panel);
  * panzoom/arcball navigation. Repeat calls update the existing background's color
  * instead of stacking new visuals.
  *
- * Components are in [0, 1].
+ * Components are in [0, 1]. RGB components are display/sRGB-authored semantic color values; alpha
+ * is linear.
  *
  * @param panel the panel
  * @param r red component
@@ -3424,11 +3427,13 @@ DVZ_EXPORT const DvzVolumeState* dvz_volume_state(const DvzVisual* visual);
 
 
 /**
- * Attach a 2D RGBA8 texture to an image, glyph, or mesh visual.
+ * Attach a 2D RGBA8 sRGB-color texture to an image, glyph, or mesh visual.
  *
  * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
  * binds it to the visual's `"field"` slot for image/glyph visuals or `"texture"` slot for mesh
- * visuals. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
+ * visuals. The owned sampled field uses `DVZ_FIELD_SEMANTIC_COLOR` and
+ * `DVZ_COLOR_ROLE_SRGB_COLOR`. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new
+ * code.
  *
  * @param visual the visual (must be of type IMAGE, GLYPH, or MESH)
  * @param rgba RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes)
@@ -3444,9 +3449,10 @@ DVZ_EXPORT int dvz_visual_set_texture(
  * Attach a 2D scalar F32 texture to an image or glyph visual.
  *
  * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
- * binds it to the visual's `"field"` slot. The bound scale and colormap are applied
- * on the CPU during emit to produce the RGBA texture used by the current first-slice image
- * runtime path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
+ * binds it to the visual's `"field"` slot. The owned sampled field uses
+ * `DVZ_FIELD_SEMANTIC_SCALAR` and `DVZ_COLOR_ROLE_DATA`. The bound scale and colormap are applied
+ * on the CPU during emit to produce the RGBA texture used by the current first-slice image runtime
+ * path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
  *
  * @param visual the visual (must be of type IMAGE or GLYPH)
  * @param values scalar F32 pixel data, tightly packed, row-major
