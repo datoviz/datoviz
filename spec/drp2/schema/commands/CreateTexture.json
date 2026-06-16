@@ -43,6 +43,9 @@
       "type": "integer",
       "minimum": 1
     },
+    "color_role": {
+      "$ref": "../common/TextureColorRole.json"
+    },
     "label": {
       "type": "string"
     }

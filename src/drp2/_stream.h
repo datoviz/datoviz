@@ -71,6 +71,7 @@ struct DvzDrp2Command
             uint32_t format; /* VkFormat, 0 means the default RGBA8 format */
             uint32_t usage;
             uint32_t sample_count;
+            DvzDrp2ColorRole color_role;
         } create_texture;
         struct
         {

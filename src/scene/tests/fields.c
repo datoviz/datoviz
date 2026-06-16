@@ -3613,6 +3613,7 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, c
         {
             created_scalar_texture = true;
             AT(cmd->u.create_texture.format == VK_FORMAT_R8_UNORM);
+            AT(cmd->u.create_texture.color_role == DVZ_DRP2_COLOR_ROLE_DATA);
             AT(cmd->u.create_texture.depth == 2);
         }
         if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE &&
@@ -3620,6 +3621,7 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, c
         {
             created_transfer_texture = true;
             AT(cmd->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM);
+            AT(cmd->u.create_texture.color_role == DVZ_DRP2_COLOR_ROLE_SRGB_COLOR);
             AT(cmd->u.create_texture.width == 256);
             AT(cmd->u.create_texture.height == 1);
             AT(cmd->u.create_texture.depth == 1);

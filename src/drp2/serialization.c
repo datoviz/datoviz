@@ -184,6 +184,23 @@ static const char* _texture_format_name(uint32_t format)
 }
 
 
+static const char* _texture_color_role_name(DvzDrp2ColorRole role)
+{
+    switch (role)
+    {
+    case DVZ_DRP2_COLOR_ROLE_SRGB_COLOR:
+        return "srgb_color";
+    case DVZ_DRP2_COLOR_ROLE_LINEAR_COLOR:
+        return "linear_color";
+    case DVZ_DRP2_COLOR_ROLE_DATA:
+        return "data";
+    case DVZ_DRP2_COLOR_ROLE_NONE:
+    default:
+        return NULL;
+    }
+}
+
+
 
 static const char* _topology_name(uint32_t topology)
 {
@@ -659,6 +676,13 @@ static void _json_append_command(
             command->u.create_texture.depth > 0 ? command->u.create_texture.depth : 1,
             _texture_format_name(command->u.create_texture.format));
         _json_append_texture_usage(builder, command->u.create_texture.usage);
+        const char* color_role =
+            _texture_color_role_name(command->u.create_texture.color_role);
+        if (color_role != NULL)
+        {
+            _json_append(builder, ", \"color_role\": ");
+            _json_append_escaped_string(builder, color_role);
+        }
         _json_append(
             builder, ", \"mip_level_count\": 1, \"sample_count\": %" PRIu32 " }",
             command->u.create_texture.sample_count != 0 ?

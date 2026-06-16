@@ -66,6 +66,16 @@ typedef enum
 
 typedef enum
 {
+    DVZ_DRP2_COLOR_ROLE_NONE = 0,
+    DVZ_DRP2_COLOR_ROLE_SRGB_COLOR,
+    DVZ_DRP2_COLOR_ROLE_LINEAR_COLOR,
+    DVZ_DRP2_COLOR_ROLE_DATA,
+} DvzDrp2ColorRole;
+
+
+
+typedef enum
+{
     DVZ_DRP2_VERTEX_STEP_MODE_VERTEX = 0,
     DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE = 1,
 } DvzDrp2VertexStepMode;

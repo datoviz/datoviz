@@ -33,6 +33,23 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+static DvzDrp2ColorRole _drp2_color_role(DvzColorRole role)
+{
+    switch (role)
+    {
+    case DVZ_COLOR_ROLE_SRGB_COLOR:
+        return DVZ_DRP2_COLOR_ROLE_SRGB_COLOR;
+    case DVZ_COLOR_ROLE_LINEAR_COLOR:
+        return DVZ_DRP2_COLOR_ROLE_LINEAR_COLOR;
+    case DVZ_COLOR_ROLE_DATA:
+        return DVZ_DRP2_COLOR_ROLE_DATA;
+    case DVZ_COLOR_ROLE_NONE:
+    default:
+        return DVZ_DRP2_COLOR_ROLE_NONE;
+    }
+}
+
+
 /**
  * Emit runtime-mode upload commands.
  *
@@ -143,6 +160,10 @@ bool _emitter_emit_upload(
             }
             else if (!dvz_drp2_stream_create_texture_2d_format_usage(
                          stream, id, texture_w, texture_h, format, usage))
+                return false;
+            DvzDrp2ColorRole color_role = _drp2_color_role(resource->color_role);
+            if (color_role != DVZ_DRP2_COLOR_ROLE_NONE &&
+                !dvz_drp2_stream_create_texture_set_color_role(stream, color_role))
                 return false;
         }
         if (emitter->resources.first_texture_id == 0)

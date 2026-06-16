@@ -78,6 +78,7 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_stream_append);
     TST_CASE(test_drp2_stream_debug_labels);
     TST_CASE(test_drp2_stream_json);
+    TST_CASE(test_drp2_stream_texture_color_role_json);
     TST_CASE(test_drp2_stream_growth_json);
     TST_CASE(test_drp2_write_buffer_bytes_uses_data_raw);
     TST_CASE(test_drp2_write_buffer_bytes_json_encodes_data_raw);

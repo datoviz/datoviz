@@ -32,6 +32,8 @@ int test_drp2_stream_debug_labels(TstContext* suite, const TstCase* item);
 
 int test_drp2_stream_json(TstContext* suite, const TstCase* item);
 
+int test_drp2_stream_texture_color_role_json(TstContext* suite, const TstCase* item);
+
 int test_drp2_stream_growth_json(TstContext* suite, const TstCase* item);
 
 int test_drp2_write_buffer_bytes_uses_data_raw(TstContext* suite, const TstCase* item);

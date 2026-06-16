@@ -1207,14 +1207,16 @@ static bool _recording_write_portable_command(
                    "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
                    "\"op\":\"CreateTexture\",\"id\":%" PRIu64 ",\"width\":%" PRIu32
                    ",\"height\":%" PRIu32 ",\"depth\":%" PRIu32 ",\"format\":%" PRIu32
-                   ",\"usage\":%" PRIu32 ",\"sample_count\":%" PRIu32 "}\n",
+                   ",\"usage\":%" PRIu32 ",\"sample_count\":%" PRIu32
+                   ",\"color_role\":%d}\n",
                    index, (int)command->type, command->u.create_texture.id,
                    command->u.create_texture.width, command->u.create_texture.height,
                    command->u.create_texture.depth, command->u.create_texture.format,
                    command->u.create_texture.usage,
                    command->u.create_texture.sample_count != 0 ?
                        command->u.create_texture.sample_count :
-                       1) > 0;
+                       1,
+                   (int)command->u.create_texture.color_role) > 0;
     case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
         if (!_recording_write_create_shader_module(
                 root, stream_fp, command, index, blob_index))
@@ -2454,6 +2456,9 @@ static bool _recording_read_portable_command(
         command.u.create_texture.sample_count = 1;
         (void)_recording_line_u32(
             line, "\"sample_count\":", &command.u.create_texture.sample_count);
+        uint32_t color_role = 0;
+        if (_recording_line_u32(line, "\"color_role\":", &color_role))
+            command.u.create_texture.color_role = (DvzDrp2ColorRole)color_role;
     }
     else if (strcmp(op, "CreateShaderModule") == 0)
     {

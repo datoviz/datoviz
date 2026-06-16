@@ -230,6 +230,17 @@ DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_format_usage_samples(
     uint32_t usage, uint32_t sample_count);
 
 
+/**
+ * Set the semantic color role on the most recently appended CreateTexture command.
+ *
+ * @param stream the command stream
+ * @param color_role texture color role
+ * @return whether the most recent command was a CreateTexture command
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_texture_set_color_role(
+    DvzDrp2CommandStream* stream, DvzDrp2ColorRole color_role);
+
+
 
 /**
  * Append a CreateTexture command for a 3D texture.

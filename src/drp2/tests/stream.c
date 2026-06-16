@@ -136,6 +136,34 @@ int test_drp2_stream_json(TstContext* suite, const TstCase* item)
 }
 
 
+int test_drp2_stream_texture_color_role_json(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 20, 2, 2, VK_FORMAT_R8G8B8A8_UNORM,
+        DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
+    AT(dvz_drp2_stream_create_texture_set_color_role(
+        stream, DVZ_DRP2_COLOR_ROLE_SRGB_COLOR));
+
+    const DvzDrp2Command* command = dvz_drp2_stream_get(stream, 0);
+    ANN(command);
+    AT(command->u.create_texture.color_role == DVZ_DRP2_COLOR_ROLE_SRGB_COLOR);
+
+    char* json = dvz_drp2_stream_json(stream, "texture_color_role_from_c");
+    ANN(json);
+    AT(strstr(json, "\"color_role\": \"srgb_color\"") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
 
 int test_drp2_stream_growth_json(TstContext* suite, const TstCase* item)
 {

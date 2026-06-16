@@ -608,6 +608,26 @@ bool dvz_drp2_stream_create_texture_2d_format_usage_samples(
 }
 
 
+/**
+ * Set the semantic color role on the most recently appended CreateTexture command.
+ *
+ * @param stream the command stream
+ * @param color_role texture color role
+ * @return whether the most recent command was a CreateTexture command
+ */
+bool dvz_drp2_stream_create_texture_set_color_role(
+    DvzDrp2CommandStream* stream, DvzDrp2ColorRole color_role)
+{
+    if (stream == NULL || stream->count == 0)
+        return false;
+    DvzDrp2Command* command = &stream->commands[stream->count - 1];
+    if (command->type != DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        return false;
+    command->u.create_texture.color_role = color_role;
+    return true;
+}
+
+
 
 /**
  * Append a DestroyTexture command.

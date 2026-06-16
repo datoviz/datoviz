@@ -294,12 +294,16 @@ Required fields:
 
 Optional fields:
 
+- `color_role`: semantic texture color role, one of `srgb_color`, `linear_color`, or `data`.
 - `label`: debug label.
 
 Semantics:
 
 1. the tuple `(dimension, width, height, depth)` defines the logical texture extent,
 2. `usage`, `format`, `mip_level_count`, and `sample_count` constrain later copies and attachment use.
+3. `color_role` records whether shader sampling should treat texture values as sRGB-authored color,
+   already-linear color, or non-color data; missing means the producer has not supplied role
+   metadata.
 
 The C stream API carries `format` as a `VkFormat` value. Convenience helpers that do not take an
 explicit format emit `rgba8unorm`; WBOIT-style intermediate targets should use the explicit
