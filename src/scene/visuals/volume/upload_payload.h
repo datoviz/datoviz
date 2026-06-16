@@ -38,6 +38,7 @@ typedef struct DvzVolumeTextureUploadPayload
     uint32_t allocation_width;
     uint32_t allocation_height;
     uint32_t allocation_depth;
+    DvzColorRole color_role;
 } DvzVolumeTextureUploadPayload;
 
 

@@ -1675,6 +1675,71 @@ int test_scene_image_visual_binds_colormap_scale(TstContext* suite, const TstCas
 }
 
 
+int test_scene_sampled_field_color_role_defaults(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzSampledFieldDesc desc = dvz_sampled_field_desc();
+    desc.width = 2;
+    desc.height = 2;
+    DvzSampledField* rgba = dvz_sampled_field(scene, &desc);
+    ANN(rgba);
+    const DvzSampledFieldDesc* rgba_desc = dvz_sampled_field_get_desc(rgba);
+    ANN(rgba_desc);
+    AT(rgba_desc->color_role == DVZ_COLOR_ROLE_SRGB_COLOR);
+
+    DvzSampledField* explicit_linear = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .color_role = DVZ_COLOR_ROLE_LINEAR_COLOR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(explicit_linear);
+    const DvzSampledFieldDesc* linear_desc = dvz_sampled_field_get_desc(explicit_linear);
+    ANN(linear_desc);
+    AT(linear_desc->color_role == DVZ_COLOR_ROLE_LINEAR_COLOR);
+
+    DvzSampledField* scalar = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(scalar);
+    const DvzSampledFieldDesc* scalar_desc = dvz_sampled_field_get_desc(scalar);
+    ANN(scalar_desc);
+    AT(scalar_desc->color_role == DVZ_COLOR_ROLE_DATA);
+
+    DvzSampledField* label = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_UINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(label);
+    const DvzSampledFieldDesc* label_desc = dvz_sampled_field_get_desc(label);
+    ANN(label_desc);
+    AT(label_desc->color_role == DVZ_COLOR_ROLE_DATA);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const TstCase* item)
 {
     (void)item;
@@ -4375,6 +4440,7 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_colorbar_rejects_unsupported_requests);
     TST_CASE(test_scene_colorbar_rejects_cross_scene_scale);
     TST_CASE(test_scene_image_visual_binds_colormap_scale);
+    TST_CASE(test_scene_sampled_field_color_role_defaults);
     TST_CASE(test_scene_labels_visual_binds_categorical_scale);
     TST_CASE(test_scene_labels_state_setters);
     TST_CASE(test_scene_visual_scale_rejects_cross_scene_scale);

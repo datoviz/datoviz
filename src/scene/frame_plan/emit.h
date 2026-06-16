@@ -109,6 +109,7 @@ struct ResourceId
     uint32_t texture_sample_count;       /* texture sample count, defaulting to one           */
     DvzFramePlanResourceKind kind;        /* typed resource kind, when supplied by FramePlan   */
     DvzFramePlanResourceRole role;        /* typed resource role, when supplied by FramePlan   */
+    DvzColorRole color_role;              /* texture color role, when supplied by FramePlan    */
 };
 
 

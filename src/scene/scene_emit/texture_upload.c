@@ -62,6 +62,7 @@ bool _scene_emit_sampled_field_texture_upload(
     metadata.kind = payload.texture_3d ? DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_3D
                                        : DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D;
     metadata.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE;
+    metadata.color_role = payload.color_role;
     metadata.visual_index = UINT32_MAX;
     metadata.buffer_index = UINT32_MAX;
     if (!dvz_frame_plan_upload_metadata(plan, &metadata) ||
@@ -221,6 +222,8 @@ static void _scene_emit_marker_symbol_texture_upload(
             &(DvzFramePlanUploadMeta){
                 .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
                 .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+                .color_role = page->channels == 4 ? DVZ_COLOR_ROLE_SRGB_COLOR
+                                                   : DVZ_COLOR_ROLE_DATA,
                 .visual_index = visual_index,
                 .buffer_index = UINT32_MAX,
             }) ||
@@ -266,7 +269,9 @@ static void _scene_emit_volume_source_texture_upload(
             &(DvzFramePlanUploadMeta){
                 .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_3D,
                 .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
-                .visual_index = UINT32_MAX,
+                .color_role = payload.color_role,
+                .visual_type = (uint32_t)visual->type,
+                .visual_index = visual_index,
                 .buffer_index = UINT32_MAX,
             }) ||
         !dvz_frame_plan_upload_set_texture_format(
@@ -281,9 +286,6 @@ static void _scene_emit_volume_source_texture_upload(
         log_error("volume visual texture upload failed");
         return;
     }
-    _scene_attach_upload_metadata(
-        plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
-        DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_3D, UINT32_MAX, 0);
 }
 
 
@@ -320,6 +322,7 @@ static void _scene_emit_volume_transfer_texture_upload(
             &(DvzFramePlanUploadMeta){
                 .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
                 .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+                .color_role = DVZ_COLOR_ROLE_SRGB_COLOR,
                 .visual_index = UINT32_MAX,
                 .buffer_index = UINT32_MAX,
             }) ||

@@ -270,6 +270,7 @@ typedef struct DvzFramePlanUploadMeta
     bool has_metadata;
     DvzFramePlanResourceKind kind;
     DvzFramePlanResourceRole role;
+    DvzColorRole color_role;
     uint32_t visual_type;
     uint32_t visual_index;
     uint32_t buffer_index;

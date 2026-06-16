@@ -64,6 +64,7 @@ bool _emitter_emit_upload(
         {
             resource->kind = node->u.upload.metadata.kind;
             resource->role = node->u.upload.metadata.role;
+            resource->color_role = node->u.upload.metadata.color_role;
             resource->logical_item_count = node->u.upload.metadata.logical_item_count;
         }
         resource->byte_size = node->u.upload.byte_size;
@@ -204,6 +205,7 @@ bool _emitter_emit_upload(
     {
         resource->kind = node->u.upload.metadata.kind;
         resource->role = node->u.upload.metadata.role;
+        resource->color_role = node->u.upload.metadata.color_role;
         if (node->u.upload.metadata.logical_item_count > 0)
             resource->logical_item_count = node->u.upload.metadata.logical_item_count;
     }

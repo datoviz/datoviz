@@ -86,6 +86,16 @@ typedef enum
 
 
 
+typedef enum
+{
+    DVZ_COLOR_ROLE_NONE = 0,
+    DVZ_COLOR_ROLE_SRGB_COLOR,
+    DVZ_COLOR_ROLE_LINEAR_COLOR,
+    DVZ_COLOR_ROLE_DATA,
+} DvzColorRole;
+
+
+
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
@@ -97,6 +107,7 @@ struct DvzSampledFieldDesc
     DvzFieldDim dim;
     DvzFieldFormat format;
     DvzFieldSemantic semantic;
+    DvzColorRole color_role;
     uint32_t width;
     uint32_t height;
     uint32_t depth;

@@ -130,6 +130,7 @@ bool _scene_sampled_field_texture_upload_payload(
     out->allocation_width = field->desc.width;
     out->allocation_height = field->desc.height;
     out->allocation_depth = field->desc.depth;
+    out->color_role = field->desc.color_role;
     out->texture_3d = field->desc.dim == DVZ_FIELD_DIM_3D;
     return true;
 }

@@ -635,6 +635,8 @@ int test_scene_colorbar_rejects_cross_scene_scale(TstContext* suite, const TstCa
 
 int test_scene_image_visual_binds_colormap_scale(TstContext* suite, const TstCase* item);
 
+int test_scene_sampled_field_color_role_defaults(TstContext* suite, const TstCase* item);
+
 int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const TstCase* item);
 
 int test_scene_labels_state_setters(TstContext* suite, const TstCase* item);

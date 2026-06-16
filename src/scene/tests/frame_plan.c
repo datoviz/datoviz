@@ -1176,6 +1176,36 @@ int test_frame_plan_texture_upload_json_includes_region(TstContext* suite, const
 }
 
 
+int test_frame_plan_texture_upload_json_includes_color_role(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.texture.color_role", 11);
+    ANN(plan);
+
+    DvzFramePlanUploadMeta metadata = {0};
+    metadata.kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D;
+    metadata.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE;
+    metadata.color_role = DVZ_COLOR_ROLE_SRGB_COLOR;
+    metadata.visual_index = UINT32_MAX;
+    metadata.buffer_index = UINT32_MAX;
+
+    AT(dvz_frame_plan_upload(plan, "tex.image.rgba", 0, 16, "image.rgba"));
+    AT(dvz_frame_plan_upload_metadata(plan, &metadata));
+    AT(dvz_frame_plan_upload_set_texture_extent(plan, 2, 2));
+
+    char* json = dvz_frame_plan_json(plan);
+    ANN(json);
+    AT(strstr(json, "\"color_role\": \"srgb_color\"") != NULL);
+
+    dvz_frame_plan_json_destroy(json);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
 int test_frame_plan_readbacks(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -2474,6 +2504,7 @@ int test_scene_frame_plan(TstSuite* suite)
     TST_CASE(test_frame_plan_draw_resource_validation_rejects_short_position);
     TST_CASE(test_frame_plan_dynamic_update);
     TST_CASE(test_frame_plan_texture_upload_json_includes_region);
+    TST_CASE(test_frame_plan_texture_upload_json_includes_color_role);
     TST_CASE(test_frame_plan_readbacks);
     TST_CASE(test_frame_plan_query_readback_copy_metadata);
     TST_CASE(test_frame_plan_abi_rejects_invalid_structs);

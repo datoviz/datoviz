@@ -25,6 +25,7 @@ typedef struct DvzSampledFieldTextureUploadPayload
     uint32_t allocation_width;
     uint32_t allocation_height;
     uint32_t allocation_depth;
+    DvzColorRole color_role;
     bool texture_3d;
 } DvzSampledFieldTextureUploadPayload;
 

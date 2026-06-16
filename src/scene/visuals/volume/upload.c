@@ -356,6 +356,7 @@ bool _volume_source_texture_payload(DvzVisual* visual, DvzVolumeTextureUploadPay
     out->allocation_width = _visual_family_state(visual)->field->desc.width;
     out->allocation_height = _visual_family_state(visual)->field->desc.height;
     out->allocation_depth = _visual_family_state(visual)->field->desc.depth;
+    out->color_role = _visual_family_state(visual)->field->desc.color_role;
     return true;
 }
 

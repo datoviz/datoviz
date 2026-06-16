@@ -54,6 +54,39 @@ static bool _sampled_field_desc_validate(const DvzSampledFieldDesc* desc)
 }
 
 
+static DvzColorRole _sampled_field_default_color_role(
+    DvzFieldFormat format, DvzFieldSemantic semantic)
+{
+    switch (semantic)
+    {
+    case DVZ_FIELD_SEMANTIC_SCALAR:
+    case DVZ_FIELD_SEMANTIC_VECTOR_2:
+    case DVZ_FIELD_SEMANTIC_VECTOR_3:
+    case DVZ_FIELD_SEMANTIC_LABEL:
+    case DVZ_FIELD_SEMANTIC_NORMAL:
+        return DVZ_COLOR_ROLE_DATA;
+    case DVZ_FIELD_SEMANTIC_COLOR:
+        if (format == DVZ_FIELD_FORMAT_RGBA16_FLOAT || format == DVZ_FIELD_FORMAT_RGBA32_FLOAT)
+            return DVZ_COLOR_ROLE_LINEAR_COLOR;
+        return DVZ_COLOR_ROLE_SRGB_COLOR;
+    case DVZ_FIELD_SEMANTIC_GENERIC:
+    default:
+        return _field_format_is_scalar(format) ? DVZ_COLOR_ROLE_DATA : DVZ_COLOR_ROLE_SRGB_COLOR;
+    }
+}
+
+
+static DvzSampledFieldDesc _sampled_field_desc_resolve(const DvzSampledFieldDesc* desc)
+{
+    ANN(desc);
+    DvzSampledFieldDesc resolved = *desc;
+    if (resolved.color_role == DVZ_COLOR_ROLE_NONE)
+        resolved.color_role =
+            _sampled_field_default_color_role(resolved.format, resolved.semantic);
+    return resolved;
+}
+
+
 
 static bool _field_geometry_validate(const DvzFieldGeometry* geometry)
 {
@@ -75,6 +108,7 @@ DvzSampledFieldDesc dvz_sampled_field_desc(void)
     desc.dim = DVZ_FIELD_DIM_2D;
     desc.format = DVZ_FIELD_FORMAT_RGBA8_UNORM;
     desc.semantic = DVZ_FIELD_SEMANTIC_COLOR;
+    desc.color_role = DVZ_COLOR_ROLE_SRGB_COLOR;
     desc.depth = 1;
     return desc;
 }
@@ -153,28 +187,29 @@ DvzSampledField* dvz_sampled_field(DvzScene* scene, const DvzSampledFieldDesc* d
     ANN(scene);
     if (!_sampled_field_desc_validate(desc))
         return NULL;
-    if (!_field_format_supported(desc->format))
+    DvzSampledFieldDesc resolved = _sampled_field_desc_resolve(desc);
+    if (!_field_format_supported(resolved.format))
     {
-        log_error("unsupported sampled field format %d", (int)desc->format);
+        log_error("unsupported sampled field format %d", (int)resolved.format);
         return NULL;
     }
-    if (desc->dim != DVZ_FIELD_DIM_2D && desc->dim != DVZ_FIELD_DIM_3D)
+    if (resolved.dim != DVZ_FIELD_DIM_2D && resolved.dim != DVZ_FIELD_DIM_3D)
     {
-        log_error("unsupported sampled field dimensionality %d", (int)desc->dim);
+        log_error("unsupported sampled field dimensionality %d", (int)resolved.dim);
         return NULL;
     }
-    if (desc->width == 0 || desc->height == 0 || desc->depth == 0)
+    if (resolved.width == 0 || resolved.height == 0 || resolved.depth == 0)
     {
         log_error("sampled field dimensions must be non-zero");
         return NULL;
     }
-    if (desc->dim == DVZ_FIELD_DIM_2D && desc->depth != 1)
+    if (resolved.dim == DVZ_FIELD_DIM_2D && resolved.depth != 1)
     {
         log_error("2D sampled fields must use depth=1");
         return NULL;
     }
     uint64_t data_size = 0;
-    if (!_field_expected_data_size(desc, &data_size))
+    if (!_field_expected_data_size(&resolved, &data_size))
     {
         log_error("sampled field size overflow");
         return NULL;
@@ -186,7 +221,7 @@ DvzSampledField* dvz_sampled_field(DvzScene* scene, const DvzSampledFieldDesc* d
         log_error("maximum sampled field count reached");
         return NULL;
     }
-    field->desc = *desc;
+    field->desc = resolved;
     field->data_size = data_size;
     field->geometry = dvz_field_geometry();
     field->dirty = false;

@@ -29,6 +29,22 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+static const char* _color_role_name(DvzColorRole role)
+{
+    switch (role)
+    {
+    case DVZ_COLOR_ROLE_SRGB_COLOR:
+        return "srgb_color";
+    case DVZ_COLOR_ROLE_LINEAR_COLOR:
+        return "linear_color";
+    case DVZ_COLOR_ROLE_DATA:
+        return "data";
+    case DVZ_COLOR_ROLE_NONE:
+    default:
+        return "none";
+    }
+}
+
 /**
  * Return the deterministic JSON name for a FramePlan node type.
  *
@@ -569,6 +585,12 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
                 _json_append(
                     builder, ", \"format\": %" PRIu32 ", \"bytes_per_texel\": %" PRIu32,
                     node->u.upload.texture_format, node->u.upload.texture_bytes_per_texel);
+            }
+            if (node->u.upload.metadata.color_role != DVZ_COLOR_ROLE_NONE)
+            {
+                _json_append(builder, ", \"color_role\": ");
+                _json_append_escaped_string(
+                    builder, _color_role_name(node->u.upload.metadata.color_role));
             }
             if (node->u.upload.texture_alloc_width > 0 &&
                 node->u.upload.texture_alloc_height > 0)
