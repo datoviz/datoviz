@@ -1,5 +1,7 @@
 #version 450
 
+#include "color.glsl"
+
 layout(set = 0, binding = 0) uniform MVP {
     mat4 model;
     mat4 view;
@@ -173,8 +175,11 @@ void main()
         float density = transfer ? sample_value.a : transfer_t(sample_value.r);
         if (density > value) {
             value = density;
-            color = transfer ? sample_value.rgb
-                             : texture(sampler2D(transferTex, samp), vec2(density, 0.5)).rgb;
+            color = transfer ?
+                        sample_value.rgb :
+                        semanticColorToLinear(
+                            texture(sampler2D(transferTex, samp), vec2(density, 0.5)))
+                            .rgb;
         }
     }
     outColor = vec4(color, value * volume.params.x);

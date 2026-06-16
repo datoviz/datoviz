@@ -1,5 +1,7 @@
 #version 450
 
+#include "color.glsl"
+
 #ifdef DVZ_SCENE_OCCLUSION
 #include "scene_occlusion.glsl"
 #endif
@@ -93,16 +95,17 @@ void main()
     uint id = loadLabel(coord, size);
     if (id == labels.ids.x || isHidden(id))
         discard;
-    outColor = labelColor(id);
+    outColor = semanticColorToLinear(labelColor(id));
     bool selected = (labels.params.x & LABELS_FLAG_SELECTED) != 0u && id == labels.ids.y;
     if (selected)
     {
+        vec4 boundaryColor = semanticColorToLinear(labels.boundary_color);
         bool boundary = (labels.params.x & LABELS_FLAG_BOUNDARY) != 0u &&
                         selectedBoundary(coord, size, labels.ids.y);
         if (boundary)
-            outColor = labels.boundary_color;
+            outColor = boundaryColor;
         else
-            outColor = mix(outColor, labels.boundary_color, 0.35);
+            outColor = mix(outColor, boundaryColor, 0.35);
     }
     outColor.a *= labels.floats.x;
 #ifdef DVZ_SCENE_OCCLUSION

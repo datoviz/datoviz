@@ -70,12 +70,13 @@ vec4 label_palette_color(uint key)
 {
     vec4 lookup_color = vec4(0.0);
     if (label_lookup_color(key, lookup_color)) {
-        return lookup_color;
+        return semanticColorToLinear(lookup_color);
     }
     ivec2 size = textureSize(sampler2D(transferTex, samp), 0);
     if (key < uint(size.x)) {
-        return texelFetch(sampler2D(transferTex, samp), ivec2(int(key), 0), 0);
+        return semanticColorToLinear(
+            texelFetch(sampler2D(transferTex, samp), ivec2(int(key), 0), 0));
     }
-    return fallback_label_color(key);
+    return semanticColorToLinear(fallback_label_color(key));
 }
 #endif

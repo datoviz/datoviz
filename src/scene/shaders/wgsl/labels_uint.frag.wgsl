@@ -1,3 +1,5 @@
+#include "color.wgsl"
+
 struct FragmentIn {
     @location(0) uv: vec2f,
 }
@@ -85,15 +87,16 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
     if id == labels.ids.x || isHidden(id) {
         discard;
     }
-    var color = labelColor(id);
+    var color = semantic_color_to_linear(labelColor(id));
     let selected = (labels.params.x & LABELS_FLAG_SELECTED) != 0u && id == labels.ids.y;
     if selected {
+        let boundary_color = semantic_color_to_linear(labels.boundary_color);
         let boundary = (labels.params.x & LABELS_FLAG_BOUNDARY) != 0u &&
             selectedBoundary(coord, extent_i, labels.ids.y);
         if boundary {
-            color = labels.boundary_color;
+            color = boundary_color;
         } else {
-            color = mix(color, labels.boundary_color, vec4f(0.35));
+            color = mix(color, boundary_color, vec4f(0.35));
         }
     }
     color.a = color.a * labels.floats.x;

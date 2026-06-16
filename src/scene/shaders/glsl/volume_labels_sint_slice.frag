@@ -2,6 +2,8 @@
 
 #define DVZ_VOLUME_LABEL_SINT 1
 
+#include "color.glsl"
+
 #ifdef DVZ_SCENE_OCCLUSION
 #include "scene_occlusion.glsl"
 #endif
@@ -151,7 +153,7 @@ vec4 transfer_value(float value)
 {
     float denom = max(volume.value_range.y - volume.value_range.x, 1e-12);
     float t = clamp((value - volume.value_range.x) / denom, 0.0, 1.0);
-    return texture(sampler2D(transferTex, samp), vec2(t, 0.5));
+    return semanticColorToLinear(texture(sampler2D(transferTex, samp), vec2(t, 0.5)));
 }
 
 #include "volume_labels.glsl"
