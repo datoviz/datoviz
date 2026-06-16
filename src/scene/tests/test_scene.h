@@ -929,6 +929,9 @@ int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* ite
 int test_scene_image_query_plan_preserves_linear_color_role(
     TstContext* suite, const TstCase* item);
 
+int test_scene_image_query_linear_color_sample_not_decoded(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_image_query_generated_rect_samples_position(
     TstContext* suite, const TstCase* item);
 
