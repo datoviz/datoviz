@@ -21,20 +21,23 @@ behavior instead of restating it here.
    volume occlusion, shader feature, and validation contract.
 6. [TRANSPARENCY_MSAA.md](TRANSPARENCY_MSAA.md): implementation-facing WBOIT, depth peeling,
    MSAA, alpha-to-coverage, and validation contract.
-7. [SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](SCENE_VISUAL_BOUNDARY_GUARDRAILS.md): active
+7. [COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md](COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md):
+   implementation pickup plan for explicit texture roles, linear rendering, and one final sRGB
+   encode.
+8. [SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](SCENE_VISUAL_BOUNDARY_GUARDRAILS.md): active
    visual-architecture phase for keeping generic scene code registry-driven and confining
    visual-specific behavior to family folders or explicit shared visual subsystems.
-8. [FRAME_ARTIFACT_REFACTOR_PLAN.md](FRAME_ARTIFACT_REFACTOR_PLAN.md): active plan to make
+9. [FRAME_ARTIFACT_REFACTOR_PLAN.md](FRAME_ARTIFACT_REFACTOR_PLAN.md): active plan to make
    `DvzSceneFrameArtifact` the single scene emission product while preserving DRP2 streams as the
    artifact-owned execution IR.
-9. [PANEL_VIEW_ARCHITECTURE_PLAN.md](PANEL_VIEW_ARCHITECTURE_PLAN.md): active plan for panel 2D
+10. [PANEL_VIEW_ARCHITECTURE_PLAN.md](PANEL_VIEW_ARCHITECTURE_PLAN.md): active plan for panel 2D
    view ownership, release-candidate API naming, and resolver-derived fitted domains.
-10. [PLOT_VIEWPORT_DRAW_CONTRACT_PLAN.md](PLOT_VIEWPORT_DRAW_CONTRACT_PLAN.md): implemented
+11. [PLOT_VIEWPORT_DRAW_CONTRACT_PLAN.md](PLOT_VIEWPORT_DRAW_CONTRACT_PLAN.md): implemented
    native contract for separating per-draw viewport and scissor selection, viewport uniforms, and
    CPU pixel-basis rules for plot-clipped draws.
-11. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): retired pointer for the completed
+12. [SCENE_CODE_SPLIT_ROADMAP.md](SCENE_CODE_SPLIT_ROADMAP.md): retired pointer for the completed
    broad scene source split; active work moved to `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md`.
-12. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): retired pointer
+13. [SCENE_ARCHITECTURE_COMPLETION_PLAN.md](SCENE_ARCHITECTURE_COMPLETION_PLAN.md): retired pointer
    for the completed architecture queue.
 
 ## Current priorities
@@ -47,14 +50,16 @@ behavior instead of restating it here.
 5. Keep graph-backed effects and transparency implementation rules in `GRAPH_TECHNIQUES.md`.
 6. Keep SSAO and occlusion implementation rules in `OCCLUSION_EFFECTS.md`.
 7. Keep transparency, depth-peeling, and MSAA implementation rules in `TRANSPARENCY_MSAA.md`.
-8. Use `FRAME_ARTIFACT_REFACTOR_PLAN.md` before changing scene emission ownership, WASM packet
+8. Use `COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md` before changing sampled-field texture roles,
+   shader color linearization, render-target color formats, or screenshot/readback color encoding.
+9. Use `FRAME_ARTIFACT_REFACTOR_PLAN.md` before changing scene emission ownership, WASM packet
    payloads, JSON emission, app/runtime handoff, or `dvz_figure_emit_frame()` semantics.
-9. Use `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md` before adding new root-level visual switches,
+10. Use `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md` before adding new root-level visual switches,
    family-private includes from generic code, or family-specific fields to generic retained visual
    state.
-10. Use `PANEL_VIEW_ARCHITECTURE_PLAN.md` before changing panel 2D view API names, panel view code,
+11. Use `PANEL_VIEW_ARCHITECTURE_PLAN.md` before changing panel 2D view API names, panel view code,
    or equal-aspect resolver ownership.
-11. Use `PLOT_VIEWPORT_DRAW_CONTRACT_PLAN.md` before changing runtime viewport/scissor emission,
+12. Use `PLOT_VIEWPORT_DRAW_CONTRACT_PLAN.md` before changing runtime viewport/scissor emission,
    plot-clipped draw routing, viewport uniforms, or CPU-expanded pixel geometry for axis grids.
-12. Treat `SCENE_CODE_SPLIT_ROADMAP.md` and `SCENE_ARCHITECTURE_COMPLETION_PLAN.md` as retired
+13. Treat `SCENE_CODE_SPLIT_ROADMAP.md` and `SCENE_ARCHITECTURE_COMPLETION_PLAN.md` as retired
    compatibility links, not active queues.

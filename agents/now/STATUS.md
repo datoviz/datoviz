@@ -10,6 +10,12 @@ history, not in agent archives.
 
 Next critical path: RC1 release proof.
 
+Near-term implementation pickup: color management now has a normative semantic contract and a
+ready implementation handoff at
+[`../../spec/scene/implementation/COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md`](../../spec/scene/implementation/COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md).
+Use it before changing sampled-field texture roles, shader color linearization, render-target color
+formats, or screenshot/readback color encoding.
+
 Blockers:
 
 | Lane | Status | Next proof |
