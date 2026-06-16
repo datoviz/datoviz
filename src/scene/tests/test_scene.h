@@ -1178,6 +1178,8 @@ int test_app_offscreen_two_panel_points_light_both_halves(TstContext* suite, con
 
 int test_app_offscreen_clear_color(TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_midgray_srgb_readback(TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_volume_slice_renders_field(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_volume_mip_renders_bright_slice(TstContext* suite, const TstCase* item);

@@ -5920,6 +5920,75 @@ int test_app_offscreen_clear_color(TstContext* suite, const TstCase* item)
 }
 
 
+/**
+ * Ensure semantic mid-gray RGBA8 colors read back as standard sRGB u8 screenshots.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_midgray_srgb_readback(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzColor midgray = {128, 128, 128, 255};
+    DvzVisual* visual = _app_primitive_add_quad(
+        scene, panel, -0.95f, 0.95f, -0.95f, 0.95f, 0.0f, midgray, DVZ_ALPHA_OPAQUE, false);
+    AT(visual != NULL);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_midgray_srgb_readback skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
+    AT(win != NULL);
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    for (uint32_t frame = 0; frame < 3; frame++)
+    {
+        dvz_app_run(app, 1);
+        if (rgba != NULL)
+            dvz_free(rgba);
+        rgba = NULL;
+        AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+        ANN(rgba);
+    }
+    AT(width == 64);
+    AT(height == 64);
+
+    const uint8_t* center = _pixel_at(rgba, width, height, width / 2, height / 2);
+    AT(center[0] >= 108 && center[0] <= 148);
+    AT(center[1] >= 108 && center[1] <= 148);
+    AT(center[2] >= 108 && center[2] <= 148);
+    AT(center[0] > 80 && center[1] > 80 && center[2] > 80);
+    AT(center[0] < 168 && center[1] < 168 && center[2] < 168);
+    AT(center[3] >= 240);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_app_capture_rejects_wrong_dimensions(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -7200,6 +7269,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_query_request_steady_state);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_two_panel_points_light_both_halves);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_clear_color);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_midgray_srgb_readback);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_slice_renders_field);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_mip_renders_bright_slice);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_composite_renders_field);
