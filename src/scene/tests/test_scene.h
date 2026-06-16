@@ -407,6 +407,8 @@ int test_scene_image_glsl_executes(TstContext* suite, const TstCase* item);
 
 int test_scene_image_emit_wgsl(TstContext* suite, const TstCase* item);
 
+int test_scene_image_linear_color_emit_wgsl(TstContext* suite, const TstCase* item);
+
 int test_scene_glyph_emit_glsl(TstContext* suite, const TstCase* item);
 
 int test_scene_labels_emit_signed_glsl(TstContext* suite, const TstCase* item);

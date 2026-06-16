@@ -204,6 +204,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_labels_emit_unsigned_glsl);
     TST_CASE(test_scene_labels_emit_wgsl);
     TST_CASE(test_scene_image_emit_wgsl);
+    TST_CASE(test_scene_image_linear_color_emit_wgsl);
     TST_CASE(test_scene_image_emit_uses_common_and_texture_sets);
     TST_CASE(test_scene_visual_common_binding_layout_order);
     TST_CASE(test_scene_empty_figure_emit_clear_only);

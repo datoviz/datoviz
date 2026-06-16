@@ -6412,6 +6412,8 @@ int test_scene_image_emit_wgsl(TstContext* suite, const TstCase* item)
     AT(strstr(json, "\"format\": \"glsl\"") == NULL);
     AT(strstr(json, "texture_2d<f32>") != NULL);
     AT(strstr(json, "textureSample") != NULL);
+    AT(strstr(json, "sampled_texture_color_to_linear") != NULL);
+    AT(strstr(json, "\"color_role\": \"srgb_color\"") != NULL);
     AT(strstr(json, "@group(1) @binding(0)") != NULL);
     AT(strstr(json, "@group(1) @binding(1)") != NULL);
     AT(strstr(json, "\"bind_group_layout_ids\": [") != NULL);
@@ -6421,6 +6423,87 @@ int test_scene_image_emit_wgsl(TstContext* suite, const TstCase* item)
     AT(_assert_stream_matches_fixture(
            stream, "scene_image_wgsl_from_c",
            "spec/drp2/fixtures/positive/scene_image_wgsl_from_c.json") == 0);
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_image_linear_color_emit_wgsl(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_image(scene, 0);
+    AT(visual != NULL);
+
+    vec3 positions[4] = {
+        {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
+        { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
+    };
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    DvzColor pixels[4] = {
+        {128, 128, 128, 255},
+        {128, 128, 128, 255},
+        {128, 128, 128, 255},
+        {128, 128, 128, 255},
+    };
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .color_role = DVZ_COLOR_ROLE_LINEAR_COLOR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(field);
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                   .data = pixels,
+                   .bytes_per_row = 2 * sizeof(DvzColor),
+                   .rows_per_image = 2,
+               }));
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_field(visual, "field", field));
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_wgsl = true;
+    caps.shader_format_glsl = false;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    char* json = dvz_drp2_stream_json(stream, "scene_image_linear_color_wgsl_from_c");
+    ANN(json);
+    AT(strstr(json, "\"format\": \"wgsl\"") != NULL);
+    AT(strstr(json, "\"format\": \"glsl\"") == NULL);
+    AT(strstr(json, "sampled_texture_color_to_linear") != NULL);
+    AT(strstr(json, "\"color_role\": \"linear_color\"") != NULL);
+    AT(strstr(json, "\"color_role\": \"srgb_color\"") == NULL);
+    dvz_drp2_stream_json_destroy(json);
+
     _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
