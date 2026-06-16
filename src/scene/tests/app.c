@@ -5990,6 +5990,115 @@ int test_app_offscreen_midgray_srgb_readback(TstContext* suite, const TstCase* i
 
 
 /**
+ * Ensure explicit linear-color RGBA8 fields are not decoded as sRGB textures.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_linear_color_field_not_decoded(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    AT(image != NULL);
+    vec3 positions[4] = {
+        {-0.95f, -0.95f, 0.0f},
+        {-0.95f, 0.95f, 0.0f},
+        {0.95f, -0.95f, 0.0f},
+        {0.95f, 0.95f, 0.0f},
+    };
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .color_role = DVZ_COLOR_ROLE_LINEAR_COLOR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(field);
+    DvzColor pixels[4] = {
+        {128, 128, 128, 255},
+        {128, 128, 128, 255},
+        {128, 128, 128, 255},
+        {128, 128, 128, 255},
+    };
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                   .data = pixels,
+                   .bytes_per_row = 2 * sizeof(DvzColor),
+                   .rows_per_image = 2,
+               }));
+    AT(dvz_visual_set_field(image, "field", field));
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzColor expected = dvz_color_from_linear(
+        dvz_colorf(128.0f / 255.0f, 128.0f / 255.0f, 128.0f / 255.0f, 1.0f));
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_linear_color_field_not_decoded skipped: GPU context failed");
+        tst_skip(suite, "GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
+    AT(win != NULL);
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    for (uint32_t frame = 0; frame < 3; frame++)
+    {
+        dvz_app_run(app, 1);
+        if (rgba != NULL)
+            dvz_free(rgba);
+        rgba = NULL;
+        AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+        ANN(rgba);
+    }
+    AT(width == 64);
+    AT(height == 64);
+
+    const uint8_t* center = _pixel_at(rgba, width, height, width / 2, height / 2);
+    AT(abs((int)center[0] - (int)expected.r) <= 16);
+    AT(abs((int)center[1] - (int)expected.g) <= 16);
+    AT(abs((int)center[2] - (int)expected.b) <= 16);
+    AT(center[0] > 160 && center[1] > 160 && center[2] > 160);
+    AT(center[3] >= 240);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure source-over alpha compositing uses linear RGB over a nonblack background.
  *
  * @param suite test suite
@@ -7580,6 +7689,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_two_panel_points_light_both_halves);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_clear_color);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_midgray_srgb_readback);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_linear_color_field_not_decoded);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_alpha_over_nonblack_linear);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_colormap_srgb_lut_linear_blend);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_slice_renders_field);

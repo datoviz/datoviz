@@ -1185,6 +1185,8 @@ int test_app_offscreen_clear_color(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_midgray_srgb_readback(TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_linear_color_field_not_decoded(TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_alpha_over_nonblack_linear(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_colormap_srgb_lut_linear_blend(TstContext* suite, const TstCase* item);
