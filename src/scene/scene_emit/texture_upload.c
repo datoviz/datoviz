@@ -118,6 +118,27 @@ bool _scene_resource_key_volume_label_lookup(uint32_t visual_index, char* out, s
 
 
 /**
+ * Return the color role for a marker symbol atlas texture.
+ *
+ * @param kind symbol source kind
+ * @return texture color role
+ */
+static DvzColorRole _marker_symbol_atlas_color_role(DvzSymbolSourceKind kind)
+{
+    switch (kind)
+    {
+    case DVZ_SYMBOL_SOURCE_BITMAP:
+        return DVZ_COLOR_ROLE_SRGB_COLOR;
+    case DVZ_SYMBOL_SOURCE_SDF:
+    case DVZ_SYMBOL_SOURCE_MSDF:
+        return DVZ_COLOR_ROLE_DATA;
+    default:
+        return DVZ_COLOR_ROLE_NONE;
+    }
+}
+
+
+/**
  * Emit dirty 2D texture uploads for image-like visuals.
  *
  * @param plan the destination frame plan
@@ -229,8 +250,7 @@ static void _scene_emit_marker_symbol_texture_upload(
             &(DvzFramePlanUploadMeta){
                 .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
                 .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
-                .color_role = page->channels == 4 ? DVZ_COLOR_ROLE_SRGB_COLOR
-                                                   : DVZ_COLOR_ROLE_DATA,
+                .color_role = _marker_symbol_atlas_color_role(state->symbol_source_kind),
                 .visual_index = visual_index,
                 .buffer_index = UINT32_MAX,
             }) ||

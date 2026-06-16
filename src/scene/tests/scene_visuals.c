@@ -1345,6 +1345,9 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     bool found_sdf_texture_upload = false;
     bool found_msdf_texture = false;
     bool found_msdf_texture_upload = false;
+    uint32_t rgba_srgb_texture_count = 0;
+    uint32_t rgba_data_texture_count = 0;
+    uint32_t r8_data_texture_count = 0;
     bool found_vertex_slots[6] = {false};
     uint32_t set_vertex_buffer_count = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
@@ -1408,6 +1411,22 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
         {
+            if (command->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM &&
+                command->u.create_texture.width == 2 && command->u.create_texture.height == 2 &&
+                command->u.create_texture.depth == 1)
+            {
+                if (command->u.create_texture.color_role == DVZ_DRP2_COLOR_ROLE_SRGB_COLOR)
+                    rgba_srgb_texture_count++;
+                if (command->u.create_texture.color_role == DVZ_DRP2_COLOR_ROLE_DATA)
+                    rgba_data_texture_count++;
+            }
+            if (command->u.create_texture.format == VK_FORMAT_R8_UNORM &&
+                command->u.create_texture.width == 2 && command->u.create_texture.height == 2 &&
+                command->u.create_texture.depth == 1 &&
+                command->u.create_texture.color_role == DVZ_DRP2_COLOR_ROLE_DATA)
+            {
+                r8_data_texture_count++;
+            }
             found_texture =
                 found_texture || (command->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM &&
                                   command->u.create_texture.width == 2 &&
@@ -1460,6 +1479,9 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     AT(found_sdf_texture_upload);
     AT(found_msdf_texture);
     AT(found_msdf_texture_upload);
+    AT(rgba_srgb_texture_count >= 1);
+    AT(rgba_data_texture_count >= 1);
+    AT(r8_data_texture_count >= 1);
 
 #if defined(DVZ_HAS_MSDF_SVG) && DVZ_HAS_MSDF_SVG
     const char* star_path =

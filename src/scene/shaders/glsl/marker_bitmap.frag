@@ -29,7 +29,7 @@ void main()
 
     vec2 markerUV = p * 0.5 + 0.5;
     vec2 uv = mix(fragTexRect.xy, fragTexRect.zw, markerUV);
-    vec4 texel = texture(sampler2D(tex, samp), uv);
+    vec4 texel = semanticColorToLinear(texture(sampler2D(tex, samp), uv));
     vec4 linearColor = semanticColorToLinear(fragColor);
     outColor = vec4(linearColor.rgb * texel.rgb, linearColor.a * texel.a);
     if (outColor.a <= 0.0)
