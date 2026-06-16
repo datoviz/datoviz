@@ -87,6 +87,56 @@ static DvzSampledFieldDesc _sampled_field_desc_resolve(const DvzSampledFieldDesc
 }
 
 
+/**
+ * Validate that a sampled-field color role matches the field semantic.
+ *
+ * @param desc resolved sampled-field descriptor
+ * @return whether the color-role/semantic pair is valid
+ */
+static bool _sampled_field_color_role_validate(const DvzSampledFieldDesc* desc)
+{
+    ANN(desc);
+    switch (desc->color_role)
+    {
+    case DVZ_COLOR_ROLE_SRGB_COLOR:
+    case DVZ_COLOR_ROLE_LINEAR_COLOR:
+    case DVZ_COLOR_ROLE_DATA:
+        break;
+    case DVZ_COLOR_ROLE_NONE:
+    default:
+        log_error("invalid sampled field color role %d", (int)desc->color_role);
+        return false;
+    }
+
+    switch (desc->semantic)
+    {
+    case DVZ_FIELD_SEMANTIC_SCALAR:
+    case DVZ_FIELD_SEMANTIC_VECTOR_2:
+    case DVZ_FIELD_SEMANTIC_VECTOR_3:
+    case DVZ_FIELD_SEMANTIC_LABEL:
+    case DVZ_FIELD_SEMANTIC_NORMAL:
+        if (desc->color_role != DVZ_COLOR_ROLE_DATA)
+        {
+            log_error(
+                "sampled field semantic %d requires data color role, got %d",
+                (int)desc->semantic, (int)desc->color_role);
+            return false;
+        }
+        return true;
+    case DVZ_FIELD_SEMANTIC_COLOR:
+        if (desc->color_role == DVZ_COLOR_ROLE_DATA)
+        {
+            log_error("color sampled fields require srgb_color or linear_color role");
+            return false;
+        }
+        return true;
+    case DVZ_FIELD_SEMANTIC_GENERIC:
+    default:
+        return true;
+    }
+}
+
+
 
 static bool _field_geometry_validate(const DvzFieldGeometry* geometry)
 {
@@ -188,6 +238,8 @@ DvzSampledField* dvz_sampled_field(DvzScene* scene, const DvzSampledFieldDesc* d
     if (!_sampled_field_desc_validate(desc))
         return NULL;
     DvzSampledFieldDesc resolved = _sampled_field_desc_resolve(desc);
+    if (!_sampled_field_color_role_validate(&resolved))
+        return NULL;
     if (!_field_format_supported(resolved.format))
     {
         log_error("unsupported sampled field format %d", (int)resolved.format);

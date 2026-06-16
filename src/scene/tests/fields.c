@@ -1740,6 +1740,44 @@ int test_scene_sampled_field_color_role_defaults(TstContext* suite, const TstCas
 }
 
 
+int test_scene_sampled_field_color_role_rejects_invalid_semantics(
+    TstContext* suite, const TstCase* item)
+{
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzSampledFieldDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        .dim = DVZ_FIELD_DIM_2D,
+        .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+        .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+        .color_role = DVZ_COLOR_ROLE_SRGB_COLOR,
+        .width = 2,
+        .height = 2,
+        .depth = 1,
+    };
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_sampled_field(scene, &desc) == NULL);
+
+    desc.format = DVZ_FIELD_FORMAT_R32_UINT;
+    desc.semantic = DVZ_FIELD_SEMANTIC_LABEL;
+    desc.color_role = DVZ_COLOR_ROLE_LINEAR_COLOR;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_sampled_field(scene, &desc) == NULL);
+
+    desc.format = DVZ_FIELD_FORMAT_RGBA8_UNORM;
+    desc.semantic = DVZ_FIELD_SEMANTIC_COLOR;
+    desc.color_role = DVZ_COLOR_ROLE_DATA;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_sampled_field(scene, &desc) == NULL);
+
+    desc.color_role = (DvzColorRole)999;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_sampled_field(scene, &desc) == NULL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const TstCase* item)
 {
     (void)item;
@@ -4443,6 +4481,7 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_colorbar_rejects_cross_scene_scale);
     TST_CASE(test_scene_image_visual_binds_colormap_scale);
     TST_CASE(test_scene_sampled_field_color_role_defaults);
+    TST_CASE(test_scene_sampled_field_color_role_rejects_invalid_semantics);
     TST_CASE(test_scene_labels_visual_binds_categorical_scale);
     TST_CASE(test_scene_labels_state_setters);
     TST_CASE(test_scene_visual_scale_rejects_cross_scene_scale);

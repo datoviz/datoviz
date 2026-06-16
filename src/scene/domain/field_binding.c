@@ -60,6 +60,7 @@ static DvzSampledField* _scene_ensure_owned_image_field(
     DvzSampledFieldDesc desc = dvz_sampled_field_desc();
     desc.format = format;
     desc.semantic = semantic;
+    desc.color_role = DVZ_COLOR_ROLE_NONE;
     desc.width = width;
     desc.height = height;
     field = dvz_sampled_field(visual->scene, &desc);
