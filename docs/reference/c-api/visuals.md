@@ -5575,32 +5575,21 @@ _Declared in `include/datoviz/scene.h`:1740._
 Write attribute data to a visual.
 
 First-slice visual families currently accept:
-point: `"position"` (vec3f), `"color"` (RGBA8 or scalar float with a color scale),
-`"diameter"` (float pixels),
-optional `"item_state"` (uint32_t DvzItemStateKind bitfield)
-splat: `"position"` (vec3f), `"color"` (RGBA8), `"sigma"` (vec2f pixels),
-`"angle"` (float radians)
-pixel: `"position"` (vec3f), `"color"` (RGBA8 or scalar float with a color scale),
-`"pixel_size"` (float pixels),
-optional `"item_state"` (uint32_t DvzItemStateKind bitfield)
-marker: `"position"` (vec3f), `"color"` (RGBA8), `"diameter"` (float pixels),
-`"angle"` (float radians), `"shape"` (uint32_t DvzMarkerShape),
-optional `"item_state"` (uint32_t DvzItemStateKind bitfield)
-sphere: `"position"` (vec3f), `"color"` (RGBA8), `"radius"` (float scene units)
-segment: `"position_start"` (vec3f), `"position_end"` (vec3f), `"color"` (RGBA8),
-`"stroke_width"` (float pixels)
-primitive: `"position"` (vec3f), `"color"` (RGBA8)
-path: `"position"` (vec3f), `"color"` (RGBA8), optional `"stroke_width"` (float pixels)
-mesh: `"position"` (vec3f), optional `"color"` (RGBA8), optional `"normal"` (vec3f),
-optional `"texcoords"` (vec2f), optional `"instance_transform"` (mat4f, one per instance)
-primitive only: `"normal"` (vec3f)
-image: legacy `"position"` (vec3f) + `"texcoords"` (vec2f) corner vertices, or
-per-item `"position"` (vec3f) + `"extent"` (vec2f) with optional `"tex_rect"`
-(vec4f) and `"anchor"` (vec2f)
-text: string attribute `"text"` plus per-string `"position"` (vec3f pixels), optional
-`"anchor"` (vec2f), `"size"` (float pixels), `"color"` (RGBA8), `"angle"` (float radians)
-glyph: `"position"` (vec3f anchor), `"bounds"` (vec4f local pixel bounds),
-`"texcoords"` (vec4f atlas UV bounds), `"color"` (RGBA8), `"angle"` (float radians)
+
+| Visual family | Attributes |
+| --- | --- |
+| point | `"position"` (vec3f), `"color"` (RGBA8 or scalar float with a color scale), `"diameter"` (float pixels), optional `"item_state"` (uint32_t DvzItemStateKind bitfield) |
+| splat | `"position"` (vec3f), `"color"` (RGBA8), `"sigma"` (vec2f pixels), `"angle"` (float radians) |
+| pixel | `"position"` (vec3f), `"color"` (RGBA8 or scalar float with a color scale), `"pixel_size"` (float pixels), optional `"item_state"` (uint32_t DvzItemStateKind bitfield) |
+| marker | `"position"` (vec3f), `"color"` (RGBA8), `"diameter"` (float pixels), `"angle"` (float radians), `"shape"` (uint32_t DvzMarkerShape), optional `"item_state"` (uint32_t DvzItemStateKind bitfield) |
+| sphere | `"position"` (vec3f), `"color"` (RGBA8), `"radius"` (float scene units) |
+| segment | `"position_start"` (vec3f), `"position_end"` (vec3f), `"color"` (RGBA8), `"stroke_width"` (float pixels) |
+| primitive | `"position"` (vec3f), `"color"` (RGBA8), primitive-only `"normal"` (vec3f) |
+| path | `"position"` (vec3f), `"color"` (RGBA8), optional `"stroke_width"` (float pixels) |
+| mesh | `"position"` (vec3f), optional `"color"` (RGBA8), optional `"normal"` (vec3f), optional `"texcoords"` (vec2f), optional `"instance_transform"` (mat4f, one per instance) |
+| image | legacy `"position"` (vec3f) + `"texcoords"` (vec2f) corner vertices, or per-item `"position"` (vec3f) + `"extent"` (vec2f) with optional `"tex_rect"` (vec4f) and `"anchor"` (vec2f) |
+| text | string attribute `"text"` plus per-string `"position"` (vec3f pixels), optional `"anchor"` (vec2f), `"size"` (float pixels), `"color"` (RGBA8), `"angle"` (float radians) |
+| glyph | `"position"` (vec3f anchor), `"bounds"` (vec4f local pixel bounds), `"texcoords"` (vec4f atlas UV bounds), `"color"` (RGBA8), `"angle"` (float radians) |
 
 All configured attributes on one visual must use the same item_count. Retained mutation is legal
 after frame artifact creation; changes are reflected only in later artifacts.
