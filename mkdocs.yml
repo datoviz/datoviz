@@ -156,7 +156,7 @@ nav:
         - App, window, and I/O: 'reference/c-api/app.md'
         - Runtime and utilities: 'reference/c-api/runtime.md'
         - C types: 'reference/c-api/types.md'
-      - Python binding: 'reference/ctypes.md'
+      - Raw ctypes: 'reference/ctypes.md'
     - Visual families:
       - Overview: 'reference/visual-families/index.md'
       - Point: 'reference/visual-families/point.md'

@@ -43,6 +43,6 @@ plotting interface to be present.
 ??? example "Related examples"
 
     - Start page: [Quickstart](../start/quickstart.md)
-    - Reference: [Python binding](../reference/ctypes.md)
+    - Reference: [Raw ctypes](../reference/ctypes.md)
     - Gallery: [Scatter Plot](../examples/gallery/start/start_scatter.md)
     - Source: `examples/c/start/scatter.c`
