@@ -11,6 +11,11 @@ Durable release policy lives in [../../spec/release/](../../spec/release/):
 [COMMUNICATION.md](../../spec/release/COMMUNICATION.md), and
 [GALLERY_OUTREACH.md](../../spec/release/GALLERY_OUTREACH.md).
 
+Maintainer execution docs live in
+[../../docs/contributors/release-process.md](../../docs/contributors/release-process.md),
+[../../docs/contributors/release-flight-checklist.md](../../docs/contributors/release-flight-checklist.md),
+and [../../docs/contributors/release-wheels.md](../../docs/contributors/release-wheels.md).
+
 
 ## Scope
 

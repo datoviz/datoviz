@@ -22,6 +22,12 @@ Wheel build, inspection, installed smoke tests, platform matrices, and the non-l
 draft are documented in [Release wheels](release-wheels.md).
 
 
+## Maintainer Flow
+
+Use [Release process](release-process.md) for the operational RC sequence and
+[Release flight checklist](release-flight-checklist.md) for the step-by-step maintainer checklist.
+
+
 ## Release Records
 
 Each RC note should include:

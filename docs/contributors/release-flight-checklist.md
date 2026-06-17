@@ -1,0 +1,117 @@
+# Release Flight Checklist
+
+This checklist is for the maintainer cutting a v0.4 release candidate or final release. Work from
+top to bottom and record skipped items as known exclusions.
+
+
+## 1. Repository Hygiene
+
+- [ ] Confirm the branch and commit.
+- [ ] Run `git status --short`.
+- [ ] Confirm no unintended staged changes.
+- [ ] Confirm no staged `data` submodule update unless explicitly approved.
+- [ ] Confirm no generated/runtime binary payloads are staged unintentionally.
+- [ ] Run `git diff --check`.
+
+
+## 2. Version And Release Notes
+
+- [ ] Set the Python package version to the intended PEP 440 version.
+- [ ] Confirm C runtime version and public notes agree with the release identity.
+- [ ] Confirm the intended tag name, for example `v0.4.0rc1`.
+- [ ] Draft RC notes with commit, tag, feature status, known issues, and validation matrix.
+- [ ] Confirm migration/status notes from v0.3 are honest about breaking changes.
+
+
+## 3. Native Build And Tests
+
+- [ ] Run `just build`.
+- [ ] Run the focused release tests for touched areas.
+- [ ] Run `just test` or record why a narrower loop is being used.
+- [ ] Run `just spec-check`.
+- [ ] Run Vulkan validation or graphics smoke checks for graphics/runtime changes.
+- [ ] Record any local native build options that affect artifacts.
+
+
+## 4. Examples, Docs, And Gallery
+
+- [ ] Build the documentation site.
+- [ ] Run docs link checks if available.
+- [ ] Verify feature/status and known-issues pages.
+- [ ] Verify release examples compile or run as appropriate.
+- [ ] Regenerate gallery media that changed.
+- [ ] Confirm gallery data attribution and licenses.
+- [ ] Confirm public docs do not make stale v0.3 promises.
+
+
+## 5. Wheel Build
+
+- [ ] Run `just wheel-matrix`.
+- [ ] Run `just wheel-ci-local <host-platform-tag>`.
+- [ ] If native rebuild is required, run `just wheel-ci-local <host-platform-tag> 1`.
+- [ ] Inspect wheel contents with `just wheel-inspect`.
+- [ ] Inspect native dependencies with `just wheel-inspect --native-deps`.
+- [ ] Confirm wheel filename version and platform tag match the intended artifact.
+- [ ] Confirm stale wheels are not present in `dist/`.
+
+
+## 6. Wheel Install Smokes
+
+- [ ] Run `just wheel-check --cmake-consumer --qt-probe optional`.
+- [ ] Run render smoke with `--render` on at least one graphics-capable host.
+- [ ] Confirm `import datoviz` works from an installed wheel.
+- [ ] Confirm `import datoviz.raw` works from an installed wheel.
+- [ ] Confirm `python -m datoviz.cli --cflags --libs --cmake-dir` behavior.
+- [ ] Confirm the CMake consumer smoke builds and runs.
+
+
+## 7. Qt And PyQt
+
+- [ ] Confirm base wheel install works without PyQt.
+- [ ] Confirm `python -m datoviz.qt` gives a clear diagnostic when PyQt or Qt Vulkan support is
+      absent.
+- [ ] On a Qt-capable host, run `just wheel-check --cmake-consumer --qt-probe required`.
+- [ ] Confirm the optional Qt bridge provider is packaged only when intended.
+- [ ] Record platform-specific Qt/PyQt limitations.
+
+
+## 8. CI And Cross-Platform Artifacts
+
+- [ ] Keep draft workflows outside `.github/workflows/` until explicitly enabling them.
+- [ ] Run or inspect the non-live wheel workflow draft.
+- [ ] Confirm Linux `x86_64` and `aarch64` wheel artifacts.
+- [ ] Confirm macOS `x86_64` and `arm64` wheel artifacts.
+- [ ] Confirm Windows `AMD64` and `ARM64` wheel artifacts.
+- [ ] Confirm host-native install smokes for Python 3.10 through 3.14.
+- [ ] Keep Python 3.15 prerelease smoke non-blocking unless release policy changes.
+
+
+## 9. TestPyPI Rehearsal
+
+- [ ] Upload candidate artifacts to TestPyPI through a manual workflow or local maintainer command.
+- [ ] Install from TestPyPI in a clean environment.
+- [ ] Run import, CLI, CMake consumer, and optional Qt checks.
+- [ ] Confirm dependency metadata and optional extras.
+- [ ] Record TestPyPI artifact URLs.
+
+
+## 10. Publication
+
+- [ ] Re-run `git status --short`.
+- [ ] Re-run `git diff --check`.
+- [ ] Create the RC or final tag.
+- [ ] Upload artifacts to PyPI only after TestPyPI rehearsal is accepted.
+- [ ] Create or update the GitHub release.
+- [ ] Attach source archive, wheels, checksums, and release notes.
+- [ ] Publish documentation.
+- [ ] Announce known issues and feedback channels.
+
+
+## 11. Post-Release
+
+- [ ] Verify public artifacts are downloadable.
+- [ ] Install the published wheel in a fresh environment.
+- [ ] Verify documentation and release links.
+- [ ] Update `agents/now/STATUS.md`.
+- [ ] Open issues for deferred or newly reported blockers.
+- [ ] Start the next RC or post-release patch queue.

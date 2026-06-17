@@ -214,6 +214,8 @@ nav:
       - Adding examples: 'contributors/adding-examples.md'
       - Adding a visual: 'contributors/adding-a-visual.md'
       - Release validation: 'contributors/release-validation.md'
+      - Release process: 'contributors/release-process.md'
+      - Release flight checklist: 'contributors/release-flight-checklist.md'
       - Release wheels: 'contributors/release-wheels.md'
 not_in_nav: |
   _old/*
