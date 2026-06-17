@@ -5,6 +5,14 @@ the wheel, conda, and vcpkg paths tied to the same source bundle.
 
 ## Local Source Bundle
 
+The repeatable local preflight entry point is:
+
+```sh
+just distribution-validate-local all
+```
+
+Individual lanes are available as `source-install`, `vcpkg`, and `conda`.
+
 1. Generate current ctypes bindings:
    ```sh
    just ctypes

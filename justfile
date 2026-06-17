@@ -1161,6 +1161,10 @@ release-source-bundle version:
     @python tools/release_source_bundle.py {{version}}
 #
 
+distribution-validate-local mode='all':
+    @tools/validate_distribution_local.sh {{mode}}
+#
+
 wheel-ci-local platform_tag='' rebuild='0' render='0':
     #!/usr/bin/env sh
     set -e
