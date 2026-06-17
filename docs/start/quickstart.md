@@ -43,12 +43,23 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
 
 === "C"
 
-    Save the program below as `scatter.c`, then compile and run:
+    Save the program below as `scatter.c`, then compile and run.
+    Use the flags printed by `datoviz-config --cflags --libs` if available, otherwise:
 
-    ```sh
-    gcc scatter.c -o scatter -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
-    ./scatter
-    ```
+    === "Linux"
+
+        ```sh
+        gcc scatter.c -o scatter -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
+        ./scatter
+        ```
+
+    === "macOS"
+
+        ```sh
+        clang scatter.c -o scatter -I/usr/local/include/datoviz -L/usr/local/lib/datoviz \
+            -Wl,-rpath,/usr/local/lib/datoviz -lm -ldatoviz
+        ./scatter
+        ```
 
     Or, if you cloned the repository, use the bundled example directly:
 
