@@ -97,7 +97,7 @@ lint.ignore = [
 "examples/*.py" = ["D103"]
 
 [tool.cibuildwheel]
-build = "cp310-* cp311-* cp312-* cp313-* cp314-*"
+build = "cp313-*"
 skip = "pp* *-musllinux_* cp31?t-*"
 test-command = "python {project}/tools/release_wheels/check_wheel.py --wheel {wheel} --qt-probe optional"
 

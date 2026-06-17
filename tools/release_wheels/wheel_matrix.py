@@ -9,8 +9,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 
-PYTHONS_REQUIRED = ("cp310", "cp311", "cp312", "cp313", "cp314")
-PYTHONS_PRERELEASE = ("cp315",)
+PYTHONS_REQUIRED = ("3.10", "3.11", "3.12", "3.13", "3.14")
+PYTHONS_PRERELEASE = ("3.15",)
 
 
 @dataclass(frozen=True)
@@ -31,15 +31,11 @@ TARGETS = (
 )
 
 
-def expected_wheel_stems(include_prerelease: bool) -> list[str]:
-    pythons = list(PYTHONS_REQUIRED)
-    if include_prerelease:
-        pythons.extend(PYTHONS_PRERELEASE)
-    stems: list[str] = []
+def expected_wheel_tags() -> list[str]:
+    tags: list[str] = []
     for target in TARGETS:
-        for python_tag in pythons:
-            stems.append(f"{python_tag}-none-{target.platform_tag}")
-    return stems
+        tags.append(f"py3-none-{target.platform_tag}")
+    return tags
 
 
 def parse_args() -> argparse.Namespace:
@@ -56,13 +52,13 @@ def main() -> int:
         "required_pythons": PYTHONS_REQUIRED,
         "prerelease_pythons": PYTHONS_PRERELEASE,
         "targets": [asdict(target) for target in TARGETS],
-        "expected_tags": expected_wheel_stems(args.include_prerelease),
+        "expected_wheel_tags": expected_wheel_tags(),
     }
     if args.json:
         print(json.dumps(data, indent=2, sort_keys=True))
     else:
-        print("Required Python tags:", " ".join(PYTHONS_REQUIRED))
-        print("Prerelease Python tags:", " ".join(PYTHONS_PRERELEASE))
+        print("Required Python test versions:", " ".join(PYTHONS_REQUIRED))
+        print("Prerelease Python test versions:", " ".join(PYTHONS_PRERELEASE))
         for target in TARGETS:
             mark = "required" if target.required else "optional"
             print(f"{target.os:7} {target.arch:8} {target.platform_tag:28} {mark}")

@@ -12,14 +12,12 @@ name: "WHEELS v0.4 draft"
 
 on:
   workflow_dispatch:
-    inputs:
-      include_prerelease:
-        description: "Build CPython prerelease wheels such as cp315?"
-        required: false
-        default: "false"
 
 env:
-  CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-* cp314-*"
+  # Build once per platform; Datoviz is Python-ABI independent and the artifact is retagged as
+  # py3-none-<platform>. Separate install-smoke jobs should cover Python 3.10 through 3.14, with
+  # 3.15 prerelease enabled only for nightly/prerelease checks.
+  CIBW_BUILD: "cp313-*"
   CIBW_SKIP: "pp* *-musllinux_* cp31?t-*"
   CIBW_TEST_COMMAND: "python {project}/tools/release_wheels/check_wheel.py --wheel {wheel} --qt-probe optional"
 
@@ -53,11 +51,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: Enable CPython prerelease
-        if: ${{ github.event.inputs.include_prerelease == 'true' }}
-        run: |
-          echo "CIBW_BUILD=${CIBW_BUILD} cp315-*" >> "$GITHUB_ENV"
-          echo "CIBW_ENABLE=cpython-prerelease" >> "$GITHUB_ENV"
       - name: Build native artifacts
         run: |
           python -m pip install -U pip cibuildwheel build
@@ -98,11 +91,6 @@ jobs:
         run: |
           brew install just ccache ninja jq
           python -m pip install -U pip cibuildwheel build delocate
-      - name: Enable CPython prerelease
-        if: ${{ github.event.inputs.include_prerelease == 'true' }}
-        run: |
-          echo "CIBW_BUILD=${CIBW_BUILD} cp315-*" >> "$GITHUB_ENV"
-          echo "CIBW_ENABLE=cpython-prerelease" >> "$GITHUB_ENV"
       - name: Build native artifacts
         run: |
           just build
@@ -139,12 +127,6 @@ jobs:
         run: |
           choco install just mingw cmake ninja jq -y
           python -m pip install -U pip cibuildwheel build delvewheel
-      - name: Enable CPython prerelease
-        if: ${{ github.event.inputs.include_prerelease == 'true' }}
-        shell: pwsh
-        run: |
-          "CIBW_BUILD=$env:CIBW_BUILD cp315-*" | Out-File -FilePath $env:GITHUB_ENV -Append
-          "CIBW_ENABLE=cpython-prerelease" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Build native artifacts
         shell: pwsh
         run: |

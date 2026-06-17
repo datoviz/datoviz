@@ -35,6 +35,37 @@ def _run(cmd: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> Non
     subprocess.run(cmd, cwd=cwd, env=env, check=True)
 
 
+def _create_venv(venv: Path) -> None:
+    try:
+        subprocess.run([sys.executable, "-m", "venv", str(venv)], check=True)
+        return
+    except subprocess.CalledProcessError:
+        uv = shutil.which("uv")
+        if uv is None:
+            raise
+        subprocess.run([uv, "venv", "--python", sys.executable, str(venv)], check=True)
+
+
+def _has_pip(python: Path, cwd: Path) -> bool:
+    return subprocess.run(
+        [str(python), "-m", "pip", "--version"],
+        cwd=cwd,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    ).returncode == 0
+
+
+def _pip_install(python: Path, cwd: Path, args: list[str]) -> None:
+    if _has_pip(python, cwd):
+        _run([str(python), "-m", "pip", "install", *args], cwd=cwd)
+        return
+    uv = shutil.which("uv")
+    if uv is None:
+        raise RuntimeError(f"{python} has no pip and uv is not available")
+    _run([uv, "pip", "install", "--python", str(python), *args], cwd=cwd)
+
+
 def _python_smokes(python: Path, work: Path) -> None:
     _run([str(python), "-c", "import datoviz; print(datoviz.__file__)"], cwd=work)
     _run([str(python), "-c", "import datoviz.raw as dvz; print(dvz.__file__)"], cwd=work)
@@ -82,10 +113,10 @@ def main() -> int:
     venv = work / "venv"
 
     try:
-        subprocess.run([sys.executable, "-m", "venv", str(venv)], check=True)
+        _create_venv(venv)
         python = _bin_dir(venv) / ("python.exe" if os.name == "nt" else "python")
-        _run([str(python), "-m", "pip", "install", "--upgrade", "pip", "wheel"], cwd=work)
-        _run([str(python), "-m", "pip", "install", str(wheel)], cwd=work)
+        _pip_install(python, work, ["--upgrade", "pip", "wheel"])
+        _pip_install(python, work, [str(wheel)])
         _python_smokes(python, work)
         if args.render:
             _render_smoke(python, work)

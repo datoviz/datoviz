@@ -19,9 +19,11 @@ Target RC matrix:
 python tools/release_wheels/wheel_matrix.py
 ```
 
-The required Python tags are `cp310`, `cp311`, `cp312`, `cp313`, and `cp314`.
-`cp315` is a prerelease lane and should be enabled only in prerelease/nightly wheel builds until
-the interpreter reaches an RC or final release appropriate for PyPI users.
+The wheel itself is Python-ABI independent because Datoviz is loaded through `ctypes`, so the
+release artifact should be a platform wheel tagged `py3-none-<platform>`. The required Python test
+versions are 3.10, 3.11, 3.12, 3.13, and 3.14. Python 3.15 is a prerelease test lane and should be
+enabled only in prerelease/nightly wheel builds until the interpreter reaches an RC or final release
+appropriate for PyPI users.
 
 The target platform lanes are:
 
