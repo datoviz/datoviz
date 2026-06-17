@@ -582,6 +582,8 @@ def render_card(
     page = Path(example.page_path)
     href = page.as_posix()
     media = media_block(page_path, example, image_dir, image_url_base, image_format)
+    if media.startswith("!["):
+        media = f"[{media}]({href})"
     tag_line = ""
     if show_tags:
         tags = ", ".join(f"`{tag}`" for tag in example.tags[:5])

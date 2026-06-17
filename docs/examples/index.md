@@ -14,7 +14,7 @@ Composed scenes demonstrating scientific workflows, real data, and polished demo
 
 ### [Allen Mouse Brain](gallery/showcases/brain_volume.md)
 
-![Allen Mouse Brain](../assets/gallery/v0.4/showcases/brain_volume.webp)
+[![Allen Mouse Brain](../assets/gallery/v0.4/showcases/brain_volume.webp)](gallery/showcases/brain_volume.md)
 
 local Allen mouse brain RGBA volume and occluded slice.
 
@@ -24,7 +24,7 @@ local Allen mouse brain RGBA volume and occluded slice.
 
 ### [Lipid Brain Atlas](gallery/showcases/showcase_lipid_brain_atlas.md)
 
-![Lipid Brain Atlas](../assets/gallery/v0.4/showcases/showcase_lipid_brain_atlas.webp)
+[![Lipid Brain Atlas](../assets/gallery/v0.4/showcases/showcase_lipid_brain_atlas.webp)](gallery/showcases/showcase_lipid_brain_atlas.md)
 
 section/channel lipid intensity showcase.
 
@@ -34,7 +34,7 @@ section/channel lipid intensity showcase.
 
 ### [Embedding Atlas](gallery/showcases/showcase_embedding_atlas.md)
 
-![Embedding Atlas](../assets/gallery/v0.4/showcases/showcase_embedding_atlas.webp)
+[![Embedding Atlas](../assets/gallery/v0.4/showcases/showcase_embedding_atlas.webp)](gallery/showcases/showcase_embedding_atlas.md)
 
 interactive prepared AI embedding atlas.
 
@@ -44,7 +44,7 @@ interactive prepared AI embedding atlas.
 
 ### [Synthetic Mouse](gallery/showcases/showcase_synthetic_mouse.md)
 
-![Synthetic Mouse](../assets/gallery/v0.4/showcases/showcase_synthetic_mouse.webp)
+[![Synthetic Mouse](../assets/gallery/v0.4/showcases/showcase_synthetic_mouse.webp)](gallery/showcases/showcase_synthetic_mouse.md)
 
 animated textured mouse mesh with trajectory and skeleton trails.
 
@@ -54,7 +54,7 @@ animated textured mouse mesh with trajectory and skeleton trails.
 
 ### [Protein](gallery/showcases/protein_arcball_viewer.md)
 
-![Protein](../assets/gallery/v0.4/showcases/protein_arcball_viewer.webp)
+[![Protein](../assets/gallery/v0.4/showcases/protein_arcball_viewer.webp)](gallery/showcases/protein_arcball_viewer.md)
 
 RCSB PDB protein structure rendered as clustered spheres.
 
@@ -64,7 +64,7 @@ RCSB PDB protein structure rendered as clustered spheres.
 
 ### [Point Cloud](gallery/showcases/point_cloud.md)
 
-![Point Cloud](../assets/gallery/v0.4/showcases/point_cloud.webp)
+[![Point Cloud](../assets/gallery/v0.4/showcases/point_cloud.webp)](gallery/showcases/point_cloud.md)
 
 RESEPI RGB LiDAR dense point cloud.
 
@@ -74,7 +74,7 @@ RESEPI RGB LiDAR dense point cloud.
 
 ### [Surface Grid](gallery/showcases/showcase_surface_grid.md)
 
-![Surface Grid](../assets/gallery/v0.4/showcases/showcase_surface_grid.webp)
+[![Surface Grid](../assets/gallery/v0.4/showcases/showcase_surface_grid.webp)](gallery/showcases/showcase_surface_grid.md)
 
 generated height-field mesh with a derived wireframe overlay.
 
@@ -84,7 +84,7 @@ generated height-field mesh with a derived wireframe overlay.
 
 ### [Textured Planets](gallery/showcases/textured_terrain_or_planet.md)
 
-![Textured Planets](../assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)
+[![Textured Planets](../assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)](gallery/showcases/textured_terrain_or_planet.md)
 
 UV textured planet mesh via dvz_mesh + sampled fields.
 
@@ -94,7 +94,7 @@ UV textured planet mesh via dvz_mesh + sampled fields.
 
 ### [Wind Field](gallery/showcases/showcase_wind_field.md)
 
-![Wind Field](../assets/gallery/v0.4/showcases/showcase_wind_field.webp)
+[![Wind Field](../assets/gallery/v0.4/showcases/showcase_wind_field.webp)](gallery/showcases/showcase_wind_field.md)
 
 synthetic weather-like scalar and vector field showcase.
 
@@ -104,7 +104,7 @@ synthetic weather-like scalar and vector field showcase.
 
 ### [GPU Particle Smoke](gallery/showcases/showcase_gpu_particle_smoke.md)
 
-![GPU Particle Smoke](../assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)
+[![GPU Particle Smoke](../assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)](gallery/showcases/showcase_gpu_particle_smoke.md)
 
 scene API compute-to-graphics particle smoke showcase.
 
@@ -114,7 +114,7 @@ scene API compute-to-graphics particle smoke showcase.
 
 ### [Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md)
 
-![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)
+[![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)](gallery/showcases/scientific_plotting_workflow.md)
 
 histogram, guide annotations, stacked traces, and error bands.
 
@@ -124,7 +124,7 @@ histogram, guide annotations, stacked traces, and error bands.
 
 ### [Scale Bar Measurement Workflow](gallery/showcases/scalebar_measurement_workflow.md)
 
-![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)
+[![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)](gallery/showcases/scalebar_measurement_workflow.md)
 
 scale-aware overview, detail, and 3D measurement workflow.
 
@@ -144,7 +144,7 @@ linked temporal panels with a spanning summary panel.
 
 ### [Linked Probe With Colorbar](gallery/showcases/linked_panels_probe_colorbar.md)
 
-![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)
+[![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)](gallery/showcases/linked_panels_probe_colorbar.md)
 
 linked image panels with one probe readout and shared colorbar.
 
@@ -154,7 +154,7 @@ linked image panels with one probe readout and shared colorbar.
 
 ### [U.S. State Choropleth](gallery/showcases/us_state_choropleth.md)
 
-![U.S. State Choropleth](../assets/gallery/v0.4/showcases/us_state_choropleth.webp)
+[![U.S. State Choropleth](../assets/gallery/v0.4/showcases/us_state_choropleth.webp)](gallery/showcases/us_state_choropleth.md)
 
 contiguous U.S. state population-density choropleth.
 
@@ -176,7 +176,7 @@ contiguous U.S. state population-density choropleth.
 
 ### [Point](gallery/visuals/point_2d.md)
 
-![Point](../assets/gallery/v0.4/visuals/point_2d.webp)
+[![Point](../assets/gallery/v0.4/visuals/point_2d.webp)](gallery/visuals/point_2d.md)
 
 deterministic retained 2D point visual baseline.
 
@@ -186,7 +186,7 @@ deterministic retained 2D point visual baseline.
 
 ### [Pixel](gallery/visuals/visual_pixel.md)
 
-![Pixel](../assets/gallery/v0.4/visuals/visual_pixel.webp)
+[![Pixel](../assets/gallery/v0.4/visuals/visual_pixel.webp)](gallery/visuals/visual_pixel.md)
 
 deterministic retained pixel visual baseline.
 
@@ -196,7 +196,7 @@ deterministic retained pixel visual baseline.
 
 ### [Marker](gallery/visuals/visual_marker.md)
 
-![Marker](../assets/gallery/v0.4/visuals/visual_marker.webp)
+[![Marker](../assets/gallery/v0.4/visuals/visual_marker.webp)](gallery/visuals/visual_marker.md)
 
 retained marker visual with deterministic symbol, fill, stroke, and size variation.
 
@@ -206,7 +206,7 @@ retained marker visual with deterministic symbol, fill, stroke, and size variati
 
 ### [Splat](gallery/visuals/visual_splat.md)
 
-![Splat](../assets/gallery/v0.4/visuals/visual_splat.webp)
+[![Splat](../assets/gallery/v0.4/visuals/visual_splat.webp)](gallery/visuals/visual_splat.md)
 
 retained Gaussian splat visual with deterministic screen-space ellipses.
 
@@ -222,7 +222,7 @@ retained Gaussian splat visual with deterministic screen-space ellipses.
 
 ### [Segment](gallery/visuals/visual_segment.md)
 
-![Segment](../assets/gallery/v0.4/visuals/visual_segment.webp)
+[![Segment](../assets/gallery/v0.4/visuals/visual_segment.webp)](gallery/visuals/visual_segment.md)
 
 retained segment visual with independent endpoint-pair strokes.
 
@@ -232,7 +232,7 @@ retained segment visual with independent endpoint-pair strokes.
 
 ### [Path](gallery/visuals/visual_path.md)
 
-![Path](../assets/gallery/v0.4/visuals/visual_path.webp)
+[![Path](../assets/gallery/v0.4/visuals/visual_path.webp)](gallery/visuals/visual_path.md)
 
 deterministic multi-signal retained path visual.
 
@@ -242,7 +242,7 @@ deterministic multi-signal retained path visual.
 
 ### [Vector](gallery/visuals/visual_vector.md)
 
-![Vector](../assets/gallery/v0.4/visuals/visual_vector.webp)
+[![Vector](../assets/gallery/v0.4/visuals/visual_vector.webp)](gallery/visuals/visual_vector.md)
 
 retained straight and curved vector visual example.
 
@@ -252,7 +252,7 @@ retained straight and curved vector visual example.
 
 ### [Primitive](gallery/visuals/visual_primitive.md)
 
-![Primitive](../assets/gallery/v0.4/visuals/visual_primitive.webp)
+[![Primitive](../assets/gallery/v0.4/visuals/visual_primitive.webp)](gallery/visuals/visual_primitive.md)
 
 topology-parametric triangles rendered with the retained primitive visual.
 
@@ -268,7 +268,7 @@ topology-parametric triangles rendered with the retained primitive visual.
 
 ### [Image](gallery/visuals/visual_image.md)
 
-![Image](../assets/gallery/v0.4/visuals/visual_image.webp)
+[![Image](../assets/gallery/v0.4/visuals/visual_image.webp)](gallery/visuals/visual_image.md)
 
 deterministic scalar sampled field rendered with the retained image visual.
 
@@ -278,7 +278,7 @@ deterministic scalar sampled field rendered with the retained image visual.
 
 ### [Text](gallery/visuals/visual_text.md)
 
-![Text](../assets/gallery/v0.4/visuals/visual_text.webp)
+[![Text](../assets/gallery/v0.4/visuals/visual_text.webp)](gallery/visuals/visual_text.md)
 
 retained semantic text objects lowered to glyph visuals.
 
@@ -288,7 +288,7 @@ retained semantic text objects lowered to glyph visuals.
 
 ### [Font Atlas Glyphs](gallery/visuals/visual_glyph.md)
 
-![Font Atlas Glyphs](../assets/gallery/v0.4/visuals/visual_glyph.webp)
+[![Font Atlas Glyphs](../assets/gallery/v0.4/visuals/visual_glyph.webp)](gallery/visuals/visual_glyph.md)
 
 low-level font atlas glyph quads, distinct from retained semantic text.
 
@@ -298,7 +298,7 @@ low-level font atlas glyph quads, distinct from retained semantic text.
 
 ### [Labels](gallery/visuals/visual_labels.md)
 
-![Labels](../assets/gallery/v0.4/visuals/visual_labels.webp)
+[![Labels](../assets/gallery/v0.4/visuals/visual_labels.webp)](gallery/visuals/visual_labels.md)
 
 retained labels visual with a small deterministic integer sampled field.
 
@@ -314,7 +314,7 @@ retained labels visual with a small deterministic integer sampled field.
 
 ### [Mesh](gallery/visuals/visual_mesh.md)
 
-![Mesh](../assets/gallery/v0.4/visuals/visual_mesh.webp)
+[![Mesh](../assets/gallery/v0.4/visuals/visual_mesh.webp)](gallery/visuals/visual_mesh.md)
 
 retained lit indexed cube mesh.
 
@@ -324,7 +324,7 @@ retained lit indexed cube mesh.
 
 ### [Sphere](gallery/visuals/sphere_impostor.md)
 
-![Sphere](../assets/gallery/v0.4/visuals/sphere_impostor.webp)
+[![Sphere](../assets/gallery/v0.4/visuals/sphere_impostor.webp)](gallery/visuals/sphere_impostor.md)
 
 deterministic 3D impostor-sphere cluster with depth, radius, and color variation.
 
@@ -334,7 +334,7 @@ deterministic 3D impostor-sphere cluster with depth, radius, and color variation
 
 ### [Volume](gallery/visuals/volume.md)
 
-![Volume](../assets/gallery/v0.4/visuals/volume.webp)
+[![Volume](../assets/gallery/v0.4/visuals/volume.webp)](gallery/visuals/volume.md)
 
 deterministic gyroid scalar field rendered with the retained volume visual.
 
@@ -350,7 +350,7 @@ deterministic gyroid scalar field rendered with the retained volume visual.
 
 ### [Polygon Composite](gallery/composites/composite_polygon.md)
 
-![Polygon Composite](../assets/gallery/v0.4/composites/composite_polygon.webp)
+[![Polygon Composite](../assets/gallery/v0.4/composites/composite_polygon.webp)](gallery/composites/composite_polygon.md)
 
 clean semantic polygon and polygon-set composites.
 
@@ -360,7 +360,7 @@ clean semantic polygon and polygon-set composites.
 
 ### [Graph Composite](gallery/composites/composite_graph.md)
 
-![Graph Composite](../assets/gallery/v0.4/composites/composite_graph.webp)
+[![Graph Composite](../assets/gallery/v0.4/composites/composite_graph.webp)](gallery/composites/composite_graph.md)
 
 deterministic brain-connectivity graph composite.
 
@@ -382,7 +382,7 @@ A selection of isolated feature examples.
 
 ### [Panel Grid](gallery/features/feature_panel_grid.md)
 
-![Panel Grid](../assets/gallery/v0.4/features/feature_panel_grid.webp)
+[![Panel Grid](../assets/gallery/v0.4/features/feature_panel_grid.webp)](gallery/features/feature_panel_grid.md)
 
 four grid-owned panels with clipped panel-local content.
 
@@ -392,7 +392,7 @@ four grid-owned panels with clipped panel-local content.
 
 ### [Multiple Panels](gallery/features/feature_panel_multi.md)
 
-![Multiple Panels](../assets/gallery/v0.4/features/feature_panel_multi.webp)
+[![Multiple Panels](../assets/gallery/v0.4/features/feature_panel_multi.webp)](gallery/features/feature_panel_multi.md)
 
 multiple independent panels with panel-local panzoom controllers.
 
@@ -402,7 +402,7 @@ multiple independent panels with panel-local panzoom controllers.
 
 ### [Linked Panels](gallery/features/feature_panel_linked.md)
 
-![Linked Panels](../assets/gallery/v0.4/features/feature_panel_linked.webp)
+[![Linked Panels](../assets/gallery/v0.4/features/feature_panel_linked.webp)](gallery/features/feature_panel_linked.md)
 
 two panels with bidirectional linked X panzoom state.
 
@@ -418,7 +418,7 @@ two panels with bidirectional linked X panzoom state.
 
 ### [Axis Labels](gallery/features/feature_axis_labels.md)
 
-![Axis Labels](../assets/gallery/v0.4/features/feature_axis_labels.webp)
+[![Axis Labels](../assets/gallery/v0.4/features/feature_axis_labels.webp)](gallery/features/feature_axis_labels.md)
 
 retained axis titles and tick-label placement with plot margins.
 
@@ -428,7 +428,7 @@ retained axis titles and tick-label placement with plot margins.
 
 ### [Colorbar](gallery/features/colorbar.md)
 
-![Colorbar](../assets/gallery/v0.4/features/colorbar.webp)
+[![Colorbar](../assets/gallery/v0.4/features/colorbar.webp)](gallery/features/colorbar.md)
 
 deterministic scalar image with one retained continuous colorbar.
 
@@ -438,7 +438,7 @@ deterministic scalar image with one retained continuous colorbar.
 
 ### [Scale Bar](gallery/features/scale_bar.md)
 
-![Scale Bar](../assets/gallery/v0.4/features/scale_bar.webp)
+[![Scale Bar](../assets/gallery/v0.4/features/scale_bar.webp)](gallery/features/scale_bar.md)
 
 minimal retained scale bar attached to one 2D panel.
 
@@ -448,7 +448,7 @@ minimal retained scale bar attached to one 2D panel.
 
 ### [Scalar Color Scale](gallery/features/colormap_scale.md)
 
-![Scalar Color Scale](../assets/gallery/v0.4/features/colormap_scale.webp)
+[![Scalar Color Scale](../assets/gallery/v0.4/features/colormap_scale.webp)](gallery/features/colormap_scale.md)
 
 point visual with scalar float colors and one retained color scale.
 
@@ -464,7 +464,7 @@ point visual with scalar float colors and one retained color scale.
 
 ### [Arcball Controller](gallery/features/feature_controller_arcball.md)
 
-![Arcball Controller](../assets/gallery/v0.4/features/feature_controller_arcball.webp)
+[![Arcball Controller](../assets/gallery/v0.4/features/feature_controller_arcball.webp)](gallery/features/feature_controller_arcball.md)
 
 arcball controller attached to a small 3D mesh.
 
@@ -474,7 +474,7 @@ arcball controller attached to a small 3D mesh.
 
 ### [Fly Controller](gallery/features/feature_controller_fly.md)
 
-![Fly Controller](../assets/gallery/v0.4/features/feature_controller_fly.webp)
+[![Fly Controller](../assets/gallery/v0.4/features/feature_controller_fly.webp)](gallery/features/feature_controller_fly.md)
 
 fly controller with deterministic camera translation.
 
@@ -484,7 +484,7 @@ fly controller with deterministic camera translation.
 
 ### [Turntable Controller](gallery/features/feature_controller_turntable.md)
 
-![Turntable Controller](../assets/gallery/v0.4/features/feature_controller_turntable.webp)
+[![Turntable Controller](../assets/gallery/v0.4/features/feature_controller_turntable.webp)](gallery/features/feature_controller_turntable.md)
 
 constrained turntable controller around a small 3D mesh.
 
@@ -500,7 +500,7 @@ constrained turntable controller around a small 3D mesh.
 
 ### [2D Sampled Field](gallery/features/feature_sampled_field_2d.md)
 
-![2D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_2d.webp)
+[![2D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_2d.webp)](gallery/features/feature_sampled_field_2d.md)
 
 scene-owned 2D sampled field bound to an image visual.
 
@@ -510,7 +510,7 @@ scene-owned 2D sampled field bound to an image visual.
 
 ### [3D Sampled Field](gallery/features/feature_sampled_field_3d.md)
 
-![3D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_3d.webp)
+[![3D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_3d.webp)](gallery/features/feature_sampled_field_3d.md)
 
 scene-owned 3D sampled field bound to a volume visual.
 
@@ -520,7 +520,7 @@ scene-owned 3D sampled field bound to a volume visual.
 
 ### [Isolines](gallery/features/feature_isolines.md)
 
-![Isolines](../assets/gallery/v0.4/features/feature_isolines.webp)
+[![Isolines](../assets/gallery/v0.4/features/feature_isolines.webp)](gallery/features/feature_isolines.md)
 
 CPU contour extraction rendered as retained segment overlays.
 
@@ -530,7 +530,7 @@ CPU contour extraction rendered as retained segment overlays.
 
 ### [Marker Symbols](gallery/features/feature_marker_symbols.md)
 
-![Marker Symbols](../assets/gallery/v0.4/features/feature_marker_symbols.webp)
+[![Marker Symbols](../assets/gallery/v0.4/features/feature_marker_symbols.webp)](gallery/features/feature_marker_symbols.md)
 
 marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
@@ -546,7 +546,7 @@ marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
 ### [Lighting](gallery/features/feature_lighting.md)
 
-![Lighting](../assets/gallery/v0.4/features/feature_lighting.webp)
+[![Lighting](../assets/gallery/v0.4/features/feature_lighting.webp)](gallery/features/feature_lighting.md)
 
 compare lit sphere clusters with different material and light settings.
 
@@ -556,7 +556,7 @@ compare lit sphere clusters with different material and light settings.
 
 ### [Textured Mesh](gallery/features/feature_mesh_texture.md)
 
-![Textured Mesh](../assets/gallery/v0.4/features/feature_mesh_texture.webp)
+[![Textured Mesh](../assets/gallery/v0.4/features/feature_mesh_texture.webp)](gallery/features/feature_mesh_texture.md)
 
 minimal UV textured mesh with a procedural RGBA8 texture.
 
@@ -566,7 +566,7 @@ minimal UV textured mesh with a procedural RGBA8 texture.
 
 ### [Screen-Space Ambient Occlusion](gallery/features/technique_ssao.md)
 
-![Screen-Space Ambient Occlusion](../assets/gallery/v0.4/features/technique_ssao.webp)
+[![Screen-Space Ambient Occlusion](../assets/gallery/v0.4/features/technique_ssao.webp)](gallery/features/technique_ssao.md)
 
 screen-space ambient occlusion on normal-producing mesh geometry.
 
@@ -576,7 +576,7 @@ screen-space ambient occlusion on normal-producing mesh geometry.
 
 ### [Depth Cue](gallery/features/technique_depth_cue.md)
 
-![Depth Cue](../assets/gallery/v0.4/features/technique_depth_cue.webp)
+[![Depth Cue](../assets/gallery/v0.4/features/technique_depth_cue.webp)](gallery/features/technique_depth_cue.md)
 
 depth-dependent fading applied to a regular 3D sphere lattice.
 
@@ -592,7 +592,7 @@ depth-dependent fading applied to a regular 3D sphere lattice.
 
 ### [Animation Tracks](gallery/features/feature_animation_tracks.md)
 
-![Animation Tracks](../assets/gallery/v0.4/features/feature_animation_tracks.webp)
+[![Animation Tracks](../assets/gallery/v0.4/features/feature_animation_tracks.webp)](gallery/features/feature_animation_tracks.md)
 
 retained track-backed visual transform animation.
 
@@ -602,7 +602,7 @@ retained track-backed visual transform animation.
 
 ### [Timer Animation](gallery/features/feature_timer_animation.md)
 
-![Timer Animation](../assets/gallery/v0.4/features/feature_timer_animation.webp)
+[![Timer Animation](../assets/gallery/v0.4/features/feature_timer_animation.webp)](gallery/features/feature_timer_animation.md)
 
 portable scenario updating retained point data on runner frames.
 
@@ -612,7 +612,7 @@ portable scenario updating retained point data on runner frames.
 
 ### [Image Probe](gallery/features/image_probe.md)
 
-![Image Probe](../assets/gallery/v0.4/features/image_probe.webp)
+[![Image Probe](../assets/gallery/v0.4/features/image_probe.webp)](gallery/features/image_probe.md)
 
 scalar image pixel-query proof with a live probe marker.
 
@@ -622,7 +622,7 @@ scalar image pixel-query proof with a live probe marker.
 
 ### [Sphere Selection](gallery/features/feature_selection_sphere.md)
 
-![Sphere Selection](../assets/gallery/v0.4/features/feature_selection_sphere.webp)
+[![Sphere Selection](../assets/gallery/v0.4/features/feature_selection_sphere.webp)](gallery/features/feature_selection_sphere.md)
 
 retained sphere hover and click selection.
 

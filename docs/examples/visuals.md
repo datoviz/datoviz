@@ -12,7 +12,7 @@
 
 ### [Point](gallery/visuals/point_2d.md)
 
-![Point](../assets/gallery/v0.4/visuals/point_2d.webp)
+[![Point](../assets/gallery/v0.4/visuals/point_2d.webp)](gallery/visuals/point_2d.md)
 
 `supported` `visuals`<br><span>`point`, `panzoom`, `capture`</span>
 
@@ -24,7 +24,7 @@ deterministic retained 2D point visual baseline.
 
 ### [Pixel](gallery/visuals/visual_pixel.md)
 
-![Pixel](../assets/gallery/v0.4/visuals/visual_pixel.webp)
+[![Pixel](../assets/gallery/v0.4/visuals/visual_pixel.webp)](gallery/visuals/visual_pixel.md)
 
 `supported` `visuals`<br><span>`pixel`, `panzoom`, `capture`</span>
 
@@ -36,7 +36,7 @@ deterministic retained pixel visual baseline.
 
 ### [Marker](gallery/visuals/visual_marker.md)
 
-![Marker](../assets/gallery/v0.4/visuals/visual_marker.webp)
+[![Marker](../assets/gallery/v0.4/visuals/visual_marker.webp)](gallery/visuals/visual_marker.md)
 
 `supported` `visuals`<br><span>`marker`, `panzoom`, `capture`</span>
 
@@ -48,7 +48,7 @@ retained marker visual with deterministic symbol, fill, stroke, and size variati
 
 ### [Splat](gallery/visuals/visual_splat.md)
 
-![Splat](../assets/gallery/v0.4/visuals/visual_splat.webp)
+[![Splat](../assets/gallery/v0.4/visuals/visual_splat.webp)](gallery/visuals/visual_splat.md)
 
 `experimental` `visuals`<br><span>`splat`, `panzoom`, `capture`</span>
 
@@ -66,7 +66,7 @@ retained Gaussian splat visual with deterministic screen-space ellipses.
 
 ### [Segment](gallery/visuals/visual_segment.md)
 
-![Segment](../assets/gallery/v0.4/visuals/visual_segment.webp)
+[![Segment](../assets/gallery/v0.4/visuals/visual_segment.webp)](gallery/visuals/visual_segment.md)
 
 `supported` `visuals`<br><span>`segment`, `panzoom`, `capture`</span>
 
@@ -78,7 +78,7 @@ retained segment visual with independent endpoint-pair strokes.
 
 ### [Path](gallery/visuals/visual_path.md)
 
-![Path](../assets/gallery/v0.4/visuals/visual_path.webp)
+[![Path](../assets/gallery/v0.4/visuals/visual_path.webp)](gallery/visuals/visual_path.md)
 
 `supported` `visuals`<br><span>`path`, `capture`</span>
 
@@ -90,7 +90,7 @@ deterministic multi-signal retained path visual.
 
 ### [Vector](gallery/visuals/visual_vector.md)
 
-![Vector](../assets/gallery/v0.4/visuals/visual_vector.webp)
+[![Vector](../assets/gallery/v0.4/visuals/visual_vector.webp)](gallery/visuals/visual_vector.md)
 
 `supported` `visuals`<br><span>`vector`, `path`, `panzoom`, `capture`</span>
 
@@ -102,7 +102,7 @@ retained straight and curved vector visual example.
 
 ### [Primitive](gallery/visuals/visual_primitive.md)
 
-![Primitive](../assets/gallery/v0.4/visuals/visual_primitive.webp)
+[![Primitive](../assets/gallery/v0.4/visuals/visual_primitive.webp)](gallery/visuals/visual_primitive.md)
 
 `supported` `visuals`<br><span>`primitive`, `capture`</span>
 
@@ -120,7 +120,7 @@ topology-parametric triangles rendered with the retained primitive visual.
 
 ### [Image](gallery/visuals/visual_image.md)
 
-![Image](../assets/gallery/v0.4/visuals/visual_image.webp)
+[![Image](../assets/gallery/v0.4/visuals/visual_image.webp)](gallery/visuals/visual_image.md)
 
 `supported` `visuals`<br><span>`image`, `sampled-field`, `capture`</span>
 
@@ -132,7 +132,7 @@ deterministic scalar sampled field rendered with the retained image visual.
 
 ### [Text](gallery/visuals/visual_text.md)
 
-![Text](../assets/gallery/v0.4/visuals/visual_text.webp)
+[![Text](../assets/gallery/v0.4/visuals/visual_text.webp)](gallery/visuals/visual_text.md)
 
 `supported` `visuals`<br><span>`text`, `capture`</span>
 
@@ -144,7 +144,7 @@ retained semantic text objects lowered to glyph visuals.
 
 ### [Font Atlas Glyphs](gallery/visuals/visual_glyph.md)
 
-![Font Atlas Glyphs](../assets/gallery/v0.4/visuals/visual_glyph.webp)
+[![Font Atlas Glyphs](../assets/gallery/v0.4/visuals/visual_glyph.webp)](gallery/visuals/visual_glyph.md)
 
 `experimental` `visuals`<br><span>`glyph`, `font-atlas`, `texture-atlas`, `sdf`, `capture`</span>
 
@@ -156,7 +156,7 @@ low-level font atlas glyph quads, distinct from retained semantic text.
 
 ### [Labels](gallery/visuals/visual_labels.md)
 
-![Labels](../assets/gallery/v0.4/visuals/visual_labels.webp)
+[![Labels](../assets/gallery/v0.4/visuals/visual_labels.webp)](gallery/visuals/visual_labels.md)
 
 `supported` `visuals`<br><span>`labels`, `categorical-scale`, `panzoom`, `capture`</span>
 
@@ -174,7 +174,7 @@ retained labels visual with a small deterministic integer sampled field.
 
 ### [Mesh](gallery/visuals/visual_mesh.md)
 
-![Mesh](../assets/gallery/v0.4/visuals/visual_mesh.webp)
+[![Mesh](../assets/gallery/v0.4/visuals/visual_mesh.webp)](gallery/visuals/visual_mesh.md)
 
 `supported` `visuals`<br><span>`mesh`, `indexed-geometry`, `arcball`, `capture`</span>
 
@@ -186,7 +186,7 @@ retained lit indexed cube mesh.
 
 ### [Sphere](gallery/visuals/sphere_impostor.md)
 
-![Sphere](../assets/gallery/v0.4/visuals/sphere_impostor.webp)
+[![Sphere](../assets/gallery/v0.4/visuals/sphere_impostor.webp)](gallery/visuals/sphere_impostor.md)
 
 `supported` `visuals`<br><span>`sphere`, `arcball`, `capture`</span>
 
@@ -198,7 +198,7 @@ deterministic 3D impostor-sphere cluster with depth, radius, and color variation
 
 ### [Volume](gallery/visuals/volume.md)
 
-![Volume](../assets/gallery/v0.4/visuals/volume.webp)
+[![Volume](../assets/gallery/v0.4/visuals/volume.webp)](gallery/visuals/volume.md)
 
 `supported` `visuals`<br><span>`sampled-field`, `volume`, `transfer-function`, `boundary-box`, `arcball`, ...</span>
 
@@ -216,7 +216,7 @@ deterministic gyroid scalar field rendered with the retained volume visual.
 
 ### [Polygon Composite](gallery/composites/composite_polygon.md)
 
-![Polygon Composite](../assets/gallery/v0.4/composites/composite_polygon.webp)
+[![Polygon Composite](../assets/gallery/v0.4/composites/composite_polygon.webp)](gallery/composites/composite_polygon.md)
 
 `supported` `composites`<br><span>`composite`, `polygon`, `polygon-set`, `holes`, `panzoom`</span>
 
@@ -228,7 +228,7 @@ clean semantic polygon and polygon-set composites.
 
 ### [Graph Composite](gallery/composites/composite_graph.md)
 
-![Graph Composite](../assets/gallery/v0.4/composites/composite_graph.webp)
+[![Graph Composite](../assets/gallery/v0.4/composites/composite_graph.webp)](gallery/composites/composite_graph.md)
 
 `supported` `composites`<br><span>`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`</span>
 

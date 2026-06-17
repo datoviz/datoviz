@@ -12,7 +12,7 @@
 
 ### [Basic Scene](gallery/features/feature_basic_scene.md)
 
-![Basic Scene](../assets/gallery/v0.4/features/feature_basic_scene.webp)
+[![Basic Scene](../assets/gallery/v0.4/features/feature_basic_scene.webp)](gallery/features/feature_basic_scene.md)
 
 `supported` `features`
 
@@ -36,7 +36,7 @@ interactive 3D RGB-axis proof of the Datoviz scene coordinate convention.
 
 ### [Single Panel](gallery/features/feature_panel_single.md)
 
-![Single Panel](../assets/gallery/v0.4/features/feature_panel_single.webp)
+[![Single Panel](../assets/gallery/v0.4/features/feature_panel_single.webp)](gallery/features/feature_panel_single.md)
 
 `supported` `features`
 
@@ -48,7 +48,7 @@ one explicit panel rectangle with panel chrome and one visual.
 
 ### [Panel Grid](gallery/features/feature_panel_grid.md)
 
-![Panel Grid](../assets/gallery/v0.4/features/feature_panel_grid.webp)
+[![Panel Grid](../assets/gallery/v0.4/features/feature_panel_grid.webp)](gallery/features/feature_panel_grid.md)
 
 `supported` `features`
 
@@ -60,7 +60,7 @@ four grid-owned panels with clipped panel-local content.
 
 ### [Multiple Panels](gallery/features/feature_panel_multi.md)
 
-![Multiple Panels](../assets/gallery/v0.4/features/feature_panel_multi.webp)
+[![Multiple Panels](../assets/gallery/v0.4/features/feature_panel_multi.webp)](gallery/features/feature_panel_multi.md)
 
 `supported` `features`
 
@@ -72,7 +72,7 @@ multiple independent panels with panel-local panzoom controllers.
 
 ### [Linked Panels](gallery/features/feature_panel_linked.md)
 
-![Linked Panels](../assets/gallery/v0.4/features/feature_panel_linked.webp)
+[![Linked Panels](../assets/gallery/v0.4/features/feature_panel_linked.webp)](gallery/features/feature_panel_linked.md)
 
 `supported` `features`
 
@@ -96,7 +96,7 @@ panel-owned 2D view framing with equal aspect.
 
 ### [Panel Background](gallery/features/panel_background.md)
 
-![Panel Background](../assets/gallery/v0.4/features/panel_background.webp)
+[![Panel Background](../assets/gallery/v0.4/features/panel_background.webp)](gallery/features/panel_background.md)
 
 `supported` `features`
 
@@ -108,7 +108,7 @@ fixed graphite-cyan panel background behind a simple visual.
 
 ### [User Scale](gallery/features/feature_user_scale.md)
 
-![User Scale](../assets/gallery/v0.4/features/feature_user_scale.webp)
+[![User Scale](../assets/gallery/v0.4/features/feature_user_scale.webp)](gallery/features/feature_user_scale.md)
 
 `supported` `features`
 
@@ -120,7 +120,7 @@ screen-space marker, path, and axis scaling controlled by a GUI slider.
 
 ### [Visual Transform](gallery/features/feature_visual_transform.md)
 
-![Visual Transform](../assets/gallery/v0.4/features/feature_visual_transform.webp)
+[![Visual Transform](../assets/gallery/v0.4/features/feature_visual_transform.webp)](gallery/features/feature_visual_transform.md)
 
 `supported` `features`
 
@@ -132,7 +132,7 @@ retained visual-local affine transform on point visuals.
 
 ### [Visual Visibility](gallery/features/feature_visibility.md)
 
-![Visual Visibility](../assets/gallery/v0.4/features/feature_visibility.webp)
+[![Visual Visibility](../assets/gallery/v0.4/features/feature_visibility.webp)](gallery/features/feature_visibility.md)
 
 `supported` `features`
 
@@ -162,7 +162,7 @@ bind a panzoom controller to one panel with a simple 2D visual.
 
 ### [Arcball Controller](gallery/features/feature_controller_arcball.md)
 
-![Arcball Controller](../assets/gallery/v0.4/features/feature_controller_arcball.webp)
+[![Arcball Controller](../assets/gallery/v0.4/features/feature_controller_arcball.webp)](gallery/features/feature_controller_arcball.md)
 
 `supported` `features`
 
@@ -174,7 +174,7 @@ arcball controller attached to a small 3D mesh.
 
 ### [Turntable Controller](gallery/features/feature_controller_turntable.md)
 
-![Turntable Controller](../assets/gallery/v0.4/features/feature_controller_turntable.webp)
+[![Turntable Controller](../assets/gallery/v0.4/features/feature_controller_turntable.webp)](gallery/features/feature_controller_turntable.md)
 
 `supported` `features`
 
@@ -186,7 +186,7 @@ constrained turntable controller around a small 3D mesh.
 
 ### [Fly Controller](gallery/features/feature_controller_fly.md)
 
-![Fly Controller](../assets/gallery/v0.4/features/feature_controller_fly.webp)
+[![Fly Controller](../assets/gallery/v0.4/features/feature_controller_fly.webp)](gallery/features/feature_controller_fly.md)
 
 `supported` `features`
 
@@ -198,7 +198,7 @@ fly controller with deterministic camera translation.
 
 ### [Orbit Camera Controller](gallery/features/feature_controller_orbit_camera.md)
 
-![Orbit Camera Controller](../assets/gallery/v0.4/features/feature_controller_orbit_camera.webp)
+[![Orbit Camera Controller](../assets/gallery/v0.4/features/feature_controller_orbit_camera.webp)](gallery/features/feature_controller_orbit_camera.md)
 
 `supported` `features`
 
@@ -210,7 +210,7 @@ orbit-camera controller attached to a small 3D mesh.
 
 ### [Orientation Gizmo](gallery/features/feature_orientation_gizmo.md)
 
-![Orientation Gizmo](../assets/gallery/v0.4/features/feature_orientation_gizmo.webp)
+[![Orientation Gizmo](../assets/gallery/v0.4/features/feature_orientation_gizmo.webp)](gallery/features/feature_orientation_gizmo.md)
 
 `supported` `features`
 
@@ -222,7 +222,7 @@ panel-attached orientation axes following the panel's rendered orientation.
 
 ### [Reference Grid](gallery/features/feature_reference_grid.md)
 
-![Reference Grid](../assets/gallery/v0.4/features/feature_reference_grid.webp)
+[![Reference Grid](../assets/gallery/v0.4/features/feature_reference_grid.webp)](gallery/features/feature_reference_grid.md)
 
 `supported` `features`
 
@@ -240,7 +240,7 @@ plane-oriented reference grid in an arcball 3D scene.
 
 ### [Axis Labels](gallery/features/feature_axis_labels.md)
 
-![Axis Labels](../assets/gallery/v0.4/features/feature_axis_labels.webp)
+[![Axis Labels](../assets/gallery/v0.4/features/feature_axis_labels.webp)](gallery/features/feature_axis_labels.md)
 
 `supported` `features`
 
@@ -252,7 +252,7 @@ retained axis titles and tick-label placement with plot margins.
 
 ### [Path With 2D Axes](gallery/features/path_axes_2d.md)
 
-![Path With 2D Axes](../assets/gallery/v0.4/features/path_axes_2d.webp)
+[![Path With 2D Axes](../assets/gallery/v0.4/features/path_axes_2d.webp)](gallery/features/path_axes_2d.md)
 
 `supported` `features`
 
@@ -264,7 +264,7 @@ deterministic path with retained 2D axes and tick labels.
 
 ### [Guide Lines](gallery/features/feature_guide_lines.md)
 
-![Guide Lines](../assets/gallery/v0.4/features/feature_guide_lines.webp)
+[![Guide Lines](../assets/gallery/v0.4/features/feature_guide_lines.webp)](gallery/features/feature_guide_lines.md)
 
 `supported` `features`
 
@@ -276,7 +276,7 @@ retained horizontal and vertical guide lines in panel data coordinates.
 
 ### [Guide Spans](gallery/features/feature_guide_spans.md)
 
-![Guide Spans](../assets/gallery/v0.4/features/feature_guide_spans.webp)
+[![Guide Spans](../assets/gallery/v0.4/features/feature_guide_spans.webp)](gallery/features/feature_guide_spans.md)
 
 `supported` `features`
 
@@ -288,7 +288,7 @@ retained horizontal and vertical guide spans in panel data coordinates.
 
 ### [Bars And Bands](gallery/features/feature_bars_bands.md)
 
-![Bars And Bands](../assets/gallery/v0.4/features/feature_bars_bands.webp)
+[![Bars And Bands](../assets/gallery/v0.4/features/feature_bars_bands.webp)](gallery/features/feature_bars_bands.md)
 
 `supported` `features`
 
@@ -300,7 +300,7 @@ retained bars and uncertainty band plot helpers.
 
 ### [Scale Bar](gallery/features/scale_bar.md)
 
-![Scale Bar](../assets/gallery/v0.4/features/scale_bar.webp)
+[![Scale Bar](../assets/gallery/v0.4/features/scale_bar.webp)](gallery/features/scale_bar.md)
 
 `supported` `features`
 
@@ -312,7 +312,7 @@ minimal retained scale bar attached to one 2D panel.
 
 ### [Scale Bar Units](gallery/features/scalebar_units.md)
 
-![Scale Bar Units](../assets/gallery/v0.4/features/scalebar_units.webp)
+[![Scale Bar Units](../assets/gallery/v0.4/features/scalebar_units.webp)](gallery/features/scalebar_units.md)
 
 `supported` `features`
 
@@ -324,7 +324,7 @@ retained scale bar with a custom time-unit string.
 
 ### [Colorbar](gallery/features/colorbar.md)
 
-![Colorbar](../assets/gallery/v0.4/features/colorbar.webp)
+[![Colorbar](../assets/gallery/v0.4/features/colorbar.webp)](gallery/features/colorbar.md)
 
 `supported` `features`<br><span>`colorbar`, `scalar-field`, `image`, `capture`</span>
 
@@ -336,7 +336,7 @@ deterministic scalar image with one retained continuous colorbar.
 
 ### [Scalar Color Scale](gallery/features/colormap_scale.md)
 
-![Scalar Color Scale](../assets/gallery/v0.4/features/colormap_scale.webp)
+[![Scalar Color Scale](../assets/gallery/v0.4/features/colormap_scale.webp)](gallery/features/colormap_scale.md)
 
 `supported` `features`
 
@@ -348,7 +348,7 @@ point visual with scalar float colors and one retained color scale.
 
 ### [Categorical Legend](gallery/features/feature_legend_categorical.md)
 
-![Categorical Legend](../assets/gallery/v0.4/features/feature_legend_categorical.webp)
+[![Categorical Legend](../assets/gallery/v0.4/features/feature_legend_categorical.webp)](gallery/features/feature_legend_categorical.md)
 
 `experimental` `features`<br><span>`categorical-scale`, `legend`, `marker`, `capture`</span>
 
@@ -360,7 +360,7 @@ tentative retained categorical legend proof.
 
 ### [Annotation Readout](gallery/features/annotation_readout.md)
 
-![Annotation Readout](../assets/gallery/v0.4/features/annotation_readout.webp)
+[![Annotation Readout](../assets/gallery/v0.4/features/annotation_readout.webp)](gallery/features/annotation_readout.md)
 
 `supported` `features`
 
@@ -372,7 +372,7 @@ retained label annotation anchored to data.
 
 ### [Text Block](gallery/features/feature_text_block.md)
 
-![Text Block](../assets/gallery/v0.4/features/feature_text_block.webp)
+[![Text Block](../assets/gallery/v0.4/features/feature_text_block.webp)](gallery/features/feature_text_block.md)
 
 `supported` `features`
 
@@ -384,7 +384,7 @@ compact retained text block with stable screen placement.
 
 ### [Overlay Card](gallery/features/feature_overlay_card.md)
 
-![Overlay Card](../assets/gallery/v0.4/features/feature_overlay_card.webp)
+[![Overlay Card](../assets/gallery/v0.4/features/feature_overlay_card.webp)](gallery/features/feature_overlay_card.md)
 
 `supported` `features`
 
@@ -396,7 +396,7 @@ screen-space data readout over a simple panel visual.
 
 ### [Label Probe](gallery/features/feature_probe_labels.md)
 
-![Label Probe](../assets/gallery/v0.4/features/feature_probe_labels.webp)
+[![Label Probe](../assets/gallery/v0.4/features/feature_probe_labels.webp)](gallery/features/feature_probe_labels.md)
 
 `supported` `features`
 
@@ -414,7 +414,7 @@ categorical labels query proof with deterministic label-id readout.
 
 ### [Builtin Shapes 2D](gallery/features/feature_builtin_shapes_2d.md)
 
-![Builtin Shapes 2D](../assets/gallery/v0.4/features/feature_builtin_shapes_2d.webp)
+[![Builtin Shapes 2D](../assets/gallery/v0.4/features/feature_builtin_shapes_2d.webp)](gallery/features/feature_builtin_shapes_2d.md)
 
 `supported` `features`
 
@@ -426,7 +426,7 @@ builtin 2D geometry builders rendered through retained meshes.
 
 ### [Builtin Shapes 3D](gallery/features/feature_builtin_shapes_3d.md)
 
-![Builtin Shapes 3D](../assets/gallery/v0.4/features/feature_builtin_shapes_3d.webp)
+[![Builtin Shapes 3D](../assets/gallery/v0.4/features/feature_builtin_shapes_3d.webp)](gallery/features/feature_builtin_shapes_3d.md)
 
 `supported` `features`
 
@@ -438,7 +438,7 @@ builtin 3D geometry builders rendered through retained meshes.
 
 ### [Marker Symbols](gallery/features/feature_marker_symbols.md)
 
-![Marker Symbols](../assets/gallery/v0.4/features/feature_marker_symbols.webp)
+[![Marker Symbols](../assets/gallery/v0.4/features/feature_marker_symbols.webp)](gallery/features/feature_marker_symbols.md)
 
 `supported` `features`<br><span>`marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`, `svg-path-symbol`</span>
 
@@ -450,7 +450,7 @@ marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
 ### [Bezier Curve Path](gallery/features/feature_bezier_curve_path.md)
 
-![Bezier Curve Path](../assets/gallery/v0.4/features/feature_bezier_curve_path.webp)
+[![Bezier Curve Path](../assets/gallery/v0.4/features/feature_bezier_curve_path.webp)](gallery/features/feature_bezier_curve_path.md)
 
 `supported` `features`
 
@@ -474,7 +474,7 @@ acute stroked path joins for visual regression inspection.
 
 ### [OBJ Loading](gallery/features/feature_obj_loading.md)
 
-![OBJ Loading](../assets/gallery/v0.4/features/feature_obj_loading.webp)
+[![OBJ Loading](../assets/gallery/v0.4/features/feature_obj_loading.webp)](gallery/features/feature_obj_loading.md)
 
 `supported` `features`
 
@@ -492,7 +492,7 @@ Wavefront OBJ mesh loading through geom/fileio helpers.
 
 ### [2D Sampled Field](gallery/features/feature_sampled_field_2d.md)
 
-![2D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_2d.webp)
+[![2D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_2d.webp)](gallery/features/feature_sampled_field_2d.md)
 
 `supported` `features`
 
@@ -504,7 +504,7 @@ scene-owned 2D sampled field bound to an image visual.
 
 ### [3D Sampled Field](gallery/features/feature_sampled_field_3d.md)
 
-![3D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_3d.webp)
+[![3D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_3d.webp)](gallery/features/feature_sampled_field_3d.md)
 
 `supported` `features`
 
@@ -516,7 +516,7 @@ scene-owned 3D sampled field bound to a volume visual.
 
 ### [Isolines](gallery/features/feature_isolines.md)
 
-![Isolines](../assets/gallery/v0.4/features/feature_isolines.webp)
+[![Isolines](../assets/gallery/v0.4/features/feature_isolines.webp)](gallery/features/feature_isolines.md)
 
 `supported` `features`
 
@@ -528,7 +528,7 @@ CPU contour extraction rendered as retained segment overlays.
 
 ### [Image Probe](gallery/features/image_probe.md)
 
-![Image Probe](../assets/gallery/v0.4/features/image_probe.webp)
+[![Image Probe](../assets/gallery/v0.4/features/image_probe.webp)](gallery/features/image_probe.md)
 
 `supported` `features`
 
@@ -546,7 +546,7 @@ scalar image pixel-query proof with a live probe marker.
 
 ### [Lighting](gallery/features/feature_lighting.md)
 
-![Lighting](../assets/gallery/v0.4/features/feature_lighting.webp)
+[![Lighting](../assets/gallery/v0.4/features/feature_lighting.webp)](gallery/features/feature_lighting.md)
 
 `supported` `features`
 
@@ -558,7 +558,7 @@ compare lit sphere clusters with different material and light settings.
 
 ### [Textured Mesh](gallery/features/feature_mesh_texture.md)
 
-![Textured Mesh](../assets/gallery/v0.4/features/feature_mesh_texture.webp)
+[![Textured Mesh](../assets/gallery/v0.4/features/feature_mesh_texture.webp)](gallery/features/feature_mesh_texture.md)
 
 `supported` `features`
 
@@ -570,7 +570,7 @@ minimal UV textured mesh with a procedural RGBA8 texture.
 
 ### [Mesh Materials](gallery/features/feature_material_mesh.md)
 
-![Mesh Materials](../assets/gallery/v0.4/features/feature_material_mesh.webp)
+[![Mesh Materials](../assets/gallery/v0.4/features/feature_material_mesh.webp)](gallery/features/feature_material_mesh.md)
 
 `supported` `features`
 
@@ -582,7 +582,7 @@ retained mesh visuals with explicit material parameters.
 
 ### [Volume Occlusion](gallery/features/feature_volume_occlusion.md)
 
-![Volume Occlusion](../assets/gallery/v0.4/features/feature_volume_occlusion.webp)
+[![Volume Occlusion](../assets/gallery/v0.4/features/feature_volume_occlusion.webp)](gallery/features/feature_volume_occlusion.md)
 
 `supported` `features`
 
@@ -594,7 +594,7 @@ side-by-side volume occluder attenuation on an embedded slice.
 
 ### [Screen-Space Ambient Occlusion](gallery/features/technique_ssao.md)
 
-![Screen-Space Ambient Occlusion](../assets/gallery/v0.4/features/technique_ssao.webp)
+[![Screen-Space Ambient Occlusion](../assets/gallery/v0.4/features/technique_ssao.webp)](gallery/features/technique_ssao.md)
 
 `supported` `features`
 
@@ -606,7 +606,7 @@ screen-space ambient occlusion on normal-producing mesh geometry.
 
 ### [Depth Cue](gallery/features/technique_depth_cue.md)
 
-![Depth Cue](../assets/gallery/v0.4/features/technique_depth_cue.webp)
+[![Depth Cue](../assets/gallery/v0.4/features/technique_depth_cue.webp)](gallery/features/technique_depth_cue.md)
 
 `supported` `features`
 
@@ -618,7 +618,7 @@ depth-dependent fading applied to a regular 3D sphere lattice.
 
 ### [Multisample Antialiasing](gallery/features/technique_msaa.md)
 
-![Multisample Antialiasing](../assets/gallery/v0.4/features/technique_msaa.webp)
+[![Multisample Antialiasing](../assets/gallery/v0.4/features/technique_msaa.webp)](gallery/features/technique_msaa.md)
 
 `supported` `features`
 
@@ -630,7 +630,7 @@ side-by-side multisample antialiasing on slanted 3D cube silhouettes.
 
 ### [Transparency Order](gallery/features/technique_transparency.md)
 
-![Transparency Order](../assets/gallery/v0.4/features/technique_transparency.webp)
+[![Transparency Order](../assets/gallery/v0.4/features/technique_transparency.webp)](gallery/features/technique_transparency.md)
 
 `supported` `features`
 
@@ -642,7 +642,7 @@ source-over, WBOIT, and depth-peel transparency on overlapping cubes.
 
 ### [Alpha Blending](gallery/features/alpha_blending.md)
 
-![Alpha Blending](../assets/gallery/v0.4/features/alpha_blending.webp)
+[![Alpha Blending](../assets/gallery/v0.4/features/alpha_blending.webp)](gallery/features/alpha_blending.md)
 
 `supported` `features`
 
@@ -654,7 +654,7 @@ retained primitive visual using per-vertex alpha and source-over blending.
 
 ### [Depth Test Toggle](gallery/features/technique_depth_test.md)
 
-![Depth Test Toggle](../assets/gallery/v0.4/features/technique_depth_test.webp)
+[![Depth Test Toggle](../assets/gallery/v0.4/features/technique_depth_test.webp)](gallery/features/technique_depth_test.md)
 
 `supported` `features`
 
@@ -666,7 +666,7 @@ side-by-side visual depth-test toggle with overlapping 3D points.
 
 ### [Bounds Overlay](gallery/features/feature_bounds_overlay.md)
 
-![Bounds Overlay](../assets/gallery/v0.4/features/feature_bounds_overlay.webp)
+[![Bounds Overlay](../assets/gallery/v0.4/features/feature_bounds_overlay.webp)](gallery/features/feature_bounds_overlay.md)
 
 `diagnostic` `features`<br><span>`diagnostic`, `bounds`, `overlay`, `point`, `sphere`</span>
 
@@ -696,7 +696,7 @@ unified retained marker hover and selection proof.
 
 ### [Pixel Selection](gallery/features/feature_selection_pixel.md)
 
-![Pixel Selection](../assets/gallery/v0.4/features/feature_selection_pixel.webp)
+[![Pixel Selection](../assets/gallery/v0.4/features/feature_selection_pixel.webp)](gallery/features/feature_selection_pixel.md)
 
 `supported` `features`
 
@@ -708,7 +708,7 @@ retained pixel hover and click selection.
 
 ### [Sphere Selection](gallery/features/feature_selection_sphere.md)
 
-![Sphere Selection](../assets/gallery/v0.4/features/feature_selection_sphere.webp)
+[![Sphere Selection](../assets/gallery/v0.4/features/feature_selection_sphere.webp)](gallery/features/feature_selection_sphere.md)
 
 `supported` `features`
 
@@ -720,7 +720,7 @@ retained sphere hover and click selection.
 
 ### [Mesh Instance Selection](gallery/features/feature_selection_mesh_instances.md)
 
-![Mesh Instance Selection](../assets/gallery/v0.4/features/feature_selection_mesh_instances.webp)
+[![Mesh Instance Selection](../assets/gallery/v0.4/features/feature_selection_mesh_instances.webp)](gallery/features/feature_selection_mesh_instances.md)
 
 `supported` `features`
 
@@ -738,7 +738,7 @@ retained instanced mesh hover and click selection.
 
 ### [Animation Tracks](gallery/features/feature_animation_tracks.md)
 
-![Animation Tracks](../assets/gallery/v0.4/features/feature_animation_tracks.webp)
+[![Animation Tracks](../assets/gallery/v0.4/features/feature_animation_tracks.webp)](gallery/features/feature_animation_tracks.md)
 
 `supported` `features`
 
@@ -750,7 +750,7 @@ retained track-backed visual transform animation.
 
 ### [Timer Animation](gallery/features/feature_timer_animation.md)
 
-![Timer Animation](../assets/gallery/v0.4/features/feature_timer_animation.webp)
+[![Timer Animation](../assets/gallery/v0.4/features/feature_timer_animation.webp)](gallery/features/feature_timer_animation.md)
 
 `supported` `features`
 
@@ -762,7 +762,7 @@ portable scenario updating retained point data on runner frames.
 
 ### [Compute Buffer Animation](gallery/features/feature_compute_buffer_animation.md)
 
-![Compute Buffer Animation](../assets/gallery/v0.4/features/feature_compute_buffer_animation.webp)
+[![Compute Buffer Animation](../assets/gallery/v0.4/features/feature_compute_buffer_animation.webp)](gallery/features/feature_compute_buffer_animation.md)
 
 `experimental` `features`<br><span>`scene-compute`, `storage-buffer`, `point`</span>
 
@@ -774,7 +774,7 @@ scene compute pass with independent circular point motion.
 
 ### [Partial Data Update](gallery/features/update_partial.md)
 
-![Partial Data Update](../assets/gallery/v0.4/features/update_partial.webp)
+[![Partial Data Update](../assets/gallery/v0.4/features/update_partial.webp)](gallery/features/update_partial.md)
 
 `supported` `features`
 
@@ -786,7 +786,7 @@ point visual with one retained data-range update.
 
 ### [Visual Data Update](gallery/features/feature_update_visual_data.md)
 
-![Visual Data Update](../assets/gallery/v0.4/features/feature_update_visual_data.webp)
+[![Visual Data Update](../assets/gallery/v0.4/features/feature_update_visual_data.webp)](gallery/features/feature_update_visual_data.md)
 
 `supported` `features`
 
@@ -858,7 +858,7 @@ direct GLFW app path without the scenario runner.
 
 ### [Offscreen Capture](gallery/features/feature_offscreen_capture.md)
 
-![Offscreen Capture](../assets/gallery/v0.4/features/feature_offscreen_capture.webp)
+[![Offscreen Capture](../assets/gallery/v0.4/features/feature_offscreen_capture.webp)](gallery/features/feature_offscreen_capture.md)
 
 `supported` `features`
 
