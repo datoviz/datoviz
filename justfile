@@ -1197,7 +1197,53 @@ wheel platform_tag='': build
     fi
 #
 
-testpypi:
+testpypi-check platform_tag dist_dir='dist':
+    #!/usr/bin/env sh
+    set -e
+    just wheel-validate --dist-dir "{{dist_dir}}" --platform-tag "{{platform_tag}}"
+    python -c "import twine" 2>/dev/null || {
+        echo "twine is required: python -m pip install --upgrade twine" >&2
+        exit 1
+    }
+    python -m twine check "{{dist_dir}}"/datoviz-*.whl
+#
+
+testpypi-check-all dist_dir='dist':
+    #!/usr/bin/env sh
+    set -e
+    just wheel-validate --dist-dir "{{dist_dir}}"
+    python -c "import twine" 2>/dev/null || {
+        echo "twine is required: python -m pip install --upgrade twine" >&2
+        exit 1
+    }
+    python -m twine check "{{dist_dir}}"/datoviz-*.whl
+#
+
+testpypi-upload platform_tag dist_dir='dist' confirm='no':
+    #!/usr/bin/env sh
+    set -e
+    if [ "{{confirm}}" != "yes" ]; then
+        echo "Refusing to upload to TestPyPI without confirm=yes" >&2
+        echo "Run: just testpypi-upload {{platform_tag}} {{dist_dir}} yes" >&2
+        exit 1
+    fi
+    just testpypi-check "{{platform_tag}}" "{{dist_dir}}"
+    python -m twine upload --repository testpypi "{{dist_dir}}"/datoviz-*.whl
+#
+
+testpypi-upload-all dist_dir='dist' confirm='no':
+    #!/usr/bin/env sh
+    set -e
+    if [ "{{confirm}}" != "yes" ]; then
+        echo "Refusing to upload the full wheelhouse to TestPyPI without confirm=yes" >&2
+        echo "Run: just testpypi-upload-all {{dist_dir}} yes" >&2
+        exit 1
+    fi
+    just testpypi-check-all "{{dist_dir}}"
+    python -m twine upload --repository testpypi "{{dist_dir}}"/datoviz-*.whl
+#
+
+pypi-install-smoke:
     #!/usr/bin/env bash
 
     # HACK: work around: ERROR: Can not perform a '--user' install. User site-packages are not

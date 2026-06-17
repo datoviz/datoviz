@@ -90,7 +90,12 @@ top to bottom and record skipped items as known exclusions.
 
 ## 9. TestPyPI Rehearsal
 
+- [ ] Install and configure `twine` for TestPyPI.
+- [ ] Run `just testpypi-check <host-platform-tag>` for a local single-platform wheel.
+- [ ] For a full wheelhouse, run `just testpypi-check-all wheelhouse`.
 - [ ] Upload candidate artifacts to TestPyPI through a manual workflow or local maintainer command.
+- [ ] Use `just testpypi-upload <host-platform-tag> dist yes` for local single-wheel rehearsal.
+- [ ] Use `just testpypi-upload-all wheelhouse yes` for full-wheelhouse rehearsal.
 - [ ] Install from TestPyPI in a clean environment.
 - [ ] Run import, CLI, CMake consumer, and optional Qt checks.
 - [ ] Confirm dependency metadata and optional extras.

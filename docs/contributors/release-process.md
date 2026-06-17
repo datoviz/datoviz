@@ -116,6 +116,20 @@ manual upload workflow should publish vetted artifacts to TestPyPI or PyPI.
 Use TestPyPI for release-candidate upload rehearsal. A TestPyPI upload should happen only after
 local and CI wheel validation pass for the intended matrix.
 
+For a local single-platform rehearsal:
+
+```sh
+just testpypi-check <host-platform-tag>
+just testpypi-upload <host-platform-tag> dist yes
+```
+
+For a complete wheelhouse:
+
+```sh
+just testpypi-check-all wheelhouse
+just testpypi-upload-all wheelhouse yes
+```
+
 Before PyPI:
 
 1. compare artifact names and versions against the intended tag;

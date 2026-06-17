@@ -53,6 +53,8 @@ Use the primary `just` recipes from the repository root.
 | Install-smoke the wheel | `just wheel-check --cmake-consumer --qt-probe optional` |
 | Run the local CI-parity path | `just wheel-ci-local manylinux_2_34_x86_64` |
 | Run local CI parity after rebuilding native code | `just wheel-ci-local manylinux_2_34_x86_64 1` |
+| Check a local TestPyPI candidate | `just testpypi-check manylinux_2_34_x86_64` |
+| Upload one local wheel to TestPyPI | `just testpypi-upload manylinux_2_34_x86_64 dist yes` |
 
 The normal local loop is:
 
@@ -162,6 +164,33 @@ Before enabling it:
 7. Qt probing is optional unless the runner explicitly installs a known-good Qt/PyQt stack;
 8. artifact names match `wheel-<os>-<arch>`;
 9. upload to TestPyPI or PyPI is handled by a separate release workflow.
+
+
+## Local TestPyPI Rehearsal
+
+Install `twine` and configure a TestPyPI token before uploading:
+
+```sh
+python -m pip install --upgrade twine
+```
+
+For a single locally built wheel:
+
+```sh
+just testpypi-check manylinux_2_34_x86_64
+just testpypi-upload manylinux_2_34_x86_64 dist yes
+```
+
+For a complete wheelhouse:
+
+```sh
+just testpypi-check-all wheelhouse
+just testpypi-upload-all wheelhouse yes
+```
+
+The upload recipes refuse to run unless the final argument is `yes`. TestPyPI does not allow
+overwriting an existing filename/version, so bump the package version before retrying a previously
+uploaded candidate.
 
 
 ## Known Constraints
