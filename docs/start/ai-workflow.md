@@ -15,7 +15,7 @@ code from the docs alone without needing to browse the codebase.
 
 ## Workflow
 
-1. Open [Start Here](index.md) and copy its full content.
+1. Open [Quickstart](quickstart.md) and copy its full content.
 2. Describe the visualization you want in plain language.
 3. Specify Python or C and ask for v0.4 API only.
 4. Paste the output into your project and run it.
