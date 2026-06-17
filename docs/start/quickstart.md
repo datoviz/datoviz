@@ -43,14 +43,19 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
 
 === "C"
 
-    If you have the source tree, build and run the bundled example:
+    Save the program below as `scatter.c`, then compile and run:
+
+    ```sh
+    gcc scatter.c -o scatter -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
+    ./scatter
+    ```
+
+    Or, if you cloned the repository, use the bundled example directly:
 
     ```sh
     just example-c visuals/point
     ./build/examples/c/visuals/point --live
     ```
-
-    Otherwise, compile the self-contained program below and link against `datoviz`:
 
     ```c
     #include <stdint.h>
