@@ -133,9 +133,6 @@ jobs:
     runs-on: ${{ matrix.runner }}
     env:
       VCPKG_ROOT: C:/vcpkg
-      DVZ_CMAKE_ARGS: >-
-        -DDVZ_ENABLE_SHADERC=ON
-        -DDVZ_CANVAS_SHADER_GLSLANG_VALIDATOR=${{ github.workspace }}/build/vcpkg_installed/${{ matrix.vcpkg_triplet }}/tools/glslang/glslangValidator.exe
     steps:
       - uses: actions/checkout@v4
         with:
@@ -168,6 +165,27 @@ jobs:
           python -m pip install -U pip build delvewheel
           Get-Command ccache
           python -c "import delvewheel"
+      - name: Install vcpkg dependencies
+        shell: pwsh
+        run: |
+          & "$env:VCPKG_ROOT/vcpkg.exe" install `
+            --triplet ${{ matrix.vcpkg_triplet }} `
+            --x-install-root="$PWD/build/vcpkg_installed"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Resolve glslangValidator
+        shell: pwsh
+        run: |
+          $validator = Get-ChildItem -Path "build/vcpkg_installed" -Recurse -Filter "glslangValidator.exe" -File |
+            Select-Object -First 1
+          if (!$validator) {
+            Get-ChildItem -Path "build/vcpkg_installed" -Recurse -Depth 4 |
+              Select-Object FullName
+            Write-Error "glslangValidator.exe not found under build/vcpkg_installed"
+          }
+          $validatorPath = $validator.FullName.Replace('\', '/')
+          "DVZ_CMAKE_ARGS=$env:DVZ_CMAKE_ARGS -DDVZ_CANVAS_SHADER_GLSLANG_VALIDATOR=$validatorPath" |
+            Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          & $validator.FullName --version
       - name: Build native artifacts
         shell: pwsh
         run: |

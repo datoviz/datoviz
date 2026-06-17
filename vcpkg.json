@@ -1,6 +1,12 @@
 {
   "dependencies": [
     "freetype",
+    {
+      "name": "glslang",
+      "features": [
+        "tools"
+      ]
+    },
     "libpng",
     "pthreads",
     "shaderc",
