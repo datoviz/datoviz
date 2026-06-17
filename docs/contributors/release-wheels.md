@@ -82,6 +82,28 @@ just wheel-check --cmake-consumer --qt-probe optional
 when the native build should be refreshed first. This is useful because packaging changes should be
 testable without reconfiguring unrelated local native build options.
 
+For macOS release-tag proof, set the deployment target before building native code and every
+packaged dependency. The wheel platform tag must not claim an older macOS version than any bundled
+dylib supports; `delocate-wheel` enforces this and rejects mismatches. Local host-native proofs may
+use the host tag, but release evidence must use the matrix tag.
+
+For the arm64 release target:
+
+```sh
+MACOSX_DEPLOYMENT_TARGET=11.0 just build
+DVZ_WHEEL_RUNTIME_DIRS="<shaderc-lib>:<vulkan-loader-lib>:<moltenvk-lib>" \
+  just wheel-stage --clean
+MACOSX_DEPLOYMENT_TARGET=11.0 \
+  just wheel-build --platform-tag macosx_11_0_arm64
+just wheel-validate --platform-tag macosx_11_0_arm64
+just wheel-inspect --native-deps
+just wheel-check --shaderc --cmake-consumer --qt-probe optional
+```
+
+If `delocate-wheel` reports that `libdatoviz.dylib` or copied dependencies have a newer minimum
+macOS target, rebuild those inputs with the intended `MACOSX_DEPLOYMENT_TARGET` or move the proof to
+a clean CI/builder environment. Do not retag a newer-target wheel as `macosx_11_0_arm64`.
+
 
 ## Pipeline Stages
 
