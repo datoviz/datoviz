@@ -144,7 +144,7 @@ Datoviz Qt bridge provider are expected to be present.
 The v0.4 wheel workflow is intentionally not live yet:
 
 ```text
-.github/workflows-draft/wheels-v04.yml
+.github/workflows-draft/wheels.yml
 ```
 
 It should stay outside `.github/workflows/` until the local scripts and at least one manual branch

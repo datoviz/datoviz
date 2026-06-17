@@ -9,7 +9,7 @@
 # 6. cross-Python install smokes cover Python 3.10 through 3.14 on host-native wheels;
 # 7. RC upload workflow is separate from this build workflow.
 
-name: "WHEELS v0.4 draft"
+name: "Wheels draft"
 
 on:
   workflow_dispatch:

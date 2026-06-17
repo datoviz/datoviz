@@ -54,7 +54,7 @@ The target platform lanes are:
 2. macOS `x86_64` and `arm64`;
 3. Windows `AMD64` and `ARM64`.
 
-The draft GitHub Actions workflow is stored in `.github/workflows-draft/wheels-v04.yml`. It is not
+The draft GitHub Actions workflow is stored in `.github/workflows-draft/wheels.yml`. It is not
 live. Move or copy it to `.github/workflows/` only after the local scripts and one manual branch
 run have proven the staged-tree build, wheel inspection, and installed smokes.
 
