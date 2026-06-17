@@ -83,6 +83,38 @@ def _python_smokes(python: Path, work: Path) -> None:
     _run([str(python), "-m", "datoviz.cli", "--cmake-dir"], cwd=work)
 
 
+def _shaderc_smoke(python: Path, work: Path) -> None:
+    code = r'''
+import ctypes
+import datoviz.raw as dvz
+
+glsl = b"""#version 450
+layout(location = 0) out vec4 out_color;
+vec2 positions[3] = vec2[](
+    vec2(0.0, -0.5),
+    vec2(0.5, 0.5),
+    vec2(-0.5, 0.5)
+);
+void main() {
+    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
+    out_color = vec4(1.0);
+}
+"""
+
+size = ctypes.c_uint64(0)
+ptr = dvz.dvz_compile_glsl(b"VERTEX", glsl, ctypes.byref(size))
+if not ptr:
+    raise SystemExit("dvz_compile_glsl returned NULL")
+if size.value == 0 or size.value % 4 != 0:
+    raise SystemExit(f"invalid SPIR-V size: {size.value}")
+words = ctypes.cast(ptr, ctypes.POINTER(ctypes.c_uint32))
+if words[0] != 0x07230203:
+    raise SystemExit(f"invalid SPIR-V magic: {words[0]:08x}")
+print(f"shaderc GLSL smoke produced {size.value} bytes")
+'''
+    _run([str(python), "-c", code], cwd=work)
+
+
 def _render_smoke(python: Path, work: Path) -> None:
     path = work / "datoviz-wheel-smoke.png"
     env = os.environ.copy()
@@ -139,6 +171,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--wheel")
     parser.add_argument("--work-dir", type=Path)
     parser.add_argument("--render", action="store_true")
+    parser.add_argument("--shaderc", action="store_true")
     parser.add_argument("--cmake-consumer", action="store_true")
     parser.add_argument("--qt-probe", choices=("skip", "optional", "required"), default="skip")
     parser.add_argument("--keep", action="store_true")
@@ -158,6 +191,8 @@ def main() -> int:
         _pip_install(python, work, ["--upgrade", "pip", "wheel"])
         _pip_install(python, work, [str(wheel)])
         _python_smokes(python, work)
+        if args.shaderc:
+            _shaderc_smoke(python, work)
         if args.render:
             _render_smoke(python, work)
         if args.cmake_consumer:

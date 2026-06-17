@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import platform
+import shutil
 import subprocess
 import sys
 import sysconfig
@@ -42,6 +44,31 @@ def _retag(dist_dir: Path, platform_tag: str | None) -> None:
     wheels[0].unlink()
 
 
+def _single_wheel(dist_dir: Path) -> Path:
+    wheels = sorted(dist_dir.glob("datoviz-*.whl"))
+    if len(wheels) != 1:
+        raise RuntimeError(f"expected one wheel in {dist_dir}, found: {wheels}")
+    return wheels[0]
+
+
+def _repair_macos(dist_dir: Path) -> None:
+    if platform.system() != "Darwin":
+        return
+    delocate = shutil.which("delocate-wheel")
+    if delocate is None:
+        raise RuntimeError("delocate-wheel is required to repair macOS wheels")
+    wheel = _single_wheel(dist_dir)
+    repaired = dist_dir / ".repaired"
+    if repaired.exists():
+        shutil.rmtree(repaired)
+    repaired.mkdir(parents=True)
+    subprocess.run([delocate, "-w", str(repaired), str(wheel)], check=True)
+    repaired_wheel = _single_wheel(repaired)
+    wheel.unlink()
+    repaired_wheel.replace(dist_dir / repaired_wheel.name)
+    shutil.rmtree(repaired)
+
+
 def main() -> int:
     args = parse_args()
     args.dist_dir.mkdir(parents=True, exist_ok=True)
@@ -52,6 +79,7 @@ def main() -> int:
         check=True,
     )
     _retag(args.dist_dir, args.platform_tag)
+    _repair_macos(args.dist_dir)
     return 0
 
 
