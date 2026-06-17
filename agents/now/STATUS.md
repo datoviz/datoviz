@@ -10,6 +10,10 @@ history, not in agent archives.
 
 Next critical path: RC1 release proof.
 
+Pre-RC repository hygiene note: if the v0.4 Git history cleanup remains desired, do it before
+`v0.4.0-rc1` and before treating release refs as stable. The agreed process, user migration note,
+and force-push guardrails are recorded in [RELEASE.md](RELEASE.md#0-pre-rc-git-history-cleanup).
+
 Color management is closed for the v0.4 core rendering/screenshot path: sampled-field color roles,
 role propagation through FramePlan/DRP2, shader-side semantic color linearization, final sRGB
 screenshot/readback behavior, and focused GPU/offscreen fixtures are landed. Use

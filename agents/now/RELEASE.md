@@ -60,6 +60,62 @@ External ownership:
 
 ## Release Sequence
 
+### 0. Pre-RC Git History Cleanup
+
+Status: required before `v0.4.0-rc1` if the repository-size cleanup is still desired.
+
+The v0.4 development branch briefly carried large generated/runtime payloads and copied legacy
+trees. The current source tree has removed those payloads, but the Git object database only shrinks
+after a coordinated history rewrite or deletion of every ref that still keeps those objects alive.
+
+Recommended policy:
+
+1. Do the history cleanup before any v0.4 RC tag exists.
+2. From `v0.4.0-rc1` onward, treat public release refs as stable and do not rewrite history except
+   for emergencies.
+3. Keep `datoviz/datoviz` as the active v0.4+ repository.
+4. Preserve exact old history outside the active repo only if needed, preferably in a separate
+   `datoviz-legacy` mirror or GitHub release archives.
+5. Expect existing direct-git users to reclone after the rewrite; repairing old clones is possible
+   but should not be the primary instruction.
+
+Safe execution sequence:
+
+1. Announce a temporary push freeze.
+2. Create and verify a legacy backup of the current refs.
+3. Run `git filter-repo` in a fresh mirror clone first, removing the agreed heavy paths.
+4. Inspect rewritten refs, sizes, tags, and a fresh clone smoke test.
+5. Force-push cleaned active refs with `--force-with-lease` only after explicit maintainer
+   approval.
+6. Publish the reclone instructions in the README/release notes/pinned issue before cutting RC1.
+
+Existing clone migration note:
+
+```sh
+mv datoviz datoviz-pre-v0.4-history-cleanup
+git clone --recursive https://github.com/datoviz/datoviz.git
+cd datoviz
+```
+
+For uncommitted local work:
+
+```sh
+git diff > /tmp/datoviz-local.patch
+# reclone, then:
+git apply /tmp/datoviz-local.patch
+```
+
+For committed local work, prefer exporting patches before recloning:
+
+```sh
+git format-patch origin/main..HEAD -o /tmp/datoviz-patches
+# reclone, then:
+git am /tmp/datoviz-patches/*.patch
+```
+
+Do not run the destructive rewrite from an automation session without an explicit final maintainer
+confirmation for the exact refs to rewrite and force-push.
+
 ### 1. Feature-Freeze Candidate
 
 Exit criteria:
