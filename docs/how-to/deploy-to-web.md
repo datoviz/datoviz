@@ -1,118 +1,43 @@
-# Deploy to Web
+# Deploy WebGPU Examples to the Browser
 
-How to run a datoviz scene in a browser using the experimental WebAssembly/WebGPU path.
+Use generated WebGPU live routes for portable browser examples.
 
-## Overview
+## Task Workflow
 
-Datoviz v0.4 includes an experimental browser path that compiles your C scene to WebAssembly and
-renders it through the browser's WebGPU API. The pipeline is:
+Start from an example marked `webgpu-live` in `examples/c/MANIFEST.yaml`. Build the docs/site
+artifacts, then open the generated route `examples/webgpu/live.html?id=<example-id>`.
 
-```text
-C/WASM scene state → scene frame plan → WGSL DRP2 packets → browser WebGPU runtime → canvas
-```
-
-This is a portability proof for the v0.4 scene and DRP2 contract, not native Vulkan feature
-parity. Treat it as an unstable preview. Unsupported features fail explicitly with diagnostics.
-
-## Supported visual families
-
-The browser subset covers:
-
-- point, pixel, marker, segment, path, primitive, image, glyph, text, labels;
-- basic, textured, and material-controlled mesh; basic sphere;
-- 2D axes with ticks, grid lines, and bitmap text labels;
-- adornment examples (colorbar, scalebar, categorical legend, annotation readout);
-- panzoom, arcball, fly, turntable, and orbit-camera controllers.
-
-App/window, video export, and GUI modules are unsupported in WASM.
-
-## Steps
-
-**1. Build the WASM target.**
-
-Build datoviz with Emscripten to produce the WASM scene ABI:
-
-```bash
-just build-wasm
-```
-
-This compiles `src/wasm/scene_api.c` and outputs the WASM module and JS glue under `build/wasm/`.
-
-**2. Run browserless smoke checks.**
-
-Before opening a browser, validate the emitted DRP2 streams offline:
-
-```bash
-just webgpu-fixture-preflight
-just webgpu-runner-smoke
-just wasm-scene-smoke
-just webgpu-browser-smoke
-```
-
-These checks catch scene-emission and DRP2 issues without requiring a browser.
-
-**3. Serve the repository locally.**
-
-The WASM module and HTML pages must be served over HTTP (not `file://`):
-
-```bash
-python3 -m http.server 8765
-```
-
-**4. Open the example pages.**
-
-Navigate to the pre-built demo pages to verify the WASM scene renders:
+## Minimal Call Sequence
 
 ```text
-http://localhost:8765/examples/webgpu/examples.html?demo=wasm-2d
-http://localhost:8765/examples/webgpu/examples.html?demo=wasm-3d
+examples/webgpu/live.html?id=feature_basic_scene
 ```
 
-The 2D page exercises point, pixel, marker, segment, path, image, text, mesh, and panzoom. The 3D
-page exercises sphere, textured mesh, and arcball.
+The route hosts the WebGPU runtime, WASM bridge, canvas, and scenario data. Do not inline that
+runtime inside ordinary documentation pages.
 
-**5. Check the fixture dashboard.**
+## Canonical Examples
 
-```text
-http://localhost:8765/examples/webgpu/fixtures.html
-```
+- Gallery: [Basic Scene](../examples/gallery/features/feature_basic_scene.md)
+- Source: `examples/c/features/basic_scene.c`
+- Gallery: [Linked Panels](../examples/gallery/features/feature_panel_linked.md)
+- Source: `examples/c/features/panel_linked.c`
+- Gallery: [Point](../examples/gallery/visuals/point_2d.md)
+- Source: `examples/c/visuals/point.c`
 
-All committed fixture rows should pass. Any failure here indicates a DRP2 regression.
+## Important Details
 
-**6. Open a live gallery route (optional).**
+Only examples marked `webgpu-live` have browser routes. `webgpu-planned`, `webgpu-deferred`, and
+`native-only` examples need fallback links or native validation.
 
-Single-example browser routes are available for promoted C examples:
+## Common Mistakes
 
-```text
-http://localhost:8765/examples/webgpu/live.html?id=feature_timer_animation
-```
+- Assuming every native example has a WebGPU live route.
+- Copying GLFW input code into browser examples.
+- Moving browser runtime JavaScript into handwritten How-To pages.
 
-Replace `feature_timer_animation` with any promoted example id from `examples/webgpu/COMPAT.md`.
+## See Also
 
-## Using the WASM scene ABI
-
-The WASM module exposes handle-based `dvz_wasm_api_*` functions. JavaScript loads the module,
-calls `dvz_wasm_api_emit_packets()` each frame, and feeds the returned binary DRP2 packets into
-the browser WebGPU runner in `web/wasm/scene.js`.
-
-JavaScript must pass handles back unchanged and must not inspect internal scene state. Packet spans
-are borrowed from the current frame artifact — decode or copy them immediately; do not retain WASM
-views after packet release.
-
-## Diagnostics
-
-A failed scene emit returns a non-zero status. Retrieve diagnostics with:
-
-```c
-dvz_wasm_api_diagnostic_count()
-dvz_wasm_api_diagnostic()
-```
-
-Successful emits leave the diagnostic report empty. Unsupported features fail explicitly rather
-than silently falling back.
-
-## See also
-
-- [Explanation: Portability and WebGPU](../explanation/portability-webgpu.md)
-- [Reference: WebGPU subset](../reference/webgpu-subset.md)
-- [Render offscreen](render-offscreen.md)
+- [Diagnose WebGPU support](debug-webgpu.md)
+- [Record and replay frame streams](replay-dvzr.md)
+- [Debug rendering output](debug-rendering.md)

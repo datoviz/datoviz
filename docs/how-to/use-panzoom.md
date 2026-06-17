@@ -1,115 +1,46 @@
 # Use Panzoom
 
-Enable interactive pan and zoom on a 2D panel using mouse drag and scroll.
+Enable 2D mouse pan and wheel zoom on a panel.
 
-## Overview
+## Task Workflow
 
-Panzoom is a 2D controller that maps mouse drag to translation and scroll wheel to zoom. It
-operates in normalized device coordinates by default, but can be combined with
-`dvz_panel_set_domain` to work in data coordinates. Each panel gets its own controller instance;
-multiple panels can share a panzoom by binding the same controller to each.
+Set a panel domain for the visible data range, create a panzoom controller, then bind it to the
+panel with the axes that should respond to interaction.
 
-## Example
-
-=== "C"
-
-    ```c
-    #include <stdint.h>
-    #include <stdlib.h>
-    #include "datoviz/scene.h"
-
-    #define N 500
-
-    int main(void) {
-        /* scene and panel */
-        DvzScene* scene = dvz_scene();
-        DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
-        DvzPanel* panel = dvz_panel_full(figure);
-
-        /* set data-space domain */
-        dvz_panel_set_domain(panel, DVZ_DIM_X, -1.0, 1.0);
-        dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, 1.0);
-
-        /* attach panzoom controller */
-        DvzController* controller = dvz_panzoom(scene, NULL);
-        dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY);
-
-        /* point visual */
-        float pos[N * 3];
-        uint8_t color[N * 4];
-        float size[N];
-        for (int i = 0; i < N; i++) {
-            pos[3*i+0] = (float)rand() / RAND_MAX * 2.0f - 1.0f;
-            pos[3*i+1] = (float)rand() / RAND_MAX * 2.0f - 1.0f;
-            pos[3*i+2] = 0.0f;
-            color[4*i+0] = rand() % 256;
-            color[4*i+1] = rand() % 256;
-            color[4*i+2] = rand() % 256;
-            color[4*i+3] = 200;
-            size[i] = 8.0f;
-        }
-        DvzVisual* visual = dvz_point(scene, 0);
-        dvz_visual_set_data(visual, "position", pos, N);
-        dvz_visual_set_data(visual, "color", color, N);
-        dvz_visual_set_data(visual, "size", size, N);
-        dvz_panel_add_visual(panel, visual, NULL);
-
-        /* run */
-        DvzApp* app = dvz_app(scene);
-        dvz_view_glfw(app, figure, 800, 600, "Panzoom");
-        dvz_app_run(app, 0);
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 0;
-    }
-    ```
-
-<!-- TODO: Python -->
-
-## Step by step
-
-Call `dvz_panel_set_domain` on both axes before attaching the controller. This defines the
-data-space extent the panel covers at rest; the panzoom controller will map user interactions to
-translations and scales within that space.
-
-Create the controller with `dvz_panzoom(scene, NULL)`. The second argument accepts an optional
-`DvzPanzoomDesc` for advanced options such as `DVZ_PANZOOM_FLAGS_KEEP_ASPECT`, which locks the
-aspect ratio so X and Y zoom identically.
-
-Bind the controller to the panel with `dvz_panel_bind_controller`, passing a dimension mask. Use
-`DVZ_DIM_MASK_XY` for free 2D navigation, `DVZ_DIM_MASK_X` to restrict movement to the
-horizontal axis only, or `DVZ_DIM_MASK_Y` for vertical only.
-
-Add visuals to the panel normally after the controller is bound. Their positions are interpreted
-in the data coordinate space established by `dvz_panel_set_domain`.
-
-## Common patterns / Variants
-
-**Locked aspect ratio** — keep X and Y scales equal (useful for geographic or scientific data):
+## Minimal Call Sequence
 
 ```c
-DvzPanzoomDesc desc = dvz_panzoom_desc();
-desc.controller_flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
-DvzController* controller = dvz_panzoom_ex(scene, &desc);
+dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
+dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
+
+DvzController* controller = dvz_panzoom(scene, NULL);
 dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY);
 ```
 
-**X-axis only** — lock vertical position, zoom and pan horizontally only:
+Use `DVZ_DIM_MASK_X` or `DVZ_DIM_MASK_Y` for one-axis navigation.
 
-```c
-dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_X);
-```
+## Canonical Examples
 
-**Shared controller across panels** — bind the same controller to two panels so they pan and
-zoom in sync:
+- Gallery: [Panzoom](../examples/gallery/features/feature_panzoom.md)
+- Source: `examples/c/features/panzoom.c`
+- Gallery: [Linked Panels](../examples/gallery/features/feature_panel_linked.md)
+- Source: `examples/c/features/panel_linked.c`
+- Gallery: [Panel View 2D](../examples/gallery/features/feature_panel_view2d.md)
+- Source: `examples/c/features/panel_view2d.c`
 
-```c
-dvz_panel_bind_controller(panel_a, controller, DVZ_DIM_MASK_XY);
-dvz_panel_bind_controller(panel_b, controller, DVZ_DIM_MASK_XY);
-```
+## Important Details
 
-## See also
+Panzoom is a 2D controller. Use 3D controllers for orbit, turntable, fly, or arcball navigation.
+Sharing one panzoom controller across panels links their view state.
 
-- [Create a scene](create-a-scene.md) — scene, figure, and panel hierarchy
-- [3D navigation](3d-navigation.md) — arcball, turntable, and fly controllers for 3D
-- [Create multiple panels](create-multiple-panels.md) — linking panels with a shared controller
+## Common Mistakes
+
+- Binding panzoom before deciding the panel domain.
+- Creating separate controllers for panels that should stay linked.
+- Using panzoom for a 3D mesh scene.
+
+## See Also
+
+- [Link panels and controllers](link-panels.md)
+- [Use 3D controllers](3d-navigation.md)
+- [Use coordinate systems](coordinate-systems.md)

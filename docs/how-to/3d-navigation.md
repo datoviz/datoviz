@@ -1,101 +1,46 @@
-# 3D Navigation
+# Use 3D Controllers
 
-Attach a 3D navigation controller to a panel so users can rotate, orbit, or fly through a scene.
+Navigate 3D scenes with arcball, orbit camera, turntable, or fly controls.
 
-## Overview
+## Task Workflow
 
-Datoviz provides four 3D controllers: **arcball** (free rotation around a pivot), **turntable**
-(world-up constrained orbit), **fly** (first-person camera), and **orbit camera** (orbit with
-explicit target and up-vector). Each is created as a `DvzController*` and bound to a panel with
-`dvz_panel_bind_controller`.
+Choose the controller by interaction style: arcball for object inspection, orbit camera for camera
+around a target, turntable for constrained rotation, and fly for free navigation. Bind the
+controller to the 3D panel before running the app.
 
-## Example
-
-=== "C"
-
-    ```c
-    #include <stdint.h>
-    #include "datoviz/app.h"
-    #include "datoviz/geom.h"
-    #include "datoviz/scene.h"
-
-    int main(void) {
-        /* scene and panel */
-        DvzScene* scene = dvz_scene();
-        DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
-        DvzPanel* panel = dvz_panel_full(figure);
-
-        /* sphere mesh */
-        DvzGeometrySphereDesc sdesc = dvz_geometry_sphere_desc();
-        sdesc.rows = 32;
-        sdesc.cols = 32;
-        DvzGeometry* geo = dvz_geom_sphere(&sdesc);
-        DvzVisual* visual = dvz_mesh(scene, 0);
-        dvz_mesh_set_geometry(visual, geo);
-        dvz_panel_add_visual(panel, visual, NULL);
-
-        /* arcball controller — free 3D rotation */
-        DvzController* controller = dvz_arcball(scene, NULL);
-        dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ);
-
-        /* run */
-        DvzApp* app = dvz_app(scene);
-        dvz_view_glfw(app, figure, "3D navigation", 0);
-        dvz_app_run(app, 0);
-        dvz_app_destroy(app);
-        dvz_geometry_destroy(geo);
-        dvz_scene_destroy(scene);
-        return 0;
-    }
-    ```
-
-<!-- TODO: Python -->
-
-## Step by step
-
-Create the scene, figure, and panel as usual with `dvz_scene`, `dvz_figure`, and
-`dvz_panel_full`. The panel holds the visuals and the controller.
-
-Build a mesh geometry — here a UV sphere via `dvz_geom_sphere`. Create a `DvzVisual*` with
-`dvz_mesh`, upload the geometry with `dvz_mesh_set_geometry`, and add the visual to the panel.
-
-Create the arcball controller with `dvz_arcball(scene, NULL)`. The second argument is an optional
-`DvzArcballDesc*` for initial orientation; pass `NULL` for defaults. Bind it to the panel with
-`dvz_panel_bind_controller`, passing `DVZ_DIM_MASK_XYZ` so all three axes are interactive.
-
-Launch the interactive window with the standard `dvz_app` / `dvz_view_glfw` / `dvz_app_run`
-sequence. Clean up geometry separately from the scene since `DvzGeometry` is not owned by the
-scene graph.
-
-## Variants
-
-**Turntable** — world-up constrained orbit; no roll, pitch clamped to avoid gimbal flip. Best for
-upright object inspection.
+## Minimal Call Sequence
 
 ```c
-DvzController* controller = dvz_turntable(scene, NULL);
+DvzController* controller = dvz_arcball(scene, NULL);
 dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ);
 ```
 
-**Fly** — first-person WASD + mouse-look camera. Suitable for large environments where the user
-walks through the scene.
+Use the exact constructor shown by the selected controller example.
 
-```c
-DvzController* controller = dvz_fly(scene, NULL);
-dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ);
-```
+## Canonical Examples
 
-**Orbit camera** — orbit around an explicit target point with a specified up-vector. Use when you
-need programmatic control of the pivot.
+- Gallery: [Arcball Controller](../examples/gallery/features/feature_controller_arcball.md)
+- Source: `examples/c/features/controller_arcball.c`
+- Gallery: [Orbit Camera Controller](../examples/gallery/features/feature_controller_orbit_camera.md)
+- Source: `examples/c/features/controller_orbit_camera.c`
+- Gallery: [Fly Controller](../examples/gallery/features/feature_controller_fly.md)
+- Source: `examples/c/features/controller_fly.c`
+- Gallery: [Turntable Controller](../examples/gallery/features/feature_controller_turntable.md)
+- Source: `examples/c/features/controller_turntable.c`
 
-```c
-DvzController* controller = dvz_orbit_camera(scene, NULL);
-dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ);
-```
+## Important Details
 
-## See also
+3D controllers work best with a clear target, domain, and camera convention. For object viewers,
+normalize or center geometry before adding advanced navigation.
 
-- [Create a scene](create-a-scene.md)
-- [Lighting and materials](lighting-and-materials.md)
-- [Rendering techniques](rendering-techniques.md)
-- [Panzoom](use-panzoom.md)
+## Common Mistakes
+
+- Binding a 2D panzoom controller to a 3D scene.
+- Forgetting depth testing or material settings, then debugging the controller.
+- Expecting every native 3D controller to have identical WebGPU status.
+
+## See Also
+
+- [Configure cameras](configure-cameras.md)
+- [Use lighting and materials](lighting-and-materials.md)
+- [Control depth, blending, and transparency](rendering-techniques.md)

@@ -1,138 +1,47 @@
-# Use Datoviz From C Or C++
+# Use from C or C++
 
-Datoviz v0.4 wheels include the C library, public headers, and CMake package metadata. After
-installing the wheel, C and C++ consumers can build against the installed package without cloning
-the repository.
+Build native applications against the Datoviz C API.
 
+## Task Workflow
 
-## Compiler Flags
+Include the public headers, link `libdatoviz`, create the scene/app hierarchy, and keep ownership
+rules explicit. In C++, wrap Datoviz pointers in your own RAII types only if the wrapper preserves
+Datoviz lifetimes.
 
-Use `datoviz-config` for direct compiler invocations on Linux, macOS, and MSYS2:
-
-```bash
-cc scatter.c $(datoviz-config --cflags --libs) -o scatter
-./scatter
-```
-
-The command emits the installed include path, library path, and runtime rpath for the wheel
-location.
-
-
-## CMake
-
-Use the installed package config for CMake projects:
-
-```cmake
-cmake_minimum_required(VERSION 3.21)
-project(my_datoviz_app C)
-
-find_package(datoviz REQUIRED)
-
-add_executable(my_datoviz_app main.c)
-target_link_libraries(my_datoviz_app PRIVATE datoviz::datoviz)
-```
-
-Configure with:
-
-```bash
-cmake -B build -Ddatoviz_DIR="$(datoviz-config --cmake-dir)"
-cmake --build build
-```
-
-The maintained copy-pasteable example is in
-`examples/c/integration/cmake_package/`.
-
-On Windows with MSVC, use the CMake package path rather than `datoviz-config`. After linking,
-copy the Datoviz DLL next to your executable:
-
-```cmake
-add_custom_command(TARGET my_datoviz_app POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "$<TARGET_FILE:datoviz::datoviz>"
-        "$<TARGET_FILE_DIR:my_datoviz_app>"
-)
-```
-
-
-## vcpkg Overlay
-
-The v0.4 tree includes a draft vcpkg overlay for Visual Studio and CMake users at
-`vcpkg-overlay/`. It is tag-gated because the vcpkg port must consume a release source
-bundle that includes required submodule contents.
-
-After the release asset exists:
-
-```bash
-vcpkg install datoviz --overlay-ports=/path/to/datoviz/vcpkg-overlay/ports
-```
-
-Consumer CMake code is the same installed-package path:
-
-```cmake
-find_package(datoviz CONFIG REQUIRED)
-target_link_libraries(my_datoviz_app PRIVATE datoviz::datoviz)
-```
-
-
-## FetchContent
-
-Projects that intentionally build Datoviz from source can embed it as a CMake subproject:
-
-```cmake
-include(FetchContent)
-
-FetchContent_Declare(datoviz
-    GIT_REPOSITORY https://github.com/datoviz/datoviz.git
-    GIT_TAG v0.4.0
-)
-
-FetchContent_MakeAvailable(datoviz)
-
-add_executable(my_datoviz_app main.c)
-target_link_libraries(my_datoviz_app PRIVATE datoviz::datoviz)
-```
-
-When Datoviz is added this way, tests, examples, and install/package export rules are disabled by
-default. Use the installed package path above for normal consumers; FetchContent is slower and
-requires the full native build environment.
-
-The maintained copy-pasteable example is in
-`examples/c/integration/fetchcontent/`.
-
-
-## Headers
-
-Use the umbrella header for application code:
+## Minimal Call Sequence
 
 ```c
-#include <datoviz.h>
+#include "datoviz/app.h"
+#include "datoviz/scene.h"
+
+DvzScene* scene = dvz_scene();
+/* Build figures, panels, visuals. */
+DvzApp* app = dvz_app(scene);
+dvz_app_destroy(app);
+dvz_scene_destroy(scene);
 ```
 
-The wheel bundles Datoviz public headers and the public third-party headers required by those
-headers, including Vulkan and volk headers.
+## Canonical Examples
 
+- Gallery: [Scatter Plot](../examples/gallery/start/start_scatter.md)
+- Source: `examples/c/start/scatter.c`
+- Gallery: [GLFW App](../examples/gallery/features/feature_app_glfw.md)
+- Source: `examples/c/features/app_glfw.c`
+- Source manifest: `examples/c/MANIFEST.yaml`
 
-## Local Validation
+## Important Details
 
-Repository developers can validate public header parseability in the normal build through
-`dvz_public_header_probe` and `dvz_public_header_cpp_probe`.
+The C API is the primary v0.4 surface. Public headers live in `include/datoviz/`; implementation
+details live under `src/` and should not be included by applications.
 
-The wheel C integration path is validated separately with:
+## Common Mistakes
 
-```bash
-just build
-tools/wheel_c_integration_smoke.sh
-```
+- Including private headers from `src/`.
+- Destroying scene-owned objects manually unless the API grants that ownership.
+- Copying generated gallery source from the built docs instead of using `examples/c/...`.
 
-The maintained CMake examples are validated with:
+## See Also
 
-```bash
-just c-integration-smoke
-```
-
-That smoke installs Datoviz into a temporary prefix, builds the `find_package()` example against
-that prefix, and builds the FetchContent example against the local checkout.
-
-The wheel smoke builds a temporary wheel, installs it into a temporary target directory, compiles a
-C consumer with `datoviz-config`, and builds an out-of-tree CMake consumer with
-`find_package(datoviz)`.
+- [Create a scene](create-a-scene.md)
+- [Open an interactive window](create-a-window.md)
+- [Use raw ctypes](use-raw-ctypes.md)

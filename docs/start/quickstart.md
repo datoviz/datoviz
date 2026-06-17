@@ -19,7 +19,7 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
     pos[:, 2] = 0.0
     color = np.random.randint(0, 256, (N, 4), dtype=np.uint8)
     color[:, 3] = 255
-    sizes = np.full(N, 5.0, dtype=np.float32)
+    diameters = np.full(N, 5.0, dtype=np.float32)
 
     # --- scene ---
     scene = dvz.dvz_scene()
@@ -33,7 +33,7 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
     visual = dvz.dvz_point(scene, 0)
     dvz.dvz_visual_set_data(visual, "position", pos)
     dvz.dvz_visual_set_data(visual, "color", color)
-    dvz.dvz_visual_set_data(visual, "size", sizes)
+    dvz.dvz_visual_set_data(visual, "diameter", diameters)
     dvz.dvz_panel_add_visual(panel, visual, None)
 
     # --- run ---
@@ -47,6 +47,7 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
     #include <stdint.h>
     #include <stdlib.h>
     #include <time.h>
+    #include "datoviz/app.h"
     #include "datoviz/scene.h"
 
     #define N 10000
@@ -55,7 +56,7 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
         srand((unsigned)time(NULL));
 
         /* data */
-        float pos[N * 3], size[N];
+        float pos[N * 3], diameter[N];
         uint8_t color[N * 4];
         for (int i = 0; i < N; i++) {
             pos[3*i+0] = (float)rand()/RAND_MAX * 2 - 1;
@@ -65,7 +66,7 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
             color[4*i+1] = rand() % 256;
             color[4*i+2] = rand() % 256;
             color[4*i+3] = 255;
-            size[i] = 5.0f;
+            diameter[i] = 5.0f;
         }
 
         /* scene */
@@ -80,7 +81,7 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
         DvzVisual* visual = dvz_point(scene, 0);
         dvz_visual_set_data(visual, "position", pos, N);
         dvz_visual_set_data(visual, "color", color, N);
-        dvz_visual_set_data(visual, "size", size, N);
+        dvz_visual_set_data(visual, "diameter", diameter, N);
         dvz_panel_add_visual(panel, visual, NULL);
 
         DvzApp* app = dvz_app(scene);
@@ -150,13 +151,13 @@ A dark window containing 10,000 colored dots. Drag to pan, scroll to zoom.
 
 ## How it works
 
-**Data arrays** — Positions are `(N, 3)` float32 arrays in normalized coordinates `[-1, 1]`. Colors are `(N, 4)` uint8 RGBA in `[0, 255]`. Sizes are per-point pixel diameters.
+**Data arrays** — Positions are `(N, 3)` float32 arrays in normalized coordinates `[-1, 1]`. Colors are `(N, 4)` uint8 RGBA in `[0, 255]`. Diameters are per-point pixel sizes.
 
 **Scene hierarchy** — A `scene` is the root container. A `figure` holds one or more panels at a given pixel size. A `panel` is a viewport that owns a controller and one or more visuals.
 
 **Controller** — `dvz_panzoom` attaches pan-and-zoom navigation to the panel. `dvz_panel_bind_controller` connects it, optionally restricting which axes respond.
 
-**Visual** — `dvz_point` is the GPU-accelerated scatter renderer. `dvz_visual_set_data` uploads each named attribute (position, color, size) to the GPU.
+**Visual** — `dvz_point` is the GPU-accelerated scatter renderer. `dvz_visual_set_data` uploads each named attribute (`position`, `color`, `diameter`) to the GPU.
 
 **Run vs. capture** — In Python, `dvz.run(scene, figure)` opens a GLFW window and blocks until closed; `dvz.capture(scene, figure, path="output.png")` renders one frame offscreen to a PNG. In C, `dvz_view_glfw` + `dvz_app_run(app, 0)` opens a window and loops; for headless PNG output, use `dvz_view_offscreen` + `dvz_app_run(app, 1)` + `dvz_view_capture_png` instead.
 
@@ -165,4 +166,4 @@ A dark window containing 10,000 colored dots. Drag to pan, scroll to zoom.
 
 - Browse the [Examples gallery](../examples/index.md) for visual families, features, and showcase scenes.
 - To render without a window, see [Render offscreen](../how-to/render-offscreen.md).
-- To add 3D rotation instead of panzoom, see [Use arcball](../how-to/use-arcball.md).
+- To add 3D rotation instead of panzoom, see [Use 3D controllers](../how-to/3d-navigation.md).

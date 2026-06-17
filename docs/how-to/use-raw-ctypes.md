@@ -1,46 +1,45 @@
-# Use Raw `ctypes`
+# Use Raw ctypes
 
-The recommended direct-engine Python import is the array-aware facade:
+Call the Datoviz shared library directly from Python when you need the low-level binding surface.
 
-```python
-import datoviz as dvz
-```
+## Task Workflow
 
-Use raw `ctypes` when you need exact low-level FFI behavior:
+Load the binding, declare or use generated signatures, pass arrays with exact C-compatible dtypes,
+and keep ownership identical to the C API.
 
-```python
-import datoviz.raw as raw
-```
-
-The raw layer preserves C signatures. That means Python callers provide explicit bytes, pointers,
-counts, and `ctypes` objects:
+## Minimal Call Sequence
 
 ```python
-import ctypes
 import numpy as np
-import datoviz.raw as raw
-
-scene = raw.dvz_scene()
-points = raw.dvz_point(scene, 0)
-
-positions = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)
-raw.dvz_visual_set_data(
-    points,
-    b"position",
-    positions.ctypes.data_as(ctypes.c_void_p),
-    positions.shape[0],
-)
-
-raw.dvz_scene_destroy(scene)
-```
-
-For normal data uploads, prefer the facade:
-
-```python
 import datoviz as dvz
 
-dvz.dvz_visual_set_data(points, "position", positions)
+scene = dvz.dvz_scene()
+figure = dvz.dvz_figure(scene, 800, 600, 0)
+panel = dvz.dvz_panel_full(figure)
 ```
 
-Raw `ctypes` is for ABI validation, debugging, advanced FFI integration, and exact C-shaped call
-sites. It is not the v0.3 Python object model and not a plotting API.
+Use the reference binding page for exact symbol names and type adapters.
+
+## Canonical Examples
+
+- Reference: [Python binding](../reference/ctypes.md)
+- Start page: [Quickstart](../start/quickstart.md)
+- Source: `examples/c/start/scatter.c`
+
+## Important Details
+
+Raw ctypes is not the high-level plotting layer. It is useful for smoke tests, integration glue, and
+binding development.
+
+## Common Mistakes
+
+- Letting temporary NumPy arrays be freed before a raw call finishes.
+- Passing wrong pointer types or item counts.
+- Treating Python object lifetime as a substitute for `dvz_app_destroy()` and
+  `dvz_scene_destroy()`.
+
+## See Also
+
+- [Use from Python](use-python.md)
+- [Use from C or C++](c-integration.md)
+- [Diagnose build and platform issues](diagnose-platform.md)
