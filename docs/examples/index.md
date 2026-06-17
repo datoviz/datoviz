@@ -16,7 +16,7 @@ Composed scenes demonstrating scientific workflows, real data, and polished demo
 
 ![Allen Mouse Brain](../assets/gallery/v0.4/showcases/brain_volume.webp)
 
-`prototype` `showcases`<br><span>`scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, ...</span>
+`prototype` `showcases`
 
 local Allen mouse brain RGBA volume and occluded slice.
 
@@ -28,7 +28,7 @@ local Allen mouse brain RGBA volume and occluded slice.
 
 ![Lipid Brain Atlas](../assets/gallery/v0.4/showcases/showcase_lipid_brain_atlas.webp)
 
-`prototype` `showcases`<br><span>`scientific`, `real-data`, `lipid-atlas`, `image`, `sampled-field`, ...</span>
+`prototype` `showcases`
 
 section/channel lipid intensity showcase.
 
@@ -40,7 +40,7 @@ section/channel lipid intensity showcase.
 
 ![Embedding Atlas](../assets/gallery/v0.4/showcases/showcase_embedding_atlas.webp)
 
-`supported` `showcases`<br><span>`scientific`, `synthetic`, `embedding`, `point`, `panzoom`, ...</span>
+`supported` `showcases`
 
 interactive prepared AI embedding atlas.
 
@@ -52,7 +52,7 @@ interactive prepared AI embedding atlas.
 
 ![Synthetic Mouse](../assets/gallery/v0.4/showcases/showcase_synthetic_mouse.webp)
 
-`prototype` `showcases`<br><span>`scientific`, `synthetic`, `textured-mesh`, `animation`, `skeleton`, ...</span>
+`prototype` `showcases`
 
 animated textured mouse mesh with trajectory and skeleton trails.
 
@@ -64,7 +64,7 @@ animated textured mouse mesh with trajectory and skeleton trails.
 
 ![Protein](../assets/gallery/v0.4/showcases/protein_arcball_viewer.webp)
 
-`supported` `showcases`<br><span>`scientific`, `real-data`, `molecular`, `sphere`, `arcball`</span>
+`supported` `showcases`
 
 RCSB PDB protein structure rendered as clustered spheres.
 
@@ -76,7 +76,7 @@ RCSB PDB protein structure rendered as clustered spheres.
 
 ![Point Cloud](../assets/gallery/v0.4/showcases/point_cloud.webp)
 
-`supported` `showcases`<br><span>`real-data`, `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, ...</span>
+`supported` `showcases`
 
 RESEPI RGB LiDAR dense point cloud.
 
@@ -88,7 +88,7 @@ RESEPI RGB LiDAR dense point cloud.
 
 ![Surface Grid](../assets/gallery/v0.4/showcases/showcase_surface_grid.webp)
 
-`supported` `showcases`<br><span>`scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, ...</span>
+`supported` `showcases`
 
 generated height-field mesh with a derived wireframe overlay.
 
@@ -100,7 +100,7 @@ generated height-field mesh with a derived wireframe overlay.
 
 ![Textured Planets](../assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)
 
-`supported` `showcases`<br><span>`real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, ...</span>
+`supported` `showcases`
 
 UV textured planet mesh via dvz_mesh + sampled fields.
 
@@ -112,7 +112,7 @@ UV textured planet mesh via dvz_mesh + sampled fields.
 
 ![Wind Field](../assets/gallery/v0.4/showcases/showcase_wind_field.webp)
 
-`supported` `showcases`<br><span>`scientific`, `synthetic`, `scalar-field`, `vector-field`, `wind-field`, ...</span>
+`supported` `showcases`
 
 synthetic weather-like scalar and vector field showcase.
 
@@ -124,7 +124,7 @@ synthetic weather-like scalar and vector field showcase.
 
 ![GPU Particle Smoke](../assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)
 
-`experimental` `showcases`<br><span>`compute`, `simulation`, `particles`, `point`, `alpha-blending`, ...</span>
+`experimental` `showcases`
 
 scene API compute-to-graphics particle smoke showcase.
 
@@ -136,7 +136,7 @@ scene API compute-to-graphics particle smoke showcase.
 
 ![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)
 
-`supported` `showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
+`supported` `showcases`
 
 histogram, guide annotations, stacked traces, and error bands.
 
@@ -148,7 +148,7 @@ histogram, guide annotations, stacked traces, and error bands.
 
 ![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)
 
-`supported` `showcases`<br><span>`workflow`, `scale-bar`, `measurement`, `synthetic`</span>
+`supported` `showcases`
 
 scale-aware overview, detail, and 3D measurement workflow.
 
@@ -160,7 +160,7 @@ scale-aware overview, detail, and 3D measurement workflow.
 
 _Media pending._
 
-`supported` `showcases`<br><span>`workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic`</span>
+`supported` `showcases`
 
 linked temporal panels with a spanning summary panel.
 
@@ -172,7 +172,7 @@ linked temporal panels with a spanning summary panel.
 
 ![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)
 
-`supported` `showcases`<br><span>`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, ...</span>
+`supported` `showcases`
 
 linked image panels with one probe readout and shared colorbar.
 
@@ -184,7 +184,7 @@ linked image panels with one probe readout and shared colorbar.
 
 ![U.S. State Choropleth](../assets/gallery/v0.4/showcases/us_state_choropleth.webp)
 
-`supported` `showcases`<br><span>`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, ...</span>
+`supported` `showcases`
 
 contiguous U.S. state population-density choropleth.
 
@@ -204,7 +204,7 @@ contiguous U.S. state population-density choropleth.
 
 ![Point](../assets/gallery/v0.4/visuals/point_2d.webp)
 
-`supported` `visuals`<br><span>`point`, `panzoom`, `capture`</span>
+`supported` `visuals`
 
 deterministic retained 2D point visual baseline.
 
@@ -216,7 +216,7 @@ deterministic retained 2D point visual baseline.
 
 ![Pixel](../assets/gallery/v0.4/visuals/visual_pixel.webp)
 
-`supported` `visuals`<br><span>`pixel`, `panzoom`, `capture`</span>
+`supported` `visuals`
 
 deterministic retained pixel visual baseline.
 
@@ -228,7 +228,7 @@ deterministic retained pixel visual baseline.
 
 ![Primitive](../assets/gallery/v0.4/visuals/visual_primitive.webp)
 
-`supported` `visuals`<br><span>`primitive`, `capture`</span>
+`supported` `visuals`
 
 topology-parametric triangles rendered with the retained primitive visual.
 
@@ -240,7 +240,7 @@ topology-parametric triangles rendered with the retained primitive visual.
 
 ![Segment](../assets/gallery/v0.4/visuals/visual_segment.webp)
 
-`supported` `visuals`<br><span>`segment`, `panzoom`, `capture`</span>
+`supported` `visuals`
 
 retained segment visual with independent endpoint-pair strokes.
 
@@ -252,7 +252,7 @@ retained segment visual with independent endpoint-pair strokes.
 
 ![Path](../assets/gallery/v0.4/visuals/visual_path.webp)
 
-`supported` `visuals`<br><span>`path`, `capture`</span>
+`supported` `visuals`
 
 deterministic multi-signal retained path visual.
 
@@ -264,7 +264,7 @@ deterministic multi-signal retained path visual.
 
 ![Marker](../assets/gallery/v0.4/visuals/visual_marker.webp)
 
-`supported` `visuals`<br><span>`marker`, `panzoom`, `capture`</span>
+`supported` `visuals`
 
 retained marker visual with deterministic symbol, fill, stroke, and size variation.
 
@@ -276,7 +276,7 @@ retained marker visual with deterministic symbol, fill, stroke, and size variati
 
 ![Text](../assets/gallery/v0.4/visuals/visual_text.webp)
 
-`supported` `visuals`<br><span>`text`, `capture`</span>
+`supported` `visuals`
 
 retained semantic text objects lowered to glyph visuals.
 
@@ -288,7 +288,7 @@ retained semantic text objects lowered to glyph visuals.
 
 ![Font Atlas Glyphs](../assets/gallery/v0.4/visuals/visual_glyph.webp)
 
-`experimental` `visuals`<br><span>`glyph`, `font-atlas`, `texture-atlas`, `sdf`, `capture`</span>
+`experimental` `visuals`
 
 low-level font atlas glyph quads, distinct from retained semantic text.
 
@@ -300,7 +300,7 @@ low-level font atlas glyph quads, distinct from retained semantic text.
 
 ![Labels](../assets/gallery/v0.4/visuals/visual_labels.webp)
 
-`supported` `visuals`<br><span>`labels`, `categorical-scale`, `panzoom`, `capture`</span>
+`supported` `visuals`
 
 retained labels visual with a small deterministic integer sampled field.
 
@@ -312,7 +312,7 @@ retained labels visual with a small deterministic integer sampled field.
 
 ![Image](../assets/gallery/v0.4/visuals/visual_image.webp)
 
-`supported` `visuals`<br><span>`image`, `sampled-field`, `capture`</span>
+`supported` `visuals`
 
 deterministic scalar sampled field rendered with the retained image visual.
 
@@ -324,7 +324,7 @@ deterministic scalar sampled field rendered with the retained image visual.
 
 ![Vector](../assets/gallery/v0.4/visuals/visual_vector.webp)
 
-`supported` `visuals`<br><span>`vector`, `path`, `panzoom`, `capture`</span>
+`supported` `visuals`
 
 retained straight and curved vector visual example.
 
@@ -336,7 +336,7 @@ retained straight and curved vector visual example.
 
 ![Splat](../assets/gallery/v0.4/visuals/visual_splat.webp)
 
-`experimental` `visuals`<br><span>`splat`, `panzoom`, `capture`</span>
+`experimental` `visuals`
 
 retained Gaussian splat visual with deterministic screen-space ellipses.
 
@@ -348,7 +348,7 @@ retained Gaussian splat visual with deterministic screen-space ellipses.
 
 ![Mesh](../assets/gallery/v0.4/visuals/visual_mesh.webp)
 
-`supported` `visuals`<br><span>`mesh`, `indexed-geometry`, `arcball`, `capture`</span>
+`supported` `visuals`
 
 retained lit indexed cube mesh.
 
@@ -360,7 +360,7 @@ retained lit indexed cube mesh.
 
 ![Sphere](../assets/gallery/v0.4/visuals/sphere_impostor.webp)
 
-`supported` `visuals`<br><span>`sphere`, `arcball`, `capture`</span>
+`supported` `visuals`
 
 deterministic 3D impostor-sphere cluster with depth, radius, and color variation.
 
@@ -372,7 +372,7 @@ deterministic 3D impostor-sphere cluster with depth, radius, and color variation
 
 ![Volume](../assets/gallery/v0.4/visuals/volume.webp)
 
-`supported` `visuals`<br><span>`sampled-field`, `volume`, `transfer-function`, `boundary-box`, `arcball`, ...</span>
+`supported` `visuals`
 
 deterministic gyroid scalar field rendered with the retained volume visual.
 
@@ -384,7 +384,7 @@ deterministic gyroid scalar field rendered with the retained volume visual.
 
 ![Polygon Composite](../assets/gallery/v0.4/composites/composite_polygon.webp)
 
-`supported` `composites`<br><span>`composite`, `polygon`, `polygon-set`, `holes`, `panzoom`</span>
+`supported` `composites`
 
 clean semantic polygon and polygon-set composites.
 
@@ -396,7 +396,7 @@ clean semantic polygon and polygon-set composites.
 
 ![Graph Composite](../assets/gallery/v0.4/composites/composite_graph.webp)
 
-`supported` `composites`<br><span>`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`</span>
+`supported` `composites`
 
 deterministic brain-connectivity graph composite.
 
@@ -452,7 +452,7 @@ retained axis titles and tick-label placement with plot margins.
 
 ![Colorbar](../assets/gallery/v0.4/features/colorbar.webp)
 
-`supported` `features`<br><span>`colorbar`, `scalar-field`, `image`, `capture`</span>
+`supported` `features`
 
 deterministic scalar image with one retained continuous colorbar.
 
@@ -488,7 +488,7 @@ scene-owned 2D sampled field bound to an image visual.
 
 ![Marker Symbols](../assets/gallery/v0.4/features/feature_marker_symbols.webp)
 
-`supported` `features`<br><span>`marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`, `svg-path-symbol`</span>
+`supported` `features`
 
 marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 

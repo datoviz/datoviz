@@ -445,14 +445,17 @@ def render_card(
     image_dir: Path,
     image_url_base: str,
     image_format: str = DEFAULT_IMAGE_FORMAT,
+    show_tags: bool = True,
 ) -> str:
     page = Path(example.page_path)
     href = page.as_posix()
     media = media_block(page_path, example, image_dir, image_url_base, image_format)
-    tags = ", ".join(f"`{tag}`" for tag in example.tags[:5])
-    if len(example.tags) > 5:
-        tags += ", ..."
-    tag_line = f"<br><span>{tags}</span>" if tags else ""
+    tag_line = ""
+    if show_tags:
+        tags = ", ".join(f"`{tag}`" for tag in example.tags[:5])
+        if len(example.tags) > 5:
+            tags += ", ..."
+        tag_line = f"<br><span>{tags}</span>" if tags else ""
     return f"""\
 <div class="card" markdown="1">
 
@@ -571,7 +574,7 @@ def render_index(
     lines.append('<div class="grid cards" markdown="1">')
     lines.append("")
     for example in showcase_examples:
-        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
     lines.append("</div>")
     lines.append("")
 
@@ -587,7 +590,7 @@ def render_index(
     lines.append('<div class="grid cards" markdown="1">')
     lines.append("")
     for example in semantic_sort(visual_examples + composite_examples, INDEX_VISUAL_ORDER):
-        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
     lines.append("</div>")
     lines.append("")
 
@@ -602,7 +605,7 @@ def render_index(
     lines.append('<div class="grid cards" markdown="1">')
     lines.append("")
     for example in flagship_features:
-        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
     lines.append("</div>")
     lines.append("")
     lines.extend(
