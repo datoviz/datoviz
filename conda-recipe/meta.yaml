@@ -28,6 +28,7 @@ outputs:
         - cglm
         - freetype
         - glfw
+        - libgl-devel  # [linux]
         - libpng
         - mimalloc
         - tinyxml2

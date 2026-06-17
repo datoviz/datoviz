@@ -24,6 +24,18 @@ DEFAULT_SUBMODULES = (
 REQUIRED_GENERATED_FILES = (
     "datoviz/_ctypes.py",
 )
+REQUIRED_DATA_FILES = (
+    "data/assets/fonts/DroidSans.ttf",
+    "data/assets/fonts/Inconsolata-Regular.ttf",
+    "data/assets/fonts/Roboto-Black.ttf",
+    "data/assets/fonts/Roboto-Bold.ttf",
+    "data/assets/fonts/Roboto-BoldItalic.ttf",
+    "data/assets/fonts/Roboto-Italic.ttf",
+    "data/assets/fonts/Roboto-Light.ttf",
+    "data/assets/fonts/Roboto-Medium.ttf",
+    "data/assets/fonts/Roboto-Regular.ttf",
+    "data/assets/fonts/RobotoMono-Medium.ttf",
+)
 
 
 def _run(args: list[str], *, cwd: Path = ROOT) -> str:
@@ -35,16 +47,36 @@ def _git_files(cwd: Path) -> list[Path]:
     return [Path(part.decode()) for part in out.split(b"\0") if part]
 
 
-def _submodule_paths() -> set[Path]:
-    status = _run(["git", "submodule", "status"])
+def _submodule_paths(cwd: Path) -> set[Path]:
+    status = _run(["git", "submodule", "status"], cwd=cwd)
     paths: set[Path] = set()
     for line in status.splitlines():
         fields = line.strip().split()
         if len(fields) >= 2:
-            path = Path(fields[1])
-            if path != Path("data"):
-                paths.add(path)
+            paths.add(Path(fields[1]))
     return paths
+
+
+def _collect_worktree_entries(cwd: Path, prefix: Path, *, exclude: set[Path]) -> list[tuple[Path, Path]]:
+    entries: list[tuple[Path, Path]] = []
+    submodules = _submodule_paths(cwd)
+
+    for rel in _git_files(cwd):
+        if rel in exclude or rel in submodules:
+            continue
+        src = cwd / rel
+        if src.is_file():
+            entries.append((src, prefix / rel))
+
+    for submodule in sorted(submodules):
+        if submodule in exclude:
+            continue
+        subroot = cwd / submodule
+        if not (subroot / ".git").exists():
+            raise FileNotFoundError(f"submodule is not initialized: {prefix / submodule}")
+        entries.extend(_collect_worktree_entries(subroot, prefix / submodule, exclude=set()))
+
+    return entries
 
 
 def _add_file(tar: tarfile.TarFile, src: Path, arcname: Path) -> None:
@@ -63,14 +95,8 @@ def _add_file(tar: tarfile.TarFile, src: Path, arcname: Path) -> None:
 
 def _source_entries(submodules: tuple[str, ...]) -> list[tuple[Path, Path]]:
     entries: list[tuple[Path, Path]] = []
-    submodule_paths = _submodule_paths()
-
-    for rel in _git_files(ROOT):
-        if rel == Path("data") or any(rel == sm for sm in submodule_paths):
-            continue
-        src = ROOT / rel
-        if src.is_file():
-            entries.append((src, rel))
+    submodule_paths = _submodule_paths(ROOT)
+    entries.extend(_collect_worktree_entries(ROOT, Path(), exclude={Path("data"), *submodule_paths}))
 
     for submodule in submodules:
         subroot = ROOT / submodule
@@ -78,10 +104,7 @@ def _source_entries(submodules: tuple[str, ...]) -> list[tuple[Path, Path]]:
             raise FileNotFoundError(
                 f"submodule is not initialized or does not look usable: {submodule}"
             )
-        for rel in _git_files(subroot):
-            src = subroot / rel
-            if src.is_file():
-                entries.append((src, Path(submodule) / rel))
+        entries.extend(_collect_worktree_entries(subroot, Path(submodule), exclude=set()))
 
     for rel_text in REQUIRED_GENERATED_FILES:
         rel = Path(rel_text)
@@ -90,6 +113,13 @@ def _source_entries(submodules: tuple[str, ...]) -> list[tuple[Path, Path]]:
             raise FileNotFoundError(
                 f"required generated release file is missing: {rel}. Run `just ctypes` first."
             )
+        entries.append((src, rel))
+
+    for rel_text in REQUIRED_DATA_FILES:
+        rel = Path(rel_text)
+        src = ROOT / rel
+        if not src.is_file():
+            raise FileNotFoundError(f"required release asset is missing: {rel}")
         entries.append((src, rel))
 
     return sorted(entries, key=lambda item: os.fspath(item[1]))
