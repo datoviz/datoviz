@@ -11,6 +11,9 @@ VCPKG_ROOT=${VCPKG_ROOT:-/tmp/datoviz-vcpkg}
 VCPKG_TRIPLET=${VCPKG_TRIPLET:-x64-linux-dynamic}
 CONDA_BLD_DIR=${DATOVIZ_CONDA_BLD_DIR:-/tmp/datoviz-mamba-root/envs/build/conda-bld}
 SOURCE_DEPS=${DATOVIZ_SOURCE_DEPS:-vendored}
+SOURCE_AUDIT_PREFIX=${DATOVIZ_SOURCE_AUDIT_PREFIX:-$WORKDIR/source-prefix}
+VCPKG_AUDIT_PREFIX=${DATOVIZ_VCPKG_AUDIT_PREFIX:-$VCPKG_ROOT/installed/$VCPKG_TRIPLET}
+CONDA_AUDIT_PREFIX=${DATOVIZ_CONDA_AUDIT_PREFIX:-${DATOVIZ_CONDA_PREFIX:-/tmp/datoviz-local}}
 
 
 log()
@@ -38,6 +41,12 @@ require()
 }
 
 
+warn()
+{
+    printf 'warning: %s\n' "$*" >&2
+}
+
+
 cmake_generator_args()
 {
     if have ninja; then
@@ -58,6 +67,17 @@ with open(sys.argv[1], "rb") as f:
         h.update(chunk)
 print(h.hexdigest())
 PY
+}
+
+
+canonical_path()
+{
+    local path=$1
+    if [ -e "$path" ]; then
+        (CDPATH= cd -- "$path" 2>/dev/null && pwd -P) || printf '%s\n' "$path"
+    else
+        printf '%s\n' "$path"
+    fi
 }
 
 
@@ -146,6 +166,219 @@ EOF
         -o "$build_dir/datoviz_pkg_config_consumer"
     LD_LIBRARY_PATH="$prefix/lib:$prefix/lib64:$prefix/debug/lib:${LD_LIBRARY_PATH:-}" \
         "$build_dir/datoviz_pkg_config_consumer"
+}
+
+
+expect_file()
+{
+    local path=$1
+    [ -f "$path" ] || die "expected file is missing: $path"
+    printf '  file: %s\n' "$path"
+}
+
+
+expect_dir()
+{
+    local path=$1
+    [ -d "$path" ] || die "expected directory is missing: $path"
+    printf '  dir:  %s\n' "$path"
+}
+
+
+find_first_file()
+{
+    local prefix=$1
+    shift
+    local candidate
+    for candidate in "$@"; do
+        if [ -f "$prefix/$candidate" ]; then
+            printf '%s\n' "$prefix/$candidate"
+            return 0
+        fi
+    done
+    return 1
+}
+
+
+audit_pkg_config_file()
+{
+    local prefix=$1
+    local pc_file=$2
+    local pc_dir
+    pc_dir=$(dirname "$pc_file")
+
+    log "Auditing pkg-config metadata: $pc_file"
+    expect_file "$pc_file"
+    grep -q '^Name: datoviz$' "$pc_file" || die "pkg-config file has no 'Name: datoviz': $pc_file"
+    grep -q '^-ldatoviz\| -ldatoviz' "$pc_file" || die "pkg-config file does not link datoviz: $pc_file"
+    grep -q -- '-I.*include' "$pc_file" || die "pkg-config file does not expose include flags: $pc_file"
+
+    if have pkg-config; then
+        PKG_CONFIG_PATH="$pc_dir" pkg-config --exists datoviz ||
+            die "pkg-config cannot load datoviz from $pc_dir"
+        printf '  cflags: %s\n' "$(PKG_CONFIG_PATH="$pc_dir" pkg-config --cflags datoviz)"
+        printf '  libs:   %s\n' "$(PKG_CONFIG_PATH="$pc_dir" pkg-config --libs datoviz)"
+
+        local pc_prefix prefix_real pc_prefix_real
+        pc_prefix=$(PKG_CONFIG_PATH="$pc_dir" pkg-config --variable=prefix datoviz 2>/dev/null || true)
+        prefix_real=$(canonical_path "$prefix")
+        pc_prefix_real=$(canonical_path "$pc_prefix")
+        case "$pc_prefix_real" in
+            "$prefix_real"|"${prefix_real%/}")
+                ;;
+            "")
+                warn "pkg-config prefix variable is empty: $pc_file"
+                ;;
+            *)
+                warn "pkg-config prefix does not match audited prefix: $pc_file"
+                ;;
+        esac
+    else
+        warn "pkg-config not found; skipped metadata resolution"
+    fi
+}
+
+
+audit_cmake_config()
+{
+    local prefix=$1
+    local config_file=$2
+    local config_dir
+    config_dir=$(dirname "$config_file")
+
+    log "Auditing CMake package metadata: $config_file"
+    expect_file "$config_file"
+    grep -Eq 'DatovizTargets\.cmake|add_library\(datoviz::datoviz' "$config_file" ||
+        die "CMake config does not expose datoviz targets: $config_file"
+
+    if [ -f "$config_dir/DatovizTargets.cmake" ]; then
+        expect_file "$config_dir/DatovizTargets.cmake"
+    fi
+    if [ -f "$config_dir/DatovizConfigVersion.cmake" ]; then
+        expect_file "$config_dir/DatovizConfigVersion.cmake"
+    fi
+
+    if have cmake; then
+        run_cmake_consumer "$prefix" "$WORKDIR/audit-cmake-consumer-$(basename "$prefix")"
+    else
+        warn "cmake not found; skipped CMake consumer check"
+    fi
+}
+
+
+audit_shared_library()
+{
+    local lib=$1
+    expect_file "$lib"
+
+    case "$(uname -s)" in
+        Linux)
+            if have ldd; then
+                log "Auditing dynamic dependencies: $lib"
+                ldd "$lib" | sed 's/^/  /'
+                if ldd "$lib" | grep -q 'not found'; then
+                    die "unresolved dynamic dependency in $lib"
+                fi
+            fi
+            if have readelf; then
+                local runpath
+                runpath=$(readelf -d "$lib" | sed -n 's/.*(RPATH)\s*Library rpath: \[\(.*\)\]/\1/p; s/.*(RUNPATH)\s*Library runpath: \[\(.*\)\]/\1/p')
+                if [ -n "$runpath" ]; then
+                    printf '  runpath: %s\n' "$runpath"
+                else
+                    printf '  runpath: <none>\n'
+                fi
+            fi
+            ;;
+        Darwin)
+            if have otool; then
+                log "Auditing dynamic dependencies: $lib"
+                otool -L "$lib" | sed 's/^/  /'
+            fi
+            ;;
+    esac
+}
+
+
+audit_prefix()
+{
+    local label=$1
+    local prefix=$2
+
+    [ -d "$prefix" ] || die "$label prefix does not exist: $prefix"
+    log "Auditing $label install prefix: $prefix"
+
+    expect_dir "$prefix/include"
+    expect_file "$prefix/include/datoviz.h"
+    expect_file "$prefix/include/datoviz/datoviz.h"
+
+    local libdatoviz
+    libdatoviz=$(find_first_file "$prefix" \
+        lib/libdatoviz.so lib64/libdatoviz.so debug/lib/libdatoviz.so \
+        lib/libdatoviz.dylib lib64/libdatoviz.dylib debug/lib/libdatoviz.dylib \
+        bin/datoviz.dll Library/bin/datoviz.dll) ||
+        die "libdatoviz shared library not found under $prefix"
+    audit_shared_library "$libdatoviz"
+
+    local pc_file
+    pc_file=$(find_first_file "$prefix" \
+        lib/pkgconfig/datoviz.pc lib64/pkgconfig/datoviz.pc share/pkgconfig/datoviz.pc) ||
+        die "datoviz.pc not found under $prefix"
+    audit_pkg_config_file "$prefix" "$pc_file"
+
+    local cmake_config
+    cmake_config=$(find_first_file "$prefix" \
+        lib/cmake/datoviz/DatovizConfig.cmake \
+        lib64/cmake/datoviz/DatovizConfig.cmake \
+        share/datoviz/DatovizConfig.cmake \
+        share/datoviz/datoviz-config.cmake \
+        Library/lib/cmake/datoviz/DatovizConfig.cmake) ||
+        die "Datoviz CMake config not found under $prefix"
+    audit_cmake_config "$prefix" "$cmake_config"
+
+    if have find; then
+        log "Installed Datoviz payload summary: $prefix"
+        local header_count
+        header_count=$(
+            {
+                find "$prefix/include/datoviz" -type f -name '*.h'
+                printf '%s\n' "$prefix/include/datoviz.h"
+            } | wc -l | tr -d ' '
+        )
+        printf '  datoviz headers: %s\n' "$header_count"
+        find "$prefix" -name 'libdatoviz*' -print | sort | sed 's/^/  /'
+        find "$prefix" \( -name 'datoviz.pc' -o -name '*Datoviz*.cmake' -o -name '*datoviz*.cmake' \) \
+            -print | sort | sed 's/^/  /'
+    fi
+}
+
+
+validate_audit()
+{
+    local audited=0
+
+    if [ -d "$SOURCE_AUDIT_PREFIX" ]; then
+        audit_prefix source "$SOURCE_AUDIT_PREFIX"
+        audited=$((audited + 1))
+    else
+        log "Skipping source audit; prefix not found: $SOURCE_AUDIT_PREFIX"
+    fi
+
+    if [ -d "$VCPKG_AUDIT_PREFIX" ]; then
+        audit_prefix vcpkg "$VCPKG_AUDIT_PREFIX"
+        audited=$((audited + 1))
+    else
+        log "Skipping vcpkg audit; prefix not found: $VCPKG_AUDIT_PREFIX"
+    fi
+
+    if [ -d "$CONDA_AUDIT_PREFIX" ]; then
+        audit_prefix conda "$CONDA_AUDIT_PREFIX"
+        audited=$((audited + 1))
+    else
+        log "Skipping conda audit; prefix not found: $CONDA_AUDIT_PREFIX"
+    fi
+
+    [ "$audited" -gt 0 ] || die "no install prefixes found to audit"
 }
 
 
@@ -270,7 +503,7 @@ PY
 usage()
 {
     cat <<EOF
-Usage: $0 [all|source-install|vcpkg|conda|pkg-config]
+Usage: $0 [all|source-install|vcpkg|conda|pkg-config|audit]
 
 Environment:
   DATOVIZ_VALIDATE_VERSION       Release version for generated bundles [$VERSION]
@@ -282,6 +515,9 @@ Environment:
   MICROMAMBA or CONDA_EXE        conda frontend for conda validation
   DATOVIZ_CONDA_BLD_DIR          conda-bld directory [$CONDA_BLD_DIR]
   DATOVIZ_SOURCE_DEPS            source-install dependency mode: vendored or system [$SOURCE_DEPS]
+  DATOVIZ_SOURCE_AUDIT_PREFIX    Existing source install prefix [$SOURCE_AUDIT_PREFIX]
+  DATOVIZ_VCPKG_AUDIT_PREFIX     Existing vcpkg install prefix [$VCPKG_AUDIT_PREFIX]
+  DATOVIZ_CONDA_AUDIT_PREFIX     Existing conda install prefix [$CONDA_AUDIT_PREFIX]
 EOF
 }
 
@@ -308,6 +544,10 @@ main()
         pkg-config)
             prepare_workdir
             validate_source_install
+            ;;
+        audit)
+            mkdir -p "$WORKDIR"
+            validate_audit
             ;;
         all)
             prepare_workdir
