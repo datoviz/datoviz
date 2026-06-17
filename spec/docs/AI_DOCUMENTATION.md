@@ -222,8 +222,9 @@ Concretely: never write a paragraph that is intentionally terse or jargon-heavy 
 Write clear prose for the human reader. The LLM will parse it correctly. If a paragraph reads
 poorly to a human, rewrite it — do not excuse it as "LLM context."
 
-The Start Here page (`docs/start/index.md`) is the primary LLM entry point. Its opening
-paragraphs are also the first thing a human sees. They must work for both.
+The primary LLM entry points are `docs/start/quickstart.md`,
+`docs/start/ai-workflow.md`, and the task-specific How-To page relevant to the user's request.
+Their opening paragraphs must work for both humans and LLMs.
 
 
 ## LLM-Friendly Page Design

@@ -8,9 +8,9 @@ engine layer. Most scientific users should eventually use VisPy2/GSP for high-le
 Datoviz documentation is for native application developers, backend authors, advanced users of the
 C/raw-binding surface, and contributors.
 
-`mkdocs.yml` is the source of truth for the concrete public navigation. This document mirrors the
-current MkDocs structure and records the intent behind each section. If a page is moved, added, or
-removed in `mkdocs.yml`, update this file in the same change.
+`mkdocs.yml` is the source of truth for the concrete public navigation. This document records the
+intent behind each section. If a page is moved, added, or removed in `mkdocs.yml`, update this file
+in the same change.
 
 
 ## Audiences
@@ -32,19 +32,23 @@ Use these public documentation sections, as declared in `mkdocs.yml`:
 docs/
   index.md
   start/
-  tutorials/
   examples/
   how-to/
   reference/
-  explanation/
+  explanation/   # exposed as Internals
+  advanced/      # exposed as Internals / Lower layers
   contributors/
 ```
 
-This is Diataxis plus two Datoviz-specific additions:
+This is a compact, Datoviz-specific structure:
 
-1. `start/` gives immediate orientation and layer selection.
-2. `examples/` is a first-class pillar because examples are executable release proof and the best
-   input for coding agents.
+1. `start/` gives immediate orientation and first render.
+2. `examples/` is a first-class pillar because examples are executable release proof, gallery
+   content, screenshots, and the best input for coding agents.
+3. `how-to/` explains task workflows and points to canonical examples instead of duplicating them.
+4. `reference/` provides exact facts, tables, signatures, attributes, statuses, and limits.
+5. `explanation/` and `advanced/` are exposed as **Internals**, not as the main user path.
+6. `contributors/` is a top-level section for humans and agents changing the repository.
 
 Page roles should stay distinct:
 
@@ -53,12 +57,12 @@ Page roles should stay distinct:
 | Examples | executable truth and release proof |
 | Reference | exact facts, status, signatures, attributes, and limits |
 | How-to | practical task workflows that adapt examples to real code |
-| Tutorials | narrative learning paths through stable composed workflows |
 | Explanation | concepts, architecture, and tradeoffs |
 
 Do not force a one-to-one relationship between features and how-to pages. The required coverage unit
 for each public visual or feature is a minimal example. How-to pages should group related tasks, and
-tutorials should wait until the examples they teach are stable.
+composed walkthroughs should live in the examples/gallery layer unless they teach a distinct task
+workflow.
 
 
 ## Live WebGPU Embeds
@@ -151,36 +155,6 @@ start/
 4. use DRP2/DVZR for command-stream portability and replay.
 
 
-## Tutorials
-
-Purpose: teach a first-time user by walking through a small complete workflow.
-
-Tutorials should be few, polished, narrative, and backed by runnable C examples. They should not try
-to enumerate the whole API.
-
-Current MkDocs navigation:
-
-```text
-tutorials/
-  index.md
-  Basics/
-    first-scene.md
-    interactive-window.md
-    offscreen-capture.md
-  Scene Workflows/
-    image-colorbar-probe.md
-    mesh-arcball.md
-    multi-panel-figure.md
-```
-
-Tutorial rules:
-
-1. start from a complete C example;
-2. explain the minimum mental model needed for that example;
-3. avoid large API tables;
-4. end with links to related examples, how-to pages, reference pages, and explanations.
-
-
 ## Examples
 
 Purpose: provide minimal executable truth for visuals, features, composites, techniques, and
@@ -194,20 +168,6 @@ Examples are a public documentation pillar, not an appendix. The rule is:
 4. showcases may compose multiple visuals, features, and composites, but they must not replace
    minimal examples.
 
-Current MkDocs navigation:
-
-```text
-examples/
-  index.md
-  Galleries/
-    visual-gallery.md
-    feature-gallery.md
-    techniques.md
-  Release Proof/
-    showcases.md
-    validation-gallery.md
-```
-
 Detailed coverage rules are in [EXAMPLE_COVERAGE.md](EXAMPLE_COVERAGE.md).
 
 
@@ -219,75 +179,99 @@ How-to guides are still needed even when every feature has a minimal example. Ex
 smallest working code. How-to guides explain which pattern to use, which ownership rules matter, and
 how to adapt the example to real code.
 
-Current MkDocs navigation:
+Target MkDocs navigation:
 
 ```text
 how-to/
-  Scene And Runtime/
+  Core Workflow/
     create-a-scene.md
     create-a-window.md
     render-offscreen.md
-    capture-an-image.md
-  Visuals And Data/
     add-a-visual.md
-    choose-a-visual-family.md
     update-visual-data.md
-    use-sampled-fields.md
+    animation.md
+  Data To Visuals/
+    choose-a-visual-family.md
+    coordinate-systems.md
+    transforms-and-scales.md
     use-colormaps.md
-  Layout And Adornments/
+    use-sampled-fields.md
+  Layout/
     create-multiple-panels.md
-    add-axes.md
-    add-colorbars.md
+    link-panels.md
+    axes.md
+    adornments.md
     add-annotations.md
   Interaction/
     use-panzoom.md
-    use-arcball.md
+    3d-navigation.md
+    input-events.md
     pick-and-probe.md
+    probe-fields.md
     select-items.md
-  Integration And Debugging/
-    embed-in-qt.md
-    use-raw-ctypes.md
-    replay-dvzr.md
-    debug-rendering.md
+  Rendering/
+    configure-cameras.md
+    lighting-and-materials.md
+    rendering-techniques.md
     profile-performance.md
+  Output/
+    capture-an-image.md
+    video-export.md
+    replay-dvzr.md
+  Integration/
+    c-integration.md
+    use-python.md
+    use-raw-ctypes.md
+    embed-in-qt.md
+    deploy-to-web.md
+  Diagnostics/
+    debug-rendering.md
+    debug-webgpu.md
+    diagnose-platform.md
 ```
 
 How-to rules:
 
 1. stay task-focused;
-2. link to minimal examples instead of duplicating them;
+2. link to minimal examples and generated gallery detail pages instead of duplicating full source;
 3. include validation commands where relevant;
-4. call out ownership, lifetime, and backend limitations.
+4. call out ownership, lifetime, coordinate, async, and backend limitations;
+5. show screenshots by reusing generated gallery media when the task has a visual result;
+6. keep composed recipes in Examples unless the page teaches a reusable task pattern.
 
 
 ## Reference
 
 Purpose: provide exact, complete, dry facts.
 
-Current MkDocs navigation:
+Target MkDocs navigation:
 
 ```text
 reference/
   index.md
-  Status And Support/
+  API/
+    c-api/index.md
+    c-api/scene.md
+    c-api/visuals.md
+    c-api/app.md
+    c-api/runtime.md
+    c-api/types.md
+    ctypes.md
+  Visual families/
+    visual-families/index.md
+    visual-families/*.md
+  Core reference/
+    objects-and-lifetimes.md
+    coordinate-systems.md
+    controllers.md
+    callbacks.md
+  Compatibility/
     feature-status.md
     platform-support.md
     build-options.md
-  API/
-    c-api/index.md
-    ctypes.md
-    drp2/index.md
-  Scene Reference/
-    objects-and-lifetimes.md
-    visual-families/index.md
-    visual-attributes.md
-    coordinate-systems.md
-    controllers.md
-    queries.md
-    callbacks.md
-    errors-and-logging.md
   Backends/
     webgpu-subset.md
+    compute-graphics.md
 ```
 
 Reference pages should prefer tables, status labels, signatures, constraints, and links to examples.

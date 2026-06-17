@@ -20,14 +20,12 @@ Get Started / Examples / How-To / Reference / Advanced.
 Reconcile `spec/docs/INFORMATION_ARCHITECTURE.md` with `V04_DOCUMENTATION_DECISIONS.md`.
 Move existing pages into the new structure; stub missing pages.
 
-### 3. Start Here + Quickstart pages
-Write two new pages:
-- `docs/start/index.md` — orientation page serving both humans and LLMs: what datoviz is,
-  capability→URL map, task→URL map, layer→URL map, 3-4 minimal inline code patterns.
-  This is the page the prompt widget links to as primary context.
+### 3. Quickstart + AI-assisted workflow pages
+Keep the active start path concise:
 - `docs/start/quickstart.md` — "rendering in 10 minutes": scatter plot, 10k random 3D points,
-  pan/zoom controller. C version first, Python ctypes version immediately below or in a tab.
-  Zero external data dependencies — synthetic random data only.
+  pan/zoom controller, zero external data dependencies.
+- `docs/start/ai-workflow.md` — how to combine Quickstart, one How-To page, one generated Example
+  page, and one Reference page as context for coding assistants.
 
 ### 4. Visual family pages
 Bring each visual family page to the standard template:
@@ -40,7 +38,8 @@ Screenshots come from existing `data/gallery/v0.4/visuals/` assets where availab
 Static JavaScript widget embedded in the docs site. No backend, no LLM, fully deterministic.
 Free text input → structured header/footer wrapping the user's text → copy button +
 "Open in Claude" / "Open in ChatGPU" links.
-Depends on: Start Here page existing (its URL is injected into the prompt header).
+Depends on: Quickstart and AI-assisted workflow pages existing; prompt headers should link to
+those plus the relevant How-To/Example/Reference pages.
 Spec: see AI-Assisted Workflow section in `V04_DOCUMENTATION_DECISIONS.md`.
 
 ### 6. Pyodide live playground

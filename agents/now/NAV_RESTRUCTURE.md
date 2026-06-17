@@ -4,9 +4,15 @@ Status: ready to execute. Self-contained briefing — no prior conversation cont
 
 ## Goal
 
-Restructure `mkdocs.yml` to reflect the agreed final documentation architecture. This is a
-**nav and metadata change only** — no content writing, no file creation except minimal stubs
-where a nav entry references a file that does not yet exist.
+Restructure `mkdocs.yml` to reflect the agreed final documentation architecture and keep the nav
+aligned with the v0.4 documentation contract:
+
+1. **Examples** are the executable source of truth, screenshots, and release proof.
+2. **How-To** pages are task workflows that explain how to adapt canonical examples.
+3. **Reference** pages are exact facts: API, statuses, attributes, lifetimes, and backend limits.
+4. **Internals** is intentionally small and only exposes lower-layer architecture for advanced
+   runtime/backend work.
+5. **Contributing** is a top-level maintainer/developer section.
 
 Read `CLAUDE.md` before starting: short commit messages, no Co-Authored-By trailers.
 
@@ -27,8 +33,62 @@ Keep exactly as-is:
 ### Examples — unchanged
 Keep exactly as-is.
 
-### How-To — unchanged
-Already restructured in a prior session. Keep exactly as-is.
+### How-To — task-oriented rewrite
+
+Do **not** keep the current How-To section unchanged. It contains hidden stubs, overlapping pages,
+and stale hand-written examples. The final How-To nav should be:
+
+```yaml
+- How-To:
+  - Core Workflow:
+    - Create a scene: 'how-to/create-a-scene.md'
+    - Open an interactive window: 'how-to/create-a-window.md'
+    - Render offscreen and capture: 'how-to/render-offscreen.md'
+    - Add visuals to a panel: 'how-to/add-a-visual.md'
+    - Update visual data: 'how-to/update-visual-data.md'
+    - Animate a scene: 'how-to/animation.md'
+  - Data To Visuals:
+    - Choose a visual family: 'how-to/choose-a-visual-family.md'
+    - Use coordinate systems: 'how-to/coordinate-systems.md'
+    - Transform visual data: 'how-to/transforms-and-scales.md'
+    - Map scalar values with colormaps: 'how-to/use-colormaps.md'
+    - Use sampled fields and textures: 'how-to/use-sampled-fields.md'
+  - Layout:
+    - Create multiple panels: 'how-to/create-multiple-panels.md'
+    - Link panels and controllers: 'how-to/link-panels.md'
+    - Add axes: 'how-to/axes.md'
+    - Add colorbars, scale bars, and legends: 'how-to/adornments.md'
+    - Add text, labels, and annotations: 'how-to/add-annotations.md'
+  - Interaction:
+    - Use panzoom: 'how-to/use-panzoom.md'
+    - Use 3D controllers: 'how-to/3d-navigation.md'
+    - Handle input events: 'how-to/input-events.md'
+    - Pick items: 'how-to/pick-and-probe.md'
+    - Probe image or field values: 'how-to/probe-fields.md'
+    - Select and highlight data: 'how-to/select-items.md'
+  - Rendering:
+    - Configure cameras: 'how-to/configure-cameras.md'
+    - Use lighting and materials: 'how-to/lighting-and-materials.md'
+    - Control depth, blending, and transparency: 'how-to/rendering-techniques.md'
+    - Profile rendering performance: 'how-to/profile-performance.md'
+  - Output:
+    - Save screenshots: 'how-to/capture-an-image.md'
+    - Export videos: 'how-to/video-export.md'
+    - Record and replay frame streams: 'how-to/replay-dvzr.md'
+  - Integration:
+    - Use from C or C++: 'how-to/c-integration.md'
+    - Use from Python: 'how-to/use-python.md'
+    - Use raw ctypes: 'how-to/use-raw-ctypes.md'
+    - Embed in Qt: 'how-to/embed-in-qt.md'
+    - Deploy WebGPU examples to the browser: 'how-to/deploy-to-web.md'
+  - Diagnostics:
+    - Debug rendering output: 'how-to/debug-rendering.md'
+    - Diagnose WebGPU support: 'how-to/debug-webgpu.md'
+    - Diagnose build and platform issues: 'how-to/diagnose-platform.md'
+```
+
+How-To pages should link to canonical examples and gallery pages instead of duplicating full source
+programs. Use short call sequences and snippets only when they explain the task.
 
 ### Reference — restructured
 
@@ -182,4 +242,4 @@ python -m mkdocs build --strict 2>&1 | head -50
 Fix any "file not found" or "not in nav" warnings before committing.
 If `mkdocs` is not available, run `git diff --check && git status --short` at minimum.
 
-Commit: `docs: restructure nav — Internals, Contributing, Reference sub-groups`
+Commit: `docs: restructure public docs nav`

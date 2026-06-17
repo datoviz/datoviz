@@ -4,7 +4,8 @@ Status: ready to execute. Self-contained briefing — no prior conversation cont
 
 ## Goal
 
-Write three batches of documentation pages in parallel using subagents:
+Write three batches of documentation pages in parallel using subagents after the shared
+documentation contract and nav have been reconciled:
 
 - **15 visual family reference pages** (`docs/reference/visual-families/`)
 - **3 start section pages** (`docs/start/`)
@@ -17,12 +18,12 @@ Phase 1 infrastructure is already done. Your job is writing only.
 
 ## Background: key conventions
 
-**Public API pattern.** Code snippets use the raw public API as shown in
-`docs/start/quickstart.md`. Do NOT use the internal `DvzScenarioSpec`/`DvzScenarioContext` runner
-pattern found in `examples/c/features/`. Use C examples only as reference for what to render;
-write boilerplate from the quickstart pattern.
+**Examples are canonical.** Do not hand-write long standalone programs in reference pages. Link to
+the canonical `examples/c/...` source and generated gallery detail page. Use only tiny excerpts
+when a reference page needs to highlight one call or attribute.
 
-**C tabs only.** All pages need only C code for now. Leave Python as `<!-- TODO: Python -->`.
+**No visible TODO tabs.** If Python content is not ready, omit the Python tab and link to the
+Python/raw-ctypes scope page. Do not add new `<!-- TODO: Python -->` markers.
 
 **Comments in code.** Per `CLAUDE.md`: comments go on their own line above the code. Never inline.
 
@@ -66,15 +67,15 @@ Prose: neighboring visual families or deferred features to use instead.
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 
-## Minimal example
+## Canonical example
 
-=== "C"
+- Source: `examples/c/visuals/<name>.c`
+- Gallery: `docs/examples/gallery/visuals/<id>.md`
+- Build: `just example-c visuals/<name>`
 
-    ```c
-    /* minimal self-contained example using the raw public API */
-    ```
+## Minimal call sequence
 
-<!-- TODO: Python -->
+Short prose plus a small fenced snippet, only if useful.
 
 ## See also
 
@@ -101,7 +102,8 @@ Links to related how-to pages and other visual families.
 | `vector.md` | `visuals/vector.c` | arrow/vector field |
 | `labels.md` | `visuals/labels.c` | |
 
-Also read `examples/c/MANIFEST.yaml` for status, backend support, and requirement tags per visual.
+Use `examples/c/MANIFEST.yaml` for status, backend support, requirement tags, source path, and
+copy-safe status. Use generated gallery pages for screenshots and live WebGPU links.
 
 Commit when done: `docs: write visual family reference pages`
 
