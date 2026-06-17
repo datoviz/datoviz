@@ -111,8 +111,6 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
 
 === "C"
 
-    Use the flags printed by `datoviz-config --cflags --libs` if available, otherwise:
-
     === "Linux"
 
         ```sh
