@@ -83,6 +83,7 @@ INDEX_FEATURE_GROUPS = (
         "feature_lighting",
         "feature_mesh_texture",
         "technique_ssao",
+        "technique_depth_cue",
     ]),
     ("Animation & Interaction", [
         "feature_animation_tracks",
@@ -120,21 +121,6 @@ PAGE_CONFIG = {
     },
 }
 
-TECHNIQUE_IDS = (
-    "technique_depth_test",
-    "technique_edl",
-    "technique_ssao",
-    "technique_msaa",
-    "technique_depth_cue",
-    "technique_transparency",
-    "alpha_blending",
-    "feature_lighting",
-    "feature_material_mesh",
-    "feature_mesh_texture",
-    "point_cloud",
-    "protein_arcball_viewer",
-    "showcase_gpu_particle_smoke",
-)
 
 
 @dataclass(frozen=True)
@@ -566,10 +552,10 @@ def render_index(
 
     lines.extend([f"[Browse all {n_vc} visuals and composites](visuals.md).", ""])
 
-    # --- Features & Techniques ---
+    # --- Features ---
     all_flagship_ids = {id_ for _, ids in INDEX_FEATURE_GROUPS for id_ in ids}
-    lines.extend(["## Features & Techniques", ""])
-    lines.extend(["A selection of isolated feature and technique examples.", ""])
+    lines.extend(["## Features", ""])
+    lines.extend(["A selection of isolated feature examples.", ""])
     for group_label, group_ids in INDEX_FEATURE_GROUPS:
         group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
         if not group_examples:
@@ -583,8 +569,8 @@ def render_index(
         lines.append("")
     lines.extend(
         [
-            f"[Browse all {len(feature_examples)} feature and technique examples](features.md) — "
-            "controllers, adornments, interaction, animation, techniques, and more.",
+            f"[Browse all {len(feature_examples)} feature examples](features.md) — "
+            "controllers, adornments, interaction, animation, rendering, and more.",
             "",
         ]
     )
@@ -639,26 +625,12 @@ def render_features_page(
     image_format: str = DEFAULT_IMAGE_FORMAT,
 ) -> None:
     feature_examples = [e for e in examples if e.lane == "features"]
-    technique_examples = [e for e in examples if e.id in TECHNIQUE_IDS]
     page_path = docs_site_path(docs_dir, "features.md")
-    lines = generated_header("Features & Techniques")
-    lines.extend(
-        [
-            f"{len(feature_examples)} feature examples and {len(technique_examples)} technique examples.",
-            "",
-        ]
-    )
-    lines.extend(["## Features", ""])
+    lines = generated_header("Features")
+    lines.extend([f"{len(feature_examples)} feature examples.", ""])
     lines.append('<div class="grid cards" markdown="1">')
     lines.append("")
     for example in sorted(feature_examples, key=lambda e: e.title.lower()):
-        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
-    lines.append("</div>")
-    lines.append("")
-    lines.extend(["## Techniques", ""])
-    lines.append('<div class="grid cards" markdown="1">')
-    lines.append("")
-    for example in technique_examples:
         lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
     lines.append("</div>")
     lines.append("")

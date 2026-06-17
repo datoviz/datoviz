@@ -98,7 +98,7 @@ nav:
     - Overview: 'examples/index.md'
     - Showcases: 'examples/showcases.md'
     - Visuals & Composites: 'examples/visuals.md'
-    - Features & Techniques: 'examples/features.md'
+    - Features: 'examples/features.md'
     - Advanced: 'examples/advanced.md'
   - How-To:
     - Scene And Runtime:

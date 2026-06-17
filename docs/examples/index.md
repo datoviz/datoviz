@@ -370,9 +370,9 @@ deterministic brain-connectivity graph composite.
 
 [Browse all 17 visuals and composites](visuals.md).
 
-## Features & Techniques
+## Features
 
-A selection of isolated feature and technique examples.
+A selection of isolated feature examples.
 
 #### Layout
 
@@ -572,6 +572,16 @@ screen-space ambient occlusion on normal-producing mesh geometry.
 
 </div>
 
+<div class="card" markdown="1">
+
+### [Depth Cue](gallery/features/technique_depth_cue.md)
+
+![Depth Cue](../assets/gallery/v0.4/features/technique_depth_cue.webp)
+
+depth-dependent fading applied to a regular 3D sphere lattice.
+
+</div>
+
 </div>
 
 #### Animation & Interaction
@@ -620,4 +630,4 @@ retained sphere hover and click selection.
 
 </div>
 
-[Browse all 71 feature and technique examples](features.md) — controllers, adornments, interaction, animation, techniques, and more.
+[Browse all 71 feature examples](features.md) — controllers, adornments, interaction, animation, rendering, and more.
