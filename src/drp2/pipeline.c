@@ -293,9 +293,10 @@ bool _vklite_compile_glsl(
     }
 
     g_shaderc.compile_options_set_source_language(options, shaderc_source_language_glsl);
+    /* Match build-time glslc output and avoid requiring optional shader demote features. */
     g_shaderc.compile_options_set_target_env(
-        options, shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
-    g_shaderc.compile_options_set_target_spirv(options, shaderc_spirv_version_1_6);
+        options, shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_0);
+    g_shaderc.compile_options_set_target_spirv(options, shaderc_spirv_version_1_0);
 
     shaderc_shader_kind kind = _vklite_shader_kind(stage);
     shaderc_compilation_result_t result = g_shaderc.compile_into_spv(

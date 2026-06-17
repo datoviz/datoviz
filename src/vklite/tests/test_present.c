@@ -87,6 +87,46 @@ static bool _present_test_visible(void)
 
 
 /**
+ * Resolve the surface format expected from the swapchain configuration.
+ *
+ * @param surface cached surface capabilities
+ * @param cfg requested swapchain configuration
+ * @return requested format when supported, otherwise the surface preference
+ */
+static VkSurfaceFormatKHR _present_expected_swapchain_format(
+    const DvzSurface* surface, DvzSwapchainConfig cfg)
+{
+    ANN(surface);
+
+    VkSurfaceFormatKHR expected = dvz_surface_preferred_format(surface);
+    if (cfg.image_format == VK_FORMAT_UNDEFINED)
+    {
+        return expected;
+    }
+
+    uint32_t format_count = dvz_surface_format_count(surface);
+    for (uint32_t i = 0; i < format_count; i++)
+    {
+        VkSurfaceFormatKHR candidate = {0};
+        if (!dvz_surface_format(surface, i, &candidate))
+        {
+            continue;
+        }
+        if (candidate.format != cfg.image_format)
+        {
+            continue;
+        }
+        if (cfg.color_space == 0 || candidate.colorSpace == cfg.color_space)
+        {
+            return candidate;
+        }
+    }
+    return expected;
+}
+
+
+
+/**
  * Destroy all resources owned by a presentation fixture.
  *
  * @param fixture fixture to cleanup
@@ -942,10 +982,10 @@ int test_vklite_swapchain_recreate_resolved_state(TstContext* suite, const TstCa
     }
 
     AT(status == DVZ_PRESENT_STATUS_OK);
-    VkSurfaceFormatKHR preferred_format = dvz_surface_preferred_format(surface);
+    VkSurfaceFormatKHR expected_format = _present_expected_swapchain_format(surface, cfg);
     AT(dvz_swapchain_image_format(swapchain) != VK_FORMAT_UNDEFINED);
-    AT(dvz_swapchain_image_format(swapchain) == preferred_format.format);
-    AT(dvz_swapchain_color_space(swapchain) == preferred_format.colorSpace);
+    AT(dvz_swapchain_image_format(swapchain) == expected_format.format);
+    AT(dvz_swapchain_color_space(swapchain) == expected_format.colorSpace);
     AT(dvz_swapchain_present_mode(swapchain) == dvz_surface_preferred_present_mode(surface));
 
     dvz_swapchain_destroy(swapchain);
