@@ -9,7 +9,7 @@ _PKG = Path(__file__).resolve().parent
 
 
 def _usage() -> str:
-    return "Usage: datoviz-config [--cflags] [--libs] [--prefix]"
+    return "Usage: datoviz-config [--cflags] [--libs] [--cmake-dir] [--prefix]"
 
 
 def main() -> int:
@@ -19,7 +19,7 @@ def main() -> int:
         print(_usage())
         return 0
 
-    unknown = args - {"--cflags", "--libs", "--prefix"}
+    unknown = args - {"--cflags", "--libs", "--cmake-dir", "--prefix"}
     if unknown:
         print(f"datoviz-config: unknown option: {sorted(unknown)[0]}", file=sys.stderr)
         print(_usage(), file=sys.stderr)
@@ -36,6 +36,8 @@ def main() -> int:
         elif sys.platform == "darwin":
             rpath = f" -Wl,-rpath,{_PKG}"
         print(f"-L{_PKG} -ldatoviz{rpath}")
+    if "--cmake-dir" in args:
+        print(_PKG / "lib" / "cmake" / "datoviz")
 
     return 0
 

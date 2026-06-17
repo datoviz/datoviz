@@ -21,3 +21,7 @@ cp external/vk_mem_alloc.h "$dst/include/"
 cp external/cimgui/cimgui.h "$dst/include/"
 cp -a external/vulkan "$dst/include/"
 cp -a external/vk_video "$dst/include/"
+
+mkdir -p "$dst/lib/cmake/datoviz"
+cp cmake/DatovizConfig.cmake.wheel "$dst/lib/cmake/datoviz/DatovizConfig.cmake"
+cp cmake/DatovizConfig.cmake.wheel "$dst/lib/cmake/datoviz/datovizConfig.cmake"

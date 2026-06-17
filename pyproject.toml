@@ -30,6 +30,7 @@ package-data = {"datoviz" = [
     "*.json",
     "include/*.h",
     "include/**/*.h",
+    "lib/cmake/datoviz/*.cmake",
 ]}
 
 [project.scripts]
