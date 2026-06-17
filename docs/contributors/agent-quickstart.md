@@ -4,6 +4,9 @@ Use this page when asking a coding agent to write Datoviz v0.4 example or user-c
 source of truth for public examples is `docs/examples/examples.json`, generated from
 `examples/c/MANIFEST.yaml`.
 
+Use [AI Agents](ai-agents.md) for broader implementation work. Use this page only for example and
+snippet selection.
+
 
 ## Pick A Starting Example
 

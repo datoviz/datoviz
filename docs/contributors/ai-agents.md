@@ -46,6 +46,8 @@ figure -> panel -> visual or retained object -> data/resources -> render/show/ca
 
 For example selection, start with [Agent Quickstart](agent-quickstart.md). It uses
 `docs/examples/examples.json` as the machine-readable source of truth for current public examples.
+For capability-first lookup, use
+[Example Selection By Capability](example-selection-by-capability.md).
 
 Prefer examples that are:
 
@@ -68,6 +70,15 @@ Use the example taxonomy when searching:
 
 Treat `workflow`, `scientific`, `real-data`, `simulated`, `interactive`, `offscreen`, and domain
 labels as tags. Do not add new public source folders for those concepts.
+
+For lower-level changes, use the contributor appendices:
+
+| Task | Appendix |
+| --- | --- |
+| visual family work | [Adding A Visual](adding-a-visual.md) |
+| new backend command contract | [Adding A DRP2 Command](adding-a-drp2-command.md) |
+| browser fixture or live route | [Adding A WebGPU Fixture](adding-a-webgpu-fixture.md) |
+| source-of-truth lookup | [Architecture Map](architecture-map.md) |
 
 
 ## Do Not Invent

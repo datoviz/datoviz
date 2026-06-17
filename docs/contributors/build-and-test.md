@@ -6,16 +6,18 @@ Run build and test commands from the repository root.
 ## Primary Workflow
 
 ```bash
-just clean
 just build
 just test
 ```
+
+Use `just clean` only when you need to discard local build artifacts or reset a stale configuration.
 
 For focused work, run the narrowest relevant test filter:
 
 ```bash
 just test scene
 just test drp2
+just spec-check
 ```
 
 
@@ -37,3 +39,12 @@ For documentation-only edits:
 git diff --check
 git status --short
 ```
+
+Before committing, inspect the staged set:
+
+```bash
+git diff --cached --stat
+```
+
+Do not stage unrelated work, `data` submodule pointer updates, generated binary payloads, or
+vendored runtime libraries unless explicitly approved for the current change.

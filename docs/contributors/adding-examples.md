@@ -13,6 +13,9 @@ Before adding or changing a public example, check:
 3. `spec/scene/examples/TEMPLATE.md` for scenario notes;
 4. the relevant visual, feature, runtime, or diagnostics spec.
 
+For capability-first lookup, use [Example Selection By Capability](example-selection-by-capability.md)
+before copying from a showcase or guessing by filename.
+
 
 ## Minimal Examples
 
@@ -81,3 +84,6 @@ just spec-check
 
 When a screenshot, readback, or fixture is part of the example contract, update or regenerate that
 artifact through the documented workflow instead of hand-editing generated files.
+
+For browser promotion, use [Adding A WebGPU Fixture](adding-a-webgpu-fixture.md). Browser examples
+must reuse the canonical C example or portable C scenario; JavaScript remains host glue.

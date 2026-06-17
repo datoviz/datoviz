@@ -1,9 +1,40 @@
 # Docs Authoring
 
-Draft contributor stub.
-
 Write public documentation in `docs/`, durable behavior specs in `spec/`, and execution handoff
 notes in `agents/`. Keep pages short, task-oriented, and linked to runnable examples.
+
+
+## Source Of Truth
+
+Use this routing before adding or moving content:
+
+| Content | Location |
+| --- | --- |
+| public start/tutorial/example/how-to/reference/explanation/contributor pages | `docs/` |
+| public navigation | `mkdocs.yml` |
+| documentation architecture and policy | `spec/docs/` |
+| scene, visual, runtime, and interaction semantics | `spec/scene/` |
+| DRP2 command and fixture contracts | `spec/drp2/` |
+| raw binding and Python facade boundaries | `spec/bindings/`, `spec/api/` |
+| current execution status and work queues | `agents/` |
+| generated API/reference output | generated docs path, never hand-edited |
+
+When `mkdocs.yml` changes, update `spec/docs/INFORMATION_ARCHITECTURE.md` in the same change so
+the documented intent matches the built site.
+
+
+## Page Shape
+
+Prefer:
+
+1. one job per page;
+2. short sections with runnable commands;
+3. links to canonical examples instead of copied code fragments;
+4. explicit support status for experimental, deferred, or external/GSP-owned surfaces;
+5. current v0.4 names and runtime boundaries.
+
+Do not put active blocker lists, release diary notes, or private implementation plans in public
+docs. Put those in `agents/` or `spec/` according to the table above.
 
 
 ## Visual Gallery Pages
