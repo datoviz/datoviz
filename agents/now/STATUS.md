@@ -8,7 +8,21 @@ history, not in agent archives.
 
 ## Current Pickup
 
-Next critical path: RC1 release proof.
+Next critical path: follow the Pre-RC1 execution order below, then move directly to RC1 release
+notes, tag, artifacts, and publication checks.
+
+Pre-RC1 execution order:
+
+1. Run the v0.4 Git history cleanup if it is still desired before stable RC refs exist.
+2. Prove the Windows wheel locally, starting with AMD64.
+3. Make the GitHub Actions wheel workflow green across the required matrix.
+4. Install, inspect, and smoke-test the built wheels, including native dependencies and the CMake
+   consumer check.
+5. Land the v0.3 visible parity audit and public API/status disposition table.
+6. Polish the WebGPU/WASM story: supported live routes, experimental scope, diagnostics, and
+   non-parity boundaries.
+7. Proofread the public docs, gallery pages, generated matrices, screenshots, and example metadata.
+8. Cut RC1 only after final validation and release notes are recorded.
 
 Pre-RC repository hygiene note: if the v0.4 Git history cleanup remains desired, do it before
 `v0.4.0-rc1` and before treating release refs as stable. The agreed process, user migration note,
