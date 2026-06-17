@@ -48,6 +48,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             ccache glslang-tools glslc libshaderc-dev libvulkan-dev \
+            libgl1-mesa-dev \
             libx11-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev
           python -m pip install -U pip cibuildwheel build auditwheel
           command -v ccache
