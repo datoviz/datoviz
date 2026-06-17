@@ -101,42 +101,36 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
 
 ## Build and run
 
-=== "Python"
+**Python:** save as `scatter.py` and run `python scatter.py`.
 
-    Save as `scatter.py` and run:
+**C:** compile for your platform:
+
+=== "Linux"
 
     ```sh
-    python scatter.py
+    gcc scatter.c -o scatter -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
+    ./scatter
     ```
 
-=== "C"
+=== "macOS"
 
-    === "Linux"
+    ```sh
+    clang scatter.c -o scatter -I/usr/local/include/datoviz -L/usr/local/lib/datoviz \
+        -Wl,-rpath,/usr/local/lib/datoviz -lm -ldatoviz
+    ./scatter
+    ```
 
-        ```sh
-        gcc scatter.c -o scatter -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
-        ./scatter
-        ```
+=== "Windows (MSYS2/MinGW)"
 
-    === "macOS"
+    ```sh
+    gcc scatter.c -o scatter -Iinclude/ -Lbuild/ -lm -ldatoviz
+    ./scatter.exe
+    ```
 
-        ```sh
-        clang scatter.c -o scatter -I/usr/local/include/datoviz -L/usr/local/lib/datoviz \
-            -Wl,-rpath,/usr/local/lib/datoviz -lm -ldatoviz
-        ./scatter
-        ```
+=== "Windows (MSVC)"
 
-    === "Windows (MSYS2/MinGW)"
-
-        ```sh
-        gcc scatter.c -o scatter -Iinclude/ -Lbuild/ -lm -ldatoviz
-        ./scatter.exe
-        ```
-
-    === "Windows (MSVC)"
-
-        MSVC is supported via CMake. See [Install](install.md) for the CMake package
-        integration, which handles include paths and linking automatically.
+    MSVC is supported via CMake. See [Install](install.md) for the CMake package
+    integration, which handles include paths and linking automatically.
 
 
 ## What you should see
