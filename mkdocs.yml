@@ -96,16 +96,14 @@ nav:
     - AI-assisted workflow: 'start/ai-workflow.md'
   - Examples:
     - Overview: 'examples/index.md'
-    - Galleries:
+    - Showcases: 'examples/showcases.md'
+    - Visuals & Composites:
       - Visual gallery: 'examples/visual-gallery.md'
-      - Feature gallery: 'examples/feature-gallery.md'
       - Composites: 'examples/composites.md'
+    - Features & Techniques:
+      - Feature gallery: 'examples/feature-gallery.md'
       - Techniques: 'examples/techniques.md'
-      - Advanced examples: 'examples/advanced.md'
-    - Release Proof:
-      - Showcases: 'examples/showcases.md'
-      - Validation gallery: 'examples/validation-gallery.md'
-      - WebGPU matrix: 'examples/webgpu-matrix.md'
+    - Advanced: 'examples/advanced.md'
   - How-To:
     - Scene And Runtime:
       - Create a scene: 'how-to/create-a-scene.md'
@@ -214,6 +212,8 @@ nav:
       - Adding examples: 'contributors/adding-examples.md'
       - Adding a visual: 'contributors/adding-a-visual.md'
       - Release validation: 'contributors/release-validation.md'
+      - Validation gallery: 'examples/validation-gallery.md'
+      - WebGPU matrix: 'examples/webgpu-matrix.md'
       - Release process: 'contributors/release-process.md'
       - Release flight checklist: 'contributors/release-flight-checklist.md'
       - Release wheels: 'contributors/release-wheels.md'

@@ -574,7 +574,7 @@ def render_index(
     for example in showcase_examples:
         lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False, show_status=False))
     lines.append("</div>")
-    lines.append("")
+    lines.extend(["", f"[Browse all {len(showcase_examples)} showcases](showcases.md).", ""])
 
     # --- Visuals & Composites ---
     n_vc = len(visual_examples) + len(composite_examples)
@@ -591,6 +591,8 @@ def render_index(
             lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False, show_status=False))
         lines.append("</div>")
         lines.append("")
+
+    lines.extend([f"[Browse all {n_vc} visuals and composites](visual-gallery.md).", ""])
 
     # --- Features & Techniques ---
     all_flagship_ids = {id_ for _, ids in INDEX_FEATURE_GROUPS for id_ in ids}

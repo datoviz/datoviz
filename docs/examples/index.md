@@ -162,6 +162,8 @@ contiguous U.S. state population-density choropleth.
 
 </div>
 
+[Browse all 15 showcases](showcases.md).
+
 ## Visuals & Composites
 
 17 rendering families — one example each.
@@ -365,6 +367,8 @@ deterministic brain-connectivity graph composite.
 </div>
 
 </div>
+
+[Browse all 17 visuals and composites](visual-gallery.md).
 
 ## Features & Techniques
 
