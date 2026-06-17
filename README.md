@@ -186,13 +186,13 @@ app.destroy()
 
 ## 📚 Documentation
 
-* [**📖 User guide**](https://datoviz.org/guide/)
-* [**🐍 Examples**](https://datoviz.org/gallery/)
-* [**📚 API** reference](https://datoviz.org/reference/api_py/)
-* [**🏛️ Architecture** overview](https://datoviz.org/discussions/ARCHITECTURE/)
-* [**🏗️ Build** instructions](https://datoviz.org/discussions/BUILD/)
-* [**👥 Contributors** instructions](https://datoviz.org/discussions/CONTRIBUTING/)
-* [**🛠️ Maintainers** instructions](https://datoviz.org/discussions/MAINTAINERS/)
+* [**📖 Quickstart**](https://datoviz.org/start/quickstart/)
+* [**🐍 Examples**](https://datoviz.org/examples/)
+* [**📚 API reference**](https://datoviz.org/reference/)
+* [**🏛️ Internals**](https://datoviz.org/explanation/why-datoviz/)
+* [**🏗️ Build and test**](https://datoviz.org/contributors/build-and-test/)
+* [**👥 Contributing**](https://datoviz.org/contributors/build-and-test/)
+* [**🛠️ Release process**](https://datoviz.org/contributors/release-process/)
 
 
 
