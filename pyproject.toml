@@ -28,7 +28,12 @@ package-data = {"datoviz" = [
     "*.dll",
     "*.dylib",
     "*.json",
+    "include/*.h",
+    "include/**/*.h",
 ]}
+
+[project.scripts]
+datoviz-config = "datoviz.cli:main"
 
 [project.urls]
 "Homepage" = "https://github.com/datoviz/datoviz"

@@ -468,8 +468,12 @@ manylinux release="Release":
     RUN \
         mkdir -p wheel wheel/datoviz && \
         cp datoviz/*.py wheel/datoviz/ && \
+        cp -a datoviz/experimental wheel/datoviz/ && \
         cp pyproject.toml wheel/ && \
-        cp build/libdatoviz.so wheel/datoviz/ && \
+        DVZ_LIB=\$(find build -maxdepth 3 -name 'libdatoviz.so' | head -n 1) && \
+        test -n "\$DVZ_LIB" && \
+        cp "\$DVZ_LIB" wheel/datoviz/ && \
+        tools/copy_wheel_c_integration.sh wheel/datoviz && \
         cp -L libs/shaderc/linux/*.so* wheel/datoviz/ && \
         cp /usr/lib64/libvulkan.so.1 wheel/datoviz/ && \
         cp /usr/bin/glslc wheel/datoviz/
@@ -721,10 +725,14 @@ wheel almalinux="0":
 
     # Copy the Python projects files
     cp datoviz/*.py wheel/datoviz/
+    cp -a datoviz/experimental wheel/datoviz/
     cp pyproject.toml wheel/
 
     # Copy libdatoviz
-    cp build/libdatoviz.so wheel/datoviz/
+    DVZ_LIB=$(find build -maxdepth 3 -name 'libdatoviz.so' | head -n 1)
+    test -n "$DVZ_LIB"
+    cp "$DVZ_LIB" wheel/datoviz/
+    tools/copy_wheel_c_integration.sh wheel/datoviz
 
     # Copy the Vulkan shared libraries
     if [ "{{almalinux}}" != "0" ]; then
@@ -938,8 +946,12 @@ wheel arg='': checkstructs
 
     # Copy the header files.
     cp datoviz/*.py $DVZDIR
+    cp -a datoviz/experimental $DVZDIR
     cp pyproject.toml $PKGROOT/
-    cp build/libdatoviz.dylib $DVZDIR
+    DVZ_LIB=$(find build -maxdepth 3 -name 'libdatoviz.dylib' | head -n 1)
+    test -n "$DVZ_LIB"
+    cp "$DVZ_LIB" $DVZDIR
+    tools/copy_wheel_c_integration.sh $DVZDIR
     cp build/libvulkan.1.dylib $DVZDIR
     cp build/libshaderc*.1.dylib $DVZDIR
     cp build/libfreetype.6.dylib $DVZDIR
@@ -1332,8 +1344,10 @@ wheel: checkstructs && showwheel
 
     # Copy the header files.
     cp datoviz/*.py "$DVZDIR"
+    cp -a datoviz/experimental "$DVZDIR"
     cp pyproject.toml "$PKGROOT/"
     cp build/*.dll "$DVZDIR"
+    tools/copy_wheel_c_integration.sh "$DVZDIR"
 
     # Copy mingw64 shared libraries.
     MINGW64_DIR="$(dirname $(which gcc))"
