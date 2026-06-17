@@ -8,6 +8,11 @@ Start with a scene, add one figure, create a panel, attach at least one visual, 
 interactive or offscreen view. The scene owns figures, panels, controllers, and visuals; the app
 owns the runtime used to render them.
 
+Datoviz is designed for batching. Prefer a small number of visuals with many items in each visual:
+one point visual with one million points is the intended shape; one million point visuals with one
+item each is not. Group similar elements by visual family, attribute layout, material, and update
+cadence so the GPU can draw large batches efficiently.
+
 ## Minimal Call Sequence
 
 ```c
@@ -31,18 +36,15 @@ dvz_scene_destroy(scene);
 Use `dvz_panel_full()` for a single viewport. Use panel-grid helpers only when the figure has
 multiple coordinated views.
 
-## Canonical Examples
-
-- Gallery: [Basic Scene](../examples/gallery/features/feature_basic_scene.md)
-- Source: `examples/c/features/basic_scene.c`
-- First program: [Scatter Plot](../examples/gallery/start/start_scatter.md)
-- Source: `examples/c/start/scatter.c`
 
 ## Important Details
 
 Create all scene objects before `dvz_app_run()`. Destroy the app before destroying the scene. Keep
 CPU arrays alive until the corresponding `dvz_visual_set_data()` call has returned; retained visual
 data is then owned by Datoviz.
+
+Minimize visual count aggressively. Add another visual only when elements need a different visual
+family, shader/material path, panel attachment, transform, lifetime, or update cadence.
 
 ## Common Mistakes
 
@@ -55,3 +57,10 @@ data is then owned by Datoviz.
 - [Open an interactive window](create-a-window.md)
 - [Render offscreen and capture](render-offscreen.md)
 - [Add visuals to a panel](add-a-visual.md)
+
+??? example "Related examples"
+
+    - Gallery: [Basic Scene](../examples/gallery/features/feature_basic_scene.md)
+    - Source: `examples/c/features/basic_scene.c`
+    - First program: [Scatter Plot](../examples/gallery/start/start_scatter.md)
+    - Source: `examples/c/start/scatter.c`

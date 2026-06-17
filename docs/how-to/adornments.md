@@ -18,14 +18,6 @@ dvz_panel_add_visual(panel, visual, NULL);
 
 The exact helper depends on the adornment type.
 
-## Canonical Examples
-
-- Gallery: [Colorbar](../examples/gallery/features/colorbar.md)
-- Source: `examples/c/features/colorbar.c`
-- Gallery: [Scale Bar](../examples/gallery/features/scale_bar.md)
-- Source: `examples/c/features/scalebar.c`
-- Gallery: [Categorical Legend](../examples/gallery/features/feature_legend_categorical.md)
-- Source: `examples/c/features/legend_categorical.c`
 
 ## Important Details
 
@@ -43,3 +35,12 @@ category set changes, update the adornment at the same time.
 - [Map scalar values with colormaps](use-colormaps.md)
 - [Add axes](axes.md)
 - [Add text, labels, and annotations](add-annotations.md)
+
+??? example "Related examples"
+
+    - Gallery: [Colorbar](../examples/gallery/features/colorbar.md)
+    - Source: `examples/c/features/colorbar.c`
+    - Gallery: [Scale Bar](../examples/gallery/features/scale_bar.md)
+    - Source: `examples/c/features/scalebar.c`
+    - Gallery: [Categorical Legend](../examples/gallery/features/feature_legend_categorical.md)
+    - Source: `examples/c/features/legend_categorical.c`

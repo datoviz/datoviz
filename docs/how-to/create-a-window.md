@@ -19,12 +19,6 @@ dvz_app_destroy(app);
 Pass `0` to `dvz_app_run()` to run until the window closes. Pass a positive frame count for smoke
 tests or deterministic captures.
 
-## Canonical Examples
-
-- Gallery: [GLFW App](../examples/gallery/features/feature_app_glfw.md)
-- Source: `examples/c/features/app_glfw.c`
-- Gallery: [Panzoom](../examples/gallery/features/feature_panzoom.md)
-- Source: `examples/c/features/panzoom.c`
 
 ## Important Details
 
@@ -49,3 +43,10 @@ before `dvz_scene_destroy()`.
 - [Create a scene](create-a-scene.md)
 - [Use panzoom](use-panzoom.md)
 - [Handle input events](input-events.md)
+
+??? example "Related examples"
+
+    - Gallery: [GLFW App](../examples/gallery/features/feature_app_glfw.md)
+    - Source: `examples/c/features/app_glfw.c`
+    - Gallery: [Panzoom](../examples/gallery/features/feature_panzoom.md)
+    - Source: `examples/c/features/panzoom.c`

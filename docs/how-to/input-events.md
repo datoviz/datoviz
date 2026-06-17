@@ -20,18 +20,6 @@ state.
 
 Keep callback work small; defer expensive updates to the next frame or a controlled update path.
 
-## Canonical Examples
-
-- Gallery: [Input Events](../examples/gallery/features/feature_input_events.md)
-- Source: `examples/c/features/input_events.c`
-- Gallery: [Picking](../examples/gallery/features/feature_picking.md)
-- Source: `examples/c/features/picking.c`
-- Gallery: [GUI Controls](../examples/gallery/features/feature_gui_controls.md)
-- Source: `examples/c/features/gui_controls.c`
-- Gallery: [Raw cimgui GUI](../examples/gallery/features/feature_gui_cimgui.md)
-- Source: `examples/c/features/gui_cimgui.c`
-- Gallery: [GUI Viewport](../examples/gallery/features/feature_gui_viewport.md)
-- Source: `examples/c/features/gui_viewport.c`
 
 ## Important Details
 
@@ -50,3 +38,16 @@ WebGPU route and should not be copied from GLFW callback code.
 - [Use panzoom](use-panzoom.md)
 - [Pick items](pick-and-probe.md)
 - [Embed in Qt](embed-in-qt.md)
+
+??? example "Related examples"
+
+    - Gallery: [Input Events](../examples/gallery/features/feature_input_events.md)
+    - Source: `examples/c/features/input_events.c`
+    - Gallery: [Picking](../examples/gallery/features/feature_picking.md)
+    - Source: `examples/c/features/picking.c`
+    - Gallery: [GUI Controls](../examples/gallery/features/feature_gui_controls.md)
+    - Source: `examples/c/features/gui_controls.c`
+    - Gallery: [Raw cimgui GUI](../examples/gallery/features/feature_gui_cimgui.md)
+    - Source: `examples/c/features/gui_cimgui.c`
+    - Gallery: [GUI Viewport](../examples/gallery/features/feature_gui_viewport.md)
+    - Source: `examples/c/features/gui_viewport.c`

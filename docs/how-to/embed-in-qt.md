@@ -18,12 +18,6 @@ you target.
 
 Use the GLFW external-surface example as the closest maintained native embedding reference.
 
-## Canonical Examples
-
-- Gallery: [External Surface GLFW](../examples/gallery/advanced/advanced_external_surface_glfw.md)
-- Source: `examples/c/advanced/external_surface_glfw.c`
-- Gallery: [GUI Viewport](../examples/gallery/features/feature_gui_viewport.md)
-- Source: `examples/c/features/gui_viewport.c`
 
 ## Important Details
 
@@ -41,3 +35,10 @@ stack; adapt the existing runtime/view boundary.
 - [Open an interactive window](create-a-window.md)
 - [Handle input events](input-events.md)
 - [Diagnose build and platform issues](diagnose-platform.md)
+
+??? example "Related examples"
+
+    - Gallery: [External Surface GLFW](../examples/gallery/advanced/advanced_external_surface_glfw.md)
+    - Source: `examples/c/advanced/external_surface_glfw.c`
+    - Gallery: [GUI Viewport](../examples/gallery/features/feature_gui_viewport.md)
+    - Source: `examples/c/features/gui_viewport.c`

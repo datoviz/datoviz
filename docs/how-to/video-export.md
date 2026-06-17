@@ -19,12 +19,6 @@ for (uint32_t frame = 0; frame < frame_count; frame++)
 
 Do not hand-roll a separate renderer for video; reuse the app/offscreen frame path.
 
-## Canonical Examples
-
-- Gallery: [Video Export](../examples/gallery/features/feature_video_export.md)
-- Source: `examples/c/features/video_export.c`
-- Gallery: [Timer Animation](../examples/gallery/features/feature_timer_animation.md)
-- Source: `examples/c/features/timer_animation.c`
 
 ## Important Details
 
@@ -42,3 +36,10 @@ fixed for reproducible output.
 - [Animate a scene](animation.md)
 - [Save screenshots](capture-an-image.md)
 - [Record and replay frame streams](replay-dvzr.md)
+
+??? example "Related examples"
+
+    - Gallery: [Video Export](../examples/gallery/features/feature_video_export.md)
+    - Source: `examples/c/features/video_export.c`
+    - Gallery: [Timer Animation](../examples/gallery/features/feature_timer_animation.md)
+    - Source: `examples/c/features/timer_animation.c`

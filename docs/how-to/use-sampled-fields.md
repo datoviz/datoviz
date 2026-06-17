@@ -19,14 +19,6 @@ dvz_panel_add_visual(panel, image, NULL);
 
 Use the exact image or volume attribute names from the canonical source before copying this pattern.
 
-## Canonical Examples
-
-- Gallery: [2D Sampled Field](../examples/gallery/features/feature_sampled_field_2d.md)
-- Source: `examples/c/features/sampled_field_2d.c`
-- Gallery: [3D Sampled Field](../examples/gallery/features/feature_sampled_field_3d.md)
-- Source: `examples/c/features/sampled_field_3d.c`
-- Gallery: [Textured Mesh](../examples/gallery/features/feature_mesh_texture.md)
-- Source: `examples/c/features/mesh_texture.c`
 
 ## Important Details
 
@@ -44,3 +36,12 @@ texture format so filtering, colormapping, and probing remain meaningful.
 - [Probe image or field values](probe-fields.md)
 - [Map scalar values with colormaps](use-colormaps.md)
 - [Use lighting and materials](lighting-and-materials.md)
+
+??? example "Related examples"
+
+    - Gallery: [2D Sampled Field](../examples/gallery/features/feature_sampled_field_2d.md)
+    - Source: `examples/c/features/sampled_field_2d.c`
+    - Gallery: [3D Sampled Field](../examples/gallery/features/feature_sampled_field_3d.md)
+    - Source: `examples/c/features/sampled_field_3d.c`
+    - Gallery: [Textured Mesh](../examples/gallery/features/feature_mesh_texture.md)
+    - Source: `examples/c/features/mesh_texture.c`

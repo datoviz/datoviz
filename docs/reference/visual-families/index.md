@@ -7,6 +7,10 @@ Use the [Examples gallery](../../examples/visuals.md) for complete executable so
 [Choose a visual family](../../how-to/choose-a-visual-family.md) when deciding between neighboring
 families.
 
+Visual families are batching units. Prefer one visual with many items over many visuals with one
+item each. Use per-item attributes for position, color, size, radius, state, and related styling
+whenever the visual family supports them.
+
 | Preview | Family | Status | Primary use | Example |
 | --- | --- | --- | --- | --- |
 | [![Point](../../assets/gallery/v0.4/visuals/point_2d.webp)](../../examples/gallery/visuals/point_2d.md) | [Point](point.md) | supported | Dense circular point sprites for scatter plots and point clouds | [Example](../../examples/gallery/visuals/point_2d.md) |

@@ -17,14 +17,6 @@ dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ);
 
 Use the constructor and camera descriptor shown by the selected controller example.
 
-## Canonical Examples
-
-- Gallery: [Orbit Camera Controller](../examples/gallery/features/feature_controller_orbit_camera.md)
-- Source: `examples/c/features/controller_orbit_camera.c`
-- Gallery: [Arcball Controller](../examples/gallery/features/feature_controller_arcball.md)
-- Source: `examples/c/features/controller_arcball.c`
-- Gallery: [Orientation Gizmo](../examples/gallery/features/feature_orientation_gizmo.md)
-- Source: `examples/c/features/orientation_gizmo.c`
 
 ## Important Details
 
@@ -42,3 +34,12 @@ adding orientation UI or scientific labels.
 - [Use 3D controllers](3d-navigation.md)
 - [Use coordinate systems](coordinate-systems.md)
 - [Use lighting and materials](lighting-and-materials.md)
+
+??? example "Related examples"
+
+    - Gallery: [Orbit Camera Controller](../examples/gallery/features/feature_controller_orbit_camera.md)
+    - Source: `examples/c/features/controller_orbit_camera.c`
+    - Gallery: [Arcball Controller](../examples/gallery/features/feature_controller_arcball.md)
+    - Source: `examples/c/features/controller_arcball.c`
+    - Gallery: [Orientation Gizmo](../examples/gallery/features/feature_orientation_gizmo.md)
+    - Source: `examples/c/features/orientation_gizmo.c`

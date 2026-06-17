@@ -17,14 +17,6 @@ dvz_visual_set_data(visual, "color", color, n);
 For dense point or pixel data, a color or alpha update is usually cheaper than creating one visual
 per selected item.
 
-## Canonical Examples
-
-- Gallery: [Pixel Selection](../examples/gallery/features/feature_selection_pixel.md)
-- Source: `examples/c/features/selection_pixel.c`
-- Gallery: [Sphere Selection](../examples/gallery/features/feature_selection_sphere.md)
-- Source: `examples/c/features/selection_sphere.c`
-- Gallery: [Mesh Instance Selection](../examples/gallery/features/feature_selection_mesh_instances.md)
-- Source: `examples/c/features/selection_mesh_instances.c`
 
 ## Important Details
 
@@ -42,3 +34,12 @@ not own your semantic selection model.
 - [Pick items](pick-and-probe.md)
 - [Update visual data](update-visual-data.md)
 - [Control depth, blending, and transparency](rendering-techniques.md)
+
+??? example "Related examples"
+
+    - Gallery: [Pixel Selection](../examples/gallery/features/feature_selection_pixel.md)
+    - Source: `examples/c/features/selection_pixel.c`
+    - Gallery: [Sphere Selection](../examples/gallery/features/feature_selection_sphere.md)
+    - Source: `examples/c/features/selection_sphere.c`
+    - Gallery: [Mesh Instance Selection](../examples/gallery/features/feature_selection_mesh_instances.md)
+    - Source: `examples/c/features/selection_mesh_instances.c`

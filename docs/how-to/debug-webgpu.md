@@ -15,12 +15,6 @@ manifest status -> live route -> browser WebGPU support -> console errors -> nat
 
 Use the standalone route before debugging an iframe embedded in a gallery page.
 
-## Canonical Examples
-
-- Gallery: [Basic Scene](../examples/gallery/features/feature_basic_scene.md)
-- Source: `examples/c/features/basic_scene.c`
-- Gallery: [WebGPU Matrix](../examples/webgpu-matrix.md)
-- Manifest: `examples/c/MANIFEST.yaml`
 
 ## Important Details
 
@@ -39,3 +33,10 @@ adapter.
 - [Deploy WebGPU examples to the browser](deploy-to-web.md)
 - [Debug rendering output](debug-rendering.md)
 - [Diagnose build and platform issues](diagnose-platform.md)
+
+??? example "Related examples"
+
+    - Gallery: [Basic Scene](../examples/gallery/features/feature_basic_scene.md)
+    - Source: `examples/c/features/basic_scene.c`
+    - Gallery: [WebGPU Matrix](../examples/webgpu-matrix.md)
+    - Manifest: `examples/c/MANIFEST.yaml`

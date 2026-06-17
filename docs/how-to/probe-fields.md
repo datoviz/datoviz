@@ -20,14 +20,6 @@ Use picking for item identity; use probing for field values.
 For an image with a colorbar and cursor readout, keep the sampled field, scalar normalization,
 colorbar range, and probe coordinate transform synchronized.
 
-## Canonical Examples
-
-- Gallery: [Image Probe](../examples/gallery/features/image_probe.md)
-- Source: `examples/c/features/image_probe.c`
-- Gallery: [Label Probe](../examples/gallery/features/feature_probe_labels.md)
-- Source: `examples/c/features/probe_labels.c`
-- Gallery: [Linked Probe With Colorbar](../examples/gallery/showcases/linked_panels_probe_colorbar.md)
-- Source: `examples/c/showcases/linked_probe_colorbar.c`
 
 ## Important Details
 
@@ -46,3 +38,12 @@ translated, or texture-mapped onto a mesh, account for that transform before ind
 - [Use sampled fields and textures](use-sampled-fields.md)
 - [Pick items](pick-and-probe.md)
 - [Add text, labels, and annotations](add-annotations.md)
+
+??? example "Related examples"
+
+    - Gallery: [Image Probe](../examples/gallery/features/image_probe.md)
+    - Source: `examples/c/features/image_probe.c`
+    - Gallery: [Label Probe](../examples/gallery/features/feature_probe_labels.md)
+    - Source: `examples/c/features/probe_labels.c`
+    - Gallery: [Linked Probe With Colorbar](../examples/gallery/showcases/linked_panels_probe_colorbar.md)
+    - Source: `examples/c/showcases/linked_probe_colorbar.c`

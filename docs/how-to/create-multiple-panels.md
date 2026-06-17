@@ -20,14 +20,6 @@ dvz_panel_add_visual(right, visual_b, NULL);
 Use `dvz_grid_set_margins()` and `dvz_grid_set_gutter()` when the panels need reserved space or
 consistent spacing.
 
-## Canonical Examples
-
-- Gallery: [Panel Grid](../examples/gallery/features/feature_panel_grid.md)
-- Source: `examples/c/features/panel_grid.c`
-- Gallery: [Multiple Panels](../examples/gallery/features/feature_panel_multi.md)
-- Source: `examples/c/features/panel_multi.c`
-- Gallery: [Linked Panels](../examples/gallery/features/feature_panel_linked.md)
-- Source: `examples/c/features/panel_linked.c`
 
 ## Important Details
 
@@ -45,3 +37,12 @@ deliberately; do not duplicate the whole scene unless the runtime really needs s
 - [Link panels and controllers](link-panels.md)
 - [Add axes](axes.md)
 - [Use panzoom](use-panzoom.md)
+
+??? example "Related examples"
+
+    - Gallery: [Panel Grid](../examples/gallery/features/feature_panel_grid.md)
+    - Source: `examples/c/features/panel_grid.c`
+    - Gallery: [Multiple Panels](../examples/gallery/features/feature_panel_multi.md)
+    - Source: `examples/c/features/panel_multi.c`
+    - Gallery: [Linked Panels](../examples/gallery/features/feature_panel_linked.md)
+    - Source: `examples/c/features/panel_linked.c`

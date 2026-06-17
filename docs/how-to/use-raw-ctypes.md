@@ -20,11 +20,6 @@ panel = dvz.dvz_panel_full(figure)
 
 Use the reference binding page for exact symbol names and type adapters.
 
-## Canonical Examples
-
-- Reference: [Python binding](../reference/ctypes.md)
-- Start page: [Quickstart](../start/quickstart.md)
-- Source: `examples/c/start/scatter.c`
 
 ## Important Details
 
@@ -43,3 +38,9 @@ binding development.
 - [Use from Python](use-python.md)
 - [Use from C or C++](c-integration.md)
 - [Diagnose build and platform issues](diagnose-platform.md)
+
+??? example "Related examples"
+
+    - Reference: [Python binding](../reference/ctypes.md)
+    - Start page: [Quickstart](../start/quickstart.md)
+    - Source: `examples/c/start/scatter.c`

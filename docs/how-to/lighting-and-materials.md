@@ -20,14 +20,6 @@ dvz_panel_add_visual(panel, mesh, NULL);
 Use the material-specific calls from the canonical source for roughness, metallic, or texture
 attributes.
 
-## Canonical Examples
-
-- Gallery: [Lighting](../examples/gallery/features/feature_lighting.md)
-- Source: `examples/c/features/lighting.c`
-- Gallery: [Mesh Materials](../examples/gallery/features/feature_material_mesh.md)
-- Source: `examples/c/features/material_mesh.c`
-- Gallery: [Textured Mesh](../examples/gallery/features/feature_mesh_texture.md)
-- Source: `examples/c/features/mesh_texture.c`
 
 ## Important Details
 
@@ -45,3 +37,12 @@ normals, orientation, and scale cleanup before lighting looks correct.
 - [Configure cameras](configure-cameras.md)
 - [Control depth, blending, and transparency](rendering-techniques.md)
 - [Use sampled fields and textures](use-sampled-fields.md)
+
+??? example "Related examples"
+
+    - Gallery: [Lighting](../examples/gallery/features/feature_lighting.md)
+    - Source: `examples/c/features/lighting.c`
+    - Gallery: [Mesh Materials](../examples/gallery/features/feature_material_mesh.md)
+    - Source: `examples/c/features/material_mesh.c`
+    - Gallery: [Textured Mesh](../examples/gallery/features/feature_mesh_texture.md)
+    - Source: `examples/c/features/mesh_texture.c`

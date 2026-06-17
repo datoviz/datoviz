@@ -16,14 +16,6 @@ examples/webgpu/live.html?id=feature_basic_scene
 The route hosts the WebGPU runtime, WASM bridge, canvas, and scenario data. Do not inline that
 runtime inside ordinary documentation pages.
 
-## Canonical Examples
-
-- Gallery: [Basic Scene](../examples/gallery/features/feature_basic_scene.md)
-- Source: `examples/c/features/basic_scene.c`
-- Gallery: [Linked Panels](../examples/gallery/features/feature_panel_linked.md)
-- Source: `examples/c/features/panel_linked.c`
-- Gallery: [Point](../examples/gallery/visuals/point_2d.md)
-- Source: `examples/c/visuals/point.c`
 
 ## Important Details
 
@@ -41,3 +33,12 @@ Only examples marked `webgpu-live` have browser routes. `webgpu-planned`, `webgp
 - [Diagnose WebGPU support](debug-webgpu.md)
 - [Record and replay frame streams](replay-dvzr.md)
 - [Debug rendering output](debug-rendering.md)
+
+??? example "Related examples"
+
+    - Gallery: [Basic Scene](../examples/gallery/features/feature_basic_scene.md)
+    - Source: `examples/c/features/basic_scene.c`
+    - Gallery: [Linked Panels](../examples/gallery/features/feature_panel_linked.md)
+    - Source: `examples/c/features/panel_linked.c`
+    - Gallery: [Point](../examples/gallery/visuals/point_2d.md)
+    - Source: `examples/c/visuals/point.c`

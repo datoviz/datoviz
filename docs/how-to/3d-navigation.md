@@ -17,18 +17,6 @@ dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ);
 
 Use the exact constructor shown by the selected controller example.
 
-## Canonical Examples
-
-- Gallery: [Arcball Controller](../examples/gallery/features/feature_controller_arcball.md)
-- Source: `examples/c/features/controller_arcball.c`
-- Gallery: [Orbit Camera Controller](../examples/gallery/features/feature_controller_orbit_camera.md)
-- Source: `examples/c/features/controller_orbit_camera.c`
-- Gallery: [Fly Controller](../examples/gallery/features/feature_controller_fly.md)
-- Source: `examples/c/features/controller_fly.c`
-- Gallery: [Turntable Controller](../examples/gallery/features/feature_controller_turntable.md)
-- Source: `examples/c/features/controller_turntable.c`
-- Gallery: [Protein](../examples/gallery/showcases/protein_arcball_viewer.md)
-- Source: `examples/c/showcases/protein.c`
 
 ## Important Details
 
@@ -50,3 +38,16 @@ arcball recipe.
 - [Configure cameras](configure-cameras.md)
 - [Use lighting and materials](lighting-and-materials.md)
 - [Control depth, blending, and transparency](rendering-techniques.md)
+
+??? example "Related examples"
+
+    - Gallery: [Arcball Controller](../examples/gallery/features/feature_controller_arcball.md)
+    - Source: `examples/c/features/controller_arcball.c`
+    - Gallery: [Orbit Camera Controller](../examples/gallery/features/feature_controller_orbit_camera.md)
+    - Source: `examples/c/features/controller_orbit_camera.c`
+    - Gallery: [Fly Controller](../examples/gallery/features/feature_controller_fly.md)
+    - Source: `examples/c/features/controller_fly.c`
+    - Gallery: [Turntable Controller](../examples/gallery/features/feature_controller_turntable.md)
+    - Source: `examples/c/features/controller_turntable.c`
+    - Gallery: [Protein](../examples/gallery/showcases/protein_arcball_viewer.md)
+    - Source: `examples/c/showcases/protein.c`

@@ -14,12 +14,6 @@ example. Use this when debugging the runtime boundary rather than ordinary scene
 /* Keep the recorded stream with the exact runtime and asset assumptions it needs. */
 ```
 
-## Canonical Examples
-
-- Gallery: [Record Replay](../examples/gallery/features/feature_record_replay.md)
-- Source: `examples/c/features/record_replay.c`
-- Advanced gallery: [Raw Triangle DRP2](../examples/gallery/advanced/advanced_raw_triangle_drp2.md)
-- Source: `examples/c/advanced/raw_triangle_drp2.c`
 
 ## Important Details
 
@@ -37,3 +31,10 @@ task is replay, validation, or backend debugging.
 - [Debug rendering output](debug-rendering.md)
 - [Deploy WebGPU examples to the browser](deploy-to-web.md)
 - [Profile rendering performance](profile-performance.md)
+
+??? example "Related examples"
+
+    - Gallery: [Record Replay](../examples/gallery/features/feature_record_replay.md)
+    - Source: `examples/c/features/record_replay.c`
+    - Advanced gallery: [Raw Triangle DRP2](../examples/gallery/advanced/advanced_raw_triangle_drp2.md)
+    - Source: `examples/c/advanced/raw_triangle_drp2.c`

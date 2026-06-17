@@ -17,13 +17,6 @@ git diff --check
 
 For documentation-only changes, `git diff --check` is the required final hygiene check.
 
-## Canonical Examples
-
-- Start page: [Install](../start/install.md)
-- Reference: [Platform support](../reference/platform-support.md)
-- Reference: [Build options](../reference/build-options.md)
-- Gallery: [Offscreen Capture](../examples/gallery/features/feature_offscreen_capture.md)
-- Source: `examples/c/features/offscreen_capture.c`
 
 ## Important Details
 
@@ -41,3 +34,11 @@ layers. Verify the narrowest failing layer before changing code.
 - [Debug rendering output](debug-rendering.md)
 - [Diagnose WebGPU support](debug-webgpu.md)
 - [Use from C or C++](c-integration.md)
+
+??? example "Related examples"
+
+    - Start page: [Install](../start/install.md)
+    - Reference: [Platform support](../reference/platform-support.md)
+    - Reference: [Build options](../reference/build-options.md)
+    - Gallery: [Offscreen Capture](../examples/gallery/features/feature_offscreen_capture.md)
+    - Source: `examples/c/features/offscreen_capture.c`

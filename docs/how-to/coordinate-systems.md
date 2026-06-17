@@ -20,14 +20,6 @@ dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY);
 For 3D scenes, use a 3D controller and keep object positions in the model coordinate system chosen
 by the example.
 
-## Canonical Examples
-
-- Gallery: [Coordinate System](../examples/gallery/features/feature_coordinate_system.md)
-- Source: `examples/c/features/coordinate_system.c`
-- Gallery: [Panel View 2D](../examples/gallery/features/feature_panel_view2d.md)
-- Source: `examples/c/features/panel_view2d.c`
-- Gallery: [User Scale](../examples/gallery/features/feature_user_scale.md)
-- Source: `examples/c/features/user_scale.c`
 
 ## Important Details
 
@@ -46,3 +38,12 @@ ordinary data navigation.
 - [Use panzoom](use-panzoom.md)
 - [Configure cameras](configure-cameras.md)
 - [Transform visual data](transforms-and-scales.md)
+
+??? example "Related examples"
+
+    - Gallery: [Coordinate System](../examples/gallery/features/feature_coordinate_system.md)
+    - Source: `examples/c/features/coordinate_system.c`
+    - Gallery: [Panel View 2D](../examples/gallery/features/feature_panel_view2d.md)
+    - Source: `examples/c/features/panel_view2d.c`
+    - Gallery: [User Scale](../examples/gallery/features/feature_user_scale.md)
+    - Source: `examples/c/features/user_scale.c`

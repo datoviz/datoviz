@@ -15,12 +15,6 @@ dvz_app_run(app, 1);
 dvz_view_capture_png(view, "output.png");
 ```
 
-## Canonical Examples
-
-- Gallery: [Offscreen Capture](../examples/gallery/features/feature_offscreen_capture.md)
-- Source: `examples/c/features/offscreen_capture.c`
-- Gallery: [Basic Scene](../examples/gallery/features/feature_basic_scene.md)
-- Source: `examples/c/features/basic_scene.c`
 
 ## Important Details
 
@@ -37,3 +31,10 @@ Use fixed dimensions and deterministic data when screenshots become tests or doc
 - [Render offscreen and capture](render-offscreen.md)
 - [Export videos](video-export.md)
 - [Debug rendering output](debug-rendering.md)
+
+??? example "Related examples"
+
+    - Gallery: [Offscreen Capture](../examples/gallery/features/feature_offscreen_capture.md)
+    - Source: `examples/c/features/offscreen_capture.c`
+    - Gallery: [Basic Scene](../examples/gallery/features/feature_basic_scene.md)
+    - Source: `examples/c/features/basic_scene.c`

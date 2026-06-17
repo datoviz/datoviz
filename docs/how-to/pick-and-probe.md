@@ -17,14 +17,6 @@ is a sampled field value at a data coordinate.
 
 Keep the visual's item order stable if the pick result is used as an index into application data.
 
-## Canonical Examples
-
-- Gallery: [Picking](../examples/gallery/features/feature_picking.md)
-- Source: `examples/c/features/picking.c`
-- Gallery: [Pixel Selection](../examples/gallery/features/feature_selection_pixel.md)
-- Source: `examples/c/features/selection_pixel.c`
-- Gallery: [Label Probe](../examples/gallery/features/feature_probe_labels.md)
-- Source: `examples/c/features/probe_labels.c`
 
 ## Important Details
 
@@ -42,3 +34,12 @@ behave like a CPU-side nearest-neighbor search.
 - [Probe image or field values](probe-fields.md)
 - [Select and highlight data](select-items.md)
 - [Handle input events](input-events.md)
+
+??? example "Related examples"
+
+    - Gallery: [Picking](../examples/gallery/features/feature_picking.md)
+    - Source: `examples/c/features/picking.c`
+    - Gallery: [Pixel Selection](../examples/gallery/features/feature_selection_pixel.md)
+    - Source: `examples/c/features/selection_pixel.c`
+    - Gallery: [Label Probe](../examples/gallery/features/feature_probe_labels.md)
+    - Source: `examples/c/features/probe_labels.c`

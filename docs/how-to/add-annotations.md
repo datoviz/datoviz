@@ -19,14 +19,6 @@ dvz_panel_add_visual(panel, labels, NULL);
 
 Check the canonical source for the current string storage and attribute names.
 
-## Canonical Examples
-
-- Gallery: [Text Block](../examples/gallery/features/feature_text_block.md)
-- Source: `examples/c/features/text_block.c`
-- Gallery: [Labels](../examples/gallery/visuals/visual_labels.md)
-- Source: `examples/c/visuals/labels.c`
-- Gallery: [Annotation Readout](../examples/gallery/features/annotation_readout.md)
-- Source: `examples/c/features/annotation_readout.c`
 
 ## Important Details
 
@@ -44,3 +36,12 @@ remain legible and prefer probe readouts for dense data.
 - [Pick items](pick-and-probe.md)
 - [Probe image or field values](probe-fields.md)
 - [Add colorbars, scale bars, and legends](adornments.md)
+
+??? example "Related examples"
+
+    - Gallery: [Text Block](../examples/gallery/features/feature_text_block.md)
+    - Source: `examples/c/features/text_block.c`
+    - Gallery: [Labels](../examples/gallery/visuals/visual_labels.md)
+    - Source: `examples/c/visuals/labels.c`
+    - Gallery: [Annotation Readout](../examples/gallery/features/annotation_readout.md)
+    - Source: `examples/c/features/annotation_readout.c`

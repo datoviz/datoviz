@@ -21,13 +21,6 @@ dvz_app_destroy(app);
 dvz_scene_destroy(scene);
 ```
 
-## Canonical Examples
-
-- Gallery: [Scatter Plot](../examples/gallery/start/start_scatter.md)
-- Source: `examples/c/start/scatter.c`
-- Gallery: [GLFW App](../examples/gallery/features/feature_app_glfw.md)
-- Source: `examples/c/features/app_glfw.c`
-- Source manifest: `examples/c/MANIFEST.yaml`
 
 ## Important Details
 
@@ -45,3 +38,11 @@ details live under `src/` and should not be included by applications.
 - [Create a scene](create-a-scene.md)
 - [Open an interactive window](create-a-window.md)
 - [Use raw ctypes](use-raw-ctypes.md)
+
+??? example "Related examples"
+
+    - Gallery: [Scatter Plot](../examples/gallery/start/start_scatter.md)
+    - Source: `examples/c/start/scatter.c`
+    - Gallery: [GLFW App](../examples/gallery/features/feature_app_glfw.md)
+    - Source: `examples/c/features/app_glfw.c`
+    - Source manifest: `examples/c/MANIFEST.yaml`

@@ -17,16 +17,6 @@ dvz_visual_set_data(visual, "color", rgba, n);
 
 Keep technique state close to the visual or pass that actually needs it.
 
-## Canonical Examples
-
-- Gallery: [Depth Test Toggle](../examples/gallery/features/technique_depth_test.md)
-- Source: `examples/c/features/technique_depth_test.c`
-- Gallery: [Alpha Blending](../examples/gallery/features/alpha_blending.md)
-- Source: `examples/c/features/alpha_blending.c`
-- Gallery: [Transparency Order](../examples/gallery/features/technique_transparency.md)
-- Source: `examples/c/features/technique_transparency.c`
-- Gallery: [Multisample Antialiasing](../examples/gallery/features/technique_msaa.md)
-- Source: `examples/c/features/technique_msaa.c`
 
 ## Important Details
 
@@ -44,3 +34,14 @@ considered together.
 - [Use lighting and materials](lighting-and-materials.md)
 - [Debug rendering output](debug-rendering.md)
 - [Profile rendering performance](profile-performance.md)
+
+??? example "Related examples"
+
+    - Gallery: [Depth Test Toggle](../examples/gallery/features/technique_depth_test.md)
+    - Source: `examples/c/features/technique_depth_test.c`
+    - Gallery: [Alpha Blending](../examples/gallery/features/alpha_blending.md)
+    - Source: `examples/c/features/alpha_blending.c`
+    - Gallery: [Transparency Order](../examples/gallery/features/technique_transparency.md)
+    - Source: `examples/c/features/technique_transparency.c`
+    - Gallery: [Multisample Antialiasing](../examples/gallery/features/technique_msaa.md)
+    - Source: `examples/c/features/technique_msaa.c`

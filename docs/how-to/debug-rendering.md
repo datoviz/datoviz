@@ -15,14 +15,6 @@ scene -> figure -> panel -> visual -> attributes -> panel add -> app/view -> fra
 
 If any step is missing, fix that before investigating backend behavior.
 
-## Canonical Examples
-
-- Gallery: [Basic Scene](../examples/gallery/features/feature_basic_scene.md)
-- Source: `examples/c/features/basic_scene.c`
-- Gallery: [Depth Test Toggle](../examples/gallery/features/technique_depth_test.md)
-- Source: `examples/c/features/technique_depth_test.c`
-- Gallery: [Offscreen Capture](../examples/gallery/features/feature_offscreen_capture.md)
-- Source: `examples/c/features/offscreen_capture.c`
 
 ## Important Details
 
@@ -40,3 +32,12 @@ camera/domain mismatch, or a technique state such as depth or blending hiding ge
 - [Render offscreen and capture](render-offscreen.md)
 - [Control depth, blending, and transparency](rendering-techniques.md)
 - [Diagnose build and platform issues](diagnose-platform.md)
+
+??? example "Related examples"
+
+    - Gallery: [Basic Scene](../examples/gallery/features/feature_basic_scene.md)
+    - Source: `examples/c/features/basic_scene.c`
+    - Gallery: [Depth Test Toggle](../examples/gallery/features/technique_depth_test.md)
+    - Source: `examples/c/features/technique_depth_test.c`
+    - Gallery: [Offscreen Capture](../examples/gallery/features/feature_offscreen_capture.md)
+    - Source: `examples/c/features/offscreen_capture.c`

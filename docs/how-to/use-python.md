@@ -22,12 +22,6 @@ panel = dvz.dvz_panel_full(figure)
 Adapt the C examples one call at a time. Keep NumPy array dtype and shape matched to the C
 attribute contract.
 
-## Canonical Examples
-
-- Start page: [Quickstart](../start/quickstart.md)
-- Reference: [Python binding](../reference/ctypes.md)
-- Gallery: [Scatter Plot](../examples/gallery/start/start_scatter.md)
-- Source: `examples/c/start/scatter.c`
 
 ## Important Details
 
@@ -45,3 +39,10 @@ plotting interface to be present.
 - [Use raw ctypes](use-raw-ctypes.md)
 - [Use from C or C++](c-integration.md)
 - [Choose a visual family](choose-a-visual-family.md)
+
+??? example "Related examples"
+
+    - Start page: [Quickstart](../start/quickstart.md)
+    - Reference: [Python binding](../reference/ctypes.md)
+    - Gallery: [Scatter Plot](../examples/gallery/start/start_scatter.md)
+    - Source: `examples/c/start/scatter.c`

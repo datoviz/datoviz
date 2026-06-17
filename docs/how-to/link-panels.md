@@ -17,14 +17,6 @@ dvz_panel_bind_controller(panel_b, shared, DVZ_DIM_MASK_XY);
 
 Use a narrower dimension mask to link only one axis.
 
-## Canonical Examples
-
-- Gallery: [Linked Panels](../examples/gallery/features/feature_panel_linked.md)
-- Source: `examples/c/features/panel_linked.c`
-- Gallery: [Linked Panels With Axes](../examples/gallery/showcases/linked_panels_axes_panzoom.md)
-- Source: `examples/c/showcases/panel_linked_axes.c`
-- Gallery: [Linked Probe With Colorbar](../examples/gallery/showcases/linked_panels_probe_colorbar.md)
-- Source: `examples/c/showcases/linked_probe_colorbar.c`
 
 ## Important Details
 
@@ -42,3 +34,12 @@ between panels.
 - [Create multiple panels](create-multiple-panels.md)
 - [Use panzoom](use-panzoom.md)
 - [Probe image or field values](probe-fields.md)
+
+??? example "Related examples"
+
+    - Gallery: [Linked Panels](../examples/gallery/features/feature_panel_linked.md)
+    - Source: `examples/c/features/panel_linked.c`
+    - Gallery: [Linked Panels With Axes](../examples/gallery/showcases/linked_panels_axes_panzoom.md)
+    - Source: `examples/c/showcases/panel_linked_axes.c`
+    - Gallery: [Linked Probe With Colorbar](../examples/gallery/showcases/linked_panels_probe_colorbar.md)
+    - Source: `examples/c/showcases/linked_probe_colorbar.c`

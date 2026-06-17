@@ -18,14 +18,6 @@ dvz_panel_add_visual(panel, visual, NULL);
 For sampled fields, use the image or volume path shown in the field examples instead of manually
 expanding every scalar to geometry.
 
-## Canonical Examples
-
-- Gallery: [Scalar Color Scale](../examples/gallery/features/colormap_scale.md)
-- Source: `examples/c/features/colormap_scale.c`
-- Gallery: [Colorbar](../examples/gallery/features/colorbar.md)
-- Source: `examples/c/features/colorbar.c`
-- Gallery: [2D Sampled Field](../examples/gallery/features/feature_sampled_field_2d.md)
-- Source: `examples/c/features/sampled_field_2d.c`
 
 ## Important Details
 
@@ -44,3 +36,12 @@ not just the colormap name.
 - [Use sampled fields and textures](use-sampled-fields.md)
 - [Add colorbars, scale bars, and legends](adornments.md)
 - [Control depth, blending, and transparency](rendering-techniques.md)
+
+??? example "Related examples"
+
+    - Gallery: [Scalar Color Scale](../examples/gallery/features/colormap_scale.md)
+    - Source: `examples/c/features/colormap_scale.c`
+    - Gallery: [Colorbar](../examples/gallery/features/colorbar.md)
+    - Source: `examples/c/features/colorbar.c`
+    - Gallery: [2D Sampled Field](../examples/gallery/features/feature_sampled_field_2d.md)
+    - Source: `examples/c/features/sampled_field_2d.c`
