@@ -16,6 +16,23 @@ The source-install lane defaults to `DATOVIZ_SOURCE_DEPS=vendored`; use
 `DATOVIZ_SOURCE_DEPS=system` when validating distro-style system dependencies on a machine with
 the required development packages installed.
 
+Audit existing install prefixes without rebuilding:
+
+```sh
+just distribution-validate-local audit
+```
+
+The audit lane checks the source install prefix, vcpkg prefix, and conda prefix when present. It
+verifies installed Datoviz headers, `libdatoviz`, `ldd`/runtime paths on Linux, `datoviz.pc`,
+CMake package files, and small CMake/pkg-config consumers. Override default prefixes with:
+
+```sh
+DATOVIZ_SOURCE_AUDIT_PREFIX=/tmp/datoviz-dist-validate/source-prefix \
+DATOVIZ_VCPKG_AUDIT_PREFIX=/tmp/datoviz-vcpkg/installed/x64-linux-dynamic \
+DATOVIZ_CONDA_AUDIT_PREFIX=/tmp/datoviz-local \
+  just distribution-validate-local audit
+```
+
 1. Generate current ctypes bindings:
    ```sh
    just ctypes
@@ -53,6 +70,8 @@ Expected proof:
 - `libdatoviz` builds and installs headers plus `libdatoviz`.
 - `datoviz` imports `datoviz` and `datoviz.raw`.
 - `raw.dvz_scene()` and `raw.dvz_scene_destroy()` pass in the test environment.
+- `just distribution-validate-local audit` reports the expected Datoviz headers, shared libraries,
+  CMake package files, pkg-config metadata, and no unresolved `ldd` entries for the conda prefix.
 
 ## vcpkg Overlay Preflight
 
@@ -73,6 +92,36 @@ DATOVIZ_VCPKG_SOURCE_SHA512=<sha512> \
 
 For Windows release confidence, repeat with `x64-windows` or the selected Windows dynamic triplet
 before publishing the overlay.
+
+Expected Linux dynamic audit proof:
+
+- `libdatoviz.so`, `libdatoviz_core.so`, `libdatoviz_vk.so`, and `libdatoviz_canvas.so` exist in
+  both release and debug library directories for `x64-linux-dynamic`.
+- `DatovizConfig.cmake`, version files, and targets are fixed up under `share/datoviz`.
+- `datoviz.pc` exists under `lib/pkgconfig`.
+- `ldd` resolves vcpkg-managed runtime dependencies from the vcpkg prefix and reports no
+  unresolved entries.
+
+## Distro-Style System Dependency Preflight
+
+Run this after installing the target distro development packages:
+
+```sh
+DATOVIZ_SOURCE_DEPS=system just distribution-validate-local source-install
+```
+
+On Ubuntu 24.04 noble, the required package names validated so far are:
+
+```sh
+sudo apt-get install -y \
+  cmake ninja-build pkg-config \
+  libcglm-dev libfreetype-dev libglfw3-dev libmimalloc-dev libtinyxml2-dev libvulkan-dev zlib1g-dev
+```
+
+Current local result: the lane configures far enough to prove the package-name gap. It fails when
+`libcglm-dev` is absent, and CMake warns that GLFW falls back to the headless backend when
+`libglfw3-dev` is absent. `libmimalloc-dev` is also required for the current
+`DVZ_MIMALLOC_SOURCE=SYSTEM` validation profile.
 
 ## Live Release Gates
 
