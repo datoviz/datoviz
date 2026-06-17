@@ -1,4 +1,4 @@
-# Start Here
+# Get Started
 
 Datoviz is a GPU rendering engine for scientific visualization — built for scientists and
 developers who need to explore large datasets interactively. Render millions of points, meshes,

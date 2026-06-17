@@ -30,6 +30,7 @@ theme:
     - content.tabs.link
     - navigation.footer
     - navigation.path
+    - navigation.indexes
     - navigation.sections
     - navigation.tabs
     - navigation.tabs.sticky
@@ -90,7 +91,7 @@ hooks:
 nav:
   - Home: 'index.md'
   - Get Started:
-    - Start Here: 'start/index.md'
+    - 'start/index.md'
     - Install: 'start/install.md'
     - Quickstart: 'start/quickstart.md'
     - Project status: 'start/project-status.md'
