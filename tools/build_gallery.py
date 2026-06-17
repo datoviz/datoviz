@@ -202,17 +202,15 @@ PAGE_CONFIG = {
     "showcases.md": {
         "title": "Showcases",
         "lanes": ("showcases",),
-        "intro": """\
-            Composed scenes demonstrating scientific workflows, real data, and polished demos.
-        """,
+        "intro": "Browse composed scenes demonstrating scientific workflows, real data, and polished demos.",
     },
     "advanced.md": {
         "title": "Advanced Examples",
         "lanes": ("advanced",),
-        "intro": """\
-            Advanced examples cover low-level runtime, DRP2, and host-integration paths. They are
-            not the preferred starting point for ordinary scene code.
-        """,
+        "intro": (
+            "Browse low-level runtime, DRP2, and host-integration examples. "
+            "These are not the preferred starting point for ordinary scene code."
+        ),
     },
 }
 
@@ -717,6 +715,17 @@ def generated_header(title: str) -> list[str]:
     ]
 
 
+def render_page_intro(summary: str, coverage: str) -> list[str]:
+    return [
+        summary,
+        "",
+        coverage,
+        "",
+        "Each card links to a detail page with preview media, source code, and validation metadata.",
+        "",
+    ]
+
+
 def render_lane_section(
     examples: list[Example],
     lane: str,
@@ -749,8 +758,12 @@ def render_gallery_page(
 ) -> None:
     page_examples = [example for example in examples if example.lane in config["lanes"]]
     lines = generated_header(config["title"])
-    lines.extend(dedent(config["intro"]).strip().splitlines())
-    lines.extend(["", f"Coverage: {len(page_examples)} examples ({status_counts(page_examples)}).", ""])
+    lines.extend(
+        render_page_intro(
+            dedent(config["intro"]).strip(),
+            f"Coverage: {len(page_examples)} examples ({status_counts(page_examples)}).",
+        )
+    )
     page_path = docs_site_path(docs_dir, filename)
     for lane in config["lanes"]:
         lines.extend(
@@ -777,20 +790,21 @@ def render_index(
 
     lines = generated_header("Examples")
     lines.extend(
-        [
-            "Datoviz v0.4 ships with "
+        render_page_intro(
+            "Browse the generated Datoviz v0.4 example gallery.",
+            "Coverage: "
             f"{len(showcase_examples)} showcases, "
-            f"{len(visual_examples) + len(composite_examples)} visual families, "
-            f"and {len(feature_examples)} feature examples.",
-            "",
-        ]
+            f"{len(visual_examples) + len(composite_examples)} visuals and composites, "
+            f"{len(feature_examples)} feature examples, "
+            f"and {len(by_lane['advanced'])} advanced examples.",
+        )
     )
 
     # --- Showcases ---
     lines.extend(["## Showcases", ""])
     lines.extend(
         [
-            "Composed scenes demonstrating scientific workflows, real data, and polished demos.",
+            "Selected composed examples are shown below.",
             "",
         ]
     )
@@ -804,7 +818,7 @@ def render_index(
     # --- Visuals & Composites ---
     n_vc = len(visual_examples) + len(composite_examples)
     lines.extend(["## Visuals & Composites", ""])
-    lines.extend([f"{n_vc} rendering families — one example each.", ""])
+    lines.extend(["Selected visual and composite examples are shown below.", ""])
     for group_label, group_ids in INDEX_VISUAL_GROUPS:
         group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
         if not group_examples:
@@ -822,7 +836,7 @@ def render_index(
     # --- Features ---
     all_flagship_ids = {id_ for _, ids in INDEX_FEATURE_GROUPS for id_ in ids}
     lines.extend(["## Features", ""])
-    lines.extend(["A selection of isolated feature examples.", ""])
+    lines.extend(["Selected isolated feature examples are shown below.", ""])
     for group_label, group_ids in INDEX_FEATURE_GROUPS:
         group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
         if not group_examples:
@@ -857,10 +871,10 @@ def render_visuals_page(
     page_path = docs_site_path(docs_dir, "visuals.md")
     lines = generated_header("Visuals & Composites")
     lines.extend(
-        [
-            f"{len(visual_examples)} visual families and {len(composite_examples)} composites.",
-            "",
-        ]
+        render_page_intro(
+            "Browse one focused example per visual family or composite.",
+            f"Coverage: {len(visual_examples)} visual families and {len(composite_examples)} composites.",
+        )
     )
     visual_groups = (
         ("0D — point-like", ["point_2d", "visual_pixel", "visual_marker", "visual_splat"]),
@@ -895,7 +909,12 @@ def render_features_page(
     by_id = {e.id: e for e in examples}
     page_path = docs_site_path(docs_dir, "features.md")
     lines = generated_header("Features")
-    lines.extend([f"{len(feature_examples)} feature examples.", ""])
+    lines.extend(
+        render_page_intro(
+            "Browse isolated examples for layout, navigation, adornments, rendering, interaction, animation, and I/O features.",
+            f"Coverage: {len(feature_examples)} feature examples ({status_counts(feature_examples)}).",
+        )
+    )
     grouped_ids = {id_ for _, ids in FEATURE_PAGE_GROUPS for id_ in ids}
     for group_label, group_ids in FEATURE_PAGE_GROUPS:
         group_examples = [by_id[i] for i in group_ids if i in by_id]
