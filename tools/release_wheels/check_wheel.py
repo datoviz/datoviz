@@ -1,0 +1,101 @@
+#!/usr/bin/env python3
+"""Install a Datoviz wheel in a clean venv and run installed-package smokes."""
+
+from __future__ import annotations
+
+import argparse
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def _wheel(path: str | None) -> Path:
+    if path:
+        return Path(path)
+    wheels = sorted((ROOT / "dist").glob("datoviz-*.whl"))
+    if not wheels:
+        raise FileNotFoundError("no dist/datoviz-*.whl found")
+    if len(wheels) > 1:
+        raise RuntimeError(f"multiple wheels found; pass --wheel explicitly: {wheels}")
+    return wheels[0]
+
+
+def _bin_dir(venv: Path) -> Path:
+    return venv / ("Scripts" if os.name == "nt" else "bin")
+
+
+def _run(cmd: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> None:
+    print("+", " ".join(cmd))
+    subprocess.run(cmd, cwd=cwd, env=env, check=True)
+
+
+def _python_smokes(python: Path, work: Path) -> None:
+    _run([str(python), "-c", "import datoviz; print(datoviz.__file__)"], cwd=work)
+    _run([str(python), "-c", "import datoviz.raw as dvz; print(dvz.__file__)"], cwd=work)
+    _run([str(python), "-m", "datoviz.cli", "--prefix"], cwd=work)
+    _run([str(python), "-m", "datoviz.cli", "--cflags"], cwd=work)
+    _run([str(python), "-m", "datoviz.cli", "--libs"], cwd=work)
+    _run([str(python), "-m", "datoviz.cli", "--cmake-dir"], cwd=work)
+
+
+def _render_smoke(python: Path, work: Path) -> None:
+    path = work / "datoviz-wheel-smoke.png"
+    env = os.environ.copy()
+    env["DVZ_CAPTURE_PNG"] = str(path)
+    _run([str(python), "-c", "import datoviz; datoviz.demo()"], cwd=work, env=env)
+    size = path.stat().st_size if path.exists() else 0
+    if size <= 100_000:
+        raise RuntimeError(f"render smoke output is missing or too small: {path} ({size} bytes)")
+
+
+def _qt_probe(python: Path, work: Path, *, required: bool) -> None:
+    cmd = [str(python), "-m", "datoviz.qt"]
+    print("+", " ".join(cmd))
+    result = subprocess.run(cmd, cwd=work, check=False)
+    if required and result.returncode != 0:
+        raise RuntimeError("required Qt probe failed")
+    if not required and result.returncode != 0:
+        print("check_wheel: optional Qt probe failed as expected for this environment", file=sys.stderr)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--wheel")
+    parser.add_argument("--work-dir", type=Path)
+    parser.add_argument("--render", action="store_true")
+    parser.add_argument("--qt-probe", choices=("skip", "optional", "required"), default="skip")
+    parser.add_argument("--keep", action="store_true")
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    wheel = _wheel(args.wheel).resolve()
+    work = args.work_dir or Path(tempfile.mkdtemp(prefix="datoviz-wheel-"))
+    work.mkdir(parents=True, exist_ok=True)
+    venv = work / "venv"
+
+    try:
+        subprocess.run([sys.executable, "-m", "venv", str(venv)], check=True)
+        python = _bin_dir(venv) / ("python.exe" if os.name == "nt" else "python")
+        _run([str(python), "-m", "pip", "install", "--upgrade", "pip", "wheel"], cwd=work)
+        _run([str(python), "-m", "pip", "install", str(wheel)], cwd=work)
+        _python_smokes(python, work)
+        if args.render:
+            _render_smoke(python, work)
+        if args.qt_probe != "skip":
+            _qt_probe(python, work, required=args.qt_probe == "required")
+    finally:
+        if not args.keep and args.work_dir is None:
+            shutil.rmtree(work, ignore_errors=True)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

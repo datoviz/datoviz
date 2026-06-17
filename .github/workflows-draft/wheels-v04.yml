@@ -1,0 +1,165 @@
+# Draft only. This file is intentionally outside .github/workflows/ and will not run on GitHub.
+#
+# Promotion checklist before moving this to .github/workflows/:
+# 1. local stage/build/check scripts pass on each host OS;
+# 2. cibuildwheel builds from build/wheel-stage and emits platform-tagged wheels;
+# 3. Linux x86_64 and aarch64 wheels pass auditwheel inspection;
+# 4. macOS x86_64 and arm64 wheels pass delocate inspection;
+# 5. Windows AMD64 and ARM64 wheels pass DLL inventory and installed smoke tests;
+# 6. RC upload workflow is separate from this build workflow.
+
+name: "WHEELS v0.4 draft"
+
+on:
+  workflow_dispatch:
+    inputs:
+      include_prerelease:
+        description: "Build CPython prerelease wheels such as cp315?"
+        required: false
+        default: "false"
+
+env:
+  CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-* cp314-*"
+  CIBW_SKIP: "pp* *-musllinux_* cp31?t-*"
+  CIBW_TEST_COMMAND: "python {project}/tools/release_wheels/check_wheel.py --wheel {wheel} --qt-probe optional"
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      json: ${{ steps.matrix.outputs.json }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: matrix
+        run: |
+          python tools/release_wheels/wheel_matrix.py --json > matrix.json
+          echo "json=$(python -c 'import json; print(json.dumps(json.load(open("matrix.json"))))')" >> "$GITHUB_OUTPUT"
+
+  linux:
+    needs: matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+    env:
+      CIBW_ARCHS_LINUX: ${{ matrix.arch }}
+      CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_34
+      CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_34
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Enable CPython prerelease
+        if: ${{ github.event.inputs.include_prerelease == 'true' }}
+        run: |
+          echo "CIBW_BUILD=${CIBW_BUILD} cp315-*" >> "$GITHUB_ENV"
+          echo "CIBW_ENABLE=cpython-prerelease" >> "$GITHUB_ENV"
+      - name: Build native artifacts
+        run: |
+          python -m pip install -U pip cibuildwheel build
+          just build
+          python tools/release_wheels/stage_wheel.py --clean
+      - name: Build wheels
+        run: python -m cibuildwheel build/wheel-stage --output-dir wheelhouse
+      - name: Inspect wheels
+        run: |
+          for whl in wheelhouse/*.whl; do
+            python tools/release_wheels/inspect_wheel.py --wheel "$whl" --native-deps
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-${{ matrix.arch }}
+          path: wheelhouse/*.whl
+
+  macos:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-13
+            arch: x86_64
+          - runner: macos-latest
+            arch: arm64
+    env:
+      CIBW_ARCHS_MACOS: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Dependencies
+        run: |
+          brew install just ccache ninja jq
+          python -m pip install -U pip cibuildwheel build delocate
+      - name: Enable CPython prerelease
+        if: ${{ github.event.inputs.include_prerelease == 'true' }}
+        run: |
+          echo "CIBW_BUILD=${CIBW_BUILD} cp315-*" >> "$GITHUB_ENV"
+          echo "CIBW_ENABLE=cpython-prerelease" >> "$GITHUB_ENV"
+      - name: Build native artifacts
+        run: |
+          just build
+          python tools/release_wheels/stage_wheel.py --clean
+      - name: Build wheels
+        run: python -m cibuildwheel build/wheel-stage --output-dir wheelhouse
+      - name: Inspect wheels
+        run: |
+          for whl in wheelhouse/*.whl; do
+            python tools/release_wheels/inspect_wheel.py --wheel "$whl" --native-deps
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-macos-${{ matrix.arch }}
+          path: wheelhouse/*.whl
+
+  windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [AMD64, ARM64]
+    env:
+      CIBW_ARCHS_WINDOWS: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Dependencies
+        shell: pwsh
+        run: |
+          choco install just mingw cmake ninja jq -y
+          python -m pip install -U pip cibuildwheel build delvewheel
+      - name: Enable CPython prerelease
+        if: ${{ github.event.inputs.include_prerelease == 'true' }}
+        shell: pwsh
+        run: |
+          "CIBW_BUILD=$env:CIBW_BUILD cp315-*" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CIBW_ENABLE=cpython-prerelease" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Build native artifacts
+        shell: pwsh
+        run: |
+          just build
+          python tools/release_wheels/stage_wheel.py --clean
+      - name: Build wheels
+        shell: pwsh
+        run: python -m cibuildwheel build/wheel-stage --output-dir wheelhouse
+      - name: Inspect wheels
+        shell: pwsh
+        run: |
+          foreach ($whl in Get-ChildItem wheelhouse/*.whl) {
+            python tools/release_wheels/inspect_wheel.py --wheel "$whl" --native-deps
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-windows-${{ matrix.arch }}
+          path: wheelhouse/*.whl

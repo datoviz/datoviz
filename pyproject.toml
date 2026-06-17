@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools", "wheel", "tqdm", "libclang"]
+requires = ["setuptools", "wheel", "build", "tqdm", "libclang"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "datoviz"
-requires-python = ">=3.8"  # 3.10 actually required but need this temporarily for almalinux build
+requires-python = ">=3.10"
 dependencies = ["numpy", "requests", "platformdirs"]
 version = "0.3.3-dev"
 description = "Datoviz: high-performance rendering for scientific data visualization"
@@ -35,6 +35,9 @@ package-data = {"datoviz" = [
 
 [project.scripts]
 datoviz-config = "datoviz.cli:main"
+
+[project.optional-dependencies]
+qt = ["PyQt6"]
 
 [project.urls]
 "Homepage" = "https://github.com/datoviz/datoviz"
@@ -92,6 +95,22 @@ lint.ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "examples/*.py" = ["D103"]
+
+[tool.cibuildwheel]
+build = "cp310-* cp311-* cp312-* cp313-* cp314-*"
+skip = "pp* *-musllinux_* cp31?t-*"
+test-command = "python {project}/tools/release_wheels/check_wheel.py --wheel {wheel} --qt-probe optional"
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64", "aarch64"]
+manylinux-x86_64-image = "manylinux_2_34"
+manylinux-aarch64-image = "manylinux_2_34"
+
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64"]
+
+[tool.cibuildwheel.windows]
+archs = ["AMD64", "ARM64"]
 
 #    "F",      # TODO: enable Pyflakes rules
 #    "C408",   # Unnecessary `dict()` call (rewrite as a literal)
