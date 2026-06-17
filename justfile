@@ -1302,6 +1302,26 @@ showwheel:
     @unzip -l dist/*.whl
 #
 
+v04-wheel-matrix:
+    @python tools/release_wheels/wheel_matrix.py
+#
+
+v04-wheel-stage *args:
+    @python tools/release_wheels/stage_wheel.py {{args}}
+#
+
+v04-wheel-build *args:
+    @python tools/release_wheels/build_wheel.py {{args}}
+#
+
+v04-wheel-inspect *args:
+    @python tools/release_wheels/inspect_wheel.py {{args}}
+#
+
+v04-wheel-check *args:
+    @python tools/release_wheels/check_wheel.py {{args}}
+#
+
 renamewheel platform_tag='':
     #!/usr/bin/env sh
     set -e
