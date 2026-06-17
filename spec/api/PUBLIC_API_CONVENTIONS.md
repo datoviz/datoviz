@@ -38,6 +38,24 @@ Backend or third-party names should not appear in high-level user APIs unless th
 an explicit backend policy such as a triangulation backend.
 
 
+## Public Headers
+
+Application-level C and C++ examples should include the top-level umbrella header:
+
+```c
+#include <datoviz.h>
+```
+
+The installed forwarding header `include/datoviz.h` delegates to `include/datoviz/datoviz.h`.
+Focused module and submodule headers remain valid for advanced or low-level examples that are
+documenting a specific subsystem.
+
+Public headers that declare exported functions must wrap those declarations with `EXTERN_C_ON` and
+`EXTERN_C_OFF`. The macros live in `include/datoviz/common/macros.h`; under C++ they provide
+`extern "C"` linkage, and under C they expand away. The public header probes in `testing/` are the
+release guard for umbrella-header parseability from both C and C++.
+
+
 ## Public Struct Naming
 
 Public struct suffixes should describe the role of the record, not just its shape.

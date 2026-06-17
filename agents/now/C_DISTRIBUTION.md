@@ -19,10 +19,10 @@ Python wheel is the primary distribution vehicle for v0.4; other channels follow
 - **DLL placement on Windows**: CMake post-build copy command (documented snippet). Not PATH.
 - **FetchContent support**: add `PROJECT_IS_TOP_LEVEL` guards in CMakeLists so datoviz can be
   pulled as a subdirectory dependency without installing.
-- **Umbrella header**: `include/datoviz/datoviz.h` already exists. Update it to include `app.h`
-  (currently missing) and fix the 5 sub-headers missing `EXTERN_C_ON` guards (see work item 1b).
-  Users write `#include <datoviz/datoviz.h>`. Also provide `#include <datoviz.h>` via a
-  top-level forwarding header at `include/datoviz.h`.
+- **Public C/C++ headers**: `include/datoviz.h` exists as the preferred umbrella include and
+  forwards to `include/datoviz/datoviz.h`, which now includes `app.h`. The previously missing
+  `EXTERN_C_ON` / `EXTERN_C_OFF` guards on the five public subheaders are fixed, and
+  `testing/dvz_public_header_probe.cpp` verifies that the installed umbrella header parses as C++.
 - **MSVC support**: after RC, before final v0.4 release. pip wheel with `.dll` + `.lib` +
   headers. CMake `find_package` is the documented integration path.
 - **Windows paths in scope**: WSL2 (document only, no engineering), MinGW64 (works today),
@@ -61,51 +61,38 @@ is not available. A `package.py` recipe is ~50 lines and unlocks that entire com
 
 ## Work items
 
-### 1a. Fix umbrella header
+### 1a. Public umbrella header — completed
 
-**Current state:** `include/datoviz/datoviz.h` exists but is missing `app.h`.
+**Current state:** completed in the source tree.
 
-**Fix:** add `#include "app.h"` to `include/datoviz/datoviz.h`.
+- `include/datoviz/datoviz.h` includes `app.h`.
+- `include/datoviz.h` exists as the top-level forwarding header.
+- C and C++ public header probes are registered in `testing/CMakeLists.txt`.
 
-**Also add:** a top-level forwarding header `include/datoviz.h` containing only:
+Users can write:
+
 ```c
-#pragma once
-#include "datoviz/datoviz.h"
+#include <datoviz.h>
 ```
-This lets users write either `#include <datoviz.h>` or `#include <datoviz/datoviz.h>`.
 
 The CMakeLists install rule `install(DIRECTORY include/ DESTINATION include)` already covers
 both files.
 
-**Docs:** update all "minimal code patterns" examples to use `#include <datoviz.h>` once this
-exists.
+Keep new minimal C/C++ examples on the top-level include unless a subheader is being documented
+explicitly.
 
 ---
 
-### 1b. Fix missing `EXTERN_C_ON` guards
+### 1b. C++ public header guards — completed
 
-Five sub-headers declare exported functions (`DVZ_EXPORT`) but are missing `EXTERN_C_ON` /
-`EXTERN_C_OFF` wrappers. C++ consumers including these directly (or via the umbrella) will get
-linker errors without the guards.
-
-Files to fix — add `EXTERN_C_ON` after the `#pragma once` / includes block, and `EXTERN_C_OFF`
-at end of file:
+These five public subheaders now wrap exported declarations in `EXTERN_C_ON` /
+`EXTERN_C_OFF`:
 
 - `include/datoviz/math/vec.h` — 15 exported functions
 - `include/datoviz/math/parallel.h` — 4 exported functions
 - `include/datoviz/vk/device.h` — 19 exported functions
 - `include/datoviz/vk/gpu.h` — 3 exported functions
 - `include/datoviz/common/version.h` — 1 exported function
-
-Pattern (follow `scene.h` lines 44 and 3461 as the reference):
-```c
-// after all #includes:
-EXTERN_C_ON
-
-// ... declarations ...
-
-EXTERN_C_OFF
-```
 
 `EXTERN_C_ON` / `EXTERN_C_OFF` are defined in `include/datoviz/common/macros.h` and expand to
 `extern "C" {` / `}` under C++, nothing under C.
@@ -616,21 +603,33 @@ the feedstock environment before forcing `SYSTEM`; otherwise keep those two as `
 
 ## Implementation order
 
-1. `EXTERN_C_ON` guards on 5 sub-headers (1b) — prerequisite for C++ consumers, do first
-2. Fix umbrella header: add `app.h`, add top-level `include/datoviz.h` forwarder (1a)
-3. `datoviz-config` script + pyproject.toml entry point (2) — independent
-4. `datoviz.pc.in` + CMakeLists install rule (14) — independent, needed for brew/apt
-5. `DVZ_VENDORED_DEPS` CMake flag (this section) — needed for conda/brew/apt
-6. Bundle headers into wheel + verify `package-data` (3) — depends on 1a
-7. Hand-written relocatable wheel `DatovizConfig.cmake` (4) — independent, test locally
-8. Rpath in `datoviz-config` output (5) — depends on 3
-9. FetchContent `PROJECT_IS_TOP_LEVEL` guards + CMake bump to 3.21 (6) — independent
-10. `.deb` packaging (12) — depends on 4, 5, 14
-11. Homebrew formula (11) — depends on 4, 5, 14; needs release tag
-12. conda-forge feedstock (10) — depends on 5; needs release tag
-13. MSVC wheel CI job (8) — after RC
-14. rpm spec file (13), Spack recipe (15) — post-v0.4
-15. Documentation pages (16) — can be written in parallel; mark unfinished sections as "coming soon"
+Completed:
+
+1. Public umbrella include: `include/datoviz.h` forwards to `include/datoviz/datoviz.h`, and the
+   umbrella includes `app.h`.
+2. C++ public header guards: the five previously missing `EXTERN_C_ON` / `EXTERN_C_OFF` wrappers
+   are present.
+3. System dependency source modes for GLFW, cglm, Kvazaar, and mimalloc are implemented and
+   documented.
+4. `datoviz.pc.in`, CMake package install metadata, and package smoke/install presets are in place.
+
+Active / next:
+
+1. Wheel C integration lane: `datoviz-config`, bundled headers, wheel CMake config, and wheel smoke
+   CI. Coordinate with the active wheel-build agent before editing `pyproject.toml`,
+   `datoviz/cli.py`, wheel CMake config files, or `tools/release_wheels/*`.
+2. FetchContent `PROJECT_IS_TOP_LEVEL` guards and subdirectory consumer smoke (6). This is
+   independent of the wheel lane and is the next good non-overlapping CMake task.
+3. Rpath verification in `datoviz-config` output once the console script lands (5).
+4. `.deb` packaging (12) after pkg-config, dependency modes, and install metadata are stable.
+5. Homebrew formula (11) after release tagging; uses the strict Homebrew system-required lane.
+6. conda-forge feedstock (10) after release tagging; verify cglm/Kvazaar availability in the
+   feedstock environment before forcing `SYSTEM`.
+7. MSVC wheel CI job (8) after RC.
+8. rpm spec file (13), Spack recipe (15), vcpkg, and conan remain post-v0.4 unless release scope
+   changes.
+9. Documentation pages (16) can continue in parallel; mark unfinished package-manager sections as
+   "coming soon".
 
 ## Testing the full path
 

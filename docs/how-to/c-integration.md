@@ -54,7 +54,10 @@ headers, including Vulkan and volk headers.
 
 ## Local Validation
 
-Repository developers can validate the wheel C integration path with:
+Repository developers can validate public header parseability in the normal build through
+`dvz_public_header_probe` and `dvz_public_header_cpp_probe`.
+
+The wheel C integration path is validated separately with:
 
 ```bash
 just build
