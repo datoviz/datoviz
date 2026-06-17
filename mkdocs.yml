@@ -135,6 +135,7 @@ nav:
       - Mesh with arcball: 'how-to/mesh-arcball.md'
       - Multi-panel figure: 'how-to/multi-panel-figure.md'
     - Integration And Debugging:
+      - Use from C or C++: 'how-to/c-integration.md'
       - Embed in Qt: 'how-to/embed-in-qt.md'
       - Use raw ctypes: 'how-to/use-raw-ctypes.md'
       - Replay DVZR: 'how-to/replay-dvzr.md'
