@@ -158,6 +158,10 @@ static bool _shaderc_load(void)
 #define DVZ_SHADERC_LIB_PATH "libshaderc_shared.so.1"
 #endif
     DvzDynLib lib = dvz_dynlib_open(DVZ_SHADERC_LIB_PATH);
+#if defined(__APPLE__)
+    if (lib == NULL && strcmp(DVZ_SHADERC_LIB_PATH, "@rpath/libshaderc_shared.1.dylib") == 0)
+        lib = dvz_dynlib_open("@loader_path/libshaderc_shared.1.dylib");
+#endif
     if (lib == NULL)
     {
         log_error(

@@ -41,6 +41,16 @@ Local shaderc/Vulkan source-build proof:
   environment skip, `vk/memory_interop_buffer_export` (`external semaphore FD unsupported`).
   The DRP2 GLSL shader module runtime cases passed.
 - On 2026-06-17 macOS arm64, `just test-drp2-contract` passed 91/91 selected tests.
+- On 2026-06-17 macOS arm64, a host-native wheel proof passed with
+  `DVZ_WHEEL_RUNTIME_DIRS=/Users/cyrille/VulkanSDK/1.4.328.1/macOS/lib`,
+  `just wheel-stage --clean`, `just wheel-build --platform-tag macosx_15_0_arm64`,
+  `just wheel-validate --platform-tag macosx_15_0_arm64`, `just wheel-inspect --native-deps`,
+  and `just wheel-check --shaderc --cmake-consumer --qt-probe optional`. The optional Qt probe
+  failed as expected because PyQt6 is absent in the clean check environment.
+- The same local machine cannot prove the release target `macosx_11_0_arm64`: with
+  `MACOSX_DEPLOYMENT_TARGET=11.0`, `delocate-wheel` rejects `libdatoviz.dylib` and Homebrew
+  `libpng`, `libtinyxml2`, and `libfreetype` dylibs because they have minimum target macOS 15.0.
+  Use an older-target build host/dependency set or CI for the release matrix tag proof.
 
 1. Generate current ctypes bindings:
    ```sh
