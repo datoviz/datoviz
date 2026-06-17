@@ -668,13 +668,18 @@ Completed:
 10. Conda headless preflight passed locally for `import datoviz`, `import datoviz.raw`, and
     `raw.dvz_scene()` / `raw.dvz_scene_destroy()`.
 11. WSL2, native Visual Studio, and vcpkg-preview user docs are present.
+12. Conda-style native-library loading is supported in `datoviz._ctypes`: Unix `$PREFIX/lib` and
+    Windows `$PREFIX/Library/bin` are searched in addition to wheel/local-build paths.
+13. Draft conda-forge recipe lives under `conda-recipe/`; direct conda-forge repodata confirmed
+    `cglm` on target platforms and did not find `kvazaar`, so the draft disables Kvazaar.
 
 Active / next:
 
 1. Run the manual wheel workflow on GitHub and record Linux, macOS, and Windows artifact evidence.
 2. Validate the vcpkg overlay on a Windows machine with vcpkg installed; replace the release
    source-bundle SHA512 after tagging.
-3. Conda-forge preflight (10): verify cglm/Kvazaar availability in the feedstock environment.
+3. Conda-forge preflight (10): render/build `conda-recipe/` in a local conda-build or
+   staged-recipes environment and confirm dependency names on every target platform.
 4. `.deb` packaging (12) after pkg-config, dependency modes, and install metadata are stable.
 5. Homebrew formula (11) after release tagging; uses the strict Homebrew system-required lane.
 6. conda-forge feedstock (10) after release tagging; verify cglm/Kvazaar availability in the

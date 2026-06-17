@@ -19,7 +19,7 @@ consult `C_DISTRIBUTION.md` for implementation details on each work item.
 | Wheel C integration | implemented, local Linux proof passed | Re-run on macOS and Windows CI |
 | WSL2 install docs | documented | Keep aligned with source-build docs |
 | "Build on Windows in VS" docs | documented in install guide | Expand into a dedicated page if user feedback needs it |
-| conda-forge preflight | headless import proof passed locally | Verify cglm/Kvazaar availability in conda-forge environment |
+| conda-forge preflight | headless import proof passed locally; draft recipe added | Render/build `conda-recipe/` in conda-build or staged-recipes |
 | vcpkg overlay | draft added | Replace release-source SHA512 after stable release tag and source bundle |
 
 ### Needs release tag
@@ -219,6 +219,7 @@ conda, and vcpkg lanes. See C_DISTRIBUTION.md item 15 for the recipe skeleton.
 | `agents/now/C_DISTRIBUTION.md` | Detailed implementation spec for all distribution work items |
 | `.github/workflows/wheels.yml` | Manual wheel CI including Windows MinGW jobs |
 | `vcpkg-overlay/ports/datoviz/` | Draft vcpkg overlay port |
+| `conda-recipe/` | Draft conda-forge staged-recipes starting point |
 | `CMakePresets.json` | `msvc` and `mingw` presets for Windows builds |
 | `justfile` | `just msvc`, `just mingw` recipes |
 | `datoviz/cli.py` | `datoviz-config` console script |

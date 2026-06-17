@@ -37,9 +37,9 @@ class CtypesEnum(IntEnum):
 
 
 _PLATFORM_LIB_NAMES = {
-    'Linux': 'libdatoviz.so',
-    'Darwin': 'libdatoviz.dylib',
-    'Windows': 'libdatoviz.dll',
+    'Linux': ('libdatoviz.so',),
+    'Darwin': ('libdatoviz.dylib',),
+    'Windows': ('datoviz.dll', 'libdatoviz.dll'),
 }
 
 
@@ -48,15 +48,23 @@ def _candidate_library_paths():
     if env_path:
         yield pathlib.Path(env_path)
 
-    name = _PLATFORM_LIB_NAMES.get(platform.system())
-    if not name:
+    names = _PLATFORM_LIB_NAMES.get(platform.system())
+    if not names:
         return
 
     here = pathlib.Path(__file__).resolve().parent
     root = here.parent
-    yield here / name
-    yield root / 'build' / 'src' / name
-    yield root / 'build' / name
+    for name in names:
+        yield here / name
+        yield root / 'build' / 'src' / name
+        yield root / 'build' / name
+
+    # Conda installs Python modules under <prefix>/lib/pythonX.Y/site-packages and native
+    # libraries under <prefix>/lib on Unix or <prefix>/Library/bin on Windows.
+    for parent in here.parents:
+        for name in names:
+            yield parent / 'lib' / name
+            yield parent / 'Library' / 'bin' / name
 
 
 def _load_library():

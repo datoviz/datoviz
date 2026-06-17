@@ -1,0 +1,80 @@
+{% set version = "0.4.0" %}
+
+package:
+  name: datoviz-split
+  version: {{ version }}
+
+source:
+  url: https://github.com/datoviz/datoviz/releases/download/v{{ version }}/datoviz-{{ version }}-source.tar.gz
+  sha512: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+outputs:
+  - name: libdatoviz
+    script: build_libdatoviz.sh  # [unix]
+    script: bld_libdatoviz.bat  # [win]
+    build:
+      run_exports:
+        - {{ pin_subpackage("libdatoviz", max_pin="x.x") }}
+    requirements:
+      build:
+        - {{ compiler("c") }}
+        - {{ compiler("cxx") }}
+        - cmake
+        - ninja
+        - pkg-config  # [unix]
+      host:
+        - cglm
+        - freetype
+        - glfw
+        - libpng
+        - mimalloc
+        - tinyxml2
+        - vulkan-loader
+        - zlib
+      run:
+        - cglm
+        - freetype
+        - glfw
+        - libpng
+        - mimalloc
+        - tinyxml2
+        - vulkan-loader
+        - zlib
+    test:
+      commands:
+        - test -f "$PREFIX/include/datoviz.h"  # [unix]
+        - test -f "$PREFIX/lib/libdatoviz${SHLIB_EXT}"  # [unix]
+        - if not exist "%PREFIX%\\Library\\include\\datoviz.h" exit 1  # [win]
+        - if not exist "%PREFIX%\\Library\\bin\\datoviz.dll" exit 1  # [win]
+
+  - name: datoviz
+    script: build_python_datoviz.sh  # [unix]
+    script: bld_python_datoviz.bat  # [win]
+    requirements:
+      host:
+        - python
+        - pip
+        - setuptools
+        - wheel
+      run:
+        - python
+        - numpy
+        - platformdirs
+        - requests
+        - {{ pin_subpackage("libdatoviz", exact=True) }}
+    test:
+      imports:
+        - datoviz
+        - datoviz.raw
+      commands:
+        - python -c "import datoviz.raw as raw; scene = raw.dvz_scene(); raw.dvz_scene_destroy(scene)"
+
+about:
+  home: https://datoviz.org
+  license: MIT
+  license_file: LICENSE
+  summary: GPU rendering engine for scientific visualization
+
+extra:
+  recipe-maintainers:
+    - datoviz-maintainers
