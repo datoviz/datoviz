@@ -5,6 +5,8 @@ library, a notebook widget toolkit, or a compatibility layer for the old Datoviz
 The purpose of the v0.4 rewrite is to make the rendering core explicit enough to validate,
 embed, replay, port, and harden.
 
+## Engine First
+
 The engine is designed around retained scene state. Users create figures, panels, visuals,
 controllers, adornments, and resources. Datoviz keeps that state, validates it, and lowers it into
 frame plans and backend-agnostic DRP2 command streams. The runtime then executes those streams
@@ -18,10 +20,14 @@ This separation gives Datoviz three jobs:
   validation;
 - act as a rendering backend that higher-level scientific plotting layers can target.
 
+## Deliberate Boundaries
+
 Datoviz v0.4 deliberately does less than a full plotting environment. It does not own high-level
 `plot()`, `scatter()`, or `imshow()` APIs, declarative chart grammars, notebook layout systems,
 publication-oriented vector export, or Python-first object models. Those responsibilities belong to
 GSP/VisPy2 or other libraries above Datoviz.
+
+## Documentation Consequence
 
 That boundary matters for the documentation. Datoviz pages should teach the engine, the retained
 scene model, visual data contracts, runtime ownership, status labels, and low-level binding scope.

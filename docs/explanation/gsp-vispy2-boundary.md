@@ -2,18 +2,26 @@
 
 Datoviz v0.4 owns the rendering engine. GSP/VisPy2 owns high-level scientific plotting.
 
+## Boundary
+
 This boundary is intentional. Datoviz should provide a predictable C engine, retained scene model,
 visual families, runtime execution, offscreen capture, embedding hooks, raw/generated low-level
 bindings, DRP2 streams, fixtures, and portability experiments. It should not grow a parallel
 high-level Python plotting API inside the v0.4 docs.
 
+## When to Use Datoviz
+
 Use Datoviz directly when you need engine control: C applications, native embedding, explicit
 visual data, retained resources, low-level Python smoke tests, backend validation, WebGPU/WASM
 experiments, or contributor work on rendering internals.
 
+## When to Use GSP or VisPy2
+
 Use GSP/VisPy2 when you want plotting objects, automatic scales, declarative chart-like workflows,
 notebook-first ergonomics, rich Python object models, or migration from old high-level Python
 plotting patterns.
+
+## Documentation Rule
 
 This does not make Datoviz less user-facing. It means the user-facing Datoviz surface is the engine
 surface: examples, visual families, scenes, panels, controllers, capture, diagnostics, and exact

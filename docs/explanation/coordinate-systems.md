@@ -4,6 +4,8 @@ Datoviz separates semantic coordinates from backend coordinates. User code shoul
 the coordinate system that makes sense for the visualization; frame planning then lowers that state
 to the GPU-facing spaces required for rendering.
 
+## Common Spaces
+
 The common spaces are:
 
 - data coordinates: the user's scientific or application coordinates;
@@ -13,19 +15,27 @@ The common spaces are:
 - framebuffer coordinates: pixel positions in the render target;
 - texture or sample coordinates: indices or normalized coordinates used for images and fields.
 
+## Precision Boundary
+
 For v0.4, semantic and domain coordinates should remain authoritative in double precision where the
 scene contract needs it. Visual render attributes are lowered to GPU-facing float data unless a
 family contract says otherwise. This keeps the public model precise without requiring every shader
 input to be double precision.
 
+## Controllers and Domains
+
 Controllers change transforms, not the original data. Panzoom changes the visible 2D domain.
 Arcball, fly, turntable, and orbit controllers change view or camera state for 3D panels. Linked
 panels should share controller or domain state explicitly.
+
+## Projection Scope
 
 Nonlinear or geographic projections are not scene-managed in v0.4. The supported pattern is to
 project data on the CPU into ordinary Cartesian coordinates, then upload the projected positions to
 Datoviz. A future scene-managed projection system should preserve the same distinction between data
 semantics and GPU lowering.
+
+## Queries
 
 Picking and probing depend on the same coordinate chain as rendering. A pointer starts in
 framebuffer coordinates, maps through the panel viewport into panel or data coordinates, and may

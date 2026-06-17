@@ -3,6 +3,12 @@
 Datoviz keeps scene semantics above backend execution. The scene describes what should be rendered;
 the runtime executes already-planned work.
 
+The short version is:
+
+```text
+scene semantics -> frame artifact -> DRP2 packets -> runtime execution
+```
+
 ## What the Scene Owns
 
 The scene owns user-facing state: figures, panels, visuals, controllers, sampled fields, scales,

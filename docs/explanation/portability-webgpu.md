@@ -3,6 +3,8 @@
 Datoviz treats WebGPU as portability pressure on the scene and DRP2 contracts, not as a second
 renderer architecture.
 
+## Shared Architecture
+
 The active native path is:
 
 ```text
@@ -79,7 +81,7 @@ accessors. A successful emit should leave the report empty.
 
 ## Validation Strategy
 
-Validation is layered:
+Validation is layered rather than exhaustive on every route:
 
 - C scene tests check portable WGSL frame-plan emission;
 - fixture preflight checks committed DRP2 streams and negative fixtures without a browser;
@@ -87,29 +89,6 @@ Validation is layered:
 - the fixture dashboard executes the committed subset in a real browser WebGPU runtime;
 - the WASM scene pages prove browser input -> C scene/controller state -> DRP2 emission -> WebGPU
   replay.
-
-Run:
-
-```bash
-just webgpu-fixture-preflight
-just webgpu-runner-smoke
-just wasm-scene-smoke
-just webgpu-browser-smoke
-```
-
-For browser evidence, serve the repository and inspect the fixture dashboard plus the unified WASM
-examples host:
-
-```bash
-python3 -m http.server 8765
-```
-
-```text
-http://localhost:8765/examples/webgpu/fixtures.html
-http://localhost:8765/examples/webgpu/live.html
-http://localhost:8765/examples/webgpu/live.html?id=feature_timer_animation
-http://localhost:8765/examples/webgpu/live.html?id=feature_picking
-```
 
 The release bar is clear scope, repeatable validation, and explicit unsupported-feature behavior.
 Broader visual parity can follow after those properties are stable.
