@@ -32,7 +32,7 @@ outputs:
         - libpng
         - mimalloc
         - tinyxml2
-        - vulkan-loader
+        - libvulkan-loader
         - zlib
       run:
         - cglm
@@ -41,7 +41,7 @@ outputs:
         - libpng
         - mimalloc
         - tinyxml2
-        - vulkan-loader
+        - libvulkan-loader
         - zlib
     test:
       commands:
