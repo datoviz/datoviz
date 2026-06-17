@@ -1937,7 +1937,40 @@ docs-assets:
 #
 
 serve: docs-assets
-    @uv run --with mkdocs-material --with 'mkdocstrings[python]' mkdocs serve -a localhost:8294
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    host="${DATOVIZ_DOCS_HOST:-localhost}"
+    start_port="${DATOVIZ_DOCS_PORT:-8294}"
+    end_port=$((start_port + 20))
+
+    port=$(python3 - "$host" "$start_port" "$end_port" <<'PY'
+    import socket
+    import sys
+
+    host = sys.argv[1]
+    start_port = int(sys.argv[2])
+    end_port = int(sys.argv[3])
+
+    for port in range(start_port, end_port + 1):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                sock.bind((host, port))
+            except OSError:
+                continue
+        print(port)
+        break
+    else:
+        sys.exit(f"no free port found on {host}:{start_port}-{end_port}")
+    PY
+    )
+
+    if [ "$port" != "$start_port" ]; then
+        echo "Port ${host}:${start_port} is busy; serving docs on ${host}:${port}."
+    fi
+
+    uv run --with mkdocs-material --with 'mkdocstrings[python]' mkdocs serve -a "${host}:${port}"
 #
 
 # Publish the mkdocs website on GitHub Pages.

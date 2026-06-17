@@ -24,7 +24,7 @@ interactive 3D RGB-axis proof of the Datoviz scene coordinate convention.
 
 ## Media
 
-![Coordinate System](../../../assets/gallery/v0.4/features/feature_coordinate_system.webp)
+_Media pending._
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

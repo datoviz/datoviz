@@ -1,7 +1,7 @@
 # Feature Status
 
 Draft v0.4 public status table. Status labels use the meanings from
-[Project status](../start/project-status.md).
+[Project status](project-status.md).
 
 | Area | Status | Notes |
 | --- | --- | --- |

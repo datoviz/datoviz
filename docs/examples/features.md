@@ -24,7 +24,7 @@ smallest runner-backed retained scene with one point visual.
 
 ### [Coordinate System](gallery/features/feature_coordinate_system.md)
 
-![Coordinate System](../assets/gallery/v0.4/features/feature_coordinate_system.webp)
+_Media pending._
 
 `supported` `features`
 
@@ -84,7 +84,7 @@ two panels with bidirectional linked X panzoom state.
 
 ### [Panel View 2D](gallery/features/feature_panel_view2d.md)
 
-![Panel View 2D](../assets/gallery/v0.4/features/feature_panel_view2d.webp)
+_Media pending._
 
 `supported` `features`
 
@@ -462,7 +462,7 @@ tessellated cubic Bezier curve rendered as a retained path.
 
 ### [Path Join](gallery/features/feature_path_join.md)
 
-![Path Join](../assets/gallery/v0.4/features/feature_path_join.webp)
+_Media pending._
 
 `supported` `features`
 

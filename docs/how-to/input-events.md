@@ -7,6 +7,10 @@ React to keyboard, mouse, and pointer input in native examples.
 Use controllers for standard navigation first. Add explicit input callbacks when the application
 needs custom selection, toggles, overlays, or host integration.
 
+For host GUI controls, let the UI own application state such as toggles, sliders, and mode
+switches, then update retained Datoviz visual data, visibility, or controller state from that
+state.
+
 ## Minimal Call Sequence
 
 ```c
@@ -24,6 +28,10 @@ Keep callback work small; defer expensive updates to the next frame or a control
 - Source: `examples/c/features/picking.c`
 - Gallery: [GUI Controls](../examples/gallery/features/feature_gui_controls.md)
 - Source: `examples/c/features/gui_controls.c`
+- Gallery: [Raw cimgui GUI](../examples/gallery/features/feature_gui_cimgui.md)
+- Source: `examples/c/features/gui_cimgui.c`
+- Gallery: [GUI Viewport](../examples/gallery/features/feature_gui_viewport.md)
+- Source: `examples/c/features/gui_viewport.c`
 
 ## Important Details
 
@@ -35,6 +43,7 @@ WebGPU route and should not be copied from GLFW callback code.
 - Reimplementing pan/zoom in raw input callbacks.
 - Mutating visual data from long-running callback work.
 - Assuming GLFW key codes are portable to WebGPU.
+- Letting GUI state and visual attributes drift apart.
 
 ## See Also
 

@@ -27,11 +27,17 @@ Use the exact constructor shown by the selected controller example.
 - Source: `examples/c/features/controller_fly.c`
 - Gallery: [Turntable Controller](../examples/gallery/features/feature_controller_turntable.md)
 - Source: `examples/c/features/controller_turntable.c`
+- Gallery: [Protein](../examples/gallery/showcases/protein_arcball_viewer.md)
+- Source: `examples/c/showcases/protein.c`
 
 ## Important Details
 
 3D controllers work best with a clear target, domain, and camera convention. For object viewers,
 normalize or center geometry before adding advanced navigation.
+
+For mesh inspection, upload geometry and material attributes first, attach the 3D controller, then
+verify depth and lighting. The protein viewer is a composed showcase, not the minimal mesh or
+arcball recipe.
 
 ## Common Mistakes
 

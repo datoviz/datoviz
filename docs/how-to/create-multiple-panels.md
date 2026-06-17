@@ -31,8 +31,8 @@ consistent spacing.
 
 ## Important Details
 
-Panels are viewports, not separate scenes. Share data and controllers deliberately; do not duplicate
-the whole scene unless the runtime really needs separate lifetimes.
+Panels are viewports in one figure and scene, not separate scenes. Share data and controllers
+deliberately; do not duplicate the whole scene unless the runtime really needs separate lifetimes.
 
 ## Common Mistakes
 

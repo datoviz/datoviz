@@ -17,6 +17,9 @@ index or texture coordinate space, then display the value with a label, annotati
 
 Use picking for item identity; use probing for field values.
 
+For an image with a colorbar and cursor readout, keep the sampled field, scalar normalization,
+colorbar range, and probe coordinate transform synchronized.
+
 ## Canonical Examples
 
 - Gallery: [Image Probe](../examples/gallery/features/image_probe.md)
@@ -36,6 +39,7 @@ translated, or texture-mapped onto a mesh, account for that transform before ind
 - Treating screen pixels as image indices after pan or zoom.
 - Ignoring interpolation and sampling mode when reporting values.
 - Turning a composed linked-probe showcase into copied starter code.
+- Showing a colorbar with a range that differs from the field normalization.
 
 ## See Also
 
