@@ -667,18 +667,29 @@ def render_example_nav(
     overview_href = site_html_relative_url(page_path, overview_site_path)
     previous_href = site_html_relative_url(page_path, f"examples/{previous.page_path[:-3]}/") if previous else ""
     next_href = site_html_relative_url(page_path, f"examples/{next_.page_path[:-3]}/") if next_ else ""
+    if location == "top":
+        return [
+            '<nav class="dvz-example-breadcrumbs" aria-label="Breadcrumbs">',
+            f'<a href="{examples_href}">Examples</a>',
+            '<span>/</span>',
+            f'<a href="{overview_href}">{overview_label}</a>',
+            '<span>/</span>',
+            f'<span>{example.title}</span>',
+            "</nav>",
+            "",
+        ]
+
     previous_link = (
-        f'<a class="dvz-example-nav__link" href="{previous_href}">'
-        f'<span>Previous</span><strong>{previous.title}</strong></a>'
+        f'<a href="{previous_href}">Previous: {previous.title}</a>'
         if previous
-        else '<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>'
+        else ""
     )
     next_link = (
-        f'<a class="dvz-example-nav__link" href="{next_href}">'
-        f'<span>Next</span><strong>{next_.title}</strong></a>'
+        f'<a href="{next_href}">Next: {next_.title}</a>'
         if next_
-        else '<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>'
+        else ""
     )
+    sibling_links = [link for link in (previous_link, next_link) if link]
     return [
         f'<nav class="dvz-example-nav dvz-example-nav--{location}" aria-label="Example navigation">',
         '<div class="dvz-example-nav__trail">',
@@ -687,8 +698,7 @@ def render_example_nav(
         f'<a href="{overview_href}">{overview_label}</a>',
         "</div>",
         '<div class="dvz-example-nav__siblings">',
-        previous_link,
-        next_link,
+        " · ".join(sibling_links),
         "</div>",
         "</nav>",
         "",
@@ -1056,8 +1066,8 @@ def render_example_page(
 ) -> None:
     page_path = docs_site_path(docs_dir, example.page_path)
     lines = generated_header(example.title)
-    lines.extend([example.summary, ""])
     lines.extend(render_example_nav(example, page_path, previous, next_))
+    lines.extend([example.summary, ""])
     lines.extend(render_preview(example, page_path, image_dir, image_url_base, image_format))
     lines.extend(render_source_tabs(example))
     lines.extend(render_example_details(example, page_path))
