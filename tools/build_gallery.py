@@ -25,19 +25,70 @@ PUBLIC_LANES = ("start", "visuals", "features", "composites", "showcases", "adva
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
 PYTHON_SOURCE_BY_ID = {}
 
-# Flagship feature IDs shown on the examples index; the rest are reachable via the full gallery.
-FLAGSHIP_FEATURE_IDS = (
-    "feature_controller_arcball",
-    "colorbar",
-    "feature_axis_labels",
-    "feature_panel_multi",
-    "feature_lighting",
-    "feature_animation_tracks",
-    "feature_isolines",
-    "technique_edl",
-    "feature_sampled_field_2d",
+# Semantic ordering for the examples index page.
+# Items not listed fall to the end in their natural order.
+
+INDEX_SHOWCASE_ORDER = (
+    "brain_volume",               # flagship neuro volume
+    "showcase_lipid_brain_atlas", # neuro atlas
+    "showcase_embedding_atlas",   # high-dim data
+    "showcase_synthetic_mouse",   # neuro anatomy
+    "protein_arcball_viewer",     # molecular 3D
+    "point_cloud",                # 3D scatter
+    "showcase_surface_grid",      # 3D surface
+    "textured_terrain_or_planet", # textured mesh
+    "showcase_wind_field",        # vector field
+    "showcase_gpu_particle_smoke",# GPU compute
+    "scientific_plotting_workflow",
+    "scalebar_measurement_workflow",
+    "linked_panels_axes_panzoom",
+    "linked_panels_probe_colorbar",
+    "us_state_choropleth",
+)
+
+INDEX_VISUAL_ORDER = (
+    # 2D primitives
+    "point_2d",
+    "visual_pixel",
+    "visual_primitive",
+    "visual_segment",
+    "visual_path",
+    # markers and text
+    "visual_marker",
+    "visual_text",
+    "visual_glyph",
+    "visual_labels",
+    # image / field / splat
+    "visual_image",
+    "visual_vector",
+    "visual_splat",
+    # 3D
+    "visual_mesh",
+    "sphere_impostor",
+    "volume",
+    # composites
+    "composite_polygon",
+    "composite_graph",
+)
+
+INDEX_FEATURE_ORDER = (
+    # layout
     "feature_panel_grid",
+    "feature_panel_multi",
+    # adornments
+    "feature_axis_labels",
+    "colorbar",
+    # navigation
+    "feature_controller_arcball",
+    # data / scientific
+    "feature_sampled_field_2d",
     "feature_marker_symbols",
+    "feature_isolines",
+    # 3D rendering
+    "feature_lighting",
+    "technique_ssao",
+    # animation / interaction
+    "feature_animation_tracks",
     "image_probe",
 )
 
@@ -417,6 +468,12 @@ def render_card(
 """
 
 
+def semantic_sort(examples: list[Example], order: tuple[str, ...]) -> list[Example]:
+    """Sort examples by a fixed ID order; unrecognised IDs fall to the end."""
+    rank = {id_: i for i, id_ in enumerate(order)}
+    return sorted(examples, key=lambda e: rank.get(e.id, len(order)))
+
+
 def write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text.rstrip() + "\n", encoding="utf8")
@@ -481,11 +538,14 @@ def render_index(
     image_format: str = DEFAULT_IMAGE_FORMAT,
 ) -> None:
     by_lane = {lane: [e for e in examples if e.lane == lane] for lane in PUBLIC_LANES}
-    showcase_examples = by_lane["showcases"]
+    showcase_examples = semantic_sort(by_lane["showcases"], INDEX_SHOWCASE_ORDER)
     visual_examples = by_lane["visuals"]
     composite_examples = by_lane["composites"]
     feature_examples = by_lane["features"]
-    flagship_features = [e for e in feature_examples if e.id in FLAGSHIP_FEATURE_IDS]
+    flagship_feature_ids = set(INDEX_FEATURE_ORDER)
+    flagship_features = semantic_sort(
+        [e for e in feature_examples if e.id in flagship_feature_ids], INDEX_FEATURE_ORDER
+    )
     index_path = docs_dir / "index.md"
     page_path = docs_site_path(docs_dir, "index.md")
 
@@ -526,7 +586,7 @@ def render_index(
     )
     lines.append('<div class="grid cards" markdown="1">')
     lines.append("")
-    for example in sorted(visual_examples + composite_examples, key=lambda e: e.title.lower()):
+    for example in semantic_sort(visual_examples + composite_examples, INDEX_VISUAL_ORDER):
         lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
     lines.append("</div>")
     lines.append("")
@@ -541,7 +601,7 @@ def render_index(
     )
     lines.append('<div class="grid cards" markdown="1">')
     lines.append("")
-    for example in sorted(flagship_features, key=lambda e: e.title.lower()):
+    for example in flagship_features:
         lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
     lines.append("</div>")
     lines.append("")

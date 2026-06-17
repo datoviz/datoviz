@@ -12,61 +12,49 @@ Composed scenes demonstrating scientific workflows, real data, and polished demo
 
 <div class="card" markdown="1">
 
-### [Linked Panels With Axes](gallery/showcases/linked_panels_axes_panzoom.md)
+### [Allen Mouse Brain](gallery/showcases/brain_volume.md)
 
-_Media pending._
+![Allen Mouse Brain](../assets/gallery/v0.4/showcases/brain_volume.webp)
 
-`supported` `showcases`<br><span>`workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic`</span>
+`prototype` `showcases`<br><span>`scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, ...</span>
 
-linked temporal panels with a spanning summary panel.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Linked Probe With Colorbar](gallery/showcases/linked_panels_probe_colorbar.md)
-
-![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)
-
-`supported` `showcases`<br><span>`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, ...</span>
-
-linked image panels with one probe readout and shared colorbar.
+local Allen mouse brain RGBA volume and occluded slice.
 
 </div>
 
 <div class="card" markdown="1">
 
-### [Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md)
+### [Lipid Brain Atlas](gallery/showcases/showcase_lipid_brain_atlas.md)
 
-![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)
+![Lipid Brain Atlas](../assets/gallery/v0.4/showcases/showcase_lipid_brain_atlas.webp)
 
-`supported` `showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
+`prototype` `showcases`<br><span>`scientific`, `real-data`, `lipid-atlas`, `image`, `sampled-field`, ...</span>
 
-histogram, guide annotations, stacked traces, and error bands.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Scale Bar Measurement Workflow](gallery/showcases/scalebar_measurement_workflow.md)
-
-![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)
-
-`supported` `showcases`<br><span>`workflow`, `scale-bar`, `measurement`, `synthetic`</span>
-
-scale-aware overview, detail, and 3D measurement workflow.
+section/channel lipid intensity showcase.
 
 </div>
 
 <div class="card" markdown="1">
 
-### [U.S. State Choropleth](gallery/showcases/us_state_choropleth.md)
+### [Embedding Atlas](gallery/showcases/showcase_embedding_atlas.md)
 
-![U.S. State Choropleth](../assets/gallery/v0.4/showcases/us_state_choropleth.webp)
+![Embedding Atlas](../assets/gallery/v0.4/showcases/showcase_embedding_atlas.webp)
 
-`supported` `showcases`<br><span>`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, ...</span>
+`supported` `showcases`<br><span>`scientific`, `synthetic`, `embedding`, `point`, `panzoom`, ...</span>
 
-contiguous U.S. state population-density choropleth.
+interactive prepared AI embedding atlas.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Synthetic Mouse](gallery/showcases/showcase_synthetic_mouse.md)
+
+![Synthetic Mouse](../assets/gallery/v0.4/showcases/showcase_synthetic_mouse.webp)
+
+`prototype` `showcases`<br><span>`scientific`, `synthetic`, `textured-mesh`, `animation`, `skeleton`, ...</span>
+
+animated textured mouse mesh with trajectory and skeleton trails.
 
 </div>
 
@@ -79,6 +67,42 @@ contiguous U.S. state population-density choropleth.
 `supported` `showcases`<br><span>`scientific`, `real-data`, `molecular`, `sphere`, `arcball`</span>
 
 RCSB PDB protein structure rendered as clustered spheres.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Point Cloud](gallery/showcases/point_cloud.md)
+
+![Point Cloud](../assets/gallery/v0.4/showcases/point_cloud.webp)
+
+`supported` `showcases`<br><span>`real-data`, `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, ...</span>
+
+RESEPI RGB LiDAR dense point cloud.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Surface Grid](gallery/showcases/showcase_surface_grid.md)
+
+![Surface Grid](../assets/gallery/v0.4/showcases/showcase_surface_grid.webp)
+
+`supported` `showcases`<br><span>`scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, ...</span>
+
+generated height-field mesh with a derived wireframe overlay.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Textured Planets](gallery/showcases/textured_terrain_or_planet.md)
+
+![Textured Planets](../assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)
+
+`supported` `showcases`<br><span>`real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, ...</span>
+
+UV textured planet mesh via dvz_mesh + sampled fields.
 
 </div>
 
@@ -108,85 +132,61 @@ scene API compute-to-graphics particle smoke showcase.
 
 <div class="card" markdown="1">
 
-### [Embedding Atlas](gallery/showcases/showcase_embedding_atlas.md)
+### [Scientific Plotting Workflow](gallery/showcases/scientific_plotting_workflow.md)
 
-![Embedding Atlas](../assets/gallery/v0.4/showcases/showcase_embedding_atlas.webp)
+![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)
 
-`supported` `showcases`<br><span>`scientific`, `synthetic`, `embedding`, `point`, `panzoom`, ...</span>
+`supported` `showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
 
-interactive prepared AI embedding atlas.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Lipid Brain Atlas](gallery/showcases/showcase_lipid_brain_atlas.md)
-
-![Lipid Brain Atlas](../assets/gallery/v0.4/showcases/showcase_lipid_brain_atlas.webp)
-
-`prototype` `showcases`<br><span>`scientific`, `real-data`, `lipid-atlas`, `image`, `sampled-field`, ...</span>
-
-section/channel lipid intensity showcase.
+histogram, guide annotations, stacked traces, and error bands.
 
 </div>
 
 <div class="card" markdown="1">
 
-### [Synthetic Mouse](gallery/showcases/showcase_synthetic_mouse.md)
+### [Scale Bar Measurement Workflow](gallery/showcases/scalebar_measurement_workflow.md)
 
-![Synthetic Mouse](../assets/gallery/v0.4/showcases/showcase_synthetic_mouse.webp)
+![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)
 
-`prototype` `showcases`<br><span>`scientific`, `synthetic`, `textured-mesh`, `animation`, `skeleton`, ...</span>
+`supported` `showcases`<br><span>`workflow`, `scale-bar`, `measurement`, `synthetic`</span>
 
-animated textured mouse mesh with trajectory and skeleton trails.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Surface Grid](gallery/showcases/showcase_surface_grid.md)
-
-![Surface Grid](../assets/gallery/v0.4/showcases/showcase_surface_grid.webp)
-
-`supported` `showcases`<br><span>`scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, ...</span>
-
-generated height-field mesh with a derived wireframe overlay.
+scale-aware overview, detail, and 3D measurement workflow.
 
 </div>
 
 <div class="card" markdown="1">
 
-### [Allen Mouse Brain](gallery/showcases/brain_volume.md)
+### [Linked Panels With Axes](gallery/showcases/linked_panels_axes_panzoom.md)
 
-![Allen Mouse Brain](../assets/gallery/v0.4/showcases/brain_volume.webp)
+_Media pending._
 
-`prototype` `showcases`<br><span>`scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, ...</span>
+`supported` `showcases`<br><span>`workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic`</span>
 
-local Allen mouse brain RGBA volume and occluded slice.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Point Cloud](gallery/showcases/point_cloud.md)
-
-![Point Cloud](../assets/gallery/v0.4/showcases/point_cloud.webp)
-
-`supported` `showcases`<br><span>`real-data`, `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, ...</span>
-
-RESEPI RGB LiDAR dense point cloud.
+linked temporal panels with a spanning summary panel.
 
 </div>
 
 <div class="card" markdown="1">
 
-### [Textured Planets](gallery/showcases/textured_terrain_or_planet.md)
+### [Linked Probe With Colorbar](gallery/showcases/linked_panels_probe_colorbar.md)
 
-![Textured Planets](../assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)
+![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)
 
-`supported` `showcases`<br><span>`real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, ...</span>
+`supported` `showcases`<br><span>`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, ...</span>
 
-UV textured planet mesh via dvz_mesh + sampled fields.
+linked image panels with one probe readout and shared colorbar.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [U.S. State Choropleth](gallery/showcases/us_state_choropleth.md)
+
+![U.S. State Choropleth](../assets/gallery/v0.4/showcases/us_state_choropleth.webp)
+
+`supported` `showcases`<br><span>`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, ...</span>
+
+contiguous U.S. state population-density choropleth.
 
 </div>
 
@@ -197,102 +197,6 @@ UV textured planet mesh via dvz_mesh + sampled fields.
 17 rendering families — one example each.
 
 <div class="grid cards" markdown="1">
-
-<div class="card" markdown="1">
-
-### [Font Atlas Glyphs](gallery/visuals/visual_glyph.md)
-
-![Font Atlas Glyphs](../assets/gallery/v0.4/visuals/visual_glyph.webp)
-
-`experimental` `visuals`<br><span>`glyph`, `font-atlas`, `texture-atlas`, `sdf`, `capture`</span>
-
-low-level font atlas glyph quads, distinct from retained semantic text.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Graph Composite](gallery/composites/composite_graph.md)
-
-![Graph Composite](../assets/gallery/v0.4/composites/composite_graph.webp)
-
-`supported` `composites`<br><span>`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`</span>
-
-deterministic brain-connectivity graph composite.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Image](gallery/visuals/visual_image.md)
-
-![Image](../assets/gallery/v0.4/visuals/visual_image.webp)
-
-`supported` `visuals`<br><span>`image`, `sampled-field`, `capture`</span>
-
-deterministic scalar sampled field rendered with the retained image visual.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Labels](gallery/visuals/visual_labels.md)
-
-![Labels](../assets/gallery/v0.4/visuals/visual_labels.webp)
-
-`supported` `visuals`<br><span>`labels`, `categorical-scale`, `panzoom`, `capture`</span>
-
-retained labels visual with a small deterministic integer sampled field.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Marker](gallery/visuals/visual_marker.md)
-
-![Marker](../assets/gallery/v0.4/visuals/visual_marker.webp)
-
-`supported` `visuals`<br><span>`marker`, `panzoom`, `capture`</span>
-
-retained marker visual with deterministic symbol, fill, stroke, and size variation.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Mesh](gallery/visuals/visual_mesh.md)
-
-![Mesh](../assets/gallery/v0.4/visuals/visual_mesh.webp)
-
-`supported` `visuals`<br><span>`mesh`, `indexed-geometry`, `arcball`, `capture`</span>
-
-retained lit indexed cube mesh.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Path](gallery/visuals/visual_path.md)
-
-![Path](../assets/gallery/v0.4/visuals/visual_path.webp)
-
-`supported` `visuals`<br><span>`path`, `capture`</span>
-
-deterministic multi-signal retained path visual.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Pixel](gallery/visuals/visual_pixel.md)
-
-![Pixel](../assets/gallery/v0.4/visuals/visual_pixel.webp)
-
-`supported` `visuals`<br><span>`pixel`, `panzoom`, `capture`</span>
-
-deterministic retained pixel visual baseline.
-
-</div>
 
 <div class="card" markdown="1">
 
@@ -308,13 +212,13 @@ deterministic retained 2D point visual baseline.
 
 <div class="card" markdown="1">
 
-### [Polygon Composite](gallery/composites/composite_polygon.md)
+### [Pixel](gallery/visuals/visual_pixel.md)
 
-![Polygon Composite](../assets/gallery/v0.4/composites/composite_polygon.webp)
+![Pixel](../assets/gallery/v0.4/visuals/visual_pixel.webp)
 
-`supported` `composites`<br><span>`composite`, `polygon`, `polygon-set`, `holes`, `panzoom`</span>
+`supported` `visuals`<br><span>`pixel`, `panzoom`, `capture`</span>
 
-clean semantic polygon and polygon-set composites.
+deterministic retained pixel visual baseline.
 
 </div>
 
@@ -344,25 +248,25 @@ retained segment visual with independent endpoint-pair strokes.
 
 <div class="card" markdown="1">
 
-### [Sphere](gallery/visuals/sphere_impostor.md)
+### [Path](gallery/visuals/visual_path.md)
 
-![Sphere](../assets/gallery/v0.4/visuals/sphere_impostor.webp)
+![Path](../assets/gallery/v0.4/visuals/visual_path.webp)
 
-`supported` `visuals`<br><span>`sphere`, `arcball`, `capture`</span>
+`supported` `visuals`<br><span>`path`, `capture`</span>
 
-deterministic 3D impostor-sphere cluster with depth, radius, and color variation.
+deterministic multi-signal retained path visual.
 
 </div>
 
 <div class="card" markdown="1">
 
-### [Splat](gallery/visuals/visual_splat.md)
+### [Marker](gallery/visuals/visual_marker.md)
 
-![Splat](../assets/gallery/v0.4/visuals/visual_splat.webp)
+![Marker](../assets/gallery/v0.4/visuals/visual_marker.webp)
 
-`experimental` `visuals`<br><span>`splat`, `panzoom`, `capture`</span>
+`supported` `visuals`<br><span>`marker`, `panzoom`, `capture`</span>
 
-retained Gaussian splat visual with deterministic screen-space ellipses.
+retained marker visual with deterministic symbol, fill, stroke, and size variation.
 
 </div>
 
@@ -380,6 +284,42 @@ retained semantic text objects lowered to glyph visuals.
 
 <div class="card" markdown="1">
 
+### [Font Atlas Glyphs](gallery/visuals/visual_glyph.md)
+
+![Font Atlas Glyphs](../assets/gallery/v0.4/visuals/visual_glyph.webp)
+
+`experimental` `visuals`<br><span>`glyph`, `font-atlas`, `texture-atlas`, `sdf`, `capture`</span>
+
+low-level font atlas glyph quads, distinct from retained semantic text.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Labels](gallery/visuals/visual_labels.md)
+
+![Labels](../assets/gallery/v0.4/visuals/visual_labels.webp)
+
+`supported` `visuals`<br><span>`labels`, `categorical-scale`, `panzoom`, `capture`</span>
+
+retained labels visual with a small deterministic integer sampled field.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Image](gallery/visuals/visual_image.md)
+
+![Image](../assets/gallery/v0.4/visuals/visual_image.webp)
+
+`supported` `visuals`<br><span>`image`, `sampled-field`, `capture`</span>
+
+deterministic scalar sampled field rendered with the retained image visual.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Vector](gallery/visuals/visual_vector.md)
 
 ![Vector](../assets/gallery/v0.4/visuals/visual_vector.webp)
@@ -387,6 +327,42 @@ retained semantic text objects lowered to glyph visuals.
 `supported` `visuals`<br><span>`vector`, `path`, `panzoom`, `capture`</span>
 
 retained straight and curved vector visual example.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Splat](gallery/visuals/visual_splat.md)
+
+![Splat](../assets/gallery/v0.4/visuals/visual_splat.webp)
+
+`experimental` `visuals`<br><span>`splat`, `panzoom`, `capture`</span>
+
+retained Gaussian splat visual with deterministic screen-space ellipses.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Mesh](gallery/visuals/visual_mesh.md)
+
+![Mesh](../assets/gallery/v0.4/visuals/visual_mesh.webp)
+
+`supported` `visuals`<br><span>`mesh`, `indexed-geometry`, `arcball`, `capture`</span>
+
+retained lit indexed cube mesh.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Sphere](gallery/visuals/sphere_impostor.md)
+
+![Sphere](../assets/gallery/v0.4/visuals/sphere_impostor.webp)
+
+`supported` `visuals`<br><span>`sphere`, `arcball`, `capture`</span>
+
+deterministic 3D impostor-sphere cluster with depth, radius, and color variation.
 
 </div>
 
@@ -402,6 +378,30 @@ deterministic gyroid scalar field rendered with the retained volume visual.
 
 </div>
 
+<div class="card" markdown="1">
+
+### [Polygon Composite](gallery/composites/composite_polygon.md)
+
+![Polygon Composite](../assets/gallery/v0.4/composites/composite_polygon.webp)
+
+`supported` `composites`<br><span>`composite`, `polygon`, `polygon-set`, `holes`, `panzoom`</span>
+
+clean semantic polygon and polygon-set composites.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Graph Composite](gallery/composites/composite_graph.md)
+
+![Graph Composite](../assets/gallery/v0.4/composites/composite_graph.webp)
+
+`supported` `composites`<br><span>`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`</span>
+
+deterministic brain-connectivity graph composite.
+
+</div>
+
 </div>
 
 ## Features & Techniques
@@ -412,37 +412,25 @@ A selection of isolated feature and technique examples.
 
 <div class="card" markdown="1">
 
-### [2D Sampled Field](gallery/features/feature_sampled_field_2d.md)
+### [Panel Grid](gallery/features/feature_panel_grid.md)
 
-![2D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_2d.webp)
+![Panel Grid](../assets/gallery/v0.4/features/feature_panel_grid.webp)
 
 `supported` `features`
 
-scene-owned 2D sampled field bound to an image visual.
+four grid-owned panels with clipped panel-local content.
 
 </div>
 
 <div class="card" markdown="1">
 
-### [Animation Tracks](gallery/features/feature_animation_tracks.md)
+### [Multiple Panels](gallery/features/feature_panel_multi.md)
 
-![Animation Tracks](../assets/gallery/v0.4/features/feature_animation_tracks.webp)
-
-`supported` `features`
-
-retained track-backed visual transform animation.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Arcball Controller](gallery/features/feature_controller_arcball.md)
-
-![Arcball Controller](../assets/gallery/v0.4/features/feature_controller_arcball.webp)
+![Multiple Panels](../assets/gallery/v0.4/features/feature_panel_multi.webp)
 
 `supported` `features`
 
-arcball controller attached to a small 3D mesh.
+multiple independent panels with panel-local panzoom controllers.
 
 </div>
 
@@ -472,13 +460,37 @@ deterministic scalar image with one retained continuous colorbar.
 
 <div class="card" markdown="1">
 
-### [Image Probe](gallery/features/image_probe.md)
+### [Arcball Controller](gallery/features/feature_controller_arcball.md)
 
-![Image Probe](../assets/gallery/v0.4/features/image_probe.webp)
+![Arcball Controller](../assets/gallery/v0.4/features/feature_controller_arcball.webp)
 
 `supported` `features`
 
-scalar image pixel-query proof with a live probe marker.
+arcball controller attached to a small 3D mesh.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [2D Sampled Field](gallery/features/feature_sampled_field_2d.md)
+
+![2D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_2d.webp)
+
+`supported` `features`
+
+scene-owned 2D sampled field bound to an image visual.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Marker Symbols](gallery/features/feature_marker_symbols.md)
+
+![Marker Symbols](../assets/gallery/v0.4/features/feature_marker_symbols.webp)
+
+`supported` `features`<br><span>`marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`, `svg-path-symbol`</span>
+
+marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
 </div>
 
@@ -508,37 +520,37 @@ compare lit sphere clusters with different material and light settings.
 
 <div class="card" markdown="1">
 
-### [Marker Symbols](gallery/features/feature_marker_symbols.md)
+### [Screen-Space Ambient Occlusion](gallery/features/technique_ssao.md)
 
-![Marker Symbols](../assets/gallery/v0.4/features/feature_marker_symbols.webp)
+![Screen-Space Ambient Occlusion](../assets/gallery/v0.4/features/technique_ssao.webp)
 
-`supported` `features`<br><span>`marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`, `svg-path-symbol`</span>
+`supported` `features`
 
-marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
+screen-space ambient occlusion on normal-producing mesh geometry.
 
 </div>
 
 <div class="card" markdown="1">
 
-### [Multiple Panels](gallery/features/feature_panel_multi.md)
+### [Animation Tracks](gallery/features/feature_animation_tracks.md)
 
-![Multiple Panels](../assets/gallery/v0.4/features/feature_panel_multi.webp)
+![Animation Tracks](../assets/gallery/v0.4/features/feature_animation_tracks.webp)
 
 `supported` `features`
 
-multiple independent panels with panel-local panzoom controllers.
+retained track-backed visual transform animation.
 
 </div>
 
 <div class="card" markdown="1">
 
-### [Panel Grid](gallery/features/feature_panel_grid.md)
+### [Image Probe](gallery/features/image_probe.md)
 
-![Panel Grid](../assets/gallery/v0.4/features/feature_panel_grid.webp)
+![Image Probe](../assets/gallery/v0.4/features/image_probe.webp)
 
 `supported` `features`
 
-four grid-owned panels with clipped panel-local content.
+scalar image pixel-query proof with a live probe marker.
 
 </div>
 
