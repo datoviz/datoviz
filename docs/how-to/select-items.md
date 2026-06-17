@@ -6,6 +6,8 @@ Use retained selection for item-level highlighting driven by picking, linked app
 external UI. Keep the semantic selection set in application code when it has meaning beyond the
 rendered visual.
 
+![Sphere Selection](../assets/gallery/v0.4/features/feature_selection_sphere.webp)
+
 ## Task Workflow
 
 Use picking or application state to compute selected ids, then update a visual attribute or a

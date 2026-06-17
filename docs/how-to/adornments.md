@@ -2,6 +2,8 @@
 
 Add visual context without turning the adornment into primary data.
 
+![Colorbar](../assets/gallery/v0.4/features/colorbar.webp)
+
 ## Task Workflow
 
 Choose the adornment that explains the visual encoding: colorbars for scalar color, scale bars for

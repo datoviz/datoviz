@@ -2,6 +2,8 @@
 
 Render without opening a window, then save a PNG.
 
+![Offscreen Capture](../assets/gallery/v0.4/features/feature_offscreen_capture.webp)
+
 ## Task Workflow
 
 Use the normal scene, figure, panel, and visual setup. At the view step, create an offscreen view

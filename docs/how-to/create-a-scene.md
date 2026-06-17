@@ -2,6 +2,8 @@
 
 Create the retained scene hierarchy used by every v0.4 program.
 
+![Basic Scene](../assets/gallery/v0.4/features/feature_basic_scene.webp)
+
 ## Task Workflow
 
 Start with a scene, add one figure, create a panel, attach at least one visual, then choose an

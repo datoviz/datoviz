@@ -2,6 +2,8 @@
 
 Place readable text in or near a data view.
 
+![Annotation Readout](../assets/gallery/v0.4/features/annotation_readout.webp)
+
 ## Task Workflow
 
 Choose the text path from the job it needs to do. Use retained text for fixed panel text, labels for

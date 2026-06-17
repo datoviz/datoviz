@@ -2,6 +2,8 @@
 
 Make 3D surfaces readable with normals, material attributes, and lights.
 
+![Mesh Materials](../assets/gallery/v0.4/features/feature_material_mesh.webp)
+
 ## Task Workflow
 
 Choose a visual family that supports material parameters, provide the geometry attributes required

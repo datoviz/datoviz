@@ -2,6 +2,8 @@
 
 Change a retained visual after its first upload.
 
+![Visual Data Update](../assets/gallery/v0.4/features/feature_update_visual_data.webp)
+
 ## Task Workflow
 
 Keep the same visual object, replace the attributes that changed, and let the next frame draw the

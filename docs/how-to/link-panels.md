@@ -2,6 +2,8 @@
 
 Make multiple panels pan, zoom, or probe together.
 
+![Linked Panels](../assets/gallery/v0.4/features/feature_panel_linked.webp)
+
 ## Task Workflow
 
 Create the panels first. Bind the same controller object to every panel that should share view

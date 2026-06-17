@@ -2,6 +2,8 @@
 
 Navigate 3D scenes with arcball, orbit camera, turntable, or fly controls.
 
+![Arcball Controller](../assets/gallery/v0.4/features/feature_controller_arcball.webp)
+
 ## Task Workflow
 
 Choose the controller by interaction style: arcball for object inspection, orbit camera for camera

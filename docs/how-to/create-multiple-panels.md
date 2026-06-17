@@ -2,6 +2,8 @@
 
 Split a figure into coordinated viewports.
 
+![Multiple Panels](../assets/gallery/v0.4/features/feature_panel_multi.webp)
+
 ## Task Workflow
 
 Create one figure, define a panel grid or multiple panels, attach visuals to each panel, and bind

@@ -2,6 +2,8 @@
 
 Convert scalar data into colors and expose the scale to readers.
 
+![Scalar Color Scale](../assets/gallery/v0.4/features/colormap_scale.webp)
+
 ## Task Workflow
 
 Choose the scalar range, choose a colormap, upload the mapped colors or sampled-field data, then add

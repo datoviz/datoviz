@@ -2,6 +2,8 @@
 
 Create a visual family, upload its attributes, and attach it to a panel.
 
+![Point](../assets/gallery/v0.4/visuals/point_2d.webp)
+
 ## Task Workflow
 
 Choose the visual family that matches the primitive you want to draw. Create the visual from the

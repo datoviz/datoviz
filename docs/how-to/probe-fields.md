@@ -2,6 +2,8 @@
 
 Read the field value under a cursor or selected coordinate.
 
+![Image Probe](../assets/gallery/v0.4/features/image_probe.webp)
+
 ## Task Workflow
 
 Convert the pointer position to panel data coordinates, map that coordinate into the sampled field's

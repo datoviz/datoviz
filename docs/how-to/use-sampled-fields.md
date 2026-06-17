@@ -2,6 +2,8 @@
 
 Render regular 2D or 3D scalar data as image, texture, or volume content.
 
+![2D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_2d.webp)
+
 ## Task Workflow
 
 Keep regular grids in sampled-field form when possible. Use image visuals for 2D arrays, volume
