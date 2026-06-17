@@ -41,7 +41,5 @@ image comparison tests, batch rendering, and documentation screenshots.
 
 ??? example "Related examples"
 
-    - Gallery: [Offscreen Capture](../examples/gallery/features/feature_offscreen_capture.md)
-    - Source: `examples/c/features/offscreen_capture.c`
-    - Gallery: [Basic Scene](../examples/gallery/features/feature_basic_scene.md)
-    - Source: `examples/c/features/basic_scene.c`
+    - [Offscreen Capture](../examples/gallery/features/feature_offscreen_capture.md) - Source: `examples/c/features/offscreen_capture.c`
+    - [Basic Scene](../examples/gallery/features/feature_basic_scene.md) - Source: `examples/c/features/basic_scene.c`

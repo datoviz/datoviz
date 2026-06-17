@@ -51,8 +51,6 @@ details live under `src/` and should not be included by applications.
 
 ??? example "Related examples"
 
-    - Gallery: [Scatter Plot](../examples/gallery/start/start_scatter.md)
-    - Source: `examples/c/start/scatter.c`
-    - Gallery: [GLFW App](../examples/gallery/features/feature_app_glfw.md)
-    - Source: `examples/c/features/app_glfw.c`
+    - [Scatter Plot](../examples/gallery/start/start_scatter.md) - Source: `examples/c/start/scatter.c`
+    - [GLFW App](../examples/gallery/features/feature_app_glfw.md) - Source: `examples/c/features/app_glfw.c`
     - Source manifest: `examples/c/MANIFEST.yaml`

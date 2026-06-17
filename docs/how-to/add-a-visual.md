@@ -69,11 +69,7 @@ as attributes should stay inside the same visual.
 
 ??? example "Related examples"
 
-    - Gallery: [Point](../examples/gallery/visuals/point_2d.md)
-    - Source: `examples/c/visuals/point.c`
-    - Gallery: [Marker](../examples/gallery/visuals/visual_marker.md)
-    - Source: `examples/c/visuals/marker.c`
-    - Gallery: [Mesh](../examples/gallery/visuals/visual_mesh.md)
-    - Source: `examples/c/visuals/mesh.c`
-    - Gallery: [Mesh Instance Selection](../examples/gallery/features/feature_selection_mesh_instances.md)
-    - Source: `examples/c/features/selection_mesh_instances.c`
+    - [Point](../examples/gallery/visuals/point_2d.md) - Source: `examples/c/visuals/point.c`
+    - [Marker](../examples/gallery/visuals/visual_marker.md) - Source: `examples/c/visuals/marker.c`
+    - [Mesh](../examples/gallery/visuals/visual_mesh.md) - Source: `examples/c/visuals/mesh.c`
+    - [Mesh Instance Selection](../examples/gallery/features/feature_selection_mesh_instances.md) - Source: `examples/c/features/selection_mesh_instances.c`

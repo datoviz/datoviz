@@ -44,9 +44,6 @@ scene API rather than baking every camera or scale change into raw positions.
 
 ??? example "Related examples"
 
-    - Gallery: [Visual Transform](../examples/gallery/features/feature_visual_transform.md)
-    - Source: `examples/c/features/visual_transform.c`
-    - Gallery: [User Scale](../examples/gallery/features/feature_user_scale.md)
-    - Source: `examples/c/features/user_scale.c`
-    - Gallery: [Reference Grid](../examples/gallery/features/feature_reference_grid.md)
-    - Source: `examples/c/features/reference_grid.c`
+    - [Visual Transform](../examples/gallery/features/feature_visual_transform.md) - Source: `examples/c/features/visual_transform.c`
+    - [User Scale](../examples/gallery/features/feature_user_scale.md) - Source: `examples/c/features/user_scale.c`
+    - [Reference Grid](../examples/gallery/features/feature_reference_grid.md) - Source: `examples/c/features/reference_grid.c`

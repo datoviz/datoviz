@@ -49,9 +49,6 @@ normals, orientation, and scale cleanup before lighting looks correct.
 
 ??? example "Related examples"
 
-    - Gallery: [Lighting](../examples/gallery/features/feature_lighting.md)
-    - Source: `examples/c/features/lighting.c`
-    - Gallery: [Mesh Materials](../examples/gallery/features/feature_material_mesh.md)
-    - Source: `examples/c/features/material_mesh.c`
-    - Gallery: [Textured Mesh](../examples/gallery/features/feature_mesh_texture.md)
-    - Source: `examples/c/features/mesh_texture.c`
+    - [Lighting](../examples/gallery/features/feature_lighting.md) - Source: `examples/c/features/lighting.c`
+    - [Mesh Materials](../examples/gallery/features/feature_material_mesh.md) - Source: `examples/c/features/material_mesh.c`
+    - [Textured Mesh](../examples/gallery/features/feature_mesh_texture.md) - Source: `examples/c/features/mesh_texture.c`

@@ -42,13 +42,8 @@ WebGPU route and should not be copied from GLFW callback code.
 
 ??? example "Related examples"
 
-    - Gallery: [Input Events](../examples/gallery/features/feature_input_events.md)
-    - Source: `examples/c/features/input_events.c`
-    - Gallery: [Picking](../examples/gallery/features/feature_picking.md)
-    - Source: `examples/c/features/picking.c`
-    - Gallery: [GUI Controls](../examples/gallery/features/feature_gui_controls.md)
-    - Source: `examples/c/features/gui_controls.c`
-    - Gallery: [Raw cimgui GUI](../examples/gallery/features/feature_gui_cimgui.md)
-    - Source: `examples/c/features/gui_cimgui.c`
-    - Gallery: [GUI Viewport](../examples/gallery/features/feature_gui_viewport.md)
-    - Source: `examples/c/features/gui_viewport.c`
+    - [Input Events](../examples/gallery/features/feature_input_events.md) - Source: `examples/c/features/input_events.c`
+    - [Picking](../examples/gallery/features/feature_picking.md) - Source: `examples/c/features/picking.c`
+    - [GUI Controls](../examples/gallery/features/feature_gui_controls.md) - Source: `examples/c/features/gui_controls.c`
+    - [Raw cimgui GUI](../examples/gallery/features/feature_gui_cimgui.md) - Source: `examples/c/features/gui_cimgui.c`
+    - [GUI Viewport](../examples/gallery/features/feature_gui_viewport.md) - Source: `examples/c/features/gui_viewport.c`

@@ -43,9 +43,6 @@ the ticks and labels still match the visible data range.
 
 ??? example "Related examples"
 
-    - Gallery: [Path With 2D Axes](../examples/gallery/features/path_axes_2d.md)
-    - Source: `examples/c/features/axes_2d.c`
-    - Gallery: [Axis Labels](../examples/gallery/features/feature_axis_labels.md)
-    - Source: `examples/c/features/axis_labels.c`
-    - Gallery: [Scientific Plotting Workflow](../examples/gallery/showcases/scientific_plotting_workflow.md)
-    - Source: `examples/c/showcases/scientific_plotting.c`
+    - [Path With 2D Axes](../examples/gallery/features/path_axes_2d.md) - Source: `examples/c/features/axes_2d.c`
+    - [Axis Labels](../examples/gallery/features/feature_axis_labels.md) - Source: `examples/c/features/axis_labels.c`
+    - [Scientific Plotting Workflow](../examples/gallery/showcases/scientific_plotting_workflow.md) - Source: `examples/c/showcases/scientific_plotting.c`

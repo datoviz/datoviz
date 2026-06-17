@@ -46,7 +46,5 @@ before `dvz_scene_destroy()`.
 
 ??? example "Related examples"
 
-    - Gallery: [GLFW App](../examples/gallery/features/feature_app_glfw.md)
-    - Source: `examples/c/features/app_glfw.c`
-    - Gallery: [Panzoom](../examples/gallery/features/feature_panzoom.md)
-    - Source: `examples/c/features/panzoom.c`
+    - [GLFW App](../examples/gallery/features/feature_app_glfw.md) - Source: `examples/c/features/app_glfw.c`
+    - [Panzoom](../examples/gallery/features/feature_panzoom.md) - Source: `examples/c/features/panzoom.c`

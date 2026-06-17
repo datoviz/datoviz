@@ -53,9 +53,6 @@ not just the colormap name.
 
 ??? example "Related examples"
 
-    - Gallery: [Scalar Color Scale](../examples/gallery/features/colormap_scale.md)
-    - Source: `examples/c/features/colormap_scale.c`
-    - Gallery: [Colorbar](../examples/gallery/features/colorbar.md)
-    - Source: `examples/c/features/colorbar.c`
-    - Gallery: [2D Sampled Field](../examples/gallery/features/feature_sampled_field_2d.md)
-    - Source: `examples/c/features/sampled_field_2d.c`
+    - [Scalar Color Scale](../examples/gallery/features/colormap_scale.md) - Source: `examples/c/features/colormap_scale.c`
+    - [Colorbar](../examples/gallery/features/colorbar.md) - Source: `examples/c/features/colorbar.c`
+    - [2D Sampled Field](../examples/gallery/features/feature_sampled_field_2d.md) - Source: `examples/c/features/sampled_field_2d.c`

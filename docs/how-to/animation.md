@@ -46,9 +46,6 @@ state. Use deterministic seeds for screenshots and tests.
 
 ??? example "Related examples"
 
-    - Gallery: [Timer Animation](../examples/gallery/features/feature_timer_animation.md)
-    - Source: `examples/c/features/timer_animation.c`
-    - Gallery: [Animation Tracks](../examples/gallery/features/feature_animation_tracks.md)
-    - Source: `examples/c/features/animation_tracks.c`
-    - Gallery: [Compute Buffer Animation](../examples/gallery/features/feature_compute_buffer_animation.md)
-    - Source: `examples/c/features/compute_buffer_animation.c`
+    - [Timer Animation](../examples/gallery/features/feature_timer_animation.md) - Source: `examples/c/features/timer_animation.c`
+    - [Animation Tracks](../examples/gallery/features/feature_animation_tracks.md) - Source: `examples/c/features/animation_tracks.c`
+    - [Compute Buffer Animation](../examples/gallery/features/feature_compute_buffer_animation.md) - Source: `examples/c/features/compute_buffer_animation.c`

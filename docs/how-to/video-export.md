@@ -50,7 +50,5 @@ fixed for reproducible output.
 
 ??? example "Related examples"
 
-    - Gallery: [Video Export](../examples/gallery/features/feature_video_export.md)
-    - Source: `examples/c/features/video_export.c`
-    - Gallery: [Timer Animation](../examples/gallery/features/feature_timer_animation.md)
-    - Source: `examples/c/features/timer_animation.c`
+    - [Video Export](../examples/gallery/features/feature_video_export.md) - Source: `examples/c/features/video_export.c`
+    - [Timer Animation](../examples/gallery/features/feature_timer_animation.md) - Source: `examples/c/features/timer_animation.c`

@@ -37,7 +37,5 @@ stack; adapt the existing runtime/view boundary.
 
 ??? example "Related examples"
 
-    - Gallery: [External Surface GLFW](../examples/gallery/advanced/advanced_external_surface_glfw.md)
-    - Source: `examples/c/advanced/external_surface_glfw.c`
-    - Gallery: [GUI Viewport](../examples/gallery/features/feature_gui_viewport.md)
-    - Source: `examples/c/features/gui_viewport.c`
+    - [External Surface GLFW](../examples/gallery/advanced/advanced_external_surface_glfw.md) - Source: `examples/c/advanced/external_surface_glfw.c`
+    - [GUI Viewport](../examples/gallery/features/feature_gui_viewport.md) - Source: `examples/c/features/gui_viewport.c`

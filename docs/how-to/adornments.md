@@ -55,9 +55,6 @@ category set changes, update the adornment at the same time.
 
 ??? example "Related examples"
 
-    - Gallery: [Colorbar](../examples/gallery/features/colorbar.md)
-    - Source: `examples/c/features/colorbar.c`
-    - Gallery: [Scale Bar](../examples/gallery/features/scale_bar.md)
-    - Source: `examples/c/features/scalebar.c`
-    - Gallery: [Categorical Legend](../examples/gallery/features/feature_legend_categorical.md)
-    - Source: `examples/c/features/legend_categorical.c`
+    - [Colorbar](../examples/gallery/features/colorbar.md) - Source: `examples/c/features/colorbar.c`
+    - [Scale Bar](../examples/gallery/features/scale_bar.md) - Source: `examples/c/features/scalebar.c`
+    - [Categorical Legend](../examples/gallery/features/feature_legend_categorical.md) - Source: `examples/c/features/legend_categorical.c`

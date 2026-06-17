@@ -55,9 +55,6 @@ texture format so filtering, colormapping, and probing remain meaningful.
 
 ??? example "Related examples"
 
-    - Gallery: [2D Sampled Field](../examples/gallery/features/feature_sampled_field_2d.md)
-    - Source: `examples/c/features/sampled_field_2d.c`
-    - Gallery: [3D Sampled Field](../examples/gallery/features/feature_sampled_field_3d.md)
-    - Source: `examples/c/features/sampled_field_3d.c`
-    - Gallery: [Textured Mesh](../examples/gallery/features/feature_mesh_texture.md)
-    - Source: `examples/c/features/mesh_texture.c`
+    - [2D Sampled Field](../examples/gallery/features/feature_sampled_field_2d.md) - Source: `examples/c/features/sampled_field_2d.c`
+    - [3D Sampled Field](../examples/gallery/features/feature_sampled_field_3d.md) - Source: `examples/c/features/sampled_field_3d.c`
+    - [Textured Mesh](../examples/gallery/features/feature_mesh_texture.md) - Source: `examples/c/features/mesh_texture.c`

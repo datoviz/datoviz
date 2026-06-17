@@ -44,9 +44,6 @@ lifetimes, or update rates.
 
 ??? example "Related examples"
 
-    - Gallery: [Visual Data Update](../examples/gallery/features/feature_update_visual_data.md)
-    - Source: `examples/c/features/update_visual_data.c`
-    - Gallery: [Compute Buffer Animation](../examples/gallery/features/feature_compute_buffer_animation.md)
-    - Source: `examples/c/features/compute_buffer_animation.c`
-    - Gallery: [Point Cloud](../examples/gallery/showcases/point_cloud.md)
-    - Source: `examples/c/showcases/point_cloud.c`
+    - [Visual Data Update](../examples/gallery/features/feature_update_visual_data.md) - Source: `examples/c/features/update_visual_data.c`
+    - [Compute Buffer Animation](../examples/gallery/features/feature_compute_buffer_animation.md) - Source: `examples/c/features/compute_buffer_animation.c`
+    - [Point Cloud](../examples/gallery/showcases/point_cloud.md) - Source: `examples/c/showcases/point_cloud.c`

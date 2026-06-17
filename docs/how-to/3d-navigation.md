@@ -41,13 +41,8 @@ arcball recipe.
 
 ??? example "Related examples"
 
-    - Gallery: [Arcball Controller](../examples/gallery/features/feature_controller_arcball.md)
-    - Source: `examples/c/features/controller_arcball.c`
-    - Gallery: [Orbit Camera Controller](../examples/gallery/features/feature_controller_orbit_camera.md)
-    - Source: `examples/c/features/controller_orbit_camera.c`
-    - Gallery: [Fly Controller](../examples/gallery/features/feature_controller_fly.md)
-    - Source: `examples/c/features/controller_fly.c`
-    - Gallery: [Turntable Controller](../examples/gallery/features/feature_controller_turntable.md)
-    - Source: `examples/c/features/controller_turntable.c`
-    - Gallery: [Protein](../examples/gallery/showcases/protein_arcball_viewer.md)
-    - Source: `examples/c/showcases/protein.c`
+    - [Arcball Controller](../examples/gallery/features/feature_controller_arcball.md) - Source: `examples/c/features/controller_arcball.c`
+    - [Orbit Camera Controller](../examples/gallery/features/feature_controller_orbit_camera.md) - Source: `examples/c/features/controller_orbit_camera.c`
+    - [Fly Controller](../examples/gallery/features/feature_controller_fly.md) - Source: `examples/c/features/controller_fly.c`
+    - [Turntable Controller](../examples/gallery/features/feature_controller_turntable.md) - Source: `examples/c/features/controller_turntable.c`
+    - [Protein](../examples/gallery/showcases/protein_arcball_viewer.md) - Source: `examples/c/showcases/protein.c`

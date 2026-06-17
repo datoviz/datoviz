@@ -1,30 +1,87 @@
 # Probe Image or Field Values
 
-Read the data value under a cursor or selected coordinate.
+Read the field value under a cursor or selected coordinate.
 
 ## Task Workflow
 
 Convert the pointer position to panel data coordinates, map that coordinate into the sampled field's
 index or texture coordinate space, then display the value with a label, annotation, or overlay.
 
-## Minimal Workflow
+Use probing for continuous image or field values. Use picking when the target is a rendered item id,
+instance id, or primitive id.
 
-1. Convert pointer position to panel data coordinates.
-2. Convert data coordinates to the image texel, field index, or texture coordinate used by the
-   rendered visual.
-3. Read the sampled value through the feature example's probe path.
-4. Update a label or readout visual with the sampled value.
+## Minimal Query Path
 
-Use picking for item identity; use probing for field values.
+1. Enable pixel queries on the image visual.
+2. Queue a panel query at the latest logical panel pointer position.
+3. Poll resolved query results after frames execute.
+4. Convert the returned panel position to the field's data or texture coordinate space.
+5. Sample the application-owned field value and update a retained label or readout visual.
+
+```c
+// After creating the image visual.
+dvz_visual_set_query_capabilities(image, DVZ_QUERY_CAPABILITY_PIXEL);
+
+// Queue one probe request at a logical panel coordinate, for example from a pointer event.
+DvzQueryRequest request = dvz_query_request();
+request.request_id = 1;
+request.target = DVZ_SCENE_TARGET_PIXEL;
+if (dvz_panel_query(panel, cursor_x, cursor_y, &request) != 0)
+    return;
+
+// Poll after frame execution. Live scenario examples do this from their post-frame callback.
+DvzQueryResult query = {0};
+while (dvz_scene_poll_query(scene, &query))
+{
+    if (query.request_id != 1 || query.status != DVZ_QUERY_STATUS_HIT || !query.hit)
+        continue;
+
+    double data_x = 0.0;
+    double data_y = 0.0;
+    if (!panel_position_to_field_position(
+            panel, query.panel_position[0], query.panel_position[1], &data_x, &data_y))
+    {
+        continue;
+    }
+
+    double value = sample_field_value(values, width, height, data_x, data_y);
+    update_probe_readout(readout, data_x, data_y, value);
+}
+```
+
+`dvz_panel_query()` validates the rendered hit and returns panel coordinates. It does not replace
+your application's field indexing policy: the application still maps the returned coordinate to a
+texel, interpolated sample, or transformed mesh UV and reads the scalar value it owns.
+
+The live scenario helper used by `examples/c/features/image_probe.c` queues the same request through
+`dvz_scenario_panel_query()` so the example can run in native and browser scenario hosts. Plain C
+applications should use `dvz_panel_query()` unless they are inside the scenario runner.
 
 For an image with a colorbar and cursor readout, keep the sampled field, scalar normalization,
-colorbar range, and probe coordinate transform synchronized.
+colorbar range, and probe coordinate transform synchronized. A readout that samples a different
+array or normalization than the colorbar is worse than no readout.
 
 
 ## Important Details
 
 Probing depends on the same coordinate transform used for rendering. If the image is scaled,
 translated, or texture-mapped onto a mesh, account for that transform before indexing the field.
+
+For an axis-aligned image in a normalized panel domain, the mapping can be direct: data coordinate
+`x=0.25, y=0.75` maps to the same normalized field coordinate before converting to integer texels or
+performing interpolation. For a textured mesh, the query position must be mapped through the mesh
+surface or application geometry to UV space before sampling the texture.
+
+Decide whether the readout reports nearest-texel values or interpolated values. The visual may be
+filtered by the GPU; a CPU-side nearest lookup can disagree with what the user sees between texel
+centers.
+
+## When To Use It
+
+- Image or sampled-field cursor readouts.
+- Linked panels that share one probe marker and one value display.
+- Colorbar workflows where the displayed value must match the scalar normalization.
+- Debugging field transforms by printing the resolved panel coordinate and sampled value.
 
 ## Common Mistakes
 
@@ -41,9 +98,6 @@ translated, or texture-mapped onto a mesh, account for that transform before ind
 
 ??? example "Related examples"
 
-    - Gallery: [Image Probe](../examples/gallery/features/image_probe.md)
-    - Source: `examples/c/features/image_probe.c`
-    - Gallery: [Label Probe](../examples/gallery/features/feature_probe_labels.md)
-    - Source: `examples/c/features/probe_labels.c`
-    - Gallery: [Linked Probe With Colorbar](../examples/gallery/showcases/linked_panels_probe_colorbar.md)
-    - Source: `examples/c/showcases/linked_probe_colorbar.c`
+    - [Image Probe](../examples/gallery/features/image_probe.md) - Source: `examples/c/features/image_probe.c`
+    - [Label Probe](../examples/gallery/features/feature_probe_labels.md) - Source: `examples/c/features/probe_labels.c`
+    - [Linked Probe With Colorbar](../examples/gallery/showcases/linked_panels_probe_colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`

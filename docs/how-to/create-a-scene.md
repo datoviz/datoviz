@@ -60,7 +60,5 @@ family, shader/material path, panel attachment, transform, lifetime, or update c
 
 ??? example "Related examples"
 
-    - Gallery: [Basic Scene](../examples/gallery/features/feature_basic_scene.md)
-    - Source: `examples/c/features/basic_scene.c`
-    - First program: [Scatter Plot](../examples/gallery/start/start_scatter.md)
-    - Source: `examples/c/start/scatter.c`
+    - [Basic Scene](../examples/gallery/features/feature_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
+    - [Scatter Plot](../examples/gallery/start/start_scatter.md) - Source: `examples/c/start/scatter.c`

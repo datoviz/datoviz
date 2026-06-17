@@ -43,7 +43,5 @@ task is replay, validation, or backend debugging.
 
 ??? example "Related examples"
 
-    - Gallery: [Record Replay](../examples/gallery/features/feature_record_replay.md)
-    - Source: `examples/c/features/record_replay.c`
-    - Advanced gallery: [Raw Triangle DRP2](../examples/gallery/advanced/advanced_raw_triangle_drp2.md)
-    - Source: `examples/c/advanced/raw_triangle_drp2.c`
+    - [Record Replay](../examples/gallery/features/feature_record_replay.md) - Source: `examples/c/features/record_replay.c`
+    - [Raw Triangle DRP2](../examples/gallery/advanced/advanced_raw_triangle_drp2.md) - Source: `examples/c/advanced/raw_triangle_drp2.c`

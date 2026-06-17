@@ -39,11 +39,7 @@ considered together.
 
 ??? example "Related examples"
 
-    - Gallery: [Depth Test Toggle](../examples/gallery/features/technique_depth_test.md)
-    - Source: `examples/c/features/technique_depth_test.c`
-    - Gallery: [Alpha Blending](../examples/gallery/features/alpha_blending.md)
-    - Source: `examples/c/features/alpha_blending.c`
-    - Gallery: [Transparency Order](../examples/gallery/features/technique_transparency.md)
-    - Source: `examples/c/features/technique_transparency.c`
-    - Gallery: [Multisample Antialiasing](../examples/gallery/features/technique_msaa.md)
-    - Source: `examples/c/features/technique_msaa.c`
+    - [Depth Test Toggle](../examples/gallery/features/technique_depth_test.md) - Source: `examples/c/features/technique_depth_test.c`
+    - [Alpha Blending](../examples/gallery/features/alpha_blending.md) - Source: `examples/c/features/alpha_blending.c`
+    - [Transparency Order](../examples/gallery/features/technique_transparency.md) - Source: `examples/c/features/technique_transparency.c`
+    - [Multisample Antialiasing](../examples/gallery/features/technique_msaa.md) - Source: `examples/c/features/technique_msaa.c`

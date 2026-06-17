@@ -40,5 +40,4 @@ layers. Verify the narrowest failing layer before changing code.
     - Start page: [Install](../start/install.md)
     - Reference: [Platform support](../reference/platform-support.md)
     - Reference: [Build options](../reference/build-options.md)
-    - Gallery: [Offscreen Capture](../examples/gallery/features/feature_offscreen_capture.md)
-    - Source: `examples/c/features/offscreen_capture.c`
+    - [Offscreen Capture](../examples/gallery/features/feature_offscreen_capture.md) - Source: `examples/c/features/offscreen_capture.c`

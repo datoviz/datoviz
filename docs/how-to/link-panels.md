@@ -37,9 +37,6 @@ between panels.
 
 ??? example "Related examples"
 
-    - Gallery: [Linked Panels](../examples/gallery/features/feature_panel_linked.md)
-    - Source: `examples/c/features/panel_linked.c`
-    - Gallery: [Linked Panels With Axes](../examples/gallery/showcases/linked_panels_axes_panzoom.md)
-    - Source: `examples/c/showcases/panel_linked_axes.c`
-    - Gallery: [Linked Probe With Colorbar](../examples/gallery/showcases/linked_panels_probe_colorbar.md)
-    - Source: `examples/c/showcases/linked_probe_colorbar.c`
+    - [Linked Panels](../examples/gallery/features/feature_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
+    - [Linked Panels With Axes](../examples/gallery/showcases/linked_panels_axes_panzoom.md) - Source: `examples/c/showcases/panel_linked_axes.c`
+    - [Linked Probe With Colorbar](../examples/gallery/showcases/linked_panels_probe_colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`

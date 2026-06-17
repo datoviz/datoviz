@@ -41,9 +41,6 @@ ordinary data navigation.
 
 ??? example "Related examples"
 
-    - Gallery: [Coordinate System](../examples/gallery/features/feature_coordinate_system.md)
-    - Source: `examples/c/features/coordinate_system.c`
-    - Gallery: [Panel View 2D](../examples/gallery/features/feature_panel_view2d.md)
-    - Source: `examples/c/features/panel_view2d.c`
-    - Gallery: [User Scale](../examples/gallery/features/feature_user_scale.md)
-    - Source: `examples/c/features/user_scale.c`
+    - [Coordinate System](../examples/gallery/features/feature_coordinate_system.md) - Source: `examples/c/features/coordinate_system.c`
+    - [Panel View 2D](../examples/gallery/features/feature_panel_view2d.md) - Source: `examples/c/features/panel_view2d.c`
+    - [User Scale](../examples/gallery/features/feature_user_scale.md) - Source: `examples/c/features/user_scale.c`

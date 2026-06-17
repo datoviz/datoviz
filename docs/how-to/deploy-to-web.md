@@ -36,9 +36,6 @@ Only examples marked `webgpu-live` have browser routes. `webgpu-planned`, `webgp
 
 ??? example "Related examples"
 
-    - Gallery: [Basic Scene](../examples/gallery/features/feature_basic_scene.md)
-    - Source: `examples/c/features/basic_scene.c`
-    - Gallery: [Linked Panels](../examples/gallery/features/feature_panel_linked.md)
-    - Source: `examples/c/features/panel_linked.c`
-    - Gallery: [Point](../examples/gallery/visuals/point_2d.md)
-    - Source: `examples/c/visuals/point.c`
+    - [Basic Scene](../examples/gallery/features/feature_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
+    - [Linked Panels](../examples/gallery/features/feature_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
+    - [Point](../examples/gallery/visuals/point_2d.md) - Source: `examples/c/visuals/point.c`

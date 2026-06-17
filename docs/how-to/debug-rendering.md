@@ -35,9 +35,6 @@ camera/domain mismatch, or a technique state such as depth or blending hiding ge
 
 ??? example "Related examples"
 
-    - Gallery: [Basic Scene](../examples/gallery/features/feature_basic_scene.md)
-    - Source: `examples/c/features/basic_scene.c`
-    - Gallery: [Depth Test Toggle](../examples/gallery/features/technique_depth_test.md)
-    - Source: `examples/c/features/technique_depth_test.c`
-    - Gallery: [Offscreen Capture](../examples/gallery/features/feature_offscreen_capture.md)
-    - Source: `examples/c/features/offscreen_capture.c`
+    - [Basic Scene](../examples/gallery/features/feature_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
+    - [Depth Test Toggle](../examples/gallery/features/technique_depth_test.md) - Source: `examples/c/features/technique_depth_test.c`
+    - [Offscreen Capture](../examples/gallery/features/feature_offscreen_capture.md) - Source: `examples/c/features/offscreen_capture.c`

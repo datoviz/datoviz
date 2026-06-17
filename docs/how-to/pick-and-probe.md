@@ -36,9 +36,6 @@ behave like a CPU-side nearest-neighbor search.
 
 ??? example "Related examples"
 
-    - Gallery: [Picking](../examples/gallery/features/feature_picking.md)
-    - Source: `examples/c/features/picking.c`
-    - Gallery: [Pixel Selection](../examples/gallery/features/feature_selection_pixel.md)
-    - Source: `examples/c/features/selection_pixel.c`
-    - Gallery: [Label Probe](../examples/gallery/features/feature_probe_labels.md)
-    - Source: `examples/c/features/probe_labels.c`
+    - [Picking](../examples/gallery/features/feature_picking.md) - Source: `examples/c/features/picking.c`
+    - [Pixel Selection](../examples/gallery/features/feature_selection_pixel.md) - Source: `examples/c/features/selection_pixel.c`
+    - [Label Probe](../examples/gallery/features/feature_probe_labels.md) - Source: `examples/c/features/probe_labels.c`

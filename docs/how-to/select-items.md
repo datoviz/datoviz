@@ -39,9 +39,6 @@ not own your semantic selection model.
 
 ??? example "Related examples"
 
-    - Gallery: [Pixel Selection](../examples/gallery/features/feature_selection_pixel.md)
-    - Source: `examples/c/features/selection_pixel.c`
-    - Gallery: [Sphere Selection](../examples/gallery/features/feature_selection_sphere.md)
-    - Source: `examples/c/features/selection_sphere.c`
-    - Gallery: [Mesh Instance Selection](../examples/gallery/features/feature_selection_mesh_instances.md)
-    - Source: `examples/c/features/selection_mesh_instances.c`
+    - [Pixel Selection](../examples/gallery/features/feature_selection_pixel.md) - Source: `examples/c/features/selection_pixel.c`
+    - [Sphere Selection](../examples/gallery/features/feature_selection_sphere.md) - Source: `examples/c/features/selection_sphere.c`
+    - [Mesh Instance Selection](../examples/gallery/features/feature_selection_mesh_instances.md) - Source: `examples/c/features/selection_mesh_instances.c`

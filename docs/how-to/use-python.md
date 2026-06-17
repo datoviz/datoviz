@@ -47,5 +47,4 @@ plotting interface to be present.
 
     - Start page: [Quickstart](../start/quickstart.md)
     - Reference: [Python raw ctypes](../reference/ctypes.md)
-    - Gallery: [Scatter Plot](../examples/gallery/start/start_scatter.md)
-    - Source: `examples/c/start/scatter.c`
+    - [Scatter Plot](../examples/gallery/start/start_scatter.md) - Source: `examples/c/start/scatter.c`
