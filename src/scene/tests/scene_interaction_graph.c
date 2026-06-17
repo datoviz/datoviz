@@ -878,7 +878,7 @@ int test_scene_background_color_creates_fixed_quad(TstContext* suite, const TstC
     AT(panel->background_visual == NULL);
 
     /* First call: creates a hidden background visual at z_layer=-1, FIXED. */
-    dvz_panel_set_background_color(panel, 0.1f, 0.2f, 0.3f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.1f, 0.2f, 0.3f, 1.0f));
     AT(panel->visual_count == 1);
     ANN(panel->background_visual);
     AT(panel->visuals[0].visual == panel->background_visual);
@@ -888,7 +888,7 @@ int test_scene_background_color_creates_fixed_quad(TstContext* suite, const TstC
 
     /* Second call with a different color: updates in place, no new visual. */
     DvzVisual* before = panel->background_visual;
-    dvz_panel_set_background_color(panel, 0.9f, 0.8f, 0.7f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.9f, 0.8f, 0.7f, 1.0f));
     AT(panel->visual_count == 1);
     AT(panel->background_visual == before);
 
@@ -1075,7 +1075,7 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
     AT(dvz_panel_set_layout_reserve(
         panel, &(DvzPanelLayoutReserve){.left = 0.25f, .right = 0.15f, .bottom = 0.10f,
                                         .top = 0.20f}));
-    dvz_panel_set_background_color(panel, 0.1f, 0.2f, 0.3f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.1f, 0.2f, 0.3f, 1.0f));
 
     float pos[3] = {1.5f, 0.0f, 0.0f};
     DvzColor col = {255, 255, 255, 255};

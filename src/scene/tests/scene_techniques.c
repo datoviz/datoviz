@@ -4080,7 +4080,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
     AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_WBOIT) == 0);
     AT(dvz_panel_add_visual(panel, opaque, NULL) == 0);
     AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
-    dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.05f, 0.05f, 0.08f, 1.0f));
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 2;
@@ -5131,7 +5131,7 @@ int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstContext* suite, con
 
     DvzVisual* transparent = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     AT(transparent != NULL);
-    dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.05f, 0.05f, 0.08f, 1.0f));
     vec3 positions[3] = {
         {-0.6f, -0.6f, 0.0f},
         {0.6f, -0.6f, 0.0f},

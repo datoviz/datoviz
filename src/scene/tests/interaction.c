@@ -3005,8 +3005,8 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
         figure, (DvzPanelDesc){.x = 0.5f, .y = 0.0f, .width = 0.5f, .height = 1.0f});
     ANN(left);
     ANN(right);
-    dvz_panel_set_background_color(left, 0.04f, 0.05f, 0.06f, 1.0f);
-    dvz_panel_set_background_color(right, 0.04f, 0.044f, 0.052f, 1.0f);
+    dvz_panel_set_background_color(left, dvz_color_from_unit(0.04f, 0.05f, 0.06f, 1.0f));
+    dvz_panel_set_background_color(right, dvz_color_from_unit(0.04f, 0.044f, 0.052f, 1.0f));
 
     DvzVisual* left_points = dvz_point(scene, 0);
     ANN(left_points);

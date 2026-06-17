@@ -1085,19 +1085,16 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
  * Set or update the panel background color visual.
  *
  * @param panel the panel
- * @param r red channel in normalized units
- * @param g green channel in normalized units
- * @param b blue channel in normalized units
- * @param a alpha channel in normalized units
+ * @param color RGBA8 background color
  */
-void dvz_panel_set_background_color(DvzPanel* panel, float r, float g, float b, float a)
+void dvz_panel_set_background_color(DvzPanel* panel, DvzColor color)
 {
     DvzPanelBackgroundDesc background = dvz_panel_background_desc();
     background.type = DVZ_PANEL_BACKGROUND_COLOR;
-    background.color[0] = r;
-    background.color[1] = g;
-    background.color[2] = b;
-    background.color[3] = a;
+    background.color[0] = (float)color.r / 255.0f;
+    background.color[1] = (float)color.g / 255.0f;
+    background.color[2] = (float)color.b / 255.0f;
+    background.color[3] = (float)color.a / 255.0f;
     (void)dvz_panel_set_background(panel, &background);
 }
 

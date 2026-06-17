@@ -639,7 +639,7 @@ static AppSceneOcclusionCapture _app_source_over_scene_occlusion_capture_center(
         dvz_scene_destroy(scene);
         return out;
     }
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzColor red = {240, 20, 20, 220};
     DvzColor green = {20, 220, 40, occluder_alpha};
@@ -755,7 +755,7 @@ static AppWboitCapture _app_wboit_capture_center(TstContext* suite, bool reverse
         dvz_scene_destroy(scene);
         return out;
     }
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzColor red = {255, 0, 0, 128};
     DvzColor blue = {0, 0, 255, 128};
@@ -1091,7 +1091,7 @@ static AppRgbaCapture _app_edl_point_capture(TstContext* suite, bool enabled)
         dvz_scene_destroy(scene);
         return out;
     }
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
     if (enabled &&
         !dvz_panel_set_edl(
             panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 90.0f, .depth_scale = 1.0f}))
@@ -2569,7 +2569,7 @@ static int _app_render_path_join_stats(
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzVisual* visual = dvz_path(scene, 0);
     AT(visual != NULL);
@@ -2717,7 +2717,7 @@ int test_app_offscreen_path_closed_star_seam_has_pixels(TstContext* suite, const
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzVisual* visual = dvz_path(scene, 0);
     AT(visual != NULL);
@@ -2899,7 +2899,7 @@ int test_app_offscreen_points_edl_renders(TstContext* suite, const TstCase* item
     AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, 4) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
     AT(dvz_panel_set_edl(
         panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 65.0f, .depth_scale = 1.0f}));
 
@@ -3032,7 +3032,7 @@ int test_app_offscreen_mesh_ssao_changes_pixels(TstContext* suite, const TstCase
         _app_ssao_add_quad(scene, panel, -0.22f, +0.52f, -0.28f, +0.46f, 0.25f, front_color);
     AT(back.visual != NULL);
     AT(front.visual != NULL);
-    dvz_panel_set_background_color(panel, 0.03f, 0.035f, 0.045f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.03f, 0.035f, 0.045f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -3139,7 +3139,7 @@ int test_app_offscreen_sphere_ssao_darkens_contact(TstContext* suite, const TstC
     AT(dvz_visual_set_data(sphere, "color", colors, 4) == 0);
     AT(dvz_visual_set_data(sphere, "radius", radii, 4) == 0);
     AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
-    dvz_panel_set_background_color(panel, 0.03f, 0.035f, 0.045f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.03f, 0.035f, 0.045f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -3472,7 +3472,7 @@ int test_app_offscreen_colorbar_has_visible_ramp_and_labels(TstContext* suite, c
         });
     AT(colorbar != NULL);
     dvz_colorbar_set_format(colorbar, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 1});
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -3867,7 +3867,7 @@ int test_app_offscreen_overlay_rich_card_has_visible_pixels(
     DvzPanel* panel = dvz_panel(
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     AT(panel != NULL);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzOverlay* overlay = dvz_overlay(panel, 0);
     AT(overlay != NULL);
@@ -4131,7 +4131,7 @@ int test_app_offscreen_source_over_mesh_depth_and_blend(TstContext* suite, const
     ANN(figure);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzColor background = {20, 30, 180, 255};
     DvzColor transparent = {240, 20, 20, 128};
@@ -4207,7 +4207,7 @@ int test_app_offscreen_depth_peel_mesh_two_layers(TstContext* suite, const TstCa
     ANN(figure);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzColor background = {12, 12, 16, 255};
     DvzColor red = {255, 20, 20, 160};
@@ -4302,7 +4302,7 @@ int test_app_offscreen_depth_peel_mesh_three_layers(TstContext* suite, const Tst
     ANN(figure);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzColor background = {0, 0, 0, 255};
     DvzColor red = {255, 0, 0, 128};
@@ -4960,7 +4960,7 @@ int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const 
     AT(_test_set_phong_material(
            visual, (float[3]){0.35f, 0.55f, 0.75f}, 0.25f, 0.85f, 0.25f, 32.0f) ==
        0);
-    dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.05f, 0.05f, 0.08f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -5059,7 +5059,7 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
     AT(_test_set_phong_material(
            visual, (float[3]){0.35f, 0.55f, 0.75f}, 0.25f, 0.85f, 0.25f, 32.0f) ==
        0);
-    dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.05f, 0.05f, 0.08f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -5160,7 +5160,7 @@ int test_app_offscreen_orbit_camera_drag_renders_cube(TstContext* suite, const T
     AT(_test_set_phong_material(
            visual, (float[3]){0.35f, 0.55f, 0.75f}, 0.25f, 0.85f, 0.25f, 32.0f) ==
        0);
-    dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.05f, 0.05f, 0.08f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -5551,7 +5551,7 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
-    dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.05f, 0.05f, 0.08f, 1.0f));
 
     DvzVisual* mesh = dvz_mesh(scene, 0);
     DvzVisual* image = dvz_image(scene, 0);
@@ -5940,7 +5940,7 @@ int test_app_offscreen_midgray_srgb_readback(TstContext* suite, const TstCase* i
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzColor midgray = {128, 128, 128, 255};
     DvzVisual* visual = _app_primitive_add_quad(
@@ -6009,7 +6009,7 @@ int test_app_offscreen_linear_color_field_not_decoded(TstContext* suite, const T
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzVisual* image = dvz_image(scene, 0);
     AT(image != NULL);
@@ -6118,7 +6118,7 @@ int test_app_offscreen_alpha_over_nonblack_linear(TstContext* suite, const TstCa
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzColor dst = {64, 64, 64, 255};
     DvzColor src = {192, 32, 32, 128};
@@ -6203,7 +6203,7 @@ int test_app_offscreen_colormap_srgb_lut_linear_blend(TstContext* suite, const T
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzColor dst = {64, 64, 64, 255};
     DvzColor src = {192, 32, 32, 128};
@@ -6427,7 +6427,7 @@ int test_app_offscreen_volume_slice_renders_field(TstContext* suite, const TstCa
         field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
     AT(dvz_visual_set_field(volume, "field", field));
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -6490,7 +6490,7 @@ int test_app_offscreen_volume_rgba_srgb_linear_blend(TstContext* suite, const Ts
     ANN(figure);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzColor dst = {64, 64, 64, 255};
     DvzColor src = {192, 32, 32, 128};
@@ -6621,7 +6621,7 @@ int test_app_offscreen_volume_mip_renders_bright_slice(TstContext* suite, const 
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) == 0);
     AT(dvz_volume_set_step_count(volume, 16) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -6704,7 +6704,7 @@ int test_app_offscreen_volume_composite_renders_field(TstContext* suite, const T
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
     AT(dvz_volume_set_step_count(volume, 64) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -6804,7 +6804,7 @@ int test_app_offscreen_volume_label_composite_renders_category(
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
     AT(dvz_volume_set_step_count(volume, 16) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -6906,7 +6906,7 @@ int test_app_offscreen_volume_label_composite_renders_sparse_category(
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
     AT(dvz_volume_set_step_count(volume, 16) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -7080,7 +7080,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
         dvz_scene_destroy(scene);
         return out;
     }
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -7445,7 +7445,7 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
                .fade_distance = 0.02f,
                .occluded_alpha = 0.05f,
            }) == 0);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -7566,7 +7566,7 @@ int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, con
     AT(dvz_volume_set_step_count(volume, 16) == 0);
     AT(dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzApp* app = dvz_app(scene);
     if (app == NULL)

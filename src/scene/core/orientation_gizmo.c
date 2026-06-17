@@ -959,7 +959,7 @@ DvzOrientationGizmo* dvz_orientation_gizmo(
     camera.far = 20.0f;
     if (dvz_panel_set_camera(gizmo->panel, &camera) == NULL)
         goto fail;
-    dvz_panel_set_background_color(gizmo->panel, 0.0f, 0.0f, 0.0f, 0.0f);
+    dvz_panel_set_background_color(gizmo->panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 0.0f));
 
     if (!_orientation_gizmo_alloc_geometry(gizmo))
         goto fail;

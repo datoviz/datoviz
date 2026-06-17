@@ -7745,7 +7745,7 @@ int test_scene_pending_render_work_clears_unlit_background(TstContext* suite, co
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
-    dvz_panel_set_background_color(panel, 0.02f, 0.03f, 0.04f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.02f, 0.03f, 0.04f, 1.0f));
     AT(panel->background_visual != NULL);
     AT(_scene_figure_has_pending_render_work(figure));
 

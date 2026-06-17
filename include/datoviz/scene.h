@@ -915,17 +915,10 @@ DVZ_EXPORT void dvz_panel_clear_background(DvzPanel* panel);
  * panzoom/arcball navigation. Repeat calls update the existing background's color
  * instead of stacking new visuals.
  *
- * Components are in [0, 1]. RGB components are display/sRGB-authored semantic color values; alpha
- * is linear.
- *
  * @param panel the panel
- * @param r red component
- * @param g green component
- * @param b blue component
- * @param a alpha component
+ * @param color RGBA8 background color
  */
-DVZ_EXPORT void dvz_panel_set_background_color(
-    DvzPanel* panel, float r, float g, float b, float a);
+DVZ_EXPORT void dvz_panel_set_background_color(DvzPanel* panel, DvzColor color);
 
 
 /**
