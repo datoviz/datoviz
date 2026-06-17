@@ -97,12 +97,8 @@ nav:
   - Examples:
     - Overview: 'examples/index.md'
     - Showcases: 'examples/showcases.md'
-    - Visuals & Composites:
-      - Visual gallery: 'examples/visual-gallery.md'
-      - Composites: 'examples/composites.md'
-    - Features & Techniques:
-      - Feature gallery: 'examples/feature-gallery.md'
-      - Techniques: 'examples/techniques.md'
+    - Visuals & Composites: 'examples/visuals.md'
+    - Features & Techniques: 'examples/features.md'
     - Advanced: 'examples/advanced.md'
   - How-To:
     - Scene And Runtime:
@@ -224,6 +220,10 @@ not_in_nav: |
   discussions/*
   landing/*
   examples/gallery/*
+  examples/visual-gallery.md
+  examples/feature-gallery.md
+  examples/composites.md
+  examples/techniques.md
   examples/webgpu/COMPAT.md
   gallery/*
   guide/*

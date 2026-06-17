@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Public C examples in manifest: 106
-- Examples declaring screenshot validation: 92
+- Public C examples in manifest: 107
+- Examples declaring screenshot validation: 93
 - Examples that should have video or motion evidence: 7
 
 ## Commands
@@ -121,3 +121,4 @@ and should be committed through that submodule, not copied into the main reposit
 | [Allen Mouse Brain](gallery/showcases/brain_volume.md) | [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c) | `prototype` | `smoke+screenshot` |
 | [Point Cloud](gallery/showcases/point_cloud.md) | [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c) | `supported` | `smoke+screenshot` |
 | [Textured Planets](gallery/showcases/textured_terrain_or_planet.md) | [`examples/c/showcases/textured_planet.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c) | `supported` | `smoke+screenshot` |
+| [Scatter Plot](gallery/start/start_scatter.md) | [`examples/c/start/scatter.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/start/scatter.c) | `supported` | `smoke+screenshot` |

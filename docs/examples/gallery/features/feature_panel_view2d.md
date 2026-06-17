@@ -24,7 +24,7 @@ panel-owned 2D view framing with equal aspect.
 
 ## Media
 
-_Media pending._
+![Panel View 2D](../../../assets/gallery/v0.4/features/feature_panel_view2d.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

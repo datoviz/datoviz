@@ -103,39 +103,11 @@ CATEGORY_TO_LANE = {
 LANE_TO_CATEGORY = {lane: category for category, lane in CATEGORY_TO_LANE.items()}
 
 PAGE_CONFIG = {
-    "visual-gallery.md": {
-        "title": "Visual Gallery",
-        "lanes": ("visuals",),
-        "intro": """\
-            This page indexes the current C examples for visual families. Visual examples are
-            intentionally small: each one demonstrates one retained rendering family and avoids
-            unrelated features where possible.
-        """,
-    },
-    "feature-gallery.md": {
-        "title": "Feature Gallery",
-        "lanes": ("features",),
-        "intro": """\
-            This page indexes focused C examples for public scene, layout, adornment, interaction,
-            update, rendering-technique, and appearance features.
-        """,
-    },
-    "composites.md": {
-        "title": "Composites",
-        "lanes": ("composites",),
-        "intro": """\
-            This page indexes semantic scene objects that lower to one or more visual families.
-            Composite examples are still atomic building blocks, not polished user-goal showcases.
-        """,
-    },
     "showcases.md": {
         "title": "Showcases",
         "lanes": ("showcases",),
         "intro": """\
-            Showcases are composed examples for user goals, release proof, and public website media.
-            They may use workflows, prepared data, animation, postprocess settings, or
-            domain-specific context. Each item still needs a deterministic screenshot before final
-            publication.
+            Composed scenes demonstrating scientific workflows, real data, and polished demos.
         """,
     },
     "advanced.md": {
@@ -143,7 +115,7 @@ PAGE_CONFIG = {
         "lanes": ("advanced",),
         "intro": """\
             Advanced examples cover low-level runtime, DRP2, and host-integration paths. They are
-            public release proof, but are not the preferred starting point for ordinary scene code.
+            not the preferred starting point for ordinary scene code.
         """,
     },
 }
@@ -592,7 +564,7 @@ def render_index(
         lines.append("</div>")
         lines.append("")
 
-    lines.extend([f"[Browse all {n_vc} visuals and composites](visual-gallery.md).", ""])
+    lines.extend([f"[Browse all {n_vc} visuals and composites](visuals.md).", ""])
 
     # --- Features & Techniques ---
     all_flagship_ids = {id_ for _, ids in INDEX_FEATURE_GROUPS for id_ in ids}
@@ -611,7 +583,7 @@ def render_index(
         lines.append("")
     lines.extend(
         [
-            f"[Browse all {len(feature_examples)} feature examples](feature-gallery.md) — "
+            f"[Browse all {len(feature_examples)} feature and technique examples](features.md) — "
             "controllers, adornments, interaction, animation, techniques, and more.",
             "",
         ]
@@ -620,27 +592,77 @@ def render_index(
     write_text(index_path, "\n".join(lines))
 
 
-def render_techniques(examples: list[Example], docs_dir: Path) -> None:
-    selected = [example for example in examples if example.id in TECHNIQUE_IDS]
-    lines = generated_header("Techniques")
+def render_visuals_page(
+    examples: list[Example],
+    docs_dir: Path,
+    image_dir: Path,
+    image_url_base: str,
+    image_format: str = DEFAULT_IMAGE_FORMAT,
+) -> None:
+    visual_examples = [e for e in examples if e.lane == "visuals"]
+    composite_examples = [e for e in examples if e.lane == "composites"]
+    page_path = docs_site_path(docs_dir, "visuals.md")
+    lines = generated_header("Visuals & Composites")
     lines.extend(
-        dedent(
-            """\
-            Technique coverage is currently represented by focused feature examples and selected
-            showcases. Public rendering techniques should normally be indexed as feature examples,
-            with `technique` tags for filtering.
-            """
-        )
-        .strip()
-        .splitlines()
+        [
+            f"{len(visual_examples)} visual families and {len(composite_examples)} composites.",
+            "",
+        ]
     )
-    lines.extend(["", "| Technique coverage | Source | Status |", "| --- | --- | --- |"])
-    for example in selected:
-        lines.append(
-            f"| [{example.title}]({example.page_path}) | "
-            f"[`{example.source}`]({source_url(example)}) | `{example.status}` |"
-        )
-    write_text(docs_dir / "techniques.md", "\n".join(lines))
+    visual_groups = (
+        ("0D — point-like", ["point_2d", "visual_pixel", "visual_marker", "visual_splat"]),
+        ("1D — line-like",  ["visual_segment", "visual_path", "visual_vector", "visual_primitive"]),
+        ("2D — planar",     ["visual_image", "visual_text", "visual_glyph", "visual_labels"]),
+        ("3D — volumetric", ["visual_mesh", "sphere_impostor", "volume"]),
+        ("Composites",      ["composite_polygon", "composite_graph"]),
+    )
+    by_id = {e.id: e for e in examples}
+    for group_label, group_ids in visual_groups:
+        group_examples = [by_id[i] for i in group_ids if i in by_id]
+        if not group_examples:
+            continue
+        lines.extend([f"## {group_label}", ""])
+        lines.append('<div class="grid cards" markdown="1">')
+        lines.append("")
+        for example in group_examples:
+            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+        lines.append("</div>")
+        lines.append("")
+    write_text(docs_dir / "visuals.md", "\n".join(lines))
+
+
+def render_features_page(
+    examples: list[Example],
+    docs_dir: Path,
+    image_dir: Path,
+    image_url_base: str,
+    image_format: str = DEFAULT_IMAGE_FORMAT,
+) -> None:
+    feature_examples = [e for e in examples if e.lane == "features"]
+    technique_examples = [e for e in examples if e.id in TECHNIQUE_IDS]
+    page_path = docs_site_path(docs_dir, "features.md")
+    lines = generated_header("Features & Techniques")
+    lines.extend(
+        [
+            f"{len(feature_examples)} feature examples and {len(technique_examples)} technique examples.",
+            "",
+        ]
+    )
+    lines.extend(["## Features", ""])
+    lines.append('<div class="grid cards" markdown="1">')
+    lines.append("")
+    for example in sorted(feature_examples, key=lambda e: e.title.lower()):
+        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+    lines.append("</div>")
+    lines.append("")
+    lines.extend(["## Techniques", ""])
+    lines.append('<div class="grid cards" markdown="1">')
+    lines.append("")
+    for example in technique_examples:
+        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+    lines.append("</div>")
+    lines.append("")
+    write_text(docs_dir / "features.md", "\n".join(lines))
 
 
 def render_validation(examples: list[Example], docs_dir: Path) -> None:
@@ -847,7 +869,8 @@ def main() -> int:
             args.image_url_base,
             args.image_format,
         )
-    render_techniques(examples, args.docs_dir)
+    render_visuals_page(examples, args.docs_dir, args.image_dir, args.image_url_base, args.image_format)
+    render_features_page(examples, args.docs_dir, args.image_dir, args.image_url_base, args.image_format)
     render_validation(examples, args.docs_dir)
     render_webgpu_matrix(examples, args.docs_dir)
     for example in examples:

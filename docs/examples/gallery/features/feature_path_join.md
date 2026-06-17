@@ -24,7 +24,7 @@ acute stroked path joins for visual regression inspection.
 
 ## Media
 
-_Media pending._
+![Path Join](../../../assets/gallery/v0.4/features/feature_path_join.webp)
 
 Static screenshots are required before final website publication. Generated media is
 prepared in the `data` submodule and linked from this page.

@@ -368,7 +368,7 @@ deterministic brain-connectivity graph composite.
 
 </div>
 
-[Browse all 17 visuals and composites](visual-gallery.md).
+[Browse all 17 visuals and composites](visuals.md).
 
 ## Features & Techniques
 
@@ -620,4 +620,4 @@ retained sphere hover and click selection.
 
 </div>
 
-[Browse all 71 feature examples](feature-gallery.md) — controllers, adornments, interaction, animation, techniques, and more.
+[Browse all 71 feature and technique examples](features.md) — controllers, adornments, interaction, animation, techniques, and more.
