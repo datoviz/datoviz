@@ -138,13 +138,6 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
         MSVC is supported via CMake. See [Install](install.md) for the CMake package
         integration, which handles include paths and linking automatically.
 
-    If you cloned the repository, skip the above and use the bundled example instead:
-
-    ```sh
-    just example-c visuals/point
-    ./build/examples/c/visuals/point --live
-    ```
-
 
 ## What you should see
 
