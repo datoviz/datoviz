@@ -179,7 +179,7 @@ set_target_properties(datoviz PROPERTIES EXPORT_NAME datoviz)
 # Install rule
 install(TARGETS datoviz
     EXPORT DatovizTargets
-    LIBRARY DESTINATION lib
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 )
 
 if(APPLE)
@@ -574,7 +574,7 @@ endif()
 if(DVZ_LAYER_TARGETS)
     install(TARGETS ${DVZ_LAYER_TARGETS}
         EXPORT DatovizTargets
-        LIBRARY DESTINATION lib
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     )
 endif()
 
@@ -596,7 +596,7 @@ target_include_directories(datoviz
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/volk>
     $<$<BOOL:${DVZ_BUILD_GUI}>:$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/cimgui>>
-    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 add_library(datoviz::datoviz ALIAS datoviz)

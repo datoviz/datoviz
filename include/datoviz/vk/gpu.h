@@ -31,6 +31,8 @@
 typedef struct DvzInstance DvzInstance;
 typedef struct DvzGpuInfo DvzGpuInfo;
 
+EXTERN_C_ON
+
 
 
 /*************************************************************************************************/
@@ -88,3 +90,7 @@ dvz_instance_gpu_info(DvzInstance* instance, uint32_t gpu_index, DvzGpuInfo* out
  */
 DVZ_EXPORT bool dvz_instance_gpu_handle(
     DvzInstance* instance, uint32_t gpu_index, VkPhysicalDevice* out_pdevice);
+
+
+
+EXTERN_C_OFF

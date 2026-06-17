@@ -20,6 +20,7 @@
 #include "controller.h"
 #include "drp2.h"
 #include "dvzmath.h"
+#include "app.h"
 #include "font.h"
 #include "geom.h"
 #include "gui.h"

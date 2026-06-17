@@ -38,6 +38,8 @@ typedef struct DvzDevice DvzDevice;
 typedef struct DvzDeviceQueueRequest DvzDeviceQueueRequest;
 typedef struct DvzDeviceConfig DvzDeviceConfig;
 
+EXTERN_C_ON
+
 struct DvzDeviceQueueRequest
 {
     uint32_t family;
@@ -271,3 +273,7 @@ DVZ_EXPORT void dvz_device_destroy(DvzDevice* device);
  * @returns whether the device has support for the extension
  */
 DVZ_EXPORT bool dvz_device_has_extension(DvzDevice* device, const char* extension);
+
+
+
+EXTERN_C_OFF

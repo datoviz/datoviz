@@ -5,6 +5,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(datoviz VERSION 0.4 LANGUAGES C CXX)
 
+include(GNUInstallDirs)
+
 # Threading setup (portable: Linux, macOS, Windows-MSVC, Windows-MinGW)
 if(WIN32)
     if(MINGW)
@@ -608,7 +610,7 @@ set(_dvz_package_dir "${CMAKE_CURRENT_BINARY_DIR}/cmake")
 configure_package_config_file(
     "${PROJECT_SOURCE_DIR}/cmake/packages/DatovizConfig.cmake.in"
     "${_dvz_package_dir}/DatovizConfig.cmake"
-    INSTALL_DESTINATION "lib/cmake/datoviz"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/datoviz"
 )
 
 write_basic_package_version_file(
@@ -620,13 +622,18 @@ write_basic_package_version_file(
 install(EXPORT DatovizTargets
     FILE DatovizTargets.cmake
     NAMESPACE datoviz::
-    DESTINATION lib/cmake/datoviz
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/datoviz"
 )
 
 install(FILES
     "${_dvz_package_dir}/DatovizConfig.cmake"
     "${_dvz_package_dir}/DatovizConfigVersion.cmake"
-    DESTINATION lib/cmake/datoviz
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/datoviz"
+)
+
+configure_file(cmake/datoviz.pc.in datoviz.pc @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/datoviz.pc"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
 )
 
 # Configuration summary.
@@ -668,19 +675,19 @@ message(STATUS "-------------------------------------------------------------")
 message(STATUS "")
 
 # Install headers and library
-install(DIRECTORY include/ DESTINATION include)
+install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 if(DVZ_BUILD_VK OR DVZ_BUILD_CANVAS)
     install(FILES
         ${PROJECT_SOURCE_DIR}/external/vk_mem_alloc.h
         ${PROJECT_SOURCE_DIR}/external/volk/volk.h
-        DESTINATION include
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     )
 endif()
 
 if(DVZ_BUILD_GUI)
     install(FILES
         ${PROJECT_SOURCE_DIR}/external/cimgui/cimgui.h
-        DESTINATION include
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     )
 endif()
