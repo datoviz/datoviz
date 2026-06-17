@@ -42,6 +42,37 @@ cmake --build build
 The maintained copy-pasteable example is in
 `examples/c/integration/cmake_package/`.
 
+On Windows with MSVC, use the CMake package path rather than `datoviz-config`. After linking,
+copy the Datoviz DLL next to your executable:
+
+```cmake
+add_custom_command(TARGET my_datoviz_app POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "$<TARGET_FILE:datoviz::datoviz>"
+        "$<TARGET_FILE_DIR:my_datoviz_app>"
+)
+```
+
+
+## vcpkg Overlay
+
+The v0.4 tree includes a draft vcpkg overlay for Visual Studio and CMake users at
+`vcpkg-overlay/`. It is tag-gated because the vcpkg port must consume a release source
+bundle that includes required submodule contents.
+
+After the release asset exists:
+
+```bash
+vcpkg install datoviz --overlay-ports=/path/to/datoviz/vcpkg-overlay/ports
+```
+
+Consumer CMake code is the same installed-package path:
+
+```cmake
+find_package(datoviz CONFIG REQUIRED)
+target_link_libraries(my_datoviz_app PRIVATE datoviz::datoviz)
+```
+
 
 ## FetchContent
 

@@ -146,8 +146,8 @@ tag version:
 #
 
 runid:
-    @echo "The legacy live wheel workflow is disabled for v0.4 RC prep." >&2
-    @echo "Use .github/workflows-draft/wheels.yml after explicit promotion." >&2
+    @echo "Use the manual .github/workflows/wheels.yml workflow for v0.4 RC wheel builds." >&2
+    @echo "Query the selected GitHub Actions run ID explicitly before downloading artifacts." >&2
     @exit 1
 #
 
@@ -198,9 +198,9 @@ upload:
 
 wheels:
     #!/usr/bin/env sh
-    echo "The legacy live wheel workflow is disabled for v0.4 RC prep." >&2
+    echo "The v0.4 wheel workflow is manual: .github/workflows/wheels.yml" >&2
     echo "Use local validation first: just wheel-ci-local <platform-tag>" >&2
-    echo "Promote .github/workflows-draft/wheels.yml only when explicitly ready." >&2
+    echo "Then dispatch the GitHub Actions workflow from the Actions tab or gh workflow run." >&2
     exit 1
 #
 

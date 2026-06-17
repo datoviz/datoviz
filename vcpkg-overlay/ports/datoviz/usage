@@ -1,0 +1,12 @@
+datoviz provides CMake targets:
+
+  find_package(datoviz CONFIG REQUIRED)
+  target_link_libraries(myapp PRIVATE datoviz::datoviz)
+
+On Windows, copy the Datoviz DLL next to your executable after build:
+
+  add_custom_command(TARGET myapp POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          "$<TARGET_FILE:datoviz::datoviz>"
+          "$<TARGET_FILE_DIR:myapp>"
+  )

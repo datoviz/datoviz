@@ -54,9 +54,9 @@ The target platform lanes are:
 2. macOS `x86_64` and `arm64`;
 3. Windows `AMD64` and `ARM64`.
 
-The draft GitHub Actions workflow is stored in `.github/workflows-draft/wheels.yml`. It is not
-live. Move or copy it to `.github/workflows/` only after the local scripts and one manual branch
-run have proven the staged-tree build, wheel inspection, and installed smokes.
+The GitHub Actions workflow is stored in `.github/workflows/wheels.yml` and is manual-only through
+`workflow_dispatch`. Keep `.github/workflows-draft/wheels.yml` as a staging reference for major
+workflow rewrites, but use the live workflow for RC wheel evidence after local validation passes.
 
 Native dependency inspection uses the platform repair tooling expected in CI:
 

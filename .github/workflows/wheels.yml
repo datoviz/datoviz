@@ -1,0 +1,236 @@
+name: "Wheels"
+
+on:
+  workflow_dispatch:
+
+env:
+  # Build once per platform; Datoviz is Python-ABI independent and the artifact is retagged as
+  # py3-none-<platform>. Separate install-smoke jobs should cover Python 3.10 through 3.14, with
+  # 3.15 prerelease enabled only for nightly/prerelease checks.
+  CIBW_BUILD: "cp313-*"
+  CIBW_SKIP: "pp* *-musllinux_* cp31?t-*"
+  CIBW_TEST_COMMAND: "python {project}/tools/release_wheels/check_wheel.py --wheel {wheel} --cmake-consumer --qt-probe optional"
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      json: ${{ steps.matrix.outputs.json }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: matrix
+        run: |
+          python tools/release_wheels/wheel_matrix.py --json > matrix.json
+          echo "json=$(python -c 'import json; print(json.dumps(json.load(open("matrix.json"))))')" >> "$GITHUB_OUTPUT"
+
+  linux:
+    needs: matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+    env:
+      CIBW_ARCHS_LINUX: ${{ matrix.arch }}
+      CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_34
+      CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_34
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: taiki-e/install-action@just
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Dependencies
+        run: |
+          python -m pip install -U pip cibuildwheel build auditwheel
+          command -v auditwheel
+      - name: Build native artifacts
+        run: |
+          just build
+          just wheel-stage --clean
+      - name: Build wheels
+        run: python -m cibuildwheel build/wheel-stage --output-dir wheelhouse
+      - name: Inspect wheels
+        run: |
+          for whl in wheelhouse/*.whl; do
+            just wheel-inspect --wheel "$whl" --native-deps
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-linux-${{ matrix.arch }}
+          path: wheelhouse/*.whl
+
+  macos:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-13
+            arch: x86_64
+          - runner: macos-latest
+            arch: arm64
+    env:
+      CIBW_ARCHS_MACOS: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Dependencies
+        run: |
+          brew install just ccache ninja jq
+          python -m pip install -U pip cibuildwheel build delocate
+          command -v delocate-listdeps
+      - name: Build native artifacts
+        run: |
+          just build
+          just wheel-stage --clean
+      - name: Build wheels
+        run: python -m cibuildwheel build/wheel-stage --output-dir wheelhouse
+      - name: Inspect wheels
+        run: |
+          for whl in wheelhouse/*.whl; do
+            just wheel-inspect --wheel "$whl" --native-deps
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-macos-${{ matrix.arch }}
+          path: wheelhouse/*.whl
+
+  windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [AMD64, ARM64]
+    env:
+      CIBW_ARCHS_WINDOWS: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Dependencies
+        shell: pwsh
+        run: |
+          choco install just mingw cmake ninja jq -y
+          python -m pip install -U pip cibuildwheel build delvewheel
+          python -c "import delvewheel"
+      - name: Build native artifacts
+        shell: pwsh
+        run: |
+          just build
+          just wheel-stage --clean
+      - name: Build wheels
+        shell: pwsh
+        run: python -m cibuildwheel build/wheel-stage --output-dir wheelhouse
+      - name: Inspect wheels
+        shell: pwsh
+        run: |
+          foreach ($whl in Get-ChildItem wheelhouse/*.whl) {
+            just wheel-inspect --wheel "$whl" --native-deps
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-windows-${{ matrix.arch }}
+          path: wheelhouse/*.whl
+
+  linux-python-smoke:
+    needs: linux
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheel-linux-x86_64
+          path: wheelhouse
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Dependencies
+        run: python -m pip install -U pip wheel
+      - name: Installed wheel smoke
+        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional
+
+  linux-python-prerelease-smoke:
+    needs: linux
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheel-linux-x86_64
+          path: wheelhouse
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.15-dev"
+          allow-prereleases: true
+      - name: Dependencies
+        run: python -m pip install -U pip wheel
+      - name: Installed wheel smoke
+        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional
+
+  macos-python-smoke:
+    needs: macos
+    runs-on: ${{ matrix.target.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        target:
+          - runner: macos-13
+            arch: x86_64
+          - runner: macos-latest
+            arch: arm64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheel-macos-${{ matrix.target.arch }}
+          path: wheelhouse
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Dependencies
+        run: |
+          brew install ninja
+          python -m pip install -U pip wheel
+      - name: Installed wheel smoke
+        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional
+
+  windows-python-smoke:
+    needs: windows
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheel-windows-AMD64
+          path: wheelhouse
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Dependencies
+        shell: pwsh
+        run: |
+          choco install ninja -y
+          python -m pip install -U pip wheel
+      - name: Installed wheel smoke
+        shell: pwsh
+        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional

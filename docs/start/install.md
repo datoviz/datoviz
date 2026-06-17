@@ -37,6 +37,28 @@ xcode-select --install
 brew install cmake just ninja
 ```
 
+On **Windows via WSL2**, use Ubuntu and then follow the Linux path:
+
+```powershell
+wsl --install
+```
+
+Install Ubuntu 24.04 from the Microsoft Store, open the Ubuntu shell, then run the Ubuntu
+dependency commands above. On Windows 11 with current Intel, AMD, or NVIDIA drivers, WSLg provides
+Vulkan GPU passthrough for normal desktop use.
+
+On **native Windows with Visual Studio**, install:
+
+| Requirement | Notes |
+| --- | --- |
+| Visual Studio 2022 | include the Desktop development with C++ workload |
+| Vulkan SDK | from LunarG |
+| vcpkg | recommended dependency manager for Visual Studio projects |
+| CMake and Ninja | available from Visual Studio, vcpkg, or standalone installers |
+
+Then open the Datoviz folder in Visual Studio. Visual Studio detects `CMakePresets.json`; select
+the `msvc` preset and build. Native Windows binary packages are still release-candidate work.
+
 
 ## Clone and Build
 
@@ -83,3 +105,18 @@ just example-c visuals/point
 ```
 
 See [Quickstart](quickstart.md) for a walkthrough of this example.
+
+
+## Package Status
+
+The v0.4 release-candidate packaging work is active:
+
+| Path | Status |
+| --- | --- |
+| `pip install datoviz` | planned primary Python install path for RC wheels |
+| Windows MinGW wheel | active CI path |
+| Windows MSVC wheel | planned before final v0.4 |
+| vcpkg overlay | active draft for C/C++ users; publication waits for a stable release tag |
+| conda-forge | planned after headless import and dependency preflight |
+
+Until those packages are published, build from source for reproducible v0.4 testing.

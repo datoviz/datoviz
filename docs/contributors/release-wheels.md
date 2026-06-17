@@ -141,19 +141,19 @@ Use `--qt-probe required` only on a machine or CI runner where PyQt6, Qt Vulkan 
 Datoviz Qt bridge provider are expected to be present.
 
 
-## Draft GitHub Actions Workflow
+## GitHub Actions Workflow
 
-The v0.4 wheel workflow is intentionally not live yet:
+The v0.4 wheel workflow is manual-only:
 
 ```text
-.github/workflows-draft/wheels.yml
+.github/workflows/wheels.yml
 ```
 
-It should stay outside `.github/workflows/` until the local scripts and at least one manual branch
-run have proven the path.
-There is currently no live scheduled wheel workflow for v0.4 RC prep.
+It has no scheduled trigger. Dispatch it only after the local scripts and at least one targeted
+branch run have proven the path. Keep `.github/workflows-draft/wheels.yml` as a staging reference
+for major workflow rewrites.
 
-Before enabling it:
+Before relying on a run for release evidence:
 
 1. `just wheel-ci-local <host-platform-tag>` passes on each maintained host OS;
 2. Linux wheels build and inspect on `x86_64` and `aarch64`;

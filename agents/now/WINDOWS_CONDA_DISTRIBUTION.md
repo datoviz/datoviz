@@ -15,12 +15,12 @@ consult `C_DISTRIBUTION.md` for implementation details on each work item.
 | Item | Status | Next action |
 |---|---|---|
 | pip Linux/macOS wheels | in flight | — |
-| pip Windows MinGW wheel | draft CI exists | Promote `.github/workflows-draft/wheels-v04.yml` to `.github/workflows/` |
-| Wheel C integration | designed, not started | Add `datoviz-config`, bundled headers, bundled wheel CMake config, and wheel smoke CI |
-| WSL2 install docs | not started | Pure documentation, no engineering |
-| "Build on Windows in VS" docs | not started | Pure documentation, no engineering |
-| conda-forge preflight | not started | Validate Vulkan headless import and dependency availability first |
-| vcpkg overlay | high priority, not started | Draft now; publish after stable release tag |
+| pip Windows MinGW wheel | manual CI promoted | Run `.github/workflows/wheels.yml`; inspect Windows AMD64/ARM64 artifacts |
+| Wheel C integration | implemented, local Linux proof passed | Re-run on macOS and Windows CI |
+| WSL2 install docs | documented | Keep aligned with source-build docs |
+| "Build on Windows in VS" docs | documented in install guide | Expand into a dedicated page if user feedback needs it |
+| conda-forge preflight | headless import proof passed locally | Verify cglm/Kvazaar availability in conda-forge environment |
+| vcpkg overlay | draft added | Replace release-source SHA512 after stable release tag and source bundle |
 
 ### Needs release tag
 
@@ -217,8 +217,9 @@ conda, and vcpkg lanes. See C_DISTRIBUTION.md item 15 for the recipe skeleton.
 | File | Purpose |
 |---|---|
 | `agents/now/C_DISTRIBUTION.md` | Detailed implementation spec for all distribution work items |
-| `.github/workflows-draft/wheels-v04.yml` | Draft wheel CI including Windows MinGW job — promote this |
+| `.github/workflows/wheels.yml` | Manual wheel CI including Windows MinGW jobs |
+| `vcpkg-overlay/ports/datoviz/` | Draft vcpkg overlay port |
 | `CMakePresets.json` | `msvc` and `mingw` presets for Windows builds |
 | `justfile` | `just msvc`, `just mingw` recipes |
-| `datoviz/cli.py` | Does not exist yet — create for `datoviz-config` console script |
-| `cmake/DatovizConfig.cmake.wheel` | Does not exist yet — create for `find_package` support |
+| `datoviz/cli.py` | `datoviz-config` console script |
+| `cmake/DatovizConfig.cmake.wheel` | Wheel-local `find_package` support |

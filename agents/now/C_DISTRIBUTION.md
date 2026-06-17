@@ -660,23 +660,29 @@ Completed:
 6. Maintained CMake package and FetchContent integration examples live under
    `examples/c/integration/`, with `tools/c_integration_smoke.sh` / `just c-integration-smoke`
    covering both.
+7. Wheel C integration lane: `datoviz-config`, bundled headers, wheel CMake config, and installed
+   wheel CMake consumer smoke are present; local Linux `just wheel-ci-local '' 0 0` passed.
+8. Manual wheel GitHub Actions workflow is promoted at `.github/workflows/wheels.yml`.
+9. Draft vcpkg overlay lives under `vcpkg-overlay/`; publication waits for a release
+   source bundle with submodule contents and the final SHA512.
+10. Conda headless preflight passed locally for `import datoviz`, `import datoviz.raw`, and
+    `raw.dvz_scene()` / `raw.dvz_scene_destroy()`.
+11. WSL2, native Visual Studio, and vcpkg-preview user docs are present.
 
 Active / next:
 
-1. Wheel C integration lane: `datoviz-config`, bundled headers, wheel CMake config, and wheel smoke
-   CI. Coordinate with the active wheel-build agent before editing `pyproject.toml`,
-   `datoviz/cli.py`, wheel CMake config files, or `tools/release_wheels/*`.
-2. Rpath verification in `datoviz-config` output once the console script lands (5).
-3. vcpkg overlay (16) draft and local consumer smoke; publish after stable release tag.
-4. conda-forge preflight (10): headless import, raw library load, and dependency availability.
-5. `.deb` packaging (12) after pkg-config, dependency modes, and install metadata are stable.
-6. Homebrew formula (11) after release tagging; uses the strict Homebrew system-required lane.
-7. conda-forge feedstock (10) after release tagging; verify cglm/Kvazaar availability in the
+1. Run the manual wheel workflow on GitHub and record Linux, macOS, and Windows artifact evidence.
+2. Validate the vcpkg overlay on a Windows machine with vcpkg installed; replace the release
+   source-bundle SHA512 after tagging.
+3. Conda-forge preflight (10): verify cglm/Kvazaar availability in the feedstock environment.
+4. `.deb` packaging (12) after pkg-config, dependency modes, and install metadata are stable.
+5. Homebrew formula (11) after release tagging; uses the strict Homebrew system-required lane.
+6. conda-forge feedstock (10) after release tagging; verify cglm/Kvazaar availability in the
    feedstock environment before forcing `SYSTEM`.
-8. MSVC wheel CI job (8) after RC.
-9. Spack recipe (15) if bandwidth allows after wheel/conda/vcpkg lanes.
-10. rpm spec file (13) and conan remain post-v0.4 unless release scope changes.
-11. Documentation pages (17) can continue in parallel; mark unfinished package-manager sections as
+7. MSVC wheel CI job (8) after RC.
+8. Spack recipe (15) if bandwidth allows after wheel/conda/vcpkg lanes.
+9. rpm spec file (13) and conan remain post-v0.4 unless release scope changes.
+10. Documentation pages (17) can continue in parallel; mark unfinished package-manager sections as
    "coming soon".
 
 ## Testing the full path
