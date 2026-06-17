@@ -179,12 +179,16 @@ nav:
       - Coordinate systems: 'reference/coordinate-systems.md'
       - Controllers: 'reference/controllers.md'
       - Callbacks: 'reference/callbacks.md'
+      - Visual attributes: 'reference/visual-attributes.md'
+      - Queries: 'reference/queries.md'
+      - Errors and logging: 'reference/errors-and-logging.md'
     - Compatibility:
       - Project status: 'reference/project-status.md'
       - Feature status: 'reference/feature-status.md'
       - Platform support: 'reference/platform-support.md'
       - Build options: 'reference/build-options.md'
     - Backends:
+      - DRP2: 'reference/drp2/index.md'
       - WebGPU subset: 'reference/webgpu-subset.md'
       - Compute and graphics: 'reference/compute-graphics.md'
   - Advanced:
@@ -244,10 +248,6 @@ not_in_nav: |
   tutorials/index.md
   tutorials/first-scene.md
   reference/c-api/drp2.md
-  reference/drp2/index.md
-  reference/visual-attributes.md
-  reference/queries.md
-  reference/errors-and-logging.md
   contributors/architecture-map.md
   contributors/adding-a-drp2-command.md
   contributors/adding-a-webgpu-fixture.md

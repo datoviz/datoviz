@@ -1,8 +1,10 @@
 # Main classes
 
-!!! warning
+!!! note
 
-    The Python API reference documentation is still a work-in-progress. Please feel free to contribute.
+    This legacy high-level Python API page is not the v0.4 Datoviz public surface. Use
+    [Python raw ctypes](ctypes.md) for the supported low-level binding. High-level plotting belongs
+    to GSP/VisPy2 scope.
 
 ::: datoviz._app.App
 

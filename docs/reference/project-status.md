@@ -1,7 +1,8 @@
 # Project Status
 
-Datoviz v0.4 is under active development. The current release surface is being classified with
-explicit status labels:
+Datoviz v0.4 is under active development. Public documentation uses explicit status labels so users
+can distinguish release surface, experimental slices, contributor surfaces, deferred work, and
+external ownership.
 
 | Status | Meaning |
 | --- | --- |
@@ -14,20 +15,20 @@ explicit status labels:
 
 ## Current Broad Status
 
-| Area | Status |
-| --- | --- |
-| Native C scene/app path | supported, with feature-specific gaps |
-| Retained visual families | supported/experimental by visual |
-| Offscreen and GLFW app presentation | supported/experimental |
-| DRP2 command stream and fixtures | advanced/unstable |
-| Scene compute shaders | experimental |
-| Qt/PyQt hosted rendering | supported, optional provider |
-| CPU-side nonlinear/geographic pre-projection | supported pattern |
-| Scene-managed nonlinear transforms | deferred |
-| Custom visual/render shaders | deferred |
-| Built-in shader replacement and hot reload | deferred |
-| Python raw `ctypes` binding | supported |
-| WebGPU/WASM path | experimental |
-| Old Datoviz Python plotting API | external/GSP |
+| Area | Status | Reference |
+| --- | --- | --- |
+| Native C scene/app path | supported, with feature-specific gaps | [C API](c-api/index.md), [Feature status](feature-status.md) |
+| Retained visual families | supported/experimental by family | [Visual families](visual-families/index.md) |
+| Offscreen and GLFW app presentation | supported/experimental | [Platform support](platform-support.md) |
+| DRP2 command stream and fixtures | advanced/unstable | [DRP2](drp2/index.md) |
+| Scene compute shaders | experimental | [Compute and graphics](compute-graphics.md) |
+| Qt/PyQt hosted rendering | supported, optional provider | [Platform support](platform-support.md) |
+| CPU-side nonlinear/geographic pre-projection | supported pattern | [Coordinate systems](coordinate-systems.md) |
+| Scene-managed nonlinear transforms | deferred | [Feature status](feature-status.md) |
+| Custom visual/render shaders | deferred | [Visual attributes](visual-attributes.md) |
+| Built-in shader replacement and hot reload | deferred | [Feature status](feature-status.md) |
+| Python raw `ctypes` binding | supported | [Python raw ctypes](ctypes.md) |
+| WebGPU/WASM path | experimental | [WebGPU subset](webgpu-subset.md) |
+| Old Datoviz Python plotting API | external/GSP | [Feature status](feature-status.md) |
 
-See [Feature status](../reference/feature-status.md) for the detailed table.
+See [Feature status](feature-status.md) for the detailed table.
