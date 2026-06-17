@@ -27,26 +27,55 @@ pages:
       - include/datoviz/controller.h
     prefixes:
       - anim
+      - annotation
+      - arcball
       - axis
+      - band
+      - bars
       - camera
+      - capability
       - colorbar
       - colormap
       - controller
+      - datetime
+      - diagnostic
+      - field
       - figure
+      - fly
+      - font
+      - format
       - frame
       - grid
       - guide
+      - hline
+      - hover
+      - hspan
+      - interaction
+      - item
+      - label
       - labels
       - legend
+      - link
       - linear
+      - orbit
       - overlay
       - panel
+      - panzoom
+      - pinned
       - query
+      - sampled
       - scene
       - scale
+      - scalebar
       - selection
       - text
       - track
+      - transform
+      - turntable
+      - unit
+      - units
+      - vline
+      - vspan
       - world
 
   visuals:
@@ -70,8 +99,11 @@ pages:
       - include/datoviz/geom/**
     prefixes:
       - composite
+      - bezier
       - depth
       - edl
+      - geom
+      - geometry
       - glyph
       - graph
       - image
@@ -92,6 +124,10 @@ pages:
       - ssao
       - standard
       - symbol
+      - tessellate
+      - tessellated
+      - triangulate
+      - triangulation
       - vector
       - visual
       - volume
