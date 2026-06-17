@@ -35,7 +35,10 @@
             "binaryDir": "${sourceDir}/build/package-smoke-vendored",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "DVZ_BUILD_GUI": "OFF"
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/package-smoke-vendored/install",
+                "DVZ_BUILD_GUI": "OFF",
+                "DVZ_BUILD_TESTING": "OFF",
+                "DVZ_BUILD_EXAMPLES": "OFF"
             }
         },
         {
@@ -46,7 +49,10 @@
             "binaryDir": "${sourceDir}/build/package-smoke-system-auto",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/package-smoke-system-auto/install",
                 "DVZ_BUILD_GUI": "OFF",
+                "DVZ_BUILD_TESTING": "OFF",
+                "DVZ_BUILD_EXAMPLES": "OFF",
                 "DVZ_VENDORED_DEPS": "OFF"
             }
         },
@@ -58,7 +64,10 @@
             "binaryDir": "${sourceDir}/build/package-smoke-system-required",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/package-smoke-system-required/install",
                 "DVZ_BUILD_GUI": "ON",
+                "DVZ_BUILD_TESTING": "OFF",
+                "DVZ_BUILD_EXAMPLES": "OFF",
                 "DVZ_VENDORED_DEPS": "OFF",
                 "DVZ_CGLM_SOURCE": "SYSTEM",
                 "DVZ_KVAZAAR_SOURCE": "SYSTEM",
@@ -86,6 +95,13 @@
             ]
         },
         {
+            "name": "package-install-vendored",
+            "configurePreset": "package-smoke-vendored",
+            "targets": [
+                "install"
+            ]
+        },
+        {
             "name": "package-smoke-system-auto",
             "configurePreset": "package-smoke-system-auto",
             "targets": [
@@ -96,6 +112,13 @@
             ]
         },
         {
+            "name": "package-install-system-auto",
+            "configurePreset": "package-smoke-system-auto",
+            "targets": [
+                "install"
+            ]
+        },
+        {
             "name": "package-smoke-system-required",
             "configurePreset": "package-smoke-system-required",
             "targets": [
@@ -103,6 +126,13 @@
                 "datoviz_video",
                 "datoviz_window",
                 "datoviz_vklite"
+            ]
+        },
+        {
+            "name": "package-install-system-required",
+            "configurePreset": "package-smoke-system-required",
+            "targets": [
+                "install"
             ]
         }
     ],

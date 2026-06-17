@@ -57,6 +57,8 @@ option(DVZ_BUILD_WEBGPU "Build the WebGPU layer" OFF)
 option(DVZ_BUILD_SCENE "Build the scene layer" ON)
 option(DVZ_BUILD_APP "Build the app presentation layer" ON)
 option(DVZ_BUILD_GUI "Build the Dear ImGui app overlay layer" ON)
+option(DVZ_BUILD_TESTING "Build Datoviz test executables" ON)
+option(DVZ_BUILD_EXAMPLES "Build Datoviz example executables" ON)
 option(DVZ_VENDORED_DEPS "Use bundled third-party dependency source trees when available" ON)
 set(DVZ_MIMALLOC_SOURCE "AUTO" CACHE STRING "mimalloc source mode (AUTO, SYSTEM, VENDORED, or OFF)")
 set(DVZ_CGLM_SOURCE "AUTO" CACHE STRING "cglm source mode (AUTO, SYSTEM, VENDORED, or OFF)")
@@ -458,14 +460,19 @@ endif()
 
 # Add subdirectories
 add_subdirectory(src)
-add_subdirectory(testing)
 
-if(DVZ_BUILD_CANVAS)
-    add_subdirectory(examples/c)
+if(DVZ_BUILD_TESTING)
+    add_subdirectory(testing)
 endif()
 
-if(DVZ_BUILD_APP)
-    add_subdirectory(examples/qt)
+if(DVZ_BUILD_EXAMPLES)
+    if(DVZ_BUILD_CANVAS)
+        add_subdirectory(examples/c)
+    endif()
+
+    if(DVZ_BUILD_APP)
+        add_subdirectory(examples/qt)
+    endif()
 endif()
 
 get_property(_dvz_targets GLOBAL PROPERTY DVZ_ALL_TARGETS)
@@ -552,9 +559,19 @@ configure_package_config_file(
     "${_dvz_package_dir}/DatovizConfig.cmake"
     INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/datoviz"
 )
+configure_package_config_file(
+    "${PROJECT_SOURCE_DIR}/cmake/packages/DatovizConfig.cmake.in"
+    "${_dvz_package_dir}/datovizConfig.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/datoviz"
+)
 
 write_basic_package_version_file(
     "${_dvz_package_dir}/DatovizConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+write_basic_package_version_file(
+    "${_dvz_package_dir}/datovizConfigVersion.cmake"
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY SameMajorVersion
 )
@@ -568,6 +585,8 @@ install(EXPORT DatovizTargets
 install(FILES
     "${_dvz_package_dir}/DatovizConfig.cmake"
     "${_dvz_package_dir}/DatovizConfigVersion.cmake"
+    "${_dvz_package_dir}/datovizConfig.cmake"
+    "${_dvz_package_dir}/datovizConfigVersion.cmake"
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/datoviz"
 )
 
@@ -612,6 +631,8 @@ message(STATUS "DVZ_BUILD_WEBGPU: ${DVZ_BUILD_WEBGPU}")
 message(STATUS "DVZ_BUILD_SCENE: ${DVZ_BUILD_SCENE}")
 message(STATUS "DVZ_BUILD_APP: ${DVZ_BUILD_APP}")
 message(STATUS "DVZ_BUILD_GUI: ${DVZ_BUILD_GUI}")
+message(STATUS "DVZ_BUILD_TESTING: ${DVZ_BUILD_TESTING}")
+message(STATUS "DVZ_BUILD_EXAMPLES: ${DVZ_BUILD_EXAMPLES}")
 message(STATUS "DVZ_VENDORED_DEPS: ${DVZ_VENDORED_DEPS}")
 message(STATUS "DVZ_ENABLE_QT_BRIDGE: ${DVZ_ENABLE_QT_BRIDGE}")
 message(STATUS "DVZ_HAS_QT_BRIDGE: ${DVZ_HAS_QT_BRIDGE}")

@@ -511,6 +511,7 @@ For stricter package CI, force individual dependency modes:
 ```sh
 cmake --preset package-smoke-system-required
 cmake --build --preset package-smoke-system-required
+cmake --build --preset package-install-system-required
 ```
 
 That preset requires system `glfw3`, cglm, Kvazaar, and mimalloc. Use
@@ -578,6 +579,7 @@ sudo apt-get update
 sudo apt-get install -y libglfw3-dev libcglm-dev libmimalloc-dev
 cmake --preset package-smoke-system-auto
 cmake --build --preset package-smoke-system-auto
+cmake --build --preset package-install-system-auto
 ```
 
 Use `DVZ_KVAZAAR_SOURCE=VENDORED` or leave `AUTO` when a distribution does not provide a Kvazaar
