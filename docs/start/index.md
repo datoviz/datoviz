@@ -173,8 +173,13 @@ The scene setup is identical for interactive and offscreen use — only the last
 
 ## AI-assisted workflow
 
-Datoviz is designed for use with coding agents. Paste this page's URL into your LLM as context,
-describe the visualization you want, and ask for Python `ctypes` code using only the documented
-v0.4 API. For tips and a prompt template, see [AI-assisted workflow](ai-workflow.md).
+Datoviz works well with coding agents. Give your LLM this page as context and describe what you want:
+
+```
+Using the Datoviz v0.4 Python API (https://datoviz.org/start/),
+write ctypes code for a scatter plot of 10k random points with pan/zoom.
+```
+
+For a fuller prompt template and tips, see [AI-assisted workflow](ai-workflow.md).
 
 <!-- PROMPT_WIDGET_PLACEHOLDER -->
