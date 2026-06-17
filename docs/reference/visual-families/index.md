@@ -1,36 +1,29 @@
 # Visual Families
 
-Status: planned structured reference.
+Each public visual family has a concise reference page with status, backend support, data model,
+attributes, picking/probing notes, and links to the canonical example.
 
-Each public visual family should have one reference entry. This page should combine structured
-facts with short choice guidance.
+Use the [Examples gallery](../../examples/visuals.md) for screenshots and complete executable
+source. Use [Choose a visual family](../../how-to/choose-a-visual-family.md) when deciding between
+neighboring families.
 
-Use this template for each visual:
+| Family | Primary use |
+| --- | --- |
+| [Point](point.md) | Dense circular point sprites for scatter plots and point clouds |
+| [Pixel](pixel.md) | Screen-aligned square cells or dense sparse rasters |
+| [Marker](marker.md) | Symbolic point marks with configurable shapes |
+| [Primitive](primitive.md) | Simple triangle or line primitive batches |
+| [Segment](segment.md) | Independent line segments with per-segment styling |
+| [Path](path.md) | Connected polylines, curves, and trajectories |
+| [Vector](vector.md) | Arrow or vector-field glyphs |
+| [Image](image.md) | 2D sampled fields, textures, and image quads |
+| [Labels](labels.md) | Categorical integer sampled fields and segmentation masks |
+| [Mesh](mesh.md) | Triangle meshes, surfaces, and textured geometry |
+| [Sphere](sphere.md) | 3D sphere impostors with radius and lighting |
+| [Volume](volume.md) | 3D sampled scalar fields |
+| [Splat](splat.md) | Experimental Gaussian splats |
+| [Text](text.md) | Semantic text annotations and labels |
+| [Glyph](glyph.md) | Low-level atlas glyph quads |
 
-```text
-## <Visual Name>
-
-Status:
-Backends:
-Use when:
-Avoid when:
-Data model:
-Required attributes:
-Optional attributes:
-Controllers:
-Picking/probing:
-Backend notes:
-Minimal example:
-Related how-to:
-```
-
-The exact API facts may come from source-controlled metadata or generated reference data. The choice
-guidance should be authored prose:
-
-1. `Use when` explains the data shape and task where the visual is the best fit.
-2. `Avoid when` points to neighboring visual families or deferred features.
-3. `Backend notes` calls out native support, WebGPU/WASM gaps, and release limitations.
-4. `Minimal example` links to the copy-safe C example that demonstrates valid setup and cleanup.
-
-This reference should stay concise. Longer decision prose belongs in
-[`Choose a visual family`](../../how-to/choose-a-visual-family.md).
+Reference pages intentionally avoid long standalone programs. The canonical source files under
+`examples/c/visuals/` and generated gallery pages are the executable source of truth.

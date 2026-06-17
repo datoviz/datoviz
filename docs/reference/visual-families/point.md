@@ -1,3 +1,57 @@
-# point
+# Point
 
-This page is under construction.
+Screen-space circular point sprites for dense 2D or 3D point clouds.
+
+Status: supported.
+Backends: native; WebGPU live (`point`, `panzoom`).
+Primitive: instanced screen-space quads.
+
+## Use When
+
+Use point visuals for many circular marks whose size is expressed in pixels and whose centers live
+in panel coordinates. They are the baseline choice for scatter plots and point-cloud overlays.
+
+## Avoid When
+
+Use [Marker](marker.md) when each item needs a symbolic shape, [Pixel](pixel.md) for square
+screen-aligned cells, or [Sphere](sphere.md) for true 3D radius and lighting.
+
+## Data Model
+
+Create with `dvz_point(scene, flags)`. Upload one item per point, then attach the visual to a
+panel. The canonical example uses scalar color values by changing the `color` attribute format and
+binding a scale.
+
+## Attributes
+
+Required: `position` (`vec3` center), `color` (RGBA8 or configured scalar), `diameter` (`float`,
+pixels).
+
+Optional: `item_state` for retained hover/selection styling; edge styling through
+`dvz_point_set_style()` (`edge_color`, `stroke_width`, filled/stroke/outline aspect); alpha mode,
+depth test, transform, and visual-wide scale bindings.
+
+## Picking And Probing
+
+Point visuals expose retained dense attributes for CPU-side bounds and first-slice picking. Pick
+results identify the source item, not the generated quad vertices.
+
+## Backend Notes
+
+Native and WebGPU paths are active. The WebGPU gallery route is live for the RC browser subset.
+Depth testing is a visual option; the example disables it for a 2D panzoom panel.
+
+## Canonical Example
+
+- Source: `examples/c/visuals/point.c`
+- Gallery: [Point](../../examples/gallery/visuals/point_2d.md)
+- Build: `just example-c visuals/point`
+- Smoke: `./build/examples/c/visuals/point --png`
+- Validation: `smoke+screenshot`
+- Agent copy-safe: yes
+
+## See Also
+
+[Choose a visual family](../../how-to/choose-a-visual-family.md),
+[use panzoom](../../how-to/use-panzoom.md), [pick and probe](../../how-to/pick-and-probe.md),
+[Pixel](pixel.md), [Marker](marker.md), [Sphere](sphere.md).
