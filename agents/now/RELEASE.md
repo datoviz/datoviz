@@ -16,6 +16,10 @@ Maintainer execution docs live in
 [../../docs/contributors/release-flight-checklist.md](../../docs/contributors/release-flight-checklist.md),
 and [../../docs/contributors/release-wheels.md](../../docs/contributors/release-wheels.md).
 
+Distribution packaging preflight lives in
+[DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md). Run it locally before
+dispatching wheel CI, submitting conda-forge staged-recipes, or publishing the vcpkg overlay.
+
 
 ## Scope
 

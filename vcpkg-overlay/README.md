@@ -46,6 +46,14 @@ DATOVIZ_VCPKG_SOURCE_PATH=$PWD \
   vcpkg install datoviz --overlay-ports=vcpkg-overlay/ports --triplet x64-windows
 ```
 
+Then validate the generated source bundle path:
+
+```sh
+DATOVIZ_VCPKG_SOURCE_URL=file:///tmp/datoviz-source-bundle-smoke/datoviz-0.4.0-source.tar.gz \
+DATOVIZ_VCPKG_SOURCE_SHA512=<printed sha512> \
+  vcpkg install datoviz --overlay-ports=vcpkg-overlay/ports --triplet x64-windows
+```
+
 Minimum proof before publishing the overlay:
 
 ```sh
