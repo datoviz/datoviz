@@ -11,6 +11,6 @@ target_include_directories(datoviz_window
 
 target_compile_definitions(datoviz_window PUBLIC ${DVZ_COMPILE_DEFINITIONS})
 
-if(DVZ_HAS_GLFW AND TARGET glfw)
+if(DVZ_HAS_GLFW AND TARGET glfw::glfw)
     target_link_libraries(datoviz_window PUBLIC glfw::glfw)
 endif()
