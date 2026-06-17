@@ -91,7 +91,6 @@ hooks:
 nav:
   - Home: 'index.md'
   - Get Started:
-    - 'start/index.md'
     - Install: 'start/install.md'
     - Quickstart: 'start/quickstart.md'
     - Project status: 'start/project-status.md'
