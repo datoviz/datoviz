@@ -10,26 +10,38 @@ consult `C_DISTRIBUTION.md` for implementation details on each work item.
 
 ## Current status
 
+### Active now
+
 | Item | Status | Next action |
 |---|---|---|
 | pip Linux/macOS wheels | in flight | — |
 | pip Windows MinGW wheel | draft CI exists | Promote `.github/workflows-draft/wheels-v04.yml` to `.github/workflows/` |
-| MSVC wheel + `datoviz-config` + cmake config | designed, not started | `datoviz-config` console script is the entry point (C_DISTRIBUTION.md item 2) |
+| Wheel C integration | designed, not started | Add `datoviz-config`, bundled headers, bundled wheel CMake config, and wheel smoke CI |
 | WSL2 install docs | not started | Pure documentation, no engineering |
 | "Build on Windows in VS" docs | not started | Pure documentation, no engineering |
-| conda-forge feedstock | not started | Validate Vulkan headless import first (see below) |
-| vcpkg overlay (custom registry) | not started | Needs stable release tag |
+| conda-forge preflight | not started | Validate Vulkan headless import and dependency availability first |
+| vcpkg overlay | high priority, not started | Draft now; publish after stable release tag |
+
+### Needs release tag
+
+| Item | Status | Next action |
+|---|---|---|
+| conda-forge feedstock submission | not started | Submit after preflight passes and stable release tag exists |
+| MSVC wheel | designed, not started | Build `datoviz.dll` + `datoviz.lib`; use bundled CMake config, not `datoviz-config` |
 | vcpkg main catalog submission | not started | After overlay is validated; review takes weeks |
 | Spack recipe | not started | `DVZ_VENDORED_DEPS=OFF` confirmed stable — low effort |
 | Homebrew formula | partial (justfile machinery exists) | Needs stable release tag |
 | `.deb` package | partial (justfile machinery exists) | After pkg-config and install metadata are stable |
-| Chocolatey / winget | **out of scope** | App installers, not C library distribution |
+
+### Later or out of scope
+
+| Item | Status | Next action |
+|---|---|---|
 | conan | post-v0.4 | Not datoviz's primary audience |
 | rpm | post-v0.4 | Less critical than deb for this audience |
 | Docker headless image | post-v0.4 | GPU passthrough complexity not worth pulling in now |
 | nix/nixpkgs | community-driven | No action needed |
-
-All items in the first block are **active now**, not staged across RC/final milestones.
+| Chocolatey / winget | **out of scope** | App installers, not C library distribution |
 
 ---
 
@@ -39,7 +51,7 @@ All items in the first block are **active now**, not staged across RC/final mile
 
 | Persona | Expected path |
 |---|---|
-| Scientific Python user | `pip install datoviz` or `conda install datoviz` — done |
+| Scientific Python user | `pip install datoviz` now; `conda install datoviz` once feedstock is live |
 | VS C++ developer | `vcpkg install datoviz`, then `find_package(datoviz)` in CMake |
 | MSYS2/MinGW developer | `datoviz-config --cflags --libs` or MinGW-compatible build |
 | End user (no dev) | Not datoviz's audience |
@@ -123,13 +135,16 @@ IBL itself and most neuroscience labs run conda environments.
 
 ### Split package pattern
 
-conda-forge convention for libraries with Python bindings is two packages:
+Preferred conda-forge proposal for libraries with Python bindings:
 
-- `datoviz` — the C library (`libdatoviz.so` + headers), no Python dependency
-- `python-datoviz` — Python bindings, depends on `datoviz`
+- `libdatoviz` — the C library (`libdatoviz.so` + headers), no Python dependency
+- `datoviz` — Python bindings, depends on `libdatoviz`
 
-This mirrors OpenCV (`libopencv` + `py-opencv`), VTK, HDF5. C developers install just
-`datoviz`; Python users get both. Submit both recipes together.
+This mirrors the important part of OpenCV's conda-forge split (`libopencv` is the native
+library, `py-opencv` is the Python binding package). For Datoviz, keeping `datoviz` as the
+Python package is better for user expectations because it matches `pip install datoviz` and
+`import datoviz`. C developers install `libdatoviz`; Python users install `datoviz` and get both.
+Treat this as the initial staged-recipes proposal, not a decision to fight reviewers over.
 
 ### Dynamic linking vs. pip wheels
 
@@ -146,10 +161,13 @@ a GPU, the conda-forge CI will fail and the feedstock cannot be accepted.
 
 **Validate before submitting the feedstock:**
 ```python
-# Should not crash in a headless environment with no GPU
-import datoviz as dvz
-scene = dvz.dvz_scene()
-dvz.dvz_scene_destroy(scene)
+# Importing the Python package and loading the raw library should not create a Vulkan device.
+import datoviz
+import datoviz.raw as raw
+
+# Scene allocation should also stay CPU-side and headless-safe.
+scene = raw.dvz_scene()
+raw.dvz_scene_destroy(scene)
 ```
 
 If this crashes, the library needs a lazy Vulkan initialisation path — defer device creation
@@ -159,10 +177,13 @@ largest unknown for the conda-forge submission.
 ### conda-forge submission process
 
 1. Validate Vulkan headless import (above)
-2. Write `recipe/meta.yaml` with `DVZ_VENDORED_DEPS=OFF` and correct `host:`/`run:` deps
-3. Submit to `conda-forge/staged-recipes` (review takes 1–3 weeks)
-4. After merge, the feedstock lives at `conda-forge/datoviz-feedstock`
-5. conda-forge bot handles dependency update PRs automatically from then on
+2. Verify conda-forge availability for cglm and Kvazaar before forcing those dependencies to
+   `SYSTEM`
+3. Write `recipe/meta.yaml` with `DVZ_VENDORED_DEPS=OFF`, preferred outputs `libdatoviz` and
+   `datoviz`, and correct `host:`/`run:` deps
+4. Submit to `conda-forge/staged-recipes` (review takes 1–3 weeks)
+5. After merge, the feedstock lives at `conda-forge/datoviz-feedstock`
+6. conda-forge bot handles dependency update PRs automatically from then on
 
 Requires a stable release tag before submission. conda-forge will not accept a moving target.
 
@@ -170,8 +191,8 @@ Requires a stable release tag before submission. conda-forge will not accept a m
 
 ~50 lines of Python, `DVZ_VENDORED_DEPS=OFF` already works. Datoviz's neuroscience audience
 overlaps heavily with HPC clusters (national labs, universities) where Spack is the dominant
-package manager and pip is unavailable. Bumped from post-v0.4 to **active now** — low effort,
-high audience impact. See C_DISTRIBUTION.md item 15 for the recipe skeleton.
+package manager and pip is unavailable. Keep this tag-gated and lower priority than the wheel,
+conda, and vcpkg lanes. See C_DISTRIBUTION.md item 15 for the recipe skeleton.
 
 ---
 
@@ -182,10 +203,12 @@ high audience impact. See C_DISTRIBUTION.md item 15 for the recipe skeleton.
 - **Dynamic linking only** for `libdatoviz` itself (no static build of datoviz).
 - **vcpkg overlay first**, then main catalog submission. Don't wait for registry review.
 - **Chocolatey and winget are out of scope** — app installers, not relevant.
-- **conda split-package pattern** (`datoviz` + `python-datoviz`), matching OpenCV/VTK.
+- **conda split-package proposal** (`libdatoviz` + `datoviz`), matching native-library/Python
+  binding split conventions while preserving `conda install datoviz` for Python users.
 - **Vulkan headless validation is a prerequisite** for the conda-forge submission.
-- **Spack and vcpkg are bumped to active** — previously post-v0.4, now in scope.
-- **conan, rpm, Docker, nix** remain post-v0.4.
+- **vcpkg is bumped to high-priority active work** — draft the overlay soon, publish after tag.
+- **Spack is low-effort, release-tag-gated work** — do not let it block wheel/conda/vcpkg progress.
+- **conan, rpm, Docker, nix** remain post-v0.4 or community-driven.
 
 ---
 

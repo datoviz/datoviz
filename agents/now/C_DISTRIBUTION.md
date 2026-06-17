@@ -28,7 +28,9 @@ Python wheel is the primary distribution vehicle for v0.4; other channels follow
   headers. CMake `find_package` is the documented integration path.
 - **Windows paths in scope**: WSL2 (document only, no engineering), MinGW64 (works today),
   MSVC (wheel + docs after RC).
-- **vcpkg port / conan**: post-v0.4.
+- **vcpkg overlay**: high-priority active work, drafted before final and published after a stable
+  release tag. Official vcpkg catalog submission follows overlay validation.
+- **conan**: post-v0.4.
 
 ---
 
@@ -42,21 +44,27 @@ Python wheel is the primary distribution vehicle for v0.4; other channels follow
 | conda-forge | Scientific Python ecosystem | dynamic (conda's libs) | `meta.yaml` feedstock | v0.4 final |
 | Homebrew | macOS C/C++ developers | dynamic (brew's libs) | `Formula/datoviz.rb` | v0.4 final |
 | apt / .deb | Ubuntu/Debian, headless CI | dynamic (system libs) | `debian/` packaging | v0.4 final |
+| vcpkg overlay | Windows/cross-platform C++ | vcpkg manages | `portfile.cmake` | v0.4 final, after tag |
 | rpm / .rpm | Fedora, RHEL, openSUSE | dynamic (system libs) | `.spec` file | post-v0.4 |
-| vcpkg port | Windows/cross-platform C++ | vcpkg manages | `portfile.cmake` | post-v0.4 |
+| vcpkg main catalog | Windows/cross-platform C++ | vcpkg manages | upstream registry PR | post-overlay |
 | conan | C++ build system users | conan manages | `conanfile.py` | post-v0.4 |
-| Spack | HPC clusters, national labs | dynamic (spack's libs) | `package.py` | post-v0.4 |
+| Spack | HPC clusters, national labs | dynamic (spack's libs) | `package.py` | v0.4 final, after tag if bandwidth allows |
 | nix / nixpkgs | Reproducibility-focused devs | nix manages | `default.nix` | community |
-| winget / chocolatey | Windows end users | bundled installer | installer + manifest | post-v0.4 |
+| winget / chocolatey | Windows end users | bundled installer | installer + manifest | out of scope |
 | Docker / container image | Headless CI, cloud rendering | bundled | `Dockerfile` (partial) | post-v0.4 |
 
 **Why `.deb` in v0.4 final:** Ubuntu is datoviz's primary Linux target, it's what CI runs, and
 it's the cleanest story for "install datoviz system-wide and use from C without Python". The
 justfile already has partial `.deb`/pkg build machinery. Pull it up.
 
+**Why vcpkg is active:** it is the standard Visual Studio dependency path for C/C++ developers.
+The overlay can be drafted before release and published immediately after a stable tag, while the
+official catalog submission can wait for validation.
+
 **Why Spack matters:** datoviz's scientific visualization audience overlaps heavily with HPC
 users (national labs, universities). Spack is the dominant package manager on clusters where pip
-is not available. A `package.py` recipe is ~50 lines and unlocks that entire community.
+is not available. A `package.py` recipe is small and useful, but it should not displace wheel,
+conda, or vcpkg work.
 
 ---
 
@@ -323,6 +331,17 @@ WSL2 is the recommended Windows path until the native MSVC wheel stabilises.
 `recipe/meta.yaml`. conda-forge maintainers or datoviz contributors submit it to the
 `conda-forge/staged-recipes` repo.
 
+**Preferred outputs:**
+- `libdatoviz` — C library, headers, pkg-config file, CMake package metadata; no Python runtime
+  dependency.
+- `datoviz` — Python package, depends on `libdatoviz`, and preserves the expected
+  `conda install datoviz` / `import datoviz` path.
+
+This follows the native-library plus Python-binding split used by packages such as OpenCV
+(`libopencv` plus `py-opencv`) without forcing Datoviz Python users to remember a separate
+`python-datoviz` package name. Treat the names as the preferred staged-recipes proposal, subject
+to conda-forge reviewer feedback.
+
 **Key points:**
 - Link dynamically against conda's `freetype`, `zlib`, `libvulkan`, etc. — do not vendor.
 - Declare them as `host:` and `run:` dependencies in `meta.yaml`.
@@ -333,6 +352,8 @@ WSL2 is the recommended Windows path until the native MSVC wheel stabilises.
   `find_package(datoviz)` work automatically for C/C++ packages that depend on it.
 - The Python package in conda should be a thin wrapper that loads the conda-prefix lib,
   not a bundled wheel.
+- Validate `import datoviz` and `import datoviz.raw` in headless CI before feedstock submission;
+  neither import nor `raw.dvz_scene()` should require a live Vulkan device.
 
 **Timeline:** v0.4 final. Requires a stable release tag first.
 
@@ -429,7 +450,8 @@ A `package.py` recipe submitted to the Spack package repository.
 
 **Why:** datoviz's scientific visualization audience overlaps heavily with HPC users at national
 labs and universities. Spack is the dominant package manager on clusters where pip is unavailable
-or unreliable. A `package.py` is ~50 lines and unlocks that entire community.
+or unreliable. A `package.py` is small and useful, but tag-gated and lower priority than the
+wheel, conda, and vcpkg lanes.
 
 ```python
 class Datoviz(CMakePackage):
@@ -444,11 +466,34 @@ class Datoviz(CMakePackage):
         return [self.define("DVZ_VENDORED_DEPS", False)]
 ```
 
-**Timeline:** post-v0.4. Requires the same `-DDVZ_VENDORED_DEPS=OFF` flag as conda/brew.
+**Timeline:** v0.4 final if bandwidth allows after higher-priority lanes; otherwise post-v0.4.
+Requires the same `-DDVZ_VENDORED_DEPS=OFF` flag as conda/brew.
 
 ---
 
-### 16. Documentation pages to write/update
+### 16. vcpkg overlay
+
+**What:** a custom vcpkg overlay or registry that builds Datoviz for Visual Studio users before
+the official vcpkg catalog PR is accepted.
+
+**Why:** vcpkg is the default modern dependency path for Visual Studio C/C++ projects. Users should
+be able to add Datoviz to `vcpkg.json`, configure their CMake project, and consume
+`datoviz::datoviz` without manual include paths, import-library discovery, or DLL hunting.
+
+**Key points:**
+- Draft the overlay recipe before final, but publish only against a stable release tag or archived
+  source tarball.
+- Build dynamic `datoviz` itself; let vcpkg manage third-party dependencies.
+- Use the installed CMake package metadata and verify `find_package(datoviz CONFIG REQUIRED)`.
+- Validate with an out-of-tree Visual Studio or `cmake --preset msvc` consumer that links
+  `datoviz::datoviz`.
+- Keep the official vcpkg catalog submission behind the overlay proof; review can take weeks.
+
+**Timeline:** high-priority active work, tag-gated for publication.
+
+---
+
+### 17. Documentation pages to write/update
 
 **`docs/start/install.md`** — restructure to cover all paths:
 - pip (Linux/macOS/Windows-MinGW) — primary
@@ -622,14 +667,16 @@ Active / next:
    CI. Coordinate with the active wheel-build agent before editing `pyproject.toml`,
    `datoviz/cli.py`, wheel CMake config files, or `tools/release_wheels/*`.
 2. Rpath verification in `datoviz-config` output once the console script lands (5).
-3. `.deb` packaging (12) after pkg-config, dependency modes, and install metadata are stable.
-4. Homebrew formula (11) after release tagging; uses the strict Homebrew system-required lane.
-5. conda-forge feedstock (10) after release tagging; verify cglm/Kvazaar availability in the
+3. vcpkg overlay (16) draft and local consumer smoke; publish after stable release tag.
+4. conda-forge preflight (10): headless import, raw library load, and dependency availability.
+5. `.deb` packaging (12) after pkg-config, dependency modes, and install metadata are stable.
+6. Homebrew formula (11) after release tagging; uses the strict Homebrew system-required lane.
+7. conda-forge feedstock (10) after release tagging; verify cglm/Kvazaar availability in the
    feedstock environment before forcing `SYSTEM`.
-6. MSVC wheel CI job (8) after RC.
-7. rpm spec file (13), Spack recipe (15), vcpkg, and conan remain post-v0.4 unless release scope
-   changes.
-8. Documentation pages (16) can continue in parallel; mark unfinished package-manager sections as
+8. MSVC wheel CI job (8) after RC.
+9. Spack recipe (15) if bandwidth allows after wheel/conda/vcpkg lanes.
+10. rpm spec file (13) and conan remain post-v0.4 unless release scope changes.
+11. Documentation pages (17) can continue in parallel; mark unfinished package-manager sections as
    "coming soon".
 
 ## Testing the full path
