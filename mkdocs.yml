@@ -93,7 +93,6 @@ nav:
   - Get Started:
     - Install: 'start/install.md'
     - Quickstart: 'start/quickstart.md'
-    - Project status: 'start/project-status.md'
     - AI-assisted workflow: 'start/ai-workflow.md'
   - Examples:
     - Overview: 'examples/index.md'
@@ -143,6 +142,7 @@ nav:
   - Reference:
     - Overview: 'reference/index.md'
     - Status And Support:
+      - Project status: 'reference/project-status.md'
       - Feature status: 'reference/feature-status.md'
       - Platform support: 'reference/platform-support.md'
       - Build options: 'reference/build-options.md'
