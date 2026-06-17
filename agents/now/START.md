@@ -23,7 +23,7 @@ as real implementation, not scaffolding.
 
 ## Start Work
 
-1. Use [STATUS.md](STATUS.md) for current blockers and active lanes.
+1. Use [STATUS.md](STATUS.md) for the Pre-RC1 execution order, current blockers, and active lanes.
 2. Use [RELEASE.md](RELEASE.md) for release sequencing.
 3. Use [DOCUMENTATION.md](DOCUMENTATION.md) for public documentation gates.
 4. Use [../../spec/scene/README.md](../../spec/scene/README.md) before changing scene semantics.
@@ -31,7 +31,8 @@ as real implementation, not scaffolding.
    schemas, fixtures, or scene DRP2 emission.
 6. Use [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md) before changing
    the top-level Python package, raw-binding generation, or NumPy/array argument adaptation.
-7. Use [TEST_REFACTORING.md](TEST_REFACTORING.md) for the next test-suite split checkpoint.
+7. Use [TEST_REFACTORING.md](TEST_REFACTORING.md) only when explicitly picking up the deferred
+   test-suite split checkpoint.
 
 
 ## Guardrails
