@@ -5,11 +5,9 @@ developers who need to explore large datasets interactively. Render millions of 
 volumes, and time series in 2D and 3D, at interactive frame rates, on the desktop or in the
 browser.
 
-You use it from **C** or **Python** (via `ctypes`). There is no `plot()` or `scatter()` — those
-belong to [VisPy2/GSP](../explanation/gsp-vispy2-boundary.md), which builds on Datoviz.
-If you want GPU-level control, offscreen rendering, or browser deployment, you are in the right
-place. If you are waiting for a high-level Python plotting API, VisPy2 is coming this Fall — and in the
-meantime, an LLM can write the ctypes code for you. See [AI-assisted workflow](ai-workflow.md).
+**C** and **Python** (via `ctypes`) are the supported languages. There is no `plot()` or `scatter()`
+— those belong to [VisPy2/GSP](../explanation/gsp-vispy2-boundary.md), which builds on Datoviz.
+An LLM can write the ctypes boilerplate for you — see [AI-assisted workflow](ai-workflow.md).
 
 
 ## I want to display…
