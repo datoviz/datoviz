@@ -61,6 +61,10 @@ Qt host bridge:
    binding for `QVulkanInstance::setVkInstance()` or `QVulkanInstance::vkInstance()`.
 2. Must be separate from core `libdatoviz`.
 3. Should be loaded by `datoviz.qt` only when PyQt hosting is requested.
+4. Has v0.4 status `supported, optional provider`: Qt/PyQt hosting is supported when the provider,
+   Qt runtime, PyQt Vulkan binding surface, and platform WSI extensions are available.
+5. Must diagnose missing bridge libraries, ABI mismatches, Qt runtime mismatches, unsupported
+   PyQt/PySide bindings, and missing Vulkan platform support before creating hosted Datoviz views.
 
 Shader compiler provider:
 
@@ -154,6 +158,12 @@ Preferred packaging order:
 2. conda-forge split packages for providers that depend on conda-managed Qt/CUDA/codec stacks;
 3. optional PyPI provider wheels only after ABI and runtime-version checks are proven;
 4. no bundled host SDKs in the main `datoviz` wheel unless explicitly approved by release policy.
+
+For the Qt host bridge, source builds should keep `DVZ_ENABLE_QT_BRIDGE=AUTO` as the default:
+build `datoviz_qtbridge` when Qt6 Gui development files are available and skip it without failing
+the core build when they are absent. Installed providers should be discoverable by `datoviz.qt`
+next to the Python package or through the platform loader; `DATOVIZ_QTBRIDGE_LIBRARY` remains the
+explicit override for local builds, split packages, and debugging.
 
 
 ## Validation

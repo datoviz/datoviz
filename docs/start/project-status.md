@@ -21,6 +21,7 @@ explicit status labels:
 | Offscreen and GLFW app presentation | supported/experimental |
 | DRP2 command stream and fixtures | advanced/unstable |
 | Scene compute shaders | experimental |
+| Qt/PyQt hosted rendering | supported, optional provider |
 | CPU-side nonlinear/geographic pre-projection | supported pattern |
 | Scene-managed nonlinear transforms | deferred |
 | Custom visual/render shaders | deferred |

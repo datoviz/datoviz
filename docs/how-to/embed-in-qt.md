@@ -1,6 +1,6 @@
 # Embed In Qt
 
-Status: advanced/experimental.
+Status: supported, optional provider.
 
 Datoviz can be hosted inside a Qt application without making Qt part of `libdatoviz`. Qt owns the
 window and event loop. Datoviz owns the rendering stack and renders into a Qt-created Vulkan
@@ -19,7 +19,7 @@ available:
 ```sh
 just build
 ./build/examples/qt/hosted_qt_smoke 120
-./build/examples/qt/hosted_qt_widgets
+./build/examples/qt/hosted_qt_widgets --smoke-ms 1000
 ```
 
 `hosted_qt_smoke` is the minimal contract smoke. `hosted_qt_widgets` embeds the hosted Datoviz
@@ -38,11 +38,18 @@ The PyQt source-tree example uses `datoviz.qt.DatovizWidget`:
 
 ```sh
 PYTHONPATH=. python -m datoviz.qt
-PYTHONPATH=. python examples/python/qt/hosted_pyqt.py
+PYTHONPATH=. python examples/python/qt/hosted_pyqt.py --smoke-ms 1000
 ```
 
 The first command is a bridge probe. It checks PyQt Vulkan bindings, bridge loading, bridge ABI,
 and the Qt runtime version without opening a visible hosted window.
+
+For an installed or split-provider bridge, set `DATOVIZ_QTBRIDGE_LIBRARY` when the library is not
+discoverable next to the Python package or through the platform loader:
+
+```sh
+DATOVIZ_QTBRIDGE_LIBRARY=/path/to/libdatoviz_qtbridge.so python -m datoviz.qt
+```
 
 
 ## Ownership Model
@@ -160,3 +167,17 @@ callers should continue to prefer the struct-based `dvz_view_external_surface()`
    installed separately from core `libdatoviz`.
 4. `QVulkanWindow` is not the recommended path because it overlaps with Datoviz ownership of the
    Vulkan device, queues, swapchain, and command buffers.
+
+
+## Diagnostics
+
+`python -m datoviz.qt` is the first check to run when PyQt hosting fails. It should either print
+the bridge path, ABI, Qt runtime version, and PyQt Vulkan binding support, or fail with one of these
+actionable conditions:
+
+| Condition | Meaning |
+| --- | --- |
+| `QVulkanInstance` import failure | The installed PyQt6 package was built without the Qt Vulkan binding surface needed by Datoviz. Use a PyQt6 build that exposes `QVulkanInstance`. |
+| Missing `QWindow.setVulkanInstance` or `QVulkanInstance.surfaceForWindow` | The binding cannot host Datoviz's Vulkan surface path. This PyQt/PySide package is unsupported for v0.4 hosting. |
+| Missing `datoviz_qtbridge` | Build with `-DDVZ_ENABLE_QT_BRIDGE=AUTO` or `ON`, install the split provider, or set `DATOVIZ_QTBRIDGE_LIBRARY`. |
+| Qt runtime mismatch | The bridge and PyQt6 were built against different Qt major/minor runtimes; use a bridge built against the same Qt runtime as PyQt6. |
