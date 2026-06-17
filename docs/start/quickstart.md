@@ -43,23 +43,27 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
 
 === "C"
 
-    Build and run with the bundled example:
+    If you have the source tree, build and run the bundled example:
 
     ```sh
     just example-c visuals/point
     ./build/examples/c/visuals/point --live
     ```
 
-    Or as a self-contained program:
+    Otherwise, compile the self-contained program below and link against `datoviz`:
 
     ```c
     #include <stdint.h>
     #include <stdlib.h>
+    #include <time.h>
     #include "datoviz/scene.h"
 
+    #define N 10000
+
     int main(void) {
+        srand((unsigned)time(NULL));
+
         /* data */
-        int N = 10000;
         float pos[N * 3], size[N];
         uint8_t color[N * 4];
         for (int i = 0; i < N; i++) {
@@ -88,7 +92,10 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
         dvz_visual_set_data(visual, "size", size, N);
         dvz_panel_add_visual(panel, visual, NULL);
 
-        /* run — or replace with dvz_capture(scene, figure, "output.png") for offscreen PNG */
+        /* open a window and run until closed; for offscreen PNG instead:
+             DvzView* view = dvz_view_offscreen(app, figure, 800, 600);
+             dvz_app_run(app, 1);
+             dvz_view_capture_png(view, "output.png"); */
         DvzApp* app = dvz_app(scene);
         dvz_view_glfw(app, figure, 800, 600, "Scatter plot");
         dvz_app_run(app, 0);
@@ -117,7 +124,7 @@ A dark window containing 10,000 colored dots. Drag to pan, scroll to zoom.
 
 **Visual** — `dvz_point` is the GPU-accelerated scatter renderer. `dvz_visual_set_data` uploads each named attribute (position, color, size) to the GPU.
 
-**Run vs. capture** — `dvz.run(...)` opens a GLFW window and blocks until the user closes it. Replace it with `dvz.capture(scene, figure, path="output.png")` to render a single frame to disk without opening a window.
+**Run vs. capture** — In Python, `dvz.run(scene, figure)` opens a GLFW window and blocks until closed; `dvz.capture(scene, figure, path="output.png")` renders one frame offscreen to a PNG. In C, `dvz_app_run(app, 0)` runs the window loop; replace it with `dvz_capture(scene, figure, "output.png")` for headless rendering.
 
 
 ## Next steps

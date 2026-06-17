@@ -1783,6 +1783,11 @@ python *args:
 examples *args: build
     @python3 tools/run_c_examples.py "$@"
 
+# Smoke-test fenced code blocks in documentation markdown files.
+# Prerequisites: build (for C) and ctypes (for Python array facade).
+doctest lang="both":
+    @python3 tools/doctest.py --lang {{lang}} docs/index.md docs/start/quickstart.md
+
 # Run all Python examples and generate screenshots in data/gallery/.
 gallery-screenshots filter="": && gallery
     @echo "Generating screenshots from examples..."
