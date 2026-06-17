@@ -46,8 +46,9 @@ jobs:
       - name: Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libshaderc-dev libvulkan-dev
+          sudo apt-get install -y glslang-tools libshaderc-dev libvulkan-dev
           python -m pip install -U pip cibuildwheel build auditwheel
+          command -v glslangValidator
           command -v auditwheel
       - name: Build native artifacts
         run: |
@@ -86,8 +87,9 @@ jobs:
           python-version: "3.13"
       - name: Dependencies
         run: |
-          brew install just ccache ninja jq shaderc vulkan-headers vulkan-loader molten-vk freetype tinyxml2
+          brew install just ccache ninja jq glslang shaderc vulkan-headers vulkan-loader molten-vk freetype tinyxml2
           python -m pip install -U pip cibuildwheel build delocate
+          command -v glslangValidator
           command -v delocate-listdeps
       - name: Build native artifacts
         run: |
