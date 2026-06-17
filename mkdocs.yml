@@ -220,10 +220,6 @@ not_in_nav: |
   discussions/*
   landing/*
   examples/gallery/*
-  examples/visual-gallery.md
-  examples/feature-gallery.md
-  examples/composites.md
-  examples/techniques.md
   examples/webgpu/COMPAT.md
   gallery/*
   guide/*

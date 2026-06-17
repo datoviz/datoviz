@@ -23,3 +23,11 @@ Before submitting:
 The source bundle must be created with `tools/release_source_bundle.py` or `just
 release-source-bundle`; GitHub's auto-generated archives are insufficient because they omit
 submodule contents and ignored generated files such as `datoviz/_ctypes.py`.
+
+For local builds before the release asset exists, override the source fields:
+
+```sh
+DATOVIZ_CONDA_SOURCE_URL=file:///tmp/datoviz-source-bundle-smoke/datoviz-0.4.0-source.tar.gz \
+DATOVIZ_CONDA_SOURCE_SHA512=<printed sha512> \
+conda build --override-channels -c conda-forge conda-recipe
+```

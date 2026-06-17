@@ -1,12 +1,14 @@
 {% set version = "0.4.0" %}
+{% set source_url = environ.get("DATOVIZ_CONDA_SOURCE_URL", "https://github.com/datoviz/datoviz/releases/download/v" ~ version ~ "/datoviz-" ~ version ~ "-source.tar.gz") %}
+{% set source_sha512 = environ.get("DATOVIZ_CONDA_SOURCE_SHA512", "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000") %}
 
 package:
   name: datoviz-split
   version: {{ version }}
 
 source:
-  url: https://github.com/datoviz/datoviz/releases/download/v{{ version }}/datoviz-{{ version }}-source.tar.gz
-  sha512: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  url: {{ source_url }}
+  sha512: {{ source_sha512 }}
 
 outputs:
   - name: libdatoviz
