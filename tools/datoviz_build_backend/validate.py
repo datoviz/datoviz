@@ -175,7 +175,7 @@ def main(argv: list[str] | None = None) -> int:
 
 def _validate_record(zf: zipfile.ZipFile, record_name: str) -> None:
     rows = csv.reader(zf.read(record_name).decode("utf8").splitlines())
-    names = set(zf.namelist())
+    names = {name for name in zf.namelist() if not name.endswith("/")}
     recorded: set[str] = set()
     for row in rows:
         if len(row) != 3:
@@ -205,7 +205,9 @@ def _validate_payload_manifest(zf: zipfile.ZipFile) -> None:
         path = Path(tmp) / "_wheel_payload.json"
         path.write_bytes(zf.read(manifest_name))
         entries = read_manifest(path)
-    payload_names = {name for name in zf.namelist() if name.startswith("datoviz/")}
+    payload_names = {
+        name for name in zf.namelist() if name.startswith("datoviz/") and not name.endswith("/")
+    }
     manifest_names = {entry.wheel_path for entry in entries}
     missing = payload_names - manifest_names
     if missing:
@@ -354,4 +356,3 @@ def _cmake_consumer_smoke(python: Path, work: Path) -> None:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
