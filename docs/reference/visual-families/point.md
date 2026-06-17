@@ -6,6 +6,14 @@ Status: supported.
 Backends: native; WebGPU live (`point`, `panzoom`).
 Primitive: instanced screen-space quads.
 
+## Preview And Links
+
+[![Point](../../assets/gallery/v0.4/visuals/point_2d.webp)](../../examples/gallery/visuals/point_2d.md)
+
+- Example: [Point](../../examples/gallery/visuals/point_2d.md)
+- How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
+- Related: [Pixel](pixel.md), [Marker](marker.md), [Sphere](sphere.md), [Splat](splat.md)
+
 ## Use When
 
 Use point visuals for many circular marks whose size is expressed in pixels and whose centers live

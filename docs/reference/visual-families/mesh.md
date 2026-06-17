@@ -6,6 +6,14 @@ Status: supported.
 Backends: native; WebGPU live (`mesh`, `indexed-geometry`, `arcball`).
 Primitive: triangle list.
 
+## Preview And Links
+
+[![Mesh](../../assets/gallery/v0.4/visuals/visual_mesh.webp)](../../examples/gallery/visuals/visual_mesh.md)
+
+- Example: [Mesh](../../examples/gallery/visuals/visual_mesh.md)
+- How-to: [Use lighting and materials](../../how-to/lighting-and-materials.md), [use 3D controllers](../../how-to/3d-navigation.md)
+- Related: [Primitive](primitive.md), [Sphere](sphere.md), [Volume](volume.md)
+
 ## Use When
 
 Use mesh visuals for surfaces, solids, loaded geometry, and instanced triangle data that should

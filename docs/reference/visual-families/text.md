@@ -6,6 +6,14 @@ Status: supported.
 Backends: native; WebGPU live (`text`, `glyph-atlas`).
 Primitive: generated glyph quads.
 
+## Preview And Links
+
+[![Text](../../assets/gallery/v0.4/visuals/visual_text.webp)](../../examples/gallery/visuals/visual_text.md)
+
+- Example: [Text](../../examples/gallery/visuals/visual_text.md)
+- How-to: [Add text, labels, and annotations](../../how-to/add-annotations.md), [add visuals to a panel](../../how-to/add-a-visual.md)
+- Related: [Glyph](glyph.md), [Labels](labels.md), [Marker](marker.md)
+
 ## Use When
 
 Use text for user-facing annotations, titles, labels, and short strings where Datoviz should manage

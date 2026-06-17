@@ -6,6 +6,14 @@ Status: supported.
 Backends: native; WebGPU live (`marker`, `panzoom`).
 Primitive: instanced screen-space quads.
 
+## Preview And Links
+
+[![Marker](../../assets/gallery/v0.4/visuals/visual_marker.webp)](../../examples/gallery/visuals/visual_marker.md)
+
+- Example: [Marker](../../examples/gallery/visuals/visual_marker.md)
+- How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
+- Related: [Point](point.md), [Pixel](pixel.md), [Glyph](glyph.md), [Text](text.md)
+
 ## Use When
 
 Use marker visuals for scatter marks that need categorical symbol shapes, per-item rotation, or

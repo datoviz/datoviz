@@ -41,6 +41,7 @@ topology-parametric triangles rendered with the retained primitive visual.
     - Lane: `visuals`
     - Status: `supported`
     - Source: [`examples/c/visuals/primitive.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/primitive.c)
+    - Reference: [Primitive visual family](../../../reference/visual-families/primitive.md)
     - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_primitive"><code>examples/webgpu/live.html?id=visual_primitive</code></a>

@@ -6,6 +6,14 @@ Status: supported.
 Backends: native; WebGPU live (`vector`, `path`, `panzoom`).
 Primitive: screen-space stroked segments or paths.
 
+## Preview And Links
+
+[![Vector](../../assets/gallery/v0.4/visuals/visual_vector.webp)](../../examples/gallery/visuals/visual_vector.md)
+
+- Example: [Vector](../../examples/gallery/visuals/visual_vector.md)
+- How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
+- Related: [Segment](segment.md), [Path](path.md), [Primitive](primitive.md)
+
 ## Use When
 
 Use vector visuals for displacement fields, arrows, and curved vector annotations where each item

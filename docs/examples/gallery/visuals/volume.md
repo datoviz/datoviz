@@ -31,6 +31,7 @@ deterministic gyroid scalar field rendered with the retained volume visual.
     - Lane: `visuals`
     - Status: `supported`
     - Source: [`examples/c/visuals/volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/volume.c)
+    - Reference: [Volume visual family](../../../reference/visual-families/volume.md)
     - Agent copy-safe: `true`
     - WebGPU status: `webgpu-planned`
     - WebGPU requirements: `volume`, `sampled-field`, `texture-3d`, `arcball`

@@ -41,6 +41,7 @@ deterministic retained 2D point visual baseline.
     - Lane: `visuals`
     - Status: `supported`
     - Source: [`examples/c/visuals/point.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/point.c)
+    - Reference: [Point visual family](../../../reference/visual-families/point.md)
     - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=point_2d"><code>examples/webgpu/live.html?id=point_2d</code></a>

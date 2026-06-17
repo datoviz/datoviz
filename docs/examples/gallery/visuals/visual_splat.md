@@ -31,6 +31,7 @@ retained Gaussian splat visual with deterministic screen-space ellipses.
     - Lane: `visuals`
     - Status: `experimental`
     - Source: [`examples/c/visuals/splat.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/splat.c)
+    - Reference: [Splat visual family](../../../reference/visual-families/splat.md)
     - Agent copy-safe: `false`
     - WebGPU status: `webgpu-deferred`
     - WebGPU requirements: `splat`, `alpha-blending`

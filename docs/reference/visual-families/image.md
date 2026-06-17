@@ -6,6 +6,14 @@ Status: supported.
 Backends: native; WebGPU live (`image`, `sampled-field`, `panzoom`).
 Primitive: textured quad or retained image item quads.
 
+## Preview And Links
+
+[![Image](../../assets/gallery/v0.4/visuals/visual_image.webp)](../../examples/gallery/visuals/visual_image.md)
+
+- Example: [Image](../../examples/gallery/visuals/visual_image.md)
+- How-to: [Use sampled fields and textures](../../how-to/use-sampled-fields.md), [map scalar values with colormaps](../../how-to/use-colormaps.md)
+- Related: [Pixel](pixel.md), [Labels](labels.md), [Volume](volume.md)
+
 ## Use When
 
 Use image visuals for dense 2D scalar or color sampled fields, texture-backed panels, heatmaps, and

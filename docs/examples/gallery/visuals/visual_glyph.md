@@ -41,6 +41,7 @@ low-level font atlas glyph quads, distinct from retained semantic text.
     - Lane: `visuals`
     - Status: `experimental`
     - Source: [`examples/c/visuals/glyph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/glyph.c)
+    - Reference: [Font Atlas Glyphs visual family](../../../reference/visual-families/glyph.md)
     - Agent copy-safe: `false`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_glyph"><code>examples/webgpu/live.html?id=visual_glyph</code></a>

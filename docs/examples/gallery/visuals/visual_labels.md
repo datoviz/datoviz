@@ -41,6 +41,7 @@ retained labels visual with a small deterministic integer sampled field.
     - Lane: `visuals`
     - Status: `supported`
     - Source: [`examples/c/visuals/labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/labels.c)
+    - Reference: [Labels visual family](../../../reference/visual-families/labels.md)
     - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_labels"><code>examples/webgpu/live.html?id=visual_labels</code></a>

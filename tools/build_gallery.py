@@ -55,6 +55,24 @@ INDEX_VISUAL_GROUPS = (
     ("Composites",      ["composite_polygon", "composite_graph"]),
 )
 
+VISUAL_REFERENCE_BY_ID = {
+    "point_2d": "point",
+    "visual_pixel": "pixel",
+    "visual_marker": "marker",
+    "visual_splat": "splat",
+    "visual_segment": "segment",
+    "visual_path": "path",
+    "visual_vector": "vector",
+    "visual_primitive": "primitive",
+    "visual_image": "image",
+    "visual_text": "text",
+    "visual_glyph": "glyph",
+    "visual_labels": "labels",
+    "visual_mesh": "mesh",
+    "sphere_impostor": "sphere",
+    "volume": "volume",
+}
+
 # Full feature grouping used on the features page — covers all 71 public features.
 FEATURE_PAGE_GROUPS = (
     ("Scene & Layout", [
@@ -529,6 +547,13 @@ def render_example_details(example: Example, page_path: str | Path) -> list[str]
         f"- Status: `{example.status}`",
         f"- Source: [`{example.source}`]({source_url(example)})",
     ]
+    visual_reference = VISUAL_REFERENCE_BY_ID.get(example.id)
+    if visual_reference is not None:
+        metadata.append(
+            "- Reference: "
+            f"[{example.title} visual family]"
+            f"({site_relative_url(page_path, f'reference/visual-families/{visual_reference}.md')})"
+        )
     if example.agent_copy_safe is not None:
         metadata.append(f"- Agent copy-safe: `{str(example.agent_copy_safe).lower()}`")
     if example.python_source is not None:

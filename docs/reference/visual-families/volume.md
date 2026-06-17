@@ -6,6 +6,14 @@ Status: supported.
 Backends: native; WebGPU planned (`volume`, `sampled-field`, `texture-3d`, `arcball`).
 Primitive: box proxy with raymarching in the native runtime.
 
+## Preview And Links
+
+[![Volume](../../assets/gallery/v0.4/visuals/volume.webp)](../../examples/gallery/visuals/volume.md)
+
+- Example: [Volume](../../examples/gallery/visuals/volume.md)
+- How-to: [Use sampled fields and textures](../../how-to/use-sampled-fields.md), [probe image or field values](../../how-to/probe-fields.md)
+- Related: [Image](image.md), [Labels](labels.md), [Mesh](mesh.md)
+
 ## Use When
 
 Use volume visuals for 3D scalar fields, medical or simulation volumes, and sampled data that needs

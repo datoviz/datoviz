@@ -41,6 +41,7 @@ deterministic retained pixel visual baseline.
     - Lane: `visuals`
     - Status: `supported`
     - Source: [`examples/c/visuals/pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/pixel.c)
+    - Reference: [Pixel visual family](../../../reference/visual-families/pixel.md)
     - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_pixel"><code>examples/webgpu/live.html?id=visual_pixel</code></a>

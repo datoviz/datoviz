@@ -6,6 +6,14 @@ Status: supported.
 Backends: native; WebGPU live (`sphere`, `arcball`).
 Primitive: impostor quads with fragment-shader sphere reconstruction.
 
+## Preview And Links
+
+[![Sphere](../../assets/gallery/v0.4/visuals/sphere_impostor.webp)](../../examples/gallery/visuals/sphere_impostor.md)
+
+- Example: [Sphere](../../examples/gallery/visuals/sphere_impostor.md)
+- How-to: [Use 3D controllers](../../how-to/3d-navigation.md), [use lighting and materials](../../how-to/lighting-and-materials.md)
+- Related: [Point](point.md), [Mesh](mesh.md), [Splat](splat.md)
+
 ## Use When
 
 Use sphere visuals for many true 3D balls where each item has a world-space radius and should sort

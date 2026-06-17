@@ -6,6 +6,14 @@ Status: supported.
 Backends: native; WebGPU live (`segment`, `panzoom`).
 Primitive: expanded screen-space stroked segments.
 
+## Preview And Links
+
+[![Segment](../../assets/gallery/v0.4/visuals/visual_segment.webp)](../../examples/gallery/visuals/visual_segment.md)
+
+- Example: [Segment](../../examples/gallery/visuals/visual_segment.md)
+- How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
+- Related: [Path](path.md), [Vector](vector.md), [Primitive](primitive.md)
+
 ## Use When
 
 Use segment visuals for disconnected line pairs such as edge lists, rulers, tick marks, and short

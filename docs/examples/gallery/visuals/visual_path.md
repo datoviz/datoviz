@@ -41,6 +41,7 @@ deterministic multi-signal retained path visual.
     - Lane: `visuals`
     - Status: `supported`
     - Source: [`examples/c/visuals/path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/path.c)
+    - Reference: [Path visual family](../../../reference/visual-families/path.md)
     - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_path"><code>examples/webgpu/live.html?id=visual_path</code></a>

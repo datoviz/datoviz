@@ -6,6 +6,14 @@ Status: experimental.
 Backends: native; WebGPU live (`glyph`, `glyph-atlas`, `sdf`).
 Primitive: atlas-textured quads.
 
+## Preview And Links
+
+[![Glyph](../../assets/gallery/v0.4/visuals/visual_glyph.webp)](../../examples/gallery/visuals/visual_glyph.md)
+
+- Example: [Glyph](../../examples/gallery/visuals/visual_glyph.md)
+- How-to: [Add text, labels, and annotations](../../how-to/add-annotations.md), [add visuals to a panel](../../how-to/add-a-visual.md)
+- Related: [Text](text.md), [Labels](labels.md), [Marker](marker.md)
+
 ## Use When
 
 Use glyph visuals only when you already have shaped glyph positions and atlas coordinates and need

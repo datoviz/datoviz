@@ -6,6 +6,14 @@ Status: experimental.
 Backends: native; WebGPU deferred (`splat`, `alpha-blending`).
 Primitive: screen-space Gaussian quads.
 
+## Preview And Links
+
+[![Splat](../../assets/gallery/v0.4/visuals/visual_splat.webp)](../../examples/gallery/visuals/visual_splat.md)
+
+- Example: [Splat](../../examples/gallery/visuals/visual_splat.md)
+- How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [control depth, blending, and transparency](../../how-to/rendering-techniques.md)
+- Related: [Point](point.md), [Sphere](sphere.md), [Mesh](mesh.md)
+
 ## Use When
 
 Use splat visuals for experimental translucent Gaussian marks where each item has an anisotropic

@@ -41,6 +41,7 @@ retained semantic text objects lowered to glyph visuals.
     - Lane: `visuals`
     - Status: `supported`
     - Source: [`examples/c/visuals/text.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c)
+    - Reference: [Text visual family](../../../reference/visual-families/text.md)
     - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_text"><code>examples/webgpu/live.html?id=visual_text</code></a>

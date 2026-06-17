@@ -6,6 +6,14 @@ Status: supported.
 Backends: native; WebGPU live (`primitive`).
 Primitive: selected by `DvzPrimitiveTopology` at construction.
 
+## Preview And Links
+
+[![Primitive](../../assets/gallery/v0.4/visuals/visual_primitive.webp)](../../examples/gallery/visuals/visual_primitive.md)
+
+- Example: [Primitive](../../examples/gallery/visuals/visual_primitive.md)
+- How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
+- Related: [Mesh](mesh.md), [Path](path.md), [Segment](segment.md)
+
 ## Use When
 
 Use primitive visuals when your data is already GPU-style geometry and you want direct control over

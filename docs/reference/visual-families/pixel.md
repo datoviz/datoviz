@@ -6,6 +6,14 @@ Status: supported.
 Backends: native; WebGPU live (`pixel`, `panzoom`).
 Primitive: instanced screen-space quads.
 
+## Preview And Links
+
+[![Pixel](../../assets/gallery/v0.4/visuals/visual_pixel.webp)](../../examples/gallery/visuals/visual_pixel.md)
+
+- Example: [Pixel](../../examples/gallery/visuals/visual_pixel.md)
+- How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
+- Related: [Point](point.md), [Marker](marker.md), [Image](image.md), [Labels](labels.md)
+
 ## Use When
 
 Use pixel visuals for square marks with explicit pixel sizes, especially sparse raster samples or

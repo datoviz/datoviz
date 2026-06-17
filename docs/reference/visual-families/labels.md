@@ -6,6 +6,14 @@ Status: supported.
 Backends: native; WebGPU live (`labels`, `categorical-scale`, `panzoom`).
 Primitive: textured quad or retained label item quads.
 
+## Preview And Links
+
+[![Labels](../../assets/gallery/v0.4/visuals/visual_labels.webp)](../../examples/gallery/visuals/visual_labels.md)
+
+- Example: [Labels](../../examples/gallery/visuals/visual_labels.md)
+- How-to: [Add text, labels, and annotations](../../how-to/add-annotations.md), [use sampled fields and textures](../../how-to/use-sampled-fields.md)
+- Related: [Image](image.md), [Text](text.md), [Pixel](pixel.md)
+
 ## Use When
 
 Use labels visuals for segmentation masks, categorical rasters, and integer ID fields where values

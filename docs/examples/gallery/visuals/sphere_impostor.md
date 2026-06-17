@@ -41,6 +41,7 @@ deterministic 3D impostor-sphere cluster with depth, radius, and color variation
     - Lane: `visuals`
     - Status: `supported`
     - Source: [`examples/c/visuals/sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c)
+    - Reference: [Sphere visual family](../../../reference/visual-families/sphere.md)
     - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=sphere_impostor"><code>examples/webgpu/live.html?id=sphere_impostor</code></a>

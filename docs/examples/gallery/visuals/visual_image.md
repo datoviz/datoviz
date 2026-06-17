@@ -41,6 +41,7 @@ deterministic scalar sampled field rendered with the retained image visual.
     - Lane: `visuals`
     - Status: `supported`
     - Source: [`examples/c/visuals/image.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image.c)
+    - Reference: [Image visual family](../../../reference/visual-families/image.md)
     - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_image"><code>examples/webgpu/live.html?id=visual_image</code></a>

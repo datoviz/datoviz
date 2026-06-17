@@ -41,6 +41,7 @@ retained straight and curved vector visual example.
     - Lane: `visuals`
     - Status: `supported`
     - Source: [`examples/c/visuals/vector.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/vector.c)
+    - Reference: [Vector visual family](../../../reference/visual-families/vector.md)
     - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_vector"><code>examples/webgpu/live.html?id=visual_vector</code></a>
