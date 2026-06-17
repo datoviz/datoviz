@@ -31,11 +31,10 @@ Create with `dvz_volume(scene, flags)`. Bind a 3D `DvzSampledField` with
 
 ## Attributes
 
-Required: sampled field bound to `"field"`.
-
-Optional: color scale or transfer setup, opacity, sampling mode, render mode, slice axis and
-position, raymarch step count, proxy bounds, axis mapping, scalar value range, alpha stops, clipping,
-alpha mode, depth test, transform.
+| Kind | Attributes |
+| --- | --- |
+| Required | sampled field bound to `"field"` |
+| Optional | color scale or transfer setup; opacity; sampling mode; render mode; slice axis and position; raymarch step count; proxy bounds; axis mapping; scalar value range; alpha stops; clipping; alpha mode; depth test; transform |
 
 ## Picking And Probing
 
@@ -50,12 +49,14 @@ validated.
 
 ## Canonical Example
 
-- Source: `examples/c/visuals/volume.c`
-- Gallery: [Volume](../../examples/gallery/visuals/volume.md)
-- Build: `just example-c visuals/volume`
-- Smoke: `./build/examples/c/visuals/volume --png`
-- Validation: `smoke+screenshot`
-- Agent copy-safe: yes
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/volume.c` |
+| Gallery | [Volume](../../examples/gallery/visuals/volume.md) |
+| Build | `just example-c visuals/volume` |
+| Smoke | `./build/examples/c/visuals/volume --png` |
+| Validation | `smoke+screenshot` |
+| Agent copy-safe | yes |
 
 ## See Also
 

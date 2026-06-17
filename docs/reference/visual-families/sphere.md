@@ -31,10 +31,10 @@ Create with `dvz_sphere(scene, flags)`. The canonical example enables lighting, 
 
 ## Attributes
 
-Required: `position` (`vec3` center), `radius` (`float`, object-space), `color` (RGBA8).
-
-Optional: mode through `dvz_sphere_mode()`, material, depth cue, alpha mode, depth test, transform,
-and visual-wide scale bindings.
+| Kind | Attributes |
+| --- | --- |
+| Required | `position` (`vec3` center), `radius` (`float`, object-space), `color` (RGBA8) |
+| Optional | mode through `dvz_sphere_mode()`; material; depth cue; alpha mode; depth test; transform; visual-wide scale bindings |
 
 ## Picking And Probing
 
@@ -48,12 +48,14 @@ shader and uses analytic antialiasing at silhouettes.
 
 ## Canonical Example
 
-- Source: `examples/c/visuals/sphere.c`
-- Gallery: [Sphere](../../examples/gallery/visuals/sphere_impostor.md)
-- Build: `just example-c visuals/sphere`
-- Smoke: `./build/examples/c/visuals/sphere --png`
-- Validation: `smoke+screenshot`
-- Agent copy-safe: yes
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/sphere.c` |
+| Gallery | [Sphere](../../examples/gallery/visuals/sphere_impostor.md) |
+| Build | `just example-c visuals/sphere` |
+| Smoke | `./build/examples/c/visuals/sphere --png` |
+| Validation | `smoke+screenshot` |
+| Agent copy-safe | yes |
 
 ## See Also
 

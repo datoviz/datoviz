@@ -32,13 +32,11 @@ omits `vector` and interprets positions as path points, optionally grouped with
 
 ## Attributes
 
-Required for straight vectors: `position` (`vec3` anchor), `vector` (`vec3` displacement), `color`
-(RGBA8), `stroke_width` (`float`, pixels).
-
-Required for curved vectors: `position`, `color`, `stroke_width`.
-
-Optional: style through `dvz_vector_set_style()` (`scale`, anchor, caps, joins), subpath lengths,
-alpha mode, depth test, transform, and visual-wide scale bindings.
+| Kind | Attributes |
+| --- | --- |
+| Required for straight vectors | `position` (`vec3` anchor), `vector` (`vec3` displacement), `color` (RGBA8), `stroke_width` (`float`, pixels) |
+| Required for curved vectors | `position`, `color`, `stroke_width` |
+| Optional | style through `dvz_vector_set_style()` (`scale`, anchor, caps, joins); subpath lengths; alpha mode; depth test; transform; visual-wide scale bindings |
 
 ## Picking And Probing
 
@@ -52,12 +50,14 @@ vectors.
 
 ## Canonical Example
 
-- Source: `examples/c/visuals/vector.c`
-- Gallery: [Vector](../../examples/gallery/visuals/visual_vector.md)
-- Build: `just example-c visuals/vector`
-- Smoke: `./build/examples/c/visuals/vector --png`
-- Validation: `smoke+screenshot`
-- Agent copy-safe: yes
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/vector.c` |
+| Gallery | [Vector](../../examples/gallery/visuals/visual_vector.md) |
+| Build | `just example-c visuals/vector` |
+| Smoke | `./build/examples/c/visuals/vector --png` |
+| Validation | `smoke+screenshot` |
+| Agent copy-safe | yes |
 
 ## See Also
 

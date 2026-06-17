@@ -34,11 +34,10 @@ Create with `dvz_mesh(scene, flags)`. Upload dense vertex attributes directly or
 
 ## Attributes
 
-Required: `position` (`vec3`).
-
-Optional: `color` (RGBA8, defaults to opaque white when omitted), `normal` (`vec3`), `texcoords`
-(`vec2`), `instance_transform` (`mat4` per instance), `"index"` buffer, RGBA8 sampled field bound
-to `"texture"`, material, depth cue, alpha mode, depth test, transform.
+| Kind | Attributes |
+| --- | --- |
+| Required | `position` (`vec3`) |
+| Optional | `color` (RGBA8, defaults to opaque white when omitted); `normal` (`vec3`); `texcoords` (`vec2`); `instance_transform` (`mat4` per instance); `"index"` buffer; RGBA8 sampled field bound to `"texture"`; material; depth cue; alpha mode; depth test; transform |
 
 ## Picking And Probing
 
@@ -52,12 +51,14 @@ Native and WebGPU paths are active for indexed geometry. The canonical example u
 
 ## Canonical Example
 
-- Source: `examples/c/visuals/mesh.c`
-- Gallery: [Mesh](../../examples/gallery/visuals/visual_mesh.md)
-- Build: `just example-c visuals/mesh`
-- Smoke: `./build/examples/c/visuals/mesh --png`
-- Validation: `smoke+screenshot`
-- Agent copy-safe: yes
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/mesh.c` |
+| Gallery | [Mesh](../../examples/gallery/visuals/visual_mesh.md) |
+| Build | `just example-c visuals/mesh` |
+| Smoke | `./build/examples/c/visuals/mesh --png` |
+| Validation | `smoke+screenshot` |
+| Agent copy-safe | yes |
 
 ## See Also
 

@@ -32,12 +32,11 @@ positions, four texture coordinates, a scalar 2D field, and a color scale.
 
 ## Attributes
 
-Required: sampled field bound to `"field"` plus placement attributes.
-
-Placement forms: legacy four-corner `position` (`vec3[4]`) and `texcoords` (`vec2[4]`), or retained
-per-item `position` plus `extent`.
-
-Optional: `tex_rect`, `anchor`, scale bound to `"color"`, alpha mode, depth test, transform.
+| Kind | Attributes |
+| --- | --- |
+| Required | sampled field bound to `"field"` plus placement attributes |
+| Placement forms | legacy four-corner `position` (`vec3[4]`) and `texcoords` (`vec2[4]`), or retained per-item `position` plus `extent` |
+| Optional | `tex_rect`; `anchor`; scale bound to `"color"`; alpha mode; depth test; transform |
 
 ## Picking And Probing
 
@@ -51,12 +50,14 @@ to scene-owned sampled fields internally.
 
 ## Canonical Example
 
-- Source: `examples/c/visuals/image.c`
-- Gallery: [Image](../../examples/gallery/visuals/visual_image.md)
-- Build: `just example-c visuals/image`
-- Smoke: `./build/examples/c/visuals/image --png`
-- Validation: `smoke+screenshot`
-- Agent copy-safe: yes
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/image.c` |
+| Gallery | [Image](../../examples/gallery/visuals/visual_image.md) |
+| Build | `just example-c visuals/image` |
+| Smoke | `./build/examples/c/visuals/image --png` |
+| Validation | `smoke+screenshot` |
+| Agent copy-safe | yes |
 
 ## See Also
 

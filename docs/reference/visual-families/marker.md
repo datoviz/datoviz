@@ -31,12 +31,10 @@ the v0.3 marker vocabulary plus target symbols.
 
 ## Attributes
 
-Required: `position` (`vec3` center), `color` (RGBA8 fill), `diameter` (`float`, pixels), `angle`
-(`float`, radians), `shape` or `symbol` (`uint32_t` built-in symbol id).
-
-Optional: `item_state` for retained hover/selection styling; visual-wide symbol set through
-`dvz_marker_set_symbols()`, one built-in symbol through `dvz_marker_set_symbol()`, stroke/fill
-style through `dvz_marker_set_style()`, alpha mode, depth test, and transform.
+| Kind | Attributes |
+| --- | --- |
+| Required | `position` (`vec3` center), `color` (RGBA8 fill), `diameter` (`float`, pixels), `angle` (`float`, radians), `shape` or `symbol` (`uint32_t` built-in symbol id) |
+| Optional | `item_state` for retained hover/selection styling; visual-wide symbol set through `dvz_marker_set_symbols()`; one built-in symbol through `dvz_marker_set_symbol()`; stroke/fill style through `dvz_marker_set_style()`; alpha mode; depth test; transform |
 
 ## Picking And Probing
 
@@ -50,12 +48,14 @@ screen diameter unless the data is updated.
 
 ## Canonical Example
 
-- Source: `examples/c/visuals/marker.c`
-- Gallery: [Marker](../../examples/gallery/visuals/visual_marker.md)
-- Build: `just example-c visuals/marker`
-- Smoke: `./build/examples/c/visuals/marker --png`
-- Validation: `smoke+screenshot`
-- Agent copy-safe: yes
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/marker.c` |
+| Gallery | [Marker](../../examples/gallery/visuals/visual_marker.md) |
+| Build | `just example-c visuals/marker` |
+| Smoke | `./build/examples/c/visuals/marker --png` |
+| Validation | `smoke+screenshot` |
+| Agent copy-safe | yes |
 
 ## See Also
 

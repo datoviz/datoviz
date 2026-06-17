@@ -32,12 +32,10 @@ binding a scale.
 
 ## Attributes
 
-Required: `position` (`vec3` center), `color` (RGBA8 or configured scalar), `diameter` (`float`,
-pixels).
-
-Optional: `item_state` for retained hover/selection styling; edge styling through
-`dvz_point_set_style()` (`edge_color`, `stroke_width`, filled/stroke/outline aspect); alpha mode,
-depth test, transform, and visual-wide scale bindings.
+| Kind | Attributes |
+| --- | --- |
+| Required | `position` (`vec3` center), `color` (RGBA8 or configured scalar), `diameter` (`float`, pixels) |
+| Optional | `item_state` for retained hover/selection styling; edge styling through `dvz_point_set_style()` (`edge_color`, `stroke_width`, filled/stroke/outline aspect); alpha mode; depth test; transform; visual-wide scale bindings |
 
 ## Picking And Probing
 
@@ -51,12 +49,14 @@ Depth testing is a visual option; the example disables it for a 2D panzoom panel
 
 ## Canonical Example
 
-- Source: `examples/c/visuals/point.c`
-- Gallery: [Point](../../examples/gallery/visuals/point_2d.md)
-- Build: `just example-c visuals/point`
-- Smoke: `./build/examples/c/visuals/point --png`
-- Validation: `smoke+screenshot`
-- Agent copy-safe: yes
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/point.c` |
+| Gallery | [Point](../../examples/gallery/visuals/point_2d.md) |
+| Build | `just example-c visuals/point` |
+| Smoke | `./build/examples/c/visuals/point --png` |
+| Validation | `smoke+screenshot` |
+| Agent copy-safe | yes |
 
 ## See Also
 

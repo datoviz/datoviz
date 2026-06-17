@@ -32,10 +32,10 @@ visual.
 
 ## Attributes
 
-Required: `position` (`vec3` anchor), `bounds` (`vec4` local pixel bounds), `texcoords` (`vec4`
-atlas UV bounds), `color` (RGBA8), `angle` (`float`, radians), font atlas.
-
-Optional: alpha mode, depth test, transform, and visual-wide scale bindings.
+| Kind | Attributes |
+| --- | --- |
+| Required | `position` (`vec3` anchor), `bounds` (`vec4` local pixel bounds), `texcoords` (`vec4` atlas UV bounds), `color` (RGBA8), `angle` (`float`, radians), font atlas |
+| Optional | alpha mode; depth test; transform; visual-wide scale bindings |
 
 ## Picking And Probing
 
@@ -49,12 +49,14 @@ the canonical example is not agent copy-safe.
 
 ## Canonical Example
 
-- Source: `examples/c/visuals/glyph.c`
-- Gallery: [Font Atlas Glyphs](../../examples/gallery/visuals/visual_glyph.md)
-- Build: `just example-c visuals/glyph`
-- Smoke: `./build/examples/c/visuals/glyph --png`
-- Validation: `smoke+screenshot`
-- Agent copy-safe: no
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/glyph.c` |
+| Gallery | [Font Atlas Glyphs](../../examples/gallery/visuals/visual_glyph.md) |
+| Build | `just example-c visuals/glyph` |
+| Smoke | `./build/examples/c/visuals/glyph --png` |
+| Validation | `smoke+screenshot` |
+| Agent copy-safe | no |
 
 ## See Also
 

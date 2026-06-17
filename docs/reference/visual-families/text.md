@@ -32,11 +32,11 @@ time.
 
 ## Attributes
 
-Required: string content through `dvz_text_set_string()`.
-
-Optional: `DvzTextStyle` through `dvz_text_set_style()`, `DvzTextPlacement` through
-`dvz_text_set_placement()`, renderer through `dvz_text_set_renderer()`. The generated glyph visual
-uses glyph-family attributes internally.
+| Kind | Attributes |
+| --- | --- |
+| Required | string content through `dvz_text_set_string()` |
+| Optional | `DvzTextStyle` through `dvz_text_set_style()`; `DvzTextPlacement` through `dvz_text_set_placement()`; renderer through `dvz_text_set_renderer()` |
+| Internal lowering | generated glyph visual uses glyph-family attributes internally |
 
 ## Picking And Probing
 
@@ -50,12 +50,14 @@ glyph atlas rendering.
 
 ## Canonical Example
 
-- Source: `examples/c/visuals/text.c`
-- Gallery: [Text](../../examples/gallery/visuals/visual_text.md)
-- Build: `just example-c visuals/text`
-- Smoke: `./build/examples/c/visuals/text --png`
-- Validation: `smoke+screenshot`
-- Agent copy-safe: yes
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/text.c` |
+| Gallery | [Text](../../examples/gallery/visuals/visual_text.md) |
+| Build | `just example-c visuals/text` |
+| Smoke | `./build/examples/c/visuals/text --png` |
+| Validation | `smoke+screenshot` |
+| Agent copy-safe | yes |
 
 ## See Also
 

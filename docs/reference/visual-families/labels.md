@@ -32,14 +32,11 @@ Create with `dvz_labels(scene, flags)`. Bind an integer sampled field with
 
 ## Attributes
 
-Required: sampled field bound to `"field"`, categorical scale bound to `"labels"`, and placement
-attributes.
-
-Placement forms: `position` plus `extent` for retained items; `anchor` and `tex_rect` are optional.
-
-Optional: opacity, transparent background label ID, selected label ID, hidden label IDs, boundary
-rendering, fallback-color seed, first-slice 3D slice axis/position, alpha mode, depth test,
-transform.
+| Kind | Attributes |
+| --- | --- |
+| Required | sampled field bound to `"field"`, categorical scale bound to `"labels"`, and placement attributes |
+| Placement forms | `position` plus `extent` for retained items; `anchor` and `tex_rect` are optional |
+| Optional | opacity; transparent background label ID; selected label ID; hidden label IDs; boundary rendering; fallback-color seed; first-slice 3D slice axis/position; alpha mode; depth test; transform |
 
 ## Picking And Probing
 
@@ -53,12 +50,14 @@ depth testing and enables alpha blending.
 
 ## Canonical Example
 
-- Source: `examples/c/visuals/labels.c`
-- Gallery: [Labels](../../examples/gallery/visuals/visual_labels.md)
-- Build: `just example-c visuals/labels`
-- Smoke: `./build/examples/c/visuals/labels --png`
-- Validation: `smoke+screenshot`
-- Agent copy-safe: yes
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/labels.c` |
+| Gallery | [Labels](../../examples/gallery/visuals/visual_labels.md) |
+| Build | `just example-c visuals/labels` |
+| Smoke | `./build/examples/c/visuals/labels --png` |
+| Validation | `smoke+screenshot` |
+| Agent copy-safe | yes |
 
 ## See Also
 

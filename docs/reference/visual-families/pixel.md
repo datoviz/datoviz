@@ -31,11 +31,10 @@ scalar values for `color` and binds a color scale.
 
 ## Attributes
 
-Required: `position` (`vec3` center), `color` (RGBA8 or configured scalar), `pixel_size` (`float`,
-pixels).
-
-Optional: `item_state` for retained hover/selection styling; alpha mode, depth test, transform, and
-visual-wide scale bindings.
+| Kind | Attributes |
+| --- | --- |
+| Required | `position` (`vec3` center), `color` (RGBA8 or configured scalar), `pixel_size` (`float`, pixels) |
+| Optional | `item_state` for retained hover/selection styling; alpha mode; depth test; transform; visual-wide scale bindings |
 
 ## Picking And Probing
 
@@ -49,12 +48,14 @@ disables depth testing for a 2D panzoom panel.
 
 ## Canonical Example
 
-- Source: `examples/c/visuals/pixel.c`
-- Gallery: [Pixel](../../examples/gallery/visuals/visual_pixel.md)
-- Build: `just example-c visuals/pixel`
-- Smoke: `./build/examples/c/visuals/pixel --png`
-- Validation: `smoke+screenshot`
-- Agent copy-safe: yes
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/pixel.c` |
+| Gallery | [Pixel](../../examples/gallery/visuals/visual_pixel.md) |
+| Build | `just example-c visuals/pixel` |
+| Smoke | `./build/examples/c/visuals/pixel --png` |
+| Validation | `smoke+screenshot` |
+| Agent copy-safe | yes |
 
 ## See Also
 

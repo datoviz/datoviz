@@ -32,11 +32,10 @@ pipeline. Use `dvz_path_set_subpaths()` to split one visual into several open pa
 
 ## Attributes
 
-Required: `position` (`vec3`), `color` (RGBA8).
-
-Optional: `stroke_width` (`float`, pixels), subpath lengths, caps through `dvz_path_set_caps()`,
-joins through `dvz_path_set_join()`, alpha mode, depth test, transform, and visual-wide scale
-bindings.
+| Kind | Attributes |
+| --- | --- |
+| Required | `position` (`vec3`), `color` (RGBA8) |
+| Optional | `stroke_width` (`float`, pixels); subpath lengths; caps through `dvz_path_set_caps()`; joins through `dvz_path_set_join()`; alpha mode; depth test; transform; visual-wide scale bindings |
 
 ## Picking And Probing
 
@@ -50,12 +49,14 @@ attributes are deferred.
 
 ## Canonical Example
 
-- Source: `examples/c/visuals/path.c`
-- Gallery: [Path](../../examples/gallery/visuals/visual_path.md)
-- Build: `just example-c visuals/path`
-- Smoke: `./build/examples/c/visuals/path --png`
-- Validation: `smoke+screenshot`
-- Agent copy-safe: yes
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/path.c` |
+| Gallery | [Path](../../examples/gallery/visuals/visual_path.md) |
+| Build | `just example-c visuals/path` |
+| Smoke | `./build/examples/c/visuals/path --png` |
+| Validation | `smoke+screenshot` |
+| Agent copy-safe | yes |
 
 ## See Also
 

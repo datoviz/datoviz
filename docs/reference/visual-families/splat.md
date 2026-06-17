@@ -33,10 +33,10 @@ sorting or projected 3D covariance.
 
 ## Attributes
 
-Required: `position` (`vec3` center), `color` (RGBA8), `sigma` (`vec2`, screen pixels), `angle`
-(`float`, radians).
-
-Optional: alpha mode, depth test, transform, and visual-wide scale bindings.
+| Kind | Attributes |
+| --- | --- |
+| Required | `position` (`vec3` center), `color` (RGBA8), `sigma` (`vec2`, screen pixels), `angle` (`float`, radians) |
+| Optional | alpha mode; depth test; transform; visual-wide scale bindings |
 
 ## Picking And Probing
 
@@ -50,12 +50,14 @@ browser subset. The canonical example is not agent copy-safe.
 
 ## Canonical Example
 
-- Source: `examples/c/visuals/splat.c`
-- Gallery: [Splat](../../examples/gallery/visuals/visual_splat.md)
-- Build: `just example-c visuals/splat`
-- Smoke: `./build/examples/c/visuals/splat --png`
-- Validation: `smoke+screenshot`
-- Agent copy-safe: no
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/splat.c` |
+| Gallery | [Splat](../../examples/gallery/visuals/visual_splat.md) |
+| Build | `just example-c visuals/splat` |
+| Smoke | `./build/examples/c/visuals/splat --png` |
+| Validation | `smoke+screenshot` |
+| Agent copy-safe | no |
 
 ## See Also
 

@@ -31,11 +31,10 @@ vertex attributes and, when needed, bind or upload an index buffer.
 
 ## Attributes
 
-Required: `position` (`vec3`), `color` (RGBA8).
-
-Optional: `normal` (`vec3`), `"index"` buffer through `dvz_visual_set_index_data()` or
-`dvz_visual_set_buffer()`, material, alpha mode, depth test, transform, and visual-wide scale
-bindings.
+| Kind | Attributes |
+| --- | --- |
+| Required | `position` (`vec3`), `color` (RGBA8) |
+| Optional | `normal` (`vec3`); `"index"` buffer through `dvz_visual_set_index_data()` or `dvz_visual_set_buffer()`; material; alpha mode; depth test; transform; visual-wide scale bindings |
 
 ## Picking And Probing
 
@@ -50,12 +49,14 @@ triangle list, strip, and fan setup.
 
 ## Canonical Example
 
-- Source: `examples/c/visuals/primitive.c`
-- Gallery: [Primitive](../../examples/gallery/visuals/visual_primitive.md)
-- Build: `just example-c visuals/primitive`
-- Smoke: `./build/examples/c/visuals/primitive --png`
-- Validation: `smoke+screenshot`
-- Agent copy-safe: yes
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/primitive.c` |
+| Gallery | [Primitive](../../examples/gallery/visuals/visual_primitive.md) |
+| Build | `just example-c visuals/primitive` |
+| Smoke | `./build/examples/c/visuals/primitive --png` |
+| Validation | `smoke+screenshot` |
+| Agent copy-safe | yes |
 
 ## See Also
 

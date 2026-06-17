@@ -31,11 +31,10 @@ the first slice.
 
 ## Attributes
 
-Required: `position_start` (`vec3`), `position_end` (`vec3`), `color` (RGBA8), `stroke_width`
-(`float`, pixels).
-
-Optional: endpoint caps through `dvz_segment_set_caps()`, alpha mode, depth test, transform, and
-visual-wide scale bindings.
+| Kind | Attributes |
+| --- | --- |
+| Required | `position_start` (`vec3`), `position_end` (`vec3`), `color` (RGBA8), `stroke_width` (`float`, pixels) |
+| Optional | endpoint caps through `dvz_segment_set_caps()`; alpha mode; depth test; transform; visual-wide scale bindings |
 
 ## Picking And Probing
 
@@ -48,12 +47,14 @@ triangle-out, square, and butt. Dashes and per-item cap attributes are deferred.
 
 ## Canonical Example
 
-- Source: `examples/c/visuals/segment.c`
-- Gallery: [Segment](../../examples/gallery/visuals/visual_segment.md)
-- Build: `just example-c visuals/segment`
-- Smoke: `./build/examples/c/visuals/segment --png`
-- Validation: `smoke+screenshot`
-- Agent copy-safe: yes
+| Field | Value |
+| --- | --- |
+| Source | `examples/c/visuals/segment.c` |
+| Gallery | [Segment](../../examples/gallery/visuals/visual_segment.md) |
+| Build | `just example-c visuals/segment` |
+| Smoke | `./build/examples/c/visuals/segment --png` |
+| Validation | `smoke+screenshot` |
+| Agent copy-safe | yes |
 
 ## See Also
 
