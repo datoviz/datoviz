@@ -22,6 +22,9 @@ panel = dvz.dvz_panel_full(figure)
 Adapt the C examples one call at a time. Keep NumPy array dtype and shape matched to the C
 attribute contract.
 
+The top-level `datoviz` module uses the generated array-aware facade for C-shaped `dvz_*` names.
+Use `datoviz.raw` only when you need the exact generated `ctypes` layer.
+
 
 ## Important Details
 
