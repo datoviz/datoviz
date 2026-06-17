@@ -133,6 +133,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     env:
       VCPKG_ROOT: C:/vcpkg
+      VCPKG_BINARY_SOURCES: clear;files,C:/vcpkg-binary-cache,readwrite
     steps:
       - uses: actions/checkout@v4
         with:
@@ -140,6 +141,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+      - name: Cache vcpkg binary archives
+        uses: actions/cache@v4
+        with:
+          path: C:/vcpkg-binary-cache
+          key: ${{ matrix.runner }}-${{ matrix.vcpkg_triplet }}-wheel-vcpkg-binary-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+          restore-keys: |
+            ${{ matrix.runner }}-${{ matrix.vcpkg_triplet }}-wheel-vcpkg-binary-
+            ${{ runner.os }}-${{ matrix.vcpkg_triplet }}-wheel-vcpkg-binary-
+            ${{ runner.os }}-wheel-vcpkg-binary-
       - name: Cache vcpkg
         uses: actions/cache@v4
         with:
