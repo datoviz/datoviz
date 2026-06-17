@@ -10,6 +10,11 @@ It is not the v0.3 Python plotting API, not a compatibility layer, and not the r
 direct-engine Python import. High-level plotting and object-oriented Python workflows belong above
 Datoviz, currently in the GSP/VisPy2 layer.
 
+| Use this page when | Use another page when |
+| --- | --- |
+| You need exact generated `ctypes` signatures, pointers, callbacks, or ABI behavior. | You want normal direct-engine Python calls with NumPy arrays. Use `import datoviz as dvz`. |
+| You are debugging binding generation, package loading, or C/Python lifetime rules. | You want a high-level plotting API. Use the GSP/VisPy2 layer when available. |
+
 
 ## Import Surface
 
@@ -72,19 +77,18 @@ The extraction and generation tools live under `tools/bindings/`. Binding policy
 
 ## API Reference Generation
 
-This page defines the raw-binding scope, import style, ownership expectations, and validation
-commands. It is not the exhaustive symbol catalog.
+This page defines the raw-binding scope, import style, ownership expectations, and validation. It is
+not the exhaustive symbol catalog.
 
-Exhaustive C, facade, and raw-binding symbol references should be generated from parsed public
-headers rather than maintained by hand. The first source of truth for that generated outline is
-expected to be:
+The exhaustive C, facade, and raw-binding symbol references are generated from parsed public headers
+rather than maintained by hand. The generated outline starts from:
 
 ```text
 build/bindings/datoviz_api.json
 ```
 
-The generated reference should cover public C symbols, headers, structs, enums, constants, callback
-typedefs, and raw-binding availability. Any skipped or opaque symbol should be explained from
+The generated reference covers public C symbols, headers, structs, enums, constants, callback
+typedefs, and raw-binding availability. Skipped or opaque symbols should point back to
 source-controlled binding policy where possible.
 
 
@@ -100,6 +104,32 @@ The top-level facade and raw module intentionally share C-shaped names:
 
 The facade only adapts policy-declared pointer/count, pointer/byte-size, and string relationships.
 Unannotated calls remain raw-shaped passthroughs.
+
+For example, the facade call:
+
+```python
+dvz.dvz_visual_set_data(points, "position", positions)
+```
+
+maps to explicit raw pointer and count arguments:
+
+```python
+import ctypes
+import numpy as np
+import datoviz.raw as raw
+
+positions = np.asarray(positions, dtype=np.float32, order="C")
+
+raw.dvz_visual_set_data(
+    points,
+    b"position",
+    positions.ctypes.data_as(ctypes.c_void_p),
+    positions.shape[0],
+)
+```
+
+Keep `positions` alive until the raw call has returned. If a function documents borrowed storage
+rather than copied storage, keep the array alive for the documented borrowed lifetime.
 
 
 ## Naming And Types
