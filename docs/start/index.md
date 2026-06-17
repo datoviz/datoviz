@@ -1,13 +1,8 @@
 # Get Started
 
-Datoviz is a GPU rendering engine for scientific visualization — built for scientists and
-developers who need to explore large datasets interactively. Render millions of points, meshes,
-volumes, and time series in 2D and 3D, at interactive frame rates, on the desktop or in the
-browser.
+Datoviz is a **GPU rendering engine for scientific visualization** — built for scientists and developers who need to explore large datasets interactively. Efficiently render **millions of points**, meshes, volumes, and time series in 2D and 3D, at high quality, on the desktop or in the browser.
 
-**C** and **Python** (via `ctypes`) are the supported languages. There is no `plot()` or `scatter()`
-— those belong to [VisPy2/GSP](../explanation/gsp-vispy2-boundary.md), which builds on Datoviz.
-An LLM can write the ctypes boilerplate for you — see [AI-assisted workflow](ai-workflow.md).
+Datoviz is a **C-first library** with an included auto-generated Python wrapper (using `ctypes`). A higher-level plotting API is coming in Fall 2026 with [**VisPy 2**](../explanation/gsp-vispy2-boundary.md). In the meantime, you can use the Datoviz API directly, which involves some boilerplate that an [AI agent](ai-workflow.md) can generate for you.
 
 
 ## I want to display…
@@ -26,24 +21,24 @@ An LLM can write the ctypes boilerplate for you — see [AI-assisted workflow](a
 <div class="vf-cards">
 <a class="vf-card" href="../reference/visual-families/segment/"><img src="../assets/gallery/v0.4/thumbs/v_segment.webp" alt="Segment"><span>Segment</span></a>
 <a class="vf-card" href="../reference/visual-families/path/"><img src="../assets/gallery/v0.4/thumbs/v_path.webp" alt="Path"><span>Path</span></a>
-<a class="vf-card" href="../reference/visual-families/"><img src="../assets/gallery/v0.4/thumbs/v_vector.webp" alt="Vector"><span>Vector</span></a>
+<a class="vf-card" href="../reference/visual-families/vector/"><img src="../assets/gallery/v0.4/thumbs/v_vector.webp" alt="Vector"><span>Vector</span></a>
 </div>
 </div>
 <div class="vf-group">
 <div class="vf-dim-label">2D — planar</div>
 <div class="vf-cards">
+<a class="vf-card" href="../reference/visual-families/primitive/"><img src="../assets/gallery/v0.4/thumbs/v_primitive.webp" alt="Primitive"><span>Primitive</span></a>
 <a class="vf-card" href="../reference/visual-families/image/"><img src="../assets/gallery/v0.4/thumbs/v_image.webp" alt="Image"><span>Image</span></a>
 <a class="vf-card" href="../reference/visual-families/glyph/"><img src="../assets/gallery/v0.4/thumbs/v_glyph.webp" alt="Glyph"><span>Glyph</span></a>
 <a class="vf-card" href="../reference/visual-families/text/"><img src="../assets/gallery/v0.4/thumbs/v_text.webp" alt="Text"><span>Text</span></a>
-<a class="vf-card" href="../reference/visual-families/primitive/"><img src="../assets/gallery/v0.4/thumbs/v_primitive.webp" alt="Primitive"><span>Primitive</span></a>
 </div>
 </div>
 <div class="vf-group">
 <div class="vf-dim-label">3D — volumetric</div>
 <div class="vf-cards">
 <a class="vf-card" href="../reference/visual-families/mesh/"><img src="../assets/gallery/v0.4/thumbs/v_mesh.webp" alt="Mesh"><span>Mesh</span></a>
-<a class="vf-card" href="../reference/visual-families/volume/"><img src="../assets/gallery/v0.4/thumbs/v_volume.webp" alt="Volume"><span>Volume</span></a>
 <a class="vf-card" href="../reference/visual-families/sphere/"><img src="../assets/gallery/v0.4/thumbs/v_sphere.webp" alt="Sphere"><span>Sphere</span></a>
+<a class="vf-card" href="../reference/visual-families/volume/"><img src="../assets/gallery/v0.4/thumbs/v_volume.webp" alt="Volume"><span>Volume</span></a>
 <a class="vf-card" href="../reference/visual-families/splat/"><img src="../assets/gallery/v0.4/thumbs/v_splat.webp" alt="Splat"><span>Splat</span></a>
 </div>
 </div>

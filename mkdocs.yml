@@ -168,6 +168,7 @@ nav:
         - Marker: 'reference/visual-families/marker.md'
         - Sphere: 'reference/visual-families/sphere.md'
         - Segment: 'reference/visual-families/segment.md'
+        - Vector: 'reference/visual-families/vector.md'
         - Pixel: 'reference/visual-families/pixel.md'
         - Glyph: 'reference/visual-families/glyph.md'
         - Splat: 'reference/visual-families/splat.md'
