@@ -103,7 +103,8 @@ The scene setup is identical for interactive and offscreen use — only the last
     scene = dvz.dvz_scene()
     figure = dvz.dvz_figure(scene, 800, 600, 0)
     panel = dvz.dvz_panel_full(figure)
-    controller = dvz.dvz_panzoom(scene, None)                          # enable pan/zoom
+    # enable pan/zoom on XY axes
+    controller = dvz.dvz_panzoom(scene, None)
     dvz.dvz_panel_bind_controller(panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
 
     # --- visual ---
@@ -114,8 +115,8 @@ The scene setup is identical for interactive and offscreen use — only the last
     dvz.dvz_panel_add_visual(panel, visual, None)
 
     # --- run ---
-    dvz.run(scene, figure, title="Scatter plot")        # interactive window
-    # dvz.capture(scene, figure, path="output.png")     # or: save to PNG
+    # interactive window — or replace with dvz.capture(scene, figure, path="output.png") for offscreen PNG
+    dvz.run(scene, figure, title="Scatter plot")
     ```
 
 === "C"
@@ -143,7 +144,8 @@ The scene setup is identical for interactive and offscreen use — only the last
         DvzScene* scene = dvz_scene();
         DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
         DvzPanel* panel = dvz_panel_full(figure);
-        DvzController* controller = dvz_panzoom(scene, NULL);  /* enable pan/zoom */
+        /* enable pan/zoom on XY axes */
+        DvzController* controller = dvz_panzoom(scene, NULL);
         dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY);
 
         /* visual */
@@ -153,15 +155,14 @@ The scene setup is identical for interactive and offscreen use — only the last
         dvz_visual_set_data(visual, "size", size, N);
         dvz_panel_add_visual(panel, visual, NULL);
 
-        /* run — interactive window */
+        /* run — interactive window
+           or replace with offscreen PNG:
+             DvzView* view = dvz_view_offscreen(app, figure, 800, 600);
+             dvz_app_run(app, 1);
+             dvz_view_capture_png(view, "output.png"); */
         DvzApp* app = dvz_app(scene);
         dvz_view_glfw(app, figure, 800, 600, "Scatter plot");
         dvz_app_run(app, 0);
-
-        /* or offscreen PNG:
-        DvzView* view = dvz_view_offscreen(app, figure, 800, 600);
-        dvz_app_run(app, 1);
-        dvz_view_capture_png(view, "output.png"); */
 
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);

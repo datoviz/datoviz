@@ -9,6 +9,10 @@ For C/C++ distribution (pip wheel, conda, brew, apt, MSVC, `datoviz-config`, `DV
 `extern "C"` guard fixes), see `agents/now/C_DISTRIBUTION.md` — items 1–4 in the implementation
 order are unblocked and ready to pick up.
 
+## Documentation examples
+
+In documentation code examples, comments are encouraged to orient readers. Place comments on their own line above the code they describe — not inline to the right of a line of code.
+
 ## Git commits
 
 Do not add `Co-Authored-By:` trailer lines to commit messages.
