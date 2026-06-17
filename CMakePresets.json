@@ -26,6 +26,44 @@
             "cacheVariables": {
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
             }
+        },
+        {
+            "name": "package-smoke-vendored",
+            "displayName": "Package smoke: vendored dependencies",
+            "description": "Configure a narrow package smoke build with default vendored dependency preference.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/package-smoke-vendored",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "DVZ_BUILD_GUI": "OFF"
+            }
+        },
+        {
+            "name": "package-smoke-system-auto",
+            "displayName": "Package smoke: system-preferred AUTO dependencies",
+            "description": "Configure package-manager mode with system-first AUTO dependency resolution and vendored fallback.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/package-smoke-system-auto",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "DVZ_BUILD_GUI": "OFF",
+                "DVZ_VENDORED_DEPS": "OFF"
+            }
+        },
+        {
+            "name": "package-smoke-system-required",
+            "displayName": "Package smoke: required system dependencies",
+            "description": "Configure package-manager CI mode requiring system cglm, Kvazaar, mimalloc, and GLFW.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/package-smoke-system-required",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "DVZ_BUILD_GUI": "ON",
+                "DVZ_VENDORED_DEPS": "OFF",
+                "DVZ_CGLM_SOURCE": "SYSTEM",
+                "DVZ_KVAZAAR_SOURCE": "SYSTEM",
+                "DVZ_MIMALLOC_SOURCE": "SYSTEM"
+            }
         }
     ],
     "buildPresets": [
@@ -36,6 +74,36 @@
         {
             "name": "msvc",
             "configurePreset": "msvc"
+        },
+        {
+            "name": "package-smoke-vendored",
+            "configurePreset": "package-smoke-vendored",
+            "targets": [
+                "datoviz_math",
+                "datoviz_video",
+                "datoviz_window",
+                "datoviz_vklite"
+            ]
+        },
+        {
+            "name": "package-smoke-system-auto",
+            "configurePreset": "package-smoke-system-auto",
+            "targets": [
+                "datoviz_math",
+                "datoviz_video",
+                "datoviz_window",
+                "datoviz_vklite"
+            ]
+        },
+        {
+            "name": "package-smoke-system-required",
+            "configurePreset": "package-smoke-system-required",
+            "targets": [
+                "datoviz_math",
+                "datoviz_video",
+                "datoviz_window",
+                "datoviz_vklite"
+            ]
         }
     ],
     "testPresets": [

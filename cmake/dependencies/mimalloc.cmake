@@ -1,0 +1,78 @@
+set(DVZ_WITH_MIMALLOC OFF)
+set(DVZ_MIMALLOC_TARGET "")
+set(DVZ_MIMALLOC_SOURCE_RESOLVED "OFF")
+set(DVZ_MIMALLOC_DIR "${DVZ_EXTERNAL_DIR}/mimalloc")
+
+if(NOT DVZ_MIMALLOC_SOURCE STREQUAL "OFF" AND NOT EMSCRIPTEN)
+    dvz_dependency_source_order(_dvz_mimalloc_sources "${DVZ_MIMALLOC_SOURCE}")
+
+    foreach(_dvz_mimalloc_source IN LISTS _dvz_mimalloc_sources)
+        if(DVZ_WITH_MIMALLOC)
+            break()
+        endif()
+
+        if(_dvz_mimalloc_source STREQUAL "SYSTEM")
+            find_package(mimalloc CONFIG QUIET)
+
+            if(TARGET mimalloc-static)
+                set(DVZ_MIMALLOC_TARGET mimalloc-static)
+                set(DVZ_WITH_MIMALLOC ON)
+                set(DVZ_MIMALLOC_SOURCE_RESOLVED "SYSTEM")
+            elseif(TARGET mimalloc)
+                set(DVZ_MIMALLOC_TARGET mimalloc)
+                set(DVZ_WITH_MIMALLOC ON)
+                set(DVZ_MIMALLOC_SOURCE_RESOLVED "SYSTEM")
+            endif()
+
+            if(NOT DVZ_WITH_MIMALLOC)
+                find_package(PkgConfig QUIET)
+
+                if(PkgConfig_FOUND)
+                    pkg_check_modules(MIMALLOC QUIET IMPORTED_TARGET mimalloc)
+                endif()
+
+                if(TARGET PkgConfig::MIMALLOC)
+                    set(DVZ_MIMALLOC_TARGET PkgConfig::MIMALLOC)
+                    set(DVZ_WITH_MIMALLOC ON)
+                    set(DVZ_MIMALLOC_SOURCE_RESOLVED "SYSTEM")
+                endif()
+            endif()
+        elseif(_dvz_mimalloc_source STREQUAL "VENDORED")
+            if(EXISTS "${DVZ_MIMALLOC_DIR}/CMakeLists.txt")
+                set(MI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+                set(MI_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+                set(MI_BUILD_STATIC ON CACHE BOOL "" FORCE)
+                set(MI_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+                set(MI_INSTALL_TOPLEVEL OFF CACHE BOOL "" FORCE)
+                add_subdirectory(
+                    "${DVZ_MIMALLOC_DIR}"
+                    "${CMAKE_CURRENT_BINARY_DIR}/external/mimalloc"
+                    EXCLUDE_FROM_ALL)
+
+                if(TARGET mimalloc-static)
+                    set(DVZ_MIMALLOC_TARGET mimalloc-static)
+                    set(DVZ_WITH_MIMALLOC ON)
+                    set(DVZ_MIMALLOC_SOURCE_RESOLVED "VENDORED")
+                endif()
+            endif()
+        endif()
+    endforeach()
+endif()
+
+if(NOT DVZ_WITH_MIMALLOC AND NOT DVZ_MIMALLOC_SOURCE STREQUAL "OFF" AND NOT EMSCRIPTEN)
+    if(DVZ_MIMALLOC_SOURCE STREQUAL "SYSTEM")
+        message(FATAL_ERROR "DVZ_MIMALLOC_SOURCE=SYSTEM but system mimalloc was not found.")
+    elseif(DVZ_MIMALLOC_SOURCE STREQUAL "VENDORED")
+        message(FATAL_ERROR "DVZ_MIMALLOC_SOURCE=VENDORED but external/mimalloc is missing.")
+    elseif(DVZ_MIMALLOC_SOURCE STREQUAL "AUTO")
+        message(WARNING "mimalloc was not found from system packages or external/mimalloc; mimalloc disabled.")
+    endif()
+endif()
+
+if(EMSCRIPTEN AND NOT DVZ_MIMALLOC_SOURCE STREQUAL "OFF")
+    message(STATUS "mimalloc disabled for Emscripten builds")
+endif()
+
+set(DVZ_WITH_MIMALLOC "${DVZ_WITH_MIMALLOC}" CACHE INTERNAL "mimalloc availability flag" FORCE)
+set(DVZ_MIMALLOC_TARGET "${DVZ_MIMALLOC_TARGET}" CACHE INTERNAL "Resolved mimalloc link target" FORCE)
+set(DVZ_MIMALLOC_SOURCE_RESOLVED "${DVZ_MIMALLOC_SOURCE_RESOLVED}" CACHE INTERNAL "Resolved mimalloc source" FORCE)

@@ -496,15 +496,25 @@ Add to `mkdocs.yml` nav under the Guide section.
 ## CMake flag needed across non-pip channels
 
 conda-forge, Homebrew, apt, rpm, and Spack all need datoviz to link dynamically against
-their system copies of vendored dependencies. Add a CMake option:
+their system copies of supported external dependencies. The package-manager entry point is:
 
 ```cmake
-option(DVZ_VENDORED_DEPS "Use bundled (vendored) copies of freetype, zlib, etc." ON)
+option(DVZ_VENDORED_DEPS "Use bundled third-party dependency source trees when available" ON)
 ```
 
-When `OFF`, replace the relevant `add_subdirectory(external/...)` calls with
-`find_package(...)` equivalents. This flag is `ON` by default (preserving current
-build-from-source behaviour) and `OFF` in conda/brew/deb build recipes.
+When `OFF`, dependencies whose source mode is `AUTO` are resolved system-first, with vendored
+fallback only when the dependency supports it. This flag is `ON` by default, preserving the
+normal source checkout behavior, and should be `OFF` in conda/brew/deb/rpm/spack recipes.
+
+For stricter package CI, force individual dependency modes:
+
+```sh
+cmake --preset package-smoke-system-required
+cmake --build --preset package-smoke-system-required
+```
+
+That preset requires system `glfw3`, cglm, Kvazaar, and mimalloc. Use
+`package-smoke-system-auto` for a local system-preferred smoke that still allows vendored fallback.
 
 ### Vendored dependency audit
 
@@ -516,8 +526,8 @@ dependencies are replaceable. Results:
 | **glfw** | 3.4.0 | shared/static lib | **Yes** | `find_package(glfw3 REQUIRED)` | Universally packaged. Target alias `glfw::glfw`. Wayland disabled in vendored build — system package fine on X11/macOS/Windows. **Highest priority.** |
 | **kvazaar** | 2.3.2 | static lib | **Yes** | `find_package(kvazaar REQUIRED)` or `pkg_check_modules` | Available as `libkvazaar-dev` on Debian/Ubuntu; on conda-forge. Target `kvazaar::kvazaar`. |
 | **mimalloc** | 3.0.10 | static lib | **Yes** | `find_package(mimalloc REQUIRED)` | Ships a CMake config; conda-forge and vcpkg have it. Used only in Release builds. Target `mimalloc-static`. |
-| **cglm** | 0.9.6 | header-only/static | **Maybe** | `find_package(cglm REQUIRED)` | conda-forge and some distros have `cglm-dev`. Low effort to support. |
-| **msdf-atlas-gen** | 1.4.0 | static lib | **Maybe** | `find_package(msdf-atlas-gen CONFIG QUIET)` | CMakeLists already tries `find_package` fallback. vcpkg/conda; rare in apt. |
+| **cglm** | 0.9.6 | header-only/static | **Yes** | `find_package(cglm REQUIRED)` or `pkg_check_modules` | Packaged by Homebrew and some distros. Required by the active math stack. Target normalized as `dvz_cglm`. |
+| **msdf-atlas-gen** | 1.4.0 | static lib | **No** | — | Too niche for a reliable distribution dependency. Keep source/vendored-only for v0.4 packaging. |
 | **shaderc** headers | v2024.4 | header-only | **Yes** | via Vulkan SDK | Only headers vendored; `.so`/`.lib` comes from the Vulkan SDK already. |
 | **Vulkan headers** | — | header-only | **Yes** | `find_package(Vulkan REQUIRED)` | Standard Vulkan SDK. |
 | **volk** | 330 | static (meta-loader) | **No** | — | Tightly integrated Vulkan meta-loader. System packages are rare; API coupling is exact. **Must stay vendored.** |
@@ -532,24 +542,50 @@ dependencies are replaceable. Results:
 | **b64** | — | static (small) | **No** | — | No standard CMake package. Stay vendored. |
 | **memorymeasure** | — | header+impl | **No** | — | Internal utility. Stay vendored. |
 
-**Summary:** `DVZ_VENDORED_DEPS=OFF` needs to gate replacement of **glfw**, **kvazaar**,
-**mimalloc**, and optionally **cglm** and **msdf-atlas-gen**. Everything else must stay vendored
-(niche, single-header, or architecturally coupled like volk/cimgui). Freetype and ZLIB are
-already system-first (no vendored copy in `external/`).
+**Summary:** `DVZ_VENDORED_DEPS=OFF` gates system-first replacement of **glfw**, **kvazaar**,
+**mimalloc**, and **cglm**. **msdf-atlas-gen** stays source/vendored-only because it is too niche
+for reliable package-manager availability. Everything else must stay vendored (niche,
+single-header, or architecturally coupled like volk/cimgui). Freetype and ZLIB are already
+system-first (no vendored copy in `external/`).
 
-**Pattern for each replaceable dep in CMakeLists.txt:**
-```cmake
-if(DVZ_VENDORED_DEPS)
-    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-    set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
-    add_subdirectory(external/glfw)
-else()
-    find_package(glfw3 REQUIRED)
-    if(NOT TARGET glfw::glfw AND TARGET glfw)
-        add_library(glfw::glfw ALIAS glfw)
-    endif()
-endif()
+**Source modes for package recipes:**
+
+```sh
+-DDVZ_VENDORED_DEPS=OFF
+-DDVZ_CGLM_SOURCE=SYSTEM
+-DDVZ_KVAZAAR_SOURCE=SYSTEM
+-DDVZ_MIMALLOC_SOURCE=SYSTEM
 ```
+
+Use explicit `SYSTEM` in CI/package builders to fail early when a declared system dependency is
+missing. Keep `AUTO` for developer builds where vendored fallback is desirable.
+
+**Package-manager smoke commands:**
+
+Homebrew has all four package-manager candidates:
+
+```sh
+brew install glfw cglm kvazaar mimalloc
+cmake --preset package-smoke-system-required
+cmake --build --preset package-smoke-system-required
+```
+
+Ubuntu 24.04 package metadata covers GLFW, cglm, and mimalloc, but Kvazaar availability is not
+reliable across distributions:
+
+```sh
+sudo apt-get update
+sudo apt-get install -y libglfw3-dev libcglm-dev libmimalloc-dev
+cmake --preset package-smoke-system-auto
+cmake --build --preset package-smoke-system-auto
+```
+
+Use `DVZ_KVAZAAR_SOURCE=VENDORED` or leave `AUTO` when a distribution does not provide a Kvazaar
+development package. Do not make msdf-atlas-gen a package-manager requirement.
+
+Conda-forge has GLFW and mimalloc packages. cglm and Kvazaar availability should be verified in
+the feedstock environment before forcing `SYSTEM`; otherwise keep those two as `AUTO` or
+`VENDORED`.
 
 ---
 

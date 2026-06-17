@@ -17,3 +17,24 @@ scene, app, WebGPU, validation, and optional dependency flags.
 
 Explicit `SYSTEM` or `VENDORED` source modes fail configuration if the requested source is not
 available. Only `AUTO` may fall back to the other source.
+
+`msdf-atlas-gen` remains source/vendored-only. It is too niche to rely on as a package-manager
+dependency across supported distributions.
+
+## Package Smoke Presets
+
+| Preset | Purpose |
+| --- | --- |
+| `package-smoke-vendored` | Narrow Release build using the default vendored dependency preference. |
+| `package-smoke-system-auto` | Narrow Release build with `DVZ_VENDORED_DEPS=OFF`, preferring system packages while allowing `AUTO` fallback. |
+| `package-smoke-system-required` | Package CI preset requiring system cglm, Kvazaar, mimalloc, and GLFW. Use only in an environment that installs those development packages first. |
+
+Useful local checks:
+
+```sh
+cmake --preset package-smoke-vendored
+cmake --build --preset package-smoke-vendored
+
+cmake --preset package-smoke-system-auto
+cmake --build --preset package-smoke-system-auto
+```
