@@ -176,11 +176,12 @@ add_library(datoviz SHARED
 set_target_properties(datoviz PROPERTIES OUTPUT_NAME "datoviz")
 set_target_properties(datoviz PROPERTIES EXPORT_NAME datoviz)
 
-# Install rule
-install(TARGETS datoviz
-    EXPORT DatovizTargets
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-)
+if(DVZ_INSTALL)
+    install(TARGETS datoviz
+        EXPORT DatovizTargets
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    )
+endif()
 
 if(APPLE)
     # Ensure the shared library can resolve sibling dylibs at runtime via dlopen().
@@ -529,6 +530,7 @@ if(DVZ_BUILD_VK)
 target_include_directories(datoviz_vk_layer
     PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/volk>
     $<INSTALL_INTERFACE:include>
 )
@@ -554,6 +556,7 @@ if(DVZ_BUILD_CANVAS)
 target_include_directories(datoviz_canvas_layer
     PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/volk>
     $<INSTALL_INTERFACE:include>
 )
@@ -572,7 +575,7 @@ if(TARGET datoviz_canvas_layer)
     list(APPEND DVZ_LAYER_TARGETS datoviz_canvas_layer)
 endif()
 
-if(DVZ_LAYER_TARGETS)
+if(DVZ_INSTALL AND DVZ_LAYER_TARGETS)
     install(TARGETS ${DVZ_LAYER_TARGETS}
         EXPORT DatovizTargets
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
@@ -595,6 +598,7 @@ endif()
 target_include_directories(datoviz
     PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/volk>
     $<$<BOOL:${DVZ_BUILD_GUI}>:$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/cimgui>>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>

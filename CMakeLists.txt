@@ -2,7 +2,7 @@
 # Meta CMake file
 # -------------------------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.21)
 project(datoviz VERSION 0.4 LANGUAGES C CXX)
 
 include(GNUInstallDirs)
@@ -57,8 +57,9 @@ option(DVZ_BUILD_WEBGPU "Build the WebGPU layer" OFF)
 option(DVZ_BUILD_SCENE "Build the scene layer" ON)
 option(DVZ_BUILD_APP "Build the app presentation layer" ON)
 option(DVZ_BUILD_GUI "Build the Dear ImGui app overlay layer" ON)
-option(DVZ_BUILD_TESTING "Build Datoviz test executables" ON)
-option(DVZ_BUILD_EXAMPLES "Build Datoviz example executables" ON)
+option(DVZ_BUILD_TESTING "Build Datoviz test executables" ${PROJECT_IS_TOP_LEVEL})
+option(DVZ_BUILD_EXAMPLES "Build Datoviz example executables" ${PROJECT_IS_TOP_LEVEL})
+option(DVZ_INSTALL "Install Datoviz targets, headers, and package metadata" ${PROJECT_IS_TOP_LEVEL})
 option(DVZ_VENDORED_DEPS "Use bundled third-party dependency source trees when available" ON)
 set(DVZ_MIMALLOC_SOURCE "AUTO" CACHE STRING "mimalloc source mode (AUTO, SYSTEM, VENDORED, or OFF)")
 set(DVZ_CGLM_SOURCE "AUTO" CACHE STRING "cglm source mode (AUTO, SYSTEM, VENDORED, or OFF)")
@@ -551,49 +552,51 @@ if(DVZ_ENABLE_COVERAGE)
     endif()
 endif()
 
-include(CMakePackageConfigHelpers)
-set(_dvz_package_dir "${CMAKE_CURRENT_BINARY_DIR}/cmake")
+if(DVZ_INSTALL)
+    include(CMakePackageConfigHelpers)
+    set(_dvz_package_dir "${CMAKE_CURRENT_BINARY_DIR}/cmake")
 
-configure_package_config_file(
-    "${PROJECT_SOURCE_DIR}/cmake/packages/DatovizConfig.cmake.in"
-    "${_dvz_package_dir}/DatovizConfig.cmake"
-    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/datoviz"
-)
-configure_package_config_file(
-    "${PROJECT_SOURCE_DIR}/cmake/packages/DatovizConfig.cmake.in"
-    "${_dvz_package_dir}/datovizConfig.cmake"
-    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/datoviz"
-)
+    configure_package_config_file(
+        "${PROJECT_SOURCE_DIR}/cmake/packages/DatovizConfig.cmake.in"
+        "${_dvz_package_dir}/DatovizConfig.cmake"
+        INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/datoviz"
+    )
+    configure_package_config_file(
+        "${PROJECT_SOURCE_DIR}/cmake/packages/DatovizConfig.cmake.in"
+        "${_dvz_package_dir}/datovizConfig.cmake"
+        INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/datoviz"
+    )
 
-write_basic_package_version_file(
-    "${_dvz_package_dir}/DatovizConfigVersion.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
-write_basic_package_version_file(
-    "${_dvz_package_dir}/datovizConfigVersion.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
+    write_basic_package_version_file(
+        "${_dvz_package_dir}/DatovizConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion
+    )
+    write_basic_package_version_file(
+        "${_dvz_package_dir}/datovizConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion
+    )
 
-install(EXPORT DatovizTargets
-    FILE DatovizTargets.cmake
-    NAMESPACE datoviz::
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/datoviz"
-)
+    install(EXPORT DatovizTargets
+        FILE DatovizTargets.cmake
+        NAMESPACE datoviz::
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/datoviz"
+    )
 
-install(FILES
-    "${_dvz_package_dir}/DatovizConfig.cmake"
-    "${_dvz_package_dir}/DatovizConfigVersion.cmake"
-    "${_dvz_package_dir}/datovizConfig.cmake"
-    "${_dvz_package_dir}/datovizConfigVersion.cmake"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/datoviz"
-)
+    install(FILES
+        "${_dvz_package_dir}/DatovizConfig.cmake"
+        "${_dvz_package_dir}/DatovizConfigVersion.cmake"
+        "${_dvz_package_dir}/datovizConfig.cmake"
+        "${_dvz_package_dir}/datovizConfigVersion.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/datoviz"
+    )
 
-configure_file(cmake/datoviz.pc.in datoviz.pc @ONLY)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/datoviz.pc"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
-)
+    configure_file(cmake/datoviz.pc.in datoviz.pc @ONLY)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/datoviz.pc"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+    )
+endif()
 
 # Configuration summary.
 message(STATUS "")
@@ -633,6 +636,7 @@ message(STATUS "DVZ_BUILD_APP: ${DVZ_BUILD_APP}")
 message(STATUS "DVZ_BUILD_GUI: ${DVZ_BUILD_GUI}")
 message(STATUS "DVZ_BUILD_TESTING: ${DVZ_BUILD_TESTING}")
 message(STATUS "DVZ_BUILD_EXAMPLES: ${DVZ_BUILD_EXAMPLES}")
+message(STATUS "DVZ_INSTALL: ${DVZ_INSTALL}")
 message(STATUS "DVZ_VENDORED_DEPS: ${DVZ_VENDORED_DEPS}")
 message(STATUS "DVZ_ENABLE_QT_BRIDGE: ${DVZ_ENABLE_QT_BRIDGE}")
 message(STATUS "DVZ_HAS_QT_BRIDGE: ${DVZ_HAS_QT_BRIDGE}")
@@ -644,20 +648,22 @@ endif()
 message(STATUS "-------------------------------------------------------------")
 message(STATUS "")
 
-# Install headers and library
-install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+if(DVZ_INSTALL)
+    # Install headers and library
+    install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
-if(DVZ_BUILD_VK OR DVZ_BUILD_CANVAS)
-    install(FILES
-        ${PROJECT_SOURCE_DIR}/external/vk_mem_alloc.h
-        ${PROJECT_SOURCE_DIR}/external/volk/volk.h
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-    )
-endif()
+    if(DVZ_BUILD_VK OR DVZ_BUILD_CANVAS)
+        install(FILES
+            ${PROJECT_SOURCE_DIR}/external/vk_mem_alloc.h
+            ${PROJECT_SOURCE_DIR}/external/volk/volk.h
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+        )
+    endif()
 
-if(DVZ_BUILD_GUI)
-    install(FILES
-        ${PROJECT_SOURCE_DIR}/external/cimgui/cimgui.h
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-    )
+    if(DVZ_BUILD_GUI)
+        install(FILES
+            ${PROJECT_SOURCE_DIR}/external/cimgui/cimgui.h
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+        )
+    endif()
 endif()

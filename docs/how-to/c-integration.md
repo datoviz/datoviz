@@ -40,6 +40,29 @@ cmake --build build
 ```
 
 
+## FetchContent
+
+Projects that intentionally build Datoviz from source can embed it as a CMake subproject:
+
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(datoviz
+    GIT_REPOSITORY https://github.com/datoviz/datoviz.git
+    GIT_TAG v0.4.0
+)
+
+FetchContent_MakeAvailable(datoviz)
+
+add_executable(my_datoviz_app main.c)
+target_link_libraries(my_datoviz_app PRIVATE datoviz::datoviz)
+```
+
+When Datoviz is added this way, tests, examples, and install/package export rules are disabled by
+default. Use the installed package path above for normal consumers; FetchContent is slower and
+requires the full native build environment.
+
+
 ## Headers
 
 Use the umbrella header for application code:

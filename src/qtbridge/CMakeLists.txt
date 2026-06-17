@@ -58,11 +58,13 @@ elseif(UNIX)
     )
 endif()
 
-install(TARGETS datoviz_qtbridge
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
-    ARCHIVE DESTINATION lib
-)
+if(DVZ_INSTALL)
+    install(TARGETS datoviz_qtbridge
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+        ARCHIVE DESTINATION lib
+    )
+endif()
 
 set(DVZ_HAS_QT_BRIDGE 1 CACHE INTERNAL "Qt bridge provider availability flag" FORCE)
 set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS datoviz_qtbridge)

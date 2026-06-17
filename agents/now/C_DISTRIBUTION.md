@@ -17,8 +17,9 @@ Python wheel is the primary distribution vehicle for v0.4; other channels follow
   (self-contained, no conflicts). Dynamically linked against the host package manager's copies
   for conda-forge, Homebrew, deb, rpm, spack (those package managers own the ABI).
 - **DLL placement on Windows**: CMake post-build copy command (documented snippet). Not PATH.
-- **FetchContent support**: add `PROJECT_IS_TOP_LEVEL` guards in CMakeLists so datoviz can be
-  pulled as a subdirectory dependency without installing.
+- **FetchContent support**: CMake now requires 3.21 and uses `PROJECT_IS_TOP_LEVEL` defaults so
+  tests, examples, and install/package export rules stay disabled when Datoviz is embedded as a
+  subproject. Consumers link `datoviz::datoviz`.
 - **Public C/C++ headers**: `include/datoviz.h` exists as the preferred umbrella include and
   forwards to `include/datoviz/datoviz.h`, which now includes `app.h`. The previously missing
   `EXTERN_C_ON` / `EXTERN_C_OFF` guards on the five public subheaders are fixed, and
@@ -222,22 +223,17 @@ path). Check with `otool -D build/src/libdatoviz.dylib`. The wheel build runs `i
 
 ---
 
-### 6. FetchContent support
+### 6. FetchContent support — completed
 
-Wrap install rules, test targets, and example targets in `PROJECT_IS_TOP_LEVEL` guards so
-downstream CMake projects can use `FetchContent_MakeAvailable(datoviz)` without triggering
-tests and installs.
+Top-level CMake now uses `PROJECT_IS_TOP_LEVEL` defaults:
 
-Requires bumping minimum CMake from 3.20 → 3.21 (when `PROJECT_IS_TOP_LEVEL` was introduced).
+- `DVZ_BUILD_TESTING` defaults to `PROJECT_IS_TOP_LEVEL`.
+- `DVZ_BUILD_EXAMPLES` defaults to `PROJECT_IS_TOP_LEVEL`.
+- `DVZ_INSTALL` defaults to `PROJECT_IS_TOP_LEVEL`.
+- Install/export/header/package rules are gated by `DVZ_INSTALL`.
 
 ```cmake
-# In top-level CMakeLists.txt, guard these blocks:
-if(PROJECT_IS_TOP_LEVEL)
-    add_subdirectory(examples/c)
-    include(CTest)
-    add_subdirectory(tests)
-    install(...)
-endif()
+cmake_minimum_required(VERSION 3.21)
 ```
 
 FetchContent consumer pattern:
@@ -251,8 +247,11 @@ FetchContent_MakeAvailable(datoviz)
 target_link_libraries(myapp PRIVATE datoviz::datoviz)
 ```
 
-**Note in docs:** FetchContent compiles datoviz from source — slow, requires the full toolchain
-(Vulkan SDK, cmake, ninja, etc.). Prefer the pip wheel for most users.
+Validated locally with an out-of-tree `/tmp` FetchContent consumer that includes `<datoviz.h>`,
+links `datoviz::datoviz`, and confirms Datoviz tests/examples are not added and the subproject
+contributes no install payload by default. FetchContent compiles Datoviz from source and still
+requires the full toolchain (Vulkan SDK, CMake, Ninja, etc.); prefer the pip wheel or
+package-manager install for normal users.
 
 ---
 
@@ -612,23 +611,22 @@ Completed:
 3. System dependency source modes for GLFW, cglm, Kvazaar, and mimalloc are implemented and
    documented.
 4. `datoviz.pc.in`, CMake package install metadata, and package smoke/install presets are in place.
+5. FetchContent subproject defaults and consumer smoke are in place.
 
 Active / next:
 
 1. Wheel C integration lane: `datoviz-config`, bundled headers, wheel CMake config, and wheel smoke
    CI. Coordinate with the active wheel-build agent before editing `pyproject.toml`,
    `datoviz/cli.py`, wheel CMake config files, or `tools/release_wheels/*`.
-2. FetchContent `PROJECT_IS_TOP_LEVEL` guards and subdirectory consumer smoke (6). This is
-   independent of the wheel lane and is the next good non-overlapping CMake task.
-3. Rpath verification in `datoviz-config` output once the console script lands (5).
-4. `.deb` packaging (12) after pkg-config, dependency modes, and install metadata are stable.
-5. Homebrew formula (11) after release tagging; uses the strict Homebrew system-required lane.
-6. conda-forge feedstock (10) after release tagging; verify cglm/Kvazaar availability in the
+2. Rpath verification in `datoviz-config` output once the console script lands (5).
+3. `.deb` packaging (12) after pkg-config, dependency modes, and install metadata are stable.
+4. Homebrew formula (11) after release tagging; uses the strict Homebrew system-required lane.
+5. conda-forge feedstock (10) after release tagging; verify cglm/Kvazaar availability in the
    feedstock environment before forcing `SYSTEM`.
-7. MSVC wheel CI job (8) after RC.
-8. rpm spec file (13), Spack recipe (15), vcpkg, and conan remain post-v0.4 unless release scope
+6. MSVC wheel CI job (8) after RC.
+7. rpm spec file (13), Spack recipe (15), vcpkg, and conan remain post-v0.4 unless release scope
    changes.
-9. Documentation pages (16) can continue in parallel; mark unfinished package-manager sections as
+8. Documentation pages (16) can continue in parallel; mark unfinished package-manager sections as
    "coming soon".
 
 ## Testing the full path

@@ -14,8 +14,9 @@ scene, app, WebGPU, validation, and optional dependency flags.
 | `DVZ_MIMALLOC_SOURCE` | `AUTO` | Select mimalloc source: `AUTO`, `SYSTEM`, `VENDORED`, or `OFF`. `AUTO` follows `DVZ_VENDORED_DEPS`, falling back to the other source when needed. |
 | `DVZ_CGLM_SOURCE` | `AUTO` | Select cglm source: `AUTO`, `SYSTEM`, `VENDORED`, or `OFF`. cglm is required by the active math stack, so `OFF` is currently rejected. |
 | `DVZ_KVAZAAR_SOURCE` | `AUTO` | Select Kvazaar source: `AUTO`, `SYSTEM`, `VENDORED`, or `OFF`. `OFF` disables the optional software HEVC backend. |
-| `DVZ_BUILD_TESTING` | `ON` | Build Datoviz test executables. Package/install smoke presets disable this. |
-| `DVZ_BUILD_EXAMPLES` | `ON` | Build Datoviz example executables. Package/install smoke presets disable this. |
+| `DVZ_BUILD_TESTING` | `PROJECT_IS_TOP_LEVEL` | Build Datoviz test executables. Package/install smoke presets and FetchContent consumers normally disable this. |
+| `DVZ_BUILD_EXAMPLES` | `PROJECT_IS_TOP_LEVEL` | Build Datoviz example executables. Package/install smoke presets and FetchContent consumers normally disable this. |
+| `DVZ_INSTALL` | `PROJECT_IS_TOP_LEVEL` | Add install, CMake package export, pkg-config, and header install rules. FetchContent consumers normally leave this disabled. |
 
 Explicit `SYSTEM` or `VENDORED` source modes fail configuration if the requested source is not
 available. Only `AUTO` may fall back to the other source.
@@ -56,3 +57,26 @@ cmake --build --preset package-smoke-system-auto
 
 cmake --build --preset package-install-system-auto
 ```
+
+## FetchContent
+
+Datoviz can be embedded as a CMake subproject. Tests, examples, and install/package export rules
+default to disabled when Datoviz is not the top-level project:
+
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(datoviz
+    GIT_REPOSITORY https://github.com/datoviz/datoviz.git
+    GIT_TAG v0.4.0
+)
+
+FetchContent_MakeAvailable(datoviz)
+
+add_executable(my_datoviz_app main.c)
+target_link_libraries(my_datoviz_app PRIVATE datoviz::datoviz)
+```
+
+FetchContent builds Datoviz from source and still needs the native toolchain and SDK dependencies.
+For most installed-user workflows, prefer `find_package(datoviz)` from a wheel or package-manager
+install.
