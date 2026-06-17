@@ -23,6 +23,17 @@ For example:
 datoviz-0.4.0.dev0-py3-none-manylinux_2_34_x86_64.whl
 ```
 
+Shaderc and Vulkan dependency policy:
+
+- Source builds default to `DVZ_ENABLE_SHADERC=AUTO`, so runtime GLSL compilation is enabled when
+  shaderc headers are present and unavailable otherwise.
+- Official release wheels must configure with `DVZ_ENABLE_SHADERC=ON`.
+- Do not commit vendored SDK or runtime payloads such as Vulkan SDK libraries or shaderc dylibs.
+- On macOS wheels, `delocate` repairs linked dylib dependencies. `DVZ_WHEEL_RUNTIME_DIRS` is only
+  for libraries Datoviz loads with `dlopen()` at runtime.
+- `glslc` is only a tests/tools dependency. It is not part of the Datoviz runtime GLSL compilation
+  path.
+
 Required Python install-smoke versions are 3.10, 3.11, 3.12, 3.13, and 3.14. Python 3.15 is a
 prerelease smoke lane and should stay non-blocking until it is appropriate for normal PyPI users.
 

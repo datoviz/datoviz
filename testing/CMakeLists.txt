@@ -39,6 +39,13 @@ set_target_properties(testing PROPERTIES
 
 if(APPLE)
     set(_dvz_runtime_rpath "@executable_path;@loader_path")
+elseif(UNIX)
+    set(_dvz_runtime_rpath "$ORIGIN")
+endif()
+
+if((APPLE OR UNIX) AND DVZ_SHADERC_LIBRARY)
+    get_filename_component(_dvz_shaderc_library_dir "${DVZ_SHADERC_LIBRARY}" DIRECTORY)
+    list(APPEND _dvz_runtime_rpath "${_dvz_shaderc_library_dir}")
 endif()
 
 # -------------------------------------------------------------------------------------------------
@@ -413,6 +420,49 @@ else()
 endif()
 
 if(_dvz_has_core AND _dvz_has_drp2)
+    if(DVZ_HAS_SHADERC)
+        add_executable(dvz_shaderc_smoke
+            dvz_shaderc_smoke.c
+        )
+
+        target_link_libraries(dvz_shaderc_smoke
+            PRIVATE
+            datoviz_common
+            datoviz_drp2
+        )
+
+        if(_dvz_has_vk)
+            target_link_libraries(
+                dvz_shaderc_smoke PRIVATE datoviz_vk datoviz_vklite datoviz_volk)
+        endif()
+
+        if(DVZ_WITH_MIMALLOC)
+            target_link_libraries(
+                dvz_shaderc_smoke PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+        endif()
+
+        target_include_directories(dvz_shaderc_smoke
+            PRIVATE
+            ${PROJECT_SOURCE_DIR}/include
+            ${PROJECT_SOURCE_DIR}/src/common
+        )
+
+        if(_dvz_compile_definitions)
+            target_compile_definitions(dvz_shaderc_smoke PRIVATE ${_dvz_compile_definitions})
+        endif()
+
+        if(APPLE OR UNIX)
+            set_target_properties(dvz_shaderc_smoke PROPERTIES
+                BUILD_RPATH "${_dvz_runtime_rpath}"
+                INSTALL_RPATH "${_dvz_runtime_rpath}"
+            )
+        endif()
+
+        add_test(NAME dvz_shaderc_smoke COMMAND dvz_shaderc_smoke)
+    else()
+        message(STATUS "Skipping dvz_shaderc_smoke: shaderc support is not enabled.")
+    endif()
+
     add_executable(dvztest_drp2
         ${DVZ_TEST_DRP2_SOURCES}
         components/dvztest_drp2.c

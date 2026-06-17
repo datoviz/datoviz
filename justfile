@@ -1726,6 +1726,15 @@ test-slow *args:
     just test-lane slow-churn {{args}}
 #
 
+[linux]
+[macos]
+shaderc-smoke:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cmake --build build --target dvz_shaderc_smoke
+    ./build/testing/dvz_shaderc_smoke
+#
+
 [windows]
 test test_name="":
     ./build/testing/dvztest.exe {{test_name}}
