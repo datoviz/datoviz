@@ -55,7 +55,102 @@ INDEX_VISUAL_GROUPS = (
     ("Composites",      ["composite_polygon", "composite_graph"]),
 )
 
-# Features grouped by theme; each tuple is (subheading, [ids]).
+# Full feature grouping used on the features page — covers all 71 public features.
+FEATURE_PAGE_GROUPS = (
+    ("Scene & Layout", [
+        "feature_basic_scene",
+        "feature_coordinate_system",
+        "feature_panel_single",
+        "feature_panel_grid",
+        "feature_panel_multi",
+        "feature_panel_linked",
+        "feature_panel_view2d",
+        "panel_background",
+        "feature_user_scale",
+        "feature_visual_transform",
+        "feature_visibility",
+    ]),
+    ("Navigation", [
+        "feature_panzoom",
+        "feature_controller_arcball",
+        "feature_controller_turntable",
+        "feature_controller_fly",
+        "feature_controller_orbit_camera",
+        "feature_orientation_gizmo",
+        "feature_reference_grid",
+    ]),
+    ("Adornments", [
+        "feature_axis_labels",
+        "path_axes_2d",
+        "feature_guide_lines",
+        "feature_guide_spans",
+        "feature_bars_bands",
+        "scale_bar",
+        "scalebar_units",
+        "colorbar",
+        "colormap_scale",
+        "feature_legend_categorical",
+        "annotation_readout",
+        "feature_text_block",
+        "feature_overlay_card",
+        "feature_probe_labels",
+    ]),
+    ("Shapes & Geometry", [
+        "feature_builtin_shapes_2d",
+        "feature_builtin_shapes_3d",
+        "feature_marker_symbols",
+        "feature_bezier_curve_path",
+        "feature_path_join",
+        "feature_obj_loading",
+    ]),
+    ("Scientific", [
+        "feature_sampled_field_2d",
+        "feature_sampled_field_3d",
+        "feature_isolines",
+        "image_probe",
+    ]),
+    ("3D Rendering", [
+        "feature_lighting",
+        "feature_mesh_texture",
+        "feature_material_mesh",
+        "feature_volume_occlusion",
+        "technique_ssao",
+        "technique_depth_cue",
+        "technique_msaa",
+        "technique_transparency",
+        "alpha_blending",
+        "technique_depth_test",
+        "feature_bounds_overlay",
+    ]),
+    ("Interaction & Selection", [
+        "feature_picking",
+        "feature_selection_pixel",
+        "feature_selection_sphere",
+        "feature_selection_mesh_instances",
+    ]),
+    ("Animation & Updates", [
+        "feature_animation_tracks",
+        "feature_timer_animation",
+        "feature_compute_buffer_animation",
+        "update_partial",
+        "feature_update_visual_data",
+    ]),
+    ("GUI", [
+        "feature_gui_controls",
+        "feature_gui_viewport",
+        "feature_gui_cimgui",
+    ]),
+    ("App & I/O", [
+        "feature_app_glfw",
+        "feature_offscreen_capture",
+        "feature_input_events",
+        "feature_record_replay",
+        "feature_json_export",
+        "feature_video_export",
+    ]),
+)
+
+# Flagship feature IDs shown on the examples index; the rest are reachable via the full gallery.
 INDEX_FEATURE_GROUPS = (
     ("Layout", [
         "feature_panel_grid",
@@ -625,15 +720,31 @@ def render_features_page(
     image_format: str = DEFAULT_IMAGE_FORMAT,
 ) -> None:
     feature_examples = [e for e in examples if e.lane == "features"]
+    by_id = {e.id: e for e in examples}
     page_path = docs_site_path(docs_dir, "features.md")
     lines = generated_header("Features")
     lines.extend([f"{len(feature_examples)} feature examples.", ""])
-    lines.append('<div class="grid cards" markdown="1">')
-    lines.append("")
-    for example in sorted(feature_examples, key=lambda e: e.title.lower()):
-        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
-    lines.append("</div>")
-    lines.append("")
+    grouped_ids = {id_ for _, ids in FEATURE_PAGE_GROUPS for id_ in ids}
+    for group_label, group_ids in FEATURE_PAGE_GROUPS:
+        group_examples = [by_id[i] for i in group_ids if i in by_id]
+        if not group_examples:
+            continue
+        lines.extend([f"## {group_label}", ""])
+        lines.append('<div class="grid cards" markdown="1">')
+        lines.append("")
+        for example in group_examples:
+            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+        lines.append("</div>")
+        lines.append("")
+    ungrouped = [e for e in feature_examples if e.id not in grouped_ids]
+    if ungrouped:
+        lines.extend(["## Other", ""])
+        lines.append('<div class="grid cards" markdown="1">')
+        lines.append("")
+        for example in sorted(ungrouped, key=lambda e: e.title.lower()):
+            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+        lines.append("</div>")
+        lines.append("")
     write_text(docs_dir / "features.md", "\n".join(lines))
 
 
