@@ -98,8 +98,20 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
     }
     ```
 
-    Save as `scatter.c` and compile. Use `datoviz-config --cflags --libs` for the flags if
-    available, otherwise use the platform commands below.
+
+## Build and run
+
+=== "Python"
+
+    Save as `scatter.py` and run:
+
+    ```sh
+    python scatter.py
+    ```
+
+=== "C"
+
+    Use the flags printed by `datoviz-config --cflags --libs` if available, otherwise:
 
     === "Linux"
 
