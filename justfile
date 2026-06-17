@@ -146,7 +146,9 @@ tag version:
 #
 
 runid:
-    @echo $(gh run list --workflow=WHEELS --json conclusion,databaseId --jq '.[] | select(.conclusion == "success") | .databaseId' | head -n 1)
+    @echo "The legacy live wheel workflow is disabled for v0.4 RC prep." >&2
+    @echo "Use .github/workflows-draft/wheels.yml after explicit promotion." >&2
+    @exit 1
 #
 
 # Download the built wheel artifacts
@@ -159,7 +161,7 @@ download:
     echo "Workflow run: $run_id"
 
     if [ -z "$run_id" ]; then
-        echo "No successful workflow run found for 'WHEELS'"
+        echo "No successful wheel workflow run found"
         exit 1
     fi
 
@@ -196,10 +198,10 @@ upload:
 
 wheels:
     #!/usr/bin/env sh
-    gh workflow run wheels.yml -r dev
-    sleep 2
-    URL="https://github.com/datoviz/datoviz/actions"
-    xdg-open "$URL" || open "$URL"
+    echo "The legacy live wheel workflow is disabled for v0.4 RC prep." >&2
+    echo "Use local validation first: just wheel-ci-local <platform-tag>" >&2
+    echo "Promote .github/workflows-draft/wheels.yml only when explicitly ready." >&2
+    exit 1
 #
 
 nightly arg='':

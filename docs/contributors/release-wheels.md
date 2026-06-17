@@ -149,6 +149,7 @@ The v0.4 wheel workflow is intentionally not live yet:
 
 It should stay outside `.github/workflows/` until the local scripts and at least one manual branch
 run have proven the path.
+There is currently no live scheduled wheel workflow for v0.4 RC prep.
 
 Before enabling it:
 
