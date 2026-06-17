@@ -1,6 +1,7 @@
 [build-system]
-requires = ["setuptools", "wheel", "build", "tqdm", "libclang"]
-build-backend = "setuptools.build_meta"
+requires = ["setuptools", "wheel", "build", "tqdm", "libclang", "tomli; python_version < '3.11'"]
+build-backend = "datoviz_build_backend.backend"
+backend-path = ["tools"]
 
 [project]
 name = "datoviz"
@@ -43,6 +44,35 @@ qt = ["PyQt6"]
 "Homepage" = "https://github.com/datoviz/datoviz"
 "Documentation" = "https://github.com/datoviz/datoviz"
 "Source" = "https://github.com/datoviz/datoviz"
+
+[tool.datoviz.wheel]
+platform-specific = true
+native-build-dir = "build"
+include-headers = true
+include-cmake-package = true
+runtime-dirs-env = "DVZ_WHEEL_RUNTIME_DIRS"
+require-shaderc = true
+payload-manifest = "datoviz/_wheel_payload.json"
+
+[tool.datoviz.wheel.macos]
+platform-tags = ["macosx_10_13_x86_64", "macosx_11_0_arm64"]
+repair-tool = "delocate"
+runtime-patterns = [
+    "libshaderc*.dylib",
+    "libvulkan*.dylib",
+    "libMoltenVK.dylib",
+    "MoltenVK_icd.json",
+]
+
+[tool.datoviz.wheel.linux]
+platform-tags = ["manylinux_2_34_x86_64", "manylinux_2_34_aarch64"]
+repair-tool = "auditwheel"
+runtime-patterns = ["libshaderc*.so*"]
+
+[tool.datoviz.wheel.windows]
+platform-tags = ["win_amd64", "win_arm64"]
+repair-tool = "delvewheel"
+runtime-patterns = ["*.dll"]
 
 [tool.ruff]
 format.quote-style = "single"
