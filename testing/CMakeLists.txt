@@ -1055,6 +1055,7 @@ endif()
 #
 if(TARGET datoviz_core)
     add_executable(dvz_public_header_probe dvz_public_header_probe.c)
+    add_executable(dvz_public_header_cpp_probe dvz_public_header_probe.cpp)
 
     target_link_libraries(dvz_public_header_probe
         PRIVATE
@@ -1070,14 +1071,28 @@ if(TARGET datoviz_core)
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/external
     )
+    target_include_directories(dvz_public_header_cpp_probe
+        PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/external
+        ${PROJECT_SOURCE_DIR}/external/volk
+        ${PROJECT_SOURCE_DIR}/external/cglm/include
+        ${PROJECT_SOURCE_DIR}/external/cimgui
+        ${PROJECT_SOURCE_DIR}/external/msdf-atlas-gen/msdfgen
+    )
 
     if(_dvz_compile_definitions)
         target_compile_definitions(dvz_public_header_probe PRIVATE ${_dvz_compile_definitions})
+        target_compile_definitions(dvz_public_header_cpp_probe PRIVATE ${_dvz_compile_definitions})
     endif()
 
     if(APPLE)
         # Mirror the run-path configuration for the auxiliary test executable.
         set_target_properties(dvz_public_header_probe PROPERTIES
+            BUILD_RPATH "${_dvz_runtime_rpath}"
+            INSTALL_RPATH "${_dvz_runtime_rpath}"
+        )
+        set_target_properties(dvz_public_header_cpp_probe PROPERTIES
             BUILD_RPATH "${_dvz_runtime_rpath}"
             INSTALL_RPATH "${_dvz_runtime_rpath}"
         )
@@ -1097,7 +1112,7 @@ if(TARGET datoviz_core)
         )
     endif()
 else()
-    message(STATUS "Skipping dvz_public_header_probe: datoviz_core target is disabled.")
+    message(STATUS "Skipping public header probes: datoviz_core target is disabled.")
 endif()
 
 # Track testing targets so top-level logic can apply shared instrumentation (coverage, sanitizers, ...).
@@ -1111,7 +1126,8 @@ foreach(_dvz_test_target
     dvztest_canvas
     dvztest_integration
     dvz_live_canvas
-    dvz_public_header_probe)
+    dvz_public_header_probe
+    dvz_public_header_cpp_probe)
     if(TARGET ${_dvz_test_target})
         set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS ${_dvz_test_target})
     endif()
@@ -1128,7 +1144,8 @@ if(DVZ_SANITIZER_FLAGS)
         dvztest_canvas
         dvztest_integration
         dvz_live_canvas
-        dvz_public_header_probe)
+        dvz_public_header_probe
+        dvz_public_header_cpp_probe)
         if(TARGET ${_target})
             target_compile_options(${_target} PRIVATE
                 $<$<AND:$<CONFIG:Debug>,$<NOT:$<COMPILE_LANGUAGE:CUDA>>>:${DVZ_SANITIZER_FLAGS}>

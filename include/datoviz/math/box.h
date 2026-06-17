@@ -19,6 +19,7 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
+#include "dim.h"
 #include "types.h"
 
 
@@ -63,17 +64,6 @@ typedef enum
     DVZ_BOX_EXTENT_FIXED_ASPECT_EXPAND = 1,   // expand the box to match the aspect ratio
     DVZ_BOX_EXTENT_FIXED_ASPECT_CONTRACT = 2, // contract the box to match the aspect ratio
 } DvzBoxExtentStrategy;
-
-
-
-// Dimension.
-typedef enum
-{
-    DVZ_DIM_X = 0x0000,
-    DVZ_DIM_Y = 0x0001,
-    DVZ_DIM_Z = 0x0002,
-    DVZ_DIM_COUNT,
-} DvzDim;
 
 
 

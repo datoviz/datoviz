@@ -18,7 +18,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <vulkan/vulkan_core.h>
+#include "datoviz/vk/vulkan.h"
 
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/device.h"

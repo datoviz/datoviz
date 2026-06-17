@@ -21,6 +21,7 @@
 
 #include "datoviz/font.h"
 #include "datoviz/geom/types.h"
+#include "datoviz/math/dim.h"
 #include "datoviz/math/types.h"
 #include "datoviz/scene/enums.h"
 
@@ -110,14 +111,6 @@ typedef uint32_t DvzSymbolId;
 /*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
-
-typedef enum
-{
-    DVZ_DIM_X = 0,
-    DVZ_DIM_Y = 1,
-    DVZ_DIM_Z = 2,
-} DvzDim;
-
 
 typedef enum
 {

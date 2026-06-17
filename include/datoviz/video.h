@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "datoviz/vk/vulkan.h"
 #include <volk.h>
 
 #include "datoviz/common/macros.h"

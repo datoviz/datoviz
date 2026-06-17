@@ -212,11 +212,11 @@ void dvz_barrier_image_access( //
 
 
 void dvz_barrier_image_layout( //
-    DvzBarrierImage* bimg, VkImageLayout old, VkImageLayout new)
+    DvzBarrierImage* bimg, VkImageLayout old, VkImageLayout new_layout)
 {
     ANN(bimg);
     bimg->oldLayout = old;
-    bimg->newLayout = new;
+    bimg->newLayout = new_layout;
 }
 
 

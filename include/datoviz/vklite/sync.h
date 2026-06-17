@@ -17,7 +17,7 @@
 /*************************************************************************************************/
 
 #include <stdint.h>
-#include <vulkan/vulkan_core.h>
+#include "datoviz/vk/vulkan.h"
 
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
@@ -233,10 +233,10 @@ DVZ_EXPORT void dvz_barrier_image_access( //
  *
  * @param bimg the image barrier
  * @param old the old image layout
- * @param new the new image layout
+ * @param new_layout the new image layout
  */
 DVZ_EXPORT void dvz_barrier_image_layout( //
-    DvzBarrierImage* bimg, VkImageLayout old, VkImageLayout new);
+    DvzBarrierImage* bimg, VkImageLayout old, VkImageLayout new_layout);
 
 
 

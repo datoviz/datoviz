@@ -20,6 +20,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "datoviz/vk/vulkan.h"
 #include <volk.h>
 
 #include "canvas/enums.h"
