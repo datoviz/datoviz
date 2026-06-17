@@ -10,11 +10,12 @@ SOURCE_SHA512=${DATOVIZ_SOURCE_SHA512:-}
 VCPKG_ROOT=${VCPKG_ROOT:-/tmp/datoviz-vcpkg}
 VCPKG_TRIPLET=${VCPKG_TRIPLET:-x64-linux-dynamic}
 CONDA_BLD_DIR=${DATOVIZ_CONDA_BLD_DIR:-/tmp/datoviz-mamba-root/envs/build/conda-bld}
+SOURCE_DEPS=${DATOVIZ_SOURCE_DEPS:-vendored}
 
 
 log()
 {
-    printf '\n==> %s\n' "$*"
+    printf '\n==> %s\n' "$*" >&2
 }
 
 
@@ -155,22 +156,38 @@ validate_source_install()
     source_dir=$(extract_source_bundle)
     prefix="$WORKDIR/source-prefix"
     build_dir="$WORKDIR/source-build"
+    local cmake_opts=(
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_INSTALL_PREFIX="$prefix"
+        -DCMAKE_INSTALL_LIBDIR=lib
+        -DDVZ_BUILD_TESTING=OFF
+        -DDVZ_BUILD_EXAMPLES=OFF
+        -DDVZ_INSTALL=ON
+        -DDVZ_KVAZAAR_SOURCE=OFF
+        -DDVZ_ENABLE_CUDA=OFF
+        -DDVZ_ENABLE_QT_BRIDGE=OFF
+    )
 
-    log "Building and installing source bundle"
+    case "$SOURCE_DEPS" in
+        vendored)
+            cmake_opts+=(-DDVZ_VENDORED_DEPS=ON)
+            ;;
+        system)
+            cmake_opts+=(
+                -DDVZ_VENDORED_DEPS=OFF
+                -DDVZ_CGLM_SOURCE=SYSTEM
+                -DDVZ_MIMALLOC_SOURCE=SYSTEM
+            )
+            ;;
+        *)
+            die "DATOVIZ_SOURCE_DEPS must be 'vendored' or 'system'"
+            ;;
+    esac
+
+    log "Building and installing source bundle with $SOURCE_DEPS dependencies"
     cmake -S "$source_dir" -B "$build_dir" \
         $(cmake_generator_args) \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX="$prefix" \
-        -DCMAKE_INSTALL_LIBDIR=lib \
-        -DDVZ_BUILD_TESTING=OFF \
-        -DDVZ_BUILD_EXAMPLES=OFF \
-        -DDVZ_INSTALL=ON \
-        -DDVZ_VENDORED_DEPS=OFF \
-        -DDVZ_CGLM_SOURCE=SYSTEM \
-        -DDVZ_MIMALLOC_SOURCE=SYSTEM \
-        -DDVZ_KVAZAAR_SOURCE=OFF \
-        -DDVZ_ENABLE_CUDA=OFF \
-        -DDVZ_ENABLE_QT_BRIDGE=OFF
+        "${cmake_opts[@]}"
     cmake --build "$build_dir" --target install
 
     run_cmake_consumer "$prefix" "$WORKDIR/source-cmake-consumer"
@@ -264,6 +281,7 @@ Environment:
   VCPKG_TRIPLET                  vcpkg target triplet [$VCPKG_TRIPLET]
   MICROMAMBA or CONDA_EXE        conda frontend for conda validation
   DATOVIZ_CONDA_BLD_DIR          conda-bld directory [$CONDA_BLD_DIR]
+  DATOVIZ_SOURCE_DEPS            source-install dependency mode: vendored or system [$SOURCE_DEPS]
 EOF
 }
 

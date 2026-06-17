@@ -12,6 +12,9 @@ just distribution-validate-local all
 ```
 
 Individual lanes are available as `source-install`, `vcpkg`, and `conda`.
+The source-install lane defaults to `DATOVIZ_SOURCE_DEPS=vendored`; use
+`DATOVIZ_SOURCE_DEPS=system` when validating distro-style system dependencies on a machine with
+the required development packages installed.
 
 1. Generate current ctypes bindings:
    ```sh
