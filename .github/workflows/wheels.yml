@@ -46,8 +46,9 @@ jobs:
       - name: Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y glslang-tools libshaderc-dev libvulkan-dev
+          sudo apt-get install -y ccache glslang-tools libshaderc-dev libvulkan-dev
           python -m pip install -U pip cibuildwheel build auditwheel
+          command -v ccache
           command -v glslangValidator
           command -v auditwheel
       - name: Build native artifacts
@@ -145,8 +146,9 @@ jobs:
       - name: Dependencies
         shell: pwsh
         run: |
-          choco install just mingw cmake ninja jq -y
+          choco install just mingw cmake ninja jq ccache -y
           python -m pip install -U pip cibuildwheel build delvewheel
+          Get-Command ccache
           python -c "import delvewheel"
       - name: Build native artifacts
         shell: pwsh
