@@ -187,12 +187,23 @@ nav:
     - Backends:
       - WebGPU subset: 'reference/webgpu-subset.md'
       - Compute and graphics: 'reference/compute-graphics.md'
-  - Internals:
-    - Architecture:
+  - Advanced:
+    - Explanation:
+      - Overview: 'explanation/index.md'
       - Why Datoviz: 'explanation/why-datoviz.md'
+      - Architecture: 'explanation/architecture.md'
       - Scene model: 'explanation/scene-model.md'
+      - Figure, panel, visual model: 'explanation/figure-panel-visual-model.md'
+      - Coordinate systems: 'explanation/coordinate-systems.md'
+      - Frame lifecycle: 'explanation/frame-lifecycle.md'
+      - Retained resources: 'explanation/retained-resources.md'
+      - Invalidation and caching: 'explanation/invalidation-and-caching.md'
+      - GPU resource ownership: 'explanation/gpu-resource-ownership.md'
+      - Interaction model: 'explanation/interaction-model.md'
+      - Query, pick, and probe model: 'explanation/query-pick-probe-model.md'
       - Performance model: 'explanation/performance-model.md'
       - Portability and WebGPU: 'explanation/portability-webgpu.md'
+      - GSP and VisPy2 boundary: 'explanation/gsp-vispy2-boundary.md'
     - Lower Layers:
       - vklite: 'advanced/vklite.md'
       - Canvas and stream API: 'advanced/canvas.md'
@@ -237,16 +248,6 @@ not_in_nav: |
   reference/visual-attributes.md
   reference/queries.md
   reference/errors-and-logging.md
-  explanation/architecture.md
-  explanation/figure-panel-visual-model.md
-  explanation/coordinate-systems.md
-  explanation/interaction-model.md
-  explanation/gsp-vispy2-boundary.md
-  explanation/frame-lifecycle.md
-  explanation/retained-resources.md
-  explanation/invalidation-and-caching.md
-  explanation/gpu-resource-ownership.md
-  explanation/query-pick-probe-model.md
   contributors/architecture-map.md
   contributors/adding-a-drp2-command.md
   contributors/adding-a-webgpu-fixture.md
