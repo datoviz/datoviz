@@ -126,10 +126,16 @@ jobs:
         include:
           - arch: AMD64
             platform_tag: win_amd64
+            vcpkg_triplet: x64-windows
           - arch: ARM64
             platform_tag: win_arm64
+            vcpkg_triplet: x64-windows
+    runs-on: ${{ matrix.runner }}
     env:
       VCPKG_ROOT: C:/vcpkg
+      DVZ_CMAKE_ARGS: >-
+        -DDVZ_ENABLE_SHADERC=ON
+        -DDVZ_CANVAS_SHADER_GLSLANG_VALIDATOR=${{ github.workspace }}/build/vcpkg_installed/${{ matrix.vcpkg_triplet }}/tools/glslang/glslangValidator.exe
     steps:
       - uses: actions/checkout@v4
         with:
@@ -166,17 +172,42 @@ jobs:
         shell: pwsh
         run: |
           just build
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          @'
+          import pathlib
+          import struct
+          import sys
+
+          expected = "${{ matrix.arch }}"
+          dlls = list(pathlib.Path("build").glob("*datoviz*.dll"))
+          if not dlls:
+              raise SystemExit("no Datoviz DLL found in build/")
+          data = dlls[0].read_bytes()
+          pe_offset = struct.unpack_from("<I", data, 0x3C)[0]
+          machine = struct.unpack_from("<H", data, pe_offset + 4)[0]
+          actual = {0x8664: "AMD64", 0xAA64: "ARM64"}.get(machine, hex(machine))
+          print(f"{dlls[0]} machine={actual}")
+          if actual != expected:
+              raise SystemExit(f"expected {expected}, got {actual}")
+          '@ | python -
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          just ctypes
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Build wheels
         shell: pwsh
         run: |
-          python -m pip wheel . --no-deps -w wheelhouse `
-            -C datoviz.release-wheel=true `
-            -C datoviz.platform-tag=${{ matrix.platform_tag }}
+          python tools/release_wheels/stage_wheel.py --clean
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/release_wheels/build_wheel.py `
+            --dist-dir wheelhouse `
+            --platform-tag ${{ matrix.platform_tag }}
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Inspect wheels
         shell: pwsh
         run: |
           foreach ($whl in Get-ChildItem wheelhouse/*.whl) {
             just wheel-inspect --wheel "$whl" --native-deps
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
       - uses: actions/upload-artifact@v4
         with:
