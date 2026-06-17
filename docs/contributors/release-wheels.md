@@ -57,7 +57,7 @@ Use the primary `just` recipes from the repository root.
 |---|---|
 | Print the intended matrix | `just wheel-matrix` |
 | Stage the wheel tree from `build/` | `just wheel-stage --clean` |
-| Build and retag the wheel | `just wheel-build --platform-tag manylinux_2_34_x86_64` |
+| Build the platform wheel | `just wheel-build --platform-tag manylinux_2_34_x86_64` |
 | Validate wheel version and tag | `just wheel-validate --platform-tag manylinux_2_34_x86_64` |
 | Inspect wheel contents | `just wheel-inspect` |
 | Inspect native dependencies | `just wheel-inspect --native-deps` |
@@ -114,11 +114,12 @@ a clean CI/builder environment. Do not retag a newer-target wheel as `macosx_11_
 3. native Datoviz runtime library from `build/`;
 4. public headers and CMake package files used by C consumers;
 5. platform runtime dependencies that the current wheel policy bundles;
-6. `tools/release_wheels/check_wheel.py`, so cibuildwheel can run the installed smoke from the
-   staged project.
+6. `datoviz/_wheel_payload.json`, so the backend and validation tools can audit included files.
 
-`wheel-build` builds from the staged tree, clears stale `dist/datoviz-*.whl` files, and retags the
-pure Python wheel as `py3-none-<platform>`.
+`wheel-build` builds from the staged tree, clears stale `dist/datoviz-*.whl` files, and writes the
+final `py3-none-<platform>` wheel directly through the Datoviz build backend. It no longer creates
+`py3-none-any` first and retags it afterwards. `--skip-repair` is available only for local backend
+diagnostics; release evidence must run the platform repair path.
 
 `wheel-validate` checks wheel filenames in `dist/` against the expected project version and platform
 tags. With no `--platform-tag`, it expects the full release matrix. Use `--platform-tag` for local
@@ -182,9 +183,13 @@ The v0.4 wheel workflow is manual-only:
 .github/workflows/wheels.yml
 ```
 
-It has no scheduled trigger. Dispatch it only after the local scripts and at least one targeted
-branch run have proven the path. Keep `.github/workflows-draft/wheels.yml` as a staging reference
-for major workflow rewrites.
+It has no scheduled trigger. Dispatch it only after the local backend scripts and at least one
+targeted branch run have proven the path. Keep `.github/workflows-draft/wheels.yml` as a staging
+reference for major workflow rewrites.
+
+The workflow uses `python -m pip wheel` with Datoviz release-wheel config settings, not
+`cibuildwheel`. The wheel policy source of truth is `[tool.datoviz.wheel]` in `pyproject.toml` and
+the backend under `tools/datoviz_build_backend/`.
 
 Before relying on a run for release evidence:
 
@@ -228,9 +233,8 @@ uploaded candidate.
 
 ## Known Constraints
 
-Cross-arch build and cross-arch execution are different guarantees. Linux `aarch64` can usually be
-covered through cibuildwheel with emulation, but Windows `ARM64` should be treated as build and
-inventory coverage unless a native ARM64 runner is available.
+Cross-arch build and cross-arch execution are different guarantees. Linux `aarch64` and Windows
+`ARM64` should be treated as build and inventory coverage unless a native runner is available.
 
 Local native rebuilds inherit local CMake cache options. If `just wheel-ci-local <tag> 1` fails in
 `just build`, fix the native build configuration or run the packaging validation from an existing

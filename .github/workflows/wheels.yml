@@ -4,12 +4,9 @@ on:
   workflow_dispatch:
 
 env:
-  # Build once per platform; Datoviz is Python-ABI independent and the artifact is retagged as
-  # py3-none-<platform>. Separate install-smoke jobs should cover Python 3.10 through 3.14, with
-  # 3.15 prerelease enabled only for nightly/prerelease checks.
-  CIBW_BUILD: "cp313-*"
-  CIBW_SKIP: "pp* *-musllinux_* cp31?t-*"
-  CIBW_TEST_COMMAND: "python {project}/tools/release_wheels/check_wheel.py --wheel {wheel} --shaderc --cmake-consumer --qt-probe optional"
+  # Build once per platform; Datoviz is Python-ABI independent and the backend emits
+  # py3-none-<platform> directly. Separate install-smoke jobs cover Python 3.10 through 3.14,
+  # with 3.15 prerelease enabled only for nightly/prerelease checks.
   DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON"
 
 jobs:
@@ -30,11 +27,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [x86_64, aarch64]
-    env:
-      CIBW_ARCHS_LINUX: ${{ matrix.arch }}
-      CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_34
-      CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_34
+        include:
+          - arch: x86_64
+            platform_tag: manylinux_2_34_x86_64
+            gnu_triplet: x86_64-linux-gnu
+          - arch: aarch64
+            platform_tag: manylinux_2_34_aarch64
+            gnu_triplet: aarch64-linux-gnu
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,7 +49,7 @@ jobs:
             ccache glslang-tools glslc libshaderc-dev libvulkan-dev \
             libgl1-mesa-dev \
             libx11-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev
-          python -m pip install -U pip cibuildwheel build auditwheel
+          python -m pip install -U pip build auditwheel
           command -v ccache
           command -v glslc
           command -v glslangValidator
@@ -58,9 +57,13 @@ jobs:
       - name: Build native artifacts
         run: |
           just build
-          just wheel-stage --clean
       - name: Build wheels
-        run: python -m cibuildwheel build/wheel-stage --output-dir wheelhouse
+        env:
+          DVZ_WHEEL_RUNTIME_DIRS: /usr/lib/${{ matrix.gnu_triplet }}
+        run: |
+          python -m pip wheel . --no-deps -w wheelhouse \
+            -C datoviz.release-wheel=true \
+            -C datoviz.platform-tag=${{ matrix.platform_tag }}
       - name: Inspect wheels
         run: |
           for whl in wheelhouse/*.whl; do
@@ -79,10 +82,10 @@ jobs:
         include:
           - runner: macos-13
             arch: x86_64
+            platform_tag: macosx_10_13_x86_64
           - runner: macos-latest
             arch: arm64
-    env:
-      CIBW_ARCHS_MACOS: ${{ matrix.arch }}
+            platform_tag: macosx_11_0_arm64
     steps:
       - uses: actions/checkout@v4
         with:
@@ -93,16 +96,18 @@ jobs:
       - name: Dependencies
         run: |
           brew install just ccache ninja jq glslang shaderc vulkan-headers vulkan-loader molten-vk freetype tinyxml2
-          python -m pip install -U pip cibuildwheel build delocate
+          python -m pip install -U pip build delocate
           command -v glslangValidator
           command -v delocate-listdeps
       - name: Build native artifacts
         run: |
-          export DVZ_WHEEL_RUNTIME_DIRS="$(brew --prefix shaderc)/lib:$(brew --prefix vulkan-loader)/lib:$(brew --prefix molten-vk)/lib"
           just build
-          just wheel-stage --clean
       - name: Build wheels
-        run: python -m cibuildwheel build/wheel-stage --output-dir wheelhouse
+        run: |
+          export DVZ_WHEEL_RUNTIME_DIRS="$(brew --prefix shaderc)/lib:$(brew --prefix vulkan-loader)/lib:$(brew --prefix molten-vk)/lib:$(brew --prefix molten-vk)/share/vulkan/icd.d"
+          python -m pip wheel . --no-deps -w wheelhouse \
+            -C datoviz.release-wheel=true \
+            -C datoviz.platform-tag=${{ matrix.platform_tag }}
       - name: Inspect wheels
         run: |
           for whl in wheelhouse/*.whl; do
@@ -118,9 +123,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [AMD64, ARM64]
+        include:
+          - arch: AMD64
+            platform_tag: win_amd64
+          - arch: ARM64
+            platform_tag: win_arm64
     env:
-      CIBW_ARCHS_WINDOWS: ${{ matrix.arch }}
       VCPKG_ROOT: C:/vcpkg
     steps:
       - uses: actions/checkout@v4
@@ -151,17 +159,19 @@ jobs:
         shell: pwsh
         run: |
           choco install just mingw cmake ninja jq ccache -y
-          python -m pip install -U pip cibuildwheel build delvewheel
+          python -m pip install -U pip build delvewheel
           Get-Command ccache
           python -c "import delvewheel"
       - name: Build native artifacts
         shell: pwsh
         run: |
           just build
-          just wheel-stage --clean
       - name: Build wheels
         shell: pwsh
-        run: python -m cibuildwheel build/wheel-stage --output-dir wheelhouse
+        run: |
+          python -m pip wheel . --no-deps -w wheelhouse `
+            -C datoviz.release-wheel=true `
+            -C datoviz.platform-tag=${{ matrix.platform_tag }}
       - name: Inspect wheels
         shell: pwsh
         run: |
