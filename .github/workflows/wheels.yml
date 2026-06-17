@@ -119,15 +119,16 @@ jobs:
           path: wheelhouse/*.whl
 
   windows:
-    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - arch: AMD64
+          - runner: windows-latest
+            arch: AMD64
             platform_tag: win_amd64
             vcpkg_triplet: x64-windows
-          - arch: ARM64
+          - runner: windows-latest
+            arch: ARM64
             platform_tag: win_arm64
             vcpkg_triplet: x64-windows
     runs-on: ${{ matrix.runner }}
