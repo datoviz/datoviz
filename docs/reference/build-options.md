@@ -58,6 +58,12 @@ cmake --build --preset package-smoke-system-auto
 cmake --build --preset package-install-system-auto
 ```
 
+Out-of-tree CMake consumer checks:
+
+```sh
+just c-integration-smoke
+```
+
 ## FetchContent
 
 Datoviz can be embedded as a CMake subproject. Tests, examples, and install/package export rules

@@ -20,7 +20,7 @@ location.
 
 ## CMake
 
-Use the wheel-provided package config for CMake projects:
+Use the installed package config for CMake projects:
 
 ```cmake
 cmake_minimum_required(VERSION 3.21)
@@ -38,6 +38,9 @@ Configure with:
 cmake -B build -Ddatoviz_DIR="$(datoviz-config --cmake-dir)"
 cmake --build build
 ```
+
+The maintained copy-pasteable example is in
+`examples/c/integration/cmake_package/`.
 
 
 ## FetchContent
@@ -61,6 +64,9 @@ target_link_libraries(my_datoviz_app PRIVATE datoviz::datoviz)
 When Datoviz is added this way, tests, examples, and install/package export rules are disabled by
 default. Use the installed package path above for normal consumers; FetchContent is slower and
 requires the full native build environment.
+
+The maintained copy-pasteable example is in
+`examples/c/integration/fetchcontent/`.
 
 
 ## Headers
@@ -87,6 +93,15 @@ just build
 tools/wheel_c_integration_smoke.sh
 ```
 
-The smoke builds a temporary wheel, installs it into a temporary target directory, compiles a C
-consumer with `datoviz-config`, and builds an out-of-tree CMake consumer with
+The maintained CMake examples are validated with:
+
+```bash
+just c-integration-smoke
+```
+
+That smoke installs Datoviz into a temporary prefix, builds the `find_package()` example against
+that prefix, and builds the FetchContent example against the local checkout.
+
+The wheel smoke builds a temporary wheel, installs it into a temporary target directory, compiles a
+C consumer with `datoviz-config`, and builds an out-of-tree CMake consumer with
 `find_package(datoviz)`.

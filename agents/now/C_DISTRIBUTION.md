@@ -612,6 +612,9 @@ Completed:
    documented.
 4. `datoviz.pc.in`, CMake package install metadata, and package smoke/install presets are in place.
 5. FetchContent subproject defaults and consumer smoke are in place.
+6. Maintained CMake package and FetchContent integration examples live under
+   `examples/c/integration/`, with `tools/c_integration_smoke.sh` / `just c-integration-smoke`
+   covering both.
 
 Active / next:
 

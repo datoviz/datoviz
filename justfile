@@ -923,6 +923,10 @@ ctypes-wheel-smoke: build ctypes
 ctypes-package-smoke: ctypes-editable-smoke ctypes-wheel-smoke
 #
 
+c-integration-smoke:
+    @tools/c_integration_smoke.sh
+#
+
 bindings: build ctypes ctypes-check ctypes-smoke ctypes-facade-smoke ctypes-python-smoke ctypes-render-smoke ctypes-package-smoke
 #
 
