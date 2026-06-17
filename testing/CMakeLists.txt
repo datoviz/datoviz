@@ -127,16 +127,6 @@ if(DVZ_VKLITE_TEST_SHADERS)
         "$ENV{VULKAN_SDK}/Bin"
     )
 
-    if(APPLE)
-        list(APPEND _dvz_glslc_hints "${PROJECT_SOURCE_DIR}/bin/vulkan/macos")
-    endif()
-
-    if(WIN32)
-        list(APPEND _dvz_glslc_hints "${PROJECT_SOURCE_DIR}/bin/vulkan/windows")
-    endif()
-
-    list(APPEND _dvz_glslc_hints "${PROJECT_SOURCE_DIR}/bin/vulkan/linux")
-
     find_program(DVZ_GLSLC_EXECUTABLE
         NAMES glslc
         HINTS ${_dvz_glslc_hints}

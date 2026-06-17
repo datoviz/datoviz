@@ -277,7 +277,10 @@ set_property(GLOBAL PROPERTY DVZ_COMPILE_DEFINITIONS "${DVZ_COMPILE_DEFINITIONS}
 add_subdirectory(${PROJECT_SOURCE_DIR}/external/volk ${CMAKE_CURRENT_BINARY_DIR}/external/volk EXCLUDE_FROM_ALL)
 
 if(DVZ_BUILD_VK OR DVZ_BUILD_CANVAS)
-    find_package(Vulkan REQUIRED)
+    find_package(Vulkan QUIET)
+    if(NOT Vulkan_FOUND)
+        message(STATUS "Vulkan package not found; using vendored Vulkan C headers.")
+    endif()
 endif()
 
 # -------------------------------------------------------------------------------------------------

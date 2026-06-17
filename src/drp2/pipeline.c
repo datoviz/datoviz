@@ -18,7 +18,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#if DVZ_HAS_SHADERC
 #include "shaderc/shaderc.h"
+#else
+typedef int shaderc_shader_kind;
+#endif
 #include <volk.h>
 
 #include "_alloc.h"
@@ -36,6 +40,7 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+#if DVZ_HAS_SHADERC
 /* Lazy-loaded shaderc function-pointer table. Populated once on first GLSL compile call. */
 typedef struct
 {
@@ -62,6 +67,7 @@ typedef struct
 static ShadercSyms g_shaderc = {0};
 static bool g_shaderc_loaded = false;
 static bool g_shaderc_available = false;
+#endif
 
 
 static VkShaderStageFlags _vklite_stage_flags(uint32_t visibility)
@@ -143,6 +149,7 @@ static VkPipelineLayout _vklite_combined_pipeline_layout(
 
 static bool _shaderc_load(void)
 {
+#if DVZ_HAS_SHADERC
     if (g_shaderc_loaded)
         return g_shaderc_available;
     g_shaderc_loaded = true;
@@ -189,6 +196,10 @@ static bool _shaderc_load(void)
        so the symbols remain valid for the process lifetime without re-opening on each call. */
     g_shaderc_available = true;
     return true;
+#else
+    log_error("shaderc support was not enabled at build time");
+    return false;
+#endif
 }
 
 
@@ -200,6 +211,7 @@ static bool _shaderc_load(void)
  */
 static shaderc_shader_kind _vklite_shader_kind(const char* stage)
 {
+#if DVZ_HAS_SHADERC
     ANN(stage);
     if (strcmp(stage, "VERTEX") == 0 || strcmp(stage, "vertex") == 0)
         return shaderc_glsl_vertex_shader;
@@ -208,6 +220,10 @@ static shaderc_shader_kind _vklite_shader_kind(const char* stage)
     if (strcmp(stage, "COMPUTE") == 0 || strcmp(stage, "compute") == 0)
         return shaderc_glsl_compute_shader;
     return shaderc_glsl_infer_from_source;
+#else
+    (void)stage;
+    return 0;
+#endif
 }
 
 
@@ -249,6 +265,7 @@ bool _vklite_compile_glsl(
     *spv = NULL;
     *spv_size = 0;
 
+#if DVZ_HAS_SHADERC
     if (!_shaderc_load())
         return false;
 
@@ -303,6 +320,10 @@ bool _vklite_compile_glsl(
     *spv = out;
     *spv_size = size;
     return true;
+#else
+    log_error("GLSL shader modules require shaderc support, but it was disabled at build time");
+    return false;
+#endif
 }
 
 

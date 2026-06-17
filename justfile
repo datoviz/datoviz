@@ -331,7 +331,6 @@ build release="Debug":
     @unset CXX
     @mkdir -p docs/images
     @mkdir -p build
-    @if [ -d libs/vulkan/linux ]; then cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build/; fi
     @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     @cd build/ && ninja
 #
@@ -343,7 +342,6 @@ build-gprof release="RelWithDebInfo":
     @unset CXX
     @mkdir -p docs/images
     @mkdir -p build-gprof
-    @if [ -d libs/vulkan/linux ]; then cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-gprof/; fi
     @cd build-gprof && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DDVZ_ENABLE_GPROF=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     @cd build-gprof && ninja dvztest
 #
@@ -355,7 +353,6 @@ build-profile:
     @unset CXX
     @mkdir -p docs/images
     @mkdir -p build-profile
-    @if [ -d libs/vulkan/linux ]; then cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-profile/; fi
     @cd build-profile/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDVZ_USE_VALIDATION=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     @cd build-profile/ && ninja dvz_live_canvas
 #
@@ -391,7 +388,6 @@ gprof-report gmon="build-gprof/testing/gmon.out" out="build-gprof/testing/gprof.
 _sanitizer-build name:
     @set -e
     @mkdir -p docs/images build-{{name}}
-    @if [ -d libs/vulkan/linux ]; then cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-{{name}}/; fi
     @cd build-{{name}}/ && \
       CC=/usr/bin/clang CXX=/usr/bin/clang++ cmake .. -GNinja \
         -DCMAKE_BUILD_TYPE=Debug \
@@ -425,9 +421,6 @@ build release="Debug": # && bundledeps
     @mkdir -p docs/images
     @mkdir -p build/src
     @mkdir -p build/testing
-    #@cp -a libs/vulkan/macos_$([[ "$(arch)" == "aarch64" || "$(arch)" == "arm64" ]] && echo "arm64" || echo "x86_64")/* build/src/
-    #@cp -a libs/vulkan/macos_$([[ "$(arch)" == "aarch64" || "$(arch)" == "arm64" ]] && echo "arm64" || echo "x86_64")/* build/testing/
-    #@cp -a libs/shaderc/macos_$([[ "$(arch)" == "aarch64" || "$(arch)" == "arm64" ]] && echo "arm64" || echo "x86_64")/libshaderc*dylib build/src/
     cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     cd build/ && ninja
 #
@@ -451,8 +444,6 @@ build release="Debug":
     unset CXX
     BUILD_DIR="build"
     mkdir -p "$BUILD_DIR"
-    if [ -f libs/vulkan/windows/vulkan-1.dll ]; then cp libs/vulkan/windows/vulkan-1.dll "$BUILD_DIR"/; fi
-    cp libs/shaderc/windows/libshaderc_shared.dll "$BUILD_DIR"/
 
     # Copy MinGW runtime libraries next to the built artifacts.
     MINGW64_DIR="$(dirname "$(which gcc)")"
@@ -479,8 +470,6 @@ msvc release="Debug":
     unset CXX
     BUILD_DIR="build-msvc"
     mkdir -p "$BUILD_DIR"
-    if [ -f libs/vulkan/windows/vulkan-1.dll ]; then cp libs/vulkan/windows/vulkan-1.dll "$BUILD_DIR"/; fi
-    cp libs/shaderc/windows/libshaderc_shared.dll "$BUILD_DIR"/
 
     CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake --preset=msvc -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     cmake --build --preset msvc --config {{release}}
@@ -576,8 +565,7 @@ deb: checkstructs && rpath
 
     # Copy the libraries.
     cp -a build/libdatoviz.so* $DEB$LIBDIR
-    if [ -d libs/vulkan/linux ]; then cp -L libs/vulkan/linux/libvulkan.so* $DEB$LIBDIR; fi
-    cp -L libs/shaderc/linux/libshaderc*.so* $DEB$LIBDIR
+    if ls build/libshaderc*.so* >/dev/null 2>&1; then cp -L build/libshaderc*.so* $DEB$LIBDIR; fi
 
     # Copy the Python files
     cp -a datoviz/ $DEB$LIBDIR/
@@ -1644,7 +1632,6 @@ coverage filter="":
     @rm -rf build-coverage
     @mkdir -p docs/images
     @mkdir -p build-coverage/coverage
-    @if [ -d libs/vulkan/linux ]; then cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-coverage/; fi
     @ROOT=$(pwd) && cd build-coverage && cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DDVZ_ENABLE_COVERAGE=ON -DDVZ_ENABLE_ASAN_IN_DEBUG=OFF -DDVZ_ENABLE_CUDA=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_C_COMPILER_LAUNCHER= -DCMAKE_CXX_COMPILER_LAUNCHER=
     @cd build-coverage && ninja
     @cd build-coverage && if [ -n "{{filter}}" ]; then ./testing/dvztest "{{filter}}"; else ./testing/dvztest; fi
@@ -1767,11 +1754,7 @@ memory-canvas-release *args:
 
 [macos]
 canvas *args:
-    @if [ -f libs/vulkan/macos/MoltenVK_icd.json ]; then \
-        VK_DRIVER_FILES="$(pwd)/libs/vulkan/macos/MoltenVK_icd.json" ./build/testing/dvz_live_canvas {{args}}; \
-    else \
-        ./build/testing/dvz_live_canvas {{args}}; \
-    fi
+    ./build/testing/dvz_live_canvas {{args}}
 #
 
 [windows]
@@ -1816,11 +1799,7 @@ pydemo_dll:
 
 [macos]
 pydemo_dll:
-    @if [ -f libs/vulkan/macos/MoltenVK_icd.json ]; then \
-        DYLD_LIBRARY_PATH=build/ VK_DRIVER_FILES="$(pwd)/libs/vulkan/macos/MoltenVK_icd.json" python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dylib').dvz_demo()"; \
-    else \
-        DYLD_LIBRARY_PATH=build/ python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dylib').dvz_demo()"; \
-    fi
+    @DYLD_LIBRARY_PATH=build/ python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dylib').dvz_demo()"
 #
 
 [windows]
@@ -1844,11 +1823,6 @@ python *args:
 # [linux]
 # runexample name="":
 #     ./build/example_{{name}}
-# #
-
-# [macos]
-# runexample name="":
-#     @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/example_{{name}}
 # #
 
 # [windows]

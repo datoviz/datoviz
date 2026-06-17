@@ -49,6 +49,35 @@ def _copy_matches(patterns: list[str], dst: Path, *, required: bool = False) -> 
     return copied
 
 
+def _runtime_roots(build_dir: Path) -> list[Path]:
+    roots = [build_dir]
+    env = os.environ.get("DVZ_WHEEL_RUNTIME_DIRS", "")
+    for item in env.split(os.pathsep):
+        if item:
+            roots.append(Path(item).expanduser().resolve())
+    return roots
+
+
+def _copy_runtime_matches(
+    build_dir: Path, patterns: list[str], dst: Path, *, required: bool = False
+) -> list[Path]:
+    copied: list[Path] = []
+    seen: set[Path] = set()
+    for root in _runtime_roots(build_dir):
+        for pattern in patterns:
+            for src in sorted(root.glob(pattern)):
+                if src.is_file() and src.resolve() not in seen:
+                    _copy_file(src, dst / src.name)
+                    copied.append(dst / src.name)
+                    seen.add(src.resolve())
+    if required and not copied:
+        roots = ", ".join(os.fspath(root) for root in _runtime_roots(build_dir))
+        raise FileNotFoundError(
+            f"no runtime files matched {patterns}; searched build dir and DVZ_WHEEL_RUNTIME_DIRS: {roots}"
+        )
+    return copied
+
+
 def _stage_python(stage: Path) -> None:
     package_dir = stage / "datoviz"
     package_dir.mkdir(parents=True, exist_ok=True)
@@ -78,21 +107,22 @@ def _stage_native(build_dir: Path, package_dir: Path, include_qtbridge: bool) ->
     if system == "Linux":
         lib = _first_existing(["libdatoviz.so", "**/libdatoviz.so"], build_dir)
         _copy_file(lib, package_dir / lib.name)
-        _copy_matches(["libs/vulkan/linux/libvulkan.so.1"], package_dir)
-        _copy_matches(["libs/shaderc/linux/*.so*"], package_dir)
-        _copy_matches(["bin/vulkan/linux/glslc"], package_dir)
+        _copy_runtime_matches(build_dir, ["libshaderc*.so*"], package_dir)
     elif system == "Darwin":
         lib = _first_existing(["libdatoviz.dylib", "**/libdatoviz.dylib"], build_dir)
         _copy_file(lib, package_dir / lib.name)
-        for pattern in (
-            "build/libvulkan*.dylib",
-            "build/libshaderc*.dylib",
-            "build/libfreetype*.dylib",
-            "build/libpng*.dylib",
-            "build/libMoltenVK.dylib",
-            "build/MoltenVK_icd.json",
-        ):
-            _copy_matches([pattern], package_dir)
+        _copy_runtime_matches(
+            build_dir,
+            [
+                "libvulkan*.dylib",
+                "libshaderc*.dylib",
+                "libfreetype*.dylib",
+                "libpng*.dylib",
+                "libMoltenVK.dylib",
+                "MoltenVK_icd.json",
+            ],
+            package_dir,
+        )
     elif system == "Windows":
         copied = _copy_matches(["build/*.dll"], package_dir)
         if not any(path.name.lower() in {"datoviz.dll", "libdatoviz.dll"} for path in copied):
