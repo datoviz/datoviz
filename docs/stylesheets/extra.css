@@ -113,6 +113,38 @@ img[alt*=gpuopen] {
     }
 }
 
+/* ── Docs home navigation cards ─────────────────────────────────────────── */
+.dvz-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin: 1.5rem 0 2rem;
+}
+.dvz-nav-card {
+    display: block;
+    padding: 1.1rem 1.25rem;
+    border-radius: 8px;
+    border: 1px solid var(--md-default-fg-color--lightest, #30363d);
+    text-decoration: none !important;
+    transition: border-color 0.15s, transform 0.15s;
+    background: var(--md-code-bg-color);
+}
+.dvz-nav-card:hover {
+    border-color: var(--md-accent-fg-color);
+    transform: translateY(-2px);
+}
+.dvz-nav-card strong {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--md-typeset-a-color);
+    margin-bottom: 0.3rem;
+}
+.dvz-nav-card span {
+    font-size: 0.82rem;
+    color: var(--md-default-fg-color--light);
+    line-height: 1.4;
+}
+
 /* ── Visual families grid (Start Here page) ─────────────────────────────── */
 .vf-grid {
     margin: 1.5rem 0;
