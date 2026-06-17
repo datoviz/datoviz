@@ -33,6 +33,15 @@ DATOVIZ_CONDA_AUDIT_PREFIX=/tmp/datoviz-local \
   just distribution-validate-local audit
 ```
 
+Local shaderc/Vulkan source-build proof:
+
+- `just shaderc-smoke` runs a native build-tree `dvz_compile_glsl()` smoke.
+- On 2026-06-17 macOS arm64, `just shaderc-smoke` passed and produced 1168 SPIR-V bytes.
+- On 2026-06-17 macOS arm64, `just test-runtime-vklite` passed 88/89 selected tests with one
+  environment skip, `vk/memory_interop_buffer_export` (`external semaphore FD unsupported`).
+  The DRP2 GLSL shader module runtime cases passed.
+- On 2026-06-17 macOS arm64, `just test-drp2-contract` passed 91/91 selected tests.
+
 1. Generate current ctypes bindings:
    ```sh
    just ctypes
