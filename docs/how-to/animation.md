@@ -10,16 +10,21 @@ for ordinary animations and compute-buffer examples for GPU-driven animation.
 ## Minimal Call Sequence
 
 ```c
-static void on_timer(DvzApp* app, DvzId timer_id, void* user_data)
+static void on_timer(DvzAnimation* animation, double t, double dt, void* user_data)
 {
+    (void)animation;
+    (void)t;
+    (void)dt;
     DvzVisual* visual = user_data;
     update_positions(pos);
     dvz_visual_set_data(visual, "position", pos, n);
 }
+
+DvzAnimation* timer = dvz_anim_timer(scene, 0.0, on_timer, visual);
+dvz_anim_start(timer, 0.0);
 ```
 
-Register the callback with the app/timer path used by the selected example, then run the app
-normally.
+Run the app normally after registering the scene animation.
 
 
 ## Important Details

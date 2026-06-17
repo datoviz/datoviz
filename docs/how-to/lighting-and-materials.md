@@ -14,11 +14,20 @@ DvzVisual* mesh = dvz_mesh(scene, 0);
 dvz_visual_set_data(mesh, "position", pos, vertex_count);
 dvz_visual_set_data(mesh, "normal", normal, vertex_count);
 dvz_visual_set_data(mesh, "color", color, vertex_count);
+
+DvzMaterialDesc material = dvz_standard_material_desc();
+material.light_direction[0] = -0.45f;
+material.light_direction[1] = +0.35f;
+material.light_direction[2] = +0.82f;
+material.standard.roughness = 0.62f;
+dvz_visual_set_material(mesh, &material);
+dvz_visual_set_depth_test(mesh, true);
+
 dvz_panel_add_visual(panel, mesh, NULL);
 ```
 
-Use the material-specific calls from the canonical source for roughness, metallic, or texture
-attributes.
+Use the material-specific calls from the canonical source for metallic, emissive, texture, or
+advanced lighting attributes.
 
 
 ## Important Details

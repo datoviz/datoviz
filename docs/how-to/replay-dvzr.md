@@ -10,9 +10,18 @@ example. Use this when debugging the runtime boundary rather than ordinary scene
 ## Minimal Call Sequence
 
 ```c
-/* Use the record/replay calls from examples/c/features/record_replay.c. */
-/* Keep the recorded stream with the exact runtime and asset assumptions it needs. */
+DvzView* view = dvz_view_offscreen(app, figure, width, height);
+
+dvz_view_record_start(view, "capture.dvzr");
+dvz_app_run(app, frame_count);
+dvz_view_record_stop(view);
+
+dvz_view_replay_start(view, "capture.dvzr");
+dvz_app_run(app, frame_count);
+dvz_view_replay_stop(view);
 ```
+
+Keep the recorded stream with the exact runtime and asset assumptions it needs.
 
 
 ## Important Details

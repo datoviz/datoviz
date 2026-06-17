@@ -8,13 +8,12 @@ Keep Datoviz responsible for GPU rendering and let the host toolkit own the appl
 menus, and widgets. Use the external-surface or viewport integration path closest to the platform
 you target.
 
-## Minimal Call Sequence
+## Minimal Workflow
 
-```c
-/* Host toolkit creates or exposes a native surface. */
-/* Datoviz attaches a view to that surface using the external-surface integration path. */
-/* The host event loop drives resize, input, and frame scheduling. */
-```
+1. Let the host toolkit create or expose the native surface.
+2. Create Datoviz with any required host Vulkan instance extensions.
+3. Attach a Datoviz view to the external surface or hosted viewport path.
+4. Let the host event loop drive resize, input, frame requests, and `dvz_view_render_once()`.
 
 Use the GLFW external-surface example as the closest maintained native embedding reference.
 

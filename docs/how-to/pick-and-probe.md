@@ -7,13 +7,12 @@ Map a pointer location to a rendered item or scene value.
 Use picking when the target is a rendered item, instance, or primitive. Use probing when the target
 is a sampled field value at a data coordinate.
 
-## Minimal Call Sequence
+## Minimal Workflow
 
-```c
-/* Convert pointer input through the panel/view path. */
-/* Call the picking helper shown in examples/c/features/picking.c. */
-/* Update selection or readout visuals from the returned item id. */
-```
+1. Convert pointer input through the panel/view path used by `examples/c/features/picking.c`.
+2. Submit the pick request for the target visual or panel.
+3. Map the returned item id back to application data.
+4. Update selection or readout visuals through retained visual data.
 
 Keep the visual's item order stable if the pick result is used as an index into application data.
 

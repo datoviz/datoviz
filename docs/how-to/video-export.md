@@ -7,14 +7,25 @@ Write an animation to a video output.
 Create the scene and animation state, run a bounded frame sequence, update visual data each frame,
 and write frames through the video-export path shown in the canonical example.
 
-## Minimal Call Sequence
+## Minimal Workflow
 
 ```c
+DvzAppCaptureConfig capture = dvz_app_capture_config();
+capture.flags = DVZ_APP_CAPTURE_VIDEO;
+capture.directory = "captures";
+capture.basename = "animation";
+capture.fps = 60.0;
+
+DvzView* view = dvz_view_offscreen(app, figure, width, height);
+dvz_view_capture_start(view, &capture);
+
 for (uint32_t frame = 0; frame < frame_count; frame++)
 {
     update_scene(frame);
-    /* Render and append the frame using the video example path. */
+    dvz_app_run(app, 1);
 }
+
+dvz_view_capture_stop(view);
 ```
 
 Do not hand-roll a separate renderer for video; reuse the app/offscreen frame path.

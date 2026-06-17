@@ -15,8 +15,18 @@ Datoviz lifetimes.
 #include "datoviz/scene.h"
 
 DvzScene* scene = dvz_scene();
-/* Build figures, panels, visuals. */
+DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+DvzPanel* panel = dvz_panel_full(figure);
+
+DvzVisual* visual = dvz_point(scene, 0);
+dvz_visual_set_data(visual, "position", pos, n);
+dvz_visual_set_data(visual, "color", color, n);
+dvz_visual_set_data(visual, "diameter", diameter, n);
+dvz_panel_add_visual(panel, visual, NULL);
+
 DvzApp* app = dvz_app(scene);
+dvz_view_glfw(app, figure, 800, 600, "Datoviz");
+dvz_app_run(app, 0);
 dvz_app_destroy(app);
 dvz_scene_destroy(scene);
 ```

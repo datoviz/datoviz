@@ -14,7 +14,6 @@ state changes, and draw overhead before the GPU can help.
 ## Minimal Call Sequence
 
 ```c
-/* Run a bounded frame count for repeatable native profiling. */
 dvz_app_run(app, frame_count);
 ```
 

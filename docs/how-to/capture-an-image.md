@@ -10,9 +10,11 @@ one frame before capture so the framebuffer contains the current scene.
 ## Minimal Call Sequence
 
 ```c
+DvzApp* app = dvz_app(scene);
 DvzView* view = dvz_view_offscreen(app, figure, width, height);
 dvz_app_run(app, 1);
 dvz_view_capture_png(view, "output.png");
+dvz_app_destroy(app);
 ```
 
 

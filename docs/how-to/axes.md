@@ -12,7 +12,13 @@ Use labels when the axis needs named units or titles.
 ```c
 dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
 dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
-/* Add axes using the helper path shown in examples/c/features/axes_2d.c. */
+
+DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+dvz_axis_set_grid(x_axis, true);
+dvz_axis_set_grid(y_axis, true);
+dvz_axis_set_label(x_axis, "x");
+dvz_axis_set_label(y_axis, "y");
 ```
 
 Keep axes in the same panel as the data they describe.

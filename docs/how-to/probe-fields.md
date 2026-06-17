@@ -7,13 +7,13 @@ Read the data value under a cursor or selected coordinate.
 Convert the pointer position to panel data coordinates, map that coordinate into the sampled field's
 index or texture coordinate space, then display the value with a label, annotation, or overlay.
 
-## Minimal Call Sequence
+## Minimal Workflow
 
-```c
-/* Pointer position -> panel data coordinate. */
-/* Data coordinate -> image texel or field sample. */
-/* Update a label/readout visual with the sampled value. */
-```
+1. Convert pointer position to panel data coordinates.
+2. Convert data coordinates to the image texel, field index, or texture coordinate used by the
+   rendered visual.
+3. Read the sampled value through the feature example's probe path.
+4. Update a label or readout visual with the sampled value.
 
 Use picking for item identity; use probing for field values.
 

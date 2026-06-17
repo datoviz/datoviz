@@ -11,13 +11,18 @@ models non-default coordinate scaling.
 ## Minimal Call Sequence
 
 ```c
-mat4 transform = {{0}};
-/* Fill the affine transform matrix. */
+mat4 transform = {
+    {1.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 1.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 1.0f, 0.0f},
+    {0.2f, 0.1f, 0.0f, 1.0f},
+};
 dvz_visual_set_transform(visual, transform);
 dvz_panel_add_visual(panel, visual, NULL);
 ```
 
-Use the matrix setup pattern from `examples/c/features/visual_transform.c` when adapting this.
+Use the matrix setup pattern from `examples/c/features/visual_transform.c` for rotations, scales,
+or combined affine transforms.
 
 
 ## Important Details

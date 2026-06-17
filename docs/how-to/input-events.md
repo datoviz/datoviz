@@ -11,12 +11,13 @@ For host GUI controls, let the UI own application state such as toggles, sliders
 switches, then update retained Datoviz visual data, visibility, or controller state from that
 state.
 
-## Minimal Call Sequence
+## Minimal Workflow
 
-```c
-/* Register the callback path shown in examples/c/features/input_events.c. */
-/* In the callback, inspect the event and update retained scene state. */
-```
+1. Bind a controller first if the input is ordinary navigation.
+2. Register the native input callback path shown in `examples/c/features/input_events.c` only for
+   custom gestures, shortcuts, or host integration.
+3. In the callback, inspect the event, update retained scene state, and request/render the next
+   frame through the app or host loop.
 
 Keep callback work small; defer expensive updates to the next frame or a controlled update path.
 

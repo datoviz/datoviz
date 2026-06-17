@@ -10,8 +10,10 @@ separate highlight visual. Keep the base visual stable and make selection a smal
 ## Minimal Call Sequence
 
 ```c
-/* selected[id] -> color, size, visibility, or highlight geometry */
+color[selected_id] = highlight_color;
 dvz_visual_set_data(visual, "color", color, n);
+
+dvz_visual_set_visible(highlight_visual, selected_id != DVZ_ID_NONE);
 ```
 
 For dense point or pixel data, a color or alpha update is usually cheaper than creating one visual

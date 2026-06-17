@@ -12,10 +12,12 @@ solve a specific visual problem.
 
 ```c
 dvz_visual_set_data(visual, "color", rgba, n);
-/* Use the technique-specific flags and state from the matching example. */
+dvz_visual_set_depth_test(visual, true);
+dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED);
 ```
 
-Keep technique state close to the visual or pass that actually needs it.
+Use alpha blending only for visuals with meaningful alpha. Keep technique state close to the visual
+or pass that actually needs it.
 
 
 ## Important Details
