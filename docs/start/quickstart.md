@@ -103,11 +103,15 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
 
 === "Python"
 
+    Save as `scatter.py` and run:
+
     ```sh
     python scatter.py
     ```
 
 === "C"
+
+    Save as `scatter.c` and compile for your platform:
 
     === "Linux"
 
