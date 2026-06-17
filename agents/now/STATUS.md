@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active RC preparation. Updated: 2026-06-10.
+Status: active RC preparation. Updated: 2026-06-17.
 
 Keep this file short. Durable behavior belongs in `spec/`; completed history belongs in git
 history, not in agent archives.
@@ -10,11 +10,15 @@ history, not in agent archives.
 
 Next critical path: RC1 release proof.
 
-Near-term implementation pickup: color management now has a normative semantic contract and a
-ready implementation handoff at
-[`../../spec/scene/implementation/COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md`](../../spec/scene/implementation/COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md).
-Use it before changing sampled-field texture roles, shader color linearization, render-target color
-formats, or screenshot/readback color encoding.
+Color management is closed for the v0.4 core rendering/screenshot path: sampled-field color roles,
+role propagation through FramePlan/DRP2, shader-side semantic color linearization, final sRGB
+screenshot/readback behavior, and focused GPU/offscreen fixtures are landed. Use
+[`../../spec/scene/implementation/COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md`](../../spec/scene/implementation/COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md)
+as the audit checklist before changing sampled-field texture roles, shader color linearization,
+render-target color formats, or screenshot/readback color encoding.
+
+Release decision: explicit linear `f16`/`f32` scientific image export/readback is deferred beyond
+RC1. The v0.4.0 capture contract is sRGB RGBA8 screenshot/export pixels.
 
 Blockers:
 
@@ -34,10 +38,11 @@ native smoke evidence.
 Known follow-up: `gui/viewport_resize_hidden_smoke` currently fails. Recheck it during the next GUI
 or runtime resize pass before treating hidden viewport resize coverage as clean.
 
-Closed first slices that should stay in validation: frame artifact scene emission, raw `ctypes`, retained textured mesh, retained
-DATA-coordinate visual attachments, text, 2D axes/ticks, colorbars, labels/readouts, scale bars,
-app/offscreen rendering, broad item/sample query paths, scene visual-boundary checks, WebGPU fixture
-runner, and WASM frame artifact packet scene smoke.
+Closed first slices that should stay in validation: frame artifact scene emission, raw `ctypes`,
+retained textured mesh, retained DATA-coordinate visual attachments, color management, text, 2D
+axes/ticks, colorbars, labels/readouts, scale bars, app/offscreen rendering, broad item/sample query
+paths, scene visual-boundary checks, WebGPU fixture runner, and WASM frame artifact packet scene
+smoke.
 
 New Python binding direction: keep `datoviz.raw` as the exact generated `ctypes` layer, and make
 top-level `import datoviz as dvz` the planned array-aware facade that preserves `dvz_*` names while

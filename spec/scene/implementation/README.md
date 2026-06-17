@@ -22,8 +22,8 @@ behavior instead of restating it here.
 6. [TRANSPARENCY_MSAA.md](TRANSPARENCY_MSAA.md): implementation-facing WBOIT, depth peeling,
    MSAA, alpha-to-coverage, and validation contract.
 7. [COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md](COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md):
-   implementation pickup plan for explicit texture roles, linear rendering, and one final sRGB
-   encode.
+   landed implementation checklist for explicit texture roles, linear rendering, one final sRGB
+   encode, and remaining export/readback audit points.
 8. [SCENE_VISUAL_BOUNDARY_GUARDRAILS.md](SCENE_VISUAL_BOUNDARY_GUARDRAILS.md): active
    visual-architecture phase for keeping generic scene code registry-driven and confining
    visual-specific behavior to family folders or explicit shared visual subsystems.
@@ -50,8 +50,9 @@ behavior instead of restating it here.
 5. Keep graph-backed effects and transparency implementation rules in `GRAPH_TECHNIQUES.md`.
 6. Keep SSAO and occlusion implementation rules in `OCCLUSION_EFFECTS.md`.
 7. Keep transparency, depth-peeling, and MSAA implementation rules in `TRANSPARENCY_MSAA.md`.
-8. Use `COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md` before changing sampled-field texture roles,
-   shader color linearization, render-target color formats, or screenshot/readback color encoding.
+8. Use `COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md` as the color-management audit checklist before
+   changing sampled-field texture roles, shader color linearization, render-target color formats, or
+   screenshot/readback color encoding.
 9. Use `FRAME_ARTIFACT_REFACTOR_PLAN.md` before changing scene emission ownership, WASM packet
    payloads, JSON emission, app/runtime handoff, or `dvz_figure_emit_frame()` semantics.
 10. Use `SCENE_VISUAL_BOUNDARY_GUARDRAILS.md` before adding new root-level visual switches,

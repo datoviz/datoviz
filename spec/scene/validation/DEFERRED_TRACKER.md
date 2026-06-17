@@ -30,6 +30,7 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 
 | Item | Source |
 |---|---|
+| Explicit linear `f16`/`f32` scientific image export/readback | `spec/scene/export/IMAGE_EXPORT.md`, `spec/scene/semantics/COLOR_MANAGEMENT.md` |
 | Per-panel render scale for image export | `spec/scene/export/IMAGE_EXPORT.md` |
 | Lanczos and high-quality downsampling filters for export | `spec/scene/export/IMAGE_EXPORT.md` |
 | GPU compute pre-pass for non-linear projection (e.g., geographic) | `spec/scene/semantics/NONLINEAR_TRANSFORMS.md` |

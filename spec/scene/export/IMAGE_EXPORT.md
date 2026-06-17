@@ -24,8 +24,9 @@ The scene-level contract for still image capture is:
 
 The scene has no knowledge of whether the rendered frame is displayed, saved, or discarded.
 
-Standard PNG screenshots are exported as sRGB-encoded 8-bit RGBA. Scientific readback should support
-explicit output encoding and precision choices, conceptually including:
+Standard PNG screenshots are exported as sRGB-encoded 8-bit RGBA. The v0.4.0 capture API exposes
+this screenshot/export contract. Scientific readback with explicit output encoding and precision
+choices is deferred beyond RC1, conceptually including:
 
 | Use | Output |
 |---|---|
@@ -197,4 +198,4 @@ This remains the intended scene-native path for embedding a rendered panel insid
 | `pipeline/FRAME_PLAN.md` | future offscreen panel ordering in FramePlan |
 | `integration/EXTERNAL_UI.md` | future `dvz_gui_image` offscreen-panel consumption |
 | `pipeline/RESOURCE_MODEL.md` | future offscreen texture as a scene-owned `TextureResource` |
-| `semantics/COLOR_MANAGEMENT.md` | sRGB screenshots, linear scientific readback, and output encoding |
+| `semantics/COLOR_MANAGEMENT.md` | sRGB screenshots, deferred linear scientific readback, and output encoding |

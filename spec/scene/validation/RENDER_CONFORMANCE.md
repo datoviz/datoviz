@@ -44,7 +44,9 @@ Color-management fixtures should include:
 3. image and mesh texture fixtures with `srgb_color`, `linear_color`, and `data` sampled fields,
 4. colormap fixtures proving sRGB-authored tables are linearized before compositing,
 5. WBOIT and ordinary alpha blending over non-black backgrounds in linear RGB,
-6. PNG screenshot export as sRGB `u8` RGBA and float readback as explicit linear RGBA.
+6. PNG screenshot export as sRGB `u8` RGBA.
+
+Deferred beyond RC1: float image export/readback as explicit linear `f16`/`f32` RGBA.
 
 Fixtures should avoid animation, wall-clock timing, random seeds without explicit initialization,
 and backend-dependent layout defaults. If a fixture needs randomness, it must pin the seed in the

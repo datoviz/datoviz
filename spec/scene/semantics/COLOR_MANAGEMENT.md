@@ -45,7 +45,7 @@ until the final display/export encode.
 | HDR color textures and linear render inputs | `linear_color` |
 | Generated intermediate render targets | linear color storage |
 | Standard screenshot/export image | sRGB `u8` RGBA |
-| Scientific float readback | explicit linear `f16` or `f32` RGBA |
+| Future scientific float readback | explicit linear `f16` or `f32` RGBA |
 
 ## Texture Color Roles
 
@@ -73,9 +73,9 @@ If the runtime uses an sRGB-capable final render target or swapchain format, har
 the final linear-to-sRGB encode. If the final target is not sRGB-encoded, the runtime must insert an
 explicit final encode pass when producing standard display or screenshot output.
 
-Standard 8-bit image output, such as PNG screenshots, is sRGB-encoded by default. Scientific
-readback paths may request explicit linear outputs; that choice belongs to the app/canvas/runtime
-layer, not to the scene graph.
+Standard 8-bit image output, such as PNG screenshots, is sRGB-encoded by default. Future scientific
+readback paths may request explicit linear outputs; that deferred choice belongs to the
+app/canvas/runtime layer, not to the scene graph.
 
 ## Conformance Requirements
 
@@ -84,9 +84,11 @@ layer, not to the scene graph.
    compositing, multisampling resolve, or post-processing arithmetic.
 3. Alpha values are never sRGB-decoded or sRGB-encoded.
 4. Standard PNG screenshot output is sRGB `u8` RGBA.
-5. Scientific readback can request explicit linear float RGBA output.
-6. Texture resources carry an explicit color role before lowering to backend resources.
-7. Final display/export encoding happens exactly once.
+5. Texture resources carry an explicit color role before lowering to backend resources.
+6. Final display/export encoding happens exactly once.
+
+Explicit linear `f16`/`f32` scientific image export/readback is deferred beyond RC1 and is not a
+v0.4.0 conformance requirement.
 
 ## Non-Goals
 

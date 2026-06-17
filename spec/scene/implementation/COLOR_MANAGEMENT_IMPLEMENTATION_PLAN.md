@@ -66,10 +66,11 @@ roles, linear rendering, or one final sRGB encode.
    generated render inputs must store linear color. Final display and standard screenshot output
    must encode to sRGB exactly once.
 
-7. Update screenshot and scientific readback paths.
+7. Update screenshot and classify scientific readback paths.
 
-   PNG screenshots are sRGB `u8` RGBA. Scientific/export readback should expose explicit linear
-   `f16` or `f32` RGBA outputs. Keep this in app/canvas/runtime code, not scene graph objects.
+   PNG screenshots are sRGB `u8` RGBA. Explicit linear `f16` or `f32` scientific/export image
+   readback is deferred beyond RC1. Keep that future API in app/canvas/runtime code, not scene
+   graph objects.
 
 8. Add diagnostics.
 
@@ -118,4 +119,3 @@ just test scene
 For shader/runtime/output changes, add the narrowest relevant native or WebGPU smoke available in
 the current environment. If Vulkan or browser execution is unavailable, record that explicitly in
 the commit or handoff.
-
