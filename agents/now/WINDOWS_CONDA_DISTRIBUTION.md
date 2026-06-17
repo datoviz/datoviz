@@ -1,0 +1,201 @@
+# Windows & Conda Distribution — Agent Handoff
+
+## Purpose
+
+This document captures strategic decisions and current status for Windows packaging and
+conda-forge distribution of datoviz v0.4. Read this first for priorities and rationale, then
+consult `C_DISTRIBUTION.md` for implementation details on each work item.
+
+---
+
+## Current status
+
+| Item | Status | Next action |
+|---|---|---|
+| pip Linux/macOS wheels | in flight | — |
+| pip Windows MinGW wheel | draft CI exists | Promote `.github/workflows-draft/wheels-v04.yml` to `.github/workflows/` |
+| MSVC wheel + `datoviz-config` + cmake config | designed, not started | `datoviz-config` console script is the entry point (C_DISTRIBUTION.md item 2) |
+| WSL2 install docs | not started | Pure documentation, no engineering |
+| "Build on Windows in VS" docs | not started | Pure documentation, no engineering |
+| conda-forge feedstock | not started | Validate Vulkan headless import first (see below) |
+| vcpkg overlay (custom registry) | not started | Needs stable release tag |
+| vcpkg main catalog submission | not started | After overlay is validated; review takes weeks |
+| Spack recipe | not started | `DVZ_VENDORED_DEPS=OFF` confirmed stable — low effort |
+| Homebrew formula | partial (justfile machinery exists) | Needs stable release tag |
+| `.deb` package | partial (justfile machinery exists) | After pkg-config and install metadata are stable |
+| Chocolatey / winget | **out of scope** | App installers, not C library distribution |
+| conan | post-v0.4 | Not datoviz's primary audience |
+| rpm | post-v0.4 | Less critical than deb for this audience |
+| Docker headless image | post-v0.4 | GPU passthrough complexity not worth pulling in now |
+| nix/nixpkgs | community-driven | No action needed |
+
+All items in the first block are **active now**, not staged across RC/final milestones.
+
+---
+
+## Windows
+
+### What Windows users expect, by persona
+
+| Persona | Expected path |
+|---|---|
+| Scientific Python user | `pip install datoviz` or `conda install datoviz` — done |
+| VS C++ developer | `vcpkg install datoviz`, then `find_package(datoviz)` in CMake |
+| MSYS2/MinGW developer | `datoviz-config --cflags --libs` or MinGW-compatible build |
+| End user (no dev) | Not datoviz's audience |
+
+### Wheels: MinGW is the right call
+
+Python users on Windows don't care whether the DLL was built with MinGW or MSVC. NumPy,
+SciPy, and matplotlib all ship MinGW-built DLLs on Windows. The MinGW wheel CI already
+exists in `.github/workflows-draft/` — promoting it to `.github/workflows/` is the single
+highest-leverage action for Windows support.
+
+The MSVC wheel matters for C developers who `pip install datoviz` and then link against it
+from a Visual Studio project. MinGW DLLs require a `.lib` import library generated from a
+`.def` file to be usable from MSVC, which is friction. The MSVC wheel ships `datoviz.dll` +
+`datoviz.lib` directly, which VS can consume without extra steps.
+
+### `datoviz-config` is not for MSVC
+
+`datoviz-config` emits `-I`/`-L` flags (GCC syntax). MSVC uses `/I`/`/LIBPATH:`. This is a
+deliberate decision — nobody writes MSVC projects as raw `cl.exe` invocations; they use
+CMake, MSBuild, or Visual Studio. The documented MSVC integration path is
+`find_package(datoviz)` via the bundled `DatovizConfig.cmake`. See C_DISTRIBUTION.md item 4
+for the cmake config design.
+
+### DLL placement on Windows
+
+There is no rpath on Windows. Users must either put `datoviz.dll` next to their binary or
+add it to PATH. The documented solution (C_DISTRIBUTION.md item 7) is a CMake
+`add_custom_command` post-build copy snippet. Document this in the C integration guide.
+
+### Build from source in Visual Studio
+
+This already works. VS 2019+ has first-class CMake support — `File > Open > Folder` picks up
+`CMakePresets.json`, and the `msvc` preset is defined. Prerequisites: Visual Studio 2022,
+Vulkan SDK, vcpkg. What's missing is a "Building on Windows" documentation page walking
+through those three steps. No engineering required.
+
+### vcpkg is high priority
+
+vcpkg is the standard modern dependency management path for VS C++ developers. When vcpkg is
+integrated with VS (default in VS 2022), users add `datoviz` to `vcpkg.json` and
+`find_package(datoviz)` works automatically — no manual include paths, no `.lib` hunting.
+
+**Two-stage approach:**
+1. **Custom vcpkg overlay** (ships immediately, no review wait) — a small repo users point
+   their vcpkg at. A `portfile.cmake` is ~30 lines. Unblocked once there is a stable release
+   tag.
+2. **Official vcpkg registry submission** — after the overlay is validated. Microsoft's review
+   takes 1–4 weeks. This is what makes datoviz discoverable via `vcpkg search`.
+
+vcpkg is bumped from post-v0.4 to **active now**. It is the correct answer to "standard way
+to add datoviz as a VS dependency."
+
+### Chocolatey and winget are out of scope
+
+These are app installers (think `choco install git`), not C library distribution mechanisms.
+They have no role in the datoviz distribution story.
+
+### MSYS2/pacman
+
+Community-driven. Once the MinGW wheel is stable and there is a release tag, someone will
+submit a `mingw-w64-datoviz` package to the MSYS2 package repo. No action needed; document
+MSYS2 as a supported path.
+
+### WSL2
+
+The recommended Windows path until the native MSVC wheel stabilises. Pure documentation
+work — see C_DISTRIBUTION.md item 9 for the step-by-step. Write this page first since it
+unblocks Windows users immediately at zero engineering cost.
+
+---
+
+## conda
+
+### Why conda matters for datoviz's audience
+
+The scientific Python community — neuroscience, bioinformatics, computational biology, HPC —
+is heavily conda-first. Many users in this space have never used pip directly. If datoviz
+is not on conda-forge, a real segment of the target audience hits friction at install time.
+IBL itself and most neuroscience labs run conda environments.
+
+### Split package pattern
+
+conda-forge convention for libraries with Python bindings is two packages:
+
+- `datoviz` — the C library (`libdatoviz.so` + headers), no Python dependency
+- `python-datoviz` — Python bindings, depends on `datoviz`
+
+This mirrors OpenCV (`libopencv` + `py-opencv`), VTK, HDF5. C developers install just
+`datoviz`; Python users get both. Submit both recipes together.
+
+### Dynamic linking vs. pip wheels
+
+pip wheels statically vendor freetype, zlib, etc. into `libdatoviz`. conda packages
+dynamically link against conda's canonical copies. The `DVZ_VENDORED_DEPS=OFF` CMake flag
+gates system-first resolution of glfw, cglm, mimalloc, and kvazaar — confirmed working (see
+C_DISTRIBUTION.md vendored dependency audit). Set this flag in the conda recipe.
+
+### The Vulkan headless question — validate this first
+
+conda-forge CI builds run without a GPU. Does `import datoviz` (or loading `libdatoviz`)
+require a live Vulkan device, or only at first render? If it crashes at import time without
+a GPU, the conda-forge CI will fail and the feedstock cannot be accepted.
+
+**Validate before submitting the feedstock:**
+```python
+# Should not crash in a headless environment with no GPU
+import datoviz as dvz
+scene = dvz.dvz_scene()
+dvz.dvz_scene_destroy(scene)
+```
+
+If this crashes, the library needs a lazy Vulkan initialisation path — defer device creation
+until first `dvz_app()` call, not at library load or `dvz_scene()`. This is the single
+largest unknown for the conda-forge submission.
+
+### conda-forge submission process
+
+1. Validate Vulkan headless import (above)
+2. Write `recipe/meta.yaml` with `DVZ_VENDORED_DEPS=OFF` and correct `host:`/`run:` deps
+3. Submit to `conda-forge/staged-recipes` (review takes 1–3 weeks)
+4. After merge, the feedstock lives at `conda-forge/datoviz-feedstock`
+5. conda-forge bot handles dependency update PRs automatically from then on
+
+Requires a stable release tag before submission. conda-forge will not accept a moving target.
+
+### Spack
+
+~50 lines of Python, `DVZ_VENDORED_DEPS=OFF` already works. Datoviz's neuroscience audience
+overlaps heavily with HPC clusters (national labs, universities) where Spack is the dominant
+package manager and pip is unavailable. Bumped from post-v0.4 to **active now** — low effort,
+high audience impact. See C_DISTRIBUTION.md item 15 for the recipe skeleton.
+
+---
+
+## Decisions made — do not re-open
+
+- **MinGW wheel first**, not MSVC. Python users don't care about toolchain.
+- **`datoviz-config` is GCC-only**. MSVC users use CMake `find_package`.
+- **Dynamic linking only** for `libdatoviz` itself (no static build of datoviz).
+- **vcpkg overlay first**, then main catalog submission. Don't wait for registry review.
+- **Chocolatey and winget are out of scope** — app installers, not relevant.
+- **conda split-package pattern** (`datoviz` + `python-datoviz`), matching OpenCV/VTK.
+- **Vulkan headless validation is a prerequisite** for the conda-forge submission.
+- **Spack and vcpkg are bumped to active** — previously post-v0.4, now in scope.
+- **conan, rpm, Docker, nix** remain post-v0.4.
+
+---
+
+## Key files
+
+| File | Purpose |
+|---|---|
+| `agents/now/C_DISTRIBUTION.md` | Detailed implementation spec for all distribution work items |
+| `.github/workflows-draft/wheels-v04.yml` | Draft wheel CI including Windows MinGW job — promote this |
+| `CMakePresets.json` | `msvc` and `mingw` presets for Windows builds |
+| `justfile` | `just msvc`, `just mingw` recipes |
+| `datoviz/cli.py` | Does not exist yet — create for `datoviz-config` console script |
+| `cmake/DatovizConfig.cmake.wheel` | Does not exist yet — create for `find_package` support |
