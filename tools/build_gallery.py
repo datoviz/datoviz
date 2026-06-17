@@ -446,6 +446,7 @@ def render_card(
     image_url_base: str,
     image_format: str = DEFAULT_IMAGE_FORMAT,
     show_tags: bool = True,
+    show_status: bool = True,
 ) -> str:
     page = Path(example.page_path)
     href = page.as_posix()
@@ -456,15 +457,15 @@ def render_card(
         if len(example.tags) > 5:
             tags += ", ..."
         tag_line = f"<br><span>{tags}</span>" if tags else ""
+    meta_line = f"`{example.status}` `{example.lane}`{tag_line}" if show_status else tag_line
+    meta_block = f"\n{meta_line}\n" if meta_line else ""
     return f"""\
 <div class="card" markdown="1">
 
 ### [{example.title}]({href})
 
 {media}
-
-`{example.status}` `{example.lane}`{tag_line}
-
+{meta_block}
 {example.summary}
 
 </div>
@@ -571,7 +572,7 @@ def render_index(
     lines.append('<div class="grid cards" markdown="1">')
     lines.append("")
     for example in showcase_examples:
-        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
+        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False, show_status=False))
     lines.append("</div>")
     lines.append("")
 
@@ -587,7 +588,7 @@ def render_index(
         lines.append('<div class="grid cards" markdown="1">')
         lines.append("")
         for example in group_examples:
-            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
+            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False, show_status=False))
         lines.append("</div>")
         lines.append("")
 
@@ -603,7 +604,7 @@ def render_index(
         lines.append('<div class="grid cards" markdown="1">')
         lines.append("")
         for example in group_examples:
-            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
+            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False, show_status=False))
         lines.append("</div>")
         lines.append("")
     lines.extend(
