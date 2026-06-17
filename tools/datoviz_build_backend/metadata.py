@@ -51,8 +51,9 @@ def metadata_text(root: Path) -> str:
             msg["Author-email"] = str(author["email"])
     for classifier in project.get("classifiers", []):
         msg["Classifier"] = str(classifier)
-    for keyword in project.get("keywords", []):
-        msg["Keywords"] = str(keyword)
+    keywords = project.get("keywords", [])
+    if keywords:
+        msg["Keywords"] = ", ".join(str(keyword) for keyword in keywords)
     for dep in project.get("dependencies", []):
         msg["Requires-Dist"] = str(dep)
     optional = project.get("optional-dependencies", {})
@@ -68,6 +69,8 @@ def metadata_text(root: Path) -> str:
     if isinstance(readme, str):
         readme_path = root / readme
         if readme_path.exists():
+            if readme_path.suffix.lower() == ".md":
+                msg["Description-Content-Type"] = "text/markdown"
             body = "\n" + readme_path.read_text(encoding="utf8")
     return msg.as_string() + body
 
@@ -93,4 +96,3 @@ def entry_points_text(project: dict) -> str:
     for name, target in sorted(scripts.items()):
         lines.append(f"{name} = {target}")
     return "\n".join(lines) + "\n"
-
