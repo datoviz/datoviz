@@ -4,30 +4,21 @@
 
 arcball controller attached to a small 3D mesh.
 
-- ID: `feature_controller_arcball`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/controller_arcball.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
-- WebGPU requirements: `controller`, `arcball`, `mesh`
-- Build: `just example-c features/controller_arcball`
-- Smoke: `./build/examples/c/features/controller_arcball --png`
-- Validation: `smoke+interaction+screenshot`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_panzoom"><span>Previous</span><strong>Panzoom</strong></a>
+<a class="dvz-example-nav__link" href="../feature_controller_turntable"><span>Next</span><strong>Turntable Controller</strong></a>
+</div>
+</nav>
 
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 ![Arcball Controller](../../../assets/gallery/v0.4/features/feature_controller_arcball.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -36,3 +27,38 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/controller_arcball.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_controller_arcball`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/controller_arcball.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-planned`
+    - WebGPU requirements: `controller`, `arcball`, `mesh`
+    - Build: `just example-c features/controller_arcball`
+    - Smoke: `./build/examples/c/features/controller_arcball --png`
+    - Validation: `smoke+interaction+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_panzoom"><span>Previous</span><strong>Panzoom</strong></a>
+<a class="dvz-example-nav__link" href="../feature_controller_turntable"><span>Next</span><strong>Turntable Controller</strong></a>
+</div>
+</nav>

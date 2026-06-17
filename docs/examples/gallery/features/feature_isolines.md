@@ -4,39 +4,31 @@
 
 CPU contour extraction rendered as retained segment overlays.
 
-- ID: `feature_isolines`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/isolines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/isolines.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_isolines"><code>examples/webgpu/live.html?id=feature_isolines</code></a>
-- WebGPU requirements: `mesh`, `segment`, `controller`, `arcball`
-- Build: `just example-c features/isolines`
-- Smoke: `./build/examples/c/features/isolines --png`
-- Validation: `smoke+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Isolines](../../../assets/gallery/v0.4/features/feature_isolines.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=feature_isolines" title="Isolines WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_sampled_field_3d"><span>Previous</span><strong>3D Sampled Field</strong></a>
+<a class="dvz-example-nav__link" href="../image_probe"><span>Next</span><strong>Image Probe</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=feature_isolines">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Isolines](../../../assets/gallery/v0.4/features/feature_isolines.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=feature_isolines" title="Isolines WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=feature_isolines">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/isolines.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_isolines`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/isolines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/isolines.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_isolines"><code>examples/webgpu/live.html?id=feature_isolines</code></a>
+    - WebGPU requirements: `mesh`, `segment`, `controller`, `arcball`
+    - Build: `just example-c features/isolines`
+    - Smoke: `./build/examples/c/features/isolines --png`
+    - Validation: `smoke+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_sampled_field_3d"><span>Previous</span><strong>3D Sampled Field</strong></a>
+<a class="dvz-example-nav__link" href="../image_probe"><span>Next</span><strong>Image Probe</strong></a>
+</div>
+</nav>

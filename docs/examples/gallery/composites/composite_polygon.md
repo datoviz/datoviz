@@ -4,43 +4,31 @@
 
 clean semantic polygon and polygon-set composites.
 
-- ID: `composite_polygon`
-- Category: `composite`
-- Lane: `composites`
-- Status: `supported`
-- Source: [`examples/c/composites/polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=composite_polygon"><code>examples/webgpu/live.html?id=composite_polygon</code></a>
-- WebGPU requirements: `composite`, `polygon-set`, `primitive`, `segment`, `panzoom`
-- Build: `just example-c composites/polygon`
-- Smoke: `./build/examples/c/composites/polygon --png`
-- Validation: `smoke+screenshot`
-
-## Tags
-
-`composite`, `polygon`, `polygon-set`, `holes`, `panzoom`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Polygon Composite](../../../assets/gallery/v0.4/composites/composite_polygon.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=composite_polygon" title="Polygon Composite WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+<a class="dvz-example-nav__link" href="../composite_graph"><span>Next</span><strong>Graph Composite</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=composite_polygon">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Polygon Composite](../../../assets/gallery/v0.4/composites/composite_polygon.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=composite_polygon" title="Polygon Composite WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=composite_polygon">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -49,3 +37,43 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/composites/polygon.c"
     ```
+
+??? info "Example details"
+
+    - ID: `composite_polygon`
+    - Category: `composite`
+    - Lane: `composites`
+    - Status: `supported`
+    - Source: [`examples/c/composites/polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=composite_polygon"><code>examples/webgpu/live.html?id=composite_polygon</code></a>
+    - WebGPU requirements: `composite`, `polygon-set`, `primitive`, `segment`, `panzoom`
+    - Build: `just example-c composites/polygon`
+    - Smoke: `./build/examples/c/composites/polygon --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `composite`, `polygon`, `polygon-set`, `holes`, `panzoom`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+<a class="dvz-example-nav__link" href="../composite_graph"><span>Next</span><strong>Graph Composite</strong></a>
+</div>
+</nav>

@@ -4,44 +4,21 @@
 
 animated textured mouse mesh with trajectory and skeleton trails.
 
-- ID: `showcase_synthetic_mouse`
-- Category: `showcase`
-- Lane: `showcases`
-- Status: `prototype`
-- Source: [`examples/c/showcases/synthetic_mouse.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/synthetic_mouse.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-deferred`
-- WebGPU requirements: `textured-mesh`, `animation`, `reference-grid`, `arcball`, `video`
-- Build: `just example-c showcases/synthetic_mouse`
-- Smoke: `./build/examples/c/showcases/synthetic_mouse --png`
-- Validation: `smoke+screenshot+video`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../showcase_embedding_atlas"><span>Previous</span><strong>Embedding Atlas</strong></a>
+<a class="dvz-example-nav__link" href="../protein_arcball_viewer"><span>Next</span><strong>Protein</strong></a>
+</div>
+</nav>
 
-## Tags
-
-`scientific`, `synthetic`, `textured-mesh`, `animation`, `skeleton`, `trajectory`, `reference-grid`, `arcball`, `video`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | generated |
-
-## Dataset
-
-| Field | Value |
-| --- | --- |
-| `name` | Synthetic mouse animation validation bundle |
-| `source` | https://osf.io/h3ec5/ |
-| `license` | generated fallback; upstream OSF terms require review for real assets |
-| `preprocessing` | python tools/data/prepare_synthetic_mouse.py |
-| `cache_prepared_path` | .cache/datoviz/examples/synthetic_mouse/prepared |
-
-## Media
+## Preview
 
 ![Synthetic Mouse](../../../assets/gallery/v0.4/showcases/showcase_synthetic_mouse.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -50,3 +27,52 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/showcases/synthetic_mouse.c"
     ```
+
+??? info "Example details"
+
+    - ID: `showcase_synthetic_mouse`
+    - Category: `showcase`
+    - Lane: `showcases`
+    - Status: `prototype`
+    - Source: [`examples/c/showcases/synthetic_mouse.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/synthetic_mouse.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-deferred`
+    - WebGPU requirements: `textured-mesh`, `animation`, `reference-grid`, `arcball`, `video`
+    - Build: `just example-c showcases/synthetic_mouse`
+    - Smoke: `./build/examples/c/showcases/synthetic_mouse --png`
+    - Validation: `smoke+screenshot+video`
+
+    ### Tags
+
+    `scientific`, `synthetic`, `textured-mesh`, `animation`, `skeleton`, `trajectory`, `reference-grid`, `arcball`, `video`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | generated |
+
+    ### Dataset
+
+    | Field | Value |
+    | --- | --- |
+    | `name` | Synthetic mouse animation validation bundle |
+    | `source` | https://osf.io/h3ec5/ |
+    | `license` | generated fallback; upstream OSF terms require review for real assets |
+    | `preprocessing` | python tools/data/prepare_synthetic_mouse.py |
+    | `cache_prepared_path` | .cache/datoviz/examples/synthetic_mouse/prepared |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../showcase_embedding_atlas"><span>Previous</span><strong>Embedding Atlas</strong></a>
+<a class="dvz-example-nav__link" href="../protein_arcball_viewer"><span>Next</span><strong>Protein</strong></a>
+</div>
+</nav>

@@ -4,39 +4,31 @@
 
 smallest runner-backed retained scene with one point visual.
 
-- ID: `feature_basic_scene`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/basic_scene.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/basic_scene.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_basic_scene"><code>examples/webgpu/live.html?id=feature_basic_scene</code></a>
-- WebGPU requirements: `point`
-- Build: `just example-c features/basic_scene`
-- Smoke: `./build/examples/c/features/basic_scene --png`
-- Validation: `smoke+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Basic Scene](../../../assets/gallery/v0.4/features/feature_basic_scene.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=feature_basic_scene" title="Basic Scene WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+<a class="dvz-example-nav__link" href="../feature_coordinate_system"><span>Next</span><strong>Coordinate System</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=feature_basic_scene">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Basic Scene](../../../assets/gallery/v0.4/features/feature_basic_scene.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=feature_basic_scene" title="Basic Scene WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=feature_basic_scene">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/basic_scene.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_basic_scene`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/basic_scene.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/basic_scene.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_basic_scene"><code>examples/webgpu/live.html?id=feature_basic_scene</code></a>
+    - WebGPU requirements: `point`
+    - Build: `just example-c features/basic_scene`
+    - Smoke: `./build/examples/c/features/basic_scene --png`
+    - Validation: `smoke+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+<a class="dvz-example-nav__link" href="../feature_coordinate_system"><span>Next</span><strong>Coordinate System</strong></a>
+</div>
+</nav>

@@ -4,39 +4,31 @@
 
 side-by-side visual depth-test toggle with overlapping 3D points.
 
-- ID: `technique_depth_test`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/technique_depth_test.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_test.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=technique_depth_test"><code>examples/webgpu/live.html?id=technique_depth_test</code></a>
-- WebGPU requirements: `depth-test`, `point`, `controller`
-- Build: `just example-c features/technique_depth_test`
-- Smoke: `./build/examples/c/features/technique_depth_test --png`
-- Validation: `smoke+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Depth Test Toggle](../../../assets/gallery/v0.4/features/technique_depth_test.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=technique_depth_test" title="Depth Test Toggle WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../alpha_blending"><span>Previous</span><strong>Alpha Blending</strong></a>
+<a class="dvz-example-nav__link" href="../feature_bounds_overlay"><span>Next</span><strong>Bounds Overlay</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=technique_depth_test">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Depth Test Toggle](../../../assets/gallery/v0.4/features/technique_depth_test.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=technique_depth_test" title="Depth Test Toggle WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=technique_depth_test">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/technique_depth_test.c"
     ```
+
+??? info "Example details"
+
+    - ID: `technique_depth_test`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/technique_depth_test.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_test.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=technique_depth_test"><code>examples/webgpu/live.html?id=technique_depth_test</code></a>
+    - WebGPU requirements: `depth-test`, `point`, `controller`
+    - Build: `just example-c features/technique_depth_test`
+    - Smoke: `./build/examples/c/features/technique_depth_test --png`
+    - Validation: `smoke+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../alpha_blending"><span>Previous</span><strong>Alpha Blending</strong></a>
+<a class="dvz-example-nav__link" href="../feature_bounds_overlay"><span>Next</span><strong>Bounds Overlay</strong></a>
+</div>
+</nav>

@@ -4,30 +4,21 @@
 
 categorical labels query proof with deterministic label-id readout.
 
-- ID: `feature_probe_labels`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/probe_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
-- WebGPU requirements: `labels`, `query-readback`, `panzoom`
-- Build: `just example-c features/probe_labels`
-- Smoke: `./build/examples/c/features/probe_labels --png`
-- Validation: `smoke+readback+screenshot`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_overlay_card"><span>Previous</span><strong>Overlay Card</strong></a>
+<a class="dvz-example-nav__link" href="../feature_builtin_shapes_2d"><span>Next</span><strong>Builtin Shapes 2D</strong></a>
+</div>
+</nav>
 
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 ![Label Probe](../../../assets/gallery/v0.4/features/feature_probe_labels.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -36,3 +27,38 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/probe_labels.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_probe_labels`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/probe_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-planned`
+    - WebGPU requirements: `labels`, `query-readback`, `panzoom`
+    - Build: `just example-c features/probe_labels`
+    - Smoke: `./build/examples/c/features/probe_labels --png`
+    - Validation: `smoke+readback+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_overlay_card"><span>Previous</span><strong>Overlay Card</strong></a>
+<a class="dvz-example-nav__link" href="../feature_builtin_shapes_2d"><span>Next</span><strong>Builtin Shapes 2D</strong></a>
+</div>
+</nav>

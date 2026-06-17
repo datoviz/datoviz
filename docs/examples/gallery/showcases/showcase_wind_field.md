@@ -4,43 +4,31 @@
 
 synthetic weather-like scalar and vector field showcase.
 
-- ID: `showcase_wind_field`
-- Category: `showcase`
-- Lane: `showcases`
-- Status: `supported`
-- Source: [`examples/c/showcases/wind_field.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/wind_field.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=showcase_wind_field"><code>examples/webgpu/live.html?id=showcase_wind_field</code></a>
-- WebGPU requirements: `image`, `vector`, `path`, `colorbar`, `panzoom`
-- Build: `just example-c showcases/wind_field`
-- Smoke: `./build/examples/c/showcases/wind_field --png`
-- Validation: `smoke+screenshot`
-
-## Tags
-
-`scientific`, `synthetic`, `scalar-field`, `vector-field`, `wind-field`, `colorbar`, `capture`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Wind Field](../../../assets/gallery/v0.4/showcases/showcase_wind_field.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=showcase_wind_field" title="Wind Field WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../textured_terrain_or_planet"><span>Previous</span><strong>Textured Planets</strong></a>
+<a class="dvz-example-nav__link" href="../showcase_gpu_particle_smoke"><span>Next</span><strong>GPU Particle Smoke</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=showcase_wind_field">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Wind Field](../../../assets/gallery/v0.4/showcases/showcase_wind_field.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=showcase_wind_field" title="Wind Field WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=showcase_wind_field">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -49,3 +37,43 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/showcases/wind_field.c"
     ```
+
+??? info "Example details"
+
+    - ID: `showcase_wind_field`
+    - Category: `showcase`
+    - Lane: `showcases`
+    - Status: `supported`
+    - Source: [`examples/c/showcases/wind_field.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/wind_field.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=showcase_wind_field"><code>examples/webgpu/live.html?id=showcase_wind_field</code></a>
+    - WebGPU requirements: `image`, `vector`, `path`, `colorbar`, `panzoom`
+    - Build: `just example-c showcases/wind_field`
+    - Smoke: `./build/examples/c/showcases/wind_field --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `scientific`, `synthetic`, `scalar-field`, `vector-field`, `wind-field`, `colorbar`, `capture`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../textured_terrain_or_planet"><span>Previous</span><strong>Textured Planets</strong></a>
+<a class="dvz-example-nav__link" href="../showcase_gpu_particle_smoke"><span>Next</span><strong>GPU Particle Smoke</strong></a>
+</div>
+</nav>

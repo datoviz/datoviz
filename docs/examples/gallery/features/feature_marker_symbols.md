@@ -4,34 +4,21 @@
 
 marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
-- ID: `feature_marker_symbols`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-deferred`
-- WebGPU requirements: `marker`, `symbol-set`, `glyph-atlas`
-- Build: `just example-c features/marker_symbols`
-- Smoke: `./build/examples/c/features/marker_symbols --png`
-- Validation: `smoke+screenshot`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_builtin_shapes_3d"><span>Previous</span><strong>Builtin Shapes 3D</strong></a>
+<a class="dvz-example-nav__link" href="../feature_bezier_curve_path"><span>Next</span><strong>Bezier Curve Path</strong></a>
+</div>
+</nav>
 
-## Tags
-
-`marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`, `svg-path-symbol`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 ![Marker Symbols](../../../assets/gallery/v0.4/features/feature_marker_symbols.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -40,3 +27,42 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/marker_symbols.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_marker_symbols`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-deferred`
+    - WebGPU requirements: `marker`, `symbol-set`, `glyph-atlas`
+    - Build: `just example-c features/marker_symbols`
+    - Smoke: `./build/examples/c/features/marker_symbols --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`, `svg-path-symbol`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_builtin_shapes_3d"><span>Previous</span><strong>Builtin Shapes 3D</strong></a>
+<a class="dvz-example-nav__link" href="../feature_bezier_curve_path"><span>Next</span><strong>Bezier Curve Path</strong></a>
+</div>
+</nav>

@@ -4,42 +4,21 @@
 
 local Allen mouse brain RGBA volume and occluded slice.
 
-- ID: `brain_volume`
-- Category: `showcase`
-- Lane: `showcases`
-- Status: `prototype`
-- Source: [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-planned`
-- WebGPU requirements: `volume`, `texture-3d`, `arcball`
-- Build: `just example-c showcases/brain_volume`
-- Smoke: `./build/examples/c/showcases/brain_volume --png`
-- Validation: `smoke+screenshot`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+<a class="dvz-example-nav__link" href="../showcase_lipid_brain_atlas"><span>Next</span><strong>Lipid Brain Atlas</strong></a>
+</div>
+</nav>
 
-## Tags
-
-`scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, `arcball`, `capture`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | prepared |
-
-## Dataset
-
-| Field | Value |
-| --- | --- |
-| `name` | Allen mouse brain RGBA volume |
-| `source` | data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz |
-| `license` | repository data submodule terms |
-
-## Media
+## Preview
 
 ![Allen Mouse Brain](../../../assets/gallery/v0.4/showcases/brain_volume.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -48,3 +27,50 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/showcases/brain_volume.c"
     ```
+
+??? info "Example details"
+
+    - ID: `brain_volume`
+    - Category: `showcase`
+    - Lane: `showcases`
+    - Status: `prototype`
+    - Source: [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-planned`
+    - WebGPU requirements: `volume`, `texture-3d`, `arcball`
+    - Build: `just example-c showcases/brain_volume`
+    - Smoke: `./build/examples/c/showcases/brain_volume --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, `arcball`, `capture`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | prepared |
+
+    ### Dataset
+
+    | Field | Value |
+    | --- | --- |
+    | `name` | Allen mouse brain RGBA volume |
+    | `source` | data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz |
+    | `license` | repository data submodule terms |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+<a class="dvz-example-nav__link" href="../showcase_lipid_brain_atlas"><span>Next</span><strong>Lipid Brain Atlas</strong></a>
+</div>
+</nav>

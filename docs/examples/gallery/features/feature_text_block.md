@@ -4,39 +4,31 @@
 
 compact retained text block with stable screen placement.
 
-- ID: `feature_text_block`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/text_block.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/text_block.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_text_block"><code>examples/webgpu/live.html?id=feature_text_block</code></a>
-- WebGPU requirements: `text`, `glyph-atlas`
-- Build: `just example-c features/text_block`
-- Smoke: `./build/examples/c/features/text_block --png`
-- Validation: `smoke+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Text Block](../../../assets/gallery/v0.4/features/feature_text_block.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=feature_text_block" title="Text Block WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../annotation_readout"><span>Previous</span><strong>Annotation Readout</strong></a>
+<a class="dvz-example-nav__link" href="../feature_overlay_card"><span>Next</span><strong>Overlay Card</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=feature_text_block">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Text Block](../../../assets/gallery/v0.4/features/feature_text_block.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=feature_text_block" title="Text Block WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=feature_text_block">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/text_block.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_text_block`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/text_block.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/text_block.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_text_block"><code>examples/webgpu/live.html?id=feature_text_block</code></a>
+    - WebGPU requirements: `text`, `glyph-atlas`
+    - Build: `just example-c features/text_block`
+    - Smoke: `./build/examples/c/features/text_block --png`
+    - Validation: `smoke+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../annotation_readout"><span>Previous</span><strong>Annotation Readout</strong></a>
+<a class="dvz-example-nav__link" href="../feature_overlay_card"><span>Next</span><strong>Overlay Card</strong></a>
+</div>
+</nav>

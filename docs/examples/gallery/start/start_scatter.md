@@ -4,29 +4,21 @@
 
 quickstart scatter plot: 10 000 random colored points with pan/zoom.
 
-- ID: `start_scatter`
-- Category: `start`
-- Lane: `start`
-- Status: `supported`
-- Source: [`examples/c/start/scatter.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/start/scatter.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-deferred`
-- Build: `just example-c start/scatter`
-- Smoke: `./build/examples/c/start/scatter --png`
-- Validation: `smoke+screenshot`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../..">Examples</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+</div>
+</nav>
 
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 ![Scatter Plot](../../../assets/gallery/v0.4/start/start_scatter.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -35,3 +27,37 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/start/scatter.c"
     ```
+
+??? info "Example details"
+
+    - ID: `start_scatter`
+    - Category: `start`
+    - Lane: `start`
+    - Status: `supported`
+    - Source: [`examples/c/start/scatter.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/start/scatter.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-deferred`
+    - Build: `just example-c start/scatter`
+    - Smoke: `./build/examples/c/start/scatter --png`
+    - Validation: `smoke+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../..">Examples</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+</div>
+</nav>

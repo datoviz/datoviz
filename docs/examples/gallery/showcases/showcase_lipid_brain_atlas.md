@@ -4,45 +4,21 @@
 
 section/channel lipid intensity showcase.
 
-- ID: `showcase_lipid_brain_atlas`
-- Category: `showcase`
-- Lane: `showcases`
-- Status: `prototype`
-- Source: [`examples/c/showcases/lipid_brain_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/lipid_brain_atlas.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-deferred`
-- WebGPU requirements: `image`, `sampled-field`, `colorbar`, `panzoom`, `video`
-- Build: `just example-c showcases/lipid_brain_atlas`
-- Smoke: `./build/examples/c/showcases/lipid_brain_atlas --png`
-- Validation: `smoke+screenshot+video`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../brain_volume"><span>Previous</span><strong>Allen Mouse Brain</strong></a>
+<a class="dvz-example-nav__link" href="../showcase_embedding_atlas"><span>Next</span><strong>Embedding Atlas</strong></a>
+</div>
+</nav>
 
-## Tags
-
-`scientific`, `real-data`, `lipid-atlas`, `image`, `sampled-field`, `colorbar`, `panzoom`, `video`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | prepared |
-
-## Dataset
-
-| Field | Value |
-| --- | --- |
-| `name` | Lipid Brain Atlas peaks parquet |
-| `source` | https://zenodo.org/records/15379499 |
-| `license` | Zenodo dataset terms apply |
-| `preprocessing` | python tools/data/prepare_lipid_brain_atlas.py --synthetic --force |
-| `cache_prepared_path` | .cache/datoviz/examples/lipid_brain_atlas/prepared |
-| `raw_cache_path` | $DVZ_DATASET_CACHE/lipid_brain_atlas/peaks.parquet |
-
-## Media
+## Preview
 
 ![Lipid Brain Atlas](../../../assets/gallery/v0.4/showcases/showcase_lipid_brain_atlas.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -51,3 +27,53 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/showcases/lipid_brain_atlas.c"
     ```
+
+??? info "Example details"
+
+    - ID: `showcase_lipid_brain_atlas`
+    - Category: `showcase`
+    - Lane: `showcases`
+    - Status: `prototype`
+    - Source: [`examples/c/showcases/lipid_brain_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/lipid_brain_atlas.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-deferred`
+    - WebGPU requirements: `image`, `sampled-field`, `colorbar`, `panzoom`, `video`
+    - Build: `just example-c showcases/lipid_brain_atlas`
+    - Smoke: `./build/examples/c/showcases/lipid_brain_atlas --png`
+    - Validation: `smoke+screenshot+video`
+
+    ### Tags
+
+    `scientific`, `real-data`, `lipid-atlas`, `image`, `sampled-field`, `colorbar`, `panzoom`, `video`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | prepared |
+
+    ### Dataset
+
+    | Field | Value |
+    | --- | --- |
+    | `name` | Lipid Brain Atlas peaks parquet |
+    | `source` | https://zenodo.org/records/15379499 |
+    | `license` | Zenodo dataset terms apply |
+    | `preprocessing` | python tools/data/prepare_lipid_brain_atlas.py --synthetic --force |
+    | `cache_prepared_path` | .cache/datoviz/examples/lipid_brain_atlas/prepared |
+    | `raw_cache_path` | $DVZ_DATASET_CACHE/lipid_brain_atlas/peaks.parquet |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../brain_volume"><span>Previous</span><strong>Allen Mouse Brain</strong></a>
+<a class="dvz-example-nav__link" href="../showcase_embedding_atlas"><span>Next</span><strong>Embedding Atlas</strong></a>
+</div>
+</nav>

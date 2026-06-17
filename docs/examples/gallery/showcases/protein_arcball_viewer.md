@@ -4,63 +4,31 @@
 
 RCSB PDB protein structure rendered as clustered spheres.
 
-- ID: `protein_arcball_viewer`
-- Category: `showcase`
-- Lane: `showcases`
-- Status: `supported`
-- Source: [`examples/c/showcases/protein.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/protein.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=protein_arcball_viewer"><code>examples/webgpu/live.html?id=protein_arcball_viewer</code></a>
-- WebGPU requirements: `sphere`, `arcball`, `material`, `real-data`
-- Build: `just example-c showcases/protein`
-- Smoke: `./build/examples/c/showcases/protein --png`
-- Validation: `smoke+screenshot+manual`
-
-## Tags
-
-`scientific`, `real-data`, `molecular`, `sphere`, `arcball`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | real |
-
-## Dataset
-
-| Field | Value |
-| --- | --- |
-| `name` | RCSB PDB protein structure |
-| `source` | https://files.rcsb.org/download/{pdb_id}.pdb |
-| `license` | RCSB PDB data usage policy applies. |
-| `default_pdb_id` | 6M0J |
-| `fallback_pdb_id` | 1UBQ |
-| `fallback_prepared_path` | data/examples/proteins/1ubq/prepared |
-| `preprocessing` | python tools/data/prepare_protein_arcball.py 1UBQ --regenerate |
-
-## Encoding
-
-| Field | Value |
-| --- | --- |
-| `position` | atom coordinates normalized into scene space |
-| `color` | element-style atom colors from the preparation bundle |
-| `size` | atom radii scaled for sphere impostors |
-
-## Media
-
-![Protein](../../../assets/gallery/v0.4/showcases/protein_arcball_viewer.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=protein_arcball_viewer" title="Protein WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../showcase_synthetic_mouse"><span>Previous</span><strong>Synthetic Mouse</strong></a>
+<a class="dvz-example-nav__link" href="../point_cloud"><span>Next</span><strong>Point Cloud</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=protein_arcball_viewer">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Protein](../../../assets/gallery/v0.4/showcases/protein_arcball_viewer.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=protein_arcball_viewer" title="Protein WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=protein_arcball_viewer">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -69,3 +37,63 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/showcases/protein.c"
     ```
+
+??? info "Example details"
+
+    - ID: `protein_arcball_viewer`
+    - Category: `showcase`
+    - Lane: `showcases`
+    - Status: `supported`
+    - Source: [`examples/c/showcases/protein.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/protein.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=protein_arcball_viewer"><code>examples/webgpu/live.html?id=protein_arcball_viewer</code></a>
+    - WebGPU requirements: `sphere`, `arcball`, `material`, `real-data`
+    - Build: `just example-c showcases/protein`
+    - Smoke: `./build/examples/c/showcases/protein --png`
+    - Validation: `smoke+screenshot+manual`
+
+    ### Tags
+
+    `scientific`, `real-data`, `molecular`, `sphere`, `arcball`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | real |
+
+    ### Dataset
+
+    | Field | Value |
+    | --- | --- |
+    | `name` | RCSB PDB protein structure |
+    | `source` | https://files.rcsb.org/download/{pdb_id}.pdb |
+    | `license` | RCSB PDB data usage policy applies. |
+    | `default_pdb_id` | 6M0J |
+    | `fallback_pdb_id` | 1UBQ |
+    | `fallback_prepared_path` | data/examples/proteins/1ubq/prepared |
+    | `preprocessing` | python tools/data/prepare_protein_arcball.py 1UBQ --regenerate |
+
+    ### Encoding
+
+    | Field | Value |
+    | --- | --- |
+    | `position` | atom coordinates normalized into scene space |
+    | `color` | element-style atom colors from the preparation bundle |
+    | `size` | atom radii scaled for sphere impostors |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../showcase_synthetic_mouse"><span>Previous</span><strong>Synthetic Mouse</strong></a>
+<a class="dvz-example-nav__link" href="../point_cloud"><span>Next</span><strong>Point Cloud</strong></a>
+</div>
+</nav>

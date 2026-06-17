@@ -4,43 +4,31 @@
 
 low-level font atlas glyph quads, distinct from retained semantic text.
 
-- ID: `visual_glyph`
-- Category: `visual`
-- Lane: `visuals`
-- Status: `experimental`
-- Source: [`examples/c/visuals/glyph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/glyph.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=visual_glyph"><code>examples/webgpu/live.html?id=visual_glyph</code></a>
-- WebGPU requirements: `glyph`, `glyph-atlas`, `sdf`
-- Build: `just example-c visuals/glyph`
-- Smoke: `./build/examples/c/visuals/glyph --png`
-- Validation: `smoke+screenshot`
-
-## Tags
-
-`glyph`, `font-atlas`, `texture-atlas`, `sdf`, `capture`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Font Atlas Glyphs](../../../assets/gallery/v0.4/visuals/visual_glyph.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=visual_glyph" title="Font Atlas Glyphs WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../visual_text"><span>Previous</span><strong>Text</strong></a>
+<a class="dvz-example-nav__link" href="../visual_labels"><span>Next</span><strong>Labels</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=visual_glyph">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Font Atlas Glyphs](../../../assets/gallery/v0.4/visuals/visual_glyph.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=visual_glyph" title="Font Atlas Glyphs WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=visual_glyph">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -49,3 +37,43 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/visuals/glyph.c"
     ```
+
+??? info "Example details"
+
+    - ID: `visual_glyph`
+    - Category: `visual`
+    - Lane: `visuals`
+    - Status: `experimental`
+    - Source: [`examples/c/visuals/glyph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/glyph.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_glyph"><code>examples/webgpu/live.html?id=visual_glyph</code></a>
+    - WebGPU requirements: `glyph`, `glyph-atlas`, `sdf`
+    - Build: `just example-c visuals/glyph`
+    - Smoke: `./build/examples/c/visuals/glyph --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `glyph`, `font-atlas`, `texture-atlas`, `sdf`, `capture`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../visual_text"><span>Previous</span><strong>Text</strong></a>
+<a class="dvz-example-nav__link" href="../visual_labels"><span>Next</span><strong>Labels</strong></a>
+</div>
+</nav>

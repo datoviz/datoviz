@@ -4,43 +4,31 @@
 
 linked image panels with one probe readout and shared colorbar.
 
-- ID: `linked_panels_probe_colorbar`
-- Category: `showcase`
-- Lane: `showcases`
-- Status: `supported`
-- Source: [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=linked_panels_probe_colorbar"><code>examples/webgpu/live.html?id=linked_panels_probe_colorbar</code></a>
-- WebGPU requirements: `panel-grid`, `linked-panels`, `image`, `colorbar`, `query-readback`, `readout`
-- Build: `just example-c showcases/linked_probe_colorbar`
-- Smoke: `./build/examples/c/showcases/linked_probe_colorbar --png`
-- Validation: `smoke+readback+interaction+screenshot`
-
-## Tags
-
-`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, `colorbar`, `readout`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Linked Probe With Colorbar](../../../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=linked_panels_probe_colorbar" title="Linked Probe With Colorbar WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../linked_panels_axes_panzoom"><span>Previous</span><strong>Linked Panels With Axes</strong></a>
+<a class="dvz-example-nav__link" href="../us_state_choropleth"><span>Next</span><strong>U.S. State Choropleth</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=linked_panels_probe_colorbar">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Linked Probe With Colorbar](../../../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=linked_panels_probe_colorbar" title="Linked Probe With Colorbar WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=linked_panels_probe_colorbar">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -49,3 +37,43 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/showcases/linked_probe_colorbar.c"
     ```
+
+??? info "Example details"
+
+    - ID: `linked_panels_probe_colorbar`
+    - Category: `showcase`
+    - Lane: `showcases`
+    - Status: `supported`
+    - Source: [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=linked_panels_probe_colorbar"><code>examples/webgpu/live.html?id=linked_panels_probe_colorbar</code></a>
+    - WebGPU requirements: `panel-grid`, `linked-panels`, `image`, `colorbar`, `query-readback`, `readout`
+    - Build: `just example-c showcases/linked_probe_colorbar`
+    - Smoke: `./build/examples/c/showcases/linked_probe_colorbar --png`
+    - Validation: `smoke+readback+interaction+screenshot`
+
+    ### Tags
+
+    `workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, `colorbar`, `readout`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../linked_panels_axes_panzoom"><span>Previous</span><strong>Linked Panels With Axes</strong></a>
+<a class="dvz-example-nav__link" href="../us_state_choropleth"><span>Next</span><strong>U.S. State Choropleth</strong></a>
+</div>
+</nav>

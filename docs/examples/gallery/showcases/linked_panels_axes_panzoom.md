@@ -4,43 +4,31 @@
 
 linked temporal panels with a spanning summary panel.
 
-- ID: `linked_panels_axes_panzoom`
-- Category: `showcase`
-- Lane: `showcases`
-- Status: `supported`
-- Source: [`examples/c/showcases/panel_linked_axes.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/panel_linked_axes.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=linked_panels_axes_panzoom"><code>examples/webgpu/live.html?id=linked_panels_axes_panzoom</code></a>
-- WebGPU requirements: `panel-grid`, `linked-panels`, `axes`, `panzoom`, `path`
-- Build: `just example-c showcases/panel_linked_axes`
-- Smoke: `./build/examples/c/showcases/panel_linked_axes --png`
-- Validation: `smoke+interaction`
-
-## Tags
-
-`workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-_Media pending._
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=linked_panels_axes_panzoom" title="Linked Panels With Axes WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../scalebar_measurement_workflow"><span>Previous</span><strong>Scale Bar Measurement Workflow</strong></a>
+<a class="dvz-example-nav__link" href="../linked_panels_probe_colorbar"><span>Next</span><strong>Linked Probe With Colorbar</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=linked_panels_axes_panzoom">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    _Media pending._
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=linked_panels_axes_panzoom" title="Linked Panels With Axes WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=linked_panels_axes_panzoom">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -49,3 +37,43 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/showcases/panel_linked_axes.c"
     ```
+
+??? info "Example details"
+
+    - ID: `linked_panels_axes_panzoom`
+    - Category: `showcase`
+    - Lane: `showcases`
+    - Status: `supported`
+    - Source: [`examples/c/showcases/panel_linked_axes.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/panel_linked_axes.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=linked_panels_axes_panzoom"><code>examples/webgpu/live.html?id=linked_panels_axes_panzoom</code></a>
+    - WebGPU requirements: `panel-grid`, `linked-panels`, `axes`, `panzoom`, `path`
+    - Build: `just example-c showcases/panel_linked_axes`
+    - Smoke: `./build/examples/c/showcases/panel_linked_axes --png`
+    - Validation: `smoke+interaction`
+
+    ### Tags
+
+    `workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../scalebar_measurement_workflow"><span>Previous</span><strong>Scale Bar Measurement Workflow</strong></a>
+<a class="dvz-example-nav__link" href="../linked_panels_probe_colorbar"><span>Next</span><strong>Linked Probe With Colorbar</strong></a>
+</div>
+</nav>

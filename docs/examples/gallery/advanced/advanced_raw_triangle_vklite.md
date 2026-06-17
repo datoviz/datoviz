@@ -4,34 +4,21 @@
 
 raw_triangle_vklite — vklite draw commands into DvzCanvas.
 
-- ID: `advanced_raw_triangle_vklite`
-- Category: `advanced`
-- Lane: `advanced`
-- Status: `experimental`
-- Source: [`examples/c/advanced/raw_triangle_vklite.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/raw_triangle_vklite.c)
-- Agent copy-safe: `false`
-- WebGPU status: `native-only`
-- WebGPU requirements: `vklite`, `canvas`
-- Build: `just example-c advanced/raw_triangle_vklite`
-- Smoke: `./build/examples/c/advanced/raw_triangle_vklite --png`
-- Validation: `smoke+png`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../advanced">Advanced Examples</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../advanced_raw_triangle_drp2"><span>Previous</span><strong>Raw Triangle DRP2</strong></a>
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+</div>
+</nav>
 
-## Tags
-
-`advanced`, `vklite`, `canvas`, `low-level`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 _Media pending._
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -40,3 +27,42 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/advanced/raw_triangle_vklite.c"
     ```
+
+??? info "Example details"
+
+    - ID: `advanced_raw_triangle_vklite`
+    - Category: `advanced`
+    - Lane: `advanced`
+    - Status: `experimental`
+    - Source: [`examples/c/advanced/raw_triangle_vklite.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/raw_triangle_vklite.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `native-only`
+    - WebGPU requirements: `vklite`, `canvas`
+    - Build: `just example-c advanced/raw_triangle_vklite`
+    - Smoke: `./build/examples/c/advanced/raw_triangle_vklite --png`
+    - Validation: `smoke+png`
+
+    ### Tags
+
+    `advanced`, `vklite`, `canvas`, `low-level`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../advanced">Advanced Examples</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../advanced_raw_triangle_drp2"><span>Previous</span><strong>Raw Triangle DRP2</strong></a>
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+</div>
+</nav>

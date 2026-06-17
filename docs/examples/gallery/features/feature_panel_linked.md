@@ -4,39 +4,31 @@
 
 two panels with bidirectional linked X panzoom state.
 
-- ID: `feature_panel_linked`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/panel_linked.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_linked.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_linked"><code>examples/webgpu/live.html?id=feature_panel_linked</code></a>
-- WebGPU requirements: `panel-grid`, `linked-panels`, `panzoom`, `point`
-- Build: `just example-c features/panel_linked`
-- Smoke: `./build/examples/c/features/panel_linked --png`
-- Validation: `smoke+interaction+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Linked Panels](../../../assets/gallery/v0.4/features/feature_panel_linked.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=feature_panel_linked" title="Linked Panels WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_panel_multi"><span>Previous</span><strong>Multiple Panels</strong></a>
+<a class="dvz-example-nav__link" href="../feature_panel_view2d"><span>Next</span><strong>Panel View 2D</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=feature_panel_linked">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Linked Panels](../../../assets/gallery/v0.4/features/feature_panel_linked.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=feature_panel_linked" title="Linked Panels WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=feature_panel_linked">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/panel_linked.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_panel_linked`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/panel_linked.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_linked.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_linked"><code>examples/webgpu/live.html?id=feature_panel_linked</code></a>
+    - WebGPU requirements: `panel-grid`, `linked-panels`, `panzoom`, `point`
+    - Build: `just example-c features/panel_linked`
+    - Smoke: `./build/examples/c/features/panel_linked --png`
+    - Validation: `smoke+interaction+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_panel_multi"><span>Previous</span><strong>Multiple Panels</strong></a>
+<a class="dvz-example-nav__link" href="../feature_panel_view2d"><span>Next</span><strong>Panel View 2D</strong></a>
+</div>
+</nav>

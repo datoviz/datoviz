@@ -4,30 +4,21 @@
 
 dockable Dear ImGui window containing a live Datoviz render target.
 
-- ID: `feature_gui_viewport`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/gui_viewport.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_viewport.c)
-- Agent copy-safe: `false`
-- WebGPU status: `native-only`
-- WebGPU requirements: `gui`, `native-view`
-- Build: `just example-c features/gui_viewport`
-- Smoke: `./build/examples/c/features/gui_viewport --png`
-- Validation: `smoke+interaction`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_gui_controls"><span>Previous</span><strong>GUI Controls</strong></a>
+<a class="dvz-example-nav__link" href="../feature_gui_cimgui"><span>Next</span><strong>Raw cimgui GUI</strong></a>
+</div>
+</nav>
 
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 _Media pending._
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -36,3 +27,38 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/gui_viewport.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_gui_viewport`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/gui_viewport.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_viewport.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `native-only`
+    - WebGPU requirements: `gui`, `native-view`
+    - Build: `just example-c features/gui_viewport`
+    - Smoke: `./build/examples/c/features/gui_viewport --png`
+    - Validation: `smoke+interaction`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_gui_controls"><span>Previous</span><strong>GUI Controls</strong></a>
+<a class="dvz-example-nav__link" href="../feature_gui_cimgui"><span>Next</span><strong>Raw cimgui GUI</strong></a>
+</div>
+</nav>

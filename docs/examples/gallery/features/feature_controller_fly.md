@@ -4,39 +4,31 @@
 
 fly controller with deterministic camera translation.
 
-- ID: `feature_controller_fly`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/controller_fly.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_fly.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_controller_fly"><code>examples/webgpu/live.html?id=feature_controller_fly</code></a>
-- WebGPU requirements: `controller`, `fly`, `mesh`
-- Build: `just example-c features/controller_fly`
-- Smoke: `./build/examples/c/features/controller_fly --png`
-- Validation: `smoke+interaction+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Fly Controller](../../../assets/gallery/v0.4/features/feature_controller_fly.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=feature_controller_fly" title="Fly Controller WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_controller_turntable"><span>Previous</span><strong>Turntable Controller</strong></a>
+<a class="dvz-example-nav__link" href="../feature_controller_orbit_camera"><span>Next</span><strong>Orbit Camera Controller</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=feature_controller_fly">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Fly Controller](../../../assets/gallery/v0.4/features/feature_controller_fly.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=feature_controller_fly" title="Fly Controller WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=feature_controller_fly">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/controller_fly.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_controller_fly`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/controller_fly.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_fly.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_controller_fly"><code>examples/webgpu/live.html?id=feature_controller_fly</code></a>
+    - WebGPU requirements: `controller`, `fly`, `mesh`
+    - Build: `just example-c features/controller_fly`
+    - Smoke: `./build/examples/c/features/controller_fly --png`
+    - Validation: `smoke+interaction+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_controller_turntable"><span>Previous</span><strong>Turntable Controller</strong></a>
+<a class="dvz-example-nav__link" href="../feature_controller_orbit_camera"><span>Next</span><strong>Orbit Camera Controller</strong></a>
+</div>
+</nav>

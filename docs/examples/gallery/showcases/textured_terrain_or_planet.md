@@ -4,34 +4,21 @@
 
 UV textured planet mesh via dvz_mesh + sampled fields.
 
-- ID: `textured_terrain_or_planet`
-- Category: `showcase`
-- Lane: `showcases`
-- Status: `supported`
-- Source: [`examples/c/showcases/textured_planet.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-planned`
-- WebGPU requirements: `mesh`, `sampled-field`, `texture`, `arcball`
-- Build: `just example-c showcases/textured_planet`
-- Smoke: `./build/examples/c/showcases/textured_planet --png`
-- Validation: `smoke+screenshot`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../showcase_surface_grid"><span>Previous</span><strong>Surface Grid</strong></a>
+<a class="dvz-example-nav__link" href="../showcase_wind_field"><span>Next</span><strong>Wind Field</strong></a>
+</div>
+</nav>
 
-## Tags
-
-`real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, `capture`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | real |
-
-## Media
+## Preview
 
 ![Textured Planets](../../../assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -40,3 +27,42 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/showcases/textured_planet.c"
     ```
+
+??? info "Example details"
+
+    - ID: `textured_terrain_or_planet`
+    - Category: `showcase`
+    - Lane: `showcases`
+    - Status: `supported`
+    - Source: [`examples/c/showcases/textured_planet.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-planned`
+    - WebGPU requirements: `mesh`, `sampled-field`, `texture`, `arcball`
+    - Build: `just example-c showcases/textured_planet`
+    - Smoke: `./build/examples/c/showcases/textured_planet --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `real-data`, `mesh`, `sampled-field`, `texture`, `arcball`, `capture`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | real |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../showcase_surface_grid"><span>Previous</span><strong>Surface Grid</strong></a>
+<a class="dvz-example-nav__link" href="../showcase_wind_field"><span>Next</span><strong>Wind Field</strong></a>
+</div>
+</nav>

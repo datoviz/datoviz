@@ -4,43 +4,31 @@
 
 scale-aware overview, detail, and 3D measurement workflow.
 
-- ID: `scalebar_measurement_workflow`
-- Category: `showcase`
-- Lane: `showcases`
-- Status: `supported`
-- Source: [`examples/c/showcases/scalebar_measurement.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scalebar_measurement.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=scalebar_measurement_workflow"><code>examples/webgpu/live.html?id=scalebar_measurement_workflow</code></a>
-- WebGPU requirements: `scale-bar`, `text`, `panel-grid`, `mesh`, `panzoom`
-- Build: `just example-c showcases/scalebar_measurement`
-- Smoke: `./build/examples/c/showcases/scalebar_measurement --png`
-- Validation: `smoke+screenshot`
-
-## Tags
-
-`workflow`, `scale-bar`, `measurement`, `synthetic`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Scale Bar Measurement Workflow](../../../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=scalebar_measurement_workflow" title="Scale Bar Measurement Workflow WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../scientific_plotting_workflow"><span>Previous</span><strong>Scientific Plotting Workflow</strong></a>
+<a class="dvz-example-nav__link" href="../linked_panels_axes_panzoom"><span>Next</span><strong>Linked Panels With Axes</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=scalebar_measurement_workflow">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Scale Bar Measurement Workflow](../../../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=scalebar_measurement_workflow" title="Scale Bar Measurement Workflow WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=scalebar_measurement_workflow">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -49,3 +37,43 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/showcases/scalebar_measurement.c"
     ```
+
+??? info "Example details"
+
+    - ID: `scalebar_measurement_workflow`
+    - Category: `showcase`
+    - Lane: `showcases`
+    - Status: `supported`
+    - Source: [`examples/c/showcases/scalebar_measurement.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scalebar_measurement.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=scalebar_measurement_workflow"><code>examples/webgpu/live.html?id=scalebar_measurement_workflow</code></a>
+    - WebGPU requirements: `scale-bar`, `text`, `panel-grid`, `mesh`, `panzoom`
+    - Build: `just example-c showcases/scalebar_measurement`
+    - Smoke: `./build/examples/c/showcases/scalebar_measurement --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `workflow`, `scale-bar`, `measurement`, `synthetic`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../scientific_plotting_workflow"><span>Previous</span><strong>Scientific Plotting Workflow</strong></a>
+<a class="dvz-example-nav__link" href="../linked_panels_axes_panzoom"><span>Next</span><strong>Linked Panels With Axes</strong></a>
+</div>
+</nav>

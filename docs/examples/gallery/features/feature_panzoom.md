@@ -4,39 +4,31 @@
 
 bind a panzoom controller to one panel with a simple 2D visual.
 
-- ID: `feature_panzoom`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/panzoom.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panzoom"><code>examples/webgpu/live.html?id=feature_panzoom</code></a>
-- WebGPU requirements: `controller`, `panzoom`, `point`
-- Build: `just example-c features/panzoom`
-- Smoke: `./build/examples/c/features/panzoom --png`
-- Validation: `smoke+interaction`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-_Media pending._
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=feature_panzoom" title="Panzoom WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_visibility"><span>Previous</span><strong>Visual Visibility</strong></a>
+<a class="dvz-example-nav__link" href="../feature_controller_arcball"><span>Next</span><strong>Arcball Controller</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=feature_panzoom">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    _Media pending._
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=feature_panzoom" title="Panzoom WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=feature_panzoom">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/panzoom.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_panzoom`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/panzoom.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panzoom"><code>examples/webgpu/live.html?id=feature_panzoom</code></a>
+    - WebGPU requirements: `controller`, `panzoom`, `point`
+    - Build: `just example-c features/panzoom`
+    - Smoke: `./build/examples/c/features/panzoom --png`
+    - Validation: `smoke+interaction`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_visibility"><span>Previous</span><strong>Visual Visibility</strong></a>
+<a class="dvz-example-nav__link" href="../feature_controller_arcball"><span>Next</span><strong>Arcball Controller</strong></a>
+</div>
+</nav>

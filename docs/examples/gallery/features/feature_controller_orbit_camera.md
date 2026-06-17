@@ -4,39 +4,31 @@
 
 orbit-camera controller attached to a small 3D mesh.
 
-- ID: `feature_controller_orbit_camera`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/controller_orbit_camera.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_orbit_camera.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_controller_orbit_camera"><code>examples/webgpu/live.html?id=feature_controller_orbit_camera</code></a>
-- WebGPU requirements: `controller`, `orbit-camera`, `mesh`
-- Build: `just example-c features/controller_orbit_camera`
-- Smoke: `./build/examples/c/features/controller_orbit_camera --png`
-- Validation: `smoke+interaction+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Orbit Camera Controller](../../../assets/gallery/v0.4/features/feature_controller_orbit_camera.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=feature_controller_orbit_camera" title="Orbit Camera Controller WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_controller_fly"><span>Previous</span><strong>Fly Controller</strong></a>
+<a class="dvz-example-nav__link" href="../feature_orientation_gizmo"><span>Next</span><strong>Orientation Gizmo</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=feature_controller_orbit_camera">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Orbit Camera Controller](../../../assets/gallery/v0.4/features/feature_controller_orbit_camera.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=feature_controller_orbit_camera" title="Orbit Camera Controller WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=feature_controller_orbit_camera">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/controller_orbit_camera.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_controller_orbit_camera`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/controller_orbit_camera.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_orbit_camera.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_controller_orbit_camera"><code>examples/webgpu/live.html?id=feature_controller_orbit_camera</code></a>
+    - WebGPU requirements: `controller`, `orbit-camera`, `mesh`
+    - Build: `just example-c features/controller_orbit_camera`
+    - Smoke: `./build/examples/c/features/controller_orbit_camera --png`
+    - Validation: `smoke+interaction+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_controller_fly"><span>Previous</span><strong>Fly Controller</strong></a>
+<a class="dvz-example-nav__link" href="../feature_orientation_gizmo"><span>Next</span><strong>Orientation Gizmo</strong></a>
+</div>
+</nav>

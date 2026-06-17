@@ -4,43 +4,31 @@
 
 topology-parametric triangles rendered with the retained primitive visual.
 
-- ID: `visual_primitive`
-- Category: `visual`
-- Lane: `visuals`
-- Status: `supported`
-- Source: [`examples/c/visuals/primitive.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/primitive.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=visual_primitive"><code>examples/webgpu/live.html?id=visual_primitive</code></a>
-- WebGPU requirements: `primitive`
-- Build: `just example-c visuals/primitive`
-- Smoke: `./build/examples/c/visuals/primitive --png`
-- Validation: `smoke+screenshot`
-
-## Tags
-
-`primitive`, `capture`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Primitive](../../../assets/gallery/v0.4/visuals/visual_primitive.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=visual_primitive" title="Primitive WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../visual_vector"><span>Previous</span><strong>Vector</strong></a>
+<a class="dvz-example-nav__link" href="../visual_image"><span>Next</span><strong>Image</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=visual_primitive">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Primitive](../../../assets/gallery/v0.4/visuals/visual_primitive.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=visual_primitive" title="Primitive WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=visual_primitive">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -49,3 +37,43 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/visuals/primitive.c"
     ```
+
+??? info "Example details"
+
+    - ID: `visual_primitive`
+    - Category: `visual`
+    - Lane: `visuals`
+    - Status: `supported`
+    - Source: [`examples/c/visuals/primitive.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/primitive.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_primitive"><code>examples/webgpu/live.html?id=visual_primitive</code></a>
+    - WebGPU requirements: `primitive`
+    - Build: `just example-c visuals/primitive`
+    - Smoke: `./build/examples/c/visuals/primitive --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `primitive`, `capture`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../visual_vector"><span>Previous</span><strong>Vector</strong></a>
+<a class="dvz-example-nav__link" href="../visual_image"><span>Next</span><strong>Image</strong></a>
+</div>
+</nav>

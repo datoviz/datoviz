@@ -4,39 +4,31 @@
 
 fixed graphite-cyan panel background behind a simple visual.
 
-- ID: `panel_background`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/panel_background.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_background.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=panel_background"><code>examples/webgpu/live.html?id=panel_background</code></a>
-- WebGPU requirements: `panel-background`, `primitive`
-- Build: `just example-c features/panel_background`
-- Smoke: `./build/examples/c/features/panel_background --png`
-- Validation: `smoke+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Panel Background](../../../assets/gallery/v0.4/features/panel_background.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=panel_background" title="Panel Background WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_panel_view2d"><span>Previous</span><strong>Panel View 2D</strong></a>
+<a class="dvz-example-nav__link" href="../feature_user_scale"><span>Next</span><strong>User Scale</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=panel_background">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Panel Background](../../../assets/gallery/v0.4/features/panel_background.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=panel_background" title="Panel Background WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=panel_background">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/panel_background.c"
     ```
+
+??? info "Example details"
+
+    - ID: `panel_background`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/panel_background.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_background.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=panel_background"><code>examples/webgpu/live.html?id=panel_background</code></a>
+    - WebGPU requirements: `panel-background`, `primitive`
+    - Build: `just example-c features/panel_background`
+    - Smoke: `./build/examples/c/features/panel_background --png`
+    - Validation: `smoke+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_panel_view2d"><span>Previous</span><strong>Panel View 2D</strong></a>
+<a class="dvz-example-nav__link" href="../feature_user_scale"><span>Next</span><strong>User Scale</strong></a>
+</div>
+</nav>

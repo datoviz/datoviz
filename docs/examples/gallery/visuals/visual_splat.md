@@ -4,34 +4,21 @@
 
 retained Gaussian splat visual with deterministic screen-space ellipses.
 
-- ID: `visual_splat`
-- Category: `visual`
-- Lane: `visuals`
-- Status: `experimental`
-- Source: [`examples/c/visuals/splat.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/splat.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-deferred`
-- WebGPU requirements: `splat`, `alpha-blending`
-- Build: `just example-c visuals/splat`
-- Smoke: `./build/examples/c/visuals/splat --png`
-- Validation: `smoke+screenshot`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../visual_marker"><span>Previous</span><strong>Marker</strong></a>
+<a class="dvz-example-nav__link" href="../visual_segment"><span>Next</span><strong>Segment</strong></a>
+</div>
+</nav>
 
-## Tags
-
-`splat`, `panzoom`, `capture`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 ![Splat](../../../assets/gallery/v0.4/visuals/visual_splat.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -40,3 +27,42 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/visuals/splat.c"
     ```
+
+??? info "Example details"
+
+    - ID: `visual_splat`
+    - Category: `visual`
+    - Lane: `visuals`
+    - Status: `experimental`
+    - Source: [`examples/c/visuals/splat.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/splat.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-deferred`
+    - WebGPU requirements: `splat`, `alpha-blending`
+    - Build: `just example-c visuals/splat`
+    - Smoke: `./build/examples/c/visuals/splat --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `splat`, `panzoom`, `capture`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../visual_marker"><span>Previous</span><strong>Marker</strong></a>
+<a class="dvz-example-nav__link" href="../visual_segment"><span>Next</span><strong>Segment</strong></a>
+</div>
+</nav>

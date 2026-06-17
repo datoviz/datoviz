@@ -4,39 +4,31 @@
 
 retained primitive visual using per-vertex alpha and source-over blending.
 
-- ID: `alpha_blending`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/alpha_blending.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/alpha_blending.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=alpha_blending"><code>examples/webgpu/live.html?id=alpha_blending</code></a>
-- WebGPU requirements: `alpha-blending`, `primitive`
-- Build: `just example-c features/alpha_blending`
-- Smoke: `./build/examples/c/features/alpha_blending --png`
-- Validation: `smoke+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Alpha Blending](../../../assets/gallery/v0.4/features/alpha_blending.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=alpha_blending" title="Alpha Blending WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../technique_transparency"><span>Previous</span><strong>Transparency Order</strong></a>
+<a class="dvz-example-nav__link" href="../technique_depth_test"><span>Next</span><strong>Depth Test Toggle</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=alpha_blending">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Alpha Blending](../../../assets/gallery/v0.4/features/alpha_blending.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=alpha_blending" title="Alpha Blending WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=alpha_blending">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/alpha_blending.c"
     ```
+
+??? info "Example details"
+
+    - ID: `alpha_blending`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/alpha_blending.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/alpha_blending.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=alpha_blending"><code>examples/webgpu/live.html?id=alpha_blending</code></a>
+    - WebGPU requirements: `alpha-blending`, `primitive`
+    - Build: `just example-c features/alpha_blending`
+    - Smoke: `./build/examples/c/features/alpha_blending --png`
+    - Validation: `smoke+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../technique_transparency"><span>Previous</span><strong>Transparency Order</strong></a>
+<a class="dvz-example-nav__link" href="../technique_depth_test"><span>Next</span><strong>Depth Test Toggle</strong></a>
+</div>
+</nav>

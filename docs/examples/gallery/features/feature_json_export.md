@@ -4,30 +4,21 @@
 
 retained scene JSON serialization diagnostic.
 
-- ID: `feature_json_export`
-- Category: `feature`
-- Lane: `features`
-- Status: `experimental`
-- Source: [`examples/c/features/json_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/json_export.c)
-- Agent copy-safe: `false`
-- WebGPU status: `native-only`
-- WebGPU requirements: `diagnostics`
-- Build: `just example-c features/json_export`
-- Smoke: `./build/examples/c/features/json_export --png`
-- Validation: `smoke+stdout`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_record_replay"><span>Previous</span><strong>Record Replay</strong></a>
+<a class="dvz-example-nav__link" href="../feature_video_export"><span>Next</span><strong>Video Export</strong></a>
+</div>
+</nav>
 
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 _Media pending._
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -36,3 +27,38 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/json_export.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_json_export`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `experimental`
+    - Source: [`examples/c/features/json_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/json_export.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `native-only`
+    - WebGPU requirements: `diagnostics`
+    - Build: `just example-c features/json_export`
+    - Smoke: `./build/examples/c/features/json_export --png`
+    - Validation: `smoke+stdout`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_record_replay"><span>Previous</span><strong>Record Replay</strong></a>
+<a class="dvz-example-nav__link" href="../feature_video_export"><span>Next</span><strong>Video Export</strong></a>
+</div>
+</nav>

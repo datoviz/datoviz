@@ -4,43 +4,31 @@
 
 scene compute pass with independent circular point motion.
 
-- ID: `feature_compute_buffer_animation`
-- Category: `feature`
-- Lane: `features`
-- Status: `experimental`
-- Source: [`examples/c/features/compute_buffer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/compute_buffer_animation.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_compute_buffer_animation"><code>examples/webgpu/live.html?id=feature_compute_buffer_animation</code></a>
-- WebGPU requirements: `scene-buffers`, `storage-buffers`, `scene-compute`, `continuous-frames`, `point`
-- Build: `just example-c features/compute_buffer_animation`
-- Smoke: `./build/examples/c/features/compute_buffer_animation --png`
-- Validation: `smoke+screenshot`
-
-## Tags
-
-`scene-compute`, `storage-buffer`, `point`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Compute Buffer Animation](../../../assets/gallery/v0.4/features/feature_compute_buffer_animation.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=feature_compute_buffer_animation" title="Compute Buffer Animation WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_timer_animation"><span>Previous</span><strong>Timer Animation</strong></a>
+<a class="dvz-example-nav__link" href="../update_partial"><span>Next</span><strong>Partial Data Update</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=feature_compute_buffer_animation">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Compute Buffer Animation](../../../assets/gallery/v0.4/features/feature_compute_buffer_animation.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=feature_compute_buffer_animation" title="Compute Buffer Animation WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=feature_compute_buffer_animation">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -49,3 +37,43 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/compute_buffer_animation.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_compute_buffer_animation`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `experimental`
+    - Source: [`examples/c/features/compute_buffer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/compute_buffer_animation.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_compute_buffer_animation"><code>examples/webgpu/live.html?id=feature_compute_buffer_animation</code></a>
+    - WebGPU requirements: `scene-buffers`, `storage-buffers`, `scene-compute`, `continuous-frames`, `point`
+    - Build: `just example-c features/compute_buffer_animation`
+    - Smoke: `./build/examples/c/features/compute_buffer_animation --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `scene-compute`, `storage-buffer`, `point`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_timer_animation"><span>Previous</span><strong>Timer Animation</strong></a>
+<a class="dvz-example-nav__link" href="../update_partial"><span>Next</span><strong>Partial Data Update</strong></a>
+</div>
+</nav>

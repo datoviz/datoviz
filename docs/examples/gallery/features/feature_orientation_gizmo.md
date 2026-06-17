@@ -4,30 +4,21 @@
 
 panel-attached orientation axes following the panel's rendered orientation.
 
-- ID: `feature_orientation_gizmo`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/orientation_gizmo.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/orientation_gizmo.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
-- WebGPU requirements: `orientation-gizmo`, `overlay`, `mesh`, `controller`
-- Build: `just example-c features/orientation_gizmo`
-- Smoke: `./build/examples/c/features/orientation_gizmo --png`
-- Validation: `smoke+interaction+screenshot`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_controller_orbit_camera"><span>Previous</span><strong>Orbit Camera Controller</strong></a>
+<a class="dvz-example-nav__link" href="../feature_reference_grid"><span>Next</span><strong>Reference Grid</strong></a>
+</div>
+</nav>
 
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 ![Orientation Gizmo](../../../assets/gallery/v0.4/features/feature_orientation_gizmo.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -36,3 +27,38 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/orientation_gizmo.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_orientation_gizmo`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/orientation_gizmo.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/orientation_gizmo.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-planned`
+    - WebGPU requirements: `orientation-gizmo`, `overlay`, `mesh`, `controller`
+    - Build: `just example-c features/orientation_gizmo`
+    - Smoke: `./build/examples/c/features/orientation_gizmo --png`
+    - Validation: `smoke+interaction+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_controller_orbit_camera"><span>Previous</span><strong>Orbit Camera Controller</strong></a>
+<a class="dvz-example-nav__link" href="../feature_reference_grid"><span>Next</span><strong>Reference Grid</strong></a>
+</div>
+</nav>

@@ -4,30 +4,21 @@
 
 source-over, WBOIT, and depth-peel transparency on overlapping cubes.
 
-- ID: `technique_transparency`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/technique_transparency.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_transparency.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-deferred`
-- WebGPU requirements: `wboit`, `depth-peeling`
-- Build: `just example-c features/technique_transparency`
-- Smoke: `./build/examples/c/features/technique_transparency --png`
-- Validation: `smoke+screenshot`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../technique_msaa"><span>Previous</span><strong>Multisample Antialiasing</strong></a>
+<a class="dvz-example-nav__link" href="../alpha_blending"><span>Next</span><strong>Alpha Blending</strong></a>
+</div>
+</nav>
 
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 ![Transparency Order](../../../assets/gallery/v0.4/features/technique_transparency.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -36,3 +27,38 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/technique_transparency.c"
     ```
+
+??? info "Example details"
+
+    - ID: `technique_transparency`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/technique_transparency.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_transparency.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-deferred`
+    - WebGPU requirements: `wboit`, `depth-peeling`
+    - Build: `just example-c features/technique_transparency`
+    - Smoke: `./build/examples/c/features/technique_transparency --png`
+    - Validation: `smoke+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../technique_msaa"><span>Previous</span><strong>Multisample Antialiasing</strong></a>
+<a class="dvz-example-nav__link" href="../alpha_blending"><span>Next</span><strong>Alpha Blending</strong></a>
+</div>
+</nav>

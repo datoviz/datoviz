@@ -4,30 +4,21 @@
 
 retained visual-local affine transform on point visuals.
 
-- ID: `feature_visual_transform`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/visual_transform.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visual_transform.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
-- WebGPU requirements: `visual-transform`, `mesh`
-- Build: `just example-c features/visual_transform`
-- Smoke: `./build/examples/c/features/visual_transform --png`
-- Validation: `smoke+screenshot`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_user_scale"><span>Previous</span><strong>User Scale</strong></a>
+<a class="dvz-example-nav__link" href="../feature_visibility"><span>Next</span><strong>Visual Visibility</strong></a>
+</div>
+</nav>
 
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 ![Visual Transform](../../../assets/gallery/v0.4/features/feature_visual_transform.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -36,3 +27,38 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/visual_transform.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_visual_transform`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/visual_transform.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visual_transform.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-planned`
+    - WebGPU requirements: `visual-transform`, `mesh`
+    - Build: `just example-c features/visual_transform`
+    - Smoke: `./build/examples/c/features/visual_transform --png`
+    - Validation: `smoke+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_user_scale"><span>Previous</span><strong>User Scale</strong></a>
+<a class="dvz-example-nav__link" href="../feature_visibility"><span>Next</span><strong>Visual Visibility</strong></a>
+</div>
+</nav>

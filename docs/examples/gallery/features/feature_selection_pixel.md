@@ -4,39 +4,31 @@
 
 retained pixel hover and click selection.
 
-- ID: `feature_selection_pixel`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/selection_pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_pixel.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_selection_pixel"><code>examples/webgpu/live.html?id=feature_selection_pixel</code></a>
-- WebGPU requirements: `pixel`, `controller`, `panzoom`, `query-readback`, `frame-callbacks`
-- Build: `just example-c features/selection_pixel`
-- Smoke: `./build/examples/c/features/selection_pixel --png`
-- Validation: `smoke+interaction+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Pixel Selection](../../../assets/gallery/v0.4/features/feature_selection_pixel.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=feature_selection_pixel" title="Pixel Selection WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_picking"><span>Previous</span><strong>Picking</strong></a>
+<a class="dvz-example-nav__link" href="../feature_selection_sphere"><span>Next</span><strong>Sphere Selection</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=feature_selection_pixel">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Pixel Selection](../../../assets/gallery/v0.4/features/feature_selection_pixel.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=feature_selection_pixel" title="Pixel Selection WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=feature_selection_pixel">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/selection_pixel.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_selection_pixel`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/selection_pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_pixel.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_selection_pixel"><code>examples/webgpu/live.html?id=feature_selection_pixel</code></a>
+    - WebGPU requirements: `pixel`, `controller`, `panzoom`, `query-readback`, `frame-callbacks`
+    - Build: `just example-c features/selection_pixel`
+    - Smoke: `./build/examples/c/features/selection_pixel --png`
+    - Validation: `smoke+interaction+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_picking"><span>Previous</span><strong>Picking</strong></a>
+<a class="dvz-example-nav__link" href="../feature_selection_sphere"><span>Next</span><strong>Sphere Selection</strong></a>
+</div>
+</nav>

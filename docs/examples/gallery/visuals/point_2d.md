@@ -4,43 +4,31 @@
 
 deterministic retained 2D point visual baseline.
 
-- ID: `point_2d`
-- Category: `visual`
-- Lane: `visuals`
-- Status: `supported`
-- Source: [`examples/c/visuals/point.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/point.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=point_2d"><code>examples/webgpu/live.html?id=point_2d</code></a>
-- WebGPU requirements: `point`, `panzoom`
-- Build: `just example-c visuals/point`
-- Smoke: `./build/examples/c/visuals/point --png`
-- Validation: `smoke+screenshot`
-
-## Tags
-
-`point`, `panzoom`, `capture`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Point](../../../assets/gallery/v0.4/visuals/point_2d.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=point_2d" title="Point WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+<a class="dvz-example-nav__link" href="../visual_pixel"><span>Next</span><strong>Pixel</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=point_2d">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Point](../../../assets/gallery/v0.4/visuals/point_2d.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=point_2d" title="Point WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=point_2d">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -49,3 +37,43 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/visuals/point.c"
     ```
+
+??? info "Example details"
+
+    - ID: `point_2d`
+    - Category: `visual`
+    - Lane: `visuals`
+    - Status: `supported`
+    - Source: [`examples/c/visuals/point.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/point.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=point_2d"><code>examples/webgpu/live.html?id=point_2d</code></a>
+    - WebGPU requirements: `point`, `panzoom`
+    - Build: `just example-c visuals/point`
+    - Smoke: `./build/examples/c/visuals/point --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `point`, `panzoom`, `capture`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+<a class="dvz-example-nav__link" href="../visual_pixel"><span>Next</span><strong>Pixel</strong></a>
+</div>
+</nav>

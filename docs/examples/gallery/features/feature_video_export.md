@@ -4,34 +4,21 @@
 
 portable scenario using the native runner's live/capture modes.
 
-- ID: `feature_video_export`
-- Category: `feature`
-- Lane: `features`
-- Status: `experimental`
-- Source: [`examples/c/features/video_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/video_export.c)
-- Agent copy-safe: `false`
-- WebGPU status: `native-only`
-- WebGPU requirements: `point`, `frame-callbacks`, `native-capture`
-- Build: `just example-c features/video_export`
-- Smoke: `./build/examples/c/features/video_export --png`
-- Validation: `smoke+optional-video`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_json_export"><span>Previous</span><strong>JSON Export</strong></a>
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+</div>
+</nav>
 
-## Tags
-
-`app-capture`, `scenario-runner`, `video`, `animation`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 _Media pending._
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -40,3 +27,42 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/video_export.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_video_export`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `experimental`
+    - Source: [`examples/c/features/video_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/video_export.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `native-only`
+    - WebGPU requirements: `point`, `frame-callbacks`, `native-capture`
+    - Build: `just example-c features/video_export`
+    - Smoke: `./build/examples/c/features/video_export --png`
+    - Validation: `smoke+optional-video`
+
+    ### Tags
+
+    `app-capture`, `scenario-runner`, `video`, `animation`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_json_export"><span>Previous</span><strong>JSON Export</strong></a>
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+</div>
+</nav>

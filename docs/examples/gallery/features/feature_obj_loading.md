@@ -4,39 +4,31 @@
 
 Wavefront OBJ mesh loading through geom/fileio helpers.
 
-- ID: `feature_obj_loading`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/obj_loading.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/obj_loading.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_obj_loading"><code>examples/webgpu/live.html?id=feature_obj_loading</code></a>
-- WebGPU requirements: `mesh`, `controller`, `arcball`
-- Build: `just example-c features/obj_loading`
-- Smoke: `./build/examples/c/features/obj_loading --png`
-- Validation: `smoke+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![OBJ Loading](../../../assets/gallery/v0.4/features/feature_obj_loading.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=feature_obj_loading" title="OBJ Loading WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_path_join"><span>Previous</span><strong>Path Join</strong></a>
+<a class="dvz-example-nav__link" href="../feature_sampled_field_2d"><span>Next</span><strong>2D Sampled Field</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=feature_obj_loading">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![OBJ Loading](../../../assets/gallery/v0.4/features/feature_obj_loading.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=feature_obj_loading" title="OBJ Loading WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=feature_obj_loading">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/obj_loading.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_obj_loading`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/obj_loading.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/obj_loading.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_obj_loading"><code>examples/webgpu/live.html?id=feature_obj_loading</code></a>
+    - WebGPU requirements: `mesh`, `controller`, `arcball`
+    - Build: `just example-c features/obj_loading`
+    - Smoke: `./build/examples/c/features/obj_loading --png`
+    - Validation: `smoke+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_path_join"><span>Previous</span><strong>Path Join</strong></a>
+<a class="dvz-example-nav__link" href="../feature_sampled_field_2d"><span>Next</span><strong>2D Sampled Field</strong></a>
+</div>
+</nav>

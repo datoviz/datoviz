@@ -4,64 +4,31 @@
 
 contiguous U.S. state population-density choropleth.
 
-- ID: `us_state_choropleth`
-- Category: `showcase`
-- Lane: `showcases`
-- Status: `supported`
-- Source: [`examples/c/showcases/choropleth.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/choropleth.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=us_state_choropleth"><code>examples/webgpu/live.html?id=us_state_choropleth</code></a>
-- WebGPU requirements: `composite`, `polygon-set`, `colorbar`, `panzoom`
-- Build: `just example-c showcases/choropleth`
-- Smoke: `./build/examples/c/showcases/choropleth --png`
-- Validation: `smoke+screenshot+manual`
-
-## Tags
-
-`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, `choropleth`, `colorbar`, `panzoom`, `capture`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | prepared |
-
-## Dataset
-
-| Field | Value |
-| --- | --- |
-| `name` | Contiguous U.S. state population density |
-| `boundary_source` | https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip |
-| `population_source` | https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx |
-| `license` | U.S. Census Bureau public data; cite the Census Bureau as source. |
-| `fallback_prepared_path` | .cache/datoviz/examples/us_state_choropleth/prepared |
-| `promoted_prepared_path` | data/examples/us_state_choropleth/prepared |
-| `preprocessing` | python tools/data/prepare_us_state_choropleth.py |
-| `prepared_layout` | flat typed arrays plus metadata.tsv |
-
-## Encoding
-
-| Field | Value |
-| --- | --- |
-| `position` | Census boundary rings projected with a spherical Albers equal-area transform and normalized into scene space |
-| `color` | log10 of Vintage 2025 resident population per Census ALAND square kilometer |
-| `topology` | each shapefile ring is rendered as one polygon-set region; interior holes are not preserved |
-
-## Media
-
-![U.S. State Choropleth](../../../assets/gallery/v0.4/showcases/us_state_choropleth.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=us_state_choropleth" title="U.S. State Choropleth WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../linked_panels_probe_colorbar"><span>Previous</span><strong>Linked Probe With Colorbar</strong></a>
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=us_state_choropleth">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![U.S. State Choropleth](../../../assets/gallery/v0.4/showcases/us_state_choropleth.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=us_state_choropleth" title="U.S. State Choropleth WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=us_state_choropleth">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -70,3 +37,64 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/showcases/choropleth.c"
     ```
+
+??? info "Example details"
+
+    - ID: `us_state_choropleth`
+    - Category: `showcase`
+    - Lane: `showcases`
+    - Status: `supported`
+    - Source: [`examples/c/showcases/choropleth.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/choropleth.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=us_state_choropleth"><code>examples/webgpu/live.html?id=us_state_choropleth</code></a>
+    - WebGPU requirements: `composite`, `polygon-set`, `colorbar`, `panzoom`
+    - Build: `just example-c showcases/choropleth`
+    - Smoke: `./build/examples/c/showcases/choropleth --png`
+    - Validation: `smoke+screenshot+manual`
+
+    ### Tags
+
+    `scientific`, `real-data`, `geo`, `composite`, `polygon-set`, `choropleth`, `colorbar`, `panzoom`, `capture`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | prepared |
+
+    ### Dataset
+
+    | Field | Value |
+    | --- | --- |
+    | `name` | Contiguous U.S. state population density |
+    | `boundary_source` | https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip |
+    | `population_source` | https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx |
+    | `license` | U.S. Census Bureau public data; cite the Census Bureau as source. |
+    | `fallback_prepared_path` | .cache/datoviz/examples/us_state_choropleth/prepared |
+    | `promoted_prepared_path` | data/examples/us_state_choropleth/prepared |
+    | `preprocessing` | python tools/data/prepare_us_state_choropleth.py |
+    | `prepared_layout` | flat typed arrays plus metadata.tsv |
+
+    ### Encoding
+
+    | Field | Value |
+    | --- | --- |
+    | `position` | Census boundary rings projected with a spherical Albers equal-area transform and normalized into scene space |
+    | `color` | log10 of Vintage 2025 resident population per Census ALAND square kilometer |
+    | `topology` | each shapefile ring is rendered as one polygon-set region; interior holes are not preserved |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../linked_panels_probe_colorbar"><span>Previous</span><strong>Linked Probe With Colorbar</strong></a>
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+</div>
+</nav>

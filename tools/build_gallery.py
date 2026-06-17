@@ -475,21 +475,99 @@ def render_source_tabs(example: Example) -> list[str]:
     return lines
 
 
-def render_webgpu_live(example: Example, page_path: str | Path) -> list[str]:
+def indent_markdown(lines: list[str], spaces: int = 4) -> list[str]:
+    prefix = " " * spaces
+    return [f"{prefix}{line}" if line else "" for line in lines]
+
+
+def render_preview(
+    example: Example,
+    page_path: str | Path,
+    image_dir: Path,
+    image_url_base: str,
+    image_format: str = DEFAULT_IMAGE_FORMAT,
+) -> list[str]:
+    screenshot = media_block(page_path, example, image_dir, image_url_base, image_format).splitlines()
     if example.webgpu_status != "webgpu-live" or not example.webgpu_site_route:
-        return []
+        return ["## Preview", "", *screenshot, ""]
+
     route = site_html_relative_url(page_path, example.webgpu_site_route)
-    return [
-        "## Live WebGPU",
-        "",
+    live_lines = [
         '<div class="dvz-webgpu-live" markdown="1">',
         f'<iframe src="{route}" title="{example.title} WebGPU live example" '
         'loading="lazy" allow="fullscreen; webgpu"></iframe>',
         "</div>",
         "",
         f'{html_link(route, "Open the live WebGPU example")}.',
+    ]
+    return [
+        "## Preview",
+        "",
+        '=== "Screenshot"',
+        "",
+        *indent_markdown(screenshot),
+        "",
+        '=== "Live WebGPU"',
+        "",
+        *indent_markdown(live_lines),
         "",
     ]
+
+
+def append_detail_table(lines: list[str], title: str, values: dict) -> None:
+    if not values:
+        return
+    lines.extend([f"### {title}", "", "| Field | Value |", "| --- | --- |"])
+    for key, value in values.items():
+        lines.append(f"| `{key}` | {value} |")
+    lines.append("")
+
+
+def render_example_details(example: Example, page_path: str | Path) -> list[str]:
+    metadata = [
+        f"- ID: `{example.id}`",
+        f"- Category: `{example.category}`",
+        f"- Lane: `{example.lane}`",
+        f"- Status: `{example.status}`",
+        f"- Source: [`{example.source}`]({source_url(example)})",
+    ]
+    if example.agent_copy_safe is not None:
+        metadata.append(f"- Agent copy-safe: `{str(example.agent_copy_safe).lower()}`")
+    if example.python_source is not None:
+        metadata.append(
+            f"- Python source: [`{example.python_source}`]({SOURCE_BASE_URL}/{example.python_source})",
+        )
+    if example.webgpu:
+        metadata.append(f"- WebGPU status: `{example.webgpu_status}`")
+        if example.webgpu_route:
+            metadata.append(
+                f"- WebGPU live route: "
+                f"{html_link(site_html_relative_url(page_path, example.webgpu_site_route), example.webgpu_route, code=True)}"
+            )
+        if example.webgpu_requirements:
+            requirements = ", ".join(f"`{requirement}`" for requirement in example.webgpu_requirements)
+            metadata.append(f"- WebGPU requirements: {requirements}")
+    metadata.extend(
+        [
+            f"- Build: `just example-c {example.rel_executable}`",
+            f"- Smoke: `./build/examples/c/{example.rel_executable} --png`",
+            f"- Validation: `{example.validation}`",
+        ]
+    )
+
+    detail_lines = [*metadata, ""]
+    if example.tags:
+        detail_lines.extend(["### Tags", "", ", ".join(f"`{tag}`" for tag in example.tags), ""])
+    append_detail_table(detail_lines, "Data", example.data)
+    append_detail_table(detail_lines, "Dataset", example.dataset)
+    append_detail_table(detail_lines, "Encoding", example.encoding)
+    detail_lines.extend(
+        [
+            "Generated media is prepared in the `data` submodule and linked from this page.",
+            "",
+        ]
+    )
+    return ['??? info "Example details"', "", *indent_markdown(detail_lines), ""]
 
 
 def render_card(
@@ -523,6 +601,98 @@ def render_card(
 
 </div>
 """
+
+
+def lane_overview(lane: str) -> tuple[str, str]:
+    return {
+        "start": ("Examples", "index.md"),
+        "visuals": ("Visuals & Composites", "visuals.md"),
+        "features": ("Features", "features.md"),
+        "composites": ("Visuals & Composites", "visuals.md"),
+        "showcases": ("Showcases", "showcases.md"),
+        "advanced": ("Advanced Examples", "advanced.md"),
+    }.get(lane, ("Examples", "index.md"))
+
+
+def ordered_lane_examples(examples: list[Example], lane: str) -> list[Example]:
+    lane_examples = [example for example in examples if example.lane == lane]
+    by_id = {example.id: example for example in examples}
+    if lane == "features":
+        ordered: list[Example] = []
+        seen: set[str] = set()
+        for _, group_ids in FEATURE_PAGE_GROUPS:
+            for id_ in group_ids:
+                example = by_id.get(id_)
+                if example is not None and example.lane == lane:
+                    ordered.append(example)
+                    seen.add(id_)
+        ordered.extend(
+            sorted((e for e in lane_examples if e.id not in seen), key=lambda e: e.title.lower())
+        )
+        return ordered
+    if lane in ("visuals", "composites"):
+        group_ids = [id_ for _, ids in INDEX_VISUAL_GROUPS for id_ in ids]
+        ordered = [by_id[id_] for id_ in group_ids if id_ in by_id and by_id[id_].lane == lane]
+        seen = {example.id for example in ordered}
+        ordered.extend(
+            sorted((e for e in lane_examples if e.id not in seen), key=lambda e: e.title.lower())
+        )
+        return ordered
+    if lane == "showcases":
+        return semantic_sort(lane_examples, INDEX_SHOWCASE_ORDER)
+    return sorted(lane_examples, key=lambda e: e.title.lower())
+
+
+def example_neighbors(examples: list[Example]) -> dict[str, tuple[Example | None, Example | None]]:
+    neighbors: dict[str, tuple[Example | None, Example | None]] = {}
+    for lane in PUBLIC_LANES:
+        ordered = ordered_lane_examples(examples, lane)
+        for i, example in enumerate(ordered):
+            previous = ordered[i - 1] if i > 0 else None
+            next_ = ordered[i + 1] if i + 1 < len(ordered) else None
+            neighbors[example.id] = (previous, next_)
+    return neighbors
+
+
+def render_example_nav(
+    example: Example,
+    page_path: str | Path,
+    previous: Example | None,
+    next_: Example | None,
+    location: str = "top",
+) -> list[str]:
+    overview_label, overview_path = lane_overview(example.lane)
+    overview_site_path = "examples/" if overview_path == "index.md" else f"examples/{overview_path[:-3]}/"
+    examples_href = site_html_relative_url(page_path, "examples/")
+    overview_href = site_html_relative_url(page_path, overview_site_path)
+    previous_href = site_html_relative_url(page_path, f"examples/{previous.page_path[:-3]}/") if previous else ""
+    next_href = site_html_relative_url(page_path, f"examples/{next_.page_path[:-3]}/") if next_ else ""
+    previous_link = (
+        f'<a class="dvz-example-nav__link" href="{previous_href}">'
+        f'<span>Previous</span><strong>{previous.title}</strong></a>'
+        if previous
+        else '<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>'
+    )
+    next_link = (
+        f'<a class="dvz-example-nav__link" href="{next_href}">'
+        f'<span>Next</span><strong>{next_.title}</strong></a>'
+        if next_
+        else '<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>'
+    )
+    return [
+        f'<nav class="dvz-example-nav dvz-example-nav--{location}" aria-label="Example navigation">',
+        '<div class="dvz-example-nav__trail">',
+        f'<a href="{examples_href}">Examples</a>',
+        '<span>/</span>',
+        f'<a href="{overview_href}">{overview_label}</a>',
+        "</div>",
+        '<div class="dvz-example-nav__siblings">',
+        previous_link,
+        next_link,
+        "</div>",
+        "</nav>",
+        "",
+    ]
 
 
 def semantic_sort(examples: list[Example], order: tuple[str, ...]) -> list[Example]:
@@ -856,6 +1026,8 @@ def render_webgpu_matrix(examples: list[Example], docs_dir: Path) -> None:
 
 def render_example_page(
     example: Example,
+    previous: Example | None,
+    next_: Example | None,
     docs_dir: Path,
     image_dir: Path,
     image_url_base: str,
@@ -864,69 +1036,11 @@ def render_example_page(
     page_path = docs_site_path(docs_dir, example.page_path)
     lines = generated_header(example.title)
     lines.extend([example.summary, ""])
-    metadata = [
-        f"- ID: `{example.id}`",
-        f"- Category: `{example.category}`",
-        f"- Lane: `{example.lane}`",
-        f"- Status: `{example.status}`",
-        f"- Source: [`{example.source}`]({source_url(example)})",
-    ]
-    if example.agent_copy_safe is not None:
-        metadata.append(f"- Agent copy-safe: `{str(example.agent_copy_safe).lower()}`")
-    if example.python_source is not None:
-        metadata.append(
-            f"- Python source: [`{example.python_source}`]({SOURCE_BASE_URL}/{example.python_source})",
-        )
-    if example.webgpu:
-        metadata.append(f"- WebGPU status: `{example.webgpu_status}`")
-        if example.webgpu_route:
-            metadata.append(
-                f"- WebGPU live route: "
-                f"{html_link(site_html_relative_url(page_path, example.webgpu_site_route), example.webgpu_route, code=True)}"
-            )
-        if example.webgpu_requirements:
-            requirements = ", ".join(f"`{requirement}`" for requirement in example.webgpu_requirements)
-            metadata.append(f"- WebGPU requirements: {requirements}")
-    metadata.extend(
-        [
-            f"- Build: `just example-c {example.rel_executable}`",
-            f"- Smoke: `./build/examples/c/{example.rel_executable} --png`",
-            f"- Validation: `{example.validation}`",
-        ]
-    )
-    lines.extend(metadata)
-    lines.append("")
-    if example.tags:
-        lines.extend(["## Tags", ""])
-        lines.append(", ".join(f"`{tag}`" for tag in example.tags))
-        lines.append("")
-    if example.data:
-        lines.extend(["## Data", "", "| Field | Value |", "| --- | --- |"])
-        for key, value in example.data.items():
-            lines.append(f"| `{key}` | {value} |")
-        lines.append("")
-    if example.dataset:
-        lines.extend(["## Dataset", "", "| Field | Value |", "| --- | --- |"])
-        for key, value in example.dataset.items():
-            lines.append(f"| `{key}` | {value} |")
-        lines.append("")
-    if example.encoding:
-        lines.extend(["## Encoding", "", "| Field | Value |", "| --- | --- |"])
-        for key, value in example.encoding.items():
-            lines.append(f"| `{key}` | {value} |")
-        lines.append("")
-    lines.extend(
-        ["## Media", "", media_block(page_path, example, image_dir, image_url_base, image_format), ""]
-    )
-    lines.extend(
-        [
-            "Static screenshots are required before final website publication. Generated media is",
-            "prepared in the `data` submodule and linked from this page.",
-            "",
-        ]
-    )
-    lines.extend(render_webgpu_live(example, page_path))
+    lines.extend(render_example_nav(example, page_path, previous, next_))
+    lines.extend(render_preview(example, page_path, image_dir, image_url_base, image_format))
     lines.extend(render_source_tabs(example))
+    lines.extend(render_example_details(example, page_path))
+    lines.extend(render_example_nav(example, page_path, previous, next_, location="bottom"))
     write_text(docs_dir / example.page_path, "\n".join(lines))
 
 
@@ -956,9 +1070,17 @@ def main() -> int:
     render_features_page(examples, args.docs_dir, args.image_dir, args.image_url_base, args.image_format)
     render_validation(examples, args.docs_dir)
     render_webgpu_matrix(examples, args.docs_dir)
+    neighbors = example_neighbors(examples)
     for example in examples:
+        previous, next_ = neighbors.get(example.id, (None, None))
         render_example_page(
-            example, args.docs_dir, args.image_dir, args.image_url_base, args.image_format
+            example,
+            previous,
+            next_,
+            args.docs_dir,
+            args.image_dir,
+            args.image_url_base,
+            args.image_format,
         )
     print(f"Generated {len(examples)} C gallery entries under {args.docs_dir}")
     return 0

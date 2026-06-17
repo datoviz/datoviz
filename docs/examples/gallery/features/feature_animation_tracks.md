@@ -4,39 +4,31 @@
 
 retained track-backed visual transform animation.
 
-- ID: `feature_animation_tracks`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/animation_tracks.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/animation_tracks.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_animation_tracks"><code>examples/webgpu/live.html?id=feature_animation_tracks</code></a>
-- WebGPU requirements: `mesh`, `frame-callbacks`, `controller`, `arcball`
-- Build: `just example-c features/animation_tracks`
-- Smoke: `./build/examples/c/features/animation_tracks --png`
-- Validation: `smoke+interaction+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Animation Tracks](../../../assets/gallery/v0.4/features/feature_animation_tracks.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=feature_animation_tracks" title="Animation Tracks WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_selection_mesh_instances"><span>Previous</span><strong>Mesh Instance Selection</strong></a>
+<a class="dvz-example-nav__link" href="../feature_timer_animation"><span>Next</span><strong>Timer Animation</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=feature_animation_tracks">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Animation Tracks](../../../assets/gallery/v0.4/features/feature_animation_tracks.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=feature_animation_tracks" title="Animation Tracks WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=feature_animation_tracks">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/animation_tracks.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_animation_tracks`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/animation_tracks.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/animation_tracks.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_animation_tracks"><code>examples/webgpu/live.html?id=feature_animation_tracks</code></a>
+    - WebGPU requirements: `mesh`, `frame-callbacks`, `controller`, `arcball`
+    - Build: `just example-c features/animation_tracks`
+    - Smoke: `./build/examples/c/features/animation_tracks --png`
+    - Validation: `smoke+interaction+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_selection_mesh_instances"><span>Previous</span><strong>Mesh Instance Selection</strong></a>
+<a class="dvz-example-nav__link" href="../feature_timer_animation"><span>Next</span><strong>Timer Animation</strong></a>
+</div>
+</nav>

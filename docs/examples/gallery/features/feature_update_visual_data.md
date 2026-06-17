@@ -4,39 +4,31 @@
 
 retained point visual with full data replacement.
 
-- ID: `feature_update_visual_data`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/update_visual_data.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_visual_data.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_update_visual_data"><code>examples/webgpu/live.html?id=feature_update_visual_data</code></a>
-- WebGPU requirements: `buffer-update`, `visual-update`, `point`, `frame-callbacks`
-- Build: `just example-c features/update_visual_data`
-- Smoke: `./build/examples/c/features/update_visual_data --png`
-- Validation: `smoke+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Visual Data Update](../../../assets/gallery/v0.4/features/feature_update_visual_data.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=feature_update_visual_data" title="Visual Data Update WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../update_partial"><span>Previous</span><strong>Partial Data Update</strong></a>
+<a class="dvz-example-nav__link" href="../feature_gui_controls"><span>Next</span><strong>GUI Controls</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=feature_update_visual_data">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Visual Data Update](../../../assets/gallery/v0.4/features/feature_update_visual_data.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=feature_update_visual_data" title="Visual Data Update WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=feature_update_visual_data">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/update_visual_data.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_update_visual_data`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/update_visual_data.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_visual_data.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_update_visual_data"><code>examples/webgpu/live.html?id=feature_update_visual_data</code></a>
+    - WebGPU requirements: `buffer-update`, `visual-update`, `point`, `frame-callbacks`
+    - Build: `just example-c features/update_visual_data`
+    - Smoke: `./build/examples/c/features/update_visual_data --png`
+    - Validation: `smoke+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../update_partial"><span>Previous</span><strong>Partial Data Update</strong></a>
+<a class="dvz-example-nav__link" href="../feature_gui_controls"><span>Next</span><strong>GUI Controls</strong></a>
+</div>
+</nav>

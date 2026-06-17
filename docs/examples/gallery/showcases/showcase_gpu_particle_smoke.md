@@ -4,43 +4,31 @@
 
 scene API compute-to-graphics particle smoke showcase.
 
-- ID: `showcase_gpu_particle_smoke`
-- Category: `showcase`
-- Lane: `showcases`
-- Status: `experimental`
-- Source: [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=showcase_gpu_particle_smoke"><code>examples/webgpu/live.html?id=showcase_gpu_particle_smoke</code></a>
-- WebGPU requirements: `scene-buffers`, `storage-buffers`, `scene-compute`, `point`, `alpha-blending`
-- Build: `just example-c showcases/gpu_particle_smoke`
-- Smoke: `./build/examples/c/showcases/gpu_particle_smoke --png`
-- Validation: `smoke+screenshot`
-
-## Tags
-
-`compute`, `simulation`, `particles`, `point`, `alpha-blending`, `capture`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | simulated |
-
-## Media
-
-![GPU Particle Smoke](../../../assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=showcase_gpu_particle_smoke" title="GPU Particle Smoke WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../showcase_wind_field"><span>Previous</span><strong>Wind Field</strong></a>
+<a class="dvz-example-nav__link" href="../scientific_plotting_workflow"><span>Next</span><strong>Scientific Plotting Workflow</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=showcase_gpu_particle_smoke">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![GPU Particle Smoke](../../../assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=showcase_gpu_particle_smoke" title="GPU Particle Smoke WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=showcase_gpu_particle_smoke">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -49,3 +37,43 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/showcases/gpu_particle_smoke.c"
     ```
+
+??? info "Example details"
+
+    - ID: `showcase_gpu_particle_smoke`
+    - Category: `showcase`
+    - Lane: `showcases`
+    - Status: `experimental`
+    - Source: [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=showcase_gpu_particle_smoke"><code>examples/webgpu/live.html?id=showcase_gpu_particle_smoke</code></a>
+    - WebGPU requirements: `scene-buffers`, `storage-buffers`, `scene-compute`, `point`, `alpha-blending`
+    - Build: `just example-c showcases/gpu_particle_smoke`
+    - Smoke: `./build/examples/c/showcases/gpu_particle_smoke --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `compute`, `simulation`, `particles`, `point`, `alpha-blending`, `capture`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | simulated |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../showcase_wind_field"><span>Previous</span><strong>Wind Field</strong></a>
+<a class="dvz-example-nav__link" href="../scientific_plotting_workflow"><span>Next</span><strong>Scientific Plotting Workflow</strong></a>
+</div>
+</nav>

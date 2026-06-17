@@ -4,34 +4,21 @@
 
 deterministic brain-connectivity graph composite.
 
-- ID: `composite_graph`
-- Category: `composite`
-- Lane: `composites`
-- Status: `supported`
-- Source: [`examples/c/composites/graph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-planned`
-- WebGPU requirements: `composite`, `marker`, `bezier-edges`, `path`, `panzoom`
-- Build: `just example-c composites/graph`
-- Smoke: `./build/examples/c/composites/graph --png`
-- Validation: `smoke+screenshot`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../composite_polygon"><span>Previous</span><strong>Polygon Composite</strong></a>
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+</div>
+</nav>
 
-## Tags
-
-`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 ![Graph Composite](../../../assets/gallery/v0.4/composites/composite_graph.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -40,3 +27,42 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/composites/graph.c"
     ```
+
+??? info "Example details"
+
+    - ID: `composite_graph`
+    - Category: `composite`
+    - Lane: `composites`
+    - Status: `supported`
+    - Source: [`examples/c/composites/graph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-planned`
+    - WebGPU requirements: `composite`, `marker`, `bezier-edges`, `path`, `panzoom`
+    - Build: `just example-c composites/graph`
+    - Smoke: `./build/examples/c/composites/graph --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../composite_polygon"><span>Previous</span><strong>Polygon Composite</strong></a>
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+</div>
+</nav>

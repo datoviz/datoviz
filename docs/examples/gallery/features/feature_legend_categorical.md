@@ -4,43 +4,31 @@
 
 tentative retained categorical legend proof.
 
-- ID: `feature_legend_categorical`
-- Category: `feature`
-- Lane: `features`
-- Status: `experimental`
-- Source: [`examples/c/features/legend_categorical.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_legend_categorical"><code>examples/webgpu/live.html?id=feature_legend_categorical</code></a>
-- WebGPU requirements: `legend`, `categorical-scale`, `marker`, `text`
-- Build: `just example-c features/legend_categorical`
-- Smoke: `./build/examples/c/features/legend_categorical --png`
-- Validation: `smoke+screenshot`
-
-## Tags
-
-`categorical-scale`, `legend`, `marker`, `capture`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Categorical Legend](../../../assets/gallery/v0.4/features/feature_legend_categorical.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=feature_legend_categorical" title="Categorical Legend WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../colormap_scale"><span>Previous</span><strong>Scalar Color Scale</strong></a>
+<a class="dvz-example-nav__link" href="../annotation_readout"><span>Next</span><strong>Annotation Readout</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=feature_legend_categorical">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Categorical Legend](../../../assets/gallery/v0.4/features/feature_legend_categorical.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=feature_legend_categorical" title="Categorical Legend WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=feature_legend_categorical">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -49,3 +37,43 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/legend_categorical.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_legend_categorical`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `experimental`
+    - Source: [`examples/c/features/legend_categorical.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_legend_categorical"><code>examples/webgpu/live.html?id=feature_legend_categorical</code></a>
+    - WebGPU requirements: `legend`, `categorical-scale`, `marker`, `text`
+    - Build: `just example-c features/legend_categorical`
+    - Smoke: `./build/examples/c/features/legend_categorical --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `categorical-scale`, `legend`, `marker`, `capture`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../colormap_scale"><span>Previous</span><strong>Scalar Color Scale</strong></a>
+<a class="dvz-example-nav__link" href="../annotation_readout"><span>Next</span><strong>Annotation Readout</strong></a>
+</div>
+</nav>

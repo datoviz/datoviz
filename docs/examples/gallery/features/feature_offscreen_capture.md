@@ -4,30 +4,21 @@
 
 render an exact-pixel offscreen view once and write a PNG.
 
-- ID: `feature_offscreen_capture`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/offscreen_capture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/offscreen_capture.c)
-- Agent copy-safe: `true`
-- WebGPU status: `native-only`
-- WebGPU requirements: `native-capture`
-- Build: `just example-c features/offscreen_capture`
-- Smoke: `./build/examples/c/features/offscreen_capture --png`
-- Validation: `smoke+screenshot`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_app_glfw"><span>Previous</span><strong>GLFW App</strong></a>
+<a class="dvz-example-nav__link" href="../feature_input_events"><span>Next</span><strong>Input Events</strong></a>
+</div>
+</nav>
 
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 ![Offscreen Capture](../../../assets/gallery/v0.4/features/feature_offscreen_capture.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -36,3 +27,38 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/offscreen_capture.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_offscreen_capture`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/offscreen_capture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/offscreen_capture.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `native-only`
+    - WebGPU requirements: `native-capture`
+    - Build: `just example-c features/offscreen_capture`
+    - Smoke: `./build/examples/c/features/offscreen_capture --png`
+    - Validation: `smoke+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_app_glfw"><span>Previous</span><strong>GLFW App</strong></a>
+<a class="dvz-example-nav__link" href="../feature_input_events"><span>Next</span><strong>Input Events</strong></a>
+</div>
+</nav>

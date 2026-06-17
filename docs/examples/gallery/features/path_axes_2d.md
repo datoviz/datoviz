@@ -4,39 +4,31 @@
 
 deterministic path with retained 2D axes and tick labels.
 
-- ID: `path_axes_2d`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/axes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axes_2d.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=path_axes_2d"><code>examples/webgpu/live.html?id=path_axes_2d</code></a>
-- WebGPU requirements: `path`, `axes`, `text`, `panzoom`
-- Build: `just example-c features/axes_2d`
-- Smoke: `./build/examples/c/features/axes_2d --png`
-- Validation: `smoke+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Path With 2D Axes](../../../assets/gallery/v0.4/features/path_axes_2d.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=path_axes_2d" title="Path With 2D Axes WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_axis_labels"><span>Previous</span><strong>Axis Labels</strong></a>
+<a class="dvz-example-nav__link" href="../feature_guide_lines"><span>Next</span><strong>Guide Lines</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=path_axes_2d">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Path With 2D Axes](../../../assets/gallery/v0.4/features/path_axes_2d.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=path_axes_2d" title="Path With 2D Axes WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=path_axes_2d">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/axes_2d.c"
     ```
+
+??? info "Example details"
+
+    - ID: `path_axes_2d`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/axes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axes_2d.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=path_axes_2d"><code>examples/webgpu/live.html?id=path_axes_2d</code></a>
+    - WebGPU requirements: `path`, `axes`, `text`, `panzoom`
+    - Build: `just example-c features/axes_2d`
+    - Smoke: `./build/examples/c/features/axes_2d --png`
+    - Validation: `smoke+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_axis_labels"><span>Previous</span><strong>Axis Labels</strong></a>
+<a class="dvz-example-nav__link" href="../feature_guide_lines"><span>Next</span><strong>Guide Lines</strong></a>
+</div>
+</nav>

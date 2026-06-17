@@ -4,30 +4,21 @@
 
 record an offscreen app view and replay it into a second offscreen view.
 
-- ID: `feature_record_replay`
-- Category: `feature`
-- Lane: `features`
-- Status: `experimental`
-- Source: [`examples/c/features/record_replay.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/record_replay.c)
-- Agent copy-safe: `false`
-- WebGPU status: `native-only`
-- WebGPU requirements: `native-capture`
-- Build: `just example-c features/record_replay`
-- Smoke: `./build/examples/c/features/record_replay --png`
-- Validation: `smoke+capture`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_input_events"><span>Previous</span><strong>Input Events</strong></a>
+<a class="dvz-example-nav__link" href="../feature_json_export"><span>Next</span><strong>JSON Export</strong></a>
+</div>
+</nav>
 
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 _Media pending._
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -36,3 +27,38 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/record_replay.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_record_replay`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `experimental`
+    - Source: [`examples/c/features/record_replay.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/record_replay.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `native-only`
+    - WebGPU requirements: `native-capture`
+    - Build: `just example-c features/record_replay`
+    - Smoke: `./build/examples/c/features/record_replay --png`
+    - Validation: `smoke+capture`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_input_events"><span>Previous</span><strong>Input Events</strong></a>
+<a class="dvz-example-nav__link" href="../feature_json_export"><span>Next</span><strong>JSON Export</strong></a>
+</div>
+</nav>

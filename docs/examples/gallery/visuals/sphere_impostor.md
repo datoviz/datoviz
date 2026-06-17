@@ -4,43 +4,31 @@
 
 deterministic 3D impostor-sphere cluster with depth, radius, and color variation.
 
-- ID: `sphere_impostor`
-- Category: `visual`
-- Lane: `visuals`
-- Status: `supported`
-- Source: [`examples/c/visuals/sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=sphere_impostor"><code>examples/webgpu/live.html?id=sphere_impostor</code></a>
-- WebGPU requirements: `sphere`, `arcball`
-- Build: `just example-c visuals/sphere`
-- Smoke: `./build/examples/c/visuals/sphere --png`
-- Validation: `smoke+screenshot`
-
-## Tags
-
-`sphere`, `arcball`, `capture`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Sphere](../../../assets/gallery/v0.4/visuals/sphere_impostor.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=sphere_impostor" title="Sphere WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../visual_mesh"><span>Previous</span><strong>Mesh</strong></a>
+<a class="dvz-example-nav__link" href="../volume"><span>Next</span><strong>Volume</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=sphere_impostor">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Sphere](../../../assets/gallery/v0.4/visuals/sphere_impostor.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=sphere_impostor" title="Sphere WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=sphere_impostor">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -49,3 +37,43 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/visuals/sphere.c"
     ```
+
+??? info "Example details"
+
+    - ID: `sphere_impostor`
+    - Category: `visual`
+    - Lane: `visuals`
+    - Status: `supported`
+    - Source: [`examples/c/visuals/sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=sphere_impostor"><code>examples/webgpu/live.html?id=sphere_impostor</code></a>
+    - WebGPU requirements: `sphere`, `arcball`
+    - Build: `just example-c visuals/sphere`
+    - Smoke: `./build/examples/c/visuals/sphere --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `sphere`, `arcball`, `capture`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../visual_mesh"><span>Previous</span><strong>Mesh</strong></a>
+<a class="dvz-example-nav__link" href="../volume"><span>Next</span><strong>Volume</strong></a>
+</div>
+</nav>

@@ -4,30 +4,21 @@
 
 screen-space marker, path, and axis scaling controlled by a GUI slider.
 
-- ID: `feature_user_scale`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/user_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/user_scale.c)
-- Agent copy-safe: `true`
-- WebGPU status: `native-only`
-- WebGPU requirements: `marker`, `path`, `gui`
-- Build: `just example-c features/user_scale`
-- Smoke: `./build/examples/c/features/user_scale --png`
-- Validation: `smoke+interaction+screenshot`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../panel_background"><span>Previous</span><strong>Panel Background</strong></a>
+<a class="dvz-example-nav__link" href="../feature_visual_transform"><span>Next</span><strong>Visual Transform</strong></a>
+</div>
+</nav>
 
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 ![User Scale](../../../assets/gallery/v0.4/features/feature_user_scale.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -36,3 +27,38 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/user_scale.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_user_scale`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/user_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/user_scale.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `native-only`
+    - WebGPU requirements: `marker`, `path`, `gui`
+    - Build: `just example-c features/user_scale`
+    - Smoke: `./build/examples/c/features/user_scale --png`
+    - Validation: `smoke+interaction+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../panel_background"><span>Previous</span><strong>Panel Background</strong></a>
+<a class="dvz-example-nav__link" href="../feature_visual_transform"><span>Next</span><strong>Visual Transform</strong></a>
+</div>
+</nav>

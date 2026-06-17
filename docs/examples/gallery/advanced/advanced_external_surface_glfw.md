@@ -4,34 +4,21 @@
 
 host-owned GLFW loop using Datoviz hosted rendering.
 
-- ID: `advanced_external_surface_glfw`
-- Category: `advanced`
-- Lane: `advanced`
-- Status: `experimental`
-- Source: [`examples/c/advanced/external_surface_glfw.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/external_surface_glfw.c)
-- Agent copy-safe: `false`
-- WebGPU status: `native-only`
-- WebGPU requirements: `native-view`, `external-surface`, `glfw`
-- Build: `just example-c advanced/external_surface_glfw`
-- Smoke: `./build/examples/c/advanced/external_surface_glfw --png`
-- Validation: `native-smoke`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../advanced">Advanced Examples</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+<a class="dvz-example-nav__link" href="../advanced_raw_triangle_drp2"><span>Next</span><strong>Raw Triangle DRP2</strong></a>
+</div>
+</nav>
 
-## Tags
-
-`advanced`, `external-surface`, `glfw`, `host-integration`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 _Media pending._
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -40,3 +27,42 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/advanced/external_surface_glfw.c"
     ```
+
+??? info "Example details"
+
+    - ID: `advanced_external_surface_glfw`
+    - Category: `advanced`
+    - Lane: `advanced`
+    - Status: `experimental`
+    - Source: [`examples/c/advanced/external_surface_glfw.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/external_surface_glfw.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `native-only`
+    - WebGPU requirements: `native-view`, `external-surface`, `glfw`
+    - Build: `just example-c advanced/external_surface_glfw`
+    - Smoke: `./build/examples/c/advanced/external_surface_glfw --png`
+    - Validation: `native-smoke`
+
+    ### Tags
+
+    `advanced`, `external-surface`, `glfw`, `host-integration`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../advanced">Advanced Examples</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<span class="dvz-example-nav__link dvz-example-nav__link--empty"></span>
+<a class="dvz-example-nav__link" href="../advanced_raw_triangle_drp2"><span>Next</span><strong>Raw Triangle DRP2</strong></a>
+</div>
+</nav>

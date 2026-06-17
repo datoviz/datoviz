@@ -4,39 +4,31 @@
 
 retained bars and uncertainty band plot helpers.
 
-- ID: `feature_bars_bands`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/bars_bands.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bars_bands.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_bars_bands"><code>examples/webgpu/live.html?id=feature_bars_bands</code></a>
-- WebGPU requirements: `primitive`, `segment`, `axes`, `panzoom`
-- Build: `just example-c features/bars_bands`
-- Smoke: `./build/examples/c/features/bars_bands --png`
-- Validation: `smoke+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Bars And Bands](../../../assets/gallery/v0.4/features/feature_bars_bands.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=feature_bars_bands" title="Bars And Bands WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_guide_spans"><span>Previous</span><strong>Guide Spans</strong></a>
+<a class="dvz-example-nav__link" href="../scale_bar"><span>Next</span><strong>Scale Bar</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=feature_bars_bands">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Bars And Bands](../../../assets/gallery/v0.4/features/feature_bars_bands.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=feature_bars_bands" title="Bars And Bands WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=feature_bars_bands">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/bars_bands.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_bars_bands`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/bars_bands.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bars_bands.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_bars_bands"><code>examples/webgpu/live.html?id=feature_bars_bands</code></a>
+    - WebGPU requirements: `primitive`, `segment`, `axes`, `panzoom`
+    - Build: `just example-c features/bars_bands`
+    - Smoke: `./build/examples/c/features/bars_bands --png`
+    - Validation: `smoke+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_guide_spans"><span>Previous</span><strong>Guide Spans</strong></a>
+<a class="dvz-example-nav__link" href="../scale_bar"><span>Next</span><strong>Scale Bar</strong></a>
+</div>
+</nav>

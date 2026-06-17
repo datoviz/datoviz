@@ -4,39 +4,31 @@
 
 one explicit panel rectangle with panel chrome and one visual.
 
-- ID: `feature_panel_single`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/panel_single.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_single.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_single"><code>examples/webgpu/live.html?id=feature_panel_single</code></a>
-- WebGPU requirements: `panel`, `point`
-- Build: `just example-c features/panel_single`
-- Smoke: `./build/examples/c/features/panel_single --png`
-- Validation: `smoke+screenshot`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Single Panel](../../../assets/gallery/v0.4/features/feature_panel_single.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=feature_panel_single" title="Single Panel WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_coordinate_system"><span>Previous</span><strong>Coordinate System</strong></a>
+<a class="dvz-example-nav__link" href="../feature_panel_grid"><span>Next</span><strong>Panel Grid</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=feature_panel_single">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Single Panel](../../../assets/gallery/v0.4/features/feature_panel_single.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=feature_panel_single" title="Single Panel WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=feature_panel_single">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -45,3 +37,39 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/panel_single.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_panel_single`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/panel_single.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_single.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_single"><code>examples/webgpu/live.html?id=feature_panel_single</code></a>
+    - WebGPU requirements: `panel`, `point`
+    - Build: `just example-c features/panel_single`
+    - Smoke: `./build/examples/c/features/panel_single --png`
+    - Validation: `smoke+screenshot`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_coordinate_system"><span>Previous</span><strong>Coordinate System</strong></a>
+<a class="dvz-example-nav__link" href="../feature_panel_grid"><span>Next</span><strong>Panel Grid</strong></a>
+</div>
+</nav>

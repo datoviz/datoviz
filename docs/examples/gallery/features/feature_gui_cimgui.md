@@ -4,30 +4,21 @@
 
 raw cimgui calls inside a Datoviz GUI callback.
 
-- ID: `feature_gui_cimgui`
-- Category: `feature`
-- Lane: `features`
-- Status: `supported`
-- Source: [`examples/c/features/gui_cimgui.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_cimgui.c)
-- Agent copy-safe: `false`
-- WebGPU status: `native-only`
-- WebGPU requirements: `gui`
-- Build: `just example-c features/gui_cimgui`
-- Smoke: `./build/examples/c/features/gui_cimgui --png`
-- Validation: `smoke+interaction`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_gui_viewport"><span>Previous</span><strong>GUI Viewport</strong></a>
+<a class="dvz-example-nav__link" href="../feature_app_glfw"><span>Next</span><strong>GLFW App</strong></a>
+</div>
+</nav>
 
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
+## Preview
 
 _Media pending._
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -36,3 +27,38 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/features/gui_cimgui.c"
     ```
+
+??? info "Example details"
+
+    - ID: `feature_gui_cimgui`
+    - Category: `feature`
+    - Lane: `features`
+    - Status: `supported`
+    - Source: [`examples/c/features/gui_cimgui.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_cimgui.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `native-only`
+    - WebGPU requirements: `gui`
+    - Build: `just example-c features/gui_cimgui`
+    - Smoke: `./build/examples/c/features/gui_cimgui --png`
+    - Validation: `smoke+interaction`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../features">Features</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../feature_gui_viewport"><span>Previous</span><strong>GUI Viewport</strong></a>
+<a class="dvz-example-nav__link" href="../feature_app_glfw"><span>Next</span><strong>GLFW App</strong></a>
+</div>
+</nav>

@@ -4,43 +4,31 @@
 
 deterministic multi-signal retained path visual.
 
-- ID: `visual_path`
-- Category: `visual`
-- Lane: `visuals`
-- Status: `supported`
-- Source: [`examples/c/visuals/path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/path.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=visual_path"><code>examples/webgpu/live.html?id=visual_path</code></a>
-- WebGPU requirements: `path`, `panzoom`
-- Build: `just example-c visuals/path`
-- Smoke: `./build/examples/c/visuals/path --png`
-- Validation: `smoke+screenshot`
-
-## Tags
-
-`path`, `capture`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Path](../../../assets/gallery/v0.4/visuals/visual_path.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=visual_path" title="Path WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../visual_segment"><span>Previous</span><strong>Segment</strong></a>
+<a class="dvz-example-nav__link" href="../visual_vector"><span>Next</span><strong>Vector</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=visual_path">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Path](../../../assets/gallery/v0.4/visuals/visual_path.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=visual_path" title="Path WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=visual_path">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -49,3 +37,43 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/visuals/path.c"
     ```
+
+??? info "Example details"
+
+    - ID: `visual_path`
+    - Category: `visual`
+    - Lane: `visuals`
+    - Status: `supported`
+    - Source: [`examples/c/visuals/path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/path.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_path"><code>examples/webgpu/live.html?id=visual_path</code></a>
+    - WebGPU requirements: `path`, `panzoom`
+    - Build: `just example-c visuals/path`
+    - Smoke: `./build/examples/c/visuals/path --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `path`, `capture`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../visual_segment"><span>Previous</span><strong>Segment</strong></a>
+<a class="dvz-example-nav__link" href="../visual_vector"><span>Next</span><strong>Vector</strong></a>
+</div>
+</nav>

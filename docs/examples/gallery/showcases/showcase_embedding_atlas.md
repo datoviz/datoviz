@@ -4,44 +4,21 @@
 
 interactive prepared AI embedding atlas.
 
-- ID: `showcase_embedding_atlas`
-- Category: `showcase`
-- Lane: `showcases`
-- Status: `supported`
-- Source: [`examples/c/showcases/embedding_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/embedding_atlas.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-planned`
-- WebGPU requirements: `point`, `panzoom`, `query-readback`, `selection`, `overlay`
-- Build: `just example-c showcases/embedding_atlas`
-- Smoke: `./build/examples/c/showcases/embedding_atlas --png`
-- Validation: `smoke+interaction+screenshot`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../showcase_lipid_brain_atlas"><span>Previous</span><strong>Lipid Brain Atlas</strong></a>
+<a class="dvz-example-nav__link" href="../showcase_synthetic_mouse"><span>Next</span><strong>Synthetic Mouse</strong></a>
+</div>
+</nav>
 
-## Tags
-
-`scientific`, `synthetic`, `embedding`, `point`, `panzoom`, `query-readback`, `selection`, `overlay-card`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | generated |
-
-## Dataset
-
-| Field | Value |
-| --- | --- |
-| `name` | Synthetic embedding atlas |
-| `source` | deterministic local generation |
-| `license` | generated under repository license |
-| `preprocessing` | python tools/data/prepare_embedding_atlas.py --force |
-| `cache_prepared_path` | .cache/datoviz/examples/embedding_atlas/prepared |
-
-## Media
+## Preview
 
 ![Embedding Atlas](../../../assets/gallery/v0.4/showcases/showcase_embedding_atlas.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -50,3 +27,52 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/showcases/embedding_atlas.c"
     ```
+
+??? info "Example details"
+
+    - ID: `showcase_embedding_atlas`
+    - Category: `showcase`
+    - Lane: `showcases`
+    - Status: `supported`
+    - Source: [`examples/c/showcases/embedding_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/embedding_atlas.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-planned`
+    - WebGPU requirements: `point`, `panzoom`, `query-readback`, `selection`, `overlay`
+    - Build: `just example-c showcases/embedding_atlas`
+    - Smoke: `./build/examples/c/showcases/embedding_atlas --png`
+    - Validation: `smoke+interaction+screenshot`
+
+    ### Tags
+
+    `scientific`, `synthetic`, `embedding`, `point`, `panzoom`, `query-readback`, `selection`, `overlay-card`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | generated |
+
+    ### Dataset
+
+    | Field | Value |
+    | --- | --- |
+    | `name` | Synthetic embedding atlas |
+    | `source` | deterministic local generation |
+    | `license` | generated under repository license |
+    | `preprocessing` | python tools/data/prepare_embedding_atlas.py --force |
+    | `cache_prepared_path` | .cache/datoviz/examples/embedding_atlas/prepared |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../showcase_lipid_brain_atlas"><span>Previous</span><strong>Lipid Brain Atlas</strong></a>
+<a class="dvz-example-nav__link" href="../showcase_synthetic_mouse"><span>Next</span><strong>Synthetic Mouse</strong></a>
+</div>
+</nav>

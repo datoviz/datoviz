@@ -4,43 +4,31 @@
 
 retained segment visual with independent endpoint-pair strokes.
 
-- ID: `visual_segment`
-- Category: `visual`
-- Lane: `visuals`
-- Status: `supported`
-- Source: [`examples/c/visuals/segment.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/segment.c)
-- Agent copy-safe: `true`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=visual_segment"><code>examples/webgpu/live.html?id=visual_segment</code></a>
-- WebGPU requirements: `segment`, `panzoom`
-- Build: `just example-c visuals/segment`
-- Smoke: `./build/examples/c/visuals/segment --png`
-- Validation: `smoke+screenshot`
-
-## Tags
-
-`segment`, `panzoom`, `capture`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Segment](../../../assets/gallery/v0.4/visuals/visual_segment.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=visual_segment" title="Segment WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../visual_splat"><span>Previous</span><strong>Splat</strong></a>
+<a class="dvz-example-nav__link" href="../visual_path"><span>Next</span><strong>Path</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=visual_segment">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Segment](../../../assets/gallery/v0.4/visuals/visual_segment.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=visual_segment" title="Segment WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=visual_segment">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -49,3 +37,43 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/visuals/segment.c"
     ```
+
+??? info "Example details"
+
+    - ID: `visual_segment`
+    - Category: `visual`
+    - Lane: `visuals`
+    - Status: `supported`
+    - Source: [`examples/c/visuals/segment.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/segment.c)
+    - Agent copy-safe: `true`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_segment"><code>examples/webgpu/live.html?id=visual_segment</code></a>
+    - WebGPU requirements: `segment`, `panzoom`
+    - Build: `just example-c visuals/segment`
+    - Smoke: `./build/examples/c/visuals/segment --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `segment`, `panzoom`, `capture`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../visuals">Visuals & Composites</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../visual_splat"><span>Previous</span><strong>Splat</strong></a>
+<a class="dvz-example-nav__link" href="../visual_path"><span>Next</span><strong>Path</strong></a>
+</div>
+</nav>

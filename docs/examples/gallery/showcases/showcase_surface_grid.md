@@ -4,43 +4,31 @@
 
 generated height-field mesh with a derived wireframe overlay.
 
-- ID: `showcase_surface_grid`
-- Category: `showcase`
-- Lane: `showcases`
-- Status: `supported`
-- Source: [`examples/c/showcases/surface_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-live`
-- WebGPU live route: <a href="../../../webgpu/live.html?id=showcase_surface_grid"><code>examples/webgpu/live.html?id=showcase_surface_grid</code></a>
-- WebGPU requirements: `mesh`, `segment`, `arcball`
-- Build: `just example-c showcases/surface_grid`
-- Smoke: `./build/examples/c/showcases/surface_grid --png`
-- Validation: `smoke+screenshot`
-
-## Tags
-
-`scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, `arcball`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | synthetic |
-
-## Media
-
-![Surface Grid](../../../assets/gallery/v0.4/showcases/showcase_surface_grid.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
-
-## Live WebGPU
-
-<div class="dvz-webgpu-live" markdown="1">
-<iframe src="../../../webgpu/live.html?id=showcase_surface_grid" title="Surface Grid WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
 </div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../point_cloud"><span>Previous</span><strong>Point Cloud</strong></a>
+<a class="dvz-example-nav__link" href="../textured_terrain_or_planet"><span>Next</span><strong>Textured Planets</strong></a>
+</div>
+</nav>
 
-<a href="../../../webgpu/live.html?id=showcase_surface_grid">Open the live WebGPU example</a>.
+## Preview
+
+=== "Screenshot"
+
+    ![Surface Grid](../../../assets/gallery/v0.4/showcases/showcase_surface_grid.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=showcase_surface_grid" title="Surface Grid WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=showcase_surface_grid">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -49,3 +37,43 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/showcases/surface_grid.c"
     ```
+
+??? info "Example details"
+
+    - ID: `showcase_surface_grid`
+    - Category: `showcase`
+    - Lane: `showcases`
+    - Status: `supported`
+    - Source: [`examples/c/showcases/surface_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=showcase_surface_grid"><code>examples/webgpu/live.html?id=showcase_surface_grid</code></a>
+    - WebGPU requirements: `mesh`, `segment`, `arcball`
+    - Build: `just example-c showcases/surface_grid`
+    - Smoke: `./build/examples/c/showcases/surface_grid --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, `arcball`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | synthetic |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../point_cloud"><span>Previous</span><strong>Point Cloud</strong></a>
+<a class="dvz-example-nav__link" href="../textured_terrain_or_planet"><span>Next</span><strong>Textured Planets</strong></a>
+</div>
+</nav>

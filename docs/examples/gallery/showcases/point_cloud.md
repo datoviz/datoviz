@@ -4,44 +4,21 @@
 
 RESEPI RGB LiDAR dense point cloud.
 
-- ID: `point_cloud`
-- Category: `showcase`
-- Lane: `showcases`
-- Status: `supported`
-- Source: [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c)
-- Agent copy-safe: `false`
-- WebGPU status: `webgpu-deferred`
-- WebGPU requirements: `pixel`, `dense-point-cloud`, `depth-postprocess`, `gui`, `fly`
-- Build: `just example-c showcases/point_cloud`
-- Smoke: `./build/examples/c/showcases/point_cloud --png`
-- Validation: `smoke+screenshot`
+<nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../protein_arcball_viewer"><span>Previous</span><strong>Protein</strong></a>
+<a class="dvz-example-nav__link" href="../showcase_surface_grid"><span>Next</span><strong>Surface Grid</strong></a>
+</div>
+</nav>
 
-## Tags
-
-`real-data`, `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, `gui`, `fly`, `capture`
-
-## Data
-
-| Field | Value |
-| --- | --- |
-| `kind` | prepared |
-
-## Dataset
-
-| Field | Value |
-| --- | --- |
-| `name` | RESEPI GENM2X colorized benchmark point cloud |
-| `source` | https://lidarpayload.com/sample-data/ |
-| `license` | Public RESEPI sample data; usage follows the source site's terms |
-| `preprocessing` | python tools/data/prepare_point_cloud.py |
-| `cache_prepared_path` | .cache/datoviz/examples/point_cloud/prepared |
-
-## Media
+## Preview
 
 ![Point Cloud](../../../assets/gallery/v0.4/showcases/point_cloud.webp)
-
-Static screenshots are required before final website publication. Generated media is
-prepared in the `data` submodule and linked from this page.
 
 ## Source
 
@@ -50,3 +27,52 @@ prepared in the `data` submodule and linked from this page.
     ```c
     --8<-- "examples/c/showcases/point_cloud.c"
     ```
+
+??? info "Example details"
+
+    - ID: `point_cloud`
+    - Category: `showcase`
+    - Lane: `showcases`
+    - Status: `supported`
+    - Source: [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c)
+    - Agent copy-safe: `false`
+    - WebGPU status: `webgpu-deferred`
+    - WebGPU requirements: `pixel`, `dense-point-cloud`, `depth-postprocess`, `gui`, `fly`
+    - Build: `just example-c showcases/point_cloud`
+    - Smoke: `./build/examples/c/showcases/point_cloud --png`
+    - Validation: `smoke+screenshot`
+
+    ### Tags
+
+    `real-data`, `pixel`, `dense-point-cloud`, `direct-color`, `eye-dome-lighting`, `gui`, `fly`, `capture`
+
+    ### Data
+
+    | Field | Value |
+    | --- | --- |
+    | `kind` | prepared |
+
+    ### Dataset
+
+    | Field | Value |
+    | --- | --- |
+    | `name` | RESEPI GENM2X colorized benchmark point cloud |
+    | `source` | https://lidarpayload.com/sample-data/ |
+    | `license` | Public RESEPI sample data; usage follows the source site's terms |
+    | `preprocessing` | python tools/data/prepare_point_cloud.py |
+    | `cache_prepared_path` | .cache/datoviz/examples/point_cloud/prepared |
+
+    Generated media is prepared in the `data` submodule and linked from this page.
+
+
+<nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
+<div class="dvz-example-nav__trail">
+<a href="../../..">Examples</a>
+<span>/</span>
+<a href="../../../showcases">Showcases</a>
+</div>
+<div class="dvz-example-nav__siblings">
+<a class="dvz-example-nav__link" href="../protein_arcball_viewer"><span>Previous</span><strong>Protein</strong></a>
+<a class="dvz-example-nav__link" href="../showcase_surface_grid"><span>Next</span><strong>Surface Grid</strong></a>
+</div>
+</nav>
