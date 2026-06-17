@@ -262,7 +262,8 @@ Bridge implementation changes:
 just build
 ./build/examples/qt/hosted_qt_smoke 120
 ./build/examples/qt/hosted_qt_widgets --smoke-ms 1000
-python examples/python/qt/hosted_pyqt.py
+python -m datoviz.qt
+python examples/python/qt/hosted_pyqt.py --smoke-ms 1000
 git diff --check
 ```
 

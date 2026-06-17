@@ -191,6 +191,8 @@ Code changes to the hosted C API or Qt examples should use the narrowest relevan
 just build
 ./build/examples/qt/hosted_qt_smoke 120
 ./build/examples/qt/hosted_qt_widgets --smoke-ms 1000
+python -m datoviz.qt
+python examples/python/qt/hosted_pyqt.py --smoke-ms 1000
 just ctypes
 just ctypes-check
 just ctypes-python-smoke

@@ -3,11 +3,12 @@
 
 from __future__ import annotations
 
+import argparse
 import ctypes
 import random
 import sys
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QApplication, QHBoxLayout, QLabel, QMainWindow, QPushButton
 from PyQt6.QtWidgets import QSlider, QVBoxLayout, QWidget
 
@@ -136,11 +137,29 @@ class MainWindow(QMainWindow):
         self.datoviz.request_frame()
 
 
-def main() -> int:
-    app = QApplication(sys.argv)
+def _parse_args(argv: list[str]) -> tuple[argparse.Namespace, list[str]]:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        '--smoke-ms',
+        type=int,
+        default=0,
+        help='quit automatically after this many milliseconds',
+    )
+    return parser.parse_known_args(argv[1:])
+
+
+def main(argv: list[str] | None = None) -> int:
+    argv = sys.argv if argv is None else argv
+    args, qt_args = _parse_args(argv)
+    app = QApplication([argv[0], *qt_args])
     window = MainWindow()
     window.show()
-    return int(app.exec())
+    if args.smoke_ms > 0:
+        QTimer.singleShot(args.smoke_ms, app.quit)
+    rc = int(app.exec())
+    window.close()
+    app.processEvents()
+    return rc
 
 
 if __name__ == '__main__':
