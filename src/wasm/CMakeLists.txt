@@ -89,8 +89,9 @@ target_include_directories(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/src/scene/core
     ${PROJECT_SOURCE_DIR}/src/scene/visuals
     ${PROJECT_SOURCE_DIR}/examples/c
-    ${PROJECT_SOURCE_DIR}/external/cglm/include
 )
+
+target_link_libraries(datoviz_wasm_scene PRIVATE dvz_cglm)
 
 target_compile_definitions(datoviz_wasm_scene PRIVATE DVZ_EXAMPLE_NO_APP=1 DVZ_EXAMPLE_NO_MAIN=1)
 

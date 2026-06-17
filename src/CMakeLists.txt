@@ -223,6 +223,7 @@ set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     DVZ_HAS_CUDA=${DVZ_HAS_CUDA}
     DVZ_HAS_GLFW=${DVZ_HAS_GLFW}
     DVZ_HAS_KVZ=${DVZ_HAS_KVZ}
+    DVZ_HAS_CGLM=${DVZ_HAS_CGLM}
     DVZ_HAS_FREETYPE=${DVZ_HAS_FREETYPE}
     DVZ_HAS_MSDF_ATLAS=${DVZ_HAS_MSDF_ATLAS}
     DVZ_HAS_DRP2=$<IF:$<BOOL:${DVZ_BUILD_DRP2}>,1,0>
@@ -614,10 +615,10 @@ endif()
 
 if(DVZ_WITH_MIMALLOC)
     if(TARGET datoviz_core)
-        target_link_libraries(datoviz_core PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+        target_link_libraries(datoviz_core PRIVATE $<$<CONFIG:Release>:${DVZ_MIMALLOC_TARGET}>)
     endif()
     if(DVZ_BUILD_CORE)
-        target_link_libraries(datoviz PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+        target_link_libraries(datoviz PRIVATE $<$<CONFIG:Release>:${DVZ_MIMALLOC_TARGET}>)
     endif()
 endif()
 

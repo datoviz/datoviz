@@ -25,6 +25,8 @@ target_compile_definitions(datoviz_vklite
         # VMA_DYNAMIC_VULKAN_FUNCTIONS=1
 )
 
+target_link_libraries(datoviz_vklite PUBLIC dvz_cglm)
+
 if(WIN32)
     target_compile_definitions(datoviz_vklite PRIVATE DVZ_SHARED)
 endif()

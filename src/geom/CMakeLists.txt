@@ -9,11 +9,11 @@ target_include_directories(datoviz_geom
     PUBLIC
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src/common
-    ${PROJECT_SOURCE_DIR}/external/cglm/include
     ${PROJECT_SOURCE_DIR}/external
 )
 
 target_compile_definitions(datoviz_geom PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+target_link_libraries(datoviz_geom PUBLIC dvz_cglm)
 if(WIN32)
     target_compile_definitions(datoviz_geom PRIVATE DVZ_SHARED)
 endif()

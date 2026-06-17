@@ -10,13 +10,13 @@ target_include_directories(datoviz_controller
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src/common
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${PROJECT_SOURCE_DIR}/external/cglm/include
 )
 
 target_link_libraries(datoviz_controller
     PUBLIC
     datoviz_input
     datoviz_math
+    dvz_cglm
 )
 
 target_compile_definitions(datoviz_controller PUBLIC ${DVZ_COMPILE_DEFINITIONS})

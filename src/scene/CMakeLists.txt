@@ -76,7 +76,6 @@ target_include_directories(datoviz_scene
     ${PROJECT_SOURCE_DIR}/src/common
     ${PROJECT_SOURCE_DIR}/external
     ${PROJECT_SOURCE_DIR}/external/cimgui
-    ${PROJECT_SOURCE_DIR}/external/cglm/include
     ${PROJECT_SOURCE_DIR}/external/volk
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/annotation
@@ -96,6 +95,7 @@ target_include_directories(datoviz_scene
 )
 
 target_compile_definitions(datoviz_scene PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+target_link_libraries(datoviz_scene PUBLIC dvz_cglm)
 target_compile_definitions(
     datoviz_scene PUBLIC DVZ_HAS_PRECOMPILED_SHADERS=${DVZ_HAS_PRECOMPILED_SHADERS})
 target_compile_definitions(datoviz_scene PUBLIC DVZ_HAS_GLSL_SHADERS=${DVZ_HAS_GLSL_SHADERS})

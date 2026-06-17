@@ -39,11 +39,7 @@ target_compile_definitions(datoviz_video
 )
 
 if(DVZ_HAS_KVZ)
-    target_include_directories(datoviz_video
-        PUBLIC
-        ${PROJECT_SOURCE_DIR}/external/kvazaar/src
-    )
-    target_link_libraries(datoviz_video PUBLIC kvazaar::kvazaar)
+    target_link_libraries(datoviz_video PUBLIC ${DVZ_KVAZAAR_TARGET})
 endif()
 
 if(WIN32)

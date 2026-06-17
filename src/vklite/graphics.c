@@ -23,8 +23,8 @@
 #include "_compat.h"
 #include "_graphics.h"
 #include "_log.h"
-#include "cglm/include/cglm/types.h"
-#include "cglm/include/cglm/vec4.h"
+#include "cglm/types.h"
+#include "cglm/vec4.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vklite/commands.h"
 
