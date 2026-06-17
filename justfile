@@ -424,95 +424,6 @@ release: symbols && bundledeps
     just build "Release" || just build "Release"
 #
 
-[linux]
-manylinux release="Release":
-    #!/usr/bin/env sh
-    set -e
-    DOCKER_IMAGE="rossant/datoviz_manylinux"
-    BUILD_DIR="build_many"
-    IMAGE_NAME="datoviz-manylinux"
-    DISTDIR="dist"
-
-    mkdir -p $BUILD_DIR
-    # HACK: do NOT use the shipped Ubuntu libraries in the RedHat-based Docker container
-    rsync -a -v \
-        --exclude "libvulkan*" --exclude "glslc" --exclude "justfile" \
-        --exclude "__pycache__" --exclude "Dockerfile" --exclude "data/mesh" \
-        --exclude "data/misc" --exclude "data/volumes" --exclude "data/gallery" \
-        bin cli cmake data datoviz external include libs src tests tools \
-        *.toml *.json *.txt *.map *.md *.cff \
-        CMakeLists.txt *.map "$BUILD_DIR/"
-
-    # Create a temporary Dockerfile
-    cat <<EOF > $BUILD_DIR/Dockerfile
-    FROM $DOCKER_IMAGE
-
-    # Copy source files into the container
-    COPY . /workspace
-
-    # Set the working directory
-    WORKDIR /workspace
-
-    # Build the project
-    RUN ldd --version ldd
-    # RUN ldd  libs/shaderc/linux/libshaderc_shared.so.1
-    RUN mkdir -p build/ $DISTDIR wheel/ && \
-        cd build/ && \
-        CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_MESSAGE_LOG_LEVEL=INFO -DCMAKE_BUILD_TYPE=$release || true && \
-        ninja || true
-    RUN cd build/ && \
-        CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_MESSAGE_LOG_LEVEL=INFO -DCMAKE_BUILD_TYPE=$release && \
-        ninja
-
-    # Copy files before building the wheel.
-    RUN \
-        mkdir -p wheel wheel/datoviz && \
-        cp datoviz/*.py wheel/datoviz/ && \
-        cp -a datoviz/experimental wheel/datoviz/ && \
-        cp pyproject.toml wheel/ && \
-        DVZ_LIB=\$(find build -maxdepth 3 -name 'libdatoviz.so' | head -n 1) && \
-        test -n "\$DVZ_LIB" && \
-        cp "\$DVZ_LIB" wheel/datoviz/ && \
-        tools/copy_wheel_c_integration.sh wheel/datoviz && \
-        cp -L libs/shaderc/linux/*.so* wheel/datoviz/ && \
-        cp /usr/lib64/libvulkan.so.1 wheel/datoviz/ && \
-        cp /usr/bin/glslc wheel/datoviz/
-
-    # Build the wheel.
-    RUN /opt/python/cp38-cp38/bin/pip wheel wheel/ -w "$DISTDIR/" --no-deps
-
-    # # Rename the wheel.
-    # RUN \
-    #     WHEELPATH=$(ls dist/*any.whl 2>/dev/null) && \
-    #     PLATFORM_TAG=$(/opt/python/cp38-cp38/bin/python -c "from setuptools.wheel import get_platform; print(get_platform())") && \
-    #     TAG="cp3-none-$PLATFORM_TAG" && \
-    #     /opt/python/cp38-cp38/bin/python -m wheel tags --platform-tag $PLATFORM_TAG "$DISTDIR/*"
-
-    EOF
-
-    # Build the Docker image
-    docker build -t $IMAGE_NAME $BUILD_DIR # --progress=plain
-
-    # Copy the files from the container to the host, in dist/.
-    container_id=$(docker create $IMAGE_NAME)
-    files=$(docker run --rm $IMAGE_NAME sh -c 'ls /workspace/dist/datoviz*.whl')
-    for file in $files; do
-        docker cp "$container_id:$file" ./dist/
-    done
-    docker rm $container_id
-
-    # Check the contents of dist/
-    ls -lah $DISTDIR
-
-    # Fix permissions.
-    # sudo chown $(whoami):$(id -gn) $DISTDIR/*.whl
-
-    # Rename the wheel
-    just renamewheel "manylinux_2_34_x86_64"
-
-    rm -rf wheel/
-#
-
 [windows]
 build release="Debug":
     #!/usr/bin/env sh
@@ -715,46 +626,6 @@ testdeb:
     rm Dockerfile
 #
 
-[linux]
-wheel almalinux="0":
-    #!/usr/bin/env sh
-    set -e
-
-    # Create the wheel/ temporary directory
-    mkdir -p wheel wheel/datoviz
-
-    # Copy the Python projects files
-    cp datoviz/*.py wheel/datoviz/
-    cp -a datoviz/experimental wheel/datoviz/
-    cp pyproject.toml wheel/
-
-    # Copy libdatoviz
-    DVZ_LIB=$(find build -maxdepth 3 -name 'libdatoviz.so' | head -n 1)
-    test -n "$DVZ_LIB"
-    cp "$DVZ_LIB" wheel/datoviz/
-    tools/copy_wheel_c_integration.sh wheel/datoviz
-
-    # Copy the Vulkan shared libraries
-    if [ "{{almalinux}}" != "0" ]; then
-        cp /usr/lib64/libvulkan.so.1 wheel/datoviz/
-        cp /usr/bin/glslc wheel/datoviz/
-    else
-        if [ -f libs/vulkan/linux/libvulkan.so.1 ]; then cp libs/vulkan/linux/libvulkan.so.1 wheel/datoviz/; fi
-        cp libs/shaderc/linux/*.so* wheel/datoviz/
-        cp bin/vulkan/linux/glslc wheel/datoviz/
-    fi
-
-    # Build the wheel
-    pip3 wheel wheel/ -w "dist/" --no-deps
-
-    # Rename the wheel
-    if [ "{{almalinux}}" != "0" ]; then
-        just renamewheel "manylinux_2_34_x86_64"
-    fi
-
-    rm -rf wheel/
-#
-
 # Test the wheel in a Docker environment.
 [linux]
 testwheel:
@@ -932,52 +803,6 @@ testpkg vm_ip_address:
     EOF
 #
 
-[macos]
-wheel arg='': checkstructs
-    #!/usr/bin/env sh
-    set -e
-    PKGROOT="packaging/wheel"
-    DVZDIR="$PKGROOT/datoviz"
-    DISTDIR="dist"
-
-    # Clean up and prepare the directory structure.
-    mkdir -p $PKGROOT $DISTDIR
-    mkdir -p $DVZDIR
-
-    # Copy the header files.
-    cp datoviz/*.py $DVZDIR
-    cp -a datoviz/experimental $DVZDIR
-    cp pyproject.toml $PKGROOT/
-    DVZ_LIB=$(find build -maxdepth 3 -name 'libdatoviz.dylib' | head -n 1)
-    test -n "$DVZ_LIB"
-    cp "$DVZ_LIB" $DVZDIR
-    tools/copy_wheel_c_integration.sh $DVZDIR
-    cp build/libvulkan.1.dylib $DVZDIR
-    cp build/libshaderc*.1.dylib $DVZDIR
-    cp build/libfreetype.6.dylib $DVZDIR
-    cp build/libpng16.16.dylib $DVZDIR
-    cp build/libMoltenVK.dylib $DVZDIR
-    cp build/MoltenVK_icd.json $DVZDIR
-
-    # Copy the dependencies and adjust their rpaths.
-    LIB=$DVZDIR/libdatoviz.dylib
-    just bundledeps $LIB
-
-    # Create the wheel.
-    cd $PKGROOT
-    pip wheel . -w "../../$DISTDIR" --no-deps
-
-    # Cleanup.
-    cd -
-    rm -rf $PKGROOT
-
-    # Rename the wheel.
-    just renamewheel {{arg}}
-
-    # Show the wheel contents.
-    just showwheel
-#
-
 # Test the wheel in a virtual machine
 [macos]
 testwheel vm_ip_address="":
@@ -986,8 +811,8 @@ testwheel vm_ip_address="":
     IP="{{vm_ip_address}}"
     TMPDIR=/tmp/datoviz_example
 
-    if [ ! $IP]; then
-        just checkwheel
+    if [ -z "$IP" ]; then
+        just wheel-check
         # # Create a new virtual environment
         # rm -rf test_env
         # python -m venv test_env --system-site-packages
@@ -1299,90 +1124,39 @@ spec-check: shader-abi-check
 # -------------------------------------------------------------------------------------------------
 
 showwheel:
-    @unzip -l dist/*.whl
+    @just wheel-inspect
 #
 
-v04-wheel-matrix:
+wheel-matrix:
     @python tools/release_wheels/wheel_matrix.py
 #
 
-v04-wheel-stage *args:
+wheel-stage *args:
     @python tools/release_wheels/stage_wheel.py {{args}}
 #
 
-v04-wheel-build *args:
+wheel-build *args:
     @python tools/release_wheels/build_wheel.py {{args}}
 #
 
-v04-wheel-inspect *args:
+wheel-inspect *args:
     @python tools/release_wheels/inspect_wheel.py {{args}}
 #
 
-v04-wheel-check *args:
+wheel-check *args:
     @python tools/release_wheels/check_wheel.py {{args}}
 #
 
-renamewheel platform_tag='':
+wheel platform_tag='': build
     #!/usr/bin/env sh
     set -e
-
-    echo "just renamewheel {{platform_tag}}"
-
-    # Rename the wheel depending on the current platform.
-    if [ ! -f dist/*any.whl ]; then
-        echo "No universal wheel to rename in dist/"
-        exit 1
-    fi
-
-    WHEELPATH=$(ls dist/*any.whl 2>/dev/null)
-
-    if [ -z "{{platform_tag}}" ]; then
-        PLATFORM_TAG=$(python -c "from setuptools.wheel import get_platform; print(get_platform().replace('-', '_'))")
+    just wheel-stage --clean
+    if [ -n "{{platform_tag}}" ]; then
+        just wheel-build --platform-tag "{{platform_tag}}"
     else
-        PLATFORM_TAG="{{platform_tag}}"
+        just wheel-build
     fi
-    echo $PLATFORM_TAG
-
-    TAG="cp3-none-$PLATFORM_TAG"
-
-    echo "Rename $WHEELPATH"
-    python -m wheel tags --platform-tag $PLATFORM_TAG $WHEELPATH
-    rm $WHEELPATH
-#
-
-[windows]
-wheel: checkstructs && showwheel
-    #!/usr/bin/env sh
-    set -e
-    PKGROOT="packaging/wheel"
-    DVZDIR="$PKGROOT/datoviz"
-    DISTDIR="dist"
-
-    # Clean up and prepare the directory structure.
-    rm -rf "$PKGROOT" "$DISTDIR"
-    mkdir -p "$PKGROOT" "$DVZDIR" "$DISTDIR"
-
-    # Copy the header files.
-    cp datoviz/*.py "$DVZDIR"
-    cp -a datoviz/experimental "$DVZDIR"
-    cp pyproject.toml "$PKGROOT/"
-    cp build/*.dll "$DVZDIR"
-    tools/copy_wheel_c_integration.sh "$DVZDIR"
-
-    # Copy mingw64 shared libraries.
-    MINGW64_DIR="$(dirname $(which gcc))"
-    cp "$MINGW64_DIR/libgcc_s_seh-1.dll" "$DVZDIR"
-    cp "$MINGW64_DIR/libstdc++-6.dll" "$DVZDIR"
-    cp "$MINGW64_DIR/libwinpthread-1.dll" "$DVZDIR"
-
-    # Build the wheel.
-    pushd "$PKGROOT"
-    pip wheel . -w "../../$DISTDIR" --no-deps
-    popd
-    just renamewheel win_amd64
-
-    # Clean up.
-    rm -rf "$PKGROOT"
+    just wheel-inspect
 #
 
 testpypi:
@@ -1417,43 +1191,6 @@ testpypi:
     rm -rf venv_pypi
 #
 
-checkwheel path="":
-    #!/usr/bin/env sh
-    set -e
-
-    # Temp directory
-    TESTDIR=~/tmp/testwheel
-    rm -rf $TESTDIR
-    mkdir -p $TESTDIR
-
-    case "$(uname -s)" in
-    *CYGWIN*|*MINGW*|*MSYS*) BINDIR="Scripts" ;;
-    *) BINDIR="bin" ;;
-    esac
-
-    # Copy the wheel
-    [ -f "{{path}}" ] && cp {{path}} $TESTDIR || cp dist/datoviz-*.whl $TESTDIR
-
-    # Virtual env
-    python -m venv $TESTDIR/venv
-    cd $TESTDIR
-    $TESTDIR/venv/$BINDIR/python -m pip install --isolated --upgrade pip wheel
-    # NOTE: --isolated fixes the pip error 'Can not perform a '--user' install'
-    $TESTDIR/venv/$BINDIR/python -m pip install --isolated $TESTDIR/datoviz-*.whl
-
-    # Run the demo from the wheel
-    DVZ_CAPTURE_PNG="$TESTDIR/testwheel.png" $TESTDIR/venv/$BINDIR/python -c "import datoviz; datoviz.demo()"
-
-    # Return 0 iff the file exists and if sufficiently large
-    res=1
-    if [ -f "$TESTDIR/testwheel.png" ]; then
-        filesize=$($TESTDIR/venv/$BINDIR/python -c "from pathlib import Path; print(Path(r'testwheel.png').stat().st_size)")
-        res=$(( $filesize > 100000 ? 0 : 1 ))
-    fi
-    rm -rf $TESTDIR
-    exit $res
-#
-
 checkartifactversion temp_dir:
     #!/usr/bin/env sh
     set -e
@@ -1483,7 +1220,7 @@ checkartifact RUN_ID="":
     temp_dir=$(mktemp -d)
     gh run download $run_id -n wheel-linux_x86_64 -D $temp_dir
     just checkartifactversion $temp_dir
-    just checkwheel $temp_dir/datoviz*.whl
+    just wheel-check $temp_dir/datoviz*.whl
     exit_code=$?
     rm -rf "${temp_dir}"
     exit $exit_code
@@ -1510,7 +1247,7 @@ checkartifact RUN_ID="":
     gh run download $run_id -n "wheel-macosx_$platform" -D $temp_dir
     just checkartifactversion $temp_dir
     ls $temp_dir/datoviz*.whl
-    just checkwheel $temp_dir/datoviz*.whl
+    just wheel-check $temp_dir/datoviz*.whl
     exit_code=$?
     rm -rf "${temp_dir}"
     exit $exit_code
@@ -1527,25 +1264,11 @@ checkartifact RUN_ID="":
     temp_dir=$(mktemp -d)
     gh run download $run_id -n wheel-win_amd64 -D $temp_dir
     just checkartifactversion $temp_dir
-    just checkwheel $temp_dir/datoviz*.whl
+    just wheel-check $temp_dir/datoviz*.whl
     exit_code=$?
     rm -rf "${temp_dir}"
     exit $exit_code
 #
-
-buildwheel args='':
-    #!/usr/bin/env sh
-    set -e
-
-    if [ -n "$DVZ_NIGHTLY_TAG" ]; then
-        echo "🔁 Detected DVZ_NIGHTLY_TAG=$DVZ_NIGHTLY_TAG — using just nightly"
-        just nightly {{args}}
-    else
-        echo "🎯 No DVZ_NIGHTLY_TAG — using just wheel"
-        just wheel {{args}}
-    fi
-#
-
 
 [linux]
 [macos]
