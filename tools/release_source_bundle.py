@@ -21,6 +21,9 @@ DEFAULT_SUBMODULES = (
     "external/mimalloc",
     "external/msdf-atlas-gen",
 )
+REQUIRED_GENERATED_FILES = (
+    "datoviz/_ctypes.py",
+)
 
 
 def _run(args: list[str], *, cwd: Path = ROOT) -> str:
@@ -79,6 +82,15 @@ def _source_entries(submodules: tuple[str, ...]) -> list[tuple[Path, Path]]:
             src = subroot / rel
             if src.is_file():
                 entries.append((src, Path(submodule) / rel))
+
+    for rel_text in REQUIRED_GENERATED_FILES:
+        rel = Path(rel_text)
+        src = ROOT / rel
+        if not src.is_file():
+            raise FileNotFoundError(
+                f"required generated release file is missing: {rel}. Run `just ctypes` first."
+            )
+        entries.append((src, rel))
 
     return sorted(entries, key=lambda item: os.fspath(item[1]))
 

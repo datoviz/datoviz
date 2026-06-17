@@ -19,3 +19,7 @@ Before submitting:
 2. Verify dependency names against a local `conda-build` or staged-recipes run.
 3. Confirm Windows paths and DLL packaging in the feedstock CI logs.
 4. Keep package names as proposed: `libdatoviz` for the C library and `datoviz` for Python.
+
+The source bundle must be created with `tools/release_source_bundle.py` or `just
+release-source-bundle`; GitHub's auto-generated archives are insufficient because they omit
+submodule contents and ignored generated files such as `datoviz/_ctypes.py`.
