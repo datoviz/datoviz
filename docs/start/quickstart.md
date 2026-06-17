@@ -61,6 +61,18 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
         ./scatter
         ```
 
+    === "Windows (MSYS2/MinGW)"
+
+        ```sh
+        gcc scatter.c -o scatter -Iinclude/ -Lbuild/ -lm -ldatoviz
+        ./scatter.exe
+        ```
+
+    === "Windows (MSVC)"
+
+        MSVC is supported via CMake. See [Install](install.md) for the CMake package
+        integration, which handles include paths and linking automatically.
+
     Or, if you cloned the repository, use the bundled example directly:
 
     ```sh
