@@ -13,11 +13,27 @@ visuals for 3D arrays, and textured mesh only when the texture is attached to su
 DvzVisual* image = dvz_image(scene, 0);
 dvz_visual_set_data(image, "position", pos, 4);
 dvz_visual_set_data(image, "texcoords", uv, 4);
-dvz_visual_set_data(image, "texture", pixels, width * height);
+
+DvzSampledField* field = dvz_sampled_field(
+    scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+               .dim = DVZ_FIELD_DIM_2D,
+               .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+               .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+               .width = width,
+               .height = height,
+               .depth = 1});
+dvz_sampled_field_set_data(
+    field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+               .data = values,
+               .bytes_per_row = width * sizeof(float),
+               .rows_per_image = height});
+dvz_visual_set_field(image, "field", field);
 dvz_panel_add_visual(panel, image, NULL);
 ```
 
-Use the exact image or volume attribute names from the canonical source before copying this pattern.
+Use `dvz_visual_set_field()` for image and volume sampled fields. The older texture convenience
+wrappers still exist, but new examples should keep dimensions, format, semantic role, and row pitch
+explicit in the sampled-field descriptor and data view.
 
 
 ## Important Details

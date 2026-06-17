@@ -23,6 +23,7 @@ when they truly need different visual families, materials, transforms, panels, o
 | 3D scalar field | Volume | [Volume](../examples/gallery/visuals/volume.md) |
 | Triangulated surface | Mesh | [Mesh](../examples/gallery/visuals/visual_mesh.md) |
 | Many copies of the same 3D object | Mesh with `instance_transform` | [Mesh Instance Selection](../examples/gallery/features/feature_selection_mesh_instances.md) |
+| 3D balls, atoms, or particles with world-space radius | Sphere | [Sphere](../examples/gallery/visuals/sphere_impostor.md) |
 | Text annotations | Text, labels | [Labels](../examples/gallery/visuals/visual_labels.md) |
 
 
