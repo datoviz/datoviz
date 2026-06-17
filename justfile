@@ -331,7 +331,7 @@ build release="Debug":
     @unset CXX
     @mkdir -p docs/images
     @mkdir -p build
-    @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    @cmake_args="${DVZ_CMAKE_ARGS:-}"; cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ${cmake_args}
     @cd build/ && ninja
 #
 
@@ -421,7 +421,7 @@ build release="Debug": # && bundledeps
     @mkdir -p docs/images
     @mkdir -p build/src
     @mkdir -p build/testing
-    cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    cmake_args="${DVZ_CMAKE_ARGS:-}"; cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ${cmake_args}
     cd build/ && ninja
 #
 
@@ -442,6 +442,7 @@ build release="Debug":
     set -e
     unset CC
     unset CXX
+    cmake_args="${DVZ_CMAKE_ARGS:-}"
     BUILD_DIR="build"
     mkdir -p "$BUILD_DIR"
 
@@ -451,7 +452,7 @@ build release="Debug":
     cp "$MINGW64_DIR/libstdc++-6.dll" "$BUILD_DIR"/
     cp "$MINGW64_DIR/libwinpthread-1.dll" "$BUILD_DIR"/
 
-    CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake --preset=mingw -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake --preset=mingw -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ${cmake_args}
     cmake --build --preset mingw
 
     # Copy vcpkg_installed dll's to datoviz.exe location.
@@ -468,10 +469,11 @@ msvc release="Debug":
     set -e
     unset CC
     unset CXX
+    cmake_args="${DVZ_CMAKE_ARGS:-}"
     BUILD_DIR="build-msvc"
     mkdir -p "$BUILD_DIR"
 
-    CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake --preset=msvc -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake --preset=msvc -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ${cmake_args}
     cmake --build --preset msvc --config {{release}}
 
     # Copy vcpkg_installed dll's next to datoviz.exe.

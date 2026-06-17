@@ -10,6 +10,7 @@ env:
   CIBW_BUILD: "cp313-*"
   CIBW_SKIP: "pp* *-musllinux_* cp31?t-*"
   CIBW_TEST_COMMAND: "python {project}/tools/release_wheels/check_wheel.py --wheel {wheel} --cmake-consumer --qt-probe optional"
+  DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON"
 
 jobs:
   matrix:
@@ -44,6 +45,8 @@ jobs:
           python-version: "3.13"
       - name: Dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y libshaderc-dev libvulkan-dev
           python -m pip install -U pip cibuildwheel build auditwheel
           command -v auditwheel
       - name: Build native artifacts
@@ -83,11 +86,12 @@ jobs:
           python-version: "3.13"
       - name: Dependencies
         run: |
-          brew install just ccache ninja jq
+          brew install just ccache ninja jq shaderc vulkan-headers vulkan-loader molten-vk
           python -m pip install -U pip cibuildwheel build delocate
           command -v delocate-listdeps
       - name: Build native artifacts
         run: |
+          export DVZ_WHEEL_RUNTIME_DIRS="$(brew --prefix shaderc)/lib:$(brew --prefix vulkan-loader)/lib:$(brew --prefix molten-vk)/lib"
           just build
           just wheel-stage --clean
       - name: Build wheels
@@ -110,6 +114,7 @@ jobs:
         arch: [AMD64, ARM64]
     env:
       CIBW_ARCHS_WINDOWS: ${{ matrix.arch }}
+      VCPKG_ROOT: C:/vcpkg
     steps:
       - uses: actions/checkout@v4
         with:
@@ -117,6 +122,24 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: |
+            C:/vcpkg
+            build/vcpkg_installed
+          key: ${{ runner.os }}-wheel-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+          restore-keys: |
+            ${{ runner.os }}-wheel-vcpkg-
+      - name: Bootstrap vcpkg
+        shell: pwsh
+        run: |
+          if (!(Test-Path "$env:VCPKG_ROOT")) {
+            git clone https://github.com/microsoft/vcpkg.git "$env:VCPKG_ROOT"
+          }
+          if (!(Test-Path "$env:VCPKG_ROOT/vcpkg.exe")) {
+            & "$env:VCPKG_ROOT/bootstrap-vcpkg.bat"
+          }
       - name: Dependencies
         shell: pwsh
         run: |
