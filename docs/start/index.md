@@ -20,8 +20,8 @@ Datoviz is a **C-first library** with an included auto-generated Python wrapper 
 <div class="vf-dim-label">1D — line-like</div>
 <div class="vf-cards">
 <a class="vf-card" href="../reference/visual-families/segment/"><img src="../assets/gallery/v0.4/thumbs/v_segment.webp" alt="Segment"><span>Segment</span></a>
-<a class="vf-card" href="../reference/visual-families/path/"><img src="../assets/gallery/v0.4/thumbs/v_path.webp" alt="Path"><span>Path</span></a>
 <a class="vf-card" href="../reference/visual-families/vector/"><img src="../assets/gallery/v0.4/thumbs/v_vector.webp" alt="Vector"><span>Vector</span></a>
+<a class="vf-card" href="../reference/visual-families/path/"><img src="../assets/gallery/v0.4/thumbs/v_path.webp" alt="Path"><span>Path</span></a>
 </div>
 </div>
 <div class="vf-group">
@@ -62,7 +62,7 @@ Datoviz is a **C-first library** with an included auto-generated Python wrapper 
 </div>
 </div>
 
-[Capture a PNG →](../how-to/capture-an-image.md) · [Run in the browser →](../advanced/webgpu-renderer.md) · [All how-to guides →](../how-to/index.md) · [Feature gallery →](../examples/feature-gallery.md)
+[All how-to guides →](../how-to/index.md) · [All feature examples →](../examples/feature-gallery.md)
 
 
 ## I want to use layer…
@@ -81,6 +81,8 @@ Complete standalone examples. See the [Quickstart](quickstart.md) for a fuller w
 
 **Scatter plot — 10k random points with pan/zoom**
 
+The scene setup is identical for interactive and offscreen use — only the last call differs.
+
 ![Scatter plot — 10 000 random colored points with pan/zoom](../assets/gallery/v0.4/start/start_scatter.webp)
 
 === "Python"
@@ -89,6 +91,7 @@ Complete standalone examples. See the [Quickstart](quickstart.md) for a fuller w
     import numpy as np
     import datoviz as dvz
 
+    # --- data ---
     N = 10_000
     pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
     pos[:, 2] = 0.0
@@ -96,19 +99,23 @@ Complete standalone examples. See the [Quickstart](quickstart.md) for a fuller w
     color[:, 3] = 1.0
     sizes = np.full(N, 5.0, dtype=np.float32)
 
+    # --- scene ---
     scene = dvz.dvz_scene()
     figure = dvz.dvz_figure(scene, 800, 600, 0)
     panel = dvz.dvz_panel_full(figure)
-    controller = dvz.dvz_panzoom(scene, None)
+    controller = dvz.dvz_panzoom(scene, None)                          # enable pan/zoom
     dvz.dvz_panel_bind_controller(panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
 
+    # --- visual ---
     visual = dvz.dvz_point(scene, 0)
     dvz.dvz_visual_set_data(visual, "position", pos)
     dvz.dvz_visual_set_data(visual, "color", color)
     dvz.dvz_visual_set_data(visual, "size", sizes)
     dvz.dvz_panel_add_visual(panel, visual, None)
 
-    dvz.run(scene, figure, title="Scatter plot")
+    # --- run ---
+    dvz.run(scene, figure, title="Scatter plot")        # interactive window
+    # dvz.capture(scene, figure, path="output.png")     # or: save to PNG
     ```
 
 === "C"
@@ -118,6 +125,7 @@ Complete standalone examples. See the [Quickstart](quickstart.md) for a fuller w
     #include "datoviz/scene.h"
 
     int main(void) {
+        /* data */
         int N = 10000;
         float pos[N * 3], color[N * 4], size[N];
         for (int i = 0; i < N; i++) {
@@ -131,87 +139,30 @@ Complete standalone examples. See the [Quickstart](quickstart.md) for a fuller w
             size[i] = 5.0f;
         }
 
+        /* scene */
         DvzScene* scene = dvz_scene();
         DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
         DvzPanel* panel = dvz_panel_full(figure);
-        DvzController* controller = dvz_panzoom(scene, NULL);
+        DvzController* controller = dvz_panzoom(scene, NULL);  /* enable pan/zoom */
         dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY);
 
+        /* visual */
         DvzVisual* visual = dvz_point(scene, 0);
         dvz_visual_set_data(visual, "position", pos, N);
         dvz_visual_set_data(visual, "color", color, N);
         dvz_visual_set_data(visual, "size", size, N);
         dvz_panel_add_visual(panel, visual, NULL);
 
+        /* run — interactive window */
         DvzApp* app = dvz_app(scene);
         dvz_view_glfw(app, figure, 800, 600, "Scatter plot");
         dvz_app_run(app, 0);
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 0;
-    }
-    ```
 
----
-
-**Offscreen render to PNG**
-
-=== "Python"
-
-    ```python
-    import numpy as np
-    import datoviz as dvz
-
-    N = 1000
-    pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
-    pos[:, 2] = 0.0
-    color = np.ones((N, 4), dtype=np.float32)
-    sizes = np.full(N, 8.0, dtype=np.float32)
-
-    scene = dvz.dvz_scene()
-    figure = dvz.dvz_figure(scene, 800, 600, 0)
-    panel = dvz.dvz_panel_full(figure)
-
-    visual = dvz.dvz_point(scene, 0)
-    dvz.dvz_visual_set_data(visual, "position", pos)
-    dvz.dvz_visual_set_data(visual, "color", color)
-    dvz.dvz_visual_set_data(visual, "size", sizes)
-    dvz.dvz_panel_add_visual(panel, visual, None)
-
-    dvz.capture(scene, figure, path="output.png")
-    ```
-
-=== "C"
-
-    ```c
-    #include <stdlib.h>
-    #include "datoviz/scene.h"
-
-    int main(void) {
-        int N = 1000;
-        float pos[N * 3], color[N * 4], size[N];
-        for (int i = 0; i < N; i++) {
-            pos[3*i+0] = (float)rand()/RAND_MAX * 2 - 1;
-            pos[3*i+1] = (float)rand()/RAND_MAX * 2 - 1;
-            pos[3*i+2] = 0;
-            color[4*i+0] = color[4*i+1] = color[4*i+2] = color[4*i+3] = 1.0f;
-            size[i] = 8.0f;
-        }
-
-        DvzScene* scene = dvz_scene();
-        DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
-        DvzPanel* panel = dvz_panel_full(figure);
-
-        DvzVisual* visual = dvz_point(scene, 0);
-        dvz_visual_set_data(visual, "position", pos, N);
-        dvz_visual_set_data(visual, "color", color, N);
-        dvz_visual_set_data(visual, "size", size, N);
-        dvz_panel_add_visual(panel, visual, NULL);
-
-        DvzApp* app = dvz_app(scene);
+        /* or offscreen PNG:
         DvzView* view = dvz_view_offscreen(app, figure, 800, 600);
         dvz_app_run(app, 1);
-        dvz_view_capture_png(view, "output.png");
+        dvz_view_capture_png(view, "output.png"); */
+
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 0;
