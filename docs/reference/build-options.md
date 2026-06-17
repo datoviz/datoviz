@@ -34,6 +34,17 @@ dependency across supported distributions.
 | `package-smoke-system-required` | Package CI preset requiring system cglm, Kvazaar, mimalloc, and GLFW. Use only in an environment that installs those development packages first. |
 | `package-install-system-required` | Install-tree smoke requiring system cglm, Kvazaar, mimalloc, and GLFW. Use only in an environment that installs those development packages first. |
 
+## Package CI Matrix
+
+| Platform | System dependencies to install | Expected preset lane | Dependency policy |
+| --- | --- | --- | --- |
+| Ubuntu 24.04 | `libglfw3-dev libcglm-dev libmimalloc-dev` | `package-smoke-system-auto`, then `package-install-system-auto` | Prefer system GLFW, cglm, and mimalloc. Leave Kvazaar as `AUTO` or set `DVZ_KVAZAAR_SOURCE=VENDORED` unless the builder provides `libkvazaar-dev`. |
+| Fedora | `glfw-devel mimalloc-devel` plus any available cglm/Kvazaar development packages | `package-smoke-system-auto`, then `package-install-system-auto` | Prefer system packages that exist in the target Fedora/EPEL release. Keep cglm and Kvazaar as `AUTO` unless the packaging environment explicitly provides them. |
+| macOS / Homebrew | `glfw cglm kvazaar mimalloc` | `package-smoke-system-required`, then `package-install-system-required` | Homebrew has all four package-manager candidates, so this is the strict system-dependency lane. |
+
+`msdf-atlas-gen` is intentionally absent from the matrix. Treat it as source/vendored-only for
+v0.4 packaging; do not add it as a distro package requirement.
+
 Useful local checks:
 
 ```sh

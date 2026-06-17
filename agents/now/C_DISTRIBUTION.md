@@ -561,6 +561,18 @@ system-first (no vendored copy in `external/`).
 Use explicit `SYSTEM` in CI/package builders to fail early when a declared system dependency is
 missing. Keep `AUTO` for developer builds where vendored fallback is desirable.
 
+**Package CI matrix:**
+
+| Platform | System dependencies to install | Expected preset lane | Dependency policy |
+|---|---|---|---|
+| Ubuntu 24.04 | `libglfw3-dev libcglm-dev libmimalloc-dev` | `package-smoke-system-auto`, then `package-install-system-auto` | Prefer system GLFW, cglm, and mimalloc. Leave Kvazaar as `AUTO` or set `DVZ_KVAZAAR_SOURCE=VENDORED` unless the builder provides `libkvazaar-dev`. |
+| Fedora | `glfw-devel mimalloc-devel` plus any available cglm/Kvazaar development packages | `package-smoke-system-auto`, then `package-install-system-auto` | Prefer system packages that exist in the target Fedora/EPEL release. Keep cglm and Kvazaar as `AUTO` unless the packaging environment explicitly provides them. |
+| macOS / Homebrew | `glfw cglm kvazaar mimalloc` | `package-smoke-system-required`, then `package-install-system-required` | Homebrew has all four package-manager candidates, so this is the strict system-dependency lane. |
+
+`msdf-atlas-gen` is intentionally absent from CI/package dependency lists. It stays
+source/vendored-only for v0.4 because distro availability is too narrow for a reliable package
+contract.
+
 **Package-manager smoke commands:**
 
 Homebrew has all four package-manager candidates:
@@ -569,6 +581,7 @@ Homebrew has all four package-manager candidates:
 brew install glfw cglm kvazaar mimalloc
 cmake --preset package-smoke-system-required
 cmake --build --preset package-smoke-system-required
+cmake --build --preset package-install-system-required
 ```
 
 Ubuntu 24.04 package metadata covers GLFW, cglm, and mimalloc, but Kvazaar availability is not
@@ -584,6 +597,16 @@ cmake --build --preset package-install-system-auto
 
 Use `DVZ_KVAZAAR_SOURCE=VENDORED` or leave `AUTO` when a distribution does not provide a Kvazaar
 development package. Do not make msdf-atlas-gen a package-manager requirement.
+
+Fedora/EPEL package metadata clearly covers GLFW and mimalloc. Use the system-auto lane until a
+specific target release has confirmed cglm and Kvazaar development packages:
+
+```sh
+sudo dnf install -y glfw-devel mimalloc-devel
+cmake --preset package-smoke-system-auto
+cmake --build --preset package-smoke-system-auto
+cmake --build --preset package-install-system-auto
+```
 
 Conda-forge has GLFW and mimalloc packages. cglm and Kvazaar availability should be verified in
 the feedstock environment before forcing `SYSTEM`; otherwise keep those two as `AUTO` or
