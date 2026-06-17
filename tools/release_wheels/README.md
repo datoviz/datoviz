@@ -10,7 +10,7 @@ just build
 python tools/release_wheels/stage_wheel.py --clean
 python tools/release_wheels/build_wheel.py
 python tools/release_wheels/inspect_wheel.py --native-deps
-python tools/release_wheels/check_wheel.py --render --qt-probe optional
+python tools/release_wheels/check_wheel.py --cmake-consumer --render --qt-probe optional
 ```
 
 Target RC matrix:

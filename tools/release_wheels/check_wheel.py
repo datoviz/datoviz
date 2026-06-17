@@ -95,11 +95,43 @@ def _qt_probe(python: Path, work: Path, *, required: bool) -> None:
         print("check_wheel: optional Qt probe failed as expected for this environment", file=sys.stderr)
 
 
+def _cmake_consumer_smoke(python: Path, work: Path) -> None:
+    cmake = shutil.which("cmake")
+    if cmake is None:
+        raise RuntimeError("cmake is required for --cmake-consumer")
+    source = work / "cmake-consumer"
+    source.mkdir(parents=True, exist_ok=True)
+    (source / "main.c").write_text(
+        "#include <datoviz.h>\n"
+        "#include <stdio.h>\n"
+        "int main(void) { printf(\"%s\\n\", dvz_version()); return 0; }\n",
+        encoding="utf8",
+    )
+    (source / "CMakeLists.txt").write_text(
+        "cmake_minimum_required(VERSION 3.21)\n"
+        "project(datoviz_wheel_consumer C)\n"
+        "find_package(datoviz REQUIRED)\n"
+        "add_executable(datoviz_cmake_consumer main.c)\n"
+        "target_link_libraries(datoviz_cmake_consumer PRIVATE datoviz::datoviz)\n",
+        encoding="utf8",
+    )
+    cmake_dir = subprocess.check_output(
+        [str(python), "-m", "datoviz.cli", "--cmake-dir"], cwd=work, text=True
+    ).strip()
+    build = source / "build"
+    generator = ["-GNinja"] if shutil.which("ninja") else []
+    _run([cmake, "-S", str(source), "-B", str(build), f"-Ddatoviz_DIR={cmake_dir}", *generator], cwd=work)
+    _run([cmake, "--build", str(build)], cwd=work)
+    exe = build / ("datoviz_cmake_consumer.exe" if os.name == "nt" else "datoviz_cmake_consumer")
+    _run([str(exe)], cwd=work)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--wheel")
     parser.add_argument("--work-dir", type=Path)
     parser.add_argument("--render", action="store_true")
+    parser.add_argument("--cmake-consumer", action="store_true")
     parser.add_argument("--qt-probe", choices=("skip", "optional", "required"), default="skip")
     parser.add_argument("--keep", action="store_true")
     return parser.parse_args()
@@ -120,6 +152,8 @@ def main() -> int:
         _python_smokes(python, work)
         if args.render:
             _render_smoke(python, work)
+        if args.cmake_consumer:
+            _cmake_consumer_smoke(python, work)
         if args.qt_probe != "skip":
             _qt_probe(python, work, required=args.qt_probe == "required")
     finally:

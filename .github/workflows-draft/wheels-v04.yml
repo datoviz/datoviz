@@ -19,7 +19,7 @@ env:
   # 3.15 prerelease enabled only for nightly/prerelease checks.
   CIBW_BUILD: "cp313-*"
   CIBW_SKIP: "pp* *-musllinux_* cp31?t-*"
-  CIBW_TEST_COMMAND: "python {project}/tools/release_wheels/check_wheel.py --wheel {wheel} --qt-probe optional"
+  CIBW_TEST_COMMAND: "python {project}/tools/release_wheels/check_wheel.py --wheel {wheel} --cmake-consumer --qt-probe optional"
 
 jobs:
   matrix:
