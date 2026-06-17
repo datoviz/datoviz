@@ -1,9 +1,43 @@
 # Build Options
 
-Draft reference stub.
+This page lists the CMake and `just` build options most relevant to source builds, packaging, and
+release validation.
 
-This page should document CMake and `just` build options, including core, Vulkan, canvas, DRP2,
-scene, app, WebGPU, validation, and optional dependency flags.
+## Core CMake Options
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `DVZ_BUILD_CORE` | `ON` | Build common, data-structure, file I/O, math, and thread layers. |
+| `DVZ_BUILD_CONTROLLER` | `ON` | Build scene-independent camera/controller primitives. |
+| `DVZ_BUILD_VK` | `ON` | Build Vulkan and vklite layers. |
+| `DVZ_BUILD_CANVAS` | `ON` | Build input, window, stream, video, and canvas layers. |
+| `DVZ_BUILD_DRP2` | `ON` | Build the DRP2 command-stream layer. |
+| `DVZ_BUILD_WEBGPU` | `OFF` | Build the native WebGPU layer where available. Browser WebGPU routes use the WASM/browser tooling. |
+| `DVZ_BUILD_SCENE` | `ON` | Build retained scene, visuals, controllers, frame planning, and scene DRP2 emission. |
+| `DVZ_BUILD_APP` | `ON` | Build app presentation helpers. |
+| `DVZ_BUILD_GUI` | `ON` | Build the Dear ImGui app overlay layer. |
+| `DVZ_BUILD_TESTING` | `PROJECT_IS_TOP_LEVEL` | Build Datoviz test executables. |
+| `DVZ_BUILD_EXAMPLES` | `PROJECT_IS_TOP_LEVEL` | Build Datoviz example executables. |
+| `DVZ_INSTALL` | `PROJECT_IS_TOP_LEVEL` | Add install, CMake package export, pkg-config, and header install rules. |
+
+## Optional Feature Options
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `DVZ_ENABLE_CUDA` | platform-dependent | Enable CUDA interop hooks and tests when the toolkit is available. |
+| `DVZ_ENABLE_KVAZAAR` | `ON` | Enable the optional Kvazaar software HEVC backend. |
+| `DVZ_WITH_GLFW` | `ON` | Enable the GLFW window backend. |
+| `DVZ_WITH_ZLIB` | `ON` | Enable zlib support for gzip-compressed data files. |
+| `DVZ_WITH_FREETYPE` | `ON` | Enable FreeType-backed scene text atlases when available. |
+| `DVZ_WITH_MSDF_ATLAS` | `ON` | Enable msdf-atlas-gen scene text atlases when available. |
+| `DVZ_WITH_MSDF_SVG` | `ON` | Enable SVG path import through msdfgen when tinyxml2 is available. |
+| `DVZ_ENABLE_QT_BRIDGE` | `AUTO` | Build the optional Qt bridge provider when Qt6 Gui development files are available. |
+| `DVZ_ENABLE_SHADERC` | `AUTO` | Enable runtime GLSL compilation through lazy-loaded shaderc when headers/library are available. |
+| `DVZ_ENABLE_ASAN_IN_DEBUG` | `OFF` | Enable sanitizer instrumentation in Debug builds. |
+| `DVZ_ENABLE_COVERAGE` | `OFF` | Enable code coverage instrumentation for supported compilers. |
+| `DVZ_ENABLE_GPROF` | `OFF` | Enable gprof instrumentation on supported compilers. |
+| `DVZ_SANITIZER` | empty | Optional sanitizer override for Debug builds: `asan`, `msan`, `tsan`, or `off`. |
+| `DVZ_USE_MIMALLOC_RELEASE_DEFAULT` | `ON` | Use mimalloc as the default allocator in Release builds when available. |
 
 ## Dependency Source
 
