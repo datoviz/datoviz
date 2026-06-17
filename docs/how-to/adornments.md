@@ -8,6 +8,18 @@ Choose the adornment that explains the visual encoding: colorbars for scalar col
 spatial units, legends for categorical encodings. Add it after the data visual and keep its range or
 labels synchronized with the visual.
 
+| Need | Use | Keep synchronized with |
+| --- | --- | --- |
+| Show how scalar values map to a colormap. | Colorbar | The same continuous `DvzScale`, normalization, format, and title used by the visual. |
+| Show physical or data distance in the panel. | Scale bar | The panel domain, controller-visible extent, measured dimension, and unit conversion. |
+| Show category names and colors. | Legend | The same categorical `DvzScale`, category IDs, colors, labels, ordering, and highlight state. |
+| Show coordinate ticks and grid lines. | Axes | The panel domain, units, tick policy, and panzoom-linked visible range. |
+| Show a local note or dynamic sampled value. | Annotation or readout | The data item, sampled field, query result, and any colorbar or unit formatting it references. |
+
+Use this page for the overview. Use [Add axes](axes.md), [Add text, labels, and
+annotations](add-annotations.md), [Map scalar values with colormaps](use-colormaps.md), and
+[Probe image or field values](probe-fields.md) for the specialized workflows.
+
 ## Minimal Call Sequences
 
 ```c
@@ -41,10 +53,44 @@ panel dimension and should match the panel's domain and units.
 Adornments should describe the current visual encoding. If the scalar normalization, unit scale, or
 category set changes, update the adornment at the same time.
 
+Colorbars and legends are scale views, not independent encodings. Create the `DvzScale` once, bind
+it to the visual, then pass that same scale to the colorbar or legend. Do not recreate colors,
+labels, limits, or category ordering separately for the adornment.
+
+Scale bars measure visible distance. For a 2D panzoom panel, the scale bar should track the
+controller-visible domain. For 3D or camera-facing measurements, choose the scale-bar reference
+mode deliberately and verify the result against the camera convention.
+
+Attached colorbars and legends reserve space at a panel edge. Use panel-left or panel-right anchors
+for vertical colorbars, and panel-top or panel-bottom anchors for horizontal colorbars. Detached
+placement is useful for composed layouts, but it should still be visually tied to the data it
+explains.
+
+In multi-panel figures, prefer one adornment per independently encoded panel. Share an adornment
+only when the panels truly share the same scale, category table, units, and visible-domain policy.
+
+Probe readouts are a common source of subtle errors. If a cursor readout describes a color-mapped
+field, it should sample the same field and use the same normalization and display format as the
+colorbar.
+
+## Choosing Placement
+
+| Placement choice | Use when | Watch for |
+| --- | --- | --- |
+| Panel edge, attached | The adornment is part of the panel layout and should not cover data. | Attached anchors are constrained to supported panel edges. |
+| Panel corner, overlay | The panel has spare interior space and the context is compact. | Avoid hiding dense marks, labels, or important extrema. |
+| Detached placement | A composed figure needs a shared legend, large colorbar, or custom layout. | Make the visual association obvious and keep the scale contract shared. |
+| Data/world anchored annotation | The note refers to a specific item, point, or measurement. | It may move, clip, or become unreadable under navigation. |
+
 ## Common Mistakes
 
 - Showing a colorbar for arbitrary RGBA colors.
+- Building a colorbar or legend from duplicated colors instead of the visual's scale.
+- Showing one legend for panels that use different category mappings.
 - Letting a scale bar drift from the panel domain after zoom or unit changes.
+- Mixing data units, display units, and SI-prefix formatting without an explicit `DvzUnits` setup.
+- Placing an attached colorbar on an edge that disagrees with its orientation.
+- Letting an overlay adornment cover the data pattern it is meant to explain.
 - Using a long showcase as copied starter code instead of the minimal feature example.
 
 ## See Also
@@ -52,9 +98,13 @@ category set changes, update the adornment at the same time.
 - [Map scalar values with colormaps](use-colormaps.md)
 - [Add axes](axes.md)
 - [Add text, labels, and annotations](add-annotations.md)
+- [Probe image or field values](probe-fields.md)
+- [Link panels and controllers](link-panels.md)
 
 ??? example "Related examples"
 
     - [Colorbar](../examples/gallery/features/colorbar.md) - Source: `examples/c/features/colorbar.c`
     - [Scale Bar](../examples/gallery/features/scale_bar.md) - Source: `examples/c/features/scalebar.c`
     - [Categorical Legend](../examples/gallery/features/feature_legend_categorical.md) - Source: `examples/c/features/legend_categorical.c`
+    - [Linked Probe With Colorbar](../examples/gallery/showcases/linked_panels_probe_colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`
+    - [Scale-Aware Measurement Workflow](../examples/gallery/showcases/scalebar_measurement_workflow.md) - Source: `examples/c/showcases/scalebar_measurement.c`
