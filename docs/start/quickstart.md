@@ -43,43 +43,6 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
 
 === "C"
 
-    Save the program below as `scatter.c`, then compile and run.
-    Use the flags printed by `datoviz-config --cflags --libs` if available, otherwise:
-
-    === "Linux"
-
-        ```sh
-        gcc scatter.c -o scatter -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
-        ./scatter
-        ```
-
-    === "macOS"
-
-        ```sh
-        clang scatter.c -o scatter -I/usr/local/include/datoviz -L/usr/local/lib/datoviz \
-            -Wl,-rpath,/usr/local/lib/datoviz -lm -ldatoviz
-        ./scatter
-        ```
-
-    === "Windows (MSYS2/MinGW)"
-
-        ```sh
-        gcc scatter.c -o scatter -Iinclude/ -Lbuild/ -lm -ldatoviz
-        ./scatter.exe
-        ```
-
-    === "Windows (MSVC)"
-
-        MSVC is supported via CMake. See [Install](install.md) for the CMake package
-        integration, which handles include paths and linking automatically.
-
-    Or, if you cloned the repository, use the bundled example directly:
-
-    ```sh
-    just example-c visuals/point
-    ./build/examples/c/visuals/point --live
-    ```
-
     ```c
     #include <stdint.h>
     #include <stdlib.h>
@@ -133,6 +96,43 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
         dvz_scene_destroy(scene);
         return 0;
     }
+    ```
+
+    Save as `scatter.c` and compile. Use `datoviz-config --cflags --libs` for the flags if
+    available, otherwise use the platform commands below.
+
+    === "Linux"
+
+        ```sh
+        gcc scatter.c -o scatter -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
+        ./scatter
+        ```
+
+    === "macOS"
+
+        ```sh
+        clang scatter.c -o scatter -I/usr/local/include/datoviz -L/usr/local/lib/datoviz \
+            -Wl,-rpath,/usr/local/lib/datoviz -lm -ldatoviz
+        ./scatter
+        ```
+
+    === "Windows (MSYS2/MinGW)"
+
+        ```sh
+        gcc scatter.c -o scatter -Iinclude/ -Lbuild/ -lm -ldatoviz
+        ./scatter.exe
+        ```
+
+    === "Windows (MSVC)"
+
+        MSVC is supported via CMake. See [Install](install.md) for the CMake package
+        integration, which handles include paths and linking automatically.
+
+    If you cloned the repository, skip the above and use the bundled example instead:
+
+    ```sh
+    just example-c visuals/point
+    ./build/examples/c/visuals/point --live
     ```
 
 
