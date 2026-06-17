@@ -1157,6 +1157,10 @@ wheel-check *args:
     @python tools/release_wheels/check_wheel.py {{args}}
 #
 
+release-source-bundle version:
+    @python tools/release_source_bundle.py {{version}}
+#
+
 wheel-ci-local platform_tag='' rebuild='0' render='0':
     #!/usr/bin/env sh
     set -e

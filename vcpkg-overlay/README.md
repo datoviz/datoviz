@@ -28,9 +28,25 @@ datoviz-<version>-source.tar.gz
 That archive must include the required submodule contents. After publishing the release asset,
 replace the placeholder `SHA512` in `ports/datoviz/portfile.cmake`.
 
+Create the bundle with:
+
+```sh
+just release-source-bundle 0.4.0
+```
+
+The command prints the archive path and SHA512 digest. Use that digest in the vcpkg port after the
+asset is uploaded.
+
 ## Validation
 
-Minimum local proof before publishing the overlay:
+For pre-tag local validation, point the port at the current checkout:
+
+```sh
+DATOVIZ_VCPKG_SOURCE_PATH=$PWD \
+  vcpkg install datoviz --overlay-ports=vcpkg-overlay/ports --triplet x64-windows
+```
+
+Minimum proof before publishing the overlay:
 
 ```sh
 vcpkg install datoviz --overlay-ports=vcpkg-overlay/ports --triplet x64-windows

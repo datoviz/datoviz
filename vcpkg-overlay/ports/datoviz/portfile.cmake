@@ -1,14 +1,21 @@
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 
-vcpkg_download_distfile(ARCHIVE
-    URLS "https://github.com/datoviz/datoviz/releases/download/v${VERSION}/datoviz-${VERSION}-source.tar.gz"
-    FILENAME "datoviz-${VERSION}-source.tar.gz"
-    SHA512 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-)
+if(DEFINED ENV{DATOVIZ_VCPKG_SOURCE_PATH})
+    file(TO_CMAKE_PATH "$ENV{DATOVIZ_VCPKG_SOURCE_PATH}" SOURCE_PATH)
+    if(NOT EXISTS "${SOURCE_PATH}/CMakeLists.txt")
+        message(FATAL_ERROR "DATOVIZ_VCPKG_SOURCE_PATH does not contain CMakeLists.txt: ${SOURCE_PATH}")
+    endif()
+else()
+    vcpkg_download_distfile(ARCHIVE
+        URLS "https://github.com/datoviz/datoviz/releases/download/v${VERSION}/datoviz-${VERSION}-source.tar.gz"
+        FILENAME "datoviz-${VERSION}-source.tar.gz"
+        SHA512 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+    )
 
-vcpkg_extract_source_archive(SOURCE_PATH
-    ARCHIVE "${ARCHIVE}"
-)
+    vcpkg_extract_source_archive(SOURCE_PATH
+        ARCHIVE "${ARCHIVE}"
+    )
+endif()
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
