@@ -32,6 +32,8 @@ class PagePolicy:
     output: Path
     status: str
     summary: str
+    audience: str
+    workflows: tuple[tuple[str, str], ...]
     headers: tuple[str, ...]
     prefixes: tuple[str, ...]
 
@@ -66,6 +68,10 @@ def load_policy(path: Path) -> tuple[list[PagePolicy], dict, tuple[str, ...]]:
                 output=ROOT / str(entry["output"]),
                 status=str(entry["status"]),
                 summary=str(entry["summary"]),
+                audience=str(entry.get("audience", "")),
+                workflows=tuple(
+                    (str(item["label"]), str(item["href"])) for item in entry.get("workflows", ())
+                ),
                 headers=tuple(str(item) for item in entry.get("headers", ())),
                 prefixes=tuple(str(item) for item in entry.get("prefixes", ())),
             )
@@ -97,7 +103,7 @@ def classify_symbol(item: dict, pages: list[PagePolicy], hidden_headers: tuple[s
         if header_matches(header, page.headers) and prefix in page.prefixes:
             return page.key
     for page in pages:
-        if header_matches(header, page.headers):
+        if header_matches(header, page.headers) and not page.prefixes:
             return page.key
     return None
 
@@ -174,12 +180,45 @@ def generated_header(title: str, summary: str | None = None) -> list[str]:
     return lines
 
 
-def format_function(fn: dict) -> list[str]:
+def related_functions(fn: dict, names: set[str]) -> list[str]:
+    name = str(fn.get("name", ""))
+    related = []
+    if name.endswith("_create"):
+        candidate = f"{name[:-7]}_destroy"
+        if candidate in names:
+            related.append(candidate)
+    elif name.endswith("_destroy"):
+        candidate = f"{name[:-8]}_create"
+        if candidate in names:
+            related.append(candidate)
+    if name.endswith("_config"):
+        candidate = f"{name[:-7]}_create"
+        if candidate in names:
+            related.append(candidate)
+    if name.endswith("_desc"):
+        candidate = name[:-5]
+        if candidate in names:
+            related.append(candidate)
+    if name.endswith("_set_data"):
+        for suffix in ("_set_data_range", "_set_data_many"):
+            candidate = f"{name[:-9]}{suffix}"
+            if candidate in names:
+                related.append(candidate)
+    if name.endswith("_set_data_range"):
+        candidate = name.removesuffix("_range")
+        if candidate in names:
+            related.append(candidate)
+    if name.endswith("_set_data_many"):
+        candidate = name.removesuffix("_many")
+        if candidate in names:
+            related.append(candidate)
+    return sorted(set(related))
+
+
+def format_function(fn: dict, names: set[str]) -> list[str]:
     doc, param_docs, ret_doc = doc_parts(fn.get("doc"))
     header = header_of(fn)
     lines = [f"### `{fn['name']}()`", ""]
-    if doc:
-        lines.extend([doc, ""])
     lines.extend(
         [
             f"```c title=\"{fn['name']}\"",
@@ -198,6 +237,12 @@ def format_function(fn: dict) -> list[str]:
                 f"| `{name}` | `{type_name(arg.get('type'))}` | {param_docs.get(name, '')} |"
             )
         lines.append("")
+    if doc:
+        lines.extend([doc, ""])
+    related = related_functions(fn, names)
+    if related:
+        links = ", ".join(f"[`{name}()`](#{symbol_anchor(name)})" for name in related)
+        lines.extend([f"Related: {links}.", ""])
     if header:
         line = (fn.get("location") or {}).get("line")
         location = f"`{header}`"
@@ -216,34 +261,81 @@ def symbol_anchor(name: str) -> str:
     return name.lower()
 
 
-def render_page(page: PagePolicy, functions: list[dict]) -> None:
-    lines = generated_header(page.title, page.summary)
+def header_summary(functions: list[dict]) -> str:
+    headers = sorted({header_of(fn) for fn in functions if header_of(fn)})
+    if not headers:
+        return ""
+    if len(headers) <= 2:
+        return ", ".join(f"`{header}`" for header in headers)
+    return f"{len(headers)} headers"
+
+
+def render_page_intro(page: PagePolicy, functions: list[dict]) -> list[str]:
+    lines = [
+        f"!!! info \"Status: {page.status}\"",
+        "",
+        "    This generated page lists exported C functions classified by the v0.4 C API",
+        "    reference policy. Raw Python `ctypes` call forms are documented separately.",
+        "",
+    ]
+    if page.audience:
+        lines.extend([page.audience, ""])
+    if page.workflows:
+        lines.extend(["Common workflows:", ""])
+        for label, href in page.workflows:
+            lines.append(f"- [{label}]({href})")
+        lines.append("")
     lines.extend(
         [
-            f"!!! info \"Status: {page.status}\"",
-            "",
-            "    This generated page lists exported C functions classified by the v0.4 C API",
-            "    reference policy. Raw Python `ctypes` call forms are documented separately.",
-            "",
             f"Functions: {len(functions)}",
             "",
-            "## Symbol Index",
-            "",
-            "| Function | Header |",
-            "| --- | --- |",
         ]
     )
-    for fn in sorted(functions, key=lambda item: item["name"]):
-        lines.append(f"| [`{fn['name']}()`](#{symbol_anchor(fn['name'])}) | `{header_of(fn)}` |")
+    return lines
+
+
+def render_symbol_groups(grouped: dict[str, list[dict]]) -> list[str]:
+    lines = [
+        "## Symbol Groups",
+        "",
+        "| Group | Functions | Headers |",
+        "| --- | ---: | --- |",
+    ]
+    for group in sorted(grouped):
+        functions = sorted(grouped[group], key=lambda item: item["name"])
+        lines.append(f"| [{group}](#{group.lower().replace(' ', '-')}) | {len(functions)} | {header_summary(functions)} |")
     lines.append("")
+    lines.extend(
+        [
+            '??? info "Grouped symbol index"',
+            "",
+        ]
+    )
+    for group in sorted(grouped):
+        functions = sorted(grouped[group], key=lambda item: item["name"])
+        lines.extend([f"    ### {group}", "", "    | Function | Header |", "    | --- | --- |"])
+        for fn in functions:
+            lines.append(
+                f"    | [`{fn['name']}()`](#{symbol_anchor(fn['name'])}) | `{header_of(fn)}` |"
+            )
+        lines.append("")
+    return lines
+
+
+def render_page(page: PagePolicy, functions: list[dict]) -> None:
+    lines = generated_header(page.title, page.summary)
+    lines.extend(render_page_intro(page, functions))
 
     grouped: dict[str, list[dict]] = defaultdict(list)
     for fn in functions:
         grouped[object_group(str(fn["name"]))].append(fn)
+    lines.extend(render_symbol_groups(grouped))
+
+    names = {str(fn["name"]) for fn in functions}
     for group in sorted(grouped):
         lines.extend([f"## {group}", ""])
         for fn in sorted(grouped[group], key=lambda item: item["name"]):
-            lines.extend(format_function(fn))
+            lines.extend(format_function(fn, names))
 
     page.output.parent.mkdir(parents=True, exist_ok=True)
     page.output.write_text("\n".join(lines).rstrip() + "\n", encoding="utf8")

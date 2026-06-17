@@ -10,7 +10,18 @@ pages:
     output: docs/reference/c-api/scene.md
     status: supported
     summary: Retained figures, panels, cameras, controllers, scene objects, queries, and frame artifacts.
+    audience: Use this page when you are writing retained scene/app code and already know the scene object or controller you need.
+    workflows:
+      - label: Create a scene
+        href: ../../how-to/create-a-scene.md
+      - label: Create multiple panels
+        href: ../../how-to/create-multiple-panels.md
+      - label: Configure cameras
+        href: ../../how-to/configure-cameras.md
+      - label: Pick and probe
+        href: ../../how-to/pick-and-probe.md
     headers:
+      - include/datoviz/scene.h
       - include/datoviz/scene/**
       - include/datoviz/controller/**
       - include/datoviz/controller.h
@@ -27,19 +38,32 @@ pages:
       - guide
       - labels
       - legend
+      - linear
       - overlay
       - panel
+      - query
       - scene
       - scale
       - selection
       - text
       - track
+      - world
 
   visuals:
     title: Visuals And Composites API
     output: docs/reference/c-api/visuals.md
     status: supported
     summary: Retained visual families, semantic composites, visual styles, and visual data setters.
+    audience: Use this page when you know the visual family, composite, geometry helper, or visual data setter you need.
+    workflows:
+      - label: Choose a visual family
+        href: ../../how-to/choose-a-visual-family.md
+      - label: Add a visual
+        href: ../../how-to/add-a-visual.md
+      - label: Update visual data
+        href: ../../how-to/update-visual-data.md
+      - label: Visual families reference
+        href: ../visual-families/index.md
     headers:
       - include/datoviz/scene.h
       - include/datoviz/geom.h
@@ -77,6 +101,16 @@ pages:
     output: docs/reference/c-api/app.md
     status: supported
     summary: Native app loop, windows, canvases, input routing, GUI hooks, frame streams, capture, and video.
+    audience: Use this page when integrating Datoviz into a native app loop, window, canvas, GUI, capture, or video path.
+    workflows:
+      - label: Open an interactive window
+        href: ../../how-to/create-a-window.md
+      - label: Render offscreen
+        href: ../../how-to/render-offscreen.md
+      - label: Handle input events
+        href: ../../how-to/input-events.md
+      - label: Save screenshots
+        href: ../../how-to/capture-an-image.md
     headers:
       - include/datoviz/app.h
       - include/datoviz/canvas.h
@@ -110,6 +144,14 @@ pages:
     output: docs/reference/c-api/drp2.md
     status: advanced/unstable
     summary: Datoviz Rendering Protocol command streams, packets, recording, and runtime integration.
+    audience: Use this page for advanced command-stream and packet work. Ordinary scene code should start from the Scene API.
+    workflows:
+      - label: Replay frame streams
+        href: ../../how-to/replay-dvzr.md
+      - label: Debug rendering
+        href: ../../how-to/debug-rendering.md
+      - label: DRP2 overview
+        href: ../drp2/index.md
     headers:
       - include/datoviz/drp2.h
       - include/datoviz/drp2/**
@@ -121,6 +163,16 @@ pages:
     output: docs/reference/c-api/runtime.md
     status: advanced/unstable
     summary: Lower-level Vulkan, vklite, math, geometry, file, data-structure, thread, and utility APIs.
+    audience: Use this page for lower-level runtime, Vulkan, vklite, math, geometry, data-structure, thread, and utility integration.
+    workflows:
+      - label: Debug rendering
+        href: ../../how-to/debug-rendering.md
+      - label: Profile performance
+        href: ../../how-to/profile-performance.md
+      - label: vklite overview
+        href: ../../advanced/vklite.md
+      - label: Canvas and stream API
+        href: ../../advanced/canvas.md
     headers:
       - include/datoviz/common.h
       - include/datoviz/common/**
