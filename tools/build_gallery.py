@@ -25,6 +25,22 @@ PUBLIC_LANES = ("start", "visuals", "features", "composites", "showcases", "adva
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
 PYTHON_SOURCE_BY_ID = {}
 
+# Flagship feature IDs shown on the examples index; the rest are reachable via the full gallery.
+FLAGSHIP_FEATURE_IDS = (
+    "feature_controller_arcball",
+    "colorbar",
+    "feature_axis_labels",
+    "feature_panel_multi",
+    "feature_lighting",
+    "feature_animation_tracks",
+    "feature_isolines",
+    "technique_edl",
+    "feature_sampled_field_2d",
+    "feature_panel_grid",
+    "feature_marker_symbols",
+    "image_probe",
+)
+
 CATEGORY_TO_LANE = {
     "visual": "visuals",
     "feature": "features",
@@ -457,74 +473,87 @@ def render_gallery_page(
     write_text(docs_dir / filename, "\n".join(lines))
 
 
-def render_index(examples: list[Example], docs_dir: Path) -> None:
-    by_lane = {lane: [example for example in examples if example.lane == lane] for lane in PUBLIC_LANES}
-    visual_examples = by_lane["visuals"]
-    feature_examples = by_lane["features"]
-    composite_examples = by_lane["composites"]
+def render_index(
+    examples: list[Example],
+    docs_dir: Path,
+    image_dir: Path = DEFAULT_IMAGE_DIR,
+    image_url_base: str = DEFAULT_IMAGE_URL_BASE,
+    image_format: str = DEFAULT_IMAGE_FORMAT,
+) -> None:
+    by_lane = {lane: [e for e in examples if e.lane == lane] for lane in PUBLIC_LANES}
     showcase_examples = by_lane["showcases"]
-    advanced_examples = by_lane["advanced"]
+    visual_examples = by_lane["visuals"]
+    composite_examples = by_lane["composites"]
+    feature_examples = by_lane["features"]
+    flagship_features = [e for e in feature_examples if e.id in FLAGSHIP_FEATURE_IDS]
+    index_path = docs_dir / "index.md"
+    page_path = docs_site_path(docs_dir, "index.md")
+
     lines = generated_header("Examples")
     lines.extend(
-        dedent(
-            """\
-            Examples are executable release proof for v0.4. The public gallery is generated from
-            `examples/c/MANIFEST.yaml` and points at the C sources that exercise the current
-            scene -> DRP2 -> runtime path.
+        [
+            "Datoviz v0.4 ships with "
+            f"{len(showcase_examples)} showcases, "
+            f"{len(visual_examples) + len(composite_examples)} visual families, "
+            f"and {len(feature_examples)} feature examples.",
+            "",
+        ]
+    )
 
-            Static screenshots are required before final website publication. This generated index
-            keeps media status explicit while capture artifacts are prepared separately.
-            """
-        )
-        .strip()
-        .splitlines()
-    )
-    lines.extend(["", "## Public Taxonomy", ""])
+    # --- Showcases ---
+    lines.extend(["## Showcases", ""])
     lines.extend(
         [
-            "| Category | Examples | Use |",
-            "| --- | ---: | --- |",
-            f"| [Visual gallery](visual-gallery.md) | {len(visual_examples)} | One public visual family per example. |",
-            f"| [Feature gallery](feature-gallery.md) | {len(feature_examples)} | One isolated feature or technique per example. |",
-            f"| [Composites](composites.md) | {len(composite_examples)} | One semantic object lowering to one or more visuals per example. |",
-            f"| [Showcases](showcases.md) | {len(showcase_examples)} | Composed workflows, scientific stories, real-data examples, and polished demos. |",
-            f"| [Advanced examples](advanced.md) | {len(advanced_examples)} | Low-level runtime, DRP2, and host-integration examples. |",
-        ]
-    )
-    lines.extend(["", "## Gallery Sections", ""])
-    lines.extend(
-        [
-            "| Section | Examples | Status |",
-            "| --- | ---: | --- |",
-            f"| [Visual gallery](visual-gallery.md) | {len(visual_examples)} | {status_counts(visual_examples)} |",
-            f"| [Feature gallery](feature-gallery.md) | {len(feature_examples)} | {status_counts(feature_examples)} |",
-            f"| [Composites](composites.md) | {len(composite_examples)} | {status_counts(composite_examples)} |",
-            f"| [Showcases](showcases.md) | {len(showcase_examples)} | {status_counts(showcase_examples)} |",
-            f"| [Advanced examples](advanced.md) | {len(advanced_examples)} | {status_counts(advanced_examples)} |",
-            f"| [Techniques](techniques.md) | {len([e for e in examples if e.id in TECHNIQUE_IDS])} | Rendering and compute behavior coverage |",
-            f"| [Validation gallery](validation-gallery.md) | {len(examples)} | Release evidence checklist |",
-            f"| [WebGPU matrix](webgpu-matrix.md) | {len([e for e in examples if e.webgpu])} | Browser live-example status |",
-        ]
-    )
-    lines.extend(
-        [
-            "",
-            "## Current Source Lanes",
-            "",
-            "Public source lanes use `visuals`, `features`, `composites`, `showcases`, or `advanced`.",
-            "Concepts such as `workflow`, `scientific`, and `real-data` are manifest tags.",
-            "",
-            "Coding agents should use [`docs/examples/examples.json`](examples.json),",
-            "[`docs/examples/capabilities.json`](capabilities.json), and the",
-            "[agent quickstart](../contributors/agent-quickstart.md) when selecting copy-safe",
-            "starting points by example or capability.",
+            "Composed scenes demonstrating scientific workflows, real data, and polished demos.",
             "",
         ]
     )
-    lines.extend(["| Lane | Source directory | Examples |", "| --- | --- | ---: |"])
-    for lane in PUBLIC_LANES:
-        lines.append(f"| {lane_title(lane)} | `examples/c/{lane}/` | {len(by_lane[lane])} |")
-    write_text(docs_dir / "index.md", "\n".join(lines))
+    lines.append('<div class="grid cards" markdown="1">')
+    lines.append("")
+    for example in showcase_examples:
+        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+    lines.append("</div>")
+    lines.append("")
+
+    # --- Visuals & Composites ---
+    n_vc = len(visual_examples) + len(composite_examples)
+    lines.extend(["## Visuals & Composites", ""])
+    lines.extend(
+        [
+            f"{n_vc} rendering families — one example each.",
+            "",
+        ]
+    )
+    lines.append('<div class="grid cards" markdown="1">')
+    lines.append("")
+    for example in sorted(visual_examples + composite_examples, key=lambda e: e.title.lower()):
+        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+    lines.append("</div>")
+    lines.append("")
+
+    # --- Features & Techniques ---
+    lines.extend(["## Features & Techniques", ""])
+    lines.extend(
+        [
+            "A selection of isolated feature and technique examples.",
+            "",
+        ]
+    )
+    lines.append('<div class="grid cards" markdown="1">')
+    lines.append("")
+    for example in sorted(flagship_features, key=lambda e: e.title.lower()):
+        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+    lines.append("</div>")
+    lines.append("")
+    lines.extend(
+        [
+            f"[Browse all {len(feature_examples)} feature examples](feature-gallery.md) — "
+            "controllers, adornments, interaction, animation, techniques, and more.",
+            "",
+        ]
+    )
+
+    write_text(index_path, "\n".join(lines))
 
 
 def render_techniques(examples: list[Example], docs_dir: Path) -> None:
@@ -743,7 +772,7 @@ def main() -> int:
     manifest = load_manifest(args.manifest)
     examples = collect_examples(manifest)
     clean_generated_pages(args.docs_dir)
-    render_index(examples, args.docs_dir)
+    render_index(examples, args.docs_dir, args.image_dir, args.image_url_base, args.image_format)
     for filename, config in PAGE_CONFIG.items():
         render_gallery_page(
             filename,
