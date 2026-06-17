@@ -19,6 +19,9 @@ Primitive: triangle list.
 Use mesh visuals for surfaces, solids, loaded geometry, and instanced triangle data that should
 participate in 3D camera navigation and material lighting.
 
+For many repeated copies of the same object, use one mesh visual with `"instance_transform"` rather
+than creating one mesh visual per copy. See [Add visuals to a panel](../../how-to/add-a-visual.md).
+
 ## Avoid When
 
 Use [Primitive](primitive.md) for raw topology experiments, [Sphere](sphere.md) for many analytic
