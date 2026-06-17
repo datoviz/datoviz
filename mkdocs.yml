@@ -194,20 +194,25 @@ nav:
   - Advanced:
     - Explanation:
       - Overview: 'explanation/index.md'
-      - Why Datoviz: 'explanation/why-datoviz.md'
-      - Architecture: 'explanation/architecture.md'
-      - Scene model: 'explanation/scene-model.md'
-      - Figure, panel, visual model: 'explanation/figure-panel-visual-model.md'
-      - Coordinate systems: 'explanation/coordinate-systems.md'
-      - Frame lifecycle: 'explanation/frame-lifecycle.md'
-      - Retained resources: 'explanation/retained-resources.md'
-      - Invalidation and caching: 'explanation/invalidation-and-caching.md'
-      - GPU resource ownership: 'explanation/gpu-resource-ownership.md'
-      - Interaction model: 'explanation/interaction-model.md'
-      - Query, pick, and probe model: 'explanation/query-pick-probe-model.md'
-      - Performance model: 'explanation/performance-model.md'
-      - Portability and WebGPU: 'explanation/portability-webgpu.md'
-      - GSP and VisPy2 boundary: 'explanation/gsp-vispy2-boundary.md'
+      - Positioning:
+        - Why Datoviz: 'explanation/why-datoviz.md'
+        - Datoviz, GSP, and VisPy2: 'explanation/gsp-vispy2-boundary.md'
+      - System Architecture:
+        - Architecture: 'explanation/architecture.md'
+        - Scene to runtime boundary: 'explanation/scene-to-runtime-boundary.md'
+        - Portability and WebGPU: 'explanation/portability-webgpu.md'
+      - Scene Concepts:
+        - Scene model: 'explanation/scene-model.md'
+        - Figures, panels, and visuals: 'explanation/figure-panel-visual-model.md'
+        - Coordinate systems: 'explanation/coordinate-systems.md'
+        - Interaction model: 'explanation/interaction-model.md'
+        - Queries, picking, and probing: 'explanation/query-pick-probe-model.md'
+      - Frame and Resources:
+        - Frame lifecycle: 'explanation/frame-lifecycle.md'
+        - Retained resources: 'explanation/retained-resources.md'
+        - Invalidation and caching: 'explanation/invalidation-and-caching.md'
+        - GPU resource ownership: 'explanation/gpu-resource-ownership.md'
+        - Performance model: 'explanation/performance-model.md'
     - Lower Layers:
       - vklite: 'advanced/vklite.md'
       - Canvas and stream API: 'advanced/canvas.md'

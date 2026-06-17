@@ -1,4 +1,4 @@
-# Invalidation And Caching
+# Invalidation and Caching
 
 Invalidation is the way retained scene changes become bounded runtime work. Caching is the matching
 runtime behavior: reuse backend objects when the scene contract has not changed.

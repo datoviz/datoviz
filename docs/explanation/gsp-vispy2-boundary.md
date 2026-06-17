@@ -1,4 +1,4 @@
-# GSP And VisPy2 Boundary
+# Datoviz, GSP, and VisPy2
 
 Datoviz v0.4 owns the rendering engine. GSP/VisPy2 owns high-level scientific plotting.
 
@@ -21,9 +21,9 @@ status labels. Higher-level libraries can build friendlier plotting APIs on top 
 engine documentation to promise behavior it does not own.
 
 When writing docs or examples, make the layer explicit. If a page describes C scene/app use,
-Datoviz owns it. If a page describes raw `ctypes`, it is low-level and experimental. If a page
-describes high-level plotting convenience, it belongs outside the Datoviz v0.4 public docs unless it
-is explicitly marked as GSP/VisPy2 scope.
+Datoviz owns it. If a page describes raw `ctypes`, it is a low-level supported binding surface. If a
+page describes high-level plotting convenience, it belongs outside the Datoviz v0.4 public docs
+unless it is explicitly marked as GSP/VisPy2 scope.
 
 See also:
 

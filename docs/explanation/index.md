@@ -9,12 +9,29 @@ pages for exact API names, status labels, and constraints.
 
 ## Reading Order
 
-1. [Why Datoviz?](why-datoviz.md)
-2. [Architecture](architecture.md)
-3. [Scene Model](scene-model.md)
-4. [Coordinate Systems](coordinate-systems.md)
-5. [Frame Lifecycle](frame-lifecycle.md)
-6. [Performance Model](performance-model.md)
+Start with the positioning pages:
 
-The remaining pages go deeper into ownership, invalidation, interaction, queries, portability, and
-the GSP/VisPy2 boundary.
+1. [Why Datoviz?](why-datoviz.md)
+2. [Datoviz, GSP, and VisPy2](gsp-vispy2-boundary.md)
+
+Then read the system model:
+
+1. [Architecture](architecture.md)
+2. [Scene to runtime boundary](scene-to-runtime-boundary.md)
+3. [Portability and WebGPU](portability-webgpu.md)
+
+Then read the scene concepts:
+
+1. [Scene model](scene-model.md)
+2. [Figures, panels, and visuals](figure-panel-visual-model.md)
+3. [Coordinate systems](coordinate-systems.md)
+4. [Interaction model](interaction-model.md)
+5. [Queries, picking, and probing](query-pick-probe-model.md)
+
+Finally read the frame and resource model:
+
+1. [Frame lifecycle](frame-lifecycle.md)
+2. [Retained resources](retained-resources.md)
+3. [Invalidation and caching](invalidation-and-caching.md)
+4. [GPU resource ownership](gpu-resource-ownership.md)
+5. [Performance model](performance-model.md)

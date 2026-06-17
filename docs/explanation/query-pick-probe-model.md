@@ -1,7 +1,7 @@
-# Query, Pick, And Probe Model
+# Queries, Picking, and Probing
 
-Queries connect rendered output back to retained scene state. The exact v0.4 query API is still
-being classified by feature, but the conceptual split is stable enough to document.
+Queries connect rendered output back to retained scene state. Support is feature-specific, but the
+conceptual split between picking, probing, and readback is stable.
 
 Picking answers "which scene item is under this pointer or region?" A pick usually starts from a
 framebuffer coordinate, maps it to the panel, and resolves it to an item, instance, visual, or
@@ -28,4 +28,5 @@ See also:
 
 - [Pick items](../how-to/pick-and-probe.md)
 - [Probe fields](../how-to/probe-fields.md)
+- [Queries reference](../reference/queries.md)
 - [WebGPU subset](../reference/webgpu-subset.md)

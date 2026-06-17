@@ -1,4 +1,4 @@
-# Portability And WebGPU
+# Portability and WebGPU
 
 Datoviz treats WebGPU as portability pressure on the scene and DRP2 contracts, not as a second
 renderer architecture.
@@ -19,7 +19,7 @@ The scene layer owns visual semantics, controller math, lowering decisions, shad
 resource ids, and diagnostics. The browser runtime executes DRP2 commands. It must not learn
 Datoviz visual families or mutate scene-owned buffers through browser-only shortcuts.
 
-## Why The Subset Is Small
+## Why the Subset Is Small
 
 The v0.4 browser goal is an honest experimental subset, not native Vulkan parity. A small subset is
 useful because it checks the hard boundaries:
@@ -106,7 +106,7 @@ python3 -m http.server 8765
 
 ```text
 http://localhost:8765/examples/webgpu/fixtures.html
-http://localhost:8765/examples/webgpu/fixtures.html
+http://localhost:8765/examples/webgpu/live.html
 http://localhost:8765/examples/webgpu/live.html?id=feature_timer_animation
 http://localhost:8765/examples/webgpu/live.html?id=feature_picking
 ```
