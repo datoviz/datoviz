@@ -342,24 +342,37 @@ Purpose: document how humans and agents change Datoviz safely.
 Current MkDocs navigation:
 
 ```text
-contributors/
-  Orientation/
-    architecture-map.md
+Contributing/
+  Getting started/
     build-and-test.md
     coding-style.md
-  Documentation/
-    docs-authoring.md
-    ai-agents.md
+  Adding content/
     adding-examples.md
-  Development/
     adding-a-visual.md
-    adding-a-drp2-command.md
-    adding-a-webgpu-fixture.md
+    docs-authoring.md
+  AI workflows/
+    ai-agents.md
+    agent-quickstart.md
+  Release/
+    release-process.md
+    release-flight-checklist.md
+    release-wheels.md
     release-validation.md
+    examples/validation-gallery.md
+    examples/webgpu-matrix.md
 ```
 
+Advanced contributor appendices may remain outside the navigation when they are linked from the
+main contributor pages:
+
+1. `contributors/architecture-map.md`;
+2. `contributors/adding-a-drp2-command.md`;
+3. `contributors/adding-a-webgpu-fixture.md`;
+4. `contributors/example-selection-by-capability.md`.
+
 Contributor pages may link to `spec/` and `agents/`, but public docs should not become execution
-history or active task queues.
+history or active task queues. `CONTRIBUTING.md` is the short repository entry point; detailed
+procedures belong in `docs/contributors/`.
 
 
 ## Non-Goals

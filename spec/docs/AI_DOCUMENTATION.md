@@ -323,8 +323,10 @@ The current MkDocs navigation includes these AI-relevant and agent-oriented page
 
 ```text
 contributors/ai-agents.md
+contributors/agent-quickstart.md
 contributors/docs-authoring.md
 contributors/adding-examples.md
+contributors/example-selection-by-capability.md
 start/choose-your-layer.md
 reference/feature-status.md
 reference/objects-and-lifetimes.md
