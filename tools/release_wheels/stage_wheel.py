@@ -105,19 +105,18 @@ def _stage_c_integration(package_dir: Path) -> None:
 def _stage_native(build_dir: Path, package_dir: Path, include_qtbridge: bool) -> None:
     system = platform.system()
     if system == "Linux":
-        lib = _first_existing(["libdatoviz.so", "**/libdatoviz.so"], build_dir)
+        lib = _first_existing(["src/libdatoviz.so", "libdatoviz.so", "**/libdatoviz.so"], build_dir)
         _copy_file(lib, package_dir / lib.name)
         _copy_runtime_matches(build_dir, ["libshaderc*.so*"], package_dir)
     elif system == "Darwin":
-        lib = _first_existing(["libdatoviz.dylib", "**/libdatoviz.dylib"], build_dir)
+        lib = _first_existing(
+            ["src/libdatoviz.dylib", "libdatoviz.dylib", "**/libdatoviz.dylib"], build_dir)
         _copy_file(lib, package_dir / lib.name)
         _copy_runtime_matches(
             build_dir,
             [
                 "libvulkan*.dylib",
                 "libshaderc*.dylib",
-                "libfreetype*.dylib",
-                "libpng*.dylib",
                 "libMoltenVK.dylib",
                 "MoltenVK_icd.json",
             ],

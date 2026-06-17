@@ -86,7 +86,7 @@ jobs:
           python-version: "3.13"
       - name: Dependencies
         run: |
-          brew install just ccache ninja jq shaderc vulkan-headers vulkan-loader molten-vk
+          brew install just ccache ninja jq shaderc vulkan-headers vulkan-loader molten-vk freetype tinyxml2
           python -m pip install -U pip cibuildwheel build delocate
           command -v delocate-listdeps
       - name: Build native artifacts

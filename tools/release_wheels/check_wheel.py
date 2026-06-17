@@ -35,6 +35,13 @@ def _run(cmd: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> Non
     subprocess.run(cmd, cwd=cwd, env=env, check=True)
 
 
+def _venv_env() -> dict[str, str]:
+    env = os.environ.copy()
+    env["PIP_USER"] = "false"
+    env["PYTHONNOUSERSITE"] = "1"
+    return env
+
+
 def _create_venv(venv: Path) -> None:
     try:
         subprocess.run([sys.executable, "-m", "venv", str(venv)], check=True)
@@ -50,6 +57,7 @@ def _has_pip(python: Path, cwd: Path) -> bool:
     return subprocess.run(
         [str(python), "-m", "pip", "--version"],
         cwd=cwd,
+        env=_venv_env(),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         check=False,
@@ -58,7 +66,7 @@ def _has_pip(python: Path, cwd: Path) -> bool:
 
 def _pip_install(python: Path, cwd: Path, args: list[str]) -> None:
     if _has_pip(python, cwd):
-        _run([str(python), "-m", "pip", "install", *args], cwd=cwd)
+        _run([str(python), "-m", "pip", "install", *args], cwd=cwd, env=_venv_env())
         return
     uv = shutil.which("uv")
     if uv is None:

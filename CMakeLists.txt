@@ -108,26 +108,26 @@ endif()
 if(DVZ_HAS_SHADERC)
     if(DVZ_SHADERC_RUNTIME_LIBRARY)
         set(_dvz_shaderc_runtime "${DVZ_SHADERC_RUNTIME_LIBRARY}")
-    elseif(DVZ_SHADERC_LIBRARY)
-        get_filename_component(_dvz_shaderc_ext "${DVZ_SHADERC_LIBRARY}" EXT)
-        if(_dvz_shaderc_ext MATCHES "\\.(so|dylib|dll)(\\..*)?$")
-            set(_dvz_shaderc_runtime "${DVZ_SHADERC_LIBRARY}")
-        endif()
     endif()
     if(NOT _dvz_shaderc_runtime)
         if(WIN32)
             set(_dvz_shaderc_runtime "libshaderc_shared.dll")
         elseif(APPLE)
-            set(_dvz_shaderc_runtime "libshaderc_shared.dylib")
+            set(_dvz_shaderc_runtime "@loader_path/libshaderc_shared.1.dylib")
         else()
             set(_dvz_shaderc_runtime "libshaderc_shared.so.1")
         endif()
     endif()
     set(DVZ_SHADERC_RUNTIME_LIBRARY "${_dvz_shaderc_runtime}" CACHE STRING
         "Optional shaderc runtime library name or path baked into Datoviz" FORCE)
-    message(STATUS "shaderc support enabled; runtime library: ${DVZ_SHADERC_RUNTIME_LIBRARY}")
+    message(STATUS
+        "shaderc support enabled; runtime GLSL compilation will lazy-load: "
+        "${DVZ_SHADERC_RUNTIME_LIBRARY}")
 else()
-    message(STATUS "shaderc support disabled; runtime GLSL compilation will be unavailable.")
+    message(STATUS
+        "shaderc support disabled; runtime GLSL compilation will be unavailable. "
+        "Install shaderc development files or the Vulkan SDK, then configure with "
+        "-DDVZ_ENABLE_SHADERC=ON to require it for release wheels.")
 endif()
 
 if(DVZ_ENABLE_GPROF)

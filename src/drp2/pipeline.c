@@ -160,7 +160,12 @@ static bool _shaderc_load(void)
     DvzDynLib lib = dvz_dynlib_open(DVZ_SHADERC_LIB_PATH);
     if (lib == NULL)
     {
-        log_error("shaderc not available: could not load " DVZ_SHADERC_LIB_PATH);
+        log_error(
+            "runtime GLSL compilation unavailable: could not load shaderc runtime "
+            DVZ_SHADERC_LIB_PATH);
+        log_error(
+            "install shaderc or set DVZ_SHADERC_RUNTIME_LIBRARY/DVZ_WHEEL_RUNTIME_DIRS so the "
+            "runtime library is packaged or discoverable");
         return false;
     }
 
@@ -197,7 +202,11 @@ static bool _shaderc_load(void)
     g_shaderc_available = true;
     return true;
 #else
-    log_error("shaderc support was not enabled at build time");
+    log_error(
+        "runtime GLSL compilation unavailable: Datoviz was built without shaderc support");
+    log_error(
+        "install shaderc development files or the Vulkan SDK and rebuild with "
+        "-DDVZ_ENABLE_SHADERC=ON to require this feature");
     return false;
 #endif
 }
@@ -321,7 +330,8 @@ bool _vklite_compile_glsl(
     *spv_size = size;
     return true;
 #else
-    log_error("GLSL shader modules require shaderc support, but it was disabled at build time");
+    log_error(
+        "GLSL shader modules require shaderc support, but Datoviz was built without it");
     return false;
 #endif
 }

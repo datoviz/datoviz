@@ -185,9 +185,24 @@ endif()
 
 if(APPLE)
     # Ensure the shared library can resolve sibling dylibs at runtime via dlopen().
+    set(_dvz_build_rpath "@loader_path")
+    if(DVZ_SHADERC_LIBRARY)
+        get_filename_component(_dvz_shaderc_library_dir "${DVZ_SHADERC_LIBRARY}" DIRECTORY)
+        list(APPEND _dvz_build_rpath "${_dvz_shaderc_library_dir}")
+    endif()
     set_target_properties(datoviz PROPERTIES
-        BUILD_RPATH "@loader_path"
+        BUILD_RPATH "${_dvz_build_rpath}"
         INSTALL_RPATH "@loader_path"
+    )
+elseif(UNIX)
+    set(_dvz_build_rpath "$ORIGIN")
+    if(DVZ_SHADERC_LIBRARY)
+        get_filename_component(_dvz_shaderc_library_dir "${DVZ_SHADERC_LIBRARY}" DIRECTORY)
+        list(APPEND _dvz_build_rpath "${_dvz_shaderc_library_dir}")
+    endif()
+    set_target_properties(datoviz PROPERTIES
+        BUILD_RPATH "${_dvz_build_rpath}"
+        INSTALL_RPATH "$ORIGIN"
     )
 endif()
 
