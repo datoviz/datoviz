@@ -602,7 +602,7 @@ int main(int argc, char** argv)
     camera_desc.far = 100.0f;
     ok = dvz_panel_set_camera(panel, &camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
-    dvz_panel_set_background_color(panel, 0.018f, 0.020f, 0.024f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.018f, 0.020f, 0.024f, 1.0f));
 
     if (edl_enabled)
     {

@@ -251,7 +251,7 @@ int main(int argc, char** argv)
     bool ok = dvz_panel_set_camera(panel, &camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
-    dvz_panel_set_background_color(panel, 0.030f, 0.036f, 0.045f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.030f, 0.036f, 0.045f, 1.0f));
     DvzDepthCueDesc cue = {DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
         .mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
         .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,

@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 
     DvzPanel* panel = dvz_panel_full(figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
-    dvz_panel_set_background_color(panel, 0.055f, 0.065f, 0.085f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.055f, 0.065f, 0.085f, 1.0f));
 
     const char* strings[TEXT_COUNT] = {
         "MSDF text smoke",

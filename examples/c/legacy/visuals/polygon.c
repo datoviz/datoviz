@@ -563,7 +563,7 @@ int main(int argc, char** argv)
 
     DvzPanel* panel = dvz_panel_full(figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    dvz_panel_set_background_color(panel, 0.96f, 0.97f, 0.96f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.96f, 0.97f, 0.96f, 1.0f));
 
     bool ok = _add_polygon(scene, panel, &state);
     EXAMPLE_CHECK(ok, "failed to create polygon composite");

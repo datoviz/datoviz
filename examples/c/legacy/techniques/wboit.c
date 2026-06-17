@@ -162,9 +162,9 @@ static void _mesh_wboit_update_background(MeshWboitState* state)
         return;
 
     if (state->light_background)
-        dvz_panel_set_background_color(state->panel, 0.96f, 0.97f, 0.98f, 1.0f);
+        dvz_panel_set_background_color(state->panel, dvz_color_from_unit(0.96f, 0.97f, 0.98f, 1.0f));
     else
-        dvz_panel_set_background_color(state->panel, 0.05f, 0.05f, 0.08f, 1.0f);
+        dvz_panel_set_background_color(state->panel, dvz_color_from_unit(0.05f, 0.05f, 0.08f, 1.0f));
 }
 
 

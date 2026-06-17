@@ -1238,7 +1238,7 @@ int main(int argc, char** argv)
         dvz_visual_set_visible(ribbon, false);
     }
 
-    dvz_panel_set_background_color(panel, 0.030f, 0.034f, 0.044f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.030f, 0.034f, 0.044f, 1.0f));
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 

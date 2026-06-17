@@ -556,7 +556,7 @@ int main(int argc, char** argv)
     DvzPanelDesc panel_desc = {.x = 0.045f, .y = 0.06f, .width = 0.91f, .height = 0.88f};
     DvzPanel* panel = dvz_panel(figure, panel_desc);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
-    dvz_panel_set_background_color(panel, 0.020f, 0.022f, 0.028f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.020f, 0.022f, 0.028f, 1.0f));
 
     uint8_t field_pixels[FIELD_WIDTH * FIELD_HEIGHT * 4] = {0};
     _fill_probe_field(field_pixels);

@@ -157,7 +157,7 @@ int main(int argc, char** argv)
     material.phong.shininess = 96.0f;
     dvz_visual_set_material(visual, &material);
     dvz_panel_add_visual(panel, visual, NULL);
-    dvz_panel_set_background_color(panel, 0.04f, 0.045f, 0.05f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.04f, 0.045f, 0.05f, 1.0f));
 
     app = dvz_app(scene);
     DvzView* win =

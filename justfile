@@ -1135,6 +1135,10 @@ wheel-matrix:
     @python tools/release_wheels/wheel_matrix.py
 #
 
+wheel-validate *args:
+    @python tools/release_wheels/wheel_matrix.py --validate-dist {{args}}
+#
+
 wheel-stage *args:
     @python tools/release_wheels/stage_wheel.py {{args}}
 #
@@ -1165,6 +1169,9 @@ wheel-ci-local platform_tag='' rebuild='0' render='0':
         just wheel-build
     fi
     just wheel-inspect
+    if [ -n "{{platform_tag}}" ]; then
+        just wheel-validate --platform-tag "{{platform_tag}}"
+    fi
     just wheel-inspect --native-deps
     if [ "{{render}}" = "1" ]; then
         just wheel-check --cmake-consumer --render --qt-probe optional
@@ -1183,6 +1190,9 @@ wheel platform_tag='': build
         just wheel-build
     fi
     just wheel-inspect
+    if [ -n "{{platform_tag}}" ]; then
+        just wheel-validate --platform-tag "{{platform_tag}}"
+    fi
 #
 
 testpypi:

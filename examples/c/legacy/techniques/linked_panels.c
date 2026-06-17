@@ -286,9 +286,9 @@ int main(int argc, char** argv)
         EXAMPLE_CHECK(panels[i] != NULL, "dvz_panel() failed");
     }
 
-    dvz_panel_set_background_color(panels[0], 0.045f, 0.060f, 0.075f, 1.0f);
-    dvz_panel_set_background_color(panels[1], 0.070f, 0.055f, 0.050f, 1.0f);
-    dvz_panel_set_background_color(panels[2], 0.050f, 0.060f, 0.050f, 1.0f);
+    dvz_panel_set_background_color(panels[0], dvz_color_from_unit(0.045f, 0.060f, 0.075f, 1.0f));
+    dvz_panel_set_background_color(panels[1], dvz_color_from_unit(0.070f, 0.055f, 0.050f, 1.0f));
+    dvz_panel_set_background_color(panels[2], dvz_color_from_unit(0.050f, 0.060f, 0.050f, 1.0f));
 
     bool ok = _add_point_grid(scene, panels[0], 0);
     EXAMPLE_CHECK(ok, "_add_point_grid(panel 0) failed");

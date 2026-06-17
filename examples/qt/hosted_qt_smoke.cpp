@@ -114,7 +114,7 @@ static DvzScene* _make_scene(DvzFigure** out_figure, DvzPanel** out_panel)
     dvz_visual_set_data(visual, "color", colors, 3);
     dvz_visual_set_data(visual, "diameter", sizes, 3);
     dvz_panel_add_visual(panel, visual, nullptr);
-    dvz_panel_set_background_color(panel, 0.08f, 0.10f, 0.14f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.08f, 0.10f, 0.14f, 1.0f));
 
     if (out_figure != nullptr)
         *out_figure = figure;

@@ -706,7 +706,7 @@ int main(int argc, char** argv)
         (void)dvz_axis_set_label(state.y_axis, "y");
     _apply_axis_controls(&state);
 
-    dvz_panel_set_background_color(panel, 0.04f, 0.05f, 0.06f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.04f, 0.05f, 0.06f, 1.0f));
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");

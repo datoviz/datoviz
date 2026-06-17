@@ -816,7 +816,7 @@ int main(int argc, char** argv)
         });
     EXAMPLE_CHECK(legend != NULL, "dvz_legend() failed");
     state.legend = legend;
-    dvz_panel_set_background_color(panel, 0.025f, 0.027f, 0.03f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.025f, 0.027f, 0.03f, 1.0f));
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");

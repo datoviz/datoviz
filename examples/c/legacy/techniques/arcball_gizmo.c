@@ -1023,8 +1023,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed for gizmo rings");
     rc = dvz_panel_add_visual(gizmo_panel, gizmo_axes_visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed for gizmo axes");
-    dvz_panel_set_background_color(main_panel, 0.035f, 0.038f, 0.046f, 1.0f);
-    dvz_panel_set_background_color(gizmo_panel, 0.080f, 0.087f, 0.100f, 1.0f);
+    dvz_panel_set_background_color(main_panel, dvz_color_from_unit(0.035f, 0.038f, 0.046f, 1.0f));
+    dvz_panel_set_background_color(gizmo_panel, dvz_color_from_unit(0.080f, 0.087f, 0.100f, 1.0f));
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");

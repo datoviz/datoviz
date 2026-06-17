@@ -843,7 +843,7 @@ static int setup_source_scene(DvzScene* scene, TextLabSource* source)
     source->panel = dvz_panel_full(source->figure);
     if (source->panel == NULL)
         return -1;
-    dvz_panel_set_background_color(source->panel, 0.055f, 0.065f, 0.085f, 1.0f);
+    dvz_panel_set_background_color(source->panel, dvz_color_from_unit(0.055f, 0.065f, 0.085f, 1.0f));
     source->text = _scene_text_visual(scene, 0);
     if (source->text == NULL)
         return -1;
@@ -923,7 +923,7 @@ int main(int argc, char** argv)
     DvzFigure* host_figure = dvz_figure(scene, TEXT_MSDF_LAB_HOST_WIDTH, TEXT_MSDF_LAB_HOST_HEIGHT, 0);
     DvzPanel* host_panel = host_figure != NULL ? dvz_panel_full(host_figure) : NULL;
     EXAMPLE_CHECK(host_figure != NULL && host_panel != NULL, "host figure setup failed");
-    dvz_panel_set_background_color(host_panel, 0.045f, 0.052f, 0.062f, 1.0f);
+    dvz_panel_set_background_color(host_panel, dvz_color_from_unit(0.045f, 0.052f, 0.062f, 1.0f));
     update_sources(&state);
 
     DvzAppConfig app_config = dvz_app_config();

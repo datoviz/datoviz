@@ -215,7 +215,7 @@ void example_graphite_cyan_set_panel_background(DvzPanel* panel)
     ANN(panel);
     float bg[4] = {0};
     example_graphite_cyan_panel_background(bg);
-    dvz_panel_set_background_color(panel, bg[0], bg[1], bg[2], bg[3]);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(bg[0], bg[1], bg[2], bg[3]));
 }
 
 

@@ -49,6 +49,8 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Run `just wheel-matrix`.
 - [ ] Run `just wheel-ci-local <host-platform-tag>`.
 - [ ] If native rebuild is required, run `just wheel-ci-local <host-platform-tag> 1`.
+- [ ] Validate local artifact tags with `just wheel-validate --platform-tag <host-platform-tag>`.
+- [ ] Validate a complete wheelhouse with `just wheel-validate`.
 - [ ] Inspect wheel contents with `just wheel-inspect`.
 - [ ] Inspect native dependencies with `just wheel-inspect --native-deps`.
 - [ ] Confirm wheel filename version and platform tag match the intended artifact.

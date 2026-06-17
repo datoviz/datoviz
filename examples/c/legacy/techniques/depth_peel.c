@@ -139,7 +139,7 @@ int main(int argc, char** argv)
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
     DvzPanel* panel = dvz_panel_full(figure);
     EXAMPLE_CHECK(figure != NULL && panel != NULL, "scene setup failed");
-    dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.05f, 0.05f, 0.08f, 1.0f));
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[2] = 3.2f;

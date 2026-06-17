@@ -674,7 +674,7 @@ int main(int argc, char** argv)
     _segment_reset(&state);
     int rc = dvz_panel_add_visual(state.panel, state.visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
-    dvz_panel_set_background_color(state.panel, 0.055f, 0.060f, 0.075f, 1.0f);
+    dvz_panel_set_background_color(state.panel, dvz_color_from_unit(0.055f, 0.060f, 0.075f, 1.0f));
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");

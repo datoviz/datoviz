@@ -91,7 +91,7 @@ int main(int argc, char** argv)
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
-    dvz_panel_set_background_color(panel, 0.05f, 0.07f, 0.10f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.05f, 0.07f, 0.10f, 1.0f));
 
     DvzItemInteraction* pick = dvz_item_interaction(panel, NULL);
     EXAMPLE_CHECK(pick != NULL, "dvz_item_interaction() failed");

@@ -9,6 +9,7 @@ Current local loop:
 just build
 just wheel-stage --clean
 just wheel-build
+just wheel-validate --platform-tag manylinux_2_34_x86_64
 just wheel-inspect --native-deps
 just wheel-check --cmake-consumer --render --qt-probe optional
 ```
@@ -27,6 +28,18 @@ Target RC matrix:
 
 ```sh
 just wheel-matrix
+```
+
+Validate a complete wheelhouse against every required platform tag:
+
+```sh
+just wheel-validate
+```
+
+Validate one locally built artifact:
+
+```sh
+just wheel-validate --platform-tag manylinux_2_34_x86_64
 ```
 
 The wheel itself is Python-ABI independent because Datoviz is loaded through `ctypes`, so the

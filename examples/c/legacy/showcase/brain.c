@@ -1890,7 +1890,7 @@ int main(int argc, char** argv)
         rc = dvz_panel_add_visual(panel, atlas_mesh_visual, &atlas_attach);
         EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed for Allen/IBL atlas mesh");
     }
-    dvz_panel_set_background_color(panel, 0.025f, 0.035f, 0.045f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.025f, 0.035f, 0.045f, 1.0f));
 
     AllenMouseBrainState state = {
         .panel = panel,

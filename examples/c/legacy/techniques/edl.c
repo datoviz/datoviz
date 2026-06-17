@@ -409,7 +409,7 @@ int main(int argc, char** argv)
 
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
-    dvz_panel_set_background_color(panel, 0.035f, 0.045f, 0.055f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.035f, 0.045f, 0.055f, 1.0f));
 
     EdlExampleState gui_state = {
         .panel = panel,

@@ -547,7 +547,7 @@ int main(int argc, char** argv)
     DvzFigure* figure = dvz_figure(scene, LAB_WIDTH, LAB_HEIGHT, 0);
     DvzPanel* panel = figure != NULL ? dvz_panel_full(figure) : NULL;
     EXAMPLE_CHECK(figure != NULL && panel != NULL, "figure or panel creation failed");
-    dvz_panel_set_background_color(panel, 0.045f, 0.052f, 0.060f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.045f, 0.052f, 0.060f, 1.0f));
 
     DvzVisual* image = dvz_image(scene, 0);
     DvzVisual* points = dvz_point(scene, 0);

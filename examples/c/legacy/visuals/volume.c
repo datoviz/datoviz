@@ -454,7 +454,7 @@ int main(int argc, char** argv)
     (void)dvz_volume_set_value_range(volume, 0.0, 1.0);
     rc = dvz_panel_add_visual(panel, volume, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
-    dvz_panel_set_background_color(panel, 0.025f, 0.035f, 0.045f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.025f, 0.035f, 0.045f, 1.0f));
 
     VolumeGlfwState state = {
         .volume = volume,

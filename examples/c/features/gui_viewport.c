@@ -135,7 +135,7 @@ int main(int argc, char** argv)
     DvzPanel* host_panel = dvz_panel_full(host_figure);
     EXAMPLE_CHECK(source_panel != NULL && host_panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(source_panel);
-    dvz_panel_set_background_color(host_panel, 0.045f, 0.050f, 0.064f, 1.0f);
+    dvz_panel_set_background_color(host_panel, dvz_color_from_unit(0.045f, 0.050f, 0.064f, 1.0f));
 
     DvzVisual* point = dvz_point(scene, 0);
     EXAMPLE_CHECK(point != NULL, "dvz_point() failed");

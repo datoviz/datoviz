@@ -70,7 +70,7 @@ int main(int argc, char** argv)
 
     DvzPanel* panel = dvz_panel_full(figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
-    dvz_panel_set_background_color(panel, 0.055f, 0.058f, 0.066f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.055f, 0.058f, 0.066f, 1.0f));
 
     vec3 straight_position[FIELD_COUNT] = {{0}};
     vec3 straight_vector[FIELD_COUNT] = {{0}};

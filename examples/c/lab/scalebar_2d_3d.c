@@ -285,8 +285,8 @@ int main(int argc, char** argv)
         dvz_panel(figure, (DvzPanelDesc){.x = 0.50f, .y = 0.00f, .width = 0.50f, .height = 1.0f});
     EXAMPLE_CHECK(panel_3d != NULL, "dvz_panel(3d) failed");
 
-    dvz_panel_set_background_color(panel_2d, 0.040f, 0.050f, 0.060f, 1.0f);
-    dvz_panel_set_background_color(panel_3d, 0.040f, 0.044f, 0.052f, 1.0f);
+    dvz_panel_set_background_color(panel_2d, dvz_color_from_unit(0.040f, 0.050f, 0.060f, 1.0f));
+    dvz_panel_set_background_color(panel_3d, dvz_color_from_unit(0.040f, 0.044f, 0.052f, 1.0f));
 
     bool ok = _add_physical_scatter(scene, panel_2d);
     EXAMPLE_CHECK(ok, "_add_physical_scatter() failed");

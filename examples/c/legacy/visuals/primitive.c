@@ -337,7 +337,7 @@ int main(int argc, char** argv)
     bool ok = dvz_panel_set_camera(panel, &camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
-    dvz_panel_set_background_color(panel, 0.040f, 0.043f, 0.052f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.040f, 0.043f, 0.052f, 1.0f));
     _fill_triangles(&state, 0.0f);
     DvzMaterialDesc material = dvz_phong_material_desc();
     material.alpha_mode = dvz_visual_alpha_mode(state.visual);

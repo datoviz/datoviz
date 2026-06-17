@@ -736,7 +736,7 @@ int main(int argc, char** argv)
     rc = dvz_panel_add_visual(state.panel, state.contours_visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(contours) failed");
     _state_apply_visibility(&state);
-    dvz_panel_set_background_color(state.panel, 0.04f, 0.045f, 0.05f, 1.0f);
+    dvz_panel_set_background_color(state.panel, dvz_color_from_unit(0.04f, 0.045f, 0.05f, 1.0f));
 
     app = dvz_app(scene);
     DvzView* win =

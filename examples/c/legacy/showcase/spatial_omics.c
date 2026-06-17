@@ -821,7 +821,7 @@ int main(int argc, char** argv)
     DvzVisual* points = panel != NULL ? dvz_point(scene, 0) : NULL;
     EXAMPLE_CHECK(figure != NULL && panel != NULL && points != NULL, "dense_points: scene setup failed");
 
-    dvz_panel_set_background_color(panel, 0.035f, 0.040f, 0.052f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.035f, 0.040f, 0.052f, 1.0f));
 
     DvzVisual* background = _background_visual(scene, &dataset);
     if (background != NULL)

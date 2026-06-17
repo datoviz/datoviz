@@ -162,7 +162,7 @@ int main(int argc, char** argv)
 
     DvzPanel* panel = dvz_panel_full(figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    dvz_panel_set_background_color(panel, 0.055f, 0.067f, 0.090f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.055f, 0.067f, 0.090f, 1.0f));
 
     DvzVisual* visual = dvz_point(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_point() failed");

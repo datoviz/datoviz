@@ -1005,7 +1005,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
             target_link_libraries(dvztest PRIVATE ${DVZ_NVENC_LIB})
             target_link_libraries(dvztest_integration PRIVATE ${DVZ_NVENC_LIB})
         else()
-            message(FATAL_ERROR "DVZ_HAS_CUDA is ON but DVZ_NVENC_LIB is unset.")
+            message(STATUS "DVZ_HAS_CUDA is ON but DVZ_NVENC_LIB is unset; NVENC tests will rely on runtime availability checks.")
         endif()
 
         # Optional: explicitly add the CUDA kernel file if it exists

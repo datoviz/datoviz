@@ -47,6 +47,7 @@ Use the primary `just` recipes from the repository root.
 | Print the intended matrix | `just wheel-matrix` |
 | Stage the wheel tree from `build/` | `just wheel-stage --clean` |
 | Build and retag the wheel | `just wheel-build --platform-tag manylinux_2_34_x86_64` |
+| Validate wheel version and tag | `just wheel-validate --platform-tag manylinux_2_34_x86_64` |
 | Inspect wheel contents | `just wheel-inspect` |
 | Inspect native dependencies | `just wheel-inspect --native-deps` |
 | Install-smoke the wheel | `just wheel-check --cmake-consumer --qt-probe optional` |
@@ -59,6 +60,7 @@ The normal local loop is:
 just build
 just wheel-stage --clean
 just wheel-build --platform-tag manylinux_2_34_x86_64
+just wheel-validate --platform-tag manylinux_2_34_x86_64
 just wheel-inspect --native-deps
 just wheel-check --cmake-consumer --qt-probe optional
 ```
@@ -82,6 +84,10 @@ testable without reconfiguring unrelated local native build options.
 
 `wheel-build` builds from the staged tree, clears stale `dist/datoviz-*.whl` files, and retags the
 pure Python wheel as `py3-none-<platform>`.
+
+`wheel-validate` checks wheel filenames in `dist/` against the expected project version and platform
+tags. With no `--platform-tag`, it expects the full release matrix. Use `--platform-tag` for local
+single-platform validation.
 
 `wheel-inspect` lists packaged files and, with `--native-deps`, delegates to the platform dependency
 tool.

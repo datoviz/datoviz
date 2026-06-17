@@ -312,7 +312,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     if (panel == NULL)
         return false;
-    dvz_panel_set_background_color(panel, 0.005f, 0.007f, 0.010f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.005f, 0.007f, 0.010f, 1.0f));
 
     const DvzPathJoin joins[JOIN_COUNT] = {
         DVZ_PATH_JOIN_MITER,

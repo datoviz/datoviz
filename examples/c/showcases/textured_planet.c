@@ -729,7 +729,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
-    dvz_panel_set_background_color(panel, 0.006f, 0.008f, 0.014f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.006f, 0.008f, 0.014f, 1.0f));
 
     DvzOrbitCameraDesc orbit_desc = dvz_orbit_camera_desc();
     orbit_desc.min_distance = 1.45f;

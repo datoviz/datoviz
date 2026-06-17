@@ -67,7 +67,7 @@ setup_source(DvzScene* scene, DvzFigure* figure, SourceState* state, float shift
     DvzPanel* panel = dvz_panel_full(figure);
     if (panel == NULL)
         return NULL;
-    dvz_panel_set_background_color(panel, 0.07f + shift * 0.05f, 0.08f, 0.11f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.07f + shift * 0.05f, 0.08f, 0.11f, 1.0f));
 
     DvzVisual* visual = dvz_point(scene, 0);
     if (visual == NULL)
@@ -170,7 +170,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(
         source_panels[0] != NULL && source_panels[1] != NULL && host_panel != NULL,
         "panel setup failed");
-    dvz_panel_set_background_color(host_panel, 0.06f, 0.07f, 0.09f, 1.0f);
+    dvz_panel_set_background_color(host_panel, dvz_color_from_unit(0.06f, 0.07f, 0.09f, 1.0f));
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");

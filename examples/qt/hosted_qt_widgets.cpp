@@ -135,11 +135,11 @@ static int _apply_animation_step(SceneState* state)
 static void _set_background(SceneState* state, int background)
 {
     if (background == 0)
-        dvz_panel_set_background_color(state->panel, 0.08f, 0.10f, 0.14f, 1.0f);
+        dvz_panel_set_background_color(state->panel, dvz_color_from_unit(0.08f, 0.10f, 0.14f, 1.0f));
     else if (background == 1)
-        dvz_panel_set_background_color(state->panel, 0.94f, 0.95f, 0.92f, 1.0f);
+        dvz_panel_set_background_color(state->panel, dvz_color_from_unit(0.94f, 0.95f, 0.92f, 1.0f));
     else
-        dvz_panel_set_background_color(state->panel, 0.03f, 0.11f, 0.10f, 1.0f);
+        dvz_panel_set_background_color(state->panel, dvz_color_from_unit(0.03f, 0.11f, 0.10f, 1.0f));
 }
 
 

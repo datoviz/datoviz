@@ -139,7 +139,7 @@ int main(int argc, char** argv)
 
     DvzPanel* panel = dvz_panel_full(figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
-    dvz_panel_set_background_color(panel, 0.040f, 0.050f, 0.060f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.040f, 0.050f, 0.060f, 1.0f));
 
     DvzTextRenderer renderer = example_arg_has(argc, argv, "bitmap")
                                    ? DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS

@@ -635,7 +635,7 @@ int main(int argc, char** argv)
                               MARKER_STRESS_PANEL_H,
                           });
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
-    dvz_panel_set_background_color(panel, 0.065f, 0.075f, 0.095f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.065f, 0.075f, 0.095f, 1.0f));
 
     DvzVisual* visual = dvz_marker(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_marker() failed");

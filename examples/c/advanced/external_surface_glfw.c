@@ -329,7 +329,7 @@ static DvzScene* _make_scene(DvzFigure** out_figure, DvzPanel** out_panel)
         dvz_scene_destroy(scene);
         return NULL;
     }
-    dvz_panel_set_background_color(panel, 0.08f, 0.10f, 0.14f, 1.0f);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.08f, 0.10f, 0.14f, 1.0f));
 
     if (out_figure != NULL)
         *out_figure = figure;
