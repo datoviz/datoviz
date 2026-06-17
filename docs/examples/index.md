@@ -196,6 +196,8 @@ contiguous U.S. state population-density choropleth.
 
 17 rendering families — one example each.
 
+#### 0D — point-like
+
 <div class="grid cards" markdown="1">
 
 <div class="card" markdown="1">
@@ -224,15 +226,33 @@ deterministic retained pixel visual baseline.
 
 <div class="card" markdown="1">
 
-### [Primitive](gallery/visuals/visual_primitive.md)
+### [Marker](gallery/visuals/visual_marker.md)
 
-![Primitive](../assets/gallery/v0.4/visuals/visual_primitive.webp)
+![Marker](../assets/gallery/v0.4/visuals/visual_marker.webp)
 
 `supported` `visuals`
 
-topology-parametric triangles rendered with the retained primitive visual.
+retained marker visual with deterministic symbol, fill, stroke, and size variation.
 
 </div>
+
+<div class="card" markdown="1">
+
+### [Splat](gallery/visuals/visual_splat.md)
+
+![Splat](../assets/gallery/v0.4/visuals/visual_splat.webp)
+
+`experimental` `visuals`
+
+retained Gaussian splat visual with deterministic screen-space ellipses.
+
+</div>
+
+</div>
+
+#### 1D — line-like
+
+<div class="grid cards" markdown="1">
 
 <div class="card" markdown="1">
 
@@ -260,13 +280,43 @@ deterministic multi-signal retained path visual.
 
 <div class="card" markdown="1">
 
-### [Marker](gallery/visuals/visual_marker.md)
+### [Vector](gallery/visuals/visual_vector.md)
 
-![Marker](../assets/gallery/v0.4/visuals/visual_marker.webp)
+![Vector](../assets/gallery/v0.4/visuals/visual_vector.webp)
 
 `supported` `visuals`
 
-retained marker visual with deterministic symbol, fill, stroke, and size variation.
+retained straight and curved vector visual example.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Primitive](gallery/visuals/visual_primitive.md)
+
+![Primitive](../assets/gallery/v0.4/visuals/visual_primitive.webp)
+
+`supported` `visuals`
+
+topology-parametric triangles rendered with the retained primitive visual.
+
+</div>
+
+</div>
+
+#### 2D — planar
+
+<div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
+### [Image](gallery/visuals/visual_image.md)
+
+![Image](../assets/gallery/v0.4/visuals/visual_image.webp)
+
+`supported` `visuals`
+
+deterministic scalar sampled field rendered with the retained image visual.
 
 </div>
 
@@ -306,41 +356,11 @@ retained labels visual with a small deterministic integer sampled field.
 
 </div>
 
-<div class="card" markdown="1">
-
-### [Image](gallery/visuals/visual_image.md)
-
-![Image](../assets/gallery/v0.4/visuals/visual_image.webp)
-
-`supported` `visuals`
-
-deterministic scalar sampled field rendered with the retained image visual.
-
 </div>
 
-<div class="card" markdown="1">
+#### 3D — volumetric
 
-### [Vector](gallery/visuals/visual_vector.md)
-
-![Vector](../assets/gallery/v0.4/visuals/visual_vector.webp)
-
-`supported` `visuals`
-
-retained straight and curved vector visual example.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Splat](gallery/visuals/visual_splat.md)
-
-![Splat](../assets/gallery/v0.4/visuals/visual_splat.webp)
-
-`experimental` `visuals`
-
-retained Gaussian splat visual with deterministic screen-space ellipses.
-
-</div>
+<div class="grid cards" markdown="1">
 
 <div class="card" markdown="1">
 
@@ -378,6 +398,12 @@ deterministic gyroid scalar field rendered with the retained volume visual.
 
 </div>
 
+</div>
+
+#### Composites
+
+<div class="grid cards" markdown="1">
+
 <div class="card" markdown="1">
 
 ### [Polygon Composite](gallery/composites/composite_polygon.md)
@@ -408,6 +434,8 @@ deterministic brain-connectivity graph composite.
 
 A selection of isolated feature and technique examples.
 
+#### Layout
+
 <div class="grid cards" markdown="1">
 
 <div class="card" markdown="1">
@@ -436,6 +464,24 @@ multiple independent panels with panel-local panzoom controllers.
 
 <div class="card" markdown="1">
 
+### [Linked Panels](gallery/features/feature_panel_linked.md)
+
+![Linked Panels](../assets/gallery/v0.4/features/feature_panel_linked.webp)
+
+`supported` `features`
+
+two panels with bidirectional linked X panzoom state.
+
+</div>
+
+</div>
+
+#### Adornments
+
+<div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
 ### [Axis Labels](gallery/features/feature_axis_labels.md)
 
 ![Axis Labels](../assets/gallery/v0.4/features/feature_axis_labels.webp)
@@ -460,6 +506,36 @@ deterministic scalar image with one retained continuous colorbar.
 
 <div class="card" markdown="1">
 
+### [Scale Bar](gallery/features/scale_bar.md)
+
+![Scale Bar](../assets/gallery/v0.4/features/scale_bar.webp)
+
+`supported` `features`
+
+minimal retained scale bar attached to one 2D panel.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Scalar Color Scale](gallery/features/colormap_scale.md)
+
+![Scalar Color Scale](../assets/gallery/v0.4/features/colormap_scale.webp)
+
+`supported` `features`
+
+point visual with scalar float colors and one retained color scale.
+
+</div>
+
+</div>
+
+#### Navigation
+
+<div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
 ### [Arcball Controller](gallery/features/feature_controller_arcball.md)
 
 ![Arcball Controller](../assets/gallery/v0.4/features/feature_controller_arcball.webp)
@@ -469,6 +545,36 @@ deterministic scalar image with one retained continuous colorbar.
 arcball controller attached to a small 3D mesh.
 
 </div>
+
+<div class="card" markdown="1">
+
+### [Fly Controller](gallery/features/feature_controller_fly.md)
+
+![Fly Controller](../assets/gallery/v0.4/features/feature_controller_fly.webp)
+
+`supported` `features`
+
+fly controller with deterministic camera translation.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Turntable Controller](gallery/features/feature_controller_turntable.md)
+
+![Turntable Controller](../assets/gallery/v0.4/features/feature_controller_turntable.webp)
+
+`supported` `features`
+
+constrained turntable controller around a small 3D mesh.
+
+</div>
+
+</div>
+
+#### Scientific
+
+<div class="grid cards" markdown="1">
 
 <div class="card" markdown="1">
 
@@ -484,13 +590,13 @@ scene-owned 2D sampled field bound to an image visual.
 
 <div class="card" markdown="1">
 
-### [Marker Symbols](gallery/features/feature_marker_symbols.md)
+### [3D Sampled Field](gallery/features/feature_sampled_field_3d.md)
 
-![Marker Symbols](../assets/gallery/v0.4/features/feature_marker_symbols.webp)
+![3D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_3d.webp)
 
 `supported` `features`
 
-marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
+scene-owned 3D sampled field bound to a volume visual.
 
 </div>
 
@@ -508,6 +614,24 @@ CPU contour extraction rendered as retained segment overlays.
 
 <div class="card" markdown="1">
 
+### [Marker Symbols](gallery/features/feature_marker_symbols.md)
+
+![Marker Symbols](../assets/gallery/v0.4/features/feature_marker_symbols.webp)
+
+`supported` `features`
+
+marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
+
+</div>
+
+</div>
+
+#### 3D Rendering
+
+<div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
 ### [Lighting](gallery/features/feature_lighting.md)
 
 ![Lighting](../assets/gallery/v0.4/features/feature_lighting.webp)
@@ -515,6 +639,18 @@ CPU contour extraction rendered as retained segment overlays.
 `supported` `features`
 
 compare lit sphere clusters with different material and light settings.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Textured Mesh](gallery/features/feature_mesh_texture.md)
+
+![Textured Mesh](../assets/gallery/v0.4/features/feature_mesh_texture.webp)
+
+`supported` `features`
+
+minimal UV textured mesh with a procedural RGBA8 texture.
 
 </div>
 
@@ -530,6 +666,12 @@ screen-space ambient occlusion on normal-producing mesh geometry.
 
 </div>
 
+</div>
+
+#### Animation & Interaction
+
+<div class="grid cards" markdown="1">
+
 <div class="card" markdown="1">
 
 ### [Animation Tracks](gallery/features/feature_animation_tracks.md)
@@ -544,6 +686,18 @@ retained track-backed visual transform animation.
 
 <div class="card" markdown="1">
 
+### [Timer Animation](gallery/features/feature_timer_animation.md)
+
+![Timer Animation](../assets/gallery/v0.4/features/feature_timer_animation.webp)
+
+`supported` `features`
+
+portable scenario updating retained point data on runner frames.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Image Probe](gallery/features/image_probe.md)
 
 ![Image Probe](../assets/gallery/v0.4/features/image_probe.webp)
@@ -551,6 +705,18 @@ retained track-backed visual transform animation.
 `supported` `features`
 
 scalar image pixel-query proof with a live probe marker.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Sphere Selection](gallery/features/feature_selection_sphere.md)
+
+![Sphere Selection](../assets/gallery/v0.4/features/feature_selection_sphere.webp)
+
+`supported` `features`
+
+retained sphere hover and click selection.
 
 </div>
 

@@ -46,50 +46,50 @@ INDEX_SHOWCASE_ORDER = (
     "us_state_choropleth",
 )
 
-INDEX_VISUAL_ORDER = (
-    # 2D primitives
-    "point_2d",
-    "visual_pixel",
-    "visual_primitive",
-    "visual_segment",
-    "visual_path",
-    # markers and text
-    "visual_marker",
-    "visual_text",
-    "visual_glyph",
-    "visual_labels",
-    # image / field / splat
-    "visual_image",
-    "visual_vector",
-    "visual_splat",
-    # 3D
-    "visual_mesh",
-    "sphere_impostor",
-    "volume",
-    # composites
-    "composite_polygon",
-    "composite_graph",
+# Visuals grouped by dimensionality; each tuple is (subheading, [ids]).
+INDEX_VISUAL_GROUPS = (
+    ("0D — point-like", ["point_2d", "visual_pixel", "visual_marker", "visual_splat"]),
+    ("1D — line-like",  ["visual_segment", "visual_path", "visual_vector", "visual_primitive"]),
+    ("2D — planar",     ["visual_image", "visual_text", "visual_glyph", "visual_labels"]),
+    ("3D — volumetric", ["visual_mesh", "sphere_impostor", "volume"]),
+    ("Composites",      ["composite_polygon", "composite_graph"]),
 )
 
-INDEX_FEATURE_ORDER = (
-    # layout
-    "feature_panel_grid",
-    "feature_panel_multi",
-    # adornments
-    "feature_axis_labels",
-    "colorbar",
-    # navigation
-    "feature_controller_arcball",
-    # data / scientific
-    "feature_sampled_field_2d",
-    "feature_marker_symbols",
-    "feature_isolines",
-    # 3D rendering
-    "feature_lighting",
-    "technique_ssao",
-    # animation / interaction
-    "feature_animation_tracks",
-    "image_probe",
+# Features grouped by theme; each tuple is (subheading, [ids]).
+INDEX_FEATURE_GROUPS = (
+    ("Layout", [
+        "feature_panel_grid",
+        "feature_panel_multi",
+        "feature_panel_linked",
+    ]),
+    ("Adornments", [
+        "feature_axis_labels",
+        "colorbar",
+        "scale_bar",
+        "colormap_scale",
+    ]),
+    ("Navigation", [
+        "feature_controller_arcball",
+        "feature_controller_fly",
+        "feature_controller_turntable",
+    ]),
+    ("Scientific", [
+        "feature_sampled_field_2d",
+        "feature_sampled_field_3d",
+        "feature_isolines",
+        "feature_marker_symbols",
+    ]),
+    ("3D Rendering", [
+        "feature_lighting",
+        "feature_mesh_texture",
+        "technique_ssao",
+    ]),
+    ("Animation & Interaction", [
+        "feature_animation_tracks",
+        "feature_timer_animation",
+        "image_probe",
+        "feature_selection_sphere",
+    ]),
 )
 
 CATEGORY_TO_LANE = {
@@ -545,10 +545,7 @@ def render_index(
     visual_examples = by_lane["visuals"]
     composite_examples = by_lane["composites"]
     feature_examples = by_lane["features"]
-    flagship_feature_ids = set(INDEX_FEATURE_ORDER)
-    flagship_features = semantic_sort(
-        [e for e in feature_examples if e.id in flagship_feature_ids], INDEX_FEATURE_ORDER
-    )
+    by_id = {e.id: e for e in examples}
     index_path = docs_dir / "index.md"
     page_path = docs_site_path(docs_dir, "index.md")
 
@@ -581,33 +578,34 @@ def render_index(
     # --- Visuals & Composites ---
     n_vc = len(visual_examples) + len(composite_examples)
     lines.extend(["## Visuals & Composites", ""])
-    lines.extend(
-        [
-            f"{n_vc} rendering families — one example each.",
-            "",
-        ]
-    )
-    lines.append('<div class="grid cards" markdown="1">')
-    lines.append("")
-    for example in semantic_sort(visual_examples + composite_examples, INDEX_VISUAL_ORDER):
-        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
-    lines.append("</div>")
-    lines.append("")
+    lines.extend([f"{n_vc} rendering families — one example each.", ""])
+    for group_label, group_ids in INDEX_VISUAL_GROUPS:
+        group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
+        if not group_examples:
+            continue
+        lines.extend([f"#### {group_label}", ""])
+        lines.append('<div class="grid cards" markdown="1">')
+        lines.append("")
+        for example in group_examples:
+            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
+        lines.append("</div>")
+        lines.append("")
 
     # --- Features & Techniques ---
+    all_flagship_ids = {id_ for _, ids in INDEX_FEATURE_GROUPS for id_ in ids}
     lines.extend(["## Features & Techniques", ""])
-    lines.extend(
-        [
-            "A selection of isolated feature and technique examples.",
-            "",
-        ]
-    )
-    lines.append('<div class="grid cards" markdown="1">')
-    lines.append("")
-    for example in flagship_features:
-        lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
-    lines.append("</div>")
-    lines.append("")
+    lines.extend(["A selection of isolated feature and technique examples.", ""])
+    for group_label, group_ids in INDEX_FEATURE_GROUPS:
+        group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
+        if not group_examples:
+            continue
+        lines.extend([f"#### {group_label}", ""])
+        lines.append('<div class="grid cards" markdown="1">')
+        lines.append("")
+        for example in group_examples:
+            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False))
+        lines.append("</div>")
+        lines.append("")
     lines.extend(
         [
             f"[Browse all {len(feature_examples)} feature examples](feature-gallery.md) — "
