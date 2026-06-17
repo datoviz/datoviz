@@ -62,7 +62,8 @@ External ownership:
 
 ### 0. Pre-RC Git History Cleanup
 
-Status: required before `v0.4.0-rc1` if the repository-size cleanup is still desired.
+Status: required before `v0.4.0-rc1` if the repository-size cleanup is still desired. Execution
+checklist: [HISTORY_CLEANUP.md](HISTORY_CLEANUP.md).
 
 The v0.4 development branch briefly carried large generated/runtime payloads and copied legacy
 trees. The current source tree has removed those payloads, but the Git object database only shrinks
