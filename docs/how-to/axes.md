@@ -1,13 +1,21 @@
 # Add Axes
 
-Add 2D axes and axis labels to a panel.
+Add 2D axes, ticks, grid lines, and labels to a panel.
 
-## Task Workflow
+## Use This When
 
-Set the panel domain, attach the visual data, then add axes that reflect the same coordinate system.
-Use labels when the axis needs named units or titles.
+- A 2D panel needs numeric X/Y context.
+- Panzoom interaction should keep ticks aligned with the visible data range.
+- A figure needs axis titles, grid lines, or tuned tick density.
+- You need a plotting-style panel rather than a bare scene view.
 
-## Minimal Call Sequence
+Use [reference grids](../examples/gallery/features/feature_reference_grid.md) or orientation gizmos
+for 3D spatial context. The retained axis helpers described here are for panel-owned 2D X/Y axes.
+
+## Minimal Sequence
+
+Set the panel data domain first, then request the panel-owned axes and configure their visible
+parts.
 
 ```c
 dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
@@ -21,17 +29,98 @@ dvz_axis_set_label(x_axis, "x");
 dvz_axis_set_label(y_axis, "y");
 ```
 
-Keep axes in the same panel as the data they describe.
+Keep axes in the same panel as the data they describe. If the panel uses panzoom, bind the
+controller to the same X/Y dimensions so ticks, grid lines, and visible data move together.
 
+## Domain and Coordinates
+
+Axes are derived from the panel data domain. Visual attributes may still need to be uploaded in the
+visual coordinate space expected by the visual family. When your source samples are in panel data
+coordinates, convert them before upload:
+
+```c
+dvz_panel_data_to_visual_positions(
+    panel, (const float*)data_positions, (float*)visual_positions, count);
+dvz_visual_set_data(visual, "position", visual_positions, count);
+```
+
+Update the panel domain when the data range changes. If multiple panels are linked, keep their
+domains and controllers linked intentionally rather than copying tick labels by hand.
+
+## Tick Policy and Labels
+
+Use the default tick policy for ordinary plots. Tune it when labels collide or the panel is small.
+
+```c
+DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
+ticks.target_count = 5;
+ticks.min_pixel_spacing = 150.0f;
+ticks.minor_per_interval = 2;
+dvz_axis_set_tick_policy(x_axis, &ticks);
+dvz_axis_set_tick_policy(y_axis, &ticks);
+```
+
+Use labels for semantic names and units:
+
+```c
+dvz_axis_set_label(x_axis, "time (ms)");
+dvz_axis_set_label(y_axis, "normalized response");
+```
+
+For formatted numeric units, attach a `DvzUnits` object with `dvz_axis_set_units()`. For compact
+data coordinates that should render as absolute UTC time, use `dvz_axis_set_datetime()` and
+`dvz_axis_set_datetime_range()`.
+
+## Styling and Margins
+
+Axis labels and tick labels need space. If labels crowd the plot edge, reserve plot-area margins
+or use a larger panel/grid margin.
+
+```c
+dvz_axis_set_plot_margins(x_axis, 0.0f, 0.0f, 0.08f, 0.0f);
+dvz_axis_set_plot_margins(y_axis, 0.08f, 0.0f, 0.0f, 0.0f);
+```
+
+Use `dvz_axis_set_style()` when the default tick, text, or grid styling does not match the figure.
+Avoid drawing custom axis lines unless the retained axis helper cannot express the intended
+annotation.
+
+## Backend Status
+
+The 2D axes and axis-label examples have live WebGPU routes. They require the `axes` and `text`
+browser capabilities, and panzoom examples also require the `panzoom` route support.
+
+## Canonical Examples
+
+![Path With 2D Axes](../assets/gallery/v0.4/features/path_axes_2d.webp)
+
+- [Path With 2D Axes](../examples/gallery/features/path_axes_2d.md) - minimal retained 2D axes and
+  tick labels on a path plot. Source: `examples/c/features/axes_2d.c`.
+- [Axis Labels](../examples/gallery/features/feature_axis_labels.md) - axis titles, tick-label
+  spacing, and plot margins. Source: `examples/c/features/axis_labels.c`.
+- [Linked Panels With Axes](../examples/gallery/showcases/linked_panels_axes_panzoom.md) - linked
+  panels, axes, and panzoom coordination. Source: `examples/c/showcases/panel_linked_axes.c`.
+- [Scientific Plotting Workflow](../examples/gallery/showcases/scientific_plotting_workflow.md) -
+  composed plotting workflow using axes as one part of a larger layout.
 
 ## Important Details
 
-Axes are adornments tied to a panel domain. If you change the domain or link a controller, verify
-the ticks and labels still match the visible data range.
+- Axes are panel-owned adornments. Do not share one `DvzAxis` across panels.
+- The active retained axis path supports finite linear X/Y panel domains. Use separate 3D reference
+  helpers for 3D orientation.
+- Axis labels are rendered through the scene text pipeline, so text capability matters for browser
+  routes.
+- Grid lines belong to the axis state. Keep them subtle enough that they do not dominate the data.
+- When using colorbars, scale bars, or legends, keep each adornment synchronized with the same data
+  range, units, and panel layout policy.
 
 ## Common Mistakes
 
+- Adding axes before deciding the panel data domain.
+- Uploading data-space positions directly when the visual expects visual-space positions.
 - Adding axis labels without matching the data units.
+- Letting tick labels collide instead of tuning tick policy or margins.
+- Showing one axis or label set for panels that are not actually linked.
 - Treating a composed scientific plotting showcase as the minimal axes example.
 - Drawing custom lines for axes when the axes helper already provides the intended behavior.
 
@@ -40,9 +129,5 @@ the ticks and labels still match the visible data range.
 - [Use coordinate systems](coordinate-systems.md)
 - [Add colorbars, scale bars, and legends](adornments.md)
 - [Link panels and controllers](link-panels.md)
-
-??? example "Related examples"
-
-    - [Path With 2D Axes](../examples/gallery/features/path_axes_2d.md) - Source: `examples/c/features/axes_2d.c`
-    - [Axis Labels](../examples/gallery/features/feature_axis_labels.md) - Source: `examples/c/features/axis_labels.c`
-    - [Scientific Plotting Workflow](../examples/gallery/showcases/scientific_plotting_workflow.md) - Source: `examples/c/showcases/scientific_plotting.c`
+- [Use panzoom](use-panzoom.md)
+- [Scene API reference](../reference/c-api/scene.md)
