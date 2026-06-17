@@ -159,3 +159,33 @@ img[alt*=gpuopen] {
     text-align: center;
     width: 100%;
 }
+
+/* ── Docs home screenshot row ────────────────────────────────────────────── */
+.dvz-screenshot-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin: 1.5rem 0 2.5rem;
+}
+.dvz-screenshot-row a {
+    display: block;
+    overflow: hidden;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: border-color 0.15s, transform 0.15s;
+}
+.dvz-screenshot-row a:hover {
+    border-color: var(--md-accent-fg-color);
+    transform: translateY(-2px);
+}
+.dvz-screenshot-row img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+}
+@media (max-width: 768px) {
+    .dvz-screenshot-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

@@ -2,20 +2,24 @@
 
 **GPU scientific visualization at any scale — explore millions of data points in 2D and 3D**
 
-C and Python API · Vulkan and WebGPU · Desktop and browser
+C and Python · Vulkan and WebGPU · Desktop and browser
 
+[Get Started](start/index.md){ .md-button .md-button--primary } [Examples](examples/index.md){ .md-button }
 
-## Get Started
-
-- [Start Here](start/index.md) — what datoviz is, capability map, and how to use it with AI assistance.
-- [Install](start/install.md) and [build from source](start/build-from-source.md).
-- [Quickstart](start/quickstart.md) — rendering in 10 minutes.
-- [Project status](start/project-status.md) — what is supported, experimental, or deferred in v0.4.
-
-
-## Main Sections
+<div class="dvz-screenshot-row" markdown="1">
+[![Embedding Atlas](assets/gallery/v0.4/showcases/showcase_embedding_atlas.webp)](examples/gallery/showcases/showcase_embedding_atlas.md)
+[![Protein Viewer](assets/gallery/v0.4/showcases/protein_arcball_viewer.webp)](examples/gallery/showcases/protein_arcball_viewer.md)
+[![Brain Volume](assets/gallery/v0.4/showcases/brain_volume.webp)](examples/gallery/showcases/brain_volume.md)
+[![Scientific Plotting](assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)](examples/gallery/showcases/scientific_plotting_workflow.md)
+</div>
 
 <div class="grid cards" markdown="1">
+
+-   **Get Started**
+
+    Install, quickstart, capability map, and AI-assisted workflow.
+
+    [:octicons-arrow-right-24: Get Started](start/index.md)
 
 -   **Examples**
 
@@ -25,20 +29,14 @@ C and Python API · Vulkan and WebGPU · Desktop and browser
 
 -   **How-To**
 
-    Task-oriented guides: add a colorbar, go offscreen, add ImGui controls, and more.
+    Task-oriented guides: add axes, go offscreen, pick and probe, and more.
 
     [:octicons-arrow-right-24: How-To](how-to/create-a-scene.md)
 
 -   **Reference**
 
-    C API, visual family parameters, feature status, platform support, and raw ctypes.
+    C API, visual family parameters, feature status, and platform support.
 
     [:octicons-arrow-right-24: Reference](reference/index.md)
-
--   **Advanced**
-
-    Architecture, internals, lower layers (vklite, canvas), and contributor docs.
-
-    [:octicons-arrow-right-24: Advanced](explanation/architecture.md)
 
 </div>
