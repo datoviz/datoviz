@@ -11,6 +11,8 @@ for release contracts that should survive agent handoffs, documentation rebuilds
 - [READINESS.md](READINESS.md): feature/API freeze expectations, quality audits, packaging,
   legal/asset checks, and release-blocking validation.
 - [RC_PROCESS.md](RC_PROCESS.md): RC1, RC2, RC3, and final-release gates and required artifacts.
+- [WHEEL_BACKEND_ARCHITECTURE.md](WHEEL_BACKEND_ARCHITECTURE.md): aggressive long-term wheel
+  backend refactor plan for producing `py3-none-<platform>` artifacts directly.
 - [COMMUNICATION.md](COMMUNICATION.md): release notes, blog/announcement assets, public messages,
   and feedback channels.
 - [GALLERY_OUTREACH.md](GALLERY_OUTREACH.md): real-dataset showcase and scientist outreach policy.
