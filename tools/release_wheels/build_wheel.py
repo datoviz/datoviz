@@ -45,6 +45,8 @@ def _retag(dist_dir: Path, platform_tag: str | None) -> None:
 def main() -> int:
     args = parse_args()
     args.dist_dir.mkdir(parents=True, exist_ok=True)
+    for wheel in args.dist_dir.glob("datoviz-*.whl"):
+        wheel.unlink()
     subprocess.run(
         [sys.executable, "-m", "pip", "wheel", str(args.stage_dir), "-w", str(args.dist_dir), "--no-deps"],
         check=True,

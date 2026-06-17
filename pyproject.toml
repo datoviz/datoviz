@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "datoviz"
 requires-python = ">=3.10"
 dependencies = ["numpy", "requests", "platformdirs"]
-version = "0.3.3-dev"
+version = "0.4.0.dev0"
 description = "Datoviz: high-performance rendering for scientific data visualization"
 authors = [
     { name = "Cyrille Rossant", email = "cyrille.rossant@gmail.com" }

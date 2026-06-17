@@ -1,22 +1,32 @@
 # v0.4 Wheel Pipeline
 
-These scripts are the local release-wheel path for v0.4. They are intentionally separate from the
-older `justfile` wheel recipes while the RC pipeline is being hardened.
+These scripts are the local release-wheel path for v0.4. The primary entry points are the `just`
+wheel recipes.
 
 Current local loop:
 
 ```sh
 just build
-python tools/release_wheels/stage_wheel.py --clean
-python tools/release_wheels/build_wheel.py
-python tools/release_wheels/inspect_wheel.py --native-deps
-python tools/release_wheels/check_wheel.py --cmake-consumer --render --qt-probe optional
+just wheel-stage --clean
+just wheel-build
+just wheel-inspect --native-deps
+just wheel-check --cmake-consumer --render --qt-probe optional
 ```
+
+CI-parity local loop:
+
+```sh
+just wheel-ci-local
+```
+
+`just wheel-ci-local <platform-tag> 1` also runs `just build` first. The default uses the existing
+`build/` tree, which is useful when validating packaging changes without reconfiguring native
+build options.
 
 Target RC matrix:
 
 ```sh
-python tools/release_wheels/wheel_matrix.py
+just wheel-matrix
 ```
 
 The wheel itself is Python-ABI independent because Datoviz is loaded through `ctypes`, so the
@@ -34,3 +44,9 @@ The target platform lanes are:
 The draft GitHub Actions workflow is stored in `.github/workflows-draft/wheels-v04.yml`. It is not
 live. Move or copy it to `.github/workflows/` only after the local scripts and one manual branch
 run have proven the staged-tree build, wheel inspection, and installed smokes.
+
+Native dependency inspection uses the platform repair tooling expected in CI:
+
+1. Linux: `auditwheel`;
+2. macOS: `delocate-listdeps` from `delocate`;
+3. Windows: `python -m delvewheel show` from `delvewheel`.

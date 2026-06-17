@@ -1151,6 +1151,28 @@ wheel-check *args:
     @python tools/release_wheels/check_wheel.py {{args}}
 #
 
+wheel-ci-local platform_tag='' rebuild='0' render='0':
+    #!/usr/bin/env sh
+    set -e
+    just wheel-matrix
+    if [ "{{rebuild}}" = "1" ]; then
+        just build
+    fi
+    just wheel-stage --clean
+    if [ -n "{{platform_tag}}" ]; then
+        just wheel-build --platform-tag "{{platform_tag}}"
+    else
+        just wheel-build
+    fi
+    just wheel-inspect
+    just wheel-inspect --native-deps
+    if [ "{{render}}" = "1" ]; then
+        just wheel-check --cmake-consumer --render --qt-probe optional
+    else
+        just wheel-check --cmake-consumer --qt-probe optional
+    fi
+#
+
 wheel platform_tag='': build
     #!/usr/bin/env sh
     set -e
