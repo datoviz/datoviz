@@ -96,9 +96,14 @@ build*/
 cleaned
 dist
 docs/gallery/
+docs/assets/references/
 docs/images/gallery/
 experimental
 joblib
+bin/vulkan/
+libs/shaderc/
+libs/swiftshader/
+libs/vulkan/
 nightly
 notes.md
 packaging

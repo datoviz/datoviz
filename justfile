@@ -20,6 +20,23 @@ default:
     @exit 1
 #
 
+check-staged:
+    python3 tools/check_staged_payloads.py
+#
+
+install-git-hooks:
+    #!/usr/bin/env sh
+    set -e
+    mkdir -p .git/hooks
+    {
+        printf '%s\n' '#!/usr/bin/env sh'
+        printf '%s\n' 'set -e'
+        printf '%s\n' 'python3 tools/check_staged_payloads.py'
+    } > .git/hooks/pre-commit
+    chmod +x .git/hooks/pre-commit
+    echo "Installed .git/hooks/pre-commit"
+#
+
 
 
 # -------------------------------------------------------------------------------------------------
