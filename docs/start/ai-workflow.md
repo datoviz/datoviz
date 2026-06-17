@@ -22,7 +22,7 @@ page.
 3. Specify Python or C and ask for v0.4 API only.
 4. Paste the output into your project and run it.
 
-For Python, prefer `import datoviz as dvz` over raw ctypes unless you need explicit pointer
+For Python, prefer `import datoviz as dvz` over Python raw `ctypes` unless you need explicit pointer
 control. For C, use the Quickstart C pattern and canonical `examples/c/...` sources as structural
 templates.
 

@@ -139,7 +139,7 @@ nav:
     - Integration:
       - Use from C or C++: 'how-to/c-integration.md'
       - Use from Python: 'how-to/use-python.md'
-      - Use raw ctypes: 'how-to/use-raw-ctypes.md'
+      - Use Python raw ctypes: 'how-to/use-raw-ctypes.md'
       - Embed in Qt: 'how-to/embed-in-qt.md'
       - Deploy WebGPU examples to the browser: 'how-to/deploy-to-web.md'
     - Diagnostics:
@@ -156,7 +156,7 @@ nav:
         - App, window, and I/O: 'reference/c-api/app.md'
         - Runtime and utilities: 'reference/c-api/runtime.md'
         - C types: 'reference/c-api/types.md'
-      - Raw ctypes: 'reference/ctypes.md'
+      - Python raw ctypes: 'reference/ctypes.md'
     - Visual families:
       - Overview: 'reference/visual-families/index.md'
       - Point: 'reference/visual-families/point.md'

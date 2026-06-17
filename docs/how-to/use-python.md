@@ -36,13 +36,13 @@ plotting interface to be present.
 
 ## See Also
 
-- [Use raw ctypes](use-raw-ctypes.md)
+- [Use Python raw ctypes](use-raw-ctypes.md)
 - [Use from C or C++](c-integration.md)
 - [Choose a visual family](choose-a-visual-family.md)
 
 ??? example "Related examples"
 
     - Start page: [Quickstart](../start/quickstart.md)
-    - Reference: [Raw ctypes](../reference/ctypes.md)
+    - Reference: [Python raw ctypes](../reference/ctypes.md)
     - Gallery: [Scatter Plot](../examples/gallery/start/start_scatter.md)
     - Source: `examples/c/start/scatter.c`

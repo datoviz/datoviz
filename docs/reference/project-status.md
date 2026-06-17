@@ -26,7 +26,7 @@ explicit status labels:
 | Scene-managed nonlinear transforms | deferred |
 | Custom visual/render shaders | deferred |
 | Built-in shader replacement and hot reload | deferred |
-| Raw generated `ctypes` bindings | experimental |
+| Python raw `ctypes` binding | supported |
 | WebGPU/WASM path | experimental |
 | Old Datoviz Python plotting API | external/GSP |
 

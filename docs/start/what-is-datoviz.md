@@ -22,7 +22,7 @@ scientific plotting belongs in VisPy2/GSP, with Datoviz as one rendering backend
 - offscreen rendering, capture, and validation;
 - low-level backend or adapter work;
 - DRP2 stream generation, replay, and portability experiments;
-- raw generated `ctypes` access for low-level Python smoke tests.
+- Python raw `ctypes` access for low-level smoke tests and integration.
 
 
 ## Use Another Layer For

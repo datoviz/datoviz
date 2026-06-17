@@ -1,10 +1,10 @@
-# Raw `ctypes`
+# Python Raw `ctypes` Binding
 
-Status: experimental low-level binding.
+Status: supported low-level Python binding.
 
-The raw `ctypes` layer exposes the v0.4 C engine to Python as directly as possible. It is useful for
-low-level integration, smoke tests, backend work, and automation that needs exact access to
-`libdatoviz`.
+The Python raw `ctypes` layer exposes the v0.4 C engine to Python as directly as possible. It is
+useful for low-level integration, smoke tests, backend work, and automation that needs exact access
+to `libdatoviz`.
 
 It is not the v0.3 Python plotting API, not a compatibility layer, and not the recommended
 direct-engine Python import. High-level plotting and object-oriented Python workflows belong above

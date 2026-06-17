@@ -9,7 +9,7 @@ When using a coding agent, make the layer explicit. For normal Datoviz C visuali
 | --- | --- | --- |
 | Native rendering engine, windows, offscreen views, capture | Datoviz C `scene` and `app` APIs | supported/experimental by feature |
 | Backend-agnostic render stream or replay | DRP2/DVZR | advanced/unstable |
-| Low-level Python loading of the C library | Raw generated `ctypes` | experimental |
+| Low-level Python loading of the C library | Python raw `ctypes` binding | supported |
 | High-level scientific plotting | VisPy2/GSP | external/GSP |
 | Old Datoviz v0.3 Pythonic plotting API | Not part of v0.4 Datoviz docs | deferred/external |
 
@@ -23,10 +23,10 @@ This is the default Datoviz layer for generated examples that create figures, pa
 controllers, captures, or pick/probe requests.
 
 
-## Raw `ctypes`
+## Python Raw `ctypes`
 
-Choose raw `ctypes` only when you need direct access to generated C bindings from Python. Treat it
-as a low-level integration and smoke-testing path, not as a high-level plotting API.
+Choose Python raw `ctypes` only when you need direct access to generated C bindings from Python.
+Treat it as a low-level integration and smoke-testing path, not as a high-level plotting API.
 
 Ask agents to preserve raw C names such as `dvz_scene()` and to follow C ownership rules. Do not ask
 for Pythonic helpers unless they are documented as part of the current package.

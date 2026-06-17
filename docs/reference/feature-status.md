@@ -14,6 +14,6 @@ Draft v0.4 public status table. Status labels use the meanings from
 | Scene compute shaders | experimental | Narrow compute-to-render interop path with DRP2 `ResourceBarrier`, WebGPU fixture coverage, and `examples/c/showcases/gpu_particle_smoke.c`; not the general custom render-shader API. |
 | Qt/PyQt hosted rendering | supported, optional provider | Native Qt and PyQt hosting render into Qt-owned Vulkan surfaces without linking Qt into `libdatoviz`. PyQt requires the optional `datoviz_qtbridge` provider and a PyQt6 build exposing `QVulkanInstance`, `QVulkanInstance.surfaceForWindow()`, and `QWindow.setVulkanInstance()`. PySide6 is not a v0.4 target unless a specific binding exposes the same surface and pointer-unwrapping support. |
 | Built-in shader replacement and hot reload | deferred | Built-in visual shader ABI is internal in v0.4. |
-| Raw `ctypes` | experimental | Low-level binding path only. |
+| Python raw `ctypes` binding | supported | Low-level Python binding path for exact C-shaped access. |
 | WebGPU/WASM | experimental | Browser subset is documented and release-proofed for buffer-backed point/pixel positions, basic marker, segment/path with cap/join controls, primitive, RGBA8 image, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, basic sphere, panzoom, one 3D sphere + textured mesh/arcball scene, the first portable C scenario/frame-callback proof, and the committed DRP2 fixture slice. Not Vulkan parity. |
 | Old Datoviz Python plotting API | external/GSP | Not part of v0.4 Datoviz docs. |
