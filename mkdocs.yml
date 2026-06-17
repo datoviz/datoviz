@@ -101,38 +101,45 @@ nav:
     - Features: 'examples/features.md'
     - Advanced: 'examples/advanced.md'
   - How-To:
-    - Scene And Runtime:
+    - Scene Basics:
       - Create a scene: 'how-to/create-a-scene.md'
-      - Create a window: 'how-to/create-a-window.md'
-      - Render offscreen: 'how-to/render-offscreen.md'
-      - Capture an image: 'how-to/capture-an-image.md'
-    - Visuals And Data:
       - Add a visual: 'how-to/add-a-visual.md'
-      - Choose a visual family: 'how-to/choose-a-visual-family.md'
       - Update visual data: 'how-to/update-visual-data.md'
-      - Use sampled fields: 'how-to/use-sampled-fields.md'
+      - Render offscreen: 'how-to/render-offscreen.md'
+    - Coordinate Systems & Scales:
+      - Coordinate systems: 'how-to/coordinate-systems.md'
+      - Transforms and scales: 'how-to/transforms-and-scales.md'
+    - Visuals:
+      - Choose a visual family: 'how-to/choose-a-visual-family.md'
       - Use colormaps: 'how-to/use-colormaps.md'
-    - Layout And Adornments:
-      - Create multiple panels: 'how-to/create-multiple-panels.md'
-      - Add axes: 'how-to/add-axes.md'
-      - Add colorbars: 'how-to/add-colorbars.md'
-      - Add annotations: 'how-to/add-annotations.md'
+      - Use sampled fields: 'how-to/use-sampled-fields.md'
+    - Layout:
+      - Multiple panels: 'how-to/create-multiple-panels.md'
+      - Axes: 'how-to/axes.md'
+      - Adornments: 'how-to/adornments.md'
     - Interaction:
-      - Use panzoom: 'how-to/use-panzoom.md'
-      - Use arcball: 'how-to/use-arcball.md'
-      - Pick and probe: 'how-to/pick-and-probe.md'
-      - Select items: 'how-to/select-items.md'
-    - Guides:
-      - Image, colorbar, and probe: 'how-to/image-colorbar-probe.md'
-      - Mesh with arcball: 'how-to/mesh-arcball.md'
-      - Multi-panel figure: 'how-to/multi-panel-figure.md'
-    - Integration And Debugging:
+      - Panzoom: 'how-to/use-panzoom.md'
+      - 3D navigation: 'how-to/3d-navigation.md'
+      - Input events: 'how-to/input-events.md'
+    - 3D Rendering:
+      - Lighting and materials: 'how-to/lighting-and-materials.md'
+      - Rendering techniques: 'how-to/rendering-techniques.md'
+    - Animation & Video:
+      - Animation: 'how-to/animation.md'
+      - Video export: 'how-to/video-export.md'
+    - GUI:
+      - GUI controls: 'how-to/gui-controls.md'
+    - Integration & Diagnostics:
       - Use from C or C++: 'how-to/c-integration.md'
       - Embed in Qt: 'how-to/embed-in-qt.md'
       - Use raw ctypes: 'how-to/use-raw-ctypes.md'
-      - Replay DVZR: 'how-to/replay-dvzr.md'
+      - Deploy to web: 'how-to/deploy-to-web.md'
       - Debug rendering: 'how-to/debug-rendering.md'
       - Profile performance: 'how-to/profile-performance.md'
+    - Walkthroughs:
+      - Scatter with probe: 'how-to/image-colorbar-probe.md'
+      - 3D mesh with arcball: 'how-to/mesh-arcball.md'
+      - Multi-panel figure: 'how-to/multi-panel-figure.md'
   - Reference:
     - Overview: 'reference/index.md'
     - Status And Support:
