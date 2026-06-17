@@ -118,10 +118,10 @@ sudo apt-get install -y \
   libcglm-dev libfreetype-dev libglfw3-dev libmimalloc-dev libtinyxml2-dev libvulkan-dev zlib1g-dev
 ```
 
-Current local result: the lane configures far enough to prove the package-name gap. It fails when
-`libcglm-dev` is absent, and CMake warns that GLFW falls back to the headless backend when
-`libglfw3-dev` is absent. `libmimalloc-dev` is also required for the current
-`DVZ_MIMALLOC_SOURCE=SYSTEM` validation profile.
+Current local result on Ubuntu 24.04 noble: after installing those packages,
+`DATOVIZ_SOURCE_DEPS=system just distribution-validate-local source-install` passes, and
+`just distribution-validate-local audit` reports the source prefix linked to system `libmimalloc`,
+`libglfw`, `zlib`, `freetype`, and `tinyxml2` with no unresolved `ldd` entries.
 
 ## Live Release Gates
 
