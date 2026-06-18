@@ -489,7 +489,7 @@ class DatovizWindow(QWindow):
         instance, surface, width, height, scale = self._surface_tuple()
         if instance == 0 or surface == 0:
             return False
-        self._view = dvz.dvz_view_external_surface_ffi(
+        self._view = dvz.dvz_ffi_view_external_surface(
             self._app,
             self._figure,
             ctypes.c_void_p(instance),
@@ -557,11 +557,11 @@ class DatovizWindow(QWindow):
             return
 
         instance, surface, width, height, scale = self._surface_tuple()
-        rc = dvz.dvz_view_update_external_surface_ffi(
+        rc = dvz.dvz_ffi_view_update_external_surface(
             self._view, ctypes.c_void_p(instance), surface, width, height, scale, scale, False
         )
         if rc != 0:
-            raise RuntimeError('dvz_view_update_external_surface_ffi() failed')
+            raise RuntimeError('dvz_ffi_view_update_external_surface() failed')
 
         if not self._repaint_requested:
             return

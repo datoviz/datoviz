@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/geom.h"
+#include "datoviz/ffi.h"
 #include "datoviz/math/vec.h"
 
 #include <float.h>
@@ -1039,6 +1040,32 @@ DvzGeometryArrowDesc dvz_geometry_arrow_desc(void)
         .sectors = DVZ_GEOM_REVOLUTION_DEFAULT_SECTORS,
     };
 }
+
+
+
+#define DVZ_FFI_DESC_WRAPPER(name, type)                                                        \
+    bool dvz_ffi_##name(type* out)                                                              \
+    {                                                                                            \
+        if (out == NULL)                                                                         \
+            return false;                                                                        \
+        *out = dvz_##name();                                                                     \
+        return true;                                                                             \
+    }
+
+DVZ_FFI_DESC_WRAPPER(geometry_arrow_desc, DvzGeometryArrowDesc)
+DVZ_FFI_DESC_WRAPPER(geometry_cone_desc, DvzGeometryConeDesc)
+DVZ_FFI_DESC_WRAPPER(geometry_cube_desc, DvzGeometryCubeDesc)
+DVZ_FFI_DESC_WRAPPER(geometry_cylinder_desc, DvzGeometryCylinderDesc)
+DVZ_FFI_DESC_WRAPPER(geometry_disc_desc, DvzGeometryDiscDesc)
+DVZ_FFI_DESC_WRAPPER(geometry_plane_desc, DvzGeometryPlaneDesc)
+DVZ_FFI_DESC_WRAPPER(geometry_regular_polygon_desc, DvzGeometryRegularPolygonDesc)
+DVZ_FFI_DESC_WRAPPER(geometry_sector_desc, DvzGeometrySectorDesc)
+DVZ_FFI_DESC_WRAPPER(geometry_sphere_desc, DvzGeometrySphereDesc)
+DVZ_FFI_DESC_WRAPPER(geometry_star_desc, DvzGeometryStarDesc)
+DVZ_FFI_DESC_WRAPPER(geometry_surface_grid_desc, DvzGeometrySurfaceGridDesc)
+DVZ_FFI_DESC_WRAPPER(geometry_torus_desc, DvzGeometryTorusDesc)
+
+#undef DVZ_FFI_DESC_WRAPPER
 
 
 

@@ -2105,13 +2105,13 @@ int test_app_external_surface_release_waits(TstContext* suite, const TstCase* it
         return 0;
     }
 
-    DvzView* win = dvz_view_external_surface_ffi(
+    DvzView* win = dvz_ffi_view_external_surface(
         app, figure, (void*)instance, (uint64_t)(uintptr_t)surface, 64, 64, 1.0f, 1.0f, false);
     AT(win != NULL);
 
     AppRequestFrameProbe request_probe = {0};
     dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
-    AT(dvz_view_update_external_surface_ffi(
+    AT(dvz_ffi_view_update_external_surface(
            win, (void*)instance, (uint64_t)(uintptr_t)surface, 64, 64, 1.0f, 1.0f, false) == 0);
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
 

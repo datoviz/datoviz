@@ -24,6 +24,7 @@
 #include "_log.h"
 #include "_scene.h"
 #include "core/scene_notify_internal.h"
+#include "datoviz/ffi.h"
 #include "datoviz/scene.h"
 
 
@@ -403,6 +404,15 @@ DvzReferenceGridDesc dvz_reference_grid_desc(void)
         .show_axes = true,
         .depth_test = true,
     };
+}
+
+
+bool dvz_ffi_reference_grid_desc(DvzReferenceGridDesc* out)
+{
+    if (out == NULL)
+        return false;
+    *out = dvz_reference_grid_desc();
+    return true;
 }
 
 

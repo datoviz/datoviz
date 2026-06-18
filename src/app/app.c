@@ -30,6 +30,7 @@
 #include "_trace.h"
 #include "datoviz/app.h"
 #include "datoviz/common/mutex.h"
+#include "datoviz/ffi.h"
 #include "datoviz/gui.h"
 #include "datoviz/input/router.h"
 #include "datoviz/scene.h"
@@ -3948,7 +3949,7 @@ DvzView* dvz_view_external_surface(
  * @param owned_by_datoviz whether Datoviz should destroy the surface
  * @return view handle, or NULL on failure
  */
-DvzView* dvz_view_external_surface_ffi(
+DvzView* dvz_ffi_view_external_surface(
     DvzApp* app, DvzFigure* figure, void* instance, uint64_t surface,
     uint32_t framebuffer_width, uint32_t framebuffer_height, float scale_x, float scale_y,
     bool owned_by_datoviz)
@@ -4032,7 +4033,7 @@ int dvz_view_update_external_surface(
  * @param owned_by_datoviz whether Datoviz should destroy the surface
  * @return 0 on success, negative on error
  */
-int dvz_view_update_external_surface_ffi(
+int dvz_ffi_view_update_external_surface(
     DvzView* win, void* instance, uint64_t surface, uint32_t framebuffer_width,
     uint32_t framebuffer_height, float scale_x, float scale_y, bool owned_by_datoviz)
 {

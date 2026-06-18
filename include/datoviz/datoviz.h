@@ -21,6 +21,7 @@
 #include "drp2.h"
 #include "dvzmath.h"
 #include "app.h"
+#include "ffi.h"
 #include "font.h"
 #include "geom.h"
 #include "gui.h"
@@ -29,5 +30,3 @@
 #include "scene.h"
 #include "video.h"
 #include "window.h"
-#include "vk.h"
-#include "vklite.h"

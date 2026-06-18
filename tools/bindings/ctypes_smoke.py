@@ -46,8 +46,8 @@ def main() -> int:
         ctypes.c_float,
         ctypes.c_bool,
     ]
-    assert dvz.dvz_view_external_surface_ffi.argtypes == expected_create_args
-    assert dvz.dvz_view_external_surface_ffi.restype == ctypes.POINTER(dvz.DvzView)
+    assert dvz.dvz_ffi_view_external_surface.argtypes == expected_create_args
+    assert dvz.dvz_ffi_view_external_surface.restype == ctypes.POINTER(dvz.DvzView)
 
     expected_update_args = [
         ctypes.POINTER(dvz.DvzView),
@@ -59,8 +59,8 @@ def main() -> int:
         ctypes.c_float,
         ctypes.c_bool,
     ]
-    assert dvz.dvz_view_update_external_surface_ffi.argtypes == expected_update_args
-    assert dvz.dvz_view_update_external_surface_ffi.restype == ctypes.c_int
+    assert dvz.dvz_ffi_view_update_external_surface.argtypes == expected_update_args
+    assert dvz.dvz_ffi_view_update_external_surface.restype == ctypes.c_int
 
     t0 = dvz.dvz_time_monotonic_ns()
     t1 = dvz.dvz_time_monotonic_ns()

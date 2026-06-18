@@ -108,12 +108,12 @@ Prefer adding a pair of thin FFI convenience functions over forcing PyQt example
 `DvzWindowExternalSurfaceInfo` directly:
 
 ```c
-DVZ_EXPORT DvzView* dvz_view_external_surface_ffi(
+DVZ_EXPORT DvzView* dvz_ffi_view_external_surface(
     DvzApp* app, DvzFigure* figure, void* instance, uint64_t surface,
     uint32_t framebuffer_width, uint32_t framebuffer_height, float scale_x, float scale_y,
     bool owned_by_datoviz);
 
-DVZ_EXPORT int dvz_view_update_external_surface_ffi(
+DVZ_EXPORT int dvz_ffi_view_update_external_surface(
     DvzView* view, void* instance, uint64_t surface, uint32_t framebuffer_width,
     uint32_t framebuffer_height, float scale_x, float scale_y, bool owned_by_datoviz);
 ```
@@ -122,7 +122,7 @@ These functions should be exact wrappers around the struct API. They should buil
 `DvzWindowExternalSurfaceInfo` internally and call `dvz_view_external_surface()` or
 `dvz_view_update_external_surface()`.
 
-The `_ffi` suffix is intentional:
+The `dvz_ffi_*` prefix is intentional:
 
 1. it marks the functions as foreign-function-interface conveniences;
 2. it avoids implying that they are simpler or preferred for native C callers;
