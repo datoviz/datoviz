@@ -3,6 +3,9 @@ pydev: # install the Python binding on a development machine
     @pip install -e .
 #
 
+python-dev-install: pydev
+#
+
 api-json:
     @python tools/bindings/extract_api.py
 #

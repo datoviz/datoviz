@@ -15,6 +15,12 @@ just test
 just spec-check
 ```
 
+For a local RC1 preflight driver over the standard sequence, use:
+
+```sh
+just release-preflight rc1
+```
+
 
 ## Packaging
 

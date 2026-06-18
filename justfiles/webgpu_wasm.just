@@ -29,82 +29,14 @@ webgpu-check: webgpu-gallery-check
 #
 
 wasm-env-check:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    export EMSDK_QUIET=1
-    if ! command -v emcmake >/dev/null 2>&1; then
-        if [ -n "${EMSDK_ENV_SH:-}" ] && [ -f "$EMSDK_ENV_SH" ]; then
-            source "$EMSDK_ENV_SH"
-        elif [ -n "${EMSDK:-}" ] && [ -f "$EMSDK/emsdk_env.sh" ]; then
-            source "$EMSDK/emsdk_env.sh"
-        elif [ -f "$PWD/../emsdk/emsdk_env.sh" ]; then
-            source "$PWD/../emsdk/emsdk_env.sh"
-        elif [ -f "$HOME/SDK/emsdk/emsdk_env.sh" ]; then
-            source "$HOME/SDK/emsdk/emsdk_env.sh"
-        elif [ -f "$HOME/emsdk/emsdk_env.sh" ]; then
-            source "$HOME/emsdk/emsdk_env.sh"
-        else
-            echo "Emscripten not found."
-            echo "Install/activate emsdk, put emcmake on PATH, or set EMSDK_ENV_SH=/path/to/emsdk_env.sh."
-            exit 1
-        fi
-    fi
-    echo "emcc: $(command -v emcc)"
-    echo "emcmake: $(command -v emcmake)"
-    emcc --version | head -n 1
+    @bash tasks/wasm_build.sh env-check
 #
 
 wasm-doctor: wasm-env-check
 #
 
 _wasm-scene-build-mode build_dir build_type flag_config c_flags='' cxx_flags='' linker_flags='':
-    #!/usr/bin/env bash
-    set -euo pipefail
-    export EMSDK_QUIET=1
-    if ! command -v emcmake >/dev/null 2>&1; then
-        if [ -n "${EMSDK_ENV_SH:-}" ] && [ -f "$EMSDK_ENV_SH" ]; then
-            source "$EMSDK_ENV_SH"
-        elif [ -n "${EMSDK:-}" ] && [ -f "$EMSDK/emsdk_env.sh" ]; then
-            source "$EMSDK/emsdk_env.sh"
-        elif [ -f "$PWD/../emsdk/emsdk_env.sh" ]; then
-            source "$PWD/../emsdk/emsdk_env.sh"
-        elif [ -f "$HOME/SDK/emsdk/emsdk_env.sh" ]; then
-            source "$HOME/SDK/emsdk/emsdk_env.sh"
-        elif [ -f "$HOME/emsdk/emsdk_env.sh" ]; then
-            source "$HOME/emsdk/emsdk_env.sh"
-        else
-            echo "Emscripten not found."
-            echo "Install/activate emsdk, put emcmake on PATH, or set EMSDK_ENV_SH=/path/to/emsdk_env.sh."
-            exit 1
-        fi
-    fi
-    cmake_args=(
-        -S .
-        -B "{{build_dir}}"
-        -DCMAKE_BUILD_TYPE="{{build_type}}"
-        -DCMAKE_SKIP_INSTALL_RULES=ON
-        -DDVZ_BUILD_VK=OFF
-        -DDVZ_BUILD_CANVAS=OFF
-        -DDVZ_BUILD_APP=OFF
-        -DDVZ_BUILD_GUI=OFF
-        -DDVZ_WITH_FREETYPE=OFF
-        -DDVZ_WITH_MSDF_ATLAS=OFF
-        -DDVZ_ENABLE_KVAZAAR=OFF
-        -DDVZ_WITH_GLFW=OFF
-        -DDVZ_WITH_ZLIB=OFF
-        -DDVZ_USE_MIMALLOC_RELEASE_DEFAULT=OFF
-    )
-    if [ -n "{{c_flags}}" ]; then
-        cmake_args+=("-DCMAKE_C_FLAGS_{{flag_config}}={{c_flags}}")
-    fi
-    if [ -n "{{cxx_flags}}" ]; then
-        cmake_args+=("-DCMAKE_CXX_FLAGS_{{flag_config}}={{cxx_flags}}")
-    fi
-    if [ -n "{{linker_flags}}" ]; then
-        cmake_args+=("-DCMAKE_EXE_LINKER_FLAGS_{{flag_config}}={{linker_flags}}")
-    fi
-    emcmake cmake "${cmake_args[@]}"
-    cmake --build "{{build_dir}}" --target datoviz_wasm_scene -j 8
+    @bash tasks/wasm_build.sh build "{{build_dir}}" "{{build_type}}" "{{flag_config}}" "{{c_flags}}" "{{cxx_flags}}" "{{linker_flags}}"
 #
 
 wasm-scene-build:
@@ -156,47 +88,5 @@ shader-abi-check:
 #
 
 spec-check: shader-abi-check
-    #!/usr/bin/env bash
-    set -euo pipefail
-
-    tmpdir="$(mktemp -d)"
-    trap 'rm -rf "$tmpdir"' EXIT
-
-    names=()
-    pids=()
-    logs=()
-
-    run_check() {
-        local name="$1"
-        shift
-        local log="$tmpdir/${#names[@]}.log"
-        names+=("$name")
-        logs+=("$log")
-        "$@" >"$log" 2>&1 &
-        pids+=("$!")
-    }
-
-    run_check "drp2 fixture runner" .venv/bin/python tools/drp2_fixture_runner.py
-    run_check "webgpu fixture preflight" .venv/bin/python tools/webgpu_fixture_preflight.py
-    run_check "webgpu runner smoke" node tools/webgpu_runner_smoke.mjs
-    run_check "drp2 fixture tests" .venv/bin/pytest -q testing/test_drp2_fixture_runner.py
-    run_check "webgpu preflight tests" .venv/bin/pytest -q testing/test_webgpu_fixture_preflight.py
-    run_check "scheduler tests" .venv/bin/pytest -q testing/test_dvztest_scheduler.py
-    run_check "scene query source guard" .venv/bin/pytest -q testing/test_scene_query_source_guard.py
-    run_check "scene architecture source guard" .venv/bin/pytest -q testing/test_scene_architecture_source_guard.py
-    run_check "scene visual boundary guard" .venv/bin/python tools/check_scene_visual_boundaries.py
-
-    status=0
-    for i in "${!pids[@]}"; do
-        if wait "${pids[$i]}"; then
-            printf 'PASS %s\n' "${names[$i]}"
-        else
-            printf 'FAIL %s\n' "${names[$i]}"
-            status=1
-        fi
-        cat "${logs[$i]}"
-    done
-
-    exit "$status"
+    @python3 tasks/spec_check.py
 #
-

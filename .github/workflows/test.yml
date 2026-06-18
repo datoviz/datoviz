@@ -45,7 +45,7 @@ jobs:
       # make the tests fail.
     - name: Test
       run:
-        xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24 -extension MIT-SHM" ./build/datoviz test
+        xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24 -extension MIT-SHM" just test
 
   # -----------------------------------------------------------------------------------------------
   # macOS
@@ -115,7 +115,7 @@ jobs:
     # Run the tests
     - name: Test
       run:
-        ./build/datoviz test
+        just test
 
   # -----------------------------------------------------------------------------------------------
   # Windows

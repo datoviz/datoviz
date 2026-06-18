@@ -216,6 +216,10 @@ release-commits since='' until='':
     @just commits "{{since}}" "{{until}}"
 #
 
+release-preflight profile='rc1' *args='':
+    @python3 tasks/release_preflight.py "{{profile}}" {{args}}
+#
+
 
 # -------------------------------------------------------------------------------------------------
 dockerpush name:

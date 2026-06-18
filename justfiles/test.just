@@ -1,8 +1,5 @@
-[linux]
 test test_name="":
-    #!/usr/bin/env bash
-    set -euo pipefail
-    ./build/testing/dvztest {{test_name}}
+    @python3 tasks/test_driver.py run "{{test_name}}"
 #
 
 [linux]
@@ -50,71 +47,38 @@ ttest test_name="": tsan
     TSAN_OPTIONS="ignore_noninstrumented_modules=1:verbosity=0" ./build-tsan/testing/dvztest {{test_name}}
 #
 
-[macos]
-test test_name="":
-    ./build/testing/dvztest {{test_name}}
-#
-
-[macos]
 test-inventory lane="":
-    #!/usr/bin/env bash
-    set -euo pipefail
-    if [[ -n "{{lane}}" ]]; then
-        python3 tools/test_inventory.py \
-            --lane "{{lane}}" \
-            --output "build/testing/test_inventory_{{lane}}.json" \
-            --markdown "build/testing/test_inventory_{{lane}}.md"
-    else
-        python3 tools/test_inventory.py \
-            --output build/testing/test_inventory.json \
-            --markdown build/testing/test_inventory.md
-    fi
+    @python3 tasks/test_driver.py inventory "{{lane}}"
 #
 
-[macos]
 test-lane lane *args:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    case_list="build/testing/test_lane_{{lane}}.txt"
-    python3 tools/test_inventory.py \
-        --lane "{{lane}}" \
-        --output "build/testing/test_inventory_{{lane}}.json" \
-        --markdown "build/testing/test_inventory_{{lane}}.md" \
-        --case-list "${case_list}"
-    ./build/testing/dvztest --case-list "${case_list}" {{args}}
+    @python3 tasks/test_driver.py lane "{{lane}}" -- {{args}}
 #
 
-[macos]
 test-fast *args:
     just test-lane fast-cpu {{args}}
 #
 
-[macos]
 test-scene-cpu *args:
     just test-lane scene-semantic {{args}}
 #
 
-[macos]
 test-drp2-contract *args:
     just test-lane drp2-contract {{args}}
 #
 
-[macos]
 test-runtime-vklite *args:
     just test-lane runtime-vklite {{args}}
 #
 
-[macos]
 test-render-smoke *args:
     just test-lane render-smoke {{args}}
 #
 
-[macos]
 test-render-conformance *args:
     just test-lane render-conformance {{args}}
 #
 
-[macos]
 test-slow *args:
     just test-lane slow-churn {{args}}
 #
@@ -126,11 +90,6 @@ shaderc-smoke:
     set -euo pipefail
     cmake --build build --target dvz_shaderc_smoke
     ./build/testing/dvz_shaderc_smoke
-#
-
-[windows]
-test test_name="":
-    ./build/testing/dvztest.exe {{test_name}}
 #
 
 [linux]
