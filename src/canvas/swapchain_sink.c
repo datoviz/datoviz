@@ -1372,6 +1372,18 @@ static void canvas_swapchain_sync_surface_changes(DvzCanvas* canvas, DvzCanvasSw
     ANN(canvas);
     ANN(state);
 
+    VkSurfaceKHR live_surface = canvas_surface_handle(canvas);
+    VkSurfaceKHR wrapped_surface = state->surface_wrapper != NULL
+                                       ? dvz_surface_handle(state->surface_wrapper)
+                                       : VK_NULL_HANDLE;
+    if (dvz_swapchain_ready(state->swapchain_wrapper) && live_surface != wrapped_surface)
+    {
+        state->dirty = true;
+        canvas_runtime_transition(
+            state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "surface handle changed");
+        return;
+    }
+
     VkExtent2D current_extent = dvz_swapchain_extent(state->swapchain_wrapper);
     if (
         canvas->surface && dvz_swapchain_ready(state->swapchain_wrapper) &&

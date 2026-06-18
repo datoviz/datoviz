@@ -33,6 +33,7 @@
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
+#include "datoviz/ffi.h"
 #include "datoviz/scene.h"
 #include "text/internal.h"
 #include "text/text_internal.h"
