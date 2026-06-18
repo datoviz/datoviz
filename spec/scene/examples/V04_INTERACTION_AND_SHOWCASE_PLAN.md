@@ -448,16 +448,15 @@ affected examples as native-first or WebGPU-planned in metadata.
 ## Implementation Order
 
 1. Fix the small-window `200x200` app/view logical layout clamp and tests.
-2. Fix GUI viewport resize as a synchronized committed resize with last-valid-frame display.
-3. Clarify bounds overlay semantics and update overlay padding/tests for rendered marks.
-4. Rewrite `panel_view2d` to visually prove contain/equal-aspect behavior.
-5. Update `visuals/glyph` to show font-derived letters through the raw glyph atlas path.
-6. Add `features/text_font_atlas.c`; add `features/symbol_atlas.c` only if the symbol API is ready.
-7. Make `compute_buffer_animation` use explicit continuous scheduling.
-8. Replace generated/fallback embedding, lipid, and mouse showcase data with real prepared data.
-10. Polish orientation gizmo and reference grid usage in 3D showcases.
-11. Update example manifest/catalog metadata, docs, screenshots, and WebGPU subset docs as needed.
-12. Run validation and `git diff --check`.
+2. Clarify bounds overlay semantics and update overlay padding/tests for rendered marks.
+3. Rewrite `panel_view2d` to visually prove contain/equal-aspect behavior.
+4. Update `visuals/glyph` to show font-derived letters through the raw glyph atlas path.
+5. Add `features/text_font_atlas.c`; add `features/symbol_atlas.c` only if the symbol API is ready.
+6. Make `compute_buffer_animation` use explicit continuous scheduling.
+7. Replace generated/fallback embedding, lipid, and mouse showcase data with real prepared data.
+8. Polish orientation gizmo and reference grid usage in 3D showcases.
+9. Update example manifest/catalog metadata, docs, screenshots, and WebGPU subset docs as needed.
+10. Run validation and `git diff --check`.
 
 
 ## Validation

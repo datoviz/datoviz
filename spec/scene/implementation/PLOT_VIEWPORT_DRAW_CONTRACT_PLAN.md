@@ -149,10 +149,6 @@ just example-c features/axes_2d --live
 
 Pan slowly by a few pixels. Grid lines should neither disappear nor change apparent thickness.
 
-Known unrelated validation note: `gui/viewport_resize_hidden_smoke` may fail with
-`smoke.transition_drawable_count > 0` in this branch. Track that under GUI viewport resize work; it
-is not evidence against this draw-contract implementation.
-
 Focused automated coverage:
 
 1. plot-clipped `DATA`/`VIEW` visuals emit plot viewport and plot scissor;

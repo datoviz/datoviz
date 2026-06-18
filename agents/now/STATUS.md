@@ -44,9 +44,6 @@ Blockers:
 | Public API/status cleanup | Initial public status docs landed in `docs/reference/feature-status.md` and `docs/reference/project-status.md`, with the API implementation snapshot in `spec/scene/api/API_IMPLEMENTATION_READINESS.md`; these now link to the v0.3 visible parity table. | Continue reconciling installed headers, generated C reference, and known gaps before RC1. |
 | Release example proof | Partial for the full RC, but the 2026-06-09 `EXAMPLES_NOTES.md` ledger is closed: source/gallery polish, `showcases/surface_grid`, `features/bounds_overlay`, runtime/readability fixes, scenario-helper audit, comment metadata audit, and builtin-shapes parity audit are resolved with native smoke or explicit audit evidence. | Continue broader release proof outside `EXAMPLES_NOTES.md`: visible parity table, API disposition, and any additional focused native evidence where the environment supports Vulkan. |
 
-Known follow-up: `gui/viewport_resize_hidden_smoke` currently fails. Recheck it during the next GUI
-or runtime resize pass before treating hidden viewport resize coverage as clean.
-
 Closed first slices that should stay in validation: frame artifact scene emission, raw `ctypes`,
 retained textured mesh, retained DATA-coordinate visual attachments, color management, text, 2D
 axes/ticks, colorbars, labels/readouts, scale bars, app/offscreen rendering, broad item/sample query
