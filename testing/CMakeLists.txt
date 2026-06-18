@@ -95,7 +95,7 @@ add_test(NAME dvztest_scheduler COMMAND dvztest_scheduler)
 # -------------------------------------------------------------------------------------------------
 
 # All module C/C++ test sources.
-file(GLOB DVZ_MODULE_TEST_SOURCES
+file(GLOB_RECURSE DVZ_MODULE_TEST_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/../src/*/tests/*.c*"
 )
 
@@ -598,6 +598,7 @@ if(_dvz_has_core AND _dvz_has_drp2 AND _dvz_has_scene)
         ${PROJECT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/src/common
+        ${PROJECT_SOURCE_DIR}/src/scene/tests
         ${PROJECT_SOURCE_DIR}/src/canvas
         ${PROJECT_SOURCE_DIR}/external/volk
     )
@@ -655,6 +656,7 @@ if(_dvz_has_core AND _dvz_has_vk)
         ${PROJECT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/src/common
+        ${PROJECT_SOURCE_DIR}/src/scene/tests
         ${PROJECT_SOURCE_DIR}/src/vk/tests
         ${PROJECT_SOURCE_DIR}/src/vklite
         ${PROJECT_SOURCE_DIR}/src/canvas
@@ -734,6 +736,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         ${PROJECT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/src/common
+        ${PROJECT_SOURCE_DIR}/src/scene/tests
         ${PROJECT_SOURCE_DIR}/src/vk/tests
         ${PROJECT_SOURCE_DIR}/src/vklite
         ${PROJECT_SOURCE_DIR}/src/canvas

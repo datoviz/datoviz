@@ -387,6 +387,8 @@ int test_scene_mesh_instance_transform_emits_instanced_draw(TstContext* suite, c
 
 int test_scene_mesh_emits_depth_attachment(TstContext* suite, const TstCase* item);
 
+int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const TstCase* item);
+
 int test_scene_mesh_glsl_executes(TstContext* suite, const TstCase* item);
 
 int test_scene_indexed_primitive_emits_draw_indexed(TstContext* suite, const TstCase* item);
