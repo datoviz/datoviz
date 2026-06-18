@@ -19,6 +19,16 @@ that feature.
 
 Public functions use `dvz_<object>_<action>()` for object-level actions.
 
+The v0.4 public ABI uses three deliberate C namespaces:
+
+1. `dvz_*` is the canonical C API.
+2. `dvz_ffi_*` is the foreign-function-interface helper ABI for raw `ctypes`, WASM, and other
+   runtimes that need pointer-oriented call shapes.
+3. `dvz_wasm_*` is the browser/session-specific WASM ABI.
+
+Do not add ad-hoc `_ffi` suffix functions. When a binding needs a pointer-output version of a
+canonical by-value initializer, keep the canonical C initializer and add a `dvz_ffi_*` wrapper.
+
 When a public object has subroles, role/property setters use:
 
 ```text
@@ -92,6 +102,15 @@ Initializer functions should match the struct suffix:
 
 Do not add new `dvz_<thing>_default_config()` functions. A config initializer already implies
 default values.
+
+Canonical C descriptor/config/style initializers may return small public records by value:
+
+```c
+DvzGeometryCubeDesc desc = dvz_geometry_cube_desc();
+```
+
+Do not replace these canonical C APIs solely for FFI convenience. Add `dvz_ffi_*` out-pointer
+wrappers when raw bindings or WASM need pointer-based ABI.
 
 
 ## Visuals, Semantic Objects, And Composites
@@ -172,6 +191,10 @@ field-presence rules, but v0.4 should require explicit current-size initializati
 
 Public structs must not expose Vulkan handles, DRP2 runtime object ids, command buffers, atlas
 pages, C++ standard-library types, or third-party-library structs.
+
+The umbrella `<datoviz.h>` should stay scene/app-first. Advanced Vulkan, vklite, DRP2, and other
+runtime internals should be included through their explicit module headers by callers that need
+them.
 
 
 ## Binding And WASM Constraints

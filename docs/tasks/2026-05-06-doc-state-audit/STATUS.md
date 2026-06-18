@@ -26,7 +26,8 @@
 
 ### Larger branch-vs-release docs mismatch
 
-- `docs/reference/api_c.md` appears substantially v0.3-oriented and does not match the active v0.4 scene API shape.
+- The legacy generated C reference trap was substantially v0.3-oriented and did not match the active
+  v0.4 scene API shape; it has since been removed in favor of generated `docs/reference/c-api/`.
 - `docs/guide/common.md` and related guide pages also look release/public-API oriented rather than current v0.4-dev source-of-truth docs.
 - If `docs/` is meant to describe the current branch, it needs a broader refresh; if it is meant to stay release-oriented, it should likely carry a clearer note about that.
 

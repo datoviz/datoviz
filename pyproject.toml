@@ -78,6 +78,7 @@ runtime-patterns = ["*.dll"]
 format.quote-style = "single"
 exclude = [
     "datoviz/_ctypes.py",
+    "datoviz/_array_facade.py",
     "datoviz/backends/*.py",
 ]
 line-length = 99

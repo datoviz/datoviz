@@ -6,4 +6,5 @@
   - `ARCHITECTURE.md`
   - `agents/now/NEXT_STEPS.md`
   - public headers under `include/datoviz/`
-- If a broader branch-doc refresh is desired later, prioritize `docs/reference/api_c.md` and `docs/guide/common.md` first.
+- The legacy generated C reference trap has been removed. If a broader branch-doc refresh is desired
+  later, prioritize `docs/guide/common.md` first.

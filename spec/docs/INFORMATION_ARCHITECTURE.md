@@ -107,8 +107,6 @@ gallery/*
 guide/*
 tasks/*
 visuals/*
-reference/api_c.md
-reference/api_py.md
 reference/colormaps.md
 ```
 

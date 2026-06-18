@@ -23,6 +23,7 @@ DEFAULT_SUBMODULES = (
 )
 REQUIRED_GENERATED_FILES = (
     "datoviz/_ctypes.py",
+    "datoviz/_array_facade.py",
 )
 REQUIRED_DATA_FILES = (
     "data/assets/fonts/DroidSans.ttf",

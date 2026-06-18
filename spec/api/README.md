@@ -6,7 +6,7 @@ This directory owns durable public API and API-positioning policy for v0.4.
 ## Index
 
 1. [PUBLIC_API_CONVENTIONS.md](PUBLIC_API_CONVENTIONS.md): cross-module public C API naming,
-   ownership, struct, callback, and binding-readiness rules.
+   ownership, struct, callback, FFI namespace, and binding-readiness rules.
 2. [COLOR_TYPES.md](COLOR_TYPES.md): target public color types and conversion helpers.
 3. [PYTHON_GSP_SCOPE.md](PYTHON_GSP_SCOPE.md): v0.4 ownership split between Datoviz, raw generated
    Python bindings, GSP, and VisPy2.

@@ -28,6 +28,7 @@ external ownership.
 | Custom visual/render shaders | deferred | [Visual attributes](visual-attributes.md) |
 | Built-in shader replacement and hot reload | deferred | [Feature status](feature-status.md) |
 | Python raw `ctypes` binding | supported | [Python raw ctypes](ctypes.md) |
+| C FFI helper ABI | supported | [FFI helper API](c-api/ffi.md) |
 | WebGPU/WASM path | experimental | [WebGPU subset](webgpu-subset.md) |
 | v0.3 visible capability disposition | fixed/experimental/deferred/external by capability | [v0.3 visible parity](v03-visible-parity.md) |
 | Old Datoviz Python plotting API | external/GSP | [Feature status](feature-status.md) |

@@ -18,7 +18,8 @@ visible capability disposition is tracked in [v0.3 visible parity](v03-visible-p
 | Scene compute shaders | experimental | [Compute and graphics](compute-graphics.md) | Narrow compute-to-render interop path with DRP2 `ResourceBarrier`, WebGPU fixture coverage, and `examples/c/showcases/gpu_particle_smoke.c`; not a general compute framework. |
 | Qt/PyQt hosted rendering | supported, optional provider | [Platform support](platform-support.md) | Native Qt and PyQt hosting render into Qt-owned Vulkan surfaces without linking Qt into `libdatoviz`; PyQt requires the optional bridge and compatible Vulkan binding surface. |
 | Built-in shader replacement and hot reload | deferred | [Errors and logging](errors-and-logging.md) | Built-in visual shader ABI is internal in v0.4. |
-| Python raw `ctypes` binding | supported | [Python raw ctypes](ctypes.md) | Low-level Python binding path for exact C-shaped access. |
+| Python raw `ctypes` binding | supported | [Python raw ctypes](ctypes.md) | Low-level Python binding path for exact exported `DVZ_EXPORT` ABI access; pointer-oriented `dvz_ffi_*` helpers cover FFI-only call shapes. |
+| C FFI helper ABI | supported | [FFI helper API](c-api/ffi.md) | `dvz_ffi_*` wrappers are for raw ctypes, WASM, and other foreign runtimes; canonical C APIs remain under `dvz_*`. |
 | WebGPU/WASM | experimental | [WebGPU subset](webgpu-subset.md) | Browser subset is documented and release-proofed for promoted examples; it is not Vulkan parity. |
 | v0.3 visible parity | fixed/experimental/deferred/external by capability | [v0.3 visible parity](v03-visible-parity.md) | Visible v0.3-era behavior is classified as covered by v0.4, active experimental, intentionally deferred, or owned by GSP/VisPy2/Matplotlib. |
 | Old Datoviz Python plotting API | external/GSP | [Project status](project-status.md) | Not part of v0.4 Datoviz docs. |
