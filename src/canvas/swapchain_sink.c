@@ -26,6 +26,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "_vk_utils.h"
 #include "datoviz/vk/enums.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/buffers.h"
@@ -215,11 +216,7 @@ static VkFormat canvas_surface_format(const DvzCanvas* canvas)
     {
         return canvas->cfg.color_format;
     }
-    if (canvas->surface && canvas->surface->format != VK_FORMAT_UNDEFINED)
-    {
-        return canvas->surface->format;
-    }
-    return VK_FORMAT_B8G8R8A8_SRGB;
+    return VK_FORMAT_UNDEFINED;
 }
 
 
@@ -239,7 +236,13 @@ static VkFormat canvas_frame_format(const DvzCanvas* canvas)
     {
         return canvas->cfg.color_format;
     }
-    return DVZ_DEFAULT_COLOR_FORMAT;
+    if (canvas->swapchain != NULL && canvas->swapchain->swapchain_wrapper != NULL)
+    {
+        VkFormat format = dvz_swapchain_image_format(canvas->swapchain->swapchain_wrapper);
+        if (format != VK_FORMAT_UNDEFINED)
+            return format;
+    }
+    return dvz_format_srgb_counterpart(DVZ_DEFAULT_COLOR_FORMAT);
 }
 
 
@@ -840,7 +843,6 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     }
     canvas_swapchain_apply_config(swapchain);
 
-    VkFormat frame_format = canvas_frame_format(canvas);
     uvec2 size = {extent.width, extent.height};
     DvzPresentStatus status = DVZ_PRESENT_STATUS_OK;
     if (!canvas_test_consume_forced_status(&swapchain->test_force_recreate_status, &status))
@@ -861,6 +863,12 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     VkExtent2D resolved_extent = dvz_swapchain_extent(swapchain->swapchain_wrapper);
     if (resolved_extent.width > 0 && resolved_extent.height > 0)
         extent = resolved_extent;
+
+    VkFormat frame_format = canvas->cfg.color_format != VK_FORMAT_UNDEFINED
+                                ? canvas_frame_format(canvas)
+                                : dvz_swapchain_image_format(swapchain->swapchain_wrapper);
+    if (frame_format == VK_FORMAT_UNDEFINED)
+        frame_format = canvas_frame_format(canvas);
 
     swapchain->frame_format = frame_format;
     if (!canvas_swapchain_init_slot_state(swapchain, extent, frame_format))

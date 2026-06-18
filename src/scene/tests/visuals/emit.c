@@ -81,6 +81,115 @@ int test_scene_point_emit(TstContext* suite, const TstCase* item)
 }
 
 
+int test_scene_external_unorm_target_encodes_srgb(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+
+    vec3 positions[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor colors[1] = {{128, 160, 192, 255}};
+    float sizes[1] = {16.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 1) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 1) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 1) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_wgsl = true;
+    caps.max_vertex_buffers = 8;
+    caps.max_bind_groups = 4;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+    emit_cfg.external_color_target = true;
+    emit_cfg.color_target_id = 4242;
+    emit_cfg.color_target_format = VK_FORMAT_B8G8R8A8_UNORM;
+    emit_cfg.target_width = 64;
+    emit_cfg.target_height = 64;
+
+    DvzDrp2CommandStream* stream =
+        _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream != NULL);
+
+    bool final_target_created = false;
+    bool found_intermediate = false;
+    bool found_scene_pass = false;
+    bool found_encode_pass = false;
+    bool found_encode_shader = false;
+    uint64_t intermediate_id = 0;
+    uint32_t scene_pass_index = UINT32_MAX;
+    uint32_t encode_pass_index = UINT32_MAX;
+
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL)
+            continue;
+
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            if (cmd->u.create_texture.id == emit_cfg.color_target_id)
+                final_target_created = true;
+            if (cmd->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM &&
+                (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0 &&
+                (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) != 0)
+            {
+                found_intermediate = true;
+                intermediate_id = cmd->u.create_texture.id;
+            }
+        }
+        else if (
+            cmd->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE &&
+            cmd->u.create_shader_module.code != NULL &&
+            (strstr(cmd->u.create_shader_module.code, "linearToSrgb") != NULL ||
+             strstr(cmd->u.create_shader_module.code, "linear_to_srgb") != NULL))
+        {
+            found_encode_shader = true;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+        {
+            const DvzDrp2ColorAttachment* attachment =
+                &cmd->u.begin_render_pass.color_attachments[0];
+            if (cmd->u.begin_render_pass.color_attachment_count > 0 &&
+                attachment->texture_id == intermediate_id)
+            {
+                found_scene_pass = true;
+                scene_pass_index = i;
+            }
+            if (cmd->u.begin_render_pass.color_attachment_count > 0 &&
+                attachment->texture_id == emit_cfg.color_target_id)
+            {
+                found_encode_pass = true;
+                encode_pass_index = i;
+            }
+        }
+    }
+
+    AT(!final_target_created);
+    AT(found_intermediate);
+    AT(found_scene_pass);
+    AT(found_encode_pass);
+    AT(found_encode_shader);
+    AT(scene_pass_index < encode_pass_index);
+
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_path_emit(TstContext* suite, const TstCase* item)
 {
     (void)suite;

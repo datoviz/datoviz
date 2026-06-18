@@ -126,11 +126,14 @@ bool _emitter_emit_render_compat(
         ok = ok && dvz_drp2_stream_create_render_pipeline(
                        stream, pipe_id, vs_id, fs_id, vertex_buffer_count);
         if (ok && cfg != NULL && cfg->color_target_format != 0)
-            ok = dvz_drp2_stream_pipeline_set_color_target(stream, 0, cfg->color_target_format);
+            ok = dvz_drp2_stream_pipeline_set_color_target(
+                stream, 0, _render_pass_scene_color_target_format(cfg));
     }
 
-    uint64_t color_id = 0;
-    ok = ok && _render_pass_resolve_color_target(emitter, stream, cfg, &color_id);
+    uint64_t scene_color_id = 0;
+    uint64_t final_color_id = 0;
+    ok = ok && _render_pass_resolve_scene_color_target(
+                   emitter, stream, cfg, &scene_color_id, &final_color_id);
 
     uint64_t rb_id = 0;
     ok = ok && _render_pass_resolve_readback_buffer(emitter, stream, readback, &rb_id);
@@ -151,16 +154,19 @@ bool _emitter_emit_render_compat(
     float ca = cfg ? cfg->clear_color[3] : 1.0f;
     ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
          dvz_drp2_stream_begin_render_pass_region_clear(
-             stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca, render->u.render.desc.x,
-             render->u.render.desc.y, render->u.render.desc.width, render->u.render.desc.height,
-             clear) &&
+             stream, render_pass_id, encoder_id, scene_color_id, cr, cg, cb, ca,
+             render->u.render.desc.x, render->u.render.desc.y, render->u.render.desc.width,
+             render->u.render.desc.height, clear) &&
          dvz_drp2_stream_set_pipeline(stream, render_pass_id, pipe_id);
     for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)
         ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
     ok = ok && dvz_drp2_stream_draw(stream, render_pass_id, 3, 1, 0, 0);
     ok = ok && dvz_drp2_stream_end_render_pass(stream, render_pass_id);
-    ok =
-        ok && _render_pass_copy_finish_submit(
-                  stream, encoder_id, command_buffer_id, submission_id, color_id, rb_id, readback);
+    ok = ok &&
+         _render_pass_emit_final_encode(
+             emitter, stream, cfg, encoder_id, scene_color_id, final_color_id);
+    ok = ok &&
+         _render_pass_copy_finish_submit(
+             stream, encoder_id, command_buffer_id, submission_id, final_color_id, rb_id, readback);
     return ok;
 }

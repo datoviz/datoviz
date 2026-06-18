@@ -34,6 +34,17 @@ bool _render_pass_resolve_color_target(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream,
     const DvzFramePlanEmitConfig* cfg, uint64_t* out_id);
 
+uint32_t _render_pass_scene_color_target_format(const DvzFramePlanEmitConfig* cfg);
+
+bool _render_pass_resolve_scene_color_target(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream,
+    const DvzFramePlanEmitConfig* cfg, uint64_t* out_scene_id, uint64_t* out_final_id);
+
+bool _render_pass_emit_final_encode(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream,
+    const DvzFramePlanEmitConfig* cfg, uint64_t encoder_id, uint64_t scene_color_id,
+    uint64_t final_color_id);
+
 bool _render_pass_resolve_readback_buffer(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* copy,
     uint64_t* out_id);

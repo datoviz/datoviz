@@ -1019,6 +1019,8 @@ int test_scene_artifact_allows_mutation_after_emit(TstContext* suite, const TstC
 
 int test_scene_point_emit(TstContext* suite, const TstCase* item);
 
+int test_scene_external_unorm_target_encodes_srgb(TstContext* suite, const TstCase* item);
+
 int test_scene_path_emit(TstContext* suite, const TstCase* item);
 
 int test_scene_image_emit(TstContext* suite, const TstCase* item);

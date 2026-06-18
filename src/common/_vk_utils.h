@@ -16,6 +16,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
+
 #include <vulkan/vulkan_core.h>
 
 #include "_assertions.h"
@@ -80,6 +82,69 @@ static inline int vk_result_check(VkResult res, const char* file, int line)
 
 
 
+static inline bool dvz_format_is_srgb(VkFormat format)
+{
+    switch (format)
+    {
+    case VK_FORMAT_R8_SRGB:
+    case VK_FORMAT_R8G8_SRGB:
+    case VK_FORMAT_R8G8B8_SRGB:
+    case VK_FORMAT_B8G8R8_SRGB:
+    case VK_FORMAT_R8G8B8A8_SRGB:
+    case VK_FORMAT_B8G8R8A8_SRGB:
+    case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
+    case VK_FORMAT_BC1_RGB_SRGB_BLOCK:
+    case VK_FORMAT_BC1_RGBA_SRGB_BLOCK:
+    case VK_FORMAT_BC2_SRGB_BLOCK:
+    case VK_FORMAT_BC3_SRGB_BLOCK:
+    case VK_FORMAT_BC7_SRGB_BLOCK:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+
+static inline bool dvz_format_is_display_unorm_rgba8(VkFormat format)
+{
+    switch (format)
+    {
+    case VK_FORMAT_R8G8B8A8_UNORM:
+    case VK_FORMAT_B8G8R8A8_UNORM:
+    case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+
+static inline bool dvz_format_requires_final_srgb_encode(VkFormat format)
+{
+    return dvz_format_is_display_unorm_rgba8(format) && !dvz_format_is_srgb(format);
+}
+
+
+
+static inline VkFormat dvz_format_srgb_counterpart(VkFormat format)
+{
+    switch (format)
+    {
+    case VK_FORMAT_R8G8B8A8_UNORM:
+        return VK_FORMAT_R8G8B8A8_SRGB;
+    case VK_FORMAT_B8G8R8A8_UNORM:
+        return VK_FORMAT_B8G8R8A8_SRGB;
+    case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
+        return VK_FORMAT_A8B8G8R8_SRGB_PACK32;
+    default:
+        return format;
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Macros                                                                                       */
 /*************************************************************************************************/
@@ -100,4 +165,3 @@ static inline int vk_result_check(VkResult res, const char* file, int line)
         VkResult res = (f);                                                                        \
         out = vk_result_check(res, __FILE__, __LINE__);                                            \
     } while (0)
-

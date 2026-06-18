@@ -366,7 +366,7 @@ static void _window_setup_config(DvzWindow* window, const DvzWindowConfig* confi
     window->surface.scale_y = user_scale;
     window->surface.instance = VK_NULL_HANDLE;
     window->surface.surface = VK_NULL_HANDLE;
-    window->surface.format = VK_FORMAT_B8G8R8A8_UNORM;
+    window->surface.format = VK_FORMAT_UNDEFINED;
     window->surface.color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     window->backend_owns_surface = false;
 }

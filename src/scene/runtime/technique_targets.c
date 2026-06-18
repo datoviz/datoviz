@@ -46,10 +46,9 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-static uint32_t _final_color_target_format(const DvzFramePlanEmitConfig* cfg)
+static uint32_t _scene_color_target_format(const DvzFramePlanEmitConfig* cfg)
 {
-    return cfg != NULL && cfg->color_target_format != 0 ? cfg->color_target_format
-                                                        : VK_FORMAT_R8G8B8A8_UNORM;
+    return _render_pass_scene_color_target_format(cfg);
 }
 
 
@@ -280,7 +279,7 @@ bool _emitter_prepare_edl_targets(
     }
 
     const char* fmt = _shader_format_tag(cfg);
-    uint32_t final_format = _final_color_target_format(cfg);
+    uint32_t final_format = _scene_color_target_format(cfg);
     char vs_key[32];
     char fs_key[32];
     char pipe_key[64];
@@ -756,7 +755,7 @@ bool _emitter_prepare_ssao_targets(
 
     dvz_snprintf(vs_key, sizeof(vs_key), "_vs_ssao_comp%s", fmt);
     dvz_snprintf(fs_key, sizeof(fs_key), "_fs_ssao_comp%s", fmt);
-    uint32_t final_format = _final_color_target_format(cfg);
+    uint32_t final_format = _scene_color_target_format(cfg);
     dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_ssao_comp%s_%u", fmt, final_format);
     vs_id = _obj_id(emitter, vs_key, &is_new);
     if (vs_id == 0)
@@ -982,7 +981,7 @@ bool _emitter_prepare_wboit_targets(
     }
 
     const char* fmt = _shader_format_tag(cfg);
-    uint32_t final_format = _final_color_target_format(cfg);
+    uint32_t final_format = _scene_color_target_format(cfg);
     char vs_key[32];
     char fs_key[32];
     char pipe_key[64];
@@ -1286,7 +1285,7 @@ bool _emitter_prepare_depth_peel_targets(
     }
 
     const char* fmt = _shader_format_tag(cfg);
-    uint32_t final_format = _final_color_target_format(cfg);
+    uint32_t final_format = _scene_color_target_format(cfg);
     char vs_key[40];
     char fs_key[40];
     char pipe_key[64];
