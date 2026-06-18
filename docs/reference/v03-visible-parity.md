@@ -47,6 +47,5 @@ Status values:
 | Custom visual/render shader replacement and hot reload | deferred | future custom visual/provider route | Built-in shader ABI is internal for v0.4. |
 | Scene-managed nonlinear/geographic coordinate transforms | deferred | CPU pre-projection before upload | The renderer accepts ordinary uploaded positions; domain transforms belong in a future scene/GSP layer. |
 
-For implementation-level gaps by family, see [Visual families](visual-families/index.md) and the
-scene API snapshot in
-[`spec/scene/api/API_IMPLEMENTATION_READINESS.md`](../../spec/scene/api/API_IMPLEMENTATION_READINESS.md).
+For implementation-level gaps by family, see [Visual families](visual-families/index.md). The
+implementation-facing scene API snapshot lives in `spec/scene/api/API_IMPLEMENTATION_READINESS.md`.

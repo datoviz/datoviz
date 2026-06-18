@@ -181,6 +181,7 @@ nav:
       - Callbacks and events: 'reference/callbacks.md'
     - Compatibility:
       - Feature status: 'reference/feature-status.md'
+      - v0.3 visible parity: 'reference/v03-visible-parity.md'
       - Platform support: 'reference/platform-support.md'
       - Build options: 'reference/build-options.md'
     - Backends:
