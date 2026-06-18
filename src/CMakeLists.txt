@@ -613,6 +613,12 @@ if(TARGET datoviz_volk AND (DVZ_BUILD_VK OR DVZ_BUILD_CANVAS))
     target_link_libraries(datoviz PRIVATE datoviz_volk)
 endif()
 
+if(TARGET Vulkan::Headers AND (DVZ_BUILD_VK OR DVZ_BUILD_CANVAS))
+    target_link_libraries(datoviz PUBLIC Vulkan::Headers)
+elseif(TARGET Vulkan::Vulkan AND (DVZ_BUILD_VK OR DVZ_BUILD_CANVAS))
+    target_link_libraries(datoviz PUBLIC Vulkan::Vulkan)
+endif()
+
 target_include_directories(datoviz
     PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
