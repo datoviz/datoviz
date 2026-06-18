@@ -49,6 +49,8 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Run `just wheel-matrix`.
 - [ ] Run `just wheel-ci-local <host-platform-tag>`.
 - [ ] If native rebuild is required, run `just wheel-ci-local <host-platform-tag> 1`.
+- [ ] For Linux `x86_64` RC evidence, run `just wheel-manylinux-docker x86_64`; do not treat a
+      native Ubuntu wheel as manylinux release proof.
 - [ ] Validate local artifact tags with `just wheel-validate --platform-tag <host-platform-tag>`.
 - [ ] Validate a complete wheelhouse with `just wheel-validate`.
 - [ ] Inspect wheel contents with `just wheel-inspect`.
@@ -72,6 +74,12 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Confirm base wheel install works without PyQt.
 - [ ] Confirm `python -m datoviz.qt` gives a clear diagnostic when PyQt or Qt Vulkan support is
       absent.
+- [ ] On a Qt-capable source host, run
+      `DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build`.
+- [ ] On the same host, run `python -m datoviz.qt` with `DATOVIZ_QTBRIDGE_LIBRARY` pointing at the
+      built `datoviz_qtbridge` provider.
+- [ ] On the same host, run `python examples/python/qt/hosted_pyqt.py --smoke-ms 1000` with the
+      same `DATOVIZ_QTBRIDGE_LIBRARY`.
 - [ ] On a Qt-capable host, run `just wheel-check --cmake-consumer --qt-probe required`.
 - [ ] Confirm the optional Qt bridge provider is packaged only when intended.
 - [ ] Record platform-specific Qt/PyQt limitations.
@@ -81,7 +89,9 @@ top to bottom and record skipped items as known exclusions.
 
 - [ ] Keep draft workflows outside `.github/workflows/` until explicitly enabling them.
 - [ ] Run or inspect the non-live wheel workflow draft.
-- [ ] Confirm Linux `x86_64` and `aarch64` wheel artifacts.
+- [ ] Confirm Linux `x86_64` with the manylinux Docker route or equivalent manylinux CI builder.
+- [ ] Confirm Linux `aarch64` wheel artifacts only after the `x86_64` Docker route is repeatably
+      stable; treat cross-arch builds as inventory coverage unless a native runner is available.
 - [ ] Confirm macOS `x86_64` and `arm64` wheel artifacts.
 - [ ] Confirm Windows `AMD64` and `ARM64` wheel artifacts.
 - [ ] Confirm host-native install smokes for Python 3.10 through 3.14.

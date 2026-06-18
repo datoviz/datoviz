@@ -66,6 +66,17 @@ Use the rebuild variant when the local native build configuration is known to be
 just wheel-ci-local <host-platform-tag> 1
 ```
 
+For Linux `x86_64` RC wheel evidence, prefer the controlled manylinux Docker route over the host
+native wheel:
+
+```sh
+just wheel-manylinux-docker x86_64
+```
+
+Do not broaden this local Docker proof to Linux `aarch64` until the `x86_64` route is repeatably
+stable. Cross-arch artifacts are useful inventory coverage, but they are not execution proof unless
+they run on a native or otherwise validated runner.
+
 
 ## Version And Tag Policy
 

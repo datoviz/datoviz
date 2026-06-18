@@ -182,6 +182,20 @@ Conda-forge is the preferred first binary provider channel because it can keep Q
 bridge on one managed runtime. PyPI provider wheels should wait until the bridge ABI,
 runtime-version policy, and per-platform Qt library layout are proven.
 
+On a Qt-capable source host, validate the split provider route with:
+
+```sh
+DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build
+DATOVIZ_QTBRIDGE_LIBRARY=build/qtbridge/libdatoviz_qtbridge.so python -m datoviz.qt
+DATOVIZ_QTBRIDGE_LIBRARY=build/qtbridge/libdatoviz_qtbridge.so \
+  python examples/python/qt/hosted_pyqt.py --smoke-ms 1000
+```
+
+Record the PyQt and bridge Qt runtime versions from that lane. If Qt development files, PyQt6
+Vulkan bindings, the bridge library, or platform WSI support are missing, record the specific
+diagnostic as an environment block rather than treating the base wheel optional probe as provider
+proof.
+
 
 ## GitHub Actions Workflow
 
@@ -268,6 +282,10 @@ Use the local manylinux Docker route for Linux x86_64 RC evidence:
 just wheel-manylinux-docker x86_64
 ```
 
+This is the local route to reuse before dispatching or interpreting Linux wheel CI. A native Ubuntu
+wheel may be useful for iteration, but it is not enough for `manylinux_2_34` RC evidence because it
+can pick up newer host glibc symbols.
+
 By default this uses the current upstream PyPA base image:
 
 ```text
@@ -290,3 +308,7 @@ tree.
 Keep the upstream PyPA image as the release source of truth unless a refreshed custom image is
 needed for build time. If a custom `rossant/datoviz_manylinux` image is used for RC evidence, record
 its digest, base image, creation date, and package deltas from the upstream PyPA image.
+
+Keep the local Docker route scoped to `x86_64` until repeated runs are stable. Do not extend the
+recipe to `aarch64` only because a platform tag exists; add that path only after a native or
+explicitly validated emulated builder can run the installed-wheel smoke.

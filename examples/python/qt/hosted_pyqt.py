@@ -53,7 +53,7 @@ class ExampleScene:
         self._upload()
         if dvz.dvz_panel_add_visual(self.panel, self.visual, None) != 0:
             raise RuntimeError('dvz_panel_add_visual() failed')
-        dvz.dvz_panel_set_background_color(self.panel, 0.05, 0.06, 0.08, 1.0)
+        dvz.dvz_panel_set_background_color(self.panel, dvz.DvzColor(13, 15, 20, 255))
 
         controller = dvz.dvz_panzoom(self.scene, None)
         if not controller:
