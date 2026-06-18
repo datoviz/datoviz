@@ -15,8 +15,6 @@ exclude_docs: |
   guide/*
   tasks/*
   visuals/*
-  reference/api_c.md
-  reference/api_py.md
   reference/colormaps.md
 theme:
   name: material
@@ -154,6 +152,9 @@ nav:
         - Scene: 'reference/c-api/scene.md'
         - Visuals and composites: 'reference/c-api/visuals.md'
         - App, window, and I/O: 'reference/c-api/app.md'
+        - FFI helpers: 'reference/c-api/ffi.md'
+        - FramePlan and packets: 'reference/c-api/frame-plan.md'
+        - DRP2: 'reference/c-api/drp2.md'
         - Runtime and utilities: 'reference/c-api/runtime.md'
         - C types: 'reference/c-api/types.md'
       - Python binding: 'reference/ctypes.md'
@@ -235,7 +236,6 @@ not_in_nav: |
   start/what-is-datoviz.md
   tutorials/index.md
   tutorials/first-scene.md
-  reference/c-api/drp2.md
   reference/drp2/index.md
   reference/project-status.md
   reference/visual-attributes.md

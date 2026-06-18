@@ -35,7 +35,7 @@ async def _run(output: Path) -> int:
         panel = dvz.dvz_panel_full(figure)
         if not panel:
             raise RuntimeError('dvz_panel_full() failed')
-        dvz.dvz_panel_set_background_color(panel, 0.04, 0.05, 0.07, 1.0)
+        dvz.dvz_panel_set_background_color(panel, dvz.DvzColor(10, 13, 18, 255))
 
         visual = dvz.dvz_point(scene, 0)
         if not visual:

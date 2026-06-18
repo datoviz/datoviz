@@ -14,12 +14,14 @@ headers:
     - datoviz/dvzmath.h
     - datoviz/fileio.h
     - datoviz/font.h
+    - datoviz/ffi.h
     - datoviz/geom.h
     - datoviz/gui.h
     - datoviz/imgui.h
     - datoviz/input.h
     - datoviz/runner.h
     - datoviz/scene.h
+    - datoviz/scene/frame_packets.h
     - datoviz/stream.h
     - datoviz/thread.h
     - datoviz/video.h
@@ -32,8 +34,8 @@ smoke_symbols:
   - dvz_time_monotonic_ns
   - dvz_scene
   - dvz_scene_destroy
-  - dvz_view_external_surface_ffi
-  - dvz_view_update_external_surface_ffi
+  - dvz_ffi_view_external_surface
+  - dvz_ffi_view_update_external_surface
   - dvz_interop_buffer_export_from_buffer
   - dvz_interop_buffer_wait_timeline
   - dvz_interop_gpu_ctx
@@ -77,6 +79,18 @@ callback_functions:
   global:
     - dvz_error_callback
     - dvz_thread
+
+owned_string_returns:
+  dvz_drp2_stream_json:
+    destroy: dvz_drp2_stream_json_destroy
+  dvz_drp2_stream_json_payload_refs:
+    destroy: dvz_drp2_stream_json_destroy
+  dvz_frame_plan_json:
+    destroy: dvz_frame_plan_json_destroy
+  dvz_scene_frame_artifact_json:
+    destroy: dvz_drp2_stream_json_destroy
+  dvz_scene_json:
+    destroy: dvz_scene_json_destroy
 
 array_facade:
   dvz_scene_buffer_set_data:
@@ -122,28 +136,32 @@ skipped_functions:
     - dvz_attachment_clear
     - dvz_camera_motion_desc
     - dvz_cmd_rendering_default
-    - dvz_cond
     - dvz_depth_cue_desc
-    - dvz_deq_dequeue_return
-    - dvz_deq_peek_first
-    - dvz_deq_peek_last
     - dvz_device_config
     - dvz_field_geometry
     - dvz_frame_plan_emit_config
+    - dvz_geometry_arrow_desc
+    - dvz_geometry_cone_desc
     - dvz_geometry_cube_desc
+    - dvz_geometry_cylinder_desc
+    - dvz_geometry_disc_desc
     - dvz_geometry_plane_desc
+    - dvz_geometry_regular_polygon_desc
+    - dvz_geometry_sector_desc
     - dvz_geometry_sphere_desc
+    - dvz_geometry_star_desc
     - dvz_geometry_surface_grid_desc
+    - dvz_geometry_torus_desc
     - dvz_gpu_ctx_config
     - dvz_label_desc
     - dvz_material_desc
-    - dvz_mutex
     - dvz_orbit_camera_desc
     - dvz_overlay_card_desc
     - dvz_overlay_card_style
     - dvz_panel_background_desc
     - dvz_phong_material_desc
     - dvz_polygon_desc
+    - dvz_reference_grid_desc
     - dvz_scalebar_desc
     - dvz_standard_material_desc
     - dvz_surface_capabilities

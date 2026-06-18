@@ -498,6 +498,45 @@ def _callback_policy_from_policy(path: Path) -> dict[str, str]:
     return out
 
 
+def _owned_string_returns_from_policy(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    try:
+        import yaml  # type: ignore
+
+        with path.open() as f:
+            policy = yaml.safe_load(f) or {}
+        entries = policy.get('owned_string_returns', {})
+        out: dict[str, str] = {}
+        if isinstance(entries, dict):
+            for name, entry in entries.items():
+                if isinstance(name, str) and isinstance(entry, dict):
+                    destroy = entry.get('destroy')
+                    if isinstance(destroy, str):
+                        out[name] = destroy
+        return out
+    except ModuleNotFoundError:
+        pass
+
+    out: dict[str, str] = {}
+    in_section = False
+    current_name: str | None = None
+    for line in path.read_text().splitlines():
+        stripped = line.strip()
+        if stripped == 'owned_string_returns:':
+            in_section = True
+            current_name = None
+            continue
+        if in_section and not line.startswith(' ') and stripped:
+            break
+        if in_section and line.startswith('  ') and not line.startswith('    ') and stripped.endswith(':'):
+            current_name = stripped[:-1]
+            continue
+        if in_section and current_name is not None and stripped.startswith('destroy:'):
+            out[current_name] = stripped.split(':', 1)[1].strip()
+    return out
+
+
 def _layoutable_records(
     ordered_records: list[dict],
     records: set[str],
@@ -579,12 +618,14 @@ def generate(
     *,
     forced_layout_records: set[str] | None = None,
     callback_policy: dict[str, str] | None = None,
+    owned_string_returns: dict[str, str] | None = None,
 ) -> tuple[str, list[str]]:
     records = {record['name'] for record in api.get('records', []) if record.get('name')}
     enums = {enum['name'] for enum in api.get('enums', []) if enum.get('name')}
     callback_typedefs = _callback_typedefs(api)
     callbacks = set(callback_typedefs)
     callback_policy = callback_policy or {}
+    owned_string_returns = owned_string_returns or {}
     lines = [HEADER]
 
     for enum in api.get('enums', []):
@@ -690,6 +731,8 @@ def generate(
             if result is None:
                 skipped.append(name)
                 continue
+            if name in owned_string_returns and result == 'ctypes.c_char_p':
+                result = 'ctypes.c_void_p'
             lines.append('try:\n')
             raw_name = f'_{name}' if callback_param_indices else name
             lines.append(f'    {raw_name} = dvz.{name}\n')
@@ -778,6 +821,7 @@ def main() -> int:
         api,
         forced_layout_records=_layout_records_from_policy(args.policy),
         callback_policy=_callback_policy_from_policy(args.policy),
+        owned_string_returns=_owned_string_returns_from_policy(args.policy),
     )
 
     if args.check:

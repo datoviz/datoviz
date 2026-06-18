@@ -74,6 +74,10 @@ just ctypes
 The extraction and generation tools live under `tools/bindings/`. Binding policy lives under
 `spec/bindings/`.
 
+The generated raw module tracks the exported C ABI: `DVZ_EXPORT` declarations only. Installed
+headers may contain declarations that are not emitted by `libdatoviz`; those are not raw-binding
+entry points unless they become exported ABI.
+
 
 ## API Reference Generation
 
@@ -160,6 +164,18 @@ Use these rules unless a specific function documents a narrower contract:
 3. copy borrowed payloads before the next mutating call when the C API says the payload is reused;
 4. keep Python callback objects alive while they are registered with C;
 5. do not rely on `datoviz._ctypes` internals for ownership or lifetime behavior.
+
+Owned `char*` returns are represented as `ctypes.c_void_p`, not `ctypes.c_char_p`, so the original
+pointer can be passed to the matching destroy function:
+
+```python
+ptr = raw.dvz_scene_json(scene)
+try:
+    text = ctypes.string_at(ptr).decode("utf8") if ptr else None
+finally:
+    if ptr:
+        raw.dvz_scene_json_destroy(ptr)
+```
 
 Callback and host-helper behavior is still experimental. Thin Python helpers may exist for event
 loop and callback ergonomics, but they do not replace the raw C-shaped API.

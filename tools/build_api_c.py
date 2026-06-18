@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import fnmatch
 import json
 import re
@@ -20,6 +21,7 @@ API_PATH = ROOT / "build/bindings/datoviz_api.json"
 POLICY_PATH = ROOT / "spec/api/C_API_REFERENCE_POLICY.yaml"
 DOCS_ROOT = ROOT / "docs"
 SUMMARY_PATH = ROOT / "build/docs/c-api-reference-summary.json"
+CTYPES_PATH = ROOT / "datoviz/_ctypes.py"
 
 PARAM_RE = re.compile(r"^@param\s+(?P<name>\w+)\s*(?P<doc>.*)$")
 RETURN_RE = re.compile(r"^@returns?\s+(?P<doc>.*)$")
@@ -38,6 +40,13 @@ class PagePolicy:
     prefixes: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class RawCtypesStatus:
+    emitted: frozenset[str]
+    skipped: frozenset[str]
+    ffi_wrappers: dict[str, str]
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--api", type=Path, default=API_PATH)
@@ -49,6 +58,56 @@ def parse_args() -> argparse.Namespace:
         help="validate classification without writing generated Markdown",
     )
     return parser.parse_args()
+
+
+def generated_list(path: Path, name: str) -> list[str]:
+    if not path.exists():
+        return []
+    module = ast.parse(path.read_text(encoding="utf8"))
+    for node in module.body:
+        if not isinstance(node, ast.Assign) or len(node.targets) != 1:
+            continue
+        target = node.targets[0]
+        if isinstance(target, ast.Name) and target.id == name:
+            value = ast.literal_eval(node.value)
+            if isinstance(value, list) and all(isinstance(item, str) for item in value):
+                return value
+    return []
+
+
+def load_raw_ctypes_status(path: Path = CTYPES_PATH) -> RawCtypesStatus:
+    skipped = frozenset(generated_list(path, "_SKIPPED_FUNCTIONS"))
+    emitted: set[str] = set()
+    if path.exists():
+        module = ast.parse(path.read_text(encoding="utf8"))
+        for node in module.body:
+            if not isinstance(node, ast.Try) or not node.body:
+                continue
+            first = node.body[0]
+            if not isinstance(first, ast.Assign) or len(first.targets) != 1:
+                continue
+            target = first.targets[0]
+            if isinstance(target, ast.Name) and target.id.startswith("dvz_"):
+                emitted.add(target.id)
+            continue
+        if isinstance(node, ast.FunctionDef) and node.name.startswith("dvz_"):
+            emitted.add(node.name)
+    ffi_wrappers = {
+        "dvz_geometry_arrow_desc": "dvz_ffi_geometry_arrow_desc",
+        "dvz_geometry_cone_desc": "dvz_ffi_geometry_cone_desc",
+        "dvz_geometry_cube_desc": "dvz_ffi_geometry_cube_desc",
+        "dvz_geometry_cylinder_desc": "dvz_ffi_geometry_cylinder_desc",
+        "dvz_geometry_disc_desc": "dvz_ffi_geometry_disc_desc",
+        "dvz_geometry_plane_desc": "dvz_ffi_geometry_plane_desc",
+        "dvz_geometry_regular_polygon_desc": "dvz_ffi_geometry_regular_polygon_desc",
+        "dvz_geometry_sector_desc": "dvz_ffi_geometry_sector_desc",
+        "dvz_geometry_sphere_desc": "dvz_ffi_geometry_sphere_desc",
+        "dvz_geometry_star_desc": "dvz_ffi_geometry_star_desc",
+        "dvz_geometry_surface_grid_desc": "dvz_ffi_geometry_surface_grid_desc",
+        "dvz_geometry_torus_desc": "dvz_ffi_geometry_torus_desc",
+        "dvz_reference_grid_desc": "dvz_ffi_reference_grid_desc",
+    }
+    return RawCtypesStatus(frozenset(emitted), skipped, ffi_wrappers)
 
 
 def load_json(path: Path) -> dict:
@@ -223,7 +282,20 @@ def related_functions(fn: dict, names: set[str]) -> list[str]:
     return sorted(set(related))
 
 
-def format_function(fn: dict, names: set[str]) -> list[str]:
+def raw_ctypes_line(name: str, status: RawCtypesStatus) -> str:
+    if name in status.emitted:
+        return "Raw ctypes: emitted."
+    wrapper = status.ffi_wrappers.get(name)
+    if wrapper:
+        if wrapper in status.emitted:
+            return f"Raw ctypes: available through `{wrapper}()`."
+        return f"Raw ctypes: canonical by-value return; FFI wrapper `{wrapper}()` is declared."
+    if name in status.skipped:
+        return "Raw ctypes: skipped by binding policy."
+    return "Raw ctypes: not emitted by the current generated binding."
+
+
+def format_function(fn: dict, names: set[str], raw_status: RawCtypesStatus) -> list[str]:
     doc, param_docs, ret_doc = doc_parts(fn.get("doc"))
     header = header_of(fn)
     lines = [f"### `{fn['name']}()`", ""]
@@ -251,6 +323,7 @@ def format_function(fn: dict, names: set[str]) -> list[str]:
     if related:
         links = ", ".join(f"[`{name}()`](#{symbol_anchor(name)})" for name in related)
         lines.extend([f"Related: {links}.", ""])
+    lines.extend([raw_ctypes_line(str(fn["name"]), raw_status), ""])
     if header:
         line = (fn.get("location") or {}).get("line")
         location = f"`{header}`"
@@ -330,7 +403,7 @@ def render_symbol_groups(grouped: dict[str, list[dict]]) -> list[str]:
     return lines
 
 
-def render_page(page: PagePolicy, functions: list[dict]) -> None:
+def render_page(page: PagePolicy, functions: list[dict], raw_status: RawCtypesStatus) -> None:
     lines = generated_header(page.title, page.summary)
     lines.extend(render_page_intro(page, functions))
 
@@ -343,7 +416,7 @@ def render_page(page: PagePolicy, functions: list[dict]) -> None:
     for group in sorted(grouped):
         lines.extend([f"## {group}", ""])
         for fn in sorted(grouped[group], key=lambda item: item["name"]):
-            lines.extend(format_function(fn, names))
+            lines.extend(format_function(fn, names, raw_status))
 
     page.output.parent.mkdir(parents=True, exist_ok=True)
     page.output.write_text("\n".join(lines).rstrip() + "\n", encoding="utf8")
@@ -367,7 +440,13 @@ def enum_signature(enum: dict) -> str:
     return "\n".join(lines)
 
 
-def render_types(types_policy: dict, pages: list[PagePolicy], records: dict, enums: dict) -> None:
+def typedef_signature(typedef: dict) -> str:
+    return f"typedef {type_name(typedef.get('type'))} {typedef['name']};"
+
+
+def render_types(
+    types_policy: dict, pages: list[PagePolicy], records: dict, enums: dict, typedefs: dict
+) -> None:
     output = ROOT / str(types_policy["output"])
     title = str(types_policy.get("title", "C Types"))
     summary = str(types_policy.get("summary", ""))
@@ -376,9 +455,23 @@ def render_types(types_policy: dict, pages: list[PagePolicy], records: dict, enu
     for page in pages:
         page_records = sorted(records.get(page.key, []), key=lambda item: item.get("name", ""))
         page_enums = sorted(enums.get(page.key, []), key=lambda item: item.get("name", ""))
-        if not page_records and not page_enums:
+        page_typedefs = sorted(typedefs.get(page.key, []), key=lambda item: item.get("name", ""))
+        if not page_records and not page_enums and not page_typedefs:
             continue
         lines.extend([f"## {page.title}", ""])
+        if page_typedefs:
+            lines.extend(["### Typedefs", ""])
+            for typedef in page_typedefs:
+                lines.extend(
+                    [
+                        f"#### `{typedef['name']}`",
+                        "",
+                        "```c",
+                        typedef_signature(typedef),
+                        "```",
+                        "",
+                    ]
+                )
         if page_enums:
             lines.extend(["### Enums", ""])
             for enum in page_enums:
@@ -432,7 +525,9 @@ def validate_classification(kind: str, items: list[dict], pages: list[PagePolicy
     return by_page, missing
 
 
-def write_summary(path: Path, pages: list[PagePolicy], functions: dict, records: dict, enums: dict) -> None:
+def write_summary(
+    path: Path, pages: list[PagePolicy], functions: dict, records: dict, enums: dict, typedefs: dict
+) -> None:
     summary = {
         "pages": {
             page.key: {
@@ -441,6 +536,7 @@ def write_summary(path: Path, pages: list[PagePolicy], functions: dict, records:
                 "functions": len(functions.get(page.key, [])),
                 "records": len(records.get(page.key, [])),
                 "enums": len(enums.get(page.key, [])),
+                "typedefs": len(typedefs.get(page.key, [])),
             }
             for page in pages
         }
@@ -453,6 +549,7 @@ def main() -> int:
     args = parse_args()
     api = load_json(args.api)
     pages, types_policy, hidden_headers = load_policy(args.policy)
+    raw_status = load_raw_ctypes_status()
 
     functions, missing_functions = validate_classification(
         "functions", api.get("functions", []), pages, hidden_headers
@@ -461,11 +558,15 @@ def main() -> int:
         "records", api.get("records", []), pages, hidden_headers
     )
     enums, missing_enums = validate_classification("enums", api.get("enums", []), pages, hidden_headers)
+    typedefs, missing_typedefs = validate_classification(
+        "typedefs", api.get("typedefs", []), pages, hidden_headers
+    )
 
     missing = {
         "functions": missing_functions,
         "records": missing_records,
         "enums": missing_enums,
+        "typedefs": missing_typedefs,
     }
     missing = {key: value for key, value in missing.items() if value}
     if missing:
@@ -480,9 +581,11 @@ def main() -> int:
 
     if not args.check:
         for page in pages:
-            render_page(page, sorted(functions.get(page.key, []), key=lambda item: item["name"]))
-        render_types(types_policy, pages, records, enums)
-        write_summary(args.summary, pages, functions, records, enums)
+            render_page(
+                page, sorted(functions.get(page.key, []), key=lambda item: item["name"]), raw_status
+            )
+        render_types(types_policy, pages, records, enums, typedefs)
+        write_summary(args.summary, pages, functions, records, enums, typedefs)
 
     total_functions = sum(len(items) for items in functions.values())
     print(f"C API reference classification OK: {total_functions} functions, {len(pages)} pages")

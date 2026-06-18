@@ -13,11 +13,14 @@ The generated module reference is split by v0.4 API role:
 | [Scene API](scene.md) | Retained figures, panels, controllers, scene objects, queries, and frame artifacts. |
 | [Visuals and composites API](visuals.md) | Visual families, semantic composites, visual styles, and visual data setters. |
 | [App, window, and I/O API](app.md) | Native app loop, windows, canvases, input, GUI hooks, capture, and video. |
+| [FFI helper API](ffi.md) | Pointer-oriented helper ABI for raw ctypes, WASM, and other foreign runtimes. |
+| [FramePlan and packet API](frame-plan.md) | Advanced/unstable FramePlan builders, DRP2 emission, and packet spans. |
 | [DRP2 API](drp2.md) | Advanced Datoviz Rendering Protocol command streams, packets, recording, and runtime integration. |
 | [Runtime and utilities API](runtime.md) | Advanced Vulkan, vklite, math, geometry, data-structure, thread, and utility APIs. |
 | [C types](types.md) | Public enums, records, opaque handles, and callback typedefs grouped by reference page. |
 
-The reference is generated from parsed public headers and the binding extraction artifact:
+The reference is generated from exported `DVZ_EXPORT` declarations in parsed public headers and the
+binding extraction artifact:
 
 ```text
 build/bindings/datoviz_api.json
@@ -76,7 +79,8 @@ in v0.4. Use `dvz_figure_emit_frame()` and retrieve the artifact projection need
 The generated module pages cover:
 
 1. public headers under `include/datoviz/`;
-2. exported functions and signatures;
+2. exported `DVZ_EXPORT` functions and signatures;
 3. public structs, unions, enums, constants, and callback typedefs;
 4. opaque handles and ownership notes where available;
-5. raw `ctypes` availability, skipped symbols, and opaque records where binding policy knows them.
+5. raw `ctypes` availability, skipped symbols, FFI wrapper alternatives, and opaque records where
+   binding policy knows them.

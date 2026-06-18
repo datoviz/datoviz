@@ -38,7 +38,7 @@ def main(argv: list[str] | None = None) -> int:
         panel = dvz.dvz_panel_full(figure)
         if not panel:
             raise RuntimeError('dvz_panel_full() failed')
-        dvz.dvz_panel_set_background_color(panel, 0.05, 0.06, 0.08, 1.0)
+        dvz.dvz_panel_set_background_color(panel, dvz.DvzColor(13, 15, 20, 255))
 
         visual = dvz.dvz_point(scene, 0)
         if not visual:

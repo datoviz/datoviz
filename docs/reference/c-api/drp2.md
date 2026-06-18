@@ -185,6 +185,8 @@ DvzDrp2CommandType dvz_drp2_command_type(
 
 Return a command type.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:118._
 
 ### `dvz_drp2_external_buffer_desc()`
@@ -198,6 +200,8 @@ DvzDrp2ExternalBufferDesc dvz_drp2_external_buffer_desc(void);
 | return | `DvzDrp2ExternalBufferDesc` | zeroed descriptor with a valid ABI prologue |
 
 Return a default external-buffer descriptor.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/runtime.h`:90._
 
@@ -215,6 +219,8 @@ DvzDrp2PacketKind dvz_drp2_packet_command_kind(
 | `type` | `DvzDrp2CommandType` | the command type |
 
 Return the default packet phase for a command type.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/packet.h`:88._
 
@@ -244,6 +250,8 @@ Decode a binary packet plus payload arena into a DRP2 command stream.
 The returned command stream is owned by the caller and must be destroyed with
 `dvz_drp2_stream_destroy()`. The payload arena must remain alive while the decoded stream is used.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/packet.h`:131._
 
 ### `dvz_drp2_packet_destroy()`
@@ -259,6 +267,8 @@ void dvz_drp2_packet_destroy(
 | `ptr` | `void *` | encoded packet or arena pointer |
 
 Destroy a buffer returned by `dvz_drp2_packet_encode_stream()`.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/packet.h`:141._
 
@@ -287,6 +297,8 @@ _Bool dvz_drp2_packet_encode_stream(
 | `packet_size` | `uint64_t *` |  |
 | `arena` | `void **` |  |
 | `arena_size` | `uint64_t *` |  |
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/packet.h`:112._
 
@@ -322,6 +334,8 @@ Encode only commands whose default phase matches `kind`.
 This is the native split-packet bridge used before browser execution is changed. Empty phases
 return true with NULL packet and zero sizes.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/packet.h`:107._
 
 ### `dvz_drp2_recorder_close()`
@@ -338,6 +352,8 @@ _Bool dvz_drp2_recorder_close(
 | `recorder` | `DvzDrp2Recorder *` | the recorder |
 
 Close a linear DRP2 recorder.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/recording.h`:110._
 
@@ -357,6 +373,8 @@ DvzDrp2Recorder * dvz_drp2_recorder_open(
 | `info` | `const DvzDrp2RecordingInfo *` | optional recording metadata |
 
 Open a linear DRP2 recorder.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/recording.h`:89._
 
@@ -379,6 +397,8 @@ _Bool dvz_drp2_recorder_write_stream(
 
 Append one timestamped command stream to a linear DRP2 recorder.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/recording.h`:100._
 
 ### `dvz_drp2_recording_close()`
@@ -394,6 +414,8 @@ void dvz_drp2_recording_close(
 | `recording` | `DvzDrp2Recording *` | loaded recording |
 
 Close a loaded DRP2 recording.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/recording.h`:142._
 
@@ -413,6 +435,8 @@ DvzDrp2ValidationResult dvz_drp2_recording_execute_all(
 | `runtime` | `DvzDrp2Runtime *` | the runtime |
 
 Execute all recorded frames in order against an existing DRP2 runtime.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/recording.h`:229._
 
@@ -435,6 +459,8 @@ DvzDrp2ValidationResult dvz_drp2_recording_execute_frame(
 
 Execute one recorded frame against an existing DRP2 runtime.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/recording.h`:217._
 
 ### `dvz_drp2_recording_frame()`
@@ -454,6 +480,8 @@ const DvzDrp2RecordedFrame * dvz_drp2_recording_frame(
 
 Return one frame record from a loaded recording.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/recording.h`:172._
 
 ### `dvz_drp2_recording_frame_count()`
@@ -470,6 +498,8 @@ uint32_t dvz_drp2_recording_frame_count(
 | `recording` | `const DvzDrp2Recording *` | loaded recording |
 
 Return the number of frame records in a loaded recording.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/recording.h`:161._
 
@@ -492,6 +522,8 @@ Return a newly allocated command stream for one recorded frame.
 
 Payload bytes in the returned stream are copied and remain valid after the recording is closed.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/recording.h`:206._
 
 ### `dvz_drp2_recording_info()`
@@ -505,6 +537,8 @@ DvzDrp2RecordingInfo dvz_drp2_recording_info(void);
 | return | `DvzDrp2RecordingInfo` | zeroed recording info with a valid ABI prologue |
 
 Return a default DRP2 recording info descriptor.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/recording.h`:78._
 
@@ -522,6 +556,8 @@ DvzDrp2Recording * dvz_drp2_recording_open(
 | `path` | `const char *` | recording directory path |
 
 Open a linear DRP2 recording directory for indexed playback.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/recording.h`:134._
 
@@ -544,6 +580,8 @@ DvzDrp2ValidationResult dvz_drp2_recording_playback(
 
 Play a recording frame by frame, optionally pacing execution by recorded timestamps.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/recording.h`:240._
 
 ### `dvz_drp2_recording_raw_fallback()`
@@ -563,6 +601,8 @@ const DvzDrp2RawFallback * dvz_drp2_recording_raw_fallback(
 
 Return one raw ABI-local fallback command record.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/recording.h`:193._
 
 ### `dvz_drp2_recording_raw_fallback_count()`
@@ -579,6 +619,8 @@ uint32_t dvz_drp2_recording_raw_fallback_count(
 | `recording` | `const DvzDrp2Recording *` | loaded recording |
 
 Return the number of raw ABI-local fallback command records in a loaded recording.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/recording.h`:181._
 
@@ -597,6 +639,8 @@ DvzDrp2CommandStream * dvz_drp2_recording_read_stream(
 
 Read a linear DRP2 recording directory.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/recording.h`:250._
 
 ### `dvz_drp2_recording_stream()`
@@ -613,6 +657,8 @@ const DvzDrp2CommandStream * dvz_drp2_recording_stream(
 | `recording` | `const DvzDrp2Recording *` | loaded recording |
 
 Return the full reconstructed command stream owned by a loaded recording.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/recording.h`:152._
 
@@ -638,6 +684,8 @@ Write a linear DRP2 recording directory.
 Supported MVP commands are stored as portable JSON records with payload bytes in blobs.
 Unsupported commands fall back to ABI-local raw command blobs for development replay.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/recording.h`:124._
 
 ### `dvz_drp2_runtime_attach_frame_target()`
@@ -658,6 +706,8 @@ _Bool dvz_drp2_runtime_attach_frame_target(
 | `frame` | `const DvzStreamFrame *` | the borrowed stream frame whose command buffer is currently recording |
 
 Attach a borrowed stream frame as a runtime render target.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/runtime.h`:184._
 
@@ -680,6 +730,8 @@ _Bool dvz_drp2_runtime_copy_texture_to_frame(
 
 Record a copy from a runtime-owned texture into a borrowed stream frame.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/runtime.h`:196._
 
 ### `dvz_drp2_runtime_destroy()`
@@ -697,6 +749,8 @@ void dvz_drp2_runtime_destroy(
 Destroy a DRP2 runtime.
 
 Vklite-backed runtimes wait for submitted device work before releasing owned backend resources.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/runtime.h`:121._
 
@@ -726,6 +780,8 @@ Download bytes from a DRP2 buffer into CPU memory.
 Must be called after dvz_drp2_runtime_execute() has completed.
 The buffer must have been created with DVZ_DRP2_BUFFER_USAGE_COPY_DST usage.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/runtime.h`:213._
 
 ### `dvz_drp2_runtime_execute()`
@@ -745,6 +801,8 @@ DvzDrp2ValidationResult dvz_drp2_runtime_execute(
 
 Execute a command stream through a DRP2 runtime skeleton.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/runtime.h`:173._
 
 ### `dvz_drp2_runtime_get_config()`
@@ -761,6 +819,8 @@ DvzDrp2RuntimeConfig dvz_drp2_runtime_get_config(
 | `runtime` | `const DvzDrp2Runtime *` | the runtime |
 
 Return the borrowed configuration that was used to create a DRP2 runtime.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/runtime.h`:110._
 
@@ -787,6 +847,8 @@ The registration is live-runtime state and is not portable DRP2 stream data. Sem
 runtimes use `size` and `usage` without requiring a backend buffer. Vklite-backed runtimes borrow
 `desc->buffer`; the caller must keep it alive until the runtime is reset or destroyed.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/runtime.h`:149._
 
 ### `dvz_drp2_runtime_reset()`
@@ -807,6 +869,8 @@ This releases runtime-owned objects while keeping the runtime itself and its
 borrowed device/allocator configuration alive for reuse. Vklite-backed
 runtimes wait for submitted device work before releasing owned backend resources.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/runtime.h`:134._
 
 ### `dvz_drp2_runtime_vklite()`
@@ -823,6 +887,8 @@ DvzDrp2Runtime * dvz_drp2_runtime_vklite(
 | `cfg` | `const DvzDrp2RuntimeConfig *` | the runtime configuration |
 
 Create a DRP2 runtime using the vklite backend boundary.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/runtime.h`:100._
 
@@ -843,6 +909,8 @@ DvzDrp2RuntimeConfig dvz_drp2_runtime_vklite_config(
 
 Return a DRP2 runtime configuration for a vklite-backed runtime.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/runtime.h`:82._
 
 ### `dvz_drp2_stream()`
@@ -856,6 +924,8 @@ DvzDrp2CommandStream * dvz_drp2_stream(void);
 | return | `DvzDrp2CommandStream *` | the command stream |
 
 Create an empty DRP2 command stream.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:38._
 
@@ -875,6 +945,8 @@ _Bool dvz_drp2_stream_begin_command_encoder(
 | `id` | `uint64_t` | the encoder id |
 
 Append a BeginCommandEncoder command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:974._
 
@@ -896,6 +968,8 @@ _Bool dvz_drp2_stream_begin_compute_pass(
 | `encoder_id` | `uint64_t` | the encoder id |
 
 Append a BeginComputePass command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1154._
 
@@ -919,6 +993,8 @@ _Bool dvz_drp2_stream_begin_render_pass(
 | `texture_id` | `uint64_t` | the color attachment texture id |
 
 Append a BeginRenderPass command with one color texture attachment.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:987._
 
@@ -948,6 +1024,8 @@ _Bool dvz_drp2_stream_begin_render_pass_add_color_attachment(
 | `clear` | `_Bool` | whether to clear this attachment at render-pass begin |
 
 Add a color attachment to the most recently appended BeginRenderPass command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1050._
 
@@ -979,6 +1057,8 @@ _Bool dvz_drp2_stream_begin_render_pass_clear(
 | `a` | `float` | alpha clear value [0, 1] |
 
 Append a BeginRenderPass command with an explicit RGBA clear color.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1005._
 
@@ -1026,6 +1106,8 @@ The render pass targets the rectangle `(x, y, width, height)` in normalized
 full target before rendering; when false, existing target contents are
 preserved and only subsequent draw commands are clipped to the region.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1033._
 
 ### `dvz_drp2_stream_begin_render_pass_set_color_attachment_access()`
@@ -1046,6 +1128,8 @@ _Bool dvz_drp2_stream_begin_render_pass_set_color_attachment_access(
 | `access` | `DvzDrp2AttachmentAccess` | the attachment access intent |
 
 Set access intent on one color attachment of the most recent BeginRenderPass command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1077._
 
@@ -1070,6 +1154,8 @@ _Bool dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
 
 Set load/store operations on one color attachment of the most recent BeginRenderPass command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1064._
 
 ### `dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve()`
@@ -1093,6 +1179,8 @@ _Bool dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve(
 
 Set the resolve target on one color attachment of the most recent BeginRenderPass command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1090._
 
 ### `dvz_drp2_stream_begin_render_pass_set_depth()`
@@ -1113,6 +1201,8 @@ _Bool dvz_drp2_stream_begin_render_pass_set_depth(
 Attach a transient depth attachment request to the most recently appended BeginRenderPass
 command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1104._
 
 ### `dvz_drp2_stream_begin_render_pass_set_depth_access()`
@@ -1131,6 +1221,8 @@ _Bool dvz_drp2_stream_begin_render_pass_set_depth_access(
 | `access` | `DvzDrp2AttachmentAccess` | the depth attachment access intent |
 
 Set access intent on the depth attachment of the most recent BeginRenderPass command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1141._
 
@@ -1152,6 +1244,8 @@ _Bool dvz_drp2_stream_begin_render_pass_set_depth_ops(
 | `store_op` | `DvzDrp2AttachmentStoreOp` | the depth attachment store operation |
 
 Set load/store operations on the depth attachment of the most recent BeginRenderPass command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1129._
 
@@ -1175,6 +1269,8 @@ _Bool dvz_drp2_stream_begin_render_pass_set_depth_texture(
 Attach a named depth texture to the most recently appended BeginRenderPass command.
 
 A zero `depth_texture_id` keeps the existing transient depth attachment behavior.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1117._
 
@@ -1204,6 +1300,8 @@ _Bool dvz_drp2_stream_copy_buffer_to_buffer(
 | `size` | `uint64_t` | the copied byte size |
 
 Append a CopyBufferToBuffer command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1373._
 
@@ -1238,6 +1336,8 @@ _Bool dvz_drp2_stream_copy_buffer_to_texture(
 
 Append a CopyBufferToTexture command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1393._
 
 ### `dvz_drp2_stream_copy_texture_to_buffer()`
@@ -1271,6 +1371,8 @@ _Bool dvz_drp2_stream_copy_texture_to_buffer(
 
 Append a CopyTextureToBuffer command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1414._
 
 ### `dvz_drp2_stream_copy_texture_to_texture()`
@@ -1298,6 +1400,8 @@ _Bool dvz_drp2_stream_copy_texture_to_texture(
 
 Append a CopyTextureToTexture command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1432._
 
 ### `dvz_drp2_stream_count()`
@@ -1314,6 +1418,8 @@ uint32_t dvz_drp2_stream_count(
 | `stream` | `const DvzDrp2CommandStream *` | the command stream |
 
 Return the number of commands in a DRP2 command stream.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:57._
 
@@ -1340,6 +1446,8 @@ _Bool dvz_drp2_stream_create_bind_group_entries(
 
 Append a CreateBindGroup command with explicit resource entries.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:760._
 
 ### `dvz_drp2_stream_create_bind_group_layout_entries()`
@@ -1362,6 +1470,8 @@ _Bool dvz_drp2_stream_create_bind_group_layout_entries(
 | `entries` | `const DvzDrp2BindGroupLayoutEntry *` | bind-group layout entries |
 
 Append a CreateBindGroupLayout command with explicit entries.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:695._
 
@@ -1386,6 +1496,8 @@ _Bool dvz_drp2_stream_create_buffer(
 
 Append a CreateBuffer command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:155._
 
 ### `dvz_drp2_stream_create_compute_pipeline()`
@@ -1406,6 +1518,8 @@ _Bool dvz_drp2_stream_create_compute_pipeline(
 | `compute_shader_module_id` | `uint64_t` | the compute shader module id |
 
 Append a CreateComputePipeline command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:594._
 
@@ -1429,6 +1543,8 @@ _Bool dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(
 | `bind_group_layout_id` | `uint64_t` | the bind-group layout id for slot 0 |
 
 Append a CreateComputePipeline command with one bind-group layout.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:608._
 
@@ -1454,6 +1570,8 @@ _Bool dvz_drp2_stream_create_render_pipeline(
 | `vertex_buffer_slots` | `uint32_t` | the number of required vertex buffer slots |
 
 Append a CreateRenderPipeline command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:371._
 
@@ -1495,6 +1613,8 @@ _Bool dvz_drp2_stream_create_render_pipeline_ex(
 | `attr_offsets` | `const uint32_t *` | byte offset within the binding for each attribute |
 
 Append a CreateRenderPipeline command with explicit vertex input layout and topology.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:413._
 
@@ -1539,6 +1659,8 @@ _Bool dvz_drp2_stream_create_render_pipeline_ex2(
 
 Append a CreateRenderPipeline command with explicit vertex layout, topology, and step modes.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:442._
 
 ### `dvz_drp2_stream_create_render_pipeline_with_bind_group_layout()`
@@ -1566,6 +1688,8 @@ _Bool dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
 
 Append a CreateRenderPipeline command with one bind-group layout.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:388._
 
 ### `dvz_drp2_stream_create_sampler()`
@@ -1584,6 +1708,8 @@ _Bool dvz_drp2_stream_create_sampler(
 | `id` | `uint64_t` | the sampler id |
 
 Append a CreateSampler command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:633._
 
@@ -1608,6 +1734,8 @@ _Bool dvz_drp2_stream_create_sampler_filter(
 
 Append a CreateSampler command with explicit min/mag filters.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:645._
 
 ### `dvz_drp2_stream_create_shader_module()`
@@ -1630,6 +1758,8 @@ _Bool dvz_drp2_stream_create_shader_module(
 | `code` | `const char *` | the WGSL shader source |
 
 Append a CreateShaderModule command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:296._
 
@@ -1655,6 +1785,8 @@ _Bool dvz_drp2_stream_create_shader_module_format(
 | `code` | `const char *` | the shader source |
 
 Append a CreateShaderModule command with an explicit shader source format.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:310._
 
@@ -1683,6 +1815,8 @@ Append a CreateShaderModule command from a precompiled SPIR-V binary (in-process
 
 The caller retains ownership of `spirv`; it must remain valid until the stream is executed.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:328._
 
 ### `dvz_drp2_stream_create_storage_bind_group()`
@@ -1710,6 +1844,8 @@ _Bool dvz_drp2_stream_create_storage_bind_group(
 
 Append a CreateBindGroup command for two storage buffers.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:728._
 
 ### `dvz_drp2_stream_create_storage_bind_group_layout()`
@@ -1728,6 +1864,8 @@ _Bool dvz_drp2_stream_create_storage_bind_group_layout(
 | `id` | `uint64_t` | the bind-group layout id |
 
 Append a CreateBindGroupLayout command for compute input/output storage buffers.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:671._
 
@@ -1751,6 +1889,8 @@ _Bool dvz_drp2_stream_create_texture_2d(
 | `height` | `uint32_t` | the texture height |
 
 Append a CreateTexture command for a 2D render attachment.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:180._
 
@@ -1778,6 +1918,8 @@ _Bool dvz_drp2_stream_create_texture_2d_format_usage(
 | `usage` | `uint32_t` | texture usage flags |
 
 Append a CreateTexture command for a 2D texture with explicit format and usage.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:211._
 
@@ -1808,6 +1950,8 @@ _Bool dvz_drp2_stream_create_texture_2d_format_usage_samples(
 
 Append a CreateTexture command for a 2D texture with explicit format, usage, and samples.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:228._
 
 ### `dvz_drp2_stream_create_texture_2d_usage()`
@@ -1833,6 +1977,8 @@ _Bool dvz_drp2_stream_create_texture_2d_usage(
 
 Append a CreateTexture command for a 2D texture with explicit usage.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:195._
 
 ### `dvz_drp2_stream_create_texture_3d()`
@@ -1857,6 +2003,8 @@ _Bool dvz_drp2_stream_create_texture_3d(
 | `depth` | `uint32_t` | the texture depth (number of slices) |
 
 Append a CreateTexture command for a 3D texture.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:255._
 
@@ -1887,6 +2035,8 @@ _Bool dvz_drp2_stream_create_texture_3d_format_usage(
 
 Append a CreateTexture command for a 3D texture with explicit format and usage.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:271._
 
 ### `dvz_drp2_stream_create_texture_sampler_bind_group()`
@@ -1912,6 +2062,8 @@ _Bool dvz_drp2_stream_create_texture_sampler_bind_group(
 
 Append a CreateBindGroup command for one sampled texture and one sampler.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:711._
 
 ### `dvz_drp2_stream_create_texture_sampler_bind_group_layout()`
@@ -1931,6 +2083,8 @@ _Bool dvz_drp2_stream_create_texture_sampler_bind_group_layout(
 
 Append a CreateBindGroupLayout command for one sampled texture and one sampler.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:659._
 
 ### `dvz_drp2_stream_create_texture_set_color_role()`
@@ -1949,6 +2103,8 @@ _Bool dvz_drp2_stream_create_texture_set_color_role(
 | `color_role` | `DvzDrp2ColorRole` | texture color role |
 
 Set the semantic color role on the most recently appended CreateTexture command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:240._
 
@@ -1977,6 +2133,8 @@ _Bool dvz_drp2_stream_create_uniform_bind_group(
 
 Append a CreateBindGroup command for one uniform buffer with a sub-allocation offset.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:745._
 
 ### `dvz_drp2_stream_create_uniform_bind_group_layout()`
@@ -1996,6 +2154,8 @@ _Bool dvz_drp2_stream_create_uniform_bind_group_layout(
 
 Append a CreateBindGroupLayout command for one uniform buffer (VS + FS visible).
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:683._
 
 ### `dvz_drp2_stream_destroy()`
@@ -2011,6 +2171,8 @@ void dvz_drp2_stream_destroy(
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 
 Destroy a DRP2 command stream.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:47._
 
@@ -2031,6 +2193,8 @@ _Bool dvz_drp2_stream_destroy_bind_group(
 
 Append a DestroyBindGroup command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:786._
 
 ### `dvz_drp2_stream_destroy_bind_group_layout()`
@@ -2049,6 +2213,8 @@ _Bool dvz_drp2_stream_destroy_bind_group_layout(
 | `bind_group_layout_id` | `uint64_t` | the bind-group layout id |
 
 Append a DestroyBindGroupLayout command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:773._
 
@@ -2069,6 +2235,8 @@ _Bool dvz_drp2_stream_destroy_buffer(
 
 Append a DestroyBuffer command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:167._
 
 ### `dvz_drp2_stream_destroy_compute_pipeline()`
@@ -2087,6 +2255,8 @@ _Bool dvz_drp2_stream_destroy_compute_pipeline(
 | `compute_pipeline_id` | `uint64_t` | the compute pipeline id |
 
 Append a DestroyComputePipeline command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:621._
 
@@ -2107,6 +2277,8 @@ _Bool dvz_drp2_stream_destroy_render_pipeline(
 
 Append a DestroyRenderPipeline command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:582._
 
 ### `dvz_drp2_stream_destroy_shader_module()`
@@ -2126,6 +2298,8 @@ _Bool dvz_drp2_stream_destroy_shader_module(
 
 Append a DestroyShaderModule command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:357._
 
 ### `dvz_drp2_stream_destroy_texture()`
@@ -2144,6 +2318,8 @@ _Bool dvz_drp2_stream_destroy_texture(
 | `texture_id` | `uint64_t` | the texture id |
 
 Append a DestroyTexture command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:283._
 
@@ -2169,6 +2345,8 @@ _Bool dvz_drp2_stream_dispatch_workgroups(
 | `z` | `uint32_t` | the z workgroup count |
 
 Append a DispatchWorkgroups command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1322._
 
@@ -2196,6 +2374,8 @@ _Bool dvz_drp2_stream_draw(
 | `first_instance` | `uint32_t` | the first instance |
 
 Append a Draw command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1277._
 
@@ -2226,6 +2406,8 @@ _Bool dvz_drp2_stream_draw_indexed(
 
 Append a DrawIndexed command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1295._
 
 ### `dvz_drp2_stream_end_compute_pass()`
@@ -2245,6 +2427,8 @@ _Bool dvz_drp2_stream_end_compute_pass(
 
 Append an EndComputePass command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1334._
 
 ### `dvz_drp2_stream_end_render_pass()`
@@ -2263,6 +2447,8 @@ _Bool dvz_drp2_stream_end_render_pass(
 | `pass_id` | `uint64_t` | the pass id |
 
 Append an EndRenderPass command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1308._
 
@@ -2285,6 +2471,8 @@ _Bool dvz_drp2_stream_finish_command_encoder(
 
 Append a FinishCommandEncoder command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1446._
 
 ### `dvz_drp2_stream_get()`
@@ -2303,6 +2491,8 @@ const DvzDrp2Command * dvz_drp2_stream_get(
 | `index` | `uint32_t` | the command index |
 
 Return a command from a DRP2 command stream.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:69._
 
@@ -2323,6 +2513,8 @@ _Bool dvz_drp2_stream_hello_renderer(
 
 Append a HelloRenderer command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:130._
 
 ### `dvz_drp2_stream_json()`
@@ -2342,6 +2534,8 @@ char * dvz_drp2_stream_json(
 
 Serialize a command stream as a DRP2 fixture JSON document.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1489._
 
 ### `dvz_drp2_stream_json_destroy()`
@@ -2357,6 +2551,8 @@ void dvz_drp2_stream_json_destroy(
 | `json` | `char *` | the JSON string |
 
 Destroy a JSON string returned by dvz_drp2_stream_json().
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1556._
 
@@ -2382,6 +2578,8 @@ WriteBuffer and WriteTexture commands backed by in-process raw bytes are seriali
 payloads are available through `dvz_drp2_stream_payload_*()`. Commands that only have a base64
 payload keep the normal inline `data` field.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1505._
 
 ### `dvz_drp2_stream_label()`
@@ -2400,6 +2598,8 @@ const char * dvz_drp2_stream_label(
 | `id` | `uint64_t` | the DRP2 object or transient id |
 
 Return a debug label attached to a numeric DRP2 id.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:96._
 
@@ -2420,6 +2620,8 @@ uint64_t dvz_drp2_stream_label_id(
 
 Return the numeric DRP2 id attached to a debug label.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:108._
 
 ### `dvz_drp2_stream_payload_command_index()`
@@ -2439,6 +2641,8 @@ uint32_t dvz_drp2_stream_payload_command_index(
 
 Return the command index owning a raw binary payload.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1525._
 
 ### `dvz_drp2_stream_payload_count()`
@@ -2455,6 +2659,8 @@ uint32_t dvz_drp2_stream_payload_count(
 | `stream` | `const DvzDrp2CommandStream *` | the command stream |
 
 Return the number of raw binary write payloads in a command stream.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1514._
 
@@ -2475,6 +2681,8 @@ const void * dvz_drp2_stream_payload_ptr(
 
 Return the raw binary payload pointer for a payload index.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1536._
 
 ### `dvz_drp2_stream_payload_size()`
@@ -2493,6 +2701,8 @@ uint64_t dvz_drp2_stream_payload_size(
 | `payload_index` | `uint32_t` | the payload index |
 
 Return the raw binary payload byte size for a payload index.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1547._
 
@@ -2516,6 +2726,8 @@ Attach a bind-group layout to the most recently appended CreateRenderPipeline co
 Use after `dvz_drp2_stream_create_render_pipeline_ex` to combine an explicit vertex layout
 with a bind-group layout (mirrors what `_with_bind_group_layout` does on its own).
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:462._
 
 ### `dvz_drp2_stream_pipeline_set_bind_group_layout2()`
@@ -2535,6 +2747,8 @@ _Bool dvz_drp2_stream_pipeline_set_bind_group_layout2(
 
 Attach a second bind-group layout (descriptor set 1) to the most recently appended
 CreateRenderPipeline command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:475._
 
@@ -2556,6 +2770,8 @@ _Bool dvz_drp2_stream_pipeline_set_bind_group_layouts(
 | `bind_group_layout_ids` | `const uint64_t *` | ordered bind-group layout ids, one per slot |
 
 Attach an ordered bind-group layout array to the most recent CreateRenderPipeline command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:487._
 
@@ -2579,6 +2795,8 @@ _Bool dvz_drp2_stream_pipeline_set_builtin_identity(
 | `version` | `uint32_t` | built-in pipeline contract version |
 
 Attach optional built-in pipeline identity metadata to a CreateRenderPipeline command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:568._
 
@@ -2613,6 +2831,8 @@ _Bool dvz_drp2_stream_pipeline_set_color_blend(
 
 Set one color target blend state on the most recently appended CreateRenderPipeline command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:553._
 
 ### `dvz_drp2_stream_pipeline_set_color_target()`
@@ -2633,6 +2853,8 @@ _Bool dvz_drp2_stream_pipeline_set_color_target(
 | `format` | `uint32_t` | backend-native texture format enum value |
 
 Set one color target format on the most recently appended CreateRenderPipeline command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:535._
 
@@ -2655,6 +2877,8 @@ _Bool dvz_drp2_stream_pipeline_set_depth_state(
 
 Attach depth state to the most recently appended CreateRenderPipeline command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:499._
 
 ### `dvz_drp2_stream_pipeline_set_multisampling()`
@@ -2675,6 +2899,8 @@ _Bool dvz_drp2_stream_pipeline_set_multisampling(
 | `alpha_to_coverage_enabled` | `_Bool` | whether alpha-to-coverage is enabled |
 
 Set multisampling state on the most recently appended CreateRenderPipeline command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:523._
 
@@ -2697,6 +2923,8 @@ _Bool dvz_drp2_stream_pipeline_set_raster_state(
 
 Attach raster state to the most recently appended CreateRenderPipeline command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:511._
 
 ### `dvz_drp2_stream_queue_submit()`
@@ -2717,6 +2945,8 @@ _Bool dvz_drp2_stream_queue_submit(
 | `submission_id` | `uint64_t` | the submission id |
 
 Append a QueueSubmit command with one command buffer and no readback.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1459._
 
@@ -2745,6 +2975,8 @@ _Bool dvz_drp2_stream_queue_submit_readback(
 
 Append a QueueSubmit command with one command buffer and one readback request.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1475._
 
 ### `dvz_drp2_stream_renderer_hello_reply()`
@@ -2763,6 +2995,8 @@ _Bool dvz_drp2_stream_renderer_hello_reply(
 | `renderer_name` | `const char *` | the renderer name |
 
 Append a RendererHelloReply command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:142._
 
@@ -2800,6 +3034,8 @@ Append a ResourceBarrier command for a buffer range.
 The first active DRP2 barrier slice covers compute storage writes made visible to a later vertex
 input or copy read in the same command encoder.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1354._
 
 ### `dvz_drp2_stream_set_bind_group()`
@@ -2822,6 +3058,8 @@ _Bool dvz_drp2_stream_set_bind_group(
 | `bind_group_id` | `uint64_t` | the bind-group id |
 
 Append a SetBindGroup command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1213._
 
@@ -2850,6 +3088,8 @@ _Bool dvz_drp2_stream_set_bind_group_dynamic(
 
 Append a SetBindGroup command with dynamic offsets.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1228._
 
 ### `dvz_drp2_stream_set_index_buffer()`
@@ -2875,6 +3115,8 @@ _Bool dvz_drp2_stream_set_index_buffer(
 
 Append a SetIndexBuffer command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1260._
 
 ### `dvz_drp2_stream_set_label()`
@@ -2898,6 +3140,8 @@ Attach a debug label to a numeric DRP2 id in a command stream.
 
 Labels are diagnostic metadata only: runtimes ignore them and they are not executable commands.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:84._
 
 ### `dvz_drp2_stream_set_pipeline()`
@@ -2918,6 +3162,8 @@ _Bool dvz_drp2_stream_set_pipeline(
 | `pipeline_id` | `uint64_t` | the pipeline id |
 
 Append a SetPipeline command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1200._
 
@@ -2946,6 +3192,8 @@ _Bool dvz_drp2_stream_set_scissor(
 
 Append a SetScissor command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1186._
 
 ### `dvz_drp2_stream_set_vertex_buffer()`
@@ -2970,6 +3218,8 @@ _Bool dvz_drp2_stream_set_vertex_buffer(
 | `offset` | `uint64_t` | the byte offset |
 
 Append a SetVertexBuffer command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:1244._
 
@@ -2998,6 +3248,8 @@ _Bool dvz_drp2_stream_set_viewport(
 
 Append a SetViewport command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:1170._
 
 ### `dvz_drp2_stream_shader_set_builtin_identity()`
@@ -3023,6 +3275,8 @@ _Bool dvz_drp2_stream_shader_set_builtin_identity(
 
 Attach optional built-in shader identity metadata to a CreateShaderModule command.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:343._
 
 ### `dvz_drp2_stream_write_buffer()`
@@ -3047,6 +3301,8 @@ _Bool dvz_drp2_stream_write_buffer(
 | `data_base64` | `const char *` | base64-encoded payload |
 
 Append a WriteBuffer command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:800._
 
@@ -3085,6 +3341,8 @@ command and does not retain `data` (which may legitimately be NULL).
 
 command was recorded)
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:826._
 
 ### `dvz_drp2_stream_write_texture_2d()`
@@ -3115,6 +3373,8 @@ _Bool dvz_drp2_stream_write_texture_2d(
 | `data_base64` | `const char *` | base64-encoded payload |
 
 Append a WriteTexture command.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:845._
 
@@ -3150,6 +3410,8 @@ Append a WriteTexture command for a full 2D mip level using raw bytes.
 Mirrors `dvz_drp2_stream_write_buffer_bytes`: the runtime path consumes the borrowed
 pointer directly with no base64 round-trip; JSON serialization re-encodes lazily.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:866._
 
 ### `dvz_drp2_stream_write_texture_2d_region()`
@@ -3184,6 +3446,8 @@ _Bool dvz_drp2_stream_write_texture_2d_region(
 | `data_base64` | `const char *` | base64-encoded payload |
 
 Append a WriteTexture command for a 2D sub-region with explicit origin.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:909._
 
@@ -3221,6 +3485,8 @@ _Bool dvz_drp2_stream_write_texture_2d_region_bytes(
 Append a WriteTexture command for a 2D sub-region using raw bytes.
 
 Mirrors `dvz_drp2_stream_write_texture_2d_bytes` for the in-process runtime path.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:888._
 
@@ -3260,6 +3526,8 @@ _Bool dvz_drp2_stream_write_texture_3d(
 | `data_base64` | `const char *` | base64-encoded payload |
 
 Append a WriteTexture command for a 3D sub-region.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:933._
 
@@ -3302,6 +3570,8 @@ Append a WriteTexture command for a 3D sub-region using raw bytes.
 
 Mirrors `dvz_drp2_stream_write_texture_2d_bytes` for 3D texture uploads.
 
+Raw ctypes: emitted.
+
 _Declared in `include/datoviz/drp2/stream.h`:959._
 
 ### `dvz_drp2_validate_stream()`
@@ -3318,5 +3588,7 @@ DvzDrp2ValidationResult dvz_drp2_validate_stream(
 | `stream` | `const DvzDrp2CommandStream *` | the command stream |
 
 Validate a DRP2 command stream against the backend-agnostic semantic rules.
+
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/runtime.h`:161._

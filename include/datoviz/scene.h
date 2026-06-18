@@ -29,6 +29,7 @@
 #include "scene/field.h"
 #include "scene/fly.h"
 #include "scene/frame_plan.h"
+#include "scene/frame_packets.h"
 #include "scene/interaction.h"
 #include "scene/orbit_camera.h"
 #include "scene/overlay.h"
@@ -1574,7 +1575,10 @@ dvz_visual_attr_format(const DvzVisual* visual, const char* attr_name);
  *
  * @param visual the visual
  * @param attr_name attribute name (family-specific, e.g. "position", "color")
- * @param data packed data array
+ * The payload is copied before this function returns. The caller keeps ownership of `data` and may
+ * release or reuse it immediately after a successful or failed call.
+ *
+ * @param data packed data array borrowed for the duration of the call
  * @param item_count number of items
  * @return 0 on success, -1 on error
  */
@@ -1667,7 +1671,11 @@ DVZ_EXPORT int dvz_visual_set_strings(
  * artifacts.
  *
  * @param visual the visual
- * @param updates attribute update descriptors
+ * Every payload referenced by `updates` is copied before this function returns. The caller keeps
+ * ownership of update descriptors and payload pointers and may release or reuse them immediately
+ * after a successful or failed call.
+ *
+ * @param updates attribute update descriptors borrowed for the duration of the call
  * @param update_count number of update descriptors
  * @return 0 on success, -1 on error
  */
@@ -1685,7 +1693,10 @@ DVZ_EXPORT int dvz_visual_set_data_many(
  *
  * @param visual the visual
  * @param attr_name attribute name
- * @param data packed array of item_count items to write
+ * The payload is copied before this function returns. The caller keeps ownership of `data` and may
+ * release or reuse it immediately after a successful or failed call.
+ *
+ * @param data packed array of item_count items borrowed for the duration of the call
  * @param first_item index of the first item to update
  * @param item_count number of items to update
  * @return 0 on success, -1 on error
@@ -1730,7 +1741,10 @@ DVZ_EXPORT void dvz_scene_buffer_destroy(DvzSceneBuffer* buffer);
  * Replace the full payload of a scene-owned buffer resource.
  *
  * @param buffer the buffer
- * @param data the packed byte payload
+ * The payload is copied before this function returns. The caller keeps ownership of `data` and may
+ * release or reuse it immediately after a successful or failed call.
+ *
+ * @param data the packed byte payload borrowed for the duration of the call
  * @param byte_size the payload size in bytes
  * @return true on success, false on error
  */

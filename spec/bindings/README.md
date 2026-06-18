@@ -122,7 +122,7 @@ definitions used by the configured build. It should emit C facts, not Python bin
 
 The extracted JSON should include at least:
 
-1. exported functions and their exact C names;
+1. exported `DVZ_EXPORT` functions and their exact C names;
 2. concrete structs and unions, including fields, arrays, size, alignment, and offsets when
    available;
 3. opaque structs and handle-like pointer targets;
@@ -132,7 +132,10 @@ The extracted JSON should include at least:
 7. header path, feature guard, and documentation metadata where available.
 
 Top-level public headers such as `datoviz/scene.h`, `datoviz/app.h`, and `datoviz/canvas.h` must be
-included in the extraction scope. The old `include/datoviz/*/*.h`-only traversal is insufficient.
+included in the extraction scope. Public support headers such as `datoviz/ffi.h` and intentionally
+public packet helpers such as `datoviz/scene/frame_packets.h` must be listed explicitly when they
+are not reached by the umbrella path. The old `include/datoviz/*/*.h`-only traversal is
+insufficient.
 
 
 ## JSON Policy
@@ -140,6 +143,11 @@ included in the extraction scope. The old `include/datoviz/*/*.h`-only traversal
 `build/bindings/datoviz_api.json` describes the C API. It must not pre-decide `ctypes` details such
 as whether a pointer becomes `ctypes.c_void_p`, `ctypes.c_char_p`, `ctypes.POINTER(T)`, or a helper
 wrapper.
+
+The generated raw `ctypes` surface tracks the exported shared-library ABI, not every declaration
+that appears in installed headers. A declaration without `DVZ_EXPORT` may be public source-level
+documentation or an inline/support declaration, but it is not a raw-binding function until it is an
+exported ABI symbol.
 
 Binding-specific policy belongs in `spec/bindings/ctypes.yml` or an equivalent source-controlled
 manifest. That manifest can describe decisions that are not safely inferable from C syntax:
@@ -233,6 +241,11 @@ The first generated raw layer should be conservative:
 5. `const char*` may use `ctypes.c_char_p` for borrowed input strings;
 6. owned `char*` returns require explicit ownership policy and a matching destroy function;
 7. callbacks require generated `ctypes.CFUNCTYPE` definitions and documented lifetime rules.
+
+When a canonical C API returns a public record by value and the raw binding cannot safely express
+that layout yet, prefer a `dvz_ffi_*` out-pointer helper over changing the canonical `dvz_*` API.
+The generated C reference should distinguish "emitted", "skipped by policy", and "available through
+`dvz_ffi_*`" states.
 
 NumPy support should be added as thin helpers around the raw layer, not as the default treatment for
 every pointer argument. The raw layer should remain faithful and predictable before becoming

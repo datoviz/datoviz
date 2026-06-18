@@ -5,6 +5,41 @@
 # public docs without an intentional module/status decision.
 
 pages:
+  ffi:
+    title: FFI Helper API
+    output: docs/reference/c-api/ffi.md
+    status: supported ABI helpers
+    summary: Pointer-oriented helper functions for raw ctypes, WASM, and foreign runtimes.
+    audience: Use this page when a foreign-function interface cannot safely call the canonical C API by value or cannot construct native records directly.
+    workflows:
+      - label: Python raw ctypes
+        href: ../ctypes.md
+      - label: Qt hosted rendering
+        href: ../../how-to/embed-in-qt.md
+    headers:
+      - include/datoviz/ffi.h
+    prefixes:
+      - ffi
+
+  frame_plan:
+    title: FramePlan And Packet API
+    output: docs/reference/c-api/frame-plan.md
+    status: advanced/unstable
+    summary: FramePlan builders, DRP2 emission helpers, and packet spans used by runtime and WASM integrations.
+    audience: Use this page for advanced runtime, fixture, or WASM/WebGPU integration work. Ordinary retained scene code should use scene frame artifacts.
+    workflows:
+      - label: DRP2 overview
+        href: ../drp2/index.md
+      - label: WebGPU portability
+        href: ../../explanation/portability-webgpu.md
+    headers:
+      - include/datoviz/scene/frame_plan.h
+      - include/datoviz/scene/frame_packets.h
+    prefixes:
+      - capability
+      - diagnostic
+      - frame
+
   scene:
     title: Scene API
     output: docs/reference/c-api/scene.md
@@ -23,8 +58,6 @@ pages:
     headers:
       - include/datoviz/scene.h
       - include/datoviz/scene/**
-      - include/datoviz/controller/**
-      - include/datoviz/controller.h
     prefixes:
       - anim
       - annotation
@@ -226,6 +259,8 @@ pages:
       - include/datoviz/math/**
       - include/datoviz/thread.h
       - include/datoviz/thread/**
+      - include/datoviz/controller/**
+      - include/datoviz/controller.h
       - include/datoviz/vk.h
       - include/datoviz/vk/**
       - include/datoviz/vklite.h
@@ -244,6 +279,8 @@ pages:
       - compile
       - cond
       - container
+      - arcball
+      - camera
       - deq
       - device
       - dmat4
@@ -253,6 +290,7 @@ pages:
       - error
       - fifo
       - file
+      - fly
       - font
       - geom
       - geometry
@@ -273,6 +311,8 @@ pages:
       - min
       - normalize
       - obj
+      - orbit
+      - panzoom
       - parse
       - prng
       - queue
@@ -293,6 +333,7 @@ pages:
       - tessellated
       - thread
       - time
+      - turntable
       - triangulate
       - triangulation
       - vec3

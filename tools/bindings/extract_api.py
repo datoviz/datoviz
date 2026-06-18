@@ -56,6 +56,7 @@ DEFINES = [
 ]
 
 IDENTIFIER_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+SOURCE_CACHE: dict[str, list[str]] = {}
 
 
 def _run(cmd: list[str], *, cwd: Path, stdout: Any = None) -> subprocess.CompletedProcess[str]:
@@ -164,7 +165,23 @@ def _parameters(cursor: cindex.Cursor) -> list[dict[str, Any]]:
 def _is_exported_function(cursor: cindex.Cursor) -> bool:
     if cursor.storage_class == cindex.StorageClass.STATIC:
         return False
-    return cursor.linkage == cindex.LinkageKind.EXTERNAL
+    if cursor.linkage != cindex.LinkageKind.EXTERNAL:
+        return False
+    loc = _location(cursor)
+    file = loc.get('file')
+    line = loc.get('line')
+    if not isinstance(file, str) or not isinstance(line, int):
+        return False
+    lines = SOURCE_CACHE.get(file)
+    if lines is None:
+        path = ROOT_DIR / file
+        if not path.exists():
+            return False
+        lines = path.read_text(encoding='utf8').splitlines()
+        SOURCE_CACHE[file] = lines
+    start = max(0, line - 4)
+    end = min(len(lines), line + 2)
+    return any('DVZ_EXPORT' in lines[index] for index in range(start, end))
 
 
 def _extract_translation_unit(tu: cindex.TranslationUnit) -> dict[str, list[dict[str, Any]]]:
