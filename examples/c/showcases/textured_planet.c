@@ -111,8 +111,6 @@ typedef struct TexturedPlanetState
 {
     DvzVisual* visual;
     DvzExampleVisualSpin spin;
-    DvzTrack* flyover_eye;
-    DvzTrack* flyover_target;
     PlanetTexture textures[PLANET_COUNT];
     int planet_index;
     bool auto_rotate;
@@ -750,36 +748,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         "example_visual_spin(planet) failed");
     example_visual_spin_start(&state->spin, 0.0);
 
-    state->flyover_eye = dvz_track_circle3(&(DvzTrackCircle3Desc){
-        DVZ_STRUCT_INIT_FIELDS(DvzTrackCircle3Desc),
-        .center = {0.0f, 0.28f, -0.34f},
-        .normal = {0.38f, 0.90f, -0.20f},
-        .radius = 3.15f,
-        .phase = 1.35f,
-        .speed_rad_per_sec = -0.018f,
-    });
-    EXAMPLE_CHECK(state->flyover_eye != NULL, "dvz_track_circle3() failed");
-    state->flyover_target = dvz_track_constant(&(DvzTrackConstantDesc){
-        DVZ_STRUCT_INIT_FIELDS(DvzTrackConstantDesc),
-        .type = DVZ_TRACK_VEC3,
-        .value = (float[3]){0.0f, 0.0f, 0.0f},
-    });
-    EXAMPLE_CHECK(state->flyover_target != NULL, "dvz_track_constant() failed");
-
-    DvzAnimation* flyover = dvz_anim_camera_motion(
-        ctx->scene, camera,
-        &(DvzCameraMotionDesc){
-            DVZ_STRUCT_INIT_FIELDS(DvzCameraMotionDesc),
-            .eye = state->flyover_eye,
-            .target = state->flyover_target,
-            .up_mode = DVZ_CAMERA_UP_WORLD,
-            .up = {0.0f, 1.0f, 0.0f},
-        });
-    EXAMPLE_CHECK(flyover != NULL, "dvz_anim_camera_motion() failed");
-    dvz_anim_set_interaction_policy(
-        flyover, orbit_controller, DVZ_ANIM_INTERACTION_STOP, 0.0);
-    dvz_anim_start(flyover, 0.0);
-
     ok = true;
 cleanup:
     if (sphere != NULL)
@@ -816,8 +784,6 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     if (state == NULL)
         return;
     example_visual_spin_destroy(&state->spin);
-    dvz_track_destroy(state->flyover_target);
-    dvz_track_destroy(state->flyover_eye);
     for (uint32_t i = 0; i < PLANET_COUNT; i++)
         dvz_free(state->textures[i].pixels);
     dvz_free(state);
