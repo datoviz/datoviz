@@ -159,7 +159,7 @@ static void canvas_runtime_transition(
     {
         return;
     }
-    log_debug(
+    log_trace(
         "canvas present state %s -> %s (%s)",
         canvas_runtime_state_name(swapchain->runtime_state), canvas_runtime_state_name(state),
         reason ? reason : "no reason");
