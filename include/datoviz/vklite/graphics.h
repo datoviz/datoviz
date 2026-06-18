@@ -95,7 +95,7 @@ DVZ_EXPORT DvzGraphics* dvz_graphics_create_wrapper(void);
  * graphics pipeline requires dvz_graphics_destroy() first.
  *
  * @param device the device
- * @param[out graphics] the created graphics pipeline
+ * @param[out] graphics the created graphics pipeline
  */
 DVZ_EXPORT void dvz_graphics(DvzDevice* device, DvzGraphics* graphics);
 

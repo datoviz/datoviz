@@ -7,6 +7,8 @@
 /*************************************************************************************************/
 /*  Scene FramePlan                                                                              */
 /*************************************************************************************************/
+/* Advanced/unstable scene-to-runtime emission API. Ordinary users should render through scene/app
+ * entry points rather than constructing FramePlans directly. */
 
 #pragma once
 
@@ -206,6 +208,10 @@ DVZ_EXPORT bool dvz_frame_plan_upload(
 
 /**
  * Append an upload node with actual data to be encoded into the DRP2 stream.
+ *
+ * Buffer uploads copy the bytes into emitted DRP2 packet/stream storage during emission. Texture
+ * uploads keep the source pointer borrowed in the emitted in-process stream until runtime execution
+ * or packet encoding copies it into an arena. Keep texture payloads alive through that boundary.
  *
  * @param plan the FramePlan
  * @param resource_id the resource id
@@ -527,6 +533,8 @@ DVZ_EXPORT DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
  * Look up the DRP2 object id assigned to an emitter-internal key.
  *
  * Returns the id previously assigned to `key`, or 0 if the key has not been allocated yet.
+ * Debug/test-only advanced helper; string keys are internal emitter implementation details and are
+ * not stable public resource names.
  *
  * @param emitter the persistent emitter
  * @param key the internal object key (e.g. "_rb", "_vs", "_pipe0")

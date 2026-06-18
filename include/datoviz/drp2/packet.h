@@ -61,25 +61,6 @@ typedef struct DvzDrp2PacketInfo
 /*************************************************************************************************/
 
 /**
- * Encode a DRP2 command stream as a binary packet plus payload arena.
- *
- * The returned `packet` and `arena` buffers are owned by the caller and must be released with
- * `dvz_drp2_packet_destroy()`. JSON/base64-only payload commands are intentionally rejected; the
- * runtime packet path requires raw payload bytes.
- *
- * @param stream the command stream
- * @param kind the packet phase
- * @param resource_version retained resource version associated with the packet
- * @param frame_index frame counter associated with the packet
- * @param packet output encoded packet bytes
- * @param packet_size output encoded packet byte size
- * @param arena output payload arena bytes, or NULL when empty
- * @param arena_size output payload arena byte size
- * @return whether the stream was encoded
- */
-
-
-/**
  * Return the default packet phase for a command type.
  *
  * @param type the command type
@@ -109,6 +90,23 @@ DVZ_EXPORT bool dvz_drp2_packet_encode_stream_phase(
     uint64_t frame_index, void** packet, uint64_t* packet_size, void** arena,
     uint64_t* arena_size);
 
+/**
+ * Encode a DRP2 command stream as a binary packet plus payload arena.
+ *
+ * The returned `packet` and `arena` buffers are owned by the caller and must be released with
+ * `dvz_drp2_packet_destroy()`. JSON/base64-only payload commands are intentionally rejected; the
+ * runtime packet path requires raw payload bytes.
+ *
+ * @param stream the command stream
+ * @param kind the packet phase
+ * @param resource_version retained resource version associated with the packet
+ * @param frame_index frame counter associated with the packet
+ * @param packet output encoded packet bytes, or NULL when empty
+ * @param packet_size output encoded packet byte size
+ * @param arena output payload arena bytes, or NULL when empty
+ * @param arena_size output payload arena byte size
+ * @return whether the stream was encoded
+ */
 DVZ_EXPORT bool dvz_drp2_packet_encode_stream(
     const DvzDrp2CommandStream* stream, DvzDrp2PacketKind kind, uint64_t resource_version,
     uint64_t frame_index, void** packet, uint64_t* packet_size, void** arena,

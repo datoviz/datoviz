@@ -7,6 +7,8 @@
 /*************************************************************************************************/
 /*  Controller                                                                                   */
 /*************************************************************************************************/
+/* Advanced/unstable standalone controller internals. Ordinary scene code should prefer
+ * scene-owned controllers and copy-out inspection APIs. */
 
 #pragma once
 

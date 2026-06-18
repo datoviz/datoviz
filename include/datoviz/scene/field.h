@@ -147,9 +147,9 @@ struct DvzFieldDataView
 {
     uint32_t struct_size;
     uint32_t flags;
-    const void* data;
-    uint64_t bytes_per_row;
-    uint64_t rows_per_image;
+    const void* data;        /* Required payload pointer for non-empty uploads. */
+    uint64_t bytes_per_row;  /* 0 means tightly packed rows for the field format. */
+    uint64_t rows_per_image; /* 0 means tightly packed 2D slices for the field format. */
 };
 typedef struct DvzFieldDataView DvzFieldDataView;
 
@@ -208,6 +208,10 @@ DVZ_EXPORT bool dvz_sampled_field_destroy(DvzSampledField* field);
 /**
  * Replace the entire field payload.
  *
+ * `view->data` must cover the full field extent. Payload bytes are copied into scene-owned storage
+ * before return and may be released by the caller after this function returns. Passing NULL or an
+ * empty view is rejected.
+ *
  * @param field the sampled field
  * @param view the uploaded data view
  * @return true on success, false on error
@@ -221,6 +225,8 @@ DVZ_EXPORT bool dvz_sampled_field_set_data(
  *
  * The field format, semantic, dimensionality, and visual bindings are preserved. Bound image
  * visuals receive a full dirty mark so the next scene emission reallocates the texture if needed.
+ * `width`, `height`, and `depth` must describe a non-empty extent. `view->data` must cover that
+ * extent and is copied before return.
  *
  * @param field the sampled field
  * @param width new field width in samples
@@ -236,6 +242,9 @@ DVZ_EXPORT bool dvz_sampled_field_resize(
 
 /**
  * Update a field subregion in sample coordinates.
+ *
+ * `region` must be non-empty and fully inside the current field extent. `view->data` must cover the
+ * subregion and is copied before return.
  *
  * @param field the sampled field
  * @param region the updated sample-space region
@@ -259,6 +268,9 @@ DVZ_EXPORT bool dvz_sampled_field_set_geometry(
 
 /**
  * Return the immutable field descriptor.
+ *
+ * The returned pointer is borrowed from the field and remains valid until the field is destroyed or
+ * resized. Callers must not cast away const or retain it past field lifetime.
  *
  * @param field the sampled field
  * @return the descriptor, or NULL on error

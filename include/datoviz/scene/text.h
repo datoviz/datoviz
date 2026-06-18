@@ -138,7 +138,7 @@ DVZ_EXPORT DvzTextAtlasInfo dvz_text_atlas_info(const DvzTextAtlas* atlas);
  * Return the sampled field containing the atlas texture.
  *
  * The field is owned by the atlas's font scene. It may be bound to glyph visuals but must not be
- * destroyed by the caller.
+ * destroyed or mutated by the caller.
  *
  * @param atlas the text atlas
  * @return sampled atlas field, or NULL

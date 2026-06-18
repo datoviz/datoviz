@@ -136,7 +136,6 @@ DVZ_EXPORT void dvz_descriptors_image(
  * Bind descriptors in a command buffer.
  *
  * @param cmds the commands
- * @param idx the command index
  * @param bind_point graphics or compute pipeline
  * @param descriptors the descriptors
  * @param first_set the index of the first set to bind within the descriptors

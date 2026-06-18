@@ -87,6 +87,8 @@ DVZ_EXPORT void dvz_interaction_set_query_hit_policy(
 /**
  * Enable or disable automatic readout pinning from interaction-driven query results.
  *
+ * Invalid interaction handles are ignored.
+ *
  * @param interaction the interaction policy
  * @param enabled true to enable automatic pinning
  */
@@ -110,6 +112,9 @@ DVZ_EXPORT void dvz_visual_set_query_capabilities(DvzVisual* visual, uint32_t ca
 
 /**
  * Bind per-item link keys for a visual on one link channel.
+ *
+ * `link_keys` must contain `item_count` entries and must not be NULL unless `item_count` is zero.
+ * The keys are copied before return. Passing zero entries clears the binding for this channel.
  *
  * @param visual the visual
  * @param channel the link channel
@@ -238,6 +243,9 @@ DVZ_EXPORT uint32_t dvz_selection_count(const DvzSelection* selection);
 
 /**
  * Copy resolved selection contents into caller-owned storage.
+ *
+ * Writes at most `max_items` entries. Use `dvz_selection_count()` first to detect whether the
+ * output buffer is large enough; extra entries are not copied.
  *
  * @param selection the selection
  * @param items output item array
@@ -413,6 +421,9 @@ DVZ_EXPORT int dvz_panel_query_now(
 
 /**
  * Return the retained hover state for one panel.
+ *
+ * The returned pointer is borrowed scene state. It remains valid until the next hover/query update
+ * for the panel or scene destruction and must not be mutated or retained.
  *
  * @param scene the scene
  * @param panel the panel

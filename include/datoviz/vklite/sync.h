@@ -313,6 +313,9 @@ DVZ_EXPORT void dvz_barriers_flags(DvzBarriers* barriers, VkDependencyFlags flag
 /**
  * Add a memory barrier to a set of barriers
  *
+ * Each barrier kind has capacity `DVZ_MAX_BARRIERS`. Returns NULL when the memory-barrier capacity
+ * is exhausted.
+ *
  * @param barriers the set of barriers
  * @returns the memory barrier
  */
@@ -322,6 +325,9 @@ DVZ_EXPORT DvzBarrierMemory* dvz_barriers_memory(DvzBarriers* barriers);
 
 /**
  * Add a buffer barrier to a set of barriers
+ *
+ * Each barrier kind has capacity `DVZ_MAX_BARRIERS`. Returns NULL when the buffer-barrier capacity
+ * is exhausted.
  *
  * @param barriers the set of barriers
  * @param buffer the buffer
@@ -336,6 +342,9 @@ DVZ_EXPORT DvzBarrierBuffer* dvz_barriers_buffer(
 
 /**
  * Add an image barrier to a set of barriers
+ *
+ * Each barrier kind has capacity `DVZ_MAX_BARRIERS`. Returns NULL when the image-barrier capacity
+ * is exhausted.
  *
  * @param barriers the set of barriers
  * @param img an image
@@ -414,7 +423,7 @@ DVZ_EXPORT uint32_t dvz_barriers_capacity(DvzBarriers* barriers);
  *
  * @param device the device
  * @param signaled whether the fence is created in the signaled state or not
- * @param[out] the created fence
+ * @param[out] fence the created fence
  */
 DVZ_EXPORT void dvz_fence(DvzDevice* device, bool signaled, DvzFence* fence);
 
@@ -573,6 +582,9 @@ DVZ_EXPORT void dvz_submit(DvzSubmit* submit);
 /**
  * Add a semaphore to wait on.
  *
+ * A submission stores at most `DVZ_MAX_SEMAPHORES` wait semaphores. Extra waits are ignored after
+ * logging an error.
+ *
  * @param submit the submission
  * @param semaphore the semaphore
  * @param value the value to wait on, if using a timeline semaphore
@@ -586,6 +598,9 @@ DVZ_EXPORT void dvz_submit_wait(
 /**
  * Add a semaphore to signal.
  *
+ * A submission stores at most `DVZ_MAX_SEMAPHORES` signal semaphores. Extra signals are ignored
+ * after logging an error.
+ *
  * @param submit the submission
  * @param semaphore the semaphore
  * @param value the value to signal, if using a timeline semaphore
@@ -598,6 +613,9 @@ DVZ_EXPORT void dvz_submit_signal(
 
 /**
  * Add a command buffer to the submission.
+ *
+ * A submission stores at most `DVZ_MAX_COMMANDS` command buffers. Extra command buffers are ignored
+ * after logging an error.
  *
  * @param submit the submission
  * @param cmd the command buffer

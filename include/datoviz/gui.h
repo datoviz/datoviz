@@ -44,8 +44,8 @@ typedef void (*DvzGuiCallback)(DvzGui* gui, DvzView* view, void* user_data);
 typedef enum DvzGuiFlags
 {
     DVZ_GUI_FLAGS_NONE = 0,
-    DVZ_GUI_FLAGS_DOCKING = 1u << 0,
-    DVZ_GUI_FLAGS_DOCKSPACE = 1u << 1,
+    DVZ_GUI_FLAGS_DOCKING = 1u << 0,   /* enable ImGui docking support */
+    DVZ_GUI_FLAGS_DOCKSPACE = 1u << 1, /* create the default full-view dockspace */
 } DvzGuiFlags;
 
 
@@ -70,8 +70,8 @@ typedef enum DvzGuiViewportFlags
 typedef struct DvzGuiConfig
 {
     uint32_t struct_size;
-    uint32_t flags;
-    uint32_t gui_flags;
+    uint32_t flags;     /* Reserved for future GUI config flags; must be 0 in v0.4. */
+    uint32_t gui_flags; /* Bitwise OR of DvzGuiFlags. */
     /* ImGui .ini path, or NULL to disable persisted GUI window state. */
     const char* ini_path;
     DvzFontDefaults font_defaults;
@@ -137,6 +137,9 @@ DVZ_EXPORT DvzGui* dvz_view_gui(DvzView* view, const DvzGuiConfig* config);
 
 /**
  * Register a GUI callback called while building each ImGui frame.
+ *
+ * The callback is applied only after `dvz_view_gui()` has created the overlay. Calling this before
+ * overlay creation is a no-op in v0.4.
  *
  * @param view the view
  * @param callback callback pointer, or NULL to clear it

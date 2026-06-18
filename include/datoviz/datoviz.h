@@ -7,6 +7,9 @@
 /*************************************************************************************************/
 /*  Public API                                                                                   */
 /*************************************************************************************************/
+/* Top-level convenience include. The ordinary v0.4 user path is scene/app first. Low-level
+ * controller, DRP2, stream, and vklite/Vulkan-facing declarations included transitively here are
+ * advanced/unstable unless their module docs say otherwise. */
 
 #pragma once
 

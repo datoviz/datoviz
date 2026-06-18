@@ -20,10 +20,6 @@
 #include "datoviz/vk/vulkan.h"
 
 #include "datoviz/common/macros.h"
-MUTE_ON
-#define VMA_EXTERNAL_MEMORY 1
-#include "vk_mem_alloc.h"
-MUTE_OFF
 
 
 
@@ -170,6 +166,10 @@ DVZ_EXPORT void dvz_instance_probe_layers(DvzInstance* instance);
 /**
  * Get the supported layers before creating an instance.
  *
+ * The returned string array is borrowed instance-owned storage. It remains valid until the next
+ * layer probe on the same instance or instance destruction. Callers must not mutate or free the
+ * array or strings.
+ *
  * @param instance the instance
  * @param[out] count the number of supported layers
  * @returns a pointer to an array of strings
@@ -204,6 +204,10 @@ DVZ_EXPORT void dvz_instance_probe_extensions(DvzInstance* instance);
 
 /**
  * Get the supported extensions before creating an instance.
+ *
+ * The returned string array is borrowed instance-owned storage. It remains valid until the next
+ * extension probe on the same instance or instance destruction. Callers must not mutate or free the
+ * array or strings.
  *
  * @param instance the instance
  * @param[out] count the number of supported extensions

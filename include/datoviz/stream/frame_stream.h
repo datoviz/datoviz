@@ -69,6 +69,14 @@ typedef enum
 
 
 // Stream frame descriptor.
+//
+// Vulkan handles are owned by the stream unless the corresponding `*_borrowed` field is true. A
+// borrowed handle is never destroyed by Datoviz. A stream sink may inspect handles during its
+// start/update/submit callbacks, but must not destroy, reset, transition, or retain them unless the
+// sink duplicates the underlying OS handle or owns the wrapped object by contract. `memory_fd` and
+// `wait_semaphore_fd` are callback-duration descriptors owned by Datoviz; duplicate before
+// retaining and do not close the originals. `command_buffer_recording` tells sinks whether the
+// command buffer is currently open for recording.
 typedef struct DvzStreamFrame
 {
     VkImage image;

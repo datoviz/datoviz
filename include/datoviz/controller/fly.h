@@ -7,6 +7,8 @@
 /*************************************************************************************************/
 /*  Fly camera controller                                                                        */
 /*************************************************************************************************/
+/* Advanced/unstable standalone controller internals. Prefer scene-owned controllers for ordinary
+ * v0.4 scene/app use. */
 
 #pragma once
 

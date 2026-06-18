@@ -7,6 +7,8 @@
 /*************************************************************************************************/
 /*  Arcball controller                                                                           */
 /*************************************************************************************************/
+/* Advanced/unstable standalone controller internals. This standalone API includes legacy
+ * camera-view pan/zoom helpers; scene-owned DvzArcball remains object/model oriented. */
 
 // References:
 // https://github.com/Twinklebear/arcball-cpp

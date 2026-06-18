@@ -83,6 +83,14 @@ typedef struct
 
 
 // Live-image frame payload forwarded by the optional canvas live sink.
+//
+// All Vulkan handles are borrowed from the canvas stream and are valid only for the duration of the
+// live-image callback unless a later callback with the same resource_generation explicitly confirms
+// unchanged handles. The callback must not destroy, reset, transition, or retain these handles.
+// `command_buffer` is already recorded for the submitted frame. `image` is in the layout reported
+// by the matching stream frame and should be treated as read-only by consumers. File descriptors are
+// owned by Datoviz for the callback; duplicate them in the callback if they must outlive it, and do
+// not close the original descriptors.
 typedef struct
 {
     uint64_t frame_id;

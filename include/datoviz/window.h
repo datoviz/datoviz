@@ -112,7 +112,7 @@ DVZ_EXPORT DvzWindowConfig dvz_window_config(void);
  * Create a window using the preferred backend.
  *
  * @param host host that manages the window
- * @param backend preferred backend (falls back to headless)
+ * @param backend preferred backend (falls back to DVZ_BACKEND_OFFSCREEN when available)
  * @param config window configuration or NULL for defaults
  * @returns pointer to the created window or NULL on failure
  */

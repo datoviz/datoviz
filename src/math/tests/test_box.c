@@ -48,6 +48,13 @@ int test_box_2(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 
+    DvzBox unchanged = dvz_box(-2.0, 6.0, -1.0, 5.0, -1.0, 1.0);
+    DvzBox def = dvz_box_extent(unchanged, 4.0, 3.0, DVZ_BOX_EXTENT_DEFAULT);
+    AC(def.xmin, unchanged.xmin, EPS);
+    AC(def.xmax, unchanged.xmax, EPS);
+    AC(def.ymin, unchanged.ymin, EPS);
+    AC(def.ymax, unchanged.ymax, EPS);
+
     // Test dvz_box_extent with fixed aspect ratio expand
     DvzBox box = dvz_box(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
     DvzBox result = dvz_box_extent(box, 4.0, 3.0, DVZ_BOX_EXTENT_FIXED_ASPECT_EXPAND);
@@ -67,6 +74,13 @@ int test_box_2(TstContext* suite, const TstCase* tstitem)
     AC(center[0], 0, EPS);
     AC(center[1], 0, EPS);
     AC(center[2], 0, EPS);
+
+    DvzBox contracted = dvz_box_extent(box, 4.0, 3.0, DVZ_BOX_EXTENT_FIXED_ASPECT_CONTRACT);
+    AC(dvz_box_aspect(contracted), 4.0 / 3.0, EPS);
+    AT(contracted.xmin >= box.xmin);
+    AT(contracted.xmax <= box.xmax);
+    AT(contracted.ymin >= box.ymin);
+    AT(contracted.ymax <= box.ymax);
 
     return 0;
 }

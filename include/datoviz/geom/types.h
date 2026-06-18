@@ -74,6 +74,10 @@ struct DvzGeometry
     dvec3 grid_height_axis; // surface-grid height displacement axis
     double grid_height_scale; // surface-grid height multiplier
 
+    /*
+     * Owned arrays released by dvz_geometry_destroy(). Callers may edit element contents but must
+     * not free, reallocate, replace these pointers, or desynchronize them from the count fields.
+     */
     dvec3* positions;  // F64 3D positions
     dvec3* normals;    // F64 3D normal vectors
     DvzColor* colors;  // RGBA color of each vertex

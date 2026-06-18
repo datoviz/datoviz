@@ -65,7 +65,7 @@ DVZ_EXPORT DvzShader* dvz_shader_create_wrapper(void);
  * @param size the size of the buffer with the SPIR-V code, in bytes
  * @param buffer the buffer with the SPIR-V bytecode
  * @param[out] shader the shader module
- * @return the Vulkan creation result code
+ * @return 0 on success, non-zero on Vulkan or Datoviz state failure
  */
 DVZ_EXPORT int
 dvz_shader(DvzDevice* device, DvzSize size, const uint32_t* buffer, DvzShader* shader);

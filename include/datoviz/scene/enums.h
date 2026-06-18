@@ -186,6 +186,7 @@ typedef enum
 typedef enum
 {
     DVZ_CONTROLLER_LINK_ONE_WAY = 0,
+    /* Reserved for future bidirectional propagation; rejected by the v0.4 implementation. */
     DVZ_CONTROLLER_LINK_TWO_WAY = 1,
 } DvzControllerLinkMode;
 

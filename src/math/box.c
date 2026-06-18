@@ -59,51 +59,55 @@ void dvz_box_center(DvzBox box, dvec3 center)
 
 DvzBox dvz_box_extent(DvzBox box, float width, float height, DvzBoxExtentStrategy strategy)
 {
-    if (height <= 0)
+    if (strategy == DVZ_BOX_EXTENT_DEFAULT || width <= 0 || height <= 0)
         return box;
+
+    ASSERT(width > 0);
     ASSERT(height > 0);
 
-    // return the extent of a box, especially if the input box aspect ratio should be fixed. There
-    // may be multiple strategies to get the box extent (in output) if the aspect ratio does not
-    // match. We may want the extent to contain the input box so that its aspect ratio is fixed, or
-    // to contract it
-
-    // Calculate the aspect ratio of the specified dimensions
     double target_aspect_ratio = width / height;
-
-    // Calculate the current dimensions of the box
     double box_width = box.xmax - box.xmin;
     double box_height = box.ymax - box.ymin;
+    if (target_aspect_ratio <= 0 || box_width <= 0 || box_height <= 0)
+        return box;
 
-    // Calculate the center of the box
     double center_x = (box.xmin + box.xmax) / 2.0;
     double center_y = (box.ymin + box.ymax) / 2.0;
-
-    // Calculate the current aspect ratio of the box
     double box_aspect_ratio = box_width / box_height;
 
-    // Determine whether to extend the width or height
     double new_width, new_height;
-    if (box_aspect_ratio > target_aspect_ratio)
+    if (strategy == DVZ_BOX_EXTENT_FIXED_ASPECT_CONTRACT)
     {
-        // Extend height to match the target aspect ratio
-        new_width = box_width;
-        new_height = box_width / target_aspect_ratio;
+        if (box_aspect_ratio > target_aspect_ratio)
+        {
+            new_height = box_height;
+            new_width = box_height * target_aspect_ratio;
+        }
+        else
+        {
+            new_width = box_width;
+            new_height = box_width / target_aspect_ratio;
+        }
     }
     else
     {
-        // Extend width to match the target aspect ratio
-        new_height = box_height;
-        new_width = box_height * target_aspect_ratio;
+        if (box_aspect_ratio > target_aspect_ratio)
+        {
+            new_width = box_width;
+            new_height = box_width / target_aspect_ratio;
+        }
+        else
+        {
+            new_height = box_height;
+            new_width = box_height * target_aspect_ratio;
+        }
     }
 
-    // Calculate the new boundaries while keeping the center unchanged
     double new_xmin = center_x - new_width / 2.0;
     double new_xmax = center_x + new_width / 2.0;
     double new_ymin = center_y - new_height / 2.0;
     double new_ymax = center_y + new_height / 2.0;
 
-    // Return the new box
     return (DvzBox){
         .xmin = new_xmin,
         .xmax = new_xmax,

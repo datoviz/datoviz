@@ -7,6 +7,7 @@
 /*************************************************************************************************/
 /*  Scene FramePlan DRP2 packet emission                                                         */
 /*************************************************************************************************/
+/* Advanced/unstable native packet bridge for the runtime/WASM boundary. */
 
 #pragma once
 
@@ -63,7 +64,8 @@ typedef enum
  * @param caps the capability snapshot
  * @param report the diagnostic report
  * @param cfg the emission configuration
- * @return an owned packet result; destroy with dvz_frame_plan_packet_result_destroy()
+ * @return an owned packet result, or NULL on allocation failure; destroy with
+ * dvz_frame_plan_packet_result_destroy()
  */
 DVZ_EXPORT DvzFramePlanPacketResult* dvz_frame_plan_emitter_emit_drp2_packets(
     DvzFramePlanEmitter* emitter, const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps,

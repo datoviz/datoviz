@@ -91,6 +91,7 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_packet_rejects_empty_shader_module_fields);
     TST_CASE(test_drp2_write_buffer_bytes_large_json_roundtrip);
     TST_CASE(test_drp2_render_pipeline_step_modes_json);
+    TST_CASE(test_drp2_render_pipeline_rejects_vertex_layout_overflow);
     TST_CASE(test_drp2_render_pipeline_color_targets_json);
     TST_CASE(test_drp2_render_pipeline_raster_state);
     TST_CASE(test_drp2_wboit_accumulation_resolve_stream);

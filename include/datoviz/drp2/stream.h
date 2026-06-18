@@ -7,6 +7,8 @@
 /*************************************************************************************************/
 /*  DRP2 command stream                                                                          */
 /*************************************************************************************************/
+/* Advanced/unstable runtime protocol builder. This header intentionally exposes backend-adjacent
+ * tokens for vklite/WebGPU runtime integration and fixture tests. */
 
 #pragma once
 
@@ -320,7 +322,7 @@ DVZ_EXPORT bool dvz_drp2_stream_create_shader_module_format(
  *
  * @param stream the command stream
  * @param id the shader module id
- * @param stage the shader stage ("VERTEX" or "FRAGMENT")
+ * @param stage the shader stage ("VERTEX", "FRAGMENT", or "COMPUTE")
  * @param spirv pointer to SPIR-V bytecode
  * @param spirv_size size in bytes
  * @return whether the command was appended
@@ -395,6 +397,10 @@ DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
 /**
  * Append a CreateRenderPipeline command with explicit vertex input layout and topology.
  *
+ * `binding_count` and `attr_count` must be at most `DVZ_DRP2_MAX_BINDINGS`. Count-zero pointer
+ * arrays may be NULL; non-zero counts require all matching arrays. Oversized or missing arrays are
+ * rejected and no command is appended.
+ *
  * @param stream the command stream
  * @param id the pipeline id
  * @param vertex_shader_module_id the vertex shader module id
@@ -422,6 +428,11 @@ DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline_ex(
 
 /**
  * Append a CreateRenderPipeline command with explicit vertex layout, topology, and step modes.
+ *
+ * `binding_count` and `attr_count` must be at most `DVZ_DRP2_MAX_BINDINGS`. Count-zero pointer
+ * arrays may be NULL; non-zero counts require all matching arrays except `binding_step_modes`,
+ * which may be NULL to select per-vertex stepping. Oversized or missing arrays are rejected and no
+ * command is appended.
  *
  * @param stream the command stream
  * @param id the pipeline id
@@ -686,6 +697,9 @@ dvz_drp2_stream_create_uniform_bind_group_layout(DvzDrp2CommandStream* stream, u
 /**
  * Append a CreateBindGroupLayout command with explicit entries.
  *
+ * `entry_count` must be in `[1, DVZ_DRP2_MAX_BINDINGS]` and `entries` must not be NULL. Invalid
+ * inputs are rejected and no command is appended.
+ *
  * @param stream the command stream
  * @param id the bind-group layout id
  * @param entry_count number of entries
@@ -749,6 +763,9 @@ DVZ_EXPORT bool dvz_drp2_stream_create_uniform_bind_group(
 
 /**
  * Append a CreateBindGroup command with explicit resource entries.
+ *
+ * `entry_count` must be in `[1, DVZ_DRP2_MAX_BINDINGS]` and `entries` must not be NULL. Invalid
+ * inputs are rejected and no command is appended.
  *
  * @param stream the command stream
  * @param id the bind-group id
@@ -1023,10 +1040,10 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_clear(
  * @param g clear color green channel
  * @param b clear color blue channel
  * @param a clear color alpha channel
- * @param x left coordinate in framebuffer pixels
- * @param y top coordinate in framebuffer pixels
- * @param width width in framebuffer pixels
- * @param height height in framebuffer pixels
+ * @param x normalized left coordinate in attachment space [0, 1]
+ * @param y normalized top coordinate in attachment space [0, 1]
+ * @param width normalized width in attachment space [0, 1]
+ * @param height normalized height in attachment space [0, 1]
  * @param clear whether to clear the target at render-pass begin
  * @return whether the command was appended
  */
@@ -1161,10 +1178,10 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_compute_pass(
  *
  * @param stream the command stream
  * @param pass_id the render pass id
- * @param x left coordinate in framebuffer pixels
- * @param y top coordinate in framebuffer pixels
- * @param width width in framebuffer pixels
- * @param height height in framebuffer pixels
+ * @param x normalized left coordinate in attachment space [0, 1]
+ * @param y normalized top coordinate in attachment space [0, 1]
+ * @param width normalized width in attachment space [0, 1]
+ * @param height normalized height in attachment space [0, 1]
  * @return whether the command was appended
  */
 DVZ_EXPORT bool dvz_drp2_stream_set_viewport(
@@ -1177,10 +1194,10 @@ DVZ_EXPORT bool dvz_drp2_stream_set_viewport(
  *
  * @param stream the command stream
  * @param pass_id the render pass id
- * @param x left coordinate in framebuffer pixels
- * @param y top coordinate in framebuffer pixels
- * @param width width in framebuffer pixels
- * @param height height in framebuffer pixels
+ * @param x normalized left coordinate in attachment space [0, 1]
+ * @param y normalized top coordinate in attachment space [0, 1]
+ * @param width normalized width in attachment space [0, 1]
+ * @param height normalized height in attachment space [0, 1]
  * @return whether the command was appended
  */
 DVZ_EXPORT bool dvz_drp2_stream_set_scissor(

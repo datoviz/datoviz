@@ -84,7 +84,8 @@ EXTERN_C_ON
  * @param zmax maximum z value
  * @returns the box
  */
-DvzBox dvz_box(double xmin, double xmax, double ymin, double ymax, double zmin, double zmax);
+DVZ_EXPORT DvzBox
+dvz_box(double xmin, double xmax, double ymin, double ymax, double zmin, double zmax);
 
 
 
@@ -94,7 +95,7 @@ DvzBox dvz_box(double xmin, double xmax, double ymin, double ymax, double zmin, 
  * @param box the box
  * @returns the aspect ratio width/height
  */
-double dvz_box_aspect(DvzBox box);
+DVZ_EXPORT double dvz_box_aspect(DvzBox box);
 
 
 
@@ -104,13 +105,15 @@ double dvz_box_aspect(DvzBox box);
  * @param box the box
  * @param[out] the box's center
  */
-void dvz_box_center(DvzBox box, dvec3 center);
+DVZ_EXPORT void dvz_box_center(DvzBox box, dvec3 center);
 
 
 
 /**
- * Return the extent of a box, in the same coordinate system, depending on the aspect ratio.
- * This will return the same box if the aspect ratio is unconstrained.
+ * Return the extent of a box, in the same coordinate system, depending on the target viewport
+ * aspect ratio. `DVZ_BOX_EXTENT_DEFAULT` returns the input box unchanged. `EXPAND` preserves the
+ * center and grows the smaller axis so the returned box contains the input. `CONTRACT` preserves
+ * the center and shrinks the larger axis so the returned box is contained by the input.
  *
  * @param box the original box
  * @param width the viewport width
@@ -131,7 +134,8 @@ DvzBox dvz_box_extent(DvzBox box, float width, float height, DvzBoxExtentStrateg
  * @param strategy the merge strategy
  * @returns the merged box
  */
-DvzBox dvz_box_merge(uint32_t box_count, DvzBox* boxes, DvzBoxMergeStrategy strategy);
+DVZ_EXPORT DvzBox
+dvz_box_merge(uint32_t box_count, DvzBox* boxes, DvzBoxMergeStrategy strategy);
 
 
 

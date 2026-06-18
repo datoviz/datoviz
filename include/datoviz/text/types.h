@@ -37,6 +37,10 @@ typedef struct DvzAtlasFont DvzAtlasFont;
 
 struct DvzAtlasFont
 {
+    /*
+     * Advanced/unstable internal atlas-font bridge. These pointers are owned by the text/font
+     * implementation and have no standalone public lifecycle.
+     */
     unsigned long ttf_size;
     unsigned char* ttf_bytes;
     DvzAtlas* atlas;

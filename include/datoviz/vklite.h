@@ -7,6 +7,8 @@
 /*************************************************************************************************/
 /*  vklite                                                                                       */
 /*************************************************************************************************/
+/* Advanced/unstable Vulkan-lite runtime helpers. These headers expose Vulkan-native concepts by
+ * design and are not the ordinary scene/app API. */
 
 #pragma once
 

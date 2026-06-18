@@ -135,7 +135,7 @@ DVZ_EXPORT void dvz_buffer_flags(DvzBuffer* buffer, DvzAllocationFlags flags);
  * wrapper. Call dvz_buffer_destroy() before attempting to create it again.
  *
  * @param buffer the buffer
- * @returns the Vulkan creation result code
+ * @returns 0 on success, non-zero on Vulkan or Datoviz state failure
  */
 DVZ_EXPORT int dvz_buffer_create(DvzBuffer* buffer);
 
@@ -164,6 +164,10 @@ DVZ_EXPORT DvzSize dvz_buffer_size_value(DvzBuffer* buffer);
 /**
  * Resize a buffer.
  *
+ * The requested logical size is updated only on a valid buffer. This helper does not preserve
+ * existing contents, remap host pointers, or recreate a live Vulkan buffer; destroy and create the
+ * buffer again after changing size. Shrinking follows the same recreate contract as growing.
+ *
  * @param buffer the buffer
  * @param size the new buffer size, in bytes
  */
@@ -174,8 +178,8 @@ DVZ_EXPORT void dvz_buffer_resize(DvzBuffer* buffer, DvzSize size);
 /**
  * Memmap a GPU buffer.
  *
- * @param buffer
- * @returns the result code
+ * @param buffer the buffer
+ * @returns 0 on success, non-zero on Vulkan or Datoviz state failure
  */
 DVZ_EXPORT int dvz_buffer_map(DvzBuffer* buffer);
 

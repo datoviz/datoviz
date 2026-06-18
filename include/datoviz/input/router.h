@@ -109,6 +109,8 @@ DVZ_EXPORT DvzInputRouter* dvz_input_router(void);
 
 /**
  * Destroy a router.
+ *
+ * @param router router returned by dvz_input_router(); must not be NULL
  */
 DVZ_EXPORT void dvz_input_router_destroy(DvzInputRouter* router);
 

@@ -215,6 +215,8 @@ DVZ_EXPORT void dvz_scale_destroy(DvzScale* scale);
 /**
  * Set the semantic domain on a scale.
  *
+ * Invalid ranges are ignored and leave the previous domain unchanged.
+ *
  * @param scale the scale
  * @param min the domain minimum
  * @param max the domain maximum
@@ -224,6 +226,8 @@ DVZ_EXPORT void dvz_scale_set_domain(DvzScale* scale, double min, double max);
 
 /**
  * Set the current visible range on a scale.
+ *
+ * Invalid ranges are ignored and leave the previous range unchanged.
  *
  * @param scale the scale
  * @param min the view-range minimum
@@ -235,6 +239,8 @@ DVZ_EXPORT void dvz_scale_set_view_range(DvzScale* scale, double min, double max
 /**
  * Bind a colormap to a scale.
  *
+ * Passing NULL clears the binding. Invalid scale handles are ignored.
+ *
  * @param scale the scale
  * @param colormap the colormap
  */
@@ -243,6 +249,8 @@ DVZ_EXPORT void dvz_scale_set_colormap(DvzScale* scale, DvzColormap* colormap);
 
 /**
  * Override shared formatting policy on a scale.
+ *
+ * Passing NULL clears the override. Invalid descriptors are ignored.
  *
  * @param scale the scale
  * @param format the format descriptor, or NULL to clear the override
@@ -373,6 +381,10 @@ DVZ_EXPORT void dvz_colormap_destroy(DvzColormap* colormap);
 /**
  * Set custom color stops on a colormap.
  *
+ * `stops` must contain `count` entries and must not be NULL unless `count` is zero. The stop array
+ * is copied before return. Passing zero entries clears custom stops and restores the built-in or
+ * default mapping policy.
+ *
  * @param colormap the colormap
  * @param stops the color stops
  * @param count the number of stops
@@ -383,6 +395,8 @@ DVZ_EXPORT void dvz_colormap_set_stops(
 
 /**
  * Set the diverging center on a colormap.
+ *
+ * Invalid colormap handles are ignored.
  *
  * @param colormap the colormap
  * @param center the semantic center value

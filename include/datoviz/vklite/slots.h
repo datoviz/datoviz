@@ -117,7 +117,7 @@ dvz_slots_push(DvzSlots* slots, VkShaderStageFlagBits stages, DvzSize offset, Dv
  * attempting to create them again.
  *
  * @param slots the slots
- * @return the Vulkan creation result code
+ * @return 0 on success, non-zero on Vulkan or Datoviz state failure
  */
 DVZ_EXPORT int dvz_slots_create(DvzSlots* slots);
 

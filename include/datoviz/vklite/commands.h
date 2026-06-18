@@ -241,7 +241,8 @@ DVZ_EXPORT void dvz_commands_destroy(DvzCommands* cmds);
  * Wrap an existing Vulkan command buffer in a DvzCommands struct.
  *
  * The wrapped command buffer remains externally owned. This helper is intended for command buffers
- * whose owner still grants recording-control operations such as begin, end, reset, or submit.
+ * whose owner grants recording-control operations such as begin, end, or reset. Queue submission is
+ * not supported for wrappers created by this function because no queue is supplied.
  *
  * @param device the device
  * @param vk_cmd the Vulkan command buffer

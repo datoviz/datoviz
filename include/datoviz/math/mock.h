@@ -7,6 +7,8 @@
 /*************************************************************************************************/
 /*  Mock functions                                                                               */
 /*************************************************************************************************/
+/* All generated arrays returned by this header are allocated with the Datoviz allocator and are
+ * owned by the caller. Release them with dvz_free(). */
 
 #pragma once
 

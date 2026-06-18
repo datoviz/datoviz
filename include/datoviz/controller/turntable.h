@@ -7,6 +7,8 @@
 /*************************************************************************************************/
 /*  Turntable controller                                                                         */
 /*************************************************************************************************/
+/* Advanced/unstable standalone controller internals. Prefer scene-owned controllers for ordinary
+ * v0.4 scene/app use. */
 /* World-up constrained camera orbit around a pivot. Intended for upright object or scene
  * inspection where yaw, pitch/elevation, distance, and optional pivot pan remain predictable. */
 

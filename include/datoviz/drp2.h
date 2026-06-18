@@ -7,6 +7,8 @@
 /*************************************************************************************************/
 /*  Datoviz Rendering Protocol v2                                                                */
 /*************************************************************************************************/
+/* Advanced/unstable runtime protocol surface. Ordinary scene/app users should not build DRP2
+ * streams directly unless they are testing or integrating a runtime backend. */
 
 #pragma once
 

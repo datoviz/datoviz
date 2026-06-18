@@ -214,7 +214,7 @@ DVZ_EXPORT void dvz_images_layers(DvzImages* img, uint32_t layers);
  * wrapper. Call dvz_images_destroy() before attempting to create them again.
  *
  * @param images the images
- * @returns the Vulkan creation result code
+ * @returns 0 on success, non-zero on Vulkan or Datoviz state failure
  */
 DVZ_EXPORT int dvz_images_create(DvzImages* img);
 
@@ -254,8 +254,8 @@ DVZ_EXPORT VkFormat dvz_images_format_value(DvzImages* img);
 /**
  * Destroy images.
  *
- * This releases the wrapped Vulkan images and returns the wrapper to a reusable
- * initialized state.
+ * This releases Datoviz-owned Vulkan images and returns the wrapper to a reusable initialized
+ * state. Images installed with `dvz_images_wrap()` are borrowed and are not destroyed.
  *
  * @param images the images
  */
@@ -265,6 +265,9 @@ DVZ_EXPORT void dvz_images_destroy(DvzImages* img);
 
 /**
  * Wrap an existing Vulkan image into a DvzImages struct.
+ *
+ * The Vulkan image remains externally owned. Datoviz records the handle for view creation,
+ * transitions, and descriptor binding according to later calls, but does not destroy the image.
  *
  * @param device the device
  * @param allocator the Datoviz allocator
@@ -345,7 +348,7 @@ DVZ_EXPORT void dvz_image_views_layers(DvzImageViews* views, uint32_t base, uint
  * again.
  *
  * @param views the image views
- * @return 0 on success, -1 on error
+ * @return 0 on success, non-zero on Vulkan or Datoviz state failure
  */
 DVZ_EXPORT int dvz_image_views_create(DvzImageViews* views);
 
@@ -548,8 +551,8 @@ DVZ_EXPORT void dvz_cmd_copy_image_to_buffer(
  * Define the source of an image copy operation.
  *
  * @param copy the copy structure
- * @param image the source image
- * @param layout the source image layout
+ * @param image the destination image
+ * @param layout the destination image layout
  * @param x the source offset x
  * @param y the source offset y
  * @param z the source offset z

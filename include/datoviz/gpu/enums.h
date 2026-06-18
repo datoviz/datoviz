@@ -44,8 +44,7 @@ typedef enum
 
 
 
-// Dat usage.
-// TODO: not implemented yet, going from these flags to DvzDatFlags
+// Reserved advanced/unstable dat-usage hints. v0.4 does not translate these hints into DvzDatFlags.
 typedef enum
 {
     DVZ_DAT_USAGE_FREQUENT_NONE,

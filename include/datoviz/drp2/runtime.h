@@ -7,6 +7,7 @@
 /*************************************************************************************************/
 /*  DRP2 runtime semantic validation                                                            */
 /*************************************************************************************************/
+/* Advanced/unstable runtime execution and validation API. */
 
 #pragma once
 
@@ -42,6 +43,7 @@ struct DvzDrp2ValidationResult
 {
     bool ok;
     DvzDrp2ValidationCode code;
+    /* Index of the failing command. UINT32_MAX when validation succeeds or no command is blamed. */
     uint32_t command_index;
 };
 

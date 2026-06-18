@@ -94,7 +94,7 @@ DVZ_EXPORT DvzGuideLine* dvz_vline(DvzPanel* panel, double x, const DvzGuideLine
 /**
  * Return a borrowed role visual from a guide line.
  *
- * Only `DVZ_PLOT_ROLE_LINE` is valid for guide lines.
+ * Advanced inspection escape hatch. Only `DVZ_PLOT_ROLE_LINE` is valid for guide lines.
  *
  * @param guide the guide line
  * @param role visual role
@@ -152,7 +152,8 @@ dvz_vspan(DvzPanel* panel, double x0, double x1, const DvzGuideSpanDesc* desc);
 /**
  * Return a borrowed role visual from a guide span.
  *
- * Valid roles are `DVZ_PLOT_ROLE_FILL` and `DVZ_PLOT_ROLE_OUTLINE`.
+ * Advanced inspection escape hatch. Valid roles are `DVZ_PLOT_ROLE_FILL` and
+ * `DVZ_PLOT_ROLE_OUTLINE`.
  *
  * @param span the guide span
  * @param role visual role
@@ -217,7 +218,8 @@ DVZ_EXPORT int dvz_bars_set_style(DvzBars* bars, const DvzBarsDesc* desc);
 /**
  * Return a borrowed role visual from a bars object.
  *
- * Valid roles are `DVZ_PLOT_ROLE_FILL` and `DVZ_PLOT_ROLE_OUTLINE`.
+ * Advanced inspection escape hatch. Valid roles are `DVZ_PLOT_ROLE_FILL` and
+ * `DVZ_PLOT_ROLE_OUTLINE`.
  *
  * @param bars the bars object
  * @param role visual role
@@ -285,7 +287,8 @@ DVZ_EXPORT int dvz_band_set_style(DvzBand* band, const DvzBandDesc* desc);
 /**
  * Return a borrowed role visual from a band object.
  *
- * Valid roles are `DVZ_PLOT_ROLE_FILL`, `DVZ_PLOT_ROLE_LINE`, and `DVZ_PLOT_ROLE_BOUNDS`.
+ * Advanced inspection escape hatch. Valid roles are `DVZ_PLOT_ROLE_FILL`, `DVZ_PLOT_ROLE_LINE`,
+ * and `DVZ_PLOT_ROLE_BOUNDS`.
  *
  * @param band the band object
  * @param role visual role

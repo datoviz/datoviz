@@ -85,6 +85,9 @@ DVZ_EXPORT DvzAnnotation* dvz_annotation_scalebar(
 /**
  * Create a retained scale bar attached to a panel.
  *
+ * `DvzScaleBar` is a typed alias for the retained annotation object returned here. Destroy it with
+ * `dvz_annotation_destroy((DvzAnnotation*)scalebar)`.
+ *
  * @param panel the panel
  * @return the scale bar
  */
@@ -135,6 +138,8 @@ DVZ_EXPORT int dvz_scalebar_set_duration(DvzScaleBar* scalebar, DvzUnits* durati
 
 /**
  * Destroy a retained annotation object.
+ *
+ * Also destroys typed annotation aliases such as `DvzScaleBar` after casting to `DvzAnnotation*`.
  *
  * @param annotation the annotation
  */

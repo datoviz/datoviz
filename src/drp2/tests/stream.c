@@ -669,6 +669,41 @@ int test_drp2_render_pipeline_step_modes_json(TstContext* suite, const TstCase* 
 
 
 
+int test_drp2_render_pipeline_rejects_vertex_layout_overflow(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    uint32_t strides[DVZ_DRP2_MAX_BINDINGS + 1] = {0};
+    uint32_t bindings[DVZ_DRP2_MAX_BINDINGS + 1] = {0};
+    uint32_t locations[DVZ_DRP2_MAX_BINDINGS + 1] = {0};
+    uint32_t formats[DVZ_DRP2_MAX_BINDINGS + 1] = {0};
+    uint32_t offsets[DVZ_DRP2_MAX_BINDINGS + 1] = {0};
+
+    AT(!dvz_drp2_stream_create_render_pipeline_ex2(
+        stream, 10, 9000, 9001, 1, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+        DVZ_DRP2_MAX_BINDINGS + 1, strides, NULL, 1, bindings, locations, formats, offsets));
+    AT(dvz_drp2_stream_count(stream) == 0);
+
+    AT(!dvz_drp2_stream_create_render_pipeline_ex2(
+        stream, 10, 9000, 9001, 1, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 1, strides, NULL,
+        DVZ_DRP2_MAX_BINDINGS + 1, bindings, locations, formats, offsets));
+    AT(dvz_drp2_stream_count(stream) == 0);
+
+    AT(!dvz_drp2_stream_create_render_pipeline_ex2(
+        stream, 10, 9000, 9001, 1, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 1, NULL, NULL, 1,
+        bindings, locations, formats, offsets));
+    AT(dvz_drp2_stream_count(stream) == 0);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_render_pipeline_color_targets_json(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

@@ -39,7 +39,7 @@ EXTERN_C_ON
  * @param filename path of the file
  * @returns the size of the file
  */
-DvzSize dvz_file_size(const char* filename);
+DVZ_EXPORT DvzSize dvz_file_size(const char* filename);
 
 
 
@@ -48,9 +48,10 @@ DvzSize dvz_file_size(const char* filename);
  *
  * @param filename path of the file to open
  * @param[out] size of the file
- * @returns pointer to a byte buffer with the file contents
+ * @returns owned byte buffer allocated with the Datoviz allocator, or NULL on failure; free with
+ * dvz_free()
  */
-void* dvz_read_file(const char* filename, DvzSize* size);
+DVZ_EXPORT void* dvz_read_file(const char* filename, DvzSize* size);
 
 
 
@@ -59,9 +60,9 @@ void* dvz_read_file(const char* filename, DvzSize* size);
  *
  * @param filename path of the file to open
  * @param[out] size of the file
- * @returns pointer to a buffer containing the array elements
+ * @returns owned buffer containing the array elements, or NULL on failure; free with dvz_free()
  */
-void* dvz_read_npy(const char* filename, DvzSize* size);
+DVZ_EXPORT void* dvz_read_npy(const char* filename, DvzSize* size);
 
 
 
@@ -70,9 +71,9 @@ void* dvz_read_npy(const char* filename, DvzSize* size);
  *
  * @param size of the file
  * @param npy_bytes the contents of the NPY file
- * @returns pointer to a buffer containing the array elements
+ * @returns owned buffer containing the array elements, or NULL on failure; free with dvz_free()
  */
-void* dvz_parse_npy(DvzSize size, char* npy_bytes);
+DVZ_EXPORT void* dvz_parse_npy(DvzSize size, char* npy_bytes);
 
 
 
@@ -81,9 +82,9 @@ void* dvz_parse_npy(DvzSize size, char* npy_bytes);
  *
  * @param filename path of the GZIP compressed file to open
  * @param[out] size of the decompressed buffer
- * @returns pointer to a buffer containing the decompressed buffer
+ * @returns owned decompressed buffer, or NULL on failure; free with dvz_free()
  */
-char* dvz_read_gz(const char* filename, DvzSize* size);
+DVZ_EXPORT char* dvz_read_gz(const char* filename, DvzSize* size);
 
 
 
@@ -95,7 +96,8 @@ char* dvz_read_gz(const char* filename, DvzSize* size);
  * @param size size of the buffer
  * @param bytes buffer
  */
-int dvz_write_bytes(const char* filename, const char* mode, DvzSize size, const uint8_t* bytes);
+DVZ_EXPORT int
+dvz_write_bytes(const char* filename, const char* mode, DvzSize size, const uint8_t* bytes);
 
 
 
@@ -111,7 +113,8 @@ int dvz_write_bytes(const char* filename, const char* mode, DvzSize size, const 
  * @param height height of the image
  * @param image pointer to an array of 24-bit RGB values
  */
-int dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
+DVZ_EXPORT int
+dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
 
 
 
@@ -121,9 +124,9 @@ int dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const u
  * @param filename path of the file to open
  * @param[out] width width of the image
  * @param[out] height of the image
- * @returns pointer to a buffer with the loaded RGBA pixel colors
+ * @returns owned tightly packed RGB8 pixel buffer, or NULL on failure; free with dvz_free()
  */
-uint8_t* dvz_read_ppm(const char* filename, int* width, int* height);
+DVZ_EXPORT uint8_t* dvz_read_ppm(const char* filename, int* width, int* height);
 
 
 
@@ -135,7 +138,8 @@ uint8_t* dvz_read_ppm(const char* filename, int* width, int* height);
  * @param height height of the image
  * @param rgba pointer to tightly packed sRGB RGBA8 pixels with straight linear alpha
  */
-int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* rgba);
+DVZ_EXPORT int
+dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* rgba);
 
 
 
@@ -146,22 +150,26 @@ int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const u
  * @param height height of the image
  * @param rgb pointer to tightly packed sRGB RGB8 pixels
  * @param size pointer to a variable that will contain the size of the buffer
- * @param out pointer to a variable that will contain a pointer to the recorded image
+ * @param out pointer to an owned PNG byte buffer allocated with the Datoviz allocator; free with
+ * dvz_free()
  */
-int dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size, void** out);
+DVZ_EXPORT int
+dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size, void** out);
 
 
 
 /**
- * Load a PNG image.
+ * Decode a PNG image from memory into tightly packed RGB8 pixels.
  *
- * @param size pointer to a variable that will contain the size of the buffer
- * @param png_buffer pointer to an array of 24-bit RGB values
- * @param width width of the image
- * @param height height of the image
- * @returns RGB buffer
+ * @param size size of the PNG byte buffer
+ * @param bytes PNG byte buffer
+ * @param[out] width decoded image width
+ * @param[out] height decoded image height
+ * @returns owned RGB8 pixel buffer allocated with the Datoviz allocator, or NULL on failure; free
+ * with dvz_free()
  */
-uint8_t* dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint32_t* height);
+DVZ_EXPORT uint8_t*
+dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint32_t* height);
 
 
 

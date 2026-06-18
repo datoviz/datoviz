@@ -97,7 +97,7 @@ typedef enum DvzViewKind
 struct DvzAppConfig
 {
     uint32_t struct_size;
-    uint32_t flags;
+    uint32_t flags; /* Reserved for future app config flags; must be 0 in v0.4. */
     uint32_t instance_extension_count;
     const char* const* instance_extensions;
     bool enable_canvas_extensions;
@@ -878,11 +878,12 @@ dvz_view_set_frame_callback(
  * Render one frame for a single view without polling any Datoviz-owned event loop.
  *
  * This is the primary hosted-loop primitive for Qt, SDL, Tk, IPython, and other integrations where
- * the caller owns scheduling.  Returns the dvz_canvas_frame() status when no frame was submitted.
+ * the caller owns scheduling. Returns the dvz_canvas_frame() status when no frame was submitted.
+ * Disabled views are skipped and return DVZ_CANVAS_FRAME_READY without submitting.
  *
  * @param view the view
  * @return DVZ_CANVAS_FRAME_READY after a submitted frame, DVZ_CANVAS_FRAME_WAIT_SURFACE while the
- * surface is unavailable, or a negative error code
+ * surface is unavailable, after a disabled-view no-op, or a negative error code
  */
 DVZ_EXPORT int dvz_view_render_once(DvzView* view);
 

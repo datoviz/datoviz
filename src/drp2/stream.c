@@ -1089,6 +1089,17 @@ bool dvz_drp2_stream_create_render_pipeline_ex2(
     uint32_t attr_count, const uint32_t* attr_bindings, const uint32_t* attr_locations,
     const uint32_t* attr_formats, const uint32_t* attr_offsets)
 {
+    if (binding_count > DVZ_DRP2_MAX_BINDINGS || attr_count > DVZ_DRP2_MAX_BINDINGS)
+        return false;
+    if (binding_count > 0 && binding_strides == NULL)
+        return false;
+    if (attr_count > 0 &&
+        (attr_bindings == NULL || attr_locations == NULL || attr_formats == NULL ||
+         attr_offsets == NULL))
+    {
+        return false;
+    }
+
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE);
     if (command == NULL)
         return false;
@@ -1109,7 +1120,7 @@ bool dvz_drp2_stream_create_render_pipeline_ex2(
     command->u.create_render_pipeline.color_targets[0].format = 0;
     command->u.create_render_pipeline.color_targets[0].color_write_mask = 0xFu;
     command->u.create_render_pipeline.topology = topology;
-    uint32_t nb = binding_count < 16 ? binding_count : 16;
+    uint32_t nb = binding_count;
     command->u.create_render_pipeline.binding_count = nb;
     for (uint32_t i = 0; i < nb; i++)
     {
@@ -1117,7 +1128,7 @@ bool dvz_drp2_stream_create_render_pipeline_ex2(
         command->u.create_render_pipeline.binding_step_modes[i] =
             binding_step_modes != NULL ? binding_step_modes[i] : DVZ_DRP2_VERTEX_STEP_MODE_VERTEX;
     }
-    uint32_t na = attr_count < 16 ? attr_count : 16;
+    uint32_t na = attr_count;
     command->u.create_render_pipeline.attr_count = na;
     for (uint32_t i = 0; i < na; i++)
     {

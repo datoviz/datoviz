@@ -55,6 +55,8 @@ int test_drp2_packet_shader_module_roundtrip(TstContext* suite, const TstCase* i
 int test_drp2_packet_rejects_empty_shader_module_fields(TstContext* suite, const TstCase* item);
 
 int test_drp2_render_pipeline_step_modes_json(TstContext* suite, const TstCase* item);
+int test_drp2_render_pipeline_rejects_vertex_layout_overflow(
+    TstContext* suite, const TstCase* item);
 
 int test_drp2_recording_linear_roundtrip(TstContext* suite, const TstCase* item);
 

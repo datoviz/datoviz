@@ -35,15 +35,15 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzPrng* dvz_prng(void);
+DVZ_EXPORT DvzPrng* dvz_prng(void);
 
 
 
-uint64_t dvz_prng_uuid(DvzPrng* prng);
+DVZ_EXPORT uint64_t dvz_prng_uuid(DvzPrng* prng);
 
 
 
-void dvz_prng_destroy(DvzPrng* prng);
+DVZ_EXPORT void dvz_prng_destroy(DvzPrng* prng);
 
 
 

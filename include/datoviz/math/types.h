@@ -99,13 +99,16 @@ static char _PRETTY_SIZE[64] = {0};
 
 typedef uint64_t DvzSize;
 
-static inline char* dvz_pretty_size(DvzSize size)
+static inline char* dvz_pretty_size_r(DvzSize size, char* out, size_t out_size)
 {
+    if (out == NULL || out_size == 0)
+        return NULL;
+
     if (size <= PRETTY_SIZE_THRESHOLD)
     {
         snprintf( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-            _PRETTY_SIZE, 64, "%" PRIu64 " bytes", size);
-        return _PRETTY_SIZE;
+            out, out_size, "%" PRIu64 " bytes", size);
+        return out;
     }
     float s = (float)size;
     const char* u;
@@ -129,7 +132,14 @@ static inline char* dvz_pretty_size(DvzSize size)
         u = "bytes";
     }
     snprintf( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-        _PRETTY_SIZE, 64, "%.1f %s", s, u);
+        out, out_size, "%.1f %s", s, u);
+    return out;
+}
+
+static inline char* dvz_pretty_size(DvzSize size)
+{
+    // Compatibility helper; not thread-safe and overwritten on the next call in this TU.
+    dvz_pretty_size_r(size, _PRETTY_SIZE, sizeof(_PRETTY_SIZE));
     return _PRETTY_SIZE;
 }
 
