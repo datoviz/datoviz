@@ -14,9 +14,9 @@ consult `C_DISTRIBUTION.md` for implementation details on each work item.
 
 | Item | Status | Next action |
 |---|---|---|
-| pip Linux/macOS wheels | in flight | — |
-| pip Windows MinGW wheel | manual CI promoted | Run `.github/workflows/wheels.yml`; inspect Windows AMD64/ARM64 artifacts |
-| Wheel C integration | implemented, local Linux proof passed | Re-run on macOS and Windows CI |
+| pip Linux/macOS wheels | Linux manylinux and host-native macOS proof passed; release-target macOS tag still needs CI/older-builder proof | Run `.github/workflows/wheels.yml`; inspect Linux/macOS release artifacts |
+| pip Windows MinGW wheel | local Windows AMD64 build/validation fixes landed in `19e62968`; CI matrix confirmation pending | Inspect Windows AMD64/ARM64 artifacts from `.github/workflows/wheels.yml` |
+| Wheel C integration | implemented; Linux/macOS proof passed, Windows CMake-consumer fixes landed in `19e62968` | Re-run clean installed-wheel smokes on Windows CI |
 | WSL2 install docs | documented | Keep aligned with source-build docs |
 | "Build on Windows in VS" docs | documented in install guide | Expand into a dedicated page if user feedback needs it |
 | conda-forge preflight | macOS arm64 render/build proof passed locally; headless import/scene proof passed | Confirm Windows/Linux feedstock logs and dependency review |
@@ -59,14 +59,27 @@ consult `C_DISTRIBUTION.md` for implementation details on each work item.
 ### Wheels: MinGW is the right call
 
 Python users on Windows don't care whether the DLL was built with MinGW or MSVC. NumPy,
-SciPy, and matplotlib all ship MinGW-built DLLs on Windows. The MinGW wheel CI already
-exists in `.github/workflows-draft/` — promoting it to `.github/workflows/` is the single
-highest-leverage action for Windows support.
+SciPy, and matplotlib all ship MinGW-built DLLs on Windows. The MinGW wheel CI is now the
+manual `.github/workflows/wheels.yml` workflow; the highest-leverage Windows support action
+is to keep that workflow green and inspect the AMD64/ARM64 artifacts before upload.
 
 The MSVC wheel matters for C developers who `pip install datoviz` and then link against it
 from a Visual Studio project. MinGW DLLs require a `.lib` import library generated from a
 `.def` file to be usable from MSVC, which is friction. The MSVC wheel ships `datoviz.dll` +
 `datoviz.lib` directly, which VS can consume without extra steps.
+
+Current MinGW wheel implementation notes after `19e62968`:
+
+- Windows wheel staging requires Git Bash so `tools/copy_wheel_c_integration.sh` can copy the
+  bundled headers and CMake files.
+- Native payload staging copies Datoviz DLL/import-library outputs from `build/src`, root `build`,
+  and vcpkg runtime DLLs from `build/vcpkg_installed/.../bin`.
+- The wheel-local `DatovizConfig.cmake` accepts `libdatoviz.dll.a` as the MinGW import library
+  fallback when `datoviz.lib` is absent.
+- `datoviz.raw` adds the installed wheel directory to `DVZ_WHEEL_RUNTIME_DIRS` and, on Windows,
+  calls `os.add_dll_directory()` so bundled DLLs are discoverable.
+- The installed-wheel CMake consumer smoke prepends the wheel prefix to `PATH` before running the
+  compiled executable.
 
 ### `datoviz-config` is not for MSVC
 
