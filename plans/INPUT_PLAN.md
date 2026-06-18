@@ -40,7 +40,7 @@ DVZ_EXPORT void dvz_input_emit_pointer(DvzInputRouter* router, const DvzPointerE
 
 ## Step-by-step instructions for agents
 
-1. **Design the router internals.** Allocate a single `DvzInputRouter` per window host, manage dynamic arrays (or `DvzArray` helpers) of callbacks, and make each subscription flag whether it listens for pointer, keyboard, or generic events.
+1. **Design the router internals.** Allocate a single `DvzInputRouter` per window host, manage dynamic callback storage, and make each subscription flag whether it listens for pointer, keyboard, or generic events.
 2. **Implement pointer and keyboard emission helpers.** Normalize coordinates to window-relative space, translate backend buttons into `DvzPointerButton`, compute modifier bitmasks, and stamp `timestamp_ns`. Emit pointer/keyboard events through the router API so canvases always see the same structures regardless of GLFW/Qt/Headless backends.
 3. **Publish threaded events.** Document whether callbacks run on the backend thread (GLFW main thread, Qt UI thread) so downstream code knows about thread safety. Event emission should not block; backends can queue events and flush them during `dvz_window_host_poll()`.
 4. **Port legacy heuristics.** Reuse the v0.3 pointer/keyboard helpers for gesture timing thresholds and modifier mapping, but move them behind the router (e.g., subscribe to pointer events and re-emit gesture tags via `dvz_input_emit_event()` when needed). Do not reintroduce old public APIs like `dvz_mouse_*`.

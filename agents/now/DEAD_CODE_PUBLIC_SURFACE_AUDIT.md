@@ -1,35 +1,39 @@
 # Dead-Code And Public-Surface Disposition Audit
 
-Status: read-only audit, 2026-06-18.
+Status: completed cleanup, 2026-06-18.
 
 Scope: v0.3-era utility headers and related implementations under `ds`, `thread`, `common/mutex`,
 and `math/array`, plus umbrella exposure through `datoviz.h`, `ds.h`, `thread.h`, and `dvzmath.h`.
 
-Method: direct source inspection and `rg` reference checks across `include`, `src`, `testing`,
-`examples`, `tools`, `docs`, `spec`, and `agents`, excluding existing generated/build output only
-where noted. No code, build, generated docs, or submodule state was changed for this audit.
+Original method: direct source inspection and `rg` reference checks across `include`, `src`,
+`testing`, `examples`, `tools`, `docs`, `spec`, and `agents`, excluding existing generated/build
+output only where noted.
+
+Cleanup commits:
+
+1. `c3bebc55d Remove legacy DvzArray utility surface`
+2. `d5a1730d0 Remove legacy ds utility module`
+3. `408952cec Remove dead thread utility public surface`
 
 
-## Summary
+## Completed Outcome
 
-The active v0.4 scene/app/runtime path does not need the installed `ds` API, the legacy
-`DvzArray` API, or the `DvzFifo`/`DvzDeq` queue API as public surface. `src/common/mutex.c`,
-`src/thread/atomic.cpp`, and `src/thread/thread.c` still support active internal implementation
-paths, but their installed headers expose platform or callback-shaped utility APIs that should not
-look like ordinary v0.4 user APIs.
+The active v0.4 scene/app/runtime path no longer installs or generates binding/docs surface for
+the legacy `ds` API, `DvzArray`, `DvzFifo`/`DvzDeq`, public thread/atomic helpers, or public mutex
+helpers.
 
-The most important distinction is public-surface exposure versus internal utility use:
+Current disposition:
 
-1. `datoviz.h` does not include `ds.h` or `thread.h`, but it does include `dvzmath.h`, which includes
-   `math/array.h`.
-2. The raw `ctypes` generator filters callable functions by `DVZ_EXPORT`; these utility functions
-   are not emitted as callable raw functions today.
-3. The header/type extractor still records typedefs, enums, and layoutable records from installed
-   headers, so `DvzArray`, `DvzDataType`, `DvzList`, `DvzDeq*`, `DvzFifo`, `DvzThread`, and related
-   records leak into generated C reference/raw type namespaces.
+1. `math/array`, `ds`, and FIFO/deq implementation files and tests are deleted.
+2. `common/mutex`, `thread/atomic`, and `thread/thread` remain active implementation helpers, but
+   their headers now live under `src/` and are not installed public API.
+3. Raw `ctypes` policy, API extraction defaults, generated C reference docs, and public header
+   composition were regenerated or checked after each cleanup slice.
+4. There are no remaining dead-code cleanup steps from this audit. Further work belongs to public
+   API hardening, documentation polish, or release validation lanes, not this dead-code lane.
 
 
-## Disposition Table
+## Original Disposition Table
 
 | API family | Classification | Current reference evidence | Used outside own module/tests? | Included by top-level public umbrella? | Generated C reference/raw `ctypes` effect | Recommended RC1 action | Removal or privatization risk |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -41,7 +45,7 @@ The most important distinction is public-surface exposure versus internal utilit
 | `include/datoviz/thread/thread.h`, `src/thread/thread.c` | active internal implementation | Header exposes callback type and thread API at `include/datoviz/thread/thread.h:35`, `include/datoviz/thread/thread.h:37`, `include/datoviz/thread/thread.h:56`; implementation at `src/thread/thread.c:33`, `src/thread/thread.c:48`; active video use at `src/video/encoder_backend_kvazaar.c:539`, `src/video/encoder_backend_kvazaar.c:559`, `src/video/encoder_backend_kvazaar.c:568`; tests at `src/thread/tests/test_thread.c:45`; build inclusion via `src/thread/CMakeLists.txt:6`. | Yes. Used by `src/video/encoder_backend_kvazaar.c` outside `src/thread`. | No through `<datoviz.h>`. Exposed by focused `include/datoviz/thread.h:21`. | Binding policy includes `datoviz/thread.h` at `spec/bindings/ctypes.yml:26` and treats `dvz_thread` as a global callback at `spec/bindings/ctypes.yml:63`; raw callable function is not emitted, but types leak: `docs/reference/c-api/types.md:7261`, `datoviz/_ctypes.py:2800`, `datoviz/_ctypes.py:2992`. | Keep implementation for video or replace with a private worker helper. Remove from installed headers and binding policy unless Datoviz explicitly wants a public cross-platform thread API, which would need exported functions and ownership docs. | Medium. Active video dependency means build removal is unsafe today; public privatization risk is mostly external utility compatibility. |
 
 
-## Prioritized Findings
+## Original Prioritized Findings
 
 1. `math/array.h` is the highest-priority public-surface leak because it is included by
    `<datoviz.h>` through `dvzmath.h`, yet `rg` shows no active consumer outside its own
@@ -59,36 +63,39 @@ The most important distinction is public-surface exposure versus internal utilit
    public API unless Datoviz commits to a documented threading utility surface.
 
 
-## Suggested Cleanup Sequence
+## Completed Cleanup Sequence
 
-1. Remove `math/array.h` from `dvzmath.h`; regenerate API metadata/docs/raw ctypes and confirm
+1. Removed `math/array.h` from `dvzmath.h`; regenerated API metadata/docs/raw ctypes and confirmed
    `DvzArray`, `DvzDataType`, `DvzArrayCopyType`, and `DVZ_DTYPE_*` disappear from generated public
    surfaces.
-2. Remove `datoviz/ds.h` from binding policy and installed public inventory; then remove
-   `datoviz_ds` from `DVZ_CORE_COMPONENTS` if a full-tree build confirms no private references.
-3. Split `thread.h`: keep any needed private implementation headers under `src/thread` or
-   `src/common`, and remove `fifo.h`/`atomic.h`/`thread.h` from installed public headers unless an
-   explicit advanced threading API is approved.
-4. Remove `fifo.c`/`fifo_structs.h` and Deq callback binding policy if no private consumer appears
-   after the header split.
-5. Privatize `common/mutex.h` or replace it with opaque public handles; update internal includes in
+2. Removed `datoviz/ds.h` from binding policy and installed public inventory, removed
+   `datoviz_ds` from `DVZ_CORE_COMPONENTS`, and deleted isolated `src/ds` implementation/tests.
+3. Split thread helpers into private implementation headers under `src/thread` and `src/common`,
+   and removed `fifo.h`/`atomic.h`/`thread.h` from installed public headers.
+4. Removed `fifo.c`/`fifo_structs.h` and the Deq callback binding policy special case.
+5. Privatized `common/mutex.h` as `src/common/mutex_internal.h` and updated internal includes in
    `app`, `common/log`, `math/prng`, and `thread`.
-6. Regenerate C reference/raw ctypes and run the public header probes. The expected public-surface
-   delta is removal of utility records/enums/types, not removal of active scene/app/runtime
-   functions.
+6. Regenerated C reference/raw ctypes and ran public header probes. The public-surface delta is
+   removal of utility records/enums/types, not removal of active scene/app/runtime functions.
 
 
 ## Validation Notes
 
-No build or generated-output commands were run for the audit itself. Before implementing the cleanup,
-the narrow validation should be:
+Final validation for the cleanup lane included:
 
 ```sh
 just build
-just ctypes
-just ctypes-check
+just test
+cmake --build build --target dvz_public_header_probe dvz_public_header_cpp_probe
+uv run --with libclang python tools/bindings/extract_api.py
+uv run --with libclang python tools/bindings/generate_ctypes_abi.py
+uv run --with libclang python tools/bindings/generate_ctypes.py --check
+uv run --with libclang python tools/bindings/generate_array_facade.py --check
+uv run --with libclang python tools/bindings/validate_ctypes_policy.py
+uv run --with libclang python tools/bindings/validate_array_facade.py
+PYTHONPATH=. uv run --with libclang python tools/bindings/validate_ctypes_abi.py
+uv run --with libclang python3 tools/build_api_c.py --check
 git diff --check
 ```
 
-For each removal commit, also run the relevant focused C tests before deleting tests, then run the
-public header probes and distribution header smoke because this is installed-surface work.
+The final full test result was 958/959 passed, 0 failed, 1 skipped.
