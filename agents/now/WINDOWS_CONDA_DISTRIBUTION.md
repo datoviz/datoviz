@@ -15,8 +15,8 @@ consult `C_DISTRIBUTION.md` for implementation details on each work item.
 | Item | Status | Next action |
 |---|---|---|
 | pip Linux/macOS wheels | Linux manylinux and host-native macOS proof passed; release-target macOS tag still needs CI/older-builder proof | Run `.github/workflows/wheels.yml`; inspect Linux/macOS release artifacts |
-| pip Windows MinGW wheel | local Windows AMD64 build/validation fixes landed in `19e62968`; CI matrix confirmation pending | Inspect Windows AMD64/ARM64 artifacts from `.github/workflows/wheels.yml` |
-| Wheel C integration | implemented; Linux/macOS proof passed, Windows CMake-consumer fixes landed in `19e62968` | Re-run clean installed-wheel smokes on Windows CI |
+| pip Windows MinGW wheel | local Windows AMD64 build/validation passed after `19e62968`; CI matrix confirmation pending | Inspect Windows AMD64/ARM64 artifacts from `.github/workflows/wheels.yml` |
+| Wheel C integration | implemented; Linux/macOS proof passed, Windows AMD64 CMake-consumer smoke passed locally | Re-run clean installed-wheel smokes on Windows CI |
 | WSL2 install docs | documented | Keep aligned with source-build docs |
 | "Build on Windows in VS" docs | documented in install guide | Expand into a dedicated page if user feedback needs it |
 | conda-forge preflight | macOS arm64 render/build proof passed locally; headless import/scene proof passed | Confirm Windows/Linux feedstock logs and dependency review |

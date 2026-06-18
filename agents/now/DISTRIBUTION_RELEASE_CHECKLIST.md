@@ -72,6 +72,9 @@ Keep this section compact; detailed history belongs in commits and release notes
   `manylinux_2_34_x86_64` tag, and installed-wheel import, `datoviz.cli`, shaderc GLSL
   compilation, and CMake consumer checks passed. The optional Qt probe failed only because PyQt6
   was absent in the clean venv.
+- On 2026-06-18 Windows AMD64, local MinGW wheel proof passed after `19e62968`: wheel build,
+  native dependency inspection, installed-wheel import, `datoviz.cli`, shaderc GLSL compilation,
+  and the installed-wheel CMake consumer check completed successfully.
 - On 2026-06-18 macOS arm64, conda preflight passed after bootstrapping micromamba in `/tmp` and
   building from a generated release source bundle. `conda render` and `conda mambabuild
   --override-channels -c conda-forge --no-anaconda-upload conda-recipe` produced local
@@ -116,7 +119,7 @@ When native code must be rebuilt first:
 just wheel-ci-local <host-platform-tag> 1
 ```
 
-Windows AMD64 remains the first local Windows proof target:
+Windows AMD64 has local proof. Use this only to reproduce or debug the Windows AMD64 lane:
 
 ```sh
 set VCPKG_ROOT=C:/vcpkg
@@ -141,9 +144,9 @@ python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-cons
 ```
 
 Record the resulting wheel filename, bundled DLL list, native dependency inspection, and CMake
-consumer output before treating Windows AMD64 as proven. If AMD64 is green locally, use GitHub
-Actions only for the remaining matrix confirmation, especially Windows ARM64 and older macOS
-release tags.
+consumer output for release notes. Use GitHub Actions for matrix confirmation, especially Windows
+ARM64 and older macOS release tags. Windows `wheel-stage` requires Git Bash for the C integration
+copy script.
 
 Before accepting wheel evidence:
 

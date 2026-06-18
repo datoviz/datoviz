@@ -53,6 +53,10 @@ On 2026-06-18 macOS arm64:
   `wheelhouse/datoviz-0.4.0.dev0-py3-none-manylinux_2_34_x86_64.whl`; auditwheel kept the
   `manylinux_2_34_x86_64` tag; installed-wheel import, `datoviz.cli`, shaderc GLSL compilation,
   and CMake consumer checks passed; optional Qt probe failed only because PyQt6 was absent.
+- Local Windows AMD64 wheel proof passes after `19e62968`: the MinGW wheel builds, native
+  dependencies inspect, installed-wheel import and `datoviz.cli` checks pass, shaderc GLSL
+  compilation is available, and the installed-wheel CMake consumer builds and runs with bundled
+  DLL discovery.
 - Local conda render/build proof passes from a generated release source bundle after the Python
   recipe scripts force `PIP_USER=false`: `libdatoviz` and `datoviz` packages build, and the package
   test imports `datoviz.raw` and creates/destroys a scene without a Vulkan device.
@@ -72,6 +76,9 @@ On 2026-06-18 macOS arm64:
 - `datoviz-config` is installed by wheels for GCC-compatible Linux, macOS, and MSYS2/MinGW shells.
   MSVC users use CMake, not `datoviz-config`.
 - Wheels bundle public headers and a relocatable wheel-local `DatovizConfig.cmake`.
+- Windows MinGW wheels bundle the Datoviz DLL, `libdatoviz.dll.a` import library when present, and
+  vcpkg runtime DLLs; `datoviz.raw` configures wheel-local runtime DLL discovery before loading the
+  library.
 - System installs generate `datoviz.pc` and installed CMake package metadata.
 - `DVZ_VENDORED_DEPS=OFF` plus per-dependency source modes supports package-manager builds for
   GLFW, cglm, Kvazaar, and mimalloc where those packages are available. `msdf-atlas-gen` remains
@@ -87,8 +94,9 @@ On 2026-06-18 macOS arm64:
 
 1. Prove release-target macOS wheels in CI or an older-target builder, especially
    `macosx_11_0_arm64`.
-2. Prove Windows AMD64 first, then Windows ARM64: build wheel, inspect native dependencies, install
-   in a clean environment, and run the CMake consumer check.
+2. Confirm Windows AMD64 in GitHub Actions, then prove Windows ARM64: build wheel, inspect native
+   dependencies, install in a clean environment, and run the CMake consumer check where native
+   execution is available.
 3. Validate the vcpkg overlay on Windows with vcpkg installed; replace placeholder source-bundle
    SHA512 values only after tagging/release-asset publication.
 4. Confirm conda recipe dependency names, Unix paths, and Windows DLL layout in staged-recipes or
@@ -131,6 +139,9 @@ python tools/release_wheels/build_wheel.py --dist-dir wheelhouse --platform-tag 
 just wheel-inspect --wheel wheelhouse/*.whl --native-deps
 python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional
 ```
+
+On Windows, `wheel-stage` requires Git Bash for the C integration copy script. The
+`--cmake-consumer` check is part of the Windows proof, not just inventory.
 
 Before finalizing edits in this lane, run:
 
