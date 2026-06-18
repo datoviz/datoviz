@@ -122,12 +122,11 @@ bool _scene_primitive_visual_shader_desc(
             out, "scene.primitive",
             instanced ? (item_state ? "lit_instanced_item_state" : "lit_instanced")
                       : (item_state ? "lit_item_state" : "lit"));
-        if (item_state)
-        {
-            out->vertex_spirv_key = instanced ? "primitive_lit_instanced_item_state_vert"
-                                              : "primitive_lit_item_state_vert";
-            out->fragment_spirv_key = "primitive_lit_frag";
-        }
+        out->vertex_spirv_key =
+            instanced ? (item_state ? "primitive_lit_instanced_item_state_vert"
+                                    : "primitive_lit_instanced_vert")
+                      : (item_state ? "primitive_lit_item_state_vert" : "primitive_lit_vert");
+        out->fragment_spirv_key = "primitive_lit_frag";
         return true;
     }
 

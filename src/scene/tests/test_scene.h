@@ -377,6 +377,8 @@ int test_scene_pixel_emit_wgsl_instanced_quads(TstContext* suite, const TstCase*
 
 int test_scene_primitive_triangle_list_glsl_executes(TstContext* suite, const TstCase* item);
 
+int test_scene_primitive_lit_glsl_uses_spirv(TstContext* suite, const TstCase* item);
+
 int test_scene_primitive_line_strip_glsl_executes(TstContext* suite, const TstCase* item);
 
 int test_scene_primitive_triangle_list_emit_wgsl(TstContext* suite, const TstCase* item);

@@ -51,6 +51,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_point_emit_wgsl_instanced_quads);
     TST_CASE(test_scene_pixel_emit_wgsl_instanced_quads);
     TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_primitive_triangle_list_glsl_executes);
+    TST_CASE(test_scene_primitive_lit_glsl_uses_spirv);
     TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_primitive_line_strip_glsl_executes);
     TST_CASE(test_scene_primitive_triangle_list_emit_wgsl);
     TST_CASE(test_scene_mesh_indexed_default_color_emits_draw_indexed);

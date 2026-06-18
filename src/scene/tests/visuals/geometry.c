@@ -218,6 +218,77 @@ int test_scene_primitive_triangle_list_glsl_executes(TstContext* suite, const Ts
 }
 
 
+int test_scene_primitive_lit_glsl_uses_spirv(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    AT(visual != NULL);
+
+    vec3 positions[3] = {
+        {-0.5f, -0.4f, 0.0f},
+        { 0.0f,  0.4f, 0.0f},
+        { 0.5f, -0.4f, 0.0f},
+    };
+    vec3 normals[3] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 180, 255, 255}, {255, 255, 255, 255}};
+
+    AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(visual, "normal", normals, 3) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool found_vertex = false;
+    bool found_fragment = false;
+    const uint32_t count = dvz_drp2_stream_count(stream);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
+            continue;
+        if (strcmp(command->u.create_shader_module.builtin_family, "scene.primitive") != 0 ||
+            strcmp(command->u.create_shader_module.builtin_variant, "lit") != 0)
+            continue;
+
+        AT(strcmp(command->u.create_shader_module.format, "spirv") == 0);
+        AT(command->u.create_shader_module.spirv != NULL);
+        AT(command->u.create_shader_module.spirv_size > 0);
+        found_vertex = found_vertex ||
+                       strcmp(command->u.create_shader_module.stage, "VERTEX") == 0;
+        found_fragment = found_fragment ||
+                         strcmp(command->u.create_shader_module.stage, "FRAGMENT") == 0;
+    }
+    AT(found_vertex);
+    AT(found_fragment);
+
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_point_emit_wgsl_instanced_quads(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
