@@ -59,9 +59,9 @@ docs-doctest lang="both":
     @just doctest "{{lang}}"
 
 # Run all Python examples and generate screenshots in data/gallery/.
-gallery-screenshots filter="": && gallery
-    @echo "Generating screenshots from examples..."
-    @python tools/build_screenshots.py {{filter}}
+gallery-screenshots filter="":
+    @echo "Legacy Python gallery screenshot flow is quarantined. Use just capture-gallery or just gallery-refresh." >&2
+    @exit 2
 
 
 # Capture v0.4 C gallery screenshots into data/gallery/v0.4/.
@@ -204,9 +204,13 @@ docs-serve: serve
 #
 
 # Publish the mkdocs website on GitHub Pages.
-publish:
+publish confirm='no':
     #!/usr/bin/env bash
     set -e
+    if [ "{{confirm}}" != "yes" ]; then
+        echo "Refusing docs publish without confirm=yes." >&2
+        exit 2
+    fi
 
     # Get the current branch name
     current_branch=$(git rev-parse --abbrev-ref HEAD)
@@ -223,5 +227,6 @@ publish:
     popd
 #
 
-docs-publish: publish
+docs-publish confirm='no':
+    @just publish "{{confirm}}"
 #

@@ -11,15 +11,18 @@ version:
     echo ${VERSION}
 #
 
-version-bump version:
-    @just bump "{{version}}"
+version-bump version confirm='no':
+    @just bump "{{version}}" "{{confirm}}"
 #
 
-bump version:
+bump version confirm='no':
     #!/usr/bin/env python
     from datetime import datetime
     import os
     import re
+
+    if "{{confirm}}" != "yes":
+        raise SystemExit("Refusing to bump versions without confirm=yes. Run: just version-bump {{version}} yes")
 
     # Define the version
     version = "{{version}}"
@@ -75,12 +78,13 @@ bump version:
     print("Updated ctypes wrapper")
 #
 
-tag version:
-    git tag -a v{{version}} -m "v{{version}}"
+tag version confirm='no':
+    @if [ "{{confirm}}" != "yes" ]; then echo "Refusing to create tag without confirm=yes. Run: just release-tag {{version}} yes" >&2; exit 2; fi
+    @git tag -a v{{version}} -m "v{{version}}"
 #
 
-release-tag version:
-    @just tag "{{version}}"
+release-tag version confirm='no':
+    @just tag "{{version}}" "{{confirm}}"
 #
 
 runid:
@@ -91,42 +95,30 @@ runid:
 
 # Download the built wheel artifacts
 download:
+    @echo "Obsolete v0.3 artifact download flow. Use manual .github/workflows/wheels.yml artifacts plus just wheel-inspect/wheel-check." >&2
+    @exit 2
+#
+
+draft confirm='no':
     #!/usr/bin/env sh
-    tag=$(git describe --tags --abbrev=0)
-    echo "Tag: $tag"
-
-    run_id=$(just runid)
-    echo "Workflow run: $run_id"
-
-    if [ -z "$run_id" ]; then
-        echo "No successful wheel workflow run found"
-        exit 1
+    if [ "{{confirm}}" != "yes" ]; then
+        echo "Refusing to create a GitHub release draft without confirm=yes. Prefer the documented manual RC flow." >&2
+        exit 2
     fi
+    echo "Obsolete v0.3 draft flow. Use the v0.4 release checklist and vetted artifacts." >&2
+    exit 2
+#
 
-    artifacts_dir="release_artifacts/$tag"
-    if ! ls $artifacts_dir/*.whl 1> /dev/null 2>&1; then
-        gh run download "$run_id" --dir "$artifacts_dir"
-        find "$artifacts_dir" -mindepth 2 -type f -exec mv -t "$artifacts_dir" {} +
-        find "$artifacts_dir" -type d -empty -delete
+release-draft confirm='no':
+    @just draft "{{confirm}}"
+#
+
+upload confirm='no':
+    #!/usr/bin/env sh
+    if [ "{{confirm}}" != "yes" ]; then
+        echo "Refusing PyPI upload without confirm=yes. Prefer TestPyPI rehearsal and the manual release checklist." >&2
+        exit 2
     fi
-#
-
-draft:
-    #!/usr/bin/env sh
-    just download
-
-    tag=$(git describe --tags --abbrev=0)
-    artifacts_dir="release_artifacts/$tag"
-    gh release create "$tag" --draft --title "$tag" --notes "" $artifacts_dir/*
-    # gh release upload "$tag"
-#
-
-release-draft:
-    @just draft
-#
-
-upload:
-    #!/usr/bin/env sh
 
     # Put this in your ~/.pypirc:
     # [pypi]
@@ -138,8 +130,8 @@ upload:
     twine upload $artifacts_dir/*.whl
 #
 
-pypi-upload:
-    @just upload
+pypi-upload confirm='no':
+    @just upload "{{confirm}}"
 #
 
 wheels:
@@ -150,9 +142,13 @@ wheels:
     exit 1
 #
 
-nightly arg='':
+nightly arg='' confirm='no':
     #!/usr/bin/env sh
     set -e
+    if [ "{{confirm}}" != "yes" ]; then
+        echo "Refusing nightly artifact mutation without confirm=yes." >&2
+        exit 2
+    fi
 
     DATE=$(date +%Y%m%d)
     VERSION_TAG="dev${DATE}"
@@ -222,15 +218,16 @@ release-preflight profile='rc1' *args='':
 
 
 # -------------------------------------------------------------------------------------------------
-dockerpush name:
-    docker build -t rossant/datoviz_{{name}}:latest -f docker/Dockerfile_{{name}} .
-    docker login
-    docker push rossant/datoviz_{{name}}:latest
+dockerpush name confirm='no':
+    @if [ "{{confirm}}" != "yes" ]; then echo "Refusing Docker push without confirm=yes." >&2; exit 2; fi
+    @docker build -t rossant/datoviz_{{name}}:latest -f docker/Dockerfile_{{name}} .
+    @docker login
+    @docker push rossant/datoviz_{{name}}:latest
     # docker run -it rossant/datoviz_{{name}}:latest
 #
 
-docker-push name:
-    @just dockerpush "{{name}}"
+docker-push name confirm='no':
+    @just dockerpush "{{name}}" "{{confirm}}"
 #
 
 # on macOS do

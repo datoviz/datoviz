@@ -329,4 +329,7 @@ tryimport:
     @python -c "import datoviz"
 #
 
-api: symbols ctypes doc tryimport # after every API update
+api:
+    @echo "Legacy API mega-target is quarantined. Use just bindings-preflight and just docs-api-check." >&2
+    @exit 2
+#

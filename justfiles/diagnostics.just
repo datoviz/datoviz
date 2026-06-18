@@ -59,8 +59,12 @@ cloc:
     cloc include src datoviz tests pytests examples cli --quiet
 #
 
-copyright:
+copyright confirm='no':
     #!/bin/bash
+    if [ "{{confirm}}" != "yes" ]; then
+        echo "Refusing bulk copyright edits without confirm=yes." >&2
+        exit 2
+    fi
 
     # Define the copyright text
     COPYRIGHT_TEXT="/*
@@ -143,21 +147,28 @@ exec arg:
 
 [linux]
 pydemo_dll:
+    @echo "Legacy dvz_demo ctypes entry point is quarantined for v0.4. Use just example-c <name> or Python binding smokes." >&2
+    @exit 2
     @LD_LIBRARY_PATH=build/ python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.so').dvz_demo()"
 #
 
 [macos]
 pydemo_dll:
+    @echo "Legacy dvz_demo ctypes entry point is quarantined for v0.4. Use just example-c <name> or Python binding smokes." >&2
+    @exit 2
     @DYLD_LIBRARY_PATH=build/ python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dylib').dvz_demo()"
 #
 
 [windows]
 pydemo_dll:
+    @echo "Legacy dvz_demo ctypes entry point is quarantined for v0.4. Use just example-c <name> or Python binding smokes." >&2
+    @exit 2
     python -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dll').dvz_demo()"
 #
 
 pydemo:
-    python -c "import datoviz; datoviz.demo()"
+    @echo "Legacy datoviz.demo() entry point is quarantined for v0.4. Use just example-c <name> or binding smokes." >&2
+    @exit 2
 #
 
 python *args:
