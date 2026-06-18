@@ -46,6 +46,9 @@ On 2026-06-18 macOS arm64:
 - Host-native repaired macOS wheel proof passes for imports, `datoviz-config`, bundled
   headers/CMake files, native dependency inspection, and the wheel CMake consumer. The optional Qt
   probe fails only because PyQt6 is absent in the clean venv.
+- Local conda render/build proof passes from a generated release source bundle after the Python
+  recipe scripts force `PIP_USER=false`: `libdatoviz` and `datoviz` packages build, and the package
+  test imports `datoviz.raw` and creates/destroys a scene without a Vulkan device.
 - Local release-target proof for `macosx_11_0_arm64` remains blocked by this host's newer macOS 15
   deployment target in native outputs and Homebrew dependencies; prove it in CI or an older-target
   builder.
@@ -81,8 +84,8 @@ On 2026-06-18 macOS arm64:
    in a clean environment, and run the CMake consumer check.
 3. Validate the vcpkg overlay on Windows with vcpkg installed; replace placeholder source-bundle
    SHA512 values only after tagging/release-asset publication.
-4. Render/build `conda-recipe/` in a local conda-build or staged-recipes environment and confirm
-   dependency names on every target platform.
+4. Confirm conda recipe dependency names, Unix paths, and Windows DLL layout in staged-recipes or
+   feedstock CI logs; local macOS arm64 render/build is green.
 5. Keep Homebrew, `.deb`, Spack, rpm, and conan behind the wheel/conda/vcpkg proof unless release
    scope changes.
 

@@ -7,17 +7,26 @@ Current preflight:
 
 - `import datoviz`, `import datoviz.raw`, `raw.dvz_scene()`, and destroy passed locally without
   creating a Vulkan device.
+- On 2026-06-18 macOS arm64, `conda render` and `conda mambabuild --override-channels -c
+  conda-forge --no-anaconda-upload conda-recipe` passed from a generated local release source
+  bundle. The resulting package test imported `datoviz`, imported `datoviz.raw`, and created and
+  destroyed a scene.
 - The raw ctypes loader can find a native Datoviz library installed under a conda-style prefix
   (`$PREFIX/lib` on Unix, `$PREFIX/Library/bin` on Windows).
 - Direct conda-forge repodata check found `cglm` on Linux, macOS, and Windows target subdirs.
 - Direct conda-forge repodata check did not find `kvazaar`; keep `DVZ_KVAZAAR_SOURCE=OFF` for the
   first recipe unless a conda-forge package lands.
+- The Python build scripts set `PIP_USER=false`; this is required in environments where pip config
+  would otherwise force a user install, which conda-build forbids.
 
 Before submitting:
 
 1. Replace the source `sha512` placeholder in `meta.yaml`.
-2. Verify dependency names against a local `conda-build` or staged-recipes run.
-3. Confirm Windows paths and DLL packaging in the feedstock CI logs.
+2. Confirm Linux and Windows paths, dependency names, and DLL/shared-library packaging in
+   staged-recipes or feedstock CI logs.
+3. Revisit explicit `run:` dependencies after staged-recipes review; the local macOS build warned
+   that several manually listed run requirements were over-declared even though they are valid
+   host/build requirements.
 4. Keep package names as proposed: `libdatoviz` for the C library and `datoviz` for Python.
 
 The source bundle must be created with `tools/release_source_bundle.py` or `just

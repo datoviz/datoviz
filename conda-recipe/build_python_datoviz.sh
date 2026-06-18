@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-"$PYTHON" -m pip install . --no-deps --no-build-isolation --ignore-installed -vv
+PIP_USER=false "$PYTHON" -m pip install . --no-deps --no-build-isolation -vv

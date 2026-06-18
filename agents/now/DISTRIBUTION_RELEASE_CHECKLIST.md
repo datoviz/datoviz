@@ -65,6 +65,12 @@ Keep this section compact; detailed history belongs in commits and release notes
   `datoviz-config`, bundled headers/CMake files, native dependency inspection, and the wheel CMake
   consumer. The local repaired wheel was host-tagged `macosx_15_0_arm64`, so
   `macosx_11_0_arm64` still needs CI or an older-target builder.
+- On 2026-06-18 macOS arm64, conda preflight passed after bootstrapping micromamba in `/tmp` and
+  building from a generated release source bundle. `conda render` and `conda mambabuild
+  --override-channels -c conda-forge --no-anaconda-upload conda-recipe` produced local
+  `libdatoviz-0.4.0-h70deae4_0.tar.bz2` and `datoviz-0.4.0-py312_0.tar.bz2` packages; the package
+  test imported `datoviz`, imported `datoviz.raw`, and created/destroyed `raw.dvz_scene()` without
+  a Vulkan device.
 - On Ubuntu 24.04 noble, the distro-style system source-install lane passed with system
   `libmimalloc`, `libglfw`, `zlib`, `freetype`, and `tinyxml2`, with no unresolved `ldd` entries.
 
@@ -112,6 +118,26 @@ set DVZ_CMAKE_ARGS=-DDVZ_ENABLE_SHADERC=ON
 just wheel-ci-local win_amd64 1
 ```
 
+Equivalent expanded Windows AMD64 runbook, useful when debugging without GitHub Actions:
+
+```sh
+set VCPKG_ROOT=C:/vcpkg
+set VCPKG_BINARY_SOURCES=clear;files,C:/vcpkg-binary-cache,readwrite
+set DVZ_CMAKE_ARGS=-DDVZ_ENABLE_SHADERC=ON
+
+just build
+just ctypes
+python tools/release_wheels/stage_wheel.py --clean
+python tools/release_wheels/build_wheel.py --dist-dir wheelhouse --platform-tag win_amd64
+just wheel-inspect --wheel wheelhouse/*.whl --native-deps
+python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional
+```
+
+Record the resulting wheel filename, bundled DLL list, native dependency inspection, and CMake
+consumer output before treating Windows AMD64 as proven. If AMD64 is green locally, use GitHub
+Actions only for the remaining matrix confirmation, especially Windows ARM64 and older macOS
+release tags.
+
 Before accepting wheel evidence:
 
 1. Linux wheels build and inspect on `x86_64` and `aarch64`.
@@ -144,6 +170,17 @@ Expected proof:
 - `raw.dvz_scene()` and `raw.dvz_scene_destroy()` pass without creating a Vulkan device.
 - `just distribution-validate-local audit` reports the expected conda prefix metadata and no
   unresolved runtime dependencies.
+
+macOS arm64 notes from the local 2026-06-18 run:
+
+- `libdatoviz` linked dynamically to conda-forge `mimalloc`, `libzlib`, `libfreetype6`,
+  `tinyxml2`, `glfw`, and `libcxx`.
+- The recipe intentionally disables Kvazaar for now because direct conda-forge repodata did not
+  expose `kvazaar` on the target subdirs checked.
+- Conda-build warned that manually listed run dependencies such as `cglm`, `libpng`, `zlib`,
+  `freetype`, and `libvulkan-loader` were over-declared on macOS. Revisit `host` versus explicit
+  `run` requirements during staged-recipes review; do not drop platform-critical runtime
+  dependencies solely from this macOS warning.
 
 
 ## vcpkg Overlay Preflight

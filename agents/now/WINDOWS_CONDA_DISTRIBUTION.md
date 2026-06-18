@@ -19,7 +19,7 @@ consult `C_DISTRIBUTION.md` for implementation details on each work item.
 | Wheel C integration | implemented, local Linux proof passed | Re-run on macOS and Windows CI |
 | WSL2 install docs | documented | Keep aligned with source-build docs |
 | "Build on Windows in VS" docs | documented in install guide | Expand into a dedicated page if user feedback needs it |
-| conda-forge preflight | headless import proof passed locally; draft recipe added | Render/build `conda-recipe/` in conda-build or staged-recipes |
+| conda-forge preflight | macOS arm64 render/build proof passed locally; headless import/scene proof passed | Confirm Windows/Linux feedstock logs and dependency review |
 | vcpkg overlay | draft added | Replace release-source SHA512 after stable release tag and source bundle |
 
 ### Needs release tag
@@ -174,6 +174,17 @@ If this crashes, the library needs a lazy Vulkan initialisation path — defer d
 until first `dvz_app()` call, not at library load or `dvz_scene()`. This is the single
 largest unknown for the conda-forge submission.
 
+### Current local conda proof
+
+On 2026-06-18 macOS arm64, a generated release source bundle rendered and built with
+`conda mambabuild --override-channels -c conda-forge --no-anaconda-upload conda-recipe`.
+The local build produced `libdatoviz` and `datoviz` packages, then the package test imported
+`datoviz`, imported `datoviz.raw`, and created/destroyed `raw.dvz_scene()` without a Vulkan device.
+
+The first local build exposed a Python-output issue: pip inherited a user-install preference and
+failed inside conda-build. The recipe scripts now force `PIP_USER=false` and avoid
+`--ignore-installed`.
+
 ### conda-forge submission process
 
 1. Validate Vulkan headless import (above)
@@ -220,6 +231,7 @@ conda, and vcpkg lanes. See C_DISTRIBUTION.md item 15 for the recipe skeleton.
 | `.github/workflows/wheels.yml` | Manual wheel CI including Windows MinGW jobs |
 | `vcpkg-overlay/ports/datoviz/` | Draft vcpkg overlay port |
 | `conda-recipe/` | Draft conda-forge staged-recipes starting point |
+| `agents/now/DISTRIBUTION_RELEASE_CHECKLIST.md` | Current local preflight commands and recorded package evidence |
 | `CMakePresets.json` | `msvc` and `mingw` presets for Windows builds |
 | `justfile` | `just msvc`, `just mingw` recipes |
 | `datoviz/cli.py` | `datoviz-config` console script |

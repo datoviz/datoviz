@@ -117,6 +117,6 @@ The v0.4 release-candidate packaging work is active:
 | Windows MinGW wheel | active CI path |
 | Windows MSVC wheel | planned before final v0.4 |
 | vcpkg overlay | active draft for C/C++ users; publication waits for a stable release tag |
-| conda-forge | planned after headless import and dependency preflight |
+| conda-forge | draft recipe builds locally; feedstock submission waits for release tag and platform proof |
 
 Until those packages are published, build from source for reproducible v0.4 testing.
