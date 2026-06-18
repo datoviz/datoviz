@@ -64,6 +64,7 @@ Use the primary `just` recipes from the repository root.
 | Install-smoke the wheel | `just wheel-check --cmake-consumer --qt-probe optional` |
 | Run the local CI-parity path | `just wheel-ci-local manylinux_2_34_x86_64` |
 | Run local CI parity after rebuilding native code | `just wheel-ci-local manylinux_2_34_x86_64 1` |
+| Run the local manylinux Docker proof | `just wheel-manylinux-docker x86_64` |
 | Check a local TestPyPI candidate | `just testpypi-check manylinux_2_34_x86_64` |
 | Upload one local wheel to TestPyPI | `just testpypi-upload manylinux_2_34_x86_64 dist yes` |
 
@@ -253,3 +254,37 @@ just wheel-ci-local <tag>
 
 Do not publish artifacts from a dirty or manually patched staging tree. Recreate `build/wheel-stage`
 with `just wheel-stage --clean` before release validation.
+
+
+## Local Manylinux Docker Proof
+
+A normal recent Linux workstation can build and smoke-test a Datoviz wheel, but it may not be valid
+`manylinux_2_34` release evidence. For example, an Ubuntu 24.04 native build can emit GLIBC 2.38
+symbols, which auditwheel correctly constrains to a newer platform tag.
+
+Use the local manylinux Docker route for Linux x86_64 RC evidence:
+
+```sh
+just wheel-manylinux-docker x86_64
+```
+
+By default this uses the current upstream PyPA base image:
+
+```text
+quay.io/pypa/manylinux_2_34_x86_64:latest
+```
+
+Override the image only for a known equivalent builder:
+
+```sh
+DATOVIZ_MANYLINUX_IMAGE=rossant/datoviz_manylinux:latest just wheel-manylinux-docker x86_64
+```
+
+The container script installs the missing RPM packages, builds Datoviz with
+`DVZ_ENABLE_SHADERC=ON`, generates raw `ctypes`, builds the release wheel through the v0.4 backend,
+runs auditwheel inspection, and executes the installed-wheel shaderc/CMake consumer smoke. Output
+wheels are written to `wheelhouse/` and must not be committed.
+
+Keep the upstream PyPA image as the release source of truth unless a refreshed custom image is
+needed for build time. If a custom `rossant/datoviz_manylinux` image is used for RC evidence, record
+its digest, base image, creation date, and package deltas from the upstream PyPA image.

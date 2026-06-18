@@ -1197,6 +1197,28 @@ wheel-ci-local platform_tag='' rebuild='0' render='0':
     fi
 #
 
+wheel-manylinux-docker arch='x86_64':
+    #!/usr/bin/env sh
+    set -e
+    image="${DATOVIZ_MANYLINUX_IMAGE:-quay.io/pypa/manylinux_2_34_x86_64:latest}"
+    case "{{arch}}" in
+        x86_64) ;;
+        *)
+            echo "unsupported local manylinux Docker arch: {{arch}}" >&2
+            echo "set DATOVIZ_MANYLINUX_IMAGE and extend this recipe after a native or emulated {{arch}} builder is proven" >&2
+            exit 2
+            ;;
+    esac
+    docker run --rm \
+        -e DVZ_CMAKE_ARGS="${DVZ_CMAKE_ARGS:-}" \
+        -e DVZ_WHEEL_RUNTIME_DIRS="${DVZ_WHEEL_RUNTIME_DIRS:-}" \
+        -e DATOVIZ_MANYLINUX_PYTHON="${DATOVIZ_MANYLINUX_PYTHON:-}" \
+        -v "$PWD:/workspace" \
+        -w /workspace \
+        "$image" \
+        bash tools/release_wheels/manylinux_build_inside.sh "{{arch}}"
+#
+
 wheel platform_tag='': build
     #!/usr/bin/env sh
     set -e
