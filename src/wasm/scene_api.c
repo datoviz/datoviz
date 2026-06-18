@@ -1976,6 +1976,7 @@ int dvz_wasm_api_visual_set_labels_s32(
     field_desc.dim = DVZ_FIELD_DIM_2D;
     field_desc.format = DVZ_FIELD_FORMAT_R32_SINT;
     field_desc.semantic = DVZ_FIELD_SEMANTIC_LABEL;
+    field_desc.color_role = DVZ_COLOR_ROLE_DATA;
     field_desc.width = width;
     field_desc.height = height;
     field_desc.depth = 1;

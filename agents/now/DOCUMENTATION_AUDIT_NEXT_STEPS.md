@@ -35,10 +35,15 @@ active work; move durable documentation policy into `spec/docs/` when needed.
 
 ## Remaining Next Steps
 
-1. During final release proof, pair `webgpu-live` status with recorded browser/adapter evidence for
-   promoted routes that matter to RC notes. Local `just webgpu-browser-smoke` on 2026-06-18 rebuilt
-   the WASM scene target but failed after a headless WebGPU instance-loss skip with:
-   `CreateShaderModule: invalid character found`.
+No active documentation-audit follow-up remains in this queue. During final release proof, continue
+to pair `webgpu-live` status with recorded browser/adapter evidence for promoted routes that matter
+to RC notes.
+
+The local WebGPU/WASM browser evidence issue from 2026-06-18 is closed: `just wasm-scene-smoke` and
+`just webgpu-browser-smoke` passed after resolving WGSL includes during scene shader emission and
+fixing the WASM labels field color role. Browser live routes in this shell still report the known
+headless external WebGPU instance-loss diagnostic at `QueueSubmit`, but the previous
+`CreateShaderModule: invalid character found` failure is gone.
 
 Do not include unrelated user changes, generated binary payloads, or `data` submodule changes unless
 explicitly approved in the current turn.

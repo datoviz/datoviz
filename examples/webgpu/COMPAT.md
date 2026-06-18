@@ -46,6 +46,14 @@ Do not move broader live-example coverage into the supported/current section unt
 `wasm-scene-smoke`, `webgpu-browser-smoke`, and any relevant native/DRP2 checks have recorded
 evidence for the promoted slice.
 
+Recorded local browser shader-payload proof on 2026-06-18: `node --check
+tools/webgpu_browser_smoke.mjs`, `node --check tools/wasm_scene_smoke.mjs`, and `just
+wasm-scene-smoke` passed after resolving WGSL includes during scene shader emission and adding a
+packet smoke guard against unresolved WGSL includes. `just webgpu-browser-smoke` exited
+successfully in this shell: the previously observed `CreateShaderModule: invalid character found`
+and `semantic_color_to_linear` WGSL failures were gone, and live routes were skipped only by the
+known headless external WebGPU instance-loss diagnostic at `QueueSubmit`.
+
 Recorded local panel/annotation basics promotion proof on 2026-06-10: `just wasm-scene-build`
 linked `feature_panel_single`, `feature_panel_grid`, `feature_panzoom`, `path_axes_2d`, and
 `feature_axis_labels` into the WASM scenario table; `just wasm-scene-smoke` passed with targeted

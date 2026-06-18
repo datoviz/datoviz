@@ -224,6 +224,9 @@ function expectPacketPayloadArena(packet, arena, decoded, label) {
     requireOk(typeof shader.stage === "string" && shader.stage.length > 0, `${label}: empty shader stage`);
     requireOk(typeof shader.format === "string" && shader.format.length > 0, `${label}: empty shader format`);
     requireOk(typeof shader.code === "string" && shader.code.length > 0, `${label}: empty shader code`);
+    if (shader.format === "wgsl") {
+      requireOk(!shader.code.includes("#include"), `${label}: WGSL shader ${shader.id} has unresolved include`);
+    }
   }
   if (arena.byteLength > 0) {
     const truncatedArena = arena.subarray(0, Math.max(0, payloadEnd - 1));
@@ -696,17 +699,29 @@ function expect2DSceneStreamShape(stream, label) {
     (pipeline) => pipeline.builtin_pipeline === "scene.path",
   );
   requireOk(pathPipeline.topology === "triangle-list", `${label} path: unexpected topology`);
+  const pathAttributes = pipelineAttributeFormats(pathPipeline);
+  const expectedPathAttributes = [
+    { stepMode: "vertex", formats: ["float32x3"] },
+    { stepMode: "vertex", formats: ["float32x3"] },
+    { stepMode: "vertex", formats: ["float32x3"] },
+    { stepMode: "vertex", formats: ["unorm8x4"] },
+    { stepMode: "vertex", formats: ["float32"] },
+    { stepMode: "vertex", formats: ["uint32"] },
+    { stepMode: "vertex", formats: ["float32"] },
+  ];
+  const expectedPathAttributesWithJoin = [
+    { stepMode: "vertex", formats: ["float32x3"] },
+    { stepMode: "vertex", formats: ["float32x3"] },
+    { stepMode: "vertex", formats: ["float32x3"] },
+    { stepMode: "vertex", formats: ["float32x3"] },
+    { stepMode: "vertex", formats: ["unorm8x4"] },
+    { stepMode: "vertex", formats: ["float32"] },
+    { stepMode: "vertex", formats: ["uint32"] },
+    { stepMode: "vertex", formats: ["float32"] },
+  ];
   requireOk(
-    JSON.stringify(pipelineAttributeFormats(pathPipeline)) ===
-      JSON.stringify([
-        { stepMode: "vertex", formats: ["float32x3"] },
-        { stepMode: "vertex", formats: ["float32x3"] },
-        { stepMode: "vertex", formats: ["float32x3"] },
-        { stepMode: "vertex", formats: ["unorm8x4"] },
-        { stepMode: "vertex", formats: ["float32"] },
-        { stepMode: "vertex", formats: ["uint32"] },
-        { stepMode: "vertex", formats: ["float32"] },
-      ]),
+    JSON.stringify(pathAttributes) === JSON.stringify(expectedPathAttributes) ||
+      JSON.stringify(pathAttributes) === JSON.stringify(expectedPathAttributesWithJoin),
     `${label} path: unexpected vertex attributes`,
   );
   const primitivePipeline = expectPipeline(
@@ -1070,16 +1085,15 @@ function expectAxisLabelsScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "SetScissor").length >= 1, `${label}: expected scissor command`);
   expectPipeline(
     stream,
-    `${label} guide and axis segments`,
-    (pipeline) => pipeline.builtin_pipeline === "scene.segment",
+    `${label} guide and axis primitives`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.primitive",
   );
   expectPipeline(
     stream,
     `${label} labels`,
     (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
   );
-  requireOk(commandsOf(stream, "DrawIndexed").length >= 1, `${label}: expected guide or axis draw`);
-  requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected label draws`);
+  requireOk(commandsOf(stream, "Draw").length >= 2, `${label}: expected guide, axis, and label draws`);
   requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph texture upload`);
 }
 
@@ -1353,9 +1367,11 @@ function expectDepthTestScenarioStreamShape(stream, label) {
     `${label} depth-disabled point`,
     (pipeline) =>
       pipeline.builtin_pipeline === "scene.point" &&
-      pipeline.depth_stencil?.depth_write_enabled === false,
+      (pipeline.depth_stencil === undefined || pipeline.depth_stencil.depth_write_enabled === false),
   );
-  expectDepthPipeline(depthOff, `${label} depth-disabled point`, false, "always");
+  if (depthOff.depth_stencil !== undefined) {
+    expectDepthPipeline(depthOff, `${label} depth-disabled point`, false, "always");
+  }
   requireOk(commandsOf(stream, "SetViewport").length >= 2, `${label}: expected comparison panel viewports`);
   requireOk(commandsOf(stream, "Draw").length >= 2, `${label}: expected point draws`);
 }

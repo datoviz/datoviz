@@ -323,6 +323,25 @@ static const char* _shader_include_source(const char* include_name)
 }
 
 
+
+/**
+ * Return an embedded WGSL include source from an include filename.
+ *
+ * @param include_name include filename such as scene_material.wgsl
+ * @return embedded source, or NULL when unavailable
+ */
+static const char* _shader_wgsl_include_source(const char* include_name)
+{
+    ANN(include_name);
+    char key[128] = {0};
+    dvz_strlcpy(key, include_name, sizeof(key));
+    char* dot = strrchr(key, '.');
+    if (dot != NULL)
+        *dot = '\0';
+    return _resource_wgsl(key);
+}
+
+
 /**
  * Recursively append a GLSL source with local includes resolved.
  *
@@ -390,6 +409,61 @@ static bool _shader_preprocess_into(
 }
 
 
+
+/**
+ * Recursively append a WGSL source with local includes resolved.
+ *
+ * @param dst the source buffer pointer
+ * @param len current byte length
+ * @param cap current buffer capacity
+ * @param wgsl input WGSL source
+ * @param depth include recursion depth
+ * @return whether preprocessing succeeded
+ */
+static bool
+_shader_wgsl_preprocess_into(char** dst, size_t* len, size_t* cap, const char* wgsl, uint32_t depth)
+{
+    ANN(dst);
+    ANN(len);
+    ANN(cap);
+    ANN(wgsl);
+    if (depth > 8)
+        return false;
+
+    const char* cursor = wgsl;
+    while (*cursor != '\0')
+    {
+        const char* line_end = strchr(cursor, '\n');
+        size_t line_len = line_end != NULL ? (size_t)(line_end - cursor + 1) : strlen(cursor);
+
+        if (strncmp(cursor, "#include \"", 10) == 0)
+        {
+            const char* name_start = cursor + 10;
+            const char* name_end = strchr(name_start, '"');
+            if (name_end == NULL || (line_end != NULL && name_end > line_end))
+                return false;
+            char include_name[128] = {0};
+            size_t name_len = (size_t)(name_end - name_start);
+            if (name_len >= sizeof(include_name))
+                return false;
+            dvz_memcpy(include_name, sizeof(include_name), name_start, name_len);
+            const char* include_source = _shader_wgsl_include_source(include_name);
+            if (include_source == NULL)
+                return false;
+            if (!_shader_wgsl_preprocess_into(dst, len, cap, include_source, depth + 1))
+                return false;
+        }
+        else
+        {
+            if (!_shader_builder_append(dst, len, cap, cursor, line_len))
+                return false;
+        }
+        cursor += line_len;
+    }
+    return true;
+}
+
+
 /**
  * Create an owned GLSL variant with local includes resolved and optional defines inserted.
  *
@@ -405,6 +479,29 @@ char* _shader_glsl_variant(const char* glsl, const char* defines)
     size_t len = 0;
     size_t cap = 0;
     if (!_shader_preprocess_into(&out, &len, &cap, glsl, defines, true, 0))
+    {
+        dvz_free(out);
+        return NULL;
+    }
+    return out;
+}
+
+
+
+/**
+ * Create an owned WGSL variant with local includes resolved.
+ *
+ * @param wgsl input WGSL source
+ * @return owned preprocessed source, or NULL on failure
+ */
+static char* _shader_wgsl_variant(const char* wgsl)
+{
+    if (wgsl == NULL)
+        return NULL;
+    char* out = NULL;
+    size_t len = 0;
+    size_t cap = 0;
+    if (!_shader_wgsl_preprocess_into(&out, &len, &cap, wgsl, 0))
     {
         dvz_free(out);
         return NULL;
@@ -511,8 +608,24 @@ bool _emit_shader(
     DvzDrp2CommandStream* stream, uint64_t id, const char* stage, const char* wgsl,
     const char* glsl, const DvzFramePlanEmitConfig* cfg)
 {
-    return dvz_drp2_stream_create_shader_module_format(
-        stream, id, stage, _shader_format_token(cfg), _shader_source(cfg, wgsl, glsl));
+    if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+    {
+        char* glsl_variant = _shader_glsl_variant(glsl, NULL);
+        if (glsl != NULL && glsl_variant == NULL)
+            return false;
+        bool ok = dvz_drp2_stream_create_shader_module_format(
+            stream, id, stage, "glsl", glsl_variant != NULL ? glsl_variant : glsl);
+        _shader_glsl_variant_destroy(glsl_variant);
+        return ok;
+    }
+
+    char* wgsl_variant = _shader_wgsl_variant(wgsl);
+    if (wgsl != NULL && wgsl_variant == NULL)
+        return false;
+    bool ok = dvz_drp2_stream_create_shader_module_format(
+        stream, id, stage, "wgsl", wgsl_variant != NULL ? wgsl_variant : wgsl);
+    dvz_free(wgsl_variant);
+    return ok;
 }
 
 

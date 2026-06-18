@@ -1,21 +1,10 @@
-struct SceneMaterial {
-    light_dir: vec4f,
-    params: vec4f,
-    model: vec4f,
-    base_color_factor: vec4f,
-    standard_params: vec4f,
-    emissive_rim: vec4f,
-    depth_cue: vec4f,
-    depth_cue_color: vec4f,
-    depth_cue_extra: vec4f,
-}
+#include "scene_material.wgsl"
+
 struct FragmentIn {
     @location(0) color: vec4f,
     @location(1) corner: vec2f,
     @location(2) size: f32,
 }
-
-@group(1) @binding(0) var<uniform> material: SceneMaterial;
 
 @fragment
 fn main(input: FragmentIn) -> @location(0) vec4f {
