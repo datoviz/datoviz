@@ -48,9 +48,9 @@ Reference pages.
 
 ### How-To
 
-Use the task-oriented structure recorded in `agents/now/HOWTO_DOCS_WRITING.md` and
-`spec/docs/INFORMATION_ARCHITECTURE.md`. Do not put composed walkthroughs in the first-level
-How-To nav unless they teach a reusable task pattern.
+Use the task-oriented structure and page contract recorded in
+`spec/docs/INFORMATION_ARCHITECTURE.md`. Do not put composed walkthroughs in the first-level How-To
+nav unless they teach a reusable task pattern.
 
 
 ### Reference

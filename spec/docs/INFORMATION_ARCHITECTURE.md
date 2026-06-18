@@ -239,6 +239,22 @@ How-to rules:
 5. show screenshots by reusing generated gallery media when the task has a visual result;
 6. keep composed recipes in Examples unless the page teaches a reusable task pattern.
 
+Every how-to page should generally follow this contract, with shorter variants allowed when the
+task does not need every section:
+
+1. title and one-sentence task statement;
+2. task workflow or "use this when" decision guidance;
+3. minimal sequence of calls or steps, using snippets only for the calls being explained;
+4. canonical examples, linking both generated gallery detail pages and `examples/c/...` sources;
+5. important details covering ownership, lifetime, coordinates, async behavior, backend support,
+   validation, or other task-specific limits;
+6. common mistakes;
+7. see-also links to related how-to, reference, explanation, or example pages.
+
+Do not add `<!-- TODO: Python -->` markers or expose the old v0.3 Pythonic plotting API as current
+v0.4 API. Python how-to pages should document the active top-level array-aware facade and exact
+`datoviz.raw` layer boundaries.
+
 
 ## Reference
 
