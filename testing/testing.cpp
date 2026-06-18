@@ -2734,7 +2734,11 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
                 result.timeout_ms = options.default_timeout_ms;
             }
 
-            if (!child_mode && !options.process_child && result.isolation == TST_ISOLATION_PROCESS)
+            const bool run_in_process_child =
+                !options.process_child &&
+                (result.isolation == TST_ISOLATION_EXCLUSIVE ||
+                 (!child_mode && result.isolation == TST_ISOLATION_PROCESS));
+            if (run_in_process_child)
             {
                 TstOwnedResult child_result = {};
                 const uint64_t start_ns = _tst_now_ns();

@@ -166,6 +166,13 @@ def test_dvztest_scheduler_process_isolation_without_jobs_runs_in_child(
     assert process_case["status"] == "PASS"
     assert process_case["order_index"] == 3
     assert process_case["repeat_index"] == 0
+
+    exclusive_case = data["cases"][6]
+    assert exclusive_case["isolation"] == "exclusive"
+    assert exclusive_case["status"] == "PASS"
+    assert exclusive_case["order_index"] == 6
+    assert exclusive_case["repeat_index"] == 0
+
     assert data["summary"]["selected"] == 8
     assert data["summary"]["passed"] == 8
 

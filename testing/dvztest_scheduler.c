@@ -139,7 +139,7 @@ static int _scheduler_plain_case(TstContext* ctx, const TstCase* item)
 
 
 /**
- * Verify process-isolated cases execute outside the root scheduler process when requested.
+ * Verify child-process cases execute outside the root scheduler process when requested.
  *
  * @param ctx test context
  * @param item test case metadata
@@ -253,9 +253,11 @@ static void _scheduler_register(TstSuite* suite)
     _scheduler_add_case(
         suite, "serial-log-capture", TST_RES_CPU | TST_RES_LOG_CAPTURE, TST_ISOLATION_SERIAL,
         NULL, TST_FIXTURE_SCOPE_NONE);
-    _scheduler_add_case(
-        suite, "serial-exclusive-isolation", TST_RES_CPU, TST_ISOLATION_EXCLUSIVE, NULL,
-        TST_FIXTURE_SCOPE_NONE);
+    TstCaseDesc exclusive_desc =
+        tst_case_desc("serial-exclusive-isolation", "_scheduler_process_case", _scheduler_process_case);
+    exclusive_desc.resources = TST_RES_CPU;
+    exclusive_desc.isolation = TST_ISOLATION_EXCLUSIVE;
+    tst_suite_add_case(suite, exclusive_desc);
     _scheduler_add_case(
         suite, "serial-exclusive-fixture", TST_RES_CPU, TST_ISOLATION_SERIAL,
         "exclusive-fixture", TST_FIXTURE_SCOPE_EXCLUSIVE);
