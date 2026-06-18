@@ -10,6 +10,7 @@ The active v0.4 public documentation lives in:
 - `how-to/`
 - `reference/`
 - `explanation/`
+- `releases/`
 - `contributors/`
 
 Some legacy v0.3-era directories remain in place for inspection and content mining while the

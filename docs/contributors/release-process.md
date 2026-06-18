@@ -172,6 +172,10 @@ Every RC note should include:
 Keep known issues honest. If a platform or optional provider is untested, record it as untested
 rather than supported.
 
+The current RC1 draft lives in [v0.4.0rc1 release notes](../releases/v0.4.0rc1.md). Keep it as a
+draft until the final commit, tag, artifact URLs, checksums, and platform validation matrix are
+filled in.
+
 
 ## What Stays Manual
 

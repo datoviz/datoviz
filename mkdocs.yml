@@ -208,6 +208,9 @@ nav:
       - AI agents: 'contributors/ai-agents.md'
       - Agent quickstart: 'contributors/agent-quickstart.md'
     - Release:
+      - Release notes:
+        - Overview: 'releases/index.md'
+        - v0.4.0rc1 draft: 'releases/v0.4.0rc1.md'
       - Release process: 'contributors/release-process.md'
       - Release flight checklist: 'contributors/release-flight-checklist.md'
       - Release wheels: 'contributors/release-wheels.md'
