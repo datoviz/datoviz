@@ -9,8 +9,8 @@ into the scene layer.
 ## Purpose
 
 Built-in visual families cover the common scientific visualization cases. In v0.4, general custom
-visual/render shaders are explicitly deferred; `DvzSceneCompute` is a narrower advanced/unstable
-compute path and does not expose built-in visual shader replacement.
+visual/render shaders are explicitly deferred; `DvzSceneCompute` is a narrower experimental
+compute-to-render path and does not expose built-in visual shader replacement.
 
 The future custom visual direction is that custom visual families allow users to define new
 rendering primitives that:

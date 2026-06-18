@@ -211,10 +211,11 @@ appended to `DvzVisualAttachDesc`, which already has the public struct ABI prolo
 through a new growable descriptor with the same `struct_size`/`flags` convention. Current v0.4
 examples should use CPU-side pre-projection before upload for polar/geographic coordinates.
 
-Custom visual/render shaders are also deferred. `DvzSceneComputeDesc` remains the advanced compute
-interop path and must not be documented as built-in visual shader replacement. Built-in visual shader
-identity may be recorded in DRP2 metadata for tooling and replay, but the shader ABI remains
-scene-internal unless a future custom visual family API explicitly exports it.
+Custom visual/render shaders are also deferred. `DvzSceneComputeDesc` remains the narrow
+experimental compute-to-render interop path and must not be documented as built-in visual shader
+replacement. Built-in visual shader identity may be recorded in DRP2 metadata for tooling and
+replay, but the shader ABI remains scene-internal unless a future custom visual family API
+explicitly exports it.
 
 
 ## Panel View And Coordinate Spaces
