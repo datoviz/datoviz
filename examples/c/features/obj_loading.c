@@ -128,8 +128,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera.up[1] = 0.0f;
     camera.up[2] = 1.0f;
     camera.fov_y = 0.66f;
-    camera.near = 0.05f;
-    camera.far = 100.0f;
+    camera.near_clip = 0.05f;
+    camera.far_clip = 100.0f;
     if (dvz_panel_set_camera(panel, &camera) == NULL)
     {
         dvz_geometry_destroy(geometry);

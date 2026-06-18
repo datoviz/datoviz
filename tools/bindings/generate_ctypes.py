@@ -67,7 +67,22 @@ def _candidate_library_paths():
             yield parent / 'Library' / 'bin' / name
 
 
+def _configure_runtime_dirs():
+    here = pathlib.Path(__file__).resolve().parent
+    existing = [
+        path
+        for path in os.environ.get('DVZ_WHEEL_RUNTIME_DIRS', '').split(os.pathsep)
+        if path
+    ]
+    here_str = str(here)
+    dirs = [here_str, *[path for path in existing if path != here_str]]
+    os.environ['DVZ_WHEEL_RUNTIME_DIRS'] = os.pathsep.join(dirs)
+    if platform.system() == 'Windows' and hasattr(os, 'add_dll_directory'):
+        os.add_dll_directory(here_str)
+
+
 def _load_library():
+    _configure_runtime_dirs()
     errors = []
     missing = []
     for path in _candidate_library_paths():
@@ -430,7 +445,7 @@ def _layout_records_from_policy(path: Path) -> set[str]:
     try:
         import yaml  # type: ignore
 
-        with path.open() as f:
+        with path.open(encoding='utf8') as f:
             policy = yaml.safe_load(f) or {}
         include = policy.get('layout_records', {}).get('include', [])
         if isinstance(include, list) and all(isinstance(item, str) for item in include):
@@ -465,7 +480,7 @@ def _callback_policy_from_policy(path: Path) -> dict[str, str]:
     try:
         import yaml  # type: ignore
 
-        with path.open() as f:
+        with path.open(encoding='utf8') as f:
             policy = yaml.safe_load(f) or {}
         groups = policy.get('callback_functions', {})
         out: dict[str, str] = {}
@@ -814,7 +829,7 @@ def main() -> int:
     parser.add_argument('--check', action='store_true', help='fail if the generated file is stale')
     args = parser.parse_args()
 
-    with args.input.open() as f:
+    with args.input.open(encoding='utf8') as f:
         api = json.load(f)
     text, skipped = generate(
         api,
@@ -831,7 +846,7 @@ def main() -> int:
         return 0
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(text)
+    args.output.write_text(text, encoding='utf8')
     print(f'wrote {args.output} ({len(skipped)} skipped functions)')
     return 0
 

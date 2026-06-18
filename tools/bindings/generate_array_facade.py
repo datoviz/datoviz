@@ -84,7 +84,7 @@ def _load_policy(path: Path) -> dict:
     try:
         import yaml  # type: ignore
 
-        with path.open() as f:
+        with path.open(encoding='utf8') as f:
             policy = yaml.safe_load(f) or {}
         facade = policy.get('array_facade', {})
     except ModuleNotFoundError:
@@ -288,7 +288,7 @@ def main() -> int:
     parser.add_argument('--check', action='store_true', help='fail if the generated file is stale')
     args = parser.parse_args()
 
-    with args.input.open() as f:
+    with args.input.open(encoding='utf8') as f:
         api = json.load(f)
     text = generate(api, _load_policy(args.policy))
 
@@ -300,7 +300,7 @@ def main() -> int:
         return 0
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(text)
+    args.output.write_text(text, encoding='utf8')
     print(f'wrote {args.output}')
     return 0
 

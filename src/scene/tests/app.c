@@ -3242,12 +3242,12 @@ int test_app_offscreen_records_dvzr_frames(TstContext* suite, const TstCase* ite
     char saved_record_fps[64] = {0};
     if (had_record_fps)
         dvz_strlcpy(saved_record_fps, old_record_fps, sizeof(saved_record_fps));
-    AT(setenv("DVZ_DRP2_RECORD_FPS", "0", 1) == 0);
+    AT(tst_setenv("DVZ_DRP2_RECORD_FPS", "0") == 0);
     int record_start = dvz_view_record_start(win, path);
     if (had_record_fps)
-        (void)setenv("DVZ_DRP2_RECORD_FPS", saved_record_fps, 1);
+        (void)tst_setenv("DVZ_DRP2_RECORD_FPS", saved_record_fps);
     else
-        (void)unsetenv("DVZ_DRP2_RECORD_FPS");
+        (void)tst_unsetenv("DVZ_DRP2_RECORD_FPS");
     AT(record_start == 0);
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);

@@ -145,8 +145,8 @@ static bool _set_camera(DvzPanel* panel)
     camera.eye[1] = 0.82f;
     camera.eye[2] = 3.15f;
     camera.fov_y = 0.62f;
-    camera.near = 0.05f;
-    camera.far = 100.0f;
+    camera.near_clip = 0.05f;
+    camera.far_clip = 100.0f;
     return dvz_panel_set_camera(panel, &camera) != NULL;
 }
 

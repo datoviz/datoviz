@@ -23,6 +23,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#if defined(_WIN32)
+#include <direct.h>
+#endif
+
 #include "_alloc.h"
 #include "_compat.h"
 #include "_scene.h"
@@ -76,7 +80,11 @@ typedef struct TextDiagSample
 static bool make_dir_one(const char* path)
 {
     ANN(path);
+#if defined(_WIN32)
+    if (_mkdir(path) == 0 || errno == EEXIST)
+#else
     if (mkdir(path, 0755) == 0 || errno == EEXIST)
+#endif
         return true;
     dvz_fprintf(stderr, "failed to create directory %s: %s\n", path, strerror(errno));
     return false;

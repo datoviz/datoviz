@@ -635,7 +635,7 @@ bool dvz_drp2_runtime_copy_texture_to_frame(
 /*  Public GLSL compilation utility                                                              */
 /*************************************************************************************************/
 
-uint32_t* dvz_compile_glsl(const char* stage, const char* glsl, uint64_t* out_size)
+DVZ_EXPORT uint32_t* dvz_compile_glsl(const char* stage, const char* glsl, uint64_t* out_size)
 {
     ANN(stage);
     ANN(glsl);

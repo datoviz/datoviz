@@ -16,6 +16,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #if DVZ_HAS_SHADERC
@@ -68,6 +70,43 @@ static ShadercSyms g_shaderc = {0};
 static bool g_shaderc_loaded = false;
 static bool g_shaderc_available = false;
 #endif
+
+
+static DvzDynLib _shaderc_open_runtime_dirs(const char* filename)
+{
+    ANN(filename);
+    const char* dirs = getenv("DVZ_WHEEL_RUNTIME_DIRS");
+    if (dirs == NULL || dirs[0] == '\0')
+        return NULL;
+
+#if defined(_WIN32)
+    const char sep = ';';
+#else
+    const char sep = ':';
+#endif
+
+    const char* cursor = dirs;
+    while (*cursor != '\0')
+    {
+        const char* end = strchr(cursor, sep);
+        size_t dir_len = end == NULL ? strlen(cursor) : (size_t)(end - cursor);
+        if (dir_len > 0)
+        {
+            char path[4096] = {0};
+            int rc = snprintf(path, sizeof(path), "%.*s/%s", (int)dir_len, cursor, filename);
+            if (rc > 0 && (size_t)rc < sizeof(path))
+            {
+                DvzDynLib lib = dvz_dynlib_open(path);
+                if (lib != NULL)
+                    return lib;
+            }
+        }
+        if (end == NULL)
+            break;
+        cursor = end + 1;
+    }
+    return NULL;
+}
 
 
 static VkShaderStageFlags _vklite_stage_flags(uint32_t visibility)
@@ -157,7 +196,12 @@ static bool _shaderc_load(void)
 #ifndef DVZ_SHADERC_LIB_PATH
 #define DVZ_SHADERC_LIB_PATH "libshaderc_shared.so.1"
 #endif
-    DvzDynLib lib = dvz_dynlib_open(DVZ_SHADERC_LIB_PATH);
+    const char* env_path = getenv("DVZ_SHADERC_RUNTIME_LIBRARY");
+    DvzDynLib lib = env_path != NULL && env_path[0] != '\0' ? dvz_dynlib_open(env_path) : NULL;
+    if (lib == NULL)
+        lib = dvz_dynlib_open(DVZ_SHADERC_LIB_PATH);
+    if (lib == NULL)
+        lib = _shaderc_open_runtime_dirs(DVZ_SHADERC_LIB_PATH);
 #if defined(__APPLE__)
     if (lib == NULL && strcmp(DVZ_SHADERC_LIB_PATH, "@rpath/libshaderc_shared.1.dylib") == 0)
         lib = dvz_dynlib_open("@loader_path/libshaderc_shared.1.dylib");

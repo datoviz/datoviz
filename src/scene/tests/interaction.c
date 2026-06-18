@@ -3048,8 +3048,8 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
     camera_desc.eye[2] = 3.20f;
     camera_desc.up[1] = 1.0f;
     camera_desc.fov_y = 0.74f;
-    camera_desc.near = 0.1f;
-    camera_desc.far = 100.0f;
+    camera_desc.near_clip = 0.1f;
+    camera_desc.far_clip = 100.0f;
     DvzCamera* camera = dvz_panel_set_camera(right, &camera_desc);
     ANN(camera);
 

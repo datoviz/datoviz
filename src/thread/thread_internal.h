@@ -39,13 +39,13 @@ EXTERN_C_ON
 /*  Thread functions                                                                             */
 /*************************************************************************************************/
 
-DvzThread* dvz_thread(DvzThreadCallback callback, void* user_data);
+DVZ_EXPORT DvzThread* dvz_thread(DvzThreadCallback callback, void* user_data);
 
-void dvz_thread_lock(DvzThread* thread);
+DVZ_EXPORT void dvz_thread_lock(DvzThread* thread);
 
-void dvz_thread_unlock(DvzThread* thread);
+DVZ_EXPORT void dvz_thread_unlock(DvzThread* thread);
 
-void dvz_thread_join(DvzThread* thread);
+DVZ_EXPORT void dvz_thread_join(DvzThread* thread);
 
 
 

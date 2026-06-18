@@ -78,11 +78,51 @@ def _stage_python(root: Path, package_dir: Path) -> list[PayloadEntry]:
     return entries
 
 
+def _find_windows_bash() -> str | None:
+    candidates = [
+        r"C:\Program Files\Git\bin\bash.exe",
+        r"C:\Program Files\Git\usr\bin\bash.exe",
+        shutil.which("bash"),
+    ]
+    for candidate in candidates:
+        if candidate is None:
+            continue
+        path = Path(candidate)
+        if path.name.lower() != "bash.exe":
+            continue
+        if path.parent.as_posix().lower().endswith("/windows/system32"):
+            continue
+        if path.exists():
+            return str(path)
+    return None
+
+
+def _git_bash_path(path: Path) -> str:
+    path = path.resolve()
+    drive = path.drive.rstrip(":").lower()
+    parts = path.parts[1:]
+    if drive:
+        return "/" + "/".join([drive, *parts])
+    return path.as_posix()
+
+
 def _stage_c_integration(root: Path, package_dir: Path) -> list[PayloadEntry]:
     script = root / "tools" / "copy_wheel_c_integration.sh"
     if not script.exists():
         raise FileNotFoundError(script)
-    subprocess.run([str(script), str(package_dir)], cwd=root, check=True)
+    cmd = [str(script), str(package_dir)]
+    if os.name == "nt":
+        bash = _find_windows_bash()
+        if bash is None:
+            raise RuntimeError("Git Bash is required to stage C integration files on Windows")
+        cmd = [bash, _git_bash_path(script), _git_bash_path(package_dir)]
+        env = os.environ.copy()
+        git_root = Path(bash).parents[1] if Path(bash).parent.name.lower() == "bin" else Path(bash).parents[1]
+        git_usr_bin = git_root / "usr" / "bin"
+        env["PATH"] = f"{git_usr_bin}{os.pathsep}{Path(bash).parent}{os.pathsep}{env.get('PATH', '')}"
+        subprocess.run(cmd, cwd=root, check=True, env=env)
+    else:
+        subprocess.run(cmd, cwd=root, check=True)
 
     entries: list[PayloadEntry] = []
     for dst in sorted((package_dir / "include").rglob("*")):
@@ -130,11 +170,26 @@ def _stage_native(config: ReleaseWheelConfig, package_dir: Path) -> list[Payload
             )
         )
     elif system == "Windows":
-        copied = _copy_matches(config.root, ["build/*.dll"], package_dir)
+        copied = _copy_matches(
+            config.root,
+            [
+                "build/src/*.dll",
+                "build/src/*.dll.a",
+                "build/*.dll",
+                "build/*.dll.a",
+                "build/vcpkg_installed/x64-windows/bin/*.dll",
+                "build/vcpkg_installed/x64-windows/debug/bin/*.dll",
+            ],
+            package_dir,
+        )
         if not any(path.name.lower() in {"datoviz.dll", "libdatoviz.dll"} for path in copied):
-            raise FileNotFoundError("no datoviz DLL was copied from build/*.dll")
+            raise FileNotFoundError("no datoviz DLL was copied from the Windows build outputs")
         for dst in copied:
-            kind = "libdatoviz" if dst.name.lower() in {"datoviz.dll", "libdatoviz.dll"} else "runtime"
+            kind = (
+                "libdatoviz"
+                if dst.name.lower() in {"datoviz.dll", "libdatoviz.dll", "libdatoviz.dll.a"}
+                else "runtime"
+            )
             entries.append(_entry(dst, f"datoviz/{dst.name}", kind, "core-runtime"))
         gcc = shutil.which("gcc")
         if gcc is not None:
@@ -172,12 +227,17 @@ def _first_existing(patterns: list[str], build_dir: Path) -> Path:
 
 def _copy_matches(root: Path, patterns: list[str], dst: Path) -> list[Path]:
     copied: list[Path] = []
+    seen_names: set[str] = set()
     for pattern in patterns:
         for src in sorted(root.glob(pattern)):
             if src.is_file():
+                key = src.name.lower()
+                if key in seen_names:
+                    continue
                 target = dst / src.name
                 copy_file(src, target)
                 copied.append(target)
+                seen_names.add(key)
     return copied
 
 
@@ -227,4 +287,3 @@ def _entry(src: Path, wheel_path: str, kind: str, reason: str) -> PayloadEntry:
         required=True,
         reason=reason,
     )
-

@@ -20,6 +20,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "datoviz/common/macros.h"
 
@@ -62,6 +63,30 @@ EXTERN_C_ON
         AC((x)[i], (y)[i], (eps));
 
 #define EPS 1e-6
+
+
+
+/*************************************************************************************************/
+/*  Platform helpers                                                                             */
+/*************************************************************************************************/
+
+static inline int tst_setenv(const char* name, const char* value)
+{
+#if defined(_WIN32)
+    return _putenv_s(name, value);
+#else
+    return setenv(name, value, 1);
+#endif
+}
+
+static inline int tst_unsetenv(const char* name)
+{
+#if defined(_WIN32)
+    return _putenv_s(name, "");
+#else
+    return unsetenv(name);
+#endif
+}
 
 
 

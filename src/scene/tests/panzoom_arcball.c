@@ -1348,8 +1348,8 @@ int test_scene_camera_arcball_mvp_composition(TstContext* suite, const TstCase* 
     desc.target[1] = 0.0f;
     desc.target[2] = 0.0f;
     desc.fov_y = GLM_PI_4f;
-    desc.near = 0.1f;
-    desc.far = 100.0f;
+    desc.near_clip = 0.1f;
+    desc.far_clip = 100.0f;
     DvzCamera* camera = dvz_panel_set_camera(panel, &desc);
     ANN(camera);
     AT(dvz_panel_camera(panel) == camera);

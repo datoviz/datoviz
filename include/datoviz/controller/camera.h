@@ -23,6 +23,15 @@
 #include "datoviz/controller/panzoom.h" /* for DvzMVP */
 
 
+// Windows headers may define legacy near/far memory-model macros.
+#ifdef near
+#undef near
+#endif
+#ifdef far
+#undef far
+#endif
+
+
 
 /*************************************************************************************************/
 /*  Enums                                                                                        */
@@ -59,8 +68,8 @@ struct DvzCameraDesc
     vec3 up;
 
     float fov_y;
-    float near;
-    float far;
+    float near_clip;
+    float far_clip;
 
     float ortho_height;
 };

@@ -200,8 +200,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera.up[1] = 1.0f;
     camera.up[2] = 0.0f;
     camera.fov_y = 0.66f;
-    camera.near = 0.05f;
-    camera.far = 100.0f;
+    camera.near_clip = 0.05f;
+    camera.far_clip = 100.0f;
     DvzController* controllers[3] = {0};
     const char* labels[3] = {"Matte key light", "Glossy side light", "Rim highlight"};
     for (uint32_t i = 0; i < 3u; i++)

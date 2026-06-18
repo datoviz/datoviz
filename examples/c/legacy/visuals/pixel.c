@@ -246,8 +246,8 @@ int main(int argc, char** argv)
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[2] = 3.6f;
-    camera_desc.near = 0.1f;
-    camera_desc.far = 100.0f;
+    camera_desc.near_clip = 0.1f;
+    camera_desc.far_clip = 100.0f;
     bool ok = dvz_panel_set_camera(panel, &camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 

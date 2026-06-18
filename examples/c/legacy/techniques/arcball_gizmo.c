@@ -941,8 +941,8 @@ int main(int argc, char** argv)
     camera_desc.up[1] = 0.0f;
     camera_desc.up[2] = 1.0f;
     camera_desc.fov_y = 0.72f;
-    camera_desc.near = 0.05f;
-    camera_desc.far = 100.0f;
+    camera_desc.near_clip = 0.05f;
+    camera_desc.far_clip = 100.0f;
     bool ok = dvz_panel_set_camera(main_panel, &camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera(main_panel) failed");
 
@@ -957,8 +957,8 @@ int main(int argc, char** argv)
     gizmo_camera_desc.up[1] = 0.0f;
     gizmo_camera_desc.up[2] = 1.0f;
     gizmo_camera_desc.fov_y = 0.76f;
-    gizmo_camera_desc.near = 0.05f;
-    gizmo_camera_desc.far = 100.0f;
+    gizmo_camera_desc.near_clip = 0.05f;
+    gizmo_camera_desc.far_clip = 100.0f;
     ok = dvz_panel_set_camera(gizmo_panel, &gizmo_camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera(gizmo_panel) failed");
 

@@ -28,13 +28,19 @@
 /*************************************************************************************************/
 
 #ifndef DVZ_EXPORT
-#if defined(_MSC_VER) || CC_MSVC
+#if defined(_WIN32) || defined(_MSC_VER) || CC_MSVC
 #ifdef DVZ_SHARED
 #define DVZ_EXPORT __declspec(dllexport)
-#else
+#elif defined(_MSC_VER) || CC_MSVC
 #define DVZ_EXPORT __declspec(dllimport)
+#else
+#define DVZ_EXPORT
 #endif
+#if defined(_MSC_VER) || CC_MSVC
 #define DVZ_INLINE __forceinline
+#else
+#define DVZ_INLINE static inline __attribute((always_inline))
+#endif
 #else
 #define DVZ_EXPORT __attribute__((visibility("default")))
 #define DVZ_INLINE static inline __attribute((always_inline))

@@ -168,8 +168,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera.eye[1] = 1.22f;
     camera.eye[2] = 3.25f;
     camera.fov_y = 0.64f;
-    camera.near = 0.05f;
-    camera.far = 100.0f;
+    camera.near_clip = 0.05f;
+    camera.far_clip = 100.0f;
     DvzMaterialDesc matte = dvz_phong_material_desc();
     matte.phong.ambient = 0.34f;
     matte.phong.diffuse = 0.84f;

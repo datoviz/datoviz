@@ -530,9 +530,9 @@ if(DVZ_BUILD_VK)
 
     target_link_libraries(datoviz_vk_layer
         PRIVATE
-        datoviz_core
         ${DVZ_VK_COMPONENTS}
         datoviz_volk
+        datoviz_core
     )
 
     if(TARGET Vulkan::Headers)
@@ -561,10 +561,10 @@ if(DVZ_BUILD_CANVAS)
 
     target_link_libraries(datoviz_canvas_layer
         PRIVATE
-        datoviz_core
-        datoviz_vk_layer
         ${DVZ_CANVAS_COMPONENTS}
         datoviz_volk
+        datoviz_vk_layer
+        datoviz_core
     )
 
     target_compile_definitions(datoviz_canvas_layer PUBLIC ${DVZ_COMPILE_DEFINITIONS})

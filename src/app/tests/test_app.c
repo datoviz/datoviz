@@ -53,9 +53,9 @@ static void _test_restore_env(const char* name, const char* value)
 {
     ANN(name);
     if (value != NULL)
-        (void)setenv(name, value, 1);
+        (void)tst_setenv(name, value);
     else
-        (void)unsetenv(name);
+        (void)tst_unsetenv(name);
 }
 
 
@@ -182,8 +182,8 @@ static int test_app_config_defaults(TstContext* suite, const TstCase* item)
         dvz_snprintf(saved_schedule, sizeof(saved_schedule), "%s", old_schedule);
     if (old_fps_cap != NULL)
         dvz_snprintf(saved_fps_cap, sizeof(saved_fps_cap), "%s", old_fps_cap);
-    (void)unsetenv("DVZ_APP_SCHEDULE");
-    (void)unsetenv("DVZ_FPS_CAP");
+    (void)tst_unsetenv("DVZ_APP_SCHEDULE");
+    (void)tst_unsetenv("DVZ_FPS_CAP");
 
     DvzAppConfig config = dvz_app_config();
     AT(config.instance_extension_count == 0);
@@ -216,11 +216,11 @@ static int test_app_config_env_schedule(TstContext* suite, const TstCase* item)
     if (old_schedule != NULL)
         dvz_snprintf(saved_schedule, sizeof(saved_schedule), "%s", old_schedule);
 
-    AT(setenv("DVZ_APP_SCHEDULE", "continuous", 1) == 0);
+    AT(tst_setenv("DVZ_APP_SCHEDULE", "continuous") == 0);
     DvzAppConfig config = dvz_app_config();
     AT(config.schedule_mode == DVZ_APP_SCHEDULE_CONTINUOUS);
 
-    AT(setenv("DVZ_APP_SCHEDULE", "on_demand", 1) == 0);
+    AT(tst_setenv("DVZ_APP_SCHEDULE", "on_demand") == 0);
     config = dvz_app_config();
     AT(config.schedule_mode == DVZ_APP_SCHEDULE_ON_DEMAND);
 
@@ -240,7 +240,7 @@ static int test_app_config_env_fps_cap(TstContext* suite, const TstCase* item)
     if (old_fps_cap != NULL)
         dvz_snprintf(saved_fps_cap, sizeof(saved_fps_cap), "%s", old_fps_cap);
 
-    AT(setenv("DVZ_FPS_CAP", "144.5", 1) == 0);
+    AT(tst_setenv("DVZ_FPS_CAP", "144.5") == 0);
     DvzAppConfig config = dvz_app_config();
     AT(config.fps_cap == 144.5);
 
@@ -327,12 +327,12 @@ static int test_app_capture_config_env(TstContext* suite, const TstCase* item)
     if (old_mode != NULL)
         dvz_snprintf(saved_mode, sizeof(saved_mode), "%s", old_mode);
 
-    AT(setenv("DVZ_CAPTURE", "dvzr,mp4,png", 1) == 0);
-    AT(setenv("DVZ_CAPTURE_DIR", "/tmp/datoviz-capture", 1) == 0);
-    AT(setenv("DVZ_CAPTURE_BASENAME", "env-name", 1) == 0);
-    AT(setenv("DVZ_CAPTURE_FPS", "24", 1) == 0);
-    AT(setenv("DVZ_CAPTURE_VIDEO_BACKEND", "stub", 1) == 0);
-    AT(setenv("DVZ_CAPTURE_VIDEO_MODE", "cpu", 1) == 0);
+    AT(tst_setenv("DVZ_CAPTURE", "dvzr,mp4,png") == 0);
+    AT(tst_setenv("DVZ_CAPTURE_DIR", "/tmp/datoviz-capture") == 0);
+    AT(tst_setenv("DVZ_CAPTURE_BASENAME", "env-name") == 0);
+    AT(tst_setenv("DVZ_CAPTURE_FPS", "24") == 0);
+    AT(tst_setenv("DVZ_CAPTURE_VIDEO_BACKEND", "stub") == 0);
+    AT(tst_setenv("DVZ_CAPTURE_VIDEO_MODE", "cpu") == 0);
 
     DvzAppCaptureConfig config = dvz_app_capture_config_from_env("fallback-name");
     AT((config.flags & DVZ_APP_CAPTURE_DVZR) != 0);
@@ -344,7 +344,7 @@ static int test_app_capture_config_env(TstContext* suite, const TstCase* item)
     AT(strcmp(config.video_backend, "stub") == 0);
     AT(config.video_capture_mode == DVZ_VIDEO_CAPTURE_CPU_READBACK);
 
-    AT(setenv("DVZ_CAPTURE", "off", 1) == 0);
+    AT(tst_setenv("DVZ_CAPTURE", "off") == 0);
     config = dvz_app_capture_config_from_env("fallback-name");
     AT(config.flags == DVZ_APP_CAPTURE_NONE);
 

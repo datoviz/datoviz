@@ -711,8 +711,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera.eye[1] = 2.0f;
     camera.eye[2] = 4.4f;
     camera.fov_y = 0.58f;
-    camera.near = 0.05f;
-    camera.far = 100.0f;
+    camera.near_clip = 0.05f;
+    camera.far_clip = 100.0f;
     if (!dvz_panel_set_camera(panel, &camera))
         goto error;
 

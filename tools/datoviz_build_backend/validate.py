@@ -351,7 +351,13 @@ def _cmake_consumer_smoke(python: Path, work: Path) -> None:
     _run([cmake, "-S", str(source), "-B", str(build), f"-Ddatoviz_DIR={cmake_dir}", *generator], cwd=work)
     _run([cmake, "--build", str(build)], cwd=work)
     exe = build / ("datoviz_cmake_consumer.exe" if os.name == "nt" else "datoviz_cmake_consumer")
-    _run([str(exe)], cwd=work)
+    env = os.environ.copy()
+    if os.name == "nt":
+        prefix = subprocess.check_output(
+            [str(python), "-m", "datoviz.cli", "--prefix"], cwd=work, text=True
+        ).strip()
+        env["PATH"] = f"{prefix}{os.pathsep}{env.get('PATH', '')}"
+    _run([str(exe)], cwd=work, env=env)
 
 
 if __name__ == "__main__":

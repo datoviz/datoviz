@@ -366,8 +366,8 @@ DvzCameraDesc example_default_3d_camera_desc(float extent)
     camera.up[1] = 1.0f;
     camera.up[2] = 0.0f;
     camera.fov_y = 0.66f;
-    camera.near = 0.05f;
-    camera.far = 100.0f * extent;
+    camera.near_clip = 0.05f;
+    camera.far_clip = 100.0f * extent;
     return camera;
 }
 
@@ -407,8 +407,8 @@ DvzCameraDesc example_controller_camera_desc(void)
     camera.up[1] = 1.0f;
     camera.up[2] = 0.0f;
     camera.fov_y = 0.66f;
-    camera.near = 0.05f;
-    camera.far = 100.0f;
+    camera.near_clip = 0.05f;
+    camera.far_clip = 100.0f;
     return camera;
 }
 

@@ -23,6 +23,8 @@ extern "C"
 #include <stdio.h>
 #include <string.h>
 
+#include "datoviz/common/macros.h"
+
 
 
 #define __FILENAME__                                                                              \
@@ -58,16 +60,16 @@ extern "C"
 #define log_error(...) log_log(LOG_ERROR, __FILENAME__, __LINE__, __VA_ARGS__)
 #define log_fatal(...) log_log(LOG_FATAL, __FILENAME__, __LINE__, __VA_ARGS__)
 
-    void log_set_udata(void* udata);
-    void log_set_lock(log_LockFn fn);
-    void log_set_fp(FILE* fp);
-    void log_set_level(int level);
-    void log_set_quiet(int enable);
-    void log_set_intercept(log_InterceptFn fn, void* udata);
+    DVZ_EXPORT void log_set_udata(void* udata);
+    DVZ_EXPORT void log_set_lock(log_LockFn fn);
+    DVZ_EXPORT void log_set_fp(FILE* fp);
+    DVZ_EXPORT void log_set_level(int level);
+    DVZ_EXPORT void log_set_quiet(int enable);
+    DVZ_EXPORT void log_set_intercept(log_InterceptFn fn, void* udata);
 
-    void log_log(int level, const char* file, int line, const char* fmt, ...);
+    DVZ_EXPORT void log_log(int level, const char* file, int line, const char* fmt, ...);
 
-    void log_set_level_env(void);
+    DVZ_EXPORT void log_set_level_env(void);
 
 #ifdef __cplusplus
 }

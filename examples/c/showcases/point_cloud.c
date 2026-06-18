@@ -306,8 +306,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera_desc.up[1] = +0.941078f;
     camera_desc.up[2] = +0.265137f;
     camera_desc.fov_y = 0.700000f;
-    camera_desc.near = 0.020000f;
-    camera_desc.far = 100.000000f;
+    camera_desc.near_clip = 0.020000f;
+    camera_desc.far_clip = 100.000000f;
     camera_desc.ortho_height = 2.000000f;
     DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
     EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera() failed");

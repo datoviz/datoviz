@@ -76,7 +76,7 @@ typedef struct LidarViewParams
     vec3 eye;
     vec3 target;
     vec3 up;
-    float far;
+    float far_clip;
     float speed;
 } LidarViewParams;
 
@@ -437,7 +437,7 @@ static bool _compute_lidar_view_params(const LidarDataset* dataset, LidarViewPar
     dvz_memcpy(out->eye, sizeof(out->eye), eye, sizeof(eye));
     dvz_memcpy(out->target, sizeof(out->target), target, sizeof(target));
     dvz_memcpy(out->up, sizeof(out->up), up, sizeof(up));
-    out->far = 10.0f * forward_extent;
+    out->far_clip = 10.0f * forward_extent;
     out->speed = 0.32f * forward_extent;
 
     dvz_fprintf(
@@ -739,8 +739,8 @@ int main(int argc, char** argv)
     dvz_memcpy(camera_desc.eye, sizeof(camera_desc.eye), view.eye, sizeof(view.eye));
     dvz_memcpy(camera_desc.target, sizeof(camera_desc.target), view.target, sizeof(view.target));
     dvz_memcpy(camera_desc.up, sizeof(camera_desc.up), view.up, sizeof(view.up));
-    camera_desc.near = 0.1f;
-    camera_desc.far = view.far;
+    camera_desc.near_clip = 0.1f;
+    camera_desc.far_clip = view.far_clip;
     bool ok = dvz_panel_set_camera(panel, &camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 

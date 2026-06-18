@@ -53,8 +53,8 @@ struct DvzCamera
     vec3 up;
 
     float fov_y;
-    float near;
-    float far;
+    float near_clip;
+    float far_clip;
     float ortho_height;
 
     vec2 viewport_size;
@@ -126,9 +126,9 @@ static void _camera_apply_desc(DvzCamera* camera, const DvzCameraDesc* desc)
                         (vec3){desc->target[0], desc->target[1], desc->target[2]},
                         (vec3){desc->up[0], desc->up[1], desc->up[2]});
     if (desc->type == DVZ_CAMERA_ORTHOGRAPHIC)
-        dvz_camera_set_orthographic(camera, desc->ortho_height, desc->near, desc->far);
+        dvz_camera_set_orthographic(camera, desc->ortho_height, desc->near_clip, desc->far_clip);
     else
-        dvz_camera_set_perspective(camera, desc->fov_y, desc->near, desc->far);
+        dvz_camera_set_perspective(camera, desc->fov_y, desc->near_clip, desc->far_clip);
 }
 
 
@@ -151,8 +151,8 @@ DvzCameraDesc dvz_camera_desc(void)
         .target = {0.0f, 0.0f, 0.0f},
         .up = {0.0f, 1.0f, 0.0f},
         .fov_y = DVZ_CAMERA_DEFAULT_FOV_Y,
-        .near = DVZ_CAMERA_DEFAULT_NEAR,
-        .far = DVZ_CAMERA_DEFAULT_FAR,
+        .near_clip = DVZ_CAMERA_DEFAULT_NEAR,
+        .far_clip = DVZ_CAMERA_DEFAULT_FAR,
         .ortho_height = DVZ_CAMERA_DEFAULT_ORTHO_HEIGHT,
     };
 }
@@ -252,8 +252,8 @@ void dvz_camera_set_perspective(DvzCamera* camera, float fov_y, float near, floa
         return;
     camera->type = DVZ_CAMERA_PERSPECTIVE;
     camera->fov_y = fov_y;
-    camera->near = near;
-    camera->far = far;
+    camera->near_clip = near;
+    camera->far_clip = far;
 }
 
 
@@ -273,8 +273,8 @@ void dvz_camera_set_orthographic(DvzCamera* camera, float height, float near, fl
         return;
     camera->type = DVZ_CAMERA_ORTHOGRAPHIC;
     camera->ortho_height = height;
-    camera->near = near;
-    camera->far = far;
+    camera->near_clip = near;
+    camera->far_clip = far;
 }
 
 
@@ -318,13 +318,13 @@ void dvz_camera_mvp(DvzCamera* camera, DvzMVP* mvp)
                                                    DVZ_CAMERA_DEFAULT_ORTHO_HEIGHT;
         float width = height * camera->aspect;
         glm_ortho(
-            -0.5f * width, +0.5f * width, -0.5f * height, +0.5f * height, camera->near,
-            camera->far, mvp->proj);
+            -0.5f * width, +0.5f * width, -0.5f * height, +0.5f * height, camera->near_clip,
+            camera->far_clip, mvp->proj);
     }
     else
     {
         float fov_y = camera->fov_y > 0.0f ? camera->fov_y : DVZ_CAMERA_DEFAULT_FOV_Y;
-        glm_perspective(fov_y, camera->aspect, camera->near, camera->far, mvp->proj);
+        glm_perspective(fov_y, camera->aspect, camera->near_clip, camera->far_clip, mvp->proj);
     }
 }
 

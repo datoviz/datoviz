@@ -197,9 +197,9 @@ static void _debug_dump_camera(const char* name, const DvzCameraDesc* camera)
         camera->up[0], camera->up[1], camera->up[2]);
     dvz_fprintf(
         stderr,
-        "camera_desc.fov_y = %.6ff; camera_desc.near = %.6ff; "
-        "camera_desc.far = %.6ff;\n",
-        camera->fov_y, camera->near, camera->far);
+        "camera_desc.fov_y = %.6ff; camera_desc.near_clip = %.6ff; "
+        "camera_desc.far_clip = %.6ff;\n",
+        camera->fov_y, camera->near_clip, camera->far_clip);
     dvz_fprintf(stderr, "camera_desc.ortho_height = %.6ff;\n", camera->ortho_height);
 }
 

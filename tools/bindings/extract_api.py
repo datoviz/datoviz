@@ -47,6 +47,7 @@ INCLUDE_DIRS = [
     'external/cglm/include',
     'external/cimgui',
     'external/volk',
+    'build/vcpkg_installed/x64-windows/include',
 ]
 
 DEFINES = [
@@ -109,9 +110,9 @@ def _display_path(path: str | None) -> str | None:
         return None
     resolved = Path(path).resolve()
     try:
-        return str(resolved.relative_to(ROOT_DIR))
+        return resolved.relative_to(ROOT_DIR).as_posix()
     except ValueError:
-        return str(resolved)
+        return resolved.as_posix()
 
 
 def _location(cursor: cindex.Cursor) -> dict[str, Any]:
