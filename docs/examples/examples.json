@@ -2,23 +2,24 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 106,
+  "count": 107,
   "categories": {
     "advanced": 3,
     "composite": 2,
     "feature": 71,
     "showcase": 15,
+    "start": 1,
     "visual": 15
   },
   "statuses": {
     "diagnostic": 1,
     "experimental": 11,
     "prototype": 3,
-    "supported": 91
+    "supported": 92
   },
   "agent_copy_safe": {
     "false": 28,
-    "true": 78
+    "true": 79
   },
   "examples": [
     {
@@ -2528,6 +2529,26 @@
         "glfw",
         "host-integration"
       ],
+      "data": {
+        "kind": "synthetic"
+      }
+    },
+    {
+      "id": "start_scatter",
+      "title": "Scatter Plot",
+      "category": "start",
+      "lane": "start",
+      "stage": "",
+      "status": "supported",
+      "source": "examples/c/start/scatter.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/start/scatter.c",
+      "page": "gallery/start/start_scatter.md",
+      "summary": "quickstart scatter plot: 10 000 random colored points with pan/zoom.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c start/scatter",
+      "smoke_command": "./build/examples/c/start/scatter --png",
+      "agent_copy_safe": true,
+      "tags": [],
       "data": {
         "kind": "synthetic"
       }

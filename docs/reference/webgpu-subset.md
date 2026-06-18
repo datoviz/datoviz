@@ -52,7 +52,7 @@ Supported browser pages:
 - `examples/webgpu/examples.html?demo=wasm-image-probe`: sampled image pixel probe through the
   query/readback path;
 - `examples/webgpu/live.html?id=...`: public live gallery routes generated from canonical C
-  examples and portable C scenarios, currently covering 68 promoted examples including standalone
+  examples and portable C scenarios, currently covering 67 promoted examples including standalone
   point, pixel, marker, primitive, segment, path, image, mesh, sphere, text, glyph, and labels
   visuals, panel single/grid/multi/linked basics, panzoom, path axes, axis labels, text block,
   overlay card, guide lines/spans, bars/bands, sampled-field/image color-scale examples, panel

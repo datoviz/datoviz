@@ -11,7 +11,7 @@
 
 Up to **10,000x faster than matplotlib**, it delivers highly efficient **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
 
-Built from the ground up with performance in mind, Datoviz is written primarily in **C** and **C++**, leveraging the [**Khronos Vulkan graphics API**](https://www.vulkan.org/). For v0.4, it focuses on the C API and low-level Python bindings via `ctypes`; the higher-level Python object-oriented and plotting APIs are expected to live in the VisPy2/GSP stack.
+Built from the ground up with performance in mind, Datoviz is written primarily in **C** and **C++**, leveraging the [**Khronos Vulkan graphics API**](https://www.vulkan.org/). For v0.4, it is C-first, with a generated raw Python `ctypes` layer and a thin array-aware facade that keeps C-shaped `dvz_*` names. The old v0.3 Python plotting API is not preserved; higher-level Python plotting and workflow APIs belong in the VisPy2/GSP stack.
 
 Written by one of the original creators of [VisPy](https://vispy.org), a GPU-based Python scientific visualization library, Datoviz aims to serve as the default backend for the upcoming **VisPy 2.0**.
 
@@ -68,15 +68,20 @@ VTK is a powerful, heavyweight toolkit for 3D visualization, simulation, and sci
 
 
 
-## 🕐 Current status [May 2026]
+## 🕐 Current status [June 2026]
 
 **The latest released version remains v0.3.x.**
-The active development branch is the v0.4 refactor. It is rebuilding the C core around modular
-targets, the Vulkan/vklite/canvas runtime stack, and a new scene -> DRP2 -> runtime path. That v0.4
-API is still experimental and may change aggressively before release. The active branch now includes
-focused `drp2`/`scene`/`app` validation, offscreen and GLFW app paths, retained point/primitive/mesh
-and image scene rendering, sampled-field texture updates, panel controllers, depth-enabled render
-passes, and first GPU-backed point-pick / image-probe request handling.
+The active development branch is preparing v0.4 release candidates. It rebuilds the engine around a
+modular C core, the Vulkan/vklite/canvas runtime stack, and the scene -> DRP2 -> runtime path. The
+release-facing surface is the C scene/app API, public headers and installed CMake/pkg-config
+metadata, raw/generated Python `ctypes`, and a planned top-level array-aware Python facade. WebGPU,
+compute+graphics, and Qt/PyQt hosting are active but explicitly scoped: WebGPU is an experimental
+promoted browser subset rather than native Vulkan parity, compute+graphics is a narrow experimental
+compute-to-render path, and Qt/PyQt works only through the optional `datoviz_qtbridge` provider and
+a compatible Qt/PyQt runtime.
+
+The v0.4 raster capture contract is sRGB RGBA8. Explicit linear `f16`/`f32` scientific
+export/readback is deferred beyond RC1.
 
 
 
@@ -92,20 +97,20 @@ backend-agnostic rendering path. Current development priorities are:
 * 🧪 Executable DRP2 fixtures and focused `drp2`/`scene`/`app` tests, including multi-panel runtime
   checks, depth checks, readback checks, and request coalescing/freshness checks
 
-These foundations are intended to support the following later features:
+These foundations keep the following features deferred or outside the v0.4 core release surface:
 
 * 🧊 Correct transparency in 3D mesh and volume rendering
 * ✨ Multisample anti-aliasing (MSAA)
-* 🎯 Richer object picking beyond the current point/image request slice
+* 🎯 Richer object picking beyond the promoted query/readback families
 * 📈 Nonlinear coordinate transforms
 * ⚡ CUDA interoperability
-* 🧮 Vulkan compute shaders (similar to CUDA kernels)
+* 🧮 General-purpose compute APIs beyond the experimental compute-to-render slice
 * 🖌️ Dynamic and customizable shaders
-* 🎛️ Combined GPGPU compute and graphics workflows
+* 🎛️ Broad GPGPU compute and graphics workflows
 * 🔗 GPU memory sharing across visuals
 * 🐍 IPython integration
-* 🖥️ Qt backend support
-* 🌐 WebGPU backend, starting from a narrow DRP2 replay feasibility lane
+* 🖥️ Qt/PyQt workflows beyond the optional provider
+* 🌐 Full WebGPU parity with native Vulkan
 
 
 
@@ -132,7 +137,8 @@ These foundations are intended to support the following later features:
 pip install datoviz
 ```
 
-This installs a Python wheel that includes the C library, precompiled for your system.
+Today this installs the v0.3 stable package from PyPI. v0.4 wheels are release-candidate work; build
+from source for reproducible v0.4 testing until those packages are published.
 
 If the installation fails, you may need to [build from source](BUILD.md) or [open an issue](https://github.com/datoviz/datoviz/issues) to request support for your configuration.
 
@@ -150,38 +156,33 @@ Each wheel file is tagged by platform (e.g. `manylinux`, `macosx`, `win_amd64`) 
 
 ## 🚀 Usage
 
-Here’s a simple 2D scatter plot example with axes in Python, displaying points with random positions, colors, and sizes.
+Here is a minimal v0.4-style Python example using the top-level array-aware facade with C-shaped
+`dvz_*` calls:
 
 ```python
 import numpy as np
 import datoviz as dvz
 
-n = 1000
-x = np.random.normal(scale=0.2, size=n)
-y = np.random.normal(scale=0.2, size=n)
-
-color = np.random.randint(size=(n, 4), low=100, high=240, dtype=np.uint8)
+N = 10_000
+pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
+pos[:, 2] = 0
+color = np.random.randint(0, 256, (N, 4), dtype=np.uint8)
 color[:, 3] = 255
+diameter = np.full(N, 5, dtype=np.float32)
 
-size = np.random.uniform(low=10, high=30, size=n)
+scene = dvz.dvz_scene()
+figure = dvz.dvz_figure(scene, 800, 600, 0)
+panel = dvz.dvz_panel_full(figure)
+controller = dvz.dvz_panzoom(scene, None)
+dvz.dvz_panel_bind_controller(panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
 
-app = dvz.App(background='white')
-figure = app.figure(800, 600)
-panel = figure.panel()
+visual = dvz.dvz_point(scene, 0)
+dvz.dvz_visual_set_data(visual, "position", pos)
+dvz.dvz_visual_set_data(visual, "color", color)
+dvz.dvz_visual_set_data(visual, "diameter", diameter)
+dvz.dvz_panel_add_visual(panel, visual, None)
 
-xmin, xmax = -1, +1
-ymin, ymax = -1, +1
-axes = panel.axes((xmin, xmax), (ymin, ymax))
-
-visual = app.point(
-    position=axes.normalize(x, y),
-    color=color,
-    size=size,
-)
-panel.add(visual)
-
-app.run()
-app.destroy()
+dvz.run(scene, figure, title="Scatter plot")
 ```
 
 ## 📚 Documentation

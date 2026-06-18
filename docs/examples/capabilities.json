@@ -3,23 +3,24 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 106,
+  "example_count": 107,
   "categories": {
     "advanced": 3,
     "composite": 2,
     "feature": 71,
     "showcase": 15,
+    "start": 1,
     "visual": 15
   },
   "statuses": {
     "diagnostic": 1,
     "experimental": 11,
     "prototype": 3,
-    "supported": 91
+    "supported": 92
   },
   "agent_copy_safe": {
     "false": 28,
-    "true": 78
+    "true": 79
   },
   "capabilities": {
     "composites": {
@@ -155,7 +156,7 @@
         ]
       },
       "synthetic": {
-        "count": 97,
+        "count": 98,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -1029,6 +1030,15 @@
             "agent_copy_safe": false,
             "source": "examples/c/advanced/external_surface_glfw.c",
             "page": "gallery/advanced/advanced_external_surface_glfw.md"
+          },
+          {
+            "id": "start_scatter",
+            "title": "Scatter Plot",
+            "category": "start",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/start/scatter.c",
+            "page": "gallery/start/start_scatter.md"
           }
         ]
       }
