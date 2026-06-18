@@ -843,13 +843,6 @@ DVZ_EXPORT DvzVisualShaderDesc dvz_visual_shader_desc(void);
  *
  * @param panel the panel
  * @param visual the visual
- * @return 0 on success, -1 on error
- */
-/**
- * Add a visual to a panel.
- *
- * @param panel the panel
- * @param visual the visual
  * @param desc per-visual attachment options (z_layer, controller_mode, coord_space); pass NULL for
  *             defaults (z_layer=0, controller_mode=DVZ_CONTROLLER_APPLY,
  *             coord_space=DVZ_COORD_VIEW)

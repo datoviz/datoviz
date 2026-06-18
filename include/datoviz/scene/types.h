@@ -1092,6 +1092,8 @@ struct DvzQueryResult
     DvzCategoryId category_id;
     char label[DVZ_SCENE_LABEL_SIZE];
     char unit[32];
+    /* Borrowed scene-owned scale associated with the result, or NULL. Valid only while the source
+     * scene and scale remain alive; do not use across scenes or after scale destruction. */
     DvzScale* scale;
 };
 typedef struct DvzQueryResult DvzQueryResult;
