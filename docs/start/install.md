@@ -12,19 +12,20 @@ candidate. The v0.3 stable release remains available on PyPI in the meantime.
 | Requirement | Notes |
 | --- | --- |
 | Git | for cloning with submodules |
-| CMake 3.20+ | build system |
+| CMake 3.21+ | build system |
 | GCC 12+ or Clang 15+ | C/C++ compiler |
 | Ninja | recommended build backend |
 | [`just`](https://github.com/casey/just) | command runner used by all build targets |
-| Python 3.8+ | for ctypes bindings and tools |
+| Python 3.10+ | for ctypes bindings and tools |
 | NumPy | required by the Python package |
 | Vulkan-capable GPU | integrated or discrete from the last ~10 years |
+| Shader tools | `glslc` from the Vulkan SDK for shader precompilation; `glslangValidator` for WGSL-generation tooling |
 
 On **Ubuntu 24.04**, install system dependencies with:
 
 ```bash
 sudo apt install build-essential cmake curl gcc git ccache ninja-build \
-  xorg-dev clang-format patchelf tree libfreetype-dev
+  xorg-dev clang-format patchelf tree libfreetype-dev glslang-tools
 
 # Install just
 curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
@@ -34,7 +35,7 @@ On **macOS**, install with Homebrew:
 
 ```bash
 xcode-select --install
-brew install cmake just ninja
+brew install cmake just ninja glslang
 ```
 
 On **Windows via WSL2**, use Ubuntu and then follow the Linux path:
@@ -52,7 +53,7 @@ On **native Windows with Visual Studio**, install:
 | Requirement | Notes |
 | --- | --- |
 | Visual Studio 2022 | include the Desktop development with C++ workload |
-| Vulkan SDK | from LunarG |
+| Vulkan SDK | from LunarG; ensure `glslc` and `glslangValidator` are on `PATH` |
 | vcpkg | recommended dependency manager for Visual Studio projects |
 | CMake and Ninja | available from Visual Studio, vcpkg, or standalone installers |
 

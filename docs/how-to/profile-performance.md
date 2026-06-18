@@ -92,7 +92,7 @@ feature set, item count, and readback behavior.
 Prefer one retained visual with dense arrays:
 
 ```c
-DvzVisual* points = dvz_point(panel, 0);
+DvzVisual* points = dvz_point(scene, 0);
 dvz_visual_set_data(points, "position", positions, point_count);
 dvz_visual_set_data(points, "color", colors, point_count);
 dvz_visual_set_data(points, "diameter", diameters, point_count);
@@ -103,7 +103,7 @@ Avoid creating one visual per item:
 ```c
 for (uint32_t i = 0; i < point_count; i++)
 {
-    DvzVisual* point = dvz_point(panel, 0);
+    DvzVisual* point = dvz_point(scene, 0);
     dvz_visual_set_data(point, "position", &positions[i], 1);
 }
 ```

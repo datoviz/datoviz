@@ -43,7 +43,7 @@ A scatter plot of 10 000 random points with pan/zoom:
     pos[:, 2] = 0.0
     color = np.random.randint(0, 256, (N, 4), dtype=np.uint8)
     color[:, 3] = 255
-    sizes = np.full(N, 5.0, dtype=np.float32)
+    diameters = np.full(N, 5.0, dtype=np.float32)
 
     # --- scene ---
     scene = dvz.dvz_scene()
@@ -57,7 +57,7 @@ A scatter plot of 10 000 random points with pan/zoom:
     visual = dvz.dvz_point(scene, 0)
     dvz.dvz_visual_set_data(visual, "position", pos)
     dvz.dvz_visual_set_data(visual, "color", color)
-    dvz.dvz_visual_set_data(visual, "size", sizes)
+    dvz.dvz_visual_set_data(visual, "diameter", diameters)
     dvz.dvz_panel_add_visual(panel, visual, None)
 
     # --- run ---
@@ -70,12 +70,13 @@ A scatter plot of 10 000 random points with pan/zoom:
     ```c
     #include <stdint.h>
     #include <stdlib.h>
+    #include "datoviz/app.h"
     #include "datoviz/scene.h"
 
     int main(void) {
         /* data */
         int N = 10000;
-        float pos[N * 3], size[N];
+        float pos[N * 3], diameter[N];
         uint8_t color[N * 4];
         for (int i = 0; i < N; i++) {
             pos[3*i+0] = (float)rand()/RAND_MAX * 2 - 1;
@@ -85,7 +86,7 @@ A scatter plot of 10 000 random points with pan/zoom:
             color[4*i+1] = rand() % 256;
             color[4*i+2] = rand() % 256;
             color[4*i+3] = 255;
-            size[i] = 5.0f;
+            diameter[i] = 5.0f;
         }
 
         /* scene */
@@ -100,11 +101,10 @@ A scatter plot of 10 000 random points with pan/zoom:
         DvzVisual* visual = dvz_point(scene, 0);
         dvz_visual_set_data(visual, "position", pos, N);
         dvz_visual_set_data(visual, "color", color, N);
-        dvz_visual_set_data(visual, "size", size, N);
+        dvz_visual_set_data(visual, "diameter", diameter, N);
         dvz_panel_add_visual(panel, visual, NULL);
 
-        /* run — or replace with the following for offscreen PNG:
-             dvz_capture(scene, figure, "output.png"); */
+        /* run; for offscreen PNG use dvz_view_offscreen() and dvz_view_capture_png(). */
         DvzApp* app = dvz_app(scene);
         dvz_view_glfw(app, figure, 800, 600, "Scatter plot");
         dvz_app_run(app, 0);
