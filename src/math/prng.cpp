@@ -12,8 +12,8 @@
 
 #include "_assertions.h"
 #include "_log.h"
-#include "datoviz/common/mutex.h"
 #include "datoviz/math/prng.h"
+#include "mutex_internal.h"
 
 
 

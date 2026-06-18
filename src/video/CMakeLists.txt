@@ -24,6 +24,7 @@ target_include_directories(datoviz_video
     PUBLIC
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/src/common
+        ${PROJECT_SOURCE_DIR}/src/thread
 )
 
 target_include_directories(datoviz_video

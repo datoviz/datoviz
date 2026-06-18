@@ -1,0 +1,52 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
+/*************************************************************************************************/
+/*  Internal threading utilities                                                                  */
+/*************************************************************************************************/
+
+// NOTE: this file should NOT be called _thread.h, or this will prevent compilation on macOS
+// probably due to a naming conflict of a system file.
+
+#pragma once
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include "datoviz/common/macros.h"
+
+
+
+/*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct DvzThread DvzThread;
+
+typedef void* (*DvzThreadCallback)(void*);
+
+
+
+EXTERN_C_ON
+
+/*************************************************************************************************/
+/*  Thread functions                                                                             */
+/*************************************************************************************************/
+
+DvzThread* dvz_thread(DvzThreadCallback callback, void* user_data);
+
+void dvz_thread_lock(DvzThread* thread);
+
+void dvz_thread_unlock(DvzThread* thread);
+
+void dvz_thread_join(DvzThread* thread);
+
+
+
+EXTERN_C_OFF

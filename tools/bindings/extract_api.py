@@ -34,7 +34,6 @@ DEFAULT_HEADERS = [
     'datoviz/runner.h',
     'datoviz/scene.h',
     'datoviz/stream.h',
-    'datoviz/thread.h',
     'datoviz/video.h',
     'datoviz/vk.h',
     'datoviz/vklite.h',

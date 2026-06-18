@@ -16,13 +16,13 @@
 
 #include <stddef.h>
 
+#include "../atomic_internal.h"
+#include "../thread_internal.h"
 #include "_assertions.h"
 #include "_time_utils.h"
-#include "datoviz/common/mutex.h" // this one is in common as it is used by _log.h
-#include "datoviz/thread/thread.h"
+#include "mutex_internal.h"
 #include "test_thread.h"
 #include "testing.h"
-#include "datoviz/thread/atomic.h"
 
 
 
@@ -135,18 +135,6 @@ int test_thread(TstSuite* suite)
     TST_CASE(test_mutex_1);
     TST_CASE(test_cond_1);
     TST_CASE(test_atomic_1);
-
-    TST_GROUP("fifo");
-    TST_CASE(test_fifo_1);
-    TST_CASE(test_fifo_2);
-    TST_CASE(test_fifo_resize);
-    TST_CASE(test_fifo_discard);
-    TST_CASE(test_fifo_first);
-
-    TST_GROUP("deq");
-    TST_CASE(test_deq_1);
-    TST_CASE(test_deq_2);
-    TST_CASE(test_deq_3);
 
     return 0;
 }

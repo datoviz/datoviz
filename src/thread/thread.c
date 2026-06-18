@@ -19,10 +19,10 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
-#include "datoviz/common/mutex.h"
+#include "atomic_internal.h"
 #include "datoviz/common/obj.h"
-#include "datoviz/thread/atomic.h"
-#include "datoviz/thread/thread.h"
+#include "mutex_internal.h"
+#include "thread_internal.h"
 
 
 

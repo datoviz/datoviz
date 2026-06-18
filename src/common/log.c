@@ -47,8 +47,8 @@
 
 #include "_compat.h"
 #include "_log.h"
-#include "datoviz/common/mutex.h"
 #include "datoviz/common/macros.h"
+#include "mutex_internal.h"
 
 #if OS_WINDOWS
 MUTE_ON

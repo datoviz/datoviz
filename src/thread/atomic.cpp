@@ -12,7 +12,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/thread/atomic.h"
+#include "atomic_internal.h"
 
 
 

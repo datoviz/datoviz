@@ -5,11 +5,8 @@
  */
 
 /*************************************************************************************************/
-/*  Threading utilities                                                                          */
+/*  Internal mutex helpers                                                                        */
 /*************************************************************************************************/
-
-// NOTE: this file should NOT be called _thread.h, or this will prevent compilation on macOS
-// probably due to a naming conflict of a system file.
 
 #pragma once
 
@@ -19,12 +16,11 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-// #include "tinycthread.h"
+#include <pthread.h>
 
-#include "atomic.h"
 #include "datoviz/common/macros.h"
-#include "datoviz/common/mutex.h"
-#include "datoviz/common/obj.h"
+
+struct timespec;
 
 
 
@@ -32,55 +28,45 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzThread DvzThread;
+typedef pthread_cond_t DvzCond;
 
-typedef void* (*DvzThreadCallback)(void*);
+typedef pthread_mutex_t DvzMutex;
 
 
 
 EXTERN_C_ON
 
 /*************************************************************************************************/
-/*  Thread functions                                                                             */
+/*  Mutex functions                                                                              */
 /*************************************************************************************************/
 
-/**
- * Create a thread.
- *
- * Callback function signature: `void*(void*)`
- *
- * @param callback the function that will run in a background thread
- * @param user_data a pointer to arbitrary user data
- * @returns thread object
- */
-DvzThread* dvz_thread(DvzThreadCallback callback, void* user_data);
+int dvz_mutex_init(DvzMutex* mutex);
+
+DvzMutex dvz_mutex(void);
+
+int dvz_mutex_lock(DvzMutex* mutex);
+
+int dvz_mutex_unlock(DvzMutex* mutex);
+
+void dvz_mutex_destroy(DvzMutex* mutex);
 
 
 
-/**
- * Acquire a mutex lock associated to the thread.
- *
- * @param thread the thread
- */
-void dvz_thread_lock(DvzThread* thread);
+/*************************************************************************************************/
+/*  Cond functions                                                                               */
+/*************************************************************************************************/
 
+int dvz_cond_init(DvzCond* cond);
 
+DvzCond dvz_cond(void);
 
-/**
- * Release a mutex lock associated to the thread.
- *
- * @param thread the thread
- */
-void dvz_thread_unlock(DvzThread* thread);
+int dvz_cond_signal(DvzCond* cond);
 
+int dvz_cond_wait(DvzCond* cond, DvzMutex* mutex);
 
+int dvz_cond_timedwait(DvzCond* cond, DvzMutex* mutex, struct timespec* wait);
 
-/**
- * Destroy a thread after the thread function has finished running.
- *
- * @param thread the thread
- */
-void dvz_thread_join(DvzThread* thread);
+void dvz_cond_destroy(DvzCond* cond);
 
 
 

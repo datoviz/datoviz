@@ -767,8 +767,7 @@ def generate(
                         f'({callback_type}, {owner_name}, {callback_name}, {user_data_name})\n'
                     )
                 elif callback_kind == 'subscription' or (
-                    callback_kind is None
-                    and (name.startswith('dvz_input_subscribe') or name == 'dvz_deq_callback')
+                    callback_kind is None and name.startswith('dvz_input_subscribe')
                 ):
                     lines.append(
                         f'        {callback_name} = _callback_store_subscription'

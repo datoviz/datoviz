@@ -22,7 +22,6 @@ headers:
     - datoviz/scene.h
     - datoviz/scene/frame_packets.h
     - datoviz/stream.h
-    - datoviz/thread.h
     - datoviz/video.h
     - datoviz/vk.h
     - datoviz/vk/memory_interop.h
@@ -57,7 +56,6 @@ layout_records:
 callback_functions:
   subscription:
     - dvz_anim_timer
-    - dvz_deq_callback
     - dvz_input_subscribe_event
     - dvz_input_subscribe_keyboard
     - dvz_input_subscribe_pointer
@@ -77,7 +75,6 @@ callback_functions:
     - dvz_view_set_request_frame_callback
   global:
     - dvz_error_callback
-    - dvz_thread
 
 owned_string_returns:
   dvz_drp2_stream_json:

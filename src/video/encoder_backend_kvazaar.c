@@ -27,10 +27,10 @@
 #include "_alloc.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
-#include "datoviz/thread/thread.h"
 #include "datoviz/vk/device.h"
 #include "encoder_backend.h"
 #include "kvazaar.h"
+#include "thread_internal.h"
 
 
 

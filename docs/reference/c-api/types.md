@@ -6736,12 +6736,6 @@ typedef struct DvzCommands DvzCommands;
 typedef struct DvzCompute DvzCompute;
 ```
 
-#### `DvzCond`
-
-```c
-typedef pthread_cond_t DvzCond;
-```
-
 #### `DvzContainer`
 
 ```c
@@ -6776,60 +6770,6 @@ typedef enum DvzDatUsage DvzDatUsage;
 
 ```c
 typedef enum DvzDefaultQueue DvzDefaultQueue;
-```
-
-#### `DvzDeq`
-
-```c
-typedef struct DvzDeq DvzDeq;
-```
-
-#### `DvzDeqCallback`
-
-```c
-typedef void (*)(DvzDeq *, void *, void *) DvzDeqCallback;
-```
-
-#### `DvzDeqCallbackRegister`
-
-```c
-typedef struct DvzDeqCallbackRegister DvzDeqCallbackRegister;
-```
-
-#### `DvzDeqItem`
-
-```c
-typedef struct DvzDeqItem DvzDeqItem;
-```
-
-#### `DvzDeqItemNext`
-
-```c
-typedef struct DvzDeqItemNext DvzDeqItemNext;
-```
-
-#### `DvzDeqOrder`
-
-```c
-typedef enum DvzDeqOrder DvzDeqOrder;
-```
-
-#### `DvzDeqProc`
-
-```c
-typedef struct DvzDeqProc DvzDeqProc;
-```
-
-#### `DvzDeqProcBatchPosition`
-
-```c
-typedef enum DvzDeqProcBatchPosition DvzDeqProcBatchPosition;
-```
-
-#### `DvzDeqStrategy`
-
-```c
-typedef enum DvzDeqStrategy DvzDeqStrategy;
 ```
 
 #### `DvzDescriptorType`
@@ -6878,12 +6818,6 @@ typedef void (*)(const char *) DvzErrorCallback;
 
 ```c
 typedef struct DvzFence DvzFence;
-```
-
-#### `DvzFifo`
-
-```c
-typedef struct DvzFifo DvzFifo;
 ```
 
 #### `DvzFilter`
@@ -7034,12 +6968,6 @@ typedef struct DvzMVP DvzMVP;
 
 ```c
 typedef enum DvzMVPFlags DvzMVPFlags;
-```
-
-#### `DvzMutex`
-
-```c
-typedef pthread_mutex_t DvzMutex;
 ```
 
 #### `DvzObject`
@@ -7220,18 +7148,6 @@ typedef struct DvzSwapchainConfig DvzSwapchainConfig;
 
 ```c
 typedef enum DvzTexFlags DvzTexFlags;
-```
-
-#### `DvzThread`
-
-```c
-typedef struct DvzThread DvzThread;
-```
-
-#### `DvzThreadCallback`
-
-```c
-typedef void *(*)(void *) DvzThreadCallback;
 ```
 
 #### `DvzTime`
@@ -7558,27 +7474,6 @@ DVZ_DEFAULT_QUEUE_COMPUTE = 1,
 DVZ_DEFAULT_QUEUE_RENDER = 2,
 DVZ_DEFAULT_QUEUE_PRESENT = 3,
 DVZ_DEFAULT_QUEUE_COUNT = 4,
-```
-
-#### `DvzDeqOrder`
-
-```c
-DVZ_DEQ_ORDER_DEFAULT = 0,
-DVZ_DEQ_ORDER_REVERSE = 1,
-```
-
-#### `DvzDeqProcBatchPosition`
-
-```c
-DVZ_DEQ_PROC_BATCH_BEGIN = 0,
-DVZ_DEQ_PROC_BATCH_END = 1,
-```
-
-#### `DvzDeqStrategy`
-
-```c
-DVZ_DEQ_STRATEGY_BREADTH_FIRST = 0,
-DVZ_DEQ_STRATEGY_DEPTH_FIRST = 1,
 ```
 
 #### `DvzDescriptorType`
@@ -8056,36 +7951,6 @@ struct DvzContainerIterator {
 };
 ```
 
-#### `DvzDeq`
-
-```c
-typedef struct DvzDeq DvzDeq;
-```
-
-#### `DvzDeqCallbackRegister`
-
-```c
-typedef struct DvzDeqCallbackRegister DvzDeqCallbackRegister;
-```
-
-#### `DvzDeqItem`
-
-```c
-typedef struct DvzDeqItem DvzDeqItem;
-```
-
-#### `DvzDeqItemNext`
-
-```c
-typedef struct DvzDeqItemNext DvzDeqItemNext;
-```
-
-#### `DvzDeqProc`
-
-```c
-typedef struct DvzDeqProc DvzDeqProc;
-```
-
 #### `DvzDescriptors`
 
 ```c
@@ -8129,12 +7994,6 @@ struct DvzDeviceQueueRequest {
 
 ```c
 typedef struct DvzFence DvzFence;
-```
-
-#### `DvzFifo`
-
-```c
-typedef struct DvzFifo DvzFifo;
 ```
 
 #### `DvzFly`
@@ -8550,12 +8409,6 @@ struct DvzSwapchainConfig {
 };
 ```
 
-#### `DvzThread`
-
-```c
-typedef struct DvzThread DvzThread;
-```
-
 #### `DvzTime`
 
 ```c
@@ -8619,10 +8472,4 @@ struct DvzTurntableDesc {
     float max_distance;
     uint32_t controller_flags;
 };
-```
-
-#### `timespec`
-
-```c
-typedef struct timespec timespec;
 ```
