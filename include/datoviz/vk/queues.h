@@ -112,6 +112,8 @@ struct DvzQueues
 
 
 
+EXTERN_C_ON
+
 /*************************************************************************************************/
 /*  Queues                                                                                       */
 /*************************************************************************************************/
@@ -220,3 +222,7 @@ DVZ_EXPORT bool dvz_queue_supports(DvzQueue* queue, DvzQueueRole role);
 
 
 // TODO: put in device.c: void dvz_queues_create(DvzQueues* queues, DvzDevice* device);
+
+
+
+EXTERN_C_OFF

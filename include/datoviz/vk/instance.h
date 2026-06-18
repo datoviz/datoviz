@@ -77,6 +77,8 @@ typedef enum
 
 
 
+EXTERN_C_ON
+
 /*************************************************************************************************/
 /*  Instance                                                                                     */
 /*************************************************************************************************/
@@ -220,3 +222,6 @@ DVZ_EXPORT char** dvz_instance_supported_extensions(DvzInstance* instance, uint3
  */
 DVZ_EXPORT bool dvz_instance_has_extension(DvzInstance* instance, const char* extension);
 
+
+
+EXTERN_C_OFF

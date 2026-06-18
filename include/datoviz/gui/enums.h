@@ -16,16 +16,6 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-// GUI flags.
-typedef enum
-{
-    DVZ_GUI_FLAGS_NONE = 0x000000,
-    DVZ_GUI_FLAGS_OFFSCREEN = 0x008000,
-    DVZ_GUI_FLAGS_DOCKING = 0x000010,
-} DvzGuiFlags;
-
-
-
 // GUI dialog flags.
 typedef enum
 {
