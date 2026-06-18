@@ -249,12 +249,14 @@ pages:
     headers:
       - include/datoviz/common.h
       - include/datoviz/common/**
+      - include/datoviz/ds/**
       - include/datoviz/dvzmath.h
       - include/datoviz/fileio.h
       - include/datoviz/fileio/**
       - include/datoviz/font.h
       - include/datoviz/gpu/**
       - include/datoviz/math/**
+      - include/datoviz/thread/**
       - include/datoviz/controller/**
       - include/datoviz/controller.h
       - include/datoviz/vk.h
@@ -271,9 +273,11 @@ pages:
       - box
       - buffer
       - circular
+      - cond
       - cmd
       - compile
       - container
+      - deq
       - arcball
       - camera
       - device
@@ -283,6 +287,7 @@ pages:
       - easing
       - error
       - file
+      - fifo
       - fly
       - font
       - geom
@@ -300,6 +305,7 @@ pages:
       - map
       - mean
       - mock
+      - mutex
       - min
       - normalize
       - obj
@@ -321,6 +327,7 @@ pages:
       - submit
       - surface
       - swapchain
+      - thread
       - tessellate
       - tessellated
       - time

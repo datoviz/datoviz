@@ -75,6 +75,9 @@ bool _scene_visual_frame_plan_metadata(
 bool _scene_emit_sampled_field_texture_upload(
     DvzFramePlan* plan, const char* resource_id, DvzSampledField* field);
 
+bool _scene_marker_symbol_atlas_page(
+    DvzVisual* visual, const DvzSymbolAtlasPage** out_page, DvzSymbolSourceKind* out_kind);
+
 void _scene_emit_visual_dense_attr_uploads(
     const DvzFigure* figure, DvzFramePlan* plan, const DvzVisual* visual, uint32_t visual_index,
     bool upload_position_topology, bool* emitted_buffers);

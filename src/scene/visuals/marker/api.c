@@ -68,6 +68,42 @@ static bool _symbol_set_has_renderable_marker_id(const DvzSymbolSet* symbols, Dv
 }
 
 
+
+/**
+ * Return the active texture-backed marker symbol atlas page.
+ *
+ * @param visual the marker visual
+ * @param out_page output atlas page pointer
+ * @param out_kind output symbol source kind
+ * @return whether an active texture-backed symbol atlas page exists
+ */
+bool _scene_marker_symbol_atlas_page(
+    DvzVisual* visual, const DvzSymbolAtlasPage** out_page, DvzSymbolSourceKind* out_kind)
+{
+    ANN(visual);
+    ANN(out_page);
+    ANN(out_kind);
+
+    *out_page = NULL;
+    *out_kind = DVZ_SYMBOL_SOURCE_NONE;
+    if (visual->type != DVZ_VISUAL_TYPE_MARKER)
+        return false;
+
+    DvzVisualFamilyState* state = _visual_family_state(visual);
+    if (state->symbol_source_kind == DVZ_SYMBOL_SOURCE_NONE || state->symbol_set == NULL)
+        return false;
+
+    DvzSymbolAtlasPage* page = &state->symbol_set->atlas_pages[state->symbol_source_kind];
+    if (!page->active || page->data == NULL || page->byte_size == 0)
+        return false;
+
+    *out_page = page;
+    *out_kind = state->symbol_source_kind;
+    return true;
+}
+
+
+
 /**
  * Return a symbol-set source slot for one custom symbol id.
  *

@@ -214,13 +214,10 @@ static void _scene_emit_marker_symbol_texture_upload(
     ANN(figure);
     ANN(plan);
     ANN(visual);
-    if (visual->type != DVZ_VISUAL_TYPE_MARKER)
-        return;
-    DvzVisualFamilyState* state = _visual_family_state(visual);
-    if (state->symbol_source_kind == DVZ_SYMBOL_SOURCE_NONE || state->symbol_set == NULL)
-        return;
-    DvzSymbolAtlasPage* page = &state->symbol_set->atlas_pages[state->symbol_source_kind];
-    if (!page->active || page->data == NULL || page->byte_size == 0)
+
+    const DvzSymbolAtlasPage* page = NULL;
+    DvzSymbolSourceKind symbol_source_kind = DVZ_SYMBOL_SOURCE_NONE;
+    if (!_scene_marker_symbol_atlas_page(visual, &page, &symbol_source_kind))
         return;
 
     uint32_t texture_format = 0;
@@ -250,7 +247,7 @@ static void _scene_emit_marker_symbol_texture_upload(
             &(DvzFramePlanUploadMeta){
                 .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
                 .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
-                .color_role = _marker_symbol_atlas_color_role(state->symbol_source_kind),
+                .color_role = _marker_symbol_atlas_color_role(symbol_source_kind),
                 .visual_index = visual_index,
                 .buffer_index = UINT32_MAX,
             }) ||
