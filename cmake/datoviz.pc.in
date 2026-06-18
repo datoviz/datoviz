@@ -7,4 +7,4 @@ Name: datoviz
 Description: GPU rendering engine for scientific visualization
 Version: @PROJECT_VERSION@
 Libs: -L${libdir} -ldatoviz
-Cflags: -I${includedir}
+Cflags: -I${includedir} @DVZ_PKG_CONFIG_PUBLIC_CFLAGS@

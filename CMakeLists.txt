@@ -614,6 +614,27 @@ endif()
 if(DVZ_INSTALL)
     include(CMakePackageConfigHelpers)
     set(_dvz_package_dir "${CMAKE_CURRENT_BINARY_DIR}/cmake")
+    set(DVZ_PKG_CONFIG_PUBLIC_CFLAGS "")
+
+    if((DVZ_BUILD_VK OR DVZ_BUILD_CANVAS) AND NOT Vulkan_FOUND)
+        find_package(Vulkan QUIET)
+    endif()
+
+    set(_dvz_vulkan_public_include_dirs "")
+    if(Vulkan_INCLUDE_DIRS)
+        list(APPEND _dvz_vulkan_public_include_dirs ${Vulkan_INCLUDE_DIRS})
+    endif()
+    if(Vulkan_INCLUDE_DIR)
+        list(APPEND _dvz_vulkan_public_include_dirs "${Vulkan_INCLUDE_DIR}")
+    endif()
+
+    if((DVZ_BUILD_VK OR DVZ_BUILD_CANVAS) AND Vulkan_FOUND AND _dvz_vulkan_public_include_dirs)
+        foreach(_dvz_vulkan_include_dir IN LISTS _dvz_vulkan_public_include_dirs)
+            list(APPEND DVZ_PKG_CONFIG_PUBLIC_CFLAGS "-I${_dvz_vulkan_include_dir}")
+        endforeach()
+        list(REMOVE_DUPLICATES DVZ_PKG_CONFIG_PUBLIC_CFLAGS)
+        string(JOIN " " DVZ_PKG_CONFIG_PUBLIC_CFLAGS ${DVZ_PKG_CONFIG_PUBLIC_CFLAGS})
+    endif()
 
     configure_package_config_file(
         "${PROJECT_SOURCE_DIR}/cmake/packages/DatovizConfig.cmake.in"
