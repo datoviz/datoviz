@@ -304,7 +304,6 @@ endif()
 #
 set(DVZ_CORE_COMPONENTS
     datoviz_common
-    datoviz_ds
     datoviz_fileio
     datoviz_geom
     datoviz_math
@@ -427,7 +426,6 @@ endif()
 
 if(DVZ_BUILD_CORE)
     add_subdirectory(common)
-    add_subdirectory(ds)
     add_subdirectory(fileio)
     add_subdirectory(geom)
     add_subdirectory(math)
@@ -794,7 +792,6 @@ if(DVZ_SANITIZER_FLAGS)
         datoviz_vk_layer
         datoviz_canvas_layer
         datoviz_common
-        datoviz_ds
         datoviz_fileio
         datoviz_math
         datoviz_thread

@@ -24,7 +24,6 @@ DEFAULT_HEADERS = [
     'datoviz/canvas.h',
     'datoviz/common.h',
     'datoviz/drp2.h',
-    'datoviz/ds.h',
     'datoviz/dvzmath.h',
     'datoviz/fileio.h',
     'datoviz/font.h',

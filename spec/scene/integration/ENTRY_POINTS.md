@@ -121,7 +121,7 @@ Keep one shared library (`datoviz`) and provide profile-style build presets thro
 
 Recommended profile naming for distribution/documentation:
 
-1. **core**: core-only (`common`, `ds`, `fileio`, `math`, `thread`)
+1. **core**: core-only (`common`, `fileio`, `math`, `thread`)
 2. **canvas**: core + Vulkan + canvas stack
 3. **drp2**: canvas profile + DRP2
 4. **scene**: drp2 profile + scene

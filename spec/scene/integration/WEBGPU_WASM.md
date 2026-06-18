@@ -73,7 +73,7 @@ The first WASM module should be narrow and explicit, built with Emscripten.
 Required modules:
 
 1. `common`;
-2. selected `ds`;
+2. selected core utility modules;
 3. `math`;
 4. portable DRP2 stream and semantic pieces;
 5. `scene`.

@@ -235,8 +235,8 @@ pages:
     title: Runtime And Utilities API
     output: docs/reference/c-api/runtime.md
     status: advanced/unstable
-    summary: Lower-level Vulkan, vklite, math, geometry, file, data-structure, thread, and utility APIs.
-    audience: Use this page for lower-level runtime, Vulkan, vklite, math, geometry, data-structure, thread, and utility integration.
+    summary: Lower-level Vulkan, vklite, math, geometry, file, thread, and utility APIs.
+    audience: Use this page for lower-level runtime, Vulkan, vklite, math, geometry, thread, and utility integration.
     workflows:
       - label: Debug rendering
         href: ../../how-to/debug-rendering.md
@@ -249,8 +249,6 @@ pages:
     headers:
       - include/datoviz/common.h
       - include/datoviz/common/**
-      - include/datoviz/ds.h
-      - include/datoviz/ds/**
       - include/datoviz/dvzmath.h
       - include/datoviz/fileio.h
       - include/datoviz/fileio/**

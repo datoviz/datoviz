@@ -18,7 +18,6 @@
 
 #include "_log.h"
 #include "../../src/common/tests/test_common.h"
-#include "../../src/ds/tests/test_ds.h"
 #include "../../src/fileio/tests/test_fileio.h"
 #include "../../src/geom/tests/test_geom.h"
 #include "../../src/math/tests/test_math.h"
@@ -47,7 +46,6 @@ int main(int argc, char** argv)
     dvz_testing_install_log_adapter(&suite);
 
     test_common(&suite);
-    test_ds(&suite);
     test_fileio(&suite);
     test_geom(&suite);
     test_math(&suite);

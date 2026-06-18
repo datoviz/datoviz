@@ -37,7 +37,7 @@ Specs own durable behavior. Do not put active work queues or release handoff not
 | --- | --- |
 | public C headers | `include/datoviz/` |
 | shared internal helpers | `src/common/` |
-| active modules | `src/common`, `src/ds`, `src/fileio`, `src/geom`, `src/math`, `src/thread`, `src/input`, `src/window`, `src/canvas`, `src/stream`, `src/video`, `src/vk`, `src/vklite`, `src/drp2`, `src/scene`, `src/app` |
+| active modules | `src/common`, `src/fileio`, `src/geom`, `src/math`, `src/thread`, `src/input`, `src/window`, `src/canvas`, `src/stream`, `src/video`, `src/vk`, `src/vklite`, `src/drp2`, `src/scene`, `src/app` |
 | generated Python raw binding | `datoviz/raw.py`, `datoviz/_ctypes.py` |
 | array-aware Python facade | `datoviz/_array_facade.py` |
 | example manifest tooling | `tools/build_examples_manifest.py` |

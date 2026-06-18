@@ -25,7 +25,6 @@
 #if defined(DVZ_HAS_CONTROLLER) && DVZ_HAS_CONTROLLER
 #include "../src/controller/tests/test_controller.h"
 #endif
-#include "../src/ds/tests/test_ds.h"
 #if defined(DVZ_HAS_DRP2) && DVZ_HAS_DRP2
 #include "../src/drp2/tests/test_drp2.h"
 #endif
@@ -70,7 +69,6 @@ int main(int argc, char** argv)
 #if defined(DVZ_HAS_CONTROLLER) && DVZ_HAS_CONTROLLER
     test_controller(&suite);
 #endif
-    test_ds(&suite);
 #if defined(DVZ_HAS_DRP2) && DVZ_HAS_DRP2
     test_drp2(&suite);
 #endif

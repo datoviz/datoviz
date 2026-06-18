@@ -119,7 +119,7 @@ they later become pointer-passed growable descriptors:
 | Result/output structs | `DvzGpuInfo`, `DvzDrp2ValidationResult`, `DvzQueryResult`, `DvzHoverState`, `DvzFramePlanPacketResult`, `DvzInteropBufferExport`, `DvzVisualDataView` |
 | Geometry/data records | `DvzBounds`, `DvzRect`, `DvzPanelDesc`, `DvzGridCell`, `DvzPanelReserve`, `DvzDataDomain`, `DvzPlacement`, `DvzFieldRegion` |
 | Category/color records | `DvzVolumeAlphaStop`, `DvzColor`, `DvzColorf`, `DvzTime` |
-| Internal/container records exposed for low-level use | `DvzObject`, `DvzContainer`, `DvzContainerIterator`, `DvzList`, `DvzQueue`, `DvzQueues`, `DvzBarriers`, `DvzSubmit` |
+| Internal/container records exposed for low-level use | `DvzObject`, `DvzContainer`, `DvzContainerIterator`, `DvzQueue`, `DvzQueues`, `DvzBarriers`, `DvzSubmit` |
 | Borrowed runtime records | `DvzStreamFrame` |
 
 

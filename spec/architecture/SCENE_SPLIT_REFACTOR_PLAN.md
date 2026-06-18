@@ -38,7 +38,7 @@ active status docs or the nearest durable spec; completed implementation history
 
 The intended dependency direction is:
 
-1. **Foundation:** `common`, `ds`, `math`, `thread`, `fileio`.
+1. **Foundation:** `common`, `math`, `thread`, `fileio`.
 2. **Domain primitives:** scene-independent visualization/data primitives such as `geom`,
    `controller`, and future `color`, `field`, and `text` candidates.
 3. **Runtime/backend:** `input`, `window`, `vk`, `vklite`, `canvas`, `stream`, `video`.

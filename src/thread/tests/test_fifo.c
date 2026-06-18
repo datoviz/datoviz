@@ -22,7 +22,6 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_time_utils.h"
-#include "datoviz/ds/types.h"
 #include "datoviz/thread/atomic.h"
 #include "datoviz/thread/fifo.h"
 #include "datoviz/thread/thread.h"

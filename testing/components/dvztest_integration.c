@@ -19,7 +19,6 @@
 #include "_log.h"
 #include "../../src/canvas/tests/test_canvas.h"
 #include "../../src/common/tests/test_common.h"
-#include "../../src/ds/tests/test_ds.h"
 #if defined(DVZ_HAS_DRP2) && DVZ_HAS_DRP2
 #include "../../src/drp2/tests/test_drp2.h"
 #endif
@@ -62,7 +61,6 @@ int main(int argc, char** argv)
     dvz_testing_install_log_adapter(&suite);
 
     test_common(&suite);
-    test_ds(&suite);
 #if defined(DVZ_HAS_DRP2) && DVZ_HAS_DRP2
     test_drp2(&suite);
 #endif

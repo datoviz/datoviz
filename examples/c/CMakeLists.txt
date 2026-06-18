@@ -32,7 +32,6 @@ function(dvz_add_example group name source)
     target_link_libraries(${target}
         PRIVATE
         datoviz_common
-        datoviz_ds
         datoviz_fileio
         datoviz_geom
         datoviz_math

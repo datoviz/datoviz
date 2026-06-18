@@ -20,7 +20,7 @@ The concrete scene split plan is [SCENE_SPLIT_REFACTOR_PLAN.md](SCENE_SPLIT_REFA
 
 The intended source layers are:
 
-1. **Foundation:** `common`, `ds`, `math`, `thread`, `fileio`.
+1. **Foundation:** `common`, `math`, `thread`, `fileio`.
 2. **Domain primitives:** scene-independent visualization primitives such as `geom`, `controller`,
    and future candidates like `color`, `field`, and `text`.
 3. **Runtime/backend:** `input`, `window`, `vk`, `vklite`, `canvas`, `stream`, `video`.

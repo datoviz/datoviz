@@ -27,7 +27,7 @@ LIST_LINE_RE = re.compile(
     r"fixture_scope=(?P<fixture_scope>\S*)$"
 )
 
-CORE_MODULES = {"common", "ds", "fileio", "geom", "math", "thread"}
+CORE_MODULES = {"common", "fileio", "geom", "math", "thread"}
 RUNTIME_MODULES = {"vk", "vklite"}
 RENDER_MODULES = {"canvas", "window", "stream", "video", "gui"}
 SLOW_CHURN_KEYWORDS = (

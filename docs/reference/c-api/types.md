@@ -7024,18 +7024,6 @@ typedef struct DvzInteropBufferExport DvzInteropBufferExport;
 typedef struct DvzInteropBufferExportConfig DvzInteropBufferExportConfig;
 ```
 
-#### `DvzList`
-
-```c
-typedef struct DvzList DvzList;
-```
-
-#### `DvzListItem`
-
-```c
-typedef union DvzListItem DvzListItem;
-```
-
 #### `DvzMVP`
 
 ```c
@@ -7046,12 +7034,6 @@ typedef struct DvzMVP DvzMVP;
 
 ```c
 typedef enum DvzMVPFlags DvzMVPFlags;
-```
-
-#### `DvzMap`
-
-```c
-typedef struct DvzMap DvzMap;
 ```
 
 #### `DvzMutex`
@@ -8374,25 +8356,6 @@ struct DvzInteropBufferExportConfig {
 };
 ```
 
-#### `DvzList`
-
-```c
-struct DvzList {
-    uint64_t capacity;
-    uint64_t count;
-    DvzListItem * values;
-};
-```
-
-#### `DvzListItem`
-
-```c
-union DvzListItem {
-    int i;
-    void * p;
-};
-```
-
 #### `DvzMVP`
 
 ```c
@@ -8403,12 +8366,6 @@ struct DvzMVP {
     float time;
     uint32_t flags;
 };
-```
-
-#### `DvzMap`
-
-```c
-typedef struct DvzMap DvzMap;
 ```
 
 #### `DvzObject`

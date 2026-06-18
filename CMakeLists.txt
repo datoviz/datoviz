@@ -48,7 +48,7 @@ if(APPLE)
 endif()
 
 option(DVZ_ENABLE_CUDA "Enable CUDA interop hooks and tests" ${_dvz_enable_cuda_default})
-option(DVZ_BUILD_CORE "Build the datoviz core layer (common/ds/fileio/math/thread)" ON)
+option(DVZ_BUILD_CORE "Build the datoviz core layer (common/fileio/geom/math/thread)" ON)
 option(DVZ_BUILD_CONTROLLER "Build scene-independent camera/controller primitives" ON)
 option(DVZ_BUILD_VK "Build the Vulkan layer (vk/vklite)" ON)
 option(DVZ_BUILD_CANVAS "Build the canvas layer (input/window/stream/video/canvas)" ON)
