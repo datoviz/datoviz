@@ -447,6 +447,56 @@ if(_dvz_has_core AND _dvz_has_drp2)
         endif()
 
         add_test(NAME dvz_shaderc_smoke COMMAND dvz_shaderc_smoke)
+
+        if(DVZ_SHADERC_LIBRARY)
+            add_executable(dvz_shaderc_runtime_dirs_smoke
+                dvz_shaderc_smoke.c
+            )
+
+            target_link_libraries(dvz_shaderc_runtime_dirs_smoke
+                PRIVATE
+                datoviz_common
+                datoviz_drp2
+            )
+
+            if(_dvz_has_vk)
+                target_link_libraries(
+                    dvz_shaderc_runtime_dirs_smoke PRIVATE datoviz_vk datoviz_vklite datoviz_volk)
+            endif()
+
+            if(DVZ_WITH_MIMALLOC)
+                target_link_libraries(
+                    dvz_shaderc_runtime_dirs_smoke PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+            endif()
+
+            target_include_directories(dvz_shaderc_runtime_dirs_smoke
+                PRIVATE
+                ${PROJECT_SOURCE_DIR}/include
+                ${PROJECT_SOURCE_DIR}/src/common
+            )
+
+            if(_dvz_compile_definitions)
+                target_compile_definitions(
+                    dvz_shaderc_runtime_dirs_smoke PRIVATE ${_dvz_compile_definitions})
+            endif()
+
+            if(APPLE)
+                set_target_properties(dvz_shaderc_runtime_dirs_smoke PROPERTIES
+                    BUILD_RPATH "@executable_path;@loader_path"
+                    INSTALL_RPATH "@executable_path;@loader_path"
+                )
+            elseif(UNIX)
+                set_target_properties(dvz_shaderc_runtime_dirs_smoke PROPERTIES
+                    BUILD_RPATH "$ORIGIN"
+                    INSTALL_RPATH "$ORIGIN"
+                )
+            endif()
+
+            get_filename_component(_dvz_shaderc_runtime_dir "${DVZ_SHADERC_LIBRARY}" DIRECTORY)
+            add_test(NAME dvz_shaderc_runtime_dirs_smoke COMMAND dvz_shaderc_runtime_dirs_smoke)
+            set_tests_properties(dvz_shaderc_runtime_dirs_smoke PROPERTIES
+                ENVIRONMENT "DVZ_WHEEL_RUNTIME_DIRS=${_dvz_shaderc_runtime_dir}")
+        endif()
     else()
         message(STATUS "Skipping dvz_shaderc_smoke: shaderc support is not enabled.")
     endif()
@@ -1155,6 +1205,7 @@ foreach(_dvz_test_target
     dvztest_fileio
     dvztest_drp2
     dvz_shaderc_smoke
+    dvz_shaderc_runtime_dirs_smoke
     dvz_drp2_player
     dvztest_scene
     dvztest_vk

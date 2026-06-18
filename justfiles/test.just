@@ -90,6 +90,12 @@ shaderc-smoke:
     set -euo pipefail
     cmake --build build --target dvz_shaderc_smoke
     ./build/testing/dvz_shaderc_smoke
+    shaderc_library="$(cmake -LA -N build | awk -F= '/^DVZ_SHADERC_LIBRARY:FILEPATH=/{print $2}')"
+    if [[ -n "${shaderc_library}" && -f "${shaderc_library}" ]]; then
+        cmake --build build --target dvz_shaderc_runtime_dirs_smoke
+        shaderc_runtime_dir="$(dirname "${shaderc_library}")"
+        DVZ_WHEEL_RUNTIME_DIRS="${shaderc_runtime_dir}" ./build/testing/dvz_shaderc_runtime_dirs_smoke
+    fi
 #
 
 [linux]

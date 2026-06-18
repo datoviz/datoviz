@@ -86,10 +86,18 @@ function(dvz_add_example group name source)
         target_compile_definitions(${target} PRIVATE DVZ_DRP2_HAS_VKLITE=0)
     endif()
 
-    if(APPLE)
+    if(APPLE OR UNIX)
+        set(_dvz_example_runtime_rpath "@executable_path;@loader_path")
+        if(NOT APPLE)
+            set(_dvz_example_runtime_rpath "$ORIGIN")
+        endif()
+        if(DVZ_SHADERC_LIBRARY)
+            get_filename_component(_dvz_shaderc_library_dir "${DVZ_SHADERC_LIBRARY}" DIRECTORY)
+            list(APPEND _dvz_example_runtime_rpath "${_dvz_shaderc_library_dir}")
+        endif()
         set_target_properties(${target} PROPERTIES
-            BUILD_RPATH  "@executable_path;@loader_path"
-            INSTALL_RPATH "@executable_path;@loader_path"
+            BUILD_RPATH  "${_dvz_example_runtime_rpath}"
+            INSTALL_RPATH "${_dvz_example_runtime_rpath}"
         )
     endif()
 

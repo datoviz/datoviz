@@ -79,6 +79,16 @@ static DvzDynLib _shaderc_open_runtime_dirs(const char* filename)
     if (dirs == NULL || dirs[0] == '\0')
         return NULL;
 
+    const char* basename = strrchr(filename, '/');
+#if defined(_WIN32)
+    const char* backslash = strrchr(filename, '\\');
+    if (basename == NULL || (backslash != NULL && backslash > basename))
+        basename = backslash;
+#endif
+    filename = basename != NULL ? basename + 1 : filename;
+    if (filename[0] == '\0')
+        return NULL;
+
 #if defined(_WIN32)
     const char sep = ';';
 #else
