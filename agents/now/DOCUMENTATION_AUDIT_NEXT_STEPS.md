@@ -13,7 +13,8 @@ active work; move durable documentation policy into `spec/docs/` when needed.
    counts, status returns, advanced/unstable runtime APIs, and scene inspection escape hatches.
 2. Generated C reference/raw `ctypes` policy still needs a local `just ctypes-check` rerun in an
    environment with the Python `clang` module; the local attempt stopped before repo checks started.
-3. `agents/now/API_SURFACE_AUDIT.md` is now a completed closeout record, not an active work queue.
+3. The completed API surface audit file was removed from `agents/now/`; commit history is the
+   closeout record.
 
 
 ## Preferred Sequence
