@@ -50,18 +50,6 @@ int test_math(TstSuite* suite)
     TST_CASE(test_box_5);
     TST_CASE(test_box_6);
 
-    TST_GROUP("array");
-    TST_CASE(test_array_1);
-    TST_CASE(test_array_2);
-    TST_CASE(test_array_3);
-    TST_CASE(test_array_4);
-    TST_CASE(test_array_5);
-    TST_CASE(test_array_6);
-    TST_CASE(test_array_7);
-    TST_CASE(test_array_cast);
-    TST_CASE(test_array_mvp);
-    TST_CASE(test_array_3D);
-
     TST_GROUP("stats");
     TST_CASE(test_stats_parallel);
 

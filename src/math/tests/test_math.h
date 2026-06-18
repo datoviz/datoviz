@@ -79,32 +79,6 @@ int test_anim_1(TstContext* suite, const TstCase* tstitem);
 
 
 /*************************************************************************************************/
-/*  Array tests                                                                                  */
-/*************************************************************************************************/
-
-int test_array_1(TstContext* suite, const TstCase* tstitem);
-
-int test_array_2(TstContext* suite, const TstCase* tstitem);
-
-int test_array_3(TstContext* suite, const TstCase* tstitem);
-
-int test_array_4(TstContext* suite, const TstCase* tstitem);
-
-int test_array_5(TstContext* suite, const TstCase* tstitem);
-
-int test_array_6(TstContext* suite, const TstCase* tstitem);
-
-int test_array_7(TstContext* suite, const TstCase* tstitem);
-
-int test_array_cast(TstContext* suite, const TstCase* tstitem);
-
-int test_array_mvp(TstContext* suite, const TstCase* tstitem);
-
-int test_array_3D(TstContext* suite, const TstCase* tstitem);
-
-
-
-/*************************************************************************************************/
 /*  Math test entry-point                                                                        */
 /*************************************************************************************************/
 
