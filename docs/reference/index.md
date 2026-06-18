@@ -29,6 +29,7 @@ support, and links to minimal examples.
 | --- | --- |
 | [Project status](project-status.md) | Meaning of status labels and broad release posture. |
 | [Feature status](feature-status.md) | Feature-by-feature support, deferral, and ownership classification. |
+| [v0.3 visible parity](v03-visible-parity.md) | Fixed, deferred, and external/GSP disposition for visible v0.3-era capabilities. |
 | [Platform support](platform-support.md) | Native platforms, browser/WebGPU requirements, optional providers, and limitations. |
 | [Build options](build-options.md) | CMake options, dependency-source policy, package smoke presets, and FetchContent. |
 

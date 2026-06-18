@@ -148,7 +148,8 @@ capture, frame callbacks, multi-panel figures, text, axes, colorbars, panzoom, a
 point, pixel, marker, primitive, segment/path, image, mesh/textured mesh, sphere, and volume.
 
 Exit criteria: every visible gap is fixed, deferred, or external/GSP, and the table is linked from
-release docs.
+release docs. The current public table is
+[../../docs/reference/v03-visible-parity.md](../../docs/reference/v03-visible-parity.md).
 
 ### 3. WebGPU/WASM Experimental Slice
 

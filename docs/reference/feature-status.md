@@ -1,7 +1,8 @@
 # Feature Status
 
 Status labels use the meanings from [Project status](project-status.md). This page classifies
-public-facing features; exact function signatures live in the generated C API reference.
+public-facing features; exact function signatures live in the generated C API reference. The v0.3
+visible capability disposition is tracked in [v0.3 visible parity](v03-visible-parity.md).
 
 | Area | Status | Reference | Notes |
 | --- | --- | --- | --- |
@@ -19,4 +20,5 @@ public-facing features; exact function signatures live in the generated C API re
 | Built-in shader replacement and hot reload | deferred | [Errors and logging](errors-and-logging.md) | Built-in visual shader ABI is internal in v0.4. |
 | Python raw `ctypes` binding | supported | [Python raw ctypes](ctypes.md) | Low-level Python binding path for exact C-shaped access. |
 | WebGPU/WASM | experimental | [WebGPU subset](webgpu-subset.md) | Browser subset is documented and release-proofed for promoted examples; it is not Vulkan parity. |
+| v0.3 visible parity | fixed/deferred/external by capability | [v0.3 visible parity](v03-visible-parity.md) | Visible v0.3-era behavior is classified as covered by v0.4, intentionally deferred, or owned by GSP/VisPy2/Matplotlib. |
 | Old Datoviz Python plotting API | external/GSP | [Project status](project-status.md) | Not part of v0.4 Datoviz docs. |
