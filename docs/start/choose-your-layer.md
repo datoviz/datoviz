@@ -8,6 +8,7 @@ When using a coding agent, make the layer explicit. For normal Datoviz C visuali
 | Need | Use | Status |
 | --- | --- | --- |
 | Native rendering engine, windows, offscreen views, capture | Datoviz C `scene` and `app` APIs | supported/experimental by feature |
+| Direct-engine Python calls with NumPy array adaptation | top-level `import datoviz as dvz` facade | supported for policy-declared calls |
 | Backend-agnostic render stream or replay | DRP2/DVZR | advanced/unstable |
 | Low-level Python loading of the C library | Python raw `ctypes` binding | supported |
 | High-level scientific plotting | VisPy2/GSP | external/GSP |
@@ -21,6 +22,18 @@ visual data, runtime resources, windows, offscreen targets, or capture.
 
 This is the default Datoviz layer for generated examples that create figures, panels, visuals,
 controllers, captures, or pick/probe requests.
+
+
+## Python Facade
+
+Choose the top-level facade for normal Python use with the v0.4 engine:
+
+```python
+import datoviz as dvz
+```
+
+It preserves C-shaped `dvz_*` names and adapts NumPy arrays only for policy-declared calls. It is
+not a high-level plotting wrapper and should not be presented as a replacement for GSP/VisPy2.
 
 
 ## Python Raw `ctypes`

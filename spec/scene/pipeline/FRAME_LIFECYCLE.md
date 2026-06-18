@@ -8,9 +8,9 @@ This document defines the logical frame flow for the active v0.4 scene layer.
 The frame lifecycle is triggered by the view render step.
 
 Each frame, `DvzView` routes pending input and size state to the figure, asks the scene to
-produce a `FramePlan`, emits a `DvzDrp2CommandStream`, and submits it to the view's
-`DvzDrp2Runtime`. The runtime executes through vklite/canvas and presents or captures through the
-app layer.
+produce a `FramePlan`, emits an immutable `DvzSceneFrameArtifact`, and submits the artifact's
+DRP2 stream snapshot to the view's `DvzDrp2Runtime`. The runtime executes through vklite/canvas
+and presents or captures through the app layer.
 
 The scene does not own the event loop, the canvas, or the swapchain.
 It receives a "build a frame" signal and produces DRP2 work in response.
@@ -31,7 +31,7 @@ GLFW loop.
 7. validate the affected scene state,
 8. apply capability adaptation,
 9. build the scene-level `FramePlan`,
-10. emit a `DvzDrp2CommandStream`,
+10. emit a `DvzSceneFrameArtifact`,
 11. submit through `DvzDrp2Runtime`,
 12. optionally render external UI overlay,
 13. process readback or picking results.
@@ -131,9 +131,10 @@ The current spec direction is that this build produces one scene-level `FramePla
 even when the plan contains panel-local nodes or subplans.
 
 
-### 8. DRP2 Emission
+### 8. Frame Artifact Emission
 
-Emit:
+Emit an immutable `DvzSceneFrameArtifact` containing artifact-owned DRP2 packet spans and stream
+snapshots for the already-built plan:
 
 1. resource creates, if needed,
 2. resource writes for dirty content,
@@ -149,7 +150,8 @@ It should not rediscover upload work outside the plan.
 
 ### 9. Runtime Submission
 
-Submit the emitted `DvzDrp2CommandStream` through the runtime-facing boundary.
+Submit the emitted artifact's DRP2 stream snapshot through the runtime-facing boundary. Packet
+spans and stream snapshots are borrowed from the artifact and must not outlive it.
 
 This stage should treat the runtime as an execution service, not as a second planner.
 

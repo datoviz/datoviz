@@ -40,9 +40,10 @@ These boundaries are now explicit enough to start public API drafting:
    scales; they do not own the scale or colormap.
 7. `SampledField` is the active shared scene-owned regular-grid resource for image and volume paths
    and future broader probe/readout consumers.
-8. The active rendering path is scene -> `FramePlan` -> `DvzDrp2CommandStream` ->
-   `DvzDrp2Runtime` -> vklite/canvas/app. Scene code emits backend-agnostic DRP2 work and does
-   not own swapchains, command-buffer lifetimes, or native host event loops.
+8. The active rendering path is scene -> `FramePlan` -> `DvzSceneFrameArtifact` -> DRP2
+   packet/stream snapshots -> `DvzDrp2Runtime` -> vklite/canvas/app. Scene code emits
+   backend-agnostic artifact snapshots and does not own swapchains, command-buffer lifetimes, or
+   native host event loops.
 9. App capture is active through `DvzView`/canvas PNG capture. DRP2 linear `.dvzr`
    recording and replay are active view capabilities.
 
@@ -60,7 +61,7 @@ old v0.3 API names.
 
 | Area | Public API | Retained state | Native rendering / execution | GPU request/readback | Remaining gaps |
 |---|---|---|---|---|---|
-| Core scene/app | scene, figure, panel, view, emit, capture, DVZR recording/replay | active | active scene -> FramePlan -> DRP2 -> vklite/canvas/app path | frame capture and runtime readbacks are used by tests | installed CLI boundary for DVZR replay remains a product decision |
+| Core scene/app | scene, figure, panel, view, frame artifacts, view capture, DVZR recording/replay | active | active scene -> FramePlan -> DvzSceneFrameArtifact -> DRP2 packet/stream snapshots -> vklite/canvas/app path | frame capture and runtime readbacks are used by tests | installed CLI boundary for DVZR replay remains a product decision |
 | Visual families | pixel, point, marker, primitive, segment/path, image, labels, mesh, sphere, volume, glyph, vector constructors; semantic polygon composites | active for those families | active for retained first slices, including WBOIT/depth-peel, EDL, SSAO/G-buffer where eligible; glyph path renders atlas-backed text; labels render integer fields; vector uses cap-based stroke lowerings | item queries exist for point-like, stroke, primitive, image, mesh, sphere, vector, and volume proxy targets; image, labels, and volume sample queries have GPU paths | errorbar, boxplot, splat, exact marker/path semantics, independent vector-head styling, labels query pressure tests, and richer path/image/volume features |
 | Sampled fields/scales | `DvzSampledField`, scale, colormap, colorbar, legend, and labels APIs | fields/scales/colorbars/legends/labels retain state | image, labels, and volume consume fields; image/volume colormap bindings, continuous colorbars, categorical legends, and integer label rendering are active | image queries return RGBA/scalar/category-like payloads; volume slice queries now use GPU-rendered scalar and label payloads | richer query payloads, shared colorbar/legend layout, 3D label slices, and broader labels query pressure tests |
 | Interaction/selection | policies, panel query queues, selection/link APIs | active bookkeeping and tests | query processing executes through app/runtime for point-like, stroke, primitive, image, mesh, sphere, and volume proxy targets | broad item-query readback plus image/labels/volume sample query first slices | richer mesh face/region, path, label, text, and volume ray-hit identities plus broader rendered selection highlights |

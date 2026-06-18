@@ -58,13 +58,16 @@ animation, picking, selection, query/probe, or data semantics in JavaScript.
 
 | Status | Meaning |
 | --- | --- |
-| `webgpu-live` | Public live route exists and should work in supported WebGPU browsers. |
+| `webgpu-live` | Public live route exists for the promoted subset; browser/adapter visual proof is recorded separately. |
 | `webgpu-planned` | Intended browser route, but not promoted yet. |
 | `webgpu-deferred` | Browser support is intentionally postponed. |
 | `native-only` | Native/runtime feature should link to native validation or static media instead. |
 
 Only `webgpu-live` examples should be linked as live browser routes. Other statuses need fallback
 links, screenshots, videos, or native instructions.
+
+A live route is not the same as adapter-specific proof. For release evidence, pair the manifest
+status with `just webgpu-browser-smoke` output or a recorded manual browser/adapter result.
 
 
 ## Deployment Notes

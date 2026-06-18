@@ -1,7 +1,6 @@
 # Documentation Audit Next Steps
 
-Status: active follow-up plan after the v0.4 documentation audit and API surface audit closeout on
-2026-06-18.
+Status: active follow-up plan after the v0.4 documentation cleanup pass on 2026-06-18.
 
 Use this as the execution order for the next documentation cleanup pass. Keep this file focused on
 active work; move durable documentation policy into `spec/docs/` when needed.
@@ -17,60 +16,27 @@ active work; move durable documentation policy into `spec/docs/` when needed.
    closeout record.
 
 
-## Preferred Sequence
+## Completed In Current Cleanup Pass
 
-1. Rewrite `README.md` for v0.4.
-   Treat it as a fresh v0.4 front door, not a patch over the v0.3-era README. Keep it short and
-   release-candidate honest: C-first engine, source build path while v0.4 packages are pending,
-   raw/facade Python scope, WebGPU/Qt experimental or optional-provider status, and links into the
-   public docs.
-
-2. Fix copy-breaking user docs.
-   - `docs/start/install.md`: update to CMake 3.21+, Python >=3.10, and include the shader tool
-     dependency path for `glslangValidator`.
-   - `docs/index.md`: include `datoviz/app.h` where app APIs are used and remove the nonexistent
-     C `dvz_capture()` reference.
-   - `docs/how-to/profile-performance.md`: replace `dvz_point(panel, 0)` with
-     `dvz_point(scene, 0)`.
-
-3. Reconcile Python docs.
-   Make every public page use the same model:
-   - `import datoviz as dvz` is the top-level array-aware direct-engine facade.
-   - `import datoviz.raw as raw` is the exact generated `ctypes` layer.
-   - high-level plotting belongs to external GSP/VisPy2.
-   Also clarify that only the policy-declared facade calls are currently array-adapted.
-
-4. Fix scene emission source-of-truth drift.
-   Update older spec pages so the active path is consistently:
+1. `README.md` was rewritten as a short v0.4 front door.
+2. Copy-breaking public docs were fixed in install, front-page, and performance pages.
+3. Public Python layer wording was reconciled where drift remained.
+4. Scene-emission spec wording now uses:
    `scene frame plans -> DvzSceneFrameArtifact -> DRP2 packet/stream snapshots -> runtime`.
-   Prioritize ownership and lifetime wording in `spec/scene/core/RUNTIME_BOUNDARY.md`,
-   `spec/scene/pipeline/FRAME_LIFECYCLE.md`, and
-   `spec/scene/api/API_IMPLEMENTATION_READINESS.md`.
-
-5. Clean generated example metadata.
-   Fix the Textured Mesh/Textured Planets WebGPU route and status conflict at the manifest/source
-   metadata level, then regenerate gallery pages, the WebGPU matrix, and public examples metadata.
-
-6. Add real-data attribution.
-   For Textured Planets and any similar real-data examples, add source, license/citation,
-   preparation command, and provenance notes. Treat this as a release-gate item.
-
-7. Tighten experimental-provider docs.
-   - WebGPU: distinguish a published `webgpu-live` route from actual visual render proof on a
-     specific browser/adapter.
-   - Qt/PyQt: state clearly that `datoviz_qtbridge` is an optional provider that must be built or
-     supplied separately; it is not part of the base wheel.
-
-8. Regenerate and validate.
-   Run the narrow generators/checks that match the edited scope, then finish with the full
-   documentation validation loop below.
+5. Textured Mesh/Textured Planets WebGPU route/status metadata was fixed at the manifest level and
+   generated public metadata was refreshed.
+6. Textured Planets now records source, license/citation, preparation, and provenance notes.
+7. WebGPU and Qt/PyQt provider docs now distinguish route publication from adapter visual proof and
+   base-wheel support from optional providers.
 
 
-## Suggested Checkpoint Commits
+## Remaining Next Steps
 
-1. README plus copy-breaking public docs.
-2. Python wording, scene-emission spec consistency, generated gallery/WebGPU metadata, and
-   attribution fixes.
+1. Rerun `just ctypes-check` in an environment with the Python `clang` module.
+2. Continue the real-data attribution audit for any remaining real/prepared showcases beyond
+   Textured Planets.
+3. During final release proof, pair `webgpu-live` status with recorded browser/adapter evidence for
+   promoted routes that matter to RC notes.
 
 Do not include unrelated user changes, generated binary payloads, or `data` submodule changes unless
 explicitly approved in the current turn.

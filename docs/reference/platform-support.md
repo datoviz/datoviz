@@ -29,7 +29,9 @@ Requirements:
 - diagnostics accepted for routes classified as planned, deferred, native-only, or unsupported on
   the current adapter.
 
-Native Vulkan success does not imply WebGPU success on a particular browser/adapter.
+Native Vulkan success does not imply WebGPU success on a particular browser/adapter. A published
+`webgpu-live` route is a routing and subset claim; browser/adapter visual proof is recorded
+separately in smoke output or compatibility notes.
 
 ## Optional Providers
 
@@ -40,6 +42,10 @@ Native Vulkan success does not imply WebGPU success on a particular browser/adap
 | Shaderc runtime compilation | Optional | Enabled when headers/library are found or required by `DVZ_ENABLE_SHADERC=ON`; otherwise precompiled shaders are required. |
 | CUDA/CuPy interop | Advanced/unstable | Native/provider-style work only; not portable WebGPU support. |
 | Video encoders | Optional/backend-dependent | Software or hardware encoders depend on build options and installed libraries. |
+
+The base `libdatoviz` build and base Python wheel do not link Qt. PyQt hosting needs a
+`datoviz_qtbridge` shared library built with `DVZ_ENABLE_QT_BRIDGE=ON` or supplied separately, plus
+a compatible Qt/PyQt runtime at load time.
 
 ## Build Dependencies
 

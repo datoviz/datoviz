@@ -14,7 +14,17 @@ UV textured planet mesh via dvz_mesh + sampled fields.
 
 ## Preview
 
-![Textured Planets](../../../assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)
+=== "Screenshot"
+
+    ![Textured Planets](../../../assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=textured_terrain_or_planet" title="Textured Planets WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=textured_terrain_or_planet">Open the live WebGPU example</a>.
 
 ## Source
 
@@ -32,7 +42,8 @@ UV textured planet mesh via dvz_mesh + sampled fields.
     - Status: `supported`
     - Source: [`examples/c/showcases/textured_planet.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c)
     - Agent copy-safe: `false`
-    - WebGPU status: `webgpu-planned`
+    - WebGPU status: `webgpu-live`
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=textured_terrain_or_planet"><code>examples/webgpu/live.html?id=textured_terrain_or_planet</code></a>
     - WebGPU requirements: `mesh`, `sampled-field`, `texture`, `arcball`
     - Build: `just example-c showcases/textured_planet`
     - Smoke: `./build/examples/c/showcases/textured_planet --png`
@@ -47,6 +58,18 @@ UV textured planet mesh via dvz_mesh + sampled fields.
     | Field | Value |
     | --- | --- |
     | `kind` | real |
+
+    ### Dataset
+
+    | Field | Value |
+    | --- | --- |
+    | `name` | NASA Earth and Mars equirectangular texture maps |
+    | `source` | data/assets/textures/world.200412.3x5400x2700.jpg; data/assets/textures/earth.jpg; data/assets/textures/mars_viking_mdim21.jpg |
+    | `source_url` | https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/; https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m |
+    | `license` | NASA media usage guidelines and USGS/NASA public-domain source-data terms apply; acknowledge NASA, NASA Ames, JPL, and USGS as source where relevant. |
+    | `citation` | NASA Blue Marble Next Generation; USGS Astrogeology Mars Viking Colorized Global Mosaic 232m / Mars Digital Image Model 2.1. |
+    | `preprocessing` | none; committed JPEG texture maps are loaded directly from data/assets/textures |
+    | `provenance` | Earth uses NASA Blue Marble Next Generation texture assets; Mars uses the USGS Astrogeology/NASA Ames/JPL/USGS Viking MDIM 2.1 colorized global mosaic. The example can generate a procedural Earth fallback when the local Earth file is absent, but release gallery evidence should use the committed real texture assets. |
 
     Generated media is prepared in the `data` submodule and linked from this page.
 

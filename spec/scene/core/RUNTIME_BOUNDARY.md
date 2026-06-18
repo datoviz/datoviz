@@ -40,9 +40,10 @@ The intended relationship is:
 
 1. scene owns authored semantics, dirty tracking, validation, and adaptation,
 2. scene builds one scene-level `FramePlan` for the frame,
-3. the scene-to-DRP2 converter translates that plan into a `DvzDrp2CommandStream`,
-4. `DvzDrp2Runtime` consumes the command stream and executes through vklite/canvas,
-5. the app layer owns presentation, capture, hosted surfaces, and event-loop stepping.
+3. frame emission returns an owned immutable `DvzSceneFrameArtifact`,
+4. the artifact owns DRP2 packet spans and stream snapshots for that frame,
+5. `DvzDrp2Runtime` consumes the artifact's stream snapshot and executes through vklite/canvas,
+6. the app layer owns presentation, capture, hosted surfaces, and event-loop stepping.
 
 The active public flow is `dvz_scene()` -> `dvz_figure()` -> `dvz_app()` ->
 `DvzView`, with the view driving render-once or run-loop execution.
@@ -131,13 +132,16 @@ inspection.
 
 ```text
 caps       = runtime_query_capabilities(runtime)
-commands   = scene_convert_frame_plan(frame_plan, caps)
-submission = runtime_submit_commands(runtime, commands)
+artifact   = scene_emit_frame_artifact(frame_plan, caps)
+snapshot   = scene_frame_artifact_stream(artifact)
+submission = runtime_submit_snapshot(runtime, snapshot)
 event      = runtime_poll_completion(runtime)
 ```
 
-The concrete active command object is `DvzDrp2CommandStream`; the concrete active executor is
-`DvzDrp2Runtime`.
+The concrete active emission product is `DvzSceneFrameArtifact`; the concrete active executor is
+`DvzDrp2Runtime`. The artifact exposes a `DvzDrp2CommandStream` snapshot for native execution and
+packet spans for WASM/WebGPU transport. Those views are borrowed from the artifact and must not
+outlive it.
 
 
 ## `SubmissionResult`
@@ -229,16 +233,17 @@ The snapshot must be explicit enough that:
 The important rules are:
 
 1. scene decides the topology of the frame plan,
-2. the scene-to-DRP2 converter emits the command stream,
-3. runtime executes the command stream,
+2. the scene-to-DRP2 converter emits the frame artifact,
+3. runtime executes the artifact-owned stream snapshot,
 4. runtime may cache backend objects internally,
 5. runtime must not silently reinterpret scene-level ordering, fallback, or identity.
 
-The runtime may internally translate one DRP2 command stream into one or several backend
-submissions, with internal caching or deferred object creation. A convenience
-`FramePlan` submission helper may combine conversion and command-stream submission, but that helper
-does not make `FramePlan` the primary runtime contract. Internal details must not alter the meaning
-of the submitted frame, the identity route for diagnostics, or the identity route for completions.
+The runtime may internally translate one artifact-owned DRP2 stream snapshot into one or several
+backend submissions, with internal caching or deferred object creation. A convenience
+`FramePlan` submission helper may combine planning, artifact emission, and runtime submission, but
+that helper does not make `FramePlan` the primary runtime contract. Internal details must not alter
+the meaning of the submitted frame, the identity route for diagnostics, or the identity route for
+completions.
 
 `DvzView` is the active owner of repeated submissions for a figure. It may reuse request and
 frame runtimes, resize the canvas to match the figure, render once for hosted loops, or run a
@@ -298,8 +303,8 @@ Per-frame flow:
 DvzView render step
   -> app synchronizes figure size and input state
   -> scene builds FramePlan
-  -> scene-to-DRP2 converter emits DvzDrp2CommandStream
-  -> DvzDrp2Runtime executes through vklite/canvas
+  -> scene emission returns DvzSceneFrameArtifact
+  -> DvzDrp2Runtime executes the artifact stream snapshot through vklite/canvas
   -> app presents, captures, records, or replays as requested
 ```
 

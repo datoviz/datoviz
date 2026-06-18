@@ -81,9 +81,11 @@ not expected.
 
 ## PyQt Hosting
 
-The Python hosted path uses an optional `datoviz_qtbridge` provider. Keep failure diagnostics
-explicit: missing bridge library, unsupported PyQt/PySide binding, missing `QVulkanInstance`
-features, and Qt runtime mismatches should fail before rendering starts.
+The Python hosted path uses an optional `datoviz_qtbridge` provider. The base Python wheel does not
+include or load Qt by itself; build the bridge with `DVZ_ENABLE_QT_BRIDGE=ON` or supply a compatible
+bridge library separately. Keep failure diagnostics explicit: missing bridge library, unsupported
+PyQt/PySide binding, missing `QVulkanInstance` features, and Qt runtime mismatches should fail
+before rendering starts.
 
 The current example is:
 

@@ -5,7 +5,8 @@ Status: experimental v0.4 browser subset.
 Datoviz v0.4 includes an experimental browser path:
 
 ```text
-C/WASM scene state -> scene frame plan -> WGSL DRP2 packets -> browser WebGPU runtime -> canvas
+C/WASM scene state -> DvzSceneFrameArtifact -> WGSL DRP2 packets ->
+browser WebGPU runtime -> canvas
 ```
 
 This is a portability proof for the v0.4 scene and DRP2 contract. It is not native Vulkan feature
@@ -119,6 +120,12 @@ validation. Browser JavaScript may host the WASM module, load assets, normalize 
 configure WebGPU, execute DRP2 packets, surface diagnostics, and provide page UI, but it must not
 reimplement the example scene construction, visual state, animation, picking, selection,
 query/probe, or data semantics.
+
+`webgpu-live` means a public route is registered and included in the promoted browser subset. It is
+not a promise that every browser, GPU adapter, driver, or CI runner has produced visual evidence for
+that route. Treat route publication, browser smoke coverage, and adapter-specific visual proof as
+separate facts, and record adapter failures as diagnostics rather than silently downgrading the
+example.
 
 Browser smoke routes are deliberately smaller than the gallery. The required RC smoke set is one
 basic runtime route plus one query/readback route; broader WASM sampler pages may remain for
