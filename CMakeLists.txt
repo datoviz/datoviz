@@ -541,6 +541,8 @@ get_property(_dvz_compile_definitions GLOBAL PROPERTY DVZ_COMPILE_DEFINITIONS)
 
 foreach(_dvz_target ${_dvz_targets})
     if(TARGET ${_dvz_target})
+        get_target_property(_dvz_target_type ${_dvz_target} TYPE)
+
         if(DVZ_COMMON_COMPILE_OPTIONS)
             target_compile_options(${_dvz_target} PRIVATE
                 $<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:${DVZ_COMMON_COMPILE_OPTIONS}>
@@ -561,6 +563,19 @@ foreach(_dvz_target ${_dvz_targets})
 
         if(_dvz_compile_definitions)
             target_compile_definitions(${_dvz_target} PRIVATE ${_dvz_compile_definitions})
+        endif()
+
+        if(DVZ_SANITIZER_FLAGS AND _dvz_target_type AND
+           NOT _dvz_target_type STREQUAL "INTERFACE_LIBRARY")
+            target_compile_options(${_dvz_target} PRIVATE
+                $<$<AND:$<CONFIG:Debug>,$<NOT:$<COMPILE_LANGUAGE:CUDA>>>:${DVZ_SANITIZER_FLAGS}>
+            )
+
+            if(NOT _dvz_target_type STREQUAL "OBJECT_LIBRARY" AND NOT CC_MSVC)
+                target_link_options(${_dvz_target} PRIVATE
+                    $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>
+                )
+            endif()
         endif()
     endif()
 endforeach()

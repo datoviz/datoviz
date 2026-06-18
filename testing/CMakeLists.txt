@@ -1144,12 +1144,22 @@ endif()
 # Track testing targets so top-level logic can apply shared instrumentation (coverage, sanitizers, ...).
 foreach(_dvz_test_target
     testing
+    dvztest_scheduler
     dvztest
     dvztest_core
+    dvztest_common
+    dvztest_math
+    dvztest_geom
+    dvztest_controller
+    dvztest_thread
+    dvztest_fileio
     dvztest_drp2
+    dvz_shaderc_smoke
+    dvz_drp2_player
     dvztest_scene
     dvztest_vk
     dvztest_canvas
+    dvztest_gui
     dvztest_integration
     dvz_live_canvas
     dvz_public_header_probe

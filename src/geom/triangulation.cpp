@@ -19,6 +19,7 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <cstring>
 #include <limits>
 #include <vector>
 
@@ -246,8 +247,14 @@ static bool _triangulation_backend_supported(const DvzTriangulationDesc* desc)
 {
     if (desc == NULL)
         return true;
-    return desc->backend == DVZ_TRIANGULATION_BACKEND_DEFAULT ||
-           desc->backend == DVZ_TRIANGULATION_BACKEND_EARCUT;
+
+    uint32_t backend = 0;
+    static_assert(
+        sizeof(desc->backend) <= sizeof(backend),
+        "DvzTriangulationBackend storage must fit in uint32_t");
+    memcpy(&backend, &desc->backend, sizeof(desc->backend));
+    return backend == (uint32_t)DVZ_TRIANGULATION_BACKEND_DEFAULT ||
+           backend == (uint32_t)DVZ_TRIANGULATION_BACKEND_EARCUT;
 }
 
 
