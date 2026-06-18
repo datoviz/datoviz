@@ -18,7 +18,7 @@ Common workflows:
 - [Configure cameras](../../how-to/configure-cameras.md)
 - [Pick and probe](../../how-to/pick-and-probe.md)
 
-Functions: 460
+Functions: 481
 
 ## Symbol Groups
 
@@ -40,7 +40,7 @@ Functions: 460
 | [Field](#field) | 2 | `include/datoviz/scene/field.h` |
 | [Figure](#figure) | 10 | `include/datoviz/scene.h` |
 | [Fly](#fly) | 30 | `include/datoviz/controller/fly.h`, `include/datoviz/scene/fly.h` |
-| [Font](#font) | 2 | `include/datoviz/scene/text.h` |
+| [Font](#font) | 6 | `include/datoviz/scene/text.h` |
 | [Format](#format) | 1 | `include/datoviz/scene/scale.h` |
 | [Frame](#frame) | 35 | `include/datoviz/scene/frame_plan.h` |
 | [Grid](#grid) | 8 | `include/datoviz/scene.h` |
@@ -55,17 +55,20 @@ Functions: 460
 | [Legend](#legend) | 8 | `include/datoviz/scene/scale.h` |
 | [Link](#link) | 2 | `include/datoviz/scene/interaction.h` |
 | [Orbit](#orbit) | 14 | `include/datoviz/controller/orbit_camera.h`, `include/datoviz/scene/orbit_camera.h` |
+| [Orientation](#orientation) | 4 | `include/datoviz/scene.h` |
 | [Overlay](#overlay) | 14 | `include/datoviz/scene/overlay.h` |
-| [Panel](#panel) | 45 | 3 headers |
-| [Panzoom](#panzoom) | 19 | `include/datoviz/controller/panzoom.h`, `include/datoviz/scene/panzoom.h` |
+| [Panel](#panel) | 46 | 3 headers |
+| [Panzoom](#panzoom) | 20 | `include/datoviz/controller/panzoom.h`, `include/datoviz/scene/panzoom.h` |
 | [Pinned](#pinned) | 3 | `include/datoviz/scene/interaction.h` |
+| [Placement](#placement) | 3 | `include/datoviz/scene.h` |
 | [Query](#query) | 1 | `include/datoviz/scene/interaction.h` |
+| [Reference](#reference) | 4 | `include/datoviz/scene.h` |
 | [Sampled](#sampled) | 8 | `include/datoviz/scene/field.h` |
 | [Scale](#scale) | 10 | `include/datoviz/scene/scale.h` |
 | [Scalebar](#scalebar) | 6 | `include/datoviz/scene/annotation.h` |
 | [Scene](#scene) | 33 | 3 headers |
 | [Selection](#selection) | 9 | `include/datoviz/scene/interaction.h` |
-| [Text](#text) | 8 | `include/datoviz/scene/text.h` |
+| [Text](#text) | 12 | `include/datoviz/scene/text.h` |
 | [Track](#track) | 14 | `include/datoviz/scene/animation.h` |
 | [Transform](#transform) | 1 | `include/datoviz/scene/animation.h` |
 | [Turntable](#turntable) | 16 | `include/datoviz/controller/turntable.h`, `include/datoviz/scene/turntable.h` |
@@ -311,6 +314,10 @@ Functions: 460
     | Function | Header |
     | --- | --- |
     | [`dvz_font()`](#dvz_font) | `include/datoviz/scene/text.h` |
+    | [`dvz_font_atlas()`](#dvz_font_atlas) | `include/datoviz/scene/text.h` |
+    | [`dvz_font_atlas_ensure()`](#dvz_font_atlas_ensure) | `include/datoviz/scene/text.h` |
+    | [`dvz_font_atlas_ensure_string()`](#dvz_font_atlas_ensure_string) | `include/datoviz/scene/text.h` |
+    | [`dvz_font_atlas_ensure_strings()`](#dvz_font_atlas_ensure_strings) | `include/datoviz/scene/text.h` |
     | [`dvz_font_destroy()`](#dvz_font_destroy) | `include/datoviz/scene/text.h` |
 
     ### Format
@@ -492,6 +499,15 @@ Functions: 460
     | [`dvz_orbit_camera_set_camera()`](#dvz_orbit_camera_set_camera) | `include/datoviz/controller/orbit_camera.h` |
     | [`dvz_orbit_camera_viewport()`](#dvz_orbit_camera_viewport) | `include/datoviz/controller/orbit_camera.h` |
 
+    ### Orientation
+
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_orientation_gizmo()`](#dvz_orientation_gizmo) | `include/datoviz/scene.h` |
+    | [`dvz_orientation_gizmo_desc()`](#dvz_orientation_gizmo_desc) | `include/datoviz/scene.h` |
+    | [`dvz_orientation_gizmo_destroy()`](#dvz_orientation_gizmo_destroy) | `include/datoviz/scene.h` |
+    | [`dvz_orientation_gizmo_set_visible()`](#dvz_orientation_gizmo_set_visible) | `include/datoviz/scene.h` |
+
     ### Overlay
 
     | Function | Header |
@@ -527,12 +543,11 @@ Functions: 460
     | [`dvz_panel_camera()`](#dvz_panel_camera) | `include/datoviz/scene/camera.h` |
     | [`dvz_panel_clear_background()`](#dvz_panel_clear_background) | `include/datoviz/scene.h` |
     | [`dvz_panel_clear_border()`](#dvz_panel_clear_border) | `include/datoviz/scene.h` |
-    | [`dvz_panel_clear_domain_fit()`](#dvz_panel_clear_domain_fit) | `include/datoviz/scene.h` |
+    | [`dvz_panel_clear_view2d()`](#dvz_panel_clear_view2d) | `include/datoviz/scene.h` |
     | [`dvz_panel_connect_input()`](#dvz_panel_connect_input) | `include/datoviz/scene.h` |
     | [`dvz_panel_controller()`](#dvz_panel_controller) | `include/datoviz/scene.h` |
     | [`dvz_panel_data_to_visual_positions()`](#dvz_panel_data_to_visual_positions) | `include/datoviz/scene.h` |
     | [`dvz_panel_destroy()`](#dvz_panel_destroy) | `include/datoviz/scene.h` |
-    | [`dvz_panel_domain_fit()`](#dvz_panel_domain_fit) | `include/datoviz/scene.h` |
     | [`dvz_panel_full()`](#dvz_panel_full) | `include/datoviz/scene.h` |
     | [`dvz_panel_get_layout_reserve()`](#dvz_panel_get_layout_reserve) | `include/datoviz/scene.h` |
     | [`dvz_panel_get_padding()`](#dvz_panel_get_padding) | `include/datoviz/scene.h` |
@@ -549,7 +564,6 @@ Functions: 460
     | [`dvz_panel_set_camera()`](#dvz_panel_set_camera) | `include/datoviz/scene/camera.h` |
     | [`dvz_panel_set_desc()`](#dvz_panel_set_desc) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_domain()`](#dvz_panel_set_domain) | `include/datoviz/scene.h` |
-    | [`dvz_panel_set_domain_fit()`](#dvz_panel_set_domain_fit) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_edl()`](#dvz_panel_set_edl) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_layout_reserve()`](#dvz_panel_set_layout_reserve) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_msaa()`](#dvz_panel_set_msaa) | `include/datoviz/scene.h` |
@@ -557,7 +571,10 @@ Functions: 460
     | [`dvz_panel_set_reserve()`](#dvz_panel_set_reserve) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_scene_occlusion()`](#dvz_panel_set_scene_occlusion) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_ssao()`](#dvz_panel_set_ssao) | `include/datoviz/scene.h` |
+    | [`dvz_panel_set_view2d()`](#dvz_panel_set_view2d) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_volume_occluder()`](#dvz_panel_set_volume_occluder) | `include/datoviz/scene.h` |
+    | [`dvz_panel_view2d()`](#dvz_panel_view2d) | `include/datoviz/scene.h` |
+    | [`dvz_panel_view2d_extent()`](#dvz_panel_view2d_extent) | `include/datoviz/scene.h` |
     | [`dvz_panel_visible_domain()`](#dvz_panel_visible_domain) | `include/datoviz/scene.h` |
     | [`dvz_panel_visual_bounds()`](#dvz_panel_visual_bounds) | `include/datoviz/scene.h` |
 
@@ -579,6 +596,7 @@ Functions: 460
     | [`dvz_panzoom_pointer()`](#dvz_panzoom_pointer) | `include/datoviz/controller/panzoom.h` |
     | [`dvz_panzoom_reset()`](#dvz_panzoom_reset) | `include/datoviz/controller/panzoom.h` |
     | [`dvz_panzoom_resize()`](#dvz_panzoom_resize) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_resolve()`](#dvz_panzoom_resolve) | `include/datoviz/controller/panzoom.h` |
     | [`dvz_panzoom_viewport()`](#dvz_panzoom_viewport) | `include/datoviz/controller/panzoom.h` |
     | [`dvz_panzoom_zoom()`](#dvz_panzoom_zoom) | `include/datoviz/controller/panzoom.h` |
     | [`dvz_panzoom_zoom_limits()`](#dvz_panzoom_zoom_limits) | `include/datoviz/controller/panzoom.h` |
@@ -593,11 +611,28 @@ Functions: 460
     | [`dvz_pinned_readout_query()`](#dvz_pinned_readout_query) | `include/datoviz/scene/interaction.h` |
     | [`dvz_pinned_readout_set_format()`](#dvz_pinned_readout_set_format) | `include/datoviz/scene/interaction.h` |
 
+    ### Placement
+
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_placement()`](#dvz_placement) | `include/datoviz/scene.h` |
+    | [`dvz_placement_panel_corner()`](#dvz_placement_panel_corner) | `include/datoviz/scene.h` |
+    | [`dvz_placement_resolve()`](#dvz_placement_resolve) | `include/datoviz/scene.h` |
+
     ### Query
 
     | Function | Header |
     | --- | --- |
     | [`dvz_query_request()`](#dvz_query_request) | `include/datoviz/scene/interaction.h` |
+
+    ### Reference
+
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_reference_grid()`](#dvz_reference_grid) | `include/datoviz/scene.h` |
+    | [`dvz_reference_grid_desc()`](#dvz_reference_grid_desc) | `include/datoviz/scene.h` |
+    | [`dvz_reference_grid_destroy()`](#dvz_reference_grid_destroy) | `include/datoviz/scene.h` |
+    | [`dvz_reference_grid_set_visible()`](#dvz_reference_grid_set_visible) | `include/datoviz/scene.h` |
 
     ### Sampled
 
@@ -695,6 +730,10 @@ Functions: 460
     | Function | Header |
     | --- | --- |
     | [`dvz_text()`](#dvz_text) | `include/datoviz/scene/text.h` |
+    | [`dvz_text_atlas_field()`](#dvz_text_atlas_field) | `include/datoviz/scene/text.h` |
+    | [`dvz_text_atlas_glyph()`](#dvz_text_atlas_glyph) | `include/datoviz/scene/text.h` |
+    | [`dvz_text_atlas_info()`](#dvz_text_atlas_info) | `include/datoviz/scene/text.h` |
+    | [`dvz_text_atlas_spec()`](#dvz_text_atlas_spec) | `include/datoviz/scene/text.h` |
     | [`dvz_text_destroy()`](#dvz_text_destroy) | `include/datoviz/scene/text.h` |
     | [`dvz_text_placement()`](#dvz_text_placement) | `include/datoviz/scene/text.h` |
     | [`dvz_text_set_placement()`](#dvz_text_set_placement) | `include/datoviz/scene/text.h` |
@@ -802,7 +841,7 @@ DvzAnimation * dvz_anim_camera_motion(
 
 Create a camera motion animation.
 
-_Declared in `include/datoviz/scene/animation.h`:498._
+_Declared in `include/datoviz/scene/animation.h`:506._
 
 ### `dvz_anim_destroy()`
 
@@ -818,7 +857,7 @@ void dvz_anim_destroy(
 
 Destroy an animation handle owned by its scene.
 
-_Declared in `include/datoviz/scene/animation.h`:560._
+_Declared in `include/datoviz/scene/animation.h`:568._
 
 ### `dvz_anim_phase()`
 
@@ -837,7 +876,7 @@ DvzAnimation * dvz_anim_phase(
 
 Create a wrapped linear phase animation driven by the scene clock.
 
-_Declared in `include/datoviz/scene/animation.h`:458._
+_Declared in `include/datoviz/scene/animation.h`:466._
 
 ### `dvz_anim_phase_desc()`
 
@@ -853,7 +892,7 @@ Return a default phase animation descriptor.
 
 Related: [`dvz_anim_phase()`](#dvz_anim_phase).
 
-_Declared in `include/datoviz/scene/animation.h`:311._
+_Declared in `include/datoviz/scene/animation.h`:319._
 
 ### `dvz_anim_phase_set_value()`
 
@@ -871,7 +910,7 @@ void dvz_anim_phase_set_value(
 
 Set the current value of a phase animation.
 
-_Declared in `include/datoviz/scene/animation.h`:532._
+_Declared in `include/datoviz/scene/animation.h`:540._
 
 ### `dvz_anim_set_interaction_policy()`
 
@@ -893,7 +932,7 @@ void dvz_anim_set_interaction_policy(
 
 Set how an animation responds to an interactive controller.
 
-_Declared in `include/datoviz/scene/animation.h`:509._
+_Declared in `include/datoviz/scene/animation.h`:517._
 
 ### `dvz_anim_set_speed()`
 
@@ -912,7 +951,7 @@ void dvz_anim_set_speed(
 Set the scalar speed used by phase animations, or the local-time multiplier used by track-backed
 animations.
 
-_Declared in `include/datoviz/scene/animation.h`:523._
+_Declared in `include/datoviz/scene/animation.h`:531._
 
 ### `dvz_anim_start()`
 
@@ -930,7 +969,7 @@ void dvz_anim_start(
 
 Start or restart an animation at a scene-clock time.
 
-_Declared in `include/datoviz/scene/animation.h`:542._
+_Declared in `include/datoviz/scene/animation.h`:550._
 
 ### `dvz_anim_stop()`
 
@@ -946,7 +985,7 @@ void dvz_anim_stop(
 
 Stop an animation while keeping the handle valid.
 
-_Declared in `include/datoviz/scene/animation.h`:551._
+_Declared in `include/datoviz/scene/animation.h`:559._
 
 ### `dvz_anim_timer()`
 
@@ -969,7 +1008,7 @@ DvzAnimation * dvz_anim_timer(
 
 Create a timer animation driven by the scene clock.
 
-_Declared in `include/datoviz/scene/animation.h`:302._
+_Declared in `include/datoviz/scene/animation.h`:310._
 
 ### `dvz_anim_track()`
 
@@ -992,7 +1031,7 @@ DvzAnimation * dvz_anim_track(
 
 Create a generic track animation driven by the scene clock.
 
-_Declared in `include/datoviz/scene/animation.h`:470._
+_Declared in `include/datoviz/scene/animation.h`:478._
 
 ### `dvz_anim_visual_transform()`
 
@@ -1013,7 +1052,7 @@ DvzAnimation * dvz_anim_visual_transform(
 
 Create a visual-local transform animation.
 
-_Declared in `include/datoviz/scene/animation.h`:485._
+_Declared in `include/datoviz/scene/animation.h`:493._
 
 ## Annotation
 
@@ -1179,7 +1218,7 @@ void dvz_arcball_connect(
 
 Subscribe the arcball to an input router.
 
-_Declared in `include/datoviz/controller/arcball.h`:240._
+_Declared in `include/datoviz/controller/arcball.h`:242._
 
 ### `dvz_arcball_constrain()`
 
@@ -1244,7 +1283,7 @@ Destroy the arcball.
 
 Related: [`dvz_arcball_create()`](#dvz_arcball_create).
 
-_Declared in `include/datoviz/controller/arcball.h`:254._
+_Declared in `include/datoviz/controller/arcball.h`:256._
 
 ### `dvz_arcball_disconnect()`
 
@@ -1262,7 +1301,7 @@ void dvz_arcball_disconnect(
 
 Unsubscribe the arcball from a router.
 
-_Declared in `include/datoviz/controller/arcball.h`:247._
+_Declared in `include/datoviz/controller/arcball.h`:249._
 
 ### `dvz_arcball_end()`
 
@@ -1278,7 +1317,7 @@ void dvz_arcball_end(
 
 Commit the in-flight rotation into the accumulated matrix (call at drag stop).
 
-_Declared in `include/datoviz/controller/arcball.h`:208._
+_Declared in `include/datoviz/controller/arcball.h`:210._
 
 ### `dvz_arcball_initial()`
 
@@ -1313,7 +1352,7 @@ _Bool dvz_arcball_is_interacting(
 
 Return whether the pointer is currently interacting with the arcball.
 
-_Declared in `include/datoviz/controller/arcball.h`:224._
+_Declared in `include/datoviz/controller/arcball.h`:226._
 
 ### `dvz_arcball_model()`
 
@@ -1331,7 +1370,9 @@ void dvz_arcball_model(
 
 Compute the model matrix (accumulated × in-flight rotation).
 
-_Declared in `include/datoviz/controller/arcball.h`:201._
+Arcball pan and zoom are camera view state and are not included here.
+
+_Declared in `include/datoviz/controller/arcball.h`:203._
 
 ### `dvz_arcball_mvp()`
 
@@ -1347,10 +1388,10 @@ void dvz_arcball_mvp(
 | `arcball` | `DvzArcball *` |  |
 | `mvp` | `DvzMVP *` |  |
 
-Fill the model matrix of an MVP struct from the current arcball state.
-View and proj matrices are left untouched.
+Fill the MVP struct from the current arcball state.
+Rotation is applied to the model matrix; pan and zoom are applied to view.
 
-_Declared in `include/datoviz/controller/arcball.h`:216._
+_Declared in `include/datoviz/controller/arcball.h`:218._
 
 ### `dvz_arcball_pan()`
 
@@ -1366,7 +1407,7 @@ void dvz_arcball_pan(
 | `arcball` | `DvzArcball *` | arcball controller |
 | `pan` | `vec2` | panel-plane pan offset |
 
-Set the panel-plane pan offset.
+Set the camera view-plane pan offset.
 
 _Declared in `include/datoviz/controller/arcball.h`:157._
 
@@ -1405,7 +1446,7 @@ _Bool dvz_arcball_pointer(
 
 Process a pointer event and update arcball state.
 
-_Declared in `include/datoviz/controller/arcball.h`:233._
+_Declared in `include/datoviz/controller/arcball.h`:235._
 
 ### `dvz_arcball_reset()`
 
@@ -1515,7 +1556,7 @@ void dvz_arcball_zoom(
 | `arcball` | `DvzArcball *` | arcball controller |
 | `zoom` | `float` | uniform zoom factor |
 
-Set the uniform zoom factor.
+Set the camera dolly factor.
 
 _Declared in `include/datoviz/controller/arcball.h`:148._
 
@@ -1538,7 +1579,7 @@ _Bool dvz_axis_set_datetime(
 
 Attach an absolute datetime formatter to one panel-owned axis.
 
-_Declared in `include/datoviz/scene.h`:1145._
+_Declared in `include/datoviz/scene.h`:1278._
 
 ### `dvz_axis_set_datetime_range()`
 
@@ -1563,7 +1604,7 @@ _Bool dvz_axis_set_datetime_range(
 
 Map compact data coordinates to an absolute datetime interval.
 
-_Declared in `include/datoviz/scene.h`:1158._
+_Declared in `include/datoviz/scene.h`:1291._
 
 ### `dvz_axis_set_grid()`
 
@@ -1582,7 +1623,7 @@ _Bool dvz_axis_set_grid(
 
 Enable or disable grid lines for one panel-owned axis.
 
-_Declared in `include/datoviz/scene.h`:1073._
+_Declared in `include/datoviz/scene.h`:1206._
 
 ### `dvz_axis_set_label()`
 
@@ -1603,7 +1644,7 @@ Set the label stored on one panel-owned axis.
 
 The active 2D axis path renders this label through the scene text visual pipeline.
 
-_Declared in `include/datoviz/scene.h`:1085._
+_Declared in `include/datoviz/scene.h`:1218._
 
 ### `dvz_axis_set_plot_margins()`
 
@@ -1632,7 +1673,7 @@ Margins are in visual-space units relative to the panel bounds. Defaults are zer
 edge-to-edge Datoviz behavior. Nonzero values can reserve space for future tick labels, legends,
 or other panel adornments.
 
-_Declared in `include/datoviz/scene.h`:1122._
+_Declared in `include/datoviz/scene.h`:1255._
 
 ### `dvz_axis_set_style()`
 
@@ -1651,7 +1692,7 @@ _Bool dvz_axis_set_style(
 
 Set the line and text style for one panel-owned axis.
 
-_Declared in `include/datoviz/scene.h`:1105._
+_Declared in `include/datoviz/scene.h`:1238._
 
 ### `dvz_axis_set_tick_policy()`
 
@@ -1670,7 +1711,7 @@ _Bool dvz_axis_set_tick_policy(
 
 Set the tick policy for one panel-owned axis.
 
-_Declared in `include/datoviz/scene.h`:1095._
+_Declared in `include/datoviz/scene.h`:1228._
 
 ### `dvz_axis_set_units()`
 
@@ -1691,7 +1732,7 @@ Attach numeric units to one panel-owned axis.
 
 Tick positions remain in panel data coordinates; labels are formatted through the units object.
 
-_Declared in `include/datoviz/scene.h`:1135._
+_Declared in `include/datoviz/scene.h`:1268._
 
 ### `dvz_axis_set_visible()`
 
@@ -1710,7 +1751,7 @@ _Bool dvz_axis_set_visible(
 
 Show or hide one panel-owned axis.
 
-_Declared in `include/datoviz/scene.h`:1063._
+_Declared in `include/datoviz/scene.h`:1196._
 
 ### `dvz_axis_style()`
 
@@ -1724,7 +1765,7 @@ DvzAxisStyle dvz_axis_style(void);
 
 Return the default axis line and text style.
 
-_Declared in `include/datoviz/scene.h`:1053._
+_Declared in `include/datoviz/scene.h`:1186._
 
 ### `dvz_axis_tick_policy()`
 
@@ -1738,7 +1779,7 @@ DvzAxisTickPolicy dvz_axis_tick_policy(void);
 
 Return the default axis tick policy.
 
-_Declared in `include/datoviz/scene.h`:1045._
+_Declared in `include/datoviz/scene.h`:1178._
 
 ## Band
 
@@ -2069,7 +2110,7 @@ DvzCameraMotionDesc dvz_camera_motion_desc(void);
 
 Return a default camera motion descriptor.
 
-_Declared in `include/datoviz/scene/animation.h`:375._
+_Declared in `include/datoviz/scene/animation.h`:383._
 
 ### `dvz_camera_mvp()`
 
@@ -2876,7 +2917,7 @@ DvzFieldDataView dvz_field_data_view(void);
 
 Return the default sampled-field data view descriptor.
 
-_Declared in `include/datoviz/scene/field.h`:172._
+_Declared in `include/datoviz/scene/field.h`:183._
 
 ### `dvz_field_geometry()`
 
@@ -2890,7 +2931,7 @@ DvzFieldGeometry dvz_field_geometry(void);
 
 Return the default sampled-field geometry descriptor.
 
-_Declared in `include/datoviz/scene/field.h`:164._
+_Declared in `include/datoviz/scene/field.h`:175._
 
 ## Figure
 
@@ -2936,7 +2977,7 @@ Attach a scene compute pass to a figure.
 
 Attached compute passes are emitted before the figure render passes.
 
-_Declared in `include/datoviz/scene.h`:1715._
+_Declared in `include/datoviz/scene.h`:1837._
 
 ### `dvz_figure_destroy()`
 
@@ -3043,7 +3084,7 @@ _Bool dvz_figure_remove_compute(
 
 Detach a scene compute pass from a figure.
 
-_Declared in `include/datoviz/scene.h`:1725._
+_Declared in `include/datoviz/scene.h`:1847._
 
 ### `dvz_figure_resize()`
 
@@ -3677,7 +3718,93 @@ DvzFont * dvz_font(
 
 Create a scene-owned font resource.
 
-_Declared in `include/datoviz/scene/text.h`:53._
+_Declared in `include/datoviz/scene/text.h`:57._
+
+### `dvz_font_atlas()`
+
+```c title="dvz_font_atlas"
+const DvzTextAtlas * dvz_font_atlas(
+    const DvzFont * font,
+    const DvzTextAtlasSpec * spec
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `const DvzTextAtlas *` | atlas pointer, or NULL when unavailable |
+| `font` | `const DvzFont *` | the font |
+| `spec` | `const DvzTextAtlasSpec *` | requested atlas spec |
+
+Return the font atlas matching a spec.
+
+The returned atlas is owned by the font's scene and remains valid until the font or scene is
+destroyed. When the requested renderer falls back internally, this function returns the fallback
+atlas.
+
+_Declared in `include/datoviz/scene/text.h`:125._
+
+### `dvz_font_atlas_ensure()`
+
+```c title="dvz_font_atlas_ensure"
+_Bool dvz_font_atlas_ensure(
+    DvzFont * font,
+    const DvzTextAtlasSpec * spec
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | true when the atlas is available |
+| `font` | `DvzFont *` | the font |
+| `spec` | `const DvzTextAtlasSpec *` | requested atlas spec |
+
+Ensure a font has an atlas for Datoviz's default text glyph set.
+
+_Declared in `include/datoviz/scene/text.h`:85._
+
+### `dvz_font_atlas_ensure_string()`
+
+```c title="dvz_font_atlas_ensure_string"
+_Bool dvz_font_atlas_ensure_string(
+    DvzFont * font,
+    const DvzTextAtlasSpec * spec,
+    const char * string
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | true when the atlas is available |
+| `font` | `DvzFont *` | the font |
+| `spec` | `const DvzTextAtlasSpec *` | requested atlas spec |
+| `string` | `const char *` | the UTF-8 string |
+
+Ensure a font has an atlas that covers one UTF-8 string.
+
+_Declared in `include/datoviz/scene/text.h`:97._
+
+### `dvz_font_atlas_ensure_strings()`
+
+```c title="dvz_font_atlas_ensure_strings"
+_Bool dvz_font_atlas_ensure_strings(
+    DvzFont * font,
+    const DvzTextAtlasSpec * spec,
+    const char *const * strings,
+    uint32_t count
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | true when the atlas is available |
+| `font` | `DvzFont *` | the font |
+| `spec` | `const DvzTextAtlasSpec *` | requested atlas spec |
+| `strings` | `const char *const *` | UTF-8 strings |
+| `count` | `uint32_t` | string count |
+
+Ensure a font has an atlas that covers a list of UTF-8 strings.
+
+_Declared in `include/datoviz/scene/text.h`:109._
 
 ### `dvz_font_destroy()`
 
@@ -3693,7 +3820,7 @@ void dvz_font_destroy(
 
 Destroy a font resource.
 
-_Declared in `include/datoviz/scene/text.h`:61._
+_Declared in `include/datoviz/scene/text.h`:65._
 
 ## Format
 
@@ -5184,7 +5311,7 @@ image placement attributes as image visuals: `position`, `extent`, `anchor`, and
 Bind the integer sampled field with `dvz_visual_set_field(labels, "field", field)` and the
 categorical scale with `dvz_visual_set_scale(labels, "labels", scale)`.
 
-_Declared in `include/datoviz/scene.h`:2972._
+_Declared in `include/datoviz/scene.h`:3094._
 
 ### `dvz_labels_clear_selected()`
 
@@ -5201,7 +5328,7 @@ int dvz_labels_clear_selected(
 
 Clear the selected label ID on a labels visual.
 
-_Declared in `include/datoviz/scene.h`:3011._
+_Declared in `include/datoviz/scene.h`:3133._
 
 ### `dvz_labels_set_background()`
 
@@ -5220,7 +5347,7 @@ int dvz_labels_set_background(
 
 Set the transparent background label ID on a labels visual.
 
-_Declared in `include/datoviz/scene.h`:2992._
+_Declared in `include/datoviz/scene.h`:3114._
 
 ### `dvz_labels_set_boundary()`
 
@@ -5243,7 +5370,7 @@ int dvz_labels_set_boundary(
 
 Configure boundary rendering on a labels visual.
 
-_Declared in `include/datoviz/scene.h`:3036._
+_Declared in `include/datoviz/scene.h`:3158._
 
 ### `dvz_labels_set_fallback_seed()`
 
@@ -5262,7 +5389,7 @@ int dvz_labels_set_fallback_seed(
 
 Set the deterministic fallback-color seed on a labels visual.
 
-_Declared in `include/datoviz/scene.h`:3046._
+_Declared in `include/datoviz/scene.h`:3168._
 
 ### `dvz_labels_set_hidden()`
 
@@ -5283,7 +5410,7 @@ int dvz_labels_set_hidden(
 
 Set the hidden label IDs on a labels visual.
 
-_Declared in `include/datoviz/scene.h`:3023._
+_Declared in `include/datoviz/scene.h`:3145._
 
 ### `dvz_labels_set_opacity()`
 
@@ -5302,7 +5429,7 @@ int dvz_labels_set_opacity(
 
 Set the global opacity multiplier on a labels visual.
 
-_Declared in `include/datoviz/scene.h`:2982._
+_Declared in `include/datoviz/scene.h`:3104._
 
 ### `dvz_labels_set_selected()`
 
@@ -5321,7 +5448,7 @@ int dvz_labels_set_selected(
 
 Set the selected label ID on a labels visual.
 
-_Declared in `include/datoviz/scene.h`:3002._
+_Declared in `include/datoviz/scene.h`:3124._
 
 ### `dvz_labels_set_slice_axis()`
 
@@ -5340,7 +5467,7 @@ int dvz_labels_set_slice_axis(
 
 Set the first-slice axis for a 3D labels visual.
 
-_Declared in `include/datoviz/scene.h`:3056._
+_Declared in `include/datoviz/scene.h`:3178._
 
 ### `dvz_labels_set_slice_position()`
 
@@ -5359,7 +5486,7 @@ int dvz_labels_set_slice_position(
 
 Set the first-slice position for a 3D labels visual.
 
-_Declared in `include/datoviz/scene.h`:3066._
+_Declared in `include/datoviz/scene.h`:3188._
 
 ### `dvz_labels_state()`
 
@@ -5376,7 +5503,7 @@ const DvzLabelsState * dvz_labels_state(
 
 Return the retained labels state for inspection.
 
-_Declared in `include/datoviz/scene.h`:3075._
+_Declared in `include/datoviz/scene.h`:3197._
 
 ## Legend
 
@@ -5601,7 +5728,7 @@ void dvz_orbit_camera_apply_camera(
 | --- | --- | --- |
 | `orbit` | `DvzOrbitCamera *` |  |
 
-_Declared in `include/datoviz/controller/orbit_camera.h`:81._
+_Declared in `include/datoviz/controller/orbit_camera.h`:86._
 
 ### `dvz_orbit_camera_create()`
 
@@ -5617,7 +5744,7 @@ DvzOrbitCamera * dvz_orbit_camera_create(
 
 Related: [`dvz_orbit_camera_destroy()`](#dvz_orbit_camera_destroy).
 
-_Declared in `include/datoviz/controller/orbit_camera.h`:63._
+_Declared in `include/datoviz/controller/orbit_camera.h`:68._
 
 ### `dvz_orbit_camera_desc()`
 
@@ -5629,7 +5756,7 @@ DvzOrbitCameraDesc dvz_orbit_camera_desc(void);
 
 Related: [`dvz_orbit_camera()`](#dvz_orbit_camera).
 
-_Declared in `include/datoviz/controller/orbit_camera.h`:61._
+_Declared in `include/datoviz/controller/orbit_camera.h`:66._
 
 ### `dvz_orbit_camera_destroy()`
 
@@ -5645,7 +5772,7 @@ void dvz_orbit_camera_destroy(
 
 Related: [`dvz_orbit_camera_create()`](#dvz_orbit_camera_create).
 
-_Declared in `include/datoviz/controller/orbit_camera.h`:87._
+_Declared in `include/datoviz/controller/orbit_camera.h`:92._
 
 ### `dvz_orbit_camera_get_distance()`
 
@@ -5659,7 +5786,7 @@ float dvz_orbit_camera_get_distance(
 | --- | --- | --- |
 | `orbit` | `const DvzOrbitCamera *` |  |
 
-_Declared in `include/datoviz/controller/orbit_camera.h`:74._
+_Declared in `include/datoviz/controller/orbit_camera.h`:79._
 
 ### `dvz_orbit_camera_get_pivot()`
 
@@ -5675,7 +5802,7 @@ int dvz_orbit_camera_get_pivot(
 | `orbit` | `const DvzOrbitCamera *` |  |
 | `out` | `vec3` |  |
 
-_Declared in `include/datoviz/controller/orbit_camera.h`:72._
+_Declared in `include/datoviz/controller/orbit_camera.h`:77._
 
 ### `dvz_orbit_camera_get_view()`
 
@@ -5695,7 +5822,7 @@ int dvz_orbit_camera_get_view(
 | `target` | `vec3` |  |
 | `up` | `vec3` |  |
 
-_Declared in `include/datoviz/controller/orbit_camera.h`:76._
+_Declared in `include/datoviz/controller/orbit_camera.h`:81._
 
 ### `dvz_orbit_camera_is_interacting()`
 
@@ -5709,7 +5836,7 @@ _Bool dvz_orbit_camera_is_interacting(
 | --- | --- | --- |
 | `orbit` | `const DvzOrbitCamera *` |  |
 
-_Declared in `include/datoviz/controller/orbit_camera.h`:85._
+_Declared in `include/datoviz/controller/orbit_camera.h`:90._
 
 ### `dvz_orbit_camera_pivot()`
 
@@ -5725,7 +5852,7 @@ void dvz_orbit_camera_pivot(
 | `orbit` | `DvzOrbitCamera *` |  |
 | `pivot` | `vec3` |  |
 
-_Declared in `include/datoviz/controller/orbit_camera.h`:70._
+_Declared in `include/datoviz/controller/orbit_camera.h`:75._
 
 ### `dvz_orbit_camera_pointer()`
 
@@ -5741,7 +5868,7 @@ _Bool dvz_orbit_camera_pointer(
 | `orbit` | `DvzOrbitCamera *` |  |
 | `ev` | `const DvzPointerEvent *` |  |
 
-_Declared in `include/datoviz/controller/orbit_camera.h`:83._
+_Declared in `include/datoviz/controller/orbit_camera.h`:88._
 
 ### `dvz_orbit_camera_resize()`
 
@@ -5759,7 +5886,7 @@ void dvz_orbit_camera_resize(
 | `width` | `float` |  |
 | `height` | `float` |  |
 
-_Declared in `include/datoviz/controller/orbit_camera.h`:68._
+_Declared in `include/datoviz/controller/orbit_camera.h`:73._
 
 ### `dvz_orbit_camera_set_camera()`
 
@@ -5775,7 +5902,7 @@ void dvz_orbit_camera_set_camera(
 | `orbit` | `DvzOrbitCamera *` |  |
 | `camera` | `DvzCamera *` |  |
 
-_Declared in `include/datoviz/controller/orbit_camera.h`:79._
+_Declared in `include/datoviz/controller/orbit_camera.h`:84._
 
 ### `dvz_orbit_camera_viewport()`
 
@@ -5797,7 +5924,81 @@ void dvz_orbit_camera_viewport(
 | `width` | `float` |  |
 | `height` | `float` |  |
 
-_Declared in `include/datoviz/controller/orbit_camera.h`:65._
+_Declared in `include/datoviz/controller/orbit_camera.h`:70._
+
+## Orientation
+
+### `dvz_orientation_gizmo()`
+
+```c title="dvz_orientation_gizmo"
+DvzOrientationGizmo * dvz_orientation_gizmo(
+    DvzPanel * panel,
+    const DvzOrientationGizmoDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzOrientationGizmo *` | the orientation gizmo, or NULL on validation/allocation error |
+| `panel` | `DvzPanel *` | source panel |
+| `desc` | `const DvzOrientationGizmoDesc *` | descriptor, or NULL for defaults |
+
+Create a passive orientation gizmo attached to one source panel.
+
+The gizmo observes the source panel's effective rendered orientation and displays it as a
+fixed-size inset triad with lit mesh arrows, a central hub, and orientation rings.
+
+_Declared in `include/datoviz/scene.h`:678._
+
+### `dvz_orientation_gizmo_desc()`
+
+```c title="dvz_orientation_gizmo_desc"
+DvzOrientationGizmoDesc dvz_orientation_gizmo_desc(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzOrientationGizmoDesc` | default orientation-gizmo descriptor |
+
+Return the default orientation-gizmo descriptor.
+
+Related: [`dvz_orientation_gizmo()`](#dvz_orientation_gizmo).
+
+_Declared in `include/datoviz/scene.h`:665._
+
+### `dvz_orientation_gizmo_destroy()`
+
+```c title="dvz_orientation_gizmo_destroy"
+void dvz_orientation_gizmo_destroy(
+    DvzOrientationGizmo * gizmo
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `gizmo` | `DvzOrientationGizmo *` | the orientation gizmo |
+
+Destroy an orientation gizmo.
+
+_Declared in `include/datoviz/scene.h`:687._
+
+### `dvz_orientation_gizmo_set_visible()`
+
+```c title="dvz_orientation_gizmo_set_visible"
+void dvz_orientation_gizmo_set_visible(
+    DvzOrientationGizmo * gizmo,
+    _Bool visible
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `gizmo` | `DvzOrientationGizmo *` | the orientation gizmo |
+| `visible` | `_Bool` | whether the gizmo should be visible |
+
+Set orientation-gizmo visibility.
+
+_Declared in `include/datoviz/scene.h`:696._
 
 ## Overlay
 
@@ -6088,7 +6289,7 @@ Add all generated visual roles of a composite to a panel.
 The composite is realized before attachment. Generated visuals are then attached to the panel
 with the same semantics as dvz_panel_add_visual().
 
-_Declared in `include/datoviz/scene.h`:742._
+_Declared in `include/datoviz/scene.h`:872._
 
 ### `dvz_panel_add_visual()`
 
@@ -6114,9 +6315,9 @@ Add a visual to a panel.
 Add a visual to a panel.
 
 defaults (z_layer=0, controller_mode=DVZ_CONTROLLER_APPLY,
-coord_space=DVZ_COORD_VISUAL)
+coord_space=DVZ_COORD_VIEW)
 
-_Declared in `include/datoviz/scene.h`:727._
+_Declared in `include/datoviz/scene.h`:857._
 
 ### `dvz_panel_axis()`
 
@@ -6135,7 +6336,7 @@ DvzAxis * dvz_panel_axis(
 
 Return a panel-owned axis, creating its WIP geometry visual on first use.
 
-_Declared in `include/datoviz/scene.h`:1037._
+_Declared in `include/datoviz/scene.h`:1170._
 
 ### `dvz_panel_background_desc()`
 
@@ -6149,7 +6350,7 @@ DvzPanelBackgroundDesc dvz_panel_background_desc(void);
 
 Return the default panel background descriptor.
 
-_Declared in `include/datoviz/scene.h`:751._
+_Declared in `include/datoviz/scene.h`:881._
 
 ### `dvz_panel_bind_controller()`
 
@@ -6172,7 +6373,7 @@ Bind a scene-owned controller to one panel.
 
 Fly controllers must be bound to DVZ_DIM_MASK_XYZ in this first slice.
 
-_Declared in `include/datoviz/scene.h`:654._
+_Declared in `include/datoviz/scene.h`:784._
 
 ### `dvz_panel_border_desc()`
 
@@ -6188,7 +6389,7 @@ Return the default panel border descriptor.
 
 The default is a visible one-pixel border inset by half a pixel so it is fully inside the panel.
 
-_Declared in `include/datoviz/scene.h`:805._
+_Declared in `include/datoviz/scene.h`:931._
 
 ### `dvz_panel_bounds()`
 
@@ -6209,7 +6410,7 @@ int dvz_panel_bounds(
 
 Return the union of all visible visual bounds attached to one panel.
 
-_Declared in `include/datoviz/scene.h`:1518._
+_Declared in `include/datoviz/scene.h`:1640._
 
 ### `dvz_panel_bounds_visible()`
 
@@ -6226,7 +6427,7 @@ _Bool dvz_panel_bounds_visible(
 
 Return whether the panel-owned visual bounds overlay is enabled.
 
-_Declared in `include/datoviz/scene.h`:949._
+_Declared in `include/datoviz/scene.h`:1075._
 
 ### `dvz_panel_camera()`
 
@@ -6259,7 +6460,7 @@ void dvz_panel_clear_background(
 
 Clear a panel background.
 
-_Declared in `include/datoviz/scene.h`:775._
+_Declared in `include/datoviz/scene.h`:907._
 
 ### `dvz_panel_clear_border()`
 
@@ -6275,12 +6476,12 @@ void dvz_panel_clear_border(
 
 Clear a panel border.
 
-_Declared in `include/datoviz/scene.h`:826._
+_Declared in `include/datoviz/scene.h`:952._
 
-### `dvz_panel_clear_domain_fit()`
+### `dvz_panel_clear_view2d()`
 
-```c title="dvz_panel_clear_domain_fit"
-void dvz_panel_clear_domain_fit(
+```c title="dvz_panel_clear_view2d"
+void dvz_panel_clear_view2d(
     DvzPanel * panel
 );
 ```
@@ -6289,9 +6490,9 @@ void dvz_panel_clear_domain_fit(
 | --- | --- | --- |
 | `panel` | `DvzPanel *` | the panel |
 
-Clear a panel domain-fit policy without changing the current axis domains.
+Clear a panel 2D view policy without changing the current axis domains.
 
-_Declared in `include/datoviz/scene.h`:995._
+_Declared in `include/datoviz/scene.h`:1118._
 
 ### `dvz_panel_connect_input()`
 
@@ -6313,7 +6514,7 @@ Route an input router through one panel's bound controllers.
 The panel supplies viewport-local context before events reach scene-owned controllers, so shared
 controllers do not own a single canonical viewport.
 
-_Declared in `include/datoviz/scene.h`:667._
+_Declared in `include/datoviz/scene.h`:797._
 
 ### `dvz_panel_controller()`
 
@@ -6332,7 +6533,7 @@ DvzController * dvz_panel_controller(
 
 Return the controller bound to one panel dimension.
 
-_Declared in `include/datoviz/scene.h`:677._
+_Declared in `include/datoviz/scene.h`:807._
 
 ### `dvz_panel_data_to_visual_positions()`
 
@@ -6355,10 +6556,12 @@ int dvz_panel_data_to_visual_positions(
 
 Normalize tightly packed 3D data positions through the panel X/Y domains.
 
-X and Y are mapped from data coordinates into panel visual coordinates in [-1, +1]. Z is copied
-unchanged. Unset domains fall back to pass-through visual coordinates for that dimension.
+X and Y are mapped from data coordinates into panel visual coordinates in [-1, +1]. For ordinary
+increasing domains, X increases left to right and Y increases bottom to top. Z is copied
+unchanged; positive Z is the default front direction for camera/depth interpretation. Unset
+domains fall back to pass-through visual coordinates for that dimension.
 
-_Declared in `include/datoviz/scene.h`:1026._
+_Declared in `include/datoviz/scene.h`:1159._
 
 ### `dvz_panel_destroy()`
 
@@ -6374,21 +6577,7 @@ void dvz_panel_destroy(
 
 Destroy a panel.
 
-_Declared in `include/datoviz/scene.h`:640._
-
-### `dvz_panel_domain_fit()`
-
-```c title="dvz_panel_domain_fit"
-DvzPanelDomainFit dvz_panel_domain_fit(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzPanelDomainFit` | domain-fit descriptor |
-
-Return the default panel domain-fit descriptor.
-
-_Declared in `include/datoviz/scene.h`:972._
+_Declared in `include/datoviz/scene.h`:770._
 
 ### `dvz_panel_full()`
 
@@ -6424,7 +6613,7 @@ _Bool dvz_panel_get_layout_reserve(
 
 Return one panel's layout reservation.
 
-_Declared in `include/datoviz/scene.h`:632._
+_Declared in `include/datoviz/scene.h`:762._
 
 ### `dvz_panel_get_padding()`
 
@@ -6591,30 +6780,26 @@ Set or update a panel background.
 
 Backgrounds are rendered as a fixed full-panel visual behind regular visuals. Passing NULL or
 a descriptor with type DVZ_PANEL_BACKGROUND_NONE clears the current background. Linear gradients
-use panel-local start and end points in [0, 1]. Image backgrounds accept tightly packed RGBA8
-pixels and stretch them to the panel rectangle.
+use panel-local start and end points in [0, 1]. Background color and gradient float components
+are display/sRGB-authored semantic colors; RGB is linearized before rendering arithmetic and
+alpha remains linear. Image backgrounds accept tightly packed RGBA8 sRGB color pixels and stretch
+them to the panel rectangle.
 
-_Declared in `include/datoviz/scene.h`:767._
+_Declared in `include/datoviz/scene.h`:899._
 
 ### `dvz_panel_set_background_color()`
 
 ```c title="dvz_panel_set_background_color"
 void dvz_panel_set_background_color(
     DvzPanel * panel,
-    float r,
-    float g,
-    float b,
-    float a
+    DvzColor color
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `panel` | `DvzPanel *` | the panel |
-| `r` | `float` | red component |
-| `g` | `float` | green component |
-| `b` | `float` | blue component |
-| `a` | `float` | alpha component |
+| `color` | `DvzColor` | RGBA8 background color |
 
 Set or update a uniform-color background for a panel.
 
@@ -6623,9 +6808,7 @@ controller_mode=FIXED so the background fills the panel rect and is unaffected b
 panzoom/arcball navigation. Repeat calls update the existing background's color
 instead of stacking new visuals.
 
-Components are in [0, 1].
-
-_Declared in `include/datoviz/scene.h`:794._
+_Declared in `include/datoviz/scene.h`:921._
 
 ### `dvz_panel_set_border()`
 
@@ -6647,7 +6830,7 @@ Set, update, or clear a fixed panel border.
 Borders are panel chrome: they are rendered as a fixed screen-space overlay, do not affect plot
 layout, and do not reserve space. Passing NULL, visible=false, or width_px=0 clears the border.
 
-_Declared in `include/datoviz/scene.h`:818._
+_Declared in `include/datoviz/scene.h`:944._
 
 ### `dvz_panel_set_bounds_visible()`
 
@@ -6669,7 +6852,7 @@ Show or hide the panel-owned visual bounds overlay.
 The overlay is a generated wireframe segment visual in visual space. It follows the panel
 controller and is rebuilt from visible, controller-applied visuals before frame emission.
 
-_Declared in `include/datoviz/scene.h`:940._
+_Declared in `include/datoviz/scene.h`:1066._
 
 ### `dvz_panel_set_camera()`
 
@@ -6736,31 +6919,7 @@ Set a panel data domain for one axis dimension.
 The first WIP axis slice supports finite linear X/Y domains. Axis geometry is derived from this
 domain and the panel panzoom extent during frame emission.
 
-_Declared in `include/datoviz/scene.h`:964._
-
-### `dvz_panel_set_domain_fit()`
-
-```c title="dvz_panel_set_domain_fit"
-int dvz_panel_set_domain_fit(
-    DvzPanel * panel,
-    const DvzPanelDomainFit * fit
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `int` | 0 on success, -1 on validation error |
-| `panel` | `DvzPanel *` | the panel |
-| `fit` | `const DvzPanelDomainFit *` | domain-fit descriptor; NULL clears the fit policy |
-
-Set a panel 2D domain-fit policy.
-
-The fit policy owns both X and Y axis domains and is re-applied when the panel plot rectangle
-changes. DVZ_PANEL_DOMAIN_ASPECT_EQUAL expands one domain so one X data unit and one Y data
-unit occupy the same number of plot pixels. Padding is a non-negative fraction of the larger
-source domain span, applied before aspect fitting.
-
-_Declared in `include/datoviz/scene.h`:987._
+_Declared in `include/datoviz/scene.h`:1090._
 
 ### `dvz_panel_set_edl()`
 
@@ -6783,7 +6942,7 @@ EDL is a depth-based post-process intended to improve local depth perception for
 pixel, and opaque geometry views. Pass NULL to disable EDL on the panel. The descriptor values
 are clamped to implementation-supported ranges.
 
-_Declared in `include/datoviz/scene.h`:848._
+_Declared in `include/datoviz/scene.h`:974._
 
 ### `dvz_panel_set_layout_reserve()`
 
@@ -6805,7 +6964,7 @@ Reserve visual-space room around one panel's plot area for future adornments.
 Compatibility bridge: reservations are accepted in panel visual-space units and converted to
 fixed logical pixels at the panel's current size. Prefer dvz_panel_set_reserve() for new code.
 
-_Declared in `include/datoviz/scene.h`:621._
+_Declared in `include/datoviz/scene.h`:751._
 
 ### `dvz_panel_set_msaa()`
 
@@ -6827,7 +6986,7 @@ Configure internal multisample antialiasing for one panel.
 The panel renders opaque scene color/depth into transient multisample attachments and resolves
 into the figure target. Pass NULL or a descriptor with enabled=false to disable MSAA.
 
-_Declared in `include/datoviz/scene.h`:861._
+_Declared in `include/datoviz/scene.h`:987._
 
 ### `dvz_panel_set_padding()`
 
@@ -6894,7 +7053,7 @@ Scene occlusion is active only when the panel contains at least one visible visu
 scene occluder and at least one visible visual marked as scene-occluded. Pass NULL or a disabled
 descriptor to disable the panel path.
 
-_Declared in `include/datoviz/scene.h`:927._
+_Declared in `include/datoviz/scene.h`:1053._
 
 ### `dvz_panel_set_ssao()`
 
@@ -6918,7 +7077,30 @@ occlusion texture from panel depth and normals, optionally blurs it, and composi
 into the panel output. Pass NULL to disable SSAO on the panel. Descriptor values are clamped to
 implementation-supported ranges.
 
-_Declared in `include/datoviz/scene.h`:884._
+_Declared in `include/datoviz/scene.h`:1010._
+
+### `dvz_panel_set_view2d()`
+
+```c title="dvz_panel_set_view2d"
+int dvz_panel_set_view2d(
+    DvzPanel * panel,
+    const DvzPanelView2D * view
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `int` | 0 on success, -1 on validation error |
+| `panel` | `DvzPanel *` | the panel |
+| `view` | `const DvzPanelView2D *` | panel 2D view descriptor; NULL clears the view policy |
+
+Set a panel 2D view policy.
+
+The panel view owns the controller-visible 2D base extent and fitted DATA domains. With
+DVZ_PANEL_VIEW2D_ASPECT_EQUAL, VIEW and DATA coordinates preserve equal X/Y screen scale under
+the current plot rectangle.
+
+_Declared in `include/datoviz/scene.h`:1111._
 
 ### `dvz_panel_set_volume_occluder()`
 
@@ -6939,7 +7121,40 @@ int dvz_panel_set_volume_occluder(
 
 Configure a panel volume visual as the screen-space occluder for embedded visuals.
 
-_Declared in `include/datoviz/scene.h`:903._
+_Declared in `include/datoviz/scene.h`:1029._
+
+### `dvz_panel_view2d()`
+
+```c title="dvz_panel_view2d"
+DvzPanelView2D dvz_panel_view2d(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzPanelView2D` | panel 2D view descriptor |
+
+Return the default panel 2D view descriptor.
+
+_Declared in `include/datoviz/scene.h`:1098._
+
+### `dvz_panel_view2d_extent()`
+
+```c title="dvz_panel_view2d_extent"
+_Bool dvz_panel_view2d_extent(
+    DvzPanel * panel,
+    float[4] out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the extent was written |
+| `panel` | `DvzPanel *` | the panel |
+| `out` | `float[4]` | output extent as xmin, xmax, ymin, ymax |
+
+Return the current resolved panel VIEW extent before panzoom.
+
+_Declared in `include/datoviz/scene.h`:1127._
 
 ### `dvz_panel_visible_domain()`
 
@@ -6965,7 +7180,7 @@ Return the current visible data domain for one panel dimension.
 The panel's domain is combined with the current panzoom extent. When no explicit domain has
 been configured, the default visual domain [-1, +1] is used.
 
-_Declared in `include/datoviz/scene.h`:1011._
+_Declared in `include/datoviz/scene.h`:1142._
 
 ### `dvz_panel_visual_bounds()`
 
@@ -6992,7 +7207,7 @@ Return one visual's bounds in the coordinate space of one panel attachment.
 projects the visual-space box through the panel attachment MVP and returns pixel bounds relative
 to the figure.
 
-_Declared in `include/datoviz/scene.h`:1506._
+_Declared in `include/datoviz/scene.h`:1628._
 
 ## Panzoom
 
@@ -7032,7 +7247,7 @@ void dvz_panzoom_connect(
 Subscribe the panzoom to an input router.
 The panzoom pointer callback will be registered; call dvz_panzoom_disconnect() to remove it.
 
-_Declared in `include/datoviz/controller/panzoom.h`:238._
+_Declared in `include/datoviz/controller/panzoom.h`:258._
 
 ### `dvz_panzoom_create()`
 
@@ -7051,7 +7266,7 @@ Create a standalone panzoom controller.
 
 Related: [`dvz_panzoom_destroy()`](#dvz_panzoom_destroy).
 
-_Declared in `include/datoviz/controller/panzoom.h`:129._
+_Declared in `include/datoviz/controller/panzoom.h`:146._
 
 ### `dvz_panzoom_desc()`
 
@@ -7061,7 +7276,7 @@ DvzPanzoomDesc dvz_panzoom_desc(void);
 
 Related: [`dvz_panzoom()`](#dvz_panzoom).
 
-_Declared in `include/datoviz/controller/panzoom.h`:119._
+_Declared in `include/datoviz/controller/panzoom.h`:136._
 
 ### `dvz_panzoom_destroy()`
 
@@ -7079,7 +7294,7 @@ Destroy the panzoom.
 
 Related: [`dvz_panzoom_create()`](#dvz_panzoom_create).
 
-_Declared in `include/datoviz/controller/panzoom.h`:252._
+_Declared in `include/datoviz/controller/panzoom.h`:272._
 
 ### `dvz_panzoom_disconnect()`
 
@@ -7097,7 +7312,7 @@ void dvz_panzoom_disconnect(
 
 Unsubscribe the panzoom from a router.
 
-_Declared in `include/datoviz/controller/panzoom.h`:245._
+_Declared in `include/datoviz/controller/panzoom.h`:265._
 
 ### `dvz_panzoom_end()`
 
@@ -7113,7 +7328,7 @@ void dvz_panzoom_end(
 
 Commit the current pan/zoom as the new drag baseline (call at drag stop).
 
-_Declared in `include/datoviz/controller/panzoom.h`:213._
+_Declared in `include/datoviz/controller/panzoom.h`:230._
 
 ### `dvz_panzoom_extent()`
 
@@ -7132,7 +7347,7 @@ _Bool dvz_panzoom_extent(
 
 Return the visible extent in visual coordinates.
 
-_Declared in `include/datoviz/controller/panzoom.h`:185._
+_Declared in `include/datoviz/controller/panzoom.h`:202._
 
 ### `dvz_panzoom_mvp()`
 
@@ -7151,7 +7366,7 @@ void dvz_panzoom_mvp(
 Fill the view and proj matrices of an MVP struct from the current panzoom state.
 The model matrix is left untouched.
 
-_Declared in `include/datoviz/controller/panzoom.h`:221._
+_Declared in `include/datoviz/controller/panzoom.h`:238._
 
 ### `dvz_panzoom_pan()`
 
@@ -7169,7 +7384,7 @@ void dvz_panzoom_pan(
 
 Set the pan offset in NDC.
 
-_Declared in `include/datoviz/controller/panzoom.h`:157._
+_Declared in `include/datoviz/controller/panzoom.h`:174._
 
 ### `dvz_panzoom_pan_shift()`
 
@@ -7189,7 +7404,7 @@ void dvz_panzoom_pan_shift(
 
 Apply a pan shift (pixel delta).
 
-_Declared in `include/datoviz/controller/panzoom.h`:192._
+_Declared in `include/datoviz/controller/panzoom.h`:209._
 
 ### `dvz_panzoom_pointer()`
 
@@ -7208,7 +7423,7 @@ _Bool dvz_panzoom_pointer(
 
 Process a pointer event and update panzoom state.
 
-_Declared in `include/datoviz/controller/panzoom.h`:230._
+_Declared in `include/datoviz/controller/panzoom.h`:250._
 
 ### `dvz_panzoom_reset()`
 
@@ -7224,7 +7439,7 @@ void dvz_panzoom_reset(
 
 Reset to the identity transform.
 
-_Declared in `include/datoviz/controller/panzoom.h`:136._
+_Declared in `include/datoviz/controller/panzoom.h`:153._
 
 ### `dvz_panzoom_resize()`
 
@@ -7244,7 +7459,25 @@ void dvz_panzoom_resize(
 
 Update the viewport size (call on window resize).
 
-_Declared in `include/datoviz/controller/panzoom.h`:143._
+_Declared in `include/datoviz/controller/panzoom.h`:160._
+
+### `dvz_panzoom_resolve()`
+
+```c title="dvz_panzoom_resolve"
+_Bool dvz_panzoom_resolve(
+    const DvzPanzoom * panzoom,
+    const DvzPanzoomEval * eval,
+    DvzPanzoomResolved * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `panzoom` | `const DvzPanzoom *` |  |
+| `eval` | `const DvzPanzoomEval *` |  |
+| `out` | `DvzPanzoomResolved *` |  |
+
+_Declared in `include/datoviz/controller/panzoom.h`:240._
 
 ### `dvz_panzoom_viewport()`
 
@@ -7268,7 +7501,7 @@ void dvz_panzoom_viewport(
 
 Update the viewport rectangle in window coordinates.
 
-_Declared in `include/datoviz/controller/panzoom.h`:150._
+_Declared in `include/datoviz/controller/panzoom.h`:167._
 
 ### `dvz_panzoom_zoom()`
 
@@ -7286,7 +7519,7 @@ void dvz_panzoom_zoom(
 
 Set the zoom factors.
 
-_Declared in `include/datoviz/controller/panzoom.h`:164._
+_Declared in `include/datoviz/controller/panzoom.h`:181._
 
 ### `dvz_panzoom_zoom_limits()`
 
@@ -7307,7 +7540,7 @@ _Bool dvz_panzoom_zoom_limits(
 
 Set zoom limits.
 
-_Declared in `include/datoviz/controller/panzoom.h`:175._
+_Declared in `include/datoviz/controller/panzoom.h`:192._
 
 ### `dvz_panzoom_zoom_shift()`
 
@@ -7327,7 +7560,7 @@ void dvz_panzoom_zoom_shift(
 
 Apply a zoom shift driven by right-drag (pixel delta + anchor).
 
-_Declared in `include/datoviz/controller/panzoom.h`:199._
+_Declared in `include/datoviz/controller/panzoom.h`:216._
 
 ### `dvz_panzoom_zoom_wheel()`
 
@@ -7347,7 +7580,7 @@ void dvz_panzoom_zoom_wheel(
 
 Apply a wheel zoom.
 
-_Declared in `include/datoviz/controller/panzoom.h`:206._
+_Declared in `include/datoviz/controller/panzoom.h`:223._
 
 ## Pinned
 
@@ -7404,6 +7637,79 @@ Override formatting for a pinned readout.
 
 _Declared in `include/datoviz/scene/interaction.h`:454._
 
+## Placement
+
+### `dvz_placement()`
+
+```c title="dvz_placement"
+DvzPlacement dvz_placement(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzPlacement` | default placement descriptor |
+
+Return the default panel-local placement descriptor.
+
+The default anchors a zero-sized widget to the panel top-left corner with no offset. Callers
+normally override anchors, size, and offsets before resolving.
+
+_Declared in `include/datoviz/scene.h`:619._
+
+### `dvz_placement_panel_corner()`
+
+```c title="dvz_placement_panel_corner"
+DvzPlacement dvz_placement_panel_corner(
+    DvzHorizontalAnchor horizontal,
+    DvzVerticalAnchor vertical,
+    float width_px,
+    float height_px,
+    float offset_x_px,
+    float offset_y_px
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzPlacement` | placement descriptor |
+| `horizontal` | `DvzHorizontalAnchor` | horizontal panel anchor |
+| `vertical` | `DvzVerticalAnchor` | vertical panel anchor |
+| `width_px` | `float` | widget width in logical pixels |
+| `height_px` | `float` | widget height in logical pixels |
+| `offset_x_px` | `float` | horizontal offset from the anchor in logical pixels |
+| `offset_y_px` | `float` | vertical offset from the anchor in logical pixels |
+
+Return a fixed-size panel-corner placement descriptor.
+
+_Declared in `include/datoviz/scene.h`:633._
+
+### `dvz_placement_resolve()`
+
+```c title="dvz_placement_resolve"
+_Bool dvz_placement_resolve(
+    const DvzPlacement * placement,
+    const DvzRect * panel_rect,
+    const DvzRect * figure_rect,
+    DvzRect * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the placement could be resolved |
+| `placement` | `const DvzPlacement *` | placement descriptor |
+| `panel_rect` | `const DvzRect *` | panel rectangle in figure pixels |
+| `figure_rect` | `const DvzRect *` | figure rectangle in figure pixels, or NULL to use the panel rectangle |
+| `out` | `DvzRect *` | output panel-local rectangle |
+
+Resolve a placement to a panel-local rectangle.
+
+`panel_rect` and `figure_rect` are expressed in logical figure pixels. Panel-space placements
+resolve inside the panel; figure-space placements resolve inside the figure and are returned in
+the panel's local coordinate system.
+
+_Declared in `include/datoviz/scene.h`:651._
+
 ## Query
 
 ### `dvz_query_request()`
@@ -7419,6 +7725,79 @@ DvzQueryRequest dvz_query_request(void);
 Return the default query request descriptor.
 
 _Declared in `include/datoviz/scene/interaction.h`:371._
+
+## Reference
+
+### `dvz_reference_grid()`
+
+```c title="dvz_reference_grid"
+DvzReferenceGrid * dvz_reference_grid(
+    DvzPanel * panel,
+    const DvzReferenceGridDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzReferenceGrid *` | the reference grid, or NULL on validation/allocation error |
+| `panel` | `DvzPanel *` | panel receiving the grid |
+| `desc` | `const DvzReferenceGridDesc *` | descriptor, or NULL for defaults |
+
+Create a retained plane-oriented reference grid attached to one panel.
+
+The helper lowers to a retained segment visual and does not introduce a renderer path.
+
+_Declared in `include/datoviz/scene.h`:720._
+
+### `dvz_reference_grid_desc()`
+
+```c title="dvz_reference_grid_desc"
+DvzReferenceGridDesc dvz_reference_grid_desc(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzReferenceGridDesc` | default reference-grid descriptor |
+
+Return the default reference-grid descriptor.
+
+Related: [`dvz_reference_grid()`](#dvz_reference_grid).
+
+_Declared in `include/datoviz/scene.h`:708._
+
+### `dvz_reference_grid_destroy()`
+
+```c title="dvz_reference_grid_destroy"
+void dvz_reference_grid_destroy(
+    DvzReferenceGrid * grid
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `grid` | `DvzReferenceGrid *` | the reference grid |
+
+Destroy a reference grid.
+
+_Declared in `include/datoviz/scene.h`:729._
+
+### `dvz_reference_grid_set_visible()`
+
+```c title="dvz_reference_grid_set_visible"
+void dvz_reference_grid_set_visible(
+    DvzReferenceGrid * grid,
+    _Bool visible
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `grid` | `DvzReferenceGrid *` | the reference grid |
+| `visible` | `_Bool` | whether the grid should be visible |
+
+Set reference-grid visibility.
+
+_Declared in `include/datoviz/scene.h`:738._
 
 ## Sampled
 
@@ -7439,7 +7818,7 @@ DvzSampledField * dvz_sampled_field(
 
 Create a scene-owned sampled field.
 
-_Declared in `include/datoviz/scene/field.h`:182._
+_Declared in `include/datoviz/scene/field.h`:193._
 
 ### `dvz_sampled_field_desc()`
 
@@ -7455,7 +7834,7 @@ Return the default sampled-field descriptor.
 
 Related: [`dvz_sampled_field()`](#dvz_sampled_field).
 
-_Declared in `include/datoviz/scene/field.h`:156._
+_Declared in `include/datoviz/scene/field.h`:167._
 
 ### `dvz_sampled_field_destroy()`
 
@@ -7474,7 +7853,7 @@ Destroy a sampled field.
 
 Any visual bindings to this field are cleared.
 
-_Declared in `include/datoviz/scene/field.h`:194._
+_Declared in `include/datoviz/scene/field.h`:205._
 
 ### `dvz_sampled_field_get_desc()`
 
@@ -7491,7 +7870,7 @@ const DvzSampledFieldDesc * dvz_sampled_field_get_desc(
 
 Return the immutable field descriptor.
 
-_Declared in `include/datoviz/scene/field.h`:255._
+_Declared in `include/datoviz/scene/field.h`:266._
 
 ### `dvz_sampled_field_resize()`
 
@@ -7519,7 +7898,7 @@ Change the field extent and replace the entire payload.
 The field format, semantic, dimensionality, and visual bindings are preserved. Bound image
 visuals receive a full dirty mark so the next scene emission reallocates the texture if needed.
 
-_Declared in `include/datoviz/scene/field.h`:221._
+_Declared in `include/datoviz/scene/field.h`:232._
 
 ### `dvz_sampled_field_set_data()`
 
@@ -7538,7 +7917,7 @@ _Bool dvz_sampled_field_set_data(
 
 Replace the entire field payload.
 
-_Declared in `include/datoviz/scene/field.h`:204._
+_Declared in `include/datoviz/scene/field.h`:215._
 
 ### `dvz_sampled_field_set_geometry()`
 
@@ -7557,7 +7936,7 @@ _Bool dvz_sampled_field_set_geometry(
 
 Update the field geometry metadata.
 
-_Declared in `include/datoviz/scene/field.h`:245._
+_Declared in `include/datoviz/scene/field.h`:256._
 
 ### `dvz_sampled_field_update_region()`
 
@@ -7578,7 +7957,7 @@ _Bool dvz_sampled_field_update_region(
 
 Update a field subregion in sample coordinates.
 
-_Declared in `include/datoviz/scene/field.h`:234._
+_Declared in `include/datoviz/scene/field.h`:245._
 
 ## Scale
 
@@ -7931,7 +8310,7 @@ The initial supported slot is primitive `"index"` buffers. `stride` is the byte 
 of one item in the uploaded payload (for example `sizeof(DvzIndex)` for 32-bit index buffers,
 or `sizeof(uint16_t)` for 16-bit).
 
-_Declared in `include/datoviz/scene.h`:1588._
+_Declared in `include/datoviz/scene.h`:1710._
 
 ### `dvz_scene_buffer_desc()`
 
@@ -7947,7 +8326,7 @@ Return the default scene buffer descriptor.
 
 Related: [`dvz_scene_buffer()`](#dvz_scene_buffer).
 
-_Declared in `include/datoviz/scene.h`:1596._
+_Declared in `include/datoviz/scene.h`:1718._
 
 ### `dvz_scene_buffer_destroy()`
 
@@ -7963,7 +8342,7 @@ void dvz_scene_buffer_destroy(
 
 Destroy a scene-owned buffer resource.
 
-_Declared in `include/datoviz/scene.h`:1604._
+_Declared in `include/datoviz/scene.h`:1726._
 
 ### `dvz_scene_buffer_get_desc()`
 
@@ -7980,7 +8359,7 @@ const DvzSceneBufferDesc * dvz_scene_buffer_get_desc(
 
 Return the immutable buffer descriptor.
 
-_Declared in `include/datoviz/scene.h`:1625._
+_Declared in `include/datoviz/scene.h`:1747._
 
 ### `dvz_scene_buffer_resource_key()`
 
@@ -8005,7 +8384,7 @@ The key is stable for the buffer lifetime and is attached as a DRP2 stream label
 emitted. Advanced runtimes can combine this with `dvz_drp2_stream_label_id()` to register a live
 external buffer without scanning draw commands.
 
-_Declared in `include/datoviz/scene.h`:1641._
+_Declared in `include/datoviz/scene.h`:1763._
 
 ### `dvz_scene_buffer_set_data()`
 
@@ -8026,7 +8405,7 @@ _Bool dvz_scene_buffer_set_data(
 
 Replace the full payload of a scene-owned buffer resource.
 
-_Declared in `include/datoviz/scene.h`:1616._
+_Declared in `include/datoviz/scene.h`:1738._
 
 ### `dvz_scene_clock_dt()`
 
@@ -8043,7 +8422,7 @@ double dvz_scene_clock_dt(
 
 Return the last scene clock delta in seconds.
 
-_Declared in `include/datoviz/scene/animation.h`:280._
+_Declared in `include/datoviz/scene/animation.h`:288._
 
 ### `dvz_scene_clock_time()`
 
@@ -8060,7 +8439,7 @@ double dvz_scene_clock_time(
 
 Return the current scene clock time in seconds.
 
-_Declared in `include/datoviz/scene/animation.h`:270._
+_Declared in `include/datoviz/scene/animation.h`:278._
 
 ### `dvz_scene_compute()`
 
@@ -8082,7 +8461,7 @@ Create an experimental scene-owned compute pass.
 The compute pass owns no backend handles. It stores shader source, dispatch dimensions, and
 buffer bindings that are lowered into DRP2 before figure render passes.
 
-_Declared in `include/datoviz/scene.h`:1655._
+_Declared in `include/datoviz/scene.h`:1777._
 
 ### `dvz_scene_compute_desc()`
 
@@ -8098,7 +8477,7 @@ Return the default scene compute descriptor.
 
 Related: [`dvz_scene_compute()`](#dvz_scene_compute).
 
-_Declared in `include/datoviz/scene.h`:1663._
+_Declared in `include/datoviz/scene.h`:1785._
 
 ### `dvz_scene_compute_destroy()`
 
@@ -8114,7 +8493,7 @@ void dvz_scene_compute_destroy(
 
 Destroy a scene-owned compute pass and detach it from all figures.
 
-_Declared in `include/datoviz/scene.h`:1671._
+_Declared in `include/datoviz/scene.h`:1793._
 
 ### `dvz_scene_compute_set_buffer()`
 
@@ -8144,7 +8523,7 @@ Bind a scene buffer to one compute shader binding.
 The buffer must advertise `DVZ_SCENE_BUFFER_USAGE_STORAGE`. The first slice supports storage
 buffers only. Ranges are passed through to the DRP2 bind group.
 
-_Declared in `include/datoviz/scene.h`:1701._
+_Declared in `include/datoviz/scene.h`:1823._
 
 ### `dvz_scene_compute_set_dispatch()`
 
@@ -8167,7 +8546,7 @@ _Bool dvz_scene_compute_set_dispatch(
 
 Set the dispatch size for a scene compute pass.
 
-_Declared in `include/datoviz/scene.h`:1684._
+_Declared in `include/datoviz/scene.h`:1806._
 
 ### `dvz_scene_destroy()`
 
@@ -8353,7 +8732,7 @@ _Bool dvz_scene_has_active_animations(
 
 Return whether the scene has at least one active animation.
 
-_Declared in `include/datoviz/scene/animation.h`:289._
+_Declared in `include/datoviz/scene/animation.h`:297._
 
 ### `dvz_scene_hover()`
 
@@ -8422,7 +8801,7 @@ DvzSceneOcclusionDesc dvz_scene_occlusion_desc(void);
 
 Return default scene-occlusion options.
 
-_Declared in `include/datoviz/scene.h`:912._
+_Declared in `include/datoviz/scene.h`:1038._
 
 ### `dvz_scene_poll_query()`
 
@@ -8477,7 +8856,7 @@ void dvz_scene_set_clock_mode(
 
 Set the scene clock mode used by animations.
 
-_Declared in `include/datoviz/scene/animation.h`:250._
+_Declared in `include/datoviz/scene/animation.h`:258._
 
 ### `dvz_scene_set_font_defaults()`
 
@@ -8516,7 +8895,7 @@ void dvz_scene_set_fps(
 
 Set the scene clock frame rate used by offline mode and timer period resolution.
 
-_Declared in `include/datoviz/scene/animation.h`:260._
+_Declared in `include/datoviz/scene/animation.h`:268._
 
 ## Selection
 
@@ -8704,7 +9083,82 @@ Create a retained text object attached to a panel.
 The text object owns semantic string, style, placement, and renderer state. Rendering lowers to
 an internal glyph visual during frame preparation.
 
-_Declared in `include/datoviz/scene/text.h`:74._
+_Declared in `include/datoviz/scene/text.h`:170._
+
+### `dvz_text_atlas_field()`
+
+```c title="dvz_text_atlas_field"
+DvzSampledField * dvz_text_atlas_field(
+    const DvzTextAtlas * atlas
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzSampledField *` | sampled atlas field, or NULL |
+| `atlas` | `const DvzTextAtlas *` | the text atlas |
+
+Return the sampled field containing the atlas texture.
+
+The field is owned by the atlas's font scene. It may be bound to glyph visuals but must not be
+destroyed by the caller.
+
+_Declared in `include/datoviz/scene/text.h`:146._
+
+### `dvz_text_atlas_glyph()`
+
+```c title="dvz_text_atlas_glyph"
+const DvzTextAtlasGlyph * dvz_text_atlas_glyph(
+    const DvzTextAtlas * atlas,
+    uint32_t codepoint
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `const DvzTextAtlasGlyph *` | glyph metrics, or NULL when unavailable |
+| `atlas` | `const DvzTextAtlas *` | the text atlas |
+| `codepoint` | `uint32_t` | Unicode codepoint |
+
+Return one atlas glyph, falling back to '?' for unsupported codepoints.
+
+_Declared in `include/datoviz/scene/text.h`:157._
+
+### `dvz_text_atlas_info()`
+
+```c title="dvz_text_atlas_info"
+DvzTextAtlasInfo dvz_text_atlas_info(
+    const DvzTextAtlas * atlas
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzTextAtlasInfo` | atlas metadata; zeroed when atlas is NULL |
+| `atlas` | `const DvzTextAtlas *` | the text atlas |
+
+Return immutable atlas metadata.
+
+_Declared in `include/datoviz/scene/text.h`:134._
+
+### `dvz_text_atlas_spec()`
+
+```c title="dvz_text_atlas_spec"
+DvzTextAtlasSpec dvz_text_atlas_spec(
+    DvzTextRenderer renderer,
+    float size_px
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzTextAtlasSpec` | atlas generation spec |
+| `renderer` | `DvzTextRenderer` | requested text renderer |
+| `size_px` | `float` | rendered text size in logical pixels |
+
+Resolve a text atlas specification from a renderer and rendered text size.
+
+_Declared in `include/datoviz/scene/text.h`:75._
 
 ### `dvz_text_destroy()`
 
@@ -8720,7 +9174,7 @@ void dvz_text_destroy(
 
 Destroy a retained text object.
 
-_Declared in `include/datoviz/scene/text.h`:82._
+_Declared in `include/datoviz/scene/text.h`:178._
 
 ### `dvz_text_placement()`
 
@@ -8734,7 +9188,11 @@ DvzTextPlacement dvz_text_placement(void);
 
 Return the default retained text placement.
 
-_Declared in `include/datoviz/scene/text.h`:43._
+The default is panel-local screen placement. Use `DVZ_TEXT_PLACEMENT_DATA` when text should stay
+anchored to panel data coordinates; `DvzTextPlacement::offset` remains a logical-pixel offset in
+every placement mode.
+
+_Declared in `include/datoviz/scene/text.h`:47._
 
 ### `dvz_text_set_placement()`
 
@@ -8752,7 +9210,7 @@ void dvz_text_set_placement(
 
 Set the placement of a retained text object.
 
-_Declared in `include/datoviz/scene/text.h`:110._
+_Declared in `include/datoviz/scene/text.h`:206._
 
 ### `dvz_text_set_renderer()`
 
@@ -8771,7 +9229,7 @@ int dvz_text_set_renderer(
 
 Select the renderer used by a retained text object.
 
-_Declared in `include/datoviz/scene/text.h`:120._
+_Declared in `include/datoviz/scene/text.h`:216._
 
 ### `dvz_text_set_string()`
 
@@ -8789,7 +9247,7 @@ void dvz_text_set_string(
 
 Set the UTF-8 content of a retained text object.
 
-_Declared in `include/datoviz/scene/text.h`:91._
+_Declared in `include/datoviz/scene/text.h`:187._
 
 ### `dvz_text_set_style()`
 
@@ -8808,7 +9266,7 @@ int dvz_text_set_style(
 
 Set the style of a retained text object.
 
-_Declared in `include/datoviz/scene/text.h`:101._
+_Declared in `include/datoviz/scene/text.h`:197._
 
 ### `dvz_text_style()`
 
@@ -8841,7 +9299,7 @@ DvzTrack * dvz_track_circle2(
 
 Create a 2D circle track.
 
-_Declared in `include/datoviz/scene/animation.h`:411._
+_Declared in `include/datoviz/scene/animation.h`:419._
 
 ### `dvz_track_circle2_desc()`
 
@@ -8857,7 +9315,7 @@ Return a default 2D circle track descriptor.
 
 Related: [`dvz_track_circle2()`](#dvz_track_circle2).
 
-_Declared in `include/datoviz/scene/animation.h`:343._
+_Declared in `include/datoviz/scene/animation.h`:351._
 
 ### `dvz_track_circle3()`
 
@@ -8874,7 +9332,7 @@ DvzTrack * dvz_track_circle3(
 
 Create a 3D circle track.
 
-_Declared in `include/datoviz/scene/animation.h`:420._
+_Declared in `include/datoviz/scene/animation.h`:428._
 
 ### `dvz_track_circle3_desc()`
 
@@ -8890,7 +9348,7 @@ Return a default 3D circle track descriptor.
 
 Related: [`dvz_track_circle3()`](#dvz_track_circle3).
 
-_Declared in `include/datoviz/scene/animation.h`:351._
+_Declared in `include/datoviz/scene/animation.h`:359._
 
 ### `dvz_track_constant()`
 
@@ -8907,7 +9365,7 @@ DvzTrack * dvz_track_constant(
 
 Create a constant typed track.
 
-_Declared in `include/datoviz/scene/animation.h`:384._
+_Declared in `include/datoviz/scene/animation.h`:392._
 
 ### `dvz_track_constant_desc()`
 
@@ -8923,7 +9381,7 @@ Return a default constant track descriptor.
 
 Related: [`dvz_track_constant()`](#dvz_track_constant).
 
-_Declared in `include/datoviz/scene/animation.h`:319._
+_Declared in `include/datoviz/scene/animation.h`:327._
 
 ### `dvz_track_destroy()`
 
@@ -8939,7 +9397,7 @@ void dvz_track_destroy(
 
 Destroy a track.
 
-_Declared in `include/datoviz/scene/animation.h`:448._
+_Declared in `include/datoviz/scene/animation.h`:456._
 
 ### `dvz_track_eval()`
 
@@ -8960,7 +9418,7 @@ _Bool dvz_track_eval(
 
 Evaluate a track at local time.
 
-_Declared in `include/datoviz/scene/animation.h`:440._
+_Declared in `include/datoviz/scene/animation.h`:448._
 
 ### `dvz_track_keyframes()`
 
@@ -8977,7 +9435,7 @@ DvzTrack * dvz_track_keyframes(
 
 Create a keyframed typed track.
 
-_Declared in `include/datoviz/scene/animation.h`:402._
+_Declared in `include/datoviz/scene/animation.h`:410._
 
 ### `dvz_track_keyframes_desc()`
 
@@ -8993,7 +9451,7 @@ Return a default keyframe track descriptor.
 
 Related: [`dvz_track_keyframes()`](#dvz_track_keyframes).
 
-_Declared in `include/datoviz/scene/animation.h`:335._
+_Declared in `include/datoviz/scene/animation.h`:343._
 
 ### `dvz_track_linear()`
 
@@ -9010,7 +9468,7 @@ DvzTrack * dvz_track_linear(
 
 Create a linear typed track.
 
-_Declared in `include/datoviz/scene/animation.h`:393._
+_Declared in `include/datoviz/scene/animation.h`:401._
 
 ### `dvz_track_linear_desc()`
 
@@ -9026,7 +9484,7 @@ Return a default linear track descriptor.
 
 Related: [`dvz_track_linear()`](#dvz_track_linear).
 
-_Declared in `include/datoviz/scene/animation.h`:327._
+_Declared in `include/datoviz/scene/animation.h`:335._
 
 ### `dvz_track_rotation()`
 
@@ -9043,7 +9501,7 @@ DvzTrack * dvz_track_rotation(
 
 Create a quaternion rotation track.
 
-_Declared in `include/datoviz/scene/animation.h`:429._
+_Declared in `include/datoviz/scene/animation.h`:437._
 
 ### `dvz_track_rotation_desc()`
 
@@ -9059,7 +9517,7 @@ Return a default rotation track descriptor.
 
 Related: [`dvz_track_rotation()`](#dvz_track_rotation).
 
-_Declared in `include/datoviz/scene/animation.h`:359._
+_Declared in `include/datoviz/scene/animation.h`:367._
 
 ## Transform
 
@@ -9075,7 +9533,7 @@ DvzTransformMotionDesc dvz_transform_motion_desc(void);
 
 Return a default transform motion descriptor.
 
-_Declared in `include/datoviz/scene/animation.h`:367._
+_Declared in `include/datoviz/scene/animation.h`:375._
 
 ## Turntable
 
@@ -9112,7 +9570,7 @@ void dvz_turntable_apply_camera(
 
 Apply the turntable pose to the attached camera.
 
-_Declared in `include/datoviz/controller/turntable.h`:242._
+_Declared in `include/datoviz/controller/turntable.h`:244._
 
 ### `dvz_turntable_connect()`
 
@@ -9130,7 +9588,7 @@ void dvz_turntable_connect(
 
 Subscribe the turntable to an input router.
 
-_Declared in `include/datoviz/controller/turntable.h`:263._
+_Declared in `include/datoviz/controller/turntable.h`:265._
 
 ### `dvz_turntable_create()`
 
@@ -9149,7 +9607,7 @@ Create a standalone turntable controller.
 
 Related: [`dvz_turntable_destroy()`](#dvz_turntable_destroy).
 
-_Declared in `include/datoviz/controller/turntable.h`:145._
+_Declared in `include/datoviz/controller/turntable.h`:147._
 
 ### `dvz_turntable_desc()`
 
@@ -9165,7 +9623,7 @@ Return a default turntable descriptor.
 
 Related: [`dvz_turntable()`](#dvz_turntable).
 
-_Declared in `include/datoviz/controller/turntable.h`:135._
+_Declared in `include/datoviz/controller/turntable.h`:137._
 
 ### `dvz_turntable_destroy()`
 
@@ -9183,7 +9641,7 @@ Destroy a turntable controller.
 
 Related: [`dvz_turntable_create()`](#dvz_turntable_create).
 
-_Declared in `include/datoviz/controller/turntable.h`:282._
+_Declared in `include/datoviz/controller/turntable.h`:284._
 
 ### `dvz_turntable_disconnect()`
 
@@ -9201,7 +9659,7 @@ void dvz_turntable_disconnect(
 
 Unsubscribe the turntable from an input router.
 
-_Declared in `include/datoviz/controller/turntable.h`:273._
+_Declared in `include/datoviz/controller/turntable.h`:275._
 
 ### `dvz_turntable_dolly()`
 
@@ -9219,7 +9677,7 @@ void dvz_turntable_dolly(
 
 Dolly toward or away from the pivot.
 
-_Declared in `include/datoviz/controller/turntable.h`:211._
+_Declared in `include/datoviz/controller/turntable.h`:213._
 
 ### `dvz_turntable_orbit()`
 
@@ -9239,7 +9697,7 @@ void dvz_turntable_orbit(
 
 Orbit around the pivot.
 
-_Declared in `include/datoviz/controller/turntable.h`:201._
+_Declared in `include/datoviz/controller/turntable.h`:203._
 
 ### `dvz_turntable_pan()`
 
@@ -9259,7 +9717,7 @@ void dvz_turntable_pan(
 
 Pan the pivot in the current view plane.
 
-_Declared in `include/datoviz/controller/turntable.h`:223._
+_Declared in `include/datoviz/controller/turntable.h`:225._
 
 ### `dvz_turntable_pivot()`
 
@@ -9277,7 +9735,7 @@ void dvz_turntable_pivot(
 
 Set the pivot while preserving the current camera eye.
 
-_Declared in `include/datoviz/controller/turntable.h`:189._
+_Declared in `include/datoviz/controller/turntable.h`:191._
 
 ### `dvz_turntable_pointer()`
 
@@ -9296,7 +9754,7 @@ _Bool dvz_turntable_pointer(
 
 Process a pointer event.
 
-_Declared in `include/datoviz/controller/turntable.h`:253._
+_Declared in `include/datoviz/controller/turntable.h`:255._
 
 ### `dvz_turntable_reset()`
 
@@ -9312,7 +9770,7 @@ void dvz_turntable_reset(
 
 Reset a turntable to its initial pose.
 
-_Declared in `include/datoviz/controller/turntable.h`:154._
+_Declared in `include/datoviz/controller/turntable.h`:156._
 
 ### `dvz_turntable_resize()`
 
@@ -9332,7 +9790,7 @@ void dvz_turntable_resize(
 
 Update the viewport size.
 
-_Declared in `include/datoviz/controller/turntable.h`:179._
+_Declared in `include/datoviz/controller/turntable.h`:181._
 
 ### `dvz_turntable_set_camera()`
 
@@ -9350,7 +9808,7 @@ void dvz_turntable_set_camera(
 
 Attach a camera updated by this turntable.
 
-_Declared in `include/datoviz/controller/turntable.h`:233._
+_Declared in `include/datoviz/controller/turntable.h`:235._
 
 ### `dvz_turntable_viewport()`
 
@@ -9374,7 +9832,7 @@ void dvz_turntable_viewport(
 
 Update the viewport rectangle in window coordinates.
 
-_Declared in `include/datoviz/controller/turntable.h`:168._
+_Declared in `include/datoviz/controller/turntable.h`:170._
 
 ## Unit
 

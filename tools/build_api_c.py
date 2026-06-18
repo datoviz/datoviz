@@ -86,6 +86,14 @@ def header_of(item: dict) -> str:
 def symbol_prefix(name: str) -> str:
     if name.startswith("dvz_"):
         name = name[4:]
+        return name.split("_", 1)[0]
+    if name.startswith("Dvz"):
+        name = name[3:]
+        if name.startswith("DRP2"):
+            return "drp2"
+        match = re.match(r"[A-Z]+(?=[A-Z][a-z]|$)|[A-Z]?[a-z]+|[0-9]+", name)
+        if match:
+            return match.group(0).lower()
     return name.split("_", 1)[0]
 
 
@@ -410,6 +418,12 @@ def validate_classification(kind: str, items: list[dict], pages: list[PagePolicy
         if kind == "functions" and not name.startswith("dvz_"):
             continue
         page_key = classify_symbol(item, pages, hidden_headers)
+        if page_key is None and kind != "functions":
+            header = header_of(item)
+            for page in pages:
+                if header_matches(header, page.headers):
+                    page_key = page.key
+                    break
         if page_key is None:
             if not header_matches(header_of(item), hidden_headers):
                 missing.append(f"{name} ({header_of(item)})")

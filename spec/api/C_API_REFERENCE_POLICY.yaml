@@ -58,11 +58,14 @@ pages:
       - link
       - linear
       - orbit
+      - orientation
       - overlay
       - panel
       - panzoom
+      - placement
       - pinned
       - query
+      - reference
       - sampled
       - scene
       - scale
@@ -95,6 +98,7 @@ pages:
         href: ../visual-families/index.md
     headers:
       - include/datoviz/scene.h
+      - include/datoviz/scene/**
       - include/datoviz/geom.h
       - include/datoviz/geom/**
     prefixes:
@@ -263,16 +267,21 @@ pages:
       - load
       - make
       - map
+      - mean
       - mock
       - mutex
+      - min
+      - normalize
       - obj
       - parse
       - prng
       - queue
       - queues
       - rand
+      - range
       - read
       - rendering
+      - resample
       - resource
       - sampler
       - slots
@@ -287,8 +296,17 @@ pages:
       - triangulate
       - triangulation
       - vec3
+      - vec2
       - version
       - write
+      - attachment
+      - command
+      - commands
+      - compute
+      - descriptors
+      - fence
+      - semaphore
+      - shader
 
 types:
   output: docs/reference/c-api/types.md

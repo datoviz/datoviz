@@ -86,6 +86,15 @@ DVZ_CAMERA_UP_WORLD = 1,
 DVZ_CAMERA_UP_TRACK = 2,
 ```
 
+#### `DvzColorRole`
+
+```c
+DVZ_COLOR_ROLE_NONE = 0,
+DVZ_COLOR_ROLE_SRGB_COLOR = 1,
+DVZ_COLOR_ROLE_LINEAR_COLOR = 2,
+DVZ_COLOR_ROLE_DATA = 3,
+```
+
 #### `DvzColorbarOrientation`
 
 ```c
@@ -132,6 +141,7 @@ DVZ_CONTROLLER_LINK_TWO_WAY = 1,
 DVZ_CONTROLLER_APPLY = 0,
 DVZ_CONTROLLER_FIXED = 1,
 DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL = 2,
+DVZ_CONTROLLER_APPLY_VIEW_PROJ = 3,
 ```
 
 #### `DvzControllerType`
@@ -150,38 +160,6 @@ DVZ_CONTROLLER_TYPE_ORBIT_CAMERA = 5,
 ```c
 DVZ_DATETIME_FORMAT_CONCISE_UTC = 0,
 DVZ_DATETIME_FORMAT_ISO_UTC = 1,
-```
-
-#### `DvzDepthCueFalloff`
-
-```c
-DVZ_DEPTH_CUE_FALLOFF_LINEAR = 0,
-DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL = 1,
-```
-
-#### `DvzDepthCueMetric`
-
-```c
-DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH = 0,
-DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE = 1,
-DVZ_DEPTH_CUE_METRIC_WORLD_DISTANCE = 2,
-```
-
-#### `DvzDepthCueMode`
-
-```c
-DVZ_DEPTH_CUE_NONE = 0,
-DVZ_DEPTH_CUE_FADE_TO_BACKGROUND = 1,
-DVZ_DEPTH_CUE_DESATURATE = 2,
-DVZ_DEPTH_CUE_DARKEN = 3,
-```
-
-#### `DvzDim`
-
-```c
-DVZ_DIM_X = 0,
-DVZ_DIM_Y = 1,
-DVZ_DIM_Z = 2,
 ```
 
 #### `DvzDimMaskFlag`
@@ -299,14 +277,6 @@ DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE = 13,
 DVZ_FRAME_PLAN_RENDER_PASS_PICKING = 14,
 ```
 
-#### `DvzGraphEdgeMode`
-
-```c
-DVZ_GRAPH_EDGE_MODE_SEGMENT = 0,
-DVZ_GRAPH_EDGE_MODE_PATH = 1,
-DVZ_GRAPH_EDGE_MODE_BEZIER = 2,
-```
-
 #### `DvzGridSizeMode`
 
 ```c
@@ -364,40 +334,6 @@ DVZ_MVP_FLAGS_NONE = 0,
 DVZ_MVP_FLAGS_ISOTROPIC_LOCAL = 1,
 ```
 
-#### `DvzMarkerShape`
-
-```c
-DVZ_MARKER_SHAPE_DISC = 0,
-DVZ_MARKER_SHAPE_SQUARE = 1,
-DVZ_MARKER_SHAPE_TRIANGLE = 2,
-DVZ_MARKER_SHAPE_DIAMOND = 3,
-DVZ_MARKER_SHAPE_CROSS = 4,
-DVZ_MARKER_SHAPE_RING = 5,
-DVZ_MARKER_SHAPE_TARGET = 6,
-DVZ_MARKER_SHAPE_ASTERISK = 7,
-DVZ_MARKER_SHAPE_CHEVRON = 8,
-DVZ_MARKER_SHAPE_CLOVER = 9,
-DVZ_MARKER_SHAPE_CLUB = 10,
-DVZ_MARKER_SHAPE_ARROW = 11,
-DVZ_MARKER_SHAPE_ELLIPSE = 12,
-DVZ_MARKER_SHAPE_HBAR = 13,
-DVZ_MARKER_SHAPE_HEART = 14,
-DVZ_MARKER_SHAPE_INFINITY = 15,
-DVZ_MARKER_SHAPE_PIN = 16,
-DVZ_MARKER_SHAPE_SPADE = 17,
-DVZ_MARKER_SHAPE_TAG = 18,
-DVZ_MARKER_SHAPE_VBAR = 19,
-DVZ_MARKER_SHAPE_ROUNDED_RECT = 20,
-```
-
-#### `DvzMaterialModel`
-
-```c
-DVZ_MATERIAL_MODEL_UNLIT = 0,
-DVZ_MATERIAL_MODEL_PHONG = 1,
-DVZ_MATERIAL_MODEL_STANDARD = 2,
-```
-
 #### `DvzOverlayCardFlag`
 
 ```c
@@ -424,20 +360,6 @@ DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT = 2,
 DVZ_PANEL_BACKGROUND_IMAGE = 3,
 ```
 
-#### `DvzPanelDomainAspectMode`
-
-```c
-DVZ_PANEL_DOMAIN_ASPECT_FREE = 0,
-DVZ_PANEL_DOMAIN_ASPECT_EQUAL = 1,
-```
-
-#### `DvzPanelDomainFitMode`
-
-```c
-DVZ_PANEL_DOMAIN_FIT_NONE = 0,
-DVZ_PANEL_DOMAIN_FIT_CONTAIN = 1,
-```
-
 #### `DvzPanelLinkFlags`
 
 ```c
@@ -447,6 +369,20 @@ DVZ_PANEL_LINK_FLAGS_VIEW = 2,
 DVZ_PANEL_LINK_FLAGS_PROJECTION = 4,
 ```
 
+#### `DvzPanelView2DAspect`
+
+```c
+DVZ_PANEL_VIEW2D_ASPECT_FREE = 0,
+DVZ_PANEL_VIEW2D_ASPECT_EQUAL = 1,
+```
+
+#### `DvzPanelView2DMode`
+
+```c
+DVZ_PANEL_VIEW2D_NONE = 0,
+DVZ_PANEL_VIEW2D_CONTAIN = 1,
+```
+
 #### `DvzPanzoomFlags`
 
 ```c
@@ -454,14 +390,6 @@ DVZ_PANZOOM_FLAGS_NONE = 0,
 DVZ_PANZOOM_FLAGS_FIXED_X = 1,
 DVZ_PANZOOM_FLAGS_FIXED_Y = 2,
 DVZ_PANZOOM_FLAGS_KEEP_ASPECT = 4,
-```
-
-#### `DvzPathJoin`
-
-```c
-DVZ_PATH_JOIN_MITER = 0,
-DVZ_PATH_JOIN_ROUND = 1,
-DVZ_PATH_JOIN_BEVEL = 2,
 ```
 
 #### `DvzPlacementSpace`
@@ -538,6 +466,15 @@ DVZ_QUERY_VALUE_VEC4 = 4,
 DVZ_QUERY_VALUE_CATEGORY = 5,
 DVZ_QUERY_VALUE_TEXT = 6,
 DVZ_QUERY_VALUE_OPAQUE_FAMILY_PAYLOAD = 7,
+```
+
+#### `DvzReferenceGridPlane`
+
+```c
+DVZ_REFERENCE_GRID_XY = 0,
+DVZ_REFERENCE_GRID_XZ = 1,
+DVZ_REFERENCE_GRID_YZ = 2,
+DVZ_REFERENCE_GRID_CUSTOM = 3,
 ```
 
 #### `DvzScaleBarLabelPosition`
@@ -665,17 +602,6 @@ DVZ_SCENE_VISUAL_FAMILY_LABELS = 14,
 DVZ_SCENE_VISUAL_FAMILY_SPLAT = 15,
 ```
 
-#### `DvzSegmentCap`
-
-```c
-DVZ_SEGMENT_CAP_NONE = 0,
-DVZ_SEGMENT_CAP_ROUND = 1,
-DVZ_SEGMENT_CAP_TRIANGLE_IN = 2,
-DVZ_SEGMENT_CAP_TRIANGLE_OUT = 3,
-DVZ_SEGMENT_CAP_SQUARE = 4,
-DVZ_SEGMENT_CAP_BUTT = 5,
-```
-
 #### `DvzSelectMode`
 
 ```c
@@ -693,54 +619,21 @@ DVZ_SHAPE_ASPECT_STROKE = 1,
 DVZ_SHAPE_ASPECT_OUTLINE = 2,
 ```
 
-#### `DvzSphereFlags`
+#### `DvzTextAtlasBackend`
 
 ```c
-DVZ_SPHERE_FLAGS_NONE = 0,
-DVZ_SPHERE_FLAGS_LIGHTING = 1,
+DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP = 0,
+DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP = 1,
+DVZ_TEXT_ATLAS_BACKEND_STB_SDF = 2,
+DVZ_TEXT_ATLAS_BACKEND_MSDF = 3,
 ```
 
-#### `DvzSphereMode`
+#### `DvzTextAtlasEncoding`
 
 ```c
-DVZ_SPHERE_MODE_FAST_IMPOSTOR = 0,
-DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR = 1,
-```
-
-#### `DvzSymbolBuiltin`
-
-```c
-DVZ_SYMBOL_DISC = 0,
-DVZ_SYMBOL_SQUARE = 1,
-DVZ_SYMBOL_TRIANGLE = 2,
-DVZ_SYMBOL_DIAMOND = 3,
-DVZ_SYMBOL_CROSS = 4,
-DVZ_SYMBOL_RING = 5,
-DVZ_SYMBOL_TARGET = 6,
-DVZ_SYMBOL_ASTERISK = 7,
-DVZ_SYMBOL_CHEVRON = 8,
-DVZ_SYMBOL_CLOVER = 9,
-DVZ_SYMBOL_CLUB = 10,
-DVZ_SYMBOL_ARROW = 11,
-DVZ_SYMBOL_ELLIPSE = 12,
-DVZ_SYMBOL_HBAR = 13,
-DVZ_SYMBOL_HEART = 14,
-DVZ_SYMBOL_INFINITY = 15,
-DVZ_SYMBOL_PIN = 16,
-DVZ_SYMBOL_SPADE = 17,
-DVZ_SYMBOL_TAG = 18,
-DVZ_SYMBOL_VBAR = 19,
-DVZ_SYMBOL_ROUNDED_RECT = 20,
-```
-
-#### `DvzSymbolSourceKind`
-
-```c
-DVZ_SYMBOL_SOURCE_NONE = 0,
-DVZ_SYMBOL_SOURCE_BUILTIN = 1,
-DVZ_SYMBOL_SOURCE_BITMAP = 2,
-DVZ_SYMBOL_SOURCE_SDF = 3,
-DVZ_SYMBOL_SOURCE_MSDF = 4,
+DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA = 0,
+DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA = 1,
+DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB = 2,
 ```
 
 #### `DvzTextPlacementMode`
@@ -802,6 +695,13 @@ DVZ_TRACK_TANGENT_FLAT = 1,
 DVZ_TRACK_TANGENT_USER = 2,
 ```
 
+#### `DvzTrackTopology`
+
+```c
+DVZ_TRACK_TOPOLOGY_OPEN = 0,
+DVZ_TRACK_TOPOLOGY_CLOSED = 1,
+```
+
 #### `DvzTrackType`
 
 ```c
@@ -844,109 +744,12 @@ DVZ_UNIT_LADDER_DURATION = 1,
 DVZ_UNIT_LADDER_RAW = 2,
 ```
 
-#### `DvzVectorAnchor`
-
-```c
-DVZ_VECTOR_ANCHOR_TAIL = 0,
-DVZ_VECTOR_ANCHOR_CENTER = 1,
-DVZ_VECTOR_ANCHOR_HEAD = 2,
-```
-
 #### `DvzVerticalAnchor`
 
 ```c
 DVZ_VERTICAL_ANCHOR_TOP = 0,
 DVZ_VERTICAL_ANCHOR_CENTER = 1,
 DVZ_VERTICAL_ANCHOR_BOTTOM = 2,
-```
-
-#### `DvzVisualAttrFormat`
-
-```c
-DVZ_VISUAL_ATTR_FORMAT_DEFAULT = 0,
-DVZ_VISUAL_ATTR_FORMAT_RGBA_U8 = 1,
-DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32 = 2,
-```
-
-#### `DvzVisualAttrMutability`
-
-```c
-DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC = 0,
-DVZ_VISUAL_ATTR_MUTABILITY_STATIC = 1,
-DVZ_VISUAL_ATTR_MUTABILITY_STREAMING = 2,
-```
-
-#### `DvzVisualAttrSource`
-
-```c
-DVZ_VISUAL_ATTR_SOURCE_PER_ITEM = 0,
-DVZ_VISUAL_ATTR_SOURCE_CONSTANT = 1,
-DVZ_VISUAL_ATTR_SOURCE_PER_SPAN = 2,
-DVZ_VISUAL_ATTR_SOURCE_PER_GROUP = 3,
-```
-
-#### `DvzVisualCoordSpace`
-
-```c
-DVZ_COORD_VISUAL = 0,
-DVZ_COORD_DATA = 1,
-```
-
-#### `DvzVisualShaderKind`
-
-```c
-DVZ_VISUAL_SHADER_NONE = 0,
-DVZ_VISUAL_SHADER_CUSTOM_FAMILY = 1,
-DVZ_VISUAL_SHADER_BUILTIN_REPLACEMENT = 2,
-```
-
-#### `DvzVisualShaderSource`
-
-```c
-DVZ_VISUAL_SHADER_SOURCE_NONE = 0,
-DVZ_VISUAL_SHADER_SOURCE_GLSL = 1,
-DVZ_VISUAL_SHADER_SOURCE_WGSL = 2,
-DVZ_VISUAL_SHADER_SOURCE_SPIRV = 3,
-```
-
-#### `DvzVisualTransformKind`
-
-```c
-DVZ_VISUAL_TRANSFORM_NONE = 0,
-DVZ_VISUAL_TRANSFORM_LINEAR = 1,
-DVZ_VISUAL_TRANSFORM_NONLINEAR = 2,
-DVZ_VISUAL_TRANSFORM_CUSTOM = 3,
-```
-
-#### `DvzVisualTransformSpace`
-
-```c
-DVZ_VISUAL_TRANSFORM_SPACE_DATA = 0,
-DVZ_VISUAL_TRANSFORM_SPACE_VISUAL = 1,
-DVZ_VISUAL_TRANSFORM_SPACE_PANEL = 2,
-```
-
-#### `DvzVolumeAxis`
-
-```c
-DVZ_VOLUME_AXIS_X = 0,
-DVZ_VOLUME_AXIS_Y = 1,
-DVZ_VOLUME_AXIS_Z = 2,
-```
-
-#### `DvzVolumeRenderMode`
-
-```c
-DVZ_VOLUME_RENDER_SLICE = 0,
-DVZ_VOLUME_RENDER_MIP = 1,
-DVZ_VOLUME_RENDER_COMPOSITE = 2,
-```
-
-#### `DvzVolumeSamplingMode`
-
-```c
-DVZ_VOLUME_SAMPLING_LINEAR = 0,
-DVZ_VOLUME_SAMPLING_NEAREST = 1,
 ```
 
 ### Records
@@ -1255,12 +1058,6 @@ struct DvzColormapStop {
 };
 ```
 
-#### `DvzComposite`
-
-```c
-typedef struct DvzComposite DvzComposite;
-```
-
 #### `DvzController`
 
 ```c
@@ -1288,41 +1085,12 @@ struct DvzDataDomain {
 typedef struct DvzDateTimeFormat DvzDateTimeFormat;
 ```
 
-#### `DvzDepthCueDesc`
-
-```c
-struct DvzDepthCueDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzDepthCueMode mode;
-    DvzDepthCueMetric metric;
-    DvzDepthCueFalloff falloff;
-    float near_depth;
-    float far_depth;
-    float strength;
-    float density;
-    float[4] background_color;
-};
-```
-
 #### `DvzDiagnosticReport`
 
 ```c
 struct DvzDiagnosticReport {
     uint32_t count;
     char[16][256] messages;
-};
-```
-
-#### `DvzEdlDesc`
-
-```c
-struct DvzEdlDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    float radius;
-    float strength;
-    float depth_scale;
 };
 ```
 
@@ -1516,27 +1284,6 @@ typedef struct DvzFramePlanEmitter DvzFramePlanEmitter;
 
 ```c
 typedef struct DvzFramePlanNode DvzFramePlanNode;
-```
-
-#### `DvzGraph`
-
-```c
-typedef struct DvzGraph DvzGraph;
-```
-
-#### `DvzGraphEdgeStyle`
-
-```c
-struct DvzGraphEdgeStyle {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzGraphEdgeMode mode;
-    DvzBezierTessellationDesc tessellation;
-    DvzSegmentCap start_cap;
-    DvzSegmentCap end_cap;
-    DvzPathJoin join;
-    float miter_limit;
-};
 ```
 
 #### `DvzGrid`
@@ -1752,46 +1499,6 @@ struct DvzMVP {
 };
 ```
 
-#### `DvzMarkerStyle`
-
-```c
-struct DvzMarkerStyle {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzColor edge_color;
-    float stroke_width;
-    DvzShapeAspect aspect;
-};
-```
-
-#### `DvzMaterialDesc`
-
-```c
-struct DvzMaterialDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzMaterialModel model;
-    DvzAlphaMode alpha_mode;
-    float opacity;
-    float[4] base_color_factor;
-    float[3] light_direction;
-    DvzPhongMaterial phong;
-    DvzStandardMaterial standard;
-};
-```
-
-#### `DvzMsaaDesc`
-
-```c
-struct DvzMsaaDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    _Bool enabled;
-    uint32_t sample_count;
-    _Bool alpha_to_coverage;
-};
-```
-
 #### `DvzOrbitCamera`
 
 ```c
@@ -1808,6 +1515,31 @@ struct DvzOrbitCameraDesc {
     float height;
     uint32_t controller_flags;
     vec3 pivot;
+    float min_distance;
+    float max_distance;
+    float zoom_speed;
+};
+```
+
+#### `DvzOrientationGizmo`
+
+```c
+typedef struct DvzOrientationGizmo DvzOrientationGizmo;
+```
+
+#### `DvzOrientationGizmoDesc`
+
+```c
+struct DvzOrientationGizmoDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzPlacement placement;
+    _Bool show_axes;
+    float axis_length;
+    float axis_width_px;
+    DvzColor x_color;
+    DvzColor y_color;
+    DvzColor z_color;
 };
 ```
 
@@ -1886,8 +1618,8 @@ struct DvzPanelBackgroundDesc {
     uint32_t flags;
     DvzPanelBackgroundType type;
     float[4] color;
-    struct (unnamed struct at include/datoviz/scene/types.h:317:5) gradient;
-    struct (unnamed struct at include/datoviz/scene/types.h:325:5) image;
+    struct (unnamed struct at include/datoviz/scene/types.h:330:5) gradient;
+    struct (unnamed struct at include/datoviz/scene/types.h:338:5) image;
 };
 ```
 
@@ -1915,20 +1647,6 @@ struct DvzPanelDesc {
 };
 ```
 
-#### `DvzPanelDomainFit`
-
-```c
-struct DvzPanelDomainFit {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzPanelDomainFitMode fit;
-    DvzPanelDomainAspectMode aspect;
-    DvzDataDomain x;
-    DvzDataDomain y;
-    double padding;
-};
-```
-
 #### `DvzPanelLayoutReserve`
 
 ```c
@@ -1948,6 +1666,20 @@ struct DvzPanelReserve {
     float right_px;
     float top_px;
     float bottom_px;
+};
+```
+
+#### `DvzPanelView2D`
+
+```c
+struct DvzPanelView2D {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzPanelView2DMode mode;
+    DvzPanelView2DAspect aspect;
+    DvzDataDomain data_x;
+    DvzDataDomain data_y;
+    double padding;
 };
 ```
 
@@ -1986,14 +1718,22 @@ struct DvzPanzoomDesc {
 };
 ```
 
-#### `DvzPhongMaterial`
+#### `DvzPanzoomEval`
 
 ```c
-struct DvzPhongMaterial {
-    float ambient;
-    float diffuse;
-    float specular;
-    float shininess;
+struct DvzPanzoomEval {
+    float[4] base_extent;
+    float viewport_width;
+    float viewport_height;
+};
+```
+
+#### `DvzPanzoomResolved`
+
+```c
+struct DvzPanzoomResolved {
+    DvzMVP mvp;
+    float[4] visible_extent;
 };
 ```
 
@@ -2014,47 +1754,6 @@ struct DvzPlacement {
     float offset_y_px;
     float width_px;
     float height_px;
-};
-```
-
-#### `DvzPointStyleDesc`
-
-```c
-struct DvzPointStyleDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzColor edge_color;
-    float stroke_width;
-    DvzShapeAspect aspect;
-};
-```
-
-#### `DvzPolygon`
-
-```c
-typedef struct DvzPolygon DvzPolygon;
-```
-
-#### `DvzPolygonSet`
-
-```c
-typedef struct DvzPolygonSet DvzPolygonSet;
-```
-
-#### `DvzPolygonStyle`
-
-```c
-struct DvzPolygonStyle {
-    uint32_t struct_size;
-    uint32_t flags;
-    _Bool visible;
-    DvzColor fill_color;
-    DvzColor stroke_color;
-    float stroke_width;
-    DvzSegmentCap stroke_start_cap;
-    DvzSegmentCap stroke_end_cap;
-    DvzPathJoin stroke_join;
-    float stroke_miter_limit;
 };
 ```
 
@@ -2136,6 +1835,38 @@ struct DvzRect {
 };
 ```
 
+#### `DvzReferenceGrid`
+
+```c
+typedef struct DvzReferenceGrid DvzReferenceGrid;
+```
+
+#### `DvzReferenceGridDesc`
+
+```c
+struct DvzReferenceGridDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzReferenceGridPlane plane;
+    vec3 origin;
+    vec3 axis_u;
+    vec3 axis_v;
+    float[2] size;
+    float spacing;
+    uint32_t major_every;
+    DvzColor minor_color;
+    DvzColor major_color;
+    DvzColor axis_color;
+    float minor_width_px;
+    float major_width_px;
+    float axis_width_px;
+    _Bool show_minor;
+    _Bool show_major;
+    _Bool show_axes;
+    _Bool depth_test;
+};
+```
+
 #### `DvzSampledField`
 
 ```c
@@ -2151,6 +1882,7 @@ struct DvzSampledFieldDesc {
     DvzFieldDim dim;
     DvzFieldFormat format;
     DvzFieldSemantic semantic;
+    DvzColorRole color_role;
     uint32_t width;
     uint32_t height;
     uint32_t depth;
@@ -2320,59 +2052,67 @@ struct DvzSelectionVisualStyle {
 };
 ```
 
-#### `DvzSsaoDesc`
-
-```c
-struct DvzSsaoDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    float radius;
-    float strength;
-    float bias;
-    float power;
-    float min_visibility;
-    float blur_radius;
-    float blur_depth_sigma;
-    float blur_normal_sigma;
-    uint32_t sample_count;
-    _Bool blur_enabled;
-    _Bool debug_view;
-};
-```
-
-#### `DvzStandardMaterial`
-
-```c
-struct DvzStandardMaterial {
-    float roughness;
-    float specular;
-    float metallic;
-    float[3] emissive;
-    float rim_strength;
-};
-```
-
-#### `DvzSymbolImageDesc`
-
-```c
-struct DvzSymbolImageDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint32_t row_stride;
-    float distance_range_px;
-};
-```
-
-#### `DvzSymbolSet`
-
-```c
-typedef struct DvzSymbolSet DvzSymbolSet;
-```
-
 #### `DvzText`
 
 ```c
 typedef struct DvzText DvzText;
+```
+
+#### `DvzTextAtlas`
+
+```c
+typedef struct DvzTextAtlas DvzTextAtlas;
+```
+
+#### `DvzTextAtlasGlyph`
+
+```c
+struct DvzTextAtlasGlyph {
+    uint32_t codepoint;
+    uint32_t glyph_id;
+    float advance;
+    float xoff;
+    float yoff;
+    float width;
+    float height;
+    float[4] plane_bounds;
+    float[4] atlas_bounds;
+    float[4] uv;
+    _Bool valid;
+};
+```
+
+#### `DvzTextAtlasInfo`
+
+```c
+struct DvzTextAtlasInfo {
+    DvzTextAtlasSpec spec;
+    DvzTextAtlasBackend backend;
+    DvzTextAtlasEncoding encoding;
+    uint32_t width;
+    uint32_t height;
+    uint32_t glyph_count;
+    uint32_t channels;
+    float em_px;
+    float distance_range_px;
+    float ascent;
+    float descent;
+    float line_gap;
+    float line_height;
+    uint32_t missing_glyph_count;
+    uint64_t generation;
+};
+```
+
+#### `DvzTextAtlasSpec`
+
+```c
+struct DvzTextAtlasSpec {
+    DvzTextAtlasBackend backend;
+    float em_px;
+    float distance_range_px;
+    uint32_t flags;
+};
 ```
 
 #### `DvzTextPlacement`
@@ -2464,6 +2204,7 @@ struct DvzTrackKeyframesDesc {
     const double * times;
     const void * values;
     DvzTrackRepeat repeat;
+    DvzTrackTopology topology;
     DvzTrackInterpolation interpolation;
     DvzTrackTangentMode tangents;
     float tension;
@@ -2578,6 +2319,796 @@ typedef struct DvzUnitLadder DvzUnitLadder;
 
 ```c
 typedef struct DvzUnits DvzUnits;
+```
+
+## Visuals And Composites API
+
+### Enums
+
+#### `DvzDepthCueFalloff`
+
+```c
+DVZ_DEPTH_CUE_FALLOFF_LINEAR = 0,
+DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL = 1,
+```
+
+#### `DvzDepthCueMetric`
+
+```c
+DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH = 0,
+DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE = 1,
+DVZ_DEPTH_CUE_METRIC_WORLD_DISTANCE = 2,
+```
+
+#### `DvzDepthCueMode`
+
+```c
+DVZ_DEPTH_CUE_NONE = 0,
+DVZ_DEPTH_CUE_FADE_TO_BACKGROUND = 1,
+DVZ_DEPTH_CUE_DESATURATE = 2,
+DVZ_DEPTH_CUE_DARKEN = 3,
+```
+
+#### `DvzGeometryEdgeFlags`
+
+```c
+DVZ_GEOMETRY_EDGE_NONE = 0,
+DVZ_GEOMETRY_EDGE_BOUNDARY = 1,
+DVZ_GEOMETRY_EDGE_NONMANIFOLD = 2,
+```
+
+#### `DvzGeometryIndexingFlags`
+
+```c
+DVZ_GEOMETRY_INDEXING_NONE = 0,
+DVZ_GEOMETRY_INDEXING_TRIANGLES = 1,
+DVZ_GEOMETRY_INDEXING_SURFACE_GRID = 2,
+DVZ_GEOMETRY_INDEXING_TRIANGULATION = 4,
+```
+
+#### `DvzGeometryType`
+
+```c
+DVZ_GEOMETRY_NONE = 0,
+DVZ_GEOMETRY_CUSTOM = 1,
+DVZ_GEOMETRY_CUBE = 2,
+DVZ_GEOMETRY_PLANE = 3,
+DVZ_GEOMETRY_SURFACE_GRID = 4,
+DVZ_GEOMETRY_SPHERE = 5,
+DVZ_GEOMETRY_CYLINDER = 6,
+DVZ_GEOMETRY_CONE = 7,
+DVZ_GEOMETRY_TORUS = 8,
+DVZ_GEOMETRY_ARROW = 9,
+```
+
+#### `DvzGraphEdgeMode`
+
+```c
+DVZ_GRAPH_EDGE_MODE_SEGMENT = 0,
+DVZ_GRAPH_EDGE_MODE_PATH = 1,
+DVZ_GRAPH_EDGE_MODE_BEZIER = 2,
+```
+
+#### `DvzMarkerShape`
+
+```c
+DVZ_MARKER_SHAPE_DISC = 0,
+DVZ_MARKER_SHAPE_SQUARE = 1,
+DVZ_MARKER_SHAPE_TRIANGLE = 2,
+DVZ_MARKER_SHAPE_DIAMOND = 3,
+DVZ_MARKER_SHAPE_CROSS = 4,
+DVZ_MARKER_SHAPE_RING = 5,
+DVZ_MARKER_SHAPE_TARGET = 6,
+DVZ_MARKER_SHAPE_ASTERISK = 7,
+DVZ_MARKER_SHAPE_CHEVRON = 8,
+DVZ_MARKER_SHAPE_CLOVER = 9,
+DVZ_MARKER_SHAPE_CLUB = 10,
+DVZ_MARKER_SHAPE_ARROW = 11,
+DVZ_MARKER_SHAPE_ELLIPSE = 12,
+DVZ_MARKER_SHAPE_HBAR = 13,
+DVZ_MARKER_SHAPE_HEART = 14,
+DVZ_MARKER_SHAPE_INFINITY = 15,
+DVZ_MARKER_SHAPE_PIN = 16,
+DVZ_MARKER_SHAPE_SPADE = 17,
+DVZ_MARKER_SHAPE_TAG = 18,
+DVZ_MARKER_SHAPE_VBAR = 19,
+DVZ_MARKER_SHAPE_ROUNDED_RECT = 20,
+```
+
+#### `DvzMaterialModel`
+
+```c
+DVZ_MATERIAL_MODEL_UNLIT = 0,
+DVZ_MATERIAL_MODEL_PHONG = 1,
+DVZ_MATERIAL_MODEL_STANDARD = 2,
+```
+
+#### `DvzPathJoin`
+
+```c
+DVZ_PATH_JOIN_MITER = 0,
+DVZ_PATH_JOIN_ROUND = 1,
+DVZ_PATH_JOIN_BEVEL = 2,
+```
+
+#### `DvzSegmentCap`
+
+```c
+DVZ_SEGMENT_CAP_NONE = 0,
+DVZ_SEGMENT_CAP_ROUND = 1,
+DVZ_SEGMENT_CAP_TRIANGLE_IN = 2,
+DVZ_SEGMENT_CAP_TRIANGLE_OUT = 3,
+DVZ_SEGMENT_CAP_SQUARE = 4,
+DVZ_SEGMENT_CAP_BUTT = 5,
+```
+
+#### `DvzSphereFlags`
+
+```c
+DVZ_SPHERE_FLAGS_NONE = 0,
+DVZ_SPHERE_FLAGS_LIGHTING = 1,
+```
+
+#### `DvzSphereMode`
+
+```c
+DVZ_SPHERE_MODE_FAST_IMPOSTOR = 0,
+DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR = 1,
+```
+
+#### `DvzSymbolBuiltin`
+
+```c
+DVZ_SYMBOL_DISC = 0,
+DVZ_SYMBOL_SQUARE = 1,
+DVZ_SYMBOL_TRIANGLE = 2,
+DVZ_SYMBOL_DIAMOND = 3,
+DVZ_SYMBOL_CROSS = 4,
+DVZ_SYMBOL_RING = 5,
+DVZ_SYMBOL_TARGET = 6,
+DVZ_SYMBOL_ASTERISK = 7,
+DVZ_SYMBOL_CHEVRON = 8,
+DVZ_SYMBOL_CLOVER = 9,
+DVZ_SYMBOL_CLUB = 10,
+DVZ_SYMBOL_ARROW = 11,
+DVZ_SYMBOL_ELLIPSE = 12,
+DVZ_SYMBOL_HBAR = 13,
+DVZ_SYMBOL_HEART = 14,
+DVZ_SYMBOL_INFINITY = 15,
+DVZ_SYMBOL_PIN = 16,
+DVZ_SYMBOL_SPADE = 17,
+DVZ_SYMBOL_TAG = 18,
+DVZ_SYMBOL_VBAR = 19,
+DVZ_SYMBOL_ROUNDED_RECT = 20,
+```
+
+#### `DvzSymbolSourceKind`
+
+```c
+DVZ_SYMBOL_SOURCE_NONE = 0,
+DVZ_SYMBOL_SOURCE_BUILTIN = 1,
+DVZ_SYMBOL_SOURCE_BITMAP = 2,
+DVZ_SYMBOL_SOURCE_SDF = 3,
+DVZ_SYMBOL_SOURCE_MSDF = 4,
+```
+
+#### `DvzTriangulationBackend`
+
+```c
+DVZ_TRIANGULATION_BACKEND_DEFAULT = 0,
+DVZ_TRIANGULATION_BACKEND_EARCUT = 1,
+```
+
+#### `DvzVectorAnchor`
+
+```c
+DVZ_VECTOR_ANCHOR_TAIL = 0,
+DVZ_VECTOR_ANCHOR_CENTER = 1,
+DVZ_VECTOR_ANCHOR_HEAD = 2,
+```
+
+#### `DvzVisualAttrFormat`
+
+```c
+DVZ_VISUAL_ATTR_FORMAT_DEFAULT = 0,
+DVZ_VISUAL_ATTR_FORMAT_RGBA_U8 = 1,
+DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32 = 2,
+```
+
+#### `DvzVisualAttrMutability`
+
+```c
+DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC = 0,
+DVZ_VISUAL_ATTR_MUTABILITY_STATIC = 1,
+DVZ_VISUAL_ATTR_MUTABILITY_STREAMING = 2,
+```
+
+#### `DvzVisualAttrSource`
+
+```c
+DVZ_VISUAL_ATTR_SOURCE_PER_ITEM = 0,
+DVZ_VISUAL_ATTR_SOURCE_CONSTANT = 1,
+DVZ_VISUAL_ATTR_SOURCE_PER_SPAN = 2,
+DVZ_VISUAL_ATTR_SOURCE_PER_GROUP = 3,
+```
+
+#### `DvzVisualCoordSpace`
+
+```c
+DVZ_COORD_VIEW = 0,
+DVZ_COORD_DATA = 1,
+DVZ_COORD_PANEL = 2,
+```
+
+#### `DvzVisualShaderKind`
+
+```c
+DVZ_VISUAL_SHADER_NONE = 0,
+DVZ_VISUAL_SHADER_CUSTOM_FAMILY = 1,
+DVZ_VISUAL_SHADER_BUILTIN_REPLACEMENT = 2,
+```
+
+#### `DvzVisualShaderSource`
+
+```c
+DVZ_VISUAL_SHADER_SOURCE_NONE = 0,
+DVZ_VISUAL_SHADER_SOURCE_GLSL = 1,
+DVZ_VISUAL_SHADER_SOURCE_WGSL = 2,
+DVZ_VISUAL_SHADER_SOURCE_SPIRV = 3,
+```
+
+#### `DvzVisualTransformKind`
+
+```c
+DVZ_VISUAL_TRANSFORM_NONE = 0,
+DVZ_VISUAL_TRANSFORM_LINEAR = 1,
+DVZ_VISUAL_TRANSFORM_NONLINEAR = 2,
+DVZ_VISUAL_TRANSFORM_CUSTOM = 3,
+```
+
+#### `DvzVisualTransformSpace`
+
+```c
+DVZ_VISUAL_TRANSFORM_SPACE_DATA = 0,
+DVZ_VISUAL_TRANSFORM_SPACE_VISUAL = 1,
+DVZ_VISUAL_TRANSFORM_SPACE_PANEL = 2,
+```
+
+#### `DvzVolumeAxis`
+
+```c
+DVZ_VOLUME_AXIS_X = 0,
+DVZ_VOLUME_AXIS_Y = 1,
+DVZ_VOLUME_AXIS_Z = 2,
+```
+
+#### `DvzVolumeRenderMode`
+
+```c
+DVZ_VOLUME_RENDER_SLICE = 0,
+DVZ_VOLUME_RENDER_MIP = 1,
+DVZ_VOLUME_RENDER_COMPOSITE = 2,
+```
+
+#### `DvzVolumeSamplingMode`
+
+```c
+DVZ_VOLUME_SAMPLING_LINEAR = 0,
+DVZ_VOLUME_SAMPLING_NEAREST = 1,
+```
+
+### Records
+
+#### `DvzBezierTessellationDesc`
+
+```c
+struct DvzBezierTessellationDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    uint32_t segment_count;
+    double tolerance;
+};
+```
+
+#### `DvzComposite`
+
+```c
+typedef struct DvzComposite DvzComposite;
+```
+
+#### `DvzDepthCueDesc`
+
+```c
+struct DvzDepthCueDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzDepthCueMode mode;
+    DvzDepthCueMetric metric;
+    DvzDepthCueFalloff falloff;
+    float near_depth;
+    float far_depth;
+    float strength;
+    float density;
+    float[4] background_color;
+};
+```
+
+#### `DvzEdlDesc`
+
+```c
+struct DvzEdlDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    float radius;
+    float strength;
+    float depth_scale;
+};
+```
+
+#### `DvzGeometry`
+
+```c
+struct DvzGeometry {
+    DvzGeometryType type;
+    uint32_t flags;
+    uint32_t vertex_count;
+    uint32_t index_count;
+    uint32_t grid_rows;
+    uint32_t grid_cols;
+    dvec3 grid_origin;
+    dvec3 grid_row_basis;
+    dvec3 grid_col_basis;
+    dvec3 grid_height_axis;
+    double grid_height_scale;
+    dvec3 * positions;
+    dvec3 * normals;
+    DvzColor * colors;
+    dvec2 * texcoords;
+    DvzIndex * indices;
+};
+```
+
+#### `DvzGeometryArrowDesc`
+
+```c
+struct DvzGeometryArrowDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;
+    double length;
+    double shaft_radius;
+    double head_radius;
+    double head_length;
+    uint32_t sectors;
+    DvzColor color;
+};
+```
+
+#### `DvzGeometryBounds`
+
+```c
+struct DvzGeometryBounds {
+    double xmin;
+    double xmax;
+    double ymin;
+    double ymax;
+    double zmin;
+    double zmax;
+};
+```
+
+#### `DvzGeometryConeDesc`
+
+```c
+struct DvzGeometryConeDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;
+    double radius;
+    double height;
+    uint32_t sectors;
+    DvzColor color;
+};
+```
+
+#### `DvzGeometryContourSegment`
+
+```c
+struct DvzGeometryContourSegment {
+    dvec3 p0;
+    dvec3 p1;
+    double level;
+    uint32_t level_index;
+    uint32_t face_index;
+};
+```
+
+#### `DvzGeometryContours`
+
+```c
+struct DvzGeometryContours {
+    uint32_t segment_count;
+    DvzGeometryContourSegment * segments;
+};
+```
+
+#### `DvzGeometryCubeDesc`
+
+```c
+struct DvzGeometryCubeDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;
+    double size;
+    DvzColor color;
+    const DvzColor * face_colors;
+    uint32_t face_color_count;
+};
+```
+
+#### `DvzGeometryCylinderDesc`
+
+```c
+struct DvzGeometryCylinderDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;
+    double radius;
+    double height;
+    uint32_t sectors;
+    DvzColor color;
+};
+```
+
+#### `DvzGeometryDiscDesc`
+
+```c
+struct DvzGeometryDiscDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;
+    double radius;
+    uint32_t segments;
+    DvzColor color;
+};
+```
+
+#### `DvzGeometryEdge`
+
+```c
+struct DvzGeometryEdge {
+    DvzIndex v0;
+    DvzIndex v1;
+    uint32_t face0;
+    uint32_t face1;
+    uint32_t adjacent_count;
+    uint32_t flags;
+};
+```
+
+#### `DvzGeometryEdges`
+
+```c
+struct DvzGeometryEdges {
+    uint32_t edge_count;
+    DvzGeometryEdge * edges;
+};
+```
+
+#### `DvzGeometryObjDesc`
+
+```c
+struct DvzGeometryObjDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzColor color;
+};
+```
+
+#### `DvzGeometryPlaneDesc`
+
+```c
+struct DvzGeometryPlaneDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;
+    double width;
+    double height;
+    double z;
+    DvzColor color;
+};
+```
+
+#### `DvzGeometryRegularPolygonDesc`
+
+```c
+struct DvzGeometryRegularPolygonDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;
+    double radius;
+    uint32_t sides;
+    DvzColor color;
+};
+```
+
+#### `DvzGeometrySectorDesc`
+
+```c
+struct DvzGeometrySectorDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;
+    double radius;
+    double start_angle;
+    double sweep_angle;
+    uint32_t segments;
+    DvzColor color;
+};
+```
+
+#### `DvzGeometrySphereDesc`
+
+```c
+struct DvzGeometrySphereDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;
+    double radius;
+    uint32_t rings;
+    uint32_t sectors;
+    DvzColor color;
+};
+```
+
+#### `DvzGeometryStarDesc`
+
+```c
+struct DvzGeometryStarDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;
+    double outer_radius;
+    double inner_radius;
+    uint32_t points;
+    DvzColor color;
+};
+```
+
+#### `DvzGeometrySurfaceGridDesc`
+
+```c
+struct DvzGeometrySurfaceGridDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    uint32_t rows;
+    uint32_t cols;
+    const double * heights;
+    const DvzColor * colors;
+    dvec3 origin;
+    dvec3 row_basis;
+    dvec3 col_basis;
+    dvec3 height_axis;
+    double height_scale;
+    DvzColor color;
+};
+```
+
+#### `DvzGeometryTorusDesc`
+
+```c
+struct DvzGeometryTorusDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    dvec3 center;
+    double major_radius;
+    double minor_radius;
+    uint32_t rings;
+    uint32_t sectors;
+    DvzColor color;
+};
+```
+
+#### `DvzGraph`
+
+```c
+typedef struct DvzGraph DvzGraph;
+```
+
+#### `DvzGraphEdgeStyle`
+
+```c
+struct DvzGraphEdgeStyle {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzGraphEdgeMode mode;
+    DvzBezierTessellationDesc tessellation;
+    DvzSegmentCap start_cap;
+    DvzSegmentCap end_cap;
+    DvzPathJoin join;
+    float miter_limit;
+};
+```
+
+#### `DvzMarkerStyle`
+
+```c
+struct DvzMarkerStyle {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzColor edge_color;
+    float stroke_width;
+    DvzShapeAspect aspect;
+};
+```
+
+#### `DvzMaterialDesc`
+
+```c
+struct DvzMaterialDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzMaterialModel model;
+    DvzAlphaMode alpha_mode;
+    float opacity;
+    float[4] base_color_factor;
+    float[3] light_direction;
+    DvzPhongMaterial phong;
+    DvzStandardMaterial standard;
+};
+```
+
+#### `DvzMsaaDesc`
+
+```c
+struct DvzMsaaDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    _Bool enabled;
+    uint32_t sample_count;
+    _Bool alpha_to_coverage;
+};
+```
+
+#### `DvzPhongMaterial`
+
+```c
+struct DvzPhongMaterial {
+    float ambient;
+    float diffuse;
+    float specular;
+    float shininess;
+};
+```
+
+#### `DvzPointStyleDesc`
+
+```c
+struct DvzPointStyleDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzColor edge_color;
+    float stroke_width;
+    DvzShapeAspect aspect;
+};
+```
+
+#### `DvzPolygon`
+
+```c
+typedef struct DvzPolygon DvzPolygon;
+```
+
+#### `DvzPolygonDesc`
+
+```c
+struct DvzPolygonDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzPolygonRing outer;
+    const DvzPolygonRing * holes;
+    uint32_t hole_count;
+};
+```
+
+#### `DvzPolygonRing`
+
+```c
+struct DvzPolygonRing {
+    const dvec2 * xy;
+    uint32_t count;
+};
+```
+
+#### `DvzPolygonSet`
+
+```c
+typedef struct DvzPolygonSet DvzPolygonSet;
+```
+
+#### `DvzPolygonStyle`
+
+```c
+struct DvzPolygonStyle {
+    uint32_t struct_size;
+    uint32_t flags;
+    _Bool visible;
+    DvzColor fill_color;
+    DvzColor stroke_color;
+    float stroke_width;
+    DvzSegmentCap stroke_start_cap;
+    DvzSegmentCap stroke_end_cap;
+    DvzPathJoin stroke_join;
+    float stroke_miter_limit;
+};
+```
+
+#### `DvzSsaoDesc`
+
+```c
+struct DvzSsaoDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    float radius;
+    float strength;
+    float bias;
+    float power;
+    float min_visibility;
+    float blur_radius;
+    float blur_depth_sigma;
+    float blur_normal_sigma;
+    uint32_t sample_count;
+    _Bool blur_enabled;
+    _Bool debug_view;
+};
+```
+
+#### `DvzStandardMaterial`
+
+```c
+struct DvzStandardMaterial {
+    float roughness;
+    float specular;
+    float metallic;
+    float[3] emissive;
+    float rim_strength;
+};
+```
+
+#### `DvzSymbolImageDesc`
+
+```c
+struct DvzSymbolImageDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    uint32_t row_stride;
+    float distance_range_px;
+};
+```
+
+#### `DvzSymbolSet`
+
+```c
+typedef struct DvzSymbolSet DvzSymbolSet;
+```
+
+#### `DvzTessellatedPath`
+
+```c
+struct DvzTessellatedPath {
+    uint32_t point_count;
+    dvec3 * points;
+};
+```
+
+#### `DvzTriangulationDesc`
+
+```c
+struct DvzTriangulationDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzTriangulationBackend backend;
+};
 ```
 
 #### `DvzVectorStyle`
@@ -2719,242 +3250,6 @@ struct DvzVolumeState {
     uint32_t alpha_stop_count;
     uint32_t step_count;
     uint64_t version;
-};
-```
-
-## Visuals And Composites API
-
-### Enums
-
-#### `DvzGeometryEdgeFlags`
-
-```c
-DVZ_GEOMETRY_EDGE_NONE = 0,
-DVZ_GEOMETRY_EDGE_BOUNDARY = 1,
-DVZ_GEOMETRY_EDGE_NONMANIFOLD = 2,
-```
-
-#### `DvzGeometryIndexingFlags`
-
-```c
-DVZ_GEOMETRY_INDEXING_NONE = 0,
-DVZ_GEOMETRY_INDEXING_TRIANGLES = 1,
-DVZ_GEOMETRY_INDEXING_SURFACE_GRID = 2,
-DVZ_GEOMETRY_INDEXING_TRIANGULATION = 4,
-```
-
-#### `DvzGeometryType`
-
-```c
-DVZ_GEOMETRY_NONE = 0,
-DVZ_GEOMETRY_CUSTOM = 1,
-DVZ_GEOMETRY_CUBE = 2,
-DVZ_GEOMETRY_PLANE = 3,
-DVZ_GEOMETRY_SURFACE_GRID = 4,
-DVZ_GEOMETRY_SPHERE = 5,
-DVZ_GEOMETRY_CYLINDER = 6,
-DVZ_GEOMETRY_CONE = 7,
-DVZ_GEOMETRY_TORUS = 8,
-DVZ_GEOMETRY_ARROW = 9,
-```
-
-#### `DvzTriangulationBackend`
-
-```c
-DVZ_TRIANGULATION_BACKEND_DEFAULT = 0,
-DVZ_TRIANGULATION_BACKEND_EARCUT = 1,
-```
-
-### Records
-
-#### `DvzBezierTessellationDesc`
-
-```c
-struct DvzBezierTessellationDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint32_t segment_count;
-    double tolerance;
-};
-```
-
-#### `DvzGeometry`
-
-```c
-struct DvzGeometry {
-    DvzGeometryType type;
-    uint32_t flags;
-    uint32_t vertex_count;
-    uint32_t index_count;
-    uint32_t grid_rows;
-    uint32_t grid_cols;
-    dvec3 grid_origin;
-    dvec3 grid_row_basis;
-    dvec3 grid_col_basis;
-    dvec3 grid_height_axis;
-    double grid_height_scale;
-    dvec3 * positions;
-    dvec3 * normals;
-    DvzColor * colors;
-    dvec2 * texcoords;
-    DvzIndex * indices;
-};
-```
-
-#### `DvzGeometryBounds`
-
-```c
-struct DvzGeometryBounds {
-    double xmin;
-    double xmax;
-    double ymin;
-    double ymax;
-    double zmin;
-    double zmax;
-};
-```
-
-#### `DvzGeometryContourSegment`
-
-```c
-struct DvzGeometryContourSegment {
-    dvec3 p0;
-    dvec3 p1;
-    double level;
-    uint32_t level_index;
-    uint32_t face_index;
-};
-```
-
-#### `DvzGeometryContours`
-
-```c
-struct DvzGeometryContours {
-    uint32_t segment_count;
-    DvzGeometryContourSegment * segments;
-};
-```
-
-#### `DvzGeometryCubeDesc`
-
-```c
-struct DvzGeometryCubeDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    dvec3 center;
-    double size;
-    DvzColor color;
-    const DvzColor * face_colors;
-    uint32_t face_color_count;
-};
-```
-
-#### `DvzGeometryEdge`
-
-```c
-struct DvzGeometryEdge {
-    DvzIndex v0;
-    DvzIndex v1;
-    uint32_t face0;
-    uint32_t face1;
-    uint32_t adjacent_count;
-    uint32_t flags;
-};
-```
-
-#### `DvzGeometryEdges`
-
-```c
-struct DvzGeometryEdges {
-    uint32_t edge_count;
-    DvzGeometryEdge * edges;
-};
-```
-
-#### `DvzGeometryPlaneDesc`
-
-```c
-struct DvzGeometryPlaneDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    dvec3 center;
-    double width;
-    double height;
-    double z;
-    DvzColor color;
-};
-```
-
-#### `DvzGeometrySphereDesc`
-
-```c
-struct DvzGeometrySphereDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    dvec3 center;
-    double radius;
-    uint32_t rings;
-    uint32_t sectors;
-    DvzColor color;
-};
-```
-
-#### `DvzGeometrySurfaceGridDesc`
-
-```c
-struct DvzGeometrySurfaceGridDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    uint32_t rows;
-    uint32_t cols;
-    const double * heights;
-    const DvzColor * colors;
-    dvec3 origin;
-    dvec3 row_basis;
-    dvec3 col_basis;
-    dvec3 height_axis;
-    double height_scale;
-    DvzColor color;
-};
-```
-
-#### `DvzPolygonDesc`
-
-```c
-struct DvzPolygonDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzPolygonRing outer;
-    const DvzPolygonRing * holes;
-    uint32_t hole_count;
-};
-```
-
-#### `DvzPolygonRing`
-
-```c
-struct DvzPolygonRing {
-    const dvec2 * xy;
-    uint32_t count;
-};
-```
-
-#### `DvzTessellatedPath`
-
-```c
-struct DvzTessellatedPath {
-    uint32_t point_count;
-    dvec3 * points;
-};
-```
-
-#### `DvzTriangulationDesc`
-
-```c
-struct DvzTriangulationDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzTriangulationBackend backend;
 };
 ```
 
@@ -3286,6 +3581,14 @@ DVZ_VIDEO_MUX_MP4_STREAMING = 1,
 DVZ_VIDEO_MUX_MP4_POST = 2,
 ```
 
+#### `DvzViewKind`
+
+```c
+DVZ_VIEW_OFFSCREEN = 0,
+DVZ_VIEW_GLFW = 1,
+DVZ_VIEW_EXTERNAL_SURFACE = 2,
+```
+
 ### Records
 
 #### `DvzApp`
@@ -3370,6 +3673,8 @@ struct DvzCanvasLiveImageFrame {
     VkCommandBuffer command_buffer;
     VkExtent2D extent;
     _Bool handles_dirty;
+    uint64_t resource_generation;
+    _Bool image_valid;
     int memory_fd;
     int wait_semaphore_fd;
 };
@@ -3598,6 +3903,8 @@ struct DvzStreamFrame {
     _Bool image_view_borrowed;
     _Bool command_buffer_borrowed;
     _Bool handles_dirty;
+    uint64_t resource_generation;
+    _Bool image_valid;
     int memory_fd;
     int wait_semaphore_fd;
 };
@@ -3682,6 +3989,25 @@ struct DvzVideoSinkConfig {
 
 ```c
 typedef struct DvzView DvzView;
+```
+
+#### `DvzViewDesc`
+
+```c
+struct DvzViewDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzViewKind kind;
+    uint32_t logical_width;
+    uint32_t logical_height;
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    float device_scale;
+    float user_scale;
+    float render_scale;
+    const char * title;
+    const DvzWindowExternalSurfaceInfo * external_surface;
+};
 ```
 
 #### `DvzWindow`
@@ -3847,6 +4173,15 @@ DVZ_DRP2_BUFFER_USAGE_VERTEX = 16,
 DVZ_DRP2_BUFFER_USAGE_INDEX = 32,
 DVZ_DRP2_BUFFER_USAGE_UNIFORM = 64,
 DVZ_DRP2_BUFFER_USAGE_STORAGE = 128,
+```
+
+#### `DvzDrp2ColorRole`
+
+```c
+DVZ_DRP2_COLOR_ROLE_NONE = 0,
+DVZ_DRP2_COLOR_ROLE_SRGB_COLOR = 1,
+DVZ_DRP2_COLOR_ROLE_LINEAR_COLOR = 2,
+DVZ_DRP2_COLOR_ROLE_DATA = 3,
 ```
 
 #### `DvzDrp2CommandType`
@@ -4274,6 +4609,15 @@ DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8,
 DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,
 ```
 
+#### `DvzDim`
+
+```c
+DVZ_DIM_X = 0,
+DVZ_DIM_Y = 1,
+DVZ_DIM_Z = 2,
+DVZ_DIM_COUNT = 3,
+```
+
 #### `DvzEasing`
 
 ```c
@@ -4339,7 +4683,9 @@ DVZ_FORMAT_R8G8B8A8_UNORM = 37,
 DVZ_FORMAT_R8G8B8A8_SNORM = 38,
 DVZ_FORMAT_R8G8B8A8_UINT = 41,
 DVZ_FORMAT_R8G8B8A8_SINT = 42,
+DVZ_FORMAT_R8G8B8A8_SRGB = 43,
 DVZ_FORMAT_B8G8R8A8_UNORM = 44,
+DVZ_FORMAT_B8G8R8A8_SRGB = 50,
 DVZ_FORMAT_R16_UNORM = 70,
 DVZ_FORMAT_R16_SNORM = 71,
 DVZ_FORMAT_R32_UINT = 98,

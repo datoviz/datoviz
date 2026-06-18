@@ -1702,25 +1702,6 @@ _Declared in `include/datoviz/math/array.h`:235._
 
 ### `dvz_array_data()`
 
-```c
-// Create an array of 10 double numbers, initialize all elements with 1.23.
-DvzArray* arr = dvz_array(10, DVZ_DTYPE_DOUBLE);
-double item = 1.23;
-dvz_array_data(&arr, 0, 10, 1, &item);
-```
-
-Copy data into an array.
-
-* There will be `item_count` values copied between `first_item` and `first_item + item_count` in
-the array.
-* There are `data_item_count` values in the passed buffer.
-* If `item_count > data_item_count`, the last value of `data` will be repeated until the last
-value.
-
-Example:
-
-=== "C"
-
 ```c title="dvz_array_data"
 void dvz_array_data(
     DvzArray * array,
@@ -1738,6 +1719,24 @@ void dvz_array_data(
 | `item_count` | `uint32_t` | number of items to write |
 | `data_item_count` | `uint32_t` | number of elements in `data` |
 | `data` | `const void *` | the buffer containing the data to copy |
+
+Copy data into an array.
+
+* There will be `item_count` values copied between `first_item` and `first_item + item_count` in
+the array.
+* There are `data_item_count` values in the passed buffer.
+* If `item_count > data_item_count`, the last value of `data` will be repeated until the last
+value.
+
+Example:
+
+=== "C"
+```c
+// Create an array of 10 double numbers, initialize all elements with 1.23.
+DvzArray* arr = dvz_array(10, DVZ_DTYPE_DOUBLE);
+double item = 1.23;
+dvz_array_data(&arr, 0, 10, 1, &item);
+```
 
 _Declared in `include/datoviz/math/array.h`:266._
 
@@ -2134,7 +2133,7 @@ _Declared in `include/datoviz/vklite/sync.h`:285._
 void dvz_barrier_image_layout(
     DvzBarrierImage * bimg,
     VkImageLayout old,
-    VkImageLayout new
+    VkImageLayout new_layout
 );
 ```
 
@@ -2142,7 +2141,7 @@ void dvz_barrier_image_layout(
 | --- | --- | --- |
 | `bimg` | `DvzBarrierImage *` | the image barrier |
 | `old` | `VkImageLayout` | the old image layout |
-| `new` | `VkImageLayout` | the new image layout |
+| `new_layout` | `VkImageLayout` | the new image layout |
 
 Set the image layout change.
 
@@ -2455,7 +2454,7 @@ DvzBox dvz_box(
 
 Create a box.
 
-_Declared in `include/datoviz/math/box.h`:97._
+_Declared in `include/datoviz/math/box.h`:87._
 
 ### `dvz_box_aspect()`
 
@@ -2472,7 +2471,7 @@ double dvz_box_aspect(
 
 Return the aspect ratio of a box.
 
-_Declared in `include/datoviz/math/box.h`:107._
+_Declared in `include/datoviz/math/box.h`:97._
 
 ### `dvz_box_center()`
 
@@ -2490,7 +2489,7 @@ void dvz_box_center(
 
 Return the box center.
 
-_Declared in `include/datoviz/math/box.h`:117._
+_Declared in `include/datoviz/math/box.h`:107._
 
 ### `dvz_box_extent()`
 
@@ -2514,7 +2513,7 @@ DvzBox dvz_box_extent(
 Return the extent of a box, in the same coordinate system, depending on the aspect ratio.
 This will return the same box if the aspect ratio is unconstrained.
 
-_Declared in `include/datoviz/math/box.h`:132._
+_Declared in `include/datoviz/math/box.h`:122._
 
 ### `dvz_box_inverse()`
 
@@ -2536,7 +2535,7 @@ void dvz_box_inverse(
 
 Perform an inverse transformation of a position from a target box to a source box.
 
-_Declared in `include/datoviz/math/box.h`:211._
+_Declared in `include/datoviz/math/box.h`:201._
 
 ### `dvz_box_merge()`
 
@@ -2557,7 +2556,7 @@ DvzBox dvz_box_merge(
 
 Merge a number of boxes into a single box.
 
-_Declared in `include/datoviz/math/box.h`:144._
+_Declared in `include/datoviz/math/box.h`:134._
 
 ### `dvz_box_normalize_1D()`
 
@@ -2585,7 +2584,7 @@ Normalize 1D input positions into a target box.
 
 precision)
 
-_Declared in `include/datoviz/math/box.h`:160._
+_Declared in `include/datoviz/math/box.h`:150._
 
 ### `dvz_box_normalize_2D()`
 
@@ -2611,7 +2610,7 @@ Normalize 2D input positions into a target box.
 
 precision)
 
-_Declared in `include/datoviz/math/box.h`:175._
+_Declared in `include/datoviz/math/box.h`:165._
 
 ### `dvz_box_normalize_3D()`
 
@@ -2637,7 +2636,7 @@ Normalize 3D input positions into a target box.
 
 precision)
 
-_Declared in `include/datoviz/math/box.h`:204._
+_Declared in `include/datoviz/math/box.h`:194._
 
 ### `dvz_box_normalize_polygon()`
 
@@ -2663,7 +2662,7 @@ Normalize 2D input positions into a target box, using dvec2* as output format.
 
 precision)
 
-_Declared in `include/datoviz/math/box.h`:189._
+_Declared in `include/datoviz/math/box.h`:179._
 
 ### `dvz_box_print()`
 
@@ -2679,7 +2678,7 @@ void dvz_box_print(
 
 Display information about a box.
 
-_Declared in `include/datoviz/math/box.h`:218._
+_Declared in `include/datoviz/math/box.h`:208._
 
 ## Buffer
 
@@ -5171,7 +5170,7 @@ VkCommandPool dvz_device_command_pool(
 
 Return the command pool associated to a queue family index.
 
-_Declared in `include/datoviz/vk/device.h`:234._
+_Declared in `include/datoviz/vk/device.h`:236._
 
 ### `dvz_device_config()`
 
@@ -5190,7 +5189,7 @@ Return default configuration values for creating a device.
 
 Related: [`dvz_device_create()`](#dvz_device_create).
 
-_Declared in `include/datoviz/vk/device.h`:82._
+_Declared in `include/datoviz/vk/device.h`:84._
 
 ### `dvz_device_config_enable_canvas_extensions()`
 
@@ -5208,7 +5207,7 @@ void dvz_device_config_enable_canvas_extensions(
 
 Toggle canvas extension requests on a device configuration.
 
-_Declared in `include/datoviz/vk/device.h`:128._
+_Declared in `include/datoviz/vk/device.h`:130._
 
 ### `dvz_device_config_request_extension()`
 
@@ -5227,7 +5226,7 @@ _Bool dvz_device_config_request_extension(
 
 Add an extension request to a device configuration.
 
-_Declared in `include/datoviz/vk/device.h`:118._
+_Declared in `include/datoviz/vk/device.h`:120._
 
 ### `dvz_device_config_request_queue()`
 
@@ -5248,7 +5247,7 @@ _Bool dvz_device_config_request_queue(
 
 Add a queue request to a device configuration.
 
-_Declared in `include/datoviz/vk/device.h`:106._
+_Declared in `include/datoviz/vk/device.h`:108._
 
 ### `dvz_device_config_set_features10()`
 
@@ -5266,7 +5265,7 @@ void dvz_device_config_set_features10(
 
 Copy Vulkan 1.0 features into a device configuration.
 
-_Declared in `include/datoviz/vk/device.h`:139._
+_Declared in `include/datoviz/vk/device.h`:141._
 
 ### `dvz_device_config_set_features11()`
 
@@ -5284,7 +5283,7 @@ void dvz_device_config_set_features11(
 
 Copy Vulkan 1.1 features into a device configuration.
 
-_Declared in `include/datoviz/vk/device.h`:149._
+_Declared in `include/datoviz/vk/device.h`:151._
 
 ### `dvz_device_config_set_features12()`
 
@@ -5302,7 +5301,7 @@ void dvz_device_config_set_features12(
 
 Copy Vulkan 1.2 features into a device configuration.
 
-_Declared in `include/datoviz/vk/device.h`:160._
+_Declared in `include/datoviz/vk/device.h`:162._
 
 ### `dvz_device_config_set_features13()`
 
@@ -5320,7 +5319,7 @@ void dvz_device_config_set_features13(
 
 Copy Vulkan 1.3 features into a device configuration.
 
-_Declared in `include/datoviz/vk/device.h`:171._
+_Declared in `include/datoviz/vk/device.h`:173._
 
 ### `dvz_device_config_set_gpu_index()`
 
@@ -5339,7 +5338,7 @@ _Bool dvz_device_config_set_gpu_index(
 
 Select the GPU index used for device creation.
 
-_Declared in `include/datoviz/vk/device.h`:93._
+_Declared in `include/datoviz/vk/device.h`:95._
 
 ### `dvz_device_create()`
 
@@ -5358,7 +5357,7 @@ Create and initialize a heap-allocated device from a configuration.
 
 Related: [`dvz_device_destroy()`](#dvz_device_destroy).
 
-_Declared in `include/datoviz/vk/device.h`:182._
+_Declared in `include/datoviz/vk/device.h`:184._
 
 ### `dvz_device_descriptor_pool()`
 
@@ -5375,7 +5374,7 @@ VkDescriptorPool dvz_device_descriptor_pool(
 
 Return the descriptor pool associated to a device.
 
-_Declared in `include/datoviz/vk/device.h`:244._
+_Declared in `include/datoviz/vk/device.h`:246._
 
 ### `dvz_device_destroy()`
 
@@ -5393,7 +5392,7 @@ Destroy a device.
 
 Related: [`dvz_device_create()`](#dvz_device_create).
 
-_Declared in `include/datoviz/vk/device.h`:262._
+_Declared in `include/datoviz/vk/device.h`:264._
 
 ### `dvz_device_features10()`
 
@@ -5410,7 +5409,7 @@ const VkPhysicalDeviceFeatures * dvz_device_features10(
 
 Return the Vulkan 1.0 feature set enabled on this device.
 
-_Declared in `include/datoviz/vk/device.h`:212._
+_Declared in `include/datoviz/vk/device.h`:214._
 
 ### `dvz_device_handle()`
 
@@ -5427,7 +5426,7 @@ VkDevice dvz_device_handle(
 
 Get the Vulkan VkDevice handle of a device.
 
-_Declared in `include/datoviz/vk/device.h`:192._
+_Declared in `include/datoviz/vk/device.h`:194._
 
 ### `dvz_device_has_extension()`
 
@@ -5446,7 +5445,7 @@ _Bool dvz_device_has_extension(
 
 Return whether a device was created with support for a given extension or not.
 
-_Declared in `include/datoviz/vk/device.h`:273._
+_Declared in `include/datoviz/vk/device.h`:275._
 
 ### `dvz_device_physical_device()`
 
@@ -5463,7 +5462,7 @@ VkPhysicalDevice dvz_device_physical_device(
 
 Return the Vulkan physical device used by this logical device.
 
-_Declared in `include/datoviz/vk/device.h`:202._
+_Declared in `include/datoviz/vk/device.h`:204._
 
 ### `dvz_device_queue()`
 
@@ -5482,7 +5481,7 @@ DvzQueue * dvz_device_queue(
 
 Retrieve a queue from a role.
 
-_Declared in `include/datoviz/vk/device.h`:223._
+_Declared in `include/datoviz/vk/device.h`:225._
 
 ### `dvz_device_wait()`
 
@@ -5498,7 +5497,7 @@ void dvz_device_wait(
 
 Wait until the device is ready. Inefficient.
 
-_Declared in `include/datoviz/vk/device.h`:253._
+_Declared in `include/datoviz/vk/device.h`:255._
 
 ## Dmat4
 
@@ -5516,7 +5515,7 @@ void dvz_dmat4_copy(
 | `mat` | `dmat4` |  |
 | `dest` | `dmat4` |  |
 
-_Declared in `include/datoviz/math/vec.h`:50._
+_Declared in `include/datoviz/math/vec.h`:54._
 
 ### `dvz_dmat4_identity()`
 
@@ -5530,7 +5529,7 @@ void dvz_dmat4_identity(
 | --- | --- | --- |
 | `mat` | `dmat4` |  |
 
-_Declared in `include/datoviz/math/vec.h`:58._
+_Declared in `include/datoviz/math/vec.h`:62._
 
 ### `dvz_dmat4_inv()`
 
@@ -5546,7 +5545,7 @@ void dvz_dmat4_inv(
 | `mat` | `dmat4` |  |
 | `dest` | `dmat4` |  |
 
-_Declared in `include/datoviz/math/vec.h`:86._
+_Declared in `include/datoviz/math/vec.h`:90._
 
 ### `dvz_dmat4_mat4()`
 
@@ -5562,7 +5561,7 @@ void dvz_dmat4_mat4(
 | `mat` | `mat4` |  |
 | `dest` | `dmat4` |  |
 
-_Declared in `include/datoviz/math/vec.h`:54._
+_Declared in `include/datoviz/math/vec.h`:58._
 
 ### `dvz_dmat4_mul()`
 
@@ -5580,7 +5579,7 @@ void dvz_dmat4_mul(
 | `m2` | `dmat4` |  |
 | `dest` | `dmat4` |  |
 
-_Declared in `include/datoviz/math/vec.h`:62._
+_Declared in `include/datoviz/math/vec.h`:66._
 
 ### `dvz_dmat4_mulv()`
 
@@ -5598,7 +5597,7 @@ void dvz_dmat4_mulv(
 | `v` | `dvec4` |  |
 | `dest` | `dvec4` |  |
 
-_Declared in `include/datoviz/math/vec.h`:66._
+_Declared in `include/datoviz/math/vec.h`:70._
 
 ### `dvz_dmat4_mulv3()`
 
@@ -5618,7 +5617,7 @@ void dvz_dmat4_mulv3(
 | `last` | `double` |  |
 | `dest` | `dvec3` |  |
 
-_Declared in `include/datoviz/math/vec.h`:78._
+_Declared in `include/datoviz/math/vec.h`:82._
 
 ### `dvz_dmat4_scale_p()`
 
@@ -5634,7 +5633,7 @@ void dvz_dmat4_scale_p(
 | `m` | `dmat4` |  |
 | `s` | `double` |  |
 
-_Declared in `include/datoviz/math/vec.h`:82._
+_Declared in `include/datoviz/math/vec.h`:86._
 
 ## Dvec3
 
@@ -5652,7 +5651,7 @@ void dvz_dvec3(
 | `v4` | `dvec4` |  |
 | `dest` | `dvec3` |  |
 
-_Declared in `include/datoviz/math/vec.h`:74._
+_Declared in `include/datoviz/math/vec.h`:78._
 
 ### `dvz_dvec3_copy()`
 
@@ -5668,7 +5667,7 @@ void dvz_dvec3_copy(
 | `a` | `const dvec3` |  |
 | `b` | `dvec3` |  |
 
-_Declared in `include/datoviz/math/vec.h`:42._
+_Declared in `include/datoviz/math/vec.h`:46._
 
 ## Dvec4
 
@@ -5688,7 +5687,7 @@ void dvz_dvec4(
 | `last` | `double` |  |
 | `dest` | `dvec4` |  |
 
-_Declared in `include/datoviz/math/vec.h`:70._
+_Declared in `include/datoviz/math/vec.h`:74._
 
 ### `dvz_dvec4_copy()`
 
@@ -5704,7 +5703,7 @@ void dvz_dvec4_copy(
 | `a` | `const dvec4` |  |
 | `b` | `dvec4` |  |
 
-_Declared in `include/datoviz/math/vec.h`:46._
+_Declared in `include/datoviz/math/vec.h`:50._
 
 ## Easing
 
@@ -8021,7 +8020,7 @@ uint32_t dvz_instance_gpu_count(
 
 Return the number of detected physical GPUs.
 
-_Declared in `include/datoviz/vk/gpu.h`:64._
+_Declared in `include/datoviz/vk/gpu.h`:66._
 
 ### `dvz_instance_gpu_handle()`
 
@@ -8042,7 +8041,7 @@ _Bool dvz_instance_gpu_handle(
 
 Resolve the Vulkan physical device handle for a selected GPU index.
 
-_Declared in `include/datoviz/vk/gpu.h`:89._
+_Declared in `include/datoviz/vk/gpu.h`:91._
 
 ### `dvz_instance_gpu_info()`
 
@@ -8063,7 +8062,7 @@ _Bool dvz_instance_gpu_info(
 
 Return a GPU descriptor snapshot for a given GPU index.
 
-_Declared in `include/datoviz/vk/gpu.h`:77._
+_Declared in `include/datoviz/vk/gpu.h`:79._
 
 ### `dvz_instance_gpu_queue_caps()`
 
@@ -8692,11 +8691,11 @@ int dvz_make_png(
 | --- | --- | --- |
 | `width` | `uint32_t` | width of the image |
 | `height` | `uint32_t` | height of the image |
-| `rgb` | `const uint8_t *` | pointer to an array of 24-bit RGB values |
+| `rgb` | `const uint8_t *` | pointer to tightly packed sRGB RGB8 pixels |
 | `size` | `DvzSize *` | pointer to a variable that will contain the size of the buffer |
 | `out` | `void **` | pointer to a variable that will contain a pointer to the recorded image |
 
-Compress an image to PNG and write it to a memory buffer.
+Compress an sRGB RGB8 image to PNG and write it to a memory buffer.
 
 _Declared in `include/datoviz/fileio/fileio.h`:151._
 
@@ -11854,7 +11853,7 @@ void dvz_vec2_copy(
 
 *********************************************************************************************
 
-_Declared in `include/datoviz/math/vec.h`:30._
+_Declared in `include/datoviz/math/vec.h`:34._
 
 ## Vec3
 
@@ -11872,7 +11871,7 @@ void dvz_vec3_cast(
 | `a` | `const dvec3 *` |  |
 | `b` | `vec3 *` |  |
 
-_Declared in `include/datoviz/math/vec.h`:38._
+_Declared in `include/datoviz/math/vec.h`:42._
 
 ### `dvz_vec3_copy()`
 
@@ -11888,7 +11887,7 @@ void dvz_vec3_copy(
 | `a` | `const vec3` |  |
 | `b` | `vec3` |  |
 
-_Declared in `include/datoviz/math/vec.h`:34._
+_Declared in `include/datoviz/math/vec.h`:38._
 
 ## Version
 
@@ -11904,7 +11903,7 @@ const char * dvz_version(void);
 
 Return the current version string.
 
-_Declared in `include/datoviz/common/version.h`:65._
+_Declared in `include/datoviz/common/version.h`:69._
 
 ## Write
 
@@ -11946,9 +11945,9 @@ int dvz_write_png(
 | `filename` | `const char *` | path to the PNG file to create |
 | `width` | `uint32_t` | width of the image |
 | `height` | `uint32_t` | height of the image |
-| `rgba` | `const uint8_t *` |  |
+| `rgba` | `const uint8_t *` | pointer to tightly packed sRGB RGBA8 pixels with straight linear alpha |
 
-Save an image to a PNG file
+Save an sRGB RGBA8 image to a PNG file.
 
 _Declared in `include/datoviz/fileio/fileio.h`:138._
 

@@ -17,13 +17,13 @@ Common workflows:
 - [Debug rendering](../../how-to/debug-rendering.md)
 - [DRP2 overview](../drp2/index.md)
 
-Functions: 135
+Functions: 136
 
 ## Symbol Groups
 
 | Group | Functions | Headers |
 | --- | ---: | --- |
-| [Drp2](#drp2) | 135 | 4 headers |
+| [Drp2](#drp2) | 136 | 4 headers |
 
 ??? info "Grouped symbol index"
 
@@ -108,6 +108,7 @@ Functions: 135
     | [`dvz_drp2_stream_create_texture_3d_format_usage()`](#dvz_drp2_stream_create_texture_3d_format_usage) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_create_texture_sampler_bind_group()`](#dvz_drp2_stream_create_texture_sampler_bind_group) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_create_texture_sampler_bind_group_layout()`](#dvz_drp2_stream_create_texture_sampler_bind_group_layout) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_texture_set_color_role()`](#dvz_drp2_stream_create_texture_set_color_role) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_create_uniform_bind_group()`](#dvz_drp2_stream_create_uniform_bind_group) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_create_uniform_bind_group_layout()`](#dvz_drp2_stream_create_uniform_bind_group_layout) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_destroy()`](#dvz_drp2_stream_destroy) | `include/datoviz/drp2/stream.h` |
@@ -875,7 +876,7 @@ _Bool dvz_drp2_stream_begin_command_encoder(
 
 Append a BeginCommandEncoder command.
 
-_Declared in `include/datoviz/drp2/stream.h`:963._
+_Declared in `include/datoviz/drp2/stream.h`:974._
 
 ### `dvz_drp2_stream_begin_compute_pass()`
 
@@ -896,7 +897,7 @@ _Bool dvz_drp2_stream_begin_compute_pass(
 
 Append a BeginComputePass command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1143._
+_Declared in `include/datoviz/drp2/stream.h`:1154._
 
 ### `dvz_drp2_stream_begin_render_pass()`
 
@@ -919,7 +920,7 @@ _Bool dvz_drp2_stream_begin_render_pass(
 
 Append a BeginRenderPass command with one color texture attachment.
 
-_Declared in `include/datoviz/drp2/stream.h`:976._
+_Declared in `include/datoviz/drp2/stream.h`:987._
 
 ### `dvz_drp2_stream_begin_render_pass_add_color_attachment()`
 
@@ -948,7 +949,7 @@ _Bool dvz_drp2_stream_begin_render_pass_add_color_attachment(
 
 Add a color attachment to the most recently appended BeginRenderPass command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1039._
+_Declared in `include/datoviz/drp2/stream.h`:1050._
 
 ### `dvz_drp2_stream_begin_render_pass_clear()`
 
@@ -979,7 +980,7 @@ _Bool dvz_drp2_stream_begin_render_pass_clear(
 
 Append a BeginRenderPass command with an explicit RGBA clear color.
 
-_Declared in `include/datoviz/drp2/stream.h`:994._
+_Declared in `include/datoviz/drp2/stream.h`:1005._
 
 ### `dvz_drp2_stream_begin_render_pass_region_clear()`
 
@@ -1025,7 +1026,7 @@ The render pass targets the rectangle `(x, y, width, height)` in normalized
 full target before rendering; when false, existing target contents are
 preserved and only subsequent draw commands are clipped to the region.
 
-_Declared in `include/datoviz/drp2/stream.h`:1022._
+_Declared in `include/datoviz/drp2/stream.h`:1033._
 
 ### `dvz_drp2_stream_begin_render_pass_set_color_attachment_access()`
 
@@ -1046,7 +1047,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_color_attachment_access(
 
 Set access intent on one color attachment of the most recent BeginRenderPass command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1066._
+_Declared in `include/datoviz/drp2/stream.h`:1077._
 
 ### `dvz_drp2_stream_begin_render_pass_set_color_attachment_ops()`
 
@@ -1069,7 +1070,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
 
 Set load/store operations on one color attachment of the most recent BeginRenderPass command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1053._
+_Declared in `include/datoviz/drp2/stream.h`:1064._
 
 ### `dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve()`
 
@@ -1092,7 +1093,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve(
 
 Set the resolve target on one color attachment of the most recent BeginRenderPass command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1079._
+_Declared in `include/datoviz/drp2/stream.h`:1090._
 
 ### `dvz_drp2_stream_begin_render_pass_set_depth()`
 
@@ -1112,7 +1113,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_depth(
 Attach a transient depth attachment request to the most recently appended BeginRenderPass
 command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1093._
+_Declared in `include/datoviz/drp2/stream.h`:1104._
 
 ### `dvz_drp2_stream_begin_render_pass_set_depth_access()`
 
@@ -1131,7 +1132,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_depth_access(
 
 Set access intent on the depth attachment of the most recent BeginRenderPass command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1130._
+_Declared in `include/datoviz/drp2/stream.h`:1141._
 
 ### `dvz_drp2_stream_begin_render_pass_set_depth_ops()`
 
@@ -1152,7 +1153,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_depth_ops(
 
 Set load/store operations on the depth attachment of the most recent BeginRenderPass command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1118._
+_Declared in `include/datoviz/drp2/stream.h`:1129._
 
 ### `dvz_drp2_stream_begin_render_pass_set_depth_texture()`
 
@@ -1175,7 +1176,7 @@ Attach a named depth texture to the most recently appended BeginRenderPass comma
 
 A zero `depth_texture_id` keeps the existing transient depth attachment behavior.
 
-_Declared in `include/datoviz/drp2/stream.h`:1106._
+_Declared in `include/datoviz/drp2/stream.h`:1117._
 
 ### `dvz_drp2_stream_copy_buffer_to_buffer()`
 
@@ -1204,7 +1205,7 @@ _Bool dvz_drp2_stream_copy_buffer_to_buffer(
 
 Append a CopyBufferToBuffer command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1362._
+_Declared in `include/datoviz/drp2/stream.h`:1373._
 
 ### `dvz_drp2_stream_copy_buffer_to_texture()`
 
@@ -1237,7 +1238,7 @@ _Bool dvz_drp2_stream_copy_buffer_to_texture(
 
 Append a CopyBufferToTexture command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1382._
+_Declared in `include/datoviz/drp2/stream.h`:1393._
 
 ### `dvz_drp2_stream_copy_texture_to_buffer()`
 
@@ -1270,7 +1271,7 @@ _Bool dvz_drp2_stream_copy_texture_to_buffer(
 
 Append a CopyTextureToBuffer command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1403._
+_Declared in `include/datoviz/drp2/stream.h`:1414._
 
 ### `dvz_drp2_stream_copy_texture_to_texture()`
 
@@ -1297,7 +1298,7 @@ _Bool dvz_drp2_stream_copy_texture_to_texture(
 
 Append a CopyTextureToTexture command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1421._
+_Declared in `include/datoviz/drp2/stream.h`:1432._
 
 ### `dvz_drp2_stream_count()`
 
@@ -1339,7 +1340,7 @@ _Bool dvz_drp2_stream_create_bind_group_entries(
 
 Append a CreateBindGroup command with explicit resource entries.
 
-_Declared in `include/datoviz/drp2/stream.h`:749._
+_Declared in `include/datoviz/drp2/stream.h`:760._
 
 ### `dvz_drp2_stream_create_bind_group_layout_entries()`
 
@@ -1362,7 +1363,7 @@ _Bool dvz_drp2_stream_create_bind_group_layout_entries(
 
 Append a CreateBindGroupLayout command with explicit entries.
 
-_Declared in `include/datoviz/drp2/stream.h`:684._
+_Declared in `include/datoviz/drp2/stream.h`:695._
 
 ### `dvz_drp2_stream_create_buffer()`
 
@@ -1406,7 +1407,7 @@ _Bool dvz_drp2_stream_create_compute_pipeline(
 
 Append a CreateComputePipeline command.
 
-_Declared in `include/datoviz/drp2/stream.h`:583._
+_Declared in `include/datoviz/drp2/stream.h`:594._
 
 ### `dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout()`
 
@@ -1429,7 +1430,7 @@ _Bool dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(
 
 Append a CreateComputePipeline command with one bind-group layout.
 
-_Declared in `include/datoviz/drp2/stream.h`:597._
+_Declared in `include/datoviz/drp2/stream.h`:608._
 
 ### `dvz_drp2_stream_create_render_pipeline()`
 
@@ -1454,7 +1455,7 @@ _Bool dvz_drp2_stream_create_render_pipeline(
 
 Append a CreateRenderPipeline command.
 
-_Declared in `include/datoviz/drp2/stream.h`:360._
+_Declared in `include/datoviz/drp2/stream.h`:371._
 
 ### `dvz_drp2_stream_create_render_pipeline_ex()`
 
@@ -1495,7 +1496,7 @@ _Bool dvz_drp2_stream_create_render_pipeline_ex(
 
 Append a CreateRenderPipeline command with explicit vertex input layout and topology.
 
-_Declared in `include/datoviz/drp2/stream.h`:402._
+_Declared in `include/datoviz/drp2/stream.h`:413._
 
 ### `dvz_drp2_stream_create_render_pipeline_ex2()`
 
@@ -1538,7 +1539,7 @@ _Bool dvz_drp2_stream_create_render_pipeline_ex2(
 
 Append a CreateRenderPipeline command with explicit vertex layout, topology, and step modes.
 
-_Declared in `include/datoviz/drp2/stream.h`:431._
+_Declared in `include/datoviz/drp2/stream.h`:442._
 
 ### `dvz_drp2_stream_create_render_pipeline_with_bind_group_layout()`
 
@@ -1565,7 +1566,7 @@ _Bool dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
 
 Append a CreateRenderPipeline command with one bind-group layout.
 
-_Declared in `include/datoviz/drp2/stream.h`:377._
+_Declared in `include/datoviz/drp2/stream.h`:388._
 
 ### `dvz_drp2_stream_create_sampler()`
 
@@ -1584,7 +1585,7 @@ _Bool dvz_drp2_stream_create_sampler(
 
 Append a CreateSampler command.
 
-_Declared in `include/datoviz/drp2/stream.h`:622._
+_Declared in `include/datoviz/drp2/stream.h`:633._
 
 ### `dvz_drp2_stream_create_sampler_filter()`
 
@@ -1607,7 +1608,7 @@ _Bool dvz_drp2_stream_create_sampler_filter(
 
 Append a CreateSampler command with explicit min/mag filters.
 
-_Declared in `include/datoviz/drp2/stream.h`:634._
+_Declared in `include/datoviz/drp2/stream.h`:645._
 
 ### `dvz_drp2_stream_create_shader_module()`
 
@@ -1630,7 +1631,7 @@ _Bool dvz_drp2_stream_create_shader_module(
 
 Append a CreateShaderModule command.
 
-_Declared in `include/datoviz/drp2/stream.h`:285._
+_Declared in `include/datoviz/drp2/stream.h`:296._
 
 ### `dvz_drp2_stream_create_shader_module_format()`
 
@@ -1655,7 +1656,7 @@ _Bool dvz_drp2_stream_create_shader_module_format(
 
 Append a CreateShaderModule command with an explicit shader source format.
 
-_Declared in `include/datoviz/drp2/stream.h`:299._
+_Declared in `include/datoviz/drp2/stream.h`:310._
 
 ### `dvz_drp2_stream_create_shader_module_spirv()`
 
@@ -1682,7 +1683,7 @@ Append a CreateShaderModule command from a precompiled SPIR-V binary (in-process
 
 The caller retains ownership of `spirv`; it must remain valid until the stream is executed.
 
-_Declared in `include/datoviz/drp2/stream.h`:317._
+_Declared in `include/datoviz/drp2/stream.h`:328._
 
 ### `dvz_drp2_stream_create_storage_bind_group()`
 
@@ -1709,7 +1710,7 @@ _Bool dvz_drp2_stream_create_storage_bind_group(
 
 Append a CreateBindGroup command for two storage buffers.
 
-_Declared in `include/datoviz/drp2/stream.h`:717._
+_Declared in `include/datoviz/drp2/stream.h`:728._
 
 ### `dvz_drp2_stream_create_storage_bind_group_layout()`
 
@@ -1728,7 +1729,7 @@ _Bool dvz_drp2_stream_create_storage_bind_group_layout(
 
 Append a CreateBindGroupLayout command for compute input/output storage buffers.
 
-_Declared in `include/datoviz/drp2/stream.h`:660._
+_Declared in `include/datoviz/drp2/stream.h`:671._
 
 ### `dvz_drp2_stream_create_texture_2d()`
 
@@ -1857,7 +1858,7 @@ _Bool dvz_drp2_stream_create_texture_3d(
 
 Append a CreateTexture command for a 3D texture.
 
-_Declared in `include/datoviz/drp2/stream.h`:244._
+_Declared in `include/datoviz/drp2/stream.h`:255._
 
 ### `dvz_drp2_stream_create_texture_3d_format_usage()`
 
@@ -1886,7 +1887,7 @@ _Bool dvz_drp2_stream_create_texture_3d_format_usage(
 
 Append a CreateTexture command for a 3D texture with explicit format and usage.
 
-_Declared in `include/datoviz/drp2/stream.h`:260._
+_Declared in `include/datoviz/drp2/stream.h`:271._
 
 ### `dvz_drp2_stream_create_texture_sampler_bind_group()`
 
@@ -1911,7 +1912,7 @@ _Bool dvz_drp2_stream_create_texture_sampler_bind_group(
 
 Append a CreateBindGroup command for one sampled texture and one sampler.
 
-_Declared in `include/datoviz/drp2/stream.h`:700._
+_Declared in `include/datoviz/drp2/stream.h`:711._
 
 ### `dvz_drp2_stream_create_texture_sampler_bind_group_layout()`
 
@@ -1930,7 +1931,26 @@ _Bool dvz_drp2_stream_create_texture_sampler_bind_group_layout(
 
 Append a CreateBindGroupLayout command for one sampled texture and one sampler.
 
-_Declared in `include/datoviz/drp2/stream.h`:648._
+_Declared in `include/datoviz/drp2/stream.h`:659._
+
+### `dvz_drp2_stream_create_texture_set_color_role()`
+
+```c title="dvz_drp2_stream_create_texture_set_color_role"
+_Bool dvz_drp2_stream_create_texture_set_color_role(
+    DvzDrp2CommandStream * stream,
+    DvzDrp2ColorRole color_role
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the most recent command was a CreateTexture command |
+| `stream` | `DvzDrp2CommandStream *` | the command stream |
+| `color_role` | `DvzDrp2ColorRole` | texture color role |
+
+Set the semantic color role on the most recently appended CreateTexture command.
+
+_Declared in `include/datoviz/drp2/stream.h`:240._
 
 ### `dvz_drp2_stream_create_uniform_bind_group()`
 
@@ -1957,7 +1977,7 @@ _Bool dvz_drp2_stream_create_uniform_bind_group(
 
 Append a CreateBindGroup command for one uniform buffer with a sub-allocation offset.
 
-_Declared in `include/datoviz/drp2/stream.h`:734._
+_Declared in `include/datoviz/drp2/stream.h`:745._
 
 ### `dvz_drp2_stream_create_uniform_bind_group_layout()`
 
@@ -1976,7 +1996,7 @@ _Bool dvz_drp2_stream_create_uniform_bind_group_layout(
 
 Append a CreateBindGroupLayout command for one uniform buffer (VS + FS visible).
 
-_Declared in `include/datoviz/drp2/stream.h`:672._
+_Declared in `include/datoviz/drp2/stream.h`:683._
 
 ### `dvz_drp2_stream_destroy()`
 
@@ -2011,7 +2031,7 @@ _Bool dvz_drp2_stream_destroy_bind_group(
 
 Append a DestroyBindGroup command.
 
-_Declared in `include/datoviz/drp2/stream.h`:775._
+_Declared in `include/datoviz/drp2/stream.h`:786._
 
 ### `dvz_drp2_stream_destroy_bind_group_layout()`
 
@@ -2030,7 +2050,7 @@ _Bool dvz_drp2_stream_destroy_bind_group_layout(
 
 Append a DestroyBindGroupLayout command.
 
-_Declared in `include/datoviz/drp2/stream.h`:762._
+_Declared in `include/datoviz/drp2/stream.h`:773._
 
 ### `dvz_drp2_stream_destroy_buffer()`
 
@@ -2068,7 +2088,7 @@ _Bool dvz_drp2_stream_destroy_compute_pipeline(
 
 Append a DestroyComputePipeline command.
 
-_Declared in `include/datoviz/drp2/stream.h`:610._
+_Declared in `include/datoviz/drp2/stream.h`:621._
 
 ### `dvz_drp2_stream_destroy_render_pipeline()`
 
@@ -2087,7 +2107,7 @@ _Bool dvz_drp2_stream_destroy_render_pipeline(
 
 Append a DestroyRenderPipeline command.
 
-_Declared in `include/datoviz/drp2/stream.h`:571._
+_Declared in `include/datoviz/drp2/stream.h`:582._
 
 ### `dvz_drp2_stream_destroy_shader_module()`
 
@@ -2106,7 +2126,7 @@ _Bool dvz_drp2_stream_destroy_shader_module(
 
 Append a DestroyShaderModule command.
 
-_Declared in `include/datoviz/drp2/stream.h`:346._
+_Declared in `include/datoviz/drp2/stream.h`:357._
 
 ### `dvz_drp2_stream_destroy_texture()`
 
@@ -2125,7 +2145,7 @@ _Bool dvz_drp2_stream_destroy_texture(
 
 Append a DestroyTexture command.
 
-_Declared in `include/datoviz/drp2/stream.h`:272._
+_Declared in `include/datoviz/drp2/stream.h`:283._
 
 ### `dvz_drp2_stream_dispatch_workgroups()`
 
@@ -2150,7 +2170,7 @@ _Bool dvz_drp2_stream_dispatch_workgroups(
 
 Append a DispatchWorkgroups command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1311._
+_Declared in `include/datoviz/drp2/stream.h`:1322._
 
 ### `dvz_drp2_stream_draw()`
 
@@ -2177,7 +2197,7 @@ _Bool dvz_drp2_stream_draw(
 
 Append a Draw command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1266._
+_Declared in `include/datoviz/drp2/stream.h`:1277._
 
 ### `dvz_drp2_stream_draw_indexed()`
 
@@ -2206,7 +2226,7 @@ _Bool dvz_drp2_stream_draw_indexed(
 
 Append a DrawIndexed command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1284._
+_Declared in `include/datoviz/drp2/stream.h`:1295._
 
 ### `dvz_drp2_stream_end_compute_pass()`
 
@@ -2225,7 +2245,7 @@ _Bool dvz_drp2_stream_end_compute_pass(
 
 Append an EndComputePass command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1323._
+_Declared in `include/datoviz/drp2/stream.h`:1334._
 
 ### `dvz_drp2_stream_end_render_pass()`
 
@@ -2244,7 +2264,7 @@ _Bool dvz_drp2_stream_end_render_pass(
 
 Append an EndRenderPass command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1297._
+_Declared in `include/datoviz/drp2/stream.h`:1308._
 
 ### `dvz_drp2_stream_finish_command_encoder()`
 
@@ -2265,7 +2285,7 @@ _Bool dvz_drp2_stream_finish_command_encoder(
 
 Append a FinishCommandEncoder command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1435._
+_Declared in `include/datoviz/drp2/stream.h`:1446._
 
 ### `dvz_drp2_stream_get()`
 
@@ -2322,7 +2342,7 @@ char * dvz_drp2_stream_json(
 
 Serialize a command stream as a DRP2 fixture JSON document.
 
-_Declared in `include/datoviz/drp2/stream.h`:1478._
+_Declared in `include/datoviz/drp2/stream.h`:1489._
 
 ### `dvz_drp2_stream_json_destroy()`
 
@@ -2338,7 +2358,7 @@ void dvz_drp2_stream_json_destroy(
 
 Destroy a JSON string returned by dvz_drp2_stream_json().
 
-_Declared in `include/datoviz/drp2/stream.h`:1545._
+_Declared in `include/datoviz/drp2/stream.h`:1556._
 
 ### `dvz_drp2_stream_json_payload_refs()`
 
@@ -2362,7 +2382,7 @@ WriteBuffer and WriteTexture commands backed by in-process raw bytes are seriali
 payloads are available through `dvz_drp2_stream_payload_*()`. Commands that only have a base64
 payload keep the normal inline `data` field.
 
-_Declared in `include/datoviz/drp2/stream.h`:1494._
+_Declared in `include/datoviz/drp2/stream.h`:1505._
 
 ### `dvz_drp2_stream_label()`
 
@@ -2419,7 +2439,7 @@ uint32_t dvz_drp2_stream_payload_command_index(
 
 Return the command index owning a raw binary payload.
 
-_Declared in `include/datoviz/drp2/stream.h`:1514._
+_Declared in `include/datoviz/drp2/stream.h`:1525._
 
 ### `dvz_drp2_stream_payload_count()`
 
@@ -2436,7 +2456,7 @@ uint32_t dvz_drp2_stream_payload_count(
 
 Return the number of raw binary write payloads in a command stream.
 
-_Declared in `include/datoviz/drp2/stream.h`:1503._
+_Declared in `include/datoviz/drp2/stream.h`:1514._
 
 ### `dvz_drp2_stream_payload_ptr()`
 
@@ -2455,7 +2475,7 @@ const void * dvz_drp2_stream_payload_ptr(
 
 Return the raw binary payload pointer for a payload index.
 
-_Declared in `include/datoviz/drp2/stream.h`:1525._
+_Declared in `include/datoviz/drp2/stream.h`:1536._
 
 ### `dvz_drp2_stream_payload_size()`
 
@@ -2474,7 +2494,7 @@ uint64_t dvz_drp2_stream_payload_size(
 
 Return the raw binary payload byte size for a payload index.
 
-_Declared in `include/datoviz/drp2/stream.h`:1536._
+_Declared in `include/datoviz/drp2/stream.h`:1547._
 
 ### `dvz_drp2_stream_pipeline_set_bind_group_layout()`
 
@@ -2496,7 +2516,7 @@ Attach a bind-group layout to the most recently appended CreateRenderPipeline co
 Use after `dvz_drp2_stream_create_render_pipeline_ex` to combine an explicit vertex layout
 with a bind-group layout (mirrors what `_with_bind_group_layout` does on its own).
 
-_Declared in `include/datoviz/drp2/stream.h`:451._
+_Declared in `include/datoviz/drp2/stream.h`:462._
 
 ### `dvz_drp2_stream_pipeline_set_bind_group_layout2()`
 
@@ -2516,7 +2536,7 @@ _Bool dvz_drp2_stream_pipeline_set_bind_group_layout2(
 Attach a second bind-group layout (descriptor set 1) to the most recently appended
 CreateRenderPipeline command.
 
-_Declared in `include/datoviz/drp2/stream.h`:464._
+_Declared in `include/datoviz/drp2/stream.h`:475._
 
 ### `dvz_drp2_stream_pipeline_set_bind_group_layouts()`
 
@@ -2537,7 +2557,7 @@ _Bool dvz_drp2_stream_pipeline_set_bind_group_layouts(
 
 Attach an ordered bind-group layout array to the most recent CreateRenderPipeline command.
 
-_Declared in `include/datoviz/drp2/stream.h`:476._
+_Declared in `include/datoviz/drp2/stream.h`:487._
 
 ### `dvz_drp2_stream_pipeline_set_builtin_identity()`
 
@@ -2560,7 +2580,7 @@ _Bool dvz_drp2_stream_pipeline_set_builtin_identity(
 
 Attach optional built-in pipeline identity metadata to a CreateRenderPipeline command.
 
-_Declared in `include/datoviz/drp2/stream.h`:557._
+_Declared in `include/datoviz/drp2/stream.h`:568._
 
 ### `dvz_drp2_stream_pipeline_set_color_blend()`
 
@@ -2593,7 +2613,7 @@ _Bool dvz_drp2_stream_pipeline_set_color_blend(
 
 Set one color target blend state on the most recently appended CreateRenderPipeline command.
 
-_Declared in `include/datoviz/drp2/stream.h`:542._
+_Declared in `include/datoviz/drp2/stream.h`:553._
 
 ### `dvz_drp2_stream_pipeline_set_color_target()`
 
@@ -2614,7 +2634,7 @@ _Bool dvz_drp2_stream_pipeline_set_color_target(
 
 Set one color target format on the most recently appended CreateRenderPipeline command.
 
-_Declared in `include/datoviz/drp2/stream.h`:524._
+_Declared in `include/datoviz/drp2/stream.h`:535._
 
 ### `dvz_drp2_stream_pipeline_set_depth_state()`
 
@@ -2635,7 +2655,7 @@ _Bool dvz_drp2_stream_pipeline_set_depth_state(
 
 Attach depth state to the most recently appended CreateRenderPipeline command.
 
-_Declared in `include/datoviz/drp2/stream.h`:488._
+_Declared in `include/datoviz/drp2/stream.h`:499._
 
 ### `dvz_drp2_stream_pipeline_set_multisampling()`
 
@@ -2656,7 +2676,7 @@ _Bool dvz_drp2_stream_pipeline_set_multisampling(
 
 Set multisampling state on the most recently appended CreateRenderPipeline command.
 
-_Declared in `include/datoviz/drp2/stream.h`:512._
+_Declared in `include/datoviz/drp2/stream.h`:523._
 
 ### `dvz_drp2_stream_pipeline_set_raster_state()`
 
@@ -2677,7 +2697,7 @@ _Bool dvz_drp2_stream_pipeline_set_raster_state(
 
 Attach raster state to the most recently appended CreateRenderPipeline command.
 
-_Declared in `include/datoviz/drp2/stream.h`:500._
+_Declared in `include/datoviz/drp2/stream.h`:511._
 
 ### `dvz_drp2_stream_queue_submit()`
 
@@ -2698,7 +2718,7 @@ _Bool dvz_drp2_stream_queue_submit(
 
 Append a QueueSubmit command with one command buffer and no readback.
 
-_Declared in `include/datoviz/drp2/stream.h`:1448._
+_Declared in `include/datoviz/drp2/stream.h`:1459._
 
 ### `dvz_drp2_stream_queue_submit_readback()`
 
@@ -2725,7 +2745,7 @@ _Bool dvz_drp2_stream_queue_submit_readback(
 
 Append a QueueSubmit command with one command buffer and one readback request.
 
-_Declared in `include/datoviz/drp2/stream.h`:1464._
+_Declared in `include/datoviz/drp2/stream.h`:1475._
 
 ### `dvz_drp2_stream_renderer_hello_reply()`
 
@@ -2780,7 +2800,7 @@ Append a ResourceBarrier command for a buffer range.
 The first active DRP2 barrier slice covers compute storage writes made visible to a later vertex
 input or copy read in the same command encoder.
 
-_Declared in `include/datoviz/drp2/stream.h`:1343._
+_Declared in `include/datoviz/drp2/stream.h`:1354._
 
 ### `dvz_drp2_stream_set_bind_group()`
 
@@ -2803,7 +2823,7 @@ _Bool dvz_drp2_stream_set_bind_group(
 
 Append a SetBindGroup command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1202._
+_Declared in `include/datoviz/drp2/stream.h`:1213._
 
 ### `dvz_drp2_stream_set_bind_group_dynamic()`
 
@@ -2830,7 +2850,7 @@ _Bool dvz_drp2_stream_set_bind_group_dynamic(
 
 Append a SetBindGroup command with dynamic offsets.
 
-_Declared in `include/datoviz/drp2/stream.h`:1217._
+_Declared in `include/datoviz/drp2/stream.h`:1228._
 
 ### `dvz_drp2_stream_set_index_buffer()`
 
@@ -2855,7 +2875,7 @@ _Bool dvz_drp2_stream_set_index_buffer(
 
 Append a SetIndexBuffer command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1249._
+_Declared in `include/datoviz/drp2/stream.h`:1260._
 
 ### `dvz_drp2_stream_set_label()`
 
@@ -2899,7 +2919,7 @@ _Bool dvz_drp2_stream_set_pipeline(
 
 Append a SetPipeline command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1189._
+_Declared in `include/datoviz/drp2/stream.h`:1200._
 
 ### `dvz_drp2_stream_set_scissor()`
 
@@ -2926,7 +2946,7 @@ _Bool dvz_drp2_stream_set_scissor(
 
 Append a SetScissor command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1175._
+_Declared in `include/datoviz/drp2/stream.h`:1186._
 
 ### `dvz_drp2_stream_set_vertex_buffer()`
 
@@ -2951,7 +2971,7 @@ _Bool dvz_drp2_stream_set_vertex_buffer(
 
 Append a SetVertexBuffer command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1233._
+_Declared in `include/datoviz/drp2/stream.h`:1244._
 
 ### `dvz_drp2_stream_set_viewport()`
 
@@ -2978,7 +2998,7 @@ _Bool dvz_drp2_stream_set_viewport(
 
 Append a SetViewport command.
 
-_Declared in `include/datoviz/drp2/stream.h`:1159._
+_Declared in `include/datoviz/drp2/stream.h`:1170._
 
 ### `dvz_drp2_stream_shader_set_builtin_identity()`
 
@@ -3003,7 +3023,7 @@ _Bool dvz_drp2_stream_shader_set_builtin_identity(
 
 Attach optional built-in shader identity metadata to a CreateShaderModule command.
 
-_Declared in `include/datoviz/drp2/stream.h`:332._
+_Declared in `include/datoviz/drp2/stream.h`:343._
 
 ### `dvz_drp2_stream_write_buffer()`
 
@@ -3028,7 +3048,7 @@ _Bool dvz_drp2_stream_write_buffer(
 
 Append a WriteBuffer command.
 
-_Declared in `include/datoviz/drp2/stream.h`:789._
+_Declared in `include/datoviz/drp2/stream.h`:800._
 
 ### `dvz_drp2_stream_write_buffer_bytes()`
 
@@ -3065,7 +3085,7 @@ command and does not retain `data` (which may legitimately be NULL).
 
 command was recorded)
 
-_Declared in `include/datoviz/drp2/stream.h`:815._
+_Declared in `include/datoviz/drp2/stream.h`:826._
 
 ### `dvz_drp2_stream_write_texture_2d()`
 
@@ -3096,7 +3116,7 @@ _Bool dvz_drp2_stream_write_texture_2d(
 
 Append a WriteTexture command.
 
-_Declared in `include/datoviz/drp2/stream.h`:834._
+_Declared in `include/datoviz/drp2/stream.h`:845._
 
 ### `dvz_drp2_stream_write_texture_2d_bytes()`
 
@@ -3130,7 +3150,7 @@ Append a WriteTexture command for a full 2D mip level using raw bytes.
 Mirrors `dvz_drp2_stream_write_buffer_bytes`: the runtime path consumes the borrowed
 pointer directly with no base64 round-trip; JSON serialization re-encodes lazily.
 
-_Declared in `include/datoviz/drp2/stream.h`:855._
+_Declared in `include/datoviz/drp2/stream.h`:866._
 
 ### `dvz_drp2_stream_write_texture_2d_region()`
 
@@ -3165,7 +3185,7 @@ _Bool dvz_drp2_stream_write_texture_2d_region(
 
 Append a WriteTexture command for a 2D sub-region with explicit origin.
 
-_Declared in `include/datoviz/drp2/stream.h`:898._
+_Declared in `include/datoviz/drp2/stream.h`:909._
 
 ### `dvz_drp2_stream_write_texture_2d_region_bytes()`
 
@@ -3202,7 +3222,7 @@ Append a WriteTexture command for a 2D sub-region using raw bytes.
 
 Mirrors `dvz_drp2_stream_write_texture_2d_bytes` for the in-process runtime path.
 
-_Declared in `include/datoviz/drp2/stream.h`:877._
+_Declared in `include/datoviz/drp2/stream.h`:888._
 
 ### `dvz_drp2_stream_write_texture_3d()`
 
@@ -3241,7 +3261,7 @@ _Bool dvz_drp2_stream_write_texture_3d(
 
 Append a WriteTexture command for a 3D sub-region.
 
-_Declared in `include/datoviz/drp2/stream.h`:922._
+_Declared in `include/datoviz/drp2/stream.h`:933._
 
 ### `dvz_drp2_stream_write_texture_3d_bytes()`
 
@@ -3282,7 +3302,7 @@ Append a WriteTexture command for a 3D sub-region using raw bytes.
 
 Mirrors `dvz_drp2_stream_write_texture_2d_bytes` for 3D texture uploads.
 
-_Declared in `include/datoviz/drp2/stream.h`:948._
+_Declared in `include/datoviz/drp2/stream.h`:959._
 
 ### `dvz_drp2_validate_stream()`
 
