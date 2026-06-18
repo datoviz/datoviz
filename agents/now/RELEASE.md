@@ -1,6 +1,6 @@
 # Datoviz v0.4 Release Plan
 
-Status: active release roadmap. Updated: 2026-06-09.
+Status: active release roadmap. Updated: 2026-06-18.
 
 This is the short route from the current branch to `v0.4.0`. Use [STATUS.md](STATUS.md) for current
 blockers and [DOCUMENTATION.md](DOCUMENTATION.md) for public documentation gates.
@@ -15,6 +15,8 @@ Maintainer execution docs live in
 [../../docs/contributors/release-process.md](../../docs/contributors/release-process.md),
 [../../docs/contributors/release-flight-checklist.md](../../docs/contributors/release-flight-checklist.md),
 and [../../docs/contributors/release-wheels.md](../../docs/contributors/release-wheels.md).
+Public status docs live in [../../docs/reference/project-status.md](../../docs/reference/project-status.md)
+and [../../docs/reference/feature-status.md](../../docs/reference/feature-status.md).
 
 Distribution packaging preflight lives in
 [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md). Run it locally before
@@ -33,10 +35,10 @@ Required before feature freeze:
 4. Raw `ctypes` generation and smoke tests work for the intended public C surface.
 5. v0.3 visible capability gaps are fixed, explicitly deferred, or external/GSP-owned.
 6. Core examples compile and exercise the release feature set.
-7. Minimal compute+graphics interop has an experimental C-first proof, including explicit DRP2
-   synchronization and a gallery-oriented particle-advection plan or example.
-8. Low-level Qt/PyQt hosted rendering works through the optional Qt bridge provider, without adding
-   Qt as a dependency of `libdatoviz`.
+7. Minimal compute+graphics interop has an experimental C-first proof, explicit DRP2
+   synchronization, and a gallery-oriented particle example.
+8. Low-level Qt/PyQt hosted rendering works through the optional Qt bridge provider, is documented
+   as an optional provider, and does not add Qt as a dependency of `libdatoviz`.
 
 Not required for v0.4:
 
@@ -121,14 +123,14 @@ confirmation for the exact refs to rewrite and force-push.
 
 Exit criteria:
 
-1. Feature/status table exists and uses `supported`, `experimental`, `advanced/unstable`,
-   `deferred`, and `external/GSP`.
+1. Feature/status docs exist and use `supported`, `experimental`, `advanced/unstable`, `deferred`,
+   and `external/GSP`; final RC work reconciles them with the visible parity audit and known gaps.
 2. No feature-freeze blocker in [STATUS.md](STATUS.md) is unclassified.
 3. Retained textured mesh remains in validation with deterministic proof.
 4. Text, axes, ticks, colorbars, annotations, scale bars, and retained visuals are represented in
    examples or tests.
-5. Qt/PyQt hosting is either proven with the optional bridge or tracked as the remaining release
-   blocker with the implementation handoff in `spec/scene/integration/QT_HOST_BRIDGE.md`.
+5. Qt/PyQt hosting remains classified as `supported, optional provider`, with bridge diagnostics
+   and wheel checks kept explicit.
 
 Suggested validation:
 
@@ -182,8 +184,7 @@ Exit criteria:
 3. Native validation proves compute, synchronization, graphics consumption, and readback or captured
    visual evidence.
 4. WebGPU accepts the portable subset or emits explicit unsupported-feature diagnostics.
-5. A C gallery example, preferably GPU particle advection, is planned or landed with a release
-   artifact target.
+5. The C `gpu_particle_smoke` gallery proof remains available with a release artifact target.
 6. Optional CUDA SDK interop remains native-only, capability-gated, and advanced/unstable.
 
 ### 5. Qt/PyQt Hosted Path
@@ -207,9 +208,10 @@ Exit criteria:
 1. Generated bindings load the intended installed C API.
 2. ABI/layout smoke checks pass.
 3. Raw examples cover the supported low-level Python path.
-4. The docs state that high-level Python plotting is GSP/VisPy2 scope.
-5. C API docs state that `dvz_figure_emit()` and `dvz_figure_emit_ex()` are gone and that
-   `DvzSceneFrameArtifact` is the scene emission product.
+4. The docs state that high-level Python plotting is GSP/VisPy2 scope and distinguish the planned
+   top-level array-aware facade from exact `datoviz.raw` access.
+5. C API docs continue to state that `dvz_figure_emit()` and `dvz_figure_emit_ex()` are gone and
+   that `DvzSceneFrameArtifact` is the scene emission product.
 
 ### 7. RC1
 
