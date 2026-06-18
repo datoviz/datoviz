@@ -1,0 +1,44 @@
+name: Example failure
+description: Report a Datoviz example, gallery page, data, or capture failure.
+title: "[example] "
+labels: ["examples", "v0.4-rc1"]
+body:
+  - type: input
+    id: example
+    attributes:
+      label: Example or gallery page
+      placeholder: "examples/c/showcases/point_cloud.c or docs gallery URL"
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: What failed?
+      description: Include whether this is compile, runtime, data preparation, screenshot, or docs output.
+    validations:
+      required: true
+  - type: input
+    id: datoviz-version
+    attributes:
+      label: Datoviz version or commit
+      placeholder: "0.4.0rc1, wheel filename, or git commit"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "Ubuntu 24.04, macOS 15 arm64, Windows 11 AMD64"
+  - type: textarea
+    id: commands
+    attributes:
+      label: Commands and output
+      description: Paste the exact command and relevant terminal output.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: Screenshot or generated artifact
+      description: Attach output images when the failure is visual.

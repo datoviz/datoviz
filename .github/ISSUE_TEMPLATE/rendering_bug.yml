@@ -1,0 +1,56 @@
+name: Rendering bug
+description: Report incorrect rendering, GPU, driver, Vulkan, WebGPU, or readback behavior.
+title: "[rendering] "
+labels: ["rendering", "v0.4-rc1"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the rendering problem and the expected output.
+    validations:
+      required: true
+  - type: input
+    id: datoviz-version
+    attributes:
+      label: Datoviz version or commit
+      placeholder: "0.4.0rc1, wheel filename, or git commit"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "Ubuntu 24.04, macOS 15 arm64, Windows 11 AMD64"
+    validations:
+      required: true
+  - type: input
+    id: gpu-driver
+    attributes:
+      label: GPU and driver/runtime
+      placeholder: "GPU model, Vulkan/WebGPU runtime, driver version"
+    validations:
+      required: true
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Backend or path
+      options:
+        - Native Vulkan/app
+        - Offscreen/capture
+        - WebGPU/WASM
+        - Qt/PyQt provider
+        - Unknown
+  - type: textarea
+    id: reproducer
+    attributes:
+      label: Minimal reproducer
+      description: Link or paste the smallest example that shows the problem.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: Screenshots, logs, or validation output
+      description: Attach screenshots or paste Vulkan/WebGPU/terminal diagnostics.

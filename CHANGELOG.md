@@ -1,16 +1,75 @@
 # Change Log
 
-## Development version
+## v0.4.0rc1 (draft)
 
-Ongoing developments planned for v0.4.0 (2026) include:
+This release candidate is a controlled public testing milestone for the v0.4 rewrite. It is not the
+final v0.4 release, and it is not VisPy 2.0.
 
-* Internal backend-related refactoring to better support Qt and offscreen rendering.
-* Better support for compute shaders.
-* More Vulkan/graphics features: multipass rendering, antialiasing, order-independent transparency...
-* Integration with other GPU APIs such as CUDA/CuPy.
+### Highlights
+
+* Rebuild Datoviz as a C-first Vulkan scientific visualization engine with a retained scene layer.
+* Route scene output through the scene -> DRP2 -> vklite/canvas/stream runtime path.
+* Expose a generated raw Python `ctypes` binding and the first array-aware facade direction.
+* Publish explicit feature, platform, WebGPU/WASM, and v0.3 visible-parity status pages.
+* Keep high-level Python plotting and workflow APIs outside Datoviz v0.4, in the GSP/VisPy2 layer.
+
+### Architecture
+
+* Split active release-facing modules across `common`, `ds`, `fileio`, `geom`, `math`, `thread`,
+  `input`, `window`, `canvas`, `stream`, `video`, `vk`, `vklite`, `drp2`, `scene`, and `app`.
+* Make DRP2 command streams the backend-facing rendering contract.
+* Treat offscreen rendering, app presentation, canvas execution, and stream/video paths as one
+  runtime foundation rather than parallel renderer stacks.
+
+### Scene API
+
+* Promote retained scene objects, figures, panels, visuals, controllers, app/offscreen rendering,
+  screenshot capture, and selected query/readback paths as the v0.4 user-facing core.
+* Cover visual families and interaction features with explicit `supported`, `experimental`,
+  `advanced/unstable`, `deferred`, or `external/GSP` labels.
+* Keep v0.3 visible capabilities audited by behavior rather than preserving v0.3 APIs.
+
+### Rendering / DRP2
+
+* Introduce frame artifacts and DRP2 packet streams as the active scene emission product.
+* Keep DRP2/DVZR contributor and runtime-author surfaces classified as advanced/unstable.
+* Include a narrow experimental compute-to-render path with explicit synchronization semantics and
+  a gallery-oriented GPU particle smoke proof.
+* Define the v0.4 raster capture contract as sRGB RGBA8; explicit linear `f16`/`f32` scientific
+  export/readback is deferred beyond RC1.
+
+### Python bindings
+
+* Generate `datoviz.raw` from the exported C ABI.
+* Reserve `dvz_ffi_*` for explicit FFI helper APIs.
+* Keep top-level `import datoviz as dvz` as the planned array-aware facade with C-shaped names.
+* Do not preserve the old v0.3 object-oriented Python plotting API.
+
+### WebGPU/WASM, Qt, and platform support
+
+* Ship WebGPU/WASM as an experimental promoted browser subset for selected live examples, not as
+  native Vulkan parity.
+* Keep Qt/PyQt hosting behind the optional `datoviz_qtbridge` provider with explicit diagnostics.
+* Use installed CMake/pkg-config consumer checks and wheel install smokes as release evidence.
+
+### Known limitations
+
+* The API is still subject to change before the final v0.4.0 release.
+* Windows wheel proof, release-target macOS wheel proof, and the full wheel matrix must be recorded
+  before publication.
+* WebGPU/WASM, compute+graphics, and some query/readback paths remain experimental.
+* Publication-quality PDF/SVG/vector export, high-level plotting, notebook/dashboard workflows,
+  broad custom shader APIs, CUDA/CuPy interop, and full WebGPU parity are outside the v0.4 core.
+
+### Breaking changes from v0.3
+
+* v0.4 does not preserve v0.3 source compatibility, ABI compatibility, or old Python plotting
+  object names.
+* Users should migrate to the v0.4 C scene/app API, raw `ctypes` binding, or future GSP/VisPy2
+  layers depending on their workflow.
 
 
-## v0.3.2 (2025-10-16) [LATEST]
+## v0.3.2 (2025-10-16) [LATEST STABLE]
 
 ### Backends
 

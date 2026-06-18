@@ -39,6 +39,8 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Run docs link checks if available.
 - [ ] Verify feature/status and known-issues pages.
 - [ ] Verify release examples compile or run as appropriate.
+- [ ] Select the RC canonical examples and confirm each has a source link, status metadata, and
+      reproducible run or capture command.
 - [ ] Regenerate gallery media that changed.
 - [ ] Confirm gallery data attribution and licenses.
 - [ ] Confirm public docs do not make stale v0.3 promises.
@@ -121,6 +123,7 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Create or update the GitHub release.
 - [ ] Attach source archive, wheels, checksums, and release notes.
 - [ ] Publish documentation.
+- [ ] Confirm GitHub issue forms, labels, and milestone are ready for RC feedback triage.
 - [ ] Announce known issues and feedback channels.
 
 

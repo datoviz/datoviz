@@ -1,0 +1,29 @@
+name: Documentation issue
+description: Report stale, unclear, missing, or broken Datoviz documentation.
+title: "[docs] "
+labels: ["docs", "v0.4-rc1"]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page or file
+      placeholder: "docs URL or repository path"
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: Issue
+      description: What is wrong, missing, stale, or unclear?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected wording or behavior
+      description: Optional suggested correction.
+  - type: input
+    id: datoviz-version
+    attributes:
+      label: Datoviz version or commit
+      placeholder: "0.4.0rc1, wheel filename, or git commit"

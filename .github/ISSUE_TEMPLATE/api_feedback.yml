@@ -1,0 +1,42 @@
+name: API feedback
+description: Share feedback about C API, raw ctypes, ownership, lifetimes, or documentation clarity.
+title: "[api] "
+labels: ["api-feedback", "v0.4-rc1"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - C scene/app API
+        - Raw Python ctypes
+        - Array-aware Python facade
+        - DRP2 or lower runtime layer
+        - Ownership or lifetime rules
+        - Documentation clarity
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Feedback
+      description: What was unclear, surprising, missing, or hard to use?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context or code snippet
+      description: Include a small code snippet or workflow if useful.
+      render: c
+  - type: input
+    id: datoviz-version
+    attributes:
+      label: Datoviz version or commit
+      placeholder: "0.4.0rc1, wheel filename, or git commit"
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Suggested change
+      description: Optional concrete wording, API adjustment, or documentation link.

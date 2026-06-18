@@ -1,0 +1,56 @@
+name: Installation failure
+description: Report a Datoviz install, import, wheel, or source-build failure.
+title: "[install] "
+labels: ["install", "v0.4-rc1"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What failed, and what did you expect to happen?
+    validations:
+      required: true
+  - type: input
+    id: datoviz-version
+    attributes:
+      label: Datoviz version or commit
+      placeholder: "0.4.0rc1, wheel filename, or git commit"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "Ubuntu 24.04, macOS 15 arm64, Windows 11 AMD64"
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: "python --version"
+  - type: input
+    id: install-method
+    attributes:
+      label: Installation method
+      placeholder: "pip, source build, wheel artifact, conda, vcpkg"
+    validations:
+      required: true
+  - type: input
+    id: gpu-driver
+    attributes:
+      label: GPU and driver/runtime
+      placeholder: "GPU model, Vulkan loader/runtime, driver version if known"
+  - type: textarea
+    id: commands
+    attributes:
+      label: Commands and output
+      description: Paste the exact commands and the relevant terminal output.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Anything else that may help reproduce the failure.

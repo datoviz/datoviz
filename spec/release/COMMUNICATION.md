@@ -18,6 +18,31 @@ Refine these messages for release notes, README, website, blog, and social posts
    may still break API where needed.
 
 
+## RC1 Positioning
+
+Present RC1 as a controlled public testing milestone, not a broad launch.
+
+Use language such as:
+
+1. first release candidate;
+2. early technical feedback;
+3. C-first Vulkan rendering core;
+4. retained scene layer;
+5. DRP2 rendering contract;
+6. low-level Python bindings;
+7. offscreen and app rendering paths;
+8. experimental WebGPU/WASM and optional provider slices.
+
+Avoid language that implies:
+
+1. final v0.4 stability;
+2. production-ready plotting;
+3. Matplotlib, VTK, or VisPy replacement;
+4. VisPy 2.0 availability;
+5. complete WebGPU parity;
+6. fully stable public API.
+
+
 ## Blog And Announcement Assets
 
 Generate launch assets from current examples, not mockups:
@@ -45,6 +70,12 @@ Use these channels when the release artifacts and docs are ready:
 5. X post or thread;
 6. relevant scientific Python, visualization, and GPU communities;
 7. direct notes to early adopters, collaborators, and selected dataset authors.
+
+For RC1, prefer soft announcement channels first: GitHub release, project docs, direct early-adopter
+messages, selected VisPy/GSP and scientific Python contacts, IBL/internal channels, and selected
+graphics/Vulkan contacts. Delay broad channels such as Hacker News, large generic Python audiences,
+and comparison-driven launch posts until final v0.4 unless there is a deliberate maintainer decision
+to widen RC visibility.
 
 
 ## Feedback Policy

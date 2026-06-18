@@ -15,6 +15,16 @@ Exit criteria:
 4. release examples are documented enough for early testers;
 5. public headers, ownership rules, and lower-layer support labels have been reviewed.
 
+Success criteria:
+
+1. a small number of serious external testers, roughly 5-10, try the release candidate;
+2. installation feedback arrives from Linux, macOS, and Windows;
+3. at least several release examples run outside the main development machine;
+4. reports distinguish build/install failures, rendering or driver bugs, example issues, API
+   feedback, documentation gaps, and platform/GPU details;
+5. public discussion does not confuse Datoviz v0.4 RC1 with VisPy 2.0 or with the final v0.4
+   release.
+
 
 ## RC2: Documentation And Gallery Candidate
 
@@ -68,3 +78,18 @@ Every RC note should include:
 7. wheel/source artifacts;
 8. migration/status notes from v0.3 and development snapshots;
 9. feedback request targeted at users and contributors.
+
+
+## Feedback Triage
+
+Each RC should have issue labels or project fields that separate:
+
+1. installation and packaging failures;
+2. rendering, driver, and platform-specific bugs;
+3. example and gallery failures;
+4. API and ownership/lifetime feedback;
+5. documentation issues;
+6. final-release blockers.
+
+After one to two weeks of RC1 feedback, summarize the findings and decide whether RC2 is a blocker
+fix release, a documentation/gallery candidate, or unnecessary before the next planned RC gate.
