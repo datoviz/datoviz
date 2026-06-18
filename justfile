@@ -1627,6 +1627,10 @@ example-c name *args: build
     fi
 #
 
+example-watch name *args:
+    @python3 tools/watch_c_example.py "{{name}}" {{args}}
+#
+
 # Tests
 # -------------------------------------------------------------------------------------------------
 
