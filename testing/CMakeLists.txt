@@ -990,6 +990,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         ${PROJECT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/src/common
+        ${PROJECT_SOURCE_DIR}/src/scene/tests
         ${PROJECT_SOURCE_DIR}/src/vk/tests
         ${PROJECT_SOURCE_DIR}/src/vklite
         ${PROJECT_SOURCE_DIR}/src/canvas
@@ -1000,6 +1001,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         ${PROJECT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/src/common
+        ${PROJECT_SOURCE_DIR}/src/scene/tests
         ${PROJECT_SOURCE_DIR}/src/vk/tests
         ${PROJECT_SOURCE_DIR}/src/vklite
         ${PROJECT_SOURCE_DIR}/src/canvas
