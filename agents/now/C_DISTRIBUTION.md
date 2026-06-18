@@ -22,7 +22,11 @@ Status on 2026-06-18, macOS arm64:
   `libpng 1.6.58`, `tinyxml2 11.0.0`, and `pkgconf 2.5.1`. The Vulkan dependency is still the
   local Vulkan SDK at `/Users/cyrille/VulkanSDK/1.4.328.1`, not a Homebrew `vulkan-loader`.
   `DATOVIZ_SOURCE_DEPS=system just distribution-validate-local source-install` passed after
-  commits `2c8a49f3d` and the macOS pkg-config consumer linker fix.
+  commits `2c8a49f3d` and `7faf7f7dd`.
+- `just distribution-validate-local audit` passes against the strict source install prefix. The
+  audit sees 119 installed headers, `libdatoviz*.dylib`, `DatovizConfig.cmake`, `datoviz.pc`,
+  Vulkan SDK include flags in pkg-config metadata, and working installed CMake/pkg-config
+  consumers. vcpkg and conda audits are skipped because their local prefixes are absent.
 - Host-native wheel proof passes for the repaired `macosx_15_0_arm64` wheel: imports,
   `datoviz-config`, bundled headers/CMake files, native dependency inspection, and the wheel CMake
   consumer all pass. The optional Qt probe fails only because PyQt6 is absent in the clean venv.

@@ -72,6 +72,11 @@ Local shaderc/Vulkan source-build proof:
   `DATOVIZ_SOURCE_DEPS=system just distribution-validate-local source-install` passed after
   `2c8a49f3d` exported Vulkan SDK include flags in `datoviz.pc` and the local validator stopped
   passing Linux-only `-Wl,-rpath-link` to the macOS linker in the pkg-config consumer smoke.
+- On 2026-06-18 macOS arm64, `just distribution-validate-local audit` passed against the strict
+  source install prefix. It found 119 installed headers, `libdatoviz*.dylib`, CMake package files,
+  `datoviz.pc` with Vulkan SDK include flags, Homebrew dynamic dependencies for cglm, freetype,
+  tinyxml2, and GLFW, and working installed CMake/pkg-config consumers. vcpkg and conda audits
+  were skipped because their local prefixes were absent.
 - On 2026-06-18 macOS arm64, the wheel C/C++ integration proof passed using
   `DVZ_WHEEL_RUNTIME_DIRS=/Users/cyrille/VulkanSDK/1.4.328.1/macOS/lib:/Users/cyrille/VulkanSDK/1.4.328.1/macOS/share/vulkan/icd.d`,
   `just build`, `just ctypes`, `python tools/release_wheels/stage_wheel.py --clean`,
