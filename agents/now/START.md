@@ -31,8 +31,6 @@ as real implementation, not scaffolding.
    schemas, fixtures, or scene DRP2 emission.
 6. Use [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md) before changing
    the top-level Python package, raw-binding generation, or NumPy/array argument adaptation.
-7. Use [TEST_REFACTORING.md](TEST_REFACTORING.md) only when explicitly picking up the deferred
-   test-suite split checkpoint.
 
 
 ## Guardrails
