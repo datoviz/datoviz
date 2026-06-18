@@ -102,3 +102,9 @@ Packaging and assets:
 7. installed CMake/pkg-config consumers compile against public headers without private include
    paths, including transitive dependencies exposed by those headers;
 8. checksums/signing policy is decided.
+
+Current macOS arm64 evidence, recorded 2026-06-18: vendored package install, system-auto package
+install, strict Homebrew-style source install, installed CMake consumer, installed pkg-config
+consumer, host-native wheel build/inspect/check, and wheel CMake consumer passed locally. Remaining
+packaging proof that cannot be completed on this Mac: release-target `macosx_11_0_arm64` wheel
+repair/tag validation and Windows wheel/runtime consumer validation.

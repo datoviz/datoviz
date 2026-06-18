@@ -60,14 +60,18 @@ Local shaderc/Vulkan source-build proof:
   `cmake --preset package-smoke-vendored`, `cmake --build --preset package-smoke-vendored`,
   `cmake --build --preset package-install-vendored`, `cmake --preset package-smoke-system-auto`,
   `cmake --build --preset package-smoke-system-auto`, and
-  `cmake --build --preset package-install-system-auto`. The system-auto configure warned that
-  system GLFW was not found and fell back to the headless backend; this is not strict Homebrew
-  proof.
-- On 2026-06-18 macOS arm64, strict distro/Homebrew-style system proof remained environment-blocked.
-  `brew list --versions glfw cglm kvazaar mimalloc freetype libpng tinyxml2 vulkan-loader` found
-  only `freetype 2.14.3`, `libpng 1.6.58`, and `tinyxml2 11.0.0`. Consequently
-  `cmake --preset package-smoke-system-required` failed because system `cglm` was absent after
-  GLFW also fell back to headless.
+  `cmake --build --preset package-install-system-auto`. Before Homebrew GLFW was installed, the
+  system-auto configure warned that system GLFW was not found and fell back to the headless
+  backend; this was not strict Homebrew proof.
+- On 2026-06-18 macOS arm64, strict distro/Homebrew-style system proof passed after installing
+  Homebrew `glfw 3.4`, `cglm 0.9.6`, `kvazaar 2.3.2`, and `mimalloc 3.3.2`; `freetype 2.14.3`,
+  `libpng 1.6.58`, `tinyxml2 11.0.0`, and `pkgconf 2.5.1` were already present. Vulkan came from
+  `/Users/cyrille/VulkanSDK/1.4.328.1`, not Homebrew `vulkan-loader`. The strict
+  `cmake --preset package-smoke-system-required`, build, and install passed.
+- On 2026-06-18 macOS arm64,
+  `DATOVIZ_SOURCE_DEPS=system just distribution-validate-local source-install` passed after
+  `2c8a49f3d` exported Vulkan SDK include flags in `datoviz.pc` and the local validator stopped
+  passing Linux-only `-Wl,-rpath-link` to the macOS linker in the pkg-config consumer smoke.
 - On 2026-06-18 macOS arm64, the wheel C/C++ integration proof passed using
   `DVZ_WHEEL_RUNTIME_DIRS=/Users/cyrille/VulkanSDK/1.4.328.1/macOS/lib:/Users/cyrille/VulkanSDK/1.4.328.1/macOS/share/vulkan/icd.d`,
   `just build`, `just ctypes`, `python tools/release_wheels/stage_wheel.py --clean`,

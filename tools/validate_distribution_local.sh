@@ -144,6 +144,7 @@ run_pkg_config_consumer()
     local prefix=$1
     local build_dir=$2
     local pc_path="$prefix/lib/pkgconfig:$prefix/lib64/pkgconfig:$prefix/share/pkgconfig"
+    local linker_flags=()
 
     require cc
     require pkg-config
@@ -159,10 +160,14 @@ int main(void)
     return dvz_version() == 0;
 }
 EOF
+    linker_flags+=("-Wl,-rpath,$prefix/lib")
+    if [ "$(uname -s)" = Linux ]; then
+        linker_flags+=("-Wl,-rpath-link,$prefix/lib")
+    fi
     # Intentional shell expansion: pkg-config emits compiler/linker words.
     PKG_CONFIG_PATH="$pc_path" \
         cc "$build_dir/main.c" $(PKG_CONFIG_PATH="$pc_path" pkg-config --cflags --libs datoviz) \
-        -Wl,-rpath,"$prefix/lib" -Wl,-rpath-link,"$prefix/lib" \
+        "${linker_flags[@]}" \
         -o "$build_dir/datoviz_pkg_config_consumer"
     LD_LIBRARY_PATH="$prefix/lib:$prefix/lib64:$prefix/debug/lib:${LD_LIBRARY_PATH:-}" \
         "$build_dir/datoviz_pkg_config_consumer"
