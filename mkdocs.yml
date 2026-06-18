@@ -139,7 +139,7 @@ nav:
     - Integration:
       - Use from C or C++: 'how-to/c-integration.md'
       - Use from Python: 'how-to/use-python.md'
-      - Use Python raw ctypes: 'how-to/use-raw-ctypes.md'
+      - Use raw ctypes: 'how-to/use-raw-ctypes.md'
       - Embed in Qt: 'how-to/embed-in-qt.md'
       - Deploy WebGPU examples to the browser: 'how-to/deploy-to-web.md'
     - Diagnostics:
@@ -156,7 +156,7 @@ nav:
         - App, window, and I/O: 'reference/c-api/app.md'
         - Runtime and utilities: 'reference/c-api/runtime.md'
         - C types: 'reference/c-api/types.md'
-      - Python raw ctypes: 'reference/ctypes.md'
+      - Python binding: 'reference/ctypes.md'
     - Visual families:
       - Overview: 'reference/visual-families/index.md'
       - Point: 'reference/visual-families/point.md'
@@ -175,44 +175,23 @@ nav:
       - Sphere: 'reference/visual-families/sphere.md'
       - Volume: 'reference/visual-families/volume.md'
     - Core reference:
-      - Objects and lifetimes: 'reference/objects-and-lifetimes.md'
+      - Object lifetimes: 'reference/objects-and-lifetimes.md'
       - Coordinate systems: 'reference/coordinate-systems.md'
       - Controllers: 'reference/controllers.md'
-      - Callbacks: 'reference/callbacks.md'
-      - Visual attributes: 'reference/visual-attributes.md'
-      - Queries: 'reference/queries.md'
-      - Errors and logging: 'reference/errors-and-logging.md'
+      - Callbacks and events: 'reference/callbacks.md'
     - Compatibility:
-      - Project status: 'reference/project-status.md'
       - Feature status: 'reference/feature-status.md'
       - Platform support: 'reference/platform-support.md'
       - Build options: 'reference/build-options.md'
     - Backends:
-      - DRP2: 'reference/drp2/index.md'
       - WebGPU subset: 'reference/webgpu-subset.md'
       - Compute and graphics: 'reference/compute-graphics.md'
-  - Advanced:
-    - Explanation:
-      - Overview: 'explanation/index.md'
-      - Positioning:
-        - Why Datoviz: 'explanation/why-datoviz.md'
-        - Datoviz, GSP, and VisPy2: 'explanation/gsp-vispy2-boundary.md'
-      - System Architecture:
-        - Architecture: 'explanation/architecture.md'
-        - Scene to runtime boundary: 'explanation/scene-to-runtime-boundary.md'
-        - Portability and WebGPU: 'explanation/portability-webgpu.md'
-      - Scene Concepts:
-        - Scene model: 'explanation/scene-model.md'
-        - Figures, panels, and visuals: 'explanation/figure-panel-visual-model.md'
-        - Coordinate systems: 'explanation/coordinate-systems.md'
-        - Interaction model: 'explanation/interaction-model.md'
-        - Queries, picking, and probing: 'explanation/query-pick-probe-model.md'
-      - Frame and Resources:
-        - Frame lifecycle: 'explanation/frame-lifecycle.md'
-        - Retained resources: 'explanation/retained-resources.md'
-        - Invalidation and caching: 'explanation/invalidation-and-caching.md'
-        - GPU resource ownership: 'explanation/gpu-resource-ownership.md'
-        - Performance model: 'explanation/performance-model.md'
+  - Internals:
+    - Architecture:
+      - Why Datoviz: 'explanation/why-datoviz.md'
+      - Scene model: 'explanation/scene-model.md'
+      - Performance model: 'explanation/performance-model.md'
+      - Portability and WebGPU: 'explanation/portability-webgpu.md'
     - Lower Layers:
       - vklite: 'advanced/vklite.md'
       - Canvas and stream API: 'advanced/canvas.md'
@@ -253,6 +232,23 @@ not_in_nav: |
   tutorials/index.md
   tutorials/first-scene.md
   reference/c-api/drp2.md
+  reference/drp2/index.md
+  reference/project-status.md
+  reference/visual-attributes.md
+  reference/queries.md
+  reference/errors-and-logging.md
+  explanation/index.md
+  explanation/architecture.md
+  explanation/figure-panel-visual-model.md
+  explanation/coordinate-systems.md
+  explanation/interaction-model.md
+  explanation/gsp-vispy2-boundary.md
+  explanation/frame-lifecycle.md
+  explanation/retained-resources.md
+  explanation/invalidation-and-caching.md
+  explanation/gpu-resource-ownership.md
+  explanation/query-pick-probe-model.md
+  explanation/scene-to-runtime-boundary.md
   contributors/architecture-map.md
   contributors/adding-a-drp2-command.md
   contributors/adding-a-webgpu-fixture.md

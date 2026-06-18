@@ -1,6 +1,7 @@
 # Nav Restructure Plan
 
-Status: ready to execute. Self-contained briefing — no prior conversation context needed.
+Status: completed in `mkdocs.yml`. Durable nav policy now lives in
+`spec/docs/NAV_RESTRUCTURE.md`; this file is retained only as historical execution context.
 
 ## Goal
 
