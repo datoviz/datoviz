@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active RC preparation. Updated: 2026-06-17.
+Status: active RC preparation. Updated: 2026-06-18.
 
 Keep this file short. Durable behavior belongs in `spec/`; completed history belongs in git
 history, not in agent archives.
@@ -28,13 +28,6 @@ Pre-RC repository hygiene note: if the v0.4 Git history cleanup remains desired,
 `v0.4.0-rc1` and before treating release refs as stable. The agreed process, user migration note,
 and force-push guardrails are recorded in [RELEASE.md](RELEASE.md#0-pre-rc-git-history-cleanup).
 
-Color management is closed for the v0.4 core rendering/screenshot path: sampled-field color roles,
-role propagation through FramePlan/DRP2, shader-side semantic color linearization, final sRGB
-screenshot/readback behavior, and focused GPU/offscreen fixtures are landed. Use
-[`../../spec/scene/implementation/COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md`](../../spec/scene/implementation/COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md)
-as the audit checklist before changing sampled-field texture roles, shader color linearization,
-render-target color formats, or screenshot/readback color encoding.
-
 Release decision: explicit linear `f16`/`f32` scientific image export/readback is deferred beyond
 RC1. The v0.4.0 capture contract is sRGB RGBA8 screenshot/export pixels.
 
@@ -42,7 +35,7 @@ Blockers:
 
 | Lane | Status | Next proof |
 | --- | --- | --- |
-| C/C++ distribution preflight | macOS source/package and wheel CMake-consumer proof advanced on 2026-06-18. Commit `d94f72dd6` fixed installed package exports by propagating the Vulkan header dependency from `datoviz::datoviz`; `just c-integration-smoke` now passes installed-package and FetchContent consumers. macOS arm64 vendored and system-auto package presets install successfully, with system-auto falling back to headless because system GLFW is absent. Host-native wheel proof passed for repaired `macosx_15_0_arm64`: imports, `datoviz-config`, headers, CMake package, native dependency inspection, and wheel CMake consumer are green; optional Qt probe fails only because PyQt6 is absent. | Keep macOS release-target `macosx_11_0_arm64` proof in CI/older-target builder because local delocate repair retags to macOS 15. Strict Homebrew-style proof on this Mac needs Homebrew `glfw`, `cglm`, `kvazaar`, and `mimalloc`. Windows wheel proof remains the main external blocker. |
+| C/C++ distribution preflight | macOS source/package and host-native wheel CMake-consumer proof advanced on 2026-06-18 after `d94f72dd6`; see [C_DISTRIBUTION.md](C_DISTRIBUTION.md) for exact evidence and remaining packaging-channel notes. | Prove release-target `macosx_11_0_arm64` in CI or an older-target builder, then keep Windows wheel proof as the main external blocker. |
 | Windows wheel proof | Wheel workflow fixes are on `v0.4-dev`: Windows matrix/tool setup, vcpkg-provided `glslangValidator` resolution, vendored static Kvazaar `KVZ_STATIC_LIB`, and vcpkg binary archive caching. GitHub Actions confirmed Linux and macOS arm64 wheel paths during probe runs; Windows remains the active unknown because hosted runners are slow and logs arrive late. | Prefer local Windows iteration before more GHA polling: warm `C:/vcpkg`, set `VCPKG_ROOT=C:/vcpkg`, `VCPKG_BINARY_SOURCES=clear;files,C:/vcpkg-binary-cache,readwrite`, `DVZ_CMAKE_ARGS=-DDVZ_ENABLE_SHADERC=ON`, then run `just build`, `just ctypes`, `python tools/release_wheels/stage_wheel.py --clean`, `python tools/release_wheels/build_wheel.py --dist-dir wheelhouse --platform-tag win_amd64`, `just wheel-inspect --wheel wheelhouse/*.whl --native-deps`, and `python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional`. If local AMD64 is green, push `v0.4-dev` and dispatch full wheel CI for Windows ARM64/macOS x86_64 confirmation. |
 | WebGPU/WASM experimental path | WebGPU fixture runner works; generic WASM scene ABI emits split DRP2 packets for buffer-backed point/pixel positions, basic marker, segment/path with cap/join controls, primitive, RGBA8 image, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, basic sphere, panzoom, 3D arcball/fly/turntable/orbit controller examples, sampled-field/image color-scale routes, panel background, synthetic composed-showcase routes, retained data update/visibility routes, basic depth-test route, alpha blending, material/lighting routes, textured planets, protein, and portable C scenario/frame-callback proof for `feature_timer_animation`. Native scenario runner has requirements, portable event/post-frame hooks, and query/readback-shaped scenario proofs. Browser-live routes now cover 68 examples, including standalone point, pixel, marker, primitive, segment, path, image, mesh, sphere, text, glyph, labels, panel/annotation/layout, image/color-scale, controller, polygon composite, linked-panels axes, scale-bar measurement, surface-grid, U.S. state choropleth, textured planets, protein, retained update/visibility, depth-test, alpha-blending, and material/lighting routes. The frame artifact refactor is complete: scene emission returns artifact-owned stream snapshots, WASM/WebGPU consumes artifact packet spans, JSON is debug/fixture-only, and retained scene mutation no longer depends on raw emitted stream lifetime. | Follow the good-enough RC plan in `spec/scene/integration/WASM_WEBGPU_PARITY_PLAN.md`: next handle remaining non-data composed routes or continue visible parity/API disposition. |
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04. Native Vulkan compute+graphics proof passed on 2026-06-17: `test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes`, `test_vklite_compute_1`, `test_technique_compute_graphics`, and `examples/c/showcases/gpu_particle_smoke.c --png` with artifact `build/release-evidence/gpu_particle_smoke.png`. | Keep the slice classified as experimental in the feature/status table: native proof exists, but this is a narrow scene-compute/DRP2 interop path, not a general compute framework. |
@@ -51,10 +44,6 @@ Blockers:
 | Public API/status cleanup | Missing. | Mark public surfaces as supported, experimental, advanced/unstable, deferred, or external/GSP. |
 | Release example proof | Partial for the full RC, but the 2026-06-09 `EXAMPLES_NOTES.md` ledger is closed: source/gallery polish, `showcases/surface_grid`, `features/bounds_overlay`, runtime/readability fixes, scenario-helper audit, comment metadata audit, and builtin-shapes parity audit are resolved with native smoke or explicit audit evidence. | Continue broader release proof outside `EXAMPLES_NOTES.md`: visible parity table, API disposition, and any additional focused native evidence where the environment supports Vulkan. |
 
-June 10 examples cleanup is closed in git history: shared interaction fixes, 3D context polish,
-technique-panel polish, reviewed visual polish, and graph replacement landed with focused tests and
-native smoke evidence.
-
 Known follow-up: `gui/viewport_resize_hidden_smoke` currently fails. Recheck it during the next GUI
 or runtime resize pass before treating hidden viewport resize coverage as clean.
 
@@ -62,7 +51,10 @@ Closed first slices that should stay in validation: frame artifact scene emissio
 retained textured mesh, retained DATA-coordinate visual attachments, color management, text, 2D
 axes/ticks, colorbars, labels/readouts, scale bars, app/offscreen rendering, broad item/sample query
 paths, scene visual-boundary checks, WebGPU fixture runner, and WASM frame artifact packet scene
-smoke.
+smoke. Before changing sampled-field texture roles, shader color linearization, render-target color
+formats, or screenshot/readback encoding, use
+[`../../spec/scene/implementation/COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md`](../../spec/scene/implementation/COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md)
+as the color-management audit checklist.
 
 New Python binding direction: keep `datoviz.raw` as the exact generated `ctypes` layer, and make
 top-level `import datoviz as dvz` the planned array-aware facade that preserves `dvz_*` names while
