@@ -65,6 +65,13 @@ Keep this section compact; detailed history belongs in commits and release notes
   `datoviz-config`, bundled headers/CMake files, native dependency inspection, and the wheel CMake
   consumer. The local repaired wheel was host-tagged `macosx_15_0_arm64`, so
   `macosx_11_0_arm64` still needs CI or an older-target builder.
+- On 2026-06-18 Linux x86_64, local manylinux Docker proof passed with
+  `just wheel-manylinux-docker x86_64` against
+  `quay.io/pypa/manylinux_2_34_x86_64@sha256:e05e1c4b281f10dc4c3df2b6f546392a0dd4c6383d620c3f8a6c33e19069d056`.
+  The run built `datoviz-0.4.0.dev0-py3-none-manylinux_2_34_x86_64.whl`; auditwheel kept the
+  `manylinux_2_34_x86_64` tag, and installed-wheel import, `datoviz.cli`, shaderc GLSL
+  compilation, and CMake consumer checks passed. The optional Qt probe failed only because PyQt6
+  was absent in the clean venv.
 - On 2026-06-18 macOS arm64, conda preflight passed after bootstrapping micromamba in `/tmp` and
   building from a generated release source bundle. `conda render` and `conda mambabuild
   --override-channels -c conda-forge --no-anaconda-upload conda-recipe` produced local

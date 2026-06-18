@@ -1213,6 +1213,9 @@ wheel-manylinux-docker arch='x86_64':
         -e DVZ_CMAKE_ARGS="${DVZ_CMAKE_ARGS:-}" \
         -e DVZ_WHEEL_RUNTIME_DIRS="${DVZ_WHEEL_RUNTIME_DIRS:-}" \
         -e DATOVIZ_MANYLINUX_PYTHON="${DATOVIZ_MANYLINUX_PYTHON:-}" \
+        -e DATOVIZ_MANYLINUX_GENERATE_CTYPES="${DATOVIZ_MANYLINUX_GENERATE_CTYPES:-}" \
+        -e DATOVIZ_HOST_UID="$(id -u)" \
+        -e DATOVIZ_HOST_GID="$(id -g)" \
         -v "$PWD:/workspace" \
         -w /workspace \
         "$image" \

@@ -46,6 +46,13 @@ On 2026-06-18 macOS arm64:
 - Host-native repaired macOS wheel proof passes for imports, `datoviz-config`, bundled
   headers/CMake files, native dependency inspection, and the wheel CMake consumer. The optional Qt
   probe fails only because PyQt6 is absent in the clean venv.
+- Local Linux x86_64 manylinux proof passes with
+  `just wheel-manylinux-docker x86_64` against
+  `quay.io/pypa/manylinux_2_34_x86_64@sha256:e05e1c4b281f10dc4c3df2b6f546392a0dd4c6383d620c3f8a6c33e19069d056`
+  (image created 2026-06-12). The run built
+  `wheelhouse/datoviz-0.4.0.dev0-py3-none-manylinux_2_34_x86_64.whl`; auditwheel kept the
+  `manylinux_2_34_x86_64` tag; installed-wheel import, `datoviz.cli`, shaderc GLSL compilation,
+  and CMake consumer checks passed; optional Qt probe failed only because PyQt6 was absent.
 - Local conda render/build proof passes from a generated release source bundle after the Python
   recipe scripts force `PIP_USER=false`: `libdatoviz` and `datoviz` packages build, and the package
   test imports `datoviz.raw` and creates/destroys a scene without a Vulkan device.

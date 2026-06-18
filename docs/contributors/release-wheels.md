@@ -281,9 +281,11 @@ DATOVIZ_MANYLINUX_IMAGE=rossant/datoviz_manylinux:latest just wheel-manylinux-do
 ```
 
 The container script installs the missing RPM packages, builds Datoviz with
-`DVZ_ENABLE_SHADERC=ON`, generates raw `ctypes`, builds the release wheel through the v0.4 backend,
-runs auditwheel inspection, and executes the installed-wheel shaderc/CMake consumer smoke. Output
-wheels are written to `wheelhouse/` and must not be committed.
+`DVZ_ENABLE_SHADERC=ON`, regenerates raw `ctypes` and the array facade, builds the release wheel
+through the v0.4 backend, runs auditwheel inspection, and executes the installed-wheel
+shaderc/CMake consumer smoke. Output wheels are written to `wheelhouse/` and must not be committed.
+Set `DATOVIZ_MANYLINUX_GENERATE_CTYPES=0` only when intentionally checking an already generated
+tree.
 
 Keep the upstream PyPA image as the release source of truth unless a refreshed custom image is
 needed for build time. If a custom `rossant/datoviz_manylinux` image is used for RC evidence, record

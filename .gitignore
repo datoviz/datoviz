@@ -114,6 +114,7 @@ site
 uv.lock
 *venv
 wheel
+wheelhouse
 .cache
 vcpkg_installed
 *.mp4
