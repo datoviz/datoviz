@@ -53,8 +53,13 @@ local Allen mouse brain RGBA volume and occluded slice.
     | Field | Value |
     | --- | --- |
     | `name` | Allen mouse brain RGBA volume |
-    | `source` | data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz |
-    | `license` | repository data submodule terms |
+    | `source` | Allen Mouse Brain Common Coordinate Framework average template, annotation volume, structure graph, and selected structure meshes |
+    | `source_url` | http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/; https://alleninstitute.org/legal/terms-of-use |
+    | `license` | Allen Institute Terms of Use apply; public use must follow Allen Institute citation requirements. |
+    | `citation` | Allen Mouse Brain Common Coordinate Framework / Allen Brain Atlas; cite Allen Institute source material and CCF references. |
+    | `prepared_source` | data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz |
+    | `preprocessing` | python tools/data/prepare_brain_volume.py |
+    | `provenance` | Prepared from Allen CCF anatomical and annotation volumes plus selected structure meshes into a compact RGBA volume consumed by the C showcase. The committed file is a prepared data-submodule artifact; upstream Allen terms remain the source license boundary. |
 
     Generated media is prepared in the `data` submodule and linked from this page.
 

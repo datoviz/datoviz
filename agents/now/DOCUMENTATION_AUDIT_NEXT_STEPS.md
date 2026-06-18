@@ -28,15 +28,17 @@ active work; move durable documentation policy into `spec/docs/` when needed.
 6. Textured Planets now records source, license/citation, preparation, and provenance notes.
 7. WebGPU and Qt/PyQt provider docs now distinguish route publication from adapter visual proof and
    base-wheel support from optional providers.
+8. `uv run --with libclang just ctypes-check` passed locally.
+9. Real/prepared showcase attribution was expanded for U.S. State Choropleth, Protein, Lipid Brain
+   Atlas, and Allen Mouse Brain.
 
 
 ## Remaining Next Steps
 
-1. Rerun `just ctypes-check` in an environment with the Python `clang` module.
-2. Continue the real-data attribution audit for any remaining real/prepared showcases beyond
-   Textured Planets.
-3. During final release proof, pair `webgpu-live` status with recorded browser/adapter evidence for
-   promoted routes that matter to RC notes.
+1. During final release proof, pair `webgpu-live` status with recorded browser/adapter evidence for
+   promoted routes that matter to RC notes. Local `just webgpu-browser-smoke` on 2026-06-18 rebuilt
+   the WASM scene target but failed after a headless WebGPU instance-loss skip with:
+   `CreateShaderModule: invalid character found`.
 
 Do not include unrelated user changes, generated binary payloads, or `data` submodule changes unless
 explicitly approved in the current turn.

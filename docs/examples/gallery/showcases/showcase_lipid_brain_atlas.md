@@ -54,10 +54,13 @@ section/channel lipid intensity showcase.
     | --- | --- |
     | `name` | Lipid Brain Atlas peaks parquet |
     | `source` | https://zenodo.org/records/15379499 |
-    | `license` | Zenodo dataset terms apply |
+    | `source_url` | https://zenodo.org/records/15379499 |
+    | `license` | Zenodo record terms apply; verify the record license before redistributing the raw 49.4 GB parquet file. |
+    | `citation` | Fusar Bassini, Luca. Lipid Brain Atlas - biorXiv; Peaks Parquet Dataset. Zenodo, 2025. |
     | `preprocessing` | python tools/data/prepare_lipid_brain_atlas.py --synthetic --force |
     | `cache_prepared_path` | .cache/datoviz/examples/lipid_brain_atlas/prepared |
     | `raw_cache_path` | $DVZ_DATASET_CACHE/lipid_brain_atlas/peaks.parquet |
+    | `provenance` | The release gallery path uses deterministic synthetic prepared data unless the real Zenodo parquet is downloaded into the external dataset cache; raw downloads are not committed to the repository. |
 
     Generated media is prepared in the `data` submodule and linked from this page.
 

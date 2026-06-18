@@ -2042,13 +2042,24 @@ examples:
     agent_copy_safe: false
     dataset:
       name: Contiguous U.S. state population density
+      source: U.S. Census Bureau 2024 cartographic state boundaries and Vintage 2025 state population estimates
+      source_url: >-
+        https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip;
+        https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx
       boundary_source: https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip
       population_source: https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx
       license: U.S. Census Bureau public data; cite the Census Bureau as source.
+      citation: >-
+        U.S. Census Bureau, 2024 Cartographic Boundary File, States, 1:20m; U.S. Census
+        Bureau, Vintage 2025 state resident population estimates.
       fallback_prepared_path: .cache/datoviz/examples/us_state_choropleth/prepared
       promoted_prepared_path: data/examples/us_state_choropleth/prepared
       preprocessing: python tools/data/prepare_us_state_choropleth.py
       prepared_layout: flat typed arrays plus metadata.tsv
+      provenance: >-
+        Prepared from Census boundary and population files by filtering to the 48 contiguous
+        states, projecting rings with a spherical Albers equal-area transform, and encoding
+        log10 resident population density from 2025 population estimates and Census ALAND values.
     encoding:
       position: Census boundary rings projected with a spherical Albers equal-area transform and normalized into scene space
       color: log10 of Vintage 2025 resident population per Census ALAND square kilometer
@@ -2088,11 +2099,17 @@ examples:
     dataset:
       name: RCSB PDB protein structure
       source: https://files.rcsb.org/download/{pdb_id}.pdb
-      license: RCSB PDB data usage policy applies.
+      source_url: https://www.wwpdb.org/about/usage-policies
+      license: PDB archive coordinate files are available under CC0 1.0; attribute original structure authors where possible.
+      citation: Cite the original PDB structure entry and the wwPDB/RCSB PDB resource where appropriate.
       default_pdb_id: 6M0J
       fallback_pdb_id: 1UBQ
       fallback_prepared_path: data/examples/proteins/1ubq/prepared
       preprocessing: python tools/data/prepare_protein_arcball.py 1UBQ --regenerate
+      provenance: >-
+        The showcase loads a PDB coordinate file, normalizes atom positions into scene space, and
+        renders atoms as sphere impostors with element-style colors and radii from the preparation
+        bundle.
     encoding:
       position: atom coordinates normalized into scene space
       color: element-style atom colors from the preparation bundle
@@ -2228,10 +2245,18 @@ examples:
     dataset:
       name: Lipid Brain Atlas peaks parquet
       source: https://zenodo.org/records/15379499
-      license: Zenodo dataset terms apply
+      source_url: https://zenodo.org/records/15379499
+      license: >-
+        Zenodo record terms apply; verify the record license before redistributing the raw
+        49.4 GB parquet file.
+      citation: Fusar Bassini, Luca. Lipid Brain Atlas - biorXiv; Peaks Parquet Dataset. Zenodo, 2025.
       preprocessing: python tools/data/prepare_lipid_brain_atlas.py --synthetic --force
       cache_prepared_path: .cache/datoviz/examples/lipid_brain_atlas/prepared
       raw_cache_path: $DVZ_DATASET_CACHE/lipid_brain_atlas/peaks.parquet
+      provenance: >-
+        The release gallery path uses deterministic synthetic prepared data unless the real
+        Zenodo parquet is downloaded into the external dataset cache; raw downloads are not
+        committed to the repository.
     gallery:
       card: section
       status_label: prototype
@@ -2330,8 +2355,18 @@ examples:
     agent_copy_safe: false
     dataset:
       name: Allen mouse brain RGBA volume
-      source: data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz
-      license: repository data submodule terms
+      source: Allen Mouse Brain Common Coordinate Framework average template, annotation volume, structure graph, and selected structure meshes
+      source_url: >-
+        http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/;
+        https://alleninstitute.org/legal/terms-of-use
+      license: Allen Institute Terms of Use apply; public use must follow Allen Institute citation requirements.
+      citation: Allen Mouse Brain Common Coordinate Framework / Allen Brain Atlas; cite Allen Institute source material and CCF references.
+      prepared_source: data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz
+      preprocessing: python tools/data/prepare_brain_volume.py
+      provenance: >-
+        Prepared from Allen CCF anatomical and annotation volumes plus selected structure meshes
+        into a compact RGBA volume consumed by the C showcase. The committed file is a prepared
+        data-submodule artifact; upstream Allen terms remain the source license boundary.
     gallery:
       card: section
       status_label: prototype

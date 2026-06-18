@@ -65,11 +65,14 @@ RCSB PDB protein structure rendered as clustered spheres.
     | --- | --- |
     | `name` | RCSB PDB protein structure |
     | `source` | https://files.rcsb.org/download/{pdb_id}.pdb |
-    | `license` | RCSB PDB data usage policy applies. |
+    | `source_url` | https://www.wwpdb.org/about/usage-policies |
+    | `license` | PDB archive coordinate files are available under CC0 1.0; attribute original structure authors where possible. |
+    | `citation` | Cite the original PDB structure entry and the wwPDB/RCSB PDB resource where appropriate. |
     | `default_pdb_id` | 6M0J |
     | `fallback_pdb_id` | 1UBQ |
     | `fallback_prepared_path` | data/examples/proteins/1ubq/prepared |
     | `preprocessing` | python tools/data/prepare_protein_arcball.py 1UBQ --regenerate |
+    | `provenance` | The showcase loads a PDB coordinate file, normalizes atom positions into scene space, and renders atoms as sphere impostors with element-style colors and radii from the preparation bundle. |
 
     ### Encoding
 
