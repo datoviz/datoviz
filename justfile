@@ -1995,7 +1995,7 @@ serve: docs-assets
         echo "Port ${host}:${start_port} is busy; serving docs on ${host}:${port}."
     fi
 
-    uv run --with mkdocs-material --with 'mkdocstrings[python]' mkdocs serve -a "${host}:${port}"
+    uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs serve -a "${host}:${port}"
 #
 
 # Publish the mkdocs website on GitHub Pages.
