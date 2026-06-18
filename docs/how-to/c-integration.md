@@ -45,6 +45,17 @@ Pass `0` to run until the user closes the window; pass a positive frame count fo
 
 ## Build Integration
 
+For wheels installed with `pip`, `datoviz-config` prints the include path, library path, and CMake
+package directory from the active Python environment:
+
+```sh
+cc main.c $(datoviz-config --cflags --libs) -o my_datoviz_app
+./my_datoviz_app
+```
+
+This path is intended for GCC-compatible shells on Linux, macOS, and MSYS2/MinGW. On Windows with
+MSVC, use CMake instead of `datoviz-config`; the script does not emit `/I` or `/LIBPATH:` flags.
+
 Installed CMake consumers should use the exported Datoviz package:
 
 ```cmake
@@ -54,9 +65,40 @@ add_executable(my_datoviz_app main.c)
 target_link_libraries(my_datoviz_app PRIVATE datoviz::datoviz)
 ```
 
-Datoviz can also be embedded with CMake `FetchContent` when source integration is preferred. See
-[Build options](../reference/build-options.md) for install exports, package smoke presets, and the
-`just c-integration-smoke` validation target.
+After `pip install datoviz`, point CMake at the wheel package directory when it is not on the normal
+prefix path:
+
+```sh
+cmake -S . -B build -Ddatoviz_DIR="$(datoviz-config --cmake-dir)"
+cmake --build build
+```
+
+Datoviz can also be embedded with CMake `FetchContent` when source integration is preferred:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(datoviz
+    GIT_REPOSITORY https://github.com/datoviz/datoviz.git
+    GIT_TAG v0.4.0
+)
+FetchContent_MakeAvailable(datoviz)
+
+add_executable(my_datoviz_app main.c)
+target_link_libraries(my_datoviz_app PRIVATE datoviz::datoviz)
+```
+
+On Windows, copy the Datoviz DLL next to your executable after build:
+
+```cmake
+add_custom_command(TARGET my_datoviz_app POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "$<TARGET_FILE:datoviz::datoviz>"
+        "$<TARGET_FILE_DIR:my_datoviz_app>"
+)
+```
+
+See [Build options](../reference/build-options.md) for install exports, package smoke presets, and
+the `just c-integration-smoke` validation target.
 
 ## Important Details
 

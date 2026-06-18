@@ -99,4 +99,6 @@ Packaging and assets:
 4. optional features fail gracefully when dependencies are unavailable;
 5. every shipped asset has a known license;
 6. generated media and public datasets have provenance;
-7. checksums/signing policy is decided.
+7. installed CMake/pkg-config consumers compile against public headers without private include
+   paths, including transitive dependencies exposed by those headers;
+8. checksums/signing policy is decided.

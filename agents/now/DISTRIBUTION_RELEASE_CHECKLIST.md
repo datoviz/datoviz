@@ -51,6 +51,35 @@ Local shaderc/Vulkan source-build proof:
   `MACOSX_DEPLOYMENT_TARGET=11.0`, `delocate-wheel` rejects `libdatoviz.dylib` and Homebrew
   `libpng`, `libtinyxml2`, and `libfreetype` dylibs because they have minimum target macOS 15.0.
   Use an older-target build host/dependency set or CI for the release matrix tag proof.
+- On 2026-06-18 macOS arm64, the local source/package C consumer proof exposed and then closed an
+  installed export bug: `datoviz::datoviz` did not propagate the Vulkan header dependency while
+  public installed headers include `<vulkan/vulkan.h>`. Commit `d94f72dd6` exports
+  `Vulkan::Headers`/`Vulkan::Vulkan` from the aggregate target. After that fix,
+  `just c-integration-smoke` passed for both installed-package and FetchContent consumers.
+- On 2026-06-18 macOS arm64, these source/package checks passed:
+  `cmake --preset package-smoke-vendored`, `cmake --build --preset package-smoke-vendored`,
+  `cmake --build --preset package-install-vendored`, `cmake --preset package-smoke-system-auto`,
+  `cmake --build --preset package-smoke-system-auto`, and
+  `cmake --build --preset package-install-system-auto`. The system-auto configure warned that
+  system GLFW was not found and fell back to the headless backend; this is not strict Homebrew
+  proof.
+- On 2026-06-18 macOS arm64, strict distro/Homebrew-style system proof remained environment-blocked.
+  `brew list --versions glfw cglm kvazaar mimalloc freetype libpng tinyxml2 vulkan-loader` found
+  only `freetype 2.14.3`, `libpng 1.6.58`, and `tinyxml2 11.0.0`. Consequently
+  `cmake --preset package-smoke-system-required` failed because system `cglm` was absent after
+  GLFW also fell back to headless.
+- On 2026-06-18 macOS arm64, the wheel C/C++ integration proof passed using
+  `DVZ_WHEEL_RUNTIME_DIRS=/Users/cyrille/VulkanSDK/1.4.328.1/macOS/lib:/Users/cyrille/VulkanSDK/1.4.328.1/macOS/share/vulkan/icd.d`,
+  `just build`, `just ctypes`, `python tools/release_wheels/stage_wheel.py --clean`,
+  `python tools/release_wheels/build_wheel.py --dist-dir wheelhouse --platform-tag macosx_11_0_arm64`,
+  `just wheel-validate --dist-dir wheelhouse --platform-tag macosx_15_0_arm64`,
+  `python tools/release_wheels/inspect_wheel.py --wheel wheelhouse/datoviz-0.4.0.dev0-py3-none-macosx_15_0_arm64.whl --native-deps`,
+  and
+  `python tools/release_wheels/check_wheel.py --wheel wheelhouse/datoviz-0.4.0.dev0-py3-none-macosx_15_0_arm64.whl --cmake-consumer --qt-probe optional`.
+  The repaired local wheel was host-tagged `macosx_15_0_arm64`, bundled `libdatoviz.dylib`,
+  `libvulkan.1.4.328.dylib`, `libMoltenVK.dylib`, `libshaderc_shared.1.dylib`, `MoltenVK_icd.json`,
+  headers, and `DatovizConfig.cmake`, and the wheel CMake consumer printed `0.4.0-dev (DEBUG)`.
+  The optional Qt probe failed as expected because PyQt6 was absent in the clean check venv.
 
 1. Generate current ctypes bindings:
    ```sh

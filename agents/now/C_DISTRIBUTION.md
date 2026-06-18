@@ -8,6 +8,36 @@ Python wheel is the primary distribution vehicle for v0.4; other channels follow
 
 ---
 
+## Current macOS preflight
+
+Status on 2026-06-18, macOS arm64:
+
+- Source install consumers are green after commit `d94f72dd6`, which exports the Vulkan header
+  dependency from `datoviz::datoviz`. `just c-integration-smoke` now passes for both installed
+  package and FetchContent consumers.
+- Vendored package presets pass: `package-smoke-vendored` and `package-install-vendored`.
+- System-auto package presets pass: `package-smoke-system-auto` and `package-install-system-auto`,
+  but this Mac falls back to the headless window backend because system GLFW is absent.
+- Strict system/Homebrew proof is blocked on this machine until Homebrew `glfw`, `cglm`, `kvazaar`,
+  and `mimalloc` development packages are installed. The strict preset currently fails at missing
+  system `cglm`.
+- Host-native wheel proof passes for the repaired `macosx_15_0_arm64` wheel: imports,
+  `datoviz-config`, bundled headers/CMake files, native dependency inspection, and the wheel CMake
+  consumer all pass. The optional Qt probe fails only because PyQt6 is absent in the clean venv.
+- Release-target macOS proof for `macosx_11_0_arm64` remains a CI/older-target-builder task:
+  local delocate repair retags/requires the newer macOS 15 deployment target from this host's
+  native outputs and Homebrew dependencies.
+
+Still blocked outside this Mac:
+
+- Windows AMD64/ARM64 wheel proof, including MinGW runtime DLL layout and MSVC `.dll`/`.lib`
+  CMake consumer proof.
+- vcpkg overlay proof on Windows/Visual Studio.
+- Final conda-forge, Homebrew, `.deb`, Spack, and release publication steps that require a stable
+  release tag or external packaging infrastructure.
+
+---
+
 ## Decisions already made
 
 - **`datoviz-config` script** is the pkg-config equivalent for Linux/macOS/MinGW. It emits
