@@ -196,6 +196,10 @@ The umbrella `<datoviz.h>` should stay scene/app-first. Advanced Vulkan, vklite,
 runtime internals should be included through their explicit module headers by callers that need
 them.
 
+For RC1, existing advanced runtime APIs should be documented as `advanced/unstable` rather than
+hidden wholesale. Hide or remove only specific accidental symbols whose ownership and release role
+are clearly internal.
+
 
 ## Binding And WASM Constraints
 

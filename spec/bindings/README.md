@@ -247,6 +247,10 @@ that layout yet, prefer a `dvz_ffi_*` out-pointer helper over changing the canon
 The generated C reference should distinguish "emitted", "skipped by policy", and "available through
 `dvz_ffi_*`" states.
 
+For RC1, do not add `dvz_ffi_*` wrappers for every skipped by-value return. Add wrappers only when a
+raw `ctypes`, WASM, or release example needs that exact initializer. The current geometry and
+reference-grid wrappers cover the first release-facing set.
+
 NumPy support should be added as thin helpers around the raw layer, not as the default treatment for
 every pointer argument. The raw layer should remain faithful and predictable before becoming
 ergonomic.
@@ -271,6 +275,9 @@ the generated Python classes. Do not rely on blanket assumptions such as `_pack_
 The current generator emits `_fields_` only for layout-safe records it can validate with `ctypes`.
 Records that depend on cglm vector/matrix alignment are intentionally kept opaque until the raw
 binding has an explicit aligned-structure policy.
+
+For RC1, keep cglm-aligned records opaque in raw `ctypes`. Use pointer-based APIs or targeted
+`dvz_ffi_*` helpers instead of attempting a broad aligned-record mapping late in the release cycle.
 
 
 ## Examples
