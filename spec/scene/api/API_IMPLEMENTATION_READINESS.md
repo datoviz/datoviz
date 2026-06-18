@@ -55,8 +55,8 @@ area-level implementation status is below. Per-family visual status lives in
 [`../visuals/STATUS.md`](../visuals/STATUS.md).
 The release-facing v0.3 visible capability disposition lives in
 [`../../../docs/reference/v03-visible-parity.md`](../../../docs/reference/v03-visible-parity.md);
-that table classifies behavior as fixed, deferred, or external/GSP without preserving old v0.3 API
-names.
+that table classifies behavior as fixed, experimental, deferred, or external/GSP without preserving
+old v0.3 API names.
 
 | Area | Public API | Retained state | Native rendering / execution | GPU request/readback | Remaining gaps |
 |---|---|---|---|---|---|

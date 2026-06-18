@@ -7,6 +7,7 @@ promise source or ABI compatibility with v0.3. The active v0.4 API is the C scen
 Status values:
 
 - `fixed`: covered by the v0.4 scene/app surface, examples, tests, or public docs.
+- `experimental`: active v0.4 surface, but not required as a v0.3 visible parity blocker.
 - `deferred`: intentionally not part of the v0.4 release surface.
 - `external/GSP`: owned by GSP, VisPy2, Matplotlib, or an application layer above Datoviz.
 
@@ -35,10 +36,10 @@ Status values:
 | Volume visual and 3D sampled fields | fixed | `dvz_volume()`, volume, volume-occlusion, and brain-volume examples | Slice/MIP/composite paths are active. Isosurfaces, MPR, categorical label volumes, and DVR/MIP ray-hit picking are deferred. |
 | Picking, selection, image probing, and readback | fixed | unified query API, picking/selection/probe examples | First broad item/sample paths are active. Rich mesh face, text/glyph, path/span, and volume ray identities are deferred. |
 | Retained data updates, partial updates, transforms, and visibility | fixed | update, partial-update, transform, and visibility examples | Broader span/group source APIs remain future work unless a family documents support. |
-| Raster video export | deferred | experimental video example | Not a required v0.4 parity blocker. |
-| Scene compute and compute-to-render particles | deferred | experimental compute+graphics slice | Active as an experimental v0.4 feature, not a v0.3 visible parity requirement. |
-| WebGPU/WASM browser rendering | deferred | experimental WebGPU subset | The browser route is promoted for selected examples but is not native Vulkan parity. |
-| DRP2/DVZR command streams, fixtures, and replay | deferred | advanced/unstable contributor surface | Useful for runtime authors; not a v0.3 user-facing parity requirement. |
+| Raster video export | experimental | experimental video example | Active, but not a required v0.3 visible parity blocker. |
+| Scene compute and compute-to-render particles | experimental | experimental compute+graphics slice | Active as a v0.4 feature, not a v0.3 visible parity requirement. |
+| WebGPU/WASM browser rendering | experimental | experimental WebGPU subset | The browser route is promoted for selected examples but is not native Vulkan parity. |
+| DRP2/DVZR command streams, fixtures, and replay | experimental | advanced/unstable contributor surface | Useful for runtime authors; not a v0.3 user-facing parity requirement. |
 | Error bars, box plots, statistical plotting helpers, and high-level trace APIs | external/GSP | compose from primitives or use GSP/VisPy2 | Datoviz may expose low-level visuals/composites, but statistical plotting policy belongs above the renderer. |
 | Old object-oriented Python plotting API | external/GSP | GSP/VisPy2 | Datoviz v0.4 does not recreate the v0.3 Python API. |
 | Publication-quality PDF/SVG/vector export | external/GSP | GSP/Matplotlib | Datoviz owns interactive GPU rendering and raster capture. |

@@ -33,7 +33,8 @@ Required before feature freeze:
    examples live on the website, including core visuals, animation/frame callbacks,
    compute-to-render particles, and a narrow request/query/readback slice.
 4. Raw `ctypes` generation and smoke tests work for the intended public C surface.
-5. v0.3 visible capability gaps are fixed, explicitly deferred, or external/GSP-owned.
+5. v0.3 visible capability gaps are fixed, active experimental, explicitly deferred, or
+   external/GSP-owned.
 6. Core examples compile and exercise the release feature set.
 7. Minimal compute+graphics interop has an experimental C-first proof, explicit DRP2
    synchronization, and a gallery-oriented particle example.
@@ -147,8 +148,8 @@ Audit visible capabilities, not old APIs: retained scene workflow, offscreen/GLF
 capture, frame callbacks, multi-panel figures, text, axes, colorbars, panzoom, arcball/fly/turntable,
 point, pixel, marker, primitive, segment/path, image, mesh/textured mesh, sphere, and volume.
 
-Exit criteria: every visible gap is fixed, deferred, or external/GSP, and the table is linked from
-release docs. The current public table is
+Exit criteria: every visible gap is fixed, experimental, deferred, or external/GSP, and the table is
+linked from release docs. The current public table is
 [../../docs/reference/v03-visible-parity.md](../../docs/reference/v03-visible-parity.md).
 
 ### 3. WebGPU/WASM Experimental Slice
