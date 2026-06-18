@@ -1,20 +1,32 @@
 # Distribution Release Checklist
 
-Use this checklist before dispatching live GitHub Actions or publishing release assets. It keeps
-the wheel, conda, and vcpkg paths tied to the same source bundle.
+Status: active release gate. Updated: 2026-06-18.
 
-## Local Source Bundle
+Use this checklist before dispatching live GitHub Actions, publishing source assets, submitting
+package-manager recipes, or uploading release wheels. It keeps the wheel, conda, and vcpkg paths
+tied to the same explicit source bundle.
 
-The repeatable local preflight entry point is:
+Detailed references:
+
+- Active handoff: [C_DISTRIBUTION.md](C_DISTRIBUTION.md).
+- Wheel policy and commands: [../../docs/contributors/release-wheels.md](../../docs/contributors/release-wheels.md).
+- C/C++ integration docs: [../../docs/how-to/c-integration.md](../../docs/how-to/c-integration.md).
+- Build options and package presets: [../../docs/reference/build-options.md](../../docs/reference/build-options.md).
+- Conda recipe draft: [../../conda-recipe/README.md](../../conda-recipe/README.md).
+- vcpkg overlay draft: [../../vcpkg-overlay/README.md](../../vcpkg-overlay/README.md).
+
+
+## Local Preflight
+
+Run the repeatable local distribution preflight:
 
 ```sh
 just distribution-validate-local all
 ```
 
-Individual lanes are available as `source-install`, `vcpkg`, and `conda`.
-The source-install lane defaults to `DATOVIZ_SOURCE_DEPS=vendored`; use
-`DATOVIZ_SOURCE_DEPS=system` when validating distro-style system dependencies on a machine with
-the required development packages installed.
+Individual lanes are available as `source-install`, `vcpkg`, and `conda`. The source-install lane
+defaults to `DATOVIZ_SOURCE_DEPS=vendored`; use `DATOVIZ_SOURCE_DEPS=system` only on machines with
+the target distro/package-manager development packages installed.
 
 Audit existing install prefixes without rebuilding:
 
@@ -22,9 +34,9 @@ Audit existing install prefixes without rebuilding:
 just distribution-validate-local audit
 ```
 
-The audit lane checks the source install prefix, vcpkg prefix, and conda prefix when present. It
-verifies installed Datoviz headers, `libdatoviz`, `ldd`/runtime paths on Linux, `datoviz.pc`,
-CMake package files, and small CMake/pkg-config consumers. Override default prefixes with:
+The audit checks source-install, vcpkg, and conda prefixes when present. It verifies installed
+headers, Datoviz shared libraries, Linux runtime paths, `datoviz.pc`, CMake package files, and
+small CMake/pkg-config consumers. Override prefixes when needed:
 
 ```sh
 DATOVIZ_SOURCE_AUDIT_PREFIX=/tmp/datoviz-dist-validate/source-prefix \
@@ -33,73 +45,41 @@ DATOVIZ_CONDA_AUDIT_PREFIX=/tmp/datoviz-local \
   just distribution-validate-local audit
 ```
 
-Local shaderc/Vulkan source-build proof:
 
-- `just shaderc-smoke` runs a native build-tree `dvz_compile_glsl()` smoke.
-- On 2026-06-17 macOS arm64, `just shaderc-smoke` passed and produced 1168 SPIR-V bytes.
-- On 2026-06-17 macOS arm64, `just test-runtime-vklite` passed 88/89 selected tests with one
-  environment skip, `vk/memory_interop_buffer_export` (`external semaphore FD unsupported`).
-  The DRP2 GLSL shader module runtime cases passed.
-- On 2026-06-17 macOS arm64, `just test-drp2-contract` passed 91/91 selected tests.
-- On 2026-06-17 macOS arm64, a host-native wheel proof passed with
-  `DVZ_WHEEL_RUNTIME_DIRS=/Users/cyrille/VulkanSDK/1.4.328.1/macOS/lib`,
-  `just wheel-stage --clean`, `just wheel-build --platform-tag macosx_15_0_arm64`,
-  `just wheel-validate --platform-tag macosx_15_0_arm64`, `just wheel-inspect --native-deps`,
-  and `just wheel-check --shaderc --cmake-consumer --qt-probe optional`. The optional Qt probe
-  failed as expected because PyQt6 is absent in the clean check environment.
-- The same local machine cannot prove the release target `macosx_11_0_arm64`: with
-  `MACOSX_DEPLOYMENT_TARGET=11.0`, `delocate-wheel` rejects `libdatoviz.dylib` and Homebrew
-  `libpng`, `libtinyxml2`, and `libfreetype` dylibs because they have minimum target macOS 15.0.
-  Use an older-target build host/dependency set or CI for the release matrix tag proof.
-- On 2026-06-18 macOS arm64, the local source/package C consumer proof exposed and then closed an
-  installed export bug: `datoviz::datoviz` did not propagate the Vulkan header dependency while
-  public installed headers include `<vulkan/vulkan.h>`. Commit `d94f72dd6` exports
-  `Vulkan::Headers`/`Vulkan::Vulkan` from the aggregate target. After that fix,
-  `just c-integration-smoke` passed for both installed-package and FetchContent consumers.
-- On 2026-06-18 macOS arm64, these source/package checks passed:
-  `cmake --preset package-smoke-vendored`, `cmake --build --preset package-smoke-vendored`,
-  `cmake --build --preset package-install-vendored`, `cmake --preset package-smoke-system-auto`,
-  `cmake --build --preset package-smoke-system-auto`, and
-  `cmake --build --preset package-install-system-auto`. Before Homebrew GLFW was installed, the
-  system-auto configure warned that system GLFW was not found and fell back to the headless
-  backend; this was not strict Homebrew proof.
-- On 2026-06-18 macOS arm64, strict distro/Homebrew-style system proof passed after installing
-  Homebrew `glfw 3.4`, `cglm 0.9.6`, `kvazaar 2.3.2`, and `mimalloc 3.3.2`; `freetype 2.14.3`,
-  `libpng 1.6.58`, `tinyxml2 11.0.0`, and `pkgconf 2.5.1` were already present. Vulkan came from
-  `/Users/cyrille/VulkanSDK/1.4.328.1`, not Homebrew `vulkan-loader`. The strict
-  `cmake --preset package-smoke-system-required`, build, and install passed.
+## Latest Local Proof
+
+Keep this section compact; detailed history belongs in commits and release notes.
+
+- On 2026-06-17 macOS arm64, shaderc/Vulkan source-build proof passed:
+  `just shaderc-smoke`, `just test-runtime-vklite`, and `just test-drp2-contract`.
+- On 2026-06-18 macOS arm64, installed C consumers passed after `d94f72dd6` exported Vulkan
+  headers from `datoviz::datoviz`: `just c-integration-smoke` covers installed-package and
+  FetchContent consumers.
+- On 2026-06-18 macOS arm64, vendored, system-auto, and strict Homebrew-style source/package lanes
+  passed. The strict lane used Homebrew `glfw`, `cglm`, `kvazaar`, and `mimalloc`; Vulkan came
+  from the local Vulkan SDK, not Homebrew `vulkan-loader`.
 - On 2026-06-18 macOS arm64,
-  `DATOVIZ_SOURCE_DEPS=system just distribution-validate-local source-install` passed after
-  `2c8a49f3d` exported Vulkan SDK include flags in `datoviz.pc` and the local validator stopped
-  passing Linux-only `-Wl,-rpath-link` to the macOS linker in the pkg-config consumer smoke.
-- On 2026-06-18 macOS arm64, `just distribution-validate-local audit` passed against the strict
-  source install prefix. It found 119 installed headers, `libdatoviz*.dylib`, CMake package files,
-  `datoviz.pc` with Vulkan SDK include flags, Homebrew dynamic dependencies for cglm, freetype,
-  tinyxml2, and GLFW, and working installed CMake/pkg-config consumers. vcpkg and conda audits
-  were skipped because their local prefixes were absent.
-- On 2026-06-18 macOS arm64, the wheel C/C++ integration proof passed using
-  `DVZ_WHEEL_RUNTIME_DIRS=/Users/cyrille/VulkanSDK/1.4.328.1/macOS/lib:/Users/cyrille/VulkanSDK/1.4.328.1/macOS/share/vulkan/icd.d`,
-  `just build`, `just ctypes`, `python tools/release_wheels/stage_wheel.py --clean`,
-  `python tools/release_wheels/build_wheel.py --dist-dir wheelhouse --platform-tag macosx_11_0_arm64`,
-  `just wheel-validate --dist-dir wheelhouse --platform-tag macosx_15_0_arm64`,
-  `python tools/release_wheels/inspect_wheel.py --wheel wheelhouse/datoviz-0.4.0.dev0-py3-none-macosx_15_0_arm64.whl --native-deps`,
-  and
-  `python tools/release_wheels/check_wheel.py --wheel wheelhouse/datoviz-0.4.0.dev0-py3-none-macosx_15_0_arm64.whl --cmake-consumer --qt-probe optional`.
-  The repaired local wheel was host-tagged `macosx_15_0_arm64`, bundled `libdatoviz.dylib`,
-  `libvulkan.1.4.328.dylib`, `libMoltenVK.dylib`, `libshaderc_shared.1.dylib`, `MoltenVK_icd.json`,
-  headers, and `DatovizConfig.cmake`, and the wheel CMake consumer printed `0.4.0-dev (DEBUG)`.
-  The optional Qt probe failed as expected because PyQt6 was absent in the clean check venv.
+  `DATOVIZ_SOURCE_DEPS=system just distribution-validate-local source-install` and
+  `just distribution-validate-local audit` passed against the strict source install prefix.
+- On 2026-06-18 macOS arm64, host-native repaired wheel proof passed for imports,
+  `datoviz-config`, bundled headers/CMake files, native dependency inspection, and the wheel CMake
+  consumer. The local repaired wheel was host-tagged `macosx_15_0_arm64`, so
+  `macosx_11_0_arm64` still needs CI or an older-target builder.
+- On Ubuntu 24.04 noble, the distro-style system source-install lane passed with system
+  `libmimalloc`, `libglfw`, `zlib`, `freetype`, and `tinyxml2`, with no unresolved `ldd` entries.
 
-1. Generate current ctypes bindings:
-   ```sh
-   just ctypes
-   ```
-2. Create the source bundle:
-   ```sh
-   just release-source-bundle 0.4.0
-   ```
-3. Record the printed SHA512 digest. GitHub-generated archives are not valid for v0.4 packaging
-   because they omit submodules and ignored generated files.
+
+## Source Bundle
+
+Generate bindings and the release source bundle before package-manager validation:
+
+```sh
+just ctypes
+just release-source-bundle 0.4.0
+```
+
+Record the printed SHA512 digest. GitHub auto-generated source archives are not valid for v0.4
+packaging because they omit submodules and ignored generated files.
 
 The bundle must include:
 
@@ -107,6 +87,41 @@ The bundle must include:
 - external submodules, including nested `external/cimgui/imgui` and
   `external/msdf-atlas-gen/msdfgen`
 - required `data/assets/fonts/*.ttf` files used by scene text defaults
+
+
+## Wheel Matrix
+
+Use local CI parity before dispatching `.github/workflows/wheels.yml`:
+
+```sh
+just wheel-ci-local <host-platform-tag>
+```
+
+When native code must be rebuilt first:
+
+```sh
+just wheel-ci-local <host-platform-tag> 1
+```
+
+Windows AMD64 remains the first local Windows proof target:
+
+```sh
+set VCPKG_ROOT=C:/vcpkg
+set VCPKG_BINARY_SOURCES=clear;files,C:/vcpkg-binary-cache,readwrite
+set DVZ_CMAKE_ARGS=-DDVZ_ENABLE_SHADERC=ON
+just wheel-ci-local win_amd64 1
+```
+
+Before accepting wheel evidence:
+
+1. Linux wheels build and inspect on `x86_64` and `aarch64`.
+2. macOS wheels build and inspect on `x86_64` and `arm64`; `macosx_11_0_arm64` must be proven in
+   CI or a clean older-target builder, not retagged from this macOS 15 host.
+3. Windows wheels build and inspect on AMD64 and ARM64.
+4. Installed-wheel smokes pass for Python 3.10 through 3.14.
+5. The CMake consumer check passes from the installed wheel.
+6. Qt probing stays optional unless the runner installs a known-good Qt/PyQt stack.
+
 
 ## Conda Preflight
 
@@ -126,13 +141,14 @@ Expected proof:
 
 - `libdatoviz` builds and installs headers plus `libdatoviz`.
 - `datoviz` imports `datoviz` and `datoviz.raw`.
-- `raw.dvz_scene()` and `raw.dvz_scene_destroy()` pass in the test environment.
-- `just distribution-validate-local audit` reports the expected Datoviz headers, shared libraries,
-  CMake package files, pkg-config metadata, and no unresolved `ldd` entries for the conda prefix.
+- `raw.dvz_scene()` and `raw.dvz_scene_destroy()` pass without creating a Vulkan device.
+- `just distribution-validate-local audit` reports the expected conda prefix metadata and no
+  unresolved runtime dependencies.
+
 
 ## vcpkg Overlay Preflight
 
-First validate fast checkout mode:
+Validate fast checkout mode first:
 
 ```sh
 DATOVIZ_VCPKG_SOURCE_PATH=$PWD \
@@ -150,24 +166,25 @@ DATOVIZ_VCPKG_SOURCE_SHA512=<sha512> \
 For Windows release confidence, repeat with `x64-windows` or the selected Windows dynamic triplet
 before publishing the overlay.
 
-Expected Linux dynamic audit proof:
+Expected proof:
 
-- `libdatoviz.so`, `libdatoviz_core.so`, `libdatoviz_vk.so`, and `libdatoviz_canvas.so` exist in
-  both release and debug library directories for `x64-linux-dynamic`.
+- Datoviz release and debug shared libraries exist in the vcpkg install prefix.
 - `DatovizConfig.cmake`, version files, and targets are fixed up under `share/datoviz`.
 - `datoviz.pc` exists under `lib/pkgconfig`.
-- `ldd` resolves vcpkg-managed runtime dependencies from the vcpkg prefix and reports no
-  unresolved entries.
+- Runtime dependency inspection resolves vcpkg-managed dependencies and reports no unresolved
+  entries.
 
-## Distro-Style System Dependency Preflight
+
+## Distro-Style System Preflight
 
 Run this after installing the target distro development packages:
 
 ```sh
 DATOVIZ_SOURCE_DEPS=system just distribution-validate-local source-install
+just distribution-validate-local audit
 ```
 
-On Ubuntu 24.04 noble, the required package names validated so far are:
+Ubuntu 24.04 noble package names validated so far:
 
 ```sh
 sudo apt-get install -y \
@@ -175,19 +192,19 @@ sudo apt-get install -y \
   libcglm-dev libfreetype-dev libglfw3-dev libmimalloc-dev libtinyxml2-dev libvulkan-dev zlib1g-dev
 ```
 
-Current local result on Ubuntu 24.04 noble: after installing those packages,
-`DATOVIZ_SOURCE_DEPS=system just distribution-validate-local source-install` passes, and
-`just distribution-validate-local audit` reports the source prefix linked to system `libmimalloc`,
-`libglfw`, `zlib`, `freetype`, and `tinyxml2` with no unresolved `ldd` entries.
+Package-manager recipes should use `DVZ_VENDORED_DEPS=OFF` and only force `SYSTEM` for dependency
+packages proven in that ecosystem.
+
 
 ## Live Release Gates
 
-Do not run or publish from this checklist until the user explicitly approves live release actions.
-When approved:
+Do not run or publish live release actions until the user explicitly approves them. When approved:
 
-1. Upload `datoviz-<version>-source.tar.gz` as a release asset.
-2. Replace placeholder SHA512 values in `conda-recipe/meta.yaml` and
+1. Confirm `git diff --check` is clean and `git status --short` has no unapproved `data` gitlink,
+   generated binary, runtime library, wheel, or source-bundle changes staged.
+2. Upload `datoviz-<version>-source.tar.gz` as a release asset.
+3. Replace placeholder SHA512 values in `conda-recipe/meta.yaml` and
    `vcpkg-overlay/ports/datoviz/portfile.cmake`.
-3. Run the manual wheel workflow `.github/workflows/wheels.yml`.
-4. Inspect Linux, macOS, and Windows artifacts before upload.
-5. Submit conda-forge staged-recipes and vcpkg catalog PRs after local and CI proof are clean.
+4. Run the manual wheel workflow `.github/workflows/wheels.yml`.
+5. Inspect Linux, macOS, and Windows artifacts before upload.
+6. Submit conda-forge staged-recipes and vcpkg catalog PRs after local and CI proof are clean.
