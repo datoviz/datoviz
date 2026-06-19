@@ -222,9 +222,11 @@ def manifest_batch_examples(
     examples_root: Path,
     manifest: dict,
     batch_name: str,
+    args: argparse.Namespace,
     ignore_patterns: list[str],
 ) -> tuple[list[tuple[str, Path]], list[str], list[str]]:
     resolved_name = resolve_batch_name(manifest, batch_name)
+    args.resolved_batch = resolved_name
     batch_ids = [str(example_id) for example_id in manifest["batches"][resolved_name]]
     entries = manifest_entries_by_id(manifest)
     unknown_ids = [example_id for example_id in batch_ids if example_id not in entries]
@@ -265,7 +267,7 @@ def manifest_examples(
 ) -> tuple[list[tuple[str, Path]], list[str], list[str]]:
     manifest = load_manifest(root / args.manifest)
     if args.batch:
-        return manifest_batch_examples(root, examples_root, manifest, args.batch, ignore_patterns)
+        return manifest_batch_examples(root, examples_root, manifest, args.batch, args, ignore_patterns)
 
     public_folders = manifest_public_folders(manifest)
     lane_filters = set(split_patterns(args.lane))
@@ -375,6 +377,9 @@ def main() -> int:
                 print(f"  - {rel}", file=sys.stderr)
         return 1
 
+    if args.batch:
+        resolved_batch = getattr(args, "resolved_batch", args.batch)
+        print(f"C example review batch: {resolved_batch} ({len(examples)} examples)")
     print("C examples to run sequentially:")
     for index, (rel, _) in enumerate(examples, 1):
         print(f"  {index:2d}. {rel}")
