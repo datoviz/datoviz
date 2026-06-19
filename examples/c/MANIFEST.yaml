@@ -60,142 +60,160 @@ batches:
     - feature_coordinate_system
     - feature_user_scale
     - feature_visual_transform
+
+  review-01-overlays-reference:
     - feature_visibility
     - feature_bounds_overlay
     - feature_reference_grid
+    - feature_overlay_card
+    - feature_orientation_gizmo
 
-  review-01-panels-layout:
+  review-02-panels-basic:
     - feature_panel_single
     - feature_panel_grid
     - feature_panel_multi
     - feature_panel_linked
     - feature_panel_view2d
-    - panel_background
-    - feature_overlay_card
 
-  review-02-axes-text-annotations:
+  review-03-panels-backgrounds:
+    - panel_background
+    - linked_panels_axes_panzoom
+    - linked_panels_probe_colorbar
+    - scientific_plotting_workflow
+
+  review-04-axes-scales:
     - path_axes_2d
     - feature_axis_labels
     - scale_bar
     - scalebar_units
     - colorbar
+
+  review-05-text-labels-annotations:
     - colormap_scale
     - annotation_readout
     - feature_probe_labels
     - feature_text_block
     - visual_text
+
+  review-06-labels-legends:
     - visual_labels
     - feature_legend_categorical
+    - feature_marker_symbols
+    - feature_bars_bands
 
-  review-03-cameras-navigation:
+  review-07-cameras-3d:
     - feature_controller_arcball
-    - feature_orientation_gizmo
     - feature_controller_fly
     - feature_controller_turntable
     - feature_controller_orbit_camera
     - feature_panzoom
 
-  review-04-interaction-selection:
+  review-08-input-probing:
     - image_probe
     - feature_input_events
     - feature_picking
     - feature_selection_pixel
     - feature_selection_sphere
-    - feature_selection_mesh_instances
 
-  review-05-gui-app-io:
+  review-09-selection-mesh:
+    - feature_selection_mesh_instances
     - feature_gui_controls
     - feature_gui_viewport
     - feature_gui_cimgui
     - feature_app_glfw
+
+  review-10-capture-record-export:
     - feature_offscreen_capture
     - feature_record_replay
     - feature_json_export
     - feature_video_export
+    - update_partial
 
-  review-06-points-markers-shapes:
+  review-11-points-markers:
     - point_2d
     - visual_pixel
     - visual_marker
     - visual_primitive
-    - feature_marker_symbols
-    - feature_builtin_shapes_2d
+    - visual_splat
 
-  review-07-lines-paths-guides:
+  review-12-lines-paths:
     - visual_segment
     - visual_vector
     - visual_path
     - feature_bezier_curve_path
     - feature_path_join
+
+  review-13-guides-shapes-2d:
     - feature_guide_lines
     - feature_guide_spans
-    - feature_bars_bands
+    - feature_builtin_shapes_2d
     - composite_polygon
+    - composite_graph
 
-  review-08-3d-mesh-shapes:
+  review-14-mesh-materials:
     - visual_mesh
     - sphere_impostor
     - feature_mesh_texture
     - feature_material_mesh
     - feature_lighting
+
+  review-15-3d-shapes-loading:
     - feature_builtin_shapes_3d
     - feature_obj_loading
-    - visual_splat
     - visual_glyph
-    - composite_graph
-
-  review-09-images-fields-volumes:
-    - visual_image
-    - volume
-    - feature_volume_occlusion
-    - feature_sampled_field_2d
     - feature_sampled_field_3d
-    - feature_isolines
+    - feature_volume_occlusion
 
-  review-10-rendering-techniques:
+  review-16-images-fields:
+    - visual_image
+    - feature_sampled_field_2d
+    - feature_isolines
+    - volume
+    - brain_volume
+
+  review-17-rendering-techniques-a:
     - technique_ssao
     - technique_msaa
     - technique_depth_cue
     - technique_transparency
+
+  review-18-rendering-techniques-b:
     - technique_depth_test
     - alpha_blending
     - technique_edl
-
-  review-11-updates-animation-compute:
-    - update_partial
     - feature_update_visual_data
+
+  review-19-animation-compute:
     - feature_animation_tracks
     - feature_timer_animation
     - feature_compute_buffer_animation
+    - showcase_gpu_particle_smoke
+    - advanced_raw_triangle_drp2
 
-  review-12-showcase-workflows:
-    - linked_panels_axes_panzoom
-    - linked_panels_probe_colorbar
-    - scientific_plotting_workflow
+  review-20-showcases-measurement:
     - scalebar_measurement_workflow
     - us_state_choropleth
     - protein_arcball_viewer
     - showcase_embedding_atlas
     - showcase_lipid_brain_atlas
 
-  review-13-showcase-spatial-volume:
+  review-21-showcases-spatial-a:
     - showcase_wind_field
-    - showcase_gpu_particle_smoke
     - showcase_synthetic_mouse
     - showcase_surface_grid
-    - brain_volume
     - point_cloud
     - textured_terrain_or_planet
 
-  review-14-advanced-lab:
+  review-22-advanced-runtime:
     - advanced_raw_triangle_vklite
-    - advanced_raw_triangle_drp2
     - advanced_external_surface_glfw
-    - lab_axis_lattice_smoke
-    - lab_point_stress
-    - lab_protein_viewer
     - lab_record_dvzr
     - lab_replay_dvzr
+    - lab_point_stress
+
+  review-23-lab-text-scale:
+    - lab_axis_lattice_smoke
+    - lab_protein_viewer
     - lab_scalebar_2d_3d
     - lab_text_msdf_diagnostics
     - lab_text_msdf_lab
