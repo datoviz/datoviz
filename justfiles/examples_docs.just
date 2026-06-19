@@ -50,6 +50,23 @@ examples *args: build
 examples-run *args: build
     @just examples "$@"
 
+[positional-arguments]
+review batch *args: build
+    @python3 tools/run_c_examples.py --batch "{{batch}}" "$@"
+
+review-batches:
+    #!/usr/bin/env python3
+    import yaml
+    from pathlib import Path
+
+    manifest = yaml.safe_load(Path("examples/c/MANIFEST.yaml").read_text())
+    batches = manifest.get("batches") or {}
+    if not batches:
+        print("No review batches defined.")
+    else:
+        for name, ids in sorted(batches.items()):
+            print(f"{name:36s} {len(ids)} examples")
+
 # Smoke-test fenced code blocks in documentation markdown files.
 # Prerequisites: build (for C) and ctypes (for Python array facade).
 doctest lang="both":
