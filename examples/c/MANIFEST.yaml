@@ -53,6 +53,153 @@ defaults:
   public_capture: 1600x1200
   seed: 12345
 
+batches:
+  review-00-foundation:
+    - start_scatter
+    - feature_basic_scene
+    - feature_coordinate_system
+    - feature_user_scale
+    - feature_visual_transform
+    - feature_visibility
+    - feature_bounds_overlay
+    - feature_reference_grid
+
+  review-01-panels-layout:
+    - feature_panel_single
+    - feature_panel_grid
+    - feature_panel_multi
+    - feature_panel_linked
+    - feature_panel_view2d
+    - panel_background
+    - feature_overlay_card
+
+  review-02-axes-text-annotations:
+    - path_axes_2d
+    - feature_axis_labels
+    - scale_bar
+    - scalebar_units
+    - colorbar
+    - colormap_scale
+    - annotation_readout
+    - feature_probe_labels
+    - feature_text_block
+    - visual_text
+    - visual_labels
+    - feature_legend_categorical
+
+  review-03-cameras-navigation:
+    - feature_controller_arcball
+    - feature_orientation_gizmo
+    - feature_controller_fly
+    - feature_controller_turntable
+    - feature_controller_orbit_camera
+    - feature_panzoom
+
+  review-04-interaction-selection:
+    - image_probe
+    - feature_input_events
+    - feature_picking
+    - feature_selection_pixel
+    - feature_selection_sphere
+    - feature_selection_mesh_instances
+
+  review-05-gui-app-io:
+    - feature_gui_controls
+    - feature_gui_viewport
+    - feature_gui_cimgui
+    - feature_app_glfw
+    - feature_offscreen_capture
+    - feature_record_replay
+    - feature_json_export
+    - feature_video_export
+
+  review-06-points-markers-shapes:
+    - point_2d
+    - visual_pixel
+    - visual_marker
+    - visual_primitive
+    - feature_marker_symbols
+    - feature_builtin_shapes_2d
+
+  review-07-lines-paths-guides:
+    - visual_segment
+    - visual_vector
+    - visual_path
+    - feature_bezier_curve_path
+    - feature_path_join
+    - feature_guide_lines
+    - feature_guide_spans
+    - feature_bars_bands
+    - composite_polygon
+
+  review-08-3d-mesh-shapes:
+    - visual_mesh
+    - sphere_impostor
+    - feature_mesh_texture
+    - feature_material_mesh
+    - feature_lighting
+    - feature_builtin_shapes_3d
+    - feature_obj_loading
+    - visual_splat
+    - visual_glyph
+    - composite_graph
+
+  review-09-images-fields-volumes:
+    - visual_image
+    - volume
+    - feature_volume_occlusion
+    - feature_sampled_field_2d
+    - feature_sampled_field_3d
+    - feature_isolines
+
+  review-10-rendering-techniques:
+    - technique_ssao
+    - technique_msaa
+    - technique_depth_cue
+    - technique_transparency
+    - technique_depth_test
+    - alpha_blending
+    - technique_edl
+
+  review-11-updates-animation-compute:
+    - update_partial
+    - feature_update_visual_data
+    - feature_animation_tracks
+    - feature_timer_animation
+    - feature_compute_buffer_animation
+
+  review-12-showcase-workflows:
+    - linked_panels_axes_panzoom
+    - linked_panels_probe_colorbar
+    - scientific_plotting_workflow
+    - scalebar_measurement_workflow
+    - us_state_choropleth
+    - protein_arcball_viewer
+    - showcase_embedding_atlas
+    - showcase_lipid_brain_atlas
+
+  review-13-showcase-spatial-volume:
+    - showcase_wind_field
+    - showcase_gpu_particle_smoke
+    - showcase_synthetic_mouse
+    - showcase_surface_grid
+    - brain_volume
+    - point_cloud
+    - textured_terrain_or_planet
+
+  review-14-advanced-lab:
+    - advanced_raw_triangle_vklite
+    - advanced_raw_triangle_drp2
+    - advanced_external_surface_glfw
+    - lab_axis_lattice_smoke
+    - lab_point_stress
+    - lab_protein_viewer
+    - lab_record_dvzr
+    - lab_replay_dvzr
+    - lab_scalebar_2d_3d
+    - lab_text_msdf_diagnostics
+    - lab_text_msdf_lab
+
 examples:
   - id: feature_basic_scene
     title: Basic Scene

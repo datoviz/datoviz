@@ -50,6 +50,14 @@ def parse_args() -> argparse.Namespace:
         help="manifest stage to run; may be repeated or comma-separated",
     )
     parser.add_argument(
+        "--batch",
+        default="",
+        help=(
+            "manifest review batch name, or number alias such as 3 for review-03-*; "
+            "cannot be combined with --lane, --stage, or --all-built"
+        ),
+    )
+    parser.add_argument(
         "--include-lab",
         action="store_true",
         help="include manifest lab entries in the default public-example selection",
@@ -90,7 +98,14 @@ def parse_args() -> argparse.Namespace:
         default="build",
         help="CMake build directory, default: build",
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.batch and args.all_built:
+        parser.error("--batch cannot be combined with --all-built")
+    if args.batch and args.lane:
+        parser.error("--batch cannot be combined with --lane; batch selects explicit manifest IDs")
+    if args.batch and args.stage:
+        parser.error("--batch cannot be combined with --stage; batch selects explicit manifest IDs")
+    return args
 
 
 def is_executable(path: Path) -> bool:
@@ -162,15 +177,96 @@ def manifest_entry_text(entry: dict, rel: str) -> str:
     return " ".join(fields)
 
 
+def manifest_entries_by_id(manifest: dict) -> dict[str, dict]:
+    entries: dict[str, dict] = {}
+    for entry in manifest.get("examples", []):
+        example_id = str(entry.get("id", ""))
+        if example_id:
+            entries[example_id] = entry
+    return entries
+
+
+def resolve_batch_name(manifest: dict, batch_name: str) -> str:
+    batches = manifest.get("batches") or {}
+    if batch_name in batches:
+        return batch_name
+
+    available = sorted(str(name) for name in batches)
+    if batch_name.isdigit():
+        prefix = f"review-{int(batch_name):02d}-"
+        matches = [name for name in available if name.startswith(prefix)]
+        if len(matches) == 1:
+            return matches[0]
+        if len(matches) > 1:
+            raise ValueError(
+                f"ambiguous C example review batch number {batch_name!r}; "
+                f"matches: {', '.join(matches)}"
+            )
+
+    lines = [f"unknown C example review batch: {batch_name}"]
+    if available:
+        lines.append("available batches:")
+        lines.extend(f"  - {name}" for name in available)
+    else:
+        lines.append("no review batches are defined in the manifest")
+    raise ValueError("\n".join(lines))
+
+
 def source_is_public(source: str, public_folders: set[str]) -> bool:
     normalized = source.rstrip("/")
     return any(normalized.startswith(f"{folder}/") for folder in public_folders)
+
+
+def manifest_batch_examples(
+    root: Path,
+    examples_root: Path,
+    manifest: dict,
+    batch_name: str,
+    ignore_patterns: list[str],
+) -> tuple[list[tuple[str, Path]], list[str], list[str]]:
+    resolved_name = resolve_batch_name(manifest, batch_name)
+    batch_ids = [str(example_id) for example_id in manifest["batches"][resolved_name]]
+    entries = manifest_entries_by_id(manifest)
+    unknown_ids = [example_id for example_id in batch_ids if example_id not in entries]
+    if unknown_ids:
+        raise ValueError(
+            f"C example review batch {resolved_name!r} contains unknown example IDs: "
+            + ", ".join(unknown_ids)
+        )
+
+    examples: list[tuple[str, Path]] = []
+    ignored: list[str] = []
+    missing: list[str] = []
+    seen: set[str] = set()
+
+    for example_id in batch_ids:
+        if example_id in seen:
+            continue
+        seen.add(example_id)
+
+        entry = entries[example_id]
+        rel = manifest_entry_rel(root, entry)
+        text = manifest_entry_text(entry, rel)
+        if any(matches_filter(text, pattern) for pattern in ignore_patterns):
+            ignored.append(rel)
+            continue
+
+        exe = examples_root / rel
+        if is_executable(exe):
+            examples.append((rel, exe))
+        else:
+            missing.append(rel)
+
+    return examples, ignored, missing
 
 
 def manifest_examples(
     root: Path, examples_root: Path, args: argparse.Namespace, ignore_patterns: list[str]
 ) -> tuple[list[tuple[str, Path]], list[str], list[str]]:
     manifest = load_manifest(root / args.manifest)
+    if args.batch:
+        return manifest_batch_examples(root, examples_root, manifest, args.batch, ignore_patterns)
+
     public_folders = manifest_public_folders(manifest)
     lane_filters = set(split_patterns(args.lane))
     stage_filters = set(split_patterns(args.stage))
