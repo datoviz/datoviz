@@ -517,6 +517,8 @@ int test_scene_json_includes_buffer_binding_metadata(TstContext* suite, const Ts
 
 int test_scene_panel_full_helper(TstContext* suite, const TstCase* item);
 
+int test_scene_lifetime_local_ids(TstContext* suite, const TstCase* item);
+
 int test_scene_grid_resolve_weights_fixed_and_spans(TstContext* suite, const TstCase* item);
 
 int test_scene_grid_resolve_rejects_invalid_inputs(TstContext* suite, const TstCase* item);

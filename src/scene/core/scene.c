@@ -118,6 +118,22 @@ static bool _scene_occlusion_desc_validate(const DvzSceneOcclusionDesc* desc)
 }
 
 
+/**
+ * Allocate the next monotonically increasing scene-local identity.
+ *
+ * @param scene the scene
+ * @return a non-zero scene-local identity
+ */
+DvzId _scene_next_id(DvzScene* scene)
+{
+    ANN(scene);
+    scene->next_id++;
+    if (scene->next_id == DVZ_ID_NONE)
+        scene->next_id++;
+    return scene->next_id;
+}
+
+
 
 /**
  * Allocate the next monotonically increasing request freshness serial.
@@ -147,6 +163,7 @@ DvzScene* dvz_scene(void)
     DvzScene* scene = (DvzScene*)dvz_calloc(1, sizeof(DvzScene));
     if (scene == NULL)
         return NULL;
+    scene->id = _scene_next_id(scene);
     scene->caps = dvz_capability_snapshot();
     _scene_technique_state_init(&scene->techniques);
     scene->font_defaults = dvz_font_defaults();
@@ -160,6 +177,12 @@ DvzScene* dvz_scene(void)
         return NULL;
     }
     return scene;
+}
+
+
+DvzId dvz_scene_id(const DvzScene* scene)
+{
+    return scene != NULL ? scene->id : DVZ_ID_NONE;
 }
 
 
@@ -302,6 +325,7 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, uint32_t
 
     dvz_memset(fig, sizeof(DvzFigure), 0, sizeof(DvzFigure));
     fig->scene  = scene;
+    fig->id     = _scene_next_id(scene);
     fig->width  = width;
     fig->height = height;
     fig->flags  = flags;
@@ -310,6 +334,12 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, uint32_t
     fig->render_scale = 1.0f;
     fig->user_scale = 1.0f;
     return fig;
+}
+
+
+DvzId dvz_figure_id(const DvzFigure* figure)
+{
+    return figure != NULL && figure->scene != NULL ? figure->id : DVZ_ID_NONE;
 }
 
 
@@ -529,6 +559,7 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
         return NULL;
     DvzPanel* panel       = &figure->panels[figure->panel_count++];
     panel->figure         = figure;
+    panel->id             = _scene_next_id(figure->scene);
     panel->desc           = desc;
     panel->grid           = NULL;
     panel->grid_cell      = (DvzGridCell){0};
@@ -551,6 +582,12 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
     panel->border = dvz_panel_border_desc();
     panel->border.visible = false;
     return panel;
+}
+
+
+DvzId dvz_panel_id(const DvzPanel* panel)
+{
+    return panel != NULL && panel->figure != NULL ? panel->id : DVZ_ID_NONE;
 }
 
 

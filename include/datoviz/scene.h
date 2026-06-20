@@ -57,6 +57,19 @@ DVZ_EXPORT DvzScene* dvz_scene(void);
 
 
 /**
+ * Return the scene-local identity of a scene.
+ *
+ * DvzId is a fixed-width opaque identity. It is stable for the Datoviz object lifetime and is
+ * independent from DRP2 ids, backend handles, and adapter protocol ids. The value is not
+ * persistent across scene destruction, process restart, serialization, or replay.
+ *
+ * @param scene the scene
+ * @return the scene-local identity, or DVZ_ID_NONE when scene is NULL
+ */
+DVZ_EXPORT DvzId dvz_scene_id(const DvzScene* scene);
+
+
+/**
  * Set the scene font defaults used by text objects without an explicit font.
  *
  * The scene copies the descriptor values, but string pointers remain borrowed and must outlive
@@ -130,6 +143,15 @@ DVZ_EXPORT void dvz_scene_json_destroy(char* json);
  */
 DVZ_EXPORT DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height,
                                   uint32_t flags);
+
+
+/**
+ * Return the scene-local identity of a figure.
+ *
+ * @param figure the figure
+ * @return the scene-local identity, or DVZ_ID_NONE when figure is NULL
+ */
+DVZ_EXPORT DvzId dvz_figure_id(const DvzFigure* figure);
 
 
 /**
@@ -505,6 +527,15 @@ DVZ_EXPORT DvzMsaaDesc dvz_msaa_desc(void);
  * @return the panel
  */
 DVZ_EXPORT DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc);
+
+
+/**
+ * Return the scene-local identity of a panel.
+ *
+ * @param panel the panel
+ * @return the scene-local identity, or DVZ_ID_NONE when panel is NULL
+ */
+DVZ_EXPORT DvzId dvz_panel_id(const DvzPanel* panel);
 
 
 /**
@@ -1296,6 +1327,15 @@ DVZ_EXPORT bool dvz_axis_set_datetime_range(
  * @param visual the visual
  */
 DVZ_EXPORT void dvz_visual_destroy(DvzVisual* visual);
+
+
+/**
+ * Return the scene-local identity of a visual.
+ *
+ * @param visual the visual
+ * @return the scene-local identity, or DVZ_ID_NONE when visual is NULL
+ */
+DVZ_EXPORT DvzId dvz_visual_id(const DvzVisual* visual);
 
 
 /**

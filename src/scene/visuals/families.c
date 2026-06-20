@@ -330,6 +330,7 @@ DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t fla
         return NULL;
     }
     visual->scene = scene;
+    visual->id = _scene_next_id(scene);
     visual->type = type;
     visual->ops = _scene_visual_family_ops(type);
     visual->family_state = state;
@@ -555,7 +556,7 @@ void _scene_text_visual_reset_state(DvzVisual* visual)
 
 
 /**
- * Return the public one-based id of one scene visual.
+ * Return the scene-local public id of one scene visual.
  *
  * @param scene the scene
  * @param visual the visual
@@ -565,12 +566,7 @@ uint64_t _scene_visual_public_id(const DvzScene* scene, const DvzVisual* visual)
 {
     ANN(scene);
     ANN(visual);
-    for (uint32_t i = 0; i < scene->visual_count; i++)
-    {
-        if (&scene->visuals[i] == visual)
-            return (uint64_t)i + 1;
-    }
-    return 0;
+    return visual->scene == scene ? visual->id : DVZ_ID_NONE;
 }
 
 
@@ -1321,6 +1317,12 @@ void dvz_visual_destroy(DvzVisual* visual)
     if (!_scene_visual_mutation_allowed(visual->scene, "destroy scene-owned visual data"))
         return;
     _scene_visual_reset(visual, true);
+}
+
+
+DvzId dvz_visual_id(const DvzVisual* visual)
+{
+    return visual != NULL && visual->scene != NULL ? visual->id : DVZ_ID_NONE;
 }
 
 

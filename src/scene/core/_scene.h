@@ -356,6 +356,8 @@ typedef void (*DvzSceneRequestFrameCallback)(DvzFigure* figure, void* user_data)
 typedef struct DvzSceneRequestFrameSubscription DvzSceneRequestFrameSubscription;
 typedef struct DvzPanelView2DResolved DvzPanelView2DResolved;
 
+DvzId _scene_next_id(DvzScene* scene);
+
 struct DvzPanelView2DResolved
 {
     float view_extent[4];
@@ -1661,6 +1663,7 @@ struct DvzVisualFamilyState
 struct DvzVisual
 {
     DvzScene*    scene;
+    DvzId        id;
     DvzVisualType type;
     const DvzVisualFamilyOps* ops;
     void*        family_state;
@@ -1841,6 +1844,7 @@ struct DvzPanelAttach
 struct DvzPanel
 {
     DvzFigure*  figure;
+    DvzId       id;
     DvzPanelDesc desc; /* normalized position and size */
     DvzGrid* grid;     /* optional owner grid for retained layout */
     DvzGridCell grid_cell;
@@ -1942,6 +1946,7 @@ struct DvzGrid
 struct DvzFigure
 {
     DvzScene*  scene;
+    DvzId      id;
     uint32_t   width;
     uint32_t   height;
     uint32_t   flags;
@@ -1972,6 +1977,9 @@ struct DvzFigure
 
 struct DvzScene
 {
+    DvzId id;
+    DvzId next_id;
+
     DvzCapabilitySnapshot caps;
     DvzSceneTechniqueState techniques;
     DvzFontDefaults font_defaults;

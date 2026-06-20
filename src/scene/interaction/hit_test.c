@@ -96,18 +96,13 @@ bool _scene_query_request_ndc(
  *
  * @param figure the figure
  * @param panel the panel
- * @return the 1-based public panel id, or 1 when not found
+ * @return the public panel id, or zero when absent
  */
 uint64_t _scene_panel_public_id(const DvzFigure* figure, const DvzPanel* panel)
 {
     ANN(figure);
     ANN(panel);
-    for (uint32_t pi = 0; pi < figure->panel_count; pi++)
-    {
-        if (&figure->panels[pi] == panel)
-            return (uint64_t)pi + 1;
-    }
-    return 1;
+    return panel->figure == figure ? panel->id : DVZ_ID_NONE;
 }
 
 

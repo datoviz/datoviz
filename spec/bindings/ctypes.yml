@@ -31,6 +31,10 @@ headers:
 smoke_symbols:
   - dvz_time_monotonic_ns
   - dvz_scene
+  - dvz_scene_id
+  - dvz_figure_id
+  - dvz_panel_id
+  - dvz_visual_id
   - dvz_scene_destroy
   - dvz_view_capabilities
   - dvz_ffi_view_external_surface

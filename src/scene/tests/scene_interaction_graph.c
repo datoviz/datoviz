@@ -215,6 +215,63 @@ int test_scene_panel_full_helper(TstContext* suite, const TstCase* item)
 }
 
 
+int test_scene_lifetime_local_ids(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    AT(dvz_scene_id(NULL) == DVZ_ID_NONE);
+    AT(dvz_figure_id(NULL) == DVZ_ID_NONE);
+    AT(dvz_panel_id(NULL) == DVZ_ID_NONE);
+    AT(dvz_visual_id(NULL) == DVZ_ID_NONE);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzId scene_id = dvz_scene_id(scene);
+    AT(scene_id != DVZ_ID_NONE);
+
+    DvzFigure* figure = dvz_figure(scene, 64, 32, 0);
+    ANN(figure);
+    DvzId figure_id = dvz_figure_id(figure);
+    AT(figure_id != DVZ_ID_NONE);
+    AT(figure_id != scene_id);
+
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    DvzId panel_id = dvz_panel_id(panel);
+    AT(panel_id != DVZ_ID_NONE);
+    AT(panel_id != scene_id);
+    AT(panel_id != figure_id);
+
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+    DvzId visual_id = dvz_visual_id(visual);
+    AT(visual_id != DVZ_ID_NONE);
+    AT(visual_id != scene_id);
+    AT(visual_id != figure_id);
+    AT(visual_id != panel_id);
+    AT(_scene_visual_public_id(scene, visual) == visual_id);
+
+    dvz_figure_destroy(figure);
+    AT(dvz_figure_id(figure) == DVZ_ID_NONE);
+    AT(dvz_panel_id(panel) == DVZ_ID_NONE);
+    DvzFigure* reused = dvz_figure(scene, 128, 64, 0);
+    ANN(reused);
+    AT(reused == figure);
+    AT(dvz_figure_id(reused) != figure_id);
+
+    dvz_visual_destroy(visual);
+    AT(dvz_visual_id(visual) == DVZ_ID_NONE);
+    DvzVisual* next_visual = dvz_point(scene, 0);
+    ANN(next_visual);
+    AT(dvz_visual_id(next_visual) != DVZ_ID_NONE);
+    AT(dvz_visual_id(next_visual) != visual_id);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 int test_scene_grid_resolve_weights_fixed_and_spans(TstContext* suite, const TstCase* item)
 {

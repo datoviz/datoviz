@@ -421,17 +421,20 @@ static bool _item_state_visual_supports(const DvzVisual* visual)
  * Resolve a public visual id to a retained visual slot.
  *
  * @param scene the scene
- * @param visual_id one-based public visual id
+ * @param visual_id scene-local public visual id
  * @return the visual, or NULL when the id is invalid
  */
 static DvzVisual* _item_state_visual_from_public_id(DvzScene* scene, uint64_t visual_id)
 {
-    if (scene == NULL || visual_id == 0 || visual_id > scene->visual_count)
+    if (scene == NULL || visual_id == DVZ_ID_NONE)
         return NULL;
-    DvzVisual* visual = &scene->visuals[visual_id - 1];
-    if (_scene_visual_public_id(scene, visual) != visual_id)
-        return NULL;
-    return visual;
+    for (uint32_t i = 0; i < scene->visual_count; i++)
+    {
+        DvzVisual* visual = &scene->visuals[i];
+        if (_scene_visual_public_id(scene, visual) == visual_id)
+            return visual;
+    }
+    return NULL;
 }
 
 
@@ -742,8 +745,7 @@ static int _item_state_sync_scene(DvzScene* scene, const char* reason)
     for (uint32_t i = 0; i < scene->visual_count; i++)
     {
         DvzVisual* visual = &scene->visuals[i];
-        DvzVisual* picked_visual = _item_state_visual_from_public_id(scene, (uint64_t)i + 1);
-        if (picked_visual != visual)
+        if (visual->scene != scene)
             continue;
         if (_item_state_sync_visual(scene, visual) != 0)
             res = -1;
