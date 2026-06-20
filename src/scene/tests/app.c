@@ -1288,6 +1288,52 @@ int test_app_offscreen(TstContext* suite, const TstCase* item)
 }
 
 
+int test_app_view_capabilities(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_view_capabilities skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
+    AT(win != NULL);
+
+    DvzCapabilitySnapshot caps = {0};
+    AT(!dvz_view_capabilities(NULL, &caps));
+    AT(!dvz_view_capabilities(win, NULL));
+    AT(dvz_view_capabilities(win, &caps));
+    AT(caps.struct_size == sizeof(DvzCapabilitySnapshot));
+    AT(caps.max_buffer_size > 0);
+    AT(caps.max_texture_dimension_2d > 0);
+    AT(caps.max_readback_size > 0);
+    AT(caps.min_texture_copy_bytes_per_row_alignment > 0);
+    AT(caps.shader_format_glsl);
+    AT(caps.supports_readback);
+    AT(!caps.query_profile_u32_r32 || caps.render_target_format_r32uint);
+    AT(!caps.query_profile_u64_rg32 || caps.render_target_format_rg32uint);
+    AT(!caps.query_profile_u64_2xr32 ||
+       (caps.render_target_format_r32uint && caps.max_color_attachments >= 2));
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_app_view_desc_offscreen_scale(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -7631,6 +7677,7 @@ int test_scene_app(TstSuite* suite)
         _app_gpu_fixture_destroy);
 
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen);
+    TST_SCENE_APP_SHARED_CASE(test_app_view_capabilities);
     TST_SCENE_APP_SHARED_CASE(test_app_view_desc_offscreen_scale);
     TST_SCENE_APP_SHARED_CASE(test_app_view_desc_offscreen_exact_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_small_view_clamps_layout);

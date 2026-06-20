@@ -711,11 +711,11 @@ static bool _app_format_supports_query_readback(VkPhysicalDevice physical_device
  * @param app app owning the runtime GPU context
  * @param caps capabilities to update
  */
-static void _app_apply_runtime_caps(DvzApp* app, DvzCapabilitySnapshot* caps)
+static bool _app_apply_runtime_caps(const DvzApp* app, DvzCapabilitySnapshot* caps)
 {
     ANN(caps);
     if (app == NULL || app->gpu_ctx == NULL)
-        return;
+        return false;
 
     DvzInstance* instance = dvz_gpu_ctx_instance(app->gpu_ctx);
     uint32_t gpu_index = dvz_gpu_ctx_gpu_index(app->gpu_ctx);
@@ -723,7 +723,7 @@ static void _app_apply_runtime_caps(DvzApp* app, DvzCapabilitySnapshot* caps)
     if (instance == NULL ||
         !dvz_instance_gpu_handle(instance, gpu_index, &physical_device) ||
         physical_device == VK_NULL_HANDLE)
-        return;
+        return false;
 
     VkPhysicalDeviceVulkan13Properties props13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES,
@@ -764,6 +764,31 @@ static void _app_apply_runtime_caps(DvzApp* app, DvzCapabilitySnapshot* caps)
     caps->max_depth_sample_count = _app_image_max_sample_count(
         physical_device, VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
         props.properties.limits.framebufferDepthSampleCounts);
+    return true;
+}
+
+
+
+/**
+ * Fill a scene-facing capability snapshot from the app runtime.
+ *
+ * @param app app owning the runtime GPU context
+ * @param out output capability snapshot
+ * @return whether the runtime-backed fields were available
+ */
+static bool _app_runtime_capabilities(const DvzApp* app, DvzCapabilitySnapshot* out)
+{
+    ANN(out);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    const bool runtime_caps = _app_apply_runtime_caps(app, &caps);
+
+    caps.shader_format_glsl = true;
+    caps.render_target_format_rgba16float = true;
+    caps.render_target_format_r16float = true;
+    caps.supports_render_target_sampling = true;
+    caps.supports_color_blending = true;
+    *out = caps;
+    return runtime_caps;
 }
 
 
@@ -3158,14 +3183,9 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     }
 
     /* Emit one frame artifact with the canvas as external color target. */
-    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
-    _app_apply_runtime_caps(app, &caps);
-    caps.shader_format_glsl = true;
+    DvzCapabilitySnapshot caps = {0};
+    (void)_app_runtime_capabilities(app, &caps);
     caps.max_color_attachments = 3;
-    caps.render_target_format_rgba16float = true;
-    caps.render_target_format_r16float = true;
-    caps.supports_render_target_sampling = true;
-    caps.supports_color_blending = true;
 
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format         = DVZ_SCENE_SHADER_FORMAT_GLSL;
@@ -4288,6 +4308,19 @@ void dvz_view_framebuffer_size(const DvzView* win, uint32_t* out_width, uint32_t
         *out_width = win->framebuffer_width;
     if (out_height != NULL)
         *out_height = win->framebuffer_height;
+}
+
+
+
+bool dvz_view_capabilities(const DvzView* win, DvzCapabilitySnapshot* out)
+{
+    if (win == NULL || out == NULL)
+        return false;
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    return _app_runtime_capabilities(win->app, out);
+#else
+    return false;
+#endif
 }
 
 

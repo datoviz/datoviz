@@ -474,6 +474,19 @@ dvz_view_framebuffer_size(const DvzView* view, uint32_t* out_width, uint32_t* ou
 
 
 /**
+ * Return the runtime capability snapshot for a live view.
+ *
+ * The snapshot is scene-facing and backend-neutral. It reports the runtime facts used by scene
+ * planning and query/readback adaptation without exposing Vulkan, canvas, or runtime handles.
+ *
+ * @param view the view
+ * @param out output capability snapshot
+ * @return true when live runtime-backed fields were available; false means only defaults were used
+ */
+DVZ_EXPORT bool dvz_view_capabilities(const DvzView* view, DvzCapabilitySnapshot* out);
+
+
+/**
  * Return the current render scale.
  *
  * @param view the view
