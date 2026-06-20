@@ -5821,6 +5821,139 @@ int test_app_offscreen_query_request_steady_state(TstContext* suite, const TstCa
 }
 
 
+/**
+ * Exercise the first public C surface expected by a GSP adapter.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_gsp_first_slice_smoke(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel =
+        dvz_panel(figure, (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    AT(panel != NULL);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    AT(image != NULL);
+    dvz_visual_set_query_capabilities(image, DVZ_QUERY_CAPABILITY_PIXEL);
+    vec3 image_pos[4] = {
+        {-1.0f, -1.0f, 0.0f},
+        {-1.0f, 1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+    };
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    uint8_t pixels[4 * 4 * 4] = {0};
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        pixels[4 * i + 0] = 220;
+        pixels[4 * i + 1] = 40;
+        pixels[4 * i + 2] = 40;
+        pixels[4 * i + 3] = 255;
+    }
+    AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(
+           panel, image,
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) ==
+       0);
+
+    DvzVisual* points = dvz_point(scene, 0);
+    AT(points != NULL);
+    dvz_visual_set_query_capabilities(points, DVZ_QUERY_CAPABILITY_ITEM);
+    vec3 point_pos[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor point_color[1] = {{255, 255, 0, 255}};
+    float point_diameter[1] = {20.0f};
+    AT(dvz_visual_set_data(points, "position", point_pos, 1) == 0);
+    AT(dvz_visual_set_data(points, "color", point_color, 1) == 0);
+    AT(dvz_visual_set_data(points, "diameter", point_diameter, 1) == 0);
+    AT(dvz_panel_add_visual(panel, points, NULL) == 0);
+
+    const DvzId scene_id = dvz_scene_id(scene);
+    const DvzId figure_id = dvz_figure_id(figure);
+    const DvzId panel_id = dvz_panel_id(panel);
+    const DvzId image_id = dvz_visual_id(image);
+    const DvzId points_id = dvz_visual_id(points);
+    AT(scene_id != DVZ_ID_NONE);
+    AT(figure_id != DVZ_ID_NONE);
+    AT(panel_id != DVZ_ID_NONE);
+    AT(image_id != DVZ_ID_NONE);
+    AT(points_id != DVZ_ID_NONE);
+    AT(image_id != points_id);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_gsp_first_slice_smoke skipped: GPU context failed");
+        tst_skip(suite, "GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
+    AT(win != NULL);
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_view_capture_png(win, "/tmp/dvz_gsp_first_slice_smoke.png") == 0);
+
+    DvzQueryRequest point_request = dvz_query_request();
+    point_request.request_id = 1001;
+    point_request.target = DVZ_SCENE_TARGET_ITEM;
+    DvzQueryRequest image_request = dvz_query_request();
+    image_request.request_id = 1002;
+    image_request.target = DVZ_SCENE_TARGET_PIXEL;
+    AT(dvz_panel_query(panel, 32.0, 32.0, &point_request) == 0);
+    AT(dvz_panel_query(panel, 8.0, 8.0, &image_request) == 0);
+
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+
+    DvzQueryResult first = {0};
+    DvzQueryResult second = {0};
+    AT(dvz_scene_poll_query(scene, &first));
+    AT(dvz_scene_poll_query(scene, &second));
+    AT(!dvz_scene_poll_query(scene, &second));
+
+    DvzQueryResult* point_result = first.request_id == point_request.request_id ? &first : &second;
+    DvzQueryResult* image_result = first.request_id == image_request.request_id ? &first : &second;
+    AT(point_result != image_result);
+
+    AT(point_result->hit);
+    AT(point_result->scene_id == scene_id);
+    AT(point_result->figure_id == figure_id);
+    AT(point_result->panel_id == panel_id);
+    AT(point_result->visual_id == points_id);
+    AT(point_result->visual_family == DVZ_SCENE_VISUAL_FAMILY_POINT);
+    AT(point_result->resolved_target == DVZ_SCENE_TARGET_ITEM);
+    AT(point_result->item_id == 0);
+
+    AT(image_result->hit);
+    AT(image_result->scene_id == scene_id);
+    AT(image_result->figure_id == figure_id);
+    AT(image_result->panel_id == panel_id);
+    AT(image_result->visual_id == image_id);
+    AT(image_result->visual_family == DVZ_SCENE_VISUAL_FAMILY_IMAGE);
+    AT(image_result->resolved_target == DVZ_SCENE_TARGET_PIXEL);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 int test_app_offscreen_two_panel_points_light_both_halves(TstContext* suite, const TstCase* item)
 {
@@ -7734,6 +7867,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_retained_render_second_frame);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_resize_reuses_runtime_with_mesh_and_image);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_query_request_steady_state);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_gsp_first_slice_smoke);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_two_panel_points_light_both_halves);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_clear_color);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_midgray_srgb_readback);
