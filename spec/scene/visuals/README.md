@@ -18,6 +18,7 @@ These documents refine `../semantics/VISUAL_FAMILY_RULES.md` and
 Implementation ownership notes for the current `src/scene/visuals/<family>/` layout live in
 [`IMPLEMENTATION_LAYOUT.md`](IMPLEMENTATION_LAYOUT.md).
 The current per-family implementation snapshot lives in [STATUS.md](STATUS.md).
+The GSP adapter-facing visual-family mapping lives in [GSP_MAPPING.md](GSP_MAPPING.md).
 
 
 ## Visuals Versus Composites
