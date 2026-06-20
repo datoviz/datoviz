@@ -165,6 +165,8 @@ int test_scene_query_queue_processes_native_results(TstContext* suite, const Tst
     AT(dvz_scene_poll_query(scene, &result));
     AT(result.request_id == 11);
     AT(result.status == DVZ_QUERY_STATUS_NO_CAPABLE_VISUAL);
+    AT(result.scene_id == dvz_scene_id(scene));
+    AT(result.figure_id == dvz_figure_id(figure));
     AT(result.panel_id == dvz_panel_id(panel));
     AC(result.panel_position[0], 10.0, 1e-12);
     AC(result.panel_position[1], 20.0, 1e-12);

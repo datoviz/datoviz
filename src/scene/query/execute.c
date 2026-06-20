@@ -72,6 +72,8 @@ static void _query_result_init(
     out_result->request_id = pending->request.request_id;
     out_result->freshness_serial = pending->freshness_serial;
     out_result->status = DVZ_QUERY_STATUS_UNKNOWN;
+    out_result->scene_id = dvz_scene_id(figure->scene);
+    out_result->figure_id = dvz_figure_id(figure);
     out_result->panel_id = _scene_panel_public_id(figure, pending->panel);
     out_result->panel_position[0] = pending->x;
     out_result->panel_position[1] = pending->y;

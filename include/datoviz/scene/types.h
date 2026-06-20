@@ -1050,6 +1050,8 @@ struct DvzQueryResult
     uint64_t freshness_serial;
     DvzQueryStatus status;
     bool hit;
+    DvzId scene_id;
+    DvzId figure_id;
     uint64_t panel_id;
     double panel_position[2];
     uint32_t framebuffer_position[2];
