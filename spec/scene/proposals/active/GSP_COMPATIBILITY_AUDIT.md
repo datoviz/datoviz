@@ -9,7 +9,7 @@ Datoviz v0.4 is close to a viable GSP backend target. The scene/app path, retain
 FramePlan artifact emission, raw ctypes generation, offscreen capture, dense visual updates,
 sampled fields, scene buffers, and unified panel query API already match the GSP direction.
 
-The main Datoviz-side blockers before an RC1-compatible GSP adapter are narrow and API-shaped:
+The initial Datoviz-side blockers before an RC1-compatible GSP adapter were narrow and API-shaped:
 
 1. expose a public live runtime/view capability query;
 2. expose or explicitly document stable object identity and protocol-id mapping rules;
@@ -21,6 +21,24 @@ Most transform, resource, offscreen, and first-slice visual mapping needs are al
 public C APIs. GSP should own high-level Python semantics, protocol object models, vector export,
 virtual data sources, and adapter-side mapping tables. Datoviz should not embed GSP or expose
 Vulkan/runtime internals.
+
+
+## Implementation Checkpoint
+
+Status after commits through `DVZ-GSP-005: document visual family adapter mapping` on
+`gsp-compat-prep`:
+
+| Task | Checkpoint result |
+|---|---|
+| `DVZ-GSP-001` | `dvz_view_capabilities()` exposes a public live view/runtime capability snapshot. |
+| `DVZ-GSP-002` | Scene-local `DvzId` getters exist for scene, figure, panel, visual, and retained scene objects needed by query/adapter maps. GSP protocol ids remain adapter-owned. |
+| `DVZ-GSP-003` | Query results now include parent scene and figure ids in addition to panel/visual ids. |
+| `DVZ-GSP-004` | Raw ctypes policy and smoke coverage include GSP-critical capability/query structs and the no-runtime panel query path. |
+| `DVZ-GSP-005` | `spec/scene/visuals/GSP_MAPPING.md` documents the adapter-facing family/resource/query mapping. |
+
+Remaining near-term Datoviz work is the public C end-to-end GSP smoke scenario: one panel, image
+background, point overlay, render once, query point and image-only coordinates, and capture PNG.
+Structured diagnostic subject records can stay post-RC1 unless the first adapter needs them.
 
 
 ## Already Ready
@@ -53,6 +71,9 @@ Vulkan/runtime internals.
 
 
 ## Needs Datoviz Change
+
+Baseline gaps from the initial audit. Items addressed by the implementation checkpoint above are no
+longer open RC1 blockers.
 
 | Gap | Impact on GSP | Recommended Datoviz task | Before RC1? |
 |---|---|---|---|
@@ -98,12 +119,12 @@ Vulkan/runtime internals.
 
 ## Recommended Datoviz Task List
 
-1. `DVZ-GSP-001-capability-query.md`: add `dvz_view_capabilities()` or equivalent view-centered public function that returns the same runtime-enriched snapshot used by app rendering.
-2. `DVZ-GSP-002-stable-identity.md`: expose/document stable object ids and decide whether Datoviz accepts GSP user/protocol ids or leaves protocol mapping to the adapter.
-3. `DVZ-GSP-003-query-contract.md`: freeze the first GSP query contract around point-over-image plus explicit unsupported statuses and per-family payload tables.
-4. `DVZ-GSP-004-ctypes-readiness.md`: add raw ctypes policy/layout/smoke coverage for `DvzCapabilitySnapshot`, `DvzQueryRequest`, `DvzQueryResult`, capability query, point visual upload, query, and offscreen capture.
-5. `DVZ-GSP-005-visual-family-mapping.md`: publish a maintained table for point, image, primitive/mesh, volume slice, text/glyph, and labels.
-6. Add one public C GSP smoke scenario after tasks 1-5: one panel, image background, point overlay, render once, query point and image-only coordinates, capture PNG.
+1. Completed: `DVZ-GSP-001-capability-query.md`.
+2. Completed: `DVZ-GSP-002-stable-identity.md`.
+3. Completed first contract slice: `DVZ-GSP-003-query-contract.md`.
+4. Completed raw smoke slice: `DVZ-GSP-004-ctypes-readiness.md`.
+5. Completed: `DVZ-GSP-005-visual-family-mapping.md`.
+6. Remaining: add one public C GSP smoke scenario after tasks 1-5: one panel, image background, point overlay, render once, query point and image-only coordinates, capture PNG.
 
 
 ## Recommended GSP-Side Task List
@@ -177,9 +198,11 @@ Source and tests:
 
 ## ChatGPT Pro Consultation Requests
 
-Create and answer:
+Answered:
 
 1. `spec/scene/proposals/active/gsp_tasks/CHATGPT_PRO_CONSULTATION_001.md`
 
-Reason: stable GSP protocol ID ownership is architectural, cross-repo, hard to reverse after RC1,
-and affects both Datoviz public C API and GSP adapter mapping semantics.
+Decision: use the hybrid RC1 path. Datoviz exposes opaque scene-local `DvzId` getters for retained
+objects that can appear in query, selection, diagnostics, or adapter maps. GSP owns all protocol-id
+maps. Do not add Datoviz `user_id`/protocol-id setters or user-id fields in `DvzQueryResult` for
+RC1.
