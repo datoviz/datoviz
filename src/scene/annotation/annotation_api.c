@@ -136,6 +136,7 @@ DvzAnnotation* dvz_annotation(DvzPanel* panel, const DvzAnnotationDesc* desc)
     DvzAnnotation* annotation = &scene->annotations[scene->annotation_count++];
     dvz_memset(annotation, sizeof(DvzAnnotation), 0, sizeof(DvzAnnotation));
     annotation->scene = scene;
+    annotation->id = _scene_next_id(scene);
     annotation->panel = panel;
     annotation->kind = desc->kind;
     annotation->style = desc->style;
@@ -147,6 +148,12 @@ DvzAnnotation* dvz_annotation(DvzPanel* panel, const DvzAnnotationDesc* desc)
         dvz_strlcpy(annotation->text, desc->text, sizeof(annotation->text));
     _scene_notify_request_frame(panel->figure);
     return annotation;
+}
+
+
+DvzId dvz_annotation_id(const DvzAnnotation* annotation)
+{
+    return annotation != NULL && annotation->scene != NULL ? annotation->id : DVZ_ID_NONE;
 }
 
 

@@ -205,6 +205,15 @@ DVZ_EXPORT DvzScale* dvz_scale(DvzScene* scene, const DvzScaleDesc* desc);
 
 
 /**
+ * Return the scene-local identity of a scale.
+ *
+ * @param scale the scale
+ * @return the scene-local identity, or DVZ_ID_NONE when scale is NULL or destroyed
+ */
+DVZ_EXPORT DvzId dvz_scale_id(const DvzScale* scale);
+
+
+/**
  * Destroy a scale object.
  *
  * @param scale the scale
@@ -310,6 +319,15 @@ DVZ_EXPORT bool dvz_scale_remove_categories(
  * @return the colormap
  */
 DVZ_EXPORT DvzColormap* dvz_colormap(DvzScene* scene, const DvzColormapDesc* desc);
+
+
+/**
+ * Return the scene-local identity of a colormap.
+ *
+ * @param colormap the colormap
+ * @return the scene-local identity, or DVZ_ID_NONE when colormap is NULL or destroyed
+ */
+DVZ_EXPORT DvzId dvz_colormap_id(const DvzColormap* colormap);
 
 
 /**
@@ -430,6 +448,15 @@ DVZ_EXPORT DvzColorbar* dvz_colorbar(
 
 
 /**
+ * Return the scene-local identity of a colorbar.
+ *
+ * @param colorbar the colorbar
+ * @return the scene-local identity, or DVZ_ID_NONE when colorbar is NULL or destroyed
+ */
+DVZ_EXPORT DvzId dvz_colorbar_id(const DvzColorbar* colorbar);
+
+
+/**
  * Destroy a colorbar.
  *
  * @param colorbar the colorbar
@@ -516,6 +543,15 @@ DVZ_EXPORT DvzLegendDesc dvz_legend_desc(void);
  */
 DVZ_EXPORT DvzLegend* dvz_legend(
     DvzPanel* panel, DvzScale* scale, const DvzLegendDesc* desc);
+
+
+/**
+ * Return the scene-local identity of a legend.
+ *
+ * @param legend the legend
+ * @return the scene-local identity, or DVZ_ID_NONE when legend is NULL or destroyed
+ */
+DVZ_EXPORT DvzId dvz_legend_id(const DvzLegend* legend);
 
 
 /**

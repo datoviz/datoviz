@@ -369,6 +369,7 @@ struct DvzPanelView2DResolved
 struct DvzController
 {
     DvzScene* scene;
+    DvzId id;
     DvzControllerType type;
     bool active;
     DvzPanzoom* panzoom;
@@ -834,6 +835,7 @@ typedef struct DvzScaleCategoryState
 struct DvzScale
 {
     DvzScene* scene;
+    DvzId id;
     DvzScaleKind kind;
     char label[DVZ_SCENE_LABEL_SIZE];
     char unit[32];
@@ -854,6 +856,7 @@ struct DvzScale
 struct DvzColormap
 {
     DvzScene* scene;
+    DvzId id;
     DvzColormapKind kind;
     DvzBuiltinColormap builtin;
     double center;
@@ -869,6 +872,7 @@ struct DvzColormap
 struct DvzColorbar
 {
     DvzScene* scene;
+    DvzId id;
     DvzPanel* panel;
     DvzScale* scale;
     DvzColorbarPlacementMode placement_mode;
@@ -909,6 +913,7 @@ struct DvzColorbar
 struct DvzLegend
 {
     DvzScene* scene;
+    DvzId id;
     DvzPanel* panel;
     DvzScale* scale;
     DvzLegendPlacementMode placement_mode;
@@ -1092,6 +1097,7 @@ struct DvzFont
 struct DvzText
 {
     DvzScene* scene;
+    DvzId id;
     DvzPanel* panel;
     char string[DVZ_SCENE_LABEL_SIZE];
     DvzTextStyle style;
@@ -1180,6 +1186,7 @@ struct DvzScaleBarRealization
 struct DvzAnnotation
 {
     DvzScene* scene;
+    DvzId id;
     DvzPanel* panel;
     DvzAnnotationKind kind;
     char text[DVZ_SCENE_LABEL_SIZE];
@@ -1330,6 +1337,7 @@ struct DvzSceneRequestExecutor
 struct DvzSampledField
 {
     DvzScene* scene;
+    DvzId id;
     DvzSampledFieldDesc desc;
     DvzFieldGeometry geometry;
     void* data;

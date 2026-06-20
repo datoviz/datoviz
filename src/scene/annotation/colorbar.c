@@ -1308,6 +1308,7 @@ DvzColorbar* dvz_colorbar(DvzPanel* panel, DvzScale* scale, const DvzColorbarDes
     DvzColorbar* colorbar = &scene->colorbars[scene->colorbar_count++];
     dvz_memset(colorbar, sizeof(DvzColorbar), 0, sizeof(DvzColorbar));
     colorbar->scene = scene;
+    colorbar->id = _scene_next_id(scene);
     colorbar->panel = panel;
     colorbar->scale = scale;
     colorbar->placement_mode = placement_mode;
@@ -1343,6 +1344,12 @@ DvzColorbar* dvz_colorbar(DvzPanel* panel, DvzScale* scale, const DvzColorbarDes
     panel->colorbars[panel->colorbar_count++] = colorbar;
     _colorbar_apply_auto_reserve(colorbar);
     return colorbar;
+}
+
+
+DvzId dvz_colorbar_id(const DvzColorbar* colorbar)
+{
+    return colorbar != NULL && colorbar->scene != NULL ? colorbar->id : DVZ_ID_NONE;
 }
 
 

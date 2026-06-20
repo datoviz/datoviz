@@ -353,9 +353,16 @@ static DvzSampledField* _scene_alloc_field_slot(DvzScene* scene)
             continue;
         dvz_memset(field, sizeof(DvzSampledField), 0, sizeof(DvzSampledField));
         field->scene = scene;
+        field->id = _scene_next_id(scene);
         if (i + 1 > scene->field_count)
             scene->field_count = i + 1;
         return field;
     }
     return NULL;
+}
+
+
+DvzId dvz_sampled_field_id(const DvzSampledField* field)
+{
+    return field != NULL && field->scene != NULL ? field->id : DVZ_ID_NONE;
 }

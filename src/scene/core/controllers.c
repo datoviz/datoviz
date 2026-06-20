@@ -1126,9 +1126,17 @@ static DvzController* _scene_controller(DvzScene* scene, DvzControllerType type)
 
     dvz_memset(controller, sizeof(DvzController), 0, sizeof(DvzController));
     controller->scene = scene;
+    controller->id = _scene_next_id(scene);
     controller->type = type;
     controller->active = true;
     return controller;
+}
+
+
+DvzId dvz_controller_id(const DvzController* controller)
+{
+    return controller != NULL && controller->scene != NULL && controller->active ? controller->id
+                                                                                : DVZ_ID_NONE;
 }
 
 

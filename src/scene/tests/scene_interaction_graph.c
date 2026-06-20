@@ -243,6 +243,57 @@ int test_scene_lifetime_local_ids(TstContext* suite, const TstCase* item)
     AT(panel_id != scene_id);
     AT(panel_id != figure_id);
 
+    DvzSampledFieldDesc field_desc = dvz_sampled_field_desc();
+    field_desc.width = 2;
+    field_desc.height = 2;
+    DvzSampledField* field = dvz_sampled_field(scene, &field_desc);
+    ANN(field);
+    DvzId field_id = dvz_sampled_field_id(field);
+    AT(field_id != DVZ_ID_NONE);
+
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
+                 .kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale);
+    DvzId scale_id = dvz_scale_id(scale);
+    AT(scale_id != DVZ_ID_NONE);
+
+    DvzColormap* colormap = dvz_colormap(scene, NULL);
+    ANN(colormap);
+    DvzId colormap_id = dvz_colormap_id(colormap);
+    AT(colormap_id != DVZ_ID_NONE);
+
+    DvzColorbar* colorbar = dvz_colorbar(panel, scale, NULL);
+    ANN(colorbar);
+    DvzId colorbar_id = dvz_colorbar_id(colorbar);
+    AT(colorbar_id != DVZ_ID_NONE);
+
+    DvzScale* categorical = dvz_scale(
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
+                 .kind = DVZ_SCALE_CATEGORICAL});
+    ANN(categorical);
+    DvzLegend* legend = dvz_legend(panel, categorical, NULL);
+    ANN(legend);
+    DvzId legend_id = dvz_legend_id(legend);
+    AT(legend_id != DVZ_ID_NONE);
+
+    DvzText* text = dvz_text(panel, 0);
+    ANN(text);
+    DvzId text_id = dvz_text_id(text);
+    AT(text_id != DVZ_ID_NONE);
+
+    DvzAnnotationDesc annotation_desc = dvz_annotation_desc();
+    annotation_desc.text = "id";
+    DvzAnnotation* annotation = dvz_annotation(panel, &annotation_desc);
+    ANN(annotation);
+    DvzId annotation_id = dvz_annotation_id(annotation);
+    AT(annotation_id != DVZ_ID_NONE);
+
+    DvzController* controller = dvz_panzoom(scene, NULL);
+    ANN(controller);
+    DvzId controller_id = dvz_controller_id(controller);
+    AT(controller_id != DVZ_ID_NONE);
+
     DvzVisual* visual = dvz_point(scene, 0);
     ANN(visual);
     DvzId visual_id = dvz_visual_id(visual);
@@ -250,7 +301,26 @@ int test_scene_lifetime_local_ids(TstContext* suite, const TstCase* item)
     AT(visual_id != scene_id);
     AT(visual_id != figure_id);
     AT(visual_id != panel_id);
+    AT(visual_id != field_id);
+    AT(visual_id != scale_id);
+    AT(visual_id != colormap_id);
+    AT(visual_id != colorbar_id);
+    AT(visual_id != legend_id);
+    AT(visual_id != text_id);
+    AT(visual_id != annotation_id);
+    AT(visual_id != controller_id);
     AT(_scene_visual_public_id(scene, visual) == visual_id);
+
+    dvz_sampled_field_destroy(field);
+    AT(dvz_sampled_field_id(field) == DVZ_ID_NONE);
+    dvz_colorbar_destroy(colorbar);
+    AT(dvz_colorbar_id(colorbar) == DVZ_ID_NONE);
+    dvz_legend_destroy(legend);
+    AT(dvz_legend_id(legend) == DVZ_ID_NONE);
+    dvz_text_destroy(text);
+    AT(dvz_text_id(text) == DVZ_ID_NONE);
+    dvz_annotation_destroy(annotation);
+    AT(dvz_annotation_id(annotation) == DVZ_ID_NONE);
 
     dvz_figure_destroy(figure);
     AT(dvz_figure_id(figure) == DVZ_ID_NONE);
@@ -266,6 +336,11 @@ int test_scene_lifetime_local_ids(TstContext* suite, const TstCase* item)
     ANN(next_visual);
     AT(dvz_visual_id(next_visual) != DVZ_ID_NONE);
     AT(dvz_visual_id(next_visual) != visual_id);
+
+    dvz_scale_destroy(scale);
+    AT(dvz_scale_id(scale) == DVZ_ID_NONE);
+    dvz_colormap_destroy(colormap);
+    AT(dvz_colormap_id(colormap) == DVZ_ID_NONE);
 
     dvz_scene_destroy(scene);
     return 0;

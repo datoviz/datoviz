@@ -840,6 +840,15 @@ DVZ_EXPORT DvzController* dvz_panel_controller(DvzPanel* panel, DvzDim dim);
 
 
 /**
+ * Return the scene-local identity of a controller.
+ *
+ * @param controller the controller
+ * @return the scene-local identity, or DVZ_ID_NONE when controller is NULL or destroyed
+ */
+DVZ_EXPORT DvzId dvz_controller_id(const DvzController* controller);
+
+
+/**
  * Return the default visual attachment descriptor.
  *
  * @return default visual attachment descriptor

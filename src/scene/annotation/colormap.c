@@ -382,6 +382,7 @@ DvzColormap* dvz_colormap(DvzScene* scene, const DvzColormapDesc* desc)
     DvzColormap* colormap = &scene->colormaps[scene->colormap_count++];
     dvz_memset(colormap, sizeof(DvzColormap), 0, sizeof(DvzColormap));
     colormap->scene = scene;
+    colormap->id = _scene_next_id(scene);
     colormap->kind = desc != NULL ? desc->kind : DVZ_COLORMAP_CONTINUOUS;
     colormap->builtin = desc != NULL ? desc->builtin : DVZ_BUILTIN_COLORMAP_NONE;
     if (desc != NULL)
@@ -392,6 +393,12 @@ DvzColormap* dvz_colormap(DvzScene* scene, const DvzColormapDesc* desc)
             dvz_strlcpy(colormap->label, desc->label, sizeof(colormap->label));
     }
     return colormap;
+}
+
+
+DvzId dvz_colormap_id(const DvzColormap* colormap)
+{
+    return colormap != NULL && colormap->scene != NULL ? colormap->id : DVZ_ID_NONE;
 }
 
 

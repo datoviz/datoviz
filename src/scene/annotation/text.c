@@ -201,6 +201,7 @@ DvzText* dvz_text(DvzPanel* panel, uint32_t flags)
     DvzText* text = &scene->texts[scene->text_count++];
     dvz_memset(text, sizeof(DvzText), 0, sizeof(DvzText));
     text->scene = scene;
+    text->id = _scene_next_id(scene);
     text->panel = panel;
     text->style = _text_default_style(scene);
     text->placement = _text_default_placement();
@@ -209,6 +210,12 @@ DvzText* dvz_text(DvzPanel* panel, uint32_t flags)
     text->version = 1;
     _scene_notify_request_frame(panel->figure);
     return text;
+}
+
+
+DvzId dvz_text_id(const DvzText* text)
+{
+    return text != NULL && text->scene != NULL ? text->id : DVZ_ID_NONE;
 }
 
 

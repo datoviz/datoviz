@@ -171,6 +171,15 @@ DVZ_EXPORT DvzText* dvz_text(DvzPanel* panel, uint32_t flags);
 
 
 /**
+ * Return the scene-local identity of a text object.
+ *
+ * @param text the text object
+ * @return the scene-local identity, or DVZ_ID_NONE when text is NULL or destroyed
+ */
+DVZ_EXPORT DvzId dvz_text_id(const DvzText* text);
+
+
+/**
  * Destroy a retained text object.
  *
  * @param text the text object

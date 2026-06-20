@@ -781,6 +781,7 @@ DvzLegend* dvz_legend(DvzPanel* panel, DvzScale* scale, const DvzLegendDesc* des
     DvzLegend* legend = &scene->legends[scene->legend_count++];
     dvz_memset(legend, sizeof(DvzLegend), 0, sizeof(DvzLegend));
     legend->scene = scene;
+    legend->id = _scene_next_id(scene);
     legend->panel = panel;
     legend->scale = scale;
     legend->placement_mode = placement_mode;
@@ -815,6 +816,12 @@ DvzLegend* dvz_legend(DvzPanel* panel, DvzScale* scale, const DvzLegendDesc* des
     panel->legends[panel->legend_count++] = legend;
     _legend_apply_auto_reserve(legend);
     return legend;
+}
+
+
+DvzId dvz_legend_id(const DvzLegend* legend)
+{
+    return legend != NULL && legend->scene != NULL ? legend->id : DVZ_ID_NONE;
 }
 
 

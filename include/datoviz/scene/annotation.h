@@ -62,6 +62,15 @@ DVZ_EXPORT DvzAnnotation* dvz_annotation(DvzPanel* panel, const DvzAnnotationDes
 
 
 /**
+ * Return the scene-local identity of an annotation.
+ *
+ * @param annotation the annotation
+ * @return the scene-local identity, or DVZ_ID_NONE when annotation is NULL or destroyed
+ */
+DVZ_EXPORT DvzId dvz_annotation_id(const DvzAnnotation* annotation);
+
+
+/**
  * Create a retained label annotation attached to a panel.
  *
  * @param panel the panel

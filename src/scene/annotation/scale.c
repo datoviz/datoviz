@@ -344,6 +344,7 @@ DvzScale* dvz_scale(DvzScene* scene, const DvzScaleDesc* desc)
     DvzScale* scale = &scene->scales[scene->scale_count++];
     dvz_memset(scale, sizeof(DvzScale), 0, sizeof(DvzScale));
     scale->scene = scene;
+    scale->id = _scene_next_id(scene);
     scale->kind = desc != NULL ? desc->kind : DVZ_SCALE_CONTINUOUS;
     if (desc != NULL)
     {
@@ -355,6 +356,12 @@ DvzScale* dvz_scale(DvzScene* scene, const DvzScaleDesc* desc)
             _scene_format_state_copy(&scale->format, &desc->format);
     }
     return scale;
+}
+
+
+DvzId dvz_scale_id(const DvzScale* scale)
+{
+    return scale != NULL && scale->scene != NULL ? scale->id : DVZ_ID_NONE;
 }
 
 

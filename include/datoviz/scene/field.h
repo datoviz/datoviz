@@ -195,6 +195,15 @@ DVZ_EXPORT DvzSampledField* dvz_sampled_field(
 
 
 /**
+ * Return the scene-local identity of a sampled field.
+ *
+ * @param field the sampled field
+ * @return the scene-local identity, or DVZ_ID_NONE when field is NULL or destroyed
+ */
+DVZ_EXPORT DvzId dvz_sampled_field_id(const DvzSampledField* field);
+
+
+/**
  * Destroy a sampled field.
  *
  * Any visual bindings to this field are cleared.
