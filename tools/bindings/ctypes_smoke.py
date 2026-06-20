@@ -27,6 +27,47 @@ def _smoke_symbols() -> list[str]:
     return symbols
 
 
+def _run_gsp_query_smoke(dvz) -> None:
+    caps = dvz.dvz_capability_snapshot()
+    assert caps.struct_size == ctypes.sizeof(dvz.DvzCapabilitySnapshot)
+    assert not dvz.dvz_view_capabilities(None, ctypes.byref(caps))
+
+    scene = dvz.dvz_scene()
+    assert bool(scene)
+    try:
+        figure = dvz.dvz_figure(scene, 64, 64, 0)
+        assert bool(figure)
+        panel = dvz.dvz_panel_full(figure)
+        assert bool(panel)
+
+        scene_id = dvz.dvz_scene_id(scene)
+        figure_id = dvz.dvz_figure_id(figure)
+        panel_id = dvz.dvz_panel_id(panel)
+        assert scene_id
+        assert figure_id
+        assert panel_id
+
+        request = dvz.dvz_query_request()
+        assert request.struct_size == ctypes.sizeof(dvz.DvzQueryRequest)
+        request.request_id = 123
+        request.target = dvz.DvzSceneTargetKind.DVZ_SCENE_TARGET_ITEM
+        assert dvz.dvz_panel_query(panel, 10.0, 10.0, ctypes.byref(request)) == 0
+
+        processed = dvz.dvz_figure_process_queries(figure, None, ctypes.byref(caps))
+        assert processed == 1
+
+        result = dvz.DvzQueryResult()
+        assert dvz.dvz_scene_poll_query(scene, ctypes.byref(result))
+        assert result.request_id == request.request_id
+        assert result.status == dvz.DvzQueryStatus.DVZ_QUERY_STATUS_NO_CAPABLE_VISUAL
+        assert result.scene_id == scene_id
+        assert result.figure_id == figure_id
+        assert result.panel_id == panel_id
+        assert not dvz.dvz_scene_poll_query(scene, ctypes.byref(result))
+    finally:
+        dvz.dvz_scene_destroy(scene)
+
+
 def main() -> int:
     sys.path.insert(0, str(ROOT_DIR))
 
@@ -67,9 +108,7 @@ def main() -> int:
     assert isinstance(t0, int)
     assert t1 >= t0
 
-    scene = dvz.dvz_scene()
-    assert bool(scene)
-    dvz.dvz_scene_destroy(scene)
+    _run_gsp_query_smoke(dvz)
 
     calls: list[int | None] = []
 

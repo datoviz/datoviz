@@ -44,7 +44,14 @@ smoke_symbols:
   - dvz_annotation_id
   - dvz_controller_id
   - dvz_scene_destroy
+  - dvz_figure
+  - dvz_panel_full
+  - dvz_capability_snapshot
   - dvz_view_capabilities
+  - dvz_query_request
+  - dvz_panel_query
+  - dvz_figure_process_queries
+  - dvz_scene_poll_query
   - dvz_ffi_view_external_surface
   - dvz_ffi_view_update_external_surface
   - dvz_interop_buffer_export_from_buffer
@@ -53,8 +60,11 @@ smoke_symbols:
 
 layout_records:
   include:
+    - DvzCapabilitySnapshot
     - DvzCanvasConfig
     - DvzCameraDesc
+    - DvzFieldDataView
+    - DvzFieldRegion
     - DvzFlyDesc
     - DvzInteropBufferExport
     - DvzInteropBufferExportConfig
@@ -62,6 +72,9 @@ layout_records:
     - DvzPointerDragEvent
     - DvzPointerEventUnion
     - DvzPointerEvent
+    - DvzQueryRequest
+    - DvzQueryResult
+    - DvzSampledFieldDesc
     - DvzStreamConfig
     - DvzTurntableDesc
     - DvzVideoEncoderConfig
