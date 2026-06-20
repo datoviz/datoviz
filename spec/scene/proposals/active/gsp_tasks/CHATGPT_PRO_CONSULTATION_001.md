@@ -72,3 +72,47 @@ Not blocked:
 2. The capability query task.
 3. Ctypes smoke coverage for existing query/capability structs.
 4. Visual-family mapping documentation.
+
+
+## Answer Received
+
+Recommendation: use the hybrid RC1 path. Datoviz should expose Datoviz-local public id getters for
+retained scene objects that appear in query, selection, diagnostics, or adapter maps, while GSP keeps
+all protocol ids in the adapter.
+
+Do not add `user_id` or GSP/protocol-id setters for RC1. Do not add user-id fields to
+`DvzQueryResult`. Do not use generic labels/resource keys as identity.
+
+Critical constraint: the public Datoviz id contract must not expose raw retained-array slot indices.
+The id should be a fixed-width opaque `uint64_t`, nonzero for live objects, stable for the Datoviz
+object lifetime, scene-local, independent from DRP2/backend ids, and not persistent across scene
+destruction, process restart, serialization, or replay unless a future API explicitly says so.
+
+Preferred implementation strategy is a per-scene monotonic `uint64_t` assigned at object creation.
+A slot plus generation encoding is acceptable if the bit layout remains private. Reusable slot-only
+ids are rejected because stale async query results could resolve to a different object after slot
+reuse.
+
+GSP adapter responsibility:
+
+```text
+GSP protocol id -> Datoviz handle
+Datoviz DvzId    -> GSP protocol id
+```
+
+The adapter translates `DvzQueryResult` Datoviz ids back to GSP protocol ids through its reverse
+map. Destroying a GSP object removes both mappings. Stale async results are discarded when the
+Datoviz id is no longer mapped or when request/freshness checks fail.
+
+RC1-safe Datoviz subset:
+
+1. add `DvzId` and `DVZ_ID_NONE`;
+2. add id getters for public retained objects needed by query/selection/diagnostics/GSP maps;
+3. return Datoviz ids in public result/diagnostic structs;
+4. defer user/protocol ids, label identity, and persistent ids to v0.5 or adapter-proven pressure.
+
+The previously blocked work is resolved as follows:
+
+1. public user/protocol id setters: do not implement for RC1;
+2. user-id fields in `DvzQueryResult`: do not implement for RC1;
+3. protocol-id ownership: GSP adapter owns protocol ids; Datoviz owns scene-local Datoviz ids.

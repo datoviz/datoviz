@@ -5,6 +5,9 @@
 Make GSP able to map protocol objects to Datoviz scene objects and back from query results and
 diagnostics using public C APIs only.
 
+Consultation result: use the hybrid RC1 path. Datoviz exposes scene-local Datoviz ids; GSP owns all
+protocol ids and adapter maps. Do not add Datoviz `user_id`/protocol-id setters for RC1.
+
 ## Files To Inspect/Change
 
 | File | Reason |
@@ -28,38 +31,76 @@ diagnostics using public C APIs only.
 
 ## Implementation Notes
 
+Add a public id type:
+
+```c
+typedef uint64_t DvzId;
+
+#define DVZ_ID_NONE UINT64_C(0)
+```
+
 Minimum useful API:
 
 ```c
-DVZ_EXPORT uint64_t dvz_panel_id(const DvzPanel* panel);
-DVZ_EXPORT uint64_t dvz_visual_id(const DvzVisual* visual);
-DVZ_EXPORT uint64_t dvz_scene_buffer_id(const DvzSceneBuffer* buffer);
-DVZ_EXPORT uint64_t dvz_sampled_field_id(const DvzSampledField* field);
+DVZ_EXPORT DvzId dvz_scene_id(const DvzScene* scene);
+DVZ_EXPORT DvzId dvz_figure_id(const DvzFigure* figure);
+DVZ_EXPORT DvzId dvz_panel_id(const DvzPanel* panel);
+DVZ_EXPORT DvzId dvz_visual_id(const DvzVisual* visual);
+DVZ_EXPORT DvzId dvz_scene_buffer_id(const DvzSceneBuffer* buffer);
+DVZ_EXPORT DvzId dvz_sampled_field_id(const DvzSampledField* field);
 ```
 
-Potential API after consultation:
+Consider adding getters for other public retained objects only when they can appear in query,
+selection, diagnostics, or adapter maps:
 
 ```c
-DVZ_EXPORT bool dvz_visual_set_user_id(DvzVisual* visual, uint64_t id);
-DVZ_EXPORT uint64_t dvz_visual_user_id(const DvzVisual* visual);
+DVZ_EXPORT DvzId dvz_scale_id(const DvzScale* scale);
+DVZ_EXPORT DvzId dvz_colormap_id(const DvzColormap* colormap);
+DVZ_EXPORT DvzId dvz_colorbar_id(const DvzColorbar* colorbar);
+DVZ_EXPORT DvzId dvz_legend_id(const DvzLegend* legend);
+DVZ_EXPORT DvzId dvz_text_id(const DvzText* text);
+DVZ_EXPORT DvzId dvz_annotation_id(const DvzAnnotation* annotation);
+DVZ_EXPORT DvzId dvz_controller_id(const DvzController* controller);
 ```
 
-If Datoviz does not accept user/protocol ids, document that the GSP adapter owns protocol-id mapping
-and Datoviz exposes only stable lifetime-local object ids.
+Do not give ids to POD values copied into visuals. For example, do not add a transform id unless
+there is a public retained transform handle.
 
-Current internal ids are one-based retained-array indices. Before exposing them, document lifetime,
-destroy/reuse, and cross-scene uniqueness rules.
+Public id contract:
+
+1. fixed-width `uint64_t`;
+2. `DVZ_ID_NONE` is zero;
+3. nonzero for live objects;
+4. stable for the lifetime of that Datoviz object;
+5. scene-local, not globally unique across scenes;
+6. suitable for query, selection, diagnostics, and adapter maps;
+7. independent from DRP2 ids and backend ids;
+8. not a pointer, slot index, Vulkan/vklite/canvas/runtime handle, or GSP protocol id;
+9. not persistent across scene destruction, process restart, serialization, or replay unless a
+   future API says so.
+
+Implementation must not expose current one-based retained-array slot indices as the public id
+contract. Prefer per-scene monotonic ids assigned at object creation. Slot plus generation is
+acceptable only if the bit layout remains private. Slot-only ids are rejected because stale async
+query results could resolve to a newly-created object after slot reuse.
+
+GSP adapter mapping remains:
+
+```text
+GSP protocol id -> Datoviz handle
+Datoviz DvzId    -> GSP protocol id
+```
 
 ## Tests/Validation
 
 1. Public id getters return ids matching query result `visual_id`/`panel_id`.
-2. Destroy/recreate behavior is tested or explicitly documented.
+2. Destroy/recreate behavior proves stale ids cannot resolve to a different live object.
 3. Selection/hover paths still resolve query results correctly.
-4. If user ids are added, duplicate/zero/lifetime behavior is tested.
+4. Query result ids remain Datoviz ids, not backend or GSP ids.
 5. Run `git diff --check`.
 
 ## Stop Conditions
 
-1. Choosing between Datoviz-owned user ids and adapter-owned protocol maps remains unresolved.
+1. Implementing ids would require adding Datoviz user/protocol-id setters.
 2. Public ids cannot be made stable without changing retained object allocation semantics.
 3. Diagnostics need structured subject records before identity can be meaningfully consumed.
