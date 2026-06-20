@@ -35,10 +35,10 @@ Status after commits through `DVZ-GSP-005: document visual family adapter mappin
 | `DVZ-GSP-003` | Query results now include parent scene and figure ids in addition to panel/visual ids. |
 | `DVZ-GSP-004` | Raw ctypes policy and smoke coverage include GSP-critical capability/query structs and the no-runtime panel query path. |
 | `DVZ-GSP-005` | `spec/scene/visuals/GSP_MAPPING.md` documents the adapter-facing family/resource/query mapping. |
+| `DVZ-GSP-006` | Public C app smoke covers image background, point overlay, offscreen render, PNG capture, point query, and image-only query. |
 
-Remaining near-term Datoviz work is the public C end-to-end GSP smoke scenario: one panel, image
-background, point overlay, render once, query point and image-only coordinates, and capture PNG.
-Structured diagnostic subject records can stay post-RC1 unless the first adapter needs them.
+The narrow Datoviz-side RC1 GSP-prep checkpoints are complete. Structured diagnostic subject
+records can stay post-RC1 unless the first adapter needs them.
 
 
 ## Already Ready
@@ -124,7 +124,7 @@ longer open RC1 blockers.
 3. Completed first contract slice: `DVZ-GSP-003-query-contract.md`.
 4. Completed raw smoke slice: `DVZ-GSP-004-ctypes-readiness.md`.
 5. Completed: `DVZ-GSP-005-visual-family-mapping.md`.
-6. Remaining: add one public C GSP smoke scenario after tasks 1-5: one panel, image background, point overlay, render once, query point and image-only coordinates, capture PNG.
+6. Completed: `DVZ-GSP-006-public-c-smoke.md`.
 
 
 ## Recommended GSP-Side Task List
