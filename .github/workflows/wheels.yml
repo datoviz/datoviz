@@ -41,6 +41,8 @@ jobs:
         with:
           submodules: recursive
       - name: Build, inspect, and smoke-test manylinux wheel
+        env:
+          DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_BUILD_TESTING=OFF -DDVZ_BUILD_EXAMPLES=OFF"
         run: |
           bash tools/release_wheels/manylinux_build_inside.sh ${{ matrix.arch }}
       - uses: actions/upload-artifact@v4
