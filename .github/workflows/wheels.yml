@@ -111,6 +111,7 @@ jobs:
             vcpkg_triplet: arm64-windows
     runs-on: ${{ matrix.runner }}
     env:
+      DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_BUILD_TESTING=OFF -DDVZ_BUILD_EXAMPLES=OFF"
       VCPKG_ROOT: C:/vcpkg
       VCPKG_BINARY_SOURCES: clear;files,C:/vcpkg-binary-cache,readwrite
     steps:
