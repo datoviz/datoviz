@@ -29,6 +29,7 @@
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/device.h"
 #include "encoder_backend.h"
+#include "file_utils.h"
 #include "kvazaar.h"
 #include "thread_internal.h"
 
@@ -611,7 +612,7 @@ static int kvazaar_emit_sample(
     uint64_t file_offset = UINT64_MAX;
     if (enc->fp && enc->mux == DVZ_VIDEO_MUX_MP4_POST)
     {
-        long pos = ftello(enc->fp);
+        int64_t pos = dvz_video_file_tell64(enc->fp);
         if (pos >= 0)
         {
             file_offset = (uint64_t)pos;

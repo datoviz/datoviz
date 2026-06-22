@@ -11,6 +11,7 @@
 #include "encoder.h"
 #include "encoder_backend.h"
 #include "encoder_internal.h"
+#include "file_utils.h"
 
 #include <errno.h>
 #include <limits.h>
@@ -308,7 +309,7 @@ int dvz_video_encoder_stop(DvzVideoEncoder* enc)
     {
         fflush(enc->fp);
         dvz_video_encoder_mux_post(enc);
-        fseeko(enc->fp, 0, SEEK_END);
+        dvz_video_file_seek64(enc->fp, 0, SEEK_END);
     }
     video_encoder_release(enc);
     return 0;

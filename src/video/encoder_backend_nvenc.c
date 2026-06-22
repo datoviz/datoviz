@@ -13,6 +13,7 @@
 #include "_log.h"
 #include "datoviz/common/macros.h"
 #include "encoder_backend.h"
+#include "file_utils.h"
 #include <cuda.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -906,7 +907,7 @@ static void nvenc_encode_frame(
     uint64_t sample_offset = NVENC_INVALID_OFFSET;
     if (enc->fp && enc->mux == DVZ_VIDEO_MUX_MP4_POST)
     {
-        long pos = ftello(enc->fp);
+        int64_t pos = dvz_video_file_tell64(enc->fp);
         if (pos >= 0)
         {
             sample_offset = (uint64_t)pos;

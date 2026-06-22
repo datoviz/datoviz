@@ -9,13 +9,11 @@
 /*************************************************************************************************/
 
 #include "encoder_internal.h"
+#include "file_utils.h"
 
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#if !defined(_WIN32) && !defined(_MSC_VER)
-#include <sys/types.h>
-#endif
 
 MUTE_ON
 #define MINIMP4_IMPLEMENTATION
@@ -38,27 +36,6 @@ MUTE_OFF
 #define DVZ_HEVC_NAL_SUFFIX_SEI_NUT 40u
 
 
-static int _file_seek64(FILE* fp, int64_t offset, int origin)
-{
-#if defined(_WIN32) || defined(_MSC_VER)
-    return _fseeki64(fp, offset, origin);
-#else
-    return fseeko(fp, (off_t)offset, origin);
-#endif
-}
-
-
-
-static int64_t _file_tell64(FILE* fp)
-{
-#if defined(_WIN32) || defined(_MSC_VER)
-    return _ftelli64(fp);
-#else
-    return (int64_t)ftello(fp);
-#endif
-}
-
-
 
 static int mp4_write_cb(int64_t offset, const void* buffer, size_t size, void* token)
 {
@@ -67,9 +44,9 @@ static int mp4_write_cb(int64_t offset, const void* buffer, size_t size, void* t
     {
         return MP4E_STATUS_FILE_WRITE_ERROR;
     }
-    if (_file_tell64(fp) != offset)
+    if (dvz_video_file_tell64(fp) != offset)
     {
-        if (_file_seek64(fp, offset, SEEK_SET) != 0)
+        if (dvz_video_file_seek64(fp, offset, SEEK_SET) != 0)
         {
             return MP4E_STATUS_FILE_WRITE_ERROR;
         }
@@ -347,7 +324,7 @@ int dvz_video_encoder_mux_post(DvzVideoEncoder* enc)
             buffer = new_buf;
             buffer_size = sample.size;
         }
-        if (_file_seek64(enc->fp, (int64_t)sample.offset, SEEK_SET) != 0)
+        if (dvz_video_file_seek64(enc->fp, (int64_t)sample.offset, SEEK_SET) != 0)
         {
             log_error(
                 "failed to seek raw stream for mp4 mux (sample %zu, offset=%llu)", i,
