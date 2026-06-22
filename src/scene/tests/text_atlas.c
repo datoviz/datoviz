@@ -235,13 +235,13 @@ int test_scene_text_default_msdf_uses_embedded_atlas(TstContext* suite, const Ts
     AT(_scene_text_atlas_ensure_string(font, &small_spec, "MSDF atlas renderer"));
     AT(font->ttf_bytes == NULL);
     AT(font->ttf_size == 0);
-    DvzTextAtlas* small = _scene_text_atlas_get(font, &small_spec);
-    ANN(small);
-    ANN(small->field);
-    AT(small->backend == DVZ_TEXT_ATLAS_BACKEND_MSDF);
-    AT(small->encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
-    AT(small->glyph_count >= 95);
-    DvzTextAtlasGlyph* small_glyph = _scene_text_atlas_glyph(small, 'A');
+    DvzTextAtlas* small_atlas = _scene_text_atlas_get(font, &small_spec);
+    ANN(small_atlas);
+    ANN(small_atlas->field);
+    AT(small_atlas->backend == DVZ_TEXT_ATLAS_BACKEND_MSDF);
+    AT(small_atlas->encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
+    AT(small_atlas->glyph_count >= 95);
+    DvzTextAtlasGlyph* small_glyph = _scene_text_atlas_glyph(small_atlas, 'A');
     ANN(small_glyph);
 
     DvzTextAtlasSpec large_spec =
