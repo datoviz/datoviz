@@ -23,15 +23,17 @@ jobs:
 
   linux:
     needs: matrix
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - arch: x86_64
+          - runner: ubuntu-latest
+            arch: x86_64
             platform_tag: manylinux_2_34_x86_64
             gnu_triplet: x86_64-linux-gnu
-          - arch: aarch64
+          - runner: ubuntu-24.04-arm
+            arch: aarch64
             platform_tag: manylinux_2_34_aarch64
             gnu_triplet: aarch64-linux-gnu
     steps:
@@ -125,12 +127,14 @@ jobs:
         include:
           - runner: windows-latest
             arch: AMD64
+            msvc_arch: x64
             platform_tag: win_amd64
             vcpkg_triplet: x64-windows
-          - runner: windows-latest
+          - runner: windows-11-arm
             arch: ARM64
+            msvc_arch: arm64
             platform_tag: win_arm64
-            vcpkg_triplet: x64-windows
+            vcpkg_triplet: arm64-windows
     runs-on: ${{ matrix.runner }}
     env:
       VCPKG_ROOT: C:/vcpkg
@@ -139,6 +143,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.msvc_arch }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
@@ -172,7 +179,7 @@ jobs:
       - name: Dependencies
         shell: pwsh
         run: |
-          choco install just mingw cmake ninja jq ccache -y
+          choco install just cmake ninja jq ccache -y
           python -m pip install -U pip build delvewheel
           Get-Command ccache
           python -c "import delvewheel"
@@ -200,7 +207,16 @@ jobs:
       - name: Build native artifacts
         shell: pwsh
         run: |
-          just build
+          cmake -S . -B build -GNinja `
+            -DCMAKE_BUILD_TYPE=Debug `
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON `
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache `
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
+            -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }} `
+            $env:DVZ_CMAKE_ARGS
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build build
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           @'
           import pathlib
@@ -225,6 +241,12 @@ jobs:
       - name: Build wheels
         shell: pwsh
         run: |
+          $runtimeDirs = @(
+            "$PWD/build/vcpkg_installed/${{ matrix.vcpkg_triplet }}/bin",
+            "$PWD/build/vcpkg_installed/${{ matrix.vcpkg_triplet }}/debug/bin"
+          ) -join [IO.Path]::PathSeparator
+          "DVZ_WHEEL_RUNTIME_DIRS=$runtimeDirs" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $env:DVZ_WHEEL_RUNTIME_DIRS = $runtimeDirs
           python tools/release_wheels/stage_wheel.py --clean
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python tools/release_wheels/build_wheel.py `
