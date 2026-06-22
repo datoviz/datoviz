@@ -154,9 +154,10 @@ jobs:
         shell: pwsh
         run: |
           choco install just cmake ninja jq ccache -y
-          python -m pip install -U pip build delvewheel
+          python -m pip install -U pip build delvewheel libclang
           Get-Command ccache
           python -c "import delvewheel"
+          python -c "from clang import cindex; print(cindex.Config.library_path)"
       - name: Install vcpkg dependencies
         shell: pwsh
         run: |
