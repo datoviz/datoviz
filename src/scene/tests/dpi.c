@@ -288,6 +288,83 @@ static int test_scene_dpi_user_scale_axis_segment_width(TstContext* suite, const
 
 
 /**
+ * Verify user scale affects left-axis tick/title text placement gaps.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_scene_dpi_user_scale_axis_text_gap(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel_full(figure);
+    AT(panel != NULL);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -1.0, +1.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, +1.0) == 0);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    AT(y_axis != NULL);
+    AT(dvz_axis_set_label(y_axis, "amplitude"));
+    DvzAxisStyle style = dvz_axis_style();
+    style.tick_gap_px = 8.0f;
+    style.label_gap_px = 12.0f;
+    style.tick_size_px = 16.0f;
+    AT(dvz_axis_set_style(y_axis, &style));
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_glsl = true;
+    caps.supports_color_blending = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 1024 * 1024;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 800;
+    cfg.target_height = 600;
+
+    float offsets[2] = {0};
+    for (uint32_t pass = 0; pass < 2; pass++)
+    {
+        cfg.user_scale = pass == 0 ? 1.0f : 2.0f;
+        DvzDiagnosticReport report;
+        dvz_diagnostic_report_init(&report);
+        DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+        AT(dvz_diagnostic_report_count(&report) == 0);
+        ANN(stream);
+        _test_scene_stream_destroy(stream);
+
+        DvzRect plot = {0};
+        AT(dvz_panel_plot_rect_px(panel, &plot));
+        bool found_label = false;
+        for (uint32_t i = 0; i < y_axis->text_count; i++)
+        {
+            if (strcmp(y_axis->text_labels[i], "amplitude") != 0)
+                continue;
+            offsets[pass] = plot.x - y_axis->text_positions[i][0];
+            found_label = true;
+            break;
+        }
+        AT(found_label);
+    }
+
+    const float expected = style.tick_gap_px + 2.25f * style.tick_size_px + style.label_gap_px;
+    AC(offsets[0], expected, 1e-4f);
+    AC(offsets[1], 2.0f * expected, 1e-4f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Verify user scale affects resolved panel reserves around the plot area.
  *
  * @param suite the active test suite
@@ -417,6 +494,7 @@ int test_scene_dpi(TstSuite* suite)
     const char* tags = "scene,dpi";
     TST_CASE(test_scene_dpi_physical_viewport_and_screen_scale);
     TST_CASE(test_scene_dpi_user_scale_axis_segment_width);
+    TST_CASE(test_scene_dpi_user_scale_axis_text_gap);
     TST_CASE(test_scene_dpi_user_scale_panel_margin);
     TST_CASE(test_scene_dpi_user_scale_layout_reserve);
     return 0;

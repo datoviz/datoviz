@@ -269,21 +269,32 @@ static float _axis_text_size(float value, float fallback)
 }
 
 
+static float _axis_text_user_scale(const DvzAxis* axis)
+{
+    ANN(axis);
+    if (axis->panel == NULL || axis->panel->figure == NULL)
+        return 1.0f;
+    return _scene_scale_or_one(axis->panel->figure->user_scale);
+}
+
+
 static float _axis_text_tick_gap(const DvzAxis* axis)
 {
     ANN(axis);
-    return axis->style.tick_gap_px > 0.0f && isfinite(axis->style.tick_gap_px) ?
-               axis->style.tick_gap_px :
-               AXIS_TEXT_TICK_GAP;
+    float gap = axis->style.tick_gap_px > 0.0f && isfinite(axis->style.tick_gap_px) ?
+                    axis->style.tick_gap_px :
+                    AXIS_TEXT_TICK_GAP;
+    return gap * _axis_text_user_scale(axis);
 }
 
 
 static float _axis_text_label_gap(const DvzAxis* axis)
 {
     ANN(axis);
-    return axis->style.label_gap_px > 0.0f && isfinite(axis->style.label_gap_px) ?
-               axis->style.label_gap_px :
-               AXIS_TEXT_LABEL_GAP;
+    float gap = axis->style.label_gap_px > 0.0f && isfinite(axis->style.label_gap_px) ?
+                    axis->style.label_gap_px :
+                    AXIS_TEXT_LABEL_GAP;
+    return gap * _axis_text_user_scale(axis);
 }
 
 
@@ -292,7 +303,9 @@ static float _axis_text_label_offset(const DvzAxis* axis)
     ANN(axis);
     float tick_gap = _axis_text_tick_gap(axis);
     float label_gap = _axis_text_label_gap(axis);
-    float tick_size = _axis_text_size(axis->style.tick_size_px, AXIS_TEXT_TICK_SIZE);
+    float tick_size =
+        _axis_text_size(axis->style.tick_size_px, AXIS_TEXT_TICK_SIZE) *
+        _axis_text_user_scale(axis);
     if (axis->dim == DVZ_DIM_X)
         return tick_gap + tick_size + label_gap;
     return tick_gap + 2.25f * tick_size + label_gap;
