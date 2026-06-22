@@ -73,7 +73,7 @@ Keep this section compact; detailed history belongs in commits and release notes
   `manylinux_2_34_x86_64` tag, and installed-wheel import, `datoviz.cli`, shaderc GLSL
   compilation, and CMake consumer checks passed. The optional Qt probe failed only because PyQt6
   was absent in the clean venv.
-- On 2026-06-18 Windows AMD64, local MinGW wheel proof passed after `19e62968`: wheel build,
+- On 2026-06-18 Windows AMD64, local Windows wheel proof passed after `19e62968`: wheel build,
   native dependency inspection, installed-wheel import, `datoviz.cli`, shaderc GLSL compilation,
   and the installed-wheel CMake consumer check completed successfully.
 - On 2026-06-18 macOS arm64, conda preflight passed after bootstrapping micromamba in `/tmp` and

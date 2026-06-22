@@ -14,9 +14,9 @@ consult `C_DISTRIBUTION.md` for implementation details on each work item.
 
 | Item | Status | Next action |
 |---|---|---|
-| pip Linux/macOS wheels | Linux manylinux proof passed; macOS wheel policy now targets macOS 15 for both arm64 and Intel | Run `.github/workflows/wheels.yml`; inspect Linux/macOS release artifacts |
-| pip Windows MinGW wheel | local Windows AMD64 build/validation passed after `19e62968`; hosted CI run `27975460115` passed AMD64/ARM64 build, inspect, upload, and Python 3.10-3.14 smokes | Keep artifacts in RC evidence; rerun only if wheel payload changes |
-| Wheel C integration | implemented; Linux/macOS proof passed, Windows AMD64 CMake-consumer smoke passed locally | Re-run clean installed-wheel smokes on Windows CI |
+| pip Linux/macOS wheels | hosted CI run `27975460115` passed Linux x86_64/aarch64 and macOS 15 arm64/Intel build, inspect, upload, and Python 3.10-3.14 smokes | Keep artifacts in RC evidence; rerun only if wheel payload changes |
+| pip Windows MSVC/vcpkg wheel | local Windows AMD64 validation passed after `19e62968`; hosted CI run `27975460115` passed AMD64/ARM64 build, inspect, upload, and Python 3.10-3.14 smokes; artifacts include `datoviz.dll` and `datoviz.lib` | Keep artifacts in RC evidence; rerun only if wheel payload changes |
+| Wheel C integration | implemented; Linux/macOS proof passed, Windows CMake-consumer smoke is part of the installed-wheel proof | Keep clean installed-wheel CMake consumer smokes in CI validation |
 | WSL2 install docs | documented | Keep aligned with source-build docs |
 | "Build on Windows in VS" docs | documented in install guide | Expand into a dedicated page if user feedback needs it |
 | conda-forge preflight | macOS arm64 render/build proof passed locally; headless import/scene proof passed | Confirm Windows/Linux feedstock logs and dependency review |
@@ -27,7 +27,6 @@ consult `C_DISTRIBUTION.md` for implementation details on each work item.
 | Item | Status | Next action |
 |---|---|---|
 | conda-forge feedstock submission | not started | Submit after preflight passes and stable release tag exists |
-| MSVC wheel | designed, not started | Build `datoviz.dll` + `datoviz.lib`; use bundled CMake config, not `datoviz-config` |
 | vcpkg main catalog submission | not started | After overlay is validated; review takes weeks |
 | Spack recipe | not started | `DVZ_VENDORED_DEPS=OFF` confirmed stable — low effort |
 | Homebrew formula | partial (justfile machinery exists) | Needs stable release tag |
@@ -51,31 +50,33 @@ consult `C_DISTRIBUTION.md` for implementation details on each work item.
 
 | Persona | Expected path |
 |---|---|
-| Scientific Python user | `pip install datoviz` now; `conda install datoviz` once feedstock is live |
-| VS C++ developer | `vcpkg install datoviz`, then `find_package(datoviz)` in CMake |
+| Scientific Python user | `pip install datoviz` once RC wheels are published; `conda install datoviz` once feedstock is live |
+| VS C++ developer | `pip install datoviz` plus wheel-local `find_package(datoviz)` once RC wheels are published; `vcpkg install datoviz`, then `find_package(datoviz)` once the vcpkg port is published |
 | MSYS2/MinGW developer | `datoviz-config --cflags --libs` or MinGW-compatible build |
 | End user (no dev) | Not datoviz's audience |
 
-### Wheels: MinGW is the right call
+### Windows wheels: MSVC/vcpkg is the pip path
 
-Python users on Windows don't care whether the DLL was built with MinGW or MSVC. NumPy,
-SciPy, and matplotlib all ship MinGW-built DLLs on Windows. The MinGW wheel CI is now the
-manual `.github/workflows/wheels.yml` workflow; the highest-leverage Windows support action
-is to keep that workflow green and inspect the AMD64/ARM64 artifacts before upload.
+The current Windows pip wheel is built under the MSVC environment with vcpkg dependencies. In the
+GitHub Actions workflow this is the Windows matrix using `ilammy/msvc-dev-cmd`, `x64-windows` and
+`arm64-windows` vcpkg triplets, and CMake/Ninja. Hosted CI run `27975460115` passed AMD64 and ARM64
+wheel builds, artifact inspection, upload, and Python 3.10 through 3.14 installed-wheel smokes.
 
-The MSVC wheel matters for C developers who `pip install datoviz` and then link against it
-from a Visual Studio project. MinGW DLLs require a `.lib` import library generated from a
-`.def` file to be usable from MSVC, which is friction. The MSVC wheel ships `datoviz.dll` +
-`datoviz.lib` directly, which VS can consume without extra steps.
+The old "MSVC wheel" TODO meant a wheel carrying a Visual Studio-consumable DLL/import library pair,
+not merely a Python wheel that happens to install on Windows. That work is now implemented: the
+wheel ships `datoviz.dll`, `datoviz.lib`, split Datoviz import libraries, bundled CMake package
+files, and vcpkg runtime DLLs. The remaining Windows/MSVC work is package-manager and documentation
+work, especially vcpkg catalog submission and possibly a dedicated Visual Studio walkthrough, not a
+separate RC-blocking wheel lane.
 
-Current MinGW wheel implementation notes after `19e62968`:
+Current Windows wheel implementation notes after hosted run `27975460115`:
 
 - Windows wheel staging requires Git Bash so `tools/copy_wheel_c_integration.sh` can copy the
   bundled headers and CMake files.
 - Native payload staging copies Datoviz DLL/import-library outputs from `build/src`, root `build`,
   and vcpkg runtime DLLs from `build/vcpkg_installed/.../bin`.
-- The wheel-local `DatovizConfig.cmake` accepts `libdatoviz.dll.a` as the MinGW import library
-  fallback when `datoviz.lib` is absent.
+- The wheel-local `DatovizConfig.cmake` prefers the MSVC `datoviz.lib` import library and accepts
+  `libdatoviz.dll.a` as a MinGW fallback when present.
 - `datoviz.raw` adds the installed wheel directory to `DVZ_WHEEL_RUNTIME_DIRS` and, on Windows,
   calls `os.add_dll_directory()` so bundled DLLs are discoverable.
 - The installed-wheel CMake consumer smoke prepends the wheel prefix to `PATH` before running the
@@ -125,15 +126,13 @@ They have no role in the datoviz distribution story.
 
 ### MSYS2/pacman
 
-Community-driven. Once the MinGW wheel is stable and there is a release tag, someone will
-submit a `mingw-w64-datoviz` package to the MSYS2 package repo. No action needed; document
-MSYS2 as a supported path.
+Community-driven. Once there is a release tag, someone can submit a `mingw-w64-datoviz` package to
+the MSYS2 package repo. No action needed; document MSYS2 as a supported GCC-compatible path.
 
 ### WSL2
 
-The recommended Windows path until the native MSVC wheel stabilises. Pure documentation
-work — see C_DISTRIBUTION.md item 9 for the step-by-step. Write this page first since it
-unblocks Windows users immediately at zero engineering cost.
+Supported Linux-like development path on Windows, especially for contributors who want the same
+tooling as Linux CI. It is no longer a workaround for missing native pip wheels.
 
 ---
 
@@ -222,7 +221,7 @@ conda, and vcpkg lanes. See C_DISTRIBUTION.md item 15 for the recipe skeleton.
 
 ## Decisions made — do not re-open
 
-- **MinGW wheel first**, not MSVC. Python users don't care about toolchain.
+- **Windows pip wheels are MSVC/vcpkg-built** and include `datoviz.dll` plus `datoviz.lib`.
 - **`datoviz-config` is GCC-only**. MSVC users use CMake `find_package`.
 - **Dynamic linking only** for `libdatoviz` itself (no static build of datoviz).
 - **vcpkg overlay first**, then main catalog submission. Don't wait for registry review.
@@ -241,7 +240,7 @@ conda, and vcpkg lanes. See C_DISTRIBUTION.md item 15 for the recipe skeleton.
 | File | Purpose |
 |---|---|
 | `agents/now/C_DISTRIBUTION.md` | Detailed implementation spec for all distribution work items |
-| `.github/workflows/wheels.yml` | Manual wheel CI including Windows MinGW jobs |
+| `.github/workflows/wheels.yml` | Manual wheel CI including Windows MSVC/vcpkg jobs |
 | `vcpkg-overlay/ports/datoviz/` | Draft vcpkg overlay port |
 | `conda-recipe/` | Draft conda-forge staged-recipes starting point |
 | `agents/now/DISTRIBUTION_RELEASE_CHECKLIST.md` | Current local preflight commands and recorded package evidence |

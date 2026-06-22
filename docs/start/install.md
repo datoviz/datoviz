@@ -58,7 +58,8 @@ On **native Windows with Visual Studio**, install:
 | CMake and Ninja | available from Visual Studio, vcpkg, or standalone installers |
 
 Then open the Datoviz folder in Visual Studio. Visual Studio detects `CMakePresets.json`; select
-the `msvc` preset and build. Native Windows binary packages are still release-candidate work.
+the `msvc` preset and build. Native Windows pip wheels are part of the release-candidate package
+set; vcpkg and conda packages wait for release tags and package-manager review.
 
 
 ## Clone and Build
@@ -115,8 +116,8 @@ The v0.4 release-candidate packaging work is active:
 | Path | Status |
 | --- | --- |
 | `pip install datoviz` | planned primary Python install path for RC wheels |
-| Windows MinGW wheel | active CI path |
-| Windows MSVC wheel | planned before final v0.4 |
+| Windows MSVC/vcpkg wheel | active CI path; AMD64 and ARM64 artifacts passed hosted wheel CI |
+| Windows MSYS2/MinGW source path | supported GCC-compatible path through `datoviz-config` |
 | vcpkg overlay | active draft for C/C++ users; publication waits for a stable release tag |
 | conda-forge | draft recipe builds locally; feedstock submission waits for release tag and platform proof |
 

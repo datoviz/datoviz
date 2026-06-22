@@ -53,7 +53,7 @@ On 2026-06-18 macOS arm64:
   `wheelhouse/datoviz-0.4.0.dev0-py3-none-manylinux_2_34_x86_64.whl`; auditwheel kept the
   `manylinux_2_34_x86_64` tag; installed-wheel import, `datoviz.cli`, shaderc GLSL compilation,
   and CMake consumer checks passed; optional Qt probe failed only because PyQt6 was absent.
-- Local Windows AMD64 wheel proof passes after `19e62968`: the MinGW wheel builds, native
+- Local Windows AMD64 wheel proof passes after `19e62968`: the Windows wheel builds, native
   dependencies inspect, installed-wheel import and `datoviz.cli` checks pass, shaderc GLSL
   compilation is available, and the installed-wheel CMake consumer builds and runs with bundled
   DLL discovery.
@@ -80,9 +80,10 @@ On 2026-06-18 macOS arm64:
 - `datoviz-config` is installed by wheels for GCC-compatible Linux, macOS, and MSYS2/MinGW shells.
   MSVC users use CMake, not `datoviz-config`.
 - Wheels bundle public headers and a relocatable wheel-local `DatovizConfig.cmake`.
-- Windows MinGW wheels bundle the Datoviz DLL, `libdatoviz.dll.a` import library when present, and
-  vcpkg runtime DLLs; `datoviz.raw` configures wheel-local runtime DLL discovery before loading the
-  library.
+- Windows MSVC/vcpkg wheels bundle the Datoviz DLL, `datoviz.lib` import library,
+  split Datoviz import libraries, and vcpkg runtime DLLs; `libdatoviz.dll.a` remains a MinGW
+  fallback when present. `datoviz.raw` configures wheel-local runtime DLL discovery before loading
+  the library.
 - System installs generate `datoviz.pc` and installed CMake package metadata.
 - `DVZ_VENDORED_DEPS=OFF` plus per-dependency source modes supports package-manager builds for
   GLFW, cglm, Kvazaar, and mimalloc where those packages are available. `msdf-atlas-gen` remains
