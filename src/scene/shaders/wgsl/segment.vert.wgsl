@@ -51,7 +51,32 @@ fn clip_segment_to_view(start_clip: ptr<function, vec4f>, end_clip: ptr<function
         start_clip, end_clip, (*start_clip).w - CLIP_EPS, (*end_clip).w - CLIP_EPS)) {
         return false;
     }
-    return clip_segment_plane(start_clip, end_clip, (*start_clip).z, (*end_clip).z);
+    if (!clip_segment_plane(
+        start_clip, end_clip, (*start_clip).x + (*start_clip).w,
+        (*end_clip).x + (*end_clip).w)) {
+        return false;
+    }
+    if (!clip_segment_plane(
+        start_clip, end_clip, (*start_clip).w - (*start_clip).x,
+        (*end_clip).w - (*end_clip).x)) {
+        return false;
+    }
+    if (!clip_segment_plane(
+        start_clip, end_clip, (*start_clip).y + (*start_clip).w,
+        (*end_clip).y + (*end_clip).w)) {
+        return false;
+    }
+    if (!clip_segment_plane(
+        start_clip, end_clip, (*start_clip).w - (*start_clip).y,
+        (*end_clip).w - (*end_clip).y)) {
+        return false;
+    }
+    if (!clip_segment_plane(start_clip, end_clip, (*start_clip).z, (*end_clip).z)) {
+        return false;
+    }
+    return clip_segment_plane(
+        start_clip, end_clip, (*start_clip).w - (*start_clip).z,
+        (*end_clip).w - (*end_clip).z);
 }
 
 fn stroke_outer_half_width(line_width: f32) -> f32 {

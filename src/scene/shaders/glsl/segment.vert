@@ -59,7 +59,17 @@ bool clipSegmentToView(inout vec4 startClip, inout vec4 endClip)
 {
     if (!clipSegmentPlane(startClip, endClip, startClip.w - CLIP_EPS, endClip.w - CLIP_EPS))
         return false;
-    return clipSegmentPlane(startClip, endClip, startClip.z, endClip.z);
+    if (!clipSegmentPlane(startClip, endClip, startClip.x + startClip.w, endClip.x + endClip.w))
+        return false;
+    if (!clipSegmentPlane(startClip, endClip, startClip.w - startClip.x, endClip.w - endClip.x))
+        return false;
+    if (!clipSegmentPlane(startClip, endClip, startClip.y + startClip.w, endClip.y + endClip.w))
+        return false;
+    if (!clipSegmentPlane(startClip, endClip, startClip.w - startClip.y, endClip.w - endClip.y))
+        return false;
+    if (!clipSegmentPlane(startClip, endClip, startClip.z, endClip.z))
+        return false;
+    return clipSegmentPlane(startClip, endClip, startClip.w - startClip.z, endClip.w - endClip.z);
 }
 
 void main()
