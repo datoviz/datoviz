@@ -21,6 +21,32 @@ jobs:
           python tools/release_wheels/wheel_matrix.py --json > matrix.json
           echo "json=$(python -c 'import json; print(json.dumps(json.load(open("matrix.json"))))')" >> "$GITHUB_OUTPUT"
 
+  python-bindings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Generate Python bindings
+        run: |
+          python -m pip install -U pip libclang pyyaml
+          clang --version
+          python tools/bindings/extract_api.py --clang clang
+          python tools/bindings/generate_ctypes.py
+          python tools/bindings/generate_array_facade.py
+          test -f datoviz/_ctypes.py
+          test -f datoviz/_array_facade.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-bindings
+          path: |
+            build/bindings/datoviz_api.json
+            datoviz/_ctypes.py
+            datoviz/_array_facade.py
+
   linux:
     needs: matrix
     runs-on: ${{ matrix.runner }}
@@ -51,6 +77,7 @@ jobs:
           path: wheelhouse/*.whl
 
   macos:
+    needs: python-bindings
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -75,6 +102,14 @@ jobs:
           python -m pip install -U pip build delocate
           command -v glslangValidator
           command -v delocate-listdeps
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-bindings
+          path: .
+      - name: Check generated Python bindings
+        run: |
+          test -f datoviz/_ctypes.py
+          test -f datoviz/_array_facade.py
       - name: Build native artifacts
         run: |
           just build
@@ -95,6 +130,7 @@ jobs:
           path: wheelhouse/*.whl
 
   windows:
+    needs: python-bindings
     strategy:
       fail-fast: false
       matrix:
@@ -158,6 +194,15 @@ jobs:
           Get-Command ccache
           python -c "import delvewheel"
           python -c "from clang import cindex; print(cindex.Config.library_path)"
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-bindings
+          path: .
+      - name: Check generated Python bindings
+        shell: pwsh
+        run: |
+          if (!(Test-Path "datoviz/_ctypes.py")) { throw "datoviz/_ctypes.py is missing" }
+          if (!(Test-Path "datoviz/_array_facade.py")) { throw "datoviz/_array_facade.py is missing" }
       - name: Install vcpkg dependencies
         shell: pwsh
         run: |
@@ -218,8 +263,6 @@ jobs:
           if actual != expected:
               raise SystemExit(f"expected {expected}, got {actual}")
           '@ | python -
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          just ctypes
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Build wheels
         shell: pwsh

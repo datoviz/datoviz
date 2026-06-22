@@ -177,8 +177,8 @@ def _stage_native(config: ReleaseWheelConfig, package_dir: Path) -> list[Payload
                 "build/src/*.dll.a",
                 "build/*.dll",
                 "build/*.dll.a",
-                "build/vcpkg_installed/x64-windows/bin/*.dll",
-                "build/vcpkg_installed/x64-windows/debug/bin/*.dll",
+                "build/vcpkg_installed/*-windows/bin/*.dll",
+                "build/vcpkg_installed/*-windows/debug/bin/*.dll",
             ],
             package_dir,
         )
