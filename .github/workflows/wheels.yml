@@ -283,7 +283,8 @@ jobs:
         shell: pwsh
         run: |
           foreach ($whl in Get-ChildItem wheelhouse/*.whl) {
-            just wheel-inspect --wheel "$whl" --native-deps
+            $wheelPath = $whl.FullName.Replace('\', '/')
+            just wheel-inspect --wheel "$wheelPath" --native-deps
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
       - uses: actions/upload-artifact@v4
