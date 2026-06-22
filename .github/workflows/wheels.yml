@@ -111,7 +111,6 @@ jobs:
             vcpkg_triplet: arm64-windows
     runs-on: ${{ matrix.runner }}
     env:
-      DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_BUILD_TESTING=OFF -DDVZ_BUILD_EXAMPLES=OFF"
       VCPKG_ROOT: C:/vcpkg
       VCPKG_BINARY_SOURCES: clear;files,C:/vcpkg-binary-cache,readwrite
     steps:
@@ -176,20 +175,28 @@ jobs:
             Write-Error "glslangValidator.exe not found under build/vcpkg_installed"
           }
           $validatorPath = $validator.FullName.Replace('\', '/')
-          "DVZ_CMAKE_ARGS=$env:DVZ_CMAKE_ARGS -DDVZ_CANVAS_SHADER_GLSLANG_VALIDATOR=$validatorPath" |
+          "DVZ_GLSLANG_VALIDATOR=$validatorPath" |
             Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           & $validator.FullName --version
       - name: Build native artifacts
         shell: pwsh
         run: |
-          cmake -S . -B build -GNinja `
-            -DCMAKE_BUILD_TYPE=Debug `
-            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON `
-            -DCMAKE_C_COMPILER_LAUNCHER=ccache `
-            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache `
-            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
-            -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }} `
-            $env:DVZ_CMAKE_ARGS
+          $cmakeArgs = @(
+            "-S", ".",
+            "-B", "build",
+            "-GNinja",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+            "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+            "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake",
+            "-DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }}",
+            "-DDVZ_ENABLE_SHADERC=ON",
+            "-DDVZ_BUILD_TESTING=OFF",
+            "-DDVZ_BUILD_EXAMPLES=OFF",
+            "-DDVZ_CANVAS_SHADER_GLSLANG_VALIDATOR=$env:DVZ_GLSLANG_VALIDATOR"
+          )
+          cmake @cmakeArgs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cmake --build build
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
