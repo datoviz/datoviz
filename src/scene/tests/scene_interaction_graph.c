@@ -714,6 +714,7 @@ int test_scene_reference_grid_api_and_geometry(TstContext* suite, const TstCase*
     ANN(grid->visual);
     AT(scene->reference_grid_count == 1);
     AT(grid->line_count == 14);
+    AT(dvz_visual_alpha_mode(grid->visual) == DVZ_ALPHA_BLENDED);
     AT(!dvz_visual_depth_test(grid->visual));
     AT(panel->visual_count == 1);
     AT(panel->visuals[0].visual == grid->visual);

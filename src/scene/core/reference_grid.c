@@ -464,6 +464,8 @@ DvzReferenceGrid* dvz_reference_grid(DvzPanel* panel, const DvzReferenceGridDesc
         goto fail;
     if (dvz_segment_set_caps(grid->visual, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_BUTT) != 0)
         goto fail;
+    if (dvz_visual_set_alpha_mode(grid->visual, DVZ_ALPHA_BLENDED) != 0)
+        goto fail;
     if (dvz_visual_set_depth_test(grid->visual, resolved.depth_test) != 0)
         goto fail;
     if (!_reference_grid_rebuild(grid))
