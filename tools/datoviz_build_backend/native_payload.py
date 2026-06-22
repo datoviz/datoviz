@@ -175,8 +175,10 @@ def _stage_native(config: ReleaseWheelConfig, package_dir: Path) -> list[Payload
             [
                 "build/src/*.dll",
                 "build/src/*.dll.a",
+                "build/src/*.lib",
                 "build/*.dll",
                 "build/*.dll.a",
+                "build/*.lib",
                 "build/vcpkg_installed/*-windows/bin/*.dll",
                 "build/vcpkg_installed/*-windows/debug/bin/*.dll",
             ],
@@ -187,7 +189,8 @@ def _stage_native(config: ReleaseWheelConfig, package_dir: Path) -> list[Payload
         for dst in copied:
             kind = (
                 "libdatoviz"
-                if dst.name.lower() in {"datoviz.dll", "libdatoviz.dll", "libdatoviz.dll.a"}
+                if dst.name.lower()
+                in {"datoviz.dll", "datoviz.lib", "libdatoviz.dll", "libdatoviz.dll.a"}
                 else "runtime"
             )
             entries.append(_entry(dst, f"datoviz/{dst.name}", kind, "core-runtime"))
