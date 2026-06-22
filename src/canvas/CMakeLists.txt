@@ -13,6 +13,9 @@ target_include_directories(datoviz_canvas
 )
 
 target_compile_definitions(datoviz_canvas PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+if(WIN32)
+    target_compile_definitions(datoviz_canvas PRIVATE DVZ_SHARED)
+endif()
 
 set(DVZ_CANVAS_SHADER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shaders")
 file(GLOB DVZ_CANVAS_SHADER_SOURCES

@@ -7,4 +7,7 @@ target_include_directories(datoviz_input
         ${PROJECT_SOURCE_DIR}/src/common
 )
 
-target_compile_definitions(datoviz_input PUBLIC ${COMPILE_DEFINITIONS})
+target_compile_definitions(datoviz_input PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+if(WIN32)
+    target_compile_definitions(datoviz_input PRIVATE DVZ_SHARED)
+endif()

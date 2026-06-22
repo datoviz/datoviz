@@ -37,11 +37,13 @@
 #include <windows.h>
 
 // MSVC defines this in winsock2.h!?
+#if !defined(_WINSOCKAPI_) && !defined(_WINSOCK2API_)
 typedef struct timeval
 {
     long tv_sec;
     long tv_usec;
 } timeval;
+#endif
 
 static int gettimeofday(struct timeval* tp, struct timezone* tzp)
 {

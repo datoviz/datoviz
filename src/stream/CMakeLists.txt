@@ -20,3 +20,7 @@ target_compile_definitions(datoviz_stream
     PUBLIC
         ${DVZ_COMPILE_DEFINITIONS}
 )
+
+if(WIN32)
+    target_compile_definitions(datoviz_stream PRIVATE DVZ_SHARED)
+endif()

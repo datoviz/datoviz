@@ -10,6 +10,9 @@ target_include_directories(datoviz_window
 )
 
 target_compile_definitions(datoviz_window PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+if(WIN32)
+    target_compile_definitions(datoviz_window PRIVATE DVZ_SHARED)
+endif()
 
 if(DVZ_HAS_GLFW AND TARGET glfw::glfw)
     target_link_libraries(datoviz_window PUBLIC glfw::glfw)
