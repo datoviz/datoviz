@@ -383,4 +383,8 @@ jobs:
           python -m pip install -U pip wheel tomli
       - name: Installed wheel smoke
         shell: pwsh
-        run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional
+        run: |
+          $wheel = Get-ChildItem wheelhouse/*.whl | Select-Object -First 1
+          if (!$wheel) { throw "no wheel found in wheelhouse" }
+          $wheelPath = $wheel.FullName.Replace('\', '/')
+          python tools/release_wheels/check_wheel.py --wheel "$wheelPath" --cmake-consumer --qt-probe optional
