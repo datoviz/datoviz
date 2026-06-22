@@ -1,6 +1,6 @@
 # Distribution Release Checklist
 
-Status: active release gate. Updated: 2026-06-18.
+Status: active release gate. Updated: 2026-06-22.
 
 Use this checklist before dispatching live GitHub Actions, publishing source assets, submitting
 package-manager recipes, or uploading release wheels. It keeps the wheel, conda, and vcpkg paths
@@ -83,6 +83,22 @@ Keep this section compact; detailed history belongs in commits and release notes
   a Vulkan device.
 - On Ubuntu 24.04 noble, the distro-style system source-install lane passed with system
   `libmimalloc`, `libglfw`, `zlib`, `freetype`, and `tinyxml2`, with no unresolved `ldd` entries.
+- On 2026-06-22, hosted wheel CI run `27966579584` proved Linux x86_64/aarch64 wheel build,
+  native inspection, upload, and Linux installed-wheel smokes for Python 3.10 through 3.14 plus a
+  prerelease smoke. The downloaded Linux artifacts were
+  `datoviz-0.4.0.dev0-py3-none-manylinux_2_34_x86_64.whl` and
+  `datoviz-0.4.0.dev0-py3-none-manylinux_2_34_aarch64.whl`, each with required generated Python
+  bindings, CMake package files, `libdatoviz.so`, and `libshaderc_shared.so`.
+- On 2026-06-22, hosted wheel CI run `27966579584` proved Windows AMD64 and ARM64 wheel build,
+  native inspection, upload, and Windows Python 3.10 through 3.14 installed-wheel smokes. The
+  downloaded Windows artifacts were `datoviz-0.4.0.dev0-py3-none-win_amd64.whl` and
+  `datoviz-0.4.0.dev0-py3-none-win_arm64.whl`, each with generated Python bindings, CMake package
+  files, `datoviz.dll`, and the required `datoviz.lib` import library.
+- On 2026-06-22, the macOS arm64 hosted wheel lane built, inspected, and uploaded an artifact, but
+  the repaired wheel was tagged `macosx_15_0_arm64` instead of the intended
+  `macosx_11_0_arm64`. Treat this as build-path evidence only until the macOS repair tag is fixed
+  and rerun. The `macos-13` x86_64 lane in run `27966579584` remained queued, so no macOS
+  installed-wheel smokes had started.
 
 
 ## Source Bundle

@@ -1,6 +1,6 @@
 # Datoviz v0.4 Release Plan
 
-Status: active release roadmap. Updated: 2026-06-18.
+Status: active release roadmap. Updated: 2026-06-22.
 
 This is the short route from the current branch to `v0.4.0`. Use [STATUS.md](STATUS.md) for current
 blockers and [DOCUMENTATION.md](DOCUMENTATION.md) for public documentation gates.
@@ -226,6 +226,16 @@ Exit criteria:
 4. Release examples are documented enough for early testers.
 5. Required RC note fields from
    [../../spec/release/RC_PROCESS.md](../../spec/release/RC_PROCESS.md) are present.
+
+Current packaging gate:
+
+1. Hosted wheel CI run `27966579584` on 2026-06-22 proved Linux x86_64/aarch64 wheels and Windows
+   AMD64/ARM64 wheels, including installed-wheel smoke tests for Python 3.10 through 3.14 on the
+   install-smoke host platforms.
+2. macOS remains the RC1 wheel blocker: x86_64 on `macos-13` is still queued, and the arm64 artifact
+   was repaired to a host `macosx_15_0_arm64` tag instead of the intended `macosx_11_0_arm64` tag.
+3. The next release step is to rerun the macOS wheel lanes after the macOS repair tag-preservation
+   fix and record the corrected artifacts before cutting RC1.
 
 ### 8. RC2
 

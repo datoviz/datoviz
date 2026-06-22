@@ -86,9 +86,14 @@ jobs:
           - runner: macos-13
             arch: x86_64
             platform_tag: macosx_10_13_x86_64
+            deployment_target: "10.13"
           - runner: macos-latest
             arch: arm64
             platform_tag: macosx_11_0_arm64
+            deployment_target: "11.0"
+    env:
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.deployment_target }}
+      DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.deployment_target }}"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -342,8 +347,12 @@ jobs:
         target:
           - runner: macos-13
             arch: x86_64
+            deployment_target: "10.13"
           - runner: macos-latest
             arch: arm64
+            deployment_target: "11.0"
+    env:
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.target.deployment_target }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
