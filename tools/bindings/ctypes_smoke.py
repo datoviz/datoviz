@@ -68,6 +68,44 @@ def _run_gsp_query_smoke(dvz) -> None:
         dvz.dvz_scene_destroy(scene)
 
 
+def _check_query_result_layout(dvz) -> None:
+    assert hasattr(dvz, 'DvzQueryResult')
+    assert hasattr(dvz.DvzQueryResult, '_fields_')
+
+    field_names = [name for name, *_ in dvz.DvzQueryResult._fields_]
+    for required in [
+        'request_id',
+        'status',
+        'hit',
+        'panel_position',
+        'framebuffer_position',
+        'visual_id',
+        'visual_family',
+        'item_id',
+        'texel_id',
+        'has_display_rgba',
+        'display_rgba',
+        'value_kind',
+        'scalar',
+        'vector',
+        'label',
+    ]:
+        assert required in field_names
+
+    result = dvz.DvzQueryResult()
+    result.request_id = 123
+    result.status = 2
+    result.hit = False
+    result.panel_position[0] = 12.0
+    result.panel_position[1] = 34.0
+    assert result.request_id == 123
+    assert tuple(result.panel_position) == (12.0, 34.0)
+    assert dvz.dvz_scene_poll_query.argtypes == [
+        ctypes.POINTER(dvz.DvzScene),
+        ctypes.POINTER(dvz.DvzQueryResult),
+    ]
+
+
 def main() -> int:
     sys.path.insert(0, str(ROOT_DIR))
 
@@ -108,6 +146,7 @@ def main() -> int:
     assert isinstance(t0, int)
     assert t1 >= t0
 
+    _check_query_result_layout(dvz)
     _run_gsp_query_smoke(dvz)
 
     calls: list[int | None] = []
