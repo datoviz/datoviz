@@ -63,8 +63,9 @@ Keep this section compact; detailed history belongs in commits and release notes
   `just distribution-validate-local audit` passed against the strict source install prefix.
 - On 2026-06-18 macOS arm64, host-native repaired wheel proof passed for imports,
   `datoviz-config`, bundled headers/CMake files, native dependency inspection, and the wheel CMake
-  consumer. The local repaired wheel was host-tagged `macosx_15_0_arm64`, so
-  `macosx_11_0_arm64` still needs CI or an older-target builder.
+  consumer. On 2026-06-22, hosted CI showed the current macOS Vulkan/Homebrew runtime stack requires
+  macOS 15, so the v0.4 wheel policy now targets `macosx_15_0_arm64` and
+  `macosx_15_0_x86_64`.
 - On 2026-06-18 Linux x86_64, local manylinux Docker proof passed with
   `just wheel-manylinux-docker x86_64` against
   `quay.io/pypa/manylinux_2_34_x86_64@sha256:e05e1c4b281f10dc4c3df2b6f546392a0dd4c6383d620c3f8a6c33e19069d056`.
@@ -94,11 +95,10 @@ Keep this section compact; detailed history belongs in commits and release notes
   downloaded Windows artifacts were `datoviz-0.4.0.dev0-py3-none-win_amd64.whl` and
   `datoviz-0.4.0.dev0-py3-none-win_arm64.whl`, each with generated Python bindings, CMake package
   files, `datoviz.dll`, and the required `datoviz.lib` import library.
-- On 2026-06-22, the macOS arm64 hosted wheel lane built, inspected, and uploaded an artifact, but
-  the repaired wheel was tagged `macosx_15_0_arm64` instead of the intended
-  `macosx_11_0_arm64`. Treat this as build-path evidence only until the macOS repair tag is fixed
-  and rerun. The `macos-13` x86_64 lane in run `27966579584` remained queued, so no macOS
-  installed-wheel smokes had started.
+- On 2026-06-22, hosted wheel CI run `27971470056` proved that the old
+  `macosx_11_0_arm64` target was dishonest with current bundled macOS runtime dependencies:
+  `delocate` rejected the wheel because `libvulkan`, `libshaderc_shared`, `freetype`, `libpng`,
+  and `tinyxml2` required macOS 15. The next macOS proof must use the macOS 15 wheel tags.
 
 
 ## Source Bundle
@@ -167,8 +167,8 @@ copy script.
 Before accepting wheel evidence:
 
 1. Linux wheels build and inspect on `x86_64` and `aarch64`.
-2. macOS wheels build and inspect on `x86_64` and `arm64`; `macosx_11_0_arm64` must be proven in
-   CI or a clean older-target builder, not retagged from this macOS 15 host.
+2. macOS 15 wheels build and inspect on `x86_64` and `arm64`; do not retag a wheel as supporting
+   an older macOS version than any bundled dylib supports.
 3. Windows wheels build and inspect on AMD64 and ARM64.
 4. Installed-wheel smokes pass for Python 3.10 through 3.14.
 5. The CMake consumer check passes from the installed wheel.

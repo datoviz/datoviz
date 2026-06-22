@@ -60,9 +60,8 @@ On 2026-06-18 macOS arm64:
 - Local conda render/build proof passes from a generated release source bundle after the Python
   recipe scripts force `PIP_USER=false`: `libdatoviz` and `datoviz` packages build, and the package
   test imports `datoviz.raw` and creates/destroys a scene without a Vulkan device.
-- Local release-target proof for `macosx_11_0_arm64` remains blocked by this host's newer macOS 15
-  deployment target in native outputs and Homebrew dependencies; prove it in CI or an older-target
-  builder.
+- Hosted CI confirmed that current macOS Vulkan/Homebrew runtime dependencies require macOS 15.
+  The v0.4 wheel policy therefore targets `macosx_15_0_arm64` and `macosx_15_0_x86_64`.
 
 
 ## Implemented Surface
@@ -92,8 +91,8 @@ On 2026-06-18 macOS arm64:
 
 ## Active Blockers
 
-1. Prove release-target macOS wheels in CI or an older-target builder, especially
-   `macosx_11_0_arm64`.
+1. Prove release-target macOS 15 wheels in CI: `macosx_15_0_arm64` and
+   `macosx_15_0_x86_64`.
 2. Confirm Windows AMD64 in GitHub Actions, then prove Windows ARM64: build wheel, inspect native
    dependencies, install in a clean environment, and run the CMake consumer check where native
    execution is available.

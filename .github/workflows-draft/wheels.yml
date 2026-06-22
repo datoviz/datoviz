@@ -79,9 +79,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: macos-13
+          - runner: macos-15-intel
             arch: x86_64
-          - runner: macos-latest
+          - runner: macos-15
             arch: arm64
     env:
       CIBW_ARCHS_MACOS: ${{ matrix.arch }}
@@ -201,9 +201,9 @@ jobs:
       matrix:
         python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
         target:
-          - runner: macos-13
+          - runner: macos-15-intel
             arch: x86_64
-          - runner: macos-latest
+          - runner: macos-15
             arch: arm64
     steps:
       - uses: actions/checkout@v4

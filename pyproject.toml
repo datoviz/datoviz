@@ -65,7 +65,7 @@ require-shaderc = true
 payload-manifest = "datoviz/_wheel_payload.json"
 
 [tool.datoviz.wheel.macos]
-platform-tags = ["macosx_10_13_x86_64", "macosx_11_0_arm64"]
+platform-tags = ["macosx_15_0_x86_64", "macosx_15_0_arm64"]
 repair-tool = "delocate"
 runtime-patterns = [
     "libshaderc*.dylib",

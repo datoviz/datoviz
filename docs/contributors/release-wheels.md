@@ -43,8 +43,8 @@ Target platform artifacts are:
 |---|---:|---|
 | Linux | `x86_64` | `manylinux_2_34_x86_64` |
 | Linux | `aarch64` | `manylinux_2_34_aarch64` |
-| macOS | `x86_64` | `macosx_10_13_x86_64` |
-| macOS | `arm64` | `macosx_11_0_arm64` |
+| macOS | `x86_64` | `macosx_15_0_x86_64` |
+| macOS | `arm64` | `macosx_15_0_arm64` |
 | Windows | `AMD64` | `win_amd64` |
 | Windows | `ARM64` | `win_arm64` |
 
@@ -91,19 +91,19 @@ use the host tag, but release evidence must use the matrix tag.
 For the arm64 release target:
 
 ```sh
-MACOSX_DEPLOYMENT_TARGET=11.0 just build
+MACOSX_DEPLOYMENT_TARGET=15.0 just build
 DVZ_WHEEL_RUNTIME_DIRS="<shaderc-lib>:<vulkan-loader-lib>:<moltenvk-lib>" \
   just wheel-stage --clean
-MACOSX_DEPLOYMENT_TARGET=11.0 \
-  just wheel-build --platform-tag macosx_11_0_arm64
-just wheel-validate --platform-tag macosx_11_0_arm64
+MACOSX_DEPLOYMENT_TARGET=15.0 \
+  just wheel-build --platform-tag macosx_15_0_arm64
+just wheel-validate --platform-tag macosx_15_0_arm64
 just wheel-inspect --native-deps
 just wheel-check --shaderc --cmake-consumer --qt-probe optional
 ```
 
 If `delocate-wheel` reports that `libdatoviz.dylib` or copied dependencies have a newer minimum
 macOS target, rebuild those inputs with the intended `MACOSX_DEPLOYMENT_TARGET` or move the proof to
-a clean CI/builder environment. Do not retag a newer-target wheel as `macosx_11_0_arm64`.
+a clean CI/builder environment. Do not retag a newer-target wheel as an older macOS wheel.
 
 
 ## Pipeline Stages

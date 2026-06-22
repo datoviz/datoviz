@@ -67,13 +67,13 @@ namespaced config setting such as:
 ```sh
 python -m build --wheel \
   --config-setting=datoviz.release-wheel=true \
-  --config-setting=datoviz.platform-tag=macosx_11_0_arm64
+  --config-setting=datoviz.platform-tag=macosx_15_0_arm64
 ```
 
 In release wheel mode, `build_wheel()` should directly emit the final artifact:
 
 ```text
-datoviz-<version>-py3-none-macosx_11_0_arm64.whl
+datoviz-<version>-py3-none-macosx_15_0_arm64.whl
 datoviz-<version>-py3-none-manylinux_2_34_x86_64.whl
 datoviz-<version>-py3-none-win_amd64.whl
 ```
@@ -147,7 +147,7 @@ require-shaderc = true
 payload-manifest = "datoviz/_wheel_payload.json"
 
 [tool.datoviz.wheel.macos]
-platform-tags = ["macosx_10_13_x86_64", "macosx_11_0_arm64"]
+platform-tags = ["macosx_15_0_x86_64", "macosx_15_0_arm64"]
 repair-tool = "delocate"
 runtime-patterns = [
   "libshaderc*.dylib",
@@ -211,7 +211,7 @@ macOS:
 
 1. require `MACOSX_DEPLOYMENT_TARGET` for release-tag builds;
 2. inspect bundled dylibs for minimum macOS version;
-3. reject `macosx_11_0_arm64` if any bundled dylib requires a newer target;
+3. reject a macOS wheel tag if any bundled dylib requires a newer target;
 4. run `delocate-wheel` or equivalent repair inside `build_wheel()`;
 5. revalidate the repaired wheel filename, contents, and native dependencies.
 

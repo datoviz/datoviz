@@ -14,7 +14,7 @@ consult `C_DISTRIBUTION.md` for implementation details on each work item.
 
 | Item | Status | Next action |
 |---|---|---|
-| pip Linux/macOS wheels | Linux manylinux and host-native macOS proof passed; release-target macOS tag still needs CI/older-builder proof | Run `.github/workflows/wheels.yml`; inspect Linux/macOS release artifacts |
+| pip Linux/macOS wheels | Linux manylinux proof passed; macOS wheel policy now targets macOS 15 for both arm64 and Intel | Run `.github/workflows/wheels.yml`; inspect Linux/macOS release artifacts |
 | pip Windows MinGW wheel | local Windows AMD64 build/validation passed after `19e62968`; CI matrix confirmation pending | Inspect Windows AMD64/ARM64 artifacts from `.github/workflows/wheels.yml` |
 | Wheel C integration | implemented; Linux/macOS proof passed, Windows AMD64 CMake-consumer smoke passed locally | Re-run clean installed-wheel smokes on Windows CI |
 | WSL2 install docs | documented | Keep aligned with source-build docs |

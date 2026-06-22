@@ -232,10 +232,10 @@ Current packaging gate:
 1. Hosted wheel CI run `27966579584` on 2026-06-22 proved Linux x86_64/aarch64 wheels and Windows
    AMD64/ARM64 wheels, including installed-wheel smoke tests for Python 3.10 through 3.14 on the
    install-smoke host platforms.
-2. macOS remains the RC1 wheel blocker: x86_64 on `macos-13` is still queued, and the arm64 artifact
-   was repaired to a host `macosx_15_0_arm64` tag instead of the intended `macosx_11_0_arm64` tag.
-3. The next release step is to rerun the macOS wheel lanes after the macOS repair tag-preservation
-   fix and record the corrected artifacts before cutting RC1.
+2. macOS remains the RC1 wheel blocker, but the supported binary floor is now macOS 15 for both
+   Apple Silicon and Intel: `macosx_15_0_arm64` and `macosx_15_0_x86_64`.
+3. The next release step is to rerun the macOS 15 wheel lanes and record the corrected artifacts
+   before cutting RC1.
 
 ### 8. RC2
 

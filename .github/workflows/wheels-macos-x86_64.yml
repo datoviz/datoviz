@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
 
 env:
-  MACOSX_DEPLOYMENT_TARGET: "10.13"
-  DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13"
+  MACOSX_DEPLOYMENT_TARGET: "15.0"
+  DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"
 
 jobs:
   python-bindings:
@@ -36,7 +36,7 @@ jobs:
 
   macos-x86_64:
     needs: python-bindings
-    runs-on: macos-13
+    runs-on: macos-15-intel
     steps:
       - uses: actions/checkout@v4
         with:
@@ -65,7 +65,7 @@ jobs:
           export DVZ_WHEEL_RUNTIME_DIRS="$(brew --prefix shaderc)/lib:$(brew --prefix vulkan-loader)/lib:$(brew --prefix molten-vk)/lib:$(brew --prefix molten-vk)/share/vulkan/icd.d"
           python -m pip wheel . --no-deps -w wheelhouse \
             -C datoviz.release-wheel=true \
-            -C datoviz.platform-tag=macosx_10_13_x86_64
+            -C datoviz.platform-tag=macosx_15_0_x86_64
       - name: Inspect wheel
         run: |
           for whl in wheelhouse/*.whl; do
@@ -78,7 +78,7 @@ jobs:
 
   macos-x86_64-python-smoke:
     needs: macos-x86_64
-    runs-on: macos-13
+    runs-on: macos-15-intel
     strategy:
       fail-fast: false
       matrix:

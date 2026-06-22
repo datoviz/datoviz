@@ -30,8 +30,8 @@ class WheelTarget:
 TARGETS = (
     WheelTarget("linux", "x86_64", "manylinux_2_34_x86_64", True),
     WheelTarget("linux", "aarch64", "manylinux_2_34_aarch64", True),
-    WheelTarget("macos", "x86_64", "macosx_10_13_x86_64", True),
-    WheelTarget("macos", "arm64", "macosx_11_0_arm64", True),
+    WheelTarget("macos", "x86_64", "macosx_15_0_x86_64", True),
+    WheelTarget("macos", "arm64", "macosx_15_0_arm64", True),
     WheelTarget("windows", "AMD64", "win_amd64", True),
     WheelTarget("windows", "ARM64", "win_arm64", True),
 )
@@ -98,4 +98,3 @@ def print_matrix(*, as_json: bool = False) -> None:
     for target in TARGETS:
         mark = "required" if target.required else "optional"
         print(f"{target.os:7} {target.arch:8} {target.platform_tag:28} {mark}")
-
