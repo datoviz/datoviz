@@ -24,6 +24,8 @@ jobs:
   linux:
     needs: matrix
     runs-on: ${{ matrix.runner }}
+    container:
+      image: quay.io/pypa/manylinux_2_34_${{ matrix.arch }}:latest
     strategy:
       fail-fast: false
       matrix:
@@ -31,46 +33,16 @@ jobs:
           - runner: ubuntu-latest
             arch: x86_64
             platform_tag: manylinux_2_34_x86_64
-            gnu_triplet: x86_64-linux-gnu
           - runner: ubuntu-24.04-arm
             arch: aarch64
             platform_tag: manylinux_2_34_aarch64
-            gnu_triplet: aarch64-linux-gnu
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: taiki-e/install-action@just
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-      - name: Dependencies
+      - name: Build, inspect, and smoke-test manylinux wheel
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            ccache glslang-tools glslc libshaderc-dev libvulkan-dev \
-            libgl1-mesa-dev \
-            libx11-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev
-          python -m pip install -U pip build auditwheel
-          command -v ccache
-          command -v glslc
-          command -v glslangValidator
-          command -v auditwheel
-      - name: Build native artifacts
-        run: |
-          just build
-      - name: Build wheels
-        env:
-          DVZ_WHEEL_RUNTIME_DIRS: /usr/lib/${{ matrix.gnu_triplet }}
-        run: |
-          python -m pip wheel . --no-deps -w wheelhouse \
-            -C datoviz.release-wheel=true \
-            -C datoviz.platform-tag=${{ matrix.platform_tag }}
-      - name: Inspect wheels
-        run: |
-          for whl in wheelhouse/*.whl; do
-            just wheel-inspect --wheel "$whl" --native-deps
-          done
+          bash tools/release_wheels/manylinux_build_inside.sh ${{ matrix.arch }}
       - uses: actions/upload-artifact@v4
         with:
           name: wheel-linux-${{ matrix.arch }}
