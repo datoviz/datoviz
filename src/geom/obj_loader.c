@@ -70,6 +70,17 @@ typedef struct ObjArrays
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+static char* _obj_strtok(char* str, const char* delimiters, char** context)
+{
+#if defined(_WIN32) || defined(_MSC_VER)
+    return strtok_s(str, delimiters, context);
+#else
+    return strtok_r(str, delimiters, context);
+#endif
+}
+
+
+
 static bool _obj_desc_validate(const DvzGeometryObjDesc* desc)
 {
     if (desc == NULL)
@@ -225,8 +236,8 @@ static bool _obj_parse_face(char* line, ObjArrays* arrays)
     ObjFaceVertex face[OBJ_FACE_MAX] = {{0}};
     uint32_t face_count = 0;
     char* saveptr = NULL;
-    for (char* token = strtok_r(line, " \t\r\n", &saveptr); token != NULL;
-         token = strtok_r(NULL, " \t\r\n", &saveptr))
+    for (char* token = _obj_strtok(line, " \t\r\n", &saveptr); token != NULL;
+         token = _obj_strtok(NULL, " \t\r\n", &saveptr))
     {
         if (face_count >= OBJ_FACE_MAX)
             return false;
