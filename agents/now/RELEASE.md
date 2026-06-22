@@ -229,13 +229,13 @@ Exit criteria:
 
 Current packaging gate:
 
-1. Hosted wheel CI run `27966579584` on 2026-06-22 proved Linux x86_64/aarch64 wheels and Windows
-   AMD64/ARM64 wheels, including installed-wheel smoke tests for Python 3.10 through 3.14 on the
-   install-smoke host platforms.
-2. macOS remains the RC1 wheel blocker, but the supported binary floor is now macOS 15 for both
-   Apple Silicon and Intel: `macosx_15_0_arm64` and `macosx_15_0_x86_64`.
-3. The next release step is to rerun the macOS 15 wheel lanes and record the corrected artifacts
-   before cutting RC1.
+1. Hosted wheel CI run `27975460115` on 2026-06-22 passed the full required matrix on commit
+   `92c41fd6e`: Linux x86_64/aarch64, macOS 15 arm64/Intel, Windows AMD64/ARM64, and
+   installed-wheel smoke tests for Python 3.10 through 3.14 on Linux, macOS, and Windows.
+2. Local artifact inspection confirmed expected wheel tags, required generated bindings and CMake
+   package files, Windows `datoviz.dll` plus `datoviz.lib`, and architecture-correct macOS dylibs.
+3. The next release step is RC1 source bundle/checksum generation, final release notes, and
+   publication rehearsal before cutting RC1.
 
 ### 8. RC2
 

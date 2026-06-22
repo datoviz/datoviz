@@ -62,6 +62,11 @@ On 2026-06-18 macOS arm64:
   test imports `datoviz.raw` and creates/destroys a scene without a Vulkan device.
 - Hosted CI confirmed that current macOS Vulkan/Homebrew runtime dependencies require macOS 15.
   The v0.4 wheel policy therefore targets `macosx_15_0_arm64` and `macosx_15_0_x86_64`.
+- Hosted wheel CI run `27975460115` passed on 2026-06-22 with Linux x86_64/aarch64, macOS 15
+  arm64/Intel, Windows AMD64/ARM64, Python 3.10 through 3.14 installed-wheel smokes on
+  Linux/macOS/Windows, and Linux prerelease smoke. Downloaded artifacts were inspected locally for
+  expected wheel tags, required generated bindings and CMake package files, Windows import
+  libraries, and macOS dylib architectures.
 
 
 ## Implemented Surface
@@ -91,16 +96,11 @@ On 2026-06-18 macOS arm64:
 
 ## Active Blockers
 
-1. Prove release-target macOS 15 wheels in CI: `macosx_15_0_arm64` and
-   `macosx_15_0_x86_64`.
-2. Confirm Windows AMD64 in GitHub Actions, then prove Windows ARM64: build wheel, inspect native
-   dependencies, install in a clean environment, and run the CMake consumer check where native
-   execution is available.
-3. Validate the vcpkg overlay on Windows with vcpkg installed; replace placeholder source-bundle
+1. Validate the vcpkg overlay on Windows with vcpkg installed; replace placeholder source-bundle
    SHA512 values only after tagging/release-asset publication.
-4. Confirm conda recipe dependency names, Unix paths, and Windows DLL layout in staged-recipes or
+2. Confirm conda recipe dependency names, Unix paths, and Windows DLL layout in staged-recipes or
    feedstock CI logs; local macOS arm64 render/build is green.
-5. Keep Homebrew, `.deb`, Spack, rpm, and conan behind the wheel/conda/vcpkg proof unless release
+3. Keep Homebrew, `.deb`, Spack, rpm, and conan behind the wheel/conda/vcpkg proof unless release
    scope changes.
 
 

@@ -99,6 +99,15 @@ Keep this section compact; detailed history belongs in commits and release notes
   `macosx_11_0_arm64` target was dishonest with current bundled macOS runtime dependencies:
   `delocate` rejected the wheel because `libvulkan`, `libshaderc_shared`, `freetype`, `libpng`,
   and `tinyxml2` required macOS 15. The next macOS proof must use the macOS 15 wheel tags.
+- On 2026-06-22, hosted wheel CI run `27975460115` passed the full wheel matrix on commit
+  `92c41fd6e`: Linux x86_64/aarch64, macOS 15 arm64/Intel, Windows AMD64/ARM64, installed-wheel
+  smokes for Python 3.10 through 3.14 on Linux/macOS/Windows, and the non-blocking Linux
+  prerelease smoke. Downloaded artifacts had the expected tags:
+  `manylinux_2_34_x86_64`, `manylinux_2_34_aarch64`, `macosx_15_0_arm64`,
+  `macosx_15_0_x86_64`, `win_amd64`, and `win_arm64`. Local artifact inspection confirmed
+  required generated Python bindings, CMake package files, Linux `libdatoviz.so` plus
+  `libshaderc_shared.so`, Windows `datoviz.dll` plus `datoviz.lib`, and architecture-correct
+  macOS dylibs for arm64 and x86_64.
 
 
 ## Source Bundle
@@ -160,8 +169,7 @@ python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-cons
 ```
 
 Record the resulting wheel filename, bundled DLL list, native dependency inspection, and CMake
-consumer output for release notes. Use GitHub Actions for matrix confirmation, especially Windows
-ARM64 and older macOS release tags. Windows `wheel-stage` requires Git Bash for the C integration
+consumer output for release notes. Windows `wheel-stage` requires Git Bash for the C integration
 copy script.
 
 Before accepting wheel evidence:
