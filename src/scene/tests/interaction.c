@@ -3745,9 +3745,9 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
-    DvzVisual* small = _scene_text_visual(scene, 0);
-    ANN(small);
-    AT(_scene_text_visual_set_renderer(small, DVZ_TEXT_RENDERER_AUTO) == 0);
+    DvzVisual* small_text = _scene_text_visual(scene, 0);
+    ANN(small_text);
+    AT(_scene_text_visual_set_renderer(small_text, DVZ_TEXT_RENDERER_AUTO) == 0);
     const char* small_string[1] = {"small"};
     vec3 small_pos[1] = {{24.0f, 24.0f, 0.0f}};
     float small_size[1] = {10.0f};
@@ -3755,10 +3755,10 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
         {.attr_name = "position", .data = small_pos, .item_count = 1},
         {.attr_name = "size", .data = small_size, .item_count = 1},
     };
-    AT(dvz_visual_set_strings(small, "text", small_string, 1) == 0);
-    AT(dvz_visual_set_data_many(small, small_updates, 2) == 0);
+    AT(dvz_visual_set_strings(small_text, "text", small_string, 1) == 0);
+    AT(dvz_visual_set_data_many(small_text, small_updates, 2) == 0);
     AT(dvz_panel_add_visual(
-           panel, small,
+           panel, small_text,
            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     DvzVisual* large = _scene_text_visual(scene, 0);
@@ -3778,17 +3778,17 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     _scene_prepare_text_visuals(figure);
-    AT(_visual_family_state(small)->text.glyph_visual != NULL);
+    AT(_visual_family_state(small_text)->text.glyph_visual != NULL);
     AT(_visual_family_state(large)->text.glyph_visual != NULL);
 #if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
-    AT(_visual_family_state(_visual_family_state(small)->text.glyph_visual)->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA);
+    AT(_visual_family_state(_visual_family_state(small_text)->text.glyph_visual)->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA);
     AT(scene->font_count >= 1);
     DvzTextAtlas* small_atlas =
         text_test_atlas(scene, DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP, small_size[0]);
     ANN(small_atlas);
-    AT(small_atlas->field == _visual_family_state(_visual_family_state(small)->text.glyph_visual)->field);
+    AT(small_atlas->field == _visual_family_state(_visual_family_state(small_text)->text.glyph_visual)->field);
 #else
-    AT(_visual_family_state(_visual_family_state(small)->text.glyph_visual)->field == scene->text_bitmap_atlas);
+    AT(_visual_family_state(_visual_family_state(small_text)->text.glyph_visual)->field == scene->text_bitmap_atlas);
 #endif
 #if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
     AT(_visual_family_state(_visual_family_state(large)->text.glyph_visual)->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
