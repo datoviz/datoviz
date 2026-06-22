@@ -3813,17 +3813,17 @@ int test_scene_text_msdf_atlas_spec_scales_range(TstContext* suite, const TstCas
 {
     ANN(suite);
     ANN(item);
-    DvzTextAtlasSpec small = _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, 32.0f);
+    DvzTextAtlasSpec small_spec = _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, 32.0f);
     DvzTextAtlasSpec medium = _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, 72.0f);
     DvzTextAtlasSpec large = _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, 128.0f);
 
-    AC(small.em_px, 32.0f, 1e-6f);
-    AC(small.distance_range_px, 4.0f, 1e-6f);
+    AC(small_spec.em_px, 32.0f, 1e-6f);
+    AC(small_spec.distance_range_px, 4.0f, 1e-6f);
     AC(medium.em_px, 64.0f, 1e-6f);
     AC(medium.distance_range_px, 8.0f, 1e-6f);
     AC(large.em_px, 128.0f, 1e-6f);
     AC(large.distance_range_px, 16.0f, 1e-6f);
-    AC(small.distance_range_px / small.em_px, medium.distance_range_px / medium.em_px, 1e-6f);
+    AC(small_spec.distance_range_px / small_spec.em_px, medium.distance_range_px / medium.em_px, 1e-6f);
     AC(medium.distance_range_px / medium.em_px, large.distance_range_px / large.em_px, 1e-6f);
     return 0;
 }
