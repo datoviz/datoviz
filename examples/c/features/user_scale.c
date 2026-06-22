@@ -79,7 +79,8 @@ typedef struct UserScaleState
  * @param colors output curve colors
  * @param widths output logical stroke widths
  */
-static void _fill_path(vec3 positions[PATH_COUNT], DvzColor colors[PATH_COUNT], float widths[PATH_COUNT])
+static void
+_fill_path(vec3 positions[PATH_COUNT], DvzColor colors[PATH_COUNT], float widths[PATH_COUNT])
 {
     ANN(positions);
     ANN(colors);
@@ -178,10 +179,9 @@ static bool _add_markers(DvzScene* scene, DvzPanel* panel)
                            : EXAMPLE_STYLE_COLOR_WARNING);
         diameters[i] = 34.0f + 8.0f * (float)(i % 3u);
         angles[i] = 0.16f * (float)i;
-        symbols[i] = (uint32_t)(
-            i % 3u == 0u   ? DVZ_SYMBOL_DISC
-            : i % 3u == 1u ? DVZ_SYMBOL_TRIANGLE
-                           : DVZ_SYMBOL_DIAMOND);
+        symbols[i] = (uint32_t)(i % 3u == 0u   ? DVZ_SYMBOL_DISC
+                                : i % 3u == 1u ? DVZ_SYMBOL_TRIANGLE
+                                               : DVZ_SYMBOL_DIAMOND);
     }
 
     DvzVisualDataUpdate updates[] = {
@@ -267,8 +267,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_graphite_cyan_set_panel_background(panel);
 
     if (!dvz_panel_set_layout_reserve(
-            panel, &(DvzPanelLayoutReserve){.left = 0.15f, .right = 0.06f, .bottom = 0.16f,
-                                            .top = 0.07f}))
+            panel, &(DvzPanelLayoutReserve){
+                       .left = 0.05f, .right = 0.05f, .bottom = 0.05f, .top = 0.05f}))
         goto error;
     if (dvz_panel_set_domain(panel, DVZ_DIM_X, -3.25, 3.25) != 0)
         goto error;

@@ -44,6 +44,10 @@
 static const double AXIS_LENGTH = 1.45;
 static const float GRID_SIZE = 10.0f;
 static const float GRID_SPACING = 0.25f;
+static const float CAMERA_NEAR_CLIP = 0.005f;
+static const float CAMERA_FAR_CLIP = 100.0f;
+static const float ORBIT_MIN_DISTANCE = 0.03f;
+static const float ORBIT_MAX_DISTANCE = 24.0f;
 
 
 
@@ -313,8 +317,8 @@ static bool _set_camera(DvzPanel* panel)
 {
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = 1.15f;
-    camera.eye[1] = 2.75f;
-    camera.eye[2] = 3.75f;
+    camera.eye[1] = 1.75f;
+    camera.eye[2] = 4.75f;
     camera.target[0] = 0.0f;
     camera.target[1] = 0.0f;
     camera.target[2] = 0.0f;
@@ -322,8 +326,8 @@ static bool _set_camera(DvzPanel* panel)
     camera.up[1] = 1.0f;
     camera.up[2] = 0.0f;
     camera.fov_y = 0.74f;
-    camera.near_clip = 0.05f;
-    camera.far_clip = 100.0f;
+    camera.near_clip = CAMERA_NEAR_CLIP;
+    camera.far_clip = CAMERA_FAR_CLIP;
     return dvz_panel_set_camera(panel, &camera) != NULL;
 }
 
@@ -341,6 +345,8 @@ static bool _bind_orbit_camera(DvzScenarioContext* ctx, DvzPanel* panel)
     DvzOrbitCameraDesc desc = dvz_orbit_camera_desc();
     desc.width = (float)ctx->width;
     desc.height = (float)ctx->height;
+    desc.min_distance = ORBIT_MIN_DISTANCE;
+    desc.max_distance = ORBIT_MAX_DISTANCE;
     desc.pivot[0] = 0.0f;
     desc.pivot[1] = 0.0f;
     desc.pivot[2] = 0.0f;
