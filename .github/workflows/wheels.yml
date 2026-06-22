@@ -206,7 +206,7 @@ jobs:
           import sys
 
           expected = "${{ matrix.arch }}"
-          dlls = list(pathlib.Path("build").glob("*datoviz*.dll"))
+          dlls = list(pathlib.Path("build").rglob("*datoviz*.dll"))
           if not dlls:
               raise SystemExit("no Datoviz DLL found in build/")
           data = dlls[0].read_bytes()
