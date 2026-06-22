@@ -141,6 +141,115 @@ static DvzPanelReserve _scene_panel_scaled_reserve(
 }
 
 
+
+/**
+ * Return whether two panel reservations match within layout tolerance.
+ *
+ * @param a first reserve
+ * @param b second reserve
+ * @return whether all sides are equivalent
+ */
+static bool _scene_panel_reserve_equal(const DvzPanelReserve* a, const DvzPanelReserve* b)
+{
+    ANN(a);
+    ANN(b);
+    return fabsf(a->left_px - b->left_px) <= 1e-4f &&
+           fabsf(a->right_px - b->right_px) <= 1e-4f &&
+           fabsf(a->top_px - b->top_px) <= 1e-4f &&
+           fabsf(a->bottom_px - b->bottom_px) <= 1e-4f;
+}
+
+
+
+/**
+ * Add one panel reserve contribution to an accumulator.
+ *
+ * @param out accumulator
+ * @param contribution contribution to add
+ */
+static void _scene_panel_reserve_add(
+    DvzPanelReserve* out, const DvzPanelReserve* contribution)
+{
+    ANN(out);
+    ANN(contribution);
+    out->left_px += contribution->left_px;
+    out->right_px += contribution->right_px;
+    out->top_px += contribution->top_px;
+    out->bottom_px += contribution->bottom_px;
+}
+
+
+
+/**
+ * Resolve one panel reserve contribution for geometry.
+ *
+ * @param panel panel owning the reserve
+ * @param reserve input reserve
+ * @param scale whether the reserve is a user-scaled logical-pixel quantity
+ * @return effective reserve
+ */
+static DvzPanelReserve _scene_panel_effective_reserve_component(
+    const DvzPanel* panel, const DvzPanelReserve* reserve, bool scale)
+{
+    ANN(panel);
+    ANN(reserve);
+    if (!_panel_reserve_valid(panel, reserve))
+        return (DvzPanelReserve){0};
+    return scale ? _scene_panel_scaled_reserve(panel, reserve) : *reserve;
+}
+
+
+
+/**
+ * Resolve the effective plot reserve for geometry.
+ *
+ * Proportional layout reserve has already been converted from normalized panel space to logical
+ * pixels and must not be user-scaled again. Explicit pixel reserves and adornment reserves remain
+ * UI-like logical-pixel quantities and do follow user_scale.
+ *
+ * @param panel panel owning reserve contributions
+ * @return effective geometry reserve
+ */
+static DvzPanelReserve _scene_panel_effective_reserve(const DvzPanel* panel)
+{
+    ANN(panel);
+    DvzPanelReserve resolved = panel->base_reserve;
+    _scene_panel_reserve_add(&resolved, &panel->axis_reserve);
+    _scene_panel_reserve_add(&resolved, &panel->colorbar_reserve);
+    _scene_panel_reserve_add(&resolved, &panel->legend_reserve);
+
+    DvzPanelReserve effective = {0};
+    if (_scene_panel_reserve_equal(&panel->reserve, &resolved))
+    {
+        DvzPanelReserve base = _scene_panel_effective_reserve_component(
+            panel, &panel->base_reserve, !panel->layout_reserve_enabled);
+        DvzPanelReserve axis =
+            _scene_panel_effective_reserve_component(panel, &panel->axis_reserve, true);
+        DvzPanelReserve colorbar =
+            _scene_panel_effective_reserve_component(panel, &panel->colorbar_reserve, true);
+        DvzPanelReserve legend =
+            _scene_panel_effective_reserve_component(panel, &panel->legend_reserve, true);
+        _scene_panel_reserve_add(&effective, &base);
+        _scene_panel_reserve_add(&effective, &axis);
+        _scene_panel_reserve_add(&effective, &colorbar);
+        _scene_panel_reserve_add(&effective, &legend);
+    }
+    else if (_scene_panel_reserve_equal(&panel->reserve, &panel->base_reserve))
+    {
+        effective = _scene_panel_effective_reserve_component(
+            panel, &panel->base_reserve, !panel->layout_reserve_enabled);
+    }
+    else
+    {
+        effective = _scene_panel_scaled_reserve(panel, &panel->reserve);
+    }
+
+    if (!_panel_reserve_valid(panel, &effective))
+        effective = (DvzPanelReserve){0};
+    return effective;
+}
+
+
 /**
  * Initialize an identity MVP.
  *
@@ -482,11 +591,7 @@ void _scene_panel_plot_visual_rect(const DvzPanel* panel, float out[4])
         padding = _scene_panel_scaled_reserve(panel, &padding);
     if (!_panel_padding_valid(panel, &padding))
         padding = (DvzPanelReserve){0};
-    DvzPanelReserve reserve = panel->reserve;
-    if (_panel_reserve_valid(panel, &reserve))
-        reserve = _scene_panel_scaled_reserve(panel, &reserve);
-    if (!_panel_reserve_valid(panel, &reserve))
-        reserve = (DvzPanelReserve){0};
+    DvzPanelReserve reserve = _scene_panel_effective_reserve(panel);
 
     float width = 0.0f;
     float height = 0.0f;
@@ -537,11 +642,7 @@ void _scene_panel_plot_pixel_rect(
     float panel_height = 0.0f;
     _scene_panel_inner_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
 
-    DvzPanelReserve reserve = panel->reserve;
-    if (_panel_reserve_valid(panel, &reserve))
-        reserve = _scene_panel_scaled_reserve(panel, &reserve);
-    if (!_panel_reserve_valid(panel, &reserve))
-        reserve = (DvzPanelReserve){0};
+    DvzPanelReserve reserve = _scene_panel_effective_reserve(panel);
 
     *out_x = panel_x + reserve.left_px;
     *out_y = panel_y + reserve.top_px;
@@ -566,11 +667,7 @@ DvzPanelDesc _scene_panel_plot_desc(const DvzPanel* panel)
     float panel_width = 0.0f;
     float panel_height = 0.0f;
     _scene_panel_inner_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
-    DvzPanelReserve reserve = panel->reserve;
-    if (_panel_reserve_valid(panel, &reserve))
-        reserve = _scene_panel_scaled_reserve(panel, &reserve);
-    if (!_panel_reserve_valid(panel, &reserve))
-        reserve = (DvzPanelReserve){0};
+    DvzPanelReserve reserve = _scene_panel_effective_reserve(panel);
 
     const float left = panel_width > 0.0f ? reserve.left_px / panel_width : 0.0f;
     const float right = panel_width > 0.0f ? reserve.right_px / panel_width : 0.0f;
