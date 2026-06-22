@@ -1,5 +1,15 @@
 [build-system]
-requires = ["setuptools", "wheel", "build", "tqdm", "libclang", "tomli; python_version < '3.11'"]
+requires = [
+    "setuptools",
+    "wheel",
+    "build",
+    "tqdm",
+    "libclang",
+    "auditwheel; sys_platform == 'linux'",
+    "delocate; sys_platform == 'darwin'",
+    "delvewheel; sys_platform == 'win32'",
+    "tomli; python_version < '3.11'",
+]
 build-backend = "datoviz_build_backend.backend"
 backend-path = ["tools"]
 

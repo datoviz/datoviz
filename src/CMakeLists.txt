@@ -79,7 +79,7 @@ if(CC_GCC OR CC_CLANG)
         $<$<CONFIG:Debug>:-O0>
         $<$<NOT:$<CONFIG:Debug>>:-O2>
     )
-    if(NOT EMSCRIPTEN)
+    if(NOT EMSCRIPTEN AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|amd64|i.86")
         list(APPEND DVZ_COMMON_COMPILE_OPTIONS -m64)
     endif()
 endif()
