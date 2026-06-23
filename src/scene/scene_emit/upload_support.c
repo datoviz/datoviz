@@ -370,9 +370,15 @@ bool _scene_payload_lower_fields(
         if (field_size > (size_t)byte_size - field->offset)
             return false;
 
-        float* values = (float*)((uint8_t*)dst + field->offset);
+        uint8_t* values = (uint8_t*)dst + field->offset;
         for (uint64_t j = 0; j < field->count; j++)
-            values[j] *= screen_scale;
+        {
+            float value = 0;
+            uint8_t* value_ptr = values + j * sizeof(float);
+            dvz_memcpy(&value, sizeof(value), value_ptr, sizeof(value));
+            value *= screen_scale;
+            dvz_memcpy(value_ptr, sizeof(value), &value, sizeof(value));
+        }
     }
     return true;
 }
