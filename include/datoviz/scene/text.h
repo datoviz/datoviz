@@ -30,6 +30,9 @@ EXTERN_C_ON
 /**
  * Return the default retained text style.
  *
+ * The returned style leaves `size_px` unresolved as 0.0f; retained text resolves that value from
+ * the owning scene font defaults. Set a positive `size_px` to force an explicit text size.
+ *
  * @return default text style
  */
 DVZ_EXPORT DvzTextStyle dvz_text_style(void);

@@ -98,7 +98,7 @@ DvzTextStyle dvz_text_style(void)
 {
     return (DvzTextStyle){
         DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-        .size_px = dvz_font_defaults().text_size_px,
+        .size_px = 0.0f,
         .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
         .color = {255, 255, 255, 255},
     };
@@ -126,12 +126,17 @@ DvzTextPlacement dvz_text_placement(void)
  * @param scene the scene
  * @return default text style
  */
-static DvzTextStyle _text_default_style(const DvzScene* scene)
+static DvzTextStyle _text_resolve_style(const DvzScene* scene, const DvzTextStyle* style)
 {
-    DvzTextStyle style = dvz_text_style();
-    if (scene != NULL && scene->font_defaults.text_size_px > 0.0f)
-        style.size_px = scene->font_defaults.text_size_px;
-    return style;
+    DvzTextStyle resolved = style != NULL ? *style : dvz_text_style();
+    if (resolved.size_px <= 0.0f)
+    {
+        DvzFontDefaults defaults = scene != NULL ? scene->font_defaults : dvz_font_defaults();
+        if (defaults.text_size_px <= 0.0f)
+            defaults = dvz_font_defaults();
+        resolved.size_px = defaults.text_size_px;
+    }
+    return resolved;
 }
 
 
@@ -203,7 +208,7 @@ DvzText* dvz_text(DvzPanel* panel, uint32_t flags)
     text->scene = scene;
     text->id = _scene_next_id(scene);
     text->panel = panel;
-    text->style = _text_default_style(scene);
+    text->style = _text_resolve_style(scene, NULL);
     text->placement = _text_default_placement();
     text->flags = flags;
     text->dirty_flags = DVZ_TEXT_DIRTY_ALL;
@@ -270,7 +275,7 @@ int dvz_text_set_style(DvzText* text, const DvzTextStyle* style)
     ANN(text);
     if (style != NULL && !_text_style_validate(style))
         return -1;
-    DvzTextStyle resolved = style != NULL ? *style : _text_default_style(text->scene);
+    DvzTextStyle resolved = _text_resolve_style(text->scene, style);
     if (resolved.font != NULL && resolved.font->scene != text->scene)
     {
         log_error("cannot bind a font from a different scene");

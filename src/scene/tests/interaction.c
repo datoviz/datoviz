@@ -3193,6 +3193,8 @@ int test_scene_font_defaults(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFontDefaults defaults = dvz_scene_font_defaults(scene);
     DvzFontDefaults built_in = dvz_font_defaults();
+    DvzTextStyle default_style = dvz_text_style();
+    AT(default_style.size_px == 0.0f);
     AT(strcmp(defaults.sans.family, built_in.sans.family) == 0);
     AT(defaults.text_size_px == built_in.text_size_px);
 
@@ -3214,6 +3216,14 @@ int test_scene_font_defaults(TstContext* suite, const TstCase* item)
     DvzText* text = dvz_text(panel, 0);
     ANN(text);
     AT(text->style.size_px == 19.0f);
+    AT(dvz_text_set_style(text, NULL) == 0);
+    AT(text->style.size_px == 19.0f);
+    default_style = dvz_text_style();
+    AT(dvz_text_set_style(text, &default_style) == 0);
+    AT(text->style.size_px == 19.0f);
+    default_style.size_px = 21.0f;
+    AT(dvz_text_set_style(text, &default_style) == 0);
+    AT(text->style.size_px == 21.0f);
 
     dvz_scene_set_font_defaults(scene, NULL);
     defaults = dvz_scene_font_defaults(scene);
