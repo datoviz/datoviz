@@ -263,11 +263,18 @@ static int test_scene_dpi_user_scale_marker_edge_width(TstContext* suite, const 
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     cfg.target_width = 400;
     cfg.target_height = 300;
-    cfg.user_scale = 2.0f;
+    cfg.user_scale = 1.0f;
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    _test_scene_stream_destroy(stream);
+
+    cfg.user_scale = 2.0f;
+    dvz_diagnostic_report_init(&report);
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 

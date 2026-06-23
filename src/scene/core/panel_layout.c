@@ -21,6 +21,7 @@
 #include "_scene.h"
 #include "core/scene_notify_internal.h"
 #include "core/panel_layout_internal.h"
+#include "scene_emit/visual_lowering.h"
 #include "_visual_internal.h"
 
 
@@ -112,6 +113,48 @@ static bool _panel_visual_has_attr_data(const DvzVisual* visual, const char* att
 
 
 /**
+ * Return whether payload field descriptors depend on screen-scale lowering.
+ *
+ * @param fields field descriptors
+ * @param field_count field descriptor count
+ * @return whether at least one field is authored in logical pixels and uploaded in physical pixels
+ */
+static bool _scene_payload_fields_depend_on_screen_scale(
+    const DvzScenePayloadFieldDesc* fields, uint32_t field_count)
+{
+    if (fields == NULL)
+        return false;
+    for (uint32_t i = 0; i < field_count; i++)
+    {
+        if (fields[i].authored_unit == DVZ_SCENE_PAYLOAD_UNIT_LOGICAL_PX &&
+            fields[i].runtime_unit == DVZ_SCENE_PAYLOAD_UNIT_PHYSICAL_PX)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+/**
+ * Return whether a visual's material params need reuploading after screen scale changes.
+ *
+ * @param visual the visual
+ * @return whether material params contain screen-scale-lowered fields
+ */
+static bool _scene_visual_material_depends_on_screen_scale(const DvzVisual* visual)
+{
+    ANN(visual);
+    DvzVisualLowering lowering = {0};
+    return _scene_visual_lowering_resolve(visual, &lowering) && lowering.needs_material_params &&
+           _scene_payload_fields_depend_on_screen_scale(
+               lowering.material_param_fields, lowering.material_param_field_count);
+}
+
+
+
+/**
  * Mark screen-space visual resources dirty after a DPI or user-scale change.
  *
  * @param figure the figure whose visible visuals should be marked
@@ -136,12 +179,8 @@ void _scene_figure_mark_screen_space_dirty(DvzFigure* figure)
                 attr->dirty_first_item = 0;
                 attr->dirty_item_count = attr->item_count;
             }
-            if (visual->type == DVZ_VISUAL_TYPE_POINT ||
-                visual->type == DVZ_VISUAL_TYPE_MARKER ||
-                visual->type == DVZ_VISUAL_TYPE_PATH)
-            {
+            if (_scene_visual_material_depends_on_screen_scale(visual))
                 _visual_family_state(visual)->material_params_dirty = true;
-            }
             if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
                 _visual_family_state(visual)->segment.gpu.dirty = true;
             if (visual->type == DVZ_VISUAL_TYPE_IMAGE &&
