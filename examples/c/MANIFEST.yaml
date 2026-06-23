@@ -643,6 +643,7 @@ examples:
       status: native-only
       requirements:
         - marker
+        - panzoom
         - path
         - gui
       reason: the user-scale control is a native ImGui slider on a Datoviz app view

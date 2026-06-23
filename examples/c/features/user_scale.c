@@ -262,6 +262,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!_add_axes(panel))
         goto error;
 
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    if (panzoom == NULL)
+        goto error;
+
     *out_user = state;
     return true;
 
@@ -352,7 +356,8 @@ DvzScenarioSpec dvz_example_user_scale_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
-        .requirements = DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_NATIVE_VIEW,
+        .requirements = DVZ_SCENARIO_REQ_MARKER_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
+                        DVZ_SCENARIO_REQ_PANZOOM | DVZ_SCENARIO_REQ_NATIVE_VIEW,
         .init = _scenario_init,
         .native_view = _scenario_native_view,
         .destroy = _scenario_destroy,
