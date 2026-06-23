@@ -38,11 +38,18 @@ int test_scene_visual_attach_default_coord_space(TstContext* suite, const TstCas
     ANN(panel);
     DvzVisual* visual = dvz_point(scene, 0);
     ANN(visual);
+    DvzVisual* explicit_visual = dvz_point(scene, 0);
+    ANN(explicit_visual);
 
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
-    AT(panel->visual_count == 1);
+    AT(dvz_panel_add_visual(panel, explicit_visual, &attach) == 0);
+    AT(panel->visual_count == 2);
     AT(panel->visuals[0].visual == visual);
+    AT(panel->visuals[1].visual == explicit_visual);
+    AT(panel->visuals[0].z_layer == panel->visuals[1].z_layer);
+    AT(panel->visuals[0].controller_mode == panel->visuals[1].controller_mode);
     AT(panel->visuals[0].coord_space == DVZ_COORD_DATA);
+    AT(panel->visuals[0].coord_space == panel->visuals[1].coord_space);
 
     dvz_scene_destroy(scene);
     return 0;

@@ -895,11 +895,12 @@ int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual, const DvzVisualAtta
         return -1;
     if (panel->visual_count >= DVZ_SCENE_MAX_VISUALS)
         return -1;
+    DvzVisualAttachDesc resolved = desc != NULL ? *desc : dvz_visual_attach_desc();
     DvzPanelAttach* slot = &panel->visuals[panel->visual_count];
     slot->visual = visual;
-    slot->z_layer = desc ? desc->z_layer : 0;
-    slot->controller_mode = desc ? desc->controller_mode : DVZ_CONTROLLER_APPLY;
-    slot->coord_space = desc ? desc->coord_space : DVZ_COORD_DATA;
+    slot->z_layer = resolved.z_layer;
+    slot->controller_mode = resolved.controller_mode;
+    slot->coord_space = resolved.coord_space;
     slot->insertion_index = panel->visual_count;
     panel->visual_count++;
     _scene_notify_request_frame(panel->figure);
