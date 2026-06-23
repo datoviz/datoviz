@@ -1122,11 +1122,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
 
-    ok = dvz_panel_set_reserve(
-        panel, &(DvzPanelReserve){.left_px = 22.0f, .right_px = 12.0f, .bottom_px = 15.0f,
-                                        .top_px = 10.5f});
-    EXAMPLE_CHECK(ok, "dvz_panel_set_reserve() failed");
-
     int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, DOMAIN_X_MIN_KM, DOMAIN_X_MAX_KM);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_set_domain(x) failed");
     rc = dvz_panel_set_domain(panel, DVZ_DIM_Y, DOMAIN_Y_MIN_KM, DOMAIN_Y_MAX_KM);

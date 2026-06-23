@@ -219,17 +219,11 @@ static bool _add_axes(DvzPanel* panel, const char* x_label, const char* y_label,
  * Configure one showcase panel.
  *
  * @param panel target panel
- * @param left_px left pixel reserve
- * @param bottom_px bottom pixel reserve
  * @return true when the panel was configured
  */
-static bool _configure_panel(DvzPanel* panel, float left_px, float bottom_px)
+static bool _configure_panel(DvzPanel* panel)
 {
     example_graphite_cyan_set_panel_background(panel);
-    if (!dvz_panel_set_reserve(
-            panel, &(DvzPanelReserve){.left_px = left_px, .right_px = 24.0f, .top_px = 16.0f,
-                                      .bottom_px = bottom_px}))
-        return false;
 
     DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
     color.a = 220u;
@@ -490,9 +484,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (correlogram == NULL || mean_error == NULL || stacked == NULL)
         return false;
 
-    if (!_configure_panel(correlogram, 96.0f, 66.0f) ||
-        !_configure_panel(mean_error, 84.0f, 66.0f) ||
-        !_configure_panel(stacked, 38.0f, 66.0f))
+    if (!_configure_panel(correlogram) || !_configure_panel(mean_error) || !_configure_panel(stacked))
         return false;
 
     if (!_set_domain(correlogram, -50.0, 50.0, 0.0, 125.0))

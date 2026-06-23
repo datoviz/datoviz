@@ -567,10 +567,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         goto error;
     example_graphite_cyan_set_panel_background(panel);
 
-    if (!dvz_panel_set_reserve(
-            panel, &(DvzPanelReserve){.left_px = 20.0f, .right_px = 16.0f, .bottom_px = 18.0f,
-                                            .top_px = 12.0f}))
-        goto error;
     if (dvz_panel_set_domain(panel, DVZ_DIM_X, -1.18, 1.18) != 0)
         goto error;
     if (dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.02, 1.02) != 0)
