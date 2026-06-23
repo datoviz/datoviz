@@ -1,4 +1,4 @@
-# Handoff: user_scale depth-layout validation warning
+# Handoff: user_scale depth-layout validation
 
 Date: 2026-06-23
 Branch: `v0.4-dev`
@@ -10,194 +10,151 @@ Branch: `v0.4-dev`
 - Do not stage generated/runtime binary payloads such as `libs/vulkan/`, `*.dylib`, `*.so`,
   `*.dll`, `*.npy`, `*.npz`, or `.DS_Store`.
 - Always run `git diff --check` before finalizing code changes.
-- Before committing code, run `git status --short` and `git diff --cached --stat` and verify the
-  staged set excludes `data`, generated files, vendored runtime libraries, large binaries, and
-  unrelated user changes.
+- Before committing, run `git status --short` and `git diff --cached --stat`; verify the staged set
+  excludes `data`, generated files, vendored runtime libraries, large binaries, and unrelated user
+  changes.
 
 ## User Report
 
-The user first reported that `./build/examples/c/features/user_scale` showed layout scaling issues:
-
-- Increasing `user_scale` increased margins faster than expected.
-- Horizontal spacing between the left axis and the left title did not depend on scale.
-
-Those were addressed in earlier commits:
-
-- `10df239e3 Fix user scale layout reserve handling`
-- `7c765f9ac Scale axis text gaps with user scale`
-- `e381f5838 Enable alpha blending for reference grids`
-- `aa90f4b38 Clip segment quads to the full view volume`
-- `7d5954c68 Tune feature example framing`
-
-After that, the user ran the live feature example and reported this Vulkan validation error:
+The user reported this Vulkan validation error while interacting with
+`./build/examples/c/features/user_scale`:
 
 ```text
-./build/examples/c/features/user_scale
-scenario_runner: feature_user_scale requirements: marker,native-view
 validation layer: vkQueueSubmit2(): pSubmits[0] command buffer ... expects VkImage ...
 to be in layout VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL--instead, current layout is
 VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL.
 VUID-vkCmdDraw-None-09600
 ```
 
-The example has a GUI slider that calls `dvz_view_set_user_scale()` from
-`examples/c/features/user_scale.c`.
+The report occurred when zooming in the live example. The validation message names a depth image
+subresource and says a sampled/image descriptor expected `READ_ONLY_OPTIMAL`, while the tracked image
+layout was `ATTACHMENT_OPTIMAL`.
 
-## Reproduction Status
+## Current Findings
 
-Manual slider interaction appears important. Bounded non-interactive runs did not reproduce the
-validation warning:
+The problem does not appear to be caused by the `user_scale` math itself.
+
+The static/offscreen `user_scale` stream is clean:
+
+- pass `10001` writes the named depth texture as a depth attachment;
+- pass `10002` attaches the same depth texture read-only;
+- the sampled bind groups in that stream sample glyph/font atlases, not the depth texture.
+
+The important DRP2 behavior is in `src/drp2/pass.c`:
+
+- `_binding_texture_access()` maps sampled depth textures to
+  `DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_READ`;
+- `_transition_bind_group_textures()` transitions sampled depth descriptors to read-only layouts;
+- `_vklite_begin_render_pass()` skips active attachment texture ids when transitioning sampled
+  bind-group textures;
+- if the named depth attachment access is not read-only, the named depth texture is then transitioned
+  to `DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT`, which maps to `VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL`.
+
+That means this stream shape will reproduce the validation error:
+
+1. a render pass attaches depth texture `D` with `WRITE` or `READ_WRITE` access;
+2. a bind group set in the same pass samples texture `D`;
+3. the descriptor was written with `VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL`;
+4. the pass transitions `D` to `VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL` before draw.
+
+This is invalid Vulkan. The correct scene/DRP2 contract is: sampling the active depth attachment is
+only valid when that depth attachment is declared read-only for the pass.
+
+## Reproduction Attempts
+
+These did not reproduce the validation error locally:
 
 ```sh
-./build/examples/c/features/user_scale --live 120
-./build/examples/c/features/user_scale --live 120 --user-scale 2.0
-./build/examples/c/features/user_scale --live 180
-./build/examples/c/features/user_scale --png --user-scale 0.75
-./build/examples/c/features/user_scale --png --user-scale 1.5
-./build/examples/c/features/user_scale --png --user-scale 2.25
+./build/examples/c/features/user_scale --dvzr 1 --size 800x600
+./build/examples/c/features/user_scale --dvzr 1 --size 800x600 --user-scale 2.5
+./build/examples/c/features/user_scale --png --user-scale 2.5
 ```
 
-`just build` passed after the WIP runtime edits described below.
+A live X11 run was also attempted:
 
-## Important Code Paths
+```sh
+./build/examples/c/features/user_scale --live
+```
+
+The GLFW window was found and synthetic X11 wheel-up events were sent to its center. The app rendered
+additional frames, but no validation output appeared in that run.
+
+Generated artifacts from these checks were removed before this handoff was committed.
+
+## Relevant Code Paths
+
+- `examples/c/features/user_scale.c`
+  - Path visual, blended marker visual, axes, panzoom controller, GUI slider.
+  - The marker visual uses `DVZ_ALPHA_BLENDED`, causing a second pass.
+  - No explicit volume, scene occlusion, depth peeling, SSAO, or sampled-depth feature is enabled.
 
 - `src/app/app.c`
-  - `_app_draw()` emits one frame per native-view frame.
-  - It sets `cfg.runtime_resource_scope_id = _app_frame_runtime_scope(frame)`.
-  - That means graph runtime textures are scoped per frame target.
-
-- `src/scene/runtime/graph_resources.c`
-  - `_runtime_scope_key()` appends `_scope_%016PRIx64` to graph resource keys.
-  - `_graph_resolve_texture_2d()` uses that scoped key for graph textures, including depth.
-
-- `src/scene/techniques/graph_wboit.c`
-  - `_scene_technique_emit_blended_frame_graph()` creates `fig0_p0.depth`.
-  - For source-over transparent passes after opaque depth, depth should be `LOAD + READ`.
-
-- `src/scene/runtime/graph_resources.c`
-  - `_stream_apply_graph_depth()` maps graph depth attachment access to DRP2 depth access.
+  - `_app_draw()` emits live native-view frames with `external_color_target = true`.
+  - It sets `cfg.runtime_resource_scope_id = _app_frame_runtime_scope(frame)`, so graph resources
+    can be scoped per swapchain command buffer.
+  - `dvz_view_set_user_scale()` marks the view dirty and forces frame re-emission.
 
 - `src/drp2/pipeline.c`
   - `_vklite_build_bind_group_descriptors()` writes sampled depth descriptors with
     `VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL`.
 
 - `src/drp2/transfer.c`
-  - `_vklite_texture_access_layout(DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_READ)` maps to
+  - `_vklite_texture_access_layout(DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_READ)` returns
     `VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL`.
-  - `_vklite_transition_image_access()` is the tracked image-layout transition helper.
+  - `_vklite_texture_access_layout(DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT)` and
+    `_WRITE` return `VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL`.
 
 - `src/drp2/pass.c`
-  - `_binding_texture_access()` maps sampled depth textures to
-    `DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_READ`.
-  - `_vklite_begin_render_pass()` builds attachment layouts and transitions bind-group textures
-    before `vkCmdBeginRendering`.
+  - The pass-local interaction between sampled bind-group transitions and active attachment
+    transitions is the most likely enforcement point.
 
-## Current Hypothesis
+## Tests Already Present
 
-The error is likely a live-runtime synchronization issue involving a depth texture whose descriptor
-was written as `READ_ONLY_OPTIMAL` but whose image is still in `ATTACHMENT_OPTIMAL` at draw time.
+`src/drp2/tests/vklite_runtime.c` already contains positive coverage for the valid case:
 
-The suspicious mechanism is not the `user_scale` value itself. The scale change forces live frame
-reemission, while native-view app emission also uses per-frame scoped graph resources. That can leave
-old bind groups and old graph texture objects alive in the persistent DRP2/vklite runtime while new
-frame-scoped graph resources are emitted.
+- `test_drp2_runtime_vklite_samples_read_only_active_depth`
+  - writes depth in one pass;
+  - samples the same depth while attaching it read-only in a later pass;
+  - asserts the depth image finishes as `VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL`.
 
-One investigated idea: `src/drp2/pass.c` transitions all live bind-group textures before every render
-pass. That is conservative but can include stale bind groups from previous frames. A WIP patch changes
-this to scan the current command stream from `BeginRenderPass` to matching `EndRenderPass` and
-transition only bind groups actually set in that pass.
+There is also coverage that unused bind groups do not affect unrelated render-pass transitions:
 
-This WIP is not proven. It may be useful, but do not treat it as complete.
+- `test_drp2_runtime_vklite_ignores_unused_render_pass_bind_groups`
 
-## Local WIP State At Handoff
-
-The workspace currently has uncommitted WIP edits in:
-
-```text
-src/drp2/_runtime.h
-src/drp2/backend.c
-src/drp2/pass.c
-src/drp2/tests/test_drp2.c
-src/drp2/tests/test_drp2.h
-src/drp2/tests/vklite_runtime.c
-```
-
-There is also an existing dirty `data` submodule (` m data`). Do not stage it without explicit
-approval.
-
-The WIP runtime patch:
-
-- Changes `_vklite_begin_render_pass()` to receive `const DvzDrp2CommandStream* stream`.
-- Changes the vklite backend dispatch in `src/drp2/backend.c` to pass the stream.
-- Adds `_transition_render_pass_bind_group_textures()` in `src/drp2/pass.c`.
-- Removes the old all-live-bind-groups transition call from begin-render-pass.
-
-The WIP test addition:
-
-- Adds `test_drp2_runtime_vklite_ignores_unused_render_pass_bind_groups`.
-- Registers it in `src/drp2/tests/test_drp2.c` and declares it in `test_drp2.h`.
-- The test currently passes its assertions but then crashes at teardown.
-
-Crash detail from `lldb`:
-
-```text
-PASS  drp2/vklite-runtime/ignores_unused_render_pass_bind_groups
-Process stopped: EXC_BAD_ACCESS
-frame #0: dvz_device_wait(device=0x...) at src/vk/device.c:786
-vkDeviceWaitIdle(device->vk_device);
-```
-
-Likely cause: the test uses `drp2_test_vklite_fixture_runtime()` but destroys the fixture-owned
-runtime/GPU context manually. Fix the test teardown before committing the WIP test. Compare nearby
-shared-fixture tests in `src/drp2/tests/vklite_runtime.c`; they often destroy the stream only.
-
-## Validation Already Run
-
-Passing:
-
-```sh
-just build
-just test drp2_runtime_vklite_samples_read_only_active_depth
-./build/examples/c/features/user_scale --live 180
-./build/examples/c/features/user_scale --png --user-scale 0.75
-./build/examples/c/features/user_scale --png --user-scale 1.5
-./build/examples/c/features/user_scale --png --user-scale 2.25
-```
-
-Problematic:
-
-```sh
-./build/testing/dvztest_drp2 ignores_unused_render_pass_bind_groups
-```
-
-This crashed after reporting PASS because of the teardown issue above.
-
-Filters such as `just test ignores_unused` and
-`just test drp2/vklite-runtime/ignores_unused_render_pass_bind_groups` did not select the new case via
-`tasks/test_driver.py`; the binary listed the case correctly with:
-
-```sh
-./build/testing/dvztest_drp2 --list | rg -n "unused|bind|render_pass|vklite-runtime"
-```
+The missing focused coverage is the invalid case: same depth texture sampled by a bind group and
+attached with non-read access in the same pass.
 
 ## Suggested Next Steps
 
-1. Fix the WIP test teardown first. If it uses a shared fixture runtime, do not destroy the runtime or
-   GPU context in the test body.
-2. Re-run:
-   ```sh
-   ./build/testing/dvztest_drp2 ignores_unused_render_pass_bind_groups
-   just test drp2_runtime_vklite_samples_read_only_active_depth
-   just test drp2
-   ```
-3. Reproduce the original manual slider warning if possible with `DVZ_DRP2_TRACE=full` or app
-   recording. The non-interactive live runs have not reproduced it.
-4. If the pass-local bind-group transition patch is kept, verify no stream relies on descriptor sets
-   being bound before `BeginRenderPass`; scene emission appears to set required groups inside each
-   pass.
-5. Run required hygiene before any code commit:
-   ```sh
-   git diff --check
-   git status --short
-   git diff --cached --stat
-   ```
+1. Add a DRP2 runtime validation guard in `src/drp2/pass.c`.
+   - While scanning bind groups set between `BeginRenderPass` and `EndRenderPass`, detect whether any
+     sampled texture id equals the active named depth attachment id.
+   - If so, require the effective depth attachment access to be `DVZ_DRP2_ATTACHMENT_ACCESS_READ`.
+   - Return a DRP2 validation failure before Vulkan submission if the stream tries to sample and write
+     the same depth attachment.
+
+2. Add a regression test in `src/drp2/tests/vklite_runtime.c`.
+   - Build a stream that attaches depth `D` with default/write access and also samples `D` in the same
+     pass.
+   - Assert `dvz_drp2_runtime_execute()` returns a validation failure and does not rely on Vulkan
+     validation layers to catch it.
+
+3. If the original live-only warning persists after the guard, instrument the same detection path.
+   - Log pass id, named depth id, effective depth access, and bind group id/binding that samples the
+     active depth.
+   - That will identify the scene graph pass that emits the invalid stream.
+
+4. If the invalid stream comes from scene emission, fix the emitter rather than papering over DRP2.
+   - Any pass that samples its active depth attachment must set graph depth access to read-only.
+   - If the pass truly needs to write depth, it must sample a different depth texture from an earlier
+     pass.
+
+5. Re-run a narrow validation loop:
+
+```sh
+just test drp2_runtime_vklite_samples_read_only_active_depth
+./build/examples/c/features/user_scale --png --user-scale 2.5
+git diff --check
+```
+
+If code changes touch shared DRP2 pass behavior, also run a broader DRP2 test filter before commit.
