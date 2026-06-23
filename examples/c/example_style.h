@@ -93,3 +93,6 @@ DvzAxisStyle example_graphite_cyan_axis_style(
 
 bool example_graphite_cyan_apply_axis_style(
     DvzAxis* axis, bool vertical, const ExampleAxisStyleOptions* options);
+
+bool example_graphite_cyan_style_axes_2d(
+    DvzPanel* panel, const ExampleAxisStyleOptions* options);

@@ -210,28 +210,16 @@ static bool _add_axes(DvzPanel* panel)
 {
     ANN(panel);
 
-    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
-    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
-    if (x_axis == NULL || y_axis == NULL)
-        return false;
+    DvzPanelAxes2DDesc axes = dvz_panel_axes_2d_desc();
+    axes.x_label = "x";
+    axes.y_label = "amplitude";
+    axes.tick_policy.target_count = 7;
+    axes.tick_policy.min_pixel_spacing = 110.0f;
+    axes.tick_policy.minor_per_interval = 2;
 
-    DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
-    ticks.target_count = 7;
-    ticks.min_pixel_spacing = 110.0f;
-    ticks.minor_per_interval = 2;
-    if (!dvz_axis_set_tick_policy(x_axis, &ticks))
+    if (!dvz_panel_set_axes_2d(panel, &axes))
         return false;
-    if (!dvz_axis_set_tick_policy(y_axis, &ticks))
-        return false;
-    if (!example_graphite_cyan_apply_axis_style(x_axis, false, NULL))
-        return false;
-    if (!example_graphite_cyan_apply_axis_style(y_axis, true, NULL))
-        return false;
-    if (!dvz_axis_set_grid(x_axis, true) || !dvz_axis_set_grid(y_axis, true))
-        return false;
-    if (!dvz_axis_set_label(x_axis, "x"))
-        return false;
-    return dvz_axis_set_label(y_axis, "amplitude");
+    return example_graphite_cyan_style_axes_2d(panel, NULL);
 }
 
 

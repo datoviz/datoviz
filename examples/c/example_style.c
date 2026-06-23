@@ -293,3 +293,24 @@ bool example_graphite_cyan_apply_axis_style(
     DvzAxisStyle style = example_graphite_cyan_axis_style(vertical, options);
     return dvz_axis_set_style(axis, &style);
 }
+
+
+/**
+ * Apply graphite-cyan styling to a panel-owned X/Y axis pair.
+ *
+ * @param panel target panel
+ * @param options optional axis style options
+ * @return true when both axis style updates succeed
+ */
+bool example_graphite_cyan_style_axes_2d(
+    DvzPanel* panel, const ExampleAxisStyleOptions* options)
+{
+    ANN(panel);
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    if (x_axis == NULL || y_axis == NULL)
+        return false;
+    if (!example_graphite_cyan_apply_axis_style(x_axis, false, options))
+        return false;
+    return example_graphite_cyan_apply_axis_style(y_axis, true, options);
+}
