@@ -290,6 +290,13 @@ static bool _scene_visual_has_pending_render_work(const DvzVisual* visual)
         return true;
     if (_visual_family_state(visual)->buffer != NULL && _visual_family_state(visual)->buffer->dirty)
         return true;
+    if (
+        visual->type == DVZ_VISUAL_TYPE_IMAGE &&
+        _visual_family_state(visual)->image_sampling_realized_version !=
+            _visual_family_state(visual)->image_sampling_version)
+    {
+        return true;
+    }
     if (_visual_family_state(visual)->segment.gpu.dirty || _visual_family_state(visual)->path.gpu.dirty || _visual_family_state(visual)->image_gpu.dirty)
         return true;
 
@@ -511,6 +518,9 @@ static void _scene_commit_emit_success(DvzFigure* figure)
                 _visual_family_state(visual)->volume_realized_version = _visual_family_state(visual)->volume.version;
             if (visual->type == DVZ_VISUAL_TYPE_LABELS)
                 _visual_family_state(visual)->labels_realized_version = _visual_family_state(visual)->labels.version;
+            if (visual->type == DVZ_VISUAL_TYPE_IMAGE)
+                _visual_family_state(visual)->image_sampling_realized_version =
+                    _visual_family_state(visual)->image_sampling_version;
         }
     }
     for (uint32_t ci = 0; ci < figure->compute_count; ci++)

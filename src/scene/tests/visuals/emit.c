@@ -790,6 +790,71 @@ int test_scene_image_emit_wgsl(TstContext* suite, const TstCase* item)
 }
 
 
+int test_scene_image_sampling_nearest_emits_sampler_filters(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* image = dvz_image(scene, 0);
+    AT(image != NULL);
+    DvzVisual* point = dvz_point(scene, 0);
+    AT(point != NULL);
+
+    AT(dvz_image_set_sampling(image, DVZ_IMAGE_SAMPLING_NEAREST) == 0);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_image_set_sampling(point, DVZ_IMAGE_SAMPLING_NEAREST) == -1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_image_set_sampling(image, (DvzImageSampling)99) == -1);
+
+    vec3 positions[4] = {
+        {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
+        { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
+    };
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    uint8_t pixels[4 * 4 * 4];
+    dvz_memset(pixels, sizeof(pixels), 128, sizeof(pixels));
+
+    AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_wgsl = true;
+    caps.shader_format_glsl = false;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    char* json = dvz_drp2_stream_json(stream, "scene_image_nearest_sampler_wgsl_from_c");
+    ANN(json);
+    AT(strstr(json, "\"cmd\": \"CreateSampler\"") != NULL);
+    AT(strstr(json, "\"mag_filter\": \"nearest\"") != NULL);
+    AT(strstr(json, "\"min_filter\": \"nearest\"") != NULL);
+    dvz_drp2_stream_json_destroy(json);
+
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_image_linear_color_emit_wgsl(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

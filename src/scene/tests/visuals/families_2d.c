@@ -1039,8 +1039,63 @@ int test_scene_point_style_emits_glsl_and_wgsl(TstContext* suite, const TstCase*
     ANN(json);
     AT(strstr(json, "\"format\": \"wgsl\"") != NULL);
     AT(strstr(json, "line_width") != NULL);
+    AT(strstr(json, "line_width > 0.0") != NULL);
     dvz_drp2_stream_json_destroy(json);
     _test_scene_stream_destroy(wgsl_stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_point_filled_no_stroke_uses_fill_shader(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+
+    vec3 position[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor color[1] = {{255, 80, 40, 255}};
+    float diameter_px[1] = {24.0f};
+    AT(dvz_visual_set_data(visual, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(visual, "color", color, 1) == 0);
+    AT(dvz_visual_set_data(visual, "diameter_px", diameter_px, 1) == 0);
+
+    DvzPointStyleDesc style = dvz_point_style_desc();
+    style.stroke_width_px = 0.0f;
+    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
+    AT(dvz_point_set_style(visual, &style) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    AT(!_stream_has_render_pipeline_label(stream, "_pipe_point_styleg_coverage_blend_depth"));
+
+    bool found_material_bg = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
+            found_material_bg = found_material_bg || command->u.set_bind_group.slot == 1;
+    }
+    AT(!found_material_bg);
+
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }

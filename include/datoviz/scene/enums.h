@@ -355,6 +355,13 @@ typedef enum
 
 typedef enum
 {
+    DVZ_IMAGE_SAMPLING_LINEAR = 0,
+    DVZ_IMAGE_SAMPLING_NEAREST,
+} DvzImageSampling;
+
+
+typedef enum
+{
     DVZ_VOLUME_SAMPLING_LINEAR = 0,
     DVZ_VOLUME_SAMPLING_NEAREST,
 } DvzVolumeSamplingMode;

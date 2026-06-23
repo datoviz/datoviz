@@ -367,6 +367,8 @@ int test_scene_point_emit_glsl_native_points(TstContext* suite, const TstCase* i
 
 int test_scene_point_style_emits_glsl_and_wgsl(TstContext* suite, const TstCase* item);
 
+int test_scene_point_filled_no_stroke_uses_fill_shader(TstContext* suite, const TstCase* item);
+
 int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item);
 
 int test_scene_point_emit_wgsl_instanced_quads(TstContext* suite, const TstCase* item);
@@ -410,6 +412,9 @@ int test_scene_path_closed_star_cache_adjacency(TstContext* suite, const TstCase
 int test_scene_image_glsl_executes(TstContext* suite, const TstCase* item);
 
 int test_scene_image_emit_wgsl(TstContext* suite, const TstCase* item);
+
+int test_scene_image_sampling_nearest_emits_sampler_filters(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_image_linear_color_emit_wgsl(TstContext* suite, const TstCase* item);
 
@@ -1202,6 +1207,9 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(
 int test_app_offscreen_query_request_steady_state(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_gsp_first_slice_smoke(TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke(
+    TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_two_panel_points_light_both_halves(TstContext* suite, const TstCase* item);
 

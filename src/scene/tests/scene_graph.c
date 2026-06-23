@@ -46,6 +46,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_splat_emit_instanced_quads);
     TST_CASE(test_scene_point_emit_glsl_native_points);
     TST_CASE(test_scene_point_style_emits_glsl_and_wgsl);
+    TST_CASE(test_scene_point_filled_no_stroke_uses_fill_shader);
     TST_CASE(test_scene_marker_api_and_emit_glsl);
     TST_CASE(test_scene_pixel_emit_glsl_native_square_points);
     TST_CASE(test_scene_point_emit_wgsl_instanced_quads);
@@ -200,6 +201,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_labels_emit_unsigned_glsl);
     TST_CASE(test_scene_labels_emit_wgsl);
     TST_CASE(test_scene_image_emit_wgsl);
+    TST_CASE(test_scene_image_sampling_nearest_emits_sampler_filters);
     TST_CASE(test_scene_image_linear_color_emit_wgsl);
     TST_CASE(test_scene_image_emit_uses_common_and_texture_sets);
     TST_CASE(test_scene_visual_common_binding_layout_order);

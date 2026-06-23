@@ -30,6 +30,10 @@ Create with `dvz_image(scene, flags)`. Bind a scene-owned `DvzSampledField` with
 `dvz_visual_set_field(image, "field", field)`. The canonical example uploads four corner
 positions, four texture coordinates, a scalar 2D field, and a color scale.
 
+Set texture filtering with `dvz_image_set_sampling(image, DVZ_IMAGE_SAMPLING_LINEAR)` or
+`dvz_image_set_sampling(image, DVZ_IMAGE_SAMPLING_NEAREST)`. Linear sampling is the default; nearest
+sampling is intended for pixel-exact image/checkerboard rendering.
+
 ## Attributes
 
 | Kind | Attributes |

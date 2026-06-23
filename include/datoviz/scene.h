@@ -3130,6 +3130,19 @@ DVZ_EXPORT DvzVisual* dvz_image(DvzScene* scene, uint32_t flags);
 
 
 /**
+ * Set the sampler filter mode for an image visual.
+ *
+ * `DVZ_IMAGE_SAMPLING_LINEAR` is the default. `DVZ_IMAGE_SAMPLING_NEAREST` emits a nearest
+ * minification and magnification sampler for pixel-exact image rendering.
+ *
+ * @param visual the image visual
+ * @param sampling the image sampler filter mode
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_image_set_sampling(DvzVisual* visual, DvzImageSampling sampling);
+
+
+/**
  * Create a labels visual.
  *
  * Labels visuals render integer sampled fields with categorical scale metadata. They use the same

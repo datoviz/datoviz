@@ -167,6 +167,7 @@ Functions: 198
     | Function | Header |
     | --- | --- |
     | [`dvz_image()`](#dvz_image) | `include/datoviz/scene.h` |
+    | [`dvz_image_set_sampling()`](#dvz_image_set_sampling) | `include/datoviz/scene.h` |
 
     ### Marker
 
@@ -1727,6 +1728,30 @@ to scene-owned sampled fields internally.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:3129._
+
+### `dvz_image_set_sampling()`
+
+```c title="dvz_image_set_sampling"
+int dvz_image_set_sampling(
+    DvzVisual * visual,
+    DvzImageSampling sampling
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `int` | 0 on success, -1 on error |
+| `visual` | `DvzVisual *` | the image visual |
+| `sampling` | `DvzImageSampling` | the image sampler filter mode |
+
+Set the sampler filter mode for an image visual.
+
+`DVZ_IMAGE_SAMPLING_LINEAR` is the default. `DVZ_IMAGE_SAMPLING_NEAREST` emits a nearest
+minification and magnification sampler for pixel-exact image rendering.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3142._
 
 ## Marker
 

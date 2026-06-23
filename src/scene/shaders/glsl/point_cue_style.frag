@@ -32,8 +32,8 @@ void main()
     float lineWidth = max(material.params.x, 0.0);
     int aspect = int(material.params.y + 0.5);
     bool filled = aspect == 0 || aspect == 2;
-    bool stroke = aspect == 1 || aspect == 2;
-    float strokeWidth = stroke ? max(lineWidth, 1.0) : 0.0;
+    bool stroke = (aspect == 1 || aspect == 2) && lineWidth > 0.0;
+    float strokeWidth = stroke ? lineWidth : 0.0;
     float edgeMix = stroke ? smoothstep(-aa, aa, dist + strokeWidth) : 0.0;
     float fillMask = filled ? 1.0 - edgeMix : 0.0;
     float strokeMask = stroke ? edgeMix : 0.0;

@@ -19,8 +19,8 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
     let line_width = max(material.params.x, 0.0);
     let aspect = u32(material.params.y + 0.5);
     let filled = aspect == 0u || aspect == 2u;
-    let stroke = aspect == 1u || aspect == 2u;
-    let stroke_width_px = select(0.0, max(line_width, 1.0), stroke);
+    let stroke = (aspect == 1u || aspect == 2u) && line_width > 0.0;
+    let stroke_width_px = select(0.0, line_width, stroke);
     let inner_radius = max(1.0 - 2.0 * stroke_width_px / max(input.size, 1.0), 0.0);
     let edge_mix = select(0.0, smoothstep(inner_radius - aa, inner_radius + aa, dist), stroke);
     let fill_mask = select(0.0, 1.0 - edge_mix, filled);

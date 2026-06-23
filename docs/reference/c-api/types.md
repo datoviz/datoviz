@@ -3638,6 +3638,12 @@ typedef struct DvzVolumeOcclusionDesc DvzVolumeOcclusionDesc;
 typedef enum DvzVolumeRenderMode DvzVolumeRenderMode;
 ```
 
+#### `DvzImageSampling`
+
+```c
+typedef enum DvzImageSampling DvzImageSampling;
+```
+
 #### `DvzVolumeSamplingMode`
 
 ```c
@@ -3915,6 +3921,13 @@ DVZ_VOLUME_AXIS_Z = 2,
 DVZ_VOLUME_RENDER_SLICE = 0,
 DVZ_VOLUME_RENDER_MIP = 1,
 DVZ_VOLUME_RENDER_COMPOSITE = 2,
+```
+
+#### `DvzImageSampling`
+
+```c
+DVZ_IMAGE_SAMPLING_LINEAR = 0,
+DVZ_IMAGE_SAMPLING_NEAREST = 1,
 ```
 
 #### `DvzVolumeSamplingMode`

@@ -71,6 +71,7 @@ bool _scene_image_visual_fill_metadata(
 
     if (lowering->desc_kind != DVZ_SCENE_VISUAL_DESC_IMAGE)
         return true;
+    metadata->image_nearest_sampler = _visual_family_state(visual)->image_nearest_sampler;
     if (!_image_uses_generated_quads(visual))
         return true;
     if (_visual_family_state(visual)->image_gpu.vertex_count > UINT32_MAX)

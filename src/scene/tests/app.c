@@ -5955,6 +5955,202 @@ int test_app_offscreen_gsp_first_slice_smoke(TstContext* suite, const TstCase* i
 
 
 
+static uint8_t _test_pixel_luma(const uint8_t* pixel)
+{
+    ANN(pixel);
+    return (uint8_t)(((uint32_t)pixel[0] + (uint32_t)pixel[1] + (uint32_t)pixel[2]) / 3);
+}
+
+
+
+static bool _test_pixel_red_point(const uint8_t* pixel)
+{
+    ANN(pixel);
+    return pixel[0] > 160 && pixel[0] > pixel[1] + 80 && pixel[0] > pixel[2] + 80;
+}
+
+
+
+static bool _test_pixel_pale_halo(const uint8_t* pixel)
+{
+    ANN(pixel);
+    return pixel[0] > 120 && pixel[1] > 120 && pixel[2] > 120;
+}
+
+
+
+/**
+ * Render the GSP checker/image + filled point overlay case and assert that nearest sampling and
+ * zero-stroke point styling are visible in readback pixels.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel =
+        dvz_panel(figure, (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    AT(panel != NULL);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    AT(image != NULL);
+    AT(dvz_image_set_sampling(image, DVZ_IMAGE_SAMPLING_NEAREST) == 0);
+    vec3 image_pos[4] = {
+        {-1.0f, -1.0f, 0.0f},
+        {-1.0f, 1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+    };
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    DvzColor pixels[4 * 4] = {0};
+    for (uint32_t y = 0; y < 4; y++)
+    {
+        for (uint32_t x = 0; x < 4; x++)
+        {
+            const bool central_dark = (x == 1 || x == 2) && (y == 1 || y == 2);
+            const bool dark = central_dark || ((x + y) % 2 == 0);
+            pixels[y * 4 + x] = dark ? (DvzColor){8, 8, 8, 255}
+                                     : (DvzColor){245, 245, 245, 255};
+        }
+    }
+    AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(
+           panel, image,
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) ==
+       0);
+
+    DvzVisual* point = dvz_point(scene, 0);
+    AT(point != NULL);
+    vec3 point_pos[1] = {{-0.25f, -0.25f, 0.0f}};
+    DvzColor point_color[1] = {{255, 0, 0, 255}};
+    float diameter_px[1] = {8.0f};
+    DvzPointStyleDesc style = dvz_point_style_desc();
+    style.stroke_width_px = 0.0f;
+    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
+    style.edge_color = (DvzColor){255, 255, 255, 255};
+    AT(dvz_point_set_style(point, &style) == 0);
+    AT(dvz_visual_set_data(point, "position", point_pos, 1) == 0);
+    AT(dvz_visual_set_data(point, "color", point_color, 1) == 0);
+    AT(dvz_visual_set_data(point, "diameter_px", diameter_px, 1) == 0);
+    AT(dvz_panel_add_visual(panel, point, NULL) == 0);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke skipped: GPU context failed");
+        tst_skip(suite, "GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
+    AT(win != NULL);
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_view_capture_png(win, "/tmp/dvz_gsp_image_nearest_point_no_stroke_smoke.png") == 0);
+
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+
+    uint32_t checker_dark = 0;
+    uint32_t checker_light = 0;
+    uint32_t checker_mid = 0;
+    const uint32_t cell_centers[4] = {8, 24, 40, 56};
+    for (uint32_t y_idx = 0; y_idx < 4; y_idx++)
+    {
+        for (uint32_t x_idx = 0; x_idx < 4; x_idx++)
+        {
+            const uint32_t x = cell_centers[x_idx];
+            const uint32_t y = cell_centers[y_idx];
+            const uint8_t* pixel = &rgba[4 * (y * width + x)];
+            if (_test_pixel_red_point(pixel))
+                continue;
+
+            const uint8_t luma = _test_pixel_luma(pixel);
+            if (luma < 35)
+                checker_dark++;
+            else if (luma > 210)
+                checker_light++;
+            else
+                checker_mid++;
+        }
+    }
+    AT(checker_dark >= 8);
+    AT(checker_light >= 2);
+    AT(checker_mid == 0);
+
+    uint32_t red_count = 0;
+    uint32_t min_x = width, min_y = height, max_x = 0, max_y = 0;
+    for (uint32_t y = 0; y < height; y++)
+    {
+        for (uint32_t x = 0; x < width; x++)
+        {
+            const uint8_t* pixel = &rgba[4 * (y * width + x)];
+            if (!_test_pixel_red_point(pixel))
+                continue;
+            red_count++;
+            if (x < min_x)
+                min_x = x;
+            if (y < min_y)
+                min_y = y;
+            if (x > max_x)
+                max_x = x;
+            if (y > max_y)
+                max_y = y;
+        }
+    }
+    AT(red_count >= 20);
+    AT(max_x > min_x);
+    AT(max_y > min_y);
+
+    const uint32_t ring_min_x = min_x > 3 ? min_x - 3 : 0;
+    const uint32_t ring_min_y = min_y > 3 ? min_y - 3 : 0;
+    const uint32_t ring_max_x = max_x + 3 < width ? max_x + 3 : width - 1;
+    const uint32_t ring_max_y = max_y + 3 < height ? max_y + 3 : height - 1;
+    uint32_t pale_ring = 0;
+    for (uint32_t y = ring_min_y; y <= ring_max_y; y++)
+    {
+        for (uint32_t x = ring_min_x; x <= ring_max_x; x++)
+        {
+            if (x >= min_x && x <= max_x && y >= min_y && y <= max_y)
+                continue;
+            const uint8_t* pixel = &rgba[4 * (y * width + x)];
+            if (_test_pixel_pale_halo(pixel))
+                pale_ring++;
+        }
+    }
+    AT(pale_ring == 0);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_app_offscreen_two_panel_points_light_both_halves(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -7868,6 +8064,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_resize_reuses_runtime_with_mesh_and_image);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_query_request_steady_state);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_gsp_first_slice_smoke);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_two_panel_points_light_both_halves);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_clear_color);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_midgray_srgb_readback);
