@@ -301,11 +301,18 @@ bool _scene_frame_plan_upload_style_bytes(
         owned = dvz_malloc((size_t)byte_size);
         if (owned == NULL)
             return false;
-        size_t count = (size_t)(byte_size / sizeof(float));
-        const float* src = (const float*)data;
-        float* dst = (float*)owned;
-        for (size_t i = 0; i < count; i++)
-            dst[i] = src[i] * scale;
+        DvzScenePayloadFieldDesc field = {
+            .name = data_tag,
+            .offset = 0,
+            .count = byte_size / sizeof(float),
+            .authored_unit = DVZ_SCENE_PAYLOAD_UNIT_LOGICAL_PX,
+            .runtime_unit = DVZ_SCENE_PAYLOAD_UNIT_PHYSICAL_PX,
+        };
+        if (!_scene_payload_lower_fields(figure, data, byte_size, &field, 1, owned))
+        {
+            dvz_free(owned);
+            return false;
+        }
         upload_data = owned;
     }
 
@@ -357,14 +364,14 @@ bool _scene_payload_lower_fields(
         }
         if (field->count == 0 || field->offset > (size_t)byte_size)
             return false;
-        if (field->count > (SIZE_MAX - field->offset) / sizeof(float))
+        if (field->count > (uint64_t)((SIZE_MAX - field->offset) / sizeof(float)))
             return false;
         const size_t field_size = (size_t)field->count * sizeof(float);
         if (field_size > (size_t)byte_size - field->offset)
             return false;
 
         float* values = (float*)((uint8_t*)dst + field->offset);
-        for (uint32_t j = 0; j < field->count; j++)
+        for (uint64_t j = 0; j < field->count; j++)
             values[j] *= screen_scale;
     }
     return true;

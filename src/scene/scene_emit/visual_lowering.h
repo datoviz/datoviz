@@ -55,7 +55,7 @@ typedef struct DvzScenePayloadFieldDesc
 {
     const char* name;
     size_t offset;
-    uint32_t count;
+    uint64_t count;
     DvzScenePayloadUnit authored_unit;
     DvzScenePayloadUnit runtime_unit;
 } DvzScenePayloadFieldDesc;
