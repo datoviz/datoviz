@@ -98,7 +98,9 @@ static bool _add_signal(DvzScene* scene, DvzPanel* panel)
         return false;
     if (dvz_visual_set_depth_test(path, false) != 0)
         return false;
-    return dvz_panel_add_visual(panel, path, NULL) == 0;
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_COORD_VIEW;
+    return dvz_panel_add_visual(panel, path, &attach) == 0;
 }
 
 

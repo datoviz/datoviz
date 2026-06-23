@@ -111,7 +111,9 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
         return false;
     if (dvz_visual_set_depth_test(point, false) != 0)
         return false;
-    return dvz_panel_add_visual(panel, point, NULL) == 0;
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_COORD_VIEW;
+    return dvz_panel_add_visual(panel, point, &attach) == 0;
 }
 
 

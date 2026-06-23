@@ -90,7 +90,9 @@ static bool _add_signal(DvzScene* scene, DvzPanel* panel)
         return false;
     if (dvz_path_set_caps(path, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) != 0)
         return false;
-    if (dvz_panel_add_visual(panel, path, NULL) != 0)
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_COORD_VIEW;
+    if (dvz_panel_add_visual(panel, path, &attach) != 0)
         return false;
 
     const vec3 point_pos[POINT_COUNT] = {{0.22f, 0.13f, 0.0f}};
@@ -109,7 +111,7 @@ static bool _add_signal(DvzScene* scene, DvzPanel* panel)
         return false;
     if (dvz_visual_set_depth_test(point, false) != 0)
         return false;
-    return dvz_panel_add_visual(panel, point, NULL) == 0;
+    return dvz_panel_add_visual(panel, point, &attach) == 0;
 }
 
 

@@ -116,7 +116,9 @@ static bool _add_curve(DvzScene* scene, DvzPanel* panel)
         return false;
     if (dvz_path_set_join(path, DVZ_PATH_JOIN_ROUND, 4.0f) != 0)
         return false;
-    return dvz_panel_add_visual(panel, path, NULL) == 0;
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_COORD_VIEW;
+    return dvz_panel_add_visual(panel, path, &attach) == 0;
 }
 
 

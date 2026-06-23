@@ -128,7 +128,9 @@ static bool _add_line_panel(DvzScene* scene, DvzPanel* panel, float phase, uint8
         return false;
     if (dvz_visual_set_depth_test(visual, false) != 0)
         return false;
-    return dvz_panel_add_visual(panel, visual, NULL) == 0;
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_COORD_VIEW;
+    return dvz_panel_add_visual(panel, visual, &attach) == 0;
 }
 
 

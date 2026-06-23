@@ -183,7 +183,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!ok)
         return false;
 
-    rc = dvz_panel_add_visual(panel, path, NULL);
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_COORD_VIEW;
+    rc = dvz_panel_add_visual(panel, path, &attach);
     if (rc != 0)
         return false;
 

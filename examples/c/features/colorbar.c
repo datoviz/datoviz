@@ -228,7 +228,9 @@ _add_scalar_image(DvzScene* scene, DvzPanel* panel, DvzScale* scale, float* valu
         return false;
     if (dvz_visual_set_depth_test(image, false) != 0)
         return false;
-    return dvz_panel_add_visual(panel, image, NULL) == 0;
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_COORD_VIEW;
+    return dvz_panel_add_visual(panel, image, &attach) == 0;
 }
 
 

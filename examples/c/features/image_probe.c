@@ -255,7 +255,9 @@ static bool _add_probe_image(
     if (dvz_visual_set_depth_test(image, false) != 0)
         return false;
     dvz_visual_set_query_capabilities(image, DVZ_QUERY_CAPABILITY_PIXEL);
-    return dvz_panel_add_visual(panel, image, NULL) == 0;
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_COORD_VIEW;
+    return dvz_panel_add_visual(panel, image, &attach) == 0;
 }
 
 
@@ -515,7 +517,9 @@ static bool _add_probe_marker(
         return false;
     if (dvz_visual_set_depth_test(marker, false) != 0)
         return false;
-    if (dvz_panel_add_visual(panel, marker, NULL) != 0)
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_COORD_VIEW;
+    if (dvz_panel_add_visual(panel, marker, &attach) != 0)
         return false;
 
     vec3 dot_data[1] = {{PROBE_X, PROBE_Y, 0.03f}};
@@ -544,7 +548,7 @@ static bool _add_probe_marker(
         return false;
     if (dvz_visual_set_depth_test(dot, false) != 0)
         return false;
-    if (dvz_panel_add_visual(panel, dot, NULL) != 0)
+    if (dvz_panel_add_visual(panel, dot, &attach) != 0)
         return false;
 
     *out_segments = marker;

@@ -276,7 +276,9 @@ static bool _add_labels(
     if (dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED) != 0)
         return false;
     dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM);
-    return dvz_panel_add_visual(panel, visual, NULL) == 0;
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_COORD_VIEW;
+    return dvz_panel_add_visual(panel, visual, &attach) == 0;
 }
 
 
@@ -435,7 +437,9 @@ _add_probe_marker(DvzScene* scene, DvzPanel* panel, DvzVisual** out_ring, DvzVis
         return false;
     if (dvz_visual_set_depth_test(ring, false) != 0)
         return false;
-    if (dvz_panel_add_visual(panel, ring, NULL) != 0)
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_COORD_VIEW;
+    if (dvz_panel_add_visual(panel, ring, &attach) != 0)
         return false;
 
     vec3 dot_data[1] = {{PROBE_X, PROBE_Y, 0.05f}};
@@ -464,7 +468,7 @@ _add_probe_marker(DvzScene* scene, DvzPanel* panel, DvzVisual** out_ring, DvzVis
         return false;
     if (dvz_visual_set_depth_test(dot, false) != 0)
         return false;
-    if (dvz_panel_add_visual(panel, dot, NULL) != 0)
+    if (dvz_panel_add_visual(panel, dot, &attach) != 0)
         return false;
 
     *out_ring = ring;

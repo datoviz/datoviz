@@ -140,7 +140,7 @@ static bool _add_path(DvzScene* scene, DvzPanel* panel)
 
 
 /**
- * Add outlined screen-space markers.
+ * Add outlined data-space markers.
  *
  * @param scene scene owning the visual
  * @param panel target panel
