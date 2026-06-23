@@ -62,9 +62,7 @@ bool _material_desc_valid(const DvzMaterialDesc* desc);
 void _material_state_apply_desc(DvzSceneMaterialState* material, const DvzMaterialDesc* desc);
 void _material_params_sync_state(
     DvzSceneMaterialParams* params, const DvzSceneMaterialState* material);
-void _material_params_upload_payload(
-    const DvzVisual* visual, bool point_style_scaled, float screen_scale,
-    DvzSceneMaterialParams* out_params);
+void _material_params_upload_payload(const DvzVisual* visual, DvzSceneMaterialParams* out_params);
 bool _material_depth_cue_supported(DvzVisualType visual_type);
 int _material_apply_depth_cue(DvzSceneMaterialState* material, const DvzDepthCueDesc* desc);
 void _visual_material_mark_dirty(DvzVisual* visual);

@@ -47,7 +47,17 @@ bool _scene_marker_visual_lowering(const DvzVisual* visual, DvzVisualLowering* o
     out->needs_material_params =
         _visual_family_state(visual)->symbol_source_kind == DVZ_SYMBOL_SOURCE_NONE ||
         _visual_family_state(visual)->symbol_source_kind == DVZ_SYMBOL_SOURCE_BUILTIN;
-    out->material_params_screen_scaled = out->needs_material_params;
+    if (out->needs_material_params)
+    {
+        out->material_param_fields[out->material_param_field_count++] =
+            (DvzScenePayloadFieldDesc){
+                .name = "marker_style.stroke_width_px",
+                .offset = offsetof(DvzSceneMaterialParams, params),
+                .count = 1,
+                .authored_unit = DVZ_SCENE_PAYLOAD_UNIT_LOGICAL_PX,
+                .runtime_unit = DVZ_SCENE_PAYLOAD_UNIT_PHYSICAL_PX,
+            };
+    }
     return true;
 }
 

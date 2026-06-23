@@ -17,14 +17,49 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stddef.h>
+
 #include "_scene.h"
 #include "_visual_pipeline.h"
 
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_SCENE_PAYLOAD_MAX_FIELDS 8
+
+
+
+/*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+typedef enum DvzScenePayloadUnit
+{
+    DVZ_SCENE_PAYLOAD_UNIT_NONE = 0,
+    DVZ_SCENE_PAYLOAD_UNIT_LOGICAL_PX,
+    DVZ_SCENE_PAYLOAD_UNIT_PHYSICAL_PX,
+    DVZ_SCENE_PAYLOAD_UNIT_DATA,
+    DVZ_SCENE_PAYLOAD_UNIT_NORMALIZED,
+} DvzScenePayloadUnit;
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+typedef struct DvzScenePayloadFieldDesc
+{
+    const char* name;
+    size_t offset;
+    uint32_t count;
+    DvzScenePayloadUnit authored_unit;
+    DvzScenePayloadUnit runtime_unit;
+} DvzScenePayloadFieldDesc;
+
 
 typedef struct DvzVisualLowering
 {
@@ -34,9 +69,8 @@ typedef struct DvzVisualLowering
     bool has_point_like_kind;
     bool needs_material_params;
     bool point_style_enabled;
-    /* TODO: replace this coarse flag with field-level payload unit metadata; see
-     * agents/now/HANDOFF_USER_SCALE_STYLE_UNITS.md. */
-    bool material_params_screen_scaled;
+    uint32_t material_param_field_count;
+    DvzScenePayloadFieldDesc material_param_fields[DVZ_SCENE_PAYLOAD_MAX_FIELDS];
     bool needs_vector_params_sync;
     const char* draw_position_attr;
     const DvzStrokeQuadGpuCache* stroke_quad_cache;

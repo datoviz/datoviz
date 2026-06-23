@@ -324,6 +324,55 @@ bool _scene_frame_plan_upload_style_bytes(
 
 
 /**
+ * Lower authored payload fields into runtime payload units.
+ *
+ * @param figure parent figure
+ * @param src authored source payload
+ * @param byte_size payload byte size
+ * @param fields field unit descriptors
+ * @param field_count field descriptor count
+ * @param dst destination payload
+ * @return whether the payload was lowered
+ */
+bool _scene_payload_lower_fields(
+    const DvzFigure* figure, const void* src, uint64_t byte_size,
+    const DvzScenePayloadFieldDesc* fields, uint32_t field_count, void* dst)
+{
+    ANN(src);
+    ANN(dst);
+    if (byte_size > SIZE_MAX)
+        return false;
+    dvz_memcpy(dst, (size_t)byte_size, src, (size_t)byte_size);
+
+    const float screen_scale = _scene_screen_scale(figure);
+    for (uint32_t i = 0; i < field_count; i++)
+    {
+        const DvzScenePayloadFieldDesc* field = &fields[i];
+        if (field->authored_unit == field->runtime_unit)
+            continue;
+        if (field->authored_unit != DVZ_SCENE_PAYLOAD_UNIT_LOGICAL_PX ||
+            field->runtime_unit != DVZ_SCENE_PAYLOAD_UNIT_PHYSICAL_PX)
+        {
+            return false;
+        }
+        if (field->count == 0 || field->offset > (size_t)byte_size)
+            return false;
+        if (field->count > (SIZE_MAX - field->offset) / sizeof(float))
+            return false;
+        const size_t field_size = (size_t)field->count * sizeof(float);
+        if (field_size > (size_t)byte_size - field->offset)
+            return false;
+
+        float* values = (float*)((uint8_t*)dst + field->offset);
+        for (uint32_t j = 0; j < field->count; j++)
+            values[j] *= screen_scale;
+    }
+    return true;
+}
+
+
+
+/**
  * Return whether one visual has dirty source attributes.
  *
  * @param visual the visual

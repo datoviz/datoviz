@@ -59,10 +59,20 @@ bool _scene_emit_visual_material_upload(
     if (params == NULL)
         return false;
     DvzVisualLowering lowering = {0};
-    bool has_lowering = _scene_visual_lowering_resolve(visual, &lowering);
-    bool point_style_scaled = has_lowering && lowering.material_params_screen_scaled;
-    _material_params_upload_payload(
-        visual, point_style_scaled, _scene_screen_scale(figure), params);
+    if (!_scene_visual_lowering_resolve(visual, &lowering))
+    {
+        dvz_free(params);
+        return false;
+    }
+    DvzSceneMaterialParams authored = {0};
+    _material_params_upload_payload(visual, &authored);
+    if (!_scene_payload_lower_fields(
+            figure, &authored, sizeof(DvzSceneMaterialParams), lowering.material_param_fields,
+            lowering.material_param_field_count, params))
+    {
+        dvz_free(params);
+        return false;
+    }
     if (!dvz_frame_plan_upload_bytes(
             plan, material_resource_id, 0, sizeof(DvzSceneMaterialParams), "material_params",
             params))

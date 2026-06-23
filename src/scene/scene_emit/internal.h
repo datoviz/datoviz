@@ -18,6 +18,7 @@
 /*************************************************************************************************/
 
 #include "scene_emit/scene_emit.h"
+#include "scene_emit/visual_lowering.h"
 #include "upload.h"
 
 
@@ -55,6 +56,10 @@ bool _scene_attach_upload_metadata(
 bool _scene_frame_plan_upload_style_bytes(
     const DvzFigure* figure, DvzFramePlan* plan, const char* resource_id, uint64_t byte_offset,
     uint64_t byte_size, const char* data_tag, const void* data, DvzFramePlanResourceRole role);
+
+bool _scene_payload_lower_fields(
+    const DvzFigure* figure, const void* src, uint64_t byte_size,
+    const DvzScenePayloadFieldDesc* fields, uint32_t field_count, void* dst);
 
 bool _scene_visual_attrs_dirty(const DvzVisual* visual);
 

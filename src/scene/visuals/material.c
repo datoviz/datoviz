@@ -534,22 +534,16 @@ void _visual_material_mark_dirty(DvzVisual* visual)
 
 
 /**
- * Fill the material parameter upload payload for one visual.
+ * Fill authored material parameters for one visual.
  *
  * @param visual the visual
- * @param point_style_scaled whether point-style size payloads use logical screen units
- * @param screen_scale logical-to-physical screen scale
  * @param out_params output material parameter payload
  */
-void _material_params_upload_payload(
-    const DvzVisual* visual, bool point_style_scaled, float screen_scale,
-    DvzSceneMaterialParams* out_params)
+void _material_params_upload_payload(const DvzVisual* visual, DvzSceneMaterialParams* out_params)
 {
     ANN(visual);
     ANN(out_params);
     *out_params = _visual_family_state(visual)->material_params;
-    if (point_style_scaled)
-        out_params->params[0] *= screen_scale;
 }
 
 
