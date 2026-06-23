@@ -881,7 +881,7 @@ typedef struct DvzLabelsState DvzLabelsState;
  *
  * Passed to dvz_panel_add_visual() to control draw order, controller behavior, and coordinate
  * interpretation for a visual within a panel. Pass NULL to use defaults
- * (z_layer=0, controller_mode=APPLY, coord_space=VIEW).
+ * (z_layer=0, controller_mode=APPLY, coord_space=DATA).
  *
  * Spec: spec/scene/pipeline/TRANSFORM_PIPELINE.md "Visual Attachment And Coordinate Space".
  */
@@ -891,7 +891,7 @@ struct DvzVisualAttachDesc
     uint32_t flags;
     int32_t           z_layer;          /* signed; lower draws behind, higher in front; default 0 */
     DvzControllerMode controller_mode;  /* APPLY (default), FIXED, VIEW_PROJ, or isotropic */
-    DvzVisualCoordSpace coord_space;    /* VIEW (default), DATA/domain, or PANEL coordinates */
+    DvzVisualCoordSpace coord_space;    /* DATA/domain (default), VIEW, or PANEL coordinates */
 };
 typedef struct DvzVisualAttachDesc DvzVisualAttachDesc;
 

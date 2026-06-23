@@ -140,6 +140,12 @@ through a new growable descriptor with the same `struct_size`/`flags` prologue. 
 unknown attachment flags or unsupported coordinate-space values rather than accepting no-op
 projection requests.
 
+`dvz_visual_attach_desc()` and `dvz_panel_add_visual(panel, visual, NULL)` default to
+`coord_space=DVZ_COORD_DATA`. Without an explicit panel domain, DATA uses the default `[-1, +1]`
+domain and therefore maps normalized examples like VIEW. With explicit domains or axes, uploaded
+positions are interpreted as semantic data coordinates. Use `DVZ_COORD_VIEW` explicitly for
+pre-normalized view-space/reference visuals.
+
 
 ## Aspect Ratio
 
@@ -157,8 +163,8 @@ navigation, but they do not own viewport aspect or rewrite panel domains.
 
 ## Visual Attachment
 
-`DvzVisualAttachDesc` currently declares controller application and draw order. The future
-attachment contract may also declare coordinate interpretation and optional domain overrides.
+`DvzVisualAttachDesc` declares controller application, draw order, and coordinate interpretation.
+The future attachment contract may also declare optional domain overrides.
 
 | Field | Rule |
 |---|---|
@@ -177,7 +183,7 @@ Coordinate-space meanings:
 | `DVZ_COORD_PANEL` | normalized panel coordinates over the full panel rectangle, intentionally viewport-shaped |
 
 `coord_space` and `controller_mode` are independent. Typical combinations include
-`DATA+APPLY` for data visuals, `PANEL+FIXED` for static panel overlays, and
+default `DATA+APPLY` for data visuals, `PANEL+FIXED` for static panel overlays, and
 `VIEW+APPLY_VIEW_PROJ` for reference aids that follow camera view/projection but ignore
 controller/object model transforms. Future `PIXEL+FIXED` attachments may cover legends, scale bars,
 or panel-corner annotations.

@@ -118,8 +118,8 @@ new positions every frame when the vertex data itself is unchanged.
 ## Common Mistakes
 
 - Using transforms to compensate for a wrong panel domain.
-- Uploading data coordinates with the default `DVZ_COORD_VIEW` attachment, then adding a transform
-  to make the result look right.
+- Uploading pre-normalized view coordinates with the default `DVZ_COORD_DATA` attachment, then
+  adding a transform to make the result look right.
 - Applying both data scaling and visual scaling without documenting the final units.
 - Expecting `dvz_view_set_user_scale()` to change data coordinates or camera distance.
 - Expecting `DvzScale` color/label mappings to scale geometry.

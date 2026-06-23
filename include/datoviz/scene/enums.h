@@ -136,8 +136,8 @@ typedef enum
 /* Coordinate interpretation for retained visual positions when attached to a panel. */
 typedef enum
 {
-    DVZ_COORD_VIEW   = 0, /* default: metric panel view coordinates */
-    DVZ_COORD_DATA   = 1, /* positions are panel data/domain coordinates */
+    DVZ_COORD_VIEW   = 0, /* metric panel view coordinates */
+    DVZ_COORD_DATA   = 1, /* default: positions are panel data/domain coordinates */
     DVZ_COORD_PANEL  = 2, /* normalized panel coordinates, intentionally viewport-shaped */
 } DvzVisualCoordSpace;
 

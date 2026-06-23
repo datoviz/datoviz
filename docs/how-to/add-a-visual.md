@@ -25,7 +25,7 @@ dvz_panel_add_visual(panel, visual, NULL);
 ```
 
 Use `NULL` for the default panel attachment: draw layer `0`, controller mode
-`DVZ_CONTROLLER_APPLY`, and coordinate space `DVZ_COORD_VIEW`.
+`DVZ_CONTROLLER_APPLY`, and coordinate space `DVZ_COORD_DATA`.
 
 ## Attachment Options
 
@@ -34,7 +34,7 @@ visual needs a non-default draw layer, coordinate interpretation, or controller 
 
 ```c
 DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-attach.coord_space = DVZ_COORD_DATA;
+attach.coord_space = DVZ_COORD_VIEW;
 attach.z_layer = 1;
 dvz_panel_add_visual(panel, visual, &attach);
 ```
@@ -43,7 +43,7 @@ The most common attachment choices are:
 
 | Field | Default | Use when |
 | --- | --- | --- |
-| `coord_space` | `DVZ_COORD_VIEW` | Set `DVZ_COORD_DATA` for data-domain positions, or `DVZ_COORD_PANEL` for panel-fixed overlays. |
+| `coord_space` | `DVZ_COORD_DATA` | Set `DVZ_COORD_VIEW` for pre-normalized view positions, or `DVZ_COORD_PANEL` for panel-fixed overlays. |
 | `z_layer` | `0` | Draw one visual in front of or behind another visual in the same panel. |
 | `controller_mode` | `DVZ_CONTROLLER_APPLY` | Keep the default for ordinary data visuals; use specialized modes only when the example or reference page requires them. |
 
@@ -53,9 +53,7 @@ Set panel domains before attaching data-coordinate visuals:
 dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
 dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
 
-DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-attach.coord_space = DVZ_COORD_DATA;
-dvz_panel_add_visual(panel, visual, &attach);
+dvz_panel_add_visual(panel, visual, NULL);
 ```
 
 See [Use coordinate systems](coordinate-systems.md) before mixing data, view, and panel coordinate
@@ -143,7 +141,7 @@ multiple panels, keep its data layout compatible with every attachment.
 - Reusing point attributes on another visual family without checking that family's reference page.
 - Creating many tiny visuals instead of batching items into one visual.
 - Creating a visual but never attaching it to a panel.
-- Uploading data coordinates but attaching with the default `DVZ_COORD_VIEW` coordinate space.
+- Uploading pre-normalized view coordinates with the default `DVZ_COORD_DATA` coordinate space.
 - Splitting by color or size when those are ordinary per-item attributes.
 
 ## See Also

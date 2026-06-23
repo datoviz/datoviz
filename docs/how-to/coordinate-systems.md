@@ -14,8 +14,8 @@ domain.
 
 | Space | Use when | API hook |
 | --- | --- | --- |
-| `DVZ_COORD_DATA` | Positions are scientific or application data values. | Set panel domains and attach the visual with `coord_space = DVZ_COORD_DATA`. |
-| `DVZ_COORD_VIEW` | Positions are already in panel view coordinates, usually `[-1, +1]`. | This is the default when `dvz_panel_add_visual()` receives `NULL`. |
+| `DVZ_COORD_DATA` | Positions are scientific or application data values. | This is the default when `dvz_panel_add_visual()` receives `NULL`; set panel domains when data has non-default ranges. |
+| `DVZ_COORD_VIEW` | Positions are already in panel view coordinates, usually `[-1, +1]`. | Attach explicitly with `coord_space = DVZ_COORD_VIEW`. |
 | `DVZ_COORD_PANEL` | Positions are normalized to the panel itself for fixed overlays. | Attach with `coord_space = DVZ_COORD_PANEL`. |
 
 ## Data-Space Call Sequence
@@ -24,9 +24,7 @@ domain.
 dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
 dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
 
-DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-attach.coord_space = DVZ_COORD_DATA;
-dvz_panel_add_visual(panel, visual, &attach);
+dvz_panel_add_visual(panel, visual, NULL);
 
 DvzController* controller = dvz_panzoom(scene, NULL);
 dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY);
@@ -39,9 +37,11 @@ domain; it does not rewrite the uploaded source positions.
 ## View-Space Call Sequence
 
 ```c
-// Positions already use the default view coordinate range.
+// Positions already use the view coordinate range.
 dvz_visual_set_data(visual, "position", positions, count);
-dvz_panel_add_visual(panel, visual, NULL);
+DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+attach.coord_space = DVZ_COORD_VIEW;
+dvz_panel_add_visual(panel, visual, &attach);
 ```
 
 Use this for examples or low-level visuals that intentionally work in normalized panel view space.
@@ -103,7 +103,8 @@ pick/probe results should follow the same transform, clipping, depth, and shader
 ## Common Mistakes
 
 - Uploading pixel coordinates to a data-space panel.
-- Uploading data coordinates but attaching the visual with the default `DVZ_COORD_VIEW` space.
+- Uploading pre-normalized view coordinates but leaving the visual in the default
+  `DVZ_COORD_DATA` space.
 - Setting only one axis domain and expecting aspect-preserving 2D navigation.
 - Using a visual transform to compensate for a wrong data domain.
 - Mixing 2D panzoom with 3D orbit/arcball camera control.

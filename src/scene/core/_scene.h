@@ -1841,7 +1841,7 @@ struct DvzPanelAttach
     DvzVisual*        visual;          /* weak ref — owned by scene */
     int32_t           z_layer;         /* signed; default 0 */
     DvzControllerMode controller_mode; /* default APPLY */
-    DvzVisualCoordSpace coord_space;   /* default VISUAL */
+    DvzVisualCoordSpace coord_space;   /* default DATA */
     uint32_t          insertion_index; /* used as stable tie-breaker when z_layer ties */
 };
 

@@ -4369,7 +4369,7 @@ Add a visual to a panel.
 Add a visual to a panel.
 
 defaults (z_layer=0, controller_mode=DVZ_CONTROLLER_APPLY,
-coord_space=DVZ_COORD_VIEW)
+coord_space=DVZ_COORD_DATA)
 
 Raw ctypes: emitted.
 
