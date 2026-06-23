@@ -820,6 +820,7 @@ int test_scene_controller_mode_view_proj_strips_panel_model(
 
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
     attach.controller_mode = DVZ_CONTROLLER_APPLY_VIEW_PROJ;
+    attach.coord_space = DVZ_COORD_VIEW;
     AT(dvz_panel_add_visual(panel, visual, &attach) == 0);
 
     DvzFramePlan* plan = dvz_frame_plan("controller.view_proj", 0);
@@ -1787,6 +1788,7 @@ int test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state(
 
     DvzVisualAttachDesc fixed = dvz_visual_attach_desc();
     fixed.controller_mode = DVZ_CONTROLLER_FIXED;
+    fixed.coord_space = DVZ_COORD_VIEW;
     AT(dvz_panel_add_visual(left, vl, &fixed) == 0);
     AT(dvz_panel_add_visual(right, vr, &fixed) == 0);
 

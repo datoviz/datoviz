@@ -2102,6 +2102,7 @@ int _scene_text_block_realize_image(
         DvzVisualAttachDesc attach = dvz_visual_attach_desc();
         attach.z_layer = resolved.z_layer;
         attach.controller_mode = resolved.controller_mode;
+        attach.coord_space = DVZ_COORD_VIEW;
         if (dvz_panel_add_visual(panel, block->image_visual, &attach) != 0)
             return -1;
         block->image_attached = true;

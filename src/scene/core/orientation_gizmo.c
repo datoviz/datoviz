@@ -992,6 +992,7 @@ DvzOrientationGizmo* dvz_orientation_gizmo(
     dvz_visual_set_visible(gizmo->rings_visual, resolved.show_axes);
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
     attach.controller_mode = DVZ_CONTROLLER_APPLY_VIEW_PROJ;
+    attach.coord_space = DVZ_COORD_VIEW;
     if (dvz_panel_add_visual(gizmo->panel, gizmo->rings_visual, &attach) != 0)
         goto fail;
     if (dvz_panel_add_visual(gizmo->panel, gizmo->axes_visual, &attach) != 0)

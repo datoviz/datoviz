@@ -433,6 +433,7 @@ DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim)
         DvzVisualAttachDesc attach = dvz_visual_attach_desc();
         attach.z_layer = 1000;
         attach.controller_mode = DVZ_CONTROLLER_FIXED;
+        attach.coord_space = DVZ_COORD_VIEW;
         if (dvz_panel_add_visual(panel, axis->visual, &attach) != 0)
         {
             axis->visual = NULL;
@@ -451,6 +452,7 @@ DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim)
         DvzVisualAttachDesc attach = dvz_visual_attach_desc();
         attach.z_layer = -1;
         attach.controller_mode = DVZ_CONTROLLER_APPLY;
+        attach.coord_space = DVZ_COORD_VIEW;
         if (dvz_panel_add_visual(panel, axis->grid_visual, &attach) != 0)
         {
             axis->grid_visual = NULL;

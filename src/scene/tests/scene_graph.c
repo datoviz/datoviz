@@ -67,6 +67,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_path_closed_star_cache_adjacency);
     TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_image_glsl_executes);
     TST_CASE(test_scene_json);
+    TST_CASE(test_scene_visual_attach_default_coord_space);
     TST_CASE(test_scene_json_includes_field_dirty_metadata);
     TST_CASE(test_scene_json_includes_buffer_binding_metadata);
     TST_CASE(test_scene_panel_full_helper);

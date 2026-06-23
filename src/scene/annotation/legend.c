@@ -295,6 +295,7 @@ static bool _legend_attach_visual(DvzLegend* legend, DvzVisual* visual, int32_t 
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
     attach.z_layer = z_layer;
     attach.controller_mode = DVZ_CONTROLLER_FIXED;
+    attach.coord_space = DVZ_COORD_VIEW;
     for (uint32_t i = 0; i < legend->panel->visual_count; i++)
     {
         DvzPanelAttach* existing = &legend->panel->visuals[i];

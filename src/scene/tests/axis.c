@@ -2106,6 +2106,133 @@ static int test_axis_data_visual_mvp_uses_view_extent_after_resize(
 
 
 /**
+ * Ensure the default DATA attachment maps the default domain like legacy view coordinates.
+ *
+ * @param suite the test suite
+ * @param item the test case
+ * @return zero on success
+ */
+static int test_axis_default_data_attachment_uses_default_domain(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 256, 256, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(point);
+    vec3 positions[2] = {{-1.0f, -1.0f, 0.0f}, {+1.0f, +1.0f, 0.0f}};
+    DvzColor colors[2] = {{255, 255, 255, 255}, {255, 255, 255, 255}};
+    float sizes[2] = {8.0f, 8.0f};
+    AT(dvz_visual_set_data(point, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(point, "color", colors, 2) == 0);
+    AT(dvz_visual_set_data(point, "size", sizes, 2) == 0);
+    AT(dvz_panel_add_visual(panel, point, NULL) == 0);
+    AT(panel->visuals[0].coord_space == DVZ_COORD_DATA);
+
+    DvzFramePlan* plan = dvz_frame_plan("axis.default_data_attachment", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    AT(dvz_frame_plan_node_count(plan) == 1);
+    const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
+    ANN(render);
+    AT(render->u.render.visual_count == 1);
+    AT(render->u.render.visual_has_mvp[0]);
+
+    DvzMVP visual_mvp = render->u.render.visual_mvp[0];
+    float left = 0.0f;
+    float right = 0.0f;
+    float bottom = 0.0f;
+    float top = 0.0f;
+    AT(_axis_test_apply_mvp_coord(&visual_mvp, positions[0], DVZ_DIM_X, &left));
+    AT(_axis_test_apply_mvp_coord(&visual_mvp, positions[1], DVZ_DIM_X, &right));
+    AT(_axis_test_apply_mvp_coord(&visual_mvp, positions[0], DVZ_DIM_Y, &bottom));
+    AT(_axis_test_apply_mvp_coord(&visual_mvp, positions[1], DVZ_DIM_Y, &top));
+    AT(fabsf(left + 1.0f) < 1e-5f);
+    AT(fabsf(right - 1.0f) < 1e-5f);
+    AT(fabsf(bottom + 1.0f) < 1e-5f);
+    AT(fabsf(top - 1.0f) < 1e-5f);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Compare DATA default and explicit VIEW mapping for a non-symmetric Y domain.
+ *
+ * @param suite the test suite
+ * @param item the test case
+ * @return zero on success
+ */
+static int test_axis_default_data_zero_differs_from_explicit_view_zero(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 256, 256, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.45, +1.20) == 0);
+
+    vec3 position = {0.0f, 0.0f, 0.0f};
+    DvzColor color = {255, 255, 255, 255};
+    float size = 8.0f;
+
+    DvzVisual* data_point = dvz_point(scene, 0);
+    ANN(data_point);
+    AT(dvz_visual_set_data(data_point, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(data_point, "color", &color, 1) == 0);
+    AT(dvz_visual_set_data(data_point, "size", &size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, data_point, NULL) == 0);
+
+    DvzVisual* view_point = dvz_point(scene, 0);
+    ANN(view_point);
+    AT(dvz_visual_set_data(view_point, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(view_point, "color", &color, 1) == 0);
+    AT(dvz_visual_set_data(view_point, "size", &size, 1) == 0);
+    DvzVisualAttachDesc view_attach = dvz_visual_attach_desc();
+    view_attach.coord_space = DVZ_COORD_VIEW;
+    AT(dvz_panel_add_visual(panel, view_point, &view_attach) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("axis.data_zero_vs_view_zero", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    AT(dvz_frame_plan_node_count(plan) == 1);
+    const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
+    ANN(render);
+    AT(render->u.render.visual_count == 2);
+    AT(render->u.render.visual_has_mvp[0]);
+
+    DvzMVP data_mvp = render->u.render.visual_mvp[0];
+    DvzMVP view_mvp = render->u.render.visual_mvp[1];
+    float data_y = 0.0f;
+    float view_y = 0.0f;
+    AT(_axis_test_apply_mvp_coord(&data_mvp, position, DVZ_DIM_Y, &data_y));
+    AT(_axis_test_apply_mvp_coord(&view_mvp, position, DVZ_DIM_Y, &view_y));
+    float expected_data_y = (float)((0.0 - (-0.125)) / 1.325);
+    AT(fabsf(data_y - expected_data_y) < 1e-5f);
+    AT(fabsf(view_y) < 1e-5f);
+    AT(fabsf(data_y - view_y) > 1e-3f);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Check that raw visual-space grid lines and points share the same APPLY transform.
  *
  * @param suite the test suite
@@ -2253,7 +2380,9 @@ static int test_axis_integer_lattice_panzoom_alignment(TstContext* suite, const 
         {.attr_name = "diameter", .data = diameters, .item_count = count},
     };
     AT(dvz_visual_set_data_many(point, updates, 3) == 0);
-    AT(dvz_panel_add_visual(panel, point, NULL) == 0);
+    DvzVisualAttachDesc view_attach = dvz_visual_attach_desc();
+    view_attach.coord_space = DVZ_COORD_VIEW;
+    AT(dvz_panel_add_visual(panel, point, &view_attach) == 0);
 
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
@@ -2809,6 +2938,8 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_grid_uses_plot_source_extent);
     TST_CASE(test_axis_grid_centers_snap_after_panzoom);
     TST_CASE(test_axis_data_visual_mvp_uses_view_extent_after_resize);
+    TST_CASE(test_axis_default_data_attachment_uses_default_domain);
+    TST_CASE(test_axis_default_data_zero_differs_from_explicit_view_zero);
     TST_CASE(test_axis_raw_visual_panzoom_alignment);
     TST_CASE(test_axis_integer_lattice_panzoom_alignment);
     TST_CASE(test_axis_zoom_out_in_grid_regression);

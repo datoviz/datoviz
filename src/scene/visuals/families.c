@@ -259,7 +259,7 @@ DvzVisualAttachDesc dvz_visual_attach_desc(void)
         DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
         .z_layer = 0,
         .controller_mode = DVZ_CONTROLLER_APPLY,
-        .coord_space = DVZ_COORD_VIEW,
+        .coord_space = DVZ_COORD_DATA,
     };
     return desc;
 }
@@ -849,6 +849,7 @@ static bool _panel_background_attach(
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
     attach.z_layer = -1;
     attach.controller_mode = DVZ_CONTROLLER_FIXED;
+    attach.coord_space = DVZ_COORD_VIEW;
     if (dvz_panel_add_visual(panel, visual, &attach) != 0)
     {
         return false;
@@ -898,7 +899,7 @@ int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual, const DvzVisualAtta
     slot->visual = visual;
     slot->z_layer = desc ? desc->z_layer : 0;
     slot->controller_mode = desc ? desc->controller_mode : DVZ_CONTROLLER_APPLY;
-    slot->coord_space = desc ? desc->coord_space : DVZ_COORD_VIEW;
+    slot->coord_space = desc ? desc->coord_space : DVZ_COORD_DATA;
     slot->insertion_index = panel->visual_count;
     panel->visual_count++;
     _scene_notify_request_frame(panel->figure);
@@ -1178,6 +1179,7 @@ bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
         DvzVisualAttachDesc attach = dvz_visual_attach_desc();
         attach.z_layer = INT32_MAX / 8;
         attach.controller_mode = DVZ_CONTROLLER_FIXED;
+        attach.coord_space = DVZ_COORD_VIEW;
         if (dvz_panel_add_visual(panel, visual, &attach) != 0)
         {
             log_error("dvz_panel_set_border: failed to attach border visual");

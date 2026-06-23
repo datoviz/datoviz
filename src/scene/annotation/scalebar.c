@@ -312,6 +312,7 @@ static bool _scalebar_ensure_visuals(DvzAnnotation* annotation)
         DvzVisualAttachDesc attach = dvz_visual_attach_desc();
         attach.z_layer = INT32_MAX / 4 - 1;
         attach.controller_mode = DVZ_CONTROLLER_FIXED;
+        attach.coord_space = DVZ_COORD_VIEW;
         if (dvz_panel_add_visual(annotation->panel, annotation->scalebar_visual, &attach) != 0)
             return false;
     }
@@ -326,6 +327,7 @@ static bool _scalebar_ensure_visuals(DvzAnnotation* annotation)
         DvzVisualAttachDesc attach = dvz_visual_attach_desc();
         attach.z_layer = INT32_MAX / 4;
         attach.controller_mode = DVZ_CONTROLLER_FIXED;
+        attach.coord_space = DVZ_COORD_VIEW;
         if (dvz_panel_add_visual(annotation->panel, annotation->visual, &attach) != 0)
             return false;
     }

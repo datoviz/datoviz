@@ -661,6 +661,7 @@ static DvzVisual* _bounds_overlay_visual(DvzPanel* panel, bool occluded)
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
     attach.z_layer = occluded ? BOUNDS_OVERLAY_Z_LAYER_OCCLUDED : BOUNDS_OVERLAY_Z_LAYER_VISIBLE;
     attach.controller_mode = DVZ_CONTROLLER_APPLY;
+    attach.coord_space = DVZ_COORD_VIEW;
     if (dvz_panel_add_visual(panel, visual, &attach) != 0)
         return NULL;
     if (occluded)

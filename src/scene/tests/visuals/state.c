@@ -22,6 +22,33 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+int test_scene_visual_attach_default_coord_space(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    AT(attach.coord_space == DVZ_COORD_DATA);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+    AT(panel->visual_count == 1);
+    AT(panel->visuals[0].visual == visual);
+    AT(panel->visuals[0].coord_space == DVZ_COORD_DATA);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_json(TstContext* suite, const TstCase* item)
 {
     (void)suite;

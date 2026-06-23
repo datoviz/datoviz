@@ -215,6 +215,8 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         screen_placement ? DVZ_CONTROLLER_FIXED : DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL;
     if (text->placement.mode == DVZ_TEXT_PLACEMENT_DATA)
         attach.coord_space = DVZ_COORD_DATA;
+    else
+        attach.coord_space = DVZ_COORD_VIEW;
     uint32_t visible = 0;
     DvzSampledField* atlas = NULL;
     DvzTextAtlas* font_atlas = NULL;
