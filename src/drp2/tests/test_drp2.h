@@ -250,6 +250,9 @@ int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstContext* suite, const 
 int test_drp2_runtime_vklite_samples_read_only_active_depth(
     TstContext* suite, const TstCase* item);
 
+int test_drp2_runtime_vklite_ignores_unused_render_pass_bind_groups(
+    TstContext* suite, const TstCase* item);
+
 int test_drp2_runtime_vklite_samples_3d_texture(TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_vklite_samples_then_copies_texture(TstContext* suite, const TstCase* item);

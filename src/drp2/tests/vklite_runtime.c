@@ -2210,6 +2210,112 @@ int test_drp2_runtime_vklite_samples_read_only_active_depth(
 }
 
 
+/**
+ * Ensure unused bind groups do not transition textures for unrelated render passes.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_drp2_runtime_vklite_ignores_unused_render_pass_bind_groups(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = drp2_test_vklite_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
+        return 0;
+    ANN(ctx);
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+
+    const char* fullscreen_vs =
+        "#version 450\nvec2 p[3]=vec2[](vec2(-1,-1),vec2(3,-1),vec2(-1,3));"
+        "void main(){gl_Position=vec4(p[gl_VertexIndex],0.25,1);}";
+    AT(dvz_drp2_stream_create_shader_module_format(stream, 10, "VERTEX", "glsl", fullscreen_vs));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 11, "FRAGMENT", "glsl",
+        "#version 450\nlayout(location=0)out vec4 color;"
+        "void main(){color=vec4(1,0,0,1);}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, VK_COMPARE_OP_LESS_OR_EQUAL));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 13, 10, 11, 0));
+
+    DvzDrp2BindGroupLayoutEntry layout_entries[2] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+    };
+    AT(dvz_drp2_stream_create_bind_group_layout_entries(stream, 30, 2, layout_entries));
+    AT(dvz_drp2_stream_create_sampler(stream, 31));
+    uint32_t depth_usage =
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING;
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 50, 2, 2, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 51, 2, 2, VK_FORMAT_D32_SFLOAT, depth_usage));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 52, 2, 2, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+
+    DvzDrp2BindGroupEntry bind_entries[2] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = 51,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+            .resource_id = 31,
+        },
+    };
+    AT(dvz_drp2_stream_create_bind_group_entries(stream, 32, 30, 2, bind_entries));
+
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 70));
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 71, 70, 50, 0, 0, 0, 1));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, 51, 1.0f));
+    AT(dvz_drp2_stream_set_pipeline(stream, 71, 12));
+    AT(dvz_drp2_stream_draw(stream, 71, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 71));
+
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 72, 70, 52, 0, 0, 0, 1));
+    AT(dvz_drp2_stream_set_pipeline(stream, 72, 13));
+    AT(dvz_drp2_stream_draw(stream, 72, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 72));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 70, 73));
+    AT(dvz_drp2_stream_queue_submit(stream, 73, 74));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    Drp2VkliteObject* depth = _vklite_find(runtime->vklite_state, 51);
+    ANN(depth);
+    AT(depth->texture_access == DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT);
+    AT(depth->image_layout == VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
 
 int test_drp2_runtime_vklite_samples_then_copies_texture(TstContext* suite, const TstCase* item)
 {
@@ -2660,6 +2766,4 @@ int test_drp2_write_buffer_bytes_large_payload_executes(TstContext* suite, const
     return 0;
 }
 #endif
-
-
 

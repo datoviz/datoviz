@@ -649,7 +649,7 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
             result = _vklite_copy_texture_to_texture(state, command, i);
             break;
         case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
-            result = _vklite_begin_render_pass(state, command, i);
+            result = _vklite_begin_render_pass(state, stream, command, i);
             break;
         case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
             result = _vklite_begin_compute_pass(state, command, i);

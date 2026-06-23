@@ -209,6 +209,7 @@ int test_drp2(TstSuite* suite)
     TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_draws_wboit_format_passes);
     TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_draws_depth_peeling_shape);
     TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_samples_read_only_active_depth);
+    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_ignores_unused_render_pass_bind_groups);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_samples_3d_texture);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_samples_then_copies_texture);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate);

@@ -361,38 +361,6 @@ static DvzDrp2ValidationResult _transition_bind_group_textures(
 
 
 /**
- * Transition all currently-declared bind-group textures before a render pass begins.
- *
- * @param state vklite runtime state
- * @param cmds command buffer wrapper
- * @param skip_count number of texture ids that are attachments in the pass being opened
- * @param skip_texture_ids texture ids to leave in attachment layouts
- * @param command_index command index used for validation reporting
- * @return DRP2 validation result
- */
-static DvzDrp2ValidationResult _transition_declared_bind_group_textures(
-    Drp2VkliteState* state, DvzCommands* cmds, uint32_t skip_count,
-    const uint64_t* skip_texture_ids, uint32_t command_index)
-{
-    ANN(state);
-    ANN(cmds);
-
-    for (uint32_t i = 0; i < state->count; i++)
-    {
-        const Drp2VkliteObject* object = &state->objects[i];
-        if (object->destroyed || object->kind != DRP2_OBJECT_BIND_GROUP)
-            continue;
-        DvzDrp2ValidationResult result = _transition_bind_group_textures(
-            state, cmds, object, skip_count, skip_texture_ids, command_index);
-        if (!result.ok)
-            return result;
-    }
-    return _drp2_ok();
-}
-
-
-
-/**
  * Transition an owned transient depth image according to a declared attachment access.
  *
  * @param cmds command buffer wrapper
@@ -506,14 +474,17 @@ static VkAttachmentStoreOp _vklite_attachment_store_op(DvzDrp2AttachmentStoreOp 
  * Begin a vklite dynamic-rendering pass for a DRP2 BeginRenderPass command.
  *
  * @param state vklite runtime state
+ * @param stream DRP2 command stream being executed
  * @param command DRP2 BeginRenderPass command
  * @param command_index command index used for validation reporting
  * @return DRP2 validation result
  */
 DvzDrp2ValidationResult _vklite_begin_render_pass(
-    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+    Drp2VkliteState* state, const DvzDrp2CommandStream* stream,
+    const DvzDrp2Command* command, uint32_t command_index)
 {
     ANN(state);
+    ANN(stream);
     ANN(command);
 
     uint32_t color_count = command->u.begin_render_pass.color_attachment_count;
@@ -832,11 +803,25 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
     if (named_depth != NULL && depth_transition_access != DVZ_DRP2_ATTACHMENT_ACCESS_READ)
         skip_texture_ids[skip_count++] = named_depth->id;
 
-    DvzDrp2ValidationResult bind_group_transition_result =
-        _transition_declared_bind_group_textures(
-            state, cmds, skip_count, skip_texture_ids, command_index);
-    if (!bind_group_transition_result.ok)
-        return bind_group_transition_result;
+    for (uint32_t i = command_index + 1; i < stream->count; i++)
+    {
+        const DvzDrp2Command* pass_command = &stream->commands[i];
+        if (pass_command->type == DVZ_DRP2_COMMAND_END_RENDER_PASS &&
+            pass_command->u.end_render_pass.pass_id == command->u.begin_render_pass.id)
+            break;
+        if (pass_command->type != DVZ_DRP2_COMMAND_SET_BIND_GROUP ||
+            pass_command->u.set_bind_group.pass_id != command->u.begin_render_pass.id)
+            continue;
+
+        Drp2VkliteObject* bind_group =
+            _vklite_find(state, pass_command->u.set_bind_group.bind_group_id);
+        if (bind_group == NULL || bind_group->kind != DRP2_OBJECT_BIND_GROUP)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, i);
+        DvzDrp2ValidationResult transition_result = _transition_bind_group_textures(
+            state, cmds, bind_group, skip_count, skip_texture_ids, i);
+        if (!transition_result.ok)
+            return transition_result;
+    }
 
     for (uint32_t i = 0; i < color_count; i++)
     {
