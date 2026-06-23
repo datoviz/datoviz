@@ -541,6 +541,19 @@ struct DvzAxisStyle
 typedef struct DvzAxisStyle DvzAxisStyle;
 
 
+struct DvzPanelAxes2DDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    const char* x_label;
+    const char* y_label;
+    DvzAxisTickPolicy tick_policy;
+    DvzAxisStyle x_style;
+    DvzAxisStyle y_style;
+};
+typedef struct DvzPanelAxes2DDesc DvzPanelAxes2DDesc;
+
+
 struct DvzPlacement
 {
     DvzPlacementSpace space;

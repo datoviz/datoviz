@@ -2788,6 +2788,105 @@ int test_axis_descriptor_abi_rejects_invalid_structs(TstContext* suite, const Ts
     view.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_view2d(panel, &view) != 0);
 
+    DvzPanelAxes2DDesc axes = dvz_panel_axes_2d_desc();
+    axes.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_axes_2d(panel, &axes));
+
+    axes = dvz_panel_axes_2d_desc();
+    axes.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_axes_2d(panel, &axes));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+static int test_panel_axes_2d_desc(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzPanelAxes2DDesc desc = dvz_panel_axes_2d_desc();
+    AT(desc.struct_size == DVZ_STRUCT_SIZE(DvzPanelAxes2DDesc));
+    AT(desc.flags == 0);
+    AT(desc.x_label == NULL);
+    AT(desc.y_label == NULL);
+    AT(desc.tick_policy.struct_size == DVZ_STRUCT_SIZE(DvzAxisTickPolicy));
+    AT(desc.x_style.struct_size == DVZ_STRUCT_SIZE(DvzAxisStyle));
+    AT(desc.y_style.struct_size == DVZ_STRUCT_SIZE(DvzAxisStyle));
+    AT(desc.x_style.show_grid);
+    AT(desc.y_style.show_grid);
+
+    DvzAxisStyle style = dvz_axis_style();
+    AT(!style.show_grid);
+    style.show_grid = true;
+    AT(memcmp(&desc.x_style, &style, sizeof(DvzAxisStyle)) == 0);
+    AT(memcmp(&desc.y_style, &style, sizeof(DvzAxisStyle)) == 0);
+    return 0;
+}
+
+
+static int test_panel_set_axes_2d(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    AT(dvz_panel_set_axes_2d(panel, NULL));
+
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    ANN(x_axis);
+    ANN(y_axis);
+    AT(x_axis->enabled);
+    AT(y_axis->enabled);
+    AT(x_axis->style.show_grid);
+    AT(y_axis->style.show_grid);
+    AT(strcmp(x_axis->label, "") == 0);
+    AT(strcmp(y_axis->label, "") == 0);
+
+    DvzPanelAxes2DDesc axes = dvz_panel_axes_2d_desc();
+    axes.x_label = "time";
+    axes.y_label = "amplitude";
+    axes.tick_policy.target_count = 9;
+    axes.tick_policy.min_pixel_spacing = 42.0f;
+    axes.tick_policy.minor_per_interval = 3;
+    axes.x_style.spine_width = 2.0f;
+    axes.x_style.tick_size_px = 17.0f;
+    axes.x_style.grid_color[0] = 11;
+    axes.y_style.spine_width = 3.0f;
+    axes.y_style.tick_size_px = 23.0f;
+    axes.y_style.grid_color[0] = 99;
+    AT(dvz_panel_set_axes_2d(panel, &axes));
+
+    AT(strcmp(x_axis->label, "time") == 0);
+    AT(strcmp(y_axis->label, "amplitude") == 0);
+    AT(x_axis->tick_policy.target_count == 9);
+    AT(y_axis->tick_policy.target_count == 9);
+    AC(x_axis->tick_policy.min_pixel_spacing, 42.0f, 1e-6f);
+    AC(y_axis->tick_policy.min_pixel_spacing, 42.0f, 1e-6f);
+    AT(x_axis->tick_policy.minor_per_interval == 3);
+    AT(y_axis->tick_policy.minor_per_interval == 3);
+    AC(x_axis->style.spine_width, 2.0f, 1e-6f);
+    AC(y_axis->style.spine_width, 3.0f, 1e-6f);
+    AC(x_axis->style.tick_size_px, 17.0f, 1e-6f);
+    AC(y_axis->style.tick_size_px, 23.0f, 1e-6f);
+    AT(x_axis->style.grid_color[0] == 11);
+    AT(y_axis->style.grid_color[0] == 99);
+
+    axes.struct_size = DVZ_STRUCT_SIZE(DvzPanelAxes2DDesc) - 1;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_axes_2d(panel, &axes));
+
+    axes = dvz_panel_axes_2d_desc();
+    axes.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_axes_2d(panel, &axes));
+
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -2947,6 +3046,8 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_static_prepare_idempotent);
     TST_CASE(test_axis_visual_clip_rect_panel);
     TST_CASE(test_axis_dynamic_segment_draw_count);
+    TST_CASE(test_panel_axes_2d_desc);
+    TST_CASE(test_panel_set_axes_2d);
     TST_CASE(test_axis_descriptor_abi_rejects_invalid_structs);
     return 0;
 }

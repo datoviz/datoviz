@@ -35,6 +35,7 @@
 
 #define DVZ_AXIS_TICK_POLICY_KNOWN_FLAGS 0u
 #define DVZ_AXIS_STYLE_KNOWN_FLAGS 0u
+#define DVZ_PANEL_AXES_2D_DESC_KNOWN_FLAGS 0u
 
 
 static bool _axis_tick_policy_validate(const DvzAxisTickPolicy* policy)
@@ -59,6 +60,22 @@ static bool _axis_style_validate(const DvzAxisStyle* style)
         log_error("invalid axis style ABI");
         return false;
     }
+    return true;
+}
+
+
+static bool _panel_axes_2d_desc_validate(const DvzPanelAxes2DDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzPanelAxes2DDesc, DVZ_PANEL_AXES_2D_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid panel 2D axes descriptor ABI");
+        return false;
+    }
+    if (!_axis_tick_policy_validate(&desc->tick_policy) || !_axis_style_validate(&desc->x_style) ||
+        !_axis_style_validate(&desc->y_style))
+        return false;
     return true;
 }
 
@@ -462,6 +479,67 @@ DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim)
     axis->enabled = true;
     _axis_mark_dirty(axis);
     return axis;
+}
+
+
+/**
+ * Return the default 2D panel axes descriptor.
+ *
+ * @return default 2D axes descriptor
+ */
+DvzPanelAxes2DDesc dvz_panel_axes_2d_desc(void)
+{
+    DvzAxisStyle x_style = _axis_default_style();
+    DvzAxisStyle y_style = _axis_default_style();
+    x_style.show_grid = true;
+    y_style.show_grid = true;
+
+    return (DvzPanelAxes2DDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzPanelAxes2DDesc),
+        .x_label = NULL,
+        .y_label = NULL,
+        .tick_policy = _axis_default_tick_policy(),
+        .x_style = x_style,
+        .y_style = y_style,
+    };
+}
+
+
+/**
+ * Apply common 2D axes defaults to a panel-owned X/Y axis pair.
+ *
+ * @param panel the panel
+ * @param desc axes descriptor, or NULL for defaults
+ * @return whether the axes were updated
+ */
+bool dvz_panel_set_axes_2d(DvzPanel* panel, const DvzPanelAxes2DDesc* desc)
+{
+    if (panel == NULL)
+        return false;
+    DvzPanelAxes2DDesc resolved = desc != NULL ? *desc : dvz_panel_axes_2d_desc();
+    if (!_panel_axes_2d_desc_validate(&resolved))
+        return false;
+
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    if (x_axis == NULL || y_axis == NULL)
+        return false;
+
+    if (!dvz_axis_set_tick_policy(x_axis, &resolved.tick_policy))
+        return false;
+    if (!dvz_axis_set_tick_policy(y_axis, &resolved.tick_policy))
+        return false;
+    if (!dvz_axis_set_style(x_axis, &resolved.x_style))
+        return false;
+    if (!dvz_axis_set_style(y_axis, &resolved.y_style))
+        return false;
+    if (!dvz_axis_set_label(x_axis, resolved.x_label))
+        return false;
+    if (!dvz_axis_set_label(y_axis, resolved.y_label))
+        return false;
+    if (!dvz_axis_set_visible(x_axis, true))
+        return false;
+    return dvz_axis_set_visible(y_axis, true);
 }
 
 

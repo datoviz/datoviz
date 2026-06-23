@@ -1175,6 +1175,30 @@ DVZ_EXPORT DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim);
 
 
 /**
+ * Return the default 2D panel axes descriptor.
+ *
+ * The descriptor enables grid lines in the default X/Y axis styles and leaves labels empty.
+ *
+ * @return default 2D axes descriptor
+ */
+DVZ_EXPORT DvzPanelAxes2DDesc dvz_panel_axes_2d_desc(void);
+
+
+/**
+ * Apply common 2D axes defaults to a panel-owned X/Y axis pair.
+ *
+ * This helper fetches the panel-owned X/Y axes, applies one tick policy to both axes, applies the
+ * independent X/Y styles, sets labels, and makes both axes visible. Passing NULL uses
+ * dvz_panel_axes_2d_desc().
+ *
+ * @param panel the panel
+ * @param desc axes descriptor, or NULL for defaults
+ * @return whether the axes were updated
+ */
+DVZ_EXPORT bool dvz_panel_set_axes_2d(DvzPanel* panel, const DvzPanelAxes2DDesc* desc);
+
+
+/**
  * Return the default axis tick policy.
  *
  * @return default axis tick policy
