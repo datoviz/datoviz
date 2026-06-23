@@ -435,11 +435,6 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
 
-    bool ok = dvz_panel_set_reserve(
-        panel, &(DvzPanelReserve){.left_px = 56.0f, .right_px = 16.0f, .bottom_px = 36.0f,
-                                        .top_px = 12.0f});
-    EXAMPLE_CHECK(ok, "dvz_panel_set_reserve() failed");
-
     int rc = 0;
     if (!raw_probe)
     {
@@ -459,7 +454,7 @@ int main(int argc, char** argv)
     ticks.target_count = 11;
     ticks.min_pixel_spacing = 75.0f;
     ticks.minor_per_interval = 0;
-    ok = dvz_axis_set_tick_policy(x_axis, &ticks);
+    bool ok = dvz_axis_set_tick_policy(x_axis, &ticks);
     EXAMPLE_CHECK(ok, "dvz_axis_set_tick_policy() failed for X");
     ok = dvz_axis_set_tick_policy(y_axis, &ticks);
     EXAMPLE_CHECK(ok, "dvz_axis_set_tick_policy() failed for Y");

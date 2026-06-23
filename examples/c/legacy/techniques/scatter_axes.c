@@ -212,10 +212,6 @@ int main(int argc, char** argv)
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.08f, 0.06f, 0.86f, 0.86f});
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.07f, 0.08f, 0.11f, 1.0f));
-    bool ok = dvz_panel_set_reserve(
-        panel, &(DvzPanelReserve){.left_px = 56.0f, .right_px = 0.0f, .bottom_px = 54.0f,
-                                        .top_px = 0.0f});
-    EXAMPLE_CHECK(ok, "dvz_panel_set_reserve() failed");
 
     DvzVisual* visual = dvz_point(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_point() failed");

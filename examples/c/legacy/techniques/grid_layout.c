@@ -194,10 +194,6 @@ int main(int argc, char** argv)
     for (uint32_t i = 0; i < PLOT_COUNT; i++)
         EXAMPLE_CHECK(panels[i] != NULL, "plot panel creation failed");
 
-    ok = dvz_panel_set_reserve(
-        panels[0], &(DvzPanelReserve){.left_px = 40.0f, .bottom_px = 24.0f});
-    EXAMPLE_CHECK(ok, "dvz_panel_set_reserve() failed");
-
     dvz_panel_set_background_color(panels[0], dvz_color_from_unit(0.045f, 0.060f, 0.075f, 1.0f));
     dvz_panel_set_background_color(panels[1], dvz_color_from_unit(0.070f, 0.055f, 0.050f, 1.0f));
     dvz_panel_set_background_color(panels[2], dvz_color_from_unit(0.055f, 0.060f, 0.045f, 1.0f));
