@@ -212,6 +212,96 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
 
 
 /**
+ * Verify user scale affects built-in marker edge widths in material uploads.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_scene_dpi_user_scale_marker_edge_width(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 400, 300, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel_full(figure);
+    AT(panel != NULL);
+
+    DvzVisual* marker = dvz_marker(scene, 0);
+    AT(marker != NULL);
+
+    DvzMarkerStyle style = dvz_marker_style();
+    style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
+    style.stroke_width = 2.75f;
+    AT(dvz_marker_set_style(marker, &style) == 0);
+
+    vec3 pos[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor color[1] = {{255, 255, 255, 255}};
+    float diameter[1] = {24.0f};
+    float angle[1] = {0.0f};
+    uint32_t symbol[1] = {DVZ_SYMBOL_DISC};
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = pos, .item_count = 1},
+        {.attr_name = "color", .data = color, .item_count = 1},
+        {.attr_name = "diameter", .data = diameter, .item_count = 1},
+        {.attr_name = "angle", .data = angle, .item_count = 1},
+        {.attr_name = "symbol", .data = symbol, .item_count = 1},
+    };
+    AT(dvz_visual_set_data_many(marker, updates, DVZ_ARRAY_COUNT(updates)) == 0);
+    AT(dvz_panel_add_visual(panel, marker, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 1024 * 1024;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 400;
+    cfg.target_height = 300;
+    cfg.user_scale = 2.0f;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool found_material_params = false;
+    const uint32_t count = dvz_drp2_stream_count(stream);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_WRITE_BUFFER ||
+            cmd->u.write_buffer.size != sizeof(DvzSceneMaterialParams))
+        {
+            continue;
+        }
+
+        const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
+        if (label == NULL || strstr(label, "material_params") == NULL)
+            continue;
+
+        const DvzSceneMaterialParams* params =
+            (const DvzSceneMaterialParams*)cmd->u.write_buffer.data_raw;
+        ANN(params);
+        AC(params->params[0], style.stroke_width * cfg.user_scale, 1e-6f);
+        found_material_params = true;
+    }
+    AT(found_material_params);
+
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Verify user scale affects generated axis segment widths.
  *
  * @param suite the active test suite
@@ -493,6 +583,7 @@ int test_scene_dpi(TstSuite* suite)
     ANN(suite);
     const char* tags = "scene,dpi";
     TST_CASE(test_scene_dpi_physical_viewport_and_screen_scale);
+    TST_CASE(test_scene_dpi_user_scale_marker_edge_width);
     TST_CASE(test_scene_dpi_user_scale_axis_segment_width);
     TST_CASE(test_scene_dpi_user_scale_axis_text_gap);
     TST_CASE(test_scene_dpi_user_scale_panel_margin);

@@ -34,6 +34,8 @@ typedef struct DvzVisualLowering
     bool has_point_like_kind;
     bool needs_material_params;
     bool point_style_enabled;
+    /* TODO: replace this coarse flag with field-level payload unit metadata; see
+     * agents/now/HANDOFF_USER_SCALE_STYLE_UNITS.md. */
     bool material_params_screen_scaled;
     bool needs_vector_params_sync;
     const char* draw_position_attr;

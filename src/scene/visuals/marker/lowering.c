@@ -47,6 +47,7 @@ bool _scene_marker_visual_lowering(const DvzVisual* visual, DvzVisualLowering* o
     out->needs_material_params =
         _visual_family_state(visual)->symbol_source_kind == DVZ_SYMBOL_SOURCE_NONE ||
         _visual_family_state(visual)->symbol_source_kind == DVZ_SYMBOL_SOURCE_BUILTIN;
+    out->material_params_screen_scaled = out->needs_material_params;
     return true;
 }
 
