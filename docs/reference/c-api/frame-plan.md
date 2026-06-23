@@ -106,7 +106,7 @@ Return the default capability snapshot.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:71._
+_Declared in `include/datoviz/scene/frame_plan.h`:73._
 
 ### `dvz_capability_snapshot_copy()`
 
@@ -126,7 +126,7 @@ Copy a capability snapshot.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:82._
+_Declared in `include/datoviz/scene/frame_plan.h`:84._
 
 ## Diagnostic
 
@@ -149,7 +149,7 @@ Add a diagnostic message.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:102._
+_Declared in `include/datoviz/scene/frame_plan.h`:104._
 
 ### `dvz_diagnostic_report_count()`
 
@@ -168,7 +168,7 @@ Return a diagnostic count.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:112._
+_Declared in `include/datoviz/scene/frame_plan.h`:114._
 
 ### `dvz_diagnostic_report_get()`
 
@@ -189,7 +189,7 @@ Return a diagnostic message.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:124._
+_Declared in `include/datoviz/scene/frame_plan.h`:126._
 
 ### `dvz_diagnostic_report_init()`
 
@@ -207,7 +207,7 @@ Initialize a diagnostic report.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:91._
+_Declared in `include/datoviz/scene/frame_plan.h`:93._
 
 ## Frame
 
@@ -230,7 +230,7 @@ Create an empty FramePlan.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:135._
+_Declared in `include/datoviz/scene/frame_plan.h`:137._
 
 ### `dvz_frame_plan_clear()`
 
@@ -253,7 +253,7 @@ Append a clear-only render node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:397._
+_Declared in `include/datoviz/scene/frame_plan.h`:403._
 
 ### `dvz_frame_plan_compute()`
 
@@ -280,7 +280,7 @@ Append a compute node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:347._
+_Declared in `include/datoviz/scene/frame_plan.h`:353._
 
 ### `dvz_frame_plan_compute_read()`
 
@@ -301,7 +301,7 @@ Add a resource read to the most recent compute node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:359._
+_Declared in `include/datoviz/scene/frame_plan.h`:365._
 
 ### `dvz_frame_plan_compute_write()`
 
@@ -322,7 +322,7 @@ Add a resource write to the most recent compute node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:370._
+_Declared in `include/datoviz/scene/frame_plan.h`:376._
 
 ### `dvz_frame_plan_copy()`
 
@@ -347,7 +347,7 @@ Append a copy node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:421._
+_Declared in `include/datoviz/scene/frame_plan.h`:427._
 
 ### `dvz_frame_plan_copy_desc()`
 
@@ -365,7 +365,7 @@ Related: [`dvz_frame_plan_copy()`](#dvz_frame_plan_copy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:64._
+_Declared in `include/datoviz/scene/frame_plan.h`:66._
 
 ### `dvz_frame_plan_copy_ex()`
 
@@ -386,7 +386,7 @@ Append an explicit texture-to-buffer copy node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:433._
+_Declared in `include/datoviz/scene/frame_plan.h`:439._
 
 ### `dvz_frame_plan_destroy()`
 
@@ -404,7 +404,7 @@ Destroy a FramePlan.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:144._
+_Declared in `include/datoviz/scene/frame_plan.h`:146._
 
 ### `dvz_frame_plan_emit_config()`
 
@@ -420,7 +420,7 @@ Return the default FramePlan-to-DRP2 emission configuration.
 
 Raw ctypes: skipped by binding policy.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:478._
+_Declared in `include/datoviz/scene/frame_plan.h`:484._
 
 ### `dvz_frame_plan_emit_drp2()`
 
@@ -443,7 +443,7 @@ Emit a DRP2 command stream from a FramePlan in fixture mode.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:469._
+_Declared in `include/datoviz/scene/frame_plan.h`:475._
 
 ### `dvz_frame_plan_emit_drp2_ex()`
 
@@ -468,7 +468,7 @@ Emit a DRP2 command stream from a FramePlan with explicit fixture options.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:490._
+_Declared in `include/datoviz/scene/frame_plan.h`:496._
 
 ### `dvz_frame_plan_emitter()`
 
@@ -484,7 +484,7 @@ Create a persistent FramePlan-to-DRP2 emitter for runtime-mode streams.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:500._
+_Declared in `include/datoviz/scene/frame_plan.h`:506._
 
 ### `dvz_frame_plan_emitter_destroy()`
 
@@ -502,7 +502,7 @@ Destroy a persistent FramePlan-to-DRP2 emitter.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:508._
+_Declared in `include/datoviz/scene/frame_plan.h`:514._
 
 ### `dvz_frame_plan_emitter_emit_drp2()`
 
@@ -529,7 +529,7 @@ Emit a runtime-mode DRP2 command stream from a FramePlan.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:521._
+_Declared in `include/datoviz/scene/frame_plan.h`:527._
 
 ### `dvz_frame_plan_emitter_emit_drp2_packets()`
 
@@ -545,7 +545,7 @@ DvzFramePlanPacketResult * dvz_frame_plan_emitter_emit_drp2_packets(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `DvzFramePlanPacketResult *` | an owned packet result; destroy with dvz_frame_plan_packet_result_destroy() |
+| return | `DvzFramePlanPacketResult *` | an owned packet result, or NULL on allocation failure; destroy with |
 | `emitter` | `DvzFramePlanEmitter *` | the persistent FramePlan-to-DRP2 emitter |
 | `plan` | `const DvzFramePlan *` | the FramePlan |
 | `caps` | `const DvzCapabilitySnapshot *` | the capability snapshot |
@@ -557,9 +557,11 @@ Emit split setup/update/frame DRP2 binary packets from a FramePlan.
 This native boundary is the first step toward the break-compatible WebGPU/WASM runtime path. JSON
 export remains separate fixture/debug output and is not used here.
 
+dvz_frame_plan_packet_result_destroy()
+
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_packets.h`:68._
+_Declared in `include/datoviz/scene/frame_packets.h`:70._
 
 ### `dvz_frame_plan_emitter_object_id()`
 
@@ -579,10 +581,12 @@ uint64_t dvz_frame_plan_emitter_object_id(
 Look up the DRP2 object id assigned to an emitter-internal key.
 
 Returns the id previously assigned to `key`, or 0 if the key has not been allocated yet.
+Debug/test-only advanced helper; string keys are internal emitter implementation details and are
+not stable public resource names.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:536._
+_Declared in `include/datoviz/scene/frame_plan.h`:544._
 
 ### `dvz_frame_plan_json()`
 
@@ -601,7 +605,7 @@ Serialize a FramePlan as deterministic debug JSON.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:457._
+_Declared in `include/datoviz/scene/frame_plan.h`:463._
 
 ### `dvz_frame_plan_json_destroy()`
 
@@ -619,7 +623,7 @@ Destroy a JSON string returned by dvz_frame_plan_json().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:545._
+_Declared in `include/datoviz/scene/frame_plan.h`:553._
 
 ### `dvz_frame_plan_node_count()`
 
@@ -638,7 +642,7 @@ Return a FramePlan node count.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:154._
+_Declared in `include/datoviz/scene/frame_plan.h`:156._
 
 ### `dvz_frame_plan_node_get()`
 
@@ -659,7 +663,7 @@ Return a FramePlan node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:166._
+_Declared in `include/datoviz/scene/frame_plan.h`:168._
 
 ### `dvz_frame_plan_node_type()`
 
@@ -678,7 +682,7 @@ Return a FramePlan node type.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:176._
+_Declared in `include/datoviz/scene/frame_plan.h`:178._
 
 ### `dvz_frame_plan_packet_result_destroy()`
 
@@ -696,7 +700,7 @@ Destroy a split packet result.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_packets.h`:78._
+_Declared in `include/datoviz/scene/frame_packets.h`:80._
 
 ### `dvz_frame_plan_packet_result_frame_index()`
 
@@ -715,7 +719,7 @@ Return the frame index associated with the packet result.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_packets.h`:107._
+_Declared in `include/datoviz/scene/frame_packets.h`:109._
 
 ### `dvz_frame_plan_packet_result_get()`
 
@@ -746,7 +750,7 @@ Empty phases return true with NULL packet and zero sizes.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_packets.h`:124._
+_Declared in `include/datoviz/scene/frame_packets.h`:126._
 
 ### `dvz_frame_plan_packet_result_resource_version()`
 
@@ -765,7 +769,7 @@ Return the resource version associated with the packet result.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_packets.h`:97._
+_Declared in `include/datoviz/scene/frame_packets.h`:99._
 
 ### `dvz_frame_plan_packet_result_status()`
 
@@ -784,7 +788,7 @@ Return the result status.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_packets.h`:88._
+_Declared in `include/datoviz/scene/frame_packets.h`:90._
 
 ### `dvz_frame_plan_readback()`
 
@@ -807,7 +811,7 @@ Append a readback node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:447._
+_Declared in `include/datoviz/scene/frame_plan.h`:453._
 
 ### `dvz_frame_plan_render()`
 
@@ -832,7 +836,7 @@ Append a render node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:383._
+_Declared in `include/datoviz/scene/frame_plan.h`:389._
 
 ### `dvz_frame_plan_render_pass_role()`
 
@@ -851,7 +855,7 @@ Return a FramePlan render node pass role.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:187._
+_Declared in `include/datoviz/scene/frame_plan.h`:189._
 
 ### `dvz_frame_plan_render_visual()`
 
@@ -872,7 +876,7 @@ Add a visual to the most recent render node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:408._
+_Declared in `include/datoviz/scene/frame_plan.h`:414._
 
 ### `dvz_frame_plan_upload()`
 
@@ -899,7 +903,7 @@ Append an upload node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:201._
+_Declared in `include/datoviz/scene/frame_plan.h`:203._
 
 ### `dvz_frame_plan_upload_bytes()`
 
@@ -926,9 +930,13 @@ _Bool dvz_frame_plan_upload_bytes(
 
 Append an upload node with actual data to be encoded into the DRP2 stream.
 
+Buffer uploads copy the bytes into emitted DRP2 packet/stream storage during emission. Texture
+uploads keep the source pointer borrowed in the emitted in-process stream until runtime execution
+or packet encoding copies it into an arena. Keep texture payloads alive through that boundary.
+
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:218._
+_Declared in `include/datoviz/scene/frame_plan.h`:224._
 
 ### `dvz_frame_plan_upload_set_texture_3d_allocation_extent()`
 
@@ -953,7 +961,7 @@ Tag the most recently appended 3D texture upload node with the full allocation e
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:304._
+_Declared in `include/datoviz/scene/frame_plan.h`:310._
 
 ### `dvz_frame_plan_upload_set_texture_3d_extent()`
 
@@ -978,7 +986,7 @@ Mark the most recently appended upload node as a 3D texture write of the given e
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:264._
+_Declared in `include/datoviz/scene/frame_plan.h`:270._
 
 ### `dvz_frame_plan_upload_set_texture_3d_region()`
 
@@ -1003,7 +1011,7 @@ Tag the most recently appended texture upload node with a 3D sub-region origin.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:332._
+_Declared in `include/datoviz/scene/frame_plan.h`:338._
 
 ### `dvz_frame_plan_upload_set_texture_allocation_extent()`
 
@@ -1029,7 +1037,7 @@ extent without relying on prior cached runtime state.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:291._
+_Declared in `include/datoviz/scene/frame_plan.h`:297._
 
 ### `dvz_frame_plan_upload_set_texture_extent()`
 
@@ -1057,7 +1065,7 @@ separately, this write extent is also used as the texture allocation extent.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:251._
+_Declared in `include/datoviz/scene/frame_plan.h`:257._
 
 ### `dvz_frame_plan_upload_set_texture_format()`
 
@@ -1080,7 +1088,7 @@ Tag the most recently appended texture upload node with an explicit format.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:276._
+_Declared in `include/datoviz/scene/frame_plan.h`:282._
 
 ### `dvz_frame_plan_upload_set_texture_region()`
 
@@ -1106,7 +1114,7 @@ size, while this call sets the destination origin within the texture.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:319._
+_Declared in `include/datoviz/scene/frame_plan.h`:325._
 
 ### `dvz_frame_plan_upload_set_topology()`
 
@@ -1130,4 +1138,4 @@ Pass `UINT32_MAX` to clear the hint.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:234._
+_Declared in `include/datoviz/scene/frame_plan.h`:240._

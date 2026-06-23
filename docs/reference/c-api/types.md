@@ -639,6 +639,12 @@ typedef struct DvzOverlayRichTextDesc DvzOverlayRichTextDesc;
 typedef struct DvzPanel DvzPanel;
 ```
 
+#### `DvzPanelAxes2DDesc`
+
+```c
+typedef struct DvzPanelAxes2DDesc DvzPanelAxes2DDesc;
+```
+
 #### `DvzPanelBackgroundDesc`
 
 ```c
@@ -2554,6 +2560,20 @@ struct DvzOverlayRichTextDesc {
 typedef struct DvzPanel DvzPanel;
 ```
 
+#### `DvzPanelAxes2DDesc`
+
+```c
+struct DvzPanelAxes2DDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    const char * x_label;
+    const char * y_label;
+    DvzAxisTickPolicy tick_policy;
+    DvzAxisStyle x_style;
+    DvzAxisStyle y_style;
+};
+```
+
 #### `DvzPanelBackgroundDesc`
 
 ```c
@@ -2657,6 +2677,8 @@ struct DvzQueryResult {
     uint64_t freshness_serial;
     DvzQueryStatus status;
     _Bool hit;
+    DvzId scene_id;
+    DvzId figure_id;
     uint64_t panel_id;
     double[2] panel_position;
     uint32_t[2] framebuffer_position;
@@ -5684,7 +5706,6 @@ struct DvzGuiConfig {
     uint32_t flags;
     uint32_t gui_flags;
     const char * ini_path;
-    DvzFontDefaults font_defaults;
 };
 ```
 
@@ -7872,8 +7893,8 @@ struct DvzCameraDesc {
     vec3 target;
     vec3 up;
     float fov_y;
-    float near;
-    float far;
+    float near_clip;
+    float far_clip;
     float ortho_height;
 };
 ```
