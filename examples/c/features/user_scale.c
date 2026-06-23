@@ -213,9 +213,6 @@ static bool _add_axes(DvzPanel* panel)
     DvzPanelAxes2DDesc axes = dvz_panel_axes_2d_desc();
     axes.x_label = "x";
     axes.y_label = "amplitude";
-    axes.tick_policy.target_count = 7;
-    axes.tick_policy.min_pixel_spacing = 110.0f;
-    axes.tick_policy.minor_per_interval = 2;
 
     if (!dvz_panel_set_axes_2d(panel, &axes))
         return false;

@@ -194,17 +194,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (x_axis == NULL || y_axis == NULL)
         return false;
 
-    DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
-    ticks.target_count = 6;
-    ticks.min_pixel_spacing = 110.0f;
-    ticks.minor_per_interval = 3;
-    ok = dvz_axis_set_tick_policy(x_axis, &ticks);
-    if (!ok)
-        return false;
-    ok = dvz_axis_set_tick_policy(y_axis, &ticks);
-    if (!ok)
-        return false;
-
     ok = example_graphite_cyan_apply_axis_style(x_axis, false, NULL);
     if (!ok)
         return false;
