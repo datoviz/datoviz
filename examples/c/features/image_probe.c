@@ -802,12 +802,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (panel == NULL)
         return false;
 
-    bool ok = dvz_panel_set_reserve(
-        panel, &(DvzPanelReserve){.left_px = 18.0f, .right_px = 18.0f, .bottom_px = 16.5f,
-                                        .top_px = 13.5f});
-    if (!ok)
-        return false;
-    ok = _set_probe_domain(panel);
+    bool ok = _set_probe_domain(panel);
     if (!ok)
         return false;
 

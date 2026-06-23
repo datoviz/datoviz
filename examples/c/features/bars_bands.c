@@ -67,10 +67,6 @@ static bool _configure_panel(DvzPanel* panel)
     ANN(panel);
 
     example_graphite_cyan_set_panel_background(panel);
-    if (!dvz_panel_set_reserve(
-            panel, &(DvzPanelReserve){
-                       .left_px = 48.0f, .right_px = 20.0f, .bottom_px = 45.0f, .top_px = 18.0f}))
-        return false;
     if (dvz_panel_set_domain(panel, DVZ_DIM_X, -0.5, 8.5) != 0)
         return false;
     if (dvz_panel_set_domain(panel, DVZ_DIM_Y, -0.35, 2.25) != 0)

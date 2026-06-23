@@ -264,11 +264,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         goto error;
     example_graphite_cyan_set_panel_background(panel);
 
-    bool ok = dvz_panel_set_reserve(
-        panel, &(DvzPanelReserve){.left_px = 18.0f, .right_px = 16.0f, .bottom_px = 16.5f,
-                                        .top_px = 13.5f});
-    if (!ok)
-        goto error;
     int rc = dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 1.0);
     if (rc != 0)
         goto error;
@@ -280,7 +275,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (scale == NULL)
         goto error;
 
-    ok = _add_scalar_image(ctx->scene, panel, scale, state->values);
+    bool ok = _add_scalar_image(ctx->scene, panel, scale, state->values);
     if (!ok)
         goto error;
 
