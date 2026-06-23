@@ -141,6 +141,35 @@ static DvzStreamConfig canvas_stream_config(const DvzCanvas* canvas)
 
 
 /**
+ * Resolve video sink defaults against the current stream configuration.
+ *
+ * @param stream_cfg stream configuration providing inherited frame geometry and cadence
+ * @param cfg optional sink configuration
+ * @returns sink configuration with inherited encoder width, height, and FPS filled in
+ */
+static DvzVideoSinkConfig
+canvas_resolve_video_sink_config(const DvzStreamConfig* stream_cfg, const DvzVideoSinkConfig* cfg)
+{
+    ANN(stream_cfg);
+    DvzVideoSinkConfig resolved = cfg ? *cfg : dvz_video_sink_config();
+    if (resolved.encoder.width == 0)
+    {
+        resolved.encoder.width = stream_cfg->width;
+    }
+    if (resolved.encoder.height == 0)
+    {
+        resolved.encoder.height = stream_cfg->height;
+    }
+    if (resolved.encoder.fps == 0)
+    {
+        resolved.encoder.fps = stream_cfg->fps;
+    }
+    return resolved;
+}
+
+
+
+/**
  * Capture the current canvas frame into a temporary RGBA buffer.
  *
  * @param user_data canvas pointer
@@ -269,30 +298,8 @@ static int canvas_create_stream_with_sinks(
             dvz_stream_destroy(stream);
             return -1;
         }
-        DvzVideoSinkConfig sink_cfg = cfg ? *cfg : dvz_video_sink_config();
+        DvzVideoSinkConfig sink_cfg = canvas_resolve_video_sink_config(&stream_cfg, cfg);
         sink_cfg.capture_mode = capture_mode;
-        if (cfg == NULL)
-        {
-            if (stream_cfg.width > 0)
-            {
-                sink_cfg.encoder.width = stream_cfg.width;
-            }
-            if (stream_cfg.height > 0)
-            {
-                sink_cfg.encoder.height = stream_cfg.height;
-            }
-        }
-        else
-        {
-            if (sink_cfg.encoder.width == 0 && stream_cfg.width > 0)
-            {
-                sink_cfg.encoder.width = stream_cfg.width;
-            }
-            if (sink_cfg.encoder.height == 0 && stream_cfg.height > 0)
-            {
-                sink_cfg.encoder.height = stream_cfg.height;
-            }
-        }
         if (capture_mode == DVZ_VIDEO_CAPTURE_CPU_READBACK && sink_cfg.capture_rgba == NULL)
         {
             sink_cfg.capture_rgba = canvas_capture_rgba_callback;

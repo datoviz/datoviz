@@ -86,9 +86,9 @@ typedef struct
 {
     uint32_t struct_size;
     uint32_t flags;
-    uint32_t width;
-    uint32_t height;
-    uint32_t fps;
+    uint32_t width;  // 0 means inherit from the stream/canvas, or 1080p for standalone encoders.
+    uint32_t height; // 0 means inherit from the stream/canvas, or 1080p for standalone encoders.
+    uint32_t fps;    // 0 means inherit from the stream/canvas, or 60 FPS for standalone encoders.
     VkFormat color_format;
     DvzVideoCodec codec;
     DvzVideoMux mux;
@@ -123,7 +123,10 @@ EXTERN_C_ON
 /**
  * Return the encoder configuration used when no overrides are supplied.
  *
- * @returns a config tuned for 1080p60 HEVC capture with MP4 streaming muxing
+ * Width, height, and FPS are zero in the returned initializer. Canvas/stream users inherit those
+ * fields from the stream; standalone encoder creation resolves them to 1080p60.
+ *
+ * @returns a config tuned for inherited-size HEVC capture with MP4 streaming muxing
  */
 DVZ_EXPORT DvzVideoEncoderConfig dvz_video_encoder_config(void);
 
@@ -131,6 +134,9 @@ DVZ_EXPORT DvzVideoEncoderConfig dvz_video_encoder_config(void);
 
 /**
  * Return the default video sink configuration that wraps the encoder defaults.
+ *
+ * The nested encoder leaves width, height, and FPS unresolved so canvas/stream attachment can
+ * inherit the active stream geometry and cadence.
  *
  * @returns a sink config whose encoder uses `dvz_video_encoder_config()` and null
  * bitstream

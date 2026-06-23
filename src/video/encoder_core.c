@@ -116,6 +116,33 @@ static void video_encoder_release(DvzVideoEncoder* enc)
 
 
 
+/**
+ * Resolve public zero defaults for standalone encoder creation.
+ *
+ * @param cfg optional user configuration
+ * @returns concrete encoder configuration suitable for backend initialization
+ */
+static DvzVideoEncoderConfig
+video_encoder_resolve_config(const DvzVideoEncoderConfig* cfg)
+{
+    DvzVideoEncoderConfig resolved = cfg ? *cfg : dvz_video_encoder_config();
+    if (resolved.width == 0)
+    {
+        resolved.width = WIDTH;
+    }
+    if (resolved.height == 0)
+    {
+        resolved.height = HEIGHT;
+    }
+    if (resolved.fps == 0)
+    {
+        resolved.fps = FPS;
+    }
+    return resolved;
+}
+
+
+
 /*************************************************************************************************/
 /*  Front-end API                                                                                */
 /*************************************************************************************************/
@@ -124,9 +151,9 @@ DvzVideoEncoderConfig dvz_video_encoder_config(void)
 {
     DvzVideoEncoderConfig cfg = {
         DVZ_STRUCT_INIT_FIELDS(DvzVideoEncoderConfig),
-        .width = WIDTH,
-        .height = HEIGHT,
-        .fps = FPS,
+        .width = 0,
+        .height = 0,
+        .fps = 0,
         .color_format = DVZ_DEFAULT_COLOR_FORMAT,
         .codec = DVZ_VIDEO_CODEC_HEVC,
         .mux = DVZ_VIDEO_MUX_MP4_STREAMING,
@@ -147,7 +174,7 @@ DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncod
     DvzVideoEncoder* enc = (DvzVideoEncoder*)dvz_calloc(1, sizeof(DvzVideoEncoder));
     ANN(enc);
     enc->device = device;
-    enc->cfg = cfg ? *cfg : dvz_video_encoder_config();
+    enc->cfg = video_encoder_resolve_config(cfg);
     enc->memory_fd = -1;
     enc->wait_semaphore_fd = -1;
     enc->mp4_writer = NULL;

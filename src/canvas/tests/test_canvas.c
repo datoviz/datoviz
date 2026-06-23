@@ -945,9 +945,6 @@ static int test_canvas_offscreen_video_sink_cpu_readback(TstContext* suite, cons
     DvzVideoSinkConfig sink_cfg = dvz_video_sink_config();
     sink_cfg.capture_mode = DVZ_VIDEO_CAPTURE_CPU_READBACK;
     sink_cfg.encoder.backend = "auto";
-    sink_cfg.encoder.width = 320;
-    sink_cfg.encoder.height = 240;
-    sink_cfg.encoder.fps = 30;
     sink_cfg.encoder.mux = DVZ_VIDEO_MUX_NONE;
     sink_cfg.encoder.mp4_path = "/tmp/dvz_canvas_offscreen_video_test.mp4";
     sink_cfg.encoder.raw_path = "/tmp/dvz_canvas_offscreen_video_test.h26x";
@@ -1674,9 +1671,6 @@ static int test_canvas_offscreen_video_wait_monotonic_across_rebuild(TstContext*
     DvzVideoSinkConfig sink_cfg = dvz_video_sink_config();
     sink_cfg.capture_mode = DVZ_VIDEO_CAPTURE_CPU_READBACK;
     sink_cfg.encoder.backend = "auto";
-    sink_cfg.encoder.width = 320;
-    sink_cfg.encoder.height = 240;
-    sink_cfg.encoder.fps = 30;
     sink_cfg.encoder.mux = DVZ_VIDEO_MUX_NONE;
     sink_cfg.encoder.mp4_path = "/tmp/dvz_canvas_offscreen_video_wait_test.mp4";
     sink_cfg.encoder.raw_path = "/tmp/dvz_canvas_offscreen_video_wait_test.h26x";
