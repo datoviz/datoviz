@@ -1283,7 +1283,7 @@ int test_scene_visual_depth_test(TstContext* suite, const TstCase* item)
     float diameters[1] = {8.0f};
     AT(dvz_visual_set_data(point, "position", positions, 1) == 0);
     AT(dvz_visual_set_data(point, "color", colors, 1) == 0);
-    AT(dvz_visual_set_data(point, "diameter", diameters, 1) == 0);
+    AT(dvz_visual_set_data(point, "diameter_px", diameters, 1) == 0);
     AT(dvz_visual_set_alpha_mode(point, DVZ_ALPHA_BLENDED) == 0);
     AT(dvz_visual_set_depth_test(point, false) == 0);
     AT(dvz_panel_add_visual(panel, point, NULL) == 0);

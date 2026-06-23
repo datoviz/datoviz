@@ -95,14 +95,14 @@ static bool _add_depth_points(DvzScene* scene, DvzPanel* panel, bool depth_test_
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = POINT_COUNT},
     };
     if (dvz_visual_set_data_many(point, updates, 3) != 0)
         return false;
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
-    style.stroke_width = 2.5f;
+    style.stroke_width_px = 2.5f;
     style.edge_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
     style.edge_color.a = 255;
     if (dvz_point_set_style(point, &style) != 0)

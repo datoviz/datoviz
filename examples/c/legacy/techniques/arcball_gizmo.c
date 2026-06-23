@@ -508,11 +508,11 @@ static bool _append_hub(GizmoMesh* mesh, const GizmoGeometry* geometry)
  * @param path target path arrays
  * @param position point position
  * @param color point color
- * @param stroke_width stroke width in pixels
+ * @param stroke_width_px stroke width in pixels
  * @return true when the point was appended
  */
 static bool _gizmo_path_point(
-    GizmoPath* path, const vec3 position, const DvzColor color, float stroke_width)
+    GizmoPath* path, const vec3 position, const DvzColor color, float stroke_width_px)
 {
     ANN(path);
     ANN(position);
@@ -521,7 +521,7 @@ static bool _gizmo_path_point(
 
     dvz_memcpy(path->positions[path->count], sizeof(vec3), position, sizeof(vec3));
     path->colors[path->count] = color;
-    path->stroke_widths[path->count] = stroke_width;
+    path->stroke_widths[path->count] = stroke_width_px;
     path->count++;
     return true;
 }
@@ -667,7 +667,7 @@ static bool _gizmo_apply_geometry(ArcballGizmoState* state)
             .item_count = state->rings_path->count,
         },
         {
-            .attr_name = "stroke_width",
+            .attr_name = "stroke_width_px",
             .data = state->rings_path->stroke_widths,
             .item_count = state->rings_path->count,
         },

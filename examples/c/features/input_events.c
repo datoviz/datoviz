@@ -535,7 +535,7 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = 5},
         {.attr_name = "color", .data = colors, .item_count = 5},
-        {.attr_name = "diameter", .data = sizes, .item_count = 5},
+        {.attr_name = "diameter_px", .data = sizes, .item_count = 5},
     };
     if (dvz_visual_set_data_many(points, updates, 3) != 0)
         return false;

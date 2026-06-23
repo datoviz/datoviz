@@ -171,7 +171,7 @@ Keep `tube` as a future first-class family candidate rather than a `path` flag.
 
 Reason:
 
-1. it adds a 3D `radius` contract rather than a screen-space `stroke_width` contract,
+1. it adds a 3D `radius` contract rather than a screen-space `stroke_width_px` contract,
 2. its fragments can represent surface points with normals and corrected depth,
 3. it participates in material, transparency, G-buffer, SSAO, and clipping policies differently
    from plain strokes,

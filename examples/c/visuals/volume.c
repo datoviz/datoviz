@@ -313,7 +313,7 @@ static bool _add_boundary_box(DvzScene* scene, DvzPanel* panel, DvzVisual** out)
         {.attr_name = "position_start", .data = start, .item_count = BOX_SEGMENTS},
         {.attr_name = "position_end", .data = end, .item_count = BOX_SEGMENTS},
         {.attr_name = "color", .data = colors, .item_count = BOX_SEGMENTS},
-        {.attr_name = "stroke_width", .data = widths, .item_count = BOX_SEGMENTS},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = BOX_SEGMENTS},
     };
     if (dvz_visual_set_data_many(box, updates, 4) != 0)
         return false;

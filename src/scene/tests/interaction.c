@@ -842,7 +842,7 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     AT(dvz_visual_set_link_keys(point, channel, point_keys, 3) == 0);
     DvzPointStyleDesc point_style = dvz_point_style_desc();
     point_style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
-    point_style.stroke_width = 2.0f;
+    point_style.stroke_width_px = 2.0f;
     point_style.edge_color = (DvzColor){0, 0, 0, 255};
     AT(dvz_point_set_style(point, &point_style) == 0);
     AT(dvz_visual_set_depth_cue(
@@ -864,11 +864,11 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
         {255, 255, 255, 255},
         {255, 255, 255, 255},
     };
-    float pixel_size[3] = {8.0f, 8.0f, 8.0f};
+    float pixel_size_px[3] = {8.0f, 8.0f, 8.0f};
     uint64_t pixel_keys[3] = {60, 20, 70};
     AT(dvz_visual_set_data(pixel, "position", pixel_pos, 3) == 0);
     AT(dvz_visual_set_data(pixel, "color", pixel_color, 3) == 0);
-    AT(dvz_visual_set_data(pixel, "size", pixel_size, 3) == 0);
+    AT(dvz_visual_set_data(pixel, "size", pixel_size_px, 3) == 0);
     AT(dvz_visual_set_link_keys(pixel, channel, pixel_keys, 3) == 0);
     AT(dvz_visual_set_depth_cue(
            pixel,
@@ -1107,7 +1107,7 @@ int test_scene_pixel_hover_selection_item_state(TstContext* suite, const TstCase
     float size[4] = {18.0f, 18.0f, 18.0f, 18.0f};
     AT(dvz_visual_set_data(pixel, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(pixel, "color", colors, 4) == 0);
-    AT(dvz_visual_set_data(pixel, "pixel_size", size, 4) == 0);
+    AT(dvz_visual_set_data(pixel, "pixel_size_px", size, 4) == 0);
     AT(dvz_panel_add_visual(panel, pixel, NULL) == 0);
 
     DvzHover* hover = dvz_hover(
@@ -1923,7 +1923,7 @@ int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstC
     DvzVisualDataView line_width_view = {0};
     AT(dvz_visual_data(hline->line_visual, "position_start", &line_start_view) == 0);
     AT(dvz_visual_data(hline->line_visual, "position_end", &line_end_view) == 0);
-    AT(dvz_visual_data(hline->line_visual, "stroke_width", &line_width_view) == 0);
+    AT(dvz_visual_data(hline->line_visual, "stroke_width_px", &line_width_view) == 0);
     const float* line_start = (const float*)line_start_view.data;
     const float* line_end = (const float*)line_end_view.data;
     const float* line_width = (const float*)line_width_view.data;
@@ -2056,7 +2056,7 @@ int test_scene_bars_prepare_visuals(TstContext* suite, const TstCase* item)
     DvzVisualDataView outline_width_view = {0};
     AT(dvz_visual_data(bars->outline_visual, "position_start", &outline_start_view) == 0);
     AT(dvz_visual_data(bars->outline_visual, "position_end", &outline_end_view) == 0);
-    AT(dvz_visual_data(bars->outline_visual, "stroke_width", &outline_width_view) == 0);
+    AT(dvz_visual_data(bars->outline_visual, "stroke_width_px", &outline_width_view) == 0);
     const float* outline_start = (const float*)outline_start_view.data;
     const float* outline_end = (const float*)outline_end_view.data;
     const float* outline_width = (const float*)outline_width_view.data;
@@ -2141,7 +2141,7 @@ int test_scene_band_prepare_visuals(TstContext* suite, const TstCase* item)
     DvzVisualDataView line_position_view = {0};
     DvzVisualDataView line_width_view = {0};
     AT(dvz_visual_data(band->line_visual, "position", &line_position_view) == 0);
-    AT(dvz_visual_data(band->line_visual, "stroke_width", &line_width_view) == 0);
+    AT(dvz_visual_data(band->line_visual, "stroke_width_px", &line_width_view) == 0);
     const float* line_positions = (const float*)line_position_view.data;
     const float* line_widths = (const float*)line_width_view.data;
     AT(line_position_view.item_count == 4);
@@ -2154,7 +2154,7 @@ int test_scene_band_prepare_visuals(TstContext* suite, const TstCase* item)
     DvzVisualDataView bounds_position_view = {0};
     DvzVisualDataView bounds_width_view = {0};
     AT(dvz_visual_data(band->bounds_visual, "position", &bounds_position_view) == 0);
-    AT(dvz_visual_data(band->bounds_visual, "stroke_width", &bounds_width_view) == 0);
+    AT(dvz_visual_data(band->bounds_visual, "stroke_width_px", &bounds_width_view) == 0);
     const float* bounds_positions = (const float*)bounds_position_view.data;
     const float* bounds_widths = (const float*)bounds_width_view.data;
     AT(bounds_position_view.item_count == 8);
@@ -3059,7 +3059,7 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
     DvzVisualDataUpdate left_updates[] = {
         {.attr_name = "position", .data = left_positions, .item_count = 2},
         {.attr_name = "color", .data = left_colors, .item_count = 2},
-        {.attr_name = "diameter", .data = left_diameters, .item_count = 2},
+        {.attr_name = "diameter_px", .data = left_diameters, .item_count = 2},
     };
     AT(dvz_visual_set_data_many(left_points, left_updates, 3) == 0);
     AT(dvz_panel_add_visual(left, left_points, NULL) == 0);
@@ -3131,7 +3131,7 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
     DvzVisualDataUpdate right_updates[] = {
         {.attr_name = "position", .data = right_positions, .item_count = 3},
         {.attr_name = "color", .data = right_colors, .item_count = 3},
-        {.attr_name = "diameter", .data = right_diameters, .item_count = 3},
+        {.attr_name = "diameter_px", .data = right_diameters, .item_count = 3},
     };
     AT(dvz_visual_set_data_many(right_points, right_updates, 3) == 0);
     AT(dvz_panel_add_visual(right, right_points, NULL) == 0);

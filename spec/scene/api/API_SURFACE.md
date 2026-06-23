@@ -150,7 +150,7 @@ Examples:
 
 ```text
 dvz_polygon_fill_color()
-dvz_polygon_stroke_width()
+dvz_polygon_stroke_width_px()
 dvz_graph_node_sizes()
 dvz_graph_edge_colors()
 ```

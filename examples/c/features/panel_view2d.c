@@ -79,7 +79,7 @@ static bool _add_domain_shape(DvzScene* scene, DvzPanel* panel, DvzColor color)
     DvzVisualDataUpdate path_updates[] = {
         {.attr_name = "position", .data = circle, .item_count = CIRCLE_COUNT},
         {.attr_name = "color", .data = circle_colors, .item_count = CIRCLE_COUNT},
-        {.attr_name = "stroke_width", .data = circle_widths, .item_count = CIRCLE_COUNT},
+        {.attr_name = "stroke_width_px", .data = circle_widths, .item_count = CIRCLE_COUNT},
     };
     if (dvz_visual_set_data_many(path, path_updates, 3) != 0)
         return false;

@@ -49,7 +49,7 @@
 typedef struct GuiCimguiState
 {
     DvzVisual* point;
-    float diameter;
+    float diameter_px;
     bool show_demo;
 } GuiCimguiState;
 
@@ -60,7 +60,7 @@ typedef struct GuiCimguiState
 /*************************************************************************************************/
 
 /**
- * Upload a uniform point diameter.
+ * Upload a uniform point diameter_px.
  *
  * @param state cimgui example state
  */
@@ -70,12 +70,12 @@ static void _gui_cimgui_upload(GuiCimguiState* state)
         return;
 
     float diameters[POINT_COUNT] = {
-        state->diameter,
-        state->diameter,
-        state->diameter,
-        state->diameter,
+        state->diameter_px,
+        state->diameter_px,
+        state->diameter_px,
+        state->diameter_px,
     };
-    if (dvz_visual_set_data(state->point, "diameter", diameters, POINT_COUNT) != 0)
+    if (dvz_visual_set_data(state->point, "diameter_px", diameters, POINT_COUNT) != 0)
         dvz_fprintf(stderr, "gui_cimgui: failed to upload point diameters\n");
 }
 
@@ -116,7 +116,7 @@ static void _gui_cimgui_callback(DvzGui* gui, DvzView* view, void* user_data)
             igText("retained point");
             igEndTable();
         }
-        if (igSliderFloat("Diameter", &state->diameter, 8.0f, 90.0f, "%.1f", 0))
+        if (igSliderFloat("Diameter", &state->diameter_px, 8.0f, 90.0f, "%.1f", 0))
             _gui_cimgui_upload(state);
         (void)igCheckbox("ImGui demo", &state->show_demo);
     }
@@ -150,7 +150,7 @@ int main(int argc, char** argv)
 
     GuiCimguiState state = {
         .point = point,
-        .diameter = 44.0f,
+        .diameter_px = 44.0f,
     };
     vec3 positions[POINT_COUNT] = {
         {-0.60f, -0.30f, 0.0f},

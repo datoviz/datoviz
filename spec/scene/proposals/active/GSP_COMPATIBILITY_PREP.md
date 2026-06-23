@@ -225,7 +225,7 @@ A GSP-facing agent should be able to write a table like:
 ```text
 GSP family point
   -> Datoviz constructor dvz_point()
-  -> attributes: position, color, diameter, item_state, edge_color, stroke_width
+  -> attributes: position, color, diameter_px, item_state, edge_color, stroke_width_px
   -> query: visual id, item id, optional link key, displayed RGBA
 ```
 

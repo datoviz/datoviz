@@ -526,7 +526,7 @@ static bool _add_overlays(DvzScene* scene, DvzPanel* panel, MouseState* state)
         {.attr_name = "position_start", .data = state->skeleton_starts, .item_count = edge_count},
         {.attr_name = "position_end", .data = state->skeleton_ends, .item_count = edge_count},
         {.attr_name = "color", .data = state->skeleton_colors, .item_count = edge_count},
-        {.attr_name = "stroke_width", .data = state->skeleton_widths, .item_count = edge_count},
+        {.attr_name = "stroke_width_px", .data = state->skeleton_widths, .item_count = edge_count},
     };
     if (dvz_visual_set_data_many(skeleton, skeleton_updates, DVZ_ARRAY_COUNT(skeleton_updates)) != 0)
         return false;
@@ -537,7 +537,7 @@ static bool _add_overlays(DvzScene* scene, DvzPanel* panel, MouseState* state)
         {.attr_name = "position_start", .data = state->trail_starts, .item_count = trail_count},
         {.attr_name = "position_end", .data = state->trail_ends, .item_count = trail_count},
         {.attr_name = "color", .data = state->trail_colors, .item_count = trail_count},
-        {.attr_name = "stroke_width", .data = state->trail_widths, .item_count = trail_count},
+        {.attr_name = "stroke_width_px", .data = state->trail_widths, .item_count = trail_count},
     };
     if (dvz_visual_set_data_many(trail, trail_updates, DVZ_ARRAY_COUNT(trail_updates)) != 0)
         return false;
@@ -547,7 +547,7 @@ static bool _add_overlays(DvzScene* scene, DvzPanel* panel, MouseState* state)
     DvzVisualDataUpdate trajectory_updates[] = {
         {.attr_name = "position", .data = state->trajectory_positions, .item_count = MOUSE_TRAIL},
         {.attr_name = "color", .data = state->trajectory_colors, .item_count = MOUSE_TRAIL},
-        {.attr_name = "stroke_width", .data = state->trajectory_widths, .item_count = MOUSE_TRAIL},
+        {.attr_name = "stroke_width_px", .data = state->trajectory_widths, .item_count = MOUSE_TRAIL},
     };
     if (dvz_visual_set_data_many(
             trajectory, trajectory_updates, DVZ_ARRAY_COUNT(trajectory_updates)) != 0)
@@ -630,18 +630,18 @@ static bool _set_frame(MouseState* state, uint32_t frame)
         {.attr_name = "position_start", .data = state->skeleton_starts, .item_count = state->data.edge_count},
         {.attr_name = "position_end", .data = state->skeleton_ends, .item_count = state->data.edge_count},
         {.attr_name = "color", .data = state->skeleton_colors, .item_count = state->data.edge_count},
-        {.attr_name = "stroke_width", .data = state->skeleton_widths, .item_count = state->data.edge_count},
+        {.attr_name = "stroke_width_px", .data = state->skeleton_widths, .item_count = state->data.edge_count},
     };
     DvzVisualDataUpdate trail_updates[] = {
         {.attr_name = "position_start", .data = state->trail_starts, .item_count = trail_count},
         {.attr_name = "position_end", .data = state->trail_ends, .item_count = trail_count},
         {.attr_name = "color", .data = state->trail_colors, .item_count = trail_count},
-        {.attr_name = "stroke_width", .data = state->trail_widths, .item_count = trail_count},
+        {.attr_name = "stroke_width_px", .data = state->trail_widths, .item_count = trail_count},
     };
     DvzVisualDataUpdate trajectory_updates[] = {
         {.attr_name = "position", .data = state->trajectory_positions, .item_count = MOUSE_TRAIL},
         {.attr_name = "color", .data = state->trajectory_colors, .item_count = MOUSE_TRAIL},
-        {.attr_name = "stroke_width", .data = state->trajectory_widths, .item_count = MOUSE_TRAIL},
+        {.attr_name = "stroke_width_px", .data = state->trajectory_widths, .item_count = MOUSE_TRAIL},
     };
     if (dvz_visual_set_data_many(state->skeleton, skeleton_updates, DVZ_ARRAY_COUNT(skeleton_updates)) != 0)
         return false;

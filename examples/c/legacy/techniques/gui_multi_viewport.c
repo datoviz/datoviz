@@ -47,7 +47,7 @@ static void update_source(SourceState* source)
     float size = source->show_points ? source->point_size : 0.0f;
     for (uint32_t i = 0; i < 4; i++)
         source->sizes[i] = size;
-    dvz_visual_set_data(source->visual, "diameter", source->sizes, 4);
+    dvz_visual_set_data(source->visual, "diameter_px", source->sizes, 4);
 }
 
 
@@ -92,7 +92,7 @@ setup_source(DvzScene* scene, DvzFigure* figure, SourceState* state, float shift
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = 4},
         {.attr_name = "color", .data = colors, .item_count = 4},
-        {.attr_name = "diameter", .data = state->sizes, .item_count = 4},
+        {.attr_name = "diameter_px", .data = state->sizes, .item_count = 4},
     };
     int rc = dvz_visual_set_data_many(visual, updates, 3);
     if (rc != 0)

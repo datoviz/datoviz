@@ -92,7 +92,7 @@ static bool _add_point_grid(
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
-        {.attr_name = "diameter", .data = sizes, .item_count = POINT_COUNT},
+        {.attr_name = "diameter_px", .data = sizes, .item_count = POINT_COUNT},
     };
     int rc = dvz_visual_set_data_many(visual, updates, 3);
     if (rc != 0)

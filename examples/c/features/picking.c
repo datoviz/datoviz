@@ -330,7 +330,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
     DvzColor grid = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
     style.edge_color = dvz_color_rgba(grid.r, grid.g, grid.b, 210);
-    style.stroke_width = 2.0f;
+    style.stroke_width_px = 2.0f;
     if (dvz_marker_set_style(visual, &style) != 0)
         return false;
 
@@ -407,7 +407,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = MARKER_COUNT},
         {.attr_name = "color", .data = colors, .item_count = MARKER_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = MARKER_COUNT},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = MARKER_COUNT},
         {.attr_name = "angle", .data = angles, .item_count = MARKER_COUNT},
         {.attr_name = "shape", .data = shapes, .item_count = MARKER_COUNT},
     };

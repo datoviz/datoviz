@@ -473,7 +473,7 @@ DvzMarkerStyle dvz_marker_style(void)
     DvzMarkerStyle style = {
         DVZ_STRUCT_INIT_FIELDS(DvzMarkerStyle),
         .edge_color = {0, 0, 0, 255},
-        .stroke_width = 0.0f,
+        .stroke_width_px = 0.0f,
         .aspect = DVZ_SHAPE_ASPECT_FILLED,
     };
     return style;
@@ -493,7 +493,7 @@ DvzPointStyleDesc _marker_style_to_point_style(const DvzMarkerStyle* style)
     DvzPointStyleDesc out = {
         DVZ_STRUCT_INIT_FIELDS(DvzPointStyleDesc),
         .edge_color = style->edge_color,
-        .stroke_width = style->stroke_width,
+        .stroke_width_px = style->stroke_width_px,
         .aspect = style->aspect,
     };
     return out;
@@ -758,9 +758,9 @@ int dvz_marker_set_style(DvzVisual* visual, const DvzMarkerStyle* style)
         return -1;
     }
     DvzMarkerStyle marker_style = style != NULL ? *style : dvz_marker_style();
-    if (!isfinite(marker_style.stroke_width) || marker_style.stroke_width < 0.0f)
+    if (!isfinite(marker_style.stroke_width_px) || marker_style.stroke_width_px < 0.0f)
     {
-        log_error("marker stroke_width must be finite and nonnegative");
+        log_error("marker stroke_width_px must be finite and nonnegative");
         return -1;
     }
     if (marker_style.aspect < DVZ_SHAPE_ASPECT_FILLED ||

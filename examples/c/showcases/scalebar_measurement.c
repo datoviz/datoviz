@@ -317,7 +317,7 @@ static bool _add_zoom_box(DvzScene* scene, DvzPanel* panel)
         {.attr_name = "position_start", .data = visual_starts, .item_count = ZOOM_BOX_SEG},
         {.attr_name = "position_end", .data = visual_ends, .item_count = ZOOM_BOX_SEG},
         {.attr_name = "color", .data = colors, .item_count = ZOOM_BOX_SEG},
-        {.attr_name = "stroke_width", .data = widths, .item_count = ZOOM_BOX_SEG},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = ZOOM_BOX_SEG},
     };
     if (dvz_visual_set_data_many(box, updates, 4) != 0)
         return false;
@@ -373,7 +373,7 @@ static bool _add_detail_points(DvzScene* scene, DvzPanel* panel)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = visual_positions, .item_count = DETAIL_POINTS},
         {.attr_name = "color", .data = colors, .item_count = DETAIL_POINTS},
-        {.attr_name = "diameter", .data = diameters, .item_count = DETAIL_POINTS},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = DETAIL_POINTS},
     };
     if (dvz_visual_set_data_many(points, updates, 3) != 0)
         return false;
@@ -529,7 +529,7 @@ static bool _add_3d_cloud(DvzScene* scene, DvzPanel* panel, DvzVisual** out)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = count},
         {.attr_name = "color", .data = colors, .item_count = count},
-        {.attr_name = "diameter", .data = diameters, .item_count = count},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = count},
     };
     if (dvz_visual_set_data_many(points, updates, 3) != 0)
         return false;

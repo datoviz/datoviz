@@ -118,7 +118,7 @@ static bool _add_line_panel(DvzScene* scene, DvzPanel* panel, float phase, uint8
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = visual_positions, .item_count = PATH_COUNT},
         {.attr_name = "color", .data = colors, .item_count = PATH_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = PATH_COUNT},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = PATH_COUNT},
     };
     if (dvz_visual_set_data_many(visual, updates, 3) != 0)
         return false;

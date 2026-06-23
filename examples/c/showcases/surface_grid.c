@@ -183,7 +183,7 @@ static bool _add_wireframe(
         {.attr_name = "position_start", .data = starts, .item_count = edges->edge_count},
         {.attr_name = "position_end", .data = ends, .item_count = edges->edge_count},
         {.attr_name = "color", .data = colors, .item_count = edges->edge_count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = edges->edge_count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = edges->edge_count},
     };
     if (dvz_visual_set_data_many(wire, updates, 4) != 0)
         goto error;

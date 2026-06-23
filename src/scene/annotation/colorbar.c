@@ -884,7 +884,7 @@ static void _colorbar_update_ticks_and_text(
             {.attr_name = "position_start", .data = starts, .item_count = count},
             {.attr_name = "position_end", .data = ends, .item_count = count},
             {.attr_name = "color", .data = colors, .item_count = count},
-            {.attr_name = "stroke_width", .data = widths, .item_count = count},
+            {.attr_name = "stroke_width_px", .data = widths, .item_count = count},
         };
         if (dvz_visual_set_data_many(colorbar->tick_visual, updates, 4) == 0)
             dvz_visual_set_visible(colorbar->tick_visual, true);

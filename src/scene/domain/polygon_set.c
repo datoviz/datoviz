@@ -418,7 +418,7 @@ int dvz_polygon_set_region_stroke_colors(
  * @param width stroke width in pixels
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_region_stroke_width(DvzPolygonSet* set, uint32_t polygon_index, float width)
+int dvz_polygon_set_region_stroke_width_px(DvzPolygonSet* set, uint32_t polygon_index, float width)
 {
     if (
         set == NULL || set->scene == NULL || !isfinite(width) || width < 0.0f ||
@@ -428,7 +428,7 @@ int dvz_polygon_set_region_stroke_width(DvzPolygonSet* set, uint32_t polygon_ind
     }
     if (!_scene_visual_mutation_allowed(set->scene, "update polygon set stroke width"))
         return -1;
-    set->polygons[polygon_index].stroke_width = width;
+    set->polygons[polygon_index].stroke_width_px = width;
     set->polygons[polygon_index].version++;
     set->version++;
     _polygon_set_mark_composites_dirty(set, false, true);
@@ -446,7 +446,7 @@ int dvz_polygon_set_region_stroke_width(DvzPolygonSet* set, uint32_t polygon_ind
  * @param widths stroke widths in pixels
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_region_stroke_widths(
+int dvz_polygon_set_region_stroke_widths_px(
     DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const float* widths)
 {
     if (
@@ -465,7 +465,7 @@ int dvz_polygon_set_region_stroke_widths(
     for (uint32_t i = 0; i < polygon_count; i++)
     {
         DvzPolygonSetItem* region = &set->polygons[first_polygon + i];
-        region->stroke_width = widths[i];
+        region->stroke_width_px = widths[i];
         region->version++;
     }
     set->version++;

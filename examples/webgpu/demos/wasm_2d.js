@@ -56,7 +56,7 @@ function addPoints(scene, panel) {
   positionBuffer.setData(positions);
   points.setAttrBuffer("position", positionBuffer, count);
   points.setRGBA8("color", colors, count);
-  points.setF32("diameter", diameters, count);
+  points.setF32("diameter_px", diameters, count);
   scene.addVisual(panel, points);
 }
 
@@ -88,7 +88,7 @@ function addPixels(scene, panel) {
   positionBuffer.setData(positions);
   pixels.setAttrBuffer("position", positionBuffer, count);
   pixels.setRGBA8("color", colors, count);
-  pixels.setF32("pixel_size", sizes, count);
+  pixels.setF32("pixel_size_px", sizes, count);
   scene.addVisual(panel, pixels);
 }
 
@@ -115,7 +115,7 @@ function addMarkers(scene, panel) {
   const markers = scene.visual("marker");
   markers.setF32("position", positions, count);
   markers.setRGBA8("color", colors, count);
-  markers.setF32("diameter", diameters, count);
+  markers.setF32("diameter_px", diameters, count);
   markers.setF32("angle", angles, count);
   markers.setU32("symbol", symbols, count);
   scene.addVisual(panel, markers);
@@ -150,7 +150,7 @@ function addSegments(scene, panel) {
   segments.setF32("position_start", starts, count);
   segments.setF32("position_end", ends, count);
   segments.setRGBA8("color", colors, count);
-  segments.setF32("stroke_width", widths, count);
+  segments.setF32("stroke_width_px", widths, count);
   segments.setSegmentCaps("square", "triangle-out");
   scene.addVisual(panel, segments);
 }
@@ -176,7 +176,7 @@ function addPath(scene, panel) {
   const path = scene.visual("path");
   path.setF32("position", positions, count);
   path.setRGBA8("color", colors, count);
-  path.setF32("stroke_width", widths, count);
+  path.setF32("stroke_width_px", widths, count);
   path.setPathCaps("round", "square");
   path.setPathJoin("miter", 2.5);
   scene.addVisual(panel, path);

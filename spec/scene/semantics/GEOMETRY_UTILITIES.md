@@ -120,7 +120,7 @@ The user-facing workflow is:
 2. receive a Datoviz-owned F64 polyline buffer and point count, plus subpath lengths when
    tessellating multiple curves in one call;
 3. upload the points to `dvz_path()` as the `"position"` attribute, alongside `"color"` and optional
-   `"stroke_width"` attributes;
+   `"stroke_width_px"` attributes;
 4. call `dvz_path_set_subpaths()` when the tessellated output contains multiple curves.
 
 Returned buffers must use the Datoviz allocator contract and be released with the matching Datoviz

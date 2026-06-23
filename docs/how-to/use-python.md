@@ -33,7 +33,7 @@ diameters = np.asarray(diameters, dtype=np.float32, order="C")
 
 dvz.dvz_visual_set_data(points, "position", positions)
 dvz.dvz_visual_set_data(points, "color", colors)
-dvz.dvz_visual_set_data(points, "diameter", diameters)
+dvz.dvz_visual_set_data(points, "diameter_px", diameters)
 dvz.dvz_panel_add_visual(panel, points, None)
 ```
 

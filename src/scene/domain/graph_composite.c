@@ -175,7 +175,7 @@ static int _graph_prepare_nodes(DvzGraph* graph, DvzVisual* nodes)
     const DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = count},
         {.attr_name = "color", .data = colors, .item_count = count},
-        {.attr_name = "diameter", .data = sizes, .item_count = count},
+        {.attr_name = "diameter_px", .data = sizes, .item_count = count},
         {.attr_name = "angle", .data = angles, .item_count = count},
         {.attr_name = "shape", .data = shapes, .item_count = count},
     };
@@ -235,7 +235,7 @@ static int _graph_prepare_segments(DvzGraph* graph, DvzVisual* segments)
         {.attr_name = "position_start", .data = starts, .item_count = count},
         {.attr_name = "position_end", .data = ends, .item_count = count},
         {.attr_name = "color", .data = colors, .item_count = count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = count},
     };
     int rc = dvz_segment_set_caps(segments, graph->edge_cap_start, graph->edge_cap_end);
     if (rc == 0)
@@ -372,7 +372,7 @@ static int _graph_prepare_paths(DvzGraph* graph, DvzVisual* path)
         const DvzVisualDataUpdate updates[] = {
             {.attr_name = "position", .data = positions, .item_count = point_count},
             {.attr_name = "color", .data = colors, .item_count = point_count},
-            {.attr_name = "stroke_width", .data = widths, .item_count = point_count},
+            {.attr_name = "stroke_width_px", .data = widths, .item_count = point_count},
         };
         rc = dvz_visual_set_data_many(path, updates, 3);
     }

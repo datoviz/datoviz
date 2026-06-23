@@ -375,7 +375,7 @@ static bool _add_symbol_row(
     style.aspect = row == 0u ? DVZ_SHAPE_ASPECT_OUTLINE : DVZ_SHAPE_ASPECT_FILLED;
     style.edge_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
     style.edge_color.a = 220u;
-    style.stroke_width = 2.0f;
+    style.stroke_width_px = 2.0f;
     if (dvz_marker_set_style(visual, &style) != 0)
         return false;
 
@@ -401,7 +401,7 @@ static bool _add_symbol_row(
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = ROW_SYMBOLS},
         {.attr_name = "color", .data = colors, .item_count = ROW_SYMBOLS},
-        {.attr_name = "diameter", .data = diameters, .item_count = ROW_SYMBOLS},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = ROW_SYMBOLS},
         {.attr_name = "angle", .data = angles, .item_count = ROW_SYMBOLS},
         {.attr_name = "symbol", .data = symbol_ids, .item_count = ROW_SYMBOLS},
     };

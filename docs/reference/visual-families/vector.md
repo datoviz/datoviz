@@ -34,8 +34,8 @@ omits `vector` and interprets positions as path points, optionally grouped with
 
 | Kind | Attributes |
 | --- | --- |
-| Required for straight vectors | `position` (`vec3` anchor), `vector` (`vec3` displacement), `color` (RGBA8), `stroke_width` (`float`, pixels) |
-| Required for curved vectors | `position`, `color`, `stroke_width` |
+| Required for straight vectors | `position` (`vec3` anchor), `vector` (`vec3` displacement), `color` (RGBA8), `stroke_width_px` (`float`, pixels) |
+| Required for curved vectors | `position`, `color`, `stroke_width_px` |
 | Optional | style through `dvz_vector_set_style()` (`scale`, anchor, caps, joins); subpath lengths; alpha mode; depth test; transform; visual-wide scale bindings |
 
 ## Picking And Probing

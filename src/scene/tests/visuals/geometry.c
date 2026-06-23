@@ -1173,7 +1173,7 @@ int test_scene_path_line_width_emit_glsl(TstContext* suite, const TstCase* item)
 
     AT(dvz_visual_set_data(visual, "position", positions, 5) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 5) == 0);
-    AT(dvz_visual_set_data(visual, "stroke_width", stroke_widths, 5) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width_px", stroke_widths, 5) == 0);
     AT(dvz_path_set_subpaths(visual, 2, subpaths) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
@@ -1269,7 +1269,7 @@ int test_scene_path_repeated_endpoint_closes_subpath(TstContext* suite, const Ts
 
     AT(dvz_visual_set_data(visual, "position", positions, 5) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 5) == 0);
-    AT(dvz_visual_set_data(visual, "stroke_width", stroke_widths, 5) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width_px", stroke_widths, 5) == 0);
     AT(dvz_path_set_subpaths(visual, 1, &subpath) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
@@ -1362,7 +1362,7 @@ int test_scene_path_closed_star_cache_adjacency(TstContext* suite, const TstCase
     uint32_t subpath = STAR_POINT_COUNT;
     AT(dvz_visual_set_data(visual, "position", positions, STAR_POINT_COUNT) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, STAR_POINT_COUNT) == 0);
-    AT(dvz_visual_set_data(visual, "stroke_width", stroke_widths, STAR_POINT_COUNT) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width_px", stroke_widths, STAR_POINT_COUNT) == 0);
     AT(dvz_path_set_subpaths(visual, 1, &subpath) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 

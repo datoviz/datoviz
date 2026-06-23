@@ -315,7 +315,7 @@ static DvzScene* _make_scene(DvzFigure** out_figure, DvzPanel** out_panel)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = 3},
         {.attr_name = "color", .data = colors, .item_count = 3},
-        {.attr_name = "diameter", .data = sizes, .item_count = 3},
+        {.attr_name = "diameter_px", .data = sizes, .item_count = 3},
     };
     int rc = dvz_visual_set_data_many(visual, updates, 3);
     if (rc != 0)

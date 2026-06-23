@@ -638,11 +638,11 @@ static bool _gizmo_append_hub(GizmoMesh* mesh, const GizmoGeometry* geometry)
  * @param path target path arrays
  * @param position point position
  * @param color point color
- * @param stroke_width stroke width in pixels
+ * @param stroke_width_px stroke width in pixels
  * @return true when the point was appended
  */
 static bool
-_gizmo_path_point(GizmoPath* path, const vec3 position, const DvzColor color, float stroke_width)
+_gizmo_path_point(GizmoPath* path, const vec3 position, const DvzColor color, float stroke_width_px)
 {
     ANN(path);
     ANN(position);
@@ -651,7 +651,7 @@ _gizmo_path_point(GizmoPath* path, const vec3 position, const DvzColor color, fl
 
     dvz_memcpy(path->positions[path->count], sizeof(vec3), position, sizeof(vec3));
     path->colors[path->count] = color;
-    path->stroke_widths[path->count] = stroke_width;
+    path->stroke_widths[path->count] = stroke_width_px;
     path->count++;
     return true;
 }
@@ -848,7 +848,7 @@ static bool _orientation_gizmo_update_geometry(DvzOrientationGizmo* gizmo)
     DvzVisualDataUpdate ring_updates[] = {
         {.attr_name = "position", .data = gizmo->ring_positions, .item_count = rings.count},
         {.attr_name = "color", .data = gizmo->ring_colors, .item_count = rings.count},
-        {.attr_name = "stroke_width", .data = gizmo->ring_widths, .item_count = rings.count},
+        {.attr_name = "stroke_width_px", .data = gizmo->ring_widths, .item_count = rings.count},
     };
     if (dvz_visual_set_data_many(gizmo->rings_visual, ring_updates, 3) != 0)
         return false;

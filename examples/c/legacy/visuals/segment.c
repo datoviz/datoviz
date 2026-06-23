@@ -85,7 +85,7 @@ struct SegmentStressState
     DvzColor* colors;
     float* stroke_widths;
 
-    float stroke_width;
+    float stroke_width_px;
     float alpha;
     int count_preset;
     int start_cap;
@@ -353,7 +353,7 @@ static void _segment_fill_upload_buffers(SegmentStressState* state)
             _u8_from_unit(0.25f + 0.70f * _unit(i, 7)),
             _u8_from_unit(0.35f + 0.55f * _unit(i, 8)),
             _u8_from_unit(0.45f + 0.50f * _unit(i, 9)), alpha);
-        state->stroke_widths[i] = state->stroke_width * (0.55f + 0.90f * _unit(i, 10));
+        state->stroke_widths[i] = state->stroke_width_px * (0.55f + 0.90f * _unit(i, 10));
     }
 }
 
@@ -391,7 +391,7 @@ static void _segment_upload(SegmentStressState* state)
             .item_count = state->active_count,
         },
         {
-            .attr_name = "stroke_width",
+            .attr_name = "stroke_width_px",
             .data = state->stroke_widths,
             .item_count = state->active_count,
         },
@@ -419,7 +419,7 @@ static void _segment_reset(SegmentStressState* state)
     ANN(state);
     state->active_count = 8192;
     state->active_count_value = (float)state->active_count;
-    state->stroke_width = 4.0f;
+    state->stroke_width_px = 4.0f;
     state->alpha = 0.82f;
     state->count_preset = 3;
     state->start_cap = 1;
@@ -570,7 +570,7 @@ static void _segment_gui(DvzGui* gui, DvzView* win, void* user_data)
             changed = true;
         }
         changed |=
-            dvz_gui_slider_float_format(gui, "Stroke width", &state->stroke_width, 0.5f, 30.0f,
+            dvz_gui_slider_float_format(gui, "Stroke width", &state->stroke_width_px, 0.5f, 30.0f,
                                         "%.1f px");
         changed |= dvz_gui_combo(gui, "Start cap", &state->start_cap, cap_items, 6);
         changed |= dvz_gui_combo(gui, "End cap", &state->end_cap, cap_items, 6);
@@ -669,7 +669,7 @@ int main(int argc, char** argv)
     (void)dvz_visual_set_attr_mutability(
         state.visual, "color", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
     (void)dvz_visual_set_attr_mutability(
-        state.visual, "stroke_width", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
+        state.visual, "stroke_width_px", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
 
     _segment_reset(&state);
     int rc = dvz_panel_add_visual(state.panel, state.visual, NULL);

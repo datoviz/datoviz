@@ -581,7 +581,7 @@ static bool _add_vectors(DvzScene* scene, DvzPanel* panel, DvzVisual** out_visua
         {.attr_name = "position", .data = positions, .item_count = VECTOR_COUNT},
         {.attr_name = "vector", .data = vectors, .item_count = VECTOR_COUNT},
         {.attr_name = "color", .data = colors, .item_count = VECTOR_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = VECTOR_COUNT},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = VECTOR_COUNT},
     };
     if (dvz_visual_set_data_many(visual, updates, 4) != 0)
         goto error;
@@ -731,7 +731,7 @@ _add_streamlines(DvzScene* scene, DvzPanel* panel, DvzVisual** out_visual, float
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = STREAMLINE_TOTAL_COUNT},
         {.attr_name = "color", .data = colors, .item_count = STREAMLINE_TOTAL_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = STREAMLINE_TOTAL_COUNT},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = STREAMLINE_TOTAL_COUNT},
     };
     if (dvz_visual_set_data_many(path, updates, 3) != 0)
         goto error;
@@ -812,7 +812,7 @@ static bool _add_probe(DvzScene* scene, DvzPanel* panel)
         {.attr_name = "position_start", .data = starts, .item_count = PROBE_SEGMENTS},
         {.attr_name = "position_end", .data = ends, .item_count = PROBE_SEGMENTS},
         {.attr_name = "color", .data = colors, .item_count = PROBE_SEGMENTS},
-        {.attr_name = "stroke_width", .data = widths, .item_count = PROBE_SEGMENTS},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = PROBE_SEGMENTS},
     };
     if (dvz_visual_set_data_many(ring, updates, 4) != 0)
         return false;
@@ -834,11 +834,11 @@ static bool _add_probe(DvzScene* scene, DvzPanel* panel)
         return false;
     DvzColor dot_color[1] = {cyan};
     dot_color[0].a = 245u;
-    float diameter[1] = {7.0f};
+    float diameter_px[1] = {7.0f};
     DvzVisualDataUpdate dot_updates[] = {
         {.attr_name = "position", .data = dot_position, .item_count = 1},
         {.attr_name = "color", .data = dot_color, .item_count = 1},
-        {.attr_name = "diameter", .data = diameter, .item_count = 1},
+        {.attr_name = "diameter_px", .data = diameter_px, .item_count = 1},
     };
     if (dvz_visual_set_data_many(dot, dot_updates, 3) != 0)
         return false;
@@ -1011,7 +1011,7 @@ static bool _update_vectors(WindShowcaseState* state, float time_s)
         {.attr_name = "position", .data = positions, .item_count = VECTOR_COUNT},
         {.attr_name = "vector", .data = vectors, .item_count = VECTOR_COUNT},
         {.attr_name = "color", .data = colors, .item_count = VECTOR_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = VECTOR_COUNT},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = VECTOR_COUNT},
     };
     ok = dvz_visual_set_data_many(state->vectors, updates, 4) == 0;
 
@@ -1050,7 +1050,7 @@ static bool _update_streamlines(WindShowcaseState* state, float time_s)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = STREAMLINE_TOTAL_COUNT},
         {.attr_name = "color", .data = colors, .item_count = STREAMLINE_TOTAL_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = STREAMLINE_TOTAL_COUNT},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = STREAMLINE_TOTAL_COUNT},
     };
     ok = dvz_visual_set_data_many(state->streamlines, updates, 3) == 0;
 

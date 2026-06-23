@@ -137,7 +137,7 @@ static bool _add_polygon(DvzScene* scene, DvzPanel* panel, PolygonExampleState* 
     rc = dvz_polygon_stroke_color(polygon, (DvzColor){18, 39, 54, 255});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_stroke_width(polygon, state->polygon_width);
+    rc = dvz_polygon_stroke_width_px(polygon, state->polygon_width);
     if (rc != 0)
         return false;
 
@@ -211,10 +211,10 @@ static bool _add_polygon_set(DvzScene* scene, DvzPanel* panel, PolygonExampleSta
     rc = dvz_polygon_set_region_stroke_color(set, second, (DvzColor){72, 49, 12, 255});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_set_region_stroke_width(set, first, state->set_first_width);
+    rc = dvz_polygon_set_region_stroke_width_px(set, first, state->set_first_width);
     if (rc != 0)
         return false;
-    rc = dvz_polygon_set_region_stroke_width(set, second, state->set_second_width);
+    rc = dvz_polygon_set_region_stroke_width_px(set, second, state->set_second_width);
     if (rc != 0)
         return false;
 
@@ -460,12 +460,12 @@ static void _apply_polygon_controls(PolygonExampleState* state)
 
     const DvzPathJoin join = (DvzPathJoin)state->join;
     if (state->polygon != NULL)
-        (void)dvz_polygon_stroke_width(state->polygon, state->polygon_width);
+        (void)dvz_polygon_stroke_width_px(state->polygon, state->polygon_width);
     if (state->set != NULL)
     {
-        (void)dvz_polygon_set_region_stroke_width(
+        (void)dvz_polygon_set_region_stroke_width_px(
             state->set, state->set_first, state->set_first_width);
-        (void)dvz_polygon_set_region_stroke_width(
+        (void)dvz_polygon_set_region_stroke_width_px(
             state->set, state->set_second, state->set_second_width);
     }
     if (state->polygon_composite != NULL)

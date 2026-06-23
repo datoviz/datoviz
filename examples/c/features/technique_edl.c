@@ -216,7 +216,7 @@ static bool _add_depth_cloud(DvzScene* scene, DvzPanel* panel)
     style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
     style.edge_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_PANEL_BG);
     style.edge_color.a = 245u;
-    style.stroke_width = 2.0f;
+    style.stroke_width_px = 2.0f;
     if (dvz_point_set_style(point, &style) != 0)
         return false;
     return dvz_panel_add_visual(panel, point, NULL) == 0;

@@ -193,7 +193,7 @@ void _polygon_set_item_default_style(DvzPolygonSetItem* item)
     item->visible = style.visible;
     item->fill_color = style.fill_color;
     item->stroke_color = style.stroke_color;
-    item->stroke_width = style.stroke_width;
+    item->stroke_width_px = style.stroke_width_px;
 }
 
 
@@ -397,7 +397,7 @@ DvzPolygon* _scene_alloc_polygon(DvzScene* scene)
     polygon->visible = style.visible;
     polygon->fill_color = style.fill_color;
     polygon->stroke_color = style.stroke_color;
-    polygon->stroke_width = style.stroke_width;
+    polygon->stroke_width_px = style.stroke_width_px;
     polygon->stroke_cap_start = style.stroke_start_cap;
     polygon->stroke_cap_end = style.stroke_end_cap;
     polygon->stroke_join = style.stroke_join;

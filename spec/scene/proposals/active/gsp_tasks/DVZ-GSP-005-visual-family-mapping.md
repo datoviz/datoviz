@@ -34,7 +34,7 @@ Start with this table shape:
 
 | Family | Constructor | Required data | Optional data/resources | Query support | GSP first-slice status |
 |---|---|---|---|---|---|
-| point | `dvz_point()` | `position`, `color`, `diameter` | `item_state`, link keys | item id, visual id, displayed color where available | ready |
+| point | `dvz_point()` | `position`, `color`, `diameter_px` | `item_state`, link keys | item id, visual id, displayed color where available | ready |
 | image | `dvz_image()` | sampled field plus placement attributes | scalar/color fields, scale/colormap | pixel/sample/image payloads, exact fields documented per profile | ready with limits |
 | primitive | `dvz_primitive()` | `position`, `color` | `normal`, index buffer | item/primitive currently limited | usable |
 | mesh | `dvz_mesh()` | `position` | color, normal, texcoords, instance transform, index, texture | item/mesh identity; face/region payload pending | usable with limits |

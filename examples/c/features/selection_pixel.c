@@ -425,7 +425,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = state->positions, .item_count = PIXEL_COUNT},
         {.attr_name = "color", .data = state->colors, .item_count = PIXEL_COUNT},
-        {.attr_name = "pixel_size", .data = state->sizes, .item_count = PIXEL_COUNT},
+        {.attr_name = "pixel_size_px", .data = state->sizes, .item_count = PIXEL_COUNT},
     };
     if (dvz_visual_set_data_many(visual, updates, 3) != 0)
         goto error;

@@ -65,7 +65,7 @@ Ignored when `color_mode = texture`.
 
 ### `radius`
 
-Standard — see `SHARED_ATTRIBUTES.md`. Sphere radius (not diameter).
+Standard — see `SHARED_ATTRIBUTES.md`. Sphere radius (not diameter_px).
 Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 Supports `direct` and `scalar` modes — see `radius_mode` variant axis.
 

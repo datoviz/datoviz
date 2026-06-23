@@ -51,7 +51,7 @@ typedef struct GuiViewportState
 {
     DvzGuiViewport* viewport;
     DvzVisual* point;
-    float diameter;
+    float diameter_px;
     bool show_points;
     bool show_demo;
 } GuiViewportState;
@@ -73,9 +73,9 @@ static bool _gui_viewport_upload(GuiViewportState* state)
     if (state == NULL || state->point == NULL)
         return false;
 
-    const float diameter = state->show_points ? state->diameter : 0.0f;
-    float diameters[POINT_COUNT] = {diameter, diameter, diameter, diameter, diameter};
-    return dvz_visual_set_data(state->point, "diameter", diameters, POINT_COUNT) == 0;
+    const float diameter_px = state->show_points ? state->diameter_px : 0.0f;
+    float diameters[POINT_COUNT] = {diameter_px, diameter_px, diameter_px, diameter_px, diameter_px};
+    return dvz_visual_set_data(state->point, "diameter_px", diameters, POINT_COUNT) == 0;
 }
 
 
@@ -99,7 +99,7 @@ static void _gui_viewport_callback(DvzGui* gui, DvzView* view, void* user_data)
     bool changed = false;
     if (dvz_gui_begin(gui, "Viewport controls", NULL, 0))
     {
-        changed |= dvz_gui_slider_float(gui, "Diameter", &state->diameter, 4.0f, 80.0f);
+        changed |= dvz_gui_slider_float(gui, "Diameter", &state->diameter_px, 4.0f, 80.0f);
         changed |= dvz_gui_checkbox(gui, "Show points", &state->show_points);
         (void)dvz_gui_checkbox(gui, "ImGui demo", &state->show_demo);
     }
@@ -141,7 +141,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(point != NULL, "dvz_point() failed");
     GuiViewportState state = {
         .point = point,
-        .diameter = 34.0f,
+        .diameter_px = 34.0f,
         .show_points = true,
     };
     vec3 positions[POINT_COUNT] = {

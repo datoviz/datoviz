@@ -44,7 +44,7 @@ static void update_visual(GuiViewportState* state)
     float size = state->show_points ? state->point_size : 0.0f;
     for (uint32_t i = 0; i < 5; i++)
         state->sizes[i] = size;
-    dvz_visual_set_data(state->visual, "diameter", state->sizes, 5);
+    dvz_visual_set_data(state->visual, "diameter_px", state->sizes, 5);
 }
 
 
@@ -132,7 +132,7 @@ int main(int argc, char** argv)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = 5},
         {.attr_name = "color", .data = colors, .item_count = 5},
-        {.attr_name = "diameter", .data = state.sizes, .item_count = 5},
+        {.attr_name = "diameter_px", .data = state.sizes, .item_count = 5},
     };
     int rc = dvz_visual_set_data_many(visual, updates, 3);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");

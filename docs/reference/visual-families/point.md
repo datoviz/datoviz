@@ -34,8 +34,8 @@ binding a scale.
 
 | Kind | Attributes |
 | --- | --- |
-| Required | `position` (`vec3` center), `color` (RGBA8 or configured scalar), `diameter` (`float`, pixels) |
-| Optional | `item_state` for retained hover/selection styling; edge styling through `dvz_point_set_style()` (`edge_color`, `stroke_width`, filled/stroke/outline aspect); alpha mode; depth test; transform; visual-wide scale bindings |
+| Required | `position` (`vec3` center), `color` (RGBA8 or configured scalar), `diameter_px` (`float`, pixels) |
+| Optional | `item_state` for retained hover/selection styling; edge styling through `dvz_point_set_style()` (`edge_color`, `stroke_width_px`, filled/stroke/outline aspect); alpha mode; depth test; transform; visual-wide scale bindings |
 
 ## Picking And Probing
 

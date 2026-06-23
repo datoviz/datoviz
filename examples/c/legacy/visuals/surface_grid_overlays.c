@@ -341,7 +341,7 @@ static bool _state_upload_edges(SurfaceOverlayState* state)
         {.attr_name = "position_start", .data = starts, .item_count = edge_count},
         {.attr_name = "position_end", .data = ends, .item_count = edge_count},
         {.attr_name = "color", .data = colors, .item_count = edge_count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = edge_count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = edge_count},
     };
     ok = dvz_visual_set_data_many(state->wire, updates, 4) == 0 &&
          dvz_segment_set_caps(state->wire, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_BUTT) == 0;
@@ -402,7 +402,7 @@ static bool _state_upload_contours(SurfaceOverlayState* state)
         {.attr_name = "position_start", .data = starts, .item_count = state->contours->segment_count},
         {.attr_name = "position_end", .data = ends, .item_count = state->contours->segment_count},
         {.attr_name = "color", .data = colors, .item_count = state->contours->segment_count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = state->contours->segment_count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = state->contours->segment_count},
     };
     ok = dvz_visual_set_data_many(state->contours_visual, updates, 4) == 0 &&
          dvz_segment_set_caps(
@@ -714,7 +714,7 @@ int main(int argc, char** argv)
     (void)dvz_visual_set_attr_mutability(
         state.wire, "color", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
     (void)dvz_visual_set_attr_mutability(
-        state.wire, "stroke_width", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
+        state.wire, "stroke_width_px", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
     (void)dvz_visual_set_attr_mutability(
         state.contours_visual, "position_start", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
     (void)dvz_visual_set_attr_mutability(
@@ -722,7 +722,7 @@ int main(int argc, char** argv)
     (void)dvz_visual_set_attr_mutability(
         state.contours_visual, "color", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
     (void)dvz_visual_set_attr_mutability(
-        state.contours_visual, "stroke_width", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
+        state.contours_visual, "stroke_width_px", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
 
     ok = _state_rebuild_geometry(&state);
     EXAMPLE_CHECK(ok, "surface and overlay upload failed");

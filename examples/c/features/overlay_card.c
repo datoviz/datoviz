@@ -84,7 +84,7 @@ static bool _add_signal(DvzScene* scene, DvzPanel* panel)
     DvzVisualDataUpdate path_updates[] = {
         {.attr_name = "position", .data = positions, .item_count = PATH_COUNT},
         {.attr_name = "color", .data = colors, .item_count = PATH_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = PATH_COUNT},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = PATH_COUNT},
     };
     if (dvz_visual_set_data_many(path, path_updates, 3) != 0)
         return false;
@@ -105,7 +105,7 @@ static bool _add_signal(DvzScene* scene, DvzPanel* panel)
     DvzVisualDataUpdate point_updates[] = {
         {.attr_name = "position", .data = point_pos, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = point_color, .item_count = POINT_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = POINT_COUNT},
     };
     if (dvz_visual_set_data_many(point, point_updates, 3) != 0)
         return false;

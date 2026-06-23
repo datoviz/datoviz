@@ -693,7 +693,7 @@ struct DvzPolygonStyle
     bool visible;
     DvzColor fill_color;
     DvzColor stroke_color;
-    float stroke_width;
+    float stroke_width_px;
     DvzSegmentCap stroke_start_cap;
     DvzSegmentCap stroke_end_cap;
     DvzPathJoin stroke_join;
@@ -804,7 +804,7 @@ struct DvzPointStyleDesc
     uint32_t struct_size;
     uint32_t flags;
     DvzColor edge_color;
-    float stroke_width;
+    float stroke_width_px;
     DvzShapeAspect aspect;
 };
 typedef struct DvzPointStyleDesc DvzPointStyleDesc;
@@ -815,7 +815,7 @@ struct DvzMarkerStyle
     uint32_t struct_size;
     uint32_t flags;
     DvzColor edge_color;
-    float stroke_width;
+    float stroke_width_px;
     DvzShapeAspect aspect;
 };
 typedef struct DvzMarkerStyle DvzMarkerStyle;

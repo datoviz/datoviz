@@ -264,9 +264,9 @@ static bool _bounds_point_like_render_radius_px(const DvzVisual* visual, double*
 
     const char* attr_name = NULL;
     if (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_MARKER)
-        attr_name = "diameter";
+        attr_name = "diameter_px";
     else if (visual->type == DVZ_VISUAL_TYPE_PIXEL)
-        attr_name = "pixel_size";
+        attr_name = "pixel_size_px";
     else
         return false;
 
@@ -779,7 +779,7 @@ static bool _bounds_overlay_sync_panel(DvzPanel* panel)
         {.attr_name = "position_start", .data = start, .item_count = line_count},
         {.attr_name = "position_end", .data = end, .item_count = line_count},
         {.attr_name = "color", .data = colors, .item_count = line_count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = line_count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = line_count},
     };
     int rc = line_count > 0 ? dvz_visual_set_data_many(overlay, updates, 4) : -1;
     bool visible = rc == 0 && line_count > 0;

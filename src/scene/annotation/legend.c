@@ -679,7 +679,7 @@ static void _legend_update_visuals(DvzLegend* legend, DvzDiagnosticReport* repor
     DvzVisualDataUpdate updates[5] = {
         {.attr_name = "position", .data = mark_positions, .item_count = mark_count},
         {.attr_name = "color", .data = mark_colors, .item_count = mark_count},
-        {.attr_name = "diameter", .data = mark_sizes, .item_count = mark_count},
+        {.attr_name = "diameter_px", .data = mark_sizes, .item_count = mark_count},
         {.attr_name = "angle", .data = mark_angles, .item_count = mark_count},
         {.attr_name = "shape", .data = mark_shapes, .item_count = mark_count},
     };

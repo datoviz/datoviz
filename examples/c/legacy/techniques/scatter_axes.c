@@ -6,7 +6,7 @@
 
 /* scatter_axes — interactive 2D scatter plot with WIP axes.
  *
- * Opens a GLFW window showing random discs with per-point color and diameter.
+ * Opens a GLFW window showing random discs with per-point color and diameter_px.
  * Left-drag to pan, right-drag or scroll to zoom, double-click to reset.
  * Axis tick labels and axis labels render through the scene text visual path.
  *
@@ -231,7 +231,7 @@ int main(int argc, char** argv)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = visual_positions, .item_count = N},
         {.attr_name = "color", .data = colors, .item_count = N},
-        {.attr_name = "diameter", .data = sizes, .item_count = N},
+        {.attr_name = "diameter_px", .data = sizes, .item_count = N},
     };
     rc = dvz_visual_set_data_many(visual, updates, 3);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");

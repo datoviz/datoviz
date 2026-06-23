@@ -33,7 +33,7 @@ scalar values for `color` and binds a color scale.
 
 | Kind | Attributes |
 | --- | --- |
-| Required | `position` (`vec3` center), `color` (RGBA8 or configured scalar), `pixel_size` (`float`, pixels) |
+| Required | `position` (`vec3` center), `color` (RGBA8 or configured scalar), `pixel_size_px` (`float`, pixels) |
 | Optional | `item_state` for retained hover/selection styling; alpha mode; depth test; transform; visual-wide scale bindings |
 
 ## Picking And Probing

@@ -65,7 +65,7 @@ physical_size = logical_size * device_scale * render_scale
 | Class | Examples | Scale rule |
 |---|---|---|
 | Layout logical pixels | figure size, panel rects, grid gutters, reserves, padding | authored in logical pixels; runtime maps to physical |
-| UI-style pixels | margins, tick gaps, label offsets, text size, line width, point/marker diameter, pixel visual size, selection halo, hit tolerance | multiply by `device_scale * user_scale` when lowering to physical shader/raster units |
+| UI-style pixels | margins, tick gaps, label offsets, text size, line width, point/marker diameter_px, pixel visual size, selection halo, hit tolerance | multiply by `device_scale * user_scale` when lowering to physical shader/raster units |
 | Raster detail | text atlas size, bitmap glyphs, MSDF range, offscreen resolve resources | multiply by `device_scale * render_scale`, and by `user_scale` only if the authored logical size changed |
 | Data/world quantities | mesh coordinates, sphere radius in data/world units, volume spacing, camera distance, sampled-field dimensions | never scaled by `user_scale`; only projected by camera/transform |
 | Image/export resolution | screenshots, video frames, still image export | controlled by `render_scale` plus any requested output extent |
@@ -121,10 +121,10 @@ physical_style_px = logical_style_px * device_scale * user_scale
 
 Use it for visual attributes and style blocks that are defined in logical pixels:
 
-1. point and marker `diameter`,
-2. point and marker `stroke_width`,
-3. pixel `pixel_size`,
-4. segment and path `stroke_width`,
+1. point and marker `diameter_px`,
+2. point and marker `stroke_width_px`,
+3. pixel `pixel_size_px`,
+4. segment and path `stroke_width_px`,
 5. axis widths, tick lengths, gaps, reserves, and text sizes,
 6. colorbar and legend dimensions, offsets, and text sizes,
 7. text and annotation sizes, anchors, padding, and bitmap/SDF layout.

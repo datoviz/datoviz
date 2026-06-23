@@ -33,7 +33,7 @@ the first slice.
 
 | Kind | Attributes |
 | --- | --- |
-| Required | `position_start` (`vec3`), `position_end` (`vec3`), `color` (RGBA8), `stroke_width` (`float`, pixels) |
+| Required | `position_start` (`vec3`), `position_end` (`vec3`), `color` (RGBA8), `stroke_width_px` (`float`, pixels) |
 | Optional | endpoint caps through `dvz_segment_set_caps()`; alpha mode; depth test; transform; visual-wide scale bindings |
 
 ## Picking And Probing

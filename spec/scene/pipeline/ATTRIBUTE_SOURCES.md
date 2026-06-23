@@ -9,7 +9,7 @@ This document defines per-attribute data multiplicity and update-frequency hints
 
 ## Purpose
 
-Visual attributes such as `position`, `color`, `size`, or `stroke_width` may be constant, per item,
+Visual attributes such as `position`, `color`, `size`, or `stroke_width_px` may be constant, per item,
 per structural span, or per semantic group. Users declare the source and optional mutability; the
 scene chooses buffers, parameter blocks, shader access, draw splitting, or expansion.
 
@@ -44,7 +44,7 @@ Attribute layout hints may express producer and update behavior without exposing
 | `PER_GROUP` | one value per semantic group | visuals with `group_id` | draw-per-group, lookup, or expansion |
 
 `position` is generally `PER_ITEM` only. Style attributes such as `color`, `size`, `opacity`, and
-`stroke_width` usually accept multiple sources. Family specs define exact validity; when absent, the
+`stroke_width_px` usually accept multiple sources. Family specs define exact validity; when absent, the
 default is `PER_ITEM`.
 
 

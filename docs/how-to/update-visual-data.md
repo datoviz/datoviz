@@ -37,7 +37,7 @@ When the item count changes, update all dense per-item attributes together:
 DvzVisualDataUpdate updates[] = {
     {.attr_name = "position", .data = pos, .item_count = n},
     {.attr_name = "color", .data = color, .item_count = n},
-    {.attr_name = "diameter", .data = diameter, .item_count = n},
+    {.attr_name = "diameter_px", .data = diameter_px, .item_count = n},
 };
 dvz_visual_set_data_many(visual, updates, 3);
 ```
@@ -58,7 +58,7 @@ Datoviz retains the visual object and its GPU resources. You should update attri
 visual API instead of destroying and recreating the visual every frame.
 
 All dense per-item attributes configured on one visual must use the same item count. If a point
-visual has `position`, `color`, and `diameter`, growing from `n` to `m` points means all three
+visual has `position`, `color`, and `diameter_px`, growing from `n` to `m` points means all three
 attributes must be updated to `m` items.
 
 `dvz_visual_set_data_many()` is the safer API for count changes because it validates the whole batch

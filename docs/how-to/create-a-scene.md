@@ -43,7 +43,7 @@ DvzPanel* panel = dvz_panel_full(figure);
 DvzVisual* visual = dvz_point(scene, 0);
 dvz_visual_set_data(visual, "position", pos, n);
 dvz_visual_set_data(visual, "color", color, n);
-dvz_visual_set_data(visual, "diameter", diameter, n);
+dvz_visual_set_data(visual, "diameter_px", diameter_px, n);
 dvz_panel_add_visual(panel, visual, NULL);
 
 DvzApp* app = dvz_app(scene);

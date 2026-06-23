@@ -308,7 +308,7 @@ static void _upload_path_data(PathStressState* state)
         {.attr_name = "position", .data = state->positions, .item_count = state->active_count},
         {.attr_name = "color", .data = state->colors, .item_count = state->active_count},
         {
-            .attr_name = "stroke_width",
+            .attr_name = "stroke_width_px",
             .data = state->stroke_widths,
             .item_count = state->active_count,
         },

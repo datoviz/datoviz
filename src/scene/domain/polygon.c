@@ -138,7 +138,7 @@ static bool _polygon_style_valid(const DvzPolygonStyle* style)
         log_error("invalid DvzPolygonStyle ABI prologue");
         return false;
     }
-    if (!isfinite(style->stroke_width) || style->stroke_width < 0.0f)
+    if (!isfinite(style->stroke_width_px) || style->stroke_width_px < 0.0f)
         return false;
     if (
         !_polygon_stroke_cap_valid(style->stroke_start_cap) ||
@@ -167,7 +167,7 @@ DvzPolygonStyle dvz_polygon_style(void)
         .visible = true,
         .fill_color = {255, 255, 255, 255},
         .stroke_color = {0, 0, 0, 255},
-        .stroke_width = 1.0f,
+        .stroke_width_px = 1.0f,
         .stroke_start_cap = DVZ_SEGMENT_CAP_BUTT,
         .stroke_end_cap = DVZ_SEGMENT_CAP_BUTT,
         .stroke_join = DVZ_PATH_JOIN_ROUND,
@@ -388,7 +388,7 @@ int dvz_polygon_set_style(DvzPolygon* polygon, const DvzPolygonStyle* style)
     polygon->visible = style->visible;
     _polygon_color_copy(&polygon->fill_color, style->fill_color);
     _polygon_color_copy(&polygon->stroke_color, style->stroke_color);
-    polygon->stroke_width = style->stroke_width;
+    polygon->stroke_width_px = style->stroke_width_px;
     polygon->stroke_cap_start = style->stroke_start_cap;
     polygon->stroke_cap_end = style->stroke_end_cap;
     polygon->stroke_join = style->stroke_join;
@@ -447,13 +447,13 @@ int dvz_polygon_stroke_color(DvzPolygon* polygon, const DvzColor color)
  * @param width stroke width in pixels
  * @return 0 on success, -1 on invalid input
  */
-int dvz_polygon_stroke_width(DvzPolygon* polygon, float width)
+int dvz_polygon_stroke_width_px(DvzPolygon* polygon, float width)
 {
     if (polygon == NULL || polygon->scene == NULL || !isfinite(width) || width < 0.0f)
         return -1;
     if (!_scene_visual_mutation_allowed(polygon->scene, "update polygon stroke width"))
         return -1;
-    polygon->stroke_width = width;
+    polygon->stroke_width_px = width;
     polygon->version++;
     _polygon_mark_composites_dirty(polygon, false, true);
     return 0;

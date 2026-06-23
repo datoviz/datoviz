@@ -347,7 +347,7 @@ static bool _bars_upload_outline(DvzBars* bars)
         {.attr_name = "position_start", .data = starts, .item_count = segment_count},
         {.attr_name = "position_end", .data = ends, .item_count = segment_count},
         {.attr_name = "color", .data = colors, .item_count = segment_count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = segment_count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = segment_count},
     };
     int rc = dvz_visual_set_data_many(bars->outline_visual, updates, 4);
     dvz_visual_set_visible(bars->outline_visual, true);

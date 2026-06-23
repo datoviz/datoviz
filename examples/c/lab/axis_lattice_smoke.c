@@ -89,7 +89,7 @@ static void _fill_lattice(vec3* positions, DvzColor* colors, float* diameters)
  *
  * @param positions output data-space position
  * @param colors output point color
- * @param diameters output point diameter in pixels
+ * @param diameters output point diameter_px in pixels
  */
 static void _fill_probe_point(vec3* positions, DvzColor* colors, float* diameters, bool raw)
 {
@@ -127,7 +127,7 @@ static bool _upload_lattice(
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = count},
         {.attr_name = "color", .data = colors, .item_count = count},
-        {.attr_name = "diameter", .data = diameters, .item_count = count},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = count},
     };
     return dvz_visual_set_data_many(visual, updates, 3) == 0;
 }
@@ -508,7 +508,7 @@ int main(int argc, char** argv)
 
     DvzPointStyleDesc point_style = dvz_point_style_desc();
     point_style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    point_style.stroke_width = 0.0f;
+    point_style.stroke_width_px = 0.0f;
     rc = dvz_point_set_style(points, &point_style);
     EXAMPLE_CHECK(rc == 0, "dvz_point_set_style() failed");
 

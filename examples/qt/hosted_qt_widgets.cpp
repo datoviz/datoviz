@@ -80,7 +80,7 @@ static int _apply_point_size(SceneState* state, float point_size)
     state->point_size = point_size;
     for (uint32_t i = 0; i < POINT_COUNT; i++)
         state->sizes[i] = point_size;
-    return dvz_visual_set_data(state->visual, "diameter", state->sizes, POINT_COUNT);
+    return dvz_visual_set_data(state->visual, "diameter_px", state->sizes, POINT_COUNT);
 }
 
 
@@ -172,7 +172,7 @@ static DvzScene* _make_scene(SceneState* state)
 
     dvz_visual_set_data(visual, "position", state->positions, POINT_COUNT);
     dvz_visual_set_data(visual, "color", state->colors, POINT_COUNT);
-    dvz_visual_set_data(visual, "diameter", state->sizes, POINT_COUNT);
+    dvz_visual_set_data(visual, "diameter_px", state->sizes, POINT_COUNT);
     dvz_panel_add_visual(panel, visual, nullptr);
     _set_background(state, 0);
     return scene;
@@ -263,7 +263,7 @@ static QWidget* _controls_widget(SceneState* state, DvzQtHostedWindow* view_wind
         state->phase = 0.0f;
         _fill_scene_data(state);
         (void)dvz_visual_set_data(state->visual, "position", state->positions, POINT_COUNT);
-        (void)dvz_visual_set_data(state->visual, "diameter", state->sizes, POINT_COUNT);
+        (void)dvz_visual_set_data(state->visual, "diameter_px", state->sizes, POINT_COUNT);
         view_window->request_scene_frame();
     });
     QObject::connect(timer, &QTimer::timeout, controls, [state, view_window]() {

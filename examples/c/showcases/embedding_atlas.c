@@ -368,14 +368,14 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel, const EmbeddingAtlasDa
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = data->positions, .item_count = data->count},
         {.attr_name = "color", .data = data->colors, .item_count = data->count},
-        {.attr_name = "diameter", .data = data->diameters, .item_count = data->count},
+        {.attr_name = "diameter_px", .data = data->diameters, .item_count = data->count},
     };
     if (dvz_visual_set_data_many(visual, updates, 3) != 0)
         return false;
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
+    style.stroke_width_px = 0.0f;
     if (dvz_point_set_style(visual, &style) != 0)
         return false;
     if (dvz_visual_set_depth_test(visual, false) != 0)

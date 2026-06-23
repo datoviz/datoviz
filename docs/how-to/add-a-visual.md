@@ -11,7 +11,7 @@ scene, upload all required attributes with the same item count, then add the vis
 panel.
 
 Batch aggressively. A visual is a batch of similar items, not a single mark. Prefer one visual with
-large `position`, `color`, `diameter`, or equivalent attribute arrays over many visuals with one or
+large `position`, `color`, `diameter_px`, or equivalent attribute arrays over many visuals with one or
 a few items each.
 
 ## Basic Call Sequence
@@ -20,7 +20,7 @@ a few items each.
 DvzVisual* visual = dvz_point(scene, 0);
 dvz_visual_set_data(visual, "position", pos, n);
 dvz_visual_set_data(visual, "color", color, n);
-dvz_visual_set_data(visual, "diameter", diameter, n);
+dvz_visual_set_data(visual, "diameter_px", diameter_px, n);
 dvz_panel_add_visual(panel, visual, NULL);
 ```
 
@@ -62,7 +62,7 @@ spaces.
 ## Attributes
 
 Attribute names, item counts, and defaults are visual-specific. The point visual uses `position`,
-`color`, and `diameter`; mesh, image, text, volume, and path visuals use different attribute names
+`color`, and `diameter_px`; mesh, image, text, volume, and path visuals use different attribute names
 and data layouts.
 
 Keep related per-item arrays aligned:
@@ -70,7 +70,7 @@ Keep related per-item arrays aligned:
 ```c
 dvz_visual_set_data(visual, "position", positions, count);
 dvz_visual_set_data(visual, "color", colors, count);
-dvz_visual_set_data(visual, "diameter", diameters, count);
+dvz_visual_set_data(visual, "diameter_px", diameters, count);
 ```
 
 Do not assume an attribute exists just because another visual family has a similar field. Check the
@@ -83,7 +83,7 @@ update:
 DvzVisualDataUpdate updates[] = {
     {.attr_name = "position", .data = positions, .item_count = count},
     {.attr_name = "color", .data = colors, .item_count = count},
-    {.attr_name = "diameter", .data = diameters, .item_count = count},
+    {.attr_name = "diameter_px", .data = diameters, .item_count = count},
 };
 dvz_visual_set_data_many(visual, updates, 3);
 ```
@@ -100,7 +100,7 @@ boundary:
 - different shared geometry for mesh instancing.
 
 Keep style differences inside one visual when the style is already an attribute, such as point
-color, diameter, symbol, radius, or per-item transform.
+color, diameter_px, symbol, radius, or per-item transform.
 
 ## Instanced Meshes
 

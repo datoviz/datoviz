@@ -2377,7 +2377,7 @@ static int test_axis_integer_lattice_panzoom_alignment(TstContext* suite, const 
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = visual, .item_count = count},
         {.attr_name = "color", .data = colors, .item_count = count},
-        {.attr_name = "diameter", .data = diameters, .item_count = count},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = count},
     };
     AT(dvz_visual_set_data_many(point, updates, 3) == 0);
     DvzVisualAttachDesc view_attach = dvz_visual_attach_desc();

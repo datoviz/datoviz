@@ -33,7 +33,7 @@ the v0.3 marker vocabulary plus target symbols.
 
 | Kind | Attributes |
 | --- | --- |
-| Required | `position` (`vec3` center), `color` (RGBA8 fill), `diameter` (`float`, pixels), `angle` (`float`, radians), `shape` or `symbol` (`uint32_t` built-in symbol id) |
+| Required | `position` (`vec3` center), `color` (RGBA8 fill), `diameter_px` (`float`, pixels), `angle` (`float`, radians), `shape` or `symbol` (`uint32_t` built-in symbol id) |
 | Optional | `item_state` for retained hover/selection styling; visual-wide symbol set through `dvz_marker_set_symbols()`; one built-in symbol through `dvz_marker_set_symbol()`; stroke/fill style through `dvz_marker_set_style()`; alpha mode; depth test; transform |
 
 ## Picking And Probing
@@ -44,7 +44,7 @@ items.
 ## Backend Notes
 
 Native and WebGPU paths are active. Marker size is in pixels, so zoom changes item positions but not
-screen diameter unless the data is updated.
+screen diameter_px unless the data is updated.
 
 ## Canonical Example
 

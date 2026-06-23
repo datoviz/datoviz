@@ -25,7 +25,7 @@ DvzVisual* points = dvz_point(scene, 0);
 DvzVisualDataUpdate updates[] = {
     {.attr_name = "position", .data = positions, .item_count = n},
     {.attr_name = "color",    .data = colors,    .item_count = n},
-    {.attr_name = "diameter", .data = diameters, .item_count = n},
+    {.attr_name = "diameter_px", .data = diameters, .item_count = n},
 };
 if (dvz_visual_set_data_many(points, updates, 3) != 0)
     return -1;

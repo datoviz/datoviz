@@ -289,7 +289,7 @@ static bool _guide_line_upload(DvzGuideLine* guide)
         {.attr_name = "position_start", .data = position_start, .item_count = 1},
         {.attr_name = "position_end", .data = position_end, .item_count = 1},
         {.attr_name = "color", .data = colors, .item_count = 1},
-        {.attr_name = "stroke_width", .data = widths, .item_count = 1},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = 1},
     };
     return dvz_visual_set_data_many(guide->line_visual, updates, 4) == 0;
 }
@@ -375,7 +375,7 @@ static bool _guide_span_upload(DvzGuideSpan* span)
             {.attr_name = "position_start", .data = starts, .item_count = 4},
             {.attr_name = "position_end", .data = ends, .item_count = 4},
             {.attr_name = "color", .data = outline_colors, .item_count = 4},
-            {.attr_name = "stroke_width", .data = widths, .item_count = 4},
+            {.attr_name = "stroke_width_px", .data = widths, .item_count = 4},
         };
         if (dvz_visual_set_data_many(span->outline_visual, outline_updates, 4) != 0)
             return false;

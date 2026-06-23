@@ -466,7 +466,7 @@ static void _apply_point_size(LidarExampleState* state)
     for (uint32_t i = 0; i < state->dataset->point_count; i++)
         state->dataset->sizes[i] = state->point_size;
     if (dvz_visual_set_data(
-            state->visual, "pixel_size", state->dataset->sizes, state->dataset->point_count) != 0)
+            state->visual, "pixel_size_px", state->dataset->sizes, state->dataset->point_count) != 0)
         dvz_fprintf(stderr, "failed to update point size\n");
 }
 
@@ -750,7 +750,7 @@ int main(int argc, char** argv)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = dataset.positions, .item_count = dataset.point_count},
         {.attr_name = "color", .data = dataset.colors, .item_count = dataset.point_count},
-        {.attr_name = "pixel_size", .data = dataset.sizes, .item_count = dataset.point_count},
+        {.attr_name = "pixel_size_px", .data = dataset.sizes, .item_count = dataset.point_count},
     };
     int rc = dvz_visual_set_data_many(visual, updates, 3);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");

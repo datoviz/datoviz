@@ -78,7 +78,7 @@ typedef struct PointCloudRecord
     float g;
     float b;
     float a;
-    float pixel_size;
+    float pixel_size_px;
 } PointCloudRecord;
 
 
@@ -177,7 +177,7 @@ static bool _load_binary(const char* path, PointCloudData* data)
         data->colors[i].g = _u8(record.g);
         data->colors[i].b = _u8(record.b);
         data->colors[i].a = _u8(record.a);
-        data->pixel_sizes[i] = record.pixel_size;
+        data->pixel_sizes[i] = record.pixel_size_px;
     }
     data->count = header.count;
     ok = true;
@@ -253,7 +253,7 @@ static bool _upload_pixels(DvzVisual* visual, const PointCloudData* data)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = data->positions, .item_count = data->count},
         {.attr_name = "color", .data = data->colors, .item_count = data->count},
-        {.attr_name = "pixel_size", .data = data->pixel_sizes, .item_count = data->count},
+        {.attr_name = "pixel_size_px", .data = data->pixel_sizes, .item_count = data->count},
     };
     return dvz_visual_set_data_many(visual, updates, DVZ_ARRAY_COUNT(updates)) == 0;
 }

@@ -127,7 +127,7 @@ static bool _add_categorized_markers(DvzScene* scene, DvzPanel* panel)
 
     DvzMarkerStyle style = dvz_marker_style();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 1.5f;
+    style.stroke_width_px = 1.5f;
     DvzColor edge = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_PANEL_BG);
     style.edge_color = dvz_color_rgba(edge.r, edge.g, edge.b, 220);
     if (dvz_marker_set_style(marker, &style) != 0)
@@ -157,7 +157,7 @@ static bool _add_categorized_markers(DvzScene* scene, DvzPanel* panel)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = MARKER_COUNT},
         {.attr_name = "color", .data = colors, .item_count = MARKER_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = MARKER_COUNT},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = MARKER_COUNT},
         {.attr_name = "angle", .data = angles, .item_count = MARKER_COUNT},
         {.attr_name = "shape", .data = shapes, .item_count = MARKER_COUNT},
     };

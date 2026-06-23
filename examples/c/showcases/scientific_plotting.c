@@ -429,7 +429,7 @@ static bool _add_stacked_traces(DvzScene* scene, DvzPanel* panel)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = TRACE_VERTEX_COUNT},
         {.attr_name = "color", .data = colors, .item_count = TRACE_VERTEX_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = TRACE_VERTEX_COUNT},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = TRACE_VERTEX_COUNT},
     };
     if (dvz_visual_set_data_many(traces, updates, 3) != 0)
         return false;

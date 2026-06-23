@@ -97,7 +97,7 @@ contacts).
 Applies uniformly to all items in the visual.
 
 
-## `stroke_width` Attribute
+## `stroke_width_px` Attribute
 
 ### Definition
 
@@ -108,9 +108,9 @@ Applies uniformly to all items in the visual.
 | Accepted sources | `CONSTANT`, `PER_ITEM`, `PER_GROUP` (unless family restricts) |
 | Typical mutability | `dynamic` |
 
-`stroke_width` is the public visual-contract name for screen-space and data-space strokes.
+`stroke_width_px` is the public visual-contract name for screen-space and data-space strokes.
 Some first-slice implementation internals still use the historical `line_width` storage/resource
-name; specs, public API docs, and examples should use `stroke_width`.
+name; specs, public API docs, and examples should use `stroke_width_px`.
 
 ### `stroke_width_space` Parameter
 
@@ -319,7 +319,7 @@ A `DvzStyle` object may be attached to a visual to override a group of defaults 
 
 ```c
 DvzStyle* style = dvz_style(scene);
-dvz_style_set_param(style, "stroke_width", &lw);
+dvz_style_set_param(style, "stroke_width_px", &lw);
 dvz_style_set_param(style, "color",     &col);
 dvz_visual_set_style(visual, style);
 ```

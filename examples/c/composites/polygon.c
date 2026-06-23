@@ -115,7 +115,7 @@ static bool _add_holed_polygon(DvzScene* scene, DvzPanel* panel)
     rc = dvz_polygon_stroke_color(polygon, (DvzColor){214, 240, 255, 255});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_stroke_width(polygon, 8.0f);
+    rc = dvz_polygon_stroke_width_px(polygon, 8.0f);
     if (rc != 0)
         return false;
     rc = dvz_polygon_stroke_join(polygon, DVZ_PATH_JOIN_ROUND, 4.0f);
@@ -201,7 +201,7 @@ static bool _add_polygon_set(DvzScene* scene, DvzPanel* panel)
     rc = dvz_polygon_set_region_stroke_colors(set, 0, 3, stroke);
     if (rc != 0)
         return false;
-    rc = dvz_polygon_set_region_stroke_widths(set, 0, 3, widths);
+    rc = dvz_polygon_set_region_stroke_widths_px(set, 0, 3, widths);
     if (rc != 0)
         return false;
     rc = dvz_polygon_set_stroke_join(set, DVZ_PATH_JOIN_BEVEL, 4.0f);

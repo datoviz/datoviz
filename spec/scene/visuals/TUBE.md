@@ -80,7 +80,7 @@ index, vertex interval, normalized curve coordinate, or physical hit position.
 | Accepted sources | `CONSTANT`, `PER_ITEM`, `PER_SPAN` |
 | Typical mutability | `dynamic` |
 
-`radius` is not `stroke_width`. `stroke_width` belongs to `path` and `segment` and is measured in
+`radius` is not `stroke_width_px`. `stroke_width_px` belongs to `path` and `segment` and is measured in
 screen pixels by default. `radius` describes a 3D curve surface. A tube farther from the camera
 should normally appear smaller.
 
@@ -276,7 +276,7 @@ Recommended future sequence:
 ## Non-Goals
 
 1. Do not make `path` a catch-all for tubes, ribbons, SVG fills, and domain resources.
-2. Do not use `stroke_width` for 3D tube radius.
+2. Do not use `stroke_width_px` for 3D tube radius.
 3. Do not require CPU-generated triangle tubes for all tube rendering.
 4. Do not make tractography, streamlines, tracks, or molecules separate renderers.
 5. Do not add a parallel presentation or Vulkan path.

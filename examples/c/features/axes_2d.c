@@ -120,7 +120,7 @@ static bool _upload_path(
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = count},
         {.attr_name = "color", .data = colors, .item_count = count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = count},
     };
     if (dvz_visual_set_data_many(visual, updates, 3) != 0)
         return false;

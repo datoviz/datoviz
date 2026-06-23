@@ -140,7 +140,7 @@ dvz_polygon_outer(polygon, count, xy);
 dvz_polygon_hole(polygon, hole_index, count, xy);
 dvz_polygon_fill_color(polygon, color);
 dvz_polygon_stroke_color(polygon, color);
-dvz_polygon_stroke_width(polygon, width);
+dvz_polygon_stroke_width_px(polygon, width);
 ```
 
 `dvz_polygon_geometry()` is the coherent bulk setter and should be the robust path for replacing
@@ -191,7 +191,7 @@ uint32_t polygon_index = dvz_polygon_set_add(polygons, &polygon_desc);
 dvz_polygon_set_region_geometry(polygons, polygon_index, &polygon_desc);
 dvz_polygon_set_region_fill_color(polygons, polygon_index, color);
 dvz_polygon_set_region_stroke_color(polygons, polygon_index, color);
-dvz_polygon_set_region_stroke_width(polygons, polygon_index, width);
+dvz_polygon_set_region_stroke_width_px(polygons, polygon_index, width);
 ```
 
 Optional bulk/range helpers are allowed for large datasets:

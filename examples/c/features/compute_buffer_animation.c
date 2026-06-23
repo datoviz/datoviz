@@ -167,12 +167,12 @@ static bool _add_compute_points(DvzScene* scene, DvzFigure* figure, DvzPanel* pa
         return false;
     if (dvz_visual_set_data(point, "color", colors, POINT_COUNT) != 0)
         return false;
-    if (dvz_visual_set_data(point, "diameter", diameters, POINT_COUNT) != 0)
+    if (dvz_visual_set_data(point, "diameter_px", diameters, POINT_COUNT) != 0)
         return false;
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
+    style.stroke_width_px = 0.0f;
     if (dvz_point_set_style(point, &style) != 0)
         return false;
     if (dvz_visual_set_depth_test(point, false) != 0)

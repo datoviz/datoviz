@@ -169,7 +169,7 @@ static bool _add_contours(DvzScene* scene, DvzPanel* panel, const DvzGeometryCon
         {.attr_name = "position_start", .data = starts, .item_count = contours->segment_count},
         {.attr_name = "position_end", .data = ends, .item_count = contours->segment_count},
         {.attr_name = "color", .data = colors, .item_count = contours->segment_count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = contours->segment_count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = contours->segment_count},
     };
     if (dvz_visual_set_data_many(segment, updates, 4) != 0)
         goto error;

@@ -353,7 +353,7 @@ static bool _reference_grid_rebuild(DvzReferenceGrid* grid)
         {.attr_name = "position_start", .data = starts, .item_count = count},
         {.attr_name = "position_end", .data = ends, .item_count = count},
         {.attr_name = "color", .data = colors, .item_count = count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = count},
     };
     const bool ok = dvz_visual_set_data_many(grid->visual, updates, 4) == 0;
     grid->line_count = ok ? count : 0;

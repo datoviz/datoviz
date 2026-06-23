@@ -202,7 +202,7 @@ static bool _add_straight_vectors(
         {.attr_name = "position", .data = positions, .item_count = FIELD_COUNT},
         {.attr_name = "vector", .data = vectors, .item_count = FIELD_COUNT},
         {.attr_name = "color", .data = colors, .item_count = FIELD_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = FIELD_COUNT},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = FIELD_COUNT},
     };
     if (dvz_visual_set_data_many(vector, updates, 4) != 0)
         return false;
@@ -250,7 +250,7 @@ static bool _add_curved_vectors(
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = CURVE_SAMPLE_COUNT},
         {.attr_name = "color", .data = colors, .item_count = CURVE_SAMPLE_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = CURVE_SAMPLE_COUNT},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = CURVE_SAMPLE_COUNT},
     };
     if (dvz_visual_set_data_many(vector, updates, 3) != 0)
         return false;

@@ -48,7 +48,7 @@
 typedef struct GuiControlsState
 {
     DvzVisual* point;
-    float diameter;
+    float diameter_px;
     float color[4];
     bool visible;
     bool pulse;
@@ -95,12 +95,12 @@ static bool _gui_controls_upload(GuiControlsState* state)
         colors[i].g = (uint8_t)(255.0f * state->color[1]);
         colors[i].b = (uint8_t)(255.0f * state->color[2]);
         colors[i].a = (uint8_t)(255.0f * state->opacity);
-        diameters[i] = state->diameter;
+        diameters[i] = state->diameter_px;
     }
 
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = POINT_COUNT},
     };
     return dvz_visual_set_data_many(state->point, updates, 2) == 0;
 }
@@ -127,7 +127,7 @@ static void _gui_controls_callback(DvzGui* gui, DvzView* view, void* user_data)
     {
         dvz_gui_separator_text(gui, "Marker");
         changed |=
-            dvz_gui_slider_float(gui, "Diameter##gui_controls_marker_diameter", &state->diameter,
+            dvz_gui_slider_float(gui, "Diameter##gui_controls_marker_diameter", &state->diameter_px,
                                  8.0f, 96.0f);
         changed |= dvz_gui_color_edit4(gui, "Tint##gui_controls_marker_tint", state->color, 0);
         changed |=
@@ -239,7 +239,7 @@ int main(int argc, char** argv)
     };
     GuiControlsState state = {
         .point = point,
-        .diameter = 42.0f,
+        .diameter_px = 42.0f,
         .color = {0.28f, 0.78f, 1.00f, 1.00f},
         .visible = true,
         .pulse = true,
@@ -268,7 +268,7 @@ int main(int argc, char** argv)
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
+    style.stroke_width_px = 0.0f;
     EXAMPLE_CHECK(dvz_point_set_style(point, &style) == 0, "dvz_point_set_style() failed");
     EXAMPLE_CHECK(
         dvz_visual_set_depth_test(point, false) == 0, "dvz_visual_set_depth_test() failed");

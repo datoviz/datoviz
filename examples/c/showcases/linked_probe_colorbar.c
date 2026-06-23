@@ -460,7 +460,7 @@ static bool _add_probe_marker(DvzScene* scene, DvzPanel* panel, ProbeMarker* out
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = marker_visual, .item_count = 1},
         {.attr_name = "color", .data = marker_color, .item_count = 1},
-        {.attr_name = "diameter", .data = marker_diameter, .item_count = 1},
+        {.attr_name = "diameter_px", .data = marker_diameter, .item_count = 1},
         {.attr_name = "angle", .data = marker_angle, .item_count = 1},
         {.attr_name = "shape", .data = marker_shape, .item_count = 1},
     };
@@ -468,7 +468,7 @@ static bool _add_probe_marker(DvzScene* scene, DvzPanel* panel, ProbeMarker* out
         return false;
     DvzMarkerStyle marker_style = dvz_marker_style();
     marker_style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    marker_style.stroke_width = 0.0f;
+    marker_style.stroke_width_px = 0.0f;
     if (dvz_marker_set_style(marker.visual, &marker_style) != 0)
         return false;
     if (dvz_visual_set_depth_test(marker.visual, false) != 0)

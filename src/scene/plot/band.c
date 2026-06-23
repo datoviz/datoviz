@@ -362,7 +362,7 @@ static bool _band_upload_center_line(DvzBand* band)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = item_count},
         {.attr_name = "color", .data = colors, .item_count = item_count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = item_count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = item_count},
     };
     int rc = dvz_visual_set_data_many(band->line_visual, updates, 3);
     if (rc == 0)
@@ -454,7 +454,7 @@ static bool _band_upload_bound_lines(DvzBand* band)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = item_count},
         {.attr_name = "color", .data = colors, .item_count = item_count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = item_count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = item_count},
     };
     int rc = dvz_visual_set_data_many(band->bounds_visual, updates, 3);
     if (rc == 0)

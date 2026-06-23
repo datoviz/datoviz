@@ -21,7 +21,7 @@ with marker size when `user_scale` changes.
 
 Current narrow diagnosis:
 
-- marker `diameter` is stored as the visual storage attr `size`;
+- marker `diameter_px` is stored as the visual storage attr `size`;
 - `size` uploads are already treated as screen-space style payloads and lowered by
   `_scene_frame_plan_upload_style_bytes()`;
 - built-in marker edge width is stored in the shared point-style material payload, currently
@@ -40,7 +40,7 @@ The durable architecture should make units explicit at scene emission boundaries
 
 Scene-retained state should store authored values, not physical values:
 
-- `diameter`, `pixel_size`, `stroke_width`, marker edge width, tick lengths, label gaps, text sizes,
+- `diameter_px`, `pixel_size_px`, `stroke_width_px`, marker edge width, tick lengths, label gaps, text sizes,
   margins, hit slop, and similar UI-style quantities are authored in logical pixels unless the API
   explicitly says otherwise;
 - data/world quantities remain in domain units and are never multiplied by `user_scale`;
@@ -110,7 +110,7 @@ Preferred implementation direction:
      physical pixels, or data units.
 
 6. Make API breakage acceptable where it removes ambiguity.
-   - If public C structs expose ambiguous fields such as `stroke_width` without a unit suffix,
+   - If public C structs expose ambiguous fields such as `stroke_width_px` without a unit suffix,
      prefer renaming new v0.4-facing fields to `*_px` or documenting the logical-pixel contract
      directly in the header.
    - Do not preserve v0.3 ambiguity if it conflicts with the v0.4 architecture.
@@ -122,7 +122,7 @@ above architecture:
 
 1. In `src/scene/visuals/marker/lowering.c`, mark built-in marker point-style material params as
    screen-scaled.
-2. Add a focused regression test proving marker edge `stroke_width` upload is multiplied by
+2. Add a focused regression test proving marker edge `stroke_width_px` upload is multiplied by
    `user_scale`.
 3. Keep the test framed as the current implementation contract, not as the final architecture.
 4. Add a TODO near the `material_params_screen_scaled` boolean pointing at this handoff, or replace
@@ -162,20 +162,20 @@ just spec-check
 - `src/scene/visuals/marker/lowering.c`
   - Marker built-in path requests material params but currently does not opt into screen scaling.
 - `src/scene/visuals/point/api.c`
-  - `_point_style_sync_params()` stores `stroke_width` into `params[0]`.
+  - `_point_style_sync_params()` stores `stroke_width_px` into `params[0]`.
 - `src/scene/shaders/wgsl/marker.frag.wgsl`
   - Marker shader consumes the edge width relative to the already-scaled marker sprite size.
 
 ## Design Test To Add Later
 
-Add a test that creates a point and a marker with the same logical diameter and stroke width, emits
+Add a test that creates a point and a marker with the same logical diameter_px and stroke width, emits
 with `user_scale = 1.0` and `user_scale = 2.0`, and asserts:
 
 - uploaded `size` doubles;
 - uploaded point style edge width doubles;
 - uploaded marker style edge width doubles;
-- retained `dvz_visual_data(..., "diameter", ...)` still returns the authored logical diameter;
-- retained marker style state still stores the authored logical `stroke_width`.
+- retained `dvz_visual_data(..., "diameter_px", ...)` still returns the authored logical diameter_px;
+- retained marker style state still stores the authored logical `stroke_width_px`.
 
 That test captures the architecture better than an example screenshot because it verifies the
 retained-state/emitted-payload split directly.

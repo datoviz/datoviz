@@ -119,14 +119,14 @@ static bool _add_points(
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = data_positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = POINT_COUNT},
     };
     if (dvz_visual_set_data_many(points, updates, 3) != 0)
         return false;
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
+    style.stroke_width_px = 0.0f;
     if (dvz_point_set_style(points, &style) != 0)
         return false;
 

@@ -429,7 +429,7 @@ _add_probe_marker(DvzScene* scene, DvzPanel* panel, DvzVisual** out_ring, DvzVis
     DvzVisualDataUpdate ring_updates[] = {
         {.attr_name = "position", .data = ring_visual, .item_count = 1},
         {.attr_name = "color", .data = ring_color, .item_count = 1},
-        {.attr_name = "diameter", .data = ring_diameter, .item_count = 1},
+        {.attr_name = "diameter_px", .data = ring_diameter, .item_count = 1},
         {.attr_name = "angle", .data = ring_angle, .item_count = 1},
         {.attr_name = "shape", .data = ring_shape, .item_count = 1},
     };
@@ -457,13 +457,13 @@ _add_probe_marker(DvzScene* scene, DvzPanel* panel, DvzVisual** out_ring, DvzVis
     DvzVisualDataUpdate dot_updates[] = {
         {.attr_name = "position", .data = dot_visual, .item_count = 1},
         {.attr_name = "color", .data = dot_color, .item_count = 1},
-        {.attr_name = "diameter", .data = dot_diameter, .item_count = 1},
+        {.attr_name = "diameter_px", .data = dot_diameter, .item_count = 1},
     };
     if (dvz_visual_set_data_many(dot, dot_updates, 3) != 0)
         return false;
     DvzPointStyleDesc point_style = dvz_point_style_desc();
     point_style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    point_style.stroke_width = 0.0f;
+    point_style.stroke_width_px = 0.0f;
     if (dvz_point_set_style(dot, &point_style) != 0)
         return false;
     if (dvz_visual_set_depth_test(dot, false) != 0)

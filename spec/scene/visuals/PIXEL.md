@@ -17,7 +17,7 @@ Status on 2026-05-17: the active v0.4 runtime implements the first retained pixe
 The implemented path supports:
 
 1. retained `pixel` visual construction via `dvz_pixel()`;
-2. dense `position`, `color`, and public `pixel_size` attributes, where `pixel_size` is measured
+2. dense `position`, `color`, and public `pixel_size_px` attributes, where `pixel_size_px` is measured
    in screen pixels and aliases the current internal `size` slot;
 3. GLSL/Vulkan lowering as native square point-list sprites;
 4. WGSL/WebGPU lowering as instanced quads, preserving the same public visual contract;
@@ -74,7 +74,7 @@ Standard `vec2` — see `SHARED_ATTRIBUTES.md`.
 Status on 2026-05-17: not implemented in the active pixel slice.
 
 
-### `pixel_size`
+### `pixel_size_px`
 
 | Property | Value |
 |---|---|
@@ -88,7 +88,7 @@ Side length of each square mark.
 
 ## Visual-Wide Parameters
 
-### `pixel_size`
+### `pixel_size_px`
 
 | Property | Value |
 |---|---|
@@ -99,7 +99,7 @@ Side length of each square mark.
 Size of every pixel mark when configured as a constant source. All items share the same size.
 Minimum supported size: 1 physical pixel. Maximum: unspecified, backend-dependent.
 
-Status on 2026-05-27: constant, per-item, and grouped `pixel_size` sources are installed through
+Status on 2026-05-27: constant, per-item, and grouped `pixel_size_px` sources are installed through
 the internal `size` storage slot.
 
 ### `size_space`
@@ -119,7 +119,7 @@ limitation instead of silently treating data-space sizes as screen-space sizes.
 | `position` | required | NaN/Inf item skipped and not pickable | no |
 | `color` | opaque white RGBA | scalar NaN uses scale missing color | yes |
 | `shift` | `(0, 0)` | NaN component treated as zero shift | yes |
-| `pixel_size` | `1 px` | invalid or NaN size falls back to default | yes |
+| `pixel_size_px` | `1 px` | invalid or NaN size falls back to default | yes |
 
 
 ## Variant Axes
@@ -174,6 +174,6 @@ Standard — see `SHARED_ATTRIBUTES.md`.
 |---|---|
 | `dvz_pixel_position` | `position`, `PER_ITEM` |
 | `dvz_pixel_color` | `color`, now also `CONSTANT`/`PER_GROUP` and `scalar` mode |
-| `dvz_pixel_size` | `pixel_size` parameter |
+| `dvz_pixel_size` | `pixel_size_px` parameter |
 
 v0.4 adds: `shift`, `size_space`, `color_mode = scalar`.

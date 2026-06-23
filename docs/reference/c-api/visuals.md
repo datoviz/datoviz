@@ -250,8 +250,8 @@ Functions: 198
     | [`dvz_polygon_set_region_ids()`](#dvz_polygon_set_region_ids) | `include/datoviz/scene.h` |
     | [`dvz_polygon_set_region_stroke_color()`](#dvz_polygon_set_region_stroke_color) | `include/datoviz/scene.h` |
     | [`dvz_polygon_set_region_stroke_colors()`](#dvz_polygon_set_region_stroke_colors) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_region_stroke_width()`](#dvz_polygon_set_region_stroke_width) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_set_region_stroke_widths()`](#dvz_polygon_set_region_stroke_widths) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_region_stroke_width_px()`](#dvz_polygon_set_region_stroke_width_px) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_region_stroke_widths_px()`](#dvz_polygon_set_region_stroke_widths_px) | `include/datoviz/scene.h` |
     | [`dvz_polygon_set_region_visibilities()`](#dvz_polygon_set_region_visibilities) | `include/datoviz/scene.h` |
     | [`dvz_polygon_set_region_visible()`](#dvz_polygon_set_region_visible) | `include/datoviz/scene.h` |
     | [`dvz_polygon_set_stroke_caps()`](#dvz_polygon_set_stroke_caps) | `include/datoviz/scene.h` |
@@ -260,7 +260,7 @@ Functions: 198
     | [`dvz_polygon_stroke_caps()`](#dvz_polygon_stroke_caps) | `include/datoviz/scene.h` |
     | [`dvz_polygon_stroke_color()`](#dvz_polygon_stroke_color) | `include/datoviz/scene.h` |
     | [`dvz_polygon_stroke_join()`](#dvz_polygon_stroke_join) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_stroke_width()`](#dvz_polygon_stroke_width) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_stroke_width_px()`](#dvz_polygon_stroke_width_px) | `include/datoviz/scene.h` |
     | [`dvz_polygon_style()`](#dvz_polygon_style) | `include/datoviz/scene.h` |
     | [`dvz_polygon_visible()`](#dvz_polygon_visible) | `include/datoviz/scene.h` |
 
@@ -1748,7 +1748,7 @@ DvzVisual * dvz_marker(
 Create a marker visual.
 
 Renders screen-space code-SDF marker sprites with dense `position` (vec3), `color` (RGBA8),
-`diameter` (float in pixels), `angle` (float radians), and `shape`/`symbol` (uint32_t built-in
+`diameter_px` (float in pixels), `angle` (float radians), and `shape`/`symbol` (uint32_t built-in
 symbol id) attributes. Optional `item_state` (uint32_t DvzItemStateKind bitfield) supports
 retained hover and selection styling.
 Built-in code-SDF shapes include the v0.3 marker vocabulary plus target.
@@ -1843,7 +1843,7 @@ DvzMarkerStyle dvz_marker_style(void);
 Return default marker styling.
 
 The default marker style renders filled markers with no stroke. The `color` visual attribute
-remains the fill color; `edge_color` and `stroke_width` apply when the aspect is
+remains the fill color; `edge_color` and `stroke_width_px` apply when the aspect is
 `DVZ_SHAPE_ASPECT_STROKE` or `DVZ_SHAPE_ASPECT_OUTLINE`.
 
 Raw ctypes: emitted.
@@ -1962,9 +1962,9 @@ DvzVisual * dvz_path(
 
 Create a path visual.
 
-A path accepts `position` (vec3), `color` (RGBA8), and optional per-point `stroke_width`
-(float, pixels). Without `stroke_width`, paths use the primitive line-strip pipeline. With
-`stroke_width`, paths use the scene.path screen-space stroke pipeline.
+A path accepts `position` (vec3), `color` (RGBA8), and optional per-point `stroke_width_px`
+(float, pixels). Without `stroke_width_px`, paths use the primitive line-strip pipeline. With
+`stroke_width_px`, paths use the scene.path screen-space stroke pipeline.
 
 Raw ctypes: emitted.
 
@@ -2089,7 +2089,7 @@ DvzVisual * dvz_pixel(
 Create a pixel visual.
 
 Renders screen-space square sprites with `position` (vec3), `color` (RGBA8),
-`pixel_size` (float, in pixels), and optional `item_state` (uint32_t DvzItemStateKind
+`pixel_size_px` (float, in pixels), and optional `item_state` (uint32_t DvzItemStateKind
 bitfield). WGSL/WebGPU emission lowers each item to an instanced quad.
 
 Raw ctypes: emitted.
@@ -2116,9 +2116,9 @@ DvzVisual * dvz_point(
 Create a point visual.
 
 Renders screen-space antialiased circular sprites with `position` (vec3), `color` (RGBA8),
-`diameter` (float, in pixels), and optional `item_state` (uint32_t DvzItemStateKind bitfield).
+`diameter_px` (float, in pixels), and optional `item_state` (uint32_t DvzItemStateKind bitfield).
 `dvz_point_set_style()` controls optional edge styling with `edge_color`,
-`stroke_width`, and a filled/stroke/outline aspect.
+`stroke_width_px`, and a filled/stroke/outline aspect.
 
 Raw ctypes: emitted.
 
@@ -2162,7 +2162,7 @@ DvzPointStyleDesc dvz_point_style_desc(void);
 Return default point styling.
 
 The default point style renders filled circular points with no stroke. The `color` visual
-attribute remains the fill color; `edge_color` and `stroke_width` apply when the aspect is
+attribute remains the fill color; `edge_color` and `stroke_width_px` apply when the aspect is
 `DVZ_SHAPE_ASPECT_STROKE` or `DVZ_SHAPE_ASPECT_OUTLINE`.
 
 Raw ctypes: emitted.
@@ -2616,10 +2616,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:2954._
 
-### `dvz_polygon_set_region_stroke_width()`
+### `dvz_polygon_set_region_stroke_width_px()`
 
-```c title="dvz_polygon_set_region_stroke_width"
-int dvz_polygon_set_region_stroke_width(
+```c title="dvz_polygon_set_region_stroke_width_px"
+int dvz_polygon_set_region_stroke_width_px(
     DvzPolygonSet * set,
     uint32_t polygon_index,
     float width
@@ -2639,10 +2639,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:2967._
 
-### `dvz_polygon_set_region_stroke_widths()`
+### `dvz_polygon_set_region_stroke_widths_px()`
 
-```c title="dvz_polygon_set_region_stroke_widths"
-int dvz_polygon_set_region_stroke_widths(
+```c title="dvz_polygon_set_region_stroke_widths_px"
+int dvz_polygon_set_region_stroke_widths_px(
     DvzPolygonSet * set,
     uint32_t first_polygon,
     uint32_t polygon_count,
@@ -2849,10 +2849,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:2802._
 
-### `dvz_polygon_stroke_width()`
+### `dvz_polygon_stroke_width_px()`
 
-```c title="dvz_polygon_stroke_width"
-int dvz_polygon_stroke_width(
+```c title="dvz_polygon_stroke_width_px"
+int dvz_polygon_stroke_width_px(
     DvzPolygon * polygon,
     float width
 );
@@ -2957,7 +2957,7 @@ Create a segment visual.
 
 First-slice segment visuals render independent endpoint pairs as analytic screen-space
 stroked line segments. Dense attributes are `position_start` (vec3), `position_end` (vec3),
-`color` (RGBA8), and `stroke_width` (float width in pixels). Segment caps default to butt at
+`color` (RGBA8), and `stroke_width_px` (float width in pixels). Segment caps default to butt at
 both ends.
 
 Raw ctypes: emitted.
@@ -3444,10 +3444,10 @@ DvzVisual * dvz_vector(
 Create a vector visual.
 
 Straight vector items accept dense `position` (vec3 tail/anchor), `vector` (vec3 displacement),
-`color` (RGBA8), and `stroke_width` (float pixels). The first native lowering renders each item
+`color` (RGBA8), and `stroke_width_px` (float pixels). The first native lowering renders each item
 through the scene segment stroke pipeline with source item identity preserved.
 
-Curved mode omits `vector`; `position`, `color`, and `stroke_width` are then interpreted as
+Curved mode omits `vector`; `position`, `color`, and `stroke_width_px` are then interpreted as
 path points, optionally grouped by dvz_vector_set_subpaths().
 
 Raw ctypes: emitted.
@@ -3993,14 +3993,14 @@ First-slice visual families currently accept:
 
 | Visual family | Attributes |
 | --- | --- |
-| point | `"position"` (vec3f), `"color"` (RGBA8 or scalar float with a color scale), `"diameter"` (float pixels), optional `"item_state"` (uint32_t DvzItemStateKind bitfield) |
+| point | `"position"` (vec3f), `"color"` (RGBA8 or scalar float with a color scale), `"diameter_px"` (float pixels), optional `"item_state"` (uint32_t DvzItemStateKind bitfield) |
 | splat | `"position"` (vec3f), `"color"` (RGBA8), `"sigma"` (vec2f pixels), `"angle"` (float radians) |
-| pixel | `"position"` (vec3f), `"color"` (RGBA8 or scalar float with a color scale), `"pixel_size"` (float pixels), optional `"item_state"` (uint32_t DvzItemStateKind bitfield) |
-| marker | `"position"` (vec3f), `"color"` (RGBA8), `"diameter"` (float pixels), `"angle"` (float radians), `"shape"` (uint32_t DvzMarkerShape), optional `"item_state"` (uint32_t DvzItemStateKind bitfield) |
+| pixel | `"position"` (vec3f), `"color"` (RGBA8 or scalar float with a color scale), `"pixel_size_px"` (float pixels), optional `"item_state"` (uint32_t DvzItemStateKind bitfield) |
+| marker | `"position"` (vec3f), `"color"` (RGBA8), `"diameter_px"` (float pixels), `"angle"` (float radians), `"shape"` (uint32_t DvzMarkerShape), optional `"item_state"` (uint32_t DvzItemStateKind bitfield) |
 | sphere | `"position"` (vec3f), `"color"` (RGBA8), `"radius"` (float scene units) |
-| segment | `"position_start"` (vec3f), `"position_end"` (vec3f), `"color"` (RGBA8), `"stroke_width"` (float pixels) |
+| segment | `"position_start"` (vec3f), `"position_end"` (vec3f), `"color"` (RGBA8), `"stroke_width_px"` (float pixels) |
 | primitive | `"position"` (vec3f), `"color"` (RGBA8), primitive-only `"normal"` (vec3f) |
-| path | `"position"` (vec3f), `"color"` (RGBA8), optional `"stroke_width"` (float pixels) |
+| path | `"position"` (vec3f), `"color"` (RGBA8), optional `"stroke_width_px"` (float pixels) |
 | mesh | `"position"` (vec3f), optional `"color"` (RGBA8), optional `"normal"` (vec3f), optional `"texcoords"` (vec2f), optional `"instance_transform"` (mat4f, one per instance) |
 | image | legacy `"position"` (vec3f) + `"texcoords"` (vec2f) corner vertices, or per-item `"position"` (vec3f) + `"extent"` (vec2f) with optional `"tex_rect"` (vec4f) and `"anchor"` (vec2f) |
 | text | string attribute `"text"` plus per-string `"position"` (vec3f pixels), optional `"anchor"` (vec2f), `"size"` (float pixels), `"color"` (RGBA8), `"angle"` (float radians) |

@@ -77,13 +77,13 @@ typedef struct MarkerStressState
     uint32_t max_count;
     uint32_t active_count;
     float active_count_value;
-    float diameter;
+    float diameter_px;
     float base_angle;
     float phase;
     float rotation_speed_rad_per_sec;
     float fill_alpha;
     float edge_color[4];
-    float stroke_width;
+    float stroke_width_px;
     int style_mode;
     bool animate;
     bool mixed_shapes;
@@ -190,14 +190,14 @@ static void _apply_fill_alpha(MarkerStressState* state)
 
 
 /**
- * Apply the current marker diameter to the active marker prefix.
+ * Apply the current marker diameter_px to the active marker prefix.
  *
  * @param state marker stress state
  */
 static void _apply_diameters(MarkerStressState* state)
 {
     for (uint32_t i = 0; i < state->active_count; i++)
-        state->diameters[i] = state->diameter;
+        state->diameters[i] = state->diameter_px;
 }
 
 
@@ -301,14 +301,14 @@ static void _upload_colors(MarkerStressState* state)
 
 
 /**
- * Upload the current marker diameter to the active marker prefix.
+ * Upload the current marker diameter_px to the active marker prefix.
  *
  * @param state marker stress state
  */
 static void _upload_diameters(MarkerStressState* state)
 {
     _apply_diameters(state);
-    (void)dvz_visual_set_data(state->visual, "diameter", state->diameters, state->active_count);
+    (void)dvz_visual_set_data(state->visual, "diameter_px", state->diameters, state->active_count);
 }
 
 
@@ -350,7 +350,7 @@ static void _upload_marker_attributes(MarkerStressState* state)
     const DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = state->positions, .item_count = state->active_count},
         {.attr_name = "color", .data = state->colors, .item_count = state->active_count},
-        {.attr_name = "diameter", .data = state->diameters, .item_count = state->active_count},
+        {.attr_name = "diameter_px", .data = state->diameters, .item_count = state->active_count},
         {.attr_name = "angle", .data = state->angles, .item_count = state->active_count},
         {.attr_name = "shape", .data = state->shapes, .item_count = state->active_count},
     };
@@ -383,7 +383,7 @@ static void _apply_marker_style(MarkerStressState* state)
     }
     style.edge_color = dvz_color_from_unit(
         state->edge_color[0], state->edge_color[1], state->edge_color[2], state->edge_color[3]);
-    style.stroke_width = state->stroke_width;
+    style.stroke_width_px = state->stroke_width_px;
     (void)dvz_marker_set_style(state->visual, &style);
 }
 
@@ -529,7 +529,7 @@ static void _marker_stress_gui(DvzGui* gui, DvzView* win, void* user_data)
         upload_shape |= dvz_gui_checkbox(gui, "Mixed shapes", &state->mixed_shapes);
 
         upload_diameter |=
-            dvz_gui_slider_float(gui, "Diameter", &state->diameter, 2.0f, 256.0f);
+            dvz_gui_slider_float(gui, "Diameter", &state->diameter_px, 2.0f, 256.0f);
         upload_angle |= dvz_gui_slider_float_format(
             gui, "Base angle", &state->base_angle, -MARKER_STRESS_PI, MARKER_STRESS_PI,
             "%.2f rad");
@@ -546,7 +546,7 @@ static void _marker_stress_gui(DvzGui* gui, DvzView* win, void* user_data)
         };
         style_changed |= dvz_gui_combo(gui, "Style", &state->style_mode, style_labels, 3);
         style_changed |=
-            dvz_gui_slider_float(gui, "Stroke width", &state->stroke_width, 0.0f, 10.0f);
+            dvz_gui_slider_float(gui, "Stroke width", &state->stroke_width_px, 0.0f, 10.0f);
 
         upload_color |= dvz_gui_slider_float(gui, "Fill alpha", &state->fill_alpha, 0.02f, 1.0f);
         style_changed |= dvz_gui_color_edit4(gui, "Edge color", state->edge_color, 0);
@@ -644,14 +644,14 @@ int main(int argc, char** argv)
     state.max_count = MARKER_STRESS_MAX_COUNT;
     state.active_count = 8192u;
     state.active_count_value = 8192.0f;
-    state.diameter = 22.0f;
+    state.diameter_px = 22.0f;
     state.rotation_speed_rad_per_sec = MARKER_STRESS_ROTATION_SPEED_RAD_PER_SEC;
     state.fill_alpha = 0.88f;
     state.edge_color[0] = 0.02f;
     state.edge_color[1] = 0.025f;
     state.edge_color[2] = 0.035f;
     state.edge_color[3] = 1.0f;
-    state.stroke_width = 2.0f;
+    state.stroke_width_px = 2.0f;
     state.style_mode = MARKER_STRESS_STYLE_OUTLINE;
     state.animate = false;
     state.mixed_shapes = true;

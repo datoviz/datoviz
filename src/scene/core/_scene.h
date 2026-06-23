@@ -173,7 +173,7 @@ struct DvzPolygon
     bool visible;
     DvzColor fill_color;
     DvzColor stroke_color;
-    float stroke_width;
+    float stroke_width_px;
     DvzSegmentCap stroke_cap_start;
     DvzSegmentCap stroke_cap_end;
     DvzPathJoin stroke_join;
@@ -193,7 +193,7 @@ struct DvzPolygonSetItem
     bool visible;
     DvzColor fill_color;
     DvzColor stroke_color;
-    float stroke_width;
+    float stroke_width_px;
     uint64_t version;
 };
 

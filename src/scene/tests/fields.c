@@ -596,7 +596,7 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
     AT(legend->version > version);
     _scene_prepare_legend_visuals(figure, NULL);
     DvzVisualDataView size_view = {0};
-    AT(dvz_visual_data(legend->mark_visual, "diameter", &size_view) == 0);
+    AT(dvz_visual_data(legend->mark_visual, "diameter_px", &size_view) == 0);
     AT(size_view.item_count == 4);
     const float* sizes = (const float*)size_view.data;
     ANN(sizes);
@@ -608,7 +608,7 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
     DvzCategoryId highlights[2] = {-7, 4000000000LL};
     AT(dvz_legend_set_highlights(legend, highlights, 2));
     _scene_prepare_legend_visuals(figure, NULL);
-    AT(dvz_visual_data(legend->mark_visual, "diameter", &size_view) == 0);
+    AT(dvz_visual_data(legend->mark_visual, "diameter_px", &size_view) == 0);
     sizes = (const float*)size_view.data;
     ANN(sizes);
     AT(sizes[2] > 12.0f);
@@ -616,7 +616,7 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
 
     AT(dvz_legend_clear_highlight(legend));
     _scene_prepare_legend_visuals(figure, NULL);
-    AT(dvz_visual_data(legend->mark_visual, "diameter", &size_view) == 0);
+    AT(dvz_visual_data(legend->mark_visual, "diameter_px", &size_view) == 0);
     sizes = (const float*)size_view.data;
     ANN(sizes);
     AT(fabsf(sizes[0] - 12.0f) < 1e-6f);

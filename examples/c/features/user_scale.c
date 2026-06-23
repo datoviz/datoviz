@@ -124,7 +124,7 @@ static bool _add_path(DvzScene* scene, DvzPanel* panel)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = data_positions, .item_count = PATH_COUNT},
         {.attr_name = "color", .data = colors, .item_count = PATH_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = PATH_COUNT},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = PATH_COUNT},
     };
     if (dvz_visual_set_data_many(path, updates, 3) != 0)
         return false;
@@ -158,7 +158,7 @@ static bool _add_markers(DvzScene* scene, DvzPanel* panel)
     DvzMarkerStyle style = dvz_marker_style();
     style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
     style.edge_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
-    style.stroke_width = 2.75f;
+    style.stroke_width_px = 2.75f;
     if (dvz_marker_set_style(markers, &style) != 0)
         return false;
 
@@ -187,7 +187,7 @@ static bool _add_markers(DvzScene* scene, DvzPanel* panel)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = MARKER_COUNT},
         {.attr_name = "color", .data = colors, .item_count = MARKER_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = MARKER_COUNT},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = MARKER_COUNT},
         {.attr_name = "angle", .data = angles, .item_count = MARKER_COUNT},
         {.attr_name = "symbol", .data = symbols, .item_count = MARKER_COUNT},
     };

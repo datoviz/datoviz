@@ -95,7 +95,7 @@ Prefer one retained visual with dense arrays:
 DvzVisual* points = dvz_point(scene, 0);
 dvz_visual_set_data(points, "position", positions, point_count);
 dvz_visual_set_data(points, "color", colors, point_count);
-dvz_visual_set_data(points, "diameter", diameters, point_count);
+dvz_visual_set_data(points, "diameter_px", diameters, point_count);
 ```
 
 Avoid creating one visual per item:

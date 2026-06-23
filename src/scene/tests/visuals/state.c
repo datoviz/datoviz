@@ -315,7 +315,7 @@ int test_scene_visual_data_view(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_attr_mutability(
            visual, "position", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING) == 0);
     AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
-    AT(dvz_visual_set_data(visual, "diameter", sizes, 2) == 0);
+    AT(dvz_visual_set_data(visual, "diameter_px", sizes, 2) == 0);
 
     DvzVisualDataView view = {0};
     AT(dvz_visual_data(visual, "position", &view) == 0);
@@ -329,7 +329,7 @@ int test_scene_visual_data_view(TstContext* suite, const TstCase* item)
     AT(view_positions[3] == 1.0f);
 
     DvzVisualDataView alias_view = {0};
-    AT(dvz_visual_data(visual, "diameter", &alias_view) == 0);
+    AT(dvz_visual_data(visual, "diameter_px", &alias_view) == 0);
     AT(alias_view.data != NULL);
     AT(alias_view.item_count == 2);
     AT(alias_view.item_size == sizeof(float));
@@ -382,7 +382,7 @@ int test_scene_visual_scalar_color_attr_format(TstContext* suite, const TstCase*
     float sizes[2] = {6.0f, 12.0f};
     AT(dvz_visual_set_data(point, "position", positions, 2) == 0);
     AT(dvz_visual_set_data(point, "color", scalars, 2) == 0);
-    AT(dvz_visual_set_data(point, "diameter", sizes, 2) == 0);
+    AT(dvz_visual_set_data(point, "diameter_px", sizes, 2) == 0);
 
     DvzVisualDataView view = {0};
     AT(dvz_visual_data(point, "color", &view) == 0);
@@ -444,7 +444,7 @@ int test_scene_scalar_color_emits_rgba_upload(TstContext* suite, const TstCase* 
     AT(dvz_visual_set_attr_format(pixel, "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32) == 0);
     AT(dvz_visual_set_data(pixel, "position", positions, N) == 0);
     AT(dvz_visual_set_data(pixel, "color", values, N) == 0);
-    AT(dvz_visual_set_data(pixel, "pixel_size", sizes, N) == 0);
+    AT(dvz_visual_set_data(pixel, "pixel_size_px", sizes, N) == 0);
 
     DvzVisualDataView view = {0};
     AT(dvz_visual_data(pixel, "color", &view) == 0);
@@ -738,7 +738,7 @@ int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* ite
     vec3 positions[2] = {{-1.0f, -1.0f, 0.0f}, {+1.0f, +1.0f, 0.0f}};
     float diameters[2] = {20.0f, 20.0f};
     AT(dvz_visual_set_data(points, "position", positions, 2) == 0);
-    AT(dvz_visual_set_data(points, "diameter", diameters, 2) == 0);
+    AT(dvz_visual_set_data(points, "diameter_px", diameters, 2) == 0);
     AT(dvz_panel_add_visual(panel, points, NULL) == 0);
 
     AT(!dvz_panel_bounds_visible(panel));
@@ -857,7 +857,7 @@ int test_scene_panel_bounds_overlay_visual_panzoom_padding(TstContext* suite, co
     vec3 positions[2] = {{-1.0f, -1.0f, 0.0f}, {+1.0f, +1.0f, 0.0f}};
     float diameters[2] = {20.0f, 20.0f};
     AT(dvz_visual_set_data(points, "position", positions, 2) == 0);
-    AT(dvz_visual_set_data(points, "diameter", diameters, 2) == 0);
+    AT(dvz_visual_set_data(points, "diameter_px", diameters, 2) == 0);
     AT(dvz_panel_add_visual(panel, points, NULL) == 0);
 
     AT(dvz_panel_set_bounds_visible(panel, true) == 0);
@@ -1068,13 +1068,13 @@ int test_scene_point_typed_data_upload(TstContext* suite, const TstCase* item)
     DvzVisualDataUpdate point_updates[] = {
         {.attr_name = "position", .data = positions, .item_count = 2},
         {.attr_name = "color", .data = colors, .item_count = 2},
-        {.attr_name = "diameter", .data = diameters, .item_count = 2},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = 2},
     };
     AT(dvz_visual_set_data_many(visual, point_updates, 3) == 0);
     AT(dvz_visual_set_data(visual, "item_state", item_state, 2) == 0);
 
     DvzVisualDataView view = {0};
-    AT(dvz_visual_data(visual, "diameter", &view) == 0);
+    AT(dvz_visual_data(visual, "diameter_px", &view) == 0);
     const float* stored_diameters = view.data;
     AT(stored_diameters[1] == 8.0f);
 
@@ -1315,7 +1315,7 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     const DvzColor stroke_color = {240, 220, 40, 255};
     AT(dvz_polygon_fill_color(polygon, fill_color) == 0);
     AT(dvz_polygon_stroke_color(polygon, stroke_color) == 0);
-    AT(dvz_polygon_stroke_width(polygon, 3.0f) == 0);
+    AT(dvz_polygon_stroke_width_px(polygon, 3.0f) == 0);
     AT(dvz_polygon_id(polygon, 42) == 0);
     AT(polygon->user_id == 42);
     AT(dvz_polygon_stroke_caps(polygon, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_TRIANGLE_OUT) == 0);
@@ -1323,7 +1323,7 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     DvzPolygonStyle style = dvz_polygon_style();
     style.fill_color = fill_color;
     style.stroke_color = stroke_color;
-    style.stroke_width = 3.0f;
+    style.stroke_width_px = 3.0f;
     style.stroke_start_cap = DVZ_SEGMENT_CAP_BUTT;
     style.stroke_end_cap = DVZ_SEGMENT_CAP_TRIANGLE_OUT;
     style.stroke_join = DVZ_PATH_JOIN_BEVEL;
@@ -1373,7 +1373,7 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     AT(_visual_family_state(stroke)->path.subpath_count == 1);
     AT(_visual_family_state(stroke)->path.subpath_lengths[0] == 5);
     DvzVisualDataView stroke_width_view = {0};
-    AT(dvz_visual_data(stroke, "stroke_width", &stroke_width_view) == 0);
+    AT(dvz_visual_data(stroke, "stroke_width_px", &stroke_width_view) == 0);
     const float* widths = stroke_width_view.data;
     AC(widths[0], 3.0f, EPS);
     AT(_visual_family_state(stroke)->path.cap_start == DVZ_SEGMENT_CAP_BUTT);
@@ -1392,9 +1392,9 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     }
     AT(fill_position_version > 0);
     AT(fill_color_version > 0);
-    AT(dvz_polygon_stroke_width(polygon, 7.0f) == 0);
+    AT(dvz_polygon_stroke_width_px(polygon, 7.0f) == 0);
     _scene_prepare_composite_visuals(figure);
-    AT(dvz_visual_data(stroke, "stroke_width", &stroke_width_view) == 0);
+    AT(dvz_visual_data(stroke, "stroke_width_px", &stroke_width_view) == 0);
     widths = stroke_width_view.data;
     AC(widths[0], 7.0f, EPS);
     for (uint32_t ai = 0; ai < fill->attr_count; ai++)
@@ -1497,8 +1497,8 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     const DvzColor green = {0, 255, 0, 255};
     AT(dvz_polygon_set_region_fill_color(set, left_index, red) == 0);
     AT(dvz_polygon_set_region_fill_color(set, right_index, green) == 0);
-    AT(dvz_polygon_set_region_stroke_width(set, left_index, 2.0f) == 0);
-    AT(dvz_polygon_set_region_stroke_width(set, right_index, 4.0f) == 0);
+    AT(dvz_polygon_set_region_stroke_width_px(set, left_index, 2.0f) == 0);
+    AT(dvz_polygon_set_region_stroke_width_px(set, right_index, 4.0f) == 0);
     const uint64_t ids[2] = {101, 102};
     AT(dvz_polygon_set_region_ids(set, 0, 2, ids) == 0);
     AT(set->polygons[left_index].user_id == 101);
@@ -1544,7 +1544,7 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     AT(stroke_position_view.item_count == 10);
     AT(_visual_family_state(stroke)->path.subpath_count == 2);
     DvzVisualDataView stroke_width_view = {0};
-    AT(dvz_visual_data(stroke, "stroke_width", &stroke_width_view) == 0);
+    AT(dvz_visual_data(stroke, "stroke_width_px", &stroke_width_view) == 0);
     const float* widths = stroke_width_view.data;
     AC(widths[0], 2.0f, EPS);
     AC(widths[5], 4.0f, EPS);
@@ -1564,9 +1564,9 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     }
     AT(fill_position_version > 0);
     AT(fill_color_version > 0);
-    AT(dvz_polygon_set_region_stroke_width(set, right_index, 7.0f) == 0);
+    AT(dvz_polygon_set_region_stroke_width_px(set, right_index, 7.0f) == 0);
     _scene_prepare_composite_visuals(figure);
-    AT(dvz_visual_data(stroke, "stroke_width", &stroke_width_view) == 0);
+    AT(dvz_visual_data(stroke, "stroke_width_px", &stroke_width_view) == 0);
     widths = stroke_width_view.data;
     AC(widths[0], 2.0f, EPS);
     AC(widths[5], 7.0f, EPS);
@@ -1596,13 +1596,13 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     const float bulk_widths[2] = {1.5f, 2.5f};
     AT(dvz_polygon_set_region_fill_colors(set, 0, 2, bulk_fill) == 0);
     AT(dvz_polygon_set_region_stroke_colors(set, 0, 2, bulk_stroke) == 0);
-    AT(dvz_polygon_set_region_stroke_widths(set, 0, 2, bulk_widths) == 0);
+    AT(dvz_polygon_set_region_stroke_widths_px(set, 0, 2, bulk_widths) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "color", &color_view) == 0);
     colors = color_view.data;
     AT(colors[0] == bulk_fill[0].r);
     AT(colors[16] == bulk_fill[1].r);
-    AT(dvz_visual_data(stroke, "stroke_width", &stroke_width_view) == 0);
+    AT(dvz_visual_data(stroke, "stroke_width_px", &stroke_width_view) == 0);
     widths = stroke_width_view.data;
     AC(widths[0], bulk_widths[0], EPS);
     AC(widths[5], bulk_widths[1], EPS);
@@ -1697,7 +1697,7 @@ int test_scene_graph_composite(TstContext* suite, const TstCase* item)
     AC(node_positions[3], 1.0f, EPS);
 
     DvzVisualDataView node_size_view = {0};
-    AT(dvz_visual_data(node_visual, "diameter", &node_size_view) == 0);
+    AT(dvz_visual_data(node_visual, "diameter_px", &node_size_view) == 0);
     AT(node_size_view.item_count == 3);
     const float* sizes = node_size_view.data;
     AC(sizes[0], 10.0f, EPS);
@@ -1708,7 +1708,7 @@ int test_scene_graph_composite(TstContext* suite, const TstCase* item)
     DvzVisualDataView edge_width_view = {0};
     AT(dvz_visual_data(edge_visual, "position_start", &edge_start_view) == 0);
     AT(dvz_visual_data(edge_visual, "position_end", &edge_end_view) == 0);
-    AT(dvz_visual_data(edge_visual, "stroke_width", &edge_width_view) == 0);
+    AT(dvz_visual_data(edge_visual, "stroke_width_px", &edge_width_view) == 0);
     AT(edge_start_view.item_count == 2);
     const float* starts = edge_start_view.data;
     const float* ends = edge_end_view.data;
@@ -1787,7 +1787,7 @@ int test_scene_additional_typed_data_uploads(TstContext* suite, const TstCase* i
     DvzVisualDataUpdate pixel_updates[] = {
         {.attr_name = "position", .data = positions, .item_count = 3},
         {.attr_name = "color", .data = colors, .item_count = 3},
-        {.attr_name = "pixel_size", .data = sizes, .item_count = 3},
+        {.attr_name = "pixel_size_px", .data = sizes, .item_count = 3},
     };
     DvzVisualDataUpdate primitive_updates[] = {
         {.attr_name = "position", .data = positions, .item_count = 3},
@@ -1804,7 +1804,7 @@ int test_scene_additional_typed_data_uploads(TstContext* suite, const TstCase* i
     AT(dvz_visual_set_data_many(sphere, sphere_updates, 3) == 0);
 
     DvzVisualDataView pixel_size_view = {0};
-    AT(dvz_visual_data(pixel, "pixel_size", &pixel_size_view) == 0);
+    AT(dvz_visual_data(pixel, "pixel_size_px", &pixel_size_view) == 0);
     const float* stored_pixel_sizes = pixel_size_view.data;
     AT(stored_pixel_sizes[2] == 12.0f);
 
@@ -1855,12 +1855,12 @@ int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCas
     float diameters[1] = {4.0f};
     uint32_t item_state[1] = {DVZ_ITEM_STATE_SELECTED};
 
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(mesh, "diameter", diameters, 1) == -1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(mesh, "diameter_px", diameters, 1) == -1);
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(point, "normal", positions, 1) == -1);
     AT_EXPECTED_ERROR_STRICT(
         suite, dvz_visual_set_data(primitive, "radius", diameters, 1) == -1);
     AT_EXPECTED_ERROR_STRICT(
-        suite, dvz_visual_set_data(sphere, "pixel_size", diameters, 1) == -1);
+        suite, dvz_visual_set_data(sphere, "pixel_size_px", diameters, 1) == -1);
     AT_EXPECTED_ERROR_STRICT(
         suite, dvz_visual_set_data(point, "item_state", item_state, 0) == -1);
 

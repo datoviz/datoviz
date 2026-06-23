@@ -10,7 +10,7 @@ family-specific required and optional attributes.
 
 | Concept | Meaning |
 | --- | --- |
-| Attribute name | Stable string such as `position`, `color`, `diameter`, `radius`, `normal`, or `texcoords`. |
+| Attribute name | Stable string such as `position`, `color`, `diameter_px`, `radius`, `normal`, or `texcoords`. |
 | Format | Element type and shape expected by the family, such as `vec3`, RGBA8, scalar float, or `mat4`. |
 | Source | Semantic multiplicity: constant, per item, per span, or per group. |
 | Mutability | Planning hint: static, dynamic, or streaming. |

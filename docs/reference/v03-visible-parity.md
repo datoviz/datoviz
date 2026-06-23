@@ -24,7 +24,7 @@ Status values:
 | Text blocks and annotations | fixed | semantic text, glyph lowering, annotation/readout examples | Complex shaping, glyph/text picking, and broader world/data placement remain deferred. |
 | Color maps, scales, colorbars, and categorical legends | fixed | sampled-field, colorbar, colormap-scale, and legend examples | First release slice is active; richer shared layout and query payloads remain follow-up work. |
 | Scale bars, guide lines/spans, overlays, and readouts | fixed | scale-bar, guide, overlay, and probe-label examples | These are v0.4 semantic/composite routes, not restored v0.3 helper APIs. |
-| Point visual | fixed | `dvz_point()` and point examples | Scalar color/diameter modes, shifts, and richer selection styling are deferred. |
+| Point visual | fixed | `dvz_point()` and point examples | Scalar color/diameter_px modes, shifts, and richer selection styling are deferred. |
 | Pixel visual | fixed | `dvz_pixel()` and pixel examples | Scalar color mode and data-space pixel sizing are deferred. |
 | Marker visual and marker symbols | fixed | `dvz_marker()` plus built-in symbol ids | Built-in code-SDF vocabulary covers the v0.3 marker set plus target; exact SDF picking and atlas variants remain deferred. |
 | Primitive/basic visual | fixed | `dvz_primitive()` | v0.3 `basic` is renamed and narrowed as a low-level primitive family. |

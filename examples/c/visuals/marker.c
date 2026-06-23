@@ -176,7 +176,7 @@ _add_marker_row(
     DvzMarkerStyle style = dvz_marker_style();
     style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
     style.edge_color = edge_color;
-    style.stroke_width = 2.25f;
+    style.stroke_width_px = 2.25f;
     if (dvz_marker_set_style(visual, &style) != 0)
         return false;
 
@@ -202,7 +202,7 @@ _add_marker_row(
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = MARKER_COLS},
         {.attr_name = "color", .data = colors, .item_count = MARKER_COLS},
-        {.attr_name = "diameter", .data = diameters, .item_count = MARKER_COLS},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = MARKER_COLS},
         {.attr_name = "angle", .data = angles, .item_count = MARKER_COLS},
         {.attr_name = "symbol", .data = symbols, .item_count = MARKER_COLS},
     };

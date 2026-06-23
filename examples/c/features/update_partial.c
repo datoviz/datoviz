@@ -93,7 +93,7 @@ static bool _upload_initial_points(DvzVisual* visual)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = POINT_COUNT},
     };
     return dvz_visual_set_data_many(visual, updates, 3) == 0;
 }
@@ -158,7 +158,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
+    style.stroke_width_px = 0.0f;
     if (dvz_point_set_style(state->point, &style) != 0)
         goto error;
 

@@ -235,18 +235,18 @@ static int test_scene_dpi_user_scale_marker_edge_width(TstContext* suite, const 
 
     DvzMarkerStyle style = dvz_marker_style();
     style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
-    style.stroke_width = 2.75f;
+    style.stroke_width_px = 2.75f;
     AT(dvz_marker_set_style(marker, &style) == 0);
 
     vec3 pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor color[1] = {{255, 255, 255, 255}};
-    float diameter[1] = {24.0f};
+    float diameter_px[1] = {24.0f};
     float angle[1] = {0.0f};
     uint32_t symbol[1] = {DVZ_SYMBOL_DISC};
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = pos, .item_count = 1},
         {.attr_name = "color", .data = color, .item_count = 1},
-        {.attr_name = "diameter", .data = diameter, .item_count = 1},
+        {.attr_name = "diameter_px", .data = diameter_px, .item_count = 1},
         {.attr_name = "angle", .data = angle, .item_count = 1},
         {.attr_name = "symbol", .data = symbol, .item_count = 1},
     };
@@ -289,7 +289,7 @@ static int test_scene_dpi_user_scale_marker_edge_width(TstContext* suite, const 
         const DvzSceneMaterialParams* params =
             (const DvzSceneMaterialParams*)cmd->u.write_buffer.data_raw;
         ANN(params);
-        AC(params->params[0], style.stroke_width * cfg.user_scale, 1e-6f);
+        AC(params->params[0], style.stroke_width_px * cfg.user_scale, 1e-6f);
         found_material_params = true;
     }
     AT(found_material_params);

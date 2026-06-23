@@ -67,14 +67,14 @@ static bool _upload_points(DvzVisual* visual, DvzColor color)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = POINT_COUNT},
     };
     if (dvz_visual_set_data_many(visual, updates, 3) != 0)
         return false;
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
+    style.stroke_width_px = 0.0f;
     if (dvz_point_set_style(visual, &style) != 0)
         return false;
     return dvz_visual_set_depth_test(visual, false) == 0;

@@ -91,7 +91,7 @@ source for domain fitting, layout diagnostics, data inspection, and most scene-l
 
 Rendered bounds describe the pixels that a visual may touch after rendering:
 
-1. point/marker/pixel diameter in logical pixels;
+1. point/marker/pixel diameter_px in logical pixels;
 2. stroke width, antialiasing, and selection halos;
 3. glyph/text atlas quads and font metrics;
 4. sphere impostor quad padding and shader antialias padding;
@@ -143,7 +143,7 @@ Plan:
 
 1. keep `dvz_visual_bounds()` as anchor bounds;
 2. add an internal rendered-bounds or overlay-padding path for bounds overlays;
-3. for point/marker/pixel overlays, expand screen-space projected bounds by rendered diameter or
+3. for point/marker/pixel overlays, expand screen-space projected bounds by rendered diameter_px or
    pixel size;
 4. for sphere overlays, account for the same impostor padding used by the sphere shader;
 5. add tests proving the visible overlay encloses rendered point and sphere marks;

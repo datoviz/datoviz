@@ -1183,7 +1183,7 @@ int test_scene_msaa_ssao_blended_overlay_runtime_lowering(TstContext* suite, con
     AT(dvz_visual_set_data(overlay, "position_start", overlay_starts, 2) == 0);
     AT(dvz_visual_set_data(overlay, "position_end", overlay_ends, 2) == 0);
     AT(dvz_visual_set_data(overlay, "color", overlay_colors, 2) == 0);
-    AT(dvz_visual_set_data(overlay, "stroke_width", overlay_widths, 2) == 0);
+    AT(dvz_visual_set_data(overlay, "stroke_width_px", overlay_widths, 2) == 0);
     AT(dvz_segment_set_caps(overlay, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) == 0);
     AT(dvz_visual_set_depth_test(overlay, false) == 0);
     AT(dvz_visual_set_alpha_mode(overlay, DVZ_ALPHA_BLENDED) == 0);

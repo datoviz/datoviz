@@ -23,7 +23,7 @@ not GSP protocol ids.
 
 | Family | Constructor | Required data/resources | Optional data/resources | Query support | GSP status |
 |---|---|---|---|---|---|
-| `point` | `dvz_point(scene, flags)` | `position` vec3, `color` RGBA8, `diameter` float | `item_state`, link keys, `dvz_point_set_style()` | `DVZ_QUERY_CAPABILITY_ITEM`; returns visual id, family, item id, link key when present | ready |
+| `point` | `dvz_point(scene, flags)` | `position` vec3, `color` RGBA8, `diameter_px` float | `item_state`, link keys, `dvz_point_set_style()` | `DVZ_QUERY_CAPABILITY_ITEM`; returns visual id, family, item id, link key when present | ready |
 | `image` | `dvz_image(scene, flags)` | either legacy quad `position` + `texcoords`, or item `position` + `extent`; 2D `DvzSampledField` on `"field"` or texture wrapper | `anchor`, `tex_rect`, `dvz_visual_set_scale(image, "color", scale)`, colormap/scale resources | item, pixel, and sample paths are implemented; pixel/sample payloads expose panel/display identity and decoded sample metadata where supported | ready with payload limits |
 | `primitive` | `dvz_primitive(scene, topology, flags)` | `position` vec3, `color` RGBA8 | `normal`, `"index"` buffer | item-level primitive identity | usable, low-level only |
 | `mesh` | `dvz_mesh(scene, flags)` | `position` vec3 | `color`, `normal`, `texcoords`, `instance_transform`, `"index"` buffer, `"texture"` sampled field, `dvz_mesh_set_geometry()` | item-level mesh identity; face/region payloads are not first-slice ready | usable with limits |
@@ -38,12 +38,12 @@ the first compatibility slice.
 
 | Family | Constructor | Required data/resources | Query support | Adapter note |
 |---|---|---|---|---|
-| `pixel` | `dvz_pixel(scene, flags)` | `position`, `color`, `pixel_size` | item-level square picking | useful fallback for exact square markers |
-| `marker` | `dvz_marker(scene, flags)` | `position`, `color`, `diameter`, `shape`; optional `angle` | item-level bounding/SDF marker picking | use when GSP needs named marker shapes |
+| `pixel` | `dvz_pixel(scene, flags)` | `position`, `color`, `pixel_size_px` | item-level square picking | useful fallback for exact square markers |
+| `marker` | `dvz_marker(scene, flags)` | `position`, `color`, `diameter_px`, `shape`; optional `angle` | item-level bounding/SDF marker picking | use when GSP needs named marker shapes |
 | `sphere` | `dvz_sphere(scene, flags)` | `position`, `color`, `radius` | item-level impostor sphere picking | 3D scatter candidate when radius is in data/world units |
-| `segment` | `dvz_segment(scene, flags)` | `position_start`, `position_end`, `color`, `stroke_width` | item-level stroke picking | independent line segments |
-| `path` | `dvz_path(scene, flags)` | `position`, `color`, `stroke_width` | item-level lowered stroke picking | grouped/subpath polyline path |
-| `vector` | `dvz_vector(scene, flags)` | straight mode: `position`, `vector`, `color`, `stroke_width`; curved mode: path-like data | item-level delegated stroke picking | quiver-style vectors; lowerings preserve source item identity |
+| `segment` | `dvz_segment(scene, flags)` | `position_start`, `position_end`, `color`, `stroke_width_px` | item-level stroke picking | independent line segments |
+| `path` | `dvz_path(scene, flags)` | `position`, `color`, `stroke_width_px` | item-level lowered stroke picking | grouped/subpath polyline path |
+| `vector` | `dvz_vector(scene, flags)` | straight mode: `position`, `vector`, `color`, `stroke_width_px`; curved mode: path-like data | item-level delegated stroke picking | quiver-style vectors; lowerings preserve source item identity |
 | `labels` | `dvz_labels(scene, flags)` | integer sampled field on `"field"`, categorical scale on `"labels"` | label/segment probe paths | better than `image` for categorical label textures |
 | `splat` | `dvz_splat(scene, flags)` | `position`, `color`, `sigma`, `angle` | none installed | render-only; do not expose as queryable |
 

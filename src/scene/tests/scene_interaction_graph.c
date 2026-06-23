@@ -74,7 +74,7 @@ static DvzVisual* _local_transform_audit_visual(DvzScene* scene, DvzVisualType t
         visual = dvz_pixel(scene, 0);
         if (visual == NULL || dvz_visual_set_data(visual, "position", positions, 1) != 0 ||
             dvz_visual_set_data(visual, "color", colors, 1) != 0 ||
-            dvz_visual_set_data(visual, "pixel_size", sizes, 1) != 0)
+            dvz_visual_set_data(visual, "pixel_size_px", sizes, 1) != 0)
             return NULL;
         break;
 
@@ -100,7 +100,7 @@ static DvzVisual* _local_transform_audit_visual(DvzScene* scene, DvzVisualType t
         if (visual == NULL || dvz_visual_set_data(visual, "position_start", starts, 1) != 0 ||
             dvz_visual_set_data(visual, "position_end", ends, 1) != 0 ||
             dvz_visual_set_data(visual, "color", colors, 1) != 0 ||
-            dvz_visual_set_data(visual, "stroke_width", sizes, 1) != 0)
+            dvz_visual_set_data(visual, "stroke_width_px", sizes, 1) != 0)
             return NULL;
         break;
     }
@@ -109,7 +109,7 @@ static DvzVisual* _local_transform_audit_visual(DvzScene* scene, DvzVisualType t
         visual = dvz_path(scene, 0);
         if (visual == NULL || dvz_visual_set_data(visual, "position", positions, 3) != 0 ||
             dvz_visual_set_data(visual, "color", colors, 3) != 0 ||
-            dvz_visual_set_data(visual, "stroke_width", sizes, 3) != 0)
+            dvz_visual_set_data(visual, "stroke_width_px", sizes, 3) != 0)
             return NULL;
         break;
 
@@ -168,7 +168,7 @@ static DvzVisual* _local_transform_audit_visual(DvzScene* scene, DvzVisualType t
         if (visual == NULL || dvz_visual_set_data(visual, "position", positions, 1) != 0 ||
             dvz_visual_set_data(visual, "vector", vectors, 1) != 0 ||
             dvz_visual_set_data(visual, "color", colors, 1) != 0 ||
-            dvz_visual_set_data(visual, "stroke_width", sizes, 1) != 0)
+            dvz_visual_set_data(visual, "stroke_width_px", sizes, 1) != 0)
             return NULL;
         break;
     }
@@ -727,7 +727,7 @@ int test_scene_reference_grid_api_and_geometry(TstContext* suite, const TstCase*
     AT(dvz_visual_data(grid->visual, "position_start", &start_view) == 0);
     AT(dvz_visual_data(grid->visual, "position_end", &end_view) == 0);
     AT(dvz_visual_data(grid->visual, "color", &color_view) == 0);
-    AT(dvz_visual_data(grid->visual, "stroke_width", &width_view) == 0);
+    AT(dvz_visual_data(grid->visual, "stroke_width_px", &width_view) == 0);
     AT(start_view.item_count == 14);
     AT(end_view.item_count == 14);
     AT(color_view.item_count == 14);

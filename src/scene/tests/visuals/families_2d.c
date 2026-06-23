@@ -301,7 +301,7 @@ int test_scene_segment_emit_glsl(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data(visual, "position_start", position_start, 2) == 0);
     AT(dvz_visual_set_data(visual, "position_end", position_end, 2) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
-    AT(dvz_visual_set_data(visual, "stroke_width", stroke_widths, 2) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width_px", stroke_widths, 2) == 0);
     AT(dvz_segment_set_caps(visual, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_ROUND) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
@@ -446,7 +446,7 @@ int test_scene_vector_style_and_bounds(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
     AT(dvz_visual_set_data(visual, "vector", vectors, 2) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
-    AT(dvz_visual_set_data(visual, "stroke_width", widths, 2) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width_px", widths, 2) == 0);
 
     DvzBounds bounds = {0};
     AT(dvz_visual_bounds(visual, &bounds) == 0);
@@ -504,7 +504,7 @@ int test_scene_vector_emit_glsl(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
     AT(dvz_visual_set_data(visual, "vector", vectors, 2) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
-    AT(dvz_visual_set_data(visual, "stroke_width", stroke_widths, 2) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width_px", stroke_widths, 2) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -594,7 +594,7 @@ int test_scene_vector_curved_emit_glsl(TstContext* suite, const TstCase* item)
 
     AT(dvz_visual_set_data(visual, "position", positions, 5) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 5) == 0);
-    AT(dvz_visual_set_data(visual, "stroke_width", stroke_widths, 5) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width_px", stroke_widths, 5) == 0);
     AT(dvz_vector_set_subpaths(visual, 2, subpaths) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
@@ -996,7 +996,7 @@ int test_scene_point_style_emits_glsl_and_wgsl(TstContext* suite, const TstCase*
            visual,
            &(DvzPointStyleDesc){DVZ_STRUCT_INIT_FIELDS(DvzPointStyleDesc),
                .edge_color = {0, 0, 0, 255},
-               .stroke_width = 3.0f,
+               .stroke_width_px = 3.0f,
                .aspect = DVZ_SHAPE_ASPECT_OUTLINE,
            }) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
@@ -1166,7 +1166,7 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
            visual,
            &(DvzMarkerStyle){DVZ_STRUCT_INIT_FIELDS(DvzMarkerStyle),
                .edge_color = {0, 0, 0, 255},
-               .stroke_width = 2.0f,
+               .stroke_width_px = 2.0f,
                .aspect = DVZ_SHAPE_ASPECT_OUTLINE,
            }) == 0);
     tst_log_capture_begin(suite);

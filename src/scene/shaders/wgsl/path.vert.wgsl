@@ -120,8 +120,8 @@ fn main(input: VertexIn) -> VertexOut {
     let n1 = vec2f(-v1.y, v1.x);
     let n2 = vec2f(-v2.y, v2.x);
 
-    let stroke_width = max(input.line_width, 0.0);
-    let half_width = stroke_outer_half_width(stroke_width);
+    let stroke_width_px = max(input.line_width, 0.0);
+    let half_width = stroke_outer_half_width(stroke_width_px);
     let join_type = i32(material.params.z + 0.5);
     let miter_limit = max(material.params.w, 1.0);
     let length_px = length(p2 - p1);
@@ -132,7 +132,7 @@ fn main(input: VertexIn) -> VertexOut {
     var length_start = select(half_width, half_width / denom_start, denom_start > 1e-3);
     var length_end = select(half_width, half_width / denom_end, denom_end > 1e-3);
     if (join_type == 0) {
-        let miter_length_limit = max(miter_limit * (stroke_width * 0.5) + 2.0, half_width);
+        let miter_length_limit = max(miter_limit * (stroke_width_px * 0.5) + 2.0, half_width);
         length_start = min(length_start, miter_length_limit);
         length_end = min(length_end, miter_length_limit);
     } else if (join_type == 2) {
@@ -146,8 +146,8 @@ fn main(input: VertexIn) -> VertexOut {
     var pixel = p1;
     if (!endpoint_end) {
         if (!has_prev) {
-            let cap_extension = stroke_cap_extension(cap_type, stroke_width);
-            let cap_half_width = stroke_cap_half_width(cap_type, stroke_width);
+            let cap_extension = stroke_cap_extension(cap_type, stroke_width_px);
+            let cap_half_width = stroke_cap_half_width(cap_type, stroke_width_px);
             pixel = p1 - cap_extension * v1 + side * cap_half_width * n1;
             output.coord = vec2f(-cap_extension, side * cap_half_width);
         } else {
@@ -156,8 +156,8 @@ fn main(input: VertexIn) -> VertexOut {
         }
     } else {
         if (!has_next) {
-            let cap_extension = stroke_cap_extension(cap_type, stroke_width);
-            let cap_half_width = stroke_cap_half_width(cap_type, stroke_width);
+            let cap_extension = stroke_cap_extension(cap_type, stroke_width_px);
+            let cap_half_width = stroke_cap_half_width(cap_type, stroke_width_px);
             pixel = p2 + cap_extension * v1 + side * cap_half_width * n1;
             output.coord = vec2f(length_px + cap_extension, side * cap_half_width);
         } else {
@@ -182,7 +182,7 @@ fn main(input: VertexIn) -> VertexOut {
     output.bevel_distance.x = select(-start_distance, select(side * d0 * start_distance, -start_distance, endpoint_end), has_prev);
     output.bevel_distance.y = select(-end_distance, select(-end_distance, -side * d1 * end_distance, endpoint_end), has_next);
     output.length_px = length_px;
-    output.line_width = stroke_width;
+    output.line_width = stroke_width_px;
     output.has_prev = select(0.0, 1.0, has_prev);
     output.has_next = select(0.0, 1.0, has_next);
     return output;

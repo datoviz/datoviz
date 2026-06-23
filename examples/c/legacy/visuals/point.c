@@ -112,7 +112,7 @@ static bool _upload_points(
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = count},
         {.attr_name = "color", .data = colors, .item_count = count},
-        {.attr_name = "diameter", .data = diameters, .item_count = count},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = count},
     };
     return dvz_visual_set_data_many(visual, updates, 3) == 0;
 }
@@ -172,7 +172,7 @@ int main(int argc, char** argv)
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
+    style.stroke_width_px = 0.0f;
     ok = dvz_point_set_style(visual, &style) == 0;
     EXAMPLE_CHECK(ok, "dvz_point_set_style() failed");
 

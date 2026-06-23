@@ -72,7 +72,7 @@ Use `DVZ_COORD_VIEW` only when positions are already normalized view coordinates
 ## User Scale
 
 User scale is presentation scale on a view. It is appropriate for screen-space sizes such as marker
-diameter, stroke width, axes, labels, and GUI-adjusted readability. It should not be used to change
+diameter_px, stroke width, axes, labels, and GUI-adjusted readability. It should not be used to change
 data units or world geometry.
 
 ```c

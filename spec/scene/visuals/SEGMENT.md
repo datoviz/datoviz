@@ -18,14 +18,14 @@ Status on 2026-05-17: the active v0.4 runtime implements the first retained segm
 The implemented segment supports:
 
 1. retained `segment` visual construction via `dvz_segment()`;
-2. dense `position_start`, `position_end`, `color`, and public `stroke_width` attributes;
+2. dense `position_start`, `position_end`, `color`, and public `stroke_width_px` attributes;
 3. screen-space analytic stroked segments derived from the v0.3 four-vertex/six-index technique;
 4. caps `none`, `round`, `triangle_in`, `triangle_out`, `square`, and `butt`;
 5. `dvz_segment_set_caps()`, with `butt` as the default at both ends;
 6. GLSL/Vulkan frame-plan and DRP2 emission through the segment pipeline;
 7. GPU-backed item picking against the rendered stroke.
 
-`stroke_width` is the public attribute name. The current retained storage, shader input, and DRP2
+`stroke_width_px` is the public attribute name. The current retained storage, shader input, and DRP2
 resource metadata still use the historical internal name `line_width`.
 
 The following sections describe the target segment contract. Dashes, arrow caps, endpoint shifts,
@@ -97,14 +97,14 @@ Must use the same `color_mode` as `color`.
 Useful for time-colored trajectories, FA-colored fibers, signal-strength connection lines.
 
 
-### `stroke_width`
+### `stroke_width_px`
 
 Standard — see `SHARED_ATTRIBUTES.md`.
 Accepted sources: `CONSTANT`, `PER_ITEM` in the active descriptor. `PER_GROUP` is a target
 capability.
 Per-item stroke width is the defining capability of `segment` over `primitive` line topologies.
 
-Status on 2026-05-27: the active slice supports constant and dense per-item `stroke_width`.
+Status on 2026-05-27: the active slice supports constant and dense per-item `stroke_width_px`.
 
 
 ### `shift`
@@ -144,7 +144,7 @@ for quiver-plot arrow markers.
 | `arrow_stealth` | swept-back stealth/chevron arrowhead — `DVZ_ARROW_STEALTH` |
 | `arrow_circle` | circular cap with arrowhead semantics — `DVZ_ARROW_CIRCLE` |
 
-`arrow_*` caps extend beyond the endpoint by a size proportional to `stroke_width`.
+`arrow_*` caps extend beyond the endpoint by a size proportional to `stroke_width_px`.
 
 Status on 2026-05-17: arrow caps are not implemented. The active defaults are `cap_start = butt`
 and `cap_end = butt`.
@@ -162,7 +162,7 @@ Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
 | `P0`, `P1` | required | NaN/Inf endpoint skips segment and picking | no |
 | `color` | opaque white RGBA | scalar NaN uses scale missing color | yes |
 | `color_end` | inherits `color` | scalar NaN uses scale missing color | yes |
-| `stroke_width` | family-defined screen width | NaN falls back to default | yes |
+| `stroke_width_px` | family-defined screen width | NaN falls back to default | yes |
 | `shift` | `(0, 0, 0, 0)` | NaN component treated as zero shift | yes |
 | `cap_start`, `cap_end` | directional default described above | n/a | yes |
 
@@ -198,9 +198,9 @@ against every cap style remains follow-up work.
 
 ## Minimum Cases This Spec Must Support
 
-1. uniform error bars — `P0`/`P1` `PER_ITEM`, `color` `CONSTANT`, `stroke_width` `CONSTANT`,
+1. uniform error bars — `P0`/`P1` `PER_ITEM`, `color` `CONSTANT`, `stroke_width_px` `CONSTANT`,
 2. per-segment colored graph edges — `color` `PER_ITEM` rgba,
-3. multi-group error bars with group-encoded widths — target `stroke_width` `PER_GROUP`,
+3. multi-group error bars with group-encoded widths — target `stroke_width_px` `PER_GROUP`,
 4. time-colored trajectories — gradient, `color` and `color_end` both `PER_ITEM` scalar,
 5. error bar caps aligned to markers — `shift` `PER_ITEM`,
 6. fiber bundle with scalar FA coloring — `color` `PER_ITEM` scalar.
@@ -212,7 +212,7 @@ against every cap style remains follow-up work.
 |---|---|
 | `initial`/`terminal` in `dvz_segment_position` | `P0`, `P1` |
 | `dvz_segment_color` | `color`, extended sources and scalar mode |
-| `dvz_segment_linewidth` | `stroke_width`, extended sources |
+| `dvz_segment_linewidth` | `stroke_width_px`, extended sources |
 | `dvz_segment_shift` | `shift` (`vec4`) |
 | `dvz_segment_cap` | `cap_start`, `cap_end` |
 

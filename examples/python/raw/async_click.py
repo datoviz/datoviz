@@ -63,8 +63,8 @@ async def _run(output: Path) -> int:
             raise RuntimeError('dvz_visual_set_data(position) failed')
         if dvz.dvz_visual_set_data(visual, b'color', _void_p(colors), 3) != 0:
             raise RuntimeError('dvz_visual_set_data(color) failed')
-        if dvz.dvz_visual_set_data(visual, b'diameter', _void_p(diameters), 3) != 0:
-            raise RuntimeError('dvz_visual_set_data(diameter) failed')
+        if dvz.dvz_visual_set_data(visual, b'diameter_px', _void_p(diameters), 3) != 0:
+            raise RuntimeError('dvz_visual_set_data(diameter_px) failed')
         if dvz.dvz_panel_add_visual(panel, visual, None) != 0:
             raise RuntimeError('dvz_panel_add_visual() failed')
 
@@ -83,10 +83,10 @@ async def _run(output: Path) -> int:
 
         @view.pointer('click')
         async def click(ev):
-            diameter = await host.run_thread(_diameter_from_click, ev.x)
-            diameters[0] = diameter
-            if dvz.dvz_visual_set_data(visual, b'diameter', _void_p(diameters), 3) != 0:
-                raise RuntimeError('dvz_visual_set_data(diameter) failed')
+            diameter_px = await host.run_thread(_diameter_from_click, ev.x)
+            diameters[0] = diameter_px
+            if dvz.dvz_visual_set_data(visual, b'diameter_px', _void_p(diameters), 3) != 0:
+                raise RuntimeError('dvz_visual_set_data(diameter_px) failed')
             view.request_frame()
             clicked.set()
 

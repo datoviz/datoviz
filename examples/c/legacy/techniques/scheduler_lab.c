@@ -104,7 +104,7 @@ typedef struct SchedulerLabState
 /*************************************************************************************************/
 
 /**
- * Update the point diameter attribute from the current GUI state.
+ * Update the point diameter_px attribute from the current GUI state.
  *
  * @param state example state
  */
@@ -116,7 +116,7 @@ static void _lab_update_points(SchedulerLabState* state)
     float size = state->show_points ? state->point_size : 0.0f;
     for (uint32_t i = 0; i < LAB_POINT_COUNT; i++)
         state->diameters[i] = size + 4.0f * (float)(i % 3);
-    if (dvz_visual_set_data(state->points, "diameter", state->diameters, LAB_POINT_COUNT) == 0)
+    if (dvz_visual_set_data(state->points, "diameter_px", state->diameters, LAB_POINT_COUNT) == 0)
         state->mutation_count++;
 }
 

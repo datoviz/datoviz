@@ -444,7 +444,7 @@ static bool _add_cursor_lines(DvzScene* scene, DvzPanel* panel, double ymin, dou
         {.attr_name = "position_start", .data = visual_starts, .item_count = CURSOR_COUNT},
         {.attr_name = "position_end", .data = visual_ends, .item_count = CURSOR_COUNT},
         {.attr_name = "color", .data = colors, .item_count = CURSOR_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = CURSOR_COUNT},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = CURSOR_COUNT},
     };
     if (dvz_visual_set_data_many(visual, updates, 4) != 0)
         return false;
@@ -493,7 +493,7 @@ static bool _add_path(
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = visual_positions, .item_count = count},
         {.attr_name = "color", .data = colors, .item_count = count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = count},
     };
     if (dvz_visual_set_data_many(visual, updates, 3) != 0)
         return false;
@@ -566,7 +566,7 @@ static bool _add_event_panel(DvzScene* scene, DvzPanel* panel)
         {.attr_name = "position_start", .data = visual_starts, .item_count = EVENT_COUNT},
         {.attr_name = "position_end", .data = visual_ends, .item_count = EVENT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = EVENT_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = EVENT_COUNT},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = EVENT_COUNT},
     };
     if (dvz_visual_set_data_many(visual, updates, 4) != 0)
         return false;
@@ -609,7 +609,7 @@ static bool _add_residual_panel(DvzScene* scene, DvzPanel* panel)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = visual_positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = POINT_COUNT},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = POINT_COUNT},
     };
     if (dvz_visual_set_data_many(visual, updates, 3) != 0)
         return false;

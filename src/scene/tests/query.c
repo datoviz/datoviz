@@ -1298,10 +1298,10 @@ int test_scene_pixel_query_accepts_square_corner(TstContext* suite, const TstCas
     dvz_visual_set_query_capabilities(pixel, DVZ_QUERY_CAPABILITY_ITEM);
     vec3 pixel_pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor pixel_color[1] = {{255, 255, 255, 255}};
-    float pixel_size[1] = {24.0f};
+    float pixel_size_px[1] = {24.0f};
     AT(dvz_visual_set_data(pixel, "position", pixel_pos, 1) == 0);
     AT(dvz_visual_set_data(pixel, "color", pixel_color, 1) == 0);
-    AT(dvz_visual_set_data(pixel, "size", pixel_size, 1) == 0);
+    AT(dvz_visual_set_data(pixel, "size", pixel_size_px, 1) == 0);
     AT(dvz_panel_add_visual(panel, pixel, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -1373,10 +1373,10 @@ int test_scene_pixel_query_preserves_vertical_item_orientation(
         {255, 255, 255, 255},
         {255, 255, 255, 255},
     };
-    float pixel_size[2] = {14.0f, 14.0f};
+    float pixel_size_px[2] = {14.0f, 14.0f};
     AT(dvz_visual_set_data(pixel, "position", pixel_pos, 2) == 0);
     AT(dvz_visual_set_data(pixel, "color", pixel_color, 2) == 0);
-    AT(dvz_visual_set_data(pixel, "size", pixel_size, 2) == 0);
+    AT(dvz_visual_set_data(pixel, "size", pixel_size_px, 2) == 0);
     AT(dvz_panel_add_visual(panel, pixel, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -2113,7 +2113,7 @@ int test_scene_vector_query_resolves_straight_item(TstContext* suite, const TstC
     AT(dvz_visual_set_data(vector, "position", position, 2) == 0);
     AT(dvz_visual_set_data(vector, "vector", displacement, 2) == 0);
     AT(dvz_visual_set_data(vector, "color", color, 2) == 0);
-    AT(dvz_visual_set_data(vector, "stroke_width", width, 2) == 0);
+    AT(dvz_visual_set_data(vector, "stroke_width_px", width, 2) == 0);
     DvzVectorStyle style = dvz_vector_style();
     style.start_cap = DVZ_SEGMENT_CAP_BUTT;
     style.end_cap = DVZ_SEGMENT_CAP_BUTT;
@@ -2203,7 +2203,7 @@ int test_scene_vector_query_resolves_curved_item(TstContext* suite, const TstCas
     uint32_t subpaths[1] = {3};
     AT(dvz_visual_set_data(vector, "position", position, 3) == 0);
     AT(dvz_visual_set_data(vector, "color", color, 3) == 0);
-    AT(dvz_visual_set_data(vector, "stroke_width", width, 3) == 0);
+    AT(dvz_visual_set_data(vector, "stroke_width_px", width, 3) == 0);
     AT(dvz_vector_set_subpaths(vector, 1, subpaths) == 0);
     DvzVectorStyle style = dvz_vector_style();
     style.start_cap = DVZ_SEGMENT_CAP_BUTT;

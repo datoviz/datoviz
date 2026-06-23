@@ -41,8 +41,8 @@ family spec, update this ledger or follow the family spec.
    DRP2/runtime auxiliary streams.
 7. Do not add CPU fallback picking. Unsupported GPU pick precision should return an explicit
    request/result failure status rather than pretending to be a miss.
-8. Avoid vague `size` attributes in new or refactored API. Use `pixel_size`, `diameter`, `radius`,
-   `stroke_width`, and `extent` according to the family contract.
+8. Avoid vague `size` attributes in new or refactored API. Use `pixel_size_px`, `diameter_px`, `radius`,
+   `stroke_width_px`, and `extent` according to the family contract.
 9. Data upload should use generic `dvz_visual_set_data()` attributes. Typed public setters should
    configure behavior, style, material, or render modes rather than duplicate per-attribute data
    upload.
@@ -52,10 +52,10 @@ family spec, update this ledger or follow the family spec.
 
 ## Consistency Pass Decisions
 
-1. `pixel` uses `pixel_size`, not `size`.
-2. `point` and `marker` use `diameter`, not `size`.
+1. `pixel` uses `pixel_size_px`, not `size`.
+2. `point` and `marker` use `diameter_px`, not `size`.
 3. `sphere` uses `radius`, not `size`, and should stop using typed data setters as the primary API.
-4. `segment` and stroked `path` use `stroke_width`, not `line_width`.
+4. `segment` and stroked `path` use `stroke_width_px`, not `line_width`.
 5. `image` is a multi-item visual with per-item `position`, `extent`, optional `anchor`, and
    optional `tex_rect`, sampling one shared field/texture/atlas in the first coherent slice.
    `angle` and tint remain follow-up attributes.
@@ -76,7 +76,7 @@ Status on 2026-05-17: the first implementation batch for the five families lande
 
 Additional visual-consistency updates landed on 2026-05-17:
 
-1. Public visual attribute names now use `diameter`, `pixel_size`, `radius`, and `stroke_width`
+1. Public visual attribute names now use `diameter_px`, `pixel_size_px`, `radius`, and `stroke_width_px`
    while preserving the current internal storage names.
 2. `sphere` now uses the generic `dvz_visual_set_data()` path and no longer exposes duplicate
    typed data setters.
@@ -99,20 +99,20 @@ Additional status corrections recorded on 2026-05-27:
 
 Implemented:
 
-1. `pixel`: public `position`/`color`/`pixel_size`, GLSL native square points, WGSL instanced
+1. `pixel`: public `position`/`color`/`pixel_size_px`, GLSL native square points, WGSL instanced
    quads, offscreen nonblank smoke, and GPU square picking.
-2. `point`: public `position`/`color`/`diameter`, antialiased circular coverage, edge/stroke
+2. `point`: public `position`/`color`/`diameter_px`, antialiased circular coverage, edge/stroke
    styling via `dvz_point_set_style()`, GLSL native point-coordinate rendering, WGSL instanced
    quads, and GPU circular picking.
 3. `marker`: public `dvz_marker()`, v0.3-parity built-in code-SDF shape vocabulary plus
-   `target`, public `position`/`color`/`diameter`/`angle`/`shape`, marker style API, GLSL marker
+   `target`, public `position`/`color`/`diameter_px`/`angle`/`shape`, marker style API, GLSL marker
    rendering, WGSL point-like lowering, symbol-set binding, bitmap/SDF/MSDF source storage, and GPU
    bounding-box picking.
 4. `segment`: public `dvz_segment()`, `position_start`/`position_end` endpoint attributes,
-   constant/per-item `stroke_width`, RGBA color, analytic GLSL stroke quads, non-arrow caps, cap
+   constant/per-item `stroke_width_px`, RGBA color, analytic GLSL stroke quads, non-arrow caps, cap
    validation/API, and GPU item picking.
 5. `path`: existing primitive line-strip path plus a stroked path lane when per-point
-   `stroke_width` is present, open subpath lengths via `dvz_path_set_subpaths()`, and GLSL lowering
+   `stroke_width_px` is present, open subpath lengths via `dvz_path_set_subpaths()`, and GLSL lowering
    through the path-native stroke pipeline with GPU item picking over lowered edges.
 
 Validation recorded after the batch:
@@ -147,13 +147,13 @@ the nearest durable visual spec. The volume contract lives in `VOLUME.md`.
 
 Implemented first slice:
 
-1. Keep the current retained API shape: `position`, `color`, and `pixel_size` are dense public
+1. Keep the current retained API shape: `position`, `color`, and `pixel_size_px` are dense public
    attributes.
 2. Internal storage may still reuse the historical `size` slot, but public code should use
-   `pixel_size`.
+   `pixel_size_px`.
 3. Colors are RGBA only.
 4. Sizes are screen-space pixels only.
-5. Current descriptor sources include constant, per-item, and grouped `color`/`pixel_size`.
+5. Current descriptor sources include constant, per-item, and grouped `color`/`pixel_size_px`.
 6. No `shift`, scalar color mode, or `size_space = data` yet.
 7. GLSL and WGSL emission coverage is in place.
 8. Runtime/offscreen smoke proves pixel draws nonblank square marks.
@@ -170,8 +170,8 @@ Deferred:
 
 Implemented first slice:
 
-1. Keep current dense `position`, `color`, and `diameter` public attributes.
-2. `diameter` is the point diameter in screen pixels. Internal storage may still reuse the
+1. Keep current dense `position`, `color`, and `diameter_px` public attributes.
+2. `diameter_px` is the point diameter_px in screen pixels. Internal storage may still reuse the
    historical `size` slot.
 3. Colors are RGBA only.
 4. Antialiased circular point rendering is in place.
@@ -179,13 +179,13 @@ Implemented first slice:
 6. GPU-backed circular picking is in place.
 7. EDL, depth-cue, alpha-mode, WBOIT, and depth-peel eligibility remain routed through the existing
    point visual pass-capability path.
-8. Current descriptor sources include constant, per-item, and grouped `color`/`diameter`.
+8. Current descriptor sources include constant, per-item, and grouped `color`/`diameter_px`.
 
 Naming:
 
 1. `color` remains the face/fill color attribute.
 2. `edge_color` is the stroke/edge color.
-3. `stroke_width` is the stroke width in screen pixels.
+3. `stroke_width_px` is the stroke width in screen pixels.
 4. Use one marker-compatible style aspect enum where needed: `filled`, `stroke`, or `outline`.
 
 Backend lowering:
@@ -198,7 +198,7 @@ Backend lowering:
 Deferred:
 
 1. `shift`.
-2. Scalar color/diameter modes.
+2. Scalar color/diameter_px modes.
 3. `size_space = data`.
 
 
@@ -212,8 +212,8 @@ Implemented first slice:
 4. Built-in shapes cover the v0.3 marker vocabulary plus `target`.
 5. Use v0.3 marker GLSL SDF code as design prior art and port selectively into the v0.4 shader
    registry and runtime path.
-6. Attributes: `position`, `color`, `diameter`, `angle`, and `shape`/`symbol`.
-7. `color` and `diameter` support constant, per-item, and grouped sources; `angle` and
+6. Attributes: `position`, `color`, `diameter_px`, `angle`, and `shape`/`symbol`.
+7. `color` and `diameter_px` support constant, per-item, and grouped sources; `angle` and
    `shape`/`symbol` are dense per-item in the active descriptor.
 8. The `shape` attribute uses `uint32_t`, not `uint8_t`, for alignment and future symbol/atlas
    consistency.
@@ -230,7 +230,7 @@ Style naming:
 
 1. `color` is fill/tint color.
 2. `edge_color` is edge/stroke color.
-3. `stroke_width` is stroke width in screen pixels.
+3. `stroke_width_px` is stroke width in screen pixels.
 4. Style aspect is one exclusive value: `filled`, `stroke`, or `outline`.
 
 Deferred:
@@ -238,7 +238,7 @@ Deferred:
 1. DRP2 texture upload and atlas-backed marker rendering for bitmap/SDF/MSDF symbol sources.
 2. SVG-path import.
 3. Shared symbol/glyph atlas infrastructure.
-4. Scalar color/diameter modes.
+4. Scalar color/diameter_px modes.
 5. Data-space marker sizing.
 
 Symbol-backed marker rules:
@@ -260,7 +260,7 @@ Symbol/glyph sharing boundary:
 1. Shared internals may include atlas texture creation/upload, atlas entry metadata, UV rectangle
    lookup, SDF/MSDF decode helpers, sampler setup, DRP2 texture/bind-group emission, dirty-state
    handling, and descriptor-refresh behavior.
-2. Marker semantics remain scatter-symbol semantics: position is the item anchor, diameter controls
+2. Marker semantics remain scatter-symbol semantics: position is the item anchor, diameter_px controls
    marker extent, angle rotates around the center, and no baseline, advance, shaping, or fallback is
    involved.
 3. Glyph/text semantics remain text-layout semantics: atlas entry identity is tied to font face and
@@ -302,12 +302,12 @@ Deferred:
 Ordering:
 
 1. The segment first slice has landed.
-2. The current path implementation keeps primitive line-strip rendering when `stroke_width` is
-   absent and lowers to the path-native stroke pipeline when `stroke_width` is present.
+2. The current path implementation keeps primitive line-strip rendering when `stroke_width_px` is
+   absent and lowers to the path-native stroke pipeline when `stroke_width_px` is present.
 
 Implemented stroked path slice:
 
-1. The current line-strip convenience path is preserved for paths without `stroke_width`.
+1. The current line-strip convenience path is preserved for paths without `stroke_width_px`.
 2. Explicit open subpath metadata is provided by `dvz_path_set_subpaths()`.
 3. `dvz_visual_set_data("span_sizes", ...)` is not used as the primary public API.
 4. Path caps are configured by `dvz_path_set_caps()`.

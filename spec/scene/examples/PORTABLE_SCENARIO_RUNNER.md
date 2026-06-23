@@ -626,7 +626,7 @@ DvzVisual* points = dvz_point(scene, 0);
 
 dvz_visual_set_data(points, "position", positions, count);
 dvz_visual_set_data(points, "color", colors, count);
-dvz_visual_set_data(points, "diameter", sizes, count);
+dvz_visual_set_data(points, "diameter_px", sizes, count);
 dvz_panel_add_visual(panel, points, NULL);
 
 DvzApp* app = dvz_app(scene);

@@ -166,7 +166,7 @@ static bool _add_segment_band(
         {.attr_name = "position_start", .data = &starts[offset], .item_count = SEGMENTS_PER_BAND},
         {.attr_name = "position_end", .data = &ends[offset], .item_count = SEGMENTS_PER_BAND},
         {.attr_name = "color", .data = &colors[offset], .item_count = SEGMENTS_PER_BAND},
-        {.attr_name = "stroke_width", .data = &widths[offset], .item_count = SEGMENTS_PER_BAND},
+        {.attr_name = "stroke_width_px", .data = &widths[offset], .item_count = SEGMENTS_PER_BAND},
     };
     if (dvz_visual_set_data_many(visual, updates, 4) != 0)
         return false;

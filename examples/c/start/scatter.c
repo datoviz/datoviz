@@ -145,14 +145,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = state->positions, .item_count = POINT_COUNT},
         {.attr_name = "color",    .data = state->colors,    .item_count = POINT_COUNT},
-        {.attr_name = "diameter", .data = state->diameters, .item_count = POINT_COUNT},
+        {.attr_name = "diameter_px", .data = state->diameters, .item_count = POINT_COUNT},
     };
     if (dvz_visual_set_data_many(point, updates, 3) != 0)
         goto error;
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect       = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width = 0.0f;
+    style.stroke_width_px = 0.0f;
     if (dvz_point_set_style(point, &style) != 0)
         goto error;
     if (dvz_visual_set_depth_test(point, false) != 0)

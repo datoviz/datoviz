@@ -19,11 +19,11 @@ parity, followed by the `DvzSymbolSet` resource layer for texture-backed and imp
 The implemented path supports:
 
 1. retained `marker` visual construction via `dvz_marker()`;
-2. dense `position`, `color`, public `diameter`, `angle`, and `shape` attributes, where
-   `diameter` aliases the current internal `size` slot;
+2. dense `position`, `color`, public `diameter_px`, `angle`, and `shape` attributes, where
+   `diameter_px` aliases the current internal `size` slot;
 3. `shape` values stored as `uint32_t` `DvzMarkerShape` values;
 4. built-in code-SDF shapes for the v0.3 marker vocabulary plus `target`;
-5. `dvz_marker_style()` and `dvz_marker_set_style()` with `edge_color`, `stroke_width`, and
+5. `dvz_marker_style()` and `dvz_marker_set_style()` with `edge_color`, `stroke_width_px`, and
    exclusive `filled`/`stroke`/`outline` aspect semantics;
 6. GLSL/Vulkan native point-list lowering with marker SDF coverage;
 7. WGSL/WebGPU instanced-quad lowering through the point-like lowering policy;
@@ -31,7 +31,7 @@ The implemented path supports:
 
 The following sections describe the target marker contract. Reusable symbol sets, bitmap/SDF/MSDF
 symbol sources, SVG-path import, and exact SDF-mask picking are v0.4 parity work. Scalar
-color/diameter modes, `shift`, aspect-ratio/magnitude helpers, and data-space sizing remain planned
+color/diameter_px modes, `shift`, aspect-ratio/magnitude helpers, and data-space sizing remain planned
 capabilities unless explicitly marked as implemented above.
 
 
@@ -55,7 +55,7 @@ Target marker data:
 | Attribute | Meaning |
 |---|---|
 | `position` | Anchor point in visual space. |
-| `diameter` | Screen-space symbol extent by default. |
+| `diameter_px` | Screen-space symbol extent by default. |
 | `angle` | Screen-space rotation around the anchor. |
 | `color` | Fill/tint color. |
 | `symbol` | `uint32_t` `DvzSymbolId` selecting an entry in a bound `DvzSymbolSet`. |
@@ -118,7 +118,7 @@ Standard — see `SHARED_ATTRIBUTES.md`. Fill color of the marker body.
 Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 
 
-### `diameter`
+### `diameter_px`
 
 Standard — see `SHARED_ATTRIBUTES.md`.
 Storage name: `size`.
@@ -215,8 +215,8 @@ Combined with `angle` `PER_ITEM` for oriented ellipses.
 | Typical mutability | `dynamic` or `streaming` |
 | Optional | yes — defaults to `1.0` (no scaling) |
 
-Multiplicative scale applied to `diameter` per item, after all other size transformations.
-Primary use: quiver plots, where `diameter` sets the base arrow length and `magnitude` encodes
+Multiplicative scale applied to `diameter_px` per item, after all other size transformations.
+Primary use: quiver plots, where `diameter_px` sets the base arrow length and `magnitude` encodes
 the field strength at each position.
 When combined with `shape = arrow` and `angle` `PER_ITEM`, produces a standard 2D vector
 field visualization.
@@ -246,7 +246,7 @@ attribute in the active first slice.
 | Mutability | `dynamic` |
 
 - `filled`: solid fill, no visible edge.
-- `stroke`: edge only, no fill. Width controlled by `stroke_width`.
+- `stroke`: edge only, no fill. Width controlled by `stroke_width_px`.
 - `outline`: filled body with edge on top. Uses both `color` (fill) and `edge_color` (edge).
 
 
@@ -261,7 +261,7 @@ attribute in the active first slice.
 Edge color for `aspect = stroke` or `aspect = outline`. Visual-wide.
 
 
-### `stroke_width`
+### `stroke_width_px`
 
 | Property | Value |
 |---|---|
@@ -335,7 +335,7 @@ Must match the declared render mode format.
 |---|---|---|---|
 | `position` | required | NaN/Inf item skipped and not pickable | no |
 | `color`, `edge_color` | fill white, edge transparent | scalar NaN uses scale missing color | yes |
-| `diameter`, `magnitude` | family-defined screen size, scale `1` | scalar NaN uses fallback size | yes |
+| `diameter_px`, `magnitude` | family-defined screen size, scale `1` | scalar NaN uses fallback size | yes |
 | `angle`, `aspect`, `shape`/`symbol` | defaults described above | invalid value is validation error | yes |
 | `shift` | `(0, 0)` | NaN component treated as zero shift | yes |
 
@@ -397,8 +397,8 @@ and emits a diagnostic. `color_mode = scalar` and `size_mode = scalar` follow st
 | `dvz_marker_mode` | symbol encoding preference or compatibility backend knob |
 | `dvz_marker_aspect` | `aspect` parameter |
 | `dvz_marker_shape` | built-in `symbol` id or compatibility `shape` parameter |
-| `dvz_marker_position/size/color/angle` | `position`/`diameter`/`color`/`angle`, extended sources and modes |
-| `dvz_marker_edgecolor/linewidth` | `edge_color` and `stroke_width` style fields |
+| `dvz_marker_position/size/color/angle` | `position`/`diameter_px`/`color`/`angle`, extended sources and modes |
+| `dvz_marker_edgecolor/linewidth` | `edge_color` and `stroke_width_px` style fields |
 | `dvz_marker_texture/tex_scale` | symbol source texture plus distance-field metadata |
 
 v0.4 adds: `size_space`, `shift`, `color_mode = scalar`, `size_mode = scalar`.

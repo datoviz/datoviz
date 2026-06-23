@@ -72,7 +72,7 @@ int main(int argc, char** argv)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = 5},
         {.attr_name = "color", .data = colors, .item_count = 5},
-        {.attr_name = "diameter", .data = sizes, .item_count = 5},
+        {.attr_name = "diameter_px", .data = sizes, .item_count = 5},
     };
     int rc = dvz_visual_set_data_many(visual, updates, 3);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");

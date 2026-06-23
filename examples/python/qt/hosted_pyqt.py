@@ -71,8 +71,8 @@ class ExampleScene:
     def set_point_size(self, size: int):
         for i in range(3):
             self.diameters[i] = float(size)
-        if dvz.dvz_visual_set_data(self.visual, b'diameter', _void_p(self.diameters), 3) != 0:
-            raise RuntimeError('dvz_visual_set_data(diameter) failed')
+        if dvz.dvz_visual_set_data(self.visual, b'diameter_px', _void_p(self.diameters), 3) != 0:
+            raise RuntimeError('dvz_visual_set_data(diameter_px) failed')
 
     def randomize_colors(self):
         for i in range(3):
@@ -90,8 +90,8 @@ class ExampleScene:
             raise RuntimeError('dvz_visual_set_data(position) failed')
         if dvz.dvz_visual_set_data(self.visual, b'color', _void_p(self.colors), 3) != 0:
             raise RuntimeError('dvz_visual_set_data(color) failed')
-        if dvz.dvz_visual_set_data(self.visual, b'diameter', _void_p(self.diameters), 3) != 0:
-            raise RuntimeError('dvz_visual_set_data(diameter) failed')
+        if dvz.dvz_visual_set_data(self.visual, b'diameter_px', _void_p(self.diameters), 3) != 0:
+            raise RuntimeError('dvz_visual_set_data(diameter_px) failed')
 
 
 class MainWindow(QMainWindow):

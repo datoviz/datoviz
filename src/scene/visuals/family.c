@@ -87,7 +87,7 @@ const char* _visual_family_attr_expected(DvzVisualType type)
 {
     const DvzVisualFamilyOps* ops = _scene_visual_family_ops(type);
     return ops != NULL && ops->expected_attrs != NULL ? ops->expected_attrs
-                                                      : "position, color, diameter, selection";
+                                                      : "position, color, diameter_px, selection";
 }
 
 

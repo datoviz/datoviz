@@ -57,7 +57,7 @@ A scatter plot of 10 000 random points with pan/zoom:
     visual = dvz.dvz_point(scene, 0)
     dvz.dvz_visual_set_data(visual, "position", pos)
     dvz.dvz_visual_set_data(visual, "color", color)
-    dvz.dvz_visual_set_data(visual, "diameter", diameters)
+    dvz.dvz_visual_set_data(visual, "diameter_px", diameters)
     dvz.dvz_panel_add_visual(panel, visual, None)
 
     # --- run ---
@@ -76,7 +76,7 @@ A scatter plot of 10 000 random points with pan/zoom:
     int main(void) {
         /* data */
         int N = 10000;
-        float pos[N * 3], diameter[N];
+        float pos[N * 3], diameter_px[N];
         uint8_t color[N * 4];
         for (int i = 0; i < N; i++) {
             pos[3*i+0] = (float)rand()/RAND_MAX * 2 - 1;
@@ -86,7 +86,7 @@ A scatter plot of 10 000 random points with pan/zoom:
             color[4*i+1] = rand() % 256;
             color[4*i+2] = rand() % 256;
             color[4*i+3] = 255;
-            diameter[i] = 5.0f;
+            diameter_px[i] = 5.0f;
         }
 
         /* scene */
@@ -101,7 +101,7 @@ A scatter plot of 10 000 random points with pan/zoom:
         DvzVisual* visual = dvz_point(scene, 0);
         dvz_visual_set_data(visual, "position", pos, N);
         dvz_visual_set_data(visual, "color", color, N);
-        dvz_visual_set_data(visual, "diameter", diameter, N);
+        dvz_visual_set_data(visual, "diameter_px", diameter_px, N);
         dvz_panel_add_visual(panel, visual, NULL);
 
         /* run; for offscreen PNG use dvz_view_offscreen() and dvz_view_capture_png(). */

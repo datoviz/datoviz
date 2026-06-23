@@ -4,7 +4,7 @@ Final one-visual public examples belong here. The old visual smoke examples were
 `../legacy/visuals/` and should be copied or rewritten back into this folder only when they are
 polished, scenario-indexed, and ready for the v0.4 public suite.
 
-- `point.c`: retained point positions, color, and diameter.
+- `point.c`: retained point positions, color, and diameter_px.
 - `pixel.c`: retained pixel positions, color, and pixel size.
 - `marker.c`: retained marker shape, fill, stroke, size, and angle.
 - `primitive.c`: retained primitive triangle topologies.

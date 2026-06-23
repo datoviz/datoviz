@@ -30,8 +30,8 @@ Implemented first-slice behavior:
 
 1. public `dvz_vector()` constructor;
 2. public `DvzVectorStyle`, `dvz_vector_style()`, and `dvz_vector_set_style()`;
-3. straight vector mode with dense `position`, `vector`, `color`, and `stroke_width` attributes;
-4. curved vector mode that omits `vector` and interprets `position`, `color`, and `stroke_width`
+3. straight vector mode with dense `position`, `vector`, `color`, and `stroke_width_px` attributes;
+4. curved vector mode that omits `vector` and interprets `position`, `color`, and `stroke_width_px`
    as path points;
 5. public `dvz_vector_set_subpaths()` for curved-vector path grouping;
 6. DRP2 emission through existing segment and path stroke pipelines;
@@ -39,7 +39,7 @@ Implemented first-slice behavior:
 8. a C smoke example at `examples/c/visuals/vector.c`.
 
 The active head rendering is cap-based: vector uses the segment/path triangular cap vocabulary, and
-the visible head size is derived from `stroke_width`. Thin strokes therefore produce small,
+the visible head size is derived from `stroke_width_px`. Thin strokes therefore produce small,
 sometimes barely visible heads. Independent head length/width, head-size space, and richer head
 geometry are not implemented yet.
 
@@ -159,7 +159,7 @@ helper. The first visual contract should keep the source explicit rather than hi
 magnitude upload.
 
 
-### `stroke_width`
+### `stroke_width_px`
 
 Standard stroke width attribute. Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 
@@ -207,8 +207,8 @@ The active implementation renders vector heads as segment/path endpoint caps. In
 cap half-width is derived from `lineWidth * 1.5`. This makes the current visual easy to lower through
 the shared stroke backend, but it couples two different style decisions:
 
-1. shaft thickness, controlled by `stroke_width`;
-2. head legibility, currently implied by that same `stroke_width`.
+1. shaft thickness, controlled by `stroke_width_px`;
+2. head legibility, currently implied by that same `stroke_width_px`.
 
 This is the main visual limitation for dense quiver and wind-field examples. Thin shafts produce
 tiny heads, while readable heads require thick shafts. The next narrow improvement should decouple
@@ -221,7 +221,7 @@ Recommended first follow-up:
 3. pass the resolved head dimensions through the existing vector material/stroke parameter path;
 4. update the stroke cap shader to use explicit head dimensions when they are positive, falling
    back to the current `lineWidth`-derived formula for compatibility with default styling;
-5. add focused tests that a thin shaft can produce a larger head without changing `stroke_width`;
+5. add focused tests that a thin shaft can produce a larger head without changing `stroke_width_px`;
 6. keep per-item head dimensions deferred until the visual-wide controls prove useful.
 
 `head_mode` should cover `none`, `end`, `start`, and `both`. In the first shader-backed slice, this
@@ -452,10 +452,10 @@ only one generated role.
 The smallest useful implementation slice should support:
 
 1. `dvz_vector()` retained visual construction;
-2. dense `position`, `vector`, `color`, and `stroke_width` data;
-3. curved mode using `position`, `color`, `stroke_width`, and `dvz_vector_set_subpaths()`;
+2. dense `position`, `vector`, `color`, and `stroke_width_px` data;
+3. curved mode using `position`, `color`, `stroke_width_px`, and `dvz_vector_set_subpaths()`;
 4. visual-wide `scale`, `anchor = tail`, and endpoint cap style;
-5. screen-space `stroke_width`;
+5. screen-space `stroke_width_px`;
 6. 2D panel lowering to existing stroke pipelines with cap-based arrowheads;
 7. GPU picking that maps shaft/cap hits to the same source item;
 8. one example with sparse straight and curved vectors.

@@ -610,7 +610,7 @@ static bool _add_choropleth_polygons(
         ok = false;
     if (ok && dvz_polygon_set_region_stroke_colors(set, 0, bundle->ring_count, bundle->stroke) != 0)
         ok = false;
-    if (ok && dvz_polygon_set_region_stroke_widths(set, 0, bundle->ring_count, bundle->widths) != 0)
+    if (ok && dvz_polygon_set_region_stroke_widths_px(set, 0, bundle->ring_count, bundle->widths) != 0)
         ok = false;
     if (ok && dvz_polygon_set_stroke_join(set, DVZ_PATH_JOIN_ROUND, 3.0f) != 0)
         ok = false;

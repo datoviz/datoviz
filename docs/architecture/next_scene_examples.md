@@ -47,7 +47,7 @@ arrays and the normalised coordinate system.
 #define N 1000
 float pos[N * 3];    /* x, y, z=0 in [-1, 1] */
 uint8_t color[N * 4];  /* RGBA */
-float size[N];       /* point diameter in pixels */
+float size[N];       /* point diameter_px in pixels */
 ```
 
 Fill with random values (use `dvz_rand_float()` or plain `rand()`).

@@ -219,7 +219,7 @@ static uint32_t _polygon_append_stroke_ring(
         positions[j][1] = (float)ring->xy[i][1];
         positions[j][2] = 0.0f;
         _polygon_color_copy(&colors[j], polygon->stroke_color);
-        widths[j] = polygon->stroke_width;
+        widths[j] = polygon->stroke_width_px;
     }
 
     const uint32_t close = offset + count;
@@ -227,7 +227,7 @@ static uint32_t _polygon_append_stroke_ring(
     positions[close][1] = (float)ring->xy[0][1];
     positions[close][2] = 0.0f;
     _polygon_color_copy(&colors[close], polygon->stroke_color);
-    widths[close] = polygon->stroke_width;
+    widths[close] = polygon->stroke_width_px;
     return close + 1;
 }
 
@@ -292,7 +292,7 @@ static int _polygon_prepare_stroke(DvzPolygon* polygon, DvzVisual* stroke)
     DvzVisualDataUpdate updates[3] = {
         {.attr_name = "position", .data = positions, .item_count = point_count},
         {.attr_name = "color", .data = colors, .item_count = point_count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = point_count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = point_count},
     };
     int out = dvz_visual_set_data_many(stroke, updates, 3);
     if (out == 0)
@@ -301,7 +301,7 @@ static int _polygon_prepare_stroke(DvzPolygon* polygon, DvzVisual* stroke)
         out = dvz_path_set_caps(stroke, polygon->stroke_cap_start, polygon->stroke_cap_end);
     if (out == 0)
         out = dvz_path_set_join(stroke, polygon->stroke_join, polygon->stroke_miter_limit);
-    stroke->visible = polygon->visible && polygon->stroke_color.a > 0 && polygon->stroke_width > 0.0f;
+    stroke->visible = polygon->visible && polygon->stroke_color.a > 0 && polygon->stroke_width_px > 0.0f;
 
     dvz_free(positions);
     dvz_free(colors);
@@ -446,7 +446,7 @@ static uint32_t _polygon_set_append_stroke_ring(
         positions[j][1] = (float)ring->xy[i][1];
         positions[j][2] = 0.0f;
         _polygon_color_copy(&colors[j], item->stroke_color);
-        widths[j] = item->stroke_width;
+        widths[j] = item->stroke_width_px;
     }
 
     const uint32_t close = offset + count;
@@ -454,7 +454,7 @@ static uint32_t _polygon_set_append_stroke_ring(
     positions[close][1] = (float)ring->xy[0][1];
     positions[close][2] = 0.0f;
     _polygon_color_copy(&colors[close], item->stroke_color);
-    widths[close] = item->stroke_width;
+    widths[close] = item->stroke_width_px;
     return close + 1;
 }
 
@@ -477,7 +477,7 @@ static int _polygon_set_prepare_stroke(DvzPolygonSet* set, DvzVisual* stroke)
         if (!item->active || !item->visible)
             continue;
         any_visible_stroke =
-            any_visible_stroke || (item->stroke_width > 0.0f && item->stroke_color.a > 0);
+            any_visible_stroke || (item->stroke_width_px > 0.0f && item->stroke_color.a > 0);
 
         uint64_t next = 0;
         if (_dvz_add_u64_overflows(
@@ -558,7 +558,7 @@ static int _polygon_set_prepare_stroke(DvzPolygonSet* set, DvzVisual* stroke)
     DvzVisualDataUpdate updates[3] = {
         {.attr_name = "position", .data = positions, .item_count = point_count},
         {.attr_name = "color", .data = colors, .item_count = point_count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = point_count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = point_count},
     };
     int out = dvz_visual_set_data_many(stroke, updates, 3);
     if (out == 0)

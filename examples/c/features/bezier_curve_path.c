@@ -84,7 +84,7 @@ static bool _add_curve(DvzScene* scene, DvzPanel* panel, const DvzTessellatedPat
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = tess->point_count},
         {.attr_name = "color", .data = colors, .item_count = tess->point_count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = tess->point_count},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = tess->point_count},
     };
     if (dvz_visual_set_data_many(path, updates, 3) != 0)
         return false;
@@ -137,7 +137,7 @@ _add_control_polygon(DvzScene* scene, DvzPanel* panel, const dvec3 controls[CONT
         {.attr_name = "position_start", .data = starts, .item_count = CONTROL_EDGES},
         {.attr_name = "position_end", .data = ends, .item_count = CONTROL_EDGES},
         {.attr_name = "color", .data = colors, .item_count = CONTROL_EDGES},
-        {.attr_name = "stroke_width", .data = widths, .item_count = CONTROL_EDGES},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = CONTROL_EDGES},
     };
     if (dvz_visual_set_data_many(segment, updates, 4) != 0)
         return false;
@@ -184,7 +184,7 @@ _add_control_points(DvzScene* scene, DvzPanel* panel, const dvec3 controls[CONTR
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = CONTROL_COUNT},
         {.attr_name = "color", .data = colors, .item_count = CONTROL_COUNT},
-        {.attr_name = "diameter", .data = diameters, .item_count = CONTROL_COUNT},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = CONTROL_COUNT},
     };
     if (dvz_visual_set_data_many(point, updates, 3) != 0)
         return false;

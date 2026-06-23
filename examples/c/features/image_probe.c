@@ -509,7 +509,7 @@ static bool _add_probe_marker(
         {.attr_name = "position_start", .data = visual_starts, .item_count = PROBE_SEGMENTS},
         {.attr_name = "position_end", .data = visual_ends, .item_count = PROBE_SEGMENTS},
         {.attr_name = "color", .data = colors, .item_count = PROBE_SEGMENTS},
-        {.attr_name = "stroke_width", .data = widths, .item_count = PROBE_SEGMENTS},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = PROBE_SEGMENTS},
     };
     if (dvz_visual_set_data_many(marker, updates, 4) != 0)
         return false;
@@ -537,13 +537,13 @@ static bool _add_probe_marker(
     DvzVisualDataUpdate dot_updates[] = {
         {.attr_name = "position", .data = dot_visual, .item_count = 1},
         {.attr_name = "color", .data = dot_color, .item_count = 1},
-        {.attr_name = "diameter", .data = dot_diameter, .item_count = 1},
+        {.attr_name = "diameter_px", .data = dot_diameter, .item_count = 1},
     };
     if (dvz_visual_set_data_many(dot, dot_updates, 3) != 0)
         return false;
     DvzPointStyleDesc point_style = dvz_point_style_desc();
     point_style.aspect = DVZ_SHAPE_ASPECT_FILLED;
-    point_style.stroke_width = 0.0f;
+    point_style.stroke_width_px = 0.0f;
     if (dvz_point_set_style(dot, &point_style) != 0)
         return false;
     if (dvz_visual_set_depth_test(dot, false) != 0)

@@ -20,8 +20,8 @@ The implemented path supports:
 
 1. retained `path` visual construction via `dvz_path()`;
 2. dense `position` and `color` attributes;
-3. primitive line-strip rendering when `stroke_width` is absent;
-4. optional dense per-point `stroke_width` in screen pixels;
+3. primitive line-strip rendering when `stroke_width_px` is absent;
+4. optional dense per-point `stroke_width_px` in screen pixels;
 5. `dvz_path_set_subpaths()` for explicit open subpath lengths in the stroked path lane;
 6. `dvz_path_set_caps()` and `dvz_path_set_join()` with round caps/joins by default and a default
    miter limit of `4.0`;
@@ -29,12 +29,12 @@ The implemented path supports:
    adjacency and cap suppression, which is the current polygon-stroke path;
 8. stroked lowering through path-native adjacency resources carrying previous/current/next
    positions, color, internal `line_width`, per-vertex role/subpath flags, cumulative distance, and
-   indices when `stroke_width` is present;
+   indices when `stroke_width_px` is present;
 9. GLSL/Vulkan frame-plan and DRP2 emission through the `scene.path` stroke pipeline for stroked
    paths, while `segment` remains the independent endpoint-pair stroke pipeline;
 10. GPU-backed item picking for stroked paths.
 
-`stroke_width` is the public attribute name. The current retained storage and shader width input
+`stroke_width_px` is the public attribute name. The current retained storage and shader width input
 still use the historical internal name `line_width`.
 
 Current limitations:
@@ -70,7 +70,7 @@ The intended user workflow is:
 
 1. call a `dvz_tessellate_*` geometry helper to produce F64 polyline vertices;
 2. downcast or upload through the normal scene path as the `"position"` attribute;
-3. set `"color"`, `"stroke_width"`, caps, joins, and subpath lengths on `dvz_path()`.
+3. set `"color"`, `"stroke_width_px"`, caps, joins, and subpath lengths on `dvz_path()`.
 
 This keeps curve rendering on the same `path` frame-plan, DRP2, picking, styling, and backend
 adaptation path as authored polylines. Datoviz should not add a separate `curve` visual for the
@@ -120,7 +120,7 @@ Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_SPAN`, `PER_GROUP`.
 `CONSTANT` means one color for all vertices of all paths.
 
 
-### `stroke_width`
+### `stroke_width_px`
 
 Standard — see `SHARED_ATTRIBUTES.md`.
 Accepted sources: `CONSTANT`, `PER_ITEM` in the active descriptor. `PER_SPAN` is a target
@@ -194,11 +194,11 @@ The miter limit is controlled by `miter_limit` (see below).
 | Default | `4.0` |
 | Mutability | `dynamic` |
 
-Maximum miter length as a multiple of `stroke_width`. When a miter join would exceed this limit,
+Maximum miter length as a multiple of `stroke_width_px`. When a miter join would exceed this limit,
 the join falls back to `bevel` automatically. `4.0` is a standard SVG/PostScript default.
 Set to a large value to disable the limit (allows arbitrarily long miter spikes).
 
-When target `stroke_width` `PER_SPAN` support is installed, the miter limit is evaluated per-path
+When target `stroke_width_px` `PER_SPAN` support is installed, the miter limit is evaluated per-path
 using that path's own stroke width — a path with a wider stroke uses its width as the reference
 multiple.
 
@@ -237,7 +237,7 @@ Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
 | `position` | required | NaN/Inf vertex breaks or skips the affected path segment | no |
 | subpath lengths | optional | invalid lengths are validation errors | no |
 | `color` | opaque white RGBA | scalar NaN uses scale missing color | yes |
-| `stroke_width` | family-defined screen width | NaN falls back to default | yes |
+| `stroke_width_px` | family-defined screen width | NaN falls back to default | yes |
 | `cap_start`, `cap_end`, `join` | defaults described above | n/a | yes |
 
 
@@ -280,11 +280,11 @@ dedicated streaming API is needed.
 
 ## Minimum Cases This Spec Must Support
 
-1. single signal trace — one path, `color` `CONSTANT`, `stroke_width` `CONSTANT`,
-2. 20 overlaid signal traces — `color` `PER_SPAN`, `stroke_width` `CONSTANT`,
+1. single signal trace — one path, `color` `CONSTANT`, `stroke_width_px` `CONSTANT`,
+2. 20 overlaid signal traces — `color` `PER_SPAN`, `stroke_width_px` `CONSTANT`,
 3. per-vertex colored trajectory — `color` `PER_ITEM` rgba (gradient along path),
 4. scalar-colored fiber bundle — `color` `PER_ITEM` scalar,
-5. per-path-width contour lines — target `stroke_width` `PER_SPAN`,
+5. per-path-width contour lines — target `stroke_width_px` `PER_SPAN`,
 6. closed polygon outlines — `closed = true`, `join = miter`.
 
 
@@ -294,7 +294,7 @@ dedicated streaming API is needed.
 |---|---|
 | `dvz_path_position` with `path_lengths` | `position` `PER_ITEM` + group structure |
 | `dvz_path_color` | `color`, extended sources and scalar mode |
-| `dvz_path_linewidth` | `stroke_width`, active `PER_ITEM`, target `PER_SPAN` |
+| `dvz_path_linewidth` | `stroke_width_px`, active `PER_ITEM`, target `PER_SPAN` |
 | `dvz_path_cap` | `cap_start` + `cap_end` (split; both default `round`) |
 | `dvz_path_join` | `join`, extended to `miter`/`round`/`bevel` |
 

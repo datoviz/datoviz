@@ -144,7 +144,7 @@ static bool _add_path(
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = SAMPLE_COUNT},
         {.attr_name = "color", .data = colors, .item_count = SAMPLE_COUNT},
-        {.attr_name = "stroke_width", .data = widths, .item_count = SAMPLE_COUNT},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = SAMPLE_COUNT},
     };
     if (dvz_visual_set_data_many(path, updates, 3) != 0)
         return false;

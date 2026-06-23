@@ -7,7 +7,7 @@
 /* point_stress - live point-visual parameter stress example.
  *
  * Opens a GLFW window with a deterministic high-count point cloud. A GUI overlay exercises point
- * count rebinding, diameter and alpha uploads, circular fill/edge/both styling, edge-color
+ * count rebinding, diameter_px and alpha uploads, circular fill/edge/both styling, edge-color
  * material updates, depth testing, MSAA alpha-to-coverage, depth cueing, arcball animation, and
  * optional per-frame full reuploads.
  *
@@ -86,9 +86,9 @@ struct PointStressState
     uint32_t active_count;
     uint32_t frame_index;
     int preset_index;
-    float diameter;
+    float diameter_px;
     float alpha;
-    float stroke_width;
+    float stroke_width_px;
     float edge_rgb[3];
     int style_mode;
     int alpha_mode;
@@ -209,7 +209,7 @@ static void _apply_alpha_to_colors(PointStressState* state)
 
 
 /**
- * Apply the active diameter value to the retained diameter array.
+ * Apply the active diameter_px value to the retained diameter_px array.
  *
  * @param state point stress state
  */
@@ -221,7 +221,7 @@ static void _apply_diameter_to_points(PointStressState* state)
     for (uint32_t i = 0; i < state->max_count; i++)
     {
         const float ripple = 0.84f + 0.16f * sinf(0.011f * (float)i);
-        state->diameters[i] = state->diameter * ripple;
+        state->diameters[i] = state->diameter_px * ripple;
     }
 }
 
@@ -244,7 +244,7 @@ static bool _upload_points(PointStressState* state)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = state->positions, .item_count = state->active_count},
         {.attr_name = "color", .data = state->colors, .item_count = state->active_count},
-        {.attr_name = "diameter", .data = state->diameters, .item_count = state->active_count},
+        {.attr_name = "diameter_px", .data = state->diameters, .item_count = state->active_count},
     };
     if (dvz_visual_set_data_many(state->visual, updates, 3) != 0)
     {
@@ -280,7 +280,7 @@ static void _apply_style(PointStressState* state)
         style.aspect = DVZ_SHAPE_ASPECT_FILLED;
         break;
     }
-    style.stroke_width = state->stroke_width;
+    style.stroke_width_px = state->stroke_width_px;
     style.edge_color =
         dvz_color_from_unit(state->edge_rgb[0], state->edge_rgb[1], state->edge_rgb[2], 1.0f);
 
@@ -411,9 +411,9 @@ static void _reset_controls(PointStressState* state)
 
     state->preset_index = DEFAULT_PRESET;
     state->active_count = _preset_count(state->preset_index);
-    state->diameter = 5.0f;
+    state->diameter_px = 5.0f;
     state->alpha = 0.78f;
-    state->stroke_width = 1.25f;
+    state->stroke_width_px = 1.25f;
     state->edge_rgb[0] = 0.03f;
     state->edge_rgb[1] = 0.04f;
     state->edge_rgb[2] = 0.05f;
@@ -467,7 +467,7 @@ static void _mutate_points(PointStressState* state)
         state->positions[i][0] = c * x - s * y + wobble;
         state->positions[i][1] = s * x + c * y + 0.025f * cosf(1.7f * phase);
         state->positions[i][2] = state->base_positions[i][2] + 0.045f * sinf(0.7f * phase);
-        state->diameters[i] = state->diameter * (0.78f + 0.22f * sinf(phase + 0.4f));
+        state->diameters[i] = state->diameter_px * (0.78f + 0.22f * sinf(phase + 0.4f));
     }
 }
 
@@ -504,7 +504,7 @@ static void _point_stress_gui(DvzGui* gui, DvzView* win, void* user_data)
         count_changed |= dvz_gui_combo(
             gui, "Active count", &state->preset_index, count_labels, (int)PRESET_COUNT);
 
-        data_changed |= dvz_gui_slider_float(gui, "Diameter", &state->diameter, 1.0f, 32.0f);
+        data_changed |= dvz_gui_slider_float(gui, "Diameter", &state->diameter_px, 1.0f, 32.0f);
         data_changed |= dvz_gui_slider_float(gui, "Alpha", &state->alpha, 0.02f, 1.0f);
         static const char* const style_labels[] = {
             "fill",
@@ -513,7 +513,7 @@ static void _point_stress_gui(DvzGui* gui, DvzView* win, void* user_data)
         };
         style_changed |= dvz_gui_combo(gui, "Style", &state->style_mode, style_labels, 3);
         style_changed |=
-            dvz_gui_slider_float(gui, "Stroke width", &state->stroke_width, 0.0f, 8.0f);
+            dvz_gui_slider_float(gui, "Stroke width", &state->stroke_width_px, 0.0f, 8.0f);
         style_changed |= dvz_gui_slider_float(gui, "Edge red", &state->edge_rgb[0], 0.0f, 1.0f);
         style_changed |=
             dvz_gui_slider_float(gui, "Edge green", &state->edge_rgb[1], 0.0f, 1.0f);
@@ -652,7 +652,7 @@ int main(int argc, char** argv)
         "point allocation failed");
 
     _build_points(&state);
-    state.diameter = 5.0f;
+    state.diameter_px = 5.0f;
     state.alpha = 0.78f;
     _apply_alpha_to_colors(&state);
     _apply_diameter_to_points(&state);

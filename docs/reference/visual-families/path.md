@@ -26,8 +26,8 @@ fields, or [Primitive](primitive.md) for raw line topology without path semantic
 
 ## Data Model
 
-Create with `dvz_path(scene, flags)`. Upload ordered path points. If `stroke_width` is absent, the
-visual uses the primitive line-strip pipeline; with `stroke_width`, it uses the scene path stroke
+Create with `dvz_path(scene, flags)`. Upload ordered path points. If `stroke_width_px` is absent, the
+visual uses the primitive line-strip pipeline; with `stroke_width_px`, it uses the scene path stroke
 pipeline. Use `dvz_path_set_subpaths()` to split one visual into several open paths.
 
 ## Attributes
@@ -35,7 +35,7 @@ pipeline. Use `dvz_path_set_subpaths()` to split one visual into several open pa
 | Kind | Attributes |
 | --- | --- |
 | Required | `position` (`vec3`), `color` (RGBA8) |
-| Optional | `stroke_width` (`float`, pixels); subpath lengths; caps through `dvz_path_set_caps()`; joins through `dvz_path_set_join()`; alpha mode; depth test; transform; visual-wide scale bindings |
+| Optional | `stroke_width_px` (`float`, pixels); subpath lengths; caps through `dvz_path_set_caps()`; joins through `dvz_path_set_join()`; alpha mode; depth test; transform; visual-wide scale bindings |
 
 ## Picking And Probing
 

@@ -458,7 +458,7 @@ static bool _upload_selection(
         {.attr_name = "position_start", .data = starts, .item_count = 6},
         {.attr_name = "position_end", .data = ends, .item_count = 6},
         {.attr_name = "color", .data = colors, .item_count = 6},
-        {.attr_name = "stroke_width", .data = widths, .item_count = 6},
+        {.attr_name = "stroke_width_px", .data = widths, .item_count = 6},
     };
     return dvz_visual_set_data_many(crosshair, crosshair_updates, 4) == 0;
 }

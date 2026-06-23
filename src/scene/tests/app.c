@@ -2520,7 +2520,7 @@ int test_app_offscreen_path_join_has_no_center_gap(TstContext* suite, const TstC
     float widths[3] = {20.0f, 20.0f, 20.0f};
     AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
-    AT(dvz_visual_set_data(visual, "stroke_width", widths, 3) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width_px", widths, 3) == 0);
     AT(dvz_path_set_join(visual, DVZ_PATH_JOIN_ROUND, 4.0f) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
@@ -2637,7 +2637,7 @@ static int _app_render_path_join_stats(
     float widths[5] = {26.0f, 26.0f, 26.0f, 26.0f, 26.0f};
     AT(dvz_visual_set_data(visual, "position", positions, 5) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 5) == 0);
-    AT(dvz_visual_set_data(visual, "stroke_width", widths, 5) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width_px", widths, 5) == 0);
     const float miter_limit = join == DVZ_PATH_JOIN_MITER ? 20.0f : 4.0f;
     AT(dvz_path_set_join(visual, join, miter_limit) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
@@ -2790,7 +2790,7 @@ int test_app_offscreen_path_closed_star_seam_has_pixels(TstContext* suite, const
     uint32_t subpath = STAR_POINT_COUNT;
     AT(dvz_visual_set_data(visual, "position", positions, STAR_POINT_COUNT) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, STAR_POINT_COUNT) == 0);
-    AT(dvz_visual_set_data(visual, "stroke_width", widths, STAR_POINT_COUNT) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width_px", widths, STAR_POINT_COUNT) == 0);
     AT(dvz_path_set_subpaths(visual, 1, &subpath) == 0);
     AT(dvz_path_set_join(visual, DVZ_PATH_JOIN_ROUND, 4.0f) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
@@ -5882,7 +5882,7 @@ int test_app_offscreen_gsp_first_slice_smoke(TstContext* suite, const TstCase* i
     float point_diameter[1] = {20.0f};
     AT(dvz_visual_set_data(points, "position", point_pos, 1) == 0);
     AT(dvz_visual_set_data(points, "color", point_color, 1) == 0);
-    AT(dvz_visual_set_data(points, "diameter", point_diameter, 1) == 0);
+    AT(dvz_visual_set_data(points, "diameter_px", point_diameter, 1) == 0);
     AT(dvz_panel_add_visual(panel, points, NULL) == 0);
 
     const DvzId scene_id = dvz_scene_id(scene);

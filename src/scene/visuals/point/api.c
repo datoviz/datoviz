@@ -40,7 +40,7 @@ DvzPointStyleDesc dvz_point_style_desc(void)
     DvzPointStyleDesc desc = {
         DVZ_STRUCT_INIT_FIELDS(DvzPointStyleDesc),
         .edge_color = {0, 0, 0, 255},
-        .stroke_width = 0.0f,
+        .stroke_width_px = 0.0f,
         .aspect = DVZ_SHAPE_ASPECT_FILLED,
     };
     return desc;
@@ -74,7 +74,7 @@ void _point_style_sync_params(DvzSceneMaterialParams* params, const DvzPointStyl
     ANN(style);
     const bool stroke_enabled =
         style->aspect == DVZ_SHAPE_ASPECT_STROKE || style->aspect == DVZ_SHAPE_ASPECT_OUTLINE;
-    params->params[0] = stroke_enabled && style->stroke_width > 0.0f ? style->stroke_width : 0.0f;
+    params->params[0] = stroke_enabled && style->stroke_width_px > 0.0f ? style->stroke_width_px : 0.0f;
     params->params[1] = (float)style->aspect;
     params->params[2] = 0.0f;
     params->params[3] = 0.0f;
@@ -128,9 +128,9 @@ int dvz_point_set_style(DvzVisual* visual, const DvzPointStyleDesc* desc)
         return -1;
     }
     DvzPointStyleDesc style = desc != NULL ? *desc : dvz_point_style_desc();
-    if (!isfinite(style.stroke_width) || style.stroke_width < 0.0f)
+    if (!isfinite(style.stroke_width_px) || style.stroke_width_px < 0.0f)
     {
-        log_error("point stroke_width must be finite and nonnegative");
+        log_error("point stroke_width_px must be finite and nonnegative");
         return -1;
     }
     if (style.aspect < DVZ_SHAPE_ASPECT_FILLED || style.aspect > DVZ_SHAPE_ASPECT_OUTLINE)

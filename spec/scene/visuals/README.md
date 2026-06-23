@@ -41,13 +41,13 @@ The active v0.4 visual API should use precise attribute names rather than a fami
 
 | Family | Canonical size/shape attribute | Meaning |
 |---|---|---|
-| `pixel` | `pixel_size` | square side length in screen pixels |
-| `point` | `diameter` | circular point diameter in screen pixels |
-| `marker` | `diameter` | marker sprite box diameter in screen pixels |
+| `pixel` | `pixel_size_px` | square side length in screen pixels |
+| `point` | `diameter_px` | circular point diameter_px in screen pixels |
+| `marker` | `diameter_px` | marker sprite box diameter_px in screen pixels |
 | `splat` | `sigma` | Gaussian standard deviations in screen pixels |
 | `sphere` | `radius` | sphere radius in world/data units unless a radius mode is added |
-| `segment` | `stroke_width` | line stroke width in screen pixels |
-| `path` | `stroke_width` | path stroke width in screen pixels |
+| `segment` | `stroke_width_px` | line stroke width in screen pixels |
+| `path` | `stroke_width_px` | path stroke width in screen pixels |
 | `vector` | `vector` | displacement/direction from the item anchor; shaft/head shape uses stroke attributes |
 | `tube` | `radius` | future 3D curve-surface radius in world/data units |
 | `image` | `extent` | image rectangle width/height |
@@ -81,12 +81,12 @@ names are the current retained implementation slots.
 
 | Family | Public constructor | Installed public attributes | Storage aliases | Installed source support |
 |---|---|---|---|---|
-| `pixel` | `dvz_pixel()` | `position`, `color`, `pixel_size` | `pixel_size -> size` | `position` item; `color` item/constant/group; `pixel_size` item/constant/group |
-| `point` | `dvz_point()` | `position`, `color`, `diameter`, `selection` | `diameter -> size` | `position` item; `color` item/constant/group; `diameter` item/constant/group; `selection` item |
-| `marker` | `dvz_marker()` | `position`, `color`, `diameter`, `selection`, `angle`, `shape` | `diameter -> size` | `position`, `selection`, `angle`, `shape` item; `color`, `diameter` item/constant/group |
+| `pixel` | `dvz_pixel()` | `position`, `color`, `pixel_size_px` | `pixel_size_px -> size` | `position` item; `color` item/constant/group; `pixel_size_px` item/constant/group |
+| `point` | `dvz_point()` | `position`, `color`, `diameter_px`, `selection` | `diameter_px -> size` | `position` item; `color` item/constant/group; `diameter_px` item/constant/group; `selection` item |
+| `marker` | `dvz_marker()` | `position`, `color`, `diameter_px`, `selection`, `angle`, `shape` | `diameter_px -> size` | `position`, `selection`, `angle`, `shape` item; `color`, `diameter_px` item/constant/group |
 | `sphere` | `dvz_sphere()` | `position`, `color`, `radius` | `radius -> size` | `position` item; `color`, `radius` item/constant/group |
-| `segment` | `dvz_segment()` | `position_start`, `position_end`, `color`, `stroke_width` | `stroke_width -> line_width` | endpoints item; `color` item/constant; `stroke_width` item/constant |
-| `path` | `dvz_path()` | `position`, `color`, `stroke_width` | `stroke_width -> line_width` | `position` item; `color` item/constant/span/group; `stroke_width` item/constant |
+| `segment` | `dvz_segment()` | `position_start`, `position_end`, `color`, `stroke_width_px` | `stroke_width_px -> line_width` | endpoints item; `color` item/constant; `stroke_width_px` item/constant |
+| `path` | `dvz_path()` | `position`, `color`, `stroke_width_px` | `stroke_width_px -> line_width` | `position` item; `color` item/constant/span/group; `stroke_width_px` item/constant |
 | `primitive` | `dvz_primitive()` | `position`, `color`, `normal` | none | `position`, `normal` item; `color` item/constant/group |
 | `mesh` | `dvz_mesh()` | `position`, `color`, `normal`, `texcoords`, `instance_transform` | none | all item; `color` also constant/group |
 | `image` | `dvz_image()` | `position`, `extent`, `position_px`, `extent_px`, `anchor`, `tex_rect`, `texcoords` | none | all item |

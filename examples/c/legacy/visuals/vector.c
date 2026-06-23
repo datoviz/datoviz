@@ -110,7 +110,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(straight vector) failed");
     rc = dvz_visual_set_data(straight, "color", straight_color, FIELD_COUNT);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(straight color) failed");
-    rc = dvz_visual_set_data(straight, "stroke_width", straight_width, FIELD_COUNT);
+    rc = dvz_visual_set_data(straight, "stroke_width_px", straight_width, FIELD_COUNT);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(straight width) failed");
 
     vec3 curve_position[CURVE_TOTAL_COUNT] = {{0}};
@@ -146,7 +146,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(curved position) failed");
     rc = dvz_visual_set_data(curved, "color", curve_color, CURVE_TOTAL_COUNT);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(curved color) failed");
-    rc = dvz_visual_set_data(curved, "stroke_width", curve_width, CURVE_TOTAL_COUNT);
+    rc = dvz_visual_set_data(curved, "stroke_width_px", curve_width, CURVE_TOTAL_COUNT);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(curved width) failed");
     rc = dvz_vector_set_subpaths(curved, CURVE_COUNT, subpaths);
     EXAMPLE_CHECK(rc == 0, "dvz_vector_set_subpaths() failed");

@@ -60,7 +60,7 @@ typedef struct PixelState
     uint32_t max_count;
     uint32_t active_count;
     float count_value;
-    float pixel_size;
+    float pixel_size_px;
     float alpha;
     float phase;
     bool animate;
@@ -109,7 +109,7 @@ static void _fill_pixels(PixelState* state, float phase)
         state->positions[i][0] = 1.36f * r * cosf(spiral);
         state->positions[i][1] = 1.02f * r * sinf(spiral);
         state->positions[i][2] = z - 0.34f;
-        state->sizes[i] = state->pixel_size * (0.62f + 0.58f * ridge);
+        state->sizes[i] = state->pixel_size_px * (0.62f + 0.58f * ridge);
         state->colors[i] = dvz_color_rgba(
             (uint8_t)(70u + (uint32_t)(145.0f * ridge)),
             (uint8_t)(58u + (uint32_t)(150.0f * dome)),
@@ -134,7 +134,7 @@ static bool _upload_pixels(PixelState* state)
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = state->positions, .item_count = state->active_count},
         {.attr_name = "color", .data = state->colors, .item_count = state->active_count},
-        {.attr_name = "pixel_size", .data = state->sizes, .item_count = state->active_count},
+        {.attr_name = "pixel_size_px", .data = state->sizes, .item_count = state->active_count},
     };
     if (dvz_visual_set_data_many(state->visual, updates, 3) != 0)
         return false;
@@ -161,7 +161,7 @@ static void _gui_callback(DvzGui* gui, DvzView* win, void* user_data)
     if (dvz_gui_begin(gui, "Pixel", NULL, 0))
     {
         changed |= dvz_gui_slider_float(gui, "Count", &state->count_value, 1024.0f, MAX_PIXELS);
-        changed |= dvz_gui_slider_float(gui, "Pixel size", &state->pixel_size, 1.0f, 12.0f);
+        changed |= dvz_gui_slider_float(gui, "Pixel size", &state->pixel_size_px, 1.0f, 12.0f);
         changed |= dvz_gui_slider_float(gui, "Alpha", &state->alpha, 0.02f, 1.0f);
         changed |= dvz_gui_checkbox(gui, "Depth variation", &state->depth_variation);
         (void)dvz_gui_checkbox(gui, "Animate", &state->animate);
@@ -223,7 +223,7 @@ int main(int argc, char** argv)
         .max_count = MAX_PIXELS,
         .active_count = 65536u,
         .count_value = 65536.0f,
-        .pixel_size = 3.4f,
+        .pixel_size_px = 3.4f,
         .alpha = 1.0f,
         .animate = true,
         .depth_variation = true,

@@ -248,7 +248,7 @@ function addWasm2DPoints(scene, panel) {
     245, 130, 95, 255,
     150, 130, 245, 255,
   ]), 3);
-  points.setF32("diameter", new Float32Array([16, 20, 18]), 3);
+  points.setF32("diameter_px", new Float32Array([16, 20, 18]), 3);
   scene.addVisual(panel, points);
   return points;
 }
@@ -269,7 +269,7 @@ function addWasm2DPixels(scene, panel) {
     245, 175, 85, 255,
     210, 105, 220, 255,
   ]), 4);
-  pixels.setF32("pixel_size", new Float32Array([8, 10, 9, 11]), 4);
+  pixels.setF32("pixel_size_px", new Float32Array([8, 10, 9, 11]), 4);
   scene.addVisual(panel, pixels);
   return pixels;
 }
@@ -290,7 +290,7 @@ function addWasm2DMarkers(scene, panel) {
     170, 130, 245, 235,
     245, 215, 90, 235,
   ]), 4);
-  markers.setF32("diameter", new Float32Array([12, 14, 13, 15]), 4);
+  markers.setF32("diameter_px", new Float32Array([12, 14, 13, 15]), 4);
   markers.setF32("angle", new Float32Array([0, 0.35, 0.7, 1.05]), 4);
   markers.setU32("symbol", new Uint32Array([0, 1, 2, 3]), 4);
   scene.addVisual(panel, markers);
@@ -315,7 +315,7 @@ function addWasm2DSegments(scene, panel) {
     245, 165, 75, 230,
     135, 225, 150, 230,
   ]), 3);
-  segments.setF32("stroke_width", new Float32Array([4, 7, 5]), 3);
+  segments.setF32("stroke_width_px", new Float32Array([4, 7, 5]), 3);
   scene.addVisual(panel, segments);
   return segments;
 }
@@ -398,9 +398,9 @@ async function runWasm2DSceneSmoke(row) {
       80, 210, 195, 255,
       225, 100, 170, 255,
     ]), 3);
-    pixels.setF32("pixel_size", new Float32Array([10, 8, 11, 9]), 4);
+    pixels.setF32("pixel_size_px", new Float32Array([10, 8, 11, 9]), 4);
     markers.setU32("symbol", new Uint32Array([3, 2, 1, 0]), 4);
-    segments.setF32("stroke_width", new Float32Array([6, 4, 8]), 3);
+    segments.setF32("stroke_width_px", new Float32Array([6, 4, 8]), 3);
     const update = await scene.renderIncremental();
     assertPositiveCommandCount(update, `${row.name} update`);
 

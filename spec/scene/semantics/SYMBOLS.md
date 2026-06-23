@@ -84,7 +84,7 @@ shape system.
 The marker visual owns placement and styling:
 
 1. `position`;
-2. `diameter`;
+2. `diameter_px`;
 3. `angle`;
 4. `color`;
 5. `symbol`;
@@ -126,7 +126,7 @@ Semantic differences:
 | Identity | font face plus glyph id/codepoint | user or built-in symbol id |
 | Layout | baseline, advance, kerning, shaping, fallback fonts | centered mark box |
 | Item model | text runs lowered into glyph quads | one symbol per marker/annotation item |
-| Styling | text color, font size, text placement | fill, stroke, outline, diameter, angle |
+| Styling | text color, font size, text placement | fill, stroke, outline, diameter_px, angle |
 | Fallback | missing glyph/font fallback | missing symbol fallback shape or diagnostic |
 | Picking | text/glyph readback semantics | symbol/marker item hit semantics |
 
@@ -170,7 +170,7 @@ The built-in vocabulary should restore useful v0.3 marker shapes and add probe-o
 | `asterisk`, `chevron`, `clover`, `club`, `spade`, `heart`, `infinity` | v0.3 parity and categorical symbol sets. |
 
 `target` must be one native symbol item, not multiple overlaid sprites. It should support
-screen-stable diameter when used by `marker`.
+screen-stable diameter_px when used by `marker`.
 
 
 ## Marker Upgrade Path
