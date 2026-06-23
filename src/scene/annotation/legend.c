@@ -742,6 +742,7 @@ DvzLegend* dvz_legend(DvzPanel* panel, DvzScale* scale, const DvzLegendDesc* des
     ANN(scale);
     if (!_legend_desc_validate(desc))
         return NULL;
+    DvzLegendDesc resolved = desc != NULL ? *desc : dvz_legend_desc();
     if (panel->figure == NULL || panel->figure->scene == NULL)
     {
         log_error("cannot create a legend on a detached panel");
@@ -758,10 +759,9 @@ DvzLegend* dvz_legend(DvzPanel* panel, DvzScale* scale, const DvzLegendDesc* des
         log_error("legends require a categorical scale; use a colorbar for continuous scales");
         return NULL;
     }
-    DvzLegendPlacementMode placement_mode =
-        desc != NULL ? desc->placement_mode : DVZ_LEGEND_PLACEMENT_ATTACHED;
-    DvzSceneAnchor anchor = desc != NULL && desc->anchor != DVZ_SCENE_ANCHOR_NONE ?
-                                desc->anchor :
+    DvzLegendPlacementMode placement_mode = resolved.placement_mode;
+    DvzSceneAnchor anchor = resolved.anchor != DVZ_SCENE_ANCHOR_NONE ?
+                                resolved.anchor :
                                 DVZ_SCENE_ANCHOR_PANEL_RIGHT;
     if (placement_mode == DVZ_LEGEND_PLACEMENT_ATTACHED && !_legend_anchor_supported(anchor))
     {
@@ -787,31 +787,23 @@ DvzLegend* dvz_legend(DvzPanel* panel, DvzScale* scale, const DvzLegendDesc* des
     legend->scale = scale;
     legend->placement_mode = placement_mode;
     legend->anchor = anchor;
-    legend->flags = desc != NULL ? desc->legend_flags : 0;
-    legend->reserve_px =
-        _legend_positive_or_default(desc != NULL ? desc->reserve_px : 0.0f, LEGEND_RESERVE_PX);
+    legend->flags = resolved.legend_flags;
+    legend->reserve_px = _legend_positive_or_default(resolved.reserve_px, LEGEND_RESERVE_PX);
     legend->edge_offset_px = _legend_positive_or_default(
-        desc != NULL ? desc->edge_offset_px : 0.0f, LEGEND_EDGE_OFFSET_PX);
+        resolved.edge_offset_px, LEGEND_EDGE_OFFSET_PX);
     legend->plot_gap_px = _legend_positive_or_default(
-        desc != NULL ? desc->plot_gap_px : 0.0f, LEGEND_PLOT_GAP_PX);
+        resolved.plot_gap_px, LEGEND_PLOT_GAP_PX);
     legend->entry_gap_px = _legend_positive_or_default(
-        desc != NULL ? desc->entry_gap_px : 0.0f, LEGEND_ENTRY_GAP_PX);
+        resolved.entry_gap_px, LEGEND_ENTRY_GAP_PX);
     legend->mark_size_px = _legend_positive_or_default(
-        desc != NULL ? desc->mark_size_px : 0.0f, LEGEND_MARK_SIZE_PX);
+        resolved.mark_size_px, LEGEND_MARK_SIZE_PX);
     legend->mark_label_gap_px = _legend_positive_or_default(
-        desc != NULL ? desc->mark_label_gap_px : 0.0f, LEGEND_MARK_LABEL_GAP_PX);
+        resolved.mark_label_gap_px, LEGEND_MARK_LABEL_GAP_PX);
     legend->text_renderer = _scene_adornment_text_renderer(
-        desc != NULL && desc->text_renderer != 0 ? desc->text_renderer :
-                                                   DVZ_TEXT_RENDERER_MSDF_ATLAS);
-    legend->placement =
-        desc != NULL ? desc->placement :
-                       (DvzPlacement){
-                           .space = DVZ_PLACEMENT_SPACE_PANEL,
-                           .horizontal_anchor = DVZ_HORIZONTAL_ANCHOR_LEFT,
-                           .vertical_anchor = DVZ_VERTICAL_ANCHOR_TOP,
-                       };
-    if (desc != NULL && desc->title != NULL)
-        dvz_strlcpy(legend->title, desc->title, sizeof(legend->title));
+        resolved.text_renderer != 0 ? resolved.text_renderer : DVZ_TEXT_RENDERER_MSDF_ATLAS);
+    legend->placement = resolved.placement;
+    if (resolved.title != NULL)
+        dvz_strlcpy(legend->title, resolved.title, sizeof(legend->title));
     legend->dirty = true;
     legend->version = 1;
     panel->legends[panel->legend_count++] = legend;

@@ -374,6 +374,7 @@ DvzColormap* dvz_colormap(DvzScene* scene, const DvzColormapDesc* desc)
     ANN(scene);
     if (!_colormap_desc_validate(desc))
         return NULL;
+    DvzColormapDesc resolved = desc != NULL ? *desc : dvz_colormap_desc();
     if (scene->colormap_count >= DVZ_SCENE_MAX_COLORMAPS)
     {
         log_error("maximum colormap count reached");
@@ -383,15 +384,12 @@ DvzColormap* dvz_colormap(DvzScene* scene, const DvzColormapDesc* desc)
     dvz_memset(colormap, sizeof(DvzColormap), 0, sizeof(DvzColormap));
     colormap->scene = scene;
     colormap->id = _scene_next_id(scene);
-    colormap->kind = desc != NULL ? desc->kind : DVZ_COLORMAP_CONTINUOUS;
-    colormap->builtin = desc != NULL ? desc->builtin : DVZ_BUILTIN_COLORMAP_NONE;
-    if (desc != NULL)
-    {
-        colormap->center = desc->center;
-        colormap->has_center = desc->center != 0.0;
-        if (desc->label != NULL)
-            dvz_strlcpy(colormap->label, desc->label, sizeof(colormap->label));
-    }
+    colormap->kind = resolved.kind;
+    colormap->builtin = resolved.builtin;
+    colormap->center = resolved.center;
+    colormap->has_center = resolved.center != 0.0;
+    if (resolved.label != NULL)
+        dvz_strlcpy(colormap->label, resolved.label, sizeof(colormap->label));
     return colormap;
 }
 

@@ -336,6 +336,7 @@ DvzScale* dvz_scale(DvzScene* scene, const DvzScaleDesc* desc)
     ANN(scene);
     if (!_scale_desc_validate(desc))
         return NULL;
+    DvzScaleDesc resolved = desc != NULL ? *desc : dvz_scale_desc();
     if (scene->scale_count >= DVZ_SCENE_MAX_SCALES)
     {
         log_error("maximum scale count reached");
@@ -345,16 +346,13 @@ DvzScale* dvz_scale(DvzScene* scene, const DvzScaleDesc* desc)
     dvz_memset(scale, sizeof(DvzScale), 0, sizeof(DvzScale));
     scale->scene = scene;
     scale->id = _scene_next_id(scene);
-    scale->kind = desc != NULL ? desc->kind : DVZ_SCALE_CONTINUOUS;
-    if (desc != NULL)
-    {
-        if (desc->label != NULL)
-            dvz_strlcpy(scale->label, desc->label, sizeof(scale->label));
-        if (desc->unit != NULL)
-            dvz_strlcpy(scale->unit, desc->unit, sizeof(scale->unit));
-        if (!_scene_format_desc_is_zero(&desc->format))
-            _scene_format_state_copy(&scale->format, &desc->format);
-    }
+    scale->kind = resolved.kind;
+    if (resolved.label != NULL)
+        dvz_strlcpy(scale->label, resolved.label, sizeof(scale->label));
+    if (resolved.unit != NULL)
+        dvz_strlcpy(scale->unit, resolved.unit, sizeof(scale->unit));
+    if (!_scene_format_desc_is_zero(&resolved.format))
+        _scene_format_state_copy(&scale->format, &resolved.format);
     return scale;
 }
 

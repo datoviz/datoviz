@@ -1262,6 +1262,7 @@ DvzColorbar* dvz_colorbar(DvzPanel* panel, DvzScale* scale, const DvzColorbarDes
     ANN(scale);
     if (!_colorbar_desc_validate(desc))
         return NULL;
+    DvzColorbarDesc resolved = desc != NULL ? *desc : dvz_colorbar_desc();
     if (panel->figure == NULL || panel->figure->scene == NULL)
     {
         log_error("cannot create a colorbar on a detached panel");
@@ -1273,12 +1274,10 @@ DvzColorbar* dvz_colorbar(DvzPanel* panel, DvzScale* scale, const DvzColorbarDes
         log_error("cannot attach a scale from a different scene to a panel colorbar");
         return NULL;
     }
-    DvzColorbarPlacementMode placement_mode =
-        desc != NULL ? desc->placement_mode : DVZ_COLORBAR_PLACEMENT_ATTACHED;
-    DvzColorbarOrientation orientation =
-        desc != NULL ? desc->orientation : DVZ_COLORBAR_ORIENTATION_VERTICAL;
-    DvzSceneAnchor anchor = desc != NULL && desc->anchor != DVZ_SCENE_ANCHOR_NONE ?
-                                desc->anchor :
+    DvzColorbarPlacementMode placement_mode = resolved.placement_mode;
+    DvzColorbarOrientation orientation = resolved.orientation;
+    DvzSceneAnchor anchor = resolved.anchor != DVZ_SCENE_ANCHOR_NONE ?
+                                resolved.anchor :
                                 _colorbar_default_anchor(orientation);
     if (placement_mode == DVZ_COLORBAR_PLACEMENT_ATTACHED && !_colorbar_anchor_supported(anchor))
     {
@@ -1315,31 +1314,24 @@ DvzColorbar* dvz_colorbar(DvzPanel* panel, DvzScale* scale, const DvzColorbarDes
     colorbar->placement_mode = placement_mode;
     colorbar->orientation = orientation;
     colorbar->anchor = anchor;
-    colorbar->flags = desc != NULL ? desc->colorbar_flags : 0;
+    colorbar->flags = resolved.colorbar_flags;
     colorbar->reserve_px = _colorbar_positive_or_default(
-        desc != NULL ? desc->reserve_px : 0.0f, _colorbar_default_reserve_px(orientation));
+        resolved.reserve_px, _colorbar_default_reserve_px(orientation));
     colorbar->ramp_width_px = _colorbar_positive_or_default(
-        desc != NULL ? desc->ramp_width_px : 0.0f, COLORBAR_RAMP_THICKNESS_PX);
-    colorbar->edge_offset_px = _colorbar_positive_or_default(
-        desc != NULL ? desc->edge_offset_px : 0.0f, COLORBAR_EDGE_OFFSET_PX);
-    colorbar->plot_gap_px = _colorbar_positive_or_default(
-        desc != NULL ? desc->plot_gap_px : 0.0f, COLORBAR_PLOT_GAP_PX);
+        resolved.ramp_width_px, COLORBAR_RAMP_THICKNESS_PX);
+    colorbar->edge_offset_px =
+        _colorbar_positive_or_default(resolved.edge_offset_px, COLORBAR_EDGE_OFFSET_PX);
+    colorbar->plot_gap_px =
+        _colorbar_positive_or_default(resolved.plot_gap_px, COLORBAR_PLOT_GAP_PX);
     colorbar->tick_length_px = _colorbar_positive_or_default(
-        desc != NULL ? desc->tick_length_px : 0.0f, COLORBAR_TICK_LENGTH_PX);
-    colorbar->label_gap_px = _colorbar_positive_or_default(
-        desc != NULL ? desc->label_gap_px : 0.0f, COLORBAR_LABEL_GAP_PX);
+        resolved.tick_length_px, COLORBAR_TICK_LENGTH_PX);
+    colorbar->label_gap_px =
+        _colorbar_positive_or_default(resolved.label_gap_px, COLORBAR_LABEL_GAP_PX);
     colorbar->text_renderer = _scene_adornment_text_renderer(
-        desc != NULL && desc->text_renderer != 0 ? desc->text_renderer :
-                                                   DVZ_TEXT_RENDERER_MSDF_ATLAS);
-    colorbar->placement =
-        desc != NULL ? desc->placement :
-                       (DvzPlacement){
-                           .space = DVZ_PLACEMENT_SPACE_PANEL,
-                           .horizontal_anchor = DVZ_HORIZONTAL_ANCHOR_LEFT,
-                           .vertical_anchor = DVZ_VERTICAL_ANCHOR_TOP,
-                       };
-    if (desc != NULL && desc->title != NULL)
-        dvz_strlcpy(colorbar->title, desc->title, sizeof(colorbar->title));
+        resolved.text_renderer != 0 ? resolved.text_renderer : DVZ_TEXT_RENDERER_MSDF_ATLAS);
+    colorbar->placement = resolved.placement;
+    if (resolved.title != NULL)
+        dvz_strlcpy(colorbar->title, resolved.title, sizeof(colorbar->title));
     colorbar->dirty = true;
     colorbar->version = 1;
     panel->colorbars[panel->colorbar_count++] = colorbar;
