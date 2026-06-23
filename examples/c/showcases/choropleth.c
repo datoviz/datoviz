@@ -475,11 +475,14 @@ static bool _configure_panel(DvzPanel* panel, const ChoroplethBundle* bundle)
     ANN(panel);
     ANN(bundle);
 
+    if (!dvz_panel_set_padding(
+            panel, &(DvzPanelReserve){
+                       .left_px = 14.0f, .right_px = 42.0f, .bottom_px = 13.5f,
+                       .top_px = 28.5f}))
+        return false;
     return example_configure_equal_aspect_panel(
         panel, (DvzDataDomain){.min = bundle->xmin, .max = bundle->xmax},
-        (DvzDataDomain){.min = bundle->ymin, .max = bundle->ymax}, 0.035,
-        &(DvzPanelLayoutReserve){
-            .left = 0.035f, .right = 0.105f, .bottom = 0.045f, .top = 0.095f});
+        (DvzDataDomain){.min = bundle->ymin, .max = bundle->ymax}, 0.035);
 }
 
 

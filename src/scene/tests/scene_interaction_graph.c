@@ -1205,9 +1205,9 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
                    .top_px = 6.0f,
                    .bottom_px = 2.0f,
                }));
-    AT(dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.25f, .right = 0.15f, .bottom = 0.10f,
-                                        .top = 0.20f}));
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 100.0f, .right_px = 60.0f, .bottom_px = 30.0f,
+                                        .top_px = 60.0f}));
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.1f, 0.2f, 0.3f, 1.0f));
 
     float pos[3] = {1.5f, 0.0f, 0.0f};

@@ -180,7 +180,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     if (!example_configure_equal_aspect_panel(
             fit_panel, (DvzDataDomain){.min = -1.0, .max = +1.0},
-            (DvzDataDomain){.min = -1.0, .max = +1.0}, 0.18, NULL))
+            (DvzDataDomain){.min = -1.0, .max = +1.0}, 0.18))
         return false;
 
     double x_min = 0.0;

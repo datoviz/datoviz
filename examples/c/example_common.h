@@ -154,8 +154,7 @@ bool example_configure_equal_aspect_panel(
     DvzPanel* panel,
     DvzDataDomain x,
     DvzDataDomain y,
-    double padding,
-    const DvzPanelLayoutReserve* reserve);
+    double padding);
 
 bool example_link_controllers_bidirectional(
     DvzScene* scene, DvzController* a, DvzController* b, uint32_t components);

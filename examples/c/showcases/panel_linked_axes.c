@@ -727,20 +727,20 @@ static bool _set_panel_border(DvzPanel* panel)
 
 
 /**
- * Configure one panel's background and layout reserve.
+ * Configure one panel's background and manual pixel reserve.
  *
  * @param panel target panel
- * @param bottom bottom layout reserve
+ * @param bottom_px bottom pixel reserve
  * @return true when layout was configured
  */
-static bool _configure_panel(DvzPanel* panel, float bottom)
+static bool _configure_panel(DvzPanel* panel, float bottom_px)
 {
     ANN(panel);
 
     example_graphite_cyan_set_panel_background(panel);
-    bool ok = dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.20f, .right = 0.06f, .bottom = bottom,
-                                        .top = 0.07f});
+    bool ok = dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 80.0f, .right_px = 24.0f,
+                                  .bottom_px = bottom_px, .top_px = 21.0f});
     return ok && _set_panel_border(panel);
 }
 
@@ -779,16 +779,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         signal != NULL && events != NULL && residuals != NULL && summary != NULL,
         "dvz_grid_panel() failed");
 
-    ok = _configure_panel(signal, 0.20f);
+    ok = _configure_panel(signal, 60.0f);
     LINKED_AXES_CHECK(ok, "_configure_panel(signal) failed");
-    ok = _configure_panel(events, 0.20f);
+    ok = _configure_panel(events, 60.0f);
     LINKED_AXES_CHECK(ok, "_configure_panel(events) failed");
-    ok = _configure_panel(residuals, 0.36f);
+    ok = _configure_panel(residuals, 108.0f);
     LINKED_AXES_CHECK(ok, "_configure_panel(residuals) failed");
-    ok = dvz_panel_set_layout_reserve(
-        summary, &(DvzPanelLayoutReserve){.left = 0.20f, .right = 0.08f, .bottom = 0.13f,
-                                          .top = 0.06f});
-    LINKED_AXES_CHECK(ok, "dvz_panel_set_layout_reserve(summary) failed");
+    ok = dvz_panel_set_reserve(
+        summary, &(DvzPanelReserve){.left_px = 80.0f, .right_px = 32.0f, .bottom_px = 39.0f,
+                                          .top_px = 18.0f});
+    LINKED_AXES_CHECK(ok, "dvz_panel_set_reserve(summary) failed");
     example_graphite_cyan_set_panel_background(summary);
     ok = _set_panel_border(summary);
     LINKED_AXES_CHECK(ok, "_set_panel_border(summary) failed");

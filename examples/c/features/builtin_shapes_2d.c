@@ -140,7 +140,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (!example_configure_equal_aspect_panel(
             panel, (DvzDataDomain){.min = -1.05, .max = +1.05},
-            (DvzDataDomain){.min = -0.72, .max = +0.72}, 0.04, NULL))
+            (DvzDataDomain){.min = -0.72, .max = +0.72}, 0.04))
         return false;
 
     const bool ok =

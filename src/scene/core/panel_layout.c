@@ -28,24 +28,6 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-/**
- * Return whether a panel layout reservation is finite and leaves non-empty plot space.
- *
- * @param reserve the reservation descriptor
- * @return whether the reservation is valid
- */
-static bool _panel_layout_reserve_valid(const DvzPanelLayoutReserve* reserve)
-{
-    ANN(reserve);
-    if (!isfinite(reserve->left) || !isfinite(reserve->right) || !isfinite(reserve->bottom) ||
-        !isfinite(reserve->top))
-        return false;
-    if (reserve->left < 0.0f || reserve->right < 0.0f || reserve->bottom < 0.0f ||
-        reserve->top < 0.0f)
-        return false;
-    return reserve->left + reserve->right < 2.0f && reserve->bottom + reserve->top < 2.0f;
-}
-
 static bool _panel_reserve_valid_for_padding(
     const DvzPanel* panel, const DvzPanelReserve* reserve, const DvzPanelReserve* padding);
 
@@ -412,18 +394,6 @@ void _scene_panel_set_legend_reserve(DvzPanel* panel, const DvzPanelReserve* res
 
 
 
-
-/**
- * Return the default panel layout reservation.
- *
- * @return default panel layout reservation
- */
-DvzPanelLayoutReserve dvz_panel_layout_reserve(void)
-{
-    return (DvzPanelLayoutReserve){0};
-}
-
-
 /**
  * Set a fixed pixel reservation around one panel's plot area.
  *
@@ -438,8 +408,6 @@ bool dvz_panel_set_reserve(DvzPanel* panel, const DvzPanelReserve* reserve)
     DvzPanelReserve next = reserve != NULL ? *reserve : (DvzPanelReserve){0};
     if (!_panel_reserve_valid(panel, &next))
         return false;
-    panel->layout_reserve_enabled = false;
-    panel->layout_reserve = dvz_panel_layout_reserve();
     if (_panel_reserve_equal(&panel->base_reserve, &next))
         return true;
     panel->base_reserve = next;
@@ -545,99 +513,5 @@ bool dvz_panel_plot_rect_px(const DvzPanel* panel, DvzRect* out)
     if (panel == NULL || out == NULL)
         return false;
     _scene_panel_plot_pixel_rect(panel, &out->x, &out->y, &out->width, &out->height);
-    return true;
-}
-
-
-/**
- * Reserve visual-space room around one panel's plot area for future adornments.
- *
- * @param panel the panel
- * @param reserve reservation descriptor, or NULL for defaults
- * @return whether the reservation was accepted
- */
-bool dvz_panel_set_layout_reserve(DvzPanel* panel, const DvzPanelLayoutReserve* reserve)
-{
-    if (panel == NULL)
-        return false;
-    DvzPanelLayoutReserve next = reserve != NULL ? *reserve : dvz_panel_layout_reserve();
-    if (!_panel_layout_reserve_valid(&next))
-        return false;
-
-    panel->layout_reserve_enabled = true;
-    panel->layout_reserve = next;
-    return _scene_panel_refresh_layout_reserve(panel);
-}
-
-
-/**
- * Refresh one panel's pixel reserve from its normalized layout reserve.
- *
- * @param panel the panel
- * @return whether the reserve is valid after refresh
- */
-bool _scene_panel_refresh_layout_reserve(DvzPanel* panel)
-{
-    if (panel == NULL)
-        return false;
-    if (!panel->layout_reserve_enabled)
-    {
-        _scene_panel_view_dirty(panel);
-        return true;
-    }
-    DvzPanelLayoutReserve next = panel->layout_reserve;
-    if (!_panel_layout_reserve_valid(&next))
-        return false;
-
-    float width = 0.0f;
-    float height = 0.0f;
-    _scene_panel_pixel_size(panel, &width, &height);
-    DvzPanelReserve pixel_reserve = {
-        .left_px = 0.5f * next.left * width,
-        .right_px = 0.5f * next.right * width,
-        .top_px = 0.5f * next.top * height,
-        .bottom_px = 0.5f * next.bottom * height,
-    };
-    if (!_panel_reserve_valid(panel, &pixel_reserve))
-        return false;
-    if (_panel_reserve_equal(&panel->base_reserve, &pixel_reserve))
-    {
-        _scene_panel_view_dirty(panel);
-        return true;
-    }
-    panel->base_reserve = pixel_reserve;
-    _panel_update_reserve(panel);
-    return true;
-}
-
-
-/**
- * Return one panel's layout reservation.
- *
- * @param panel the panel
- * @param out output reservation
- * @return whether the reservation was written
- */
-bool dvz_panel_get_layout_reserve(DvzPanel* panel, DvzPanelLayoutReserve* out)
-{
-    if (panel == NULL || out == NULL)
-        return false;
-    if (panel->layout_reserve_enabled)
-    {
-        *out = panel->layout_reserve;
-        return true;
-    }
-    float width = 0.0f;
-    float height = 0.0f;
-    _scene_panel_pixel_size(panel, &width, &height);
-    DvzPanelReserve reserve = panel->base_reserve;
-    if (!_panel_reserve_valid(panel, &reserve))
-        reserve = (DvzPanelReserve){0};
-    *out = (DvzPanelLayoutReserve){
-        .left = width > 0.0f ? 2.0f * reserve.left_px / width : 0.0f,
-        .right = width > 0.0f ? 2.0f * reserve.right_px / width : 0.0f,
-        .bottom = height > 0.0f ? 2.0f * reserve.bottom_px / height : 0.0f,
-        .top = height > 0.0f ? 2.0f * reserve.top_px / height : 0.0f,
-    };
     return true;
 }

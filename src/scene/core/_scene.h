@@ -434,8 +434,6 @@ void _scene_panel_set_colorbar_reserve(DvzPanel* panel, const DvzPanelReserve* r
 
 void _scene_panel_set_legend_reserve(DvzPanel* panel, const DvzPanelReserve* reserve);
 
-bool _scene_panel_refresh_layout_reserve(DvzPanel* panel);
-
 void _scene_panel_refresh_axis_reserve(DvzPanel* panel);
 
 void _scene_panel_refresh_colorbar_reserve(DvzPanel* panel);
@@ -1861,8 +1859,6 @@ struct DvzPanel
     uint32_t       visual_count;
     DvzPanelAttach visuals[DVZ_SCENE_MAX_VISUALS];
     DvzPanelReserve base_reserve;
-    bool layout_reserve_enabled;
-    DvzPanelLayoutReserve layout_reserve;
     DvzPanelReserve axis_reserve;
     DvzPanelReserve colorbar_reserve;
     DvzPanelReserve legend_reserve;

@@ -541,16 +541,6 @@ struct DvzAxisStyle
 typedef struct DvzAxisStyle DvzAxisStyle;
 
 
-struct DvzPanelLayoutReserve
-{
-    float left;
-    float right;
-    float bottom;
-    float top;
-};
-typedef struct DvzPanelLayoutReserve DvzPanelLayoutReserve;
-
-
 struct DvzPlacement
 {
     DvzPlacementSpace space;

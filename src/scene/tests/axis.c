@@ -1227,7 +1227,7 @@ static int test_axis_text_updates_after_domain_change(TstContext* suite, const T
 }
 
 
-static int test_axis_text_layout_reserve(TstContext* suite, const TstCase* item)
+static int test_axis_text_pixel_reserve(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -1248,9 +1248,9 @@ static int test_axis_text_layout_reserve(TstContext* suite, const TstCase* item)
     const float* positions = (const float*)position_view.data;
     float y_before = positions[1];
 
-    AT(dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.0f, .right = 0.0f, .bottom = 0.20f,
-                                        .top = 0.0f}));
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 0.0f, .right_px = 0.0f, .bottom_px = 60.0f,
+                                        .top_px = 0.0f}));
     _scene_prepare_axis_visuals(figure);
     AT(dvz_visual_data(axis->text_visual, "position", &position_view) == 0);
     positions = (const float*)position_view.data;
@@ -1282,9 +1282,9 @@ static int test_axis_text_inset_panel_coordinates(TstContext* suite, const TstCa
         figure, (DvzPanelDesc){.x = 0.08f, .y = 0.06f, .width = 0.86f, .height = 0.86f});
     ANN(panel);
 
-    AT(dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.14f, .right = 0.04f, .bottom = 0.18f,
-                                        .top = 0.04f}));
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 56.0f, .right_px = 16.0f, .bottom_px = 54.0f,
+                                        .top_px = 12.0f}));
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -5.0, +5.0) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -5.0, +5.0) == 0);
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
@@ -1450,7 +1450,7 @@ static int test_axis_plot_margins(TstContext* suite, const TstCase* item)
 }
 
 
-static int test_axis_layout_reserve(TstContext* suite, const TstCase* item)
+static int test_axis_panel_reserve(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -1462,33 +1462,33 @@ static int test_axis_layout_reserve(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzPanelLayoutReserve reserve = dvz_panel_layout_reserve();
-    AT(reserve.left == 0.0f);
-    AT(dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.20f, .right = 0.10f, .bottom = 0.05f,
-                                        .top = 0.15f}));
-    AT(dvz_panel_get_layout_reserve(panel, &reserve));
-    AT(fabsf(reserve.left - 0.20f) < 1e-6f);
-    AT(fabsf(reserve.right - 0.10f) < 1e-6f);
-    AT(fabsf(reserve.bottom - 0.05f) < 1e-6f);
-    AT(fabsf(reserve.top - 0.15f) < 1e-6f);
-
     float plot_visual[4] = {0};
     _scene_panel_plot_visual_rect(panel, plot_visual);
-    AT(fabsf(plot_visual[0] + 0.80f) < 1e-6f);
-    AT(fabsf(plot_visual[1] - 0.90f) < 1e-6f);
-    AT(fabsf(plot_visual[2] + 0.95f) < 1e-6f);
-    AT(fabsf(plot_visual[3] - 0.85f) < 1e-6f);
+    AT(fabsf(plot_visual[0] + 1.0f) < 1e-6f);
+    AT(fabsf(plot_visual[1] - 1.0f) < 1e-6f);
+    AT(fabsf(plot_visual[2] + 1.0f) < 1e-6f);
+    AT(fabsf(plot_visual[3] - 1.0f) < 1e-6f);
 
-    float plot_x = 0.0f;
-    float plot_y = 0.0f;
-    float plot_width = 0.0f;
-    float plot_height = 0.0f;
-    _scene_panel_plot_pixel_rect(panel, &plot_x, &plot_y, &plot_width, &plot_height);
-    AT(fabsf(plot_x - 80.0f) < 1e-4f);
-    AT(fabsf(plot_y - 45.0f) < 1e-4f);
-    AT(fabsf(plot_width - 680.0f) < 1e-6f);
-    AT(fabsf(plot_height - 540.0f) < 1e-6f);
+    DvzRect plot_rect = {0};
+    AT(dvz_panel_plot_rect_px(panel, &plot_rect));
+    AT(fabsf(plot_rect.x) < 1e-4f);
+    AT(fabsf(plot_rect.y) < 1e-4f);
+    AT(fabsf(plot_rect.width - 800.0f) < 1e-4f);
+    AT(fabsf(plot_rect.height - 600.0f) < 1e-4f);
+
+    DvzPanelReserve manual_reserve = {
+        .left_px = 80.0f,
+        .right_px = 40.0f,
+        .top_px = 45.0f,
+        .bottom_px = 15.0f,
+    };
+    AT(dvz_panel_set_reserve(panel, &manual_reserve));
+    DvzPanelReserve reserve = {0};
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(fabsf(reserve.left_px - 80.0f) < 1e-6f);
+    AT(fabsf(reserve.right_px - 40.0f) < 1e-6f);
+    AT(fabsf(reserve.bottom_px - 15.0f) < 1e-6f);
+    AT(fabsf(reserve.top_px - 45.0f) < 1e-6f);
 
     DvzPanelDesc plot_desc = _scene_panel_plot_desc(panel);
     AT(fabsf(plot_desc.x - 0.10f) < 1e-6f);
@@ -1507,21 +1507,21 @@ static int test_axis_layout_reserve(TstContext* suite, const TstCase* item)
     AT(fabsf(visual[4] - 0.85f) < 1e-6f);
 
     dvz_figure_resize(figure, 1200, 900);
-    AT(dvz_panel_get_layout_reserve(panel, &reserve));
-    AT(fabsf(reserve.left - 0.20f) < 1e-6f);
-    AT(fabsf(reserve.bottom - 0.05f) < 1e-6f);
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(fabsf(reserve.left_px - 80.0f) < 1e-6f);
+    AT(fabsf(reserve.bottom_px - 15.0f) < 1e-6f);
     _scene_panel_plot_visual_rect(panel, plot_visual);
-    AT(fabsf(plot_visual[0] + 0.80f) < 1e-6f);
-    AT(fabsf(plot_visual[1] - 0.90f) < 1e-6f);
-    AT(fabsf(plot_visual[2] + 0.95f) < 1e-6f);
-    AT(fabsf(plot_visual[3] - 0.85f) < 1e-6f);
+    AT(fabsf(plot_visual[0] + (1.0f - 160.0f / 1200.0f)) < 1e-6f);
+    AT(fabsf(plot_visual[1] - (1.0f - 80.0f / 1200.0f)) < 1e-6f);
+    AT(fabsf(plot_visual[2] + (1.0f - 30.0f / 900.0f)) < 1e-6f);
+    AT(fabsf(plot_visual[3] - (1.0f - 90.0f / 900.0f)) < 1e-6f);
     dvz_figure_resize(figure, 800, 600);
 
-    AT(!dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 1.50f, .right = 0.60f}));
-    AT(dvz_panel_set_layout_reserve(panel, NULL));
-    AT(dvz_panel_get_layout_reserve(panel, &reserve));
-    AT(reserve.left == 0.0f && reserve.right == 0.0f);
+    AT(!dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 600.0f, .right_px = 240.0f}));
+    AT(dvz_panel_set_reserve(panel, NULL));
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(reserve.left_px == 0.0f && reserve.right_px == 0.0f);
 
     DvzPanelReserve padding = {
         .left_px = 32.0f,
@@ -1551,7 +1551,6 @@ static int test_axis_layout_reserve(TstContext* suite, const TstCase* item)
     DvzPanelReserve pixel_out = {0};
     AT(dvz_panel_get_reserve(panel, &pixel_out));
     AT(fabsf(pixel_out.left_px - 80.0f) < 1e-6f);
-    DvzRect plot_rect = {0};
     AT(dvz_panel_plot_rect_px(panel, &plot_rect));
     AT(fabsf(plot_rect.x - 112.0f) < 1e-4f);
     AT(fabsf(plot_rect.y - 54.0f) < 1e-4f);
@@ -1564,14 +1563,8 @@ static int test_axis_layout_reserve(TstContext* suite, const TstCase* item)
     AT(fabsf(padded_plot_desc.width - 0.69f) < 1e-6f);
     AT(fabsf(padded_plot_desc.height - (488.0f / 600.0f)) < 1e-6f);
 
-    AT(dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.20f, .right = 0.10f, .bottom = 0.05f,
-                                        .top = 0.15f}));
     dvz_figure_resize(figure, 1200, 900);
-    AT(dvz_panel_get_layout_reserve(panel, &reserve));
-    AT(fabsf(reserve.left - 0.20f) < 1e-6f);
-    AT(fabsf(reserve.bottom - 0.05f) < 1e-6f);
-
+    AT(dvz_panel_get_reserve(panel, &reserve));
     AT(dvz_panel_set_reserve(panel, &pixel_reserve));
     AT(dvz_panel_inner_rect_px(panel, &inner_rect));
     AT(fabsf(inner_rect.x - 32.0f) < 1e-4f);
@@ -1595,12 +1588,9 @@ static int test_axis_layout_reserve(TstContext* suite, const TstCase* item)
     y_style.reserve_px = 55.0f;
     AT(dvz_axis_set_style(y_axis, &y_style));
 
-    AT(dvz_panel_get_layout_reserve(panel, &reserve));
-    AT(fabsf(reserve.left - (2.0f * 80.0f / 1200.0f)) < 1e-6f);
-    AT(fabsf(reserve.bottom - (2.0f * 50.0f / 900.0f)) < 1e-6f);
-    AT(dvz_panel_get_reserve(panel, &pixel_out));
-    AT(fabsf(pixel_out.left_px - 135.0f) < 1e-6f);
-    AT(fabsf(pixel_out.bottom_px - 90.0f) < 1e-6f);
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(fabsf(reserve.left_px - 135.0f) < 1e-6f);
+    AT(fabsf(reserve.bottom_px - 90.0f) < 1e-6f);
     AT(dvz_panel_plot_rect_px(panel, &plot_rect));
     AT(fabsf(plot_rect.x - 167.0f) < 1e-4f);
     AT(fabsf(plot_rect.y - 54.0f) < 1e-4f);
@@ -1755,15 +1745,15 @@ static int test_panel_view2d(TstContext* suite, const TstCase* item)
     AT(fabs(min + 0.25) < 1e-9);
     AT(fabs(max - 1.25) < 1e-9);
 
-    AT(dvz_panel_set_layout_reserve(panel, &(DvzPanelLayoutReserve){.right = 0.50f}));
+    AT(dvz_panel_set_reserve(panel, &(DvzPanelReserve){.right_px = 200.0f}));
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
     AT(fabs(min + 0.50) < 1e-9);
     AT(fabs(max - 1.50) < 1e-9);
 
     dvz_figure_resize(figure, 1200, 600);
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
-    AT(fabs(min + (1.0 / 6.0)) < 1e-9);
-    AT(fabs(max - (7.0 / 6.0)) < 1e-9);
+    AT(fabs(min + 0.10) < 1e-9);
+    AT(fabs(max - 1.10) < 1e-9);
     double x_min = 0.0;
     double x_max = 0.0;
     double y_min = 0.0;
@@ -1779,14 +1769,14 @@ static int test_panel_view2d(TstContext* suite, const TstCase* item)
     AT(fabs(x_units_per_px - y_units_per_px) < 1e-9);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 10.0, 20.0) == 0);
-    AT(dvz_panel_set_layout_reserve(panel, NULL));
+    AT(dvz_panel_set_reserve(panel, NULL));
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
     AT(fabs(min - 10.0) < 1e-9);
     AT(fabs(max - 20.0) < 1e-9);
 
     AT(dvz_panel_set_view2d(panel, &view) == 0);
     dvz_panel_clear_view2d(panel);
-    AT(dvz_panel_set_layout_reserve(panel, &(DvzPanelLayoutReserve){.right = 0.50f}));
+    AT(dvz_panel_set_reserve(panel, &(DvzPanelReserve){.right_px = 200.0f}));
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
     AT(fabs(min - 10.0) < 1e-9);
     AT(fabs(max - 20.0) < 1e-9);
@@ -1862,9 +1852,9 @@ static int test_axis_panzoom_layout_aligns_grid_to_plot(TstContext* suite, const
     DvzPanel* panel = dvz_panel_full(figure);
     ANN(panel);
 
-    AT(dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.16f, .right = 0.05f, .bottom = 0.15f,
-                                        .top = 0.05f}));
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 64.0f, .right_px = 20.0f, .bottom_px = 45.0f,
+                                        .top_px = 15.0f}));
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -2.0, 2.0) == 0);
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
@@ -2134,9 +2124,9 @@ static int test_axis_raw_visual_panzoom_alignment(TstContext* suite, const TstCa
     DvzPanel* panel = dvz_panel_full(figure);
     ANN(panel);
 
-    AT(dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.14f, .right = 0.04f, .bottom = 0.12f,
-                                        .top = 0.04f}));
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 56.0f, .right_px = 16.0f, .bottom_px = 36.0f,
+                                        .top_px = 12.0f}));
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     ANN(x_axis);
@@ -2241,9 +2231,9 @@ static int test_axis_integer_lattice_panzoom_alignment(TstContext* suite, const 
         }
     }
 
-    AT(dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.14f, .right = 0.04f, .bottom = 0.12f,
-                                        .top = 0.04f}));
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 56.0f, .right_px = 16.0f, .bottom_px = 36.0f,
+                                        .top_px = 12.0f}));
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, (double)lattice_max) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, (double)lattice_max) == 0);
     mat4 data_to_view = GLM_MAT4_IDENTITY_INIT;
@@ -2475,9 +2465,9 @@ static int test_axis_static_prepare_idempotent(TstContext* suite, const TstCase*
         figure, (DvzPanelDesc){.x = 0.08f, .y = 0.06f, .width = 0.86f, .height = 0.86f});
     ANN(panel);
 
-    AT(dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.14f, .right = 0.0f, .bottom = 0.18f,
-                                        .top = 0.0f}));
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 56.0f, .right_px = 0.0f, .bottom_px = 54.0f,
+                                        .top_px = 0.0f}));
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -5.0, +5.0) == 0);
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(axis);
@@ -2529,9 +2519,9 @@ static int test_axis_visual_clip_rect_panel(TstContext* suite, const TstCase* it
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    AT(dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.25f, .right = 0.05f, .bottom = 0.25f,
-                                        .top = 0.05f}));
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 100.0f, .right_px = 20.0f, .bottom_px = 75.0f,
+                                        .top_px = 15.0f}));
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(axis);
@@ -2805,11 +2795,11 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_text_hidpi_scales_glyph_bounds);
     TST_CASE(test_axis_text_renderer_style);
     TST_CASE(test_axis_text_updates_after_domain_change);
-    TST_CASE(test_axis_text_layout_reserve);
+    TST_CASE(test_axis_text_pixel_reserve);
     TST_CASE(test_axis_text_inset_panel_coordinates);
     TST_CASE(test_panel_data_to_visual_positions);
     TST_CASE(test_axis_plot_margins);
-    TST_CASE(test_axis_layout_reserve);
+    TST_CASE(test_axis_panel_reserve);
     TST_CASE(test_axis_auto_reserve_tracks_label_and_resize);
     TST_CASE(test_panel_visible_domain);
     TST_CASE(test_panel_view2d);

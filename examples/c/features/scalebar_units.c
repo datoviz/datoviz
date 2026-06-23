@@ -173,9 +173,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    if (!dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.08f, .right = 0.08f, .bottom = 0.12f,
-                                        .top = 0.08f}))
+    if (!dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 32.0f, .right_px = 32.0f, .bottom_px = 36.0f,
+                                        .top_px = 24.0f}))
         return false;
     if (dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 250.0) != 0)
         return false;

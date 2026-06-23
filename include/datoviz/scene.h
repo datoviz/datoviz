@@ -561,20 +561,11 @@ DVZ_EXPORT DvzPanel* dvz_panel_full(DvzFigure* figure);
 
 
 /**
- * Return the default panel layout reservation.
- *
- * The default is zero on every side so plot panels remain edge-to-edge unless callers opt in.
- *
- * @return default panel layout reservation
- */
-DVZ_EXPORT DvzPanelLayoutReserve dvz_panel_layout_reserve(void);
-
-
-/**
  * Set a fixed pixel reservation around one panel's plot area.
  *
- * Reservations are in logical pixels and remain stable across figure/window resizes. Pass NULL to
- * reset every side to zero.
+ * This is an advanced/manual plot-space override in logical pixels. Bare panels are edge-to-edge by
+ * default, while attached axes, colorbars, and legends normally reserve their own bands. Pass NULL
+ * to reset the manual reserve to zero.
  *
  * @param panel the panel
  * @param reserve pixel reservation descriptor, or NULL for zero reserve
@@ -584,7 +575,9 @@ DVZ_EXPORT bool dvz_panel_set_reserve(DvzPanel* panel, const DvzPanelReserve* re
 
 
 /**
- * Return one panel's fixed pixel reservation.
+ * Return one panel's current resolved pixel reservation.
+ *
+ * The returned reserve includes the manual base reserve plus automatic attached adornment reserves.
  *
  * @param panel the panel
  * @param out output pixel reservation
@@ -597,7 +590,8 @@ DVZ_EXPORT bool dvz_panel_get_reserve(const DvzPanel* panel, DvzPanelReserve* ou
  * Set a fixed pixel padding inside one panel's outer rectangle.
  *
  * Padding is applied before reserves are resolved: the padded inner panel rectangle contains both
- * the plot rectangle and reserved adornment bands. Pass NULL to reset every side to zero.
+ * the plot rectangle and reserved adornment bands. Use padding for simple inset spacing; attached
+ * adornments normally manage reserve bands themselves. Pass NULL to reset every side to zero.
  *
  * @param panel the panel
  * @param padding pixel padding descriptor, or NULL for zero padding
@@ -768,30 +762,6 @@ DVZ_EXPORT void dvz_reference_grid_destroy(DvzReferenceGrid* grid);
  * @param visible whether the grid should be visible
  */
 DVZ_EXPORT void dvz_reference_grid_set_visible(DvzReferenceGrid* grid, bool visible);
-
-
-/**
- * Reserve visual-space room around one panel's plot area for future adornments.
- *
- * Compatibility bridge: reservations are accepted in panel visual-space units and converted to
- * fixed logical pixels at the panel's current size. Prefer dvz_panel_set_reserve() for new code.
- *
- * @param panel the panel
- * @param reserve reservation descriptor, or NULL for defaults
- * @return whether the reservation was accepted
- */
-DVZ_EXPORT bool dvz_panel_set_layout_reserve(
-    DvzPanel* panel, const DvzPanelLayoutReserve* reserve);
-
-
-/**
- * Return one panel's layout reservation.
- *
- * @param panel the panel
- * @param out output reservation
- * @return whether the reservation was written
- */
-DVZ_EXPORT bool dvz_panel_get_layout_reserve(DvzPanel* panel, DvzPanelLayoutReserve* out);
 
 
 /**

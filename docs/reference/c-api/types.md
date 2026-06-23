@@ -663,12 +663,6 @@ typedef struct DvzPanelBorderDesc DvzPanelBorderDesc;
 typedef struct DvzPanelDesc DvzPanelDesc;
 ```
 
-#### `DvzPanelLayoutReserve`
-
-```c
-typedef struct DvzPanelLayoutReserve DvzPanelLayoutReserve;
-```
-
 #### `DvzPanelLinkFlags`
 
 ```c
@@ -2594,17 +2588,6 @@ struct DvzPanelDesc {
     float y;
     float width;
     float height;
-};
-```
-
-#### `DvzPanelLayoutReserve`
-
-```c
-struct DvzPanelLayoutReserve {
-    float left;
-    float right;
-    float bottom;
-    float top;
 };
 ```
 

@@ -418,11 +418,9 @@ Functions: 334
     | [`dvz_panel_data_to_visual_positions()`](#dvz_panel_data_to_visual_positions) | `include/datoviz/scene.h` |
     | [`dvz_panel_destroy()`](#dvz_panel_destroy) | `include/datoviz/scene.h` |
     | [`dvz_panel_full()`](#dvz_panel_full) | `include/datoviz/scene.h` |
-    | [`dvz_panel_get_layout_reserve()`](#dvz_panel_get_layout_reserve) | `include/datoviz/scene.h` |
     | [`dvz_panel_get_padding()`](#dvz_panel_get_padding) | `include/datoviz/scene.h` |
     | [`dvz_panel_get_reserve()`](#dvz_panel_get_reserve) | `include/datoviz/scene.h` |
     | [`dvz_panel_inner_rect_px()`](#dvz_panel_inner_rect_px) | `include/datoviz/scene.h` |
-    | [`dvz_panel_layout_reserve()`](#dvz_panel_layout_reserve) | `include/datoviz/scene.h` |
     | [`dvz_panel_plot_rect_px()`](#dvz_panel_plot_rect_px) | `include/datoviz/scene.h` |
     | [`dvz_panel_query()`](#dvz_panel_query) | `include/datoviz/scene/interaction.h` |
     | [`dvz_panel_query_now()`](#dvz_panel_query_now) | `include/datoviz/scene/interaction.h` |
@@ -434,7 +432,6 @@ Functions: 334
     | [`dvz_panel_set_desc()`](#dvz_panel_set_desc) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_domain()`](#dvz_panel_set_domain) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_edl()`](#dvz_panel_set_edl) | `include/datoviz/scene.h` |
-    | [`dvz_panel_set_layout_reserve()`](#dvz_panel_set_layout_reserve) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_msaa()`](#dvz_panel_set_msaa) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_padding()`](#dvz_panel_set_padding) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_reserve()`](#dvz_panel_set_reserve) | `include/datoviz/scene.h` |
@@ -4685,27 +4682,6 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:529._
 
-### `dvz_panel_get_layout_reserve()`
-
-```c title="dvz_panel_get_layout_reserve"
-_Bool dvz_panel_get_layout_reserve(
-    DvzPanel * panel,
-    DvzPanelLayoutReserve * out
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `_Bool` | whether the reservation was written |
-| `panel` | `DvzPanel *` | the panel |
-| `out` | `DvzPanelLayoutReserve *` | output reservation |
-
-Return one panel's layout reservation.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:763._
-
 ### `dvz_panel_get_padding()`
 
 ```c title="dvz_panel_get_padding"
@@ -4770,24 +4746,6 @@ The inner rectangle is the panel rectangle after padding and before resolved res
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:597._
-
-### `dvz_panel_layout_reserve()`
-
-```c title="dvz_panel_layout_reserve"
-DvzPanelLayoutReserve dvz_panel_layout_reserve(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzPanelLayoutReserve` | default panel layout reservation |
-
-Return the default panel layout reservation.
-
-The default is zero on every side so plot panels remain edge-to-edge unless callers opt in.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:539._
 
 ### `dvz_panel_plot_rect_px()`
 
@@ -5064,30 +5022,6 @@ are clamped to implementation-supported ranges.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:975._
-
-### `dvz_panel_set_layout_reserve()`
-
-```c title="dvz_panel_set_layout_reserve"
-_Bool dvz_panel_set_layout_reserve(
-    DvzPanel * panel,
-    const DvzPanelLayoutReserve * reserve
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `_Bool` | whether the reservation was accepted |
-| `panel` | `DvzPanel *` | the panel |
-| `reserve` | `const DvzPanelLayoutReserve *` | reservation descriptor, or NULL for defaults |
-
-Reserve visual-space room around one panel's plot area for future adornments.
-
-Compatibility bridge: reservations are accepted in panel visual-space units and converted to
-fixed logical pixels at the panel's current size. Prefer dvz_panel_set_reserve() for new code.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:752._
 
 ### `dvz_panel_set_msaa()`
 

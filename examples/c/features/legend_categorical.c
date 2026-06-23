@@ -225,9 +225,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    if (!dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.055f, .right = 0.020f, .bottom = 0.065f,
-                                        .top = 0.045f}))
+    if (!dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 22.0f, .right_px = 8.0f, .bottom_px = 19.5f,
+                                        .top_px = 13.5f}))
         return false;
 
     DvzScale* scale = _add_category_scale(ctx->scene);

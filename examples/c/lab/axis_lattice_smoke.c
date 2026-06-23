@@ -435,10 +435,10 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
 
-    bool ok = dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.14f, .right = 0.04f, .bottom = 0.12f,
-                                        .top = 0.04f});
-    EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve() failed");
+    bool ok = dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 56.0f, .right_px = 16.0f, .bottom_px = 36.0f,
+                                        .top_px = 12.0f});
+    EXAMPLE_CHECK(ok, "dvz_panel_set_reserve() failed");
 
     int rc = 0;
     if (!raw_probe)

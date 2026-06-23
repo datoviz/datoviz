@@ -1009,11 +1009,6 @@ static bool _view_figure_needs_layout_clamp(const DvzFigure* figure)
     ANN(figure);
     if (figure->grid_count > 0)
         return true;
-    for (uint32_t i = 0; i < figure->panel_count; i++)
-    {
-        if (figure->panels[i].layout_reserve_enabled)
-            return true;
-    }
     return false;
 }
 

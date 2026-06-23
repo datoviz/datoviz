@@ -201,13 +201,13 @@ panels.
 
 ## Adornments And Plot Rects
 
-The current `DvzPanelLayoutReserve` reserves visual-space room inside one panel for axes, legends,
-colorbars, and future adornments. A grid spec should complement this rather than replace it:
+Panel padding, manual pixel reserve, and automatic adornment reserves define plot space inside one
+panel. A grid spec should complement this rather than replace it:
 
 1. Grid margins and gutters place outer panel rectangles in figure space.
-2. Panel layout reservations and axis margins define the inner plot area in panel visual space.
+2. Panel padding and reserve bands define the inner plot area in logical pixels.
 3. Future automatic layout can measure text/colorbar needs and feed either grid-level fixed rows or
-   panel-level reservations.
+   panel-level reserves.
 
 This preserves the useful distinction between:
 

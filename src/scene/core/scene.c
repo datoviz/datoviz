@@ -419,7 +419,6 @@ void dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height)
     for (uint32_t i = 0; i < figure->panel_count; i++)
     {
         DvzPanel* panel = &figure->panels[i];
-        (void)_scene_panel_refresh_layout_reserve(panel);
         (void)_scene_panel_refresh_border(panel);
         if (panel->camera != NULL)
         {
@@ -564,8 +563,6 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
     panel->grid           = NULL;
     panel->grid_cell      = (DvzGridCell){0};
     panel->base_reserve   = (DvzPanelReserve){0};
-    panel->layout_reserve_enabled = false;
-    panel->layout_reserve = dvz_panel_layout_reserve();
     panel->axis_reserve   = (DvzPanelReserve){0};
     panel->colorbar_reserve = (DvzPanelReserve){0};
     panel->legend_reserve = (DvzPanelReserve){0};

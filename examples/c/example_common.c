@@ -716,19 +716,15 @@ bool example_add_data_label(
  * @param x x data domain
  * @param y y data domain
  * @param padding domain fit padding
- * @param reserve optional layout reserve, or NULL
  * @return true when the panel was configured
  */
 bool example_configure_equal_aspect_panel(
-    DvzPanel* panel, DvzDataDomain x, DvzDataDomain y, double padding,
-    const DvzPanelLayoutReserve* reserve)
+    DvzPanel* panel, DvzDataDomain x, DvzDataDomain y, double padding)
 {
     if (panel == NULL)
         return false;
 
     example_graphite_cyan_set_panel_background(panel);
-    if (reserve != NULL && !dvz_panel_set_layout_reserve(panel, reserve))
-        return false;
 
     DvzPanelView2D view = dvz_panel_view2d();
     view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;

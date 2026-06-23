@@ -926,14 +926,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_graphite_cyan_set_panel_background(source);
     example_graphite_cyan_set_panel_background(derived_panel);
 
-    ok = dvz_panel_set_layout_reserve(
-        source, &(DvzPanelLayoutReserve){.left = 0.11f, .right = 0.04f, .bottom = 0.10f,
-                                        .top = 0.13f});
-    EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve(source) failed");
-    ok = dvz_panel_set_layout_reserve(
-        derived_panel, &(DvzPanelLayoutReserve){.left = 0.11f, .right = 0.16f, .bottom = 0.10f,
-                                               .top = 0.13f});
-    EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve(derived) failed");
+    ok = dvz_panel_set_reserve(
+        source, &(DvzPanelReserve){.left_px = 44.0f, .right_px = 16.0f, .bottom_px = 30.0f,
+                                        .top_px = 39.0f});
+    EXAMPLE_CHECK(ok, "dvz_panel_set_reserve(source) failed");
+    ok = dvz_panel_set_reserve(
+        derived_panel, &(DvzPanelReserve){.left_px = 44.0f, .right_px = 64.0f, .bottom_px = 30.0f,
+                                               .top_px = 39.0f});
+    EXAMPLE_CHECK(ok, "dvz_panel_set_reserve(derived) failed");
 
     ok = _set_image_domain(source);
     EXAMPLE_CHECK(ok, "_set_image_domain(source) failed");

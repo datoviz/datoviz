@@ -1476,9 +1476,9 @@ int test_app_offscreen_small_view_clamps_layout(TstContext* suite, const TstCase
     AT(grid != NULL);
     DvzPanel* panel = dvz_grid_panel(grid, 0, 0);
     AT(panel != NULL);
-    AT(dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.35f, .right = 0.20f, .bottom = 0.30f,
-                                        .top = 0.15f}));
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 140.0f, .right_px = 80.0f, .bottom_px = 90.0f,
+                                        .top_px = 45.0f}));
 
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);

@@ -24,26 +24,23 @@ Panel positions are always expressed in **normalized figure coordinates** `[0, 1
 y down, origin at top-left), which makes all proportional layouts automatically responsive to
 figure resize.
 
-**Margins** (the inset between a panel's outer boundary and its inner renderable area, used
-to reserve space for axis labels and titles) are expressed in **pixels** — they have a fixed
-physical size regardless of figure dimensions.
+**Padding and reserve bands** are expressed in logical pixels. A bare panel has no implicit padding
+or reserve and therefore renders edge-to-edge by default. Attached adornments such as axes,
+colorbars, and legends claim their own pixel reserve bands automatically.
 
-Current implementation note: the public `DvzPanelReserve` object is expressed in fixed logical
-pixels and is the preferred reserve API. The legacy `DvzPanelLayoutReserve` visual-unit API remains
-a compatibility bridge; it converts the supplied visual reserve to pixels at the panel's current
-size. New adornment APIs should not expose normalized reserve units as their primary sizing
-language.
+Current implementation note: the public `DvzPanelReserve` object is the only panel reserve
+descriptor. `dvz_panel_set_reserve()` is an advanced manual plot-space override for explicit pixel
+bands; ordinary plot spacing should use grid margins, grid gutters, panel padding, or adornment
+style/layout descriptors.
 
 The active implementation resolves panel reserve from multiple contributions:
 
-1. the explicit user/base reserve set by `dvz_panel_set_reserve()` or the legacy
-   `dvz_panel_set_layout_reserve()` bridge,
+1. the explicit user/base reserve set by `dvz_panel_set_reserve()`,
 2. attached axis reserve contributions when an explicit positive axis reserve is configured,
-3. attached colorbar reserve contributions.
+3. attached colorbar reserve contributions,
+4. attached legend reserve contributions.
 
 `dvz_panel_get_reserve()` and `dvz_panel_plot_rect_px()` report the resolved reserve/plot state.
-`dvz_panel_get_layout_reserve()` remains a compatibility readback for the explicit base reserve,
-not for automatically contributed adornment bands.
 
 
 ## Panel, Plot, And Adornment Rectangles

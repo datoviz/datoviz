@@ -427,13 +427,13 @@ static int test_scene_dpi_user_scale_panel_margin(TstContext* suite, const TstCa
 
 
 /**
- * Verify user scale does not re-scale normalized layout reserves.
+ * Verify user scale applies to manual logical-pixel panel reserves.
  *
  * @param suite the active test suite
  * @param item the active test item
  * @return 0 on success
  */
-static int test_scene_dpi_user_scale_layout_reserve(TstContext* suite, const TstCase* item)
+static int test_scene_dpi_user_scale_pixel_reserve(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -445,9 +445,9 @@ static int test_scene_dpi_user_scale_layout_reserve(TstContext* suite, const Tst
     DvzPanel* panel = dvz_panel_full(figure);
     AT(panel != NULL);
 
-    AT(dvz_panel_set_layout_reserve(
-        panel, &(DvzPanelLayoutReserve){.left = 0.10f, .right = 0.05f, .bottom = 0.12f,
-                                        .top = 0.08f}));
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 40.0f, .right_px = 20.0f, .bottom_px = 36.0f,
+                                        .top_px = 24.0f}));
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
@@ -471,16 +471,16 @@ static int test_scene_dpi_user_scale_layout_reserve(TstContext* suite, const Tst
 
     DvzRect plot = {0};
     AT(dvz_panel_plot_rect_px(panel, &plot));
-    AC(plot.x, 40.0f, 1e-4f);
-    AC(plot.y, 24.0f, 1e-4f);
-    AC(plot.width, 740.0f, 1e-4f);
-    AC(plot.height, 540.0f, 1e-4f);
+    AC(plot.x, 80.0f, 1e-4f);
+    AC(plot.y, 48.0f, 1e-4f);
+    AC(plot.width, 680.0f, 1e-4f);
+    AC(plot.height, 480.0f, 1e-4f);
 
     DvzPanelDesc plot_desc = _scene_panel_plot_desc(panel);
-    AC(plot_desc.x, 0.05f, 1e-6f);
-    AC(plot_desc.y, 0.04f, 1e-6f);
-    AC(plot_desc.width, 0.925f, 1e-6f);
-    AC(plot_desc.height, 0.90f, 1e-6f);
+    AC(plot_desc.x, 0.10f, 1e-6f);
+    AC(plot_desc.y, 0.08f, 1e-6f);
+    AC(plot_desc.width, 0.85f, 1e-6f);
+    AC(plot_desc.height, 0.80f, 1e-6f);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -496,6 +496,6 @@ int test_scene_dpi(TstSuite* suite)
     TST_CASE(test_scene_dpi_user_scale_axis_segment_width);
     TST_CASE(test_scene_dpi_user_scale_axis_text_gap);
     TST_CASE(test_scene_dpi_user_scale_panel_margin);
-    TST_CASE(test_scene_dpi_user_scale_layout_reserve);
+    TST_CASE(test_scene_dpi_user_scale_pixel_reserve);
     return 0;
 }
