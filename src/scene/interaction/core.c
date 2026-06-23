@@ -260,6 +260,12 @@ static bool _overlay_card_desc_validate(const DvzOverlayCardDesc* desc)
 }
 
 
+static DvzOverlayCardDesc _overlay_card_resolve_desc(const DvzOverlayCardDesc* desc)
+{
+    return desc != NULL ? *desc : dvz_overlay_card_desc();
+}
+
+
 
 static bool _overlay_rich_text_desc_validate(const DvzOverlayRichTextDesc* desc)
 {
@@ -2589,7 +2595,14 @@ DvzOverlayCardStyle dvz_overlay_card_style(void)
 
 DvzOverlayCardDesc dvz_overlay_card_desc(void)
 {
-    return (DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc)};
+    DvzSceneCard card = {0};
+    _scene_card_init(&card, NULL);
+    return (DvzOverlayCardDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
+        .placement = card.placement,
+        .anchor_px = {card.anchor_px[0], card.anchor_px[1]},
+        .offset_px = {card.offset_px[0], card.offset_px[1]},
+    };
 }
 
 
@@ -2615,6 +2628,7 @@ DvzOverlayCard* dvz_overlay_card(DvzOverlay* overlay, const DvzOverlayCardDesc* 
         return NULL;
     if (!_overlay_card_desc_validate(desc))
         return NULL;
+    DvzOverlayCardDesc resolved = _overlay_card_resolve_desc(desc);
     DvzScene* scene = overlay->scene;
     if (scene->overlay_card_count >= DVZ_SCENE_MAX_OVERLAY_CARDS)
     {
@@ -2628,20 +2642,17 @@ DvzOverlayCard* dvz_overlay_card(DvzOverlay* overlay, const DvzOverlayCardDesc* 
     card->overlay = overlay;
     card->panel = overlay->panel;
     card->active = true;
-    card->flags = desc != NULL ? desc->card_flags : 0;
+    card->flags = resolved.card_flags;
     _scene_card_init(&card->card, overlay->panel);
-    if (desc != NULL)
-    {
-        if (_scene_card_apply_style(&card->card, desc->style) != 0)
-            return NULL;
-        if (desc->text != NULL)
-            dvz_strlcpy(card->card.text, desc->text, sizeof(card->card.text));
-        card->card.placement = desc->placement;
-        card->card.anchor_px[0] = desc->anchor_px[0];
-        card->card.anchor_px[1] = desc->anchor_px[1];
-        card->card.offset_px[0] = desc->offset_px[0];
-        card->card.offset_px[1] = desc->offset_px[1];
-    }
+    if (_scene_card_apply_style(&card->card, resolved.style) != 0)
+        return NULL;
+    if (resolved.text != NULL)
+        dvz_strlcpy(card->card.text, resolved.text, sizeof(card->card.text));
+    card->card.placement = resolved.placement;
+    card->card.anchor_px[0] = resolved.anchor_px[0];
+    card->card.anchor_px[1] = resolved.anchor_px[1];
+    card->card.offset_px[0] = resolved.offset_px[0];
+    card->card.offset_px[1] = resolved.offset_px[1];
     card->card.visible = (card->flags & DVZ_OVERLAY_CARD_HIDDEN) == 0;
     card->card.dirty = true;
     _scene_notify_request_frame(overlay->panel->figure);

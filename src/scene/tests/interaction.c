@@ -1601,6 +1601,49 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
 }
 
 
+int test_scene_overlay_card_desc_defaults(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzOverlayCardDesc desc = dvz_overlay_card_desc();
+    AT(desc.struct_size == DVZ_STRUCT_SIZE(DvzOverlayCardDesc));
+    AT(desc.flags == 0);
+    AT(desc.text == NULL);
+    AT(desc.placement == DVZ_OVERLAY_CARD_PLACEMENT_PIXEL);
+    AC(desc.anchor_px[0], 0.0f, 1e-6f);
+    AC(desc.anchor_px[1], 0.0f, 1e-6f);
+    AC(desc.offset_px[0], 12.0f, 1e-6f);
+    AC(desc.offset_px[1], 12.0f, 1e-6f);
+    AT(desc.style == NULL);
+    AT(desc.card_flags == 0);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(figure);
+    ANN(panel);
+    DvzOverlay* overlay = dvz_overlay(panel, 0);
+    ANN(overlay);
+
+    DvzOverlayCard* null_card = dvz_overlay_card(overlay, NULL);
+    DvzOverlayCard* default_card = dvz_overlay_card(overlay, &desc);
+    ANN(null_card);
+    ANN(default_card);
+    AT(null_card->card.placement == default_card->card.placement);
+    AC(null_card->card.anchor_px[0], default_card->card.anchor_px[0], 1e-6f);
+    AC(null_card->card.anchor_px[1], default_card->card.anchor_px[1], 1e-6f);
+    AC(null_card->card.offset_px[0], default_card->card.offset_px[0], 1e-6f);
+    AC(null_card->card.offset_px[1], default_card->card.offset_px[1], 1e-6f);
+    AT(null_card->card.visible == default_card->card.visible);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -4488,6 +4531,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_mesh_instance_hover_selection_item_state);
     TST_CASE(test_scene_selection_card_realizes_query_metadata);
     TST_CASE(test_scene_overlay_card_public_api);
+    TST_CASE(test_scene_overlay_card_desc_defaults);
     TST_CASE(test_scene_overlay_card_rich_text_public_api);
     TST_CASE(test_scene_text_annotation_bookkeeping);
     TST_CASE(test_scene_guide_line_and_span_prepare_visuals);

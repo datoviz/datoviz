@@ -1103,6 +1103,8 @@ int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const T
 
 int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item);
 
+int test_scene_overlay_card_desc_defaults(TstContext* suite, const TstCase* item);
+
 int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCase* item);
 
 int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* item);
