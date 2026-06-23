@@ -178,6 +178,21 @@ either mean a documented default or a documented disabled/empty value.
 Pointer-passed descriptor structs should document ownership, defaults, and which fields are ignored
 or required for each mode.
 
+When a public function documents that a pointer-passed config, descriptor, style, or request may be
+`NULL` for defaults, `NULL` must be semantically equivalent to passing the canonical public
+initializer result. Context inheritance must not depend on pointer nullness:
+
+```c
+dvz_view_gui(view, NULL);
+
+DvzGuiConfig config = dvz_gui_config();
+dvz_view_gui(view, &config);
+```
+
+If these calls should not be equivalent, the API must use more precise semantics such as clear,
+disable, zero, inherit, or reset, and document that directly. The v0.4 cleanup plan for this rule is
+in [NULL_DEFAULT_INVARIANT_REFACTOR_PLAN.md](NULL_DEFAULT_INVARIANT_REFACTOR_PLAN.md).
+
 Structs likely to grow after v0.4 should have a compatibility strategy before API freeze. Acceptable
 strategies include reserved fields, a documented version/size field, or keeping the struct out of the
 stable public surface until it settles.
