@@ -170,9 +170,7 @@ int main(int argc, char** argv)
     DvzView* host_view = dvz_view_glfw(app, host_figure, HOST_WIDTH, HOST_HEIGHT, "gui_viewport");
     EXAMPLE_CHECK(host_view != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzGuiConfig gui_config = dvz_gui_config();
-    gui_config.gui_flags = DVZ_GUI_FLAGS_DOCKING | DVZ_GUI_FLAGS_DOCKSPACE;
-    DvzGui* gui = dvz_view_gui(host_view, &gui_config);
+    DvzGui* gui = dvz_view_gui(host_view, NULL);
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
 
     DvzGuiViewportConfig viewport_config = dvz_gui_viewport_config();

@@ -747,8 +747,7 @@ int main(int argc, char** argv)
     if (state.arcball != NULL)
         dvz_arcball_initial(state.arcball, (vec3){0.55f, 0.0f, -0.25f});
 
-    DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_view_gui(win, &gui_config);
+    DvzGui* gui = dvz_view_gui(win, NULL);
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
     dvz_view_set_gui_callback(win, _overlays_gui, &state);
 

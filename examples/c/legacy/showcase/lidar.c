@@ -783,8 +783,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(fly != NULL, "failed to create or bind the LIDAR fly controller");
     gui_state.fly = fly;
 
-    DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_view_gui(win, &gui_config);
+    DvzGui* gui = dvz_view_gui(win, NULL);
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
     dvz_view_set_gui_callback(win, _lidar_gui, &gui_state);
 

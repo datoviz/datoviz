@@ -868,8 +868,7 @@ int main(int argc, char** argv)
     panzoom_desc.controller_flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, &panzoom_desc);
     EXAMPLE_CHECK(panzoom != NULL, "dense_points: panzoom setup failed");
-    DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_view_gui(win, &gui_config);
+    DvzGui* gui = dvz_view_gui(win, NULL);
     EXAMPLE_CHECK(gui != NULL, "dense_points: GUI creation failed");
     dvz_view_set_gui_callback(win, _gui_callback, &state);
     dvz_view_set_frame_callback(win, _frame_callback, &state);

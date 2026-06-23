@@ -319,8 +319,7 @@ static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView*
     if (ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW)
         return true;
 
-    DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_view_gui(view, &gui_config);
+    DvzGui* gui = dvz_view_gui(view, NULL);
     if (gui == NULL)
         return true;
     dvz_view_set_gui_callback(view, _gui_callback, state);

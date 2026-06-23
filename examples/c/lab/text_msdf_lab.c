@@ -942,8 +942,7 @@ int main(int argc, char** argv)
                             "text_msdf_lab");
     EXAMPLE_CHECK(state.host_win != NULL, "host GLFW window setup failed");
 
-    DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_view_gui(state.host_win, &gui_config);
+    DvzGui* gui = dvz_view_gui(state.host_win, NULL);
     EXAMPLE_CHECK(gui != NULL, "GUI setup failed");
 
     DvzGuiViewportConfig viewport_config = dvz_gui_viewport_config();

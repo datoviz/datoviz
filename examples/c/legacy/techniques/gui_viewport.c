@@ -146,8 +146,7 @@ int main(int argc, char** argv)
         dvz_view_glfw(app, host_figure, 1000, 700, "gui_viewport");
     EXAMPLE_CHECK(host_win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_view_gui(host_win, &gui_config);
+    DvzGui* gui = dvz_view_gui(host_win, NULL);
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
 
     viewport = dvz_gui_viewport(gui, source_figure, NULL);

@@ -105,6 +105,7 @@ struct DvzGui
     GLFWwindow* glfw_window;
     ImGuiContext* context;
     DvzGuiConfig config;
+    DvzFontDefaults font_defaults;
     DvzGuiCallback callback;
     void* callback_user_data;
     DvzGuiViewport* viewports;
@@ -265,8 +266,6 @@ bool _dvz_gui_config_validate(const DvzGuiConfig* config)
         log_error("invalid DvzGuiConfig ABI prologue");
         return false;
     }
-    if (!_gui_font_defaults_validate(&config->font_defaults))
-        return false;
     return true;
 }
 
@@ -527,7 +526,7 @@ static void _gui_load_fonts(DvzGui* gui)
     _gui_set_current(gui);
 
     ImGuiIO& io = ImGui::GetIO();
-    DvzFontDefaults defaults = gui->config.font_defaults;
+    DvzFontDefaults defaults = gui->font_defaults;
     DvzFontDefaults fallback_defaults = dvz_font_defaults();
     if (defaults.ui_size_px <= 0.0f)
         defaults.ui_size_px = fallback_defaults.ui_size_px;
@@ -1316,16 +1315,17 @@ static void _gui_submit_dockspace(DvzGui* gui)
  * @param view view to invalidate after GUI input
  * @param window GLFW window borrowed from the view
  * @param config optional GUI configuration
+ * @param font_defaults resolved app font defaults
  * @return created GUI overlay, or NULL
  */
 DvzGui* _dvz_gui_create(
     DvzApp* app, DvzGpuCtx* gpu_ctx, DvzView* view, DvzWindow* window,
-    const DvzGuiConfig* config)
+    const DvzGuiConfig* config, const DvzFontDefaults* font_defaults)
 {
     ANN(app);
     ANN(gpu_ctx);
     ANN(window);
-    if (!_dvz_gui_config_validate(config))
+    if (!_dvz_gui_config_validate(config) || !_gui_font_defaults_validate(font_defaults))
         return NULL;
 
     GLFWwindow* glfw_window = (GLFWwindow*)dvz_window_backend_handle(window);
@@ -1347,6 +1347,7 @@ DvzGui* _dvz_gui_create(
     gui->window = window;
     gui->glfw_window = glfw_window;
     gui->config = config != NULL ? *config : dvz_gui_config();
+    gui->font_defaults = *font_defaults;
     gui->context = ImGui::CreateContext(NULL);
     if (gui->context == NULL)
     {
@@ -1379,6 +1380,14 @@ DvzGui* _dvz_gui_create(
     dvz_window_glfw_set_input_callbacks(window, &callbacks, gui);
 
     return gui;
+}
+
+
+DvzFontDefaults _dvz_gui_font_defaults(const DvzGui* gui)
+{
+    if (gui == NULL)
+        return dvz_font_defaults();
+    return gui->font_defaults;
 }
 
 
@@ -1653,7 +1662,6 @@ DvzGuiConfig dvz_gui_config(void)
     config.struct_size = DVZ_STRUCT_SIZE(DvzGuiConfig);
     config.flags = 0;
     config.gui_flags = DVZ_GUI_FLAGS_DOCKING | DVZ_GUI_FLAGS_DOCKSPACE;
-    config.font_defaults = dvz_font_defaults();
     return config;
 }
 

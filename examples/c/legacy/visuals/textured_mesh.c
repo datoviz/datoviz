@@ -472,8 +472,7 @@ int main(int argc, char** argv)
     DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "textured mesh");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_view_gui(win, &gui_config);
+    DvzGui* gui = dvz_view_gui(win, NULL);
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
     dvz_view_set_gui_callback(win, _textured_mesh_gui, &gui_state);
 

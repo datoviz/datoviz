@@ -5183,9 +5183,8 @@ DvzGui* dvz_view_gui(DvzView* win, const DvzGuiConfig* config)
     if (!_dvz_gui_config_validate(config))
         return NULL;
     DvzGuiConfig resolved = config != NULL ? *config : dvz_gui_config();
-    if (config == NULL)
-        resolved.font_defaults = win->app->config.font_defaults;
-    win->gui = _dvz_gui_create(win->app, win->app->gpu_ctx, win, win->window, &resolved);
+    DvzFontDefaults fonts = win->app->config.font_defaults;
+    win->gui = _dvz_gui_create(win->app, win->app->gpu_ctx, win, win->window, &resolved, &fonts);
     if (win->gui != NULL)
         dvz_view_request_frame(win);
     return win->gui;

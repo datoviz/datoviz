@@ -685,8 +685,7 @@ int main(int argc, char** argv)
     DvzPanzoom* panzoom = dvz_view_panzoom(state.win, state.panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
 
-    DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_view_gui(state.win, &gui_config);
+    DvzGui* gui = dvz_view_gui(state.win, NULL);
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
     dvz_view_set_gui_callback(state.win, _segment_gui, &state);
     dvz_view_set_frame_callback(state.win, _segment_frame, &state);

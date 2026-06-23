@@ -249,18 +249,11 @@ static int test_gui_config_font_defaults(TstContext* suite, const TstCase* item)
     (void)item;
 
     DvzGuiConfig config = dvz_gui_config();
-    DvzFontDefaults defaults = dvz_font_defaults();
     AT(config.struct_size == DVZ_STRUCT_SIZE(DvzGuiConfig));
     AT(config.flags == 0);
     AT((config.gui_flags & DVZ_GUI_FLAGS_DOCKING) != 0);
     AT((config.gui_flags & DVZ_GUI_FLAGS_DOCKSPACE) != 0);
     AT(config.ini_path == NULL);
-    AT(strcmp(config.font_defaults.sans.family, defaults.sans.family) == 0);
-    AT(strcmp(config.font_defaults.sans.style, defaults.sans.style) == 0);
-    AT(strcmp(config.font_defaults.mono.family, defaults.mono.family) == 0);
-    AT(config.font_defaults.ui_size_px == defaults.ui_size_px);
-    AT(config.font_defaults.mono_size_px == defaults.mono_size_px);
-    AT(config.font_defaults.text_size_px == defaults.text_size_px);
     return 0;
 }
 
@@ -370,10 +363,6 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     invalid_gui.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_view_gui(host_win, &invalid_gui) == NULL);
 
-    invalid_gui = dvz_gui_config();
-    invalid_gui.font_defaults.sans.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_view_gui(host_win, &invalid_gui) == NULL);
-
     DvzGui* gui = dvz_view_gui(host_win, NULL);
     if (gui == NULL)
     {
@@ -448,6 +437,101 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     dvz_gui_viewport_destroy(smoke.viewport);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_gui_smoke_available())
+    {
+        tst_skip(suite, "GUI/GLFW support unavailable");
+        return 0;
+    }
+
+    DvzScene* null_scene = dvz_scene();
+    DvzScene* explicit_scene = dvz_scene();
+    ANN(null_scene);
+    ANN(explicit_scene);
+    DvzFigure* null_figure = _gui_test_figure(null_scene, 320, 240);
+    DvzFigure* explicit_figure = _gui_test_figure(explicit_scene, 320, 240);
+    ANN(null_figure);
+    ANN(explicit_figure);
+
+    DvzAppConfig app_config = dvz_app_config();
+    app_config.font_defaults.sans.family = "App Sans";
+    app_config.font_defaults.sans.style = "Book";
+    app_config.font_defaults.mono.family = "App Mono";
+    app_config.font_defaults.ui_size_px = 19.0f;
+    app_config.font_defaults.mono_size_px = 17.0f;
+    app_config.font_defaults.text_size_px = 23.0f;
+
+    DvzApp* null_app = dvz_app_with_config(null_scene, &app_config);
+    DvzApp* explicit_app = dvz_app_with_config(explicit_scene, &app_config);
+    if (null_app == NULL || explicit_app == NULL)
+    {
+        log_warn("test_gui_config_inherits_app_font_defaults skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        if (null_app != NULL)
+            dvz_app_destroy(null_app);
+        if (explicit_app != NULL)
+            dvz_app_destroy(explicit_app);
+        dvz_scene_destroy(null_scene);
+        dvz_scene_destroy(explicit_scene);
+        return 0;
+    }
+
+    DvzView* null_win =
+        dvz_view_glfw(null_app, null_figure, 320, 240, "test_gui_null_font_defaults");
+    DvzView* explicit_win =
+        dvz_view_glfw(explicit_app, explicit_figure, 320, 240, "test_gui_explicit_font_defaults");
+    if (null_win == NULL || explicit_win == NULL)
+    {
+        log_warn("test_gui_config_inherits_app_font_defaults skipped: view creation failed");
+        tst_skip(suite, "view creation failed");
+        dvz_app_destroy(null_app);
+        dvz_app_destroy(explicit_app);
+        dvz_scene_destroy(null_scene);
+        dvz_scene_destroy(explicit_scene);
+        return 0;
+    }
+
+    DvzGui* null_gui = dvz_view_gui(null_win, NULL);
+    DvzGuiConfig gui_config = dvz_gui_config();
+    DvzGui* explicit_gui = dvz_view_gui(explicit_win, &gui_config);
+    if (null_gui == NULL || explicit_gui == NULL)
+    {
+        log_warn("test_gui_config_inherits_app_font_defaults skipped: GUI creation failed");
+        tst_skip(suite, "GUI creation failed");
+        dvz_app_destroy(null_app);
+        dvz_app_destroy(explicit_app);
+        dvz_scene_destroy(null_scene);
+        dvz_scene_destroy(explicit_scene);
+        return 0;
+    }
+
+    DvzFontDefaults null_fonts = _dvz_gui_font_defaults(null_gui);
+    DvzFontDefaults explicit_fonts = _dvz_gui_font_defaults(explicit_gui);
+    AT(strcmp(null_fonts.sans.family, "App Sans") == 0);
+    AT(strcmp(explicit_fonts.sans.family, "App Sans") == 0);
+    AT(strcmp(null_fonts.sans.style, "Book") == 0);
+    AT(strcmp(explicit_fonts.sans.style, "Book") == 0);
+    AT(strcmp(null_fonts.mono.family, "App Mono") == 0);
+    AT(strcmp(explicit_fonts.mono.family, "App Mono") == 0);
+    AC(null_fonts.ui_size_px, 19.0f, 1e-6f);
+    AC(explicit_fonts.ui_size_px, 19.0f, 1e-6f);
+    AC(null_fonts.mono_size_px, 17.0f, 1e-6f);
+    AC(explicit_fonts.mono_size_px, 17.0f, 1e-6f);
+    AC(null_fonts.text_size_px, 23.0f, 1e-6f);
+    AC(explicit_fonts.text_size_px, 23.0f, 1e-6f);
+
+    dvz_app_destroy(null_app);
+    dvz_app_destroy(explicit_app);
+    dvz_scene_destroy(null_scene);
+    dvz_scene_destroy(explicit_scene);
     return 0;
 }
 
@@ -576,6 +660,7 @@ int test_gui(TstSuite* suite)
     TST_CASE(test_gui_viewport_config_defaults);
     TST_CASE(test_gui_config_font_defaults);
     TST_CASE(test_gui_widget_wrapper_symbols);
+    TST_GUI_GPU_CASE(test_gui_config_inherits_app_font_defaults);
     TST_GUI_GPU_CASE(test_gui_viewport_resize_hidden_smoke);
     TST_GUI_GPU_CASE(test_gui_multi_viewport_input_routers);
 

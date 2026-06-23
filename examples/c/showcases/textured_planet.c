@@ -766,8 +766,7 @@ static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView*
     if (state == NULL || view == NULL)
         return true;
 
-    DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_view_gui(view, &gui_config);
+    DvzGui* gui = dvz_view_gui(view, NULL);
     if (gui == NULL)
         return true;
     dvz_view_set_gui_callback(view, _textured_planet_gui, state);

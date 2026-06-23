@@ -178,8 +178,7 @@ int main(int argc, char** argv)
     DvzView* view = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "gui_cimgui");
     EXAMPLE_CHECK(view != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_view_gui(view, &gui_config);
+    DvzGui* gui = dvz_view_gui(view, NULL);
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
     dvz_view_set_gui_callback(view, _gui_cimgui_callback, &state);
 

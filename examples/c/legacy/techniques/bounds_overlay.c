@@ -246,8 +246,7 @@ int main(int argc, char** argv)
     DvzArcball* arcball = dvz_view_arcball(win, panel_3d, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
 
-    DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_view_gui(win, &gui_config);
+    DvzGui* gui = dvz_view_gui(win, NULL);
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
     dvz_view_set_gui_callback(win, _bounds_overlay_gui, &state);
 
