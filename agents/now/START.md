@@ -31,6 +31,8 @@ as real implementation, not scaffolding.
    schemas, fixtures, or scene DRP2 emission.
 6. Use [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md) before changing
    the top-level Python package, raw-binding generation, or NumPy/array argument adaptation.
+7. Use [HANDOFF_MARKER_TRIANGLE_ANGLE_CONVENTION.md](HANDOFF_MARKER_TRIANGLE_ANGLE_CONVENTION.md)
+   before changing marker angle, marker shape, symbol, or GSP-facing marker semantics.
 
 
 ## Guardrails

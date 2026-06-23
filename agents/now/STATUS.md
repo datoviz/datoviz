@@ -92,6 +92,12 @@ capability diagnostics against the same streams used by native runtime execution
 browser gallery example by reimplementing its scene, visual state, animation, picking, selection,
 query/probe, or data semantics in JavaScript.
 
+GSP marker-angle handoff: before changing marker angle, marker shape, symbol, or GSP-facing marker
+semantics, read
+[HANDOFF_MARKER_TRIANGLE_ANGLE_CONVENTION.md](HANDOFF_MARKER_TRIANGLE_ANGLE_CONVENTION.md). GSP
+visual QA found no global Y flip, but `DVZ_MARKER_SHAPE_TRIANGLE` appears to require
+`pi - protocol_angle` downstream unless Datoviz changes or documents the marker-local convention.
+
 Example data guardrail: examples that declare prepared, generated, or external data must not
 silently synthesize an in-memory runtime fallback when the expected bundle is absent. Fail with the
 exact preparation command instead. Synthetic/simulated examples remain acceptable only when that
