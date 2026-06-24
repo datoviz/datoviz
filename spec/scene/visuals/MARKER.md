@@ -54,9 +54,9 @@ Target marker data:
 
 | Attribute | Meaning |
 |---|---|
-| `position` | Anchor point in visual space. |
-| `diameter_px` | Screen-space symbol extent by default. |
-| `angle` | Screen-space rotation around the anchor. |
+| `position` | Center of the marker's screen-space bounding box in visual space. |
+| `diameter_px` | Screen-space bounding-box width and height by default. |
+| `angle` | Screen-space rotation around the bounding-box center. |
 | `color` | Fill/tint color. |
 | `symbol` | `uint32_t` `DvzSymbolId` selecting an entry in a bound `DvzSymbolSet`. |
 
@@ -86,7 +86,7 @@ family spec is revised.
 | Shape | | Shape | | Shape | |
 |---|---|---|---|---|---|
 | `disc` | filled circle | `square` | axis-aligned square | `diamond` | rotated square |
-| `circle` | ring | `triangle` | equilateral triangle | `cross` | plus sign |
+| `circle` | ring | `triangle` | bbox-filling triangle | `cross` | plus sign |
 | `asterisk` | six-pointed | `chevron` | V-shape | `clover` | four-lobed |
 | `club` | club suit | `spade` | spade suit | `heart` | heart suit |
 | `arrow` | directional | `ellipse` | ellipse | `hbar` | horizontal bar |
@@ -123,6 +123,7 @@ Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 Standard — see `SHARED_ATTRIBUTES.md`.
 Storage name: `size`.
 Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
+Semantics: bounding-box width and height in screen pixels for built-in code-SDF symbols.
 
 
 ### `angle`
@@ -130,7 +131,12 @@ Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 Standard — see `SHARED_ATTRIBUTES.md`.
 Accepted sources: `PER_ITEM` in the active descriptor. `CONSTANT` and `PER_GROUP` are target
 capabilities.
-Applied in screen space after the panel transform — markers always face the viewer.
+Applied in screen space after the panel transform — markers always face the viewer. Positive angles
+rotate counter-clockwise in rendered y-up coordinates around the marker bounding-box center.
+
+Built-in symbols may have different zero-angle orientations. `DVZ_MARKER_SHAPE_TRIANGLE` has
+zero-angle vertices `(-1, -1)`, `(+1, -1)`, `(0, +1)` in marker-local bounding-box coordinates,
+matching Matplotlib's `^` path up to scale.
 
 
 ### `shift`

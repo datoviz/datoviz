@@ -8,7 +8,7 @@ struct FragmentIn {
     @location(4) @interpolate(flat) shape: u32,
 }
 
-fn sd_triangle(p_in: vec2f) -> f32 {
+fn sd_equilateral_triangle(p_in: vec2f) -> f32 {
     let k = 1.7320508;
     var p = vec2f(abs(p_in.x) - 1.0, p_in.y + 1.0 / k);
     if (p.x + k * p.y > 0.0) {
@@ -33,6 +33,17 @@ fn sd_segment(p: vec2f, a: vec2f, b: vec2f) -> f32 {
     let ba = b - a;
     let h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
     return length(pa - ba * h);
+}
+
+fn sd_triangle(p: vec2f) -> f32 {
+    let a = vec2f(-1.0, -1.0);
+    let b = vec2f(1.0, -1.0);
+    let c = vec2f(0.0, 1.0);
+    let d = min(sd_segment(p, a, b), min(sd_segment(p, b, c), sd_segment(p, c, a)));
+    let s0 = (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
+    let s1 = (c.x - b.x) * (p.y - b.y) - (c.y - b.y) * (p.x - b.x);
+    let s2 = (a.x - c.x) * (p.y - c.y) - (a.y - c.y) * (p.x - c.x);
+    return select(d, -d, s0 >= 0.0 && s1 >= 0.0 && s2 >= 0.0);
 }
 
 fn sd_ellipse(p: vec2f, r: vec2f) -> f32 {
@@ -102,7 +113,7 @@ fn marker_distance(p: vec2f, shape: u32) -> f32 {
     }
     if (shape == 11u) {
         let shaft = sd_box(p - vec2f(-0.28, 0.0), vec2f(0.58, 0.18));
-        let head = sd_triangle(vec2f(-p.y * 1.35, (p.x - 0.12) * 1.35));
+        let head = sd_equilateral_triangle(vec2f(-p.y * 1.35, (p.x - 0.12) * 1.35));
         return min(shaft, head);
     }
     if (shape == 12u) {
@@ -121,7 +132,7 @@ fn marker_distance(p: vec2f, shape: u32) -> f32 {
     }
     if (shape == 16u) {
         let head = length(p - vec2f(0.0, 0.28)) - 0.5;
-        let tip = sd_triangle(vec2f(p.x * 1.15, p.y * 1.15 + 0.3));
+        let tip = sd_equilateral_triangle(vec2f(p.x * 1.15, p.y * 1.15 + 0.3));
         let hole = -(length(p - vec2f(0.0, 0.30)) - 0.18);
         return max(min(head, tip), hole);
     }
@@ -148,7 +159,9 @@ fn marker_distance(p: vec2f, shape: u32) -> f32 {
 fn main(input: FragmentIn) -> @location(0) vec4f {
     let c = cos(input.angle);
     let s = sin(input.angle);
-    let p = vec2f(c * input.sprite.x - s * input.sprite.y, s * input.sprite.x + c * input.sprite.y);
+    let marker_coord = input.sprite;
+    let p = vec2f(
+        c * marker_coord.x + s * marker_coord.y, -s * marker_coord.x + c * marker_coord.y);
 
     let dist = marker_distance(p, input.shape);
     let aa = max(fwidth(dist), 1e-6);

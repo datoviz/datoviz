@@ -1776,7 +1776,9 @@ Renders screen-space code-SDF marker sprites with dense `position` (vec3), `colo
 `diameter_px` (float in pixels), `angle` (float radians), and `shape`/`symbol` (uint32_t built-in
 symbol id) attributes. Optional `item_state` (uint32_t DvzItemStateKind bitfield) supports
 retained hover and selection styling.
-Built-in code-SDF shapes include the v0.3 marker vocabulary plus target.
+`position` is the center of the screen-space marker bounding box, `diameter_px` is its width and
+height, and positive `angle` rotates counter-clockwise in rendered y-up coordinates. Built-in
+code-SDF shapes include the v0.3 marker vocabulary plus target.
 
 Raw ctypes: emitted.
 

@@ -27,7 +27,8 @@ Use [Point](point.md) for simple circular marks, [Pixel](pixel.md) for square ce
 ## Data Model
 
 Create with `dvz_marker(scene, flags)`. Upload one item per marker. Built-in code-SDF shapes cover
-the v0.3 marker vocabulary plus target symbols.
+the v0.3 marker vocabulary plus target symbols. `position` is the center of the marker's
+screen-space bounding box, and `diameter_px` is that box's width and height in pixels.
 
 ## Attributes
 
@@ -35,6 +36,10 @@ the v0.3 marker vocabulary plus target symbols.
 | --- | --- |
 | Required | `position` (`vec3` center), `color` (RGBA8 fill), `diameter_px` (`float`, pixels), `angle` (`float`, radians), `shape` or `symbol` (`uint32_t` built-in symbol id) |
 | Optional | `item_state` for retained hover/selection styling; visual-wide symbol set through `dvz_marker_set_symbols()`; one built-in symbol through `dvz_marker_set_symbol()`; stroke/fill style through `dvz_marker_set_style()`; alpha mode; depth test; transform |
+
+`angle` rotates counter-clockwise in rendered y-up coordinates around the bounding-box center.
+`DVZ_MARKER_SHAPE_TRIANGLE` at `angle = 0` has marker-local vertices `(-1, -1)`, `(+1, -1)`,
+and `(0, +1)`, matching Matplotlib's `^` marker up to scale.
 
 ## Picking And Probing
 

@@ -14,7 +14,7 @@ layout(location = 4) in float fragSpriteScale;
 
 layout(location = 0) out vec4 outColor;
 
-float sdTriangle(vec2 p)
+float sdEquilateralTriangle(vec2 p)
 {
     const float k = 1.7320508;
     p.x = abs(p.x) - 1.0;
@@ -43,6 +43,18 @@ float sdSegment(vec2 p, vec2 a, vec2 b)
     vec2 ba = b - a;
     float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
     return length(pa - ba * h);
+}
+
+float sdTriangle(vec2 p)
+{
+    const vec2 a = vec2(-1.0, -1.0);
+    const vec2 b = vec2(+1.0, -1.0);
+    const vec2 c = vec2(0.0, +1.0);
+    float d = min(sdSegment(p, a, b), min(sdSegment(p, b, c), sdSegment(p, c, a)));
+    float s0 = (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
+    float s1 = (c.x - b.x) * (p.y - b.y) - (c.y - b.y) * (p.x - b.x);
+    float s2 = (a.x - c.x) * (p.y - c.y) - (a.y - c.y) * (p.x - c.x);
+    return s0 >= 0.0 && s1 >= 0.0 && s2 >= 0.0 ? -d : d;
 }
 
 float sdEllipse(vec2 p, vec2 r)
@@ -115,7 +127,7 @@ float markerDistance(vec2 p, uint shape)
     if (shape == 11u)
     {
         float shaft = sdBox(p - vec2(-0.28, 0.0), vec2(0.58, 0.18));
-        float head = sdTriangle(vec2(-p.y * 1.35, (p.x - 0.12) * 1.35));
+        float head = sdEquilateralTriangle(vec2(-p.y * 1.35, (p.x - 0.12) * 1.35));
         return min(shaft, head);
     }
     if (shape == 12u)
@@ -133,7 +145,7 @@ float markerDistance(vec2 p, uint shape)
     if (shape == 16u)
     {
         float head = length(p - vec2(0.0, 0.28)) - 0.5;
-        float tip = sdTriangle(vec2(p.x * 1.15, p.y * 1.15 + 0.3));
+        float tip = sdEquilateralTriangle(vec2(p.x * 1.15, p.y * 1.15 + 0.3));
         float hole = -(length(p - vec2(0.0, 0.30)) - 0.18);
         return max(min(head, tip), hole);
     }
@@ -162,7 +174,9 @@ void main()
     vec2 uv = (gl_PointCoord * 2.0 - 1.0) * max(fragSpriteScale, 1.0);
     float c = cos(fragAngle);
     float s = sin(fragAngle);
-    vec2 p = mat2(c, -s, s, c) * uv;
+    vec2 markerCoord = vec2(uv.x, -uv.y);
+    vec2 p = vec2(
+        c * markerCoord.x + s * markerCoord.y, -s * markerCoord.x + c * markerCoord.y);
 
     float dist = markerDistance(p, fragShape);
     float aa = max(fwidth(dist), 1e-6);

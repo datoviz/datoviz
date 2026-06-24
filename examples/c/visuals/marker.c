@@ -4,7 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* marker - retained marker visual with deterministic symbol, fill, stroke, and size variation.
+/* marker - retained marker visual with deterministic symbol, fill, stroke, size, and angle
+ * variation. The top row is a triangle compass probe: angle is mathematical counter-clockwise and
+ * triangle diameter_px is the screen-space bounding-box diameter.
  *
  * Scenario: visual.marker
  * Style: visuals, graphite_cyan, 1600x1200 capture target
@@ -36,6 +38,7 @@
 #define WIDTH       1600u
 #define HEIGHT      1200u
 #define MARKER_COLS 7u
+#define PI_F        3.14159265358979323846f
 
 
 
@@ -198,6 +201,34 @@ _add_marker_row(
         angles[col] = 0.18f * (float)(row + col);
         symbols[col] = _marker_symbol(row * MARKER_COLS + col);
     }
+    if (row == 0)
+    {
+        static const float compass_angles[MARKER_COLS] = {
+            0.0f,
+            0.5f * PI_F,
+            PI_F,
+            1.5f * PI_F,
+            0.25f * PI_F,
+            -0.25f * PI_F,
+            0.0f,
+        };
+        static const float compass_y_offsets[MARKER_COLS] = {
+            -0.06f,
+            +0.07f,
+            -0.02f,
+            +0.05f,
+            -0.08f,
+            +0.03f,
+            +0.00f,
+        };
+        for (uint32_t col = 0; col < MARKER_COLS; col++)
+        {
+            positions[col][1] = y + compass_y_offsets[col];
+            diameters[col] = col + 1u == MARKER_COLS ? 50.0f : 64.0f;
+            angles[col] = compass_angles[col];
+            symbols[col] = col + 1u == MARKER_COLS ? DVZ_SYMBOL_SQUARE : DVZ_SYMBOL_TRIANGLE;
+        }
+    }
 
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = MARKER_COLS},
@@ -242,7 +273,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    const float row_y[] = {+0.46f, 0.0f, -0.46f};
+    const float row_y[] = {+0.58f, +0.12f, -0.36f};
     const ExampleStyleColorRole edge_roles[] = {
         EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
         EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
