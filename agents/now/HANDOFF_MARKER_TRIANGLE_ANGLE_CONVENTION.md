@@ -1,6 +1,6 @@
 # Handoff: Marker Triangle Angle Convention
 
-Status: new GSP visual-QA finding, needs Datoviz semantic decision.
+Status: new GSP visual-QA finding, semantic decision made; needs Datoviz implementation.
 
 Owner: next Datoviz scene/marker agent.
 
@@ -19,11 +19,20 @@ GSP currently works around this with:
 datoviz_triangle_angle = pi - protocol_triangle_angle
 ```
 
-The desired Datoviz outcome is either:
+The desired Datoviz outcome is now decided:
 
-1. define and document the current convention explicitly, with tests; or
-2. change Datoviz before v0.4 API freeze so marker angles use the expected y-up mathematical
-   convention in rendered output.
+1. `diameter_px` defines the marker bounding-box width and height in pixels;
+2. `position` is the center of that bounding box;
+3. `DVZ_MARKER_SHAPE_TRIANGLE` at `angle = 0` uses bbox-normalized vertices
+   `(-1, -1)`, `(+1, -1)`, `(0, +1)` in the marker-local `[-1, +1]` square;
+4. positive `angle` rotates counter-clockwise in the mathematical/rendered y-up convention.
+
+This intentionally matches the Matplotlib `^` marker path up to scale:
+
+```text
+Matplotlib: (0, +0.5), (-0.5, -0.5), (+0.5, -0.5)
+Datoviz target: (0, +1), (-1, -1), (+1, -1)
+```
 
 
 ## Evidence From GSP
@@ -86,25 +95,34 @@ Likely implementation/test files:
    `marker_distance_frag`.
 
 
-## Decision Needed
+## Decided Semantics
 
-Datoviz should choose one public convention before v0.4 API freeze:
+Datoviz should implement the following public marker contract before v0.4 API freeze:
 
-### Preferred
+1. `position` is the center of the marker's screen-space bounding box.
+2. `diameter_px` is the width and height of that bounding box in logical pixels.
+3. Built-in marker shapes are normalized to the marker-local `[-1, +1] x [-1, +1]` box unless
+   their public spec says otherwise.
+4. `DVZ_MARKER_SHAPE_TRIANGLE` at `angle = 0` fills that box with vertices:
 
-Marker `angle` is in radians, rotates the marker glyph around its center, and positive angles
-rotate counter-clockwise in the same y-up rendered coordinate convention users see for retained
-2D/data visuals. A triangle with `angle = 0` has a documented default direction.
+   ```text
+   (-1, -1), (+1, -1), (0, +1)
+   ```
 
-If this is the intended contract, fix the Datoviz marker shader/geometry/symbol convention so GSP
-can remove the `pi - angle` compatibility transform.
+5. `angle` is in radians, rotates the marker glyph around the bbox center, and positive angles
+   rotate counter-clockwise in the same y-up rendered coordinate convention users see for retained
+   2D/data visuals.
 
-### Acceptable If Intentional
+The current Datoviz SDF triangle is not this shape. Sampling the current shader's `sdTriangle`
+gives an equilateral-ish shape with approximate vertices:
 
-Marker `angle` is defined in a marker-local screen-space coordinate system whose Y axis is down, or
-the built-in triangle symbol intentionally has a down-facing zero orientation. If so, document this
-explicitly in the public marker spec/docs and add regression tests. GSP can keep adapting it, but the
-contract must be clear.
+```text
+(-1, -0.577), (+1, -0.577), (0, +1.155)
+```
+
+That explains the baseline mismatch: the base edge is around `y = -0.577` instead of `y = -1`.
+It also means the apparent marker shape is not bbox-normalized like square, Matplotlib `^`, or the
+intended GSP protocol semantics.
 
 
 ## Acceptance Criteria
@@ -118,24 +136,24 @@ contract must be clear.
    at asymmetric Y positions, so both center-coordinate Y flips and local angle direction mistakes
    are visible.
 
-2. The marker docs/spec state:
+2. The marker docs/spec state the decided contract:
 
-   - the zero-angle direction for `DVZ_MARKER_SHAPE_TRIANGLE`;
-   - whether positive `angle` is clockwise or counter-clockwise in rendered output;
-   - whether the convention is data/y-up or screen/y-down.
+   - `diameter_px` is bbox width/height;
+   - `position` is bbox center;
+   - `DVZ_MARKER_SHAPE_TRIANGLE` vertices at `angle = 0` are
+     `(-1, -1), (+1, -1), (0, +1)`;
+   - positive `angle` is counter-clockwise in rendered y-up coordinates.
 
-3. If Datoviz changes the convention, update `examples/c/visuals/marker.c` and focused marker tests
-   so they exercise the new expected behavior.
+3. Update `examples/c/visuals/marker.c` and focused marker tests so they exercise the new expected
+   behavior.
 
-4. If Datoviz keeps the current convention, update the docs and add a test that locks the current
-   behavior so downstream adapters can rely on it intentionally.
+4. Validate both native GLSL and WebGPU/WGSL marker paths, because both have marker-local rotation
+   code and SDF code.
 
-5. Notify GSP after the Datoviz decision:
+5. Notify GSP after the Datoviz fix:
 
-   - If fixed to the preferred convention, GSP should remove `_datoviz_marker_angles()` triangle
-     remapping.
-   - If documented as intentional, GSP should keep the remapping and cite the Datoviz convention in
-     adapter comments/spec notes.
+   - GSP should remove `_datoviz_marker_angles()` triangle remapping.
+   - GSP should regenerate S023 visual QA and verify Matplotlib/Datoviz parity.
 
 
 ## Suggested Minimal Probe
@@ -151,4 +169,3 @@ Create or extend a retained marker example with:
 The key visual result should be obvious without pixel-perfect image comparison: the six arrows must
 point in the expected compass directions while their centers remain in the expected positive/negative
 Y positions.
-
