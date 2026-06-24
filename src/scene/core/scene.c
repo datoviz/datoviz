@@ -333,6 +333,7 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, uint32_t
     fig->device_scale_y = 1.0f;
     fig->render_scale = 1.0f;
     fig->user_scale = 1.0f;
+    fig->color_pipeline = DVZ_COLOR_PIPELINE_LINEAR_SRGB;
     return fig;
 }
 
@@ -447,6 +448,25 @@ void dvz_figure_size(const DvzFigure* figure, uint32_t* out_width, uint32_t* out
         *out_width = figure->width;
     if (out_height != NULL)
         *out_height = figure->height;
+}
+
+
+void dvz_figure_set_color_pipeline(DvzFigure* figure, DvzColorPipeline pipeline)
+{
+    ANN(figure);
+    if (pipeline != DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND)
+        pipeline = DVZ_COLOR_PIPELINE_LINEAR_SRGB;
+    if (figure->color_pipeline == pipeline)
+        return;
+    figure->color_pipeline = pipeline;
+    _scene_notify_request_frame(figure);
+}
+
+
+DvzColorPipeline dvz_figure_color_pipeline(const DvzFigure* figure)
+{
+    ANN(figure);
+    return figure->color_pipeline;
 }
 
 

@@ -185,6 +185,27 @@ dvz_figure_size(const DvzFigure* figure, uint32_t* out_width, uint32_t* out_heig
 
 
 /**
+ * Set the figure color pipeline used by app/offscreen rendering.
+ *
+ * The default is DVZ_COLOR_PIPELINE_LINEAR_SRGB. DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND is an
+ * opt-in compatibility mode that blends semantic sRGB colors in display space.
+ *
+ * @param figure the figure
+ * @param pipeline the color pipeline
+ */
+DVZ_EXPORT void dvz_figure_set_color_pipeline(DvzFigure* figure, DvzColorPipeline pipeline);
+
+
+/**
+ * Return the figure color pipeline used by app/offscreen rendering.
+ *
+ * @param figure the figure
+ * @return the figure color pipeline
+ */
+DVZ_EXPORT DvzColorPipeline dvz_figure_color_pipeline(const DvzFigure* figure);
+
+
+/**
  * Create a retained grid layout object owned by a figure.
  *
  * Rows and columns default to weight-based sizing with weight 1.0. Grid margins and gutters
