@@ -120,6 +120,27 @@ def _visual_data_updates_arg(updates):
     return records, keepalive
 
 
+def dvz_view_capture_rgba(view):
+    canvas = _raw.dvz_view_canvas(view)
+    if not canvas:
+        raise RuntimeError('dvz_view_capture_rgba failed: view has no canvas')
+
+    width = ctypes.c_uint32()
+    height = ctypes.c_uint32()
+    _raw.dvz_view_framebuffer_size(view, ctypes.byref(width), ctypes.byref(height))
+    if width.value == 0 or height.value == 0:
+        raise RuntimeError('dvz_view_capture_rgba failed: view framebuffer size is zero')
+
+    rgba = np.empty((height.value, width.value, 4), dtype=np.uint8)
+    out = rgba.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8))
+    rc = _raw.dvz_canvas_capture_rgba_into(
+        canvas, width.value, height.value, out, rgba.nbytes
+    )
+    if rc != 0:
+        raise RuntimeError(f'dvz_view_capture_rgba failed with code {rc}')
+    return rgba
+
+
 '''
 
 

@@ -44,9 +44,10 @@ The current branch is closer to this plan than the original draft assumed:
   top-level `dvz_visual_set_data_many()` facade now accepts mappings or iterables of
   `(attr_name, array)` pairs and lowers them to `DvzVisualDataUpdate[]` for the raw call.
 - Canvas-level memory capture already exists in C:
-  `dvz_canvas_capture_rgba_into()` and `dvz_canvas_capture_rgba()`. The missing GSP-facing piece is
-  a Python helper that reaches it from a `DvzView` via `dvz_view_canvas()`, returns a NumPy RGBA8
-  array without temporary files, and frees Datoviz-owned memory correctly.
+  `dvz_canvas_capture_rgba_into()` and `dvz_canvas_capture_rgba()`. The top-level Python facade now
+  exposes `dvz_view_capture_rgba(view)`, which reaches the canvas through `dvz_view_canvas()`, uses
+  `dvz_canvas_capture_rgba_into()`, and returns a copied NumPy RGBA8 array without temporary files
+  or Datoviz-owned memory lifetime hazards.
 - PNG-to-memory is only partially aligned: `dvz_make_png()` writes RGB memory, while screenshot
   capture is RGBA8. Add an RGBA-capable PNG-bytes path or explicitly document alpha-dropping if
   RC1 defers alpha-preserving PNG bytes.
@@ -604,9 +605,9 @@ rgba = dvz.capture_rgba(scene, figure, 800, 600)
 2. Done for the first slice: `dvz.dvz_visual_set_data_many(visual, {"attr": array, ...})`
    validates arrays, constructs `DvzVisualDataUpdate[]`, keeps temporaries alive through the raw
    call, and raises deterministic Python exceptions on validation failure.
-3. Add Python capture helpers with C-shaped names, preferably
-   `dvz.dvz_view_capture_rgba(view)` returning a `(height, width, 4)` `uint8` NumPy array, and
-   `dvz.dvz_view_capture_png_bytes(view)` if an alpha-preserving PNG-memory path is added.
+3. Done for the first capture slice: `dvz.dvz_view_capture_rgba(view)` returns a
+   `(height, width, 4)` `uint8` NumPy array using caller-owned Python memory. Add
+   `dvz.dvz_view_capture_png_bytes(view)` later if an alpha-preserving PNG-memory path is added.
 4. Update `datoviz.capture()` or add a non-destructive companion so GSP can render/capture a
    persistent app/view without automatically destroying the scene.
 5. Add focused Python facade tests for `set_data_many`, `set_data_range`, and capture memory. GPU
@@ -627,7 +628,7 @@ Minimum acceptance:
 - `import datoviz as dvz` exposes stable retained-scene functions.
 - Python can create scene/figure/panel, create point/marker/segment/path/image/text content through
   the current canonical APIs, set NumPy data, attach visuals, render offscreen, and get RGBA memory
-  without temporary files.
+  without temporary files through `dvz_view_capture_rgba(view)`.
 - Atomic multi-attribute updates are ergonomic from top-level Python through
   `dvz.dvz_visual_set_data_many(...)`.
 - Partial updates remain available through `dvz.dvz_visual_set_data_range(...)`.

@@ -63,6 +63,20 @@ def fake_facade(monkeypatch):
     raw.dvz_visual_set_index_data = _raw_function(
         [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint32), ctypes.c_uint32]
     )
+    raw.dvz_view_canvas = _raw_function([ctypes.c_void_p], ctypes.c_void_p)
+    raw.dvz_view_framebuffer_size = _raw_function(
+        [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)],
+        None,
+    )
+    raw.dvz_canvas_capture_rgba_into = _raw_function(
+        [
+            ctypes.c_void_p,
+            ctypes.c_uint32,
+            ctypes.c_uint32,
+            ctypes.POINTER(ctypes.c_uint8),
+            ctypes.c_size_t,
+        ]
+    )
 
     monkeypatch.setitem(sys.modules, 'datoviz.raw', raw)
     sys.modules.pop('datoviz._array_facade', None)
@@ -233,6 +247,60 @@ def test_index_data_requires_declared_dtype(fake_facade):
 
     with pytest.raises(ValueError, match='dtype uint32'):
         facade.dvz_visual_set_index_data(ctypes.c_void_p(5), indices.astype(np.uint16))
+
+
+def test_view_capture_rgba_returns_numpy_array(fake_facade):
+    raw, facade = fake_facade
+    canvas = ctypes.c_void_p(123)
+
+    def view_canvas(_view):
+        return canvas
+
+    def framebuffer_size(_view, out_width, out_height):
+        out_width._obj.value = 3
+        out_height._obj.value = 2
+
+    def capture_into(_canvas, width, height, out_rgba, out_size):
+        assert _canvas == canvas
+        assert width == 3
+        assert height == 2
+        assert out_size == 24
+        data = np.ctypeslib.as_array(out_rgba, shape=(out_size,))
+        data[:] = np.arange(out_size, dtype=np.uint8)
+        return 0
+
+    raw.dvz_view_canvas = view_canvas
+    raw.dvz_view_framebuffer_size = framebuffer_size
+    raw.dvz_canvas_capture_rgba_into = capture_into
+
+    rgba = facade.dvz_view_capture_rgba(ctypes.c_void_p(11))
+
+    assert rgba.shape == (2, 3, 4)
+    assert rgba.dtype == np.uint8
+    np.testing.assert_array_equal(rgba.ravel(), np.arange(24, dtype=np.uint8))
+
+
+def test_view_capture_rgba_raises_on_missing_canvas(fake_facade):
+    raw, facade = fake_facade
+    raw.dvz_view_canvas = lambda _view: None
+
+    with pytest.raises(RuntimeError, match='no canvas'):
+        facade.dvz_view_capture_rgba(ctypes.c_void_p(12))
+
+
+def test_view_capture_rgba_raises_on_capture_failure(fake_facade):
+    raw, facade = fake_facade
+    raw.dvz_view_canvas = lambda _view: ctypes.c_void_p(123)
+
+    def framebuffer_size(_view, out_width, out_height):
+        out_width._obj.value = 1
+        out_height._obj.value = 1
+
+    raw.dvz_view_framebuffer_size = framebuffer_size
+    raw.dvz_canvas_capture_rgba_into = lambda *_args: -7
+
+    with pytest.raises(RuntimeError, match='code -7'):
+        facade.dvz_view_capture_rgba(ctypes.c_void_p(13))
 
 
 def test_top_level_datoviz_resolves_facade_lazily(fake_facade):
