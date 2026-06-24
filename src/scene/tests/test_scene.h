@@ -1032,6 +1032,8 @@ int test_scene_point_emit(TstContext* suite, const TstCase* item);
 
 int test_scene_external_unorm_target_encodes_srgb(TstContext* suite, const TstCase* item);
 
+int test_scene_external_unorm_target_legacy_srgb_blend(TstContext* suite, const TstCase* item);
+
 int test_scene_path_emit(TstContext* suite, const TstCase* item);
 
 int test_scene_image_emit(TstContext* suite, const TstCase* item);
@@ -1216,6 +1218,8 @@ int test_app_offscreen_two_panel_points_light_both_halves(TstContext* suite, con
 int test_app_offscreen_clear_color(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_midgray_srgb_readback(TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_legacy_srgb_blend_readback(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_linear_color_field_not_decoded(TstContext* suite, const TstCase* item);
 

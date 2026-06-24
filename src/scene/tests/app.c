@@ -6366,6 +6366,76 @@ int test_app_offscreen_midgray_srgb_readback(TstContext* suite, const TstCase* i
 
 
 /**
+ * Ensure legacy display-space colors are not encoded again by an SRGB offscreen target.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_legacy_srgb_blend_readback(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    dvz_figure_set_color_pipeline(figure, DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
+
+    DvzColor display_red = {230, 57, 70, 255};
+    DvzVisual* visual = _app_primitive_add_quad(
+        scene, panel, -0.95f, 0.95f, -0.95f, 0.95f, 0.0f, display_red, DVZ_ALPHA_OPAQUE,
+        false);
+    AT(visual != NULL);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_legacy_srgb_blend_readback skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
+    AT(win != NULL);
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    for (uint32_t frame = 0; frame < 3; frame++)
+    {
+        dvz_app_run(app, 1);
+        if (rgba != NULL)
+            dvz_free(rgba);
+        rgba = NULL;
+        AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+        ANN(rgba);
+    }
+    AT(width == 64);
+    AT(height == 64);
+
+    const uint8_t* center = _pixel_at(rgba, width, height, width / 2, height / 2);
+    AT(center[0] >= 215 && center[0] <= 245);
+    AT(center[1] >= 45 && center[1] <= 75);
+    AT(center[2] >= 55 && center[2] <= 85);
+    AT(center[1] < 100);
+    AT(center[3] >= 240);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure explicit linear-color RGBA8 fields are not decoded as sRGB textures.
  *
  * @param suite test suite
@@ -8068,6 +8138,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_two_panel_points_light_both_halves);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_clear_color);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_midgray_srgb_readback);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_legacy_srgb_blend_readback);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_linear_color_field_not_decoded);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_alpha_over_nonblack_linear);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_colormap_srgb_lut_linear_blend);

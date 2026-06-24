@@ -72,6 +72,13 @@ typedef enum
 
 typedef enum
 {
+    DVZ_COLOR_PIPELINE_LINEAR_SRGB = 0,
+    DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND = 1,
+} DvzColorPipeline;
+
+
+typedef enum
+{
     DVZ_GRID_SIZE_WEIGHT = 0,
     DVZ_GRID_SIZE_FIXED_PX,
 } DvzGridSizeMode;

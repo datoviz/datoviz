@@ -6,7 +6,11 @@ fn srgb_to_linear(srgb: vec3f) -> vec3f {
 }
 
 fn semantic_color_to_linear(color: vec4f) -> vec4f {
-    return vec4f(srgb_to_linear(color.rgb), clamp(color.a, 0.0, 1.0));
+    let clipped = clamp(color.rgb, vec3f(0.0), vec3f(1.0));
+    if (DVZ_LEGACY_SRGB_BLEND) {
+        return vec4f(clipped, clamp(color.a, 0.0, 1.0));
+    }
+    return vec4f(srgb_to_linear(clipped), clamp(color.a, 0.0, 1.0));
 }
 
 fn sampled_texture_color_to_linear(color: vec4f, params: vec4f) -> vec4f {

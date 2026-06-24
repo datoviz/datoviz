@@ -76,6 +76,8 @@ static const char ENCODE_WGSL[] =
 
 static bool _render_pass_external_target_needs_encode(const DvzFramePlanEmitConfig* cfg)
 {
+    if (cfg != NULL && cfg->color_pipeline == DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND)
+        return false;
     return cfg != NULL && cfg->external_color_target &&
            dvz_format_requires_final_srgb_encode((VkFormat)cfg->color_target_format);
 }

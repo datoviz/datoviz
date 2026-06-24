@@ -3184,6 +3184,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format         = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.color_pipeline        = dvz_figure_color_pipeline(win->figure);
     cfg.external_color_target = true;
     cfg.color_target_id       = win->target_id;
     cfg.color_target_format   = frame->color_format;
@@ -3691,6 +3692,8 @@ _view_create_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t 
     ccfg.window          = window;
     ccfg.device          = dvz_gpu_ctx_device(app->gpu_ctx);
     ccfg.render_mode     = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    if (dvz_figure_color_pipeline(figure) == DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND)
+        ccfg.color_format = VK_FORMAT_R8G8B8A8_UNORM;
     DvzCanvas* canvas = dvz_canvas_create(&ccfg);
     if (canvas == NULL)
     {

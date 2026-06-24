@@ -1961,6 +1961,7 @@ struct DvzFigure
     float      device_scale_y;
     float      render_scale;
     float      user_scale;
+    DvzColorPipeline color_pipeline;
 
     uint32_t   panel_count;
     DvzPanel   panels[DVZ_SCENE_MAX_PANELS];

@@ -192,6 +192,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_artifact_allows_mutation_after_emit);
     TST_CASE(test_scene_point_emit);
     TST_CASE(test_scene_external_unorm_target_encodes_srgb);
+    TST_CASE(test_scene_external_unorm_target_legacy_srgb_blend);
     TST_CASE(test_scene_path_emit);
     TST_CASE(test_scene_image_emit);
     TST_CASE(test_scene_image_multi_item_emit);

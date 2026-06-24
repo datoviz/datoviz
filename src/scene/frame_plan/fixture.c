@@ -466,6 +466,7 @@ DvzFramePlanEmitConfig dvz_frame_plan_emit_config(void)
 {
     DvzFramePlanEmitConfig cfg = {DVZ_STRUCT_INIT_FIELDS(DvzFramePlanEmitConfig)};
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+    cfg.color_pipeline = DVZ_COLOR_PIPELINE_LINEAR_SRGB;
     cfg.external_color_target = false;
     cfg.color_target_id = DRP2_ID_COLOR_TARGET;
     cfg.color_target_format = 0;

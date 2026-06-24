@@ -10,7 +10,11 @@ vec3 srgbToLinear(vec3 srgb)
 
 vec4 semanticColorToLinear(vec4 color)
 {
+#ifdef DVZ_LEGACY_SRGB_BLEND
+    return vec4(clamp(color.rgb, 0.0, 1.0), clamp(color.a, 0.0, 1.0));
+#else
     return vec4(srgbToLinear(clamp(color.rgb, 0.0, 1.0)), clamp(color.a, 0.0, 1.0));
+#endif
 }
 
 vec4 sampledTextureColorToLinear(vec4 color, vec4 params)
