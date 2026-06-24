@@ -38,12 +38,24 @@ def _raw_function(argtypes, restype=ctypes.c_int):
 def fake_facade(monkeypatch):
     raw = types.ModuleType('datoviz.raw')
     raw.DvzVisual = type('DvzVisual', (), {})
+
+    class DvzVisualDataUpdate(ctypes.Structure):
+        _fields_ = [
+            ('attr_name', ctypes.c_char_p),
+            ('data', ctypes.c_void_p),
+            ('item_count', ctypes.c_uint32),
+        ]
+
+    raw.DvzVisualDataUpdate = DvzVisualDataUpdate
     raw.dvz_passthrough = _raw_function([ctypes.c_int, ctypes.c_int])
     raw.dvz_scene_buffer_set_data = _raw_function(
         [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint64], ctypes.c_bool
     )
     raw.dvz_visual_set_data = _raw_function(
         [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_void_p, ctypes.c_uint32]
+    )
+    raw.dvz_visual_set_data_many = _raw_function(
+        [ctypes.c_void_p, ctypes.POINTER(DvzVisualDataUpdate), ctypes.c_uint32]
     )
     raw.dvz_visual_set_data_range = _raw_function(
         [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint32]
@@ -98,6 +110,80 @@ def test_visual_set_data_range_infers_count_after_first_item(fake_facade):
     assert pointer.value == data.ctypes.data
     assert first_item == 5
     assert item_count == 2
+
+
+def test_visual_set_data_many_accepts_mapping(fake_facade):
+    raw, facade = fake_facade
+    positions = np.arange(9, dtype=np.float32).reshape(3, 3)
+    colors = np.full((3, 4), 255, dtype=np.uint8)
+
+    assert facade.dvz_visual_set_data_many(
+        ctypes.c_void_p(7), {'position': positions, 'color': colors}
+    ) == 17
+
+    visual, updates, update_count = raw.dvz_visual_set_data_many.calls[-1]
+    assert visual.value == 7
+    assert update_count == 2
+    assert updates[0].attr_name == b'position'
+    assert updates[0].data == positions.ctypes.data
+    assert updates[0].item_count == 3
+    assert updates[1].attr_name == b'color'
+    assert updates[1].data == colors.ctypes.data
+    assert updates[1].item_count == 3
+
+
+def test_visual_set_data_many_copies_non_contiguous_inputs(fake_facade):
+    raw, facade = fake_facade
+    data = np.arange(12, dtype=np.float32).reshape(3, 4)[:, ::2]
+    observed = {}
+
+    def inspect_many(_visual, updates, update_count):
+        observed['update_count'] = update_count
+        observed['pointer'] = updates[0].data
+        copied = np.ctypeslib.as_array((ctypes.c_float * data.size).from_address(updates[0].data))
+        observed['data'] = copied.reshape(data.shape).copy()
+        return 17
+
+    inspect_many.argtypes = raw.dvz_visual_set_data_many.argtypes
+    inspect_many.restype = raw.dvz_visual_set_data_many.restype
+    inspect_many.__doc__ = raw.dvz_visual_set_data_many.__doc__
+    inspect_many.calls = []
+    raw.dvz_visual_set_data_many = inspect_many
+
+    facade.dvz_visual_set_data_many(ctypes.c_void_p(8), {'position': data})
+
+    assert observed['update_count'] == 1
+    assert observed['pointer'] != data.ctypes.data
+    np.testing.assert_array_equal(observed['data'], np.ascontiguousarray(data))
+
+
+def test_visual_set_data_many_rejects_inconsistent_counts_before_raw_call(fake_facade):
+    raw, facade = fake_facade
+
+    with pytest.raises(ValueError, match='item count 2 does not match expected 3'):
+        facade.dvz_visual_set_data_many(
+            ctypes.c_void_p(9),
+            {
+                'position': np.zeros((3, 3), dtype=np.float32),
+                'color': np.zeros((2, 4), dtype=np.uint8),
+            },
+        )
+
+    assert raw.dvz_visual_set_data_many.calls == []
+
+
+def test_visual_set_data_many_raw_passthrough_requires_count(fake_facade):
+    raw, facade = fake_facade
+    updates = (raw.DvzVisualDataUpdate * 1)()
+
+    with pytest.raises(TypeError, match='update_count must be provided'):
+        facade.dvz_visual_set_data_many(ctypes.c_void_p(10), updates)
+
+    facade.dvz_visual_set_data_many(ctypes.c_void_p(10), updates, 1)
+
+    _, raw_updates, update_count = raw.dvz_visual_set_data_many.calls[-1]
+    assert raw_updates is updates
+    assert update_count == 1
 
 
 def test_non_contiguous_visual_data_is_copied_during_call(fake_facade):

@@ -38,7 +38,7 @@ def _encode_string(value, name):
 
 
 def _raw_pointer(value):
-    if isinstance(value, (int, ctypes.c_void_p)):
+    if isinstance(value, (int, ctypes.c_void_p, ctypes.Array)):
         return True
     return hasattr(value, '_as_parameter_')
 
@@ -75,6 +75,49 @@ def _nbytes_size(array, name):
     if array is None:
         raise TypeError(f'{name} byte size must be provided when passing a raw pointer')
     return int(array.nbytes)
+
+
+def _visual_data_updates_arg(updates):
+    if isinstance(updates, dict):
+        items = list(updates.items())
+    else:
+        try:
+            items = list(updates)
+        except TypeError as exc:
+            raise TypeError('updates must be a mapping or iterable of (attr_name, data) pairs') from exc
+    if not items:
+        raise ValueError('updates must not be empty')
+
+    records = (_raw.DvzVisualDataUpdate * len(items))()
+    keepalive = []
+    item_count = None
+
+    for i, item in enumerate(items):
+        try:
+            attr_name, data = item
+        except (TypeError, ValueError) as exc:
+            raise TypeError('updates must contain (attr_name, data) pairs') from exc
+
+        attr_name_bytes = _encode_string(attr_name, f'updates[{i}].attr_name')
+        data_array = np.asarray(data)
+        if data_array.ndim == 0:
+            raise ValueError(f'updates[{attr_name!r}] data must be at least one-dimensional')
+        if not data_array.flags.c_contiguous:
+            data_array = np.ascontiguousarray(data_array)
+        count = int(data_array.shape[0])
+        if item_count is None:
+            item_count = count
+        elif count != item_count:
+            raise ValueError(
+                f'updates[{attr_name!r}] item count {count} does not match expected {item_count}'
+            )
+
+        records[i].attr_name = attr_name_bytes
+        records[i].data = ctypes.c_void_p(data_array.ctypes.data)
+        records[i].item_count = count
+        keepalive.extend((attr_name_bytes, data_array))
+
+    return records, keepalive
 
 
 '''
@@ -212,6 +255,24 @@ def _signature(function: dict, rules: dict) -> tuple[list[str], set[str]]:
 
 def _emit_wrapper(function: dict, rules: dict) -> str:
     name = function['name']
+    if name == 'dvz_visual_set_data_many':
+        return '''\
+def dvz_visual_set_data_many(visual, updates, update_count=None):
+    if update_count is not None:
+        return _raw.dvz_visual_set_data_many(visual, updates, update_count)
+    if _raw_pointer(updates):
+        raise TypeError('update_count must be provided when passing raw update descriptors')
+    _updates_records, _updates_keepalive = _visual_data_updates_arg(updates)
+    _keepalive = (_updates_records, _updates_keepalive,)
+    return _raw.dvz_visual_set_data_many(visual, _updates_records, len(_updates_records))
+
+
+dvz_visual_set_data_many.__doc__ = getattr(_raw.dvz_visual_set_data_many, "__doc__", None)
+dvz_visual_set_data_many.argtypes = getattr(_raw.dvz_visual_set_data_many, "argtypes", None)
+dvz_visual_set_data_many.restype = getattr(_raw.dvz_visual_set_data_many, "restype", None)
+
+
+'''
     params = [param.get('name') or f'arg{i}' for i, param in enumerate(function.get('parameters', []))]
     param_index = {param: i for i, param in enumerate(params)}
     signature, inferred_targets = _signature(function, rules)

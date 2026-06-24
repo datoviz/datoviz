@@ -131,6 +131,9 @@ array_facade:
         count_from: shape0
         lifetime: copied_before_return
 
+  dvz_visual_set_data_many:
+    special: visual_data_updates
+
   dvz_visual_set_data_range:
     strings:
       - attr_name

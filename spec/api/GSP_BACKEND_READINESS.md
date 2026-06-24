@@ -40,9 +40,9 @@ The current branch is closer to this plan than the original draft assumed:
   backed by generated `datoviz.raw` exact `ctypes` bindings and a generated array-aware facade.
   Do not add prefixless aliases such as `capture_rgba()` or `visual_set_data_many()`.
 - `dvz_visual_set_data_many()` and `dvz_visual_set_data_range()` already exist in the C API.
-  `dvz_visual_set_data_range()` is already array-adapted in the top-level Python facade; the main
-  missing ergonomic piece is a dict/list-to-`DvzVisualDataUpdate[]` facade for
-  `dvz_visual_set_data_many()`.
+  `dvz_visual_set_data_range()` is already array-adapted in the top-level Python facade. The
+  top-level `dvz_visual_set_data_many()` facade now accepts mappings or iterables of
+  `(attr_name, array)` pairs and lowers them to `DvzVisualDataUpdate[]` for the raw call.
 - Canvas-level memory capture already exists in C:
   `dvz_canvas_capture_rgba_into()` and `dvz_canvas_capture_rgba()`. The missing GSP-facing piece is
   a Python helper that reaches it from a `DvzView` via `dvz_view_canvas()`, returns a NumPy RGBA8
@@ -601,10 +601,9 @@ rgba = dvz.capture_rgba(scene, figure, 800, 600)
 
 1. Keep the existing generated/raw binding split: `datoviz.raw` exact `ctypes`, top-level
    `datoviz` array-aware `dvz_*` facade.
-2. Add a generated or small hand-written facade adapter for
-   `dvz.dvz_visual_set_data_many(visual, {"attr": array, ...})`, implemented by validating all
-   arrays, constructing `DvzVisualDataUpdate[]`, keeping temporaries alive through the raw call, and
-   raising deterministic Python exceptions on validation failure.
+2. Done for the first slice: `dvz.dvz_visual_set_data_many(visual, {"attr": array, ...})`
+   validates arrays, constructs `DvzVisualDataUpdate[]`, keeps temporaries alive through the raw
+   call, and raises deterministic Python exceptions on validation failure.
 3. Add Python capture helpers with C-shaped names, preferably
    `dvz.dvz_view_capture_rgba(view)` returning a `(height, width, 4)` `uint8` NumPy array, and
    `dvz.dvz_view_capture_png_bytes(view)` if an alpha-preserving PNG-memory path is added.
