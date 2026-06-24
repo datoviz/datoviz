@@ -612,6 +612,8 @@ int test_scene_panel_border_creates_fixed_overlay(TstContext* suite, const TstCa
 
 int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* item);
 
+int test_scene_adjacent_panels_plot_scissor_no_bleed(TstContext* suite, const TstCase* item);
+
 int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* item);
 
 int test_scene_scale_guide_descriptor_abi_rejects_invalid_structs(

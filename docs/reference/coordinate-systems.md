@@ -58,6 +58,18 @@ Controllers mutate transforms and visible domains, not source data:
 
 If no controller is bound, a panel uses its configured or fitted domain.
 
+
+## Panel Clipping
+
+Data visuals attached to a panel are clipped to the resolved plot rectangle by default. Panel
+backgrounds, borders, axes, colorbars, legends, and other panel chrome may use the full panel
+rectangle when their visual-family or adornment contract requires it.
+
+Padding and reserve bands are logical-pixel layout inputs. They shrink the plot rectangle, and the
+frame emitter lowers the selected panel or plot rectangle to framebuffer viewport/scissor commands.
+This prevents oversized screen-space marks or strokes in adjacent panels from bleeding across panel
+or plot boundaries.
+
 ## Input And Queries
 
 Pointer input starts in framebuffer coordinates. The scene routes it through the target viewport and

@@ -51,8 +51,8 @@ The current branch is closer to this plan than the original draft assumed:
 - PNG-to-memory is only partially aligned: `dvz_make_png()` writes RGB memory, while screenshot
   capture is RGBA8. Add an RGBA-capable PNG-bytes path or explicitly document alpha-dropping if
   RC1 defers alpha-preserving PNG bytes.
-- Panel scissor/clip infrastructure is active in scene emission and runtime draw emission. The
-  pre-RC work should be proof/docs, not a new clipping architecture.
+- Panel scissor/clip infrastructure is active in scene emission and runtime draw emission. Focused
+  proof now covers adjacent panels with reserved plot bands and per-draw plot scissor commands.
 - Path, image, and semantic text are already release-facing visual families. Use the current
   canonical APIs: `dvz_path(scene, flags)`, `dvz_image(scene, flags)` plus sampled fields, and
   semantic `dvz_text(panel, flags)` for text. Do not invent a parallel text-as-generic-visual API
@@ -638,5 +638,6 @@ Minimum acceptance:
 - Partial updates remain available through `dvz.dvz_visual_set_data_range(...)`.
 - Screen-space size semantics are documented as logical-pixel semantics unless a family explicitly
   says otherwise.
-- Panel clipping/scissor behavior is documented and covered by focused proof.
+- Panel clipping/scissor behavior is documented and covered by focused DRP2 scissor proof for
+  adjacent panels.
 - Tests cover the above.

@@ -1339,6 +1339,103 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
     return 0;
 }
 
+
+int test_scene_adjacent_panels_plot_scissor_no_bleed(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
+    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+
+    AT(dvz_panel_set_reserve(left, &(DvzPanelReserve){.right_px = 20.0f}));
+    AT(dvz_panel_set_reserve(right, &(DvzPanelReserve){.left_px = 20.0f}));
+
+    DvzRect left_plot = {0};
+    DvzRect right_plot = {0};
+    AT(dvz_panel_plot_rect_px(left, &left_plot));
+    AT(dvz_panel_plot_rect_px(right, &right_plot));
+    AC(left_plot.x, 0.0f, 1e-6f);
+    AC(left_plot.width, 80.0f, 1e-6f);
+    AC(right_plot.x, 120.0f, 1e-6f);
+    AC(right_plot.width, 80.0f, 1e-6f);
+    AT(left_plot.x + left_plot.width <= 100.0f);
+    AT(right_plot.x >= 100.0f);
+
+    // Oversized fixed-position points would cross the panel boundary without per-draw plot
+    // scissors.
+    float pos_left[3] = {1.0f, 0.0f, 0.0f};
+    float pos_right[3] = {-1.0f, 0.0f, 0.0f};
+    DvzColor color = {255, 255, 255, 255};
+    float size = 80.0f;
+
+    DvzVisual* vl = dvz_point(scene, 0);
+    DvzVisual* vr = dvz_point(scene, 0);
+    AT(dvz_visual_set_data(vl, "position", pos_left, 1) == 0);
+    AT(dvz_visual_set_data(vl, "color", &color, 1) == 0);
+    AT(dvz_visual_set_data(vl, "size", &size, 1) == 0);
+    AT(dvz_visual_set_data(vr, "position", pos_right, 1) == 0);
+    AT(dvz_visual_set_data(vr, "color", &color, 1) == 0);
+    AT(dvz_visual_set_data(vr, "size", &size, 1) == 0);
+    AT(dvz_panel_add_visual(left, vl, NULL) == 0);
+    AT(dvz_panel_add_visual(right, vr, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 200;
+    cfg.target_height = 100;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool saw_left_plot_scissor = false;
+    bool saw_right_plot_scissor = false;
+    uint32_t draw_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
+            draw_count++;
+        if (cmd->type != DVZ_DRP2_COMMAND_SET_SCISSOR)
+            continue;
+
+        if (fabsf(cmd->u.set_scissor.scissor[0] - left_plot.x) < 1e-5f &&
+            fabsf(cmd->u.set_scissor.scissor[1] - left_plot.y) < 1e-5f &&
+            fabsf(cmd->u.set_scissor.scissor[2] - left_plot.width) < 1e-5f &&
+            fabsf(cmd->u.set_scissor.scissor[3] - left_plot.height) < 1e-5f)
+        {
+            saw_left_plot_scissor = true;
+        }
+        if (fabsf(cmd->u.set_scissor.scissor[0] - right_plot.x) < 1e-5f &&
+            fabsf(cmd->u.set_scissor.scissor[1] - right_plot.y) < 1e-5f &&
+            fabsf(cmd->u.set_scissor.scissor[2] - right_plot.width) < 1e-5f &&
+            fabsf(cmd->u.set_scissor.scissor[3] - right_plot.height) < 1e-5f)
+        {
+            saw_right_plot_scissor = true;
+        }
+    }
+
+    AT(draw_count == 2);
+    AT(saw_left_plot_scissor);
+    AT(saw_right_plot_scissor);
+
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_visual_local_transform_bounds_and_clear(TstContext* suite, const TstCase* item)
 {
     (void)suite;
