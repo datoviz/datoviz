@@ -136,7 +136,9 @@ static bool _runtime_shader_emit_stage(
         return true;
 
     bool ok = false;
-    if (stage->use_spirv)
+    bool legacy =
+        cfg != NULL && cfg->color_pipeline == DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND;
+    if (stage->use_spirv && !legacy)
     {
         ok = _emit_shader_spirv(stream, id, stage->stage, stage->spirv_key, stage->glsl, cfg);
     }

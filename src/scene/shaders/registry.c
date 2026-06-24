@@ -494,13 +494,21 @@ char* _shader_glsl_variant(const char* glsl, const char* defines)
  * @param wgsl input WGSL source
  * @return owned preprocessed source, or NULL on failure
  */
-static char* _shader_wgsl_variant(const char* wgsl)
+static char* _shader_wgsl_variant(const char* wgsl, bool legacy_srgb_blend)
 {
     if (wgsl == NULL)
         return NULL;
     char* out = NULL;
     size_t len = 0;
     size_t cap = 0;
+    const char* prefix =
+        legacy_srgb_blend ? "const DVZ_LEGACY_SRGB_BLEND: bool = true;\n"
+                          : "const DVZ_LEGACY_SRGB_BLEND: bool = false;\n";
+    if (!_shader_builder_append(&out, &len, &cap, prefix, strlen(prefix)))
+    {
+        dvz_free(out);
+        return NULL;
+    }
     if (!_shader_wgsl_preprocess_into(&out, &len, &cap, wgsl, 0))
     {
         dvz_free(out);
@@ -529,9 +537,10 @@ void _shader_glsl_variant_destroy(char* glsl)
  */
 const char* _shader_format_tag(const DvzFramePlanEmitConfig* cfg)
 {
+    bool legacy = cfg != NULL && cfg->color_pipeline == DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND;
     if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
-        return "g";
-    return "w";
+        return legacy ? "gl" : "g";
+    return legacy ? "wl" : "w";
 }
 
 
@@ -608,9 +617,11 @@ bool _emit_shader(
     DvzDrp2CommandStream* stream, uint64_t id, const char* stage, const char* wgsl,
     const char* glsl, const DvzFramePlanEmitConfig* cfg)
 {
+    bool legacy = cfg != NULL && cfg->color_pipeline == DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND;
     if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
     {
-        char* glsl_variant = _shader_glsl_variant(glsl, NULL);
+        const char* defines = legacy ? "#define DVZ_LEGACY_SRGB_BLEND 1\n" : NULL;
+        char* glsl_variant = _shader_glsl_variant(glsl, defines);
         if (glsl != NULL && glsl_variant == NULL)
             return false;
         bool ok = dvz_drp2_stream_create_shader_module_format(
@@ -619,7 +630,7 @@ bool _emit_shader(
         return ok;
     }
 
-    char* wgsl_variant = _shader_wgsl_variant(wgsl);
+    char* wgsl_variant = _shader_wgsl_variant(wgsl, legacy);
     if (wgsl != NULL && wgsl_variant == NULL)
         return false;
     bool ok = dvz_drp2_stream_create_shader_module_format(
@@ -645,7 +656,12 @@ bool _emit_shader_spirv(
     DvzDrp2CommandStream* stream, uint64_t id, const char* stage,
     const char* spirv_key, const char* glsl, const DvzFramePlanEmitConfig* cfg)
 {
-    (void)cfg;
+    if (
+        cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL &&
+        cfg->color_pipeline == DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND)
+    {
+        return _emit_shader(stream, id, stage, NULL, glsl, cfg);
+    }
 #if DVZ_HAS_PRECOMPILED_SHADERS
     unsigned long spv_size = 0;
     const unsigned char* spv = dvz_resource_shader(spirv_key, &spv_size);

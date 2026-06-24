@@ -72,6 +72,26 @@ dvz_visual_set_depth_cue(visual, &cue);
 metric is normalized clip depth after the scene transform. Pass `NULL` to
 `dvz_visual_set_depth_cue()` to disable depth cueing.
 
+## Color Pipeline
+
+Datoviz treats authored RGBA colors as display/sRGB semantic colors. The default figure color
+pipeline, `DVZ_COLOR_PIPELINE_LINEAR_SRGB`, converts RGB to linear values before scene arithmetic,
+blends alpha in linear color space, and encodes display targets back to sRGB for capture or
+presentation.
+
+Use `DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND` only when an application needs compatibility with
+renderers that blend RGB directly in display/sRGB values, such as Matplotlib/Agg comparison images.
+In that mode Datoviz skips the linear intermediate and final display encode for UNORM external
+targets, and semantic RGB colors are passed through unchanged in shaders. Alpha remains linear.
+
+```c
+dvz_figure_set_color_pipeline(figure, DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND);
+```
+
+The setting is figure-wide for app and offscreen rendering. It should be selected before rendering
+the first frame so the runtime shader and pipeline caches are built for the intended mode. Direct
+FramePlan callers can set `DvzFramePlanEmitConfig.color_pipeline` explicitly.
+
 ## Backend Status
 
 The native Vulkan path is the reference path for the advanced transparency techniques. In the
