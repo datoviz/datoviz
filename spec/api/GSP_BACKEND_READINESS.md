@@ -610,10 +610,12 @@ rgba = dvz.capture_rgba(scene, figure, 800, 600)
    `dvz.dvz_view_capture_png_bytes(view)` later if an alpha-preserving PNG-memory path is added.
 4. Update `datoviz.capture()` or add a non-destructive companion so GSP can render/capture a
    persistent app/view without automatically destroying the scene.
-5. Add focused Python facade tests for `set_data_many`, `set_data_range`, and capture memory. GPU
-   tests should skip clearly when offscreen support is unavailable.
-6. Update docs rather than broadening APIs: Python retained-scene facade, screen/logical pixel
-   semantics, panel clipping/scissor defaults, and canonical path/image/text recipes.
+5. Done for the first Python facade slice: focused tests cover `set_data_many`, `set_data_range`,
+   and capture memory; `tools/bindings/ctypes_render_smoke.py` runs raw and direct offscreen smoke
+   examples when runtime support is available.
+6. Done for the first user-facing docs slice: `docs/reference/python-direct-engine.md` documents
+   the facade, dense data updates, and RGBA capture, with cross-links from status/reference pages.
+   Future docs can still add deeper screen/logical pixel and panel clipping/scissor tables.
 7. Run the narrow checks: `pytest testing/test_array_facade.py`, a ctypes/render smoke if graphics
    is available, and `git diff --check`.
 

@@ -65,11 +65,18 @@ def _run_view_post_smoke() -> None:
 def main() -> int:
     sys.path.insert(0, str(ROOT_DIR))
     raw_examples = ROOT_DIR / 'examples' / 'python' / 'raw'
+    direct_examples = ROOT_DIR / 'examples' / 'python' / 'direct'
     offscreen = _load_example('datoviz_raw_offscreen_point', raw_examples / 'offscreen_point.py')
     async_click = _load_example('datoviz_raw_async_click', raw_examples / 'async_click.py')
+    direct_offscreen = _load_example(
+        'datoviz_direct_offscreen_point', direct_examples / 'offscreen_point.py'
+    )
 
     _run_view_post_smoke()
     rc = offscreen.main([])
+    if rc != 0:
+        return rc
+    rc = direct_offscreen.main([])
     if rc != 0:
         return rc
     return async_click.main([])

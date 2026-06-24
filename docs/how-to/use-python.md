@@ -89,6 +89,7 @@ When porting a C example:
 
 ## See Also
 
+- [Python direct-engine facade](../reference/python-direct-engine.md)
 - [Use Python raw ctypes](use-raw-ctypes.md)
 - [Use from C or C++](c-integration.md)
 - [Choose a visual family](choose-a-visual-family.md)

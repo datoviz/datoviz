@@ -102,7 +102,7 @@ The top-level facade and raw module intentionally share C-shaped names:
 
 | Need | Import |
 | --- | --- |
-| Pass NumPy arrays to declared data uploads | `import datoviz as dvz` |
+| Pass NumPy arrays to declared data uploads or capture RGBA arrays | `import datoviz as dvz`; see [Python direct-engine facade](python-direct-engine.md) |
 | Match exact `ctypes` signatures, pointers, and counts | `import datoviz.raw as raw` |
 | Debug generated FFI implementation internals | `datoviz._ctypes`, rarely and not in docs examples |
 
