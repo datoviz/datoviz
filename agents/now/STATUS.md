@@ -61,7 +61,11 @@ accepting NumPy arrays for policy-declared data arguments. Source of truth:
 
 GSP backend RC lane: the readiness checklist for making Datoviz a stable GSP/Matplotlib rendering
 target is [../../spec/api/GSP_BACKEND_READINESS.md](../../spec/api/GSP_BACKEND_READINESS.md).
-Treat it as RC-lane API/facade/capture/clipping work, not public user documentation.
+First RC slices are complete: direct Python `dvz_visual_set_data_many()` mapping facade
+(`e898a7369`), `dvz_view_capture_rgba()` (`227bbd97d`), direct-engine docs/example/smoke
+(`f88f5d82f`), pixel/capture semantics docs (`7b607090d`), and adjacent-panel scissor proof
+(`b2a562f7f`). Remaining work is optional unless GSP integration finds a concrete blocker;
+alpha-preserving PNG bytes can be deferred.
 
 
 ## Active Lanes

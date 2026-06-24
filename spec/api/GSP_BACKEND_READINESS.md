@@ -65,6 +65,42 @@ Revised pre-RC posture: make small Python facade/documentation additions around 
 surface. Avoid broad C API expansion before RC1 except for an alpha-preserving PNG-memory helper if
 needed.
 
+
+## 0.2 RC-lane completion snapshot
+
+Completed in the current RC lane:
+
+1. `dvz.dvz_visual_set_data_many(visual, updates)` accepts mappings and `(attr_name, array)`
+   iterables in the top-level facade, validates item counts before mutation, and preserves raw
+   descriptor-array passthrough when `update_count` is supplied.
+2. `dvz.dvz_view_capture_rgba(view)` returns Python-owned NumPy RGBA8 memory shaped
+   `(framebuffer_height, framebuffer_width, 4)` with top-row-first rows.
+3. `docs/reference/python-direct-engine.md` documents the direct-engine facade, dense data updates,
+   offscreen RGBA capture, and the GSP/VisPy2 boundary.
+4. `examples/python/direct/offscreen_point.py` and `tools/bindings/ctypes_render_smoke.py` cover the
+   direct facade offscreen point/capture path where native runtime support is available.
+5. Logical-pixel, framebuffer-pixel, screen-space attribute, and RGBA capture semantics are
+   documented in reference docs.
+6. Adjacent-panel plot scissor proof is covered by
+   `test_scene_adjacent_panels_plot_scissor_no_bleed`.
+
+These slices make the first GSP/Matplotlib backend path viable without private Python modules and
+without temporary files for ordinary RGBA capture.
+
+
+## 0.3 Remaining RC/post-RC follow-up
+
+Remaining work is optional for RC unless a downstream GSP integration finds a concrete blocker:
+
+1. Add `dvz_view_capture_png_bytes(view)` only if alpha-preserving PNG bytes are required before
+   RC; otherwise defer and keep RGBA memory as the stable backend target.
+2. Keep direct Python facade validation in release evidence: `testing/test_array_facade.py`,
+   `tools/bindings/ctypes_render_smoke.py`, and the adjacent-panel scissor test.
+3. Add deeper family-specific docs only when needed by a real GSP lowering path, especially image
+   upload/update convenience and semantic text update examples.
+4. Do not add a Matplotlib backend, GSP implementation, or high-level plotting aliases inside
+   Datoviz for v0.4 RC.
+
 ---
 
 ## 1. Scope and non-goals
@@ -598,28 +634,28 @@ rgba = dvz.capture_rgba(scene, figure, 800, 600)
 
 ---
 
-## 7. Suggested implementation order for Codex
+## 7. Implementation status
+
+Completed RC-lane implementation:
 
 1. Keep the existing generated/raw binding split: `datoviz.raw` exact `ctypes`, top-level
    `datoviz` array-aware `dvz_*` facade.
-2. Done for the first slice: `dvz.dvz_visual_set_data_many(visual, {"attr": array, ...})`
-   validates arrays, constructs `DvzVisualDataUpdate[]`, keeps temporaries alive through the raw
-   call, and raises deterministic Python exceptions on validation failure.
-3. Done for the first capture slice: `dvz.dvz_view_capture_rgba(view)` returns a
-   `(height, width, 4)` `uint8` NumPy array using caller-owned Python memory. Add
-   `dvz.dvz_view_capture_png_bytes(view)` later if an alpha-preserving PNG-memory path is added.
-4. Update `datoviz.capture()` or add a non-destructive companion so GSP can render/capture a
-   persistent app/view without automatically destroying the scene.
-5. Done for the first Python facade slice: focused tests cover `set_data_many`, `set_data_range`,
-   and capture memory; `tools/bindings/ctypes_render_smoke.py` runs raw and direct offscreen smoke
-   examples when runtime support is available.
-6. Done for the first user-facing docs slices: `docs/reference/python-direct-engine.md` documents
-   the facade, dense data updates, and RGBA capture, with cross-links from status/reference pages;
-   `docs/reference/coordinate-systems.md` and `docs/reference/visual-attributes.md` document
-   logical-pixel, framebuffer-pixel, and screen-space attribute semantics. Future docs can still add
-   deeper panel clipping/scissor tables.
-7. Run the narrow checks: `pytest testing/test_array_facade.py`, a ctypes/render smoke if graphics
-   is available, and `git diff --check`.
+2. `dvz.dvz_visual_set_data_many(visual, {"attr": array, ...})` validates arrays, constructs
+   `DvzVisualDataUpdate[]`, keeps temporaries alive through the raw call, and raises deterministic
+   Python exceptions on validation failure.
+3. `dvz.dvz_view_capture_rgba(view)` returns a `(height, width, 4)` `uint8` NumPy array using
+   caller-owned Python memory.
+4. Focused tests cover `set_data_many`, `set_data_range`, and capture memory;
+   `tools/bindings/ctypes_render_smoke.py` runs raw and direct offscreen smoke examples when runtime
+   support is available.
+5. `docs/reference/python-direct-engine.md` documents the facade, dense data updates, and RGBA
+   capture, with cross-links from status/reference pages.
+6. `docs/reference/coordinate-systems.md` and `docs/reference/visual-attributes.md` document
+   logical-pixel, framebuffer-pixel, screen-space attribute, panel clipping, and capture semantics.
+7. `test_scene_adjacent_panels_plot_scissor_no_bleed` covers adjacent-panel plot scissor emission.
+
+Optional follow-up: add `dvz.dvz_view_capture_png_bytes(view)` later if an alpha-preserving
+PNG-memory path is required.
 
 ---
 
