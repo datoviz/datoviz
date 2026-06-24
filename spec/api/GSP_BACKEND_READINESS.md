@@ -613,9 +613,11 @@ rgba = dvz.capture_rgba(scene, figure, 800, 600)
 5. Done for the first Python facade slice: focused tests cover `set_data_many`, `set_data_range`,
    and capture memory; `tools/bindings/ctypes_render_smoke.py` runs raw and direct offscreen smoke
    examples when runtime support is available.
-6. Done for the first user-facing docs slice: `docs/reference/python-direct-engine.md` documents
-   the facade, dense data updates, and RGBA capture, with cross-links from status/reference pages.
-   Future docs can still add deeper screen/logical pixel and panel clipping/scissor tables.
+6. Done for the first user-facing docs slices: `docs/reference/python-direct-engine.md` documents
+   the facade, dense data updates, and RGBA capture, with cross-links from status/reference pages;
+   `docs/reference/coordinate-systems.md` and `docs/reference/visual-attributes.md` document
+   logical-pixel, framebuffer-pixel, and screen-space attribute semantics. Future docs can still add
+   deeper panel clipping/scissor tables.
 7. Run the narrow checks: `pytest testing/test_array_facade.py`, a ctypes/render smoke if graphics
    is available, and `git diff --check`.
 

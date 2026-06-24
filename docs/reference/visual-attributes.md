@@ -28,6 +28,27 @@ dvz_visual_set_data_range(visual, attr_name, data, first_item, item_count);
 Range writes update a contiguous item interval for one attribute. Attribute names and element
 formats must match the visual family contract.
 
+
+## Screen-Space Attributes
+
+Attributes with a `_px` suffix are authored in logical pixels unless a visual-family page states a
+narrower rule. They are display/style quantities: controllers move or transform item positions, but
+do not scale the on-screen diameter or stroke width. The runtime converts logical pixels to
+framebuffer pixels using the view/device scale when emitting draw commands.
+
+| Attribute or setting | Families | Meaning | Coordinate effect |
+| --- | --- | --- | --- |
+| `diameter_px` | point, marker | Screen-space item diameter in logical pixels. | Center follows data/controller transform; diameter stays screen-stable. |
+| `pixel_size_px` | pixel | Square mark side length in logical pixels. | Center follows data/controller transform; size stays screen-stable. |
+| `stroke_width_px` | segment, path, vector, point edge style | Screen-space stroke width in logical pixels. | Endpoints/path points follow data/controller transform; stroke width stays screen-stable. |
+| Text style size | semantic text/glyph lowering | Glyph size in logical pixels for the selected text renderer. | Placement follows the text placement contract; glyph size is screen-stable. |
+| Panel padding/reserve | panels, axes, colorbars, legends | Layout bands in logical figure pixels. | Converted to viewport/scissor rectangles during frame planning. |
+| Image `extent` | image/labels retained item placement | Data or panel-space rectangle by attachment/visual contract, not a `_px` size. | Follows data/controller transform unless attached in a fixed coordinate space. |
+
+Do not infer pixel semantics from an attribute's numeric dtype alone. Use the attribute name and the
+visual-family contract. For example, image `extent` is placement geometry, while `diameter_px` is a
+screen-space style size.
+
 ## Sources
 
 The scene model distinguishes these source kinds:

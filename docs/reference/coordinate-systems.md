@@ -17,6 +17,26 @@ attributes.
 | Framebuffer | Pixel coordinates in the render target. | Runtime input, picking/query readback, screenshots. |
 | Texture/sample | Normalized UV/UVW or integer texel/voxel/sample indices. | Image, labels, volume, glyph atlas, sampled fields. |
 
+
+## Pixel And Display Spaces
+
+Datoviz distinguishes logical display pixels from physical framebuffer pixels. Visual style sizes
+use logical pixels unless a visual-family page explicitly says otherwise. Render targets, readback,
+and screenshots use framebuffer pixels.
+
+| Quantity | Space | Affected by device scale | Affected by controllers | Typical API |
+| --- | --- | --- | --- | --- |
+| Data positions | Data/panel/world, by visual contract | No | Yes, when attached with controller application | `position`, `position_start`, `position_end` |
+| Screen-space sizes | Logical pixels | Converted by the view/runtime to framebuffer pixels | No, size stays screen-stable while centers move | `diameter_px`, `pixel_size_px`, `stroke_width_px`, text size |
+| Panel rectangles and reserves | Logical figure pixels | Converted during viewport/scissor resolution | No | `dvz_panel_set_desc()`, reserves, padding |
+| Offscreen view extent | Framebuffer pixels | Direct exact output for `dvz_view_offscreen()` | No | `dvz_view_offscreen(app, figure, width, height)` |
+| Screenshot/RGBA capture | Framebuffer pixels | Already applied | No | `dvz_view_capture_png()`, Python `dvz_view_capture_rgba()` |
+| Pointer input | Framebuffer/window pixels at the backend boundary | Backend reports scale separately where available | Routed through panel/controller transforms | input and query APIs |
+
+For a Matplotlib/GSP-style backend, convert display quantities to Datoviz logical-pixel style
+attributes before upload. Use framebuffer dimensions only when creating/capturing render targets or
+when interpreting raw input/readback coordinates.
+
 ## Precision Boundary
 
 Semantic and domain coordinates should remain authoritative in double precision where precision

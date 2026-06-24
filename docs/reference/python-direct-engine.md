@@ -93,8 +93,10 @@ dvz.dvz_scene_destroy(scene)
 ```
 
 The returned pixels are screenshot/export pixels: tightly packed sRGB RGBA8 with straight alpha.
-They are appropriate for display, screenshots, and backend integration tests, not scientific linear
-float readback.
+The array shape is `(framebuffer_height, framebuffer_width, 4)`, channel order is `RGBA`, and row
+`0` is the top row of the captured image. The dimensions are framebuffer pixels, not logical view
+pixels. These pixels are appropriate for display, screenshots, and backend integration tests, not
+scientific linear-float readback.
 
 
 ## Example

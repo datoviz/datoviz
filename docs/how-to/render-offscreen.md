@@ -77,9 +77,10 @@ hand.
 Offscreen rendering is native-only in the current example set. It is the preferred path for CI,
 image comparison tests, batch rendering, and documentation screenshots.
 
-`dvz_view_offscreen(app, figure, width, height)` uses framebuffer pixels. If the output becomes a
-test artifact, keep dimensions, data, camera/controller state, random seeds, and color-scale ranges
-deterministic.
+`dvz_view_offscreen(app, figure, width, height)` uses framebuffer pixels. Python
+`dvz_view_capture_rgba(view)` returns an array shaped `(height, width, 4)` with top-row-first RGBA8
+screenshot pixels. If the output becomes a test artifact, keep dimensions, data, camera/controller
+state, random seeds, and color-scale ranges deterministic.
 
 PNG capture is an sRGB RGBA8 screenshot/export path. It is not a scientific linear-float readback;
 use explicit data/readback paths when the output is numeric evidence rather than a visual snapshot.
