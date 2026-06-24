@@ -12,7 +12,9 @@ This directory owns durable public API and API-positioning policy for v0.4.
    Python bindings, GSP, and VisPy2.
 4. [GSP_BACKEND_STRATEGY.md](GSP_BACKEND_STRATEGY.md): strategic Datoviz/GSP/VisPy2 backend
    boundary and capability-extension model.
-5. [NULL_DEFAULT_INVARIANT_REFACTOR_PLAN.md](NULL_DEFAULT_INVARIANT_REFACTOR_PLAN.md): refactor
+5. [GSP_BACKEND_READINESS.md](GSP_BACKEND_READINESS.md): RC-lane readiness checklist for Datoviz
+   as a stable GSP/Matplotlib rendering target.
+6. [NULL_DEFAULT_INVARIANT_REFACTOR_PLAN.md](NULL_DEFAULT_INVARIANT_REFACTOR_PLAN.md): refactor
    plan for making `NULL for defaults` equivalent to explicit public default initializer records.
 
 

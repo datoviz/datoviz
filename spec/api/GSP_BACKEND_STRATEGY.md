@@ -5,6 +5,8 @@ Status: strategic boundary contract for v0.4+ planning.
 This document records how Datoviz should relate to the future pure-Python VisPy2 stack and to GSP,
 the Graphics Specification Protocol. It complements
 [`PYTHON_GSP_SCOPE.md`](PYTHON_GSP_SCOPE.md), which remains the normative v0.4 Python-scope note.
+The concrete RC-lane readiness checklist for making Datoviz a stable GSP/Matplotlib rendering
+target is [`GSP_BACKEND_READINESS.md`](GSP_BACKEND_READINESS.md).
 
 
 ## North Star

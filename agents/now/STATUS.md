@@ -59,6 +59,10 @@ top-level `import datoviz as dvz` the planned array-aware facade that preserves 
 accepting NumPy arrays for policy-declared data arguments. Source of truth:
 [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md).
 
+GSP backend RC lane: the readiness checklist for making Datoviz a stable GSP/Matplotlib rendering
+target is [../../spec/api/GSP_BACKEND_READINESS.md](../../spec/api/GSP_BACKEND_READINESS.md).
+Treat it as RC-lane API/facade/capture/clipping work, not public user documentation.
+
 
 ## Active Lanes
 

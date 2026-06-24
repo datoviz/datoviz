@@ -7,6 +7,8 @@ and VisPy2. It exists so release notes, public documentation, examples, and futu
 not accidentally recreate the v0.3 Python API inside the Datoviz repository. The complementary
 backend strategy and capability-extension model lives in
 [`GSP_BACKEND_STRATEGY.md`](GSP_BACKEND_STRATEGY.md).
+The concrete RC-lane checklist for Datoviz as a GSP/Matplotlib rendering target lives in
+[`GSP_BACKEND_READINESS.md`](GSP_BACKEND_READINESS.md).
 
 
 ## Decision

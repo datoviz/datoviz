@@ -6,6 +6,10 @@ This note records the intended Python API layer above the exact generated `ctype
 is to make Datoviz usable from Python with normal NumPy arrays while preserving the C-shaped
 Datoviz API and leaving high-level plotting to GSP/VisPy2.
 
+Related RC-lane GSP backend readiness work lives in
+[`../api/GSP_BACKEND_READINESS.md`](../api/GSP_BACKEND_READINESS.md), especially the
+`dvz_visual_set_data_many()` facade and offscreen capture-to-memory requirements.
+
 
 ## Decision
 
