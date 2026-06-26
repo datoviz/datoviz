@@ -510,6 +510,17 @@ struct DvzAxisTickPolicy
 typedef struct DvzAxisTickPolicy DvzAxisTickPolicy;
 
 
+struct DvzAxisTicks
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    uint32_t count;
+    const double* values;
+    const char* const* labels;
+};
+typedef struct DvzAxisTicks DvzAxisTicks;
+
+
 struct DvzAxisStyle
 {
     uint32_t struct_size;

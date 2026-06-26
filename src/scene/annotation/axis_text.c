@@ -348,6 +348,7 @@ void _axis_update_text(
     float angles[DVZ_SCENE_MAX_AXIS_TEXTS] = {0};
 
     uint32_t visible_tick_count = 0;
+    uint32_t visible_tick_indices[DVZ_SCENE_MAX_AXIS_TICKS] = {0};
     double tick_values[DVZ_SCENE_MAX_AXIS_TICKS] = {0};
     float tick_positions[DVZ_SCENE_MAX_AXIS_TICKS] = {0};
     float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
@@ -363,13 +364,32 @@ void _axis_update_text(
             continue;
 
         tick_values[visible_tick_count] = axis->ticks[i];
+        visible_tick_indices[visible_tick_count] = i;
         tick_positions[visible_tick_count++] = p;
         if (visible_tick_count >= DVZ_SCENE_MAX_AXIS_TICKS)
             break;
     }
 
     DvzAxisLabelPlan label_plan = {0};
-    if (!_axis_label_plan(axis, tick_values, visible_tick_count, visible_min, visible_max, &label_plan))
+    if (axis->explicit_ticks_enabled && axis->explicit_tick_labels_set)
+    {
+        label_plan.tick_count = visible_tick_count;
+        for (uint32_t i = 0; i < visible_tick_count; i++)
+        {
+            uint32_t tick_index = visible_tick_indices[i];
+            if (tick_index >= axis->explicit_tick_count)
+            {
+                _axis_hide_text(axis);
+                return;
+            }
+            dvz_strlcpy(
+                label_plan.tick_labels[i], axis->explicit_tick_labels[tick_index],
+                sizeof(label_plan.tick_labels[i]));
+        }
+    }
+    else if (
+        !_axis_label_plan(axis, tick_values, visible_tick_count, visible_min, visible_max,
+                          &label_plan))
     {
         _axis_hide_text(axis);
         return;

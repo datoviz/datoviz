@@ -953,6 +953,115 @@ static int test_axis_text_labels(TstContext* suite, const TstCase* item)
 }
 
 
+static int test_axis_explicit_ticks_and_labels(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+    AT(dvz_axis_set_grid(axis, true));
+
+    char label0[16] = "zero";
+    char label1[16] = "five";
+    char label2[16] = "ten";
+    const double values[] = {0.0, 5.0, 10.0};
+    const char* labels[] = {label0, label1, label2};
+    DvzAxisTicks ticks = {
+        DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks),
+        .count = 3,
+        .values = values,
+        .labels = labels,
+    };
+    AT(dvz_axis_set_ticks(axis, &ticks));
+    dvz_strlcpy(label0, "mutated", sizeof(label0));
+    dvz_strlcpy(label1, "changed", sizeof(label1));
+    dvz_strlcpy(label2, "edited", sizeof(label2));
+
+    _scene_prepare_axis_visuals(figure);
+    AT(axis->tick_count == 3);
+    AT(fabs(axis->ticks[0] - 0.0) < 1e-9);
+    AT(fabs(axis->ticks[1] - 5.0) < 1e-9);
+    AT(fabs(axis->ticks[2] - 10.0) < 1e-9);
+    ANN(axis->text_visual);
+    AT(_visual_family_state(axis->text_visual)->text.string_count == 3);
+    AT(strcmp(_visual_family_state(axis->text_visual)->text.strings[0], "zero") == 0);
+    AT(strcmp(_visual_family_state(axis->text_visual)->text.strings[1], "five") == 0);
+    AT(strcmp(_visual_family_state(axis->text_visual)->text.strings[2], "ten") == 0);
+
+    AT(dvz_axis_set_ticks(
+        axis, &(DvzAxisTicks){DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks), .count = 0}));
+    _scene_prepare_axis_visuals(figure);
+    AT(axis->tick_count == 0);
+    AT(!axis->grid_visual->visible);
+
+    AT(dvz_axis_clear_ticks(axis));
+    _scene_prepare_axis_visuals(figure);
+    AT(axis->tick_count >= 5);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+static int test_axis_explicit_reversed_ticks_grid_alignment(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 10.0, 0.0) == 0);
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+    AT(dvz_axis_set_grid(axis, true));
+
+    const double reversed[] = {10.0, 5.0, 0.0};
+    AT(dvz_axis_set_ticks(
+        axis, &(DvzAxisTicks){
+                  DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks), .count = 3, .values = reversed}));
+
+    _scene_prepare_axis_visuals(figure);
+    AT(axis->tick_count == 3);
+    AT(fabs(axis->ticks[0] - 10.0) < 1e-9);
+    AT(fabs(axis->ticks[1] - 5.0) < 1e-9);
+    AT(fabs(axis->ticks[2] - 0.0) < 1e-9);
+
+    float grid_x = 0.0f;
+    AT(_axis_test_find_vertical_grid_center(axis, 0.0f, 2e-3f, &grid_x));
+    AT(fabsf(grid_x) < 2e-3f);
+
+    double too_many[DVZ_SCENE_MAX_AXIS_TICKS + 1] = {0};
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_AXIS_TICKS + 1; i++)
+        too_many[i] = (double)i;
+    AT(!dvz_axis_set_ticks(
+        axis,
+        &(DvzAxisTicks){DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks),
+                        .count = DVZ_SCENE_MAX_AXIS_TICKS + 1,
+                        .values = too_many}));
+    _scene_prepare_axis_visuals(figure);
+    AT(axis->tick_count == 3);
+    AT(fabs(axis->ticks[0] - 10.0) < 1e-9);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 static int test_axis_numeric_unit_labels(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -2931,6 +3040,14 @@ int test_axis_descriptor_abi_rejects_invalid_structs(TstContext* suite, const Ts
     policy.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_tick_policy(axis, &policy));
 
+    DvzAxisTicks ticks = {DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks)};
+    ticks.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_ticks(axis, &ticks));
+
+    ticks = (DvzAxisTicks){DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks)};
+    ticks.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_ticks(axis, &ticks));
+
     DvzAxisStyle style = dvz_axis_style();
     style.struct_size = DVZ_STRUCT_SIZE(DvzAxisStyle) - 1;
     AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_style(axis, &style));
@@ -3176,6 +3293,8 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_spine_draws_after_ticks);
     TST_CASE(test_axis_tick_density_tracks_panel_size);
     TST_CASE(test_axis_text_labels);
+    TST_CASE(test_axis_explicit_ticks_and_labels);
+    TST_CASE(test_axis_explicit_reversed_ticks_grid_alignment);
     TST_CASE(test_axis_numeric_unit_labels);
     TST_CASE(test_axis_numeric_offset_labels);
     TST_CASE(test_axis_unit_offset_labels);

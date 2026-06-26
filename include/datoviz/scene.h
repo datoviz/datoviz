@@ -1282,6 +1282,31 @@ DVZ_EXPORT bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy*
 
 
 /**
+ * Set explicit tick positions and optional labels for one panel-owned axis.
+ *
+ * Explicit tick values are in panel data coordinates and are rendered in the supplied order. When
+ * labels are supplied, Datoviz copies them before this function returns. Passing an empty tick
+ * record is valid and renders no ticks, tick labels, or grid lines until explicit ticks are cleared.
+ *
+ * @param axis the axis
+ * @param ticks explicit tick descriptor
+ * @return whether the explicit ticks were stored
+ */
+DVZ_EXPORT bool dvz_axis_set_ticks(DvzAxis* axis, const DvzAxisTicks* ticks);
+
+
+/**
+ * Clear explicit tick positions and labels for one panel-owned axis.
+ *
+ * The axis returns to its automatic tick policy after this call.
+ *
+ * @param axis the axis
+ * @return whether the axis was updated
+ */
+DVZ_EXPORT bool dvz_axis_clear_ticks(DvzAxis* axis);
+
+
+/**
  * Set the line and text style for one panel-owned axis.
  *
  * @param axis the axis

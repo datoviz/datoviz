@@ -1811,6 +1811,9 @@ struct DvzAxis
     DvzTimestamp datetime_t1;
     char label[DVZ_SCENE_LABEL_SIZE];
     uint32_t tick_count;
+    bool explicit_ticks_enabled;
+    bool explicit_tick_labels_set;
+    uint32_t explicit_tick_count;
     DvzTimeInterval datetime_tick_interval;
     double tick_lmin;
     double tick_lmax;
@@ -1818,6 +1821,8 @@ struct DvzAxis
     double tick_covered_min;
     double tick_covered_max;
     bool tick_cache_valid;
+    double explicit_ticks[DVZ_SCENE_MAX_AXIS_TICKS];
+    char explicit_tick_labels[DVZ_SCENE_MAX_AXIS_TICKS][DVZ_SCENE_LABEL_SIZE];
     double ticks[DVZ_SCENE_MAX_AXIS_TICKS];
     DvzVisual* visual;
     DvzVisual* grid_visual;

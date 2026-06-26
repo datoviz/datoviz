@@ -66,6 +66,24 @@ dvz_axis_set_tick_policy(x_axis, &ticks);
 dvz_axis_set_tick_policy(y_axis, &ticks);
 ```
 
+When another layer owns tick selection, use explicit ticks instead of the automatic policy:
+
+```c
+double tick_values[] = {10.0, 5.0, 0.0};
+const char* tick_labels[] = {"ten", "five", "zero"};
+DvzAxisTicks explicit_ticks = {
+    DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks),
+    .count = 3,
+    .values = tick_values,
+    .labels = tick_labels,
+};
+dvz_axis_set_ticks(x_axis, &explicit_ticks);
+```
+
+Explicit tick values are panel data coordinates and render in the order supplied. Datoviz copies
+labels before `dvz_axis_set_ticks()` returns. Passing an empty explicit tick record renders no
+ticks, tick labels, or grid lines until `dvz_axis_clear_ticks()` restores automatic ticks.
+
 Use labels for semantic names and units:
 
 ```c

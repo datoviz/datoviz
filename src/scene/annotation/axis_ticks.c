@@ -583,6 +583,17 @@ void _axis_compute_ticks(DvzAxis* axis)
 {
     ANN(axis);
     axis->tick_count = 0;
+    if (axis->explicit_ticks_enabled)
+    {
+        axis->tick_count = axis->explicit_tick_count;
+        for (uint32_t i = 0; i < axis->explicit_tick_count; i++)
+            axis->ticks[i] = axis->explicit_ticks[i];
+        axis->tick_lstep =
+            axis->explicit_tick_count >= 2 ? fabs(axis->ticks[1] - axis->ticks[0]) : 0.0;
+        axis->tick_cache_valid = false;
+        return;
+    }
+
     double min = 0.0;
     double max = 0.0;
     if (!_axis_visible_sorted_interval(axis, &min, &max))

@@ -34,6 +34,7 @@
 /*************************************************************************************************/
 
 #define DVZ_AXIS_TICK_POLICY_KNOWN_FLAGS 0u
+#define DVZ_AXIS_TICKS_KNOWN_FLAGS 0u
 #define DVZ_AXIS_STYLE_KNOWN_FLAGS 0u
 #define DVZ_PANEL_AXES_2D_DESC_KNOWN_FLAGS 0u
 
@@ -46,6 +47,28 @@ static bool _axis_tick_policy_validate(const DvzAxisTickPolicy* policy)
     {
         log_error("invalid axis tick policy ABI");
         return false;
+    }
+    return true;
+}
+
+
+static bool _axis_ticks_validate(const DvzAxisTicks* ticks)
+{
+    if (ticks == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(ticks, DvzAxisTicks, DVZ_AXIS_TICKS_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzAxisTicks ABI prologue");
+        return false;
+    }
+    if (ticks->count > DVZ_SCENE_MAX_AXIS_TICKS)
+        return false;
+    if (ticks->count > 0 && ticks->values == NULL)
+        return false;
+    for (uint32_t i = 0; i < ticks->count; i++)
+    {
+        if (!isfinite(ticks->values[i]))
+            return false;
     }
     return true;
 }
@@ -637,6 +660,67 @@ bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy)
     if (!_axis_tick_policy_validate(policy))
         return false;
     axis->tick_policy = policy != NULL ? *policy : _axis_default_tick_policy();
+    axis->tick_lstep = 0.0;
+    _axis_mark_dirty(axis);
+    return true;
+}
+
+
+/**
+ * Set explicit tick positions and optional labels for one panel-owned axis.
+ *
+ * @param axis the axis
+ * @param ticks explicit tick descriptor
+ * @return whether the explicit ticks were stored
+ */
+bool dvz_axis_set_ticks(DvzAxis* axis, const DvzAxisTicks* ticks)
+{
+    if (axis == NULL || !_axis_ticks_validate(ticks))
+        return false;
+
+    axis->explicit_ticks_enabled = true;
+    axis->explicit_tick_labels_set = ticks->labels != NULL;
+    axis->explicit_tick_count = ticks->count;
+    for (uint32_t i = 0; i < ticks->count; i++)
+    {
+        axis->explicit_ticks[i] = ticks->values[i];
+        axis->explicit_tick_labels[i][0] = '\0';
+        if (ticks->labels != NULL && ticks->labels[i] != NULL)
+        {
+            dvz_strlcpy(
+                axis->explicit_tick_labels[i], ticks->labels[i],
+                sizeof(axis->explicit_tick_labels[i]));
+        }
+    }
+    for (uint32_t i = ticks->count; i < DVZ_SCENE_MAX_AXIS_TICKS; i++)
+    {
+        axis->explicit_ticks[i] = 0.0;
+        axis->explicit_tick_labels[i][0] = '\0';
+    }
+    axis->tick_lstep = 0.0;
+    _axis_mark_dirty(axis);
+    return true;
+}
+
+
+/**
+ * Clear explicit tick positions and labels for one panel-owned axis.
+ *
+ * @param axis the axis
+ * @return whether the axis was updated
+ */
+bool dvz_axis_clear_ticks(DvzAxis* axis)
+{
+    if (axis == NULL)
+        return false;
+    axis->explicit_ticks_enabled = false;
+    axis->explicit_tick_labels_set = false;
+    axis->explicit_tick_count = 0;
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_AXIS_TICKS; i++)
+    {
+        axis->explicit_ticks[i] = 0.0;
+        axis->explicit_tick_labels[i][0] = '\0';
+    }
     axis->tick_lstep = 0.0;
     _axis_mark_dirty(axis);
     return true;
