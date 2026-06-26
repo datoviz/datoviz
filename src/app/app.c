@@ -3624,6 +3624,21 @@ static void _view_apply_desc_state(DvzView* win, const DvzViewDesc* desc)
 }
 
 
+/**
+ * Apply descriptor scale fields without overriding backend-observed view dimensions.
+ *
+ * @param win view to update
+ * @param desc resolved descriptor
+ */
+static void _view_apply_desc_scales(DvzView* win, const DvzViewDesc* desc)
+{
+    ANN(win);
+    ANN(desc);
+    win->user_scale = _view_valid_scale(desc->user_scale);
+    win->render_scale = _view_valid_scale(desc->render_scale);
+}
+
+
 
 /**
  * Create a view from a resolved descriptor.
@@ -3663,7 +3678,16 @@ DvzView* dvz_view(DvzApp* app, DvzFigure* figure, const DvzViewDesc* desc)
     if (win == NULL)
         return NULL;
 
-    _view_apply_desc_state(win, &resolved);
+    if (resolved.kind == DVZ_VIEW_GLFW)
+    {
+        _view_apply_desc_scales(win, &resolved);
+        _view_refresh_size_state(win, NULL);
+        _view_sync_figure_layout_size(win);
+    }
+    else
+    {
+        _view_apply_desc_state(win, &resolved);
+    }
     return win;
 }
 
