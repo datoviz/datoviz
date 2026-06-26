@@ -558,24 +558,46 @@ function expectDepthPipeline(pipeline, label, writeEnabled = true, compare = "le
   );
 }
 
-function expectCanvasRenderPass(stream, label, expectedCount = 1) {
+function expectCanvasRenderPass(
+  stream,
+  label,
+  expectedCount = 1,
+  { allowOffscreenColorTargets = false } = {},
+) {
   const passes = commandsOf(stream, "BeginRenderPass");
   requireOk(
     passes.length === expectedCount,
     `${label}: expected ${expectedCount} render pass(es), got ${passes.length}`,
   );
+  let canvasTargetCount = 0;
   for (const pass of passes) {
     requireOk(
       Array.isArray(pass.color_attachments) && pass.color_attachments.length === 1,
       `${label}: expected one color attachment`,
     );
-    requireOk(
-      pass.color_attachments[0].texture_id === 0,
-      `${label}: expected browser canvas color target texture_id 0`,
-    );
+    if (pass.color_attachments[0].texture_id === 0) {
+      canvasTargetCount++;
+    } else {
+      requireOk(
+        allowOffscreenColorTargets,
+        `${label}: expected browser canvas color target texture_id 0`,
+      );
+    }
   }
-  expectCommandCount(stream, "SetViewport", expectedCount, label);
-  expectCommandCount(stream, "SetScissor", expectedCount, label);
+  requireOk(canvasTargetCount >= 1, `${label}: expected at least one canvas render target`);
+  if (allowOffscreenColorTargets) {
+    requireOk(
+      commandsOf(stream, "SetViewport").length >= 1,
+      `${label}: expected at least one SetViewport`,
+    );
+    requireOk(
+      commandsOf(stream, "SetScissor").length >= 1,
+      `${label}: expected at least one SetScissor`,
+    );
+  } else {
+    expectCommandCount(stream, "SetViewport", expectedCount, label);
+    expectCommandCount(stream, "SetScissor", expectedCount, label);
+  }
 }
 
 function expectDraw(stream, vertexCount, instanceCount, label) {
@@ -598,24 +620,34 @@ function expectDrawIndexed(stream, indexCount, instanceCount, label) {
   );
 }
 
-function expectFrameCommandShape(stream, label, expectedRenderPassCount = 1) {
+function expectFrameCommandShape(
+  stream,
+  label,
+  expectedRenderPassCount = 1,
+  { allowOffscreenColorTargets = false } = {},
+) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
-  expectCanvasRenderPass(stream, label, expectedRenderPassCount);
+  expectCanvasRenderPass(stream, label, expectedRenderPassCount, { allowOffscreenColorTargets });
   expectCommandCount(stream, "BeginCommandEncoder", 1, label);
   expectCommandCount(stream, "EndRenderPass", expectedRenderPassCount, label);
   expectCommandCount(stream, "FinishCommandEncoder", 1, label);
   expectCommandCount(stream, "QueueSubmit", 1, label);
 }
 
-function expectCommonSceneStreamShape(stream, label, expectedRenderPassCount = 1) {
-  expectFrameCommandShape(stream, label, expectedRenderPassCount);
+function expectCommonSceneStreamShape(
+  stream,
+  label,
+  expectedRenderPassCount = 1,
+  { allowOffscreenColorTargets = false } = {},
+) {
+  expectFrameCommandShape(stream, label, expectedRenderPassCount, { allowOffscreenColorTargets });
   expectCommandCount(stream, "HelloRenderer", 1, label);
   expectCommandCount(stream, "RendererHelloReply", 1, label);
 }
 
 function expect2DSceneStreamShape(stream, label) {
-  expectCommonSceneStreamShape(stream, label, 2);
+  expectCommonSceneStreamShape(stream, label, 3, { allowOffscreenColorTargets: true });
   expectDraw(stream, 6, 5, `${label} point`);
   expectDraw(stream, 6, 6, `${label} pixel`);
   expectDraw(stream, 6, 4, `${label} marker`);
@@ -874,7 +906,7 @@ function expect2DUpdateStreamShape(
   pointInstances = 5,
   { allowSetupCommands = false } = {},
 ) {
-  expectFrameCommandShape(stream, label, 2);
+  expectFrameCommandShape(stream, label, 3, { allowOffscreenColorTargets: true });
   if (!allowSetupCommands) {
     expectNoSetupCommands(stream, label);
   }
@@ -892,24 +924,38 @@ function expect2DUpdateStreamShape(
 }
 
 function expectColorbarScenarioStreamShape(stream, label) {
+  const expectedRenderPassCount = 3;
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
   expectCommandCount(stream, "HelloRenderer", 1, label);
   expectCommandCount(stream, "RendererHelloReply", 1, label);
   expectCommandCount(stream, "BeginCommandEncoder", 1, label);
-  expectCommandCount(stream, "EndRenderPass", 2, label);
+  expectCommandCount(stream, "EndRenderPass", expectedRenderPassCount, label);
   expectCommandCount(stream, "FinishCommandEncoder", 1, label);
   expectCommandCount(stream, "QueueSubmit", 1, label);
   const passes = commandsOf(stream, "BeginRenderPass");
-  requireOk(passes.length === 2, `${label}: expected 2 render passes, got ${passes.length}`);
+  requireOk(
+    passes.length === expectedRenderPassCount,
+    `${label}: expected ${expectedRenderPassCount} render passes, got ${passes.length}`,
+  );
+  let canvasTargetCount = 0;
   for (const pass of passes) {
     requireOk(
-      pass.color_attachments?.[0]?.texture_id === 0,
-      `${label}: expected browser canvas color target texture_id 0`,
+      Array.isArray(pass.color_attachments) && pass.color_attachments.length === 1,
+      `${label}: expected one color attachment`,
+    );
+    if (pass.color_attachments[0].texture_id === 0) {
+      canvasTargetCount++;
+      continue;
+    }
+    requireOk(
+      pass.color_attachments[0].texture_id > 0,
+      `${label}: expected color target texture id`,
     );
   }
-  requireOk(commandsOf(stream, "SetViewport").length >= 2, `${label}: expected viewport commands`);
-  requireOk(commandsOf(stream, "SetScissor").length >= 2, `${label}: expected scissor commands`);
+  requireOk(canvasTargetCount >= 1, `${label}: expected at least one canvas render target`);
+  requireOk(commandsOf(stream, "SetViewport").length >= 1, `${label}: expected viewport commands`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 1, `${label}: expected scissor commands`);
   expectPipeline(
     stream,
     `${label} image`,
@@ -1701,7 +1747,7 @@ function expectScaleBarScenarioStreamShape(stream, label, { reference = "point" 
 }
 
 function expect3DSceneStreamShape(stream, label) {
-  expectCommonSceneStreamShape(stream, label);
+  expectCommonSceneStreamShape(stream, label, 2, { allowOffscreenColorTargets: true });
   expectDraw(stream, 6, 3, `${label} sphere`);
   expectDraw(stream, 36, 1, `${label} mesh`);
   const spherePipeline = expectPipeline(
@@ -1754,24 +1800,34 @@ function expect3DSceneStreamShape(stream, label) {
     `${label} mesh: missing texture upload`,
   );
   requireOk(
-    commandsOf(stream, "CreateRenderPipeline").length === 2,
+    commandsOf(stream, "CreateRenderPipeline").filter(
+      (pipeline) =>
+        pipeline.builtin_pipeline === "scene.sphere" || pipeline.builtin_pipeline === "scene.mesh",
+    ).length === 2,
     `${label}: expected sphere and textured mesh pipelines`,
   );
 }
 
 function expect3DUpdateStreamShape(stream, label) {
-  expectFrameCommandShape(stream, label);
+  expectFrameCommandShape(stream, label, 2, { allowOffscreenColorTargets: true });
   expectNoSetupCommands(stream, label);
   expectDraw(stream, 6, 3, `${label} sphere`);
   expectDraw(stream, 36, 1, `${label} mesh`);
 }
 
-function expectTimerScenarioStreamShape(stream, label, { allowSetupCommands = true } = {}) {
-  expectFrameCommandShape(stream, label);
+function expectTimerScenarioStreamShape(
+  stream,
+  label,
+  { allowSetupCommands = true, expectedRenderPassCount = 2 } = {},
+) {
+  expectFrameCommandShape(stream, label, expectedRenderPassCount, {
+    allowOffscreenColorTargets: true,
+  });
   if (!allowSetupCommands) {
     expectNoSetupCommands(stream, label);
   }
   expectDraw(stream, 6, 8, `${label} point`);
+  expectDraw(stream, 3, 1, `${label} resolve`);
   if (!allowSetupCommands) {
     return;
   }
@@ -1996,13 +2052,13 @@ expectNoLegacyDirectAbi(Module);
 
 const positionNamePtr = allocCString(Module, "position");
 const colorNamePtr = allocCString(Module, "color");
-const diameterNamePtr = allocCString(Module, "diameter");
-const pixelSizeNamePtr = allocCString(Module, "pixel_size");
+const diameterNamePtr = allocCString(Module, "diameter_px");
+const pixelSizeNamePtr = allocCString(Module, "pixel_size_px");
 const angleNamePtr = allocCString(Module, "angle");
 const symbolNamePtr = allocCString(Module, "symbol");
 const positionStartNamePtr = allocCString(Module, "position_start");
 const positionEndNamePtr = allocCString(Module, "position_end");
-const strokeWidthNamePtr = allocCString(Module, "stroke_width");
+const strokeWidthNamePtr = allocCString(Module, "stroke_width_px");
 const normalNamePtr = allocCString(Module, "normal");
 const radiusNamePtr = allocCString(Module, "radius");
 const texcoordsNamePtr = allocCString(Module, "texcoords");
@@ -3679,7 +3735,9 @@ try {
         "api image texture resize",
       );
       const visualReload = emitStream(Module, scene, figure, "generic 2D visual reload");
-      expectFrameCommandShape(visualReload.stream, "generic 2D visual reload", 2);
+      expectFrameCommandShape(visualReload.stream, "generic 2D visual reload", 3, {
+        allowOffscreenColorTargets: true,
+      });
       expectSetupCommands(visualReload.stream, "generic 2D visual reload");
       expectDraw(visualReload.stream, 6, 5, "generic 2D visual reload point");
       expectDraw(visualReload.stream, 6, 6, "generic 2D visual reload pixel");

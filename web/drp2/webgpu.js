@@ -1952,6 +1952,33 @@ function resourceStats(state) {
 
 
 
+const FRAME_PHASE_COMMANDS = new Set([
+  "BeginCommandEncoder",
+  "BeginRenderPass",
+  "BeginComputePass",
+  "SetViewport",
+  "SetScissor",
+  "SetPipeline",
+  "SetBindGroup",
+  "SetVertexBuffer",
+  "SetIndexBuffer",
+  "Draw",
+  "DrawIndexed",
+  "EndRenderPass",
+  "DispatchWorkgroups",
+  "EndComputePass",
+  "ResourceBarrier",
+  "CopyBufferToBuffer",
+  "CopyBufferToTexture",
+  "CopyTextureToBuffer",
+  "CopyTextureToTexture",
+  "FinishCommandEncoder",
+  "QueueSubmit",
+  "QueueSubmitReply",
+]);
+
+
+
 function splitStreamCommands(stream) {
   const commands = required(stream.commands, "DRP2 stream needs commands");
   if (Number.isInteger(stream.setup_command_count)) {
@@ -1965,8 +1992,8 @@ function splitStreamCommands(stream) {
     return { setupCommands: commands, frameCommands: [] };
   }
   return {
-    setupCommands: commands.slice(0, frameStart),
-    frameCommands: commands.slice(frameStart),
+    setupCommands: commands.filter((command) => !FRAME_PHASE_COMMANDS.has(command.cmd)),
+    frameCommands: commands.filter((command) => FRAME_PHASE_COMMANDS.has(command.cmd)),
   };
 }
 
