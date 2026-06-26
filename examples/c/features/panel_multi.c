@@ -26,6 +26,7 @@
 
 #include "_assertions.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -216,10 +217,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (ctx->figure == NULL)
         return false;
 
-    DvzPanel* left = dvz_panel(
-        ctx->figure, (DvzPanelDesc){.x = 0.08f, .y = 0.16f, .width = 0.40f, .height = 0.68f});
-    DvzPanel* right = dvz_panel(
-        ctx->figure, (DvzPanelDesc){.x = 0.52f, .y = 0.16f, .width = 0.40f, .height = 0.68f});
+    DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
+    if (grid == NULL)
+        return false;
+    if (!example_configure_compact_grid(grid, 40.0f, 0.0f))
+        return false;
+
+    DvzPanel* left = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* right = dvz_grid_panel(grid, 0, 1);
     if (left == NULL || right == NULL)
         return false;
 

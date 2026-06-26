@@ -34,6 +34,7 @@ typedef struct DvzGeometry DvzGeometry;
 typedef struct DvzVisual   DvzVisual;
 typedef struct DvzScene    DvzScene;
 typedef struct DvzPanel    DvzPanel;
+typedef struct DvzGrid     DvzGrid;
 typedef struct DvzCamera   DvzCamera;
 typedef struct DvzApp      DvzApp;
 typedef struct DvzView     DvzView;
@@ -155,6 +156,8 @@ bool example_configure_equal_aspect_panel(
     DvzDataDomain x,
     DvzDataDomain y,
     double padding);
+
+bool example_configure_compact_grid(DvzGrid* grid, float gutter_x_px, float gutter_y_px);
 
 bool example_link_controllers_bidirectional(
     DvzScene* scene, DvzController* a, DvzController* b, uint32_t components);

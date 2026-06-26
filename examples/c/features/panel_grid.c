@@ -129,7 +129,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!dvz_grid_set_margins(
             grid,
             &(DvzPanelReserve){
-                .left_px = 90.0f, .right_px = 90.0f, .top_px = 80.0f, .bottom_px = 80.0f}))
+                .left_px = 56.0f, .right_px = 56.0f, .top_px = 56.0f, .bottom_px = 56.0f}))
         return false;
     if (!dvz_grid_set_gutter(grid, 36.0f, 36.0f))
         return false;

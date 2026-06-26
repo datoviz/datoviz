@@ -736,6 +736,29 @@ bool example_configure_equal_aspect_panel(
 
 
 /**
+ * Configure compact, homogeneous outer grid margins for feature examples.
+ *
+ * @param grid target grid
+ * @param gutter_x_px horizontal gutter in pixels
+ * @param gutter_y_px vertical gutter in pixels
+ * @return true when margins and gutters were configured
+ */
+bool example_configure_compact_grid(DvzGrid* grid, float gutter_x_px, float gutter_y_px)
+{
+    if (grid == NULL)
+        return false;
+    if (!dvz_grid_set_margins(
+            grid,
+            &(DvzPanelReserve){
+                .left_px = 56.0f, .right_px = 56.0f, .top_px = 56.0f, .bottom_px = 56.0f}))
+    {
+        return false;
+    }
+    return dvz_grid_set_gutter(grid, gutter_x_px, gutter_y_px);
+}
+
+
+/**
  * Link two controllers in both directions using current one-way controller links.
  *
  * @param scene scene owning both controllers
