@@ -185,6 +185,31 @@ dvz_figure_size(const DvzFigure* figure, uint32_t* out_width, uint32_t* out_heig
 
 
 /**
+ * Convert a host-window logical pointer position to figure layout coordinates.
+ *
+ * Raw input events keep backend/window logical coordinates. Scene, panel, and query helpers use
+ * figure layout coordinates. When a valid host-window size is supplied, this function maps the
+ * position by the figure/window size ratio; otherwise it falls back to the supplied content scale
+ * values, or identity scale when no scale is available.
+ *
+ * @param figure the figure
+ * @param window_x pointer x position in host-window logical coordinates
+ * @param window_y pointer y position in host-window logical coordinates
+ * @param window_width logical host-window width, or zero when unknown
+ * @param window_height logical host-window height, or zero when unknown
+ * @param content_scale_x horizontal content scale fallback
+ * @param content_scale_y vertical content scale fallback
+ * @param out_x output x position in figure layout coordinates
+ * @param out_y output y position in figure layout coordinates
+ * @return whether the output coordinates were written
+ */
+DVZ_EXPORT bool dvz_figure_window_to_layout(
+    const DvzFigure* figure, float window_x, float window_y, float window_width,
+    float window_height, float content_scale_x, float content_scale_y, float* out_x,
+    float* out_y);
+
+
+/**
  * Set the figure color pipeline used by app/offscreen rendering.
  *
  * The default is DVZ_COLOR_PIPELINE_LINEAR_SRGB. DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND is an

@@ -451,6 +451,54 @@ void dvz_figure_size(const DvzFigure* figure, uint32_t* out_width, uint32_t* out
 }
 
 
+/**
+ * Convert a host-window logical pointer position to figure layout coordinates.
+ *
+ * @param figure the figure
+ * @param window_x pointer x position in host-window logical coordinates
+ * @param window_y pointer y position in host-window logical coordinates
+ * @param window_width logical host-window width, or zero when unknown
+ * @param window_height logical host-window height, or zero when unknown
+ * @param content_scale_x horizontal content scale fallback
+ * @param content_scale_y vertical content scale fallback
+ * @param out_x output x position in figure layout coordinates
+ * @param out_y output y position in figure layout coordinates
+ * @return whether the output coordinates were written
+ */
+bool dvz_figure_window_to_layout(
+    const DvzFigure* figure, float window_x, float window_y, float window_width,
+    float window_height, float content_scale_x, float content_scale_y, float* out_x,
+    float* out_y)
+{
+    if (figure == NULL || out_x == NULL || out_y == NULL || !isfinite(window_x) ||
+        !isfinite(window_y))
+    {
+        return false;
+    }
+
+    float sx = 1.0f;
+    float sy = 1.0f;
+    if (
+        isfinite(window_width) && isfinite(window_height) && window_width > 0.0f &&
+        window_height > 0.0f && figure->width > 0 && figure->height > 0)
+    {
+        sx = (float)figure->width / window_width;
+        sy = (float)figure->height / window_height;
+    }
+    else
+    {
+        if (isfinite(content_scale_x) && content_scale_x > 0.0f)
+            sx = content_scale_x;
+        if (isfinite(content_scale_y) && content_scale_y > 0.0f)
+            sy = content_scale_y;
+    }
+
+    *out_x = window_x * sx;
+    *out_y = window_y * sy;
+    return true;
+}
+
+
 void dvz_figure_set_color_pipeline(DvzFigure* figure, DvzColorPipeline pipeline)
 {
     ANN(figure);

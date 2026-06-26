@@ -846,32 +846,47 @@ static void _scene_panel_pointer_to_figure_coordinates(
     ANN(out);
     *out = *ev;
 
-    float sx = 1.0f;
-    float sy = 1.0f;
     DvzInputResizeEvent resize = {0};
-    if (router != NULL && dvz_input_router_last_resize(router, &resize) &&
-        resize.window_width > 0 && resize.window_height > 0 && panel->figure != NULL &&
-        panel->figure->width > 0 && panel->figure->height > 0)
-    {
-        sx = (float)panel->figure->width / (float)resize.window_width;
-        sy = (float)panel->figure->height / (float)resize.window_height;
-    }
-    else if (isfinite(ev->content_scale) && ev->content_scale > 0.0f)
-    {
-        sx = ev->content_scale;
-        sy = ev->content_scale;
-    }
+    bool has_resize = router != NULL && dvz_input_router_last_resize(router, &resize);
+    const float window_width = has_resize ? (float)resize.window_width : 0.0f;
+    const float window_height = has_resize ? (float)resize.window_height : 0.0f;
+    const float content_scale_x =
+        has_resize && isfinite(resize.content_scale_x) && resize.content_scale_x > 0.0f ?
+            resize.content_scale_x :
+            ev->content_scale;
+    const float content_scale_y =
+        has_resize && isfinite(resize.content_scale_y) && resize.content_scale_y > 0.0f ?
+            resize.content_scale_y :
+            ev->content_scale;
 
-    out->pos[0] *= sx;
-    out->pos[1] *= sy;
+    (void)dvz_figure_window_to_layout(
+        panel->figure, ev->pos[0], ev->pos[1], window_width, window_height, content_scale_x,
+        content_scale_y, &out->pos[0], &out->pos[1]);
     if (ev->type == DVZ_POINTER_EVENT_DRAG || ev->type == DVZ_POINTER_EVENT_DRAG_STOP)
     {
-        out->content.d.press_pos[0] *= sx;
-        out->content.d.press_pos[1] *= sy;
-        out->content.d.last_pos[0] *= sx;
-        out->content.d.last_pos[1] *= sy;
-        out->content.d.shift[0] *= sx;
-        out->content.d.shift[1] *= sy;
+        (void)dvz_figure_window_to_layout(
+            panel->figure, ev->content.d.press_pos[0], ev->content.d.press_pos[1],
+            window_width, window_height, content_scale_x, content_scale_y,
+            &out->content.d.press_pos[0], &out->content.d.press_pos[1]);
+        (void)dvz_figure_window_to_layout(
+            panel->figure, ev->content.d.last_pos[0], ev->content.d.last_pos[1],
+            window_width, window_height, content_scale_x, content_scale_y,
+            &out->content.d.last_pos[0], &out->content.d.last_pos[1]);
+
+        float zero_x = 0.0f;
+        float zero_y = 0.0f;
+        float shift_x = out->content.d.shift[0];
+        float shift_y = out->content.d.shift[1];
+        if (dvz_figure_window_to_layout(
+                panel->figure, 0.0f, 0.0f, window_width, window_height, content_scale_x,
+                content_scale_y, &zero_x, &zero_y) &&
+            dvz_figure_window_to_layout(
+                panel->figure, ev->content.d.shift[0], ev->content.d.shift[1], window_width,
+                window_height, content_scale_x, content_scale_y, &shift_x, &shift_y))
+        {
+            out->content.d.shift[0] = shift_x - zero_x;
+            out->content.d.shift[1] = shift_y - zero_y;
+        }
     }
 }
 

@@ -147,6 +147,7 @@ typedef struct DvzScenarioControllerBinding
 typedef struct DvzScenarioPointerEvent
 {
     DvzScenarioPointerType type;
+    /* Pointer position in figure layout coordinates, after host-window normalization. */
     float x;
     float y;
     float dx;
@@ -301,10 +302,10 @@ DvzPanzoom* dvz_scenario_panzoom(
     DvzScenarioContext* ctx, DvzPanel* panel, const DvzPanzoomDesc* desc, DvzDimMask dims);
 
 /**
- * Convert one portable pointer event to panel-local coordinates.
+ * Convert one portable figure-coordinate pointer event to panel-local coordinates.
  *
  * @param panel target panel
- * @param event portable pointer event
+ * @param event portable pointer event in figure layout coordinates
  * @param out_x output panel-local x coordinate
  * @param out_y output panel-local y coordinate
  * @return true when the pointer is inside the panel rectangle

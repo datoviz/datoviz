@@ -183,6 +183,8 @@ int test_panel_panzoom_getter(TstContext* suite, const TstCase* item);
 
 int test_shared_panzoom_xy_visible_domains(TstContext* suite, const TstCase* item);
 
+int test_figure_window_to_layout_coordinates(TstContext* suite, const TstCase* item);
+
 int test_panzoom_panel_input_uses_hidpi_figure_coordinates(
     TstContext* suite, const TstCase* item);
 

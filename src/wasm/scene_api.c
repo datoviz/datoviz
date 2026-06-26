@@ -1251,6 +1251,13 @@ int dvz_wasm_api_scenario_create(uint32_t scene_handle, uint32_t index)
     }
     scene->scenario_ctx = (DvzScenarioContext){
         .scene = scene->scene,
+        .logical_width = scene->width,
+        .logical_height = scene->height,
+        .framebuffer_width = scene->width,
+        .framebuffer_height = scene->height,
+        .device_scale = 1.0f,
+        .user_scale = 1.0f,
+        .render_scale = 1.0f,
         .width = scene->width,
         .height = scene->height,
     };
@@ -1337,6 +1344,51 @@ int dvz_wasm_api_scenario_post_frame(uint32_t scene_handle)
 }
 
 
+/**
+ * Convert one WASM scenario pointer position to figure layout coordinates.
+ *
+ * @param scene WASM scene wrapper
+ * @param x input host/canvas logical x coordinate
+ * @param y input host/canvas logical y coordinate
+ * @param content_scale input content scale
+ * @param out_x output figure-layout x coordinate
+ * @param out_y output figure-layout y coordinate
+ */
+static void _wasm_scenario_pointer_to_figure(
+    DvzWasmApiScene* scene, float x, float y, float content_scale, float* out_x, float* out_y)
+{
+    ANN(out_x);
+    ANN(out_y);
+    *out_x = x;
+    *out_y = y;
+    if (scene == NULL || scene->scenario_ctx.figure == NULL)
+        return;
+
+    DvzInputResizeEvent resize = {0};
+    const bool has_resize =
+        scene->router != NULL && dvz_input_router_last_resize(scene->router, &resize);
+    const uint32_t logical_width = scene->scenario_ctx.logical_width != 0 ?
+                                       scene->scenario_ctx.logical_width :
+                                       scene->scenario_ctx.width;
+    const uint32_t logical_height = scene->scenario_ctx.logical_height != 0 ?
+                                        scene->scenario_ctx.logical_height :
+                                        scene->scenario_ctx.height;
+    const float window_width =
+        has_resize && resize.window_width > 0 ? (float)resize.window_width :
+                                                (float)logical_width;
+    const float window_height =
+        has_resize && resize.window_height > 0 ? (float)resize.window_height :
+                                                 (float)logical_height;
+    const float content_scale_x =
+        has_resize && resize.content_scale_x > 0.0f ? resize.content_scale_x : content_scale;
+    const float content_scale_y =
+        has_resize && resize.content_scale_y > 0.0f ? resize.content_scale_y : content_scale;
+    (void)dvz_figure_window_to_layout(
+        scene->scenario_ctx.figure, x, y, window_width, window_height, content_scale_x,
+        content_scale_y, out_x, out_y);
+}
+
+
 
 EMSCRIPTEN_KEEPALIVE
 int dvz_wasm_api_scenario_pointer(
@@ -1353,8 +1405,9 @@ int dvz_wasm_api_scenario_pointer(
     DvzScenarioEvent event = {0};
     event.kind = DVZ_SCENARIO_EVENT_POINTER;
     event.content.pointer.type = _scenario_pointer_type_from_wasm((DvzPointerEventType)type);
-    event.content.pointer.x = x;
-    event.content.pointer.y = y;
+    _wasm_scenario_pointer_to_figure(
+        scene, x, y, content_scale > 0.0f ? content_scale : 1.0f, &event.content.pointer.x,
+        &event.content.pointer.y);
     event.content.pointer.content_scale = content_scale > 0.0f ? content_scale : 1.0f;
     event.content.pointer.button = button >= 0 ? (uint32_t)button : 0;
     event.content.pointer.modifiers = mods >= 0 ? (uint32_t)mods : 0;
@@ -1381,8 +1434,9 @@ int dvz_wasm_api_scenario_wheel(
     DvzScenarioEvent event = {0};
     event.kind = DVZ_SCENARIO_EVENT_POINTER;
     event.content.pointer.type = DVZ_SCENARIO_POINTER_WHEEL;
-    event.content.pointer.x = x;
-    event.content.pointer.y = y;
+    _wasm_scenario_pointer_to_figure(
+        scene, x, y, content_scale > 0.0f ? content_scale : 1.0f, &event.content.pointer.x,
+        &event.content.pointer.y);
     event.content.pointer.dx = dir_x;
     event.content.pointer.dy = dir_y;
     event.content.pointer.content_scale = content_scale > 0.0f ? content_scale : 1.0f;
@@ -2140,6 +2194,16 @@ int dvz_wasm_api_resize(
     _clear_payload(scene);
     scene->width = width;
     scene->height = height;
+    if (scene->scenario_active)
+    {
+        scene->scenario_ctx.logical_width = width;
+        scene->scenario_ctx.logical_height = height;
+        scene->scenario_ctx.framebuffer_width = width;
+        scene->scenario_ctx.framebuffer_height = height;
+        scene->scenario_ctx.device_scale = device_scale > 0.0f ? device_scale : 1.0f;
+        scene->scenario_ctx.width = width;
+        scene->scenario_ctx.height = height;
+    }
     dvz_figure_resize(figure->figure, width, height);
     _emit_resize(scene, width, height, device_scale);
     return 0;

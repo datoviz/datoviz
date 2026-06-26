@@ -457,6 +457,33 @@ int test_shared_panzoom_xy_visible_domains(TstContext* suite, const TstCase* ite
 }
 
 
+int test_figure_window_to_layout_coordinates(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 1600, 1200, 0);
+    ANN(figure);
+
+    float x = 0.0f;
+    float y = 0.0f;
+    AT(dvz_figure_window_to_layout(figure, 400.0f, 150.0f, 800.0f, 600.0f, 1.0f, 1.0f, &x, &y));
+    AC(x, 800.0f, 1e-6f);
+    AC(y, 300.0f, 1e-6f);
+
+    AT(dvz_figure_window_to_layout(figure, 10.0f, 15.0f, 0.0f, 0.0f, 2.0f, 3.0f, &x, &y));
+    AC(x, 20.0f, 1e-6f);
+    AC(y, 45.0f, 1e-6f);
+
+    AT(!dvz_figure_window_to_layout(NULL, 10.0f, 15.0f, 800.0f, 600.0f, 1.0f, 1.0f, &x, &y));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Ensure panzoom wheel anchors use framebuffer/figure coordinates after HiDPI scaling.
  *
@@ -2210,6 +2237,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_panzoom_mvp_identity);
     TST_CASE(test_panel_panzoom_getter);
     TST_CASE(test_shared_panzoom_xy_visible_domains);
+    TST_CASE(test_figure_window_to_layout_coordinates);
     TST_CASE(test_panzoom_panel_input_uses_hidpi_figure_coordinates);
     TST_CASE(test_split_panzoom_x_y_bindings);
 

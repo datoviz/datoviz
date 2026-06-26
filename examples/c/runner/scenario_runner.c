@@ -398,10 +398,51 @@ static void _timer_callback(DvzAnimation* animation, double t, double dt, void* 
 }
 
 
+/**
+ * Convert one raw input pointer position to portable scenario coordinates.
+ *
+ * @param router input router carrying resize state
+ * @param state runner event state
+ * @param pointer raw input pointer event
+ * @param out_x output figure-layout x coordinate
+ * @param out_y output figure-layout y coordinate
+ */
+static void _runner_pointer_to_figure(
+    const DvzInputRouter* router, const RunnerEventState* state, const DvzPointerEvent* pointer,
+    float* out_x, float* out_y)
+{
+    ANN(pointer);
+    ANN(out_x);
+    ANN(out_y);
+
+    *out_x = pointer->pos[0];
+    *out_y = pointer->pos[1];
+    if (state == NULL || state->ctx == NULL || state->ctx->figure == NULL)
+        return;
+
+    DvzInputResizeEvent resize = {0};
+    const bool has_resize = router != NULL && dvz_input_router_last_resize(router, &resize);
+    const float window_width =
+        has_resize && resize.window_width > 0 ? (float)resize.window_width :
+                                                (float)state->ctx->logical_width;
+    const float window_height =
+        has_resize && resize.window_height > 0 ? (float)resize.window_height :
+                                                 (float)state->ctx->logical_height;
+    const float content_scale_x =
+        has_resize && resize.content_scale_x > 0.0f ? resize.content_scale_x :
+                                                       pointer->content_scale;
+    const float content_scale_y =
+        has_resize && resize.content_scale_y > 0.0f ? resize.content_scale_y :
+                                                       pointer->content_scale;
+    (void)dvz_figure_window_to_layout(
+        state->ctx->figure, pointer->pos[0], pointer->pos[1], window_width, window_height,
+        content_scale_x, content_scale_y, out_x, out_y);
+}
+
+
 
 static void _runner_event(DvzInputRouter* router, const DvzInputEvent* input, void* user_data)
 {
-    (void)router;
     RunnerEventState* state = (RunnerEventState*)user_data;
     if (
         state == NULL || state->spec == NULL || state->ctx == NULL ||
@@ -416,8 +457,8 @@ static void _runner_event(DvzInputRouter* router, const DvzInputEvent* input, vo
         const DvzPointerEvent* pointer = &input->content.pointer;
         event.kind = DVZ_SCENARIO_EVENT_POINTER;
         event.content.pointer.type = _scenario_pointer_type(pointer->type);
-        event.content.pointer.x = pointer->pos[0];
-        event.content.pointer.y = pointer->pos[1];
+        _runner_pointer_to_figure(
+            router, state, pointer, &event.content.pointer.x, &event.content.pointer.y);
         event.content.pointer.dx = pointer->type == DVZ_POINTER_EVENT_WHEEL
                                        ? pointer->content.w.dir[0]
                                        : 0.0f;
