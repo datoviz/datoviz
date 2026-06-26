@@ -134,8 +134,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         .gradient = {
             .start = {0.0f, 0.0f},
             .end = {1.0f, 1.0f},
-            .color0 = {0.04f, 0.07f, 0.11f, 1.0f},
-            .color1 = {0.02f, 0.20f, 0.22f, 1.0f},
+            .color0 = {0.010f, 0.030f, 0.065f, 1.0f},
+            .color1 = {0.025f, 0.345f, 0.380f, 1.0f},
         }};
     if (!dvz_panel_set_background(panel, &background))
         return false;
