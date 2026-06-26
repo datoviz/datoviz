@@ -3136,8 +3136,9 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstContext* suite, con
     AT(_scene_pass_contract_from_render(plan, panel, opaque_node, opaque_pass, &opaque_contract));
     AT(opaque_contract.draw_count == 1);
     AT(opaque_contract.draws[0].depth_write);
+    AT(opaque_contract.draws[0].blend_policy == DVZ_SCENE_BLEND_POLICY_SEGMENT_COVERAGE);
     AT(opaque_contract.draws[0].blend_target_count == 1);
-    AT(!opaque_contract.draws[0].blend_targets[0].blend_enabled);
+    AT(opaque_contract.draws[0].blend_targets[0].blend_enabled);
     AT(opaque_contract.needs_common_set);
     dvz_diagnostic_report_init(&report);
     AT(_scene_pass_contract_validate(&opaque_contract, &report));
