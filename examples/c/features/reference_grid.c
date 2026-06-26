@@ -91,8 +91,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzReferenceGridDesc grid = dvz_reference_grid_desc();
     grid.plane = DVZ_REFERENCE_GRID_XZ;
     grid.origin[1] = -0.50f;
-    grid.size[0] = 4.0f;
-    grid.size[1] = 4.0f;
+    grid.size[0] = 8.0f;
+    grid.size[1] = 8.0f;
     grid.spacing = 0.25f;
     grid.major_every = 4;
     if (dvz_reference_grid(panel, &grid) == NULL)
