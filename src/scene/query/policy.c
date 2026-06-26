@@ -59,6 +59,9 @@ uint32_t _dvz_scene_query_target_capability(DvzSceneTargetKind target)
     case DVZ_SCENE_TARGET_TEXT:
     case DVZ_SCENE_TARGET_ANNOTATION:
         return DVZ_QUERY_CAPABILITY_OBJECT;
+    case DVZ_SCENE_TARGET_GUIDE:
+    case DVZ_SCENE_TARGET_ALL_RENDERED:
+        return 0;
     default:
         return 0;
     }

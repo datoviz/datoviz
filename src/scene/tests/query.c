@@ -261,6 +261,66 @@ int test_scene_query_queue_preserves_panel_local_y_orientation(
 }
 
 
+int test_scene_query_deferred_guide_targets_are_unsupported(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 100, 80, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.10f, .y = 0.25f, .width = 0.80f, .height = 0.50f});
+    ANN(panel);
+
+    AT(dvz_panel_query(
+           panel, 12.0, 18.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest),
+               .request_id = 501,
+               .target = DVZ_SCENE_TARGET_GUIDE,
+           }) == 0);
+    AT(dvz_panel_query(
+           panel, 40.0, 4.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest),
+               .request_id = 502,
+               .target = DVZ_SCENE_TARGET_ALL_RENDERED,
+           }) == 0);
+    AT(scene->pending_query_count == 2);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 2);
+
+    DvzQueryResult guide = {0};
+    DvzQueryResult all_rendered = {0};
+    AT(dvz_scene_poll_query(scene, &guide));
+    AT(dvz_scene_poll_query(scene, &all_rendered));
+
+    AT(guide.request_id == 501);
+    AT(!guide.hit);
+    AT(guide.status == DVZ_QUERY_STATUS_UNSUPPORTED_TARGET);
+    AT(guide.raw_target == DVZ_SCENE_TARGET_GUIDE);
+    AT(guide.resolved_target == DVZ_SCENE_TARGET_GUIDE);
+    AT(guide.visual_id == 0);
+    AC(guide.panel_position[0], 12.0, 1e-12);
+    AC(guide.panel_position[1], 18.0, 1e-12);
+
+    AT(all_rendered.request_id == 502);
+    AT(!all_rendered.hit);
+    AT(all_rendered.status == DVZ_QUERY_STATUS_UNSUPPORTED_TARGET);
+    AT(all_rendered.raw_target == DVZ_SCENE_TARGET_ALL_RENDERED);
+    AT(all_rendered.resolved_target == DVZ_SCENE_TARGET_ALL_RENDERED);
+    AT(all_rendered.visual_id == 0);
+    AC(all_rendered.panel_position[0], 40.0, 1e-12);
+    AC(all_rendered.panel_position[1], 4.0, 1e-12);
+    AT(!dvz_scene_poll_query(scene, &all_rendered));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 int test_scene_query_volume_sample_is_explicitly_unsupported(TstContext* suite, const TstCase* item)
 {
@@ -3815,6 +3875,7 @@ int test_scene_query(TstSuite* suite)
     TST_CASE(test_scene_query_queue_processes_native_results);
     TST_CASE(test_scene_query_queue_coalesces_pending_requests);
     TST_CASE(test_scene_query_queue_preserves_panel_local_y_orientation);
+    TST_CASE(test_scene_query_deferred_guide_targets_are_unsupported);
     TST_CASE(test_scene_query_volume_sample_is_explicitly_unsupported);
     TST_CASE(test_scene_query_skips_fixed_visuals);
     TST_CASE(test_scene_query_rejects_missing_query_profile);

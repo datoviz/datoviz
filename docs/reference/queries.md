@@ -45,6 +45,26 @@ Check the generated [scene C API](c-api/scene.md) for exact signatures in the cu
 
 A miss is not a capability failure. A capability failure is not a background hit.
 
+## Target Scopes
+
+`DvzQueryRequest.target` declares the semantic scope requested by the caller. Data-oriented scopes
+such as `DVZ_SCENE_TARGET_ITEM`, `DVZ_SCENE_TARGET_PIXEL`, and `DVZ_SCENE_TARGET_SAMPLE` are routed
+to visual-family query implementations when the visual advertises the matching capability.
+
+`DVZ_SCENE_TARGET_GUIDE` and `DVZ_SCENE_TARGET_ALL_RENDERED` are explicit public scopes for guide
+adapters and whole-rendered-scene requests. They are intentionally deferred in v0.4 RC: Datoviz
+returns `DVZ_QUERY_STATUS_UNSUPPORTED_TARGET` and echoes the requested target in `raw_target` and
+`resolved_target`. It does not silently degrade `ALL_RENDERED` into data-only picking when guide
+picking is absent.
+
+| Scope | Current status | Result behavior |
+| --- | --- | --- |
+| `DVZ_SCENE_TARGET_ITEM` | Supported for promoted visual families with item capability. | Hit results identify visual family, visual id, item id, link key when present, coordinates, and displayed RGBA when available. |
+| `DVZ_SCENE_TARGET_PIXEL` | Supported for promoted image-like paths with pixel capability. | Hit results identify the image visual and carry texel/sample value fields when available. |
+| `DVZ_SCENE_TARGET_SAMPLE` | Supported for promoted image/field/volume sample paths. | Hit results carry scalar/vector/category payloads and UVW/data coordinates when available. |
+| `DVZ_SCENE_TARGET_GUIDE` | Deferred. | `DVZ_QUERY_STATUS_UNSUPPORTED_TARGET`; no visual id or hit payload. |
+| `DVZ_SCENE_TARGET_ALL_RENDERED` | Deferred while guide picking is absent. | `DVZ_QUERY_STATUS_UNSUPPORTED_TARGET`; no data-only fallback. |
+
 ## GPU Authority
 
 Rendered visual queries are GPU-authoritative. CPU code may queue requests, track freshness, decode

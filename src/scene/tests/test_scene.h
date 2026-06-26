@@ -936,6 +936,9 @@ int test_scene_query_queue_coalesces_pending_requests(TstContext* suite, const T
 int test_scene_query_queue_preserves_panel_local_y_orientation(
     TstContext* suite, const TstCase* item);
 
+int test_scene_query_deferred_guide_targets_are_unsupported(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_query_volume_sample_is_explicitly_unsupported(
     TstContext* suite, const TstCase* item);
 

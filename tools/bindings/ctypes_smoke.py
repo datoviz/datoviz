@@ -64,6 +64,38 @@ def _run_gsp_query_smoke(dvz) -> None:
         assert result.figure_id == figure_id
         assert result.panel_id == panel_id
         assert not dvz.dvz_scene_poll_query(scene, ctypes.byref(result))
+
+        for request_id, target in [
+            (124, dvz.DvzSceneTargetKind.DVZ_SCENE_TARGET_GUIDE),
+            (125, dvz.DvzSceneTargetKind.DVZ_SCENE_TARGET_ALL_RENDERED),
+        ]:
+            request = dvz.dvz_query_request()
+            request.request_id = request_id
+            request.target = target
+            assert dvz.dvz_panel_query(panel, 10.0, 10.0, ctypes.byref(request)) == 0
+
+        processed = dvz.dvz_figure_process_queries(figure, None, ctypes.byref(caps))
+        assert processed == 2
+
+        guide_result = dvz.DvzQueryResult()
+        all_rendered_result = dvz.DvzQueryResult()
+        assert dvz.dvz_scene_poll_query(scene, ctypes.byref(guide_result))
+        assert dvz.dvz_scene_poll_query(scene, ctypes.byref(all_rendered_result))
+        assert guide_result.request_id == 124
+        assert guide_result.status == dvz.DvzQueryStatus.DVZ_QUERY_STATUS_UNSUPPORTED_TARGET
+        assert guide_result.raw_target == dvz.DvzSceneTargetKind.DVZ_SCENE_TARGET_GUIDE
+        assert guide_result.resolved_target == dvz.DvzSceneTargetKind.DVZ_SCENE_TARGET_GUIDE
+        assert all_rendered_result.request_id == 125
+        assert all_rendered_result.status == dvz.DvzQueryStatus.DVZ_QUERY_STATUS_UNSUPPORTED_TARGET
+        assert (
+            all_rendered_result.raw_target
+            == dvz.DvzSceneTargetKind.DVZ_SCENE_TARGET_ALL_RENDERED
+        )
+        assert (
+            all_rendered_result.resolved_target
+            == dvz.DvzSceneTargetKind.DVZ_SCENE_TARGET_ALL_RENDERED
+        )
+        assert not dvz.dvz_scene_poll_query(scene, ctypes.byref(result))
     finally:
         dvz.dvz_scene_destroy(scene)
 
@@ -81,6 +113,8 @@ def _check_query_result_layout(dvz) -> None:
         'framebuffer_position',
         'visual_id',
         'visual_family',
+        'raw_target',
+        'resolved_target',
         'item_id',
         'texel_id',
         'has_display_rgba',
