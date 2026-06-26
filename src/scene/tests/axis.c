@@ -938,6 +938,12 @@ static int test_axis_text_labels(TstContext* suite, const TstCase* item)
     float y_label_x = y_positions[3 * y_axis->tick_count + 0];
     AT(y_label_x < first_y_tick_x - y_axis->style.tick_size_px);
 
+    DvzVisualDataView y_angle_view = {0};
+    AT(dvz_visual_data(y_axis->text_visual, "angle", &y_angle_view) == 0);
+    AT(y_angle_view.item_count == _visual_family_state(y_axis->text_visual)->text.string_count);
+    const float* y_angles = (const float*)y_angle_view.data;
+    AC(y_angles[y_axis->tick_count], +1.57079632679f, 1e-6f);
+
     _scene_prepare_text_visuals(figure);
     AT(_visual_family_state(axis->text_visual)->text.glyph_visual != NULL);
     AT(_visual_family_state(axis->text_visual)->text.glyph_visual->visible);
