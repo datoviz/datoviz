@@ -35,14 +35,57 @@ clang:
 #
 
 [linux]
+[macos]
+_build-configure release mode:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    unset CC
+    unset CXX
+    build_dir="build"
+    stamp="${build_dir}/.dvz-build-config"
+    mkdir -p docs/images "${build_dir}"
+    config="$(printf '%s\n' \
+        "release={{release}}" \
+        "cmake_args=${DVZ_CMAKE_ARGS:-}" \
+        "generator=Ninja" \
+        "cxx_launcher=ccache" \
+        "export_compile_commands=ON")"
+    needs_configure=0
+    if [[ "{{mode}}" == "force" || ! -f "${build_dir}/CMakeCache.txt" || ! -f "${stamp}" ]]; then
+        needs_configure=1
+    elif ! cmp -s <(printf '%s\n' "${config}") "${stamp}"; then
+        needs_configure=1
+    fi
+    if [[ "${needs_configure}" -eq 0 ]]; then
+        exit 0
+    fi
+    cmake_args="${DVZ_CMAKE_ARGS:-}"
+    (
+        cd "${build_dir}"
+        # Preserve existing behavior: DVZ_CMAKE_ARGS is a shell-split string of extra CMake flags.
+        # shellcheck disable=SC2086
+        CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja \
+            -DCMAKE_BUILD_TYPE="{{release}}" \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            ${cmake_args}
+    )
+    printf '%s\n' "${config}" > "${stamp}"
+
+[linux]
+[macos]
+configure release="Debug":
+    @just _build-configure "{{release}}" force
+
+[linux]
+[macos]
+compile:
+    @cmake --build build
+
+[linux]
+[macos]
 build release="Debug":
-    @set -e
-    @unset CC
-    @unset CXX
-    @mkdir -p docs/images
-    @mkdir -p build
-    @cmake_args="${DVZ_CMAKE_ARGS:-}"; cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ${cmake_args}
-    @cd build/ && ninja
+    @just _build-configure "{{release}}" auto
+    @cmake --build build
 #
 
 [linux]
@@ -121,18 +164,6 @@ asan:
 [linux]
 tsan:
     just _sanitizer-build tsan
-#
-
-[macos]
-build release="Debug": # && bundledeps
-    @set -e
-    @unset CC
-    @unset CXX
-    @mkdir -p docs/images
-    @mkdir -p build/src
-    @mkdir -p build/testing
-    cmake_args="${DVZ_CMAKE_ARGS:-}"; cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ${cmake_args}
-    cd build/ && ninja
 #
 
 [windows]
