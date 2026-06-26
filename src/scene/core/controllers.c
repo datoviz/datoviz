@@ -572,6 +572,8 @@ static bool _scene_controller_link_apply(DvzControllerLink* link)
     case DVZ_CONTROLLER_TYPE_PANZOOM:
         if (link->source->panzoom == NULL || link->target->panzoom == NULL)
             return false;
+        if (link->target->panzoom->interacting && !link->source->panzoom->interacting)
+            return false;
         _scene_controller_link_copy_panzoom(link->source, link->target, link->components);
         break;
     case DVZ_CONTROLLER_TYPE_ARCBALL:

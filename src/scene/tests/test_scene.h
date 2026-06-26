@@ -228,6 +228,9 @@ int test_controller_link_panzoom_extent_x_only(TstContext* suite, const TstCase*
 int test_controller_link_panzoom_extent_x_equal_aspect_panels(
     TstContext* suite, const TstCase* item);
 
+int test_controller_link_panzoom_extent_x_bidirectional_does_not_accumulate_drag(
+    TstContext* suite, const TstCase* item);
+
 int test_controller_link_validation(TstContext* suite, const TstCase* item);
 
 int test_controller_link_destroy_stops_arcball_propagation(

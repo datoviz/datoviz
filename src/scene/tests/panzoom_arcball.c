@@ -1096,6 +1096,69 @@ int test_controller_link_panzoom_extent_x_equal_aspect_panels(
 
 
 /**
+ * Ensure all-links propagation does not echo passive panzoom extent state into an active drag.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_controller_link_panzoom_extent_x_bidirectional_does_not_accumulate_drag(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* top = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 0.5f});
+    DvzPanel* bottom = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.5f, 1.0f, 0.5f});
+    ANN(top);
+    ANN(bottom);
+
+    DvzController* top_x = dvz_panzoom(scene, NULL);
+    DvzController* bottom_x = dvz_panzoom(scene, NULL);
+    ANN(top_x);
+    ANN(bottom_x);
+    AT(dvz_panel_bind_controller(top, top_x, DVZ_DIM_MASK_X) == 0);
+    AT(dvz_panel_bind_controller(bottom, bottom_x, DVZ_DIM_MASK_X) == 0);
+
+    DvzControllerLink* top_to_bottom = dvz_controller_link(
+        scene, top_x, bottom_x, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
+    DvzControllerLink* bottom_to_top = dvz_controller_link(
+        scene, bottom_x, top_x, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
+    ANN(top_to_bottom);
+    ANN(bottom_to_top);
+
+    DvzPanzoom* top_pz = dvz_controller_panzoom(top_x);
+    DvzPanzoom* bottom_pz = dvz_controller_panzoom(bottom_x);
+    ANN(top_pz);
+    ANN(bottom_pz);
+    top_pz->interacting = true;
+    top_pz->pan[0] = 0.24f;
+    top_pz->pan_center[0] = 0.0f;
+    top_pz->zoom[0] = 1.80f;
+    top_pz->zoom_center[0] = 1.0f;
+
+    _dvz_scene_controller_links_propagate(scene);
+    _dvz_scene_controller_links_propagate(scene);
+
+    AC(top_pz->pan[0], 0.24f, 1e-6f);
+    AC(top_pz->pan_center[0], 0.0f, 1e-6f);
+    AC(top_pz->zoom[0], 1.80f, 1e-6f);
+    AC(top_pz->zoom_center[0], 1.0f, 1e-6f);
+    AC(bottom_pz->pan[0], top_pz->pan[0], 1e-6f);
+    AC(bottom_pz->zoom[0], top_pz->zoom[0], 1e-6f);
+    AC(bottom_pz->pan_center[0], top_pz->pan[0], 1e-6f);
+    AC(bottom_pz->zoom_center[0], top_pz->zoom[0], 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure invalid controller link combinations are rejected.
  *
  * @param suite the test suite
@@ -2099,6 +2162,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_orientation_gizmo_create_place_resize_and_visibility);
     TST_CASE(test_controller_link_panzoom_extent_x_only);
     TST_CASE(test_controller_link_panzoom_extent_x_equal_aspect_panels);
+    TST_CASE(test_controller_link_panzoom_extent_x_bidirectional_does_not_accumulate_drag);
     TST_CASE(test_controller_link_validation);
     TST_CASE(test_controller_link_destroy_stops_arcball_propagation);
     TST_CASE(test_controller_destroy_detaches_panels_links_and_reuses_slot);
