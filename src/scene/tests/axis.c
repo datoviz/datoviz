@@ -124,6 +124,50 @@ static uint32_t _axis_test_rect_color_count(DvzAxis* axis, const uint8_t color[4
 
 
 /**
+ * Return whether one decoration rectangle has the expected color.
+ *
+ * @param axis the axis
+ * @param rect_idx rectangle index in append order
+ * @param color expected rectangle color
+ * @return whether the rectangle exists and starts with the expected color
+ */
+static bool _axis_test_rect_color_matches(DvzAxis* axis, uint32_t rect_idx, const uint8_t color[4])
+{
+    ANN(axis);
+    ANN(axis->visual);
+    ANN(color);
+    DvzVisualDataView colors_view = {0};
+    int res = dvz_visual_data(axis->visual, "color", &colors_view);
+    ASSERT(res == 0);
+    const uint8_t* colors = (const uint8_t*)colors_view.data;
+    uint64_t vertex_idx = 6ull * rect_idx;
+    if (colors == NULL || vertex_idx >= colors_view.item_count)
+        return false;
+    return memcmp(&colors[4 * vertex_idx], color, 4) == 0;
+}
+
+
+/**
+ * Return whether the last decoration rectangle has the expected color.
+ *
+ * @param axis the axis
+ * @param color expected rectangle color
+ * @return whether the last rectangle starts with the expected color
+ */
+static bool _axis_test_last_rect_color_matches(DvzAxis* axis, const uint8_t color[4])
+{
+    ANN(axis);
+    ANN(axis->visual);
+    DvzVisualDataView colors_view = {0};
+    int res = dvz_visual_data(axis->visual, "color", &colors_view);
+    ASSERT(res == 0);
+    if (colors_view.item_count < 6)
+        return false;
+    return _axis_test_rect_color_matches(axis, (uint32_t)(colors_view.item_count / 6 - 1), color);
+}
+
+
+/**
  * Return the number of inward major tick rectangles emitted by one axis visual.
  *
  * @param axis the axis
@@ -753,6 +797,48 @@ static int test_axis_minor_ticks(TstContext* suite, const TstCase* item)
     AT(dvz_axis_set_style(axis, &style));
     _scene_prepare_axis_visuals(figure);
     AT(_axis_test_inward_minor_tick_line_count(axis) == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+static int test_axis_spine_draws_after_ticks(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+
+    DvzAxisStyle style = axis->style;
+    style.spine_color[0] = 10;
+    style.spine_color[1] = 20;
+    style.spine_color[2] = 30;
+    style.spine_color[3] = 255;
+    style.major_tick_color[0] = 40;
+    style.major_tick_color[1] = 50;
+    style.major_tick_color[2] = 60;
+    style.major_tick_color[3] = 255;
+    style.minor_tick_color[0] = 70;
+    style.minor_tick_color[1] = 80;
+    style.minor_tick_color[2] = 90;
+    style.minor_tick_color[3] = 255;
+    AT(dvz_axis_set_style(axis, &style));
+
+    _scene_prepare_axis_visuals(figure);
+    AT(axis->visual->visible);
+    AT(_axis_test_rect_color_matches(axis, 0, axis->style.major_tick_color));
+    AT(_axis_test_inward_minor_tick_line_count(axis) > 0);
+    AT(_axis_test_last_rect_color_matches(axis, axis->style.spine_color));
 
     dvz_scene_destroy(scene);
     return 0;
@@ -3014,6 +3100,7 @@ int test_scene_axis(TstSuite* suite)
 
     TST_CASE(test_axis_domain_and_ticks);
     TST_CASE(test_axis_minor_ticks);
+    TST_CASE(test_axis_spine_draws_after_ticks);
     TST_CASE(test_axis_tick_density_tracks_panel_size);
     TST_CASE(test_axis_text_labels);
     TST_CASE(test_axis_numeric_unit_labels);

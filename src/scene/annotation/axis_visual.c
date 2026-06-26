@@ -543,28 +543,6 @@ void _axis_update_visual(DvzAxis* axis)
         }
     }
 
-    if (axis->style.show_spine)
-    {
-        if (axis->dim == DVZ_DIM_X)
-        {
-            float y = y0 + 0.5f * axis->style.spine_width *
-                               user_scale * _axis_visual_pixel_size(axis, DVZ_DIM_Y);
-            _axis_append_line_rect(
-                axis, &fixed_vertex_count, fixed_positions, fixed_colors, x0, y, x1, y, z,
-                axis->style.spine_width * user_scale, axis->style.spine_color, 1.0f, 1.0f, false,
-                true);
-        }
-        else
-        {
-            float x = x0 + 0.5f * axis->style.spine_width *
-                               user_scale * _axis_visual_pixel_size(axis, DVZ_DIM_X);
-            _axis_append_line_rect(
-                axis, &fixed_vertex_count, fixed_positions, fixed_colors, x, y0, x, y1, z,
-                axis->style.spine_width * user_scale, axis->style.spine_color, 1.0f, 1.0f, false,
-                true);
-        }
-    }
-
     for (uint32_t i = 0; i < axis->tick_count; i++)
     {
         float plot_min = axis->dim == DVZ_DIM_X ? x0 : y0;
@@ -596,6 +574,28 @@ void _axis_update_visual(DvzAxis* axis)
                     axis, &fixed_vertex_count, fixed_positions, fixed_colors, mp, x0, y0, z, len,
                     axis->style.minor_tick_color, axis->style.minor_tick_width * user_scale);
             }
+        }
+    }
+
+    if (axis->style.show_spine)
+    {
+        if (axis->dim == DVZ_DIM_X)
+        {
+            float y = y0 + 0.5f * axis->style.spine_width *
+                               user_scale * _axis_visual_pixel_size(axis, DVZ_DIM_Y);
+            _axis_append_line_rect(
+                axis, &fixed_vertex_count, fixed_positions, fixed_colors, x0, y, x1, y, z,
+                axis->style.spine_width * user_scale, axis->style.spine_color, 1.0f, 1.0f, false,
+                true);
+        }
+        else
+        {
+            float x = x0 + 0.5f * axis->style.spine_width *
+                               user_scale * _axis_visual_pixel_size(axis, DVZ_DIM_X);
+            _axis_append_line_rect(
+                axis, &fixed_vertex_count, fixed_positions, fixed_colors, x, y0, x, y1, z,
+                axis->style.spine_width * user_scale, axis->style.spine_color, 1.0f, 1.0f, false,
+                true);
         }
     }
 
