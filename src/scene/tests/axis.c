@@ -1477,6 +1477,16 @@ int test_panel_data_to_visual_positions(TstContext* suite, const TstCase* item)
     AT(fabsf(visual[7] - 0.0f) < 1e-6f);
     AT(fabsf(visual[8] - 4.0f) < 1e-6f);
 
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 10.0, 0.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 5.0, -5.0) == 0);
+    AT(dvz_panel_data_to_visual_positions(panel, data, visual, 3) == 0);
+    AT(fabsf(visual[0] - 1.0f) < 1e-6f);
+    AT(fabsf(visual[1] - 1.0f) < 1e-6f);
+    AT(fabsf(visual[3] - 0.0f) < 1e-6f);
+    AT(fabsf(visual[4] + 1.0f) < 1e-6f);
+    AT(fabsf(visual[6] + 1.0f) < 1e-6f);
+    AT(fabsf(visual[7] - 0.0f) < 1e-6f);
+
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1786,6 +1796,11 @@ int test_panel_visible_domain(TstContext* suite, const TstCase* item)
     AT(fabs(min) < 1e-9);
     AT(fabs(max - 50.0) < 1e-9);
 
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 100.0, 0.0) == 0);
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
+    AT(fabs(min - 100.0) < 1e-9);
+    AT(fabs(max - 50.0) < 1e-9);
+
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1869,6 +1884,64 @@ static int test_panel_view2d(TstContext* suite, const TstCase* item)
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
     AT(fabs(min + 1.0) < 1e-9);
     AT(fabs(max - 1.0) < 1e-9);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+static int test_panel_view2d_reversed_domains(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzPanelView2D view = dvz_panel_view2d();
+    view.data_x = (DvzDataDomain){.min = 10.0, .max = 0.0};
+    view.data_y = (DvzDataDomain){.min = 1.0, .max = -1.0};
+    AT(dvz_panel_set_view2d(panel, &view) == 0);
+
+    double min = 0.0;
+    double max = 0.0;
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
+    AT(fabs(min - 10.0) < 1e-9);
+    AT(fabs(max - 0.0) < 1e-9);
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
+    AT(fabs(min - 1.0) < 1e-9);
+    AT(fabs(max + 1.0) < 1e-9);
+
+    float data[] = {10.0f, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f};
+    float visual[6] = {0};
+    AT(dvz_panel_data_to_visual_positions(panel, data, visual, 2) == 0);
+    AT(fabsf(visual[0] + 1.0f) < 1e-6f);
+    AT(fabsf(visual[1] + 1.0f) < 1e-6f);
+    AT(fabsf(visual[3] - 1.0f) < 1e-6f);
+    AT(fabsf(visual[4] - 1.0f) < 1e-6f);
+
+    view.padding = 0.10;
+    AT(dvz_panel_set_view2d(panel, &view) == 0);
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
+    AT(fabs(min - 11.0) < 1e-9);
+    AT(fabs(max + 1.0) < 1e-9);
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
+    AT(fabs(min - 2.0) < 1e-9);
+    AT(fabs(max + 2.0) < 1e-9);
+
+    view.padding = 0.0;
+    view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
+    AT(dvz_panel_set_view2d(panel, &view) == 0);
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
+    AT(fabs(min - 10.0) < 1e-9);
+    AT(fabs(max - 0.0) < 1e-9);
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
+    AT(fabs(min - 3.75) < 1e-9);
+    AT(fabs(max + 3.75) < 1e-9);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -3118,6 +3191,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_auto_reserve_tracks_label_and_resize);
     TST_CASE(test_panel_visible_domain);
     TST_CASE(test_panel_view2d);
+    TST_CASE(test_panel_view2d_reversed_domains);
     TST_CASE(test_axis_equal_aspect_axis_alignment);
     TST_CASE(test_axis_panzoom_visible_domain);
     TST_CASE(test_axis_panzoom_layout_aligns_grid_to_plot);

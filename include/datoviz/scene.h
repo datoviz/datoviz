@@ -1103,8 +1103,10 @@ DVZ_EXPORT bool dvz_panel_bounds_visible(const DvzPanel* panel);
 /**
  * Set a panel data domain for one axis dimension.
  *
- * The first WIP axis slice supports finite linear X/Y domains. Axis geometry is derived from this
- * domain and the panel panzoom extent during frame emission.
+ * The first WIP axis slice supports finite linear X/Y domains. Domain endpoints are ordered, not
+ * sorted: reversed domains such as `min=10, max=0` are legal and reverse the data-to-visual
+ * mapping. Axis geometry is derived from this domain and the panel panzoom extent during frame
+ * emission.
  *
  * @param panel the panel
  * @param dim axis dimension
@@ -1154,8 +1156,9 @@ DVZ_EXPORT bool dvz_panel_view2d_extent(DvzPanel* panel, float out[4]);
 /**
  * Return the current visible data domain for one panel dimension.
  *
- * The panel's domain is combined with the current panzoom extent. When no explicit domain has
- * been configured, the default visual domain [-1, +1] is used.
+ * The panel's domain is combined with the current panzoom extent. The returned endpoints preserve
+ * the active domain orientation, so reversed domains return reversed visible endpoints. When no
+ * explicit domain has been configured, the default visual domain [-1, +1] is used.
  *
  * @param panel the panel
  * @param dim axis dimension
@@ -1171,9 +1174,10 @@ dvz_panel_visible_domain(DvzPanel* panel, DvzDim dim, double* out_min, double* o
  * Normalize tightly packed 3D data positions through the panel X/Y domains.
  *
  * X and Y are mapped from data coordinates into panel visual coordinates in [-1, +1]. For ordinary
- * increasing domains, X increases left to right and Y increases bottom to top. Z is copied
- * unchanged; positive Z is the default front direction for camera/depth interpretation. Unset
- * domains fall back to pass-through visual coordinates for that dimension.
+ * increasing domains, X increases left to right and Y increases bottom to top. Reversed domains
+ * reverse the corresponding mapping. Z is copied unchanged; positive Z is the default front
+ * direction for camera/depth interpretation. Unset domains fall back to pass-through visual
+ * coordinates for that dimension.
  *
  * @param panel the panel
  * @param data_positions tightly packed input positions, 3 floats per item

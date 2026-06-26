@@ -535,21 +535,39 @@ bool _axis_visible_domain(const DvzAxis* axis, double* out_min, double* out_max)
             {
                 double a = ((double)a_view - translate) / scale;
                 double b = ((double)b_view - translate) / scale;
-                *out_min = fmin(a, b);
-                *out_max = fmax(a, b);
-                return isfinite(*out_min) && isfinite(*out_max) && *out_max > *out_min;
+                *out_min = a;
+                *out_max = b;
+                return isfinite(*out_min) && isfinite(*out_max) &&
+                       fabs(*out_max - *out_min) > AXIS_EPS;
             }
         }
     }
     if (!axis->domain_set)
     {
-        *out_min = fmin((double)a_view, (double)b_view);
-        *out_max = fmax((double)a_view, (double)b_view);
-        return isfinite(*out_min) && isfinite(*out_max) && *out_max > *out_min;
+        *out_min = (double)a_view;
+        *out_max = (double)b_view;
+        return isfinite(*out_min) && isfinite(*out_max) &&
+               fabs(*out_max - *out_min) > AXIS_EPS;
     }
 
     double a = _axis_visual_to_data(axis, a_view);
     double b = _axis_visual_to_data(axis, b_view);
+    *out_min = a;
+    *out_max = b;
+    return isfinite(*out_min) && isfinite(*out_max) &&
+           fabs(*out_max - *out_min) > AXIS_EPS;
+}
+
+
+bool _axis_visible_sorted_interval(const DvzAxis* axis, double* out_min, double* out_max)
+{
+    ANN(axis);
+    ANN(out_min);
+    ANN(out_max);
+    double a = 0.0;
+    double b = 0.0;
+    if (!_axis_visible_domain(axis, &a, &b))
+        return false;
     *out_min = fmin(a, b);
     *out_max = fmax(a, b);
     return isfinite(*out_min) && isfinite(*out_max) && *out_max > *out_min;
@@ -567,7 +585,7 @@ void _axis_compute_ticks(DvzAxis* axis)
     axis->tick_count = 0;
     double min = 0.0;
     double max = 0.0;
-    if (!_axis_visible_domain(axis, &min, &max))
+    if (!_axis_visible_sorted_interval(axis, &min, &max))
         return;
 
     float pixel_span = 0.0f;

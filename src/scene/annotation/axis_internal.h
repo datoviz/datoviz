@@ -72,6 +72,8 @@ float _axis_panzoom_scale(const float extent[4], DvzDim dim);
 
 bool _axis_visible_domain(const DvzAxis* axis, double* out_min, double* out_max);
 
+bool _axis_visible_sorted_interval(const DvzAxis* axis, double* out_min, double* out_max);
+
 void _axis_compute_ticks(DvzAxis* axis);
 
 void _axis_hide_text(DvzAxis* axis);

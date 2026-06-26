@@ -274,15 +274,17 @@ bool _axis_label_plan(
     if (tick_count == 0)
         return true;
 
-    if (_axis_label_plan_datetime(axis, ticks, tick_count, visible_min, visible_max, out))
+    double range_min = fmin(visible_min, visible_max);
+    double range_max = fmax(visible_min, visible_max);
+    if (_axis_label_plan_datetime(axis, ticks, tick_count, range_min, range_max, out))
         return true;
-    if (_axis_label_plan_numeric_offset(axis, ticks, tick_count, visible_min, visible_max, out))
+    if (_axis_label_plan_numeric_offset(axis, ticks, tick_count, range_min, range_max, out))
         return true;
 
     for (uint32_t i = 0; i < tick_count; i++)
     {
         _axis_format_tick_label(
-            axis, ticks[i], visible_min, visible_max, out->tick_labels[i],
+            axis, ticks[i], range_min, range_max, out->tick_labels[i],
             sizeof(out->tick_labels[i]));
     }
     return true;

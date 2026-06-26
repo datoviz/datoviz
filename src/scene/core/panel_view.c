@@ -55,7 +55,9 @@ static bool _panel_view2d_validate(const DvzPanelView2D* view)
         !isfinite(view->data_y.min) || !isfinite(view->data_y.max) ||
         !isfinite(view->padding))
         return false;
-    if (!(view->data_x.max > view->data_x.min) || !(view->data_y.max > view->data_y.min))
+    if (
+        fabs(view->data_x.max - view->data_x.min) <= AXIS_EPS ||
+        fabs(view->data_y.max - view->data_y.min) <= AXIS_EPS)
         return false;
     if (view->padding < 0.0)
         return false;
@@ -78,23 +80,63 @@ void _scene_panel_view_dirty(DvzPanel* panel)
 
 
 /**
- * Return a finite positive data domain for one dimension.
+ * Return finite ordered data-domain endpoints for one dimension.
  *
  * @param domain the source domain
  * @param out_min output minimum
  * @param out_max output maximum
  * @return whether the domain was valid
  */
-static bool _scene_panel_domain_span(const DvzDataDomain* domain, double* out_min, double* out_max)
+static bool _scene_panel_domain_endpoints(
+    const DvzDataDomain* domain, double* out_min, double* out_max)
 {
     ANN(domain);
     ANN(out_min);
     ANN(out_max);
-    if (!isfinite(domain->min) || !isfinite(domain->max) || !(domain->max > domain->min))
+    if (
+        !isfinite(domain->min) || !isfinite(domain->max) ||
+        fabs(domain->max - domain->min) <= AXIS_EPS)
         return false;
     *out_min = domain->min;
     *out_max = domain->max;
     return true;
+}
+
+
+static void _scene_panel_expand_ordered_domain(double* first, double* second, double padding)
+{
+    ANN(first);
+    ANN(second);
+    if (*second >= *first)
+    {
+        *first -= padding;
+        *second += padding;
+    }
+    else
+    {
+        *first += padding;
+        *second -= padding;
+    }
+}
+
+
+static void _scene_panel_set_ordered_span(
+    double center, double span, bool reversed, double* first, double* second)
+{
+    ANN(first);
+    ANN(second);
+    double lo = center - 0.5 * span;
+    double hi = center + 0.5 * span;
+    if (reversed)
+    {
+        *first = hi;
+        *second = lo;
+    }
+    else
+    {
+        *first = lo;
+        *second = hi;
+    }
 }
 
 
@@ -251,23 +293,23 @@ bool _scene_panel_view2d_resolve(const DvzPanel* panel, DvzPanelView2DResolved* 
 
     double xmin = 0.0, xmax = 0.0, ymin = 0.0, ymax = 0.0;
     if (
-        !_scene_panel_domain_span(&source_x, &xmin, &xmax) ||
-        !_scene_panel_domain_span(&source_y, &ymin, &ymax))
+        !_scene_panel_domain_endpoints(&source_x, &xmin, &xmax) ||
+        !_scene_panel_domain_endpoints(&source_y, &ymin, &ymax))
     {
         return false;
     }
 
-    double x_span = xmax - xmin;
-    double y_span = ymax - ymin;
+    const bool x_reversed = xmax < xmin;
+    const bool y_reversed = ymax < ymin;
+    double x_span = fabs(xmax - xmin);
+    double y_span = fabs(ymax - ymin);
     if (panel->view2d_enabled)
     {
         const double pad = panel->view2d.padding * fmax(x_span, y_span);
-        xmin -= pad;
-        xmax += pad;
-        ymin -= pad;
-        ymax += pad;
-        x_span = xmax - xmin;
-        y_span = ymax - ymin;
+        _scene_panel_expand_ordered_domain(&xmin, &xmax, pad);
+        _scene_panel_expand_ordered_domain(&ymin, &ymax, pad);
+        x_span = fabs(xmax - xmin);
+        y_span = fabs(ymax - ymin);
     }
 
     const bool equal_aspect =
@@ -288,16 +330,14 @@ bool _scene_panel_view2d_resolve(const DvzPanel* panel, DvzPanelView2DResolved* 
         {
             const double target_span = y_span * plot_aspect;
             const double center = 0.5 * (xmin + xmax);
-            xmin = center - 0.5 * target_span;
-            xmax = center + 0.5 * target_span;
+            _scene_panel_set_ordered_span(center, target_span, x_reversed, &xmin, &xmax);
             x_span = target_span;
         }
         else if (data_aspect > plot_aspect)
         {
             const double target_span = x_span / plot_aspect;
             const double center = 0.5 * (ymin + ymax);
-            ymin = center - 0.5 * target_span;
-            ymax = center + 0.5 * target_span;
+            _scene_panel_set_ordered_span(center, target_span, y_reversed, &ymin, &ymax);
             y_span = target_span;
         }
 
@@ -324,8 +364,8 @@ bool _scene_panel_view2d_resolve(const DvzPanel* panel, DvzPanelView2DResolved* 
 
     const double data_x_span = (double)out->view_extent[1] - (double)out->view_extent[0];
     const double data_y_span = (double)out->view_extent[3] - (double)out->view_extent[2];
-    const double sx = data_x_span / x_span;
-    const double sy = data_y_span / y_span;
+    const double sx = data_x_span / (xmax - xmin);
+    const double sy = data_y_span / (ymax - ymin);
     const double tx = (double)out->view_extent[0] - sx * xmin;
     const double ty = (double)out->view_extent[2] - sy * ymin;
     if (

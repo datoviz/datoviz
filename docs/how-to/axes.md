@@ -47,6 +47,12 @@ dvz_visual_set_data(visual, "position", visual_positions, count);
 Update the panel domain when the data range changes. If multiple panels are linked, keep their
 domains and controllers linked intentionally rather than copying tick labels by hand.
 
+Domain endpoints are ordered, not sorted. Reversed finite domains are valid: for example,
+`dvz_panel_set_domain(panel, DVZ_DIM_X, 10.0, 0.0)` maps data value `10.0` to the left edge and
+`0.0` to the right edge. The same convention applies to Y: the first endpoint maps to the bottom
+visual edge and the second endpoint maps to the top visual edge. `dvz_panel_visible_domain()`
+preserves that endpoint order after View2D fitting and panzoom.
+
 ## Tick Policy and Labels
 
 Use the default tick policy for ordinary plots. Tune it when labels collide or the panel is small.

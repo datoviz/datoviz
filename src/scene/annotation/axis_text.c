@@ -329,7 +329,10 @@ void _axis_update_text(
     double visible_max)
 {
     ANN(axis);
-    if (!axis->enabled || axis->tick_count == 0 || !(visible_max > visible_min))
+    if (
+        !axis->enabled || axis->tick_count == 0 ||
+        !isfinite(visible_min) || !isfinite(visible_max) ||
+        fabs(visible_max - visible_min) <= AXIS_EPS)
     {
         _axis_hide_text(axis);
         return;

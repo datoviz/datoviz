@@ -297,7 +297,7 @@ float _axis_data_to_visual(
 static int _panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max, bool clear_fit)
 {
     DvzAxis* axis = _panel_axis_slot(panel, dim);
-    if (axis == NULL || !isfinite(min) || !isfinite(max) || !(max > min))
+    if (axis == NULL || !isfinite(min) || !isfinite(max) || fabs(max - min) <= AXIS_EPS)
         return -1;
     if (clear_fit)
         panel->view2d_enabled = false;
