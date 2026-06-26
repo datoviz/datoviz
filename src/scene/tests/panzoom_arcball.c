@@ -142,6 +142,39 @@ int test_panzoom_pan_shift(TstContext* suite, const TstCase* item)
 }
 
 
+int test_panzoom_setters_update_drag_baseline(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzPanzoom* pz = _dvz_panzoom(800.0f, 400.0f, 0);
+    ANN(pz);
+    dvz_panzoom_zoom(pz, (vec2){2.0f, 2.0f});
+    dvz_panzoom_pan(pz, (vec2){0.20f, -0.10f});
+
+    AC(pz->zoom_center[0], pz->zoom[0], 1e-6f);
+    AC(pz->zoom_center[1], pz->zoom[1], 1e-6f);
+    AC(pz->pan_center[0], pz->pan[0], 1e-6f);
+    AC(pz->pan_center[1], pz->pan[1], 1e-6f);
+
+    DvzPointerEvent drag = {
+        .type = DVZ_POINTER_EVENT_DRAG,
+        .button = DVZ_POINTER_BUTTON_LEFT,
+        .content.d.press_pos = {400.0f, 200.0f},
+        .content.d.last_pos = {440.0f, 200.0f},
+        .content.d.shift = {40.0f, 0.0f},
+        .content.d.is_press_valid = true,
+        .pos = {440.0f, 200.0f},
+    };
+    AT(dvz_panzoom_pointer(pz, &drag));
+    AC(pz->pan[0], 0.25f, 1e-6f);
+    AC(pz->pan[1], -0.10f, 1e-6f);
+
+    dvz_panzoom_destroy(pz);
+    return 0;
+}
+
+
 int test_panzoom_zoom_wheel(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -2168,6 +2201,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_GROUP("panzoom");
     TST_CASE(test_panzoom_create_reset);
     TST_CASE(test_panzoom_pan_shift);
+    TST_CASE(test_panzoom_setters_update_drag_baseline);
     TST_CASE(test_panzoom_zoom_wheel);
     TST_CASE(test_panzoom_zoom_limits);
     TST_CASE(test_panzoom_keep_aspect_right_drag_diagonal_boundary);

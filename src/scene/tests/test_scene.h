@@ -164,6 +164,8 @@ int test_panzoom_create_reset(TstContext* suite, const TstCase* item);
 
 int test_panzoom_pan_shift(TstContext* suite, const TstCase* item);
 
+int test_panzoom_setters_update_drag_baseline(TstContext* suite, const TstCase* item);
+
 int test_panzoom_zoom_wheel(TstContext* suite, const TstCase* item);
 
 int test_panzoom_zoom_limits(TstContext* suite, const TstCase* item);

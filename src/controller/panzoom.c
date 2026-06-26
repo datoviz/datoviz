@@ -429,9 +429,15 @@ void dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan)
 {
     ANN(pz);
     if (!(pz->flags & DVZ_PANZOOM_FLAGS_FIXED_X))
+    {
         pz->pan[0] = pan[0];
+        pz->pan_center[0] = pan[0];
+    }
     if (!(pz->flags & DVZ_PANZOOM_FLAGS_FIXED_Y))
+    {
         pz->pan[1] = pan[1];
+        pz->pan_center[1] = pan[1];
+    }
 }
 
 
@@ -441,6 +447,7 @@ void dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom)
     ANN(pz);
     pz->zoom[0] = _clamp_zoom_value(pz, 0, zoom[0]);
     pz->zoom[1] = _clamp_zoom_value(pz, 1, zoom[1]);
+    glm_vec2_copy(pz->zoom, pz->zoom_center);
 }
 
 
