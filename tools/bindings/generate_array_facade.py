@@ -172,6 +172,56 @@ def _axis_ticks_arg(values, labels):
     return ctypes.byref(record), keepalive
 
 
+def _colorbar_ticks_raw_descriptor(value):
+    if isinstance(value, _raw.DvzColorbarTicks):
+        return ctypes.byref(value)
+    pointer_type = ctypes.POINTER(_raw.DvzColorbarTicks)
+    if isinstance(value, pointer_type):
+        return value
+    if type(value).__name__ == 'CArgObject' and isinstance(
+        getattr(value, '_obj', None), _raw.DvzColorbarTicks
+    ):
+        return value
+    return None
+
+
+def _colorbar_ticks_arg(values, labels):
+    raw_descriptor = _colorbar_ticks_raw_descriptor(values)
+    if raw_descriptor is not None:
+        if labels is not None:
+            raise TypeError('labels must be omitted when passing a raw DvzColorbarTicks descriptor')
+        return raw_descriptor, (values,)
+
+    value_array = np.asarray(values, dtype=np.float64)
+    if value_array.ndim != 1:
+        raise ValueError('values must be one-dimensional')
+    if not value_array.flags.c_contiguous:
+        value_array = np.ascontiguousarray(value_array)
+
+    count = int(value_array.shape[0])
+    label_array = None
+    encoded_labels = None
+    if labels is not None:
+        encoded_labels = [
+            _encode_string(label, f'labels[{i}]') for i, label in enumerate(labels)
+        ]
+        if len(encoded_labels) != count:
+            raise ValueError(f'labels length {len(encoded_labels)} does not match tick count {count}')
+        if count > 0:
+            label_array = (ctypes.c_char_p * count)(*encoded_labels)
+
+    record = _raw.DvzColorbarTicks()
+    record.struct_size = ctypes.sizeof(_raw.DvzColorbarTicks)
+    record.flags = 0
+    record.count = count
+    record.values = (
+        value_array.ctypes.data_as(ctypes.POINTER(ctypes.c_double)) if count > 0 else None
+    )
+    record.labels = label_array
+    keepalive = (record, value_array, encoded_labels, label_array)
+    return ctypes.byref(record), keepalive
+
+
 def dvz_view_capture_rgba(view):
     canvas = _raw.dvz_view_canvas(view)
     if not canvas:
@@ -364,6 +414,20 @@ def dvz_axis_set_ticks(axis, values, labels=None):
 dvz_axis_set_ticks.__doc__ = getattr(_raw.dvz_axis_set_ticks, "__doc__", None)
 dvz_axis_set_ticks.argtypes = getattr(_raw.dvz_axis_set_ticks, "argtypes", None)
 dvz_axis_set_ticks.restype = getattr(_raw.dvz_axis_set_ticks, "restype", None)
+
+
+'''
+    if name == 'dvz_colorbar_set_ticks':
+        return '''\
+def dvz_colorbar_set_ticks(colorbar, values, labels=None):
+    _ticks_ptr, _ticks_keepalive = _colorbar_ticks_arg(values, labels)
+    _keepalive = (_ticks_keepalive,)
+    return _raw.dvz_colorbar_set_ticks(colorbar, _ticks_ptr)
+
+
+dvz_colorbar_set_ticks.__doc__ = getattr(_raw.dvz_colorbar_set_ticks, "__doc__", None)
+dvz_colorbar_set_ticks.argtypes = getattr(_raw.dvz_colorbar_set_ticks, "argtypes", None)
+dvz_colorbar_set_ticks.restype = getattr(_raw.dvz_colorbar_set_ticks, "restype", None)
 
 
 '''

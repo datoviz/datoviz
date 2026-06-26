@@ -1197,6 +1197,17 @@ struct DvzColorbarDesc
 typedef struct DvzColorbarDesc DvzColorbarDesc;
 
 
+struct DvzColorbarTicks
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    uint32_t count;
+    const double* values;
+    const char* const* labels;
+};
+typedef struct DvzColorbarTicks DvzColorbarTicks;
+
+
 struct DvzLegendDesc
 {
     uint32_t struct_size;

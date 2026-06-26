@@ -53,6 +53,7 @@
 #define COLORBAR_EPS 1e-12
 #define COLORBAR_LAYOUT_EPS 1e-3f
 #define DVZ_COLORBAR_DESC_KNOWN_FLAGS 0u
+#define DVZ_COLORBAR_TICKS_KNOWN_FLAGS 0u
 
 
 
@@ -100,6 +101,41 @@ static bool _colorbar_desc_validate(const DvzColorbarDesc* desc)
     {
         log_error("invalid colorbar descriptor ABI");
         return false;
+    }
+    return true;
+}
+
+
+/**
+ * Validate public colorbar explicit tick descriptor ABI and payload fields.
+ *
+ * @param ticks the colorbar tick descriptor
+ * @return whether the descriptor is accepted
+ */
+static bool _colorbar_ticks_validate(const DvzColorbarTicks* ticks)
+{
+    if (ticks == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(ticks, DvzColorbarTicks, DVZ_COLORBAR_TICKS_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzColorbarTicks ABI prologue");
+        return false;
+    }
+    if (ticks->count > DVZ_SCENE_MAX_COLORBAR_TICKS)
+        return false;
+    if (ticks->count > 0 && ticks->values == NULL)
+        return false;
+    for (uint32_t i = 0; i < ticks->count; i++)
+    {
+        if (!isfinite(ticks->values[i]))
+            return false;
+        if (ticks->labels != NULL)
+        {
+            if (ticks->labels[i] == NULL)
+                return false;
+            if (strlen(ticks->labels[i]) >= DVZ_SCENE_LABEL_SIZE)
+                return false;
+        }
     }
     return true;
 }
@@ -381,6 +417,28 @@ static void _colorbar_compute_ticks(DvzColorbar* colorbar, double min, double ma
 }
 
 
+/**
+ * Resolve active tick values from explicit colorbar ticks or the automatic tick ladder.
+ *
+ * @param colorbar the colorbar
+ * @param min domain minimum
+ * @param max domain maximum
+ */
+static void _colorbar_resolve_ticks(DvzColorbar* colorbar, double min, double max)
+{
+    ANN(colorbar);
+    colorbar->tick_count = 0;
+    if (colorbar->explicit_ticks_enabled)
+    {
+        colorbar->tick_count = colorbar->explicit_tick_count;
+        for (uint32_t i = 0; i < colorbar->explicit_tick_count; i++)
+            colorbar->ticks[i] = colorbar->explicit_ticks[i];
+        return;
+    }
+    _colorbar_resolve_ticks(colorbar, min, max);
+}
+
+
 
 /**
  * Format one colorbar tick label.
@@ -437,6 +495,33 @@ static void _colorbar_format_tick(
 }
 
 
+/**
+ * Resolve one colorbar tick label from explicit labels or the formatter.
+ *
+ * @param colorbar the colorbar
+ * @param index tick index
+ * @param value tick value
+ * @param out output label buffer
+ * @param out_size output label buffer size
+ */
+static void _colorbar_tick_label(
+    const DvzColorbar* colorbar, uint32_t index, double value, char* out, uint32_t out_size)
+{
+    ANN(colorbar);
+    ANN(out);
+    if (out_size == 0)
+        return;
+    out[0] = '\0';
+    if (colorbar->explicit_ticks_enabled && colorbar->explicit_tick_labels_set &&
+        index < colorbar->explicit_tick_count)
+    {
+        dvz_strlcpy(out, colorbar->explicit_tick_labels[index], out_size);
+        return;
+    }
+    _colorbar_format_tick(colorbar, value, out, out_size);
+}
+
+
 
 /**
  * Estimate one adornment text run width in pixels.
@@ -467,12 +552,12 @@ static float _colorbar_tick_label_width_px(DvzColorbar* colorbar, double min, do
     ANN(colorbar);
     if (!isfinite(min) || !isfinite(max) || !(max > min))
         return 0.0f;
-    _colorbar_compute_ticks(colorbar, min, max);
+    _colorbar_resolve_ticks(colorbar, min, max);
     float width = 0.0f;
     for (uint32_t i = 0; i < colorbar->tick_count && i < DVZ_SCENE_MAX_COLORBAR_TICKS; i++)
     {
         char label[DVZ_SCENE_LABEL_SIZE] = {0};
-        _colorbar_format_tick(colorbar, colorbar->ticks[i], label, sizeof(label));
+        _colorbar_tick_label(colorbar, i, colorbar->ticks[i], label, sizeof(label));
         width = fmaxf(width, _colorbar_text_width_px(label, COLORBAR_TICK_TEXT_SIZE_PX));
     }
     return width;
@@ -872,7 +957,7 @@ static void _colorbar_update_ticks_and_text(
         widths[count] = COLORBAR_TICK_WIDTH_PX;
 
         char label[DVZ_SCENE_LABEL_SIZE] = {0};
-        _colorbar_format_tick(colorbar, colorbar->ticks[i], label, sizeof(label));
+        _colorbar_tick_label(colorbar, i, colorbar->ticks[i], label, sizeof(label));
         _colorbar_append_text(
             colorbar, label, label_x, label_y, anchor_x, anchor_y, COLORBAR_TICK_TEXT_SIZE_PX,
             0.0f);
@@ -924,7 +1009,7 @@ static void _colorbar_update_title(
         for (uint32_t i = 0; i < colorbar->tick_count && i < DVZ_SCENE_MAX_COLORBAR_TICKS; i++)
         {
             char label[DVZ_SCENE_LABEL_SIZE] = {0};
-            _colorbar_format_tick(colorbar, colorbar->ticks[i], label, sizeof(label));
+            _colorbar_tick_label(colorbar, i, colorbar->ticks[i], label, sizeof(label));
             label_width = fmaxf(label_width, _colorbar_text_width_px(
                                                  label, COLORBAR_TICK_TEXT_SIZE_PX));
         }
@@ -1249,6 +1334,17 @@ DvzColorbarDesc dvz_colorbar_desc(void)
 
 
 /**
+ * Return the default explicit colorbar tick descriptor.
+ *
+ * @return default explicit colorbar tick descriptor
+ */
+DvzColorbarTicks dvz_colorbar_ticks(void)
+{
+    return (DvzColorbarTicks){DVZ_STRUCT_INIT_FIELDS(DvzColorbarTicks)};
+}
+
+
+/**
  * Create a panel-attached colorbar bound to a scale.
  *
  * @param panel the panel
@@ -1376,6 +1472,9 @@ void dvz_colorbar_destroy(DvzColorbar* colorbar)
     colorbar->panel = NULL;
     colorbar->scale = NULL;
     colorbar->has_format = false;
+    colorbar->explicit_ticks_enabled = false;
+    colorbar->explicit_tick_labels_set = false;
+    colorbar->explicit_tick_count = 0;
     colorbar->dirty = false;
     colorbar->ramp_visual = NULL;
     colorbar->tick_visual = NULL;
@@ -1510,6 +1609,65 @@ bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc)
         dvz_strlcpy(colorbar->title, desc->title, sizeof(colorbar->title));
 
     _colorbar_apply_auto_reserve(colorbar);
+    _scene_mark_colorbar_dirty(colorbar);
+    return true;
+}
+
+
+/**
+ * Set explicit tick positions and optional labels for one colorbar.
+ *
+ * @param colorbar the colorbar
+ * @param ticks explicit tick descriptor
+ * @return whether the explicit ticks were stored
+ */
+bool dvz_colorbar_set_ticks(DvzColorbar* colorbar, const DvzColorbarTicks* ticks)
+{
+    if (colorbar == NULL || !_colorbar_ticks_validate(ticks))
+        return false;
+
+    colorbar->explicit_ticks_enabled = true;
+    colorbar->explicit_tick_labels_set = ticks->labels != NULL;
+    colorbar->explicit_tick_count = ticks->count;
+    for (uint32_t i = 0; i < ticks->count; i++)
+    {
+        colorbar->explicit_ticks[i] = ticks->values[i];
+        colorbar->explicit_tick_labels[i][0] = '\0';
+        if (ticks->labels != NULL)
+        {
+            dvz_strlcpy(
+                colorbar->explicit_tick_labels[i], ticks->labels[i],
+                sizeof(colorbar->explicit_tick_labels[i]));
+        }
+    }
+    for (uint32_t i = ticks->count; i < DVZ_SCENE_MAX_COLORBAR_TICKS; i++)
+    {
+        colorbar->explicit_ticks[i] = 0.0;
+        colorbar->explicit_tick_labels[i][0] = '\0';
+    }
+    _scene_mark_colorbar_dirty(colorbar);
+    return true;
+}
+
+
+/**
+ * Clear explicit tick positions and labels for one colorbar.
+ *
+ * @param colorbar the colorbar
+ * @return whether the colorbar was updated
+ */
+bool dvz_colorbar_clear_ticks(DvzColorbar* colorbar)
+{
+    if (colorbar == NULL)
+        return false;
+    colorbar->explicit_ticks_enabled = false;
+    colorbar->explicit_tick_labels_set = false;
+    colorbar->explicit_tick_count = 0;
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_COLORBAR_TICKS; i++)
+    {
+        colorbar->explicit_ticks[i] = 0.0;
+        colorbar->explicit_tick_labels[i][0] = '\0';
+    }
     _scene_mark_colorbar_dirty(colorbar);
     return true;
 }

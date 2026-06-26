@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import sys
+import ctypes
 from pathlib import Path
 
 import numpy as np
@@ -26,6 +27,7 @@ def main() -> int:
     required_symbols = [
         'DvzAxisTicks',
         'DvzColorbarDesc',
+        'DvzColorbarTicks',
         'DvzGeometry',
         'DvzQueryResult',
         'DvzTextPlacement',
@@ -40,11 +42,14 @@ def main() -> int:
         'dvz_axis_clear_ticks',
         'dvz_colorbar',
         'dvz_colorbar_desc',
+        'dvz_colorbar_ticks',
         'dvz_colorbar_set_title',
         'dvz_colorbar_set_format',
         'dvz_colorbar_set_orientation',
         'dvz_colorbar_set_anchor',
         'dvz_colorbar_set_layout',
+        'dvz_colorbar_set_ticks',
+        'dvz_colorbar_clear_ticks',
         'dvz_text',
         'dvz_text_style',
         'dvz_text_placement',
@@ -81,6 +86,26 @@ def main() -> int:
             raise RuntimeError('facade dvz_axis_set_ticks() failed')
         if not dvz.dvz_axis_clear_ticks(axis):
             raise RuntimeError('dvz_axis_clear_ticks() failed')
+
+        scale_desc = dvz.dvz_scale_desc()
+        scale_desc.kind = dvz.DvzScaleKind.DVZ_SCALE_CONTINUOUS
+        scale = dvz.dvz_scale(scene, ctypes.byref(scale_desc))
+        if not scale:
+            raise RuntimeError('dvz_scale() failed')
+        dvz.dvz_scale_set_domain(scale, 0.0, 1.0)
+        cmap = dvz.dvz_colormap_builtin(scene, dvz.DvzBuiltinColormap.DVZ_BUILTIN_COLORMAP_VIRIDIS)
+        if not cmap:
+            raise RuntimeError('dvz_colormap_builtin() failed')
+        dvz.dvz_scale_set_colormap(scale, cmap)
+        colorbar = dvz.dvz_colorbar(panel, scale, None)
+        if not colorbar:
+            raise RuntimeError('dvz_colorbar() failed')
+        if not dvz.dvz_colorbar_set_ticks(
+            colorbar, np.array([0.0, 0.5, 1.0], dtype=np.float64), ['low', 'mid', 'high']
+        ):
+            raise RuntimeError('facade dvz_colorbar_set_ticks() failed')
+        if not dvz.dvz_colorbar_clear_ticks(colorbar):
+            raise RuntimeError('dvz_colorbar_clear_ticks() failed')
 
         visual = dvz.dvz_point(scene, 0)
         if not visual:

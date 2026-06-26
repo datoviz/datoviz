@@ -16,6 +16,7 @@
 
 #include <float.h>
 #include <inttypes.h>
+#include <math.h>
 #include <string.h>
 
 #include "_alloc.h"
@@ -1349,6 +1350,131 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
     AT(dvz_panel_get_reserve(panel, &reserve));
     AT(fabsf(reserve.left_px - 24.0f) < 1e-6f);
     AT(fabsf(reserve.right_px) < 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify explicit colorbar tick values and labels override automatic ticks.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_scene_colorbar_explicit_ticks_and_labels(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
+                   .kind = DVZ_SCALE_CONTINUOUS,
+                   .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0},
+               });
+    ANN(scale);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+    DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
+    ANN(colormap);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzColorbar* colorbar = dvz_colorbar(panel, scale, NULL);
+    ANN(colorbar);
+
+    char label0[16] = "under";
+    char label1[16] = "low";
+    char label2[16] = "mid";
+    char label3[16] = "over";
+    const double values[] = {-0.5, 0.0, 0.5, 1.5};
+    const char* labels[] = {label0, label1, label2, label3};
+    DvzColorbarTicks ticks = {
+        DVZ_STRUCT_INIT_FIELDS(DvzColorbarTicks),
+        .count = 4,
+        .values = values,
+        .labels = labels,
+    };
+    AT(dvz_colorbar_set_ticks(colorbar, &ticks));
+    dvz_strlcpy(label0, "mutated", sizeof(label0));
+    dvz_strlcpy(label1, "changed", sizeof(label1));
+    dvz_strlcpy(label2, "edited", sizeof(label2));
+    dvz_strlcpy(label3, "replaced", sizeof(label3));
+
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    AT(colorbar->tick_count == 4);
+    AT(fabs(colorbar->ticks[0] + 0.5) < 1e-9);
+    AT(fabs(colorbar->ticks[1] - 0.0) < 1e-9);
+    AT(fabs(colorbar->ticks[2] - 0.5) < 1e-9);
+    AT(fabs(colorbar->ticks[3] - 1.5) < 1e-9);
+    AT(colorbar->text_count == 4);
+    AT(strcmp(colorbar->text_labels[0], "under") == 0);
+    AT(strcmp(colorbar->text_labels[1], "low") == 0);
+    AT(strcmp(colorbar->text_labels[2], "mid") == 0);
+    AT(strcmp(colorbar->text_labels[3], "over") == 0);
+
+    DvzFormatDesc format = {
+        DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 2, .prefix = "v="};
+    dvz_colorbar_set_format(colorbar, &format);
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    AT(strcmp(colorbar->text_labels[0], "under") == 0);
+
+    const double numeric_values[] = {0.25, 0.75};
+    AT(dvz_colorbar_set_ticks(
+        colorbar, &(DvzColorbarTicks){DVZ_STRUCT_INIT_FIELDS(DvzColorbarTicks),
+                                      .count = 2,
+                                      .values = numeric_values}));
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    AT(colorbar->tick_count == 2);
+    AT(strcmp(colorbar->text_labels[0], "v=0.25") == 0);
+    AT(strcmp(colorbar->text_labels[1], "v=0.75") == 0);
+
+    AT(dvz_colorbar_set_ticks(
+        colorbar, &(DvzColorbarTicks){DVZ_STRUCT_INIT_FIELDS(DvzColorbarTicks), .count = 0}));
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    AT(colorbar->tick_count == 0);
+    AT(colorbar->text_count == 0);
+    AT(!colorbar->tick_visual->visible);
+
+    AT(dvz_colorbar_clear_ticks(colorbar));
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    AT(colorbar->tick_count >= 2);
+
+    AT(dvz_colorbar_set_ticks(
+        colorbar, &(DvzColorbarTicks){DVZ_STRUCT_INIT_FIELDS(DvzColorbarTicks),
+                                      .count = 2,
+                                      .values = numeric_values}));
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    AT(colorbar->tick_count == 2);
+
+    const double bad_value[] = {NAN};
+    AT(!dvz_colorbar_set_ticks(
+        colorbar, &(DvzColorbarTicks){DVZ_STRUCT_INIT_FIELDS(DvzColorbarTicks),
+                                      .count = 1,
+                                      .values = bad_value}));
+    const char* missing_label[] = {"ok", NULL};
+    AT(!dvz_colorbar_set_ticks(
+        colorbar, &(DvzColorbarTicks){DVZ_STRUCT_INIT_FIELDS(DvzColorbarTicks),
+                                      .count = 2,
+                                      .values = numeric_values,
+                                      .labels = missing_label}));
+    char overlong[DVZ_SCENE_LABEL_SIZE + 1] = {0};
+    memset(overlong, 'x', DVZ_SCENE_LABEL_SIZE);
+    const char* overlong_labels[] = {overlong};
+    AT(!dvz_colorbar_set_ticks(
+        colorbar, &(DvzColorbarTicks){DVZ_STRUCT_INIT_FIELDS(DvzColorbarTicks),
+                                      .count = 1,
+                                      .values = numeric_values,
+                                      .labels = overlong_labels}));
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    AT(colorbar->tick_count == 2);
+    AT(fabs(colorbar->ticks[0] - 0.25) < 1e-9);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -4536,6 +4662,7 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_colorbar_attached_respects_panel_padding);
     TST_CASE(test_scene_colorbar_detached_placement);
     TST_CASE(test_scene_colorbar_updates_retained_visuals);
+    TST_CASE(test_scene_colorbar_explicit_ticks_and_labels);
     TST_CASE(test_scene_colorbar_emit_stream_contains_derived_visuals);
     TST_CASE(test_scene_colorbar_invalid_domain_reports_diagnostic);
     TST_CASE(test_scene_colorbar_rejects_unsupported_requests);

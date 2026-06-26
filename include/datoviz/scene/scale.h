@@ -436,6 +436,14 @@ DVZ_EXPORT DvzColorbarDesc dvz_colorbar_desc(void);
 
 
 /**
+ * Return the default explicit colorbar tick descriptor.
+ *
+ * @return default explicit colorbar tick descriptor
+ */
+DVZ_EXPORT DvzColorbarTicks dvz_colorbar_ticks(void);
+
+
+/**
  * Create a panel-attached colorbar bound to a scale.
  *
  * @param panel the panel
@@ -509,6 +517,29 @@ DVZ_EXPORT bool dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor an
  * @return true when the layout was accepted
  */
 DVZ_EXPORT bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc);
+
+
+/**
+ * Set explicit tick positions and optional labels for one colorbar.
+ *
+ * Tick values are scalar-domain values. Labels are copied when supplied; when labels is NULL,
+ * colorbar formatting is used.
+ *
+ * @param colorbar the colorbar
+ * @param ticks explicit tick descriptor
+ * @return whether the explicit ticks were stored
+ */
+DVZ_EXPORT bool dvz_colorbar_set_ticks(
+    DvzColorbar* colorbar, const DvzColorbarTicks* ticks);
+
+
+/**
+ * Clear explicit tick positions and labels for one colorbar.
+ *
+ * @param colorbar the colorbar
+ * @return whether the colorbar was updated
+ */
+DVZ_EXPORT bool dvz_colorbar_clear_ticks(DvzColorbar* colorbar);
 
 
 /**

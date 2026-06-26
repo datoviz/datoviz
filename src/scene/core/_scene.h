@@ -897,6 +897,11 @@ struct DvzColorbar
     DvzVisual* tick_visual;
     DvzVisual* text_visual;
     uint32_t tick_count;
+    bool explicit_ticks_enabled;
+    bool explicit_tick_labels_set;
+    uint32_t explicit_tick_count;
+    double explicit_ticks[DVZ_SCENE_MAX_COLORBAR_TICKS];
+    char explicit_tick_labels[DVZ_SCENE_MAX_COLORBAR_TICKS][DVZ_SCENE_LABEL_SIZE];
     double ticks[DVZ_SCENE_MAX_COLORBAR_TICKS];
     uint32_t text_count;
     char text_labels[DVZ_SCENE_MAX_COLORBAR_TEXTS][DVZ_SCENE_LABEL_SIZE];
