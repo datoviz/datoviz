@@ -25,6 +25,27 @@ alpha blending by default, or with the existing scene WBOIT accumulation path wh
 into `DVZ_ALPHA_WBOIT`.
 
 
+## Active Item Range
+
+`splat` may support retained visual item ranges after or alongside point if the instanced-billboard
+lowering remains low risk and identity-preserving.
+
+Range semantics are the same as for point-like flat item tables: a contiguous logical splat range
+participates in render, picking/query, and export, while retained `position`, `color`, `sigma`, and
+`angle` attributes remain unchanged.
+
+Preferred lowering for the current instanced billboard path:
+
+```text
+Draw.first_instance = first_item
+Draw.instance_count = item_count
+```
+
+Support is optional for the v0.4 RC slice. If picking, transparency routing, or WebGPU parity makes
+this non-trivial, splat item ranges should remain explicitly deferred. This range feature must not
+be confused with future splat culling, sorting, compaction, tile binning, or indirect draw.
+
+
 ## Semantic Purpose
 
 `splat` renders one continuous Gaussian footprint per item. The footprint is screen-facing,

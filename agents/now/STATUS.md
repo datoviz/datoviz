@@ -24,6 +24,10 @@ Pre-RC1 execution order:
    non-parity boundaries.
 7. Proofread the public docs, gallery pages, generated matrices, screenshots, and example metadata.
 8. Cut RC1 only after final validation and release notes are recorded.
+9. Add the narrow retained visual item-range slice only if it remains low-risk: spec-backed
+   `dvz_visual_set_item_range()` / clear/get API, point first, splat optional, and explicit deferral
+   of broader attribute views, scalar GPU mappings, modifiers, compaction, sorting, and indirect
+   draw.
 
 Pre-RC repository hygiene note: if the v0.4 Git history cleanup remains desired, do it before
 `v0.4.0-rc1` and before treating release refs as stable. The agreed process, user migration note,

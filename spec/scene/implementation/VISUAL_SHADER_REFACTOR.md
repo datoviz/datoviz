@@ -60,6 +60,26 @@ Do not reuse a cache key for a different ABI, bind layout, topology, blending, d
 format.
 
 
+## Item-Range Lowering Notes
+
+Retained visual item ranges should lower through existing draw command offset/count fields whenever
+possible. They should not require a new shader variant or DRP2 command for the point first slice.
+
+Implementation checks:
+
+1. native point-list range should update draw `first_vertex` and `vertex_count`;
+2. instanced billboard range should update draw `first_instance` and `instance_count`;
+3. picking variants must preserve global logical item ids;
+4. if a shader currently derives item id from local vertex or instance index, ranged draws may need
+   a small base-item parameter or adjusted draw semantics;
+5. do not add a visual modifier, scalar predicate, or custom shader path as part of the item-range
+   slice.
+
+Any ABI-affecting base-item parameter must be reflected in shader and pipeline cache keys. If point
+rendering can preserve item identity using existing draw builtins, prefer that path for the RC
+slice.
+
+
 ## WGSL parity lanes
 
 Current committed WGSL coverage is intentionally narrower than GLSL runtime coverage. Treat this

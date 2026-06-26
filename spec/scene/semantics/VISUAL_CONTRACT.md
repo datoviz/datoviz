@@ -69,6 +69,27 @@ canonical in [`../pipeline/RESOURCE_MODEL.md`](../pipeline/RESOURCE_MODEL.md); p
 rules are in [`../pipeline/ATTRIBUTE_SOURCES.md`](../pipeline/ATTRIBUTE_SOURCES.md).
 
 
+## Active Item Range
+
+A visual may expose an optional active item range over its logical item domain. This is retained
+visual state used by scene planning.
+
+The active range:
+
+1. is expressed in logical item indices;
+2. affects render, picking/query, and export participation;
+3. does not mutate or resize visual resources;
+4. preserves global logical item identity for picking, selection, and diagnostics;
+5. is cleared to restore full visual participation.
+
+The scene owns validation and lowering. Runtime backends see only ordinary draw counts, offsets,
+resources, and query payloads. They do not receive domain-specific time, event, track, or filtering
+semantics.
+
+Visual family specs must state whether item ranges are supported, unsupported, or deferred.
+Point-like flat item tables are the first supported target.
+
+
 ## Coordinate Precision Boundary
 
 Scene semantic and domain objects keep authoritative CPU-side coordinates in double precision unless

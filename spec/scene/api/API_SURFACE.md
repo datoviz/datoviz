@@ -172,6 +172,40 @@ transforms, Python data adaptation, and domain-specific recipes. The design boun
 [`../composites/SCIENTIFIC_PLOTTING_BOUNDARY.md`](../composites/SCIENTIFIC_PLOTTING_BOUNDARY.md).
 
 
+## Retained Visual Item Range API
+
+A narrow pre-RC public visual-range surface is allowed because it is generic, FFI-friendly, and
+lowers to existing DRP2 draw offset/count fields. It must not introduce domain-specific temporal,
+event, particle, or track semantics.
+
+Proposed public shape:
+
+```c
+typedef struct DvzItemRange
+{
+    uint32_t first_item;
+    uint32_t item_count;
+} DvzItemRange;
+
+int dvz_visual_set_item_range(DvzVisual* visual, uint32_t first_item, uint32_t item_count);
+void dvz_visual_clear_item_range(DvzVisual* visual);
+bool dvz_visual_get_item_range(const DvzVisual* visual, DvzItemRange* out);
+```
+
+API rules:
+
+1. `first_item` and `item_count` use logical item units;
+2. `item_count == 0` renders nothing;
+3. clearing the range restores the full visual;
+4. invalid ranges fail validation;
+5. range changes do not upload data;
+6. pick/query results use global item identity;
+7. family specs own support status and lowering details.
+
+This API is not a substitute for future scalar mappings, broader attribute views, visual modifiers,
+custom visuals, GPU compaction, or indirect draw.
+
+
 ## Transform And Controller Semantics
 
 The public API distinguishes three transform owners:

@@ -76,6 +76,33 @@ classes. See the future roadmap proposals under `../proposals/future/`.
 `ItemTable` is the default class for mark-like flat records. It supports row-level and contiguous
 range updates; updates to one row do not require group/span interpretation.
 
+### `ItemTableView` And Active Item Ranges
+
+A visual may declare an active contiguous range of logical items from an `ItemTable` without
+changing table contents:
+
+```text
+[first_item, first_item + item_count)
+```
+
+This is a view over retained item storage, not an upload or data mutation. The table's
+authoritative item count, resource identity, dirty ranges, and attribute-source declarations remain
+unchanged. The active item range only affects visual contribution during render, picking/query, and
+export planning.
+
+Rules:
+
+1. ranges are expressed in logical item indices, not bytes, vertices, instances, or backend offsets;
+2. `item_count == 0` is valid and contributes no items;
+3. clearing the range restores full visual participation;
+4. invalid ranges are validation errors;
+5. picking and selection identity remain global logical item ids, not range-local ids;
+6. range changes dirty draw/query/export contribution, not attribute resources.
+
+Future non-contiguous visibility masks, compacted index buffers, and GPU-generated visible lists are
+separate resource classes or derived resources. They must not be implied by the v0.4 contiguous
+item-range slice.
+
 ### `GroupedItemTable`
 
 `GroupedItemTable` stores flat items plus **spans**: contiguous structural ranges such as one path

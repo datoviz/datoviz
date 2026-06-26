@@ -76,6 +76,35 @@ Useful for jitter plots and zoom-invariant nudging.
 Status on 2026-05-17: not implemented in the active point slice.
 
 
+## Active Item Range
+
+`point` is the required first proof family for retained visual item ranges.
+
+A point visual may render a contiguous logical item range without changing its retained `position`,
+`color`, or `diameter_px` attributes. The active range is expressed in point item indices:
+
+```text
+[first_item, first_item + item_count)
+```
+
+Required behavior:
+
+1. `item_count == 0` renders no points;
+2. clearing the range renders all valid points;
+3. invalid ranges are validation errors;
+4. changing the range dirties draw/query/export contribution only;
+5. point picking returns the original logical point index, not a range-local index.
+
+Preferred lowering:
+
+- native point-list path: `Draw.first_vertex = first_item`, `Draw.vertex_count = item_count`;
+- instanced-quad path: `Draw.first_instance = first_item`, `Draw.instance_count = item_count`, with
+  item-id handling adjusted so picking remains global.
+
+If a backend path cannot preserve global pick identity, it must emit an explicit diagnostic or defer
+picking for ranged point visuals rather than returning range-local item ids silently.
+
+
 ## Visual-Wide Parameters
 
 ### `diameter_default`

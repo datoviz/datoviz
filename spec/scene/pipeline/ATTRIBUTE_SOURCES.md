@@ -79,6 +79,40 @@ same `item_count`. There is not yet installed API for `CONSTANT`, `PER_SPAN`, or
 builtin visual attributes. The full source model below is intended API direction.
 
 
+## Visual Item Ranges
+
+The active item range is orthogonal to attribute source. A visual may render a contiguous subrange
+of its logical items while its attributes remain `CONSTANT`, `PER_ITEM`, `PER_SPAN`, or `PER_GROUP`
+as declared.
+
+Proposed first public range API:
+
+```c
+typedef struct DvzItemRange
+{
+    uint32_t first_item;
+    uint32_t item_count;
+} DvzItemRange;
+
+int dvz_visual_set_item_range(DvzVisual* visual, uint32_t first_item, uint32_t item_count);
+void dvz_visual_clear_item_range(DvzVisual* visual);
+bool dvz_visual_get_item_range(const DvzVisual* visual, DvzItemRange* out);
+```
+
+Range semantics:
+
+1. the range selects rendered logical items only;
+2. it does not change attribute payload counts or source modes;
+3. it does not upload or rewrite attribute data;
+4. it is valid with any family-supported attribute-source combination;
+5. family specs define whether their logical item ranges lower directly to draw ranges or are
+   deferred.
+
+For flat point-like `ItemTable` visuals, the range should lower to DRP2 draw offset/count fields
+when possible. For grouped/span visuals, range semantics require a family-specific mapping from
+item ranges to generated vertices, spans, or draw calls and may be deferred.
+
+
 ## GPU-Produced Attributes
 
 The compute-to-graphics first slice treats `DvzSceneBuffer` as the shared scene resource between
