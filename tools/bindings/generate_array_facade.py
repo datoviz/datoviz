@@ -367,7 +367,11 @@ def _validate_policy(api: dict, policy: dict) -> None:
                     f'array_facade.{function_name} group lifetime must be copied_before_return'
                 )
         special = rules.get('special')
-        if special is not None and special not in {'visual_data_updates', 'axis_ticks'}:
+        if special is not None and special not in {
+            'visual_data_updates',
+            'axis_ticks',
+            'colorbar_ticks',
+        }:
             raise SystemExit(f'array_facade.{function_name} has unknown special wrapper {special}')
 
 

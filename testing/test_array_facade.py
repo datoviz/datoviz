@@ -48,6 +48,15 @@ def fake_facade(monkeypatch):
             ('labels', ctypes.POINTER(ctypes.c_char_p)),
         ]
 
+    class DvzColorbarTicks(ctypes.Structure):
+        _fields_ = [
+            ('struct_size', ctypes.c_uint32),
+            ('flags', ctypes.c_uint32),
+            ('count', ctypes.c_uint32),
+            ('values', ctypes.POINTER(ctypes.c_double)),
+            ('labels', ctypes.POINTER(ctypes.c_char_p)),
+        ]
+
     class DvzVisualDataUpdate(ctypes.Structure):
         _fields_ = [
             ('attr_name', ctypes.c_char_p),
@@ -56,9 +65,13 @@ def fake_facade(monkeypatch):
         ]
 
     raw.DvzAxisTicks = DvzAxisTicks
+    raw.DvzColorbarTicks = DvzColorbarTicks
     raw.DvzVisualDataUpdate = DvzVisualDataUpdate
     raw.dvz_axis_set_ticks = _raw_function(
         [ctypes.c_void_p, ctypes.POINTER(DvzAxisTicks)], ctypes.c_bool
+    )
+    raw.dvz_colorbar_set_ticks = _raw_function(
+        [ctypes.c_void_p, ctypes.POINTER(DvzColorbarTicks)], ctypes.c_bool
     )
     raw.dvz_passthrough = _raw_function([ctypes.c_int, ctypes.c_int])
     raw.dvz_scene_buffer_set_data = _raw_function(
@@ -107,6 +120,7 @@ def test_array_facade_exports_raw_names_and_passthrough(fake_facade):
     raw, facade = fake_facade
 
     assert 'dvz_visual_set_data' in facade.__all__
+    assert 'dvz_colorbar_set_ticks' in facade.__all__
     assert 'dvz_passthrough' in facade.__all__
     assert facade.DvzVisual is raw.DvzVisual
     assert facade.dvz_passthrough(1, 2) == 17
@@ -263,6 +277,60 @@ def test_axis_set_ticks_raw_descriptor_passthrough(fake_facade):
 
     with pytest.raises(TypeError, match='labels must be omitted'):
         facade.dvz_axis_set_ticks(ctypes.c_void_p(14), ctypes.byref(ticks), ['unused'])
+
+
+def test_colorbar_set_ticks_accepts_values_and_labels(fake_facade):
+    raw, facade = fake_facade
+    values = np.array([0.0, 0.5, 1.0], dtype=np.float64)
+
+    assert facade.dvz_colorbar_set_ticks(
+        ctypes.c_void_p(15), values, ['low', 'mid', 'high']
+    ) == 17
+
+    colorbar, ticks_ptr = raw.dvz_colorbar_set_ticks.calls[-1]
+    ticks = ticks_ptr._obj
+    assert colorbar.value == 15
+    assert ticks.struct_size == ctypes.sizeof(raw.DvzColorbarTicks)
+    assert ticks.flags == 0
+    assert ticks.count == 3
+    copied_values = np.ctypeslib.as_array(ticks.values, shape=(3,))
+    np.testing.assert_array_equal(copied_values, values)
+    assert [ticks.labels[i] for i in range(3)] == [b'low', b'mid', b'high']
+
+
+def test_colorbar_set_ticks_accepts_empty_explicit_ticks(fake_facade):
+    raw, facade = fake_facade
+
+    facade.dvz_colorbar_set_ticks(ctypes.c_void_p(16), [])
+
+    _, ticks_ptr = raw.dvz_colorbar_set_ticks.calls[-1]
+    ticks = ticks_ptr._obj
+    assert ticks.count == 0
+    assert not bool(ticks.values)
+    assert not bool(ticks.labels)
+
+
+def test_colorbar_set_ticks_rejects_label_count_mismatch_before_raw_call(fake_facade):
+    raw, facade = fake_facade
+
+    with pytest.raises(ValueError, match='labels length 1 does not match tick count 2'):
+        facade.dvz_colorbar_set_ticks(ctypes.c_void_p(17), [0.0, 1.0], ['low'])
+
+    assert raw.dvz_colorbar_set_ticks.calls == []
+
+
+def test_colorbar_set_ticks_raw_descriptor_passthrough(fake_facade):
+    raw, facade = fake_facade
+    ticks = raw.DvzColorbarTicks()
+    ticks.struct_size = ctypes.sizeof(raw.DvzColorbarTicks)
+
+    facade.dvz_colorbar_set_ticks(ctypes.c_void_p(18), ctypes.byref(ticks))
+
+    _, raw_ticks = raw.dvz_colorbar_set_ticks.calls[-1]
+    assert raw_ticks._obj is ticks
+
+    with pytest.raises(TypeError, match='labels must be omitted'):
+        facade.dvz_colorbar_set_ticks(ctypes.c_void_p(18), ctypes.byref(ticks), ['unused'])
 
 
 def test_non_contiguous_visual_data_is_copied_during_call(fake_facade):

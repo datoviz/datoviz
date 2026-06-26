@@ -435,7 +435,7 @@ static void _colorbar_resolve_ticks(DvzColorbar* colorbar, double min, double ma
             colorbar->ticks[i] = colorbar->explicit_ticks[i];
         return;
     }
-    _colorbar_resolve_ticks(colorbar, min, max);
+    _colorbar_compute_ticks(colorbar, min, max);
 }
 
 
@@ -1262,7 +1262,7 @@ static void _colorbar_update_visuals(DvzColorbar* colorbar, DvzDiagnosticReport*
         return;
     }
 
-    _colorbar_compute_ticks(colorbar, min, max);
+    _colorbar_resolve_ticks(colorbar, min, max);
     _colorbar_update_ramp(colorbar, width, height, ramp_x0, ramp_y0, ramp_x1, ramp_y1);
     _colorbar_update_ticks_and_text(
         colorbar, width, height, ramp_x0, ramp_y0, ramp_x1, ramp_y1, min, max);

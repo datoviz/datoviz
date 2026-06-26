@@ -141,6 +141,9 @@ array_facade:
   dvz_axis_set_ticks:
     special: axis_ticks
 
+  dvz_colorbar_set_ticks:
+    special: colorbar_ticks
+
   dvz_visual_set_data_range:
     strings:
       - attr_name
