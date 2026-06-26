@@ -1083,6 +1083,7 @@ int test_scene_point_filled_no_stroke_uses_fill_shader(TstContext* suite, const 
     DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
+    AT(_stream_has_render_pipeline_label(stream, "_pipe_pointg_coverage_blend_depth"));
     AT(!_stream_has_render_pipeline_label(stream, "_pipe_point_styleg_coverage_blend_depth"));
 
     bool found_material_bg = false;

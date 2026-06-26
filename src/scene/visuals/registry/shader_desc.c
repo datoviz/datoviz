@@ -542,10 +542,9 @@ bool _scene_visual_shader_desc_apply_pass_policy(
     bool point_like = visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
                       visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
                       visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER;
-    bool styled_point =
-        visual->kind == DVZ_SCENE_VISUAL_DESC_POINT && visual->point_style_enabled;
     bool analytic_coverage =
-        _scene_visual_desc_is_stroke(visual->kind) || styled_point ||
+        _scene_visual_desc_is_stroke(visual->kind) ||
+        visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
         visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER;
     *out_segment_coverage_blend =
         !picking &&

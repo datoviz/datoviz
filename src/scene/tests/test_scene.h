@@ -605,6 +605,9 @@ int test_app_offscreen_source_over_scene_occlusion_matrix(TstContext* suite, con
 
 int test_app_offscreen_point_depth_cue_darkens_far(TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_point_default_edge_has_fractional_pixels(
+    TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_records_dvzr_frames(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_colorbar_has_visible_ramp_and_labels(

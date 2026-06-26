@@ -141,7 +141,8 @@ fn main(@builtin(vertex_index) vertex_id: u32, input: VertexIn) -> VertexOut {
     let view = mvp.view * world;
     let center = mvp.proj * view;
     let size = apply_item_state_scale(input.size, input.item_state);
-    let radius = vec2f(size / viewport.rect.z, size / viewport.rect.w);
+    let sprite_size = max(size + 4.0, 1.0);
+    let radius = vec2f(sprite_size / viewport.rect.z, sprite_size / viewport.rect.w);
 
     var output: VertexOut;
     output.position = vec4f(center.xy + corner * radius * center.w, center.zw);

@@ -2418,6 +2418,91 @@ int test_app_offscreen_point_depth_cue_darkens_far(TstContext* suite, const TstC
 }
 
 
+/**
+ * Ensure the default point shader's analytic edge coverage reaches the color target.
+ *
+ * This catches regressions where the shader computes fractional edge alpha but the point draw uses
+ * a non-blended opaque pipeline, producing a binary/aliased circle.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_point_default_edge_has_fractional_pixels(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    dvz_panel_set_background_color(panel, dvz_color_rgba(0, 0, 0, 255));
+
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+    vec3 position[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor color[1] = {{255, 255, 255, 255}};
+    float size[1] = {28.0f};
+    AT(dvz_visual_set_data(visual, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(visual, "color", color, 1) == 0);
+    AT(dvz_visual_set_data(visual, "size", size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_point_default_edge_has_fractional_pixels skipped: GPU context "
+            "creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
+    AT(win != NULL);
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+
+    dvz_app_run(app, 1);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+
+    uint32_t bright_count = 0;
+    uint32_t fractional_count = 0;
+    for (uint32_t y = 16; y < 48; y++)
+    {
+        for (uint32_t x = 16; x < 48; x++)
+        {
+            const uint8_t* px = _pixel_at(rgba, width, height, x, y);
+            if (px[0] > 240 && px[1] > 240 && px[2] > 240)
+                bright_count++;
+            if (
+                px[0] > 8 && px[0] < 240 && abs((int)px[0] - (int)px[1]) <= 3 &&
+                abs((int)px[0] - (int)px[2]) <= 3)
+                fractional_count++;
+        }
+    }
+    AT(bright_count > 100);
+    AT(fractional_count >= 8);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -8103,6 +8188,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_scene_occlusion_hidden_alpha);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_source_over_scene_occlusion_matrix);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_cue_darkens_far);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_default_edge_has_fractional_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_path_join_has_no_center_gap);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_path_join_modes_are_ordered);

@@ -11,6 +11,7 @@ struct VertexOut {
     @location(0) color: vec4f,
     @location(1) corner: vec2f,
     @location(2) cue: vec3f,
+    @location(3) size: f32,
 }
 
 fn quad_corner(vertex_id: u32) -> vec2f {
@@ -31,12 +32,14 @@ fn main(@builtin(vertex_index) vertex_id: u32, input: VertexIn) -> VertexOut {
     let world = mvp.model * vec4f(input.position, 1.0);
     let view = mvp.view * world;
     let center = mvp.proj * view;
-    let radius = vec2f(input.size / viewport.rect.z, input.size / viewport.rect.w);
+    let sprite_size = max(input.size + 4.0, 1.0);
+    let radius = vec2f(sprite_size / viewport.rect.z, sprite_size / viewport.rect.w);
 
     var output: VertexOut;
     output.position = vec4f(center.xy + corner * radius * center.w, center.zw);
     output.color = input.color;
     output.corner = corner;
     output.cue = vec3f(center.z / max(abs(center.w), 1e-6), length(view.xyz), length(world.xyz));
+    output.size = input.size;
     return output;
 }
