@@ -65,6 +65,13 @@ typedef struct
 } WindowEventRecorder;
 
 
+typedef struct
+{
+    DvzPointerEvent event;
+    uint32_t count;
+} PointerRecorder;
+
+
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
@@ -223,6 +230,21 @@ static void _record_wheel(DvzInputRouter* router, const DvzPointerEvent* event, 
     recorder->last_dir[0] = event->content.w.dir[0];
     recorder->last_dir[1] = event->content.w.dir[1];
     recorder->wheel_count++;
+}
+
+
+
+/**
+ * Capture the last pointer event.
+ */
+static void _record_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    PointerRecorder* recorder = user_data;
+    recorder->event = *event;
+    recorder->count++;
 }
 
 
@@ -419,6 +441,37 @@ int test_pointer_wheel(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Ensure pointer emitters keep per-event logical window size.
+ */
+int test_pointer_emit_window_size(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzInputRouter* router = dvz_input_router();
+    PointerRecorder recorder = {0};
+    dvz_input_subscribe_pointer(router, _record_pointer, &recorder);
+
+    dvz_pointer_emit_position(
+        router, DVZ_POINTER_EVENT_MOVE, 100.0f, 50.0f, 640.0f, 360.0f,
+        DVZ_POINTER_BUTTON_NONE, 0, 2.0f, 0, NULL);
+    AT(recorder.count == 1);
+    AT(recorder.event.window_size[0] == 640.0f);
+    AT(recorder.event.window_size[1] == 360.0f);
+
+    dvz_pointer_emit_wheel(
+        router, 100.0f, 50.0f, 800.0f, 400.0f, 0.0f, 1.0f, 0, 2.0f, 0, NULL);
+    AT(recorder.count == 2);
+    AT(recorder.event.window_size[0] == 800.0f);
+    AT(recorder.event.window_size[1] == 400.0f);
+
+    dvz_input_router_destroy(router);
+    return 0;
+}
+
+
+
+/**
  * Validate resize/scale routing and union forwarding.
  */
 int test_resize_scale_events(TstContext* suite, const TstCase* item)
@@ -462,6 +515,7 @@ int test_input(TstSuite* suite)
     TST_CASE(test_keyboard_modifiers);
     TST_CASE(test_pointer_gestures);
     TST_CASE(test_pointer_wheel);
+    TST_CASE(test_pointer_emit_window_size);
     TST_CASE(test_resize_scale_events);
     return 0;
 }

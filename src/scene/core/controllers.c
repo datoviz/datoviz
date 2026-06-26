@@ -848,8 +848,13 @@ static void _scene_panel_pointer_to_figure_coordinates(
 
     DvzInputResizeEvent resize = {0};
     bool has_resize = router != NULL && dvz_input_router_last_resize(router, &resize);
-    const float window_width = has_resize ? (float)resize.window_width : 0.0f;
-    const float window_height = has_resize ? (float)resize.window_height : 0.0f;
+    const bool has_event_window =
+        isfinite(ev->window_size[0]) && isfinite(ev->window_size[1]) &&
+        ev->window_size[0] > 0.0f && ev->window_size[1] > 0.0f;
+    const float window_width =
+        has_event_window ? ev->window_size[0] : (has_resize ? (float)resize.window_width : 0.0f);
+    const float window_height =
+        has_event_window ? ev->window_size[1] : (has_resize ? (float)resize.window_height : 0.0f);
     const float content_scale_x =
         has_resize && isfinite(resize.content_scale_x) && resize.content_scale_x > 0.0f ?
             resize.content_scale_x :

@@ -400,21 +400,19 @@ uint64_t dvz_input_timestamp_ns(void) { return _now_ns(); }
 
 
 void dvz_pointer_emit_position(
-    DvzInputRouter* router, DvzPointerEventType type, float raw_x, float raw_y, float window_x,
-    float window_y, DvzPointerButton button, int mods, float content_scale, uint64_t timestamp_ns,
-    void* user_data)
+    DvzInputRouter* router, DvzPointerEventType type, float raw_x, float raw_y, float window_width,
+    float window_height, DvzPointerButton button, int mods, float content_scale,
+    uint64_t timestamp_ns, void* user_data)
 {
     ANN(router);
-    /* window_x/window_y are reserved for future use (e.g. multi-window cursor mapping)
-     * and currently ignored — pos is the cursor position in window/cursor coordinates. */
-    (void)window_x;
-    (void)window_y;
     if (timestamp_ns == 0)
         timestamp_ns = dvz_input_timestamp_ns();
     DvzPointerEvent event = {0};
     event.type = type;
     event.pos[0] = raw_x;
     event.pos[1] = raw_y;
+    event.window_size[0] = window_width;
+    event.window_size[1] = window_height;
     event.button = button;
     event.mods = mods;
     event.content_scale = content_scale;
@@ -426,15 +424,15 @@ void dvz_pointer_emit_position(
 
 
 static DvzPointerEvent _make_wheel_event(
-    float raw_x, float raw_y, float window_x, float window_y, float dir_x, float dir_y, int mods,
-    float content_scale, uint64_t timestamp_ns, void* user_data)
+    float raw_x, float raw_y, float window_width, float window_height, float dir_x, float dir_y,
+    int mods, float content_scale, uint64_t timestamp_ns, void* user_data)
 {
-    (void)window_x;
-    (void)window_y;
     DvzPointerEvent event = {0};
     event.type = DVZ_POINTER_EVENT_WHEEL;
     event.pos[0] = raw_x;
     event.pos[1] = raw_y;
+    event.window_size[0] = window_width;
+    event.window_size[1] = window_height;
     event.mods = mods;
     event.content_scale = content_scale;
     event.user_data = user_data;
@@ -447,14 +445,15 @@ static DvzPointerEvent _make_wheel_event(
 
 
 void dvz_pointer_emit_wheel(
-    DvzInputRouter* router, float raw_x, float raw_y, float window_x, float window_y, float dir_x,
-    float dir_y, int mods, float content_scale, uint64_t timestamp_ns, void* user_data)
+    DvzInputRouter* router, float raw_x, float raw_y, float window_width, float window_height,
+    float dir_x, float dir_y, int mods, float content_scale, uint64_t timestamp_ns,
+    void* user_data)
 {
     ANN(router);
     if (timestamp_ns == 0)
         timestamp_ns = dvz_input_timestamp_ns();
     DvzPointerEvent event = _make_wheel_event(
-        raw_x, raw_y, window_x, window_y, dir_x, dir_y, mods, content_scale, timestamp_ns,
+        raw_x, raw_y, window_width, window_height, dir_x, dir_y, mods, content_scale, timestamp_ns,
         user_data);
     dvz_input_emit_pointer(router, &event);
 }

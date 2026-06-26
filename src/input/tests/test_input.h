@@ -34,6 +34,8 @@ int test_pointer_gestures(TstContext* suite, const TstCase* item);
 
 int test_pointer_wheel(TstContext* suite, const TstCase* item);
 
+int test_pointer_emit_window_size(TstContext* suite, const TstCase* item);
+
 int test_resize_scale_events(TstContext* suite, const TstCase* item);
 
 

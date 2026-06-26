@@ -188,6 +188,9 @@ int test_figure_window_to_layout_coordinates(TstContext* suite, const TstCase* i
 int test_panzoom_panel_input_uses_hidpi_figure_coordinates(
     TstContext* suite, const TstCase* item);
 
+int test_panzoom_panel_input_uses_event_window_size_without_resize(
+    TstContext* suite, const TstCase* item);
+
 int test_split_panzoom_x_y_bindings(TstContext* suite, const TstCase* item);
 
 int test_orbit_camera_changes_view_not_model(TstContext* suite, const TstCase* item);

@@ -84,6 +84,7 @@ struct DvzPointerEvent
     DvzPointerEventType type;
     DvzPointerEventUnion content;
     vec2 pos;
+    vec2 window_size;
     DvzPointerButton button;
     int mods;
     float content_scale;
@@ -117,9 +118,9 @@ DVZ_EXPORT uint64_t dvz_input_timestamp_ns(void);
  * Emit a normalized pointer event on the router.
  */
 DVZ_EXPORT void dvz_pointer_emit_position(
-    DvzInputRouter* router, DvzPointerEventType type, float raw_x, float raw_y, float window_x,
-    float window_y, DvzPointerButton button, int mods, float content_scale, uint64_t timestamp_ns,
-    void* user_data);
+    DvzInputRouter* router, DvzPointerEventType type, float raw_x, float raw_y, float window_width,
+    float window_height, DvzPointerButton button, int mods, float content_scale,
+    uint64_t timestamp_ns, void* user_data);
 
 
 
@@ -127,8 +128,9 @@ DVZ_EXPORT void dvz_pointer_emit_position(
  * Emit a wheel event with pixel deltas.
  */
 DVZ_EXPORT void dvz_pointer_emit_wheel(
-    DvzInputRouter* router, float raw_x, float raw_y, float window_x, float window_y, float dir_x,
-    float dir_y, int mods, float content_scale, uint64_t timestamp_ns, void* user_data);
+    DvzInputRouter* router, float raw_x, float raw_y, float window_width, float window_height,
+    float dir_x, float dir_y, int mods, float content_scale, uint64_t timestamp_ns,
+    void* user_data);
 
 
 

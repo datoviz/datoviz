@@ -2221,9 +2221,15 @@ int dvz_wasm_api_pointer(
         return _fail(scene, "invalid WASM pointer request");
     _clear_payload(scene);
     uint64_t timestamp_ns = timestamp_ms > 0.0 ? (uint64_t)(timestamp_ms * 1000000.0) : 0;
+    const float window_width = scene->scenario_ctx.logical_width != 0 ?
+                                   (float)scene->scenario_ctx.logical_width :
+                                   (float)scene->width;
+    const float window_height = scene->scenario_ctx.logical_height != 0 ?
+                                    (float)scene->scenario_ctx.logical_height :
+                                    (float)scene->height;
     dvz_pointer_emit_position(
-        scene->router, (DvzPointerEventType)type, x, y, x, y, (DvzPointerButton)button, mods,
-        content_scale, timestamp_ns, NULL);
+        scene->router, (DvzPointerEventType)type, x, y, window_width, window_height,
+        (DvzPointerButton)button, mods, content_scale, timestamp_ns, NULL);
     return 0;
 }
 
@@ -2239,8 +2245,15 @@ int dvz_wasm_api_wheel(
         return _fail(scene, "invalid WASM wheel request");
     _clear_payload(scene);
     uint64_t timestamp_ns = timestamp_ms > 0.0 ? (uint64_t)(timestamp_ms * 1000000.0) : 0;
+    const float window_width = scene->scenario_ctx.logical_width != 0 ?
+                                   (float)scene->scenario_ctx.logical_width :
+                                   (float)scene->width;
+    const float window_height = scene->scenario_ctx.logical_height != 0 ?
+                                    (float)scene->scenario_ctx.logical_height :
+                                    (float)scene->height;
     dvz_pointer_emit_wheel(
-        scene->router, x, y, x, y, dir_x, dir_y, mods, content_scale, timestamp_ns, NULL);
+        scene->router, x, y, window_width, window_height, dir_x, dir_y, mods, content_scale,
+        timestamp_ns, NULL);
     return 0;
 }
 

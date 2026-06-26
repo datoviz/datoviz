@@ -18,6 +18,7 @@
 #include "_time_utils.h"
 #include "datoviz/scene.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -422,10 +423,15 @@ static void _runner_pointer_to_figure(
 
     DvzInputResizeEvent resize = {0};
     const bool has_resize = router != NULL && dvz_input_router_last_resize(router, &resize);
+    const bool has_event_window =
+        isfinite(pointer->window_size[0]) && isfinite(pointer->window_size[1]) &&
+        pointer->window_size[0] > 0.0f && pointer->window_size[1] > 0.0f;
     const float window_width =
+        has_event_window ? pointer->window_size[0] :
         has_resize && resize.window_width > 0 ? (float)resize.window_width :
                                                 (float)state->ctx->logical_width;
     const float window_height =
+        has_event_window ? pointer->window_size[1] :
         has_resize && resize.window_height > 0 ? (float)resize.window_height :
                                                  (float)state->ctx->logical_height;
     const float content_scale_x =

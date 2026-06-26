@@ -551,6 +551,65 @@ int test_panzoom_panel_input_uses_hidpi_figure_coordinates(TstContext* suite, co
 }
 
 
+/**
+ * Ensure pointer events carry enough window-size context without a prior resize event.
+ *
+ * @param suite test suite
+ * @param item test case
+ * @return 0 on success
+ */
+int test_panzoom_panel_input_uses_event_window_size_without_resize(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzController* controller = dvz_panzoom(scene, NULL);
+    ANN(controller);
+    DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
+    ANN(panzoom);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) == 0);
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    AT(dvz_panel_connect_input(panel, router) == 0);
+
+    DvzPanzoom* expected = _dvz_panzoom(800.0f, 400.0f, 0);
+    ANN(expected);
+    dvz_panzoom_zoom_wheel(expected, (vec2){0.0f, 1.0f}, (vec2){300.0f, 50.0f});
+
+    DvzInputEvent wheel = {
+        .type = DVZ_INPUT_EVENT_POINTER,
+        .content.pointer =
+            {
+                .type = DVZ_POINTER_EVENT_WHEEL,
+                .content.w.dir = {0.0f, 1.0f},
+                .pos = {300.0f, 50.0f},
+                .window_size = {800.0f, 400.0f},
+                .content_scale = 2.0f,
+            },
+    };
+    dvz_input_emit_event(router, &wheel);
+
+    AC(panzoom->zoom[0], expected->zoom[0], 1e-6f);
+    AC(panzoom->zoom[1], expected->zoom[1], 1e-6f);
+    AC(panzoom->pan[0], expected->pan[0], 1e-6f);
+    AC(panzoom->pan[1], expected->pan[1], 1e-6f);
+
+    dvz_panzoom_destroy(expected);
+    dvz_input_router_destroy(router);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_split_panzoom_x_y_bindings(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -2239,6 +2298,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_shared_panzoom_xy_visible_domains);
     TST_CASE(test_figure_window_to_layout_coordinates);
     TST_CASE(test_panzoom_panel_input_uses_hidpi_figure_coordinates);
+    TST_CASE(test_panzoom_panel_input_uses_event_window_size_without_resize);
     TST_CASE(test_split_panzoom_x_y_bindings);
 
     TST_GROUP("arcball");
