@@ -814,16 +814,11 @@ int test_controller_link_arcball_bidirectional_does_not_accumulate_drag(
     ANN(left_arcball);
     ANN(right_arcball);
 
-    DvzControllerLink* left_to_right = dvz_controller_link(
+    DvzControllerLink* link = dvz_controller_link(
         scene, left, right,
         DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM,
-        DVZ_CONTROLLER_LINK_ONE_WAY);
-    DvzControllerLink* right_to_left = dvz_controller_link(
-        scene, right, left,
-        DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM,
-        DVZ_CONTROLLER_LINK_ONE_WAY);
-    ANN(left_to_right);
-    ANN(right_to_left);
+        DVZ_CONTROLLER_LINK_TWO_WAY);
+    ANN(link);
 
     left_arcball->interacting = true;
     dvz_arcball_rotate(left_arcball, (vec2){0.36f, -0.18f}, (vec2){-0.22f, +0.14f});
@@ -1124,12 +1119,9 @@ int test_controller_link_panzoom_extent_x_bidirectional_does_not_accumulate_drag
     AT(dvz_panel_bind_controller(top, top_x, DVZ_DIM_MASK_X) == 0);
     AT(dvz_panel_bind_controller(bottom, bottom_x, DVZ_DIM_MASK_X) == 0);
 
-    DvzControllerLink* top_to_bottom = dvz_controller_link(
-        scene, top_x, bottom_x, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
-    DvzControllerLink* bottom_to_top = dvz_controller_link(
-        scene, bottom_x, top_x, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
-    ANN(top_to_bottom);
-    ANN(bottom_to_top);
+    DvzControllerLink* link = dvz_controller_link(
+        scene, top_x, bottom_x, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_TWO_WAY);
+    ANN(link);
 
     DvzPanzoom* top_pz = dvz_controller_panzoom(top_x);
     DvzPanzoom* bottom_pz = dvz_controller_panzoom(bottom_x);
@@ -1152,6 +1144,51 @@ int test_controller_link_panzoom_extent_x_bidirectional_does_not_accumulate_drag
     AC(bottom_pz->zoom[0], top_pz->zoom[0], 1e-6f);
     AC(bottom_pz->pan_center[0], top_pz->pan[0], 1e-6f);
     AC(bottom_pz->zoom_center[0], top_pz->zoom[0], 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure a two-way panzoom link can propagate from the nominal target while it is active.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_controller_link_panzoom_two_way_target_drives_source(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzController* source = dvz_panzoom(scene, NULL);
+    DvzController* target = dvz_panzoom(scene, NULL);
+    ANN(source);
+    ANN(target);
+
+    DvzControllerLink* link = dvz_controller_link(
+        scene, source, target, DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM,
+        DVZ_CONTROLLER_LINK_TWO_WAY);
+    ANN(link);
+
+    DvzPanzoom* source_pz = dvz_controller_panzoom(source);
+    DvzPanzoom* target_pz = dvz_controller_panzoom(target);
+    ANN(source_pz);
+    ANN(target_pz);
+    target_pz->interacting = true;
+    dvz_panzoom_pan(target_pz, (vec2){-0.25f, +0.15f});
+    dvz_panzoom_zoom(target_pz, (vec2){1.6f, 2.2f});
+
+    _dvz_scene_controller_links_propagate(scene);
+
+    AC(source_pz->pan[0], target_pz->pan[0], 1e-6f);
+    AC(source_pz->pan[1], target_pz->pan[1], 1e-6f);
+    AC(source_pz->zoom[0], target_pz->zoom[0], 1e-6f);
+    AC(source_pz->zoom[1], target_pz->zoom[1], 1e-6f);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1207,9 +1244,10 @@ int test_controller_link_validation(TstContext* suite, const TstCase* item)
     AT(dvz_controller_link(
            scene, arc_a, arc_b, DVZ_CONTROLLER_LINK_CAMERA, DVZ_CONTROLLER_LINK_ONE_WAY) ==
        NULL);
-    AT(dvz_controller_link(
-           scene, arc_a, arc_b, DVZ_CONTROLLER_LINK_ROTATION, DVZ_CONTROLLER_LINK_TWO_WAY) ==
-       NULL);
+    DvzControllerLink* two_way =
+        dvz_controller_link(scene, arc_a, arc_b, DVZ_CONTROLLER_LINK_ROTATION,
+                            DVZ_CONTROLLER_LINK_TWO_WAY);
+    ANN(two_way);
 
     dvz_scene_destroy(other);
     dvz_scene_destroy(scene);
@@ -2163,6 +2201,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_controller_link_panzoom_extent_x_only);
     TST_CASE(test_controller_link_panzoom_extent_x_equal_aspect_panels);
     TST_CASE(test_controller_link_panzoom_extent_x_bidirectional_does_not_accumulate_drag);
+    TST_CASE(test_controller_link_panzoom_two_way_target_drives_source);
     TST_CASE(test_controller_link_validation);
     TST_CASE(test_controller_link_destroy_stops_arcball_propagation);
     TST_CASE(test_controller_destroy_detaches_panels_links_and_reuses_slot);

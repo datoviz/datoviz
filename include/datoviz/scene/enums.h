@@ -18,17 +18,6 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-// Panel link flags.
-typedef enum
-{
-    DVZ_PANEL_LINK_FLAGS_NONE = 0x00,
-    DVZ_PANEL_LINK_FLAGS_MODEL = 0x01,
-    DVZ_PANEL_LINK_FLAGS_VIEW = 0x02,
-    DVZ_PANEL_LINK_FLAGS_PROJECTION = 0x04,
-} DvzPanelLinkFlags;
-
-
-
 typedef enum
 {
     DVZ_FRAME_PLAN_NODE_NONE,
@@ -193,7 +182,7 @@ typedef enum
 typedef enum
 {
     DVZ_CONTROLLER_LINK_ONE_WAY = 0,
-    /* Reserved for future bidirectional propagation; rejected by the v0.4 implementation. */
+    /* Propagate from whichever endpoint is actively interacting, source-to-target otherwise. */
     DVZ_CONTROLLER_LINK_TWO_WAY = 1,
 } DvzControllerLinkMode;
 

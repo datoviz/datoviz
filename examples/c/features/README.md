@@ -60,7 +60,7 @@ techniques.
 - `panel_single.c`: one explicit panel rectangle with one visual and panel chrome.
 - `panel_grid.c`: four grid-owned panels with clipped panel-local content.
 - `panel_multi.c`: multiple independent panels with panel-local panzoom controllers.
-- `panel_linked.c`: two panels with bidirectional linked X panzoom state.
+- `panel_linked.c`: two panels sharing X panzoom state with independent Y panzoom state.
 - `timer_animation.c`: runner-backed frame animation updating retained point data.
 - `marker_symbols.c`: marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 - `update_visual_data.c`: retained point visual with full data replacement.

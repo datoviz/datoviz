@@ -759,21 +759,20 @@ bool example_configure_compact_grid(DvzGrid* grid, float gutter_x_px, float gutt
 
 
 /**
- * Link two controllers in both directions using current one-way controller links.
+ * Link two controllers in both directions.
  *
  * @param scene scene owning both controllers
  * @param a first controller
  * @param b second controller
  * @param components linked controller state components
- * @return true when both links were created
+ * @return true when the link was created
  */
 bool example_link_controllers_bidirectional(
     DvzScene* scene, DvzController* a, DvzController* b, uint32_t components)
 {
     if (scene == NULL || a == NULL || b == NULL)
         return false;
-    return dvz_controller_link(scene, a, b, components, DVZ_CONTROLLER_LINK_ONE_WAY) != NULL &&
-           dvz_controller_link(scene, b, a, components, DVZ_CONTROLLER_LINK_ONE_WAY) != NULL;
+    return dvz_controller_link(scene, a, b, components, DVZ_CONTROLLER_LINK_TWO_WAY) != NULL;
 }
 
 

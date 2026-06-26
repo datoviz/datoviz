@@ -80,7 +80,7 @@ multiple independent panels with panel-local panzoom controllers.
 
 `supported` `features`
 
-two panels with bidirectional linked X panzoom state.
+two panels sharing X panzoom state with independent Y panzoom state.
 
 </div>
 

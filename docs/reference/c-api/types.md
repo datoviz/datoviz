@@ -669,12 +669,6 @@ typedef struct DvzPanelBorderDesc DvzPanelBorderDesc;
 typedef struct DvzPanelDesc DvzPanelDesc;
 ```
 
-#### `DvzPanelLinkFlags`
-
-```c
-typedef enum DvzPanelLinkFlags DvzPanelLinkFlags;
-```
-
 #### `DvzPanelReserve`
 
 ```c
@@ -1488,15 +1482,6 @@ DVZ_PANEL_BACKGROUND_NONE = 0,
 DVZ_PANEL_BACKGROUND_COLOR = 1,
 DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT = 2,
 DVZ_PANEL_BACKGROUND_IMAGE = 3,
-```
-
-#### `DvzPanelLinkFlags`
-
-```c
-DVZ_PANEL_LINK_FLAGS_NONE = 0,
-DVZ_PANEL_LINK_FLAGS_MODEL = 1,
-DVZ_PANEL_LINK_FLAGS_VIEW = 2,
-DVZ_PANEL_LINK_FLAGS_PROJECTION = 4,
 ```
 
 #### `DvzPanelView2DAspect`

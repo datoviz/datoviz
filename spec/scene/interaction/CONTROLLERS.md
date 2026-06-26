@@ -199,6 +199,10 @@ dvz_controller_link(
 The main panel may keep pan and zoom for navigation. The gizmo receives only orientation, so it
 stays centered in its inset panel and uses its own camera/viewport evaluation context.
 
+Use `DVZ_CONTROLLER_LINK_TWO_WAY` only when either endpoint should drive the other. If one endpoint
+is actively interacting, it is the source of truth for that propagation step; when neither endpoint
+is active, the declared source initializes the target.
+
 
 ## Interaction Flows
 

@@ -37,15 +37,14 @@ dvz_panel_bind_controller(panel_b, shared_x, DVZ_DIM_MASK_X);
 dvz_panel_bind_controller(panel_b, y_b, DVZ_DIM_MASK_Y);
 ```
 
-For linked but distinct controllers, create one-way controller links. Use two one-way links when
-both panels should drive each other:
+For linked but distinct controllers, use a two-way controller link when either panel should drive
+the shared state:
 
 ```c
 DvzController* x_a = dvz_panzoom(scene, NULL);
 DvzController* x_b = dvz_panzoom(scene, NULL);
 
-dvz_controller_link(scene, x_a, x_b, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
-dvz_controller_link(scene, x_b, x_a, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
+dvz_controller_link(scene, x_a, x_b, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_TWO_WAY);
 ```
 
 ## Important Details
@@ -56,10 +55,11 @@ between panels.
 Sharing the same controller is the simplest and strictest link: every bound part of that controller
 state is common. Use it for panels that should move as one view.
 
-`dvz_controller_link()` is more selective. In the current v0.4 surface it supports one-way links
-between distinct controllers of the same family. Panzoom links support pan, zoom, X extent, and Y
-extent components. Arcball links support rotation, pan, and zoom components. Use two one-way links
-for bidirectional behavior.
+`dvz_controller_link()` is more selective. It supports one-way and two-way links between distinct
+controllers of the same family. Panzoom links support pan, zoom, X extent, and Y extent components.
+Arcball links support rotation, pan, and zoom components. For two-way links, the actively
+interacting endpoint drives the passive endpoint; when neither endpoint is active, the declared
+source initializes the target.
 
 Linked controller state does not make domains or units compatible. Set each panel's domain,
 view/aspect policy, axes, and units deliberately before linking. For shared X workflows with
@@ -74,7 +74,7 @@ format.
 - Creating two identical controllers instead of sharing one controller pointer.
 - Sharing a full `DVZ_DIM_MASK_XY` controller when only X should be linked.
 - Expecting `dvz_controller_link()` to work between different controller families.
-- Expecting `DVZ_CONTROLLER_LINK_TWO_WAY` to replace two one-way links in the current surface.
+- Linking panels with simultaneous active interactions and expecting both gestures to merge.
 - Linking panels with incompatible domains.
 - Forgetting to keep axes, colorbars, units, and probe readouts synchronized with the linked view.
 - Treating showcase workflows as the minimal linked-panel API.

@@ -408,7 +408,7 @@ multiple independent panels with panel-local panzoom controllers.
 
 [![Linked Panels](../assets/gallery/v0.4/features/feature_panel_linked.webp)](gallery/features/feature_panel_linked.md)
 
-two panels with bidirectional linked X panzoom state.
+two panels sharing X panzoom state with independent Y panzoom state.
 
 </div>
 

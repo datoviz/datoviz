@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* panel_linked - two panels with bidirectional linked X panzoom state.
+/* panel_linked - two panels sharing X panzoom state with independent Y panzoom state.
  *
  * Scenario: feature.panel_linked
  * Style: features, graphite_cyan, 1600x1200 capture target
@@ -92,7 +92,6 @@ static bool _add_line_panel(DvzScene* scene, DvzPanel* panel, float phase, uint8
     ANN(panel);
 
     vec3 data_positions[PATH_COUNT] = {{0}};
-    vec3 visual_positions[PATH_COUNT] = {{0}};
     DvzColor colors[PATH_COUNT] = {{0}};
     float widths[PATH_COUNT] = {0};
 
@@ -108,16 +107,11 @@ static bool _add_line_panel(DvzScene* scene, DvzPanel* panel, float phase, uint8
         widths[i] = 3.0f;
     }
 
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data_positions, (float*)visual_positions, PATH_COUNT);
-    if (rc != 0)
-        return false;
-
     DvzVisual* visual = dvz_path(scene, 0);
     if (visual == NULL)
         return false;
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = visual_positions, .item_count = PATH_COUNT},
+        {.attr_name = "position", .data = data_positions, .item_count = PATH_COUNT},
         {.attr_name = "color", .data = colors, .item_count = PATH_COUNT},
         {.attr_name = "stroke_width_px", .data = widths, .item_count = PATH_COUNT},
     };
@@ -129,9 +123,7 @@ static bool _add_line_panel(DvzScene* scene, DvzPanel* panel, float phase, uint8
         return false;
     if (dvz_visual_set_depth_test(visual, false) != 0)
         return false;
-    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_VIEW;
-    return dvz_panel_add_visual(panel, visual, &attach) == 0;
+    return dvz_panel_add_visual(panel, visual, NULL) == 0;
 }
 
 
@@ -189,40 +181,28 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!_add_line_panel(ctx->scene, bottom, 0.24f, 164u))
         return false;
 
-    DvzController* top_x = dvz_panzoom(ctx->scene, NULL);
-    DvzController* bottom_x = dvz_panzoom(ctx->scene, NULL);
+    DvzController* shared_x = dvz_panzoom(ctx->scene, NULL);
     DvzController* top_y = dvz_panzoom(ctx->scene, NULL);
     DvzController* bottom_y = dvz_panzoom(ctx->scene, NULL);
-    if (top_x == NULL || bottom_x == NULL || top_y == NULL || bottom_y == NULL)
+    if (shared_x == NULL || top_y == NULL || bottom_y == NULL)
         return false;
 
-    DvzPanzoom* top_x_panzoom = dvz_controller_panzoom(top_x);
-    DvzPanzoom* bottom_x_panzoom = dvz_controller_panzoom(bottom_x);
+    DvzPanzoom* shared_x_panzoom = dvz_controller_panzoom(shared_x);
     DvzPanzoom* top_y_panzoom = dvz_controller_panzoom(top_y);
     DvzPanzoom* bottom_y_panzoom = dvz_controller_panzoom(bottom_y);
-    if (top_x_panzoom == NULL || bottom_x_panzoom == NULL || top_y_panzoom == NULL ||
-        bottom_y_panzoom == NULL)
+    if (shared_x_panzoom == NULL || top_y_panzoom == NULL || bottom_y_panzoom == NULL)
         return false;
 
-    dvz_panzoom_zoom(top_x_panzoom, (vec2){1.80f, 1.0f});
-    dvz_panzoom_pan(top_x_panzoom, (vec2){+0.22f, 0.0f});
+    dvz_panzoom_zoom(shared_x_panzoom, (vec2){1.80f, 1.0f});
+    dvz_panzoom_pan(shared_x_panzoom, (vec2){+0.22f, 0.0f});
     dvz_panzoom_zoom(top_y_panzoom, (vec2){1.0f, 1.15f});
     dvz_panzoom_zoom(bottom_y_panzoom, (vec2){1.0f, 1.45f});
 
-    DvzControllerLink* link_top_to_bottom = dvz_controller_link(
-        ctx->scene, top_x, bottom_x, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
-    DvzControllerLink* link_bottom_to_top = dvz_controller_link(
-        ctx->scene, bottom_x, top_x, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
-    if (link_top_to_bottom == NULL || link_bottom_to_top == NULL)
-        return false;
-    if (fabsf(bottom_x_panzoom->zoom[0] - top_x_panzoom->zoom[0]) >= 1e-6f)
-        return false;
-
-    if (dvz_scenario_bind_controller(ctx, top, top_x, DVZ_DIM_MASK_X) != 0)
+    if (dvz_scenario_bind_controller(ctx, top, shared_x, DVZ_DIM_MASK_X) != 0)
         return false;
     if (dvz_scenario_bind_controller(ctx, top, top_y, DVZ_DIM_MASK_Y) != 0)
         return false;
-    if (dvz_scenario_bind_controller(ctx, bottom, bottom_x, DVZ_DIM_MASK_X) != 0)
+    if (dvz_scenario_bind_controller(ctx, bottom, shared_x, DVZ_DIM_MASK_X) != 0)
         return false;
     return dvz_scenario_bind_controller(ctx, bottom, bottom_y, DVZ_DIM_MASK_Y) == 0;
 }
