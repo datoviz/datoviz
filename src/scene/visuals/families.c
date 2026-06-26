@@ -30,6 +30,7 @@
 #include "core/scene_notify_internal.h"
 #include "_scene_resource_key.h"
 #include "_visual_internal.h"
+#include "annotation/scale_internal.h"
 #include "bindings_internal.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
@@ -862,6 +863,20 @@ static bool _panel_background_attach(
 
 
 /**
+ * Mark panel colorbar adornments dirty after a background change.
+ *
+ * @param panel the panel
+ */
+static void _panel_background_mark_colorbars_dirty(DvzPanel* panel)
+{
+    ANN(panel);
+    for (uint32_t i = 0; i < panel->colorbar_count; i++)
+        _scene_mark_colorbar_dirty(panel->colorbars[i]);
+}
+
+
+
+/**
  * Clear one visual scale binding.
  *
  * @param visual the visual
@@ -948,6 +963,7 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
     if (background == NULL || background->type == DVZ_PANEL_BACKGROUND_NONE)
     {
         _panel_background_detach(panel);
+        _panel_background_mark_colorbars_dirty(panel);
         return true;
     }
 
@@ -1012,6 +1028,7 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
             return false;
         }
         panel->background_type = background->type;
+        _panel_background_mark_colorbars_dirty(panel);
         return true;
     }
 
@@ -1070,6 +1087,7 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
             return false;
         }
         panel->background_type = DVZ_PANEL_BACKGROUND_IMAGE;
+        _panel_background_mark_colorbars_dirty(panel);
         return true;
     }
 

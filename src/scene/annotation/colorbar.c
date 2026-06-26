@@ -31,6 +31,7 @@
 #include "prepare_internal.h"
 #include "scale_internal.h"
 #include "annotation/text_visual_bridge.h"
+#include "visuals/_visual_internal.h"
 
 
 
@@ -261,6 +262,47 @@ static bool _colorbar_vertical(const DvzColorbar* colorbar)
 {
     ANN(colorbar);
     return colorbar->orientation == DVZ_COLORBAR_ORIENTATION_VERTICAL;
+}
+
+
+
+/**
+ * Resolve a readable colorbar foreground color from the panel background.
+ *
+ * @param colorbar the colorbar
+ * @return black or white foreground color
+ */
+static DvzColor _colorbar_foreground_color(const DvzColorbar* colorbar)
+{
+    ANN(colorbar);
+    const DvzPanel* panel = colorbar->panel;
+    if (
+        panel == NULL || panel->background_visual == NULL ||
+        (panel->background_type != DVZ_PANEL_BACKGROUND_COLOR &&
+         panel->background_type != DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT))
+    {
+        return dvz_color_rgb(0, 0, 0);
+    }
+
+    const int color_idx = _attr_index(panel->background_visual, "color");
+    if (color_idx < 0)
+        return dvz_color_rgb(0, 0, 0);
+    const DvzVisualAttr* attr = &panel->background_visual->attrs[color_idx];
+    if (attr->data == NULL || attr->item_count == 0)
+        return dvz_color_rgb(0, 0, 0);
+
+    const DvzColor* colors = (const DvzColor*)attr->data;
+    double luminance = 0.0;
+    for (uint64_t i = 0; i < attr->item_count; i++)
+    {
+        const double alpha = (double)colors[i].a / 255.0;
+        const double r = alpha * (double)colors[i].r + (1.0 - alpha) * 255.0;
+        const double g = alpha * (double)colors[i].g + (1.0 - alpha) * 255.0;
+        const double b = alpha * (double)colors[i].b + (1.0 - alpha) * 255.0;
+        luminance += 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+    luminance /= (double)attr->item_count;
+    return luminance < 128.0 ? dvz_color_rgb(255, 255, 255) : dvz_color_rgb(0, 0, 0);
 }
 
 
@@ -713,7 +755,7 @@ static bool _colorbar_ensure_visuals(DvzColorbar* colorbar)
  */
 static void _colorbar_append_text(
     DvzColorbar* colorbar, const char* label, float x, float y, float anchor_x, float anchor_y,
-    float size, float angle)
+    float size, float angle, DvzColor color)
 {
     ANN(colorbar);
     ANN(label);
@@ -727,10 +769,10 @@ static void _colorbar_append_text(
     colorbar->text_anchors[i][0] = anchor_x;
     colorbar->text_anchors[i][1] = anchor_y;
     colorbar->text_sizes[i] = size;
-    colorbar->text_colors[i][0] = 0;
-    colorbar->text_colors[i][1] = 0;
-    colorbar->text_colors[i][2] = 0;
-    colorbar->text_colors[i][3] = 255;
+    colorbar->text_colors[i][0] = color.r;
+    colorbar->text_colors[i][1] = color.g;
+    colorbar->text_colors[i][2] = color.b;
+    colorbar->text_colors[i][3] = color.a;
     colorbar->text_angles[i] = angle;
 }
 
@@ -891,7 +933,7 @@ static void _colorbar_update_ramp(
  */
 static void _colorbar_update_ticks_and_text(
     DvzColorbar* colorbar, float width, float height, float ramp_x0, float ramp_y0, float ramp_x1,
-    float ramp_y1, double min, double max)
+    float ramp_y1, double min, double max, DvzColor foreground)
 {
     ANN(colorbar);
     ANN(colorbar->tick_visual);
@@ -953,14 +995,14 @@ static void _colorbar_update_ticks_and_text(
         }
         _colorbar_pixel_to_visual(width, height, x0, y0, 0.0f, starts[count]);
         _colorbar_pixel_to_visual(width, height, x1, y1, 0.0f, ends[count]);
-        colors[count] = dvz_color_rgb(0, 0, 0);
+        colors[count] = foreground;
         widths[count] = COLORBAR_TICK_WIDTH_PX;
 
         char label[DVZ_SCENE_LABEL_SIZE] = {0};
         _colorbar_tick_label(colorbar, i, colorbar->ticks[i], label, sizeof(label));
         _colorbar_append_text(
             colorbar, label, label_x, label_y, anchor_x, anchor_y, COLORBAR_TICK_TEXT_SIZE_PX,
-            0.0f);
+            0.0f, foreground);
         count++;
     }
     if (count > 0)
@@ -997,7 +1039,7 @@ static void _colorbar_update_ticks_and_text(
  */
 static void _colorbar_update_title(
     DvzColorbar* colorbar, float width, float height, float ramp_x0, float ramp_y0, float ramp_x1,
-    float ramp_y1)
+    float ramp_y1, DvzColor foreground)
 {
     ANN(colorbar);
     if (colorbar->title[0] == '\0')
@@ -1031,7 +1073,8 @@ static void _colorbar_update_title(
         float angle = colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT ? -1.57079632679f :
                                                                       +1.57079632679f;
         _colorbar_append_text(
-            colorbar, colorbar->title, x, y, 0.5f, 0.5f, COLORBAR_TITLE_TEXT_SIZE_PX, angle);
+            colorbar, colorbar->title, x, y, 0.5f, 0.5f, COLORBAR_TITLE_TEXT_SIZE_PX, angle,
+            foreground);
     }
     else
     {
@@ -1054,7 +1097,8 @@ static void _colorbar_update_title(
                              0.5f * COLORBAR_TITLE_TEXT_SIZE_PX);
         }
         _colorbar_append_text(
-            colorbar, colorbar->title, x, y, 0.5f, anchor_y, COLORBAR_TITLE_TEXT_SIZE_PX, 0.0f);
+            colorbar, colorbar->title, x, y, 0.5f, anchor_y, COLORBAR_TITLE_TEXT_SIZE_PX, 0.0f,
+            foreground);
     }
 }
 
@@ -1263,10 +1307,11 @@ static void _colorbar_update_visuals(DvzColorbar* colorbar, DvzDiagnosticReport*
     }
 
     _colorbar_resolve_ticks(colorbar, min, max);
+    const DvzColor foreground = _colorbar_foreground_color(colorbar);
     _colorbar_update_ramp(colorbar, width, height, ramp_x0, ramp_y0, ramp_x1, ramp_y1);
     _colorbar_update_ticks_and_text(
-        colorbar, width, height, ramp_x0, ramp_y0, ramp_x1, ramp_y1, min, max);
-    _colorbar_update_title(colorbar, width, height, ramp_x0, ramp_y0, ramp_x1, ramp_y1);
+        colorbar, width, height, ramp_x0, ramp_y0, ramp_x1, ramp_y1, min, max, foreground);
+    _colorbar_update_title(colorbar, width, height, ramp_x0, ramp_y0, ramp_x1, ramp_y1, foreground);
     _colorbar_update_text(colorbar);
     colorbar->dirty = false;
 }
