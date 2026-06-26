@@ -642,9 +642,9 @@ static void _colorbar_append_text(
     colorbar->text_anchors[i][0] = anchor_x;
     colorbar->text_anchors[i][1] = anchor_y;
     colorbar->text_sizes[i] = size;
-    colorbar->text_colors[i][0] = 255;
-    colorbar->text_colors[i][1] = 255;
-    colorbar->text_colors[i][2] = 255;
+    colorbar->text_colors[i][0] = 0;
+    colorbar->text_colors[i][1] = 0;
+    colorbar->text_colors[i][2] = 0;
     colorbar->text_colors[i][3] = 255;
     colorbar->text_angles[i] = angle;
 }
@@ -868,7 +868,7 @@ static void _colorbar_update_ticks_and_text(
         }
         _colorbar_pixel_to_visual(width, height, x0, y0, 0.0f, starts[count]);
         _colorbar_pixel_to_visual(width, height, x1, y1, 0.0f, ends[count]);
-        colors[count] = dvz_color_rgb(255, 255, 255);
+        colors[count] = dvz_color_rgb(0, 0, 0);
         widths[count] = COLORBAR_TICK_WIDTH_PX;
 
         char label[DVZ_SCENE_LABEL_SIZE] = {0};
