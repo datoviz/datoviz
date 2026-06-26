@@ -26,7 +26,7 @@ vec2 local_pixel_delta(vec2 local)
 {
     float c = cos(inAngle);
     float s = sin(inAngle);
-    vec2 rotated = vec2(c * local.x - s * local.y, s * local.x + c * local.y);
+    vec2 rotated = vec2(c * local.x + s * local.y, -s * local.x + c * local.y);
     return vec2(
         viewport.rect.z > 0.0 ? 2.0 * rotated.x / viewport.rect.z : 0.0,
         viewport.rect.w > 0.0 ? 2.0 * rotated.y / viewport.rect.w : 0.0);

@@ -42,6 +42,7 @@ time.
 
 Text is semantic at the retained scene layer but currently lowers to glyph quads for rendering.
 Treat interaction as annotation-level unless a feature explicitly exposes glyph-level details.
+Text placement `angle` rotates counter-clockwise in rendered y-up coordinates.
 
 ## Backend Notes
 

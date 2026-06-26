@@ -42,6 +42,8 @@ visual.
 Glyph items correspond to shaped glyph quads, not text strings or logical characters. Use semantic
 text objects when interaction should be string-based.
 
+`angle` rotates counter-clockwise in rendered y-up coordinates around the glyph anchor.
+
 ## Backend Notes
 
 Native and WebGPU paths are active for atlas-backed glyph rendering. The family is experimental and

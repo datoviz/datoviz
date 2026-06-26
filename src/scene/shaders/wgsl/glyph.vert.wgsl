@@ -27,7 +27,7 @@ fn corner(vertex_index: u32) -> vec2f {
 fn local_pixel_delta(input: VertexIn, local: vec2f) -> vec2f {
     let c = cos(input.angle);
     let s = sin(input.angle);
-    let rotated = vec2f(c * local.x - s * local.y, s * local.x + c * local.y);
+    let rotated = vec2f(c * local.x + s * local.y, -s * local.x + c * local.y);
     return vec2f(
         select(0.0, 2.0 * rotated.x / viewport.rect.z, viewport.rect.z > 0.0),
         select(0.0, -2.0 * rotated.y / viewport.rect.w, viewport.rect.w > 0.0));

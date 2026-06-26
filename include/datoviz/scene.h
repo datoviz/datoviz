@@ -1653,8 +1653,8 @@ dvz_visual_attr_format(const DvzVisual* visual, const char* attr_name);
  * | path | `"position"` (vec3f), `"color"` (RGBA8), optional `"stroke_width_px"` (float pixels) |
  * | mesh | `"position"` (vec3f), optional `"color"` (RGBA8), optional `"normal"` (vec3f), optional `"texcoords"` (vec2f), optional `"instance_transform"` (mat4f, one per instance) |
  * | image | legacy `"position"` (vec3f) + `"texcoords"` (vec2f) corner vertices, or per-item `"position"` (vec3f) + `"extent"` (vec2f) with optional `"tex_rect"` (vec4f) and `"anchor"` (vec2f) |
- * | text | string attribute `"text"` plus per-string `"position"` (vec3f pixels), optional `"anchor"` (vec2f), `"size"` (float pixels), `"color"` (RGBA8), `"angle"` (float radians) |
- * | glyph | `"position"` (vec3f anchor), `"bounds"` (vec4f local pixel bounds), `"texcoords"` (vec4f atlas UV bounds), `"color"` (RGBA8), `"angle"` (float radians) |
+ * | text | string attribute `"text"` plus per-string `"position"` (vec3f pixels), optional `"anchor"` (vec2f), `"size"` (float pixels), `"color"` (RGBA8), `"angle"` (float radians, positive counter-clockwise in rendered y-up coordinates) |
+ * | glyph | `"position"` (vec3f anchor), `"bounds"` (vec4f local pixel bounds), `"texcoords"` (vec4f atlas UV bounds), `"color"` (RGBA8), `"angle"` (float radians, positive counter-clockwise in rendered y-up coordinates) |
  *
  * All configured attributes on one visual must use the same item_count. Retained mutation is legal
  * after frame artifact creation; changes are reflected only in later artifacts.
@@ -3355,7 +3355,7 @@ DVZ_EXPORT const DvzLabelsState* dvz_labels_state(const DvzVisual* visual);
  *
  * Renders atlas-backed glyph quads with `position` (vec3 anchor), `bounds` (vec4 local pixel
  * bounds), `texcoords` (vec4 atlas UV bounds), `color` (RGBA8), `angle` (float radians), and a
- * bound 2D sampled field.
+ * bound 2D sampled field. Positive `angle` rotates counter-clockwise in rendered y-up coordinates.
  *
  * @param scene the scene
  * @param flags variant flags
