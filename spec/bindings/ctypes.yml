@@ -76,6 +76,9 @@ layout_records:
     - DvzQueryResult
     - DvzSampledFieldDesc
     - DvzStreamConfig
+    - DvzAxisTickPolicy
+    - DvzAxisTicks
+    - DvzAxisStyle
     - DvzTurntableDesc
     - DvzVideoEncoderConfig
 
@@ -133,6 +136,9 @@ array_facade:
 
   dvz_visual_set_data_many:
     special: visual_data_updates
+
+  dvz_axis_set_ticks:
+    special: axis_ticks
 
   dvz_visual_set_data_range:
     strings:

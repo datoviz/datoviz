@@ -39,6 +39,15 @@ def fake_facade(monkeypatch):
     raw = types.ModuleType('datoviz.raw')
     raw.DvzVisual = type('DvzVisual', (), {})
 
+    class DvzAxisTicks(ctypes.Structure):
+        _fields_ = [
+            ('struct_size', ctypes.c_uint32),
+            ('flags', ctypes.c_uint32),
+            ('count', ctypes.c_uint32),
+            ('values', ctypes.POINTER(ctypes.c_double)),
+            ('labels', ctypes.POINTER(ctypes.c_char_p)),
+        ]
+
     class DvzVisualDataUpdate(ctypes.Structure):
         _fields_ = [
             ('attr_name', ctypes.c_char_p),
@@ -46,7 +55,11 @@ def fake_facade(monkeypatch):
             ('item_count', ctypes.c_uint32),
         ]
 
+    raw.DvzAxisTicks = DvzAxisTicks
     raw.DvzVisualDataUpdate = DvzVisualDataUpdate
+    raw.dvz_axis_set_ticks = _raw_function(
+        [ctypes.c_void_p, ctypes.POINTER(DvzAxisTicks)], ctypes.c_bool
+    )
     raw.dvz_passthrough = _raw_function([ctypes.c_int, ctypes.c_int])
     raw.dvz_scene_buffer_set_data = _raw_function(
         [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint64], ctypes.c_bool
@@ -198,6 +211,58 @@ def test_visual_set_data_many_raw_passthrough_requires_count(fake_facade):
     _, raw_updates, update_count = raw.dvz_visual_set_data_many.calls[-1]
     assert raw_updates is updates
     assert update_count == 1
+
+
+def test_axis_set_ticks_accepts_values_and_labels(fake_facade):
+    raw, facade = fake_facade
+    values = np.array([0.0, 5.0, 10.0], dtype=np.float64)
+
+    assert facade.dvz_axis_set_ticks(ctypes.c_void_p(11), values, ['zero', 'five', 'ten']) == 17
+
+    axis, ticks_ptr = raw.dvz_axis_set_ticks.calls[-1]
+    ticks = ticks_ptr._obj
+    assert axis.value == 11
+    assert ticks.struct_size == ctypes.sizeof(raw.DvzAxisTicks)
+    assert ticks.flags == 0
+    assert ticks.count == 3
+    copied_values = np.ctypeslib.as_array(ticks.values, shape=(3,))
+    np.testing.assert_array_equal(copied_values, values)
+    assert [ticks.labels[i] for i in range(3)] == [b'zero', b'five', b'ten']
+
+
+def test_axis_set_ticks_accepts_empty_explicit_ticks(fake_facade):
+    raw, facade = fake_facade
+
+    facade.dvz_axis_set_ticks(ctypes.c_void_p(12), [])
+
+    _, ticks_ptr = raw.dvz_axis_set_ticks.calls[-1]
+    ticks = ticks_ptr._obj
+    assert ticks.count == 0
+    assert not bool(ticks.values)
+    assert not bool(ticks.labels)
+
+
+def test_axis_set_ticks_rejects_label_count_mismatch_before_raw_call(fake_facade):
+    raw, facade = fake_facade
+
+    with pytest.raises(ValueError, match='labels length 1 does not match tick count 2'):
+        facade.dvz_axis_set_ticks(ctypes.c_void_p(13), [0.0, 1.0], ['zero'])
+
+    assert raw.dvz_axis_set_ticks.calls == []
+
+
+def test_axis_set_ticks_raw_descriptor_passthrough(fake_facade):
+    raw, facade = fake_facade
+    ticks = raw.DvzAxisTicks()
+    ticks.struct_size = ctypes.sizeof(raw.DvzAxisTicks)
+
+    facade.dvz_axis_set_ticks(ctypes.c_void_p(14), ctypes.byref(ticks))
+
+    _, raw_ticks = raw.dvz_axis_set_ticks.calls[-1]
+    assert raw_ticks._obj is ticks
+
+    with pytest.raises(TypeError, match='labels must be omitted'):
+        facade.dvz_axis_set_ticks(ctypes.c_void_p(14), ctypes.byref(ticks), ['unused'])
 
 
 def test_non_contiguous_visual_data_is_copied_during_call(fake_facade):

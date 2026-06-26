@@ -38,7 +38,9 @@ def _encode_string(value, name):
 
 
 def _raw_pointer(value):
-    if isinstance(value, (int, ctypes.c_void_p, ctypes.Array)):
+    if isinstance(value, (int, ctypes.c_void_p, ctypes.Array, ctypes._Pointer)):
+        return True
+    if type(value).__name__ == 'CArgObject' and hasattr(value, '_obj'):
         return True
     return hasattr(value, '_as_parameter_')
 
@@ -120,6 +122,56 @@ def _visual_data_updates_arg(updates):
     return records, keepalive
 
 
+def _axis_ticks_raw_descriptor(value):
+    if isinstance(value, _raw.DvzAxisTicks):
+        return ctypes.byref(value)
+    pointer_type = ctypes.POINTER(_raw.DvzAxisTicks)
+    if isinstance(value, pointer_type):
+        return value
+    if type(value).__name__ == 'CArgObject' and isinstance(
+        getattr(value, '_obj', None), _raw.DvzAxisTicks
+    ):
+        return value
+    return None
+
+
+def _axis_ticks_arg(values, labels):
+    raw_descriptor = _axis_ticks_raw_descriptor(values)
+    if raw_descriptor is not None:
+        if labels is not None:
+            raise TypeError('labels must be omitted when passing a raw DvzAxisTicks descriptor')
+        return raw_descriptor, (values,)
+
+    value_array = np.asarray(values, dtype=np.float64)
+    if value_array.ndim != 1:
+        raise ValueError('values must be one-dimensional')
+    if not value_array.flags.c_contiguous:
+        value_array = np.ascontiguousarray(value_array)
+
+    count = int(value_array.shape[0])
+    label_array = None
+    encoded_labels = None
+    if labels is not None:
+        encoded_labels = [
+            _encode_string(label, f'labels[{i}]') for i, label in enumerate(labels)
+        ]
+        if len(encoded_labels) != count:
+            raise ValueError(f'labels length {len(encoded_labels)} does not match tick count {count}')
+        if count > 0:
+            label_array = (ctypes.c_char_p * count)(*encoded_labels)
+
+    record = _raw.DvzAxisTicks()
+    record.struct_size = ctypes.sizeof(_raw.DvzAxisTicks)
+    record.flags = 0
+    record.count = count
+    record.values = (
+        value_array.ctypes.data_as(ctypes.POINTER(ctypes.c_double)) if count > 0 else None
+    )
+    record.labels = label_array
+    keepalive = (record, value_array, encoded_labels, label_array)
+    return ctypes.byref(record), keepalive
+
+
 def dvz_view_capture_rgba(view):
     canvas = _raw.dvz_view_canvas(view)
     if not canvas:
@@ -196,6 +248,10 @@ def _array_facade_policy_fallback(path: Path) -> dict:
                 facade[current_function][current_section] = []
             current_group = None
             continue
+        if indent == 4 and ':' in stripped and current_section is None:
+            key, value = stripped.split(':', 1)
+            facade[current_function][key.strip()] = value.strip()
+            continue
         if current_section == 'strings' and indent == 6 and stripped.startswith('- '):
             facade[current_function]['strings'].append(stripped[2:].strip())
             continue
@@ -260,6 +316,9 @@ def _validate_policy(api: dict, policy: dict) -> None:
                 raise SystemExit(
                     f'array_facade.{function_name} group lifetime must be copied_before_return'
                 )
+        special = rules.get('special')
+        if special is not None and special not in {'visual_data_updates', 'axis_ticks'}:
+            raise SystemExit(f'array_facade.{function_name} has unknown special wrapper {special}')
 
 
 def _signature(function: dict, rules: dict) -> tuple[list[str], set[str]]:
@@ -291,6 +350,20 @@ def dvz_visual_set_data_many(visual, updates, update_count=None):
 dvz_visual_set_data_many.__doc__ = getattr(_raw.dvz_visual_set_data_many, "__doc__", None)
 dvz_visual_set_data_many.argtypes = getattr(_raw.dvz_visual_set_data_many, "argtypes", None)
 dvz_visual_set_data_many.restype = getattr(_raw.dvz_visual_set_data_many, "restype", None)
+
+
+'''
+    if name == 'dvz_axis_set_ticks':
+        return '''\
+def dvz_axis_set_ticks(axis, values, labels=None):
+    _ticks_ptr, _ticks_keepalive = _axis_ticks_arg(values, labels)
+    _keepalive = (_ticks_keepalive,)
+    return _raw.dvz_axis_set_ticks(axis, _ticks_ptr)
+
+
+dvz_axis_set_ticks.__doc__ = getattr(_raw.dvz_axis_set_ticks, "__doc__", None)
+dvz_axis_set_ticks.argtypes = getattr(_raw.dvz_axis_set_ticks, "argtypes", None)
+dvz_axis_set_ticks.restype = getattr(_raw.dvz_axis_set_ticks, "restype", None)
 
 
 '''
