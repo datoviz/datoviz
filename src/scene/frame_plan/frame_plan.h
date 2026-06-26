@@ -322,6 +322,9 @@ typedef struct DvzFramePlanVisualMeta
     uint32_t vertex_count;
     uint32_t index_count;
     uint32_t instance_count;
+    bool has_item_range;
+    uint32_t item_range_first;
+    uint32_t item_range_count;
     DvzAlphaMode alpha_mode;
     bool depth_test_enabled;
     uint32_t depth_compare_op;

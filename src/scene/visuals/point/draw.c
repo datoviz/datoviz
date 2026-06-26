@@ -45,5 +45,19 @@ bool _scene_point_visual_draw_desc(
         return false;
     out->vertex_count = lowering.draw_vertex_count;
     out->instance_count = lowering.draw_instance_count;
+    if (visual->has_item_range)
+    {
+        if (lowering.lowering == DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS)
+        {
+            out->first_vertex = 0;
+            out->first_instance = visual->item_range_first;
+            out->instance_count = visual->item_range_count;
+        }
+        else
+        {
+            out->first_vertex = visual->item_range_first;
+            out->vertex_count = visual->item_range_count;
+        }
+    }
     return true;
 }

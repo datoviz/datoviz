@@ -155,6 +155,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_blended_mesh_occlusion_contracts);
     TST_CASE(test_scene_visual_attr_source_and_mutability_metadata);
     TST_CASE(test_scene_visual_data_view);
+    TST_CASE(test_scene_visual_item_range_api);
     TST_CASE(test_scene_visual_scalar_color_attr_format);
     TST_CASE(test_scene_scalar_color_emits_rgba_upload);
     TST_CASE(test_scene_visual_bounds_point_and_range_update);
@@ -209,6 +210,9 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_visual_common_binding_layout_order);
     TST_CASE(test_scene_empty_figure_emit_clear_only);
     TST_CASE(test_scene_point_emit_has_vertex_layout);
+    TST_CASE(test_scene_point_item_range_emit_glsl);
+    TST_CASE(test_scene_point_item_range_emit_wgsl);
+    TST_CASE(test_scene_point_item_range_empty_clear_no_reupload);
     TST_CASE(test_scene_point_visual_resizes_existing_attributes);
     TST_SCENE_GRAPH_GPU_CASE(test_scene_indexed_primitive_material_updates_runtime);
     TST_SCENE_GRAPH_GPU_CASE(test_scene_point_large_count_executes);

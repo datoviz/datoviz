@@ -22,6 +22,21 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+static const DvzDrp2Command*
+_scene_test_first_draw_command(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd != NULL && cmd->type == DVZ_DRP2_COMMAND_DRAW)
+            return cmd;
+    }
+    return NULL;
+}
+
+
+
 int test_scene_point_emit_has_vertex_layout(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -73,6 +88,216 @@ int test_scene_point_emit_has_vertex_layout(TstContext* suite, const TstCase* it
     AT(found_pipeline);
 
     _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify point item ranges lower to native point-list draw offsets.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_point_item_range_emit_glsl(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    vec3 positions[5] = {
+        {-0.8f, 0.0f, 0.0f}, {-0.4f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f},
+        { 0.4f, 0.0f, 0.0f}, { 0.8f, 0.0f, 0.0f},
+    };
+    DvzColor colors[5] = {
+        {255, 0, 0, 255}, {255, 128, 0, 255}, {255, 255, 0, 255},
+        {0, 255, 0, 255}, {0, 128, 255, 255},
+    };
+    float sizes[5] = {6.0f, 7.0f, 8.0f, 9.0f, 10.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 5) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 5) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 5) == 0);
+    AT(dvz_visual_set_item_range(visual, 1, 3) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    const DvzDrp2Command* draw = _scene_test_first_draw_command(stream);
+    ANN(draw);
+    AT(draw->u.draw.first_vertex == 1);
+    AT(draw->u.draw.vertex_count == 3);
+    AT(draw->u.draw.first_instance == 0);
+    AT(draw->u.draw.instance_count == 1);
+
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify point item ranges lower to instanced-quad draw offsets.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_point_item_range_emit_wgsl(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    vec3 positions[5] = {
+        {-0.8f, 0.0f, 0.0f}, {-0.4f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f},
+        { 0.4f, 0.0f, 0.0f}, { 0.8f, 0.0f, 0.0f},
+    };
+    DvzColor colors[5] = {
+        {255, 0, 0, 255}, {255, 128, 0, 255}, {255, 255, 0, 255},
+        {0, 255, 0, 255}, {0, 128, 255, 255},
+    };
+    float sizes[5] = {6.0f, 7.0f, 8.0f, 9.0f, 10.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 5) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 5) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 5) == 0);
+    AT(dvz_visual_set_item_range(visual, 2, 2) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_wgsl = true;
+    caps.shader_format_glsl = false;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    const DvzDrp2Command* draw = _scene_test_first_draw_command(stream);
+    ANN(draw);
+    AT(draw->u.draw.first_vertex == 0);
+    AT(draw->u.draw.vertex_count == 6);
+    AT(draw->u.draw.first_instance == 2);
+    AT(draw->u.draw.instance_count == 2);
+
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify empty and cleared point item ranges affect draw contribution only.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_point_item_range_empty_clear_no_reupload(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    vec3 positions[4] = {
+        {-0.6f, 0.0f, 0.0f}, {-0.2f, 0.0f, 0.0f},
+        { 0.2f, 0.0f, 0.0f}, { 0.6f, 0.0f, 0.0f},
+    };
+    DvzColor colors[4] = {
+        {255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}, {255, 255, 255, 255},
+    };
+    float sizes[4] = {6.0f, 7.0f, 8.0f, 9.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 4) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream0 = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
+    ANN(stream0);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    _test_scene_stream_destroy(stream0);
+
+    AT(dvz_visual_set_item_range(visual, 4, 0) == 0);
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream1 = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
+    ANN(stream1);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(_stream_visual_write_buffer_count(stream1) == 0);
+    const DvzDrp2Command* draw1 = _scene_test_first_draw_command(stream1);
+    ANN(draw1);
+    AT(draw1->u.draw.first_vertex == 4);
+    AT(draw1->u.draw.vertex_count == 0);
+    _test_scene_stream_destroy(stream1);
+
+    AT(dvz_visual_set_item_range(visual, 1, 2) == 0);
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream2 = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
+    ANN(stream2);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(_stream_visual_write_buffer_count(stream2) == 0);
+    const DvzDrp2Command* draw2 = _scene_test_first_draw_command(stream2);
+    ANN(draw2);
+    AT(draw2->u.draw.first_vertex == 1);
+    AT(draw2->u.draw.vertex_count == 2);
+    _test_scene_stream_destroy(stream2);
+
+    dvz_visual_clear_item_range(visual);
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream3 = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
+    ANN(stream3);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(_stream_visual_write_buffer_count(stream3) == 0);
+    const DvzDrp2Command* draw3 = _scene_test_first_draw_command(stream3);
+    ANN(draw3);
+    AT(draw3->u.draw.first_vertex == 0);
+    AT(draw3->u.draw.vertex_count == 4);
+    _test_scene_stream_destroy(stream3);
+
     dvz_scene_destroy(scene);
     return 0;
 }

@@ -78,6 +78,9 @@ bool _scene_visual_frame_plan_metadata(
     metadata->buffer_index = UINT32_MAX;
     metadata->topology = (uint32_t)_visual_family_state(visual)->topology;
     metadata->instance_count = 1;
+    metadata->has_item_range = visual->has_item_range;
+    metadata->item_range_first = visual->item_range_first;
+    metadata->item_range_count = visual->item_range_count;
     metadata->alpha_mode = visual->alpha_mode;
     metadata->depth_test_enabled = visual->depth_test_enabled;
     metadata->depth_compare_op = visual->depth_compare_op;

@@ -942,6 +942,14 @@ struct DvzVisualDataView
 typedef struct DvzVisualDataView DvzVisualDataView;
 
 
+struct DvzItemRange
+{
+    uint32_t first_item;
+    uint32_t item_count;
+};
+typedef struct DvzItemRange DvzItemRange;
+
+
 typedef enum
 {
     DVZ_BOUNDS_SPACE_VISUAL = 0,

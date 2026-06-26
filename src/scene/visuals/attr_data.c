@@ -39,6 +39,45 @@
 /*************************************************************************************************/
 
 /**
+ * Resolve the current logical item count for the point item-range slice.
+ *
+ * @param visual the visual
+ * @param out_count output logical item count
+ * @return whether the count was resolved
+ */
+static bool
+_visual_item_range_logical_count(const DvzVisual* visual, uint64_t* out_count, bool log_errors)
+{
+    ANN(out_count);
+    *out_count = 0;
+    if (visual == NULL)
+        return false;
+    const DvzVisualFamilyOps* ops = visual->ops;
+    if (ops == NULL || ops->item_range_attr_name == NULL)
+    {
+        if (log_errors)
+            log_error(
+                "%s visual item ranges are not supported in this v0.4 slice",
+                ops != NULL ? ops->name : _visual_type_name(visual->type));
+        return false;
+    }
+
+    int idx = _attr_index(visual, ops->item_range_attr_name);
+    if (idx < 0 || visual->attrs[idx].item_count == 0)
+    {
+        if (log_errors)
+            log_error(
+                "%s visual item range requires a retained %s item count", ops->name,
+                ops->item_range_attr_name);
+        return false;
+    }
+    *out_count = visual->attrs[idx].item_count;
+    return true;
+}
+
+
+
+/**
  * Validate family-specific dense attribute payload values before retaining them.
  *
  * @param visual the visual
@@ -331,6 +370,110 @@ int dvz_visual_data(const DvzVisual* visual, const char* attr_name, DvzVisualDat
     out->mutability = attr->mutability;
     out->version = attr->version;
     return 0;
+}
+
+
+
+/**
+ * Set the active retained visual logical item range.
+ *
+ * @param visual the visual
+ * @param first_item first logical item
+ * @param item_count logical item count
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_item_range(DvzVisual* visual, uint32_t first_item, uint32_t item_count)
+{
+    if (visual == NULL)
+        return -1;
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual item range"))
+        return -1;
+
+    uint64_t logical_count = 0;
+    if (!_visual_item_range_logical_count(visual, &logical_count, true))
+        return -1;
+
+    uint64_t item_end = 0;
+    if (_dvz_add_u64_overflows(first_item, item_count, &item_end))
+    {
+        log_error(
+            "visual item range overflow for first_item=%u item_count=%u", first_item,
+            item_count);
+        return -1;
+    }
+    if (item_end > logical_count)
+    {
+        log_error(
+            "visual item range [%u, %" PRIu64 ") exceeds logical item_count %" PRIu64,
+            first_item, item_end, logical_count);
+        return -1;
+    }
+
+    if (
+        visual->has_item_range && visual->item_range_first == first_item &&
+        visual->item_range_count == item_count)
+    {
+        return 0;
+    }
+
+    visual->has_item_range = true;
+    visual->item_range_first = first_item;
+    visual->item_range_count = item_count;
+    _scene_notify_visual_changed(visual);
+    return 0;
+}
+
+
+
+/**
+ * Clear the active retained visual logical item range.
+ *
+ * @param visual the visual
+ */
+void dvz_visual_clear_item_range(DvzVisual* visual)
+{
+    if (visual == NULL)
+        return;
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual item range"))
+        return;
+    if (!visual->has_item_range)
+        return;
+
+    visual->has_item_range = false;
+    visual->item_range_first = 0;
+    visual->item_range_count = 0;
+    _scene_notify_visual_changed(visual);
+}
+
+
+
+/**
+ * Return the effective retained visual logical item range.
+ *
+ * @param visual the visual
+ * @param out output range
+ * @return whether the effective range was resolved
+ */
+bool dvz_visual_get_item_range(const DvzVisual* visual, DvzItemRange* out)
+{
+    if (visual == NULL || out == NULL)
+        return false;
+
+    uint64_t logical_count = 0;
+    if (!_visual_item_range_logical_count(visual, &logical_count, false) || logical_count > UINT32_MAX)
+        return false;
+
+    if (visual->has_item_range)
+    {
+        out->first_item = visual->item_range_first;
+        out->item_count = visual->item_range_count;
+    }
+    else
+    {
+        out->first_item = 0;
+        out->item_count = (uint32_t)logical_count;
+    }
+    return true;
 }
 
 

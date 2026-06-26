@@ -1689,6 +1689,44 @@ DVZ_EXPORT int dvz_visual_data(
 
 
 /**
+ * Set the active logical item range for a retained visual.
+ *
+ * The active range is expressed in logical item units:
+ * [first_item, first_item + item_count). Changing it affects draw/query/export contribution
+ * planning only; it does not upload or rewrite attribute buffers. The point visual is the first
+ * supported family for this v0.4 slice.
+ *
+ * @param visual the visual
+ * @param first_item first logical item in the active range
+ * @param item_count number of logical items in the active range; zero is valid
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_visual_set_item_range(DvzVisual* visual, uint32_t first_item, uint32_t item_count);
+
+
+/**
+ * Clear the active logical item range and restore full visual participation.
+ *
+ * @param visual the visual
+ */
+DVZ_EXPORT void dvz_visual_clear_item_range(DvzVisual* visual);
+
+
+/**
+ * Return the effective logical item range for a retained visual.
+ *
+ * When no explicit range is active, this returns the full effective range. This first API does not
+ * distinguish an explicitly full active range from a cleared range.
+ *
+ * @param visual the visual
+ * @param out output item range
+ * @return true on success, false on invalid input or unsupported visual state
+ */
+DVZ_EXPORT bool dvz_visual_get_item_range(const DvzVisual* visual, DvzItemRange* out);
+
+
+/**
  * Return the retained visual-space bounding box of one visual.
  *
  * The box is computed from CPU-retained dense visual attributes and family-specific geometry state.

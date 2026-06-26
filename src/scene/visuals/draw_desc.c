@@ -42,6 +42,8 @@ bool _scene_visual_default_draw_desc(
 
     out->vertex_count = visual->vertex_count;
     out->instance_count = visual->instance_count;
+    out->first_vertex = visual->has_item_range ? visual->item_range_first : 0;
+    out->first_instance = 0;
     out->index_buffer_id = visual->index_buffer_id;
     out->index_format = visual->index_format;
     out->index_count = visual->index_count;

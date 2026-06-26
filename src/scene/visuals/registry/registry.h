@@ -88,6 +88,7 @@ struct DvzVisualFamilyOps
     const char* expected_attrs;
     const char* attr_alias_public;
     const char* attr_alias_storage;
+    const char* item_range_attr_name;
     DvzVisualFamilyLoweringFn resolve_lowering;
     DvzVisualFamilyBoundsFn resolve_bounds;
     DvzVisualFamilyPassCapsFn resolve_pass_caps;

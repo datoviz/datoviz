@@ -848,6 +848,8 @@ int test_scene_visual_attr_source_and_mutability_metadata(TstContext* suite, con
 
 int test_scene_visual_data_view(TstContext* suite, const TstCase* item);
 
+int test_scene_visual_item_range_api(TstContext* suite, const TstCase* item);
+
 int test_scene_visual_scalar_color_attr_format(TstContext* suite, const TstCase* item);
 
 int test_scene_scalar_color_emits_rgba_upload(TstContext* suite, const TstCase* item);
@@ -968,6 +970,8 @@ int test_scene_image_sample_query_readback_failure(TstContext* suite, const TstC
 
 int test_scene_point_query_misses_empty_pixel(TstContext* suite, const TstCase* item);
 
+int test_scene_point_query_item_range_global_identity(TstContext* suite, const TstCase* item);
+
 int test_scene_pixel_query_accepts_square_corner(TstContext* suite, const TstCase* item);
 
 int test_scene_pixel_query_preserves_vertical_item_orientation(
@@ -1056,6 +1060,13 @@ int test_scene_image_pixel_anchor_emit_wgsl(TstContext* suite, const TstCase* it
 int test_scene_empty_figure_emit_clear_only(TstContext* suite, const TstCase* item);
 
 int test_scene_point_emit_has_vertex_layout(TstContext* suite, const TstCase* item);
+
+int test_scene_point_item_range_emit_glsl(TstContext* suite, const TstCase* item);
+
+int test_scene_point_item_range_emit_wgsl(TstContext* suite, const TstCase* item);
+
+int test_scene_point_item_range_empty_clear_no_reupload(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_second_emit_no_uploads_when_not_dirty(TstContext* suite, const TstCase* item);
 

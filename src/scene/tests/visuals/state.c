@@ -351,6 +351,73 @@ int test_scene_visual_data_view(TstContext* suite, const TstCase* item)
 }
 
 
+/**
+ * Verify retained visual item range API validation and effective range reporting.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_item_range_api(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    DvzItemRange range = {99, 99};
+    AT(!dvz_visual_get_item_range(visual, &range));
+    AT(range.first_item == 99);
+    AT(range.item_count == 99);
+
+    vec3 positions[4] = {
+        {-0.75f, 0.0f, 0.0f},
+        {-0.25f, 0.0f, 0.0f},
+        { 0.25f, 0.0f, 0.0f},
+        { 0.75f, 0.0f, 0.0f},
+    };
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+
+    AT(dvz_visual_get_item_range(visual, &range));
+    AT(range.first_item == 0);
+    AT(range.item_count == 4);
+
+    AT(dvz_visual_set_item_range(visual, 1, 2) == 0);
+    AT(dvz_visual_get_item_range(visual, &range));
+    AT(range.first_item == 1);
+    AT(range.item_count == 2);
+
+    AT(dvz_visual_set_item_range(visual, 4, 0) == 0);
+    AT(dvz_visual_get_item_range(visual, &range));
+    AT(range.first_item == 4);
+    AT(range.item_count == 0);
+
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_item_range(visual, 4, 1) == -1);
+    AT(_captured_log_contains(suite, "exceeds logical item_count 4"));
+
+    dvz_visual_clear_item_range(visual);
+    AT(dvz_visual_get_item_range(visual, &range));
+    AT(range.first_item == 0);
+    AT(range.item_count == 4);
+
+    DvzVisual* marker = dvz_marker(scene, 0);
+    ANN(marker);
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_item_range(marker, 0, 0) == -1);
+    AT(_captured_log_contains(suite, "visual item ranges are not supported"));
+
+    AT(!dvz_visual_get_item_range(NULL, &range));
+    AT(!dvz_visual_get_item_range(visual, NULL));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Verify scalar color attribute format metadata and retained dense views.

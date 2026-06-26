@@ -218,6 +218,7 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .attrs = POINT_ATTRS, .attr_count = DVZ_ARRAY_COUNT(POINT_ATTRS),
      .expected_attrs = "position, color, diameter_px, item_state",
      .attr_alias_public = "diameter_px", .attr_alias_storage = "size",
+     .item_range_attr_name = "position",
      .init_state = _scene_visual_init_point_style, .upload_material_params = true,
      .supports_depth_cue = true, .sync_point_style_material = true},
     {VISUAL_OPS(

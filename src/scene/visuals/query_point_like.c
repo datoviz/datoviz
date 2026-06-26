@@ -173,6 +173,11 @@ bool _scene_query_point_like_build_ex(
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = visual->depth_test_enabled;
     metadata.depth_compare_op = visual->depth_compare_op;
+    metadata.vertex_count =
+        pos_attr->item_count <= UINT32_MAX ? (uint32_t)pos_attr->item_count : 0;
+    metadata.has_item_range = visual->has_item_range;
+    metadata.item_range_first = visual->item_range_first;
+    metadata.item_range_count = visual->item_range_count;
     dvz_strlcpy(metadata.position_id, "query0_position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.color_id, "query0_color", sizeof(metadata.color_id));
     dvz_strlcpy(metadata.size_id, "query0_size", sizeof(metadata.size_id));

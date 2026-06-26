@@ -107,6 +107,9 @@ typedef struct DvzSceneVisualDesc
     bool volume_occluded;
     DvzVolumeOcclusionDesc volume_occlusion;
     DvzVolumeState volume_state;
+    bool has_item_range;
+    uint32_t item_range_first;
+    uint32_t item_range_count;
     uint32_t vertex_count;
     uint32_t index_count;
     uint32_t instance_count;
@@ -246,11 +249,15 @@ typedef struct DvzSceneVisualBindDesc
 
 typedef struct DvzSceneVisualDrawDesc
 {
+    uint32_t first_vertex;
     uint32_t vertex_count;
+    uint32_t first_instance;
     uint32_t instance_count;
     bool indexed;
     uint64_t index_buffer_id;
+    uint32_t first_index;
     uint32_t index_count;
+    int32_t base_vertex;
     const char* index_format;
 } DvzSceneVisualDrawDesc;
 

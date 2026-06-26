@@ -315,8 +315,12 @@ bool _scene_draw_packet_init(
     }
     out->vertex_count = draw_desc.vertex_count;
     out->instance_count = draw_desc.instance_count;
+    out->first_vertex = draw_desc.first_vertex;
+    out->first_instance = draw_desc.first_instance;
     out->index_buffer_id = draw_desc.index_buffer_id;
     out->index_format = draw_desc.index_format;
+    out->first_index = draw_desc.first_index;
+    out->base_vertex = draw_desc.base_vertex;
     out->index_count = draw_desc.index_count;
     out->indexed = draw_desc.indexed;
 
