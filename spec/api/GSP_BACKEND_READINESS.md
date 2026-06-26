@@ -83,9 +83,38 @@ Completed in the current RC lane:
    documented in reference docs.
 6. Adjacent-panel plot scissor proof is covered by
    `test_scene_adjacent_panels_plot_scissor_no_bleed`.
+7. View2D/domain readback uses ordered endpoints, including reversed finite domains. Axis/grid
+   generation uses explicit internal sorted intervals only where numeric low/high bounds are needed.
+8. `DvzAxisTicks`, `dvz_axis_set_ticks()`, and `dvz_axis_clear_ticks()` provide exact explicit
+   tick positions and optional copied labels. The top-level Python facade accepts NumPy-compatible
+   values and Python labels.
+9. Query target scopes now distinguish deferred guide and all-rendered requests:
+   `DVZ_SCENE_TARGET_GUIDE` and `DVZ_SCENE_TARGET_ALL_RENDERED` return
+   `DVZ_QUERY_STATUS_UNSUPPORTED_TARGET` instead of degrading to data-only picking.
 
 These slices make the first GSP/Matplotlib backend path viable without private Python modules and
 without temporary files for ordinary RGBA capture.
+
+
+## 0.2.1 GSP backend compatibility matrix
+
+| Capability | Status | Public C API | Top-level Python | Tests/proof | Notes |
+| --- | --- | --- | --- | --- | --- |
+| View2D/domain readback | supported | `dvz_panel_set_domain()`, `dvz_panel_set_view2d()`, `dvz_panel_visible_domain()` | exposed through `datoviz` facade | `test_panel_view2d_reversed_domains` | Public domains are ordered endpoints, not sorted bounds. |
+| Reversed finite domains | supported | same as View2D/domain | exposed | axis/panel View2D tests | Data mapping, visible-domain readback, axes, and grid use one oriented snapshot. |
+| Explicit axis ticks | supported | `DvzAxisTicks`, `dvz_axis_set_ticks()`, `dvz_axis_clear_ticks()` | `dvz.dvz_axis_set_ticks(axis, values, labels=None)` | `test_axis_explicit_ticks_and_labels`, `testing/test_array_facade.py` | Values are exact data coordinates and keep caller order. |
+| Explicit tick labels | supported | `DvzAxisTicks.labels` | Python labels supported | axis label copy tests, array facade tests | Labels are copied before the C setter returns. |
+| Grid alignment | supported | axis tick state | exposed through axis API | `test_axis_explicit_reversed_ticks_grid_alignment` | Grid lines use the same render tick snapshot as tick marks. |
+| Axis labels | supported | `dvz_axis_set_label()` | exposed | axis tests and text rendering tests | Uses the scene text/glyph pipeline. |
+| Guide query | deferred, explicit | `DVZ_SCENE_TARGET_GUIDE` | enum exposed in `datoviz.raw`; top-level query APIs exposed | `test_scene_query_deferred_guide_targets_are_unsupported`, `ctypes_smoke.py` | Returns `DVZ_QUERY_STATUS_UNSUPPORTED_TARGET`. |
+| All-rendered with guides | deferred, explicit | `DVZ_SCENE_TARGET_ALL_RENDERED` | enum exposed in `datoviz.raw`; top-level query APIs exposed | same query tests/smoke | No data-only fallback while guide picking is absent. |
+| Data query payload completeness | supported/experimental by family | `DvzQueryResult` fields and visual-family query ops | `DvzQueryResult`, `dvz_panel_query()`, `dvz_scene_poll_query()` | `just test query`, `ctypes_smoke.py` | Point/marker/image/sample/mesh paths fill promoted fields; unsupported gaps report status. |
+| Colorbar render | supported | `dvz_colorbar()`, title/format/orientation/anchor/layout setters | symbols probed by `array_facade_smoke.py` | `test_scene_scale_colormap_colorbar_core`, `test_scene_colorbar_auto_reserve_and_visuals`, `test_app_offscreen_colorbar_has_visible_ramp_and_labels` | Range comes from the shared `DvzScale`; explicit colorbar ticks are not a separate RC API. |
+| Colorbar query | deferred | use guide/all-rendered query scopes | unsupported scopes exposed | deferred-target query test | No CPU fallback query for colorbar adornments. |
+| Text render | supported | `dvz_text()`, `dvz_text_set_string()`, style/placement helpers | symbols and `DvzTextPlacement` probed by `array_facade_smoke.py` | semantic text and atlas tests under `scene/interaction` and `scene/text_atlas` | Placement may be screen, data, or world; offsets and size are logical pixels. |
+| Text query | deferred for semantic text | `DVZ_SCENE_TARGET_TEXT` currently family/backend dependent | query APIs exposed | query unsupported/family tests | Use explicit unsupported statuses unless a promoted visual-family path handles the target. |
+| Mesh render | supported | `dvz_mesh()`, `dvz_mesh_set_geometry()`, dense/index uploads | symbols probed by `array_facade_smoke.py` | mesh geometry/state tests and examples | Indexed triangle topology; supports `z=0` 2D overlays and 3D depth paths. |
+| Mesh query | supported/experimental | query item targets on mesh visuals | query APIs exposed | `test_scene_mesh_query_resolves_item`, `test_scene_mesh_query_resolves_instance_item` | Face-level semantics beyond promoted item/instance payloads remain family-specific. |
 
 
 ## 0.3 Remaining RC/post-RC follow-up

@@ -79,6 +79,7 @@ layout_records:
     - DvzAxisTickPolicy
     - DvzAxisTicks
     - DvzAxisStyle
+    - DvzTextPlacement
     - DvzTurntableDesc
     - DvzVideoEncoderConfig
 
@@ -163,7 +164,6 @@ skipped_functions:
     unions, or other layouts that are intentionally not emitted until their ABI policy is explicit.
     Keep this list synchronized with datoviz._ctypes._SKIPPED_FUNCTIONS.
   expected:
-    - dvz_annotation_desc
     - dvz_attachment_clear
     - dvz_camera_motion_desc
     - dvz_cmd_rendering_default
@@ -184,7 +184,6 @@ skipped_functions:
     - dvz_geometry_surface_grid_desc
     - dvz_geometry_torus_desc
     - dvz_gpu_ctx_config
-    - dvz_label_desc
     - dvz_material_desc
     - dvz_orbit_camera_desc
     - dvz_overlay_card_desc
@@ -199,7 +198,6 @@ skipped_functions:
     - dvz_surface_extent
     - dvz_surface_preferred_format
     - dvz_swapchain_extent
-    - dvz_text_placement
     - dvz_track_circle2_desc
     - dvz_track_circle3_desc
     - dvz_track_rotation_desc
