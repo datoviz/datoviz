@@ -379,27 +379,39 @@ static void _fill_scalar_field(float* values, float time_s)
 
 
 /**
- * Convert data-space positions to visual-space positions in one panel.
+ * Copy data-space positions while assigning one Z coordinate.
  *
- * @param panel target panel
  * @param data input data positions
- * @param visual output visual positions
+ * @param out output data positions
  * @param count number of positions
- * @param z visual Z coordinate to assign after transform
- * @return true on success
+ * @param z data Z coordinate to assign
  */
-static bool _data_to_visual(
-    DvzPanel* panel, const float* data, float* visual, uint32_t count, float z)
+static void _copy_positions_with_z(const float* data, float* out, uint32_t count, float z)
 {
-    ANN(panel);
     ANN(data);
-    ANN(visual);
+    ANN(out);
 
-    if (dvz_panel_data_to_visual_positions(panel, data, visual, count) != 0)
-        return false;
     for (uint32_t i = 0; i < count; i++)
-        visual[3 * i + 2] = z;
-    return true;
+    {
+        out[3 * i + 0] = data[3 * i + 0];
+        out[3 * i + 1] = data[3 * i + 1];
+        out[3 * i + 2] = z;
+    }
+}
+
+
+
+/**
+ * Return a DATA-space visual attachment descriptor for one draw layer.
+ *
+ * @param z_layer layer used for draw ordering
+ * @return visual attachment descriptor
+ */
+static DvzVisualAttachDesc _wind_attach(int32_t z_layer)
+{
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.z_layer = z_layer;
+    return attach;
 }
 
 
@@ -430,10 +442,6 @@ static bool _add_wind_image(
         {DOMAIN_X_MAX_KM, DOMAIN_Y_MIN_KM, 0.0f},
         {DOMAIN_X_MAX_KM, DOMAIN_Y_MAX_KM, 0.0f},
     };
-    vec3 visual_positions[4] = {{0}};
-    if (!_data_to_visual(panel, (const float*)data_positions, (float*)visual_positions, 4, 0.0f))
-        return false;
-
     vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
@@ -444,7 +452,7 @@ static bool _add_wind_image(
     DvzVisual* image = dvz_image(scene, 0);
     if (image == NULL)
         return false;
-    if (dvz_visual_set_data(image, "position", visual_positions, 4) != 0)
+    if (dvz_visual_set_data(image, "position", data_positions, 4) != 0)
         return false;
     if (dvz_visual_set_data(image, "texcoords", texcoords, 4) != 0)
         return false;
@@ -475,9 +483,8 @@ static bool _add_wind_image(
         return false;
     if (dvz_visual_set_depth_test(image, false) != 0)
         return false;
-    if (dvz_panel_add_visual(
-            panel, image,
-            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 0}) != 0)
+    DvzVisualAttachDesc attach = _wind_attach(0);
+    if (dvz_panel_add_visual(panel, image, &attach) != 0)
         return false;
     *out_field = field;
     return true;
@@ -488,19 +495,15 @@ static bool _add_wind_image(
 /**
  * Fill straight wind-vector visual data.
  *
- * @param panel target panel
- * @param positions output vector positions in visual coordinates
- * @param vectors output vector displacements in visual coordinates
+ * @param positions output vector positions in data coordinates
+ * @param vectors output vector displacements in data coordinates
  * @param colors output vector colors
  * @param widths output vector stroke widths
  * @param time_s deterministic animation time in seconds
  * @return true on success
  */
-static bool _fill_vectors(
-    DvzPanel* panel, vec3* positions, vec3* vectors, DvzColor* colors, float* widths,
-    float time_s)
+static bool _fill_vectors(vec3* positions, vec3* vectors, DvzColor* colors, float* widths, float time_s)
 {
-    ANN(panel);
     ANN(positions);
     ANN(vectors);
     ANN(colors);
@@ -520,18 +523,14 @@ static bool _fill_vectors(
 
             vec3 data_start[1] = {{x, y, 0.0f}};
             vec3 data_end[1] = {{x + scale * sample.u, y + scale * sample.v, 0.0f}};
-            vec3 visual_start[1] = {{0}};
-            vec3 visual_end[1] = {{0}};
-            if (!_data_to_visual(panel, (const float*)data_start, (float*)visual_start, 1, 0.03f))
-                return false;
-            if (!_data_to_visual(panel, (const float*)data_end, (float*)visual_end, 1, 0.03f))
-                return false;
+            data_start[0][2] = 0.03f;
+            data_end[0][2] = 0.03f;
 
-            positions[idx][0] = visual_start[0][0];
-            positions[idx][1] = visual_start[0][1];
-            positions[idx][2] = visual_start[0][2];
-            vectors[idx][0] = visual_end[0][0] - visual_start[0][0];
-            vectors[idx][1] = visual_end[0][1] - visual_start[0][1];
+            positions[idx][0] = data_start[0][0];
+            positions[idx][1] = data_start[0][1];
+            positions[idx][2] = data_start[0][2];
+            vectors[idx][0] = data_end[0][0] - data_start[0][0];
+            vectors[idx][1] = data_end[0][1] - data_start[0][1];
             vectors[idx][2] = 0.0f;
 
             colors[idx] = _wind_arrow_color(
@@ -566,7 +565,7 @@ static bool _add_vectors(DvzScene* scene, DvzPanel* panel, DvzVisual** out_visua
     float* widths = (float*)dvz_calloc(VECTOR_COUNT, sizeof(*widths));
     if (positions == NULL || vectors == NULL || colors == NULL || widths == NULL)
         goto error;
-    if (!_fill_vectors(panel, positions, vectors, colors, widths, time_s))
+    if (!_fill_vectors(positions, vectors, colors, widths, time_s))
         goto error;
 
     DvzVisual* visual = dvz_vector(scene, 0);
@@ -587,9 +586,8 @@ static bool _add_vectors(DvzScene* scene, DvzPanel* panel, DvzVisual** out_visua
         goto error;
     if (dvz_visual_set_depth_test(visual, false) != 0)
         goto error;
-    if (dvz_panel_add_visual(
-            panel, visual,
-            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2}) != 0)
+    DvzVisualAttachDesc attach = _wind_attach(2);
+    if (dvz_panel_add_visual(panel, visual, &attach) != 0)
         goto error;
 
     *out_visual = visual;
@@ -612,19 +610,16 @@ error:
 /**
  * Fill streamline path data by integrating through the same wind field.
  *
- * @param panel target panel
- * @param positions output path positions in visual coordinates
+ * @param positions output path positions in data coordinates
  * @param colors output path colors
  * @param widths output stroke widths
  * @param subpaths output subpath lengths
  * @param time_s deterministic animation time in seconds
  * @return true on success
  */
-static bool _fill_streamlines(
-    DvzPanel* panel, vec3* positions, DvzColor* colors, float* widths, uint32_t* subpaths,
-    float time_s)
+static bool
+_fill_streamlines(vec3* positions, DvzColor* colors, float* widths, uint32_t* subpaths, float time_s)
 {
-    ANN(panel);
     ANN(positions);
     ANN(colors);
     ANN(widths);
@@ -649,7 +644,7 @@ static bool _fill_streamlines(
         }
 
         bool active = true;
-        vec3 held_visual = {0};
+        vec3 held_position = {0};
         DvzColor held_color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY);
         held_color.a = 0u;
         for (uint32_t point = 0; point < STREAMLINE_POINT_COUNT; point++)
@@ -658,24 +653,22 @@ static bool _fill_streamlines(
 
             if (!active)
             {
-                positions[idx][0] = held_visual[0];
-                positions[idx][1] = held_visual[1];
-                positions[idx][2] = held_visual[2];
+                positions[idx][0] = held_position[0];
+                positions[idx][1] = held_position[1];
+                positions[idx][2] = held_position[2];
                 colors[idx] = held_color;
                 widths[idx] = 0.0f;
                 continue;
             }
 
             vec3 data[1] = {{x, y, 0.0f}};
-            vec3 visual[1] = {{0}};
-            if (!_data_to_visual(panel, (const float*)data, (float*)visual, 1, 0.02f))
-                return false;
-            positions[idx][0] = visual[0][0];
-            positions[idx][1] = visual[0][1];
-            positions[idx][2] = visual[0][2];
-            held_visual[0] = visual[0][0];
-            held_visual[1] = visual[0][1];
-            held_visual[2] = visual[0][2];
+            data[0][2] = 0.02f;
+            positions[idx][0] = data[0][0];
+            positions[idx][1] = data[0][1];
+            positions[idx][2] = data[0][2];
+            held_position[0] = data[0][0];
+            held_position[1] = data[0][1];
+            held_position[2] = data[0][2];
 
             WindSample sample = _wind_sample(x, y, time_s);
             colors[idx] = _wind_streamline_color(
@@ -722,7 +715,7 @@ _add_streamlines(DvzScene* scene, DvzPanel* panel, DvzVisual** out_visual, float
     uint32_t* subpaths = (uint32_t*)dvz_calloc(STREAMLINE_COUNT, sizeof(*subpaths));
     if (positions == NULL || colors == NULL || widths == NULL || subpaths == NULL)
         goto error;
-    if (!_fill_streamlines(panel, positions, colors, widths, subpaths, time_s))
+    if (!_fill_streamlines(positions, colors, widths, subpaths, time_s))
         goto error;
 
     DvzVisual* path = dvz_path(scene, 0);
@@ -743,9 +736,8 @@ _add_streamlines(DvzScene* scene, DvzPanel* panel, DvzVisual** out_visual, float
         goto error;
     if (dvz_visual_set_depth_test(path, false) != 0)
         goto error;
-    if (dvz_panel_add_visual(
-            panel, path,
-            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1}) != 0)
+    DvzVisualAttachDesc attach = _wind_attach(1);
+    if (dvz_panel_add_visual(panel, path, &attach) != 0)
         goto error;
 
     *out_visual = path;
@@ -800,10 +792,8 @@ static bool _add_probe(DvzScene* scene, DvzPanel* panel)
         widths[i] = 2.0f;
     }
 
-    if (!_data_to_visual(panel, (const float*)data_starts, (float*)starts, PROBE_SEGMENTS, 0.05f))
-        return false;
-    if (!_data_to_visual(panel, (const float*)data_ends, (float*)ends, PROBE_SEGMENTS, 0.05f))
-        return false;
+    _copy_positions_with_z((const float*)data_starts, (float*)starts, PROBE_SEGMENTS, 0.05f);
+    _copy_positions_with_z((const float*)data_ends, (float*)ends, PROBE_SEGMENTS, 0.05f);
 
     DvzVisual* ring = dvz_segment(scene, 0);
     if (ring == NULL)
@@ -820,15 +810,13 @@ static bool _add_probe(DvzScene* scene, DvzPanel* panel)
         return false;
     if (dvz_visual_set_depth_test(ring, false) != 0)
         return false;
-    if (dvz_panel_add_visual(
-            panel, ring,
-            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 3}) != 0)
+    DvzVisualAttachDesc ring_attach = _wind_attach(3);
+    if (dvz_panel_add_visual(panel, ring, &ring_attach) != 0)
         return false;
 
     vec3 data_dot[1] = {{PROBE_X_KM, PROBE_Y_KM, 0.0f}};
     vec3 dot_position[1] = {{0}};
-    if (!_data_to_visual(panel, (const float*)data_dot, (float*)dot_position, 1, 0.06f))
-        return false;
+    _copy_positions_with_z((const float*)data_dot, (float*)dot_position, 1, 0.06f);
     DvzVisual* dot = dvz_point(scene, 0);
     if (dot == NULL)
         return false;
@@ -844,9 +832,8 @@ static bool _add_probe(DvzScene* scene, DvzPanel* panel)
         return false;
     if (dvz_visual_set_depth_test(dot, false) != 0)
         return false;
-    if (dvz_panel_add_visual(
-            panel, dot,
-            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 4}) != 0)
+    DvzVisualAttachDesc dot_attach = _wind_attach(4);
+    if (dvz_panel_add_visual(panel, dot, &dot_attach) != 0)
         return false;
 
     WindSample sample = _wind_sample(PROBE_X_KM, PROBE_Y_KM, 0.0f);
@@ -1004,7 +991,7 @@ static bool _update_vectors(WindShowcaseState* state, float time_s)
     bool ok = false;
     if (positions == NULL || vectors == NULL || colors == NULL || widths == NULL)
         goto cleanup;
-    if (!_fill_vectors(state->panel, positions, vectors, colors, widths, time_s))
+    if (!_fill_vectors(positions, vectors, colors, widths, time_s))
         goto cleanup;
 
     DvzVisualDataUpdate updates[] = {
@@ -1044,7 +1031,7 @@ static bool _update_streamlines(WindShowcaseState* state, float time_s)
     bool ok = false;
     if (positions == NULL || colors == NULL || widths == NULL || subpaths == NULL)
         goto cleanup;
-    if (!_fill_streamlines(state->panel, positions, colors, widths, subpaths, time_s))
+    if (!_fill_streamlines(positions, colors, widths, subpaths, time_s))
         goto cleanup;
 
     DvzVisualDataUpdate updates[] = {

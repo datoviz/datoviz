@@ -264,32 +264,6 @@ static bool _load_data(EmbeddingAtlasData* data)
 
 
 /**
- * Convert data-space embedding positions into panel visual positions.
- *
- * @param panel panel with configured data domain
- * @param data embedding data
- * @return true on success
- */
-static bool _convert_positions(DvzPanel* panel, EmbeddingAtlasData* data)
-{
-    ANN(panel);
-    ANN(data);
-    if (data->positions == NULL || data->count == 0)
-        return false;
-
-    vec3* visual_positions = (vec3*)dvz_calloc(data->count, sizeof(*visual_positions));
-    if (visual_positions == NULL)
-        return false;
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data->positions, (float*)visual_positions, data->count);
-    if (rc == 0)
-        memcpy(data->positions, visual_positions, (uint64_t)data->count * sizeof(*data->positions));
-    dvz_free(visual_positions);
-    return rc == 0;
-}
-
-
-/**
  * Format and apply the overlay-card readout.
  *
  * @param state embedding-atlas state
@@ -570,8 +544,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (dvz_panel_set_domain(panel, DVZ_DIM_X, -1.18, 1.18) != 0)
         goto error;
     if (dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.02, 1.02) != 0)
-        goto error;
-    if (!_convert_positions(panel, &state->data))
         goto error;
 
     DvzSelection* selection = dvz_selection(

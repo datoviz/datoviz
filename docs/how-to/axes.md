@@ -35,13 +35,12 @@ controller to the same X/Y dimensions so ticks, grid lines, and visible data mov
 ## Domain and Coordinates
 
 Axes are derived from the panel data domain. Visual attributes may still need to be uploaded in the
-visual coordinate space expected by the visual family. When your source samples are in panel data
-coordinates, convert them before upload:
+coordinate space expected by the visual family. When your source samples are in panel data
+coordinates, upload those data positions and use the default data-space attachment:
 
 ```c
-dvz_panel_data_to_visual_positions(
-    panel, (const float*)data_positions, (float*)visual_positions, count);
-dvz_visual_set_data(visual, "position", visual_positions, count);
+dvz_visual_set_data(visual, "position", data_positions, count);
+dvz_panel_add_visual(panel, visual, NULL);
 ```
 
 Update the panel domain when the data range changes. If multiple panels are linked, keep their

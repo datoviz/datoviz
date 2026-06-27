@@ -353,21 +353,17 @@ static bool _add_image(DvzScene* scene, DvzPanel* panel, DvzScale* scale, LipidA
         {1.0f, 0.0f, 0.0f},
         {1.0f, 1.0f, 0.0f},
     };
-    vec3 visual_positions[4] = {{0}};
     vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},
         {1.0f, 1.0f},
     };
-    if (dvz_panel_data_to_visual_positions(
-            panel, (const float*)data_positions, (float*)visual_positions, 4) != 0)
-        return false;
 
     DvzVisual* image = dvz_image(scene, 0);
     if (image == NULL)
         return false;
-    if (dvz_visual_set_data(image, "position", visual_positions, 4) != 0)
+    if (dvz_visual_set_data(image, "position", data_positions, 4) != 0)
         return false;
     if (dvz_visual_set_data(image, "texcoords", texcoords, 4) != 0)
         return false;

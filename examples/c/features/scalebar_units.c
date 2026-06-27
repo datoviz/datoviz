@@ -64,7 +64,6 @@ static bool _add_signal(DvzScene* scene, DvzPanel* panel)
     ANN(panel);
 
     vec3 data_positions[SAMPLE_COUNT] = {{0}};
-    vec3 visual_positions[SAMPLE_COUNT] = {{0}};
     DvzColor colors[SAMPLE_COUNT] = {{0}};
     float widths[SAMPLE_COUNT] = {0};
 
@@ -81,16 +80,11 @@ static bool _add_signal(DvzScene* scene, DvzPanel* panel)
         widths[i] = 3.0f;
     }
 
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data_positions, (float*)visual_positions, SAMPLE_COUNT);
-    if (rc != 0)
-        return false;
-
     DvzVisual* path = dvz_path(scene, 0);
     if (path == NULL)
         return false;
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = visual_positions, .item_count = SAMPLE_COUNT},
+        {.attr_name = "position", .data = data_positions, .item_count = SAMPLE_COUNT},
         {.attr_name = "color", .data = colors, .item_count = SAMPLE_COUNT},
         {.attr_name = "stroke_width_px", .data = widths, .item_count = SAMPLE_COUNT},
     };
@@ -98,9 +92,7 @@ static bool _add_signal(DvzScene* scene, DvzPanel* panel)
         return false;
     if (dvz_visual_set_depth_test(path, false) != 0)
         return false;
-    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_VIEW;
-    return dvz_panel_add_visual(panel, path, &attach) == 0;
+    return dvz_panel_add_visual(panel, path, NULL) == 0;
 }
 
 

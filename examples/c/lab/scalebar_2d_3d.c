@@ -83,7 +83,6 @@ static bool _add_physical_scatter(DvzScene* scene, DvzPanel* panel)
         return false;
 
     vec3 data_positions[POINT_COUNT] = {0};
-    vec3 visual_positions[POINT_COUNT] = {0};
     DvzColor colors[POINT_COUNT] = {0};
     float diameters[POINT_COUNT] = {0};
     for (uint32_t i = 0; i < POINT_COUNT; i++)
@@ -100,16 +99,11 @@ static bool _add_physical_scatter(DvzScene* scene, DvzPanel* panel)
         diameters[i] = 6.0f + 6.0f * sinf(TAU * t) * sinf(TAU * t);
     }
 
-    rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data_positions, (float*)visual_positions, POINT_COUNT);
-    if (rc != 0)
-        return false;
-
     DvzVisual* visual = dvz_point(scene, 0);
     if (visual == NULL)
         return false;
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = visual_positions, .item_count = POINT_COUNT},
+        {.attr_name = "position", .data = data_positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
         {.attr_name = "diameter_px", .data = diameters, .item_count = POINT_COUNT},
     };

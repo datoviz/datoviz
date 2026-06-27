@@ -217,23 +217,19 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(visual != NULL, "dvz_point() failed");
 
     vec3 data_positions[N];
-    vec3 visual_positions[N];
     DvzColor colors[N];
     float sizes[N];
     _make_scatter(data_positions, colors, sizes);
 
     dvz_panel_set_domain(panel, DVZ_DIM_X, -5.0, +5.0);
     dvz_panel_set_domain(panel, DVZ_DIM_Y, -3.0, +3.0);
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data_positions, (float*)visual_positions, N);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_data_to_visual_positions() failed");
 
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = visual_positions, .item_count = N},
+        {.attr_name = "position", .data = data_positions, .item_count = N},
         {.attr_name = "color", .data = colors, .item_count = N},
         {.attr_name = "diameter_px", .data = sizes, .item_count = N},
     };
-    rc = dvz_visual_set_data_many(visual, updates, 3);
+    int rc = dvz_visual_set_data_many(visual, updates, 3);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");

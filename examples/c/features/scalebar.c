@@ -67,7 +67,6 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
         {6.0f, 0.0f, 0.0f},
         {8.0f, 0.0f, 0.0f},
     };
-    vec3 visual_positions[POINT_COUNT] = {{0}};
     DvzColor colors[POINT_COUNT] = {{0}};
     float diameters[POINT_COUNT] = {0};
 
@@ -80,16 +79,11 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
         diameters[i] = i == 0 || i == POINT_COUNT - 1u ? 16.0f : 10.0f;
     }
 
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data_positions, (float*)visual_positions, POINT_COUNT);
-    if (rc != 0)
-        return false;
-
     DvzVisual* points = dvz_point(scene, 0);
     if (points == NULL)
         return false;
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = visual_positions, .item_count = POINT_COUNT},
+        {.attr_name = "position", .data = data_positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
         {.attr_name = "diameter_px", .data = diameters, .item_count = POINT_COUNT},
     };
@@ -97,9 +91,7 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
         return false;
     if (dvz_visual_set_depth_test(points, false) != 0)
         return false;
-    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_VIEW;
-    return dvz_panel_add_visual(panel, points, &attach) == 0;
+    return dvz_panel_add_visual(panel, points, NULL) == 0;
 }
 
 

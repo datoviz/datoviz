@@ -51,8 +51,8 @@ if (dvz_panel_visible_domain(panel, DVZ_DIM_X, &visible_xmin, &visible_xmax))
 }
 ```
 
-Set the domain before adding data-space visuals that are normalized through the panel domain. If
-the domain changes later, update any visual positions that were derived from the old domain.
+Set the domain before adding data-space visuals. If the domain changes later, retained visuals do
+not need rewritten positions; the scene remaps the same source data through the new visible range.
 
 
 ## Options

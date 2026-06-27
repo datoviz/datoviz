@@ -181,7 +181,6 @@ _add_scalar_image(DvzScene* scene, DvzPanel* panel, DvzScale* scale, float* valu
         {1.0f, 0.0f, 0.0f},
         {1.0f, 1.0f, 0.0f},
     };
-    vec3 visual_positions[4] = {{0}};
     vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
@@ -189,15 +188,10 @@ _add_scalar_image(DvzScene* scene, DvzPanel* panel, DvzScale* scale, float* valu
         {1.0f, 1.0f},
     };
 
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data_positions, (float*)visual_positions, 4);
-    if (rc != 0)
-        return false;
-
     DvzVisual* image = dvz_image(scene, 0);
     if (image == NULL)
         return false;
-    if (dvz_visual_set_data(image, "position", visual_positions, 4) != 0)
+    if (dvz_visual_set_data(image, "position", data_positions, 4) != 0)
         return false;
     if (dvz_visual_set_data(image, "texcoords", texcoords, 4) != 0)
         return false;
@@ -228,9 +222,7 @@ _add_scalar_image(DvzScene* scene, DvzPanel* panel, DvzScale* scale, float* valu
         return false;
     if (dvz_visual_set_depth_test(image, false) != 0)
         return false;
-    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_VIEW;
-    return dvz_panel_add_visual(panel, image, &attach) == 0;
+    return dvz_panel_add_visual(panel, image, NULL) == 0;
 }
 
 

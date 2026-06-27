@@ -150,7 +150,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         *out_user = NULL;
 
     vec3 data_positions[PATH_COUNT] = {{0}};
-    vec3 visual_positions[PATH_COUNT] = {{0}};
     DvzColor colors[PATH_COUNT] = {{0}};
     float widths[PATH_COUNT] = {0};
 
@@ -170,22 +169,15 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (dvz_panel_set_domain(panel, DVZ_DIM_Y, -2.0, 2.0) != 0)
         return false;
 
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data_positions, (float*)visual_positions, PATH_COUNT);
-    if (rc != 0)
-        return false;
-
     DvzVisual* path = dvz_path(ctx->scene, 0);
     if (path == NULL)
         return false;
 
-    bool ok = _upload_path(path, visual_positions, colors, widths, PATH_COUNT);
+    bool ok = _upload_path(path, data_positions, colors, widths, PATH_COUNT);
     if (!ok)
         return false;
 
-    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_VIEW;
-    rc = dvz_panel_add_visual(panel, path, &attach);
+    int rc = dvz_panel_add_visual(panel, path, NULL);
     if (rc != 0)
         return false;
 

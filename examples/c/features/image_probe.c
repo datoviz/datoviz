@@ -207,7 +207,6 @@ static bool _add_probe_image(
         {1.0f, 0.0f, 0.0f},
         {1.0f, 1.0f, 0.0f},
     };
-    vec3 visual_positions[4] = {{0}};
     vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
@@ -215,15 +214,10 @@ static bool _add_probe_image(
         {1.0f, 1.0f},
     };
 
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data_positions, (float*)visual_positions, 4);
-    if (rc != 0)
-        return false;
-
     DvzVisual* image = dvz_image(scene, 0);
     if (image == NULL)
         return false;
-    if (dvz_visual_set_data(image, "position", visual_positions, 4) != 0)
+    if (dvz_visual_set_data(image, "position", data_positions, 4) != 0)
         return false;
     if (dvz_visual_set_data(image, "texcoords", texcoords, 4) != 0)
         return false;
@@ -255,9 +249,7 @@ static bool _add_probe_image(
     if (dvz_visual_set_depth_test(image, false) != 0)
         return false;
     dvz_visual_set_query_capabilities(image, DVZ_QUERY_CAPABILITY_PIXEL);
-    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_VIEW;
-    return dvz_panel_add_visual(panel, image, &attach) == 0;
+    return dvz_panel_add_visual(panel, image, NULL) == 0;
 }
 
 
@@ -359,34 +351,20 @@ static void _update_probe_marker(ImageProbeState* state, float x, float y)
 
     vec3 starts[PROBE_SEGMENTS] = {{0}};
     vec3 ends[PROBE_SEGMENTS] = {{0}};
-    vec3 visual_starts[PROBE_SEGMENTS] = {{0}};
-    vec3 visual_ends[PROBE_SEGMENTS] = {{0}};
     DvzColor colors[PROBE_SEGMENTS] = {{0}};
     float widths[PROBE_SEGMENTS] = {0};
     if (!_fill_probe_marker(panel, x, y, starts, ends, colors, widths))
         return;
 
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)starts, (float*)visual_starts, PROBE_SEGMENTS);
-    if (rc != 0)
-        return;
-    rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)ends, (float*)visual_ends, PROBE_SEGMENTS);
-    if (rc != 0)
-        return;
-
     DvzVisualDataUpdate segment_updates[] = {
-        {.attr_name = "position_start", .data = visual_starts, .item_count = PROBE_SEGMENTS},
-        {.attr_name = "position_end", .data = visual_ends, .item_count = PROBE_SEGMENTS},
+        {.attr_name = "position_start", .data = starts, .item_count = PROBE_SEGMENTS},
+        {.attr_name = "position_end", .data = ends, .item_count = PROBE_SEGMENTS},
     };
     if (dvz_visual_set_data_many(state->probe_segments, segment_updates, 2) != 0)
         return;
 
     vec3 dot_data[1] = {{x, y, 0.03f}};
-    vec3 dot_visual[1] = {{0}};
-    rc = dvz_panel_data_to_visual_positions(panel, (const float*)dot_data, (float*)dot_visual, 1);
-    if (rc == 0)
-        (void)dvz_visual_set_data(state->probe_dot, "position", dot_visual, 1);
+    (void)dvz_visual_set_data(state->probe_dot, "position", dot_data, 1);
 }
 
 
@@ -432,28 +410,17 @@ static bool _add_probe_marker(
 
     vec3 starts[PROBE_SEGMENTS] = {{0}};
     vec3 ends[PROBE_SEGMENTS] = {{0}};
-    vec3 visual_starts[PROBE_SEGMENTS] = {{0}};
-    vec3 visual_ends[PROBE_SEGMENTS] = {{0}};
     DvzColor colors[PROBE_SEGMENTS] = {{0}};
     float widths[PROBE_SEGMENTS] = {0};
     if (!_fill_probe_marker(panel, PROBE_X, PROBE_Y, starts, ends, colors, widths))
-        return false;
-
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)starts, (float*)visual_starts, PROBE_SEGMENTS);
-    if (rc != 0)
-        return false;
-    rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)ends, (float*)visual_ends, PROBE_SEGMENTS);
-    if (rc != 0)
         return false;
 
     DvzVisual* marker = dvz_segment(scene, 0);
     if (marker == NULL)
         return false;
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position_start", .data = visual_starts, .item_count = PROBE_SEGMENTS},
-        {.attr_name = "position_end", .data = visual_ends, .item_count = PROBE_SEGMENTS},
+        {.attr_name = "position_start", .data = starts, .item_count = PROBE_SEGMENTS},
+        {.attr_name = "position_end", .data = ends, .item_count = PROBE_SEGMENTS},
         {.attr_name = "color", .data = colors, .item_count = PROBE_SEGMENTS},
         {.attr_name = "stroke_width_px", .data = widths, .item_count = PROBE_SEGMENTS},
     };
@@ -463,16 +430,10 @@ static bool _add_probe_marker(
         return false;
     if (dvz_visual_set_depth_test(marker, false) != 0)
         return false;
-    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_VIEW;
-    if (dvz_panel_add_visual(panel, marker, &attach) != 0)
+    if (dvz_panel_add_visual(panel, marker, NULL) != 0)
         return false;
 
     vec3 dot_data[1] = {{PROBE_X, PROBE_Y, 0.03f}};
-    vec3 dot_visual[1] = {{0}};
-    rc = dvz_panel_data_to_visual_positions(panel, (const float*)dot_data, (float*)dot_visual, 1);
-    if (rc != 0)
-        return false;
 
     DvzVisual* dot = dvz_point(scene, 0);
     if (dot == NULL)
@@ -481,7 +442,7 @@ static bool _add_probe_marker(
     dot_color[0].a = 245u;
     float dot_diameter[1] = {6.0f};
     DvzVisualDataUpdate dot_updates[] = {
-        {.attr_name = "position", .data = dot_visual, .item_count = 1},
+        {.attr_name = "position", .data = dot_data, .item_count = 1},
         {.attr_name = "color", .data = dot_color, .item_count = 1},
         {.attr_name = "diameter_px", .data = dot_diameter, .item_count = 1},
     };
@@ -494,7 +455,7 @@ static bool _add_probe_marker(
         return false;
     if (dvz_visual_set_depth_test(dot, false) != 0)
         return false;
-    if (dvz_panel_add_visual(panel, dot, &attach) != 0)
+    if (dvz_panel_add_visual(panel, dot, NULL) != 0)
         return false;
 
     *out_segments = marker;
@@ -652,10 +613,10 @@ static void _image_probe_pointer(const DvzScenarioPointerEvent* event, void* use
     double data[2] = {0};
     double panel_px[2] = {0};
     state->cursor_valid =
-        dvz_panel_position_to_data(
-            state->panel, DVZ_PANEL_COORD_FIGURE_PX,
-            (const double[2]){event->x, event->y}, data) &&
-        dvz_panel_data_to_position(state->panel, DVZ_PANEL_COORD_PANEL_PX, data, panel_px);
+        dvz_panel_transform_point(
+            state->panel, DVZ_PANEL_COORD_FIGURE_PX, DVZ_PANEL_COORD_PANEL_PX,
+            (const double[2]){event->x, event->y}, panel_px) &&
+        dvz_panel_position_to_data(state->panel, DVZ_PANEL_COORD_PANEL_PX, panel_px, data);
     if (state->cursor_valid)
     {
         state->cursor_x = panel_px[0];

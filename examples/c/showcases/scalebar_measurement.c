@@ -237,7 +237,6 @@ static bool _add_image(
         {xmax, ymin, 0.0f},
         {xmax, ymax, 0.0f},
     };
-    vec3 visual_positions[4] = {{0}};
     vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
@@ -245,15 +244,10 @@ static bool _add_image(
         {1.0f, 1.0f},
     };
 
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data_positions, (float*)visual_positions, 4);
-    if (rc != 0)
-        return false;
-
     DvzVisual* image = dvz_image(scene, 0);
     if (image == NULL)
         return false;
-    if (dvz_visual_set_data(image, "position", visual_positions, 4) != 0)
+    if (dvz_visual_set_data(image, "position", data_positions, 4) != 0)
         return false;
     if (dvz_visual_set_data(image, "texcoords", texcoords, 4) != 0)
         return false;
@@ -290,8 +284,6 @@ static bool _add_zoom_box(DvzScene* scene, DvzPanel* panel)
         {3.10f, 3.65f, 0.0f},
         {3.10f, 2.25f, 0.0f},
     };
-    vec3 visual_starts[ZOOM_BOX_SEG] = {{0}};
-    vec3 visual_ends[ZOOM_BOX_SEG] = {{0}};
     DvzColor colors[ZOOM_BOX_SEG] = {{0}};
     float widths[ZOOM_BOX_SEG] = {0};
     DvzColor accent = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
@@ -301,21 +293,12 @@ static bool _add_zoom_box(DvzScene* scene, DvzPanel* panel)
         widths[i] = 2.2f;
     }
 
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)starts, (float*)visual_starts, ZOOM_BOX_SEG);
-    if (rc != 0)
-        return false;
-    rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)ends, (float*)visual_ends, ZOOM_BOX_SEG);
-    if (rc != 0)
-        return false;
-
     DvzVisual* box = dvz_segment(scene, 0);
     if (box == NULL)
         return false;
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position_start", .data = visual_starts, .item_count = ZOOM_BOX_SEG},
-        {.attr_name = "position_end", .data = visual_ends, .item_count = ZOOM_BOX_SEG},
+        {.attr_name = "position_start", .data = starts, .item_count = ZOOM_BOX_SEG},
+        {.attr_name = "position_end", .data = ends, .item_count = ZOOM_BOX_SEG},
         {.attr_name = "color", .data = colors, .item_count = ZOOM_BOX_SEG},
         {.attr_name = "stroke_width_px", .data = widths, .item_count = ZOOM_BOX_SEG},
     };
@@ -343,7 +326,6 @@ static bool _add_detail_points(DvzScene* scene, DvzPanel* panel)
     ANN(panel);
 
     vec3 data_positions[DETAIL_POINTS] = {{0}};
-    vec3 visual_positions[DETAIL_POINTS] = {{0}};
     DvzColor colors[DETAIL_POINTS] = {{0}};
     float diameters[DETAIL_POINTS] = {0};
     for (uint32_t i = 0; i < DETAIL_POINTS; i++)
@@ -362,16 +344,11 @@ static bool _add_detail_points(DvzScene* scene, DvzPanel* panel)
         diameters[i] = 4.4f + 5.4f * pulse * pulse;
     }
 
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data_positions, (float*)visual_positions, DETAIL_POINTS);
-    if (rc != 0)
-        return false;
-
     DvzVisual* points = dvz_point(scene, 0);
     if (points == NULL)
         return false;
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = visual_positions, .item_count = DETAIL_POINTS},
+        {.attr_name = "position", .data = data_positions, .item_count = DETAIL_POINTS},
         {.attr_name = "color", .data = colors, .item_count = DETAIL_POINTS},
         {.attr_name = "diameter_px", .data = diameters, .item_count = DETAIL_POINTS},
     };

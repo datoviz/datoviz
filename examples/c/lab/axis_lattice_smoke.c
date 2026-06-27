@@ -400,7 +400,6 @@ int main(int argc, char** argv)
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
     vec3* data_positions = NULL;
-    vec3* visual_positions = NULL;
     DvzColor* colors = NULL;
     float* diameters = NULL;
     bool probe = argc >= 2 && strcmp(argv[1], "probe") == 0;
@@ -412,12 +411,10 @@ int main(int argc, char** argv)
     uint32_t point_count = probe ? 1u : GRID_COUNT;
 
     data_positions = (vec3*)dvz_calloc(point_count, sizeof(*data_positions));
-    visual_positions = (vec3*)dvz_calloc(point_count, sizeof(*visual_positions));
     colors = (DvzColor*)dvz_calloc(point_count, sizeof(*colors));
     diameters = (float*)dvz_calloc(point_count, sizeof(*diameters));
     EXAMPLE_CHECK(
-        data_positions != NULL && visual_positions != NULL && colors != NULL &&
-            diameters != NULL,
+        data_positions != NULL && colors != NULL && diameters != NULL,
         "lattice allocation failed");
 
     if (probe)
@@ -490,20 +487,7 @@ int main(int argc, char** argv)
         EXAMPLE_CHECK(ok, "dvz_axis_set_label() failed for Y");
     }
 
-    if (raw_probe)
-    {
-        dvz_memcpy(
-            visual_positions, sizeof(*visual_positions) * point_count, data_positions,
-            sizeof(*data_positions) * point_count);
-    }
-    else
-    {
-        rc = dvz_panel_data_to_visual_positions(
-            panel, (const float*)data_positions, (float*)visual_positions, point_count);
-        EXAMPLE_CHECK(rc == 0, "dvz_panel_data_to_visual_positions() failed");
-    }
-
-    ok = _upload_lattice(points, visual_positions, colors, diameters, point_count);
+    ok = _upload_lattice(points, data_positions, colors, diameters, point_count);
     EXAMPLE_CHECK(ok, "point lattice upload failed");
 
     DvzPointStyleDesc point_style = dvz_point_style_desc();
@@ -564,7 +548,6 @@ cleanup:
         dvz_app_destroy(app);
     dvz_free(diameters);
     dvz_free(colors);
-    dvz_free(visual_positions);
     dvz_free(data_positions);
     if (scene != NULL)
         dvz_scene_destroy(scene);

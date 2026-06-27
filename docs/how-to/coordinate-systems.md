@@ -89,9 +89,9 @@ indices, atlas positions, or projected map coordinates. Set both X and Y for ord
 so the visible rectangle is explicit.
 
 Use `dvz_panel_visible_domain()` when you need the current data interval after controller changes.
-Use `dvz_panel_data_to_visual_positions()` only when you intentionally need a CPU-side conversion
-from panel data coordinates to `DVZ_COORD_VIEW` visual coordinates; ordinary retained data-space
-attachments should let the scene perform that mapping.
+Use `dvz_panel_transform_point()` for interactive point conversions between data, view, panel, and
+pixel spaces. Do not pre-transform retained visual arrays just to fit the panel domain; upload data
+positions and let the scene perform that mapping.
 
 
 ## Important Details

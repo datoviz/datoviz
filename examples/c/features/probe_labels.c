@@ -213,18 +213,12 @@ static bool _add_labels(
         {1.0f, 0.0f, 0.0f},
         {1.0f, 1.0f, 0.0f},
     };
-    vec3 visual_positions[4] = {{0}};
     vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},
         {1.0f, 1.0f},
     };
-
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data_positions, (float*)visual_positions, 4);
-    if (rc != 0)
-        return false;
 
     DvzSampledField* field = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){
@@ -253,7 +247,7 @@ static bool _add_labels(
     if (visual == NULL)
         return false;
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = visual_positions, .item_count = 4},
+        {.attr_name = "position", .data = data_positions, .item_count = 4},
         {.attr_name = "texcoords", .data = texcoords, .item_count = 4},
     };
     if (dvz_visual_set_data_many(visual, updates, 2) != 0)
@@ -276,9 +270,7 @@ static bool _add_labels(
     if (dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED) != 0)
         return false;
     dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM);
-    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_VIEW;
-    return dvz_panel_add_visual(panel, visual, &attach) == 0;
+    return dvz_panel_add_visual(panel, visual, NULL) == 0;
 }
 
 
@@ -300,20 +292,9 @@ static void _update_probe_marker(LabelProbeState* state, float x, float y)
 
     vec3 ring_data[1] = {{x, y, 0.04f}};
     vec3 dot_data[1] = {{x, y, 0.05f}};
-    vec3 ring_visual[1] = {{0}};
-    vec3 dot_visual[1] = {{0}};
 
-    int rc = dvz_panel_data_to_visual_positions(
-        state->panel, (const float*)ring_data, (float*)ring_visual, 1);
-    if (rc != 0)
-        return;
-    rc = dvz_panel_data_to_visual_positions(
-        state->panel, (const float*)dot_data, (float*)dot_visual, 1);
-    if (rc != 0)
-        return;
-
-    (void)dvz_visual_set_data(state->probe_ring, "position", ring_visual, 1);
-    (void)dvz_visual_set_data(state->probe_dot, "position", dot_visual, 1);
+    (void)dvz_visual_set_data(state->probe_ring, "position", ring_data, 1);
+    (void)dvz_visual_set_data(state->probe_dot, "position", dot_data, 1);
 }
 
 
@@ -358,11 +339,6 @@ _add_probe_marker(DvzScene* scene, DvzPanel* panel, DvzVisual** out_ring, DvzVis
     ANN(out_dot);
 
     vec3 ring_data[1] = {{PROBE_X, PROBE_Y, 0.04f}};
-    vec3 ring_visual[1] = {{0}};
-    int rc =
-        dvz_panel_data_to_visual_positions(panel, (const float*)ring_data, (float*)ring_visual, 1);
-    if (rc != 0)
-        return false;
 
     DvzVisual* ring = dvz_marker(scene, 0);
     if (ring == NULL)
@@ -373,7 +349,7 @@ _add_probe_marker(DvzScene* scene, DvzPanel* panel, DvzVisual** out_ring, DvzVis
     float ring_angle[1] = {0.0f};
     uint32_t ring_shape[1] = {DVZ_MARKER_SHAPE_RING};
     DvzVisualDataUpdate ring_updates[] = {
-        {.attr_name = "position", .data = ring_visual, .item_count = 1},
+        {.attr_name = "position", .data = ring_data, .item_count = 1},
         {.attr_name = "color", .data = ring_color, .item_count = 1},
         {.attr_name = "diameter_px", .data = ring_diameter, .item_count = 1},
         {.attr_name = "angle", .data = ring_angle, .item_count = 1},
@@ -383,16 +359,10 @@ _add_probe_marker(DvzScene* scene, DvzPanel* panel, DvzVisual** out_ring, DvzVis
         return false;
     if (dvz_visual_set_depth_test(ring, false) != 0)
         return false;
-    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_VIEW;
-    if (dvz_panel_add_visual(panel, ring, &attach) != 0)
+    if (dvz_panel_add_visual(panel, ring, NULL) != 0)
         return false;
 
     vec3 dot_data[1] = {{PROBE_X, PROBE_Y, 0.05f}};
-    vec3 dot_visual[1] = {{0}};
-    rc = dvz_panel_data_to_visual_positions(panel, (const float*)dot_data, (float*)dot_visual, 1);
-    if (rc != 0)
-        return false;
 
     DvzVisual* dot = dvz_point(scene, 0);
     if (dot == NULL)
@@ -401,7 +371,7 @@ _add_probe_marker(DvzScene* scene, DvzPanel* panel, DvzVisual** out_ring, DvzVis
     dot_color[0].a = 245u;
     float dot_diameter[1] = {6.0f};
     DvzVisualDataUpdate dot_updates[] = {
-        {.attr_name = "position", .data = dot_visual, .item_count = 1},
+        {.attr_name = "position", .data = dot_data, .item_count = 1},
         {.attr_name = "color", .data = dot_color, .item_count = 1},
         {.attr_name = "diameter_px", .data = dot_diameter, .item_count = 1},
     };
@@ -414,7 +384,7 @@ _add_probe_marker(DvzScene* scene, DvzPanel* panel, DvzVisual** out_ring, DvzVis
         return false;
     if (dvz_visual_set_depth_test(dot, false) != 0)
         return false;
-    if (dvz_panel_add_visual(panel, dot, &attach) != 0)
+    if (dvz_panel_add_visual(panel, dot, NULL) != 0)
         return false;
 
     *out_ring = ring;
@@ -507,10 +477,10 @@ _labels_probe_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void
     double data[2] = {0};
     double panel_px[2] = {0};
     state->cursor_valid =
-        dvz_panel_position_to_data(
-            state->panel, DVZ_PANEL_COORD_FIGURE_PX,
-            (const double[2]){event->pos[0], event->pos[1]}, data) &&
-        dvz_panel_data_to_position(state->panel, DVZ_PANEL_COORD_PANEL_PX, data, panel_px);
+        dvz_panel_transform_point(
+            state->panel, DVZ_PANEL_COORD_FIGURE_PX, DVZ_PANEL_COORD_PANEL_PX,
+            (const double[2]){event->pos[0], event->pos[1]}, panel_px) &&
+        dvz_panel_position_to_data(state->panel, DVZ_PANEL_COORD_PANEL_PX, panel_px, data);
     if (state->cursor_valid)
     {
         state->cursor_x = panel_px[0];

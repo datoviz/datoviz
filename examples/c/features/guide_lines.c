@@ -82,7 +82,6 @@ static bool _add_curve(DvzScene* scene, DvzPanel* panel)
     ANN(panel);
 
     vec3 data_positions[PATH_COUNT] = {{0}};
-    vec3 visual_positions[PATH_COUNT] = {{0}};
     DvzColor colors[PATH_COUNT] = {{0}};
     float widths[PATH_COUNT] = {0};
 
@@ -97,16 +96,12 @@ static bool _add_curve(DvzScene* scene, DvzPanel* panel)
         widths[i] = 4.0f;
     }
 
-    if (dvz_panel_data_to_visual_positions(
-            panel, (const float*)data_positions, (float*)visual_positions, PATH_COUNT) != 0)
-        return false;
-
     DvzVisual* path = dvz_path(scene, 0);
     if (path == NULL)
         return false;
 
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = visual_positions, .item_count = PATH_COUNT},
+        {.attr_name = "position", .data = data_positions, .item_count = PATH_COUNT},
         {.attr_name = "color", .data = colors, .item_count = PATH_COUNT},
         {.attr_name = "stroke_width_px", .data = widths, .item_count = PATH_COUNT},
     };
@@ -116,9 +111,7 @@ static bool _add_curve(DvzScene* scene, DvzPanel* panel)
         return false;
     if (dvz_path_set_join(path, DVZ_PATH_JOIN_ROUND, 4.0f) != 0)
         return false;
-    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_VIEW;
-    return dvz_panel_add_visual(panel, path, &attach) == 0;
+    return dvz_panel_add_visual(panel, path, NULL) == 0;
 }
 
 

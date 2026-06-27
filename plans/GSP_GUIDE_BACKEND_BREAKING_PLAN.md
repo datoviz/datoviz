@@ -101,8 +101,7 @@ Implementation guidance:
 1. Refactor `_axis_visible_domain()` and related panel helpers so public readback is oriented.
 2. Add a separate internal sorted interval for auto ticks and density/cache decisions.
 3. Ensure panzoom/controller extent does not cause axes and data mapping to diverge.
-4. Ensure `dvz_panel_data_to_visual_positions()` and axis/grid emission use the same resolved
-   View2D snapshot.
+4. Ensure retained DATA visuals and axis/grid emission use the same resolved View2D snapshot.
 5. Update docs only where behavior was ambiguous or changed.
 
 Tests:
@@ -203,7 +202,6 @@ Required top-level symbols:
 - `dvz_panel_set_domain`
 - `dvz_panel_set_view2d`
 - `dvz_panel_visible_domain`
-- `dvz_panel_data_to_visual_positions`
 - `dvz_panel_axis`
 - `dvz_axis_set_grid`
 - `dvz_axis_set_label`
