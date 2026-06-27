@@ -253,6 +253,7 @@ static int test_gui_config_font_defaults(TstContext* suite, const TstCase* item)
     AT(config.flags == 0);
     AT((config.gui_flags & DVZ_GUI_FLAGS_DOCKING) != 0);
     AT((config.gui_flags & DVZ_GUI_FLAGS_DOCKSPACE) != 0);
+    AT(config.default_window_width == 200);
     AT(config.ini_path == NULL);
     return 0;
 }

@@ -72,6 +72,8 @@ typedef struct DvzGuiConfig
     uint32_t struct_size;
     uint32_t flags;     /* Reserved for future GUI config flags; must be 0 in v0.4. */
     uint32_t gui_flags; /* Bitwise OR of DvzGuiFlags. */
+    /* Initial width hint for ordinary dvz_gui_begin() windows; 0 keeps ImGui's auto width. */
+    uint32_t default_window_width;
     /* ImGui .ini path, or NULL to disable persisted GUI window state. */
     const char* ini_path;
 } DvzGuiConfig;

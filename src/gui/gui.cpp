@@ -51,6 +51,7 @@
 #define DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_STEP 8u
 #define DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_DELAY_FRAMES 2u
 #define DVZ_GUI_VIEWPORT_RETIRED_TEXTURE_CAPACITY 64u
+#define DVZ_GUI_DEFAULT_WINDOW_WIDTH 200u
 #define DVZ_GUI_CONFIG_KNOWN_FLAGS 0u
 #define DVZ_GUI_VIEWPORT_CONFIG_KNOWN_FLAGS 0u
 #define DVZ_FONT_DEFAULTS_KNOWN_FLAGS 0u
@@ -1662,6 +1663,7 @@ DvzGuiConfig dvz_gui_config(void)
     config.struct_size = DVZ_STRUCT_SIZE(DvzGuiConfig);
     config.flags = 0;
     config.gui_flags = DVZ_GUI_FLAGS_DOCKING | DVZ_GUI_FLAGS_DOCKSPACE;
+    config.default_window_width = DVZ_GUI_DEFAULT_WINDOW_WIDTH;
     return config;
 }
 
@@ -1703,6 +1705,11 @@ bool dvz_gui_begin(DvzGui* gui, const char* title, bool* open, int flags)
     ANN(gui);
     ANN(title);
     _gui_set_current(gui);
+    if (gui->config.default_window_width > 0)
+    {
+        ImGui::SetNextWindowSize(
+            ImVec2((float)gui->config.default_window_width, 0.0f), ImGuiCond_FirstUseEver);
+    }
     return ImGui::Begin(title, open, flags);
 }
 
