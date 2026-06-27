@@ -20,12 +20,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/scene.h"
 #include "example_style.h"
@@ -49,19 +47,6 @@
 /*************************************************************************************************/
 
 DvzScenarioSpec dvz_start_scatter_scenario(void);
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-typedef struct ScatterState
-{
-    vec3* positions;
-    DvzColor* colors;
-    float* diameters;
-} ScatterState;
 
 
 
@@ -94,14 +79,48 @@ static void _fill_scatter(
     }
 }
 
-static void _free_state(ScatterState* state)
+
+
+/**
+ * Add the retained scatter point visual.
+ *
+ * @param scene scene owning the visual
+ * @param panel panel receiving the visual
+ * @return true when the visual was added
+ */
+static bool _add_points(DvzScene* scene, DvzPanel* panel)
 {
-    if (state == NULL)
-        return;
-    dvz_free(state->diameters);
-    dvz_free(state->colors);
-    dvz_free(state->positions);
-    dvz_free(state);
+    ANN(scene);
+    ANN(panel);
+
+    vec3 positions[POINT_COUNT] = {{0}};
+    DvzColor colors[POINT_COUNT] = {{0}};
+    float diameters[POINT_COUNT] = {0};
+    _fill_scatter(positions, colors, diameters);
+
+    DvzVisual* point = dvz_point(scene, 0);
+    if (point == NULL)
+        return false;
+
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
+        {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = POINT_COUNT},
+    };
+    if (dvz_visual_set_data_many(point, updates, DVZ_ARRAY_COUNT(updates)) != 0)
+        return false;
+
+    DvzPointStyleDesc style = dvz_point_style_desc();
+    style.aspect = DVZ_SHAPE_ASPECT_FILLED;
+    style.stroke_width_px = 0.0f;
+    if (dvz_point_set_style(point, &style) != 0)
+        return false;
+    if (dvz_visual_set_depth_test(point, false) != 0)
+        return false;
+    if (dvz_visual_set_alpha_mode(point, DVZ_ALPHA_BLENDED) != 0)
+        return false;
+
+    return dvz_panel_add_visual(panel, point, NULL) == 0;
 }
 
 
@@ -117,79 +136,35 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (out_user != NULL)
         *out_user = NULL;
 
-    ScatterState* state = (ScatterState*)dvz_calloc(1, sizeof(*state));
-    if (state == NULL)
-        return false;
-
-    state->positions = (vec3*)dvz_calloc(POINT_COUNT, sizeof(*state->positions));
-    state->colors    = (DvzColor*)dvz_calloc(POINT_COUNT, sizeof(*state->colors));
-    state->diameters = (float*)dvz_calloc(POINT_COUNT, sizeof(*state->diameters));
-    if (state->positions == NULL || state->colors == NULL || state->diameters == NULL)
-        goto error;
-
-    _fill_scatter(state->positions, state->colors, state->diameters);
-
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
-        goto error;
+        return false;
 
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     if (panel == NULL)
-        goto error;
+        return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzVisual* point = dvz_point(ctx->scene, 0);
-    if (point == NULL)
-        goto error;
-
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = state->positions, .item_count = POINT_COUNT},
-        {.attr_name = "color",    .data = state->colors,    .item_count = POINT_COUNT},
-        {.attr_name = "diameter_px", .data = state->diameters, .item_count = POINT_COUNT},
-    };
-    if (dvz_visual_set_data_many(point, updates, 3) != 0)
-        goto error;
-
-    DvzPointStyleDesc style = dvz_point_style_desc();
-    style.aspect       = DVZ_SHAPE_ASPECT_FILLED;
-    style.stroke_width_px = 0.0f;
-    if (dvz_point_set_style(point, &style) != 0)
-        goto error;
-    if (dvz_visual_set_depth_test(point, false) != 0)
-        goto error;
-    if (dvz_visual_set_alpha_mode(point, DVZ_ALPHA_BLENDED) != 0)
-        goto error;
-    if (dvz_panel_add_visual(panel, point, NULL) != 0)
-        goto error;
+    if (!_add_points(ctx->scene, panel))
+        return false;
 
     if (dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY) == NULL)
-        goto error;
+        return false;
 
-    if (out_user != NULL)
-        *out_user = state;
     return true;
-
-error:
-    _free_state(state);
-    return false;
-}
-
-static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
-{
-    (void)ctx;
-    _free_state((ScatterState*)user);
 }
 
 DvzScenarioSpec dvz_start_scatter_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id      = "start_scatter",
-        .title   = "start_scatter",
-        .width   = WIDTH,
-        .height  = HEIGHT,
-        .fps     = 60.0,
-        .init    = _scenario_init,
-        .destroy = _scenario_destroy,
+        .id = "start_scatter",
+        .title = "scatter",
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
+                        DVZ_SCENARIO_REQ_PANZOOM,
+        .init = _scenario_init,
     };
 }
 
