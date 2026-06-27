@@ -1607,6 +1607,142 @@ int test_panel_data_to_visual_positions(TstContext* suite, const TstCase* item)
 }
 
 
+int test_panel_transform_point(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.25f, 0.125f, 0.5f, 0.5f});
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -5.0, 5.0) == 0);
+
+    double data[2] = {5.0, 0.0};
+    double figure_px[2] = {0};
+    double roundtrip[2] = {0};
+    AT(dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_DATA, DVZ_PANEL_COORD_FIGURE_PX, data, figure_px));
+    AC(figure_px[0], 400.0, 1e-5);
+    AC(figure_px[1], 225.0, 1e-5);
+    AT(dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_FIGURE_PX, DVZ_PANEL_COORD_DATA, figure_px, roundtrip));
+    AC(roundtrip[0], data[0], 1e-6);
+    AC(roundtrip[1], data[1], 1e-6);
+
+    double panel_px[2] = {0};
+    AT(dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_FIGURE_PX, DVZ_PANEL_COORD_PANEL_PX,
+        (const double[2]){250.0, 125.0}, panel_px));
+    AC(panel_px[0], 50.0, 1e-5);
+    AC(panel_px[1], 50.0, 1e-5);
+    AT(dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_PANEL_PX, DVZ_PANEL_COORD_FIGURE_PX, panel_px, figure_px));
+    AC(figure_px[0], 250.0, 1e-5);
+    AC(figure_px[1], 125.0, 1e-5);
+
+    AT(dvz_panel_set_padding(
+        panel, &(DvzPanelReserve){
+                   .left_px = 10.0f,
+                   .right_px = 20.0f,
+                   .top_px = 30.0f,
+                   .bottom_px = 40.0f,
+               }));
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){
+                   .left_px = 50.0f,
+                   .right_px = 70.0f,
+                   .top_px = 20.0f,
+                   .bottom_px = 30.0f,
+               }));
+    DvzRect plot = {0};
+    AT(dvz_panel_plot_rect_px(panel, &plot));
+    AC(plot.x, 260.0f, 1e-4f);
+    AC(plot.y, 125.0f, 1e-4f);
+    AC(plot.width, 250.0f, 1e-4f);
+    AC(plot.height, 180.0f, 1e-4f);
+
+    AT(dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_FIGURE_PX, DVZ_PANEL_COORD_DATA,
+        (const double[2]){385.0, 215.0}, roundtrip));
+    AC(roundtrip[0], 5.0, 1e-6);
+    AC(roundtrip[1], 0.0, 1e-6);
+    AT(dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_DATA, DVZ_PANEL_COORD_PANEL_PX, data, panel_px));
+    AC(panel_px[0], 185.0, 1e-5);
+    AC(panel_px[1], 140.0, 1e-5);
+    AT(!dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_PANEL_PX, DVZ_PANEL_COORD_DATA,
+        (const double[2]){20.0, 20.0}, roundtrip));
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 10.0, 0.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 5.0, -5.0) == 0);
+    data[0] = 2.0;
+    data[1] = -1.0;
+    AT(dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_DATA, DVZ_PANEL_COORD_PANEL_PX, data, panel_px));
+    AT(dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_PANEL_PX, DVZ_PANEL_COORD_DATA, panel_px, roundtrip));
+    AC(roundtrip[0], data[0], 1e-6);
+    AC(roundtrip[1], data[1], 1e-6);
+
+    AT(dvz_panel_set_padding(panel, NULL));
+    AT(dvz_panel_set_reserve(panel, NULL));
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 100.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, 100.0) == 0);
+    DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
+    ANN(pz);
+    dvz_panzoom_zoom(pz, (vec2){2.0f, 2.0f});
+    dvz_panzoom_pan(pz, (vec2){0.5f, 0.0f});
+    double x_min = 0.0;
+    double x_max = 0.0;
+    double y_min = 0.0;
+    double y_max = 0.0;
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &x_min, &x_max));
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &y_min, &y_max));
+    data[0] = 0.5 * (x_min + x_max);
+    data[1] = 0.5 * (y_min + y_max);
+    AT(dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_DATA, DVZ_PANEL_COORD_PANEL_PX, data, panel_px));
+    AC(panel_px[0], 200.0, 1e-5);
+    AC(panel_px[1], 150.0, 1e-5);
+    AT(dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_PANEL_PX, DVZ_PANEL_COORD_DATA, panel_px, roundtrip));
+    AC(roundtrip[0], data[0], 1e-6);
+    AC(roundtrip[1], data[1], 1e-6);
+
+    double view[2] = {0};
+    float data3[] = {(float)data[0], (float)data[1], 0.0f};
+    float visual3[3] = {0};
+    AT(dvz_panel_data_to_visual_positions(panel, data3, visual3, 1) == 0);
+    AT(dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_DATA, DVZ_PANEL_COORD_VIEW, data, view));
+    AC(view[0], (double)visual3[0], 1e-6);
+    AC(view[1], (double)visual3[1], 1e-6);
+    AT(dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_VIEW, DVZ_PANEL_COORD_DATA, view, roundtrip));
+    AC(roundtrip[0], data[0], 1e-6);
+    AC(roundtrip[1], data[1], 1e-6);
+
+    AT(!dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_PANEL_PX, DVZ_PANEL_COORD_DATA,
+        (const double[2]){-1.0, 10.0}, roundtrip));
+    AT(!dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_FIGURE_PX, DVZ_PANEL_COORD_PANEL_PX,
+        (const double[2]){10.0, 10.0}, panel_px));
+    AT(!dvz_panel_transform_point(
+        panel, DVZ_PANEL_COORD_DATA, DVZ_PANEL_COORD_PANEL_PX,
+        (const double[2]){NAN, 1.0}, panel_px));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 static int test_axis_plot_margins(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -3311,6 +3447,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_text_pixel_reserve);
     TST_CASE(test_axis_text_inset_panel_coordinates);
     TST_CASE(test_panel_data_to_visual_positions);
+    TST_CASE(test_panel_transform_point);
     TST_CASE(test_axis_plot_margins);
     TST_CASE(test_axis_panel_reserve);
     TST_CASE(test_axis_auto_reserve_tracks_label_and_resize);

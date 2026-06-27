@@ -295,6 +295,27 @@ int dvz_panel_query(DvzPanel* panel, double x, double y, const DvzQueryRequest* 
 }
 
 
+/**
+ * Queue one panel query at a DATA-coordinate point.
+ *
+ * @param panel the panel
+ * @param x data x coordinate
+ * @param y data y coordinate
+ * @param request query request, or NULL for defaults
+ * @return 0 on success, -1 on failure
+ */
+int dvz_panel_query_data(DvzPanel* panel, double x, double y, const DvzQueryRequest* request)
+{
+    double panel_px[2] = {0};
+    if (!dvz_panel_data_to_position(
+            panel, DVZ_PANEL_COORD_PANEL_PX, (const double[2]){x, y}, panel_px))
+    {
+        return -1;
+    }
+    return dvz_panel_query(panel, panel_px[0], panel_px[1], request);
+}
+
+
 
 /**
  * Execute queued panel queries for one figure.

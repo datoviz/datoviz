@@ -659,7 +659,8 @@ DVZ_EXPORT bool dvz_panel_get_padding(const DvzPanel* panel, DvzPanelReserve* ou
 /**
  * Return one panel's current inner rectangle in figure pixel coordinates.
  *
- * The inner rectangle is the panel rectangle after padding and before resolved reserve.
+ * The inner rectangle is the panel outer rectangle after padding and before resolved reserve,
+ * expressed in figure logical pixels.
  *
  * @param panel the panel
  * @param out output inner rectangle in logical pixels
@@ -671,13 +672,74 @@ DVZ_EXPORT bool dvz_panel_inner_rect_px(const DvzPanel* panel, DvzRect* out);
 /**
  * Return one panel's current plot rectangle in figure pixel coordinates.
  *
- * The plot rectangle is the panel rectangle after padding and resolved reserve.
+ * The plot rectangle is the panel outer rectangle after padding and resolved reserve, expressed in
+ * figure logical pixels. Panel query positions remain panel-local logical pixels with origin at the
+ * outer panel rectangle.
  *
  * @param panel the panel
  * @param out output plot rectangle in logical pixels
  * @return whether the rectangle was written
  */
 DVZ_EXPORT bool dvz_panel_plot_rect_px(const DvzPanel* panel, DvzRect* out);
+
+
+/**
+ * Convert one 2D point between explicit panel coordinate spaces.
+ *
+ * Figure, panel, inner, and plot pixel spaces use logical pixels. Panel pixels are local to the
+ * outer panel rectangle and match `dvz_panel_query()` coordinates. DATA coordinates use the
+ * current visible data domain. VIEW coordinates are the visual coordinates used by visuals attached
+ * with `DVZ_COORD_VIEW`.
+ *
+ * @param panel the panel
+ * @param from source coordinate space
+ * @param to destination coordinate space
+ * @param in input point
+ * @param out output point
+ * @return whether the conversion was supported and finite
+ */
+DVZ_EXPORT bool dvz_panel_transform_point(
+    DvzPanel* panel, DvzPanelCoordSpace from, DvzPanelCoordSpace to, const double in[2],
+    double out[2]);
+
+
+/**
+ * Convert a position in a pixel or VIEW coordinate space to panel DATA coordinates.
+ *
+ * @param panel the panel
+ * @param from source coordinate space
+ * @param in input point
+ * @param out_data output data point
+ * @return whether the conversion was supported and finite
+ */
+DVZ_EXPORT bool dvz_panel_position_to_data(
+    DvzPanel* panel, DvzPanelCoordSpace from, const double in[2], double out_data[2]);
+
+
+/**
+ * Convert a panel DATA point to a position in another panel coordinate space.
+ *
+ * @param panel the panel
+ * @param to destination coordinate space
+ * @param data input data point
+ * @param out output point
+ * @return whether the conversion was supported and finite
+ */
+DVZ_EXPORT bool dvz_panel_data_to_position(
+    DvzPanel* panel, DvzPanelCoordSpace to, const double data[2], double out[2]);
+
+
+/**
+ * Queue a query at a DATA-coordinate point.
+ *
+ * @param panel the panel
+ * @param x data x coordinate
+ * @param y data y coordinate
+ * @param request the request descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_panel_query_data(
+    DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
 
 
 /**
@@ -1181,9 +1243,11 @@ DVZ_EXPORT bool dvz_panel_view2d_extent(DvzPanel* panel, float out[4]);
 /**
  * Return the current visible data domain for one panel dimension.
  *
- * The panel's domain is combined with the current panzoom extent. The returned endpoints preserve
- * the active domain orientation, so reversed domains return reversed visible endpoints. When no
- * explicit domain has been configured, the default visual domain [-1, +1] is used.
+ * The panel's data-to-view policy is combined with the current panzoom extent. The returned
+ * endpoints preserve the active domain orientation, so reversed domains return reversed visible
+ * endpoints. When no explicit domain has been configured, the default visual domain [-1, +1] is
+ * used. Use this for data/pixel conversion; `dvz_panel_transform_point()` wraps the common point
+ * conversions.
  *
  * @param panel the panel
  * @param dim axis dimension
@@ -1196,13 +1260,12 @@ dvz_panel_visible_domain(DvzPanel* panel, DvzDim dim, double* out_min, double* o
 
 
 /**
- * Normalize tightly packed 3D data positions through the panel X/Y domains.
+ * Convert tightly packed 3D DATA positions to panel VIEW positions.
  *
- * X and Y are mapped from data coordinates into panel visual coordinates in [-1, +1]. For ordinary
- * increasing domains, X increases left to right and Y increases bottom to top. Reversed domains
- * reverse the corresponding mapping. Z is copied unchanged; positive Z is the default front
- * direction for camera/depth interpretation. Unset domains fall back to pass-through visual
- * coordinates for that dimension.
+ * This helper is only appropriate when the destination visual is attached with `DVZ_COORD_VIEW`.
+ * Ordinary retained visual data should normally stay in DATA coordinates and use the default
+ * `DVZ_COORD_DATA` attachment. X and Y are mapped from data coordinates into panel visual
+ * coordinates; Z is copied unchanged.
  *
  * @param panel the panel
  * @param data_positions tightly packed input positions, 3 floats per item

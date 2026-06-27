@@ -138,6 +138,18 @@ typedef enum
 } DvzVisualCoordSpace;
 
 
+/* Coordinate spaces for explicit panel point conversions. */
+typedef enum
+{
+    DVZ_PANEL_COORD_FIGURE_PX = 0, /* figure logical pixels */
+    DVZ_PANEL_COORD_PANEL_PX  = 1, /* panel-local logical pixels, origin at outer rect */
+    DVZ_PANEL_COORD_INNER_PX  = 2, /* inner-rect logical pixels, after padding */
+    DVZ_PANEL_COORD_PLOT_PX   = 3, /* plot-local logical pixels, after padding and reserve */
+    DVZ_PANEL_COORD_DATA      = 4, /* panel data/domain coordinates */
+    DVZ_PANEL_COORD_VIEW      = 5, /* panel view/visual coordinates */
+} DvzPanelCoordSpace;
+
+
 typedef enum
 {
     DVZ_VISUAL_SHADER_NONE = 0,

@@ -21,6 +21,14 @@
 #include "_controllers.h"
 #include "_scene.h"
 #include "datoviz/math/_cglm.h"
+#include "datoviz/scene.h"
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define PANEL_COORD_EPS 1e-12
 
 
 /*************************************************************************************************/
@@ -601,4 +609,419 @@ DvzPanelDesc _scene_panel_plot_desc(const DvzPanel* panel)
                           (float)panel->figure->height :
                       (1.0f - top - bottom) * panel->desc.height,
     };
+}
+
+
+
+/*************************************************************************************************/
+/*  Panel coordinate transforms                                                                  */
+/*************************************************************************************************/
+
+static bool _panel_coord_space_valid(DvzPanelCoordSpace space)
+{
+    switch (space)
+    {
+    case DVZ_PANEL_COORD_FIGURE_PX:
+    case DVZ_PANEL_COORD_PANEL_PX:
+    case DVZ_PANEL_COORD_INNER_PX:
+    case DVZ_PANEL_COORD_PLOT_PX:
+    case DVZ_PANEL_COORD_DATA:
+    case DVZ_PANEL_COORD_VIEW:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+static bool _panel_coord_is_pixel_space(DvzPanelCoordSpace space)
+{
+    return space == DVZ_PANEL_COORD_FIGURE_PX || space == DVZ_PANEL_COORD_PANEL_PX ||
+           space == DVZ_PANEL_COORD_INNER_PX || space == DVZ_PANEL_COORD_PLOT_PX;
+}
+
+
+static int _panel_coord_pixel_rank(DvzPanelCoordSpace space)
+{
+    switch (space)
+    {
+    case DVZ_PANEL_COORD_FIGURE_PX:
+        return 0;
+    case DVZ_PANEL_COORD_PANEL_PX:
+        return 1;
+    case DVZ_PANEL_COORD_INNER_PX:
+        return 2;
+    case DVZ_PANEL_COORD_PLOT_PX:
+        return 3;
+    default:
+        return -1;
+    }
+}
+
+
+static bool _panel_coord_finite2(const double p[2])
+{
+    return p != NULL && isfinite(p[0]) && isfinite(p[1]);
+}
+
+
+static bool _panel_coord_rect_valid(const DvzRect* rect)
+{
+    return rect != NULL && isfinite(rect->x) && isfinite(rect->y) && isfinite(rect->width) &&
+           isfinite(rect->height) && rect->width > 0.0f && rect->height > 0.0f;
+}
+
+
+static bool _panel_coord_outer_rect(const DvzPanel* panel, DvzRect* out)
+{
+    if (panel == NULL || out == NULL)
+        return false;
+    _scene_panel_pixel_rect(panel, &out->x, &out->y, &out->width, &out->height);
+    return _panel_coord_rect_valid(out);
+}
+
+
+static bool _panel_coord_rect_for_space(
+    const DvzPanel* panel, DvzPanelCoordSpace space, DvzRect* out)
+{
+    if (panel == NULL || out == NULL)
+        return false;
+    switch (space)
+    {
+    case DVZ_PANEL_COORD_PANEL_PX:
+        return _panel_coord_outer_rect(panel, out);
+    case DVZ_PANEL_COORD_INNER_PX:
+        return dvz_panel_inner_rect_px(panel, out) && _panel_coord_rect_valid(out);
+    case DVZ_PANEL_COORD_PLOT_PX:
+        return dvz_panel_plot_rect_px(panel, out) && _panel_coord_rect_valid(out);
+    default:
+        return false;
+    }
+}
+
+
+static bool _panel_coord_figure_in_rect(const DvzRect* rect, const double figure[2])
+{
+    ANN(rect);
+    ANN(figure);
+    return figure[0] >= (double)rect->x && figure[0] <= (double)rect->x + (double)rect->width &&
+           figure[1] >= (double)rect->y && figure[1] <= (double)rect->y + (double)rect->height;
+}
+
+
+static bool _panel_coord_local_in_rect(const DvzRect* rect, const double local[2])
+{
+    ANN(rect);
+    ANN(local);
+    return local[0] >= 0.0 && local[0] <= (double)rect->width && local[1] >= 0.0 &&
+           local[1] <= (double)rect->height;
+}
+
+
+static bool _panel_coord_view_extent(const DvzPanel* panel, float out[4])
+{
+    if (panel == NULL || out == NULL)
+        return false;
+    if (!_scene_panel_panzoom_extent(panel, out))
+        return false;
+    return isfinite(out[0]) && isfinite(out[1]) && isfinite(out[2]) && isfinite(out[3]) &&
+           fabs((double)out[1] - (double)out[0]) > PANEL_COORD_EPS &&
+           fabs((double)out[3] - (double)out[2]) > PANEL_COORD_EPS;
+}
+
+
+static bool _panel_coord_data_to_view(const DvzPanel* panel, const double data[2], double view[2])
+{
+    if (panel == NULL || !_panel_coord_finite2(data) || view == NULL)
+        return false;
+    DvzPanelView2DResolved resolved = {0};
+    if (!_scene_panel_view2d_resolve(panel, &resolved))
+        return false;
+    const double sx = (double)resolved.data_to_view[0][0];
+    const double sy = (double)resolved.data_to_view[1][1];
+    const double tx = (double)resolved.data_to_view[3][0];
+    const double ty = (double)resolved.data_to_view[3][1];
+    view[0] = sx * data[0] + tx;
+    view[1] = sy * data[1] + ty;
+    return _panel_coord_finite2(view);
+}
+
+
+static bool _panel_coord_view_to_data(const DvzPanel* panel, const double view[2], double data[2])
+{
+    if (panel == NULL || !_panel_coord_finite2(view) || data == NULL)
+        return false;
+    DvzPanelView2DResolved resolved = {0};
+    if (!_scene_panel_view2d_resolve(panel, &resolved))
+        return false;
+    const double sx = (double)resolved.data_to_view[0][0];
+    const double sy = (double)resolved.data_to_view[1][1];
+    const double tx = (double)resolved.data_to_view[3][0];
+    const double ty = (double)resolved.data_to_view[3][1];
+    if (!isfinite(sx) || !isfinite(sy) || fabs(sx) <= PANEL_COORD_EPS ||
+        fabs(sy) <= PANEL_COORD_EPS)
+    {
+        return false;
+    }
+    data[0] = (view[0] - tx) / sx;
+    data[1] = (view[1] - ty) / sy;
+    return _panel_coord_finite2(data);
+}
+
+
+static bool _panel_coord_view_to_plot_px(
+    const DvzPanel* panel, const double view[2], double plot_px[2])
+{
+    if (panel == NULL || !_panel_coord_finite2(view) || plot_px == NULL)
+        return false;
+    DvzRect plot = {0};
+    float extent[4] = {0};
+    if (
+        !dvz_panel_plot_rect_px(panel, &plot) || !_panel_coord_rect_valid(&plot) ||
+        !_panel_coord_view_extent(panel, extent))
+    {
+        return false;
+    }
+    const double sx = (double)extent[1] - (double)extent[0];
+    const double sy = (double)extent[3] - (double)extent[2];
+    plot_px[0] = (view[0] - (double)extent[0]) / sx * (double)plot.width;
+    plot_px[1] = ((double)extent[3] - view[1]) / sy * (double)plot.height;
+    return _panel_coord_finite2(plot_px);
+}
+
+
+static bool _panel_coord_plot_px_to_view(
+    const DvzPanel* panel, const double plot_px[2], double view[2])
+{
+    if (panel == NULL || !_panel_coord_finite2(plot_px) || view == NULL)
+        return false;
+    DvzRect plot = {0};
+    float extent[4] = {0};
+    if (
+        !dvz_panel_plot_rect_px(panel, &plot) || !_panel_coord_rect_valid(&plot) ||
+        !_panel_coord_view_extent(panel, extent))
+    {
+        return false;
+    }
+    const double sx = (double)extent[1] - (double)extent[0];
+    const double sy = (double)extent[3] - (double)extent[2];
+    view[0] = (double)extent[0] + plot_px[0] / (double)plot.width * sx;
+    view[1] = (double)extent[3] - plot_px[1] / (double)plot.height * sy;
+    return _panel_coord_finite2(view);
+}
+
+
+static bool _panel_coord_data_to_plot_px(
+    const DvzPanel* panel, const double data[2], double plot_px[2])
+{
+    double view[2] = {0};
+    return _panel_coord_data_to_view(panel, data, view) &&
+           _panel_coord_view_to_plot_px(panel, view, plot_px);
+}
+
+
+static bool _panel_coord_plot_px_to_data(
+    const DvzPanel* panel, const double plot_px[2], double data[2])
+{
+    double view[2] = {0};
+    return _panel_coord_plot_px_to_view(panel, plot_px, view) &&
+           _panel_coord_view_to_data(panel, view, data);
+}
+
+
+static bool _panel_coord_to_figure(
+    const DvzPanel* panel, DvzPanelCoordSpace from, const double in[2], double figure[2])
+{
+    if (panel == NULL || !_panel_coord_space_valid(from) || !_panel_coord_finite2(in) ||
+        figure == NULL)
+    {
+        return false;
+    }
+
+    DvzRect rect = {0};
+    double plot_px[2] = {0};
+    switch (from)
+    {
+    case DVZ_PANEL_COORD_FIGURE_PX:
+        figure[0] = in[0];
+        figure[1] = in[1];
+        return true;
+
+    case DVZ_PANEL_COORD_PANEL_PX:
+    case DVZ_PANEL_COORD_INNER_PX:
+    case DVZ_PANEL_COORD_PLOT_PX:
+        if (!_panel_coord_rect_for_space(panel, from, &rect) ||
+            !_panel_coord_local_in_rect(&rect, in))
+        {
+            return false;
+        }
+        figure[0] = (double)rect.x + in[0];
+        figure[1] = (double)rect.y + in[1];
+        return _panel_coord_finite2(figure);
+
+    case DVZ_PANEL_COORD_DATA:
+        if (!_panel_coord_data_to_plot_px(panel, in, plot_px) ||
+            !dvz_panel_plot_rect_px(panel, &rect) || !_panel_coord_rect_valid(&rect))
+        {
+            return false;
+        }
+        figure[0] = (double)rect.x + plot_px[0];
+        figure[1] = (double)rect.y + plot_px[1];
+        return _panel_coord_finite2(figure);
+
+    case DVZ_PANEL_COORD_VIEW:
+        if (!_panel_coord_view_to_plot_px(panel, in, plot_px) ||
+            !dvz_panel_plot_rect_px(panel, &rect) || !_panel_coord_rect_valid(&rect))
+        {
+            return false;
+        }
+        figure[0] = (double)rect.x + plot_px[0];
+        figure[1] = (double)rect.y + plot_px[1];
+        return _panel_coord_finite2(figure);
+
+    default:
+        return false;
+    }
+}
+
+
+static bool _panel_coord_require_target_rect(
+    const DvzPanel* panel, DvzPanelCoordSpace from, DvzPanelCoordSpace to, const double figure[2])
+{
+    if (!_panel_coord_is_pixel_space(from))
+        return true;
+
+    DvzPanelCoordSpace bounded_space = to;
+    if (to == DVZ_PANEL_COORD_DATA || to == DVZ_PANEL_COORD_VIEW)
+        bounded_space = DVZ_PANEL_COORD_PLOT_PX;
+    if (!_panel_coord_is_pixel_space(bounded_space) || bounded_space == DVZ_PANEL_COORD_FIGURE_PX)
+        return true;
+
+    const int from_rank = _panel_coord_pixel_rank(from);
+    const int to_rank = _panel_coord_pixel_rank(bounded_space);
+    if (from_rank < 0 || to_rank < 0 || from_rank >= to_rank)
+        return true;
+
+    DvzRect rect = {0};
+    return _panel_coord_rect_for_space(panel, bounded_space, &rect) &&
+           _panel_coord_figure_in_rect(&rect, figure);
+}
+
+
+static bool _panel_coord_from_figure(
+    const DvzPanel* panel, DvzPanelCoordSpace from, DvzPanelCoordSpace to,
+    const double figure[2], double out[2])
+{
+    if (panel == NULL || !_panel_coord_space_valid(to) || !_panel_coord_finite2(figure) ||
+        out == NULL)
+    {
+        return false;
+    }
+    if (!_panel_coord_require_target_rect(panel, from, to, figure))
+        return false;
+
+    DvzRect rect = {0};
+    double plot_px[2] = {0};
+    switch (to)
+    {
+    case DVZ_PANEL_COORD_FIGURE_PX:
+        out[0] = figure[0];
+        out[1] = figure[1];
+        return true;
+
+    case DVZ_PANEL_COORD_PANEL_PX:
+    case DVZ_PANEL_COORD_INNER_PX:
+    case DVZ_PANEL_COORD_PLOT_PX:
+        if (!_panel_coord_rect_for_space(panel, to, &rect))
+            return false;
+        out[0] = figure[0] - (double)rect.x;
+        out[1] = figure[1] - (double)rect.y;
+        return _panel_coord_finite2(out);
+
+    case DVZ_PANEL_COORD_DATA:
+        if (!dvz_panel_plot_rect_px(panel, &rect) || !_panel_coord_rect_valid(&rect))
+            return false;
+        plot_px[0] = figure[0] - (double)rect.x;
+        plot_px[1] = figure[1] - (double)rect.y;
+        return _panel_coord_plot_px_to_data(panel, plot_px, out);
+
+    case DVZ_PANEL_COORD_VIEW:
+        if (!dvz_panel_plot_rect_px(panel, &rect) || !_panel_coord_rect_valid(&rect))
+            return false;
+        plot_px[0] = figure[0] - (double)rect.x;
+        plot_px[1] = figure[1] - (double)rect.y;
+        return _panel_coord_plot_px_to_view(panel, plot_px, out);
+
+    default:
+        return false;
+    }
+}
+
+
+/**
+ * Convert one 2D point between explicit panel coordinate spaces.
+ *
+ * @param panel the panel
+ * @param from source coordinate space
+ * @param to destination coordinate space
+ * @param in input point
+ * @param out output point
+ * @return whether the conversion was supported and finite
+ */
+bool dvz_panel_transform_point(
+    DvzPanel* panel, DvzPanelCoordSpace from, DvzPanelCoordSpace to, const double in[2],
+    double out[2])
+{
+    if (panel == NULL || in == NULL || out == NULL || !_panel_coord_space_valid(from) ||
+        !_panel_coord_space_valid(to) || !_panel_coord_finite2(in))
+    {
+        return false;
+    }
+    if (from == to)
+    {
+        out[0] = in[0];
+        out[1] = in[1];
+        return true;
+    }
+
+    if (from == DVZ_PANEL_COORD_DATA && to == DVZ_PANEL_COORD_VIEW)
+        return _panel_coord_data_to_view(panel, in, out);
+    if (from == DVZ_PANEL_COORD_VIEW && to == DVZ_PANEL_COORD_DATA)
+        return _panel_coord_view_to_data(panel, in, out);
+
+    double figure[2] = {0};
+    return _panel_coord_to_figure(panel, from, in, figure) &&
+           _panel_coord_from_figure(panel, from, to, figure, out);
+}
+
+
+/**
+ * Convert a position in a pixel or VIEW coordinate space to panel DATA coordinates.
+ *
+ * @param panel the panel
+ * @param from source coordinate space
+ * @param in input point
+ * @param out_data output data point
+ * @return whether the conversion was supported and finite
+ */
+bool dvz_panel_position_to_data(
+    DvzPanel* panel, DvzPanelCoordSpace from, const double in[2], double out_data[2])
+{
+    return dvz_panel_transform_point(panel, from, DVZ_PANEL_COORD_DATA, in, out_data);
+}
+
+
+/**
+ * Convert a panel DATA point to a position in another panel coordinate space.
+ *
+ * @param panel the panel
+ * @param to destination coordinate space
+ * @param data input data point
+ * @param out output point
+ * @return whether the conversion was supported and finite
+ */
+bool dvz_panel_data_to_position(
+    DvzPanel* panel, DvzPanelCoordSpace to, const double data[2], double out[2])
+{
+    return dvz_panel_transform_point(panel, DVZ_PANEL_COORD_DATA, to, data, out);
 }

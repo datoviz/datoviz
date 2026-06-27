@@ -383,8 +383,8 @@ DVZ_EXPORT DvzQueryRequest dvz_query_request(void);
  * Queue an explicit GPU-backed query request on a panel.
  *
  * @param panel the panel
- * @param x the logical panel x coordinate
- * @param y the logical panel y coordinate
+ * @param x the panel-local logical x coordinate, origin at the outer panel rectangle
+ * @param y the panel-local logical y coordinate, origin at the outer panel rectangle
  * @param request the request descriptor, or NULL for defaults
  * @return 0 on success, -1 on error
  */
@@ -407,8 +407,8 @@ DVZ_EXPORT bool dvz_scene_poll_query(DvzScene* scene, DvzQueryResult* out_result
  *
  * @param panel the panel
  * @param runtime the DRP2 runtime
- * @param x the logical panel x coordinate
- * @param y the logical panel y coordinate
+ * @param x the panel-local logical x coordinate, origin at the outer panel rectangle
+ * @param y the panel-local logical y coordinate, origin at the outer panel rectangle
  * @param request the request descriptor, or NULL for defaults
  * @param out_result output result
  * @return 0 on success, -1 on error

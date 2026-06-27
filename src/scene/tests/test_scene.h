@@ -33,6 +33,8 @@ int test_axis_domain_and_ticks(TstContext* suite, const TstCase* item);
 
 int test_panel_data_to_visual_positions(TstContext* suite, const TstCase* item);
 
+int test_panel_transform_point(TstContext* suite, const TstCase* item);
+
 int test_panel_visible_domain(TstContext* suite, const TstCase* item);
 
 int test_axis_panzoom_visible_domain(TstContext* suite, const TstCase* item);

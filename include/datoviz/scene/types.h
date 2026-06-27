@@ -1076,6 +1076,7 @@ struct DvzQueryResult
     DvzId scene_id;
     DvzId figure_id;
     uint64_t panel_id;
+    /* Panel-local logical pixels, origin at the outer panel rectangle. */
     double panel_position[2];
     uint32_t framebuffer_position[2];
     uint64_t visual_id;
