@@ -265,7 +265,6 @@ static bool _add_image(
         {1.0f, 0.0f, 0.0f},
         {1.0f, 1.0f, 0.0f},
     };
-    vec3 visual_positions[4] = {{0}};
     vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
@@ -273,15 +272,10 @@ static bool _add_image(
         {1.0f, 1.0f},
     };
 
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data_positions, (float*)visual_positions, 4);
-    if (rc != 0)
-        return false;
-
     DvzVisual* image = dvz_image(scene, 0);
     if (image == NULL)
         return false;
-    if (dvz_visual_set_data(image, "position", visual_positions, 4) != 0)
+    if (dvz_visual_set_data(image, "position", data_positions, 4) != 0)
         return false;
     if (dvz_visual_set_data(image, "texcoords", texcoords, 4) != 0)
         return false;
@@ -403,6 +397,28 @@ static bool _data_to_figure(DvzPanel* panel, float x, float y, float out[2])
 }
 
 
+/**
+ * Convert figure-space cursor coordinates to panel-local query coordinates.
+ *
+ * @param panel target panel
+ * @param figure figure-space cursor position
+ * @param out output panel-local logical pixel position
+ * @return true when conversion succeeded
+ */
+static bool _figure_to_panel(DvzPanel* panel, const float figure[2], float out[2])
+{
+    if (panel == NULL || figure == NULL || out == NULL)
+        return false;
+
+    DvzRect inner = {0};
+    if (!dvz_panel_inner_rect_px(panel, &inner))
+        return false;
+
+    out[0] = figure[0] - inner.x;
+    out[1] = figure[1] - inner.y;
+    return true;
+}
+
 
 /**
  * Move one marker to a normalized data position.
@@ -418,14 +434,8 @@ static bool _update_probe_marker(ProbeMarker* marker, float x, float y)
         return false;
 
     vec3 marker_data[1] = {{x, y, 0.04f}};
-    vec3 marker_visual[1] = {{0}};
-    const int rc = dvz_panel_data_to_visual_positions(
-        marker->panel, (const float*)marker_data, (float*)marker_visual, 1);
-    if (rc != 0)
-        return false;
-    return dvz_visual_set_data(marker->visual, "position", marker_visual, 1) == 0;
+    return dvz_visual_set_data(marker->visual, "position", marker_data, 1) == 0;
 }
-
 
 
 /**
@@ -447,18 +457,13 @@ static bool _add_probe_marker(DvzScene* scene, DvzPanel* panel, ProbeMarker* out
     if (marker.visual == NULL)
         return false;
     vec3 marker_data[1] = {{PROBE_X, PROBE_Y, 0.04f}};
-    vec3 marker_visual[1] = {{0}};
-    int rc =
-        dvz_panel_data_to_visual_positions(panel, (const float*)marker_data, (float*)marker_visual, 1);
-    if (rc != 0)
-        return false;
     DvzColor marker_color[1] = {example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING)};
     marker_color[0].a = 245u;
     float marker_diameter[1] = {34.0f};
     float marker_angle[1] = {0.0f};
     uint32_t marker_shape[1] = {DVZ_MARKER_SHAPE_TARGET};
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = marker_visual, .item_count = 1},
+        {.attr_name = "position", .data = marker_data, .item_count = 1},
         {.attr_name = "color", .data = marker_color, .item_count = 1},
         {.attr_name = "diameter_px", .data = marker_diameter, .item_count = 1},
         {.attr_name = "angle", .data = marker_angle, .item_count = 1},
@@ -711,8 +716,11 @@ static void _queue_probe(LinkedProbeState* state)
     DvzQueryRequest request = dvz_query_request();
     request.request_id = PROBE_REQUEST_ID;
     request.target = DVZ_SCENE_TARGET_PIXEL;
-    if (dvz_panel_query(state->source_panel, state->cursor_x, state->cursor_y, &request) != 0)
-        dvz_fprintf(stderr, "dvz_panel_query() failed\n");
+    if (dvz_scenario_panel_query(
+            state->source_panel, state->cursor_x, state->cursor_y, &request) != 0)
+    {
+        dvz_fprintf(stderr, "dvz_scenario_panel_query() failed\n");
+    }
 }
 
 
@@ -785,11 +793,13 @@ static void _set_probe(LinkedProbeState* state, float x, float y)
     (void)_update_probe_marker(&state->derived_marker, x, y);
 
     float source_px[2] = {0};
-    if (_data_to_figure(state->source_panel, x, y, source_px))
+    float panel_px[2] = {0};
+    if (_data_to_figure(state->source_panel, x, y, source_px) &&
+        _figure_to_panel(state->source_panel, source_px, panel_px))
     {
         state->cursor_valid = true;
-        state->cursor_x = source_px[0];
-        state->cursor_y = source_px[1];
+        state->cursor_x = panel_px[0];
+        state->cursor_y = panel_px[1];
         _queue_probe(state);
     }
 }
@@ -844,9 +854,12 @@ static void _linked_probe_post_frame(DvzScenarioContext* ctx, void* user_data)
     {
         float x = 0.0f;
         float y = 0.0f;
+        DvzRect inner = {0};
         const bool in_panel =
-            _figure_to_data(state->source_panel, query.panel_position[0], query.panel_position[1],
-                            &x, &y);
+            dvz_panel_inner_rect_px(state->source_panel, &inner) &&
+            _figure_to_data(
+                state->source_panel, query.panel_position[0] + inner.x,
+                query.panel_position[1] + inner.y, &x, &y);
         if (in_panel && _query_changed(state, &query, x, y))
         {
             _update_readout(state, x, y, query.hit);
