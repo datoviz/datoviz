@@ -196,7 +196,7 @@ static bool _add_axes(DvzPanel* panel, const char* x_label, const char* y_label,
     style.label_size_px = 13.0f;
     style.tick_gap_px = 6.0f;
     style.x_label_gap_px = 30.0f;
-    style.y_label_gap_px = 42.0f;
+    style.y_label_gap_px = 18.0f;
     style.grid_alpha = 105;
     if (!example_graphite_cyan_apply_axis_style(x_axis, false, &style))
         return false;
@@ -304,7 +304,7 @@ static bool _add_autocorrelogram(DvzScene* scene, DvzPanel* panel)
                panel, "bi-side refractory", (vec3){0.0f, 118.0f, 0.0f}, 0.0f, 0.0f,
                EXAMPLE_STYLE_TEXT_PANEL_LABEL, text) &&
            example_add_data_label(
-               panel, "baseline", (vec3){-34.0f, 38.0f, 0.0f}, 0.0f, -14.0f,
+               panel, "baseline", (vec3){-30.0f, 38.0f, 0.0f}, 0.0f, -14.0f,
                EXAMPLE_STYLE_TEXT_PANEL_LABEL, baseline_text);
 }
 
