@@ -951,6 +951,8 @@ static bool _scene_panel_dispatch_pointer_controller(
 
     bool consumed = false;
     bool links_propagated = false;
+    DvzPanzoom* transient_panzoom_interaction = NULL;
+    bool old_panzoom_interacting = false;
     switch (controller->type)
     {
     case DVZ_CONTROLLER_TYPE_PANZOOM:
@@ -968,6 +970,12 @@ static bool _scene_panel_dispatch_pointer_controller(
         if ((dims & DVZ_DIM_MASK_Y) == 0)
             panzoom->flags |= DVZ_PANZOOM_FLAGS_FIXED_Y;
         dvz_panzoom_viewport(panzoom, x, y, w, h);
+        if (ev->type == DVZ_POINTER_EVENT_WHEEL)
+        {
+            old_panzoom_interacting = panzoom->interacting;
+            panzoom->interacting = true;
+            transient_panzoom_interaction = panzoom;
+        }
         consumed = dvz_panzoom_pointer(panzoom, ev);
         glm_vec2_copy(old_origin, panzoom->viewport_origin);
         glm_vec2_copy(old_size, panzoom->viewport_size);
@@ -1080,6 +1088,8 @@ static bool _scene_panel_dispatch_pointer_controller(
             _scene_controller_links_propagate_from(controller);
         _scene_notify_controller_figures(controller);
     }
+    if (transient_panzoom_interaction != NULL)
+        transient_panzoom_interaction->interacting = old_panzoom_interacting;
     return consumed;
 }
 

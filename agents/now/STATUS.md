@@ -115,6 +115,10 @@ silently synthesize an in-memory runtime fallback when the expected bundle is ab
 exact preparation command instead. Synthetic/simulated examples remain acceptable only when that
 data source is explicit in the manifest and example contract.
 
+Lab example guardrail: `examples/c/lab/` examples are deprecated for now and are not part of the
+release/public example proof. Do not spend audit, smoke, or API-migration effort there unless the
+user explicitly asks for lab-example work in the current turn.
+
 WebGPU example promotion handoff: prefer one commit per example or evidence checkpoint. The current
 pattern is: export/reuse the canonical C scenario, register it in `src/wasm/scene_api.c` and
 `src/wasm/CMakeLists.txt` only if not already registered, add or verify

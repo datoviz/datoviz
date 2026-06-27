@@ -572,7 +572,7 @@ static bool _add_colorbar(DvzPanel* panel, DvzScale* scale)
 
 
 /**
- * Bind one panzoom controller to both image panels.
+ * Bind linked panzoom controllers to both image panels.
  *
  * @param ctx scenario context
  * @param source source panel
@@ -586,12 +586,18 @@ static bool _bind_linked_panzoom(
     ANN(source);
     ANN(derived);
 
-    DvzController* panzoom = dvz_panzoom(ctx->scene, NULL);
-    if (panzoom == NULL)
+    DvzController* source_panzoom = dvz_panzoom(ctx->scene, NULL);
+    DvzController* derived_panzoom = dvz_panzoom(ctx->scene, NULL);
+    if (source_panzoom == NULL || derived_panzoom == NULL)
         return false;
-    if (dvz_scenario_bind_controller(ctx, source, panzoom, DVZ_DIM_MASK_XY) != 0)
+    if (dvz_scenario_bind_controller(ctx, source, source_panzoom, DVZ_DIM_MASK_XY) != 0)
         return false;
-    return dvz_scenario_bind_controller(ctx, derived, panzoom, DVZ_DIM_MASK_XY) == 0;
+    if (dvz_scenario_bind_controller(ctx, derived, derived_panzoom, DVZ_DIM_MASK_XY) != 0)
+        return false;
+    return dvz_controller_link(
+               ctx->scene, source_panzoom, derived_panzoom,
+               DVZ_CONTROLLER_LINK_EXTENT_X | DVZ_CONTROLLER_LINK_EXTENT_Y,
+               DVZ_CONTROLLER_LINK_TWO_WAY) != NULL;
 }
 
 

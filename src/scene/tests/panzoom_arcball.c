@@ -1315,6 +1315,91 @@ int test_controller_link_panzoom_two_way_target_drives_source(
 
 
 /**
+ * Ensure a wheel on the nominal target of a split X/Y panzoom link drives the linked X extent only.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_controller_link_panzoom_wheel_target_drives_linked_x_only(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* top = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 0.5f});
+    DvzPanel* bottom = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.5f, 1.0f, 0.5f});
+    ANN(top);
+    ANN(bottom);
+
+    DvzController* top_x = dvz_panzoom(scene, NULL);
+    DvzController* bottom_x = dvz_panzoom(scene, NULL);
+    DvzController* bottom_y = dvz_panzoom(scene, NULL);
+    ANN(top_x);
+    ANN(bottom_x);
+    ANN(bottom_y);
+    DvzPanzoom* top_x_pz = dvz_controller_panzoom(top_x);
+    DvzPanzoom* bottom_x_pz = dvz_controller_panzoom(bottom_x);
+    DvzPanzoom* bottom_y_pz = dvz_controller_panzoom(bottom_y);
+    ANN(top_x_pz);
+    ANN(bottom_x_pz);
+    ANN(bottom_y_pz);
+    AT(dvz_panzoom_zoom_limits(bottom_y_pz, (vec2){1.0f, 1.0f}, (vec2){1.0f, 1.0f}));
+
+    AT(dvz_panel_bind_controller(top, top_x, DVZ_DIM_MASK_X) == 0);
+    AT(dvz_panel_bind_controller(bottom, bottom_x, DVZ_DIM_MASK_X) == 0);
+    AT(dvz_panel_bind_controller(bottom, bottom_y, DVZ_DIM_MASK_Y) == 0);
+
+    DvzControllerLink* link = dvz_controller_link(
+        scene, top_x, bottom_x, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_TWO_WAY);
+    ANN(link);
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    AT(dvz_panel_connect_input(top, router) == 0);
+    AT(dvz_panel_connect_input(bottom, router) == 0);
+
+    DvzInputResizeEvent resize = {
+        .framebuffer_width = 800,
+        .framebuffer_height = 400,
+        .window_width = 800,
+        .window_height = 400,
+        .content_scale_x = 1.0f,
+        .content_scale_y = 1.0f,
+    };
+    dvz_input_emit_resize(router, &resize);
+
+    DvzInputEvent wheel = {
+        .type = DVZ_INPUT_EVENT_POINTER,
+        .content.pointer =
+            {
+                .type = DVZ_POINTER_EVENT_WHEEL,
+                .content.w.dir = {0.0f, 1.0f},
+                .pos = {400.0f, 300.0f},
+                .window_size = {800.0f, 400.0f},
+                .content_scale = 1.0f,
+            },
+    };
+    dvz_input_emit_event(router, &wheel);
+
+    AT(bottom_x_pz->zoom[0] > 1.0f);
+    AC(top_x_pz->zoom[0], bottom_x_pz->zoom[0], 1e-6f);
+    AC(top_x_pz->pan[0], bottom_x_pz->pan[0], 1e-6f);
+    AC(bottom_y_pz->zoom[1], 1.0f, 1e-6f);
+    AC(bottom_y_pz->pan[1], 0.0f, 1e-6f);
+    AT(!bottom_x_pz->interacting);
+
+    dvz_input_router_destroy(router);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure invalid controller link combinations are rejected.
  *
  * @param suite the test suite
@@ -2324,6 +2409,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_controller_link_panzoom_extent_x_equal_aspect_panels);
     TST_CASE(test_controller_link_panzoom_extent_x_bidirectional_does_not_accumulate_drag);
     TST_CASE(test_controller_link_panzoom_two_way_target_drives_source);
+    TST_CASE(test_controller_link_panzoom_wheel_target_drives_linked_x_only);
     TST_CASE(test_controller_link_validation);
     TST_CASE(test_controller_link_destroy_stops_arcball_propagation);
     TST_CASE(test_controller_destroy_detaches_panels_links_and_reuses_slot);

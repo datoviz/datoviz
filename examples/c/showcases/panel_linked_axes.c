@@ -605,7 +605,7 @@ static bool _add_summary_panel(DvzScene* scene, DvzPanel* panel)
 
 
 /**
- * Bind shared X panzoom and independent Y/summary panzooms.
+ * Bind linked X panzooms and independent Y/summary panzooms.
  *
  * @param ctx scenario context
  * @param left left-column panels
@@ -620,20 +620,39 @@ static bool _bind_linked_panzooms(
     ANN(left);
     ANN(summary);
 
-    DvzController* shared_x = dvz_panzoom(ctx->scene, NULL);
     DvzController* summary_xy = dvz_panzoom(ctx->scene, NULL);
-    if (shared_x == NULL || summary_xy == NULL)
+    if (summary_xy == NULL)
         return false;
 
+    DvzController* first_x = NULL;
     for (uint32_t i = 0; i < left_count; i++)
     {
+        DvzController* x = dvz_panzoom(ctx->scene, NULL);
         DvzController* y = dvz_panzoom(ctx->scene, NULL);
-        if (left[i] == NULL || y == NULL)
+        if (left[i] == NULL || x == NULL || y == NULL)
             return false;
-        if (dvz_scenario_bind_controller(ctx, left[i], shared_x, DVZ_DIM_MASK_X) != 0)
+        DvzPanzoom* y_panzoom = dvz_controller_panzoom(y);
+        if (
+            y_panzoom == NULL ||
+            !dvz_panzoom_zoom_limits(y_panzoom, (vec2){1.0f, 1.0f}, (vec2){1.0f, 1.0f}))
+        {
+            return false;
+        }
+        if (dvz_scenario_bind_controller(ctx, left[i], x, DVZ_DIM_MASK_X) != 0)
             return false;
         if (dvz_scenario_bind_controller(ctx, left[i], y, DVZ_DIM_MASK_Y) != 0)
             return false;
+        if (first_x == NULL)
+        {
+            first_x = x;
+        }
+        else if (
+            dvz_controller_link(
+                ctx->scene, first_x, x, DVZ_CONTROLLER_LINK_EXTENT_X,
+                DVZ_CONTROLLER_LINK_TWO_WAY) == NULL)
+        {
+            return false;
+        }
     }
     return dvz_scenario_bind_controller(ctx, summary, summary_xy, DVZ_DIM_MASK_XY) == 0;
 }
@@ -817,7 +836,7 @@ DvzScenarioSpec dvz_showcase_linked_panel_axes_scenario(void)
 /*************************************************************************************************/
 
 /**
- * Run the linked-panel axes and shared-X panzoom feature proof.
+ * Run the linked-panel axes and linked-X panzoom feature proof.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
