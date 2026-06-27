@@ -59,6 +59,75 @@ static DvzPanzoom* _axis_test_bind_panzoom(DvzScene* scene, DvzPanel* panel)
 
 
 /**
+ * Map data positions through the panel's current DATA -> VIEW model for axis tests.
+ *
+ * @param panel the panel
+ * @param data tightly packed input positions
+ * @param view tightly packed output positions
+ * @param count position count
+ * @return whether the conversion succeeded
+ */
+static bool _axis_test_panel_data_model_positions(
+    DvzPanel* panel, const float* data, float* view, uint32_t count)
+{
+    if (panel == NULL || data == NULL || view == NULL)
+        return false;
+
+    mat4 data_to_view = GLM_MAT4_IDENTITY_INIT;
+    DvzAxis* x_axis = _panel_axis_slot(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = _panel_axis_slot(panel, DVZ_DIM_Y);
+    bool has_x = x_axis != NULL && x_axis->panel != NULL && x_axis->domain_set;
+    bool has_y = y_axis != NULL && y_axis->panel != NULL && y_axis->domain_set;
+    if (panel->view2d_enabled && !_scene_panel_data_model(panel, data_to_view))
+        return false;
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const float x = data[3 * i + 0];
+        const float y = data[3 * i + 1];
+        const float z = data[3 * i + 2];
+        if (!isfinite(x) || !isfinite(y) || !isfinite(z))
+            return false;
+
+        if (panel->view2d_enabled)
+        {
+            view[3 * i + 0] = data_to_view[0][0] * x + data_to_view[3][0];
+            view[3 * i + 1] = data_to_view[1][1] * y + data_to_view[3][1];
+        }
+        else
+        {
+            if (has_x)
+            {
+                float x0 = -1.0f;
+                float x1 = +1.0f;
+                _axis_plot_interval(x_axis, &x0, &x1);
+                view[3 * i + 0] =
+                    _axis_data_to_visual((double)x, x_axis->domain.min, x_axis->domain.max, x0, x1);
+            }
+            else
+            {
+                view[3 * i + 0] = x;
+            }
+            if (has_y)
+            {
+                float y0 = -1.0f;
+                float y1 = +1.0f;
+                _axis_plot_interval(y_axis, &y0, &y1);
+                view[3 * i + 1] =
+                    _axis_data_to_visual((double)y, y_axis->domain.min, y_axis->domain.max, y0, y1);
+            }
+            else
+            {
+                view[3 * i + 1] = y;
+            }
+        }
+        view[3 * i + 2] = z;
+    }
+    return true;
+}
+
+
+/**
  * Return the first draw vertex count in a command stream.
  *
  * @param stream the command stream
@@ -1562,7 +1631,7 @@ static int test_axis_text_inset_panel_coordinates(TstContext* suite, const TstCa
 }
 
 
-int test_panel_data_to_visual_positions(TstContext* suite, const TstCase* item)
+int test_panel_data_model_positions(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -1576,14 +1645,14 @@ int test_panel_data_to_visual_positions(TstContext* suite, const TstCase* item)
 
     float data[] = {0.0f, -5.0f, 2.0f, 5.0f, 5.0f, 3.0f, 10.0f, 0.0f, 4.0f};
     float visual[9] = {0};
-    AT(dvz_panel_data_to_visual_positions(panel, data, visual, 3) == 0);
+    AT(_axis_test_panel_data_model_positions(panel, data, visual, 3));
     AT(fabsf(visual[0] - 0.0f) < 1e-6f);
     AT(fabsf(visual[1] + 5.0f) < 1e-6f);
     AT(fabsf(visual[2] - 2.0f) < 1e-6f);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -5.0, 5.0) == 0);
-    AT(dvz_panel_data_to_visual_positions(panel, data, visual, 3) == 0);
+    AT(_axis_test_panel_data_model_positions(panel, data, visual, 3));
     AT(fabsf(visual[0] + 1.0f) < 1e-6f);
     AT(fabsf(visual[1] + 1.0f) < 1e-6f);
     AT(fabsf(visual[3] - 0.0f) < 1e-6f);
@@ -1594,7 +1663,7 @@ int test_panel_data_to_visual_positions(TstContext* suite, const TstCase* item)
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 10.0, 0.0) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 5.0, -5.0) == 0);
-    AT(dvz_panel_data_to_visual_positions(panel, data, visual, 3) == 0);
+    AT(_axis_test_panel_data_model_positions(panel, data, visual, 3));
     AT(fabsf(visual[0] - 1.0f) < 1e-6f);
     AT(fabsf(visual[1] - 1.0f) < 1e-6f);
     AT(fabsf(visual[3] - 0.0f) < 1e-6f);
@@ -1718,7 +1787,7 @@ int test_panel_transform_point(TstContext* suite, const TstCase* item)
     double view[2] = {0};
     float data3[] = {(float)data[0], (float)data[1], 0.0f};
     float visual3[3] = {0};
-    AT(dvz_panel_data_to_visual_positions(panel, data3, visual3, 1) == 0);
+    AT(_axis_test_panel_data_model_positions(panel, data3, visual3, 1));
     AT(dvz_panel_transform_point(
         panel, DVZ_PANEL_COORD_DATA, DVZ_PANEL_COORD_VIEW, data, view));
     AC(view[0], (double)visual3[0], 1e-6);
@@ -1766,7 +1835,7 @@ static int test_axis_plot_margins(TstContext* suite, const TstCase* item)
 
     float data[] = {0.0f, -5.0f, 2.0f, 5.0f, 5.0f, 3.0f, 10.0f, 0.0f, 4.0f};
     float visual[9] = {0};
-    AT(dvz_panel_data_to_visual_positions(panel, data, visual, 3) == 0);
+    AT(_axis_test_panel_data_model_positions(panel, data, visual, 3));
     float x0 = -1.0f;
     float x1 = +1.0f;
     float y0 = -1.0f;
@@ -1847,7 +1916,7 @@ static int test_axis_panel_reserve(TstContext* suite, const TstCase* item)
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -5.0, 5.0) == 0);
     float data[] = {0.0f, -5.0f, 0.0f, 10.0f, 5.0f, 0.0f};
     float visual[6] = {0};
-    AT(dvz_panel_data_to_visual_positions(panel, data, visual, 2) == 0);
+    AT(_axis_test_panel_data_model_positions(panel, data, visual, 2));
     AT(fabsf(visual[0] + 0.80f) < 1e-6f);
     AT(fabsf(visual[1] + 0.95f) < 1e-6f);
     AT(fabsf(visual[3] - 0.90f) < 1e-6f);
@@ -2073,8 +2142,8 @@ static int test_panel_view2d(TstContext* suite, const TstCase* item)
     AT(view.struct_size == DVZ_STRUCT_SIZE(DvzPanelView2D));
     AT(view.mode == DVZ_PANEL_VIEW2D_CONTAIN);
     AT(view.aspect == DVZ_PANEL_VIEW2D_ASPECT_FREE);
-    view.data_x = (DvzDataDomain){.min = 0.0, .max = 2.0};
-    view.data_y = (DvzDataDomain){.min = 0.0, .max = 1.0};
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 2.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, 1.0) == 0);
     view.padding = 0.10;
     AT(dvz_panel_set_view2d(panel, &view) == 0);
 
@@ -2133,7 +2202,7 @@ static int test_panel_view2d(TstContext* suite, const TstCase* item)
     AT(fabs(min - 10.0) < 1e-9);
     AT(fabs(max - 20.0) < 1e-9);
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
-    AT(fabs(min + 1.0) < 1e-9);
+    AT(fabs(min - 0.0) < 1e-9);
     AT(fabs(max - 1.0) < 1e-9);
 
     dvz_scene_destroy(scene);
@@ -2154,8 +2223,8 @@ static int test_panel_view2d_reversed_domains(TstContext* suite, const TstCase* 
     ANN(panel);
 
     DvzPanelView2D view = dvz_panel_view2d();
-    view.data_x = (DvzDataDomain){.min = 10.0, .max = 0.0};
-    view.data_y = (DvzDataDomain){.min = 1.0, .max = -1.0};
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 10.0, 0.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 1.0, -1.0) == 0);
     AT(dvz_panel_set_view2d(panel, &view) == 0);
 
     double min = 0.0;
@@ -2169,7 +2238,7 @@ static int test_panel_view2d_reversed_domains(TstContext* suite, const TstCase* 
 
     float data[] = {10.0f, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f};
     float visual[6] = {0};
-    AT(dvz_panel_data_to_visual_positions(panel, data, visual, 2) == 0);
+    AT(_axis_test_panel_data_model_positions(panel, data, visual, 2));
     AT(fabsf(visual[0] + 1.0f) < 1e-6f);
     AT(fabsf(visual[1] + 1.0f) < 1e-6f);
     AT(fabsf(visual[3] - 1.0f) < 1e-6f);
@@ -3332,8 +3401,8 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
     DvzPanelView2D view = dvz_panel_view2d();
     view.mode = DVZ_PANEL_VIEW2D_CONTAIN;
     view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
-    view.data_x = (DvzDataDomain){.min = -1.0, .max = +1.0};
-    view.data_y = (DvzDataDomain){.min = -1.0, .max = +1.0};
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -1.0, +1.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, +1.0) == 0);
     view.padding = 0.0;
     AT(dvz_panel_set_view2d(panel, &view) == 0);
 
@@ -3446,7 +3515,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_text_updates_after_domain_change);
     TST_CASE(test_axis_text_pixel_reserve);
     TST_CASE(test_axis_text_inset_panel_coordinates);
-    TST_CASE(test_panel_data_to_visual_positions);
+    TST_CASE(test_panel_data_model_positions);
     TST_CASE(test_panel_transform_point);
     TST_CASE(test_axis_plot_margins);
     TST_CASE(test_axis_panel_reserve);

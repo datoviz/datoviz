@@ -191,8 +191,9 @@ current API has only `DVZ_PANEL_VIEW2D_CONTAIN` and `DVZ_PANEL_VIEW2D_ASPECT_EQU
 
 Semantics:
 
-1. the panel 2D view policy owns the X and Y visible data domains;
-2. padding expands the source domain before fitting;
+1. the panel view resolver computes X and Y visible data domains from source domains, plot
+   geometry, View2D policy, and panzoom state;
+2. padding expands the source panel domain before fitting;
 3. `DVZ_PANEL_VIEW2D_ASPECT_EQUAL` expands one domain so one X data unit and one Y data unit occupy
    the same number of plot pixels;
 4. the policy is re-applied when the panel plot rectangle changes, including layout reserve and

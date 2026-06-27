@@ -50,14 +50,7 @@ static bool _panel_view2d_validate(const DvzPanelView2D* view)
     if (view->aspect != DVZ_PANEL_VIEW2D_ASPECT_FREE &&
         view->aspect != DVZ_PANEL_VIEW2D_ASPECT_EQUAL)
         return false;
-    if (
-        !isfinite(view->data_x.min) || !isfinite(view->data_x.max) ||
-        !isfinite(view->data_y.min) || !isfinite(view->data_y.max) ||
-        !isfinite(view->padding))
-        return false;
-    if (
-        fabs(view->data_x.max - view->data_x.min) <= AXIS_EPS ||
-        fabs(view->data_y.max - view->data_y.min) <= AXIS_EPS)
+    if (!isfinite(view->padding))
         return false;
     if (view->padding < 0.0)
         return false;
@@ -157,13 +150,6 @@ static bool _scene_panel_source_domains(
     *out_x = (DvzDataDomain){.min = -1.0, .max = +1.0};
     *out_y = (DvzDataDomain){.min = -1.0, .max = +1.0};
 
-    if (panel->view2d_enabled)
-    {
-        *out_x = panel->view2d.data_x;
-        *out_y = panel->view2d.data_y;
-        return true;
-    }
-
     const DvzAxis* x_axis = &panel->axes[DVZ_DIM_X];
     const DvzAxis* y_axis = &panel->axes[DVZ_DIM_Y];
     if (x_axis->panel != NULL && x_axis->domain_set)
@@ -190,8 +176,6 @@ DvzPanelView2D dvz_panel_view2d(void)
         DVZ_STRUCT_INIT_FIELDS(DvzPanelView2D),
         .mode = DVZ_PANEL_VIEW2D_CONTAIN,
         .aspect = DVZ_PANEL_VIEW2D_ASPECT_FREE,
-        .data_x = {.min = -1.0, .max = +1.0},
-        .data_y = {.min = -1.0, .max = +1.0},
         .padding = 0.0,
     };
 }

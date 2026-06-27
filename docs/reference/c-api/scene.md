@@ -432,7 +432,6 @@ Functions: 357
     | [`dvz_panel_connect_input()`](#dvz_panel_connect_input) | `include/datoviz/scene.h` |
     | [`dvz_panel_controller()`](#dvz_panel_controller) | `include/datoviz/scene.h` |
     | [`dvz_panel_data_to_position()`](#dvz_panel_data_to_position) | `include/datoviz/scene.h` |
-    | [`dvz_panel_data_to_visual_positions()`](#dvz_panel_data_to_visual_positions) | `include/datoviz/scene.h` |
     | [`dvz_panel_destroy()`](#dvz_panel_destroy) | `include/datoviz/scene.h` |
     | [`dvz_panel_full()`](#dvz_panel_full) | `include/datoviz/scene.h` |
     | [`dvz_panel_get_padding()`](#dvz_panel_get_padding) | `include/datoviz/scene.h` |
@@ -5010,36 +5009,6 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:728._
 
-### `dvz_panel_data_to_visual_positions()`
-
-```c title="dvz_panel_data_to_visual_positions"
-int dvz_panel_data_to_visual_positions(
-    DvzPanel * panel,
-    const float * data_positions,
-    float * visual_positions,
-    uint32_t count
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `int` | 0 on success, -1 on validation error |
-| `panel` | `DvzPanel *` | the panel |
-| `data_positions` | `const float *` | tightly packed input positions, 3 floats per item |
-| `visual_positions` | `float *` | tightly packed output positions, 3 floats per item |
-| `count` | `uint32_t` | number of positions |
-
-Convert tightly packed 3D DATA positions to panel VIEW positions.
-
-This helper is only appropriate when the destination visual is attached with `DVZ_COORD_VIEW`.
-Ordinary retained visual data should normally stay in DATA coordinates and use the default
-`DVZ_COORD_DATA` attachment. X and Y are mapped from data coordinates into panel visual
-coordinates; Z is copied unchanged.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:1276._
-
 ### `dvz_panel_destroy()`
 
 ```c title="dvz_panel_destroy"
@@ -5664,9 +5633,9 @@ int dvz_panel_set_view2d(
 
 Set a panel 2D view policy.
 
-The panel view owns the controller-visible 2D base extent and fitted DATA domains. With
-DVZ_PANEL_VIEW2D_ASPECT_EQUAL, VIEW and DATA coordinates preserve equal X/Y screen scale under
-the current plot rectangle.
+The panel view owns fitting, aspect, and padding policy for the panel's source data domains.
+With DVZ_PANEL_VIEW2D_ASPECT_EQUAL, VIEW and DATA coordinates preserve equal X/Y screen scale
+under the current plot rectangle. Set source limits with `dvz_panel_set_domain()`.
 
 Raw ctypes: emitted.
 

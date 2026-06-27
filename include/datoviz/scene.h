@@ -1214,9 +1214,9 @@ DVZ_EXPORT DvzPanelView2D dvz_panel_view2d(void);
 /**
  * Set a panel 2D view policy.
  *
- * The panel view owns the controller-visible 2D base extent and fitted DATA domains. With
- * DVZ_PANEL_VIEW2D_ASPECT_EQUAL, VIEW and DATA coordinates preserve equal X/Y screen scale under
- * the current plot rectangle.
+ * The panel view owns fitting, aspect, and padding policy for the panel's source data domains.
+ * With DVZ_PANEL_VIEW2D_ASPECT_EQUAL, VIEW and DATA coordinates preserve equal X/Y screen scale
+ * under the current plot rectangle. Set source limits with `dvz_panel_set_domain()`.
  *
  * @param panel the panel
  * @param view panel 2D view descriptor; NULL clears the view policy
@@ -1257,24 +1257,6 @@ DVZ_EXPORT bool dvz_panel_view2d_extent(DvzPanel* panel, float out[4]);
  */
 DVZ_EXPORT bool
 dvz_panel_visible_domain(DvzPanel* panel, DvzDim dim, double* out_min, double* out_max);
-
-
-/**
- * Convert tightly packed 3D DATA positions to panel VIEW positions.
- *
- * This helper is only appropriate when the destination visual is attached with `DVZ_COORD_VIEW`.
- * Ordinary retained visual data should normally stay in DATA coordinates and use the default
- * `DVZ_COORD_DATA` attachment. X and Y are mapped from data coordinates into panel visual
- * coordinates; Z is copied unchanged.
- *
- * @param panel the panel
- * @param data_positions tightly packed input positions, 3 floats per item
- * @param visual_positions tightly packed output positions, 3 floats per item
- * @param count number of positions
- * @return 0 on success, -1 on validation error
- */
-DVZ_EXPORT int dvz_panel_data_to_visual_positions(
-    DvzPanel* panel, const float* data_positions, float* visual_positions, uint32_t count);
 
 
 /**

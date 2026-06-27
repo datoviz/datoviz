@@ -61,7 +61,7 @@ bool dvz_panel_view2d_extent(DvzPanel* panel, float out[4]);
 ```
 
 The interim "view-fit" names were intentionally renamed because the descriptor now owns framing
-policy, source DATA domains, and resolved panel VIEW extent.
+policy over panel source DATA domains and a resolved panel VIEW extent.
 
 
 ## Derived State Rule
@@ -81,7 +81,7 @@ set view fit -> mutate panel X/Y domains
 with:
 
 ```text
-set view policy/source domains -> mark panel view dirty
+set source domains + view policy -> mark panel view dirty
 frame/update/query -> resolve derived fitted domains
 ```
 

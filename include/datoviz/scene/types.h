@@ -492,8 +492,6 @@ struct DvzPanelView2D
     uint32_t flags;
     DvzPanelView2DMode mode;
     DvzPanelView2DAspect aspect;
-    DvzDataDomain data_x;
-    DvzDataDomain data_y;
     double padding;
 };
 typedef struct DvzPanelView2D DvzPanelView2D;

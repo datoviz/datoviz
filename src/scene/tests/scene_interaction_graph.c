@@ -1542,8 +1542,8 @@ int test_scene_visual_data_coord_space_tracks_panel_view2d_resize(
 
     DvzPanelView2D view = dvz_panel_view2d();
     view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
-    view.data_x = (DvzDataDomain){.min = 0.0, .max = 10.0};
-    view.data_y = (DvzDataDomain){.min = 0.0, .max = 5.0};
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, 5.0) == 0);
     AT(dvz_panel_set_view2d(panel, &view) == 0);
 
     vec3 pos[1] = {{0.0f, 0.0f, 0.0f}};

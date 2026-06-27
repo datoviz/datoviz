@@ -928,7 +928,6 @@ dvz_panel_clear_border
 dvz_panel_clear_view2d
 dvz_panel_connect_input
 dvz_panel_controller
-dvz_panel_data_to_visual_positions
 dvz_panel_destroy
 dvz_panel_full
 dvz_panel_get_layout_reserve
