@@ -50,6 +50,10 @@ smoke_symbols:
   - dvz_view_capabilities
   - dvz_query_request
   - dvz_panel_query
+  - dvz_panel_query_data
+  - dvz_panel_transform_point
+  - dvz_panel_position_to_data
+  - dvz_panel_data_to_position
   - dvz_figure_process_queries
   - dvz_scene_poll_query
   - dvz_ffi_view_external_surface

@@ -10,7 +10,7 @@ through query APIs.
 
 | Term | Meaning |
 | --- | --- |
-| Query | One panel-local question about the rendered scene at a coordinate or region. |
+| Query | One outer-panel-local logical-pixel question about the rendered scene at a coordinate or region. |
 | Picking | Query use case that resolves visual/item/group/instance identity. |
 | Probing | Query use case that resolves sampled field, image, label, or volume values. |
 | Readback | Runtime operation that returns GPU-produced query payloads to scene/application code. |
@@ -23,6 +23,7 @@ The current v0.4 direction uses:
 
 ```c
 int dvz_panel_query(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
+int dvz_panel_query_data(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
 bool dvz_scene_poll_query(DvzScene* scene, DvzQueryResult* out_result);
 uint32_t dvz_figure_process_queries(
     DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps);
@@ -33,6 +34,11 @@ int dvz_panel_query_now(
 
 Check the generated [scene C API](c-api/scene.md) for exact signatures in the current tree.
 
+`dvz_panel_query()` takes `DVZ_PANEL_COORD_PANEL_PX` coordinates: logical pixels local to the outer
+panel rectangle. `DvzQueryResult.panel_position` echoes the same coordinate frame. Convert pointers,
+plot pixels, and data points with `dvz_panel_transform_point()`; use `dvz_panel_query_data()` when
+the query point is already in panel data coordinates.
+
 ## Result Semantics
 
 | Result field class | Examples |
@@ -40,7 +46,7 @@ Check the generated [scene C API](c-api/scene.md) for exact signatures in the cu
 | Request identity | request id, freshness serial, panel id. |
 | Status | hit, miss, outside panel, stale/dropped, unsupported target/family/profile, GPU/readback/decode failure. |
 | Scene identity | visual id, visual family, item/group/instance/primitive/face/voxel/texel ids where available. |
-| Coordinates | framebuffer position, panel/data coordinate, visual-local coordinate, UV/UVW or texel coordinate. |
+| Coordinates | framebuffer position, outer-panel-local position, data coordinate, visual-local coordinate, UV/UVW or texel coordinate. |
 | Values | scalar, vector, category, text, displayed RGBA, or opaque family payload. |
 
 A miss is not a capability failure. A capability failure is not a background hit.

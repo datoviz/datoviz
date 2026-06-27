@@ -15,7 +15,7 @@ instance id, or primitive id.
 ## Minimal Query Path
 
 1. Enable pixel queries on the image visual.
-2. Queue a panel query at the latest logical panel pointer position.
+2. Queue a panel query at the latest outer-panel-local pointer position.
 3. Poll resolved query results after frames execute.
 4. Convert the returned panel position to the field's data or texture coordinate space.
 5. Sample the application-owned field value and update a retained label or readout visual.
@@ -24,7 +24,7 @@ instance id, or primitive id.
 // After creating the image visual.
 dvz_visual_set_query_capabilities(image, DVZ_QUERY_CAPABILITY_PIXEL);
 
-// Queue one probe request at a logical panel coordinate, for example from a pointer event.
+// Queue one probe request at an outer-panel-local logical pixel coordinate.
 DvzQueryRequest request = dvz_query_request();
 request.request_id = 1;
 request.target = DVZ_SCENE_TARGET_PIXEL;
@@ -40,8 +40,9 @@ while (dvz_scene_poll_query(scene, &query))
 
     double data_x = 0.0;
     double data_y = 0.0;
-    if (!panel_position_to_field_position(
-            panel, query.panel_position[0], query.panel_position[1], &data_x, &data_y))
+    if (!dvz_panel_position_to_data(
+            panel, DVZ_PANEL_COORD_PANEL_PX, query.panel_position[0], query.panel_position[1],
+            &data_x, &data_y))
     {
         continue;
     }
@@ -51,9 +52,11 @@ while (dvz_scene_poll_query(scene, &query))
 }
 ```
 
-`dvz_panel_query()` validates the rendered hit and returns panel coordinates. It does not replace
-your application's field indexing policy: the application still maps the returned coordinate to a
-texel, interpolated sample, or transformed mesh UV and reads the scalar value it owns.
+`dvz_panel_query()` validates the rendered hit and returns outer-panel-local coordinates. Convert
+them to data coordinates with `dvz_panel_position_to_data()` before applying your application's
+field indexing policy. The application still maps the data coordinate to a texel, interpolated
+sample, or transformed mesh UV and reads the scalar value it owns. If you already have a data
+coordinate, `dvz_panel_query_data()` queues the equivalent panel query directly.
 
 The live scenario helper used by `examples/c/features/image_probe.c` queues the same request through
 `dvz_scenario_panel_query()` so the example can run in native and browser scenario hosts. Plain C
@@ -66,8 +69,10 @@ array or normalization than the colorbar is worse than no readout.
 
 ## Important Details
 
-Probing depends on the same coordinate transform used for rendering. If the image is scaled,
-translated, or texture-mapped onto a mesh, account for that transform before indexing the field.
+Probing depends on the same coordinate transform used for rendering. Use
+`dvz_panel_transform_point()` to move between figure pixels, panel pixels, plot pixels, data, and
+view coordinates. If the image is scaled, translated, or texture-mapped onto a mesh, account for
+that transform before indexing the field.
 
 For an axis-aligned image in a normalized panel domain, the mapping can be direct: data coordinate
 `x=0.25, y=0.75` maps to the same normalized field coordinate before converting to integer texels or

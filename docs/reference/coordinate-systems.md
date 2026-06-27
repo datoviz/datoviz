@@ -17,6 +17,20 @@ attributes.
 | Framebuffer | Pixel coordinates in the render target. | Runtime input, picking/query readback, screenshots. |
 | Texture/sample | Normalized UV/UVW or integer texel/voxel/sample indices. | Image, labels, volume, glyph atlas, sampled fields. |
 
+Public panel point transforms use the `DvzPanelCoordSpace` enum:
+
+| API space | Meaning |
+| --- | --- |
+| `DVZ_PANEL_COORD_FIGURE_PX` | Logical figure-layout pixels. |
+| `DVZ_PANEL_COORD_PANEL_PX` | Logical pixels local to the outer panel rectangle. This is the input frame for `dvz_panel_query()` and the frame echoed in `DvzQueryResult.panel_position`. |
+| `DVZ_PANEL_COORD_INNER_PX` | Logical pixels local to the inner panel rectangle after panel reserves. |
+| `DVZ_PANEL_COORD_PLOT_PX` | Logical pixels local to the plot rectangle. |
+| `DVZ_PANEL_COORD_DATA` | Panel data/domain coordinates in the current visible domain. |
+| `DVZ_PANEL_COORD_VIEW` | Panel view/visual coordinates after data-domain mapping. |
+
+Use `dvz_panel_transform_point()` to convert one point between those spaces. Use
+`dvz_panel_position_to_data()` or `dvz_panel_data_to_position()` for the common pixel/data
+directions.
 
 ## Pixel And Display Spaces
 
@@ -31,7 +45,7 @@ and screenshots use framebuffer pixels.
 | Panel rectangles and reserves | Logical figure pixels | Converted during viewport/scissor resolution | No | `dvz_panel_set_desc()`, reserves, padding |
 | Offscreen view extent | Framebuffer pixels | Direct exact output for `dvz_view_offscreen()` | No | `dvz_view_offscreen(app, figure, width, height)` |
 | Screenshot/RGBA capture | Framebuffer pixels | Already applied | No | `dvz_view_capture_png()`, Python `dvz_view_capture_rgba()` |
-| Pointer input | Framebuffer/window pixels at the backend boundary | Backend reports scale separately where available | Routed through panel/controller transforms | input and query APIs |
+| Pointer input | Host/window or figure logical pixels at the public scene boundary | Backend reports scale separately where available | Routed through panel/controller transforms | `dvz_event_window_to_figure()`, `dvz_panel_transform_point()`, query APIs |
 
 For a Matplotlib/GSP-style backend, convert display quantities to Datoviz logical-pixel style
 attributes before upload. Use framebuffer dimensions only when creating/capturing render targets or
@@ -72,9 +86,11 @@ or plot boundaries.
 
 ## Input And Queries
 
-Pointer input starts in framebuffer coordinates. The scene routes it through the target viewport and
-panel transform, then query execution resolves a rendered contribution, sampled field value, or
-miss.
+Pointer input starts in host-window or figure coordinates at the public scene boundary. Query calls
+use outer-panel-local logical pixels. Convert pointer positions with `dvz_event_window_to_figure()`
+and `dvz_panel_transform_point()` as needed before queuing `dvz_panel_query()`. If the application
+already has data coordinates, `dvz_panel_query_data()` performs the data-to-panel conversion before
+queuing the query.
 
 Do not compute rendered visual hits from CPU geometry as a fallback. Query semantics must follow the
 same transform, viewport, depth, clipping, and shader behavior used by rendering.

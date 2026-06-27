@@ -1971,7 +1971,7 @@ Return a monotonic timestamp in nanoseconds.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/pointer.h`:112._
+_Declared in `include/datoviz/input/pointer.h`:113._
 
 ### `dvz_input_unsubscribe_event()`
 
@@ -2217,7 +2217,7 @@ Translate a backend mouse button identifier into the Datoviz pointer button enum
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/pointer.h`:105._
+_Declared in `include/datoviz/input/pointer.h`:106._
 
 ### `dvz_pointer_emit_position()`
 
@@ -2227,8 +2227,8 @@ void dvz_pointer_emit_position(
     DvzPointerEventType type,
     float raw_x,
     float raw_y,
-    float window_x,
-    float window_y,
+    float window_width,
+    float window_height,
     DvzPointerButton button,
     int mods,
     float content_scale,
@@ -2243,8 +2243,8 @@ void dvz_pointer_emit_position(
 | `type` | `DvzPointerEventType` |  |
 | `raw_x` | `float` |  |
 | `raw_y` | `float` |  |
-| `window_x` | `float` |  |
-| `window_y` | `float` |  |
+| `window_width` | `float` |  |
+| `window_height` | `float` |  |
 | `button` | `DvzPointerButton` |  |
 | `mods` | `int` |  |
 | `content_scale` | `float` |  |
@@ -2255,7 +2255,7 @@ Emit a normalized pointer event on the router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/pointer.h`:119._
+_Declared in `include/datoviz/input/pointer.h`:120._
 
 ### `dvz_pointer_emit_wheel()`
 
@@ -2264,8 +2264,8 @@ void dvz_pointer_emit_wheel(
     DvzInputRouter * router,
     float raw_x,
     float raw_y,
-    float window_x,
-    float window_y,
+    float window_width,
+    float window_height,
     float dir_x,
     float dir_y,
     int mods,
@@ -2280,8 +2280,8 @@ void dvz_pointer_emit_wheel(
 | `router` | `DvzInputRouter *` |  |
 | `raw_x` | `float` |  |
 | `raw_y` | `float` |  |
-| `window_x` | `float` |  |
-| `window_y` | `float` |  |
+| `window_width` | `float` |  |
+| `window_height` | `float` |  |
 | `dir_x` | `float` |  |
 | `dir_y` | `float` |  |
 | `mods` | `int` |  |
@@ -2293,7 +2293,7 @@ Emit a wheel event with pixel deltas.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/pointer.h`:129._
+_Declared in `include/datoviz/input/pointer.h`:130._
 
 ### `dvz_pointer_gesture_handler()`
 
@@ -2315,7 +2315,7 @@ double-click, drag-start, drag, and drag-stop events.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/pointer.h`:142._
+_Declared in `include/datoviz/input/pointer.h`:144._
 
 ### `dvz_pointer_gesture_handler_destroy()`
 
@@ -2333,7 +2333,7 @@ Destroy the gesture interpreter.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/pointer.h`:149._
+_Declared in `include/datoviz/input/pointer.h`:151._
 
 ## Stream
 

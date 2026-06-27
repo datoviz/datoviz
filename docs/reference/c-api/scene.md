@@ -18,25 +18,25 @@ Common workflows:
 - [Configure cameras](../../how-to/configure-cameras.md)
 - [Pick and probe](../../how-to/pick-and-probe.md)
 
-Functions: 344
+Functions: 357
 
 ## Symbol Groups
 
 | Group | Functions | Headers |
 | --- | ---: | --- |
-| [Anim](#anim) | 12 | `include/datoviz/scene/animation.h` |
+| [Anim](#anim) | 13 | `include/datoviz/scene/animation.h` |
 | [Annotation](#annotation) | 7 | `include/datoviz/scene/annotation.h` |
 | [Arcball](#arcball) | 1 | `include/datoviz/scene/arcball.h` |
-| [Axis](#axis) | 11 | `include/datoviz/scene.h` |
+| [Axis](#axis) | 13 | `include/datoviz/scene.h` |
 | [Band](#band) | 6 | `include/datoviz/scene/plot.h` |
 | [Bars](#bars) | 5 | `include/datoviz/scene/plot.h` |
 | [Camera](#camera) | 1 | `include/datoviz/scene/animation.h` |
-| [Colorbar](#colorbar) | 9 | `include/datoviz/scene/scale.h` |
+| [Colorbar](#colorbar) | 12 | `include/datoviz/scene/scale.h` |
 | [Colormap](#colormap) | 10 | `include/datoviz/scene/scale.h` |
 | [Controller](#controller) | 10 | `include/datoviz/scene.h` |
 | [Datetime](#datetime) | 4 | `include/datoviz/scene/scale.h` |
 | [Field](#field) | 2 | `include/datoviz/scene/field.h` |
-| [Figure](#figure) | 11 | `include/datoviz/scene.h` |
+| [Figure](#figure) | 14 | `include/datoviz/scene.h` |
 | [Fly](#fly) | 1 | `include/datoviz/scene/fly.h` |
 | [Font](#font) | 6 | `include/datoviz/scene/text.h` |
 | [Format](#format) | 1 | `include/datoviz/scene/scale.h` |
@@ -54,7 +54,7 @@ Functions: 344
 | [Orbit](#orbit) | 1 | `include/datoviz/scene/orbit_camera.h` |
 | [Orientation](#orientation) | 4 | `include/datoviz/scene.h` |
 | [Overlay](#overlay) | 14 | `include/datoviz/scene/overlay.h` |
-| [Panel](#panel) | 46 | 3 headers |
+| [Panel](#panel) | 50 | 3 headers |
 | [Panzoom](#panzoom) | 1 | `include/datoviz/scene/panzoom.h` |
 | [Pinned](#pinned) | 3 | `include/datoviz/scene/interaction.h` |
 | [Placement](#placement) | 3 | `include/datoviz/scene.h` |
@@ -116,6 +116,7 @@ Functions: 344
 
     | Function | Header |
     | --- | --- |
+    | [`dvz_axis_clear_ticks()`](#dvz_axis_clear_ticks) | `include/datoviz/scene.h` |
     | [`dvz_axis_set_datetime()`](#dvz_axis_set_datetime) | `include/datoviz/scene.h` |
     | [`dvz_axis_set_datetime_range()`](#dvz_axis_set_datetime_range) | `include/datoviz/scene.h` |
     | [`dvz_axis_set_grid()`](#dvz_axis_set_grid) | `include/datoviz/scene.h` |
@@ -123,6 +124,7 @@ Functions: 344
     | [`dvz_axis_set_plot_margins()`](#dvz_axis_set_plot_margins) | `include/datoviz/scene.h` |
     | [`dvz_axis_set_style()`](#dvz_axis_set_style) | `include/datoviz/scene.h` |
     | [`dvz_axis_set_tick_policy()`](#dvz_axis_set_tick_policy) | `include/datoviz/scene.h` |
+    | [`dvz_axis_set_ticks()`](#dvz_axis_set_ticks) | `include/datoviz/scene.h` |
     | [`dvz_axis_set_units()`](#dvz_axis_set_units) | `include/datoviz/scene.h` |
     | [`dvz_axis_set_visible()`](#dvz_axis_set_visible) | `include/datoviz/scene.h` |
     | [`dvz_axis_style()`](#dvz_axis_style) | `include/datoviz/scene.h` |
@@ -160,6 +162,7 @@ Functions: 344
     | Function | Header |
     | --- | --- |
     | [`dvz_colorbar()`](#dvz_colorbar) | `include/datoviz/scene/scale.h` |
+    | [`dvz_colorbar_clear_ticks()`](#dvz_colorbar_clear_ticks) | `include/datoviz/scene/scale.h` |
     | [`dvz_colorbar_desc()`](#dvz_colorbar_desc) | `include/datoviz/scene/scale.h` |
     | [`dvz_colorbar_destroy()`](#dvz_colorbar_destroy) | `include/datoviz/scene/scale.h` |
     | [`dvz_colorbar_id()`](#dvz_colorbar_id) | `include/datoviz/scene/scale.h` |
@@ -167,7 +170,9 @@ Functions: 344
     | [`dvz_colorbar_set_format()`](#dvz_colorbar_set_format) | `include/datoviz/scene/scale.h` |
     | [`dvz_colorbar_set_layout()`](#dvz_colorbar_set_layout) | `include/datoviz/scene/scale.h` |
     | [`dvz_colorbar_set_orientation()`](#dvz_colorbar_set_orientation) | `include/datoviz/scene/scale.h` |
+    | [`dvz_colorbar_set_ticks()`](#dvz_colorbar_set_ticks) | `include/datoviz/scene/scale.h` |
     | [`dvz_colorbar_set_title()`](#dvz_colorbar_set_title) | `include/datoviz/scene/scale.h` |
+    | [`dvz_colorbar_ticks()`](#dvz_colorbar_ticks) | `include/datoviz/scene/scale.h` |
 
     ### Colormap
 
@@ -221,6 +226,7 @@ Functions: 344
     | --- | --- |
     | [`dvz_figure()`](#dvz_figure) | `include/datoviz/scene.h` |
     | [`dvz_figure_add_compute()`](#dvz_figure_add_compute) | `include/datoviz/scene.h` |
+    | [`dvz_figure_color_pipeline()`](#dvz_figure_color_pipeline) | `include/datoviz/scene.h` |
     | [`dvz_figure_destroy()`](#dvz_figure_destroy) | `include/datoviz/scene.h` |
     | [`dvz_figure_emit_frame()`](#dvz_figure_emit_frame) | `include/datoviz/scene.h` |
     | [`dvz_figure_grid()`](#dvz_figure_grid) | `include/datoviz/scene.h` |
@@ -229,7 +235,9 @@ Functions: 344
     | [`dvz_figure_remove_compute()`](#dvz_figure_remove_compute) | `include/datoviz/scene.h` |
     | [`dvz_figure_resize()`](#dvz_figure_resize) | `include/datoviz/scene.h` |
     | [`dvz_figure_scene()`](#dvz_figure_scene) | `include/datoviz/scene.h` |
+    | [`dvz_figure_set_color_pipeline()`](#dvz_figure_set_color_pipeline) | `include/datoviz/scene.h` |
     | [`dvz_figure_size()`](#dvz_figure_size) | `include/datoviz/scene.h` |
+    | [`dvz_figure_window_to_layout()`](#dvz_figure_window_to_layout) | `include/datoviz/scene.h` |
 
     ### Fly
 
@@ -423,6 +431,7 @@ Functions: 344
     | [`dvz_panel_clear_view2d()`](#dvz_panel_clear_view2d) | `include/datoviz/scene.h` |
     | [`dvz_panel_connect_input()`](#dvz_panel_connect_input) | `include/datoviz/scene.h` |
     | [`dvz_panel_controller()`](#dvz_panel_controller) | `include/datoviz/scene.h` |
+    | [`dvz_panel_data_to_position()`](#dvz_panel_data_to_position) | `include/datoviz/scene.h` |
     | [`dvz_panel_data_to_visual_positions()`](#dvz_panel_data_to_visual_positions) | `include/datoviz/scene.h` |
     | [`dvz_panel_destroy()`](#dvz_panel_destroy) | `include/datoviz/scene.h` |
     | [`dvz_panel_full()`](#dvz_panel_full) | `include/datoviz/scene.h` |
@@ -431,7 +440,9 @@ Functions: 344
     | [`dvz_panel_id()`](#dvz_panel_id) | `include/datoviz/scene.h` |
     | [`dvz_panel_inner_rect_px()`](#dvz_panel_inner_rect_px) | `include/datoviz/scene.h` |
     | [`dvz_panel_plot_rect_px()`](#dvz_panel_plot_rect_px) | `include/datoviz/scene.h` |
+    | [`dvz_panel_position_to_data()`](#dvz_panel_position_to_data) | `include/datoviz/scene.h` |
     | [`dvz_panel_query()`](#dvz_panel_query) | `include/datoviz/scene/interaction.h` |
+    | [`dvz_panel_query_data()`](#dvz_panel_query_data) | `include/datoviz/scene.h` |
     | [`dvz_panel_query_now()`](#dvz_panel_query_now) | `include/datoviz/scene/interaction.h` |
     | [`dvz_panel_set_axes_2d()`](#dvz_panel_set_axes_2d) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_background()`](#dvz_panel_set_background) | `include/datoviz/scene.h` |
@@ -449,6 +460,7 @@ Functions: 344
     | [`dvz_panel_set_ssao()`](#dvz_panel_set_ssao) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_view2d()`](#dvz_panel_set_view2d) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_volume_occluder()`](#dvz_panel_set_volume_occluder) | `include/datoviz/scene.h` |
+    | [`dvz_panel_transform_point()`](#dvz_panel_transform_point) | `include/datoviz/scene.h` |
     | [`dvz_panel_view2d()`](#dvz_panel_view2d) | `include/datoviz/scene.h` |
     | [`dvz_panel_view2d_extent()`](#dvz_panel_view2d_extent) | `include/datoviz/scene.h` |
     | [`dvz_panel_visible_domain()`](#dvz_panel_visible_domain) | `include/datoviz/scene.h` |
@@ -689,7 +701,7 @@ Create a camera motion animation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:506._
+_Declared in `include/datoviz/scene/animation.h`:532._
 
 ### `dvz_anim_destroy()`
 
@@ -707,7 +719,7 @@ Destroy an animation handle owned by its scene.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:568._
+_Declared in `include/datoviz/scene/animation.h`:594._
 
 ### `dvz_anim_phase()`
 
@@ -728,7 +740,7 @@ Create a wrapped linear phase animation driven by the scene clock.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:466._
+_Declared in `include/datoviz/scene/animation.h`:492._
 
 ### `dvz_anim_phase_desc()`
 
@@ -746,7 +758,7 @@ Related: [`dvz_anim_phase()`](#dvz_anim_phase).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:319._
+_Declared in `include/datoviz/scene/animation.h`:335._
 
 ### `dvz_anim_phase_set_value()`
 
@@ -766,7 +778,7 @@ Set the current value of a phase animation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:540._
+_Declared in `include/datoviz/scene/animation.h`:566._
 
 ### `dvz_anim_set_interaction_policy()`
 
@@ -790,7 +802,7 @@ Set how an animation responds to an interactive controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:517._
+_Declared in `include/datoviz/scene/animation.h`:543._
 
 ### `dvz_anim_set_speed()`
 
@@ -811,7 +823,7 @@ animations.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:531._
+_Declared in `include/datoviz/scene/animation.h`:557._
 
 ### `dvz_anim_start()`
 
@@ -831,7 +843,7 @@ Start or restart an animation at a scene-clock time.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:550._
+_Declared in `include/datoviz/scene/animation.h`:576._
 
 ### `dvz_anim_stop()`
 
@@ -849,7 +861,7 @@ Stop an animation while keeping the handle valid.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:559._
+_Declared in `include/datoviz/scene/animation.h`:585._
 
 ### `dvz_anim_timer()`
 
@@ -868,16 +880,14 @@ DvzAnimation * dvz_anim_timer(
 
 Create a timer animation driven by the scene clock.
 
-Raw ctypes: not emitted by the current generated binding.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/animation.h`:482._
 
 ### `dvz_anim_timer_desc()`
 
 ```c title="dvz_anim_timer_desc"
-DvzAnimTimerDesc dvz_anim_timer_desc(
-    void
-);
+DvzAnimTimerDesc dvz_anim_timer_desc(void);
 ```
 
 | Field | Type | Description |
@@ -885,6 +895,8 @@ DvzAnimTimerDesc dvz_anim_timer_desc(
 | return | `DvzAnimTimerDesc` | initialized timer animation descriptor |
 
 Return a default timer animation descriptor.
+
+Related: [`dvz_anim_timer()`](#dvz_anim_timer).
 
 Raw ctypes: emitted.
 
@@ -913,7 +925,7 @@ Create a generic track animation driven by the scene clock.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/scene/animation.h`:478._
+_Declared in `include/datoviz/scene/animation.h`:504._
 
 ### `dvz_anim_visual_transform()`
 
@@ -936,7 +948,7 @@ Create a visual-local transform animation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:493._
+_Declared in `include/datoviz/scene/animation.h`:519._
 
 ## Annotation
 
@@ -975,7 +987,7 @@ Return the default annotation descriptor.
 
 Related: [`dvz_annotation()`](#dvz_annotation).
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/annotation.h`:35._
 
@@ -1105,6 +1117,27 @@ _Declared in `include/datoviz/scene/arcball.h`:37._
 
 ## Axis
 
+### `dvz_axis_clear_ticks()`
+
+```c title="dvz_axis_clear_ticks"
+_Bool dvz_axis_clear_ticks(
+    DvzAxis * axis
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the axis was updated |
+| `axis` | `DvzAxis *` | the axis |
+
+Clear explicit tick positions and labels for one panel-owned axis.
+
+The axis returns to its automatic tick policy after this call.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:1394._
+
 ### `dvz_axis_set_datetime()`
 
 ```c title="dvz_axis_set_datetime"
@@ -1124,7 +1157,7 @@ Attach an absolute datetime formatter to one panel-owned axis.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1306._
+_Declared in `include/datoviz/scene.h`:1444._
 
 ### `dvz_axis_set_datetime_range()`
 
@@ -1151,7 +1184,7 @@ Map compact data coordinates to an absolute datetime interval.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1319._
+_Declared in `include/datoviz/scene.h`:1457._
 
 ### `dvz_axis_set_grid()`
 
@@ -1172,7 +1205,7 @@ Enable or disable grid lines for one panel-owned axis.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1234._
+_Declared in `include/datoviz/scene.h`:1347._
 
 ### `dvz_axis_set_label()`
 
@@ -1195,7 +1228,7 @@ The active 2D axis path renders this label through the scene text visual pipelin
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1246._
+_Declared in `include/datoviz/scene.h`:1359._
 
 ### `dvz_axis_set_plot_margins()`
 
@@ -1226,7 +1259,7 @@ or other panel adornments.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1283._
+_Declared in `include/datoviz/scene.h`:1421._
 
 ### `dvz_axis_set_style()`
 
@@ -1247,7 +1280,7 @@ Set the line and text style for one panel-owned axis.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1266._
+_Declared in `include/datoviz/scene.h`:1404._
 
 ### `dvz_axis_set_tick_policy()`
 
@@ -1268,7 +1301,32 @@ Set the tick policy for one panel-owned axis.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1256._
+_Declared in `include/datoviz/scene.h`:1369._
+
+### `dvz_axis_set_ticks()`
+
+```c title="dvz_axis_set_ticks"
+_Bool dvz_axis_set_ticks(
+    DvzAxis * axis,
+    const DvzAxisTicks * ticks
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the explicit ticks were stored |
+| `axis` | `DvzAxis *` | the axis |
+| `ticks` | `const DvzAxisTicks *` | explicit tick descriptor |
+
+Set explicit tick positions and optional labels for one panel-owned axis.
+
+Explicit tick values are in panel data coordinates and are rendered in the supplied order. When
+labels are supplied, Datoviz copies them before this function returns. Passing an empty tick
+record is valid and renders no ticks, tick labels, or grid lines until explicit ticks are cleared.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:1383._
 
 ### `dvz_axis_set_units()`
 
@@ -1291,7 +1349,7 @@ Tick positions remain in panel data coordinates; labels are formatted through th
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1296._
+_Declared in `include/datoviz/scene.h`:1434._
 
 ### `dvz_axis_set_visible()`
 
@@ -1312,7 +1370,7 @@ Show or hide one panel-owned axis.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1224._
+_Declared in `include/datoviz/scene.h`:1337._
 
 ### `dvz_axis_style()`
 
@@ -1328,7 +1386,7 @@ Return the default axis line and text style.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1214._
+_Declared in `include/datoviz/scene.h`:1327._
 
 ### `dvz_axis_tick_policy()`
 
@@ -1344,7 +1402,7 @@ Return the default axis tick policy.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1206._
+_Declared in `include/datoviz/scene.h`:1319._
 
 ## Band
 
@@ -1628,7 +1686,7 @@ Return a default camera motion descriptor.
 
 Raw ctypes: skipped by binding policy.
 
-_Declared in `include/datoviz/scene/animation.h`:383._
+_Declared in `include/datoviz/scene/animation.h`:399._
 
 ## Colorbar
 
@@ -1653,7 +1711,26 @@ Create a panel-attached colorbar bound to a scale.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:446._
+_Declared in `include/datoviz/scene/scale.h`:454._
+
+### `dvz_colorbar_clear_ticks()`
+
+```c title="dvz_colorbar_clear_ticks"
+_Bool dvz_colorbar_clear_ticks(
+    DvzColorbar * colorbar
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the colorbar was updated |
+| `colorbar` | `DvzColorbar *` | the colorbar |
+
+Clear explicit tick positions and labels for one colorbar.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/scale.h`:542._
 
 ### `dvz_colorbar_desc()`
 
@@ -1689,7 +1766,7 @@ Destroy a colorbar.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:464._
+_Declared in `include/datoviz/scene/scale.h`:472._
 
 ### `dvz_colorbar_id()`
 
@@ -1708,7 +1785,7 @@ Return the scene-local identity of a colorbar.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:456._
+_Declared in `include/datoviz/scene/scale.h`:464._
 
 ### `dvz_colorbar_set_anchor()`
 
@@ -1732,7 +1809,7 @@ use horizontal orientation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:497._
+_Declared in `include/datoviz/scene/scale.h`:505._
 
 ### `dvz_colorbar_set_format()`
 
@@ -1752,7 +1829,7 @@ Override formatting policy on a colorbar.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:473._
+_Declared in `include/datoviz/scene/scale.h`:481._
 
 ### `dvz_colorbar_set_layout()`
 
@@ -1777,7 +1854,7 @@ colorbar anchors must match the requested orientation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:511._
+_Declared in `include/datoviz/scene/scale.h`:519._
 
 ### `dvz_colorbar_set_orientation()`
 
@@ -1797,7 +1874,31 @@ Set the colorbar orientation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:483._
+_Declared in `include/datoviz/scene/scale.h`:491._
+
+### `dvz_colorbar_set_ticks()`
+
+```c title="dvz_colorbar_set_ticks"
+_Bool dvz_colorbar_set_ticks(
+    DvzColorbar * colorbar,
+    const DvzColorbarTicks * ticks
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the explicit ticks were stored |
+| `colorbar` | `DvzColorbar *` | the colorbar |
+| `ticks` | `const DvzColorbarTicks *` | explicit tick descriptor |
+
+Set explicit tick positions and optional labels for one colorbar.
+
+Tick values are scalar-domain values. Labels are copied when supplied; when labels is NULL,
+colorbar formatting is used.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/scale.h`:532._
 
 ### `dvz_colorbar_set_title()`
 
@@ -1817,7 +1918,23 @@ Set the colorbar title.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:520._
+_Declared in `include/datoviz/scene/scale.h`:551._
+
+### `dvz_colorbar_ticks()`
+
+```c title="dvz_colorbar_ticks"
+DvzColorbarTicks dvz_colorbar_ticks(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzColorbarTicks` | default explicit colorbar tick descriptor |
+
+Return the default explicit colorbar tick descriptor.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/scale.h`:443._
 
 ## Colormap
 
@@ -2059,7 +2176,7 @@ Return the arcball payload of an arcball controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:369._
+_Declared in `include/datoviz/scene.h`:415._
 
 ### `dvz_controller_destroy()`
 
@@ -2080,7 +2197,7 @@ handles and must not be destroyed separately.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:324._
+_Declared in `include/datoviz/scene.h`:370._
 
 ### `dvz_controller_fly()`
 
@@ -2099,7 +2216,7 @@ Return the fly payload of a fly controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:378._
+_Declared in `include/datoviz/scene.h`:424._
 
 ### `dvz_controller_id()`
 
@@ -2118,7 +2235,7 @@ Return the scene-local identity of a controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:818._
+_Declared in `include/datoviz/scene.h`:926._
 
 ### `dvz_controller_link()`
 
@@ -2149,7 +2266,7 @@ controllers of the same family.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:341._
+_Declared in `include/datoviz/scene.h`:387._
 
 ### `dvz_controller_link_destroy()`
 
@@ -2167,7 +2284,7 @@ Destroy a scene-owned controller state link.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:351._
+_Declared in `include/datoviz/scene.h`:397._
 
 ### `dvz_controller_orbit_camera()`
 
@@ -2186,7 +2303,7 @@ Return the orbit-camera payload of an orbit-camera controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:396._
+_Declared in `include/datoviz/scene.h`:442._
 
 ### `dvz_controller_panzoom()`
 
@@ -2205,7 +2322,7 @@ Return the panzoom payload of a panzoom controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:360._
+_Declared in `include/datoviz/scene.h`:406._
 
 ### `dvz_controller_turntable()`
 
@@ -2224,7 +2341,7 @@ Return the turntable payload of a turntable controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:387._
+_Declared in `include/datoviz/scene.h`:433._
 
 ### `dvz_controller_type()`
 
@@ -2243,7 +2360,7 @@ Return the type of a scene-owned controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:313._
+_Declared in `include/datoviz/scene.h`:359._
 
 ## Datetime
 
@@ -2415,7 +2532,26 @@ Attached compute passes are emitted before the figure render passes.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1887._
+_Declared in `include/datoviz/scene.h`:2063._
+
+### `dvz_figure_color_pipeline()`
+
+```c title="dvz_figure_color_pipeline"
+DvzColorPipeline dvz_figure_color_pipeline(
+    const DvzFigure * figure
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzColorPipeline` | the figure color pipeline |
+| `figure` | `const DvzFigure *` | the figure |
+
+Return the figure color pipeline used by app/offscreen rendering.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:230._
 
 ### `dvz_figure_destroy()`
 
@@ -2433,7 +2569,7 @@ Destroy a figure.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:304._
+_Declared in `include/datoviz/scene.h`:350._
 
 ### `dvz_figure_emit_frame()`
 
@@ -2462,7 +2598,7 @@ creation and affects only later artifacts.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:412._
+_Declared in `include/datoviz/scene.h`:458._
 
 ### `dvz_figure_grid()`
 
@@ -2488,7 +2624,7 @@ default to zero logical pixels.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:198._
+_Declared in `include/datoviz/scene.h`:244._
 
 ### `dvz_figure_id()`
 
@@ -2530,7 +2666,7 @@ Execute queued query requests for one figure through the DRP2 runtime.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:505._
+_Declared in `include/datoviz/scene.h`:551._
 
 ### `dvz_figure_remove_compute()`
 
@@ -2551,7 +2687,7 @@ Detach a scene compute pass from a figure.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1897._
+_Declared in `include/datoviz/scene.h`:2073._
 
 ### `dvz_figure_resize()`
 
@@ -2594,6 +2730,29 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:163._
 
+### `dvz_figure_set_color_pipeline()`
+
+```c title="dvz_figure_set_color_pipeline"
+void dvz_figure_set_color_pipeline(
+    DvzFigure * figure,
+    DvzColorPipeline pipeline
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `figure` | `DvzFigure *` | the figure |
+| `pipeline` | `DvzColorPipeline` | the color pipeline |
+
+Set the figure color pipeline used by app/offscreen rendering.
+
+The default is DVZ_COLOR_PIPELINE_LINEAR_SRGB. DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND is an
+opt-in compatibility mode that blends semantic sRGB colors in display space.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:221._
+
 ### `dvz_figure_size()`
 
 ```c title="dvz_figure_size"
@@ -2615,6 +2774,46 @@ Return a figure logical size.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:184._
+
+### `dvz_figure_window_to_layout()`
+
+```c title="dvz_figure_window_to_layout"
+_Bool dvz_figure_window_to_layout(
+    const DvzFigure * figure,
+    float window_x,
+    float window_y,
+    float window_width,
+    float window_height,
+    float content_scale_x,
+    float content_scale_y,
+    float * out_x,
+    float * out_y
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the output coordinates were written |
+| `figure` | `const DvzFigure *` | the figure |
+| `window_x` | `float` | pointer x position in host-window logical coordinates |
+| `window_y` | `float` | pointer y position in host-window logical coordinates |
+| `window_width` | `float` | logical host-window width, or zero when unknown |
+| `window_height` | `float` | logical host-window height, or zero when unknown |
+| `content_scale_x` | `float` | horizontal content scale fallback |
+| `content_scale_y` | `float` | vertical content scale fallback |
+| `out_x` | `float *` | output x position in figure layout coordinates |
+| `out_y` | `float *` | output y position in figure layout coordinates |
+
+Convert a host-window logical pointer position to figure layout coordinates.
+
+Raw input events keep backend/window logical coordinates. Scene, panel, and query helpers use
+figure layout coordinates. When a valid host-window size is supplied, this function maps the
+position by the figure/window size ratio; otherwise it falls back to the supplied content scale
+values, or identity scale when no scale is available.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:206._
 
 ## Fly
 
@@ -2817,7 +3016,7 @@ Set one grid column size.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:243._
+_Declared in `include/datoviz/scene.h`:289._
 
 ### `dvz_grid_destroy()`
 
@@ -2838,7 +3037,7 @@ last resolved descriptors.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:209._
+_Declared in `include/datoviz/scene.h`:255._
 
 ### `dvz_grid_panel()`
 
@@ -2861,7 +3060,7 @@ Create a grid-owned panel for one cell.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:282._
+_Declared in `include/datoviz/scene.h`:328._
 
 ### `dvz_grid_panel_span()`
 
@@ -2888,7 +3087,7 @@ Create a grid-owned panel spanning contiguous cells.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:295._
+_Declared in `include/datoviz/scene.h`:341._
 
 ### `dvz_grid_resolve()`
 
@@ -2915,7 +3114,7 @@ Resolve one grid cell into a normalized figure-space panel rectangle.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:269._
+_Declared in `include/datoviz/scene.h`:315._
 
 ### `dvz_grid_row_size()`
 
@@ -2940,7 +3139,7 @@ Set one grid row size.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:256._
+_Declared in `include/datoviz/scene.h`:302._
 
 ### `dvz_grid_set_gutter()`
 
@@ -2963,7 +3162,7 @@ Set fixed logical-pixel gutters between grid columns and rows.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:230._
+_Declared in `include/datoviz/scene.h`:276._
 
 ### `dvz_grid_set_margins()`
 
@@ -2984,7 +3183,7 @@ Set fixed logical-pixel margins around one grid.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:219._
+_Declared in `include/datoviz/scene.h`:265._
 
 ## Guide
 
@@ -3599,7 +3798,7 @@ DvzLabelDesc dvz_label_desc(void);
 
 Return the default label annotation descriptor.
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/annotation.h`:43._
 
@@ -3629,7 +3828,7 @@ categorical scale with `dvz_visual_set_scale(labels, "labels", scale)`.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3144._
+_Declared in `include/datoviz/scene.h`:3335._
 
 ### `dvz_labels_clear_selected()`
 
@@ -3648,7 +3847,7 @@ Clear the selected label ID on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3183._
+_Declared in `include/datoviz/scene.h`:3374._
 
 ### `dvz_labels_set_background()`
 
@@ -3669,7 +3868,7 @@ Set the transparent background label ID on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3164._
+_Declared in `include/datoviz/scene.h`:3355._
 
 ### `dvz_labels_set_boundary()`
 
@@ -3694,7 +3893,7 @@ Configure boundary rendering on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3208._
+_Declared in `include/datoviz/scene.h`:3399._
 
 ### `dvz_labels_set_fallback_seed()`
 
@@ -3715,7 +3914,7 @@ Set the deterministic fallback-color seed on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3218._
+_Declared in `include/datoviz/scene.h`:3409._
 
 ### `dvz_labels_set_hidden()`
 
@@ -3738,7 +3937,7 @@ Set the hidden label IDs on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3195._
+_Declared in `include/datoviz/scene.h`:3386._
 
 ### `dvz_labels_set_opacity()`
 
@@ -3759,7 +3958,7 @@ Set the global opacity multiplier on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3154._
+_Declared in `include/datoviz/scene.h`:3345._
 
 ### `dvz_labels_set_selected()`
 
@@ -3780,7 +3979,7 @@ Set the selected label ID on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3174._
+_Declared in `include/datoviz/scene.h`:3365._
 
 ### `dvz_labels_set_slice_axis()`
 
@@ -3801,7 +4000,7 @@ Set the first-slice axis for a 3D labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3228._
+_Declared in `include/datoviz/scene.h`:3419._
 
 ### `dvz_labels_set_slice_position()`
 
@@ -3822,7 +4021,7 @@ Set the first-slice position for a 3D labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3238._
+_Declared in `include/datoviz/scene.h`:3429._
 
 ### `dvz_labels_state()`
 
@@ -3841,7 +4040,7 @@ Return the retained labels state for inspection.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3247._
+_Declared in `include/datoviz/scene.h`:3438._
 
 ## Legend
 
@@ -3866,7 +4065,7 @@ Create a panel-attached legend bound to a categorical scale.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:544._
+_Declared in `include/datoviz/scene/scale.h`:575._
 
 ### `dvz_legend_clear_highlight()`
 
@@ -3885,7 +4084,7 @@ Clear all highlighted categorical legend entries.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:602._
+_Declared in `include/datoviz/scene/scale.h`:633._
 
 ### `dvz_legend_desc()`
 
@@ -3903,7 +4102,7 @@ Related: [`dvz_legend()`](#dvz_legend).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:533._
+_Declared in `include/datoviz/scene/scale.h`:564._
 
 ### `dvz_legend_destroy()`
 
@@ -3921,7 +4120,7 @@ Destroy a legend.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:562._
+_Declared in `include/datoviz/scene/scale.h`:593._
 
 ### `dvz_legend_id()`
 
@@ -3940,7 +4139,7 @@ Return the scene-local identity of a legend.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:554._
+_Declared in `include/datoviz/scene/scale.h`:585._
 
 ### `dvz_legend_set_highlight()`
 
@@ -3963,7 +4162,7 @@ This is presentation state only: the bound scale category color and label are un
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:593._
+_Declared in `include/datoviz/scene/scale.h`:624._
 
 ### `dvz_legend_set_highlights()`
 
@@ -3988,7 +4187,7 @@ This is presentation state only: the bound scale category colors and labels are 
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:616._
+_Declared in `include/datoviz/scene/scale.h`:647._
 
 ### `dvz_legend_set_layout()`
 
@@ -4009,7 +4208,7 @@ Update legend layout and placement parameters.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:572._
+_Declared in `include/datoviz/scene/scale.h`:603._
 
 ### `dvz_legend_set_title()`
 
@@ -4029,7 +4228,7 @@ Set the legend title.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:581._
+_Declared in `include/datoviz/scene/scale.h`:612._
 
 ## Link
 
@@ -4119,7 +4318,7 @@ fixed-size inset triad with lit mesh arrows, a central hub, and orientation ring
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:704._
+_Declared in `include/datoviz/scene.h`:812._
 
 ### `dvz_orientation_gizmo_desc()`
 
@@ -4137,7 +4336,7 @@ Related: [`dvz_orientation_gizmo()`](#dvz_orientation_gizmo).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:691._
+_Declared in `include/datoviz/scene.h`:799._
 
 ### `dvz_orientation_gizmo_destroy()`
 
@@ -4155,7 +4354,7 @@ Destroy an orientation gizmo.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:713._
+_Declared in `include/datoviz/scene.h`:821._
 
 ### `dvz_orientation_gizmo_set_visible()`
 
@@ -4175,7 +4374,7 @@ Set orientation-gizmo visibility.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:722._
+_Declared in `include/datoviz/scene.h`:830._
 
 ## Overlay
 
@@ -4472,7 +4671,7 @@ Create a panel inside a figure.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:529._
+_Declared in `include/datoviz/scene.h`:575._
 
 ### `dvz_panel_add_composite()`
 
@@ -4498,7 +4697,7 @@ with the same semantics as dvz_panel_add_visual().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:876._
+_Declared in `include/datoviz/scene.h`:984._
 
 ### `dvz_panel_add_visual()`
 
@@ -4524,7 +4723,7 @@ coord_space=DVZ_COORD_DATA)
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:861._
+_Declared in `include/datoviz/scene.h`:969._
 
 ### `dvz_panel_axes_2d_desc()`
 
@@ -4542,7 +4741,7 @@ The descriptor enables grid lines in the default X/Y axis styles and leaves labe
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1184._
+_Declared in `include/datoviz/scene.h`:1297._
 
 ### `dvz_panel_axis()`
 
@@ -4563,7 +4762,7 @@ Return a panel-owned axis, creating its WIP geometry visual on first use.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1174._
+_Declared in `include/datoviz/scene.h`:1287._
 
 ### `dvz_panel_background_desc()`
 
@@ -4579,7 +4778,7 @@ Return the default panel background descriptor.
 
 Raw ctypes: skipped by binding policy.
 
-_Declared in `include/datoviz/scene.h`:885._
+_Declared in `include/datoviz/scene.h`:993._
 
 ### `dvz_panel_bind_controller()`
 
@@ -4604,7 +4803,7 @@ Fly controllers must be bound to DVZ_DIM_MASK_XYZ in this first slice.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:786._
+_Declared in `include/datoviz/scene.h`:894._
 
 ### `dvz_panel_border_desc()`
 
@@ -4622,7 +4821,7 @@ The default is a visible one-pixel border inset by half a pixel so it is fully i
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:935._
+_Declared in `include/datoviz/scene.h`:1043._
 
 ### `dvz_panel_bounds()`
 
@@ -4645,7 +4844,7 @@ Return the union of all visible visual bounds attached to one panel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1680._
+_Declared in `include/datoviz/scene.h`:1856._
 
 ### `dvz_panel_bounds_visible()`
 
@@ -4664,7 +4863,7 @@ Return whether the panel-owned visual bounds overlay is enabled.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1079._
+_Declared in `include/datoviz/scene.h`:1187._
 
 ### `dvz_panel_camera()`
 
@@ -4703,7 +4902,7 @@ Clear a panel background.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:911._
+_Declared in `include/datoviz/scene.h`:1019._
 
 ### `dvz_panel_clear_border()`
 
@@ -4721,7 +4920,7 @@ Clear a panel border.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:956._
+_Declared in `include/datoviz/scene.h`:1064._
 
 ### `dvz_panel_clear_view2d()`
 
@@ -4739,7 +4938,7 @@ Clear a panel 2D view policy without changing the current axis domains.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1122._
+_Declared in `include/datoviz/scene.h`:1232._
 
 ### `dvz_panel_connect_input()`
 
@@ -4763,7 +4962,7 @@ controllers do not own a single canonical viewport.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:799._
+_Declared in `include/datoviz/scene.h`:907._
 
 ### `dvz_panel_controller()`
 
@@ -4784,7 +4983,32 @@ Return the controller bound to one panel dimension.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:809._
+_Declared in `include/datoviz/scene.h`:917._
+
+### `dvz_panel_data_to_position()`
+
+```c title="dvz_panel_data_to_position"
+_Bool dvz_panel_data_to_position(
+    DvzPanel * panel,
+    DvzPanelCoordSpace to,
+    const double[2] data,
+    double[2] out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the conversion was supported and finite |
+| `panel` | `DvzPanel *` | the panel |
+| `to` | `DvzPanelCoordSpace` | destination coordinate space |
+| `data` | `const double[2]` | input data point |
+| `out` | `double[2]` | output point |
+
+Convert a panel DATA point to a position in another panel coordinate space.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:728._
 
 ### `dvz_panel_data_to_visual_positions()`
 
@@ -4805,16 +5029,16 @@ int dvz_panel_data_to_visual_positions(
 | `visual_positions` | `float *` | tightly packed output positions, 3 floats per item |
 | `count` | `uint32_t` | number of positions |
 
-Normalize tightly packed 3D data positions through the panel X/Y domains.
+Convert tightly packed 3D DATA positions to panel VIEW positions.
 
-X and Y are mapped from data coordinates into panel visual coordinates in [-1, +1]. For ordinary
-increasing domains, X increases left to right and Y increases bottom to top. Z is copied
-unchanged; positive Z is the default front direction for camera/depth interpretation. Unset
-domains fall back to pass-through visual coordinates for that dimension.
+This helper is only appropriate when the destination visual is attached with `DVZ_COORD_VIEW`.
+Ordinary retained visual data should normally stay in DATA coordinates and use the default
+`DVZ_COORD_DATA` attachment. X and Y are mapped from data coordinates into panel visual
+coordinates; Z is copied unchanged.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1163._
+_Declared in `include/datoviz/scene.h`:1276._
 
 ### `dvz_panel_destroy()`
 
@@ -4832,7 +5056,7 @@ Destroy a panel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:772._
+_Declared in `include/datoviz/scene.h`:880._
 
 ### `dvz_panel_full()`
 
@@ -4851,7 +5075,7 @@ Create a panel that fills the whole figure.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:560._
+_Declared in `include/datoviz/scene.h`:606._
 
 ### `dvz_panel_get_padding()`
 
@@ -4872,7 +5096,7 @@ Return one panel's fixed pixel padding.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:610._
+_Declared in `include/datoviz/scene.h`:656._
 
 ### `dvz_panel_get_reserve()`
 
@@ -4895,7 +5119,7 @@ The returned reserve includes the manual base reserve plus automatic attached ad
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:586._
+_Declared in `include/datoviz/scene.h`:632._
 
 ### `dvz_panel_id()`
 
@@ -4914,7 +5138,7 @@ Return the scene-local identity of a panel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:538._
+_Declared in `include/datoviz/scene.h`:584._
 
 ### `dvz_panel_inner_rect_px()`
 
@@ -4933,11 +5157,12 @@ _Bool dvz_panel_inner_rect_px(
 
 Return one panel's current inner rectangle in figure pixel coordinates.
 
-The inner rectangle is the panel rectangle after padding and before resolved reserve.
+The inner rectangle is the panel outer rectangle after padding and before resolved reserve,
+expressed in figure logical pixels.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:622._
+_Declared in `include/datoviz/scene.h`:669._
 
 ### `dvz_panel_plot_rect_px()`
 
@@ -4956,11 +5181,38 @@ _Bool dvz_panel_plot_rect_px(
 
 Return one panel's current plot rectangle in figure pixel coordinates.
 
-The plot rectangle is the panel rectangle after padding and resolved reserve.
+The plot rectangle is the panel outer rectangle after padding and resolved reserve, expressed in
+figure logical pixels. Panel query positions remain panel-local logical pixels with origin at the
+outer panel rectangle.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:634._
+_Declared in `include/datoviz/scene.h`:683._
+
+### `dvz_panel_position_to_data()`
+
+```c title="dvz_panel_position_to_data"
+_Bool dvz_panel_position_to_data(
+    DvzPanel * panel,
+    DvzPanelCoordSpace from,
+    const double[2] in,
+    double[2] out_data
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the conversion was supported and finite |
+| `panel` | `DvzPanel *` | the panel |
+| `from` | `DvzPanelCoordSpace` | source coordinate space |
+| `in` | `const double[2]` | input point |
+| `out_data` | `double[2]` | output data point |
+
+Convert a position in a pixel or VIEW coordinate space to panel DATA coordinates.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:715._
 
 ### `dvz_panel_query()`
 
@@ -4977,8 +5229,8 @@ int dvz_panel_query(
 | --- | --- | --- |
 | return | `int` | 0 on success, -1 on error |
 | `panel` | `DvzPanel *` | the panel |
-| `x` | `double` | the logical panel x coordinate |
-| `y` | `double` | the logical panel y coordinate |
+| `x` | `double` | the panel-local logical x coordinate, origin at the outer panel rectangle |
+| `y` | `double` | the panel-local logical y coordinate, origin at the outer panel rectangle |
 | `request` | `const DvzQueryRequest *` | the request descriptor, or NULL for defaults |
 
 Queue an explicit GPU-backed query request on a panel.
@@ -4986,6 +5238,31 @@ Queue an explicit GPU-backed query request on a panel.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/interaction.h`:391._
+
+### `dvz_panel_query_data()`
+
+```c title="dvz_panel_query_data"
+int dvz_panel_query_data(
+    DvzPanel * panel,
+    double x,
+    double y,
+    const DvzQueryRequest * request
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `int` | 0 on success, -1 on error |
+| `panel` | `DvzPanel *` | the panel |
+| `x` | `double` | data x coordinate |
+| `y` | `double` | data y coordinate |
+| `request` | `const DvzQueryRequest *` | the request descriptor, or NULL for defaults |
+
+Queue a query at a DATA-coordinate point.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:741._
 
 ### `dvz_panel_query_now()`
 
@@ -5005,8 +5282,8 @@ int dvz_panel_query_now(
 | return | `int` | 0 on success, -1 on error |
 | `panel` | `DvzPanel *` | the panel |
 | `runtime` | `DvzDrp2Runtime *` | the DRP2 runtime |
-| `x` | `double` | the logical panel x coordinate |
-| `y` | `double` | the logical panel y coordinate |
+| `x` | `double` | the panel-local logical x coordinate, origin at the outer panel rectangle |
+| `y` | `double` | the panel-local logical y coordinate, origin at the outer panel rectangle |
 | `request` | `const DvzQueryRequest *` | the request descriptor, or NULL for defaults |
 | `out_result` | `DvzQueryResult *` | output result |
 
@@ -5039,7 +5316,7 @@ dvz_panel_axes_2d_desc().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1198._
+_Declared in `include/datoviz/scene.h`:1311._
 
 ### `dvz_panel_set_background()`
 
@@ -5067,7 +5344,7 @@ them to the panel rectangle.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:903._
+_Declared in `include/datoviz/scene.h`:1011._
 
 ### `dvz_panel_set_background_color()`
 
@@ -5092,7 +5369,7 @@ instead of stacking new visuals.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:925._
+_Declared in `include/datoviz/scene.h`:1033._
 
 ### `dvz_panel_set_border()`
 
@@ -5116,7 +5393,7 @@ layout, and do not reserve space. Passing NULL, visible=false, or width_px=0 cle
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:948._
+_Declared in `include/datoviz/scene.h`:1056._
 
 ### `dvz_panel_set_bounds_visible()`
 
@@ -5140,7 +5417,7 @@ controller and is rebuilt from visible, controller-applied visuals before frame 
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1070._
+_Declared in `include/datoviz/scene.h`:1178._
 
 ### `dvz_panel_set_camera()`
 
@@ -5188,7 +5465,7 @@ layout-dependent adornments dirty.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:551._
+_Declared in `include/datoviz/scene.h`:597._
 
 ### `dvz_panel_set_domain()`
 
@@ -5211,12 +5488,14 @@ int dvz_panel_set_domain(
 
 Set a panel data domain for one axis dimension.
 
-The first WIP axis slice supports finite linear X/Y domains. Axis geometry is derived from this
-domain and the panel panzoom extent during frame emission.
+The first WIP axis slice supports finite linear X/Y domains. Domain endpoints are ordered, not
+sorted: reversed domains such as `min=10, max=0` are legal and reverse the data-to-visual
+mapping. Axis geometry is derived from this domain and the panel panzoom extent during frame
+emission.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1094._
+_Declared in `include/datoviz/scene.h`:1204._
 
 ### `dvz_panel_set_edl()`
 
@@ -5241,7 +5520,7 @@ are clamped to implementation-supported ranges.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:978._
+_Declared in `include/datoviz/scene.h`:1086._
 
 ### `dvz_panel_set_msaa()`
 
@@ -5265,7 +5544,7 @@ into the figure target. Pass NULL or a descriptor with enabled=false to disable 
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:991._
+_Declared in `include/datoviz/scene.h`:1099._
 
 ### `dvz_panel_set_padding()`
 
@@ -5290,7 +5569,7 @@ adornments normally manage reserve bands themselves. Pass NULL to reset every si
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:600._
+_Declared in `include/datoviz/scene.h`:646._
 
 ### `dvz_panel_set_reserve()`
 
@@ -5315,7 +5594,7 @@ to reset the manual reserve to zero.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:574._
+_Declared in `include/datoviz/scene.h`:620._
 
 ### `dvz_panel_set_scene_occlusion()`
 
@@ -5340,7 +5619,7 @@ descriptor to disable the panel path.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1057._
+_Declared in `include/datoviz/scene.h`:1165._
 
 ### `dvz_panel_set_ssao()`
 
@@ -5366,7 +5645,7 @@ implementation-supported ranges.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1014._
+_Declared in `include/datoviz/scene.h`:1122._
 
 ### `dvz_panel_set_view2d()`
 
@@ -5391,7 +5670,7 @@ the current plot rectangle.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1115._
+_Declared in `include/datoviz/scene.h`:1225._
 
 ### `dvz_panel_set_volume_occluder()`
 
@@ -5414,7 +5693,39 @@ Configure a panel volume visual as the screen-space occluder for embedded visual
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1033._
+_Declared in `include/datoviz/scene.h`:1141._
+
+### `dvz_panel_transform_point()`
+
+```c title="dvz_panel_transform_point"
+_Bool dvz_panel_transform_point(
+    DvzPanel * panel,
+    DvzPanelCoordSpace from,
+    DvzPanelCoordSpace to,
+    const double[2] in,
+    double[2] out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the conversion was supported and finite |
+| `panel` | `DvzPanel *` | the panel |
+| `from` | `DvzPanelCoordSpace` | source coordinate space |
+| `to` | `DvzPanelCoordSpace` | destination coordinate space |
+| `in` | `const double[2]` | input point |
+| `out` | `double[2]` | output point |
+
+Convert one 2D point between explicit panel coordinate spaces.
+
+Figure, panel, inner, and plot pixel spaces use logical pixels. Panel pixels are local to the
+outer panel rectangle and match `dvz_panel_query()` coordinates. DATA coordinates use the
+current visible data domain. VIEW coordinates are the visual coordinates used by visuals attached
+with `DVZ_COORD_VIEW`.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:701._
 
 ### `dvz_panel_view2d()`
 
@@ -5430,7 +5741,7 @@ Return the default panel 2D view descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1102._
+_Declared in `include/datoviz/scene.h`:1212._
 
 ### `dvz_panel_view2d_extent()`
 
@@ -5451,7 +5762,7 @@ Return the current resolved panel VIEW extent before panzoom.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1131._
+_Declared in `include/datoviz/scene.h`:1241._
 
 ### `dvz_panel_visible_domain()`
 
@@ -5474,12 +5785,15 @@ _Bool dvz_panel_visible_domain(
 
 Return the current visible data domain for one panel dimension.
 
-The panel's domain is combined with the current panzoom extent. When no explicit domain has
-been configured, the default visual domain [-1, +1] is used.
+The panel's data-to-view policy is combined with the current panzoom extent. The returned
+endpoints preserve the active domain orientation, so reversed domains return reversed visible
+endpoints. When no explicit domain has been configured, the default visual domain [-1, +1] is
+used. Use this for data/pixel conversion; `dvz_panel_transform_point()` wraps the common point
+conversions.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1146._
+_Declared in `include/datoviz/scene.h`:1259._
 
 ### `dvz_panel_visual_bounds()`
 
@@ -5508,7 +5822,7 @@ to the figure.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1668._
+_Declared in `include/datoviz/scene.h`:1844._
 
 ## Panzoom
 
@@ -5613,7 +5927,7 @@ normally override anchors, size, and offsets before resolving.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:645._
+_Declared in `include/datoviz/scene.h`:753._
 
 ### `dvz_placement_panel_corner()`
 
@@ -5642,7 +5956,7 @@ Return a fixed-size panel-corner placement descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:659._
+_Declared in `include/datoviz/scene.h`:767._
 
 ### `dvz_placement_resolve()`
 
@@ -5671,7 +5985,7 @@ the panel's local coordinate system.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:677._
+_Declared in `include/datoviz/scene.h`:785._
 
 ## Query
 
@@ -5714,7 +6028,7 @@ The helper lowers to a retained segment visual and does not introduce a renderer
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:746._
+_Declared in `include/datoviz/scene.h`:854._
 
 ### `dvz_reference_grid_desc()`
 
@@ -5732,7 +6046,7 @@ Related: [`dvz_reference_grid()`](#dvz_reference_grid).
 
 Raw ctypes: available through `dvz_ffi_reference_grid_desc()`.
 
-_Declared in `include/datoviz/scene.h`:734._
+_Declared in `include/datoviz/scene.h`:842._
 
 ### `dvz_reference_grid_destroy()`
 
@@ -5750,7 +6064,7 @@ Destroy a reference grid.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:755._
+_Declared in `include/datoviz/scene.h`:863._
 
 ### `dvz_reference_grid_set_visible()`
 
@@ -5770,7 +6084,7 @@ Set reference-grid visibility.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:764._
+_Declared in `include/datoviz/scene.h`:872._
 
 ## Sampled
 
@@ -6396,7 +6710,7 @@ or `sizeof(uint16_t)` for 16-bit).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1757._
+_Declared in `include/datoviz/scene.h`:1933._
 
 ### `dvz_scene_buffer_desc()`
 
@@ -6414,7 +6728,7 @@ Related: [`dvz_scene_buffer()`](#dvz_scene_buffer).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1765._
+_Declared in `include/datoviz/scene.h`:1941._
 
 ### `dvz_scene_buffer_destroy()`
 
@@ -6432,7 +6746,7 @@ Destroy a scene-owned buffer resource.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1773._
+_Declared in `include/datoviz/scene.h`:1949._
 
 ### `dvz_scene_buffer_get_desc()`
 
@@ -6451,7 +6765,7 @@ Return the immutable buffer descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1797._
+_Declared in `include/datoviz/scene.h`:1973._
 
 ### `dvz_scene_buffer_resource_key()`
 
@@ -6478,7 +6792,7 @@ external buffer without scanning draw commands.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1813._
+_Declared in `include/datoviz/scene.h`:1989._
 
 ### `dvz_scene_buffer_set_data()`
 
@@ -6504,7 +6818,7 @@ release or reuse it immediately after a successful or failed call.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1788._
+_Declared in `include/datoviz/scene.h`:1964._
 
 ### `dvz_scene_clock_dt()`
 
@@ -6523,7 +6837,7 @@ Return the last scene clock delta in seconds.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:288._
+_Declared in `include/datoviz/scene/animation.h`:309._
 
 ### `dvz_scene_clock_time()`
 
@@ -6542,7 +6856,7 @@ Return the current scene clock time in seconds.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:278._
+_Declared in `include/datoviz/scene/animation.h`:299._
 
 ### `dvz_scene_compute()`
 
@@ -6566,7 +6880,7 @@ buffer bindings that are lowered into DRP2 before figure render passes.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1827._
+_Declared in `include/datoviz/scene.h`:2003._
 
 ### `dvz_scene_compute_desc()`
 
@@ -6584,7 +6898,7 @@ Related: [`dvz_scene_compute()`](#dvz_scene_compute).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1835._
+_Declared in `include/datoviz/scene.h`:2011._
 
 ### `dvz_scene_compute_destroy()`
 
@@ -6602,7 +6916,7 @@ Destroy a scene-owned compute pass and detach it from all figures.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1843._
+_Declared in `include/datoviz/scene.h`:2019._
 
 ### `dvz_scene_compute_set_buffer()`
 
@@ -6634,7 +6948,7 @@ buffers only. Ranges are passed through to the DRP2 bind group.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1873._
+_Declared in `include/datoviz/scene.h`:2049._
 
 ### `dvz_scene_compute_set_dispatch()`
 
@@ -6659,7 +6973,7 @@ Set the dispatch size for a scene compute pass.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1856._
+_Declared in `include/datoviz/scene.h`:2032._
 
 ### `dvz_scene_destroy()`
 
@@ -6714,7 +7028,7 @@ Destroy a frame artifact.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:422._
+_Declared in `include/datoviz/scene.h`:468._
 
 ### `dvz_scene_frame_artifact_frame_index()`
 
@@ -6733,7 +7047,7 @@ Return the frame index associated with an artifact.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:475._
+_Declared in `include/datoviz/scene.h`:521._
 
 ### `dvz_scene_frame_artifact_get_packet()`
 
@@ -6765,7 +7079,7 @@ artifact and remain valid only until artifact destruction.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:492._
+_Declared in `include/datoviz/scene.h`:538._
 
 ### `dvz_scene_frame_artifact_json()`
 
@@ -6789,7 +7103,7 @@ dvz_drp2_stream_json_destroy().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:455._
+_Declared in `include/datoviz/scene.h`:501._
 
 ### `dvz_scene_frame_artifact_resource_version()`
 
@@ -6808,7 +7122,7 @@ Return the retained resource version associated with an artifact.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:465._
+_Declared in `include/datoviz/scene.h`:511._
 
 ### `dvz_scene_frame_artifact_status()`
 
@@ -6827,7 +7141,7 @@ Return the artifact status.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:431._
+_Declared in `include/datoviz/scene.h`:477._
 
 ### `dvz_scene_frame_artifact_stream()`
 
@@ -6846,7 +7160,7 @@ Return the artifact-owned DRP2 command stream snapshot.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:442._
+_Declared in `include/datoviz/scene.h`:488._
 
 ### `dvz_scene_has_active_animations()`
 
@@ -6865,7 +7179,7 @@ Return whether the scene has at least one active animation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:297._
+_Declared in `include/datoviz/scene/animation.h`:318._
 
 ### `dvz_scene_hover()`
 
@@ -6968,7 +7282,7 @@ Return default scene-occlusion options.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1042._
+_Declared in `include/datoviz/scene.h`:1150._
 
 ### `dvz_scene_poll_query()`
 
@@ -7029,7 +7343,7 @@ Set the scene clock mode used by animations.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:258._
+_Declared in `include/datoviz/scene/animation.h`:279._
 
 ### `dvz_scene_set_font_defaults()`
 
@@ -7072,7 +7386,7 @@ Set the scene clock frame rate used by offline mode and timer period resolution.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:268._
+_Declared in `include/datoviz/scene/animation.h`:289._
 
 ## Selection
 
@@ -7421,7 +7735,7 @@ The default is panel-local screen placement. Use `DVZ_TEXT_PLACEMENT_DATA` when 
 anchored to panel data coordinates; `DvzTextPlacement::offset` remains a logical-pixel offset in
 every placement mode.
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/text.h`:50._
 
@@ -7545,7 +7859,7 @@ Create a 2D circle track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:419._
+_Declared in `include/datoviz/scene/animation.h`:435._
 
 ### `dvz_track_circle2_desc()`
 
@@ -7563,7 +7877,7 @@ Related: [`dvz_track_circle2()`](#dvz_track_circle2).
 
 Raw ctypes: skipped by binding policy.
 
-_Declared in `include/datoviz/scene/animation.h`:351._
+_Declared in `include/datoviz/scene/animation.h`:367._
 
 ### `dvz_track_circle3()`
 
@@ -7582,7 +7896,7 @@ Create a 3D circle track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:428._
+_Declared in `include/datoviz/scene/animation.h`:444._
 
 ### `dvz_track_circle3_desc()`
 
@@ -7600,7 +7914,7 @@ Related: [`dvz_track_circle3()`](#dvz_track_circle3).
 
 Raw ctypes: skipped by binding policy.
 
-_Declared in `include/datoviz/scene/animation.h`:359._
+_Declared in `include/datoviz/scene/animation.h`:375._
 
 ### `dvz_track_constant()`
 
@@ -7619,7 +7933,7 @@ Create a constant typed track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:392._
+_Declared in `include/datoviz/scene/animation.h`:408._
 
 ### `dvz_track_constant_desc()`
 
@@ -7637,7 +7951,7 @@ Related: [`dvz_track_constant()`](#dvz_track_constant).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:327._
+_Declared in `include/datoviz/scene/animation.h`:343._
 
 ### `dvz_track_destroy()`
 
@@ -7655,7 +7969,7 @@ Destroy a track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:456._
+_Declared in `include/datoviz/scene/animation.h`:472._
 
 ### `dvz_track_eval()`
 
@@ -7678,7 +7992,7 @@ Evaluate a track at local time.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:448._
+_Declared in `include/datoviz/scene/animation.h`:464._
 
 ### `dvz_track_keyframes()`
 
@@ -7697,7 +8011,7 @@ Create a keyframed typed track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:410._
+_Declared in `include/datoviz/scene/animation.h`:426._
 
 ### `dvz_track_keyframes_desc()`
 
@@ -7715,7 +8029,7 @@ Related: [`dvz_track_keyframes()`](#dvz_track_keyframes).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:343._
+_Declared in `include/datoviz/scene/animation.h`:359._
 
 ### `dvz_track_linear()`
 
@@ -7734,7 +8048,7 @@ Create a linear typed track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:401._
+_Declared in `include/datoviz/scene/animation.h`:417._
 
 ### `dvz_track_linear_desc()`
 
@@ -7752,7 +8066,7 @@ Related: [`dvz_track_linear()`](#dvz_track_linear).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:335._
+_Declared in `include/datoviz/scene/animation.h`:351._
 
 ### `dvz_track_rotation()`
 
@@ -7771,7 +8085,7 @@ Create a quaternion rotation track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:437._
+_Declared in `include/datoviz/scene/animation.h`:453._
 
 ### `dvz_track_rotation_desc()`
 
@@ -7789,7 +8103,7 @@ Related: [`dvz_track_rotation()`](#dvz_track_rotation).
 
 Raw ctypes: skipped by binding policy.
 
-_Declared in `include/datoviz/scene/animation.h`:367._
+_Declared in `include/datoviz/scene/animation.h`:383._
 
 ## Transform
 
@@ -7807,7 +8121,7 @@ Return a default transform motion descriptor.
 
 Raw ctypes: skipped by binding policy.
 
-_Declared in `include/datoviz/scene/animation.h`:375._
+_Declared in `include/datoviz/scene/animation.h`:391._
 
 ## Turntable
 

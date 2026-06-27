@@ -14,7 +14,7 @@ is a sampled field value at a data coordinate.
 ## Minimal Workflow
 
 1. Enable query support on the visual with `dvz_visual_set_query_capabilities()`.
-2. Convert pointer input to logical panel coordinates.
+2. Convert pointer input to outer-panel-local logical pixel coordinates.
 3. Queue a panel query with `dvz_panel_query()`.
 4. Poll resolved results with `dvz_scene_poll_query()` after subsequent frames.
 5. Map `resolved_id` or `link_key` back to application data.
@@ -49,14 +49,15 @@ while (dvz_scene_poll_query(scene, &result))
 
 ## Pointer Coordinates
 
-Queries use logical panel coordinates, not raw window coordinates. When the pointer event comes from
-the scenario runner, use the scenario helper shown in `examples/c/features/picking.c`. In a direct
-app or hosted integration, first translate the host pointer position into the target panel's inner
-rectangle before calling `dvz_panel_query()`.
+Queries use `DVZ_PANEL_COORD_PANEL_PX` coordinates: logical pixels local to the outer panel
+rectangle, not raw window coordinates. When the pointer event comes from the scenario runner, use
+the scenario helper shown in `examples/c/features/picking.c`. In a direct app or hosted
+integration, first translate host-window coordinates to figure coordinates with
+`dvz_event_window_to_figure()` when needed, then convert figure to panel pixels with
+`dvz_panel_transform_point()` before calling `dvz_panel_query()`.
 
-For 3D panels, verify the panel coordinate convention used by the example you are following. Some
-host paths report Y from the top of the panel while query targets may use the render target's
-framebuffer convention.
+When the application already has a data-coordinate point, use `dvz_panel_query_data()` or convert it
+with `dvz_panel_data_to_position()`.
 
 
 ## Result Handling
@@ -105,7 +106,7 @@ request from input or frame code, then consume results from the scene polling pa
 - Expecting identical results from native and WebGPU paths without checking feature status.
 - Forgetting to enable query capabilities on the visual before issuing item queries.
 - Treating query results as immediate return values instead of polling resolved results.
-- Using raw window coordinates instead of logical panel coordinates.
+- Using raw window coordinates instead of outer-panel-local logical pixels.
 
 ## See Also
 

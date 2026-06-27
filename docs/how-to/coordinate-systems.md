@@ -18,6 +18,22 @@ domain.
 | `DVZ_COORD_VIEW` | Positions are already in panel view coordinates, usually `[-1, +1]`. | Attach explicitly with `coord_space = DVZ_COORD_VIEW`. |
 | `DVZ_COORD_PANEL` | Positions are normalized to the panel itself for fixed overlays. | Attach with `coord_space = DVZ_COORD_PANEL`. |
 
+Pointer, query, and overlay code often needs pixel-space conversions instead of attachment-space
+selection. Use `dvz_panel_transform_point()` for one-point conversions between these explicit panel
+spaces:
+
+| Space | Meaning |
+| --- | --- |
+| `DVZ_PANEL_COORD_FIGURE_PX` | Logical pixels in the figure layout. |
+| `DVZ_PANEL_COORD_PANEL_PX` | Logical pixels local to the outer panel rectangle. This is the coordinate frame used by `dvz_panel_query()`. |
+| `DVZ_PANEL_COORD_INNER_PX` | Logical pixels local to the inner panel rectangle after reserves. |
+| `DVZ_PANEL_COORD_PLOT_PX` | Logical pixels local to the plot rectangle. |
+| `DVZ_PANEL_COORD_DATA` | Panel data/domain coordinates in the current visible domain. |
+| `DVZ_PANEL_COORD_VIEW` | Panel view/visual coordinates. |
+
+For the common data/pixel cases, use `dvz_panel_position_to_data()` and
+`dvz_panel_data_to_position()`.
+
 ## Data-Space Call Sequence
 
 ```c
@@ -74,8 +90,8 @@ so the visible rectangle is explicit.
 
 Use `dvz_panel_visible_domain()` when you need the current data interval after controller changes.
 Use `dvz_panel_data_to_visual_positions()` only when you intentionally need a CPU-side conversion
-from panel data coordinates to visual coordinates; ordinary retained data-space attachments should
-let the scene perform that mapping.
+from panel data coordinates to `DVZ_COORD_VIEW` visual coordinates; ordinary retained data-space
+attachments should let the scene perform that mapping.
 
 
 ## Important Details
@@ -96,9 +112,12 @@ Nonlinear and geographic projections are not scene-managed in v0.4. Project thos
 upload ordinary Cartesian positions or sampled fields, and keep projection metadata in labels,
 legends, annotations, or application state.
 
-Pointer input and queries start from framebuffer pixels, then pass through the target viewport and
-panel transform. Do not treat CPU geometry coordinates as a substitute for rendered query behavior;
-pick/probe results should follow the same transform, clipping, depth, and shader path as rendering.
+Pointer input and queries start from host or figure pixels, then pass through the target panel and
+panel transform. Convert figure pointer coordinates with `dvz_panel_transform_point()` before
+calling `dvz_panel_query()`, or call `dvz_panel_query_data()` when the application already has a
+data-coordinate query point. Do not treat CPU geometry coordinates as a substitute for rendered
+query behavior; pick/probe results should follow the same transform, clipping, depth, and shader
+path as rendering.
 
 ## Common Mistakes
 

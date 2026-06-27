@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE IMPLEMENTATION`
-> - **Updated on:** `2026-05-30`
+> - **Updated on:** `2026-06-27`
 > - **Purpose:** replace separate public picking and probing concepts with one authoritative
 >   "what is under this panel pixel?" query model.
 
@@ -37,11 +37,16 @@ and alpha rules as rendering.
 The public interaction primitive should become a unified panel query API:
 
 ```c
-dvz_panel_query(panel, x, y, flags, &request);
+int dvz_panel_query(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
+int dvz_panel_query_data(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
+bool dvz_panel_transform_point(
+    DvzPanel* panel, DvzPanelCoordSpace from, DvzPanelCoordSpace to, double x, double y,
+    double* out_x, double* out_y);
 ```
 
-The exact C shape is still open, but the semantic contract should be stable: query a panel-local
-pixel and return the frontmost rendered scene contribution, plus optional semantic readout.
+`dvz_panel_query()` takes `DVZ_PANEL_COORD_PANEL_PX` coordinates: logical pixels local to the
+outer panel rectangle. `dvz_panel_query_data()` converts panel data coordinates through the same
+public transform helper before queuing the query.
 
 This replaces separate public pick and probe APIs rather than wrapping them indefinitely. Pick and
 probe remain useful semantic words, but the public request/result mechanism is query.
@@ -55,7 +60,7 @@ A panel query result should be able to report:
 2. status,
 3. panel id,
 4. framebuffer pixel coordinate,
-5. panel-local coordinate,
+5. outer-panel-local logical-pixel coordinate,
 6. visual id,
 7. visual family,
 8. item id when applicable,
@@ -143,7 +148,7 @@ Because v0.4 does not need to preserve the v0.3 API, the implementation plan sho
 1. keep public pick/probe entry points removed now that panel query replaces them,
 2. rename request/result types around `query` rather than `pick` or `probe`,
 3. keep examples on one panel query instead of per-example composition of pick/probe requests,
-4. centralize coordinate conversion in the scene/query layer,
+4. centralize coordinate conversion in public panel transform helpers and the scene/query layer,
 5. make query capability explicit in visual-family metadata,
 6. treat image probing and point picking as query payload specializations.
 

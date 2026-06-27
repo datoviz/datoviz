@@ -147,6 +147,12 @@ typedef struct DvzAxisStyle DvzAxisStyle;
 typedef struct DvzAxisTickPolicy DvzAxisTickPolicy;
 ```
 
+#### `DvzAxisTicks`
+
+```c
+typedef struct DvzAxisTicks DvzAxisTicks;
+```
+
 #### `DvzBand`
 
 ```c
@@ -225,6 +231,12 @@ typedef struct DvzCapabilitySnapshot DvzCapabilitySnapshot;
 typedef int64_t DvzCategoryId;
 ```
 
+#### `DvzColorPipeline`
+
+```c
+typedef enum DvzColorPipeline DvzColorPipeline;
+```
+
 #### `DvzColorRole`
 
 ```c
@@ -253,6 +265,12 @@ typedef enum DvzColorbarOrientation DvzColorbarOrientation;
 
 ```c
 typedef enum DvzColorbarPlacementMode DvzColorbarPlacementMode;
+```
+
+#### `DvzColorbarTicks`
+
+```c
+typedef struct DvzColorbarTicks DvzColorbarTicks;
 ```
 
 #### `DvzColormap`
@@ -531,6 +549,12 @@ typedef struct DvzItemInteraction DvzItemInteraction;
 typedef struct DvzItemInteractionDesc DvzItemInteractionDesc;
 ```
 
+#### `DvzItemRange`
+
+```c
+typedef struct DvzItemRange DvzItemRange;
+```
+
 #### `DvzItemStateKind`
 
 ```c
@@ -667,6 +691,12 @@ typedef enum DvzPanelBackgroundType DvzPanelBackgroundType;
 
 ```c
 typedef struct DvzPanelBorderDesc DvzPanelBorderDesc;
+```
+
+#### `DvzPanelCoordSpace`
+
+```c
+typedef enum DvzPanelCoordSpace DvzPanelCoordSpace;
 ```
 
 #### `DvzPanelDesc`
@@ -885,12 +915,6 @@ typedef enum DvzSceneBufferUsage DvzSceneBufferUsage;
 typedef enum DvzSceneClockMode DvzSceneClockMode;
 ```
 
-#### `DvzTimerMode`
-
-```c
-typedef enum DvzTimerMode DvzTimerMode;
-```
-
 #### `DvzSceneCompute`
 
 ```c
@@ -1051,6 +1075,12 @@ typedef struct DvzTextStyle DvzTextStyle;
 
 ```c
 typedef enum DvzTimeInterval DvzTimeInterval;
+```
+
+#### `DvzTimerMode`
+
+```c
+typedef enum DvzTimerMode DvzTimerMode;
 ```
 
 #### `DvzTimestamp`
@@ -1243,6 +1273,13 @@ DVZ_BUILTIN_COLORMAP_GRAY = 7,
 DVZ_CAMERA_UP_FIXED = 0,
 DVZ_CAMERA_UP_WORLD = 1,
 DVZ_CAMERA_UP_TRACK = 2,
+```
+
+#### `DvzColorPipeline`
+
+```c
+DVZ_COLOR_PIPELINE_LINEAR_SRGB = 0,
+DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND = 1,
 ```
 
 #### `DvzColorRole`
@@ -1496,6 +1533,17 @@ DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT = 2,
 DVZ_PANEL_BACKGROUND_IMAGE = 3,
 ```
 
+#### `DvzPanelCoordSpace`
+
+```c
+DVZ_PANEL_COORD_FIGURE_PX = 0,
+DVZ_PANEL_COORD_PANEL_PX = 1,
+DVZ_PANEL_COORD_INNER_PX = 2,
+DVZ_PANEL_COORD_PLOT_PX = 3,
+DVZ_PANEL_COORD_DATA = 4,
+DVZ_PANEL_COORD_VIEW = 5,
+```
+
 #### `DvzPanelView2DAspect`
 
 ```c
@@ -1661,14 +1709,6 @@ DVZ_CLOCK_REALTIME = 0,
 DVZ_CLOCK_OFFLINE = 1,
 ```
 
-#### `DvzTimerMode`
-
-```c
-DVZ_TIMER_EVERY_FRAME = 0,
-DVZ_TIMER_INTERVAL = 1,
-DVZ_TIMER_CATCH_UP = 2,
-```
-
 #### `DvzSceneComputeAccess`
 
 ```c
@@ -1705,6 +1745,8 @@ DVZ_SCENE_TARGET_SEGMENT = 8,
 DVZ_SCENE_TARGET_TRIANGLE = 9,
 DVZ_SCENE_TARGET_TEXT = 10,
 DVZ_SCENE_TARGET_ANNOTATION = 11,
+DVZ_SCENE_TARGET_GUIDE = 12,
+DVZ_SCENE_TARGET_ALL_RENDERED = 13,
 ```
 
 #### `DvzSceneVisualFamily`
@@ -1792,6 +1834,14 @@ DVZ_TIME_INTERVAL_HOUR = 5,
 DVZ_TIME_INTERVAL_DAY = 6,
 DVZ_TIME_INTERVAL_MONTH = 7,
 DVZ_TIME_INTERVAL_YEAR = 8,
+```
+
+#### `DvzTimerMode`
+
+```c
+DVZ_TIMER_EVERY_FRAME = 0,
+DVZ_TIMER_INTERVAL = 1,
+DVZ_TIMER_CATCH_UP = 2,
 ```
 
 #### `DvzTrackInterpolation`
@@ -1976,6 +2026,18 @@ struct DvzAxisTickPolicy {
 };
 ```
 
+#### `DvzAxisTicks`
+
+```c
+struct DvzAxisTicks {
+    uint32_t struct_size;
+    uint32_t flags;
+    uint32_t count;
+    const double * values;
+    const char *const * labels;
+};
+```
+
 #### `DvzBand`
 
 ```c
@@ -2109,6 +2171,18 @@ struct DvzColorbarDesc {
     DvzTextRenderer text_renderer;
     DvzPlacement placement;
     uint32_t colorbar_flags;
+};
+```
+
+#### `DvzColorbarTicks`
+
+```c
+struct DvzColorbarTicks {
+    uint32_t struct_size;
+    uint32_t flags;
+    uint32_t count;
+    const double * values;
+    const char *const * labels;
 };
 ```
 
@@ -2256,6 +2330,7 @@ struct DvzFramePlanEmitConfig {
     uint32_t struct_size;
     uint32_t flags;
     DvzSceneShaderFormat shader_format;
+    DvzColorPipeline color_pipeline;
     _Bool external_color_target;
     uint64_t color_target_id;
     uint32_t color_target_format;
@@ -2401,6 +2476,15 @@ struct DvzItemInteractionDesc {
     DvzQueryHitPolicy hit_policy;
     _Bool clear_hover_on_miss;
     _Bool clear_selection_on_miss;
+};
+```
+
+#### `DvzItemRange`
+
+```c
+struct DvzItemRange {
+    uint32_t first_item;
+    uint32_t item_count;
 };
 ```
 
@@ -2601,8 +2685,8 @@ struct DvzPanelBackgroundDesc {
     uint32_t flags;
     DvzPanelBackgroundType type;
     float[4] color;
-    struct (unnamed struct at include/datoviz/scene/types.h:330:5) gradient;
-    struct (unnamed struct at include/datoviz/scene/types.h:338:5) image;
+    struct (unnamed struct at include/datoviz/scene/types.h:331:5) gradient;
+    struct (unnamed struct at include/datoviz/scene/types.h:339:5) image;
 };
 ```
 
@@ -3381,6 +3465,12 @@ typedef enum DvzGraphEdgeMode DvzGraphEdgeMode;
 typedef struct DvzGraphEdgeStyle DvzGraphEdgeStyle;
 ```
 
+#### `DvzImageSampling`
+
+```c
+typedef enum DvzImageSampling DvzImageSampling;
+```
+
 #### `DvzMarkerShape`
 
 ```c
@@ -3657,12 +3747,6 @@ typedef struct DvzVolumeOcclusionDesc DvzVolumeOcclusionDesc;
 typedef enum DvzVolumeRenderMode DvzVolumeRenderMode;
 ```
 
-#### `DvzImageSampling`
-
-```c
-typedef enum DvzImageSampling DvzImageSampling;
-```
-
 #### `DvzVolumeSamplingMode`
 
 ```c
@@ -3739,6 +3823,13 @@ DVZ_GEOMETRY_ARROW = 9,
 DVZ_GRAPH_EDGE_MODE_SEGMENT = 0,
 DVZ_GRAPH_EDGE_MODE_PATH = 1,
 DVZ_GRAPH_EDGE_MODE_BEZIER = 2,
+```
+
+#### `DvzImageSampling`
+
+```c
+DVZ_IMAGE_SAMPLING_LINEAR = 0,
+DVZ_IMAGE_SAMPLING_NEAREST = 1,
 ```
 
 #### `DvzMarkerShape`
@@ -3940,13 +4031,6 @@ DVZ_VOLUME_AXIS_Z = 2,
 DVZ_VOLUME_RENDER_SLICE = 0,
 DVZ_VOLUME_RENDER_MIP = 1,
 DVZ_VOLUME_RENDER_COMPOSITE = 2,
-```
-
-#### `DvzImageSampling`
-
-```c
-DVZ_IMAGE_SAMPLING_LINEAR = 0,
-DVZ_IMAGE_SAMPLING_NEAREST = 1,
 ```
 
 #### `DvzVolumeSamplingMode`
@@ -5837,6 +5921,7 @@ struct DvzPointerEvent {
     DvzPointerEventType type;
     DvzPointerEventUnion content;
     vec2 pos;
+    vec2 window_size;
     DvzPointerButton button;
     int mods;
     float content_scale;

@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE IMPLEMENTATION - PUBLIC PICK/PROBE REMOVED`
-> - **Updated on:** `2026-05-30`
+> - **Updated on:** `2026-06-27`
 > - **Purpose:** define the long-term v0.4 scene query architecture: one GPU-only panel query
 >   system replacing the separate public pick/probe request model.
 
@@ -23,7 +23,8 @@ Foundation now present in the tree:
 1. `DvzQueryRequest`, `DvzQueryResult`, query profiles, query statuses, and value kinds live in the
    public scene headers.
 2. `dvz_panel_query()`, `dvz_scene_poll_query()`, `dvz_figure_process_queries()`, and
-   `dvz_panel_query_now()` now use native query pending/result queues.
+   `dvz_panel_query_now()` now use native query pending/result queues. `dvz_panel_query_data()`
+   converts data-coordinate query points through the public panel transform helper before queuing.
 3. `DvzCapabilitySnapshot` carries query/readback capability fields, and the app layer populates the
    Vulkan-facing readback and integer-format facts available today.
 4. `DvzFramePlanCopyDesc` and `dvz_frame_plan_copy_ex()` carry source attachment, origin, extent,
@@ -116,6 +117,7 @@ during implementation, but the intended shape is:
 
 ```c
 int dvz_panel_query(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
+int dvz_panel_query_data(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
 bool dvz_scene_poll_query(DvzScene* scene, DvzQueryResult* out_result);
 uint32_t dvz_figure_process_queries(
     DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps);
@@ -128,6 +130,11 @@ int dvz_panel_query_now(
     DvzPanel* panel, DvzDrp2Runtime* runtime, double x, double y,
     const DvzQueryRequest* request, DvzQueryResult* out_result);
 ```
+
+`dvz_panel_query()` uses outer-panel-local logical pixels, the `DVZ_PANEL_COORD_PANEL_PX` frame in
+`DvzPanelCoordSpace`. Callers that start from figure pixels, plot pixels, view coordinates, or data
+coordinates should convert with `dvz_panel_transform_point()`, `dvz_panel_position_to_data()`, or
+`dvz_panel_data_to_position()` instead of duplicating panel geometry math.
 
 The old APIs:
 
@@ -148,7 +155,7 @@ have been removed from the public contract. They should not return as a parallel
 
 1. request id and freshness serial,
 2. status and hit/miss flag,
-3. panel id and panel-local logical coordinate,
+3. panel id and outer-panel-local logical coordinate,
 4. framebuffer pixel coordinate,
 5. visual id and visual family,
 6. raw GPU query profile and payload version,
