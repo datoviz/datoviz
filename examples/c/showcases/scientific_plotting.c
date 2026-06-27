@@ -175,9 +175,12 @@ static bool _add_data_visual(DvzPanel* panel, DvzVisual* visual, int32_t z_layer
  * @param x_label optional X label
  * @param y_label optional Y label
  * @param show_y_axis whether to show the Y axis
+ * @param x_label_gap_px X axis title gap in pixels
  * @return true when the axes were configured
  */
-static bool _add_axes(DvzPanel* panel, const char* x_label, const char* y_label, bool show_y_axis)
+static bool _add_axes(
+    DvzPanel* panel, const char* x_label, const char* y_label, bool show_y_axis,
+    float x_label_gap_px)
 {
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
@@ -195,7 +198,7 @@ static bool _add_axes(DvzPanel* panel, const char* x_label, const char* y_label,
     style.tick_size_px = 10.0f;
     style.label_size_px = 13.0f;
     style.tick_gap_px = 6.0f;
-    style.x_label_gap_px = 30.0f;
+    style.x_label_gap_px = x_label_gap_px;
     style.y_label_gap_px = 18.0f;
     style.grid_alpha = 105;
     if (!example_graphite_cyan_apply_axis_style(x_axis, false, &style))
@@ -475,7 +478,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             grid, &(DvzPanelReserve){.left_px = 24.0f, .right_px = 24.0f, .top_px = 18.0f,
                                      .bottom_px = 24.0f}))
         return false;
-    if (!dvz_grid_set_gutter(grid, 24.0f, 20.0f))
+    if (!dvz_grid_set_gutter(grid, 24.0f, 34.0f))
         return false;
 
     DvzPanel* correlogram = dvz_grid_panel(grid, 0, 0);
@@ -503,11 +506,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         !_add_stacked_traces(ctx->scene, stacked))
         return false;
 
-    if (!_add_axes(correlogram, "lag (ms)", "coincidence count", true))
+    if (!_add_axes(correlogram, "lag (ms)", "coincidence count", true, 18.0f))
         return false;
-    if (!_add_axes(mean_error, "time (s)", "response", true))
+    if (!_add_axes(mean_error, "time (s)", "response", true, 18.0f))
         return false;
-    if (!_add_axes(stacked, "time (s)", NULL, false))
+    if (!_add_axes(stacked, "time (s)", NULL, false, 18.0f))
         return false;
 
     return dvz_scenario_panzoom(ctx, correlogram, NULL, DVZ_DIM_MASK_XY) != NULL &&
