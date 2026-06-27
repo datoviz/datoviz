@@ -384,12 +384,14 @@ static DvzApp* _app_test_create(TstContext* suite, DvzScene* scene)
  * @param animation animation handle
  * @param t current scene-clock time
  * @param dt elapsed scene-clock time
+ * @param tick timer tick index
  * @param user_data timer probe storage
  */
 static void _app_timer_probe_callback(
-    DvzAnimation* animation, double t, double dt, void* user_data)
+    DvzAnimation* animation, double t, double dt, uint64_t tick, void* user_data)
 {
     (void)animation;
+    (void)tick;
     AppTimerProbe* probe = (AppTimerProbe*)user_data;
     ANN(probe);
     probe->calls++;
@@ -1855,7 +1857,10 @@ int test_app_offscreen_timer_advances_in_app_run(TstContext* suite, const TstCas
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
     dvz_scene_set_fps(scene, 4.0);
     AppTimerProbe probe = {0};
-    DvzAnimation* timer = dvz_anim_timer(scene, 0.0, _app_timer_probe_callback, &probe);
+    DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
+    timer_desc.callback = _app_timer_probe_callback;
+    timer_desc.user_data = &probe;
+    DvzAnimation* timer = dvz_anim_timer(scene, &timer_desc);
     ANN(timer);
     dvz_anim_start(timer, 0.0);
 
@@ -1900,7 +1905,10 @@ int test_app_offscreen_timer_advances_in_render_once(TstContext* suite, const Ts
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
     dvz_scene_set_fps(scene, 8.0);
     AppTimerProbe probe = {0};
-    DvzAnimation* timer = dvz_anim_timer(scene, 0.0, _app_timer_probe_callback, &probe);
+    DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
+    timer_desc.callback = _app_timer_probe_callback;
+    timer_desc.user_data = &probe;
+    DvzAnimation* timer = dvz_anim_timer(scene, &timer_desc);
     ANN(timer);
     dvz_anim_start(timer, 0.0);
 
@@ -1960,7 +1968,10 @@ int test_app_offscreen_render_enabled_gate(TstContext* suite, const TstCase* ite
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
     dvz_scene_set_fps(scene, 8.0);
     AppTimerProbe timer_probe = {0};
-    DvzAnimation* timer = dvz_anim_timer(scene, 0.0, _app_timer_probe_callback, &timer_probe);
+    DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
+    timer_desc.callback = _app_timer_probe_callback;
+    timer_desc.user_data = &timer_probe;
+    DvzAnimation* timer = dvz_anim_timer(scene, &timer_desc);
     ANN(timer);
     dvz_anim_start(timer, 0.0);
 

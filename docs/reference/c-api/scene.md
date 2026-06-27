@@ -90,6 +90,7 @@ Functions: 344
     | [`dvz_anim_start()`](#dvz_anim_start) | `include/datoviz/scene/animation.h` |
     | [`dvz_anim_stop()`](#dvz_anim_stop) | `include/datoviz/scene/animation.h` |
     | [`dvz_anim_timer()`](#dvz_anim_timer) | `include/datoviz/scene/animation.h` |
+    | [`dvz_anim_timer_desc()`](#dvz_anim_timer_desc) | `include/datoviz/scene/animation.h` |
     | [`dvz_anim_track()`](#dvz_anim_track) | `include/datoviz/scene/animation.h` |
     | [`dvz_anim_visual_transform()`](#dvz_anim_visual_transform) | `include/datoviz/scene/animation.h` |
 
@@ -855,9 +856,7 @@ _Declared in `include/datoviz/scene/animation.h`:559._
 ```c title="dvz_anim_timer"
 DvzAnimation * dvz_anim_timer(
     DvzScene * scene,
-    double period_s,
-    DvzAnimTimerCallback callback,
-    void * user_data
+    const DvzAnimTimerDesc * desc
 );
 ```
 
@@ -865,15 +864,31 @@ DvzAnimation * dvz_anim_timer(
 | --- | --- | --- |
 | return | `DvzAnimation *` | the animation handle, or NULL on failure |
 | `scene` | `DvzScene *` | owning scene |
-| `period_s` | `double` | callback period in seconds, or 0 for every scene frame |
-| `callback` | `DvzAnimTimerCallback` | timer callback |
-| `user_data` | `void *` | opaque pointer forwarded to the callback |
+| `desc` | `const DvzAnimTimerDesc *` | timer animation descriptor |
 
 Create a timer animation driven by the scene clock.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/scene/animation.h`:310._
+_Declared in `include/datoviz/scene/animation.h`:482._
+
+### `dvz_anim_timer_desc()`
+
+```c title="dvz_anim_timer_desc"
+DvzAnimTimerDesc dvz_anim_timer_desc(
+    void
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzAnimTimerDesc` | initialized timer animation descriptor |
+
+Return a default timer animation descriptor.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/animation.h`:327._
 
 ### `dvz_anim_track()`
 

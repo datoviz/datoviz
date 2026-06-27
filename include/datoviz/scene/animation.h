@@ -35,6 +35,14 @@ typedef enum
 
 typedef enum
 {
+    DVZ_TIMER_EVERY_FRAME = 0,
+    DVZ_TIMER_INTERVAL,
+    DVZ_TIMER_CATCH_UP,
+} DvzTimerMode;
+
+
+typedef enum
+{
     DVZ_TRACK_FLOAT,
     DVZ_TRACK_VEC2,
     DVZ_TRACK_VEC3,
@@ -109,7 +117,7 @@ typedef struct DvzAnimation DvzAnimation;
 typedef struct DvzTrack DvzTrack;
 
 typedef void (*DvzAnimTimerCallback)(
-    DvzAnimation* animation, double t, double dt, void* user_data);
+    DvzAnimation* animation, double t, double dt, uint64_t tick, void* user_data);
 
 typedef void (*DvzAnimPhaseCallback)(
     DvzAnimation* animation, float value, float delta, void* user_data);
@@ -124,6 +132,7 @@ typedef void (*DvzTrackApplyCallback)(
 /*************************************************************************************************/
 
 typedef struct DvzAnimPhaseDesc DvzAnimPhaseDesc;
+typedef struct DvzAnimTimerDesc DvzAnimTimerDesc;
 typedef struct DvzTrackConstantDesc DvzTrackConstantDesc;
 typedef struct DvzTrackLinearDesc DvzTrackLinearDesc;
 typedef struct DvzTrackKeyframesDesc DvzTrackKeyframesDesc;
@@ -142,6 +151,18 @@ struct DvzAnimPhaseDesc
     float wrap_min;
     float wrap_max;
     DvzAnimPhaseCallback callback;
+    void* user_data;
+};
+
+
+struct DvzAnimTimerDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzTimerMode mode;
+    double period_s;
+    uint32_t max_catch_up;
+    DvzAnimTimerCallback callback;
     void* user_data;
 };
 
@@ -299,16 +320,11 @@ DVZ_EXPORT bool dvz_scene_has_active_animations(const DvzScene* scene);
 
 
 /**
- * Create a timer animation driven by the scene clock.
+ * Return a default timer animation descriptor.
  *
- * @param scene owning scene
- * @param period_s callback period in seconds, or 0 for every scene frame
- * @param callback timer callback
- * @param user_data opaque pointer forwarded to the callback
- * @return the animation handle, or NULL on failure
+ * @return initialized timer animation descriptor
  */
-DVZ_EXPORT DvzAnimation* dvz_anim_timer(
-    DvzScene* scene, double period_s, DvzAnimTimerCallback callback, void* user_data);
+DVZ_EXPORT DvzAnimTimerDesc dvz_anim_timer_desc(void);
 
 
 /**
@@ -454,6 +470,16 @@ DVZ_EXPORT bool dvz_track_eval(const DvzTrack* track, double t, void* out);
  * @param track track
  */
 DVZ_EXPORT void dvz_track_destroy(DvzTrack* track);
+
+
+/**
+ * Create a timer animation driven by the scene clock.
+ *
+ * @param scene owning scene
+ * @param desc timer animation descriptor
+ * @return the animation handle, or NULL on failure
+ */
+DVZ_EXPORT DvzAnimation* dvz_anim_timer(DvzScene* scene, const DvzAnimTimerDesc* desc);
 
 
 /**

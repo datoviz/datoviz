@@ -764,8 +764,11 @@ struct DvzAnimation
     double t_start;
     double local_t;
     float speed;
+    DvzTimerMode timer_mode;
     double period_s;
-    double last_fire_t;
+    double next_fire_t;
+    uint64_t timer_tick;
+    uint32_t max_catch_up;
     DvzAnimTimerCallback timer_callback;
     DvzAnimPhaseCallback phase_callback;
     void* user_data;

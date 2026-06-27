@@ -116,6 +116,10 @@ int test_scene_animation_offline_timer_every_frame(TstContext* suite, const TstC
 
 int test_scene_animation_timer_period_and_stop(TstContext* suite, const TstCase* item);
 
+int test_scene_animation_timer_descriptor_abi(TstContext* suite, const TstCase* item);
+
+int test_scene_animation_timer_catch_up(TstContext* suite, const TstCase* item);
+
 int test_scene_animation_realtime_delta_clamp(TstContext* suite, const TstCase* item);
 
 int test_scene_animation_phase_descriptor_abi(TstContext* suite, const TstCase* item);

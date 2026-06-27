@@ -41,6 +41,8 @@ struct TimerTestState
     double last_t;
     double last_dt;
     double sum_dt;
+    uint64_t last_tick;
+    uint64_t tick_sum;
 };
 
 
@@ -74,9 +76,11 @@ struct TrackTestState
  * @param animation timer animation
  * @param t current scene-clock time
  * @param dt elapsed scene-clock time since the previous step
+ * @param tick timer tick index
  * @param user_data timer test state
  */
-static void _timer_test_callback(DvzAnimation* animation, double t, double dt, void* user_data)
+static void
+_timer_test_callback(DvzAnimation* animation, double t, double dt, uint64_t tick, void* user_data)
 {
     (void)animation;
     TimerTestState* state = (TimerTestState*)user_data;
@@ -85,6 +89,8 @@ static void _timer_test_callback(DvzAnimation* animation, double t, double dt, v
     state->last_t = t;
     state->last_dt = dt;
     state->sum_dt += dt;
+    state->last_tick = tick;
+    state->tick_sum += tick;
 }
 
 
@@ -159,22 +165,28 @@ int test_scene_animation_offline_timer_every_frame(TstContext* suite, const TstC
     dvz_scene_set_fps(scene, 2.0);
 
     TimerTestState state = {0};
-    DvzAnimation* timer = dvz_anim_timer(scene, 0.0, _timer_test_callback, &state);
+    DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
+    timer_desc.callback = _timer_test_callback;
+    timer_desc.user_data = &state;
+    DvzAnimation* timer = dvz_anim_timer(scene, &timer_desc);
     ANN(timer);
     dvz_anim_start(timer, 0.0);
 
     _dvz_scene_animations_step(scene, 100);
     AT(state.calls == 1);
+    AT(state.last_tick == 0);
     AC(state.last_t, 0.0, EPS);
     AC(state.last_dt, 0.0, EPS);
 
     _dvz_scene_animations_step(scene, 200);
     AT(state.calls == 2);
+    AT(state.last_tick == 1);
     AC(state.last_t, 0.5, EPS);
     AC(state.last_dt, 0.5, EPS);
 
     _dvz_scene_animations_step(scene, 300);
     AT(state.calls == 3);
+    AT(state.last_tick == 2);
     AC(dvz_scene_clock_time(scene), 1.0, EPS);
     AC(dvz_scene_clock_dt(scene), 0.5, EPS);
 
@@ -202,21 +214,109 @@ int test_scene_animation_timer_period_and_stop(TstContext* suite, const TstCase*
     dvz_scene_set_fps(scene, 10.0);
 
     TimerTestState state = {0};
-    DvzAnimation* timer = dvz_anim_timer(scene, 0.2, _timer_test_callback, &state);
+    DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
+    timer_desc.mode = DVZ_TIMER_INTERVAL;
+    timer_desc.period_s = 0.2;
+    timer_desc.callback = _timer_test_callback;
+    timer_desc.user_data = &state;
+    DvzAnimation* timer = dvz_anim_timer(scene, &timer_desc);
     ANN(timer);
     dvz_anim_start(timer, 0.0);
 
     _dvz_scene_animations_step(scene, 0);
     AT(state.calls == 1);
+    AT(state.last_tick == 0);
     _dvz_scene_animations_step(scene, 0);
     AT(state.calls == 1);
     _dvz_scene_animations_step(scene, 0);
     AT(state.calls == 2);
+    AT(state.last_tick == 1);
 
     dvz_anim_stop(timer);
     _dvz_scene_animations_step(scene, 0);
     _dvz_scene_animations_step(scene, 0);
     AT(state.calls == 2);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure timer descriptors reject invalid ABI prologues and invalid intervals.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_scene_animation_timer_descriptor_abi(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzAnimTimerDesc desc = dvz_anim_timer_desc();
+    desc.callback = _timer_test_callback;
+    desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_anim_timer(scene, &desc) == NULL);
+
+    desc = dvz_anim_timer_desc();
+    desc.callback = _timer_test_callback;
+    desc.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_anim_timer(scene, &desc) == NULL);
+
+    desc = dvz_anim_timer_desc();
+    desc.mode = DVZ_TIMER_INTERVAL;
+    desc.callback = _timer_test_callback;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_anim_timer(scene, &desc) == NULL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Ensure catch-up timers emit bounded scheduled ticks after a long frame.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_scene_animation_timer_catch_up(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+
+    TimerTestState state = {0};
+    DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
+    timer_desc.mode = DVZ_TIMER_CATCH_UP;
+    timer_desc.period_s = 0.05;
+    timer_desc.max_catch_up = 2;
+    timer_desc.callback = _timer_test_callback;
+    timer_desc.user_data = &state;
+    DvzAnimation* timer = dvz_anim_timer(scene, &timer_desc);
+    ANN(timer);
+    dvz_anim_start(timer, 0.0);
+
+    _dvz_scene_animations_step(scene, 1000000000ULL);
+    AT(state.calls == 1);
+    AT(state.last_tick == 0);
+
+    _dvz_scene_animations_step(scene, 1100000000ULL);
+    AT(state.calls == 3);
+    AT(state.last_tick == 2);
+    AT(state.tick_sum == 3);
+
+    _dvz_scene_animations_step(scene, 1150000000ULL);
+    AT(state.calls == 4);
+    AT(state.last_tick == 3);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -459,14 +559,17 @@ int test_scene_animation_destroy_reuses_slot(TstContext* suite, const TstCase* i
     DvzScene* scene = dvz_scene();
     ANN(scene);
     TimerTestState state = {0};
+    DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
+    timer_desc.callback = _timer_test_callback;
+    timer_desc.user_data = &state;
 
-    DvzAnimation* first = dvz_anim_timer(scene, 0.0, _timer_test_callback, &state);
+    DvzAnimation* first = dvz_anim_timer(scene, &timer_desc);
     ANN(first);
     AT(scene->animation_count == 1);
     dvz_anim_destroy(first);
     AT(scene->animation_count == 0);
 
-    DvzAnimation* second = dvz_anim_timer(scene, 0.0, _timer_test_callback, &state);
+    DvzAnimation* second = dvz_anim_timer(scene, &timer_desc);
     ANN(second);
     AT(second == first);
     AT(scene->animation_count == 1);
@@ -493,7 +596,10 @@ int test_scene_animation_active_query(TstContext* suite, const TstCase* item)
     AT(!dvz_scene_has_active_animations(scene));
 
     TimerTestState state = {0};
-    DvzAnimation* timer = dvz_anim_timer(scene, 0.0, _timer_test_callback, &state);
+    DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
+    timer_desc.callback = _timer_test_callback;
+    timer_desc.user_data = &state;
+    DvzAnimation* timer = dvz_anim_timer(scene, &timer_desc);
     ANN(timer);
     AT(!dvz_scene_has_active_animations(scene));
 
@@ -816,6 +922,8 @@ int test_scene_animation(TstSuite* suite)
 
     TST_CASE(test_scene_animation_offline_timer_every_frame);
     TST_CASE(test_scene_animation_timer_period_and_stop);
+    TST_CASE(test_scene_animation_timer_descriptor_abi);
+    TST_CASE(test_scene_animation_timer_catch_up);
     TST_CASE(test_scene_animation_realtime_delta_clamp);
     TST_CASE(test_scene_animation_phase_descriptor_abi);
     TST_CASE(test_scene_animation_phase_linear);

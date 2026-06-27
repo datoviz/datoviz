@@ -24,23 +24,42 @@ then update only the state that changes.
 
 ## Minimal Retained Update
 
-For direct app code, a scene timer can update retained visual attributes from the scene clock. A
-period of `0.0` runs on every scene frame.
+For direct app code, a scene timer can update retained visual attributes from the scene clock. The
+default timer mode runs on every scene frame.
 
 ```c
-static void on_timer(DvzAnimation* animation, double t, double dt, void* user_data)
+static void
+on_timer(DvzAnimation* animation, double t, double dt, uint64_t tick, void* user_data)
 {
     (void)animation;
     (void)dt;
+    (void)tick;
 
     DvzVisual* visual = user_data;
     update_positions(t, positions, n);
     dvz_visual_set_data(visual, "position", positions, n);
 }
 
-DvzAnimation* timer = dvz_anim_timer(scene, 0.0, on_timer, visual);
+DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
+timer_desc.callback = on_timer;
+timer_desc.user_data = visual;
+DvzAnimation* timer = dvz_anim_timer(scene, &timer_desc);
 dvz_anim_start(timer, 0.0);
 ```
+
+Use `DVZ_TIMER_INTERVAL` for discrete events on a fixed cadence. The callback receives a stable
+integer `tick`, so examples can avoid deriving boolean or stepped state from floating-point time.
+
+```c
+DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
+timer_desc.mode = DVZ_TIMER_INTERVAL;
+timer_desc.period_s = 0.5;
+timer_desc.callback = on_timer;
+timer_desc.user_data = state;
+```
+
+Use `DVZ_TIMER_CATCH_UP` when missed interval ticks must be emitted after a long frame. Set
+`max_catch_up` to bound the number of callbacks emitted on one rendered frame.
 
 Run the app normally after registering the animation. The canonical portable example uses the same
 retained-update idea through the scenario runner frame callback so native and WebGPU routes share

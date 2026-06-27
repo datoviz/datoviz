@@ -384,9 +384,11 @@ static DvzScenarioPointerType _scenario_pointer_type(DvzPointerEventType type)
 
 
 
-static void _timer_callback(DvzAnimation* animation, double t, double dt, void* user_data)
+static void
+_timer_callback(DvzAnimation* animation, double t, double dt, uint64_t tick, void* user_data)
 {
     (void)animation;
+    (void)tick;
     RunnerFrameState* state = (RunnerFrameState*)user_data;
     if (state == NULL || state->spec == NULL || state->ctx == NULL)
         return;
@@ -840,7 +842,10 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         frame_state.spec = spec;
         frame_state.ctx = &ctx;
         frame_state.user = user;
-        timer = dvz_anim_timer(scene, 0.0, _timer_callback, &frame_state);
+        DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
+        timer_desc.callback = _timer_callback;
+        timer_desc.user_data = &frame_state;
+        timer = dvz_anim_timer(scene, &timer_desc);
         if (timer == NULL)
         {
             fprintf(stderr, "scenario_runner: dvz_anim_timer() failed\n");

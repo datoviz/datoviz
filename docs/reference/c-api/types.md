@@ -96,7 +96,13 @@ typedef struct DvzAnimPhaseDesc DvzAnimPhaseDesc;
 #### `DvzAnimTimerCallback`
 
 ```c
-typedef void (*)(DvzAnimation *, double, double, void *) DvzAnimTimerCallback;
+typedef void (*)(DvzAnimation *, double, double, uint64_t, void *) DvzAnimTimerCallback;
+```
+
+#### `DvzAnimTimerDesc`
+
+```c
+typedef struct DvzAnimTimerDesc DvzAnimTimerDesc;
 ```
 
 #### `DvzAnimation`
@@ -879,6 +885,12 @@ typedef enum DvzSceneBufferUsage DvzSceneBufferUsage;
 typedef enum DvzSceneClockMode DvzSceneClockMode;
 ```
 
+#### `DvzTimerMode`
+
+```c
+typedef enum DvzTimerMode DvzTimerMode;
+```
+
 #### `DvzSceneCompute`
 
 ```c
@@ -1649,6 +1661,14 @@ DVZ_CLOCK_REALTIME = 0,
 DVZ_CLOCK_OFFLINE = 1,
 ```
 
+#### `DvzTimerMode`
+
+```c
+DVZ_TIMER_EVERY_FRAME = 0,
+DVZ_TIMER_INTERVAL = 1,
+DVZ_TIMER_CATCH_UP = 2,
+```
+
 #### `DvzSceneComputeAccess`
 
 ```c
@@ -1861,6 +1881,20 @@ struct DvzAnimPhaseDesc {
     float wrap_min;
     float wrap_max;
     DvzAnimPhaseCallback callback;
+    void * user_data;
+};
+```
+
+#### `DvzAnimTimerDesc`
+
+```c
+struct DvzAnimTimerDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzTimerMode mode;
+    double period_s;
+    uint32_t max_catch_up;
+    DvzAnimTimerCallback callback;
     void * user_data;
 };
 ```

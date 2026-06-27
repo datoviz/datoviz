@@ -33,6 +33,7 @@
 
 #define DVZ_SCENE_DEFAULT_FPS 60.0
 #define DVZ_SCENE_MAX_REALTIME_DT 0.1
+#define DVZ_ANIM_TIMER_DESC_KNOWN_FLAGS 0u
 #define DVZ_ANIM_PHASE_DESC_KNOWN_FLAGS 0u
 #define DVZ_TRACK_DESC_KNOWN_FLAGS 0u
 #define DVZ_MOTION_DESC_KNOWN_FLAGS 0u
@@ -93,6 +94,22 @@ static bool _anim_phase_desc_validate(const DvzAnimPhaseDesc* desc)
     if (!DVZ_STRUCT_VALID(desc, DvzAnimPhaseDesc, DVZ_ANIM_PHASE_DESC_KNOWN_FLAGS))
     {
         log_error("invalid DvzAnimPhaseDesc ABI prologue");
+        return false;
+    }
+    return true;
+}
+
+
+static bool _anim_timer_desc_validate(const DvzAnimTimerDesc* desc)
+{
+    if (desc == NULL)
+    {
+        log_error("timer animation descriptor is required");
+        return false;
+    }
+    if (!DVZ_STRUCT_VALID(desc, DvzAnimTimerDesc, DVZ_ANIM_TIMER_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzAnimTimerDesc ABI prologue");
         return false;
     }
     return true;
@@ -379,22 +396,83 @@ static DvzAnimation* _animation_alloc(DvzScene* scene)
 
 
 /**
- * Return whether a timer animation should fire at the current scene time.
+ * Return the interval tick due at a scene-clock time.
  *
  * @param animation timer animation
  * @param t current scene time
- * @return true when the callback should be invoked
+ * @return due tick index
  */
-static bool _animation_timer_should_fire(const DvzAnimation* animation, double t)
+static uint64_t _animation_timer_due_tick(const DvzAnimation* animation, double t)
 {
     ANN(animation);
-    if (!animation->active || animation->scene == NULL || animation->type != DVZ_ANIMATION_TIMER)
-        return false;
-    if (t < animation->t_start)
-        return false;
+    if (animation->period_s <= 0.0 || t <= animation->t_start)
+        return 0;
+    return (uint64_t)floor((t - animation->t_start) / animation->period_s);
+}
+
+
+/**
+ * Fire one timer callback.
+ *
+ * @param animation timer animation
+ * @param t current scene time
+ * @param dt scene-clock delta
+ * @param tick timer tick index
+ */
+static void _animation_timer_fire(DvzAnimation* animation, double t, double dt, uint64_t tick)
+{
+    ANN(animation);
+    if (animation->timer_callback != NULL)
+        animation->timer_callback(animation, t, dt, tick, animation->user_data);
+}
+
+
+/**
+ * Advance a timer animation.
+ *
+ * @param animation timer animation
+ * @param t current scene time
+ * @param dt scene-clock delta
+ */
+static void _animation_timer_step(DvzAnimation* animation, double t, double dt)
+{
+    ANN(animation);
+    if (!animation->active || animation->scene == NULL || animation->type != DVZ_ANIMATION_TIMER ||
+        t < animation->t_start || animation->timer_callback == NULL)
+        return;
+
+    if (animation->timer_mode == DVZ_TIMER_EVERY_FRAME)
+    {
+        const uint64_t tick = animation->timer_tick++;
+        _animation_timer_fire(animation, t, dt, tick);
+        return;
+    }
+
     if (animation->period_s <= 0.0)
-        return true;
-    return (t - animation->last_fire_t) >= animation->period_s;
+        return;
+
+    if (animation->timer_mode == DVZ_TIMER_INTERVAL)
+    {
+        const uint64_t due_tick = _animation_timer_due_tick(animation, t);
+        if (due_tick < animation->timer_tick)
+            return;
+        _animation_timer_fire(animation, t, dt, due_tick);
+        animation->timer_tick = due_tick + 1;
+        animation->next_fire_t =
+            animation->t_start + (double)animation->timer_tick * animation->period_s;
+        return;
+    }
+
+    uint32_t emitted = 0;
+    const uint32_t max_catch_up = animation->max_catch_up > 0 ? animation->max_catch_up : 1u;
+    while (t + 1e-12 >= animation->next_fire_t && emitted < max_catch_up)
+    {
+        const uint64_t tick = animation->timer_tick++;
+        _animation_timer_fire(animation, t, dt, tick);
+        animation->next_fire_t =
+            animation->t_start + (double)animation->timer_tick * animation->period_s;
+        emitted++;
+    }
 }
 
 
@@ -630,6 +708,20 @@ static void _animation_camera_motion_step(DvzAnimation* animation, double t, dou
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Return a default timer animation descriptor.
+ */
+DvzAnimTimerDesc dvz_anim_timer_desc(void)
+{
+    return (DvzAnimTimerDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzAnimTimerDesc),
+        .mode = DVZ_TIMER_EVERY_FRAME,
+        .max_catch_up = 4,
+    };
+}
+
+
 
 /**
  * Return a default phase animation descriptor.
@@ -1109,33 +1201,47 @@ void dvz_track_destroy(DvzTrack* track)
  * Create a timer animation driven by the scene clock.
  *
  * @param scene owning scene
- * @param period_s callback period in seconds, or 0 for every scene frame
- * @param callback timer callback
- * @param user_data opaque pointer forwarded to the callback
+ * @param desc timer animation descriptor
  * @return the animation handle, or NULL on failure
  */
-DvzAnimation* dvz_anim_timer(
-    DvzScene* scene, double period_s, DvzAnimTimerCallback callback, void* user_data)
+DvzAnimation* dvz_anim_timer(DvzScene* scene, const DvzAnimTimerDesc* desc)
 {
     ANN(scene);
-    if (callback == NULL)
+    if (!_anim_timer_desc_validate(desc))
+        return NULL;
+    if (desc->callback == NULL)
     {
         log_error("timer animation callback is required");
         return NULL;
     }
-    if (period_s < 0.0)
+    if (desc->mode != DVZ_TIMER_EVERY_FRAME && desc->mode != DVZ_TIMER_INTERVAL &&
+        desc->mode != DVZ_TIMER_CATCH_UP)
     {
-        log_error("timer animation period must be non-negative");
+        log_error("timer animation mode is invalid");
+        return NULL;
+    }
+    if (desc->mode == DVZ_TIMER_EVERY_FRAME)
+    {
+        if (!isfinite(desc->period_s) || desc->period_s < 0.0)
+        {
+            log_error("every-frame timer animation period must be non-negative");
+            return NULL;
+        }
+    }
+    else if (!isfinite(desc->period_s) || desc->period_s <= 0.0)
+    {
+        log_error("interval timer animation period must be positive");
         return NULL;
     }
     DvzAnimation* animation = _animation_alloc(scene);
     if (animation == NULL)
         return NULL;
     animation->type = DVZ_ANIMATION_TIMER;
-    animation->period_s = period_s;
-    animation->timer_callback = callback;
-    animation->user_data = user_data;
-    animation->last_fire_t = -period_s;
+    animation->timer_mode = desc->mode;
+    animation->period_s = desc->period_s;
+    animation->max_catch_up = desc->max_catch_up;
+    animation->timer_callback = desc->callback;
+    animation->user_data = desc->user_data;
     return animation;
 }
 
@@ -1363,7 +1469,8 @@ void dvz_anim_start(DvzAnimation* animation, double t_start)
         start = animation->scene->clock.t;
     animation->t_start = start;
     animation->local_t = 0.0;
-    animation->last_fire_t = animation->period_s > 0.0 ? start - animation->period_s : start;
+    animation->timer_tick = 0;
+    animation->next_fire_t = start;
     animation->active = true;
 }
 
@@ -1427,10 +1534,7 @@ void _dvz_scene_animations_step(DvzScene* scene, uint64_t wall_time_ns)
         switch (animation->type)
         {
         case DVZ_ANIMATION_TIMER:
-            if (!_animation_timer_should_fire(animation, t))
-                continue;
-            animation->last_fire_t = t;
-            animation->timer_callback(animation, t, dt, animation->user_data);
+            _animation_timer_step(animation, t, dt);
             break;
 
         case DVZ_ANIMATION_PHASE:
