@@ -1315,13 +1315,13 @@ int test_controller_link_panzoom_two_way_target_drives_source(
 
 
 /**
- * Ensure a wheel on the nominal target of a split X/Y panzoom link drives the linked X extent only.
+ * Ensure pointer gestures on the nominal target of a split X/Y link drive the linked X extent.
  *
  * @param suite the test suite
  * @param item the test item
  * @return 0 on success
  */
-int test_controller_link_panzoom_wheel_target_drives_linked_x_only(
+int test_controller_link_panzoom_target_pointer_drives_linked_x_only(
     TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -1389,6 +1389,26 @@ int test_controller_link_panzoom_wheel_target_drives_linked_x_only(
     AT(bottom_x_pz->zoom[0] > 1.0f);
     AC(top_x_pz->zoom[0], bottom_x_pz->zoom[0], 1e-6f);
     AC(top_x_pz->pan[0], bottom_x_pz->pan[0], 1e-6f);
+    AC(bottom_y_pz->zoom[1], 1.0f, 1e-6f);
+    AC(bottom_y_pz->pan[1], 0.0f, 1e-6f);
+    AT(!bottom_x_pz->interacting);
+
+    DvzInputEvent reset = {
+        .type = DVZ_INPUT_EVENT_POINTER,
+        .content.pointer =
+            {
+                .type = DVZ_POINTER_EVENT_DOUBLE_CLICK,
+                .pos = {400.0f, 300.0f},
+                .window_size = {800.0f, 400.0f},
+                .content_scale = 1.0f,
+            },
+    };
+    dvz_input_emit_event(router, &reset);
+
+    AC(bottom_x_pz->zoom[0], 1.0f, 1e-6f);
+    AC(bottom_x_pz->pan[0], 0.0f, 1e-6f);
+    AC(top_x_pz->zoom[0], 1.0f, 1e-6f);
+    AC(top_x_pz->pan[0], 0.0f, 1e-6f);
     AC(bottom_y_pz->zoom[1], 1.0f, 1e-6f);
     AC(bottom_y_pz->pan[1], 0.0f, 1e-6f);
     AT(!bottom_x_pz->interacting);
@@ -2409,7 +2429,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_controller_link_panzoom_extent_x_equal_aspect_panels);
     TST_CASE(test_controller_link_panzoom_extent_x_bidirectional_does_not_accumulate_drag);
     TST_CASE(test_controller_link_panzoom_two_way_target_drives_source);
-    TST_CASE(test_controller_link_panzoom_wheel_target_drives_linked_x_only);
+    TST_CASE(test_controller_link_panzoom_target_pointer_drives_linked_x_only);
     TST_CASE(test_controller_link_validation);
     TST_CASE(test_controller_link_destroy_stops_arcball_propagation);
     TST_CASE(test_controller_destroy_detaches_panels_links_and_reuses_slot);

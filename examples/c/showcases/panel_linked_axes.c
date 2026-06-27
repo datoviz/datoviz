@@ -350,8 +350,8 @@ static bool _add_axes(DvzPanel* panel, const char* x_label, const char* y_label)
     style.tick_size_px = 11.0f;
     style.label_size_px = 14.0f;
     style.tick_gap_px = 7.0f;
-    style.x_label_gap_px = 32.0f;
-    style.y_label_gap_px = 42.0f;
+    style.x_label_gap_px = 0.0f;
+    style.y_label_gap_px = 14.0f;
     style.minor_tick_alpha = 210;
     style.grid_alpha = 145;
     if (!example_graphite_cyan_apply_axis_style(x_axis, false, &style) ||

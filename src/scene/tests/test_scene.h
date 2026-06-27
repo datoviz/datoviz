@@ -199,7 +199,7 @@ int test_panzoom_panel_input_uses_event_window_size_without_resize(
 
 int test_split_panzoom_x_y_bindings(TstContext* suite, const TstCase* item);
 
-int test_controller_link_panzoom_wheel_target_drives_linked_x_only(
+int test_controller_link_panzoom_target_pointer_drives_linked_x_only(
     TstContext* suite, const TstCase* item);
 
 int test_orbit_camera_changes_view_not_model(TstContext* suite, const TstCase* item);

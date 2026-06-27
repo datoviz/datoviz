@@ -970,13 +970,17 @@ static bool _scene_panel_dispatch_pointer_controller(
         if ((dims & DVZ_DIM_MASK_Y) == 0)
             panzoom->flags |= DVZ_PANZOOM_FLAGS_FIXED_Y;
         dvz_panzoom_viewport(panzoom, x, y, w, h);
-        if (ev->type == DVZ_POINTER_EVENT_WHEEL)
+        const bool transient_interaction =
+            ev->type == DVZ_POINTER_EVENT_WHEEL || ev->type == DVZ_POINTER_EVENT_DOUBLE_CLICK;
+        if (transient_interaction)
         {
             old_panzoom_interacting = panzoom->interacting;
             panzoom->interacting = true;
             transient_panzoom_interaction = panzoom;
         }
         consumed = dvz_panzoom_pointer(panzoom, ev);
+        if (transient_interaction && consumed)
+            panzoom->interacting = true;
         glm_vec2_copy(old_origin, panzoom->viewport_origin);
         glm_vec2_copy(old_size, panzoom->viewport_size);
         panzoom->has_viewport = old_has_viewport;
