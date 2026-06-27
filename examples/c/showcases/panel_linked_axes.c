@@ -381,19 +381,13 @@ static bool _add_bands(DvzScene* scene, DvzPanel* panel, double ymin, double yma
     ANN(panel);
 
     vec3 data_positions[BAND_VERTEX_COUNT] = {{0}};
-    vec3 visual_positions[BAND_VERTEX_COUNT] = {{0}};
     DvzColor colors[BAND_VERTEX_COUNT] = {{0}};
     _fill_bands(ymin, ymax, data_positions, colors);
-
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data_positions, (float*)visual_positions, BAND_VERTEX_COUNT);
-    if (rc != 0)
-        return false;
 
     DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     if (visual == NULL)
         return false;
-    if (dvz_visual_set_data(visual, "position", visual_positions, BAND_VERTEX_COUNT) != 0)
+    if (dvz_visual_set_data(visual, "position", data_positions, BAND_VERTEX_COUNT) != 0)
         return false;
     if (dvz_visual_set_data(visual, "color", colors, BAND_VERTEX_COUNT) != 0)
         return false;
@@ -422,27 +416,16 @@ static bool _add_cursor_lines(DvzScene* scene, DvzPanel* panel, double ymin, dou
 
     vec3 starts[CURSOR_COUNT] = {{0}};
     vec3 ends[CURSOR_COUNT] = {{0}};
-    vec3 visual_starts[CURSOR_COUNT] = {{0}};
-    vec3 visual_ends[CURSOR_COUNT] = {{0}};
     DvzColor colors[CURSOR_COUNT] = {{0}};
     float widths[CURSOR_COUNT] = {0};
     _fill_cursor_lines(ymin, ymax, starts, ends, colors, widths);
-
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)starts, (float*)visual_starts, CURSOR_COUNT);
-    if (rc != 0)
-        return false;
-    rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)ends, (float*)visual_ends, CURSOR_COUNT);
-    if (rc != 0)
-        return false;
 
     DvzVisual* visual = dvz_segment(scene, 0);
     if (visual == NULL)
         return false;
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position_start", .data = visual_starts, .item_count = CURSOR_COUNT},
-        {.attr_name = "position_end", .data = visual_ends, .item_count = CURSOR_COUNT},
+        {.attr_name = "position_start", .data = starts, .item_count = CURSOR_COUNT},
+        {.attr_name = "position_end", .data = ends, .item_count = CURSOR_COUNT},
         {.attr_name = "color", .data = colors, .item_count = CURSOR_COUNT},
         {.attr_name = "stroke_width_px", .data = widths, .item_count = CURSOR_COUNT},
     };
@@ -478,20 +461,12 @@ static bool _add_path(
     ANN(colors);
     ANN(widths);
 
-    vec3 visual_positions[PHASE_COUNT] = {{0}};
-    if (count > PHASE_COUNT)
-        return false;
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)positions, (float*)visual_positions, count);
-    if (rc != 0)
-        return false;
-
     DvzVisual* visual = dvz_path(scene, 0);
     if (visual == NULL)
         return false;
 
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = visual_positions, .item_count = count},
+        {.attr_name = "position", .data = positions, .item_count = count},
         {.attr_name = "color", .data = colors, .item_count = count},
         {.attr_name = "stroke_width_px", .data = widths, .item_count = count},
     };
@@ -543,28 +518,17 @@ static bool _add_event_panel(DvzScene* scene, DvzPanel* panel)
 
     vec3 starts[EVENT_COUNT] = {{0}};
     vec3 ends[EVENT_COUNT] = {{0}};
-    vec3 visual_starts[EVENT_COUNT] = {{0}};
-    vec3 visual_ends[EVENT_COUNT] = {{0}};
     DvzColor colors[EVENT_COUNT] = {{0}};
     float widths[EVENT_COUNT] = {0};
     _fill_events(starts, ends, colors, widths, EVENT_COUNT);
-
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)starts, (float*)visual_starts, EVENT_COUNT);
-    if (rc != 0)
-        return false;
-    rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)ends, (float*)visual_ends, EVENT_COUNT);
-    if (rc != 0)
-        return false;
 
     DvzVisual* visual = dvz_segment(scene, 0);
     if (visual == NULL)
         return false;
 
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position_start", .data = visual_starts, .item_count = EVENT_COUNT},
-        {.attr_name = "position_end", .data = visual_ends, .item_count = EVENT_COUNT},
+        {.attr_name = "position_start", .data = starts, .item_count = EVENT_COUNT},
+        {.attr_name = "position_end", .data = ends, .item_count = EVENT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = EVENT_COUNT},
         {.attr_name = "stroke_width_px", .data = widths, .item_count = EVENT_COUNT},
     };
@@ -592,22 +556,16 @@ static bool _add_residual_panel(DvzScene* scene, DvzPanel* panel)
     ANN(panel);
 
     vec3 data_positions[POINT_COUNT] = {{0}};
-    vec3 visual_positions[POINT_COUNT] = {{0}};
     DvzColor colors[POINT_COUNT] = {{0}};
     float diameters[POINT_COUNT] = {0};
     _fill_residuals(data_positions, colors, diameters, POINT_COUNT);
-
-    int rc = dvz_panel_data_to_visual_positions(
-        panel, (const float*)data_positions, (float*)visual_positions, POINT_COUNT);
-    if (rc != 0)
-        return false;
 
     DvzVisual* visual = dvz_point(scene, 0);
     if (visual == NULL)
         return false;
 
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = visual_positions, .item_count = POINT_COUNT},
+        {.attr_name = "position", .data = data_positions, .item_count = POINT_COUNT},
         {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
         {.attr_name = "diameter_px", .data = diameters, .item_count = POINT_COUNT},
     };
