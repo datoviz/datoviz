@@ -10,7 +10,7 @@
 <span>Visual Visibility</span>
 </nav>
 
-retained visual visibility toggled on a runner frame.
+retained visual visibility toggled by a scene timer.
 
 ## Preview
 

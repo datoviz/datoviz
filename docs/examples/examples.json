@@ -1246,7 +1246,7 @@
       "source": "examples/c/features/visibility.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visibility.c",
       "page": "gallery/features/feature_visibility.md",
-      "summary": "retained visual visibility toggled on a runner frame.",
+      "summary": "retained visual visibility toggled by a scene timer.",
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/visibility",
       "smoke_command": "./build/examples/c/features/visibility --png",

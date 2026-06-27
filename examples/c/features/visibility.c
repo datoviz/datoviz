@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* visibility - retained visual visibility toggled on a runner frame.
+/* visibility - retained visual visibility toggled by a scene timer.
  *
  * Scenario: feature.visibility
  * Style: features, graphite_cyan, 1600x1200 capture target
@@ -48,6 +48,7 @@
 typedef struct VisibilityState
 {
     DvzVisual* hidden_point;
+    DvzAnimation* timer;
     bool visible;
 } VisibilityState;
 
@@ -120,6 +121,36 @@ static bool _add_point_visual(
 /*************************************************************************************************/
 
 /**
+ * Toggle the middle point on a fixed timer cadence.
+ *
+ * @param animation timer animation
+ * @param t current scene-clock time
+ * @param dt elapsed scene-clock time
+ * @param tick timer tick index
+ * @param user_data scenario state
+ */
+static void _visibility_timer(
+    DvzAnimation* animation, double t, double dt, uint64_t tick, void* user_data)
+{
+    (void)animation;
+    (void)t;
+    (void)dt;
+
+    VisibilityState* state = (VisibilityState*)user_data;
+    if (state == NULL || state->hidden_point == NULL)
+        return;
+
+    const bool visible = (tick % 2u) == 0u;
+    if (visible != state->visible)
+    {
+        dvz_visual_set_visible(state->hidden_point, visible);
+        state->visible = visible;
+    }
+}
+
+
+
+/**
  * Initialize the retained visual visibility scenario.
  *
  * @param ctx scenario context
@@ -161,34 +192,22 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY), true, NULL))
         goto error;
 
+    DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
+    timer_desc.mode = DVZ_TIMER_INTERVAL;
+    timer_desc.period_s = 0.5;
+    timer_desc.callback = _visibility_timer;
+    timer_desc.user_data = state;
+    state->timer = dvz_anim_timer(ctx->scene, &timer_desc);
+    if (state->timer == NULL)
+        goto error;
+    dvz_anim_start(state->timer, 0.0);
+
     *out_user = state;
     return true;
 
 error:
     dvz_free(state);
     return false;
-}
-
-
-
-/**
- * Toggle the middle point at 2 Hz.
- *
- * @param ctx scenario context
- * @param user scenario state
- */
-static void _scenario_frame(DvzScenarioContext* ctx, void* user)
-{
-    if (ctx == NULL || user == NULL)
-        return;
-
-    VisibilityState* state = (VisibilityState*)user;
-    const bool visible = ((uint32_t)(ctx->time * 2.0)) % 2u == 0u;
-    if (visible != state->visible)
-    {
-        dvz_visual_set_visible(state->hidden_point, visible);
-        state->visible = visible;
-    }
 }
 
 
@@ -202,7 +221,10 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
 static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 {
     (void)ctx;
-    dvz_free(user);
+    VisibilityState* state = (VisibilityState*)user;
+    if (state != NULL)
+        dvz_anim_destroy(state->timer);
+    dvz_free(state);
 }
 
 
@@ -220,8 +242,8 @@ DvzScenarioSpec dvz_example_visibility_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
+        .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_FRAME_CALLBACKS,
         .init = _scenario_init,
-        .frame = _scenario_frame,
         .destroy = _scenario_destroy,
     };
 }

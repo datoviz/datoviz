@@ -140,7 +140,7 @@ retained visual-local affine transform on point visuals.
 
 `supported` `features`
 
-retained visual visibility toggled on a runner frame.
+retained visual visibility toggled by a scene timer.
 
 </div>
 
