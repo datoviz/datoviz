@@ -48,6 +48,7 @@
 #define COLORBAR_TICK_LENGTH_PX 6.0f
 #define COLORBAR_LABEL_GAP_PX 6.0f
 #define COLORBAR_TITLE_GAP_PX 8.0f
+#define COLORBAR_OUTER_MARGIN_PX 32.0f
 #define COLORBAR_TICK_WIDTH_PX 1.0f
 #define COLORBAR_TICK_TEXT_SIZE_PX 12.0f
 #define COLORBAR_TITLE_TEXT_SIZE_PX 16.0f
@@ -317,6 +318,7 @@ void _scene_panel_refresh_colorbar_reserve(DvzPanel* panel)
     if (panel == NULL)
         return;
     DvzPanelReserve reserve = {0};
+    DvzPanelReserve outer_margin = {0};
     for (uint32_t i = 0; i < panel->colorbar_count; i++)
     {
         DvzColorbar* colorbar = panel->colorbars[i];
@@ -327,22 +329,30 @@ void _scene_panel_refresh_colorbar_reserve(DvzPanel* panel)
             _colorbar_anchor_supported(colorbar->anchor))
         {
             float reserve_px = _colorbar_effective_reserve_px(colorbar);
+            applied.left_px = COLORBAR_OUTER_MARGIN_PX;
+            applied.right_px = COLORBAR_OUTER_MARGIN_PX;
+            applied.top_px = COLORBAR_OUTER_MARGIN_PX;
+            applied.bottom_px = COLORBAR_OUTER_MARGIN_PX;
+            outer_margin.left_px = fmaxf(outer_margin.left_px, COLORBAR_OUTER_MARGIN_PX);
+            outer_margin.right_px = fmaxf(outer_margin.right_px, COLORBAR_OUTER_MARGIN_PX);
+            outer_margin.top_px = fmaxf(outer_margin.top_px, COLORBAR_OUTER_MARGIN_PX);
+            outer_margin.bottom_px = fmaxf(outer_margin.bottom_px, COLORBAR_OUTER_MARGIN_PX);
             switch (colorbar->anchor)
             {
             case DVZ_SCENE_ANCHOR_PANEL_LEFT:
-                applied.left_px = reserve_px;
+                applied.left_px += reserve_px;
                 reserve.left_px += reserve_px;
                 break;
             case DVZ_SCENE_ANCHOR_PANEL_RIGHT:
-                applied.right_px = reserve_px;
+                applied.right_px += reserve_px;
                 reserve.right_px += reserve_px;
                 break;
             case DVZ_SCENE_ANCHOR_PANEL_TOP:
-                applied.top_px = reserve_px;
+                applied.top_px += reserve_px;
                 reserve.top_px += reserve_px;
                 break;
             case DVZ_SCENE_ANCHOR_PANEL_BOTTOM:
-                applied.bottom_px = reserve_px;
+                applied.bottom_px += reserve_px;
                 reserve.bottom_px += reserve_px;
                 break;
             default:
@@ -351,6 +361,10 @@ void _scene_panel_refresh_colorbar_reserve(DvzPanel* panel)
         }
         colorbar->auto_reserve = applied;
     }
+    reserve.left_px += outer_margin.left_px;
+    reserve.right_px += outer_margin.right_px;
+    reserve.top_px += outer_margin.top_px;
+    reserve.bottom_px += outer_margin.bottom_px;
     _scene_panel_set_colorbar_reserve(panel, &reserve);
 }
 
