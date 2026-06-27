@@ -22,9 +22,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
 
-#include "datoviz/geom.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
@@ -38,17 +36,6 @@
 
 #define WIDTH  1600u
 #define HEIGHT 1200u
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-typedef struct ReferenceGridState
-{
-    DvzGeometry* geometry;
-} ReferenceGridState;
 
 
 
@@ -69,12 +56,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (out_user != NULL)
         *out_user = NULL;
-
-    ReferenceGridState* state = (ReferenceGridState*)calloc(1, sizeof(*state));
-    if (state == NULL)
-        return false;
-    if (out_user != NULL)
-        *out_user = state;
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
@@ -107,26 +88,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 }
 
 
-
-/**
- * Destroy the reference-grid feature scenario state.
- *
- * @param ctx scenario context
- * @param user scenario state
- */
-static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
-{
-    (void)ctx;
-    ReferenceGridState* state = (ReferenceGridState*)user;
-    if (state == NULL)
-        return;
-    if (state->geometry != NULL)
-        dvz_geometry_destroy(state->geometry);
-    free(state);
-}
-
-
-
 /**
  * Return the reference-grid scenario specification.
  *
@@ -141,7 +102,6 @@ static DvzScenarioSpec _reference_grid_scenario(void)
         .height = HEIGHT,
         .fps = 60.0,
         .init = _scenario_init,
-        .destroy = _scenario_destroy,
     };
 }
 
