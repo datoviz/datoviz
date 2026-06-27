@@ -306,12 +306,12 @@ DvzPanzoom* dvz_scenario_panzoom(
  *
  * @param panel target panel
  * @param event portable pointer event in figure layout coordinates
- * @param out_x output panel-local x coordinate
- * @param out_y output panel-local y coordinate
- * @return true when the pointer is inside the panel rectangle
+ * @param out_x output panel-local logical x coordinate, origin at the outer panel rectangle
+ * @param out_y output panel-local logical y coordinate, origin at the outer panel rectangle
+ * @return true when the pointer is inside the outer panel rectangle
  */
 bool dvz_scenario_panel_pointer_position(
-    const DvzPanel* panel, const DvzScenarioPointerEvent* event, double* out_x, double* out_y);
+    DvzPanel* panel, const DvzScenarioPointerEvent* event, double* out_x, double* out_y);
 
 /**
  * Queue one panel query in panel-local coordinates.

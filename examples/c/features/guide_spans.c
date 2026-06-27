@@ -142,48 +142,6 @@ static bool _add_axes(DvzPanel* panel)
 }
 
 
-/**
- * Convert one panel-local pointer position to the panel data domain.
- *
- * @param panel target panel
- * @param panel_x panel-local X coordinate in logical pixels
- * @param panel_y panel-local Y coordinate in logical pixels
- * @param out_x output data X
- * @param out_y output data Y
- * @return whether the position is inside the plot rectangle
- */
-static bool
-_panel_pointer_to_data(DvzPanel* panel, double panel_x, double panel_y, double* out_x, double* out_y)
-{
-    if (panel == NULL || out_x == NULL || out_y == NULL)
-        return false;
-
-    DvzRect plot = {0};
-    if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
-        return false;
-
-    double x0 = 0.0;
-    double x1 = 0.0;
-    double y0 = 0.0;
-    double y1 = 0.0;
-    if (!dvz_panel_visible_domain(panel, DVZ_DIM_X, &x0, &x1) ||
-        !dvz_panel_visible_domain(panel, DVZ_DIM_Y, &y0, &y1))
-    {
-        return false;
-    }
-
-    const double tx = (panel_x - (double)plot.x) / (double)plot.width;
-    const double ty = (panel_y - (double)plot.y) / (double)plot.height;
-    if (tx < 0.0 || tx > 1.0 || ty < 0.0 || ty > 1.0)
-        return false;
-
-    *out_x = x0 + tx * (x1 - x0);
-    *out_y = y1 - ty * (y1 - y0);
-    return true;
-}
-
-
-
 /*************************************************************************************************/
 /*  Scenario callbacks                                                                           */
 /*************************************************************************************************/
@@ -271,19 +229,18 @@ static void _scenario_event(DvzScenarioContext* ctx, const DvzScenarioEvent* eve
         return;
 
     GuideSpansState* state = (GuideSpansState*)user;
-    double panel_x = 0.0;
-    double panel_y = 0.0;
-    double data_x = 0.0;
-    double data_y = 0.0;
-    if (!dvz_scenario_panel_pointer_position(state->panel, pointer, &panel_x, &panel_y))
+    double data[2] = {0};
+    if (!dvz_panel_position_to_data(
+            state->panel, DVZ_PANEL_COORD_FIGURE_PX,
+            (const double[2]){pointer->x, pointer->y}, data))
+    {
         return;
-    if (!_panel_pointer_to_data(state->panel, panel_x, panel_y, &data_x, &data_y))
-        return;
+    }
 
     const double half_x = 0.65;
     const double half_y = 0.22;
-    (void)dvz_guide_span_set_range(state->vspan, data_x - half_x, data_x + half_x);
-    (void)dvz_guide_span_set_range(state->hspan, data_y - half_y, data_y + half_y);
+    (void)dvz_guide_span_set_range(state->vspan, data[0] - half_x, data[0] + half_x);
+    (void)dvz_guide_span_set_range(state->hspan, data[1] - half_y, data[1] + half_y);
 }
 
 

@@ -263,63 +263,6 @@ static bool _add_probe_image(
 
 
 /**
- * Convert a panel-local probe position to the normalized image data domain.
- *
- * @param panel target panel
- * @param panel_x panel-local X coordinate in logical pixels
- * @param panel_y panel-local Y coordinate in logical pixels
- * @param out_x output normalized data X
- * @param out_y output normalized data Y
- * @return true when the position is inside the plot rectangle
- */
-static bool
-_probe_panel_to_data(DvzPanel* panel, double panel_x, double panel_y, float* out_x, float* out_y)
-{
-    if (panel == NULL || out_x == NULL || out_y == NULL)
-        return false;
-
-    DvzRect plot = {0};
-    if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
-        return false;
-
-    const double x = (panel_x - (double)plot.x) / (double)plot.width;
-    const double y = 1.0 - (panel_y - (double)plot.y) / (double)plot.height;
-    if (x < 0.0 || x > 1.0 || y < 0.0 || y > 1.0)
-        return false;
-
-    *out_x = (float)x;
-    *out_y = (float)y;
-    return true;
-}
-
-
-
-/**
- * Convert a normalized image data position to a panel-local probe position.
- *
- * @param panel target panel
- * @param x normalized data X
- * @param y normalized data Y
- * @param out_panel output panel-local logical pixels
- * @return true when the position was converted
- */
-static bool _probe_data_to_panel(DvzPanel* panel, float x, float y, float out_panel[2])
-{
-    if (panel == NULL || out_panel == NULL)
-        return false;
-
-    DvzRect plot = {0};
-    if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
-        return false;
-
-    out_panel[0] = plot.x + x * plot.width;
-    out_panel[1] = plot.y + (1.0f - y) * plot.height;
-    return true;
-}
-
-
-
-/**
  * Fill data-space crosshair and ring segments around a probe point.
  *
  * @param panel target panel
@@ -458,11 +401,14 @@ static void _update_probe_marker_from_cursor(ImageProbeState* state)
     if (state == NULL || !state->cursor_valid)
         return;
 
-    float x = 0.0f;
-    float y = 0.0f;
-    if (!_probe_panel_to_data(state->panel, state->cursor_x, state->cursor_y, &x, &y))
+    double data[2] = {0};
+    if (!dvz_panel_position_to_data(
+            state->panel, DVZ_PANEL_COORD_PANEL_PX,
+            (const double[2]){state->cursor_x, state->cursor_y}, data))
+    {
         return;
-    _update_probe_marker(state, x, y);
+    }
+    _update_probe_marker(state, (float)data[0], (float)data[1]);
 }
 
 
@@ -604,14 +550,13 @@ _query_probe_value(ImageProbeState* state, const DvzQueryResult* query, double* 
     if (query->status != DVZ_QUERY_STATUS_HIT || !query->hit)
         return false;
 
-    float x = 0.0f;
-    float y = 0.0f;
-    if (!_probe_panel_to_data(
-            state->panel, query->panel_position[0], query->panel_position[1], &x, &y))
+    double data[2] = {0};
+    if (!dvz_panel_position_to_data(
+            state->panel, DVZ_PANEL_COORD_PANEL_PX, query->panel_position, data))
     {
         return false;
     }
-    *out_value = (double)_sample_field(x, y);
+    *out_value = (double)_sample_field((float)data[0], (float)data[1]);
     return true;
 }
 
@@ -704,8 +649,18 @@ static void _image_probe_pointer(const DvzScenarioPointerEvent* event, void* use
     if (event->type != DVZ_SCENARIO_POINTER_MOVE && event->type != DVZ_SCENARIO_POINTER_CLICK)
         return;
 
+    double data[2] = {0};
+    double panel_px[2] = {0};
     state->cursor_valid =
-        dvz_scenario_panel_pointer_position(state->panel, event, &state->cursor_x, &state->cursor_y);
+        dvz_panel_position_to_data(
+            state->panel, DVZ_PANEL_COORD_FIGURE_PX,
+            (const double[2]){event->x, event->y}, data) &&
+        dvz_panel_data_to_position(state->panel, DVZ_PANEL_COORD_PANEL_PX, data, panel_px);
+    if (state->cursor_valid)
+    {
+        state->cursor_x = panel_px[0];
+        state->cursor_y = panel_px[1];
+    }
     _update_probe_marker_from_cursor(state);
 }
 
@@ -826,8 +781,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!ok)
         return false;
 
-    float initial_probe_px[2] = {(float)WIDTH * PROBE_X, (float)HEIGHT * (1.0f - PROBE_Y)};
-    (void)_probe_data_to_panel(panel, PROBE_X, PROBE_Y, initial_probe_px);
+    double initial_probe_px[2] = {0};
+    if (!dvz_panel_data_to_position(
+            panel, DVZ_PANEL_COORD_PANEL_PX, (const double[2]){PROBE_X, PROBE_Y},
+            initial_probe_px))
+    {
+        return false;
+    }
 
     state->scene = ctx->scene;
     state->panel = panel;

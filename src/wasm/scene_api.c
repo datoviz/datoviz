@@ -350,22 +350,20 @@ DvzPanzoom* dvz_scenario_panzoom(
 
 
 bool dvz_scenario_panel_pointer_position(
-    const DvzPanel* panel, const DvzScenarioPointerEvent* event, double* out_x, double* out_y)
+    DvzPanel* panel, const DvzScenarioPointerEvent* event, double* out_x, double* out_y)
 {
     if (panel == NULL || event == NULL || out_x == NULL || out_y == NULL)
         return false;
 
-    DvzRect rect = {0};
-    if (!dvz_panel_inner_rect_px(panel, &rect) || rect.width <= 0.0f || rect.height <= 0.0f)
+    double out[2] = {0};
+    if (!dvz_panel_transform_point(
+            panel, DVZ_PANEL_COORD_FIGURE_PX, DVZ_PANEL_COORD_PANEL_PX,
+            (const double[2]){event->x, event->y}, out))
+    {
         return false;
-
-    float x = event->x - rect.x;
-    float y = event->y - rect.y;
-    if (x < 0.0f || x >= rect.width || y < 0.0f || y >= rect.height)
-        return false;
-
-    *out_x = (double)x;
-    *out_y = (double)y;
+    }
+    *out_x = out[0];
+    *out_y = out[1];
     return true;
 }
 

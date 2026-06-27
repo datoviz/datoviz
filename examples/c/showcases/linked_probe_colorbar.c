@@ -314,113 +314,6 @@ static bool _add_image(
 
 
 /**
- * Convert a figure-space cursor position to normalized panel data coordinates.
- *
- * @param panel target panel
- * @param figure_x cursor X in figure logical pixels
- * @param figure_y cursor Y in figure logical pixels
- * @param out_x output normalized data X
- * @param out_y output normalized data Y
- * @return true when the cursor is inside the panel plot rectangle
- */
-static bool
-_figure_to_data(DvzPanel* panel, double figure_x, double figure_y, float* out_x, float* out_y)
-{
-    if (panel == NULL || out_x == NULL || out_y == NULL)
-        return false;
-
-    DvzRect plot = {0};
-    if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
-        return false;
-
-    const double tx = (figure_x - (double)plot.x) / (double)plot.width;
-    const double ty = 1.0 - (figure_y - (double)plot.y) / (double)plot.height;
-    if (tx < 0.0 || tx > 1.0 || ty < 0.0 || ty > 1.0)
-        return false;
-
-    double x0 = 0.0;
-    double x1 = 0.0;
-    double y0 = 0.0;
-    double y1 = 0.0;
-    if (!dvz_panel_visible_domain(panel, DVZ_DIM_X, &x0, &x1) ||
-        !dvz_panel_visible_domain(panel, DVZ_DIM_Y, &y0, &y1))
-    {
-        return false;
-    }
-
-    const double x = x0 + tx * (x1 - x0);
-    const double y = y0 + ty * (y1 - y0);
-    if (x < 0.0 || x > 1.0 || y < 0.0 || y > 1.0)
-        return false;
-
-    *out_x = (float)x;
-    *out_y = (float)y;
-    return true;
-}
-
-
-
-/**
- * Convert normalized data coordinates to figure-space panel coordinates.
- *
- * @param panel target panel
- * @param x normalized data X
- * @param y normalized data Y
- * @param out output figure logical pixel position
- * @return true when conversion succeeded
- */
-static bool _data_to_figure(DvzPanel* panel, float x, float y, float out[2])
-{
-    if (panel == NULL || out == NULL)
-        return false;
-
-    DvzRect plot = {0};
-    if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
-        return false;
-
-    double x0 = 0.0;
-    double x1 = 0.0;
-    double y0 = 0.0;
-    double y1 = 0.0;
-    if (!dvz_panel_visible_domain(panel, DVZ_DIM_X, &x0, &x1) ||
-        !dvz_panel_visible_domain(panel, DVZ_DIM_Y, &y0, &y1) || fabs(x1 - x0) < 1e-12 ||
-        fabs(y1 - y0) < 1e-12)
-    {
-        return false;
-    }
-
-    const double tx = ((double)x - x0) / (x1 - x0);
-    const double ty = ((double)y - y0) / (y1 - y0);
-    out[0] = plot.x + (float)(tx * (double)plot.width);
-    out[1] = plot.y + (1.0f - (float)ty) * plot.height;
-    return true;
-}
-
-
-/**
- * Convert figure-space cursor coordinates to panel-local query coordinates.
- *
- * @param panel target panel
- * @param figure figure-space cursor position
- * @param out output panel-local logical pixel position
- * @return true when conversion succeeded
- */
-static bool _figure_to_panel(DvzPanel* panel, const float figure[2], float out[2])
-{
-    if (panel == NULL || figure == NULL || out == NULL)
-        return false;
-
-    DvzRect inner = {0};
-    if (!dvz_panel_inner_rect_px(panel, &inner))
-        return false;
-
-    out[0] = figure[0] - inner.x;
-    out[1] = figure[1] - inner.y;
-    return true;
-}
-
-
-/**
  * Move one marker to a normalized data position.
  *
  * @param marker marker to update
@@ -792,10 +685,9 @@ static void _set_probe(LinkedProbeState* state, float x, float y)
     (void)_update_probe_marker(&state->source_marker, x, y);
     (void)_update_probe_marker(&state->derived_marker, x, y);
 
-    float source_px[2] = {0};
-    float panel_px[2] = {0};
-    if (_data_to_figure(state->source_panel, x, y, source_px) &&
-        _figure_to_panel(state->source_panel, source_px, panel_px))
+    double panel_px[2] = {0};
+    if (dvz_panel_data_to_position(
+            state->source_panel, DVZ_PANEL_COORD_PANEL_PX, (const double[2]){x, y}, panel_px))
     {
         state->cursor_valid = true;
         state->cursor_x = panel_px[0];
@@ -825,12 +717,16 @@ static void _linked_probe_pointer(
     if (event->type != DVZ_SCENARIO_POINTER_MOVE && event->type != DVZ_SCENARIO_POINTER_CLICK)
         return;
 
-    float x = 0.0f;
-    float y = 0.0f;
-    if (_figure_to_data(state->source_panel, event->x, event->y, &x, &y) ||
-        _figure_to_data(state->derived_panel, event->x, event->y, &x, &y))
+    double data[2] = {0};
+    if (dvz_panel_position_to_data(
+            state->source_panel, DVZ_PANEL_COORD_FIGURE_PX,
+            (const double[2]){event->x, event->y}, data) ||
+        dvz_panel_position_to_data(
+            state->derived_panel, DVZ_PANEL_COORD_FIGURE_PX,
+            (const double[2]){event->x, event->y}, data))
     {
-        _set_probe(state, x, y);
+        if (data[0] >= 0.0 && data[0] <= 1.0 && data[1] >= 0.0 && data[1] <= 1.0)
+            _set_probe(state, (float)data[0], (float)data[1]);
     }
 }
 
@@ -852,18 +748,15 @@ static void _linked_probe_post_frame(DvzScenarioContext* ctx, void* user_data)
     DvzQueryResult query = {0};
     while (dvz_scene_poll_query(state->scene, &query))
     {
-        float x = 0.0f;
-        float y = 0.0f;
-        DvzRect inner = {0};
-        const bool in_panel =
-            dvz_panel_inner_rect_px(state->source_panel, &inner) &&
-            _figure_to_data(
-                state->source_panel, query.panel_position[0] + inner.x,
-                query.panel_position[1] + inner.y, &x, &y);
-        if (in_panel && _query_changed(state, &query, x, y))
+        double data[2] = {0};
+        const bool in_panel = dvz_panel_position_to_data(
+            state->source_panel, DVZ_PANEL_COORD_PANEL_PX, query.panel_position, data);
+        if (
+            in_panel && data[0] >= 0.0 && data[0] <= 1.0 && data[1] >= 0.0 &&
+            data[1] <= 1.0 && _query_changed(state, &query, (float)data[0], (float)data[1]))
         {
-            _update_readout(state, x, y, query.hit);
-            _store_query_result(state, &query, x, y);
+            _update_readout(state, (float)data[0], (float)data[1], query.hit);
+            _store_query_result(state, &query, (float)data[0], (float)data[1]);
         }
     }
 
