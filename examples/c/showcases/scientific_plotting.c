@@ -494,6 +494,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!_set_domain(stacked, 0.0, 10.0, -0.85, 31.85))
         return false;
 
+    if (!dvz_panel_set_reserve(
+            stacked, &(DvzPanelReserve){.left_px = 56.0f, .right_px = 16.0f}))
+        return false;
+
     if (!_add_autocorrelogram(ctx->scene, correlogram) ||
         !_add_mean_error(ctx->scene, mean_error) ||
         !_add_stacked_traces(ctx->scene, stacked))
