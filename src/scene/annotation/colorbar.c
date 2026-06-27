@@ -52,6 +52,7 @@
 #define COLORBAR_TICK_WIDTH_PX 1.0f
 #define COLORBAR_TICK_TEXT_SIZE_PX 12.0f
 #define COLORBAR_TITLE_TEXT_SIZE_PX 16.0f
+#define COLORBAR_TITLE_VERTICAL_ANGLE 1.57079632679f
 #define COLORBAR_EPS 1e-12
 #define COLORBAR_LAYOUT_EPS 1e-3f
 #define DVZ_COLORBAR_DESC_KNOWN_FLAGS 0u
@@ -309,6 +310,55 @@ static DvzColor _colorbar_foreground_color(const DvzColorbar* colorbar)
 
 
 /**
+ * Add one reserve contribution in place.
+ *
+ * @param reserve reserve accumulator
+ * @param contribution reserve contribution
+ */
+static void _colorbar_reserve_add(
+    DvzPanelReserve* reserve, const DvzPanelReserve* contribution)
+{
+    ANN(reserve);
+    ANN(contribution);
+    reserve->left_px += contribution->left_px;
+    reserve->right_px += contribution->right_px;
+    reserve->top_px += contribution->top_px;
+    reserve->bottom_px += contribution->bottom_px;
+}
+
+
+
+/**
+ * Return non-colorbar reserve contributions already present on one panel.
+ *
+ * @param panel panel
+ * @return existing base, axis, and legend reserves
+ */
+static DvzPanelReserve _colorbar_existing_outer_reserve(const DvzPanel* panel)
+{
+    ANN(panel);
+    DvzPanelReserve reserve = panel->base_reserve;
+    _colorbar_reserve_add(&reserve, &panel->axis_reserve);
+    _colorbar_reserve_add(&reserve, &panel->legend_reserve);
+    return reserve;
+}
+
+
+
+/**
+ * Return the default colorbar outer margin only for sides without an existing reserve.
+ *
+ * @param existing existing non-colorbar reserve on one side
+ * @return default outer margin contribution
+ */
+static float _colorbar_default_outer_margin(float existing)
+{
+    return existing > COLORBAR_LAYOUT_EPS ? 0.0f : COLORBAR_OUTER_MARGIN_PX;
+}
+
+
+
+/**
  * Refresh aggregate attached colorbar reserve for one panel.
  *
  * @param panel the panel
@@ -319,6 +369,7 @@ void _scene_panel_refresh_colorbar_reserve(DvzPanel* panel)
         return;
     DvzPanelReserve reserve = {0};
     DvzPanelReserve outer_margin = {0};
+    DvzPanelReserve existing = _colorbar_existing_outer_reserve(panel);
     for (uint32_t i = 0; i < panel->colorbar_count; i++)
     {
         DvzColorbar* colorbar = panel->colorbars[i];
@@ -329,14 +380,14 @@ void _scene_panel_refresh_colorbar_reserve(DvzPanel* panel)
             _colorbar_anchor_supported(colorbar->anchor))
         {
             float reserve_px = _colorbar_effective_reserve_px(colorbar);
-            applied.left_px = COLORBAR_OUTER_MARGIN_PX;
-            applied.right_px = COLORBAR_OUTER_MARGIN_PX;
-            applied.top_px = COLORBAR_OUTER_MARGIN_PX;
-            applied.bottom_px = COLORBAR_OUTER_MARGIN_PX;
-            outer_margin.left_px = fmaxf(outer_margin.left_px, COLORBAR_OUTER_MARGIN_PX);
-            outer_margin.right_px = fmaxf(outer_margin.right_px, COLORBAR_OUTER_MARGIN_PX);
-            outer_margin.top_px = fmaxf(outer_margin.top_px, COLORBAR_OUTER_MARGIN_PX);
-            outer_margin.bottom_px = fmaxf(outer_margin.bottom_px, COLORBAR_OUTER_MARGIN_PX);
+            applied.left_px = _colorbar_default_outer_margin(existing.left_px);
+            applied.right_px = _colorbar_default_outer_margin(existing.right_px);
+            applied.top_px = _colorbar_default_outer_margin(existing.top_px);
+            applied.bottom_px = _colorbar_default_outer_margin(existing.bottom_px);
+            outer_margin.left_px = fmaxf(outer_margin.left_px, applied.left_px);
+            outer_margin.right_px = fmaxf(outer_margin.right_px, applied.right_px);
+            outer_margin.top_px = fmaxf(outer_margin.top_px, applied.top_px);
+            outer_margin.bottom_px = fmaxf(outer_margin.bottom_px, applied.bottom_px);
             switch (colorbar->anchor)
             {
             case DVZ_SCENE_ANCHOR_PANEL_LEFT:
@@ -1084,8 +1135,9 @@ static void _colorbar_update_title(
                              0.5f * COLORBAR_TITLE_TEXT_SIZE_PX);
         }
         float y = 0.5f * (ramp_y0 + ramp_y1);
-        float angle = colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT ? -1.57079632679f :
-                                                                      +1.57079632679f;
+        float angle = colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT ?
+                          COLORBAR_TITLE_VERTICAL_ANGLE :
+                          -COLORBAR_TITLE_VERTICAL_ANGLE;
         _colorbar_append_text(
             colorbar, colorbar->title, x, y, 0.5f, 0.5f, COLORBAR_TITLE_TEXT_SIZE_PX, angle,
             foreground);

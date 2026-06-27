@@ -772,11 +772,12 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     DvzAxisStyle x_style = x_axis->style;
     x_style.reserve_px = 35.0f;
     AT(dvz_axis_set_style(x_axis, &x_style));
+    _scene_prepare_colorbar_visuals(figure, NULL);
     AT(dvz_panel_get_reserve(panel, &reserve));
     AT(fabsf(reserve.left_px - 32.0f) < 1e-6f);
     AT(fabsf(reserve.right_px - 172.0f) < 1e-6f);
     AT(fabsf(reserve.top_px - 32.0f) < 1e-6f);
-    AT(fabsf(reserve.bottom_px - 67.0f) < 1e-6f);
+    AT(fabsf(reserve.bottom_px - 35.0f) < 1e-6f);
 
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(colorbar->ramp_visual != NULL);
@@ -789,6 +790,8 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(colorbar->text_visual->visible);
     AT(colorbar->tick_count >= 2);
     AT(colorbar->text_count == colorbar->tick_count + 1);
+    AT(strcmp(colorbar->text_labels[colorbar->text_count - 1], "Intensity") == 0);
+    AC(colorbar->text_angles[colorbar->text_count - 1], -1.57079632679f, 1e-6f);
 
     DvzVisualDataView pos_view = {0};
     DvzVisualDataView ramp_color_view = {0};
@@ -847,7 +850,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(fabsf(reserve.left_px - 32.0f) < 1e-6f);
     AT(fabsf(reserve.right_px - 32.0f) < 1e-6f);
     AT(fabsf(reserve.top_px - 32.0f) < 1e-6f);
-    AT(fabsf(reserve.bottom_px - 163.0f) < 1e-6f);
+    AT(fabsf(reserve.bottom_px - 131.0f) < 1e-6f);
     AT(dvz_visual_data(colorbar->ramp_visual, "position", &pos_view) == 0);
     positions = (const float*)pos_view.data;
     AT(dvz_panel_plot_rect_px(panel, &plot_rect));
@@ -893,7 +896,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(reserve.right_px > 112.0f);
     AT(fabsf(reserve.left_px - 32.0f) < 1e-6f);
     AT(fabsf(reserve.top_px - 32.0f) < 1e-6f);
-    AT(fabsf(reserve.bottom_px - 67.0f) < 1e-6f);
+    AT(fabsf(reserve.bottom_px - 35.0f) < 1e-6f);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1085,6 +1088,7 @@ int test_scene_colorbar_left_title_uses_content_lane(TstContext* suite, const Ts
     AT(colorbar->text_count == colorbar->tick_count + 1);
 
     const float title_x = colorbar->text_positions[colorbar->text_count - 1][0];
+    AC(colorbar->text_angles[colorbar->text_count - 1], +1.57079632679f, 1e-6f);
     for (uint32_t i = 0; i < colorbar->tick_count; i++)
         AT(title_x + 8.0f < colorbar->text_positions[i][0]);
 
@@ -1143,10 +1147,10 @@ int test_scene_colorbar_attached_respects_panel_padding(TstContext* suite, const
 
     DvzPanelReserve reserve = {0};
     AT(dvz_panel_get_reserve(panel, &reserve));
-    AT(fabsf(reserve.left_px - 72.0f) < 1e-6f);
+    AT(fabsf(reserve.left_px - 40.0f) < 1e-6f);
     AT(fabsf(reserve.right_px - 172.0f) < 1e-6f);
-    AT(fabsf(reserve.top_px - 52.0f) < 1e-6f);
-    AT(fabsf(reserve.bottom_px - 62.0f) < 1e-6f);
+    AT(fabsf(reserve.top_px - 20.0f) < 1e-6f);
+    AT(fabsf(reserve.bottom_px - 30.0f) < 1e-6f);
 
     DvzRect inner_rect = {0};
     AT(dvz_panel_inner_rect_px(panel, &inner_rect));
@@ -1157,10 +1161,10 @@ int test_scene_colorbar_attached_respects_panel_padding(TstContext* suite, const
 
     DvzRect plot_rect = {0};
     AT(dvz_panel_plot_rect_px(panel, &plot_rect));
-    AT(fabsf(plot_rect.x - 104.0f) < 1e-4f);
-    AT(fabsf(plot_rect.y - 72.0f) < 1e-4f);
-    AT(fabsf(plot_rect.width - 500.0f) < 1e-4f);
-    AT(fabsf(plot_rect.height - 450.0f) < 1e-4f);
+    AT(fabsf(plot_rect.x - 72.0f) < 1e-4f);
+    AT(fabsf(plot_rect.y - 40.0f) < 1e-4f);
+    AT(fabsf(plot_rect.width - 532.0f) < 1e-4f);
+    AT(fabsf(plot_rect.height - 514.0f) < 1e-4f);
 
     _scene_prepare_colorbar_visuals(figure, NULL);
     ANN(colorbar->ramp_visual);
@@ -1325,7 +1329,7 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
     ANN(colorbar);
     DvzPanelReserve reserve = {0};
     AT(dvz_panel_get_reserve(panel, &reserve));
-    AT(fabsf(reserve.left_px - 56.0f) < 1e-6f);
+    AT(fabsf(reserve.left_px - 24.0f) < 1e-6f);
     AT(fabsf(reserve.right_px - 172.0f) < 1e-6f);
     AT(fabsf(reserve.top_px - 32.0f) < 1e-6f);
     AT(fabsf(reserve.bottom_px - 32.0f) < 1e-6f);
