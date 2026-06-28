@@ -1259,6 +1259,9 @@ int test_app_offscreen_two_panel_points_light_both_halves(TstContext* suite, con
 int test_app_offscreen_marker_query_selection_preserves_vertical_orientation(
     TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_pixel_query_selection_preserves_vertical_orientation(
+    TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_clear_color(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_midgray_srgb_readback(TstContext* suite, const TstCase* item);

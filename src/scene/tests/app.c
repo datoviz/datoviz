@@ -6356,6 +6356,122 @@ int test_app_offscreen_marker_query_selection_preserves_vertical_orientation(
 }
 
 
+int test_app_offscreen_pixel_query_selection_preserves_vertical_orientation(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel_full(figure);
+    AT(panel != NULL);
+    dvz_panel_set_background_color(panel, dvz_color_rgba(0, 0, 0, 255));
+
+    DvzVisual* pixel = dvz_pixel(scene, 0);
+    AT(pixel != NULL);
+    dvz_visual_set_query_capabilities(pixel, DVZ_QUERY_CAPABILITY_ITEM);
+
+    vec3 positions[2] = {
+        {0.0f, -0.50f, 0.0f},
+        {0.0f, +0.50f, 0.0f},
+    };
+    DvzColor colors[2] = {
+        {80, 120, 220, 255},
+        {80, 120, 220, 255},
+    };
+    float sizes[2] = {18.0f, 18.0f};
+    AT(dvz_visual_set_data(pixel, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(pixel, "color", colors, 2) == 0);
+    AT(dvz_visual_set_data(pixel, "size", sizes, 2) == 0);
+    AT(dvz_panel_add_visual(panel, pixel, NULL) == 0);
+
+    DvzSelection* selection = dvz_selection(
+        scene,
+        &(DvzSelectionDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
+            .mode = DVZ_SELECT_TOGGLE,
+            .target = DVZ_SCENE_TARGET_ITEM,
+        });
+    AT(selection != NULL);
+    DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
+    selection_style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    selection_style.selected.tint = (DvzColor){255, 220, 20, 255};
+    selection_style.selected.tint_mix = 1.0f;
+    selection_style.unselected.visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
+    AT(dvz_selection_set_visual_style(selection, &selection_style) == 0);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_pixel_query_selection_preserves_vertical_orientation skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
+    AT(win != NULL);
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+
+    DvzQueryRequest request = dvz_query_request();
+    request.request_id = 43;
+    request.target = DVZ_SCENE_TARGET_ITEM;
+    request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
+    AT(dvz_panel_query(panel, 32.0, 48.0, &request) == 0);
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+
+    DvzQueryResult result = {0};
+    AT(dvz_scene_poll_query(scene, &result));
+    AT(!dvz_scene_poll_query(scene, &result));
+    AT(result.request_id == 43);
+    AT(result.hit);
+    AT(result.visual_id == dvz_visual_id(pixel));
+    AT(result.visual_family == DVZ_SCENE_VISUAL_FAMILY_PIXEL);
+    AT(result.resolved_target == DVZ_SCENE_TARGET_ITEM);
+    AT(result.resolved_id == 0);
+    AT(dvz_selection_apply_query(selection, &result) == 0);
+    DvzVisualDataView state_view = {0};
+    AT(dvz_visual_data(pixel, "item_state", &state_view) == 0);
+    AT(state_view.item_count == 2);
+    const uint32_t* item_state = (const uint32_t*)state_view.data;
+    ANN(item_state);
+    AT(item_state[0] == DVZ_ITEM_STATE_SELECTED);
+    AT(item_state[1] == DVZ_ITEM_STATE_NONE);
+
+    uint32_t top_yellow = 0;
+    uint32_t bottom_yellow = 0;
+    for (uint32_t frame = 0; frame < 3; frame++)
+    {
+        AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+
+        uint32_t width = 0, height = 0;
+        uint8_t* rgba = NULL;
+        AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+        ANN(rgba);
+        AT(width == 64);
+        AT(height == 64);
+
+        top_yellow = _app_yellow_count_in_rows(rgba, width, height, 0, height / 2);
+        bottom_yellow = _app_yellow_count_in_rows(rgba, width, height, height / 2, height);
+        dvz_free(rgba);
+        if (bottom_yellow > 0)
+            break;
+    }
+    AT(bottom_yellow > 0);
+    AT(bottom_yellow > top_yellow);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_app_offscreen_clear_color(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -8252,6 +8368,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_two_panel_points_light_both_halves);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_marker_query_selection_preserves_vertical_orientation);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pixel_query_selection_preserves_vertical_orientation);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_clear_color);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_midgray_srgb_readback);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_legacy_srgb_blend_readback);
