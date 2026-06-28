@@ -264,42 +264,46 @@ int test_controller_orbit_camera_clamps_poles(TstContext* suite, const TstCase* 
     DvzOrbitCameraDesc desc = dvz_orbit_camera_desc();
     desc.width = 800.0f;
     desc.height = 600.0f;
-    DvzOrbitCamera* orbit = dvz_orbit_camera_create(&desc);
-    ANN(orbit);
+    float shifts[2] = {-2400.0f, +2400.0f};
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        DvzOrbitCamera* orbit = dvz_orbit_camera_create(&desc);
+        ANN(orbit);
 
-    DvzPointerEvent drag = {
-        .type = DVZ_POINTER_EVENT_DRAG,
-        .button = DVZ_POINTER_BUTTON_LEFT,
-        .pos = {400.0f, -2100.0f},
-        .content.d.press_pos = {400.0f, 300.0f},
-        .content.d.last_pos = {400.0f, 300.0f},
-        .content.d.shift = {0.0f, -2400.0f},
-        .content.d.is_press_valid = true,
-    };
-    AT(dvz_orbit_camera_pointer(orbit, &drag));
+        DvzPointerEvent drag = {
+            .type = DVZ_POINTER_EVENT_DRAG,
+            .button = DVZ_POINTER_BUTTON_LEFT,
+            .pos = {400.0f, 300.0f + shifts[i]},
+            .content.d.press_pos = {400.0f, 300.0f},
+            .content.d.last_pos = {400.0f, 300.0f},
+            .content.d.shift = {0.0f, shifts[i]},
+            .content.d.is_press_valid = true,
+        };
+        AT(dvz_orbit_camera_pointer(orbit, &drag));
 
-    vec3 eye = {0}, target = {0}, up = {0}, offset = {0};
-    AT(dvz_orbit_camera_get_view(orbit, eye, target, up) == 0);
-    glm_vec3_sub(eye, target, offset);
-    glm_vec3_normalize(offset);
-    AT(fabsf(glm_vec3_dot(offset, up)) < cosf(0.005f));
+        vec3 eye = {0}, target = {0}, up = {0}, offset = {0};
+        AT(dvz_orbit_camera_get_view(orbit, eye, target, up) == 0);
+        glm_vec3_sub(eye, target, offset);
+        glm_vec3_normalize(offset);
+        AT(fabsf(glm_vec3_dot(offset, up)) < 0.0001f);
 
-    DvzPointerEvent stop = {
-        .type = DVZ_POINTER_EVENT_DRAG_STOP,
-        .button = DVZ_POINTER_BUTTON_LEFT,
-        .pos = {400.0f, -2100.0f},
-        .content.d.press_pos = {400.0f, 300.0f},
-        .content.d.last_pos = {400.0f, 300.0f},
-        .content.d.is_press_valid = true,
-    };
-    AT(dvz_orbit_camera_pointer(orbit, &stop));
+        DvzPointerEvent stop = {
+            .type = DVZ_POINTER_EVENT_DRAG_STOP,
+            .button = DVZ_POINTER_BUTTON_LEFT,
+            .pos = {400.0f, 300.0f + shifts[i]},
+            .content.d.press_pos = {400.0f, 300.0f},
+            .content.d.last_pos = {400.0f, 300.0f},
+            .content.d.is_press_valid = true,
+        };
+        AT(dvz_orbit_camera_pointer(orbit, &stop));
 
-    AT(dvz_orbit_camera_get_view(orbit, eye, target, up) == 0);
-    glm_vec3_sub(eye, target, offset);
-    glm_vec3_normalize(offset);
-    AT(fabsf(glm_vec3_dot(offset, up)) < cosf(0.005f));
+        AT(dvz_orbit_camera_get_view(orbit, eye, target, up) == 0);
+        glm_vec3_sub(eye, target, offset);
+        glm_vec3_normalize(offset);
+        AT(fabsf(glm_vec3_dot(offset, up)) < 0.0001f);
 
-    dvz_orbit_camera_destroy(orbit);
+        dvz_orbit_camera_destroy(orbit);
+    }
     return 0;
 }
 

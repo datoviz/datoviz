@@ -275,7 +275,37 @@ static void _orbit_view(const DvzOrbitCamera* orbit, vec3 eye, vec3 target, vec3
     {
         target[i] = orbit->pivot[i];
         eye[i] = orbit->pivot[i] + eye4[i];
-        up[i] = orbit->up_axis[i];
+        up[i] = rot[1][i];
+    }
+
+    vec3 eye_dir = {0};
+    glm_vec3_sub(eye, target, eye_dir);
+    if (glm_vec3_norm(eye_dir) > 0.0f)
+        glm_vec3_normalize(eye_dir);
+
+    bool needs_up_fallback = glm_vec3_norm(up) <= 0.0f;
+    if (!needs_up_fallback && glm_vec3_norm(eye_dir) > 0.0f)
+    {
+        vec3 up_dir = {up[0], up[1], up[2]};
+        glm_vec3_normalize(up_dir);
+        needs_up_fallback = fabsf(glm_vec3_dot(up_dir, eye_dir)) > 0.999f;
+    }
+    if (needs_up_fallback)
+    {
+        vec3 stable_up = {0};
+        _orbit_stable_up_axis(orbit, stable_up);
+        float dot = glm_vec3_dot(stable_up, eye_dir);
+        vec3 projected = {0};
+        glm_vec3_scale(eye_dir, dot, projected);
+        glm_vec3_sub(stable_up, projected, up);
+    }
+    if (glm_vec3_norm(up) <= 0.0f)
+    {
+        vec3 right = {0};
+        for (uint32_t i = 0; i < 3; i++)
+            right[i] = rot[0][i];
+        if (glm_vec3_norm(right) > 0.0f)
+            glm_vec3_cross(eye_dir, right, up);
     }
     if (glm_vec3_norm(up) <= 0.0f)
         glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, up);
