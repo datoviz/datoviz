@@ -45,9 +45,11 @@ non-v0.4-blocking roadmaps live in [`../future/`](../future/).
 
 ## Visual And Render-Mode Pressure
 
-1. [MATERIAL_LIGHTING_API.md](MATERIAL_LIGHTING_API.md): material/light API still has unresolved
+1. [BATCHED_TEXT_API_REFACTOR.md](BATCHED_TEXT_API_REFACTOR.md): pre-RC public text API refactor
+   to make retained semantic text batched by default.
+2. [MATERIAL_LIGHTING_API.md](MATERIAL_LIGHTING_API.md): material/light API still has unresolved
    public shape and ownership questions.
-2. [PARTICLE_SYSTEM_DESIGN.md](PARTICLE_SYSTEM_DESIGN.md): particle-system design remains
+3. [PARTICLE_SYSTEM_DESIGN.md](PARTICLE_SYSTEM_DESIGN.md): particle-system design remains
    exploratory pressure on visuals, resources, and frame planning.
-3. [DEPTH_OF_FIELD_POSTPROCESS.md](DEPTH_OF_FIELD_POSTPROCESS.md): DoF remains active
+4. [DEPTH_OF_FIELD_POSTPROCESS.md](DEPTH_OF_FIELD_POSTPROCESS.md): DoF remains active
    postprocess/showcase design pressure.
