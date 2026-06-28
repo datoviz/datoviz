@@ -3367,10 +3367,14 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
 
     _scene_prepare_text_visuals(figure);
     ANN(text->visual);
+    AT(text->visual->type == DVZ_VISUAL_TYPE_TEXT);
     AT(text->visual->visible);
+    DvzVisual* glyph = _visual_family_state(text->visual)->text.glyph_visual;
+    ANN(glyph);
+    AT(glyph->visible);
     AT(text->dirty_flags == DVZ_TEXT_DIRTY_NONE);
     DvzVisualDataView position_view = {0};
-    AT(dvz_visual_data(text->visual, "position", &position_view) == 0);
+    AT(dvz_visual_data(glyph, "position", &position_view) == 0);
     const float* positions = position_view.data;
     ANN(positions);
     AC(positions[0], -0.96875f, 1e-6f);
@@ -3387,18 +3391,20 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
             .depth_test = true,
         });
     _scene_prepare_text_visuals(figure);
-    AT(dvz_visual_data(text->visual, "position", &position_view) == 0);
+    glyph = _visual_family_state(text->visual)->text.glyph_visual;
+    ANN(glyph);
+    AT(dvz_visual_data(glyph, "position", &position_view) == 0);
     positions = position_view.data;
     ANN(positions);
     AC(positions[0], 0.25f, 1e-6f);
     AC(positions[1], -0.5f, 1e-6f);
     DvzVisualDataView bounds_view = {0};
-    AT(dvz_visual_data(text->visual, "bounds", &bounds_view) == 0);
+    AT(dvz_visual_data(glyph, "bounds", &bounds_view) == 0);
     const float* bounds = bounds_view.data;
     ANN(bounds);
     AC(bounds[0], 12.0f, 1e-6f);
     AC(bounds[1], -6.0f, 1e-6f);
-    AT(text->visual->depth_test_enabled);
+    AT(glyph->depth_test_enabled);
     bool found_data_attach = false;
     for (uint32_t i = 0; i < panel->visual_count; i++)
     {
@@ -3413,12 +3419,14 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
 
     dvz_figure_resize(figure, 800, 600);
     _scene_prepare_text_visuals(figure);
-    AT(dvz_visual_data(text->visual, "position", &position_view) == 0);
+    glyph = _visual_family_state(text->visual)->text.glyph_visual;
+    ANN(glyph);
+    AT(dvz_visual_data(glyph, "position", &position_view) == 0);
     positions = position_view.data;
     ANN(positions);
     AC(positions[0], 0.25f, 1e-6f);
     AC(positions[1], -0.5f, 1e-6f);
-    AT(dvz_visual_data(text->visual, "bounds", &bounds_view) == 0);
+    AT(dvz_visual_data(glyph, "bounds", &bounds_view) == 0);
     bounds = bounds_view.data;
     ANN(bounds);
     AC(bounds[0], 12.0f, 1e-6f);
@@ -3449,6 +3457,7 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
     dvz_text_destroy(text);
     AT(text->scene == NULL);
     AT(!text->visual->visible);
+    AT(!glyph->visible);
     dvz_scene_destroy(scene);
     return 0;
 }

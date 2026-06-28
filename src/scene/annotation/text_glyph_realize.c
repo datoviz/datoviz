@@ -30,6 +30,7 @@
 #include "datoviz/scene.h"
 #include "text_internal.h"
 #include "_visual_internal.h"
+#include "text_visual_bridge.h"
 
 
 
@@ -140,6 +141,125 @@ static bool _text_sync_glyph_visual_attach(
 }
 
 
+static bool _text_find_panel_attach(
+    DvzPanel* panel, DvzVisual* visual, const DvzPanelAttach** out_attach)
+{
+    ANN(panel);
+    ANN(visual);
+    ANN(out_attach);
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        if (panel->visuals[i].visual == visual)
+        {
+            *out_attach = &panel->visuals[i];
+            return true;
+        }
+    }
+    return false;
+}
+
+
+static bool _text_prepare_batched_visual(DvzFigure* figure, DvzText* text)
+{
+    ANN(figure);
+    ANN(text);
+    if (text->scene == NULL || text->panel == NULL || text->panel->figure != figure)
+        return true;
+    if (text->dirty_flags == DVZ_TEXT_DIRTY_NONE)
+        return true;
+    if (text->item_count == 0 || text->strings == NULL || text->positions == NULL)
+    {
+        if (text->visual != NULL)
+            dvz_visual_set_visible(text->visual, false);
+        text->dirty_flags = DVZ_TEXT_DIRTY_NONE;
+        return true;
+    }
+
+    bool screen_placement = text->placement.mode == DVZ_TEXT_PLACEMENT_SCREEN;
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.z_layer = INT32_MAX / 4;
+    attach.controller_mode =
+        screen_placement ? DVZ_CONTROLLER_FIXED : DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL;
+    attach.coord_space = text->placement.mode == DVZ_TEXT_PLACEMENT_DATA ? DVZ_COORD_DATA : DVZ_COORD_VIEW;
+
+    if (text->visual != NULL && text->visual->type != DVZ_VISUAL_TYPE_TEXT)
+    {
+        dvz_visual_set_visible(text->visual, false);
+        text->visual = NULL;
+    }
+    if (text->visual == NULL)
+    {
+        text->visual = _scene_text_visual(text->scene, 0);
+        if (text->visual == NULL)
+            return false;
+    }
+    if (_scene_text_visual_set_renderer(text->visual, text->style.renderer) != 0)
+        return false;
+    if (!_text_sync_glyph_visual_attach(text->panel, text->visual, &attach))
+        return false;
+
+    uint32_t count = text->item_count;
+    float(*positions)[3] = (float(*)[3])dvz_calloc(count, sizeof(float[3]));
+    if (positions == NULL)
+        return false;
+    float anchor_x = 0.0f;
+    float anchor_y = 0.0f;
+    if (screen_placement)
+    {
+        float panel_x = 0.0f;
+        float panel_y = 0.0f;
+        float panel_w = 0.0f;
+        float panel_h = 0.0f;
+        _scene_panel_pixel_rect(text->panel, &panel_x, &panel_y, &panel_w, &panel_h);
+        (void)panel_w;
+        (void)panel_h;
+        _text_anchor_pixels(text, &anchor_x, &anchor_y);
+        anchor_x -= (float)text->placement.position[0];
+        anchor_y -= (float)text->placement.position[1];
+        anchor_x -= panel_x;
+        anchor_y -= panel_y;
+    }
+    for (uint32_t i = 0; i < count; i++)
+    {
+        positions[i][0] = (float)text->positions[i][0] + (screen_placement ? anchor_x : 0.0f);
+        positions[i][1] = (float)text->positions[i][1] + (screen_placement ? anchor_y : 0.0f);
+        positions[i][2] = (float)text->positions[i][2];
+    }
+
+    _visual_family_state(text->visual)->text.layout = text->layout;
+    _visual_family_state(text->visual)->text.layout_version++;
+    DvzVisualDataUpdate updates[6] = {
+        {.attr_name = "position", .data = positions, .item_count = count},
+        {.attr_name = "offset", .data = text->offsets, .item_count = count},
+        {.attr_name = "anchor", .data = text->anchors, .item_count = count},
+        {.attr_name = "size", .data = text->sizes_px, .item_count = count},
+        {.attr_name = "color", .data = text->colors, .item_count = count},
+        {.attr_name = "angle", .data = text->angles, .item_count = count},
+    };
+    bool ok = dvz_visual_set_strings(text->visual, "text", (const char* const*)text->strings, count) == 0 &&
+              dvz_visual_set_data_many(text->visual, updates, 6) == 0;
+    dvz_free(positions);
+    if (!ok)
+        return false;
+
+    const DvzPanelAttach* panel_attach = NULL;
+    if (!_text_find_panel_attach(text->panel, text->visual, &panel_attach))
+        return false;
+    ok = _text_visual_prepare(figure, text->panel, panel_attach, text->visual);
+    if (ok)
+    {
+        DvzVisual* glyph = _visual_family_state(text->visual)->text.glyph_visual;
+        if (glyph != NULL)
+            dvz_visual_set_depth_test(glyph, text->placement.depth_test);
+        text->dirty_flags = DVZ_TEXT_DIRTY_NONE;
+        text->visual_version = text->version;
+        text->visual_figure_width = figure->width;
+        text->visual_figure_height = figure->height;
+    }
+    return ok;
+}
+
+
 
 /**
  * Write one glyph vertex record consumed by the shader-side quad generator.
@@ -202,6 +322,8 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
 {
     ANN(figure);
     ANN(text);
+    if (text->id != DVZ_ID_NONE)
+        return _text_prepare_batched_visual(figure, text);
     if (text->scene == NULL || text->panel == NULL || text->panel->figure != figure)
         return true;
     float default_size_px = text->scene->font_defaults.text_size_px;
@@ -531,7 +653,9 @@ static const DvzVisualAttr* _text_visual_attr(const DvzVisual* visual, const cha
 static uint64_t _text_visual_version(const DvzVisual* visual)
 {
     ANN(visual);
-    uint64_t version = _visual_family_state(visual)->text.strings_version + _visual_family_state(visual)->text.renderer_version;
+    uint64_t version = _visual_family_state(visual)->text.strings_version +
+                       _visual_family_state(visual)->text.renderer_version +
+                       _visual_family_state(visual)->text.layout_version;
     for (uint32_t i = 0; i < visual->attr_count; i++)
         version += visual->attrs[i].version;
     return version;
@@ -548,7 +672,9 @@ static uint64_t _text_visual_version(const DvzVisual* visual)
 static uint64_t _text_visual_layout_version(const DvzVisual* visual)
 {
     ANN(visual);
-    uint64_t version = _visual_family_state(visual)->text.strings_version + _visual_family_state(visual)->text.renderer_version;
+    uint64_t version = _visual_family_state(visual)->text.strings_version +
+                       _visual_family_state(visual)->text.renderer_version +
+                       _visual_family_state(visual)->text.layout_version;
     for (uint32_t i = 0; i < visual->attr_count; i++)
     {
         if (strcmp(visual->attrs[i].name, "position") == 0)
@@ -556,6 +682,18 @@ static uint64_t _text_visual_layout_version(const DvzVisual* visual)
         version += visual->attrs[i].version;
     }
     return version;
+}
+
+
+static float _text_layout_line_advance(const DvzTextLayout* layout, float natural_line_height)
+{
+    float line_height = layout != NULL ? layout->line_height : 0.0f;
+    if (line_height <= 0.0f)
+        line_height = 1.0f;
+    float line_gap_px = layout != NULL ? layout->line_gap_px : 0.0f;
+    if (line_gap_px < 0.0f)
+        line_gap_px = 0.0f;
+    return natural_line_height * line_height + line_gap_px;
 }
 
 
@@ -695,10 +833,12 @@ bool _text_visual_prepare(
     }
 
     const DvzVisualAttr* anchor_attr = _text_visual_attr(visual, "anchor");
+    const DvzVisualAttr* offset_attr = _text_visual_attr(visual, "offset");
     const DvzVisualAttr* size_attr = _text_visual_attr(visual, "size");
     const DvzVisualAttr* color_attr = _text_visual_attr(visual, "color");
     const DvzVisualAttr* angle_attr = _text_visual_attr(visual, "angle");
     if ((anchor_attr != NULL && anchor_attr->item_count != count) ||
+        (offset_attr != NULL && offset_attr->item_count != count) ||
         (size_attr != NULL && size_attr->item_count != count) ||
         (color_attr != NULL && color_attr->item_count != count) ||
         (angle_attr != NULL && angle_attr->item_count != count))
@@ -864,6 +1004,8 @@ bool _text_visual_prepare(
     }
 
     const float(*target)[3] = (const float(*)[3])position_attr->data;
+    const float(*offsets)[2] =
+        offset_attr != NULL ? (const float(*)[2])offset_attr->data : NULL;
     const float(*text_anchors)[2] =
         anchor_attr != NULL ? (const float(*)[2])anchor_attr->data : NULL;
     const float* sizes = size_attr != NULL ? (const float*)size_attr->data : NULL;
@@ -897,22 +1039,30 @@ bool _text_visual_prepare(
         float line_h = 0.0f;
         float width = 0.0f;
         float height = 0.0f;
+        uint32_t columns = 0;
+        uint32_t lines = 0;
+        uint32_t cells_visible = 0;
+        _text_measure_cells(
+            _visual_family_state(visual)->text.strings[i], &columns, &lines, &cells_visible);
         if (!use_builtin)
         {
             scale = _text_sdf_layout_scale(&style, font_atlas);
             _text_sdf_measure(
                 _visual_family_state(visual)->text.strings[i], font_atlas, scale, &width, &height, &visible);
-            line_h = font_atlas->line_height * scale;
+            float natural_line_h = font_atlas->line_height * scale;
+            line_h = _text_layout_line_advance(&_visual_family_state(visual)->text.layout, natural_line_h);
+            if (lines > 1u)
+                height += (float)(lines - 1u) * (line_h - natural_line_h);
         }
         else
         {
-            uint32_t columns = 0;
-            uint32_t lines = 0;
-            _text_measure_cells(_visual_family_state(visual)->text.strings[i], &columns, &lines, &visible);
+            visible = cells_visible;
             scale = _text_bitmap_layout_scale(&style);
             glyph_w = (float)DVZ_TEXT_BITMAP_GLYPH_WIDTH * scale;
             glyph_h = (float)DVZ_TEXT_BITMAP_GLYPH_HEIGHT * scale;
-            line_h = (float)DVZ_TEXT_BITMAP_LINE_HEIGHT * scale;
+            line_h = _text_layout_line_advance(
+                &_visual_family_state(visual)->text.layout,
+                (float)DVZ_TEXT_BITMAP_LINE_HEIGHT * scale);
             width = (float)columns * glyph_w;
             height = (float)(lines - 1u) * line_h + glyph_h;
         }
@@ -931,6 +1081,11 @@ bool _text_visual_prepare(
         }
         float align_x = -text_anchor[0] * width;
         float align_y = -text_anchor[1] * height;
+        if (offsets != NULL)
+        {
+            align_x += offsets[i][0];
+            align_y += offsets[i][1];
+        }
         float angle = angles != NULL ? angles[i] : 0.0f;
         float anchor_position[3] = {0};
         if (attach->controller_mode == DVZ_CONTROLLER_FIXED)

@@ -25,6 +25,7 @@
 #include "_overflow.h"
 #include "_scale_ticks.h"
 #include "_scene.h"
+#include "_visual_internal.h"
 #include "core/scene_notify_internal.h"
 #include "datoviz/scene.h"
 #include "text_internal.h"
@@ -37,6 +38,7 @@
 
 #define DVZ_TEXT_STYLE_KNOWN_FLAGS     0u
 #define DVZ_TEXT_PLACEMENT_KNOWN_FLAGS 0u
+#define DVZ_TEXT_LAYOUT_KNOWN_FLAGS    0u
 
 
 bool _text_style_is_zero(const DvzTextStyle* style)
@@ -89,6 +91,24 @@ bool _text_placement_validate(const DvzTextPlacement* placement)
 }
 
 
+static bool _text_layout_validate(const DvzTextLayout* layout)
+{
+    if (layout == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(layout, DvzTextLayout, DVZ_TEXT_LAYOUT_KNOWN_FLAGS))
+    {
+        log_error("invalid text layout ABI");
+        return false;
+    }
+    if (layout->line_height < 0.0f || layout->line_gap_px < 0.0f || layout->wrap_width_px < 0.0f)
+    {
+        log_error("invalid negative text layout metric");
+        return false;
+    }
+    return true;
+}
+
+
 /**
  * Return the default retained text style.
  *
@@ -116,6 +136,18 @@ DvzTextPlacement dvz_text_placement(void)
         DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
         .mode = DVZ_TEXT_PLACEMENT_SCREEN,
         .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
+    };
+}
+
+
+DvzTextLayout dvz_text_layout(void)
+{
+    return (DvzTextLayout){
+        DVZ_STRUCT_INIT_FIELDS(DvzTextLayout),
+        .line_height = 1.0f,
+        .line_gap_px = 0.0f,
+        .wrap_width_px = 0.0f,
+        .align = DVZ_TEXT_ALIGN_LEFT,
     };
 }
 
@@ -149,6 +181,166 @@ static DvzTextStyle _text_resolve_style(const DvzScene* scene, const DvzTextStyl
 static DvzTextPlacement _text_default_placement(void)
 {
     return dvz_text_placement();
+}
+
+
+static DvzTextLayout _text_default_layout(void)
+{
+    return dvz_text_layout();
+}
+
+
+static void _text_free_collection(DvzText* text)
+{
+    ANN(text);
+    if (text->strings != NULL)
+    {
+        for (uint32_t i = 0; i < text->item_count; i++)
+            dvz_free(text->strings[i]);
+    }
+    dvz_free(text->strings);
+    dvz_free(text->positions);
+    dvz_free(text->offsets);
+    dvz_free(text->anchors);
+    dvz_free(text->sizes_px);
+    dvz_free(text->colors);
+    dvz_free(text->angles);
+    text->strings = NULL;
+    text->positions = NULL;
+    text->offsets = NULL;
+    text->anchors = NULL;
+    text->sizes_px = NULL;
+    text->colors = NULL;
+    text->angles = NULL;
+    text->item_count = 0;
+}
+
+
+static bool _text_color_zero(DvzColor color)
+{
+    return color.r == 0 && color.g == 0 && color.b == 0 && color.a == 0;
+}
+
+
+static DvzColor _text_style_dvz_color(const DvzTextStyle* style)
+{
+    uint8_t rgba[4] = {0};
+    _text_style_color(style, rgba);
+    return (DvzColor){rgba[0], rgba[1], rgba[2], rgba[3]};
+}
+
+
+static void _text_item_default_anchor(const DvzText* text, float out[2])
+{
+    ANN(text);
+    ANN(out);
+    out[0] = 0.0f;
+    out[1] = 0.0f;
+    if (text->placement.has_text_anchor)
+    {
+        out[0] = text->placement.text_anchor[0];
+        out[1] = text->placement.text_anchor[1];
+    }
+}
+
+
+static int _text_alloc_collection(
+    const DvzText* text, const DvzTextItem* items, uint32_t item_count, char*** out_strings,
+    double (**out_positions)[3], float (**out_offsets)[2], float (**out_anchors)[2],
+    float** out_sizes, DvzColor** out_colors, float** out_angles)
+{
+    ANN(text);
+    ANN(out_strings);
+    ANN(out_positions);
+    ANN(out_offsets);
+    ANN(out_anchors);
+    ANN(out_sizes);
+    ANN(out_colors);
+    ANN(out_angles);
+    *out_strings = NULL;
+    *out_positions = NULL;
+    *out_offsets = NULL;
+    *out_anchors = NULL;
+    *out_sizes = NULL;
+    *out_colors = NULL;
+    *out_angles = NULL;
+    if (item_count == 0)
+        return 0;
+    ANN(items);
+
+    char** strings = (char**)dvz_calloc(item_count, sizeof(char*));
+    double(*positions)[3] = (double(*)[3])dvz_calloc(item_count, sizeof(double[3]));
+    float(*offsets)[2] = (float(*)[2])dvz_calloc(item_count, sizeof(float[2]));
+    float(*anchors)[2] = (float(*)[2])dvz_calloc(item_count, sizeof(float[2]));
+    float* sizes = (float*)dvz_calloc(item_count, sizeof(float));
+    DvzColor* colors = (DvzColor*)dvz_calloc(item_count, sizeof(DvzColor));
+    float* angles = (float*)dvz_calloc(item_count, sizeof(float));
+    if (
+        strings == NULL || positions == NULL || offsets == NULL || anchors == NULL ||
+        sizes == NULL || colors == NULL || angles == NULL)
+    {
+        dvz_free(strings);
+        dvz_free(positions);
+        dvz_free(offsets);
+        dvz_free(anchors);
+        dvz_free(sizes);
+        dvz_free(colors);
+        dvz_free(angles);
+        log_error("text item allocation failed");
+        return -1;
+    }
+
+    float default_anchor[2] = {0};
+    _text_item_default_anchor(text, default_anchor);
+    DvzColor default_color = _text_style_dvz_color(&text->style);
+    for (uint32_t i = 0; i < item_count; i++)
+    {
+        const char* src = items[i].string != NULL ? items[i].string : "";
+        size_t len = strlen(src);
+        if (len >= DVZ_SCENE_LABEL_SIZE)
+            len = DVZ_SCENE_LABEL_SIZE - 1u;
+        strings[i] = (char*)dvz_calloc((DvzSize)len + 1u, 1);
+        if (strings[i] == NULL)
+        {
+            for (uint32_t j = 0; j < i; j++)
+                dvz_free(strings[j]);
+            dvz_free(strings);
+            dvz_free(positions);
+            dvz_free(offsets);
+            dvz_free(anchors);
+            dvz_free(sizes);
+            dvz_free(colors);
+            dvz_free(angles);
+            log_error("text item string allocation failed");
+            return -1;
+        }
+        dvz_memcpy(strings[i], len, src, len);
+        strings[i][len] = '\0';
+        positions[i][0] = items[i].position[0];
+        positions[i][1] = items[i].position[1];
+        positions[i][2] = items[i].position[2];
+        offsets[i][0] = items[i].offset[0];
+        offsets[i][1] = items[i].offset[1];
+        anchors[i][0] = items[i].anchor[0];
+        anchors[i][1] = items[i].anchor[1];
+        if (anchors[i][0] == 0.0f && anchors[i][1] == 0.0f)
+        {
+            anchors[i][0] = default_anchor[0];
+            anchors[i][1] = default_anchor[1];
+        }
+        sizes[i] = items[i].size_px > 0.0f ? items[i].size_px : text->style.size_px;
+        colors[i] = _text_color_zero(items[i].color) ? default_color : items[i].color;
+        angles[i] = items[i].angle;
+    }
+
+    *out_strings = strings;
+    *out_positions = positions;
+    *out_offsets = offsets;
+    *out_anchors = anchors;
+    *out_sizes = sizes;
+    *out_colors = colors;
+    *out_angles = angles;
+    return 0;
 }
 
 
@@ -210,6 +402,7 @@ DvzText* dvz_text(DvzPanel* panel, uint32_t flags)
     text->panel = panel;
     text->style = _text_resolve_style(scene, NULL);
     text->placement = _text_default_placement();
+    text->layout = _text_default_layout();
     text->flags = flags;
     text->dirty_flags = DVZ_TEXT_DIRTY_ALL;
     text->version = 1;
@@ -235,7 +428,16 @@ void dvz_text_destroy(DvzText* text)
     if (text == NULL)
         return;
     if (text->visual != NULL)
+    {
+        if (text->visual->type == DVZ_VISUAL_TYPE_TEXT &&
+            _visual_family_state(text->visual)->text.glyph_visual != NULL)
+        {
+            dvz_visual_set_visible(
+                _visual_family_state(text->visual)->text.glyph_visual, false);
+        }
         dvz_visual_set_visible(text->visual, false);
+    }
+    _text_free_collection(text);
     _scene_notify_request_frame(text->panel != NULL ? text->panel->figure : NULL);
     text->scene = NULL;
     text->panel = NULL;
@@ -251,14 +453,196 @@ void dvz_text_destroy(DvzText* text)
  * @param text the text object
  * @param string the string, or NULL to clear
  */
-void dvz_text_set_string(DvzText* text, const char* string)
+int dvz_text_set_items(DvzText* text, const DvzTextItem* items, uint32_t item_count)
 {
     ANN(text);
-    const char* src = string != NULL ? string : "";
-    if (strcmp(text->string, src) == 0)
-        return;
-    dvz_strlcpy(text->string, src, sizeof(text->string));
+    if (item_count > 0 && items == NULL)
+        return -1;
+    char** strings = NULL;
+    double(*positions)[3] = NULL;
+    float(*offsets)[2] = NULL;
+    float(*anchors)[2] = NULL;
+    float* sizes = NULL;
+    DvzColor* colors = NULL;
+    float* angles = NULL;
+    if (_text_alloc_collection(
+            text, items, item_count, &strings, &positions, &offsets, &anchors, &sizes, &colors,
+            &angles) != 0)
+    {
+        return -1;
+    }
+    _text_free_collection(text);
+    text->strings = strings;
+    text->positions = positions;
+    text->offsets = offsets;
+    text->anchors = anchors;
+    text->sizes_px = sizes;
+    text->colors = colors;
+    text->angles = angles;
+    text->item_count = item_count;
+    dvz_strlcpy(text->string, item_count > 0 && strings[0] != NULL ? strings[0] : "", sizeof(text->string));
     _text_mark_dirty(text, DVZ_TEXT_DIRTY_STRING | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER);
+    return 0;
+}
+
+
+int dvz_text_set_string(DvzText* text, const char* string)
+{
+    ANN(text);
+    DvzTextItem item = {DVZ_STRUCT_INIT_FIELDS(DvzTextItem), .string = string};
+    item.position[0] = text->placement.position[0];
+    item.position[1] = text->placement.position[1];
+    item.position[2] = text->placement.position[2];
+    item.offset[0] = text->placement.offset[0];
+    item.offset[1] = text->placement.offset[1];
+    item.size_px = text->style.size_px;
+    item.color = _text_style_dvz_color(&text->style);
+    item.angle = text->placement.angle;
+    if (text->placement.has_text_anchor)
+    {
+        item.anchor[0] = text->placement.text_anchor[0];
+        item.anchor[1] = text->placement.text_anchor[1];
+    }
+    return dvz_text_set_items(text, &item, 1);
+}
+
+
+int dvz_text_set_position(DvzText* text, const double position[3])
+{
+    ANN(text);
+    ANN(position);
+    if (text->item_count != 1 || text->positions == NULL)
+        return -1;
+    text->positions[0][0] = position[0];
+    text->positions[0][1] = position[1];
+    text->positions[0][2] = position[2];
+    _text_mark_dirty(text, DVZ_TEXT_DIRTY_PLACEMENT | DVZ_TEXT_DIRTY_LAYOUT);
+    return 0;
+}
+
+
+int dvz_text_set_layout(DvzText* text, const DvzTextLayout* layout)
+{
+    ANN(text);
+    if (layout != NULL && !_text_layout_validate(layout))
+        return -1;
+    text->layout = layout != NULL ? *layout : _text_default_layout();
+    _text_mark_dirty(text, DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER);
+    return 0;
+}
+
+
+static int _text_check_item_count(const DvzText* text, uint32_t item_count)
+{
+    ANN(text);
+    if (item_count == 0 || text->item_count != item_count)
+    {
+        log_error("text array setter item_count mismatch");
+        return -1;
+    }
+    return 0;
+}
+
+
+int dvz_text_set_strings(DvzText* text, const char* const* strings, uint32_t item_count)
+{
+    ANN(text);
+    ANN(strings);
+    DvzTextItem* items = (DvzTextItem*)dvz_calloc(item_count, sizeof(DvzTextItem));
+    if (items == NULL)
+        return -1;
+    for (uint32_t i = 0; i < item_count; i++)
+    {
+        items[i] = (DvzTextItem){DVZ_STRUCT_INIT_FIELDS(DvzTextItem), .string = strings[i]};
+        if (text->item_count == item_count)
+        {
+            items[i].position[0] = text->positions[i][0];
+            items[i].position[1] = text->positions[i][1];
+            items[i].position[2] = text->positions[i][2];
+            items[i].offset[0] = text->offsets[i][0];
+            items[i].offset[1] = text->offsets[i][1];
+            items[i].anchor[0] = text->anchors[i][0];
+            items[i].anchor[1] = text->anchors[i][1];
+            items[i].size_px = text->sizes_px[i];
+            items[i].color = text->colors[i];
+            items[i].angle = text->angles[i];
+        }
+    }
+    int rc = dvz_text_set_items(text, items, item_count);
+    dvz_free(items);
+    return rc;
+}
+
+
+int dvz_text_set_positions(DvzText* text, const double (*positions)[3], uint32_t item_count)
+{
+    ANN(text);
+    ANN(positions);
+    if (_text_check_item_count(text, item_count) != 0)
+        return -1;
+    dvz_memcpy(text->positions, (DvzSize)item_count * sizeof(double[3]), positions, (DvzSize)item_count * sizeof(double[3]));
+    _text_mark_dirty(text, DVZ_TEXT_DIRTY_PLACEMENT | DVZ_TEXT_DIRTY_LAYOUT);
+    return 0;
+}
+
+
+int dvz_text_set_offsets(DvzText* text, const float (*offsets)[2], uint32_t item_count)
+{
+    ANN(text);
+    ANN(offsets);
+    if (_text_check_item_count(text, item_count) != 0)
+        return -1;
+    dvz_memcpy(text->offsets, (DvzSize)item_count * sizeof(float[2]), offsets, (DvzSize)item_count * sizeof(float[2]));
+    _text_mark_dirty(text, DVZ_TEXT_DIRTY_LAYOUT);
+    return 0;
+}
+
+
+int dvz_text_set_anchors(DvzText* text, const float (*anchors)[2], uint32_t item_count)
+{
+    ANN(text);
+    ANN(anchors);
+    if (_text_check_item_count(text, item_count) != 0)
+        return -1;
+    dvz_memcpy(text->anchors, (DvzSize)item_count * sizeof(float[2]), anchors, (DvzSize)item_count * sizeof(float[2]));
+    _text_mark_dirty(text, DVZ_TEXT_DIRTY_LAYOUT);
+    return 0;
+}
+
+
+int dvz_text_set_sizes(DvzText* text, const float* sizes_px, uint32_t item_count)
+{
+    ANN(text);
+    ANN(sizes_px);
+    if (_text_check_item_count(text, item_count) != 0)
+        return -1;
+    dvz_memcpy(text->sizes_px, (DvzSize)item_count * sizeof(float), sizes_px, (DvzSize)item_count * sizeof(float));
+    _text_mark_dirty(text, DVZ_TEXT_DIRTY_STYLE | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER);
+    return 0;
+}
+
+
+int dvz_text_set_colors(DvzText* text, const DvzColor* colors, uint32_t item_count)
+{
+    ANN(text);
+    ANN(colors);
+    if (_text_check_item_count(text, item_count) != 0)
+        return -1;
+    dvz_memcpy(text->colors, (DvzSize)item_count * sizeof(DvzColor), colors, (DvzSize)item_count * sizeof(DvzColor));
+    _text_mark_dirty(text, DVZ_TEXT_DIRTY_STYLE | DVZ_TEXT_DIRTY_RENDER);
+    return 0;
+}
+
+
+int dvz_text_set_angles(DvzText* text, const float* angles, uint32_t item_count)
+{
+    ANN(text);
+    ANN(angles);
+    if (_text_check_item_count(text, item_count) != 0)
+        return -1;
+    dvz_memcpy(text->angles, (DvzSize)item_count * sizeof(float), angles, (DvzSize)item_count * sizeof(float));
+    _text_mark_dirty(text, DVZ_TEXT_DIRTY_PLACEMENT | DVZ_TEXT_DIRTY_LAYOUT);
+    return 0;
 }
 
 
@@ -299,13 +683,28 @@ int dvz_text_set_style(DvzText* text, const DvzTextStyle* style)
  * @param text the text object
  * @param placement the placement descriptor, or NULL for defaults
  */
-void dvz_text_set_placement(DvzText* text, const DvzTextPlacement* placement)
+int dvz_text_set_placement(DvzText* text, const DvzTextPlacement* placement)
 {
     ANN(text);
     if (placement != NULL && !_text_placement_validate(placement))
-        return;
+        return -1;
     text->placement = placement != NULL ? *placement : _text_default_placement();
+    if (text->item_count == 1 && text->positions != NULL)
+    {
+        text->positions[0][0] = text->placement.position[0];
+        text->positions[0][1] = text->placement.position[1];
+        text->positions[0][2] = text->placement.position[2];
+        text->offsets[0][0] = text->placement.offset[0];
+        text->offsets[0][1] = text->placement.offset[1];
+        if (text->placement.has_text_anchor)
+        {
+            text->anchors[0][0] = text->placement.text_anchor[0];
+            text->anchors[0][1] = text->placement.text_anchor[1];
+        }
+        text->angles[0] = text->placement.angle;
+    }
     _text_mark_dirty(text, DVZ_TEXT_DIRTY_PLACEMENT | DVZ_TEXT_DIRTY_LAYOUT);
+    return 0;
 }
 
 

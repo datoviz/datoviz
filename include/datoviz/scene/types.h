@@ -1307,6 +1307,33 @@ struct DvzTextPlacement
 typedef struct DvzTextPlacement DvzTextPlacement;
 
 
+struct DvzTextItem
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    const char* string;
+    double position[3];
+    float offset[2];
+    float anchor[2];
+    float size_px;
+    DvzColor color;
+    float angle;
+};
+typedef struct DvzTextItem DvzTextItem;
+
+
+struct DvzTextLayout
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    float line_height;
+    float line_gap_px;
+    float wrap_width_px;
+    DvzTextAlign align;
+};
+typedef struct DvzTextLayout DvzTextLayout;
+
+
 struct DvzAnnotationDesc
 {
     uint32_t struct_size;

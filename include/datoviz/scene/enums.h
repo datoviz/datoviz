@@ -648,6 +648,14 @@ typedef enum
 } DvzTextRenderer;
 
 
+typedef enum
+{
+    DVZ_TEXT_ALIGN_LEFT = 0,
+    DVZ_TEXT_ALIGN_CENTER,
+    DVZ_TEXT_ALIGN_RIGHT,
+} DvzTextAlign;
+
+
 
 typedef enum
 {

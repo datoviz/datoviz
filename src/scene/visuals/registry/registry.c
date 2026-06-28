@@ -187,6 +187,7 @@ static const DvzVisualFamilyAttrDesc IMAGE_ATTRS[] = {
 
 static const DvzVisualFamilyAttrDesc TEXT_ATTRS[] = {
     {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"offset", 2 * sizeof(float), SRC_ITEM_ONLY, false},
     {"anchor", 2 * sizeof(float), SRC_ITEM_ONLY, false},
     {"size", sizeof(float), SRC_SIZE_GROUPED, false},
     {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},

@@ -1106,8 +1106,17 @@ struct DvzText
     DvzId id;
     DvzPanel* panel;
     char string[DVZ_SCENE_LABEL_SIZE];
+    uint32_t item_count;
+    char** strings;
+    double (*positions)[3];
+    float (*offsets)[2];
+    float (*anchors)[2];
+    float* sizes_px;
+    DvzColor* colors;
+    float* angles;
     DvzTextStyle style;
     DvzTextPlacement placement;
+    DvzTextLayout layout;
     uint32_t flags;
     uint32_t dirty_flags;
     uint64_t version;
@@ -1565,6 +1574,8 @@ struct DvzTextVisualState
     uint64_t strings_version;
     DvzTextRenderer renderer;
     uint64_t renderer_version;
+    DvzTextLayout layout;
+    uint64_t layout_version;
     DvzTextGlyphSpan* spans;
     uint32_t span_count;
     DvzVisual* glyph_visual;

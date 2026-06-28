@@ -51,6 +51,14 @@ DVZ_EXPORT DvzTextPlacement dvz_text_placement(void);
 
 
 /**
+ * Return the default retained text layout.
+ *
+ * @return default text layout
+ */
+DVZ_EXPORT DvzTextLayout dvz_text_layout(void);
+
+
+/**
  * Create a scene-owned font resource.
  *
  * @param scene the scene
@@ -196,7 +204,63 @@ DVZ_EXPORT void dvz_text_destroy(DvzText* text);
  * @param text the text object
  * @param string the string, or NULL to clear
  */
-DVZ_EXPORT void dvz_text_set_string(DvzText* text, const char* string);
+DVZ_EXPORT int dvz_text_set_items(
+    DvzText* text, const DvzTextItem* items, uint32_t item_count);
+
+
+/**
+ * Set the UTF-8 content of a retained one-item text collection.
+ *
+ * @param text the text object
+ * @param string the string, or NULL to clear
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_text_set_string(DvzText* text, const char* string);
+
+
+/**
+ * Set the position of a retained one-item text collection.
+ *
+ * @param text the text object
+ * @param position the position in the current placement mode
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_text_set_position(DvzText* text, const double position[3]);
+
+
+/**
+ * Set the layout of a retained text collection.
+ *
+ * @param text the text object
+ * @param layout the layout descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_text_set_layout(DvzText* text, const DvzTextLayout* layout);
+
+
+DVZ_EXPORT int
+dvz_text_set_strings(DvzText* text, const char* const* strings, uint32_t item_count);
+
+
+DVZ_EXPORT int
+dvz_text_set_positions(DvzText* text, const double (*positions)[3], uint32_t item_count);
+
+
+DVZ_EXPORT int
+dvz_text_set_offsets(DvzText* text, const float (*offsets)[2], uint32_t item_count);
+
+
+DVZ_EXPORT int
+dvz_text_set_anchors(DvzText* text, const float (*anchors)[2], uint32_t item_count);
+
+
+DVZ_EXPORT int dvz_text_set_sizes(DvzText* text, const float* sizes_px, uint32_t item_count);
+
+
+DVZ_EXPORT int dvz_text_set_colors(DvzText* text, const DvzColor* colors, uint32_t item_count);
+
+
+DVZ_EXPORT int dvz_text_set_angles(DvzText* text, const float* angles, uint32_t item_count);
 
 
 /**
@@ -215,7 +279,7 @@ DVZ_EXPORT int dvz_text_set_style(DvzText* text, const DvzTextStyle* style);
  * @param text the text object
  * @param placement the placement descriptor, or NULL for defaults
  */
-DVZ_EXPORT void dvz_text_set_placement(DvzText* text, const DvzTextPlacement* placement);
+DVZ_EXPORT int dvz_text_set_placement(DvzText* text, const DvzTextPlacement* placement);
 
 
 /**
