@@ -717,8 +717,9 @@ int test_drp2_render_pipeline_color_targets_json(TstContext* suite, const TstCas
         stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, VK_FORMAT_R16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_blend(
-        stream, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-        VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+        stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+        VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+        VK_BLEND_OP_ADD,
         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
             VK_COLOR_COMPONENT_A_BIT));
     AT(dvz_drp2_stream_pipeline_set_color_blend(
@@ -741,6 +742,9 @@ int test_drp2_render_pipeline_color_targets_json(TstContext* suite, const TstCas
     AT(strstr(json, "\"format\": \"r16float\"") != NULL);
     AT(strstr(json, "\"write_mask\": [\"red\", \"green\", \"blue\", \"alpha\"]") != NULL);
     AT(strstr(json, "\"blend\"") != NULL);
+    AT(strstr(json, "\"src_factor\": \"src-alpha\"") != NULL);
+    AT(strstr(json, "\"dst_factor\": \"one-minus-src-alpha\"") != NULL);
+    AT(strstr(json, "\"operation\": \"add\"") != NULL);
 
     dvz_drp2_stream_json_destroy(json);
     dvz_drp2_stream_destroy(stream);

@@ -259,6 +259,66 @@ static const char* _front_face_name(uint32_t front_face)
 
 
 
+static const char* _blend_factor_name(uint32_t factor)
+{
+    switch ((VkBlendFactor)factor)
+    {
+    case VK_BLEND_FACTOR_ZERO:
+        return "zero";
+    case VK_BLEND_FACTOR_ONE:
+        return "one";
+    case VK_BLEND_FACTOR_SRC_COLOR:
+        return "src";
+    case VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR:
+        return "one-minus-src";
+    case VK_BLEND_FACTOR_DST_COLOR:
+        return "dst";
+    case VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR:
+        return "one-minus-dst";
+    case VK_BLEND_FACTOR_SRC_ALPHA:
+        return "src-alpha";
+    case VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA:
+        return "one-minus-src-alpha";
+    case VK_BLEND_FACTOR_DST_ALPHA:
+        return "dst-alpha";
+    case VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA:
+        return "one-minus-dst-alpha";
+    case VK_BLEND_FACTOR_CONSTANT_COLOR:
+    case VK_BLEND_FACTOR_CONSTANT_ALPHA:
+        return "constant";
+    case VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR:
+    case VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA:
+        return "one-minus-constant";
+    case VK_BLEND_FACTOR_SRC_ALPHA_SATURATE:
+        return "src-alpha-saturated";
+    default:
+        return "one";
+    }
+}
+
+
+
+static const char* _blend_operation_name(uint32_t operation)
+{
+    switch ((VkBlendOp)operation)
+    {
+    case VK_BLEND_OP_ADD:
+        return "add";
+    case VK_BLEND_OP_SUBTRACT:
+        return "subtract";
+    case VK_BLEND_OP_REVERSE_SUBTRACT:
+        return "reverse-subtract";
+    case VK_BLEND_OP_MIN:
+        return "min";
+    case VK_BLEND_OP_MAX:
+        return "max";
+    default:
+        return "add";
+    }
+}
+
+
+
 static const char* _step_mode_name(uint32_t step_mode)
 {
     switch (step_mode)
@@ -462,13 +522,16 @@ static void _json_append_color_targets(JsonBuilder* builder, const DvzDrp2Comman
         {
             _json_append(
                 builder,
-                ", \"blend\": { \"color\": { \"src_factor\": %" PRIu32
-                ", \"dst_factor\": %" PRIu32 ", \"operation\": %" PRIu32
-                " }, \"alpha\": { \"src_factor\": %" PRIu32 ", \"dst_factor\": %" PRIu32
-                ", \"operation\": %" PRIu32 " } }",
-                target->src_color_blend_factor, target->dst_color_blend_factor,
-                target->color_blend_op, target->src_alpha_blend_factor,
-                target->dst_alpha_blend_factor, target->alpha_blend_op);
+                ", \"blend\": { \"color\": { \"src_factor\": \"%s\""
+                ", \"dst_factor\": \"%s\", \"operation\": \"%s\""
+                " }, \"alpha\": { \"src_factor\": \"%s\", \"dst_factor\": \"%s\""
+                ", \"operation\": \"%s\" } }",
+                _blend_factor_name(target->src_color_blend_factor),
+                _blend_factor_name(target->dst_color_blend_factor),
+                _blend_operation_name(target->color_blend_op),
+                _blend_factor_name(target->src_alpha_blend_factor),
+                _blend_factor_name(target->dst_alpha_blend_factor),
+                _blend_operation_name(target->alpha_blend_op));
         }
         _json_append(builder, " }");
     }
