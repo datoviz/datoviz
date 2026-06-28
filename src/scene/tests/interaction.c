@@ -3463,6 +3463,129 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
 }
 
 
+int test_scene_text_batched_collection_items(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzText* text = dvz_text(panel, 0);
+    ANN(text);
+    AT(dvz_text_set_style(
+           text,
+           &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+               .size_px = 16.0f,
+               .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+               .color = {255, 255, 255, 255},
+           }) == 0);
+    AT(dvz_text_set_placement(
+           text,
+           &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
+               .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+               .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
+           }) == 0);
+    DvzTextItem items[3] = {
+        {DVZ_STRUCT_INIT_FIELDS(DvzTextItem),
+         .string = "A",
+         .position = {24.0, 32.0, 0.0},
+         .anchor = {0.0f, 0.0f},
+         .size_px = 16.0f,
+         .color = {255, 0, 0, 255}},
+        {DVZ_STRUCT_INIT_FIELDS(DvzTextItem),
+         .string = "B\nC",
+         .position = {80.0, 32.0, 0.0},
+         .anchor = {0.5f, 0.5f},
+         .size_px = 18.0f,
+         .color = {0, 255, 0, 255}},
+        {DVZ_STRUCT_INIT_FIELDS(DvzTextItem),
+         .string = "D",
+         .position = {140.0, 32.0, 0.0},
+         .size_px = 20.0f,
+         .color = {0, 0, 255, 255},
+         .angle = 0.5f},
+    };
+    AT(dvz_text_set_items(text, items, 3) == 0);
+    AT(text->item_count == 3);
+    double bad_positions[2][3] = {{1.0, 2.0, 0.0}, {3.0, 4.0, 0.0}};
+    AT(dvz_text_set_positions(text, bad_positions, 2) != 0);
+    AC((float)text->positions[0][0], 24.0f, 1e-6f);
+
+    _scene_prepare_text_visuals(figure);
+    ANN(text->visual);
+    AT(text->visual->type == DVZ_VISUAL_TYPE_TEXT);
+    AT(_visual_family_state(text->visual)->text.string_count == 3);
+    DvzVisual* glyph = _visual_family_state(text->visual)->text.glyph_visual;
+    ANN(glyph);
+    AT(glyph->visible);
+    AT(_visual_family_state(text->visual)->text.span_count == 3);
+    AT(_visual_family_state(text->visual)->text.spans[1].glyph_count == 2);
+
+    int color_idx = _attr_index(glyph, "color");
+    int angle_idx = _attr_index(glyph, "angle");
+    AT(color_idx >= 0);
+    AT(angle_idx >= 0);
+    const DvzColor* colors = (const DvzColor*)glyph->attrs[color_idx].data;
+    const float* angles = (const float*)glyph->attrs[angle_idx].data;
+    ANN(colors);
+    ANN(angles);
+    uint32_t third_vertex = _visual_family_state(text->visual)->text.spans[2].first_glyph * 6u;
+    AT(colors[third_vertex].b == 255);
+    AC(angles[third_vertex], 0.5f, 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_text_batched_layout_spacing(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    DvzText* text = dvz_text(panel, 0);
+    ANN(text);
+    AT(dvz_text_set_style(
+           text,
+           &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+               .size_px = 16.0f,
+               .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+           }) == 0);
+    AT(dvz_text_set_string(text, "A\nA") == 0);
+    _scene_prepare_text_visuals(figure);
+    DvzVisual* glyph = _visual_family_state(text->visual)->text.glyph_visual;
+    ANN(glyph);
+    int bounds_idx = _attr_index(glyph, "bounds");
+    AT(bounds_idx >= 0);
+    const vec4* bounds = (const vec4*)glyph->attrs[bounds_idx].data;
+    ANN(bounds);
+    float default_second_y = bounds[6][1];
+
+    AT(dvz_text_set_layout(
+           text,
+           &(DvzTextLayout){DVZ_STRUCT_INIT_FIELDS(DvzTextLayout),
+               .line_height = 2.0f,
+               .line_gap_px = 3.0f,
+           }) == 0);
+    _scene_prepare_text_visuals(figure);
+    glyph = _visual_family_state(text->visual)->text.glyph_visual;
+    bounds_idx = _attr_index(glyph, "bounds");
+    bounds = (const vec4*)glyph->attrs[bounds_idx].data;
+    ANN(bounds);
+    AT(bounds[6][1] > default_second_y + 3.0f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -4560,6 +4683,8 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_font_defaults);
     TST_CASE(test_scene_text_sdf_default_font);
     TST_CASE(test_scene_text_semantic_object_realization);
+    TST_CASE(test_scene_text_batched_collection_items);
+    TST_CASE(test_scene_text_batched_layout_spacing);
     TST_CASE(test_scene_text_bitmap_visual_realization);
     TST_CASE(test_scene_text_sdf_visual_realization);
     TST_CASE(test_scene_text_auto_renderer_selection);
