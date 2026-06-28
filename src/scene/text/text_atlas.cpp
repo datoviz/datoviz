@@ -26,6 +26,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
+#include "_time_utils.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/scene.h"
 #include "text/text_internal.h"
@@ -118,10 +119,47 @@ struct DvzTextAtlasBuildSet
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Woverlength-strings"
 #endif
-#include "text_default_msdf_atlas.inc"
+#include "text_default_msdf_atlas_generated.inc"
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
+
+typedef struct DvzTextDefaultMsdfAtlasData DvzTextDefaultMsdfAtlasData;
+struct DvzTextDefaultMsdfAtlasData
+{
+    uint32_t width;
+    uint32_t height;
+    uint32_t glyph_count;
+    float em_px;
+    float range_px;
+    float ascent;
+    float descent;
+    float line_gap;
+    float line_height;
+    uint32_t rgba_size;
+    uint32_t z_size;
+    const uint8_t* z;
+    const DvzTextAtlasGlyph* glyphs;
+};
+
+static const DvzTextDefaultMsdfAtlasData DVZ_TEXT_DEFAULT_MSDF_ATLASES[] = {
+    {DVZ_TEXT_DEFAULT_MSDF_32_WIDTH,        DVZ_TEXT_DEFAULT_MSDF_32_HEIGHT,
+     DVZ_TEXT_DEFAULT_MSDF_32_GLYPH_COUNT,  DVZ_TEXT_DEFAULT_MSDF_32_EM_PX,
+     DVZ_TEXT_DEFAULT_MSDF_32_RANGE_PX,     DVZ_TEXT_DEFAULT_MSDF_32_ASCENT,
+     DVZ_TEXT_DEFAULT_MSDF_32_DESCENT,      DVZ_TEXT_DEFAULT_MSDF_32_LINE_GAP,
+     DVZ_TEXT_DEFAULT_MSDF_32_LINE_HEIGHT,  DVZ_TEXT_DEFAULT_MSDF_32_RGBA_SIZE,
+     DVZ_TEXT_DEFAULT_MSDF_32_RGBA_Z_SIZE,  DVZ_TEXT_DEFAULT_MSDF_32_RGBA_Z,
+     DVZ_TEXT_DEFAULT_MSDF_32_GLYPHS},
+    {DVZ_TEXT_DEFAULT_MSDF_64_WIDTH,        DVZ_TEXT_DEFAULT_MSDF_64_HEIGHT,
+     DVZ_TEXT_DEFAULT_MSDF_64_GLYPH_COUNT,  DVZ_TEXT_DEFAULT_MSDF_64_EM_PX,
+     DVZ_TEXT_DEFAULT_MSDF_64_RANGE_PX,     DVZ_TEXT_DEFAULT_MSDF_64_ASCENT,
+     DVZ_TEXT_DEFAULT_MSDF_64_DESCENT,      DVZ_TEXT_DEFAULT_MSDF_64_LINE_GAP,
+     DVZ_TEXT_DEFAULT_MSDF_64_LINE_HEIGHT,  DVZ_TEXT_DEFAULT_MSDF_64_RGBA_SIZE,
+     DVZ_TEXT_DEFAULT_MSDF_64_RGBA_Z_SIZE,  DVZ_TEXT_DEFAULT_MSDF_64_RGBA_Z,
+     DVZ_TEXT_DEFAULT_MSDF_64_GLYPHS},
+};
+static const uint32_t DVZ_TEXT_DEFAULT_MSDF_ATLAS_COUNT =
+    sizeof(DVZ_TEXT_DEFAULT_MSDF_ATLASES) / sizeof(DVZ_TEXT_DEFAULT_MSDF_ATLASES[0]);
 
 
 static bool _text_atlas_codepoint_renderable(uint32_t codepoint);
@@ -141,6 +179,15 @@ static bool _text_atlas_try_append(
 static bool _text_default_msdf_build_atlas(
     DvzFont* font, const DvzTextAtlasSpec* spec, const DvzTextAtlasBuildSet* set,
     DvzTextAtlas** out_atlas);
+
+
+static double _text_atlas_elapsed_ms(uint64_t start_ns)
+{
+    uint64_t end_ns = dvz_time_monotonic_ns();
+    if (start_ns == 0 || end_ns <= start_ns)
+        return 0.0;
+    return (double)(end_ns - start_ns) / 1000000.0;
+}
 
 
 #if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
@@ -165,6 +212,11 @@ static bool _text_msdf_build_atlas(
         return false;
     if (!_text_sdf_font_bytes(font))
         return false;
+
+    uint64_t start_ns = dvz_time_monotonic_ns();
+    log_debug(
+        "text atlas: building runtime MSDF atlas em=%.3f range=%.3f glyphs=%u",
+        (double)spec->em_px, (double)spec->distance_range_px, set->count);
 
     msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype();
     if (ft == NULL)
@@ -400,6 +452,12 @@ static bool _text_msdf_build_atlas(
     }
 
     *out_atlas = atlas;
+    log_debug(
+        "text atlas: runtime MSDF atlas ready em=%.3f range=%.3f glyphs=%u size=%ux%u "
+        "rgba=%llu in %.3f ms",
+        (double)atlas->em_px, (double)atlas->distance_range_px, atlas->glyph_count,
+        atlas->width, atlas->height, (unsigned long long)byte_size,
+        _text_atlas_elapsed_ms(start_ns));
     return true;
 }
 #endif
@@ -957,17 +1015,15 @@ static bool _text_default_msdf_spec_index(const DvzTextAtlasSpec* spec, uint32_t
     ANN(out_index);
     if (spec->backend != DVZ_TEXT_ATLAS_BACKEND_MSDF || spec->flags != 0)
         return false;
-    if (fabsf(spec->em_px - 32.0f) <= 0.001f &&
-        fabsf(spec->distance_range_px - 4.0f) <= 0.001f)
+    for (uint32_t i = 0; i < DVZ_TEXT_DEFAULT_MSDF_ATLAS_COUNT; i++)
     {
-        *out_index = 0;
-        return true;
-    }
-    if (fabsf(spec->em_px - 64.0f) <= 0.001f &&
-        fabsf(spec->distance_range_px - 8.0f) <= 0.001f)
-    {
-        *out_index = 1;
-        return true;
+        const DvzTextDefaultMsdfAtlasData* data = &DVZ_TEXT_DEFAULT_MSDF_ATLASES[i];
+        if (fabsf(spec->em_px - data->em_px) <= 0.001f &&
+            fabsf(spec->distance_range_px - data->range_px) <= 0.001f)
+        {
+            *out_index = i;
+            return true;
+        }
     }
     return false;
 }
@@ -991,74 +1047,6 @@ static bool _text_default_msdf_covers_set(const DvzTextAtlasBuildSet* set)
     }
     return true;
 }
-
-
-
-#if defined(DVZ_HAS_ZLIB) && DVZ_HAS_ZLIB
-/**
- * Decode one base64 character.
- *
- * @param c input character
- * @return value in [0, 63], -1 for padding, -2 for invalid characters
- */
-static int _text_base64_value(char c)
-{
-    if (c >= 'A' && c <= 'Z')
-        return c - 'A';
-    if (c >= 'a' && c <= 'z')
-        return 26 + c - 'a';
-    if (c >= '0' && c <= '9')
-        return 52 + c - '0';
-    if (c == '+')
-        return 62;
-    if (c == '/')
-        return 63;
-    if (c == '=')
-        return -1;
-    return -2;
-}
-
-
-
-/**
- * Decode base64 text into bytes.
- *
- * @param b64 base64 input
- * @param out output byte buffer
- * @param out_capacity output byte capacity
- * @param out_size decoded byte size
- * @return whether decoding succeeded
- */
-static bool _text_base64_decode(
-    const char* b64, uint8_t* out, uint32_t out_capacity, uint32_t* out_size)
-{
-    ANN(b64);
-    ANN(out);
-    ANN(out_size);
-    uint32_t value = 0;
-    uint32_t bits = 0;
-    uint32_t count = 0;
-    for (uint32_t i = 0; b64[i] != '\0'; i++)
-    {
-        int v = _text_base64_value(b64[i]);
-        if (v == -1)
-            break;
-        if (v < 0)
-            return false;
-        value = (value << 6u) | (uint32_t)v;
-        bits += 6u;
-        if (bits >= 8u)
-        {
-            bits -= 8u;
-            if (count >= out_capacity)
-                return false;
-            out[count++] = (uint8_t)((value >> bits) & 0xffu);
-        }
-    }
-    *out_size = count;
-    return true;
-}
-#endif
 
 
 
@@ -1088,53 +1076,27 @@ static bool _text_default_msdf_build_atlas(
         return false;
     }
 
-    const uint32_t width =
-        index == 0 ? DVZ_TEXT_DEFAULT_MSDF_32_WIDTH : DVZ_TEXT_DEFAULT_MSDF_64_WIDTH;
-    const uint32_t height =
-        index == 0 ? DVZ_TEXT_DEFAULT_MSDF_32_HEIGHT : DVZ_TEXT_DEFAULT_MSDF_64_HEIGHT;
-    const uint32_t glyph_count =
-        index == 0 ? DVZ_TEXT_DEFAULT_MSDF_32_GLYPH_COUNT : DVZ_TEXT_DEFAULT_MSDF_64_GLYPH_COUNT;
-    const float em_px =
-        index == 0 ? DVZ_TEXT_DEFAULT_MSDF_32_EM_PX : DVZ_TEXT_DEFAULT_MSDF_64_EM_PX;
-    const float range_px =
-        index == 0 ? DVZ_TEXT_DEFAULT_MSDF_32_RANGE_PX : DVZ_TEXT_DEFAULT_MSDF_64_RANGE_PX;
-    const float ascent =
-        index == 0 ? DVZ_TEXT_DEFAULT_MSDF_32_ASCENT : DVZ_TEXT_DEFAULT_MSDF_64_ASCENT;
-    const float descent =
-        index == 0 ? DVZ_TEXT_DEFAULT_MSDF_32_DESCENT : DVZ_TEXT_DEFAULT_MSDF_64_DESCENT;
-    const float line_gap =
-        index == 0 ? DVZ_TEXT_DEFAULT_MSDF_32_LINE_GAP : DVZ_TEXT_DEFAULT_MSDF_64_LINE_GAP;
-    const float line_height =
-        index == 0 ? DVZ_TEXT_DEFAULT_MSDF_32_LINE_HEIGHT : DVZ_TEXT_DEFAULT_MSDF_64_LINE_HEIGHT;
-    const uint32_t rgba_size =
-        index == 0 ? DVZ_TEXT_DEFAULT_MSDF_32_RGBA_SIZE : DVZ_TEXT_DEFAULT_MSDF_64_RGBA_SIZE;
-    const uint32_t z_size =
-        index == 0 ? DVZ_TEXT_DEFAULT_MSDF_32_RGBA_Z_SIZE : DVZ_TEXT_DEFAULT_MSDF_64_RGBA_Z_SIZE;
-    const char* z_b64 =
-        index == 0 ? DVZ_TEXT_DEFAULT_MSDF_32_RGBA_Z_B64 : DVZ_TEXT_DEFAULT_MSDF_64_RGBA_Z_B64;
-    const DvzTextAtlasGlyph* glyphs =
-        index == 0 ? DVZ_TEXT_DEFAULT_MSDF_32_GLYPHS : DVZ_TEXT_DEFAULT_MSDF_64_GLYPHS;
+    const DvzTextDefaultMsdfAtlasData* data = &DVZ_TEXT_DEFAULT_MSDF_ATLASES[index];
+    uint64_t start_ns = dvz_time_monotonic_ns();
 
-    uint8_t* compressed = (uint8_t*)dvz_malloc(z_size);
-    uint8_t* rgba = (uint8_t*)dvz_malloc(rgba_size);
+    uint8_t* rgba = (uint8_t*)dvz_malloc(data->rgba_size);
     DvzTextAtlas* atlas = (DvzTextAtlas*)dvz_calloc(1, sizeof(DvzTextAtlas));
-    if (compressed == NULL || rgba == NULL || atlas == NULL)
+    if (rgba == NULL || atlas == NULL)
     {
-        dvz_free(compressed);
         dvz_free(rgba);
         dvz_free(atlas);
         return false;
     }
 
-    uint32_t decoded_size = 0;
-    uLongf dest_len = (uLongf)rgba_size;
-    bool ok = _text_base64_decode(z_b64, compressed, z_size, &decoded_size) &&
-              decoded_size == z_size &&
-              uncompress(rgba, &dest_len, compressed, (uLong)z_size) == Z_OK &&
-              dest_len == (uLongf)rgba_size;
-    dvz_free(compressed);
+    uLongf dest_len = (uLongf)data->rgba_size;
+    bool ok =
+        uncompress(rgba, &dest_len, data->z, (uLong)data->z_size) == Z_OK &&
+        dest_len == (uLongf)data->rgba_size;
     if (!ok)
     {
+        log_debug(
+            "text atlas: embedded MSDF atlas decompress failed em=%.3f range=%.3f",
+            (double)data->em_px, (double)data->range_px);
         dvz_free(rgba);
         dvz_free(atlas);
         return false;
@@ -1143,21 +1105,21 @@ static bool _text_default_msdf_build_atlas(
     atlas->spec = *spec;
     atlas->backend = DVZ_TEXT_ATLAS_BACKEND_MSDF;
     atlas->encoding = DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB;
-    atlas->width = width;
-    atlas->height = height;
-    atlas->glyph_count = glyph_count;
+    atlas->width = data->width;
+    atlas->height = data->height;
+    atlas->glyph_count = data->glyph_count;
     atlas->channels = 4;
-    atlas->em_px = em_px;
-    atlas->distance_range_px = range_px;
-    atlas->ascent = ascent;
-    atlas->descent = descent;
-    atlas->line_gap = line_gap;
-    atlas->line_height = line_height;
+    atlas->em_px = data->em_px;
+    atlas->distance_range_px = data->range_px;
+    atlas->ascent = data->ascent;
+    atlas->descent = data->descent;
+    atlas->line_gap = data->line_gap;
+    atlas->line_height = data->line_height;
     dvz_memcpy(
-        atlas->glyphs, sizeof(DvzTextAtlasGlyph) * glyph_count, glyphs,
-        sizeof(DvzTextAtlasGlyph) * glyph_count);
+        atlas->glyphs, sizeof(DvzTextAtlasGlyph) * data->glyph_count, data->glyphs,
+        sizeof(DvzTextAtlasGlyph) * data->glyph_count);
 
-    ok = _text_atlas_upload_rgba(font, atlas, rgba, width, height);
+    ok = _text_atlas_upload_rgba(font, atlas, rgba, data->width, data->height);
     dvz_free(rgba);
     if (!ok)
     {
@@ -1165,6 +1127,11 @@ static bool _text_default_msdf_build_atlas(
         return false;
     }
     *out_atlas = atlas;
+    log_debug(
+        "text atlas: embedded MSDF atlas ready em=%.3f range=%.3f glyphs=%u size=%ux%u "
+        "z=%u rgba=%u in %.3f ms",
+        (double)data->em_px, (double)data->range_px, data->glyph_count, data->width,
+        data->height, data->z_size, data->rgba_size, _text_atlas_elapsed_ms(start_ns));
     return true;
 #else
     (void)font;
@@ -2298,9 +2265,19 @@ static bool _text_atlas_ensure_exact_set(
     if (!_text_atlas_build_set_add_existing(&set, existing))
         return existing != NULL && existing->field != NULL;
     if (_text_atlas_contains_set(existing, &set))
+    {
+        log_trace(
+            "text atlas: cache hit backend=%d em=%.3f range=%.3f glyphs=%u",
+            (int)spec->backend, (double)spec->em_px, (double)spec->distance_range_px,
+            set.count);
         return true;
+    }
     if (existing != NULL && _text_atlas_try_append(font, existing, &set))
     {
+        log_debug(
+            "text atlas: appended glyphs backend=%d em=%.3f range=%.3f glyphs=%u",
+            (int)spec->backend, (double)spec->em_px, (double)spec->distance_range_px,
+            existing->glyph_count);
         font->version++;
         existing->generation = font->version;
         return true;
@@ -2316,6 +2293,9 @@ static bool _text_atlas_ensure_exact_set(
     }
 
     atlas = NULL;
+    log_debug(
+        "text atlas: building backend atlas backend=%d em=%.3f range=%.3f glyphs=%u",
+        (int)spec->backend, (double)spec->em_px, (double)spec->distance_range_px, set.count);
     if (!_text_atlas_build_backend(font, spec, &set, &atlas))
         return existing != NULL && existing->field != NULL;
     if (!_text_atlas_store(font, spec, atlas))

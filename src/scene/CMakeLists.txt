@@ -20,6 +20,30 @@ file(GLOB SCENE_RUNTIME_SRC "${CMAKE_CURRENT_SOURCE_DIR}/runtime/*.c*")
 file(GLOB SCENE_SCENE_EMIT_SRC "${CMAKE_CURRENT_SOURCE_DIR}/scene_emit/*.c*")
 file(GLOB SCENE_TECHNIQUE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/techniques/*.c*")
 file(GLOB SCENE_TEXT_SRC "${CMAKE_CURRENT_SOURCE_DIR}/text/*.c*")
+
+find_package(Python COMPONENTS Interpreter REQUIRED)
+
+set(DVZ_TEXT_DEFAULT_MSDF_ATLAS_SRC
+    "${CMAKE_CURRENT_SOURCE_DIR}/text/text_default_msdf_atlas.inc")
+set(DVZ_TEXT_DEFAULT_MSDF_ATLAS_GENERATED
+    "${CMAKE_CURRENT_BINARY_DIR}/text_default_msdf_atlas_generated.inc")
+
+add_custom_command(
+    OUTPUT ${DVZ_TEXT_DEFAULT_MSDF_ATLAS_GENERATED}
+    COMMAND ${Python_EXECUTABLE}
+    ${PROJECT_SOURCE_DIR}/tools/convert_msdf_atlas_payloads.py
+    --input
+    ${DVZ_TEXT_DEFAULT_MSDF_ATLAS_SRC}
+    --output
+    ${DVZ_TEXT_DEFAULT_MSDF_ATLAS_GENERATED}
+    DEPENDS
+    ${DVZ_TEXT_DEFAULT_MSDF_ATLAS_SRC}
+    ${PROJECT_SOURCE_DIR}/tools/convert_msdf_atlas_payloads.py
+    COMMENT "Generating default MSDF atlas byte arrays"
+    VERBATIM)
+
+add_custom_target(datoviz_text_default_msdf_atlas
+    DEPENDS ${DVZ_TEXT_DEFAULT_MSDF_ATLAS_GENERATED})
 list(
     APPEND
     SCENE_SRC
@@ -69,6 +93,7 @@ endif()
 if(DVZ_HAS_EMBEDDED_FONTS AND TARGET datoviz_fonts)
     add_dependencies(datoviz_scene datoviz_fonts)
 endif()
+add_dependencies(datoviz_scene datoviz_text_default_msdf_atlas)
 
 target_include_directories(datoviz_scene
     PUBLIC
@@ -92,6 +117,7 @@ target_include_directories(datoviz_scene
     ${CMAKE_CURRENT_SOURCE_DIR}/techniques
     ${CMAKE_CURRENT_SOURCE_DIR}/text
     ${CMAKE_CURRENT_SOURCE_DIR}/visuals
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 target_compile_definitions(datoviz_scene PUBLIC ${DVZ_COMPILE_DEFINITIONS})
