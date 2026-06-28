@@ -37,6 +37,7 @@
 #define DVZ_MARKER_STYLE_KNOWN_FLAGS 0u
 #define DVZ_SYMBOL_IMAGE_DESC_KNOWN_FLAGS 0u
 #define DVZ_SYMBOL_CUSTOM_ID_BASE ((DvzSymbolId)DVZ_MARKER_SHAPE_ROUNDED_RECT + 1u)
+#define DVZ_SYMBOL_ATLAS_GUTTER 1u
 
 /**
  * Return whether a built-in symbol value is supported by the code-SDF marker path.
@@ -252,10 +253,15 @@ static bool _symbol_set_rebuild_atlas_page(DvzSymbolSet* symbols, DvzSymbolSourc
         DvzSymbolSource* source = &symbols->sources[i];
         if (!source->active || source->kind != kind)
             continue;
-        if (UINT32_MAX - width < source->width)
+        const uint32_t gutter = 2u * DVZ_SYMBOL_ATLAS_GUTTER;
+        if (source->width > UINT32_MAX - gutter || source->height > UINT32_MAX - gutter)
             return false;
-        width += source->width;
-        height = MAX(height, source->height);
+        const uint32_t padded_width = source->width + gutter;
+        const uint32_t padded_height = source->height + gutter;
+        if (UINT32_MAX - width < padded_width)
+            return false;
+        width += padded_width;
+        height = MAX(height, padded_height);
         entry_count++;
     }
 
@@ -283,10 +289,12 @@ static bool _symbol_set_rebuild_atlas_page(DvzSymbolSet* symbols, DvzSymbolSourc
         DvzSymbolSource* source = &symbols->sources[i];
         if (!source->active || source->kind != kind)
             continue;
+        const uint32_t dst_x = x + DVZ_SYMBOL_ATLAS_GUTTER;
+        const uint32_t dst_y = DVZ_SYMBOL_ATLAS_GUTTER;
         for (uint32_t y = 0; y < source->height; y++)
         {
             const uint64_t src_offset = (uint64_t)y * source->row_stride;
-            const uint64_t dst_offset = ((uint64_t)y * width + x) * atlas_channels;
+            const uint64_t dst_offset = ((uint64_t)(dst_y + y) * width + dst_x) * atlas_channels;
             if (source_channels == atlas_channels)
             {
                 const uint64_t row_bytes = (uint64_t)source->width * atlas_channels;
@@ -312,13 +320,13 @@ static bool _symbol_set_rebuild_atlas_page(DvzSymbolSet* symbols, DvzSymbolSourc
                 return false;
             }
         }
-        source->atlas_x = x;
-        source->atlas_y = 0;
-        source->atlas_uv[0] = (float)x / (float)width;
-        source->atlas_uv[1] = 0.0f;
-        source->atlas_uv[2] = (float)(x + source->width) / (float)width;
-        source->atlas_uv[3] = (float)source->height / (float)height;
-        x += source->width;
+        source->atlas_x = dst_x;
+        source->atlas_y = dst_y;
+        source->atlas_uv[0] = ((float)dst_x + 0.5f) / (float)width;
+        source->atlas_uv[1] = ((float)dst_y + 0.5f) / (float)height;
+        source->atlas_uv[2] = ((float)(dst_x + source->width) - 0.5f) / (float)width;
+        source->atlas_uv[3] = ((float)(dst_y + source->height) - 0.5f) / (float)height;
+        x += source->width + 2u * DVZ_SYMBOL_ATLAS_GUTTER;
     }
 
     page->active = true;

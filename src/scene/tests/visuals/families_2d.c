@@ -1152,19 +1152,19 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     AT(sdf_symbol == bitmap_symbol + 1);
     AT(msdf_symbol == sdf_symbol + 1);
     AT(symbol_set->source_count == 3);
-    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_BITMAP].width == 2);
-    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_BITMAP].height == 2);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_BITMAP].width == 4);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_BITMAP].height == 4);
     AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_BITMAP].channels == 4);
-    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_BITMAP].data[0] == 255);
-    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_SDF].width == 2);
-    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_SDF].height == 2);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_BITMAP].data[20] == 255);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_SDF].width == 4);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_SDF].height == 4);
     AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_SDF].channels == 1);
-    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_SDF].data[2] == 160);
-    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].width == 2);
-    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].height == 2);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_SDF].data[9] == 160);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].width == 4);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].height == 4);
     AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].channels == 4);
-    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].data[8] == 160);
-    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].data[15] == 255);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].data[36] == 160);
+    AT(symbol_set->atlas_pages[DVZ_SYMBOL_SOURCE_MSDF].data[43] == 255);
 
     vec3 positions[5] = {
         {-0.50f, 0.0f, 0.0f},
@@ -1249,14 +1249,14 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     const float* stored_tex_rects = (const float*)bitmap_visual->attrs[tex_rect_idx].data;
     ANN(stored_tex_rects);
     AT(bitmap_visual->attrs[tex_rect_idx].item_count == 2);
-    AC(stored_tex_rects[0], 0.0, 1e-6);
-    AC(stored_tex_rects[1], 0.0, 1e-6);
-    AC(stored_tex_rects[2], 1.0, 1e-6);
-    AC(stored_tex_rects[3], 1.0, 1e-6);
-    AC(stored_tex_rects[4], 0.0, 1e-6);
-    AC(stored_tex_rects[5], 0.0, 1e-6);
-    AC(stored_tex_rects[6], 1.0, 1e-6);
-    AC(stored_tex_rects[7], 1.0, 1e-6);
+    AC(stored_tex_rects[0], 0.375, 1e-6);
+    AC(stored_tex_rects[1], 0.375, 1e-6);
+    AC(stored_tex_rects[2], 0.625, 1e-6);
+    AC(stored_tex_rects[3], 0.625, 1e-6);
+    AC(stored_tex_rects[4], 0.375, 1e-6);
+    AC(stored_tex_rects[5], 0.375, 1e-6);
+    AC(stored_tex_rects[6], 0.625, 1e-6);
+    AC(stored_tex_rects[7], 0.625, 1e-6);
     AT(dvz_panel_add_visual(panel, bitmap_visual, NULL) == 0);
 
     DvzVisual* sdf_visual = dvz_marker(scene, 0);
@@ -1390,7 +1390,7 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
         {
             if (command->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM &&
-                command->u.create_texture.width == 2 && command->u.create_texture.height == 2 &&
+                command->u.create_texture.width == 4 && command->u.create_texture.height == 4 &&
                 command->u.create_texture.depth == 1)
             {
                 if (command->u.create_texture.color_role == DVZ_DRP2_COLOR_ROLE_SRGB_COLOR)
@@ -1399,7 +1399,7 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
                     rgba_data_texture_count++;
             }
             if (command->u.create_texture.format == VK_FORMAT_R8_UNORM &&
-                command->u.create_texture.width == 2 && command->u.create_texture.height == 2 &&
+                command->u.create_texture.width == 4 && command->u.create_texture.height == 4 &&
                 command->u.create_texture.depth == 1 &&
                 command->u.create_texture.color_role == DVZ_DRP2_COLOR_ROLE_DATA)
             {
@@ -1407,37 +1407,37 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
             }
             found_texture =
                 found_texture || (command->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM &&
-                                  command->u.create_texture.width == 2 &&
-                                  command->u.create_texture.height == 2 &&
+                                  command->u.create_texture.width == 4 &&
+                                  command->u.create_texture.height == 4 &&
                                   command->u.create_texture.depth == 1);
             found_sdf_texture =
                 found_sdf_texture || (command->u.create_texture.format == VK_FORMAT_R8_UNORM &&
-                                      command->u.create_texture.width == 2 &&
-                                      command->u.create_texture.height == 2 &&
+                                      command->u.create_texture.width == 4 &&
+                                      command->u.create_texture.height == 4 &&
                                       command->u.create_texture.depth == 1);
             found_msdf_texture =
                 found_msdf_texture || (command->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM &&
-                                       command->u.create_texture.width == 2 &&
-                                       command->u.create_texture.height == 2 &&
+                                       command->u.create_texture.width == 4 &&
+                                       command->u.create_texture.height == 4 &&
                                        command->u.create_texture.depth == 1);
         }
         else if (command->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
         {
             found_texture_upload =
-                found_texture_upload || (command->u.write_texture.width == 2 &&
-                                         command->u.write_texture.height == 2 &&
+                found_texture_upload || (command->u.write_texture.width == 4 &&
+                                         command->u.write_texture.height == 4 &&
                                          command->u.write_texture.depth == 1 &&
-                                         command->u.write_texture.bytes_per_row == 2 * 4);
+                                         command->u.write_texture.bytes_per_row == 4 * 4);
             found_sdf_texture_upload =
-                found_sdf_texture_upload || (command->u.write_texture.width == 2 &&
-                                             command->u.write_texture.height == 2 &&
+                found_sdf_texture_upload || (command->u.write_texture.width == 4 &&
+                                             command->u.write_texture.height == 4 &&
                                              command->u.write_texture.depth == 1 &&
-                                             command->u.write_texture.bytes_per_row == 2);
+                                             command->u.write_texture.bytes_per_row == 4);
             found_msdf_texture_upload =
-                found_msdf_texture_upload || (command->u.write_texture.width == 2 &&
-                                              command->u.write_texture.height == 2 &&
+                found_msdf_texture_upload || (command->u.write_texture.width == 4 &&
+                                              command->u.write_texture.height == 4 &&
                                               command->u.write_texture.depth == 1 &&
-                                              command->u.write_texture.bytes_per_row == 2 * 4);
+                                              command->u.write_texture.bytes_per_row == 4 * 4);
         }
     }
     AT(found_pipeline);

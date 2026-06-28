@@ -91,17 +91,34 @@ DvzSymbolId dvz_symbol_svg_path(
         log_error("failed to parse symbol SVG path");
         return DVZ_SYMBOL_ID_INVALID;
     }
+    shape.setYAxisOrientation(msdfgen::Y_DOWNWARD);
+    shape.orientContours();
     shape.normalize();
     msdfgen::edgeColoringSimple(shape, 3.0);
 
     msdfgen::Bitmap<float, 3> bitmap((int)width, (int)height);
-    double scale_x = width > 2u * (uint32_t)range_px ? (double)width - 2.0 * (double)range_px :
-                                                       (double)width;
-    double scale_y = height > 2u * (uint32_t)range_px ? (double)height - 2.0 * (double)range_px :
-                                                        (double)height;
+    msdfgen::Shape::Bounds bounds = shape.getBounds();
+    double shape_width = bounds.r - bounds.l;
+    double shape_height = bounds.t - bounds.b;
+    if (!(shape_width > 0.0) || !(shape_height > 0.0) || !isfinite(shape_width) ||
+        !isfinite(shape_height))
+    {
+        log_error("symbol SVG path has empty bounds");
+        return DVZ_SYMBOL_ID_INVALID;
+    }
+
+    const double frame_margin =
+        fmax((double)range_px + 2.0, 0.125 * fmin((double)width, (double)height));
+    const double margin_x = (double)width > 2.0 * frame_margin ? frame_margin : 0.0;
+    const double margin_y = (double)height > 2.0 * frame_margin ? frame_margin : 0.0;
+    const double inner_width = (double)width - 2.0 * margin_x;
+    const double inner_height = (double)height - 2.0 * margin_y;
+    const double scale = fmin(inner_width / shape_width, inner_height / shape_height);
+    const msdfgen::Vector2 translate(
+        margin_x + 0.5 * (inner_width - shape_width * scale) - bounds.l * scale,
+        margin_y + 0.5 * (inner_height - shape_height * scale) - bounds.b * scale);
     msdfgen::generateMSDF(
-        bitmap, shape, (double)range_px, msdfgen::Vector2(scale_x, scale_y),
-        msdfgen::Vector2((double)range_px, (double)range_px));
+        bitmap, shape, (double)range_px, msdfgen::Vector2(scale, scale), translate);
 
     uint64_t pixel_count = 0;
     uint64_t byte_size = 0;
