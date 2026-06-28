@@ -62,12 +62,28 @@ static const char* LABEL_NAMES[LABEL_COUNT] = {
 
 typedef struct LabelProbeState LabelProbeState;
 
+typedef struct LabelProbeMarker LabelProbeMarker;
+
+typedef struct LabelProbePointer LabelProbePointer;
+
+struct LabelProbeMarker
+{
+    DvzVisual* ring;
+    DvzVisual* dot;
+};
+
+struct LabelProbePointer
+{
+    bool valid;
+    double panel_px[2];
+    double data[2];
+};
+
 struct LabelProbeState
 {
     DvzScene* scene;
     DvzPanel* panel;
-    DvzVisual* probe_ring;
-    DvzVisual* probe_dot;
+    LabelProbeMarker marker;
     int32_t* labels;
     bool cursor_valid;
     double cursor_x;
@@ -278,45 +294,46 @@ static bool _add_labels(
 /**
  * Update the visible probe marker to a normalized data position.
  *
- * @param state label probe example state
+ * @param marker visible probe marker
  * @param x normalized probe X coordinate
  * @param y normalized probe Y coordinate
  */
-static void _update_probe_marker(LabelProbeState* state, float x, float y)
+static void _update_probe_marker(LabelProbeMarker* marker, float x, float y)
 {
-    if (state == NULL || state->panel == NULL || state->probe_ring == NULL ||
-        state->probe_dot == NULL)
-    {
+    if (marker == NULL || marker->ring == NULL || marker->dot == NULL)
         return;
-    }
 
     vec3 ring_data[1] = {{x, y, 0.04f}};
     vec3 dot_data[1] = {{x, y, 0.05f}};
 
-    (void)dvz_visual_set_data(state->probe_ring, "position", ring_data, 1);
-    (void)dvz_visual_set_data(state->probe_dot, "position", dot_data, 1);
+    (void)dvz_visual_set_data(marker->ring, "position", ring_data, 1);
+    (void)dvz_visual_set_data(marker->dot, "position", dot_data, 1);
 }
 
 
 
 /**
- * Update the visible probe marker from the latest cursor position.
+ * Convert one figure-coordinate pointer position to panel pixels and normalized data coordinates.
  *
- * @param state label probe example state
+ * @param panel target panel
+ * @param figure_x pointer X in figure pixels
+ * @param figure_y pointer Y in figure pixels
+ * @param out converted pointer state
+ * @return true when the pointer is inside the probe panel
  */
-static void _update_probe_marker_from_cursor(LabelProbeState* state)
+static bool _probe_pointer_from_figure(
+    DvzPanel* panel, double figure_x, double figure_y, LabelProbePointer* out)
 {
-    if (state == NULL || !state->cursor_valid)
-        return;
+    ANN(panel);
+    ANN(out);
+    *out = (LabelProbePointer){0};
 
-    double data[2] = {0};
-    if (!dvz_panel_position_to_data(
-            state->panel, DVZ_PANEL_COORD_PANEL_PX,
-            (const double[2]){state->cursor_x, state->cursor_y}, data))
-    {
-        return;
-    }
-    _update_probe_marker(state, (float)data[0], (float)data[1]);
+    out->valid =
+        dvz_panel_transform_point(
+            panel, DVZ_PANEL_COORD_FIGURE_PX, DVZ_PANEL_COORD_PANEL_PX,
+            (const double[2]){figure_x, figure_y}, out->panel_px) &&
+        dvz_panel_position_to_data(panel, DVZ_PANEL_COORD_PANEL_PX, out->panel_px, out->data);
+    return out->valid;
 }
 
 
@@ -326,17 +343,14 @@ static void _update_probe_marker_from_cursor(LabelProbeState* state)
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
- * @param out_ring output ring visual
- * @param out_dot output center dot visual
+ * @param out_marker output marker visuals
  * @return true when the marker was added
  */
-static bool
-_add_probe_marker(DvzScene* scene, DvzPanel* panel, DvzVisual** out_ring, DvzVisual** out_dot)
+static bool _add_probe_marker(DvzScene* scene, DvzPanel* panel, LabelProbeMarker* out_marker)
 {
     ANN(scene);
     ANN(panel);
-    ANN(out_ring);
-    ANN(out_dot);
+    ANN(out_marker);
 
     vec3 ring_data[1] = {{PROBE_X, PROBE_Y, 0.04f}};
 
@@ -387,8 +401,8 @@ _add_probe_marker(DvzScene* scene, DvzPanel* panel, DvzVisual** out_ring, DvzVis
     if (dvz_panel_add_visual(panel, dot, NULL) != 0)
         return false;
 
-    *out_ring = ring;
-    *out_dot = dot;
+    out_marker->ring = ring;
+    out_marker->dot = dot;
     return true;
 }
 
@@ -474,19 +488,18 @@ _labels_probe_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void
     if (event->type != DVZ_POINTER_EVENT_MOVE && event->type != DVZ_POINTER_EVENT_CLICK)
         return;
 
-    double data[2] = {0};
-    double panel_px[2] = {0};
-    state->cursor_valid =
-        dvz_panel_transform_point(
-            state->panel, DVZ_PANEL_COORD_FIGURE_PX, DVZ_PANEL_COORD_PANEL_PX,
-            (const double[2]){event->pos[0], event->pos[1]}, panel_px) &&
-        dvz_panel_position_to_data(state->panel, DVZ_PANEL_COORD_PANEL_PX, panel_px, data);
-    if (state->cursor_valid)
+    LabelProbePointer pointer = {0};
+    if (_probe_pointer_from_figure(state->panel, event->pos[0], event->pos[1], &pointer))
     {
-        state->cursor_x = panel_px[0];
-        state->cursor_y = panel_px[1];
+        state->cursor_valid = true;
+        state->cursor_x = pointer.panel_px[0];
+        state->cursor_y = pointer.panel_px[1];
+        _update_probe_marker(&state->marker, (float)pointer.data[0], (float)pointer.data[1]);
     }
-    _update_probe_marker_from_cursor(state);
+    else
+    {
+        state->cursor_valid = false;
+    }
 }
 
 
@@ -581,9 +594,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!ok)
         return false;
 
-    DvzVisual* probe_ring = NULL;
-    DvzVisual* probe_dot = NULL;
-    ok = _add_probe_marker(ctx->scene, panel, &probe_ring, &probe_dot);
+    ok = _add_probe_marker(ctx->scene, panel, &state->marker);
     if (!ok)
         return false;
 
@@ -597,8 +608,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     state->scene = ctx->scene;
     state->panel = panel;
-    state->probe_ring = probe_ring;
-    state->probe_dot = probe_dot;
     state->cursor_valid = true;
     state->cursor_x = initial_probe_px[0];
     state->cursor_y = initial_probe_px[1];

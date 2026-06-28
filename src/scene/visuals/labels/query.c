@@ -224,8 +224,19 @@ static bool _labels_query_visual_uv(
         return false;
     const float* position = (const float*)pos_attr->data;
 
+    const DvzPanelAttach* attach = NULL;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        if (panel->visuals[i].visual == visual)
+        {
+            attach = &panel->visuals[i];
+            break;
+        }
+    }
+
     DvzMVP mvp = {0};
-    _scene_panel_apply_mvp(panel, &mvp);
+    if (attach == NULL || !_scene_panel_attachment_mvp(panel, visual, attach, NULL, &mvp))
+        _scene_panel_apply_mvp(panel, &mvp);
 
     const DvzVisualAttr* extent_attr = NULL;
     if (_labels_query_attr(visual, "extent", sizeof(vec2), &extent_attr))
@@ -658,15 +669,9 @@ static bool _labels_query_build(
                    (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1}) &&
          dvz_frame_plan_render_visual(plan, "labels_query0") &&
          dvz_frame_plan_render_visual_metadata(plan, &metadata);
-    DvzFramePlanNode* render = plan != NULL ? dvz_frame_plan_last_render_node(plan) : NULL;
-    if (render != NULL)
-    {
-        DvzMVP mvp = {0};
-        _scene_request_visual_mvp(ctx->panel, ctx->visual, ctx->request_ndc, &mvp);
-        render->u.render.has_mvp = true;
-        render->u.render.apply_mvp = mvp;
-        render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
-    }
+    if (ok)
+        _dvz_scene_query_apply_render_state(
+            plan, ctx->panel, ctx->visual, ctx->request_ndc, 1, 1);
 
     DvzFramePlanCopyDesc copy = dvz_frame_plan_copy_desc();
     copy.src_resource_id = "target.query.labels";

@@ -3433,6 +3433,8 @@ int test_scene_labels_query_resolves_category(TstContext* suite, const TstCase* 
     int32_t label_data[4 * 4] = {0};
     label_data[3 * 4 + 1] = -7;
     label_data[3 * 4 + 3] = 17;
+    label_data[1 * 4 + 1] = 23;
+    label_data[1 * 4 + 3] = 31;
     DvzSampledField* field = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
@@ -3455,11 +3457,13 @@ int test_scene_labels_query_resolves_category(TstContext* suite, const TstCase* 
     DvzScale* scale = dvz_scale(
         scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL, .label = "segments"});
     ANN(scale);
-    DvzScaleCategory categories[2] = {
+    DvzScaleCategory categories[4] = {
         {.category_id = -7, .order = 0, .label = "negative seven", .color = {255, 0, 0, 255}},
         {.category_id = 17, .order = 1, .label = "seventeen", .color = {0, 255, 0, 255}},
+        {.category_id = 23, .order = 2, .label = "twenty three", .color = {0, 0, 255, 255}},
+        {.category_id = 31, .order = 3, .label = "thirty one", .color = {255, 255, 0, 255}},
     };
-    AT(dvz_scale_set_categories(scale, categories, 2));
+    AT(dvz_scale_set_categories(scale, categories, 4));
     AT(dvz_visual_set_scale(labels, "labels", scale) == 0);
     AT(dvz_panel_add_visual(panel, labels, NULL) == 0);
 
@@ -3480,7 +3484,13 @@ int test_scene_labels_query_resolves_category(TstContext* suite, const TstCase* 
     AT(dvz_panel_query(
            panel, 16.0, 48.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 143, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
-    AT(dvz_figure_process_queries(figure, runtime, &caps) == 3);
+    AT(dvz_panel_query(
+           panel, 48.0, 48.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 144, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
+    AT(dvz_panel_query(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 145, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
+    AT(dvz_figure_process_queries(figure, runtime, &caps) == 5);
 
     DvzQueryResult query = {0};
     AT(dvz_scene_poll_query(scene, &query));
@@ -3504,8 +3514,20 @@ int test_scene_labels_query_resolves_category(TstContext* suite, const TstCase* 
     AT(strcmp(query.label, "seventeen") == 0);
 
     AT(dvz_scene_poll_query(scene, &query));
-    AT(!query.hit);
+    AT(query.hit);
     AT(query.request_id == 143);
+    AT(query.category_id == 23);
+    AT(strcmp(query.label, "twenty three") == 0);
+
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.hit);
+    AT(query.request_id == 144);
+    AT(query.category_id == 31);
+    AT(strcmp(query.label, "thirty one") == 0);
+
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(!query.hit);
+    AT(query.request_id == 145);
     AT(query.status == DVZ_QUERY_STATUS_MISS);
     AT(!dvz_scene_poll_query(scene, &query));
 
