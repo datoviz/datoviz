@@ -97,7 +97,6 @@ typedef struct DvzAxis              DvzAxis;
 typedef struct DvzUnitLadder        DvzUnitLadder;
 typedef struct DvzUnits             DvzUnits;
 typedef struct DvzDateTimeFormat    DvzDateTimeFormat;
-typedef struct DvzOrbitCamera       DvzOrbitCamera;
 
 
 typedef int64_t DvzCategoryId;
@@ -170,7 +169,6 @@ typedef enum
     DVZ_CONTROLLER_TYPE_ARCBALL   = 2,
     DVZ_CONTROLLER_TYPE_FLY       = 3,
     DVZ_CONTROLLER_TYPE_TURNTABLE = 4,
-    DVZ_CONTROLLER_TYPE_ORBIT_CAMERA = 5,
 } DvzControllerType;
 
 

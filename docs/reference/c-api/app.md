@@ -18,7 +18,7 @@ Common workflows:
 - [Handle input events](../../how-to/input-events.md)
 - [Save screenshots](../../how-to/capture-an-image.md)
 
-Functions: 199
+Functions: 198
 
 ## Symbol Groups
 
@@ -32,7 +32,7 @@ Functions: 199
 | [Pointer](#pointer) | 5 | `include/datoviz/input/pointer.h` |
 | [Stream](#stream) | 17 | `include/datoviz/stream.h`, `include/datoviz/video.h` |
 | [Video](#video) | 2 | `include/datoviz/video.h` |
-| [View](#view) | 51 | `include/datoviz/app.h`, `include/datoviz/gui.h` |
+| [View](#view) | 50 | `include/datoviz/app.h`, `include/datoviz/gui.h` |
 | [Window](#window) | 38 | `include/datoviz/window.h`, `include/datoviz/window/backend.h` |
 
 ??? info "Grouped symbol index"
@@ -215,7 +215,6 @@ Functions: 199
     | [`dvz_view_input()`](#dvz_view_input) | `include/datoviz/app.h` |
     | [`dvz_view_logical_size()`](#dvz_view_logical_size) | `include/datoviz/app.h` |
     | [`dvz_view_offscreen()`](#dvz_view_offscreen) | `include/datoviz/app.h` |
-    | [`dvz_view_orbit_camera()`](#dvz_view_orbit_camera) | `include/datoviz/app.h` |
     | [`dvz_view_panzoom()`](#dvz_view_panzoom) | `include/datoviz/app.h` |
     | [`dvz_view_post()`](#dvz_view_post) | `include/datoviz/app.h` |
     | [`dvz_view_record_start()`](#dvz_view_record_start) | `include/datoviz/app.h` |
@@ -308,7 +307,7 @@ GPU is available.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:190._
+_Declared in `include/datoviz/app.h`:188._
 
 ### `dvz_app_capture_config()`
 
@@ -327,7 +326,7 @@ current directory with basename "capture" at 60 FPS using the automatic video ba
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:621._
+_Declared in `include/datoviz/app.h`:607._
 
 ### `dvz_app_capture_config_from_env()`
 
@@ -351,7 +350,7 @@ Optional overrides are `DVZ_CAPTURE_DIR`, `DVZ_CAPTURE_BASENAME`, `DVZ_CAPTURE_F
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:635._
+_Declared in `include/datoviz/app.h`:621._
 
 ### `dvz_app_config()`
 
@@ -367,7 +366,7 @@ Return the default app configuration.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:171._
+_Declared in `include/datoviz/app.h`:169._
 
 ### `dvz_app_destroy()`
 
@@ -385,7 +384,7 @@ Destroy the app and all owned resources (canvases, windows, runtime, GPU context
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:241._
+_Declared in `include/datoviz/app.h`:239._
 
 ### `dvz_app_render_once()`
 
@@ -406,7 +405,7 @@ error
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:911._
+_Declared in `include/datoviz/app.h`:897._
 
 ### `dvz_app_resources()`
 
@@ -422,7 +421,7 @@ Return an empty app resource bundle.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:178._
+_Declared in `include/datoviz/app.h`:176._
 
 ### `dvz_app_run()`
 
@@ -446,7 +445,7 @@ continuous mode renders active windows until every interactive window closes.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:924._
+_Declared in `include/datoviz/app.h`:910._
 
 ### `dvz_app_vk_instance()`
 
@@ -468,7 +467,7 @@ required instance extensions to dvz_app_with_config().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:233._
+_Declared in `include/datoviz/app.h`:231._
 
 ### `dvz_app_with_config()`
 
@@ -492,7 +491,7 @@ instance extensions before Datoviz creates its GPU context.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:203._
+_Declared in `include/datoviz/app.h`:201._
 
 ### `dvz_app_with_resources()`
 
@@ -521,7 +520,7 @@ App config instance-extension fields only affect app-created GPU contexts.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:220._
+_Declared in `include/datoviz/app.h`:218._
 
 ## Canvas
 
@@ -933,7 +932,7 @@ Start an ImGui window.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:162._
+_Declared in `include/datoviz/gui.h`:164._
 
 ### `dvz_gui_button()`
 
@@ -954,7 +953,7 @@ Show a button.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:211._
+_Declared in `include/datoviz/gui.h`:213._
 
 ### `dvz_gui_checkbox()`
 
@@ -977,7 +976,7 @@ Show a checkbox.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:223._
+_Declared in `include/datoviz/gui.h`:225._
 
 ### `dvz_gui_collapsing_header()`
 
@@ -1000,7 +999,7 @@ Show a collapsible section header.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:443._
+_Declared in `include/datoviz/gui.h`:445._
 
 ### `dvz_gui_color_edit4()`
 
@@ -1025,7 +1024,7 @@ Show an RGBA color editor using float channels in [0, 1].
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:395._
+_Declared in `include/datoviz/gui.h`:397._
 
 ### `dvz_gui_color_edit_dvz()`
 
@@ -1050,7 +1049,7 @@ Show an RGBA color editor using a DvzColor value.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:408._
+_Declared in `include/datoviz/gui.h`:410._
 
 ### `dvz_gui_color_picker4()`
 
@@ -1075,7 +1074,7 @@ Show an RGBA color picker using float channels in [0, 1].
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:421._
+_Declared in `include/datoviz/gui.h`:423._
 
 ### `dvz_gui_combo()`
 
@@ -1102,7 +1101,7 @@ Show a dropdown combo.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:236._
+_Declared in `include/datoviz/gui.h`:238._
 
 ### `dvz_gui_config()`
 
@@ -1118,7 +1117,7 @@ Return the default GUI overlay configuration.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:113._
+_Declared in `include/datoviz/gui.h`:115._
 
 ### `dvz_gui_demo()`
 
@@ -1138,7 +1137,7 @@ Show Dear ImGui's demo window.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:464._
+_Declared in `include/datoviz/gui.h`:466._
 
 ### `dvz_gui_end()`
 
@@ -1156,7 +1155,7 @@ End the current ImGui window.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:171._
+_Declared in `include/datoviz/gui.h`:173._
 
 ### `dvz_gui_pop_font()`
 
@@ -1174,7 +1173,7 @@ Pop the current ImGui font.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:200._
+_Declared in `include/datoviz/gui.h`:202._
 
 ### `dvz_gui_push_mono()`
 
@@ -1193,7 +1192,7 @@ Push the default monospace ImGui font.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:191._
+_Declared in `include/datoviz/gui.h`:193._
 
 ### `dvz_gui_range_float()`
 
@@ -1226,7 +1225,7 @@ Show a float min/max range editor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:380._
+_Declared in `include/datoviz/gui.h`:382._
 
 ### `dvz_gui_same_line()`
 
@@ -1248,7 +1247,7 @@ Place the next item on the same line.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:454._
+_Declared in `include/datoviz/gui.h`:456._
 
 ### `dvz_gui_separator_text()`
 
@@ -1268,7 +1267,7 @@ Show a labeled separator.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:431._
+_Declared in `include/datoviz/gui.h`:433._
 
 ### `dvz_gui_slider_float()`
 
@@ -1295,7 +1294,7 @@ Show a float slider.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:252._
+_Declared in `include/datoviz/gui.h`:254._
 
 ### `dvz_gui_slider_float2()`
 
@@ -1322,7 +1321,7 @@ Show a two-component float slider.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:281._
+_Declared in `include/datoviz/gui.h`:283._
 
 ### `dvz_gui_slider_float3()`
 
@@ -1349,7 +1348,7 @@ Show a three-component float slider.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:296._
+_Declared in `include/datoviz/gui.h`:298._
 
 ### `dvz_gui_slider_float4()`
 
@@ -1376,7 +1375,7 @@ Show a four-component float slider.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:311._
+_Declared in `include/datoviz/gui.h`:313._
 
 ### `dvz_gui_slider_float_format()`
 
@@ -1405,7 +1404,7 @@ Show a float slider with an explicit display format.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:326._
+_Declared in `include/datoviz/gui.h`:328._
 
 ### `dvz_gui_slider_int()`
 
@@ -1432,7 +1431,7 @@ Show an integer slider.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:266._
+_Declared in `include/datoviz/gui.h`:268._
 
 ### `dvz_gui_slider_range_double()`
 
@@ -1463,7 +1462,7 @@ Show a double range slider with two handles.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:361._
+_Declared in `include/datoviz/gui.h`:363._
 
 ### `dvz_gui_slider_range_float()`
 
@@ -1494,7 +1493,7 @@ Show a float range slider with two handles.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:343._
+_Declared in `include/datoviz/gui.h`:345._
 
 ### `dvz_gui_text()`
 
@@ -1514,7 +1513,7 @@ Show an unformatted text item.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:181._
+_Declared in `include/datoviz/gui.h`:183._
 
 ### `dvz_gui_viewport()`
 
@@ -1542,7 +1541,7 @@ ImGui window created by dvz_gui_viewport_window().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:482._
+_Declared in `include/datoviz/gui.h`:484._
 
 ### `dvz_gui_viewport_config()`
 
@@ -1558,7 +1557,7 @@ Return the default dockable Datoviz GUI viewport configuration.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:122._
+_Declared in `include/datoviz/gui.h`:124._
 
 ### `dvz_gui_viewport_destroy()`
 
@@ -1576,7 +1575,7 @@ Destroy a dockable ImGui viewport.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:538._
+_Declared in `include/datoviz/gui.h`:540._
 
 ### `dvz_gui_viewport_from_window()`
 
@@ -1603,7 +1602,7 @@ must use offscreen canvas rendering.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:499._
+_Declared in `include/datoviz/gui.h`:501._
 
 ### `dvz_gui_viewport_input()`
 
@@ -1625,7 +1624,7 @@ rendered in the GUI viewport.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:513._
+_Declared in `include/datoviz/gui.h`:515._
 
 ### `dvz_gui_viewport_mouse()`
 
@@ -1653,7 +1652,7 @@ state is refreshed by dvz_gui_viewport_window().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:528._
+_Declared in `include/datoviz/gui.h`:530._
 
 ### `dvz_gui_viewport_window()`
 
@@ -1682,7 +1681,7 @@ rendering continuously.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:556._
+_Declared in `include/datoviz/gui.h`:558._
 
 ## Input
 
@@ -2758,7 +2757,7 @@ tracked separately for future supersampling and does not currently change the fr
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:271._
+_Declared in `include/datoviz/app.h`:269._
 
 ### `dvz_view_arcball()`
 
@@ -2781,7 +2780,7 @@ Create, bind, and connect an arcball controller for one panel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:560._
+_Declared in `include/datoviz/app.h`:558._
 
 ### `dvz_view_bind_controller()`
 
@@ -2806,7 +2805,7 @@ Bind a controller to a panel and connect the panel to a view input router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:535._
+_Declared in `include/datoviz/app.h`:533._
 
 ### `dvz_view_canvas()`
 
@@ -2827,7 +2826,7 @@ Gives access to the full canvas API (capture, video sink, live-image sink, etc.)
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:430._
+_Declared in `include/datoviz/app.h`:428._
 
 ### `dvz_view_capabilities()`
 
@@ -2851,7 +2850,7 @@ planning and query/readback adaptation without exposing Vulkan, canvas, or runti
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:486._
+_Declared in `include/datoviz/app.h`:484._
 
 ### `dvz_view_capture_from_env()`
 
@@ -2876,7 +2875,7 @@ no-op and returns success.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:664._
+_Declared in `include/datoviz/app.h`:650._
 
 ### `dvz_view_capture_png()`
 
@@ -2901,7 +2900,7 @@ not a scientific linear-float readback.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:610._
+_Declared in `include/datoviz/app.h`:596._
 
 ### `dvz_view_capture_start()`
 
@@ -2926,7 +2925,7 @@ CPU video capture use sRGB RGBA8 screenshot pixels.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:649._
+_Declared in `include/datoviz/app.h`:635._
 
 ### `dvz_view_capture_stop()`
 
@@ -2948,7 +2947,7 @@ the last rendered frame as sRGB RGBA8 screenshot pixels.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:676._
+_Declared in `include/datoviz/app.h`:662._
 
 ### `dvz_view_connect_panel()`
 
@@ -2969,7 +2968,7 @@ Connect a panel's bound controllers to a view input router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:523._
+_Declared in `include/datoviz/app.h`:521._
 
 ### `dvz_view_desc()`
 
@@ -2990,7 +2989,7 @@ Related: [`dvz_view()`](#dvz_view).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:255._
+_Declared in `include/datoviz/app.h`:253._
 
 ### `dvz_view_device_scale()`
 
@@ -3009,7 +3008,7 @@ Return the current device scale for a view.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:451._
+_Declared in `include/datoviz/app.h`:449._
 
 ### `dvz_view_emit_key()`
 
@@ -3034,7 +3033,7 @@ Emit a hosted keyboard event for a view.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:419._
+_Declared in `include/datoviz/app.h`:417._
 
 ### `dvz_view_emit_pointer()`
 
@@ -3067,7 +3066,7 @@ Emit a hosted pointer position/button event for a view.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:386._
+_Declared in `include/datoviz/app.h`:384._
 
 ### `dvz_view_emit_resize()`
 
@@ -3101,7 +3100,7 @@ sizing see the host's logical and framebuffer dimensions.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:368._
+_Declared in `include/datoviz/app.h`:366._
 
 ### `dvz_view_emit_wheel()`
 
@@ -3134,7 +3133,7 @@ Emit a hosted pointer wheel event for a view.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:404._
+_Declared in `include/datoviz/app.h`:402._
 
 ### `dvz_view_external_surface()`
 
@@ -3161,7 +3160,7 @@ top of the supplied surface unless surface->owned_by_datoviz is true.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:321._
+_Declared in `include/datoviz/app.h`:319._
 
 ### `dvz_view_fly()`
 
@@ -3184,7 +3183,7 @@ Create, bind, and connect a fly controller for one panel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:584._
+_Declared in `include/datoviz/app.h`:570._
 
 ### `dvz_view_framebuffer_size()`
 
@@ -3206,7 +3205,7 @@ Return the current framebuffer view size.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:473._
+_Declared in `include/datoviz/app.h`:471._
 
 ### `dvz_view_glfw()`
 
@@ -3239,7 +3238,7 @@ GLFW is unavailable or window creation fails.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:305._
+_Declared in `include/datoviz/app.h`:303._
 
 ### `dvz_view_gui()`
 
@@ -3260,7 +3259,7 @@ Attach a Dear ImGui overlay to a GLFW view.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/gui.h`:133._
+_Declared in `include/datoviz/gui.h`:135._
 
 ### `dvz_view_input()`
 
@@ -3282,7 +3281,7 @@ scene-owned controller bindings. Returns NULL when GPU support is absent.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:442._
+_Declared in `include/datoviz/app.h`:440._
 
 ### `dvz_view_logical_size()`
 
@@ -3304,7 +3303,7 @@ Return the current logical view size.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:462._
+_Declared in `include/datoviz/app.h`:460._
 
 ### `dvz_view_offscreen()`
 
@@ -3332,30 +3331,7 @@ on every call to dvz_app_run().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:286._
-
-### `dvz_view_orbit_camera()`
-
-```c title="dvz_view_orbit_camera"
-DvzOrbitCamera * dvz_view_orbit_camera(
-    DvzView * view,
-    DvzPanel * panel,
-    const DvzOrbitCameraDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzOrbitCamera *` | the orbit-camera payload, or NULL on validation error |
-| `view` | `DvzView *` | the view |
-| `panel` | `DvzPanel *` | the panel |
-| `desc` | `const DvzOrbitCameraDesc *` | orbit-camera descriptor, or NULL for defaults |
-
-Create, bind, and connect an orbit-camera controller for one panel.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/app.h`:571._
+_Declared in `include/datoviz/app.h`:284._
 
 ### `dvz_view_panzoom()`
 
@@ -3378,7 +3354,7 @@ Create, bind, and connect a panzoom controller for one panel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:548._
+_Declared in `include/datoviz/app.h`:546._
 
 ### `dvz_view_post()`
 
@@ -3405,7 +3381,7 @@ remain valid until the callback has run.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/app.h`:852._
+_Declared in `include/datoviz/app.h`:838._
 
 ### `dvz_view_record_start()`
 
@@ -3430,7 +3406,7 @@ dvz_view_record_stop() to close the recording before replaying it.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:690._
+_Declared in `include/datoviz/app.h`:676._
 
 ### `dvz_view_record_stop()`
 
@@ -3449,7 +3425,7 @@ Stop recording emitted scene DRP2 frame streams for a view.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:699._
+_Declared in `include/datoviz/app.h`:685._
 
 ### `dvz_view_release_external_surface()`
 
@@ -3472,7 +3448,7 @@ surface-dependent objects. The host remains responsible for destroying the VkSur
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:350._
+_Declared in `include/datoviz/app.h`:348._
 
 ### `dvz_view_render_enabled()`
 
@@ -3491,7 +3467,7 @@ Return whether rendering is enabled for a view.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:813._
+_Declared in `include/datoviz/app.h`:799._
 
 ### `dvz_view_render_once()`
 
@@ -3516,7 +3492,7 @@ surface is unavailable, after a disabled-view no-op, or a negative error code
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:901._
+_Declared in `include/datoviz/app.h`:887._
 
 ### `dvz_view_render_scale()`
 
@@ -3535,7 +3511,7 @@ Return the current render scale.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:495._
+_Declared in `include/datoviz/app.h`:493._
 
 ### `dvz_view_replay_frame_count()`
 
@@ -3554,7 +3530,7 @@ Return the number of frames in the active replay recording.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:761._
+_Declared in `include/datoviz/app.h`:747._
 
 ### `dvz_view_replay_set_loop()`
 
@@ -3576,7 +3552,7 @@ Looping resets the app DRP2 runtime before replay starts from frame zero again.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:752._
+_Declared in `include/datoviz/app.h`:738._
 
 ### `dvz_view_replay_set_paced()`
 
@@ -3596,7 +3572,7 @@ Enable or disable timestamp-paced replay.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:730._
+_Declared in `include/datoviz/app.h`:716._
 
 ### `dvz_view_replay_set_speed()`
 
@@ -3618,7 +3594,7 @@ Values below or equal to zero are ignored. A value of 2 plays twice as fast.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:741._
+_Declared in `include/datoviz/app.h`:727._
 
 ### `dvz_view_replay_start()`
 
@@ -3642,7 +3618,7 @@ current view frame by attaching that borrowed frame under the recording's target
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:712._
+_Declared in `include/datoviz/app.h`:698._
 
 ### `dvz_view_replay_stop()`
 
@@ -3661,7 +3637,7 @@ Stop live replay and release the loaded recording.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:721._
+_Declared in `include/datoviz/app.h`:707._
 
 ### `dvz_view_request_frame()`
 
@@ -3682,7 +3658,7 @@ example QWindow::requestUpdate(), QWidget::update(), an SDL wakeup, or a Tk idle
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:824._
+_Declared in `include/datoviz/app.h`:810._
 
 ### `dvz_view_resize()`
 
@@ -3708,7 +3684,7 @@ toolkit. GLFW windows should normally be resized by the platform window itself.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:775._
+_Declared in `include/datoviz/app.h`:761._
 
 ### `dvz_view_resize_scaled()`
 
@@ -3737,7 +3713,7 @@ scale.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:791._
+_Declared in `include/datoviz/app.h`:777._
 
 ### `dvz_view_set_frame_callback()`
 
@@ -3763,7 +3739,7 @@ the callback are therefore allowed and become visible on the next frame.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/app.h`:881._
+_Declared in `include/datoviz/app.h`:867._
 
 ### `dvz_view_set_gui_callback()`
 
@@ -3788,7 +3764,7 @@ overlay creation is a no-op in v0.4.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/gui.h`:148._
+_Declared in `include/datoviz/gui.h`:150._
 
 ### `dvz_view_set_render_enabled()`
 
@@ -3811,7 +3787,7 @@ intended for hosted/offscreen integrations such as hidden dock tabs.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:804._
+_Declared in `include/datoviz/app.h`:790._
 
 ### `dvz_view_set_request_frame_callback()`
 
@@ -3836,7 +3812,7 @@ render by itself. The host remains responsible for calling dvz_view_render_once(
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/app.h`:865._
+_Declared in `include/datoviz/app.h`:851._
 
 ### `dvz_view_set_user_scale()`
 
@@ -3856,7 +3832,7 @@ Set the user scale for UI-like scene quantities.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:513._
+_Declared in `include/datoviz/app.h`:511._
 
 ### `dvz_view_turntable()`
 
@@ -3879,7 +3855,7 @@ Create, bind, and connect a turntable controller for one panel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:595._
+_Declared in `include/datoviz/app.h`:581._
 
 ### `dvz_view_update_external_surface()`
 
@@ -3904,7 +3880,7 @@ DVZ_CANVAS_FRAME_WAIT_SURFACE until a valid surface is supplied again.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:336._
+_Declared in `include/datoviz/app.h`:334._
 
 ### `dvz_view_user_scale()`
 
@@ -3923,7 +3899,7 @@ Return the current user scale for UI-like scene quantities.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:504._
+_Declared in `include/datoviz/app.h`:502._
 
 ### `dvz_view_wake()`
 
@@ -3945,7 +3921,7 @@ thread by dvz_view_render_once().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:836._
+_Declared in `include/datoviz/app.h`:822._
 
 ## Window
 

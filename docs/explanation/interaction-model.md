@@ -6,7 +6,7 @@ application state; those changes request another frame; the next frame renders t
 ## Controllers
 
 Controllers are the preferred path for standard navigation. Panzoom controls 2D domains. Arcball,
-fly, turntable, and orbit-camera controllers control 3D view state where supported. A controller is
+fly, and turntable controllers control 3D view state where supported. A controller is
 bound to a panel and may be shared across panels to link their view state.
 
 ## Callbacks

@@ -93,7 +93,6 @@ FEATURE_PAGE_GROUPS = (
         "feature_controller_arcball",
         "feature_controller_turntable",
         "feature_controller_fly",
-        "feature_controller_orbit_camera",
         "feature_orientation_gizmo",
         "feature_reference_grid",
     ]),

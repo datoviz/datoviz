@@ -4,7 +4,7 @@
 
 Browse the generated Datoviz v0.4 example gallery.
 
-Coverage: 15 showcases, 17 visuals and composites, 71 feature examples, and 3 advanced examples.
+Coverage: 15 showcases, 17 visuals and composites, 70 feature examples, and 3 advanced examples.
 
 Each card links to a detail page with preview media, source code, and validation metadata.
 
@@ -202,7 +202,7 @@ deterministic retained pixel visual baseline.
 
 [![Marker](../assets/gallery/v0.4/visuals/visual_marker.webp)](gallery/visuals/visual_marker.md)
 
-retained marker visual with deterministic symbol, fill, stroke, and size variation.
+retained marker visual with deterministic symbol, fill, stroke, size, and angle
 
 </div>
 
@@ -408,7 +408,7 @@ multiple independent panels with panel-local panzoom controllers.
 
 [![Linked Panels](../assets/gallery/v0.4/features/feature_panel_linked.webp)](gallery/features/feature_panel_linked.md)
 
-two panels sharing X panzoom state with independent Y panzoom state.
+two panels linked on X panzoom extent with independent Y panzoom state.
 
 </div>
 
@@ -634,4 +634,4 @@ retained sphere hover and click selection.
 
 </div>
 
-[Browse all 71 feature examples](features.md) — controllers, adornments, interaction, animation, rendering, and more.
+[Browse all 70 feature examples](features.md) — controllers, adornments, interaction, animation, rendering, and more.

@@ -105,7 +105,6 @@ batches:
     - feature_controller_arcball
     - feature_controller_fly
     - feature_controller_turntable
-    - feature_controller_orbit_camera
     - feature_panzoom
 
   review-08-input-probing:
@@ -351,7 +350,6 @@ examples:
         - reference-grid
         - text
         - controller
-        - orbit-camera
     agent_copy_safe: true
 
   - id: feature_axis_labels
@@ -987,25 +985,6 @@ examples:
         - native-capture
       reason: DVZR app recording and replay use native runtime capture plumbing
     agent_copy_safe: false
-
-  - id: feature_controller_orbit_camera
-    title: Orbit Camera Controller
-    stage: v0.4_required
-    category: feature
-    primary_feature: controller-orbit-camera
-    lane: features
-    source: examples/c/features/controller_orbit_camera.c
-    validation: smoke+interaction+screenshot
-    data:
-      kind: synthetic
-    webgpu:
-      status: webgpu-live
-      route: examples/webgpu/live.html?id=feature_controller_orbit_camera
-      requirements:
-        - controller
-        - orbit-camera
-        - mesh
-    agent_copy_safe: true
 
   - id: feature_visual_transform
     title: Visual Transform

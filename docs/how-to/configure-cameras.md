@@ -82,6 +82,5 @@ scale comparisons.
 
 ??? example "Related examples"
 
-    - [Orbit Camera Controller](../examples/gallery/features/feature_controller_orbit_camera.md) - Source: `examples/c/features/controller_orbit_camera.c`
     - [Arcball Controller](../examples/gallery/features/feature_controller_arcball.md) - Source: `examples/c/features/controller_arcball.c`
     - [Orientation Gizmo](../examples/gallery/features/feature_orientation_gizmo.md) - Source: `examples/c/features/orientation_gizmo.c`

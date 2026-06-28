@@ -238,7 +238,7 @@ Datoviz should confirm or expose enough API for:
 1. Data-domain normalization.
 2. Panel domain and visible-domain updates.
 3. Panel view policy.
-4. Controller navigation: panzoom, arcball, turntable, fly, orbit-camera where available.
+4. Controller navigation: panzoom, arcball, turntable, and fly where available.
 5. Visual attachment coordinate spaces.
 6. Matrix/model transforms for visuals.
 7. Colormap/scalar-to-color paths for sampled fields and scalar visuals.

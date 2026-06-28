@@ -1079,12 +1079,6 @@ async function main() {
         'turntable-controller',
       ],
       [
-        'feature_controller_orbit_camera',
-        'Orbit Camera Controller',
-        'webgpu_live_controller_orbit_camera.png',
-        'orbit-camera-controller',
-      ],
-      [
         'feature_sampled_field_2d',
         '2D Sampled Field',
         'webgpu_live_sampled_field_2d.png',

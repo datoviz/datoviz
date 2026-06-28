@@ -65,6 +65,6 @@ fly controller with deterministic camera translation.
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_controller_turntable">Previous: Turntable Controller</a> · <a href="../feature_controller_orbit_camera">Next: Orbit Camera Controller</a>
+<a href="../feature_controller_turntable">Previous: Turntable Controller</a> · <a href="../feature_orientation_gizmo">Next: Orientation Gizmo</a>
 </div>
 </nav>

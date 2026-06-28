@@ -223,96 +223,6 @@ int test_controller_turntable_create(TstContext* suite, const TstCase* item)
 
 
 
-int test_controller_orbit_camera_zoom_limits(TstContext* suite, const TstCase* item)
-{
-    (void)suite;
-    (void)item;
-
-    DvzOrbitCameraDesc desc = dvz_orbit_camera_desc();
-    desc.min_distance = 2.0f;
-    desc.max_distance = 4.0f;
-    desc.zoom_speed = 1.0f;
-    DvzOrbitCamera* orbit = dvz_orbit_camera_create(&desc);
-    ANN(orbit);
-    AT(dvz_orbit_camera_get_distance(orbit) == 3.0f);
-
-    DvzPointerEvent wheel_in = {
-        .type = DVZ_POINTER_EVENT_WHEEL,
-        .content.w.dir = {0.0f, 100.0f},
-    };
-    AT(dvz_orbit_camera_pointer(orbit, &wheel_in));
-    AT(fabsf(dvz_orbit_camera_get_distance(orbit) - 2.0f) < 0.0001f);
-
-    DvzPointerEvent wheel_out = {
-        .type = DVZ_POINTER_EVENT_WHEEL,
-        .content.w.dir = {0.0f, -100.0f},
-    };
-    AT(dvz_orbit_camera_pointer(orbit, &wheel_out));
-    AT(fabsf(dvz_orbit_camera_get_distance(orbit) - 4.0f) < 0.0001f);
-
-    dvz_orbit_camera_destroy(orbit);
-    return 0;
-}
-
-
-
-int test_controller_orbit_camera_clamps_poles(TstContext* suite, const TstCase* item)
-{
-    (void)suite;
-    (void)item;
-
-    DvzOrbitCameraDesc desc = dvz_orbit_camera_desc();
-    desc.width = 800.0f;
-    desc.height = 600.0f;
-    float shifts[2] = {-2400.0f, +2400.0f};
-    for (uint32_t i = 0; i < 2; i++)
-    {
-        DvzOrbitCamera* orbit = dvz_orbit_camera_create(&desc);
-        ANN(orbit);
-
-        DvzPointerEvent drag = {
-            .type = DVZ_POINTER_EVENT_DRAG,
-            .button = DVZ_POINTER_BUTTON_LEFT,
-            .pos = {400.0f, 300.0f + shifts[i]},
-            .content.d.press_pos = {400.0f, 300.0f},
-            .content.d.last_pos = {400.0f, 300.0f},
-            .content.d.shift = {0.0f, shifts[i]},
-            .content.d.is_press_valid = true,
-        };
-        AT(dvz_orbit_camera_pointer(orbit, &drag));
-
-        DvzCameraView view = {0};
-        vec3 offset = {0};
-        vec3 stable_up = {0.0f, 1.0f, 0.0f};
-        AT(dvz_orbit_camera_get_view(orbit, &view) == 0);
-        glm_vec3_sub(view.eye, view.target, offset);
-        glm_vec3_normalize(offset);
-        AT(glm_vec3_dot(view.up, stable_up) > 0.999f);
-        AT(fabsf(glm_vec3_dot(offset, view.up)) <= cosf(0.075f));
-
-        DvzPointerEvent stop = {
-            .type = DVZ_POINTER_EVENT_DRAG_STOP,
-            .button = DVZ_POINTER_BUTTON_LEFT,
-            .pos = {400.0f, 300.0f + shifts[i]},
-            .content.d.press_pos = {400.0f, 300.0f},
-            .content.d.last_pos = {400.0f, 300.0f},
-            .content.d.is_press_valid = true,
-        };
-        AT(dvz_orbit_camera_pointer(orbit, &stop));
-
-        AT(dvz_orbit_camera_get_view(orbit, &view) == 0);
-        glm_vec3_sub(view.eye, view.target, offset);
-        glm_vec3_normalize(offset);
-        AT(glm_vec3_dot(view.up, stable_up) > 0.999f);
-        AT(fabsf(glm_vec3_dot(offset, view.up)) <= cosf(0.075f));
-
-        dvz_orbit_camera_destroy(orbit);
-    }
-    return 0;
-}
-
-
-
 int test_controller_desc_abi_rejects_invalid_structs(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -353,12 +263,6 @@ int test_controller_desc_abi_rejects_invalid_structs(TstContext* suite, const Ts
     turntable.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_turntable_create(&turntable) == NULL);
 
-    DvzOrbitCameraDesc orbit = dvz_orbit_camera_desc();
-    orbit.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_orbit_camera_create(&orbit) == NULL);
-    orbit = dvz_orbit_camera_desc();
-    orbit.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_orbit_camera_create(&orbit) == NULL);
     return 0;
 }
 
@@ -382,8 +286,6 @@ int test_controller(TstSuite* suite)
     TST_CASE(test_controller_fly_create);
     TST_CASE(test_controller_fly_z_up_lookat_drag);
     TST_CASE(test_controller_turntable_create);
-    TST_CASE(test_controller_orbit_camera_zoom_limits);
-    TST_CASE(test_controller_orbit_camera_clamps_poles);
     TST_CASE(test_controller_desc_abi_rejects_invalid_structs);
     return 0;
 }

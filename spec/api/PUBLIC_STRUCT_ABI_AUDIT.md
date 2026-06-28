@@ -62,7 +62,6 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzArcballDesc` | `dvz_arcball_desc()` |
 | `DvzFlyDesc` | `dvz_fly_desc()` |
 | `DvzTurntableDesc` | `dvz_turntable_desc()` |
-| `DvzOrbitCameraDesc` | `dvz_orbit_camera_desc()` |
 | `DvzEdlDesc` | `dvz_edl_desc()` |
 | `DvzMsaaDesc` | `dvz_msaa_desc()` |
 | `DvzSsaoDesc` | `dvz_ssao_desc()` |

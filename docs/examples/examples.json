@@ -2,11 +2,11 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 107,
+  "count": 106,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 71,
+    "feature": 70,
     "showcase": 15,
     "start": 1,
     "visual": 15
@@ -15,11 +15,11 @@
     "diagnostic": 1,
     "experimental": 11,
     "prototype": 3,
-    "supported": 92
+    "supported": 91
   },
   "agent_copy_safe": {
     "false": 28,
-    "true": 79
+    "true": 78
   },
   "examples": [
     {
@@ -850,27 +850,6 @@
         "kind": "synthetic"
       },
       "primary_feature": "record-replay"
-    },
-    {
-      "id": "feature_controller_orbit_camera",
-      "title": "Orbit Camera Controller",
-      "category": "feature",
-      "lane": "features",
-      "stage": "v0.4_required",
-      "status": "supported",
-      "source": "examples/c/features/controller_orbit_camera.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_orbit_camera.c",
-      "page": "gallery/features/feature_controller_orbit_camera.md",
-      "summary": "orbit-camera controller attached to a small 3D mesh.",
-      "validation": "smoke+interaction+screenshot",
-      "build_command": "just example-c features/controller_orbit_camera",
-      "smoke_command": "./build/examples/c/features/controller_orbit_camera --png",
-      "agent_copy_safe": true,
-      "tags": [],
-      "data": {
-        "kind": "synthetic"
-      },
-      "primary_feature": "controller-orbit-camera"
     },
     {
       "id": "feature_visual_transform",

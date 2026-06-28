@@ -729,16 +729,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.006f, 0.008f, 0.014f, 1.0f));
 
-    DvzOrbitCameraDesc orbit_desc = dvz_orbit_camera_desc();
-    orbit_desc.min_distance = 1.45f;
-    orbit_desc.max_distance = 7.50f;
-    orbit_desc.zoom_speed = 0.018f;
-    DvzController* orbit_controller = dvz_orbit_camera(ctx->scene, &orbit_desc);
-    EXAMPLE_CHECK(orbit_controller != NULL, "dvz_orbit_camera() failed");
-    DvzOrbitCamera* orbit = dvz_controller_orbit_camera(orbit_controller);
-    EXAMPLE_CHECK(orbit != NULL, "failed to create or bind orbit-camera controller");
+    DvzTurntableDesc turntable_desc = dvz_turntable_desc();
+    turntable_desc.min_distance = 1.45f;
+    turntable_desc.max_distance = 7.50f;
+    turntable_desc.zoom_speed = 0.018f;
+    DvzController* controller = dvz_turntable(ctx->scene, &turntable_desc);
+    EXAMPLE_CHECK(controller != NULL, "dvz_turntable() failed");
+    DvzTurntable* turntable = dvz_controller_turntable(controller);
+    EXAMPLE_CHECK(turntable != NULL, "failed to create or bind turntable controller");
     EXAMPLE_CHECK(
-        dvz_scenario_bind_controller(ctx, panel, orbit_controller, DVZ_DIM_MASK_XYZ) == 0,
+        dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) == 0,
         "dvz_scenario_bind_controller() failed");
 
     EXAMPLE_CHECK(

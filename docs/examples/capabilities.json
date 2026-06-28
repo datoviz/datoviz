@@ -3,11 +3,11 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 107,
+  "example_count": 106,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 71,
+    "feature": 70,
     "showcase": 15,
     "start": 1,
     "visual": 15
@@ -16,11 +16,11 @@
     "diagnostic": 1,
     "experimental": 11,
     "prototype": 3,
-    "supported": 92
+    "supported": 91
   },
   "agent_copy_safe": {
     "false": 28,
-    "true": 79
+    "true": 78
   },
   "capabilities": {
     "composites": {
@@ -156,7 +156,7 @@
         ]
       },
       "synthetic": {
-        "count": 98,
+        "count": 97,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -508,15 +508,6 @@
             "agent_copy_safe": false,
             "source": "examples/c/features/record_replay.c",
             "page": "gallery/features/feature_record_replay.md"
-          },
-          {
-            "id": "feature_controller_orbit_camera",
-            "title": "Orbit Camera Controller",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/controller_orbit_camera.c",
-            "page": "gallery/features/feature_controller_orbit_camera.md"
           },
           {
             "id": "feature_visual_transform",
@@ -1251,20 +1242,6 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/controller_fly.c",
             "page": "gallery/features/feature_controller_fly.md"
-          }
-        ]
-      },
-      "controller-orbit-camera": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_controller_orbit_camera",
-            "title": "Orbit Camera Controller",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/controller_orbit_camera.c",
-            "page": "gallery/features/feature_controller_orbit_camera.md"
           }
         ]
       },

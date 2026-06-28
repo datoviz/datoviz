@@ -35,7 +35,6 @@ techniques.
 - `offscreen_capture.c`: direct offscreen render-once PNG capture.
 - `input_events.c`: native input event injection independent of picking/controllers.
 - `record_replay.c`: experimental DVZR app recording and live replay.
-- `controller_orbit_camera.c`: orbit-camera controller attached to a compact 3D scene.
 - `visual_transform.c`: retained visual-local transform set/get/clear proof.
 - `panel_view2d.c`: explicit panel 2D view framing and reserved plot layout.
 - `json_export.c`: experimental scene JSON serialization diagnostic.

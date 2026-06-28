@@ -24,7 +24,6 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/colormap_scale.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/compute_buffer_animation.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/controller_fly.c
-    ${PROJECT_SOURCE_DIR}/examples/c/features/controller_orbit_camera.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/controller_turntable.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/guide_lines.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/guide_spans.c

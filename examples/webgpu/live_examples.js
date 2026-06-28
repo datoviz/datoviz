@@ -280,11 +280,6 @@ export const LIVE_EXAMPLES = [
     scenarioId: "feature_controller_turntable",
   },
   {
-    id: "feature_controller_orbit_camera",
-    label: "Orbit Camera Controller",
-    scenarioId: "feature_controller_orbit_camera",
-  },
-  {
     id: "point_2d",
     label: "Point",
     scenarioId: "visual_point",

@@ -1011,6 +1011,12 @@ typedef enum DvzShapeAspect DvzShapeAspect;
 typedef struct DvzText DvzText;
 ```
 
+#### `DvzTextAlign`
+
+```c
+typedef enum DvzTextAlign DvzTextAlign;
+```
+
 #### `DvzTextAtlas`
 
 ```c
@@ -1045,6 +1051,18 @@ typedef struct DvzTextAtlasInfo DvzTextAtlasInfo;
 
 ```c
 typedef struct DvzTextAtlasSpec DvzTextAtlasSpec;
+```
+
+#### `DvzTextItem`
+
+```c
+typedef struct DvzTextItem DvzTextItem;
+```
+
+#### `DvzTextLayout`
+
+```c
+typedef struct DvzTextLayout DvzTextLayout;
 ```
 
 #### `DvzTextPlacement`
@@ -1348,7 +1366,6 @@ DVZ_CONTROLLER_TYPE_PANZOOM = 1,
 DVZ_CONTROLLER_TYPE_ARCBALL = 2,
 DVZ_CONTROLLER_TYPE_FLY = 3,
 DVZ_CONTROLLER_TYPE_TURNTABLE = 4,
-DVZ_CONTROLLER_TYPE_ORBIT_CAMERA = 5,
 ```
 
 #### `DvzDateTimeBuiltin`
@@ -1785,6 +1802,14 @@ DVZ_SELECT_TOGGLE = 3,
 DVZ_SHAPE_ASPECT_FILLED = 0,
 DVZ_SHAPE_ASPECT_STROKE = 1,
 DVZ_SHAPE_ASPECT_OUTLINE = 2,
+```
+
+#### `DvzTextAlign`
+
+```c
+DVZ_TEXT_ALIGN_LEFT = 0,
+DVZ_TEXT_ALIGN_CENTER = 1,
+DVZ_TEXT_ALIGN_RIGHT = 2,
 ```
 
 #### `DvzTextAtlasBackend`
@@ -2568,12 +2593,6 @@ struct DvzLegendDesc {
 typedef struct DvzLinkChannel DvzLinkChannel;
 ```
 
-#### `DvzOrbitCamera`
-
-```c
-typedef struct DvzOrbitCamera DvzOrbitCamera;
-```
-
 #### `DvzOrientationGizmo`
 
 ```c
@@ -2685,8 +2704,8 @@ struct DvzPanelBackgroundDesc {
     uint32_t flags;
     DvzPanelBackgroundType type;
     float[4] color;
-    struct (unnamed struct at include/datoviz/scene/types.h:331:5) gradient;
-    struct (unnamed struct at include/datoviz/scene/types.h:339:5) image;
+    struct (unnamed struct at include/datoviz/scene/types.h:329:5) gradient;
+    struct (unnamed struct at include/datoviz/scene/types.h:337:5) image;
 };
 ```
 
@@ -3114,6 +3133,35 @@ struct DvzTextAtlasSpec {
     float em_px;
     float distance_range_px;
     uint32_t flags;
+};
+```
+
+#### `DvzTextItem`
+
+```c
+struct DvzTextItem {
+    uint32_t struct_size;
+    uint32_t flags;
+    const char * string;
+    double[3] position;
+    float[2] offset;
+    float[2] anchor;
+    float size_px;
+    DvzColor color;
+    float angle;
+};
+```
+
+#### `DvzTextLayout`
+
+```c
+struct DvzTextLayout {
+    uint32_t struct_size;
+    uint32_t flags;
+    float line_height;
+    float line_gap_px;
+    float wrap_width_px;
+    DvzTextAlign align;
 };
 ```
 
@@ -4974,18 +5022,6 @@ typedef struct DvzKeyboardModifierState DvzKeyboardModifierState;
 typedef enum DvzKeyboardModifiers DvzKeyboardModifiers;
 ```
 
-#### `DvzOrbitCamera`
-
-```c
-typedef struct DvzOrbitCamera DvzOrbitCamera;
-```
-
-#### `DvzOrbitCameraDesc`
-
-```c
-typedef struct DvzOrbitCameraDesc DvzOrbitCameraDesc;
-```
-
 #### `DvzPanzoom`
 
 ```c
@@ -5819,6 +5855,7 @@ struct DvzGuiConfig {
     uint32_t struct_size;
     uint32_t flags;
     uint32_t gui_flags;
+    uint32_t default_window_width;
     const char * ini_path;
 };
 ```
@@ -6819,10 +6856,22 @@ typedef struct DvzBufferViews DvzBufferViews;
 typedef struct DvzCameraDesc DvzCameraDesc;
 ```
 
+#### `DvzCameraProjection`
+
+```c
+typedef struct DvzCameraProjection DvzCameraProjection;
+```
+
 #### `DvzCameraType`
 
 ```c
 typedef enum DvzCameraType DvzCameraType;
+```
+
+#### `DvzCameraView`
+
+```c
+typedef struct DvzCameraView DvzCameraView;
 ```
 
 #### `DvzColor`
@@ -8003,14 +8052,30 @@ typedef struct DvzBufferViews DvzBufferViews;
 struct DvzCameraDesc {
     uint32_t struct_size;
     uint32_t flags;
+    DvzCameraView view;
+    DvzCameraProjection projection;
+};
+```
+
+#### `DvzCameraProjection`
+
+```c
+struct DvzCameraProjection {
     DvzCameraType type;
-    vec3 eye;
-    vec3 target;
-    vec3 up;
     float fov_y;
     float near_clip;
     float far_clip;
     float ortho_height;
+};
+```
+
+#### `DvzCameraView`
+
+```c
+struct DvzCameraView {
+    vec3 eye;
+    vec3 target;
+    vec3 up;
 };
 ```
 
@@ -8164,9 +8229,7 @@ struct DvzFlyDesc {
     uint32_t flags;
     DvzFlyMode mode;
     uint32_t controller_flags;
-    vec3 position;
-    vec3 target;
-    vec3 up;
+    DvzCameraView initial_view;
     float yaw;
     float pitch;
     float roll;
@@ -8355,22 +8418,6 @@ struct DvzObject {
     int request;
     uint32_t group_id;
     uint64_t id;
-};
-```
-
-#### `DvzOrbitCameraDesc`
-
-```c
-struct DvzOrbitCameraDesc {
-    uint32_t struct_size;
-    uint32_t flags;
-    float width;
-    float height;
-    uint32_t controller_flags;
-    vec3 pivot;
-    float min_distance;
-    float max_distance;
-    float zoom_speed;
 };
 ```
 
@@ -8576,11 +8623,7 @@ struct DvzTurntable {
 struct DvzTurntableDesc {
     uint32_t struct_size;
     uint32_t flags;
-    vec3 pivot;
-    vec3 up;
-    float distance;
-    float yaw;
-    float pitch;
+    DvzCameraView initial_view;
     float yaw_speed;
     float pitch_speed;
     float zoom_speed;

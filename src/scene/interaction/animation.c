@@ -321,8 +321,6 @@ static bool _controller_is_interacting(const DvzController* controller)
         return controller->fly != NULL && controller->fly->interacting;
     case DVZ_CONTROLLER_TYPE_TURNTABLE:
         return controller->turntable != NULL && controller->turntable->interacting;
-    case DVZ_CONTROLLER_TYPE_ORBIT_CAMERA:
-        return dvz_orbit_camera_is_interacting(controller->orbit_camera);
     default:
         return false;
     }

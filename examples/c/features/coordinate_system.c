@@ -13,7 +13,7 @@
  * Run:    ./build/examples/c/features/coordinate_system --live
  * Smoke:  ./build/examples/c/features/coordinate_system --png
  *
- * X is red, Y is green, and Z is blue. The live example binds an orbit-camera controller so the
+ * X is red, Y is green, and Z is blue. The live example binds a turntable controller so the
  * axis triad and reference grid can be inspected with the mouse.
  */
 
@@ -46,8 +46,8 @@ static const float GRID_SIZE = 10.0f;
 static const float GRID_SPACING = 0.25f;
 static const float CAMERA_NEAR_CLIP = 0.005f;
 static const float CAMERA_FAR_CLIP = 100.0f;
-static const float ORBIT_MIN_DISTANCE = 0.03f;
-static const float ORBIT_MAX_DISTANCE = 24.0f;
+static const float TURNTABLE_MIN_DISTANCE = 0.03f;
+static const float TURNTABLE_MAX_DISTANCE = 24.0f;
 
 
 
@@ -308,12 +308,11 @@ static bool _add_axis_labels(DvzPanel* panel)
 
 
 /**
- * Set up the default camera used for static smoke captures.
+ * Return the default camera descriptor used for static smoke captures and live interaction.
  *
- * @param panel target panel
- * @return true when the camera was set
+ * @return camera descriptor
  */
-static bool _set_camera(DvzPanel* panel)
+static DvzCameraDesc _camera_desc(void)
 {
     DvzCameraDesc camera = dvz_camera_desc();
     camera.view.eye[0] = 1.15f;
@@ -328,33 +327,47 @@ static bool _set_camera(DvzPanel* panel)
     camera.projection.fov_y = 0.74f;
     camera.projection.near_clip = CAMERA_NEAR_CLIP;
     camera.projection.far_clip = CAMERA_FAR_CLIP;
+    return camera;
+}
+
+
+
+/**
+ * Set up the default camera used for static smoke captures.
+ *
+ * @param panel target panel
+ * @return true when the camera was set
+ */
+static bool _set_camera(DvzPanel* panel)
+{
+    DvzCameraDesc camera = _camera_desc();
     return dvz_panel_set_camera(panel, &camera) != NULL;
 }
 
 
 
 /**
- * Attach an orbit-camera controller so the live example is mouse-inspectable.
+ * Attach a turntable controller so the live example is mouse-inspectable.
  *
  * @param ctx scenario context
  * @param panel target panel
  * @return true when the controller was bound
  */
-static bool _bind_orbit_camera(DvzScenarioContext* ctx, DvzPanel* panel)
+static bool _bind_turntable(DvzScenarioContext* ctx, DvzPanel* panel)
 {
-    DvzOrbitCameraDesc desc = dvz_orbit_camera_desc();
-    desc.width = (float)ctx->width;
-    desc.height = (float)ctx->height;
-    desc.min_distance = ORBIT_MIN_DISTANCE;
-    desc.max_distance = ORBIT_MAX_DISTANCE;
+    DvzTurntableDesc desc = dvz_turntable_desc();
+    DvzCameraDesc camera = _camera_desc();
+    desc.initial_view = camera.view;
+    desc.min_distance = TURNTABLE_MIN_DISTANCE;
+    desc.max_distance = TURNTABLE_MAX_DISTANCE;
 
-    DvzController* controller = dvz_orbit_camera(ctx->scene, &desc);
+    DvzController* controller = dvz_turntable(ctx->scene, &desc);
     if (controller == NULL)
         return false;
-    DvzOrbitCamera* orbit = dvz_controller_orbit_camera(controller);
-    if (orbit == NULL)
+    DvzTurntable* turntable = dvz_controller_turntable(controller);
+    if (turntable == NULL)
         return false;
-    dvz_orbit_camera_pivot(orbit, (vec3){0.0f, 0.0f, 0.0f});
+    dvz_turntable_pivot(turntable, (vec3){0.0f, 0.0f, 0.0f});
     return dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) == 0;
 }
 
@@ -390,7 +403,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     return _set_camera(panel) && _add_reference_grid(panel) &&
            _add_axis_arrow(ctx->scene, panel, 0) && _add_axis_arrow(ctx->scene, panel, 1) &&
            _add_axis_arrow(ctx->scene, panel, 2) && _add_origin(ctx->scene, panel) &&
-           _add_axis_labels(panel) && _bind_orbit_camera(ctx, panel);
+           _add_axis_labels(panel) && _bind_turntable(ctx, panel);
 }
 
 

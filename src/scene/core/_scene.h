@@ -24,7 +24,6 @@
 #include "datoviz/controller/camera.h"
 #include "datoviz/scene/enums.h"
 #include "datoviz/controller/fly.h"
-#include "datoviz/controller/orbit_camera.h"
 #include "datoviz/scene/frame_plan.h"
 #include "datoviz/scene/overlay.h"
 #include "datoviz/controller/panzoom.h"
@@ -376,7 +375,6 @@ struct DvzController
     DvzArcball* arcball;
     DvzFly* fly;
     DvzTurntable* turntable;
-    DvzOrbitCamera* orbit_camera;
 };
 
 
@@ -1908,7 +1906,6 @@ struct DvzPanel
     DvzVisual* bounds_occluded_visual; /* optional panel-owned occluded bounds overlay */
     bool bounds_visible;
     DvzTurntable* turntable; /* optional turntable camera controller (owned) */
-    DvzOrbitCamera* orbit_camera; /* optional orbit camera controller (borrowed) */
     DvzAxis axes[2];
     DvzInteractionPolicy* interaction;
     DvzItemInteraction* item_interaction;

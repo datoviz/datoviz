@@ -61,7 +61,7 @@
 #define DVZ_WASM_VISUAL_SPHERE 10
 #define DVZ_WASM_VISUAL_TEXT 11
 #define DVZ_WASM_VISUAL_LABELS 12
-#define DVZ_WASM_API_SCENARIO_COUNT 67
+#define DVZ_WASM_API_SCENARIO_COUNT 66
 #define DVZ_WASM_QUERY_RESOURCE_ID_BASE 20000
 #define DVZ_WASM_QUERY_OBJECT_ID_BASE 40000
 #define DVZ_WASM_QUERY_TRANSIENT_ID_BASE 60000
@@ -97,7 +97,6 @@ DvzScenarioSpec dvz_example_colormap_scale_scenario(void);
 DvzScenarioSpec dvz_example_compute_buffer_animation_scenario(void);
 DvzScenarioSpec dvz_composite_polygon_scenario(void);
 DvzScenarioSpec dvz_example_controller_fly_scenario(void);
-DvzScenarioSpec dvz_example_controller_orbit_camera_scenario(void);
 DvzScenarioSpec dvz_example_controller_turntable_scenario(void);
 DvzScenarioSpec dvz_example_guide_lines_scenario(void);
 DvzScenarioSpec dvz_example_guide_spans_scenario(void);
@@ -505,40 +504,38 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
     case 48:
         return dvz_example_controller_turntable_scenario();
     case 49:
-        return dvz_example_controller_orbit_camera_scenario();
-    case 50:
         return dvz_example_sampled_field_2d_scenario();
-    case 51:
+    case 50:
         return dvz_example_colormap_scale_scenario();
-    case 52:
+    case 51:
         return dvz_example_panel_background_scenario();
-    case 53:
+    case 52:
         return dvz_composite_polygon_scenario();
-    case 54:
+    case 53:
         return dvz_showcase_linked_panel_axes_scenario();
-    case 55:
+    case 54:
         return dvz_showcase_scalebar_measurement_scenario();
-    case 56:
+    case 55:
         return dvz_showcase_surface_grid_scenario();
-    case 57:
+    case 56:
         return dvz_showcase_us_state_choropleth_scenario();
-    case 58:
+    case 57:
         return dvz_example_update_partial_scenario();
-    case 59:
+    case 58:
         return dvz_example_update_visual_data_scenario();
-    case 60:
+    case 59:
         return dvz_example_visibility_scenario();
-    case 61:
+    case 60:
         return dvz_example_depth_test_scenario();
-    case 62:
+    case 61:
         return dvz_example_alpha_blending_scenario();
-    case 63:
+    case 62:
         return dvz_example_material_mesh_scenario();
-    case 64:
+    case 63:
         return dvz_example_lighting_scenario();
-    case 65:
+    case 64:
         return dvz_showcase_textured_planet_scenario();
-    case 66:
+    case 65:
         return dvz_showcase_protein_scenario();
     default:
         return (DvzScenarioSpec){0};

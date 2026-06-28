@@ -202,14 +202,6 @@ int test_split_panzoom_x_y_bindings(TstContext* suite, const TstCase* item);
 int test_controller_link_panzoom_target_pointer_drives_linked_x_only(
     TstContext* suite, const TstCase* item);
 
-int test_orbit_camera_changes_view_not_model(TstContext* suite, const TstCase* item);
-
-int test_orbit_camera_drag_axes_match_upright_planet(TstContext* suite, const TstCase* item);
-
-int test_orbit_camera_scene_drag_uses_stable_baseline(TstContext* suite, const TstCase* item);
-
-int test_orbit_camera_double_click_restores_initial_view(TstContext* suite, const TstCase* item);
-
 int test_arcball_create_reset(TstContext* suite, const TstCase* item);
 
 int test_arcball_rotate_produces_nonidentity_model(TstContext* suite, const TstCase* item);
@@ -499,7 +491,6 @@ int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const 
 
 int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const TstCase* item);
 
-int test_app_offscreen_orbit_camera_drag_renders_cube(TstContext* suite, const TstCase* item);
 #endif
 #endif
 

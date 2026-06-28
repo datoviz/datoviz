@@ -14,7 +14,7 @@ panel-owned 2D view framing with equal aspect.
 
 ## Preview
 
-_Media pending._
+![Panel View 2D](../../../assets/gallery/v0.4/features/feature_panel_view2d.webp)
 
 ## Source
 

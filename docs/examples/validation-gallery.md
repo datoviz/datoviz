@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Public C examples in manifest: 107
-- Examples declaring screenshot validation: 93
+- Public C examples in manifest: 106
+- Examples declaring screenshot validation: 92
 - Examples that should have video or motion evidence: 7
 
 ## Commands
@@ -62,7 +62,6 @@ and should be committed through that submodule, not copied into the main reposit
 | [Guide Spans](gallery/features/feature_guide_spans.md) | [`examples/c/features/guide_spans.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_spans.c) | `supported` | `smoke+screenshot` |
 | [Bars And Bands](gallery/features/feature_bars_bands.md) | [`examples/c/features/bars_bands.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bars_bands.c) | `supported` | `smoke+screenshot` |
 | [Offscreen Capture](gallery/features/feature_offscreen_capture.md) | [`examples/c/features/offscreen_capture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/offscreen_capture.c) | `supported` | `smoke+screenshot` |
-| [Orbit Camera Controller](gallery/features/feature_controller_orbit_camera.md) | [`examples/c/features/controller_orbit_camera.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_orbit_camera.c) | `supported` | `smoke+interaction+screenshot` |
 | [Visual Transform](gallery/features/feature_visual_transform.md) | [`examples/c/features/visual_transform.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visual_transform.c) | `supported` | `smoke+screenshot` |
 | [Panel View 2D](gallery/features/feature_panel_view2d.md) | [`examples/c/features/panel_view2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_view2d.c) | `supported` | `smoke+screenshot` |
 | [Bezier Curve Path](gallery/features/feature_bezier_curve_path.md) | [`examples/c/features/bezier_curve_path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bezier_curve_path.c) | `supported` | `smoke+screenshot` |

@@ -4499,32 +4499,6 @@ dvz_view_arcball(DvzView* win, DvzPanel* panel, const DvzArcballDesc* desc)
 
 
 /**
- * Create, bind, and connect an orbit-camera controller for one panel.
- *
- * @param win the view
- * @param panel the panel
- * @param desc orbit-camera descriptor, or NULL for defaults
- * @return the orbit-camera payload, or NULL on validation error
- */
-DvzOrbitCamera* dvz_view_orbit_camera(
-    DvzView* win, DvzPanel* panel, const DvzOrbitCameraDesc* desc)
-{
-    if (win == NULL || panel == NULL || panel->figure == NULL || panel->figure->scene == NULL)
-        return NULL;
-    if (dvz_view_input(win) == NULL)
-        return NULL;
-
-    DvzController* controller = dvz_orbit_camera(panel->figure->scene, desc);
-    DvzOrbitCamera* orbit = dvz_controller_orbit_camera(controller);
-    if (orbit == NULL)
-        return NULL;
-    if (dvz_view_bind_controller(win, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
-        return NULL;
-    return orbit;
-}
-
-
-/**
  * Create, bind, and connect a fly controller for one panel.
  *
  * @param win the view

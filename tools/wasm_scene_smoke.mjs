@@ -2296,7 +2296,6 @@ try {
     "feature_bars_bands",
     "feature_controller_fly",
     "feature_controller_turntable",
-    "feature_controller_orbit_camera",
     "feature_sampled_field_2d",
     "feature_colormap_scale",
     "feature_panel_background",
@@ -3188,11 +3187,6 @@ try {
     [
       "feature_controller_turntable",
       "turntable controller",
-      (stream, label) => expectControllerMeshScenarioStreamShape(stream, label),
-    ],
-    [
-      "feature_controller_orbit_camera",
-      "orbit camera controller",
       (stream, label) => expectControllerMeshScenarioStreamShape(stream, label),
     ],
     [

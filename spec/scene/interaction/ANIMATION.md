@@ -363,7 +363,7 @@ void dvz_anim_set_interaction_policy(
 The first implementation may support only `CONTINUE` and `STOP`. Add pause/resume-after-idle only
 when a real UI needs it.
 
-For `textured_planet`, the default camera flyover should stop on the first orbit-camera pointer or
+For `textured_planet`, the default camera flyover should stop on the first turntable pointer or
 wheel interaction so scripted motion never fights user control.
 
 
@@ -440,7 +440,7 @@ Aggressively replace v0.4-era callback-heavy examples once the track API lands.
 8. Rewrite `examples/c/showcases/textured_planet.c`:
    - planet spin uses `dvz_track_rotation()` plus `dvz_anim_visual_transform()`;
    - default camera flyover uses `dvz_track_circle3()` plus `dvz_anim_camera_motion()`;
-   - flyover stops on orbit-camera interaction;
+   - flyover stops on turntable interaction;
    - Mars texture remains required, with no procedural Mars fallback.
 9. Sweep scene examples for `dvz_anim_phase()` callbacks that only implement scalar, rotation,
    translation, cursor, slice, or camera motion. Replace them with tracks and adapters.

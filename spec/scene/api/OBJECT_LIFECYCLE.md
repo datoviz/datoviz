@@ -58,7 +58,7 @@ visuals, controllers, cameras, axes, colorbars, legends, or interactions attache
 
 ### Controllers
 
-`dvz_panzoom()`, `dvz_arcball()`, `dvz_fly()`, `dvz_turntable()`, and `dvz_orbit_camera()` create
+`dvz_panzoom()`, `dvz_arcball()`, `dvz_fly()`, and `dvz_turntable()` create
 scene-owned `DvzController` handles. There is no public controller destroy function.
 
 Preferred API:
@@ -75,9 +75,9 @@ Required behavior:
 4. Mark the controller slot inactive/reusable.
 5. Request frames for affected figures.
 
-`dvz_controller_panzoom()`, `dvz_controller_arcball()`, `dvz_controller_fly()`,
-`dvz_controller_turntable()`, and `dvz_controller_orbit_camera()` remain borrowed payload accessors;
-they should not get matching destroy functions.
+`dvz_controller_panzoom()`, `dvz_controller_arcball()`, `dvz_controller_fly()`, and
+`dvz_controller_turntable()` remain borrowed payload accessors; they should not get matching
+destroy functions.
 
 
 ### Units And Date Formatting

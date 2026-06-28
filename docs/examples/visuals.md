@@ -44,7 +44,7 @@ deterministic retained pixel visual baseline.
 
 `supported` `visuals`<br><span>`marker`, `panzoom`, `capture`</span>
 
-retained marker visual with deterministic symbol, fill, stroke, and size variation.
+retained marker visual with deterministic symbol, fill, stroke, size, and angle
 
 </div>
 

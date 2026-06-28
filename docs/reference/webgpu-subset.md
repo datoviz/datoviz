@@ -37,7 +37,7 @@ Supported visual and interaction families:
 - basic sphere visuals;
 - vector visuals lowered through segment/path draws;
 - 2D panzoom controller input;
-- 3D arcball, fly, turntable, and orbit-camera controller examples lowered through the shared
+- 3D arcball, fly, and turntable controller examples lowered through the shared
   scene/controller path.
 
 Supported browser pages:
@@ -105,7 +105,7 @@ The v0.4 browser path has parity with Vulkan only at the shared contract boundar
 | WGSL shader modules | supported and required for portable browser execution |
 | Vulkan-specific modules and presentation | unsupported in WASM; native-only |
 | Scene visual parity | limited to point/pixel dense and buffer-backed positions, basic marker, segment/path cap-join controls, primitive, RGBA8/scalar image routes, basic retained 2D axes/ticks/grid labels, basic signed 2D labels, low-level atlas glyph, semantic bitmap text, basic/textured/material mesh, basic sphere, vector-lowered routes, and composed layout/annotation examples built from those families |
-| Controller parity | panzoom, arcball, fly, turntable, and orbit-camera examples are live; full native controller parity remains out of scope |
+| Controller parity | panzoom, arcball, fly, and turntable examples are live; full native controller parity remains out of scope |
 | Portable scenario host parity | broad live-example coverage is current for the promoted RC subset; native-only host and app semantics remain outside WASM |
 | Compute-to-render parity | DRP2 fixture, native scene proof, `feature_compute_buffer_animation`, and `showcase_gpu_particle_smoke` browser-live routes are current |
 | Query/picking/readback scene parity | point and marker item picking, point hover, point selection, sphere selection, mesh instance selection, and one sampled image probe are browser-live |

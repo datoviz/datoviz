@@ -54,6 +54,6 @@ panel-attached orientation axes following the panel's rendered orientation.
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_controller_orbit_camera">Previous: Orbit Camera Controller</a> · <a href="../feature_reference_grid">Next: Reference Grid</a>
+<a href="../feature_controller_fly">Previous: Fly Controller</a> · <a href="../feature_reference_grid">Next: Reference Grid</a>
 </div>
 </nav>

@@ -10,7 +10,7 @@
 <span>Linked Panels</span>
 </nav>
 
-two panels sharing X panzoom state with independent Y panzoom state.
+two panels linked on X panzoom extent with independent Y panzoom state.
 
 ## Preview
 

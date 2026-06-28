@@ -74,7 +74,7 @@ The first public header split has landed. Treat these groups as implemented APIs
 4. retained visual attributes and scene buffers,
 5. sampled fields and image field binding,
 6. scale/colormap core and image colormap binding,
-7. panzoom, object/model arcball, orbit-camera, fly, and turntable controllers,
+7. panzoom, object/model arcball, fly, and turntable controllers,
 8. interaction policy, selection, link-channel, pick/probe queue, hover-state, and pinned-readout
    bookkeeping,
 9. first request execution slices through the DRP2 runtime request processor, including item
@@ -215,8 +215,8 @@ The public API distinguishes three transform owners:
    `dvz_visual_has_transform()`, and `dvz_visual_get_transform()`;
 2. **object/model arcball**: `DvzArcball` is an object/model controller and does not move the panel
    camera;
-3. **camera orbit**: `DvzOrbitCamera` moves the panel camera around a pivot and does not mutate
-   visual-local model matrices.
+3. **turntable camera orbit**: `DvzTurntable` moves the panel camera around a stable-up pivot and
+   does not mutate visual-local model matrices.
 
 The effective world transform for controller-attached visuals is:
 

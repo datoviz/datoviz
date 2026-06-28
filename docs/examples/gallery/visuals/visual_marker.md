@@ -10,7 +10,7 @@
 <span>Marker</span>
 </nav>
 
-retained marker visual with deterministic symbol, fill, stroke, and size variation.
+retained marker visual with deterministic symbol, fill, stroke, size, and angle
 
 ## Preview
 

@@ -66,10 +66,8 @@ layout_records:
   include:
     - DvzCapabilitySnapshot
     - DvzCanvasConfig
-    - DvzCameraDesc
     - DvzFieldDataView
     - DvzFieldRegion
-    - DvzFlyDesc
     - DvzInteropBufferExport
     - DvzInteropBufferExportConfig
     - DvzPointerWheelEvent
@@ -87,7 +85,6 @@ layout_records:
     - DvzTextLayout
     - DvzTextPlacement
     - DvzTextStyle
-    - DvzTurntableDesc
     - DvzVideoEncoderConfig
 
 callback_functions:
@@ -230,11 +227,14 @@ skipped_functions:
     Keep this list synchronized with datoviz._ctypes._SKIPPED_FUNCTIONS.
   expected:
     - dvz_attachment_clear
+    - dvz_camera_desc
     - dvz_camera_motion_desc
+    - dvz_camera_view
     - dvz_cmd_rendering_default
     - dvz_depth_cue_desc
     - dvz_device_config
     - dvz_field_geometry
+    - dvz_fly_desc
     - dvz_frame_plan_emit_config
     - dvz_geometry_arrow_desc
     - dvz_geometry_cone_desc
@@ -250,7 +250,6 @@ skipped_functions:
     - dvz_geometry_torus_desc
     - dvz_gpu_ctx_config
     - dvz_material_desc
-    - dvz_orbit_camera_desc
     - dvz_overlay_card_desc
     - dvz_overlay_card_style
     - dvz_panel_background_desc
@@ -267,5 +266,6 @@ skipped_functions:
     - dvz_track_circle3_desc
     - dvz_track_rotation_desc
     - dvz_transform_motion_desc
+    - dvz_turntable_desc
     - dvz_visual_transform_desc
     - dvz_window_external_surface_info

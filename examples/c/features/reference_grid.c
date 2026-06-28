@@ -79,7 +79,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (dvz_reference_grid(panel, &grid) == NULL)
         return false;
 
-    DvzController* controller = dvz_orbit_camera(ctx->scene, NULL);
+    DvzController* controller = dvz_turntable(ctx->scene, NULL);
     if (controller == NULL)
         return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)

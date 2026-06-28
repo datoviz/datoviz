@@ -59,7 +59,7 @@ Current browser-supported building blocks:
 | Transport | artifact-backed split DRP2 packets, borrowed spans copied/executed before release |
 | Visuals | point, pixel, basic marker, segment/path cap-join subset, primitive, RGBA8/scalar image routes, glyph/text, labels, basic/textured/material mesh, sphere, vector lowered through segment/path |
 | Layout/annotations | axes/ticks/grid labels, multi/linked panels, colorbar, scale bar, categorical legend, annotation readout, text block, overlay card, guide lines/spans, bars/bands |
-| Interaction | panzoom, arcball, fly, turntable, orbit-camera examples, frame callbacks, narrow async query/readback |
+| Interaction | panzoom, arcball, fly, turntable examples, frame callbacks, narrow async query/readback |
 | Dynamic retained state | same-shape visual data updates, partial buffer updates, visual visibility changes |
 | Depth state | basic point depth-test on/off comparison |
 | Material/lighting | material-backed mesh and lit sphere examples |
@@ -132,8 +132,7 @@ live:
 `feature_panel_single`, `feature_panel_grid`, `feature_panel_multi`, `feature_panel_linked`,
 `feature_panzoom`, `path_axes_2d`, `feature_axis_labels`, `feature_text_block`,
 `feature_overlay_card`, `feature_guide_lines`, `feature_guide_spans`, `feature_bars_bands`,
-`feature_controller_fly`, `feature_controller_turntable`, and
-`feature_controller_orbit_camera`.
+`feature_controller_fly`, and `feature_controller_turntable`.
 
 Keep these routes in smoke coverage while finishing the remaining composed/data-backed routes.
 
