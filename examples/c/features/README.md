@@ -9,7 +9,7 @@ techniques.
 - `axis_labels.c`: retained axis titles and tick-label placement with plot margins.
 - `sampled_field_2d.c`: scene-owned 2D sampled field bound to an image visual.
 - `sampled_field_3d.c`: scene-owned 3D sampled field bound to a volume visual.
-- `text_block.c`: compact retained text block with stable screen placement.
+- `text_block.c`: multiline retained semantic text with explicit line spacing.
 - `overlay_card.c`: screen-space overlay card attached to a panel.
 - `controller_arcball.c`: arcball controller attached to a small 3D mesh.
 - `controller_fly.c`: fly controller attached to a sparse 3D scene.

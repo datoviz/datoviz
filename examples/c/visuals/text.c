@@ -53,54 +53,6 @@ DvzScenarioSpec dvz_visual_text_scenario(void);
 /*************************************************************************************************/
 
 /**
- * Add one retained text object.
- *
- * @param panel target panel
- * @param string UTF-8 text string
- * @param x screen X coordinate in logical pixels
- * @param y screen Y coordinate in logical pixels
- * @param size text size in logical pixels
- * @param angle text angle in radians
- * @param role graphite-cyan color role
- * @return true when the object was added
- */
-static bool _add_text(
-    DvzPanel* panel, const char* string, float x, float y, float size, float angle,
-    ExampleStyleColorRole role)
-{
-    DvzText* text = dvz_text(panel, 0);
-    if (text == NULL)
-        return false;
-
-    DvzColor color = example_graphite_cyan_color(role);
-    DvzTextStyle style = dvz_text_style();
-    style.size_px = size;
-    style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
-    style.color[0] = color.r;
-    style.color[1] = color.g;
-    style.color[2] = color.b;
-    style.color[3] = color.a;
-    if (dvz_text_set_style(text, &style) != 0)
-        return false;
-
-    DvzTextPlacement placement = dvz_text_placement();
-    placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
-    placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
-    placement.position[0] = x;
-    placement.position[1] = y;
-    placement.position[2] = 0.0f;
-    placement.text_anchor[0] = 0.0f;
-    placement.text_anchor[1] = 0.5f;
-    placement.has_text_anchor = true;
-    placement.angle = angle;
-    dvz_text_set_placement(text, &placement);
-    dvz_text_set_string(text, string);
-    return true;
-}
-
-
-
-/**
  * Add the retained text examples to one panel.
  *
  * @param panel target panel
@@ -127,12 +79,32 @@ static bool _add_texts(DvzPanel* panel)
         EXAMPLE_STYLE_COLOR_WARNING,
     };
 
+    DvzText* text = dvz_text(panel, 0);
+    if (text == NULL)
+        return false;
+    DvzTextStyle style = dvz_text_style();
+    style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    if (dvz_text_set_style(text, &style) != 0)
+        return false;
+    DvzTextPlacement placement = dvz_text_placement();
+    placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    if (dvz_text_set_placement(text, &placement) != 0)
+        return false;
+
+    DvzTextItem items[TEXT_COUNT] = {0};
     for (uint32_t i = 0; i < TEXT_COUNT; i++)
     {
-        if (!_add_text(panel, strings[i], x[i], y[i], sizes[i], angles[i], roles[i]))
-            return false;
+        DvzColor color = example_graphite_cyan_color(roles[i]);
+        items[i] = (DvzTextItem){DVZ_STRUCT_INIT_FIELDS(DvzTextItem),
+            .string = strings[i],
+            .position = {x[i], y[i], 0.0},
+            .anchor = {0.0f, 0.5f},
+            .size_px = sizes[i],
+            .color = color,
+            .angle = angles[i]};
     }
-    return true;
+    return dvz_text_set_items(text, items, TEXT_COUNT) == 0;
 }
 
 

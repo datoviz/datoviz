@@ -43,57 +43,9 @@ DvzScenarioSpec dvz_example_text_block_scenario(void);
 
 #define WIDTH      1600u
 #define HEIGHT     1200u
-#define LINE_COUNT 5u
-
-
-
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-/**
- * Add one line in a retained text block.
- *
- * @param panel target panel
- * @param string text string
- * @param x screen X in logical pixels
- * @param y screen Y in logical pixels
- * @param size text size
- * @param role graphite-cyan color role
- * @return true on success
- */
-static bool _add_line(
-    DvzPanel* panel, const char* string, float x, float y, float size,
-    ExampleStyleColorRole role)
-{
-    DvzText* text = dvz_text(panel, 0);
-    if (text == NULL)
-        return false;
-
-    DvzColor color = example_graphite_cyan_color(role);
-    DvzTextStyle style = dvz_text_style();
-    style.size_px = size;
-    style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
-    style.color[0] = color.r;
-    style.color[1] = color.g;
-    style.color[2] = color.b;
-    style.color[3] = color.a;
-    if (dvz_text_set_style(text, &style) != 0)
-        return false;
-
-    DvzTextPlacement placement = dvz_text_placement();
-    placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
-    placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
-    placement.position[0] = x;
-    placement.position[1] = y;
-    placement.position[2] = 0.0;
-    placement.text_anchor[0] = 0.0f;
-    placement.text_anchor[1] = 0.5f;
-    placement.has_text_anchor = true;
-    dvz_text_set_placement(text, &placement);
-    dvz_text_set_string(text, string);
-    return true;
-}
 
 
 
@@ -105,28 +57,46 @@ static bool _add_line(
  */
 static bool _add_text_block(DvzPanel* panel)
 {
-    const char* lines[LINE_COUNT] = {
-        "Retained text block",
-        "panel anchor: top left",
-        "renderer: MSDF atlas",
-        "placement: screen pixels",
-        "strings stay scene-owned",
-    };
-    const ExampleStyleColorRole roles[LINE_COUNT] = {
-        EXAMPLE_STYLE_COLOR_TEXT,
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_MINOR_TICK,
-        EXAMPLE_STYLE_COLOR_WARNING,
-    };
-    const float sizes[LINE_COUNT] = {58.0f, 32.0f, 32.0f, 32.0f, 32.0f};
+    DvzText* text = dvz_text(panel, 0);
+    if (text == NULL)
+        return false;
 
-    for (uint32_t i = 0; i < LINE_COUNT; i++)
-    {
-        if (!_add_line(panel, lines[i], 138.0f, 245.0f + 74.0f * (float)i, sizes[i], roles[i]))
-            return false;
-    }
-    return true;
+    DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
+    DvzTextStyle style = dvz_text_style();
+    style.size_px = 38.0f;
+    style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    style.color[0] = color.r;
+    style.color[1] = color.g;
+    style.color[2] = color.b;
+    style.color[3] = color.a;
+    if (dvz_text_set_style(text, &style) != 0)
+        return false;
+
+    DvzTextLayout layout = dvz_text_layout();
+    layout.line_height = 1.18f;
+    layout.line_gap_px = 8.0f;
+    if (dvz_text_set_layout(text, &layout) != 0)
+        return false;
+
+    DvzTextPlacement placement = dvz_text_placement();
+    placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    placement.position[0] = 138.0;
+    placement.position[1] = 245.0;
+    placement.position[2] = 0.0;
+    placement.text_anchor[0] = 0.0f;
+    placement.text_anchor[1] = 0.0f;
+    placement.has_text_anchor = true;
+    if (dvz_text_set_placement(text, &placement) != 0)
+        return false;
+
+    return dvz_text_set_string(
+               text,
+               "Retained multiline label\n"
+               "panel anchor: top left\n"
+               "renderer: MSDF atlas\n"
+               "placement: screen pixels\n"
+               "strings stay scene-owned") == 0;
 }
 
 

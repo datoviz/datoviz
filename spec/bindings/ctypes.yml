@@ -83,7 +83,10 @@ layout_records:
     - DvzAxisTickPolicy
     - DvzAxisTicks
     - DvzAxisStyle
+    - DvzTextItem
+    - DvzTextLayout
     - DvzTextPlacement
+    - DvzTextStyle
     - DvzTurntableDesc
     - DvzVideoEncoderConfig
 
@@ -147,6 +150,61 @@ array_facade:
 
   dvz_colorbar_set_ticks:
     special: colorbar_ticks
+
+  dvz_text_set_items:
+    groups:
+      - pointer_arg: items
+        count_arg: item_count
+        count_from: shape0
+        lifetime: copied_before_return
+
+  dvz_text_set_positions:
+    groups:
+      - pointer_arg: positions
+        count_arg: item_count
+        count_from: shape0
+        dtype: float64
+        lifetime: copied_before_return
+
+  dvz_text_set_offsets:
+    groups:
+      - pointer_arg: offsets
+        count_arg: item_count
+        count_from: shape0
+        dtype: float32
+        lifetime: copied_before_return
+
+  dvz_text_set_anchors:
+    groups:
+      - pointer_arg: anchors
+        count_arg: item_count
+        count_from: shape0
+        dtype: float32
+        lifetime: copied_before_return
+
+  dvz_text_set_sizes:
+    groups:
+      - pointer_arg: sizes_px
+        count_arg: item_count
+        count_from: shape0
+        dtype: float32
+        lifetime: copied_before_return
+
+  dvz_text_set_colors:
+    groups:
+      - pointer_arg: colors
+        count_arg: item_count
+        count_from: shape0
+        dtype: uint8
+        lifetime: copied_before_return
+
+  dvz_text_set_angles:
+    groups:
+      - pointer_arg: angles
+        count_arg: item_count
+        count_from: shape0
+        dtype: float32
+        lifetime: copied_before_return
 
   dvz_visual_set_data_range:
     strings:
