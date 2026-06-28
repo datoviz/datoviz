@@ -122,13 +122,19 @@ static void _camera_apply_desc(DvzCamera* camera, const DvzCameraDesc* desc)
 {
     ANN(camera);
     ANN(desc);
-    dvz_camera_set_view(camera, (vec3){desc->eye[0], desc->eye[1], desc->eye[2]},
-                        (vec3){desc->target[0], desc->target[1], desc->target[2]},
-                        (vec3){desc->up[0], desc->up[1], desc->up[2]});
-    if (desc->type == DVZ_CAMERA_ORTHOGRAPHIC)
-        dvz_camera_set_orthographic(camera, desc->ortho_height, desc->near_clip, desc->far_clip);
+    dvz_camera_set_view(camera, &desc->view);
+    if (desc->projection.type == DVZ_CAMERA_ORTHOGRAPHIC)
+    {
+        dvz_camera_set_orthographic(
+            camera, desc->projection.ortho_height, desc->projection.near_clip,
+            desc->projection.far_clip);
+    }
     else
-        dvz_camera_set_perspective(camera, desc->fov_y, desc->near_clip, desc->far_clip);
+    {
+        dvz_camera_set_perspective(
+            camera, desc->projection.fov_y, desc->projection.near_clip,
+            desc->projection.far_clip);
+    }
 }
 
 
@@ -136,6 +142,40 @@ static void _camera_apply_desc(DvzCamera* camera, const DvzCameraDesc* desc)
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Return a default camera view.
+ *
+ * @return the camera view
+ */
+DvzCameraView dvz_camera_view(void)
+{
+    return (DvzCameraView){
+        .eye = {0.0f, 0.0f, 3.0f},
+        .target = {0.0f, 0.0f, 0.0f},
+        .up = {0.0f, 1.0f, 0.0f},
+    };
+}
+
+
+
+/**
+ * Return a default perspective camera projection.
+ *
+ * @return the camera projection
+ */
+DvzCameraProjection dvz_camera_projection(void)
+{
+    return (DvzCameraProjection){
+        .type = DVZ_CAMERA_PERSPECTIVE,
+        .fov_y = DVZ_CAMERA_DEFAULT_FOV_Y,
+        .near_clip = DVZ_CAMERA_DEFAULT_NEAR,
+        .far_clip = DVZ_CAMERA_DEFAULT_FAR,
+        .ortho_height = DVZ_CAMERA_DEFAULT_ORTHO_HEIGHT,
+    };
+}
+
+
 
 /**
  * Return a default perspective camera descriptor.
@@ -146,14 +186,18 @@ DvzCameraDesc dvz_camera_desc(void)
 {
     return (DvzCameraDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzCameraDesc),
-        .type = DVZ_CAMERA_PERSPECTIVE,
-        .eye = {0.0f, 0.0f, 3.0f},
-        .target = {0.0f, 0.0f, 0.0f},
-        .up = {0.0f, 1.0f, 0.0f},
-        .fov_y = DVZ_CAMERA_DEFAULT_FOV_Y,
-        .near_clip = DVZ_CAMERA_DEFAULT_NEAR,
-        .far_clip = DVZ_CAMERA_DEFAULT_FAR,
-        .ortho_height = DVZ_CAMERA_DEFAULT_ORTHO_HEIGHT,
+        .view = {
+            .eye = {0.0f, 0.0f, 3.0f},
+            .target = {0.0f, 0.0f, 0.0f},
+            .up = {0.0f, 1.0f, 0.0f},
+        },
+        .projection = {
+            .type = DVZ_CAMERA_PERSPECTIVE,
+            .fov_y = DVZ_CAMERA_DEFAULT_FOV_Y,
+            .near_clip = DVZ_CAMERA_DEFAULT_NEAR,
+            .far_clip = DVZ_CAMERA_DEFAULT_FAR,
+            .ortho_height = DVZ_CAMERA_DEFAULT_ORTHO_HEIGHT,
+        },
     };
 }
 
@@ -199,16 +243,15 @@ DvzCamera* _dvz_camera(const DvzCameraDesc* desc)
  * Set a camera view transform.
  *
  * @param camera the camera
- * @param eye the eye position
- * @param target the look-at target
- * @param up the up direction
+ * @param view the camera view
  */
-void dvz_camera_set_view(DvzCamera* camera, vec3 eye, vec3 target, vec3 up)
+void dvz_camera_set_view(DvzCamera* camera, const DvzCameraView* view)
 {
     ANN(camera);
-    glm_vec3_copy(eye, camera->eye);
-    glm_vec3_copy(target, camera->target);
-    glm_vec3_copy(up, camera->up);
+    ANN(view);
+    glm_vec3_copy(view->eye, camera->eye);
+    glm_vec3_copy(view->target, camera->target);
+    glm_vec3_copy(view->up, camera->up);
 }
 
 
@@ -217,22 +260,15 @@ void dvz_camera_set_view(DvzCamera* camera, vec3 eye, vec3 target, vec3 up)
  * Return a camera view transform.
  *
  * @param camera the camera
- * @param eye output eye position, or NULL
- * @param target output look-at target, or NULL
- * @param up output up direction, or NULL
+ * @param out output camera view
  */
-void dvz_camera_get_view(const DvzCamera* camera, vec3 eye, vec3 target, vec3 up)
+void dvz_camera_get_view(const DvzCamera* camera, DvzCameraView* out)
 {
     ANN(camera);
-    for (uint32_t i = 0; i < 3; i++)
-    {
-        if (eye != NULL)
-            eye[i] = camera->eye[i];
-        if (target != NULL)
-            target[i] = camera->target[i];
-        if (up != NULL)
-            up[i] = camera->up[i];
-    }
+    ANN(out);
+    glm_vec3_copy(camera->eye, out->eye);
+    glm_vec3_copy(camera->target, out->target);
+    glm_vec3_copy(camera->up, out->up);
 }
 
 

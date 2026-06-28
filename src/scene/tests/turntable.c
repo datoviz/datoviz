@@ -74,12 +74,15 @@ int test_turntable_z_up_orbit_uses_xy_plane(TstContext* suite, const TstCase* it
     (void)item;
 
     DvzTurntableDesc desc = dvz_turntable_desc();
-    desc.up[0] = 0.0f;
-    desc.up[1] = 0.0f;
-    desc.up[2] = 1.0f;
-    desc.yaw = 0.0f;
-    desc.pitch = 0.0f;
-    desc.distance = 3.0f;
+    desc.initial_view.eye[0] = -3.0f;
+    desc.initial_view.eye[1] = 0.0f;
+    desc.initial_view.eye[2] = 0.0f;
+    desc.initial_view.target[0] = 0.0f;
+    desc.initial_view.target[1] = 0.0f;
+    desc.initial_view.target[2] = 0.0f;
+    desc.initial_view.up[0] = 0.0f;
+    desc.initial_view.up[1] = 0.0f;
+    desc.initial_view.up[2] = 1.0f;
     DvzTurntable* turntable = _dvz_turntable(&desc);
     ANN(turntable);
     AC(turntable->eye[0], -3.0f, 1e-5f);
@@ -179,7 +182,6 @@ int test_turntable_pitch_and_distance_clamps(TstContext* suite, const TstCase* i
     desc.max_pitch = +0.25f;
     desc.min_distance = 2.0f;
     desc.max_distance = 4.0f;
-    desc.distance = 3.0f;
     desc.controller_flags |= DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE;
     DvzTurntable* turntable = _dvz_turntable(&desc);
     ANN(turntable);

@@ -159,15 +159,15 @@ int test_controller_fly_z_up_lookat_drag(TstContext* suite, const TstCase* item)
 
     DvzFlyDesc desc = dvz_fly_desc();
     desc.mode = DVZ_FLY_MODE_PLANE;
-    desc.position[0] = -0.36f;
-    desc.position[1] = -3.80f;
-    desc.position[2] = +1.34f;
-    desc.target[0] = 0.00f;
-    desc.target[1] = 0.00f;
-    desc.target[2] = 0.22f;
-    desc.up[0] = 0.0f;
-    desc.up[1] = 0.0f;
-    desc.up[2] = 1.0f;
+    desc.initial_view.eye[0] = -0.36f;
+    desc.initial_view.eye[1] = -3.80f;
+    desc.initial_view.eye[2] = +1.34f;
+    desc.initial_view.target[0] = 0.00f;
+    desc.initial_view.target[1] = 0.00f;
+    desc.initial_view.target[2] = 0.22f;
+    desc.initial_view.up[0] = 0.0f;
+    desc.initial_view.up[1] = 0.0f;
+    desc.initial_view.up[2] = 1.0f;
 
     DvzFly* fly = dvz_fly_create(&desc);
     ANN(fly);
@@ -178,7 +178,7 @@ int test_controller_fly_z_up_lookat_drag(TstContext* suite, const TstCase* item)
     dvz_fly_get_target(fly, target);
 
     vec3 expected = {0}, actual = {0};
-    glm_vec3_sub(desc.target, desc.position, expected);
+    glm_vec3_sub(desc.initial_view.target, desc.initial_view.eye, expected);
     glm_vec3_sub(target, position, actual);
     glm_vec3_normalize(expected);
     glm_vec3_normalize(actual);
@@ -281,13 +281,14 @@ int test_controller_orbit_camera_clamps_poles(TstContext* suite, const TstCase* 
         };
         AT(dvz_orbit_camera_pointer(orbit, &drag));
 
-        vec3 eye = {0}, target = {0}, up = {0}, offset = {0};
+        DvzCameraView view = {0};
+        vec3 offset = {0};
         vec3 stable_up = {0.0f, 1.0f, 0.0f};
-        AT(dvz_orbit_camera_get_view(orbit, eye, target, up) == 0);
-        glm_vec3_sub(eye, target, offset);
+        AT(dvz_orbit_camera_get_view(orbit, &view) == 0);
+        glm_vec3_sub(view.eye, view.target, offset);
         glm_vec3_normalize(offset);
-        AT(glm_vec3_dot(up, stable_up) > 0.999f);
-        AT(fabsf(glm_vec3_dot(offset, up)) <= cosf(0.075f));
+        AT(glm_vec3_dot(view.up, stable_up) > 0.999f);
+        AT(fabsf(glm_vec3_dot(offset, view.up)) <= cosf(0.075f));
 
         DvzPointerEvent stop = {
             .type = DVZ_POINTER_EVENT_DRAG_STOP,
@@ -299,11 +300,11 @@ int test_controller_orbit_camera_clamps_poles(TstContext* suite, const TstCase* 
         };
         AT(dvz_orbit_camera_pointer(orbit, &stop));
 
-        AT(dvz_orbit_camera_get_view(orbit, eye, target, up) == 0);
-        glm_vec3_sub(eye, target, offset);
+        AT(dvz_orbit_camera_get_view(orbit, &view) == 0);
+        glm_vec3_sub(view.eye, view.target, offset);
         glm_vec3_normalize(offset);
-        AT(glm_vec3_dot(up, stable_up) > 0.999f);
-        AT(fabsf(glm_vec3_dot(offset, up)) <= cosf(0.075f));
+        AT(glm_vec3_dot(view.up, stable_up) > 0.999f);
+        AT(fabsf(glm_vec3_dot(offset, view.up)) <= cosf(0.075f));
 
         dvz_orbit_camera_destroy(orbit);
     }

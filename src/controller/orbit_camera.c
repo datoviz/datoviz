@@ -328,11 +328,6 @@ static void _orbit_view(const DvzOrbitCamera* orbit, vec3 eye, vec3 target, vec3
         eye[i] = orbit->pivot[i] + eye4[i];
         up[i] = stable_up[i];
     }
-
-    if (glm_vec3_norm(up) <= 0.0f)
-        glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, up);
-    else
-        glm_vec3_normalize(up);
 }
 
 
@@ -451,6 +446,46 @@ static bool _orbit_camera_desc_validate(const DvzOrbitCameraDesc* desc)
 
 
 
+static void _orbit_sync_view(DvzOrbitCamera* orbit, const DvzCameraView* view)
+{
+    ANN(orbit);
+    ANN(view);
+
+    vec3 delta = {0};
+    glm_vec3_sub(view->eye, orbit->pivot, delta);
+    float distance = glm_vec3_norm(delta);
+    if (distance > 0.0f)
+    {
+        orbit->distance = _orbit_clamp_distance(orbit, distance);
+        vec3 forward = {0};
+        glm_vec3_scale(delta, 1.0f / distance, forward);
+        vec3 up = {view->up[0], view->up[1], view->up[2]};
+        if (glm_vec3_norm(up) <= 0.0f)
+            glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, up);
+        else
+            glm_vec3_normalize(up);
+        glm_vec3_copy(up, orbit->up_axis);
+        vec3 right = {0};
+        glm_vec3_cross(up, forward, right);
+        if (glm_vec3_norm(right) <= 0.0f)
+            glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, right);
+        else
+            glm_vec3_normalize(right);
+        glm_vec3_cross(forward, right, up);
+        glm_vec3_normalize(up);
+        glm_mat4_identity(orbit->rotation);
+        for (uint32_t row = 0; row < 3; row++)
+        {
+            orbit->rotation[0][row] = right[row];
+            orbit->rotation[1][row] = up[row];
+            orbit->rotation[2][row] = forward[row];
+        }
+    }
+    glm_quat_identity(orbit->drag_rotation);
+}
+
+
+
 DvzOrbitCameraDesc dvz_orbit_camera_desc(void)
 {
     return (DvzOrbitCameraDesc){
@@ -458,7 +493,11 @@ DvzOrbitCameraDesc dvz_orbit_camera_desc(void)
         .width = DVZ_ORBIT_CAMERA_DEFAULT_WIDTH,
         .height = DVZ_ORBIT_CAMERA_DEFAULT_HEIGHT,
         .controller_flags = 0,
-        .pivot = {0.0f, 0.0f, 0.0f},
+        .initial_view = {
+            .eye = {0.0f, 0.0f, 3.0f},
+            .target = {0.0f, 0.0f, 0.0f},
+            .up = {0.0f, 1.0f, 0.0f},
+        },
         .min_distance = DVZ_ORBIT_CAMERA_MIN_DISTANCE,
         .max_distance = DVZ_ORBIT_CAMERA_MAX_DISTANCE,
         .zoom_speed = DVZ_ORBIT_CAMERA_ZOOM_COEF,
@@ -481,7 +520,7 @@ DvzOrbitCamera* dvz_orbit_camera_create(const DvzOrbitCameraDesc* desc)
     orbit->flags = (int)desc->controller_flags;
     orbit->viewport_size[0] = desc->width > 0.0f ? desc->width : DVZ_ORBIT_CAMERA_DEFAULT_WIDTH;
     orbit->viewport_size[1] = desc->height > 0.0f ? desc->height : DVZ_ORBIT_CAMERA_DEFAULT_HEIGHT;
-    glm_vec3_copy((vec3){desc->pivot[0], desc->pivot[1], desc->pivot[2]}, orbit->pivot);
+    glm_vec3_copy(desc->initial_view.target, orbit->pivot);
     orbit->min_distance =
         desc->min_distance > 0.0f ? desc->min_distance : DVZ_ORBIT_CAMERA_MIN_DISTANCE;
     orbit->max_distance =
@@ -495,6 +534,7 @@ DvzOrbitCamera* dvz_orbit_camera_create(const DvzOrbitCameraDesc* desc)
     glm_mat4_identity(orbit->rotation);
     glm_quat_identity(orbit->drag_rotation);
     orbit->distance = _orbit_clamp_distance(orbit, 3.0f);
+    _orbit_sync_view(orbit, &desc->initial_view);
     _orbit_store_initial(orbit);
     return orbit;
 }
@@ -552,10 +592,11 @@ float dvz_orbit_camera_get_distance(const DvzOrbitCamera* orbit)
 
 
 
-int dvz_orbit_camera_get_view(const DvzOrbitCamera* orbit, vec3 eye, vec3 target, vec3 up)
+int dvz_orbit_camera_get_view(const DvzOrbitCamera* orbit, DvzCameraView* out)
 {
     ANN(orbit);
-    _orbit_view(orbit, eye, target, up);
+    ANN(out);
+    _orbit_view(orbit, out->eye, out->target, out->up);
     return 0;
 }
 
@@ -577,38 +618,9 @@ void _dvz_orbit_camera_sync_camera(DvzOrbitCamera* orbit, DvzCamera* camera)
     _dvz_orbit_camera_attach_camera(orbit, camera);
     if (camera != NULL)
     {
-        vec3 eye = {0}, target = {0}, up = {0};
-        dvz_camera_get_view(camera, eye, target, up);
-        vec3 delta = {0};
-        glm_vec3_sub(eye, orbit->pivot, delta);
-        float distance = glm_vec3_norm(delta);
-        if (distance > 0.0f)
-        {
-            orbit->distance = _orbit_clamp_distance(orbit, distance);
-            vec3 forward = {0};
-            glm_vec3_scale(delta, 1.0f / distance, forward);
-            if (glm_vec3_norm(up) <= 0.0f)
-                glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, up);
-            else
-                glm_vec3_normalize(up);
-            glm_vec3_copy(up, orbit->up_axis);
-            vec3 right = {0};
-            glm_vec3_cross(up, forward, right);
-            if (glm_vec3_norm(right) <= 0.0f)
-                glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, right);
-            else
-                glm_vec3_normalize(right);
-            glm_vec3_cross(forward, right, up);
-            glm_vec3_normalize(up);
-            glm_mat4_identity(orbit->rotation);
-            for (uint32_t row = 0; row < 3; row++)
-            {
-                orbit->rotation[0][row] = right[row];
-                orbit->rotation[1][row] = up[row];
-                orbit->rotation[2][row] = forward[row];
-            }
-        }
-        glm_quat_identity(orbit->drag_rotation);
+        DvzCameraView view = {0};
+        dvz_camera_get_view(camera, &view);
+        _orbit_sync_view(orbit, &view);
     }
     dvz_orbit_camera_apply_camera(orbit);
 }
@@ -631,7 +643,12 @@ void dvz_orbit_camera_apply_camera(DvzOrbitCamera* orbit)
 
     vec3 eye = {0}, target = {0}, up = {0};
     _orbit_view(orbit, eye, target, up);
-    dvz_camera_set_view(orbit->camera, eye, target, up);
+    DvzCameraView view = {
+        .eye = {eye[0], eye[1], eye[2]},
+        .target = {target[0], target[1], target[2]},
+        .up = {up[0], up[1], up[2]},
+    };
+    dvz_camera_set_view(orbit->camera, &view);
 }
 
 

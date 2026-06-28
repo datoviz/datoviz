@@ -700,7 +700,12 @@ static void _animation_camera_motion_step(DvzAnimation* animation, double t, dou
         glm_vec3_copy(animation->camera_motion.up, up);
         break;
     }
-    dvz_camera_set_view(animation->camera, eye, target, up);
+    DvzCameraView view = {
+        .eye = {eye[0], eye[1], eye[2]},
+        .target = {target[0], target[1], target[2]},
+        .up = {up[0], up[1], up[2]},
+    };
+    dvz_camera_set_view(animation->camera, &view);
 }
 
 

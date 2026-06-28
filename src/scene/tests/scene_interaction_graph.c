@@ -783,12 +783,12 @@ int test_scene_controller_mode_view_proj_strips_panel_model(
     DvzPanel* panel = dvz_panel_full(figure);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[2] = 3.0f;
-    camera_desc.target[0] = 0.0f;
-    camera_desc.target[1] = 0.0f;
-    camera_desc.target[2] = 0.0f;
-    camera_desc.near_clip = 0.1f;
-    camera_desc.far_clip = 100.0f;
+    camera_desc.view.eye[2] = 3.0f;
+    camera_desc.view.target[0] = 0.0f;
+    camera_desc.view.target[1] = 0.0f;
+    camera_desc.view.target[2] = 0.0f;
+    camera_desc.projection.near_clip = 0.1f;
+    camera_desc.projection.far_clip = 100.0f;
     AT(dvz_panel_set_camera(panel, &camera_desc) != NULL);
 
     DvzController* controller = dvz_arcball(scene, NULL);

@@ -948,15 +948,15 @@ DvzOrientationGizmo* dvz_orientation_gizmo(
         goto fail;
 
     DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 0.0f;
-    camera.eye[1] = 0.0f;
-    camera.eye[2] = 3.0f;
-    camera.target[0] = 0.0f;
-    camera.target[1] = 0.0f;
-    camera.target[2] = 0.0f;
-    camera.fov_y = 0.64f;
-    camera.near_clip = 0.05f;
-    camera.far_clip = 20.0f;
+    camera.view.eye[0] = 0.0f;
+    camera.view.eye[1] = 0.0f;
+    camera.view.eye[2] = 3.0f;
+    camera.view.target[0] = 0.0f;
+    camera.view.target[1] = 0.0f;
+    camera.view.target[2] = 0.0f;
+    camera.projection.fov_y = 0.64f;
+    camera.projection.near_clip = 0.05f;
+    camera.projection.far_clip = 20.0f;
     if (dvz_panel_set_camera(gizmo->panel, &camera) == NULL)
         goto fail;
     dvz_panel_set_background_color(gizmo->panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 0.0f));

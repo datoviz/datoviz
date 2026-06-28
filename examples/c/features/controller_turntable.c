@@ -26,7 +26,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
@@ -135,21 +134,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzTurntableDesc desc = dvz_turntable_desc();
     DvzCameraDesc camera = example_controller_camera_desc();
     desc.controller_flags = DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE;
-    desc.pivot[0] = camera.target[0];
-    desc.pivot[1] = camera.target[1];
-    desc.pivot[2] = camera.target[2];
-    desc.up[0] = camera.up[0];
-    desc.up[1] = camera.up[1];
-    desc.up[2] = camera.up[2];
-    vec3 front = {
-        camera.target[0] - camera.eye[0],
-        camera.target[1] - camera.eye[1],
-        camera.target[2] - camera.eye[2],
-    };
-    desc.distance =
-        sqrtf(front[0] * front[0] + front[1] * front[1] + front[2] * front[2]);
-    desc.yaw = atan2f(-front[2], -front[0]);
-    desc.pitch = asinf(front[1] / desc.distance);
+    desc.initial_view = camera.view;
     desc.min_pitch = -0.72f;
     desc.max_pitch = +0.72f;
     desc.min_distance = 2.40f;

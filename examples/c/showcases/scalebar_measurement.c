@@ -460,13 +460,13 @@ static bool _add_3d_cloud(DvzScene* scene, DvzPanel* panel, DvzVisual** out)
     ANN(panel);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = 0.18f;
-    camera_desc.eye[1] = -0.10f;
-    camera_desc.eye[2] = 3.35f;
-    camera_desc.up[1] = 1.0f;
-    camera_desc.fov_y = 0.70f;
-    camera_desc.near_clip = 0.1f;
-    camera_desc.far_clip = 100.0f;
+    camera_desc.view.eye[0] = 0.18f;
+    camera_desc.view.eye[1] = -0.10f;
+    camera_desc.view.eye[2] = 3.35f;
+    camera_desc.view.up[1] = 1.0f;
+    camera_desc.projection.fov_y = 0.70f;
+    camera_desc.projection.near_clip = 0.1f;
+    camera_desc.projection.far_clip = 100.0f;
     if (!dvz_panel_set_camera(panel, &camera_desc))
         return false;
 

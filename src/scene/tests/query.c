@@ -1738,18 +1738,18 @@ int test_scene_sphere_query_resolves_camera_arcball_item(TstContext* suite, cons
     ANN(panel);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = -0.25f;
-    camera_desc.eye[1] = +2.0f;
-    camera_desc.eye[2] = +4.0f;
-    camera_desc.target[0] = 0.0f;
-    camera_desc.target[1] = 0.0f;
-    camera_desc.target[2] = 0.0f;
-    camera_desc.up[0] = 0.0f;
-    camera_desc.up[1] = 1.0f;
-    camera_desc.up[2] = 0.0f;
-    camera_desc.fov_y = 0.66f;
-    camera_desc.near_clip = 0.05f;
-    camera_desc.far_clip = 100.0f;
+    camera_desc.view.eye[0] = -0.25f;
+    camera_desc.view.eye[1] = +2.0f;
+    camera_desc.view.eye[2] = +4.0f;
+    camera_desc.view.target[0] = 0.0f;
+    camera_desc.view.target[1] = 0.0f;
+    camera_desc.view.target[2] = 0.0f;
+    camera_desc.view.up[0] = 0.0f;
+    camera_desc.view.up[1] = 1.0f;
+    camera_desc.view.up[2] = 0.0f;
+    camera_desc.projection.fov_y = 0.66f;
+    camera_desc.projection.near_clip = 0.05f;
+    camera_desc.projection.far_clip = 100.0f;
     AT(dvz_panel_set_camera(panel, &camera_desc) != NULL);
 
     DvzController* arcball_controller = dvz_arcball(scene, NULL);
@@ -1838,18 +1838,18 @@ int test_scene_sphere_query_preserves_camera_arcball_y_orientation(
     ANN(panel);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = -0.25f;
-    camera_desc.eye[1] = +2.0f;
-    camera_desc.eye[2] = +4.0f;
-    camera_desc.target[0] = 0.0f;
-    camera_desc.target[1] = 0.0f;
-    camera_desc.target[2] = 0.0f;
-    camera_desc.up[0] = 0.0f;
-    camera_desc.up[1] = 1.0f;
-    camera_desc.up[2] = 0.0f;
-    camera_desc.fov_y = 0.66f;
-    camera_desc.near_clip = 0.05f;
-    camera_desc.far_clip = 100.0f;
+    camera_desc.view.eye[0] = -0.25f;
+    camera_desc.view.eye[1] = +2.0f;
+    camera_desc.view.eye[2] = +4.0f;
+    camera_desc.view.target[0] = 0.0f;
+    camera_desc.view.target[1] = 0.0f;
+    camera_desc.view.target[2] = 0.0f;
+    camera_desc.view.up[0] = 0.0f;
+    camera_desc.view.up[1] = 1.0f;
+    camera_desc.view.up[2] = 0.0f;
+    camera_desc.projection.fov_y = 0.66f;
+    camera_desc.projection.near_clip = 0.05f;
+    camera_desc.projection.far_clip = 100.0f;
     AT(dvz_panel_set_camera(panel, &camera_desc) != NULL);
 
     DvzController* arcball_controller = dvz_arcball(scene, NULL);

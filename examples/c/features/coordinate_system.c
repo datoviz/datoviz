@@ -316,18 +316,18 @@ static bool _add_axis_labels(DvzPanel* panel)
 static bool _set_camera(DvzPanel* panel)
 {
     DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 1.15f;
-    camera.eye[1] = 1.75f;
-    camera.eye[2] = 4.75f;
-    camera.target[0] = 0.0f;
-    camera.target[1] = 0.0f;
-    camera.target[2] = 0.0f;
-    camera.up[0] = 0.0f;
-    camera.up[1] = 1.0f;
-    camera.up[2] = 0.0f;
-    camera.fov_y = 0.74f;
-    camera.near_clip = CAMERA_NEAR_CLIP;
-    camera.far_clip = CAMERA_FAR_CLIP;
+    camera.view.eye[0] = 1.15f;
+    camera.view.eye[1] = 1.75f;
+    camera.view.eye[2] = 4.75f;
+    camera.view.target[0] = 0.0f;
+    camera.view.target[1] = 0.0f;
+    camera.view.target[2] = 0.0f;
+    camera.view.up[0] = 0.0f;
+    camera.view.up[1] = 1.0f;
+    camera.view.up[2] = 0.0f;
+    camera.projection.fov_y = 0.74f;
+    camera.projection.near_clip = CAMERA_NEAR_CLIP;
+    camera.projection.far_clip = CAMERA_FAR_CLIP;
     return dvz_panel_set_camera(panel, &camera) != NULL;
 }
 
@@ -347,9 +347,6 @@ static bool _bind_orbit_camera(DvzScenarioContext* ctx, DvzPanel* panel)
     desc.height = (float)ctx->height;
     desc.min_distance = ORBIT_MIN_DISTANCE;
     desc.max_distance = ORBIT_MAX_DISTANCE;
-    desc.pivot[0] = 0.0f;
-    desc.pivot[1] = 0.0f;
-    desc.pivot[2] = 0.0f;
 
     DvzController* controller = dvz_orbit_camera(ctx->scene, &desc);
     if (controller == NULL)

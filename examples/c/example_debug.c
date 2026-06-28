@@ -179,28 +179,30 @@ static void _debug_dump_camera(const char* name, const DvzCameraDesc* camera)
 
     dvz_fprintf(stderr, "camera %s:\n", _debug_name(name, "unnamed"));
     dvz_fprintf(stderr, "DvzCameraDesc camera_desc = dvz_camera_desc();\n");
-    dvz_fprintf(stderr, "camera_desc.type = %d;\n", (int)camera->type);
+    dvz_fprintf(stderr, "camera_desc.projection.type = %d;\n", (int)camera->projection.type);
     dvz_fprintf(
         stderr,
-        "camera_desc.eye[0] = %+.6ff; camera_desc.eye[1] = %+.6ff; "
-        "camera_desc.eye[2] = %+.6ff;\n",
-        camera->eye[0], camera->eye[1], camera->eye[2]);
+        "camera_desc.view.eye[0] = %+.6ff; camera_desc.view.eye[1] = %+.6ff; "
+        "camera_desc.view.eye[2] = %+.6ff;\n",
+        camera->view.eye[0], camera->view.eye[1], camera->view.eye[2]);
     dvz_fprintf(
         stderr,
-        "camera_desc.target[0] = %+.6ff; camera_desc.target[1] = %+.6ff; "
-        "camera_desc.target[2] = %+.6ff;\n",
-        camera->target[0], camera->target[1], camera->target[2]);
+        "camera_desc.view.target[0] = %+.6ff; camera_desc.view.target[1] = %+.6ff; "
+        "camera_desc.view.target[2] = %+.6ff;\n",
+        camera->view.target[0], camera->view.target[1], camera->view.target[2]);
     dvz_fprintf(
         stderr,
-        "camera_desc.up[0] = %+.6ff; camera_desc.up[1] = %+.6ff; "
-        "camera_desc.up[2] = %+.6ff;\n",
-        camera->up[0], camera->up[1], camera->up[2]);
+        "camera_desc.view.up[0] = %+.6ff; camera_desc.view.up[1] = %+.6ff; "
+        "camera_desc.view.up[2] = %+.6ff;\n",
+        camera->view.up[0], camera->view.up[1], camera->view.up[2]);
     dvz_fprintf(
         stderr,
-        "camera_desc.fov_y = %.6ff; camera_desc.near_clip = %.6ff; "
-        "camera_desc.far_clip = %.6ff;\n",
-        camera->fov_y, camera->near_clip, camera->far_clip);
-    dvz_fprintf(stderr, "camera_desc.ortho_height = %.6ff;\n", camera->ortho_height);
+        "camera_desc.projection.fov_y = %.6ff; camera_desc.projection.near_clip = %.6ff; "
+        "camera_desc.projection.far_clip = %.6ff;\n",
+        camera->projection.fov_y, camera->projection.near_clip, camera->projection.far_clip);
+    dvz_fprintf(
+        stderr, "camera_desc.projection.ortho_height = %.6ff;\n",
+        camera->projection.ortho_height);
 }
 
 
@@ -229,10 +231,7 @@ static void _debug_dump(const ExampleDebug* debug)
     {
         DvzCameraDesc camera = debug->cameras[i].camera;
         if (debug->cameras[i].camera_ref != NULL)
-        {
-            dvz_camera_get_view(
-                debug->cameras[i].camera_ref, camera.eye, camera.target, camera.up);
-        }
+            dvz_camera_get_view(debug->cameras[i].camera_ref, &camera.view);
         _debug_dump_camera(debug->cameras[i].name, &camera);
     }
     dvz_fprintf(stderr, "\n");

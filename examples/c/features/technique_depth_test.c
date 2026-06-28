@@ -124,12 +124,12 @@ static bool _add_depth_points(DvzScene* scene, DvzPanel* panel, bool depth_test_
 static bool _set_depth_camera(DvzPanel* panel)
 {
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = 0.00f;
-    camera_desc.eye[1] = 0.00f;
-    camera_desc.eye[2] = 10.00f;
-    camera_desc.fov_y = 0.20f;
-    camera_desc.near_clip = 0.05f;
-    camera_desc.far_clip = 100.0f;
+    camera_desc.view.eye[0] = 0.00f;
+    camera_desc.view.eye[1] = 0.00f;
+    camera_desc.view.eye[2] = 10.00f;
+    camera_desc.projection.fov_y = 0.20f;
+    camera_desc.projection.near_clip = 0.05f;
+    camera_desc.projection.far_clip = 100.0f;
     return dvz_panel_set_camera(panel, &camera_desc) != NULL;
 }
 

@@ -736,11 +736,11 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    dvz_memcpy(camera_desc.eye, sizeof(camera_desc.eye), view.eye, sizeof(view.eye));
-    dvz_memcpy(camera_desc.target, sizeof(camera_desc.target), view.target, sizeof(view.target));
-    dvz_memcpy(camera_desc.up, sizeof(camera_desc.up), view.up, sizeof(view.up));
-    camera_desc.near_clip = 0.1f;
-    camera_desc.far_clip = view.far_clip;
+    dvz_memcpy(camera_desc.view.eye, sizeof(camera_desc.view.eye), view.eye, sizeof(view.eye));
+    dvz_memcpy(camera_desc.view.target, sizeof(camera_desc.view.target), view.target, sizeof(view.target));
+    dvz_memcpy(camera_desc.view.up, sizeof(camera_desc.view.up), view.up, sizeof(view.up));
+    camera_desc.projection.near_clip = 0.1f;
+    camera_desc.projection.far_clip = view.far_clip;
     bool ok = dvz_panel_set_camera(panel, &camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
@@ -775,9 +775,14 @@ int main(int argc, char** argv)
 
     DvzFlyDesc fly_desc = dvz_fly_desc();
     fly_desc.mode = DVZ_FLY_MODE_PLANE;
-    dvz_memcpy(fly_desc.position, sizeof(fly_desc.position), view.eye, sizeof(view.eye));
-    dvz_memcpy(fly_desc.target, sizeof(fly_desc.target), view.target, sizeof(view.target));
-    dvz_memcpy(fly_desc.up, sizeof(fly_desc.up), view.up, sizeof(view.up));
+    dvz_memcpy(
+        fly_desc.initial_view.eye, sizeof(fly_desc.initial_view.eye), view.eye,
+        sizeof(view.eye));
+    dvz_memcpy(
+        fly_desc.initial_view.target, sizeof(fly_desc.initial_view.target), view.target,
+        sizeof(view.target));
+    dvz_memcpy(
+        fly_desc.initial_view.up, sizeof(fly_desc.initial_view.up), view.up, sizeof(view.up));
     fly_desc.speed = view.speed;
     DvzFly* fly = dvz_view_fly(win, panel, &fly_desc);
     EXAMPLE_CHECK(fly != NULL, "failed to create or bind the LIDAR fly controller");

@@ -356,18 +356,18 @@ DvzCameraDesc example_default_3d_camera_desc(float extent)
         extent = 1.0f;
 
     DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = -0.25f * extent;
-    camera.eye[1] = +2.0f * extent;
-    camera.eye[2] = +4.0f * extent;
-    camera.target[0] = 0.0f;
-    camera.target[1] = 0.0f;
-    camera.target[2] = 0.0f;
-    camera.up[0] = 0.0f;
-    camera.up[1] = 1.0f;
-    camera.up[2] = 0.0f;
-    camera.fov_y = 0.66f;
-    camera.near_clip = 0.05f;
-    camera.far_clip = 100.0f * extent;
+    camera.view.eye[0] = -0.25f * extent;
+    camera.view.eye[1] = +2.0f * extent;
+    camera.view.eye[2] = +4.0f * extent;
+    camera.view.target[0] = 0.0f;
+    camera.view.target[1] = 0.0f;
+    camera.view.target[2] = 0.0f;
+    camera.view.up[0] = 0.0f;
+    camera.view.up[1] = 1.0f;
+    camera.view.up[2] = 0.0f;
+    camera.projection.fov_y = 0.66f;
+    camera.projection.near_clip = 0.05f;
+    camera.projection.far_clip = 100.0f * extent;
     return camera;
 }
 
@@ -397,18 +397,18 @@ DvzCamera* example_set_default_3d_camera(DvzPanel* panel, float extent)
 DvzCameraDesc example_controller_camera_desc(void)
 {
     DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 0.0f;
-    camera.eye[1] = +3.0f;
-    camera.eye[2] = +5.0f;
-    camera.target[0] = 0.0f;
-    camera.target[1] = 0.0f;
-    camera.target[2] = +0.3f;
-    camera.up[0] = 0.0f;
-    camera.up[1] = 1.0f;
-    camera.up[2] = 0.0f;
-    camera.fov_y = 0.66f;
-    camera.near_clip = 0.05f;
-    camera.far_clip = 100.0f;
+    camera.view.eye[0] = 0.0f;
+    camera.view.eye[1] = +3.0f;
+    camera.view.eye[2] = +5.0f;
+    camera.view.target[0] = 0.0f;
+    camera.view.target[1] = 0.0f;
+    camera.view.target[2] = +0.3f;
+    camera.view.up[0] = 0.0f;
+    camera.view.up[1] = 1.0f;
+    camera.view.up[2] = 0.0f;
+    camera.projection.fov_y = 0.66f;
+    camera.projection.near_clip = 0.05f;
+    camera.projection.far_clip = 100.0f;
     return camera;
 }
 

@@ -153,7 +153,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_graphite_cyan_set_panel_background(panel);
 
     DvzCameraDesc camera = example_default_3d_camera_desc(1.35f);
-    camera.eye[0] = 0.0f;
+    camera.view.eye[0] = 0.0f;
     if (dvz_panel_set_camera(panel, &camera) == NULL)
         return false;
 

@@ -136,16 +136,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     desc.width = (float)ctx->width;
     desc.height = (float)ctx->height;
     DvzCameraDesc camera = example_controller_camera_desc();
-    desc.pivot[0] = camera.target[0];
-    desc.pivot[1] = camera.target[1];
-    desc.pivot[2] = camera.target[2];
+    desc.initial_view = camera.view;
     DvzController* controller = dvz_orbit_camera(ctx->scene, &desc);
     if (controller == NULL)
         return false;
     DvzOrbitCamera* orbit = dvz_controller_orbit_camera(controller);
     if (orbit == NULL)
         return false;
-    dvz_orbit_camera_pivot(orbit, camera.target);
+    dvz_orbit_camera_pivot(orbit, camera.view.target);
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
     return true;

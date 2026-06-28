@@ -5166,8 +5166,8 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
     ANN(panel);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[2] = 3.0f;
-    camera_desc.fov_y = GLM_PI_4f;
+    camera_desc.view.eye[2] = 3.0f;
+    camera_desc.projection.fov_y = GLM_PI_4f;
     DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
     ANN(camera);
     DvzController* arcball_controller = dvz_arcball(scene, NULL);
@@ -5265,12 +5265,12 @@ int test_app_offscreen_orbit_camera_drag_renders_cube(TstContext* suite, const T
     ANN(panel);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[2] = 3.0f;
-    camera_desc.fov_y = GLM_PI_4f;
+    camera_desc.view.eye[2] = 3.0f;
+    camera_desc.projection.fov_y = GLM_PI_4f;
     DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
     ANN(camera);
-    vec3 eye0 = {0}, target0 = {0}, up0 = {0};
-    dvz_camera_get_view(camera, eye0, target0, up0);
+    DvzCameraView view0 = {0};
+    dvz_camera_get_view(camera, &view0);
 
     DvzController* orbit_controller = dvz_orbit_camera(scene, NULL);
     ANN(orbit_controller);
@@ -5340,12 +5340,13 @@ int test_app_offscreen_orbit_camera_drag_renders_cube(TstContext* suite, const T
     dvz_orbit_camera_set_camera(orbit, NULL);
     dvz_view_request_frame(win);
 
-    vec3 eye1 = {0}, target1 = {0}, up1 = {0};
-    dvz_camera_get_view(camera, eye1, target1, up1);
-    AT(fabsf(eye1[0] - eye0[0]) > 1e-3f || fabsf(eye1[2] - eye0[2]) > 1e-3f);
-    AC(target1[0], target0[0], 1e-6);
-    AC(target1[1], target0[1], 1e-6);
-    AC(target1[2], target0[2], 1e-6);
+    DvzCameraView view1 = {0};
+    dvz_camera_get_view(camera, &view1);
+    AT(fabsf(view1.eye[0] - view0.eye[0]) > 1e-3f ||
+       fabsf(view1.eye[2] - view0.eye[2]) > 1e-3f);
+    AC(view1.target[0], view0.target[0], 1e-6);
+    AC(view1.target[1], view0.target[1], 1e-6);
+    AC(view1.target[2], view0.target[2], 1e-6);
 
     dvz_app_run(app, 1);
 
@@ -7526,13 +7527,13 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
     if (perspective_camera)
     {
         DvzCameraDesc camera_desc = dvz_camera_desc();
-        camera_desc.eye[0] = 0.5f;
-        camera_desc.eye[1] = 0.5f;
-        camera_desc.eye[2] = 3.0f;
-        camera_desc.target[0] = 0.5f;
-        camera_desc.target[1] = 0.5f;
-        camera_desc.target[2] = 0.5f;
-        camera_desc.fov_y = GLM_PI_4f;
+        camera_desc.view.eye[0] = 0.5f;
+        camera_desc.view.eye[1] = 0.5f;
+        camera_desc.view.eye[2] = 3.0f;
+        camera_desc.view.target[0] = 0.5f;
+        camera_desc.view.target[1] = 0.5f;
+        camera_desc.view.target[2] = 0.5f;
+        camera_desc.projection.fov_y = GLM_PI_4f;
         if (dvz_panel_set_camera(panel, &camera_desc) == NULL)
         {
             dvz_scene_destroy(scene);

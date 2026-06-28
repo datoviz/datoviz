@@ -802,28 +802,28 @@ int test_controller_link_arcball_rotation_only_keeps_target_centered(
     ANN(gizmo_panel);
 
     DvzCameraDesc main_camera_desc = dvz_camera_desc();
-    main_camera_desc.eye[0] = 1.8f;
-    main_camera_desc.eye[1] = -2.2f;
-    main_camera_desc.eye[2] = 1.5f;
-    main_camera_desc.target[0] = 0.0f;
-    main_camera_desc.target[1] = 0.0f;
-    main_camera_desc.target[2] = 0.0f;
-    main_camera_desc.up[0] = 0.0f;
-    main_camera_desc.up[1] = 0.0f;
-    main_camera_desc.up[2] = 1.0f;
+    main_camera_desc.view.eye[0] = 1.8f;
+    main_camera_desc.view.eye[1] = -2.2f;
+    main_camera_desc.view.eye[2] = 1.5f;
+    main_camera_desc.view.target[0] = 0.0f;
+    main_camera_desc.view.target[1] = 0.0f;
+    main_camera_desc.view.target[2] = 0.0f;
+    main_camera_desc.view.up[0] = 0.0f;
+    main_camera_desc.view.up[1] = 0.0f;
+    main_camera_desc.view.up[2] = 1.0f;
     DvzCamera* main_camera = dvz_panel_set_camera(main_panel, &main_camera_desc);
     ANN(main_camera);
 
     DvzCameraDesc gizmo_camera_desc = dvz_camera_desc();
-    gizmo_camera_desc.eye[0] = 0.0f;
-    gizmo_camera_desc.eye[1] = 0.0f;
-    gizmo_camera_desc.eye[2] = 3.0f;
-    gizmo_camera_desc.target[0] = 0.0f;
-    gizmo_camera_desc.target[1] = 0.0f;
-    gizmo_camera_desc.target[2] = 0.0f;
-    gizmo_camera_desc.up[0] = 0.0f;
-    gizmo_camera_desc.up[1] = 1.0f;
-    gizmo_camera_desc.up[2] = 0.0f;
+    gizmo_camera_desc.view.eye[0] = 0.0f;
+    gizmo_camera_desc.view.eye[1] = 0.0f;
+    gizmo_camera_desc.view.eye[2] = 3.0f;
+    gizmo_camera_desc.view.target[0] = 0.0f;
+    gizmo_camera_desc.view.target[1] = 0.0f;
+    gizmo_camera_desc.view.target[2] = 0.0f;
+    gizmo_camera_desc.view.up[0] = 0.0f;
+    gizmo_camera_desc.view.up[1] = 1.0f;
+    gizmo_camera_desc.view.up[2] = 0.0f;
     DvzCamera* gizmo_camera = dvz_panel_set_camera(gizmo_panel, &gizmo_camera_desc);
     ANN(gizmo_camera);
 
@@ -982,15 +982,15 @@ int test_orientation_gizmo_create_place_resize_and_visibility(
     ANN(panel);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = 1.8f;
-    camera_desc.eye[1] = -2.2f;
-    camera_desc.eye[2] = 1.5f;
-    camera_desc.target[0] = 0.0f;
-    camera_desc.target[1] = 0.0f;
-    camera_desc.target[2] = 0.0f;
-    camera_desc.up[0] = 0.0f;
-    camera_desc.up[1] = 0.0f;
-    camera_desc.up[2] = 1.0f;
+    camera_desc.view.eye[0] = 1.8f;
+    camera_desc.view.eye[1] = -2.2f;
+    camera_desc.view.eye[2] = 1.5f;
+    camera_desc.view.target[0] = 0.0f;
+    camera_desc.view.target[1] = 0.0f;
+    camera_desc.view.target[2] = 0.0f;
+    camera_desc.view.up[0] = 0.0f;
+    camera_desc.view.up[1] = 0.0f;
+    camera_desc.view.up[2] = 1.0f;
     DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
     ANN(camera);
 
@@ -1666,15 +1666,15 @@ int test_scene_camera_arcball_mvp_composition(TstContext* suite, const TstCase* 
     ANN(panel);
 
     DvzCameraDesc desc = dvz_camera_desc();
-    desc.eye[0] = 0.0f;
-    desc.eye[1] = 0.0f;
-    desc.eye[2] = 3.0f;
-    desc.target[0] = 0.0f;
-    desc.target[1] = 0.0f;
-    desc.target[2] = 0.0f;
-    desc.fov_y = GLM_PI_4f;
-    desc.near_clip = 0.1f;
-    desc.far_clip = 100.0f;
+    desc.view.eye[0] = 0.0f;
+    desc.view.eye[1] = 0.0f;
+    desc.view.eye[2] = 3.0f;
+    desc.view.target[0] = 0.0f;
+    desc.view.target[1] = 0.0f;
+    desc.view.target[2] = 0.0f;
+    desc.projection.fov_y = GLM_PI_4f;
+    desc.projection.near_clip = 0.1f;
+    desc.projection.far_clip = 100.0f;
     DvzCamera* camera = dvz_panel_set_camera(panel, &desc);
     ANN(camera);
     AT(dvz_panel_camera(panel) == camera);
@@ -1715,16 +1715,16 @@ int test_orbit_camera_changes_view_not_model(TstContext* suite, const TstCase* i
     ANN(orbit);
     AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
 
-    vec3 eye0 = {0}, target0 = {0}, up0 = {0};
-    dvz_camera_get_view(camera, eye0, target0, up0);
+    DvzCameraView view0 = {0};
+    dvz_camera_get_view(camera, &view0);
     dvz_orbit_camera_set_camera(orbit, camera);
     dvz_orbit_camera_resize(orbit, 800.0f, 600.0f);
 
     vec3 pivot = {0};
     AT(dvz_orbit_camera_get_pivot(orbit, pivot) == 0);
-    AC(pivot[0], target0[0], 1e-6);
-    AC(pivot[1], target0[1], 1e-6);
-    AC(pivot[2], target0[2], 1e-6);
+    AC(pivot[0], view0.target[0], 1e-6);
+    AC(pivot[1], view0.target[1], 1e-6);
+    AC(pivot[2], view0.target[2], 1e-6);
     AT(dvz_orbit_camera_get_distance(orbit) > 0.0f);
 
     DvzPointerEvent ev = {0};
@@ -1739,23 +1739,24 @@ int test_orbit_camera_changes_view_not_model(TstContext* suite, const TstCase* i
     ev.content.d.is_press_valid = true;
     AT(dvz_orbit_camera_pointer(orbit, &ev));
 
-    vec3 eye1 = {0}, target1 = {0}, up1 = {0};
-    dvz_camera_get_view(camera, eye1, target1, up1);
-    vec3 orbit_eye = {0}, orbit_target = {0}, orbit_up = {0};
-    AT(dvz_orbit_camera_get_view(orbit, orbit_eye, orbit_target, orbit_up) == 0);
-    AC(orbit_eye[0], eye1[0], 1e-6);
-    AC(orbit_eye[1], eye1[1], 1e-6);
-    AC(orbit_eye[2], eye1[2], 1e-6);
-    AC(orbit_target[0], target1[0], 1e-6);
-    AC(orbit_target[1], target1[1], 1e-6);
-    AC(orbit_target[2], target1[2], 1e-6);
-    AC(orbit_up[0], up1[0], 1e-6);
-    AC(orbit_up[1], up1[1], 1e-6);
-    AC(orbit_up[2], up1[2], 1e-6);
-    AT(fabsf(eye1[0] - eye0[0]) > 1e-3f || fabsf(eye1[2] - eye0[2]) > 1e-3f);
-    AC(target1[0], target0[0], 1e-6);
-    AC(target1[1], target0[1], 1e-6);
-    AC(target1[2], target0[2], 1e-6);
+    DvzCameraView view1 = {0};
+    dvz_camera_get_view(camera, &view1);
+    DvzCameraView orbit_view = {0};
+    AT(dvz_orbit_camera_get_view(orbit, &orbit_view) == 0);
+    AC(orbit_view.eye[0], view1.eye[0], 1e-6);
+    AC(orbit_view.eye[1], view1.eye[1], 1e-6);
+    AC(orbit_view.eye[2], view1.eye[2], 1e-6);
+    AC(orbit_view.target[0], view1.target[0], 1e-6);
+    AC(orbit_view.target[1], view1.target[1], 1e-6);
+    AC(orbit_view.target[2], view1.target[2], 1e-6);
+    AC(orbit_view.up[0], view1.up[0], 1e-6);
+    AC(orbit_view.up[1], view1.up[1], 1e-6);
+    AC(orbit_view.up[2], view1.up[2], 1e-6);
+    AT(fabsf(view1.eye[0] - view0.eye[0]) > 1e-3f ||
+       fabsf(view1.eye[2] - view0.eye[2]) > 1e-3f);
+    AC(view1.target[0], view0.target[0], 1e-6);
+    AC(view1.target[1], view0.target[1], 1e-6);
+    AC(view1.target[2], view0.target[2], 1e-6);
 
     DvzMVP mvp = {0};
     _scene_panel_apply_mvp(panel, &mvp);
@@ -1775,11 +1776,11 @@ int test_orbit_camera_drag_axes_match_upright_planet(TstContext* suite, const Ts
     (void)item;
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = 0.0f;
-    camera_desc.eye[1] = -3.0f;
-    camera_desc.eye[2] = 0.0f;
-    camera_desc.up[1] = 0.0f;
-    camera_desc.up[2] = 1.0f;
+    camera_desc.view.eye[0] = 0.0f;
+    camera_desc.view.eye[1] = -3.0f;
+    camera_desc.view.eye[2] = 0.0f;
+    camera_desc.view.up[1] = 0.0f;
+    camera_desc.view.up[2] = 1.0f;
 
     DvzCamera* camera = dvz_camera_create(&camera_desc);
     ANN(camera);
@@ -1799,18 +1800,18 @@ int test_orbit_camera_drag_axes_match_upright_planet(TstContext* suite, const Ts
     };
     AT(dvz_orbit_camera_pointer(orbit, &horizontal));
 
-    vec3 eye = {0}, target = {0}, up = {0};
-    dvz_camera_get_view(camera, eye, target, up);
-    AT(eye[0] < -1e-3f);
-    AC(eye[2], 0.0f, 1e-5f);
-    AC(up[0], 0.0f, 1e-5f);
-    AC(up[1], 0.0f, 1e-5f);
-    AC(up[2], 1.0f, 1e-5f);
-    AC(target[0], 0.0f, 1e-6f);
-    AC(target[1], 0.0f, 1e-6f);
-    AC(target[2], 0.0f, 1e-6f);
+    DvzCameraView view = {0};
+    dvz_camera_get_view(camera, &view);
+    AT(view.eye[0] < -1e-3f);
+    AC(view.eye[2], 0.0f, 1e-5f);
+    AC(view.up[0], 0.0f, 1e-5f);
+    AC(view.up[1], 0.0f, 1e-5f);
+    AC(view.up[2], 1.0f, 1e-5f);
+    AC(view.target[0], 0.0f, 1e-6f);
+    AC(view.target[1], 0.0f, 1e-6f);
+    AC(view.target[2], 0.0f, 1e-6f);
 
-    dvz_camera_set_view(camera, camera_desc.eye, camera_desc.target, camera_desc.up);
+    dvz_camera_set_view(camera, &camera_desc.view);
     dvz_orbit_camera_set_camera(orbit, camera);
     DvzPointerEvent vertical = horizontal;
     vertical.pos[0] = 400.0f;
@@ -1819,26 +1820,26 @@ int test_orbit_camera_drag_axes_match_upright_planet(TstContext* suite, const Ts
     vertical.content.d.shift[1] = -200.0f;
     AT(dvz_orbit_camera_pointer(orbit, &vertical));
 
-    dvz_camera_get_view(camera, eye, target, up);
-    AT(eye[2] < -1e-3f);
-    AC(up[0], 0.0f, 1e-5f);
+    dvz_camera_get_view(camera, &view);
+    AT(view.eye[2] < -1e-3f);
+    AC(view.up[0], 0.0f, 1e-5f);
 
     camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = 0.0f;
-    camera_desc.eye[1] = 1.2f;
-    camera_desc.eye[2] = 1.25f;
-    camera_desc.up[0] = 0.0f;
-    camera_desc.up[1] = 1.0f;
-    camera_desc.up[2] = 0.0f;
-    dvz_camera_set_view(camera, camera_desc.eye, camera_desc.target, camera_desc.up);
+    camera_desc.view.eye[0] = 0.0f;
+    camera_desc.view.eye[1] = 1.2f;
+    camera_desc.view.eye[2] = 1.25f;
+    camera_desc.view.up[0] = 0.0f;
+    camera_desc.view.up[1] = 1.0f;
+    camera_desc.view.up[2] = 0.0f;
+    dvz_camera_set_view(camera, &camera_desc.view);
     dvz_orbit_camera_set_camera(orbit, camera);
     AT(dvz_orbit_camera_pointer(orbit, &horizontal));
 
-    dvz_camera_get_view(camera, eye, target, up);
-    AC(eye[1], 1.2f, 1e-5f);
-    AC(up[0], 0.0f, 1e-5f);
-    AC(up[1], 1.0f, 1e-5f);
-    AC(up[2], 0.0f, 1e-5f);
+    dvz_camera_get_view(camera, &view);
+    AC(view.eye[1], 1.2f, 1e-5f);
+    AC(view.up[0], 0.0f, 1e-5f);
+    AC(view.up[1], 1.0f, 1e-5f);
+    AC(view.up[2], 0.0f, 1e-5f);
 
     dvz_orbit_camera_destroy(orbit);
     dvz_camera_destroy(camera);
@@ -1852,11 +1853,11 @@ int test_orbit_camera_scene_drag_uses_stable_baseline(TstContext* suite, const T
     (void)item;
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = 0.0f;
-    camera_desc.eye[1] = -3.0f;
-    camera_desc.eye[2] = 0.0f;
-    camera_desc.up[1] = 0.0f;
-    camera_desc.up[2] = 1.0f;
+    camera_desc.view.eye[0] = 0.0f;
+    camera_desc.view.eye[1] = -3.0f;
+    camera_desc.view.eye[2] = 0.0f;
+    camera_desc.view.up[1] = 0.0f;
+    camera_desc.view.up[2] = 1.0f;
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -1902,8 +1903,8 @@ int test_orbit_camera_scene_drag_uses_stable_baseline(TstContext* suite, const T
     drag.content.pointer.content.d.shift[0] = 200.0f;
     dvz_input_emit_event(router, &drag);
 
-    vec3 actual_eye = {0}, actual_target = {0}, actual_up = {0};
-    dvz_camera_get_view(camera, actual_eye, actual_target, actual_up);
+    DvzCameraView actual_view = {0};
+    dvz_camera_get_view(camera, &actual_view);
 
     DvzCamera* expected_camera = dvz_camera_create(&camera_desc);
     ANN(expected_camera);
@@ -1913,13 +1914,13 @@ int test_orbit_camera_scene_drag_uses_stable_baseline(TstContext* suite, const T
     dvz_orbit_camera_set_camera(expected_orbit, expected_camera);
     AT(dvz_orbit_camera_pointer(expected_orbit, &drag.content.pointer));
 
-    vec3 expected_eye = {0}, expected_target = {0}, expected_up = {0};
-    dvz_camera_get_view(expected_camera, expected_eye, expected_target, expected_up);
+    DvzCameraView expected_view = {0};
+    dvz_camera_get_view(expected_camera, &expected_view);
     for (uint32_t i = 0; i < 3; i++)
     {
-        AC(actual_eye[i], expected_eye[i], 1e-5f);
-        AC(actual_target[i], expected_target[i], 1e-5f);
-        AC(actual_up[i], expected_up[i], 1e-5f);
+        AC(actual_view.eye[i], expected_view.eye[i], 1e-5f);
+        AC(actual_view.target[i], expected_view.target[i], 1e-5f);
+        AC(actual_view.up[i], expected_view.up[i], 1e-5f);
     }
 
     dvz_orbit_camera_destroy(expected_orbit);
@@ -1936,11 +1937,11 @@ int test_orbit_camera_double_click_restores_initial_view(TstContext* suite, cons
     (void)item;
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = 0.0f;
-    camera_desc.eye[1] = -3.0f;
-    camera_desc.eye[2] = 0.0f;
-    camera_desc.up[1] = 0.0f;
-    camera_desc.up[2] = 1.0f;
+    camera_desc.view.eye[0] = 0.0f;
+    camera_desc.view.eye[1] = -3.0f;
+    camera_desc.view.eye[2] = 0.0f;
+    camera_desc.view.up[1] = 0.0f;
+    camera_desc.view.up[2] = 1.0f;
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -1951,8 +1952,8 @@ int test_orbit_camera_double_click_restores_initial_view(TstContext* suite, cons
     DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
     ANN(camera);
 
-    vec3 initial_eye = {0}, initial_target = {0}, initial_up = {0};
-    dvz_camera_get_view(camera, initial_eye, initial_target, initial_up);
+    DvzCameraView initial_view = {0};
+    dvz_camera_get_view(camera, &initial_view);
 
     DvzController* controller = dvz_orbit_camera(scene, NULL);
     ANN(controller);
@@ -1981,11 +1982,11 @@ int test_orbit_camera_double_click_restores_initial_view(TstContext* suite, cons
     stop.content.pointer.type = DVZ_POINTER_EVENT_DRAG_STOP;
     dvz_input_emit_event(router, &stop);
 
-    vec3 dragged_eye = {0}, dragged_target = {0}, dragged_up = {0};
-    dvz_camera_get_view(camera, dragged_eye, dragged_target, dragged_up);
-    AT(fabsf(dragged_eye[0] - initial_eye[0]) > 1e-3f ||
-       fabsf(dragged_eye[1] - initial_eye[1]) > 1e-3f ||
-       fabsf(dragged_eye[2] - initial_eye[2]) > 1e-3f);
+    DvzCameraView dragged_view = {0};
+    dvz_camera_get_view(camera, &dragged_view);
+    AT(fabsf(dragged_view.eye[0] - initial_view.eye[0]) > 1e-3f ||
+       fabsf(dragged_view.eye[1] - initial_view.eye[1]) > 1e-3f ||
+       fabsf(dragged_view.eye[2] - initial_view.eye[2]) > 1e-3f);
 
     DvzInputEvent reset = {
         .type = DVZ_INPUT_EVENT_POINTER,
@@ -1997,13 +1998,13 @@ int test_orbit_camera_double_click_restores_initial_view(TstContext* suite, cons
     };
     dvz_input_emit_event(router, &reset);
 
-    vec3 reset_eye = {0}, reset_target = {0}, reset_up = {0};
-    dvz_camera_get_view(camera, reset_eye, reset_target, reset_up);
+    DvzCameraView reset_view = {0};
+    dvz_camera_get_view(camera, &reset_view);
     for (uint32_t i = 0; i < 3; i++)
     {
-        AC(reset_eye[i], initial_eye[i], 1e-5f);
-        AC(reset_target[i], initial_target[i], 1e-5f);
-        AC(reset_up[i], initial_up[i], 1e-5f);
+        AC(reset_view.eye[i], initial_view.eye[i], 1e-5f);
+        AC(reset_view.target[i], initial_view.target[i], 1e-5f);
+        AC(reset_view.up[i], initial_view.up[i], 1e-5f);
     }
 
     dvz_input_router_destroy(router);

@@ -57,21 +57,34 @@ typedef struct DvzCamera DvzCamera;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct DvzCameraView
+{
+    vec3 eye;
+    vec3 target;
+    vec3 up;
+};
+typedef struct DvzCameraView DvzCameraView;
+
+
+
+struct DvzCameraProjection
+{
+    DvzCameraType type;
+    float fov_y;
+    float near_clip;
+    float far_clip;
+    float ortho_height;
+};
+typedef struct DvzCameraProjection DvzCameraProjection;
+
+
+
 struct DvzCameraDesc
 {
     uint32_t struct_size;
     uint32_t flags;
-    DvzCameraType type;
-
-    vec3 eye;
-    vec3 target;
-    vec3 up;
-
-    float fov_y;
-    float near_clip;
-    float far_clip;
-
-    float ortho_height;
+    DvzCameraView view;
+    DvzCameraProjection projection;
 };
 typedef struct DvzCameraDesc DvzCameraDesc;
 
@@ -82,6 +95,24 @@ EXTERN_C_ON
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Return a default camera view.
+ *
+ * @return the camera view
+ */
+DVZ_EXPORT DvzCameraView dvz_camera_view(void);
+
+
+
+/**
+ * Return a default perspective camera projection.
+ *
+ * @return the camera projection
+ */
+DVZ_EXPORT DvzCameraProjection dvz_camera_projection(void);
+
+
 
 /**
  * Return a default perspective camera descriptor.
@@ -106,11 +137,9 @@ DVZ_EXPORT DvzCamera* dvz_camera_create(const DvzCameraDesc* desc);
  * Set a camera view transform.
  *
  * @param camera the camera
- * @param eye the eye position
- * @param target the look-at target
- * @param up the up direction
+ * @param view the camera view
  */
-DVZ_EXPORT void dvz_camera_set_view(DvzCamera* camera, vec3 eye, vec3 target, vec3 up);
+DVZ_EXPORT void dvz_camera_set_view(DvzCamera* camera, const DvzCameraView* view);
 
 
 
@@ -118,12 +147,9 @@ DVZ_EXPORT void dvz_camera_set_view(DvzCamera* camera, vec3 eye, vec3 target, ve
  * Return a camera view transform.
  *
  * @param camera the camera
- * @param eye output eye position, or NULL
- * @param target output look-at target, or NULL
- * @param up output up direction, or NULL
+ * @param out output camera view
  */
-DVZ_EXPORT void dvz_camera_get_view(
-    const DvzCamera* camera, vec3 eye, vec3 target, vec3 up);
+DVZ_EXPORT void dvz_camera_get_view(const DvzCamera* camera, DvzCameraView* out);
 
 
 
