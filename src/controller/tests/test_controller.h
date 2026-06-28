@@ -40,6 +40,8 @@ int test_controller_turntable_create(TstContext* suite, const TstCase* item);
 
 int test_controller_orbit_camera_zoom_limits(TstContext* suite, const TstCase* item);
 
+int test_controller_orbit_camera_clamps_poles(TstContext* suite, const TstCase* item);
+
 int test_controller_desc_abi_rejects_invalid_structs(TstContext* suite, const TstCase* item);
 
 

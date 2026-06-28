@@ -34,6 +34,7 @@
 #define DVZ_ORBIT_CAMERA_ZOOM_COEF      0.05f
 #define DVZ_ORBIT_CAMERA_MIN_DISTANCE   0.01f
 #define DVZ_ORBIT_CAMERA_MAX_DISTANCE   100000.0f
+#define DVZ_ORBIT_CAMERA_POLE_EPS       0.01f
 #define DVZ_ORBIT_CAMERA_DESC_KNOWN_FLAGS 0u
 
 
@@ -86,7 +87,7 @@ static float _clampf(float value, float min_value, float max_value)
 
 
 
-static void _orbit_rotation_axis(const mat4 rotation, uint32_t column, vec3 out)
+static void _orbit_rotation_axis(const float rotation[4][4], uint32_t column, vec3 out)
 {
     ANN(out);
     if (column >= 3)
@@ -103,6 +104,88 @@ static void _orbit_rotation_axis(const mat4 rotation, uint32_t column, vec3 out)
 
 
 
+/**
+ * Copy the orbit up axis, falling back to a stable world-up vector.
+ *
+ * @param orbit the orbit-camera controller
+ * @param out output normalized up axis
+ */
+static void _orbit_stable_up_axis(const DvzOrbitCamera* orbit, vec3 out)
+{
+    ANN(orbit);
+    ANN(out);
+
+    for (uint32_t i = 0; i < 3; i++)
+        out[i] = orbit->up_axis[i];
+    if (glm_vec3_norm(out) <= 0.0f)
+        _orbit_rotation_axis(orbit->initial_rotation, 1, out);
+    if (glm_vec3_norm(out) <= 0.0f)
+        glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, out);
+    else
+        glm_vec3_normalize(out);
+}
+
+
+
+/**
+ * Clamp a viewport pitch delta so the orbit eye direction stays away from the poles.
+ *
+ * @param orbit the orbit-camera controller
+ * @param yaw yaw quaternion already computed for the current drag
+ * @param right_axis normalized pitch axis after yaw
+ * @param pitch_angle requested pitch delta in radians
+ * @return clamped pitch delta in radians
+ */
+static float _orbit_clamp_pitch_delta(
+    const DvzOrbitCamera* orbit, versor yaw, vec3 right_axis, float pitch_angle)
+{
+    ANN(orbit);
+
+    mat4 yaw_mat = GLM_MAT4_IDENTITY_INIT;
+    mat4 base_rotation = GLM_MAT4_IDENTITY_INIT;
+    mat4 yawed_rotation = GLM_MAT4_IDENTITY_INIT;
+    glm_quat_mat4(yaw, yaw_mat);
+    for (uint32_t col = 0; col < 4; col++)
+        for (uint32_t row = 0; row < 4; row++)
+            base_rotation[col][row] = orbit->rotation[col][row];
+    glm_mat4_mul(yaw_mat, base_rotation, yawed_rotation);
+
+    vec3 eye_dir = {0};
+    for (uint32_t row = 0; row < 3; row++)
+        eye_dir[row] = yawed_rotation[2][row];
+    if (glm_vec3_norm(eye_dir) <= 0.0f)
+        return 0.0f;
+    glm_vec3_normalize(eye_dir);
+
+    vec3 up_axis = {0};
+    _orbit_stable_up_axis(orbit, up_axis);
+    float elevation = asinf(_clampf(glm_vec3_dot(eye_dir, up_axis), -1.0f, +1.0f));
+
+    vec3 derivative_dir = {0};
+    glm_vec3_cross(right_axis, eye_dir, derivative_dir);
+    float derivative = glm_vec3_dot(derivative_dir, up_axis);
+    if (fabsf(derivative) <= 0.0f)
+        return pitch_angle;
+
+    const float min_elevation = -GLM_PI_2f + DVZ_ORBIT_CAMERA_POLE_EPS;
+    const float max_elevation = +GLM_PI_2f - DVZ_ORBIT_CAMERA_POLE_EPS;
+    float min_pitch = 0.0f;
+    float max_pitch = 0.0f;
+    if (derivative > 0.0f)
+    {
+        min_pitch = min_elevation - elevation;
+        max_pitch = max_elevation - elevation;
+    }
+    else
+    {
+        min_pitch = elevation - max_elevation;
+        max_pitch = elevation - min_elevation;
+    }
+    return _clampf(pitch_angle, min_pitch, max_pitch);
+}
+
+
+
 static void _orbit_drag_rotation(
     const DvzOrbitCamera* orbit, vec2 shift_px, float width, float height, versor out)
 {
@@ -115,13 +198,8 @@ static void _orbit_drag_rotation(
         return;
     }
 
-    vec3 up_axis = {orbit->up_axis[0], orbit->up_axis[1], orbit->up_axis[2]};
-    if (glm_vec3_norm(up_axis) <= 0.0f)
-        _orbit_rotation_axis(orbit->initial_rotation, 1, up_axis);
-    if (glm_vec3_norm(up_axis) <= 0.0f)
-        glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, up_axis);
-    else
-        glm_vec3_normalize(up_axis);
+    vec3 up_axis = {0};
+    _orbit_stable_up_axis(orbit, up_axis);
 
     vec3 right_axis = {0};
     _orbit_rotation_axis(orbit->rotation, 0, right_axis);
@@ -138,6 +216,7 @@ static void _orbit_drag_rotation(
         glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, right_axis);
     else
         glm_vec3_normalize(right_axis);
+    pitch_angle = _orbit_clamp_pitch_delta(orbit, yaw, right_axis, pitch_angle);
 
     versor pitch = GLM_QUAT_IDENTITY_INIT;
     glm_quatv(pitch, pitch_angle, right_axis);
