@@ -398,8 +398,8 @@ DvzCameraDesc example_controller_camera_desc(void)
 {
     DvzCameraDesc camera = dvz_camera_desc();
     camera.eye[0] = 0.0f;
-    camera.eye[1] = +1.5f;
-    camera.eye[2] = +2.5f;
+    camera.eye[1] = +3.0f;
+    camera.eye[2] = +5.0f;
     camera.target[0] = 0.0f;
     camera.target[1] = 0.0f;
     camera.target[2] = +0.3f;
