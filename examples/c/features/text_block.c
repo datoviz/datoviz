@@ -63,7 +63,7 @@ static bool _add_text_block(DvzPanel* panel)
 
     DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
     DvzTextStyle style = dvz_text_style();
-    style.size_px = 38.0f;
+    style.size_px = 30.0f;
     style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.color[0] = color.r;
     style.color[1] = color.g;
@@ -92,11 +92,10 @@ static bool _add_text_block(DvzPanel* panel)
 
     return dvz_text_set_string(
                text,
-               "Retained multiline label\n"
-               "panel anchor: top left\n"
-               "renderer: MSDF atlas\n"
-               "placement: screen pixels\n"
-               "strings stay scene-owned") == 0;
+               "Retained text can hold a compact note\n"
+               "split over explicit lines.\n"
+               "One scene-owned string keeps the\n"
+               "screen placement stable.") == 0;
 }
 
 
