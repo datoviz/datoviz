@@ -3786,6 +3786,8 @@ _view_create_glfw(
     ccfg.window = window;
     ccfg.device = dvz_gpu_ctx_device(app->gpu_ctx);
     /* render_mode defaults to DVZ_CANVAS_RENDER_MODE_PRESENT */
+    if (dvz_figure_color_pipeline(figure) == DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND)
+        ccfg.color_format = VK_FORMAT_R8G8B8A8_UNORM;
     _app_canvas_config_apply_present_mode_env(&ccfg);
     DvzCanvas* canvas = dvz_canvas_create(&ccfg);
     if (canvas == NULL)

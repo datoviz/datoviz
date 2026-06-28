@@ -20,6 +20,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "_swapchain.h"
+#include "_vk_utils.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vklite/swapchain.h"
 
@@ -159,6 +160,26 @@ static VkSurfaceFormatKHR _swapchain_resolve_format(const DvzSwapchain* swapchai
         if (requested_space == 0 || candidate.colorSpace == requested_space)
         {
             return candidate;
+        }
+    }
+
+    if (dvz_format_is_display_unorm_rgba8(requested_format))
+    {
+        for (uint32_t i = 0; i < format_count; i++)
+        {
+            VkSurfaceFormatKHR candidate = {0};
+            if (!dvz_surface_format(swapchain->surface, i, &candidate))
+            {
+                continue;
+            }
+            if (!dvz_format_is_display_unorm_rgba8(candidate.format))
+            {
+                continue;
+            }
+            if (requested_space == 0 || candidate.colorSpace == requested_space)
+            {
+                return candidate;
+            }
         }
     }
 
