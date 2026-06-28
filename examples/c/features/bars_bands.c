@@ -80,7 +80,7 @@ static bool _configure_panel(DvzPanel* panel)
         return false;
     if (!example_graphite_cyan_apply_axis_style(y_axis, true, NULL))
         return false;
-    if (!dvz_axis_set_grid(x_axis, true) || !dvz_axis_set_grid(y_axis, true))
+    if (!dvz_axis_set_grid(x_axis, false) || !dvz_axis_set_grid(y_axis, false))
         return false;
     return dvz_axis_set_label(x_axis, "sample") && dvz_axis_set_label(y_axis, "value");
 }
