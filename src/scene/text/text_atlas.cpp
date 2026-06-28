@@ -127,6 +127,8 @@ struct DvzTextAtlasBuildSet
 typedef struct DvzTextDefaultMsdfAtlasData DvzTextDefaultMsdfAtlasData;
 struct DvzTextDefaultMsdfAtlasData
 {
+    float spec_em_px;
+    float spec_range_px;
     uint32_t width;
     uint32_t height;
     uint32_t glyph_count;
@@ -143,20 +145,30 @@ struct DvzTextDefaultMsdfAtlasData
 };
 
 static const DvzTextDefaultMsdfAtlasData DVZ_TEXT_DEFAULT_MSDF_ATLASES[] = {
-    {DVZ_TEXT_DEFAULT_MSDF_32_WIDTH,        DVZ_TEXT_DEFAULT_MSDF_32_HEIGHT,
+    {32.0f,                                4.0f,
+     DVZ_TEXT_DEFAULT_MSDF_32_WIDTH,        DVZ_TEXT_DEFAULT_MSDF_32_HEIGHT,
      DVZ_TEXT_DEFAULT_MSDF_32_GLYPH_COUNT,  DVZ_TEXT_DEFAULT_MSDF_32_EM_PX,
      DVZ_TEXT_DEFAULT_MSDF_32_RANGE_PX,     DVZ_TEXT_DEFAULT_MSDF_32_ASCENT,
      DVZ_TEXT_DEFAULT_MSDF_32_DESCENT,      DVZ_TEXT_DEFAULT_MSDF_32_LINE_GAP,
      DVZ_TEXT_DEFAULT_MSDF_32_LINE_HEIGHT,  DVZ_TEXT_DEFAULT_MSDF_32_RGBA_SIZE,
      DVZ_TEXT_DEFAULT_MSDF_32_RGBA_Z_SIZE,  DVZ_TEXT_DEFAULT_MSDF_32_RGBA_Z,
      DVZ_TEXT_DEFAULT_MSDF_32_GLYPHS},
-    {DVZ_TEXT_DEFAULT_MSDF_64_WIDTH,        DVZ_TEXT_DEFAULT_MSDF_64_HEIGHT,
+    {64.0f,                                8.0f,
+     DVZ_TEXT_DEFAULT_MSDF_64_WIDTH,        DVZ_TEXT_DEFAULT_MSDF_64_HEIGHT,
      DVZ_TEXT_DEFAULT_MSDF_64_GLYPH_COUNT,  DVZ_TEXT_DEFAULT_MSDF_64_EM_PX,
      DVZ_TEXT_DEFAULT_MSDF_64_RANGE_PX,     DVZ_TEXT_DEFAULT_MSDF_64_ASCENT,
      DVZ_TEXT_DEFAULT_MSDF_64_DESCENT,      DVZ_TEXT_DEFAULT_MSDF_64_LINE_GAP,
      DVZ_TEXT_DEFAULT_MSDF_64_LINE_HEIGHT,  DVZ_TEXT_DEFAULT_MSDF_64_RGBA_SIZE,
      DVZ_TEXT_DEFAULT_MSDF_64_RGBA_Z_SIZE,  DVZ_TEXT_DEFAULT_MSDF_64_RGBA_Z,
      DVZ_TEXT_DEFAULT_MSDF_64_GLYPHS},
+    {128.0f,                               16.0f,
+     DVZ_TEXT_DEFAULT_MSDF_128_WIDTH,       DVZ_TEXT_DEFAULT_MSDF_128_HEIGHT,
+     DVZ_TEXT_DEFAULT_MSDF_128_GLYPH_COUNT, DVZ_TEXT_DEFAULT_MSDF_128_EM_PX,
+     DVZ_TEXT_DEFAULT_MSDF_128_RANGE_PX,    DVZ_TEXT_DEFAULT_MSDF_128_ASCENT,
+     DVZ_TEXT_DEFAULT_MSDF_128_DESCENT,     DVZ_TEXT_DEFAULT_MSDF_128_LINE_GAP,
+     DVZ_TEXT_DEFAULT_MSDF_128_LINE_HEIGHT, DVZ_TEXT_DEFAULT_MSDF_128_RGBA_SIZE,
+     DVZ_TEXT_DEFAULT_MSDF_128_RGBA_Z_SIZE, DVZ_TEXT_DEFAULT_MSDF_128_RGBA_Z,
+     DVZ_TEXT_DEFAULT_MSDF_128_GLYPHS},
 };
 static const uint32_t DVZ_TEXT_DEFAULT_MSDF_ATLAS_COUNT =
     sizeof(DVZ_TEXT_DEFAULT_MSDF_ATLASES) / sizeof(DVZ_TEXT_DEFAULT_MSDF_ATLASES[0]);
@@ -1018,8 +1030,8 @@ static bool _text_default_msdf_spec_index(const DvzTextAtlasSpec* spec, uint32_t
     for (uint32_t i = 0; i < DVZ_TEXT_DEFAULT_MSDF_ATLAS_COUNT; i++)
     {
         const DvzTextDefaultMsdfAtlasData* data = &DVZ_TEXT_DEFAULT_MSDF_ATLASES[i];
-        if (fabsf(spec->em_px - data->em_px) <= 0.001f &&
-            fabsf(spec->distance_range_px - data->range_px) <= 0.001f)
+        if (fabsf(spec->em_px - data->spec_em_px) <= 0.001f &&
+            fabsf(spec->distance_range_px - data->spec_range_px) <= 0.001f)
         {
             *out_index = i;
             return true;

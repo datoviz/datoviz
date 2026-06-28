@@ -258,6 +258,20 @@ int test_scene_text_default_msdf_uses_embedded_atlas(TstContext* suite, const Ts
     DvzTextAtlasGlyph* large_glyph = _scene_text_atlas_glyph(large, 'R');
     ANN(large_glyph);
 
+    DvzTextAtlasSpec huge_spec =
+        _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, 128.0f);
+    AT(_scene_text_atlas_ensure_string(font, &huge_spec, "Large retained text"));
+    AT(font->ttf_bytes == NULL);
+    AT(font->ttf_size == 0);
+    DvzTextAtlas* huge = _scene_text_atlas_get(font, &huge_spec);
+    ANN(huge);
+    ANN(huge->field);
+    AT(huge->backend == DVZ_TEXT_ATLAS_BACKEND_MSDF);
+    AT(huge->encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
+    AT(huge->glyph_count >= 95);
+    DvzTextAtlasGlyph* huge_glyph = _scene_text_atlas_glyph(huge, 'L');
+    ANN(huge_glyph);
+
     dvz_scene_destroy(scene);
 #else
     tst_skip(suite, "zlib unavailable");
