@@ -531,7 +531,7 @@ static bool _text_atlas_utf8_next(
     ANN(inout_index);
     ANN(out_codepoint);
     uint32_t i = *inout_index;
-    if (i >= DVZ_SCENE_LABEL_SIZE || string[i] == '\0')
+    if (string[i] == '\0')
         return false;
 
     const uint8_t* s = (const uint8_t*)string;
@@ -573,8 +573,7 @@ static bool _text_atlas_utf8_next(
 
     for (uint32_t j = 1; j < needed; j++)
     {
-        if (i + j >= DVZ_SCENE_LABEL_SIZE || string[i + j] == '\0' ||
-            (s[i + j] & 0xC0u) != 0x80u)
+        if (string[i + j] == '\0' || (s[i + j] & 0xC0u) != 0x80u)
         {
             *out_codepoint = DVZ_TEXT_SDF_FALLBACK;
             *inout_index = i + 1;

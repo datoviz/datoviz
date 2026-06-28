@@ -326,6 +326,7 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         return _text_prepare_batched_visual(figure, text);
     if (text->scene == NULL || text->panel == NULL || text->panel->figure != figure)
         return true;
+    const char* string = text->legacy_string != NULL ? text->legacy_string : "";
     float default_size_px = text->scene->font_defaults.text_size_px;
     DvzTextAtlasBackend backend =
         _text_renderer_backend(text->style.renderer, &text->style, default_size_px);
@@ -354,21 +355,21 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         DvzFont* font = _text_sdf_font(text->scene, &text->style);
         DvzTextAtlasSpec spec =
             _scene_text_atlas_spec(backend, _text_style_size_px(&text->style, default_size_px));
-        if (font == NULL || !_scene_text_atlas_ensure_string(font, &spec, text->string))
+        if (font == NULL || !_scene_text_atlas_ensure_string(font, &spec, string))
             return false;
         font_atlas = _text_font_atlas(font, &spec);
         ANN(font_atlas);
         atlas = font_atlas->field;
         atlas_generation = font_atlas->generation;
         scale = _text_sdf_layout_scale(&text->style, font_atlas);
-        _text_sdf_measure(text->string, font_atlas, scale, &width, &height, &visible);
+        _text_sdf_measure(string, font_atlas, scale, &width, &height, &visible);
         line_h = font_atlas->line_height * scale;
     }
     else
     {
         uint32_t columns = 0;
         uint32_t lines = 0;
-        _text_measure_cells(text->string, &columns, &lines, &visible);
+        _text_measure_cells(string, &columns, &lines, &visible);
         atlas = _text_bitmap_atlas_field(text->scene);
         scale = _text_bitmap_layout_scale(&text->style);
         glyph_w = (float)DVZ_TEXT_BITMAP_GLYPH_WIDTH * scale;
@@ -464,7 +465,7 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     uint32_t cp = 0;
     uint32_t vertex_count = 0;
     float cursor_x = 0.0f;
-    while (_text_utf8_next(text->string, &byte_index, &cp))
+    while (_text_utf8_next(string, &byte_index, &cp))
     {
         if (cp == '\n')
         {

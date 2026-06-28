@@ -1169,6 +1169,8 @@ int test_scene_text_sdf_default_font(TstContext* suite, const TstCase* item);
 
 int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase* item);
 
+int test_scene_text_preserves_long_strings(TstContext* suite, const TstCase* item);
+
 int test_scene_text_batched_collection_items(TstContext* suite, const TstCase* item);
 
 int test_scene_text_batched_layout_spacing(TstContext* suite, const TstCase* item);

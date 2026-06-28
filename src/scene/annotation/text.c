@@ -190,6 +190,34 @@ static DvzTextLayout _text_default_layout(void)
 }
 
 
+/**
+ * Copy UTF-8 text content without applying short-label limits.
+ *
+ * @param src source string, or NULL for empty text
+ * @return owned copy, or NULL on allocation failure
+ */
+char* _scene_text_strdup(const char* src)
+{
+    const char* resolved = src != NULL ? src : "";
+    size_t len = strlen(resolved);
+    if (len == SIZE_MAX)
+    {
+        log_error("text string length overflow");
+        return NULL;
+    }
+    char* copy = (char*)dvz_calloc((DvzSize)len + 1u, 1);
+    if (copy == NULL)
+    {
+        log_error("text string allocation failed");
+        return NULL;
+    }
+    if (len > 0)
+        dvz_memcpy(copy, len, resolved, len);
+    copy[len] = '\0';
+    return copy;
+}
+
+
 static void _text_free_collection(DvzText* text)
 {
     ANN(text);
@@ -296,10 +324,7 @@ static int _text_alloc_collection(
     for (uint32_t i = 0; i < item_count; i++)
     {
         const char* src = items[i].string != NULL ? items[i].string : "";
-        size_t len = strlen(src);
-        if (len >= DVZ_SCENE_LABEL_SIZE)
-            len = DVZ_SCENE_LABEL_SIZE - 1u;
-        strings[i] = (char*)dvz_calloc((DvzSize)len + 1u, 1);
+        strings[i] = _scene_text_strdup(src);
         if (strings[i] == NULL)
         {
             for (uint32_t j = 0; j < i; j++)
@@ -311,11 +336,8 @@ static int _text_alloc_collection(
             dvz_free(sizes);
             dvz_free(colors);
             dvz_free(angles);
-            log_error("text item string allocation failed");
             return -1;
         }
-        dvz_memcpy(strings[i], len, src, len);
-        strings[i][len] = '\0';
         positions[i][0] = items[i].position[0];
         positions[i][1] = items[i].position[1];
         positions[i][2] = items[i].position[2];
@@ -441,7 +463,7 @@ void dvz_text_destroy(DvzText* text)
     _scene_notify_request_frame(text->panel != NULL ? text->panel->figure : NULL);
     text->scene = NULL;
     text->panel = NULL;
-    text->string[0] = '\0';
+    text->legacy_string = NULL;
     text->dirty_flags = DVZ_TEXT_DIRTY_NONE;
 }
 
@@ -480,7 +502,7 @@ int dvz_text_set_items(DvzText* text, const DvzTextItem* items, uint32_t item_co
     text->colors = colors;
     text->angles = angles;
     text->item_count = item_count;
-    dvz_strlcpy(text->string, item_count > 0 && strings[0] != NULL ? strings[0] : "", sizeof(text->string));
+    text->legacy_string = NULL;
     _text_mark_dirty(text, DVZ_TEXT_DIRTY_STRING | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER);
     return 0;
 }

@@ -63,7 +63,7 @@ static bool _annotation_prepare_visual(DvzFigure* figure, DvzAnnotation* annotat
     DvzText proxy = {0};
     proxy.scene = annotation->scene;
     proxy.panel = annotation->panel;
-    dvz_strlcpy(proxy.string, annotation->text, sizeof(proxy.string));
+    proxy.legacy_string = annotation->text;
     proxy.style = annotation->style;
     proxy.placement = annotation->placement;
     proxy.flags = annotation->flags;
@@ -137,5 +137,4 @@ void _scene_prepare_text_visuals(DvzFigure* figure)
             break;
     }
 }
-
 

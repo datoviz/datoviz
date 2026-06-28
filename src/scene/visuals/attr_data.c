@@ -32,6 +32,7 @@
 #include "datoviz/scene.h"
 #include "registry/registry.h"
 #include "sample_profile.h"
+#include "text/text_internal.h"
 
 
 /*************************************************************************************************/
@@ -517,20 +518,14 @@ int dvz_visual_set_strings(
     for (uint32_t i = 0; i < item_count; i++)
     {
         const char* src = strings[i] != NULL ? strings[i] : "";
-        size_t len = strlen(src);
-        if (len >= DVZ_SCENE_LABEL_SIZE)
-            len = DVZ_SCENE_LABEL_SIZE - 1u;
-        copy[i] = (char*)dvz_calloc((DvzSize)len + 1u, 1);
+        copy[i] = _scene_text_strdup(src);
         if (copy[i] == NULL)
         {
             for (uint32_t j = 0; j < i; j++)
                 dvz_free(copy[j]);
             dvz_free(copy);
-            log_error("text visual string allocation failed");
             return -1;
         }
-        dvz_memcpy(copy[i], len, src, len);
-        copy[i][len] = '\0';
     }
 
     if (_visual_family_state(visual)->text.strings != NULL)

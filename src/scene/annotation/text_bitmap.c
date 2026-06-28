@@ -323,7 +323,8 @@ static bool _text_build_bitmap(
     uint32_t columns = 0;
     uint32_t lines = 0;
     uint32_t visible = 0;
-    _text_measure_cells(text->string, &columns, &lines, &visible);
+    const char* string = text->legacy_string != NULL ? text->legacy_string : "";
+    _text_measure_cells(string, &columns, &lines, &visible);
     if (columns == 0 || visible == 0)
         return false;
 
@@ -364,7 +365,7 @@ static bool _text_build_bitmap(
     uint32_t row = 0;
     uint32_t i = 0;
     uint32_t cp = 0;
-    while (_text_utf8_next(text->string, &i, &cp))
+    while (_text_utf8_next(string, &i, &cp))
     {
         if (cp == '\n')
         {

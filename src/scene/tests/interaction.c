@@ -3363,7 +3363,9 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
             .has_text_anchor = true,
         });
     dvz_text_set_string(text, "ABC");
-    AT(strcmp(text->string, "ABC") == 0);
+    AT(text->item_count == 1);
+    AT(text->strings != NULL);
+    AT(strcmp(text->strings[0], "ABC") == 0);
 
     _scene_prepare_text_visuals(figure);
     ANN(text->visual);
@@ -3458,6 +3460,63 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
     AT(text->scene == NULL);
     AT(!text->visual->visible);
     AT(!glyph->visible);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_text_preserves_long_strings(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    const char* long_string =
+        "Retained semantic text must preserve user content beyond the short scene label "
+        "buffer. This sentence is deliberately longer than one hundred twenty eight bytes "
+        "so tests catch accidental clipping in text storage.";
+    AT(strlen(long_string) > DVZ_SCENE_LABEL_SIZE);
+
+    DvzText* text = dvz_text(panel, 0);
+    ANN(text);
+    AT(dvz_text_set_style(
+           text,
+           &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+               .size_px = 12.0f,
+               .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+           }) == 0);
+    AT(dvz_text_set_string(text, long_string) == 0);
+    AT(text->item_count == 1);
+    ANN(text->strings);
+    ANN(text->strings[0]);
+    AT(strlen(text->strings[0]) == strlen(long_string));
+    AT(strcmp(text->strings[0], long_string) == 0);
+
+    _scene_prepare_text_visuals(figure);
+    ANN(text->visual);
+    AT(text->visual->type == DVZ_VISUAL_TYPE_TEXT);
+    AT(_visual_family_state(text->visual)->text.string_count == 1);
+    ANN(_visual_family_state(text->visual)->text.strings);
+    AT(strcmp(_visual_family_state(text->visual)->text.strings[0], long_string) == 0);
+    DvzVisual* glyph = _visual_family_state(text->visual)->text.glyph_visual;
+    ANN(glyph);
+    DvzVisualDataView glyph_positions = {0};
+    AT(dvz_visual_data(glyph, "position", &glyph_positions) == 0);
+    AT(glyph_positions.item_count == (uint64_t)strlen(long_string) * 6u);
+
+    DvzVisual* raw_text = _scene_text_visual(scene, 0);
+    ANN(raw_text);
+    const char* raw_strings[] = {long_string};
+    AT(dvz_visual_set_strings(raw_text, "text", raw_strings, 1) == 0);
+    AT(_visual_family_state(raw_text)->text.string_count == 1);
+    ANN(_visual_family_state(raw_text)->text.strings);
+    AT(strcmp(_visual_family_state(raw_text)->text.strings[0], long_string) == 0);
+
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -4683,6 +4742,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_font_defaults);
     TST_CASE(test_scene_text_sdf_default_font);
     TST_CASE(test_scene_text_semantic_object_realization);
+    TST_CASE(test_scene_text_preserves_long_strings);
     TST_CASE(test_scene_text_batched_collection_items);
     TST_CASE(test_scene_text_batched_layout_spacing);
     TST_CASE(test_scene_text_bitmap_visual_realization);

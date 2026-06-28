@@ -15,6 +15,8 @@
 
 #include "_scene.h"
 
+char* _scene_text_strdup(const char* src);
+
 void _scene_text_block_init(DvzTextBlock* block, const char* source);
 
 void _scene_text_block_set_source(DvzTextBlock* block, const char* source);

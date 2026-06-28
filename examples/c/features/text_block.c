@@ -92,10 +92,10 @@ static bool _add_text_block(DvzPanel* panel)
 
     return dvz_text_set_string(
                text,
-               "Retained text can hold a compact note\n"
-               "split over explicit lines.\n"
-               "One scene-owned string keeps the\n"
-               "screen placement stable.") == 0;
+               "Retained text can hold a compact note that reads\n"
+               "like ordinary prose across multiple explicit lines.\n"
+               "The whole paragraph remains one scene-owned string,\n"
+               "so placement, style, and updates stay together.") == 0;
 }
 
 

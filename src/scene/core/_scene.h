@@ -1105,7 +1105,7 @@ struct DvzText
     DvzScene* scene;
     DvzId id;
     DvzPanel* panel;
-    char string[DVZ_SCENE_LABEL_SIZE];
+    const char* legacy_string;
     uint32_t item_count;
     char** strings;
     double (*positions)[3];
