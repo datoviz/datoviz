@@ -6,7 +6,11 @@ pydev: # install the Python binding on a development machine
 python-dev-install: pydev
 #
 
-api-json:
+bindings-python-clang: # install Python libclang when clang.cindex is missing
+    @python -c "import clang.cindex" 2>/dev/null || python -m pip install libclang
+#
+
+api-json: bindings-python-clang
     @python tools/bindings/extract_api.py
 #
 
