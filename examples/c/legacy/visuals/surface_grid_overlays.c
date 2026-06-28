@@ -688,15 +688,15 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(figure != NULL && state.panel != NULL, "scene setup failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = 1.8f;
-    camera_desc.eye[1] = -2.25f;
-    camera_desc.eye[2] = 1.55f;
-    camera_desc.up[0] = 0.0f;
-    camera_desc.up[1] = 0.0f;
-    camera_desc.up[2] = 1.0f;
-    camera_desc.fov_y = 0.72f;
-    camera_desc.near_clip = 0.05f;
-    camera_desc.far_clip = 100.0f;
+    camera_desc.view.eye[0] = 1.8f;
+    camera_desc.view.eye[1] = -2.25f;
+    camera_desc.view.eye[2] = 1.55f;
+    camera_desc.view.up[0] = 0.0f;
+    camera_desc.view.up[1] = 0.0f;
+    camera_desc.view.up[2] = 1.0f;
+    camera_desc.projection.fov_y = 0.72f;
+    camera_desc.projection.near_clip = 0.05f;
+    camera_desc.projection.far_clip = 100.0f;
     bool ok = dvz_panel_set_camera(state.panel, &camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 

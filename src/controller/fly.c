@@ -473,9 +473,11 @@ DvzFlyDesc dvz_fly_desc(void)
         DVZ_STRUCT_INIT_FIELDS(DvzFlyDesc),
         .mode = DVZ_FLY_MODE_FREE,
         .controller_flags = DVZ_FLY_FLAGS_FIXED_UP | DVZ_FLY_FLAGS_DISABLE_ROLL,
-        .position = {0.0f, 0.0f, 3.0f},
-        .target = {0.0f, 0.0f, 0.0f},
-        .up = {0.0f, 1.0f, 0.0f},
+        .initial_view = {
+            .eye = {0.0f, 0.0f, 3.0f},
+            .target = {0.0f, 0.0f, 0.0f},
+            .up = {0.0f, 1.0f, 0.0f},
+        },
         .yaw = -GLM_PI_2f,
         .pitch = 0.0f,
         .roll = 0.0f,
@@ -512,9 +514,7 @@ DvzFly* _dvz_fly(const DvzFlyDesc* desc)
     fly->flags = (int)desc->controller_flags;
     fly->viewport_size[0] = DVZ_FLY_DEFAULT_WIDTH;
     fly->viewport_size[1] = DVZ_FLY_DEFAULT_HEIGHT;
-    fly->world_up[0] = desc->up[0];
-    fly->world_up[1] = desc->up[1];
-    fly->world_up[2] = desc->up[2];
+    glm_vec3_copy(desc->initial_view.up, fly->world_up);
     if (!_vec3_valid(fly->world_up))
         glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, fly->world_up);
     glm_vec3_normalize(fly->world_up);
@@ -529,12 +529,24 @@ DvzFly* _dvz_fly(const DvzFlyDesc* desc)
 
     if (desc->use_angles)
         dvz_fly_initial(
-            fly, (vec3){desc->position[0], desc->position[1], desc->position[2]}, desc->yaw,
-            desc->pitch, desc->roll);
+            fly, (vec3){
+                     desc->initial_view.eye[0],
+                     desc->initial_view.eye[1],
+                     desc->initial_view.eye[2],
+                 },
+            desc->yaw, desc->pitch, desc->roll);
     else
         dvz_fly_initial_lookat(
-            fly, (vec3){desc->position[0], desc->position[1], desc->position[2]},
-            (vec3){desc->target[0], desc->target[1], desc->target[2]});
+            fly, (vec3){
+                     desc->initial_view.eye[0],
+                     desc->initial_view.eye[1],
+                     desc->initial_view.eye[2],
+                 },
+            (vec3){
+                desc->initial_view.target[0],
+                desc->initial_view.target[1],
+                desc->initial_view.target[2],
+            });
     return fly;
 }
 
@@ -943,7 +955,12 @@ void dvz_fly_apply_camera(DvzFly* fly)
     vec3 target = {0}, up = {0};
     dvz_fly_get_target(fly, target);
     dvz_fly_get_up(fly, up);
-    dvz_camera_set_view(fly->camera, fly->position, target, up);
+    DvzCameraView view = {
+        .eye = {fly->position[0], fly->position[1], fly->position[2]},
+        .target = {target[0], target[1], target[2]},
+        .up = {up[0], up[1], up[2]},
+    };
+    dvz_camera_set_view(fly->camera, &view);
 }
 
 

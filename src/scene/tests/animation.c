@@ -850,13 +850,13 @@ int test_scene_animation_camera_motion(TstContext* suite, const TstCase* item)
     _dvz_scene_animations_step(scene, 0);
     _dvz_scene_animations_step(scene, 0);
 
-    vec3 actual_eye = {0}, actual_target = {0}, actual_up = {0};
-    dvz_camera_get_view(camera, actual_eye, actual_target, actual_up);
-    AC(glm_vec3_norm(actual_eye), 3.0f, 1e-5f);
-    AC(actual_target[0], 0.0f, 1e-6f);
-    AC(actual_target[1], 0.0f, 1e-6f);
-    AC(actual_target[2], 0.0f, 1e-6f);
-    AC(glm_vec3_norm(actual_up), 1.0f, 1e-5f);
+    DvzCameraView actual_view = {0};
+    dvz_camera_get_view(camera, &actual_view);
+    AC(glm_vec3_norm(actual_view.eye), 3.0f, 1e-5f);
+    AC(actual_view.target[0], 0.0f, 1e-6f);
+    AC(actual_view.target[1], 0.0f, 1e-6f);
+    AC(actual_view.target[2], 0.0f, 1e-6f);
+    AC(glm_vec3_norm(actual_view.up), 1.0f, 1e-5f);
 
     dvz_track_destroy(target);
     dvz_track_destroy(eye);

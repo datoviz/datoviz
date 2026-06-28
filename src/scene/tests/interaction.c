@@ -2593,8 +2593,8 @@ static int test_scene_scalebar_3d_world_reference(TstContext* suite, const TstCa
     ANN(panel);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[2] = 3.20f;
-    camera_desc.fov_y = 0.74f;
+    camera_desc.view.eye[2] = 3.20f;
+    camera_desc.projection.fov_y = 0.74f;
     DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
     ANN(camera);
 
@@ -2633,9 +2633,12 @@ static int test_scene_scalebar_3d_world_reference(TstContext* suite, const TstCa
     AT(scalebar->scalebar_px >= 70.0f);
     AT(scalebar->scalebar_px <= 180.0f);
 
-    dvz_camera_set_view(
-        camera, (vec3){0.0f, 0.0f, 6.40f}, (vec3){0.0f, 0.0f, 0.0f},
-        (vec3){0.0f, 1.0f, 0.0f});
+    DvzCameraView view = {
+        .eye = {0.0f, 0.0f, 6.40f},
+        .target = {0.0f, 0.0f, 0.0f},
+        .up = {0.0f, 1.0f, 0.0f},
+    };
+    dvz_camera_set_view(camera, &view);
     _scene_prepare_text_visuals(figure);
     AT(strcmp(scalebar->text, "2 m") == 0);
     AC(scalebar->scalebar_units, 2.0, 1e-12);
@@ -2667,8 +2670,8 @@ static int test_scene_scalebar_3d_view_plane_rotation_invariant(
     ANN(panel);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[2] = 3.20f;
-    camera_desc.fov_y = 0.74f;
+    camera_desc.view.eye[2] = 3.20f;
+    camera_desc.projection.fov_y = 0.74f;
     DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
     ANN(camera);
 
@@ -2742,8 +2745,8 @@ static int test_scene_scalebar_3d_view_plane_zoom_scale(
     ANN(panel);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[2] = 3.20f;
-    camera_desc.fov_y = 0.74f;
+    camera_desc.view.eye[2] = 3.20f;
+    camera_desc.projection.fov_y = 0.74f;
     DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
     ANN(camera);
 
@@ -3088,11 +3091,11 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
     ANN(scalebar);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[2] = 3.20f;
-    camera_desc.up[1] = 1.0f;
-    camera_desc.fov_y = 0.74f;
-    camera_desc.near_clip = 0.1f;
-    camera_desc.far_clip = 100.0f;
+    camera_desc.view.eye[2] = 3.20f;
+    camera_desc.view.up[1] = 1.0f;
+    camera_desc.projection.fov_y = 0.74f;
+    camera_desc.projection.near_clip = 0.1f;
+    camera_desc.projection.far_clip = 100.0f;
     DvzCamera* camera = dvz_panel_set_camera(right, &camera_desc);
     ANN(camera);
 

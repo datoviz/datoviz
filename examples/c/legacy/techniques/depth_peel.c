@@ -142,11 +142,11 @@ int main(int argc, char** argv)
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.05f, 0.05f, 0.08f, 1.0f));
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[2] = 3.2f;
-    camera_desc.up[1] = 1.0f;
-    camera_desc.fov_y = 0.78539816339f;
-    camera_desc.near_clip = 0.1f;
-    camera_desc.far_clip = 100.0f;
+    camera_desc.view.eye[2] = 3.2f;
+    camera_desc.view.up[1] = 1.0f;
+    camera_desc.projection.fov_y = 0.78539816339f;
+    camera_desc.projection.near_clip = 0.1f;
+    camera_desc.projection.far_clip = 100.0f;
     bool ok = dvz_panel_set_camera(panel, &camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 

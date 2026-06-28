@@ -131,15 +131,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzFlyDesc desc = dvz_fly_desc();
     DvzCameraDesc camera = example_controller_camera_desc();
     desc.mode = DVZ_FLY_MODE_PLANE;
-    desc.position[0] = camera.eye[0];
-    desc.position[1] = camera.eye[1];
-    desc.position[2] = camera.eye[2];
-    desc.target[0] = camera.target[0];
-    desc.target[1] = camera.target[1];
-    desc.target[2] = camera.target[2];
-    desc.up[0] = camera.up[0];
-    desc.up[1] = camera.up[1];
-    desc.up[2] = camera.up[2];
+    desc.initial_view = camera.view;
     desc.speed = 0.70f;
     desc.look_speed = 0.45f;
 

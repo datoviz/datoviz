@@ -72,9 +72,7 @@ struct DvzFlyDesc
     DvzFlyMode mode;
     uint32_t controller_flags;
 
-    vec3 position;
-    vec3 target;
-    vec3 up;
+    DvzCameraView initial_view;
 
     float yaw;
     float pitch;

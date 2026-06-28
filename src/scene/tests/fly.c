@@ -101,12 +101,12 @@ int test_fly_lookat_initialization(TstContext* suite, const TstCase* item)
     (void)item;
 
     DvzFlyDesc desc = dvz_fly_desc();
-    desc.position[0] = 1.0f;
-    desc.position[1] = 2.0f;
-    desc.position[2] = 3.0f;
-    desc.target[0] = 1.0f;
-    desc.target[1] = 2.0f;
-    desc.target[2] = 2.0f;
+    desc.initial_view.eye[0] = 1.0f;
+    desc.initial_view.eye[1] = 2.0f;
+    desc.initial_view.eye[2] = 3.0f;
+    desc.initial_view.target[0] = 1.0f;
+    desc.initial_view.target[1] = 2.0f;
+    desc.initial_view.target[2] = 2.0f;
 
     DvzFly* fly = _dvz_fly(&desc);
     ANN(fly);
@@ -135,9 +135,9 @@ int test_fly_pitch_clamp_and_reset(TstContext* suite, const TstCase* item)
 
     DvzFlyDesc desc = dvz_fly_desc();
     desc.use_angles = true;
-    desc.position[0] = 0.0f;
-    desc.position[1] = 0.0f;
-    desc.position[2] = 0.0f;
+    desc.initial_view.eye[0] = 0.0f;
+    desc.initial_view.eye[1] = 0.0f;
+    desc.initial_view.eye[2] = 0.0f;
     desc.pitch = GLM_PIf;
 
     DvzFly* fly = _dvz_fly(&desc);
@@ -170,9 +170,9 @@ int test_fly_free_and_plane_movement(TstContext* suite, const TstCase* item)
 
     DvzFlyDesc desc = dvz_fly_desc();
     desc.use_angles = true;
-    desc.position[0] = 0.0f;
-    desc.position[1] = 0.0f;
-    desc.position[2] = 0.0f;
+    desc.initial_view.eye[0] = 0.0f;
+    desc.initial_view.eye[1] = 0.0f;
+    desc.initial_view.eye[2] = 0.0f;
     desc.yaw = -GLM_PI_2f;
     desc.pitch = GLM_PI_4f;
 
@@ -207,9 +207,9 @@ int test_fly_set_mode(TstContext* suite, const TstCase* item)
 
     DvzFlyDesc desc = dvz_fly_desc();
     desc.use_angles = true;
-    desc.position[0] = 0.0f;
-    desc.position[1] = 0.0f;
-    desc.position[2] = 0.0f;
+    desc.initial_view.eye[0] = 0.0f;
+    desc.initial_view.eye[1] = 0.0f;
+    desc.initial_view.eye[2] = 0.0f;
     desc.yaw = -GLM_PI_2f;
     desc.pitch = GLM_PI_4f;
     desc.mode = DVZ_FLY_MODE_PLANE;

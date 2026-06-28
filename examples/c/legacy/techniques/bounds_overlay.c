@@ -178,18 +178,18 @@ int main(int argc, char** argv)
     dvz_panel_set_background_color(panel_3d, dvz_color_from_unit(0.07f, 0.065f, 0.075f, 1.0f));
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = 0.0f;
-    camera_desc.eye[1] = -2.9f;
-    camera_desc.eye[2] = 2.1f;
-    camera_desc.target[0] = 0.0f;
-    camera_desc.target[1] = 0.0f;
-    camera_desc.target[2] = 0.0f;
-    camera_desc.up[0] = 0.0f;
-    camera_desc.up[1] = 0.0f;
-    camera_desc.up[2] = 1.0f;
-    camera_desc.fov_y = 0.72f;
-    camera_desc.near_clip = 0.05f;
-    camera_desc.far_clip = 100.0f;
+    camera_desc.view.eye[0] = 0.0f;
+    camera_desc.view.eye[1] = -2.9f;
+    camera_desc.view.eye[2] = 2.1f;
+    camera_desc.view.target[0] = 0.0f;
+    camera_desc.view.target[1] = 0.0f;
+    camera_desc.view.target[2] = 0.0f;
+    camera_desc.view.up[0] = 0.0f;
+    camera_desc.view.up[1] = 0.0f;
+    camera_desc.view.up[2] = 1.0f;
+    camera_desc.projection.fov_y = 0.72f;
+    camera_desc.projection.near_clip = 0.05f;
+    camera_desc.projection.far_clip = 100.0f;
     DvzCamera* camera = dvz_panel_set_camera(panel_3d, &camera_desc);
     EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera() failed for 3D panel");
 

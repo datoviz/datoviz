@@ -222,18 +222,18 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_graphite_cyan_set_panel_background(panel);
 
     DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 1.55f;
-    camera.eye[1] = -2.00f;
-    camera.eye[2] = 1.45f;
-    camera.target[0] = 0.0f;
-    camera.target[1] = 0.0f;
-    camera.target[2] = 0.08f;
-    camera.up[0] = 0.0f;
-    camera.up[1] = 0.0f;
-    camera.up[2] = 1.0f;
-    camera.fov_y = 0.66f;
-    camera.near_clip = 0.05f;
-    camera.far_clip = 100.0f;
+    camera.view.eye[0] = 1.55f;
+    camera.view.eye[1] = -2.00f;
+    camera.view.eye[2] = 1.45f;
+    camera.view.target[0] = 0.0f;
+    camera.view.target[1] = 0.0f;
+    camera.view.target[2] = 0.08f;
+    camera.view.up[0] = 0.0f;
+    camera.view.up[1] = 0.0f;
+    camera.view.up[2] = 1.0f;
+    camera.projection.fov_y = 0.66f;
+    camera.projection.near_clip = 0.05f;
+    camera.projection.far_clip = 100.0f;
     if (dvz_panel_set_camera(panel, &camera) == NULL)
         return false;
 

@@ -595,11 +595,11 @@ int main(int argc, char** argv)
     vec3 up = {0.0f, 1.0f, 0.0f};
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = eye[0];
-    camera_desc.eye[1] = eye[1];
-    camera_desc.eye[2] = eye[2];
-    camera_desc.near_clip = 0.01f;
-    camera_desc.far_clip = 100.0f;
+    camera_desc.view.eye[0] = eye[0];
+    camera_desc.view.eye[1] = eye[1];
+    camera_desc.view.eye[2] = eye[2];
+    camera_desc.projection.near_clip = 0.01f;
+    camera_desc.projection.far_clip = 100.0f;
     ok = dvz_panel_set_camera(panel, &camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.018f, 0.020f, 0.024f, 1.0f));
@@ -647,9 +647,12 @@ int main(int argc, char** argv)
 
     DvzFlyDesc fly_desc = dvz_fly_desc();
     fly_desc.mode = DVZ_FLY_MODE_PLANE;
-    dvz_memcpy(fly_desc.position, sizeof(fly_desc.position), eye, sizeof(eye));
-    dvz_memcpy(fly_desc.target, sizeof(fly_desc.target), target, sizeof(target));
-    dvz_memcpy(fly_desc.up, sizeof(fly_desc.up), up, sizeof(up));
+    dvz_memcpy(
+        fly_desc.initial_view.eye, sizeof(fly_desc.initial_view.eye), eye, sizeof(eye));
+    dvz_memcpy(
+        fly_desc.initial_view.target, sizeof(fly_desc.initial_view.target), target,
+        sizeof(target));
+    dvz_memcpy(fly_desc.initial_view.up, sizeof(fly_desc.initial_view.up), up, sizeof(up));
     fly_desc.speed = fmaxf(0.12f, 0.35f * radius);
     DvzFly* fly = dvz_view_fly(win, panel, &fly_desc);
     EXAMPLE_CHECK(fly != NULL, "failed to create or bind fly controller");

@@ -141,12 +141,12 @@ static void _print_settings(const EdlDemoState* state)
 static bool _set_camera(DvzPanel* panel)
 {
     DvzCameraDesc camera = dvz_camera_desc();
-    camera.eye[0] = 0.0f;
-    camera.eye[1] = 0.82f;
-    camera.eye[2] = 3.15f;
-    camera.fov_y = 0.62f;
-    camera.near_clip = 0.05f;
-    camera.far_clip = 100.0f;
+    camera.view.eye[0] = 0.0f;
+    camera.view.eye[1] = 0.82f;
+    camera.view.eye[2] = 3.15f;
+    camera.projection.fov_y = 0.62f;
+    camera.projection.near_clip = 0.05f;
+    camera.projection.far_clip = 100.0f;
     return dvz_panel_set_camera(panel, &camera) != NULL;
 }
 

@@ -63,12 +63,7 @@ struct DvzTurntableDesc
 {
     uint32_t struct_size;
     uint32_t flags;
-    vec3 pivot;
-    vec3 up;
-
-    float distance;
-    float yaw;
-    float pitch;
+    DvzCameraView initial_view;
 
     float yaw_speed;
     float pitch_speed;

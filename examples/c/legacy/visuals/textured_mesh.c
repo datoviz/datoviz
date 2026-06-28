@@ -409,14 +409,14 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = 0.0f;
-    camera_desc.eye[1] = -3.0f;
-    camera_desc.eye[2] = 0.0f;
-    camera_desc.up[1] = 0.0f;
-    camera_desc.up[2] = 1.0f;
-    camera_desc.fov_y = 0.72f;
-    camera_desc.near_clip = 0.05f;
-    camera_desc.far_clip = 100.0f;
+    camera_desc.view.eye[0] = 0.0f;
+    camera_desc.view.eye[1] = -3.0f;
+    camera_desc.view.eye[2] = 0.0f;
+    camera_desc.view.up[1] = 0.0f;
+    camera_desc.view.up[2] = 1.0f;
+    camera_desc.projection.fov_y = 0.72f;
+    camera_desc.projection.near_clip = 0.05f;
+    camera_desc.projection.far_clip = 100.0f;
     bool ok = dvz_panel_set_camera(panel, &camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 

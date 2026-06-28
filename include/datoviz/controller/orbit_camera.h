@@ -51,7 +51,7 @@ struct DvzOrbitCameraDesc
     float width;
     float height;
     uint32_t controller_flags;
-    vec3 pivot;
+    DvzCameraView initial_view;
     float min_distance;
     float max_distance;
     float zoom_speed;
@@ -130,13 +130,10 @@ DVZ_EXPORT float dvz_orbit_camera_get_distance(const DvzOrbitCamera* orbit);
  * Copy the current camera view vectors.
  *
  * @param orbit the orbit-camera controller
- * @param[out] eye camera eye position
- * @param[out] target camera target position
- * @param[out] up camera up vector
+ * @param[out] out camera view
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_orbit_camera_get_view(
-    const DvzOrbitCamera* orbit, vec3 eye, vec3 target, vec3 up);
+DVZ_EXPORT int dvz_orbit_camera_get_view(const DvzOrbitCamera* orbit, DvzCameraView* out);
 
 /**
  * Attach a borrowed camera to the controller.

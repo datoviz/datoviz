@@ -1721,15 +1721,15 @@ int dvz_wasm_api_panel_set_camera(
         return _fail(panel != NULL ? panel->owner : NULL, "invalid WASM panel handle");
     _clear_payload(panel->owner);
     DvzCameraDesc desc = dvz_camera_desc();
-    desc.eye[0] = eye_x;
-    desc.eye[1] = eye_y;
-    desc.eye[2] = eye_z;
-    desc.target[0] = target_x;
-    desc.target[1] = target_y;
-    desc.target[2] = target_z;
-    desc.fov_y = fov_y;
-    desc.near_clip = near;
-    desc.far_clip = far;
+    desc.view.eye[0] = eye_x;
+    desc.view.eye[1] = eye_y;
+    desc.view.eye[2] = eye_z;
+    desc.view.target[0] = target_x;
+    desc.view.target[1] = target_y;
+    desc.view.target[2] = target_z;
+    desc.projection.fov_y = fov_y;
+    desc.projection.near_clip = near;
+    desc.projection.far_clip = far;
     if (dvz_panel_set_camera(panel->panel, &desc) == NULL)
         return _fail(panel->owner, "WASM panel camera setup failed");
     return 0;
