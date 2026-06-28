@@ -186,7 +186,7 @@ void _dvz_scene_query_apply_render_state(
         -1.0f + 1.0f / (float)target_width,
         1.0f - 1.0f / (float)target_height,
     };
-    vec2 delta = {request_ndc[0] - target_ndc[0], -request_ndc[1] - target_ndc[1]};
+    vec2 delta = {request_ndc[0] - target_ndc[0], request_ndc[1] - target_ndc[1]};
     _query_recenter_mvp(&mvp, delta);
     render->u.render.has_mvp = true;
     render->u.render.apply_mvp = mvp;

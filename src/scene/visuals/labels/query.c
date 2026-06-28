@@ -91,7 +91,7 @@ static bool _labels_query_project_vertex(DvzMVP* mvp, const float position[3], d
     if (fabsf(clip[3]) < 1e-12f)
         return false;
     out_ndc[0] = (double)(clip[0] / clip[3]);
-    out_ndc[1] = (double)(clip[1] / clip[3]);
+    out_ndc[1] = (double)(-clip[1] / clip[3]);
     return isfinite(out_ndc[0]) && isfinite(out_ndc[1]);
 }
 

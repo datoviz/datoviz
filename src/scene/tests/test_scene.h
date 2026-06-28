@@ -989,6 +989,9 @@ int test_scene_pixel_query_preserves_vertical_item_orientation(
 
 int test_scene_marker_query_accepts_bbox_corner(TstContext* suite, const TstCase* item);
 
+int test_scene_marker_query_preserves_vertical_item_orientation(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_sphere_query_resolves_item(TstContext* suite, const TstCase* item);
 
 int test_scene_sphere_query_resolves_camera_arcball_item(
@@ -1252,6 +1255,9 @@ int test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke(
     TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_two_panel_points_light_both_halves(TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_marker_query_selection_preserves_vertical_orientation(
+    TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_clear_color(TstContext* suite, const TstCase* item);
 
