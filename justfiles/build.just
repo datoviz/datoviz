@@ -44,11 +44,33 @@ _build-configure release mode:
     build_dir="build"
     stamp="${build_dir}/.dvz-build-config"
     mkdir -p docs/images "${build_dir}"
+    launcher="${DVZ_COMPILER_LAUNCHER:-ccache}"
+    launcher_config=""
+    launcher_args=()
+    if [[ -n "${launcher}" && "${launcher}" != "OFF" && "${launcher}" != "off" ]]; then
+        if command -v "${launcher}" >/dev/null 2>&1; then
+            launcher_config="${launcher}"
+            launcher_args=(
+                "-DCMAKE_C_COMPILER_LAUNCHER=${launcher}"
+                "-DCMAKE_CXX_COMPILER_LAUNCHER=${launcher}"
+            )
+        else
+            launcher_args=(
+                "-DCMAKE_C_COMPILER_LAUNCHER="
+                "-DCMAKE_CXX_COMPILER_LAUNCHER="
+            )
+        fi
+    else
+        launcher_args=(
+            "-DCMAKE_C_COMPILER_LAUNCHER="
+            "-DCMAKE_CXX_COMPILER_LAUNCHER="
+        )
+    fi
     config="$(printf '%s\n' \
         "release={{release}}" \
         "cmake_args=${DVZ_CMAKE_ARGS:-}" \
         "generator=Ninja" \
-        "cxx_launcher=ccache" \
+        "compiler_launcher=${launcher_config}" \
         "export_compile_commands=ON")"
     needs_configure=0
     if [[ "{{mode}}" == "force" || ! -f "${build_dir}/CMakeCache.txt" || ! -f "${stamp}" ]]; then
@@ -64,9 +86,10 @@ _build-configure release mode:
         cd "${build_dir}"
         # Preserve existing behavior: DVZ_CMAKE_ARGS is a shell-split string of extra CMake flags.
         # shellcheck disable=SC2086
-        CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja \
+        cmake .. -GNinja \
             -DCMAKE_BUILD_TYPE="{{release}}" \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            "${launcher_args[@]}" \
             ${cmake_args}
     )
     printf '%s\n' "${config}" > "${stamp}"
@@ -79,35 +102,110 @@ configure release="Debug":
 [linux]
 [macos]
 compile:
-    @cmake --build build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    build_args=()
+    if [[ -n "${DVZ_BUILD_JOBS:-}" ]]; then
+        build_args+=(--parallel "${DVZ_BUILD_JOBS}")
+    fi
+    cmake --build build "${build_args[@]}"
 
 [linux]
 [macos]
 build release="Debug":
-    @just _build-configure "{{release}}" auto
-    @cmake --build build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    just _build-configure "{{release}}" auto
+    build_args=()
+    if [[ -n "${DVZ_BUILD_JOBS:-}" ]]; then
+        build_args+=(--parallel "${DVZ_BUILD_JOBS}")
+    fi
+    cmake --build build "${build_args[@]}"
+#
+
+[linux]
+[macos]
+build-stats:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [[ ! -f build/build.ninja ]]; then
+        echo "build/build.ninja missing; run 'just build' first"
+        exit 1
+    fi
+    commands="$(ninja -C build -t commands)"
+    count_matches() {
+        local pattern="$1"
+        local count
+        count="$(printf '%s\n' "${commands}" | rg -c "${pattern}" || true)"
+        if [[ -z "${count}" ]]; then
+            count=0
+        fi
+        printf '%s' "${count}"
+    }
+    echo "Ninja compile commands: $(count_matches ' -c ')"
+    echo "Commands using compiler launcher: $(count_matches '(^| )([^ ]*/)?(ccache|sccache) ')"
+    echo "Example shared helper compiles: $(count_matches ' -c .*(example_common\.c|example_style\.c|runner/scenario_runner\.c)')"
+    if command -v ccache >/dev/null 2>&1; then
+        ccache --show-stats | sed -n '1,14p'
+    fi
 #
 
 [linux]
 build-gprof release="RelWithDebInfo":
-    @set -e
-    @unset CC
-    @unset CXX
-    @mkdir -p docs/images
-    @mkdir -p build-gprof
-    @cd build-gprof && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DDVZ_ENABLE_GPROF=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-    @cd build-gprof && ninja dvztest
+    #!/usr/bin/env bash
+    set -euo pipefail
+    unset CC
+    unset CXX
+    mkdir -p docs/images build-gprof
+    launcher="${DVZ_COMPILER_LAUNCHER:-ccache}"
+    launcher_args=()
+    if [[ -n "${launcher}" && "${launcher}" != "OFF" && "${launcher}" != "off" ]] && command -v "${launcher}" >/dev/null 2>&1; then
+        launcher_args=(
+            "-DCMAKE_C_COMPILER_LAUNCHER=${launcher}"
+            "-DCMAKE_CXX_COMPILER_LAUNCHER=${launcher}"
+        )
+    fi
+    cmake_args="${DVZ_CMAKE_ARGS:-}"
+    (
+        cd build-gprof
+        # shellcheck disable=SC2086
+        cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DDVZ_ENABLE_GPROF=ON \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "${launcher_args[@]}" ${cmake_args}
+    )
+    build_args=()
+    if [[ -n "${DVZ_BUILD_JOBS:-}" ]]; then
+        build_args+=(--parallel "${DVZ_BUILD_JOBS}")
+    fi
+    cmake --build build-gprof --target dvztest "${build_args[@]}"
 #
 
 [linux]
 build-profile:
-    @set -e
-    @unset CC
-    @unset CXX
-    @mkdir -p docs/images
-    @mkdir -p build-profile
-    @cd build-profile/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDVZ_USE_VALIDATION=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-    @cd build-profile/ && ninja dvz_live_canvas
+    #!/usr/bin/env bash
+    set -euo pipefail
+    unset CC
+    unset CXX
+    mkdir -p docs/images build-profile
+    launcher="${DVZ_COMPILER_LAUNCHER:-ccache}"
+    launcher_args=()
+    if [[ -n "${launcher}" && "${launcher}" != "OFF" && "${launcher}" != "off" ]] && command -v "${launcher}" >/dev/null 2>&1; then
+        launcher_args=(
+            "-DCMAKE_C_COMPILER_LAUNCHER=${launcher}"
+            "-DCMAKE_CXX_COMPILER_LAUNCHER=${launcher}"
+        )
+    fi
+    cmake_args="${DVZ_CMAKE_ARGS:-}"
+    (
+        cd build-profile
+        # shellcheck disable=SC2086
+        cmake .. -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDVZ_USE_VALIDATION=OFF \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "${launcher_args[@]}" ${cmake_args}
+    )
+    build_args=()
+    if [[ -n "${DVZ_BUILD_JOBS:-}" ]]; then
+        build_args+=(--parallel "${DVZ_BUILD_JOBS}")
+    fi
+    cmake --build build-profile --target dvz_live_canvas "${build_args[@]}"
 #
 
 [linux]
@@ -193,8 +291,19 @@ build release="Debug":
     cp "$MINGW64_DIR/libstdc++-6.dll" "$BUILD_DIR"/
     cp "$MINGW64_DIR/libwinpthread-1.dll" "$BUILD_DIR"/
 
-    CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake --preset=mingw -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ${cmake_args}
-    cmake --build --preset mingw
+    launcher="${DVZ_COMPILER_LAUNCHER:-ccache}"
+    launcher_args=""
+    if [ -n "$launcher" ] && [ "$launcher" != "OFF" ] && [ "$launcher" != "off" ] && command -v "$launcher" >/dev/null 2>&1; then
+        launcher_args="-DCMAKE_C_COMPILER_LAUNCHER=$launcher -DCMAKE_CXX_COMPILER_LAUNCHER=$launcher"
+    fi
+    # shellcheck disable=SC2086
+    cmake --preset=mingw -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ${launcher_args} ${cmake_args}
+    build_args=""
+    if [ -n "${DVZ_BUILD_JOBS:-}" ]; then
+        build_args="--parallel ${DVZ_BUILD_JOBS}"
+    fi
+    # shellcheck disable=SC2086
+    cmake --build --preset mingw ${build_args}
 
     # Copy vcpkg_installed dll's to datoviz.exe location.
     if [ "{{release}}" == "Debug" ]; then
@@ -214,8 +323,19 @@ msvc release="Debug":
     BUILD_DIR="build-msvc"
     mkdir -p "$BUILD_DIR"
 
-    CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake --preset=msvc -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ${cmake_args}
-    cmake --build --preset msvc --config {{release}}
+    launcher="${DVZ_COMPILER_LAUNCHER:-ccache}"
+    launcher_args=""
+    if [ -n "$launcher" ] && [ "$launcher" != "OFF" ] && [ "$launcher" != "off" ] && command -v "$launcher" >/dev/null 2>&1; then
+        launcher_args="-DCMAKE_C_COMPILER_LAUNCHER=$launcher -DCMAKE_CXX_COMPILER_LAUNCHER=$launcher"
+    fi
+    # shellcheck disable=SC2086
+    cmake --preset=msvc -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ${launcher_args} ${cmake_args}
+    build_args=""
+    if [ -n "${DVZ_BUILD_JOBS:-}" ]; then
+        build_args="--parallel ${DVZ_BUILD_JOBS}"
+    fi
+    # shellcheck disable=SC2086
+    cmake --build --preset msvc --config {{release}} ${build_args}
 
     # Copy vcpkg_installed dll's next to datoviz.exe.
     if [ "{{release}}" == "Debug" ]; then
@@ -228,13 +348,21 @@ msvc release="Debug":
 # Cross-compile Datoviz for Windows using MinGW-w64 (GNU ABI)
 [linux]
 mingw release="Debug":
-    @set -e
-    @unset CC
-    @unset CXX
-    mkdir -p "build-mingw"
-    mkdir -p docs/images
-    cd "build-mingw" && \
-    CMAKE_CXX_COMPILER_LAUNCHER=ccache \
+    #!/usr/bin/env bash
+    set -euo pipefail
+    unset CC
+    unset CXX
+    mkdir -p "build-mingw" docs/images
+    launcher="${DVZ_COMPILER_LAUNCHER:-ccache}"
+    launcher_args=()
+    if [[ -n "${launcher}" && "${launcher}" != "OFF" && "${launcher}" != "off" ]] && command -v "${launcher}" >/dev/null 2>&1; then
+        launcher_args=(
+            "-DCMAKE_C_COMPILER_LAUNCHER=${launcher}"
+            "-DCMAKE_CXX_COMPILER_LAUNCHER=${launcher}"
+        )
+    fi
+    (
+    cd "build-mingw"
     cmake .. -GNinja \
         -DCMAKE_BUILD_TYPE={{release}} \
         -DCMAKE_SYSTEM_NAME=Windows \
@@ -245,5 +373,11 @@ mingw release="Debug":
         -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
         -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
         -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
-        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-    cd "build-mingw" && ninja
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+        "${launcher_args[@]}"
+    )
+    build_args=()
+    if [[ -n "${DVZ_BUILD_JOBS:-}" ]]; then
+        build_args+=(--parallel "${DVZ_BUILD_JOBS}")
+    fi
+    cmake --build build-mingw "${build_args[@]}"

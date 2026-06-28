@@ -11,6 +11,46 @@ if(NOT DEFINED PROJECT_SOURCE_DIR OR NOT TARGET datoviz_scene)
         "(add_subdirectory from the top-level CMakeLists.txt).")
 endif()
 
+add_library(datoviz_example_support STATIC
+    example_common.c
+    example_style.c
+    runner/scenario_runner.c
+)
+
+if(TARGET datoviz_gui)
+    target_sources(datoviz_example_support PRIVATE example_gui_controls.c)
+endif()
+
+if(TARGET datoviz_app)
+    target_sources(datoviz_example_support PRIVATE example_debug.c)
+endif()
+
+target_include_directories(datoviz_example_support
+    PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/src/common
+    ${PROJECT_SOURCE_DIR}/src/app
+    ${PROJECT_SOURCE_DIR}/src/scene
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/external
+    ${PROJECT_SOURCE_DIR}/external/cglm/include
+    ${PROJECT_SOURCE_DIR}/external/volk
+)
+
+get_property(_dvz_example_compile_definitions GLOBAL PROPERTY DVZ_COMPILE_DEFINITIONS)
+if(_dvz_example_compile_definitions)
+    target_compile_definitions(
+        datoviz_example_support PRIVATE ${_dvz_example_compile_definitions})
+endif()
+
+if(TARGET datoviz_vklite)
+    target_compile_definitions(datoviz_example_support PRIVATE DVZ_DRP2_HAS_VKLITE=1)
+else()
+    target_compile_definitions(datoviz_example_support PRIVATE DVZ_DRP2_HAS_VKLITE=0)
+endif()
+
+set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS datoviz_example_support)
+
 # Helper: add one grouped C example executable.
 #
 #   dvz_add_example(group name source)
@@ -19,18 +59,11 @@ endif()
 # the short <name> filename under build/examples/c/<group>/.
 function(dvz_add_example group name source)
     set(target "example_c_${group}_${name}")
-    add_executable(${target} ${source} example_common.c example_style.c runner/scenario_runner.c)
-
-    if(TARGET datoviz_gui)
-        target_sources(${target} PRIVATE example_gui_controls.c)
-    endif()
-
-    if(TARGET datoviz_app)
-        target_sources(${target} PRIVATE example_debug.c)
-    endif()
+    add_executable(${target} ${source})
 
     target_link_libraries(${target}
         PRIVATE
+        datoviz_example_support
         datoviz_common
         datoviz_fileio
         datoviz_geom
