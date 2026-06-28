@@ -34,7 +34,7 @@
 #define DVZ_ORBIT_CAMERA_ZOOM_COEF      0.05f
 #define DVZ_ORBIT_CAMERA_MIN_DISTANCE   0.01f
 #define DVZ_ORBIT_CAMERA_MAX_DISTANCE   100000.0f
-#define DVZ_ORBIT_CAMERA_POLE_EPS       0.01f
+#define DVZ_ORBIT_CAMERA_POLE_EPS       0.08f
 #define DVZ_ORBIT_CAMERA_DESC_KNOWN_FLAGS 0u
 
 
@@ -123,6 +123,55 @@ static void _orbit_stable_up_axis(const DvzOrbitCamera* orbit, vec3 out)
         glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, out);
     else
         glm_vec3_normalize(out);
+}
+
+
+
+/**
+ * Rebuild the accumulated orbit rotation from a pivot-to-eye direction and fixed up axis.
+ *
+ * @param orbit the orbit-camera controller
+ * @param forward pivot-to-eye direction
+ * @return whether the rotation was rebuilt
+ */
+static bool _orbit_set_rotation_from_forward(DvzOrbitCamera* orbit, vec3 forward)
+{
+    ANN(orbit);
+
+    if (glm_vec3_norm(forward) <= 0.0f)
+        return false;
+    glm_vec3_normalize(forward);
+
+    vec3 stable_up = {0};
+    _orbit_stable_up_axis(orbit, stable_up);
+
+    vec3 right = {0};
+    glm_vec3_cross(stable_up, forward, right);
+    if (glm_vec3_norm(right) <= 0.0f)
+    {
+        vec3 fallback = {1.0f, 0.0f, 0.0f};
+        if (fabsf(glm_vec3_dot(stable_up, fallback)) > 0.9f)
+            glm_vec3_copy((vec3){0.0f, 0.0f, 1.0f}, fallback);
+        glm_vec3_cross(stable_up, fallback, right);
+    }
+    if (glm_vec3_norm(right) <= 0.0f)
+        return false;
+    glm_vec3_normalize(right);
+
+    vec3 local_up = {0};
+    glm_vec3_cross(forward, right, local_up);
+    if (glm_vec3_norm(local_up) <= 0.0f)
+        return false;
+    glm_vec3_normalize(local_up);
+
+    glm_mat4_identity(orbit->rotation);
+    for (uint32_t row = 0; row < 3; row++)
+    {
+        orbit->rotation[0][row] = right[row];
+        orbit->rotation[1][row] = local_up[row];
+        orbit->rotation[2][row] = forward[row];
+    }
+    return true;
 }
 
 
@@ -267,6 +316,8 @@ static void _orbit_view(const DvzOrbitCamera* orbit, vec3 eye, vec3 target, vec3
 
     mat4 rot = GLM_MAT4_IDENTITY_INIT;
     _orbit_current_rotation(orbit, rot);
+    vec3 stable_up = {0};
+    _orbit_stable_up_axis(orbit, stable_up);
     vec4 base_eye = {0.0f, 0.0f, orbit->distance, 1.0f};
     vec4 eye4 = {0};
     glm_mat4_mulv(rot, base_eye, eye4);
@@ -275,38 +326,9 @@ static void _orbit_view(const DvzOrbitCamera* orbit, vec3 eye, vec3 target, vec3
     {
         target[i] = orbit->pivot[i];
         eye[i] = orbit->pivot[i] + eye4[i];
-        up[i] = rot[1][i];
+        up[i] = stable_up[i];
     }
 
-    vec3 eye_dir = {0};
-    glm_vec3_sub(eye, target, eye_dir);
-    if (glm_vec3_norm(eye_dir) > 0.0f)
-        glm_vec3_normalize(eye_dir);
-
-    bool needs_up_fallback = glm_vec3_norm(up) <= 0.0f;
-    if (!needs_up_fallback && glm_vec3_norm(eye_dir) > 0.0f)
-    {
-        vec3 up_dir = {up[0], up[1], up[2]};
-        glm_vec3_normalize(up_dir);
-        needs_up_fallback = fabsf(glm_vec3_dot(up_dir, eye_dir)) > 0.999f;
-    }
-    if (needs_up_fallback)
-    {
-        vec3 stable_up = {0};
-        _orbit_stable_up_axis(orbit, stable_up);
-        float dot = glm_vec3_dot(stable_up, eye_dir);
-        vec3 projected = {0};
-        glm_vec3_scale(eye_dir, dot, projected);
-        glm_vec3_sub(stable_up, projected, up);
-    }
-    if (glm_vec3_norm(up) <= 0.0f)
-    {
-        vec3 right = {0};
-        for (uint32_t i = 0; i < 3; i++)
-            right[i] = rot[0][i];
-        if (glm_vec3_norm(right) > 0.0f)
-            glm_vec3_cross(eye_dir, right, up);
-    }
     if (glm_vec3_norm(up) <= 0.0f)
         glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, up);
     else
@@ -679,8 +701,12 @@ bool dvz_orbit_camera_pointer(DvzOrbitCamera* orbit, const DvzPointerEvent* ev)
     case DVZ_POINTER_EVENT_DRAG_STOP:
     {
         mat4 rot = GLM_MAT4_IDENTITY_INIT;
-        glm_quat_mat4(orbit->drag_rotation, rot);
-        glm_mat4_mul(rot, orbit->rotation, orbit->rotation);
+        _orbit_current_rotation(orbit, rot);
+        vec3 forward = {0};
+        for (uint32_t row = 0; row < 3; row++)
+            forward[row] = rot[2][row];
+        if (!_orbit_set_rotation_from_forward(orbit, forward))
+            glm_mat4_copy(rot, orbit->rotation);
         glm_quat_identity(orbit->drag_rotation);
         glm_vec2_copy(orbit->pan, orbit->pan_center);
         orbit->interacting = false;

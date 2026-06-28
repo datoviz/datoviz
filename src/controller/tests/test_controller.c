@@ -282,10 +282,12 @@ int test_controller_orbit_camera_clamps_poles(TstContext* suite, const TstCase* 
         AT(dvz_orbit_camera_pointer(orbit, &drag));
 
         vec3 eye = {0}, target = {0}, up = {0}, offset = {0};
+        vec3 stable_up = {0.0f, 1.0f, 0.0f};
         AT(dvz_orbit_camera_get_view(orbit, eye, target, up) == 0);
         glm_vec3_sub(eye, target, offset);
         glm_vec3_normalize(offset);
-        AT(fabsf(glm_vec3_dot(offset, up)) < 0.0001f);
+        AT(glm_vec3_dot(up, stable_up) > 0.999f);
+        AT(fabsf(glm_vec3_dot(offset, up)) <= cosf(0.075f));
 
         DvzPointerEvent stop = {
             .type = DVZ_POINTER_EVENT_DRAG_STOP,
@@ -300,7 +302,8 @@ int test_controller_orbit_camera_clamps_poles(TstContext* suite, const TstCase* 
         AT(dvz_orbit_camera_get_view(orbit, eye, target, up) == 0);
         glm_vec3_sub(eye, target, offset);
         glm_vec3_normalize(offset);
-        AT(fabsf(glm_vec3_dot(offset, up)) < 0.0001f);
+        AT(glm_vec3_dot(up, stable_up) > 0.999f);
+        AT(fabsf(glm_vec3_dot(offset, up)) <= cosf(0.075f));
 
         dvz_orbit_camera_destroy(orbit);
     }
