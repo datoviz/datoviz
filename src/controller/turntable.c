@@ -444,9 +444,24 @@ DvzTurntable* _dvz_turntable(const DvzTurntableDesc* desc)
     turntable->flags = (int)desc->controller_flags;
     turntable->viewport_size[0] = DVZ_TURNTABLE_DEFAULT_WIDTH;
     turntable->viewport_size[1] = DVZ_TURNTABLE_DEFAULT_HEIGHT;
-    glm_vec3_copy(desc->initial_view.target, turntable->pivot_init);
-    glm_vec3_copy(desc->initial_view.target, turntable->pivot);
-    glm_vec3_copy(desc->initial_view.up, turntable->up);
+    vec3 initial_eye = {
+        desc->initial_view.eye[0],
+        desc->initial_view.eye[1],
+        desc->initial_view.eye[2],
+    };
+    vec3 initial_target = {
+        desc->initial_view.target[0],
+        desc->initial_view.target[1],
+        desc->initial_view.target[2],
+    };
+    vec3 initial_up = {
+        desc->initial_view.up[0],
+        desc->initial_view.up[1],
+        desc->initial_view.up[2],
+    };
+    glm_vec3_copy(initial_target, turntable->pivot_init);
+    glm_vec3_copy(initial_target, turntable->pivot);
+    glm_vec3_copy(initial_up, turntable->up);
     if (!_vec3_valid(turntable->up))
         glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, turntable->up);
     glm_vec3_normalize(turntable->up);
@@ -465,7 +480,7 @@ DvzTurntable* _dvz_turntable(const DvzTurntableDesc* desc)
     turntable->max_distance =
         desc->max_distance > turntable->min_distance ? desc->max_distance : 100000.0f;
 
-    glm_vec3_copy(desc->initial_view.eye, turntable->eye);
+    glm_vec3_copy(initial_eye, turntable->eye);
     _turntable_update_angles_from_eye(turntable);
     if (turntable->distance <= 0.0f)
     {

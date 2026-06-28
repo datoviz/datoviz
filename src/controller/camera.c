@@ -249,9 +249,12 @@ void dvz_camera_set_view(DvzCamera* camera, const DvzCameraView* view)
 {
     ANN(camera);
     ANN(view);
-    glm_vec3_copy(view->eye, camera->eye);
-    glm_vec3_copy(view->target, camera->target);
-    glm_vec3_copy(view->up, camera->up);
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        camera->eye[i] = view->eye[i];
+        camera->target[i] = view->target[i];
+        camera->up[i] = view->up[i];
+    }
 }
 
 
@@ -266,9 +269,12 @@ void dvz_camera_get_view(const DvzCamera* camera, DvzCameraView* out)
 {
     ANN(camera);
     ANN(out);
-    glm_vec3_copy(camera->eye, out->eye);
-    glm_vec3_copy(camera->target, out->target);
-    glm_vec3_copy(camera->up, out->up);
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        out->eye[i] = camera->eye[i];
+        out->target[i] = camera->target[i];
+        out->up[i] = camera->up[i];
+    }
 }
 
 

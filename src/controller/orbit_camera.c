@@ -452,7 +452,8 @@ static void _orbit_sync_view(DvzOrbitCamera* orbit, const DvzCameraView* view)
     ANN(view);
 
     vec3 delta = {0};
-    glm_vec3_sub(view->eye, orbit->pivot, delta);
+    vec3 eye = {view->eye[0], view->eye[1], view->eye[2]};
+    glm_vec3_sub(eye, orbit->pivot, delta);
     float distance = glm_vec3_norm(delta);
     if (distance > 0.0f)
     {
@@ -520,7 +521,12 @@ DvzOrbitCamera* dvz_orbit_camera_create(const DvzOrbitCameraDesc* desc)
     orbit->flags = (int)desc->controller_flags;
     orbit->viewport_size[0] = desc->width > 0.0f ? desc->width : DVZ_ORBIT_CAMERA_DEFAULT_WIDTH;
     orbit->viewport_size[1] = desc->height > 0.0f ? desc->height : DVZ_ORBIT_CAMERA_DEFAULT_HEIGHT;
-    glm_vec3_copy(desc->initial_view.target, orbit->pivot);
+    vec3 initial_target = {
+        desc->initial_view.target[0],
+        desc->initial_view.target[1],
+        desc->initial_view.target[2],
+    };
+    glm_vec3_copy(initial_target, orbit->pivot);
     orbit->min_distance =
         desc->min_distance > 0.0f ? desc->min_distance : DVZ_ORBIT_CAMERA_MIN_DISTANCE;
     orbit->max_distance =

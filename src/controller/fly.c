@@ -514,7 +514,12 @@ DvzFly* _dvz_fly(const DvzFlyDesc* desc)
     fly->flags = (int)desc->controller_flags;
     fly->viewport_size[0] = DVZ_FLY_DEFAULT_WIDTH;
     fly->viewport_size[1] = DVZ_FLY_DEFAULT_HEIGHT;
-    glm_vec3_copy(desc->initial_view.up, fly->world_up);
+    vec3 initial_up = {
+        desc->initial_view.up[0],
+        desc->initial_view.up[1],
+        desc->initial_view.up[2],
+    };
+    glm_vec3_copy(initial_up, fly->world_up);
     if (!_vec3_valid(fly->world_up))
         glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, fly->world_up);
     glm_vec3_normalize(fly->world_up);
