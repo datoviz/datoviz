@@ -3503,10 +3503,11 @@ int test_scene_text_preserves_long_strings(TstContext* suite, const TstCase* ite
     _scene_prepare_text_visuals(figure);
     ANN(text->visual);
     AT(text->visual->type == DVZ_VISUAL_TYPE_TEXT);
-    AT(_visual_family_state(text->visual)->text.string_count == 1);
-    ANN(_visual_family_state(text->visual)->text.strings);
-    AT(strcmp(_visual_family_state(text->visual)->text.strings[0], long_string) == 0);
-    DvzVisual* glyph = _visual_family_state(text->visual)->text.glyph_visual;
+    DvzVisualFamilyState* text_state = _visual_family_state(text->visual);
+    AT(text_state->text.string_count == 1);
+    ANN(text_state->text.strings);
+    AT(strcmp(text_state->text.strings[0], long_string) == 0);
+    DvzVisual* glyph = text_state->text.glyph_visual;
     ANN(glyph);
     DvzVisualDataView glyph_positions = {0};
     AT(dvz_visual_data(glyph, "position", &glyph_positions) == 0);
@@ -3516,9 +3517,10 @@ int test_scene_text_preserves_long_strings(TstContext* suite, const TstCase* ite
     ANN(raw_text);
     const char* raw_strings[] = {long_string};
     AT(dvz_visual_set_strings(raw_text, "text", raw_strings, 1) == 0);
-    AT(_visual_family_state(raw_text)->text.string_count == 1);
-    ANN(_visual_family_state(raw_text)->text.strings);
-    AT(strcmp(_visual_family_state(raw_text)->text.strings[0], long_string) == 0);
+    DvzVisualFamilyState* raw_text_state = _visual_family_state(raw_text);
+    AT(raw_text_state->text.string_count == 1);
+    ANN(raw_text_state->text.strings);
+    AT(strcmp(raw_text_state->text.strings[0], long_string) == 0);
 
     dvz_scene_destroy(scene);
     return 0;
