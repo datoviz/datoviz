@@ -5796,7 +5796,6 @@ struct DvzAppConfig {
     _Bool enable_glfw_extensions;
     DvzAppScheduleMode schedule_mode;
     double fps_cap;
-    double window_size_scale;
     DvzFontDefaults font_defaults;
 };
 ```

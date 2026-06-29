@@ -176,19 +176,14 @@ static int test_app_config_defaults(TstContext* suite, const TstCase* item)
 
     const char* old_schedule = getenv("DVZ_APP_SCHEDULE");
     const char* old_fps_cap = getenv("DVZ_FPS_CAP");
-    const char* old_window_scale = getenv("DVZ_WINDOW_SIZE_SCALE");
     char saved_schedule[64] = {0};
     char saved_fps_cap[64] = {0};
-    char saved_window_scale[64] = {0};
     if (old_schedule != NULL)
         dvz_snprintf(saved_schedule, sizeof(saved_schedule), "%s", old_schedule);
     if (old_fps_cap != NULL)
         dvz_snprintf(saved_fps_cap, sizeof(saved_fps_cap), "%s", old_fps_cap);
-    if (old_window_scale != NULL)
-        dvz_snprintf(saved_window_scale, sizeof(saved_window_scale), "%s", old_window_scale);
     (void)tst_unsetenv("DVZ_APP_SCHEDULE");
     (void)tst_unsetenv("DVZ_FPS_CAP");
-    (void)tst_unsetenv("DVZ_WINDOW_SIZE_SCALE");
 
     DvzAppConfig config = dvz_app_config();
     AT(config.instance_extension_count == 0);
@@ -197,7 +192,6 @@ static int test_app_config_defaults(TstContext* suite, const TstCase* item)
     AT(config.enable_glfw_extensions);
     AT(config.schedule_mode == DVZ_APP_SCHEDULE_ON_DEMAND);
     AT(config.fps_cap == 0);
-    AT(config.window_size_scale == 0.0);
     DvzFontDefaults fonts = dvz_font_defaults();
     AT(strcmp(config.font_defaults.sans.family, fonts.sans.family) == 0);
     AT(strcmp(config.font_defaults.sans.style, fonts.sans.style) == 0);
@@ -207,8 +201,6 @@ static int test_app_config_defaults(TstContext* suite, const TstCase* item)
 
     _test_restore_env("DVZ_APP_SCHEDULE", old_schedule != NULL ? saved_schedule : NULL);
     _test_restore_env("DVZ_FPS_CAP", old_fps_cap != NULL ? saved_fps_cap : NULL);
-    _test_restore_env(
-        "DVZ_WINDOW_SIZE_SCALE", old_window_scale != NULL ? saved_window_scale : NULL);
     return 0;
 }
 
@@ -253,26 +245,6 @@ static int test_app_config_env_fps_cap(TstContext* suite, const TstCase* item)
     AT(config.fps_cap == 144.5);
 
     _test_restore_env("DVZ_FPS_CAP", old_fps_cap != NULL ? saved_fps_cap : NULL);
-    return 0;
-}
-
-
-
-static int test_app_config_env_window_size_scale(TstContext* suite, const TstCase* item)
-{
-    ANN(suite);
-    ANN(item);
-
-    const char* old_scale = getenv("DVZ_WINDOW_SIZE_SCALE");
-    char saved_scale[64] = {0};
-    if (old_scale != NULL)
-        dvz_snprintf(saved_scale, sizeof(saved_scale), "%s", old_scale);
-
-    AT(tst_setenv("DVZ_WINDOW_SIZE_SCALE", "1.25") == 0);
-    DvzAppConfig config = dvz_app_config();
-    AT(config.window_size_scale == 1.25);
-
-    _test_restore_env("DVZ_WINDOW_SIZE_SCALE", old_scale != NULL ? saved_scale : NULL);
     return 0;
 }
 
@@ -1349,7 +1321,6 @@ int test_app(TstSuite* suite)
     TST_CASE(test_app_config_defaults);
     TST_CASE(test_app_config_env_schedule);
     TST_CASE(test_app_config_env_fps_cap);
-    TST_CASE(test_app_config_env_window_size_scale);
     TST_CASE(test_app_capture_config_defaults);
     TST_CASE(test_app_abi_rejects_invalid_structs);
     TST_CASE(test_app_capture_config_env);

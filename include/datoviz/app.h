@@ -103,7 +103,6 @@ struct DvzAppConfig
     bool enable_glfw_extensions;
     DvzAppScheduleMode schedule_mode;
     double fps_cap;
-    double window_size_scale; /* 0 means default 1.0; positive values scale GLFW window size. */
     DvzFontDefaults font_defaults;
 };
 
