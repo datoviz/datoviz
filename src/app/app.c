@@ -1154,18 +1154,51 @@ DvzResolvedViewSize dvz_view_size_resolve(const DvzViewSizeDesc* desc, DvzViewKi
     case DVZ_VIEW_SIZE_REFERENCE_PX:
         resolved.canvas_width_px = size.width;
         resolved.canvas_height_px = size.height;
-        resolved.host_logical_width = _view_round_size_d(size.width);
-        resolved.host_logical_height = _view_round_size_d(size.height);
         resolved.target_width_mm = size.width / size.reference_dpi * 25.4;
         resolved.target_height_mm = size.height / size.reference_dpi * 25.4;
+        if (resolved.physical_metrics_source == DVZ_PHYSICAL_METRICS_USER_OVERRIDE)
+        {
+            double dpi_x = size.monitor_dpi_x_override > 0.0 ? size.monitor_dpi_x_override :
+                                                                size.monitor_dpi_y_override;
+            double dpi_y = size.monitor_dpi_y_override > 0.0 ? size.monitor_dpi_y_override :
+                                                                size.monitor_dpi_x_override;
+            resolved.framebuffer_width = _view_round_size_d(size.width / size.reference_dpi * dpi_x);
+            resolved.framebuffer_height =
+                _view_round_size_d(size.height / size.reference_dpi * dpi_y);
+            resolved.host_logical_width =
+                _view_round_size_d((double)resolved.framebuffer_width / resolved.device_scale_x);
+            resolved.host_logical_height =
+                _view_round_size_d((double)resolved.framebuffer_height / resolved.device_scale_y);
+        }
+        else
+        {
+            resolved.host_logical_width = _view_round_size_d(size.width);
+            resolved.host_logical_height = _view_round_size_d(size.height);
+        }
         break;
     case DVZ_VIEW_SIZE_PHYSICAL_MM:
         resolved.target_width_mm = size.width;
         resolved.target_height_mm = size.height;
         resolved.canvas_width_px = size.width / 25.4 * size.reference_dpi;
         resolved.canvas_height_px = size.height / 25.4 * size.reference_dpi;
-        resolved.host_logical_width = _view_round_size_d(resolved.canvas_width_px);
-        resolved.host_logical_height = _view_round_size_d(resolved.canvas_height_px);
+        if (resolved.physical_metrics_source == DVZ_PHYSICAL_METRICS_USER_OVERRIDE)
+        {
+            double dpi_x = size.monitor_dpi_x_override > 0.0 ? size.monitor_dpi_x_override :
+                                                                size.monitor_dpi_y_override;
+            double dpi_y = size.monitor_dpi_y_override > 0.0 ? size.monitor_dpi_y_override :
+                                                                size.monitor_dpi_x_override;
+            resolved.framebuffer_width = _view_round_size_d(size.width / 25.4 * dpi_x);
+            resolved.framebuffer_height = _view_round_size_d(size.height / 25.4 * dpi_y);
+            resolved.host_logical_width =
+                _view_round_size_d((double)resolved.framebuffer_width / resolved.device_scale_x);
+            resolved.host_logical_height =
+                _view_round_size_d((double)resolved.framebuffer_height / resolved.device_scale_y);
+        }
+        else
+        {
+            resolved.host_logical_width = _view_round_size_d(resolved.canvas_width_px);
+            resolved.host_logical_height = _view_round_size_d(resolved.canvas_height_px);
+        }
         break;
     case DVZ_VIEW_SIZE_HOST_LOGICAL_PX:
     default:

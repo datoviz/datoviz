@@ -287,11 +287,27 @@ static int test_app_view_size_policy_resolve(TstContext* suite, const TstCase* i
     AT(fabs(resolved.target_width_mm - 254.0) < 1e-9);
     AT(fabs(resolved.framebuffer_per_canvas_px_x - 2.0) < 1e-9);
 
+    reference.monitor_dpi_x_override = 139.2;
+    reference.monitor_dpi_y_override = 139.2;
+    reference.requested_device_scale = 1.0;
+    resolved = dvz_view_size_resolve(&reference, DVZ_VIEW_GLFW);
+    AT(resolved.physical_metrics_source == DVZ_PHYSICAL_METRICS_USER_OVERRIDE);
+    AT(resolved.framebuffer_width == 1392);
+    AT(resolved.framebuffer_height == 783);
+    AT(resolved.host_logical_width == 1392);
+    AT(resolved.host_logical_height == 783);
+    AT(fabs(resolved.framebuffer_per_canvas_px_x - 1.45) < 1e-9);
+
     DvzViewSizeDesc physical = dvz_view_size_desc_physical_mm(254.0, 127.0, 96.0);
+    physical.monitor_dpi_x_override = 192.0;
+    physical.monitor_dpi_y_override = 192.0;
+    physical.requested_device_scale = 2.0;
     resolved = dvz_view_size_resolve(&physical, DVZ_VIEW_GLFW);
     AT(resolved.requested_policy == DVZ_VIEW_SIZE_PHYSICAL_MM);
     AT(resolved.host_logical_width == 960);
     AT(resolved.host_logical_height == 480);
+    AT(resolved.framebuffer_width == 1920);
+    AT(resolved.framebuffer_height == 960);
     AT(fabs(resolved.canvas_width_px - 960.0) < 1e-9);
     AT(fabs(resolved.canvas_height_px - 480.0) < 1e-9);
 
