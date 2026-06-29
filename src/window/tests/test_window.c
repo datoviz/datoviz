@@ -253,9 +253,9 @@ int test_window_effective_scale_monitor(TstContext* suite, const TstCase* item)
 
 
 /**
- * Verify raw DPI is a bounded fallback and ordinary low DPI remains unscaled.
+ * Verify raw monitor DPI does not automatically become a window scale.
  */
-int test_window_effective_scale_raw_dpi(TstContext* suite, const TstCase* item)
+int test_window_effective_scale_ignores_raw_dpi(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -271,8 +271,8 @@ int test_window_effective_scale_raw_dpi(TstContext* suite, const TstCase* item)
     float sx = 0.0f;
     float sy = 0.0f;
     _dvz_window_effective_content_scale(&inputs, &sx, &sy);
-    AC(sx, 2.649f, 1e-3f);
-    AC(sy, 2.651f, 1e-3f);
+    AC(sx, 1.0f, 1e-6f);
+    AC(sy, 1.0f, 1e-6f);
 
     inputs.monitor_pixel_width = 1920;
     inputs.monitor_pixel_height = 1080;
@@ -468,7 +468,7 @@ int test_window(TstSuite* suite)
     TST_CASE(test_window_effective_scale_override);
     TST_CASE(test_window_effective_scale_framebuffer_ratio);
     TST_CASE(test_window_effective_scale_monitor);
-    TST_CASE(test_window_effective_scale_raw_dpi);
+    TST_CASE(test_window_effective_scale_ignores_raw_dpi);
     TST_CASE(test_window_metrics_framebuffer_policy);
     TST_CASE(test_window_metrics_native_window_policy);
     TST_CASE(test_window_metrics_disabled_policy);

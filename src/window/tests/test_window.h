@@ -40,7 +40,7 @@ int test_window_effective_scale_framebuffer_ratio(TstContext* suite, const TstCa
 
 int test_window_effective_scale_monitor(TstContext* suite, const TstCase* item);
 
-int test_window_effective_scale_raw_dpi(TstContext* suite, const TstCase* item);
+int test_window_effective_scale_ignores_raw_dpi(TstContext* suite, const TstCase* item);
 
 int test_window_metrics_framebuffer_policy(TstContext* suite, const TstCase* item);
 

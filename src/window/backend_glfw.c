@@ -243,20 +243,6 @@ static void _glfw_fill_monitor_scale_inputs(GLFWwindow* handle, DvzWindowScaleIn
     inputs->monitor_scale_x = monitor_scale_x;
     inputs->monitor_scale_y = monitor_scale_y;
 
-    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-    if (mode != NULL && mode->width > 0 && mode->height > 0)
-    {
-        inputs->monitor_pixel_width = (uint32_t)mode->width;
-        inputs->monitor_pixel_height = (uint32_t)mode->height;
-    }
-
-    int width_mm = 0;
-    int height_mm = 0;
-    glfwGetMonitorPhysicalSize(monitor, &width_mm, &height_mm);
-    if (width_mm > 0)
-        inputs->monitor_width_mm = (uint32_t)width_mm;
-    if (height_mm > 0)
-        inputs->monitor_height_mm = (uint32_t)height_mm;
 }
 
 
@@ -295,6 +281,23 @@ static void _glfw_effective_content_scale(
     };
     _glfw_fill_monitor_scale_inputs(handle, &inputs);
     _dvz_window_effective_content_scale(&inputs, out_x, out_y);
+}
+
+
+
+/**
+ * Return a GLFW policy compatible with the current platform.
+ *
+ * @param policy requested policy
+ * @return policy to pass into shared metrics resolution
+ */
+static DvzHiDpiPolicy _glfw_platform_policy(DvzHiDpiPolicy policy)
+{
+#if OS_MACOS
+    if (policy == DVZ_HIDPI_AUTO || policy == DVZ_HIDPI_NATIVE_WINDOW)
+        return DVZ_HIDPI_FRAMEBUFFER;
+#endif
+    return policy;
 }
 
 
@@ -368,7 +371,7 @@ static DvzWindowMetrics _glfw_query_metrics(
         .native_size = native_size,
         .framebuffer_size = _glfw_extent(fb_width, fb_height),
         .content_scale = {.x = scale_x, .y = scale_y},
-        .requested_policy = policy,
+        .requested_policy = _glfw_platform_policy(policy),
         .previous_generation = previous_generation,
     };
     DvzWindowMetrics metrics = {0};
