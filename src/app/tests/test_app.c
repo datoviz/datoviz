@@ -265,6 +265,16 @@ static int test_app_view_size_policy_resolve(TstContext* suite, const TstCase* i
     AT(resolved.framebuffer_width == 640);
     AT(resolved.framebuffer_height == 480);
     AT(fabs(resolved.framebuffer_per_canvas_px_x - 1.0) < 1e-9);
+    AT(fabs(resolved.target_width_mm - 640.0 / 96.0 * 25.4) < 1e-9);
+    AT(fabs(resolved.estimated_width_mm - resolved.target_width_mm) < 1e-9);
+
+    DvzViewSizeDesc host = dvz_view_size_desc_host_logical_px(320, 240);
+    resolved = dvz_view_size_resolve(&host, DVZ_VIEW_GLFW);
+    AT(resolved.requested_policy == DVZ_VIEW_SIZE_HOST_LOGICAL_PX);
+    AT(resolved.host_logical_width == 320);
+    AT(resolved.framebuffer_width == 320);
+    AT(fabs(resolved.target_width_mm - 320.0 / 96.0 * 25.4) < 1e-9);
+    AT(fabs(resolved.estimated_width_mm - resolved.target_width_mm) < 1e-9);
 
     DvzViewSizeDesc reference = dvz_view_size_desc_reference_px(960.0, 540.0, 96.0);
     reference.requested_device_scale = 2.0;

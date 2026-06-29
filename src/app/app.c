@@ -1103,6 +1103,14 @@ static void _view_resolved_finalize(DvzResolvedViewSize* resolved)
         resolved->canvas_height_px > 0.0 ?
             (double)resolved->framebuffer_height / resolved->canvas_height_px :
             1.0;
+    if (resolved->target_width_mm <= 0.0 && resolved->reference_dpi > 0.0)
+        resolved->target_width_mm = resolved->canvas_width_px / resolved->reference_dpi * 25.4;
+    if (resolved->target_height_mm <= 0.0 && resolved->reference_dpi > 0.0)
+        resolved->target_height_mm = resolved->canvas_height_px / resolved->reference_dpi * 25.4;
+    if (resolved->estimated_width_mm <= 0.0)
+        resolved->estimated_width_mm = resolved->target_width_mm;
+    if (resolved->estimated_height_mm <= 0.0)
+        resolved->estimated_height_mm = resolved->target_height_mm;
 }
 
 
