@@ -47,7 +47,7 @@ def __getattr__(name):
         from .host import Host
 
         return Host
-    if name.startswith(('dvz_', 'Dvz')):
+    if name.startswith(('dvz_', 'Dvz', 'DVZ_')):
         facade = _facade()
         if hasattr(facade, name):
             return getattr(facade, name)

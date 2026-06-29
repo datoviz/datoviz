@@ -499,7 +499,7 @@ def generate(api: dict, policy: dict) -> str:
     lines.append('    if _name not in globals():\n')
     lines.append('        globals()[_name] = getattr(_raw, _name)\n')
     lines.append('\n')
-    lines.append("__all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz'))]\n")
+    lines.append("__all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]\n")
     return ''.join(lines)
 
 

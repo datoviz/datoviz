@@ -38,6 +38,8 @@ def _raw_function(argtypes, restype=ctypes.c_int):
 def fake_facade(monkeypatch):
     raw = types.ModuleType('datoviz.raw')
     raw.DvzVisual = type('DvzVisual', (), {})
+    raw.DvzSizeSpace = type('DvzSizeSpace', (), {'DVZ_SIZE_LOGICAL': 0})
+    raw.DVZ_SIZE_LOGICAL = raw.DvzSizeSpace.DVZ_SIZE_LOGICAL
 
     class DvzAxisTicks(ctypes.Structure):
         _fields_ = [
@@ -89,6 +91,27 @@ def fake_facade(monkeypatch):
     raw.dvz_visual_set_index_data = _raw_function(
         [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint32), ctypes.c_uint32]
     )
+    raw.dvz_text_set_items = _raw_function(
+        [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint32]
+    )
+    raw.dvz_text_set_positions = _raw_function(
+        [ctypes.c_void_p, ctypes.POINTER(ctypes.c_double), ctypes.c_uint32]
+    )
+    raw.dvz_text_set_offsets = _raw_function(
+        [ctypes.c_void_p, ctypes.POINTER(ctypes.c_float), ctypes.c_uint32]
+    )
+    raw.dvz_text_set_anchors = _raw_function(
+        [ctypes.c_void_p, ctypes.POINTER(ctypes.c_float), ctypes.c_uint32]
+    )
+    raw.dvz_text_set_sizes = _raw_function(
+        [ctypes.c_void_p, ctypes.POINTER(ctypes.c_float), ctypes.c_uint32]
+    )
+    raw.dvz_text_set_colors = _raw_function(
+        [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint32]
+    )
+    raw.dvz_text_set_angles = _raw_function(
+        [ctypes.c_void_p, ctypes.POINTER(ctypes.c_float), ctypes.c_uint32]
+    )
     raw.dvz_view_canvas = _raw_function([ctypes.c_void_p], ctypes.c_void_p)
     raw.dvz_view_framebuffer_size = _raw_function(
         [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)],
@@ -103,6 +126,9 @@ def fake_facade(monkeypatch):
             ctypes.c_size_t,
         ]
     )
+    raw.__all__ = [
+        name for name in vars(raw) if name.startswith(('dvz_', 'Dvz', 'DVZ_'))
+    ]
 
     monkeypatch.setitem(sys.modules, 'datoviz.raw', raw)
     sys.modules.pop('datoviz._array_facade', None)
@@ -122,9 +148,21 @@ def test_array_facade_exports_raw_names_and_passthrough(fake_facade):
     assert 'dvz_visual_set_data' in facade.__all__
     assert 'dvz_colorbar_set_ticks' in facade.__all__
     assert 'dvz_passthrough' in facade.__all__
+    assert 'DVZ_SIZE_LOGICAL' in facade.__all__
     assert facade.DvzVisual is raw.DvzVisual
+    assert facade.DvzSizeSpace is raw.DvzSizeSpace
+    assert facade.DVZ_SIZE_LOGICAL == raw.DVZ_SIZE_LOGICAL
     assert facade.dvz_passthrough(1, 2) == 17
     assert raw.dvz_passthrough.calls[-1] == (1, 2)
+
+
+def test_top_level_package_reexports_raw_enum_constants(fake_facade):
+    raw, facade = fake_facade
+    import datoviz
+
+    assert datoviz.DVZ_SIZE_LOGICAL == raw.DVZ_SIZE_LOGICAL
+    assert datoviz.DvzSizeSpace is raw.DvzSizeSpace
+    assert 'DVZ_SIZE_LOGICAL' in dir(datoviz)
 
 
 def test_visual_set_data_encodes_string_and_infers_shape0(fake_facade):

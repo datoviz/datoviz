@@ -655,6 +655,11 @@ def generate(
         else:
             lines.append('    pass\n')
         lines.append('\n\n')
+        for value in values:
+            value_name = value['name']
+            lines.append(f'{value_name} = {name}.{value_name}\n')
+        if values:
+            lines.append('\n\n')
 
     ordered_records = _ordered_records(api, records)
     layoutable_records = _layoutable_records(
@@ -817,7 +822,7 @@ def generate(
     lines.append(f'_GENERATED_FUNCTION_COUNT = {len(emitted)}\n')
     lines.append(f'_SKIPPED_FUNCTIONS = {skipped!r}\n')
     lines.append(f'_DATOVIZ_CTYPES_LAYOUT_RECORDS = {layout_records!r}\n')
-    lines.append("__all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz'))]\n")
+    lines.append("__all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]\n")
     return ''.join(lines), skipped
 
 
