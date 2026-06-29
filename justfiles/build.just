@@ -104,11 +104,11 @@ configure release="Debug":
 compile:
     #!/usr/bin/env bash
     set -euo pipefail
-    build_args=()
     if [[ -n "${DVZ_BUILD_JOBS:-}" ]]; then
-        build_args+=(--parallel "${DVZ_BUILD_JOBS}")
+        cmake --build build --parallel "${DVZ_BUILD_JOBS}"
+    else
+        cmake --build build
     fi
-    cmake --build build "${build_args[@]}"
 
 [linux]
 [macos]
@@ -116,11 +116,11 @@ build release="Debug":
     #!/usr/bin/env bash
     set -euo pipefail
     just _build-configure "{{release}}" auto
-    build_args=()
     if [[ -n "${DVZ_BUILD_JOBS:-}" ]]; then
-        build_args+=(--parallel "${DVZ_BUILD_JOBS}")
+        cmake --build build --parallel "${DVZ_BUILD_JOBS}"
+    else
+        cmake --build build
     fi
-    cmake --build build "${build_args[@]}"
 #
 
 [linux]
@@ -158,7 +158,10 @@ build-gprof release="RelWithDebInfo":
     unset CXX
     mkdir -p docs/images build-gprof
     launcher="${DVZ_COMPILER_LAUNCHER:-ccache}"
-    launcher_args=()
+    launcher_args=(
+        "-DCMAKE_C_COMPILER_LAUNCHER="
+        "-DCMAKE_CXX_COMPILER_LAUNCHER="
+    )
     if [[ -n "${launcher}" && "${launcher}" != "OFF" && "${launcher}" != "off" ]] && command -v "${launcher}" >/dev/null 2>&1; then
         launcher_args=(
             "-DCMAKE_C_COMPILER_LAUNCHER=${launcher}"
@@ -172,11 +175,11 @@ build-gprof release="RelWithDebInfo":
         cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DDVZ_ENABLE_GPROF=ON \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "${launcher_args[@]}" ${cmake_args}
     )
-    build_args=()
     if [[ -n "${DVZ_BUILD_JOBS:-}" ]]; then
-        build_args+=(--parallel "${DVZ_BUILD_JOBS}")
+        cmake --build build-gprof --target dvztest --parallel "${DVZ_BUILD_JOBS}"
+    else
+        cmake --build build-gprof --target dvztest
     fi
-    cmake --build build-gprof --target dvztest "${build_args[@]}"
 #
 
 [linux]
@@ -187,7 +190,10 @@ build-profile:
     unset CXX
     mkdir -p docs/images build-profile
     launcher="${DVZ_COMPILER_LAUNCHER:-ccache}"
-    launcher_args=()
+    launcher_args=(
+        "-DCMAKE_C_COMPILER_LAUNCHER="
+        "-DCMAKE_CXX_COMPILER_LAUNCHER="
+    )
     if [[ -n "${launcher}" && "${launcher}" != "OFF" && "${launcher}" != "off" ]] && command -v "${launcher}" >/dev/null 2>&1; then
         launcher_args=(
             "-DCMAKE_C_COMPILER_LAUNCHER=${launcher}"
@@ -201,11 +207,11 @@ build-profile:
         cmake .. -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDVZ_USE_VALIDATION=OFF \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "${launcher_args[@]}" ${cmake_args}
     )
-    build_args=()
     if [[ -n "${DVZ_BUILD_JOBS:-}" ]]; then
-        build_args+=(--parallel "${DVZ_BUILD_JOBS}")
+        cmake --build build-profile --target dvz_live_canvas --parallel "${DVZ_BUILD_JOBS}"
+    else
+        cmake --build build-profile --target dvz_live_canvas
     fi
-    cmake --build build-profile --target dvz_live_canvas "${build_args[@]}"
 #
 
 [linux]
@@ -354,7 +360,10 @@ mingw release="Debug":
     unset CXX
     mkdir -p "build-mingw" docs/images
     launcher="${DVZ_COMPILER_LAUNCHER:-ccache}"
-    launcher_args=()
+    launcher_args=(
+        "-DCMAKE_C_COMPILER_LAUNCHER="
+        "-DCMAKE_CXX_COMPILER_LAUNCHER="
+    )
     if [[ -n "${launcher}" && "${launcher}" != "OFF" && "${launcher}" != "off" ]] && command -v "${launcher}" >/dev/null 2>&1; then
         launcher_args=(
             "-DCMAKE_C_COMPILER_LAUNCHER=${launcher}"
@@ -376,8 +385,8 @@ mingw release="Debug":
         -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
         "${launcher_args[@]}"
     )
-    build_args=()
     if [[ -n "${DVZ_BUILD_JOBS:-}" ]]; then
-        build_args+=(--parallel "${DVZ_BUILD_JOBS}")
+        cmake --build build-mingw --parallel "${DVZ_BUILD_JOBS}"
+    else
+        cmake --build build-mingw
     fi
-    cmake --build build-mingw "${build_args[@]}"
