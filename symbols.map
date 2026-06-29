@@ -1351,6 +1351,7 @@ dvz_view_release_external_surface
 dvz_view_render_enabled
 dvz_view_render_once
 dvz_view_render_scale
+dvz_view_resolved_size
 dvz_view_replay_frame_count
 dvz_view_replay_set_loop
 dvz_view_replay_set_paced
@@ -1365,6 +1366,11 @@ dvz_view_set_gui_callback
 dvz_view_set_render_enabled
 dvz_view_set_request_frame_callback
 dvz_view_set_user_scale
+dvz_view_size_desc_framebuffer_px
+dvz_view_size_desc_host_logical_px
+dvz_view_size_desc_physical_mm
+dvz_view_size_desc_reference_px
+dvz_view_size_resolve
 dvz_view_turntable
 dvz_view_update_external_surface
 dvz_view_user_scale
