@@ -45,6 +45,33 @@ typedef struct DvzWindowHost DvzWindowHost;
 typedef struct DvzWindow DvzWindow;
 typedef struct DvzWindowSurface DvzWindowSurface;
 typedef struct DvzWindowConfig DvzWindowConfig;
+typedef struct DvzExtent DvzExtent;
+typedef struct DvzScaleXY DvzScaleXY;
+typedef struct DvzWindowMetrics DvzWindowMetrics;
+
+
+
+/*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+typedef enum DvzSizeSpace
+{
+    DVZ_SIZE_LOGICAL,
+    DVZ_SIZE_NATIVE,
+    DVZ_SIZE_SURFACE,
+    DVZ_SIZE_RENDER,
+} DvzSizeSpace;
+
+
+typedef enum DvzHiDpiPolicy
+{
+    DVZ_HIDPI_AUTO = 0,
+    DVZ_HIDPI_DISABLED,
+    DVZ_HIDPI_FRAMEBUFFER,
+    DVZ_HIDPI_NATIVE_WINDOW,
+    DVZ_HIDPI_EXTERNAL,
+} DvzHiDpiPolicy;
 
 
 
@@ -62,6 +89,41 @@ struct DvzWindowConfig
     bool resizable;
     bool visible;
     float user_scale;
+    DvzHiDpiPolicy hidpi_policy;
+};
+
+
+
+struct DvzExtent
+{
+    uint32_t width;
+    uint32_t height;
+};
+
+
+
+struct DvzScaleXY
+{
+    float x;
+    float y;
+};
+
+
+
+struct DvzWindowMetrics
+{
+    DvzExtent logical_size;
+    DvzExtent native_size;
+    DvzExtent surface_size;
+    DvzExtent render_size;
+
+    DvzScaleXY content_scale;
+    DvzScaleXY framebuffer_scale;
+    DvzScaleXY device_scale;
+    DvzScaleXY native_to_logical;
+
+    DvzHiDpiPolicy active_hidpi_policy;
+    uint64_t generation;
 };
 
 

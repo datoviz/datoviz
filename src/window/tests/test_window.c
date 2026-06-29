@@ -286,6 +286,124 @@ int test_window_effective_scale_raw_dpi(TstContext* suite, const TstCase* item)
 
 
 
+/**
+ * Verify framebuffer HiDPI metrics preserve the logical window size.
+ */
+int test_window_metrics_framebuffer_policy(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzWindowMetricsInputs inputs = {
+        .requested_logical_size = {.width = 400, .height = 300},
+        .native_size = {.width = 400, .height = 300},
+        .framebuffer_size = {.width = 800, .height = 600},
+        .content_scale = {.x = 2.0f, .y = 2.0f},
+        .requested_policy = DVZ_HIDPI_AUTO,
+    };
+    DvzWindowMetrics metrics = {0};
+    _dvz_window_metrics_resolve(&inputs, &metrics);
+    AT(metrics.active_hidpi_policy == DVZ_HIDPI_FRAMEBUFFER);
+    AT(metrics.logical_size.width == 400);
+    AT(metrics.logical_size.height == 300);
+    AT(metrics.native_size.width == 400);
+    AT(metrics.surface_size.width == 800);
+    AT(metrics.render_size.width == 800);
+    AC(metrics.device_scale.x, 2.0f, 1e-6f);
+    AC(metrics.native_to_logical.x, 1.0f, 1e-6f);
+    return 0;
+}
+
+
+
+/**
+ * Verify native-window HiDPI metrics request an enlarged backend window.
+ */
+int test_window_metrics_native_window_policy(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzWindowMetricsInputs inputs = {
+        .requested_logical_size = {.width = 900, .height = 650},
+        .native_size = {.width = 900, .height = 650},
+        .framebuffer_size = {.width = 900, .height = 650},
+        .content_scale = {.x = 1.4549f, .y = 1.4549f},
+        .requested_policy = DVZ_HIDPI_AUTO,
+    };
+    DvzWindowMetrics metrics = {0};
+    _dvz_window_metrics_resolve(&inputs, &metrics);
+    AT(metrics.active_hidpi_policy == DVZ_HIDPI_NATIVE_WINDOW);
+    AT(metrics.logical_size.width == 900);
+    AT(metrics.logical_size.height == 650);
+    AT(metrics.native_size.width == 1309);
+    AT(metrics.surface_size.width == 1309);
+    AT(metrics.render_size.width == 1309);
+    AC(metrics.device_scale.x, 1.4549f, 1e-6f);
+    AC(metrics.native_to_logical.x, 900.0f / 1309.0f, 1e-6f);
+    return 0;
+}
+
+
+
+/**
+ * Verify disabled metrics keep all size spaces equal.
+ */
+int test_window_metrics_disabled_policy(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzWindowMetricsInputs inputs = {
+        .requested_logical_size = {.width = 320, .height = 240},
+        .native_size = {.width = 320, .height = 240},
+        .framebuffer_size = {.width = 320, .height = 240},
+        .content_scale = {.x = 1.0f, .y = 1.0f},
+        .requested_policy = DVZ_HIDPI_AUTO,
+    };
+    DvzWindowMetrics metrics = {0};
+    _dvz_window_metrics_resolve(&inputs, &metrics);
+    AT(metrics.active_hidpi_policy == DVZ_HIDPI_DISABLED);
+    AT(metrics.logical_size.width == 320);
+    AT(metrics.native_size.width == 320);
+    AT(metrics.surface_size.width == 320);
+    AT(metrics.render_size.width == 320);
+    AC(metrics.device_scale.x, 1.0f, 1e-6f);
+    AC(metrics.native_to_logical.x, 1.0f, 1e-6f);
+    return 0;
+}
+
+
+
+/**
+ * Verify public metrics query tracks backend resize emissions.
+ */
+int test_window_metrics_query_updates_on_resize(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzWindowHost* host = dvz_window_host();
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, NULL);
+    ANN(window);
+
+    const DvzWindowMetrics* metrics = dvz_window_metrics(window);
+    ANN(metrics);
+    uint64_t generation = metrics->generation;
+
+    dvz_window_backend_emit_resize(window, 800, 600, 400, 300, 2.0f, 2.0f);
+    metrics = dvz_window_metrics(window);
+    AT(metrics->generation == generation + 1);
+    AT(metrics->logical_size.width == 400);
+    AT(metrics->surface_size.width == 800);
+    AT(metrics->render_size.width == 800);
+    AC(metrics->device_scale.x, 2.0f, 1e-6f);
+
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
 #ifndef DVZ_HAS_GLFW
 #define DVZ_HAS_GLFW 0
 #endif
@@ -351,6 +469,10 @@ int test_window(TstSuite* suite)
     TST_CASE(test_window_effective_scale_framebuffer_ratio);
     TST_CASE(test_window_effective_scale_monitor);
     TST_CASE(test_window_effective_scale_raw_dpi);
+    TST_CASE(test_window_metrics_framebuffer_policy);
+    TST_CASE(test_window_metrics_native_window_policy);
+    TST_CASE(test_window_metrics_disabled_policy);
+    TST_CASE(test_window_metrics_query_updates_on_resize);
     TST_CASE(test_window_fallback);
     TST_CASE(test_window_wrap_create);
     TST_CASE(test_window_wrap_attach_detach);

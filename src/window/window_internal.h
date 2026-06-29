@@ -42,6 +42,7 @@
 typedef struct DvzWindowBackendSlot DvzWindowBackendSlot;
 typedef struct DvzWindowWrapBackendState DvzWindowWrapBackendState;
 typedef struct DvzWindowScaleInputs DvzWindowScaleInputs;
+typedef struct DvzWindowMetricsInputs DvzWindowMetricsInputs;
 
 
 
@@ -85,6 +86,18 @@ struct DvzWindowScaleInputs
 
 
 
+struct DvzWindowMetricsInputs
+{
+    DvzExtent requested_logical_size;
+    DvzExtent native_size;
+    DvzExtent framebuffer_size;
+    DvzScaleXY content_scale;
+    DvzHiDpiPolicy requested_policy;
+    uint64_t previous_generation;
+};
+
+
+
 struct DvzWindow
 {
     DvzWindowHost* host;
@@ -95,6 +108,7 @@ struct DvzWindow
     DvzPointerGestureHandler* gesture_handler;
     DvzWindowConfig config;
     DvzWindowSurface surface;
+    DvzWindowMetrics metrics;
     DvzWindowGlfwInputCallbacks glfw_input_callbacks;
     void* glfw_input_user_data;
     bool backend_owns_surface;
@@ -121,3 +135,6 @@ struct DvzWindowHost
 
 void _dvz_window_effective_content_scale(
     const DvzWindowScaleInputs* inputs, float* out_x, float* out_y);
+
+void _dvz_window_metrics_resolve(
+    const DvzWindowMetricsInputs* inputs, DvzWindowMetrics* out);

@@ -139,6 +139,15 @@ DVZ_EXPORT void dvz_window_destroy(DvzWindow* window);
 DVZ_EXPORT const DvzWindowSurface* dvz_window_surface(const DvzWindow* window);
 
 
+/**
+ * Return the cached logical/native/surface metrics for the window.
+ *
+ * @param window window to query
+ * @returns pointer to the metrics data owned by the window
+ */
+DVZ_EXPORT const DvzWindowMetrics* dvz_window_metrics(const DvzWindow* window);
+
+
 
 /**
  * Retrieve the router used to emit input events for the window.

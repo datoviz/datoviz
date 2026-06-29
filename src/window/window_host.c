@@ -38,6 +38,7 @@
 #define DVZ_WINDOW_BASE_DPI 96.0f
 #define DVZ_WINDOW_MIN_RAW_DPI_SCALE 1.25f
 #define DVZ_WINDOW_MAX_EFFECTIVE_SCALE 4.0f
+#define DVZ_WINDOW_SCALE_EPS 0.02f
 
 
 
@@ -68,6 +69,13 @@ static bool _window_backend_slot_has_window(
 static void _window_host_clear_frame_pending(DvzWindowHost* host);
 static float _window_scale_candidate(float value);
 static float _window_raw_dpi_scale(uint32_t pixels, uint32_t mm);
+static uint32_t _window_round_size(float value);
+static DvzExtent _window_extent(uint32_t width, uint32_t height);
+static DvzScaleXY _window_scale_xy(float x, float y);
+static float _window_extent_ratio(uint32_t numerator, uint32_t denominator);
+static bool _window_scale_gt_one(float scale);
+static bool _window_scales_close(float a, float b);
+static DvzHiDpiPolicy _window_metrics_policy(const DvzWindowMetricsInputs* inputs);
 
 
 
@@ -266,6 +274,134 @@ static float _window_raw_dpi_scale(uint32_t pixels, uint32_t mm)
 
 
 /**
+ * Round a positive floating-point size to a nonzero integer size.
+ *
+ * @param value input value
+ * @return rounded size, or zero when invalid
+ */
+static uint32_t _window_round_size(float value)
+{
+    if (!isfinite(value) || value <= 0.0f)
+        return 0;
+    if (value >= (float)UINT32_MAX)
+        return UINT32_MAX;
+    return (uint32_t)(value + 0.5f);
+}
+
+
+
+/**
+ * Return a window extent value.
+ *
+ * @param width width in pixels
+ * @param height height in pixels
+ * @return extent value
+ */
+static DvzExtent _window_extent(uint32_t width, uint32_t height)
+{
+    return (DvzExtent){.width = width, .height = height};
+}
+
+
+
+/**
+ * Return a two-axis scale value.
+ *
+ * @param x horizontal scale
+ * @param y vertical scale
+ * @return two-axis scale value
+ */
+static DvzScaleXY _window_scale_xy(float x, float y)
+{
+    return (DvzScaleXY){.x = x, .y = y};
+}
+
+
+
+/**
+ * Return a finite ratio between two extents.
+ *
+ * @param numerator numerator size
+ * @param denominator denominator size
+ * @return ratio, or one when unavailable
+ */
+static float _window_extent_ratio(uint32_t numerator, uint32_t denominator)
+{
+    if (numerator == 0 || denominator == 0)
+        return 1.0f;
+    float ratio = (float)numerator / (float)denominator;
+    return isfinite(ratio) && ratio > 0.0f ? ratio : 1.0f;
+}
+
+
+
+/**
+ * Return whether a scale is materially larger than one.
+ *
+ * @param scale scale value
+ * @return whether the scale is above the HiDPI tolerance
+ */
+static bool _window_scale_gt_one(float scale)
+{
+    return isfinite(scale) && scale > 1.0f + DVZ_WINDOW_SCALE_EPS;
+}
+
+
+
+/**
+ * Return whether two scale values are effectively equal.
+ *
+ * @param a first scale
+ * @param b second scale
+ * @return whether the values are within the HiDPI tolerance
+ */
+static bool _window_scales_close(float a, float b)
+{
+    return isfinite(a) && isfinite(b) && fabsf(a - b) <= DVZ_WINDOW_SCALE_EPS;
+}
+
+
+
+/**
+ * Resolve the active HiDPI policy from raw backend metrics.
+ *
+ * @param inputs raw metrics and requested policy
+ * @return active concrete policy
+ */
+static DvzHiDpiPolicy _window_metrics_policy(const DvzWindowMetricsInputs* inputs)
+{
+    ANN(inputs);
+    DvzHiDpiPolicy policy = inputs->requested_policy;
+    if (policy == DVZ_HIDPI_EXTERNAL)
+        return DVZ_HIDPI_EXTERNAL;
+    if (policy == DVZ_HIDPI_DISABLED)
+        return DVZ_HIDPI_DISABLED;
+    if (policy == DVZ_HIDPI_FRAMEBUFFER || policy == DVZ_HIDPI_NATIVE_WINDOW)
+        return policy;
+
+    float content_x = _window_scale_candidate(inputs->content_scale.x);
+    float content_y = _window_scale_candidate(inputs->content_scale.y);
+    float fb_x = _window_extent_ratio(
+        inputs->framebuffer_size.width, inputs->native_size.width);
+    float fb_y = _window_extent_ratio(
+        inputs->framebuffer_size.height, inputs->native_size.height);
+
+    if ((_window_scale_gt_one(fb_x) && _window_scales_close(fb_x, content_x)) ||
+        (_window_scale_gt_one(fb_y) && _window_scales_close(fb_y, content_y)))
+    {
+        return DVZ_HIDPI_FRAMEBUFFER;
+    }
+    if ((_window_scale_gt_one(content_x) && _window_scales_close(fb_x, 1.0f)) ||
+        (_window_scale_gt_one(content_y) && _window_scales_close(fb_y, 1.0f)))
+    {
+        return DVZ_HIDPI_NATIVE_WINDOW;
+    }
+    return DVZ_HIDPI_DISABLED;
+}
+
+
+
+/**
  * Resolve an effective content scale from backend, framebuffer, monitor, and DPI signals.
  *
  * @param inputs scale signal bundle
@@ -325,6 +461,103 @@ void _dvz_window_effective_content_scale(
 
 
 /**
+ * Resolve normalized logical, native, and surface metrics from backend observations.
+ *
+ * @param inputs raw backend observations plus requested policy
+ * @param out normalized metrics output
+ */
+void _dvz_window_metrics_resolve(
+    const DvzWindowMetricsInputs* inputs, DvzWindowMetrics* out)
+{
+    ANN(inputs);
+    ANN(out);
+
+    DvzHiDpiPolicy policy = _window_metrics_policy(inputs);
+    float content_x = _window_scale_candidate(inputs->content_scale.x);
+    float content_y = _window_scale_candidate(inputs->content_scale.y);
+    float fb_x = _window_extent_ratio(
+        inputs->framebuffer_size.width, inputs->native_size.width);
+    float fb_y = _window_extent_ratio(
+        inputs->framebuffer_size.height, inputs->native_size.height);
+    float device_x = 1.0f;
+    float device_y = 1.0f;
+    if (policy == DVZ_HIDPI_FRAMEBUFFER)
+    {
+        device_x = fb_x;
+        device_y = fb_y;
+    }
+    else if (policy == DVZ_HIDPI_NATIVE_WINDOW || policy == DVZ_HIDPI_EXTERNAL)
+    {
+        device_x = content_x;
+        device_y = content_y;
+    }
+
+    uint32_t logical_width = inputs->requested_logical_size.width;
+    uint32_t logical_height = inputs->requested_logical_size.height;
+    if (logical_width == 0)
+    {
+        if (policy == DVZ_HIDPI_NATIVE_WINDOW && inputs->native_size.width > 0)
+            logical_width = _window_round_size((float)inputs->native_size.width / device_x);
+        else if (policy == DVZ_HIDPI_FRAMEBUFFER && inputs->native_size.width > 0)
+            logical_width = inputs->native_size.width;
+        else if (inputs->framebuffer_size.width > 0)
+            logical_width = _window_round_size((float)inputs->framebuffer_size.width / device_x);
+    }
+    if (logical_height == 0)
+    {
+        if (policy == DVZ_HIDPI_NATIVE_WINDOW && inputs->native_size.height > 0)
+            logical_height = _window_round_size((float)inputs->native_size.height / device_y);
+        else if (policy == DVZ_HIDPI_FRAMEBUFFER && inputs->native_size.height > 0)
+            logical_height = inputs->native_size.height;
+        else if (inputs->framebuffer_size.height > 0)
+            logical_height = _window_round_size((float)inputs->framebuffer_size.height / device_y);
+    }
+    if (logical_width == 0)
+        logical_width = inputs->native_size.width;
+    if (logical_height == 0)
+        logical_height = inputs->native_size.height;
+
+    uint32_t native_width = inputs->native_size.width;
+    uint32_t native_height = inputs->native_size.height;
+    if (policy == DVZ_HIDPI_NATIVE_WINDOW && inputs->requested_logical_size.width > 0)
+        native_width = _window_round_size((float)logical_width * device_x);
+    if (policy == DVZ_HIDPI_NATIVE_WINDOW && inputs->requested_logical_size.height > 0)
+        native_height = _window_round_size((float)logical_height * device_y);
+    if (native_width == 0)
+        native_width = logical_width;
+    if (native_height == 0)
+        native_height = logical_height;
+
+    uint32_t surface_width = inputs->framebuffer_size.width;
+    uint32_t surface_height = inputs->framebuffer_size.height;
+    if (policy == DVZ_HIDPI_NATIVE_WINDOW && inputs->requested_logical_size.width > 0)
+        surface_width = native_width;
+    if (policy == DVZ_HIDPI_NATIVE_WINDOW && inputs->requested_logical_size.height > 0)
+        surface_height = native_height;
+    if (surface_width == 0 && logical_width > 0)
+        surface_width = _window_round_size((float)logical_width * device_x);
+    if (surface_height == 0 && logical_height > 0)
+        surface_height = _window_round_size((float)logical_height * device_y);
+
+    out->logical_size = _window_extent(logical_width, logical_height);
+    out->native_size = _window_extent(native_width, native_height);
+    out->surface_size = _window_extent(surface_width, surface_height);
+    out->render_size = out->surface_size;
+    out->content_scale = _window_scale_xy(content_x, content_y);
+    out->framebuffer_scale = _window_scale_xy(
+        _window_extent_ratio(surface_width, native_width),
+        _window_extent_ratio(surface_height, native_height));
+    out->device_scale = _window_scale_xy(device_x, device_y);
+    out->native_to_logical = _window_scale_xy(
+        _window_extent_ratio(logical_width, native_width),
+        _window_extent_ratio(logical_height, native_height));
+    out->active_hidpi_policy = policy;
+    out->generation = inputs->previous_generation + 1;
+}
+
+
+
+/**
  * Release extension strings owned by the wrap backend state.
  *
  * @param host window host whose wrap state is cleared
@@ -364,6 +597,16 @@ static void _window_setup_config(DvzWindow* window, const DvzWindowConfig* confi
         config->height > 0 ? config->height : DVZ_WINDOW_DEFAULT_HEIGHT;
     window->surface.scale_x = user_scale;
     window->surface.scale_y = user_scale;
+    DvzWindowMetricsInputs metrics = {
+        .requested_logical_size =
+            _window_extent(window->surface.extent.width, window->surface.extent.height),
+        .native_size = _window_extent(window->surface.extent.width, window->surface.extent.height),
+        .framebuffer_size =
+            _window_extent(window->surface.extent.width, window->surface.extent.height),
+        .content_scale = _window_scale_xy(1.0f, 1.0f),
+        .requested_policy = DVZ_HIDPI_DISABLED,
+    };
+    _dvz_window_metrics_resolve(&metrics, &window->metrics);
     window->surface.instance = VK_NULL_HANDLE;
     window->surface.surface = VK_NULL_HANDLE;
     window->surface.format = VK_FORMAT_UNDEFINED;
@@ -404,6 +647,7 @@ DvzWindowConfig dvz_window_config(void)
         .resizable = true,
         .visible = true,
         .user_scale = 1.f,
+        .hidpi_policy = DVZ_HIDPI_AUTO,
     };
     return config;
 }
@@ -551,6 +795,17 @@ const DvzWindowSurface* dvz_window_surface(const DvzWindow* window)
 {
     ANN(window);
     return &window->surface;
+}
+
+
+
+/**
+ * Access the metrics description associated with a window.
+ */
+const DvzWindowMetrics* dvz_window_metrics(const DvzWindow* window)
+{
+    ANN(window);
+    return &window->metrics;
 }
 
 
@@ -894,6 +1149,15 @@ void dvz_window_backend_emit_resize(
     surface->extent.height = framebuffer_height;
     surface->scale_x = content_scale_x;
     surface->scale_y = content_scale_y;
+    DvzWindowMetricsInputs metrics = {
+        .requested_logical_size = _window_extent(window_width, window_height),
+        .native_size = _window_extent(window_width, window_height),
+        .framebuffer_size = _window_extent(framebuffer_width, framebuffer_height),
+        .content_scale = _window_scale_xy(content_scale_x, content_scale_y),
+        .requested_policy = window->config.hidpi_policy,
+        .previous_generation = window->metrics.generation,
+    };
+    _dvz_window_metrics_resolve(&metrics, &window->metrics);
     DvzInputResizeEvent resize = {
         .framebuffer_width = framebuffer_width,
         .framebuffer_height = framebuffer_height,

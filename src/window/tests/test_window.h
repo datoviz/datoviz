@@ -42,6 +42,14 @@ int test_window_effective_scale_monitor(TstContext* suite, const TstCase* item);
 
 int test_window_effective_scale_raw_dpi(TstContext* suite, const TstCase* item);
 
+int test_window_metrics_framebuffer_policy(TstContext* suite, const TstCase* item);
+
+int test_window_metrics_native_window_policy(TstContext* suite, const TstCase* item);
+
+int test_window_metrics_disabled_policy(TstContext* suite, const TstCase* item);
+
+int test_window_metrics_query_updates_on_resize(TstContext* suite, const TstCase* item);
+
 int test_window_fallback(TstContext* suite, const TstCase* item);
 
 int test_window_wrap_create(TstContext* suite, const TstCase* item);
