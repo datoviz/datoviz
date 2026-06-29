@@ -18,7 +18,7 @@ Common workflows:
 - [Configure cameras](../../how-to/configure-cameras.md)
 - [Pick and probe](../../how-to/pick-and-probe.md)
 
-Functions: 365
+Functions: 366
 
 ## Symbol Groups
 
@@ -62,7 +62,7 @@ Functions: 365
 | [Sampled](#sampled) | 9 | `include/datoviz/scene/field.h` |
 | [Scale](#scale) | 11 | `include/datoviz/scene/scale.h` |
 | [Scalebar](#scalebar) | 6 | `include/datoviz/scene/annotation.h` |
-| [Scene](#scene) | 34 | 3 headers |
+| [Scene](#scene) | 35 | 3 headers |
 | [Selection](#selection) | 9 | `include/datoviz/scene/interaction.h` |
 | [Text](#text) | 24 | `include/datoviz/scene/text.h` |
 | [Track](#track) | 14 | `include/datoviz/scene/animation.h` |
@@ -573,6 +573,7 @@ Functions: 365
     | [`dvz_scene_set_clock_mode()`](#dvz_scene_set_clock_mode) | `include/datoviz/scene/animation.h` |
     | [`dvz_scene_set_font_defaults()`](#dvz_scene_set_font_defaults) | `include/datoviz/scene.h` |
     | [`dvz_scene_set_fps()`](#dvz_scene_set_fps) | `include/datoviz/scene/animation.h` |
+    | [`dvz_scene_step_external()`](#dvz_scene_step_external) | `include/datoviz/scene/animation.h` |
 
     ### Selection
 
@@ -703,7 +704,7 @@ Create a camera motion animation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:532._
+_Declared in `include/datoviz/scene/animation.h`:556._
 
 ### `dvz_anim_destroy()`
 
@@ -721,7 +722,7 @@ Destroy an animation handle owned by its scene.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:594._
+_Declared in `include/datoviz/scene/animation.h`:618._
 
 ### `dvz_anim_phase()`
 
@@ -742,7 +743,7 @@ Create a wrapped linear phase animation driven by the scene clock.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:492._
+_Declared in `include/datoviz/scene/animation.h`:516._
 
 ### `dvz_anim_phase_desc()`
 
@@ -760,7 +761,7 @@ Related: [`dvz_anim_phase()`](#dvz_anim_phase).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:335._
+_Declared in `include/datoviz/scene/animation.h`:359._
 
 ### `dvz_anim_phase_set_value()`
 
@@ -780,7 +781,7 @@ Set the current value of a phase animation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:566._
+_Declared in `include/datoviz/scene/animation.h`:590._
 
 ### `dvz_anim_set_interaction_policy()`
 
@@ -804,7 +805,7 @@ Set how an animation responds to an interactive controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:543._
+_Declared in `include/datoviz/scene/animation.h`:567._
 
 ### `dvz_anim_set_speed()`
 
@@ -825,7 +826,7 @@ animations.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:557._
+_Declared in `include/datoviz/scene/animation.h`:581._
 
 ### `dvz_anim_start()`
 
@@ -845,7 +846,7 @@ Start or restart an animation at a scene-clock time.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:576._
+_Declared in `include/datoviz/scene/animation.h`:600._
 
 ### `dvz_anim_stop()`
 
@@ -863,7 +864,7 @@ Stop an animation while keeping the handle valid.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:585._
+_Declared in `include/datoviz/scene/animation.h`:609._
 
 ### `dvz_anim_timer()`
 
@@ -884,7 +885,7 @@ Create a timer animation driven by the scene clock.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:482._
+_Declared in `include/datoviz/scene/animation.h`:506._
 
 ### `dvz_anim_timer_desc()`
 
@@ -902,7 +903,7 @@ Related: [`dvz_anim_timer()`](#dvz_anim_timer).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:327._
+_Declared in `include/datoviz/scene/animation.h`:351._
 
 ### `dvz_anim_track()`
 
@@ -927,7 +928,7 @@ Create a generic track animation driven by the scene clock.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/scene/animation.h`:504._
+_Declared in `include/datoviz/scene/animation.h`:528._
 
 ### `dvz_anim_visual_transform()`
 
@@ -950,7 +951,7 @@ Create a visual-local transform animation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:519._
+_Declared in `include/datoviz/scene/animation.h`:543._
 
 ## Annotation
 
@@ -1688,7 +1689,7 @@ Return a default camera motion descriptor.
 
 Raw ctypes: skipped by binding policy.
 
-_Declared in `include/datoviz/scene/animation.h`:399._
+_Declared in `include/datoviz/scene/animation.h`:423._
 
 ## Colorbar
 
@@ -6767,7 +6768,7 @@ Return the last scene clock delta in seconds.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:309._
+_Declared in `include/datoviz/scene/animation.h`:333._
 
 ### `dvz_scene_clock_time()`
 
@@ -6786,7 +6787,7 @@ Return the current scene clock time in seconds.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:299._
+_Declared in `include/datoviz/scene/animation.h`:323._
 
 ### `dvz_scene_compute()`
 
@@ -7109,7 +7110,7 @@ Return whether the scene has at least one active animation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:318._
+_Declared in `include/datoviz/scene/animation.h`:342._
 
 ### `dvz_scene_hover()`
 
@@ -7267,13 +7268,18 @@ void dvz_scene_set_clock_mode(
 | Field | Type | Description |
 | --- | --- | --- |
 | `scene` | `DvzScene *` | target scene |
-| `mode` | `DvzSceneClockMode` | realtime or offline clock mode |
+| `mode` | `DvzSceneClockMode` | realtime, fixed-step, or external clock mode |
 
 Set the scene clock mode used by animations.
 
+Realtime mode advances from monotonic wall-clock timestamps. Fixed-step mode advances by
+1 / fps on every submitted scene step and is intended for deterministic tests, fixtures, and
+offscreen capture. External mode is for host-driven loops that supply explicit time values with
+dvz_scene_step_external().
+
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:279._
+_Declared in `include/datoviz/scene/animation.h`:289._
 
 ### `dvz_scene_set_font_defaults()`
 
@@ -7312,11 +7318,37 @@ void dvz_scene_set_fps(
 | `scene` | `DvzScene *` | target scene |
 | `fps` | `double` | frames per second, must be positive |
 
-Set the scene clock frame rate used by offline mode and timer period resolution.
+Set the scene clock frame rate used by fixed-step mode.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:289._
+_Declared in `include/datoviz/scene/animation.h`:299._
+
+### `dvz_scene_step_external()`
+
+```c title="dvz_scene_step_external"
+void dvz_scene_step_external(
+    DvzScene * scene,
+    double t,
+    double dt
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `scene` | `DvzScene *` | target scene |
+| `t` | `double` | current host time in seconds, normally relative to the start of the scene |
+| `dt` | `double` | elapsed host time in seconds since the previous frame |
+
+Advance an external-clock scene and run active animation callbacks.
+
+This function is intended for browser, GUI toolkit, and embedded hosts that own the event loop
+and have authoritative frame timestamps. It switches the scene clock to external mode, stores the
+supplied time/delta verbatim after validation, and runs animation callbacks once.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/animation.h`:313._
 
 ## Selection
 
@@ -7661,7 +7693,7 @@ DvzTextLayout dvz_text_layout(void);
 
 Return the default retained text layout.
 
-Raw ctypes: not emitted by the current generated binding.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/text.h`:58._
 
@@ -7701,7 +7733,7 @@ int dvz_text_set_anchors(
 | `anchors` | `const float (*)[2]` |  |
 | `item_count` | `uint32_t` |  |
 
-Raw ctypes: not emitted by the current generated binding.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/text.h`:254._
 
@@ -7721,7 +7753,7 @@ int dvz_text_set_angles(
 | `angles` | `const float *` |  |
 | `item_count` | `uint32_t` |  |
 
-Raw ctypes: not emitted by the current generated binding.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/text.h`:263._
 
@@ -7741,7 +7773,7 @@ int dvz_text_set_colors(
 | `colors` | `const DvzColor *` |  |
 | `item_count` | `uint32_t` |  |
 
-Raw ctypes: not emitted by the current generated binding.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/text.h`:260._
 
@@ -7763,7 +7795,7 @@ int dvz_text_set_items(
 
 Set the UTF-8 content of a retained text object.
 
-Raw ctypes: not emitted by the current generated binding.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/text.h`:207._
 
@@ -7784,7 +7816,7 @@ int dvz_text_set_layout(
 
 Set the layout of a retained text collection.
 
-Raw ctypes: not emitted by the current generated binding.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/text.h`:238._
 
@@ -7804,7 +7836,7 @@ int dvz_text_set_offsets(
 | `offsets` | `const float (*)[2]` |  |
 | `item_count` | `uint32_t` |  |
 
-Raw ctypes: not emitted by the current generated binding.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/text.h`:250._
 
@@ -7845,7 +7877,7 @@ int dvz_text_set_position(
 
 Set the position of a retained one-item text collection.
 
-Raw ctypes: not emitted by the current generated binding.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/text.h`:228._
 
@@ -7865,7 +7897,7 @@ int dvz_text_set_positions(
 | `positions` | `const double (*)[3]` |  |
 | `item_count` | `uint32_t` |  |
 
-Raw ctypes: not emitted by the current generated binding.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/text.h`:246._
 
@@ -7906,7 +7938,7 @@ int dvz_text_set_sizes(
 | `sizes_px` | `const float *` |  |
 | `item_count` | `uint32_t` |  |
 
-Raw ctypes: not emitted by the current generated binding.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/text.h`:257._
 
@@ -7947,7 +7979,7 @@ int dvz_text_set_strings(
 | `strings` | `const char *const *` |  |
 | `item_count` | `uint32_t` |  |
 
-Raw ctypes: not emitted by the current generated binding.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/text.h`:242._
 
@@ -8010,7 +8042,7 @@ Create a 2D circle track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:435._
+_Declared in `include/datoviz/scene/animation.h`:459._
 
 ### `dvz_track_circle2_desc()`
 
@@ -8028,7 +8060,7 @@ Related: [`dvz_track_circle2()`](#dvz_track_circle2).
 
 Raw ctypes: skipped by binding policy.
 
-_Declared in `include/datoviz/scene/animation.h`:367._
+_Declared in `include/datoviz/scene/animation.h`:391._
 
 ### `dvz_track_circle3()`
 
@@ -8047,7 +8079,7 @@ Create a 3D circle track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:444._
+_Declared in `include/datoviz/scene/animation.h`:468._
 
 ### `dvz_track_circle3_desc()`
 
@@ -8065,7 +8097,7 @@ Related: [`dvz_track_circle3()`](#dvz_track_circle3).
 
 Raw ctypes: skipped by binding policy.
 
-_Declared in `include/datoviz/scene/animation.h`:375._
+_Declared in `include/datoviz/scene/animation.h`:399._
 
 ### `dvz_track_constant()`
 
@@ -8084,7 +8116,7 @@ Create a constant typed track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:408._
+_Declared in `include/datoviz/scene/animation.h`:432._
 
 ### `dvz_track_constant_desc()`
 
@@ -8102,7 +8134,7 @@ Related: [`dvz_track_constant()`](#dvz_track_constant).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:343._
+_Declared in `include/datoviz/scene/animation.h`:367._
 
 ### `dvz_track_destroy()`
 
@@ -8120,7 +8152,7 @@ Destroy a track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:472._
+_Declared in `include/datoviz/scene/animation.h`:496._
 
 ### `dvz_track_eval()`
 
@@ -8143,7 +8175,7 @@ Evaluate a track at local time.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:464._
+_Declared in `include/datoviz/scene/animation.h`:488._
 
 ### `dvz_track_keyframes()`
 
@@ -8162,7 +8194,7 @@ Create a keyframed typed track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:426._
+_Declared in `include/datoviz/scene/animation.h`:450._
 
 ### `dvz_track_keyframes_desc()`
 
@@ -8180,7 +8212,7 @@ Related: [`dvz_track_keyframes()`](#dvz_track_keyframes).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:359._
+_Declared in `include/datoviz/scene/animation.h`:383._
 
 ### `dvz_track_linear()`
 
@@ -8199,7 +8231,7 @@ Create a linear typed track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:417._
+_Declared in `include/datoviz/scene/animation.h`:441._
 
 ### `dvz_track_linear_desc()`
 
@@ -8217,7 +8249,7 @@ Related: [`dvz_track_linear()`](#dvz_track_linear).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:351._
+_Declared in `include/datoviz/scene/animation.h`:375._
 
 ### `dvz_track_rotation()`
 
@@ -8236,7 +8268,7 @@ Create a quaternion rotation track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:453._
+_Declared in `include/datoviz/scene/animation.h`:477._
 
 ### `dvz_track_rotation_desc()`
 
@@ -8254,7 +8286,7 @@ Related: [`dvz_track_rotation()`](#dvz_track_rotation).
 
 Raw ctypes: skipped by binding policy.
 
-_Declared in `include/datoviz/scene/animation.h`:383._
+_Declared in `include/datoviz/scene/animation.h`:407._
 
 ## Transform
 
@@ -8272,7 +8304,7 @@ Return a default transform motion descriptor.
 
 Raw ctypes: skipped by binding policy.
 
-_Declared in `include/datoviz/scene/animation.h`:391._
+_Declared in `include/datoviz/scene/animation.h`:415._
 
 ## Turntable
 

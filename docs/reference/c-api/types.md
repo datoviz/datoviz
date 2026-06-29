@@ -1722,6 +1722,9 @@ DVZ_SCENE_BUFFER_USAGE_STORAGE = 8,
 #### `DvzSceneClockMode`
 
 ```c
+DVZ_SCENE_CLOCK_REALTIME = 0,
+DVZ_SCENE_CLOCK_FIXED_STEP = 1,
+DVZ_SCENE_CLOCK_EXTERNAL = 2,
 DVZ_CLOCK_REALTIME = 0,
 DVZ_CLOCK_OFFLINE = 1,
 ```
@@ -4884,6 +4887,12 @@ typedef struct DvzDevice DvzDevice;
 typedef struct DvzDrp2Runtime DvzDrp2Runtime;
 ```
 
+#### `DvzExtent`
+
+```c
+typedef struct DvzExtent DvzExtent;
+```
+
 #### `DvzFly`
 
 ```c
@@ -4948,6 +4957,12 @@ typedef struct DvzGuiViewportConfig DvzGuiViewportConfig;
 
 ```c
 typedef enum DvzGuiViewportFlags DvzGuiViewportFlags;
+```
+
+#### `DvzHiDpiPolicy`
+
+```c
+typedef enum DvzHiDpiPolicy DvzHiDpiPolicy;
 ```
 
 #### `DvzInputCallback`
@@ -5098,6 +5113,18 @@ typedef void (*)(DvzInputRouter *, const DvzInputResizeEvent *, void *) DvzResiz
 
 ```c
 typedef void (*)(DvzInputRouter *, const DvzInputScaleEvent *, void *) DvzScaleCallback;
+```
+
+#### `DvzScaleXY`
+
+```c
+typedef struct DvzScaleXY DvzScaleXY;
+```
+
+#### `DvzSizeSpace`
+
+```c
+typedef enum DvzSizeSpace DvzSizeSpace;
 ```
 
 #### `DvzStream`
@@ -5370,6 +5397,12 @@ typedef _Bool (*)(DvzWindow *, double, double, void *) DvzWindowGlfwScrollCallba
 typedef struct DvzWindowHost DvzWindowHost;
 ```
 
+#### `DvzWindowMetrics`
+
+```c
+typedef struct DvzWindowMetrics DvzWindowMetrics;
+```
+
 #### `DvzWindowSurface`
 
 ```c
@@ -5475,6 +5508,16 @@ DVZ_GUI_FLAGS_DOCKSPACE = 2,
 DVZ_GUI_VIEWPORT_FLAGS_NONE = 0,
 DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT = 1,
 DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN = 2,
+```
+
+#### `DvzHiDpiPolicy`
+
+```c
+DVZ_HIDPI_AUTO = 0,
+DVZ_HIDPI_DISABLED = 1,
+DVZ_HIDPI_FRAMEBUFFER = 2,
+DVZ_HIDPI_NATIVE_WINDOW = 3,
+DVZ_HIDPI_EXTERNAL = 4,
 ```
 
 #### `DvzInputEventType`
@@ -5670,6 +5713,15 @@ DVZ_POINTER_STATE_DOUBLE_CLICK = 5,
 DVZ_POINTER_STATE_DRAGGING = 11,
 ```
 
+#### `DvzSizeSpace`
+
+```c
+DVZ_SIZE_LOGICAL = 0,
+DVZ_SIZE_NATIVE = 1,
+DVZ_SIZE_SURFACE = 2,
+DVZ_SIZE_RENDER = 3,
+```
+
 #### `DvzStreamFrameUsage`
 
 ```c
@@ -5744,6 +5796,7 @@ struct DvzAppConfig {
     _Bool enable_glfw_extensions;
     DvzAppScheduleMode schedule_mode;
     double fps_cap;
+    double window_size_scale;
     DvzFontDefaults font_defaults;
 };
 ```
@@ -5822,6 +5875,15 @@ typedef struct DvzDevice DvzDevice;
 
 ```c
 typedef struct DvzDrp2Runtime DvzDrp2Runtime;
+```
+
+#### `DvzExtent`
+
+```c
+struct DvzExtent {
+    uint32_t width;
+    uint32_t height;
+};
 ```
 
 #### `DvzFrameTiming`
@@ -5985,6 +6047,15 @@ typedef struct DvzPointerGestureHandler DvzPointerGestureHandler;
 ```c
 struct DvzPointerWheelEvent {
     vec2 dir;
+};
+```
+
+#### `DvzScaleXY`
+
+```c
+struct DvzScaleXY {
+    float x;
+    float y;
 };
 ```
 
@@ -6178,6 +6249,7 @@ struct DvzWindowConfig {
     _Bool resizable;
     _Bool visible;
     float user_scale;
+    DvzHiDpiPolicy hidpi_policy;
 };
 ```
 
@@ -6212,6 +6284,23 @@ struct DvzWindowGlfwInputCallbacks {
 
 ```c
 typedef struct DvzWindowHost DvzWindowHost;
+```
+
+#### `DvzWindowMetrics`
+
+```c
+struct DvzWindowMetrics {
+    DvzExtent logical_size;
+    DvzExtent native_size;
+    DvzExtent surface_size;
+    DvzExtent render_size;
+    DvzScaleXY content_scale;
+    DvzScaleXY framebuffer_scale;
+    DvzScaleXY device_scale;
+    DvzScaleXY native_to_logical;
+    DvzHiDpiPolicy active_hidpi_policy;
+    uint64_t generation;
+};
 ```
 
 #### `DvzWindowSurface`

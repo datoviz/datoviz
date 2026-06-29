@@ -1,58 +1,64 @@
+bindings_python := env_var_or_default("PYTHON", if path_exists(".venv/bin/python") == "true" { ".venv/bin/python" } else { "python" })
+
 pydev: # install the Python binding on a development machine
-    @pip install -r requirements-dev.txt
-    @pip install -e .
+    @{{bindings_python}} -m pip install -r requirements-dev.txt
+    @{{bindings_python}} -m pip install -e .
 #
 
 python-dev-install: pydev
 #
 
-bindings-python-clang: # install Python libclang when clang.cindex is missing
-    @python -c "import clang.cindex" 2>/dev/null || python -m pip install libclang
+bindings-python-clang: # verify Python libclang is available
+    @if ! {{bindings_python}} -c "import clang.cindex" 2>/dev/null; then \
+        echo "Missing Python package 'libclang' for {{bindings_python}}." >&2; \
+        echo "Run '{{bindings_python}} -m pip install -r requirements-dev.txt' or set PYTHON=/path/to/python." >&2; \
+        exit 1; \
+    fi
 #
 
 api-json: bindings-python-clang
-    @python tools/bindings/extract_api.py
+    @{{bindings_python}} tools/bindings/extract_api.py
 #
 
 ctypes: api-json
-    @python tools/bindings/generate_ctypes.py
-    @python tools/bindings/generate_array_facade.py
+    @{{bindings_python}} tools/bindings/generate_ctypes.py
+    @{{bindings_python}} tools/bindings/generate_array_facade.py
 #
 
 ctypes-abi: api-json
-    @python tools/bindings/generate_ctypes_abi.py
+    @{{bindings_python}} tools/bindings/generate_ctypes_abi.py
 #
 
 ctypes-check: api-json ctypes-abi
-    @python tools/bindings/generate_ctypes.py --check
-    @python tools/bindings/generate_array_facade.py --check
-    @python tools/bindings/validate_ctypes_policy.py
-    @python tools/bindings/validate_array_facade.py
-    @PYTHONPATH=. python tools/bindings/validate_ctypes_abi.py
+    @{{bindings_python}} tools/bindings/generate_ctypes.py --check
+    @{{bindings_python}} tools/bindings/generate_array_facade.py --check
+    @{{bindings_python}} tools/bindings/validate_ctypes_policy.py
+    @{{bindings_python}} tools/bindings/validate_array_facade.py
+    @PYTHONPATH=. {{bindings_python}} tools/bindings/validate_ctypes_abi.py
 #
 
 ctypes-smoke:
-    @PYTHONPATH=. python tools/bindings/ctypes_smoke.py
+    @PYTHONPATH=. {{bindings_python}} tools/bindings/ctypes_smoke.py
 #
 
 ctypes-facade-smoke:
-    @PYTHONPATH=. python tools/bindings/array_facade_smoke.py
+    @PYTHONPATH=. {{bindings_python}} tools/bindings/array_facade_smoke.py
 #
 
 ctypes-python-smoke:
-    @PYTHONPATH=. pytest -q testing/test_python_async_helpers.py testing/test_ctypes_raw_smoke.py testing/test_array_facade.py
+    @PYTHONPATH=. {{bindings_python}} -m pytest -q testing/test_python_async_helpers.py testing/test_ctypes_raw_smoke.py testing/test_array_facade.py
 #
 
 ctypes-render-smoke:
-    @PYTHONPATH=. python tools/bindings/ctypes_render_smoke.py
+    @PYTHONPATH=. {{bindings_python}} tools/bindings/ctypes_render_smoke.py
 #
 
 ctypes-editable-smoke: build ctypes
-    @python tools/bindings/ctypes_package_smoke.py editable
+    @{{bindings_python}} tools/bindings/ctypes_package_smoke.py editable
 #
 
 ctypes-wheel-smoke: build ctypes
-    @python tools/bindings/ctypes_package_smoke.py wheel
+    @{{bindings_python}} tools/bindings/ctypes_package_smoke.py wheel
 #
 
 ctypes-package-smoke: ctypes-editable-smoke ctypes-wheel-smoke

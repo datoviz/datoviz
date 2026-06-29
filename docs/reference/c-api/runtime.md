@@ -3255,7 +3255,7 @@ DvzCameraDesc dvz_camera_desc(void);
 
 Return a default perspective camera descriptor.
 
-Raw ctypes: emitted.
+Raw ctypes: skipped by binding policy.
 
 _Declared in `include/datoviz/controller/camera.h`:122._
 
@@ -3334,7 +3334,7 @@ DvzCameraProjection dvz_camera_projection(void);
 
 Return a default perspective camera projection.
 
-Raw ctypes: not emitted by the current generated binding.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/controller/camera.h`:113._
 
@@ -3440,7 +3440,7 @@ DvzCameraView dvz_camera_view(void);
 
 Return a default camera view.
 
-Raw ctypes: not emitted by the current generated binding.
+Raw ctypes: skipped by binding policy.
 
 _Declared in `include/datoviz/controller/camera.h`:104._
 
@@ -6010,7 +6010,7 @@ DvzFlyDesc dvz_fly_desc(void);
 
 Return a default fly-controller descriptor.
 
-Raw ctypes: emitted.
+Raw ctypes: skipped by binding policy.
 
 _Declared in `include/datoviz/controller/fly.h`:149._
 
@@ -12806,7 +12806,7 @@ DvzTurntableDesc dvz_turntable_desc(void);
 
 Return a default turntable descriptor.
 
-Raw ctypes: emitted.
+Raw ctypes: skipped by binding policy.
 
 _Declared in `include/datoviz/controller/turntable.h`:134._
 
