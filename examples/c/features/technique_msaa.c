@@ -222,9 +222,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzController* multisample_controller = _bind_arcball(ctx, multisample);
     if (single_controller == NULL || multisample_controller == NULL)
         return false;
-    if (!example_link_controllers_bidirectional(
+    if (dvz_controller_link(
             ctx->scene, single_controller, multisample_controller,
-            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM))
+            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM,
+            DVZ_CONTROLLER_LINK_TWO_WAY) == NULL)
         return false;
     if (!_add_cube_cluster(ctx->scene, single) || !_add_cube_cluster(ctx->scene, multisample))
         return false;

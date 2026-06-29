@@ -366,22 +366,6 @@ DvzCameraDesc example_controller_camera_desc(void)
 
 
 /**
- * Apply the shared initial camera for controller feature examples.
- *
- * @param panel target panel
- * @return scene-owned camera, or NULL on error
- */
-DvzCamera* example_set_controller_camera(DvzPanel* panel)
-{
-    if (panel == NULL)
-        return NULL;
-
-    DvzCameraDesc camera = example_controller_camera_desc();
-    return dvz_panel_set_camera(panel, &camera);
-}
-
-
-/**
  * Return the default Phong material for lit gallery meshes.
  *
  * @return material descriptor
@@ -466,24 +450,6 @@ bool example_configure_compact_grid(DvzGrid* grid, float gutter_x_px, float gutt
         return false;
     }
     return dvz_grid_set_gutter(grid, gutter_x_px, gutter_y_px);
-}
-
-
-/**
- * Link two controllers in both directions.
- *
- * @param scene scene owning both controllers
- * @param a first controller
- * @param b second controller
- * @param components linked controller state components
- * @return true when the link was created
- */
-bool example_link_controllers_bidirectional(
-    DvzScene* scene, DvzController* a, DvzController* b, uint32_t components)
-{
-    if (scene == NULL || a == NULL || b == NULL)
-        return false;
-    return dvz_controller_link(scene, a, b, components, DVZ_CONTROLLER_LINK_TWO_WAY) != NULL;
 }
 
 

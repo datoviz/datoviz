@@ -280,9 +280,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     for (uint32_t i = 1; i < 3u; i++)
     {
-        if (!example_link_controllers_bidirectional(
+        if (dvz_controller_link(
                 ctx->scene, controllers[0], controllers[i],
-                DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM))
+                DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM,
+                DVZ_CONTROLLER_LINK_TWO_WAY) == NULL)
             return false;
     }
 

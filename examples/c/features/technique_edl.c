@@ -301,9 +301,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->arcball = dvz_controller_arcball(plain_controller);
     if (state->arcball == NULL)
         return false;
-    if (!example_link_controllers_bidirectional(
+    if (dvz_controller_link(
             ctx->scene, plain_controller, lit_controller,
-            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM))
+            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM,
+            DVZ_CONTROLLER_LINK_TWO_WAY) == NULL)
         return false;
 
     if (!_add_depth_cloud(ctx->scene, plain) || !_add_depth_cloud(ctx->scene, lit))

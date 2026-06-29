@@ -128,8 +128,6 @@ DvzCamera* example_set_default_3d_camera(DvzPanel* panel, float extent);
 
 DvzCameraDesc example_controller_camera_desc(void);
 
-DvzCamera* example_set_controller_camera(DvzPanel* panel);
-
 DvzMaterialDesc example_default_phong_material_desc(void);
 
 DvzMaterialDesc example_default_standard_material_desc(void);
@@ -141,9 +139,6 @@ bool example_configure_equal_aspect_panel(
     double padding);
 
 bool example_configure_compact_grid(DvzGrid* grid, float gutter_x_px, float gutter_y_px);
-
-bool example_link_controllers_bidirectional(
-    DvzScene* scene, DvzController* a, DvzController* b, uint32_t components);
 
 DvzVisual* example_graphite_cyan_cube_mesh(
     DvzScene* scene,

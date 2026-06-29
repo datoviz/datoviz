@@ -218,9 +218,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzController* cued_controller = _bind_arcball(ctx, cued);
     if (plain_controller == NULL || cued_controller == NULL)
         return false;
-    if (!example_link_controllers_bidirectional(
+    if (dvz_controller_link(
             ctx->scene, plain_controller, cued_controller,
-            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM))
+            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM,
+            DVZ_CONTROLLER_LINK_TWO_WAY) == NULL)
         return false;
     return _add_sphere_lattice(ctx->scene, plain, false) &&
            _add_sphere_lattice(ctx->scene, cued, true);

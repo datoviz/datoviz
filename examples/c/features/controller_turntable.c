@@ -131,7 +131,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (panel == NULL)
         return false;
     example_graphite_cyan_set_panel_background(panel);
-    if (example_set_controller_camera(panel) == NULL)
+    DvzCameraDesc camera = example_controller_camera_desc();
+    if (dvz_panel_set_camera(panel, &camera) == NULL)
         return false;
     DvzReferenceGridDesc grid = dvz_reference_grid_desc();
     grid.plane = DVZ_REFERENCE_GRID_XZ;
@@ -156,7 +157,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
 
     DvzTurntableDesc desc = dvz_turntable_desc();
-    DvzCameraDesc camera = example_controller_camera_desc();
     desc.controller_flags = DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE;
     desc.initial_view = camera.view;
     desc.min_pitch = -0.72f;

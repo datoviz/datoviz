@@ -224,9 +224,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzController* off_controller = _bind_arcball(ctx, depth_off);
     if (on_controller == NULL || off_controller == NULL)
         return false;
-    if (!example_link_controllers_bidirectional(
+    if (dvz_controller_link(
             ctx->scene, on_controller, off_controller,
-            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM))
+            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM,
+            DVZ_CONTROLLER_LINK_TWO_WAY) == NULL)
         return false;
     if (!_add_depth_points(ctx->scene, depth_on, true))
         return false;
