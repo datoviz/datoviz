@@ -47,10 +47,10 @@ DvzScenarioSpec dvz_example_selection_pixel_scenario(void);
 
 #define WIDTH       1600u
 #define HEIGHT      1200u
-#define GRID_WIDTH  56u
-#define GRID_HEIGHT 40u
+#define GRID_WIDTH  40u
+#define GRID_HEIGHT 24u
 #define PIXEL_COUNT (GRID_WIDTH * GRID_HEIGHT)
-#define PIXEL_SIZE  12.0f
+#define PIXEL_SIZE  18.0f
 #define QUERY_HOVER_ID 11u
 #define QUERY_CLICK_ID 12u
 
