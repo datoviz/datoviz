@@ -74,11 +74,6 @@ typedef struct PixelSelectionState
     DvzQueryResult latest_hover_query;
     bool has_hover_query;
     bool cursor_valid;
-    double cursor_x;
-    double cursor_y;
-    bool pending_click;
-    double click_x;
-    double click_y;
 } PixelSelectionState;
 
 
@@ -221,7 +216,7 @@ static void _toggle_pixel_selection(PixelSelectionState* state, const DvzQueryRe
 /*************************************************************************************************/
 
 /**
- * Record pointer position and click intent in panel coordinates.
+ * Queue hover and click queries from panel-local pointer events.
  *
  * @param event portable pointer event
  * @param user_data pixel-selection example state
@@ -235,24 +230,41 @@ static void _selection_pixel_pointer(const DvzScenarioPointerEvent* event, void*
         event->type != DVZ_SCENARIO_POINTER_MOVE && event->type != DVZ_SCENARIO_POINTER_PRESS)
         return;
 
-    state->cursor_valid = dvz_scenario_panel_pointer_position(
-        state->panel, event, &state->cursor_x, &state->cursor_y);
-    if (event->type == DVZ_SCENARIO_POINTER_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
+    double x = 0.0;
+    double y = 0.0;
+    state->cursor_valid = dvz_scenario_panel_pointer_position(state->panel, event, &x, &y);
+    if (!state->cursor_valid)
     {
-        if (!state->cursor_valid)
+        if (state->has_hover_query)
         {
-            dvz_selection_clear(state->selection);
-            return;
+            dvz_hover_clear(state->hover);
+            state->has_hover_query = false;
         }
-        state->click_x = state->cursor_x;
-        state->click_y = state->cursor_y;
-        state->pending_click = true;
+        if (event->type == DVZ_SCENARIO_POINTER_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
+            dvz_selection_clear(state->selection);
+        return;
+    }
+
+    DvzQueryRequest request = dvz_query_request();
+    request.target = DVZ_SCENE_TARGET_ITEM;
+    request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
+    if (event->type == DVZ_SCENARIO_POINTER_MOVE)
+    {
+        request.request_id = QUERY_HOVER_ID;
+        if (dvz_scenario_panel_query(state->panel, x, y, &request) != 0)
+            fprintf(stderr, "dvz_scenario_panel_query() failed\n");
+    }
+    else if (event->button == DVZ_POINTER_BUTTON_LEFT)
+    {
+        request.request_id = QUERY_CLICK_ID;
+        if (dvz_scenario_panel_query(state->panel, x, y, &request) != 0)
+            fprintf(stderr, "dvz_scenario_panel_query(click) failed\n");
     }
 }
 
 
 /**
- * Consume pixel query results, update hover styling, and queue the next query.
+ * Consume pixel query results and update hover styling.
  *
  * @param ctx scenario context
  * @param user_data pixel-selection example state
@@ -265,7 +277,6 @@ static void _selection_pixel_post_frame(DvzScenarioContext* ctx, void* user_data
         return;
 
     DvzQueryResult query = {0};
-    bool saw_pixel_query = false;
     while (dvz_scene_poll_query(state->scene, &query))
     {
         if (query.request_id == QUERY_CLICK_ID)
@@ -285,47 +296,31 @@ static void _selection_pixel_post_frame(DvzScenarioContext* ctx, void* user_data
         }
         if (query.request_id != QUERY_HOVER_ID)
             continue;
+        if (!state->cursor_valid)
+            continue;
 
-        saw_pixel_query = true;
-        if (dvz_hover_apply_query(state->hover, &query) != 0)
-            fprintf(stderr, "dvz_hover_apply_query() failed\n");
         if (
             query.status == DVZ_QUERY_STATUS_HIT && query.hit &&
             query.visual_family == DVZ_SCENE_VISUAL_FAMILY_PIXEL &&
             query.resolved_target == DVZ_SCENE_TARGET_ITEM && query.resolved_id < PIXEL_COUNT)
         {
-            state->latest_hover_query = query;
+            bool same_item =
+                state->latest_hover_query.visual_id == query.visual_id &&
+                state->latest_hover_query.resolved_id == query.resolved_id;
+            bool hover_changed = !state->has_hover_query || !same_item;
+            if (hover_changed && dvz_hover_apply_query(state->hover, &query) != 0)
+                fprintf(stderr, "dvz_hover_apply_query() failed\n");
+            if (!same_item)
+                fprintf(stdout, "hover pixel id=%" PRIu64 "\n", query.resolved_id);
             state->has_hover_query = true;
-            fprintf(stdout, "hover pixel id=%" PRIu64 "\n", query.resolved_id);
+            state->latest_hover_query = query;
         }
         else
         {
+            if (state->has_hover_query)
+                dvz_hover_clear(state->hover);
             state->has_hover_query = false;
         }
-    }
-    if (saw_pixel_query && !state->has_hover_query)
-        dvz_hover_clear(state->hover);
-
-    if (state->cursor_valid)
-    {
-        DvzQueryRequest request = dvz_query_request();
-        request.request_id = QUERY_HOVER_ID;
-        request.target = DVZ_SCENE_TARGET_ITEM;
-        request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
-
-        if (dvz_scenario_panel_query(state->panel, state->cursor_x, state->cursor_y, &request) != 0)
-            fprintf(stderr, "dvz_scenario_panel_query() failed\n");
-    }
-    if (state->pending_click)
-    {
-        DvzQueryRequest request = dvz_query_request();
-        request.request_id = QUERY_CLICK_ID;
-        request.target = DVZ_SCENE_TARGET_ITEM;
-        request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
-
-        if (dvz_scenario_panel_query(state->panel, state->click_x, state->click_y, &request) != 0)
-            fprintf(stderr, "dvz_scenario_panel_query(click) failed\n");
-        state->pending_click = false;
     }
 }
 
