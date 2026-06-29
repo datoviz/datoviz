@@ -77,7 +77,7 @@ DvzScenarioSpec dvz_example_material_mesh_scenario(void);
 static bool _add_material_cube(
     DvzScene* scene, DvzPanel* panel, const DvzMaterialDesc* material, DvzGeometry** out_geometry)
 {
-    const ExampleStyleColorRole face_roles[6] = {
+    const ExampleStyleColorRole face_roles[DVZ_GEOM_CUBE_FACE_COUNT] = {
         EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
         EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
         EXAMPLE_STYLE_COLOR_WARNING,
@@ -85,10 +85,29 @@ static bool _add_material_cube(
         EXAMPLE_STYLE_COLOR_GRID,
         EXAMPLE_STYLE_COLOR_MINOR_TICK,
     };
-    DvzVisual* visual = example_graphite_cyan_cube_mesh(scene, 0.72, face_roles, out_geometry);
+    DvzColor face_colors[DVZ_GEOM_CUBE_FACE_COUNT] = {0};
+    for (uint32_t i = 0; i < DVZ_GEOM_CUBE_FACE_COUNT; i++)
+        face_colors[i] = example_graphite_cyan_color(face_roles[i]);
+
+    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
+        .size = 0.72,
+        .face_colors = face_colors,
+        .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT,
+    });
+    if (cube == NULL)
+        return false;
+    if (out_geometry != NULL)
+        *out_geometry = cube;
+
+    DvzVisual* visual = dvz_mesh(scene, 0);
     if (visual == NULL)
         return false;
-
+    if (dvz_mesh_set_geometry(visual, cube) != 0)
+        return false;
+    dvz_geometry_destroy(cube);
+    if (out_geometry != NULL)
+        *out_geometry = NULL;
     if (dvz_visual_set_material(visual, material) != 0)
         return false;
     return dvz_panel_add_visual(panel, visual, NULL) == 0;

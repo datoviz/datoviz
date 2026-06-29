@@ -206,10 +206,25 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             ctx->scene, fit_panel,
             example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY)))
         return false;
-    DvzPanzoomDesc fit_panzoom = dvz_panzoom_desc();
-    fit_panzoom.controller_flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
-    return dvz_scenario_panzoom(ctx, free_panel, NULL, DVZ_DIM_MASK_XY) != NULL &&
-           dvz_scenario_panzoom(ctx, fit_panel, &fit_panzoom, DVZ_DIM_MASK_XY) != NULL;
+    DvzController* free_controller = dvz_panzoom(ctx->scene, NULL);
+    if (free_controller == NULL)
+        return false;
+    DvzPanzoom* free_panzoom = dvz_controller_panzoom(free_controller);
+    if (
+        free_panzoom == NULL ||
+        dvz_scenario_bind_controller(ctx, free_panel, free_controller, DVZ_DIM_MASK_XY) != 0)
+    {
+        return false;
+    }
+
+    DvzPanzoomDesc fit_panzoom_desc = dvz_panzoom_desc();
+    fit_panzoom_desc.controller_flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
+    DvzController* fit_controller = dvz_panzoom(ctx->scene, &fit_panzoom_desc);
+    if (fit_controller == NULL)
+        return false;
+    DvzPanzoom* fit_panzoom = dvz_controller_panzoom(fit_controller);
+    return fit_panzoom != NULL &&
+           dvz_scenario_bind_controller(ctx, fit_panel, fit_controller, DVZ_DIM_MASK_XY) == 0;
 }
 
 

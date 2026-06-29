@@ -169,8 +169,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!_add_points(ctx->scene, panel))
         return false;
 
-    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
-    return panzoom != NULL;
+    DvzController* controller = dvz_panzoom(ctx->scene, NULL);
+    if (controller == NULL)
+        return false;
+    DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
+    return panzoom != NULL &&
+           dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XY) == 0;
 }
 
 
