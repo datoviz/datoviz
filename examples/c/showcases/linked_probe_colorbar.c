@@ -427,7 +427,7 @@ static DvzText* _add_readout(DvzPanel* panel)
 
     DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
     DvzTextStyle style = dvz_text_style();
-    style.size_px = 20.0f;
+    style.size_px = 16.0f;
     style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.color[0] = color.r;
     style.color[1] = color.g;
@@ -472,7 +472,7 @@ static bool _add_panel_label(DvzPanel* panel, const char* label, ExampleStyleCol
         return false;
     DvzColor color = example_graphite_cyan_color(role);
     DvzTextStyle style = dvz_text_style();
-    style.size_px = 22.0f;
+    style.size_px = 18.0f;
     style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.color[0] = color.r;
     style.color[1] = color.g;
