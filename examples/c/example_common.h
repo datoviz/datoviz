@@ -40,7 +40,6 @@ typedef struct DvzApp      DvzApp;
 typedef struct DvzView     DvzView;
 typedef struct DvzPointerEvent DvzPointerEvent;
 typedef struct DvzController DvzController;
-typedef struct DvzArcball    DvzArcball;
 typedef struct DvzAnimation  DvzAnimation;
 typedef struct DvzTrack      DvzTrack;
 typedef struct DvzAppCaptureConfig DvzAppCaptureConfig;
@@ -136,10 +135,6 @@ DvzMaterialDesc example_default_phong_material_desc(void);
 
 DvzMaterialDesc example_default_standard_material_desc(void);
 
-bool example_apply_default_phong_material(DvzVisual* visual);
-
-bool example_apply_default_standard_material(DvzVisual* visual);
-
 bool example_configure_equal_aspect_panel(
     DvzPanel* panel,
     DvzDataDomain x,
@@ -150,10 +145,6 @@ bool example_configure_compact_grid(DvzGrid* grid, float gutter_x_px, float gutt
 
 bool example_link_controllers_bidirectional(
     DvzScene* scene, DvzController* a, DvzController* b, uint32_t components);
-
-void example_default_arcball_initial(vec3 out);
-
-void example_set_default_arcball(DvzArcball* arcball);
 
 DvzVisual* example_graphite_cyan_cube_mesh(
     DvzScene* scene,

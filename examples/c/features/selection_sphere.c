@@ -340,7 +340,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (dvz_sphere_mode(visual, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
         goto error;
 
-    if (!example_apply_default_standard_material(visual))
+    DvzMaterialDesc material = example_default_standard_material_desc();
+    if (dvz_visual_set_material(visual, &material) != 0)
         goto error;
 
     DvzSelection* selection = dvz_selection(
@@ -388,12 +389,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzController* arcball_controller = dvz_arcball(ctx->scene, NULL);
     if (arcball_controller == NULL)
         goto error;
-    DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
-    if (arcball == NULL)
-        goto error;
     if (dvz_scenario_bind_controller(ctx, panel, arcball_controller, DVZ_DIM_MASK_XYZ) != 0)
         goto error;
-    example_set_default_arcball(arcball);
 
     state->scene = ctx->scene;
     state->panel = panel;

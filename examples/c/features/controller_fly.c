@@ -81,7 +81,8 @@ static bool _add_fly_cube(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_ge
     if (visual == NULL)
         return false;
 
-    if (!example_apply_default_phong_material(visual))
+    DvzMaterialDesc material = example_default_phong_material_desc();
+    if (dvz_visual_set_material(visual, &material) != 0)
         return false;
 
     return dvz_panel_add_visual(panel, visual, NULL) == 0;

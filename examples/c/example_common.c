@@ -467,38 +467,6 @@ DvzMaterialDesc example_default_standard_material_desc(void)
 
 
 /**
- * Apply the default Phong material to one visual.
- *
- * @param visual target visual
- * @return true on success
- */
-bool example_apply_default_phong_material(DvzVisual* visual)
-{
-    if (visual == NULL)
-        return false;
-
-    DvzMaterialDesc material = example_default_phong_material_desc();
-    return dvz_visual_set_material(visual, &material) == 0;
-}
-
-
-/**
- * Apply the default standard material to one visual.
- *
- * @param visual target visual
- * @return true on success
- */
-bool example_apply_default_standard_material(DvzVisual* visual)
-{
-    if (visual == NULL)
-        return false;
-
-    DvzMaterialDesc material = example_default_standard_material_desc();
-    return dvz_visual_set_material(visual, &material) == 0;
-}
-
-
-/**
  * Configure a graphite-cyan panel with an equal-aspect data-domain fit.
  *
  * @param panel target panel
@@ -564,38 +532,6 @@ bool example_link_controllers_bidirectional(
     if (scene == NULL || a == NULL || b == NULL)
         return false;
     return dvz_controller_link(scene, a, b, components, DVZ_CONTROLLER_LINK_TWO_WAY) != NULL;
-}
-
-
-/**
- * Return the default arcball initial angles for 3D gallery examples.
- *
- * @param out output initial angles
- */
-void example_default_arcball_initial(vec3 out)
-{
-    if (out == NULL)
-        return;
-
-    // out[0] = +0.56f;
-    // out[1] = -0.16f;
-    // out[2] = +0.24f;
-}
-
-
-/**
- * Apply the default arcball initial angles.
- *
- * @param arcball target arcball controller state
- */
-void example_set_default_arcball(DvzArcball* arcball)
-{
-    if (arcball == NULL)
-        return;
-
-    vec3 initial = {0};
-    example_default_arcball_initial(initial);
-    dvz_arcball_initial(arcball, initial);
 }
 
 

@@ -78,7 +78,8 @@ static bool _add_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_geomet
     if (visual == NULL)
         return false;
 
-    if (!example_apply_default_phong_material(visual))
+    DvzMaterialDesc material = example_default_phong_material_desc();
+    if (dvz_visual_set_material(visual, &material) != 0)
         return false;
 
     return dvz_panel_add_visual(panel, visual, NULL) == 0;
@@ -127,12 +128,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzController* controller = dvz_arcball(ctx->scene, NULL);
     if (controller == NULL)
         return false;
-    DvzArcball* arcball = dvz_controller_arcball(controller);
-    if (arcball == NULL)
-        return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
-    example_set_default_arcball(arcball);
 
     DvzOrientationGizmoDesc gizmo = dvz_orientation_gizmo_desc();
     gizmo.placement = dvz_placement_panel_corner(

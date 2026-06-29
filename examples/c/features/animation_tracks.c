@@ -128,7 +128,8 @@ _add_animated_cube(DvzScenarioContext* ctx, DvzPanel* panel, AnimationTracksStat
     if (cube == NULL)
         return false;
 
-    if (!example_apply_default_standard_material(cube))
+    DvzMaterialDesc material = example_default_standard_material_desc();
+    if (dvz_visual_set_material(cube, &material) != 0)
         return false;
     if (dvz_panel_add_visual(panel, cube, NULL) != 0)
         return false;

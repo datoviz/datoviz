@@ -120,7 +120,8 @@ static bool _add_spheres(DvzScene* scene, DvzPanel* panel)
     if (dvz_sphere_mode(visual, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
         return false;
 
-    if (!example_apply_default_standard_material(visual))
+    DvzMaterialDesc material = example_default_standard_material_desc();
+    if (dvz_visual_set_material(visual, &material) != 0)
         return false;
 
     DvzVisualDataUpdate updates[] = {
@@ -170,12 +171,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzController* arcball_controller = dvz_arcball(ctx->scene, NULL);
     EXAMPLE_CHECK(arcball_controller != NULL, "dvz_arcball() failed");
-    DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
-    EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     EXAMPLE_CHECK(
         dvz_scenario_bind_controller(ctx, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
         "dvz_scenario_bind_controller() failed");
-    example_set_default_arcball(arcball);
 
     ok = true;
 cleanup:

@@ -124,7 +124,8 @@ static bool _add_surface(DvzScene* scene, DvzPanel* panel, const DvzGeometry* ge
     DvzVisual* mesh = dvz_mesh(scene, 0);
     if (mesh == NULL)
         return false;
-    if (!example_apply_default_phong_material(mesh))
+    DvzMaterialDesc material = example_default_phong_material_desc();
+    if (dvz_visual_set_material(mesh, &material) != 0)
         return false;
     if (dvz_mesh_set_geometry(mesh, geometry) != 0)
         return false;
@@ -289,10 +290,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         goto error;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         goto error;
-    DvzArcball* arcball = dvz_controller_arcball(controller);
-    if (arcball == NULL)
-        goto error;
-    example_set_default_arcball(arcball);
     return true;
 
 error:

@@ -142,7 +142,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_geometry_destroy(geometry);
         return false;
     }
-    const bool ok = example_apply_default_phong_material(mesh) &&
+    DvzMaterialDesc material = example_default_phong_material_desc();
+    const bool ok = dvz_visual_set_material(mesh, &material) == 0 &&
                     dvz_mesh_set_geometry(mesh, geometry) == 0 &&
                     dvz_panel_add_visual(panel, mesh, NULL) == 0;
     dvz_geometry_destroy(geometry);
