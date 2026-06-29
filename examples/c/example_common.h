@@ -100,11 +100,6 @@ uint32_t example_frame_count_any(int argc, char** argv);
 bool example_run_with_capture(
     DvzApp* app, DvzView* view, uint32_t frame_count, const DvzAppCaptureConfig* capture);
 
-bool example_mesh_geometry(DvzVisual* visual, const DvzGeometry* geometry);
-
-bool example_panel_pointer_position(
-    const DvzPanel* panel, const DvzPointerEvent* event, double* out_x, double* out_y);
-
 DvzCameraDesc example_default_3d_camera_desc(float extent);
 
 DvzCamera* example_set_default_3d_camera(DvzPanel* panel, float extent);

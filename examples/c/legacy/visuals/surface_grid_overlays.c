@@ -505,7 +505,7 @@ static bool _state_rebuild_geometry(SurfaceOverlayState* state)
     state->geometry = geometry;
     state->edges = edges;
 
-    if (state->mesh != NULL && !example_mesh_geometry(state->mesh, state->geometry))
+    if (state->mesh != NULL && dvz_mesh_set_geometry(state->mesh, state->geometry) != 0)
         return false;
     if (state->wire != NULL && !_state_upload_edges(state))
         return false;

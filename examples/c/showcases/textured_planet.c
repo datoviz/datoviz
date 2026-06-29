@@ -700,8 +700,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(visual != NULL, "dvz_mesh() failed");
     state->visual = visual;
 
-    ok = example_mesh_geometry(visual, sphere);
-    EXAMPLE_CHECK(ok, "example_mesh_geometry() failed");
+    ok = dvz_mesh_set_geometry(visual, sphere) == 0;
+    EXAMPLE_CHECK(ok, "dvz_mesh_set_geometry() failed");
     dvz_geometry_destroy(sphere);
     sphere = NULL;
 

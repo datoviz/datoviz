@@ -118,7 +118,7 @@ static bool _add_transparent_cube(
     DvzVisual* visual = dvz_mesh(scene, 0);
     if (visual == NULL)
         goto cleanup;
-    if (!example_mesh_geometry(visual, cube))
+    if (dvz_mesh_set_geometry(visual, cube) != 0)
         goto cleanup;
 
     DvzMaterialDesc material = dvz_standard_material_desc();

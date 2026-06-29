@@ -152,7 +152,7 @@ static bool _add_textured_mesh(
     DvzVisual* visual = dvz_mesh(scene, 0);
     if (visual == NULL)
         return false;
-    if (!example_mesh_geometry(visual, sphere))
+    if (dvz_mesh_set_geometry(visual, sphere) != 0)
         return false;
     dvz_geometry_destroy(sphere);
     if (out_geometry != NULL)

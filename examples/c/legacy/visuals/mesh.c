@@ -99,8 +99,8 @@ int main(int argc, char** argv)
     });
     EXAMPLE_CHECK(cube != NULL, "dvz_geom_cube() failed");
 
-    bool uploaded = example_mesh_geometry(visual, cube);
-    EXAMPLE_CHECK(uploaded, "example_mesh_geometry() failed");
+    bool uploaded = dvz_mesh_set_geometry(visual, cube) == 0;
+    EXAMPLE_CHECK(uploaded, "dvz_mesh_set_geometry() failed");
     dvz_geometry_destroy(cube);
     cube = NULL;
 

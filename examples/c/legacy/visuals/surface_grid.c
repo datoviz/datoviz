@@ -145,8 +145,8 @@ int main(int argc, char** argv)
     DvzVisual* visual = dvz_mesh(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_mesh() failed");
 
-    bool uploaded = example_mesh_geometry(visual, geometry);
-    EXAMPLE_CHECK(uploaded, "example_mesh_geometry() failed");
+    bool uploaded = dvz_mesh_set_geometry(visual, geometry) == 0;
+    EXAMPLE_CHECK(uploaded, "dvz_mesh_set_geometry() failed");
     DvzMaterialDesc material = dvz_phong_material_desc();
     material.light_direction[0] = 0.35f;
     material.light_direction[1] = -0.45f;

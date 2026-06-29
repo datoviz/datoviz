@@ -298,53 +298,6 @@ bool example_run_with_capture(
 
 
 /**
- * Upload one CPU geometry object into a mesh visual.
- *
- * @param visual target mesh visual
- * @param geometry CPU geometry object
- * @return true on success, false on error
- */
-bool example_mesh_geometry(DvzVisual* visual, const DvzGeometry* geometry)
-{
-    return dvz_mesh_set_geometry(visual, geometry) == 0;
-}
-
-
-
-/**
- * Convert one raw pointer event to panel-local figure coordinates.
- *
- * @param panel target panel
- * @param event pointer event in logical window coordinates
- * @param out_x output panel-local x coordinate
- * @param out_y output panel-local y coordinate
- * @return true when the pointer is inside the panel rectangle
- */
-bool example_panel_pointer_position(
-    const DvzPanel* panel, const DvzPointerEvent* event, double* out_x, double* out_y)
-{
-    if (panel == NULL || event == NULL || out_x == NULL || out_y == NULL)
-        return false;
-
-    DvzRect rect = {0};
-    if (!dvz_panel_inner_rect_px(panel, &rect) || rect.width <= 0.0f || rect.height <= 0.0f)
-        return false;
-
-    float x = event->pos[0];
-    float y = event->pos[1];
-
-    x -= rect.x;
-    y -= rect.y;
-    if (x < 0.0f || x >= rect.width || y < 0.0f || y >= rect.height)
-        return false;
-
-    *out_x = (double)x;
-    *out_y = (double)y;
-    return true;
-}
-
-
-/**
  * Return the default perspective camera for 3D gallery examples.
  *
  * @param extent approximate scene extent in world units
@@ -847,7 +800,7 @@ DvzVisual* example_graphite_cyan_cube_mesh(
     if (out_geometry != NULL)
         *out_geometry = cube;
 
-    if (!example_mesh_geometry(visual, cube))
+    if (dvz_mesh_set_geometry(visual, cube) != 0)
         return NULL;
 
     dvz_geometry_destroy(cube);
