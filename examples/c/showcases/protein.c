@@ -81,9 +81,12 @@ typedef struct ProteinState
 {
     ProteinAtoms atoms;
     float* scaled_radii;
-    DvzExampleVisualSpin sphere_spin;
-    DvzExampleVisualSpin selection_spin;
-    DvzExampleVisualSpin crosshair_spin;
+    DvzTrack* sphere_rotation;
+    DvzTrack* selection_rotation;
+    DvzTrack* crosshair_rotation;
+    DvzAnimation* sphere_animation;
+    DvzAnimation* selection_animation;
+    DvzAnimation* crosshair_animation;
 } ProteinState;
 
 
@@ -608,24 +611,46 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         "dvz_scenario_bind_controller() failed");
     dvz_arcball_initial(arcball, (vec3){+0.790430f, -0.651732f, +0.810104f});
 
+    DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
+    rotation_desc.axis[1] = 1.0f;
+    rotation_desc.speed_rad_per_sec = 1.0f;
+
+    state->sphere_rotation = dvz_track_rotation(&rotation_desc);
+    EXAMPLE_CHECK(state->sphere_rotation != NULL, "dvz_track_rotation(spheres) failed");
+    DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = state->sphere_rotation;
+    state->sphere_animation = dvz_anim_visual_transform(ctx->scene, spheres, &transform_desc);
+    EXAMPLE_CHECK(state->sphere_animation != NULL, "dvz_anim_visual_transform(spheres) failed");
+    dvz_anim_set_interaction_policy(
+        state->sphere_animation, arcball_controller, DVZ_ANIM_INTERACTION_PAUSE, 0.0);
+    dvz_anim_set_speed(state->sphere_animation, ROTATION_SPEED_RAD_PER_SEC);
+    dvz_anim_stop(state->sphere_animation);
+
+    state->selection_rotation = dvz_track_rotation(&rotation_desc);
+    EXAMPLE_CHECK(state->selection_rotation != NULL, "dvz_track_rotation(selection) failed");
+    transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = state->selection_rotation;
+    state->selection_animation =
+        dvz_anim_visual_transform(ctx->scene, selection, &transform_desc);
     EXAMPLE_CHECK(
-        example_visual_spin(
-            ctx->scene, spheres, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-            arcball_controller, &state->sphere_spin),
-        "example_visual_spin(spheres) failed");
+        state->selection_animation != NULL, "dvz_anim_visual_transform(selection) failed");
+    dvz_anim_set_interaction_policy(
+        state->selection_animation, arcball_controller, DVZ_ANIM_INTERACTION_PAUSE, 0.0);
+    dvz_anim_set_speed(state->selection_animation, ROTATION_SPEED_RAD_PER_SEC);
+    dvz_anim_stop(state->selection_animation);
+
+    state->crosshair_rotation = dvz_track_rotation(&rotation_desc);
+    EXAMPLE_CHECK(state->crosshair_rotation != NULL, "dvz_track_rotation(crosshair) failed");
+    transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = state->crosshair_rotation;
+    state->crosshair_animation =
+        dvz_anim_visual_transform(ctx->scene, crosshair, &transform_desc);
     EXAMPLE_CHECK(
-        example_visual_spin(
-            ctx->scene, selection, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-            arcball_controller, &state->selection_spin),
-        "example_visual_spin(selection) failed");
-    EXAMPLE_CHECK(
-        example_visual_spin(
-            ctx->scene, crosshair, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-            arcball_controller, &state->crosshair_spin),
-        "example_visual_spin(crosshair) failed");
-    example_visual_spin_stop(&state->sphere_spin);
-    example_visual_spin_stop(&state->selection_spin);
-    example_visual_spin_stop(&state->crosshair_spin);
+        state->crosshair_animation != NULL, "dvz_anim_visual_transform(crosshair) failed");
+    dvz_anim_set_interaction_policy(
+        state->crosshair_animation, arcball_controller, DVZ_ANIM_INTERACTION_PAUSE, 0.0);
+    dvz_anim_set_speed(state->crosshair_animation, ROTATION_SPEED_RAD_PER_SEC);
+    dvz_anim_stop(state->crosshair_animation);
 
     dvz_fprintf(
         stderr, "loaded %" PRIu32 " atoms from %s\n", state->atoms.count, state->atoms.path);
@@ -649,9 +674,9 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     if (state == NULL)
         return;
 
-    example_visual_spin_destroy(&state->crosshair_spin);
-    example_visual_spin_destroy(&state->selection_spin);
-    example_visual_spin_destroy(&state->sphere_spin);
+    dvz_track_destroy(state->crosshair_rotation);
+    dvz_track_destroy(state->selection_rotation);
+    dvz_track_destroy(state->sphere_rotation);
     dvz_free(state->scaled_radii);
     _protein_atoms_destroy(&state->atoms);
     dvz_free(state);

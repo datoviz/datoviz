@@ -66,7 +66,8 @@ static const float TAU = 6.28318530718f;
 
 typedef struct ScalebarMeasurementState
 {
-    DvzExampleVisualSpin specimen_spin;
+    DvzTrack* specimen_rotation;
+    DvzAnimation* specimen_animation;
 } ScalebarMeasurementState;
 
 
@@ -625,12 +626,21 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         "dvz_scenario_bind_controller() failed");
     dvz_arcball_set(arcball, (vec3){+0.56f, -0.18f, +0.30f});
 
+    DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
+    rotation_desc.axis[1] = 1.0f;
+    rotation_desc.speed_rad_per_sec = 1.0f;
+    state->specimen_rotation = dvz_track_rotation(&rotation_desc);
+    EXAMPLE_CHECK(state->specimen_rotation != NULL, "dvz_track_rotation(specimen) failed");
+    DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = state->specimen_rotation;
+    state->specimen_animation =
+        dvz_anim_visual_transform(ctx->scene, specimen_cloud, &transform_desc);
     EXAMPLE_CHECK(
-        example_visual_spin(
-            ctx->scene, specimen_cloud, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-            arcball_controller, &state->specimen_spin),
-        "example_visual_spin(specimen) failed");
-    example_visual_spin_start(&state->specimen_spin, 0.0);
+        state->specimen_animation != NULL, "dvz_anim_visual_transform(specimen) failed");
+    dvz_anim_set_interaction_policy(
+        state->specimen_animation, arcball_controller, DVZ_ANIM_INTERACTION_PAUSE, 0.0);
+    dvz_anim_set_speed(state->specimen_animation, ROTATION_SPEED_RAD_PER_SEC);
+    dvz_anim_start(state->specimen_animation, 0.0);
 
     ok = true;
 cleanup:
@@ -651,7 +661,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     ScalebarMeasurementState* state = (ScalebarMeasurementState*)user;
     if (state == NULL)
         return;
-    example_visual_spin_destroy(&state->specimen_spin);
+    dvz_track_destroy(state->specimen_rotation);
     free(state);
 }
 

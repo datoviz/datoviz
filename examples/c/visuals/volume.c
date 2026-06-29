@@ -56,8 +56,10 @@ static const float TAU = 6.28318530718f;
 
 typedef struct VolumeState
 {
-    DvzExampleVisualSpin volume_spin;
-    DvzExampleVisualSpin box_spin;
+    DvzTrack* volume_rotation;
+    DvzTrack* box_rotation;
+    DvzAnimation* volume_animation;
+    DvzAnimation* box_animation;
 } VolumeState;
 
 
@@ -339,8 +341,8 @@ static void _volume_state_destroy(VolumeState* state)
 {
     if (state == NULL)
         return;
-    example_visual_spin_destroy(&state->box_spin);
-    example_visual_spin_destroy(&state->volume_spin);
+    dvz_track_destroy(state->box_rotation);
+    dvz_track_destroy(state->volume_rotation);
     dvz_free(state);
 }
 
@@ -422,18 +424,30 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_scenario_bind_controller(ctx, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
         "dvz_scenario_bind_controller() failed");
 
-    EXAMPLE_CHECK(
-        example_visual_spin(
-            ctx->scene, volume, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-            arcball_controller, &state->volume_spin),
-        "example_visual_spin(volume) failed");
-    EXAMPLE_CHECK(
-        example_visual_spin(
-            ctx->scene, box, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-            arcball_controller, &state->box_spin),
-        "example_visual_spin(box) failed");
-    example_visual_spin_start(&state->volume_spin, 0.0);
-    example_visual_spin_start(&state->box_spin, 0.0);
+    DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
+    rotation_desc.axis[1] = 1.0f;
+    rotation_desc.speed_rad_per_sec = 1.0f;
+    state->volume_rotation = dvz_track_rotation(&rotation_desc);
+    EXAMPLE_CHECK(state->volume_rotation != NULL, "dvz_track_rotation(volume) failed");
+    DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = state->volume_rotation;
+    state->volume_animation = dvz_anim_visual_transform(ctx->scene, volume, &transform_desc);
+    EXAMPLE_CHECK(state->volume_animation != NULL, "dvz_anim_visual_transform(volume) failed");
+    dvz_anim_set_interaction_policy(
+        state->volume_animation, arcball_controller, DVZ_ANIM_INTERACTION_PAUSE, 0.0);
+    dvz_anim_set_speed(state->volume_animation, ROTATION_SPEED_RAD_PER_SEC);
+    dvz_anim_start(state->volume_animation, 0.0);
+
+    state->box_rotation = dvz_track_rotation(&rotation_desc);
+    EXAMPLE_CHECK(state->box_rotation != NULL, "dvz_track_rotation(box) failed");
+    transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = state->box_rotation;
+    state->box_animation = dvz_anim_visual_transform(ctx->scene, box, &transform_desc);
+    EXAMPLE_CHECK(state->box_animation != NULL, "dvz_anim_visual_transform(box) failed");
+    dvz_anim_set_interaction_policy(
+        state->box_animation, arcball_controller, DVZ_ANIM_INTERACTION_PAUSE, 0.0);
+    dvz_anim_set_speed(state->box_animation, ROTATION_SPEED_RAD_PER_SEC);
+    dvz_anim_start(state->box_animation, 0.0);
 
     ok = true;
 cleanup:

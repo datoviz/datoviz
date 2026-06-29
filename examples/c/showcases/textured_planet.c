@@ -110,7 +110,8 @@ typedef struct PlanetPreset
 typedef struct TexturedPlanetState
 {
     DvzVisual* visual;
-    DvzExampleVisualSpin spin;
+    DvzTrack* spin_rotation;
+    DvzAnimation* spin_animation;
     PlanetTexture textures[PLANET_COUNT];
     int planet_index;
     bool auto_rotate;
@@ -542,11 +543,11 @@ static void _state_reset_controls(TexturedPlanetState* state)
 static void _state_apply_spin(TexturedPlanetState* state)
 {
     ANN(state);
-    if (state->spin.animation == NULL)
+    if (state->spin_animation == NULL)
         return;
 
     const float speed = state->auto_rotate ? state->spin_speed : 0.0f;
-    example_visual_spin_set_speed(&state->spin, speed);
+    dvz_anim_set_speed(state->spin_animation, speed);
 }
 
 
@@ -741,12 +742,17 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) == 0,
         "dvz_scenario_bind_controller() failed");
 
-    EXAMPLE_CHECK(
-        example_visual_spin(
-            ctx->scene, visual, (vec3){0.0f, 1.0f, 0.0f}, state->spin_speed, NULL,
-            &state->spin),
-        "example_visual_spin(planet) failed");
-    example_visual_spin_start(&state->spin, 0.0);
+    DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
+    rotation_desc.axis[1] = 1.0f;
+    rotation_desc.speed_rad_per_sec = 1.0f;
+    state->spin_rotation = dvz_track_rotation(&rotation_desc);
+    EXAMPLE_CHECK(state->spin_rotation != NULL, "dvz_track_rotation(planet) failed");
+    DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = state->spin_rotation;
+    state->spin_animation = dvz_anim_visual_transform(ctx->scene, visual, &transform_desc);
+    EXAMPLE_CHECK(state->spin_animation != NULL, "dvz_anim_visual_transform(planet) failed");
+    dvz_anim_set_speed(state->spin_animation, state->spin_speed);
+    dvz_anim_start(state->spin_animation, 0.0);
 
     ok = true;
 cleanup:
@@ -782,7 +788,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     TexturedPlanetState* state = (TexturedPlanetState*)user;
     if (state == NULL)
         return;
-    example_visual_spin_destroy(&state->spin);
+    dvz_track_destroy(state->spin_rotation);
     for (uint32_t i = 0; i < PLANET_COUNT; i++)
         dvz_free(state->textures[i].pixels);
     dvz_free(state);
