@@ -382,57 +382,6 @@ DvzCamera* example_set_controller_camera(DvzPanel* panel)
 
 
 /**
- * Return the shared XZ reference-grid height for controller feature examples.
- *
- * @return Y coordinate of the grid plane
- */
-float example_controller_grid_origin_y(void) { return -0.55f; }
-
-
-/**
- * Return the shared cube size for controller feature examples.
- *
- * @return cube edge length
- */
-double example_controller_cube_size(void) { return 1.10; }
-
-
-/**
- * Return the shared cube face color roles for controller feature examples.
- *
- * @param out six output color roles
- */
-void example_controller_cube_face_roles(ExampleStyleColorRole out[6])
-{
-    if (out == NULL)
-        return;
-
-    out[0] = EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY;
-    out[1] = EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY;
-    out[2] = EXAMPLE_STYLE_COLOR_WARNING;
-    out[3] = EXAMPLE_STYLE_COLOR_ERROR;
-    out[4] = EXAMPLE_STYLE_COLOR_TEXT;
-    out[5] = EXAMPLE_STYLE_COLOR_MINOR_TICK;
-}
-
-
-/**
- * Return the default example light direction.
- *
- * @param out output light direction
- */
-void example_default_light_direction(vec3 out)
-{
-    if (out == NULL)
-        return;
-
-    out[0] = -0.45f;
-    out[1] = +0.35f;
-    out[2] = +0.82f;
-}
-
-
-/**
  * Return the default Phong material for lit gallery meshes.
  *
  * @return material descriptor
@@ -440,7 +389,9 @@ void example_default_light_direction(vec3 out)
 DvzMaterialDesc example_default_phong_material_desc(void)
 {
     DvzMaterialDesc material = dvz_phong_material_desc();
-    example_default_light_direction(material.light_direction);
+    material.light_direction[0] = EXAMPLE_DEFAULT_LIGHT_DIRECTION_X;
+    material.light_direction[1] = EXAMPLE_DEFAULT_LIGHT_DIRECTION_Y;
+    material.light_direction[2] = EXAMPLE_DEFAULT_LIGHT_DIRECTION_Z;
     material.phong.ambient = 0.5f;
     material.phong.diffuse = 0.8f;
     material.phong.specular = 0.3f;
@@ -457,7 +408,9 @@ DvzMaterialDesc example_default_phong_material_desc(void)
 DvzMaterialDesc example_default_standard_material_desc(void)
 {
     DvzMaterialDesc material = dvz_standard_material_desc();
-    example_default_light_direction(material.light_direction);
+    material.light_direction[0] = EXAMPLE_DEFAULT_LIGHT_DIRECTION_X;
+    material.light_direction[1] = EXAMPLE_DEFAULT_LIGHT_DIRECTION_Y;
+    material.light_direction[2] = EXAMPLE_DEFAULT_LIGHT_DIRECTION_Z;
     material.standard.roughness = 0.38f;
     material.standard.specular = 0.42f;
     material.standard.rim_strength = 0.26f;

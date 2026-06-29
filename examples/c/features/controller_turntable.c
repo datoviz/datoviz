@@ -77,10 +77,16 @@ typedef struct ControllerTurntableState
  */
 static bool _add_turntable_cube(DvzScene* scene, DvzPanel* panel, DvzGeometry** out_geometry)
 {
-    ExampleStyleColorRole face_roles[6] = {0};
-    example_controller_cube_face_roles(face_roles);
+    const ExampleStyleColorRole face_roles[6] = {
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        EXAMPLE_STYLE_COLOR_WARNING,
+        EXAMPLE_STYLE_COLOR_ERROR,
+        EXAMPLE_STYLE_COLOR_TEXT,
+        EXAMPLE_STYLE_COLOR_MINOR_TICK,
+    };
     DvzVisual* visual = example_graphite_cyan_cube_mesh(
-        scene, example_controller_cube_size(), face_roles, out_geometry);
+        scene, EXAMPLE_CONTROLLER_CUBE_SIZE, face_roles, out_geometry);
     if (visual == NULL)
         return false;
 
@@ -129,7 +135,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     DvzReferenceGridDesc grid = dvz_reference_grid_desc();
     grid.plane = DVZ_REFERENCE_GRID_XZ;
-    grid.origin[1] = example_controller_grid_origin_y();
+    grid.origin[1] = EXAMPLE_CONTROLLER_GRID_ORIGIN_Y;
     grid.size[0] = EXAMPLE_XZ_REFERENCE_GRID_SIZE;
     grid.size[1] = EXAMPLE_XZ_REFERENCE_GRID_SIZE;
     grid.spacing = EXAMPLE_XZ_REFERENCE_GRID_SPACING;
