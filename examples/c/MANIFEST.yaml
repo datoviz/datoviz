@@ -50,7 +50,7 @@ folders:
 
 defaults:
   palette: graphite_cyan
-  public_capture: 1600x1200
+  public_capture: 1920x1080
   seed: 12345
 
 batches:
@@ -937,7 +937,7 @@ examples:
     validation: smoke+screenshot
     capture:
       mode: custom
-      size: 640x480
+      size: 1920x1080
       reason: exact-pixel offscreen capture writes its PNG through dvz_view_capture_png()
     data:
       kind: synthetic

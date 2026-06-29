@@ -33,8 +33,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       640u
-#define HEIGHT      480u
+#define WIDTH  EXAMPLE_OUTPUT_WIDTH
+#define HEIGHT EXAMPLE_OUTPUT_HEIGHT
 #define POINT_COUNT 5u
 
 

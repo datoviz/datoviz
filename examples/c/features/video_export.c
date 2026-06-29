@@ -7,7 +7,7 @@
 /* video_export - portable scenario using the native runner's live/capture modes.
  *
  * Scenario: feature.video_export
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target, 1920x1080 default output
  *
  * Build:  just example-c features/video_export
  * Run:    ./build/examples/c/features/video_export
@@ -37,8 +37,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       1600u
-#define HEIGHT      1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define TICK_COUNT  9u
 #define POINT_COUNT (TICK_COUNT + 1u)
 
@@ -249,6 +249,10 @@ int main(int argc, char** argv)
         config.presentation = DVZ_RUNNER_PRESENT_OFFSCREEN;
         config.capture_kind = DVZ_RUNNER_CAPTURE_VIDEO;
         config.capture.video_capture_mode = DVZ_VIDEO_CAPTURE_CPU_READBACK;
+        config.logical_width = EXAMPLE_OUTPUT_WIDTH;
+        config.logical_height = EXAMPLE_OUTPUT_HEIGHT;
+        config.framebuffer_width = EXAMPLE_OUTPUT_WIDTH;
+        config.framebuffer_height = EXAMPLE_OUTPUT_HEIGHT;
         config.frame_count = 120u;
         return dvz_scenario_run_native(&spec, &config) == 0 ? 0 : 1;
     }

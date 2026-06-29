@@ -6,6 +6,8 @@
 
 /* record_dvzr — capture an offscreen app scene and replay its DVZR recording.
  *
+ * Style: lab, native app, 1920x1080 output target
+ *
  * Build:  just build
  * Run:    ./build/examples/c/lab/record_dvzr
  *
@@ -36,8 +38,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  512u
-#define HEIGHT 384u
+#define WIDTH  EXAMPLE_OUTPUT_WIDTH
+#define HEIGHT EXAMPLE_OUTPUT_HEIGHT
 
 // Current app recordings reserve this target id for the first borrowed frame target.
 #define APP_RECORD_TARGET_ID UINT64_C(0xF000000000000000)

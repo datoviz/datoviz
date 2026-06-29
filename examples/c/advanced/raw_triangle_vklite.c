@@ -7,7 +7,7 @@
 /* raw_triangle_vklite — vklite draw commands into DvzCanvas.
  *
  * Scenario: advanced_raw_triangle_vklite
- * Style: advanced, native-only, low-level vklite/canvas, 1600x1200 capture target
+ * Style: advanced, native-only, low-level vklite/canvas, 1920x1080 output target
  *
  * Shows how to write your own Vulkan draw commands using vklite helpers while
  * letting DvzCanvas manage all presentation plumbing (offscreen images, frame
@@ -50,8 +50,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600u
-#define HEIGHT 1200u
+#define WIDTH  EXAMPLE_OUTPUT_WIDTH
+#define HEIGHT EXAMPLE_OUTPUT_HEIGHT
 
 
 

@@ -7,7 +7,7 @@
 /* raw_triangle_drp2 — triangle rendered via a hand-written DRP2 command stream.
  *
  * Scenario: advanced_raw_triangle_drp2
- * Style: advanced, native-only, low-level DRP2/vklite, 1600x1200 capture target
+ * Style: advanced, native-only, low-level DRP2/vklite, 1920x1080 output target
  *
  * DRP2 (Datoviz Rendering Protocol 2) is the backend-agnostic IR that sits
  * between the scene layer and the GPU.  This example bypasses both DvzScene
@@ -53,8 +53,8 @@
 #define ID_CMDBUF   9   /* command buffer produced by encoder    */
 #define ID_SUBMIT   10  /* submission handle                     */
 
-#define WIDTH  1600u
-#define HEIGHT 1200u
+#define WIDTH  EXAMPLE_OUTPUT_WIDTH
+#define HEIGHT EXAMPLE_OUTPUT_HEIGHT
 
 
 
