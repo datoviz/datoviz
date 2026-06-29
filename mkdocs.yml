@@ -138,6 +138,7 @@ nav:
       - Use from C or C++: 'how-to/c-integration.md'
       - Use from Python: 'how-to/use-python.md'
       - Use raw ctypes: 'how-to/use-raw-ctypes.md'
+      - Window size policies: 'how-to/window-size-policies.md'
       - Embed in Qt: 'how-to/embed-in-qt.md'
       - Deploy WebGPU examples to the browser: 'how-to/deploy-to-web.md'
     - Diagnostics:
