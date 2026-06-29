@@ -42,6 +42,7 @@ def test_pointer_event_wrapper_layout_matches_c_abi():
         records = json.load(f).get('records', {})
 
     layout_classes = {
+        'DvzInputEvent': dvz.DvzInputEvent,
         'DvzInputResizeEvent': dvz.DvzInputResizeEvent,
         'DvzInputScaleEvent': dvz.DvzInputScaleEvent,
         'DvzKeyboardEvent': dvz.DvzKeyboardEvent,
@@ -53,6 +54,14 @@ def test_pointer_event_wrapper_layout_matches_c_abi():
     for name, cls in layout_classes.items():
         assert name in records
         _assert_record_layout(cls, records[name])
+    input_event = records['DvzInputEvent']
+    assert ctypes.sizeof(dvz.DvzInputEventContent) == (
+        input_event['size'] - input_event['fields']['content']
+    )
+    assert hasattr(dvz.DvzInputEventContent, 'pointer')
+    assert hasattr(dvz.DvzInputEventContent, 'keyboard')
+    assert hasattr(dvz.DvzInputEventContent, 'resize')
+    assert hasattr(dvz.DvzInputEventContent, 'scale')
 
 
 @pytest.mark.skipif(not _library_exists(), reason='libdatoviz has not been built')

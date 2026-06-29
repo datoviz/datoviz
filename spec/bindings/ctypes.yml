@@ -70,6 +70,7 @@ layout_records:
     - DvzFieldRegion
     - DvzInteropBufferExport
     - DvzInteropBufferExportConfig
+    - DvzInputEvent
     - DvzPointerWheelEvent
     - DvzPointerDragEvent
     - DvzPointerEventUnion

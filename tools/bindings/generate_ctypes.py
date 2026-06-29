@@ -248,6 +248,24 @@ CTYPE_MAP = {
     'DvzSize': 'ctypes.c_uint64',
 }
 
+SYNTHETIC_RECORD_CLASSES = {
+    'DvzInputEventContent': 'Union',
+}
+
+SYNTHETIC_RECORD_FIELDS = {
+    'DvzInputEventContent': [
+        ('pointer', 'DvzPointerEvent'),
+        ('keyboard', 'DvzKeyboardEvent'),
+        ('resize', 'DvzInputResizeEvent'),
+        ('scale', 'DvzInputScaleEvent'),
+    ],
+}
+
+ANONYMOUS_FIELD_CTYPES = {
+    'union DvzInputEvent::(unnamed': 'DvzInputEventContent',
+    'union (unnamed union at include/datoviz/input/router.h:86:5)': 'DvzInputEventContent',
+}
+
 
 ARRAY_RE = re.compile(r'^(?P<base>.+?)(?P<dims>(?:\[[0-9]+\])+)$')
 DIM_RE = re.compile(r'\[([0-9]+)\]')
@@ -368,6 +386,10 @@ def _ctype_for_type(
     callbacks: set[str] | None = None,
 ) -> str | None:
     spellings = [type_info.get('qualtype', ''), type_info.get('canonical', '')]
+    for spelling in spellings:
+        for prefix, ctype in ANONYMOUS_FIELD_CTYPES.items():
+            if spelling.startswith(prefix):
+                return ctype
     for spelling in spellings:
         ctype = _array_ctype(
             spelling, records, enums, value_records=value_records, callbacks=callbacks
@@ -616,6 +638,8 @@ def _ctype_for(
         return ctype
     if t in CTYPE_MAP:
         return CTYPE_MAP[t]
+    if t in SYNTHETIC_RECORD_CLASSES:
+        return t
     if t in enums:
         return 'ctypes.c_int'
     if t.startswith('enum '):
@@ -673,6 +697,9 @@ def generate(
         base = 'Union' if record.get('kind') == 'union' else 'Structure'
         lines.append(f'class {name}(ctypes.{base}):\n')
         lines.append('    pass\n\n\n')
+    for name, base in SYNTHETIC_RECORD_CLASSES.items():
+        lines.append(f'class {name}(ctypes.{base}):\n')
+        lines.append('    pass\n\n\n')
 
     for name in sorted(callback_typedefs):
         typedef = callback_typedefs[name]
@@ -693,12 +720,46 @@ def generate(
             lines.append(f'{name} = ctypes.CFUNCTYPE({", ".join([result, *argtypes])})\n\n\n')
 
     layout_records = []
+    deferred_layout_records = []
     for record in ordered_records:
         name = record.get('name')
         if not name or record.get('opaque'):
             continue
         if name not in layoutable_records:
             continue
+        if name == 'DvzInputEvent':
+            deferred_layout_records.append(record)
+            continue
+        fields = []
+        for field in record.get('fields', []):
+            field_name = field.get('name')
+            if not field_name:
+                break
+            ctype = _ctype_for_type(
+                field.get('type', {}),
+                records,
+                enums,
+                value_records=layoutable_records,
+                callbacks=callbacks,
+            )
+            if ctype is None:
+                break
+            fields.append((field_name, ctype))
+        else:
+            lines.append(f'{name}._fields_ = [\n')
+            for field_name, ctype in fields:
+                lines.append(f"    ('{field_name}', {ctype}),\n")
+            lines.append(']\n\n\n')
+            layout_records.append(name)
+
+    for name, fields in SYNTHETIC_RECORD_FIELDS.items():
+        lines.append(f'{name}._fields_ = [\n')
+        for field_name, ctype in fields:
+            lines.append(f"    ('{field_name}', {ctype}),\n")
+        lines.append(']\n\n\n')
+
+    for record in deferred_layout_records:
+        name = record.get('name')
         fields = []
         for field in record.get('fields', []):
             field_name = field.get('name')
