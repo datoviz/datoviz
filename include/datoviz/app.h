@@ -39,7 +39,9 @@ typedef struct DvzApp       DvzApp;
 typedef struct DvzAppCaptureConfig DvzAppCaptureConfig;
 typedef struct DvzAppConfig DvzAppConfig;
 typedef struct DvzAppResources DvzAppResources;
+typedef struct DvzResolvedViewSize DvzResolvedViewSize;
 typedef struct DvzViewDesc DvzViewDesc;
+typedef struct DvzViewSizeDesc DvzViewSizeDesc;
 typedef struct DvzView DvzView;
 typedef struct DvzArcball DvzArcball;
 typedef struct DvzArcballDesc DvzArcballDesc;
@@ -86,6 +88,34 @@ typedef enum DvzViewKind
     DVZ_VIEW_GLFW,
     DVZ_VIEW_EXTERNAL_SURFACE,
 } DvzViewKind;
+
+
+typedef enum DvzViewSizePolicy
+{
+    DVZ_VIEW_SIZE_FRAMEBUFFER_PX,
+    DVZ_VIEW_SIZE_HOST_LOGICAL_PX,
+    DVZ_VIEW_SIZE_REFERENCE_PX,
+    DVZ_VIEW_SIZE_PHYSICAL_MM,
+} DvzViewSizePolicy;
+
+
+typedef enum DvzPhysicalMetricsSource
+{
+    DVZ_PHYSICAL_METRICS_NONE,
+    DVZ_PHYSICAL_METRICS_MONITOR_EDID,
+    DVZ_PHYSICAL_METRICS_GLFW_MONITOR_SIZE,
+    DVZ_PHYSICAL_METRICS_PLATFORM_API,
+    DVZ_PHYSICAL_METRICS_USER_OVERRIDE,
+    DVZ_PHYSICAL_METRICS_ESTIMATED,
+} DvzPhysicalMetricsSource;
+
+
+typedef enum DvzResolvedExactness
+{
+    DVZ_RESOLVED_EXACT,
+    DVZ_RESOLVED_APPROXIMATE,
+    DVZ_RESOLVED_UNKNOWN,
+} DvzResolvedExactness;
 
 
 
@@ -135,11 +165,62 @@ struct DvzAppResources
 };
 
 
+struct DvzViewSizeDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzViewSizePolicy policy;
+    double width;
+    double height;
+    double reference_dpi;
+    double requested_device_scale;
+    double monitor_dpi_x_override;
+    double monitor_dpi_y_override;
+    bool strict_framebuffer_size;
+};
+
+
+struct DvzResolvedViewSize
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzViewSizePolicy requested_policy;
+    double requested_width;
+    double requested_height;
+    double reference_dpi;
+
+    double canvas_width_px;
+    double canvas_height_px;
+
+    uint32_t host_logical_width;
+    uint32_t host_logical_height;
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+
+    double device_scale_x;
+    double device_scale_y;
+    double canvas_to_host_scale_x;
+    double canvas_to_host_scale_y;
+    double framebuffer_per_canvas_px_x;
+    double framebuffer_per_canvas_px_y;
+
+    double target_width_mm;
+    double target_height_mm;
+    double estimated_width_mm;
+    double estimated_height_mm;
+
+    DvzPhysicalMetricsSource physical_metrics_source;
+    DvzResolvedExactness exactness;
+};
+
+
 struct DvzViewDesc
 {
     uint32_t struct_size;
     uint32_t flags;
     DvzViewKind kind;
+
+    DvzViewSizeDesc size;
 
     uint32_t logical_width;
     uint32_t logical_height;
@@ -252,6 +333,71 @@ DVZ_EXPORT void dvz_app_destroy(DvzApp* app);
  * @return initialized view descriptor
  */
 DVZ_EXPORT DvzViewDesc dvz_view_desc(DvzViewKind kind);
+
+
+/**
+ * Return a framebuffer-exact size request.
+ *
+ * @param width framebuffer width in device pixels
+ * @param height framebuffer height in device pixels
+ * @return initialized view size descriptor
+ */
+DVZ_EXPORT DvzViewSizeDesc
+dvz_view_size_desc_framebuffer_px(uint32_t width, uint32_t height);
+
+
+/**
+ * Return a host-window logical-pixel size request.
+ *
+ * @param width host/window logical width
+ * @param height host/window logical height
+ * @return initialized view size descriptor
+ */
+DVZ_EXPORT DvzViewSizeDesc dvz_view_size_desc_host_logical_px(uint32_t width, uint32_t height);
+
+
+/**
+ * Return a reference-pixel size request.
+ *
+ * Reference pixels are CSS-like canvas units.  A reference-pixel canvas targets a physical size
+ * of width/reference_dpi by height/reference_dpi inches when live-window physical metrics are
+ * available.
+ *
+ * @param width canvas/reference width
+ * @param height canvas/reference height
+ * @param reference_dpi reference pixels per inch, or <= 0 for 96
+ * @return initialized view size descriptor
+ */
+DVZ_EXPORT DvzViewSizeDesc
+dvz_view_size_desc_reference_px(double width, double height, double reference_dpi);
+
+
+/**
+ * Return a physical-millimeter size request.
+ *
+ * The canvas/reference extent is derived from the physical target and reference_dpi.
+ *
+ * @param width_mm target width in millimeters
+ * @param height_mm target height in millimeters
+ * @param reference_dpi reference pixels per inch, or <= 0 for 96
+ * @return initialized view size descriptor
+ */
+DVZ_EXPORT DvzViewSizeDesc
+dvz_view_size_desc_physical_mm(double width_mm, double height_mm, double reference_dpi);
+
+
+/**
+ * Resolve a size descriptor without creating a view.
+ *
+ * This deterministic resolver uses descriptor overrides only.  Live-window backend metrics may
+ * refine the final resolved size after view creation; query that with dvz_view_resolved_size().
+ *
+ * @param desc size descriptor
+ * @param kind target view kind
+ * @return resolved size metrics
+ */
+DVZ_EXPORT DvzResolvedViewSize
+dvz_view_size_resolve(const DvzViewSizeDesc* desc, DvzViewKind kind);
 
 
 /**
@@ -467,6 +613,15 @@ DVZ_EXPORT DvzScaleXY dvz_view_device_scale_xy(const DvzView* view);
  * @return size in the requested space, or zero on invalid input
  */
 DVZ_EXPORT DvzExtent dvz_view_size(const DvzView* view, DvzSizeSpace space);
+
+
+/**
+ * Return the current resolved view size contract.
+ *
+ * @param view the view
+ * @return resolved view size metrics, or zeroed metrics on invalid input
+ */
+DVZ_EXPORT DvzResolvedViewSize dvz_view_resolved_size(const DvzView* view);
 
 
 /**

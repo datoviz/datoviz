@@ -95,6 +95,7 @@
 #define DVZ_APP_VIEW_POST_CAPACITY 64
 #define DVZ_APP_MIN_LAYOUT_WIDTH  200u
 #define DVZ_APP_MIN_LAYOUT_HEIGHT 200u
+#define DVZ_APP_DEFAULT_REFERENCE_DPI 96.0
 
 
 
@@ -123,6 +124,7 @@ struct DvzView
 {
     DvzApp*    app;
     DvzFigure* figure;
+    DvzViewKind kind;
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     DvzWindow* window;
     DvzCanvas* canvas;
@@ -149,6 +151,8 @@ struct DvzView
     uint32_t logical_height;
     uint32_t framebuffer_width;
     uint32_t framebuffer_height;
+    DvzViewSizeDesc requested_size;
+    DvzResolvedViewSize resolved_size;
     float device_scale_x;
     float device_scale_y;
     float render_scale;
@@ -981,6 +985,224 @@ static uint32_t _view_round_size(float value)
 }
 
 
+static uint32_t _view_round_size_d(double value)
+{
+    if (!isfinite(value) || value <= 0.0)
+        return 0;
+    if (value >= (double)UINT32_MAX)
+        return UINT32_MAX;
+    return (uint32_t)(value + 0.5);
+}
+
+
+
+static double _view_reference_dpi(double reference_dpi)
+{
+    return isfinite(reference_dpi) && reference_dpi > 0.0 ? reference_dpi :
+                                                              DVZ_APP_DEFAULT_REFERENCE_DPI;
+}
+
+
+
+static double _view_valid_scale_d(double scale)
+{
+    return isfinite(scale) && scale > 0.0 ? scale : 1.0;
+}
+
+
+
+static bool _view_size_desc_active(const DvzViewSizeDesc* desc)
+{
+    return desc != NULL && isfinite(desc->width) && isfinite(desc->height) &&
+           desc->width > 0.0 && desc->height > 0.0;
+}
+
+
+
+static DvzViewSizeDesc _view_size_desc(
+    DvzViewSizePolicy policy, double width, double height, double reference_dpi)
+{
+    DvzViewSizeDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzViewSizeDesc)};
+    desc.policy = policy;
+    desc.width = width;
+    desc.height = height;
+    desc.reference_dpi = _view_reference_dpi(reference_dpi);
+    return desc;
+}
+
+
+
+DvzViewSizeDesc dvz_view_size_desc_framebuffer_px(uint32_t width, uint32_t height)
+{
+    return _view_size_desc(
+        DVZ_VIEW_SIZE_FRAMEBUFFER_PX, (double)width, (double)height,
+        DVZ_APP_DEFAULT_REFERENCE_DPI);
+}
+
+
+
+DvzViewSizeDesc dvz_view_size_desc_host_logical_px(uint32_t width, uint32_t height)
+{
+    return _view_size_desc(
+        DVZ_VIEW_SIZE_HOST_LOGICAL_PX, (double)width, (double)height,
+        DVZ_APP_DEFAULT_REFERENCE_DPI);
+}
+
+
+
+DvzViewSizeDesc
+dvz_view_size_desc_reference_px(double width, double height, double reference_dpi)
+{
+    return _view_size_desc(DVZ_VIEW_SIZE_REFERENCE_PX, width, height, reference_dpi);
+}
+
+
+
+DvzViewSizeDesc
+dvz_view_size_desc_physical_mm(double width_mm, double height_mm, double reference_dpi)
+{
+    return _view_size_desc(DVZ_VIEW_SIZE_PHYSICAL_MM, width_mm, height_mm, reference_dpi);
+}
+
+
+
+static void _view_resolved_finalize(DvzResolvedViewSize* resolved)
+{
+    ANN(resolved);
+    if (resolved->canvas_width_px <= 0.0)
+        resolved->canvas_width_px = (double)resolved->host_logical_width;
+    if (resolved->canvas_height_px <= 0.0)
+        resolved->canvas_height_px = (double)resolved->host_logical_height;
+    if (resolved->host_logical_width == 0)
+        resolved->host_logical_width = _view_round_size_d(resolved->canvas_width_px);
+    if (resolved->host_logical_height == 0)
+        resolved->host_logical_height = _view_round_size_d(resolved->canvas_height_px);
+    if (resolved->device_scale_x <= 0.0 || !isfinite(resolved->device_scale_x))
+        resolved->device_scale_x = 1.0;
+    if (resolved->device_scale_y <= 0.0 || !isfinite(resolved->device_scale_y))
+        resolved->device_scale_y = 1.0;
+    if (resolved->framebuffer_width == 0)
+        resolved->framebuffer_width =
+            _view_round_size_d((double)resolved->host_logical_width * resolved->device_scale_x);
+    if (resolved->framebuffer_height == 0)
+        resolved->framebuffer_height =
+            _view_round_size_d((double)resolved->host_logical_height * resolved->device_scale_y);
+    resolved->canvas_to_host_scale_x =
+        resolved->canvas_width_px > 0.0 ?
+            (double)resolved->host_logical_width / resolved->canvas_width_px :
+            1.0;
+    resolved->canvas_to_host_scale_y =
+        resolved->canvas_height_px > 0.0 ?
+            (double)resolved->host_logical_height / resolved->canvas_height_px :
+            1.0;
+    resolved->framebuffer_per_canvas_px_x =
+        resolved->canvas_width_px > 0.0 ?
+            (double)resolved->framebuffer_width / resolved->canvas_width_px :
+            1.0;
+    resolved->framebuffer_per_canvas_px_y =
+        resolved->canvas_height_px > 0.0 ?
+            (double)resolved->framebuffer_height / resolved->canvas_height_px :
+            1.0;
+}
+
+
+
+DvzResolvedViewSize dvz_view_size_resolve(const DvzViewSizeDesc* desc, DvzViewKind kind)
+{
+    DvzViewSizeDesc size =
+        _view_size_desc_active(desc) ? *desc : dvz_view_size_desc_host_logical_px(800, 600);
+    if (size.struct_size == 0)
+        size.struct_size = DVZ_STRUCT_SIZE(DvzViewSizeDesc);
+    size.reference_dpi = _view_reference_dpi(size.reference_dpi);
+
+    DvzResolvedViewSize resolved = {DVZ_STRUCT_INIT_FIELDS(DvzResolvedViewSize)};
+    resolved.requested_policy = size.policy;
+    resolved.requested_width = size.width;
+    resolved.requested_height = size.height;
+    resolved.reference_dpi = size.reference_dpi;
+    resolved.device_scale_x = _view_valid_scale_d(size.requested_device_scale);
+    resolved.device_scale_y = _view_valid_scale_d(size.requested_device_scale);
+    resolved.physical_metrics_source =
+        size.monitor_dpi_x_override > 0.0 || size.monitor_dpi_y_override > 0.0 ?
+            DVZ_PHYSICAL_METRICS_USER_OVERRIDE :
+            DVZ_PHYSICAL_METRICS_NONE;
+    resolved.exactness =
+        kind == DVZ_VIEW_OFFSCREEN || size.policy == DVZ_VIEW_SIZE_FRAMEBUFFER_PX ?
+            DVZ_RESOLVED_EXACT :
+            DVZ_RESOLVED_APPROXIMATE;
+
+    switch (size.policy)
+    {
+    case DVZ_VIEW_SIZE_FRAMEBUFFER_PX:
+        resolved.framebuffer_width = _view_round_size_d(size.width);
+        resolved.framebuffer_height = _view_round_size_d(size.height);
+        resolved.canvas_width_px = size.width;
+        resolved.canvas_height_px = size.height;
+        resolved.host_logical_width =
+            _view_round_size_d(size.width / resolved.device_scale_x);
+        resolved.host_logical_height =
+            _view_round_size_d(size.height / resolved.device_scale_y);
+        break;
+    case DVZ_VIEW_SIZE_REFERENCE_PX:
+        resolved.canvas_width_px = size.width;
+        resolved.canvas_height_px = size.height;
+        resolved.host_logical_width = _view_round_size_d(size.width);
+        resolved.host_logical_height = _view_round_size_d(size.height);
+        resolved.target_width_mm = size.width / size.reference_dpi * 25.4;
+        resolved.target_height_mm = size.height / size.reference_dpi * 25.4;
+        break;
+    case DVZ_VIEW_SIZE_PHYSICAL_MM:
+        resolved.target_width_mm = size.width;
+        resolved.target_height_mm = size.height;
+        resolved.canvas_width_px = size.width / 25.4 * size.reference_dpi;
+        resolved.canvas_height_px = size.height / 25.4 * size.reference_dpi;
+        resolved.host_logical_width = _view_round_size_d(resolved.canvas_width_px);
+        resolved.host_logical_height = _view_round_size_d(resolved.canvas_height_px);
+        break;
+    case DVZ_VIEW_SIZE_HOST_LOGICAL_PX:
+    default:
+        resolved.host_logical_width = _view_round_size_d(size.width);
+        resolved.host_logical_height = _view_round_size_d(size.height);
+        resolved.canvas_width_px = size.width;
+        resolved.canvas_height_px = size.height;
+        break;
+    }
+
+    _view_resolved_finalize(&resolved);
+    if (resolved.physical_metrics_source == DVZ_PHYSICAL_METRICS_USER_OVERRIDE)
+    {
+        double dpi_x = size.monitor_dpi_x_override > 0.0 ? size.monitor_dpi_x_override :
+                                                            size.monitor_dpi_y_override;
+        double dpi_y = size.monitor_dpi_y_override > 0.0 ? size.monitor_dpi_y_override :
+                                                            size.monitor_dpi_x_override;
+        if (dpi_x > 0.0)
+            resolved.estimated_width_mm = (double)resolved.framebuffer_width / dpi_x * 25.4;
+        if (dpi_y > 0.0)
+            resolved.estimated_height_mm = (double)resolved.framebuffer_height / dpi_y * 25.4;
+    }
+    return resolved;
+}
+
+
+
+static void _view_resolved_apply_actual(
+    DvzResolvedViewSize* resolved, uint32_t logical_width, uint32_t logical_height,
+    uint32_t framebuffer_width, uint32_t framebuffer_height, float device_scale_x,
+    float device_scale_y)
+{
+    ANN(resolved);
+    resolved->host_logical_width = logical_width;
+    resolved->host_logical_height = logical_height;
+    resolved->framebuffer_width = framebuffer_width;
+    resolved->framebuffer_height = framebuffer_height;
+    resolved->device_scale_x = _view_valid_scale_d((double)device_scale_x);
+    resolved->device_scale_y = _view_valid_scale_d((double)device_scale_y);
+    resolved->canvas_width_px = (double)logical_width;
+    resolved->canvas_height_px = (double)logical_height;
+    _view_resolved_finalize(resolved);
+}
+
+
 
 /**
  * Clamp a view size for retained figure layout resolution.
@@ -1075,6 +1297,15 @@ static void _view_update_size_state(
         win->render_scale = 1.0f;
     if (win->user_scale <= 0.0f || !isfinite(win->user_scale))
         win->user_scale = 1.0f;
+
+    DvzViewSizeDesc size = win->requested_size;
+    if (!_view_size_desc_active(&size))
+        size = dvz_view_size_desc_host_logical_px(logical_width, logical_height);
+    DvzResolvedViewSize resolved = dvz_view_size_resolve(&size, win->kind);
+    _view_resolved_apply_actual(
+        &resolved, logical_width, logical_height, framebuffer_width, framebuffer_height,
+        device_scale_x, device_scale_y);
+    win->resolved_size = resolved;
 }
 
 
@@ -3573,6 +3804,7 @@ DvzViewDesc dvz_view_desc(DvzViewKind kind)
 {
     DvzViewDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzViewDesc)};
     desc.kind = kind;
+    desc.size = (DvzViewSizeDesc){DVZ_STRUCT_INIT_FIELDS(DvzViewSizeDesc)};
     desc.device_scale = 1.0f;
     desc.user_scale = 1.0f;
     desc.render_scale = 1.0f;
@@ -3599,6 +3831,18 @@ static void _view_desc_resolve(
     desc.device_scale = _view_valid_scale(desc.device_scale);
     desc.user_scale = _view_valid_scale(desc.user_scale);
     desc.render_scale = _view_valid_scale(desc.render_scale);
+
+    if (_view_size_desc_active(&desc.size))
+    {
+        if (desc.size.requested_device_scale <= 0.0 || !isfinite(desc.size.requested_device_scale))
+            desc.size.requested_device_scale = desc.device_scale;
+        DvzResolvedViewSize resolved = dvz_view_size_resolve(&desc.size, desc.kind);
+        desc.logical_width = resolved.host_logical_width;
+        desc.logical_height = resolved.host_logical_height;
+        desc.framebuffer_width = resolved.framebuffer_width;
+        desc.framebuffer_height = resolved.framebuffer_height;
+        desc.device_scale = (float)(0.5 * (resolved.device_scale_x + resolved.device_scale_y));
+    }
 
     if (desc.logical_width == 0 && desc.framebuffer_width > 0)
         desc.logical_width = _view_round_size((float)desc.framebuffer_width / desc.device_scale);
@@ -3635,6 +3879,7 @@ static void _view_apply_desc_state(DvzView* win, const DvzViewDesc* desc)
 {
     ANN(win);
     ANN(desc);
+    win->requested_size = desc->size;
     win->user_scale = _view_valid_scale(desc->user_scale);
     win->render_scale = _view_valid_scale(desc->render_scale);
     _view_update_size_state(
@@ -3654,6 +3899,7 @@ static void _view_apply_desc_scales(DvzView* win, const DvzViewDesc* desc)
 {
     ANN(win);
     ANN(desc);
+    win->requested_size = desc->size;
     win->user_scale = _view_valid_scale(desc->user_scale);
     win->render_scale = _view_valid_scale(desc->render_scale);
 }
@@ -3754,6 +4000,7 @@ _view_create_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t 
     }
     win->app           = app;
     win->figure        = figure;
+    win->kind          = DVZ_VIEW_OFFSCREEN;
     win->window        = window;
     win->canvas        = canvas;
     win->target_id     = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->view_count;
@@ -3825,6 +4072,7 @@ _view_create_glfw(
     }
     win->app            = app;
     win->figure         = figure;
+    win->kind           = DVZ_VIEW_GLFW;
     win->window         = window;
     win->canvas         = canvas;
     win->target_id      = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->view_count;
@@ -3914,6 +4162,7 @@ static DvzView* _view_create_external_surface(
     }
     win->app        = app;
     win->figure     = figure;
+    win->kind       = DVZ_VIEW_EXTERNAL_SURFACE;
     win->window     = window;
     win->canvas     = canvas;
     win->target_id  = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->view_count;
@@ -4376,6 +4625,15 @@ DvzExtent dvz_view_size(const DvzView* win, DvzSizeSpace space)
     default:
         return (DvzExtent){0};
     }
+}
+
+
+
+DvzResolvedViewSize dvz_view_resolved_size(const DvzView* win)
+{
+    if (win == NULL)
+        return (DvzResolvedViewSize){0};
+    return win->resolved_size;
 }
 
 

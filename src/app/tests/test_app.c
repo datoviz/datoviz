@@ -16,6 +16,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -245,6 +246,45 @@ static int test_app_config_env_fps_cap(TstContext* suite, const TstCase* item)
     AT(config.fps_cap == 144.5);
 
     _test_restore_env("DVZ_FPS_CAP", old_fps_cap != NULL ? saved_fps_cap : NULL);
+    return 0;
+}
+
+
+
+static int test_app_view_size_policy_resolve(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzViewSizeDesc framebuffer = dvz_view_size_desc_framebuffer_px(640, 480);
+    framebuffer.requested_device_scale = 2.0;
+    DvzResolvedViewSize resolved = dvz_view_size_resolve(&framebuffer, DVZ_VIEW_OFFSCREEN);
+    AT(resolved.requested_policy == DVZ_VIEW_SIZE_FRAMEBUFFER_PX);
+    AT(resolved.host_logical_width == 320);
+    AT(resolved.host_logical_height == 240);
+    AT(resolved.framebuffer_width == 640);
+    AT(resolved.framebuffer_height == 480);
+    AT(fabs(resolved.framebuffer_per_canvas_px_x - 1.0) < 1e-9);
+
+    DvzViewSizeDesc reference = dvz_view_size_desc_reference_px(960.0, 540.0, 96.0);
+    reference.requested_device_scale = 2.0;
+    resolved = dvz_view_size_resolve(&reference, DVZ_VIEW_GLFW);
+    AT(resolved.requested_policy == DVZ_VIEW_SIZE_REFERENCE_PX);
+    AT(resolved.host_logical_width == 960);
+    AT(resolved.host_logical_height == 540);
+    AT(resolved.framebuffer_width == 1920);
+    AT(resolved.framebuffer_height == 1080);
+    AT(fabs(resolved.target_width_mm - 254.0) < 1e-9);
+    AT(fabs(resolved.framebuffer_per_canvas_px_x - 2.0) < 1e-9);
+
+    DvzViewSizeDesc physical = dvz_view_size_desc_physical_mm(254.0, 127.0, 96.0);
+    resolved = dvz_view_size_resolve(&physical, DVZ_VIEW_GLFW);
+    AT(resolved.requested_policy == DVZ_VIEW_SIZE_PHYSICAL_MM);
+    AT(resolved.host_logical_width == 960);
+    AT(resolved.host_logical_height == 480);
+    AT(fabs(resolved.canvas_width_px - 960.0) < 1e-9);
+    AT(fabs(resolved.canvas_height_px - 480.0) < 1e-9);
+
     return 0;
 }
 
@@ -1321,6 +1361,7 @@ int test_app(TstSuite* suite)
     TST_CASE(test_app_config_defaults);
     TST_CASE(test_app_config_env_schedule);
     TST_CASE(test_app_config_env_fps_cap);
+    TST_CASE(test_app_view_size_policy_resolve);
     TST_CASE(test_app_capture_config_defaults);
     TST_CASE(test_app_abi_rejects_invalid_structs);
     TST_CASE(test_app_capture_config_env);
