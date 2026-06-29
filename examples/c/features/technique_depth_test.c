@@ -196,8 +196,24 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(depth_on);
     example_graphite_cyan_set_panel_background(depth_off);
-    if (!example_add_panel_label(depth_on, "depth test on", 18.0f, 18.0f) ||
-        !example_add_panel_label(depth_off, "depth test off", 18.0f, 18.0f))
+
+    DvzLabelDesc on_label = dvz_label_desc();
+    on_label.text = "depth test on";
+    on_label.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
+    on_label.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    on_label.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    on_label.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    on_label.placement.position[0] = EXAMPLE_PANEL_LABEL_X_PX;
+    on_label.placement.position[1] = EXAMPLE_PANEL_LABEL_Y_PX;
+    on_label.placement.text_anchor[0] = 0.0f;
+    on_label.placement.text_anchor[1] = 0.0f;
+    on_label.placement.has_text_anchor = true;
+    if (dvz_annotation_label(depth_on, &on_label) == NULL)
+        return false;
+
+    DvzLabelDesc off_label = on_label;
+    off_label.text = "depth test off";
+    if (dvz_annotation_label(depth_off, &off_label) == NULL)
         return false;
 
     if (!_set_depth_camera(depth_on))

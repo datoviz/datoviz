@@ -248,9 +248,25 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_graphite_cyan_set_panel_background(blended);
     example_graphite_cyan_set_panel_background(wboit);
     example_graphite_cyan_set_panel_background(peel);
-    if (!example_add_panel_label(blended, "source-over", 18.0f, 18.0f) ||
-        !example_add_panel_label(wboit, "weighted OIT", 18.0f, 18.0f) ||
-        !example_add_panel_label(peel, "depth peel", 18.0f, 18.0f))
+
+    DvzLabelDesc label = dvz_label_desc();
+    label.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
+    label.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    label.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    label.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    label.placement.position[0] = EXAMPLE_PANEL_LABEL_X_PX;
+    label.placement.position[1] = EXAMPLE_PANEL_LABEL_Y_PX;
+    label.placement.text_anchor[0] = 0.0f;
+    label.placement.text_anchor[1] = 0.0f;
+    label.placement.has_text_anchor = true;
+    label.text = "source-over";
+    if (dvz_annotation_label(blended, &label) == NULL)
+        return false;
+    label.text = "weighted OIT";
+    if (dvz_annotation_label(wboit, &label) == NULL)
+        return false;
+    label.text = "depth peel";
+    if (dvz_annotation_label(peel, &label) == NULL)
         return false;
 
     if (!_set_camera(blended) || !_set_camera(wboit) || !_set_camera(peel))

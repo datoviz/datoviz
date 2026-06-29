@@ -73,6 +73,22 @@ typedef struct DvzExampleVisualSpin
         }                                                                                         \
     } while (0)
 
+#define EXAMPLE_PANEL_LABEL_X_PX       18.0f
+#define EXAMPLE_PANEL_LABEL_Y_PX       18.0f
+#define EXAMPLE_PANEL_LABEL_LARGE_X_PX 24.0f
+#define EXAMPLE_PANEL_LABEL_LARGE_Y_PX 24.0f
+#define EXAMPLE_PANEL_LABEL_LARGE_SIZE 30.0f
+
+#define EXAMPLE_XZ_REFERENCE_GRID_SIZE         8.0f
+#define EXAMPLE_XZ_REFERENCE_GRID_SPACING      0.25f
+#define EXAMPLE_XZ_REFERENCE_GRID_MAJOR_EVERY  4
+#define EXAMPLE_XZ_REFERENCE_GRID_MINOR_ALPHA  72u
+#define EXAMPLE_XZ_REFERENCE_GRID_MAJOR_ALPHA  130u
+#define EXAMPLE_XZ_REFERENCE_GRID_AXIS_ALPHA   170u
+#define EXAMPLE_XZ_REFERENCE_GRID_MINOR_WIDTH  1.0f
+#define EXAMPLE_XZ_REFERENCE_GRID_MAJOR_WIDTH  1.4f
+#define EXAMPLE_XZ_REFERENCE_GRID_AXIS_WIDTH   2.0f
+
 
 
 /*************************************************************************************************/
@@ -123,28 +139,6 @@ DvzMaterialDesc example_default_standard_material_desc(void);
 bool example_apply_default_phong_material(DvzVisual* visual);
 
 bool example_apply_default_standard_material(DvzVisual* visual);
-
-bool example_add_xz_reference_grid(DvzPanel* panel, float origin_y, float size);
-
-bool example_add_default_xz_reference_grid(DvzPanel* panel, float origin_y);
-
-bool example_add_panel_label(DvzPanel* panel, const char* label, float x_px, float y_px);
-
-bool example_add_sized_panel_label(
-    DvzPanel* panel, const char* label, float x_px, float y_px, float size_px);
-
-bool example_add_default_panel_label(DvzPanel* panel, const char* label);
-
-bool example_add_large_panel_label(DvzPanel* panel, const char* label);
-
-bool example_add_data_label(
-    DvzPanel* panel,
-    const char* label,
-    const vec3 position,
-    float offset_x,
-    float offset_y,
-    ExampleStyleTextRole role,
-    DvzColor color);
 
 bool example_configure_equal_aspect_panel(
     DvzPanel* panel,

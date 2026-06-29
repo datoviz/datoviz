@@ -362,8 +362,23 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->ssao_panel = ssao_panel;
     example_graphite_cyan_set_panel_background(plain);
     example_graphite_cyan_set_panel_background(ssao_panel);
-    if (!example_add_large_panel_label(plain, "plain depth") ||
-        !example_add_large_panel_label(ssao_panel, "SSAO resolve"))
+
+    DvzLabelDesc label = dvz_label_desc();
+    label.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
+    label.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    label.style.size_px = EXAMPLE_PANEL_LABEL_LARGE_SIZE;
+    label.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    label.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    label.placement.position[0] = EXAMPLE_PANEL_LABEL_LARGE_X_PX;
+    label.placement.position[1] = EXAMPLE_PANEL_LABEL_LARGE_Y_PX;
+    label.placement.text_anchor[0] = 0.0f;
+    label.placement.text_anchor[1] = 0.0f;
+    label.placement.has_text_anchor = true;
+    label.text = "plain depth";
+    if (dvz_annotation_label(plain, &label) == NULL)
+        return false;
+    label.text = "SSAO resolve";
+    if (dvz_annotation_label(ssao_panel, &label) == NULL)
         return false;
     if (!_set_camera(plain) || !_set_camera(ssao_panel))
         return false;

@@ -303,12 +303,40 @@ static bool _add_autocorrelogram(DvzScene* scene, DvzPanel* panel)
     text.a = 235u;
     DvzColor baseline_text = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
     baseline_text.a = 235u;
-    return example_add_data_label(
-               panel, "bi-side refractory", (vec3){0.0f, 118.0f, 0.0f}, 0.0f, 0.0f,
-               EXAMPLE_STYLE_TEXT_PANEL_LABEL, text) &&
-           example_add_data_label(
-               panel, "baseline", (vec3){-30.0f, 38.0f, 0.0f}, 0.0f, -14.0f,
-               EXAMPLE_STYLE_TEXT_PANEL_LABEL, baseline_text);
+
+    DvzLabelDesc label = dvz_label_desc();
+    label.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
+    label.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    label.placement.mode = DVZ_TEXT_PLACEMENT_DATA;
+    label.placement.text_anchor[0] = 0.5f;
+    label.placement.text_anchor[1] = 0.5f;
+    label.placement.has_text_anchor = true;
+    label.placement.depth_test = false;
+
+    label.text = "bi-side refractory";
+    label.style.color[0] = text.r;
+    label.style.color[1] = text.g;
+    label.style.color[2] = text.b;
+    label.style.color[3] = text.a;
+    label.placement.position[0] = 0.0f;
+    label.placement.position[1] = 118.0f;
+    label.placement.position[2] = 0.0f;
+    label.placement.offset[0] = 0.0f;
+    label.placement.offset[1] = 0.0f;
+    if (dvz_annotation_label(panel, &label) == NULL)
+        return false;
+
+    label.text = "baseline";
+    label.style.color[0] = baseline_text.r;
+    label.style.color[1] = baseline_text.g;
+    label.style.color[2] = baseline_text.b;
+    label.style.color[3] = baseline_text.a;
+    label.placement.position[0] = -30.0f;
+    label.placement.position[1] = 38.0f;
+    label.placement.position[2] = 0.0f;
+    label.placement.offset[0] = 0.0f;
+    label.placement.offset[1] = -14.0f;
+    return dvz_annotation_label(panel, &label) != NULL;
 }
 
 
