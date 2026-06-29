@@ -28,8 +28,13 @@
 
 typedef enum
 {
-    DVZ_CLOCK_REALTIME = 0,
-    DVZ_CLOCK_OFFLINE,
+    DVZ_SCENE_CLOCK_REALTIME = 0,
+    DVZ_SCENE_CLOCK_FIXED_STEP,
+    DVZ_SCENE_CLOCK_EXTERNAL,
+
+    /* Compatibility aliases.  New code should use the explicit DVZ_SCENE_CLOCK_* names. */
+    DVZ_CLOCK_REALTIME = DVZ_SCENE_CLOCK_REALTIME,
+    DVZ_CLOCK_OFFLINE = DVZ_SCENE_CLOCK_FIXED_STEP,
 } DvzSceneClockMode;
 
 
@@ -273,20 +278,39 @@ EXTERN_C_ON
 /**
  * Set the scene clock mode used by animations.
  *
+ * Realtime mode advances from monotonic wall-clock timestamps. Fixed-step mode advances by
+ * 1 / fps on every submitted scene step and is intended for deterministic tests, fixtures, and
+ * offscreen capture. External mode is for host-driven loops that supply explicit time values with
+ * dvz_scene_step_external().
+ *
  * @param scene target scene
- * @param mode realtime or offline clock mode
+ * @param mode realtime, fixed-step, or external clock mode
  */
 DVZ_EXPORT void dvz_scene_set_clock_mode(DvzScene* scene, DvzSceneClockMode mode);
 
 
 
 /**
- * Set the scene clock frame rate used by offline mode and timer period resolution.
+ * Set the scene clock frame rate used by fixed-step mode.
  *
  * @param scene target scene
  * @param fps frames per second, must be positive
  */
 DVZ_EXPORT void dvz_scene_set_fps(DvzScene* scene, double fps);
+
+
+/**
+ * Advance an external-clock scene and run active animation callbacks.
+ *
+ * This function is intended for browser, GUI toolkit, and embedded hosts that own the event loop
+ * and have authoritative frame timestamps. It switches the scene clock to external mode, stores the
+ * supplied time/delta verbatim after validation, and runs animation callbacks once.
+ *
+ * @param scene target scene
+ * @param t current host time in seconds, normally relative to the start of the scene
+ * @param dt elapsed host time in seconds since the previous frame
+ */
+DVZ_EXPORT void dvz_scene_step_external(DvzScene* scene, double t, double dt);
 
 
 

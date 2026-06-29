@@ -26,6 +26,7 @@ export class WasmSceneSession {
     this.rendering = false;
     this.pending = false;
     this.animationFrame = 0;
+    this.animationStartTime = null;
     this.lastAnimationTime = null;
   }
 
@@ -106,7 +107,11 @@ export class WasmSceneSession {
         this.animationFrame = 0;
         return;
       }
-      const now = nowMs / 1000;
+      const nowAbsolute = nowMs / 1000;
+      if (this.animationStartTime === null) {
+        this.animationStartTime = nowAbsolute;
+      }
+      const now = nowAbsolute - this.animationStartTime;
       const dt = this.lastAnimationTime === null ? fallbackDt : Math.max(0, now - this.lastAnimationTime);
       this.lastAnimationTime = now;
       void (async () => {
@@ -129,6 +134,7 @@ export class WasmSceneSession {
       this.animationFrame = 0;
     }
     this.lastAnimationTime = null;
+    this.animationStartTime = null;
   }
 
   destroy() {

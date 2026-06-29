@@ -15,3 +15,4 @@
 #include "_scene.h"
 
 void _dvz_scene_animations_step(DvzScene* scene, uint64_t wall_time_ns);
+void _dvz_scene_animations_step_external(DvzScene* scene, double t, double dt);

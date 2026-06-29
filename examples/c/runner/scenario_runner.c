@@ -793,7 +793,11 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         goto cleanup;
     }
     ctx.scene = scene;
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    const bool deterministic_clock =
+        resolved.presentation != DVZ_RUNNER_PRESENT_GLFW ||
+        resolved.capture_kind != DVZ_RUNNER_CAPTURE_NONE;
+    dvz_scene_set_clock_mode(
+        scene, deterministic_clock ? DVZ_SCENE_CLOCK_FIXED_STEP : DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, resolved.fps);
 
     if (!spec->init(&ctx, &user) || ctx.figure == NULL)

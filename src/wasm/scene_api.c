@@ -1210,7 +1210,7 @@ int dvz_wasm_api_scenario_create(uint32_t scene_handle, uint32_t index)
         scene->height = spec.height != 0 ? spec.height : 640;
     if (spec.fps > 0)
     {
-        dvz_scene_set_clock_mode(scene->scene, DVZ_CLOCK_OFFLINE);
+        dvz_scene_set_clock_mode(scene->scene, DVZ_SCENE_CLOCK_EXTERNAL);
         dvz_scene_set_fps(scene->scene, spec.fps);
     }
     scene->scenario_ctx = (DvzScenarioContext){
@@ -1285,8 +1285,7 @@ int dvz_wasm_api_scenario_frame(uint32_t scene_handle, double t, double dt)
     _clear_payload(scene);
     scene->scenario_ctx.time = t;
     scene->scenario_ctx.dt = dt;
-    const uint64_t wall_time_ns = t > 0 ? (uint64_t)(t * 1000000000.0) : 0;
-    _dvz_scene_animations_step(scene->scene, wall_time_ns);
+    dvz_scene_step_external(scene->scene, t, dt);
     if (scene->scenario_spec.frame != NULL)
         scene->scenario_spec.frame(&scene->scenario_ctx, scene->scenario_user);
     scene->scenario_ctx.frame_index++;

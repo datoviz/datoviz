@@ -394,22 +394,6 @@ static DvzAnimation* _animation_alloc(DvzScene* scene)
 
 
 /**
- * Return the interval tick due at a scene-clock time.
- *
- * @param animation timer animation
- * @param t current scene time
- * @return due tick index
- */
-static uint64_t _animation_timer_due_tick(const DvzAnimation* animation, double t)
-{
-    ANN(animation);
-    if (animation->period_s <= 0.0 || t <= animation->t_start)
-        return 0;
-    return (uint64_t)floor((t - animation->t_start) / animation->period_s);
-}
-
-
-/**
  * Fire one timer callback.
  *
  * @param animation timer animation
@@ -451,13 +435,18 @@ static void _animation_timer_step(DvzAnimation* animation, double t, double dt)
 
     if (animation->timer_mode == DVZ_TIMER_INTERVAL)
     {
-        const uint64_t due_tick = _animation_timer_due_tick(animation, t);
-        if (due_tick < animation->timer_tick)
+        if (t + 1e-12 < animation->next_fire_t)
             return;
-        _animation_timer_fire(animation, t, dt, due_tick);
-        animation->timer_tick = due_tick + 1;
-        animation->next_fire_t =
-            animation->t_start + (double)animation->timer_tick * animation->period_s;
+
+        while (t + 1e-12 >= animation->next_fire_t + animation->period_s)
+        {
+            animation->timer_tick++;
+            animation->next_fire_t += animation->period_s;
+        }
+
+        const uint64_t tick = animation->timer_tick++;
+        _animation_timer_fire(animation, t, dt, tick);
+        animation->next_fire_t += animation->period_s;
         return;
     }
 
@@ -467,8 +456,7 @@ static void _animation_timer_step(DvzAnimation* animation, double t, double dt)
     {
         const uint64_t tick = animation->timer_tick++;
         _animation_timer_fire(animation, t, dt, tick);
-        animation->next_fire_t =
-            animation->t_start + (double)animation->timer_tick * animation->period_s;
+        animation->next_fire_t += animation->period_s;
         emitted++;
     }
 }
@@ -543,13 +531,15 @@ static double _scene_clock_next_dt(DvzScene* scene, uint64_t wall_time_ns)
 {
     ANN(scene);
     DvzSceneClock* clock = &scene->clock;
+    if (clock->mode == DVZ_SCENE_CLOCK_EXTERNAL)
+        return 0.0;
     if (!clock->initialized)
     {
         clock->initialized = true;
         clock->last_wall_time_ns = wall_time_ns;
         return 0.0;
     }
-    if (clock->mode == DVZ_CLOCK_OFFLINE)
+    if (clock->mode == DVZ_SCENE_CLOCK_FIXED_STEP)
         return 1.0 / clock->fps;
     uint64_t elapsed_ns = 0;
     if (wall_time_ns >= clock->last_wall_time_ns)
@@ -826,6 +816,12 @@ DvzCameraMotionDesc dvz_camera_motion_desc(void)
 void dvz_scene_set_clock_mode(DvzScene* scene, DvzSceneClockMode mode)
 {
     ANN(scene);
+    if (mode != DVZ_SCENE_CLOCK_REALTIME && mode != DVZ_SCENE_CLOCK_FIXED_STEP &&
+        mode != DVZ_SCENE_CLOCK_EXTERNAL)
+    {
+        log_error("invalid scene clock mode");
+        return;
+    }
     scene->clock.mode = mode;
     scene->clock.dt = 0.0;
     scene->clock.initialized = false;
@@ -876,6 +872,19 @@ double dvz_scene_clock_dt(const DvzScene* scene)
 {
     ANN(scene);
     return scene->clock.dt;
+}
+
+
+void dvz_scene_step_external(DvzScene* scene, double t, double dt)
+{
+    if (scene == NULL)
+        return;
+    if (!isfinite(t) || !isfinite(dt) || dt < 0.0)
+    {
+        log_error("external scene clock step requires finite t and non-negative dt");
+        return;
+    }
+    _dvz_scene_animations_step_external(scene, t, dt);
 }
 
 
@@ -1474,6 +1483,11 @@ void dvz_anim_start(DvzAnimation* animation, double t_start)
     animation->local_t = 0.0;
     animation->timer_tick = 0;
     animation->next_fire_t = start;
+    if (animation->type == DVZ_ANIMATION_TIMER &&
+        animation->timer_mode != DVZ_TIMER_EVERY_FRAME && animation->period_s > 0.0)
+    {
+        animation->next_fire_t = start + animation->period_s;
+    }
     animation->active = true;
 }
 
@@ -1514,20 +1528,10 @@ void dvz_anim_destroy(DvzAnimation* animation)
 
 
 
-/**
- * Advance the scene clock and run active animation callbacks.
- *
- * @param scene target scene
- * @param wall_time_ns current wall-clock timestamp in nanoseconds
- */
-void _dvz_scene_animations_step(DvzScene* scene, uint64_t wall_time_ns)
+static void _scene_animations_run(DvzScene* scene)
 {
     if (scene == NULL)
         return;
-    if (scene->clock.fps <= 0.0)
-        scene->clock.fps = DVZ_SCENE_DEFAULT_FPS;
-    scene->clock.dt = _scene_clock_next_dt(scene, wall_time_ns);
-    scene->clock.t += scene->clock.dt;
     double t = scene->clock.t;
     double dt = scene->clock.dt;
     uint32_t animation_count = scene->animation_count;
@@ -1569,4 +1573,34 @@ void _dvz_scene_animations_step(DvzScene* scene, uint64_t wall_time_ns)
         }
     }
     _dvz_scene_controller_links_propagate(scene);
+}
+
+
+/**
+ * Advance the scene clock and run active animation callbacks.
+ *
+ * @param scene target scene
+ * @param wall_time_ns current wall-clock timestamp in nanoseconds
+ */
+void _dvz_scene_animations_step(DvzScene* scene, uint64_t wall_time_ns)
+{
+    if (scene == NULL)
+        return;
+    if (scene->clock.fps <= 0.0)
+        scene->clock.fps = DVZ_SCENE_DEFAULT_FPS;
+    scene->clock.dt = _scene_clock_next_dt(scene, wall_time_ns);
+    scene->clock.t += scene->clock.dt;
+    _scene_animations_run(scene);
+}
+
+
+void _dvz_scene_animations_step_external(DvzScene* scene, double t, double dt)
+{
+    if (scene == NULL)
+        return;
+    scene->clock.mode = DVZ_SCENE_CLOCK_EXTERNAL;
+    scene->clock.initialized = true;
+    scene->clock.t = t;
+    scene->clock.dt = dt;
+    _scene_animations_run(scene);
 }

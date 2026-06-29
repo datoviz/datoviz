@@ -122,7 +122,11 @@ int test_scene_animation_timer_descriptor_abi(TstContext* suite, const TstCase* 
 
 int test_scene_animation_timer_catch_up(TstContext* suite, const TstCase* item);
 
+int test_scene_animation_interval_skips_to_due_tick(TstContext* suite, const TstCase* item);
+
 int test_scene_animation_realtime_delta_clamp(TstContext* suite, const TstCase* item);
+
+int test_scene_animation_external_clock_step(TstContext* suite, const TstCase* item);
 
 int test_scene_animation_phase_descriptor_abi(TstContext* suite, const TstCase* item);
 

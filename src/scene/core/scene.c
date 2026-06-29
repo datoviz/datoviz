@@ -167,7 +167,7 @@ DvzScene* dvz_scene(void)
     scene->caps = dvz_capability_snapshot();
     _scene_technique_state_init(&scene->techniques);
     scene->font_defaults = dvz_font_defaults();
-    scene->clock.mode = DVZ_CLOCK_REALTIME;
+    scene->clock.mode = DVZ_SCENE_CLOCK_REALTIME;
     scene->clock.fps = 60.0;
     _scene_request_executor_init(&scene->query_executor);
     scene->emitter = dvz_frame_plan_emitter();

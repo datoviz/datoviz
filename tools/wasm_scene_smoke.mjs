@@ -2359,8 +2359,8 @@ try {
   const scenarioTitlePtr = Module._dvz_wasm_api_scenario_title(timerScenarioIndex);
   requireOk(scenarioTitlePtr !== 0, "WASM scenario 0 has no title");
   requireOk(Module.UTF8ToString(scenarioTitlePtr) === "timer_animation", "unexpected scenario title");
-  requireOk(Module._dvz_wasm_api_scenario_width(timerScenarioIndex) === 1600, "unexpected scenario width");
-  requireOk(Module._dvz_wasm_api_scenario_height(timerScenarioIndex) === 1200, "unexpected scenario height");
+  requireOk(Module._dvz_wasm_api_scenario_width(timerScenarioIndex) === 1280, "unexpected scenario width");
+  requireOk(Module._dvz_wasm_api_scenario_height(timerScenarioIndex) === 720, "unexpected scenario height");
   requireOk(Module._dvz_wasm_api_scenario_fps(timerScenarioIndex) === 60, "unexpected scenario fps");
   requireOk(
     (Module._dvz_wasm_api_scenario_requirements(timerScenarioIndex) & (1 << 9)) !== 0,
