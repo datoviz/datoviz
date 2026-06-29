@@ -296,6 +296,7 @@ static DvzAppConfig _app_config_defaults(void)
     config.enable_glfw_extensions = true;
     config.schedule_mode = DVZ_APP_SCHEDULE_ON_DEMAND;
     config.fps_cap = 0.0;
+    config.window_size_scale = 0.0;
     config.font_defaults = dvz_font_defaults();
     return config;
 }
@@ -349,6 +350,33 @@ static void _app_config_apply_fps_cap_env(DvzAppConfig* config)
 
 
 /**
+ * Apply the DVZ_WINDOW_SIZE_SCALE environment override to an app configuration.
+ *
+ * @param config app configuration to mutate
+ */
+static void _app_config_apply_window_size_scale_env(DvzAppConfig* config)
+{
+    ANN(config);
+    if (config->window_size_scale > 0.0)
+        return;
+
+    const char* env = getenv("DVZ_WINDOW_SIZE_SCALE");
+    if (env == NULL || env[0] == '\0')
+        return;
+
+    char* end = NULL;
+    double scale = strtod(env, &end);
+    if (end == env || *end != '\0' || !isfinite(scale) || scale <= 0.0)
+    {
+        log_warn("ignoring DVZ_WINDOW_SIZE_SCALE='%s' (expected positive scale)", env);
+        return;
+    }
+    config->window_size_scale = scale;
+}
+
+
+
+/**
  * Apply supported app environment overrides to an app configuration.
  *
  * @param config app configuration to mutate
@@ -358,6 +386,7 @@ static void _app_config_apply_env(DvzAppConfig* config)
     ANN(config);
     _app_config_apply_schedule_env(config);
     _app_config_apply_fps_cap_env(config);
+    _app_config_apply_window_size_scale_env(config);
 }
 
 
@@ -978,6 +1007,35 @@ static uint32_t _view_round_size(float value)
     if (value >= (float)UINT32_MAX)
         return UINT32_MAX;
     return (uint32_t)(value + 0.5f);
+}
+
+
+
+static double _app_effective_window_size_scale(const DvzAppConfig* config)
+{
+    if (config != NULL && isfinite(config->window_size_scale) && config->window_size_scale > 0.0)
+        return config->window_size_scale;
+    return 1.0;
+}
+
+
+
+static void _view_desc_apply_window_size_scale(DvzViewDesc* desc, double scale)
+{
+    ANN(desc);
+    if (!isfinite(scale) || scale <= 0.0 || scale == 1.0)
+        return;
+
+    desc->logical_width = _view_round_size((float)((double)desc->logical_width * scale));
+    desc->logical_height = _view_round_size((float)((double)desc->logical_height * scale));
+    if (desc->logical_width == 0)
+        desc->logical_width = 1;
+    if (desc->logical_height == 0)
+        desc->logical_height = 1;
+    desc->framebuffer_width =
+        _view_round_size((float)((double)desc->logical_width * desc->device_scale));
+    desc->framebuffer_height =
+        _view_round_size((float)((double)desc->logical_height * desc->device_scale));
 }
 
 
@@ -3675,6 +3733,9 @@ DvzView* dvz_view(DvzApp* app, DvzFigure* figure, const DvzViewDesc* desc)
 
     DvzViewDesc resolved = {0};
     _view_desc_resolve(desc, figure, &resolved);
+    if (resolved.kind == DVZ_VIEW_GLFW)
+        _view_desc_apply_window_size_scale(
+            &resolved, _app_effective_window_size_scale(&app->config));
 
     DvzView* win = NULL;
     switch (resolved.kind)
