@@ -7,7 +7,7 @@
 /* gpu_particle_smoke - scene API compute-to-graphics particle smoke showcase.
  *
  * Scenario: showcase_gpu_particle_smoke
- * Style: showcase, graphite_cyan, 1600x1200 capture target, experimental scene compute
+ * Style: showcase, graphite_cyan, 1280x720 window target, experimental scene compute
  *
  * Build:  just example-c showcases/gpu_particle_smoke
  * Run:    ./build/examples/c/showcases/gpu_particle_smoke --live
@@ -35,8 +35,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH                   1600u
-#define HEIGHT                  1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #ifdef DVZ_EXAMPLE_NO_APP
 #define PARTICLE_COUNT          32768u
 #else

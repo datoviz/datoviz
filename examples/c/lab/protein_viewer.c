@@ -44,8 +44,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1000u
-#define HEIGHT 760u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 #define DEFAULT_PDB_ID "6m0j"
 #define DEFAULT_BUNDLE_PATH "data/examples/proteins/1ubq/prepared"

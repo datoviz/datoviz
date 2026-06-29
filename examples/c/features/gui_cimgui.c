@@ -36,8 +36,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       1000u
-#define HEIGHT      700u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define POINT_COUNT 4u
 
 

@@ -7,7 +7,7 @@
 /* wind_field - synthetic weather-like scalar and vector field showcase.
  *
  * Scenario: showcase_wind_field
- * Style: showcase, graphite_cyan, 1600x1200 capture target
+ * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c showcases/wind_field
  * Run:    ./build/examples/c/showcases/wind_field --live
@@ -42,8 +42,8 @@ DvzScenarioSpec dvz_showcase_wind_field_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600u
-#define HEIGHT 1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 #define FIELD_WIDTH  384u
 #define FIELD_HEIGHT 240u

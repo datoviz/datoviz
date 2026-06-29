@@ -7,7 +7,7 @@
 /* coordinate_system - interactive 3D RGB-axis proof of the Datoviz scene coordinate convention.
  *
  * Scenario: feature.coordinate_system
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/coordinate_system
  * Run:    ./build/examples/c/features/coordinate_system --live
@@ -38,8 +38,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600u
-#define HEIGHT 1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 static const double AXIS_LENGTH = 1.45;
 static const float GRID_SIZE = 10.0f;

@@ -7,7 +7,7 @@
 /* vector - retained straight and curved vector visual example.
  *
  * Scenario: visual.vector
- * Style: visuals, graphite_cyan, 1600x1200 capture target
+ * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/vector
  * Run:    ./build/examples/c/visuals/vector --live
@@ -39,8 +39,8 @@ DvzScenarioSpec dvz_visual_vector_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH              1600u
-#define HEIGHT             1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define FIELD_COLS         19u
 #define FIELD_ROWS         11u
 #define FIELD_COUNT        (FIELD_COLS * FIELD_ROWS)

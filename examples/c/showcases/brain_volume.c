@@ -7,7 +7,7 @@
 /* brain_volume - local Allen mouse brain RGBA volume and occluded slice.
  *
  * Scenario: brain_volume
- * Style: showcase, graphite_cyan, 1600x1200 capture target
+ * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * Build:   just example-c showcases/brain_volume
  * Run:     ./build/examples/c/showcases/brain_volume --live
@@ -44,8 +44,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600
-#define HEIGHT 1200
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 #define DEFAULT_DATA_PATH "data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz"
 #define DEFAULT_AXIS          DVZ_VOLUME_AXIS_Y

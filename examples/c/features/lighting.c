@@ -7,7 +7,7 @@
 /* lighting - compare lit sphere clusters with different material and light settings.
  *
  * Scenario: feature.lighting
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/lighting
  * Run:    ./build/examples/c/features/lighting --live
@@ -34,8 +34,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH        1600u
-#define HEIGHT       1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define SPHERE_COUNT 9u
 #define LABEL_SIZE   18.0f
 

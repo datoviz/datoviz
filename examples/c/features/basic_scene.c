@@ -7,7 +7,7 @@
 /* basic_scene - smallest runner-backed retained scene with one point visual.
  *
  * Scenario: feature.basic_scene
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/basic_scene
  * Run:    ./build/examples/c/features/basic_scene --live
@@ -37,8 +37,8 @@ DvzScenarioSpec dvz_example_basic_scene_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       1600u
-#define HEIGHT      1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define POINT_COUNT 3u
 
 

@@ -7,7 +7,7 @@
 /* transparency_order - source-over, WBOIT, and depth-peel transparency on overlapping cubes.
  *
  * Scenario: feature.transparency_order
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/technique_transparency
  * Run:    ./build/examples/c/features/technique_transparency --live
@@ -36,8 +36,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600u
-#define HEIGHT 1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 
 

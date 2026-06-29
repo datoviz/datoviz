@@ -7,7 +7,7 @@
 /* guide_spans - retained horizontal and vertical guide spans in panel data coordinates.
  *
  * Scenario: feature.guide_spans
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/guide_spans
  * Run:    ./build/examples/c/features/guide_spans --live
@@ -43,8 +43,8 @@ DvzScenarioSpec dvz_example_guide_spans_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       1600u
-#define HEIGHT      1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define POINT_COUNT 7u
 
 

@@ -7,7 +7,7 @@
 /* primitive - topology-parametric triangles rendered with the retained primitive visual.
  *
  * Scenario: visual.primitive
- * Style: visuals, graphite_cyan, 1600x1200 capture target
+ * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/primitive
  * Run:    ./build/examples/c/visuals/primitive --live
@@ -34,8 +34,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600u
-#define HEIGHT 1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 
 

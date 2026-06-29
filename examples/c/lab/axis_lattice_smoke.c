@@ -7,7 +7,7 @@
 /* axis_lattice_smoke - manual panzoom/axis alignment smoke tool.
  *
  * Scenario: axis_lattice_smoke
- * Style: tools, graphite_cyan, 1280x960 capture target
+ * Style: tools, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c tools/axis_lattice_smoke
  * Run:    ./build/examples/c/lab/axis_lattice_smoke
@@ -40,8 +40,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH      1280u
-#define HEIGHT     960u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define GRID_MAX   20u
 #define GRID_SIDE  (GRID_MAX + 1u)
 #define GRID_COUNT (GRID_SIDE * GRID_SIDE)

@@ -42,8 +42,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1100u
-#define HEIGHT 760u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 #define MAX_POINTS     262144u
 #define PRESET_COUNT   4u

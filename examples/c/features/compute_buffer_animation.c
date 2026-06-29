@@ -7,7 +7,7 @@
 /* compute_buffer_animation - scene compute pass with independent circular point motion.
  *
  * Scenario: feature.compute_buffer_animation
- * Style: features, graphite_cyan, 1600x1200 capture target, experimental scene compute
+ * Style: features, graphite_cyan, 1280x720 window target, experimental scene compute
  *
  * Build:  just example-c features/compute_buffer_animation
  * Run:    ./build/examples/c/features/compute_buffer_animation --live
@@ -33,8 +33,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH          1600u
-#define HEIGHT         1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define POINT_COUNT    6u
 #define WORKGROUP_SIZE 1u
 

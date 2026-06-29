@@ -7,7 +7,7 @@
 /* surface_grid - generated height-field mesh with a derived wireframe overlay.
  *
  * Scenario: showcase_surface_grid
- * Style: showcase, graphite_cyan, 1600x1200 capture target
+ * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c showcases/surface_grid
  * Run:    ./build/examples/c/showcases/surface_grid --live
@@ -47,8 +47,8 @@ DvzScenarioSpec dvz_showcase_surface_grid_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH        1600u
-#define HEIGHT       1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define SURFACE_ROWS 80u
 #define SURFACE_COLS 96u
 

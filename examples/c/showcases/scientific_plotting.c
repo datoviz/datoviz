@@ -7,7 +7,7 @@
 /* scientific_plotting - histogram, guide annotations, stacked traces, and error bands.
  *
  * Scenario: scientific_plotting_workflow
- * Style: showcase workflow, graphite_cyan, 1600x1200 capture target
+ * Style: showcase workflow, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c showcases/scientific_plotting
  * Run:    ./build/examples/c/showcases/scientific_plotting --live
@@ -40,8 +40,8 @@ DvzScenarioSpec dvz_showcase_scientific_plotting_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH                  1600u
-#define HEIGHT                 1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define CORR_BINS              101u
 #define MEAN_COUNT             320u
 #define TRACE_COUNT            32u

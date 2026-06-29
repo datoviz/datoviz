@@ -7,7 +7,7 @@
 /* labels - retained labels visual with a small deterministic integer sampled field.
  *
  * Scenario: visual.labels
- * Style: visuals, graphite_cyan, 1600x1200 capture target
+ * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/labels
  * Run:    ./build/examples/c/visuals/labels --live
@@ -36,8 +36,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH        1600u
-#define HEIGHT       1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define FIELD_WIDTH  512u
 #define FIELD_HEIGHT 384u
 #define LABEL_COUNT  6u

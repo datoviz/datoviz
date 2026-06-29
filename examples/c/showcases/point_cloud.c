@@ -7,7 +7,7 @@
 /* point_cloud - RESEPI RGB LiDAR dense point cloud.
  *
  * Scenario: point_cloud
- * Style: showcase, graphite_cyan, 1600x1200 capture target
+ * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_cloud.bin`.
  * Generate it from the upstream LAZ source with:
@@ -43,8 +43,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600u
-#define HEIGHT 1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 #define POINT_CLOUD_MAGIC      "DVZPCD1"
 #define POINT_CLOUD_MAGIC_SIZE 8u

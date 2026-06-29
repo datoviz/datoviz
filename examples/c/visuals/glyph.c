@@ -7,7 +7,7 @@
 /* glyph - low-level font atlas glyph quads, distinct from retained semantic text.
  *
  * Scenario: visual.glyph
- * Style: visuals, graphite_cyan, 1600x1200 capture target
+ * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/glyph
  * Run:    ./build/examples/c/visuals/glyph --live
@@ -34,8 +34,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH            1600u
-#define HEIGHT           1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define MAX_GLYPHS       32u
 #define VERTEX_PER_GLYPH 6u
 #define MAX_VERTICES     (MAX_GLYPHS * VERTEX_PER_GLYPH)

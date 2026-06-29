@@ -7,7 +7,7 @@
 /* protein - RCSB PDB protein structure rendered as clustered spheres.
  *
  * Scenario: protein_arcball_viewer
- * Style: showcase scientific, graphite_cyan, 1600x1200 capture target
+ * Style: showcase scientific, graphite_cyan, 1280x720 window target
  *
  * Data:    RCSB PDB structure data. The default cache target is 6M0J; the repository fallback is
  *          data/examples/proteins/1ubq/prepared, generated from RCSB PDB 1UBQ.
@@ -53,8 +53,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600u
-#define HEIGHT 1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 #define DEFAULT_PDB_ID             "6m0j"
 #define DEFAULT_BUNDLE_PATH        "data/examples/proteins/1ubq/prepared"

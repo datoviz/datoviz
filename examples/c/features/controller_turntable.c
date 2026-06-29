@@ -7,7 +7,7 @@
 /* controller_turntable - constrained turntable controller around a small 3D mesh.
  *
  * Scenario: feature.controller_turntable
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  * Intent: demonstrate stable world-up orbit around a fixed pivot, with pitch/distance clamps and
  * no roll. The opening view is shared with other controller examples, but the interaction model is
  * the upright object-inspection pattern.
@@ -47,8 +47,8 @@ DvzScenarioSpec dvz_example_controller_turntable_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600u
-#define HEIGHT 1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 
 

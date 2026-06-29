@@ -7,7 +7,7 @@
 /* bounds_overlay - diagnostic retained visual bounds in 2D and 3D panels.
  *
  * Scenario: feature_bounds_overlay
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/bounds_overlay
  * Run:    ./build/examples/c/features/bounds_overlay --live
@@ -37,8 +37,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH        1600u
-#define HEIGHT       1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define POINT_COUNT  256u
 #define SPHERE_COUNT 32u
 

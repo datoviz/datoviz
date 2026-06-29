@@ -7,7 +7,7 @@
 /* panel_linked - two panels linked on X panzoom extent with independent Y panzoom state.
  *
  * Scenario: feature.panel_linked
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/panel_linked
  * Run:    ./build/examples/c/features/panel_linked --live
@@ -44,8 +44,8 @@ DvzScenarioSpec dvz_example_panel_linked_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH      1600u
-#define HEIGHT     1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define PATH_COUNT 128u
 
 static const float TAU = 6.28318530718f;

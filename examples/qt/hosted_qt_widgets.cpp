@@ -37,6 +37,14 @@
 
 
 
+namespace
+{
+constexpr int EXAMPLE_WINDOW_WIDTH = 1280;
+constexpr int EXAMPLE_WINDOW_HEIGHT = 720;
+} // namespace
+
+
+
 static const uint32_t POINT_COUNT = 96;
 
 
@@ -150,7 +158,7 @@ static DvzScene* _make_scene(SceneState* state)
     if (scene == nullptr)
         return nullptr;
 
-    DvzFigure* figure = dvz_figure(scene, 900, 640, 0);
+    DvzFigure* figure = dvz_figure(scene, EXAMPLE_WINDOW_WIDTH, EXAMPLE_WINDOW_HEIGHT, 0);
     DvzPanelDesc panel_desc = {};
     panel_desc.x = 0.0f;
     panel_desc.y = 0.0f;
@@ -335,7 +343,8 @@ int main(int argc, char** argv)
 
     DvzQtHostedWindow* view_window = new DvzQtHostedWindow(
         app, scene_state.figure, scene_state.panel, &qt_instance,
-        QStringLiteral("hosted_qt_widgets_view"), QSize(900, 640));
+        QStringLiteral("hosted_qt_widgets_view"),
+        QSize(EXAMPLE_WINDOW_WIDTH, EXAMPLE_WINDOW_HEIGHT));
     QWidget* view_container = QWidget::createWindowContainer(view_window);
     view_container->setMinimumSize(640, 480);
     view_container->setFocusPolicy(Qt::StrongFocus);
@@ -350,7 +359,7 @@ int main(int argc, char** argv)
     root_layout->setSpacing(0);
     root_layout->addWidget(view_container, 1);
     root_layout->addWidget(controls, 0);
-    main_widget.resize(1160, 720);
+    main_widget.resize(EXAMPLE_WINDOW_WIDTH, EXAMPLE_WINDOW_HEIGHT);
     main_widget.show();
     QObject::connect(&qt_app, &QCoreApplication::aboutToQuit, &qt_app, [&view_window]() {
         view_window->release_surface();

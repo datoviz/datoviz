@@ -7,7 +7,7 @@
 /* bezier_curve_path - tessellated cubic Bezier curve rendered as a retained path.
  *
  * Scenario: feature.bezier_curve_path
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/bezier_curve_path
  * Run:    ./build/examples/c/features/bezier_curve_path --live
@@ -35,8 +35,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH         1600u
-#define HEIGHT        1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define CONTROL_COUNT 4u
 #define CONTROL_EDGES 3u
 

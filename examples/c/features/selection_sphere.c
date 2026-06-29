@@ -7,7 +7,7 @@
 /* selection_sphere - retained sphere hover and click selection.
  *
  * Scenario: feature.selection_sphere
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Move the cursor over the sphere cluster to query the frontmost sphere item. Hover and selection
  * are rendered by the retained item-state API. Click a sphere to toggle selection; click the
@@ -43,8 +43,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH        1600u
-#define HEIGHT       1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define SPHERE_COUNT 54u
 #define QUERY_HOVER_ID 17u
 #define QUERY_CLICK_ID 18u

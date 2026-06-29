@@ -7,7 +7,7 @@
 /* path_join - acute stroked path joins for visual regression inspection.
  *
  * Scenario: feature_path_join
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/path_join
  * Run:    ./build/examples/c/features/path_join --live
@@ -35,8 +35,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH         1600u
-#define HEIGHT        1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define MAX_POINTS    96u
 #define MAX_SUBPATHS  4u
 #define JOIN_COUNT    3u

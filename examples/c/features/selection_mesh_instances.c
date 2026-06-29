@@ -7,7 +7,7 @@
 /* selection_mesh_instances - retained instanced mesh hover and click selection.
  *
  * Scenario: feature.selection_mesh_instances
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Move the cursor over the cube field to query the frontmost mesh instance. Hover and selection
  * are rendered by the retained item-state API. Click a cube to toggle selection; click the
@@ -43,8 +43,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH          1600u
-#define HEIGHT         1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define GRID_X         7u
 #define GRID_Y         5u
 #define GRID_Z         3u

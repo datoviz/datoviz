@@ -7,7 +7,7 @@
 /* update_visual_data - retained point visual with full data replacement.
  *
  * Scenario: feature.update_visual_data
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/update_visual_data
  * Run:    ./build/examples/c/features/update_visual_data --live
@@ -35,8 +35,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       1600u
-#define HEIGHT      1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define POINT_COUNT 7u
 
 

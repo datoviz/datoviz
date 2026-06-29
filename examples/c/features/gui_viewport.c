@@ -35,8 +35,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define HOST_WIDTH    1100u
-#define HOST_HEIGHT   760u
+#define HOST_WIDTH    EXAMPLE_WINDOW_WIDTH
+#define HOST_HEIGHT   EXAMPLE_WINDOW_HEIGHT
 #define SOURCE_WIDTH  640u
 #define SOURCE_HEIGHT 480u
 #define POINT_COUNT   5u

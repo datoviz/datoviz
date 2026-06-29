@@ -7,7 +7,7 @@
 /* axis_labels - retained axis titles and tick-label placement with plot margins.
  *
  * Scenario: feature.axis_labels
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/axis_labels
  * Run:    ./build/examples/c/features/axis_labels --live
@@ -42,8 +42,8 @@ DvzScenarioSpec dvz_example_axis_labels_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH         1600u
-#define HEIGHT        1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define SEGMENT_COUNT 4u
 
 

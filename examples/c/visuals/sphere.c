@@ -7,7 +7,7 @@
 /* sphere - deterministic 3D impostor-sphere cluster with depth, radius, and color variation.
  *
  * Scenario: visual.sphere
- * Style: visuals, graphite_cyan, 1600x1200 capture target
+ * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/sphere
  * Run:    ./build/examples/c/visuals/sphere --live
@@ -36,8 +36,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH        1600u
-#define HEIGHT       1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define SPHERE_COUNT 42u
 
 static const float TAU = 6.28318530718f;

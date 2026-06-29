@@ -7,7 +7,7 @@
 /* lipid_brain_atlas - section/channel lipid intensity showcase.
  *
  * Scenario: showcase_lipid_brain_atlas
- * Style: showcase, graphite_cyan, 1600x1200 capture target
+ * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * Prepared data is loaded from `.cache/datoviz/examples/lipid_brain_atlas/prepared/`.
  * Generate a compact validation bundle with:
@@ -42,8 +42,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600u
-#define HEIGHT 1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 #define LIPID_CACHE_PATH ".cache/datoviz/examples/lipid_brain_atlas/prepared/lipid_atlas.bin"
 #define LIPID_MAGIC      "DVZLBA1"

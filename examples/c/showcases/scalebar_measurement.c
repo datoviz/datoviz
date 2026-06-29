@@ -7,7 +7,7 @@
 /* scalebar_measurement - scale-aware overview, detail, and 3D measurement workflow.
  *
  * Scenario: scalebar_measurement_workflow
- * Style: showcase workflow, graphite_cyan, 1600x1200 capture target
+ * Style: showcase workflow, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c showcases/scalebar_measurement
  * Run:    ./build/examples/c/showcases/scalebar_measurement --live
@@ -45,8 +45,8 @@ DvzScenarioSpec dvz_showcase_scalebar_measurement_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH            1600u
-#define HEIGHT           1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define OVERVIEW_WIDTH   224u
 #define OVERVIEW_HEIGHT  160u
 #define DETAIL_WIDTH     180u

@@ -7,7 +7,7 @@
 /* choropleth - contiguous U.S. state population-density choropleth.
  *
  * Scenario: us_state_choropleth
- * Style: showcase scientific, polygon-set, 1600x1200 capture target
+ * Style: showcase scientific, polygon-set, 1280x720 window target
  *
  * Data:    U.S. Census Bureau 2024 cartographic state boundaries and Vintage 2025 resident
  *          population estimates, prepared into flat polygon-set arrays.
@@ -48,8 +48,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600u
-#define HEIGHT 1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 #define DEFAULT_DATA_BUNDLE  "data/examples/us_state_choropleth/prepared"
 #define DEFAULT_CACHE_BUNDLE ".cache/datoviz/examples/us_state_choropleth/prepared"

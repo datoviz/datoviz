@@ -7,7 +7,7 @@
 /* depth_cue - depth-dependent fading applied to a regular 3D sphere lattice.
  *
  * Scenario: feature.depth_cue
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/technique_depth_cue
  * Run:    ./build/examples/c/features/technique_depth_cue --live
@@ -34,8 +34,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       1600u
-#define HEIGHT      1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define LATTICE_SIDE  3u
 #define SPHERE_COUNT  (LATTICE_SIDE * LATTICE_SIDE * LATTICE_SIDE)
 

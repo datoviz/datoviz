@@ -7,7 +7,7 @@
 /* material_mesh - retained mesh visuals with explicit material parameters.
  *
  * Scenario: feature.material_mesh
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/material_mesh
  * Run:    ./build/examples/c/features/material_mesh --live
@@ -36,8 +36,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600u
-#define HEIGHT 1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define LABEL_SIZE 18.0f
 
 

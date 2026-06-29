@@ -7,7 +7,7 @@
 /* picking - unified retained marker hover and selection proof.
  *
  * Scenario: feature_picking
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Opens a GLFW window showing mixed marker shapes. Move the cursor over the panel to query the
  * frontmost marker item. Hover and selection are rendered by the retained item-state API. Click a
@@ -41,8 +41,8 @@ DvzScenarioSpec dvz_example_picking_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH        1600
-#define HEIGHT       1200
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define GRID_COLS    9
 #define GRID_ROWS    6
 #define MARKER_COUNT (GRID_COLS * GRID_ROWS + 5)

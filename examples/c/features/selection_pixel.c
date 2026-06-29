@@ -7,7 +7,7 @@
 /* selection_pixel - retained pixel hover and click selection.
  *
  * Scenario: feature.selection_pixel
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Move the cursor over the pixel field to query the frontmost pixel item. Hover and selection are
  * rendered by the retained item-state API. Click a pixel to toggle selection; click the background
@@ -45,8 +45,8 @@ DvzScenarioSpec dvz_example_selection_pixel_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       1600u
-#define HEIGHT      1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define GRID_WIDTH  40u
 #define GRID_HEIGHT 24u
 #define PIXEL_COUNT (GRID_WIDTH * GRID_HEIGHT)

@@ -7,7 +7,7 @@
 /* panel_linked_axes - linked temporal panels with a spanning summary panel.
  *
  * Scenario: linked_panels_axes_panzoom
- * Style: showcase workflow, graphite_cyan, 1600x1200 capture target
+ * Style: showcase workflow, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c showcases/panel_linked_axes
  * Run:    ./build/examples/c/showcases/panel_linked_axes --live
@@ -43,8 +43,8 @@ DvzScenarioSpec dvz_showcase_linked_panel_axes_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH             1600u
-#define HEIGHT            1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define PATH_COUNT        360u
 #define EVENT_COUNT       96u
 #define EVENT_ROWS        8u

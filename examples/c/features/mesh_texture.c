@@ -7,7 +7,7 @@
 /* mesh_texture - minimal UV textured mesh with a procedural RGBA8 texture.
  *
  * Scenario: feature.mesh_texture
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/mesh_texture
  * Run:    ./build/examples/c/features/mesh_texture --live
@@ -37,8 +37,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH          1600u
-#define HEIGHT         1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define TEXTURE_WIDTH  1024u
 #define TEXTURE_HEIGHT 512u
 

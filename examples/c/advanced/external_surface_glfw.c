@@ -30,6 +30,7 @@
 #include "datoviz/input/pointer.h"
 #include "datoviz/scene.h"
 #include "datoviz/window/backend.h"
+#include "example_style.h"
 
 
 
@@ -285,7 +286,7 @@ static DvzScene* _make_scene(DvzFigure** out_figure, DvzPanel** out_panel)
     if (scene == NULL)
         return NULL;
 
-    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    DvzFigure* figure = dvz_figure(scene, EXAMPLE_WINDOW_WIDTH, EXAMPLE_WINDOW_HEIGHT, 0);
     if (figure == NULL)
     {
         dvz_scene_destroy(scene);
@@ -397,7 +398,8 @@ int main(int argc, char** argv)
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-    GLFWwindow* window = glfwCreateWindow(800, 600, "external_surface_glfw", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(
+        EXAMPLE_WINDOW_WIDTH, EXAMPLE_WINDOW_HEIGHT, "external_surface_glfw", NULL, NULL);
     if (window == NULL)
     {
         fprintf(stderr, "external_surface_glfw: skipped, GLFW window creation failed\n");

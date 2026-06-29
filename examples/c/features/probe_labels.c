@@ -7,7 +7,7 @@
 /* probe_labels - categorical labels query proof with deterministic label-id readout.
  *
  * Scenario: probe_labels
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/probe_labels
  * Run:    ./build/examples/c/features/probe_labels --live
@@ -39,8 +39,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH            1600u
-#define HEIGHT           1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define FIELD_WIDTH      256u
 #define FIELD_HEIGHT     192u
 #define LABEL_COUNT      5u

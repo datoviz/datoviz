@@ -7,7 +7,7 @@
 /* visual_transform - retained visual-local affine transform on point visuals.
  *
  * Scenario: feature.visual_transform
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/visual_transform
  * Run:    ./build/examples/c/features/visual_transform --live
@@ -34,8 +34,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       1600u
-#define HEIGHT      1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define POINT_COUNT 5u
 
 

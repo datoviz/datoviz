@@ -7,7 +7,7 @@
 /* depth_test - side-by-side visual depth-test toggle with overlapping 3D points.
  *
  * Scenario: feature.depth_test
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/technique_depth_test
  * Run:    ./build/examples/c/features/technique_depth_test --live
@@ -37,8 +37,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       1600u
-#define HEIGHT      1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define POINT_COUNT 8u
 
 

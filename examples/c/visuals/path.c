@@ -7,7 +7,7 @@
 /* path - deterministic multi-signal retained path visual.
  *
  * Scenario: visual.path
- * Style: visuals, graphite_cyan, 1600x1200 capture target
+ * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/path
  * Run:    ./build/examples/c/visuals/path --live
@@ -35,8 +35,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH            1600u
-#define HEIGHT           1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define PATH_COUNT       3u
 #define SAMPLES_PER_PATH 192u
 #define SAMPLE_COUNT     (PATH_COUNT * SAMPLES_PER_PATH)

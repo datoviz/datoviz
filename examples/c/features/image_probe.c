@@ -7,7 +7,7 @@
 /* image_probe - scalar image pixel-query proof with a live probe marker.
  *
  * Scenario: image_probe
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/image_probe
  * Run:    ./build/examples/c/features/image_probe --live
@@ -41,8 +41,8 @@ DvzScenarioSpec dvz_example_image_probe_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH               1600u
-#define HEIGHT              1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define FIELD_WIDTH         256u
 #define FIELD_HEIGHT        192u
 #define PROBE_X             0.68f

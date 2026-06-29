@@ -7,7 +7,7 @@
 /* image - deterministic scalar sampled field rendered with the retained image visual.
  *
  * Scenario: visual.image
- * Style: visuals, graphite_cyan, 1600x1200 capture target
+ * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/image
  * Run:    ./build/examples/c/visuals/image --live
@@ -36,8 +36,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH        1600u
-#define HEIGHT       1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define FIELD_WIDTH  320u
 #define FIELD_HEIGHT 240u
 

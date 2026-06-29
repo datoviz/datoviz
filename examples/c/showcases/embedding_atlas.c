@@ -7,7 +7,7 @@
 /* embedding_atlas - interactive prepared AI embedding atlas.
  *
  * Scenario: showcase_embedding_atlas
- * Style: showcase, graphite_cyan, 1600x1200 capture target
+ * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * Prepared data is loaded from `.cache/datoviz/examples/embedding_atlas/prepared/`.
  * Generate it with:
@@ -43,8 +43,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600u
-#define HEIGHT 1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 #define EMBEDDING_CACHE_DIR        ".cache/datoviz/examples/embedding_atlas/prepared"
 #define EMBEDDING_XY_PATH          EMBEDDING_CACHE_DIR "/xy.f32"

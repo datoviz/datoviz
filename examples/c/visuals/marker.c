@@ -9,7 +9,7 @@
  * triangle diameter_px is the screen-space bounding-box diameter.
  *
  * Scenario: visual.marker
- * Style: visuals, graphite_cyan, 1600x1200 capture target
+ * Style: visuals, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c visuals/marker
  * Run:    ./build/examples/c/visuals/marker --live
@@ -35,8 +35,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       1600u
-#define HEIGHT      1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define MARKER_COLS 7u
 #define PI_F        3.14159265358979323846f
 

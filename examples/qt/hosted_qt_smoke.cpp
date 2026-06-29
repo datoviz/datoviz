@@ -30,6 +30,14 @@
 
 
 
+namespace
+{
+constexpr int EXAMPLE_WINDOW_WIDTH = 1280;
+constexpr int EXAMPLE_WINDOW_HEIGHT = 720;
+} // namespace
+
+
+
 class HostedQtSmokeWindow : public DvzQtHostedWindow
 {
   public:
@@ -37,7 +45,8 @@ class HostedQtSmokeWindow : public DvzQtHostedWindow
         DvzApp* app, DvzFigure* figure, DvzPanel* panel, QVulkanInstance* instance,
         uint32_t max_frames)
         : DvzQtHostedWindow(
-              app, figure, panel, instance, QStringLiteral("hosted_qt_smoke"), QSize(800, 600)),
+              app, figure, panel, instance, QStringLiteral("hosted_qt_smoke"),
+              QSize(EXAMPLE_WINDOW_WIDTH, EXAMPLE_WINDOW_HEIGHT)),
           _max_frames(max_frames)
     {}
 
@@ -78,7 +87,7 @@ static DvzScene* _make_scene(DvzFigure** out_figure, DvzPanel** out_panel)
     if (scene == nullptr)
         return nullptr;
 
-    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    DvzFigure* figure = dvz_figure(scene, EXAMPLE_WINDOW_WIDTH, EXAMPLE_WINDOW_HEIGHT, 0);
     if (figure == nullptr)
     {
         dvz_scene_destroy(scene);

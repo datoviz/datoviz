@@ -7,7 +7,7 @@
 /* bars_bands - retained bars and uncertainty band plot helpers.
  *
  * Scenario: feature.bars_bands
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/bars_bands
  * Run:    ./build/examples/c/features/bars_bands --live
@@ -43,8 +43,8 @@ DvzScenarioSpec dvz_example_bars_bands_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH      1600u
-#define HEIGHT     1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define BAR_COUNT  9u
 #define BAND_COUNT 96u
 

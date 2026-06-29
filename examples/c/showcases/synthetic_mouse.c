@@ -7,7 +7,7 @@
 /* synthetic_mouse - animated textured mouse mesh with trajectory and skeleton trails.
  *
  * Scenario: showcase_synthetic_mouse
- * Style: showcase, graphite_cyan, 1600x1200 capture target
+ * Style: showcase, graphite_cyan, 1280x720 window target
  *
  * Prepared data is loaded from `.cache/datoviz/examples/synthetic_mouse/prepared/`.
  * Generate it with:
@@ -44,8 +44,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600u
-#define HEIGHT 1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 #define MOUSE_CACHE_PATH ".cache/datoviz/examples/synthetic_mouse/prepared/synthetic_mouse.bin"
 #define MOUSE_MAGIC      "DVZMSYN"

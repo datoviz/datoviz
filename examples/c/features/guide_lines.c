@@ -7,7 +7,7 @@
 /* guide_lines - retained horizontal and vertical guide lines in panel data coordinates.
  *
  * Scenario: feature.guide_lines
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/guide_lines
  * Run:    ./build/examples/c/features/guide_lines --live
@@ -44,8 +44,8 @@ DvzScenarioSpec dvz_example_guide_lines_scenario(void);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH      1600u
-#define HEIGHT     1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define PATH_COUNT 192u
 
 static const float TAU = 6.28318530718f;

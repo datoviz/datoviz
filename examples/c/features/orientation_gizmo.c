@@ -7,7 +7,7 @@
 /* orientation_gizmo - panel-attached orientation axes following the panel's rendered orientation.
  *
  * Scenario: feature.orientation_gizmo
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/orientation_gizmo
  * Run:    ./build/examples/c/features/orientation_gizmo --live
@@ -36,8 +36,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600u
-#define HEIGHT 1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 
 
 

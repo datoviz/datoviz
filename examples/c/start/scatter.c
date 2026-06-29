@@ -7,7 +7,7 @@
 /* scatter - quickstart scatter plot: 10 000 random colored points with pan/zoom.
  *
  * Scenario: start.scatter
- * Style: start, graphite_cyan, 1600x1200 capture target
+ * Style: start, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c start/scatter
  * Run:    ./build/examples/c/start/scatter --live
@@ -35,8 +35,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH       1600u
-#define HEIGHT      1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define POINT_COUNT 10000u
 #define SEED        12345u
 

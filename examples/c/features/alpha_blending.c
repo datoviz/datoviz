@@ -7,7 +7,7 @@
 /* alpha_blending - retained primitive visual using per-vertex alpha and source-over blending.
  *
  * Scenario: feature.alpha_blending
- * Style: features, graphite_cyan, 1600x1200 capture target
+ * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/alpha_blending
  * Run:    ./build/examples/c/features/alpha_blending --live
@@ -36,8 +36,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH        1600u
-#define HEIGHT       1200u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define VERTEX_COUNT 9u
 
 
