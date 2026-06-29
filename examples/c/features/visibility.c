@@ -194,7 +194,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
     timer_desc.mode = DVZ_TIMER_INTERVAL;
-    timer_desc.period_s = 0.1;
+    timer_desc.period_s = 0.25;
     timer_desc.callback = _visibility_timer;
     timer_desc.user_data = state;
     state->timer = dvz_anim_timer(ctx->scene, &timer_desc);
