@@ -1435,15 +1435,15 @@ function expectAlphaBlendingScenarioStreamShape(stream, label) {
   const target = pipeline.color_targets?.[0];
   requireOk(target?.blend !== undefined, `${label}: expected primitive color-target blend state`);
   requireOk(
-    target.blend.color.src_factor === 6 &&
-      target.blend.color.dst_factor === 7 &&
-      target.blend.color.operation === 0,
+    target.blend.color.src_factor === "src-alpha" &&
+      target.blend.color.dst_factor === "one-minus-src-alpha" &&
+      target.blend.color.operation === "add",
     `${label}: unexpected source-over color blend state`,
   );
   requireOk(
-    target.blend.alpha.src_factor === 1 &&
-      target.blend.alpha.dst_factor === 7 &&
-      target.blend.alpha.operation === 0,
+    target.blend.alpha.src_factor === "one" &&
+      target.blend.alpha.dst_factor === "one-minus-src-alpha" &&
+      target.blend.alpha.operation === "add",
     `${label}: unexpected source-over alpha blend state`,
   );
   requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected blended primitive draw`);
