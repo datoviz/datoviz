@@ -63,7 +63,7 @@ static bool _add_text_block(DvzPanel* panel)
 
     DvzColor color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
     DvzTextStyle style = dvz_text_style();
-    style.size_px = 30.0f;
+    style.size_px = 24.0f;
     style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.color[0] = color.r;
     style.color[1] = color.g;
@@ -74,7 +74,7 @@ static bool _add_text_block(DvzPanel* panel)
 
     DvzTextLayout layout = dvz_text_layout();
     layout.line_height = 1.18f;
-    layout.line_gap_px = 8.0f;
+    layout.line_gap_px = 6.0f;
     if (dvz_text_set_layout(text, &layout) != 0)
         return false;
 

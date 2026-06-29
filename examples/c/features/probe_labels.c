@@ -82,6 +82,7 @@ struct LabelProbePointer
 struct LabelProbeState
 {
     DvzScene* scene;
+    DvzFigure* figure;
     DvzPanel* panel;
     LabelProbeMarker marker;
     int32_t* labels;
@@ -339,6 +340,49 @@ static bool _probe_pointer_from_figure(
 
 
 /**
+ * Convert one raw native pointer event to figure-layout coordinates.
+ *
+ * @param router input router carrying resize state
+ * @param state example state
+ * @param event raw pointer event
+ * @param out figure-layout coordinates
+ * @return true when conversion succeeded
+ */
+static bool _probe_pointer_event_to_figure(
+    const DvzInputRouter* router, const LabelProbeState* state, const DvzPointerEvent* event,
+    float out[2])
+{
+    ANN(out);
+    if (state == NULL || state->figure == NULL || event == NULL)
+        return false;
+
+    DvzInputResizeEvent resize = {0};
+    const bool has_resize = router != NULL && dvz_input_router_last_resize(router, &resize);
+    const bool has_event_window =
+        isfinite(event->window_size[0]) && isfinite(event->window_size[1]) &&
+        event->window_size[0] > 0.0f && event->window_size[1] > 0.0f;
+    const float window_width =
+        has_event_window ? event->window_size[0] :
+        has_resize && resize.window_width > 0 ? (float)resize.window_width :
+                                                0.0f;
+    const float window_height =
+        has_event_window ? event->window_size[1] :
+        has_resize && resize.window_height > 0 ? (float)resize.window_height :
+                                                 0.0f;
+    const float content_scale_x =
+        has_resize && resize.content_scale_x > 0.0f ? resize.content_scale_x :
+                                                       event->content_scale;
+    const float content_scale_y =
+        has_resize && resize.content_scale_y > 0.0f ? resize.content_scale_y :
+                                                       event->content_scale;
+    return dvz_figure_window_to_layout(
+        state->figure, event->pos[0], event->pos[1], window_width, window_height,
+        content_scale_x, content_scale_y, &out[0], &out[1]);
+}
+
+
+
+/**
  * Add the visible fixed probe marker.
  *
  * @param scene scene owning the visual
@@ -488,8 +532,11 @@ _labels_probe_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void
     if (event->type != DVZ_POINTER_EVENT_MOVE && event->type != DVZ_POINTER_EVENT_CLICK)
         return;
 
+    float figure_pos[2] = {0};
     LabelProbePointer pointer = {0};
-    if (_probe_pointer_from_figure(state->panel, event->pos[0], event->pos[1], &pointer))
+    if (
+        _probe_pointer_event_to_figure(router, state, event, figure_pos) &&
+        _probe_pointer_from_figure(state->panel, figure_pos[0], figure_pos[1], &pointer))
     {
         state->cursor_valid = true;
         state->cursor_x = pointer.panel_px[0];
@@ -525,9 +572,12 @@ static void _labels_probe_frame(DvzView* win, void* user_data)
 
         if (query.hit && query.value_kind == DVZ_QUERY_VALUE_CATEGORY)
         {
+            double data[2] = {query.uvw[0], query.uvw[1]};
+            (void)dvz_panel_position_to_data(
+                state->panel, DVZ_PANEL_COORD_PANEL_PX, query.panel_position, data);
             dvz_fprintf(
-                stdout, "probe label_id=%" PRId64 " label=\"%s\" uv=(%0.3f,%0.3f)\n",
-                query.category_id, query.label, query.uvw[0], query.uvw[1]);
+                stdout, "probe label_id=%" PRId64 " label=\"%s\" data=(%0.3f,%0.3f)\n",
+                query.category_id, query.label, data[0], data[1]);
         }
         else
         {
@@ -607,6 +657,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     }
 
     state->scene = ctx->scene;
+    state->figure = ctx->figure;
     state->panel = panel;
     state->cursor_valid = true;
     state->cursor_x = initial_probe_px[0];

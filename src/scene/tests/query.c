@@ -3592,31 +3592,31 @@ int test_scene_labels_query_resolves_category(TstContext* suite, const TstCase* 
     AT(query.status == DVZ_QUERY_STATUS_HIT);
     AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_LABELS);
     AT(query.resolved_target == DVZ_SCENE_TARGET_SEGMENT);
-    AT(query.category_id == 23);
+    AT(query.category_id == -7);
     AT(query.value_kind == DVZ_QUERY_VALUE_CATEGORY);
     AT(query.scale == scale);
-    AT(strcmp(query.label, "twenty three") == 0);
+    AT(strcmp(query.label, "negative seven") == 0);
     AT(query.has_uvw);
     AT(query.uvw[0] > 0.2 && query.uvw[0] < 0.3);
-    AT(query.uvw[1] > 0.2 && query.uvw[1] < 0.3);
+    AT(query.uvw[1] > 0.7 && query.uvw[1] < 0.8);
 
     AT(dvz_scene_poll_query(scene, &query));
     AT(query.hit);
     AT(query.request_id == 142);
-    AT(query.category_id == 31);
-    AT(strcmp(query.label, "thirty one") == 0);
+    AT(query.category_id == 17);
+    AT(strcmp(query.label, "seventeen") == 0);
 
     AT(dvz_scene_poll_query(scene, &query));
     AT(query.hit);
     AT(query.request_id == 143);
-    AT(query.category_id == -7);
-    AT(strcmp(query.label, "negative seven") == 0);
+    AT(query.category_id == 23);
+    AT(strcmp(query.label, "twenty three") == 0);
 
     AT(dvz_scene_poll_query(scene, &query));
     AT(query.hit);
     AT(query.request_id == 144);
-    AT(query.category_id == 17);
-    AT(strcmp(query.label, "seventeen") == 0);
+    AT(query.category_id == 31);
+    AT(strcmp(query.label, "thirty one") == 0);
 
     AT(dvz_scene_poll_query(scene, &query));
     AT(!query.hit);
@@ -3714,7 +3714,7 @@ int test_scene_labels_query_high_unsigned_id(TstContext* suite, const TstCase* i
     caps.shader_format_glsl = true;
 
     AT(dvz_panel_query(
-           panel, 48.0, 48.0,
+           panel, 48.0, 16.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 145, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
 

@@ -29,8 +29,7 @@ bool isHidden(uint id)
 void main()
 {
     ivec2 size = textureSize(usampler2D(tex, samp), 0);
-    vec2 uv = vec2(fragUV.x, 1.0 - fragUV.y);
-    ivec2 coord = clamp(ivec2(floor(uv * vec2(size))), ivec2(0), size - ivec2(1));
+    ivec2 coord = clamp(ivec2(floor(fragUV * vec2(size))), ivec2(0), size - ivec2(1));
     uint id = texelFetch(usampler2D(tex, samp), coord, 0).r;
     if (id == labels.ids.x || isHidden(id))
         discard;

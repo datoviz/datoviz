@@ -69,7 +69,7 @@ static bool _add_texts(DvzPanel* panel)
     };
     const float x[TEXT_COUNT] = {128.0f, 132.0f, 134.0f, 136.0f, 1040.0f};
     const float y[TEXT_COUNT] = {210.0f, 344.0f, 454.0f, 544.0f, 730.0f};
-    const float sizes[TEXT_COUNT] = {84.0f, 46.0f, 38.0f, 30.0f, 42.0f};
+    const float sizes[TEXT_COUNT] = {64.0f, 36.0f, 30.0f, 24.0f, 32.0f};
     const float angles[TEXT_COUNT] = {0.0f, 0.0f, 0.0f, 0.0f, -0.34f};
     const ExampleStyleColorRole roles[TEXT_COUNT] = {
         EXAMPLE_STYLE_COLOR_TEXT,
