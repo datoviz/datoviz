@@ -494,12 +494,17 @@ int main(int argc, char** argv)
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
-    EXAMPLE_CHECK(
-        example_visual_spin(
-            scene, volume, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC, NULL,
-            &spin),
-        "example_visual_spin() failed");
-    example_visual_spin_start(&spin, 0.0);
+    DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
+    rotation_desc.axis[1] = 1.0f;
+    rotation_desc.speed_rad_per_sec = 1.0f;
+    spin.rotation = dvz_track_rotation(&rotation_desc);
+    EXAMPLE_CHECK(spin.rotation != NULL, "dvz_track_rotation() failed");
+    DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = spin.rotation;
+    spin.animation = dvz_anim_visual_transform(scene, volume, &transform_desc);
+    EXAMPLE_CHECK(spin.animation != NULL, "dvz_anim_visual_transform() failed");
+    dvz_anim_set_speed(spin.animation, ROTATION_SPEED_RAD_PER_SEC);
+    dvz_anim_start(spin.animation, 0.0);
 
     dvz_app_run(app, frame_count);
     ret = 0;
@@ -507,7 +512,7 @@ int main(int argc, char** argv)
 cleanup:
     if (app != NULL)
         dvz_app_destroy(app);
-    example_visual_spin_destroy(&spin);
+    dvz_track_destroy(spin.rotation);
     dvz_free(data);
     if (scene != NULL)
         dvz_scene_destroy(scene);

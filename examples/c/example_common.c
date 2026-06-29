@@ -21,7 +21,6 @@
 #endif
 #include "datoviz/geom.h"
 #include "datoviz/input/pointer.h"
-#include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
 
 #include "_alloc.h"
@@ -579,103 +578,4 @@ DvzVisual* example_graphite_cyan_cube_mesh(
     if (out_geometry != NULL)
         *out_geometry = NULL;
     return visual;
-}
-
-
-
-/**
- * Create a visual transform spin animation.
- *
- * @param scene owning scene
- * @param visual visual to transform
- * @param axis spin axis
- * @param speed_rad_per_sec angular speed in radians per second
- * @param controller optional controller whose interactions pause the animation
- * @param out output spin handle
- * @return true on success
- */
-bool example_visual_spin(
-    DvzScene* scene, DvzVisual* visual, vec3 axis, float speed_rad_per_sec,
-    DvzController* controller, DvzExampleVisualSpin* out)
-{
-    if (scene == NULL || visual == NULL || out == NULL)
-        return false;
-    memset(out, 0, sizeof(*out));
-
-    DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
-    glm_vec3_copy(axis, rotation_desc.axis);
-    rotation_desc.speed_rad_per_sec = 1.0f;
-    out->rotation = dvz_track_rotation(&rotation_desc);
-    if (out->rotation == NULL)
-        return false;
-
-    DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
-    transform_desc.rotation = out->rotation;
-    out->animation = dvz_anim_visual_transform(scene, visual, &transform_desc);
-    if (out->animation == NULL)
-    {
-        example_visual_spin_destroy(out);
-        return false;
-    }
-    if (controller != NULL)
-        dvz_anim_set_interaction_policy(
-            out->animation, controller, DVZ_ANIM_INTERACTION_PAUSE, 0.0);
-    example_visual_spin_set_speed(out, speed_rad_per_sec);
-    return true;
-}
-
-
-
-/**
- * Start or restart a visual spin animation.
- *
- * @param spin spin handle
- * @param t_start scene-clock start time, or 0 for immediate start
- */
-void example_visual_spin_start(DvzExampleVisualSpin* spin, double t_start)
-{
-    if (spin != NULL && spin->animation != NULL)
-        dvz_anim_start(spin->animation, t_start);
-}
-
-
-
-/**
- * Stop a visual spin animation.
- *
- * @param spin spin handle
- */
-void example_visual_spin_stop(DvzExampleVisualSpin* spin)
-{
-    if (spin != NULL && spin->animation != NULL)
-        dvz_anim_stop(spin->animation);
-}
-
-
-
-/**
- * Set the angular speed of a visual spin animation.
- *
- * @param spin spin handle
- * @param speed_rad_per_sec angular speed in radians per second
- */
-void example_visual_spin_set_speed(DvzExampleVisualSpin* spin, float speed_rad_per_sec)
-{
-    if (spin != NULL && spin->animation != NULL)
-        dvz_anim_set_speed(spin->animation, speed_rad_per_sec);
-}
-
-
-
-/**
- * Destroy resources owned by a visual spin helper.
- *
- * @param spin spin handle
- */
-void example_visual_spin_destroy(DvzExampleVisualSpin* spin)
-{
-    if (spin == NULL)
-        return;
-    dvz_track_destroy(spin->rotation);
-    memset(spin, 0, sizeof(*spin));
 }

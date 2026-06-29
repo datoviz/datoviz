@@ -388,9 +388,9 @@ static void _apply_spin(PointStressState* state)
     if (state->spin.animation == NULL)
         return;
     if (state->spin_enabled)
-        example_visual_spin_start(&state->spin, 0.0);
+        dvz_anim_start(state->spin.animation, 0.0);
     else
-        example_visual_spin_stop(&state->spin);
+        dvz_anim_stop(state->spin.animation);
 }
 
 
@@ -678,11 +678,18 @@ int main(int argc, char** argv)
         "dvz_view_bind_controller() failed");
     dvz_arcball_set(arcball, (vec3){+0.42f, -0.10f, +0.18f});
 
-    EXAMPLE_CHECK(
-        example_visual_spin(
-            scene, visual, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-            arcball_controller, &state.spin),
-        "example_visual_spin() failed");
+    DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
+    rotation_desc.axis[1] = 1.0f;
+    rotation_desc.speed_rad_per_sec = 1.0f;
+    state.spin.rotation = dvz_track_rotation(&rotation_desc);
+    EXAMPLE_CHECK(state.spin.rotation != NULL, "dvz_track_rotation() failed");
+    DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = state.spin.rotation;
+    state.spin.animation = dvz_anim_visual_transform(scene, visual, &transform_desc);
+    EXAMPLE_CHECK(state.spin.animation != NULL, "dvz_anim_visual_transform() failed");
+    dvz_anim_set_interaction_policy(
+        state.spin.animation, arcball_controller, DVZ_ANIM_INTERACTION_PAUSE, 0.0);
+    dvz_anim_set_speed(state.spin.animation, ROTATION_SPEED_RAD_PER_SEC);
     _reset_controls(&state);
 
     DvzGui* gui = dvz_view_gui(win, NULL);
@@ -698,7 +705,7 @@ int main(int argc, char** argv)
 cleanup:
     if (app != NULL)
         dvz_app_destroy(app);
-    example_visual_spin_destroy(&state.spin);
+    dvz_track_destroy(state.spin.rotation);
     dvz_free(state.diameters);
     dvz_free(state.colors);
     dvz_free(state.positions);

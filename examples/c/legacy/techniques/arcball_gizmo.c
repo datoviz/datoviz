@@ -750,11 +750,11 @@ static void _gizmo_apply_spin(ArcballGizmoState* state)
     ANN(state);
     if (state->spin.animation == NULL)
         return;
-    example_visual_spin_set_speed(&state->spin, state->spin_speed);
+    dvz_anim_set_speed(state->spin.animation, state->spin_speed);
     if (state->auto_rotate)
-        example_visual_spin_start(&state->spin, 0.0);
+        dvz_anim_start(state->spin.animation, 0.0);
     else
-        example_visual_spin_stop(&state->spin);
+        dvz_anim_stop(state->spin.animation);
 }
 
 
@@ -1061,11 +1061,16 @@ int main(int argc, char** argv)
     rc = dvz_view_capture_start(win, &capture);
     EXAMPLE_CHECK(rc == 0, "dvz_view_capture_start() failed");
 
-    EXAMPLE_CHECK(
-        example_visual_spin(
-            scene, cube_visual, (vec3){0.0f, 0.0f, 1.0f}, ROTATION_SPEED_RAD_PER_SEC, NULL,
-            &gui_state.spin),
-        "example_visual_spin() failed");
+    DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
+    rotation_desc.axis[2] = 1.0f;
+    rotation_desc.speed_rad_per_sec = 1.0f;
+    gui_state.spin.rotation = dvz_track_rotation(&rotation_desc);
+    EXAMPLE_CHECK(gui_state.spin.rotation != NULL, "dvz_track_rotation() failed");
+    DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = gui_state.spin.rotation;
+    gui_state.spin.animation = dvz_anim_visual_transform(scene, cube_visual, &transform_desc);
+    EXAMPLE_CHECK(gui_state.spin.animation != NULL, "dvz_anim_visual_transform() failed");
+    dvz_anim_set_speed(gui_state.spin.animation, ROTATION_SPEED_RAD_PER_SEC);
     _gizmo_apply_spin(&gui_state);
 
     dvz_app_run(app, frame_count);
@@ -1078,7 +1083,7 @@ cleanup:
         dvz_geometry_destroy(cube);
     if (app != NULL)
         dvz_app_destroy(app);
-    example_visual_spin_destroy(&gui_state.spin);
+    dvz_track_destroy(gui_state.spin.rotation);
     if (scene != NULL)
         dvz_scene_destroy(scene);
     dvz_free(axes_mesh.positions);

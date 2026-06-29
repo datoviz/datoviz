@@ -342,9 +342,9 @@ static void _apply_spin(SsaoExampleState* state)
     if (state->spin.animation == NULL)
         return;
     if (state->spin_enabled)
-        example_visual_spin_start(&state->spin, 0.0);
+        dvz_anim_start(state->spin.animation, 0.0);
     else
-        example_visual_spin_stop(&state->spin);
+        dvz_anim_stop(state->spin.animation);
 }
 
 
@@ -586,11 +586,16 @@ int main(int argc, char** argv)
     dvz_scene_set_fps(scene, 60.0);
 
     DvzExampleVisualSpin spin = {0};
-    EXAMPLE_CHECK(
-        example_visual_spin(
-            scene, visual, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC, NULL,
-            &spin),
-        "example_visual_spin() failed");
+    DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
+    rotation_desc.axis[1] = 1.0f;
+    rotation_desc.speed_rad_per_sec = 1.0f;
+    spin.rotation = dvz_track_rotation(&rotation_desc);
+    EXAMPLE_CHECK(spin.rotation != NULL, "dvz_track_rotation() failed");
+    DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = spin.rotation;
+    spin.animation = dvz_anim_visual_transform(scene, visual, &transform_desc);
+    EXAMPLE_CHECK(spin.animation != NULL, "dvz_anim_visual_transform() failed");
+    dvz_anim_set_speed(spin.animation, ROTATION_SPEED_RAD_PER_SEC);
 
     state = (SsaoExampleState){
         .panel = panel,
@@ -612,7 +617,7 @@ int main(int argc, char** argv)
 cleanup:
     if (app != NULL)
         dvz_app_destroy(app);
-    example_visual_spin_destroy(&state.spin);
+    dvz_track_destroy(state.spin.rotation);
     dvz_free(live_sizes);
     dvz_free(base_sizes);
     dvz_free(colors);

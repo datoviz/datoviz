@@ -491,13 +491,13 @@ static void _apply_spin(BwmExampleState* state)
         return;
     if (state->spin_enabled)
     {
-        example_visual_spin_start(&state->point_spin, 0.0);
-        example_visual_spin_start(&state->mesh_spin, 0.0);
+        dvz_anim_start(state->point_spin.animation, 0.0);
+        dvz_anim_start(state->mesh_spin.animation, 0.0);
     }
     else
     {
-        example_visual_spin_stop(&state->point_spin);
-        example_visual_spin_stop(&state->mesh_spin);
+        dvz_anim_stop(state->point_spin.animation);
+        dvz_anim_stop(state->mesh_spin.animation);
     }
 }
 
@@ -722,16 +722,24 @@ int main(int argc, char** argv)
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
-    EXAMPLE_CHECK(
-        example_visual_spin(
-            scene, point, (vec3){0.0f, 1.0f, 0.0f}, BWM_ROTATION_SPEED_RAD_PER_SEC, NULL,
-            &state.point_spin),
-        "example_visual_spin(point) failed");
-    EXAMPLE_CHECK(
-        example_visual_spin(
-            scene, mesh, (vec3){0.0f, 1.0f, 0.0f}, BWM_ROTATION_SPEED_RAD_PER_SEC, NULL,
-            &state.mesh_spin),
-        "example_visual_spin(mesh) failed");
+    DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
+    rotation_desc.axis[1] = 1.0f;
+    rotation_desc.speed_rad_per_sec = 1.0f;
+    state.point_spin.rotation = dvz_track_rotation(&rotation_desc);
+    EXAMPLE_CHECK(state.point_spin.rotation != NULL, "dvz_track_rotation(point) failed");
+    DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = state.point_spin.rotation;
+    state.point_spin.animation = dvz_anim_visual_transform(scene, point, &transform_desc);
+    EXAMPLE_CHECK(state.point_spin.animation != NULL, "dvz_anim_visual_transform(point) failed");
+    dvz_anim_set_speed(state.point_spin.animation, BWM_ROTATION_SPEED_RAD_PER_SEC);
+
+    state.mesh_spin.rotation = dvz_track_rotation(&rotation_desc);
+    EXAMPLE_CHECK(state.mesh_spin.rotation != NULL, "dvz_track_rotation(mesh) failed");
+    transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = state.mesh_spin.rotation;
+    state.mesh_spin.animation = dvz_anim_visual_transform(scene, mesh, &transform_desc);
+    EXAMPLE_CHECK(state.mesh_spin.animation != NULL, "dvz_anim_visual_transform(mesh) failed");
+    dvz_anim_set_speed(state.mesh_spin.animation, BWM_ROTATION_SPEED_RAD_PER_SEC);
     _apply_spin(&state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
@@ -741,8 +749,8 @@ int main(int argc, char** argv)
 cleanup:
     if (app != NULL)
         dvz_app_destroy(app);
-    example_visual_spin_destroy(&state.mesh_spin);
-    example_visual_spin_destroy(&state.point_spin);
+    dvz_track_destroy(state.mesh_spin.rotation);
+    dvz_track_destroy(state.point_spin.rotation);
     if (scene != NULL)
         dvz_scene_destroy(scene);
     _destroy_bwm_dataset(&dataset);

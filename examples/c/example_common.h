@@ -151,19 +151,3 @@ DvzVisual* example_graphite_cyan_cube_mesh(
     double size,
     const ExampleStyleColorRole face_roles[6],
     DvzGeometry** out_geometry);
-
-bool example_visual_spin(
-    DvzScene* scene,
-    DvzVisual* visual,
-    vec3 axis,
-    float speed_rad_per_sec,
-    DvzController* controller,
-    DvzExampleVisualSpin* out);
-
-void example_visual_spin_start(DvzExampleVisualSpin* spin, double t_start);
-
-void example_visual_spin_stop(DvzExampleVisualSpin* spin);
-
-void example_visual_spin_set_speed(DvzExampleVisualSpin* spin, float speed_rad_per_sec);
-
-void example_visual_spin_destroy(DvzExampleVisualSpin* spin);

@@ -939,13 +939,13 @@ static void _apply_spin(ProteinExampleState* state)
         return;
     if (state->spin_enabled)
     {
-        example_visual_spin_start(&state->sphere_spin, 0.0);
-        example_visual_spin_start(&state->ribbon_spin, 0.0);
+        dvz_anim_start(state->sphere_spin.animation, 0.0);
+        dvz_anim_start(state->ribbon_spin.animation, 0.0);
     }
     else
     {
-        example_visual_spin_stop(&state->sphere_spin);
-        example_visual_spin_stop(&state->ribbon_spin);
+        dvz_anim_stop(state->sphere_spin.animation);
+        dvz_anim_stop(state->ribbon_spin.animation);
     }
 }
 
@@ -1257,18 +1257,30 @@ int main(int argc, char** argv)
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
-    EXAMPLE_CHECK(
-        example_visual_spin(
-            scene, spheres, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-            arcball_controller, &sphere_spin),
-        "example_visual_spin(spheres) failed");
+    DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
+    rotation_desc.axis[1] = 1.0f;
+    rotation_desc.speed_rad_per_sec = 1.0f;
+    sphere_spin.rotation = dvz_track_rotation(&rotation_desc);
+    EXAMPLE_CHECK(sphere_spin.rotation != NULL, "dvz_track_rotation(spheres) failed");
+    DvzTransformMotionDesc transform_desc = dvz_transform_motion_desc();
+    transform_desc.rotation = sphere_spin.rotation;
+    sphere_spin.animation = dvz_anim_visual_transform(scene, spheres, &transform_desc);
+    EXAMPLE_CHECK(sphere_spin.animation != NULL, "dvz_anim_visual_transform(spheres) failed");
+    dvz_anim_set_interaction_policy(
+        sphere_spin.animation, arcball_controller, DVZ_ANIM_INTERACTION_PAUSE, 0.0);
+    dvz_anim_set_speed(sphere_spin.animation, ROTATION_SPEED_RAD_PER_SEC);
     if (ribbon != NULL)
     {
+        ribbon_spin.rotation = dvz_track_rotation(&rotation_desc);
+        EXAMPLE_CHECK(ribbon_spin.rotation != NULL, "dvz_track_rotation(ribbon) failed");
+        transform_desc = dvz_transform_motion_desc();
+        transform_desc.rotation = ribbon_spin.rotation;
+        ribbon_spin.animation = dvz_anim_visual_transform(scene, ribbon, &transform_desc);
         EXAMPLE_CHECK(
-            example_visual_spin(
-                scene, ribbon, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
-                arcball_controller, &ribbon_spin),
-            "example_visual_spin(ribbon) failed");
+            ribbon_spin.animation != NULL, "dvz_anim_visual_transform(ribbon) failed");
+        dvz_anim_set_interaction_policy(
+            ribbon_spin.animation, arcball_controller, DVZ_ANIM_INTERACTION_PAUSE, 0.0);
+        dvz_anim_set_speed(ribbon_spin.animation, ROTATION_SPEED_RAD_PER_SEC);
     }
 
     state = (ProteinExampleState){
@@ -1329,12 +1341,12 @@ int main(int argc, char** argv)
 cleanup:
     if (app != NULL)
         dvz_app_destroy(app);
-    example_visual_spin_destroy(&state.ribbon_spin);
-    example_visual_spin_destroy(&state.sphere_spin);
+    dvz_track_destroy(state.ribbon_spin.rotation);
+    dvz_track_destroy(state.sphere_spin.rotation);
     if (!state_initialized)
     {
-        example_visual_spin_destroy(&ribbon_spin);
-        example_visual_spin_destroy(&sphere_spin);
+        dvz_track_destroy(ribbon_spin.rotation);
+        dvz_track_destroy(sphere_spin.rotation);
     }
     if (scene != NULL)
         dvz_scene_destroy(scene);
