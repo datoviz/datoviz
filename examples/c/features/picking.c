@@ -168,7 +168,12 @@ static void _picking_pointer(const DvzScenarioPointerEvent* event, void* user_da
 
     double x = 0.0;
     double y = 0.0;
-    state->cursor_valid = dvz_scenario_panel_pointer_position(state->panel, event, &x, &y);
+    double panel_pos[2] = {0};
+    state->cursor_valid = dvz_panel_transform_point(
+        state->panel, DVZ_PANEL_COORD_FIGURE_PX, DVZ_PANEL_COORD_PANEL_PX,
+        (const double[2]){event->x, event->y}, panel_pos);
+    x = panel_pos[0];
+    y = panel_pos[1];
     if (!state->cursor_valid)
     {
         if (state->has_hover_query)
@@ -187,14 +192,14 @@ static void _picking_pointer(const DvzScenarioPointerEvent* event, void* user_da
     if (event->type == DVZ_SCENARIO_POINTER_MOVE)
     {
         request.request_id = QUERY_HOVER_ID;
-        if (dvz_scenario_panel_query(state->panel, x, y, &request) != 0)
-            fprintf(stderr, "dvz_scenario_panel_query() failed\n");
+        if (dvz_panel_query(state->panel, x, y, &request) != 0)
+            fprintf(stderr, "dvz_panel_query() failed\n");
     }
     else if (event->button == DVZ_POINTER_BUTTON_LEFT)
     {
         request.request_id = QUERY_CLICK_ID;
-        if (dvz_scenario_panel_query(state->panel, x, y, &request) != 0)
-            fprintf(stderr, "dvz_scenario_panel_query(click) failed\n");
+        if (dvz_panel_query(state->panel, x, y, &request) != 0)
+            fprintf(stderr, "dvz_panel_query(click) failed\n");
     }
 }
 

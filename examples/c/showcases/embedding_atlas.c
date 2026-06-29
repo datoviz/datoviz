@@ -418,8 +418,12 @@ static void _embedding_pointer(const DvzScenarioPointerEvent* event, void* user_
         event->type != DVZ_SCENARIO_POINTER_MOVE && event->type != DVZ_SCENARIO_POINTER_PRESS)
         return;
 
-    state->cursor_valid = dvz_scenario_panel_pointer_position(
-        state->panel, event, &state->cursor_x, &state->cursor_y);
+    double panel_pos[2] = {0};
+    state->cursor_valid = dvz_panel_transform_point(
+        state->panel, DVZ_PANEL_COORD_FIGURE_PX, DVZ_PANEL_COORD_PANEL_PX,
+        (const double[2]){event->x, event->y}, panel_pos);
+    state->cursor_x = panel_pos[0];
+    state->cursor_y = panel_pos[1];
     if (event->type == DVZ_SCENARIO_POINTER_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
     {
         if (!state->cursor_valid)
@@ -484,8 +488,8 @@ static void _embedding_post_frame(DvzScenarioContext* ctx, void* user_data)
         request.target = DVZ_SCENE_TARGET_ITEM;
         request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
 
-        if (dvz_scenario_panel_query(state->panel, state->cursor_x, state->cursor_y, &request) != 0)
-            fprintf(stderr, "dvz_scenario_panel_query() failed\n");
+        if (dvz_panel_query(state->panel, state->cursor_x, state->cursor_y, &request) != 0)
+            fprintf(stderr, "dvz_panel_query() failed\n");
     }
 }
 

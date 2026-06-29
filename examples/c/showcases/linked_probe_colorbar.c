@@ -615,10 +615,9 @@ static void _queue_probe(LinkedProbeState* state)
     DvzQueryRequest request = dvz_query_request();
     request.request_id = PROBE_REQUEST_ID;
     request.target = DVZ_SCENE_TARGET_PIXEL;
-    if (dvz_scenario_panel_query(
-            state->source_panel, state->cursor_x, state->cursor_y, &request) != 0)
+    if (dvz_panel_query(state->source_panel, state->cursor_x, state->cursor_y, &request) != 0)
     {
-        dvz_fprintf(stderr, "dvz_scenario_panel_query() failed\n");
+        dvz_fprintf(stderr, "dvz_panel_query() failed\n");
     }
 }
 

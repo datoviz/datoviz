@@ -301,30 +301,6 @@ int dvz_scenario_bind_controller(
 DvzPanzoom* dvz_scenario_panzoom(
     DvzScenarioContext* ctx, DvzPanel* panel, const DvzPanzoomDesc* desc, DvzDimMask dims);
 
-/**
- * Convert one portable figure-coordinate pointer event to panel-local coordinates.
- *
- * @param panel target panel
- * @param event portable pointer event in figure layout coordinates
- * @param out_x output panel-local logical x coordinate, origin at the outer panel rectangle
- * @param out_y output panel-local logical y coordinate, origin at the outer panel rectangle
- * @return true when the pointer is inside the outer panel rectangle
- */
-bool dvz_scenario_panel_pointer_position(
-    DvzPanel* panel, const DvzScenarioPointerEvent* event, double* out_x, double* out_y);
-
-/**
- * Queue one panel query in panel-local coordinates.
- *
- * @param panel target panel
- * @param x panel-local x coordinate
- * @param y panel-local y coordinate
- * @param request query request
- * @return 0 on success, negative on error
- */
-int dvz_scenario_panel_query(
-    DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
-
 int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* config);
 
 int dvz_scenario_run_native_cli(const DvzScenarioSpec* spec, int argc, char** argv);
