@@ -138,3 +138,5 @@ void _dvz_window_effective_content_scale(
 
 void _dvz_window_metrics_resolve(
     const DvzWindowMetricsInputs* inputs, DvzWindowMetrics* out);
+
+void _dvz_window_backend_emit_metrics(DvzWindow* window, const DvzWindowMetrics* metrics);

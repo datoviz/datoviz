@@ -1132,6 +1132,26 @@ static void _view_refresh_size_state(DvzView* win, const DvzStreamFrame* frame)
     }
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->window != NULL && dvz_window_backend_type(win->window) != DVZ_BACKEND_OFFSCREEN)
+    {
+        const DvzWindowMetrics* metrics = dvz_window_metrics(win->window);
+        if (metrics != NULL)
+        {
+            if (metrics->surface_size.width > 0 && metrics->surface_size.height > 0)
+            {
+                framebuffer_width = metrics->surface_size.width;
+                framebuffer_height = metrics->surface_size.height;
+            }
+            if (metrics->logical_size.width > 0 && metrics->logical_size.height > 0)
+            {
+                logical_width = metrics->logical_size.width;
+                logical_height = metrics->logical_size.height;
+            }
+            device_scale_x = _view_valid_scale(metrics->device_scale.x);
+            device_scale_y = _view_valid_scale(metrics->device_scale.y);
+        }
+    }
+
     if (win->canvas != NULL)
     {
         DvzInputRouter* router = dvz_canvas_input(win->canvas);
@@ -4296,6 +4316,66 @@ float dvz_view_device_scale(const DvzView* win)
     const float sx = win->device_scale_x > 0.0f ? win->device_scale_x : 1.0f;
     const float sy = win->device_scale_y > 0.0f ? win->device_scale_y : 1.0f;
     return 0.5f * (sx + sy);
+}
+
+
+
+/**
+ * Return the current two-axis device scale for a view.
+ *
+ * @param win the view
+ * @return physical pixels per logical pixel along X and Y
+ */
+DvzScaleXY dvz_view_device_scale_xy(const DvzView* win)
+{
+    ANN(win);
+    return (DvzScaleXY){
+        .x = win->device_scale_x > 0.0f ? win->device_scale_x : 1.0f,
+        .y = win->device_scale_y > 0.0f ? win->device_scale_y : 1.0f,
+    };
+}
+
+
+
+/**
+ * Return the current view size in an explicit size space.
+ *
+ * @param win the view
+ * @param space requested size space
+ * @return size in the requested space, or zero on invalid input
+ */
+DvzExtent dvz_view_size(const DvzView* win, DvzSizeSpace space)
+{
+    ANN(win);
+    switch (space)
+    {
+    case DVZ_SIZE_LOGICAL:
+        return (DvzExtent){.width = win->logical_width, .height = win->logical_height};
+    case DVZ_SIZE_NATIVE:
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+        if (win->window != NULL)
+        {
+            const DvzWindowMetrics* metrics = dvz_window_metrics(win->window);
+            if (metrics != NULL && metrics->native_size.width > 0 && metrics->native_size.height > 0)
+                return metrics->native_size;
+        }
+#endif
+        return (DvzExtent){.width = win->logical_width, .height = win->logical_height};
+    case DVZ_SIZE_SURFACE:
+        return (DvzExtent){.width = win->framebuffer_width, .height = win->framebuffer_height};
+    case DVZ_SIZE_RENDER:
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+        if (win->window != NULL)
+        {
+            const DvzWindowMetrics* metrics = dvz_window_metrics(win->window);
+            if (metrics != NULL && metrics->render_size.width > 0 && metrics->render_size.height > 0)
+                return metrics->render_size;
+        }
+#endif
+        return (DvzExtent){.width = win->framebuffer_width, .height = win->framebuffer_height};
+    default:
+        return (DvzExtent){0};
+    }
 }
 
 

@@ -558,6 +558,38 @@ void _dvz_window_metrics_resolve(
 
 
 /**
+ * Emit normalized metrics and refresh the cached surface values.
+ *
+ * @param window window whose router receives the resize event
+ * @param metrics normalized metrics snapshot
+ */
+void _dvz_window_backend_emit_metrics(DvzWindow* window, const DvzWindowMetrics* metrics)
+{
+    ANN(window);
+    ANN(metrics);
+    ANN(window->router);
+
+    window->metrics = *metrics;
+    DvzWindowSurface* surface = &window->surface;
+    surface->extent.width = metrics->surface_size.width;
+    surface->extent.height = metrics->surface_size.height;
+    surface->scale_x = metrics->device_scale.x;
+    surface->scale_y = metrics->device_scale.y;
+
+    DvzInputResizeEvent resize = {
+        .framebuffer_width = metrics->surface_size.width,
+        .framebuffer_height = metrics->surface_size.height,
+        .window_width = metrics->logical_size.width,
+        .window_height = metrics->logical_size.height,
+        .content_scale_x = metrics->device_scale.x,
+        .content_scale_y = metrics->device_scale.y,
+    };
+    dvz_input_emit_resize(window->router, &resize);
+}
+
+
+
+/**
  * Release extension strings owned by the wrap backend state.
  *
  * @param host window host whose wrap state is cleared
@@ -1157,16 +1189,9 @@ void dvz_window_backend_emit_resize(
         .requested_policy = window->config.hidpi_policy,
         .previous_generation = window->metrics.generation,
     };
-    _dvz_window_metrics_resolve(&metrics, &window->metrics);
-    DvzInputResizeEvent resize = {
-        .framebuffer_width = framebuffer_width,
-        .framebuffer_height = framebuffer_height,
-        .window_width = window_width,
-        .window_height = window_height,
-        .content_scale_x = content_scale_x,
-        .content_scale_y = content_scale_y,
-    };
-    dvz_input_emit_resize(window->router, &resize);
+    DvzWindowMetrics resolved = {0};
+    _dvz_window_metrics_resolve(&metrics, &resolved);
+    _dvz_window_backend_emit_metrics(window, &resolved);
 }
 
 

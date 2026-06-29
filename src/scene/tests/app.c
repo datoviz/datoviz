@@ -1410,6 +1410,18 @@ int test_app_view_desc_offscreen_scale(TstContext* suite, const TstCase* item)
     AT(logical_height == 60);
     AT(framebuffer_width == 160);
     AT(framebuffer_height == 120);
+    DvzExtent logical_size = dvz_view_size(win, DVZ_SIZE_LOGICAL);
+    DvzExtent surface_size = dvz_view_size(win, DVZ_SIZE_SURFACE);
+    DvzExtent render_size = dvz_view_size(win, DVZ_SIZE_RENDER);
+    AT(logical_size.width == 80);
+    AT(logical_size.height == 60);
+    AT(surface_size.width == 160);
+    AT(surface_size.height == 120);
+    AT(render_size.width == 160);
+    AT(render_size.height == 120);
+    DvzScaleXY device_scale = dvz_view_device_scale_xy(win);
+    AC(device_scale.x, 2.0f, 1e-6f);
+    AC(device_scale.y, 2.0f, 1e-6f);
     AT(fabsf(dvz_view_device_scale(win) - 2.0f) < 1e-6f);
     AT(fabsf(dvz_view_user_scale(win) - 1.5f) < 1e-6f);
     AT(fabsf(dvz_view_render_scale(win) - 1.25f) < 1e-6f);

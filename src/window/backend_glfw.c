@@ -299,6 +299,176 @@ static void _glfw_effective_content_scale(
 
 
 
+/**
+ * Return a GLFW window extent from positive integer dimensions.
+ *
+ * @param width raw width
+ * @param height raw height
+ * @return sanitized extent
+ */
+static DvzExtent _glfw_extent(int width, int height)
+{
+    return (DvzExtent){
+        .width = width > 0 ? (uint32_t)width : 0,
+        .height = height > 0 ? (uint32_t)height : 0,
+    };
+}
+
+
+
+/**
+ * Return the requested logical extent stored in a window configuration.
+ *
+ * @param config window configuration
+ * @return requested logical extent
+ */
+static DvzExtent _glfw_requested_logical_extent(const DvzWindowConfig* config)
+{
+    ANN(config);
+    return (DvzExtent){
+        .width = config->width > 0 ? config->width : DVZ_WINDOW_DEFAULT_WIDTH,
+        .height = config->height > 0 ? config->height : DVZ_WINDOW_DEFAULT_HEIGHT,
+    };
+}
+
+
+
+/**
+ * Query raw GLFW state and resolve normalized Datoviz window metrics.
+ *
+ * @param handle GLFW window handle
+ * @param requested_logical_size requested logical size, or zero to derive it from native metrics
+ * @param policy requested HiDPI policy
+ * @param previous_generation previous metrics generation
+ * @param out_native_size optional raw native size output
+ * @return normalized metrics snapshot
+ */
+static DvzWindowMetrics _glfw_query_metrics(
+    GLFWwindow* handle, DvzExtent requested_logical_size, DvzHiDpiPolicy policy,
+    uint64_t previous_generation, DvzExtent* out_native_size)
+{
+    ANN(handle);
+    int fb_width = 0;
+    int fb_height = 0;
+    glfwGetFramebufferSize(handle, &fb_width, &fb_height);
+    int win_width = 0;
+    int win_height = 0;
+    glfwGetWindowSize(handle, &win_width, &win_height);
+    float scale_x = 1.0f;
+    float scale_y = 1.0f;
+    glfwGetWindowContentScale(handle, &scale_x, &scale_y);
+    _glfw_effective_content_scale(handle, scale_x, scale_y, &scale_x, &scale_y);
+
+    DvzExtent native_size = _glfw_extent(win_width, win_height);
+    if (out_native_size != NULL)
+        *out_native_size = native_size;
+
+    DvzWindowMetricsInputs inputs = {
+        .requested_logical_size = requested_logical_size,
+        .native_size = native_size,
+        .framebuffer_size = _glfw_extent(fb_width, fb_height),
+        .content_scale = {.x = scale_x, .y = scale_y},
+        .requested_policy = policy,
+        .previous_generation = previous_generation,
+    };
+    DvzWindowMetrics metrics = {0};
+    _dvz_window_metrics_resolve(&inputs, &metrics);
+    return metrics;
+}
+
+
+
+/**
+ * Return whether two extents differ.
+ *
+ * @param a first extent
+ * @param b second extent
+ * @return whether the extents differ
+ */
+static bool _glfw_extent_differs(DvzExtent a, DvzExtent b)
+{
+    return a.width != b.width || a.height != b.height;
+}
+
+
+
+/**
+ * Resolve metrics and resize native-window HiDPI backends when a logical size must be preserved.
+ *
+ * @param handle GLFW window handle
+ * @param requested_logical_size requested logical size
+ * @param policy requested HiDPI policy
+ * @return metrics after any native resize
+ */
+static DvzWindowMetrics _glfw_configure_initial_metrics(
+    GLFWwindow* handle, DvzExtent requested_logical_size, DvzHiDpiPolicy policy)
+{
+    ANN(handle);
+    DvzExtent observed_native_size = {0};
+    DvzWindowMetrics metrics =
+        _glfw_query_metrics(handle, requested_logical_size, policy, 0, &observed_native_size);
+    if (metrics.active_hidpi_policy == DVZ_HIDPI_NATIVE_WINDOW &&
+        _glfw_extent_differs(observed_native_size, metrics.native_size))
+    {
+        glfwSetWindowSize(
+            handle, (int)metrics.native_size.width, (int)metrics.native_size.height);
+        metrics = _glfw_query_metrics(
+            handle, (DvzExtent){0}, policy, 0, NULL);
+    }
+    return metrics;
+}
+
+
+
+/**
+ * Requery GLFW metrics and emit the normalized resize event.
+ *
+ * @param handle GLFW window handle
+ */
+static void _glfw_emit_metrics(GLFWwindow* handle)
+{
+    DvzWindow* window = _glfw_window(handle);
+    if (window == NULL)
+        return;
+    DvzWindowMetrics metrics = _glfw_query_metrics(
+        handle, (DvzExtent){0}, window->config.hidpi_policy, window->metrics.generation, NULL);
+    _dvz_window_backend_emit_metrics(window, &metrics);
+}
+
+
+
+/**
+ * Convert GLFW native pointer coordinates to Datoviz logical coordinates.
+ *
+ * @param window Datoviz window
+ * @param native_x GLFW native x coordinate
+ * @param native_y GLFW native y coordinate
+ * @param out_x logical x coordinate
+ * @param out_y logical y coordinate
+ * @param out_width logical window width
+ * @param out_height logical window height
+ */
+static void _glfw_pointer_logical(
+    const DvzWindow* window, double native_x, double native_y, float* out_x, float* out_y,
+    float* out_width, float* out_height)
+{
+    ANN(window);
+    ANN(out_x);
+    ANN(out_y);
+    ANN(out_width);
+    ANN(out_height);
+    const DvzWindowMetrics* metrics = dvz_window_metrics(window);
+    ANN(metrics);
+    float sx = metrics->native_to_logical.x > 0.0f ? metrics->native_to_logical.x : 1.0f;
+    float sy = metrics->native_to_logical.y > 0.0f ? metrics->native_to_logical.y : 1.0f;
+    *out_x = (float)native_x * sx;
+    *out_y = (float)native_y * sy;
+    *out_width = metrics->logical_size.width > 0 ? (float)metrics->logical_size.width : 1.0f;
+    *out_height = metrics->logical_size.height > 0 ? (float)metrics->logical_size.height : 1.0f;
+}
+
+
+
 static void
 _glfw_emit_pointer(GLFWwindow* handle, DvzPointerEventType type, DvzPointerButton button, int mods)
 {
@@ -311,11 +481,14 @@ _glfw_emit_pointer(GLFWwindow* handle, DvzPointerEventType type, DvzPointerButto
     double xpos = 0.0;
     double ypos = 0.0;
     glfwGetCursorPos(handle, &xpos, &ypos);
-    int win_width = 0;
-    int win_height = 0;
-    glfwGetWindowSize(handle, &win_width, &win_height);
+    float logical_x = 0.0f;
+    float logical_y = 0.0f;
+    float logical_width = 0.0f;
+    float logical_height = 0.0f;
+    _glfw_pointer_logical(
+        window, xpos, ypos, &logical_x, &logical_y, &logical_width, &logical_height);
     dvz_pointer_emit_position(
-        router, type, (float)xpos, (float)ypos, (float)win_width, (float)win_height, button, mods,
+        router, type, logical_x, logical_y, logical_width, logical_height, button, mods,
         window->surface.scale_x, dvz_input_timestamp_ns(), dvz_window_user_data(window));
 }
 
@@ -368,18 +541,20 @@ static void _glfw_scroll_callback(GLFWwindow* handle, double dx, double dy)
     double xpos = 0.0;
     double ypos = 0.0;
     glfwGetCursorPos(handle, &xpos, &ypos);
-    int win_width = 0;
-    int win_height = 0;
-    glfwGetWindowSize(handle, &win_width, &win_height);
+    float logical_x = 0.0f;
+    float logical_y = 0.0f;
+    float logical_width = 0.0f;
+    float logical_height = 0.0f;
+    _glfw_pointer_logical(
+        window, xpos, ypos, &logical_x, &logical_y, &logical_width, &logical_height);
 #if defined(__APPLE__)
     /* Normalize macOS scroll-wheel direction so the input layer sees a single
      * sign convention across platforms. */
     dy = -dy;
 #endif
     dvz_pointer_emit_wheel(
-        router, (float)xpos, (float)ypos, (float)win_width, (float)win_height, (float)dx,
-        (float)dy, 0, window->surface.scale_x, dvz_input_timestamp_ns(),
-        dvz_window_user_data(window));
+        router, logical_x, logical_y, logical_width, logical_height, (float)dx, (float)dy, 0,
+        window->surface.scale_x, dvz_input_timestamp_ns(), dvz_window_user_data(window));
 }
 
 
@@ -426,19 +601,18 @@ static void _glfw_char_callback(GLFWwindow* handle, unsigned int codepoint)
 
 static void _glfw_framebuffer_callback(GLFWwindow* handle, int width, int height)
 {
-    DvzWindow* window = _glfw_window(handle);
-    if (window == NULL)
-        return;
-    int win_width = 0;
-    int win_height = 0;
-    glfwGetWindowSize(handle, &win_width, &win_height);
-    float scale_x = 1.f;
-    float scale_y = 1.f;
-    glfwGetWindowContentScale(handle, &scale_x, &scale_y);
-    _glfw_effective_content_scale(handle, scale_x, scale_y, &scale_x, &scale_y);
-    dvz_window_backend_emit_resize(
-        window, (uint32_t)width, (uint32_t)height, (uint32_t)win_width, (uint32_t)win_height,
-        scale_x, scale_y);
+    (void)width;
+    (void)height;
+    _glfw_emit_metrics(handle);
+}
+
+
+
+static void _glfw_window_size_callback(GLFWwindow* handle, int width, int height)
+{
+    (void)width;
+    (void)height;
+    _glfw_emit_metrics(handle);
 }
 
 
@@ -448,8 +622,13 @@ static void _glfw_scale_callback(GLFWwindow* handle, float scale_x, float scale_
     DvzWindow* window = _glfw_window(handle);
     if (window == NULL)
         return;
-    _glfw_effective_content_scale(handle, scale_x, scale_y, &scale_x, &scale_y);
-    dvz_window_backend_emit_scale(window, scale_x, scale_y);
+    (void)scale_x;
+    (void)scale_y;
+    DvzExtent requested_logical_size = window->metrics.logical_size;
+    DvzWindowMetrics metrics = _glfw_configure_initial_metrics(
+        handle, requested_logical_size, window->config.hidpi_policy);
+    metrics.generation = window->metrics.generation + 1;
+    _dvz_window_backend_emit_metrics(window, &metrics);
 }
 
 
@@ -521,7 +700,7 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
         return false;
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, config->resizable ? GLFW_TRUE : GLFW_FALSE);
-    glfwWindowHint(GLFW_VISIBLE, config->visible ? GLFW_TRUE : GLFW_FALSE);
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     _glfw_apply_window_hints();
     GLFWwindow* handle = glfwCreateWindow(
         (int)config->width, (int)config->height, config->title ? config->title : "", NULL, NULL);
@@ -531,12 +710,17 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
         return false;
     }
     glfwSetWindowUserPointer(handle, window);
+
+    DvzWindowMetrics metrics = _glfw_configure_initial_metrics(
+        handle, _glfw_requested_logical_extent(config), config->hidpi_policy);
+
     glfwSetCursorPosCallback(handle, _glfw_cursor_pos_callback);
     glfwSetMouseButtonCallback(handle, _glfw_mouse_button_callback);
     glfwSetScrollCallback(handle, _glfw_scroll_callback);
     glfwSetKeyCallback(handle, _glfw_key_callback);
     glfwSetCharCallback(handle, _glfw_char_callback);
     glfwSetFramebufferSizeCallback(handle, _glfw_framebuffer_callback);
+    glfwSetWindowSizeCallback(handle, _glfw_window_size_callback);
     glfwSetWindowContentScaleCallback(handle, _glfw_scale_callback);
     dvz_window_backend_set_handle(window, handle);
 
@@ -561,19 +745,9 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
     ANN(surface);
     surface->instance = vk_instance;
     surface->surface = vk_surface;
-    int fb_width = 0;
-    int fb_height = 0;
-    glfwGetFramebufferSize(handle, &fb_width, &fb_height);
-    int win_width = 0;
-    int win_height = 0;
-    glfwGetWindowSize(handle, &win_width, &win_height);
-    float scale_x = 1.f;
-    float scale_y = 1.f;
-    glfwGetWindowContentScale(handle, &scale_x, &scale_y);
-    _glfw_effective_content_scale(handle, scale_x, scale_y, &scale_x, &scale_y);
-    dvz_window_backend_emit_resize(
-        window, (uint32_t)fb_width, (uint32_t)fb_height, (uint32_t)win_width, (uint32_t)win_height,
-        scale_x, scale_y);
+    _dvz_window_backend_emit_metrics(window, &metrics);
+    if (config->visible)
+        glfwShowWindow(handle);
     _glfw_state.window_count++;
     return true;
 }

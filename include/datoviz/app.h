@@ -27,6 +27,7 @@
 #include "datoviz/input/keycodes.h"
 #include "datoviz/scene/types.h"
 #include "datoviz/video.h"
+#include "datoviz/window/types.h"
 
 
 
@@ -447,6 +448,25 @@ DVZ_EXPORT struct DvzInputRouter* dvz_view_input(DvzView* view);
  * @return physical pixels per logical pixel, or 1 when unavailable
  */
 DVZ_EXPORT float dvz_view_device_scale(const DvzView* view);
+
+
+/**
+ * Return the current two-axis device scale for a view.
+ *
+ * @param view the view
+ * @return physical pixels per logical pixel along X and Y
+ */
+DVZ_EXPORT DvzScaleXY dvz_view_device_scale_xy(const DvzView* view);
+
+
+/**
+ * Return the current view size in an explicit size space.
+ *
+ * @param view the view
+ * @param space requested size space
+ * @return size in the requested space, or zero on invalid input
+ */
+DVZ_EXPORT DvzExtent dvz_view_size(const DvzView* view, DvzSizeSpace space);
 
 
 /**

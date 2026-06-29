@@ -78,12 +78,15 @@ typedef struct DvzExtent
     uint32_t height;
 } DvzExtent;
 
-typedef struct DvzScale2
+typedef struct DvzScaleXY
 {
     float x;
     float y;
-} DvzScale2;
+} DvzScaleXY;
 ```
+
+`DvzScale` is already the retained scene scale object, so the window metrics type uses
+`DvzScaleXY`.
 
 Add size-space vocabulary:
 
@@ -120,10 +123,10 @@ typedef struct DvzWindowMetrics
     DvzExtent surface_size;
     DvzExtent render_size;
 
-    DvzScale2 content_scale;
-    DvzScale2 framebuffer_scale;
-    DvzScale2 device_scale;
-    DvzScale2 native_to_logical;
+    DvzScaleXY content_scale;
+    DvzScaleXY framebuffer_scale;
+    DvzScaleXY device_scale;
+    DvzScaleXY native_to_logical;
 
     DvzHiDpiPolicy active_hidpi_policy;
     uint64_t generation;
@@ -134,7 +137,7 @@ Expose view queries by space:
 
 ```c
 DvzExtent dvz_view_size(const DvzView* view, DvzSizeSpace space);
-DvzScale2 dvz_view_device_scale2(const DvzView* view);
+DvzScaleXY dvz_view_device_scale_xy(const DvzView* view);
 float dvz_view_render_scale(const DvzView* view);
 float dvz_view_user_scale(const DvzView* view);
 ```
@@ -227,9 +230,9 @@ typedef struct DvzViewTransform
     DvzExtent surface_size;
     DvzExtent render_size;
 
-    DvzScale2 logical_to_surface;
-    DvzScale2 logical_to_render;
-    DvzScale2 style_to_render;
+    DvzScaleXY logical_to_surface;
+    DvzScaleXY logical_to_render;
+    DvzScaleXY style_to_render;
 } DvzViewTransform;
 ```
 
@@ -342,4 +345,3 @@ input center:      ~450 x 325 logical
 | User scale changes layout | Panels or explicit reserves move under user scale. | Explicit reserve tests. |
 | Text paths use different bounds | Bitmap/MSDF anchors differ. | Anchor-bounds tests with the same string. |
 | GLSL/WGSL y-axis divergence | Text appears above in one backend and below in another. | Shader-sign and GPU smoke tests. |
-
