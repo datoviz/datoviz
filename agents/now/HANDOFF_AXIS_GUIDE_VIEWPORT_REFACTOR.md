@@ -44,6 +44,18 @@ Committed on `v0.4-dev`:
      conversion.
    - Removed the stale `_axis_visual_to_pixels()` parallel geometry helper.
 
+6. `1fae2aa27` `Store generated visual roles on attachments`
+   - Moved generated visual role metadata onto `DvzPanelAttach`.
+   - Switched frame-plan clip/viewport routing for migrated generated visuals to read attachment
+     role policy instead of scene object pointers.
+
+7. `f2eb157ed` `Route generated visuals by attachment roles`
+   - Migrated panel backgrounds/borders, colorbar visuals, legend visuals, scale bars, overlay
+     cards, and bounds overlays onto generated attachment roles.
+   - Propagated generated text roles to lowered glyph visuals.
+   - Removed axis/colorbar/legend pointer scans from `scene_emit/panel.c`.
+   - Updated the durable plot viewport contract to forbid pointer-derived generated routing.
+
 
 ## Current Invariants
 
@@ -53,8 +65,14 @@ Generated visual ordering is semantic, not example-driven:
 guide fill < axis grid < default data < guide line/outline < axis marks < axis text
 ```
 
-Axis/grid/guide generated visuals should not introduce new hard-coded local `z_layer`,
-`coord_space`, `controller_mode`, depth, or alpha defaults. Extend generated role policy instead.
+Generated/adornment visuals should not introduce new hard-coded local `z_layer`, `coord_space`,
+`controller_mode`, clip, viewport, depth, or alpha defaults. Extend generated role policy instead
+and attach through `_scene_panel_add_generated_visual()`.
+
+Frame-plan clip/viewport routing for generated visuals is attachment metadata, not pointer identity.
+Do not reintroduce emit-time scans over axis, guide, colorbar, legend, panel chrome, scale-bar,
+overlay, or bounds-overlay object fields. Text visuals lowered to glyphs must inherit the generated
+role from their source text attachment.
 
 Axis visuals, axis text, and guide upload now share `DvzPanelFrameSnapshot`. Do not reintroduce
 ad-hoc calls to `_scene_panel_panzoom_extent()`, `_scene_panel_pixel_rect()`,
@@ -75,6 +93,19 @@ git diff --check
 
 The generated `feature_guide_spans.png` was inspected and removed. Grid lines remain visible
 through transparent spans; points stay above spans; outlines and labels remain visible.
+
+After `1fae2aa27` and `f2eb157ed`:
+
+```sh
+cmake --build build --target dvztest
+direnv exec . just test axis
+direnv exec . just test interaction
+direnv exec . just test fields
+direnv exec . just test scene/scene-graph
+git diff --check
+```
+
+The original failing WGSL fixtures are covered by `scene/scene-graph` and pass.
 
 From `../GSP_API`:
 
@@ -99,25 +130,12 @@ not requested.
 
 Recommended next commit:
 
-1. Extend generated role policy to include clip and viewport policy.
-2. Replace frame-plan pointer special cases for axis grid and other generated adornments with role
-   metadata or a narrow compatibility bridge.
-3. Validate with:
-
-```sh
-just test axis
-just test scene_graph
-just example-c features/guide_spans --png
-git diff --check
-```
-
-Recommended follow-up commit:
-
-1. Decide whether panel background, colorbar adornments, legend, scalebar, and overlay cards should
-   join the same generated-role table now or after RC1.
-2. If included, migrate one group at a time and keep existing rendered behavior.
-3. Add tests that assert role-derived layer, controller, coord-space, clip, viewport, depth, and
-   alpha policy for each migrated group.
+1. Audit remaining direct `dvz_panel_add_visual()` call sites. Current intentional survivors are
+   public/default data visuals, plot bars/bands, and the generic text glyph sync helper.
+2. If any future generated adornment is added, give it an explicit `DvzGeneratedVisualRole` before
+   touching frame-plan routing.
+3. Consider adding a lightweight source check that rejects new generated/adornment pointer scans in
+   `scene_emit/`.
 
 Recommended GSP-facing commit:
 
