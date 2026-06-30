@@ -605,6 +605,7 @@ static void _print_usage(const DvzScenarioSpec* spec)
     fprintf(stdout, "modes:\n");
     fprintf(stdout, "  --live                 show a paced GLFW window (default)\n");
     fprintf(stdout, "  --live-record N        show GLFW and record paced offscreen video\n");
+    fprintf(stdout, "  --video N              record unpaced offscreen video\n");
     fprintf(stdout, "  --offscreen-record N   record unpaced offscreen video\n");
     fprintf(stdout, "  --png                  write one offscreen PNG\n");
     fprintf(stdout, "  --dvzr N               record a DVZR stream offscreen\n");
@@ -1011,7 +1012,7 @@ int dvz_scenario_run_native_cli(const DvzScenarioSpec* spec, int argc, char** ar
             config.frame_count = _frames_after(argc, argv, i, RUNNER_DEFAULT_FRAMES);
             config.pace_wall_time = true;
         }
-        else if (strcmp(arg, "--offscreen-record") == 0)
+        else if (strcmp(arg, "--offscreen-record") == 0 || strcmp(arg, "--video") == 0)
         {
             config.presentation = DVZ_RUNNER_PRESENT_OFFSCREEN;
             config.capture_kind = DVZ_RUNNER_CAPTURE_VIDEO;
