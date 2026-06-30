@@ -148,9 +148,7 @@ static void _guide_attach_visual(
     ANN(visual);
     if (visual->visible)
     {
-        DvzGeneratedVisualPolicy policy = _scene_generated_visual_policy(role);
-        DvzVisualAttachDesc attach = _scene_generated_visual_attach_desc(&policy, z_offset);
-        if (dvz_panel_add_visual(panel, visual, &attach) != 0)
+        if (_scene_panel_add_generated_visual(panel, visual, role, z_offset) != 0)
             log_error("failed to attach guide visual");
     }
 }

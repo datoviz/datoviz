@@ -367,8 +367,8 @@ DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim)
         if (_scene_generated_visual_apply_defaults(axis->visual, &policy, 255) != 0)
             return NULL;
         axis->visual->visible = false;
-        DvzVisualAttachDesc attach = _scene_generated_visual_attach_desc(&policy, 0);
-        if (dvz_panel_add_visual(panel, axis->visual, &attach) != 0)
+        if (_scene_panel_add_generated_visual(
+                panel, axis->visual, DVZ_GENERATED_VISUAL_AXIS_MARKS, 0) != 0)
         {
             axis->visual = NULL;
             return NULL;
@@ -385,8 +385,8 @@ DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim)
         if (_scene_generated_visual_apply_defaults(axis->grid_visual, &policy, 255) != 0)
             return NULL;
         axis->grid_visual->visible = false;
-        DvzVisualAttachDesc attach = _scene_generated_visual_attach_desc(&policy, 0);
-        if (dvz_panel_add_visual(panel, axis->grid_visual, &attach) != 0)
+        if (_scene_panel_add_generated_visual(
+                panel, axis->grid_visual, DVZ_GENERATED_VISUAL_AXIS_GRID, 0) != 0)
         {
             axis->grid_visual = NULL;
             return NULL;

@@ -208,8 +208,8 @@ static bool _axis_ensure_text_visual(DvzAxis* axis)
         _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_TEXT);
     if (_scene_generated_visual_apply_defaults(axis->text_visual, &policy, 255) != 0)
         return false;
-    DvzVisualAttachDesc attach = _scene_generated_visual_attach_desc(&policy, 0);
-    if (dvz_panel_add_visual(axis->panel, axis->text_visual, &attach) != 0)
+    if (_scene_panel_add_generated_visual(
+            axis->panel, axis->text_visual, DVZ_GENERATED_VISUAL_AXIS_TEXT, 0) != 0)
     {
         axis->text_visual = NULL;
         return false;

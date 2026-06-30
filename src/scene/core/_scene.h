@@ -348,6 +348,30 @@ typedef struct DvzTextBlockRun DvzTextBlockRun;
 typedef struct DvzTextBlockLayout DvzTextBlockLayout;
 typedef struct DvzTextBlockRasterDesc DvzTextBlockRasterDesc;
 typedef struct DvzTextBlockImageDesc DvzTextBlockImageDesc;
+
+
+typedef enum
+{
+    DVZ_GENERATED_VISUAL_PANEL_BACKGROUND = 0,
+    DVZ_GENERATED_VISUAL_PANEL_BORDER,
+    DVZ_GENERATED_VISUAL_GUIDE_FILL,
+    DVZ_GENERATED_VISUAL_AXIS_GRID,
+    DVZ_GENERATED_VISUAL_DATA_DEFAULT,
+    DVZ_GENERATED_VISUAL_GUIDE_LINE,
+    DVZ_GENERATED_VISUAL_GUIDE_OUTLINE,
+    DVZ_GENERATED_VISUAL_AXIS_MARKS,
+    DVZ_GENERATED_VISUAL_AXIS_TEXT,
+    DVZ_GENERATED_VISUAL_COLORBAR_RAMP,
+    DVZ_GENERATED_VISUAL_COLORBAR_MARKS,
+    DVZ_GENERATED_VISUAL_COLORBAR_TEXT,
+    DVZ_GENERATED_VISUAL_LEGEND_MARKS,
+    DVZ_GENERATED_VISUAL_LEGEND_TEXT,
+    DVZ_GENERATED_VISUAL_SCALEBAR_LINE,
+    DVZ_GENERATED_VISUAL_SCALEBAR_TEXT,
+    DVZ_GENERATED_VISUAL_OVERLAY_CARD,
+    DVZ_GENERATED_VISUAL_OVERLAY_TEXT,
+    DVZ_GENERATED_VISUAL_BOUNDS_OVERLAY,
+} DvzGeneratedVisualRole;
 typedef struct DvzTextBlock DvzTextBlock;
 
 typedef void (*DvzSceneRequestFrameCallback)(DvzFigure* figure, void* user_data);
@@ -1892,6 +1916,8 @@ struct DvzPanelAttach
     int32_t           z_layer;         /* signed; default 0 */
     DvzControllerMode controller_mode; /* default APPLY */
     DvzVisualCoordSpace coord_space;   /* default DATA */
+    bool              has_generated_role;
+    DvzGeneratedVisualRole generated_role;
     uint32_t          insertion_index; /* used as stable tie-breaker when z_layer ties */
 };
 

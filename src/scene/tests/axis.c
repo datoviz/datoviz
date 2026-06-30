@@ -828,6 +828,10 @@ int test_axis_domain_and_ticks(TstContext* suite, const TstCase* item)
         _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_GRID);
     AT(panel->visuals[0].z_layer == marks_policy.z_layer);
     AT(panel->visuals[1].z_layer == grid_policy.z_layer);
+    AT(panel->visuals[0].has_generated_role);
+    AT(panel->visuals[1].has_generated_role);
+    AT(panel->visuals[0].generated_role == DVZ_GENERATED_VISUAL_AXIS_MARKS);
+    AT(panel->visuals[1].generated_role == DVZ_GENERATED_VISUAL_AXIS_GRID);
     AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
     AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_APPLY);
     AT(panel->visuals[0].coord_space == DVZ_COORD_VIEW);

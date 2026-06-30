@@ -30,18 +30,6 @@
 /*  Types                                                                                        */
 /*************************************************************************************************/
 
-typedef enum
-{
-    DVZ_GENERATED_VISUAL_GUIDE_FILL = 0,
-    DVZ_GENERATED_VISUAL_AXIS_GRID,
-    DVZ_GENERATED_VISUAL_DATA_DEFAULT,
-    DVZ_GENERATED_VISUAL_GUIDE_LINE,
-    DVZ_GENERATED_VISUAL_GUIDE_OUTLINE,
-    DVZ_GENERATED_VISUAL_AXIS_MARKS,
-    DVZ_GENERATED_VISUAL_AXIS_TEXT,
-} DvzGeneratedVisualRole;
-
-
 typedef struct
 {
     DvzGeneratedVisualRole role;
@@ -65,6 +53,28 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
 {
     switch (role)
     {
+    case DVZ_GENERATED_VISUAL_PANEL_BACKGROUND:
+        return (DvzGeneratedVisualPolicy){
+            .role = role,
+            .z_layer = -100,
+            .controller_mode = DVZ_CONTROLLER_FIXED,
+            .coord_space = DVZ_COORD_VIEW,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
+            .depth_test = false,
+            .alpha_mode = DVZ_ALPHA_OPAQUE,
+        };
+    case DVZ_GENERATED_VISUAL_PANEL_BORDER:
+        return (DvzGeneratedVisualPolicy){
+            .role = role,
+            .z_layer = 1002,
+            .controller_mode = DVZ_CONTROLLER_FIXED,
+            .coord_space = DVZ_COORD_VIEW,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
+            .depth_test = false,
+            .alpha_mode = DVZ_ALPHA_BLENDED,
+        };
     case DVZ_GENERATED_VISUAL_GUIDE_FILL:
         return (DvzGeneratedVisualPolicy){
             .role = role,
@@ -121,6 +131,10 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .alpha_mode = DVZ_ALPHA_OPAQUE,
         };
     case DVZ_GENERATED_VISUAL_AXIS_TEXT:
+    case DVZ_GENERATED_VISUAL_COLORBAR_TEXT:
+    case DVZ_GENERATED_VISUAL_LEGEND_TEXT:
+    case DVZ_GENERATED_VISUAL_SCALEBAR_TEXT:
+    case DVZ_GENERATED_VISUAL_OVERLAY_TEXT:
         return (DvzGeneratedVisualPolicy){
             .role = role,
             .z_layer = 1001,
@@ -129,6 +143,32 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
             .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
             .depth_test = false,
+            .alpha_mode = DVZ_ALPHA_BLENDED,
+        };
+    case DVZ_GENERATED_VISUAL_COLORBAR_RAMP:
+    case DVZ_GENERATED_VISUAL_COLORBAR_MARKS:
+    case DVZ_GENERATED_VISUAL_LEGEND_MARKS:
+    case DVZ_GENERATED_VISUAL_SCALEBAR_LINE:
+    case DVZ_GENERATED_VISUAL_OVERLAY_CARD:
+        return (DvzGeneratedVisualPolicy){
+            .role = role,
+            .z_layer = 1000,
+            .controller_mode = DVZ_CONTROLLER_FIXED,
+            .coord_space = DVZ_COORD_VIEW,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
+            .depth_test = false,
+            .alpha_mode = DVZ_ALPHA_OPAQUE,
+        };
+    case DVZ_GENERATED_VISUAL_BOUNDS_OVERLAY:
+        return (DvzGeneratedVisualPolicy){
+            .role = role,
+            .z_layer = INT32_MAX / 4,
+            .controller_mode = DVZ_CONTROLLER_APPLY,
+            .coord_space = DVZ_COORD_DATA,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PLOT,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PLOT,
+            .depth_test = true,
             .alpha_mode = DVZ_ALPHA_BLENDED,
         };
     case DVZ_GENERATED_VISUAL_DATA_DEFAULT:
@@ -157,6 +197,27 @@ _scene_generated_visual_attach_desc(const DvzGeneratedVisualPolicy* policy, int3
     attach.controller_mode = policy->controller_mode;
     attach.coord_space = policy->coord_space;
     return attach;
+}
+
+
+static inline int _scene_panel_add_generated_visual(
+    DvzPanel* panel, DvzVisual* visual, DvzGeneratedVisualRole role, int32_t z_offset)
+{
+    DvzGeneratedVisualPolicy policy = _scene_generated_visual_policy(role);
+    DvzVisualAttachDesc attach = _scene_generated_visual_attach_desc(&policy, z_offset);
+    if (dvz_panel_add_visual(panel, visual, &attach) != 0)
+        return -1;
+    for (uint32_t i = panel->visual_count; i > 0; i--)
+    {
+        DvzPanelAttach* slot = &panel->visuals[i - 1];
+        if (slot->visual == visual)
+        {
+            slot->has_generated_role = true;
+            slot->generated_role = role;
+            return 0;
+        }
+    }
+    return -1;
 }
 
 

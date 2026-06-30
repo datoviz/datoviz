@@ -420,76 +420,21 @@ static bool _scene_visual_is_axis_derived(const DvzPanel* panel, const DvzVisual
 
 
 /**
- * Resolve generated-role policy for known generated axis and guide visuals.
+ * Resolve generated-role policy carried by an attachment.
  *
- * @param panel the panel owning the generated visual
- * @param visual the visual to classify
+ * @param attach the panel visual attachment
  * @param out_policy resolved policy
  * @return whether a generated-role policy was resolved
  */
 static bool _scene_visual_generated_policy(
-    const DvzPanel* panel, const DvzVisual* visual, DvzGeneratedVisualPolicy* out_policy)
+    const DvzPanelAttach* attach, DvzGeneratedVisualPolicy* out_policy)
 {
-    ANN(panel);
-    ANN(visual);
+    ANN(attach);
     ANN(out_policy);
-    for (uint32_t dim = 0; dim < 2; dim++)
-    {
-        const DvzAxis* axis = &panel->axes[dim];
-        if (axis->panel != panel)
-            continue;
-        if (visual == axis->grid_visual)
-        {
-            *out_policy = _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_GRID);
-            return true;
-        }
-        if (visual == axis->visual)
-        {
-            *out_policy = _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_MARKS);
-            return true;
-        }
-        if (visual == axis->text_visual)
-        {
-            *out_policy = _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_TEXT);
-            return true;
-        }
-        if (
-            axis->text_visual != NULL &&
-            visual == _visual_family_state(axis->text_visual)->text.glyph_visual)
-        {
-            *out_policy = _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_TEXT);
-            return true;
-        }
-    }
-
-    DvzScene* scene = panel->figure != NULL ? panel->figure->scene : NULL;
-    if (scene == NULL)
+    if (!attach->has_generated_role)
         return false;
-    for (uint32_t i = 0; i < scene->guide_line_count; i++)
-    {
-        const DvzGuideLine* guide = &scene->guide_lines[i];
-        if (guide->panel == panel && visual == guide->line_visual)
-        {
-            *out_policy = _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_GUIDE_LINE);
-            return true;
-        }
-    }
-    for (uint32_t i = 0; i < scene->guide_span_count; i++)
-    {
-        const DvzGuideSpan* span = &scene->guide_spans[i];
-        if (span->panel == panel && visual == span->fill_visual)
-        {
-            *out_policy = _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_GUIDE_FILL);
-            return true;
-        }
-        if (span->panel == panel && visual == span->outline_visual)
-        {
-            *out_policy = _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_GUIDE_OUTLINE);
-            return true;
-        }
-    }
-
-    return false;
+    *out_policy = _scene_generated_visual_policy(attach->generated_role);
+    return true;
 }
 
 
@@ -508,7 +453,7 @@ _scene_visual_clip_rect(const DvzPanel* panel, const DvzVisual* visual, const Dv
     ANN(visual);
     ANN(attach);
     DvzGeneratedVisualPolicy policy = {0};
-    if (_scene_visual_generated_policy(panel, visual, &policy))
+    if (_scene_visual_generated_policy(attach, &policy))
         return policy.clip_rect;
     if (visual->type == DVZ_VISUAL_TYPE_GLYPH && attach->coord_space == DVZ_COORD_DATA)
         return DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
@@ -539,7 +484,7 @@ static DvzFramePlanViewportRect _scene_visual_viewport_rect(
     ANN(visual);
     ANN(attach);
     DvzGeneratedVisualPolicy policy = {0};
-    if (_scene_visual_generated_policy(panel, visual, &policy))
+    if (_scene_visual_generated_policy(attach, &policy))
         return policy.viewport_rect;
     if (
         visual == panel->background_visual || visual == panel->border_visual ||

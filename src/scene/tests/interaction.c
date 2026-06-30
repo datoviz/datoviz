@@ -1937,6 +1937,12 @@ int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstC
     AT(line_attach->z_layer == line_policy.z_layer);
     AT(fill_attach->z_layer == fill_policy.z_layer);
     AT(outline_attach->z_layer == outline_policy.z_layer);
+    AT(line_attach->has_generated_role);
+    AT(fill_attach->has_generated_role);
+    AT(outline_attach->has_generated_role);
+    AT(line_attach->generated_role == DVZ_GENERATED_VISUAL_GUIDE_LINE);
+    AT(fill_attach->generated_role == DVZ_GENERATED_VISUAL_GUIDE_FILL);
+    AT(outline_attach->generated_role == DVZ_GENERATED_VISUAL_GUIDE_OUTLINE);
     AT(fill_attach->z_layer < line_attach->z_layer);
     AT(fill_attach->coord_space == DVZ_COORD_DATA);
     AT(fill_attach->controller_mode == DVZ_CONTROLLER_APPLY);
