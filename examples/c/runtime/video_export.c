@@ -46,6 +46,7 @@
 #define TICK_COUNT  9u
 #define POINT_COUNT (TICK_COUNT + 1u)
 #define PATH_SIZE   512u
+#define PROGRESS_WIDTH 32u
 
 static const float TAU = 6.28318530718f;
 
@@ -188,6 +189,27 @@ static void _capture_path(
 
 
 /**
+ * Print bounded video export progress.
+ *
+ * @param completed number of rendered frames
+ * @param total total frame count
+ */
+static void _print_progress(uint32_t completed, uint32_t total)
+{
+    if (total == 0)
+        return;
+
+    const uint32_t filled = (uint32_t)(((uint64_t)completed * PROGRESS_WIDTH) / total);
+    dvz_fprintf(stdout, "\rvideo_export: [");
+    for (uint32_t i = 0; i < PROGRESS_WIDTH; i++)
+        fputc(i < filled ? '#' : '.', stdout);
+    dvz_fprintf(stdout, "] %u/%u frames", completed, total);
+    fflush(stdout);
+}
+
+
+
+/**
  * Create the retained scene used by the video export.
  *
  * @param scene scene
@@ -267,6 +289,7 @@ static bool _write_video(
         return false;
 
     bool ok = true;
+    _print_progress(0, frame_count);
     for (uint32_t frame = 0; frame < frame_count; frame++)
     {
         const double t = (double)frame / FPS;
@@ -276,7 +299,9 @@ static bool _write_video(
             ok = false;
             break;
         }
+        _print_progress(frame + 1u, frame_count);
     }
+    dvz_fprintf(stdout, "\n");
     return dvz_view_capture_stop(view) == 0 && ok;
 }
 
