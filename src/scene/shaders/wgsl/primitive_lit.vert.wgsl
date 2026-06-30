@@ -25,7 +25,7 @@ fn main(input: VertexIn) -> VertexOut {
     output.position = clip;
     output.color = input.color;
     output.world_position = world.xyz;
-    output.camera_position = vec3f(0.0, 0.0, 3.0);
+    output.camera_position = camera_position_from_view();
     output.normal = mat3x3f(
         mvp.model[0].xyz,
         mvp.model[1].xyz,

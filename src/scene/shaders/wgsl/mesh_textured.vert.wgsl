@@ -34,6 +34,6 @@ fn main(input: VertexIn) -> VertexOut {
     output.uv = input.uv;
     output.depth = clip.z / max(abs(clip.w), 1e-6);
     output.world_position = world.xyz;
-    output.camera_position = vec3f(0.0, 0.0, 3.0);
+    output.camera_position = camera_position_from_view();
     return output;
 }

@@ -155,7 +155,7 @@ fn main(input: VertexIn) -> VertexOut {
         model[2].xyz,
     ))) * input.normal;
     output.world_position = world.xyz;
-    output.camera_position = vec3f(0.0, 0.0, 3.0);
+    output.camera_position = camera_position_from_view();
     output.depth = clip.z / max(abs(clip.w), 1e-6);
     return output;
 }

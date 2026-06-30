@@ -70,7 +70,7 @@ fn main(@builtin(vertex_index) vertex_id: u32, input: VertexIn) -> VertexOut {
         mvp.model[2].xyz
     ) * normal;
     output.world_position = world.xyz + normal * radius;
-    output.camera_position = vec3f(0.0, 0.0, 3.0);
+    output.camera_position = camera_position_from_view();
     output.depth = center.z / max(abs(center.w), 1e-6);
     return output;
 }
