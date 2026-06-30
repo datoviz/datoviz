@@ -33,6 +33,9 @@ as real implementation, not scaffolding.
    the top-level Python package, raw-binding generation, or NumPy/array argument adaptation.
 7. Use [HANDOFF_MARKER_TRIANGLE_ANGLE_CONVENTION.md](HANDOFF_MARKER_TRIANGLE_ANGLE_CONVENTION.md)
    before changing marker angle, marker shape, symbol, or GSP-facing marker semantics.
+8. Use [HANDOFF_AXIS_GUIDE_VIEWPORT_REFACTOR.md](HANDOFF_AXIS_GUIDE_VIEWPORT_REFACTOR.md) before
+   changing 2D axes, grid lines, guides, View2D domains, aspect ratio, or plot/panel viewport
+   behavior.
 
 
 ## Guardrails
