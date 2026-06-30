@@ -138,6 +138,25 @@ typedef enum
 } DvzVisualCoordSpace;
 
 
+/* Explicit scissor selection for a visual attached to a panel. */
+typedef enum
+{
+    DVZ_VISUAL_CLIP_AUTO  = 0, /* derive from generated role, visual ops, and coordinate space */
+    DVZ_VISUAL_CLIP_PANEL = 1, /* full panel scissor */
+    DVZ_VISUAL_CLIP_PLOT  = 2, /* inner plot scissor */
+} DvzVisualClipRect;
+
+
+/* Explicit viewport selection for a visual attached to a panel. */
+typedef enum
+{
+    DVZ_VISUAL_VIEWPORT_AUTO   = 0, /* derive from generated role, visual ops, and coordinate space */
+    DVZ_VISUAL_VIEWPORT_PANEL  = 1, /* full panel viewport */
+    DVZ_VISUAL_VIEWPORT_PLOT   = 2, /* inner plot viewport */
+    DVZ_VISUAL_VIEWPORT_TARGET = 3, /* render target viewport */
+} DvzVisualViewportRect;
+
+
 /* Coordinate spaces for explicit panel point conversions. */
 typedef enum
 {

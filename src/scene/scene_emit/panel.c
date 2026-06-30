@@ -356,6 +356,51 @@ static bool _scene_visual_generated_policy(
 }
 
 
+static bool
+_scene_visual_explicit_clip_rect(const DvzPanelAttach* attach, DvzFramePlanClipRect* out_clip_rect)
+{
+    ANN(attach);
+    ANN(out_clip_rect);
+    switch (attach->clip_rect)
+    {
+    case DVZ_VISUAL_CLIP_AUTO:
+        return false;
+    case DVZ_VISUAL_CLIP_PANEL:
+        *out_clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL;
+        return true;
+    case DVZ_VISUAL_CLIP_PLOT:
+        *out_clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+static bool _scene_visual_explicit_viewport_rect(
+    const DvzPanelAttach* attach, DvzFramePlanViewportRect* out_viewport_rect)
+{
+    ANN(attach);
+    ANN(out_viewport_rect);
+    switch (attach->viewport_rect)
+    {
+    case DVZ_VISUAL_VIEWPORT_AUTO:
+        return false;
+    case DVZ_VISUAL_VIEWPORT_PANEL:
+        *out_viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL;
+        return true;
+    case DVZ_VISUAL_VIEWPORT_PLOT:
+        *out_viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PLOT;
+        return true;
+    case DVZ_VISUAL_VIEWPORT_TARGET:
+        *out_viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_TARGET;
+        return true;
+    default:
+        return false;
+    }
+}
+
+
 
 /**
  * Return the clip rectangle one visual should use within its panel render pass.
@@ -373,6 +418,9 @@ _scene_visual_clip_rect(const DvzPanel* panel, const DvzVisual* visual, const Dv
     DvzGeneratedVisualPolicy policy = {0};
     if (_scene_visual_generated_policy(attach, &policy))
         return policy.clip_rect;
+    DvzFramePlanClipRect explicit_clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
+    if (_scene_visual_explicit_clip_rect(attach, &explicit_clip_rect))
+        return explicit_clip_rect;
     if (visual->type == DVZ_VISUAL_TYPE_GLYPH && attach->coord_space == DVZ_COORD_DATA)
         return DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
     if (visual->ops != NULL && visual->ops->panel_clip_rect)
@@ -400,6 +448,9 @@ static DvzFramePlanViewportRect _scene_visual_viewport_rect(
     DvzGeneratedVisualPolicy policy = {0};
     if (_scene_visual_generated_policy(attach, &policy))
         return policy.viewport_rect;
+    DvzFramePlanViewportRect explicit_viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PLOT;
+    if (_scene_visual_explicit_viewport_rect(attach, &explicit_viewport_rect))
+        return explicit_viewport_rect;
     if (visual->ops != NULL && visual->ops->panel_clip_rect)
     {
         return DVZ_FRAME_PLAN_VIEWPORT_PANEL;

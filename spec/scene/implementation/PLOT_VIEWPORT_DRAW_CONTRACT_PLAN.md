@@ -122,8 +122,8 @@ Prefer small commits with visible validation for future follow-up work.
 1. **Frame-plan ABI:** done. `DvzFramePlanViewportRect` is stored in render visual metadata and
    draw packets, with panel defaults for missing metadata.
 2. **Scene routing:** done. `scene_emit/panel.c` sets `viewport_rect` and `clip_rect`
-   independently from generated-role attachment policy, visual ops, and generic coordinate-space
-   defaults.
+   independently from generated-role attachment policy, explicit `DvzVisualAttachDesc`
+   clip/viewport fields, visual ops, and generic coordinate-space defaults.
 3. **Runtime emission:** done. `render_emit_draws.c` switches viewport from `viewport_rect` and
    scissor from `clip_rect`.
 4. **Viewport uniform:** done. Common bind groups are keyed by viewport selection and upload the

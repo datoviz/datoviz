@@ -163,12 +163,15 @@ navigation, but they do not own viewport aspect or rewrite panel domains.
 
 ## Visual Attachment
 
-`DvzVisualAttachDesc` declares controller application, draw order, and coordinate interpretation.
-The future attachment contract may also declare optional domain overrides.
+`DvzVisualAttachDesc` declares controller application, draw order, coordinate interpretation, and
+optional render rectangle routing. The future attachment contract may also declare optional domain
+overrides.
 
 | Field | Rule |
 |---|---|
 | `coord_space` | `DVZ_COORD_VIEW`, `DVZ_COORD_DATA`, or `DVZ_COORD_PANEL`; pixel space is future work |
+| `clip_rect` | `DVZ_VISUAL_CLIP_AUTO`, `DVZ_VISUAL_CLIP_PANEL`, or `DVZ_VISUAL_CLIP_PLOT` |
+| `viewport_rect` | `DVZ_VISUAL_VIEWPORT_AUTO`, `DVZ_VISUAL_VIEWPORT_PANEL`, `DVZ_VISUAL_VIEWPORT_PLOT`, or `DVZ_VISUAL_VIEWPORT_TARGET` |
 | `coord_transform` / `transform_params` | future field: optional pre-normalization transform |
 | `controller_mode` | `DVZ_CONTROLLER_APPLY`, `DVZ_CONTROLLER_FIXED`, or `DVZ_CONTROLLER_APPLY_VIEW_PROJ` |
 | `domain_x/y/z` | future field: `NULL` uses panel domain; non-`NULL` overrides that dimension |
@@ -187,6 +190,11 @@ default `DATA+APPLY` for data visuals, `PANEL+FIXED` for static panel overlays, 
 `VIEW+APPLY_VIEW_PROJ` for reference aids that follow camera view/projection but ignore
 controller/object model transforms. Future `PIXEL+FIXED` attachments may cover legends, scale bars,
 or panel-corner annotations.
+
+`clip_rect=AUTO` and `viewport_rect=AUTO` preserve the default routing policy: generated visual
+roles use their explicit role policy, panel-clipped visual families use panel rectangles, and normal
+DATA/VIEW visuals use plot rectangles. Non-AUTO values override those inferred defaults for custom
+overlays, composites, and generated helpers that do not need a dedicated generated-visual role.
 
 
 ## Dual-Axis And Mixed-Space Overlays

@@ -1916,6 +1916,8 @@ struct DvzPanelAttach
     int32_t           z_layer;         /* signed; default 0 */
     DvzControllerMode controller_mode; /* default APPLY */
     DvzVisualCoordSpace coord_space;   /* default DATA */
+    DvzVisualClipRect clip_rect;       /* default AUTO */
+    DvzVisualViewportRect viewport_rect; /* default AUTO */
     bool              has_generated_role;
     DvzGeneratedVisualRole generated_role;
     uint32_t          insertion_index; /* used as stable tie-breaker when z_layer ties */

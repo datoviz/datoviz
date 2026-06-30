@@ -80,6 +80,23 @@ static bool _visual_attach_desc_validate(const DvzVisualAttachDesc* desc)
         log_error("invalid visual controller mode");
         return false;
     }
+    if (
+        desc->clip_rect != DVZ_VISUAL_CLIP_AUTO &&
+        desc->clip_rect != DVZ_VISUAL_CLIP_PANEL &&
+        desc->clip_rect != DVZ_VISUAL_CLIP_PLOT)
+    {
+        log_error("invalid visual clip rectangle");
+        return false;
+    }
+    if (
+        desc->viewport_rect != DVZ_VISUAL_VIEWPORT_AUTO &&
+        desc->viewport_rect != DVZ_VISUAL_VIEWPORT_PANEL &&
+        desc->viewport_rect != DVZ_VISUAL_VIEWPORT_PLOT &&
+        desc->viewport_rect != DVZ_VISUAL_VIEWPORT_TARGET)
+    {
+        log_error("invalid visual viewport rectangle");
+        return false;
+    }
     return true;
 }
 
@@ -262,6 +279,8 @@ DvzVisualAttachDesc dvz_visual_attach_desc(void)
         .z_layer = 0,
         .controller_mode = DVZ_CONTROLLER_APPLY,
         .coord_space = DVZ_COORD_DATA,
+        .clip_rect = DVZ_VISUAL_CLIP_AUTO,
+        .viewport_rect = DVZ_VISUAL_VIEWPORT_AUTO,
     };
     return desc;
 }
@@ -914,6 +933,8 @@ int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual, const DvzVisualAtta
     slot->z_layer = resolved.z_layer;
     slot->controller_mode = resolved.controller_mode;
     slot->coord_space = resolved.coord_space;
+    slot->clip_rect = resolved.clip_rect;
+    slot->viewport_rect = resolved.viewport_rect;
     slot->insertion_index = panel->visual_count;
     panel->visual_count++;
     _scene_notify_request_frame(panel->figure);

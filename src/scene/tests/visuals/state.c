@@ -29,6 +29,8 @@ int test_scene_visual_attach_default_coord_space(TstContext* suite, const TstCas
 
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
     AT(attach.coord_space == DVZ_COORD_DATA);
+    AT(attach.clip_rect == DVZ_VISUAL_CLIP_AUTO);
+    AT(attach.viewport_rect == DVZ_VISUAL_VIEWPORT_AUTO);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -50,7 +52,55 @@ int test_scene_visual_attach_default_coord_space(TstContext* suite, const TstCas
     AT(panel->visuals[0].controller_mode == panel->visuals[1].controller_mode);
     AT(panel->visuals[0].coord_space == DVZ_COORD_DATA);
     AT(panel->visuals[0].coord_space == panel->visuals[1].coord_space);
+    AT(panel->visuals[0].clip_rect == DVZ_VISUAL_CLIP_AUTO);
+    AT(panel->visuals[0].clip_rect == panel->visuals[1].clip_rect);
+    AT(panel->visuals[0].viewport_rect == DVZ_VISUAL_VIEWPORT_AUTO);
+    AT(panel->visuals[0].viewport_rect == panel->visuals[1].viewport_rect);
 
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_visual_attach_explicit_rects_emit_metadata(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    vec3 position = {0.0f, 0.0f, 0.0f};
+    DvzColor color = {255, 255, 255, 255};
+    float size = 8.0f;
+    AT(dvz_visual_set_data(visual, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(visual, "color", &color, 1) == 0);
+    AT(dvz_visual_set_data(visual, "size", &size, 1) == 0);
+
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.clip_rect = DVZ_VISUAL_CLIP_PANEL;
+    attach.viewport_rect = DVZ_VISUAL_VIEWPORT_TARGET;
+    AT(dvz_panel_add_visual(panel, visual, &attach) == 0);
+    AT(panel->visuals[0].clip_rect == DVZ_VISUAL_CLIP_PANEL);
+    AT(panel->visuals[0].viewport_rect == DVZ_VISUAL_VIEWPORT_TARGET);
+
+    DvzFramePlan* plan = dvz_frame_plan("visual.attach.explicit_rects", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    AT(dvz_frame_plan_node_count(plan) == 1);
+    const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
+    ANN(render);
+    AT(render->u.render.visual_count == 1);
+    AT(render->u.render.visual_metadata[0].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PANEL);
+    AT(render->u.render.visual_metadata[0].viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_TARGET);
+
+    dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -2163,6 +2213,14 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
 
     attach_desc = dvz_visual_attach_desc();
     attach_desc.controller_mode = (DvzControllerMode)999;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_add_visual(panel, visual, &attach_desc) < 0);
+
+    attach_desc = dvz_visual_attach_desc();
+    attach_desc.clip_rect = (DvzVisualClipRect)999;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_add_visual(panel, visual, &attach_desc) < 0);
+
+    attach_desc = dvz_visual_attach_desc();
+    attach_desc.viewport_rect = (DvzVisualViewportRect)999;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_add_visual(panel, visual, &attach_desc) < 0);
 
     DvzPanelBackgroundDesc background_desc = dvz_panel_background_desc();

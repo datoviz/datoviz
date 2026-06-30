@@ -535,6 +535,8 @@ int test_scene_json(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_attach_default_coord_space(TstContext* suite, const TstCase* item);
 
+int test_scene_visual_attach_explicit_rects_emit_metadata(TstContext* suite, const TstCase* item);
+
 int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCase* item);
 
 int test_scene_json_includes_buffer_binding_metadata(TstContext* suite, const TstCase* item);

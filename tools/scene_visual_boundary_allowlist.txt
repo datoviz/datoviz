@@ -3,11 +3,11 @@
 # Descriptor-kind entries use path:visual-desc-kind:TOKEN:count.
 src/scene/render_contract/draw.c:visual-desc-kind:DVZ_SCENE_VISUAL_DESC_MARKER:1
 src/scene/render_contract/draw.c:visual-desc-kind:DVZ_SCENE_VISUAL_DESC_POINT:1
-src/scene/scene_emit/panel.c:458:visual-enum:if (visual->type == DVZ_VISUAL_TYPE_GLYPH && attach->coord_space == DVZ_COORD_DATA)
+src/scene/scene_emit/panel.c:424:visual-enum:if (visual->type == DVZ_VISUAL_TYPE_GLYPH && attach->coord_space == DVZ_COORD_DATA)
 src/scene/scene_emit/texture_upload.c:196:visual-enum:if (visual->type != DVZ_VISUAL_TYPE_MARKER)
 src/scene/scene_emit/upload_support.c:421:visual-enum:(visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL);
 src/scene/visuals/attr_schema.c:113:visual-enum:(type == DVZ_VISUAL_TYPE_POINT || type == DVZ_VISUAL_TYPE_PIXEL);
 src/scene/visuals/attrs.c:387:visual-enum:(visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL) &&
-src/scene/visuals/bounds.c:266:visual-enum:if (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_MARKER)
-src/scene/visuals/bounds.c:268:visual-enum:else if (visual->type == DVZ_VISUAL_TYPE_PIXEL)
+src/scene/visuals/bounds.c:267:visual-enum:if (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_MARKER)
+src/scene/visuals/bounds.c:269:visual-enum:else if (visual->type == DVZ_VISUAL_TYPE_PIXEL)
 src/scene/visuals/family.c:44:visual-enum:if (type == DVZ_VISUAL_TYPE_MARKER && strcmp(name, "symbol") == 0)

@@ -268,6 +268,24 @@ _scene_generated_visual_attach_desc(const DvzGeneratedVisualPolicy* policy, int3
     attach.z_layer = policy->z_layer + z_offset;
     attach.controller_mode = policy->controller_mode;
     attach.coord_space = policy->coord_space;
+    attach.clip_rect = policy->clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PANEL
+                           ? DVZ_VISUAL_CLIP_PANEL
+                           : DVZ_VISUAL_CLIP_PLOT;
+    switch (policy->viewport_rect)
+    {
+    case DVZ_FRAME_PLAN_VIEWPORT_PANEL:
+        attach.viewport_rect = DVZ_VISUAL_VIEWPORT_PANEL;
+        break;
+    case DVZ_FRAME_PLAN_VIEWPORT_PLOT:
+        attach.viewport_rect = DVZ_VISUAL_VIEWPORT_PLOT;
+        break;
+    case DVZ_FRAME_PLAN_VIEWPORT_TARGET:
+        attach.viewport_rect = DVZ_VISUAL_VIEWPORT_TARGET;
+        break;
+    default:
+        attach.viewport_rect = DVZ_VISUAL_VIEWPORT_AUTO;
+        break;
+    }
     return attach;
 }
 
@@ -286,11 +304,14 @@ static inline int _scene_panel_add_generated_visual(
             continue;
         bool changed =
             slot->z_layer != attach.z_layer || slot->controller_mode != attach.controller_mode ||
-            slot->coord_space != attach.coord_space || !slot->has_generated_role ||
+            slot->coord_space != attach.coord_space || slot->clip_rect != attach.clip_rect ||
+            slot->viewport_rect != attach.viewport_rect || !slot->has_generated_role ||
             slot->generated_role != role;
         slot->z_layer = attach.z_layer;
         slot->controller_mode = attach.controller_mode;
         slot->coord_space = attach.coord_space;
+        slot->clip_rect = attach.clip_rect;
+        slot->viewport_rect = attach.viewport_rect;
         slot->has_generated_role = true;
         slot->generated_role = role;
         if (changed)

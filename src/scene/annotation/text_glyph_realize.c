@@ -134,11 +134,14 @@ static bool _text_sync_glyph_visual_attach(
         bool changed =
             attach->z_layer != desc->z_layer || attach->controller_mode != desc->controller_mode ||
             attach->coord_space != desc->coord_space ||
+            attach->clip_rect != desc->clip_rect || attach->viewport_rect != desc->viewport_rect ||
             attach->has_generated_role != source_has_role ||
             (source_has_role && attach->generated_role != source_role);
         attach->z_layer = desc->z_layer;
         attach->controller_mode = desc->controller_mode;
         attach->coord_space = desc->coord_space;
+        attach->clip_rect = desc->clip_rect;
+        attach->viewport_rect = desc->viewport_rect;
         attach->has_generated_role = source_has_role;
         attach->generated_role = source_role;
         if (changed)
@@ -919,6 +922,8 @@ bool _text_visual_prepare(
     glyph_attach.z_layer = attach->z_layer;
     glyph_attach.controller_mode = attach->controller_mode;
     glyph_attach.coord_space = attach->coord_space;
+    glyph_attach.clip_rect = attach->clip_rect;
+    glyph_attach.viewport_rect = attach->viewport_rect;
     bool realized_cache_valid =
         _visual_family_state(visual)->text.glyph_visual != NULL &&
         _visual_family_state(_visual_family_state(visual)->text.glyph_visual)->field != NULL &&
