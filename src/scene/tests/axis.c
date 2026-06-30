@@ -2192,6 +2192,16 @@ static int test_panel_view2d(TstContext* suite, const TstCase* item)
     double y_max = 0.0;
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &x_min, &x_max));
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &y_min, &y_max));
+    DvzPanelFrameSnapshot snapshot = {0};
+    AT(_scene_panel_frame_snapshot(panel, &snapshot));
+    AT(snapshot.has_valid_visible_x);
+    AT(snapshot.has_valid_visible_y);
+    AT(fabs(snapshot.visible_data_x[0] - x_min) < 1e-9);
+    AT(fabs(snapshot.visible_data_x[1] - x_max) < 1e-9);
+    AT(fabs(snapshot.visible_data_y[0] - y_min) < 1e-9);
+    AT(fabs(snapshot.visible_data_y[1] - y_max) < 1e-9);
+    AT(snapshot.plot_px.width > 0.0f);
+    AT(snapshot.plot_px.height > 0.0f);
     DvzRect plot = {0};
     AT(dvz_panel_plot_rect_px(panel, &plot));
     AT(plot.width > 0.0f);
@@ -2273,6 +2283,14 @@ static int test_panel_view2d_reversed_domains(TstContext* suite, const TstCase* 
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
     AT(fabs(min - 3.75) < 1e-9);
     AT(fabs(max + 3.75) < 1e-9);
+    DvzPanelFrameSnapshot snapshot = {0};
+    AT(_scene_panel_frame_snapshot(panel, &snapshot));
+    AT(snapshot.has_valid_visible_x);
+    AT(snapshot.has_valid_visible_y);
+    AT(fabs(snapshot.visible_data_x[0] - 10.0) < 1e-9);
+    AT(fabs(snapshot.visible_data_x[1] - 0.0) < 1e-9);
+    AT(fabs(snapshot.visible_data_y[0] - 3.75) < 1e-9);
+    AT(fabs(snapshot.visible_data_y[1] + 3.75) < 1e-9);
 
     dvz_scene_destroy(scene);
     return 0;

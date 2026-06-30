@@ -141,21 +141,6 @@ static bool _guide_panel_valid(DvzPanel* panel, DvzScene** out_scene)
 
 
 
-static bool _guide_visible_domains(
-    DvzPanel* panel, double* out_x0, double* out_x1, double* out_y0, double* out_y1)
-{
-    ANN(panel);
-    ANN(out_x0);
-    ANN(out_x1);
-    ANN(out_y0);
-    ANN(out_y1);
-    return dvz_panel_visible_domain(panel, DVZ_DIM_X, out_x0, out_x1) &&
-           dvz_panel_visible_domain(panel, DVZ_DIM_Y, out_y0, out_y1) &&
-           isfinite(*out_x0) && isfinite(*out_x1) && isfinite(*out_y0) && isfinite(*out_y1);
-}
-
-
-
 static void _guide_attach_visual(
     DvzPanel* panel, DvzVisual* visual, DvzGeneratedVisualRole role, int32_t z_offset)
 {
@@ -183,46 +168,38 @@ _guide_apply_visual_defaults(DvzVisual* visual, DvzGeneratedVisualRole role, uin
 
 
 static bool _guide_data_to_panel_pixels(
-    DvzPanel* panel, double x, double y, double x0, double x1, double y0, double y1,
-    float* out_x, float* out_y)
+    const DvzPanelFrameSnapshot* snapshot, double x, double y, float* out_x, float* out_y)
 {
-    ANN(panel);
+    ANN(snapshot);
     ANN(out_x);
     ANN(out_y);
 
-    DvzRect plot = {0};
-    if (!dvz_panel_plot_rect_px(panel, &plot) || plot.width <= 0.0f || plot.height <= 0.0f)
-        return false;
+    double x0 = snapshot->visible_data_x[0];
+    double x1 = snapshot->visible_data_x[1];
+    double y0 = snapshot->visible_data_y[0];
+    double y1 = snapshot->visible_data_y[1];
     if (fabs(x1 - x0) <= DBL_EPSILON || fabs(y1 - y0) <= DBL_EPSILON)
         return false;
 
-    float panel_x = 0.0f;
-    float panel_y = 0.0f;
-    float panel_width = 0.0f;
-    float panel_height = 0.0f;
-    _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
-    (void)panel_width;
-    (void)panel_height;
-
     const double tx = (x - x0) / (x1 - x0);
     const double ty = (y - y0) / (y1 - y0);
-    *out_x = plot.x - panel_x + (float)tx * plot.width;
-    *out_y = plot.y - panel_y + (1.0f - (float)ty) * plot.height;
+    *out_x = snapshot->plot_px.x - snapshot->panel_px.x + (float)tx * snapshot->plot_px.width;
+    *out_y =
+        snapshot->plot_px.y - snapshot->panel_px.y + (1.0f - (float)ty) * snapshot->plot_px.height;
     return true;
 }
 
 
 
 static void _guide_label_update(
-    DvzAnnotation* label, DvzPanel* panel, double x, double y, double x0, double x1, double y0,
-    double y1)
+    DvzAnnotation* label, const DvzPanelFrameSnapshot* snapshot, double x, double y)
 {
     if (label == NULL)
         return;
 
     float px = 0.0f;
     float py = 0.0f;
-    if (!_guide_data_to_panel_pixels(panel, x, y, x0, x1, y0, y1, &px, &py))
+    if (!_guide_data_to_panel_pixels(snapshot, x, y, &px, &py))
         return;
 
     label->placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
@@ -259,9 +236,14 @@ static bool _guide_line_upload(DvzGuideLine* guide)
     ANN(guide->panel);
     ANN(guide->line_visual);
 
-    double x0 = 0.0, x1 = 0.0, y0 = 0.0, y1 = 0.0;
-    if (!_guide_visible_domains(guide->panel, &x0, &x1, &y0, &y1))
+    DvzPanelFrameSnapshot snapshot = {0};
+    if (!_scene_panel_frame_snapshot(guide->panel, &snapshot) || !snapshot.has_valid_visible_x ||
+        !snapshot.has_valid_visible_y)
         return false;
+    double x0 = snapshot.visible_data_x[0];
+    double x1 = snapshot.visible_data_x[1];
+    double y0 = snapshot.visible_data_y[0];
+    double y1 = snapshot.visible_data_y[1];
 
     vec3 position_start[1] = {{0}};
     vec3 position_end[1] = {{0}};
@@ -271,8 +253,7 @@ static bool _guide_line_upload(DvzGuideLine* guide)
         position_start[0][1] = (float)guide->desc.value;
         position_end[0][0] = (float)x1;
         position_end[0][1] = (float)guide->desc.value;
-        _guide_label_update(
-            guide->label, guide->panel, 0.5 * (x0 + x1), guide->desc.value, x0, x1, y0, y1);
+        _guide_label_update(guide->label, &snapshot, 0.5 * (x0 + x1), guide->desc.value);
     }
     else
     {
@@ -280,8 +261,7 @@ static bool _guide_line_upload(DvzGuideLine* guide)
         position_start[0][1] = (float)y0;
         position_end[0][0] = (float)guide->desc.value;
         position_end[0][1] = (float)y1;
-        _guide_label_update(
-            guide->label, guide->panel, guide->desc.value, 0.5 * (y0 + y1), x0, x1, y0, y1);
+        _guide_label_update(guide->label, &snapshot, guide->desc.value, 0.5 * (y0 + y1));
     }
 
     DvzColor colors[1] = {guide->desc.color};
@@ -303,9 +283,14 @@ static bool _guide_span_upload(DvzGuideSpan* span)
     ANN(span->panel);
     ANN(span->fill_visual);
 
-    double x0 = 0.0, x1 = 0.0, y0 = 0.0, y1 = 0.0;
-    if (!_guide_visible_domains(span->panel, &x0, &x1, &y0, &y1))
+    DvzPanelFrameSnapshot snapshot = {0};
+    if (!_scene_panel_frame_snapshot(span->panel, &snapshot) || !snapshot.has_valid_visible_x ||
+        !snapshot.has_valid_visible_y)
         return false;
+    double x0 = snapshot.visible_data_x[0];
+    double x1 = snapshot.visible_data_x[1];
+    double y0 = snapshot.visible_data_y[0];
+    double y1 = snapshot.visible_data_y[1];
 
     double v0 = span->desc.min_value;
     double v1 = span->desc.max_value;
@@ -321,15 +306,13 @@ static bool _guide_span_upload(DvzGuideSpan* span)
     {
         sy0 = v0;
         sy1 = v1;
-        _guide_label_update(
-            span->label, span->panel, 0.5 * (x0 + x1), 0.5 * (v0 + v1), x0, x1, y0, y1);
+        _guide_label_update(span->label, &snapshot, 0.5 * (x0 + x1), 0.5 * (v0 + v1));
     }
     else
     {
         sx0 = v0;
         sx1 = v1;
-        _guide_label_update(
-            span->label, span->panel, 0.5 * (v0 + v1), 0.5 * (y0 + y1), x0, x1, y0, y1);
+        _guide_label_update(span->label, &snapshot, 0.5 * (v0 + v1), 0.5 * (y0 + y1));
     }
 
     const vec3 positions[6] = {

@@ -424,6 +424,28 @@ void _scene_panel_plot_pixel_rect(
 
 DvzPanelDesc _scene_panel_plot_desc(const DvzPanel* panel);
 
+typedef struct DvzPanelFrameSnapshot
+{
+    DvzRect panel_px;
+    DvzRect inner_px;
+    DvzRect plot_px;
+    float plot_view[4];
+    float view_extent[4];
+    float controller_extent[4];
+    double source_data_x[2];
+    double source_data_y[2];
+    double visible_data_x[2];
+    double visible_data_y[2];
+    mat4 data_to_view;
+    bool has_view2d;
+    bool has_valid_source_x;
+    bool has_valid_source_y;
+    bool has_valid_visible_x;
+    bool has_valid_visible_y;
+} DvzPanelFrameSnapshot;
+
+bool _scene_panel_frame_snapshot(const DvzPanel* panel, DvzPanelFrameSnapshot* out);
+
 bool _scene_figure_resolve_layouts(DvzFigure* figure);
 
 void _scene_panel_set_axis_reserve(DvzPanel* panel, const DvzPanelReserve* reserve);
