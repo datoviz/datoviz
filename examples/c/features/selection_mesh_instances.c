@@ -45,9 +45,9 @@
 
 #define WIDTH  EXAMPLE_WINDOW_WIDTH
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
-#define GRID_X         7u
-#define GRID_Y         5u
-#define GRID_Z         3u
+#define GRID_X         6u
+#define GRID_Y         4u
+#define GRID_Z         2u
 #define INSTANCE_COUNT (GRID_X * GRID_Y * GRID_Z)
 #define QUERY_HOVER_ID 23u
 #define QUERY_CLICK_ID 24u
@@ -94,15 +94,25 @@ typedef struct MeshInstanceSelectionState
  * @param ty translation on Y
  * @param tz translation on Z
  * @param scale uniform scale
+ * @param angle_x rotation around X in radians
  * @param angle_z rotation around Z in radians
  * @param angle_y rotation around Y in radians
  */
 static void _cube_transform(
-    float transform[16], float tx, float ty, float tz, float scale, float angle_z, float angle_y)
+    float transform[16],
+    float tx,
+    float ty,
+    float tz,
+    float scale,
+    float angle_x,
+    float angle_z,
+    float angle_y)
 {
     if (transform == NULL)
         return;
 
+    const float cx = cosf(angle_x);
+    const float sx = sinf(angle_x);
     const float cz = cosf(angle_z);
     const float sz = sinf(angle_z);
     const float cy = cosf(angle_y);
@@ -112,13 +122,13 @@ static void _cube_transform(
     transform[1] = scale * sz * cy;
     transform[2] = scale * -sy;
     transform[3] = 0.0f;
-    transform[4] = scale * -sz;
-    transform[5] = scale * cz;
-    transform[6] = 0.0f;
+    transform[4] = scale * (cz * sy * sx - sz * cx);
+    transform[5] = scale * (sz * sy * sx + cz * cx);
+    transform[6] = scale * cy * sx;
     transform[7] = 0.0f;
-    transform[8] = scale * cz * sy;
-    transform[9] = scale * sz * sy;
-    transform[10] = scale * cy;
+    transform[8] = scale * (cz * sy * cx + sz * sx);
+    transform[9] = scale * (sz * sy * cx - cz * sx);
+    transform[10] = scale * cy * cx;
     transform[11] = 0.0f;
     transform[12] = tx;
     transform[13] = ty;
@@ -138,7 +148,7 @@ static float (*_make_cube_transforms(void))[16]
     if (transforms == NULL)
         return NULL;
 
-    const float spacing = 0.42f;
+    const float spacing = 0.50f;
     const float half_x = 0.5f * (float)(GRID_X - 1u);
     const float half_y = 0.5f * (float)(GRID_Y - 1u);
     const float half_z = 0.5f * (float)(GRID_Z - 1u);
@@ -149,15 +159,22 @@ static float (*_make_cube_transforms(void))[16]
         {
             for (uint32_t x = 0; x < GRID_X; x++)
             {
-                const float fx = ((float)x - half_x) * spacing;
-                const float fy = ((float)y - half_y) * spacing;
-                const float fz = ((float)z - half_z) * spacing;
+                const float fx = ((float)x - half_x) * spacing +
+                                 0.035f * sinf(1.70f * (float)x + 0.90f * (float)y);
+                const float fy = ((float)y - half_y) * spacing +
+                                 0.030f * cosf(1.10f * (float)y + 0.80f * (float)z);
+                const float fz = ((float)z - half_z) * spacing +
+                                 0.045f * sinf(0.80f * (float)x - 1.15f * (float)y);
                 const float wave =
                     0.5f + 0.5f * sinf(TAU * ((float)x / (float)GRID_X + (float)z * 0.11f));
                 const float scale = 0.62f + 0.30f * wave;
+                const float angle_x =
+                    0.22f * sinf(0.95f * (float)x + 1.55f * (float)y + 0.70f * (float)z);
                 const float angle_z = 0.10f * (float)x + 0.17f * (float)y;
-                const float angle_y = 0.24f * (float)z - 0.06f * (float)y;
-                _cube_transform(transforms[idx++], fx, fy, fz, scale, angle_z, angle_y);
+                const float angle_y = 0.24f * (float)z - 0.06f * (float)y +
+                                      0.14f * cosf(1.20f * (float)x + 0.50f * (float)y);
+                _cube_transform(
+                    transforms[idx++], fx, fy, fz, scale, angle_x, angle_z, angle_y);
             }
         }
     }
@@ -177,6 +194,45 @@ static void _free_state(MeshInstanceSelectionState* state)
         return;
     dvz_free(state->transforms);
     dvz_free(state);
+}
+
+
+/**
+ * Create a muted colored cube mesh for the selection field.
+ *
+ * @param scene scene owning the visual
+ * @return mesh visual, or NULL on error
+ */
+static DvzVisual* _selection_cube_mesh(DvzScene* scene)
+{
+    if (scene == NULL)
+        return NULL;
+
+    DvzColor face_colors[DVZ_GEOM_CUBE_FACE_COUNT] = {
+        dvz_color_rgb(76, 201, 240),
+        dvz_color_rgb(38, 132, 167),
+        dvz_color_rgb(128, 255, 219),
+        dvz_color_rgb(42, 176, 142),
+        dvz_color_rgb(132, 142, 239),
+        dvz_color_rgb(176, 112, 221),
+    };
+
+    DvzVisual* visual = dvz_mesh(scene, 0);
+    if (visual == NULL)
+        return NULL;
+
+    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
+        .size = 0.32,
+        .face_colors = face_colors,
+        .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT,
+    });
+    if (cube == NULL)
+        return NULL;
+
+    int rc = dvz_mesh_set_geometry(visual, cube);
+    dvz_geometry_destroy(cube);
+    return rc == 0 ? visual : NULL;
 }
 
 
@@ -380,20 +436,18 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (example_set_default_3d_camera(panel, 1.4f) == NULL)
         goto error;
 
-    const ExampleStyleColorRole face_roles[6] = {
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_WARNING,
-        EXAMPLE_STYLE_COLOR_ERROR,
-        EXAMPLE_STYLE_COLOR_TEXT,
-        EXAMPLE_STYLE_COLOR_GRID,
-    };
-    DvzVisual* visual = example_graphite_cyan_cube_mesh(ctx->scene, 0.32, face_roles, NULL);
+    DvzVisual* visual = _selection_cube_mesh(ctx->scene);
     if (visual == NULL)
         goto error;
     dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM);
 
-    DvzMaterialDesc material = example_default_phong_material_desc();
+    DvzMaterialDesc material = example_default_standard_material_desc();
+    material.light_direction[0] = +0.32f;
+    material.light_direction[1] = -0.50f;
+    material.light_direction[2] = +0.80f;
+    material.standard.roughness = 0.54f;
+    material.standard.specular = 0.28f;
+    material.standard.rim_strength = 0.08f;
     if (dvz_visual_set_material(visual, &material) != 0)
         goto error;
 
