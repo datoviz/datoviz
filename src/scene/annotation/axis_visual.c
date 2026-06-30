@@ -40,19 +40,14 @@
  * @param length_px length in pixels
  * @return major tick length in visual units
  */
-static float _axis_tick_length(const DvzAxis* axis, float length_px)
+static float _axis_tick_length(
+    const DvzAxis* axis, const DvzPanelFrameSnapshot* snapshot, float length_px)
 {
     ANN(axis);
+    ANN(snapshot);
     if (!(length_px > 0.0f) || !isfinite(length_px))
         return 0.0f;
-    if (axis->panel == NULL)
-        return 0.0f;
-    float panel_x = 0.0f;
-    float panel_y = 0.0f;
-    float panel_width = 0.0f;
-    float panel_height = 0.0f;
-    _scene_panel_pixel_rect(axis->panel, &panel_x, &panel_y, &panel_width, &panel_height);
-    float span = axis->dim == DVZ_DIM_X ? panel_height : panel_width;
+    float span = axis->dim == DVZ_DIM_X ? snapshot->panel_px.height : snapshot->panel_px.width;
     if (!(span > 0.0f) || !isfinite(span))
         return 0.0f;
     return 2.0f * length_px / span;
@@ -83,17 +78,10 @@ static float _axis_user_scale(const DvzAxis* axis)
  * @param dim the visual dimension
  * @return visual-space pixel size
  */
-static float _axis_visual_pixel_size(const DvzAxis* axis, DvzDim dim)
+static float _axis_visual_pixel_size(const DvzPanelFrameSnapshot* snapshot, DvzDim dim)
 {
-    ANN(axis);
-    if (axis->panel == NULL)
-        return 0.0f;
-    float panel_x = 0.0f;
-    float panel_y = 0.0f;
-    float panel_width = 0.0f;
-    float panel_height = 0.0f;
-    _scene_panel_pixel_rect(axis->panel, &panel_x, &panel_y, &panel_width, &panel_height);
-    float span = dim == DVZ_DIM_X ? panel_width : panel_height;
+    ANN(snapshot);
+    float span = dim == DVZ_DIM_X ? snapshot->panel_px.width : snapshot->panel_px.height;
     if (!(span > 0.0f) || !isfinite(span))
         return 0.0f;
     return 2.0f / span;
@@ -107,15 +95,10 @@ static float _axis_visual_pixel_size(const DvzAxis* axis, DvzDim dim)
  * @param dim the visual dimension
  * @return plot visual-space pixel size
  */
-static float _axis_plot_pixel_size(const DvzAxis* axis, DvzDim dim)
+static float _axis_plot_pixel_size(const DvzPanelFrameSnapshot* snapshot, DvzDim dim)
 {
-    ANN(axis);
-    if (axis->panel == NULL)
-        return 0.0f;
-    DvzRect plot_px = {0};
-    if (!dvz_panel_plot_rect_px(axis->panel, &plot_px))
-        return 0.0f;
-    float span = dim == DVZ_DIM_X ? plot_px.width : plot_px.height;
+    ANN(snapshot);
+    float span = dim == DVZ_DIM_X ? snapshot->plot_px.width : snapshot->plot_px.height;
     if (!(span > 0.0f) || !isfinite(span))
         return 0.0f;
     return 2.0f / span;
@@ -149,26 +132,13 @@ static float _axis_line_pixel_phase(float width_px)
  */
 static float
 _axis_snap_visual_pixel_center_basis(
-    const DvzAxis* axis, float value, DvzDim dim, float width_px, bool plot_pixels)
+    const DvzPanelFrameSnapshot* snapshot, float value, DvzDim dim, float width_px,
+    bool plot_pixels)
 {
-    ANN(axis);
-    if (axis->panel == NULL)
-        return value;
-    float panel_width = 0.0f;
-    float panel_height = 0.0f;
-    DvzRect plot_px = {0};
-    if (plot_pixels && dvz_panel_plot_rect_px(axis->panel, &plot_px))
-    {
-        panel_width = plot_px.width;
-        panel_height = plot_px.height;
-    }
-    else
-    {
-        float panel_x = 0.0f;
-        float panel_y = 0.0f;
-        _scene_panel_pixel_rect(axis->panel, &panel_x, &panel_y, &panel_width, &panel_height);
-    }
-    float span = dim == DVZ_DIM_X ? panel_width : panel_height;
+    ANN(snapshot);
+    float width = plot_pixels ? snapshot->plot_px.width : snapshot->panel_px.width;
+    float height = plot_pixels ? snapshot->plot_px.height : snapshot->panel_px.height;
+    float span = dim == DVZ_DIM_X ? width : height;
     if (!(span > 0.0f) || !isfinite(span))
         return value;
     float pixel = (value + 1.0f) * 0.5f * span;
@@ -188,9 +158,10 @@ _axis_snap_visual_pixel_center_basis(
  * @return snapped displayed visual coordinate
  */
 static float
-_axis_snap_visual_pixel_center(const DvzAxis* axis, float value, DvzDim dim, float width_px)
+_axis_snap_visual_pixel_center(
+    const DvzPanelFrameSnapshot* snapshot, float value, DvzDim dim, float width_px)
 {
-    return _axis_snap_visual_pixel_center_basis(axis, value, dim, width_px, false);
+    return _axis_snap_visual_pixel_center_basis(snapshot, value, dim, width_px, false);
 }
 
 
@@ -205,14 +176,17 @@ _axis_snap_visual_pixel_center(const DvzAxis* axis, float value, DvzDim dim, flo
  * @return snapped source visual coordinate
  */
 static float _axis_snap_source_panzoom_pixel_center(
-    const DvzAxis* axis, const float extent[4], DvzDim dim, float value, float width_px)
+    const DvzAxis* axis, const DvzPanelFrameSnapshot* snapshot, const float extent[4], DvzDim dim,
+    float value, float width_px)
 {
     ANN(axis);
+    ANN(snapshot);
     ANN(extent);
     uint32_t lo_idx = dim == DVZ_DIM_X ? 0 : 2;
     uint32_t hi_idx = dim == DVZ_DIM_X ? 1 : 3;
     float displayed = _axis_forward_panzoom_coord(extent, lo_idx, hi_idx, value);
-    float snapped = _axis_snap_visual_pixel_center_basis(axis, displayed, dim, width_px, true);
+    float snapped =
+        _axis_snap_visual_pixel_center_basis(snapshot, displayed, dim, width_px, true);
     return _axis_inverse_panzoom_coord(extent, lo_idx, hi_idx, snapped);
 }
 
@@ -363,31 +337,35 @@ static void _axis_append_rect(
  * @param snap whether to snap the line center to a pixel center
  */
 static void _axis_append_line_rect(
-    const DvzAxis* axis, uint32_t* count, float positions[][3], uint8_t colors[][4], float a0,
-    float b0, float a1, float b1, float z, float width_px, const uint8_t color[4], float scale_x,
-    float scale_y, bool plot_pixels, bool snap)
+    const DvzAxis* axis, const DvzPanelFrameSnapshot* snapshot, uint32_t* count,
+    float positions[][3], uint8_t colors[][4], float a0, float b0, float a1, float b1, float z,
+    float width_px, const uint8_t color[4], float scale_x, float scale_y, bool plot_pixels,
+    bool snap)
 {
     ANN(axis);
+    ANN(snapshot);
     if (!(width_px > 0.0f) || !isfinite(width_px))
         return;
     if (!(scale_x > 0.0f) || !isfinite(scale_x))
         scale_x = 1.0f;
     if (!(scale_y > 0.0f) || !isfinite(scale_y))
         scale_y = 1.0f;
-    float pixel_x = plot_pixels ? _axis_plot_pixel_size(axis, DVZ_DIM_X)
-                                : _axis_visual_pixel_size(axis, DVZ_DIM_X);
-    float pixel_y = plot_pixels ? _axis_plot_pixel_size(axis, DVZ_DIM_Y)
-                                : _axis_visual_pixel_size(axis, DVZ_DIM_Y);
+    float pixel_x = plot_pixels ? _axis_plot_pixel_size(snapshot, DVZ_DIM_X)
+                                : _axis_visual_pixel_size(snapshot, DVZ_DIM_X);
+    float pixel_y = plot_pixels ? _axis_plot_pixel_size(snapshot, DVZ_DIM_Y)
+                                : _axis_visual_pixel_size(snapshot, DVZ_DIM_Y);
     float half_x = 0.5f * width_px * pixel_x / scale_x;
     float half_y = 0.5f * width_px * pixel_y / scale_y;
     if (fabsf(a1 - a0) < fabsf(b1 - b0))
     {
-        float x = snap ? _axis_snap_visual_pixel_center(axis, a0, DVZ_DIM_X, width_px) : a0;
+        float x =
+            snap ? _axis_snap_visual_pixel_center(snapshot, a0, DVZ_DIM_X, width_px) : a0;
         _axis_append_rect(count, positions, colors, x - half_x, b0, x + half_x, b1, z, color);
     }
     else
     {
-        float y = snap ? _axis_snap_visual_pixel_center(axis, b0, DVZ_DIM_Y, width_px) : b0;
+        float y =
+            snap ? _axis_snap_visual_pixel_center(snapshot, b0, DVZ_DIM_Y, width_px) : b0;
         _axis_append_rect(count, positions, colors, a0, y - half_y, a1, y + half_y, z, color);
     }
 }
@@ -410,19 +388,21 @@ static void _axis_append_line_rect(
  * @param width tick width in pixels
  */
 static void _axis_append_tick(
-    const DvzAxis* axis, uint32_t* count, float positions[][3], uint8_t colors[][4], float p,
-    float x0, float y0, float z, float length, const uint8_t color[4], float width)
+    const DvzAxis* axis, const DvzPanelFrameSnapshot* snapshot, uint32_t* count,
+    float positions[][3], uint8_t colors[][4], float p, float x0, float y0, float z,
+    float length, const uint8_t color[4], float width)
 {
     ANN(axis);
+    ANN(snapshot);
     if (!(length > 0.0f))
         return;
     if (axis->dim == DVZ_DIM_X)
         _axis_append_line_rect(
-            axis, count, positions, colors, p, y0, p, y0 + length, z, width, color, 1.0f,
+            axis, snapshot, count, positions, colors, p, y0, p, y0 + length, z, width, color, 1.0f,
             1.0f, false, true);
     else
         _axis_append_line_rect(
-            axis, count, positions, colors, x0, p, x0 + length, p, z, width, color, 1.0f,
+            axis, snapshot, count, positions, colors, x0, p, x0 + length, p, z, width, color, 1.0f,
             1.0f, false, true);
 }
 
@@ -502,18 +482,37 @@ void _axis_update_visual(DvzAxis* axis)
     }
 
     const float z = 0.0f;
+    _axis_init(&axis->panel->axes[DVZ_DIM_X], axis->panel, DVZ_DIM_X);
+    _axis_init(&axis->panel->axes[DVZ_DIM_Y], axis->panel, DVZ_DIM_Y);
+    DvzPanelFrameSnapshot snapshot = {0};
+    if (!_scene_panel_frame_snapshot(axis->panel, &snapshot))
+    {
+        axis->visual->visible = false;
+        axis->grid_visual->visible = false;
+        _axis_hide_text(axis);
+        goto cleanup;
+    }
     float x0 = -1.0f;
     float x1 = +1.0f;
     float y0 = -1.0f;
     float y1 = +1.0f;
-    _axis_init(&axis->panel->axes[DVZ_DIM_X], axis->panel, DVZ_DIM_X);
-    _axis_init(&axis->panel->axes[DVZ_DIM_Y], axis->panel, DVZ_DIM_Y);
-    _axis_plot_interval(&axis->panel->axes[DVZ_DIM_X], &x0, &x1);
-    _axis_plot_interval(&axis->panel->axes[DVZ_DIM_Y], &y0, &y1);
+    x0 = snapshot.plot_view[0] + axis->panel->axes[DVZ_DIM_X].style.plot_margin_left;
+    x1 = snapshot.plot_view[1] - axis->panel->axes[DVZ_DIM_X].style.plot_margin_right;
+    y0 = snapshot.plot_view[2] + axis->panel->axes[DVZ_DIM_Y].style.plot_margin_bottom;
+    y1 = snapshot.plot_view[3] - axis->panel->axes[DVZ_DIM_Y].style.plot_margin_top;
+    if (x1 <= x0)
+    {
+        x0 = -1.0f;
+        x1 = +1.0f;
+    }
+    if (y1 <= y0)
+    {
+        y0 = -1.0f;
+        y1 = +1.0f;
+    }
 
     float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
-    if (axis->panel != NULL)
-        (void)_scene_panel_panzoom_extent(axis->panel, extent);
+    memcpy(extent, snapshot.controller_extent, sizeof(extent));
     float source_x0 = _axis_inverse_panzoom_coord(extent, 0, 1, -1.0f);
     float source_x1 = _axis_inverse_panzoom_coord(extent, 0, 1, +1.0f);
     float source_y0 = _axis_inverse_panzoom_coord(extent, 2, 3, -1.0f);
@@ -524,13 +523,19 @@ void _axis_update_visual(DvzAxis* axis)
 
     double visible_min = 0.0;
     double visible_max = 0.0;
-    if (!_axis_visible_domain(axis, &visible_min, &visible_max))
+    const double* visible_domain =
+        axis->dim == DVZ_DIM_X ? snapshot.visible_data_x : snapshot.visible_data_y;
+    bool has_visible_domain =
+        axis->dim == DVZ_DIM_X ? snapshot.has_valid_visible_x : snapshot.has_valid_visible_y;
+    if (!has_visible_domain)
     {
         axis->visual->visible = false;
         axis->grid_visual->visible = false;
         _axis_hide_text(axis);
         goto cleanup;
     }
+    visible_min = visible_domain[0];
+    visible_max = visible_domain[1];
     _axis_compute_ticks(axis);
 
     for (uint32_t i = 0; i < axis->tick_count; i++)
@@ -549,20 +554,20 @@ void _axis_update_visual(DvzAxis* axis)
             if (axis->dim == DVZ_DIM_X)
             {
                 source_p = _axis_snap_source_panzoom_pixel_center(
-                    axis, extent, DVZ_DIM_X, source_p, grid_width);
+                    axis, &snapshot, extent, DVZ_DIM_X, source_p, grid_width);
                 _axis_append_line_rect(
-                    axis, &grid_vertex_count, grid_positions, grid_colors, source_p, source_y0,
-                    source_p, source_y1, z, grid_width, axis->style.grid_color, scale_x, scale_y,
-                    true, false);
+                    axis, &snapshot, &grid_vertex_count, grid_positions, grid_colors, source_p,
+                    source_y0, source_p, source_y1, z, grid_width, axis->style.grid_color, scale_x,
+                    scale_y, true, false);
             }
             else
             {
                 source_p = _axis_snap_source_panzoom_pixel_center(
-                    axis, extent, DVZ_DIM_Y, source_p, grid_width);
+                    axis, &snapshot, extent, DVZ_DIM_Y, source_p, grid_width);
                 _axis_append_line_rect(
-                    axis, &grid_vertex_count, grid_positions, grid_colors, source_x0, source_p,
-                    source_x1, source_p, z, grid_width, axis->style.grid_color, scale_x, scale_y,
-                    true, false);
+                    axis, &snapshot, &grid_vertex_count, grid_positions, grid_colors, source_x0,
+                    source_p, source_x1, source_p, z, grid_width, axis->style.grid_color, scale_x,
+                    scale_y, true, false);
             }
         }
     }
@@ -577,15 +582,17 @@ void _axis_update_visual(DvzAxis* axis)
             continue;
         if (axis->style.show_major_ticks)
         {
-            float len = _axis_tick_length(axis, axis->style.major_tick_length * user_scale);
+            float len =
+                _axis_tick_length(axis, &snapshot, axis->style.major_tick_length * user_scale);
             _axis_append_tick(
-                axis, &fixed_vertex_count, fixed_positions, fixed_colors, p, x0, y0, z, len,
-                axis->style.major_tick_color, axis->style.major_tick_width * user_scale);
+                axis, &snapshot, &fixed_vertex_count, fixed_positions, fixed_colors, p, x0, y0, z,
+                len, axis->style.major_tick_color, axis->style.major_tick_width * user_scale);
         }
         if (axis->style.show_minor_ticks && i + 1 < axis->tick_count)
         {
             uint32_t minor_count = _axis_minor_count(axis);
-            float len = _axis_tick_length(axis, axis->style.minor_tick_length * user_scale);
+            float len =
+                _axis_tick_length(axis, &snapshot, axis->style.minor_tick_length * user_scale);
             double delta = (axis->ticks[i + 1] - axis->ticks[i]) / (double)(minor_count + 1);
             for (uint32_t j = 1; j <= minor_count; j++)
             {
@@ -595,8 +602,9 @@ void _axis_update_visual(DvzAxis* axis)
                 if (mp < plot_min - 0.0001f || mp > plot_max + 0.0001f)
                     continue;
                 _axis_append_tick(
-                    axis, &fixed_vertex_count, fixed_positions, fixed_colors, mp, x0, y0, z, len,
-                    axis->style.minor_tick_color, axis->style.minor_tick_width * user_scale);
+                    axis, &snapshot, &fixed_vertex_count, fixed_positions, fixed_colors, mp, x0,
+                    y0, z, len, axis->style.minor_tick_color,
+                    axis->style.minor_tick_width * user_scale);
             }
         }
     }
@@ -606,18 +614,18 @@ void _axis_update_visual(DvzAxis* axis)
         if (axis->dim == DVZ_DIM_X)
         {
             float y = y0 + 0.5f * axis->style.spine_width *
-                               user_scale * _axis_visual_pixel_size(axis, DVZ_DIM_Y);
+                               user_scale * _axis_visual_pixel_size(&snapshot, DVZ_DIM_Y);
             _axis_append_line_rect(
-                axis, &fixed_vertex_count, fixed_positions, fixed_colors, x0, y, x1, y, z,
+                axis, &snapshot, &fixed_vertex_count, fixed_positions, fixed_colors, x0, y, x1, y, z,
                 axis->style.spine_width * user_scale, axis->style.spine_color, 1.0f, 1.0f, false,
                 true);
         }
         else
         {
             float x = x0 + 0.5f * axis->style.spine_width *
-                               user_scale * _axis_visual_pixel_size(axis, DVZ_DIM_X);
+                               user_scale * _axis_visual_pixel_size(&snapshot, DVZ_DIM_X);
             _axis_append_line_rect(
-                axis, &fixed_vertex_count, fixed_positions, fixed_colors, x, y0, x, y1, z,
+                axis, &snapshot, &fixed_vertex_count, fixed_positions, fixed_colors, x, y0, x, y1, z,
                 axis->style.spine_width * user_scale, axis->style.spine_color, 1.0f, 1.0f, false,
                 true);
         }
