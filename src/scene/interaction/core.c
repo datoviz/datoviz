@@ -25,6 +25,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_scene.h"
+#include "annotation/generated_visual_policy.h"
 #include "core/scene_notify_internal.h"
 #include "_visual_internal.h"
 #include "annotation/prepare_internal.h"
@@ -1233,11 +1234,8 @@ static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card)
             return false;
         if (dvz_visual_set_depth_test(card->background_visual, false) != 0)
             return false;
-        DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-        attach.z_layer = INT32_MAX / 4 - 2;
-        attach.controller_mode = DVZ_CONTROLLER_FIXED;
-        attach.coord_space = DVZ_COORD_VIEW;
-        if (dvz_panel_add_visual(panel, card->background_visual, &attach) != 0)
+        if (_scene_panel_add_generated_visual(
+                panel, card->background_visual, DVZ_GENERATED_VISUAL_OVERLAY_CARD, 0) != 0)
             return false;
     }
     if (card->content == DVZ_SCENE_CARD_CONTENT_TEXT && card->text_visual == NULL)
@@ -1249,11 +1247,8 @@ static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card)
         _visual_family_state(card->text_visual)->text.reserved_glyph_vertices = card->max_text_chars * 6u;
         if (_scene_adornment_text_visual_set_renderer(card->text_visual, card->text_renderer) != 0)
             return false;
-        DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-        attach.z_layer = INT32_MAX / 4 - 1;
-        attach.controller_mode = DVZ_CONTROLLER_FIXED;
-        attach.coord_space = DVZ_COORD_VIEW;
-        if (dvz_panel_add_visual(panel, card->text_visual, &attach) != 0)
+        if (_scene_panel_add_generated_visual(
+                panel, card->text_visual, DVZ_GENERATED_VISUAL_OVERLAY_TEXT, 0) != 0)
             return false;
     }
     if (card->content == DVZ_SCENE_CARD_CONTENT_TEXT &&

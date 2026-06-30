@@ -73,6 +73,19 @@ static bool _colorbar_stream_has_pipeline_label(
 }
 
 
+static const DvzPanelAttach* _fields_panel_attach(const DvzPanel* panel, const DvzVisual* visual)
+{
+    ANN(panel);
+    ANN(visual);
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        if (panel->visuals[i].visual == visual)
+            return &panel->visuals[i];
+    }
+    return NULL;
+}
+
+
 /**
  * Append a minimal typed fixture render so runtime texture-upload tests exercise the emitter.
  *
@@ -561,6 +574,14 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
     AT(strcmp(legend->text_labels[2], "Beta") == 0);
     AT(strcmp(legend->text_labels[3], "-7") == 0);
     AT(strcmp(legend->text_labels[4], "4000000000") == 0);
+    const DvzPanelAttach* mark_attach = _fields_panel_attach(panel, legend->mark_visual);
+    const DvzPanelAttach* text_attach = _fields_panel_attach(panel, legend->text_visual);
+    ANN(mark_attach);
+    ANN(text_attach);
+    AT(mark_attach->has_generated_role);
+    AT(text_attach->has_generated_role);
+    AT(mark_attach->generated_role == DVZ_GENERATED_VISUAL_LEGEND_MARKS);
+    AT(text_attach->generated_role == DVZ_GENERATED_VISUAL_LEGEND_TEXT);
 
     DvzVisualDataView color_view = {0};
     AT(dvz_visual_data(legend->mark_visual, "color", &color_view) == 0);
@@ -788,6 +809,18 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(colorbar->ramp_visual->visible);
     AT(colorbar->tick_visual->visible);
     AT(colorbar->text_visual->visible);
+    const DvzPanelAttach* ramp_attach = _fields_panel_attach(panel, colorbar->ramp_visual);
+    const DvzPanelAttach* tick_attach = _fields_panel_attach(panel, colorbar->tick_visual);
+    const DvzPanelAttach* text_attach = _fields_panel_attach(panel, colorbar->text_visual);
+    ANN(ramp_attach);
+    ANN(tick_attach);
+    ANN(text_attach);
+    AT(ramp_attach->has_generated_role);
+    AT(tick_attach->has_generated_role);
+    AT(text_attach->has_generated_role);
+    AT(ramp_attach->generated_role == DVZ_GENERATED_VISUAL_COLORBAR_RAMP);
+    AT(tick_attach->generated_role == DVZ_GENERATED_VISUAL_COLORBAR_MARKS);
+    AT(text_attach->generated_role == DVZ_GENERATED_VISUAL_COLORBAR_TEXT);
     AT(colorbar->tick_count >= 2);
     AT(colorbar->text_count == colorbar->tick_count + 1);
     AT(strcmp(colorbar->text_labels[colorbar->text_count - 1], "Intensity") == 0);

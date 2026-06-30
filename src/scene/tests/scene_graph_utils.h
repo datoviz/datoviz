@@ -107,3 +107,17 @@ uint64_t _stream_scene_common_layout_id(const DvzDrp2CommandStream* stream);
 uint64_t _stream_bind_group_layout_id(const DvzDrp2CommandStream* stream, uint64_t bind_group_id);
 bool _stream_has_render_pipeline_label(const DvzDrp2CommandStream* stream, const char* label);
 bool _stream_has_render_pipeline_label_part(const DvzDrp2CommandStream* stream, const char* part);
+
+
+static inline const DvzPanelAttach*
+_scene_test_panel_attach(const DvzPanel* panel, const DvzVisual* visual)
+{
+    ANN(panel);
+    ANN(visual);
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        if (panel->visuals[i].visual == visual)
+            return &panel->visuals[i];
+    }
+    return NULL;
+}

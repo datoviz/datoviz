@@ -27,6 +27,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
+#include "annotation/generated_visual_policy.h"
 #include "core/scene_notify_internal.h"
 #include "_scene_resource_key.h"
 #include "_visual_internal.h"
@@ -847,11 +848,8 @@ static bool _panel_background_attach(
 {
     ANN(panel);
     ANN(visual);
-    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.z_layer = -1;
-    attach.controller_mode = DVZ_CONTROLLER_FIXED;
-    attach.coord_space = DVZ_COORD_VIEW;
-    if (dvz_panel_add_visual(panel, visual, &attach) != 0)
+    if (_scene_panel_add_generated_visual(
+            panel, visual, DVZ_GENERATED_VISUAL_PANEL_BACKGROUND, 0) != 0)
     {
         return false;
     }
@@ -1195,11 +1193,8 @@ bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
             return false;
         }
 
-        DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-        attach.z_layer = INT32_MAX / 8;
-        attach.controller_mode = DVZ_CONTROLLER_FIXED;
-        attach.coord_space = DVZ_COORD_VIEW;
-        if (dvz_panel_add_visual(panel, visual, &attach) != 0)
+        if (_scene_panel_add_generated_visual(
+                panel, visual, DVZ_GENERATED_VISUAL_PANEL_BORDER, 0) != 0)
         {
             log_error("dvz_panel_set_border: failed to attach border visual");
             dvz_visual_destroy(visual);

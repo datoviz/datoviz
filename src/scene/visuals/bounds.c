@@ -28,6 +28,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
+#include "annotation/generated_visual_policy.h"
 #include "core/scene_notify_internal.h"
 #include "_visual_internal.h"
 #include "bounds_internal.h"
@@ -657,12 +658,12 @@ static DvzVisual* _bounds_overlay_visual(DvzPanel* panel, bool occluded)
         return NULL;
     if (dvz_visual_set_depth_test(visual, true) != 0)
         return NULL;
+    if (dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED) != 0)
+        return NULL;
     visual->depth_compare_op = occluded ? VK_COMPARE_OP_GREATER : VK_COMPARE_OP_LESS_OR_EQUAL;
-    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.z_layer = occluded ? BOUNDS_OVERLAY_Z_LAYER_OCCLUDED : BOUNDS_OVERLAY_Z_LAYER_VISIBLE;
-    attach.controller_mode = DVZ_CONTROLLER_APPLY;
-    attach.coord_space = DVZ_COORD_VIEW;
-    if (dvz_panel_add_visual(panel, visual, &attach) != 0)
+    int32_t z_offset = occluded ? BOUNDS_OVERLAY_Z_LAYER_OCCLUDED - BOUNDS_OVERLAY_Z_LAYER_VISIBLE : 0;
+    if (_scene_panel_add_generated_visual(
+            panel, visual, DVZ_GENERATED_VISUAL_BOUNDS_OVERLAY, z_offset) != 0)
         return NULL;
     if (occluded)
         panel->bounds_occluded_visual = visual;

@@ -1532,6 +1532,20 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
     AT(card->card.background_visual->visible);
     AT(card->card.text_visual->visible);
     AT(_visual_family_state(card->card.text_visual)->text.glyph_visual->visible);
+    const DvzPanelAttach* background_attach =
+        _interaction_panel_attach(panel, card->card.background_visual);
+    const DvzPanelAttach* text_attach = _interaction_panel_attach(panel, card->card.text_visual);
+    const DvzPanelAttach* glyph_attach = _interaction_panel_attach(
+        panel, _visual_family_state(card->card.text_visual)->text.glyph_visual);
+    ANN(background_attach);
+    ANN(text_attach);
+    ANN(glyph_attach);
+    AT(background_attach->has_generated_role);
+    AT(text_attach->has_generated_role);
+    AT(glyph_attach->has_generated_role);
+    AT(background_attach->generated_role == DVZ_GENERATED_VISUAL_OVERLAY_CARD);
+    AT(text_attach->generated_role == DVZ_GENERATED_VISUAL_OVERLAY_TEXT);
+    AT(glyph_attach->generated_role == DVZ_GENERATED_VISUAL_OVERLAY_TEXT);
     const DvzVisualAttr* glyph_position =
         _interaction_visual_attr(_visual_family_state(card->card.text_visual)->text.glyph_visual, "position");
     const DvzVisualAttr* glyph_bounds =
@@ -2375,6 +2389,19 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
     AT(scalebar->visual->visible);
     AT(_visual_family_state(scalebar->visual)->text.glyph_visual != NULL);
     AT(_visual_family_state(scalebar->visual)->text.glyph_visual->visible);
+    const DvzPanelAttach* line_attach = _interaction_panel_attach(panel, scalebar->scalebar_visual);
+    const DvzPanelAttach* text_attach = _interaction_panel_attach(panel, scalebar->visual);
+    const DvzPanelAttach* glyph_attach =
+        _interaction_panel_attach(panel, _visual_family_state(scalebar->visual)->text.glyph_visual);
+    ANN(line_attach);
+    ANN(text_attach);
+    ANN(glyph_attach);
+    AT(line_attach->has_generated_role);
+    AT(text_attach->has_generated_role);
+    AT(glyph_attach->has_generated_role);
+    AT(line_attach->generated_role == DVZ_GENERATED_VISUAL_SCALEBAR_LINE);
+    AT(text_attach->generated_role == DVZ_GENERATED_VISUAL_SCALEBAR_TEXT);
+    AT(glyph_attach->generated_role == DVZ_GENERATED_VISUAL_SCALEBAR_TEXT);
     AT(strcmp(scalebar->text, "2 mm") == 0);
     AC(scalebar->scalebar_units, 0.002, 1e-12);
     AC(scalebar->scalebar_px, 80.0f, 1e-5f);

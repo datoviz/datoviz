@@ -24,13 +24,14 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_scene.h"
+#include "annotation/generated_visual_policy.h"
+#include "annotation/text_visual_bridge.h"
 #include "core/scene_notify_internal.h"
 #include "colormap_internal.h"
 #include "core/format_state_internal.h"
 #include "datoviz/scene.h"
 #include "prepare_internal.h"
 #include "scale_internal.h"
-#include "annotation/text_visual_bridge.h"
 #include "visuals/_visual_internal.h"
 
 
@@ -734,29 +735,16 @@ static void _colorbar_hide(DvzColorbar* colorbar)
  *
  * @param colorbar the colorbar
  * @param visual the visual
- * @param z_layer z layer for panel sorting
+ * @param role generated visual role
  * @return whether the visual is attached
  */
-static bool _colorbar_attach_visual(DvzColorbar* colorbar, DvzVisual* visual, int32_t z_layer)
+static bool _colorbar_attach_visual(
+    DvzColorbar* colorbar, DvzVisual* visual, DvzGeneratedVisualRole role)
 {
     ANN(colorbar);
     ANN(colorbar->panel);
     ANN(visual);
-    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.z_layer = z_layer;
-    attach.controller_mode = DVZ_CONTROLLER_FIXED;
-    attach.coord_space = DVZ_COORD_VIEW;
-    for (uint32_t i = 0; i < colorbar->panel->visual_count; i++)
-    {
-        DvzPanelAttach* existing = &colorbar->panel->visuals[i];
-        if (existing->visual != visual)
-            continue;
-        existing->z_layer = attach.z_layer;
-        existing->controller_mode = attach.controller_mode;
-        existing->coord_space = attach.coord_space;
-        return true;
-    }
-    return dvz_panel_add_visual(colorbar->panel, visual, &attach) == 0;
+    return _scene_panel_add_generated_visual(colorbar->panel, visual, role, 0) == 0;
 }
 
 
@@ -780,7 +768,8 @@ static bool _colorbar_ensure_visuals(DvzColorbar* colorbar)
             return false;
         colorbar->ramp_visual->visible = false;
     }
-    if (!_colorbar_attach_visual(colorbar, colorbar->ramp_visual, 1000))
+    if (!_colorbar_attach_visual(
+            colorbar, colorbar->ramp_visual, DVZ_GENERATED_VISUAL_COLORBAR_RAMP))
         return false;
 
     if (colorbar->tick_visual == NULL)
@@ -790,7 +779,8 @@ static bool _colorbar_ensure_visuals(DvzColorbar* colorbar)
             return false;
         colorbar->tick_visual->visible = false;
     }
-    if (!_colorbar_attach_visual(colorbar, colorbar->tick_visual, 1001))
+    if (!_colorbar_attach_visual(
+            colorbar, colorbar->tick_visual, DVZ_GENERATED_VISUAL_COLORBAR_MARKS))
         return false;
 
     if (colorbar->text_visual == NULL)
@@ -801,7 +791,8 @@ static bool _colorbar_ensure_visuals(DvzColorbar* colorbar)
             return false;
         colorbar->text_visual->visible = false;
     }
-    return _colorbar_attach_visual(colorbar, colorbar->text_visual, 1002);
+    return _colorbar_attach_visual(
+        colorbar, colorbar->text_visual, DVZ_GENERATED_VISUAL_COLORBAR_TEXT);
 }
 
 

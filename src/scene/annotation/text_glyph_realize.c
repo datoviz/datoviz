@@ -117,11 +117,15 @@ static void _text_anchor_pixels(const DvzText* text, float* out_x, float* out_y)
  * @return whether the glyph visual is attached with the desired metadata
  */
 static bool _text_sync_glyph_visual_attach(
-    DvzPanel* panel, DvzVisual* glyph_visual, const DvzVisualAttachDesc* desc)
+    DvzPanel* panel, DvzVisual* glyph_visual, const DvzVisualAttachDesc* desc,
+    const DvzPanelAttach* source_attach)
 {
     ANN(panel);
     ANN(glyph_visual);
     ANN(desc);
+    bool source_has_role = source_attach != NULL && source_attach->has_generated_role;
+    DvzGeneratedVisualRole source_role =
+        source_has_role ? source_attach->generated_role : DVZ_GENERATED_VISUAL_DATA_DEFAULT;
     for (uint32_t i = 0; i < panel->visual_count; i++)
     {
         DvzPanelAttach* attach = &panel->visuals[i];
@@ -129,15 +133,24 @@ static bool _text_sync_glyph_visual_attach(
             continue;
         bool changed =
             attach->z_layer != desc->z_layer || attach->controller_mode != desc->controller_mode ||
-            attach->coord_space != desc->coord_space;
+            attach->coord_space != desc->coord_space ||
+            attach->has_generated_role != source_has_role ||
+            (source_has_role && attach->generated_role != source_role);
         attach->z_layer = desc->z_layer;
         attach->controller_mode = desc->controller_mode;
         attach->coord_space = desc->coord_space;
+        attach->has_generated_role = source_has_role;
+        attach->generated_role = source_role;
         if (changed)
             _scene_notify_request_frame(panel->figure);
         return true;
     }
-    return dvz_panel_add_visual(panel, glyph_visual, desc) == 0;
+    if (dvz_panel_add_visual(panel, glyph_visual, desc) != 0)
+        return false;
+    DvzPanelAttach* attach = &panel->visuals[panel->visual_count - 1];
+    attach->has_generated_role = source_has_role;
+    attach->generated_role = source_role;
+    return true;
 }
 
 
@@ -195,7 +208,7 @@ static bool _text_prepare_batched_visual(DvzFigure* figure, DvzText* text)
     }
     if (_scene_text_visual_set_renderer(text->visual, text->style.renderer) != 0)
         return false;
-    if (!_text_sync_glyph_visual_attach(text->panel, text->visual, &attach))
+    if (!_text_sync_glyph_visual_attach(text->panel, text->visual, &attach, NULL))
         return false;
 
     uint32_t count = text->item_count;
@@ -558,7 +571,7 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         if (text->visual == NULL)
             ok = false;
     }
-    if (ok && !_text_sync_glyph_visual_attach(text->panel, text->visual, &attach))
+    if (ok && !_text_sync_glyph_visual_attach(text->panel, text->visual, &attach, NULL))
         ok = false;
     if (ok && dvz_visual_set_alpha_mode(text->visual, DVZ_ALPHA_BLENDED) != 0)
         ok = false;
@@ -917,7 +930,8 @@ bool _text_visual_prepare(
         _visual_family_state(visual)->text.visual_figure_height == figure->height;
     if (realized_cache_valid)
     {
-        return _text_sync_glyph_visual_attach(panel, _visual_family_state(visual)->text.glyph_visual, &glyph_attach);
+        return _text_sync_glyph_visual_attach(
+            panel, _visual_family_state(visual)->text.glyph_visual, &glyph_attach, attach);
     }
     bool position_only_dirty =
         _visual_family_state(visual)->text.glyph_visual != NULL &&
@@ -927,7 +941,8 @@ bool _text_visual_prepare(
         fabsf(_visual_family_state(visual)->text.screen_scale - screen_scale) <= 1e-6f;
     if (position_only_dirty)
     {
-        if (!_text_sync_glyph_visual_attach(panel, _visual_family_state(visual)->text.glyph_visual, &glyph_attach))
+        if (!_text_sync_glyph_visual_attach(
+                panel, _visual_family_state(visual)->text.glyph_visual, &glyph_attach, attach))
             return false;
         return _text_visual_update_glyph_positions(
             figure, panel, attach, visual, position_attr, version, layout_version);
@@ -1186,7 +1201,8 @@ bool _text_visual_prepare(
         if (_visual_family_state(visual)->text.glyph_visual == NULL)
             ok = false;
     }
-    if (ok && !_text_sync_glyph_visual_attach(panel, _visual_family_state(visual)->text.glyph_visual, &glyph_attach))
+    if (ok && !_text_sync_glyph_visual_attach(
+                  panel, _visual_family_state(visual)->text.glyph_visual, &glyph_attach, attach))
         ok = false;
     if (ok && dvz_visual_set_alpha_mode(_visual_family_state(visual)->text.glyph_visual, DVZ_ALPHA_BLENDED) != 0)
         ok = false;

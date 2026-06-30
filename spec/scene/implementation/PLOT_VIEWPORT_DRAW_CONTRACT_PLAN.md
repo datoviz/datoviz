@@ -81,6 +81,11 @@ Use this default routing unless a visual family has a documented reason to overr
 This keeps the `1c951c6b6` data-visual motivation without forcing every plot-clipped visual into
 the same implicit viewport behavior.
 
+Generated/adornment visuals must carry this policy on their `DvzPanelAttach` generated role. Scene
+emission may read the role policy, but it must not recover clip or viewport routing by scanning
+axis, guide, colorbar, legend, background, border, scale-bar, overlay, or bounds-overlay pointers.
+Text visuals lowered to glyph visuals inherit the generated role from the source text attachment.
+
 
 ## Viewport Uniform Rule
 
@@ -117,7 +122,8 @@ Prefer small commits with visible validation for future follow-up work.
 1. **Frame-plan ABI:** done. `DvzFramePlanViewportRect` is stored in render visual metadata and
    draw packets, with panel defaults for missing metadata.
 2. **Scene routing:** done. `scene_emit/panel.c` sets `viewport_rect` and `clip_rect`
-   independently.
+   independently from generated-role attachment policy, visual ops, and generic coordinate-space
+   defaults.
 3. **Runtime emission:** done. `render_emit_draws.c` switches viewport from `viewport_rect` and
    scissor from `clip_rect`.
 4. **Viewport uniform:** done. Common bind groups are keyed by viewport selection and upload the

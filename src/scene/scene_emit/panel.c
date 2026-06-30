@@ -338,88 +338,6 @@ static bool _scene_panel_has_visible_volume_occlusion_target(const DvzPanel* pan
 
 
 /**
- * Return whether a visual is owned by a panel colorbar adornment.
- *
- * @param panel the panel owning colorbar handles
- * @param visual the visual to classify
- * @return whether the visual is colorbar-derived
- */
-static bool _scene_visual_is_colorbar_derived(const DvzPanel* panel, const DvzVisual* visual)
-{
-    ANN(panel);
-    ANN(visual);
-    for (uint32_t i = 0; i < panel->colorbar_count; i++)
-    {
-        const DvzColorbar* colorbar = panel->colorbars[i];
-        if (colorbar == NULL)
-            continue;
-        if (visual == colorbar->ramp_visual || visual == colorbar->tick_visual ||
-            visual == colorbar->text_visual)
-        {
-            return true;
-        }
-        if (colorbar->text_visual != NULL &&
-            visual == _visual_family_state(colorbar->text_visual)->text.glyph_visual)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-/**
- * Return whether a visual is owned by a panel legend adornment.
- *
- * @param panel the panel owning legend handles
- * @param visual the visual to classify
- * @return whether the visual is legend-derived
- */
-static bool _scene_visual_is_legend_derived(const DvzPanel* panel, const DvzVisual* visual)
-{
-    ANN(panel);
-    ANN(visual);
-    for (uint32_t i = 0; i < panel->legend_count; i++)
-    {
-        const DvzLegend* legend = panel->legends[i];
-        if (legend == NULL)
-            continue;
-        if (visual == legend->mark_visual || visual == legend->text_visual)
-            return true;
-        if (legend->text_visual != NULL && visual == _visual_family_state(legend->text_visual)->text.glyph_visual)
-            return true;
-    }
-    return false;
-}
-
-
-/**
- * Return whether a visual is owned by a panel axis adornment.
- *
- * @param panel the panel owning axis handles
- * @param visual the visual to classify
- * @return whether the visual is axis-derived
- */
-static bool _scene_visual_is_axis_derived(const DvzPanel* panel, const DvzVisual* visual)
-{
-    ANN(panel);
-    ANN(visual);
-    for (uint32_t dim = 0; dim < 2; dim++)
-    {
-        const DvzAxis* axis = &panel->axes[dim];
-        if (axis->panel != panel)
-            continue;
-        if (visual == axis->visual || visual == axis->grid_visual || visual == axis->text_visual)
-            return true;
-        if (axis->text_visual != NULL && visual == _visual_family_state(axis->text_visual)->text.glyph_visual)
-            return true;
-    }
-    return false;
-}
-
-
-
-/**
  * Resolve generated-role policy carried by an attachment.
  *
  * @param attach the panel visual attachment
@@ -457,11 +375,7 @@ _scene_visual_clip_rect(const DvzPanel* panel, const DvzVisual* visual, const Dv
         return policy.clip_rect;
     if (visual->type == DVZ_VISUAL_TYPE_GLYPH && attach->coord_space == DVZ_COORD_DATA)
         return DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
-    if (visual == panel->background_visual || visual == panel->border_visual ||
-        (visual->ops != NULL && visual->ops->panel_clip_rect) ||
-        _scene_visual_is_axis_derived(panel, visual) ||
-        _scene_visual_is_colorbar_derived(panel, visual) ||
-        _scene_visual_is_legend_derived(panel, visual))
+    if (visual->ops != NULL && visual->ops->panel_clip_rect)
     {
         return DVZ_FRAME_PLAN_CLIP_RECT_PANEL;
     }
@@ -486,12 +400,7 @@ static DvzFramePlanViewportRect _scene_visual_viewport_rect(
     DvzGeneratedVisualPolicy policy = {0};
     if (_scene_visual_generated_policy(attach, &policy))
         return policy.viewport_rect;
-    if (
-        visual == panel->background_visual || visual == panel->border_visual ||
-        (visual->ops != NULL && visual->ops->panel_clip_rect) ||
-        _scene_visual_is_axis_derived(panel, visual) ||
-        _scene_visual_is_colorbar_derived(panel, visual) ||
-        _scene_visual_is_legend_derived(panel, visual))
+    if (visual->ops != NULL && visual->ops->panel_clip_rect)
     {
         return DVZ_FRAME_PLAN_VIEWPORT_PANEL;
     }

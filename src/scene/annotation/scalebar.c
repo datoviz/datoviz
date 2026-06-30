@@ -25,13 +25,14 @@
 #include "_log.h"
 #include "_scale_ticks.h"
 #include "_scene.h"
+#include "annotation/generated_visual_policy.h"
+#include "annotation/text_visual_bridge.h"
 #include "core/format_state_internal.h"
 #include "core/scene_notify_internal.h"
 #include "core/units_internal.h"
 #include "core/panel_layout_internal.h"
 #include "datoviz/scene.h"
 #include "text_internal.h"
-#include "annotation/text_visual_bridge.h"
 
 
 
@@ -309,11 +310,9 @@ static bool _scalebar_ensure_visuals(DvzAnnotation* annotation)
         if (dvz_segment_set_caps(
                 annotation->scalebar_visual, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_BUTT) != 0)
             return false;
-        DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-        attach.z_layer = INT32_MAX / 4 - 1;
-        attach.controller_mode = DVZ_CONTROLLER_FIXED;
-        attach.coord_space = DVZ_COORD_VIEW;
-        if (dvz_panel_add_visual(annotation->panel, annotation->scalebar_visual, &attach) != 0)
+        if (_scene_panel_add_generated_visual(
+                annotation->panel, annotation->scalebar_visual,
+                DVZ_GENERATED_VISUAL_SCALEBAR_LINE, 0) != 0)
             return false;
     }
     if (annotation->visual == NULL)
@@ -324,14 +323,24 @@ static bool _scalebar_ensure_visuals(DvzAnnotation* annotation)
         _visual_family_state(annotation->visual)->text.reserved_glyph_vertices =
             DVZ_SCALEBAR_LABEL_RESERVED_GLYPHS * 6u;
         annotation->visual->visible = false;
-        DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-        attach.z_layer = INT32_MAX / 4;
-        attach.controller_mode = DVZ_CONTROLLER_FIXED;
-        attach.coord_space = DVZ_COORD_VIEW;
-        if (dvz_panel_add_visual(annotation->panel, annotation->visual, &attach) != 0)
+        if (_scene_panel_add_generated_visual(
+                annotation->panel, annotation->visual, DVZ_GENERATED_VISUAL_SCALEBAR_TEXT, 0) != 0)
             return false;
     }
     return true;
+}
+
+
+static const DvzPanelAttach* _scalebar_panel_attach(DvzPanel* panel, const DvzVisual* visual)
+{
+    ANN(panel);
+    ANN(visual);
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        if (panel->visuals[i].visual == visual)
+            return &panel->visuals[i];
+    }
+    return NULL;
 }
 
 
@@ -859,14 +868,8 @@ static bool _scalebar_prepare_overlay_visual(
 
     if (label_position_dirty)
     {
-        if (!_text_visual_prepare(
-                figure, annotation->panel,
-                &(DvzPanelAttach){
-                    .visual = annotation->visual,
-                    .z_layer = INT32_MAX / 4,
-                    .controller_mode = DVZ_CONTROLLER_FIXED,
-                },
-                annotation->visual))
+        const DvzPanelAttach* attach = _scalebar_panel_attach(annotation->panel, annotation->visual);
+        if (attach == NULL || !_text_visual_prepare(figure, annotation->panel, attach, annotation->visual))
             return false;
     }
 

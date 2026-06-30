@@ -826,6 +826,15 @@ int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* ite
     AT(occluded_overlay->depth_test_enabled);
     AT(overlay->depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL);
     AT(occluded_overlay->depth_compare_op == VK_COMPARE_OP_GREATER);
+    const DvzPanelAttach* overlay_attach = _scene_test_panel_attach(panel, overlay);
+    const DvzPanelAttach* occluded_attach = _scene_test_panel_attach(panel, occluded_overlay);
+    ANN(overlay_attach);
+    ANN(occluded_attach);
+    AT(overlay_attach->has_generated_role);
+    AT(occluded_attach->has_generated_role);
+    AT(overlay_attach->generated_role == DVZ_GENERATED_VISUAL_BOUNDS_OVERLAY);
+    AT(occluded_attach->generated_role == DVZ_GENERATED_VISUAL_BOUNDS_OVERLAY);
+    AT(occluded_attach->z_layer == overlay_attach->z_layer - 1);
     int start_idx = _attr_index(overlay, "position_start");
     int end_idx = _attr_index(overlay, "position_end");
     int color_idx = _attr_index(overlay, "color");
@@ -1067,6 +1076,7 @@ int test_scene_panel_bounds_overlay_emit_runtime(TstContext* suite, const TstCas
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
+    caps.supports_color_blending = true;
 
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
@@ -1077,9 +1087,9 @@ int test_scene_panel_bounds_overlay_emit_runtime(TstContext* suite, const TstCas
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
     AT(_stream_has_render_pipeline_label_part(
-        stream, "_pipe_segmentg_coverage_blend_depth_msaa4"));
+        stream, "_pipe_segmentg_blend_depth"));
     AT(_stream_has_render_pipeline_label_part(
-        stream, "_pipe_segmentg_coverage_blend_depth_gt_depth_msaa4"));
+        stream, "_pipe_segmentg_blend_depth_gt_depth"));
 
     bool found_front_pipeline = false;
     bool found_occluded_pipeline = false;
@@ -1092,18 +1102,18 @@ int test_scene_panel_bounds_overlay_emit_runtime(TstContext* suite, const TstCas
         const char* label = dvz_drp2_stream_label(stream, command->u.create_render_pipeline.id);
         if (label == NULL)
             continue;
-        if (strstr(label, "_pipe_segmentg_coverage_blend_depth_gt_depth_msaa4") != NULL)
+        if (strstr(label, "_pipe_segmentg_blend_depth_gt_depth") != NULL)
         {
             found_occluded_pipeline =
                 command->u.create_render_pipeline.has_depth_attachment &&
                 !command->u.create_render_pipeline.depth_write_enabled &&
                 command->u.create_render_pipeline.depth_compare_op == VK_COMPARE_OP_GREATER;
         }
-        else if (strstr(label, "_pipe_segmentg_coverage_blend_depth_msaa4") != NULL)
+        else if (strstr(label, "_pipe_segmentg_blend_depth") != NULL)
         {
             found_front_pipeline =
                 command->u.create_render_pipeline.has_depth_attachment &&
-                command->u.create_render_pipeline.depth_write_enabled &&
+                !command->u.create_render_pipeline.depth_write_enabled &&
                 command->u.create_render_pipeline.depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL;
         }
     }

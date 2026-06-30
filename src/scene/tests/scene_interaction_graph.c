@@ -1018,6 +1018,8 @@ int test_scene_background_color_creates_fixed_quad(TstContext* suite, const TstC
     AT(panel->visuals[0].visual == panel->background_visual);
     AT(panel->visuals[0].z_layer == -1);
     AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
+    AT(panel->visuals[0].has_generated_role);
+    AT(panel->visuals[0].generated_role == DVZ_GENERATED_VISUAL_PANEL_BACKGROUND);
     AT(panel->background_type == DVZ_PANEL_BACKGROUND_COLOR);
 
     /* Second call with a different color: updates in place, no new visual. */
@@ -1143,6 +1145,8 @@ int test_scene_panel_border_creates_fixed_overlay(TstContext* suite, const TstCa
     AT(panel->visuals[0].visual == panel->border_visual);
     AT(panel->visuals[0].z_layer > 0);
     AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
+    AT(panel->visuals[0].has_generated_role);
+    AT(panel->visuals[0].generated_role == DVZ_GENERATED_VISUAL_PANEL_BORDER);
     AT(panel->border_visual->type == DVZ_VISUAL_TYPE_SEGMENT);
     AT(panel->border.visible);
     AT(panel->border.width_px == 2.0f);

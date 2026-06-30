@@ -21,6 +21,7 @@
 #include <stdint.h>
 
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "datoviz/scene.h"
 #include "frame_plan/frame_plan.h"
 
@@ -56,7 +57,7 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
     case DVZ_GENERATED_VISUAL_PANEL_BACKGROUND:
         return (DvzGeneratedVisualPolicy){
             .role = role,
-            .z_layer = -100,
+            .z_layer = -1,
             .controller_mode = DVZ_CONTROLLER_FIXED,
             .coord_space = DVZ_COORD_VIEW,
             .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
@@ -67,7 +68,7 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
     case DVZ_GENERATED_VISUAL_PANEL_BORDER:
         return (DvzGeneratedVisualPolicy){
             .role = role,
-            .z_layer = 1002,
+            .z_layer = INT32_MAX / 8,
             .controller_mode = DVZ_CONTROLLER_FIXED,
             .coord_space = DVZ_COORD_VIEW,
             .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
@@ -131,10 +132,6 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .alpha_mode = DVZ_ALPHA_OPAQUE,
         };
     case DVZ_GENERATED_VISUAL_AXIS_TEXT:
-    case DVZ_GENERATED_VISUAL_COLORBAR_TEXT:
-    case DVZ_GENERATED_VISUAL_LEGEND_TEXT:
-    case DVZ_GENERATED_VISUAL_SCALEBAR_TEXT:
-    case DVZ_GENERATED_VISUAL_OVERLAY_TEXT:
         return (DvzGeneratedVisualPolicy){
             .role = role,
             .z_layer = 1001,
@@ -146,10 +143,6 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .alpha_mode = DVZ_ALPHA_BLENDED,
         };
     case DVZ_GENERATED_VISUAL_COLORBAR_RAMP:
-    case DVZ_GENERATED_VISUAL_COLORBAR_MARKS:
-    case DVZ_GENERATED_VISUAL_LEGEND_MARKS:
-    case DVZ_GENERATED_VISUAL_SCALEBAR_LINE:
-    case DVZ_GENERATED_VISUAL_OVERLAY_CARD:
         return (DvzGeneratedVisualPolicy){
             .role = role,
             .z_layer = 1000,
@@ -160,12 +153,91 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .depth_test = false,
             .alpha_mode = DVZ_ALPHA_OPAQUE,
         };
-    case DVZ_GENERATED_VISUAL_BOUNDS_OVERLAY:
+    case DVZ_GENERATED_VISUAL_COLORBAR_MARKS:
+        return (DvzGeneratedVisualPolicy){
+            .role = role,
+            .z_layer = 1001,
+            .controller_mode = DVZ_CONTROLLER_FIXED,
+            .coord_space = DVZ_COORD_VIEW,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
+            .depth_test = false,
+            .alpha_mode = DVZ_ALPHA_OPAQUE,
+        };
+    case DVZ_GENERATED_VISUAL_COLORBAR_TEXT:
+    case DVZ_GENERATED_VISUAL_LEGEND_MARKS:
+        return (DvzGeneratedVisualPolicy){
+            .role = role,
+            .z_layer = 1002,
+            .controller_mode = DVZ_CONTROLLER_FIXED,
+            .coord_space = DVZ_COORD_VIEW,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
+            .depth_test = false,
+            .alpha_mode = role == DVZ_GENERATED_VISUAL_COLORBAR_TEXT ? DVZ_ALPHA_BLENDED
+                                                                     : DVZ_ALPHA_OPAQUE,
+        };
+    case DVZ_GENERATED_VISUAL_LEGEND_TEXT:
+        return (DvzGeneratedVisualPolicy){
+            .role = role,
+            .z_layer = 1003,
+            .controller_mode = DVZ_CONTROLLER_FIXED,
+            .coord_space = DVZ_COORD_VIEW,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
+            .depth_test = false,
+            .alpha_mode = DVZ_ALPHA_BLENDED,
+        };
+    case DVZ_GENERATED_VISUAL_SCALEBAR_LINE:
+        return (DvzGeneratedVisualPolicy){
+            .role = role,
+            .z_layer = INT32_MAX / 4 - 1,
+            .controller_mode = DVZ_CONTROLLER_FIXED,
+            .coord_space = DVZ_COORD_VIEW,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
+            .depth_test = false,
+            .alpha_mode = DVZ_ALPHA_OPAQUE,
+        };
+    case DVZ_GENERATED_VISUAL_SCALEBAR_TEXT:
         return (DvzGeneratedVisualPolicy){
             .role = role,
             .z_layer = INT32_MAX / 4,
+            .controller_mode = DVZ_CONTROLLER_FIXED,
+            .coord_space = DVZ_COORD_VIEW,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
+            .depth_test = false,
+            .alpha_mode = DVZ_ALPHA_BLENDED,
+        };
+    case DVZ_GENERATED_VISUAL_OVERLAY_CARD:
+        return (DvzGeneratedVisualPolicy){
+            .role = role,
+            .z_layer = INT32_MAX / 4 - 2,
+            .controller_mode = DVZ_CONTROLLER_FIXED,
+            .coord_space = DVZ_COORD_VIEW,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
+            .depth_test = false,
+            .alpha_mode = DVZ_ALPHA_BLENDED,
+        };
+    case DVZ_GENERATED_VISUAL_OVERLAY_TEXT:
+        return (DvzGeneratedVisualPolicy){
+            .role = role,
+            .z_layer = INT32_MAX / 4 - 1,
+            .controller_mode = DVZ_CONTROLLER_FIXED,
+            .coord_space = DVZ_COORD_VIEW,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
+            .depth_test = false,
+            .alpha_mode = DVZ_ALPHA_BLENDED,
+        };
+    case DVZ_GENERATED_VISUAL_BOUNDS_OVERLAY:
+        return (DvzGeneratedVisualPolicy){
+            .role = role,
+            .z_layer = 9500,
             .controller_mode = DVZ_CONTROLLER_APPLY,
-            .coord_space = DVZ_COORD_DATA,
+            .coord_space = DVZ_COORD_VIEW,
             .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PLOT,
             .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PLOT,
             .depth_test = true,
@@ -203,21 +275,34 @@ _scene_generated_visual_attach_desc(const DvzGeneratedVisualPolicy* policy, int3
 static inline int _scene_panel_add_generated_visual(
     DvzPanel* panel, DvzVisual* visual, DvzGeneratedVisualRole role, int32_t z_offset)
 {
+    ANN(panel);
+    ANN(visual);
     DvzGeneratedVisualPolicy policy = _scene_generated_visual_policy(role);
     DvzVisualAttachDesc attach = _scene_generated_visual_attach_desc(&policy, z_offset);
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        DvzPanelAttach* slot = &panel->visuals[i];
+        if (slot->visual != visual)
+            continue;
+        bool changed =
+            slot->z_layer != attach.z_layer || slot->controller_mode != attach.controller_mode ||
+            slot->coord_space != attach.coord_space || !slot->has_generated_role ||
+            slot->generated_role != role;
+        slot->z_layer = attach.z_layer;
+        slot->controller_mode = attach.controller_mode;
+        slot->coord_space = attach.coord_space;
+        slot->has_generated_role = true;
+        slot->generated_role = role;
+        if (changed)
+            _scene_notify_request_frame(panel->figure);
+        return 0;
+    }
     if (dvz_panel_add_visual(panel, visual, &attach) != 0)
         return -1;
-    for (uint32_t i = panel->visual_count; i > 0; i--)
-    {
-        DvzPanelAttach* slot = &panel->visuals[i - 1];
-        if (slot->visual == visual)
-        {
-            slot->has_generated_role = true;
-            slot->generated_role = role;
-            return 0;
-        }
-    }
-    return -1;
+    DvzPanelAttach* slot = &panel->visuals[panel->visual_count - 1];
+    slot->has_generated_role = true;
+    slot->generated_role = role;
+    return 0;
 }
 
 
