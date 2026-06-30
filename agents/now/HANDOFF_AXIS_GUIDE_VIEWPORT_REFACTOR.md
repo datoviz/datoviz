@@ -56,6 +56,19 @@ Committed on `v0.4-dev`:
    - Removed axis/colorbar/legend pointer scans from `scene_emit/panel.c`.
    - Updated the durable plot viewport contract to forbid pointer-derived generated routing.
 
+8. `864f726cc` `Move generated visual policy to core`
+   - Moved generated visual policy from `annotation/` to `src/scene/core/`.
+   - Updated annotation, interaction, emit, visual, and test includes to use the neutral scene-level
+     policy home.
+
+9. `d08c75b0a` `Add explicit visual attach rect policy`
+   - Added public `DvzVisualAttachDesc.clip_rect` and `.viewport_rect` selectors.
+   - Stored explicit clip/viewport routing on `DvzPanelAttach` and propagated it through normal
+     visuals, composites, generated-role helpers, and lowered glyph visuals.
+   - Added a frame-plan metadata regression test for explicit rect routing.
+   - Added an architecture source guard that rejects generated/adornment pointer scans in
+     `scene_emit/panel.c`.
+
 
 ## Current Invariants
 
@@ -73,6 +86,11 @@ Frame-plan clip/viewport routing for generated visuals is attachment metadata, n
 Do not reintroduce emit-time scans over axis, guide, colorbar, legend, panel chrome, scale-bar,
 overlay, or bounds-overlay object fields. Text visuals lowered to glyphs must inherit the generated
 role from their source text attachment.
+
+For ordinary visuals, `DvzVisualAttachDesc.clip_rect` and `.viewport_rect` are the public escape
+hatch when the default AUTO routing is too implicit. Use generated roles for semantic adornments;
+use explicit attach rects for custom overlays, composites, or helpers that should remain ordinary
+visual attachments.
 
 Axis visuals, axis text, and guide upload now share `DvzPanelFrameSnapshot`. Do not reintroduce
 ad-hoc calls to `_scene_panel_panzoom_extent()`, `_scene_panel_pixel_rect()`,
@@ -107,6 +125,19 @@ git diff --check
 
 The original failing WGSL fixtures are covered by `scene/scene-graph` and pass.
 
+After `d08c75b0a`:
+
+```sh
+cmake --build build --target dvztest
+python3 -m pytest -q testing/test_scene_architecture_source_guard.py
+direnv exec . just test scene/scene-graph
+direnv exec . just test axis
+direnv exec . just test interaction
+direnv exec . just test fields
+python3 tasks/spec_check.py
+git diff --check
+```
+
 From `../GSP_API`:
 
 ```sh
@@ -128,14 +159,12 @@ not requested.
 
 ## Next Checkpoints
 
-Recommended next commit:
-
-1. Audit remaining direct `dvz_panel_add_visual()` call sites. Current intentional survivors are
-   public/default data visuals, plot bars/bands, and the generic text glyph sync helper.
-2. If any future generated adornment is added, give it an explicit `DvzGeneratedVisualRole` before
-   touching frame-plan routing.
-3. Consider adding a lightweight source check that rejects new generated/adornment pointer scans in
-   `scene_emit/`.
+Datoviz-side architecture work in this lane is complete for the current release blocker. Remaining
+direct `dvz_panel_add_visual()` call sites were audited: public/default data visuals, plot
+bars/bands, view-projected helpers, and generic text glyph sync remain intentional. If any future
+generated adornment is added, give it an explicit `DvzGeneratedVisualRole` before touching
+frame-plan routing, or use explicit `DvzVisualAttachDesc` rects when it is not a semantic generated
+role.
 
 Recommended GSP-facing commit:
 
