@@ -58,6 +58,18 @@ static float _axis_text_tick_visual_position(
 }
 
 
+static void _axis_text_visual_to_pixels(
+    const DvzPanelFrameSnapshot* snapshot, float visual_x, float visual_y, float* out_x,
+    float* out_y)
+{
+    ANN(snapshot);
+    ANN(out_x);
+    ANN(out_y);
+    *out_x = 0.5f * (visual_x + 1.0f) * snapshot->panel_px.width;
+    *out_y = 0.5f * (1.0f - visual_y) * snapshot->panel_px.height;
+}
+
+
 /**
  * Apply the axis text renderer to the derived text visual.
  *
@@ -327,10 +339,11 @@ static float _axis_text_label_offset(const DvzAxis* axis)
  * @param visible_max visible data maximum
  */
 void _axis_update_text(
-    DvzAxis* axis, float x0, float x1, float y0, float y1, double visible_min,
-    double visible_max)
+    DvzAxis* axis, const DvzPanelFrameSnapshot* snapshot, float x0, float x1, float y0, float y1,
+    double visible_min, double visible_max)
 {
     ANN(axis);
+    ANN(snapshot);
     if (
         !axis->enabled || axis->tick_count == 0 ||
         !isfinite(visible_min) || !isfinite(visible_max) ||
@@ -354,8 +367,7 @@ void _axis_update_text(
     double tick_values[DVZ_SCENE_MAX_AXIS_TICKS] = {0};
     float tick_positions[DVZ_SCENE_MAX_AXIS_TICKS] = {0};
     float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
-    if (axis->panel != NULL)
-        (void)_scene_panel_panzoom_extent(axis->panel, extent);
+    memcpy(extent, snapshot->controller_extent, sizeof(extent));
     for (uint32_t i = 0; i < axis->tick_count; i++)
     {
         float plot_min = axis->dim == DVZ_DIM_X ? x0 : y0;
@@ -403,7 +415,7 @@ void _axis_update_text(
         float py = 0.0f;
         if (axis->dim == DVZ_DIM_X)
         {
-            _axis_visual_to_pixels(axis, tick_positions[i], y0, &px, &py);
+            _axis_text_visual_to_pixels(snapshot, tick_positions[i], y0, &px, &py);
             py += _axis_text_tick_gap(axis);
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles,
@@ -413,7 +425,7 @@ void _axis_update_text(
         }
         else
         {
-            _axis_visual_to_pixels(axis, x0, tick_positions[i], &px, &py);
+            _axis_text_visual_to_pixels(snapshot, x0, tick_positions[i], &px, &py);
             px -= _axis_text_tick_gap(axis);
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles,
@@ -430,7 +442,7 @@ void _axis_update_text(
         float offset_size = _axis_text_size(axis->style.label_size_px, AXIS_TEXT_LABEL_SIZE);
         if (axis->dim == DVZ_DIM_X)
         {
-            _axis_visual_to_pixels(axis, x1, y0, &px, &py);
+            _axis_text_visual_to_pixels(snapshot, x1, y0, &px, &py);
             py += _axis_text_label_offset(axis);
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles,
@@ -439,7 +451,7 @@ void _axis_update_text(
         }
         else
         {
-            _axis_visual_to_pixels(axis, x0, y1, &px, &py);
+            _axis_text_visual_to_pixels(snapshot, x0, y1, &px, &py);
             px -= _axis_text_label_offset(axis);
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles,
@@ -454,7 +466,7 @@ void _axis_update_text(
         float py = 0.0f;
         if (axis->dim == DVZ_DIM_X)
         {
-            _axis_visual_to_pixels(axis, 0.5f * (x0 + x1), y0, &px, &py);
+            _axis_text_visual_to_pixels(snapshot, 0.5f * (x0 + x1), y0, &px, &py);
             py += _axis_text_label_offset(axis);
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles, axis->label,
@@ -464,7 +476,7 @@ void _axis_update_text(
         }
         else
         {
-            _axis_visual_to_pixels(axis, x0, 0.5f * (y0 + y1), &px, &py);
+            _axis_text_visual_to_pixels(snapshot, x0, 0.5f * (y0 + y1), &px, &py);
             px -= _axis_text_label_offset(axis);
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles, axis->label,

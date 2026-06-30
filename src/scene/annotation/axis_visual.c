@@ -672,7 +672,7 @@ void _axis_update_visual(DvzAxis* axis)
     if (fixed_vertex_count == 0 && grid_vertex_count == 0)
         _axis_hide_text(axis);
     else
-        _axis_update_text(axis, x0, x1, y0, y1, visible_min, visible_max);
+        _axis_update_text(axis, &snapshot, x0, x1, y0, y1, visible_min, visible_max);
     axis->dirty = false;
 
 cleanup:

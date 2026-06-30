@@ -54,9 +54,6 @@ void _axis_init(DvzAxis* axis, DvzPanel* panel, DvzDim dim);
 
 void _axis_plot_interval(const DvzAxis* axis, float* out_min, float* out_max);
 
-void _axis_visual_to_pixels(
-    const DvzAxis* axis, float visual_x, float visual_y, float* out_x, float* out_y);
-
 float _axis_data_to_visual(
     double value, double min, double max, float visual_min, float visual_max);
 
@@ -79,7 +76,7 @@ void _axis_compute_ticks(DvzAxis* axis);
 void _axis_hide_text(DvzAxis* axis);
 
 void _axis_update_text(
-    DvzAxis* axis, float x0, float x1, float y0, float y1, double visible_min,
-    double visible_max);
+    DvzAxis* axis, const DvzPanelFrameSnapshot* snapshot, float x0, float x1, float y0, float y1,
+    double visible_min, double visible_max);
 
 void _axis_update_visual(DvzAxis* axis);
