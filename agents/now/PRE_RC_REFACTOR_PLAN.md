@@ -40,12 +40,14 @@ maintainability.
 5. `datoviz.raw` may remain broad and exact, but top-level Python exposure must be intentional.
 6. Generated C/JS metadata files should be committed when normal builds, docs, tests, or browser
    routes depend on them.
-7. Keep generated/runtime binary payloads out of commits unless the user explicitly approves those
+7. Update examples, docs, manifests, and tests in the same phase commit when an intentional API or
+   advanced-surface change requires it.
+8. Keep generated/runtime binary payloads out of commits unless the user explicitly approves those
    exact files in the current turn.
-8. Never stage or commit the `data` submodule pointer unless the user explicitly approves that
+9. Never stage or commit the `data` submodule pointer unless the user explicitly approves that
    submodule commit or pointer update in the current turn.
-9. Treat staged `data` gitlink updates as stop signs.
-10. Ignore unstaged/untracked `data` working-tree state only if it remains unstaged and uncommitted.
+10. Treat staged `data` gitlink updates as stop signs.
+11. Ignore unstaged/untracked `data` working-tree state only if it remains unstaged and uncommitted.
 
 
 ## Stop Conditions
@@ -103,6 +105,10 @@ Do not rely on prose-only "advanced/unstable" comments as the only API boundary.
 should guide headers, generated docs, raw-binding policy, top-level Python facade policy, and symbol
 export review where practical.
 
+Stable scene/app examples should remain conceptually equivalent after this phase. Low-level DRP2,
+vk, vklite, stream, WASM, raw-ctypes, and advanced examples may be updated, moved under an advanced
+classification, or reclassified when their current shape depends on accidental public API.
+
 ### Backend-Neutral Rendering Types
 
 Move public rendering protocol types out of Vulkan-facing headers. Prefer:
@@ -115,10 +121,25 @@ This header should own public types such as `DvzFormat`, primitive topology, com
 front face, blend factors, blend ops, or closely related protocol enums needed by scene and DRP2.
 Vulkan and WebGPU mappings must remain internal to their backend/runtime layers.
 
+The following public names are pre-approved and should not trigger a naming stop condition:
+
+1. `DvzFormat`
+2. `DvzPrimitiveTopology`
+3. `DvzCompareOp`
+4. `DvzCullMode`
+5. `DvzFrontFace`
+6. `DvzBlendFactor`
+7. `DvzBlendOp`
+
 Preserve existing numeric values for moved enums where practical and low-risk, especially for
 `DvzFormat`, to reduce transition churn and avoid unnecessary fixture/binding diffs. This numeric
 preservation is incidental compatibility, not a public contract. Do not document Vulkan numeric
 identity as part of the Datoviz API, and do not design new APIs that depend on it.
+
+Update examples, generated bindings, documentation, and smoke fixtures in the same phase when
+include paths, enum locations, or advanced API classifications change. Do not leave examples
+silently compiling through obsolete Vulkan-facing includes when the correct dependency is
+`include/datoviz/render_types.h` or the stable umbrella.
 
 ### Compatibility Stance
 
@@ -209,6 +230,7 @@ Validation:
 ```sh
 just build
 just spec-check
+python3 tools/check_example_manifests.py
 git diff --check
 ```
 
@@ -238,6 +260,7 @@ just build
 just test drp2
 just test scene
 just spec-check
+python3 tools/check_example_manifests.py
 git diff --check
 ```
 
@@ -264,6 +287,7 @@ Validation:
 just build
 just test drp2
 just spec-check
+python3 tools/check_example_manifests.py
 git diff --check
 ```
 
@@ -291,6 +315,7 @@ Validation:
 just build
 just wasm-scene-smoke
 node --check tools/wasm_scene_smoke.mjs
+python3 tools/check_example_manifests.py
 git diff --check
 ```
 
