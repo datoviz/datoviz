@@ -25,6 +25,7 @@
 #include "_scene.h"
 #include "core/scene_notify_internal.h"
 #include "datoviz/scene.h"
+#include "generated_visual_policy.h"
 #include "prepare_internal.h"
 
 
@@ -155,15 +156,15 @@ static bool _guide_visible_domains(
 
 
 
-static void _guide_attach_visual(DvzPanel* panel, DvzVisual* visual, int32_t z_layer)
+static void _guide_attach_visual(
+    DvzPanel* panel, DvzVisual* visual, DvzGeneratedVisualRole role, int32_t z_offset)
 {
     ANN(panel);
     ANN(visual);
     if (visual->visible)
     {
-        DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-        attach.coord_space = DVZ_COORD_DATA;
-        attach.z_layer = z_layer;
+        DvzGeneratedVisualPolicy policy = _scene_generated_visual_policy(role);
+        DvzVisualAttachDesc attach = _scene_generated_visual_attach_desc(&policy, z_offset);
         if (dvz_panel_add_visual(panel, visual, &attach) != 0)
             log_error("failed to attach guide visual");
     }
@@ -171,12 +172,12 @@ static void _guide_attach_visual(DvzPanel* panel, DvzVisual* visual, int32_t z_l
 
 
 
-static void _guide_apply_visual_defaults(DvzVisual* visual, bool blended)
+static void
+_guide_apply_visual_defaults(DvzVisual* visual, DvzGeneratedVisualRole role, uint8_t alpha)
 {
     ANN(visual);
-    (void)dvz_visual_set_depth_test(visual, false);
-    if (blended)
-        (void)dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED);
+    DvzGeneratedVisualPolicy policy = _scene_generated_visual_policy(role);
+    (void)_scene_generated_visual_apply_defaults(visual, &policy, alpha);
 }
 
 
@@ -439,7 +440,7 @@ DvzGuideLine* dvz_guide_line(DvzPanel* panel, const DvzGuideLineDesc* desc)
     if (visual == NULL)
         return NULL;
     (void)dvz_segment_set_caps(visual, resolved.cap_start, resolved.cap_end);
-    _guide_apply_visual_defaults(visual, resolved.color.a < 255);
+    _guide_apply_visual_defaults(visual, DVZ_GENERATED_VISUAL_GUIDE_LINE, resolved.color.a);
 
     DvzGuideLine* guide = &scene->guide_lines[scene->guide_line_count++];
     dvz_memset(guide, sizeof(DvzGuideLine), 0, sizeof(DvzGuideLine));
@@ -452,7 +453,7 @@ DvzGuideLine* dvz_guide_line(DvzPanel* panel, const DvzGuideLineDesc* desc)
     guide->line_visual = visual;
     guide->label = _guide_label_create(panel, resolved.label);
 
-    _guide_attach_visual(panel, visual, resolved.z_layer);
+    _guide_attach_visual(panel, visual, DVZ_GENERATED_VISUAL_GUIDE_LINE, resolved.z_layer);
     _scene_notify_request_frame(panel->figure);
     return guide;
 }
@@ -523,7 +524,7 @@ DvzGuideSpan* dvz_guide_span(DvzPanel* panel, const DvzGuideSpanDesc* desc)
     DvzVisual* fill = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     if (fill == NULL)
         return NULL;
-    _guide_apply_visual_defaults(fill, resolved.fill_color.a < 255);
+    _guide_apply_visual_defaults(fill, DVZ_GENERATED_VISUAL_GUIDE_FILL, resolved.fill_color.a);
 
     DvzVisual* outline = NULL;
     if (resolved.outline_width_px > 0.0f && resolved.outline_color.a > 0)
@@ -532,7 +533,8 @@ DvzGuideSpan* dvz_guide_span(DvzPanel* panel, const DvzGuideSpanDesc* desc)
         if (outline == NULL)
             return NULL;
         (void)dvz_segment_set_caps(outline, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_BUTT);
-        _guide_apply_visual_defaults(outline, resolved.outline_color.a < 255);
+        _guide_apply_visual_defaults(
+            outline, DVZ_GENERATED_VISUAL_GUIDE_OUTLINE, resolved.outline_color.a);
     }
 
     DvzGuideSpan* span = &scene->guide_spans[scene->guide_span_count++];
@@ -547,9 +549,9 @@ DvzGuideSpan* dvz_guide_span(DvzPanel* panel, const DvzGuideSpanDesc* desc)
     span->outline_visual = outline;
     span->label = _guide_label_create(panel, resolved.label);
 
-    _guide_attach_visual(panel, fill, resolved.z_layer);
+    _guide_attach_visual(panel, fill, DVZ_GENERATED_VISUAL_GUIDE_FILL, resolved.z_layer);
     if (outline != NULL)
-        _guide_attach_visual(panel, outline, resolved.z_layer + 1);
+        _guide_attach_visual(panel, outline, DVZ_GENERATED_VISUAL_GUIDE_OUTLINE, resolved.z_layer);
     _scene_notify_request_frame(panel->figure);
     return span;
 }

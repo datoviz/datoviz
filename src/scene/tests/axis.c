@@ -23,6 +23,7 @@
 #include "../../drp2/_stream.h"
 #include "_scene.h"
 #include "annotation/axis_internal.h"
+#include "annotation/generated_visual_policy.h"
 #include "annotation/prepare_internal.h"
 #include "core/figure_emit_internal.h"
 #include "scene_emit/scene_emit.h"
@@ -821,12 +822,21 @@ int test_axis_domain_and_ticks(TstContext* suite, const TstCase* item)
     AT(axis->grid_visual != NULL);
     AT(axis->grid_visual->type == DVZ_VISUAL_TYPE_PRIMITIVE);
     AT(panel->visual_count == 2);
+    DvzGeneratedVisualPolicy marks_policy =
+        _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_MARKS);
+    DvzGeneratedVisualPolicy grid_policy =
+        _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_GRID);
+    AT(panel->visuals[0].z_layer == marks_policy.z_layer);
+    AT(panel->visuals[1].z_layer == grid_policy.z_layer);
     AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
     AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_APPLY);
+    AT(panel->visuals[0].coord_space == DVZ_COORD_VIEW);
+    AT(panel->visuals[1].coord_space == DVZ_COORD_VIEW);
 
     _scene_prepare_axis_visuals(figure);
     AT(axis->tick_count >= 5);
     AT(axis->visual->visible);
+    AT(dvz_visual_alpha_mode(axis->visual) == DVZ_ALPHA_BLENDED);
     AT(axis->visual->attrs[0].item_count > 0);
     AT(_axis_test_inward_tick_line_count(axis) >= 8);
     AT(_axis_test_inward_minor_tick_line_count(axis) > 0);
@@ -834,6 +844,7 @@ int test_axis_domain_and_ticks(TstContext* suite, const TstCase* item)
     AT(dvz_axis_set_grid(axis, true));
     _scene_prepare_axis_visuals(figure);
     AT(axis->grid_visual->visible);
+    AT(dvz_visual_alpha_mode(axis->grid_visual) == DVZ_ALPHA_BLENDED);
     AT(axis->grid_visual->attrs[0].item_count > 0);
 
     dvz_scene_destroy(scene);
@@ -2892,24 +2903,29 @@ static int test_axis_integer_lattice_panzoom_alignment(TstContext* suite, const 
     DvzFramePlan* plan = dvz_frame_plan("axis.integer_lattice", 0);
     ANN(plan);
     AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
-    AT(dvz_frame_plan_node_count(plan) == 1);
-    const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
-    ANN(render);
-    AT(render->u.render.visual_count == 5);
+    AT(dvz_frame_plan_node_count(plan) == 2);
     uint32_t apply_count = 0;
     uint32_t fixed_count = 0;
-    for (uint32_t i = 0; i < render->u.render.visual_count; i++)
+    uint32_t visual_count = 0;
+    for (uint32_t ni = 0; ni < dvz_frame_plan_node_count(plan); ni++)
     {
-        if (render->u.render.controller_modes[i] == DVZ_CONTROLLER_FIXED)
-            fixed_count++;
-        else
-            apply_count++;
+        const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, ni);
+        ANN(render);
+        AT(render->u.render.has_mvp);
+        AT(fabsf(render->u.render.apply_mvp.proj[0][0] - apply_mvp.proj[0][0]) < 1e-6f);
+        AT(fabsf(render->u.render.apply_mvp.proj[1][1] - apply_mvp.proj[1][1]) < 1e-6f);
+        visual_count += render->u.render.visual_count;
+        for (uint32_t i = 0; i < render->u.render.visual_count; i++)
+        {
+            if (render->u.render.controller_modes[i] == DVZ_CONTROLLER_FIXED)
+                fixed_count++;
+            else
+                apply_count++;
+        }
     }
+    AT(visual_count == 5);
     AT(apply_count == 3);
     AT(fixed_count == 2);
-    AT(render->u.render.has_mvp);
-    AT(fabsf(render->u.render.apply_mvp.proj[0][0] - apply_mvp.proj[0][0]) < 1e-6f);
-    AT(fabsf(render->u.render.apply_mvp.proj[1][1] - apply_mvp.proj[1][1]) < 1e-6f);
     dvz_frame_plan_destroy(plan);
 
     uint32_t x_checks = 0;
@@ -3152,25 +3168,30 @@ static int test_axis_visual_clip_rect_panel(TstContext* suite, const TstCase* it
     DvzFramePlan* plan = dvz_frame_plan("axis.clip_rect_panel", 0);
     ANN(plan);
     AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
-    AT(dvz_frame_plan_node_count(plan) == 1);
-    const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
-    ANN(render);
-    AT(render->u.render.visual_count == 3);
+    AT(dvz_frame_plan_node_count(plan) == 2);
+    uint32_t visual_count = 0;
     uint32_t panel_clip_count = 0;
     uint32_t plot_clip_count = 0;
     uint32_t panel_viewport_count = 0;
     uint32_t plot_viewport_count = 0;
-    for (uint32_t i = 0; i < render->u.render.visual_count; i++)
+    for (uint32_t ni = 0; ni < dvz_frame_plan_node_count(plan); ni++)
     {
-        if (render->u.render.visual_metadata[i].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PANEL)
-            panel_clip_count++;
-        if (render->u.render.visual_metadata[i].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT)
-            plot_clip_count++;
-        if (render->u.render.visual_metadata[i].viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PANEL)
-            panel_viewport_count++;
-        if (render->u.render.visual_metadata[i].viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PLOT)
-            plot_viewport_count++;
+        const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, ni);
+        ANN(render);
+        visual_count += render->u.render.visual_count;
+        for (uint32_t i = 0; i < render->u.render.visual_count; i++)
+        {
+            if (render->u.render.visual_metadata[i].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PANEL)
+                panel_clip_count++;
+            if (render->u.render.visual_metadata[i].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT)
+                plot_clip_count++;
+            if (render->u.render.visual_metadata[i].viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PANEL)
+                panel_viewport_count++;
+            if (render->u.render.visual_metadata[i].viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PLOT)
+                plot_viewport_count++;
+        }
     }
+    AT(visual_count == 3);
     AT(panel_clip_count == 1);
     AT(plot_clip_count == 2);
     AT(panel_viewport_count == 1);

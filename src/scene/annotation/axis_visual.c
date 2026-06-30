@@ -23,6 +23,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "axis_internal.h"
+#include "generated_visual_policy.h"
 #include "prepare_internal.h"
 #include "datoviz/scene.h"
 
@@ -250,6 +251,29 @@ static float _axis_data_to_axis_visual(const DvzAxis* axis, double value)
 static float _axis_plot_clip_to_fixed(float value, float plot_min, float plot_max)
 {
     return plot_min + 0.5f * (value + 1.0f) * (plot_max - plot_min);
+}
+
+
+static uint8_t _axis_marks_style_min_alpha(const DvzAxisStyle* style)
+{
+    ANN(style);
+    uint8_t alpha = 255;
+    if (_scene_generated_visual_rgba_is_translucent(style->spine_color) &&
+        style->spine_color[3] < alpha)
+    {
+        alpha = style->spine_color[3];
+    }
+    if (_scene_generated_visual_rgba_is_translucent(style->major_tick_color) &&
+        style->major_tick_color[3] < alpha)
+    {
+        alpha = style->major_tick_color[3];
+    }
+    if (_scene_generated_visual_rgba_is_translucent(style->minor_tick_color) &&
+        style->minor_tick_color[3] < alpha)
+    {
+        alpha = style->minor_tick_color[3];
+    }
+    return alpha;
 }
 
 
@@ -601,6 +625,18 @@ void _axis_update_visual(DvzAxis* axis)
 
     axis->visual->visible = axis->enabled && fixed_vertex_count > 0;
     axis->grid_visual->visible = axis->enabled && grid_vertex_count > 0;
+    DvzGeneratedVisualPolicy marks_policy =
+        _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_MARKS);
+    DvzAlphaMode marks_alpha_mode = _scene_generated_visual_alpha_mode(
+        &marks_policy, _axis_marks_style_min_alpha(&axis->style));
+    if (axis->visual->alpha_mode != marks_alpha_mode)
+        (void)dvz_visual_set_alpha_mode(axis->visual, marks_alpha_mode);
+    DvzGeneratedVisualPolicy grid_policy =
+        _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_GRID);
+    DvzAlphaMode grid_alpha_mode =
+        _scene_generated_visual_alpha_mode(&grid_policy, axis->style.grid_color[3]);
+    if (axis->grid_visual->alpha_mode != grid_alpha_mode)
+        (void)dvz_visual_set_alpha_mode(axis->grid_visual, grid_alpha_mode);
     if (fixed_vertex_count > 0)
     {
         DvzVisualDataUpdate updates[] = {

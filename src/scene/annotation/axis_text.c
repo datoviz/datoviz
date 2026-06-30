@@ -26,6 +26,7 @@
 #include "axis_internal.h"
 #include "axis_labels_internal.h"
 #include "datoviz/scene.h"
+#include "generated_visual_policy.h"
 #include "annotation/text_visual_bridge.h"
 
 
@@ -191,10 +192,11 @@ static bool _axis_ensure_text_visual(DvzAxis* axis)
     if (axis->text_visual == NULL)
         return false;
     axis->text_visual->visible = false;
-    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.z_layer = 1001;
-    attach.controller_mode = DVZ_CONTROLLER_FIXED;
-    attach.coord_space = DVZ_COORD_VIEW;
+    DvzGeneratedVisualPolicy policy =
+        _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_TEXT);
+    if (_scene_generated_visual_apply_defaults(axis->text_visual, &policy, 255) != 0)
+        return false;
+    DvzVisualAttachDesc attach = _scene_generated_visual_attach_desc(&policy, 0);
     if (dvz_panel_add_visual(axis->panel, axis->text_visual, &attach) != 0)
     {
         axis->text_visual = NULL;

@@ -26,6 +26,7 @@
 #include "axis_internal.h"
 #include "core/scene_notify_internal.h"
 #include "datoviz/scene.h"
+#include "generated_visual_policy.h"
 #include "annotation/text_visual_bridge.h"
 
 
@@ -389,13 +390,12 @@ DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim)
             dvz_primitive(panel->figure->scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
         if (axis->visual == NULL)
             return NULL;
-        if (dvz_visual_set_depth_test(axis->visual, false) != 0)
+        DvzGeneratedVisualPolicy policy =
+            _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_MARKS);
+        if (_scene_generated_visual_apply_defaults(axis->visual, &policy, 255) != 0)
             return NULL;
         axis->visual->visible = false;
-        DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-        attach.z_layer = 1000;
-        attach.controller_mode = DVZ_CONTROLLER_FIXED;
-        attach.coord_space = DVZ_COORD_VIEW;
+        DvzVisualAttachDesc attach = _scene_generated_visual_attach_desc(&policy, 0);
         if (dvz_panel_add_visual(panel, axis->visual, &attach) != 0)
         {
             axis->visual = NULL;
@@ -408,13 +408,12 @@ DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim)
             dvz_primitive(panel->figure->scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
         if (axis->grid_visual == NULL)
             return NULL;
-        if (dvz_visual_set_depth_test(axis->grid_visual, false) != 0)
+        DvzGeneratedVisualPolicy policy =
+            _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_GRID);
+        if (_scene_generated_visual_apply_defaults(axis->grid_visual, &policy, 255) != 0)
             return NULL;
         axis->grid_visual->visible = false;
-        DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-        attach.z_layer = -1;
-        attach.controller_mode = DVZ_CONTROLLER_APPLY;
-        attach.coord_space = DVZ_COORD_VIEW;
+        DvzVisualAttachDesc attach = _scene_generated_visual_attach_desc(&policy, 0);
         if (dvz_panel_add_visual(panel, axis->grid_visual, &attach) != 0)
         {
             axis->grid_visual = NULL;

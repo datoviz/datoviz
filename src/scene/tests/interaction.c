@@ -26,6 +26,7 @@
 #include "_scale_ticks.h"
 #include "_scene.h"
 #include "_visual_internal.h"
+#include "annotation/generated_visual_policy.h"
 #include "annotation/prepare_internal.h"
 #include "datoviz/input.h"
 #include "interaction/internal.h"
@@ -81,6 +82,20 @@ static const DvzVisualAttr* _interaction_visual_attr(const DvzVisual* visual, co
     ANN(name);
     int idx = _attr_index(visual, name);
     return idx >= 0 ? &visual->attrs[idx] : NULL;
+}
+
+
+static const DvzPanelAttach*
+_interaction_panel_attach(const DvzPanel* panel, const DvzVisual* visual)
+{
+    ANN(panel);
+    ANN(visual);
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        if (panel->visuals[i].visual == visual)
+            return &panel->visuals[i];
+    }
+    return NULL;
 }
 
 
@@ -1906,6 +1921,27 @@ int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstC
     AT(dvz_guide_span_visual(vspan, DVZ_PLOT_ROLE_FILL) == vspan->fill_visual);
     AT(dvz_guide_span_visual(vspan, DVZ_PLOT_ROLE_OUTLINE) == vspan->outline_visual);
     AT(dvz_guide_span_visual(vspan, DVZ_PLOT_ROLE_LINE) == NULL);
+
+    const DvzPanelAttach* line_attach = _interaction_panel_attach(panel, hline->line_visual);
+    const DvzPanelAttach* fill_attach = _interaction_panel_attach(panel, vspan->fill_visual);
+    const DvzPanelAttach* outline_attach = _interaction_panel_attach(panel, vspan->outline_visual);
+    ANN(line_attach);
+    ANN(fill_attach);
+    ANN(outline_attach);
+    DvzGeneratedVisualPolicy line_policy =
+        _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_GUIDE_LINE);
+    DvzGeneratedVisualPolicy fill_policy =
+        _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_GUIDE_FILL);
+    DvzGeneratedVisualPolicy outline_policy =
+        _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_GUIDE_OUTLINE);
+    AT(line_attach->z_layer == line_policy.z_layer);
+    AT(fill_attach->z_layer == fill_policy.z_layer);
+    AT(outline_attach->z_layer == outline_policy.z_layer);
+    AT(fill_attach->z_layer < line_attach->z_layer);
+    AT(fill_attach->coord_space == DVZ_COORD_DATA);
+    AT(fill_attach->controller_mode == DVZ_CONTROLLER_APPLY);
+    AT(dvz_visual_alpha_mode(vspan->fill_visual) == DVZ_ALPHA_BLENDED);
+    AT(dvz_visual_alpha_mode(vspan->outline_visual) == DVZ_ALPHA_BLENDED);
 
     _scene_prepare_guide_visuals(figure);
     ANN(hline->label);
