@@ -74,7 +74,7 @@ retained Gaussian splat visual with deterministic screen-space ellipses.
 
 `supported` `visuals`<br><span>`segment`, `panzoom`, `capture`</span>
 
-retained segment visual with independent endpoint-pair strokes.
+retained segment visual with independent endpoint-pair strokes and visual-wide cap bands.
 
 </div>
 

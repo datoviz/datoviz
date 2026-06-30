@@ -228,7 +228,7 @@ retained Gaussian splat visual with deterministic screen-space ellipses.
 
 [![Segment](../assets/gallery/v0.4/visuals/visual_segment.webp)](gallery/visuals/visual_segment.md)
 
-retained segment visual with independent endpoint-pair strokes.
+retained segment visual with independent endpoint-pair strokes and visual-wide cap bands.
 
 </div>
 

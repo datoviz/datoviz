@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* segment - retained segment visual with independent endpoint-pair strokes.
+/* segment - retained segment visual with independent endpoint-pair strokes and visual-wide cap bands.
  *
  * Scenario: visual.segment
  * Style: visuals, graphite_cyan, 1280x720 window target

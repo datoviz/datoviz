@@ -10,7 +10,7 @@
 <span>Segment</span>
 </nav>
 
-retained segment visual with independent endpoint-pair strokes.
+retained segment visual with independent endpoint-pair strokes and visual-wide cap bands.
 
 ## Preview
 
