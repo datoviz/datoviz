@@ -67,6 +67,10 @@ static const char* DVZ_VALIDATION_IGNORES[] = {
 
     "Attempting to enable deprecated extension",
     "Metal does not support disabling primitive restart",
+
+    // Best-practices warning for intentionally split instance-rate attributes. Scene mesh item
+    // state currently uses a separate instance buffer from instance transforms.
+    "prefer interleaving them in a single buffer",
 };
 
 static const VkValidationFeatureEnableEXT DVZ_VALIDATION_FEATURES[] = {
