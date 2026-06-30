@@ -56,6 +56,11 @@ struct DvzCamera
     float near_clip;
     float far_clip;
     float ortho_height;
+    bool ortho_has_bounds;
+    float ortho_left;
+    float ortho_right;
+    float ortho_bottom;
+    float ortho_top;
 
     vec2 viewport_size;
     float aspect;
@@ -94,6 +99,26 @@ static bool _camera_valid_perspective(float fov_y, float near, float far)
 static bool _camera_valid_orthographic(float height, float near, float far)
 {
     return isfinite(height) && isfinite(near) && isfinite(far) && height > 0.0f && far > near;
+}
+
+
+
+/**
+ * Return whether explicit orthographic bounds are valid.
+ *
+ * @param left left orthographic bound
+ * @param right right orthographic bound
+ * @param bottom bottom orthographic bound
+ * @param top top orthographic bound
+ * @param near near clipping plane
+ * @param far far clipping plane
+ * @return whether the parameters are valid
+ */
+static bool _camera_valid_orthographic_bounds(
+    float left, float right, float bottom, float top, float near, float far)
+{
+    return isfinite(left) && isfinite(right) && isfinite(bottom) && isfinite(top) &&
+           isfinite(near) && isfinite(far) && left != right && bottom != top && far > near;
 }
 
 
@@ -293,6 +318,7 @@ void dvz_camera_set_perspective(DvzCamera* camera, float fov_y, float near, floa
     if (!_camera_valid_perspective(fov_y, near, far))
         return;
     camera->type = DVZ_CAMERA_PERSPECTIVE;
+    camera->ortho_has_bounds = false;
     camera->fov_y = fov_y;
     camera->near_clip = near;
     camera->far_clip = far;
@@ -314,9 +340,77 @@ void dvz_camera_set_orthographic(DvzCamera* camera, float height, float near, fl
     if (!_camera_valid_orthographic(height, near, far))
         return;
     camera->type = DVZ_CAMERA_ORTHOGRAPHIC;
+    camera->ortho_has_bounds = false;
     camera->ortho_height = height;
     camera->near_clip = near;
     camera->far_clip = far;
+}
+
+
+
+/**
+ * Set explicit orthographic projection bounds.
+ *
+ * @param camera the camera
+ * @param left left orthographic bound
+ * @param right right orthographic bound
+ * @param bottom bottom orthographic bound
+ * @param top top orthographic bound
+ * @param near near clipping plane
+ * @param far far clipping plane
+ * @return 0 on success, -1 on invalid bounds
+ */
+int dvz_camera_set_orthographic_bounds(
+    DvzCamera* camera, float left, float right, float bottom, float top, float near, float far)
+{
+    ANN(camera);
+    if (!_camera_valid_orthographic_bounds(left, right, bottom, top, near, far))
+        return -1;
+    camera->type = DVZ_CAMERA_ORTHOGRAPHIC;
+    camera->near_clip = near;
+    camera->far_clip = far;
+    camera->ortho_has_bounds = true;
+    camera->ortho_left = left;
+    camera->ortho_right = right;
+    camera->ortho_bottom = bottom;
+    camera->ortho_top = top;
+    return 0;
+}
+
+
+
+/**
+ * Return explicit orthographic projection bounds.
+ *
+ * @param camera the camera
+ * @param out_left output left orthographic bound
+ * @param out_right output right orthographic bound
+ * @param out_bottom output bottom orthographic bound
+ * @param out_top output top orthographic bound
+ * @param out_near output near clipping plane
+ * @param out_far output far clipping plane
+ * @return 0 when explicit bounds are active, -1 otherwise
+ */
+int dvz_camera_get_orthographic_bounds(
+    const DvzCamera* camera, float* out_left, float* out_right, float* out_bottom, float* out_top,
+    float* out_near, float* out_far)
+{
+    ANN(camera);
+    if (!camera->ortho_has_bounds)
+        return -1;
+    if (out_left != NULL)
+        *out_left = camera->ortho_left;
+    if (out_right != NULL)
+        *out_right = camera->ortho_right;
+    if (out_bottom != NULL)
+        *out_bottom = camera->ortho_bottom;
+    if (out_top != NULL)
+        *out_top = camera->ortho_top;
+    if (out_near != NULL)
+        *out_near = camera->near_clip;
+    if (out_far != NULL)
+        *out_far = camera->far_clip;
+    return 0;
 }
 
 
@@ -356,12 +450,21 @@ void dvz_camera_mvp(DvzCamera* camera, DvzMVP* mvp)
 
     if (camera->type == DVZ_CAMERA_ORTHOGRAPHIC)
     {
-        float height = camera->ortho_height > 0.0f ? camera->ortho_height :
-                                                   DVZ_CAMERA_DEFAULT_ORTHO_HEIGHT;
-        float width = height * camera->aspect;
-        glm_ortho(
-            -0.5f * width, +0.5f * width, -0.5f * height, +0.5f * height, camera->near_clip,
-            camera->far_clip, mvp->proj);
+        if (camera->ortho_has_bounds)
+        {
+            glm_ortho(
+                camera->ortho_left, camera->ortho_right, camera->ortho_bottom, camera->ortho_top,
+                camera->near_clip, camera->far_clip, mvp->proj);
+        }
+        else
+        {
+            float height = camera->ortho_height > 0.0f ? camera->ortho_height :
+                                                       DVZ_CAMERA_DEFAULT_ORTHO_HEIGHT;
+            float width = height * camera->aspect;
+            glm_ortho(
+                -0.5f * width, +0.5f * width, -0.5f * height, +0.5f * height, camera->near_clip,
+                camera->far_clip, mvp->proj);
+        }
     }
     else
     {

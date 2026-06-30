@@ -32,6 +32,8 @@ int test_controller_arcball_create(TstContext* suite, const TstCase* item);
 
 int test_controller_camera_create(TstContext* suite, const TstCase* item);
 
+int test_controller_camera_orthographic_bounds(TstContext* suite, const TstCase* item);
+
 int test_controller_fly_create(TstContext* suite, const TstCase* item);
 
 int test_controller_fly_z_up_lookat_drag(TstContext* suite, const TstCase* item);

@@ -125,6 +125,73 @@ int test_controller_camera_create(TstContext* suite, const TstCase* item)
 
 
 
+static int _assert_mat4_close(mat4 actual, mat4 expected, float eps)
+{
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        for (uint32_t j = 0; j < 4; j++)
+        {
+            AC(actual[i][j], expected[i][j], eps);
+        }
+    }
+    return 0;
+}
+
+
+
+int test_controller_camera_orthographic_bounds(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzCamera* camera = dvz_camera_create(NULL);
+    ANN(camera);
+    dvz_camera_resize(camera, 640.0f, 480.0f);
+
+    DvzMVP mvp = {0};
+    mat4 expected = GLM_MAT4_IDENTITY_INIT;
+
+    AT(dvz_camera_set_orthographic_bounds(camera, -2.0f, 4.0f, -1.0f, 3.0f, 0.1f, 100.0f) == 0);
+    dvz_camera_mvp(camera, &mvp);
+    glm_ortho(-2.0f, 4.0f, -1.0f, 3.0f, 0.1f, 100.0f, expected);
+    AT(_assert_mat4_close(mvp.proj, expected, 1e-6f) == 0);
+
+    float left = 0.0f, right = 0.0f, bottom = 0.0f, top = 0.0f, near = 0.0f, far = 0.0f;
+    AT(dvz_camera_get_orthographic_bounds(
+           camera, &left, &right, &bottom, &top, &near, &far) == 0);
+    AC(left, -2.0f, 1e-6f);
+    AC(right, 4.0f, 1e-6f);
+    AC(bottom, -1.0f, 1e-6f);
+    AC(top, 3.0f, 1e-6f);
+    AC(near, 0.1f, 1e-6f);
+    AC(far, 100.0f, 1e-6f);
+
+    AT(dvz_camera_set_orthographic_bounds(camera, 4.0f, -2.0f, 3.0f, -1.0f, 0.1f, 100.0f) == 0);
+    dvz_camera_resize(camera, 1200.0f, 300.0f);
+    dvz_camera_mvp(camera, &mvp);
+    glm_ortho(4.0f, -2.0f, 3.0f, -1.0f, 0.1f, 100.0f, expected);
+    AT(_assert_mat4_close(mvp.proj, expected, 1e-6f) == 0);
+
+    AT(dvz_camera_set_orthographic_bounds(camera, 1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f) == -1);
+    AT(dvz_camera_set_orthographic_bounds(camera, -1.0f, 1.0f, 1.0f, 1.0f, 0.1f, 100.0f) == -1);
+    AT(dvz_camera_set_orthographic_bounds(camera, -1.0f, 1.0f, -1.0f, 1.0f, 5.0f, 5.0f) == -1);
+
+    dvz_camera_set_orthographic(camera, 2.0f, 0.1f, 100.0f);
+    AT(dvz_camera_get_orthographic_bounds(camera, NULL, NULL, NULL, NULL, NULL, NULL) == -1);
+    dvz_camera_mvp(camera, &mvp);
+    glm_ortho(-4.0f, 4.0f, -1.0f, 1.0f, 0.1f, 100.0f, expected);
+    AT(_assert_mat4_close(mvp.proj, expected, 1e-6f) == 0);
+
+    AT(dvz_camera_set_orthographic_bounds(camera, -2.0f, 2.0f, -2.0f, 2.0f, 0.1f, 100.0f) == 0);
+    dvz_camera_set_perspective(camera, GLM_PI_4f, 0.1f, 100.0f);
+    AT(dvz_camera_get_orthographic_bounds(camera, NULL, NULL, NULL, NULL, NULL, NULL) == -1);
+
+    dvz_camera_destroy(camera);
+    return 0;
+}
+
+
+
 int test_controller_fly_create(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -283,6 +350,7 @@ int test_controller(TstSuite* suite)
     TST_CASE(test_controller_panzoom_keep_aspect_drag);
     TST_CASE(test_controller_arcball_create);
     TST_CASE(test_controller_camera_create);
+    TST_CASE(test_controller_camera_orthographic_bounds);
     TST_CASE(test_controller_fly_create);
     TST_CASE(test_controller_fly_z_up_lookat_drag);
     TST_CASE(test_controller_turntable_create);

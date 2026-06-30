@@ -180,6 +180,44 @@ DVZ_EXPORT void dvz_camera_set_orthographic(
 
 
 /**
+ * Set explicit orthographic projection bounds.
+ *
+ * This preserves the bounds exactly as supplied, including reversed left/right or bottom/top
+ * pairs. Unlike `dvz_camera_set_orthographic()`, these bounds are not rewritten on resize.
+ *
+ * @param camera the camera
+ * @param left left orthographic bound
+ * @param right right orthographic bound
+ * @param bottom bottom orthographic bound
+ * @param top top orthographic bound
+ * @param near near clipping plane
+ * @param far far clipping plane
+ * @return 0 on success, -1 on invalid bounds
+ */
+DVZ_EXPORT int dvz_camera_set_orthographic_bounds(
+    DvzCamera* camera, float left, float right, float bottom, float top, float near, float far);
+
+
+
+/**
+ * Return explicit orthographic projection bounds.
+ *
+ * @param camera the camera
+ * @param out_left output left orthographic bound
+ * @param out_right output right orthographic bound
+ * @param out_bottom output bottom orthographic bound
+ * @param out_top output top orthographic bound
+ * @param out_near output near clipping plane
+ * @param out_far output far clipping plane
+ * @return 0 when explicit bounds are active, -1 otherwise
+ */
+DVZ_EXPORT int dvz_camera_get_orthographic_bounds(
+    const DvzCamera* camera, float* out_left, float* out_right, float* out_bottom, float* out_top,
+    float* out_near, float* out_far);
+
+
+
+/**
  * Update the camera viewport size.
  *
  * @param camera the camera
