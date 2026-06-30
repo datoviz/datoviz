@@ -22,6 +22,7 @@
 
 #include "_scene.h"
 #include "datoviz/scene.h"
+#include "frame_plan/frame_plan.h"
 
 
 
@@ -47,6 +48,8 @@ typedef struct
     int32_t z_layer;
     DvzControllerMode controller_mode;
     DvzVisualCoordSpace coord_space;
+    DvzFramePlanClipRect clip_rect;
+    DvzFramePlanViewportRect viewport_rect;
     bool depth_test;
     DvzAlphaMode alpha_mode;
 } DvzGeneratedVisualPolicy;
@@ -68,6 +71,8 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .z_layer = -20,
             .controller_mode = DVZ_CONTROLLER_APPLY,
             .coord_space = DVZ_COORD_DATA,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PLOT,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PLOT,
             .depth_test = false,
             .alpha_mode = DVZ_ALPHA_OPAQUE,
         };
@@ -77,6 +82,8 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .z_layer = -10,
             .controller_mode = DVZ_CONTROLLER_APPLY,
             .coord_space = DVZ_COORD_VIEW,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PLOT,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PLOT,
             .depth_test = false,
             .alpha_mode = DVZ_ALPHA_OPAQUE,
         };
@@ -86,6 +93,8 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .z_layer = 10,
             .controller_mode = DVZ_CONTROLLER_APPLY,
             .coord_space = DVZ_COORD_DATA,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PLOT,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PLOT,
             .depth_test = false,
             .alpha_mode = DVZ_ALPHA_OPAQUE,
         };
@@ -95,6 +104,8 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .z_layer = 11,
             .controller_mode = DVZ_CONTROLLER_APPLY,
             .coord_space = DVZ_COORD_DATA,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PLOT,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PLOT,
             .depth_test = false,
             .alpha_mode = DVZ_ALPHA_OPAQUE,
         };
@@ -104,6 +115,8 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .z_layer = 1000,
             .controller_mode = DVZ_CONTROLLER_FIXED,
             .coord_space = DVZ_COORD_VIEW,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
             .depth_test = false,
             .alpha_mode = DVZ_ALPHA_OPAQUE,
         };
@@ -113,6 +126,8 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .z_layer = 1001,
             .controller_mode = DVZ_CONTROLLER_FIXED,
             .coord_space = DVZ_COORD_VIEW,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PANEL,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PANEL,
             .depth_test = false,
             .alpha_mode = DVZ_ALPHA_BLENDED,
         };
@@ -123,6 +138,8 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .z_layer = 0,
             .controller_mode = DVZ_CONTROLLER_APPLY,
             .coord_space = DVZ_COORD_DATA,
+            .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PLOT,
+            .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PLOT,
             .depth_test = true,
             .alpha_mode = DVZ_ALPHA_OPAQUE,
         };

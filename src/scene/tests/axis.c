@@ -832,6 +832,10 @@ int test_axis_domain_and_ticks(TstContext* suite, const TstCase* item)
     AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_APPLY);
     AT(panel->visuals[0].coord_space == DVZ_COORD_VIEW);
     AT(panel->visuals[1].coord_space == DVZ_COORD_VIEW);
+    AT(marks_policy.clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PANEL);
+    AT(marks_policy.viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PANEL);
+    AT(grid_policy.clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT);
+    AT(grid_policy.viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PLOT);
 
     _scene_prepare_axis_visuals(figure);
     AT(axis->tick_count >= 5);

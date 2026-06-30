@@ -1940,6 +1940,12 @@ int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstC
     AT(fill_attach->z_layer < line_attach->z_layer);
     AT(fill_attach->coord_space == DVZ_COORD_DATA);
     AT(fill_attach->controller_mode == DVZ_CONTROLLER_APPLY);
+    AT(line_policy.clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT);
+    AT(line_policy.viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PLOT);
+    AT(fill_policy.clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT);
+    AT(fill_policy.viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PLOT);
+    AT(outline_policy.clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT);
+    AT(outline_policy.viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PLOT);
     AT(dvz_visual_alpha_mode(vspan->fill_visual) == DVZ_ALPHA_BLENDED);
     AT(dvz_visual_alpha_mode(vspan->outline_visual) == DVZ_ALPHA_BLENDED);
 

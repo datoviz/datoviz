@@ -28,6 +28,7 @@
 #include "_scene.h"
 #include "scene_emit/scene_emit.h"
 #include "scene_emit/internal.h"
+#include "annotation/generated_visual_policy.h"
 #include "_scene_resource_key.h"
 #include "_scene_shader_abi.h"
 #include "_technique.h"
@@ -419,22 +420,75 @@ static bool _scene_visual_is_axis_derived(const DvzPanel* panel, const DvzVisual
 
 
 /**
- * Return whether a visual is an axis grid contribution.
+ * Resolve generated-role policy for known generated axis and guide visuals.
  *
- * @param panel the panel owning axis handles
+ * @param panel the panel owning the generated visual
  * @param visual the visual to classify
- * @return whether the visual is an axis grid
+ * @param out_policy resolved policy
+ * @return whether a generated-role policy was resolved
  */
-static bool _scene_visual_is_axis_grid(const DvzPanel* panel, const DvzVisual* visual)
+static bool _scene_visual_generated_policy(
+    const DvzPanel* panel, const DvzVisual* visual, DvzGeneratedVisualPolicy* out_policy)
 {
     ANN(panel);
     ANN(visual);
+    ANN(out_policy);
     for (uint32_t dim = 0; dim < 2; dim++)
     {
         const DvzAxis* axis = &panel->axes[dim];
-        if (axis->panel == panel && visual == axis->grid_visual)
+        if (axis->panel != panel)
+            continue;
+        if (visual == axis->grid_visual)
+        {
+            *out_policy = _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_GRID);
             return true;
+        }
+        if (visual == axis->visual)
+        {
+            *out_policy = _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_MARKS);
+            return true;
+        }
+        if (visual == axis->text_visual)
+        {
+            *out_policy = _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_TEXT);
+            return true;
+        }
+        if (
+            axis->text_visual != NULL &&
+            visual == _visual_family_state(axis->text_visual)->text.glyph_visual)
+        {
+            *out_policy = _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_AXIS_TEXT);
+            return true;
+        }
     }
+
+    DvzScene* scene = panel->figure != NULL ? panel->figure->scene : NULL;
+    if (scene == NULL)
+        return false;
+    for (uint32_t i = 0; i < scene->guide_line_count; i++)
+    {
+        const DvzGuideLine* guide = &scene->guide_lines[i];
+        if (guide->panel == panel && visual == guide->line_visual)
+        {
+            *out_policy = _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_GUIDE_LINE);
+            return true;
+        }
+    }
+    for (uint32_t i = 0; i < scene->guide_span_count; i++)
+    {
+        const DvzGuideSpan* span = &scene->guide_spans[i];
+        if (span->panel == panel && visual == span->fill_visual)
+        {
+            *out_policy = _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_GUIDE_FILL);
+            return true;
+        }
+        if (span->panel == panel && visual == span->outline_visual)
+        {
+            *out_policy = _scene_generated_visual_policy(DVZ_GENERATED_VISUAL_GUIDE_OUTLINE);
+            return true;
+        }
+    }
+
     return false;
 }
 
@@ -453,8 +507,9 @@ _scene_visual_clip_rect(const DvzPanel* panel, const DvzVisual* visual, const Dv
     ANN(panel);
     ANN(visual);
     ANN(attach);
-    if (_scene_visual_is_axis_grid(panel, visual))
-        return DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
+    DvzGeneratedVisualPolicy policy = {0};
+    if (_scene_visual_generated_policy(panel, visual, &policy))
+        return policy.clip_rect;
     if (visual->type == DVZ_VISUAL_TYPE_GLYPH && attach->coord_space == DVZ_COORD_DATA)
         return DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
     if (visual == panel->background_visual || visual == panel->border_visual ||
@@ -483,18 +538,19 @@ static DvzFramePlanViewportRect _scene_visual_viewport_rect(
     ANN(panel);
     ANN(visual);
     ANN(attach);
+    DvzGeneratedVisualPolicy policy = {0};
+    if (_scene_visual_generated_policy(panel, visual, &policy))
+        return policy.viewport_rect;
     if (
         visual == panel->background_visual || visual == panel->border_visual ||
         (visual->ops != NULL && visual->ops->panel_clip_rect) ||
-        (_scene_visual_is_axis_derived(panel, visual) &&
-         !_scene_visual_is_axis_grid(panel, visual)) ||
+        _scene_visual_is_axis_derived(panel, visual) ||
         _scene_visual_is_colorbar_derived(panel, visual) ||
         _scene_visual_is_legend_derived(panel, visual))
     {
         return DVZ_FRAME_PLAN_VIEWPORT_PANEL;
     }
-    if (_scene_visual_is_axis_grid(panel, visual) || attach->coord_space == DVZ_COORD_DATA ||
-        attach->coord_space == DVZ_COORD_VIEW)
+    if (attach->coord_space == DVZ_COORD_DATA || attach->coord_space == DVZ_COORD_VIEW)
     {
         return DVZ_FRAME_PLAN_VIEWPORT_PLOT;
     }
