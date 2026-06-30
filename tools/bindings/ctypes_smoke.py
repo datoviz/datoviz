@@ -202,6 +202,24 @@ def _check_camera_layout_and_bounds(dvz) -> None:
         dvz.dvz_camera_destroy(camera)
 
 
+def _check_input_event_layout(dvz) -> None:
+    assert [name for name, _ in dvz.DvzInputEvent._fields_] == ['type', 'content']
+    assert [name for name, _ in dvz.DvzInputEventContent._fields_] == [
+        'pointer',
+        'keyboard',
+        'resize',
+        'scale',
+    ]
+
+    event = dvz.DvzInputEvent()
+    event.type = dvz.DVZ_INPUT_EVENT_POINTER
+    event.content.pointer.type = dvz.DvzPointerEventType.DVZ_POINTER_EVENT_MOVE
+    event.content.pointer.pos[0] = 12.0
+    event.content.pointer.pos[1] = 34.0
+    assert event.content.pointer.type == dvz.DvzPointerEventType.DVZ_POINTER_EVENT_MOVE
+    assert tuple(event.content.pointer.pos) == (12.0, 34.0)
+
+
 def main() -> int:
     sys.path.insert(0, str(ROOT_DIR))
 
@@ -244,6 +262,7 @@ def main() -> int:
 
     _check_query_result_layout(dvz)
     _check_camera_layout_and_bounds(dvz)
+    _check_input_event_layout(dvz)
     _run_gsp_query_smoke(dvz)
 
     calls: list[int | None] = []
