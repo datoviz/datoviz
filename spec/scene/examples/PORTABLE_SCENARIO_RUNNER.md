@@ -591,11 +591,8 @@ examples/c/runner/
   scenario_runner.c
   scenario_cli.c
 
-examples/c/runtime/
-  video_export.c       # first runner-backed native executable
-
 examples/c/features/
-  timer_animation.c    # candidate scenario migration
+  timer_animation.c    # first runner-backed animated executable
   basic_scene.c        # candidate static scenario migration
 ```
 
@@ -604,11 +601,10 @@ entry points:
 
 ```text
 examples/scenarios/
-  runtime/video_export_scenario.c
   features/timer_animation_scenario.c
 
 examples/c/runtime/
-  video_export.c       # native main only
+  video_export.c       # direct native app-capture example
 
 examples/c/features/
   timer_animation.c    # native main only
@@ -700,12 +696,11 @@ Each `webgpu-live` or `webgpu-planned` row should list requirement tags such as
 ### Phase 1: Native Runner Proof
 
 1. Add example-support scenario types and the native runner in `examples/c/runner/`.
-2. Support `--live`, `--live-record N`, `--offscreen-record N`, `--png`, and `--dvzr N`.
-3. Refactor `video_export.c` first because it proves live, live-record, offscreen-record, path
-   reporting, progress, capture failure handling, and the distinction between presentation pacing
-   and deterministic recording.
-4. Refactor `timer_animation.c` next because it proves frame-time portability.
-5. Refactor `basic_scene.c` or another static example to prove scenarios without frame callbacks.
+2. Support `--live`, `--live-record N`, `--video N`, `--offscreen-record N`, `--png`, and
+   `--dvzr N`.
+3. Refactor `timer_animation.c` first because it proves frame-time portability and deterministic
+   gallery video capture through the runner.
+4. Refactor `basic_scene.c` or another static example to prove scenarios without frame callbacks.
 
 ### Phase 2: Low-Risk Feature Migration
 
@@ -767,8 +762,8 @@ runner, promote a more general run-policy descriptor such as `DvzAppRunConfig`.
 
 The architecture is successful when:
 
-1. `video_export` uses one scenario for live, live-record, and offscreen-record modes;
-2. `timer_animation` uses the same frame callback contract on native and WASM-capable hosts;
+1. `timer_animation` uses the same frame callback contract on native and WASM-capable hosts;
+2. runner-backed examples can be recorded with `--video N` or `--offscreen-record N`;
 3. `gpu_particle_smoke` can be migrated to one C scenario for native and WASM/WebGPU;
 4. unsupported WebGPU requirements produce deterministic diagnostics;
 5. native examples remain easy to read because host boilerplate is isolated;

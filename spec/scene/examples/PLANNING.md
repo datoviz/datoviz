@@ -175,10 +175,11 @@ broad coverage gaps should stay here only until the source file exists, then mov
 `examples/c/MANIFEST.yaml` with concrete metadata.
 
 Tentative examples now exist for `examples/c/features/legend_categorical.c` and
-`examples/c/runtime/video_export.c`. `video_export.c` is the first native scenario-runner proof for
-live, live-record, and offscreen-record modes. Keep the legend feature and runtime video capture
-experimental/conditional until categorical legends, video capture, and runner-backed examples are
-explicitly included in the public v0.4 API. The staged scenario-runner migration order lives in
+`examples/c/runtime/video_export.c`. `video_export.c` is the direct app-capture proof for writing a
+bounded offscreen MP4; runner-backed examples use the generic scenario runner `--video N` or
+`--offscreen-record N` modes for gallery video capture. Keep the legend feature and runtime video
+capture experimental/conditional until categorical legends, video capture, and runner-backed
+examples are explicitly included in the public v0.4 API. The staged scenario-runner migration order lives in
 [`PORTABLE_SCENARIO_RUNNER.md`](PORTABLE_SCENARIO_RUNNER.md).
 
 
@@ -187,7 +188,7 @@ explicitly included in the public v0.4 API. The staged scenario-runner migration
 | Scenario | Required slice | Decision |
 | --- | --- | --- |
 | `webgpu_browser_subset` | DRP2 WebGPU subset, WGSL, browser runtime | Point, primitive, image, and basic mesh only; visible experimental status. |
-| `animation_video_export` | frame callbacks, deterministic capture/video | Keep simple; defer transition/camera-path helper polish. |
+| `gallery_video_capture` | frame callbacks, deterministic scenario capture/video | Use existing scenario-backed examples such as `timer_animation`; keep public video-export code on the direct app-capture API. |
 | `datetime_axis` | UTC datetime tick formatting, data-to-timestamp axis mapping, duration scale bar | Experimental feature proof lives in `examples/c/features/datetime_axis.c`; not a v0.4 release blocker. |
 | `splat_cloud` | retained splat visual, blend/depth policy, deterministic capture | Experimental visual proof lives in `examples/c/visuals/splat.c`; not a release blocker. |
 | `cpu_fluid_or_particles` | dynamic image/point/path updates, panzoom, colorbar | CPU-side stretch only; GPU compute remains later. |

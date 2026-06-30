@@ -4,16 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* video_export - portable scenario using the native runner's live/capture modes.
+/* video_export - write a bounded offscreen animation with the app capture API.
  *
- * Scenario: feature.video_export
- * Style: runtime, graphite_cyan, 1280x720 window target, 1920x1080 default output
+ * Example: runtime.video_export
+ * Style: runtime, graphite_cyan, 1920x1080 output target
  *
  * Build:  just example-c runtime/video_export
  * Run:    ./build/examples/c/runtime/video_export
- * Live:   ./build/examples/c/runtime/video_export --live
- * Video:  ./build/examples/c/runtime/video_export
- * Hidden: ./build/examples/c/runtime/video_export --offscreen-record 120
+ * Smoke:  ./build/examples/c/runtime/video_export --png
  */
 
 
@@ -25,11 +23,15 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
-#include "_alloc.h"
+#include "datoviz/app.h"
+#include "datoviz/canvas/enums.h"
 #include "datoviz/scene.h"
+#include "datoviz/video.h"
+#include "example_common.h"
 #include "example_style.h"
-#include "runner/scenario_runner.h"
 
 
 
@@ -37,10 +39,13 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  EXAMPLE_WINDOW_WIDTH
-#define HEIGHT EXAMPLE_WINDOW_HEIGHT
+#define WIDTH       EXAMPLE_OUTPUT_WIDTH
+#define HEIGHT      EXAMPLE_OUTPUT_HEIGHT
+#define FPS         60.0
+#define FRAME_COUNT 120u
 #define TICK_COUNT  9u
 #define POINT_COUNT (TICK_COUNT + 1u)
+#define PATH_SIZE   512u
 
 static const float TAU = 6.28318530718f;
 
@@ -50,13 +55,13 @@ static const float TAU = 6.28318530718f;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-typedef struct VideoExportScenario
+typedef struct VideoExportState
 {
     DvzVisual* point;
     vec3 positions[POINT_COUNT];
     DvzColor colors[POINT_COUNT];
     float diameters[POINT_COUNT];
-} VideoExportScenario;
+} VideoExportState;
 
 
 
@@ -65,33 +70,47 @@ typedef struct VideoExportScenario
 /*************************************************************************************************/
 
 /**
- * Upload the diagnostic point visual.
+ * Return the frame count requested by the command line.
  *
- * @param state scenario state
- * @return true on success
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @param fallback default frame count
+ * @return bounded frame count
  */
-static bool _upload_points(VideoExportScenario* state)
+static uint32_t _frame_count(int argc, char** argv, uint32_t fallback)
 {
-    if (state == NULL || state->point == NULL)
-        return false;
+    const char* value = NULL;
+    uint32_t out = 0;
+    if (example_arg_value(argc, argv, "--frames", &value) && example_parse_u32(value, &out) &&
+        out != 0)
+        return out;
 
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = state->positions, .item_count = POINT_COUNT},
-        {.attr_name = "color", .data = state->colors, .item_count = POINT_COUNT},
-        {.attr_name = "diameter_px", .data = state->diameters, .item_count = POINT_COUNT},
-    };
-    return dvz_visual_set_data_many(state->point, updates, 3) == 0;
+    out = example_frame_count_any(argc, argv);
+    return out != 0 ? out : fallback;
 }
 
 
 
 /**
- * Fill fixed tick marks and the moving diagnostic marker at one scenario time.
- *
- * @param state scenario state
- * @param t scenario time in seconds
+ * Print command-line usage.
  */
-static void _fill_points(VideoExportScenario* state, double t)
+static void _print_usage(void)
+{
+    dvz_fprintf(stdout, "usage: video_export [--frames N] [--png]\n");
+    dvz_fprintf(stdout, "  default      record video_export.mp4 with the app capture API\n");
+    dvz_fprintf(stdout, "  --frames N   record N frames instead of the default 120\n");
+    dvz_fprintf(stdout, "  --png        render one offscreen PNG smoke image\n");
+}
+
+
+
+/**
+ * Fill the deterministic point scene at one time.
+ *
+ * @param state video-export state
+ * @param t time in seconds
+ */
+static void _fill_points(VideoExportState* state, double t)
 {
     if (state == NULL)
         return;
@@ -117,144 +136,216 @@ static void _fill_points(VideoExportScenario* state, double t)
 
 
 
-/*************************************************************************************************/
-/*  Scenario callbacks                                                                           */
-/*************************************************************************************************/
-
 /**
- * Initialize the video-export scenario.
+ * Upload all retained point attributes.
  *
- * @param ctx scenario context
- * @param out_user scenario state output
+ * @param state video-export state
  * @return true on success
  */
-static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
+static bool _upload_points(VideoExportState* state)
 {
-    if (ctx == NULL || out_user == NULL)
+    if (state == NULL || state->point == NULL)
         return false;
 
-    VideoExportScenario* state = (VideoExportScenario*)dvz_calloc(1, sizeof(VideoExportScenario));
-    if (state == NULL)
-        return false;
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = state->positions, .item_count = POINT_COUNT},
+        {.attr_name = "color", .data = state->colors, .item_count = POINT_COUNT},
+        {.attr_name = "diameter_px", .data = state->diameters, .item_count = POINT_COUNT},
+    };
+    return dvz_visual_set_data_many(state->point, updates, 3) == 0;
+}
 
-    ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
-    if (ctx->figure == NULL)
-        goto error;
 
-    DvzPanel* panel = dvz_panel_full(ctx->figure);
-    if (panel == NULL)
-        goto error;
+
+/**
+ * Fill the final capture path for display.
+ *
+ * @param capture capture configuration
+ * @param extension output file extension
+ * @param out output path buffer
+ * @param size output path buffer size
+ */
+static void _capture_path(
+    const DvzAppCaptureConfig* capture, const char* extension, char* out, size_t size)
+{
+    if (capture == NULL || extension == NULL || out == NULL || size == 0)
+        return;
+
+    const char* directory =
+        capture->directory != NULL && capture->directory[0] != '\0' ? capture->directory : ".";
+    const char* basename =
+        capture->basename != NULL && capture->basename[0] != '\0' ? capture->basename
+                                                                  : "video_export";
+    const size_t dir_len = strlen(directory);
+    if (strcmp(directory, ".") == 0)
+        dvz_snprintf(out, size, "./%s%s", basename, extension);
+    else if (dir_len > 0 && directory[dir_len - 1] == '/')
+        dvz_snprintf(out, size, "%s%s%s", directory, basename, extension);
+    else
+        dvz_snprintf(out, size, "%s/%s%s", directory, basename, extension);
+}
+
+
+
+/**
+ * Create the retained scene used by the video export.
+ *
+ * @param scene scene
+ * @param state state to initialize
+ * @return figure, or NULL on error
+ */
+static DvzFigure* _create_scene(DvzScene* scene, VideoExportState* state)
+{
+    if (scene == NULL || state == NULL)
+        return NULL;
+
+    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
+    DvzPanel* panel = figure != NULL ? dvz_panel_full(figure) : NULL;
+    state->point = dvz_point(scene, 0);
+    if (figure == NULL || panel == NULL || state->point == NULL)
+        return NULL;
     example_graphite_cyan_set_panel_background(panel);
-
-    state->point = dvz_point(ctx->scene, 0);
-    if (state->point == NULL)
-        goto error;
 
     _fill_points(state, 0.0);
     if (!_upload_points(state))
-        goto error;
+        return NULL;
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
     style.stroke_width_px = 0.0f;
     if (dvz_point_set_style(state->point, &style) != 0)
-        goto error;
+        return NULL;
     if (dvz_visual_set_depth_test(state->point, false) != 0)
-        goto error;
+        return NULL;
     if (dvz_panel_add_visual(panel, state->point, NULL) != 0)
-        goto error;
-
-    *out_user = state;
-    return true;
-
-error:
-    dvz_free(state);
-    return false;
+        return NULL;
+    return figure;
 }
 
 
 
 /**
- * Advance the video-export scenario for one runner frame.
+ * Render one PNG smoke frame.
  *
- * @param ctx scenario context
- * @param user scenario state
+ * @param view offscreen view
+ * @param state video-export state
+ * @param path PNG output path
+ * @return true on success
  */
-static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+static bool _write_png(DvzView* view, VideoExportState* state, const char* path)
 {
-    if (ctx == NULL || user == NULL)
-        return;
+    if (view == NULL || state == NULL || path == NULL)
+        return false;
 
-    VideoExportScenario* state = (VideoExportScenario*)user;
-    _fill_points(state, ctx->time);
-    (void)_upload_points(state);
+    _fill_points(state, 0.75);
+    if (!_upload_points(state))
+        return false;
+    if (dvz_view_render_once(view) != DVZ_CANVAS_FRAME_READY)
+        return false;
+    return dvz_view_capture_png(view, path) == 0;
 }
 
 
 
 /**
- * Destroy the video-export scenario.
+ * Record the deterministic animation as a video.
  *
- * @param ctx scenario context
- * @param user scenario state
+ * @param view offscreen view
+ * @param state video-export state
+ * @param capture capture configuration
+ * @param frame_count number of frames to record
+ * @return true on success
  */
-static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+static bool _write_video(
+    DvzView* view, VideoExportState* state, const DvzAppCaptureConfig* capture,
+    uint32_t frame_count)
 {
-    (void)ctx;
-    dvz_free(user);
-}
+    if (view == NULL || state == NULL || capture == NULL || frame_count == 0)
+        return false;
 
+    if (dvz_view_capture_start(view, capture) != 0)
+        return false;
 
-
-/**
- * Return the video-export scenario specification.
- *
- * @return scenario specification
- */
-static DvzScenarioSpec _video_export_scenario(void)
-{
-    return (DvzScenarioSpec){
-        .id = "feature_video_export",
-        .title = "video_export",
-        .width = WIDTH,
-        .height = HEIGHT,
-        .fps = 60.0,
-        .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_FRAME_CALLBACKS |
-                        DVZ_SCENARIO_REQ_NATIVE_CAPTURE,
-        .init = _scenario_init,
-        .frame = _scenario_frame,
-        .destroy = _scenario_destroy,
-    };
+    bool ok = true;
+    for (uint32_t frame = 0; frame < frame_count; frame++)
+    {
+        const double t = (double)frame / FPS;
+        _fill_points(state, t);
+        if (!_upload_points(state) || dvz_view_render_once(view) != DVZ_CANVAS_FRAME_READY)
+        {
+            ok = false;
+            break;
+        }
+    }
+    return dvz_view_capture_stop(view) == 0 && ok;
 }
 
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Main                                                                                         */
 /*************************************************************************************************/
 
-/**
- * Run the video-export feature example through the native scenario runner.
- *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return process exit code
- */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _video_export_scenario();
-    if (argc <= 1)
+    if (example_arg_has(argc, argv, "--help") || example_arg_has(argc, argv, "-h"))
     {
-        DvzRunnerConfig config = dvz_runner_config(&spec);
-        config.presentation = DVZ_RUNNER_PRESENT_OFFSCREEN;
-        config.capture_kind = DVZ_RUNNER_CAPTURE_VIDEO;
-        config.capture.video_capture_mode = DVZ_VIDEO_CAPTURE_CPU_READBACK;
-        config.logical_width = EXAMPLE_OUTPUT_WIDTH;
-        config.logical_height = EXAMPLE_OUTPUT_HEIGHT;
-        config.framebuffer_width = EXAMPLE_OUTPUT_WIDTH;
-        config.framebuffer_height = EXAMPLE_OUTPUT_HEIGHT;
-        config.frame_count = 120u;
-        return dvz_scenario_run_native(&spec, &config) == 0 ? 0 : 1;
+        _print_usage();
+        return 0;
     }
-    return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;
+
+    const bool png_mode = example_arg_has(argc, argv, "--png");
+    const uint32_t frame_count = _frame_count(argc, argv, FRAME_COUNT);
+
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+    VideoExportState state = {0};
+
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_FIXED_STEP);
+    dvz_scene_set_fps(scene, FPS);
+
+    DvzFigure* figure = _create_scene(scene, &state);
+    EXAMPLE_CHECK(figure != NULL, "failed to create video export scene");
+
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU?)");
+
+    DvzView* view = dvz_view_offscreen(app, figure, WIDTH, HEIGHT);
+    EXAMPLE_CHECK(view != NULL, "dvz_view_offscreen() failed");
+
+    if (png_mode)
+    {
+        char png_path[PATH_SIZE] = {0};
+        example_outpath(argv[0], "video_export.png", png_path, sizeof(png_path));
+        EXAMPLE_CHECK(_write_png(view, &state, png_path), "PNG smoke capture failed");
+        dvz_fprintf(stdout, "video_export: wrote %s (%ux%u exact pixels)\n", png_path, WIDTH, HEIGHT);
+    }
+    else
+    {
+        DvzAppCaptureConfig capture = dvz_app_capture_config();
+        capture.flags = DVZ_APP_CAPTURE_VIDEO;
+        capture.directory = ".";
+        capture.basename = "video_export";
+        capture.fps = FPS;
+        capture.video_capture_mode = DVZ_VIDEO_CAPTURE_CPU_READBACK;
+
+        char video_path[PATH_SIZE] = {0};
+        _capture_path(&capture, ".mp4", video_path, sizeof(video_path));
+        EXAMPLE_CHECK(
+            _write_video(view, &state, &capture, frame_count), "video capture failed");
+        dvz_fprintf(
+            stdout, "video_export: wrote %s (%u frames at %.0f FPS)\n", video_path, frame_count,
+            FPS);
+    }
+    ret = 0;
+
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }

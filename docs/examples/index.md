@@ -676,7 +676,7 @@ render an exact-pixel offscreen view once and write a PNG.
 
 _Media pending._
 
-portable scenario using the native runner's live/capture modes.
+write a bounded offscreen animation with the app capture API.
 
 </div>
 

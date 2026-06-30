@@ -66,6 +66,7 @@ class CaptureExample:
     validation: str
     capture_mode: str
     capture_reason: str
+    capture_args: tuple[str, ...]
     expected_width: int
     expected_height: int
 
@@ -317,6 +318,13 @@ def collect_examples(manifest: dict) -> list[CaptureExample]:
         capture = entry.get("capture") or {}
         if not isinstance(capture, dict):
             raise ValueError(f"{entry['id']} capture metadata must be a mapping")
+        raw_args = capture.get("args", [])
+        if isinstance(raw_args, str):
+            capture_args = tuple(part for part in raw_args.split(" ") if part)
+        elif isinstance(raw_args, list):
+            capture_args = tuple(str(part) for part in raw_args)
+        else:
+            raise ValueError(f"{entry['id']} capture.args must be a string or list")
         expected_width, expected_height = parse_capture_size(capture, default_size)
         examples.append(
             CaptureExample(
@@ -327,6 +335,7 @@ def collect_examples(manifest: dict) -> list[CaptureExample]:
                 validation=str(entry.get("validation", "")),
                 capture_mode=str(capture.get("mode", "scenario")),
                 capture_reason=str(capture.get("reason", "")),
+                capture_args=capture_args,
                 expected_width=expected_width,
                 expected_height=expected_height,
             )
@@ -535,7 +544,7 @@ def command_for(example: CaptureExample, build_dir: Path) -> list[str]:
     exe = str(executable_path(example, build_dir))
     if example.capture_mode == "scenario":
         return [exe, "--png"]
-    return [exe]
+    return [exe, *example.capture_args]
 
 
 def uses_scenario_runner(example: CaptureExample) -> bool:

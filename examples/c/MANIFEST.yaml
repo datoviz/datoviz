@@ -1706,23 +1706,26 @@ examples:
     lane: runtime
     source: examples/c/runtime/video_export.c
     validation: smoke+optional-video
+    capture:
+      mode: custom
+      args:
+        - --png
+      size: 1920x1080
+      reason: direct video-export example writes its PNG smoke frame through dvz_view_capture_png()
     data:
       kind: synthetic
-    portability: portable-scenario
+    portability: native-only
     webgpu:
       status: native-only
       requirements:
-        - point
-        - frame-callbacks
         - native-capture
       reason: video export uses native capture backends in v0.4
-    agent_copy_safe: false
+    agent_copy_safe: true
     gallery:
       card: small
       status_label: experimental
     tags:
       - app-capture
-      - scenario-runner
       - video
       - animation
 

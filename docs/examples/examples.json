@@ -19,8 +19,8 @@
     "supported": 91
   },
   "agent_copy_safe": {
-    "false": 28,
-    "true": 78
+    "false": 27,
+    "true": 79
   },
   "examples": [
     {
@@ -1615,14 +1615,13 @@
       "source": "examples/c/runtime/video_export.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/video_export.c",
       "page": "gallery/runtime/feature_video_export.md",
-      "summary": "portable scenario using the native runner's live/capture modes.",
+      "summary": "write a bounded offscreen animation with the app capture API.",
       "validation": "smoke+optional-video",
       "build_command": "just example-c runtime/video_export",
       "smoke_command": "./build/examples/c/runtime/video_export --png",
-      "agent_copy_safe": false,
+      "agent_copy_safe": true,
       "tags": [
         "app-capture",
-        "scenario-runner",
         "video",
         "animation"
       ],

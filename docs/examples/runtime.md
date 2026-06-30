@@ -48,9 +48,9 @@ render an exact-pixel offscreen view once and write a PNG.
 
 _Media pending._
 
-`experimental` `runtime`<br><span>`app-capture`, `scenario-runner`, `video`, `animation`</span>
+`experimental` `runtime`<br><span>`app-capture`, `video`, `animation`</span>
 
-portable scenario using the native runner's live/capture modes.
+write a bounded offscreen animation with the app capture API.
 
 </div>
 

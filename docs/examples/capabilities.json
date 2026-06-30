@@ -20,8 +20,8 @@
     "supported": 91
   },
   "agent_copy_safe": {
-    "false": 28,
-    "true": 78
+    "false": 27,
+    "true": 79
   },
   "capabilities": {
     "composites": {
@@ -821,7 +821,7 @@
             "title": "Video Export",
             "category": "runtime",
             "status": "experimental",
-            "agent_copy_safe": false,
+            "agent_copy_safe": true,
             "source": "examples/c/runtime/video_export.c",
             "page": "gallery/runtime/feature_video_export.md"
           },
@@ -2012,7 +2012,7 @@
             "title": "Video Export",
             "category": "runtime",
             "status": "experimental",
-            "agent_copy_safe": false,
+            "agent_copy_safe": true,
             "source": "examples/c/runtime/video_export.c",
             "page": "gallery/runtime/feature_video_export.md"
           }
@@ -2074,7 +2074,7 @@
             "title": "Video Export",
             "category": "runtime",
             "status": "experimental",
-            "agent_copy_safe": false,
+            "agent_copy_safe": true,
             "source": "examples/c/runtime/video_export.c",
             "page": "gallery/runtime/feature_video_export.md"
           },
@@ -2097,7 +2097,7 @@
             "title": "Video Export",
             "category": "runtime",
             "status": "experimental",
-            "agent_copy_safe": false,
+            "agent_copy_safe": true,
             "source": "examples/c/runtime/video_export.c",
             "page": "gallery/runtime/feature_video_export.md"
           }
@@ -3656,20 +3656,6 @@
           }
         ]
       },
-      "scenario-runner": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_video_export",
-            "title": "Video Export",
-            "category": "runtime",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/runtime/video_export.c",
-            "page": "gallery/runtime/feature_video_export.md"
-          }
-        ]
-      },
       "scene-compute": {
         "count": 1,
         "examples": [
@@ -4149,7 +4135,7 @@
             "title": "Video Export",
             "category": "runtime",
             "status": "experimental",
-            "agent_copy_safe": false,
+            "agent_copy_safe": true,
             "source": "examples/c/runtime/video_export.c",
             "page": "gallery/runtime/feature_video_export.md"
           },

@@ -12,16 +12,17 @@ and write frames through the video-export path shown in the canonical example.
 
 ## Recommended Example Path
 
-The canonical example uses the native scenario runner. The default run records a 120-frame
-offscreen video, and the explicit offscreen mode lets you choose the frame count:
+The canonical example uses the app capture API directly. The default run records a 120-frame
+offscreen video, and `--frames` lets you choose the frame count:
 
 ```sh
 ./build/examples/c/runtime/video_export
-./build/examples/c/runtime/video_export --offscreen-record 120
+./build/examples/c/runtime/video_export --frames 240
 ```
 
-Use `--live-record N` when you want to display a GLFW view while recording an offscreen capture
-view. Use `--live` only for interactive viewing without recording.
+Scenario-backed gallery examples can also be recorded by the native scenario runner with
+`--video N` or `--offscreen-record N`, but that is gallery infrastructure rather than the primary
+application API.
 
 
 ## Minimal Capture Sequence
@@ -95,7 +96,7 @@ DVZ_CAPTURE_DIR=captures \
 DVZ_CAPTURE_BASENAME=animation \
 DVZ_CAPTURE_FPS=60 \
 DVZ_CAPTURE_VIDEO_MODE=cpu \
-./build/examples/c/features/timer_animation 120
+./build/examples/c/features/timer_animation --video 120
 ```
 
 `DVZ_CAPTURE` accepts `mp4`, `video`, `dvzr`, `png`, `all`, or false-like values such as `off` and

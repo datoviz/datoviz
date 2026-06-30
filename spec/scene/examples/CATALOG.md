@@ -42,7 +42,7 @@ As of 2026-06-05, the public C manifest has runnable `v0.4 required` entries for
 | `composite_polygon` | `v0.4 required` | [scenarios/v04_required/COMPOSITES.md](scenarios/v04_required/COMPOSITES.md) |
 | `composite_graph` | `v0.4 required` | [scenarios/v04_required/COMPOSITES.md](scenarios/v04_required/COMPOSITES.md) |
 | `webgpu_browser_subset` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
-| `animation_video_export` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
+| `gallery_video_capture` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
 | `datetime_axis` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
 | `splat_cloud` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |
 | `cpu_fluid_or_particles` | `v0.4 experimental` | [scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md](scenarios/v04_experimental/EXPERIMENTAL_SHOWCASES.md) |

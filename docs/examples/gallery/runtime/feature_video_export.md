@@ -10,7 +10,7 @@
 <span>Video Export</span>
 </nav>
 
-portable scenario using the native runner's live/capture modes.
+write a bounded offscreen animation with the app capture API.
 
 ## Preview
 
@@ -31,16 +31,16 @@ _Media pending._
     - Lane: `runtime`
     - Status: `experimental`
     - Source: [`examples/c/runtime/video_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/video_export.c)
-    - Agent copy-safe: `false`
+    - Agent copy-safe: `true`
     - WebGPU status: `native-only`
-    - WebGPU requirements: `point`, `frame-callbacks`, `native-capture`
+    - WebGPU requirements: `native-capture`
     - Build: `just example-c runtime/video_export`
     - Smoke: `./build/examples/c/runtime/video_export --png`
     - Validation: `smoke+optional-video`
 
     ### Tags
 
-    `app-capture`, `scenario-runner`, `video`, `animation`
+    `app-capture`, `video`, `animation`
 
     ### Data
 

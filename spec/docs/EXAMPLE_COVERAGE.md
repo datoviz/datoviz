@@ -301,7 +301,7 @@ Current feature seeds and migration notes:
 | `feature.controller_arcball` | `examples/c/features/controller_arcball.c`, `examples/c/showcases/protein.c` | Minimal controller proof is separate from composed scientific/showcase examples. |
 | `feature.controller_fly` | `examples/c/features/controller_fly.c`, `examples/c/showcases/point_cloud.c` | Minimal fly-controller proof is separate from the dense point-cloud showcase. |
 | `feature.timer_animation` | `examples/c/features/timer_animation.c` | Current C example replaces old animation/timer gallery pages. |
-| `feature.video_export` | `examples/c/runtime/video_export.c` | Experimental scenario-runner video proof replaces the old video gallery page. |
+| `feature.video_export` | `examples/c/runtime/video_export.c` | Direct app-capture video example replaces the old video gallery page. |
 | `feature.lighting` | `examples/c/features/lighting.c` | Current C example replaces old light/mesh-light snippets for v0.4 docs. |
 | `feature.visibility` | `examples/c/features/visibility.c` | Current C example replaces old hide/fixed gallery pages for v0.4 docs. |
 | `feature.overlay_card` | `examples/c/features/overlay_card.c` | Current C example is separate from annotation and text-block proofs. |

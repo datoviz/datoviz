@@ -7,4 +7,4 @@ scene-level retained capabilities belong in `../features/`.
 - `app_glfw.c`: direct GLFW app/view lifecycle without the scenario runner.
 - `offscreen_capture.c`: direct offscreen render-once PNG capture.
 - `record_replay.c`: experimental DVZR app recording and live replay.
-- `video_export.c`: experimental runner-backed live, live-record, and offscreen-record modes.
+- `video_export.c`: direct offscreen MP4 export with `dvz_view_capture_start()`/stop.

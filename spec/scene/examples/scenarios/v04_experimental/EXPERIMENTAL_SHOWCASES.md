@@ -16,11 +16,11 @@ primitive, image, and maybe basic mesh. Unsupported commands and backend differe
 documented in the runnable example or generated fixture.
 
 
-## `animation_video_export`
+## `gallery_video_capture`
 
-Simple animation and deterministic capture/video proof. Use frame callbacks, offline clocks, and
-bounded export. Defer camera-path authoring helpers and rich transition APIs unless another release
-example needs them.
+Simple animation and deterministic gallery video proof. Use existing scenario-backed examples,
+frame callbacks, fixed-step clocks, and bounded runner export. Public video-export examples should
+teach the direct app capture API instead of the scenario runner.
 
 
 ## `datetime_axis`
