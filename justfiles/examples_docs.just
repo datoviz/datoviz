@@ -51,8 +51,19 @@ examples-run *args: build
     @just examples "$@"
 
 [positional-arguments]
-review batch *args: build
-    @python3 tools/run_c_examples.py --batch "{{batch}}" "$@"
+review batch *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    run_build=1
+    for arg in "$@"; do
+        if [[ "${arg}" == "--code" ]]; then
+            run_build=0
+        fi
+    done
+    if [[ "${run_build}" -eq 1 ]]; then
+        just build
+    fi
+    python3 tools/run_c_examples.py --batch "{{batch}}" "$@"
 
 review-batches:
     #!/usr/bin/env python3

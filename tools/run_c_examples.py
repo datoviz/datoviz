@@ -94,6 +94,16 @@ def parse_args() -> argparse.Namespace:
         help="print matching examples without running them",
     )
     parser.add_argument(
+        "--code",
+        action="store_true",
+        help="open matching example source files in VS Code instead of running them",
+    )
+    parser.add_argument(
+        "--code-command",
+        default="code",
+        help="VS Code command to run for --code, default: code",
+    )
+    parser.add_argument(
         "--build-dir",
         default="build",
         help="CMake build directory, default: build",
@@ -254,7 +264,7 @@ def manifest_batch_examples(
             continue
 
         exe = examples_root / rel
-        if is_executable(exe):
+        if args.code or is_executable(exe):
             examples.append((rel, exe))
         else:
             missing.append(rel)
@@ -303,7 +313,7 @@ def manifest_examples(
         seen.add(rel)
 
         exe = examples_root / rel
-        if is_executable(exe):
+        if args.code or is_executable(exe):
             examples.append((rel, exe))
         else:
             missing.append(rel)
@@ -352,6 +362,35 @@ def apply_runtime_env(root: Path, env: dict[str, str]) -> None:
             break
 
 
+def example_source_path(root: Path, rel: str) -> Path:
+    return root / "examples" / "c" / f"{rel}.c"
+
+
+def open_code(root: Path, examples: list[tuple[str, Path]], code_command: str) -> int:
+    sources = [example_source_path(root, rel) for rel, _ in examples]
+    missing = [path for path in sources if not path.is_file()]
+    if missing:
+        print("Matching examples without source files:", file=sys.stderr)
+        for path in missing:
+            print(f"  - {path.relative_to(root)}", file=sys.stderr)
+        return 1
+
+    try:
+        result = subprocess.run(
+            [code_command, "--reuse-window", *[str(path) for path in sources]],
+            cwd=root,
+            check=False,
+        )
+    except FileNotFoundError:
+        print(
+            f"VS Code command not found: {code_command!r}. "
+            "Install the 'code' shell command or pass --code-command.",
+            file=sys.stderr,
+        )
+        return 127
+    return result.returncode
+
+
 def main() -> int:
     args = parse_args()
     root = repo_root()
@@ -380,7 +419,8 @@ def main() -> int:
     if args.batch:
         resolved_batch = getattr(args, "resolved_batch", args.batch)
         print(f"C example review batch: {resolved_batch} ({len(examples)} examples)")
-    print("C examples to run sequentially:")
+    action = "open in VS Code" if args.code else "run sequentially"
+    print(f"C examples to {action}:")
     for index, (rel, _) in enumerate(examples, 1):
         print(f"  {index:2d}. {rel}")
     if ignored:
@@ -395,6 +435,9 @@ def main() -> int:
             return 1
     if args.list:
         return 0
+
+    if args.code:
+        return open_code(root, examples, args.code_command)
 
     example_args = []
     if args.frames:
