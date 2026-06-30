@@ -28,7 +28,7 @@
 #include "_scene.h"
 #include "scene_emit/scene_emit.h"
 #include "scene_emit/internal.h"
-#include "annotation/generated_visual_policy.h"
+#include "core/generated_visual_policy.h"
 #include "_scene_resource_key.h"
 #include "_scene_shader_abi.h"
 #include "_technique.h"

@@ -26,7 +26,7 @@
 #include "axis_internal.h"
 #include "axis_labels_internal.h"
 #include "datoviz/scene.h"
-#include "generated_visual_policy.h"
+#include "core/generated_visual_policy.h"
 #include "annotation/text_visual_bridge.h"
 
 

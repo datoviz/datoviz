@@ -27,7 +27,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
-#include "annotation/generated_visual_policy.h"
+#include "core/generated_visual_policy.h"
 #include "core/scene_notify_internal.h"
 #include "_scene_resource_key.h"
 #include "_visual_internal.h"

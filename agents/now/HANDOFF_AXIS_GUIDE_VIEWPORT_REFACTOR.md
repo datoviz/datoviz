@@ -23,7 +23,7 @@ Committed on `v0.4-dev`:
    - Added the aggressive API/ABI-breaking refactor plan.
 
 2. `555aca425` `scene: centralize generated axis guide visual policy`
-   - Added `src/scene/annotation/generated_visual_policy.h`.
+   - Added `src/scene/core/generated_visual_policy.h`.
    - Moved axis marks, axis text, axis grid, guide fill, guide line, and guide outline attachment
      defaults onto semantic generated-visual roles.
    - Guide descriptor `z_layer` now behaves as an offset from the semantic role layer.

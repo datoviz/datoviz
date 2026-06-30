@@ -24,7 +24,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_scene.h"
-#include "annotation/generated_visual_policy.h"
+#include "core/generated_visual_policy.h"
 #include "annotation/text_visual_bridge.h"
 #include "core/scene_notify_internal.h"
 #include "colormap_internal.h"

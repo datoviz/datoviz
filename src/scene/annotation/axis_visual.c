@@ -23,7 +23,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "axis_internal.h"
-#include "generated_visual_policy.h"
+#include "core/generated_visual_policy.h"
 #include "prepare_internal.h"
 #include "datoviz/scene.h"
 

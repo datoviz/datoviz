@@ -26,7 +26,7 @@
 #include "_scale_ticks.h"
 #include "_scene.h"
 #include "_visual_internal.h"
-#include "annotation/generated_visual_policy.h"
+#include "core/generated_visual_policy.h"
 #include "annotation/prepare_internal.h"
 #include "datoviz/input.h"
 #include "interaction/internal.h"

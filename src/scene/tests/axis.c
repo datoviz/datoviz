@@ -23,7 +23,7 @@
 #include "../../drp2/_stream.h"
 #include "_scene.h"
 #include "annotation/axis_internal.h"
-#include "annotation/generated_visual_policy.h"
+#include "core/generated_visual_policy.h"
 #include "annotation/prepare_internal.h"
 #include "core/figure_emit_internal.h"
 #include "scene_emit/scene_emit.h"

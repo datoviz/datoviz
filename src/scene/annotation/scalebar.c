@@ -25,7 +25,7 @@
 #include "_log.h"
 #include "_scale_ticks.h"
 #include "_scene.h"
-#include "annotation/generated_visual_policy.h"
+#include "core/generated_visual_policy.h"
 #include "annotation/text_visual_bridge.h"
 #include "core/format_state_internal.h"
 #include "core/scene_notify_internal.h"

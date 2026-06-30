@@ -25,7 +25,7 @@
 #include "_scene.h"
 #include "core/scene_notify_internal.h"
 #include "datoviz/scene.h"
-#include "generated_visual_policy.h"
+#include "core/generated_visual_policy.h"
 #include "prepare_internal.h"
 
 
