@@ -1,6 +1,7 @@
 // datoviz-builtin-shader: scene.primitive lit_instanced_item_state vertex v1
 
 #include "common.wgsl"
+#include "camera.wgsl"
 
 const DVZ_ITEM_STATE_HOVERED: u32 = 1u;
 const DVZ_ITEM_STATE_SELECTED: u32 = 2u;

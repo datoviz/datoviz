@@ -1,4 +1,5 @@
 #include "common.wgsl"
+#include "camera.wgsl"
 
 struct VertexIn {
     @location(0) position: vec3f,

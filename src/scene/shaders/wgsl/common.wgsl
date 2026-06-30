@@ -22,7 +22,3 @@ struct Viewport {
 fn transform(position: vec3f) -> vec4f {
     return mvp.proj * mvp.view * mvp.model * vec4f(position, 1.0);
 }
-
-fn camera_position_from_view() -> vec3f {
-    return (inverse(mvp.view) * vec4f(0.0, 0.0, 0.0, 1.0)).xyz;
-}
