@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* primitive - topology-parametric triangles rendered with the retained primitive visual.
+/* primitive - line and triangle topologies rendered with the retained primitive visual.
  *
  * Scenario: visual.primitive
  * Style: visuals, graphite_cyan, 1280x720 window target
@@ -116,7 +116,7 @@ static bool _add_primitive(
 
 
 /**
- * Add three topology-parametric primitive visuals.
+ * Add line and triangle primitive topology samples.
  *
  * @param scene scene owning visuals
  * @param panel target panel
@@ -127,47 +127,65 @@ static bool _add_primitives(DvzScene* scene, DvzPanel* panel)
     ANN(scene);
     ANN(panel);
 
-    const vec3 list_positions[6] = {
-        {-0.88f, -0.42f, 0.00f}, {-0.34f, -0.42f, 0.00f}, {-0.61f, +0.44f, 0.00f},
-        {-0.96f, +0.10f, 0.03f}, {-0.47f, +0.58f, 0.03f}, {-0.20f, -0.06f, 0.03f},
+    const vec3 line_positions[8] = {
+        {-0.86f, +0.54f, 0.00f}, {-0.52f, +0.78f, 0.00f},
+        {-0.72f, +0.16f, 0.00f}, {-0.28f, +0.38f, 0.00f},
+        {-0.10f, +0.72f, 0.00f}, {+0.26f, +0.42f, 0.00f},
+        {+0.42f, +0.18f, 0.00f}, {+0.86f, +0.56f, 0.00f},
     };
-    const ExampleStyleColorRole list_color_roles[6] = {
-        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,  EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
-        EXAMPLE_STYLE_COLOR_WARNING,         EXAMPLE_STYLE_COLOR_ERROR,
-        EXAMPLE_STYLE_COLOR_TEXT,            EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
-    };
-    if (!_add_primitive(
-            scene, panel, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, list_positions, list_color_roles,
-            6))
-        return false;
-
-    const vec3 strip_positions[6] = {
-        {-0.12f, +0.08f, 0.00f}, {+0.10f, +0.74f, 0.00f}, {+0.28f, +0.18f, 0.02f},
-        {+0.48f, +0.82f, 0.02f}, {+0.66f, +0.26f, 0.04f}, {+0.88f, +0.70f, 0.04f},
-    };
-    const ExampleStyleColorRole strip_color_roles[6] = {
+    const ExampleStyleColorRole line_color_roles[8] = {
         EXAMPLE_STYLE_COLOR_ERROR,            EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
         EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY, EXAMPLE_STYLE_COLOR_WARNING,
         EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,   EXAMPLE_STYLE_COLOR_TEXT,
+        EXAMPLE_STYLE_COLOR_WARNING,          EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
     };
     if (!_add_primitive(
-            scene, panel, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, strip_positions,
-            strip_color_roles, 6))
+            scene, panel, DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST, line_positions, line_color_roles, 8))
         return false;
 
-    const vec3 fan_positions[8] = {
-        {+0.38f, -0.44f, 0.06f}, {+0.16f, -0.86f, 0.06f}, {+0.54f, -0.92f, 0.06f},
-        {+0.88f, -0.70f, 0.06f}, {+0.92f, -0.34f, 0.06f}, {+0.70f, -0.02f, 0.06f},
-        {+0.34f, +0.04f, 0.06f}, {+0.08f, -0.18f, 0.06f},
+    const vec3 strip_positions[8] = {
+        {-0.86f, -0.08f, 0.02f}, {-0.58f, +0.14f, 0.02f},
+        {-0.34f, -0.20f, 0.02f}, {-0.08f, +0.10f, 0.02f},
+        {+0.18f, -0.22f, 0.02f}, {+0.42f, +0.12f, 0.02f},
+        {+0.66f, -0.12f, 0.02f}, {+0.88f, +0.06f, 0.02f},
     };
-    const ExampleStyleColorRole fan_color_roles[8] = {
+    const ExampleStyleColorRole strip_color_roles[8] = {
         EXAMPLE_STYLE_COLOR_TEXT,             EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
         EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY, EXAMPLE_STYLE_COLOR_WARNING,
         EXAMPLE_STYLE_COLOR_ERROR,            EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
         EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY, EXAMPLE_STYLE_COLOR_WARNING,
     };
+    if (!_add_primitive(
+            scene, panel, DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP, strip_positions, strip_color_roles,
+            8))
+        return false;
+
+    const vec3 triangle_list_positions[6] = {
+        {-0.88f, -0.82f, 0.04f}, {-0.42f, -0.82f, 0.04f}, {-0.65f, -0.36f, 0.04f},
+        {-0.36f, -0.70f, 0.06f}, {-0.04f, -0.36f, 0.06f}, {-0.02f, -0.86f, 0.06f},
+    };
+    const ExampleStyleColorRole triangle_list_color_roles[6] = {
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,  EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY,
+        EXAMPLE_STYLE_COLOR_WARNING,         EXAMPLE_STYLE_COLOR_ERROR,
+        EXAMPLE_STYLE_COLOR_TEXT,            EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+    };
+    if (!_add_primitive(
+            scene, panel, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, triangle_list_positions,
+            triangle_list_color_roles, 6))
+        return false;
+
+    const vec3 triangle_strip_positions[6] = {
+        {+0.16f, -0.86f, 0.08f}, {+0.28f, -0.38f, 0.08f}, {+0.44f, -0.78f, 0.08f},
+        {+0.58f, -0.30f, 0.08f}, {+0.72f, -0.72f, 0.08f}, {+0.88f, -0.34f, 0.08f},
+    };
+    const ExampleStyleColorRole triangle_strip_color_roles[6] = {
+        EXAMPLE_STYLE_COLOR_ERROR,            EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,
+        EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY, EXAMPLE_STYLE_COLOR_WARNING,
+        EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY,   EXAMPLE_STYLE_COLOR_TEXT,
+    };
     return _add_primitive(
-        scene, panel, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN, fan_positions, fan_color_roles, 8);
+        scene, panel, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, triangle_strip_positions,
+        triangle_strip_color_roles, 6);
 }
 
 

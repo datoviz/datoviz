@@ -7,7 +7,7 @@ polished, scenario-indexed, and ready for the v0.4 public suite.
 - `point.c`: retained point positions, color, and diameter_px.
 - `pixel.c`: retained pixel positions, color, and pixel size.
 - `marker.c`: retained marker shape, fill, stroke, size, and angle.
-- `primitive.c`: retained primitive triangle topologies.
+- `primitive.c`: retained primitive line-list, line-strip, triangle-list, and triangle-strip topologies.
 - `segment.c`: independent retained line segments.
 - `vector.c`: retained straight and curved vectors.
 - `path.c`: retained continuous polylines and subpaths.
