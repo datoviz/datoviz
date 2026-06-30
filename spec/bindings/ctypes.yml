@@ -82,6 +82,9 @@ layout_records:
     - DvzAxisTickPolicy
     - DvzAxisTicks
     - DvzAxisStyle
+    - DvzCameraView
+    - DvzCameraProjection
+    - DvzCameraDesc
     - DvzTextItem
     - DvzTextLayout
     - DvzTextPlacement
@@ -228,27 +231,11 @@ skipped_functions:
     Keep this list synchronized with datoviz._ctypes._SKIPPED_FUNCTIONS.
   expected:
     - dvz_attachment_clear
-    - dvz_camera_desc
-    - dvz_camera_motion_desc
-    - dvz_camera_view
     - dvz_cmd_rendering_default
     - dvz_depth_cue_desc
     - dvz_device_config
     - dvz_field_geometry
-    - dvz_fly_desc
     - dvz_frame_plan_emit_config
-    - dvz_geometry_arrow_desc
-    - dvz_geometry_cone_desc
-    - dvz_geometry_cube_desc
-    - dvz_geometry_cylinder_desc
-    - dvz_geometry_disc_desc
-    - dvz_geometry_plane_desc
-    - dvz_geometry_regular_polygon_desc
-    - dvz_geometry_sector_desc
-    - dvz_geometry_sphere_desc
-    - dvz_geometry_star_desc
-    - dvz_geometry_surface_grid_desc
-    - dvz_geometry_torus_desc
     - dvz_gpu_ctx_config
     - dvz_material_desc
     - dvz_overlay_card_desc
@@ -263,10 +250,5 @@ skipped_functions:
     - dvz_surface_extent
     - dvz_surface_preferred_format
     - dvz_swapchain_extent
-    - dvz_track_circle2_desc
-    - dvz_track_circle3_desc
-    - dvz_track_rotation_desc
-    - dvz_transform_motion_desc
-    - dvz_turntable_desc
     - dvz_visual_transform_desc
     - dvz_window_external_surface_info

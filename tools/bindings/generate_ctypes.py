@@ -269,6 +269,14 @@ ANONYMOUS_FIELD_CTYPES = {
 
 ARRAY_RE = re.compile(r'^(?P<base>.+?)(?P<dims>(?:\[[0-9]+\])+)$')
 DIM_RE = re.compile(r'\[([0-9]+)\]')
+SUPPORTED_VECTOR_FIELD_ALIASES = {
+    'vec2',
+    'vec3',
+    'vec4',
+    'dvec2',
+    'dvec3',
+    'dvec4',
+}
 
 
 def _clean_type(qualtype: str) -> str:
@@ -410,6 +418,9 @@ def _ctype_for_type(
 
 
 def _unsupported_field_layout(type_info: dict) -> bool:
+    qualtype = _clean_type(type_info.get('qualtype', ''))
+    if qualtype in SUPPORTED_VECTOR_FIELD_ALIASES:
+        return False
     for spelling in (type_info.get('qualtype', ''), type_info.get('canonical', '')):
         t = _clean_type(spelling)
         if t.startswith(('vec', 'dvec', 'mat')):

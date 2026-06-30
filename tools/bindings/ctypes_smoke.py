@@ -140,6 +140,68 @@ def _check_query_result_layout(dvz) -> None:
     ]
 
 
+def _check_camera_layout_and_bounds(dvz) -> None:
+    assert [name for name, _ in dvz.DvzCameraView._fields_] == ['eye', 'target', 'up']
+    assert {'view', 'projection'}.issubset(
+        {name for name, _ in dvz.DvzCameraDesc._fields_}
+    )
+    assert hasattr(dvz, 'dvz_camera_view')
+    assert hasattr(dvz, 'dvz_camera_desc')
+    assert hasattr(dvz, 'dvz_camera_set_orthographic_bounds')
+
+    view = dvz.dvz_camera_view()
+    view.eye[0] = 1.0
+    view.eye[1] = 2.0
+    view.eye[2] = 3.0
+    view.target[2] = -1.0
+
+    desc = dvz.dvz_camera_desc()
+    assert desc.struct_size == ctypes.sizeof(dvz.DvzCameraDesc)
+    desc.view = view
+    desc.projection.type = dvz.DVZ_CAMERA_ORTHOGRAPHIC
+    desc.projection.near_clip = 0.1
+    desc.projection.far_clip = 100.0
+    desc.projection.ortho_height = 2.0
+
+    camera = dvz.dvz_camera_create(ctypes.byref(desc))
+    assert bool(camera)
+    try:
+        out = dvz.DvzCameraView()
+        dvz.dvz_camera_get_view(camera, ctypes.byref(out))
+        assert tuple(out.eye) == (1.0, 2.0, 3.0)
+        assert tuple(out.target) == (0.0, 0.0, -1.0)
+
+        assert (
+            dvz.dvz_camera_set_orthographic_bounds(
+                camera, 2.0, -2.0, -1.0, 3.0, 0.1, 100.0
+            )
+            == 0
+        )
+        left = ctypes.c_float()
+        right = ctypes.c_float()
+        bottom = ctypes.c_float()
+        top = ctypes.c_float()
+        near = ctypes.c_float()
+        far = ctypes.c_float()
+        assert (
+            dvz.dvz_camera_get_orthographic_bounds(
+                camera,
+                ctypes.byref(left),
+                ctypes.byref(right),
+                ctypes.byref(bottom),
+                ctypes.byref(top),
+                ctypes.byref(near),
+                ctypes.byref(far),
+            )
+            == 0
+        )
+        assert (left.value, right.value, bottom.value, top.value) == (2.0, -2.0, -1.0, 3.0)
+        assert abs(near.value - 0.1) < 1e-6
+        assert abs(far.value - 100.0) < 1e-6
+    finally:
+        dvz.dvz_camera_destroy(camera)
+
+
 def main() -> int:
     sys.path.insert(0, str(ROOT_DIR))
 
@@ -181,6 +243,7 @@ def main() -> int:
     assert t1 >= t0
 
     _check_query_result_layout(dvz)
+    _check_camera_layout_and_bounds(dvz)
     _run_gsp_query_smoke(dvz)
 
     calls: list[int | None] = []
