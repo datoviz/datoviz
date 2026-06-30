@@ -31,7 +31,7 @@ def _manifest_entries_by_id(manifest: dict[str, Any]) -> dict[str, dict[str, Any
 
 def _primary_fields(entry: dict[str, Any]) -> dict[str, str]:
     fields = {}
-    for key in ("primary_visual", "primary_feature", "primary_composite"):
+    for key in ("primary_visual", "primary_feature", "primary_runtime", "primary_composite"):
         if key in entry:
             fields[key] = str(entry[key])
     return fields

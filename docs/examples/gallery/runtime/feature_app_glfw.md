@@ -5,7 +5,7 @@
 <nav class="dvz-example-breadcrumbs" aria-label="Breadcrumbs">
 <a href="../../..">Examples</a>
 <span>/</span>
-<a href="../../../features">Features</a>
+<a href="../../../runtime">Runtime & Capture</a>
 <span>/</span>
 <span>GLFW App</span>
 </nav>
@@ -21,21 +21,21 @@ _Media pending._
 === "C"
 
     ```c
-    --8<-- "examples/c/features/app_glfw.c"
+    --8<-- "examples/c/runtime/app_glfw.c"
     ```
 
 ??? info "Example details"
 
     - ID: `feature_app_glfw`
-    - Category: `feature`
-    - Lane: `features`
+    - Category: `runtime`
+    - Lane: `runtime`
     - Status: `supported`
-    - Source: [`examples/c/features/app_glfw.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/app_glfw.c)
+    - Source: [`examples/c/runtime/app_glfw.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/app_glfw.c)
     - Agent copy-safe: `true`
     - WebGPU status: `native-only`
     - WebGPU requirements: `native-view`
-    - Build: `just example-c features/app_glfw`
-    - Smoke: `./build/examples/c/features/app_glfw --png`
+    - Build: `just example-c runtime/app_glfw`
+    - Smoke: `./build/examples/c/runtime/app_glfw --png`
     - Validation: `smoke+interaction`
 
     ### Data
@@ -51,9 +51,9 @@ _Media pending._
 <div class="dvz-example-nav__trail">
 <a href="../../..">Examples</a>
 <span>/</span>
-<a href="../../../features">Features</a>
+<a href="../../../runtime">Runtime & Capture</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_gui_cimgui">Previous: Raw cimgui GUI</a> · <a href="../feature_offscreen_capture">Next: Offscreen Capture</a>
+<a href="../feature_offscreen_capture">Next: Offscreen Capture</a>
 </div>
 </nav>

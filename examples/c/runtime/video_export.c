@@ -7,13 +7,13 @@
 /* video_export - portable scenario using the native runner's live/capture modes.
  *
  * Scenario: feature.video_export
- * Style: features, graphite_cyan, 1280x720 window target, 1920x1080 default output
+ * Style: runtime, graphite_cyan, 1280x720 window target, 1920x1080 default output
  *
- * Build:  just example-c features/video_export
- * Run:    ./build/examples/c/features/video_export
- * Live:   ./build/examples/c/features/video_export --live
- * Video:  ./build/examples/c/features/video_export
- * Hidden: ./build/examples/c/features/video_export --offscreen-record 120
+ * Build:  just example-c runtime/video_export
+ * Run:    ./build/examples/c/runtime/video_export
+ * Live:   ./build/examples/c/runtime/video_export --live
+ * Video:  ./build/examples/c/runtime/video_export
+ * Hidden: ./build/examples/c/runtime/video_export --offscreen-record 120
  */
 
 

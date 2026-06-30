@@ -65,7 +65,7 @@ records can stay post-RC1 unless the first adapter needs them.
 | Unified panel query API | `DvzQueryRequest`, `DvzQueryResult`, `dvz_panel_query()`, `dvz_scene_poll_query()`, `dvz_figure_process_queries()`, `dvz_panel_query_now()` | `include/datoviz/scene/interaction.h`, `include/datoviz/scene/types.h`, `src/scene/query/` | Public pick/probe split is gone. |
 | Query status vocabulary | `DvzQueryStatus` distinguishes hit, miss, outside, stale, unsupported, GPU, readback, decode failures | `include/datoviz/scene/enums.h` | Matches GSP readiness requirement. |
 | Broad GPU query implementation | point, pixel, marker, sphere, segment/path/stroke, primitive, mesh, image, labels, volume query files | `src/scene/query/`, `src/scene/visuals/*/query.c`, `src/scene/tests/query.c` | Several families are active; payload completeness varies. |
-| Offscreen raster capture | `dvz_view_offscreen()`, `dvz_view_render_once()`, `dvz_view_capture_png()` | `include/datoviz/app.h`, `src/app/app.c`, `examples/c/features/offscreen_capture.c` | PNG capture is sRGB RGBA8, matching current release policy. |
+| Offscreen raster capture | `dvz_view_offscreen()`, `dvz_view_render_once()`, `dvz_view_capture_png()` | `include/datoviz/app.h`, `src/app/app.c`, `examples/c/runtime/offscreen_capture.c` | PNG capture is sRGB RGBA8, matching current release policy. |
 | Raw ctypes generation | `datoviz.raw`, `tools/bindings/ctypes_smoke.py`, `tools/bindings/ctypes_render_smoke.py` | `spec/bindings/README.md`, `spec/bindings/ctypes.yml`, `testing/test_ctypes_raw_smoke.py` | Exact raw layer exists; GSP-specific smoke coverage should be added. |
 | WASM-friendly scene API policy | Opaque handles, POD descriptors/results, fixed-width ids/counts, backend-neutral scene headers | `spec/scene/api/WASM_PORTABILITY.md`, public scene headers | GSP work should follow the existing policy. |
 
@@ -191,7 +191,7 @@ Source and tests:
 | `testing/test_ctypes_raw_smoke.py` | raw ctypes smoke entry points |
 | `tools/bindings/ctypes_smoke.py` | generated raw import/layout smoke scope |
 | `tools/bindings/ctypes_render_smoke.py` | offscreen raw ctypes smoke path |
-| `examples/c/features/offscreen_capture.c` | public offscreen render/capture example |
+| `examples/c/runtime/offscreen_capture.c` | public offscreen render/capture example |
 | `examples/c/features/update_visual_data.c` | public partial visual update example |
 | `examples/c/visuals/*.c` | per-family public usage examples |
 

@@ -21,7 +21,7 @@ DEFAULT_IMAGE_DIR = ROOT / "data/gallery/v0.4"
 DEFAULT_IMAGE_URL_BASE = "/assets/gallery/v0.4"
 DEFAULT_IMAGE_FORMAT = "webp"
 SOURCE_BASE_URL = "https://github.com/datoviz/datoviz/blob/v0.4-dev"
-PUBLIC_LANES = ("start", "visuals", "features", "composites", "showcases", "advanced")
+PUBLIC_LANES = ("start", "visuals", "features", "runtime", "composites", "showcases", "advanced")
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
 PYTHON_SOURCE_BY_ID = {}
 
@@ -157,13 +157,22 @@ FEATURE_PAGE_GROUPS = (
         "feature_gui_viewport",
         "feature_gui_cimgui",
     ]),
-    ("App & I/O", [
-        "feature_app_glfw",
-        "feature_offscreen_capture",
+    ("Input & Diagnostics", [
         "feature_input_events",
-        "feature_record_replay",
         "feature_json_export",
+    ]),
+)
+
+RUNTIME_PAGE_GROUPS = (
+    ("Windows & Hosting", [
+        "feature_app_glfw",
+    ]),
+    ("Capture & Export", [
+        "feature_offscreen_capture",
         "feature_video_export",
+    ]),
+    ("Recording & Replay", [
+        "feature_record_replay",
     ]),
 )
 
@@ -208,6 +217,7 @@ INDEX_FEATURE_GROUPS = (
 CATEGORY_TO_LANE = {
     "visual": "visuals",
     "feature": "features",
+    "runtime": "runtime",
     "composite": "composites",
     "showcase": "showcases",
     "advanced": "advanced",
@@ -227,6 +237,14 @@ PAGE_CONFIG = {
         "intro": (
             "Browse low-level runtime, DRP2, and host-integration examples. "
             "These are not the preferred starting point for ordinary scene code."
+        ),
+    },
+    "runtime.md": {
+        "title": "Runtime & Capture",
+        "lanes": ("runtime",),
+        "intro": (
+            "Browse app lifecycle, native windowing, offscreen capture, recording, replay, "
+            "and media export examples."
         ),
     },
 }
@@ -407,6 +425,7 @@ def lane_title(lane: str) -> str:
     return {
         "visuals": "Visuals",
         "features": "Features",
+        "runtime": "Runtime & Capture",
         "workflows": "Workflows",
         "composites": "Composites",
         "showcases": "Showcases",
@@ -632,6 +651,7 @@ def lane_overview(lane: str) -> tuple[str, str]:
         "start": ("Examples", "index.md"),
         "visuals": ("Visuals & Composites", "visuals.md"),
         "features": ("Features", "features.md"),
+        "runtime": ("Runtime & Capture", "runtime.md"),
         "composites": ("Visuals & Composites", "visuals.md"),
         "showcases": ("Showcases", "showcases.md"),
         "advanced": ("Advanced Examples", "advanced.md"),
@@ -645,6 +665,19 @@ def ordered_lane_examples(examples: list[Example], lane: str) -> list[Example]:
         ordered: list[Example] = []
         seen: set[str] = set()
         for _, group_ids in FEATURE_PAGE_GROUPS:
+            for id_ in group_ids:
+                example = by_id.get(id_)
+                if example is not None and example.lane == lane:
+                    ordered.append(example)
+                    seen.add(id_)
+        ordered.extend(
+            sorted((e for e in lane_examples if e.id not in seen), key=lambda e: e.title.lower())
+        )
+        return ordered
+    if lane == "runtime":
+        ordered = []
+        seen: set[str] = set()
+        for _, group_ids in RUNTIME_PAGE_GROUPS:
             for id_ in group_ids:
                 example = by_id.get(id_)
                 if example is not None and example.lane == lane:
@@ -818,6 +851,7 @@ def render_index(
     visual_examples = by_lane["visuals"]
     composite_examples = by_lane["composites"]
     feature_examples = by_lane["features"]
+    runtime_examples = by_lane["runtime"]
     by_id = {e.id: e for e in examples}
     index_path = docs_dir / "index.md"
     page_path = docs_site_path(docs_dir, "index.md")
@@ -830,6 +864,7 @@ def render_index(
             f"{len(showcase_examples)} showcases, "
             f"{len(visual_examples) + len(composite_examples)} visuals and composites, "
             f"{len(feature_examples)} feature examples, "
+            f"{len(runtime_examples)} runtime examples, "
             f"and {len(by_lane['advanced'])} advanced examples.",
         )
     )
@@ -890,6 +925,27 @@ def render_index(
         ]
     )
 
+    # --- Runtime & Capture ---
+    lines.extend(["## Runtime & Capture", ""])
+    lines.extend(
+        [
+            "Selected app lifecycle, capture, recording, and export examples are shown below.",
+            "",
+        ]
+    )
+    for group_label, group_ids in RUNTIME_PAGE_GROUPS:
+        group_examples = [by_id[id_] for id_ in group_ids if id_ in by_id]
+        if not group_examples:
+            continue
+        lines.extend([f"#### {group_label}", ""])
+        lines.append('<div class="grid cards" markdown="1">')
+        lines.append("")
+        for example in group_examples:
+            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format, show_tags=False, show_status=False))
+        lines.append("</div>")
+        lines.append("")
+    lines.extend([f"[Browse all {len(runtime_examples)} runtime examples](runtime.md).", ""])
+
     write_text(index_path, "\n".join(lines))
 
 
@@ -945,7 +1001,7 @@ def render_features_page(
     lines = generated_header("Features")
     lines.extend(
         render_page_intro(
-            "Browse isolated examples for layout, navigation, adornments, rendering, interaction, animation, and I/O features.",
+            "Browse isolated examples for layout, navigation, adornments, rendering, interaction, animation, and diagnostics.",
             f"Coverage: {len(feature_examples)} feature examples ({status_counts(feature_examples)}).",
         )
     )
@@ -971,6 +1027,47 @@ def render_features_page(
         lines.append("</div>")
         lines.append("")
     write_text(docs_dir / "features.md", "\n".join(lines))
+
+
+def render_runtime_page(
+    examples: list[Example],
+    docs_dir: Path,
+    image_dir: Path,
+    image_url_base: str,
+    image_format: str = DEFAULT_IMAGE_FORMAT,
+) -> None:
+    runtime_examples = [e for e in examples if e.lane == "runtime"]
+    by_id = {e.id: e for e in examples}
+    page_path = docs_site_path(docs_dir, "runtime.md")
+    lines = generated_header("Runtime & Capture")
+    lines.extend(
+        render_page_intro(
+            "Browse app lifecycle, native windowing, offscreen capture, recording, replay, and media export examples.",
+            f"Coverage: {len(runtime_examples)} runtime examples ({status_counts(runtime_examples)}).",
+        )
+    )
+    grouped_ids = {id_ for _, ids in RUNTIME_PAGE_GROUPS for id_ in ids}
+    for group_label, group_ids in RUNTIME_PAGE_GROUPS:
+        group_examples = [by_id[i] for i in group_ids if i in by_id]
+        if not group_examples:
+            continue
+        lines.extend([f"## {group_label}", ""])
+        lines.append('<div class="grid cards" markdown="1">')
+        lines.append("")
+        for example in group_examples:
+            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+        lines.append("</div>")
+        lines.append("")
+    ungrouped = [e for e in runtime_examples if e.id not in grouped_ids]
+    if ungrouped:
+        lines.extend(["## Other", ""])
+        lines.append('<div class="grid cards" markdown="1">')
+        lines.append("")
+        for example in sorted(ungrouped, key=lambda e: e.title.lower()):
+            lines.append(render_card(example, page_path, image_dir, image_url_base, image_format))
+        lines.append("</div>")
+        lines.append("")
+    write_text(docs_dir / "runtime.md", "\n".join(lines))
 
 
 def render_validation(examples: list[Example], docs_dir: Path) -> None:
@@ -1123,6 +1220,7 @@ def main() -> int:
         )
     render_visuals_page(examples, args.docs_dir, args.image_dir, args.image_url_base, args.image_format)
     render_features_page(examples, args.docs_dir, args.image_dir, args.image_url_base, args.image_format)
+    render_runtime_page(examples, args.docs_dir, args.image_dir, args.image_url_base, args.image_format)
     render_validation(examples, args.docs_dir)
     render_webgpu_matrix(examples, args.docs_dir)
     neighbors = example_neighbors(examples)

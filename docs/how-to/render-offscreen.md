@@ -2,8 +2,6 @@
 
 Render without opening a window, then save a PNG.
 
-![Offscreen Capture](../assets/gallery/v0.4/features/feature_offscreen_capture.webp)
-
 ## Task Workflow
 
 Use the normal scene, figure, panel, and visual setup. At the view step, create an offscreen view
@@ -39,12 +37,12 @@ submitted frame; `dvz_view_capture_png()` writes the previous rendered framebuff
 ## Static Captures
 
 For static scenes, one call to `dvz_view_render_once()` is enough. This is the path used by
-`examples/c/features/offscreen_capture.c`: build the retained scene, create an offscreen view,
+`examples/c/runtime/offscreen_capture.c`: build the retained scene, create an offscreen view,
 verify the framebuffer dimensions, render once, and write the PNG.
 
 ```sh
-just example-c features/offscreen_capture
-./build/examples/c/features/offscreen_capture
+just example-c runtime/offscreen_capture
+./build/examples/c/runtime/offscreen_capture
 ```
 
 The example writes `offscreen_capture.png` next to the executable and reports the exact pixel size.
@@ -105,5 +103,5 @@ but it can still fail on machines without a usable Vulkan backend or required de
 
 ??? example "Related examples"
 
-    - [Offscreen Capture](../examples/gallery/features/feature_offscreen_capture.md) - Source: `examples/c/features/offscreen_capture.c`
+    - [Offscreen Capture](../examples/gallery/runtime/feature_offscreen_capture.md) - Source: `examples/c/runtime/offscreen_capture.c`
     - [Basic Scene](../examples/gallery/features/feature_basic_scene.md) - Source: `examples/c/features/basic_scene.c`

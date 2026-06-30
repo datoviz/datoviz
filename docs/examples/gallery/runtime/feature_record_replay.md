@@ -5,7 +5,7 @@
 <nav class="dvz-example-breadcrumbs" aria-label="Breadcrumbs">
 <a href="../../..">Examples</a>
 <span>/</span>
-<a href="../../../features">Features</a>
+<a href="../../../runtime">Runtime & Capture</a>
 <span>/</span>
 <span>Record Replay</span>
 </nav>
@@ -21,21 +21,21 @@ _Media pending._
 === "C"
 
     ```c
-    --8<-- "examples/c/features/record_replay.c"
+    --8<-- "examples/c/runtime/record_replay.c"
     ```
 
 ??? info "Example details"
 
     - ID: `feature_record_replay`
-    - Category: `feature`
-    - Lane: `features`
+    - Category: `runtime`
+    - Lane: `runtime`
     - Status: `experimental`
-    - Source: [`examples/c/features/record_replay.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/record_replay.c)
+    - Source: [`examples/c/runtime/record_replay.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/record_replay.c)
     - Agent copy-safe: `false`
     - WebGPU status: `native-only`
     - WebGPU requirements: `native-capture`
-    - Build: `just example-c features/record_replay`
-    - Smoke: `./build/examples/c/features/record_replay --png`
+    - Build: `just example-c runtime/record_replay`
+    - Smoke: `./build/examples/c/runtime/record_replay --png`
     - Validation: `smoke+capture`
 
     ### Data
@@ -51,9 +51,9 @@ _Media pending._
 <div class="dvz-example-nav__trail">
 <a href="../../..">Examples</a>
 <span>/</span>
-<a href="../../../features">Features</a>
+<a href="../../../runtime">Runtime & Capture</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_input_events">Previous: Input Events</a> · <a href="../feature_json_export">Next: JSON Export</a>
+<a href="../feature_video_export">Previous: Video Export</a>
 </div>
 </nav>

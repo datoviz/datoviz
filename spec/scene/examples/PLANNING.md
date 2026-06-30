@@ -157,26 +157,28 @@ The main remaining polish, promotion, or feature gaps are:
 
 ## v0.4 Short Feature Coverage Queue
 
-Every public v0.4 feature should have one short C example in `examples/c/features/`, even when a
-showcase or workflow already composes the same feature. These are copy-safe API proofs first and
-gallery material second. Keep each file narrow: one feature, deterministic data, no unrelated GUI or
-domain polish, and smoke/screenshot validation once runnable.
+Every public v0.4 scene feature should have one short C example in `examples/c/features/`, even
+when a showcase or workflow already composes the same feature. Runtime hosting, capture, recording,
+and export examples live in `examples/c/runtime/`. These are copy-safe API proofs first and gallery
+material second. Keep each file narrow: one feature or runtime path, deterministic data, no
+unrelated GUI or domain polish, and smoke/screenshot validation once runnable.
 
 Focused examples now cover the first release slice of retained scenes, panels, axes, sampled fields,
 text, overlays, panzoom/arcball/fly/turntable/orbit controllers, textured/material mesh, lighting,
 GUI controls/viewports/raw cimgui, retained visual updates/transforms, visibility,
 picking/probing/selection, animation through scenario frames and retained tracks, marker symbols,
 color scales, colorbars, scale bars, alpha/depth toggles, EDL, SSAO, MSAA, depth cue,
-transparency ordering, volume occlusion, panel backgrounds, guide lines/spans, bars/bands, direct
-GLFW app, offscreen capture, input events, record/replay, scene JSON, external surface diagnostics,
-categorical legends, Bezier paths, and video export. Future broad coverage gaps should stay here
-only until the source file exists, then move into `examples/c/MANIFEST.yaml` with concrete metadata.
+transparency ordering, volume occlusion, panel backgrounds, guide lines/spans, bars/bands, input
+events, scene JSON, external surface diagnostics, categorical legends, and Bezier paths. Runtime
+examples cover direct GLFW app hosting, offscreen capture, record/replay, and video export. Future
+broad coverage gaps should stay here only until the source file exists, then move into
+`examples/c/MANIFEST.yaml` with concrete metadata.
 
 Tentative examples now exist for `examples/c/features/legend_categorical.c` and
-`examples/c/features/video_export.c`. `video_export.c` is the first native scenario-runner proof for
-live, live-record, and offscreen-record modes. Keep both experimental/conditional until categorical
-legends, video capture, and runner-backed examples are explicitly included in the public v0.4 API.
-The staged scenario-runner migration order lives in
+`examples/c/runtime/video_export.c`. `video_export.c` is the first native scenario-runner proof for
+live, live-record, and offscreen-record modes. Keep the legend feature and runtime video capture
+experimental/conditional until categorical legends, video capture, and runner-backed examples are
+explicitly included in the public v0.4 API. The staged scenario-runner migration order lives in
 [`PORTABLE_SCENARIO_RUNNER.md`](PORTABLE_SCENARIO_RUNNER.md).
 
 

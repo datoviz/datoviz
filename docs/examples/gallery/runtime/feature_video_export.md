@@ -5,7 +5,7 @@
 <nav class="dvz-example-breadcrumbs" aria-label="Breadcrumbs">
 <a href="../../..">Examples</a>
 <span>/</span>
-<a href="../../../features">Features</a>
+<a href="../../../runtime">Runtime & Capture</a>
 <span>/</span>
 <span>Video Export</span>
 </nav>
@@ -21,21 +21,21 @@ _Media pending._
 === "C"
 
     ```c
-    --8<-- "examples/c/features/video_export.c"
+    --8<-- "examples/c/runtime/video_export.c"
     ```
 
 ??? info "Example details"
 
     - ID: `feature_video_export`
-    - Category: `feature`
-    - Lane: `features`
+    - Category: `runtime`
+    - Lane: `runtime`
     - Status: `experimental`
-    - Source: [`examples/c/features/video_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/video_export.c)
+    - Source: [`examples/c/runtime/video_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/video_export.c)
     - Agent copy-safe: `false`
     - WebGPU status: `native-only`
     - WebGPU requirements: `point`, `frame-callbacks`, `native-capture`
-    - Build: `just example-c features/video_export`
-    - Smoke: `./build/examples/c/features/video_export --png`
+    - Build: `just example-c runtime/video_export`
+    - Smoke: `./build/examples/c/runtime/video_export --png`
     - Validation: `smoke+optional-video`
 
     ### Tags
@@ -55,9 +55,9 @@ _Media pending._
 <div class="dvz-example-nav__trail">
 <a href="../../..">Examples</a>
 <span>/</span>
-<a href="../../../features">Features</a>
+<a href="../../../runtime">Runtime & Capture</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_json_export">Previous: JSON Export</a>
+<a href="../feature_offscreen_capture">Previous: Offscreen Capture</a> · <a href="../feature_record_replay">Next: Record Replay</a>
 </div>
 </nav>

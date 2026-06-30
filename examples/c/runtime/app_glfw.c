@@ -7,10 +7,10 @@
 /* app_glfw - direct GLFW app path without the scenario runner.
  *
  * Scenario: feature.app_glfw
- * Style: features, native app
+ * Style: runtime, native app
  *
- * Build:  just example-c features/app_glfw
- * Run:    ./build/examples/c/features/app_glfw
+ * Build:  just example-c runtime/app_glfw
+ * Run:    ./build/examples/c/runtime/app_glfw
  */
 
 

@@ -61,6 +61,7 @@ def build_payload(manifest_path: Path) -> dict[str, Any]:
     capabilities: dict[str, dict[str, list[dict[str, Any]]]] = {
         "visuals": defaultdict(list),
         "features": defaultdict(list),
+        "runtime": defaultdict(list),
         "composites": defaultdict(list),
         "tags": defaultdict(list),
         "data_kinds": defaultdict(list),
@@ -71,6 +72,8 @@ def build_payload(manifest_path: Path) -> dict[str, Any]:
             _append_capability(capabilities, "visuals", example["primary_visual"], example)
         if "primary_feature" in example:
             _append_capability(capabilities, "features", example["primary_feature"], example)
+        if "primary_runtime" in example:
+            _append_capability(capabilities, "runtime", example["primary_runtime"], example)
         if "primary_composite" in example:
             _append_capability(capabilities, "composites", example["primary_composite"], example)
         for tag in example.get("tags", []):

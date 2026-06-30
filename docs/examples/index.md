@@ -4,7 +4,7 @@
 
 Browse the generated Datoviz v0.4 example gallery.
 
-Coverage: 15 showcases, 17 visuals and composites, 70 feature examples, and 3 advanced examples.
+Coverage: 15 showcases, 17 visuals and composites, 66 feature examples, 4 runtime examples, and 3 advanced examples.
 
 Each card links to a detail page with preview media, source code, and validation metadata.
 
@@ -634,4 +634,68 @@ retained sphere hover and click selection.
 
 </div>
 
-[Browse all 70 feature examples](features.md) — controllers, adornments, interaction, animation, rendering, and more.
+[Browse all 66 feature examples](features.md) — controllers, adornments, interaction, animation, rendering, and more.
+
+## Runtime & Capture
+
+Selected app lifecycle, capture, recording, and export examples are shown below.
+
+#### Windows & Hosting
+
+<div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
+### [GLFW App](gallery/runtime/feature_app_glfw.md)
+
+_Media pending._
+
+direct GLFW app path without the scenario runner.
+
+</div>
+
+</div>
+
+#### Capture & Export
+
+<div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
+### [Offscreen Capture](gallery/runtime/feature_offscreen_capture.md)
+
+_Media pending._
+
+render an exact-pixel offscreen view once and write a PNG.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Video Export](gallery/runtime/feature_video_export.md)
+
+_Media pending._
+
+portable scenario using the native runner's live/capture modes.
+
+</div>
+
+</div>
+
+#### Recording & Replay
+
+<div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
+### [Record Replay](gallery/runtime/feature_record_replay.md)
+
+_Media pending._
+
+record an offscreen app view and replay it into a second offscreen view.
+
+</div>
+
+</div>
+
+[Browse all 4 runtime examples](runtime.md).

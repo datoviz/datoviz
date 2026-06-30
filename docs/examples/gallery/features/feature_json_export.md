@@ -54,6 +54,6 @@ _Media pending._
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_record_replay">Previous: Record Replay</a> · <a href="../feature_video_export">Next: Video Export</a>
+<a href="../feature_input_events">Previous: Input Events</a>
 </div>
 </nav>

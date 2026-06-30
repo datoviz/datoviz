@@ -1,8 +1,9 @@
 # C Feature Examples
 
-Scene and app capabilities belong here: panels, axes, colorbars, scale bars, annotations, overlays,
+Scene capabilities belong here: panels, axes, colorbars, scale bars, annotations, overlays,
 controllers, sampled fields, picking, probing, selection, retained updates, and rendering
-techniques.
+techniques. App lifecycle, capture, recording, replay, and media export examples live in
+`../runtime/`.
 
 - `axes_2d.c`: retained numeric axes and tick labels.
 - `coordinate_system.c`: interactive 3D RGB-axis proof with an orbit camera and reference grid.
@@ -31,10 +32,7 @@ techniques.
 - `guide_lines.c`: retained horizontal and vertical guide lines with updates.
 - `guide_spans.c`: retained interval guide spans with fill and outline styling.
 - `bars_bands.c`: retained bars and uncertainty band plot helpers.
-- `app_glfw.c`: direct GLFW app/view lifecycle without the scenario runner.
-- `offscreen_capture.c`: direct offscreen render-once PNG capture.
 - `input_events.c`: native input event injection independent of picking/controllers.
-- `record_replay.c`: experimental DVZR app recording and live replay.
 - `visual_transform.c`: retained visual-local transform set/get/clear proof.
 - `panel_view2d.c`: explicit panel 2D view framing and reserved plot layout.
 - `json_export.c`: experimental scene JSON serialization diagnostic.
@@ -65,7 +63,7 @@ techniques.
 - `update_visual_data.c`: retained point visual with full data replacement.
 - `visibility.c`: retained visual visibility toggled before rendering.
 - `legend_categorical.c`: tentative retained categorical legend attached to a panel.
-- `video_export.c`: tentative runner-backed live, live-record, and offscreen-record modes.
 
-Tentative: keep `legend_categorical.c` and `video_export.c` experimental until categorical legends
-and video capture are explicitly promoted into the public v0.4 surface.
+Tentative: keep `legend_categorical.c` experimental until categorical legends are explicitly
+promoted into the public v0.4 surface. Keep runtime video capture experimental in
+`../runtime/video_export.c` until video export is explicitly promoted.

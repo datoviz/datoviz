@@ -25,7 +25,7 @@ DEFAULT_MANIFEST = ROOT / "examples/c/MANIFEST.yaml"
 DEFAULT_BUILD_DIR = ROOT / "build"
 DEFAULT_IMAGE_DIR = ROOT / "data/gallery/v0.4"
 DEFAULT_CACHE_DIR = ROOT / "build/gallery-cache/native"
-PUBLIC_LANES = ("start", "visuals", "features", "composites", "showcases")
+PUBLIC_LANES = ("start", "visuals", "features", "runtime", "composites", "showcases")
 GLOBAL_FINGERPRINT_PATHS = (
     ROOT / "CMakeLists.txt",
     ROOT / "examples/c/CMakeLists.txt",
@@ -44,6 +44,7 @@ SHARED_EXAMPLE_PATHS = (
 CATEGORY_TO_LANE = {
     "visual": "visuals",
     "feature": "features",
+    "runtime": "runtime",
     "composite": "composites",
     "showcase": "showcases",
 }
@@ -230,7 +231,7 @@ def parse_args() -> argparse.Namespace:
         "--lane",
         action="append",
         default=[],
-        help="gallery lane such as visuals, features, composites, or showcases",
+        help="gallery lane such as visuals, features, runtime, composites, or showcases",
     )
     parser.add_argument(
         "--landing",

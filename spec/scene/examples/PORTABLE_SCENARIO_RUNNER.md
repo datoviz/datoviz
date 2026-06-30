@@ -591,8 +591,10 @@ examples/c/runner/
   scenario_runner.c
   scenario_cli.c
 
-examples/c/features/
+examples/c/runtime/
   video_export.c       # first runner-backed native executable
+
+examples/c/features/
   timer_animation.c    # candidate scenario migration
   basic_scene.c        # candidate static scenario migration
 ```
@@ -602,11 +604,14 @@ entry points:
 
 ```text
 examples/scenarios/
-  features/video_export_scenario.c
+  runtime/video_export_scenario.c
   features/timer_animation_scenario.c
 
-examples/c/features/
+examples/c/runtime/
   video_export.c       # native main only
+
+examples/c/features/
+  timer_animation.c    # native main only
 
 examples/wasm/
   scenario_host.c

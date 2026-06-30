@@ -14,8 +14,8 @@ Status values:
 | Visible capability | Disposition | v0.4 route | Notes |
 | --- | --- | --- | --- |
 | Retained scene, figure, panel, and visual workflow | fixed | `dvz_scene()`, `dvz_figure()`, panels, retained visuals | The API is redesigned; parity is behavioral, not source-compatible. |
-| Native GLFW/app presentation | fixed | App/view runtime and `examples/c/features/app_glfw.c` | Datoviz-owned presentation remains in the runtime foundation. |
-| Offscreen rendering and PNG/screenshot capture | fixed | `DvzView`/canvas capture and `examples/c/features/offscreen_capture.c` | v0.4 capture contract is sRGB RGBA8. Linear `f16`/`f32` scientific readback is deferred. |
+| Native GLFW/app presentation | fixed | App/view runtime and `examples/c/runtime/app_glfw.c` | Datoviz-owned presentation remains in the runtime foundation. |
+| Offscreen rendering and PNG/screenshot capture | fixed | `DvzView`/canvas capture and `examples/c/runtime/offscreen_capture.c` | v0.4 capture contract is sRGB RGBA8. Linear `f16`/`f32` scientific readback is deferred. |
 | Frame callbacks and timer animation | fixed | callback/timer examples and portable scenario frame callbacks | Browser/WASM support is limited to the promoted experimental subset. |
 | Multi-panel figures, linked panels, and panel backgrounds | fixed | panel grid/multi/link/background examples | Dense dashboards and high-level layout authoring remain above the core renderer. |
 | Panzoom controller | fixed | `dvz_panzoom()` and panzoom examples | Native path is supported; WebGPU follows the promoted live-route subset. |

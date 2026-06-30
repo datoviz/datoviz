@@ -6,7 +6,8 @@
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 70,
+    "feature": 66,
+    "runtime": 4,
     "showcase": 15,
     "start": 1,
     "visual": 15
@@ -770,44 +771,44 @@
     {
       "id": "feature_app_glfw",
       "title": "GLFW App",
-      "category": "feature",
-      "lane": "features",
+      "category": "runtime",
+      "lane": "runtime",
       "stage": "v0.4_required",
       "status": "supported",
-      "source": "examples/c/features/app_glfw.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/app_glfw.c",
-      "page": "gallery/features/feature_app_glfw.md",
+      "source": "examples/c/runtime/app_glfw.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/app_glfw.c",
+      "page": "gallery/runtime/feature_app_glfw.md",
       "summary": "direct GLFW app path without the scenario runner.",
       "validation": "smoke+interaction",
-      "build_command": "just example-c features/app_glfw",
-      "smoke_command": "./build/examples/c/features/app_glfw --png",
+      "build_command": "just example-c runtime/app_glfw",
+      "smoke_command": "./build/examples/c/runtime/app_glfw --png",
       "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
       },
-      "primary_feature": "app-glfw"
+      "primary_runtime": "app-glfw"
     },
     {
       "id": "feature_offscreen_capture",
       "title": "Offscreen Capture",
-      "category": "feature",
-      "lane": "features",
+      "category": "runtime",
+      "lane": "runtime",
       "stage": "v0.4_required",
       "status": "supported",
-      "source": "examples/c/features/offscreen_capture.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/offscreen_capture.c",
-      "page": "gallery/features/feature_offscreen_capture.md",
+      "source": "examples/c/runtime/offscreen_capture.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/offscreen_capture.c",
+      "page": "gallery/runtime/feature_offscreen_capture.md",
       "summary": "render an exact-pixel offscreen view once and write a PNG.",
       "validation": "smoke+screenshot",
-      "build_command": "just example-c features/offscreen_capture",
-      "smoke_command": "./build/examples/c/features/offscreen_capture --png",
+      "build_command": "just example-c runtime/offscreen_capture",
+      "smoke_command": "./build/examples/c/runtime/offscreen_capture --png",
       "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
       },
-      "primary_feature": "offscreen-capture"
+      "primary_runtime": "offscreen-capture"
     },
     {
       "id": "feature_input_events",
@@ -833,23 +834,23 @@
     {
       "id": "feature_record_replay",
       "title": "Record Replay",
-      "category": "feature",
-      "lane": "features",
+      "category": "runtime",
+      "lane": "runtime",
       "stage": "v0.4_experimental",
       "status": "experimental",
-      "source": "examples/c/features/record_replay.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/record_replay.c",
-      "page": "gallery/features/feature_record_replay.md",
+      "source": "examples/c/runtime/record_replay.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/record_replay.c",
+      "page": "gallery/runtime/feature_record_replay.md",
       "summary": "record an offscreen app view and replay it into a second offscreen view.",
       "validation": "smoke+capture",
-      "build_command": "just example-c features/record_replay",
-      "smoke_command": "./build/examples/c/features/record_replay --png",
+      "build_command": "just example-c runtime/record_replay",
+      "smoke_command": "./build/examples/c/runtime/record_replay --png",
       "agent_copy_safe": false,
       "tags": [],
       "data": {
         "kind": "synthetic"
       },
-      "primary_feature": "record-replay"
+      "primary_runtime": "record-replay"
     },
     {
       "id": "feature_visual_transform",
@@ -1607,17 +1608,17 @@
     {
       "id": "feature_video_export",
       "title": "Video Export",
-      "category": "feature",
-      "lane": "features",
+      "category": "runtime",
+      "lane": "runtime",
       "stage": "v0.4_experimental",
       "status": "experimental",
-      "source": "examples/c/features/video_export.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/video_export.c",
-      "page": "gallery/features/feature_video_export.md",
+      "source": "examples/c/runtime/video_export.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/video_export.c",
+      "page": "gallery/runtime/feature_video_export.md",
       "summary": "portable scenario using the native runner's live/capture modes.",
       "validation": "smoke+optional-video",
-      "build_command": "just example-c features/video_export",
-      "smoke_command": "./build/examples/c/features/video_export --png",
+      "build_command": "just example-c runtime/video_export",
+      "smoke_command": "./build/examples/c/runtime/video_export --png",
       "agent_copy_safe": false,
       "tags": [
         "app-capture",
@@ -1628,7 +1629,7 @@
       "data": {
         "kind": "synthetic"
       },
-      "primary_feature": "video-export"
+      "primary_runtime": "video-export"
     },
     {
       "id": "point_2d",

@@ -8,14 +8,16 @@ source_of_truth:
 taxonomy:
   target_public_categories:
     visuals: one public visual family per example
-    features: one isolated feature or rendering technique per example
+    features: one isolated scene feature or rendering technique per example
+    runtime: app lifecycle, native windowing, offscreen capture, recording, and export examples
     composites: one semantic object that lowers to one or more visuals per example
     showcases: composed workflows, scientific stories, real-data examples, and polished demos
     advanced: low-level runtime, DRP2, and host-integration examples
   schema:
-    category: visual | feature | composite | showcase | advanced
+    category: visual | feature | runtime | composite | showcase | advanced
     primary_visual: required for visual examples
     primary_feature: required for feature examples
+    primary_runtime: required for runtime examples
     primary_composite: required for composite examples
     tags: searchable labels for docs, agents, and gallery filters
     data.kind: synthetic | simulated | real | prepared
@@ -40,6 +42,7 @@ folders:
   public:
     - examples/c/start
     - examples/c/features
+    - examples/c/runtime
     - examples/c/visuals
     - examples/c/composites
     - examples/c/showcases
@@ -912,10 +915,10 @@ examples:
   - id: feature_app_glfw
     title: GLFW App
     stage: v0.4_required
-    category: feature
-    primary_feature: app-glfw
-    lane: features
-    source: examples/c/features/app_glfw.c
+    category: runtime
+    primary_runtime: app-glfw
+    lane: runtime
+    source: examples/c/runtime/app_glfw.c
     validation: smoke+interaction
     data:
       kind: synthetic
@@ -930,10 +933,10 @@ examples:
   - id: feature_offscreen_capture
     title: Offscreen Capture
     stage: v0.4_required
-    category: feature
-    primary_feature: offscreen-capture
-    lane: features
-    source: examples/c/features/offscreen_capture.c
+    category: runtime
+    primary_runtime: offscreen-capture
+    lane: runtime
+    source: examples/c/runtime/offscreen_capture.c
     validation: smoke+screenshot
     capture:
       mode: custom
@@ -971,10 +974,10 @@ examples:
   - id: feature_record_replay
     title: Record Replay
     stage: v0.4_experimental
-    category: feature
-    primary_feature: record-replay
-    lane: features
-    source: examples/c/features/record_replay.c
+    category: runtime
+    primary_runtime: record-replay
+    lane: runtime
+    source: examples/c/runtime/record_replay.c
     validation: smoke+capture
     data:
       kind: synthetic
@@ -1698,10 +1701,10 @@ examples:
   - id: feature_video_export
     title: Video Export
     stage: v0.4_experimental
-    category: feature
-    primary_feature: video-export
-    lane: features
-    source: examples/c/features/video_export.c
+    category: runtime
+    primary_runtime: video-export
+    lane: runtime
+    source: examples/c/runtime/video_export.c
     validation: smoke+optional-video
     data:
       kind: synthetic

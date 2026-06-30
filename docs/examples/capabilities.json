@@ -7,7 +7,8 @@
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 70,
+    "feature": 66,
+    "runtime": 4,
     "showcase": 15,
     "start": 1,
     "visual": 15
@@ -476,20 +477,20 @@
           {
             "id": "feature_app_glfw",
             "title": "GLFW App",
-            "category": "feature",
+            "category": "runtime",
             "status": "supported",
             "agent_copy_safe": true,
-            "source": "examples/c/features/app_glfw.c",
-            "page": "gallery/features/feature_app_glfw.md"
+            "source": "examples/c/runtime/app_glfw.c",
+            "page": "gallery/runtime/feature_app_glfw.md"
           },
           {
             "id": "feature_offscreen_capture",
             "title": "Offscreen Capture",
-            "category": "feature",
+            "category": "runtime",
             "status": "supported",
             "agent_copy_safe": true,
-            "source": "examples/c/features/offscreen_capture.c",
-            "page": "gallery/features/feature_offscreen_capture.md"
+            "source": "examples/c/runtime/offscreen_capture.c",
+            "page": "gallery/runtime/feature_offscreen_capture.md"
           },
           {
             "id": "feature_input_events",
@@ -503,11 +504,11 @@
           {
             "id": "feature_record_replay",
             "title": "Record Replay",
-            "category": "feature",
+            "category": "runtime",
             "status": "experimental",
             "agent_copy_safe": false,
-            "source": "examples/c/features/record_replay.c",
-            "page": "gallery/features/feature_record_replay.md"
+            "source": "examples/c/runtime/record_replay.c",
+            "page": "gallery/runtime/feature_record_replay.md"
           },
           {
             "id": "feature_visual_transform",
@@ -818,11 +819,11 @@
           {
             "id": "feature_video_export",
             "title": "Video Export",
-            "category": "feature",
+            "category": "runtime",
             "status": "experimental",
             "agent_copy_safe": false,
-            "source": "examples/c/features/video_export.c",
-            "page": "gallery/features/feature_video_export.md"
+            "source": "examples/c/runtime/video_export.c",
+            "page": "gallery/runtime/feature_video_export.md"
           },
           {
             "id": "point_2d",
@@ -1074,20 +1075,6 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/annotation_readout.c",
             "page": "gallery/features/annotation_readout.md"
-          }
-        ]
-      },
-      "app-glfw": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_app_glfw",
-            "title": "GLFW App",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/app_glfw.c",
-            "page": "gallery/features/feature_app_glfw.md"
           }
         ]
       },
@@ -1567,20 +1554,6 @@
           }
         ]
       },
-      "offscreen-capture": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_offscreen_capture",
-            "title": "Offscreen Capture",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/offscreen_capture.c",
-            "page": "gallery/features/feature_offscreen_capture.md"
-          }
-        ]
-      },
       "orientation-gizmo": {
         "count": 1,
         "examples": [
@@ -1704,20 +1677,6 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/probe_labels.c",
             "page": "gallery/features/feature_probe_labels.md"
-          }
-        ]
-      },
-      "record-replay": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_record_replay",
-            "title": "Record Replay",
-            "category": "feature",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/features/record_replay.c",
-            "page": "gallery/features/feature_record_replay.md"
           }
         ]
       },
@@ -1959,20 +1918,6 @@
           }
         ]
       },
-      "video-export": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_video_export",
-            "title": "Video Export",
-            "category": "feature",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/features/video_export.c",
-            "page": "gallery/features/feature_video_export.md"
-          }
-        ]
-      },
       "visibility": {
         "count": 1,
         "examples": [
@@ -2012,6 +1957,64 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/volume_occlusion.c",
             "page": "gallery/features/feature_volume_occlusion.md"
+          }
+        ]
+      }
+    },
+    "runtime": {
+      "app-glfw": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_app_glfw",
+            "title": "GLFW App",
+            "category": "runtime",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/runtime/app_glfw.c",
+            "page": "gallery/runtime/feature_app_glfw.md"
+          }
+        ]
+      },
+      "offscreen-capture": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_offscreen_capture",
+            "title": "Offscreen Capture",
+            "category": "runtime",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/runtime/offscreen_capture.c",
+            "page": "gallery/runtime/feature_offscreen_capture.md"
+          }
+        ]
+      },
+      "record-replay": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_record_replay",
+            "title": "Record Replay",
+            "category": "runtime",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/runtime/record_replay.c",
+            "page": "gallery/runtime/feature_record_replay.md"
+          }
+        ]
+      },
+      "video-export": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_video_export",
+            "title": "Video Export",
+            "category": "runtime",
+            "status": "experimental",
+            "agent_copy_safe": false,
+            "source": "examples/c/runtime/video_export.c",
+            "page": "gallery/runtime/feature_video_export.md"
           }
         ]
       }
@@ -2069,11 +2072,11 @@
           {
             "id": "feature_video_export",
             "title": "Video Export",
-            "category": "feature",
+            "category": "runtime",
             "status": "experimental",
             "agent_copy_safe": false,
-            "source": "examples/c/features/video_export.c",
-            "page": "gallery/features/feature_video_export.md"
+            "source": "examples/c/runtime/video_export.c",
+            "page": "gallery/runtime/feature_video_export.md"
           },
           {
             "id": "showcase_synthetic_mouse",
@@ -2092,11 +2095,11 @@
           {
             "id": "feature_video_export",
             "title": "Video Export",
-            "category": "feature",
+            "category": "runtime",
             "status": "experimental",
             "agent_copy_safe": false,
-            "source": "examples/c/features/video_export.c",
-            "page": "gallery/features/feature_video_export.md"
+            "source": "examples/c/runtime/video_export.c",
+            "page": "gallery/runtime/feature_video_export.md"
           }
         ]
       },
@@ -3659,11 +3662,11 @@
           {
             "id": "feature_video_export",
             "title": "Video Export",
-            "category": "feature",
+            "category": "runtime",
             "status": "experimental",
             "agent_copy_safe": false,
-            "source": "examples/c/features/video_export.c",
-            "page": "gallery/features/feature_video_export.md"
+            "source": "examples/c/runtime/video_export.c",
+            "page": "gallery/runtime/feature_video_export.md"
           }
         ]
       },
@@ -4144,11 +4147,11 @@
           {
             "id": "feature_video_export",
             "title": "Video Export",
-            "category": "feature",
+            "category": "runtime",
             "status": "experimental",
             "agent_copy_safe": false,
-            "source": "examples/c/features/video_export.c",
-            "page": "gallery/features/feature_video_export.md"
+            "source": "examples/c/runtime/video_export.c",
+            "page": "gallery/runtime/feature_video_export.md"
           },
           {
             "id": "showcase_lipid_brain_atlas",

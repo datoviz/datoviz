@@ -69,8 +69,8 @@ creation fails, or the GPU/runtime cannot be initialized. In automated environme
 
 ## Canonical Examples
 
-- [GLFW App](../examples/gallery/features/feature_app_glfw.md) - direct GLFW app lifecycle without
-  the scenario runner. Source: `examples/c/features/app_glfw.c`.
+- [GLFW App](../examples/gallery/runtime/feature_app_glfw.md) - direct GLFW app lifecycle without
+  the scenario runner. Source: `examples/c/runtime/app_glfw.c`.
 - [Panzoom](../examples/gallery/features/feature_panzoom.md) - 2D controller interaction. Source:
   `examples/c/features/panzoom.c`.
 - [Input Events](../examples/gallery/features/feature_input_events.md) - native input callback

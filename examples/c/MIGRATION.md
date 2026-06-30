@@ -60,7 +60,7 @@ source material.
 | `feature_timer_animation` | `features/timer_animation.c` | Feature proof. |
 | `feature_marker_symbols` | `features/marker_symbols.c` | Feature proof. |
 | `feature_legend_categorical` | `features/legend_categorical.c` | Experimental feature proof. |
-| `feature_video_export` | `features/video_export.c` | Experimental feature proof. |
+| `feature_video_export` | `runtime/video_export.c` | Experimental runtime proof. |
 | `linked_panels_probe_colorbar` | `showcases/linked_probe_colorbar.c` | Workflow showcase proof. |
 | `composite_polygon` | `composites/polygon.c` | Composite proof. |
 | `composite_graph` | `composites/graph.c` | Composite proof. |
@@ -105,7 +105,7 @@ Target public taxonomy:
 
 ```text
 examples/c/visuals/    one public visual family per file
-examples/c/features/   one isolated feature or technique per file
+examples/c/features/   one isolated scene feature or technique per file
 examples/c/composites/ one semantic object that lowers to visual roles per file
 examples/c/showcases/  composed workflows, scientific stories, real-data examples, and demos
 ```

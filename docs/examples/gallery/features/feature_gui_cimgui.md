@@ -54,6 +54,6 @@ _Media pending._
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_gui_viewport">Previous: GUI Viewport</a> · <a href="../feature_app_glfw">Next: GLFW App</a>
+<a href="../feature_gui_viewport">Previous: GUI Viewport</a> · <a href="../feature_input_events">Next: Input Events</a>
 </div>
 </nav>

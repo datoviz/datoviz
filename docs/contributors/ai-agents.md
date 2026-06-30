@@ -64,7 +64,8 @@ Use the example taxonomy when searching:
 | Need | Start from |
 | --- | --- |
 | One visual family | `examples/c/visuals/` |
-| One isolated feature or rendering technique | `examples/c/features/` |
+| One isolated scene feature or rendering technique | `examples/c/features/` |
+| App lifecycle, windowing, capture, recording, or export | `examples/c/runtime/` |
 | One semantic scene object | `examples/c/composites/` |
 | A composed workflow, real-data story, or polished goal | `examples/c/showcases/` or showcase-tagged manifest entries |
 

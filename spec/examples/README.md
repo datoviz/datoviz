@@ -11,12 +11,13 @@ views from those examples, but it should not be the authoritative home of runnab
 
 ## Goals
 
-The examples system serves four separate source-category needs:
+The examples system serves five separate source-category needs:
 
 1. teach one visual family with the smallest useful scene;
 2. teach one API feature or rendering technique with the smallest useful program;
-3. teach one semantic composite object with the smallest useful scene;
-4. present composed goal-oriented examples, including workflows, scientific stories, and polished
+3. teach one runtime path, hosting mode, or output artifact with the smallest useful program;
+4. teach one semantic composite object with the smallest useful scene;
+5. present composed goal-oriented examples, including workflows, scientific stories, and polished
    release showcases.
 
 These needs overlap, but they should not be collapsed into one bucket. A beautiful showcase does not
@@ -33,6 +34,7 @@ Use these logical source categories for new first-class examples:
 examples/
   visuals/
   features/
+  runtime/
   composites/
   showcases/
 ```
@@ -48,12 +50,16 @@ search, and gallery tooling.
 | Category | Unit | Purpose | Data |
 | --- | --- | --- | --- |
 | `visuals` | one visual family | teach one visual type with minimal surrounding setup | usually synthetic |
-| `features` | one API feature or rendering technique | teach one capability quickly | usually synthetic |
+| `features` | one scene API feature or rendering technique | teach one scene capability quickly | usually synthetic |
+| `runtime` | one app lifecycle, hosting, capture, recording, or export path | teach how programs run or produce artifacts | usually synthetic |
 | `composites` | one semantic scene object | teach an object that lowers to coordinated visual roles | usually synthetic |
 | `showcases` | one composed goal | show workflows, scientific stories, and polished scenes | synthetic, simulated, or real with provenance |
 
 Feature examples should stay minimal. They demonstrate a capability such as a colorbar, controller,
 pick query, texture upload, linked panel, rendering technique, or partial update.
+
+Runtime examples should stay minimal. They demonstrate app lifecycle, windowing, hosted surfaces,
+offscreen rendering, screenshot capture, frame scheduling, recording/replay, or video export.
 
 Composite examples should stay minimal. They demonstrate semantic objects such as polygon sets or
 graphs that carry identity, topology, styling, and one or more visual roles.
@@ -106,6 +112,7 @@ Default gallery behavior:
 | Category | Gallery default |
 | --- | --- |
 | `features` | excluded |
+| `runtime` | excluded |
 | `visuals` | excluded unless promoted |
 | `showcases` | included when visually mature |
 

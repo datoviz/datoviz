@@ -54,6 +54,6 @@ _Media pending._
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_offscreen_capture">Previous: Offscreen Capture</a> · <a href="../feature_record_replay">Next: Record Replay</a>
+<a href="../feature_gui_cimgui">Previous: Raw cimgui GUI</a> · <a href="../feature_json_export">Next: JSON Export</a>
 </div>
 </nav>

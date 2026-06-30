@@ -138,5 +138,5 @@ instead of entering `dvz_app_run()`. The Qt/PyQt guide and hosted examples show 
 ??? example "Related examples"
 
     - [Scatter Plot](../examples/gallery/start/start_scatter.md) - Source: `examples/c/start/scatter.c`
-    - [GLFW App](../examples/gallery/features/feature_app_glfw.md) - Source: `examples/c/features/app_glfw.c`
+    - [GLFW App](../examples/gallery/runtime/feature_app_glfw.md) - Source: `examples/c/runtime/app_glfw.c`
     - Source manifest: `examples/c/MANIFEST.yaml`

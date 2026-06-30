@@ -10,6 +10,7 @@ material.
 | --- | --- |
 | `visuals/` | Public one-visual examples: one visual family per file. |
 | `features/` | Public feature examples: one isolated capability or technique per file. |
+| `runtime/` | Public app lifecycle, windowing, offscreen capture, recording, and export examples. |
 | `composites/` | Public semantic object examples that lower to one or more visuals. |
 | `showcases/` | Public composed examples: workflows, scientific stories, real-data examples, and gallery-facing demos. |
 | `advanced/` | Advanced low-level runtime, DRP2, and host-integration examples. Useful, but not gallery-first scene examples. |
@@ -20,7 +21,8 @@ Shared helpers live directly in this directory (`example_common.*`, `example_sty
 `example_gui_controls.*`). There is intentionally no `tools/`, `regression/`, or `stress/` example
 lane in the active C tree: tests own regressions, and lab owns temporary diagnostics/stress work.
 Use manifest tags, not folders, for `workflow`, `scientific`, `real-data`, `simulated`,
-`interactive`, `offscreen`, `technique`, and domain labels.
+`interactive`, `offscreen`, `technique`, and domain labels. Runtime examples are for hosting and
+output behavior; scene-level capabilities stay in `features/`.
 
 Feature examples are living API documentation. Keep the demonstrated `dvz_*` calls visible in the
 example file itself; use `example_*` helpers only for staging, theme, capture, data generation, and

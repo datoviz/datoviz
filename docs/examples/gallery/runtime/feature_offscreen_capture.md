@@ -5,7 +5,7 @@
 <nav class="dvz-example-breadcrumbs" aria-label="Breadcrumbs">
 <a href="../../..">Examples</a>
 <span>/</span>
-<a href="../../../features">Features</a>
+<a href="../../../runtime">Runtime & Capture</a>
 <span>/</span>
 <span>Offscreen Capture</span>
 </nav>
@@ -14,28 +14,28 @@ render an exact-pixel offscreen view once and write a PNG.
 
 ## Preview
 
-![Offscreen Capture](../../../assets/gallery/v0.4/features/feature_offscreen_capture.webp)
+_Media pending._
 
 ## Source
 
 === "C"
 
     ```c
-    --8<-- "examples/c/features/offscreen_capture.c"
+    --8<-- "examples/c/runtime/offscreen_capture.c"
     ```
 
 ??? info "Example details"
 
     - ID: `feature_offscreen_capture`
-    - Category: `feature`
-    - Lane: `features`
+    - Category: `runtime`
+    - Lane: `runtime`
     - Status: `supported`
-    - Source: [`examples/c/features/offscreen_capture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/offscreen_capture.c)
+    - Source: [`examples/c/runtime/offscreen_capture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/offscreen_capture.c)
     - Agent copy-safe: `true`
     - WebGPU status: `native-only`
     - WebGPU requirements: `native-capture`
-    - Build: `just example-c features/offscreen_capture`
-    - Smoke: `./build/examples/c/features/offscreen_capture --png`
+    - Build: `just example-c runtime/offscreen_capture`
+    - Smoke: `./build/examples/c/runtime/offscreen_capture --png`
     - Validation: `smoke+screenshot`
 
     ### Data
@@ -51,9 +51,9 @@ render an exact-pixel offscreen view once and write a PNG.
 <div class="dvz-example-nav__trail">
 <a href="../../..">Examples</a>
 <span>/</span>
-<a href="../../../features">Features</a>
+<a href="../../../runtime">Runtime & Capture</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_app_glfw">Previous: GLFW App</a> · <a href="../feature_input_events">Next: Input Events</a>
+<a href="../feature_app_glfw">Previous: GLFW App</a> · <a href="../feature_video_export">Next: Video Export</a>
 </div>
 </nav>

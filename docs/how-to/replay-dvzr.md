@@ -66,7 +66,7 @@ just build
 Record an offscreen scene, replay it, and write comparison PNGs:
 
 ```sh
-./build/examples/c/features/record_replay
+./build/examples/c/runtime/record_replay
 ```
 
 The feature example writes `record_replay.dvzr/`, `record_replay_original.png`, and
@@ -144,5 +144,5 @@ attach the right visual, scale, controller, or callback?", debug the retained sc
 
 ??? example "Related examples"
 
-    - [Record Replay](../examples/gallery/features/feature_record_replay.md) - Source: `examples/c/features/record_replay.c`
+    - [Record Replay](../examples/gallery/runtime/feature_record_replay.md) - Source: `examples/c/runtime/record_replay.c`
     - [Raw Triangle DRP2](../examples/gallery/advanced/advanced_raw_triangle_drp2.md) - Source: `examples/c/advanced/raw_triangle_drp2.c`

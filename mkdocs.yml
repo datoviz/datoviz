@@ -97,6 +97,7 @@ nav:
     - Showcases: 'examples/showcases.md'
     - Visuals & Composites: 'examples/visuals.md'
     - Features: 'examples/features.md'
+    - Runtime & Capture: 'examples/runtime.md'
     - Advanced: 'examples/advanced.md'
   - How-To:
     - Core Workflow:

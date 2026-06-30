@@ -120,12 +120,13 @@ The public taxonomy should stay this small:
 | Category | Unit | Notes |
 | --- | --- | --- |
 | `visuals` | one public visual family | Mechanical proof for the data shape and smallest useful styling of one visual. |
-| `features` | one isolated feature or technique | Mechanical proof for one capability, using the simplest visual scaffolding needed. |
+| `features` | one isolated scene feature or technique | Mechanical proof for one capability, using the simplest visual scaffolding needed. |
+| `runtime` | one app lifecycle, hosting, capture, recording, or export path | Mechanical proof for how programs run or produce artifacts. |
 | `composites` | one semantic scene object | Mechanical proof for objects that lower to coordinated visual roles. |
 | `showcases` | one composed goal | Workflows, scientific examples, shiny demos, real-data stories, and multi-feature scenes. |
 
-Do not add public source folders for `workflow`, `scientific`, `technique`, or domain labels unless a
-future build-system constraint requires it. Prefer metadata tags such as `workflow`, `real-data`,
+Do not add public source folders for `workflow`, `scientific`, `technique`, or domain labels unless
+a future build-system constraint requires it. Prefer metadata tags such as `workflow`, `real-data`,
 `simulated`, `scientific`, `interactive`, `offscreen`, `compute`, `geo`, or `molecular`.
 
 WebGPU examples and fixtures may keep their existing browser-oriented layout under `examples/webgpu/`
@@ -276,12 +277,11 @@ scaffolding, but the feature must be the visible point of the example.
 | `feature.depth_test` | `examples/c/features/technique_depth_test.c` | `ready-now` | Side-by-side overlapping marks show depth testing enabled and disabled. | Teaches `dvz_visual_set_depth_test()` only. Keep depth cueing and occlusion as separate techniques. |
 | `feature.alpha_blending` | `examples/c/features/alpha_blending.c` | `ready-now` | Overlapping translucent primitives blend source-over against the panel background. | Teaches per-vertex alpha with `DVZ_ALPHA_BLENDED`. Keep WBOIT and depth peeling separate. |
 
-### Animation And Media
+### Animation
 
 | ID | Source | State | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- | --- |
 | `feature.timer_animation` | `examples/c/features/timer_animation.c` | `ready-now` | A simple animated visual driven by a timer or frame callback. | Teaches app callbacks and animation loop. Avoid video export. |
-| `feature.video_export` | `examples/c/features/video_export.c` | `experimental` | A deterministic short animation captured as a video artifact. | Include only if video export is in the public v0.4 surface. Keep backend requirements explicit. |
 
 The query, pick, probe, and selection examples should be treated as normal first-class examples once
 the current API overhaul lands.
@@ -301,7 +301,7 @@ Current feature seeds and migration notes:
 | `feature.controller_arcball` | `examples/c/features/controller_arcball.c`, `examples/c/showcases/protein.c` | Minimal controller proof is separate from composed scientific/showcase examples. |
 | `feature.controller_fly` | `examples/c/features/controller_fly.c`, `examples/c/showcases/point_cloud.c` | Minimal fly-controller proof is separate from the dense point-cloud showcase. |
 | `feature.timer_animation` | `examples/c/features/timer_animation.c` | Current C example replaces old animation/timer gallery pages. |
-| `feature.video_export` | `examples/c/features/video_export.c` | Experimental scenario-runner video proof replaces the old video gallery page. |
+| `feature.video_export` | `examples/c/runtime/video_export.c` | Experimental scenario-runner video proof replaces the old video gallery page. |
 | `feature.lighting` | `examples/c/features/lighting.c` | Current C example replaces old light/mesh-light snippets for v0.4 docs. |
 | `feature.visibility` | `examples/c/features/visibility.c` | Current C example replaces old hide/fixed gallery pages for v0.4 docs. |
 | `feature.overlay_card` | `examples/c/features/overlay_card.c` | Current C example is separate from annotation and text-block proofs. |
@@ -321,6 +321,7 @@ Runtime examples document how a program is hosted or executed:
 | `runtime.frame_callback` | `examples/c/runtime/frame_callback.c` | A simple per-frame state change or counter. | Teaches frame callbacks. Avoid animation polish. |
 | `runtime.continuous` | `examples/c/runtime/continuous.c` | A scene rendered continuously or on demand with clear scheduling behavior. | Teaches immediate versus continuous rendering. |
 | `runtime.qt_hosted` | existing Qt example path, linked when supported | Hosted rendering in a Qt surface. | Only public when Qt integration is supported and documented. |
+| `runtime.video_export` | `examples/c/runtime/video_export.c` | A deterministic short animation captured as a video artifact. | Include only if video export is in the public v0.4 surface. Keep backend requirements explicit. |
 
 
 ## Technique Feature Examples

@@ -7,10 +7,10 @@
 /* record_replay - record an offscreen app view and replay it into a second offscreen view.
  *
  * Scenario: feature.record_replay
- * Style: features, native app
+ * Style: runtime, native app
  *
- * Build:  just example-c features/record_replay
- * Run:    ./build/examples/c/features/record_replay
+ * Build:  just example-c runtime/record_replay
+ * Run:    ./build/examples/c/runtime/record_replay
  */
 
 

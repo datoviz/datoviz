@@ -16,8 +16,8 @@ The canonical example uses the native scenario runner. The default run records a
 offscreen video, and the explicit offscreen mode lets you choose the frame count:
 
 ```sh
-./build/examples/c/features/video_export
-./build/examples/c/features/video_export --offscreen-record 120
+./build/examples/c/runtime/video_export
+./build/examples/c/runtime/video_export --offscreen-record 120
 ```
 
 Use `--live-record N` when you want to display a GLFW view while recording an offscreen capture
@@ -130,5 +130,5 @@ the release or docs pipeline explicitly expects that artifact.
 
 ??? example "Related examples"
 
-    - [Video Export](../examples/gallery/features/feature_video_export.md) - Source: `examples/c/features/video_export.c`
+    - [Video Export](../examples/gallery/runtime/feature_video_export.md) - Source: `examples/c/runtime/video_export.c`
     - [Timer Animation](../examples/gallery/features/feature_timer_animation.md) - Source: `examples/c/features/timer_animation.c`
