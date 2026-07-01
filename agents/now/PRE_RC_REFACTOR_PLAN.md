@@ -528,3 +528,43 @@ After all required phases complete, report:
    runtime library, large binary, or unrelated user change was committed.
 6. Confirmation that replaced legacy authorities were removed, generated, or mechanically validated
    against the new single authority.
+
+
+## Execution Log
+
+### Phase 0: Baseline and Authority Audit
+
+Status: complete.
+
+Validation:
+
+```sh
+git status --short
+git submodule status data
+git diff --check
+just build
+just spec-check
+```
+
+Result:
+
+1. `git status --short` reported only unstaged `data` submodule state: ` m data`.
+2. `git submodule status data` reported `c1506b18196e509a9d50f26faba41d6838620aa8`.
+3. `git diff --check` passed.
+4. `just build` passed with no rebuild needed.
+5. `just spec-check` passed, including scene shader ABI, DRP2 fixtures, WebGPU preflight, and
+   source-guard checks.
+
+Authority map:
+
+1. API status: `spec/api/status.yml` to be created in Phase 1 and consumed by docs/bindings checks.
+2. Render protocol types: `include/datoviz/render_types.h` to become the single public protocol
+   enum owner in Phase 2.
+3. DRP2 command metadata: existing `spec/drp2/schema/` tree first; do not add a parallel command
+   manifest unless proven necessary.
+4. WASM scenarios/routes/constants: existing `examples/c/MANIFEST.yaml` first; generate or validate
+   browser/WASM registries from it.
+5. Panel render planning: new internal planner becomes the single scene emit policy owner for pass
+   ordering, generated visuals, attachment role filtering, and technique grouping.
+
+Known risk: `data` remains dirty and unstaged; it must stay out of all checkpoint commits.
