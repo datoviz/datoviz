@@ -1541,6 +1541,23 @@ DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT = DvzGuiViewportFlags.DVZ_GUI_VIEWPORT_FLAG
 DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN = DvzGuiViewportFlags.DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN
 
 
+class DvzGuideKind(CtypesEnum):
+    DVZ_GUIDE_KIND_NONE = 0
+    DVZ_GUIDE_KIND_AXIS = 1
+    DVZ_GUIDE_KIND_COLORBAR = 2
+    DVZ_GUIDE_KIND_LEGEND = 3
+    DVZ_GUIDE_KIND_GUIDE_LINE = 4
+    DVZ_GUIDE_KIND_GUIDE_SPAN = 5
+
+
+DVZ_GUIDE_KIND_NONE = DvzGuideKind.DVZ_GUIDE_KIND_NONE
+DVZ_GUIDE_KIND_AXIS = DvzGuideKind.DVZ_GUIDE_KIND_AXIS
+DVZ_GUIDE_KIND_COLORBAR = DvzGuideKind.DVZ_GUIDE_KIND_COLORBAR
+DVZ_GUIDE_KIND_LEGEND = DvzGuideKind.DVZ_GUIDE_KIND_LEGEND
+DVZ_GUIDE_KIND_GUIDE_LINE = DvzGuideKind.DVZ_GUIDE_KIND_GUIDE_LINE
+DVZ_GUIDE_KIND_GUIDE_SPAN = DvzGuideKind.DVZ_GUIDE_KIND_GUIDE_SPAN
+
+
 class DvzGuideOrientation(CtypesEnum):
     DVZ_GUIDE_ORIENTATION_HORIZONTAL = 0
     DVZ_GUIDE_ORIENTATION_VERTICAL = 1
@@ -1548,6 +1565,66 @@ class DvzGuideOrientation(CtypesEnum):
 
 DVZ_GUIDE_ORIENTATION_HORIZONTAL = DvzGuideOrientation.DVZ_GUIDE_ORIENTATION_HORIZONTAL
 DVZ_GUIDE_ORIENTATION_VERTICAL = DvzGuideOrientation.DVZ_GUIDE_ORIENTATION_VERTICAL
+
+
+class DvzGuidePart(CtypesEnum):
+    DVZ_GUIDE_PART_NONE = 0
+    DVZ_GUIDE_PART_BOX = 1
+    DVZ_GUIDE_PART_LINE = 2
+    DVZ_GUIDE_PART_FILL = 3
+    DVZ_GUIDE_PART_OUTLINE = 4
+    DVZ_GUIDE_PART_TEXT = 5
+    DVZ_GUIDE_PART_RAMP = 6
+    DVZ_GUIDE_PART_TICK = 7
+    DVZ_GUIDE_PART_GRID = 8
+
+
+DVZ_GUIDE_PART_NONE = DvzGuidePart.DVZ_GUIDE_PART_NONE
+DVZ_GUIDE_PART_BOX = DvzGuidePart.DVZ_GUIDE_PART_BOX
+DVZ_GUIDE_PART_LINE = DvzGuidePart.DVZ_GUIDE_PART_LINE
+DVZ_GUIDE_PART_FILL = DvzGuidePart.DVZ_GUIDE_PART_FILL
+DVZ_GUIDE_PART_OUTLINE = DvzGuidePart.DVZ_GUIDE_PART_OUTLINE
+DVZ_GUIDE_PART_TEXT = DvzGuidePart.DVZ_GUIDE_PART_TEXT
+DVZ_GUIDE_PART_RAMP = DvzGuidePart.DVZ_GUIDE_PART_RAMP
+DVZ_GUIDE_PART_TICK = DvzGuidePart.DVZ_GUIDE_PART_TICK
+DVZ_GUIDE_PART_GRID = DvzGuidePart.DVZ_GUIDE_PART_GRID
+
+
+class DvzGuideRole(CtypesEnum):
+    DVZ_GUIDE_ROLE_NONE = 0
+    DVZ_GUIDE_ROLE_X_AXIS = 1
+    DVZ_GUIDE_ROLE_Y_AXIS = 2
+    DVZ_GUIDE_ROLE_AXIS_GRID = 3
+    DVZ_GUIDE_ROLE_AXIS_TICK_LABEL = 4
+    DVZ_GUIDE_ROLE_AXIS_LABEL = 5
+    DVZ_GUIDE_ROLE_COLORBAR = 6
+    DVZ_GUIDE_ROLE_COLORBAR_RAMP = 7
+    DVZ_GUIDE_ROLE_COLORBAR_TICK_LABEL = 8
+    DVZ_GUIDE_ROLE_COLORBAR_TITLE = 9
+    DVZ_GUIDE_ROLE_LEGEND = 10
+    DVZ_GUIDE_ROLE_LEGEND_ENTRY = 11
+    DVZ_GUIDE_ROLE_LEGEND_TITLE = 12
+    DVZ_GUIDE_ROLE_GUIDE_LINE = 13
+    DVZ_GUIDE_ROLE_GUIDE_SPAN = 14
+    DVZ_GUIDE_ROLE_GUIDE_LABEL = 15
+
+
+DVZ_GUIDE_ROLE_NONE = DvzGuideRole.DVZ_GUIDE_ROLE_NONE
+DVZ_GUIDE_ROLE_X_AXIS = DvzGuideRole.DVZ_GUIDE_ROLE_X_AXIS
+DVZ_GUIDE_ROLE_Y_AXIS = DvzGuideRole.DVZ_GUIDE_ROLE_Y_AXIS
+DVZ_GUIDE_ROLE_AXIS_GRID = DvzGuideRole.DVZ_GUIDE_ROLE_AXIS_GRID
+DVZ_GUIDE_ROLE_AXIS_TICK_LABEL = DvzGuideRole.DVZ_GUIDE_ROLE_AXIS_TICK_LABEL
+DVZ_GUIDE_ROLE_AXIS_LABEL = DvzGuideRole.DVZ_GUIDE_ROLE_AXIS_LABEL
+DVZ_GUIDE_ROLE_COLORBAR = DvzGuideRole.DVZ_GUIDE_ROLE_COLORBAR
+DVZ_GUIDE_ROLE_COLORBAR_RAMP = DvzGuideRole.DVZ_GUIDE_ROLE_COLORBAR_RAMP
+DVZ_GUIDE_ROLE_COLORBAR_TICK_LABEL = DvzGuideRole.DVZ_GUIDE_ROLE_COLORBAR_TICK_LABEL
+DVZ_GUIDE_ROLE_COLORBAR_TITLE = DvzGuideRole.DVZ_GUIDE_ROLE_COLORBAR_TITLE
+DVZ_GUIDE_ROLE_LEGEND = DvzGuideRole.DVZ_GUIDE_ROLE_LEGEND
+DVZ_GUIDE_ROLE_LEGEND_ENTRY = DvzGuideRole.DVZ_GUIDE_ROLE_LEGEND_ENTRY
+DVZ_GUIDE_ROLE_LEGEND_TITLE = DvzGuideRole.DVZ_GUIDE_ROLE_LEGEND_TITLE
+DVZ_GUIDE_ROLE_GUIDE_LINE = DvzGuideRole.DVZ_GUIDE_ROLE_GUIDE_LINE
+DVZ_GUIDE_ROLE_GUIDE_SPAN = DvzGuideRole.DVZ_GUIDE_ROLE_GUIDE_SPAN
+DVZ_GUIDE_ROLE_GUIDE_LABEL = DvzGuideRole.DVZ_GUIDE_ROLE_GUIDE_LABEL
 
 
 class DvzHiDpiPolicy(CtypesEnum):
@@ -2459,6 +2536,17 @@ DVZ_REFERENCE_GRID_XY = DvzReferenceGridPlane.DVZ_REFERENCE_GRID_XY
 DVZ_REFERENCE_GRID_XZ = DvzReferenceGridPlane.DVZ_REFERENCE_GRID_XZ
 DVZ_REFERENCE_GRID_YZ = DvzReferenceGridPlane.DVZ_REFERENCE_GRID_YZ
 DVZ_REFERENCE_GRID_CUSTOM = DvzReferenceGridPlane.DVZ_REFERENCE_GRID_CUSTOM
+
+
+class DvzRenderedContributionKind(CtypesEnum):
+    DVZ_RENDERED_CONTRIBUTION_NONE = 0
+    DVZ_RENDERED_CONTRIBUTION_VISUAL = 1
+    DVZ_RENDERED_CONTRIBUTION_GUIDE = 2
+
+
+DVZ_RENDERED_CONTRIBUTION_NONE = DvzRenderedContributionKind.DVZ_RENDERED_CONTRIBUTION_NONE
+DVZ_RENDERED_CONTRIBUTION_VISUAL = DvzRenderedContributionKind.DVZ_RENDERED_CONTRIBUTION_VISUAL
+DVZ_RENDERED_CONTRIBUTION_GUIDE = DvzRenderedContributionKind.DVZ_RENDERED_CONTRIBUTION_GUIDE
 
 
 class DvzResolvedExactness(CtypesEnum):
@@ -3844,6 +3932,18 @@ class DvzGuiViewportConfig(ctypes.Structure):
     pass
 
 
+class DvzRect(ctypes.Structure):
+    pass
+
+
+class DvzGuideHit(ctypes.Structure):
+    pass
+
+
+class DvzGuideLayout(ctypes.Structure):
+    pass
+
+
 class DvzGuideLine(ctypes.Structure):
     pass
 
@@ -4048,10 +4148,6 @@ class DvzPanelDesc(ctypes.Structure):
     pass
 
 
-class DvzRect(ctypes.Structure):
-    pass
-
-
 class DvzPanelFrameInfo(ctypes.Structure):
     pass
 
@@ -4169,6 +4265,10 @@ class DvzReferenceGrid(ctypes.Structure):
 
 
 class DvzReferenceGridDesc(ctypes.Structure):
+    pass
+
+
+class DvzRenderedContribution(ctypes.Structure):
     pass
 
 
@@ -5491,6 +5591,14 @@ DvzGuiViewportConfig._fields_ = [
 ]
 
 
+DvzRect._fields_ = [
+    ('x', ctypes.c_float),
+    ('y', ctypes.c_float),
+    ('width', ctypes.c_float),
+    ('height', ctypes.c_float),
+]
+
+
 DvzGuideLineDesc._fields_ = [
     ('struct_size', ctypes.c_uint32),
     ('flags', ctypes.c_uint32),
@@ -5830,14 +5938,6 @@ DvzPanelDesc._fields_ = [
 ]
 
 
-DvzRect._fields_ = [
-    ('x', ctypes.c_float),
-    ('y', ctypes.c_float),
-    ('width', ctypes.c_float),
-    ('height', ctypes.c_float),
-]
-
-
 DvzPanelReserve._fields_ = [
     ('left_px', ctypes.c_float),
     ('right_px', ctypes.c_float),
@@ -5982,6 +6082,21 @@ DvzQueue._fields_ = [
 DvzQueues._fields_ = [
     ('queue_count', ctypes.c_uint32),
     ('queues', (DvzQueue * 5)),
+]
+
+
+DvzRenderedContribution._fields_ = [
+    ('struct_size', ctypes.c_uint32),
+    ('flags', ctypes.c_uint32),
+    ('snapshot_id', ctypes.c_uint64),
+    ('contribution_id', ctypes.c_uint64),
+    ('guide_id', ctypes.c_uint64),
+    ('visual_id', ctypes.c_uint64),
+    ('kind', ctypes.c_int),
+    ('role', ctypes.c_int),
+    ('part', ctypes.c_int),
+    ('box_px', DvzRect),
+    ('label', (ctypes.c_char * 128)),
 ]
 
 
@@ -22301,6 +22416,93 @@ else:
 
 
 try:
+    dvz_panel_frame_contribution = dvz.dvz_panel_frame_contribution
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_panel_frame_contribution')
+else:
+    dvz_panel_frame_contribution.__doc__ = """/**
+ * Copy one rendered contribution record by index.
+ *
+ * @param snapshot the panel frame snapshot
+ * @param index rendered contribution index
+ * @param out output contribution
+ * @return whether the contribution was copied
+ */"""
+    dvz_panel_frame_contribution.argtypes = [ctypes.POINTER(DvzPanelFrameSnapshot), ctypes.c_uint32, ctypes.POINTER(DvzRenderedContribution)]
+    dvz_panel_frame_contribution.restype = ctypes.c_bool
+
+
+try:
+    dvz_panel_frame_contribution_count = dvz.dvz_panel_frame_contribution_count
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_panel_frame_contribution_count')
+else:
+    dvz_panel_frame_contribution_count.__doc__ = """/**
+ * Return the number of rendered contribution records in a frame snapshot.
+ *
+ * Contributions tie durable guide identities to generated visual identities.
+ *
+ * @param snapshot the panel frame snapshot
+ * @return contribution count, or 0 when snapshot is NULL
+ */"""
+    dvz_panel_frame_contribution_count.argtypes = [ctypes.POINTER(DvzPanelFrameSnapshot)]
+    dvz_panel_frame_contribution_count.restype = ctypes.c_uint32
+
+
+try:
+    dvz_panel_frame_guide_count = dvz.dvz_panel_frame_guide_count
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_panel_frame_guide_count')
+else:
+    dvz_panel_frame_guide_count.__doc__ = """/**
+ * Return the number of first-class guide layout records in a frame snapshot.
+ *
+ * Guide layouts describe retained adornment boxes such as axes, axis text, guide lines, guide
+ * spans, colorbars, and legends in figure logical pixels.
+ *
+ * @param snapshot the panel frame snapshot
+ * @return guide layout count, or 0 when snapshot is NULL
+ */"""
+    dvz_panel_frame_guide_count.argtypes = [ctypes.POINTER(DvzPanelFrameSnapshot)]
+    dvz_panel_frame_guide_count.restype = ctypes.c_uint32
+
+
+try:
+    dvz_panel_frame_guide_hit = dvz.dvz_panel_frame_guide_hit
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_panel_frame_guide_hit')
+else:
+    dvz_panel_frame_guide_hit.__doc__ = """/**
+ * Return the topmost first-class guide layout containing a figure logical-pixel point.
+ *
+ * @param snapshot the panel frame snapshot
+ * @param x_px x coordinate in figure logical pixels
+ * @param y_px y coordinate in figure logical pixels
+ * @param out output hit record
+ * @return whether a guide layout contained the point
+ */"""
+    dvz_panel_frame_guide_hit.argtypes = [ctypes.POINTER(DvzPanelFrameSnapshot), ctypes.c_float, ctypes.c_float, ctypes.POINTER(DvzGuideHit)]
+    dvz_panel_frame_guide_hit.restype = ctypes.c_bool
+
+
+try:
+    dvz_panel_frame_guide_layout = dvz.dvz_panel_frame_guide_layout
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_panel_frame_guide_layout')
+else:
+    dvz_panel_frame_guide_layout.__doc__ = """/**
+ * Copy one first-class guide layout record by index.
+ *
+ * @param snapshot the panel frame snapshot
+ * @param index guide layout index
+ * @param out output guide layout
+ * @return whether the guide layout was copied
+ */"""
+    dvz_panel_frame_guide_layout.argtypes = [ctypes.POINTER(DvzPanelFrameSnapshot), ctypes.c_uint32, ctypes.POINTER(DvzGuideLayout)]
+    dvz_panel_frame_guide_layout.restype = ctypes.c_bool
+
+
+try:
     dvz_panel_frame_id = dvz.dvz_panel_frame_id
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_panel_frame_id')
@@ -32040,7 +32242,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1535
+_GENERATED_FUNCTION_COUNT = 1540
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_field_geometry', 'dvz_frame_plan_emit_config', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_panel_background_desc', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scalebar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
-_DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzTextStyle', 'DvzTextPlacement', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzFontDesc', 'DvzFontDefaults', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzContainer', 'DvzContainerIterator', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RawFallback', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RuntimeConfig', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFly', 'DvzFlyDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzObject', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzRect', 'DvzPanelReserve', 'DvzPanelView2D', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoom', 'DvzPanzoomDesc', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntable', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewSizeDesc', 'DvzViewDesc', 'DvzVisualAttachDesc', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
+_DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzTextStyle', 'DvzTextPlacement', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzFontDesc', 'DvzFontDefaults', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzContainer', 'DvzContainerIterator', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RawFallback', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RuntimeConfig', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFly', 'DvzFlyDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzObject', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2D', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoom', 'DvzPanzoomDesc', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntable', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewSizeDesc', 'DvzViewDesc', 'DvzVisualAttachDesc', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]

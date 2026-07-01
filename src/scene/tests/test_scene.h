@@ -637,6 +637,7 @@ int test_scene_panel_border_creates_fixed_overlay(TstContext* suite, const TstCa
 
 int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* item);
 int test_scene_panel_frame_snapshot_core(TstContext* suite, const TstCase* item);
+int test_scene_panel_frame_snapshot_guide_layouts(TstContext* suite, const TstCase* item);
 int test_scene_panel_view3d_state_readback(TstContext* suite, const TstCase* item);
 
 int test_scene_adjacent_panels_plot_scissor_no_bleed(TstContext* suite, const TstCase* item);

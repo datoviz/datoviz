@@ -16,6 +16,7 @@
 
 #include "scene_graph_utils.h"
 #include "_visual_internal.h"
+#include "annotation/prepare_internal.h"
 #include "core/scene_notify_internal.h"
 
 
@@ -1464,6 +1465,113 @@ int test_scene_panel_frame_snapshot_core(TstContext* suite, const TstCase* item)
     AC(next.grid_clip_rect_px.height, next_plot.height, 1e-6f);
 
     dvz_panel_frame_unref(after);
+    dvz_panel_frame_unref(snapshot);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_panel_frame_snapshot_guide_layouts(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 420, 300, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzPanelAxes2DDesc axes = dvz_panel_axes_2d_desc();
+    axes.x_label = "time";
+    axes.y_label = "value";
+    axes.x_style.show_grid = true;
+    axes.y_style.show_grid = true;
+    AT(dvz_panel_set_axes_2d(panel, &axes));
+    const double x_ticks[] = {0.0, 0.5, 1.0};
+    const char* x_labels[] = {"zero", "half", "one"};
+    DvzAxisTicks ticks = {
+        DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks),
+        .count = 3,
+        .values = x_ticks,
+        .labels = x_labels,
+    };
+    AT(dvz_axis_set_ticks(dvz_panel_axis(panel, DVZ_DIM_X), &ticks));
+
+    DvzGuideLineDesc line_desc = dvz_guide_line_desc();
+    line_desc.label = "threshold";
+    DvzGuideLine* line = dvz_hline(panel, 0.25, &line_desc);
+    ANN(line);
+
+    DvzGuideSpanDesc span_desc = dvz_guide_span_desc();
+    span_desc.label = "window";
+    DvzGuideSpan* span = dvz_vspan(panel, 0.20, 0.40, &span_desc);
+    ANN(span);
+
+    _scene_prepare_axis_visuals(figure);
+    _scene_prepare_guide_visuals(figure);
+
+    DvzPanelFrameSnapshot* snapshot = dvz_panel_resolve_frame(panel);
+    ANN(snapshot);
+    DvzPanelFrameInfo info = {0};
+    AT(dvz_panel_frame_info(snapshot, &info));
+
+    const uint32_t guide_count = dvz_panel_frame_guide_count(snapshot);
+    AT(guide_count > 0);
+    const uint32_t contribution_count = dvz_panel_frame_contribution_count(snapshot);
+    AT(contribution_count > 0);
+
+    bool saw_grid = false;
+    bool saw_axis_label = false;
+    bool saw_tick_label = false;
+    bool saw_line = false;
+    bool saw_span = false;
+    DvzGuideLayout hit_candidate = {0};
+    for (uint32_t i = 0; i < guide_count; i++)
+    {
+        DvzGuideLayout layout = {0};
+        AT(dvz_panel_frame_guide_layout(snapshot, i, &layout));
+        AT(layout.struct_size == DVZ_STRUCT_SIZE(DvzGuideLayout));
+        AT(layout.snapshot_id == info.snapshot_id);
+        AT(layout.has_box);
+        AT(layout.box_px.width > 0.0f);
+        AT(layout.box_px.height > 0.0f);
+        if (layout.role == DVZ_GUIDE_ROLE_AXIS_GRID)
+            saw_grid = true;
+        if (layout.role == DVZ_GUIDE_ROLE_AXIS_LABEL && strcmp(layout.label, "time") == 0)
+            saw_axis_label = true;
+        if (layout.role == DVZ_GUIDE_ROLE_AXIS_TICK_LABEL && strcmp(layout.label, "half") == 0)
+        {
+            saw_tick_label = true;
+            hit_candidate = layout;
+        }
+        if (layout.role == DVZ_GUIDE_ROLE_GUIDE_LINE)
+            saw_line = true;
+        if (layout.role == DVZ_GUIDE_ROLE_GUIDE_SPAN)
+            saw_span = true;
+    }
+    AT(saw_grid);
+    AT(saw_axis_label);
+    AT(saw_tick_label);
+    AT(saw_line);
+    AT(saw_span);
+
+    DvzGuideHit hit = {0};
+    AT(dvz_panel_frame_guide_hit(
+        snapshot, hit_candidate.box_px.x + 0.5f * hit_candidate.box_px.width,
+        hit_candidate.box_px.y + 0.5f * hit_candidate.box_px.height, &hit));
+    AT(hit.struct_size == DVZ_STRUCT_SIZE(DvzGuideHit));
+    AT(hit.hit);
+    AT(hit.snapshot_id == info.snapshot_id);
+    AT(hit.guide_id == hit_candidate.guide_id);
+
+    DvzRenderedContribution contribution = {0};
+    AT(dvz_panel_frame_contribution(snapshot, 0, &contribution));
+    AT(contribution.struct_size == DVZ_STRUCT_SIZE(DvzRenderedContribution));
+    AT(contribution.snapshot_id == info.snapshot_id);
+    AT(contribution.visual_id != DVZ_ID_NONE);
+
     dvz_panel_frame_unref(snapshot);
     dvz_scene_destroy(scene);
     return 0;

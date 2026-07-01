@@ -506,6 +506,120 @@ struct DvzPanelFrameInfo
 typedef struct DvzPanelFrameInfo DvzPanelFrameInfo;
 
 
+typedef enum
+{
+    DVZ_GUIDE_KIND_NONE = 0,
+    DVZ_GUIDE_KIND_AXIS,
+    DVZ_GUIDE_KIND_COLORBAR,
+    DVZ_GUIDE_KIND_LEGEND,
+    DVZ_GUIDE_KIND_GUIDE_LINE,
+    DVZ_GUIDE_KIND_GUIDE_SPAN,
+} DvzGuideKind;
+
+
+typedef enum
+{
+    DVZ_GUIDE_ROLE_NONE = 0,
+    DVZ_GUIDE_ROLE_X_AXIS,
+    DVZ_GUIDE_ROLE_Y_AXIS,
+    DVZ_GUIDE_ROLE_AXIS_GRID,
+    DVZ_GUIDE_ROLE_AXIS_TICK_LABEL,
+    DVZ_GUIDE_ROLE_AXIS_LABEL,
+    DVZ_GUIDE_ROLE_COLORBAR,
+    DVZ_GUIDE_ROLE_COLORBAR_RAMP,
+    DVZ_GUIDE_ROLE_COLORBAR_TICK_LABEL,
+    DVZ_GUIDE_ROLE_COLORBAR_TITLE,
+    DVZ_GUIDE_ROLE_LEGEND,
+    DVZ_GUIDE_ROLE_LEGEND_ENTRY,
+    DVZ_GUIDE_ROLE_LEGEND_TITLE,
+    DVZ_GUIDE_ROLE_GUIDE_LINE,
+    DVZ_GUIDE_ROLE_GUIDE_SPAN,
+    DVZ_GUIDE_ROLE_GUIDE_LABEL,
+} DvzGuideRole;
+
+
+typedef enum
+{
+    DVZ_GUIDE_PART_NONE = 0,
+    DVZ_GUIDE_PART_BOX,
+    DVZ_GUIDE_PART_LINE,
+    DVZ_GUIDE_PART_FILL,
+    DVZ_GUIDE_PART_OUTLINE,
+    DVZ_GUIDE_PART_TEXT,
+    DVZ_GUIDE_PART_RAMP,
+    DVZ_GUIDE_PART_TICK,
+    DVZ_GUIDE_PART_GRID,
+} DvzGuidePart;
+
+
+typedef enum
+{
+    DVZ_RENDERED_CONTRIBUTION_NONE = 0,
+    DVZ_RENDERED_CONTRIBUTION_VISUAL,
+    DVZ_RENDERED_CONTRIBUTION_GUIDE,
+} DvzRenderedContributionKind;
+
+
+struct DvzGuideLayout
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzId snapshot_id;
+    DvzId guide_id;
+    DvzGuideKind kind;
+    DvzGuideRole role;
+    DvzGuidePart part;
+    DvzRect box_px;
+    float anchor_px[2];
+    double data_value;
+    uint32_t item_index;
+    bool has_box;
+    bool has_anchor;
+    bool has_data_value;
+    bool has_item_index;
+    char label[DVZ_SCENE_LABEL_SIZE];
+};
+typedef struct DvzGuideLayout DvzGuideLayout;
+
+
+struct DvzGuideHit
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzId snapshot_id;
+    DvzId guide_id;
+    DvzGuideKind kind;
+    DvzGuideRole role;
+    DvzGuidePart part;
+    DvzRect box_px;
+    float point_px[2];
+    double data_value;
+    uint32_t item_index;
+    bool hit;
+    bool has_data_value;
+    bool has_item_index;
+    char label[DVZ_SCENE_LABEL_SIZE];
+};
+typedef struct DvzGuideHit DvzGuideHit;
+
+
+struct DvzRenderedContribution
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzId snapshot_id;
+    DvzId contribution_id;
+    DvzId guide_id;
+    DvzId visual_id;
+    DvzRenderedContributionKind kind;
+    DvzGuideRole role;
+    DvzGuidePart part;
+    DvzRect box_px;
+    char label[DVZ_SCENE_LABEL_SIZE];
+};
+typedef struct DvzRenderedContribution DvzRenderedContribution;
+
+
 struct DvzPanelReserve
 {
     float left_px;

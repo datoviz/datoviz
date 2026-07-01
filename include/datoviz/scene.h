@@ -708,6 +708,66 @@ DVZ_EXPORT bool dvz_panel_frame_info(
 
 
 /**
+ * Return the number of first-class guide layout records in a frame snapshot.
+ *
+ * Guide layouts describe retained adornment boxes such as axes, axis text, guide lines, guide
+ * spans, colorbars, and legends in figure logical pixels.
+ *
+ * @param snapshot the panel frame snapshot
+ * @return guide layout count, or 0 when snapshot is NULL
+ */
+DVZ_EXPORT uint32_t dvz_panel_frame_guide_count(const DvzPanelFrameSnapshot* snapshot);
+
+
+/**
+ * Copy one first-class guide layout record by index.
+ *
+ * @param snapshot the panel frame snapshot
+ * @param index guide layout index
+ * @param out output guide layout
+ * @return whether the guide layout was copied
+ */
+DVZ_EXPORT bool dvz_panel_frame_guide_layout(
+    const DvzPanelFrameSnapshot* snapshot, uint32_t index, DvzGuideLayout* out);
+
+
+/**
+ * Return the topmost first-class guide layout containing a figure logical-pixel point.
+ *
+ * @param snapshot the panel frame snapshot
+ * @param x_px x coordinate in figure logical pixels
+ * @param y_px y coordinate in figure logical pixels
+ * @param out output hit record
+ * @return whether a guide layout contained the point
+ */
+DVZ_EXPORT bool dvz_panel_frame_guide_hit(
+    const DvzPanelFrameSnapshot* snapshot, float x_px, float y_px, DvzGuideHit* out);
+
+
+/**
+ * Return the number of rendered contribution records in a frame snapshot.
+ *
+ * Contributions tie durable guide identities to generated visual identities.
+ *
+ * @param snapshot the panel frame snapshot
+ * @return contribution count, or 0 when snapshot is NULL
+ */
+DVZ_EXPORT uint32_t dvz_panel_frame_contribution_count(const DvzPanelFrameSnapshot* snapshot);
+
+
+/**
+ * Copy one rendered contribution record by index.
+ *
+ * @param snapshot the panel frame snapshot
+ * @param index rendered contribution index
+ * @param out output contribution
+ * @return whether the contribution was copied
+ */
+DVZ_EXPORT bool dvz_panel_frame_contribution(
+    const DvzPanelFrameSnapshot* snapshot, uint32_t index, DvzRenderedContribution* out);
+
+
+/**
  * Retain one panel frame snapshot.
  *
  * @param snapshot the panel frame snapshot
