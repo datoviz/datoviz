@@ -1,53 +1,10 @@
+import { COMMAND_NAMES } from "./command_metadata.js";
+
 const PACKET_MAGIC = [0x44, 0x56, 0x50, 0x32, 0x50, 0x4b, 0x54, 0x00];
 const HEADER_SIZE = 56;
 const RECORD_SIZE = 32;
 const NO_PAYLOAD = 0xffffffffffffffffn;
 const LABEL_SIZE = 512;
-
-const COMMAND_NAMES = [
-  "None",
-  "HelloRenderer",
-  "RendererHelloReply",
-  "CreateBuffer",
-  "DestroyBuffer",
-  "CreateTexture",
-  "DestroyTexture",
-  "CreateShaderModule",
-  "DestroyShaderModule",
-  "CreateRenderPipeline",
-  "DestroyRenderPipeline",
-  "CreateComputePipeline",
-  "DestroyComputePipeline",
-  "CreateSampler",
-  "CreateBindGroupLayout",
-  "CreateBindGroup",
-  "DestroyBindGroupLayout",
-  "DestroyBindGroup",
-  "WriteBuffer",
-  "WriteTexture",
-  "BeginCommandEncoder",
-  "BeginRenderPass",
-  "BeginComputePass",
-  "SetViewport",
-  "SetScissor",
-  "SetPipeline",
-  "SetBindGroup",
-  "SetVertexBuffer",
-  "SetIndexBuffer",
-  "Draw",
-  "DrawIndexed",
-  "EndRenderPass",
-  "DispatchWorkgroups",
-  "EndComputePass",
-  "ResourceBarrier",
-  "CopyBufferToBuffer",
-  "CopyBufferToTexture",
-  "CopyTextureToBuffer",
-  "CopyTextureToTexture",
-  "FinishCommandEncoder",
-  "QueueSubmit",
-  "QueueSubmitReply",
-];
 
 const PACKET_KIND_NAMES = new Map([[1, "setup"], [2, "update"], [3, "frame"]]);
 

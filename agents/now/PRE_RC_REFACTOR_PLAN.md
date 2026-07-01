@@ -654,3 +654,48 @@ Changes:
 
 Known risk: command structs still store render tokens as `uint32_t` for packet/wire stability; the
 typed API boundary and protocol validators are now the single authority for token names.
+
+### Phase 3: DRP2 Metadata Authority
+
+Status: complete.
+
+Validation:
+
+```sh
+just build
+just test drp2
+just spec-check
+python3 tools/check_drp2_command_metadata.py
+node tools/webgpu_runner_smoke.mjs
+python3 tools/check_example_manifests.py
+git diff --check
+```
+
+Result:
+
+1. `just build` passed after rebuilding DRP2 and downstream examples.
+2. `just test drp2` passed 142/142 selected tests.
+3. `just spec-check` passed and now includes `tools/check_drp2_command_metadata.py`.
+4. `python3 tools/check_drp2_command_metadata.py` passed.
+5. `node tools/webgpu_runner_smoke.mjs` passed with 37 fixtures, 2 streams, and 82 negatives.
+6. `python3 tools/check_example_manifests.py` passed.
+7. `git diff --check` passed.
+
+Changes:
+
+1. Added `src/drp2/command_metadata.c` and `src/drp2/command_metadata.h` as the single C runtime
+   table for command discriminator names, packet phases, and fixed packet body sizes.
+2. Moved packet-only body structs to `src/drp2/packet_wire.h` so body sizing and packet encode/decode
+   share the same internal definitions.
+3. Removed the duplicate command-name switch from JSON serialization and the duplicate packet-kind
+   and fixed-body-size switches from packet encoding.
+4. Added `tools/check_drp2_command_metadata.py` to validate that `spec/drp2/COMMANDS.md`,
+   `spec/drp2/schema/drp_command.json`, `DvzDrp2CommandType`, the C runtime metadata table, and the
+   generated JS command-name metadata stay in lockstep.
+5. Replaced the inline browser `COMMAND_NAMES` list with generated
+   `web/drp2/command_metadata.js`.
+
+Known risk: the C packet runtime remains an implemented subset of the active prose/schema command
+surface; active schema-only commands are covered by the fixture runner and WebGPU preflight, but
+they must be added to `DvzDrp2CommandType` and the metadata table before native packet execution can
+carry them.

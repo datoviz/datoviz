@@ -25,6 +25,7 @@
 #include "_base64.h"
 #include "_json.h"
 #include "_stream.h"
+#include "command_metadata.h"
 
 
 
@@ -34,100 +35,6 @@
 
 #define DVZ_DRP2_JSON_INLINE_PAYLOAD UINT32_MAX
 
-
-
-static const char* _command_name(DvzDrp2CommandType type)
-{
-    switch (type)
-    {
-    case DVZ_DRP2_COMMAND_HELLO_RENDERER:
-        return "HelloRenderer";
-    case DVZ_DRP2_COMMAND_RENDERER_HELLO_REPLY:
-        return "RendererHelloReply";
-    case DVZ_DRP2_COMMAND_CREATE_BUFFER:
-        return "CreateBuffer";
-    case DVZ_DRP2_COMMAND_DESTROY_BUFFER:
-        return "DestroyBuffer";
-    case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
-        return "CreateTexture";
-    case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
-        return "DestroyTexture";
-    case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
-        return "CreateShaderModule";
-    case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
-        return "DestroyShaderModule";
-    case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
-        return "CreateRenderPipeline";
-    case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
-        return "DestroyRenderPipeline";
-    case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
-        return "CreateComputePipeline";
-    case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
-        return "DestroyComputePipeline";
-    case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
-        return "CreateSampler";
-    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
-        return "CreateBindGroupLayout";
-    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
-        return "CreateBindGroup";
-    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
-        return "DestroyBindGroupLayout";
-    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
-        return "DestroyBindGroup";
-    case DVZ_DRP2_COMMAND_WRITE_BUFFER:
-        return "WriteBuffer";
-    case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
-        return "WriteTexture";
-    case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
-        return "BeginCommandEncoder";
-    case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
-        return "BeginRenderPass";
-    case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
-        return "BeginComputePass";
-    case DVZ_DRP2_COMMAND_SET_VIEWPORT:
-        return "SetViewport";
-    case DVZ_DRP2_COMMAND_SET_SCISSOR:
-        return "SetScissor";
-    case DVZ_DRP2_COMMAND_SET_PIPELINE:
-        return "SetPipeline";
-    case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
-        return "SetBindGroup";
-    case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
-        return "SetVertexBuffer";
-    case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
-        return "SetIndexBuffer";
-    case DVZ_DRP2_COMMAND_DRAW:
-        return "Draw";
-    case DVZ_DRP2_COMMAND_DRAW_INDEXED:
-        return "DrawIndexed";
-    case DVZ_DRP2_COMMAND_END_RENDER_PASS:
-        return "EndRenderPass";
-    case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:
-        return "DispatchWorkgroups";
-    case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
-        return "EndComputePass";
-    case DVZ_DRP2_COMMAND_RESOURCE_BARRIER:
-        return "ResourceBarrier";
-    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
-        return "CopyBufferToBuffer";
-    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
-        return "CopyBufferToTexture";
-    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
-        return "CopyTextureToBuffer";
-    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE:
-        return "CopyTextureToTexture";
-    case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
-        return "FinishCommandEncoder";
-    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT:
-        return "QueueSubmit";
-    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT_REPLY:
-        return "QueueSubmitReply";
-    case DVZ_DRP2_COMMAND_NONE:
-        return "None";
-    default:
-        return "None";
-    }
-}
 
 
 static const char* _vertex_format_name(uint32_t format)
@@ -465,31 +372,31 @@ static void _json_append_vertex_buffers(JsonBuilder* builder, const DvzDrp2Comma
  * Append a DRP2 color write mask as a channel-name array.
  *
  * @param builder the JSON builder
- * @param color_write_mask the internal Vulkan color component bitmask
+ * @param color_write_mask the render protocol color component bitmask
  */
 static void _json_append_color_write_mask(JsonBuilder* builder, uint32_t color_write_mask)
 {
     ANN(builder);
-    uint32_t mask = color_write_mask == 0 ? 0xFu : color_write_mask;
+    uint32_t mask = color_write_mask == 0 ? DVZ_MASK_COLOR_ALL : color_write_mask;
     bool first = true;
 
     _json_append(builder, "[");
-    if ((mask & VK_COLOR_COMPONENT_R_BIT) != 0)
+    if ((mask & DVZ_MASK_COLOR_R) != 0)
     {
         _json_append(builder, "\"red\"");
         first = false;
     }
-    if ((mask & VK_COLOR_COMPONENT_G_BIT) != 0)
+    if ((mask & DVZ_MASK_COLOR_G) != 0)
     {
         _json_append(builder, "%s\"green\"", first ? "" : ", ");
         first = false;
     }
-    if ((mask & VK_COLOR_COMPONENT_B_BIT) != 0)
+    if ((mask & DVZ_MASK_COLOR_B) != 0)
     {
         _json_append(builder, "%s\"blue\"", first ? "" : ", ");
         first = false;
     }
-    if ((mask & VK_COLOR_COMPONENT_A_BIT) != 0)
+    if ((mask & DVZ_MASK_COLOR_A) != 0)
         _json_append(builder, "%s\"alpha\"", first ? "" : ", ");
     _json_append(builder, "]");
 }
@@ -709,19 +616,19 @@ static void _json_append_command(
             builder,
             "{ \"cmd\": \"%s\", \"version\": { \"major\": 2, \"minor\": 0 }, "
             "\"client_name\": \"%s\" }",
-            _command_name(command->type), command->u.handshake.name);
+            _dvz_drp2_command_name(command->type), command->u.handshake.name);
         break;
     case DVZ_DRP2_COMMAND_RENDERER_HELLO_REPLY:
         _json_append(
             builder,
             "{ \"cmd\": \"%s\", \"version\": { \"major\": 2, \"minor\": 0 }, "
             "\"status\": \"ok\", \"renderer_name\": \"%s\" }",
-            _command_name(command->type), command->u.handshake.name);
+            _dvz_drp2_command_name(command->type), command->u.handshake.name);
         break;
     case DVZ_DRP2_COMMAND_CREATE_BUFFER:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"size\": %" PRIu64 ", \"usage\": ",
-            _command_name(command->type), command->u.create_buffer.id,
+            _dvz_drp2_command_name(command->type), command->u.create_buffer.id,
             command->u.create_buffer.size);
         _json_append_usage(builder, command->u.create_buffer.usage);
         _json_append(builder, " }");
@@ -729,7 +636,7 @@ static void _json_append_command(
     case DVZ_DRP2_COMMAND_DESTROY_BUFFER:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"buffer_id\": %" PRIu64 " }",
-            _command_name(command->type), command->u.destroy_buffer.buffer_id);
+            _dvz_drp2_command_name(command->type), command->u.destroy_buffer.buffer_id);
         break;
     case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
         _json_append(
@@ -737,7 +644,7 @@ static void _json_append_command(
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64
             ", \"dimension\": \"%s\", \"width\": %" PRIu32 ", \"height\": %" PRIu32
             ", \"depth\": %" PRIu32 ", \"format\": \"%s\", \"usage\": ",
-            _command_name(command->type), command->u.create_texture.id,
+            _dvz_drp2_command_name(command->type), command->u.create_texture.id,
             command->u.create_texture.depth > 1 ? "3d" : "2d",
             command->u.create_texture.width, command->u.create_texture.height,
             command->u.create_texture.depth > 0 ? command->u.create_texture.depth : 1,
@@ -759,14 +666,14 @@ static void _json_append_command(
     case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"texture_id\": %" PRIu64 " }",
-            _command_name(command->type), command->u.destroy_texture.texture_id);
+            _dvz_drp2_command_name(command->type), command->u.destroy_texture.texture_id);
         break;
     case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
         _json_append(
             builder,
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"stage\": \"%s\", \"format\": \"%s\", "
             "\"entry_point\": \"main\"",
-            _command_name(command->type), command->u.create_shader_module.id,
+            _dvz_drp2_command_name(command->type), command->u.create_shader_module.id,
             command->u.create_shader_module.stage,
             command->u.create_shader_module.format[0] != '\0' ? command->u.create_shader_module.format
                                                                : "wgsl");
@@ -787,7 +694,7 @@ static void _json_append_command(
     case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"shader_module_id\": %" PRIu64 " }",
-            _command_name(command->type), command->u.destroy_shader_module.shader_module_id);
+            _dvz_drp2_command_name(command->type), command->u.destroy_shader_module.shader_module_id);
         break;
     case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
         _json_append(
@@ -795,7 +702,7 @@ static void _json_append_command(
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"vertex_buffer_slots\": %" PRIu32
             ", \"vertex_shader_module_id\": %" PRIu64
             ", \"fragment_shader_module_id\": %" PRIu64,
-            _command_name(command->type), command->u.create_render_pipeline.id,
+            _dvz_drp2_command_name(command->type), command->u.create_render_pipeline.id,
             command->u.create_render_pipeline.vertex_buffer_slots,
             command->u.create_render_pipeline.vertex_shader_module_id,
             command->u.create_render_pipeline.fragment_shader_module_id);
@@ -853,14 +760,14 @@ static void _json_append_command(
     case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"render_pipeline_id\": %" PRIu64 " }",
-            _command_name(command->type),
+            _dvz_drp2_command_name(command->type),
             command->u.destroy_render_pipeline.render_pipeline_id);
         break;
     case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
         _json_append(
             builder,
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"compute_shader_module_id\": %" PRIu64,
-            _command_name(command->type), command->u.create_compute_pipeline.id,
+            _dvz_drp2_command_name(command->type), command->u.create_compute_pipeline.id,
             command->u.create_compute_pipeline.compute_shader_module_id);
         if (command->u.create_compute_pipeline.bind_group_layout_count > 0)
         {
@@ -880,7 +787,7 @@ static void _json_append_command(
     case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"compute_pipeline_id\": %" PRIu64 " }",
-            _command_name(command->type),
+            _dvz_drp2_command_name(command->type),
             command->u.destroy_compute_pipeline.compute_pipeline_id);
         break;
     case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
@@ -897,13 +804,13 @@ static void _json_append_command(
             ", \"mag_filter\": \"%s\", \"min_filter\": \"%s\", "
             "\"mipmap_filter\": \"nearest\", \"address_mode_u\": \"clamp-to-edge\", "
             "\"address_mode_v\": \"clamp-to-edge\" }",
-            _command_name(command->type), command->u.create_sampler.id, mag_filter, min_filter);
+            _dvz_drp2_command_name(command->type), command->u.create_sampler.id, mag_filter, min_filter);
         break;
     }
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"entries\": [",
-            _command_name(command->type), command->u.create_bind_group_layout.id);
+            _dvz_drp2_command_name(command->type), command->u.create_bind_group_layout.id);
         for (uint32_t i = 0; i < command->u.create_bind_group_layout.entry_count; i++)
         {
             const DvzDrp2BindGroupLayoutEntry* entry =
@@ -934,7 +841,7 @@ static void _json_append_command(
             builder,
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"bind_group_layout_id\": %" PRIu64
             ", \"entries\": [",
-            _command_name(command->type), command->u.create_bind_group.id,
+            _dvz_drp2_command_name(command->type), command->u.create_bind_group.id,
             command->u.create_bind_group.bind_group_layout_id);
         for (uint32_t i = 0; i < command->u.create_bind_group.entry_count; i++)
         {
@@ -960,13 +867,13 @@ static void _json_append_command(
     case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"bind_group_layout_id\": %" PRIu64 " }",
-            _command_name(command->type),
+            _dvz_drp2_command_name(command->type),
             command->u.destroy_bind_group_layout.bind_group_layout_id);
         break;
     case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"bind_group_id\": %" PRIu64 " }",
-            _command_name(command->type), command->u.destroy_bind_group.bind_group_id);
+            _dvz_drp2_command_name(command->type), command->u.destroy_bind_group.bind_group_id);
         break;
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
     {
@@ -977,7 +884,7 @@ static void _json_append_command(
                 "{ \"cmd\": \"%s\", \"buffer_id\": %" PRIu64 ", \"offset\": %" PRIu64
                 ", \"size\": %" PRIu64 ", \"data_ref\": %" PRIu32
                 ", \"data_encoding\": \"wasm-memory\" }",
-                _command_name(command->type), command->u.write_buffer.buffer_id,
+                _dvz_drp2_command_name(command->type), command->u.write_buffer.buffer_id,
                 command->u.write_buffer.offset, command->u.write_buffer.size, payload_ref);
             break;
         }
@@ -997,7 +904,7 @@ static void _json_append_command(
             builder,
             "{ \"cmd\": \"%s\", \"buffer_id\": %" PRIu64 ", \"offset\": %" PRIu64
             ", \"size\": %" PRIu64 ", \"data\": \"%s\" }",
-            _command_name(command->type), command->u.write_buffer.buffer_id,
+            _dvz_drp2_command_name(command->type), command->u.write_buffer.buffer_id,
             command->u.write_buffer.offset, command->u.write_buffer.size,
             b64_wb ? b64_wb : "");
         dvz_free(b64_wb_tmp);
@@ -1018,7 +925,7 @@ static void _json_append_command(
                 ", \"depth\": %" PRIu32 " }, \"bytes_per_row\": %" PRIu32
                 ", \"rows_per_image\": %" PRIu32 ", \"data_ref\": %" PRIu32
                 ", \"data_encoding\": \"wasm-memory\" }",
-                _command_name(command->type), command->u.write_texture.texture_id,
+                _dvz_drp2_command_name(command->type), command->u.write_texture.texture_id,
                 command->u.write_texture.mip_level, command->u.write_texture.origin_x,
                 command->u.write_texture.origin_y, command->u.write_texture.origin_z,
                 command->u.write_texture.width, command->u.write_texture.height,
@@ -1045,7 +952,7 @@ static void _json_append_command(
             " }, \"size\": { \"width\": %" PRIu32 ", \"height\": %" PRIu32
             ", \"depth\": %" PRIu32 " }, \"bytes_per_row\": %" PRIu32
             ", \"rows_per_image\": %" PRIu32 ", \"data\": \"%s\" }",
-            _command_name(command->type), command->u.write_texture.texture_id,
+            _dvz_drp2_command_name(command->type), command->u.write_texture.texture_id,
             command->u.write_texture.mip_level, command->u.write_texture.origin_x,
             command->u.write_texture.origin_y, command->u.write_texture.origin_z,
             command->u.write_texture.width, command->u.write_texture.height,
@@ -1056,7 +963,7 @@ static void _json_append_command(
     }
     case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
         _json_append(
-            builder, "{ \"cmd\": \"%s\", \"id\": %" PRIu64 " }", _command_name(command->type),
+            builder, "{ \"cmd\": \"%s\", \"id\": %" PRIu64 " }", _dvz_drp2_command_name(command->type),
             command->u.begin_command_encoder.id);
         break;
     case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
@@ -1064,7 +971,7 @@ static void _json_append_command(
             builder,
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"encoder_id\": %" PRIu64
             ", \"color_attachments\": [ ",
-            _command_name(command->type), command->u.begin_render_pass.id,
+            _dvz_drp2_command_name(command->type), command->u.begin_render_pass.id,
             command->u.begin_render_pass.encoder_id);
         uint32_t color_count = command->u.begin_render_pass.color_attachment_count;
         if (color_count == 0)
@@ -1142,7 +1049,7 @@ static void _json_append_command(
     case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"encoder_id\": %" PRIu64 " }",
-            _command_name(command->type), command->u.begin_compute_pass.id,
+            _dvz_drp2_command_name(command->type), command->u.begin_compute_pass.id,
             command->u.begin_compute_pass.encoder_id);
         break;
     case DVZ_DRP2_COMMAND_SET_VIEWPORT:
@@ -1151,7 +1058,7 @@ static void _json_append_command(
             "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64
             ", \"x\": %g, \"y\": %g, \"width\": %g, \"height\": %g, "
             "\"min_depth\": 0, \"max_depth\": 1 }",
-            _command_name(command->type), command->u.set_viewport.pass_id,
+            _dvz_drp2_command_name(command->type), command->u.set_viewport.pass_id,
             (double)command->u.set_viewport.viewport[0],
             (double)command->u.set_viewport.viewport[1],
             (double)command->u.set_viewport.viewport[2],
@@ -1162,7 +1069,7 @@ static void _json_append_command(
             builder,
             "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64
             ", \"x\": %g, \"y\": %g, \"width\": %g, \"height\": %g }",
-            _command_name(command->type), command->u.set_scissor.pass_id,
+            _dvz_drp2_command_name(command->type), command->u.set_scissor.pass_id,
             (double)command->u.set_scissor.scissor[0],
             (double)command->u.set_scissor.scissor[1],
             (double)command->u.set_scissor.scissor[2],
@@ -1172,7 +1079,7 @@ static void _json_append_command(
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"pipeline_id\": %" PRIu64
                      " }",
-            _command_name(command->type), command->u.set_pipeline.pass_id,
+            _dvz_drp2_command_name(command->type), command->u.set_pipeline.pass_id,
             command->u.set_pipeline.pipeline_id);
         break;
     case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
@@ -1180,7 +1087,7 @@ static void _json_append_command(
             builder,
             "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"slot\": %" PRIu32
             ", \"bind_group_id\": %" PRIu64,
-            _command_name(command->type), command->u.set_bind_group.pass_id,
+            _dvz_drp2_command_name(command->type), command->u.set_bind_group.pass_id,
             command->u.set_bind_group.slot, command->u.set_bind_group.bind_group_id);
         if (command->u.set_bind_group.dynamic_offset_count > 0)
         {
@@ -1200,7 +1107,7 @@ static void _json_append_command(
             builder,
             "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"slot\": %" PRIu32
             ", \"buffer_id\": %" PRIu64 ", \"offset\": %" PRIu64 " }",
-            _command_name(command->type), command->u.set_vertex_buffer.pass_id,
+            _dvz_drp2_command_name(command->type), command->u.set_vertex_buffer.pass_id,
             command->u.set_vertex_buffer.slot, command->u.set_vertex_buffer.buffer_id,
             command->u.set_vertex_buffer.offset);
         break;
@@ -1209,7 +1116,7 @@ static void _json_append_command(
             builder,
             "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"buffer_id\": %" PRIu64
             ", \"index_format\": \"%s\", \"offset\": %" PRIu64 " }",
-            _command_name(command->type), command->u.set_index_buffer.pass_id,
+            _dvz_drp2_command_name(command->type), command->u.set_index_buffer.pass_id,
             command->u.set_index_buffer.buffer_id, command->u.set_index_buffer.index_format,
             command->u.set_index_buffer.offset);
         break;
@@ -1219,7 +1126,7 @@ static void _json_append_command(
             "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"vertex_count\": %" PRIu32
             ", \"instance_count\": %" PRIu32 ", \"first_vertex\": %" PRIu32
             ", \"first_instance\": %" PRIu32 " }",
-            _command_name(command->type), command->u.draw.pass_id, command->u.draw.vertex_count,
+            _dvz_drp2_command_name(command->type), command->u.draw.pass_id, command->u.draw.vertex_count,
             command->u.draw.instance_count, command->u.draw.first_vertex,
             command->u.draw.first_instance);
         break;
@@ -1229,7 +1136,7 @@ static void _json_append_command(
             "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"index_count\": %" PRIu32
             ", \"instance_count\": %" PRIu32 ", \"first_index\": %" PRIu32
             ", \"base_vertex\": %" PRId32 ", \"first_instance\": %" PRIu32 " }",
-            _command_name(command->type), command->u.draw_indexed.pass_id,
+            _dvz_drp2_command_name(command->type), command->u.draw_indexed.pass_id,
             command->u.draw_indexed.index_count, command->u.draw_indexed.instance_count,
             command->u.draw_indexed.first_index, command->u.draw_indexed.base_vertex,
             command->u.draw_indexed.first_instance);
@@ -1237,20 +1144,20 @@ static void _json_append_command(
     case DVZ_DRP2_COMMAND_END_RENDER_PASS:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 " }",
-            _command_name(command->type), command->u.end_render_pass.pass_id);
+            _dvz_drp2_command_name(command->type), command->u.end_render_pass.pass_id);
         break;
     case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:
         _json_append(
             builder,
             "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"x\": %" PRIu32
             ", \"y\": %" PRIu32 ", \"z\": %" PRIu32 " }",
-            _command_name(command->type), command->u.dispatch.pass_id, command->u.dispatch.x,
+            _dvz_drp2_command_name(command->type), command->u.dispatch.pass_id, command->u.dispatch.x,
             command->u.dispatch.y, command->u.dispatch.z);
         break;
     case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 " }",
-            _command_name(command->type), command->u.end_compute_pass.pass_id);
+            _dvz_drp2_command_name(command->type), command->u.end_compute_pass.pass_id);
         break;
     case DVZ_DRP2_COMMAND_RESOURCE_BARRIER:
         _json_append(
@@ -1258,7 +1165,7 @@ static void _json_append_command(
             "{ \"cmd\": \"%s\", \"encoder_id\": %" PRIu64 ", \"buffer_id\": %" PRIu64
             ", \"src_stage\": \"%s\", \"src_access\": \"%s\", \"dst_stage\": \"%s\""
             ", \"dst_access\": \"%s\", \"offset\": %" PRIu64 ", \"size\": %" PRIu64 " }",
-            _command_name(command->type), command->u.resource_barrier.encoder_id,
+            _dvz_drp2_command_name(command->type), command->u.resource_barrier.encoder_id,
             command->u.resource_barrier.buffer_id, command->u.resource_barrier.src_stage,
             command->u.resource_barrier.src_access, command->u.resource_barrier.dst_stage,
             command->u.resource_barrier.dst_access, command->u.resource_barrier.offset,
@@ -1270,7 +1177,7 @@ static void _json_append_command(
             "{ \"cmd\": \"%s\", \"encoder_id\": %" PRIu64 ", \"src_buffer_id\": %" PRIu64
             ", \"src_offset\": %" PRIu64 ", \"dst_buffer_id\": %" PRIu64
             ", \"dst_offset\": %" PRIu64 ", \"size\": %" PRIu64 " }",
-            _command_name(command->type), command->u.copy_buffer_to_buffer.encoder_id,
+            _dvz_drp2_command_name(command->type), command->u.copy_buffer_to_buffer.encoder_id,
             command->u.copy_buffer_to_buffer.src_buffer_id,
             command->u.copy_buffer_to_buffer.src_offset,
             command->u.copy_buffer_to_buffer.dst_buffer_id,
@@ -1285,7 +1192,7 @@ static void _json_append_command(
             ", \"dst_mip_level\": %" PRIu32 ", \"dst_origin\": { \"x\": %" PRIu32
             ", \"y\": %" PRIu32 ", \"z\": %" PRIu32 " }, \"size\": { \"width\": %" PRIu32
             ", \"height\": %" PRIu32 ", \"depth\": %" PRIu32 " } }",
-            _command_name(command->type), command->u.copy_buffer_to_texture.encoder_id,
+            _dvz_drp2_command_name(command->type), command->u.copy_buffer_to_texture.encoder_id,
             command->u.copy_buffer_to_texture.src_buffer_id,
             command->u.copy_buffer_to_texture.src_offset,
             command->u.copy_buffer_to_texture.bytes_per_row,
@@ -1306,7 +1213,7 @@ static void _json_append_command(
             "\"size\": { \"width\": %" PRIu32 ", \"height\": %" PRIu32
             ", \"depth\": 1 }, \"dst_buffer_id\": %" PRIu64 ", \"dst_offset\": %" PRIu64
             ", \"bytes_per_row\": %" PRIu32 ", \"rows_per_image\": %" PRIu32 " }",
-            _command_name(command->type), command->u.copy_texture_to_buffer.encoder_id,
+            _dvz_drp2_command_name(command->type), command->u.copy_texture_to_buffer.encoder_id,
             command->u.copy_texture_to_buffer.src_texture_id,
             command->u.copy_texture_to_buffer.width, command->u.copy_texture_to_buffer.height,
             command->u.copy_texture_to_buffer.dst_buffer_id,
@@ -1323,7 +1230,7 @@ static void _json_append_command(
             ", \"dst_mip_level\": %" PRIu32 ", \"dst_origin\": { \"x\": %" PRIu32
             ", \"y\": %" PRIu32 ", \"z\": %" PRIu32 " }, \"size\": { \"width\": %" PRIu32
             ", \"height\": %" PRIu32 ", \"depth\": %" PRIu32 " } }",
-            _command_name(command->type), command->u.copy_texture_to_texture.encoder_id,
+            _dvz_drp2_command_name(command->type), command->u.copy_texture_to_texture.encoder_id,
             command->u.copy_texture_to_texture.src_texture_id,
             command->u.copy_texture_to_texture.src_mip_level,
             command->u.copy_texture_to_texture.src_origin_x,
@@ -1341,14 +1248,14 @@ static void _json_append_command(
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"encoder_id\": %" PRIu64
                      ", \"command_buffer_id\": %" PRIu64 " }",
-            _command_name(command->type), command->u.finish_command_encoder.encoder_id,
+            _dvz_drp2_command_name(command->type), command->u.finish_command_encoder.encoder_id,
             command->u.finish_command_encoder.command_buffer_id);
         break;
     case DVZ_DRP2_COMMAND_QUEUE_SUBMIT:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"command_buffer_ids\": [%" PRIu64
                      "], \"submission_id\": %" PRIu64,
-            _command_name(command->type), command->u.queue_submit.command_buffer_id,
+            _dvz_drp2_command_name(command->type), command->u.queue_submit.command_buffer_id,
             command->u.queue_submit.submission_id);
         if (command->u.queue_submit.has_readback)
         {
@@ -1367,7 +1274,7 @@ static void _json_append_command(
             "{ \"cmd\": \"%s\", \"submission_id\": %" PRIu64 ", \"readbacks\": [ { "
             "\"buffer_id\": %" PRIu64 ", \"offset\": %" PRIu64 ", \"size\": %" PRIu64
             ", \"data\": \"%s\" } ] }",
-            _command_name(command->type), command->u.queue_submit.submission_id,
+            _dvz_drp2_command_name(command->type), command->u.queue_submit.submission_id,
             command->u.queue_submit.buffer_id, command->u.queue_submit.offset,
             command->u.queue_submit.size, command->u.queue_submit.data_base64);
         break;

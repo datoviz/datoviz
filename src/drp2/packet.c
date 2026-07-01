@@ -23,6 +23,8 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_stream.h"
+#include "command_metadata.h"
+#include "packet_wire.h"
 
 
 
@@ -37,47 +39,6 @@
 #define DVZ_DRP2_PACKET_VERSION_MAJOR 2
 #define DVZ_DRP2_PACKET_VERSION_MINOR 0
 #define DVZ_DRP2_PACKET_NO_PAYLOAD UINT64_MAX
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-typedef struct PacketWriteBufferBody
-{
-    uint64_t buffer_id;
-    uint64_t offset;
-    uint64_t size;
-} PacketWriteBufferBody;
-
-
-typedef struct PacketWriteTextureBody
-{
-    uint64_t texture_id;
-    uint32_t mip_level;
-    uint32_t origin_x;
-    uint32_t origin_y;
-    uint32_t origin_z;
-    uint32_t width;
-    uint32_t height;
-    uint32_t depth;
-    uint32_t bytes_per_row;
-    uint32_t rows_per_image;
-} PacketWriteTextureBody;
-
-
-typedef struct PacketShaderBody
-{
-    uint64_t id;
-    char stage[DVZ_DRP2_LABEL_SIZE];
-    char format[DVZ_DRP2_LABEL_SIZE];
-    char builtin_family[DVZ_DRP2_LABEL_SIZE];
-    char builtin_variant[DVZ_DRP2_LABEL_SIZE];
-    uint32_t builtin_version;
-    uint32_t payload_kind; /* 1=UTF-8 source, 2=SPIR-V bytes. */
-    uint64_t payload_size;
-} PacketShaderBody;
 
 
 
@@ -153,149 +114,13 @@ static uint64_t _get_u64(const uint8_t* src)
 
 DvzDrp2PacketKind dvz_drp2_packet_command_kind(DvzDrp2CommandType type)
 {
-    switch (type)
-    {
-    case DVZ_DRP2_COMMAND_HELLO_RENDERER:
-    case DVZ_DRP2_COMMAND_RENDERER_HELLO_REPLY:
-    case DVZ_DRP2_COMMAND_CREATE_BUFFER:
-    case DVZ_DRP2_COMMAND_DESTROY_BUFFER:
-    case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
-    case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
-    case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
-    case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
-    case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
-    case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
-    case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
-    case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
-    case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
-    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
-    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
-    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
-    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
-        return DVZ_DRP2_PACKET_SETUP;
-    case DVZ_DRP2_COMMAND_WRITE_BUFFER:
-    case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
-        return DVZ_DRP2_PACKET_UPDATE;
-    case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
-    case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
-    case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
-    case DVZ_DRP2_COMMAND_SET_VIEWPORT:
-    case DVZ_DRP2_COMMAND_SET_SCISSOR:
-    case DVZ_DRP2_COMMAND_SET_PIPELINE:
-    case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
-    case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
-    case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
-    case DVZ_DRP2_COMMAND_DRAW:
-    case DVZ_DRP2_COMMAND_DRAW_INDEXED:
-    case DVZ_DRP2_COMMAND_END_RENDER_PASS:
-    case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:
-    case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
-    case DVZ_DRP2_COMMAND_RESOURCE_BARRIER:
-    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
-    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
-    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
-    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE:
-    case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
-    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT:
-    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT_REPLY:
-        return DVZ_DRP2_PACKET_FRAME;
-    case DVZ_DRP2_COMMAND_NONE:
-    default:
-        return DVZ_DRP2_PACKET_NONE;
-    }
+    return _dvz_drp2_command_packet_kind(type);
 }
 
 
 static uint64_t _fixed_body_size(DvzDrp2CommandType type)
 {
-#define BODY_SIZE(name) sizeof(((DvzDrp2Command*)0)->u.name)
-    switch (type)
-    {
-    case DVZ_DRP2_COMMAND_HELLO_RENDERER:
-    case DVZ_DRP2_COMMAND_RENDERER_HELLO_REPLY:
-        return BODY_SIZE(handshake);
-    case DVZ_DRP2_COMMAND_CREATE_BUFFER:
-        return BODY_SIZE(create_buffer);
-    case DVZ_DRP2_COMMAND_DESTROY_BUFFER:
-        return BODY_SIZE(destroy_buffer);
-    case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
-        return BODY_SIZE(create_texture);
-    case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
-        return BODY_SIZE(destroy_texture);
-    case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
-        return BODY_SIZE(destroy_shader_module);
-    case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
-        return BODY_SIZE(create_render_pipeline);
-    case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
-        return BODY_SIZE(destroy_render_pipeline);
-    case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
-        return BODY_SIZE(create_compute_pipeline);
-    case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
-        return BODY_SIZE(destroy_compute_pipeline);
-    case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
-        return BODY_SIZE(create_sampler);
-    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
-        return BODY_SIZE(create_bind_group_layout);
-    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
-        return BODY_SIZE(create_bind_group);
-    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
-        return BODY_SIZE(destroy_bind_group_layout);
-    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
-        return BODY_SIZE(destroy_bind_group);
-    case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
-        return BODY_SIZE(begin_command_encoder);
-    case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
-        return BODY_SIZE(begin_render_pass);
-    case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
-        return BODY_SIZE(begin_compute_pass);
-    case DVZ_DRP2_COMMAND_SET_VIEWPORT:
-        return BODY_SIZE(set_viewport);
-    case DVZ_DRP2_COMMAND_SET_SCISSOR:
-        return BODY_SIZE(set_scissor);
-    case DVZ_DRP2_COMMAND_SET_PIPELINE:
-        return BODY_SIZE(set_pipeline);
-    case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
-        return BODY_SIZE(set_bind_group);
-    case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
-        return BODY_SIZE(set_vertex_buffer);
-    case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
-        return BODY_SIZE(set_index_buffer);
-    case DVZ_DRP2_COMMAND_DRAW:
-        return BODY_SIZE(draw);
-    case DVZ_DRP2_COMMAND_DRAW_INDEXED:
-        return BODY_SIZE(draw_indexed);
-    case DVZ_DRP2_COMMAND_END_RENDER_PASS:
-        return BODY_SIZE(end_render_pass);
-    case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:
-        return BODY_SIZE(dispatch);
-    case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
-        return BODY_SIZE(end_compute_pass);
-    case DVZ_DRP2_COMMAND_RESOURCE_BARRIER:
-        return BODY_SIZE(resource_barrier);
-    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
-        return BODY_SIZE(copy_buffer_to_buffer);
-    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
-        return BODY_SIZE(copy_buffer_to_texture);
-    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
-        return BODY_SIZE(copy_texture_to_buffer);
-    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE:
-        return BODY_SIZE(copy_texture_to_texture);
-    case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
-        return BODY_SIZE(finish_command_encoder);
-    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT:
-    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT_REPLY:
-        return BODY_SIZE(queue_submit);
-    case DVZ_DRP2_COMMAND_WRITE_BUFFER:
-        return sizeof(PacketWriteBufferBody);
-    case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
-        return sizeof(PacketWriteTextureBody);
-    case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
-        return sizeof(PacketShaderBody);
-    case DVZ_DRP2_COMMAND_NONE:
-    default:
-        return 0;
-    }
-#undef BODY_SIZE
+    return _dvz_drp2_command_fixed_body_size(type);
 }
 
 
