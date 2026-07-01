@@ -63,6 +63,8 @@ _old*
 _old/
 _*
 !datoviz/__init__.py
+!datoviz/_ctypes.py
+!datoviz/_array_facade.py
 .direnv
 .DS_Store
 .env*
