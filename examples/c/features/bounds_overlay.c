@@ -74,7 +74,7 @@ static void _fill_points(
         colors[i] = dvz_color_rgba(
             (uint8_t)(42.0f + 180.0f * t), (uint8_t)(210.0f - 72.0f * t),
             (uint8_t)(255.0f - 165.0f * t), 235);
-        sizes[i] = 8.0f + 12.0f * t;
+        sizes[i] = 8.0f + 22.0f * t;
     }
 }
 
