@@ -81,7 +81,7 @@ bool _emitter_prepare_gbuffer_targets(
             return false;
         uint64_t texture_id = 0;
         ok = _graph_resolve_texture_2d(
-            emitter, stream, plan, cfg, resource, width, height, VK_FORMAT_R16G16B16A16_SFLOAT,
+            emitter, stream, plan, cfg, resource, width, height, DVZ_FORMAT_R16G16B16A16_SFLOAT,
             &texture_id);
         ok = ok && _graph_runtime_targets_add(&out->graph, resource->id, texture_id);
         if (ok && i == 0)
@@ -97,7 +97,7 @@ bool _emitter_prepare_gbuffer_targets(
         if (resource == NULL)
             return false;
         ok = _graph_resolve_texture_2d(
-            emitter, stream, plan, cfg, resource, width, height, VK_FORMAT_D32_SFLOAT,
+            emitter, stream, plan, cfg, resource, width, height, DVZ_FORMAT_D32_SFLOAT,
             &out->depth_id);
         ok = ok && _graph_runtime_targets_add(&out->graph, resource->id, out->depth_id);
     }
@@ -166,10 +166,10 @@ bool _emitter_prepare_edl_targets(
         return false;
 
     bool ok = _graph_resolve_texture_2d(
-        emitter, stream, plan, cfg, color_resource, width, height, VK_FORMAT_R8G8B8A8_UNORM,
+        emitter, stream, plan, cfg, color_resource, width, height, DVZ_FORMAT_R8G8B8A8_UNORM,
         &out->color_id);
     ok = ok && _graph_resolve_texture_2d(
-                   emitter, stream, plan, cfg, depth_resource, width, height, VK_FORMAT_D32_SFLOAT,
+                   emitter, stream, plan, cfg, depth_resource, width, height, DVZ_FORMAT_D32_SFLOAT,
                    &out->depth_id);
     ok = ok && _graph_runtime_targets_add(&out->graph, color_resource->id, out->color_id);
     ok = ok && _graph_runtime_targets_add(&out->graph, depth_resource->id, out->depth_id);
@@ -391,14 +391,14 @@ bool _emitter_prepare_ssao_targets(
         return false;
 
     bool ok = _graph_resolve_texture_2d(
-        emitter, stream, plan, cfg, normal_resource, width, height, VK_FORMAT_R16G16B16A16_SFLOAT,
+        emitter, stream, plan, cfg, normal_resource, width, height, DVZ_FORMAT_R16G16B16A16_SFLOAT,
         &out->normal_id);
     ok = ok && _graph_resolve_texture_2d(
-                   emitter, stream, plan, cfg, depth_resource, width, height, VK_FORMAT_D32_SFLOAT,
+                   emitter, stream, plan, cfg, depth_resource, width, height, DVZ_FORMAT_D32_SFLOAT,
                    &out->depth_id);
     ok = ok && _graph_resolve_texture_2d(
                    emitter, stream, plan, cfg, occlusion_resource, width, height,
-                   VK_FORMAT_R8_UNORM, &out->occlusion_id);
+                   DVZ_FORMAT_R8_UNORM, &out->occlusion_id);
     ok = ok && _graph_runtime_targets_add(&out->graph, normal_resource->id, out->normal_id);
     ok = ok && _graph_runtime_targets_add(&out->graph, depth_resource->id, out->depth_id);
     ok = ok && _graph_runtime_targets_add(&out->graph, occlusion_resource->id, out->occlusion_id);
@@ -406,7 +406,7 @@ bool _emitter_prepare_ssao_targets(
     {
         ok = ok && _graph_resolve_texture_2d(
                        emitter, stream, plan, cfg, blur_resource, width, height,
-                       VK_FORMAT_R8_UNORM, &out->blur_id);
+                       DVZ_FORMAT_R8_UNORM, &out->blur_id);
         ok = ok && _graph_runtime_targets_add(&out->graph, blur_resource->id, out->blur_id);
     }
     if (!ok)
@@ -720,7 +720,7 @@ bool _emitter_prepare_ssao_targets(
         ok = ok &&
              dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
                  stream, out->ssao_pipeline_id, vs_id, fs_id, 0, out->ssao_bgl_id) &&
-             dvz_drp2_stream_pipeline_set_color_target(stream, 0, VK_FORMAT_R8_UNORM);
+             dvz_drp2_stream_pipeline_set_color_target(stream, 0, DVZ_FORMAT_R8_UNORM);
 
     if (blur_pass != NULL)
     {
@@ -750,7 +750,7 @@ bool _emitter_prepare_ssao_targets(
             ok = ok &&
                  dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
                      stream, out->blur_pipeline_id, vs_id, fs_id, 0, out->blur_bgl_id) &&
-                 dvz_drp2_stream_pipeline_set_color_target(stream, 0, VK_FORMAT_R8_UNORM);
+                 dvz_drp2_stream_pipeline_set_color_target(stream, 0, DVZ_FORMAT_R8_UNORM);
     }
 
     dvz_snprintf(vs_key, sizeof(vs_key), "_vs_ssao_comp%s", fmt);
@@ -783,11 +783,11 @@ bool _emitter_prepare_ssao_targets(
                  stream, out->composite_pipeline_id, vs_id, fs_id, 0, out->composite_bgl_id) &&
              dvz_drp2_stream_pipeline_set_color_target(stream, 0, final_format) &&
              dvz_drp2_stream_pipeline_set_color_blend(
-                 stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-                 VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-                 VK_BLEND_OP_ADD,
-                 VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-                     VK_COLOR_COMPONENT_A_BIT);
+                 stream, 0, DVZ_BLEND_FACTOR_SRC_ALPHA, DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                 DVZ_BLEND_OP_ADD, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                 DVZ_BLEND_OP_ADD,
+                 DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G | DVZ_MASK_COLOR_B |
+                     DVZ_MASK_COLOR_A);
     }
     return ok;
 }
@@ -870,23 +870,23 @@ bool _emitter_prepare_wboit_targets(
     ok = ok && (accum_resource != NULL
                     ? _graph_resolve_texture_2d(
                           emitter, stream, plan, cfg, accum_resource, width, height,
-                          VK_FORMAT_R16G16B16A16_SFLOAT, &out->accum_id)
+                          DVZ_FORMAT_R16G16B16A16_SFLOAT, &out->accum_id)
                     : _runtime_resolve_texture_2d(
                           emitter, stream, scoped_accum_key, width, height,
-                          VK_FORMAT_R16G16B16A16_SFLOAT, fallback_usage, 1, &out->accum_id));
+                          DVZ_FORMAT_R16G16B16A16_SFLOAT, fallback_usage, 1, &out->accum_id));
     ok = ok &&
          (weight_resource != NULL ? _graph_resolve_texture_2d(
                                         emitter, stream, plan, cfg, weight_resource, width, height,
-                                        VK_FORMAT_R16_SFLOAT, &out->weight_id)
+                                        DVZ_FORMAT_R16_SFLOAT, &out->weight_id)
                                   : _runtime_resolve_texture_2d(
                                         emitter, stream, scoped_weight_key, width, height,
-                                        VK_FORMAT_R16_SFLOAT, fallback_usage, 1, &out->weight_id));
+                                        DVZ_FORMAT_R16_SFLOAT, fallback_usage, 1, &out->weight_id));
     if (!ok)
         return false;
     if (depth_resource != NULL)
     {
         ok = _graph_resolve_texture_2d(
-            emitter, stream, plan, cfg, depth_resource, width, height, VK_FORMAT_D32_SFLOAT,
+            emitter, stream, plan, cfg, depth_resource, width, height, DVZ_FORMAT_D32_SFLOAT,
             &out->depth_id);
     }
     if (!ok)
@@ -1015,11 +1015,11 @@ bool _emitter_prepare_wboit_targets(
                  stream, out->resolve_pipeline_id, vs_id, fs_id, 0, out->resolve_bgl_id) &&
              dvz_drp2_stream_pipeline_set_color_target(stream, 0, final_format) &&
              dvz_drp2_stream_pipeline_set_color_blend(
-                 stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-                 VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-                 VK_BLEND_OP_ADD,
-                 VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-                     VK_COLOR_COMPONENT_A_BIT);
+                 stream, 0, DVZ_BLEND_FACTOR_SRC_ALPHA, DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                 DVZ_BLEND_OP_ADD, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                 DVZ_BLEND_OP_ADD,
+                 DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G | DVZ_MASK_COLOR_B |
+                     DVZ_MASK_COLOR_A);
     }
     return ok;
 }
@@ -1159,9 +1159,9 @@ bool _emitter_prepare_depth_peel_targets(
         uint64_t texture_id = 0;
         uint32_t format = resource->format;
         if ((resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT) != 0)
-            format = VK_FORMAT_D32_SFLOAT;
+            format = DVZ_FORMAT_D32_SFLOAT;
         if (format == 0)
-            format = VK_FORMAT_R16G16B16A16_SFLOAT;
+            format = DVZ_FORMAT_R16G16B16A16_SFLOAT;
         ok = _graph_resolve_texture_2d(
             emitter, stream, plan, cfg, resource, width, height, format, &texture_id);
         ok = ok && _graph_runtime_targets_add(&out->graph, resource->id, texture_id);
@@ -1321,11 +1321,11 @@ bool _emitter_prepare_depth_peel_targets(
                  stream, out->composite_pipeline_id, vs_id, fs_id, 0, out->composite_bgl_id) &&
              dvz_drp2_stream_pipeline_set_color_target(stream, 0, final_format) &&
              dvz_drp2_stream_pipeline_set_color_blend(
-                 stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-                 VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-                 VK_BLEND_OP_ADD,
-                 VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-                     VK_COLOR_COMPONENT_A_BIT);
+                 stream, 0, DVZ_BLEND_FACTOR_SRC_ALPHA, DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                 DVZ_BLEND_OP_ADD, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                 DVZ_BLEND_OP_ADD,
+                 DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G | DVZ_MASK_COLOR_B |
+                     DVZ_MASK_COLOR_A);
     }
     return ok;
 }

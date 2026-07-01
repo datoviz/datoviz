@@ -131,11 +131,11 @@ static bool _texture_layout_invalid(
  * Return the effective texture format used by DRP2 when a format is omitted.
  *
  * @param format texture format from a command or object
- * @return backend-native texture format enum value
+ * @return effective texture format token
  */
 static uint32_t _effective_color_format(uint32_t format)
 {
-    return format != 0 ? format : VK_FORMAT_R8G8B8A8_UNORM;
+    return format != 0 ? format : DVZ_FORMAT_R8G8B8A8_UNORM;
 }
 
 
@@ -170,11 +170,11 @@ static bool _sample_count_valid(uint32_t sample_count)
 /**
  * Return the effective depth attachment format used by DRP2 transient depth.
  *
- * @return backend-native depth texture format enum value
+ * @return effective depth texture format token
  */
 static uint32_t _effective_depth_format(void)
 {
-    return VK_FORMAT_D32_SFLOAT;
+    return DVZ_FORMAT_D32_SFLOAT;
 }
 
 
@@ -182,12 +182,12 @@ static uint32_t _effective_depth_format(void)
 /**
  * Return whether a format belongs to DRP2's supported depth attachment class.
  *
- * @param format texture or attachment format, using VkFormat values
+ * @param format texture or attachment format token
  * @return whether the format is a supported depth format
  */
 static bool _format_is_depth(uint32_t format)
 {
-    return format == VK_FORMAT_D32_SFLOAT;
+    return format == DVZ_FORMAT_D32_SFLOAT;
 }
 
 
@@ -311,30 +311,28 @@ static uint32_t _dynamic_binding_count(const Drp2Object* layout)
 
 
 /**
- * Return whether the cull mode is a supported Vulkan cull-mode flag combination.
+ * Return whether the cull mode is a supported DRP2 cull-mode token.
  *
- * @param cull_mode VkCullModeFlags value
+ * @param cull_mode cull-mode token
  * @return whether the value is supported
  */
 static bool _raster_cull_mode_valid(uint32_t cull_mode)
 {
-    return cull_mode == VK_CULL_MODE_NONE || cull_mode == VK_CULL_MODE_FRONT_BIT ||
-           cull_mode == VK_CULL_MODE_BACK_BIT ||
-           cull_mode == (VK_CULL_MODE_FRONT_BIT | VK_CULL_MODE_BACK_BIT);
+    return cull_mode == DVZ_CULL_MODE_NONE || cull_mode == DVZ_CULL_MODE_FRONT ||
+           cull_mode == DVZ_CULL_MODE_BACK || cull_mode == DVZ_CULL_MODE_FRONT_AND_BACK;
 }
 
 
 
 /**
- * Return whether the front-face value is a supported Vulkan front-face enum.
+ * Return whether the front-face value is a supported DRP2 front-face token.
  *
- * @param front_face VkFrontFace value
+ * @param front_face front-face token
  * @return whether the value is supported
  */
 static bool _raster_front_face_valid(uint32_t front_face)
 {
-    return front_face == VK_FRONT_FACE_COUNTER_CLOCKWISE ||
-           front_face == VK_FRONT_FACE_CLOCKWISE;
+    return front_face == DVZ_FRONT_FACE_COUNTER_CLOCKWISE || front_face == DVZ_FRONT_FACE_CLOCKWISE;
 }
 
 
@@ -357,57 +355,58 @@ uint64_t _drp2_texture_layout_size(
 /**
  * Return the byte size of one texel for a DRP2 texture format.
  *
- * @param format texture format, using VkFormat values; zero means default RGBA8
+ * @param format texture format token; zero means default RGBA8
  * @param out_bytes output byte size
  * @return whether the format is supported by DRP2 texture layout validation
  */
 bool _drp2_texture_format_bytes_per_texel(uint32_t format, uint32_t* out_bytes)
 {
     ANN(out_bytes);
-    VkFormat vk_format = format != 0 ? (VkFormat)format : VK_FORMAT_R8G8B8A8_UNORM;
-    switch (vk_format)
+    DvzFormat effective_format =
+        format != 0 ? (DvzFormat)format : DVZ_FORMAT_R8G8B8A8_UNORM;
+    switch (effective_format)
     {
-    case VK_FORMAT_R8_UNORM:
-    case VK_FORMAT_R8_SNORM:
-    case VK_FORMAT_R8_UINT:
-    case VK_FORMAT_R8_SINT:
+    case DVZ_FORMAT_R8_UNORM:
+    case DVZ_FORMAT_R8_SNORM:
+    case DVZ_FORMAT_R8_UINT:
+    case DVZ_FORMAT_R8_SINT:
         *out_bytes = 1;
         return true;
-    case VK_FORMAT_R16_UNORM:
-    case VK_FORMAT_R16_SNORM:
-    case VK_FORMAT_R16_UINT:
-    case VK_FORMAT_R16_SINT:
-    case VK_FORMAT_R16_SFLOAT:
+    case DVZ_FORMAT_R16_UNORM:
+    case DVZ_FORMAT_R16_SNORM:
+    case DVZ_FORMAT_R16_UINT:
+    case DVZ_FORMAT_R16_SINT:
+    case DVZ_FORMAT_R16_SFLOAT:
         *out_bytes = 2;
         return true;
-    case VK_FORMAT_R32_UINT:
-    case VK_FORMAT_R32_SINT:
-    case VK_FORMAT_R32_SFLOAT:
-    case VK_FORMAT_D32_SFLOAT:
+    case DVZ_FORMAT_R32_UINT:
+    case DVZ_FORMAT_R32_SINT:
+    case DVZ_FORMAT_R32_SFLOAT:
+    case DVZ_FORMAT_D32_SFLOAT:
         *out_bytes = 4;
         return true;
-    case VK_FORMAT_R32G32_UINT:
-    case VK_FORMAT_R32G32_SINT:
-    case VK_FORMAT_R32G32_SFLOAT:
+    case DVZ_FORMAT_R32G32_UINT:
+    case DVZ_FORMAT_R32G32_SINT:
+    case DVZ_FORMAT_R32G32_SFLOAT:
         *out_bytes = 8;
         return true;
-    case VK_FORMAT_R8G8B8A8_UNORM:
-    case VK_FORMAT_R8G8B8A8_SRGB:
-    case VK_FORMAT_R8G8B8A8_UINT:
-    case VK_FORMAT_R8G8B8A8_SINT:
-    case VK_FORMAT_B8G8R8A8_UNORM:
-    case VK_FORMAT_B8G8R8A8_SRGB:
+    case DVZ_FORMAT_R8G8B8A8_UNORM:
+    case DVZ_FORMAT_R8G8B8A8_SRGB:
+    case DVZ_FORMAT_R8G8B8A8_UINT:
+    case DVZ_FORMAT_R8G8B8A8_SINT:
+    case DVZ_FORMAT_B8G8R8A8_UNORM:
+    case DVZ_FORMAT_B8G8R8A8_SRGB:
         *out_bytes = 4;
         return true;
-    case VK_FORMAT_R16G16B16A16_UNORM:
-    case VK_FORMAT_R16G16B16A16_UINT:
-    case VK_FORMAT_R16G16B16A16_SINT:
-    case VK_FORMAT_R16G16B16A16_SFLOAT:
+    case DVZ_FORMAT_R16G16B16A16_UNORM:
+    case DVZ_FORMAT_R16G16B16A16_UINT:
+    case DVZ_FORMAT_R16G16B16A16_SINT:
+    case DVZ_FORMAT_R16G16B16A16_SFLOAT:
         *out_bytes = 8;
         return true;
-    case VK_FORMAT_R32G32B32A32_UINT:
-    case VK_FORMAT_R32G32B32A32_SINT:
-    case VK_FORMAT_R32G32B32A32_SFLOAT:
+    case DVZ_FORMAT_R32G32B32A32_UINT:
+    case DVZ_FORMAT_R32G32B32A32_SINT:
+    case DVZ_FORMAT_R32G32B32A32_SFLOAT:
         *out_bytes = 16;
         return true;
     default:

@@ -19,6 +19,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "datoviz/render_types.h"
 #include "frame_plan/emit.h"
 
 
@@ -75,8 +76,8 @@ typedef struct DvzSceneVisualDesc
     DvzScenePointLikeKind point_like_kind;
     bool has_normal;
     bool depth_test_enabled;
-    uint32_t depth_compare_op;
-    uint32_t topology;
+    DvzCompareOp depth_compare_op;
+    DvzPrimitiveTopology topology;
     uint64_t vbuf_ids[DVZ_SCENE_MAX_NODE_RESOURCES];
     uint32_t vbuf_count;
     uint64_t index_buffer_id;
@@ -175,14 +176,14 @@ typedef struct DvzSceneVisualShaderDesc
 typedef struct DvzSceneVisualPipelineDesc
 {
     uint32_t vertex_buffer_count;
-    uint32_t topology;
+    DvzPrimitiveTopology topology;
     uint32_t binding_count;
     uint32_t attr_count;
     uint32_t strides[DVZ_SCENE_MAX_NODE_RESOURCES];
     uint32_t step_modes[DVZ_SCENE_MAX_NODE_RESOURCES];
     uint32_t bindings[DVZ_SCENE_MAX_NODE_RESOURCES];
     uint32_t locations[DVZ_SCENE_MAX_NODE_RESOURCES];
-    uint32_t formats[DVZ_SCENE_MAX_NODE_RESOURCES];
+    DvzFormat formats[DVZ_SCENE_MAX_NODE_RESOURCES];
     uint32_t offsets[DVZ_SCENE_MAX_NODE_RESOURCES];
     bool needs_common_layout;
     bool needs_image_layout;
@@ -195,10 +196,10 @@ typedef struct DvzSceneVisualPipelineDesc
     bool needs_scene_occlusion_layout;
     bool has_depth_state;
     bool depth_write_enabled;
-    uint32_t depth_compare_op;
+    DvzCompareOp depth_compare_op;
     bool has_raster_state;
-    uint32_t cull_mode;
-    uint32_t front_face;
+    DvzCullMode cull_mode;
+    DvzFrontFace front_face;
     bool alpha_to_coverage;
 } DvzSceneVisualPipelineDesc;
 
@@ -267,7 +268,7 @@ typedef struct DvzScenePointLoweringDesc
 {
     DvzScenePointLikeKind kind;
     DvzScenePointLikeLowering lowering;
-    uint32_t topology;
+    DvzPrimitiveTopology topology;
     uint32_t vertex_step_mode;
     uint32_t draw_vertex_count;
     uint32_t draw_instance_count;

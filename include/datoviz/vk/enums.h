@@ -18,7 +18,7 @@
 
 #include <stdint.h>
 
-#include "datoviz/gpu/enums.h"
+#include "datoviz/render_types.h"
 
 
 
@@ -54,85 +54,6 @@ typedef enum
     DVZ_DEFAULT_QUEUE_PRESENT,
     DVZ_DEFAULT_QUEUE_COUNT,
 } DvzDefaultQueue;
-
-
-
-/*************************************************************************************************/
-/*  Vulkan wrapper enums, avoiding dependency to vulkan.h                                        */
-/*  WARNING: they must match exactly the corresponding Vulkan enums.                             */
-/*************************************************************************************************/
-
-// VkFormat wrapper.
-// NOTE: we only included the most common ones, this list can be completed as needed.
-// IMPORTANT: the original Vulkan enum values need to be used:
-// see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkFormat.html
-//
-// NOTE: see https://vulkan.gpuinfo.org/listbufferformats.php for hardware support
-// Avoid using poorly-supported formats.
-typedef enum
-{
-    DVZ_FORMAT_NONE = 0,
-    DVZ_FORMAT_R8_UNORM = 9,
-    DVZ_FORMAT_R8_SNORM = 10,
-    DVZ_FORMAT_R8_UINT = 13,
-    DVZ_FORMAT_R8_SINT = 14,
-    DVZ_FORMAT_R8G8_UNORM = 16,
-    DVZ_FORMAT_R8G8_SNORM = 17,
-    DVZ_FORMAT_R8G8_UINT = 20,
-    DVZ_FORMAT_R8G8_SINT = 21,
-    DVZ_FORMAT_R8G8B8_UNORM = 23, // NOTE: poor GPU hardware support
-    DVZ_FORMAT_R8G8B8_SNORM = 24, // NOTE: poor GPU hardware support
-    DVZ_FORMAT_R8G8B8_UINT = 27,  // NOTE: poor GPU hardware support
-    DVZ_FORMAT_R8G8B8_SINT = 28,  // NOTE: poor GPU hardware support
-    DVZ_FORMAT_R8G8B8A8_UNORM = 37,
-    DVZ_FORMAT_R8G8B8A8_SNORM = 38,
-    DVZ_FORMAT_R8G8B8A8_UINT = 41,
-    DVZ_FORMAT_R8G8B8A8_SINT = 42,
-    DVZ_FORMAT_R8G8B8A8_SRGB = 43,
-    DVZ_FORMAT_B8G8R8A8_UNORM = 44,
-    DVZ_FORMAT_B8G8R8A8_SRGB = 50,
-    DVZ_FORMAT_R16_UNORM = 70,
-    DVZ_FORMAT_R16_SNORM = 71,
-    DVZ_FORMAT_R32_UINT = 98,
-    DVZ_FORMAT_R32_SINT = 99,
-    DVZ_FORMAT_R32_SFLOAT = 100,
-    DVZ_FORMAT_R32G32_UINT = 101,
-    DVZ_FORMAT_R32G32_SINT = 102,
-    DVZ_FORMAT_R32G32_SFLOAT = 103,
-    DVZ_FORMAT_R32G32B32_UINT = 104,   // NOTE: poor GPU hardware support for textures
-    DVZ_FORMAT_R32G32B32_SINT = 105,   // NOTE: poor GPU hardware support for textures
-    DVZ_FORMAT_R32G32B32_SFLOAT = 106, // NOTE: poor GPU hardware support for textures
-    DVZ_FORMAT_R32G32B32A32_UINT = 107,
-    DVZ_FORMAT_R32G32B32A32_SINT = 108,
-    DVZ_FORMAT_R32G32B32A32_SFLOAT = 109,
-
-    // NOTE: poor GPU hardware support
-    DVZ_FORMAT_R64_UINT = 110,
-    DVZ_FORMAT_R64_SINT = 111,
-    DVZ_FORMAT_R64_SFLOAT = 112,
-    DVZ_FORMAT_R64G64_UINT = 113,
-    DVZ_FORMAT_R64G64_SINT = 114,
-    DVZ_FORMAT_R64G64_SFLOAT = 115,
-    DVZ_FORMAT_R64G64B64_UINT = 116,
-    DVZ_FORMAT_R64G64B64_SINT = 117,
-    DVZ_FORMAT_R64G64B64_SFLOAT = 118,
-    DVZ_FORMAT_R64G64B64A64_UINT = 119,
-    DVZ_FORMAT_R64G64B64A64_SINT = 120,
-    DVZ_FORMAT_R64G64B64A64_SFLOAT = 121,
-} DvzFormat;
-
-
-
-// Color mask.
-// VkColorComponentFlagBits wrapper
-typedef enum
-{
-    DVZ_MASK_COLOR_R = 0x00000001,
-    DVZ_MASK_COLOR_G = 0x00000002,
-    DVZ_MASK_COLOR_B = 0x00000004,
-    DVZ_MASK_COLOR_A = 0x00000008,
-    DVZ_MASK_COLOR_ALL = 0x0000000F,
-} DvzColorMask;
 
 
 
@@ -174,25 +95,6 @@ typedef enum
     DVZ_POLYGON_MODE_LINE = 1,
     DVZ_POLYGON_MODE_POINT = 2,
 } DvzPolygonMode;
-
-
-
-// VkFrontFace wrapper.
-typedef enum
-{
-    DVZ_FRONT_FACE_COUNTER_CLOCKWISE = 0,
-    DVZ_FRONT_FACE_CLOCKWISE = 1,
-} DvzFrontFace;
-
-
-
-// VkCullModeFlagBits wrapper.
-typedef enum
-{
-    DVZ_CULL_MODE_NONE = 0,
-    DVZ_CULL_MODE_FRONT = 0x00000001,
-    DVZ_CULL_MODE_BACK = 0x00000002,
-} DvzCullMode;
 
 
 

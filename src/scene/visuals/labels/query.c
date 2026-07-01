@@ -392,7 +392,7 @@ static bool _labels_query_geometry(
         *out_position_data = scratch->query_positions;
         *out_texcoord_data = scratch->query_texcoords;
         *out_vertex_count = vertex_count;
-        *out_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        *out_topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         return true;
     }
 
@@ -407,8 +407,8 @@ static bool _labels_query_geometry(
     *out_position_data = pos_attr->data;
     *out_texcoord_data = uv_attr->data;
     *out_vertex_count = pos_attr->item_count;
-    *out_topology = pos_attr->item_count == 4 ? VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP
-                                              : VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    *out_topology = pos_attr->item_count == 4 ? DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP
+                                              : DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     return true;
 }
 
@@ -679,7 +679,7 @@ static bool _labels_query_build(
     copy.extent[0] = 1;
     copy.extent[1] = 1;
     copy.extent[2] = 1;
-    copy.format = VK_FORMAT_R32_UINT;
+    copy.format = DVZ_FORMAT_R32_UINT;
     copy.bytes_per_texel = sizeof(uint32_t);
     copy.bytes_per_row = sizeof(uint32_t);
     copy.rows_per_image = 1;
@@ -702,7 +702,7 @@ static bool _labels_query_build(
     out_plan->uvw[2] = 0.0;
     out_plan->target_width = 1;
     out_plan->target_height = 1;
-    out_plan->format = VK_FORMAT_R32_UINT;
+    out_plan->format = DVZ_FORMAT_R32_UINT;
     out_plan->byte_size = sizeof(uint32_t);
     out_plan->schema = (DvzSceneQuerySchema){
         .fields = DVZ_SCENE_QUERY_SCHEMA_FIELD_LABEL_ID | DVZ_SCENE_QUERY_SCHEMA_FIELD_UVW,

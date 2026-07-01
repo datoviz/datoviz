@@ -72,11 +72,11 @@ static bool _emit_fixture_triangle_pipeline(DvzDrp2CommandStream* stream)
     uint32_t strides[1]   = {12};
     uint32_t bindings[1]  = {0};
     uint32_t locations[1] = {0};
-    uint32_t formats[1]   = {VK_FORMAT_R32G32B32_SFLOAT};
+    DvzFormat formats[1]  = {DVZ_FORMAT_R32G32B32_SFLOAT};
     uint32_t offsets[1]   = {0};
     return dvz_drp2_stream_create_render_pipeline_ex(
         stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER, 1,
-        VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 1, strides, 1, bindings, locations, formats, offsets);
+        DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 1, strides, 1, bindings, locations, formats, offsets);
 }
 
 

@@ -751,7 +751,7 @@ bool _graph_resolve_volume_occlusion_read(
     uint32_t height = 0;
     _emit_target_extent(cfg, &width, &height);
     return _graph_resolve_texture_2d(
-        emitter, stream, plan, cfg, resource, width, height, VK_FORMAT_R32_SFLOAT, out_id);
+        emitter, stream, plan, cfg, resource, width, height, DVZ_FORMAT_R32_SFLOAT, out_id);
 }
 
 
@@ -809,7 +809,7 @@ bool _graph_resolve_scene_occlusion_read(
     uint32_t height = 0;
     _emit_target_extent(cfg, &width, &height);
     return _graph_resolve_texture_2d(
-        emitter, stream, plan, cfg, resource, width, height, VK_FORMAT_R32_SFLOAT, out_id);
+        emitter, stream, plan, cfg, resource, width, height, DVZ_FORMAT_R32_SFLOAT, out_id);
 }
 
 
@@ -849,7 +849,7 @@ bool _graph_prepare_render_color_targets(
             continue;
         uint64_t texture_id = 0;
         ok = _graph_resolve_texture_2d(
-            emitter, stream, plan, cfg, resource, width, height, VK_FORMAT_R8G8B8A8_UNORM,
+            emitter, stream, plan, cfg, resource, width, height, DVZ_FORMAT_R8G8B8A8_UNORM,
             &texture_id);
         ok = ok && _graph_runtime_targets_add(out, resource->id, texture_id);
     }
@@ -866,7 +866,7 @@ bool _graph_prepare_render_color_targets(
  * @param key persistent resource key.
  * @param width texture width in pixels.
  * @param height texture height in pixels.
- * @param format Vulkan texture format.
+ * @param format texture format token.
  * @param usage DRP2 texture usage flags.
  * @param out_id output texture id.
  * @return whether the texture id is available.
@@ -958,7 +958,7 @@ void _runtime_scope_key(
  * @param resource graph resource descriptor.
  * @param width texture width in pixels.
  * @param height texture height in pixels.
- * @param fallback_format fallback Vulkan format when the graph format is zero.
+ * @param fallback_format fallback texture format token when the graph format is zero.
  * @param out_id output texture id.
  * @return whether the texture id is available.
  */
@@ -1020,7 +1020,7 @@ bool _graph_resolve_render_depth(
     uint32_t height = 0;
     _emit_target_extent(cfg, &width, &height);
     return _graph_resolve_texture_2d(
-        emitter, stream, plan, cfg, depth_resource, width, height, VK_FORMAT_D32_SFLOAT,
+        emitter, stream, plan, cfg, depth_resource, width, height, DVZ_FORMAT_D32_SFLOAT,
         out_depth_id);
 }
 

@@ -67,7 +67,7 @@ bool _scene_technique_emit_ssao_frame_graph(
     DvzFrameGraphResource occlusion = {0};
     dvz_strlcpy(occlusion.id, occlusion_id, sizeof(occlusion.id));
     occlusion.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-    occlusion.format = VK_FORMAT_R8_UNORM;
+    occlusion.format = DVZ_FORMAT_R8_UNORM;
     occlusion.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
     occlusion.usage_flags =
         DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
@@ -100,7 +100,7 @@ bool _scene_technique_emit_ssao_frame_graph(
         DvzFrameGraphResource blur = {0};
         dvz_strlcpy(blur.id, blur_id, sizeof(blur.id));
         blur.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        blur.format = VK_FORMAT_R8_UNORM;
+        blur.format = DVZ_FORMAT_R8_UNORM;
         blur.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         blur.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
                            DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;

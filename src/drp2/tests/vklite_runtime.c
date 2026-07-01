@@ -258,7 +258,7 @@ int test_drp2_runtime_vklite_samples_3d_texture(TstContext* suite, const TstCase
     AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(stream, 4, 1, 2, 0, 3));
     AT(dvz_drp2_stream_create_sampler(stream, 5));
     AT(dvz_drp2_stream_create_texture_3d_format_usage(
-        stream, 6, 2, 2, 2, VK_FORMAT_R8G8B8A8_UNORM,
+        stream, 6, 2, 2, 2, DVZ_FORMAT_R8G8B8A8_UNORM,
         DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
     AT(dvz_drp2_stream_write_texture_3d_bytes(
         stream, 6, 0, 0, 0, 0, 2, 2, 2, 8, 2, voxels));
@@ -728,7 +728,7 @@ int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(TstContext* suite
     uint32_t binding_step = DVZ_DRP2_VERTEX_STEP_MODE_VERTEX;
     uint32_t attr_binding = 0;
     uint32_t attr_location = 0;
-    uint32_t attr_format = VK_FORMAT_R32G32_SFLOAT;
+    DvzFormat attr_format = DVZ_FORMAT_R32G32_SFLOAT;
     uint32_t attr_offset = 0;
 
     stream = dvz_drp2_stream();
@@ -744,7 +744,7 @@ int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(TstContext* suite
         "#version 450\nlayout(location=0)out vec4 color;"
         "void main(){color=vec4(1,0,0,1);}"));
     AT(dvz_drp2_stream_create_render_pipeline_ex2(
-        stream, 4, 2, 3, 1, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 1, &binding_stride,
+        stream, 4, 2, 3, 1, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 1, &binding_stride,
         &binding_step, 1, &attr_binding, &attr_location, &attr_format, &attr_offset));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 5, 2, 2,
@@ -1340,12 +1340,12 @@ int test_drp2_runtime_vklite_draws_named_depth_render_pass(TstContext* suite, co
         stream, 2, "FRAGMENT", "glsl",
         "#version 450\nlayout(location=0)out vec4 color;void main(){color=vec4(1.0);}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
-    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, VK_COMPARE_OP_LESS_OR_EQUAL));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, DVZ_COMPARE_OP_LESS_OR_EQUAL));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 4, 2, 2,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 5, 2, 2, VK_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 5, 2, 2, DVZ_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_buffer(
         stream, 6, 4, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 10));
@@ -1401,7 +1401,7 @@ int test_drp2_runtime_vklite_draws_msaa_resolve_render_pass(TstContext* suite, c
     AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
     AT(dvz_drp2_stream_pipeline_set_multisampling(stream, 2, false));
     AT(dvz_drp2_stream_create_texture_2d_format_usage_samples(
-        stream, 4, 2, 2, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT,
+        stream, 4, 2, 2, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT,
         2));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 5, 2, 2,
@@ -1467,9 +1467,9 @@ int test_drp2_runtime_vklite_draws_rg32uint_readback(TstContext* suite, const Ts
         "#version 450\nlayout(location=0)out uvec2 query;"
         "void main(){query=uvec2(0x11223344u,0x55667788u);}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
-    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 0, VK_FORMAT_R32G32_UINT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 0, DVZ_FORMAT_R32G32_UINT));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 4, 1, 1, VK_FORMAT_R32G32_UINT,
+        stream, 4, 1, 1, DVZ_FORMAT_R32G32_UINT,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
     AT(dvz_drp2_stream_create_buffer(
         stream, 5, 8, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
@@ -1521,7 +1521,7 @@ int test_drp2_runtime_vklite_draws_multi_color_render_pass(TstContext* suite, co
         "#version 450\nlayout(location=0)out vec4 c0;layout(location=1)out vec4 c1;"
         "void main(){c0=vec4(1,0,0,1);c1=vec4(0,1,0,1);}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
-    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, VK_FORMAT_R8G8B8A8_UNORM));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, DVZ_FORMAT_R8G8B8A8_UNORM));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 4, 2, 2,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
@@ -1644,16 +1644,16 @@ int test_drp2_runtime_vklite_draws_wboit_format_passes(TstContext* suite, const 
         "void main(){accum=vec4(1,0,0,1);reveal=1;}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
     AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
-    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, VK_FORMAT_R16_SFLOAT));
+        stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, DVZ_FORMAT_R16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_blend(
-        stream, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-        VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-            VK_COLOR_COMPONENT_A_BIT));
+        stream, 0, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
+        DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
+        DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G | DVZ_MASK_COLOR_B |
+            DVZ_MASK_COLOR_A));
     AT(dvz_drp2_stream_pipeline_set_color_blend(
-        stream, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-        VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD, VK_COLOR_COMPONENT_R_BIT));
+        stream, 1, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
+        DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD, DVZ_MASK_COLOR_R));
 
     AT(dvz_drp2_stream_create_shader_module_format(
         stream, 20, "VERTEX", "glsl",
@@ -1672,10 +1672,10 @@ int test_drp2_runtime_vklite_draws_wboit_format_passes(TstContext* suite, const 
         stream, 22, 20, 21, 0, 3));
 
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 30, 2, 2, VK_FORMAT_R16G16B16A16_SFLOAT,
+        stream, 30, 2, 2, DVZ_FORMAT_R16G16B16A16_SFLOAT,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 31, 2, 2, VK_FORMAT_R16_SFLOAT,
+        stream, 31, 2, 2, DVZ_FORMAT_R16_SFLOAT,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 32, 2, 2,
@@ -1825,7 +1825,7 @@ int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstContext* suite, const 
         "#version 450\nlayout(location=0)out vec4 color;"
         "void main(){color=vec4(0.05,0.05,0.05,1.0);}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
-    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, VK_COMPARE_OP_LESS_OR_EQUAL));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, DVZ_COMPARE_OP_LESS_OR_EQUAL));
 
     AT(dvz_drp2_stream_create_shader_module_format(stream, 20, "VERTEX", "glsl", fullscreen_vs));
     AT(dvz_drp2_stream_create_shader_module_format(
@@ -1836,14 +1836,14 @@ int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstContext* suite, const 
         "depth_pair=vec4(gl_FragCoord.z,1.0-gl_FragCoord.z,0,1);}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 22, 20, 21, 0));
     AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
+        stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 1, VK_FORMAT_R16G16B16A16_SFLOAT));
+        stream, 1, DVZ_FORMAT_R16G16B16A16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 2, VK_FORMAT_R16G16B16A16_SFLOAT));
-    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, VK_COMPARE_OP_LESS_OR_EQUAL));
+        stream, 2, DVZ_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, DVZ_COMPARE_OP_LESS_OR_EQUAL));
     AT(dvz_drp2_stream_pipeline_set_raster_state(
-        stream, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE));
+        stream, DVZ_CULL_MODE_BACK, DVZ_FRONT_FACE_COUNTER_CLOCKWISE));
 
     AT(dvz_drp2_stream_create_shader_module_format(stream, 30, "VERTEX", "glsl", fullscreen_vs));
     AT(dvz_drp2_stream_create_shader_module_format(
@@ -1863,14 +1863,14 @@ int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstContext* suite, const 
     AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
         stream, 32, 30, 31, 0, 3));
     AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
+        stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 1, VK_FORMAT_R16G16B16A16_SFLOAT));
+        stream, 1, DVZ_FORMAT_R16G16B16A16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 2, VK_FORMAT_R16G16B16A16_SFLOAT));
-    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, VK_COMPARE_OP_LESS_OR_EQUAL));
+        stream, 2, DVZ_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, DVZ_COMPARE_OP_LESS_OR_EQUAL));
     AT(dvz_drp2_stream_pipeline_set_raster_state(
-        stream, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE));
+        stream, DVZ_CULL_MODE_FRONT, DVZ_FRONT_FACE_COUNTER_CLOCKWISE));
 
     AT(dvz_drp2_stream_create_shader_module_format(stream, 40, "VERTEX", "glsl", fullscreen_vs));
     AT(dvz_drp2_stream_create_shader_module_format(
@@ -1894,19 +1894,19 @@ int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstContext* suite, const 
         stream, 50, 2, 2,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 51, 2, 2, VK_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 51, 2, 2, DVZ_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 52, 2, 2, VK_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
+        stream, 52, 2, 2, DVZ_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 53, 2, 2, VK_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
+        stream, 53, 2, 2, DVZ_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 54, 2, 2, VK_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
+        stream, 54, 2, 2, DVZ_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 55, 2, 2, VK_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
+        stream, 55, 2, 2, DVZ_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 56, 2, 2, VK_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
+        stream, 56, 2, 2, DVZ_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 57, 2, 2, VK_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
+        stream, 57, 2, 2, DVZ_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
     AT(dvz_drp2_stream_create_buffer(
         stream, 70, 4, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
 
@@ -2108,7 +2108,7 @@ int test_drp2_runtime_vklite_samples_read_only_active_depth(
         "#version 450\nlayout(location=0)out vec4 color;"
         "void main(){color=vec4(1,0,0,1);}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
-    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, VK_COMPARE_OP_LESS_OR_EQUAL));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, DVZ_COMPARE_OP_LESS_OR_EQUAL));
 
     AT(dvz_drp2_stream_create_shader_module_format(stream, 20, "VERTEX", "glsl", fullscreen_vs));
     AT(dvz_drp2_stream_create_shader_module_format(
@@ -2136,7 +2136,7 @@ int test_drp2_runtime_vklite_samples_read_only_active_depth(
     AT(dvz_drp2_stream_create_bind_group_layout_entries(stream, 30, 2, layout_entries));
     AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
         stream, 22, 20, 21, 0, 30));
-    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, VK_COMPARE_OP_ALWAYS));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, DVZ_COMPARE_OP_ALWAYS));
 
     AT(dvz_drp2_stream_create_sampler(stream, 31));
     uint32_t depth_usage =
@@ -2144,7 +2144,7 @@ int test_drp2_runtime_vklite_samples_read_only_active_depth(
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 50, 2, 2, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 51, 2, 2, VK_FORMAT_D32_SFLOAT, depth_usage));
+        stream, 51, 2, 2, DVZ_FORMAT_D32_SFLOAT, depth_usage));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 52, 2, 2,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
@@ -2243,7 +2243,7 @@ int test_drp2_runtime_vklite_ignores_unused_render_pass_bind_groups(
         "#version 450\nlayout(location=0)out vec4 color;"
         "void main(){color=vec4(1,0,0,1);}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
-    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, VK_COMPARE_OP_LESS_OR_EQUAL));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, DVZ_COMPARE_OP_LESS_OR_EQUAL));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 13, 10, 11, 0));
 
     DvzDrp2BindGroupLayoutEntry layout_entries[2] = {
@@ -2267,7 +2267,7 @@ int test_drp2_runtime_vklite_ignores_unused_render_pass_bind_groups(
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 50, 2, 2, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 51, 2, 2, VK_FORMAT_D32_SFLOAT, depth_usage));
+        stream, 51, 2, 2, DVZ_FORMAT_D32_SFLOAT, depth_usage));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 52, 2, 2, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
 
@@ -2766,4 +2766,3 @@ int test_drp2_write_buffer_bytes_large_payload_executes(TstContext* suite, const
     return 0;
 }
 #endif
-

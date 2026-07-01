@@ -248,6 +248,7 @@ pages:
       - include/datoviz/font.h
       - include/datoviz/gpu/**
       - include/datoviz/math/**
+      - include/datoviz/render_types.h
       - include/datoviz/controller/**
       - include/datoviz/controller.h
       - include/datoviz/vk.h

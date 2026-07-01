@@ -77,7 +77,7 @@ bool _scene_technique_emit_depth_peel_frame_graph(
         DvzFrameGraphResource depth = {0};
         dvz_strlcpy(depth.id, opaque_depth_id, sizeof(depth.id));
         depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        depth.format = VK_FORMAT_D32_SFLOAT;
+        depth.format = DVZ_FORMAT_D32_SFLOAT;
         depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT;
         depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
@@ -92,7 +92,7 @@ bool _scene_technique_emit_depth_peel_frame_graph(
         DvzFrameGraphResource resource = {0};
         dvz_strlcpy(resource.id, peel_ids[i], sizeof(resource.id));
         resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        resource.format = i < 2 ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R32G32_SFLOAT;
+        resource.format = i < 2 ? DVZ_FORMAT_R16G16B16A16_SFLOAT : DVZ_FORMAT_R32G32_SFLOAT;
         resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         resource.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
                                DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;

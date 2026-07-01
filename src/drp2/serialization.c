@@ -134,19 +134,19 @@ static const char* _vertex_format_name(uint32_t format)
 {
     switch (format)
     {
-    case VK_FORMAT_R32_SFLOAT:
+    case DVZ_FORMAT_R32_SFLOAT:
         return "float32";
-    case VK_FORMAT_R32G32_SFLOAT:
+    case DVZ_FORMAT_R32G32_SFLOAT:
         return "float32x2";
-    case VK_FORMAT_R32G32B32_SFLOAT:
+    case DVZ_FORMAT_R32G32B32_SFLOAT:
         return "float32x3";
-    case VK_FORMAT_R32G32B32A32_SFLOAT:
+    case DVZ_FORMAT_R32G32B32A32_SFLOAT:
         return "float32x4";
-    case VK_FORMAT_R8G8B8A8_UNORM:
+    case DVZ_FORMAT_R8G8B8A8_UNORM:
         return "unorm8x4";
-    case VK_FORMAT_R8_UINT:
+    case DVZ_FORMAT_R8_UINT:
         return "uint8";
-    case VK_FORMAT_R32_UINT:
+    case DVZ_FORMAT_R32_UINT:
         return "uint32";
     default:
         return NULL;
@@ -160,27 +160,27 @@ static const char* _texture_format_name(uint32_t format)
     switch (format)
     {
     case 0:
-    case VK_FORMAT_R8G8B8A8_UNORM:
+    case DVZ_FORMAT_R8G8B8A8_UNORM:
         return "rgba8unorm";
-    case VK_FORMAT_R8G8B8A8_SRGB:
+    case DVZ_FORMAT_R8G8B8A8_SRGB:
         return "rgba8unorm-srgb";
-    case VK_FORMAT_B8G8R8A8_UNORM:
+    case DVZ_FORMAT_B8G8R8A8_UNORM:
         return "bgra8unorm";
-    case VK_FORMAT_B8G8R8A8_SRGB:
+    case DVZ_FORMAT_B8G8R8A8_SRGB:
         return "bgra8unorm-srgb";
-    case VK_FORMAT_R16_SFLOAT:
+    case DVZ_FORMAT_R16_SFLOAT:
         return "r16float";
-    case VK_FORMAT_R16G16B16A16_SFLOAT:
+    case DVZ_FORMAT_R16G16B16A16_SFLOAT:
         return "rgba16float";
-    case VK_FORMAT_R32_SFLOAT:
+    case DVZ_FORMAT_R32_SFLOAT:
         return "r32float";
-    case VK_FORMAT_R32_UINT:
+    case DVZ_FORMAT_R32_UINT:
         return "r32uint";
-    case VK_FORMAT_R32_SINT:
+    case DVZ_FORMAT_R32_SINT:
         return "r32sint";
-    case VK_FORMAT_R32G32_UINT:
+    case DVZ_FORMAT_R32G32_UINT:
         return "rg32uint";
-    case VK_FORMAT_D32_SFLOAT:
+    case DVZ_FORMAT_D32_SFLOAT:
         return "depth32float";
     default:
         return "rgba8unorm";
@@ -210,15 +210,15 @@ static const char* _topology_name(uint32_t topology)
 {
     switch (topology)
     {
-    case VK_PRIMITIVE_TOPOLOGY_POINT_LIST:
+    case DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST:
         return "point-list";
-    case VK_PRIMITIVE_TOPOLOGY_LINE_LIST:
+    case DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST:
         return "line-list";
-    case VK_PRIMITIVE_TOPOLOGY_LINE_STRIP:
+    case DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP:
         return "line-strip";
-    case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
+    case DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
         return "triangle-list";
-    case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
+    case DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
         return "triangle-strip";
     default:
         return "triangle-list";
@@ -231,13 +231,13 @@ static const char* _cull_mode_name(uint32_t cull_mode)
 {
     switch (cull_mode)
     {
-    case VK_CULL_MODE_FRONT_BIT:
+    case DVZ_CULL_MODE_FRONT:
         return "front";
-    case VK_CULL_MODE_BACK_BIT:
+    case DVZ_CULL_MODE_BACK:
         return "back";
-    case VK_CULL_MODE_FRONT_AND_BACK:
+    case DVZ_CULL_MODE_FRONT_AND_BACK:
         return "front-and-back";
-    case VK_CULL_MODE_NONE:
+    case DVZ_CULL_MODE_NONE:
     default:
         return "none";
     }
@@ -249,9 +249,9 @@ static const char* _front_face_name(uint32_t front_face)
 {
     switch (front_face)
     {
-    case VK_FRONT_FACE_CLOCKWISE:
+    case DVZ_FRONT_FACE_CLOCKWISE:
         return "clockwise";
-    case VK_FRONT_FACE_COUNTER_CLOCKWISE:
+    case DVZ_FRONT_FACE_COUNTER_CLOCKWISE:
     default:
         return "counter-clockwise";
     }
@@ -261,35 +261,35 @@ static const char* _front_face_name(uint32_t front_face)
 
 static const char* _blend_factor_name(uint32_t factor)
 {
-    switch ((VkBlendFactor)factor)
+    switch ((DvzBlendFactor)factor)
     {
-    case VK_BLEND_FACTOR_ZERO:
+    case DVZ_BLEND_FACTOR_ZERO:
         return "zero";
-    case VK_BLEND_FACTOR_ONE:
+    case DVZ_BLEND_FACTOR_ONE:
         return "one";
-    case VK_BLEND_FACTOR_SRC_COLOR:
+    case DVZ_BLEND_FACTOR_SRC_COLOR:
         return "src";
-    case VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR:
+    case DVZ_BLEND_FACTOR_ONE_MINUS_SRC_COLOR:
         return "one-minus-src";
-    case VK_BLEND_FACTOR_DST_COLOR:
+    case DVZ_BLEND_FACTOR_DST_COLOR:
         return "dst";
-    case VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR:
+    case DVZ_BLEND_FACTOR_ONE_MINUS_DST_COLOR:
         return "one-minus-dst";
-    case VK_BLEND_FACTOR_SRC_ALPHA:
+    case DVZ_BLEND_FACTOR_SRC_ALPHA:
         return "src-alpha";
-    case VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA:
+    case DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA:
         return "one-minus-src-alpha";
-    case VK_BLEND_FACTOR_DST_ALPHA:
+    case DVZ_BLEND_FACTOR_DST_ALPHA:
         return "dst-alpha";
-    case VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA:
+    case DVZ_BLEND_FACTOR_ONE_MINUS_DST_ALPHA:
         return "one-minus-dst-alpha";
-    case VK_BLEND_FACTOR_CONSTANT_COLOR:
-    case VK_BLEND_FACTOR_CONSTANT_ALPHA:
+    case DVZ_BLEND_FACTOR_CONSTANT_COLOR:
+    case DVZ_BLEND_FACTOR_CONSTANT_ALPHA:
         return "constant";
-    case VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR:
-    case VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA:
+    case DVZ_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR:
+    case DVZ_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA:
         return "one-minus-constant";
-    case VK_BLEND_FACTOR_SRC_ALPHA_SATURATE:
+    case DVZ_BLEND_FACTOR_SRC_ALPHA_SATURATE:
         return "src-alpha-saturated";
     default:
         return "one";
@@ -300,17 +300,17 @@ static const char* _blend_factor_name(uint32_t factor)
 
 static const char* _blend_operation_name(uint32_t operation)
 {
-    switch ((VkBlendOp)operation)
+    switch ((DvzBlendOp)operation)
     {
-    case VK_BLEND_OP_ADD:
+    case DVZ_BLEND_OP_ADD:
         return "add";
-    case VK_BLEND_OP_SUBTRACT:
+    case DVZ_BLEND_OP_SUBTRACT:
         return "subtract";
-    case VK_BLEND_OP_REVERSE_SUBTRACT:
+    case DVZ_BLEND_OP_REVERSE_SUBTRACT:
         return "reverse-subtract";
-    case VK_BLEND_OP_MIN:
+    case DVZ_BLEND_OP_MIN:
         return "min";
-    case VK_BLEND_OP_MAX:
+    case DVZ_BLEND_OP_MAX:
         return "max";
     default:
         return "add";
@@ -598,30 +598,30 @@ static void _json_append_texture_usage(JsonBuilder* builder, uint32_t usage)
 
 
 /**
- * Return the JSON token used for one Vulkan depth compare operation.
+ * Return the JSON token used for one DRP2 depth compare operation.
  *
- * @param compare_op the VkCompareOp value
+ * @param compare_op the depth compare operation token
  * @return the JSON token string
  */
 static const char* _depth_compare_name(uint32_t compare_op)
 {
-    switch ((VkCompareOp)compare_op)
+    switch ((DvzCompareOp)compare_op)
     {
-    case VK_COMPARE_OP_NEVER:
+    case DVZ_COMPARE_OP_NEVER:
         return "never";
-    case VK_COMPARE_OP_LESS:
+    case DVZ_COMPARE_OP_LESS:
         return "less";
-    case VK_COMPARE_OP_EQUAL:
+    case DVZ_COMPARE_OP_EQUAL:
         return "equal";
-    case VK_COMPARE_OP_LESS_OR_EQUAL:
+    case DVZ_COMPARE_OP_LESS_OR_EQUAL:
         return "less-equal";
-    case VK_COMPARE_OP_GREATER:
+    case DVZ_COMPARE_OP_GREATER:
         return "greater";
-    case VK_COMPARE_OP_NOT_EQUAL:
+    case DVZ_COMPARE_OP_NOT_EQUAL:
         return "not-equal";
-    case VK_COMPARE_OP_GREATER_OR_EQUAL:
+    case DVZ_COMPARE_OP_GREATER_OR_EQUAL:
         return "greater-or-equal";
-    case VK_COMPARE_OP_ALWAYS:
+    case DVZ_COMPARE_OP_ALWAYS:
     default:
         return "always";
     }

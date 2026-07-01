@@ -60,7 +60,7 @@ bool _scene_splat_visual_desc_from_metadata(
     out->vbuf_ids[out->vbuf_count++] = color_id;
     out->vbuf_ids[out->vbuf_count++] = sigma_id;
     out->vbuf_ids[out->vbuf_count++] = angle_id;
-    out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    out->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     out->vertex_count = 6;
     out->instance_count = item_count;
     return true;

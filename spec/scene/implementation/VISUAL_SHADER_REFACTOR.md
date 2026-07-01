@@ -29,7 +29,7 @@ Locations and bindings must match `_scene_visual_pipeline_desc()` and shader sou
 | Image | `0`: `vec3 position`, `1`: `vec2 texcoord` |
 | Volume | `0`: `vec3 position`, `1`: `vec3 texcoord` |
 
-Use the same `VkFormat`, stride, binding, and location in shader inputs and DRP2 pipeline metadata.
+Use the same `DvzFormat`, stride, binding, and location in shader inputs and DRP2 pipeline metadata.
 Picking variants may intentionally drop color/material bindings; keep that special case explicit.
 
 ### Bind groups

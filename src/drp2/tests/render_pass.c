@@ -74,7 +74,7 @@ int test_drp2_begin_render_pass_multi_color_attachments(TstContext* suite, const
     AT(dvz_drp2_stream_create_shader_module(stream, 2, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 3, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 4, 2, 3, 1));
-    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, VK_FORMAT_R8G8B8A8_UNORM));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, DVZ_FORMAT_R8G8B8A8_UNORM));
     AT(dvz_drp2_stream_create_texture_2d(stream, 5, 4, 4));
     AT(dvz_drp2_stream_create_texture_2d(stream, 6, 4, 4));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 7));
@@ -209,9 +209,9 @@ int test_drp2_begin_render_pass_named_depth_validation(TstContext* suite, const 
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 1, 4, 4, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 1, 4, 4, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 2, 4, 4, VK_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 2, 4, 4, DVZ_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 3));
     AT(!dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, 2, 1.0f));
     AT(dvz_drp2_stream_begin_render_pass(stream, 4, 3, 1));
@@ -242,7 +242,7 @@ int test_drp2_begin_render_pass_named_depth_validation(TstContext* suite, const 
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d(stream, 1, 4, 4));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 2, 4, 4, VK_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
+        stream, 2, 4, 4, DVZ_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 3));
     AT(dvz_drp2_stream_begin_render_pass(stream, 4, 3, 1));
     AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, 2, 1.0f));
@@ -257,7 +257,7 @@ int test_drp2_begin_render_pass_named_depth_validation(TstContext* suite, const 
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d(stream, 1, 4, 4));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 2, 8, 4, VK_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 2, 8, 4, DVZ_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 3));
     AT(dvz_drp2_stream_begin_render_pass(stream, 4, 3, 1));
     AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, 2, 1.0f));
@@ -283,7 +283,7 @@ int test_drp2_render_pipeline_rejects_depth_color_target(TstContext* suite, cons
     AT(dvz_drp2_stream_create_shader_module(stream, 10, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 11, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
-    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 0, VK_FORMAT_D32_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 0, DVZ_FORMAT_D32_SFLOAT));
 
     DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
     AT(!result.ok);
@@ -299,7 +299,7 @@ int test_drp2_render_pipeline_rejects_depth_color_target(TstContext* suite, cons
     AT(dvz_drp2_stream_create_shader_module(stream, 10, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 11, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
-    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 0, VK_FORMAT_R64_UINT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 0, DVZ_FORMAT_R64_UINT));
     result = dvz_drp2_validate_stream(stream);
     AT(!result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_INVALID_ARGUMENT);
@@ -322,7 +322,7 @@ int test_drp2_render_pass_rejects_attachment_format_classes(TstContext* suite, c
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 1, 4, 4, VK_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 1, 4, 4, DVZ_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 2));
     AT(dvz_drp2_stream_begin_render_pass(stream, 3, 2, 1));
 
@@ -338,9 +338,9 @@ int test_drp2_render_pass_rejects_attachment_format_classes(TstContext* suite, c
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 1, 4, 4, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 1, 4, 4, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 2, 4, 4, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 2, 4, 4, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 3));
     AT(dvz_drp2_stream_begin_render_pass(stream, 4, 3, 1));
     AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, 2, 1.0f));
@@ -366,13 +366,13 @@ int test_drp2_render_pipeline_attachment_validation(TstContext* suite, const Tst
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 1, 4, 4, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 1, 4, 4, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 2, 4, 4, VK_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 2, 4, 4, DVZ_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_shader_module(stream, 10, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 11, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
-    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, VK_COMPARE_OP_LESS_OR_EQUAL));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, DVZ_COMPARE_OP_LESS_OR_EQUAL));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 20));
     AT(dvz_drp2_stream_begin_render_pass(stream, 21, 20, 1));
     AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, 2, 1.0f));
@@ -388,12 +388,12 @@ int test_drp2_render_pipeline_attachment_validation(TstContext* suite, const Tst
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 1, 4, 4, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 1, 4, 4, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_shader_module(stream, 10, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 11, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
     AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
+        stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 20));
     AT(dvz_drp2_stream_begin_render_pass(stream, 21, 20, 1));
     AT(dvz_drp2_stream_set_pipeline(stream, 21, 12));
@@ -407,9 +407,9 @@ int test_drp2_render_pipeline_attachment_validation(TstContext* suite, const Tst
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 1, 4, 4, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 1, 4, 4, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 2, 4, 4, VK_FORMAT_R16_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 2, 4, 4, DVZ_FORMAT_R16_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_shader_module(stream, 10, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 11, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
@@ -428,12 +428,12 @@ int test_drp2_render_pipeline_attachment_validation(TstContext* suite, const Tst
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 1, 4, 4, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 1, 4, 4, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_shader_module(stream, 10, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 11, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 2));
-    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 0, VK_FORMAT_R8G8B8A8_UNORM));
-    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, VK_FORMAT_R16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 0, DVZ_FORMAT_R8G8B8A8_UNORM));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, DVZ_FORMAT_R16_SFLOAT));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 20));
     AT(dvz_drp2_stream_begin_render_pass(stream, 21, 20, 1));
     AT(dvz_drp2_stream_set_pipeline(stream, 21, 12));
@@ -447,15 +447,15 @@ int test_drp2_render_pipeline_attachment_validation(TstContext* suite, const Tst
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 1, 4, 4, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 1, 4, 4, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 2, 4, 4, VK_FORMAT_R16G16B16A16_SFLOAT,
+        stream, 2, 4, 4, DVZ_FORMAT_R16G16B16A16_SFLOAT,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_shader_module(stream, 10, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 11, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 2));
-    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 0, VK_FORMAT_R8G8B8A8_UNORM));
-    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, VK_FORMAT_R16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 0, DVZ_FORMAT_R8G8B8A8_UNORM));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, DVZ_FORMAT_R16_SFLOAT));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 20));
     AT(dvz_drp2_stream_begin_render_pass(stream, 21, 20, 1));
     AT(dvz_drp2_stream_begin_render_pass_add_color_attachment(
@@ -471,11 +471,11 @@ int test_drp2_render_pipeline_attachment_validation(TstContext* suite, const Tst
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 1, 4, 4, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 1, 4, 4, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_shader_module(stream, 10, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 11, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
-    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, VK_COMPARE_OP_LESS_OR_EQUAL));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, DVZ_COMPARE_OP_LESS_OR_EQUAL));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 20));
     AT(dvz_drp2_stream_begin_render_pass(stream, 21, 20, 1));
     AT(dvz_drp2_stream_set_pipeline(stream, 21, 12));
@@ -489,13 +489,13 @@ int test_drp2_render_pipeline_attachment_validation(TstContext* suite, const Tst
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 1, 4, 4, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 1, 4, 4, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 2, 4, 4, VK_FORMAT_R16_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 2, 4, 4, DVZ_FORMAT_R16_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_shader_module(stream, 10, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 11, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
-    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, VK_COMPARE_OP_LESS_OR_EQUAL));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, DVZ_COMPARE_OP_LESS_OR_EQUAL));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 20));
     AT(dvz_drp2_stream_begin_render_pass(stream, 21, 20, 1));
     AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, 2, 1.0f));
@@ -510,9 +510,9 @@ int test_drp2_render_pipeline_attachment_validation(TstContext* suite, const Tst
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 1, 4, 4, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 1, 4, 4, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 2, 4, 4, VK_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 2, 4, 4, DVZ_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_shader_module(stream, 10, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 11, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));

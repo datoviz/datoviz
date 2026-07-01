@@ -305,8 +305,8 @@ Semantics:
    already-linear color, or non-color data; missing means the producer has not supplied role
    metadata.
 
-The C stream API carries `format` as a `VkFormat` value. Convenience helpers that do not take an
-explicit format emit `rgba8unorm`; WBOIT-style intermediate targets should use the explicit
+The C stream API carries `format` as a `DvzFormat` protocol token. Convenience helpers that do not
+take an explicit format emit `rgba8unorm`; WBOIT-style intermediate targets should use the explicit
 format-and-usage helper so RGBA16F accumulation and R16F revealage textures survive serialization and
 runtime creation.
 

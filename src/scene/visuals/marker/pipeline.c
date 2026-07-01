@@ -63,7 +63,7 @@ bool _scene_marker_visual_pipeline_desc(
     if (pass_needs_depth)
     {
         out->depth_write_enabled = false;
-        out->depth_compare_op = VK_COMPARE_OP_ALWAYS;
+        out->depth_compare_op = DVZ_COMPARE_OP_ALWAYS;
     }
 
     uint32_t attr_count = picking ? 2 : 5;
@@ -82,22 +82,22 @@ bool _scene_marker_visual_pipeline_desc(
     out->binding_count = out->vertex_buffer_count;
     out->attr_count = attr_count;
 
-    _scene_visual_pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+    _scene_visual_pipeline_attr(out, 0, 0, 0, DVZ_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
     _scene_visual_pipeline_attr(
         out, 1, picking ? 2 : 1, picking ? 2 : 1,
-        picking ? VK_FORMAT_R32_SFLOAT : VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
-    _scene_visual_pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32_SFLOAT, sizeof(float));
-    _scene_visual_pipeline_attr(out, 3, 3, 3, VK_FORMAT_R32_SFLOAT, sizeof(float));
-    _scene_visual_pipeline_attr(out, 4, 4, 4, VK_FORMAT_R32_UINT, sizeof(uint32_t));
+        picking ? DVZ_FORMAT_R32_SFLOAT : DVZ_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
+    _scene_visual_pipeline_attr(out, 2, 2, 2, DVZ_FORMAT_R32_SFLOAT, sizeof(float));
+    _scene_visual_pipeline_attr(out, 3, 3, 3, DVZ_FORMAT_R32_SFLOAT, sizeof(float));
+    _scene_visual_pipeline_attr(out, 4, 4, 4, DVZ_FORMAT_R32_UINT, sizeof(uint32_t));
     uint32_t next_attr = 5;
     if (visual->has_item_state && !picking)
         _scene_visual_pipeline_attr(
-            out, next_attr++, 5, 5, VK_FORMAT_R32_UINT, sizeof(uint32_t));
+            out, next_attr++, 5, 5, DVZ_FORMAT_R32_UINT, sizeof(uint32_t));
     if (atlas_marker)
     {
         uint32_t binding = visual->has_item_state ? 6 : 5;
         _scene_visual_pipeline_attr(
-            out, next_attr++, binding, 6, VK_FORMAT_R32G32B32A32_SFLOAT, 4 * sizeof(float));
+            out, next_attr++, binding, 6, DVZ_FORMAT_R32G32B32A32_SFLOAT, 4 * sizeof(float));
     }
     for (uint32_t i = 0; i < out->binding_count; i++)
         out->step_modes[i] = lowering.vertex_step_mode;

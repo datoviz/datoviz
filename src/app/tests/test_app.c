@@ -803,8 +803,10 @@ static int test_app_trace_fingerprint_keeps_texture_format(TstContext* suite, co
     ANN(a);
     ANN(b);
 
-    AT(dvz_drp2_stream_create_texture_2d_format_usage(a, 42, 64, 64, 37, 0x12));
-    AT(dvz_drp2_stream_create_texture_2d_format_usage(b, 42, 64, 64, 38, 0x12));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        a, 42, 64, 64, DVZ_FORMAT_R8G8B8A8_UNORM, 0x12));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        b, 42, 64, 64, DVZ_FORMAT_R8G8B8A8_SNORM, 0x12));
 
     uint64_t fa = 0;
     uint64_t fb = 0;
@@ -830,14 +832,22 @@ static int test_app_trace_fingerprint_keeps_pipeline_attachment_state(
     ANN(b);
 
     AT(dvz_drp2_stream_create_render_pipeline(a, 10, 1, 2, 0));
-    AT(dvz_drp2_stream_pipeline_set_raster_state(a, 1, 2));
-    AT(dvz_drp2_stream_pipeline_set_color_target(a, 0, 37));
-    AT(dvz_drp2_stream_pipeline_set_color_blend(a, 0, 1, 2, 3, 4, 5, 6, 0x0f));
+    AT(dvz_drp2_stream_pipeline_set_raster_state(
+        a, DVZ_CULL_MODE_FRONT, DVZ_FRONT_FACE_CLOCKWISE));
+    AT(dvz_drp2_stream_pipeline_set_color_target(a, 0, DVZ_FORMAT_R8G8B8A8_UNORM));
+    AT(dvz_drp2_stream_pipeline_set_color_blend(
+        a, 0, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_SRC_COLOR,
+        DVZ_BLEND_OP_REVERSE_SUBTRACT, DVZ_BLEND_FACTOR_DST_COLOR,
+        DVZ_BLEND_FACTOR_ONE_MINUS_DST_COLOR, DVZ_BLEND_OP_MIN, DVZ_MASK_COLOR_ALL));
 
     AT(dvz_drp2_stream_create_render_pipeline(b, 10, 1, 2, 0));
-    AT(dvz_drp2_stream_pipeline_set_raster_state(b, 1, 2));
-    AT(dvz_drp2_stream_pipeline_set_color_target(b, 0, 38));
-    AT(dvz_drp2_stream_pipeline_set_color_blend(b, 0, 1, 2, 3, 4, 5, 6, 0x0f));
+    AT(dvz_drp2_stream_pipeline_set_raster_state(
+        b, DVZ_CULL_MODE_FRONT, DVZ_FRONT_FACE_CLOCKWISE));
+    AT(dvz_drp2_stream_pipeline_set_color_target(b, 0, DVZ_FORMAT_R8G8B8A8_SNORM));
+    AT(dvz_drp2_stream_pipeline_set_color_blend(
+        b, 0, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_SRC_COLOR,
+        DVZ_BLEND_OP_REVERSE_SUBTRACT, DVZ_BLEND_FACTOR_DST_COLOR,
+        DVZ_BLEND_FACTOR_ONE_MINUS_DST_COLOR, DVZ_BLEND_OP_MIN, DVZ_MASK_COLOR_ALL));
 
     uint64_t fa = 0;
     uint64_t fb = 0;
@@ -1066,10 +1076,12 @@ static int test_app_trace_snapshot_normalizes_scoped_edl_resources(
     ANN(a);
     ANN(b);
 
-    AT(dvz_drp2_stream_create_texture_2d_format_usage(a, 27, 800, 600, 126, 0x14));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        a, 27, 800, 600, DVZ_FORMAT_D32_SFLOAT, 0x14));
     AT(dvz_drp2_stream_set_label(
         a, 27, "fig0_p0.edl.depth_scope_aaaaaaaaaaaaaaaa"));
-    AT(dvz_drp2_stream_create_texture_2d_format_usage(a, 28, 800, 600, 44, 0x14));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        a, 28, 800, 600, DVZ_FORMAT_B8G8R8A8_UNORM, 0x14));
     AT(dvz_drp2_stream_set_label(
         a, 28, "fig0_p0.edl.color_scope_aaaaaaaaaaaaaaaa"));
     AT(dvz_drp2_stream_create_texture_sampler_bind_group(a, 5017, 5016, 28, 26));
@@ -1080,10 +1092,12 @@ static int test_app_trace_snapshot_normalizes_scoped_edl_resources(
     AT(dvz_drp2_stream_set_bind_group(a, 100, 0, 5017));
     AT(dvz_drp2_stream_draw(a, 100, 3, 1, 0, 0));
 
-    AT(dvz_drp2_stream_create_texture_2d_format_usage(b, 29, 800, 600, 126, 0x14));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        b, 29, 800, 600, DVZ_FORMAT_D32_SFLOAT, 0x14));
     AT(dvz_drp2_stream_set_label(
         b, 29, "fig0_p0.edl.depth_scope_bbbbbbbbbbbbbbbb"));
-    AT(dvz_drp2_stream_create_texture_2d_format_usage(b, 30, 800, 600, 44, 0x14));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        b, 30, 800, 600, DVZ_FORMAT_B8G8R8A8_UNORM, 0x14));
     AT(dvz_drp2_stream_set_label(
         b, 30, "fig0_p0.edl.color_scope_bbbbbbbbbbbbbbbb"));
     AT(dvz_drp2_stream_create_texture_sampler_bind_group(b, 5021, 5016, 30, 26));
@@ -1210,7 +1224,8 @@ static int test_app_trace_snapshot_ignores_transient_scoped_creates(
     ANN(a);
     ANN(b);
 
-    AT(dvz_drp2_stream_create_texture_2d_format_usage(a, 34, 100, 100, 126, 0x14));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        a, 34, 100, 100, DVZ_FORMAT_D32_SFLOAT, 0x14));
     AT(dvz_drp2_stream_set_label(
         a, 34, "fig0_p0.gbuffer.normal_scope_aaaaaaaaaaaaaaaa"));
     AT(dvz_drp2_stream_create_texture_sampler_bind_group(a, 5034, 5019, 34, 26));

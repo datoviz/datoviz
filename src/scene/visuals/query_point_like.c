@@ -199,7 +199,7 @@ bool _scene_query_point_like_build_ex(
     copy.extent[0] = 1;
     copy.extent[1] = 1;
     copy.extent[2] = 1;
-    copy.format = VK_FORMAT_R32_UINT;
+    copy.format = DVZ_FORMAT_R32_UINT;
     copy.bytes_per_texel = sizeof(uint32_t);
     copy.bytes_per_row = sizeof(uint32_t);
     copy.rows_per_image = 1;
@@ -219,12 +219,12 @@ bool _scene_query_point_like_build_ex(
     out_plan->scratch.plan = plan;
     out_plan->target_width = target_width;
     out_plan->target_height = target_height;
-    out_plan->format = VK_FORMAT_R32_UINT;
+    out_plan->format = DVZ_FORMAT_R32_UINT;
     out_plan->byte_size = sizeof(uint32_t);
     out_plan->schema.fields = DVZ_SCENE_QUERY_SCHEMA_FIELD_ITEM_ID;
     out_plan->schema.value_kind = DVZ_QUERY_VALUE_NONE;
     out_plan->schema.profile = ctx->profile;
-    out_plan->schema.format = VK_FORMAT_R32_UINT;
+    out_plan->schema.format = DVZ_FORMAT_R32_UINT;
     out_plan->schema.byte_size = sizeof(uint32_t);
     return true;
 }

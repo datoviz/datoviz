@@ -87,7 +87,7 @@ static bool _render_pass_external_target_needs_encode(const DvzFramePlanEmitConf
 uint32_t _render_pass_scene_color_target_format(const DvzFramePlanEmitConfig* cfg)
 {
     if (_render_pass_external_target_needs_encode(cfg))
-        return VK_FORMAT_R8G8B8A8_UNORM;
+        return DVZ_FORMAT_R8G8B8A8_UNORM;
     return cfg != NULL ? cfg->color_target_format : 0;
 }
 
@@ -108,7 +108,7 @@ static bool _render_pass_resolve_linear_intermediate(
 
     uint32_t width = cfg != NULL && cfg->target_width > 0 ? cfg->target_width : 4;
     uint32_t height = cfg != NULL && cfg->target_height > 0 ? cfg->target_height : 4;
-    uint32_t format = VK_FORMAT_R8G8B8A8_UNORM;
+    uint32_t format = DVZ_FORMAT_R8G8B8A8_UNORM;
     if (
         needs_create || resource->texture_width == 0 || resource->texture_height == 0 ||
         resource->texture_depth == 0 || resource->texture_format != format ||
@@ -165,7 +165,7 @@ bool _render_pass_resolve_color_target(
     uint32_t height = cfg != NULL && cfg->target_height > 0 ? cfg->target_height : 4;
     uint32_t format = cfg != NULL && cfg->color_target_format != 0 ?
                           cfg->color_target_format :
-                          VK_FORMAT_R8G8B8A8_UNORM;
+                          DVZ_FORMAT_R8G8B8A8_UNORM;
     if (
         needs_create || resource->texture_width == 0 || resource->texture_height == 0 ||
         resource->texture_depth == 0)
@@ -321,7 +321,7 @@ bool _render_pass_emit_final_encode(
              dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
                  stream, pipe_id, vs_id, fs_id, 0, bgl_id) &&
              dvz_drp2_stream_pipeline_set_color_target(
-                 stream, 0, cfg != NULL ? cfg->color_target_format : VK_FORMAT_R8G8B8A8_UNORM);
+                 stream, 0, cfg != NULL ? cfg->color_target_format : DVZ_FORMAT_R8G8B8A8_UNORM);
 
     uint64_t pass_id = _emitter_next_transient_id(emitter);
     ok = ok &&

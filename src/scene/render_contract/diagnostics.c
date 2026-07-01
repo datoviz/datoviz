@@ -62,7 +62,7 @@ static bool _scene_pass_contract_validate_technique(
         attachment = _contract_attachment_suffix(
             contract, DVZ_SCENE_ATTACHMENT_COLOR, ".volume_occlusion.depth");
         if (contract->color_attachment_count != 1 || attachment == NULL ||
-            attachment->format != VK_FORMAT_R32_SFLOAT || !attachment->write ||
+            attachment->format != DVZ_FORMAT_R32_SFLOAT || !attachment->write ||
             !attachment->clear)
         {
             _contract_report(report, "volume occlusion pass has invalid output attachment");
@@ -74,7 +74,7 @@ static bool _scene_pass_contract_validate_technique(
         attachment = _contract_attachment_suffix(
             contract, DVZ_SCENE_ATTACHMENT_COLOR, ".scene_occlusion.depth");
         if (contract->color_attachment_count != 1 || attachment == NULL ||
-            attachment->format != VK_FORMAT_R32_SFLOAT || !attachment->write ||
+            attachment->format != DVZ_FORMAT_R32_SFLOAT || !attachment->write ||
             !attachment->clear)
         {
             _contract_report(report, "scene occlusion pass has invalid color attachment");
@@ -82,7 +82,7 @@ static bool _scene_pass_contract_validate_technique(
         }
         attachment = _contract_attachment_suffix(
             contract, DVZ_SCENE_ATTACHMENT_DEPTH, ".scene_occlusion.z");
-        if (attachment == NULL || attachment->format != VK_FORMAT_D32_SFLOAT ||
+        if (attachment == NULL || attachment->format != DVZ_FORMAT_D32_SFLOAT ||
             !attachment->write || !attachment->clear)
         {
             _contract_report(report, "scene occlusion pass has invalid depth attachment");
@@ -93,7 +93,7 @@ static bool _scene_pass_contract_validate_technique(
     case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
         attachment = _contract_attachment_suffix(
             contract, DVZ_SCENE_ATTACHMENT_COLOR, ".wboit.accum");
-        if (attachment == NULL || attachment->format != VK_FORMAT_R16G16B16A16_SFLOAT ||
+        if (attachment == NULL || attachment->format != DVZ_FORMAT_R16G16B16A16_SFLOAT ||
             attachment->sample_count != 1)
         {
             _contract_report(report, "WBOIT accumulation pass has invalid accumulation target");
@@ -101,7 +101,7 @@ static bool _scene_pass_contract_validate_technique(
         }
         attachment = _contract_attachment_suffix(
             contract, DVZ_SCENE_ATTACHMENT_COLOR, ".wboit.weight");
-        if (attachment == NULL || attachment->format != VK_FORMAT_R16_SFLOAT ||
+        if (attachment == NULL || attachment->format != DVZ_FORMAT_R16_SFLOAT ||
             attachment->sample_count != 1)
         {
             _contract_report(report, "WBOIT accumulation pass has invalid weight target");
@@ -139,7 +139,7 @@ static bool _scene_pass_contract_validate_technique(
             if (attachment->role != DVZ_SCENE_ATTACHMENT_COLOR)
                 continue;
             uint32_t expected_format =
-                color_index < 2 ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R32G32_SFLOAT;
+                color_index < 2 ? DVZ_FORMAT_R16G16B16A16_SFLOAT : DVZ_FORMAT_R32G32_SFLOAT;
             color_index++;
             if (attachment->format != expected_format)
             {

@@ -2761,7 +2761,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstContext* suite, const Ts
             AT(cmd->u.create_texture.width == 2);
             AT(cmd->u.create_texture.height == 2);
             AT(cmd->u.create_texture.depth == 2);
-            AT(cmd->u.create_texture.format == VK_FORMAT_R16_UNORM);
+            AT(cmd->u.create_texture.format == DVZ_FORMAT_R16_UNORM);
         }
         if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE &&
             cmd->u.write_texture.texture_id == texture_id)
@@ -2777,12 +2777,12 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstContext* suite, const Ts
             AT(cmd->u.write_texture.rows_per_image == 2);
         }
         if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE &&
-            cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+            cmd->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
         {
             created_triangle_list_pipeline = true;
             if (cmd->u.create_render_pipeline.has_raster_state &&
-                cmd->u.create_render_pipeline.cull_mode == VK_CULL_MODE_BACK_BIT &&
-                cmd->u.create_render_pipeline.front_face == VK_FRONT_FACE_CLOCKWISE)
+                cmd->u.create_render_pipeline.cull_mode == DVZ_CULL_MODE_BACK &&
+                cmd->u.create_render_pipeline.front_face == DVZ_FRONT_FACE_CLOCKWISE)
             {
                 created_entry_face_pipeline = true;
             }
@@ -3293,7 +3293,7 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
             cmd->u.create_texture.id == texture_id)
         {
             created_rgba_texture = true;
-            AT(cmd->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM);
+            AT(cmd->u.create_texture.format == DVZ_FORMAT_R8G8B8A8_UNORM);
             AT(cmd->u.create_texture.width == width);
             AT(cmd->u.create_texture.height == height);
             AT(cmd->u.create_texture.depth == depth);
@@ -3344,7 +3344,7 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
             cmd->u.create_texture.id == transfer_binding_id)
         {
             created_dummy_transfer_texture = true;
-            AT(cmd->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM);
+            AT(cmd->u.create_texture.format == DVZ_FORMAT_R8G8B8A8_UNORM);
             AT(cmd->u.create_texture.width == 1);
             AT(cmd->u.create_texture.height == 1);
             AT(cmd->u.create_texture.depth == 1);
@@ -3902,7 +3902,7 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, c
         if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE && cmd->u.create_texture.id == texture_id)
         {
             created_scalar_texture = true;
-            AT(cmd->u.create_texture.format == VK_FORMAT_R8_UNORM);
+            AT(cmd->u.create_texture.format == DVZ_FORMAT_R8_UNORM);
             AT(cmd->u.create_texture.color_role == DVZ_DRP2_COLOR_ROLE_DATA);
             AT(cmd->u.create_texture.depth == 2);
         }
@@ -3910,7 +3910,7 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, c
             cmd->u.create_texture.id == transfer_texture_id)
         {
             created_transfer_texture = true;
-            AT(cmd->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM);
+            AT(cmd->u.create_texture.format == DVZ_FORMAT_R8G8B8A8_UNORM);
             AT(cmd->u.create_texture.color_role == DVZ_DRP2_COLOR_ROLE_SRGB_COLOR);
             AT(cmd->u.create_texture.width == 256);
             AT(cmd->u.create_texture.height == 1);
@@ -4020,7 +4020,7 @@ int test_scene_sampled_field_3d_emits_runtime_texture_upload(
             AT(cmd->u.create_texture.width == 2);
             AT(cmd->u.create_texture.height == 2);
             AT(cmd->u.create_texture.depth == 2);
-            AT(cmd->u.create_texture.format == VK_FORMAT_R16_UNORM);
+            AT(cmd->u.create_texture.format == DVZ_FORMAT_R16_UNORM);
         }
         if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE &&
             cmd->u.write_texture.texture_id == texture_id)

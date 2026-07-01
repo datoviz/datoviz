@@ -436,7 +436,7 @@ int test_frame_plan_render_visual_metadata_wgsl_uses_typed_labels(
         if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
             found_pipeline = true;
-            AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+            AT(command->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
             AT(command->u.create_render_pipeline.binding_count == 3);
             AT(command->u.create_render_pipeline.binding_step_modes[0] ==
                DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
@@ -524,7 +524,7 @@ int test_frame_plan_render_splat_metadata_wgsl_uses_typed_labels(
             if (command->u.create_render_pipeline.binding_count != 4)
                 continue;
             found_pipeline = true;
-            AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+            AT(command->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
             AT(command->u.create_render_pipeline.binding_step_modes[0] ==
                DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
             AT(command->u.create_render_pipeline.binding_step_modes[1] ==
@@ -576,7 +576,7 @@ int test_frame_plan_render_primitive_metadata_wgsl_uses_typed_labels(
     metadata.visual_type = DVZ_VISUAL_TYPE_PRIMITIVE;
     metadata.visual_index = 0;
     metadata.buffer_index = UINT32_MAX;
-    metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    metadata.topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     dvz_strlcpy(metadata.position_id, "typed-primitive-position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.color_id, "typed-primitive-color", sizeof(metadata.color_id));
     AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
@@ -607,7 +607,7 @@ int test_frame_plan_render_primitive_metadata_wgsl_uses_typed_labels(
         if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
             found_pipeline = true;
-            AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+            AT(command->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
             AT(command->u.create_render_pipeline.binding_count == 2);
         }
         else if (command->type == DVZ_DRP2_COMMAND_DRAW)
@@ -697,7 +697,7 @@ int test_frame_plan_render_image_metadata_wgsl_uses_typed_labels(
                 continue;
             found_pipeline = true;
             AT(command->u.create_render_pipeline.topology ==
-               VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
+               DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
         }
         else if (command->type == DVZ_DRP2_COMMAND_DRAW)
         {
@@ -758,7 +758,7 @@ int test_frame_plan_render_textured_mesh_metadata_wgsl_uses_typed_labels(
     metadata.desc_kind = DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
     metadata.visual_index = 0;
     metadata.buffer_index = UINT32_MAX;
-    metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    metadata.topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     dvz_strlcpy(metadata.position_id, "typed-mesh-position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.color_id, "typed-mesh-color", sizeof(metadata.color_id));
     dvz_strlcpy(metadata.normal_id, "typed-mesh-normal", sizeof(metadata.normal_id));
@@ -795,7 +795,7 @@ int test_frame_plan_render_textured_mesh_metadata_wgsl_uses_typed_labels(
             if (command->u.create_render_pipeline.binding_count != 4)
                 continue;
             found_pipeline = true;
-            AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+            AT(command->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
         }
         else if (command->type == DVZ_DRP2_COMMAND_DRAW)
         {
@@ -1923,7 +1923,7 @@ int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* 
     DvzFrameGraphResource rt = {0};
     dvz_strlcpy(rt.id, "rt", sizeof(rt.id));
     rt.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
-    rt.format = VK_FORMAT_R8G8B8A8_UNORM;
+    rt.format = DVZ_FORMAT_R8G8B8A8_UNORM;
     rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
     rt.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
                      DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
@@ -1933,7 +1933,7 @@ int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* 
     DvzFrameGraphResource opaque_depth = {0};
     dvz_strlcpy(opaque_depth.id, "panel0.depth.opaque", sizeof(opaque_depth.id));
     opaque_depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-    opaque_depth.format = VK_FORMAT_D32_SFLOAT;
+    opaque_depth.format = DVZ_FORMAT_D32_SFLOAT;
     opaque_depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
     opaque_depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT;
     opaque_depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
@@ -1950,7 +1950,7 @@ int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* 
         DvzFrameGraphResource resource = {0};
         dvz_strlcpy(resource.id, color_ids[i], sizeof(resource.id));
         resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        resource.format = i < 2 ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R32G32_SFLOAT;
+        resource.format = i < 2 ? DVZ_FORMAT_R16G16B16A16_SFLOAT : DVZ_FORMAT_R32G32_SFLOAT;
         resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         resource.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
                                DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
@@ -2056,9 +2056,9 @@ int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* 
     ANN(front_accum);
     ANN(depth_minmax_ping);
     AT(strcmp(front_accum->id, "panel0.peel.front_accum") == 0);
-    AT(front_accum->format == VK_FORMAT_R16G16B16A16_SFLOAT);
+    AT(front_accum->format == DVZ_FORMAT_R16G16B16A16_SFLOAT);
     AT(strcmp(depth_minmax_ping->id, "panel0.peel.depth_minmax_ping") == 0);
-    AT(depth_minmax_ping->format == VK_FORMAT_R32G32_SFLOAT);
+    AT(depth_minmax_ping->format == DVZ_FORMAT_R32G32_SFLOAT);
     AT(
         (front_accum->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT) != 0);
     AT((front_accum->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED) != 0);
@@ -2207,15 +2207,15 @@ int test_frame_plan_graph_gbuffer_shape(TstContext* suite, const TstCase* item)
     ANN(normal);
     ANN(object);
     AT(strcmp(depth->id, "panel0.gbuffer.depth") == 0);
-    AT(depth->format == VK_FORMAT_D32_SFLOAT);
+    AT(depth->format == DVZ_FORMAT_D32_SFLOAT);
     AT(depth->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT);
     AT(depth->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED);
     AT(strcmp(normal->id, "panel0.gbuffer.normal") == 0);
-    AT(normal->format == VK_FORMAT_R16G16B16A16_SFLOAT);
+    AT(normal->format == DVZ_FORMAT_R16G16B16A16_SFLOAT);
     AT(normal->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT);
     AT(normal->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED);
     AT(strcmp(object->id, "panel0.gbuffer.object_id") == 0);
-    AT(object->format == VK_FORMAT_R32_UINT);
+    AT(object->format == DVZ_FORMAT_R32_UINT);
     AT(object->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT);
     AT(object->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED);
 

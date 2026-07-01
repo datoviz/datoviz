@@ -72,7 +72,7 @@ bool _scene_path_stroke_visual_desc_from_metadata(
     out->vbuf_ids[out->vbuf_count++] = line_width_id;
     out->vbuf_ids[out->vbuf_count++] = flags_id;
     out->vbuf_ids[out->vbuf_count++] = distance_id;
-    out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    out->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     out->index_buffer_id = index_id;
     out->material_buffer_id = material_id;
     return _scene_visual_desc_finish_index(

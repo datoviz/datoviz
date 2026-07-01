@@ -224,11 +224,11 @@ static void _scene_emit_marker_symbol_texture_upload(
     uint32_t bytes_per_texel = page->channels;
     if (page->channels == 1)
     {
-        texture_format = VK_FORMAT_R8_UNORM;
+        texture_format = DVZ_FORMAT_R8_UNORM;
     }
     else if (page->channels == 4)
     {
-        texture_format = VK_FORMAT_R8G8B8A8_UNORM;
+        texture_format = DVZ_FORMAT_R8G8B8A8_UNORM;
     }
     else
     {
@@ -350,7 +350,7 @@ static void _scene_emit_volume_transfer_texture_upload(
                 .visual_index = UINT32_MAX,
                 .buffer_index = UINT32_MAX,
             }) ||
-        !dvz_frame_plan_upload_set_texture_format(plan, VK_FORMAT_R8G8B8A8_UNORM, 4) ||
+        !dvz_frame_plan_upload_set_texture_format(plan, DVZ_FORMAT_R8G8B8A8_UNORM, 4) ||
         !dvz_frame_plan_upload_set_texture_extent(plan, payload.width, 1) ||
         !dvz_frame_plan_upload_set_texture_allocation_extent(plan, payload.width, 1) ||
         !dvz_frame_plan_upload_set_texture_region(plan, 0, 0))

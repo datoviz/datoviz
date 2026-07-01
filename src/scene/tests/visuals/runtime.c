@@ -1689,9 +1689,9 @@ int test_scene_visual_scene_occlusion_frame_plan(TstContext* suite, const TstCas
     AT(occlusion_contract.draws[0].depth_write);
     AT(occlusion_contract.color_attachment_count == 1);
     AT(occlusion_contract.has_depth_attachment);
-    AT(occlusion_contract.attachments[0].format == VK_FORMAT_R32_SFLOAT);
+    AT(occlusion_contract.attachments[0].format == DVZ_FORMAT_R32_SFLOAT);
     AT(occlusion_contract.attachments[0].sample_count == 1);
-    AT(occlusion_contract.attachments[1].format == VK_FORMAT_D32_SFLOAT);
+    AT(occlusion_contract.attachments[1].format == DVZ_FORMAT_D32_SFLOAT);
     AT(occlusion_contract.attachments[1].write);
     AT(occlusion_contract.attachments[1].clear);
     dvz_diagnostic_report_init(&report);
@@ -1796,11 +1796,11 @@ int test_scene_visual_scene_occlusion_emits_drp2(TstContext* suite, const TstCas
             has_scene_depth =
                 has_scene_depth ||
                 (label != NULL && strcmp(label, "fig0_p0.scene_occlusion.depth") == 0 &&
-                 command->u.create_texture.format == VK_FORMAT_R32_SFLOAT);
+                 command->u.create_texture.format == DVZ_FORMAT_R32_SFLOAT);
             has_scene_z =
                 has_scene_z ||
                 (label != NULL && strcmp(label, "fig0_p0.scene_occlusion.z") == 0 &&
-                 command->u.create_texture.format == VK_FORMAT_D32_SFLOAT);
+                 command->u.create_texture.format == DVZ_FORMAT_D32_SFLOAT);
         }
         else if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
@@ -1821,7 +1821,7 @@ int test_scene_visual_scene_occlusion_emits_drp2(TstContext* suite, const TstCas
                 has_scene_occluder_depth_pipeline ||
                 (label != NULL && strstr(label, "_pipe_scene_occ_prim") != NULL &&
                  command->u.create_render_pipeline.depth_write_enabled &&
-                 command->u.create_render_pipeline.depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL);
+                 command->u.create_render_pipeline.depth_compare_op == DVZ_COMPARE_OP_LESS_OR_EQUAL);
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
         {
@@ -1959,7 +1959,7 @@ int test_scene_volume_slice_uses_volume_occlusion(TstContext* suite, const TstCa
     AT(volume_contract.draws[0].writes_volume_occlusion_depth);
     AT(!volume_contract.draws[0].samples_depth);
     AT(volume_contract.color_attachment_count == 1);
-    AT(volume_contract.attachments[0].format == VK_FORMAT_R32_SFLOAT);
+    AT(volume_contract.attachments[0].format == DVZ_FORMAT_R32_SFLOAT);
     AT(volume_contract.attachments[0].sample_count == 1);
     AT(volume_contract.attachments[0].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
     AT(volume_contract.attachments[0].access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);

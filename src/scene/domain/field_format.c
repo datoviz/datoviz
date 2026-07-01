@@ -134,7 +134,7 @@ bool _field_format_bytes_per_texel(DvzFieldFormat format, uint32_t* out_bytes)
  * Return the runtime texture format for a sampled field format.
  *
  * @param format the sampled-field format
- * @param out_format output texture format, using VkFormat values
+ * @param out_format output texture format token
  * @return whether the field format can be realized as a runtime texture
  */
 bool _field_format_texture_format(DvzFieldFormat format, uint32_t* out_format)
@@ -143,43 +143,43 @@ bool _field_format_texture_format(DvzFieldFormat format, uint32_t* out_format)
     switch (format)
     {
     case DVZ_FIELD_FORMAT_R8_UNORM:
-        *out_format = VK_FORMAT_R8_UNORM;
+        *out_format = DVZ_FORMAT_R8_UNORM;
         return true;
     case DVZ_FIELD_FORMAT_R8_SNORM:
-        *out_format = VK_FORMAT_R8_SNORM;
+        *out_format = DVZ_FORMAT_R8_SNORM;
         return true;
     case DVZ_FIELD_FORMAT_R8_UINT:
-        *out_format = VK_FORMAT_R8_UINT;
+        *out_format = DVZ_FORMAT_R8_UINT;
         return true;
     case DVZ_FIELD_FORMAT_R8_SINT:
-        *out_format = VK_FORMAT_R8_SINT;
+        *out_format = DVZ_FORMAT_R8_SINT;
         return true;
     case DVZ_FIELD_FORMAT_R16_UNORM:
-        *out_format = VK_FORMAT_R16_UNORM;
+        *out_format = DVZ_FORMAT_R16_UNORM;
         return true;
     case DVZ_FIELD_FORMAT_R16_SNORM:
-        *out_format = VK_FORMAT_R16_SNORM;
+        *out_format = DVZ_FORMAT_R16_SNORM;
         return true;
     case DVZ_FIELD_FORMAT_R16_UINT:
-        *out_format = VK_FORMAT_R16_UINT;
+        *out_format = DVZ_FORMAT_R16_UINT;
         return true;
     case DVZ_FIELD_FORMAT_R16_SINT:
-        *out_format = VK_FORMAT_R16_SINT;
+        *out_format = DVZ_FORMAT_R16_SINT;
         return true;
     case DVZ_FIELD_FORMAT_R16_FLOAT:
-        *out_format = VK_FORMAT_R16_SFLOAT;
+        *out_format = DVZ_FORMAT_R16_SFLOAT;
         return true;
     case DVZ_FIELD_FORMAT_R32_UINT:
-        *out_format = VK_FORMAT_R32_UINT;
+        *out_format = DVZ_FORMAT_R32_UINT;
         return true;
     case DVZ_FIELD_FORMAT_R32_SINT:
-        *out_format = VK_FORMAT_R32_SINT;
+        *out_format = DVZ_FORMAT_R32_SINT;
         return true;
     case DVZ_FIELD_FORMAT_R32_FLOAT:
-        *out_format = VK_FORMAT_R32_SFLOAT;
+        *out_format = DVZ_FORMAT_R32_SFLOAT;
         return true;
     case DVZ_FIELD_FORMAT_RGBA8_UNORM:
-        *out_format = VK_FORMAT_R8G8B8A8_UNORM;
+        *out_format = DVZ_FORMAT_R8G8B8A8_UNORM;
         return true;
     default:
         *out_format = 0;

@@ -65,13 +65,13 @@ bool _scene_labels_visual_pipeline_desc(
     if (pass_needs_depth)
     {
         out->depth_write_enabled = false;
-        out->depth_compare_op = VK_COMPARE_OP_ALWAYS;
+        out->depth_compare_op = DVZ_COMPARE_OP_ALWAYS;
     }
     out->vertex_buffer_count = 2;
     out->binding_count = 2;
     out->attr_count = 2;
-    _scene_visual_pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-    _scene_visual_pipeline_attr(out, 1, 1, 1, VK_FORMAT_R32G32_SFLOAT, 2 * sizeof(float));
+    _scene_visual_pipeline_attr(out, 0, 0, 0, DVZ_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+    _scene_visual_pipeline_attr(out, 1, 1, 1, DVZ_FORMAT_R32G32_SFLOAT, 2 * sizeof(float));
     out->needs_common_layout = caps.uses_common_set;
     out->needs_labels_layout = caps.uses_image_set;
     return true;

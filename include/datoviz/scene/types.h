@@ -247,7 +247,7 @@ struct DvzFramePlanEmitConfig
     DvzColorPipeline color_pipeline;
     bool external_color_target;
     uint64_t color_target_id;
-    uint32_t color_target_format;
+    DvzFormat color_target_format;
     uint32_t target_width;
     uint32_t target_height;
     float device_scale_x;

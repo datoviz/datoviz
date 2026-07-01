@@ -360,7 +360,7 @@ DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t fla
     visual->z_layer = 0;
     visual->alpha_mode = DVZ_ALPHA_OPAQUE;
     visual->depth_test_enabled = true;
-    visual->depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
+    visual->depth_compare_op = DVZ_COMPARE_OP_LESS_OR_EQUAL;
     visual->transform_desc = dvz_visual_transform_desc();
     visual->shader_desc = dvz_visual_shader_desc();
     glm_mat4_identity(visual->local_transform);

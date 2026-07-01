@@ -168,13 +168,13 @@ bool _scene_query_indexed_primitive_geometry(
     case DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST:
         primitive_count = source_index_count;
         draw_vertex_count = primitive_count;
-        draw_topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+        draw_topology = DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST;
         break;
     case DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST:
         primitive_count = source_index_count / 2;
         if (_dvz_mul_u64_overflows(primitive_count, 2, &draw_vertex_count))
             return false;
-        draw_topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+        draw_topology = DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST;
         break;
     case DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP:
         if (source_index_count < 2)
@@ -182,13 +182,13 @@ bool _scene_query_indexed_primitive_geometry(
         primitive_count = source_index_count - 1;
         if (_dvz_mul_u64_overflows(primitive_count, 2, &draw_vertex_count))
             return false;
-        draw_topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+        draw_topology = DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST;
         break;
     case DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
         primitive_count = source_index_count / 3;
         if (_dvz_mul_u64_overflows(primitive_count, 3, &draw_vertex_count))
             return false;
-        draw_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        draw_topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         break;
     case DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
     case DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
@@ -197,7 +197,7 @@ bool _scene_query_indexed_primitive_geometry(
         primitive_count = source_index_count - 2;
         if (_dvz_mul_u64_overflows(primitive_count, 3, &draw_vertex_count))
             return false;
-        draw_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        draw_topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         break;
     default:
         return false;

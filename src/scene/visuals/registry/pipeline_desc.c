@@ -41,7 +41,7 @@
  */
 void _scene_visual_pipeline_attr(
     DvzSceneVisualPipelineDesc* out, uint32_t index, uint32_t binding, uint32_t location,
-    uint32_t format, uint32_t stride)
+    DvzFormat format, uint32_t stride)
 {
     ANN(out);
     ASSERT(index < DVZ_SCENE_MAX_NODE_RESOURCES);
@@ -70,7 +70,7 @@ void _scene_visual_pipeline_instance_transform(
     for (uint32_t i = 0; i < 4; i++)
     {
         _scene_visual_pipeline_attr(
-            out, first_attr + i, binding, 3 + i, VK_FORMAT_R32G32B32A32_SFLOAT,
+            out, first_attr + i, binding, 3 + i, DVZ_FORMAT_R32G32B32A32_SFLOAT,
             16 * sizeof(float));
         out->offsets[first_attr + i] = i * 4 * sizeof(float);
     }
@@ -90,7 +90,7 @@ void _scene_visual_pipeline_instance_transform(
  */
 void _scene_visual_pipeline_apply_standard_depth_state(
     const DvzSceneVisualPassCaps* caps, bool pass_needs_depth, bool wboit_accumulation,
-    DvzAlphaMode alpha_mode, uint32_t depth_compare_op, DvzSceneVisualPipelineDesc* out)
+    DvzAlphaMode alpha_mode, DvzCompareOp depth_compare_op, DvzSceneVisualPipelineDesc* out)
 {
     ANN(caps);
     ANN(out);
@@ -98,12 +98,12 @@ void _scene_visual_pipeline_apply_standard_depth_state(
     if (!pass_needs_depth)
         return;
 
-    bool forward_compare = depth_compare_op == VK_COMPARE_OP_LESS ||
-                           depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL;
+    bool forward_compare = depth_compare_op == DVZ_COMPARE_OP_LESS ||
+                           depth_compare_op == DVZ_COMPARE_OP_LESS_OR_EQUAL;
     out->depth_write_enabled =
         caps->can_write_depth && forward_compare && !wboit_accumulation &&
         alpha_mode != DVZ_ALPHA_BLENDED;
-    out->depth_compare_op = caps->can_depth_test ? depth_compare_op : VK_COMPARE_OP_ALWAYS;
+    out->depth_compare_op = caps->can_depth_test ? depth_compare_op : DVZ_COMPARE_OP_ALWAYS;
 }
 
 
@@ -151,23 +151,23 @@ void _scene_visual_pipeline_desc_apply_query_pick(
 {
     ANN(visual);
     ANN(pipeline);
-    if (color_target_format != VK_FORMAT_R32_UINT)
+    if (color_target_format != DVZ_FORMAT_R32_UINT)
         return;
 
     if (visual->kind == DVZ_SCENE_VISUAL_DESC_SEGMENT && pipeline->attr_count > 2)
     {
         pipeline->strides[2] = sizeof(uint32_t);
-        pipeline->formats[2] = VK_FORMAT_R32_UINT;
+        pipeline->formats[2] = DVZ_FORMAT_R32_UINT;
     }
     else if (visual->kind == DVZ_SCENE_VISUAL_DESC_PATH && pipeline->attr_count > 4)
     {
         pipeline->strides[4] = sizeof(uint32_t);
-        pipeline->formats[4] = VK_FORMAT_R32_UINT;
+        pipeline->formats[4] = DVZ_FORMAT_R32_UINT;
     }
     else if (visual->kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE && pipeline->attr_count > 1)
     {
         pipeline->strides[1] = sizeof(uint32_t);
-        pipeline->formats[1] = VK_FORMAT_R32_UINT;
+        pipeline->formats[1] = DVZ_FORMAT_R32_UINT;
     }
 }
 
@@ -209,14 +209,14 @@ void _scene_visual_pipeline_desc_apply_pass_policy(
         pipeline->needs_scene_occlusion_layout = false;
         pipeline->has_depth_state = true;
         pipeline->depth_write_enabled = true;
-        pipeline->depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
+        pipeline->depth_compare_op = DVZ_COMPARE_OP_LESS_OR_EQUAL;
     }
 
     if (force_point_depth && point_like)
     {
         pipeline->has_depth_state = true;
         pipeline->depth_write_enabled = true;
-        pipeline->depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
+        pipeline->depth_compare_op = DVZ_COMPARE_OP_LESS_OR_EQUAL;
     }
 
     if (

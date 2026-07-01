@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "datoviz/gpu/enums.h" /* DvzPrimitiveTopology shared with DRP2 backends. */
+#include "datoviz/render_types.h" /* DvzPrimitiveTopology shared by scene and DRP2. */
 
 
 

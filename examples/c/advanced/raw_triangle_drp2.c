@@ -174,12 +174,12 @@ int main(int argc, char** argv)
         uint32_t strides[1]   = {5 * sizeof(float)};           /* binding 0: Vertex = 5 floats */
         uint32_t bindings[2]  = {0, 0};                        /* both attrs from binding 0    */
         uint32_t locations[2] = {0, 1};
-        uint32_t formats[2]   = {VK_FORMAT_R32G32_SFLOAT,      /* inPos:   vec2                */
-                                  VK_FORMAT_R32G32B32_SFLOAT};  /* inColor: vec3                */
+        DvzFormat formats[2]  = {DVZ_FORMAT_R32G32_SFLOAT,      /* inPos:   vec2                */
+                                 DVZ_FORMAT_R32G32B32_SFLOAT};  /* inColor: vec3                */
         uint32_t offsets[2]   = {0, 2 * sizeof(float)};
         dvz_drp2_stream_create_render_pipeline_ex(
             stream, ID_PIPE, ID_VS, ID_FS, /*slots=*/1,
-            VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+            DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
             /*bindings=*/1, strides,
             /*attrs=*/2, bindings, locations, formats, offsets);
     }

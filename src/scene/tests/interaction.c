@@ -105,7 +105,7 @@ _interaction_panel_attach(const DvzPanel* panel, const DvzVisual* visual)
  *
  * @param stream the command stream
  * @param label_prefix the pipeline debug label prefix
- * @param format the expected VkFormat
+ * @param format the expected texture format token
  * @param location the expected shader location
  * @return whether the attribute was found
  */
@@ -999,13 +999,13 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
     AT(_interaction_stream_has_pipeline_attr(
-        stream, "_pipe_point_item_stateg", VK_FORMAT_R32_UINT, 5));
+        stream, "_pipe_point_item_stateg", DVZ_FORMAT_R32_UINT, 5));
     AT(_interaction_stream_has_pipeline_attr(
-        stream, "_pipe_pixel_item_stateg", VK_FORMAT_R32_UINT, 5));
+        stream, "_pipe_pixel_item_stateg", DVZ_FORMAT_R32_UINT, 5));
     AT(_interaction_stream_has_pipeline_attr(
-        stream, "_pipe_marker_item_stateg", VK_FORMAT_R32_UINT, 5));
+        stream, "_pipe_marker_item_stateg", DVZ_FORMAT_R32_UINT, 5));
     AT(_interaction_stream_has_pipeline_attr(
-        stream, "_pipe_sphere_item_stateg", VK_FORMAT_R32_UINT, 5));
+        stream, "_pipe_sphere_item_stateg", DVZ_FORMAT_R32_UINT, 5));
     AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneItemStateStyleParams)) == 4);
     AT(_interaction_stream_item_state_style_bind_group_count(stream) == 4);
     _test_scene_stream_destroy(stream);
@@ -1411,7 +1411,7 @@ int test_scene_mesh_instance_hover_selection_item_state(TstContext* suite, const
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
     AT(_interaction_stream_has_pipeline_attr(
-        stream, "_pipe_prim_t3_inst_item_stateg", VK_FORMAT_R32_UINT, 7));
+        stream, "_pipe_prim_t3_inst_item_stateg", DVZ_FORMAT_R32_UINT, 7));
     AT(_interaction_stream_item_state_style_bind_group_count(stream) == 1);
     _test_scene_stream_destroy(stream);
 

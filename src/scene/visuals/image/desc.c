@@ -65,6 +65,6 @@ bool _scene_image_visual_desc_from_metadata(
     uint64_t pos_buf = out->vbuf_ids[0];
     out->topology = _scene_visual_desc_resource_topology(emitter, pos_buf);
     if (out->topology == UINT32_MAX)
-        out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+        out->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
     return true;
 }

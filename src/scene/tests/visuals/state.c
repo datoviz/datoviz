@@ -874,8 +874,8 @@ int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* ite
     AT(occluded_overlay->visible);
     AT(overlay->depth_test_enabled);
     AT(occluded_overlay->depth_test_enabled);
-    AT(overlay->depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL);
-    AT(occluded_overlay->depth_compare_op == VK_COMPARE_OP_GREATER);
+    AT(overlay->depth_compare_op == DVZ_COMPARE_OP_LESS_OR_EQUAL);
+    AT(occluded_overlay->depth_compare_op == DVZ_COMPARE_OP_GREATER);
     const DvzPanelAttach* overlay_attach = _scene_test_panel_attach(panel, overlay);
     const DvzPanelAttach* occluded_attach = _scene_test_panel_attach(panel, occluded_overlay);
     ANN(overlay_attach);
@@ -1157,14 +1157,14 @@ int test_scene_panel_bounds_overlay_emit_runtime(TstContext* suite, const TstCas
             found_occluded_pipeline =
                 command->u.create_render_pipeline.has_depth_attachment &&
                 !command->u.create_render_pipeline.depth_write_enabled &&
-                command->u.create_render_pipeline.depth_compare_op == VK_COMPARE_OP_GREATER;
+                command->u.create_render_pipeline.depth_compare_op == DVZ_COMPARE_OP_GREATER;
         }
         else if (strstr(label, "_pipe_segmentg_blend_depth") != NULL)
         {
             found_front_pipeline =
                 command->u.create_render_pipeline.has_depth_attachment &&
                 !command->u.create_render_pipeline.depth_write_enabled &&
-                command->u.create_render_pipeline.depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL;
+                command->u.create_render_pipeline.depth_compare_op == DVZ_COMPARE_OP_LESS_OR_EQUAL;
         }
     }
     AT(found_front_pipeline);

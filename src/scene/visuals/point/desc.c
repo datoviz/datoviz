@@ -97,7 +97,7 @@ bool _scene_point_like_visual_desc_from_metadata(
         out->has_item_state = true;
         out->item_state_style_buffer_id = item_state_style_id;
     }
-    out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+    out->topology = DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST;
     out->material_buffer_id = _scene_visual_desc_resource(emitter, meta->material_id);
     return true;
 }

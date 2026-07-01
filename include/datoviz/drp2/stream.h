@@ -206,12 +206,12 @@ DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_usage(
  * @param id the texture id
  * @param width the texture width
  * @param height the texture height
- * @param format texture format, using VkFormat values
+ * @param format texture format token
  * @param usage texture usage flags
  * @return whether the command was appended
  */
 DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_format_usage(
-    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t format,
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, DvzFormat format,
     uint32_t usage);
 
 
@@ -222,13 +222,13 @@ DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_format_usage(
  * @param id the texture id
  * @param width the texture width
  * @param height the texture height
- * @param format texture format, using VkFormat values
+ * @param format texture format token
  * @param usage texture usage flags
  * @param sample_count raster sample count, with 0 treated as 1
  * @return whether the command was appended
  */
 DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_format_usage_samples(
-    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t format,
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, DvzFormat format,
     uint32_t usage, uint32_t sample_count);
 
 
@@ -266,13 +266,13 @@ DVZ_EXPORT bool dvz_drp2_stream_create_texture_3d(
  * @param width the texture width
  * @param height the texture height
  * @param depth the texture depth (number of slices)
- * @param format texture format, using VkFormat values
+ * @param format texture format token
  * @param usage texture usage flags
  * @return whether the command was appended
  */
 DVZ_EXPORT bool dvz_drp2_stream_create_texture_3d_format_usage(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t depth,
-    uint32_t format, uint32_t usage);
+    DvzFormat format, uint32_t usage);
 
 
 /**
@@ -406,23 +406,23 @@ DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
  * @param vertex_shader_module_id the vertex shader module id
  * @param fragment_shader_module_id the fragment shader module id
  * @param vertex_buffer_slots the number of required vertex buffer slots
- * @param topology VkPrimitiveTopology value (e.g. VK_PRIMITIVE_TOPOLOGY_POINT_LIST)
+ * @param topology primitive topology token
  * @param binding_count number of vertex binding descriptors
  * @param binding_strides stride in bytes for each binding
  * @param attr_count number of vertex attribute descriptors
  * @param attr_bindings binding index for each attribute
  * @param attr_locations shader location for each attribute
- * @param attr_formats VkFormat for each attribute
+ * @param attr_formats DvzFormat token for each attribute
  * @param attr_offsets byte offset within the binding for each attribute
  * @return whether the command was appended
  */
 DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline_ex(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
     uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
-    uint32_t topology,
+    DvzPrimitiveTopology topology,
     uint32_t binding_count, const uint32_t* binding_strides,
     uint32_t attr_count, const uint32_t* attr_bindings, const uint32_t* attr_locations,
-    const uint32_t* attr_formats, const uint32_t* attr_offsets);
+    const DvzFormat* attr_formats, const uint32_t* attr_offsets);
 
 
 
@@ -439,25 +439,25 @@ DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline_ex(
  * @param vertex_shader_module_id the vertex shader module id
  * @param fragment_shader_module_id the fragment shader module id
  * @param vertex_buffer_slots the number of required vertex buffer slots
- * @param topology VkPrimitiveTopology value (e.g. VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+ * @param topology primitive topology token
  * @param binding_count number of vertex binding descriptors
  * @param binding_strides stride in bytes for each binding
  * @param binding_step_modes DvzDrp2VertexStepMode value for each binding
  * @param attr_count number of vertex attribute descriptors
  * @param attr_bindings binding index for each attribute
  * @param attr_locations shader location for each attribute
- * @param attr_formats VkFormat for each attribute
+ * @param attr_formats DvzFormat token for each attribute
  * @param attr_offsets byte offset within the binding for each attribute
  * @return whether the command was appended
  */
 DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline_ex2(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
     uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
-    uint32_t topology,
+    DvzPrimitiveTopology topology,
     uint32_t binding_count, const uint32_t* binding_strides,
     const uint32_t* binding_step_modes,
     uint32_t attr_count, const uint32_t* attr_bindings, const uint32_t* attr_locations,
-    const uint32_t* attr_formats, const uint32_t* attr_offsets);
+    const DvzFormat* attr_formats, const uint32_t* attr_offsets);
 
 
 /**
@@ -504,23 +504,23 @@ DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_bind_group_layouts(
  *
  * @param stream the command stream
  * @param depth_write_enabled whether depth writes are enabled
- * @param depth_compare_op VkCompareOp value used for depth testing
+ * @param depth_compare_op depth compare operation
  * @return whether the most recent command was a CreateRenderPipeline and was updated
  */
 DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_depth_state(
-    DvzDrp2CommandStream* stream, bool depth_write_enabled, uint32_t depth_compare_op);
+    DvzDrp2CommandStream* stream, bool depth_write_enabled, DvzCompareOp depth_compare_op);
 
 
 /**
  * Attach raster state to the most recently appended CreateRenderPipeline command.
  *
  * @param stream the command stream
- * @param cull_mode VkCullModeFlags value
- * @param front_face VkFrontFace value
+ * @param cull_mode face culling mode
+ * @param front_face front-face winding
  * @return whether the most recent command was a CreateRenderPipeline and was updated
  */
 DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_raster_state(
-    DvzDrp2CommandStream* stream, uint32_t cull_mode, uint32_t front_face);
+    DvzDrp2CommandStream* stream, DvzCullMode cull_mode, DvzFrontFace front_face);
 
 
 /**
@@ -540,11 +540,11 @@ DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_multisampling(
  *
  * @param stream the command stream
  * @param idx the color target index
- * @param format backend-native texture format enum value
+ * @param format texture format token
  * @return whether the most recent command was a CreateRenderPipeline and was updated
  */
 DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_color_target(
-    DvzDrp2CommandStream* stream, uint32_t idx, uint32_t format);
+    DvzDrp2CommandStream* stream, uint32_t idx, DvzFormat format);
 
 
 /**
@@ -562,9 +562,9 @@ DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_color_target(
  * @return whether the most recent command was a CreateRenderPipeline and was updated
  */
 DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_color_blend(
-    DvzDrp2CommandStream* stream, uint32_t idx, uint32_t src_color, uint32_t dst_color,
-    uint32_t color_op, uint32_t src_alpha, uint32_t dst_alpha, uint32_t alpha_op,
-    uint32_t color_write_mask);
+    DvzDrp2CommandStream* stream, uint32_t idx, DvzBlendFactor src_color, DvzBlendFactor dst_color,
+    DvzBlendOp color_op, DvzBlendFactor src_alpha, DvzBlendFactor dst_alpha, DvzBlendOp alpha_op,
+    DvzColorMask color_write_mask);
 
 
 /**

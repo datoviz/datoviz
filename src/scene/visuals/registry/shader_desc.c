@@ -143,30 +143,30 @@ bool _scene_visual_shader_desc_apply_query_pick(
                       visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER;
     bool segment_query =
         visual->kind == DVZ_SCENE_VISUAL_DESC_SEGMENT &&
-        color_target_format == VK_FORMAT_R32_UINT;
+        color_target_format == DVZ_FORMAT_R32_UINT;
     bool path_query =
         visual->kind == DVZ_SCENE_VISUAL_DESC_PATH &&
-        color_target_format == VK_FORMAT_R32_UINT;
+        color_target_format == DVZ_FORMAT_R32_UINT;
     bool primitive_query =
         visual->kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE &&
-        color_target_format == VK_FORMAT_R32_UINT;
+        color_target_format == DVZ_FORMAT_R32_UINT;
     bool labels_query =
         (visual->kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
          visual->kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT) &&
-        color_target_format == VK_FORMAT_R32_UINT;
+        color_target_format == DVZ_FORMAT_R32_UINT;
     bool volume_query_u32 =
         (visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME ||
          visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_SINT ||
          visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME_LABELS_UINT) &&
-        color_target_format == VK_FORMAT_R32_UINT;
+        color_target_format == DVZ_FORMAT_R32_UINT;
     bool volume_query_rg32 =
         visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME &&
-        color_target_format == VK_FORMAT_R32G32_UINT;
+        color_target_format == DVZ_FORMAT_R32G32_UINT;
     bool query =
         (point_like || visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE || segment_query ||
          path_query || primitive_query || labels_query || volume_query_u32 || volume_query_rg32) &&
-        (color_target_format == VK_FORMAT_R32_UINT ||
-         color_target_format == VK_FORMAT_R32G32_UINT);
+        (color_target_format == DVZ_FORMAT_R32_UINT ||
+         color_target_format == DVZ_FORMAT_R32G32_UINT);
     if (!query)
         return true;
 
@@ -569,7 +569,7 @@ bool _scene_visual_shader_desc_apply_pass_policy(
                 shader->pipeline_key, sizeof(shader->pipeline_key), "_no_depth_test"))
             return false;
     }
-    else if (visual->depth_compare_op == VK_COMPARE_OP_GREATER)
+    else if (visual->depth_compare_op == DVZ_COMPARE_OP_GREATER)
     {
         if (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_depth_gt"))
             return false;

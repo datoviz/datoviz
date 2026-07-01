@@ -145,7 +145,7 @@ int test_drp2_stream_texture_color_role_json(TstContext* suite, const TstCase* i
     ANN(stream);
 
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 20, 2, 2, VK_FORMAT_R8G8B8A8_UNORM,
+        stream, 20, 2, 2, DVZ_FORMAT_R8G8B8A8_UNORM,
         DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
     AT(dvz_drp2_stream_create_texture_set_color_role(
         stream, DVZ_DRP2_COLOR_ROLE_SRGB_COLOR));
@@ -645,15 +645,15 @@ int test_drp2_render_pipeline_step_modes_json(TstContext* suite, const TstCase* 
     };
     uint32_t bindings[3] = {0, 1, 2};
     uint32_t locations[3] = {0, 1, 2};
-    uint32_t formats[3] = {
-        VK_FORMAT_R32G32B32_SFLOAT,
-        VK_FORMAT_R8G8B8A8_UNORM,
-        VK_FORMAT_R32_UINT,
+    DvzFormat formats[3] = {
+        DVZ_FORMAT_R32G32B32_SFLOAT,
+        DVZ_FORMAT_R8G8B8A8_UNORM,
+        DVZ_FORMAT_R32_UINT,
     };
     uint32_t offsets[3] = {0, 0, 0};
 
     AT(dvz_drp2_stream_create_render_pipeline_ex2(
-        stream, 10, 9000, 9001, 3, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 3, strides,
+        stream, 10, 9000, 9001, 3, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 3, strides,
         step_modes, 3, bindings, locations, formats, offsets));
 
     char* json = dvz_drp2_stream_json(stream, "pipeline_step_modes");
@@ -680,21 +680,21 @@ int test_drp2_render_pipeline_rejects_vertex_layout_overflow(TstContext* suite, 
     uint32_t strides[DVZ_DRP2_MAX_BINDINGS + 1] = {0};
     uint32_t bindings[DVZ_DRP2_MAX_BINDINGS + 1] = {0};
     uint32_t locations[DVZ_DRP2_MAX_BINDINGS + 1] = {0};
-    uint32_t formats[DVZ_DRP2_MAX_BINDINGS + 1] = {0};
+    DvzFormat formats[DVZ_DRP2_MAX_BINDINGS + 1] = {0};
     uint32_t offsets[DVZ_DRP2_MAX_BINDINGS + 1] = {0};
 
     AT(!dvz_drp2_stream_create_render_pipeline_ex2(
-        stream, 10, 9000, 9001, 1, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+        stream, 10, 9000, 9001, 1, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
         DVZ_DRP2_MAX_BINDINGS + 1, strides, NULL, 1, bindings, locations, formats, offsets));
     AT(dvz_drp2_stream_count(stream) == 0);
 
     AT(!dvz_drp2_stream_create_render_pipeline_ex2(
-        stream, 10, 9000, 9001, 1, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 1, strides, NULL,
+        stream, 10, 9000, 9001, 1, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 1, strides, NULL,
         DVZ_DRP2_MAX_BINDINGS + 1, bindings, locations, formats, offsets));
     AT(dvz_drp2_stream_count(stream) == 0);
 
     AT(!dvz_drp2_stream_create_render_pipeline_ex2(
-        stream, 10, 9000, 9001, 1, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 1, NULL, NULL, 1,
+        stream, 10, 9000, 9001, 1, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 1, NULL, NULL, 1,
         bindings, locations, formats, offsets));
     AT(dvz_drp2_stream_count(stream) == 0);
 
@@ -714,25 +714,25 @@ int test_drp2_render_pipeline_color_targets_json(TstContext* suite, const TstCas
 
     AT(dvz_drp2_stream_create_render_pipeline(stream, 10, 9000, 9001, 0));
     AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
-    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, VK_FORMAT_R16_SFLOAT));
+        stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, DVZ_FORMAT_R16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_blend(
-        stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-        VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-        VK_BLEND_OP_ADD,
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-            VK_COLOR_COMPONENT_A_BIT));
+        stream, 0, DVZ_BLEND_FACTOR_SRC_ALPHA, DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+        DVZ_BLEND_OP_ADD, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+        DVZ_BLEND_OP_ADD,
+        DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G | DVZ_MASK_COLOR_B |
+            DVZ_MASK_COLOR_A));
     AT(dvz_drp2_stream_pipeline_set_color_blend(
-        stream, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-        VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-            VK_COLOR_COMPONENT_A_BIT));
+        stream, 1, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
+        DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
+        DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G | DVZ_MASK_COLOR_B |
+            DVZ_MASK_COLOR_A));
 
     const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, 0);
     ANN(cmd);
     AT(cmd->u.create_render_pipeline.color_target_count == 2);
-    AT(cmd->u.create_render_pipeline.color_targets[0].format == VK_FORMAT_R16G16B16A16_SFLOAT);
-    AT(cmd->u.create_render_pipeline.color_targets[1].format == VK_FORMAT_R16_SFLOAT);
+    AT(cmd->u.create_render_pipeline.color_targets[0].format == DVZ_FORMAT_R16G16B16A16_SFLOAT);
+    AT(cmd->u.create_render_pipeline.color_targets[1].format == DVZ_FORMAT_R16_SFLOAT);
     AT(cmd->u.create_render_pipeline.color_targets[0].blend_enabled);
     AT(cmd->u.create_render_pipeline.color_targets[1].blend_enabled);
 
@@ -763,13 +763,13 @@ int test_drp2_render_pipeline_raster_state(TstContext* suite, const TstCase* ite
 
     AT(dvz_drp2_stream_create_render_pipeline(stream, 10, 9000, 9001, 0));
     AT(dvz_drp2_stream_pipeline_set_raster_state(
-        stream, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE));
+        stream, DVZ_CULL_MODE_BACK, DVZ_FRONT_FACE_CLOCKWISE));
 
     const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, 0);
     ANN(cmd);
     AT(cmd->u.create_render_pipeline.has_raster_state);
-    AT(cmd->u.create_render_pipeline.cull_mode == VK_CULL_MODE_BACK_BIT);
-    AT(cmd->u.create_render_pipeline.front_face == VK_FRONT_FACE_CLOCKWISE);
+    AT(cmd->u.create_render_pipeline.cull_mode == DVZ_CULL_MODE_BACK);
+    AT(cmd->u.create_render_pipeline.front_face == DVZ_FRONT_FACE_CLOCKWISE);
 
     char* json = dvz_drp2_stream_json(stream, "pipeline_raster_state");
     ANN(json);
@@ -786,7 +786,7 @@ int test_drp2_render_pipeline_raster_state(TstContext* suite, const TstCase* ite
     AT(dvz_drp2_stream_create_shader_module(stream, 2, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
     AT(dvz_drp2_stream_pipeline_set_raster_state(
-        stream, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE));
+        stream, DVZ_CULL_MODE_BACK, DVZ_FRONT_FACE_CLOCKWISE));
     DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
     AT(result.ok);
     DvzDrp2RecordingInfo info = {
@@ -815,8 +815,8 @@ int test_drp2_render_pipeline_raster_state(TstContext* suite, const TstCase* ite
     ANN(replay_pipeline);
     AT(replay_pipeline->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE);
     AT(replay_pipeline->u.create_render_pipeline.has_raster_state);
-    AT(replay_pipeline->u.create_render_pipeline.cull_mode == VK_CULL_MODE_BACK_BIT);
-    AT(replay_pipeline->u.create_render_pipeline.front_face == VK_FRONT_FACE_CLOCKWISE);
+    AT(replay_pipeline->u.create_render_pipeline.cull_mode == DVZ_CULL_MODE_BACK);
+    AT(replay_pipeline->u.create_render_pipeline.front_face == DVZ_FRONT_FACE_CLOCKWISE);
     dvz_drp2_stream_destroy(replay);
     dvz_drp2_stream_destroy(stream);
 
@@ -827,7 +827,7 @@ int test_drp2_render_pipeline_raster_state(TstContext* suite, const TstCase* ite
     AT(dvz_drp2_stream_create_shader_module(stream, 1, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 2, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
-    AT(dvz_drp2_stream_pipeline_set_raster_state(stream, 0x80000000u, VK_FRONT_FACE_CLOCKWISE));
+    AT(dvz_drp2_stream_pipeline_set_raster_state(stream, 0x80000000u, DVZ_FRONT_FACE_CLOCKWISE));
     result = dvz_drp2_validate_stream(stream);
     AT(!result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
@@ -840,7 +840,7 @@ int test_drp2_render_pipeline_raster_state(TstContext* suite, const TstCase* ite
     AT(dvz_drp2_stream_create_shader_module(stream, 1, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 2, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
-    AT(dvz_drp2_stream_pipeline_set_raster_state(stream, VK_CULL_MODE_BACK_BIT, 99));
+    AT(dvz_drp2_stream_pipeline_set_raster_state(stream, DVZ_CULL_MODE_BACK, 99));
     result = dvz_drp2_validate_stream(stream);
     AT(!result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
@@ -896,17 +896,17 @@ int test_drp2_wboit_accumulation_resolve_stream(TstContext* suite, const TstCase
         "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0); }"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 1));
     AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
-    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, VK_FORMAT_R16_SFLOAT));
+        stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, DVZ_FORMAT_R16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_blend(
-        stream, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-        VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-            VK_COLOR_COMPONENT_A_BIT));
+        stream, 0, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
+        DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
+        DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G | DVZ_MASK_COLOR_B |
+            DVZ_MASK_COLOR_A));
     AT(dvz_drp2_stream_pipeline_set_color_blend(
-        stream, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-        VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD, VK_COLOR_COMPONENT_R_BIT));
-    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, VK_COMPARE_OP_LESS_OR_EQUAL));
+        stream, 1, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
+        DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD, DVZ_MASK_COLOR_R));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, DVZ_COMPARE_OP_LESS_OR_EQUAL));
 
     AT(dvz_drp2_stream_create_shader_module(
         stream, 20, "VERTEX", "@vertex fn main() -> @builtin(position) vec4f { return vec4f(); }"));
@@ -921,22 +921,22 @@ int test_drp2_wboit_accumulation_resolve_stream(TstContext* suite, const TstCase
         stream, 22, 20, 21, 0, 3));
 
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 30, 4, 4, VK_FORMAT_R16G16B16A16_SFLOAT,
+        stream, 30, 4, 4, DVZ_FORMAT_R16G16B16A16_SFLOAT,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 31, 4, 4, VK_FORMAT_R16_SFLOAT,
+        stream, 31, 4, 4, DVZ_FORMAT_R16_SFLOAT,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 32, 4, 4, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 32, 4, 4, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 33, 4, 4, VK_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+        stream, 33, 4, 4, DVZ_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
 
     const DvzDrp2Command* accum_texture = dvz_drp2_stream_get(stream, 12);
     const DvzDrp2Command* reveal_texture = dvz_drp2_stream_get(stream, 13);
     ANN(accum_texture);
     ANN(reveal_texture);
-    AT(accum_texture->u.create_texture.format == VK_FORMAT_R16G16B16A16_SFLOAT);
-    AT(reveal_texture->u.create_texture.format == VK_FORMAT_R16_SFLOAT);
+    AT(accum_texture->u.create_texture.format == DVZ_FORMAT_R16G16B16A16_SFLOAT);
+    AT(reveal_texture->u.create_texture.format == DVZ_FORMAT_R16_SFLOAT);
 
     DvzDrp2BindGroupEntry bind_entries[3] = {
         {

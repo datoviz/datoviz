@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "datoviz/drp2/enums.h"
+#include "datoviz/render_types.h"
 
 
 

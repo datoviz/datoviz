@@ -325,7 +325,7 @@ int test_scene_segment_emit_glsl(TstContext* suite, const TstCase* item)
     AT(pass_contract.draws[0].blend_targets[0].blend_enabled);
     AT(
         pass_contract.draws[0].blend_targets[0].src_color_blend_factor ==
-        VK_BLEND_FACTOR_SRC_ALPHA);
+        DVZ_BLEND_FACTOR_SRC_ALPHA);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
@@ -352,16 +352,16 @@ int test_scene_segment_emit_glsl(TstContext* suite, const TstCase* item)
             if (label != NULL && strstr(label, "_pipe_segmentg") == label)
             {
                 found_pipeline = true;
-                AT(cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+                AT(cmd->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
                 AT(cmd->u.create_render_pipeline.binding_count == 4);
                 AT(cmd->u.create_render_pipeline.attr_count == 4);
                 AT(cmd->u.create_render_pipeline.color_targets[0].blend_enabled);
                 AT(
                     cmd->u.create_render_pipeline.color_targets[0].src_color_blend_factor ==
-                    VK_BLEND_FACTOR_SRC_ALPHA);
+                    DVZ_BLEND_FACTOR_SRC_ALPHA);
                 AT(
                     cmd->u.create_render_pipeline.color_targets[0].dst_color_blend_factor ==
-                    VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+                    DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
             }
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
@@ -684,7 +684,7 @@ int test_scene_point_like_lowering_policy(TstContext* suite, const TstCase* item
         DVZ_SCENE_POINT_LIKE_POINT, DVZ_SCENE_SHADER_FORMAT_GLSL, 3, &lowering));
     AT(lowering.kind == DVZ_SCENE_POINT_LIKE_POINT);
     AT(lowering.lowering == DVZ_SCENE_POINT_LIKE_LOWERING_NATIVE_POINTS);
-    AT(lowering.topology == VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+    AT(lowering.topology == DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST);
     AT(lowering.vertex_step_mode == DVZ_DRP2_VERTEX_STEP_MODE_VERTEX);
     AT(lowering.draw_vertex_count == 3);
     AT(lowering.draw_instance_count == 1);
@@ -693,7 +693,7 @@ int test_scene_point_like_lowering_policy(TstContext* suite, const TstCase* item
         DVZ_SCENE_POINT_LIKE_PIXEL, DVZ_SCENE_SHADER_FORMAT_WGSL, 3, &lowering));
     AT(lowering.kind == DVZ_SCENE_POINT_LIKE_PIXEL);
     AT(lowering.lowering == DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS);
-    AT(lowering.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    AT(lowering.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     AT(lowering.vertex_step_mode == DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
     AT(lowering.draw_vertex_count == 6);
     AT(lowering.draw_instance_count == 3);
@@ -829,7 +829,7 @@ int test_scene_splat_emit_instanced_quads(TstContext* suite, const TstCase* item
                     continue;
                 found_pipeline = true;
                 AT(command->u.create_render_pipeline.topology ==
-                   VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+                   DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
                 AT(command->u.create_render_pipeline.binding_count == 4);
                 AT(command->u.create_render_pipeline.binding_strides[0] == 3 * sizeof(float));
                 AT(command->u.create_render_pipeline.binding_strides[1] == 4 * sizeof(uint8_t));
@@ -940,7 +940,7 @@ int test_scene_point_emit_glsl_native_points(TstContext* suite, const TstCase* i
         if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
             found_pipeline = true;
-            AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+            AT(command->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST);
             AT(command->u.create_render_pipeline.binding_count == 3);
             AT(command->u.create_render_pipeline.binding_step_modes[0] ==
                DVZ_DRP2_VERTEX_STEP_MODE_VERTEX);
@@ -1337,9 +1337,9 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
         {
             found_pipeline = true;
             AT(command->u.create_render_pipeline.attr_count == 5);
-            AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+            AT(command->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST);
             AT(command->u.create_render_pipeline.attr_locations[4] == 4);
-            AT(command->u.create_render_pipeline.attr_formats[4] == VK_FORMAT_R32_UINT);
+            AT(command->u.create_render_pipeline.attr_formats[4] == DVZ_FORMAT_R32_UINT);
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE &&
                  command->u.create_render_pipeline.binding_count == 6)
@@ -1352,10 +1352,10 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
             ANN(set1_label);
             found_bitmap_pipeline = true;
             AT(command->u.create_render_pipeline.attr_count == 6);
-            AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+            AT(command->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST);
             AT(command->u.create_render_pipeline.attr_locations[5] == 6);
             AT(command->u.create_render_pipeline.attr_formats[5] ==
-               VK_FORMAT_R32G32B32A32_SFLOAT);
+               DVZ_FORMAT_R32G32B32A32_SFLOAT);
             AT(command->u.create_render_pipeline.bind_group_layout_count == 2);
             if (strstr(pipeline_label, "_pipe_marker_bitmapg") == pipeline_label)
             {
@@ -1389,7 +1389,7 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
         {
-            if (command->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM &&
+            if (command->u.create_texture.format == DVZ_FORMAT_R8G8B8A8_UNORM &&
                 command->u.create_texture.width == 4 && command->u.create_texture.height == 4 &&
                 command->u.create_texture.depth == 1)
             {
@@ -1398,7 +1398,7 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
                 if (command->u.create_texture.color_role == DVZ_DRP2_COLOR_ROLE_DATA)
                     rgba_data_texture_count++;
             }
-            if (command->u.create_texture.format == VK_FORMAT_R8_UNORM &&
+            if (command->u.create_texture.format == DVZ_FORMAT_R8_UNORM &&
                 command->u.create_texture.width == 4 && command->u.create_texture.height == 4 &&
                 command->u.create_texture.depth == 1 &&
                 command->u.create_texture.color_role == DVZ_DRP2_COLOR_ROLE_DATA)
@@ -1406,17 +1406,17 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
                 r8_data_texture_count++;
             }
             found_texture =
-                found_texture || (command->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM &&
+                found_texture || (command->u.create_texture.format == DVZ_FORMAT_R8G8B8A8_UNORM &&
                                   command->u.create_texture.width == 4 &&
                                   command->u.create_texture.height == 4 &&
                                   command->u.create_texture.depth == 1);
             found_sdf_texture =
-                found_sdf_texture || (command->u.create_texture.format == VK_FORMAT_R8_UNORM &&
+                found_sdf_texture || (command->u.create_texture.format == DVZ_FORMAT_R8_UNORM &&
                                       command->u.create_texture.width == 4 &&
                                       command->u.create_texture.height == 4 &&
                                       command->u.create_texture.depth == 1);
             found_msdf_texture =
-                found_msdf_texture || (command->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM &&
+                found_msdf_texture || (command->u.create_texture.format == DVZ_FORMAT_R8G8B8A8_UNORM &&
                                        command->u.create_texture.width == 4 &&
                                        command->u.create_texture.height == 4 &&
                                        command->u.create_texture.depth == 1);
@@ -1529,7 +1529,7 @@ int test_scene_pixel_emit_glsl_native_square_points(TstContext* suite, const Tst
         if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
             found_pipeline = true;
-            AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+            AT(command->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST);
         }
         else if (command->type == DVZ_DRP2_COMMAND_DRAW)
         {

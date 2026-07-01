@@ -140,7 +140,7 @@ int test_drp2_runtime_rejects_draw_past_vertex_buffer(TstContext* suite, const T
     uint32_t stride = sizeof(float);
     uint32_t binding = 0;
     uint32_t location = 0;
-    uint32_t format = VK_FORMAT_R32_SFLOAT;
+    DvzFormat format = DVZ_FORMAT_R32_SFLOAT;
     uint32_t offset = 0;
 
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
@@ -149,7 +149,7 @@ int test_drp2_runtime_rejects_draw_past_vertex_buffer(TstContext* suite, const T
     AT(dvz_drp2_stream_create_shader_module(stream, 2, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 3, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline_ex(
-        stream, 4, 2, 3, 1, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, 1, &stride, 1, &binding,
+        stream, 4, 2, 3, 1, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, 1, &stride, 1, &binding,
         &location, &format, &offset));
     AT(dvz_drp2_stream_create_texture_2d(stream, 5, 4, 4));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 6));
@@ -648,17 +648,17 @@ int test_drp2_runtime_validate_write_texture_3d_formats(TstContext* suite, const
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_3d_format_usage(
-        stream, 1, 3, 2, 2, VK_FORMAT_R8_UNORM,
+        stream, 1, 3, 2, 2, DVZ_FORMAT_R8_UNORM,
         DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
     AT(dvz_drp2_stream_write_texture_3d_bytes(
         stream, 1, 0, 0, 0, 0, 3, 2, 2, 3, 2, r8_values));
     AT(dvz_drp2_stream_create_texture_3d_format_usage(
-        stream, 2, 2, 2, 2, VK_FORMAT_R16_UNORM,
+        stream, 2, 2, 2, 2, DVZ_FORMAT_R16_UNORM,
         DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
     AT(dvz_drp2_stream_write_texture_3d_bytes(
         stream, 2, 0, 0, 0, 0, 2, 2, 2, 2 * sizeof(uint16_t), 2, r16_values));
     AT(dvz_drp2_stream_create_texture_3d_format_usage(
-        stream, 3, 2, 2, 2, VK_FORMAT_R32G32_UINT,
+        stream, 3, 2, 2, 2, DVZ_FORMAT_R32G32_UINT,
         DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
     AT(dvz_drp2_stream_write_texture_3d_bytes(
         stream, 3, 0, 0, 0, 0, 2, 2, 2, 2 * 2 * sizeof(uint32_t), 2, rg32_values));
@@ -666,17 +666,17 @@ int test_drp2_runtime_validate_write_texture_3d_formats(TstContext* suite, const
     const DvzDrp2Command* r8_texture = dvz_drp2_stream_get(stream, 2);
     ANN(r8_texture);
     AT(r8_texture->u.create_texture.depth == 2);
-    AT(r8_texture->u.create_texture.format == VK_FORMAT_R8_UNORM);
+    AT(r8_texture->u.create_texture.format == DVZ_FORMAT_R8_UNORM);
 
     const DvzDrp2Command* r16_texture = dvz_drp2_stream_get(stream, 4);
     ANN(r16_texture);
     AT(r16_texture->u.create_texture.depth == 2);
-    AT(r16_texture->u.create_texture.format == VK_FORMAT_R16_UNORM);
+    AT(r16_texture->u.create_texture.format == DVZ_FORMAT_R16_UNORM);
 
     const DvzDrp2Command* rg32_texture = dvz_drp2_stream_get(stream, 6);
     ANN(rg32_texture);
     AT(rg32_texture->u.create_texture.depth == 2);
-    AT(rg32_texture->u.create_texture.format == VK_FORMAT_R32G32_UINT);
+    AT(rg32_texture->u.create_texture.format == DVZ_FORMAT_R32G32_UINT);
 
     DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
     AT(result.ok);
@@ -701,7 +701,7 @@ int test_drp2_runtime_rejects_write_texture_format_row_layout(
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_3d_format_usage(
-        stream, 1, 2, 2, 2, VK_FORMAT_R16_UNORM, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
+        stream, 1, 2, 2, 2, DVZ_FORMAT_R16_UNORM, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
     AT(dvz_drp2_stream_write_texture_3d_bytes(
         stream, 1, 0, 0, 0, 0, 2, 2, 2, 3, 2, values));
 
@@ -1780,4 +1780,3 @@ int test_drp2_runtime_rejects_destroy_live_shader_module(TstContext* suite, cons
     dvz_drp2_stream_destroy(stream);
     return 0;
 }
-

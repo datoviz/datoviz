@@ -102,7 +102,7 @@ bool _scene_emit_visual_family_derived_uploads(
         if (image_payload_count > 0)
             _scene_emit_visual_buffer_payloads(
                 figure, plan, visual, visual_index, image_payloads, image_payload_count,
-                VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+                DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
         *out_skip_dense_attrs = true;
     }
     return true;

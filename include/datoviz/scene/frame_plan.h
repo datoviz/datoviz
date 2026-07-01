@@ -43,7 +43,7 @@ typedef struct DvzFramePlanCopyDesc
     uint32_t src_attachment_index;
     uint32_t src_origin[3];
     uint32_t extent[3];
-    uint32_t format;
+    DvzFormat format;
     uint32_t bytes_per_texel;
     uint64_t bytes_per_row;
     uint32_t rows_per_image;
@@ -275,12 +275,12 @@ DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_3d_extent(
  * Tag the most recently appended texture upload node with an explicit format.
  *
  * @param plan the FramePlan
- * @param format texture format, using VkFormat values
+ * @param format texture format token
  * @param bytes_per_texel bytes in one texel for row-stride calculation
  * @return whether the format was applied
  */
 DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_format(
-    DvzFramePlan* plan, uint32_t format, uint32_t bytes_per_texel);
+    DvzFramePlan* plan, DvzFormat format, uint32_t bytes_per_texel);
 
 
 /**

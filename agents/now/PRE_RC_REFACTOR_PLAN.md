@@ -603,3 +603,54 @@ Changes:
 Known risk: some stable headers still transitively expose advanced records until Phase 2 and later
 boundary work reduce protocol leakage. This is tracked by the manifest and validator rather than by
 prose comments.
+
+### Phase 2: Backend-Neutral Rendering Types
+
+Status: complete.
+
+Validation:
+
+```sh
+just build
+just test drp2
+just test scene
+just spec-check
+python3 tools/check_api_status.py
+python3 tools/build_api_c.py --check
+python3 tools/check_example_manifests.py
+git diff --check
+```
+
+Result:
+
+1. `just build` passed without warnings after explicit backend/protocol casts at app/test frame
+   boundaries.
+2. `just test drp2` passed 142/142 selected tests.
+3. `just test scene` passed 659/659 selected tests.
+4. `just spec-check` passed, including API status, DRP2 fixtures, WebGPU preflight, and source
+   guards.
+5. `python3 tools/check_api_status.py` passed with 23 modules and 109 headers.
+6. `python3 tools/build_api_c.py --check` passed with 1545 functions and 7 pages classified.
+7. `python3 tools/check_example_manifests.py` passed.
+8. `git diff --check` passed.
+
+Changes:
+
+1. Added `include/datoviz/render_types.h` as the single public owner for scene/DRP2 render protocol
+   tokens: formats, primitive topology, depth compare, cull mode, front face, blend factors,
+   blend operations, and color write masks.
+2. Moved `DvzFormat`, `DvzPrimitiveTopology`, `DvzFrontFace`, `DvzCullMode`, and related render
+   state tokens out of Vulkan/GPU-adjacent public headers; those headers now forward to
+   `render_types.h` instead of redefining protocol enums.
+3. Changed DRP2 stream builders and scene FramePlan texture/config entry points to accept
+   `Dvz*` protocol types at the API boundary while keeping DRP2 command storage as wire-level
+   integers.
+4. Converted scene render contracts, visual pipeline descriptors, DRP2 serialization/semantic
+   validation, tests, and advanced examples to use `DVZ_*` protocol tokens.
+5. Left Vulkan casts and `VK_*` constants only in backend execution/runtime code where the protocol
+   is translated to vklite/Vulkan handles and enums.
+6. Registered `render_types` in `spec/api/status.yml`, C API policy, ctypes extraction config, and
+   public umbrella routing.
+
+Known risk: command structs still store render tokens as `uint32_t` for packet/wire stability; the
+typed API boundary and protocol validators are now the single authority for token names.

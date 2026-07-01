@@ -48,10 +48,10 @@ static void _mesh_textured_pipeline_desc(
     out->vertex_buffer_count = 4;
     out->binding_count = 4;
     out->attr_count = 4;
-    _scene_visual_pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-    _scene_visual_pipeline_attr(out, 1, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
-    _scene_visual_pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-    _scene_visual_pipeline_attr(out, 3, 3, 3, VK_FORMAT_R32G32_SFLOAT, 2 * sizeof(float));
+    _scene_visual_pipeline_attr(out, 0, 0, 0, DVZ_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+    _scene_visual_pipeline_attr(out, 1, 1, 1, DVZ_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
+    _scene_visual_pipeline_attr(out, 2, 2, 2, DVZ_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+    _scene_visual_pipeline_attr(out, 3, 3, 3, DVZ_FORMAT_R32G32_SFLOAT, 2 * sizeof(float));
     out->needs_common_layout = caps->uses_common_set;
     out->needs_image_layout = caps->uses_image_set;
     out->needs_material_layout = caps->needs_material_layout;
@@ -89,12 +89,12 @@ static void _mesh_primitive_pipeline_desc(
     out->attr_count = (visual->has_normal ? 3u : 2u) +
                       (visual->has_instance_transform ? 4u : 0u) +
                       (visual->has_item_state ? 1u : 0u);
-    _scene_visual_pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-    _scene_visual_pipeline_attr(out, 1, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
+    _scene_visual_pipeline_attr(out, 0, 0, 0, DVZ_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+    _scene_visual_pipeline_attr(out, 1, 1, 1, DVZ_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
     if (visual->has_normal)
     {
         _scene_visual_pipeline_attr(
-            out, 2, 2, 2, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+            out, 2, 2, 2, DVZ_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
     }
     if (visual->has_instance_transform)
     {
@@ -107,7 +107,7 @@ static void _mesh_primitive_pipeline_desc(
                         (visual->has_instance_transform ? 4u : 0u);
         uint32_t binding = (visual->has_normal ? 3u : 2u) +
                            (visual->has_instance_transform ? 1u : 0u);
-        _scene_visual_pipeline_attr(out, attr, binding, 7, VK_FORMAT_R32_UINT, sizeof(uint32_t));
+        _scene_visual_pipeline_attr(out, attr, binding, 7, DVZ_FORMAT_R32_UINT, sizeof(uint32_t));
         out->step_modes[binding] = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
     }
 
@@ -151,7 +151,7 @@ bool _scene_mesh_visual_pipeline_desc(
     if (pass_needs_depth)
     {
         out->depth_write_enabled = false;
-        out->depth_compare_op = VK_COMPARE_OP_ALWAYS;
+        out->depth_compare_op = DVZ_COMPARE_OP_ALWAYS;
     }
 
     if (_scene_visual_desc_is_textured_mesh(visual->kind))

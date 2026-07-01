@@ -660,7 +660,7 @@ static DvzVisual* _bounds_overlay_visual(DvzPanel* panel, bool occluded)
         return NULL;
     if (dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED) != 0)
         return NULL;
-    visual->depth_compare_op = occluded ? VK_COMPARE_OP_GREATER : VK_COMPARE_OP_LESS_OR_EQUAL;
+    visual->depth_compare_op = occluded ? DVZ_COMPARE_OP_GREATER : DVZ_COMPARE_OP_LESS_OR_EQUAL;
     int32_t z_offset = occluded ? BOUNDS_OVERLAY_Z_LAYER_OCCLUDED - BOUNDS_OVERLAY_Z_LAYER_VISIBLE : 0;
     if (_scene_panel_add_generated_visual(
             panel, visual, DVZ_GENERATED_VISUAL_BOUNDS_OVERLAY, z_offset) != 0)

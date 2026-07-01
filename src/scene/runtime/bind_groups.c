@@ -715,7 +715,7 @@ bool _resolve_volume_dummy_depth(
     {
         uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING | DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
         if (!dvz_drp2_stream_create_texture_2d_format_usage(
-                stream, depth_id, 1, 1, VK_FORMAT_R32_SFLOAT, usage))
+                stream, depth_id, 1, 1, DVZ_FORMAT_R32_SFLOAT, usage))
             return false;
         if (!dvz_drp2_stream_write_texture_2d_bytes(
                 stream, depth_id, 0, 1, 1, sizeof(float), 1, &depth_value))
@@ -750,7 +750,7 @@ bool _resolve_volume_dummy_transfer(
     {
         uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING | DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
         if (!dvz_drp2_stream_create_texture_2d_format_usage(
-                stream, texture_id, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, usage))
+                stream, texture_id, 1, 1, DVZ_FORMAT_R8G8B8A8_UNORM, usage))
             return false;
         if (!dvz_drp2_stream_write_texture_2d_bytes(
                 stream, texture_id, 0, 1, 1, sizeof(rgba_value), 1, rgba_value))

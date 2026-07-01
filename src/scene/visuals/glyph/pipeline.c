@@ -63,16 +63,16 @@ bool _scene_glyph_visual_pipeline_desc(
     if (pass_needs_depth)
     {
         out->depth_write_enabled = false;
-        out->depth_compare_op = VK_COMPARE_OP_ALWAYS;
+        out->depth_compare_op = DVZ_COMPARE_OP_ALWAYS;
     }
     out->vertex_buffer_count = 5;
     out->binding_count = 5;
     out->attr_count = 5;
-    _scene_visual_pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-    _scene_visual_pipeline_attr(out, 1, 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, 4 * sizeof(float));
-    _scene_visual_pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32G32B32A32_SFLOAT, 4 * sizeof(float));
-    _scene_visual_pipeline_attr(out, 3, 3, 3, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
-    _scene_visual_pipeline_attr(out, 4, 4, 4, VK_FORMAT_R32_SFLOAT, sizeof(float));
+    _scene_visual_pipeline_attr(out, 0, 0, 0, DVZ_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+    _scene_visual_pipeline_attr(out, 1, 1, 1, DVZ_FORMAT_R32G32B32A32_SFLOAT, 4 * sizeof(float));
+    _scene_visual_pipeline_attr(out, 2, 2, 2, DVZ_FORMAT_R32G32B32A32_SFLOAT, 4 * sizeof(float));
+    _scene_visual_pipeline_attr(out, 3, 3, 3, DVZ_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
+    _scene_visual_pipeline_attr(out, 4, 4, 4, DVZ_FORMAT_R32_SFLOAT, sizeof(float));
     out->needs_common_layout = caps.uses_common_set;
     out->needs_glyph_layout = caps.uses_image_set;
     return true;

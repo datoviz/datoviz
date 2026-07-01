@@ -114,7 +114,7 @@ int test_scene_external_unorm_target_encodes_srgb(TstContext* suite, const TstCa
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
     emit_cfg.external_color_target = true;
     emit_cfg.color_target_id = 4242;
-    emit_cfg.color_target_format = VK_FORMAT_B8G8R8A8_UNORM;
+    emit_cfg.color_target_format = DVZ_FORMAT_B8G8R8A8_UNORM;
     emit_cfg.target_width = 64;
     emit_cfg.target_height = 64;
 
@@ -142,7 +142,7 @@ int test_scene_external_unorm_target_encodes_srgb(TstContext* suite, const TstCa
         {
             if (cmd->u.create_texture.id == emit_cfg.color_target_id)
                 final_target_created = true;
-            if (cmd->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM &&
+            if (cmd->u.create_texture.format == DVZ_FORMAT_R8G8B8A8_UNORM &&
                 (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0 &&
                 (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) != 0)
             {
@@ -224,7 +224,7 @@ int test_scene_external_unorm_target_legacy_srgb_blend(TstContext* suite, const 
     emit_cfg.color_pipeline = DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND;
     emit_cfg.external_color_target = true;
     emit_cfg.color_target_id = 4242;
-    emit_cfg.color_target_format = VK_FORMAT_B8G8R8A8_UNORM;
+    emit_cfg.color_target_format = DVZ_FORMAT_B8G8R8A8_UNORM;
     emit_cfg.target_width = 64;
     emit_cfg.target_height = 64;
 
@@ -249,7 +249,7 @@ int test_scene_external_unorm_target_legacy_srgb_blend(TstContext* suite, const 
         {
             if (cmd->u.create_texture.id == emit_cfg.color_target_id)
                 final_target_created = true;
-            if (cmd->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM &&
+            if (cmd->u.create_texture.format == DVZ_FORMAT_R8G8B8A8_UNORM &&
                 (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0 &&
                 (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) != 0)
                 found_intermediate = true;
@@ -335,7 +335,7 @@ int test_scene_path_emit(TstContext* suite, const TstCase* item)
         if (cmd != NULL && cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
             found_pipeline = true;
-            AT(cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP);
+            AT(cmd->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP);
             AT(cmd->u.create_render_pipeline.binding_count == 2);
             AT(cmd->u.create_render_pipeline.attr_count == 2);
             break;
@@ -445,7 +445,7 @@ int test_scene_image_multi_item_emit(TstContext* suite, const TstCase* item)
         {
             found_pipeline =
                 cmd->u.create_render_pipeline.vertex_buffer_slots == 2 &&
-                cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST &&
+                cmd->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST &&
                 cmd->u.create_render_pipeline.bind_group_layout_count == 2;
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
@@ -569,7 +569,7 @@ int test_scene_image_pixel_anchor_emit_wgsl(TstContext* suite, const TstCase* it
             if (label != NULL && strstr(label, "_pipe_img_pxw") == label)
             {
                 found_pipeline = true;
-                AT(cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+                AT(cmd->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
                 AT(cmd->u.create_render_pipeline.vertex_buffer_slots == 2);
                 AT(cmd->u.create_render_pipeline.binding_count == 2);
                 AT(cmd->u.create_render_pipeline.attr_count == 2);
@@ -718,7 +718,7 @@ int test_scene_glyph_emit_glsl(TstContext* suite, const TstCase* item)
         {
             found_pipeline =
                 cmd->u.create_render_pipeline.vertex_buffer_slots == 5 &&
-                cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST &&
+                cmd->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST &&
                 cmd->u.create_render_pipeline.binding_count == 5 &&
                 cmd->u.create_render_pipeline.attr_count == 5 &&
                 cmd->u.create_render_pipeline.bind_group_layout_count == 2;
@@ -1036,13 +1036,13 @@ int test_scene_image_linear_color_emit_wgsl(TstContext* suite, const TstCase* it
  * Return whether a stream creates a texture with the expected format and extent.
  *
  * @param stream the emitted command stream
- * @param format expected Vulkan texture format
+ * @param format expected texture format token
  * @param width expected texture width
  * @param height expected texture height
  * @return whether a matching texture command was found
  */
 static bool _stream_has_texture_format(
-    const DvzDrp2CommandStream* stream, VkFormat format, uint32_t width, uint32_t height)
+    const DvzDrp2CommandStream* stream, DvzFormat format, uint32_t width, uint32_t height)
 {
     ANN(stream);
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
@@ -1294,7 +1294,7 @@ int test_scene_labels_emit_signed_glsl(TstContext* suite, const TstCase* item)
     AT(!_stream_has_render_pipeline_label(stream, "_pipe_imgg"));
     AT(_labels_stream_has_params_layout(stream));
     AT(_labels_stream_has_params_write(stream));
-    AT(_stream_has_texture_format(stream, VK_FORMAT_R32_SINT, 2, 2));
+    AT(_stream_has_texture_format(stream, DVZ_FORMAT_R32_SINT, 2, 2));
     AT(_stream_has_texture_upload(stream, 2, 2, 2 * sizeof(int32_t)));
 
     char* json = dvz_drp2_stream_json(stream, "scene_labels_signed_glsl_from_c");
@@ -1341,7 +1341,7 @@ int test_scene_labels_emit_unsigned_glsl(TstContext* suite, const TstCase* item)
     AT(!_stream_has_render_pipeline_label(stream, "_pipe_imgg"));
     AT(_labels_stream_has_params_layout(stream));
     AT(_labels_stream_has_params_write(stream));
-    AT(_stream_has_texture_format(stream, VK_FORMAT_R32_UINT, 2, 2));
+    AT(_stream_has_texture_format(stream, DVZ_FORMAT_R32_UINT, 2, 2));
     AT(_stream_has_texture_upload(stream, 2, 2, 2 * sizeof(uint32_t)));
 
     char* json = dvz_drp2_stream_json(stream, "scene_labels_unsigned_glsl_from_c");
@@ -1393,7 +1393,7 @@ int test_scene_labels_emit_wgsl(TstContext* suite, const TstCase* item)
     AT(_stream_has_render_pipeline_label_part(stream, "_pipe_labels_sintw"));
     AT(_labels_stream_has_params_layout(stream));
     AT(_labels_stream_has_params_write(stream));
-    AT(_stream_has_texture_format(stream, VK_FORMAT_R32_SINT, 2, 2));
+    AT(_stream_has_texture_format(stream, DVZ_FORMAT_R32_SINT, 2, 2));
 
     char* json = dvz_drp2_stream_json(stream, "scene_labels_wgsl_from_c");
     ANN(json);
@@ -1658,28 +1658,28 @@ int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCa
             AT(layout_count >= 1);
             AT(cmd->u.create_render_pipeline.bind_group_layout_ids[0] == common_layout_id);
 
-            if (slots == 3 && topology == VK_PRIMITIVE_TOPOLOGY_POINT_LIST)
+            if (slots == 3 && topology == DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST)
             {
                 AT(layout_count == 1);
                 found_point_pipeline = true;
             }
-            else if (slots == 2 && topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+            else if (slots == 2 && topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
             {
                 AT(layout_count == 1);
                 found_primitive_pipeline = true;
             }
-            else if (slots == 2 && topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP)
+            else if (slots == 2 && topology == DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP)
             {
                 AT(layout_count == 1);
                 found_path_pipeline = true;
             }
-            else if (slots == 2 && topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP)
+            else if (slots == 2 && topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP)
             {
                 AT(layout_count == 2);
                 AT(cmd->u.create_render_pipeline.bind_group_layout_ids[1] != common_layout_id);
                 found_image_pipeline = true;
             }
-            else if (slots == 3 && topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+            else if (slots == 3 && topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
             {
                 AT(layout_count == 2);
                 AT(cmd->u.create_render_pipeline.bind_group_layout_ids[1] != common_layout_id);

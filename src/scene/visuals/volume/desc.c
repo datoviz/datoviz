@@ -92,6 +92,6 @@ bool _scene_volume_visual_desc_from_metadata(
     out->volume_occluded = meta->volume_occluded;
     out->volume_occlusion = meta->volume_occlusion;
     out->volume_state = meta->volume_state;
-    out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    out->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     return true;
 }

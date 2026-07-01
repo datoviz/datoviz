@@ -167,12 +167,12 @@ static bool _contract_resource_label_matches(const char* label, const char* reso
 /**
  * Return the effective DRP2 color format when a command omits it.
  *
- * @param format emitted VkFormat value, where zero means DRP2's default color format
- * @return effective VkFormat value
+ * @param format emitted texture format token, where zero means DRP2's default color format
+ * @return effective texture format token
  */
 static uint32_t _contract_effective_color_format(uint32_t format)
 {
-    return format != 0 ? format : VK_FORMAT_R8G8B8A8_UNORM;
+    return format != 0 ? format : DVZ_FORMAT_R8G8B8A8_UNORM;
 }
 
 
@@ -692,7 +692,7 @@ static bool _contract_validate_drp2_fullscreen_pipeline(
         ok = false;
     }
     if (pipeline->u.create_render_pipeline.topology != 0 &&
-        pipeline->u.create_render_pipeline.topology != VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+        pipeline->u.create_render_pipeline.topology != DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
     {
         _contract_report(report, "DRP2 fullscreen pipeline topology mismatches contract");
         ok = false;

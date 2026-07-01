@@ -58,7 +58,7 @@ bool _scene_primitive_visual_pipeline_desc(
     if (pass_needs_depth)
     {
         out->depth_write_enabled = false;
-        out->depth_compare_op = VK_COMPARE_OP_ALWAYS;
+        out->depth_compare_op = DVZ_COMPARE_OP_ALWAYS;
     }
 
     out->vertex_buffer_count =
@@ -66,12 +66,12 @@ bool _scene_primitive_visual_pipeline_desc(
     out->binding_count = out->vertex_buffer_count;
     out->attr_count = (visual->has_normal ? 3u : 2u) +
                       (visual->has_instance_transform ? 4u : 0u);
-    _scene_visual_pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-    _scene_visual_pipeline_attr(out, 1, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
+    _scene_visual_pipeline_attr(out, 0, 0, 0, DVZ_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+    _scene_visual_pipeline_attr(out, 1, 1, 1, DVZ_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
     if (visual->has_normal)
     {
         _scene_visual_pipeline_attr(
-            out, 2, 2, 2, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+            out, 2, 2, 2, DVZ_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
     }
     if (visual->has_instance_transform)
     {

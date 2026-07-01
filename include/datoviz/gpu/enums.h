@@ -13,23 +13,16 @@
 
 
 /*************************************************************************************************/
-/*  Enums                                                                                        */
+/*  Includes                                                                                     */
 /*************************************************************************************************/
 
-// Primitive topology.
-// NOTE: these values intentionally match the common Vulkan/WebGPU topology ordering used by DRP2.
-typedef enum
-{
-    DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST = 0,
-    DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST = 1,
-    DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP = 2,
-    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3,
-    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP = 4,
-    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN = 5,
-
-} DvzPrimitiveTopology;
+#include "datoviz/render_types.h"
 
 
+
+/*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
 
 // Dat flags.
 typedef enum

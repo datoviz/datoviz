@@ -531,7 +531,7 @@ bool dvz_drp2_stream_create_texture_2d(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height)
 {
     return dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, id, width, height, VK_FORMAT_R8G8B8A8_UNORM,
+        stream, id, width, height, DVZ_FORMAT_R8G8B8A8_UNORM,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC |
             DVZ_DRP2_TEXTURE_USAGE_COPY_DST);
 }
@@ -552,7 +552,7 @@ bool dvz_drp2_stream_create_texture_2d_usage(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t usage)
 {
     return dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, id, width, height, VK_FORMAT_R8G8B8A8_UNORM, usage);
+        stream, id, width, height, DVZ_FORMAT_R8G8B8A8_UNORM, usage);
 }
 
 
@@ -564,12 +564,12 @@ bool dvz_drp2_stream_create_texture_2d_usage(
  * @param id the texture id
  * @param width the texture width
  * @param height the texture height
- * @param format texture format, using VkFormat values
+ * @param format texture format token
  * @param usage texture usage flags
  * @return whether the command was appended
  */
 bool dvz_drp2_stream_create_texture_2d_format_usage(
-    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t format,
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, DvzFormat format,
     uint32_t usage)
 {
     return dvz_drp2_stream_create_texture_2d_format_usage_samples(
@@ -585,13 +585,13 @@ bool dvz_drp2_stream_create_texture_2d_format_usage(
  * @param id the texture id
  * @param width the texture width
  * @param height the texture height
- * @param format texture format, using VkFormat values
+ * @param format texture format token
  * @param usage texture usage flags
  * @param sample_count raster sample count, with 0 treated as 1
  * @return whether the command was appended
  */
 bool dvz_drp2_stream_create_texture_2d_format_usage_samples(
-    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t format,
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, DvzFormat format,
     uint32_t usage, uint32_t sample_count)
 {
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_TEXTURE);
@@ -601,7 +601,7 @@ bool dvz_drp2_stream_create_texture_2d_format_usage_samples(
     command->u.create_texture.width = width;
     command->u.create_texture.height = height;
     command->u.create_texture.depth = 1;
-    command->u.create_texture.format = format;
+    command->u.create_texture.format = (uint32_t)format;
     command->u.create_texture.usage = usage;
     command->u.create_texture.sample_count = sample_count == 0 ? 1 : sample_count;
     return true;
@@ -917,11 +917,11 @@ bool dvz_drp2_stream_pipeline_set_bind_group_layouts(
  *
  * @param stream the command stream
  * @param depth_write_enabled whether depth writes are enabled
- * @param depth_compare_op the VkCompareOp depth compare operator
+ * @param depth_compare_op the depth compare operation token
  * @return whether the most recent command was updated
  */
 bool dvz_drp2_stream_pipeline_set_depth_state(
-    DvzDrp2CommandStream* stream, bool depth_write_enabled, uint32_t depth_compare_op)
+    DvzDrp2CommandStream* stream, bool depth_write_enabled, DvzCompareOp depth_compare_op)
 {
     ANN(stream);
     if (stream->count == 0)
@@ -931,7 +931,7 @@ bool dvz_drp2_stream_pipeline_set_depth_state(
         return false;
     command->u.create_render_pipeline.has_depth_attachment = true;
     command->u.create_render_pipeline.depth_write_enabled = depth_write_enabled;
-    command->u.create_render_pipeline.depth_compare_op = depth_compare_op;
+    command->u.create_render_pipeline.depth_compare_op = (uint32_t)depth_compare_op;
     return true;
 }
 
@@ -940,12 +940,12 @@ bool dvz_drp2_stream_pipeline_set_depth_state(
  * Attach raster state to the most recent CreateRenderPipeline command.
  *
  * @param stream the command stream
- * @param cull_mode the VkCullModeFlags value
- * @param front_face the VkFrontFace value
+ * @param cull_mode the face culling token
+ * @param front_face the front-face winding token
  * @return whether the most recent command was updated
  */
 bool dvz_drp2_stream_pipeline_set_raster_state(
-    DvzDrp2CommandStream* stream, uint32_t cull_mode, uint32_t front_face)
+    DvzDrp2CommandStream* stream, DvzCullMode cull_mode, DvzFrontFace front_face)
 {
     ANN(stream);
     if (stream->count == 0)
@@ -954,8 +954,8 @@ bool dvz_drp2_stream_pipeline_set_raster_state(
     if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         return false;
     command->u.create_render_pipeline.has_raster_state = true;
-    command->u.create_render_pipeline.cull_mode = cull_mode;
-    command->u.create_render_pipeline.front_face = front_face;
+    command->u.create_render_pipeline.cull_mode = (uint32_t)cull_mode;
+    command->u.create_render_pipeline.front_face = (uint32_t)front_face;
     return true;
 }
 
@@ -986,7 +986,7 @@ bool dvz_drp2_stream_pipeline_set_multisampling(
 
 
 bool dvz_drp2_stream_pipeline_set_color_target(
-    DvzDrp2CommandStream* stream, uint32_t idx, uint32_t format)
+    DvzDrp2CommandStream* stream, uint32_t idx, DvzFormat format)
 {
     ANN(stream);
     if (stream->count == 0 || idx >= DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
@@ -996,7 +996,7 @@ bool dvz_drp2_stream_pipeline_set_color_target(
         return false;
     command->u.create_render_pipeline.color_target_count =
         MAX(command->u.create_render_pipeline.color_target_count, idx + 1);
-    command->u.create_render_pipeline.color_targets[idx].format = format;
+    command->u.create_render_pipeline.color_targets[idx].format = (uint32_t)format;
     if (command->u.create_render_pipeline.color_targets[idx].color_write_mask == 0)
         command->u.create_render_pipeline.color_targets[idx].color_write_mask = 0xFu;
     return true;
@@ -1005,9 +1005,9 @@ bool dvz_drp2_stream_pipeline_set_color_target(
 
 
 bool dvz_drp2_stream_pipeline_set_color_blend(
-    DvzDrp2CommandStream* stream, uint32_t idx, uint32_t src_color, uint32_t dst_color,
-    uint32_t color_op, uint32_t src_alpha, uint32_t dst_alpha, uint32_t alpha_op,
-    uint32_t color_write_mask)
+    DvzDrp2CommandStream* stream, uint32_t idx, DvzBlendFactor src_color,
+    DvzBlendFactor dst_color, DvzBlendOp color_op, DvzBlendFactor src_alpha,
+    DvzBlendFactor dst_alpha, DvzBlendOp alpha_op, DvzColorMask color_write_mask)
 {
     ANN(stream);
     if (stream->count == 0 || idx >= DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
@@ -1019,13 +1019,13 @@ bool dvz_drp2_stream_pipeline_set_color_blend(
         MAX(command->u.create_render_pipeline.color_target_count, idx + 1);
     DvzDrp2ColorTarget* target = &command->u.create_render_pipeline.color_targets[idx];
     target->blend_enabled = true;
-    target->src_color_blend_factor = src_color;
-    target->dst_color_blend_factor = dst_color;
-    target->color_blend_op = color_op;
-    target->src_alpha_blend_factor = src_alpha;
-    target->dst_alpha_blend_factor = dst_alpha;
-    target->alpha_blend_op = alpha_op;
-    target->color_write_mask = color_write_mask;
+    target->src_color_blend_factor = (uint32_t)src_color;
+    target->dst_color_blend_factor = (uint32_t)dst_color;
+    target->color_blend_op = (uint32_t)color_op;
+    target->src_alpha_blend_factor = (uint32_t)src_alpha;
+    target->dst_alpha_blend_factor = (uint32_t)dst_alpha;
+    target->alpha_blend_op = (uint32_t)alpha_op;
+    target->color_write_mask = (uint32_t)color_write_mask;
     return true;
 }
 
@@ -1067,10 +1067,10 @@ bool dvz_drp2_stream_pipeline_set_builtin_identity(
 bool dvz_drp2_stream_create_render_pipeline_ex(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
     uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
-    uint32_t topology,
+    DvzPrimitiveTopology topology,
     uint32_t binding_count, const uint32_t* binding_strides,
     uint32_t attr_count, const uint32_t* attr_bindings, const uint32_t* attr_locations,
-    const uint32_t* attr_formats, const uint32_t* attr_offsets)
+    const DvzFormat* attr_formats, const uint32_t* attr_offsets)
 {
     return dvz_drp2_stream_create_render_pipeline_ex2(
         stream, id, vertex_shader_module_id, fragment_shader_module_id, vertex_buffer_slots,
@@ -1083,11 +1083,11 @@ bool dvz_drp2_stream_create_render_pipeline_ex(
 bool dvz_drp2_stream_create_render_pipeline_ex2(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
     uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
-    uint32_t topology,
+    DvzPrimitiveTopology topology,
     uint32_t binding_count, const uint32_t* binding_strides,
     const uint32_t* binding_step_modes,
     uint32_t attr_count, const uint32_t* attr_bindings, const uint32_t* attr_locations,
-    const uint32_t* attr_formats, const uint32_t* attr_offsets)
+    const DvzFormat* attr_formats, const uint32_t* attr_offsets)
 {
     if (binding_count > DVZ_DRP2_MAX_BINDINGS || attr_count > DVZ_DRP2_MAX_BINDINGS)
         return false;
@@ -1110,16 +1110,16 @@ bool dvz_drp2_stream_create_render_pipeline_ex2(
     command->u.create_render_pipeline.bind_group_layout_count = 0;
     command->u.create_render_pipeline.has_depth_attachment = false;
     command->u.create_render_pipeline.depth_write_enabled = false;
-    command->u.create_render_pipeline.depth_compare_op = VK_COMPARE_OP_ALWAYS;
+    command->u.create_render_pipeline.depth_compare_op = DVZ_COMPARE_OP_ALWAYS;
     command->u.create_render_pipeline.has_raster_state = false;
-    command->u.create_render_pipeline.cull_mode = VK_CULL_MODE_NONE;
-    command->u.create_render_pipeline.front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    command->u.create_render_pipeline.cull_mode = DVZ_CULL_MODE_NONE;
+    command->u.create_render_pipeline.front_face = DVZ_FRONT_FACE_COUNTER_CLOCKWISE;
     command->u.create_render_pipeline.sample_count = 1;
     command->u.create_render_pipeline.alpha_to_coverage_enabled = false;
     command->u.create_render_pipeline.color_target_count = 1;
     command->u.create_render_pipeline.color_targets[0].format = 0;
     command->u.create_render_pipeline.color_targets[0].color_write_mask = 0xFu;
-    command->u.create_render_pipeline.topology = topology;
+    command->u.create_render_pipeline.topology = (uint32_t)topology;
     uint32_t nb = binding_count;
     command->u.create_render_pipeline.binding_count = nb;
     for (uint32_t i = 0; i < nb; i++)
@@ -1134,7 +1134,7 @@ bool dvz_drp2_stream_create_render_pipeline_ex2(
     {
         command->u.create_render_pipeline.attr_bindings[i]  = attr_bindings[i];
         command->u.create_render_pipeline.attr_locations[i] = attr_locations[i];
-        command->u.create_render_pipeline.attr_formats[i]   = attr_formats[i];
+        command->u.create_render_pipeline.attr_formats[i]   = (uint32_t)attr_formats[i];
         command->u.create_render_pipeline.attr_offsets[i]   = attr_offsets[i];
     }
     return true;
@@ -1653,7 +1653,7 @@ bool dvz_drp2_stream_create_texture_3d(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t depth)
 {
     return dvz_drp2_stream_create_texture_3d_format_usage(
-        stream, id, width, height, depth, VK_FORMAT_R8G8B8A8_UNORM,
+        stream, id, width, height, depth, DVZ_FORMAT_R8G8B8A8_UNORM,
         DVZ_DRP2_TEXTURE_USAGE_COPY_SRC | DVZ_DRP2_TEXTURE_USAGE_COPY_DST |
             DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING);
 }
@@ -1668,13 +1668,13 @@ bool dvz_drp2_stream_create_texture_3d(
  * @param width the texture width
  * @param height the texture height
  * @param depth the texture depth
- * @param format texture format, using VkFormat values
+ * @param format texture format token
  * @param usage texture usage flags
  * @return whether the command was appended
  */
 bool dvz_drp2_stream_create_texture_3d_format_usage(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t depth,
-    uint32_t format, uint32_t usage)
+    DvzFormat format, uint32_t usage)
 {
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_TEXTURE);
     if (command == NULL)
@@ -1683,7 +1683,7 @@ bool dvz_drp2_stream_create_texture_3d_format_usage(
     command->u.create_texture.width = width;
     command->u.create_texture.height = height;
     command->u.create_texture.depth = depth;
-    command->u.create_texture.format = format;
+    command->u.create_texture.format = (uint32_t)format;
     command->u.create_texture.usage = usage;
     command->u.create_texture.sample_count = 1;
     return true;

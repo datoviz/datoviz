@@ -90,7 +90,7 @@ static bool _volume_query_target_extent(
  * Return whether a scalar volume texture format can be sampled by the float query shader.
  *
  * @param format retained field format
- * @param out_texture_format output Vulkan texture format
+ * @param out_texture_format output texture format token
  * @param out_bytes_per_texel output texture byte size
  * @return true when the sample query shader supports the field format
  */
@@ -122,7 +122,7 @@ static bool _volume_query_scalar_sample_format(
  * Return whether a label volume texture format can be sampled by the integer query shader.
  *
  * @param format retained field format
- * @param out_texture_format output Vulkan texture format
+ * @param out_texture_format output texture format token
  * @param out_bytes_per_texel output texture byte size
  * @return true when the sample query shader supports the field format
  */
@@ -419,7 +419,7 @@ static bool _volume_query_build_sample(
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "volume_query0_position", 0, position_bytes, "position",
                    pos_attr->data) &&
-         dvz_frame_plan_upload_set_topology(plan, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST) &&
+         dvz_frame_plan_upload_set_topology(plan, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST) &&
          dvz_frame_plan_upload_bytes(
              plan, "volume_query0_texcoords", 0, texcoord_bytes, "texcoords", uvw_attr->data) &&
          dvz_frame_plan_upload_bytes(
@@ -451,7 +451,7 @@ static bool _volume_query_build_sample(
                  .visual_index = UINT32_MAX,
                  .buffer_index = UINT32_MAX,
              }) &&
-         dvz_frame_plan_upload_set_texture_format(plan, VK_FORMAT_R8G8B8A8_UNORM, 4) &&
+         dvz_frame_plan_upload_set_texture_format(plan, DVZ_FORMAT_R8G8B8A8_UNORM, 4) &&
          dvz_frame_plan_upload_set_texture_extent(plan, 1, 1) &&
          dvz_frame_plan_upload_set_texture_allocation_extent(plan, 1, 1) &&
          dvz_frame_plan_upload_set_texture_region(plan, 0, 0);
@@ -461,7 +461,7 @@ static bool _volume_query_build_sample(
     metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_VOLUME;
     metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_VOLUME_PROXY;
     metadata.desc_kind = (uint32_t)_scene_visual_lowering_desc_kind(ctx->visual);
-    metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    metadata.topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;
     metadata.depth_compare_op = ctx->visual->depth_compare_op;
@@ -499,7 +499,7 @@ static bool _volume_query_build_sample(
     }
 
     bool rg32_profile = !label_profile && ctx->profile == DVZ_QUERY_PROFILE_U64_RG32;
-    uint32_t query_format = rg32_profile ? VK_FORMAT_R32G32_UINT : VK_FORMAT_R32_UINT;
+    uint32_t query_format = rg32_profile ? DVZ_FORMAT_R32G32_UINT : DVZ_FORMAT_R32_UINT;
     uint32_t query_byte_size = rg32_profile ? 2u * sizeof(uint32_t) : sizeof(uint32_t);
     DvzFramePlanCopyDesc copy = dvz_frame_plan_copy_desc();
     copy.src_resource_id = "target.query.volume.sample";
@@ -670,7 +670,7 @@ static bool _volume_query_build(
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "query0_position", 0, position_bytes, "position", pos_attr->data);
     if (ok)
-        ok = dvz_frame_plan_upload_set_topology(plan, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+        ok = dvz_frame_plan_upload_set_topology(plan, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.query_ids);
 
@@ -679,7 +679,7 @@ static bool _volume_query_build(
     metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_PRIMITIVE;
     metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_INDEXED_MESH;
     metadata.desc_kind = (uint32_t)_scene_visual_family_desc_kind(DVZ_VISUAL_TYPE_PRIMITIVE);
-    metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    metadata.topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;
     metadata.depth_compare_op = ctx->visual->depth_compare_op;
@@ -702,7 +702,7 @@ static bool _volume_query_build(
     copy.extent[0] = 1;
     copy.extent[1] = 1;
     copy.extent[2] = 1;
-    copy.format = VK_FORMAT_R32_UINT;
+    copy.format = DVZ_FORMAT_R32_UINT;
     copy.bytes_per_texel = sizeof(uint32_t);
     copy.bytes_per_row = sizeof(uint32_t);
     copy.rows_per_image = 1;
@@ -721,7 +721,7 @@ static bool _volume_query_build(
 
     out_plan->target_width = target_width;
     out_plan->target_height = target_height;
-    out_plan->format = VK_FORMAT_R32_UINT;
+    out_plan->format = DVZ_FORMAT_R32_UINT;
     out_plan->byte_size = sizeof(uint32_t);
     out_plan->schema = (DvzSceneQuerySchema){
         .fields = DVZ_SCENE_QUERY_SCHEMA_FIELD_VISUAL_ID | DVZ_SCENE_QUERY_SCHEMA_FIELD_ITEM_ID,
@@ -817,7 +817,7 @@ static bool _volume_query_decode(
         out_result->value_kind = DVZ_QUERY_VALUE_SCALAR;
         out_result->scalar = value;
         out_result->vector[0] = value;
-        if (ctx->plan->format == VK_FORMAT_R32G32_UINT)
+        if (ctx->plan->format == DVZ_FORMAT_R32G32_UINT)
         {
             if (ctx->byte_size < 2u * sizeof(uint32_t))
             {

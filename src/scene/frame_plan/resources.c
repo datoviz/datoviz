@@ -148,19 +148,19 @@ bool dvz_frame_plan_upload_set_texture_3d_extent(
  * Set the texture format on the most recently appended texture upload.
  *
  * @param plan the FramePlan
- * @param format texture format, using VkFormat values
+ * @param format texture format token
  * @param bytes_per_texel bytes in one texel
  * @return whether the format was applied
  */
 bool dvz_frame_plan_upload_set_texture_format(
-    DvzFramePlan* plan, uint32_t format, uint32_t bytes_per_texel)
+    DvzFramePlan* plan, DvzFormat format, uint32_t bytes_per_texel)
 {
     if (plan == NULL || plan->count == 0)
         return false;
     DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
     if (node->type != DVZ_FRAME_PLAN_NODE_UPLOAD)
         return false;
-    node->u.upload.texture_format = format;
+    node->u.upload.texture_format = (uint32_t)format;
     node->u.upload.texture_bytes_per_texel = bytes_per_texel;
     return true;
 }

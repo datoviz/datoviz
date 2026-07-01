@@ -337,7 +337,7 @@ bool _scene_point_like_lowering_desc(
     if (shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
     {
         out->lowering = DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS;
-        out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        out->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         out->vertex_step_mode = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
         out->draw_vertex_count = 6;
         out->draw_instance_count = item_count;
@@ -345,7 +345,7 @@ bool _scene_point_like_lowering_desc(
     }
 
     out->lowering = DVZ_SCENE_POINT_LIKE_LOWERING_NATIVE_POINTS;
-    out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+    out->topology = DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST;
     out->vertex_step_mode = DVZ_DRP2_VERTEX_STEP_MODE_VERTEX;
     out->draw_vertex_count = item_count;
     out->draw_instance_count = 1;

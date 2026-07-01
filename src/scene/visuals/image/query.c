@@ -429,7 +429,7 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
                    plan, "query0_position", 0, position_bytes, "position",
                    out_plan->scratch.query_positions);
     if (ok)
-        ok = dvz_frame_plan_upload_set_topology(plan, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+        ok = dvz_frame_plan_upload_set_topology(plan, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.query_ids);
 
@@ -438,7 +438,7 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
     metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_PRIMITIVE;
     metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_INDEXED_MESH;
     metadata.desc_kind = (uint32_t)_scene_visual_family_desc_kind(DVZ_VISUAL_TYPE_PRIMITIVE);
-    metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    metadata.topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;
     metadata.depth_compare_op = ctx->visual->depth_compare_op;
@@ -461,7 +461,7 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
     copy.extent[0] = 1;
     copy.extent[1] = 1;
     copy.extent[2] = 1;
-    copy.format = VK_FORMAT_R32_UINT;
+    copy.format = DVZ_FORMAT_R32_UINT;
     copy.bytes_per_texel = sizeof(uint32_t);
     copy.bytes_per_row = sizeof(uint32_t);
     copy.rows_per_image = 1;
@@ -480,7 +480,7 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
 
     out_plan->target_width = target_width;
     out_plan->target_height = target_height;
-    out_plan->format = VK_FORMAT_R32_UINT;
+    out_plan->format = DVZ_FORMAT_R32_UINT;
     out_plan->byte_size = sizeof(uint32_t);
     out_plan->schema = (DvzSceneQuerySchema){
         .fields = DVZ_SCENE_QUERY_SCHEMA_FIELD_VISUAL_ID | DVZ_SCENE_QUERY_SCHEMA_FIELD_ITEM_ID,

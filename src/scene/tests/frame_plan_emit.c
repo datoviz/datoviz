@@ -149,7 +149,7 @@ static bool _frame_plan_render_image_fixture_visual(
     metadata.renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD;
     metadata.desc_kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
     metadata.buffer_index = UINT32_MAX;
-    metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+    metadata.topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
     metadata.vertex_count = 4;
     dvz_strlcpy(metadata.position_id, position_id, sizeof(metadata.position_id));
     dvz_strlcpy(metadata.texcoords_id, texcoords_id, sizeof(metadata.texcoords_id));
@@ -666,7 +666,7 @@ static int _depth_peel_frame_plan_graph(DvzFramePlan** out)
     DvzFrameGraphResource rt = {0};
     dvz_strlcpy(rt.id, "rt", sizeof(rt.id));
     rt.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
-    rt.format = VK_FORMAT_R8G8B8A8_UNORM;
+    rt.format = DVZ_FORMAT_R8G8B8A8_UNORM;
     rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
     rt.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
                      DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
@@ -676,7 +676,7 @@ static int _depth_peel_frame_plan_graph(DvzFramePlan** out)
     DvzFrameGraphResource opaque_depth = {0};
     dvz_strlcpy(opaque_depth.id, "panel0.depth.opaque", sizeof(opaque_depth.id));
     opaque_depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-    opaque_depth.format = VK_FORMAT_D32_SFLOAT;
+    opaque_depth.format = DVZ_FORMAT_D32_SFLOAT;
     opaque_depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
     opaque_depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT;
     opaque_depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
@@ -693,7 +693,7 @@ static int _depth_peel_frame_plan_graph(DvzFramePlan** out)
         DvzFrameGraphResource resource = {0};
         dvz_strlcpy(resource.id, color_ids[i], sizeof(resource.id));
         resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        resource.format = i < 2 ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R32G32_SFLOAT;
+        resource.format = i < 2 ? DVZ_FORMAT_R16G16B16A16_SFLOAT : DVZ_FORMAT_R32G32_SFLOAT;
         resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         resource.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
                                DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
@@ -873,7 +873,7 @@ static int _depth_peel_emit_pipeline_setup(DvzDrp2CommandStream* stream)
         "#version 450\nlayout(location=0)out vec4 color;"
         "void main(){color=vec4(0.05,0.05,0.05,1.0);}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
-    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, VK_COMPARE_OP_LESS_OR_EQUAL));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, DVZ_COMPARE_OP_LESS_OR_EQUAL));
 
     AT(dvz_drp2_stream_create_shader_module_format(stream, 20, "VERTEX", "glsl", fullscreen_vs));
     AT(dvz_drp2_stream_create_shader_module_format(
@@ -884,13 +884,13 @@ static int _depth_peel_emit_pipeline_setup(DvzDrp2CommandStream* stream)
         "depth_pair=vec4(gl_FragCoord.z,1.0-gl_FragCoord.z,0,1);}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 22, 20, 21, 0));
     AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
+        stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 1, VK_FORMAT_R16G16B16A16_SFLOAT));
-    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 2, VK_FORMAT_R32G32_SFLOAT));
-    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, VK_COMPARE_OP_LESS_OR_EQUAL));
+        stream, 1, DVZ_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 2, DVZ_FORMAT_R32G32_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, DVZ_COMPARE_OP_LESS_OR_EQUAL));
     AT(dvz_drp2_stream_pipeline_set_raster_state(
-        stream, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE));
+        stream, DVZ_CULL_MODE_BACK, DVZ_FRONT_FACE_COUNTER_CLOCKWISE));
 
     AT(dvz_drp2_stream_create_shader_module_format(stream, 30, "VERTEX", "glsl", fullscreen_vs));
     AT(dvz_drp2_stream_create_shader_module_format(
@@ -902,13 +902,13 @@ static int _depth_peel_emit_pipeline_setup(DvzDrp2CommandStream* stream)
         "depth_pair=vec4(gl_FragCoord.z,1.0-gl_FragCoord.z,0,1);}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 32, 30, 31, 0));
     AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
+        stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_target(
-        stream, 1, VK_FORMAT_R16G16B16A16_SFLOAT));
-    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 2, VK_FORMAT_R32G32_SFLOAT));
-    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, VK_COMPARE_OP_LESS_OR_EQUAL));
+        stream, 1, DVZ_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 2, DVZ_FORMAT_R32G32_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, DVZ_COMPARE_OP_LESS_OR_EQUAL));
     AT(dvz_drp2_stream_pipeline_set_raster_state(
-        stream, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE));
+        stream, DVZ_CULL_MODE_FRONT, DVZ_FRONT_FACE_COUNTER_CLOCKWISE));
 
     AT(dvz_drp2_stream_create_shader_module_format(stream, 40, "VERTEX", "glsl", fullscreen_vs));
     AT(dvz_drp2_stream_create_shader_module_format(
@@ -3100,7 +3100,7 @@ int test_frame_plan_emitter_wgsl_query_shader_resolves(
     metadata.desc_kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
     metadata.visual_index = 2;
     metadata.buffer_index = UINT32_MAX;
-    metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    metadata.topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     metadata.vertex_count = 3;
     dvz_strlcpy(metadata.position_id, "primitive-position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.color_id, "primitive-id", sizeof(metadata.color_id));
@@ -3129,7 +3129,7 @@ int test_frame_plan_emitter_wgsl_query_shader_resolves(
     dvz_diagnostic_report_init(&report);
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
-    emit_cfg.color_target_format = VK_FORMAT_R32_UINT;
+    emit_cfg.color_target_format = DVZ_FORMAT_R32_UINT;
 
     DvzDrp2CommandStream* stream =
         dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &emit_cfg);

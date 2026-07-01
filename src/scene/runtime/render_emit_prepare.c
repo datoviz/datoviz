@@ -447,55 +447,55 @@ bool _emitter_prepare_render_multi(
             {
                 ok = ok &&
                      dvz_drp2_stream_pipeline_set_color_target(
-                         stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT) &&
-                     dvz_drp2_stream_pipeline_set_color_target(stream, 1, VK_FORMAT_R16_SFLOAT) &&
+                         stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT) &&
+                     dvz_drp2_stream_pipeline_set_color_target(stream, 1, DVZ_FORMAT_R16_SFLOAT) &&
                      dvz_drp2_stream_pipeline_set_color_blend(
-                         stream, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-                         VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-                         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                             VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT) &&
+                         stream, 0, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
+                         DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
+                         DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G |
+                             DVZ_MASK_COLOR_B | DVZ_MASK_COLOR_A) &&
                      dvz_drp2_stream_pipeline_set_color_blend(
-                         stream, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-                         VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-                         VK_COLOR_COMPONENT_R_BIT);
+                         stream, 1, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
+                         DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
+                         DVZ_MASK_COLOR_R);
             }
             else if (ok && depth_peel_pass)
             {
                 ok = ok &&
                      dvz_drp2_stream_pipeline_set_color_target(
-                         stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT) &&
+                         stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT) &&
                      dvz_drp2_stream_pipeline_set_color_target(
-                         stream, 1, VK_FORMAT_R16G16B16A16_SFLOAT) &&
+                         stream, 1, DVZ_FORMAT_R16G16B16A16_SFLOAT) &&
                      dvz_drp2_stream_pipeline_set_color_target(
-                         stream, 2, VK_FORMAT_R32G32_SFLOAT) &&
+                         stream, 2, DVZ_FORMAT_R32G32_SFLOAT) &&
                      dvz_drp2_stream_pipeline_set_color_blend(
-                         stream, 0, VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA, VK_BLEND_FACTOR_ONE,
-                         VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA,
-                         VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-                         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                             VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT) &&
+                         stream, 0, DVZ_BLEND_FACTOR_ONE_MINUS_DST_ALPHA, DVZ_BLEND_FACTOR_ONE,
+                         DVZ_BLEND_OP_ADD, DVZ_BLEND_FACTOR_ONE_MINUS_DST_ALPHA,
+                         DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_ADD,
+                         DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G |
+                             DVZ_MASK_COLOR_B | DVZ_MASK_COLOR_A) &&
                      dvz_drp2_stream_pipeline_set_color_blend(
-                         stream, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-                         VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE,
-                         VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-                         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                             VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT) &&
+                         stream, 1, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                         DVZ_BLEND_OP_ADD, DVZ_BLEND_FACTOR_ONE,
+                         DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, DVZ_BLEND_OP_ADD,
+                         DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G |
+                             DVZ_MASK_COLOR_B | DVZ_MASK_COLOR_A) &&
                      dvz_drp2_stream_pipeline_set_color_blend(
-                         stream, 2, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_MAX,
-                         VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_MAX,
-                         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT);
+                         stream, 2, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_MAX,
+                         DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_OP_MAX,
+                         DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G);
                 if (ok)
                     ok = dvz_drp2_stream_pipeline_set_raster_state(
-                        stream, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+                        stream, DVZ_CULL_MODE_NONE, DVZ_FRONT_FACE_COUNTER_CLOCKWISE);
             }
             else if (ok && gbuffer_pass)
             {
                 ok = dvz_drp2_stream_pipeline_set_color_target(
-                    stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT);
+                    stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT);
             }
             else if (ok && (volume_occlusion_pass || scene_occlusion_pass))
             {
-                ok = dvz_drp2_stream_pipeline_set_color_target(stream, 0, VK_FORMAT_R32_SFLOAT);
+                ok = dvz_drp2_stream_pipeline_set_color_target(stream, 0, DVZ_FORMAT_R32_SFLOAT);
             }
             else
             {
@@ -511,11 +511,11 @@ bool _emitter_prepare_render_multi(
                 if (ok && source_over_blend)
                 {
                     ok = dvz_drp2_stream_pipeline_set_color_blend(
-                        stream, 0, VK_BLEND_FACTOR_SRC_ALPHA,
-                        VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE,
-                        VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-                        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                            VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
+                        stream, 0, DVZ_BLEND_FACTOR_SRC_ALPHA,
+                        DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, DVZ_BLEND_OP_ADD, DVZ_BLEND_FACTOR_ONE,
+                        DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, DVZ_BLEND_OP_ADD,
+                        DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G |
+                            DVZ_MASK_COLOR_B | DVZ_MASK_COLOR_A);
                 }
             }
             if (!ok)

@@ -1744,7 +1744,7 @@ struct DvzVisual
     int32_t      z_layer;
     DvzAlphaMode alpha_mode;
     bool         depth_test_enabled;
-    uint32_t     depth_compare_op;
+    DvzCompareOp depth_compare_op;
     DvzSceneMaterialState material;
 
     uint32_t      query_capabilities;

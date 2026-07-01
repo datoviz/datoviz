@@ -156,14 +156,14 @@ void _draw_blend_target_contracts(
         targets[0] = (DvzSceneBlendTargetContract){
             .target_index = 0,
             .blend_enabled = true,
-            .src_color_blend_factor = VK_BLEND_FACTOR_SRC_ALPHA,
-            .dst_color_blend_factor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-            .color_blend_op = VK_BLEND_OP_ADD,
-            .src_alpha_blend_factor = VK_BLEND_FACTOR_ONE,
-            .dst_alpha_blend_factor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-            .alpha_blend_op = VK_BLEND_OP_ADD,
-            .color_write_mask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+            .src_color_blend_factor = DVZ_BLEND_FACTOR_SRC_ALPHA,
+            .dst_color_blend_factor = DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+            .color_blend_op = DVZ_BLEND_OP_ADD,
+            .src_alpha_blend_factor = DVZ_BLEND_FACTOR_ONE,
+            .dst_alpha_blend_factor = DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+            .alpha_blend_op = DVZ_BLEND_OP_ADD,
+            .color_write_mask = DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G |
+                                DVZ_MASK_COLOR_B | DVZ_MASK_COLOR_A,
         };
         *target_count = 1;
     }
@@ -171,21 +171,21 @@ void _draw_blend_target_contracts(
     {
         targets[0] = (DvzSceneBlendTargetContract){
             .target_index = 0,
-            .format = VK_FORMAT_R16G16B16A16_SFLOAT,
+            .format = DVZ_FORMAT_R16G16B16A16_SFLOAT,
             .blend_enabled = true,
-            .src_color_blend_factor = VK_BLEND_FACTOR_ONE,
-            .dst_color_blend_factor = VK_BLEND_FACTOR_ONE,
-            .color_blend_op = VK_BLEND_OP_ADD,
-            .src_alpha_blend_factor = VK_BLEND_FACTOR_ONE,
-            .dst_alpha_blend_factor = VK_BLEND_FACTOR_ONE,
-            .alpha_blend_op = VK_BLEND_OP_ADD,
-            .color_write_mask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+            .src_color_blend_factor = DVZ_BLEND_FACTOR_ONE,
+            .dst_color_blend_factor = DVZ_BLEND_FACTOR_ONE,
+            .color_blend_op = DVZ_BLEND_OP_ADD,
+            .src_alpha_blend_factor = DVZ_BLEND_FACTOR_ONE,
+            .dst_alpha_blend_factor = DVZ_BLEND_FACTOR_ONE,
+            .alpha_blend_op = DVZ_BLEND_OP_ADD,
+            .color_write_mask = DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G |
+                                DVZ_MASK_COLOR_B | DVZ_MASK_COLOR_A,
         };
         targets[1] = targets[0];
         targets[1].target_index = 1;
-        targets[1].format = VK_FORMAT_R16_SFLOAT;
-        targets[1].color_write_mask = VK_COLOR_COMPONENT_R_BIT;
+        targets[1].format = DVZ_FORMAT_R16_SFLOAT;
+        targets[1].color_write_mask = DVZ_MASK_COLOR_R;
         *target_count = 2;
     }
     else if (blend_policy == DVZ_SCENE_BLEND_POLICY_DEPTH_PEEL)
@@ -194,24 +194,24 @@ void _draw_blend_target_contracts(
         {
             targets[i] = (DvzSceneBlendTargetContract){
                 .target_index = i,
-                .format = i < 2 ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R32G32_SFLOAT,
+                .format = i < 2 ? DVZ_FORMAT_R16G16B16A16_SFLOAT : DVZ_FORMAT_R32G32_SFLOAT,
                 .blend_enabled = true,
-                .src_color_blend_factor = i == 0 ? VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA :
-                                                    VK_BLEND_FACTOR_ONE,
-                .dst_color_blend_factor = i == 0 ? VK_BLEND_FACTOR_ONE :
-                                                    i == 1 ? VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA :
-                                                             VK_BLEND_FACTOR_ONE,
-                .color_blend_op = i < 2 ? VK_BLEND_OP_ADD : VK_BLEND_OP_MAX,
-                .src_alpha_blend_factor = i == 0 ? VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA :
-                                                   VK_BLEND_FACTOR_ONE,
-                .dst_alpha_blend_factor = i == 0 ? VK_BLEND_FACTOR_ONE :
-                                                    i == 1 ? VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA :
-                                                             VK_BLEND_FACTOR_ONE,
-                .alpha_blend_op = i < 2 ? VK_BLEND_OP_ADD : VK_BLEND_OP_MAX,
-                .color_write_mask = i < 2 ? VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                                VK_COLOR_COMPONENT_B_BIT |
-                                                VK_COLOR_COMPONENT_A_BIT
-                                          : VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT,
+                .src_color_blend_factor = i == 0 ? DVZ_BLEND_FACTOR_ONE_MINUS_DST_ALPHA :
+                                                    DVZ_BLEND_FACTOR_ONE,
+                .dst_color_blend_factor = i == 0 ? DVZ_BLEND_FACTOR_ONE :
+                                                    i == 1 ? DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA :
+                                                             DVZ_BLEND_FACTOR_ONE,
+                .color_blend_op = i < 2 ? DVZ_BLEND_OP_ADD : DVZ_BLEND_OP_MAX,
+                .src_alpha_blend_factor = i == 0 ? DVZ_BLEND_FACTOR_ONE_MINUS_DST_ALPHA :
+                                                   DVZ_BLEND_FACTOR_ONE,
+                .dst_alpha_blend_factor = i == 0 ? DVZ_BLEND_FACTOR_ONE :
+                                                    i == 1 ? DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA :
+                                                             DVZ_BLEND_FACTOR_ONE,
+                .alpha_blend_op = i < 2 ? DVZ_BLEND_OP_ADD : DVZ_BLEND_OP_MAX,
+                .color_write_mask = i < 2 ? DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G |
+                                                DVZ_MASK_COLOR_B |
+                                                DVZ_MASK_COLOR_A
+                                          : DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G,
             };
         }
         *target_count = 3;
@@ -221,8 +221,8 @@ void _draw_blend_target_contracts(
         targets[0] = (DvzSceneBlendTargetContract){
             .target_index = 0,
             .blend_enabled = false,
-            .color_write_mask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+            .color_write_mask = DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G |
+                                DVZ_MASK_COLOR_B | DVZ_MASK_COLOR_A,
         };
         *target_count = 1;
     }
@@ -254,20 +254,20 @@ void _draw_raster_state_contract(
     if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT)
     {
         *out_has_raster_state = true;
-        *out_cull_mode = VK_CULL_MODE_NONE;
-        *out_front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        *out_cull_mode = DVZ_CULL_MODE_NONE;
+        *out_front_face = DVZ_FRONT_FACE_COUNTER_CLOCKWISE;
     }
     else if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER)
     {
         *out_has_raster_state = true;
-        *out_cull_mode = VK_CULL_MODE_NONE;
-        *out_front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        *out_cull_mode = DVZ_CULL_MODE_NONE;
+        *out_front_face = DVZ_FRONT_FACE_COUNTER_CLOCKWISE;
     }
     else if (_scene_visual_desc_is_volume((DvzSceneVisualDescKind)facts->desc_kind))
     {
         *out_has_raster_state = true;
-        *out_cull_mode = VK_CULL_MODE_BACK_BIT;
-        *out_front_face = VK_FRONT_FACE_CLOCKWISE;
+        *out_cull_mode = DVZ_CULL_MODE_BACK;
+        *out_front_face = DVZ_FRONT_FACE_CLOCKWISE;
     }
 }
 
@@ -383,8 +383,8 @@ bool _scene_draw_contract_from_visual(
     DvzSceneVisualPassCaps caps = {0};
     if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps))
         return false;
-    bool forward_depth_compare = visual->depth_compare_op == VK_COMPARE_OP_LESS ||
-                                 visual->depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL;
+    bool forward_depth_compare = visual->depth_compare_op == DVZ_COMPARE_OP_LESS ||
+                                 visual->depth_compare_op == DVZ_COMPARE_OP_LESS_OR_EQUAL;
     bool point = caps.kind == DVZ_SCENE_VISUAL_DESC_POINT;
     bool marker = caps.kind == DVZ_SCENE_VISUAL_DESC_MARKER;
 

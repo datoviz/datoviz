@@ -24,4 +24,5 @@
 #include "font.h"
 #include "geom.h"
 #include "input.h"
+#include "render_types.h"
 #include "scene.h"

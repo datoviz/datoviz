@@ -186,7 +186,7 @@ void _scene_canvas_drp2_draw(
 
     state->attach_ok = dvz_drp2_runtime_attach_frame_target(state->runtime, 1, frame);
     if (state->emit_cfg.color_target_format == 0)
-        state->emit_cfg.color_target_format = frame->color_format;
+        state->emit_cfg.color_target_format = (DvzFormat)frame->color_format;
     DvzFramePlanVisualMeta metadata = {0};
     metadata.buffer_index = UINT32_MAX;
     dvz_strlcpy(metadata.position_id, "buf.point.position", sizeof(metadata.position_id));

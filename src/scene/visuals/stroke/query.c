@@ -418,7 +418,7 @@ bool _stroke_query_build(
     copy.extent[0] = 1;
     copy.extent[1] = 1;
     copy.extent[2] = 1;
-    copy.format = VK_FORMAT_R32_UINT;
+    copy.format = DVZ_FORMAT_R32_UINT;
     copy.bytes_per_texel = sizeof(uint32_t);
     copy.bytes_per_row = sizeof(uint32_t);
     copy.rows_per_image = 1;
@@ -437,7 +437,7 @@ bool _stroke_query_build(
 
     out_plan->target_width = target_width;
     out_plan->target_height = target_height;
-    out_plan->format = VK_FORMAT_R32_UINT;
+    out_plan->format = DVZ_FORMAT_R32_UINT;
     out_plan->byte_size = sizeof(uint32_t);
     return true;
 }

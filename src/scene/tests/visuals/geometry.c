@@ -342,7 +342,7 @@ int test_scene_point_emit_wgsl_instanced_quads(TstContext* suite, const TstCase*
         if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
             found_pipeline = true;
-            AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+            AT(command->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
             AT(command->u.create_render_pipeline.binding_count == 3);
             AT(command->u.create_render_pipeline.binding_step_modes[0] ==
                DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
@@ -433,7 +433,7 @@ int test_scene_pixel_emit_wgsl_instanced_quads(TstContext* suite, const TstCase*
         if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
             found_pipeline = true;
-            AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+            AT(command->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
             AT(command->u.create_render_pipeline.binding_count == 3);
             AT(command->u.create_render_pipeline.binding_step_modes[0] ==
                DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
@@ -767,7 +767,7 @@ int test_scene_mesh_emits_depth_attachment(TstContext* suite, const TstCase* ite
             found_named_depth_texture =
                 found_named_depth_texture ||
                 (label != NULL && strcmp(label, "fig0_p0.depth") == 0 &&
-                 cmd->u.create_texture.format == VK_FORMAT_D32_SFLOAT);
+                 cmd->u.create_texture.format == DVZ_FORMAT_D32_SFLOAT);
         }
         if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
@@ -781,7 +781,7 @@ int test_scene_mesh_emits_depth_attachment(TstContext* suite, const TstCase* ite
                 found_depth_pipeline ||
                 (cmd->u.create_render_pipeline.has_depth_attachment &&
                  cmd->u.create_render_pipeline.depth_write_enabled &&
-                 cmd->u.create_render_pipeline.depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL);
+                 cmd->u.create_render_pipeline.depth_compare_op == DVZ_COMPARE_OP_LESS_OR_EQUAL);
         }
     }
     AT(found_depth_pass);
@@ -894,7 +894,7 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
         ANN(cmd);
         if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
         {
-            if (cmd->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM &&
+            if (cmd->u.create_texture.format == DVZ_FORMAT_R8G8B8A8_UNORM &&
                 cmd->u.create_texture.width == 2 && cmd->u.create_texture.height == 2 &&
                 cmd->u.create_texture.depth == 1)
             {
@@ -1202,7 +1202,7 @@ int test_scene_path_line_width_emit_glsl(TstContext* suite, const TstCase* item)
             if (label != NULL && strstr(label, "_pipe_pathg") == label)
             {
                 found_pipeline = true;
-                AT(cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+                AT(cmd->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
                 AT(cmd->u.create_render_pipeline.binding_count == 8);
                 AT(cmd->u.create_render_pipeline.attr_count == 8);
             }

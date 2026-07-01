@@ -67,7 +67,7 @@ bool _scene_technique_emit_opaque_frame_graph(
         DvzFrameGraphResource msaa_color = {0};
         dvz_strlcpy(msaa_color.id, msaa_color_id, sizeof(msaa_color.id));
         msaa_color.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        msaa_color.format = VK_FORMAT_R8G8B8A8_UNORM;
+        msaa_color.format = DVZ_FORMAT_R8G8B8A8_UNORM;
         msaa_color.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         msaa_color.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
         msaa_color.sample_count = sample_count;
@@ -81,7 +81,7 @@ bool _scene_technique_emit_opaque_frame_graph(
         DvzFrameGraphResource depth = {0};
         dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
         depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        depth.format = VK_FORMAT_D32_SFLOAT;
+        depth.format = DVZ_FORMAT_D32_SFLOAT;
         depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT;
         depth.sample_count = sample_count;
@@ -173,7 +173,7 @@ bool _scene_technique_emit_depth_postprocess_frame_graph(
     DvzFrameGraphResource depth = {0};
     dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
     depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-    depth.format = VK_FORMAT_D32_SFLOAT;
+    depth.format = DVZ_FORMAT_D32_SFLOAT;
     depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
     depth.usage_flags =
         DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
@@ -231,7 +231,7 @@ bool _scene_technique_emit_edl_frame_graph(DvzFramePlan* plan, const char* panel
         .depth_suffix = "edl.depth",
         .resolve_suffix = "edl.resolve",
         .resolve_work_label = "edl_resolve",
-        .color_format = VK_FORMAT_R8G8B8A8_UNORM,
+        .color_format = DVZ_FORMAT_R8G8B8A8_UNORM,
         .resolve_load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
         .resolve_clear = true,
     };
@@ -317,7 +317,7 @@ bool _scene_technique_emit_gbuffer_frame_graph(
         DvzFrameGraphResource depth = {0};
         dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
         depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        depth.format = VK_FORMAT_D32_SFLOAT;
+        depth.format = DVZ_FORMAT_D32_SFLOAT;
         depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT |
                             DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
@@ -331,7 +331,7 @@ bool _scene_technique_emit_gbuffer_frame_graph(
         DvzFrameGraphResource normal = {0};
         dvz_strlcpy(normal.id, normal_id, sizeof(normal.id));
         normal.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        normal.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        normal.format = DVZ_FORMAT_R16G16B16A16_SFLOAT;
         normal.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         normal.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
                              DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
@@ -345,7 +345,7 @@ bool _scene_technique_emit_gbuffer_frame_graph(
         DvzFrameGraphResource object = {0};
         dvz_strlcpy(object.id, object_id, sizeof(object.id));
         object.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        object.format = VK_FORMAT_R32_UINT;
+        object.format = DVZ_FORMAT_R32_UINT;
         object.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         object.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
                              DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;

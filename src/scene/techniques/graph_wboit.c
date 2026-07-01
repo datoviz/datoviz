@@ -77,7 +77,7 @@ bool _scene_technique_emit_wboit_frame_graph(
     DvzFrameGraphResource accum = {0};
     dvz_strlcpy(accum.id, accum_id, sizeof(accum.id));
     accum.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-    accum.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+    accum.format = DVZ_FORMAT_R16G16B16A16_SFLOAT;
     accum.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
     accum.usage_flags =
         DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
@@ -88,7 +88,7 @@ bool _scene_technique_emit_wboit_frame_graph(
     DvzFrameGraphResource weight = {0};
     dvz_strlcpy(weight.id, weight_id, sizeof(weight.id));
     weight.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-    weight.format = VK_FORMAT_R16_SFLOAT;
+    weight.format = DVZ_FORMAT_R16_SFLOAT;
     weight.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
     weight.usage_flags =
         DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
@@ -102,7 +102,7 @@ bool _scene_technique_emit_wboit_frame_graph(
         DvzFrameGraphResource depth = {0};
         dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
         depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        depth.format = VK_FORMAT_D32_SFLOAT;
+        depth.format = DVZ_FORMAT_D32_SFLOAT;
         depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT |
                             DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
@@ -241,7 +241,7 @@ bool _scene_technique_emit_blended_frame_graph(
         DvzFrameGraphResource msaa_color = {0};
         dvz_strlcpy(msaa_color.id, msaa_color_id, sizeof(msaa_color.id));
         msaa_color.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        msaa_color.format = VK_FORMAT_R8G8B8A8_UNORM;
+        msaa_color.format = DVZ_FORMAT_R8G8B8A8_UNORM;
         msaa_color.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         msaa_color.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
         msaa_color.sample_count = sample_count;
@@ -255,7 +255,7 @@ bool _scene_technique_emit_blended_frame_graph(
         DvzFrameGraphResource depth = {0};
         dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
         depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        depth.format = VK_FORMAT_D32_SFLOAT;
+        depth.format = DVZ_FORMAT_D32_SFLOAT;
         depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT |
                             DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
@@ -367,7 +367,7 @@ bool _scene_technique_emit_volume_occlusion_frame_graph(DvzFramePlan* plan, cons
     DvzFrameGraphResource depth = {0};
     dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
     depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-    depth.format = VK_FORMAT_R32_SFLOAT;
+    depth.format = DVZ_FORMAT_R32_SFLOAT;
     depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
     depth.usage_flags =
         DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
@@ -419,7 +419,7 @@ bool _scene_technique_emit_scene_occlusion_frame_graph(DvzFramePlan* plan, const
     DvzFrameGraphResource depth = {0};
     dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
     depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-    depth.format = VK_FORMAT_R32_SFLOAT;
+    depth.format = DVZ_FORMAT_R32_SFLOAT;
     depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
     depth.usage_flags =
         DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
@@ -430,7 +430,7 @@ bool _scene_technique_emit_scene_occlusion_frame_graph(DvzFramePlan* plan, const
     DvzFrameGraphResource z = {0};
     dvz_strlcpy(z.id, z_id, sizeof(z.id));
     z.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-    z.format = VK_FORMAT_D32_SFLOAT;
+    z.format = DVZ_FORMAT_D32_SFLOAT;
     z.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
     z.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT;
     z.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;

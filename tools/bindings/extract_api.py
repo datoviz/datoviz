@@ -31,6 +31,7 @@ DEFAULT_HEADERS = [
     'datoviz/gui.h',
     'datoviz/imgui.h',
     'datoviz/input.h',
+    'datoviz/render_types.h',
     'datoviz/runner.h',
     'datoviz/scene.h',
     'datoviz/stream.h',

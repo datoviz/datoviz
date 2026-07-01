@@ -83,14 +83,14 @@ DvzVisualType _scene_visual_desc_default_type(DvzSceneVisualDescKind kind);
 
 void _scene_visual_pipeline_attr(
     DvzSceneVisualPipelineDesc* out, uint32_t index, uint32_t binding, uint32_t location,
-    uint32_t format, uint32_t stride);
+    DvzFormat format, uint32_t stride);
 
 void _scene_visual_pipeline_instance_transform(
     DvzSceneVisualPipelineDesc* out, uint32_t first_attr, uint32_t binding);
 
 void _scene_visual_pipeline_apply_standard_depth_state(
     const DvzSceneVisualPassCaps* caps, bool pass_needs_depth, bool wboit_accumulation,
-    DvzAlphaMode alpha_mode, uint32_t depth_compare_op, DvzSceneVisualPipelineDesc* out);
+    DvzAlphaMode alpha_mode, DvzCompareOp depth_compare_op, DvzSceneVisualPipelineDesc* out);
 
 void _scene_visual_pipeline_desc_apply_query_pick(
     const DvzSceneVisualDesc* visual, uint32_t color_target_format,

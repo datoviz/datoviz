@@ -348,7 +348,7 @@ bool _volume_source_texture_payload(DvzVisual* visual, DvzVolumeTextureUploadPay
         return false;
     }
 
-    DvzFieldFormat byte_format = out->texture_format == VK_FORMAT_R8G8B8A8_UNORM
+    DvzFieldFormat byte_format = out->texture_format == DVZ_FORMAT_R8G8B8A8_UNORM
                                      ? DVZ_FIELD_FORMAT_RGBA8_UNORM
                                      : _visual_family_state(visual)->field->desc.format;
     if (!_field_region_byte_size(byte_format, &out->region, &out->byte_size))
