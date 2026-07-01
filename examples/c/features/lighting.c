@@ -64,11 +64,11 @@ DvzScenarioSpec dvz_example_lighting_scenario(void);
 static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel, uint32_t variant)
 {
     vec3 positions[SPHERE_COUNT] = {
-        {-1.02f, -0.36f, -0.20f}, {-0.52f, -0.36f, +0.05f}, {+0.00f, -0.36f, +0.18f},
-        {+0.52f, -0.36f, +0.05f}, {+1.02f, -0.36f, -0.20f}, {-0.72f, +0.28f, -0.06f},
-        {-0.20f, +0.28f, +0.16f}, {+0.34f, +0.28f, +0.12f}, {+0.86f, +0.28f, -0.08f},
+        {-0.56f, -0.20f, -0.20f}, {-0.29f, -0.20f, +0.05f}, {+0.00f, -0.20f, +0.18f},
+        {+0.29f, -0.20f, +0.05f}, {+0.56f, -0.20f, -0.20f}, {-0.40f, +0.15f, -0.06f},
+        {-0.11f, +0.15f, +0.16f}, {+0.19f, +0.15f, +0.12f}, {+0.47f, +0.15f, -0.08f},
     };
-    const float c = 0.35;
+    const float c = 0.82f;
     const float radii[SPHERE_COUNT] = {0.150f * c, 0.170f * c, 0.190f * c, 0.170f * c, 0.150f * c,
                                        0.165f * c, 0.205f * c, 0.185f * c, 0.155f * c};
     DvzColor colors[SPHERE_COUNT] = {
