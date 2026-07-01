@@ -262,15 +262,9 @@ static bool _bounds_point_like_render_radius_px(const DvzVisual* visual, double*
     ANN(visual);
     ANN(out_radius_px);
 
-    const char* attr_name = NULL;
-    if (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_MARKER)
-        attr_name = "diameter_px";
-    else if (visual->type == DVZ_VISUAL_TYPE_PIXEL)
-        attr_name = "pixel_size_px";
-    else
-        return false;
-
-    const DvzVisualAttr* attr = _bounds_attr(visual, attr_name, sizeof(float));
+    const DvzVisualAttr* attr = _bounds_attr(visual, "diameter_px", sizeof(float));
+    if (attr == NULL)
+        attr = _bounds_attr(visual, "pixel_size_px", sizeof(float));
     if (attr == NULL)
         return false;
 
