@@ -1,17 +1,19 @@
 # First-Class Guide Snapshot Handoff
 
-Status: implemented on branch `agent/M184-first-class-guides`, pending review/merge.
+Status: landed on `v0.4-dev` after implementation on branch `agent/M184-first-class-guides`.
 
 This handoff covers the M184 Datoviz-side work for GSP S043: first-class guide layout, hit, and
 rendered-contribution readback from `DvzPanelFrameSnapshot`.
 
 ## Branch
 
-- Base: `3ad83213b` (`Fix macOS VS Code review launcher`)
+- Base: `f4f8807b3` (`Updating NOTES`)
+- Implementation commit on `v0.4-dev`: `7b3bd2f7f`
 - Worktree: `/Users/cyrille/GIT/Viz/datoviz-agent-worktrees/M184-first-class-guides`
 - Branch: `agent/M184-first-class-guides`
 
-The main Datoviz checkout was intentionally not edited because another agent may be active there.
+The main Datoviz checkout can now be fast-forwarded to `origin/v0.4-dev` to pick up this handoff
+and implementation.
 
 ## Implemented
 
