@@ -110,7 +110,7 @@ static void _fill_spheres(
         colors[i] = dvz_color_rgb(
             (uint8_t)(230.0f - 120.0f * t), (uint8_t)(80.0f + 120.0f * t),
             (uint8_t)(120.0f + 100.0f * t));
-        const float radius_classes[3] = {0.045f, 0.075f, 0.120f};
+        const float radius_classes[3] = {0.070f, 0.105f, 0.165f};
         const uint32_t radius_class = (i * 7u + iz) % 3u;
         radii[i] = radius_classes[radius_class] + 0.006f * sinf(0.8f * (float)i);
     }
