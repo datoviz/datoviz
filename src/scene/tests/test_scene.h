@@ -575,6 +575,9 @@ int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item);
 
 int test_scene_controller_mode_fixed_emits_separate_mvp(TstContext* suite, const TstCase* item);
 
+int test_scene_split_pass_visuals_emit_separate_common_mvp(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_visual_local_transform_bounds_and_clear(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_local_transform_emits_per_visual_mvp(

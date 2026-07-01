@@ -202,8 +202,8 @@ static bool _resolve_common_set(
 
     *out_bg_id = 0;
 
-    char mvp_buf_key[128], viewport_buf_key[128], bg_key[128];
-    char mvp_slot_key[128], viewport_slot_key[128];
+    char mvp_buf_key[256], viewport_buf_key[256], bg_key[256];
+    char mvp_slot_key[256], viewport_slot_key[256];
     const char* viewport_tag =
         viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PLOT     ? "plot" :
         viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_TARGET   ? "target" :
@@ -390,8 +390,13 @@ bool _scene_common_bindings_resolve_visual_set(
                            mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL    ? "apply_iso" :
                            mode == DVZ_CONTROLLER_APPLY_VIEW_PROJ          ? "view_proj" :
                                                                               "apply";
-    char tag[160];
-    dvz_snprintf(tag, sizeof(tag), "%s_visual_%u", mode_tag, visual_index);
+    const char* visual_id = render->u.render.visuals[visual_index];
+    if (visual_id == NULL || visual_id[0] == '\0')
+        visual_id = "visual";
+    char tag[256];
+    dvz_snprintf(
+        tag, sizeof(tag), "%s_pass_%u_%s", mode_tag, (uint32_t)render->u.render.pass_role,
+        visual_id);
     uint32_t flags =
         mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL ? DVZ_MVP_FLAGS_ISOTROPIC_LOCAL : 0;
     bool fixed = mode == DVZ_CONTROLLER_FIXED;
@@ -435,7 +440,9 @@ bool _scene_common_bindings_resolve_single_set(
     if (common_bgl_new)
         ok = ok && _create_common_bind_group_layout(stream, common_bgl_id);
 
-    DvzControllerMode mode = render->u.render.controller_modes[0];
+    DvzControllerMode mode =
+        render->u.render.visual_count > 0 ? render->u.render.controller_modes[0] :
+                                            DVZ_CONTROLLER_APPLY;
     const char* mode_tag = mode == DVZ_CONTROLLER_FIXED                 ? "fixed" :
                            mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL ? "apply_iso" :
                            mode == DVZ_CONTROLLER_APPLY_VIEW_PROJ       ? "view_proj" :
@@ -443,10 +450,25 @@ bool _scene_common_bindings_resolve_single_set(
     bool fixed = mode == DVZ_CONTROLLER_FIXED;
     uint32_t mvp_flags =
         mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL ? DVZ_MVP_FLAGS_ISOTROPIC_LOCAL : 0;
+    const DvzMVP* override_mvp =
+        render->u.render.visual_count > 0 && render->u.render.visual_has_mvp[0]
+            ? &render->u.render.visual_mvp[0]
+            : NULL;
+    DvzFramePlanViewportRect viewport_rect =
+        render->u.render.visual_count > 0 && render->u.render.visual_metadata[0].has_metadata
+            ? render->u.render.visual_metadata[0].viewport_rect
+            : DVZ_FRAME_PLAN_VIEWPORT_PANEL;
+    const char* visual_id = render->u.render.visual_count > 0 ? render->u.render.visuals[0] : "";
+    if (visual_id == NULL || visual_id[0] == '\0')
+        visual_id = "single";
+    char tag[256];
+    dvz_snprintf(
+        tag, sizeof(tag), "%s_pass_%u_%s", mode_tag, (uint32_t)render->u.render.pass_role,
+        visual_id);
     uint64_t common_bg_id = 0;
     ok = ok && _resolve_common_set(
-                   emitter, stream, render, common_bgl_id, mode_tag,
-                   DVZ_FRAME_PLAN_VIEWPORT_PANEL, fixed, mvp_flags, NULL, &common_bg_id);
+                   emitter, stream, render, common_bgl_id, tag, viewport_rect, fixed, mvp_flags,
+                   override_mvp, &common_bg_id);
 
     if (!ok)
         return false;

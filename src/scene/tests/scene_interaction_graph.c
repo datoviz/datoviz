@@ -1799,6 +1799,93 @@ int test_scene_controller_mode_fixed_emits_separate_mvp(TstContext* suite, const
 }
 
 
+int test_scene_split_pass_visuals_emit_separate_common_mvp(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    /* Opaque and blended visuals are emitted in separate render nodes. Both become
+     * local visual slot 0 in their pass, so common binding identity must include
+     * stable visual/pass identity and not just the local slot index. */
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+
+    vec3 pos[1] = {{0.25f, 0.25f, 0.0f}};
+    DvzColor opaque_col[1] = {{255, 0, 0, 255}};
+    DvzColor blend_col[1] = {{0, 0, 255, 128}};
+    float sz[1] = {8.0f};
+
+    DvzVisual* opaque = dvz_point(scene, 0);
+    DvzVisual* blended = dvz_point(scene, 0);
+    ANN(opaque);
+    ANN(blended);
+
+    AT(dvz_visual_set_data(opaque, "position", pos, 1) == 0);
+    AT(dvz_visual_set_data(opaque, "color", opaque_col, 1) == 0);
+    AT(dvz_visual_set_data(opaque, "size", sz, 1) == 0);
+    AT(dvz_visual_set_data(blended, "position", pos, 1) == 0);
+    AT(dvz_visual_set_data(blended, "color", blend_col, 1) == 0);
+    AT(dvz_visual_set_data(blended, "size", sz, 1) == 0);
+    AT(dvz_visual_set_alpha_mode(blended, DVZ_ALPHA_BLENDED) == 0);
+
+    AT(dvz_panel_add_visual(panel, opaque, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, blended, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_glsl = true;
+    caps.supports_color_blending = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    uint64_t common_layout_id = _stream_scene_common_layout_id(stream);
+    AT(common_layout_id != 0);
+
+    uint32_t common_bg_count = 0;
+    uint64_t mvp_buffers[2] = {0};
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+            continue;
+        if (cmd->u.create_bind_group.bind_group_layout_id != common_layout_id)
+            continue;
+        AT(cmd->u.create_bind_group.entry_count == 2);
+        const DvzDrp2BindGroupEntry* mvp = &cmd->u.create_bind_group.entries[0];
+        const DvzDrp2BindGroupEntry* viewport = &cmd->u.create_bind_group.entries[1];
+        AT(mvp->binding == DVZ_SCENE_SHADER_BINDING_COMMON_MVP);
+        AT(mvp->binding_type == DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER);
+        AT(mvp->resource_kind == DVZ_DRP2_BINDING_RESOURCE_BUFFER);
+        AT(mvp->size == sizeof(DvzMVP));
+        AT(viewport->binding == DVZ_SCENE_SHADER_BINDING_COMMON_VIEWPORT);
+        AT(viewport->binding_type == DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER);
+        AT(viewport->resource_kind == DVZ_DRP2_BINDING_RESOURCE_BUFFER);
+        AT(viewport->size == sizeof(DvzSceneViewportUniform));
+        AT(common_bg_count < DVZ_ARRAY_COUNT(mvp_buffers));
+        mvp_buffers[common_bg_count++] = mvp->resource_id;
+    }
+
+    AT(common_bg_count == 2);
+    AT(mvp_buffers[0] != 0);
+    AT(mvp_buffers[1] != 0);
+    AT(mvp_buffers[0] != mvp_buffers[1]);
+
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_panel_one_pass_per_panel(TstContext* suite, const TstCase* item)
 {
     (void)suite;
