@@ -513,10 +513,10 @@ void _axis_update_visual(DvzAxis* axis)
 
     float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
     memcpy(extent, snapshot.controller_extent, sizeof(extent));
-    float source_x0 = _axis_inverse_panzoom_coord(extent, 0, 1, -1.0f);
-    float source_x1 = _axis_inverse_panzoom_coord(extent, 0, 1, +1.0f);
-    float source_y0 = _axis_inverse_panzoom_coord(extent, 2, 3, -1.0f);
-    float source_y1 = _axis_inverse_panzoom_coord(extent, 2, 3, +1.0f);
+    float source_x0 = _axis_inverse_panzoom_coord(extent, 0, 1, x0);
+    float source_x1 = _axis_inverse_panzoom_coord(extent, 0, 1, x1);
+    float source_y0 = _axis_inverse_panzoom_coord(extent, 2, 3, y0);
+    float source_y1 = _axis_inverse_panzoom_coord(extent, 2, 3, y1);
     float scale_x = _axis_panzoom_scale(extent, DVZ_DIM_X);
     float scale_y = _axis_panzoom_scale(extent, DVZ_DIM_Y);
     float user_scale = _axis_user_scale(axis);

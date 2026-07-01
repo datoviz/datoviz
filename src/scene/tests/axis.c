@@ -2475,16 +2475,99 @@ static int test_axis_grid_uses_plot_source_extent(TstContext* suite, const TstCa
     float max_y = 0.0f;
     float tol_x = _axis_test_grid_snap_source_tolerance(x_axis, DVZ_DIM_X, visible_extent);
     float tol_y = _axis_test_grid_snap_source_tolerance(y_axis, DVZ_DIM_Y, visible_extent);
+    float expected_x0 = -1.0f;
+    float expected_x1 = +1.0f;
+    float expected_y0 = -1.0f;
+    float expected_y1 = +1.0f;
+    _axis_plot_interval(x_axis, &expected_x0, &expected_x1);
+    _axis_plot_interval(y_axis, &expected_y0, &expected_y1);
+    float expected_source_x0 = _axis_inverse_panzoom_coord(visible_extent, 0, 1, expected_x0);
+    float expected_source_x1 = _axis_inverse_panzoom_coord(visible_extent, 0, 1, expected_x1);
+    float expected_source_y0 = _axis_inverse_panzoom_coord(visible_extent, 2, 3, expected_y0);
+    float expected_source_y1 = _axis_inverse_panzoom_coord(visible_extent, 2, 3, expected_y1);
 
     AT(_axis_test_vertical_grid_bounds(x_axis, 0.0f, tol_x, &min_y, &max_y));
-    AT(fabsf(min_y - visible_extent[2]) <= 2.0f * tol_y);
-    AT(fabsf(max_y - visible_extent[3]) <= 2.0f * tol_y);
+    AT(fabsf(min_y - expected_source_y0) <= 2.0f * tol_y);
+    AT(fabsf(max_y - expected_source_y1) <= 2.0f * tol_y);
 
     float min_x = 0.0f;
     float max_x = 0.0f;
     AT(_axis_test_horizontal_grid_bounds(y_axis, 0.0f, tol_y, &min_x, &max_x));
-    AT(fabsf(min_x - visible_extent[0]) <= 2.0f * tol_x);
-    AT(fabsf(max_x - visible_extent[1]) <= 2.0f * tol_x);
+    AT(fabsf(min_x - expected_source_x0) <= 2.0f * tol_x);
+    AT(fabsf(max_x - expected_source_x1) <= 2.0f * tol_x);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure axis grid endpoints honor style plot margins, not the full plot viewport extent.
+ *
+ * @param suite the test suite
+ * @param item the test case
+ * @return zero on success
+ */
+static int test_axis_grid_uses_style_plot_margins(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -1.0, +1.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, +1.0) == 0);
+
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    ANN(x_axis);
+    ANN(y_axis);
+    AT(dvz_axis_set_grid(x_axis, true));
+    AT(dvz_axis_set_grid(y_axis, true));
+    AT(dvz_axis_set_plot_margins(x_axis, 0.25f, 0.15f, 0.10f, 0.20f));
+    AT(dvz_axis_set_plot_margins(y_axis, 0.25f, 0.15f, 0.10f, 0.20f));
+
+    const double zero[] = {0.0};
+    AT(dvz_axis_set_ticks(
+        x_axis, &(DvzAxisTicks){DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks), .count = 1,
+                                .values = zero}));
+    AT(dvz_axis_set_ticks(
+        y_axis, &(DvzAxisTicks){DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks), .count = 1,
+                                .values = zero}));
+
+    _scene_prepare_axis_visuals(figure);
+
+    float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
+    AT(_scene_panel_panzoom_extent(panel, extent));
+    float tol_x = _axis_test_grid_snap_source_tolerance(x_axis, DVZ_DIM_X, extent);
+    float tol_y = _axis_test_grid_snap_source_tolerance(y_axis, DVZ_DIM_Y, extent);
+    float expected_x0 = -1.0f;
+    float expected_x1 = +1.0f;
+    float expected_y0 = -1.0f;
+    float expected_y1 = +1.0f;
+    _axis_plot_interval(x_axis, &expected_x0, &expected_x1);
+    _axis_plot_interval(y_axis, &expected_y0, &expected_y1);
+    float expected_source_x0 = _axis_inverse_panzoom_coord(extent, 0, 1, expected_x0);
+    float expected_source_x1 = _axis_inverse_panzoom_coord(extent, 0, 1, expected_x1);
+    float expected_source_y0 = _axis_inverse_panzoom_coord(extent, 2, 3, expected_y0);
+    float expected_source_y1 = _axis_inverse_panzoom_coord(extent, 2, 3, expected_y1);
+
+    float min_y = 0.0f;
+    float max_y = 0.0f;
+    AT(_axis_test_vertical_grid_bounds(x_axis, 0.0f, tol_x, &min_y, &max_y));
+    AT(fabsf(min_y - expected_source_y0) <= 2.0f * tol_y);
+    AT(fabsf(max_y - expected_source_y1) <= 2.0f * tol_y);
+
+    float min_x = 0.0f;
+    float max_x = 0.0f;
+    AT(_axis_test_horizontal_grid_bounds(y_axis, 0.0f, tol_y, &min_x, &max_x));
+    AT(fabsf(min_x - expected_source_x0) <= 2.0f * tol_x);
+    AT(fabsf(max_x - expected_source_x1) <= 2.0f * tol_x);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -3474,8 +3557,18 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
     _scene_panel_apply_mvp(panel, &apply_mvp);
     float plot[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
     _scene_panel_plot_visual_rect(panel, plot);
+    float expected_x0 = -1.0f;
+    float expected_x1 = +1.0f;
+    float expected_y0 = -1.0f;
+    float expected_y1 = +1.0f;
+    _axis_plot_interval(x_axis, &expected_x0, &expected_x1);
+    _axis_plot_interval(y_axis, &expected_y0, &expected_y1);
     float visible_extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
     AT(_scene_panel_panzoom_extent(panel, visible_extent));
+    float expected_source_x0 = _axis_inverse_panzoom_coord(visible_extent, 0, 1, expected_x0);
+    float expected_source_x1 = _axis_inverse_panzoom_coord(visible_extent, 0, 1, expected_x1);
+    float expected_source_y0 = _axis_inverse_panzoom_coord(visible_extent, 2, 3, expected_y0);
+    float expected_source_y1 = _axis_inverse_panzoom_coord(visible_extent, 2, 3, expected_y1);
     float grid_tol_x = _axis_test_grid_snap_source_tolerance(x_axis, DVZ_DIM_X, visible_extent);
     float grid_tol_y = _axis_test_grid_snap_source_tolerance(y_axis, DVZ_DIM_Y, visible_extent);
 
@@ -3493,8 +3586,8 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
         float grid_max_y = 0.0f;
         AT(_axis_test_vertical_grid_bounds(
             x_axis, expected_x, grid_tol_x, &grid_min_y, &grid_max_y));
-        AT(fabsf(grid_min_y - visible_extent[2]) <= 2.0f * grid_tol_y);
-        AT(fabsf(grid_max_y - visible_extent[3]) <= 2.0f * grid_tol_y);
+        AT(fabsf(grid_min_y - expected_source_y0) <= 2.0f * grid_tol_y);
+        AT(fabsf(grid_max_y - expected_source_y1) <= 2.0f * grid_tol_y);
         float plot_clip_x = 0.0f;
         AT(_axis_test_apply_mvp_coord(
             &apply_mvp, (vec3){expected_x, 0.0f, 0.0f}, DVZ_DIM_X, &plot_clip_x));
@@ -3520,8 +3613,8 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
         float grid_max_x = 0.0f;
         AT(_axis_test_horizontal_grid_bounds(
             y_axis, expected_y, grid_tol_y, &grid_min_x, &grid_max_x));
-        AT(fabsf(grid_min_x - visible_extent[0]) <= 2.0f * grid_tol_x);
-        AT(fabsf(grid_max_x - visible_extent[1]) <= 2.0f * grid_tol_x);
+        AT(fabsf(grid_min_x - expected_source_x0) <= 2.0f * grid_tol_x);
+        AT(fabsf(grid_max_x - expected_source_x1) <= 2.0f * grid_tol_x);
         float plot_clip_y = 0.0f;
         AT(_axis_test_apply_mvp_coord(
             &apply_mvp, (vec3){0.0f, expected_y, 0.0f}, DVZ_DIM_Y, &plot_clip_y));
@@ -3574,6 +3667,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_panzoom_visible_domain);
     TST_CASE(test_axis_panzoom_layout_aligns_grid_to_plot);
     TST_CASE(test_axis_grid_uses_plot_source_extent);
+    TST_CASE(test_axis_grid_uses_style_plot_margins);
     TST_CASE(test_axis_grid_centers_snap_after_panzoom);
     TST_CASE(test_axis_data_visual_mvp_uses_view_extent_after_resize);
     TST_CASE(test_axis_default_data_attachment_uses_default_domain);
