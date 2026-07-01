@@ -572,6 +572,75 @@ int test_scene_second_emit_no_uploads_when_not_dirty(TstContext* suite, const Ts
 }
 
 
+int test_scene_runtime_emitter_reset_reemits_payloads(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
+    DvzPanel* panel = dvz_panel(figure, desc);
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+
+    vec3 positions[2] = {{-0.5f, 0.0f, 0.0f}, {0.5f, 0.0f, 0.0f}};
+    DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
+    float sizes[2] = {8.0f, 8.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_wgsl = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream1 = _test_scene_emit_stream(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream1 != NULL);
+    AT(_stream_visual_write_buffer_count(stream1) > 0);
+    _test_scene_stream_destroy(stream1);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream2 = _test_scene_emit_stream(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream2 != NULL);
+    AT(_stream_visual_write_buffer_count(stream2) == 0);
+    _test_scene_stream_destroy(stream2);
+
+    AT(_scene_runtime_emitter_reset(scene));
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream3 = _test_scene_emit_stream(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream3 != NULL);
+    AT(_stream_visual_write_buffer_count(stream3) > 0);
+
+    bool found_create_buffer = false;
+    bool found_draw = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream3); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream3, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BUFFER)
+            found_create_buffer = true;
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
+            found_draw = true;
+    }
+    AT(found_create_buffer);
+    AT(found_draw);
+    AT(dvz_drp2_validate_stream(stream3).ok);
+
+    _test_scene_stream_destroy(stream3);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Ensure retained volume parameter mutations keep on-demand scheduling dirty until emitted.
  *

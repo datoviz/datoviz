@@ -153,6 +153,119 @@ uint64_t _scene_next_request_serial(DvzScene* scene)
 }
 
 
+/**
+ * Mark retained scene payloads dirty after a runtime boundary reset.
+ *
+ * @param visual the visual
+ */
+static void _scene_mark_visual_runtime_dirty(DvzVisual* visual)
+{
+    if (visual == NULL || visual->scene == NULL)
+        return;
+    DvzVisualFamilyState* state = _visual_family_state(visual);
+    if (state == NULL)
+        return;
+
+    for (uint32_t ai = 0; ai < visual->attr_count; ai++)
+    {
+        DvzVisualAttr* attr = &visual->attrs[ai];
+        if (attr->data != NULL && attr->item_count > 0)
+        {
+            attr->dirty_first_item = 0;
+            attr->dirty_item_count = attr->item_count;
+        }
+        if (attr->buffer != NULL)
+            attr->buffer->dirty = true;
+    }
+
+    if (state->buffer != NULL)
+        state->buffer->dirty = true;
+    state->material_params_dirty = true;
+    if (
+        visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
+        visual->type == DVZ_VISUAL_TYPE_MARKER || visual->type == DVZ_VISUAL_TYPE_SPHERE ||
+        visual->type == DVZ_VISUAL_TYPE_MESH)
+    {
+        state->item_state_style_params_dirty = true;
+    }
+    state->segment.gpu.dirty = true;
+    state->path.gpu.dirty = true;
+    state->vector.stroke_gpu.dirty = true;
+    state->vector.path_gpu.dirty = true;
+    state->image_gpu.dirty = true;
+    state->labels_realized_version = 0;
+    state->volume_realized_version = 0;
+    state->image_sampling_realized_version = 0;
+    state->text.realized_version = 0;
+
+    if (state->field != NULL)
+        _scene_visual_texture_mark_full_dirty(visual, &state->field->desc);
+}
+
+
+/**
+ * Mark all retained scene payloads dirty after a runtime boundary reset.
+ *
+ * @param scene the scene
+ */
+static void _scene_mark_runtime_payloads_dirty(DvzScene* scene)
+{
+    ANN(scene);
+    for (uint32_t i = 0; i < scene->visual_count; i++)
+    {
+        if (scene->visuals[i].scene == scene)
+            _scene_mark_visual_runtime_dirty(&scene->visuals[i]);
+    }
+    for (uint32_t i = 0; i < scene->field_count; i++)
+    {
+        DvzSampledField* field = &scene->fields[i];
+        if (field->scene == scene)
+            _scene_mark_field_region_dirty(field, _field_full_region(&field->desc), true);
+    }
+    for (uint32_t i = 0; i < scene->buffer_count; i++)
+    {
+        if (scene->buffers[i].scene == scene)
+            scene->buffers[i].dirty = true;
+    }
+    for (uint32_t i = 0; i < scene->compute_count; i++)
+    {
+        DvzSceneCompute* compute = &scene->computes[i];
+        if (compute->scene != scene)
+            continue;
+        for (uint32_t bi = 0; bi < compute->binding_count; bi++)
+        {
+            if (compute->bindings[bi].active && compute->bindings[bi].buffer != NULL)
+                compute->bindings[bi].buffer->dirty = true;
+        }
+    }
+}
+
+
+/**
+ * Recreate the retained FramePlan emitter and force full payload re-emission.
+ *
+ * The DRP2 runtime commits semantic state only after backend execution succeeds. If backend
+ * execution fails late, the scene-side emitter may already have advanced its resource maps while
+ * the runtime remains rolled back. Recreating the emitter and dirtying retained payloads restores
+ * the invariant that the next emitted stream is a complete setup stream for the runtime.
+ *
+ * @param scene the scene
+ * @return whether recovery state was reset
+ */
+bool _scene_runtime_emitter_reset(DvzScene* scene)
+{
+    ANN(scene);
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    if (emitter == NULL)
+        return false;
+    if (scene->emitter != NULL)
+        dvz_frame_plan_emitter_destroy(scene->emitter);
+    scene->emitter = emitter;
+    _scene_mark_runtime_payloads_dirty(scene);
+    return true;
+}
+
+
 
 /*************************************************************************************************/
 /*  Scene                                                                                        */

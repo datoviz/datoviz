@@ -1094,6 +1094,8 @@ int test_scene_point_item_range_empty_clear_no_reupload(
 
 int test_scene_second_emit_no_uploads_when_not_dirty(TstContext* suite, const TstCase* item);
 
+int test_scene_runtime_emitter_reset_reemits_payloads(TstContext* suite, const TstCase* item);
+
 int test_scene_pending_render_work_tracks_volume_state(TstContext* suite, const TstCase* item);
 
 int test_scene_pending_render_work_tracks_labels_state(TstContext* suite, const TstCase* item);

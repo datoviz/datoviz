@@ -206,6 +206,7 @@ struct DvzApp
     bool owns_gpu_ctx;
     bool owns_runtime;
     bool owns_window_host;
+    bool runtime_recovery_pending;
 #endif
     uint32_t     view_count;
     DvzView views[DVZ_APP_MAX_VIEWS];
@@ -2969,6 +2970,32 @@ static void _app_runtime_failure_reset(DvzView* win, const char* context)
 }
 
 
+static void _app_runtime_recovery_defer(DvzApp* app)
+{
+    ANN(app);
+    app->runtime_recovery_pending = true;
+    for (uint32_t i = 0; i < app->view_count; i++)
+        dvz_view_request_frame(&app->views[i]);
+}
+
+
+static bool _app_runtime_recovery_apply(DvzApp* app)
+{
+    ANN(app);
+    if (!app->runtime_recovery_pending)
+        return true;
+    if (app->runtime != NULL)
+        dvz_drp2_runtime_reset(app->runtime);
+    if (!_scene_runtime_emitter_reset(app->scene))
+    {
+        log_error("_app_draw failed to reset scene runtime emitter after runtime failure");
+        return false;
+    }
+    app->runtime_recovery_pending = false;
+    return true;
+}
+
+
 
 /**
  * Report one failed DRP2 runtime execution, suppressing exact repeats.
@@ -3437,6 +3464,9 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         return;
     }
 
+    if (!_app_runtime_recovery_apply(app))
+        return;
+
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     if (win->gui != NULL)
     {
@@ -3524,7 +3554,10 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(app->runtime, stream);
     if (!result.ok)
+    {
         _app_log_runtime_failure(win, "_app_draw runtime execution failed", stream, result);
+        _app_runtime_recovery_defer(app);
+    }
     else
     {
         _app_runtime_failure_reset(win, "_app_draw runtime execution");

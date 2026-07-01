@@ -381,6 +381,8 @@ typedef struct DvzPanelView2DResolved DvzPanelView2DResolved;
 
 DvzId _scene_next_id(DvzScene* scene);
 
+bool _scene_runtime_emitter_reset(DvzScene* scene);
+
 struct DvzPanelView2DResolved
 {
     float view_extent[4];
