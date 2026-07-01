@@ -37,3 +37,7 @@ bool _scene_emit_panel_render(
 bool _scene_emit_panel_render_ex(
     DvzFigure* figure, uint32_t panel_index, DvzFramePlan* plan, const char* figure_id,
     DvzDiagnosticReport* report);
+
+bool _scene_emit_panel_render_caps(
+    DvzFigure* figure, uint32_t panel_index, DvzFramePlan* plan, const char* figure_id,
+    const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report);

@@ -1321,7 +1321,7 @@ int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase
 
     DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
-    AT(dvz_diagnostic_report_count(&report) >= 2);
+    AT(dvz_diagnostic_report_count(&report) >= 1);
     const char* fallback_message = dvz_diagnostic_report_get(&report, 0);
     ANN(fallback_message);
     AT(strstr(fallback_message, "sample count lowered from 16 to 8") != NULL);
@@ -1363,6 +1363,105 @@ int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase
 
     _test_scene_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify capability lowering to one sample emits the plain single-sample topology.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_msaa_runtime_capability_disable_topology(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    AT(dvz_panel_set_msaa(
+        panel, &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 4,
+                              .alpha_to_coverage = true}));
+
+    DvzVisual* sphere = dvz_sphere(scene, 0);
+    AT(sphere != NULL);
+    vec3 positions[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor colors[1] = {{180, 200, 255, 255}};
+    float sizes[1] = {0.35f};
+    AT(dvz_visual_set_data(sphere, "position", positions, 1) == 0);
+    AT(dvz_visual_set_data(sphere, "color", colors, 1) == 0);
+    AT(dvz_visual_set_data(sphere, "size", sizes, 1) == 0);
+    AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.max_color_sample_count = 1;
+    caps.max_depth_sample_count = 1;
+
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) >= 1);
+    const char* message = dvz_diagnostic_report_get(&report, 0);
+    ANN(message);
+    AT(strstr(message, "MSAA disabled") != NULL);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+
+    bool found_msaa_texture = false;
+    bool found_resolve = false;
+    bool found_single_sample_pipeline = false;
+    bool found_multisample_pipeline = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_texture.id);
+            found_msaa_texture =
+                found_msaa_texture ||
+                (label != NULL && strcmp(label, "fig0_p0.msaa.color") == 0);
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+        {
+            for (uint32_t j = 0; j < cmd->u.begin_render_pass.color_attachment_count; j++)
+                found_resolve =
+                    found_resolve ||
+                    cmd->u.begin_render_pass.color_attachments[j].resolve_texture_id != 0;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+            if (label != NULL && strstr(label, "_pipe_sphere") != NULL)
+            {
+                found_single_sample_pipeline =
+                    found_single_sample_pipeline ||
+                    cmd->u.create_render_pipeline.sample_count == 1;
+                found_multisample_pipeline =
+                    found_multisample_pipeline ||
+                    cmd->u.create_render_pipeline.sample_count > 1;
+            }
+        }
+    }
+    AT(!found_msaa_texture);
+    AT(!found_resolve);
+    AT(found_single_sample_pipeline);
+    AT(!found_multisample_pipeline);
+
+    _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }

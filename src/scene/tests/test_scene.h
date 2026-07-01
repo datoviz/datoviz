@@ -806,6 +806,8 @@ int test_scene_msaa_ssao_blended_overlay_runtime_lowering(TstContext* suite, con
 
 int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase* item);
 
+int test_scene_msaa_runtime_capability_disable_topology(TstContext* suite, const TstCase* item);
+
 int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item);
 
 int test_scene_edl_blended_overlay_runtime_lowering(TstContext* suite, const TstCase* item);

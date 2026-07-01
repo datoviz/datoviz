@@ -690,6 +690,71 @@ static bool _scene_emit_blended_group_node(
 }
 
 
+/**
+ * Return the effective MSAA state after applying runtime sample-count capabilities.
+ *
+ * @param requested configured panel MSAA state
+ * @param caps active runtime capabilities, or NULL to preserve the requested state
+ * @param panel_id stable panel id used for diagnostics
+ * @param report optional diagnostic report
+ * @param storage output storage for the effective state
+ * @return effective MSAA state, or NULL when MSAA is disabled or lowered to single-sample
+ */
+static const DvzSceneMsaaTechniqueState* _scene_effective_msaa_state(
+    const DvzSceneMsaaTechniqueState* requested, const DvzCapabilitySnapshot* caps,
+    const char* panel_id, DvzDiagnosticReport* report, DvzSceneMsaaTechniqueState* storage)
+{
+    ANN(storage);
+    if (requested == NULL || !requested->enabled || requested->sample_count <= 1)
+        return NULL;
+    *storage = *requested;
+    if (caps == NULL)
+        return storage;
+
+    uint32_t color_max = caps->max_color_sample_count != 0 ? caps->max_color_sample_count : 1;
+    uint32_t depth_max = caps->max_depth_sample_count != 0 ? caps->max_depth_sample_count : 1;
+    uint32_t max_sample_count = color_max < depth_max ? color_max : depth_max;
+    uint32_t effective = 1;
+    if (requested->sample_count >= 16 && max_sample_count >= 16)
+        effective = 16;
+    else if (requested->sample_count >= 8 && max_sample_count >= 8)
+        effective = 8;
+    else if (requested->sample_count >= 4 && max_sample_count >= 4)
+        effective = 4;
+    else if (requested->sample_count >= 2 && max_sample_count >= 2)
+        effective = 2;
+
+    if (effective == requested->sample_count)
+        return storage;
+
+    if (report != NULL)
+    {
+        char message[DVZ_SCENE_DIAGNOSTIC_SIZE] = {0};
+        if (effective > 1)
+        {
+            dvz_snprintf(
+                message, sizeof(message),
+                "panel %s MSAA sample count lowered from %" PRIu32 " to %" PRIu32,
+                panel_id != NULL ? panel_id : "?", requested->sample_count, effective);
+        }
+        else
+        {
+            dvz_snprintf(
+                message, sizeof(message),
+                "panel %s MSAA disabled because runtime supports only single-sample color/depth "
+                "attachments",
+                panel_id != NULL ? panel_id : "?");
+        }
+        (void)dvz_diagnostic_report_add(report, message);
+    }
+    if (effective <= 1)
+        return NULL;
+
+    storage->sample_count = effective;
+    return storage;
+}
+
+
 
 /**
  * Emit one panel render node into a frame plan.
@@ -701,9 +766,9 @@ static bool _scene_emit_blended_group_node(
  * @param report optional diagnostic report
  * @return whether the panel render graph was emitted
  */
-bool _scene_emit_panel_render_ex(
+bool _scene_emit_panel_render_caps(
     DvzFigure* figure, uint32_t panel_index, DvzFramePlan* plan, const char* figure_id,
-    DvzDiagnosticReport* report)
+    const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report)
 {
     ANN(figure);
     ANN(plan);
@@ -716,6 +781,9 @@ bool _scene_emit_panel_render_ex(
     if (!_scene_panel_render_plan_build(figure, panel_index, figure_id, &render_plan))
         return false;
     const char* panel_id = render_plan.panel_id;
+    DvzSceneMsaaTechniqueState effective_msaa_storage = {0};
+    const DvzSceneMsaaTechniqueState* effective_msaa = _scene_effective_msaa_state(
+        render_plan.msaa_state, caps, panel_id, report, &effective_msaa_storage);
 
     if (render_plan.drawable_count == 0)
     {
@@ -1090,7 +1158,7 @@ bool _scene_emit_panel_render_ex(
                 any_blended_needs_depth =
                     any_blended_needs_depth || render_plan.blended_needs_depth[i];
             const DvzSceneMsaaTechniqueState* pre_ssao_msaa =
-                any_blended_needs_depth ? NULL : render_plan.msaa_state;
+                any_blended_needs_depth ? NULL : effective_msaa;
             if (!_scene_technique_emit_blended_frame_graph(
                     plan, panel_id, true, blended_depth_producer, blended_depth_producer, 0, NULL,
                     NULL, pre_ssao_msaa))
@@ -1107,7 +1175,7 @@ bool _scene_emit_panel_render_ex(
         else if (!_scene_technique_emit_blended_frame_graph(
                      plan, panel_id, true, blended_depth_producer, blended_depth_producer,
                      render_plan.blended_group_count, render_plan.blended_needs_depth,
-                     render_plan.blended_writes_depth, render_plan.msaa_state))
+                     render_plan.blended_writes_depth, effective_msaa))
         {
             _scene_emit_graph_report(
                 report, "failed to emit blended FramePlan graph for panel %s", panel_id);
@@ -1149,9 +1217,9 @@ bool _scene_emit_panel_render_ex(
         else if (
             (gbuffer_node != invalid_node || volume_occlusion_node != invalid_node ||
              scene_occlusion_node != invalid_node ||
-             (!render_plan.ssao_enabled && render_plan.msaa_state != NULL)) &&
+             (!render_plan.ssao_enabled && effective_msaa != NULL)) &&
             !_scene_technique_emit_opaque_frame_graph(
-                plan, panel_id, render_plan.opaque_needs_depth, render_plan.msaa_state))
+                plan, panel_id, render_plan.opaque_needs_depth, effective_msaa))
         {
             _scene_emit_graph_report(
                 report, "failed to emit opaque FramePlan graph for panel %s", panel_id);
@@ -1218,6 +1286,14 @@ bool _scene_emit_panel_render_ex(
         graph_ok = false;
     }
     return graph_ok;
+}
+
+
+bool _scene_emit_panel_render_ex(
+    DvzFigure* figure, uint32_t panel_index, DvzFramePlan* plan, const char* figure_id,
+    DvzDiagnosticReport* report)
+{
+    return _scene_emit_panel_render_caps(figure, panel_index, plan, figure_id, NULL, report);
 }
 
 

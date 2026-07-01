@@ -638,7 +638,8 @@ DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
     bool panels_ok = true;
     uint32_t graph_report_start = dvz_diagnostic_report_count(report);
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
-        panels_ok = _scene_emit_panel_render_ex(figure, pi, plan, figure_id, report) && panels_ok;
+        panels_ok =
+            _scene_emit_panel_render_caps(figure, pi, plan, figure_id, caps, report) && panels_ok;
     if (!panels_ok)
     {
         if (dvz_diagnostic_report_count(report) == graph_report_start)
