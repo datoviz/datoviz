@@ -89,6 +89,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_background_descriptor_gradient_and_image);
     TST_CASE(test_scene_panel_border_creates_fixed_overlay);
     TST_CASE(test_scene_panel_plot_clip_rect_metadata);
+    TST_CASE(test_scene_panel_frame_snapshot_core);
     TST_CASE(test_scene_adjacent_panels_plot_scissor_no_bleed);
     TST_CASE(test_scene_controller_mode_fixed_emits_separate_mvp);
     TST_CASE(test_scene_split_pass_visuals_emit_separate_common_mvp);

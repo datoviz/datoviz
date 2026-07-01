@@ -58,6 +58,7 @@ typedef struct DvzScene             DvzScene;
 typedef struct DvzFigure            DvzFigure;
 typedef struct DvzGrid              DvzGrid;
 typedef struct DvzPanel             DvzPanel;
+typedef struct DvzPanelFrameSnapshot DvzPanelFrameSnapshot;
 typedef struct DvzVisual            DvzVisual;
 typedef struct DvzSceneCompute      DvzSceneCompute;
 typedef struct DvzComposite         DvzComposite;
@@ -450,6 +451,47 @@ struct DvzRect
     float height;
 };
 typedef struct DvzRect DvzRect;
+
+
+struct DvzPanelFrameInfo
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzId snapshot_id;
+    DvzId figure_id;
+    DvzId panel_id;
+    uint64_t panel_revision;
+    uint64_t layout_revision;
+    uint64_t view_revision;
+    uint64_t guide_revision;
+    uint64_t visual_revision;
+    uint32_t logical_width_px;
+    uint32_t logical_height_px;
+    float framebuffer_width_px;
+    float framebuffer_height_px;
+    float device_scale_x;
+    float device_scale_y;
+    float user_scale;
+    DvzRect panel_rect_px;
+    DvzRect inner_rect_px;
+    DvzRect plot_rect_px;
+    DvzRect grid_clip_rect_px;
+    float plot_view[4];
+    float view_extent[4];
+    float controller_extent[4];
+    double source_data_x[2];
+    double source_data_y[2];
+    double visible_data_x[2];
+    double visible_data_y[2];
+    mat4 data_to_view;
+    bool has_view2d;
+    bool has_valid_source_x;
+    bool has_valid_source_y;
+    bool has_valid_visible_x;
+    bool has_valid_visible_y;
+    DvzDiagnosticReport diagnostics;
+};
+typedef struct DvzPanelFrameInfo DvzPanelFrameInfo;
 
 
 struct DvzPanelReserve

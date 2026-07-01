@@ -1344,6 +1344,114 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
 }
 
 
+int test_scene_panel_frame_snapshot_core(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 400, 300, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.25f, 0.20f, 0.50f, 0.60f});
+    ANN(panel);
+
+    AT(dvz_panel_set_padding(
+        panel, &(DvzPanelReserve){
+                   .left_px = 10.0f,
+                   .right_px = 6.0f,
+                   .top_px = 8.0f,
+                   .bottom_px = 4.0f,
+               }));
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){
+                   .left_px = 20.0f,
+                   .right_px = 12.0f,
+                   .top_px = 16.0f,
+                   .bottom_px = 10.0f,
+               }));
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -5.0, 15.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 10.0, -10.0) == 0);
+    DvzPanelView2D view = dvz_panel_view2d();
+    AT(dvz_panel_set_view2d(panel, &view) == 0);
+
+    DvzPanelFrameSnapshot* snapshot = dvz_panel_resolve_frame(panel);
+    ANN(snapshot);
+    DvzPanelFrameInfo info = {0};
+    AT(dvz_panel_frame_info(snapshot, &info));
+    AT(info.struct_size == DVZ_STRUCT_SIZE(DvzPanelFrameInfo));
+    AT(info.snapshot_id == dvz_panel_frame_id(snapshot));
+    AT(info.snapshot_id != DVZ_ID_NONE);
+    AT(info.figure_id == dvz_figure_id(figure));
+    AT(info.panel_id == dvz_panel_id(panel));
+    AT(info.logical_width_px == 400);
+    AT(info.logical_height_px == 300);
+    AC(info.device_scale_x, 1.0f, 1e-6f);
+    AC(info.device_scale_y, 1.0f, 1e-6f);
+    AC(info.user_scale, 1.0f, 1e-6f);
+    AC(info.framebuffer_width_px, 400.0f, 1e-6f);
+    AC(info.framebuffer_height_px, 300.0f, 1e-6f);
+
+    AC(info.panel_rect_px.x, 100.0f, 1e-6f);
+    AC(info.panel_rect_px.y, 60.0f, 1e-6f);
+    AC(info.panel_rect_px.width, 200.0f, 1e-6f);
+    AC(info.panel_rect_px.height, 180.0f, 1e-6f);
+    DvzRect plot = {0};
+    AT(dvz_panel_plot_rect_px(panel, &plot));
+    AC(info.plot_rect_px.x, plot.x, 1e-6f);
+    AC(info.plot_rect_px.y, plot.y, 1e-6f);
+    AC(info.plot_rect_px.width, plot.width, 1e-6f);
+    AC(info.plot_rect_px.height, plot.height, 1e-6f);
+    AC(info.grid_clip_rect_px.x, plot.x, 1e-6f);
+    AC(info.grid_clip_rect_px.y, plot.y, 1e-6f);
+    AC(info.grid_clip_rect_px.width, plot.width, 1e-6f);
+    AC(info.grid_clip_rect_px.height, plot.height, 1e-6f);
+    AT(info.has_view2d);
+    AT(info.has_valid_source_x);
+    AT(info.has_valid_source_y);
+    AT(info.has_valid_visible_x);
+    AT(info.has_valid_visible_y);
+    AC(info.source_data_x[0], -5.0, 1e-9);
+    AC(info.source_data_x[1], 15.0, 1e-9);
+    AC(info.source_data_y[0], 10.0, 1e-9);
+    AC(info.source_data_y[1], -10.0, 1e-9);
+    AT(info.diagnostics.count >= 1);
+
+    const DvzId first_id = info.snapshot_id;
+    const uint64_t first_revision = info.layout_revision;
+    dvz_panel_frame_ref(snapshot);
+    dvz_panel_frame_unref(snapshot);
+
+    dvz_figure_resize(figure, 800, 300);
+    DvzPanelFrameInfo frozen = {0};
+    AT(dvz_panel_frame_info(snapshot, &frozen));
+    AT(frozen.snapshot_id == first_id);
+    AT(frozen.logical_width_px == 400);
+    AT(frozen.layout_revision == first_revision);
+
+    DvzPanelFrameSnapshot* after = dvz_panel_resolve_frame(panel);
+    ANN(after);
+    DvzPanelFrameInfo next = {0};
+    AT(dvz_panel_frame_info(after, &next));
+    AT(next.snapshot_id != first_id);
+    AT(next.logical_width_px == 800);
+    AT(next.layout_revision > first_revision);
+    AT(next.panel_revision == next.layout_revision);
+    AT(next.view_revision == next.layout_revision);
+    DvzRect next_plot = {0};
+    AT(dvz_panel_plot_rect_px(panel, &next_plot));
+    AC(next.grid_clip_rect_px.x, next_plot.x, 1e-6f);
+    AC(next.grid_clip_rect_px.y, next_plot.y, 1e-6f);
+    AC(next.grid_clip_rect_px.width, next_plot.width, 1e-6f);
+    AC(next.grid_clip_rect_px.height, next_plot.height, 1e-6f);
+
+    dvz_panel_frame_unref(after);
+    dvz_panel_frame_unref(snapshot);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_adjacent_panels_plot_scissor_no_bleed(TstContext* suite, const TstCase* item)
 {
     (void)suite;

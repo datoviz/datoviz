@@ -41,7 +41,7 @@
  * @return major tick length in visual units
  */
 static float _axis_tick_length(
-    const DvzAxis* axis, const DvzPanelFrameSnapshot* snapshot, float length_px)
+    const DvzAxis* axis, const DvzPanelFrameResolved* snapshot, float length_px)
 {
     ANN(axis);
     ANN(snapshot);
@@ -78,7 +78,7 @@ static float _axis_user_scale(const DvzAxis* axis)
  * @param dim the visual dimension
  * @return visual-space pixel size
  */
-static float _axis_visual_pixel_size(const DvzPanelFrameSnapshot* snapshot, DvzDim dim)
+static float _axis_visual_pixel_size(const DvzPanelFrameResolved* snapshot, DvzDim dim)
 {
     ANN(snapshot);
     float span = dim == DVZ_DIM_X ? snapshot->panel_px.width : snapshot->panel_px.height;
@@ -95,7 +95,7 @@ static float _axis_visual_pixel_size(const DvzPanelFrameSnapshot* snapshot, DvzD
  * @param dim the visual dimension
  * @return plot visual-space pixel size
  */
-static float _axis_plot_pixel_size(const DvzPanelFrameSnapshot* snapshot, DvzDim dim)
+static float _axis_plot_pixel_size(const DvzPanelFrameResolved* snapshot, DvzDim dim)
 {
     ANN(snapshot);
     float span = dim == DVZ_DIM_X ? snapshot->plot_px.width : snapshot->plot_px.height;
@@ -132,7 +132,7 @@ static float _axis_line_pixel_phase(float width_px)
  */
 static float
 _axis_snap_visual_pixel_center_basis(
-    const DvzPanelFrameSnapshot* snapshot, float value, DvzDim dim, float width_px,
+    const DvzPanelFrameResolved* snapshot, float value, DvzDim dim, float width_px,
     bool plot_pixels)
 {
     ANN(snapshot);
@@ -159,7 +159,7 @@ _axis_snap_visual_pixel_center_basis(
  */
 static float
 _axis_snap_visual_pixel_center(
-    const DvzPanelFrameSnapshot* snapshot, float value, DvzDim dim, float width_px)
+    const DvzPanelFrameResolved* snapshot, float value, DvzDim dim, float width_px)
 {
     return _axis_snap_visual_pixel_center_basis(snapshot, value, dim, width_px, false);
 }
@@ -176,7 +176,7 @@ _axis_snap_visual_pixel_center(
  * @return snapped source visual coordinate
  */
 static float _axis_snap_source_panzoom_pixel_center(
-    const DvzAxis* axis, const DvzPanelFrameSnapshot* snapshot, const float extent[4], DvzDim dim,
+    const DvzAxis* axis, const DvzPanelFrameResolved* snapshot, const float extent[4], DvzDim dim,
     float value, float width_px)
 {
     ANN(axis);
@@ -337,7 +337,7 @@ static void _axis_append_rect(
  * @param snap whether to snap the line center to a pixel center
  */
 static void _axis_append_line_rect(
-    const DvzAxis* axis, const DvzPanelFrameSnapshot* snapshot, uint32_t* count,
+    const DvzAxis* axis, const DvzPanelFrameResolved* snapshot, uint32_t* count,
     float positions[][3], uint8_t colors[][4], float a0, float b0, float a1, float b1, float z,
     float width_px, const uint8_t color[4], float scale_x, float scale_y, bool plot_pixels,
     bool snap)
@@ -388,7 +388,7 @@ static void _axis_append_line_rect(
  * @param width tick width in pixels
  */
 static void _axis_append_tick(
-    const DvzAxis* axis, const DvzPanelFrameSnapshot* snapshot, uint32_t* count,
+    const DvzAxis* axis, const DvzPanelFrameResolved* snapshot, uint32_t* count,
     float positions[][3], uint8_t colors[][4], float p, float x0, float y0, float z,
     float length, const uint8_t color[4], float width)
 {
@@ -484,7 +484,7 @@ void _axis_update_visual(DvzAxis* axis)
     const float z = 0.0f;
     _axis_init(&axis->panel->axes[DVZ_DIM_X], axis->panel, DVZ_DIM_X);
     _axis_init(&axis->panel->axes[DVZ_DIM_Y], axis->panel, DVZ_DIM_Y);
-    DvzPanelFrameSnapshot snapshot = {0};
+    DvzPanelFrameResolved snapshot = {0};
     if (!_scene_panel_frame_snapshot(axis->panel, &snapshot))
     {
         axis->visual->visible = false;

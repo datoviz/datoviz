@@ -59,7 +59,7 @@ static float _axis_text_tick_visual_position(
 
 
 static void _axis_text_visual_to_pixels(
-    const DvzPanelFrameSnapshot* snapshot, float visual_x, float visual_y, float* out_x,
+    const DvzPanelFrameResolved* snapshot, float visual_x, float visual_y, float* out_x,
     float* out_y)
 {
     ANN(snapshot);
@@ -339,7 +339,7 @@ static float _axis_text_label_offset(const DvzAxis* axis)
  * @param visible_max visible data maximum
  */
 void _axis_update_text(
-    DvzAxis* axis, const DvzPanelFrameSnapshot* snapshot, float x0, float x1, float y0, float y1,
+    DvzAxis* axis, const DvzPanelFrameResolved* snapshot, float x0, float x1, float y0, float y1,
     double visible_min, double visible_max)
 {
     ANN(axis);

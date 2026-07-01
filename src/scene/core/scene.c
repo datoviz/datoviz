@@ -446,6 +446,7 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, uint32_t
     fig->device_scale_y = 1.0f;
     fig->render_scale = 1.0f;
     fig->user_scale = 1.0f;
+    fig->frame_revision = 1;
     fig->color_pipeline = DVZ_COLOR_PIPELINE_LINEAR_SRGB;
     return fig;
 }

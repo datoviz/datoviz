@@ -166,7 +166,7 @@ _guide_apply_visual_defaults(DvzVisual* visual, DvzGeneratedVisualRole role, uin
 
 
 static bool _guide_data_to_panel_pixels(
-    const DvzPanelFrameSnapshot* snapshot, double x, double y, float* out_x, float* out_y)
+    const DvzPanelFrameResolved* snapshot, double x, double y, float* out_x, float* out_y)
 {
     ANN(snapshot);
     ANN(out_x);
@@ -190,7 +190,7 @@ static bool _guide_data_to_panel_pixels(
 
 
 static void _guide_label_update(
-    DvzAnnotation* label, const DvzPanelFrameSnapshot* snapshot, double x, double y)
+    DvzAnnotation* label, const DvzPanelFrameResolved* snapshot, double x, double y)
 {
     if (label == NULL)
         return;
@@ -234,7 +234,7 @@ static bool _guide_line_upload(DvzGuideLine* guide)
     ANN(guide->panel);
     ANN(guide->line_visual);
 
-    DvzPanelFrameSnapshot snapshot = {0};
+    DvzPanelFrameResolved snapshot = {0};
     if (!_scene_panel_frame_snapshot(guide->panel, &snapshot) || !snapshot.has_valid_visible_x ||
         !snapshot.has_valid_visible_y)
         return false;
@@ -281,7 +281,7 @@ static bool _guide_span_upload(DvzGuideSpan* span)
     ANN(span->panel);
     ANN(span->fill_visual);
 
-    DvzPanelFrameSnapshot snapshot = {0};
+    DvzPanelFrameResolved snapshot = {0};
     if (!_scene_panel_frame_snapshot(span->panel, &snapshot) || !snapshot.has_valid_visible_x ||
         !snapshot.has_valid_visible_y)
         return false;

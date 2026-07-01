@@ -76,7 +76,7 @@ void _axis_compute_ticks(DvzAxis* axis);
 void _axis_hide_text(DvzAxis* axis);
 
 void _axis_update_text(
-    DvzAxis* axis, const DvzPanelFrameSnapshot* snapshot, float x0, float x1, float y0, float y1,
+    DvzAxis* axis, const DvzPanelFrameResolved* snapshot, float x0, float x1, float y0, float y1,
     double visible_min, double visible_max);
 
 void _axis_update_visual(DvzAxis* axis);

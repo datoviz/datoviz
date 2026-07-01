@@ -2200,7 +2200,7 @@ static int test_panel_view2d(TstContext* suite, const TstCase* item)
     double y_max = 0.0;
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &x_min, &x_max));
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &y_min, &y_max));
-    DvzPanelFrameSnapshot snapshot = {0};
+    DvzPanelFrameResolved snapshot = {0};
     AT(_scene_panel_frame_snapshot(panel, &snapshot));
     AT(snapshot.has_valid_visible_x);
     AT(snapshot.has_valid_visible_y);
@@ -2291,7 +2291,7 @@ static int test_panel_view2d_reversed_domains(TstContext* suite, const TstCase* 
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
     AT(fabs(min - 3.75) < 1e-9);
     AT(fabs(max + 3.75) < 1e-9);
-    DvzPanelFrameSnapshot snapshot = {0};
+    DvzPanelFrameResolved snapshot = {0};
     AT(_scene_panel_frame_snapshot(panel, &snapshot));
     AT(snapshot.has_valid_visible_x);
     AT(snapshot.has_valid_visible_y);

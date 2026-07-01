@@ -674,6 +674,56 @@ DVZ_EXPORT bool dvz_panel_plot_rect_px(const DvzPanel* panel, DvzRect* out);
 
 
 /**
+ * Resolve an immutable snapshot of one panel's current frame geometry and coarse revisions.
+ *
+ * The returned object owns a copy of the resolved frame info and remains immutable until released.
+ * It is an inspection contract only: resolving a frame does not emit, render, or mutate visual
+ * resources. Later panel, figure, view, or guide edits produce different revision values in later
+ * snapshots, but do not alter snapshots already returned to the caller.
+ *
+ * @param panel the panel
+ * @return owned panel frame snapshot, or NULL on validation/allocation error
+ */
+DVZ_EXPORT DvzPanelFrameSnapshot* dvz_panel_resolve_frame(DvzPanel* panel);
+
+
+/**
+ * Return a snapshot identity.
+ *
+ * @param snapshot the panel frame snapshot
+ * @return scene-local snapshot identity, or DVZ_ID_NONE when snapshot is NULL
+ */
+DVZ_EXPORT DvzId dvz_panel_frame_id(const DvzPanelFrameSnapshot* snapshot);
+
+
+/**
+ * Copy immutable panel frame information out of a snapshot.
+ *
+ * @param snapshot the panel frame snapshot
+ * @param out output frame information
+ * @return whether the information was copied
+ */
+DVZ_EXPORT bool dvz_panel_frame_info(
+    const DvzPanelFrameSnapshot* snapshot, DvzPanelFrameInfo* out);
+
+
+/**
+ * Retain one panel frame snapshot.
+ *
+ * @param snapshot the panel frame snapshot
+ */
+DVZ_EXPORT void dvz_panel_frame_ref(DvzPanelFrameSnapshot* snapshot);
+
+
+/**
+ * Release one panel frame snapshot.
+ *
+ * @param snapshot the panel frame snapshot
+ */
+DVZ_EXPORT void dvz_panel_frame_unref(DvzPanelFrameSnapshot* snapshot);
+
+
+/**
  * Convert one 2D point between explicit panel coordinate spaces.
  *
  * Figure, panel, inner, and plot pixel spaces use logical pixels. Panel pixels are local to the

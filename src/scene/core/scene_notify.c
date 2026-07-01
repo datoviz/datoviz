@@ -99,6 +99,7 @@ void _scene_notify_request_frame(DvzFigure* figure)
 {
     if (figure == NULL || figure->scene == NULL)
         return;
+    figure->frame_revision = figure->frame_revision == UINT64_MAX ? 1 : figure->frame_revision + 1;
     DvzScene* scene = figure->scene;
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_REQUEST_FRAME_SUBSCRIPTIONS; i++)
     {

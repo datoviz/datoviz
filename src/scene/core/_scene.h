@@ -450,7 +450,7 @@ void _scene_panel_plot_pixel_rect(
 
 DvzPanelDesc _scene_panel_plot_desc(const DvzPanel* panel);
 
-typedef struct DvzPanelFrameSnapshot
+typedef struct DvzPanelFrameResolved
 {
     DvzRect panel_px;
     DvzRect inner_px;
@@ -468,9 +468,9 @@ typedef struct DvzPanelFrameSnapshot
     bool has_valid_source_y;
     bool has_valid_visible_x;
     bool has_valid_visible_y;
-} DvzPanelFrameSnapshot;
+} DvzPanelFrameResolved;
 
-bool _scene_panel_frame_snapshot(const DvzPanel* panel, DvzPanelFrameSnapshot* out);
+bool _scene_panel_frame_snapshot(const DvzPanel* panel, DvzPanelFrameResolved* out);
 
 bool _scene_figure_resolve_layouts(DvzFigure* figure);
 
@@ -2048,6 +2048,7 @@ struct DvzFigure
 
     uint64_t artifact_resource_version;
     uint64_t artifact_frame_index;
+    uint64_t frame_revision;
 
     char* last_frame_plan_trace;
     bool has_last_frame_plan_trace;
