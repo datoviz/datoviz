@@ -2,3 +2,14 @@
 features/technique_transparency
 - very slow and seems badly broken, text needs to use msdf
 
+sample field 2D and 3D feature examples, are they really needed? they seem redundant with visuals image and volume examples no?
+
+isolines example: do we need the manual camera desc, can't we just reuse the common camera helper?
+
+visuals volume example, anything to fix in the code? the bounding box: can't we use an existing datoviz api for that?
+
+
+
+
+
+
