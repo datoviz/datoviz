@@ -237,7 +237,7 @@ _scene_generated_visual_policy(DvzGeneratedVisualRole role)
             .role = role,
             .z_layer = 9500,
             .controller_mode = DVZ_CONTROLLER_APPLY,
-            .coord_space = DVZ_COORD_VIEW,
+            .coord_space = DVZ_COORD_DATA,
             .clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PLOT,
             .viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PLOT,
             .depth_test = true,

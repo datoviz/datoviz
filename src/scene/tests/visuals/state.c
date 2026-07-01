@@ -1029,13 +1029,14 @@ int test_scene_panel_bounds_overlay_visual_panzoom_padding(TstContext* suite, co
 
 
 /**
- * Verify sphere overlays use conservative wire bounds while public bounds remain exact.
+ * Verify sphere overlays use exact radius-expanded visual bounds.
  *
  * @param suite the active test suite
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_panel_bounds_overlay_sphere_wire_padding(TstContext* suite, const TstCase* item)
+int test_scene_panel_bounds_overlay_sphere_exact_radius_bounds(
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1064,6 +1065,10 @@ int test_scene_panel_bounds_overlay_sphere_wire_padding(TstContext* suite, const
     AT(dvz_panel_set_bounds_visible(panel, true) == 0);
     _scene_prepare_bounds_visuals(figure);
     ANN(panel->bounds_visual);
+    const DvzPanelAttach* overlay_attach = _scene_test_panel_attach(panel, panel->bounds_visual);
+    ANN(overlay_attach);
+    AT(overlay_attach->coord_space == DVZ_COORD_DATA);
+
     int start_idx = _attr_index(panel->bounds_visual, "position_start");
     int end_idx = _attr_index(panel->bounds_visual, "position_end");
     AT(start_idx >= 0);
@@ -1082,8 +1087,8 @@ int test_scene_panel_bounds_overlay_sphere_wire_padding(TstContext* suite, const
         max_x = fmaxf(max_x, starts[3 * i + 0]);
         max_x = fmaxf(max_x, ends[3 * i + 0]);
     }
-    AT(min_x < -0.40f);
-    AT(max_x > +0.40f);
+    AC(min_x, -0.25f, 1e-6);
+    AC(max_x, +0.25f, 1e-6);
 
     dvz_scene_destroy(scene);
     return 0;

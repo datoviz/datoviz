@@ -245,7 +245,6 @@ static int _bounds_overlay_source_bounds(const DvzVisual* visual, DvzBounds* out
     ANN(out);
     if (dvz_visual_bounds(visual, out) != 0)
         return -1;
-    _sphere_bounds_expand_wire_overlay(visual, out);
     return 0;
 }
 
