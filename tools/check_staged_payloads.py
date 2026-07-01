@@ -10,6 +10,9 @@ import sys
 
 
 MAX_BYTES = int(os.environ.get("DVZ_MAX_STAGED_BYTES", str(1024 * 1024)))
+GENERATED_TEXT_MAX_BYTES = int(
+    os.environ.get("DVZ_MAX_STAGED_GENERATED_TEXT_BYTES", str(2 * 1024 * 1024))
+)
 ALLOW_ENV = "DVZ_ALLOW_STAGED_PAYLOADS"
 
 STOP_DIRS = (
@@ -29,6 +32,10 @@ STOP_GLOBS = (
     ".DS_Store",
     "*/.DS_Store",
 )
+
+GENERATED_TEXT_ALLOWLIST = {
+    "datoviz/_ctypes.py",
+}
 
 
 def _git(args: list[str], *, check: bool = True) -> subprocess.CompletedProcess[bytes]:
@@ -64,6 +71,10 @@ def _matches_stop_path(path: str) -> bool:
     return any(fnmatch.fnmatch(path, pattern) for pattern in STOP_GLOBS)
 
 
+def _is_generated_text_allowlisted(path: str) -> bool:
+    return path in GENERATED_TEXT_ALLOWLIST
+
+
 def main() -> int:
     if os.environ.get(ALLOW_ENV) == "1":
         print(f"warning: staged payload checks bypassed via {ALLOW_ENV}=1", file=sys.stderr)
@@ -86,10 +97,19 @@ def main() -> int:
 
         if mode != "160000":
             size = _object_size(oid)
+            if _is_generated_text_allowlisted(path) and size <= GENERATED_TEXT_MAX_BYTES:
+                continue
             if size > MAX_BYTES:
                 mib = size / 1024 / 1024
                 limit = MAX_BYTES / 1024 / 1024
-                failures.append(f"{path}: staged file is {mib:.2f} MiB > {limit:.2f} MiB")
+                if _is_generated_text_allowlisted(path):
+                    generated_limit = GENERATED_TEXT_MAX_BYTES / 1024 / 1024
+                    failures.append(
+                        f"{path}: staged generated text is {mib:.2f} MiB "
+                        f"> {generated_limit:.2f} MiB"
+                    )
+                else:
+                    failures.append(f"{path}: staged file is {mib:.2f} MiB > {limit:.2f} MiB")
 
     if failures:
         print("Refusing staged payloads:", file=sys.stderr)
