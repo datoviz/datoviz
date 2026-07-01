@@ -8,6 +8,12 @@ endif()
 
 add_executable(datoviz_wasm_scene
     scene_api.c
+    scene_api_common.c
+    scene_api_input.c
+    scene_api_packets.c
+    scene_api_query.c
+    scene_api_scenario.c
+    scene_api_wrappers.c
     ${PROJECT_SOURCE_DIR}/examples/c/example_common.c
     ${PROJECT_SOURCE_DIR}/examples/c/example_style.c
     ${PROJECT_SOURCE_DIR}/examples/c/composites/polygon.c

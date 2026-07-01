@@ -781,9 +781,11 @@ function expect2DSceneStreamShape(stream, label) {
       pipeline.builtin_pipeline === "scene.primitive" &&
       pipeline.vertex_buffer_slots === 2 &&
       pipeline.topology === "triangle-list" &&
-      pipeline.depth_stencil?.depth_write_enabled === false,
+      (pipeline.depth_stencil === undefined ||
+        pipeline.depth_stencil.depth_write_enabled === false),
   );
-  expectDepthPipeline(axisPrimitivePipeline, `${label} axis primitive`, false, "always");
+  if (axisPrimitivePipeline.depth_stencil !== undefined)
+    expectDepthPipeline(axisPrimitivePipeline, `${label} axis primitive`, false, "always");
   const imagePipeline = expectPipeline(
     stream,
     `${label} image`,
@@ -3532,6 +3534,8 @@ try {
     const xAxis = Module._dvz_wasm_api_panel_axis(panel, DVZ_DIM_X);
     const yAxis = Module._dvz_wasm_api_panel_axis(panel, DVZ_DIM_Y);
     requireOk(xAxis !== 0 && yAxis !== 0, "api 2D axis creation failed");
+    expectStatus(Module._dvz_wasm_api_axis_set_visible(xAxis, 1), 0, "api 2D x axis visible");
+    expectStatus(Module._dvz_wasm_api_axis_set_visible(yAxis, 1), 0, "api 2D y axis visible");
     expectStatus(Module._dvz_wasm_api_axis_set_grid(xAxis, 1), 0, "api 2D x axis grid");
     expectStatus(Module._dvz_wasm_api_axis_set_grid(yAxis, 1), 0, "api 2D y axis grid");
     expectStatus(Module._dvz_wasm_api_axis_set_label(xAxis, xAxisLabelPtr), 0, "api 2D x axis label");

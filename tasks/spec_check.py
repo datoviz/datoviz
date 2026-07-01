@@ -33,6 +33,7 @@ def main(argv: list[str] | None = None) -> int:
     checks = [
         ("api status manifest", [py, "tools/check_api_status.py"]),
         ("drp2 command metadata", [py, "tools/check_drp2_command_metadata.py"]),
+        ("wasm bridge metadata", [py, "tools/check_wasm_bridge_metadata.py"]),
         ("drp2 fixture runner", [py, "tools/drp2_fixture_runner.py"]),
         ("webgpu fixture preflight", [py, "tools/webgpu_fixture_preflight.py"]),
         ("webgpu runner smoke", ["node", "tools/webgpu_runner_smoke.mjs"]),

@@ -699,3 +699,46 @@ Known risk: the C packet runtime remains an implemented subset of the active pro
 surface; active schema-only commands are covered by the fixture runner and WebGPU preflight, but
 they must be added to `DvzDrp2CommandType` and the metadata table before native packet execution can
 carry them.
+
+### Phase 4: WASM Bridge Split
+
+Status: complete.
+
+Validation:
+
+```sh
+just build
+just wasm-scene-smoke
+node --check tools/wasm_scene_smoke.mjs
+python3 tools/check_wasm_bridge_metadata.py
+python3 tools/check_example_manifests.py
+just spec-check
+git diff --check
+```
+
+Result:
+
+1. `just build` passed with no rebuild work remaining.
+2. `just wasm-scene-smoke` passed and generated three WebGPU stream smoke artifacts.
+3. `node --check tools/wasm_scene_smoke.mjs` passed.
+4. `python3 tools/check_wasm_bridge_metadata.py` passed.
+5. `python3 tools/check_example_manifests.py` passed.
+6. `just spec-check` passed and now includes `tools/check_wasm_bridge_metadata.py`.
+7. `git diff --check` passed.
+
+Changes:
+
+1. Split the WASM scene ABI implementation into focused units for shared state/helpers, scenario
+   registry, wrapper management, input routing, frame packet/artifact export, and query handling.
+2. Kept `src/wasm/scene_api.c` as a non-authoritative marker file; active implementation now lives
+   in `src/wasm/scene_api_*.c` and shared ABI declarations live in `scene_api_internal.h`.
+3. Added `tools/check_wasm_bridge_metadata.py` to validate the browser-live route IDs in
+   `examples/c/MANIFEST.yaml`, `examples/webgpu/live_examples.js`, the C WASM scenario count, and
+   smoke-test scenario constants as one mechanically checked authority set.
+4. Wired the WASM bridge metadata guard into `just spec-check`.
+5. Tightened the WASM scene smoke around axis visibility and accepted the backend-neutral omitted
+   depth-state encoding for axis primitive pipelines.
+
+Known risk: WASM visual IDs remain ABI constants in `scene_api_internal.h`; they are not duplicated
+elsewhere, and the new metadata guard covers the scenario/route constants that are shared with
+browser smoke and manifests.
