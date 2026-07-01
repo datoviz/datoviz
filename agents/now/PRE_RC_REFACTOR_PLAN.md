@@ -742,3 +742,47 @@ Changes:
 Known risk: WASM visual IDs remain ABI constants in `scene_api_internal.h`; they are not duplicated
 elsewhere, and the new metadata guard covers the scenario/route constants that are shared with
 browser smoke and manifests.
+
+### Phase 5: Panel Render Planner
+
+Status: complete.
+
+Validation:
+
+```sh
+just build
+just test scene
+just spec-check
+git diff --check
+```
+
+Result:
+
+1. `just build` passed.
+2. `just test scene` passed 659/659 selected tests.
+3. `just spec-check` passed, including the updated scene architecture source guard and visual
+   boundary guard.
+4. `git diff --check` passed.
+
+Changes:
+
+1. Added `src/scene/scene_emit/panel_render_plan.h` and
+   `src/scene/scene_emit/panel_render_plan.c` as the internal owner for panel render-policy
+   planning.
+2. Moved drawable filtering, scene/volume occlusion enablement, G-buffer/SSAO/EDL/MSAA technique
+   selection, transparency grouping, WBOIT/depth-peel routing, and depth requirement collection out
+   of `scene_emit/panel.c`.
+3. Changed `scene_emit/panel.c` to consume `DvzPanelRenderPlan` for render-node emission while
+   keeping render-node construction, transform metadata, and generated visual attachment routing in
+   the emitter.
+4. Preserved existing transparent node ordering by recording ordered transparent pass groups in the
+   planner and emitting leading source-over groups before depth/WBOIT when the retained visual order
+   requires it.
+5. Added a scene architecture source guard preventing render-policy classification from moving back
+   into `panel.c`.
+6. Enabled `CONFIGURE_DEPENDS` for the `scene_emit` CMake glob so new emit implementation units are
+   tracked by existing build trees.
+
+Known risk: generated visual clip/viewport routing still lives in `panel.c` because it writes
+FramePlan visual metadata at append time. It remains covered by the existing generated-visual
+source guard and is not a separate render-pass planning authority.

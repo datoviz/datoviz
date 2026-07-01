@@ -66,3 +66,31 @@ def test_panel_emit_routes_generated_visuals_from_attachment_policy() -> None:
     )
     for pattern in forbidden_pointer_scans:
         assert pattern not in text, f"{panel_emit} contains generated-visual pointer scan {pattern!r}"
+
+
+def test_panel_render_policy_lives_in_planner() -> None:
+    panel_emit = Path("src/scene/scene_emit/panel.c")
+    planner_header = Path("src/scene/scene_emit/panel_render_plan.h")
+    planner_source = Path("src/scene/scene_emit/panel_render_plan.c")
+    assert panel_emit.exists(), "missing panel emitter source"
+    assert planner_header.exists(), "missing panel render planner header"
+    assert planner_source.exists(), "missing panel render planner source"
+
+    panel_text = panel_emit.read_text(encoding="utf-8")
+    planner_header_text = planner_header.read_text(encoding="utf-8")
+    planner_source_text = planner_source.read_text(encoding="utf-8")
+
+    assert "DvzPanelRenderPlan" in planner_header_text
+    assert "_scene_panel_render_plan_build(" in planner_source_text
+
+    forbidden_panel_policy = (
+        "_scene_visual_pass_caps_from_visual(",
+        "_scene_technique_gbuffer_enabled(",
+        "_scene_technique_ssao_state(",
+        "_scene_technique_msaa_state(",
+        "_scene_technique_edl_state(",
+        "_scene_panel_has_visible_scene_occlusion_target(",
+        "_scene_panel_has_visible_volume_occlusion_target(",
+    )
+    for pattern in forbidden_panel_policy:
+        assert pattern not in panel_text, f"{panel_emit} owns planner policy {pattern!r}"
