@@ -21,6 +21,9 @@ Datoviz v0.4-dev is a deep rewrite of v0.3. The branch is preparing release cand
 6. Before committing, run `git status --short` and `git diff --cached --stat`; verify the staged set
    excludes unapproved `data`, generated files, vendored runtime libraries, large binaries, and
    unrelated user changes.
+7. After changing public headers, exported API, binding policy, or binding generators, refresh and
+   validate local Python bindings with `just ctypes` and `just ctypes-check` before running Python,
+   GSP, or packaging validation.
 
 More detail: [agents/rules/REPO_HYGIENE.md](agents/rules/REPO_HYGIENE.md).
 
@@ -78,6 +81,7 @@ Run from the repository root:
 ```sh
 just build
 just test [filter]
+just ctypes-check   # after public API/header/binding changes
 git diff --check
 ```
 

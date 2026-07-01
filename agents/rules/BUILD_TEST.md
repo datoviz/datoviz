@@ -34,6 +34,30 @@ direnv exec . just test [filter]
 ```
 
 
+## Python Binding Freshness
+
+Datoviz's raw Python ctypes files are generated local artifacts. Before running Python-facing
+validation, GSP integration checks, packaging smoke tests, or release checks after public API work,
+make the local binding match the headers:
+
+```sh
+just ctypes
+just ctypes-check
+```
+
+Run this whenever a task touches:
+
+- `include/datoviz/**`
+- exported `dvz_*` function signatures or public structs/enums
+- `spec/bindings/**`
+- `tools/bindings/**`
+- generated facade behavior or Python packaging paths that import `datoviz._ctypes`
+
+`just ctypes-check` includes the raw binding freshness check, array facade check, binding policy
+validation, and C ABI layout validation. If it fails, regenerate with `just ctypes`, fix the
+header/policy/generator mismatch, and rerun the check before reporting success.
+
+
 ## Validation Strategy
 
 Prefer the narrowest relevant validation loop while iterating:
@@ -41,8 +65,10 @@ Prefer the narrowest relevant validation loop while iterating:
 1. Use `just test <module-or-filter>` for focused module work.
 2. Use focused binaries such as `dvztest_drp2`, `dvztest_scene`, `dvztest_vk`,
    `dvztest_canvas`, or `dvztest_integration` when available.
-3. Use `just test` or `dvztest` for broad validation.
-4. Run `git diff --check` before finalizing code changes.
+3. Use `just ctypes-check` after public API/header/binding changes, especially before Python or
+   GSP integration validation.
+4. Use `just test` or `dvztest` for broad validation.
+5. Run `git diff --check` before finalizing code changes.
 
 For nontrivial C changes touching allocation, byte sizes, pointer lifetimes, object tables, Vulkan
 resources, command buffers, frame lifetimes, or synchronization, consider static or dynamic
