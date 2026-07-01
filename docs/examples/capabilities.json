@@ -15,9 +15,9 @@
   },
   "statuses": {
     "diagnostic": 1,
-    "experimental": 11,
+    "experimental": 12,
     "prototype": 3,
-    "supported": 91
+    "supported": 90
   },
   "agent_copy_safe": {
     "false": 27,
@@ -442,7 +442,7 @@
             "id": "feature_volume_occlusion",
             "title": "Volume Occlusion",
             "category": "feature",
-            "status": "supported",
+            "status": "experimental",
             "agent_copy_safe": true,
             "source": "examples/c/features/volume_occlusion.c",
             "page": "gallery/features/feature_volume_occlusion.md"
@@ -1953,7 +1953,7 @@
             "id": "feature_volume_occlusion",
             "title": "Volume Occlusion",
             "category": "feature",
-            "status": "supported",
+            "status": "experimental",
             "agent_copy_safe": true,
             "source": "examples/c/features/volume_occlusion.c",
             "page": "gallery/features/feature_volume_occlusion.md"

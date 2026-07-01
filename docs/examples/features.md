@@ -4,7 +4,7 @@
 
 Browse isolated examples for layout, navigation, adornments, rendering, interaction, animation, and diagnostics.
 
-Coverage: 66 feature examples (62 supported, 3 experimental, 1 diagnostic).
+Coverage: 66 feature examples (61 supported, 4 experimental, 1 diagnostic).
 
 Each card links to a detail page with preview media, source code, and validation metadata.
 
@@ -576,7 +576,7 @@ retained mesh visuals with explicit material parameters.
 
 [![Volume Occlusion](../assets/gallery/v0.4/features/feature_volume_occlusion.webp)](gallery/features/feature_volume_occlusion.md)
 
-`supported` `features`
+`experimental` `features`
 
 side-by-side volume occluder attenuation on an embedded slice.
 

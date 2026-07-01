@@ -52,24 +52,110 @@ DvzScenarioSpec dvz_example_obj_loading_scenario(void);
 /*************************************************************************************************/
 
 /**
- * Write a tiny OBJ fixture to the working directory.
+ * Write a compact low-poly OBJ fixture to the working directory.
  *
  * @return true when the file was written
  */
 static bool _write_obj_fixture(void)
 {
     static const char OBJ[] =
-        "v 0 0 0.55\n"
-        "v -0.52 -0.45 -0.24\n"
-        "v 0.52 -0.45 -0.24\n"
-        "v 0.52 0.45 -0.24\n"
-        "v -0.52 0.45 -0.24\n"
+        "v 0.000 0.000 0.760\n"
+        "v 0.320 0.000 0.280\n"
+        "v 0.226 0.226 0.280\n"
+        "v 0.000 0.320 0.280\n"
+        "v -0.226 0.226 0.280\n"
+        "v -0.320 0.000 0.280\n"
+        "v -0.226 -0.226 0.280\n"
+        "v 0.000 -0.320 0.280\n"
+        "v 0.226 -0.226 0.280\n"
+        "v 0.320 0.000 -0.360\n"
+        "v 0.226 0.226 -0.360\n"
+        "v 0.000 0.320 -0.360\n"
+        "v -0.226 0.226 -0.360\n"
+        "v -0.320 0.000 -0.360\n"
+        "v -0.226 -0.226 -0.360\n"
+        "v 0.000 -0.320 -0.360\n"
+        "v 0.226 -0.226 -0.360\n"
+        "v 0.190 0.000 -0.560\n"
+        "v 0.134 0.134 -0.560\n"
+        "v 0.000 0.190 -0.560\n"
+        "v -0.134 0.134 -0.560\n"
+        "v -0.190 0.000 -0.560\n"
+        "v -0.134 -0.134 -0.560\n"
+        "v 0.000 -0.190 -0.560\n"
+        "v 0.134 -0.134 -0.560\n"
+        "v 0.540 0.000 -0.520\n"
+        "v 0.160 0.000 -0.040\n"
+        "v 0.300 0.000 -0.520\n"
+        "v -0.540 0.000 -0.520\n"
+        "v -0.160 0.000 -0.040\n"
+        "v -0.300 0.000 -0.520\n"
+        "v 0.000 0.540 -0.520\n"
+        "v 0.000 0.160 -0.040\n"
+        "v 0.000 0.300 -0.520\n"
+        "v 0.000 -0.540 -0.520\n"
+        "v 0.000 -0.160 -0.040\n"
+        "v 0.000 -0.300 -0.520\n"
         "f 1 2 3\n"
         "f 1 3 4\n"
         "f 1 4 5\n"
-        "f 1 5 2\n"
-        "f 2 5 4 3\n";
+        "f 1 5 6\n"
+        "f 1 6 7\n"
+        "f 1 7 8\n"
+        "f 1 8 9\n"
+        "f 1 9 2\n"
+        "f 2 10 11 3\n"
+        "f 3 11 12 4\n"
+        "f 4 12 13 5\n"
+        "f 5 13 14 6\n"
+        "f 6 14 15 7\n"
+        "f 7 15 16 8\n"
+        "f 8 16 17 9\n"
+        "f 9 17 10 2\n"
+        "f 10 18 19 11\n"
+        "f 11 19 20 12\n"
+        "f 12 20 21 13\n"
+        "f 13 21 22 14\n"
+        "f 14 22 23 15\n"
+        "f 15 23 24 16\n"
+        "f 16 24 25 17\n"
+        "f 17 25 18 10\n"
+        "f 18 25 24 23 22 21 20 19\n"
+        "f 26 27 28\n"
+        "f 29 31 30\n"
+        "f 32 34 33\n"
+        "f 35 36 37\n";
     return dvz_write_bytes(OBJ_PATH, "wb", sizeof(OBJ) - 1u, (const uint8_t*)OBJ) == 0;
+}
+
+
+/**
+ * Upload a geometry as one lit retained mesh and release the CPU copy.
+ *
+ * @param scene scene owning the visual
+ * @param panel target panel
+ * @param geometry geometry to upload
+ * @return true when the mesh was added
+ */
+static bool _add_obj_mesh(DvzScene* scene, DvzPanel* panel, DvzGeometry* geometry)
+{
+    ANN(scene);
+    ANN(panel);
+
+    if (geometry == NULL)
+        return false;
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    if (mesh == NULL)
+    {
+        dvz_geometry_destroy(geometry);
+        return false;
+    }
+    DvzMaterialDesc material = example_default_phong_material_desc();
+    const bool ok = dvz_visual_set_material(mesh, &material) == 0 &&
+                    dvz_mesh_set_geometry(mesh, geometry) == 0 &&
+                    dvz_panel_add_visual(panel, mesh, NULL) == 0;
+    dvz_geometry_destroy(geometry);
+    return ok;
 }
 
 
@@ -117,37 +203,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     }
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.view.eye[0] = 1.35f;
-    camera.view.eye[1] = -1.75f;
-    camera.view.eye[2] = 1.35f;
-    camera.view.target[0] = 0.0f;
-    camera.view.target[1] = 0.0f;
-    camera.view.target[2] = 0.0f;
-    camera.view.up[0] = 0.0f;
-    camera.view.up[1] = 0.0f;
-    camera.view.up[2] = 1.0f;
-    camera.projection.fov_y = 0.66f;
-    camera.projection.near_clip = 0.05f;
-    camera.projection.far_clip = 100.0f;
-    if (dvz_panel_set_camera(panel, &camera) == NULL)
+    if (example_set_default_3d_camera(panel, 1.0f) == NULL)
     {
         dvz_geometry_destroy(geometry);
         return false;
     }
-
-    DvzVisual* mesh = dvz_mesh(ctx->scene, 0);
-    if (mesh == NULL)
-    {
-        dvz_geometry_destroy(geometry);
-        return false;
-    }
-    DvzMaterialDesc material = example_default_phong_material_desc();
-    const bool ok = dvz_visual_set_material(mesh, &material) == 0 &&
-                    dvz_mesh_set_geometry(mesh, geometry) == 0 &&
-                    dvz_panel_add_visual(panel, mesh, NULL) == 0;
-    dvz_geometry_destroy(geometry);
-    if (!ok)
+    if (!_add_obj_mesh(ctx->scene, panel, geometry))
         return false;
 
     DvzController* controller = dvz_arcball(ctx->scene, NULL);
@@ -158,7 +219,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     if (dvz_scenario_bind_controller(ctx, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return false;
-    dvz_arcball_set(arcball, (vec3){+0.55f, 0.0f, -0.25f});
+    dvz_arcball_set(arcball, (vec3){0.0f, 0.0f, 0.0f});
     return true;
 }
 

@@ -6,7 +6,7 @@
 
 /* volume_occlusion - side-by-side volume occluder attenuation on an embedded slice.
  *
- * Scenario: feature.volume_occlusion
+ * Scenario: feature_volume_occlusion
  * Style: features, graphite_cyan, 1280x720 window target
  *
  * Build:  just example-c features/volume_occlusion

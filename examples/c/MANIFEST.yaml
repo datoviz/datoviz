@@ -839,7 +839,7 @@ examples:
 
   - id: feature_volume_occlusion
     title: Volume Occlusion
-    stage: v0.4_required
+    stage: v0.4_experimental
     category: feature
     primary_feature: volume-occlusion
     lane: features

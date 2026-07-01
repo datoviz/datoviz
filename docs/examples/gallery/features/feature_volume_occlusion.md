@@ -29,7 +29,7 @@ side-by-side volume occluder attenuation on an embedded slice.
     - ID: `feature_volume_occlusion`
     - Category: `feature`
     - Lane: `features`
-    - Status: `supported`
+    - Status: `experimental`
     - Source: [`examples/c/features/volume_occlusion.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/volume_occlusion.c)
     - Agent copy-safe: `true`
     - WebGPU status: `webgpu-deferred`

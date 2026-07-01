@@ -153,9 +153,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzCameraDesc camera = example_default_3d_camera_desc(1.35f);
-    camera.view.eye[0] = 0.0f;
-    if (dvz_panel_set_camera(panel, &camera) == NULL)
+    if (example_set_default_3d_camera(panel, 1.0f) == NULL)
         return false;
 
     const bool ok =
@@ -164,7 +162,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             dvz_geom_cube(&(DvzGeometryCubeDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
                 .center = {-0.92, 0.00, +0.42},
-                .size = 0.42,
+                .size = 0.58,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
             })) &&
         _add_geometry(
@@ -172,7 +170,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             dvz_geom_sphere(&(DvzGeometrySphereDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
                 .center = {+0.00, 0.02, +0.42},
-                .radius = 0.27,
+                .radius = 0.36,
                 .rings = 36,
                 .sectors = 72,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
@@ -181,8 +179,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             ctx->scene, panel,
             dvz_geom_cylinder(&(DvzGeometryCylinderDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryCylinderDesc),
-                .radius = 0.18,
-                .height = 0.62,
+                .radius = 0.24,
+                .height = 0.82,
                 .sectors = 128,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
             }),
@@ -191,8 +189,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             ctx->scene, panel,
             dvz_geom_cone(&(DvzGeometryConeDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryConeDesc),
-                .radius = 0.25,
-                .height = 0.66,
+                .radius = 0.34,
+                .height = 0.86,
                 .sectors = 128,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
             }),
@@ -201,8 +199,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             ctx->scene, panel,
             dvz_geom_torus(&(DvzGeometryTorusDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryTorusDesc),
-                .major_radius = 0.28,
-                .minor_radius = 0.08,
+                .major_radius = 0.36,
+                .minor_radius = 0.105,
                 .rings = 72,
                 .sectors = 32,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID),
@@ -212,10 +210,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             ctx->scene, panel,
             dvz_geom_arrow(&(DvzGeometryArrowDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryArrowDesc),
-                .length = 0.78,
-                .shaft_radius = 0.055,
-                .head_radius = 0.15,
-                .head_length = 0.25,
+                .length = 1.00,
+                .shaft_radius = 0.075,
+                .head_radius = 0.20,
+                .head_length = 0.32,
                 .sectors = 128,
                 .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ERROR),
             }),
