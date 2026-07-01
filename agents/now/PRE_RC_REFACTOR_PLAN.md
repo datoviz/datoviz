@@ -786,3 +786,19 @@ Changes:
 Known risk: generated visual clip/viewport routing still lives in `panel.c` because it writes
 FramePlan visual metadata at append time. It remains covered by the existing generated-visual
 source guard and is not a separate render-pass planning authority.
+
+### Optional Phase 6: Scene Internal State Cleanup
+
+Status: deferred.
+
+Assessment:
+
+1. `src/scene/core/_scene.h` is 2202 lines and is included from 177 source/header files.
+2. The header currently mixes retained scene objects, composites, annotations, text layout, units,
+   interaction state, controller links, panel/layout helpers, and query-related retained state.
+3. A correct split would require a broad include-graph migration across most scene subsystems.
+4. No single subsystem presented a mechanical typed-pool/store extraction that would clearly remove
+   duplicated lifetime or capacity logic within one validation loop.
+
+Decision: defer this optional cleanup. Running it now would risk creating transitional old/new
+internal state headers or include aliases without replacing an actual lifetime/capacity authority.
