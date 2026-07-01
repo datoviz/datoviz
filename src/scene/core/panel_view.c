@@ -32,6 +32,14 @@
 /*************************************************************************************************/
 
 #define DVZ_PANEL_VIEW2D_KNOWN_FLAGS 0u
+#define DVZ_PANEL_VIEW2D_DESC_KNOWN_FLAGS 0u
+#define DVZ_PANEL_VIEW3D_DESC_KNOWN_FLAGS 0u
+
+
+static uint64_t _panel_view_next_revision(uint64_t revision)
+{
+    return revision == UINT64_MAX ? 1 : revision + 1;
+}
 
 
 static bool _panel_view2d_validate(const DvzPanelView2D* view)
@@ -58,16 +66,72 @@ static bool _panel_view2d_validate(const DvzPanelView2D* view)
 }
 
 
+static bool _panel_view2d_domain_valid(const double domain[2])
+{
+    return domain != NULL && isfinite(domain[0]) && isfinite(domain[1]) &&
+           fabs(domain[1] - domain[0]) > AXIS_EPS;
+}
+
+
+static bool _panel_view2d_desc_validate(const DvzPanelView2DDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzPanelView2DDesc, DVZ_PANEL_VIEW2D_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid panel 2D view descriptor ABI");
+        return false;
+    }
+    if (desc->mode == DVZ_PANEL_VIEW2D_NONE)
+        return true;
+    if (desc->mode != DVZ_PANEL_VIEW2D_CONTAIN)
+        return false;
+    if (desc->aspect != DVZ_PANEL_VIEW2D_ASPECT_FREE &&
+        desc->aspect != DVZ_PANEL_VIEW2D_ASPECT_EQUAL)
+        return false;
+    if (!isfinite(desc->padding) || desc->padding < 0.0)
+        return false;
+    if (desc->has_domain_x && !_panel_view2d_domain_valid(desc->domain_x))
+        return false;
+    if (desc->has_domain_y && !_panel_view2d_domain_valid(desc->domain_y))
+        return false;
+    return true;
+}
+
+
+static bool _panel_view3d_desc_validate(const DvzPanelView3DDesc* desc)
+{
+    if (desc == NULL)
+        return true;
+    if (!DVZ_STRUCT_VALID(desc, DvzPanelView3DDesc, DVZ_PANEL_VIEW3D_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid panel 3D view descriptor ABI");
+        return false;
+    }
+    return true;
+}
+
+
 void _scene_panel_view_dirty(DvzPanel* panel)
 {
     if (panel == NULL)
         return;
+    panel->view2d_revision = _panel_view_next_revision(panel->view2d_revision);
     DvzAxis* x_axis = _panel_axis_slot(panel, DVZ_DIM_X);
     DvzAxis* y_axis = _panel_axis_slot(panel, DVZ_DIM_Y);
     if (x_axis != NULL && x_axis->panel != NULL)
         _axis_mark_dirty(x_axis);
     if (y_axis != NULL && y_axis->panel != NULL)
         _axis_mark_dirty(y_axis);
+    _scene_notify_request_frame(panel->figure);
+}
+
+
+void _scene_panel_view3d_dirty(DvzPanel* panel)
+{
+    if (panel == NULL)
+        return;
+    panel->view3d_revision = _panel_view_next_revision(panel->view3d_revision);
     _scene_notify_request_frame(panel->figure);
 }
 
@@ -152,9 +216,13 @@ static bool _scene_panel_source_domains(
 
     const DvzAxis* x_axis = &panel->axes[DVZ_DIM_X];
     const DvzAxis* y_axis = &panel->axes[DVZ_DIM_Y];
-    if (x_axis->panel != NULL && x_axis->domain_set)
+    if (panel->view2d_domain_x_set)
+        *out_x = panel->view2d_domain_x;
+    else if (x_axis->panel != NULL && x_axis->domain_set)
         *out_x = x_axis->domain;
-    if (y_axis->panel != NULL && y_axis->domain_set)
+    if (panel->view2d_domain_y_set)
+        *out_y = panel->view2d_domain_y;
+    else if (y_axis->panel != NULL && y_axis->domain_set)
         *out_y = y_axis->domain;
     return true;
 }
@@ -181,6 +249,21 @@ DvzPanelView2D dvz_panel_view2d(void)
 }
 
 
+DvzPanelView2DDesc dvz_panel_view2d_desc(void)
+{
+    return (DvzPanelView2DDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzPanelView2DDesc),
+        .mode = DVZ_PANEL_VIEW2D_CONTAIN,
+        .aspect = DVZ_PANEL_VIEW2D_ASPECT_FREE,
+        .padding = 0.0,
+        .domain_x = {-1.0, +1.0},
+        .domain_y = {-1.0, +1.0},
+        .has_domain_x = false,
+        .has_domain_y = false,
+    };
+}
+
+
 /**
  * Set a panel 2D view policy.
  *
@@ -193,21 +276,55 @@ int dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2D* view)
     if (panel == NULL)
         return -1;
     if (view == NULL)
-    {
-        panel->view2d_enabled = false;
-        _scene_panel_view_dirty(panel);
-        return 0;
-    }
+        return dvz_panel_set_view2d_desc(panel, NULL);
     if (!_panel_view2d_validate(view))
         return -1;
     if (view->mode == DVZ_PANEL_VIEW2D_NONE)
+        return dvz_panel_set_view2d_desc(panel, NULL);
+
+    DvzPanelView2DDesc desc = dvz_panel_view2d_desc();
+    desc.mode = view->mode;
+    desc.aspect = view->aspect;
+    desc.padding = view->padding;
+    return dvz_panel_set_view2d_desc(panel, &desc);
+}
+
+
+int dvz_panel_set_view2d_desc(DvzPanel* panel, const DvzPanelView2DDesc* desc)
+{
+    if (panel == NULL)
+        return -1;
+    if (desc == NULL)
     {
         panel->view2d_enabled = false;
+        if (panel->active_view_kind == DVZ_PANEL_VIEW_KIND_2D)
+            panel->active_view_kind = DVZ_PANEL_VIEW_KIND_NONE;
         _scene_panel_view_dirty(panel);
         return 0;
     }
-    panel->view2d = *view;
+    if (!_panel_view2d_desc_validate(desc))
+        return -1;
+    if (desc->mode == DVZ_PANEL_VIEW2D_NONE)
+        return dvz_panel_set_view2d_desc(panel, NULL);
+
+    panel->view2d = (DvzPanelView2D){
+        DVZ_STRUCT_INIT_FIELDS(DvzPanelView2D),
+        .mode = desc->mode,
+        .aspect = desc->aspect,
+        .padding = desc->padding,
+    };
     panel->view2d_enabled = true;
+    panel->active_view_kind = DVZ_PANEL_VIEW_KIND_2D;
+    if (desc->has_domain_x &&
+        dvz_panel_set_domain(panel, DVZ_DIM_X, desc->domain_x[0], desc->domain_x[1]) != 0)
+    {
+        return -1;
+    }
+    if (desc->has_domain_y &&
+        dvz_panel_set_domain(panel, DVZ_DIM_Y, desc->domain_y[0], desc->domain_y[1]) != 0)
+    {
+        return -1;
+    }
     _scene_panel_view_dirty(panel);
     return 0;
 }
@@ -223,6 +340,8 @@ void dvz_panel_clear_view2d(DvzPanel* panel)
     if (panel == NULL)
         return;
     panel->view2d_enabled = false;
+    if (panel->active_view_kind == DVZ_PANEL_VIEW_KIND_2D)
+        panel->active_view_kind = DVZ_PANEL_VIEW_KIND_NONE;
     _scene_panel_view_dirty(panel);
 }
 
@@ -245,6 +364,102 @@ bool dvz_panel_view2d_extent(DvzPanel* panel, float out[4])
     out[1] = resolved.view_extent[1];
     out[2] = resolved.view_extent[2];
     out[3] = resolved.view_extent[3];
+    return true;
+}
+
+
+bool dvz_panel_view2d_state(const DvzPanel* panel, DvzPanelView2DState* out)
+{
+    if (panel == NULL || out == NULL)
+        return false;
+    DvzPanelView2DResolved resolved = {0};
+    if (!_scene_panel_view2d_resolve(panel, &resolved))
+        return false;
+    *out = (DvzPanelView2DState){
+        DVZ_STRUCT_INIT_FIELDS(DvzPanelView2DState),
+        .view_id = panel->view2d_id,
+        .revision = panel->view2d_revision,
+        .enabled = panel->view2d_enabled,
+        .mode = panel->view2d.mode,
+        .aspect = panel->view2d.aspect,
+        .padding = panel->view2d.padding,
+        .has_domain_x = panel->view2d_domain_x_set,
+        .has_domain_y = panel->view2d_domain_y_set,
+    };
+    DvzDataDomain source_x = {.min = resolved.data_x[0], .max = resolved.data_x[1]};
+    DvzDataDomain source_y = {.min = resolved.data_y[0], .max = resolved.data_y[1]};
+    out->has_valid_source_x =
+        _scene_panel_domain_endpoints(&source_x, &out->domain_x[0], &out->domain_x[1]);
+    out->has_valid_source_y =
+        _scene_panel_domain_endpoints(&source_y, &out->domain_y[0], &out->domain_y[1]);
+    for (uint32_t i = 0; i < 4; i++)
+        out->view_extent[i] = resolved.view_extent[i];
+    glm_mat4_copy(resolved.data_to_view, out->data_to_view);
+    return true;
+}
+
+
+DvzPanelView3DDesc dvz_panel_view3d_desc(void)
+{
+    DvzPanelView3DDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzPanelView3DDesc),
+    };
+    desc.camera = dvz_camera_desc();
+    return desc;
+}
+
+
+int dvz_panel_set_view3d_desc(DvzPanel* panel, const DvzPanelView3DDesc* desc)
+{
+    if (panel == NULL)
+        return -1;
+    if (desc == NULL)
+    {
+        if (panel->camera != NULL)
+        {
+            dvz_camera_destroy(panel->camera);
+            panel->camera = NULL;
+        }
+        if (panel->active_view_kind == DVZ_PANEL_VIEW_KIND_3D)
+            panel->active_view_kind = DVZ_PANEL_VIEW_KIND_NONE;
+        _scene_panel_view3d_dirty(panel);
+        return 0;
+    }
+    if (!_panel_view3d_desc_validate(desc))
+        return -1;
+    if (dvz_panel_set_camera(panel, &desc->camera) == NULL)
+        return -1;
+    panel->active_view_kind = DVZ_PANEL_VIEW_KIND_3D;
+    return 0;
+}
+
+
+bool dvz_panel_view3d_state(DvzPanel* panel, DvzPanelView3DState* out)
+{
+    if (panel == NULL || out == NULL)
+        return false;
+    *out = (DvzPanelView3DState){
+        DVZ_STRUCT_INIT_FIELDS(DvzPanelView3DState),
+        .view_id = panel->view3d_id,
+        .revision = panel->view3d_revision,
+        .enabled = panel->camera != NULL,
+    };
+    glm_mat4_identity(out->mvp.model);
+    glm_mat4_identity(out->mvp.view);
+    glm_mat4_identity(out->mvp.proj);
+    if (panel->camera == NULL)
+        return true;
+
+    dvz_camera_get_view(panel->camera, &out->view);
+    dvz_camera_get_projection(panel->camera, &out->projection);
+    if (dvz_camera_get_orthographic_bounds(
+            panel->camera, &out->orthographic_bounds[0], &out->orthographic_bounds[1],
+            &out->orthographic_bounds[2], &out->orthographic_bounds[3],
+            &out->orthographic_bounds[4], &out->orthographic_bounds[5]) == 0)
+    {
+        out->has_explicit_orthographic_bounds = true;
+    }
+    dvz_camera_mvp(panel->camera, &out->mvp);
     return true;
 }
 

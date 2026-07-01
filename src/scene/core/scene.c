@@ -752,6 +752,15 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
     panel->padding        = (DvzPanelReserve){0};
     panel->view2d_enabled = false;
     panel->view2d = dvz_panel_view2d();
+    panel->view2d_id = _scene_next_id(figure->scene);
+    panel->view2d_revision = 1;
+    panel->view2d_domain_x = (DvzDataDomain){.min = -1.0, .max = +1.0};
+    panel->view2d_domain_y = (DvzDataDomain){.min = -1.0, .max = +1.0};
+    panel->view2d_domain_x_set = false;
+    panel->view2d_domain_y_set = false;
+    panel->view3d_id = _scene_next_id(figure->scene);
+    panel->view3d_revision = 1;
+    panel->active_view_kind = DVZ_PANEL_VIEW_KIND_NONE;
     _scene_technique_state_init(&panel->techniques);
     panel->visual_count = 0;
     panel->bounds_visual = NULL;

@@ -152,6 +152,15 @@ DVZ_EXPORT void dvz_camera_set_view(DvzCamera* camera, const DvzCameraView* view
 DVZ_EXPORT void dvz_camera_get_view(const DvzCamera* camera, DvzCameraView* out);
 
 
+/**
+ * Return camera projection parameters.
+ *
+ * @param camera the camera
+ * @param out output camera projection
+ */
+DVZ_EXPORT void dvz_camera_get_projection(const DvzCamera* camera, DvzCameraProjection* out);
+
+
 
 /**
  * Set perspective projection parameters.

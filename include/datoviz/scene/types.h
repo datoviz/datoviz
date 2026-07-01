@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "datoviz/font.h"
+#include "datoviz/controller/camera.h"
 #include "datoviz/geom/types.h"
 #include "datoviz/math/dim.h"
 #include "datoviz/math/types.h"
@@ -178,6 +179,14 @@ typedef enum
     DVZ_SCENE_FRAME_ARTIFACT_STATUS_OK = 0,
     DVZ_SCENE_FRAME_ARTIFACT_STATUS_ENCODE_ERROR = 1,
 } DvzSceneFrameArtifactStatus;
+
+
+typedef enum
+{
+    DVZ_PANEL_VIEW_KIND_NONE = 0,
+    DVZ_PANEL_VIEW_KIND_2D   = 1,
+    DVZ_PANEL_VIEW_KIND_3D   = 2,
+} DvzPanelViewKind;
 
 
 typedef enum
@@ -460,6 +469,8 @@ struct DvzPanelFrameInfo
     DvzId snapshot_id;
     DvzId figure_id;
     DvzId panel_id;
+    DvzId view_id;
+    DvzPanelViewKind view_kind;
     uint64_t panel_revision;
     uint64_t layout_revision;
     uint64_t view_revision;
@@ -535,6 +546,68 @@ struct DvzPanelView2D
     double padding;
 };
 typedef struct DvzPanelView2D DvzPanelView2D;
+
+
+struct DvzPanelView2DDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzPanelView2DMode mode;
+    DvzPanelView2DAspect aspect;
+    double padding;
+    double domain_x[2];
+    double domain_y[2];
+    bool has_domain_x;
+    bool has_domain_y;
+};
+typedef struct DvzPanelView2DDesc DvzPanelView2DDesc;
+
+
+struct DvzPanelView2DState
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzId view_id;
+    uint64_t revision;
+    bool enabled;
+    DvzPanelView2DMode mode;
+    DvzPanelView2DAspect aspect;
+    double padding;
+    double domain_x[2];
+    double domain_y[2];
+    bool has_domain_x;
+    bool has_domain_y;
+    float view_extent[4];
+    mat4 data_to_view;
+    bool has_valid_source_x;
+    bool has_valid_source_y;
+};
+typedef struct DvzPanelView2DState DvzPanelView2DState;
+
+
+struct DvzPanelView3DDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzCameraDesc camera;
+};
+typedef struct DvzPanelView3DDesc DvzPanelView3DDesc;
+
+
+struct DvzPanelView3DState
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzId view_id;
+    uint64_t revision;
+    bool enabled;
+    DvzCameraView view;
+    DvzCameraProjection projection;
+    bool has_explicit_orthographic_bounds;
+    float orthographic_bounds[6]; /* left, right, bottom, top, near, far */
+    DvzMVP mvp;
+};
+typedef struct DvzPanelView3DState DvzPanelView3DState;
 
 
 struct DvzAxisTickPolicy

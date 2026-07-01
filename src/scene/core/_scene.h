@@ -417,6 +417,10 @@ struct DvzControllerLink
 
 void _dvz_scene_controller_links_propagate(DvzScene* scene);
 
+void _scene_panel_view_dirty(DvzPanel* panel);
+
+void _scene_panel_view3d_dirty(DvzPanel* panel);
+
 
 
 /*************************************************************************************************/
@@ -844,7 +848,6 @@ bool _scene_panel_attachment_mvp(
     const DvzMVP* apply_mvp, DvzMVP* out);
 bool _scene_panel_view2d_resolve(const DvzPanel* panel, DvzPanelView2DResolved* out);
 bool _scene_panel_panzoom_extent(const DvzPanel* panel, float out[4]);
-void _scene_panel_view_dirty(DvzPanel* panel);
 void _scene_panel_pixel_size(const DvzPanel* panel, float* out_width, float* out_height);
 bool _panel_padding_valid(const DvzPanel* panel, const DvzPanelReserve* padding);
 bool _panel_reserve_valid(const DvzPanel* panel, const DvzPanelReserve* reserve);
@@ -1946,6 +1949,15 @@ struct DvzPanel
     DvzPanelReserve padding;
     bool view2d_enabled;
     DvzPanelView2D view2d;
+    DvzId view2d_id;
+    uint64_t view2d_revision;
+    DvzDataDomain view2d_domain_x;
+    DvzDataDomain view2d_domain_y;
+    bool view2d_domain_x_set;
+    bool view2d_domain_y_set;
+    DvzId view3d_id;
+    uint64_t view3d_revision;
+    DvzPanelViewKind active_view_kind;
 
     DvzPanzoom* panzoom; /* optional pan/zoom controller (owned) */
     DvzArcball* arcball; /* optional arcball controller (owned) */

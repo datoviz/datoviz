@@ -222,11 +222,27 @@ static void _snapshot_info_from_resolved(
     out->snapshot_id = snapshot_id;
     out->figure_id = dvz_figure_id(panel->figure);
     out->panel_id = dvz_panel_id(panel);
+    out->view_kind = DVZ_PANEL_VIEW_KIND_NONE;
+    if (panel->active_view_kind == DVZ_PANEL_VIEW_KIND_2D && panel->view2d_enabled)
+    {
+        out->view_kind = DVZ_PANEL_VIEW_KIND_2D;
+        out->view_id = panel->view2d_id;
+    }
+    else if (panel->active_view_kind == DVZ_PANEL_VIEW_KIND_3D && panel->camera != NULL)
+    {
+        out->view_kind = DVZ_PANEL_VIEW_KIND_3D;
+        out->view_id = panel->view3d_id;
+    }
 
     const uint64_t revision = panel->figure->frame_revision == 0 ? 1 : panel->figure->frame_revision;
     out->panel_revision = revision;
     out->layout_revision = revision;
-    out->view_revision = revision;
+    if (out->view_kind == DVZ_PANEL_VIEW_KIND_2D)
+        out->view_revision = panel->view2d_revision;
+    else if (out->view_kind == DVZ_PANEL_VIEW_KIND_3D)
+        out->view_revision = panel->view3d_revision;
+    else
+        out->view_revision = 0;
     out->guide_revision = revision;
     out->visual_revision = revision;
 
@@ -264,8 +280,8 @@ static void _snapshot_info_from_resolved(
     out->has_valid_visible_y = resolved->has_valid_visible_y;
     _snapshot_add_diagnostic(
         &out->diagnostics,
-        "coarse_frame_revisions: panel/layout/view/guide/visual revisions share the figure frame "
-        "revision until dedicated retained objects land");
+        "coarse_frame_revisions: panel/layout/guide/visual revisions share the figure frame "
+        "revision until dedicated retained objects land; view_revision is per active panel view");
     _snapshot_add_diagnostic(
         &out->diagnostics,
         "guide_layout_snapshot_incomplete: first-class guide boxes and contribution identities are "

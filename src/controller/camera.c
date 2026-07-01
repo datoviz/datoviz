@@ -303,6 +303,24 @@ void dvz_camera_get_view(const DvzCamera* camera, DvzCameraView* out)
 }
 
 
+/**
+ * Return camera projection parameters.
+ *
+ * @param camera the camera
+ * @param out output camera projection
+ */
+void dvz_camera_get_projection(const DvzCamera* camera, DvzCameraProjection* out)
+{
+    ANN(camera);
+    ANN(out);
+    out->type = camera->type;
+    out->fov_y = camera->fov_y;
+    out->near_clip = camera->near_clip;
+    out->far_clip = camera->far_clip;
+    out->ortho_height = camera->ortho_height;
+}
+
+
 
 /**
  * Set perspective projection parameters.

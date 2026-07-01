@@ -62,6 +62,11 @@ static DvzCamera* _scene_panel_ensure_camera(DvzPanel* panel)
     {
         DvzCameraDesc camera_desc = dvz_camera_desc();
         panel->camera = _dvz_camera(&camera_desc);
+        if (panel->camera != NULL)
+        {
+            panel->active_view_kind = DVZ_PANEL_VIEW_KIND_3D;
+            _scene_panel_view3d_dirty(panel);
+        }
     }
     return panel->camera;
 }
@@ -736,12 +741,14 @@ static void _scene_apply_controller_to_bound_panels(DvzController* controller)
             DvzPanel* panel = &figure->panels[pi];
             if (!_scene_panel_has_controller(panel, controller) || panel->camera == NULL)
                 continue;
+            bool applied = false;
             if (controller->type == DVZ_CONTROLLER_TYPE_FLY && controller->fly != NULL)
             {
                 DvzCamera* previous_camera = controller->fly->camera;
                 dvz_fly_set_camera(controller->fly, panel->camera);
                 controller->fly->camera = previous_camera;
                 (void)_scene_panel_sync_fly_pivot_marker(panel);
+                applied = true;
             }
             else if (
                 controller->type == DVZ_CONTROLLER_TYPE_TURNTABLE &&
@@ -750,6 +757,12 @@ static void _scene_apply_controller_to_bound_panels(DvzController* controller)
                 DvzCamera* previous_camera = controller->turntable->camera;
                 dvz_turntable_set_camera(controller->turntable, panel->camera);
                 controller->turntable->camera = previous_camera;
+                applied = true;
+            }
+            if (applied)
+            {
+                panel->active_view_kind = DVZ_PANEL_VIEW_KIND_3D;
+                _scene_panel_view3d_dirty(panel);
             }
         }
     }
@@ -1658,6 +1671,7 @@ DvzCamera* dvz_panel_set_camera(DvzPanel* panel, const DvzCameraDesc* desc)
     panel->camera = _dvz_camera(desc);
     if (panel->camera != NULL)
     {
+        panel->active_view_kind = DVZ_PANEL_VIEW_KIND_3D;
         float w = 0.0f;
         float h = 0.0f;
         _scene_panel_pixel_size(panel, &w, &h);
@@ -1677,7 +1691,7 @@ DvzCamera* dvz_panel_set_camera(DvzPanel* panel, const DvzCameraDesc* desc)
             }
         }
     }
-    _scene_notify_request_frame(panel->figure);
+    _scene_panel_view3d_dirty(panel);
     return panel->camera;
 }
 

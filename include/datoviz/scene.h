@@ -1252,6 +1252,18 @@ DVZ_EXPORT int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, dou
  */
 DVZ_EXPORT DvzPanelView2D dvz_panel_view2d(void);
 
+
+/**
+ * Return the default revisioned panel 2D view descriptor.
+ *
+ * The descriptor owns both fitting policy and optional ordered DATA-domain endpoints. Reversed
+ * domains are legal and preserved.
+ *
+ * @return panel 2D view descriptor
+ */
+DVZ_EXPORT DvzPanelView2DDesc dvz_panel_view2d_desc(void);
+
+
 /**
  * Set a panel 2D view policy.
  *
@@ -1264,6 +1276,20 @@ DVZ_EXPORT DvzPanelView2D dvz_panel_view2d(void);
  * @return 0 on success, -1 on validation error
  */
 DVZ_EXPORT int dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2D* view);
+
+
+/**
+ * Set a revisioned panel 2D view descriptor.
+ *
+ * Passing NULL clears the active 2D view. Explicit descriptor domains are copied into the retained
+ * view and synchronized to panel axes for compatibility.
+ *
+ * @param panel the panel
+ * @param desc panel 2D view descriptor, or NULL to clear
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_panel_set_view2d_desc(DvzPanel* panel, const DvzPanelView2DDesc* desc);
+
 
 /**
  * Clear a panel 2D view policy without changing the current axis domains.
@@ -1280,6 +1306,47 @@ DVZ_EXPORT void dvz_panel_clear_view2d(DvzPanel* panel);
  * @return whether the extent was written
  */
 DVZ_EXPORT bool dvz_panel_view2d_extent(DvzPanel* panel, float out[4]);
+
+
+/**
+ * Copy the current canonical 2D panel view state.
+ *
+ * @param panel the panel
+ * @param out output 2D view state
+ * @return whether the state was copied
+ */
+DVZ_EXPORT bool dvz_panel_view2d_state(const DvzPanel* panel, DvzPanelView2DState* out);
+
+
+/**
+ * Return the default revisioned panel 3D view descriptor.
+ *
+ * @return panel 3D view descriptor
+ */
+DVZ_EXPORT DvzPanelView3DDesc dvz_panel_view3d_desc(void);
+
+
+/**
+ * Set a revisioned panel 3D view descriptor.
+ *
+ * Passing NULL clears the panel-owned camera.
+ *
+ * @param panel the panel
+ * @param desc panel 3D view descriptor, or NULL to clear
+ * @return 0 on success, -1 on validation/allocation error
+ */
+DVZ_EXPORT int dvz_panel_set_view3d_desc(DvzPanel* panel, const DvzPanelView3DDesc* desc);
+
+
+/**
+ * Copy the current canonical 3D panel view state.
+ *
+ * @param panel the panel
+ * @param out output 3D view state
+ * @return whether the state was copied
+ */
+DVZ_EXPORT bool dvz_panel_view3d_state(DvzPanel* panel, DvzPanelView3DState* out);
+
 
 /**
  * Return the current visible data domain for one panel dimension.

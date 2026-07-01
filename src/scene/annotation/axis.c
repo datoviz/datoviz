@@ -295,8 +295,17 @@ static int _panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max
     DvzAxis* axis = _panel_axis_slot(panel, dim);
     if (axis == NULL || !isfinite(min) || !isfinite(max) || fabs(max - min) <= AXIS_EPS)
         return -1;
-    if (clear_fit)
-        panel->view2d_enabled = false;
+    (void)clear_fit;
+    if (dim == DVZ_DIM_X)
+    {
+        panel->view2d_domain_x = (DvzDataDomain){.min = min, .max = max};
+        panel->view2d_domain_x_set = true;
+    }
+    else if (dim == DVZ_DIM_Y)
+    {
+        panel->view2d_domain_y = (DvzDataDomain){.min = min, .max = max};
+        panel->view2d_domain_y_set = true;
+    }
     _axis_init(axis, panel, dim);
     axis->domain = (DvzDataDomain){.min = min, .max = max};
     axis->domain_set = true;
@@ -304,7 +313,7 @@ static int _panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max
     axis->tick_cache_valid = false;
     axis->dirty = true;
     axis->version++;
-    _scene_notify_request_frame(panel->figure);
+    _scene_panel_view_dirty(panel);
     return 0;
 }
 
@@ -320,7 +329,7 @@ static int _panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max
  */
 int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max)
 {
-    return _panel_set_domain(panel, dim, min, max, true);
+    return _panel_set_domain(panel, dim, min, max, false);
 }
 
 
