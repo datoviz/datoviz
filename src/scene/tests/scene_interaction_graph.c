@@ -1514,8 +1514,8 @@ int test_scene_panel_view3d_state_readback(TstContext* suite, const TstCase* ite
     AC(state.view.eye[1], 2.0f, 1e-6f);
     AC(state.view.eye[2], 3.0f, 1e-6f);
     AT(!state.has_explicit_orthographic_bounds);
-    AT(fabsf(state.mvp.proj[0][0]) > 0.0f);
-    AT(fabsf(state.mvp.proj[1][1]) > 0.0f);
+    AT(fabsf(state.projection_matrix[0][0]) > 0.0f);
+    AT(fabsf(state.projection_matrix[1][1]) > 0.0f);
 
     DvzPanelFrameSnapshot* snapshot = dvz_panel_resolve_frame(panel);
     ANN(snapshot);

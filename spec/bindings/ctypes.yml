@@ -86,6 +86,11 @@ layout_records:
     - DvzCameraView
     - DvzCameraProjection
     - DvzCameraDesc
+    - DvzPanelFrameInfo
+    - DvzPanelView2DDesc
+    - DvzPanelView2DState
+    - DvzPanelView3DDesc
+    - DvzPanelView3DState
     - DvzTextItem
     - DvzTextLayout
     - DvzTextPlacement

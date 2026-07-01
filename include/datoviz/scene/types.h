@@ -494,6 +494,7 @@ struct DvzPanelFrameInfo
     double source_data_y[2];
     double visible_data_x[2];
     double visible_data_y[2];
+    uint64_t data_to_view_padding;
     mat4 data_to_view;
     bool has_view2d;
     bool has_valid_source_x;
@@ -578,6 +579,7 @@ struct DvzPanelView2DState
     bool has_domain_x;
     bool has_domain_y;
     float view_extent[4];
+    uint32_t data_to_view_padding[3];
     mat4 data_to_view;
     bool has_valid_source_x;
     bool has_valid_source_y;
@@ -605,7 +607,9 @@ struct DvzPanelView3DState
     DvzCameraProjection projection;
     bool has_explicit_orthographic_bounds;
     float orthographic_bounds[6]; /* left, right, bottom, top, near, far */
-    DvzMVP mvp;
+    mat4 model_matrix;
+    mat4 view_matrix;
+    mat4 projection_matrix;
 };
 typedef struct DvzPanelView3DState DvzPanelView3DState;
 

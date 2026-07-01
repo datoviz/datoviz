@@ -444,9 +444,9 @@ bool dvz_panel_view3d_state(DvzPanel* panel, DvzPanelView3DState* out)
         .revision = panel->view3d_revision,
         .enabled = panel->camera != NULL,
     };
-    glm_mat4_identity(out->mvp.model);
-    glm_mat4_identity(out->mvp.view);
-    glm_mat4_identity(out->mvp.proj);
+    glm_mat4_identity(out->model_matrix);
+    glm_mat4_identity(out->view_matrix);
+    glm_mat4_identity(out->projection_matrix);
     if (panel->camera == NULL)
         return true;
 
@@ -459,7 +459,14 @@ bool dvz_panel_view3d_state(DvzPanel* panel, DvzPanelView3DState* out)
     {
         out->has_explicit_orthographic_bounds = true;
     }
-    dvz_camera_mvp(panel->camera, &out->mvp);
+    DvzMVP mvp = {0};
+    glm_mat4_identity(mvp.model);
+    glm_mat4_identity(mvp.view);
+    glm_mat4_identity(mvp.proj);
+    dvz_camera_mvp(panel->camera, &mvp);
+    glm_mat4_copy(mvp.model, out->model_matrix);
+    glm_mat4_copy(mvp.view, out->view_matrix);
+    glm_mat4_copy(mvp.proj, out->projection_matrix);
     return true;
 }
 
