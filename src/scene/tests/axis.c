@@ -2234,6 +2234,33 @@ static int test_panel_view2d(TstContext* suite, const TstCase* item)
     AT(fabs(min - 0.0) < 1e-9);
     AT(fabs(max - 1.0) < 1e-9);
 
+    DvzPanelView2DDesc desc = dvz_panel_view2d_desc();
+    AT(desc.struct_size == DVZ_STRUCT_SIZE(DvzPanelView2DDesc));
+    desc.domain_x[0] = 20.0;
+    desc.domain_x[1] = 10.0;
+    desc.domain_y[0] = -2.0;
+    desc.domain_y[1] = +2.0;
+    desc.has_domain_x = true;
+    desc.has_domain_y = true;
+    AT(dvz_panel_set_view2d_desc(panel, &desc) == 0);
+    DvzPanelView2DState state = {0};
+    AT(dvz_panel_view2d_state(panel, &state));
+    AT(state.struct_size == DVZ_STRUCT_SIZE(DvzPanelView2DState));
+    AT(state.enabled);
+    AT(state.view_id != DVZ_ID_NONE);
+    AT(state.revision > 0);
+    AT(state.has_domain_x);
+    AT(state.has_domain_y);
+    AT(state.has_valid_source_x);
+    AT(state.has_valid_source_y);
+    AT(fabs(state.domain_x[0] - 20.0) < 1e-9);
+    AT(fabs(state.domain_x[1] - 10.0) < 1e-9);
+    AT(fabs(state.domain_y[0] + 2.0) < 1e-9);
+    AT(fabs(state.domain_y[1] - 2.0) < 1e-9);
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
+    AT(fabs(min - 20.0) < 1e-9);
+    AT(fabs(max - 10.0) < 1e-9);
+
     dvz_scene_destroy(scene);
     return 0;
 }

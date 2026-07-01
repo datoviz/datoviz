@@ -1374,6 +1374,18 @@ int test_scene_panel_frame_snapshot_core(TstContext* suite, const TstCase* item)
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 10.0, -10.0) == 0);
     DvzPanelView2D view = dvz_panel_view2d();
     AT(dvz_panel_set_view2d(panel, &view) == 0);
+    DvzPanelView2DState view_state = {0};
+    AT(dvz_panel_view2d_state(panel, &view_state));
+    AT(view_state.struct_size == DVZ_STRUCT_SIZE(DvzPanelView2DState));
+    AT(view_state.view_id != DVZ_ID_NONE);
+    AT(view_state.revision > 0);
+    AT(view_state.enabled);
+    AT(view_state.has_domain_x);
+    AT(view_state.has_domain_y);
+    AC(view_state.domain_x[0], -5.0, 1e-9);
+    AC(view_state.domain_x[1], 15.0, 1e-9);
+    AC(view_state.domain_y[0], 10.0, 1e-9);
+    AC(view_state.domain_y[1], -10.0, 1e-9);
 
     DvzPanelFrameSnapshot* snapshot = dvz_panel_resolve_frame(panel);
     ANN(snapshot);
@@ -1384,6 +1396,9 @@ int test_scene_panel_frame_snapshot_core(TstContext* suite, const TstCase* item)
     AT(info.snapshot_id != DVZ_ID_NONE);
     AT(info.figure_id == dvz_figure_id(figure));
     AT(info.panel_id == dvz_panel_id(panel));
+    AT(info.view_id == view_state.view_id);
+    AT(info.view_kind == DVZ_PANEL_VIEW_KIND_2D);
+    AT(info.view_revision == view_state.revision);
     AT(info.logical_width_px == 400);
     AT(info.logical_height_px == 300);
     AC(info.device_scale_x, 1.0f, 1e-6f);
@@ -1419,6 +1434,7 @@ int test_scene_panel_frame_snapshot_core(TstContext* suite, const TstCase* item)
 
     const DvzId first_id = info.snapshot_id;
     const uint64_t first_revision = info.layout_revision;
+    const uint64_t first_view_revision = info.view_revision;
     dvz_panel_frame_ref(snapshot);
     dvz_panel_frame_unref(snapshot);
 
@@ -1437,7 +1453,9 @@ int test_scene_panel_frame_snapshot_core(TstContext* suite, const TstCase* item)
     AT(next.logical_width_px == 800);
     AT(next.layout_revision > first_revision);
     AT(next.panel_revision == next.layout_revision);
-    AT(next.view_revision == next.layout_revision);
+    AT(next.view_id == info.view_id);
+    AT(next.view_kind == DVZ_PANEL_VIEW_KIND_2D);
+    AT(next.view_revision == first_view_revision);
     DvzRect next_plot = {0};
     AT(dvz_panel_plot_rect_px(panel, &next_plot));
     AC(next.grid_clip_rect_px.x, next_plot.x, 1e-6f);
@@ -1447,6 +1465,76 @@ int test_scene_panel_frame_snapshot_core(TstContext* suite, const TstCase* item)
 
     dvz_panel_frame_unref(after);
     dvz_panel_frame_unref(snapshot);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_panel_view3d_state_readback(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 320, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzPanelView3DDesc desc = dvz_panel_view3d_desc();
+    AT(desc.struct_size == DVZ_STRUCT_SIZE(DvzPanelView3DDesc));
+    AT(desc.camera.struct_size == DVZ_STRUCT_SIZE(DvzCameraDesc));
+    desc.camera.view.eye[0] = 1.0f;
+    desc.camera.view.eye[1] = 2.0f;
+    desc.camera.view.eye[2] = 3.0f;
+    desc.camera.view.target[0] = 0.25f;
+    desc.camera.view.target[1] = -0.50f;
+    desc.camera.view.target[2] = 0.75f;
+    desc.camera.view.up[0] = 0.0f;
+    desc.camera.view.up[1] = 0.0f;
+    desc.camera.view.up[2] = 1.0f;
+    desc.camera.projection.type = DVZ_CAMERA_ORTHOGRAPHIC;
+    desc.camera.projection.ortho_height = 4.0f;
+    desc.camera.projection.near_clip = 0.1f;
+    desc.camera.projection.far_clip = 50.0f;
+
+    AT(dvz_panel_set_view3d_desc(panel, &desc) == 0);
+    DvzPanelView3DState state = {0};
+    AT(dvz_panel_view3d_state(panel, &state));
+    AT(state.struct_size == DVZ_STRUCT_SIZE(DvzPanelView3DState));
+    AT(state.enabled);
+    AT(state.view_id != DVZ_ID_NONE);
+    AT(state.revision > 0);
+    AT(state.projection.type == DVZ_CAMERA_ORTHOGRAPHIC);
+    AC(state.projection.ortho_height, 4.0f, 1e-6f);
+    AC(state.projection.near_clip, 0.1f, 1e-6f);
+    AC(state.projection.far_clip, 50.0f, 1e-6f);
+    AC(state.view.eye[0], 1.0f, 1e-6f);
+    AC(state.view.eye[1], 2.0f, 1e-6f);
+    AC(state.view.eye[2], 3.0f, 1e-6f);
+    AT(!state.has_explicit_orthographic_bounds);
+    AT(fabsf(state.mvp.proj[0][0]) > 0.0f);
+    AT(fabsf(state.mvp.proj[1][1]) > 0.0f);
+
+    DvzPanelFrameSnapshot* snapshot = dvz_panel_resolve_frame(panel);
+    ANN(snapshot);
+    DvzPanelFrameInfo info = {0};
+    AT(dvz_panel_frame_info(snapshot, &info));
+    AT(info.view_kind == DVZ_PANEL_VIEW_KIND_3D);
+    AT(info.view_id == state.view_id);
+    AT(info.view_revision == state.revision);
+    dvz_panel_frame_unref(snapshot);
+
+    AT(dvz_camera_set_orthographic_bounds(
+           dvz_panel_camera(panel), 4.0f, -4.0f, -2.0f, 2.0f, 0.2f, 60.0f) == 0);
+    AT(dvz_panel_view3d_state(panel, &state));
+    AT(state.has_explicit_orthographic_bounds);
+    AC(state.orthographic_bounds[0], 4.0f, 1e-6f);
+    AC(state.orthographic_bounds[1], -4.0f, 1e-6f);
+    AC(state.orthographic_bounds[4], 0.2f, 1e-6f);
+    AC(state.orthographic_bounds[5], 60.0f, 1e-6f);
+
     dvz_scene_destroy(scene);
     return 0;
 }
