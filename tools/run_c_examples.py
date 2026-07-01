@@ -7,6 +7,7 @@ import argparse
 import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -101,7 +102,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--code-command",
         default="code",
-        help="VS Code command to run for --code, default: code",
+        help=(
+            "VS Code command to run for --code, default: code "
+            "(on macOS, the bundled Visual Studio Code.app CLI is used when code is not on PATH)"
+        ),
     )
     parser.add_argument(
         "--build-dir",
@@ -366,6 +370,24 @@ def example_source_path(root: Path, rel: str) -> Path:
     return root / "examples" / "c" / f"{rel}.c"
 
 
+def resolve_code_command(code_command: str) -> str:
+    if code_command != "code":
+        return code_command
+
+    command = shutil.which(code_command)
+    if command:
+        return command
+
+    if platform.system() == "Darwin":
+        macos_code = Path(
+            "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
+        )
+        if macos_code.is_file():
+            return str(macos_code)
+
+    return code_command
+
+
 def open_code(root: Path, examples: list[tuple[str, Path]], code_command: str) -> int:
     sources = [example_source_path(root, rel) for rel, _ in examples]
     missing = [path for path in sources if not path.is_file()]
@@ -375,9 +397,10 @@ def open_code(root: Path, examples: list[tuple[str, Path]], code_command: str) -
             print(f"  - {path.relative_to(root)}", file=sys.stderr)
         return 1
 
+    resolved_command = resolve_code_command(code_command)
     try:
         result = subprocess.run(
-            [code_command, "--reuse-window", *[str(path) for path in sources]],
+            [resolved_command, "--reuse-window", *[str(path) for path in sources]],
             cwd=root,
             check=False,
         )
