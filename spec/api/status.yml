@@ -1,0 +1,265 @@
+version: 1
+tiers:
+  stable: default public C/Python surface
+  experimental: public enough to try, explicitly allowed to change
+  advanced: opt-in low-level/runtime API
+  internal: not a supported user API
+
+modules:
+  - module: umbrella_default
+    headers:
+      - include/datoviz/datoviz.h
+    tier: stable
+    umbrella: none
+    raw_binding: false
+    python_top_level: false
+    docs_group: null
+    rationale: null
+
+  - module: umbrella_advanced
+    headers:
+      - include/datoviz/advanced.h
+    tier: advanced
+    umbrella: none
+    raw_binding: false
+    python_top_level: false
+    docs_group: null
+    rationale: Convenience include for opt-in low-level/runtime APIs.
+
+  - module: common
+    headers:
+      - include/datoviz/common.h
+      - include/datoviz/common/**
+    tier: stable
+    umbrella: default
+    raw_binding: true
+    python_top_level: true
+    docs_group: runtime
+    rationale: null
+
+  - module: math
+    headers:
+      - include/datoviz/dvzmath.h
+      - include/datoviz/math/**
+    tier: stable
+    umbrella: default
+    raw_binding: true
+    python_top_level: true
+    docs_group: runtime
+    rationale: null
+
+  - module: font
+    headers:
+      - include/datoviz/font.h
+      - include/datoviz/text/**
+    tier: stable
+    umbrella: default
+    raw_binding: true
+    python_top_level: true
+    docs_group:
+      - scene
+      - visuals
+      - runtime
+    rationale: null
+
+  - module: geometry
+    headers:
+      - include/datoviz/geom.h
+      - include/datoviz/geom/**
+    tier: stable
+    umbrella: default
+    raw_binding: true
+    python_top_level: true
+    docs_group: visuals
+    rationale: null
+
+  - module: input
+    headers:
+      - include/datoviz/input.h
+      - include/datoviz/input/**
+    tier: stable
+    umbrella: default
+    raw_binding: true
+    python_top_level: true
+    docs_group: app
+    rationale: null
+
+  - module: app
+    headers:
+      - include/datoviz/app.h
+    tier: stable
+    umbrella: default
+    raw_binding: true
+    python_top_level: true
+    docs_group: app
+    rationale: null
+
+  - module: scene
+    headers:
+      - include/datoviz/scene.h
+      - include/datoviz/scene/animation.h
+      - include/datoviz/scene/annotation.h
+      - include/datoviz/scene/arcball.h
+      - include/datoviz/scene/camera.h
+      - include/datoviz/scene/enums.h
+      - include/datoviz/scene/field.h
+      - include/datoviz/scene/fly.h
+      - include/datoviz/scene/interaction.h
+      - include/datoviz/scene/overlay.h
+      - include/datoviz/scene/panzoom.h
+      - include/datoviz/scene/plot.h
+      - include/datoviz/scene/scale.h
+      - include/datoviz/scene/text.h
+      - include/datoviz/scene/turntable.h
+      - include/datoviz/scene/types.h
+    tier: stable
+    umbrella: default
+    raw_binding: true
+    python_top_level: true
+    docs_group:
+      - scene
+      - visuals
+    rationale: null
+
+  - module: frame_plan
+    headers:
+      - include/datoviz/scene/frame_plan.h
+      - include/datoviz/scene/frame_packets.h
+    tier: advanced
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: frame_plan
+    rationale: Runtime/WASM integration packet surface, not ordinary scene authoring API.
+
+  - module: ffi
+    headers:
+      - include/datoviz/ffi.h
+    tier: advanced
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: ffi
+    rationale: Pointer-oriented helper ABI for generated bindings and foreign runtimes.
+
+  - module: drp2
+    headers:
+      - include/datoviz/drp2.h
+      - include/datoviz/drp2/**
+    tier: advanced
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: drp2
+    rationale: Low-level command-stream and packet protocol API.
+
+  - module: canvas
+    headers:
+      - include/datoviz/canvas.h
+      - include/datoviz/canvas/**
+    tier: advanced
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: app
+    rationale: Low-level presentation and render-target integration API.
+
+  - module: stream
+    headers:
+      - include/datoviz/stream.h
+      - include/datoviz/stream/**
+    tier: advanced
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: app
+    rationale: Low-level frame-stream API for runtime integrations and sinks.
+
+  - module: window
+    headers:
+      - include/datoviz/window.h
+      - include/datoviz/window/**
+    tier: advanced
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: app
+    rationale: Low-level window host and backend API beneath the app facade.
+
+  - module: video
+    headers:
+      - include/datoviz/video.h
+    tier: advanced
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: app
+    rationale: Optional video/capture sink integration API.
+
+  - module: gui
+    headers:
+      - include/datoviz/gui.h
+      - include/datoviz/gui/**
+      - include/datoviz/imgui.h
+    tier: experimental
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: app
+    rationale: Optional Dear ImGui integration and hosted GUI controls.
+
+  - module: runner
+    headers:
+      - include/datoviz/runner.h
+      - include/datoviz/runner/**
+    tier: advanced
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: app
+    rationale: Scenario runner and validation support API.
+
+  - module: controller_low_level
+    headers:
+      - include/datoviz/controller.h
+      - include/datoviz/controller/**
+    tier: advanced
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: runtime
+    rationale: Low-level controller records; ordinary users access controllers through scene APIs.
+
+  - module: fileio
+    headers:
+      - include/datoviz/fileio.h
+      - include/datoviz/fileio/**
+    tier: advanced
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: runtime
+    rationale: Low-level utility I/O helpers.
+
+  - module: gpu_protocol_legacy
+    headers:
+      - include/datoviz/gpu/**
+    tier: advanced
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: runtime
+    rationale: Temporary protocol enum location until Phase 2 moves public render types.
+
+  - module: vulkan_runtime
+    headers:
+      - include/datoviz/vk.h
+      - include/datoviz/vk/**
+      - include/datoviz/vklite.h
+      - include/datoviz/vklite/**
+    tier: advanced
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: runtime
+    rationale: Vulkan/vklite runtime foundation, explicitly opt-in for advanced users.

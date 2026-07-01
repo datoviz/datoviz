@@ -19,6 +19,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 API_PATH = ROOT / "build/bindings/datoviz_api.json"
 POLICY_PATH = ROOT / "spec/api/C_API_REFERENCE_POLICY.yaml"
+STATUS_PATH = ROOT / "spec/api/status.yml"
 DOCS_ROOT = ROOT / "docs"
 SUMMARY_PATH = ROOT / "build/docs/c-api-reference-summary.json"
 CTYPES_PATH = ROOT / "datoviz/_ctypes.py"
@@ -51,6 +52,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--api", type=Path, default=API_PATH)
     parser.add_argument("--policy", type=Path, default=POLICY_PATH)
+    parser.add_argument("--status", type=Path, default=STATUS_PATH)
     parser.add_argument("--summary", type=Path, default=SUMMARY_PATH)
     parser.add_argument(
         "--check",
@@ -116,7 +118,44 @@ def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf8"))
 
 
-def load_policy(path: Path) -> tuple[list[PagePolicy], dict, tuple[str, ...]]:
+def _as_list(value) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, list):
+        return [str(item) for item in value]
+    return []
+
+
+def load_status_entries(path: Path) -> list[dict]:
+    raw = yaml.safe_load(path.read_text(encoding="utf8")) or {}
+    entries = raw.get("modules") or []
+    if not isinstance(entries, list):
+        raise ValueError(f"{path} must contain a modules list")
+    return [entry for entry in entries if isinstance(entry, dict)]
+
+
+def page_status(entries: list[dict], page_key: str) -> str:
+    tiers = {
+        str(entry.get("tier"))
+        for entry in entries
+        if page_key in set(_as_list(entry.get("docs_group")))
+    }
+    if not tiers:
+        return "unclassified; see spec/api/status.yml"
+    if tiers == {"stable"}:
+        return "stable"
+    if tiers == {"experimental"}:
+        return "experimental"
+    if tiers == {"advanced"}:
+        return "advanced/unstable"
+    if tiers == {"internal"}:
+        return "internal"
+    return "mixed tiers; see spec/api/status.yml"
+
+
+def load_policy(path: Path, status_entries: list[dict]) -> tuple[list[PagePolicy], dict, tuple[str, ...]]:
     raw = yaml.safe_load(path.read_text(encoding="utf8")) or {}
     pages = []
     for key, entry in (raw.get("pages") or {}).items():
@@ -125,7 +164,7 @@ def load_policy(path: Path) -> tuple[list[PagePolicy], dict, tuple[str, ...]]:
                 key=str(key),
                 title=str(entry["title"]),
                 output=ROOT / str(entry["output"]),
-                status=str(entry["status"]),
+                status=page_status(status_entries, str(key)),
                 summary=str(entry["summary"]),
                 audience=str(entry.get("audience", "")),
                 workflows=tuple(
@@ -548,7 +587,8 @@ def write_summary(
 def main() -> int:
     args = parse_args()
     api = load_json(args.api)
-    pages, types_policy, hidden_headers = load_policy(args.policy)
+    status_entries = load_status_entries(args.status)
+    pages, types_policy, hidden_headers = load_policy(args.policy, status_entries)
     raw_status = load_raw_ctypes_status()
 
     functions, missing_functions = validate_classification(

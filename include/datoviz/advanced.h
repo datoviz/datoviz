@@ -5,10 +5,11 @@
  */
 
 /*************************************************************************************************/
-/*  Public API                                                                                   */
+/*  Advanced public API                                                                          */
 /*************************************************************************************************/
-/* Stable/default v0.4 convenience include. Low-level DRP2, stream, window, vklite, Vulkan, GUI,
- * FFI, and embedding APIs are opt-in through explicit headers or <datoviz/advanced.h>. */
+/* Opt-in umbrella for low-level, backend-facing, integration, and runtime APIs. Ordinary v0.4
+ * applications should include <datoviz.h> and stay on the scene/app path unless they need direct
+ * command streams, native runtime handles, GUI embedding, or backend integration. */
 
 #pragma once
 
@@ -18,10 +19,16 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "common.h"
-#include "dvzmath.h"
-#include "app.h"
-#include "font.h"
-#include "geom.h"
-#include "input.h"
-#include "scene.h"
+#include "canvas.h"
+#include "controller.h"
+#include "drp2.h"
+#include "ffi.h"
+#include "fileio.h"
+#include "gui.h"
+#include "imgui.h"
+#include "runner.h"
+#include "stream.h"
+#include "video.h"
+#include "vk.h"
+#include "vklite.h"
+#include "window.h"

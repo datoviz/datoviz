@@ -8,7 +8,6 @@ pages:
   ffi:
     title: FFI Helper API
     output: docs/reference/c-api/ffi.md
-    status: supported ABI helpers
     summary: Pointer-oriented helper functions for raw ctypes, WASM, and foreign runtimes.
     audience: Use this page when a foreign-function interface cannot safely call the canonical C API by value or cannot construct native records directly.
     workflows:
@@ -24,7 +23,6 @@ pages:
   frame_plan:
     title: FramePlan And Packet API
     output: docs/reference/c-api/frame-plan.md
-    status: advanced/unstable
     summary: FramePlan builders, DRP2 emission helpers, and packet spans used by runtime and WASM integrations.
     audience: Use this page for advanced runtime, fixture, or WASM/WebGPU integration work. Ordinary retained scene code should use scene frame artifacts.
     workflows:
@@ -43,7 +41,6 @@ pages:
   scene:
     title: Scene API
     output: docs/reference/c-api/scene.md
-    status: supported
     summary: Retained figures, panels, cameras, controllers, scene objects, queries, and frame artifacts.
     audience: Use this page when you are writing retained scene/app code and already know the scene object or controller you need.
     workflows:
@@ -117,7 +114,6 @@ pages:
   visuals:
     title: Visuals And Composites API
     output: docs/reference/c-api/visuals.md
-    status: supported
     summary: Retained visual families, semantic composites, visual styles, and visual data setters.
     audience: Use this page when you know the visual family, composite, geometry helper, or visual data setter you need.
     workflows:
@@ -172,7 +168,6 @@ pages:
   app:
     title: App, Window, And I/O API
     output: docs/reference/c-api/app.md
-    status: supported
     summary: Native app loop, windows, canvases, input routing, GUI hooks, frame streams, capture, and video.
     audience: Use this page when integrating Datoviz into a native app loop, window, canvas, GUI, capture, or video path.
     workflows:
@@ -215,7 +210,6 @@ pages:
   drp2:
     title: DRP2 API
     output: docs/reference/c-api/drp2.md
-    status: advanced/unstable
     summary: Datoviz Rendering Protocol command streams, packets, recording, and runtime integration.
     audience: Use this page for advanced command-stream and packet work. Ordinary scene code should start from the Scene API.
     workflows:
@@ -234,7 +228,6 @@ pages:
   runtime:
     title: Runtime And Utilities API
     output: docs/reference/c-api/runtime.md
-    status: advanced/unstable
     summary: Lower-level Vulkan, vklite, math, geometry, file, and utility APIs.
     audience: Use this page for lower-level runtime, Vulkan, vklite, math, geometry, file, and utility integration.
     workflows:
@@ -249,14 +242,12 @@ pages:
     headers:
       - include/datoviz/common.h
       - include/datoviz/common/**
-      - include/datoviz/ds/**
       - include/datoviz/dvzmath.h
       - include/datoviz/fileio.h
       - include/datoviz/fileio/**
       - include/datoviz/font.h
       - include/datoviz/gpu/**
       - include/datoviz/math/**
-      - include/datoviz/thread/**
       - include/datoviz/controller/**
       - include/datoviz/controller.h
       - include/datoviz/vk.h

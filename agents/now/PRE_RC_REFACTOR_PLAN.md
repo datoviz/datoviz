@@ -568,3 +568,38 @@ Authority map:
    ordering, generated visuals, attachment role filtering, and technique grouping.
 
 Known risk: `data` remains dirty and unstaged; it must stay out of all checkpoint commits.
+
+### Phase 1: API Tiering
+
+Status: complete.
+
+Validation:
+
+```sh
+just build
+just spec-check
+python3 tools/check_example_manifests.py
+git diff --check
+```
+
+Result:
+
+1. `just build` passed after rebuilding the public header C++ probe.
+2. `just spec-check` passed and now includes `tools/check_api_status.py`.
+3. `python3 tools/check_example_manifests.py` passed after regenerating
+   `docs/examples/examples.json`.
+4. `git diff --check` passed.
+
+Changes:
+
+1. Added `spec/api/status.yml` as the single API tiering manifest.
+2. Added `tools/check_api_status.py` and wired it into `tasks/spec_check.py`.
+3. Added `include/datoviz/advanced.h` for opt-in low-level/runtime APIs.
+4. Reduced `include/datoviz/datoviz.h` to the stable/default umbrella.
+5. Removed C API page-local status labels from `spec/api/C_API_REFERENCE_POLICY.yaml`; generated
+   C API docs now derive page status from `spec/api/status.yml`.
+6. Removed stale docs-policy globs for non-installed `ds` and `thread` headers.
+
+Known risk: some stable headers still transitively expose advanced records until Phase 2 and later
+boundary work reduce protocol leakage. This is tracked by the manifest and validator rather than by
+prose comments.
