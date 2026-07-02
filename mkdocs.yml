@@ -148,6 +148,7 @@ nav:
       - Diagnose build and platform issues: 'how-to/diagnose-platform.md'
   - Reference:
     - Overview: 'reference/index.md'
+    - Citation: 'reference/citation.md'
     - API:
       - C API:
         - Overview: 'reference/c-api/index.md'

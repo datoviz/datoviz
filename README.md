@@ -119,6 +119,7 @@ and backend work, but ordinary users should start from the scene/app APIs.
 - [C API reference](https://datoviz.org/reference/c-api/)
 - [Python raw ctypes](https://datoviz.org/reference/ctypes/)
 - [WebGPU subset](https://datoviz.org/reference/webgpu-subset/)
+- [Citation](https://datoviz.org/reference/citation/)
 - [Contributing](CONTRIBUTING.md)
 - [Build notes](BUILD.md)
 
@@ -129,6 +130,10 @@ Datoviz is released under the [MIT license](LICENSE). It is developed by
 [Cyrille Rossant](https://cyrille.rossant.net/) at the
 [International Brain Laboratory](http://internationalbrainlab.org/), with support from the
 Wellcome Trust, Simons Foundation, and Chan Zuckerberg Initiative.
+
+If you use Datoviz in research, see [Citation](https://datoviz.org/reference/citation/) for the
+current software citation guidance. The final v0.4.0 release will be archived with Zenodo for a
+version-specific DOI.
 
 Datoviz builds on earlier open-source GPU visualization work including VisPy, Glumpy, Galry, and
 the Vulkan-based Datoviz releases. See the documentation and project papers for background and

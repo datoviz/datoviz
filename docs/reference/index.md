@@ -3,6 +3,12 @@
 Reference pages provide exact facts: status labels, signatures, constraints, lifetimes, backend
 support, and links to minimal examples.
 
+## Project Metadata
+
+| Page | Use it for |
+| --- | --- |
+| [Citation](citation.md) | Software citation guidance, v0.4 DOI placeholders, and scholarly citation status. |
+
 ## API
 
 | Page | Use it for |

@@ -263,6 +263,7 @@ Target MkDocs navigation:
 ```text
 reference/
   index.md
+  citation.md
   API/
     c-api/index.md
     c-api/scene.md
@@ -291,6 +292,10 @@ reference/
 Reference pages should prefer tables, status labels, signatures, constraints, and links to examples.
 They should avoid tutorial prose, but visual reference pages should still contain short authored
 judgment where it helps users choose correctly.
+
+`citation.md` is the public software-citation page. It should stay concise and should record the
+current preferred citation, Zenodo DOI status, JOSS paper status, and links to repository metadata.
+Do not put release diary notes or private publication plans there.
 
 Visual reference pages should follow one template:
 

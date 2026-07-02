@@ -1,9 +1,25 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
+type: software
 authors:
   - family-names: Rossant
     given-names: Cyrille
+    affiliation: International Brain Laboratory
     orcid: https://orcid.org/0000-0003-2069-9093
 title: "Datoviz"
-version: 0.3.3-dev
-date-released: 2025-10-16
+version: 0.4.0
+license: MIT
+repository-code: "https://github.com/datoviz/datoviz"
+url: "https://datoviz.org/"
+abstract: >
+  Datoviz is a C-first GPU rendering engine for scientific visualization. The v0.4
+  release provides a retained scene API, DRP2 command streams, a native Vulkan/vklite
+  runtime, generated low-level Python bindings, an array-aware direct-engine Python
+  facade, and an experimental WebGPU/WASM browser subset.
+keywords:
+  - scientific visualization
+  - GPU rendering
+  - Vulkan
+  - WebGPU
+  - Python
+  - C
