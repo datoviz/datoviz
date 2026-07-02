@@ -226,6 +226,8 @@ Exit criteria:
 4. Release examples are documented enough for early testers.
 5. Required RC note fields from
    [../../spec/release/RC_PROCESS.md](../../spec/release/RC_PROCESS.md) are present.
+6. `CITATION.cff`, [citation docs](../../docs/reference/citation.md), and the JOSS draft are
+   present and do not claim a final Zenodo DOI before it exists.
 
 Current packaging gate:
 
@@ -268,7 +270,15 @@ Exit criteria:
    current gallery examples.
 4. Direct feedback channels are open for early users, especially scientists whose public datasets
    are used in showcase examples.
-5. The active queue resets for v0.4 patch work and v0.5 planning.
+5. GitHub-Zenodo archiving is enabled for `datoviz/datoviz`.
+6. The final `v0.4.0` GitHub release has a Zenodo version DOI and concept DOI.
+7. `CITATION.cff`, [citation docs](../../docs/reference/citation.md), final release notes, and
+   announcement text include the exact version DOI and release date.
+8. If `.zenodo.json` is added later for grants, communities, or related identifiers, it must be
+   kept consistent with `CITATION.cff` because Zenodo uses `.zenodo.json` preferentially.
+9. The JOSS draft is submitted or explicitly deferred; JOSS acceptance is tracked separately from
+   the software release.
+10. The active queue resets for v0.4 patch work and v0.5 planning.
 
 
 ## Post-Release Refactor Queue

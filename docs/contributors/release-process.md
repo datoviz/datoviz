@@ -30,7 +30,9 @@ Before starting an RC branch pass, collect these inputs:
 3. durable policy from `spec/release/READINESS.md` and `spec/release/RC_PROCESS.md`;
 4. public documentation gates from `agents/now/DOCUMENTATION.md`;
 5. wheel workflow details from [Release wheels](release-wheels.md);
-6. the flight checklist from [Release flight checklist](release-flight-checklist.md).
+6. the flight checklist from [Release flight checklist](release-flight-checklist.md);
+7. citation metadata from `CITATION.cff`, [Citation](../reference/citation.md), and the JOSS draft
+   in `paper/`.
 
 
 ## Pre-RC Preparation
@@ -167,7 +169,9 @@ Every RC note should include:
 6. docs and gallery build links;
 7. wheel and source artifacts;
 8. migration/status notes from v0.3 and development snapshots;
-9. feedback request targeted at users and contributors.
+9. citation status, including whether the Zenodo DOI is final or still pending;
+10. JOSS draft or submission status;
+11. feedback request targeted at users and contributors.
 
 Keep known issues honest. If a platform or optional provider is untested, record it as untested
 rather than supported.
@@ -175,6 +179,12 @@ rather than supported.
 The current RC1 draft lives in [v0.4.0rc1 release notes](../releases/v0.4.0rc1.md). Keep it as a
 draft until the final commit, tag, artifact URLs, checksums, and platform validation matrix are
 filled in.
+
+For final `v0.4.0`, enable or verify GitHub-Zenodo archiving before creating the GitHub release.
+After Zenodo archives the release, update `CITATION.cff`, [Citation](../reference/citation.md), and
+the final release notes with the exact version DOI, concept DOI, and release date. Do not add a
+`.zenodo.json` file unless release-specific Zenodo metadata such as grants, communities, or related
+identifiers is needed; if it is added, keep it consistent with `CITATION.cff`.
 
 
 ## What Stays Manual

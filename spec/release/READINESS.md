@@ -90,6 +90,9 @@ Documentation and examples:
 5. every public visual or feature has a minimal example or explicit status;
 6. gallery media is generated from current code;
 7. data licenses, dependencies, and attribution are listed.
+8. citation metadata is release-ready: `CITATION.cff` is current, the public citation page explains
+   version-specific and project-level citation, and the final Zenodo DOI/date placeholders are
+   resolved before `v0.4.0`.
 
 Packaging and assets:
 
@@ -102,6 +105,16 @@ Packaging and assets:
 7. installed CMake/pkg-config consumers compile against public headers without private include
    paths, including transitive dependencies exposed by those headers;
 8. checksums/signing policy is decided.
+9. the GitHub release is archived with Zenodo for final `v0.4.0`, and the release notes record both
+   the version DOI and the concept DOI.
+
+Scholarly citation:
+
+1. a JOSS draft exists in `paper/` before RC1;
+2. the draft has the required statement of need, state of the field, software design, research
+   impact, AI usage disclosure, acknowledgements, and references sections;
+3. JOSS submission status is recorded in release notes, but acceptance is not a blocker for
+   publishing `v0.4.0`.
 
 Current macOS arm64 evidence, recorded 2026-06-18: vendored package install, system-auto package
 install, strict Homebrew-style source install, install-prefix audit, installed CMake consumer,

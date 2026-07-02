@@ -21,6 +21,10 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Confirm the intended tag name, for example `v0.4.0rc1`.
 - [ ] Draft RC notes with commit, tag, feature status, known issues, and validation matrix.
 - [ ] Confirm migration/status notes from v0.3 are honest about breaking changes.
+- [ ] Confirm `CITATION.cff` matches the intended release version.
+- [ ] Confirm [Citation](../reference/citation.md) has the correct DOI status for this release.
+- [ ] Confirm JOSS draft/submission status is recorded without treating JOSS acceptance as a
+      software-release blocker.
 
 
 ## 3. Native Build And Tests
@@ -125,6 +129,9 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Publish documentation.
 - [ ] Confirm GitHub issue forms, labels, and milestone are ready for RC feedback triage.
 - [ ] Announce known issues and feedback channels.
+- [ ] For final `v0.4.0`, confirm GitHub-Zenodo archiving created a version DOI and concept DOI.
+- [ ] For final `v0.4.0`, update `CITATION.cff`, [Citation](../reference/citation.md), and
+      release notes with the exact Zenodo DOI and release date.
 
 
 ## 11. Post-Release
