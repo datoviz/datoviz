@@ -33,7 +33,6 @@
 struct DvzThread
 {
     DvzObject obj;
-    // tct_thrd_t thread;
     pthread_t thread;
     DvzMutex lock;
     DvzAtomic lock_idx; // used to allow nested callbacks and avoid deadlocks: only 1 lock
@@ -50,7 +49,6 @@ DvzThread* dvz_thread(DvzThreadCallback callback, void* user_data)
     DvzThread* thread = (DvzThread*)dvz_calloc(1, sizeof(DvzThread));
     ANN(thread);
     // log_trace("creating thread");
-    // if (tct_thrd_create(&thread->thread, callback, user_data) != tct_thrd_success)
     if (pthread_create(&thread->thread, NULL, callback, user_data))
         log_error("thread creation failed");
     if (dvz_mutex_init(&thread->lock) != 0)
@@ -107,7 +105,6 @@ void dvz_thread_join(DvzThread* thread)
 {
     ANN(thread);
     // log_trace("joining thread");
-    // tct_thrd_join(thread->thread, NULL);
     pthread_join(thread->thread, NULL);
     dvz_mutex_destroy(&thread->lock);
     dvz_atomic_destroy(thread->lock_idx);
