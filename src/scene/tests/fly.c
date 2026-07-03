@@ -417,7 +417,7 @@ int test_fly_router_keyboard_updates_key_state(TstContext* suite, const TstCase*
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     DvzInputRouter* router = dvz_input_router();
     ANN(router);
@@ -566,7 +566,7 @@ int test_fly_pivot_marker_visual_tracks_visibility(TstContext* suite, const TstC
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     DvzFly* fly = _test_panel_bind_fly(panel, NULL, NULL, NULL);
     ANN(fly);
@@ -601,7 +601,7 @@ int test_panel_fly_getter(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     AT(panel->fly == NULL);
@@ -626,7 +626,7 @@ int test_fly_scene_controller_binding(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzController* controller = dvz_fly(scene, NULL);
@@ -656,7 +656,7 @@ int test_fly_controller_rejects_partial_dims(TstContext* suite, const TstCase* i
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     DvzController* controller = dvz_fly(scene, NULL);
     ANN(controller);
@@ -681,7 +681,7 @@ int test_fly_controller_survives_panel_destroy(TstContext* suite, const TstCase*
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     DvzController* controller = dvz_fly(scene, NULL);
     ANN(controller);
@@ -707,8 +707,8 @@ int test_shared_fly_updates_once_for_two_panels(TstContext* suite, const TstCase
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
-    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
     ANN(left);
     ANN(right);
 
@@ -751,7 +751,7 @@ int test_figure_fly_update_advances_panel_camera(TstContext* suite, const TstCas
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzFlyDesc desc = dvz_fly_desc();
@@ -798,7 +798,7 @@ int test_figure_fly_update_clamps_dt(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzFlyDesc desc = dvz_fly_desc();
@@ -829,8 +829,8 @@ int test_fly_state_is_panel_scoped(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
-    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
     ANN(left);
     ANN(right);
 

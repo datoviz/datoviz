@@ -148,7 +148,7 @@ int test_scene_query_queue_processes_native_results(TstContext* suite, const Tst
     DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.25f, .y = 0.5f, .width = 0.5f, .height = 0.25f});
+        figure, &(DvzPanelDesc){.x = 0.25f, .y = 0.5f, .width = 0.5f, .height = 0.25f});
     ANN(panel);
 
     AT(dvz_panel_query(
@@ -190,7 +190,7 @@ int test_scene_query_queue_coalesces_pending_requests(TstContext* suite, const T
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     AT(dvz_panel_query(
@@ -228,7 +228,7 @@ int test_scene_query_queue_preserves_panel_local_y_orientation(
     DvzFigure* figure = dvz_figure(scene, 100, 100, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.10f, .y = 0.10f, .width = 0.80f, .height = 0.80f});
+        figure, &(DvzPanelDesc){.x = 0.10f, .y = 0.10f, .width = 0.80f, .height = 0.80f});
     ANN(panel);
 
     AT(dvz_panel_query(
@@ -272,7 +272,7 @@ int test_scene_query_deferred_guide_targets_are_unsupported(
     DvzFigure* figure = dvz_figure(scene, 100, 80, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.10f, .y = 0.25f, .width = 0.80f, .height = 0.50f});
+        figure, &(DvzPanelDesc){.x = 0.10f, .y = 0.25f, .width = 0.80f, .height = 0.50f});
     ANN(panel);
 
     AT(dvz_panel_query(
@@ -332,7 +332,7 @@ int test_scene_query_volume_sample_is_explicitly_unsupported(TstContext* suite, 
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -370,7 +370,7 @@ int test_scene_query_skips_fixed_visuals(TstContext* suite, const TstCase* item)
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* point = dvz_point(scene, 0);
@@ -416,7 +416,7 @@ int test_scene_query_rejects_missing_query_profile(TstContext* suite, const TstC
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* point = dvz_point(scene, 0);
@@ -465,7 +465,7 @@ int test_scene_query_does_not_auto_select_2xr32_profile(TstContext* suite, const
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* point = dvz_point(scene, 0);
@@ -514,7 +514,7 @@ int test_scene_query_rejects_family_unsupported_profile(TstContext* suite, const
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* point = dvz_point(scene, 0);
@@ -578,7 +578,7 @@ int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* ite
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* image = dvz_image(scene, 0);
@@ -659,7 +659,7 @@ int test_scene_image_query_plan_preserves_linear_color_role(
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* image = dvz_image(scene, 0);
@@ -756,7 +756,7 @@ int test_scene_image_query_linear_color_sample_not_decoded(
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* image = dvz_image(scene, 0);
@@ -879,7 +879,7 @@ int test_scene_image_query_generated_rect_samples_position(
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* image = dvz_image(scene, 0);
@@ -973,7 +973,7 @@ int test_scene_image_query_panzoom_samples_transformed_position(
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzController* controller = dvz_panzoom(scene, NULL);
@@ -1087,7 +1087,7 @@ int test_scene_image_query_reuses_retained_request_executor(
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* image = dvz_image(scene, 0);
@@ -1193,7 +1193,7 @@ int test_scene_image_sample_query_readback_failure(TstContext* suite, const TstC
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* image = dvz_image(scene, 0);
@@ -1283,7 +1283,7 @@ int test_scene_point_query_misses_empty_pixel(TstContext* suite, const TstCase* 
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* points = dvz_point(scene, 0);
@@ -1356,7 +1356,7 @@ int test_scene_point_query_item_range_global_identity(TstContext* suite, const T
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* points = dvz_point(scene, 0);
@@ -1428,7 +1428,7 @@ int test_scene_pixel_query_accepts_square_corner(TstContext* suite, const TstCas
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* pixel = dvz_pixel(scene, 0);
@@ -1579,7 +1579,7 @@ int test_scene_marker_query_accepts_bbox_corner(TstContext* suite, const TstCase
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* marker = dvz_marker(scene, 0);
@@ -1746,7 +1746,7 @@ int test_scene_sphere_query_resolves_item(TstContext* suite, const TstCase* item
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* sphere = dvz_sphere(scene, 0);
@@ -2051,7 +2051,7 @@ int test_scene_mesh_query_resolves_instance_item(TstContext* suite, const TstCas
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* mesh = dvz_mesh(scene, 0);
@@ -2146,7 +2146,7 @@ int test_scene_segment_query_resolves_item(TstContext* suite, const TstCase* ite
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* segment = dvz_segment(scene, 0);
@@ -2235,7 +2235,7 @@ int test_scene_path_query_resolves_item(TstContext* suite, const TstCase* item)
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* path = dvz_path(scene, 0);
@@ -2322,7 +2322,7 @@ int test_scene_vector_query_resolves_straight_item(TstContext* suite, const TstC
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* vector = dvz_vector(scene, 0);
@@ -2414,7 +2414,7 @@ int test_scene_vector_query_resolves_curved_item(TstContext* suite, const TstCas
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* vector = dvz_vector(scene, 0);
@@ -2505,7 +2505,7 @@ int test_scene_primitive_query_resolves_item(TstContext* suite, const TstCase* i
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
@@ -2593,7 +2593,7 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* mesh = dvz_mesh(scene, 0);
@@ -2690,7 +2690,7 @@ int test_scene_image_query_resolves_item(TstContext* suite, const TstCase* item)
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* image = dvz_image(scene, 0);
@@ -2771,7 +2771,7 @@ int test_scene_volume_query_resolves_item(TstContext* suite, const TstCase* item
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -2845,7 +2845,7 @@ int test_scene_volume_query_resolves_sample(TstContext* suite, const TstCase* it
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -2933,7 +2933,7 @@ int test_scene_volume_query_resolves_label_sample(TstContext* suite, const TstCa
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -3047,7 +3047,7 @@ static int _test_scene_volume_query_label_sample_value(
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -3190,7 +3190,7 @@ int test_scene_volume_query_resolves_sample_uvw_profile(TstContext* suite, const
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -3277,7 +3277,7 @@ int test_scene_volume_sample_query_rejects_deferred_policies(
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -3339,7 +3339,7 @@ int test_scene_volume_sample_query_rejects_unsupported_format(
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -3414,7 +3414,7 @@ int test_scene_volume_sample_query_readback_failure(TstContext* suite, const Tst
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -3502,7 +3502,7 @@ int test_scene_labels_query_resolves_category(TstContext* suite, const TstCase* 
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* labels = dvz_labels(scene, 0);
@@ -3663,7 +3663,7 @@ int test_scene_labels_query_high_unsigned_id(TstContext* suite, const TstCase* i
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* labels = dvz_labels(scene, 0);
@@ -3752,7 +3752,7 @@ int test_scene_labels_query_rejects_missing_field(TstContext* suite, const TstCa
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* labels = dvz_labels(scene, 0);
@@ -3797,7 +3797,7 @@ int test_scene_labels_query_rejects_unsupported_format(TstContext* suite, const 
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* labels = dvz_labels(scene, 0);
@@ -3869,7 +3869,7 @@ int test_scene_labels_query_readback_failure(TstContext* suite, const TstCase* i
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* labels = dvz_labels(scene, 0);
@@ -3965,7 +3965,7 @@ int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const T
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* points = dvz_point(scene, 0);

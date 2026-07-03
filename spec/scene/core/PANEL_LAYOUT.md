@@ -159,7 +159,8 @@ or full tight-layout behavior.
 ### Free Placement
 
 ```text
-panel = dvz_panel(fig, x, y, w, h)   // normalized [0,1], matches v0.3 semantics
+desc = (DvzPanelDesc){x, y, w, h}   // normalized [0,1]
+panel = dvz_panel(fig, &desc)
 ```
 
 `x, y` is the top-left corner; `w, h` is the size.
@@ -469,10 +470,10 @@ If the figure is resized significantly, the user should call `dvz_figure_tight_l
 
 | v0.3 | v0.4 |
 |---|---|
-| `dvz_panel(fig, x, y, w, h)` | unchanged — free placement in normalized coords |
-| `dvz_panel_resize(panel, x, y, w, h)` | unchanged |
+| `dvz_panel(fig, x, y, w, h)` | `dvz_panel(fig, &(DvzPanelDesc){x, y, w, h})` |
+| `dvz_panel_resize(panel, x, y, w, h)` | `dvz_panel_set_desc(panel, &(DvzPanelDesc){x, y, w, h})` |
 | `dvz_panel_margins(panel, t, r, b, l)` | unchanged, now explicit default values documented |
-| `dvz_panel_default(fig)` | `dvz_grid_panel(grid, 0, 0)` for single-panel figures, or `dvz_panel(fig, 0, 0, 1, 1)` |
+| `dvz_panel_default(fig)` | `dvz_panel_full(fig)` or `dvz_grid_panel(grid, 0, 0)` |
 | — | `dvz_figure_grid` — new |
 | — | fixed-size columns/rows — new |
 | — | row/column span — new |

@@ -52,7 +52,7 @@ int test_scene_render_pass_scope_excludes_resource_commands(TstContext* suite, c
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);

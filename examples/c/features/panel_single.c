@@ -83,7 +83,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
 
     DvzPanel* panel =
-        dvz_panel(ctx->figure, (DvzPanelDesc){
+        dvz_panel(ctx->figure, &(DvzPanelDesc){
                                    .x = 0.14f,
                                    .y = 0.16f,
                                    .width = 0.72f,

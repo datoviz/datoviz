@@ -1343,7 +1343,7 @@ static int _scene_visual_records_portable_dvzr(SceneDvzrVisualKind kind, const c
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     AT(_add_dvzr_visual(scene, panel, kind));
 

@@ -735,7 +735,7 @@ static void _gizmo_apply_layout(ArcballGizmoState* state)
 {
     ANN(state);
     ANN(state->gizmo_panel);
-    (void)dvz_panel_set_desc(state->gizmo_panel, state->inset_desc);
+    (void)dvz_panel_set_desc(state->gizmo_panel, &state->inset_desc);
 }
 
 
@@ -927,7 +927,7 @@ int main(int argc, char** argv)
     DvzPanel* main_panel = dvz_panel_full(figure);
     EXAMPLE_CHECK(main_panel != NULL, "dvz_panel_full() failed");
 
-    DvzPanel* gizmo_panel = dvz_panel(figure, gui_state.inset_desc);
+    DvzPanel* gizmo_panel = dvz_panel(figure, &gui_state.inset_desc);
     EXAMPLE_CHECK(gizmo_panel != NULL, "inset dvz_panel() failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();

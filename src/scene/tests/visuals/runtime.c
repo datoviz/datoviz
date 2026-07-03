@@ -47,7 +47,7 @@ int test_scene_point_emit_has_vertex_layout(TstContext* suite, const TstCase* it
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, desc);
+    DvzPanel* panel = dvz_panel(figure, &desc);
     AT(panel != NULL);
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
@@ -109,7 +109,7 @@ int test_scene_point_item_range_emit_glsl(TstContext* suite, const TstCase* item
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     DvzVisual* visual = dvz_point(scene, 0);
     ANN(visual);
@@ -168,7 +168,7 @@ int test_scene_point_item_range_emit_wgsl(TstContext* suite, const TstCase* item
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     DvzVisual* visual = dvz_point(scene, 0);
     ANN(visual);
@@ -233,7 +233,7 @@ int test_scene_point_item_range_empty_clear_no_reupload(TstContext* suite, const
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     DvzVisual* visual = dvz_point(scene, 0);
     ANN(visual);
@@ -314,7 +314,7 @@ int test_scene_indexed_primitive_material_updates_runtime(TstContext* suite, con
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     ANN(visual);
@@ -451,7 +451,7 @@ int test_scene_point_large_count_executes(TstContext* suite, const TstCase* item
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, desc);
+    DvzPanel* panel = dvz_panel(figure, &desc);
     AT(panel != NULL);
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
@@ -516,7 +516,7 @@ int test_scene_second_emit_no_uploads_when_not_dirty(TstContext* suite, const Ts
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, desc);
+    DvzPanel* panel = dvz_panel(figure, &desc);
     AT(panel != NULL);
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
@@ -582,7 +582,7 @@ int test_scene_runtime_emitter_reset_reemits_payloads(TstContext* suite, const T
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, desc);
+    DvzPanel* panel = dvz_panel(figure, &desc);
     AT(panel != NULL);
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
@@ -657,7 +657,7 @@ int test_scene_pending_render_work_tracks_volume_state(TstContext* suite, const 
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
     DvzSampledField* field = dvz_sampled_field(
@@ -725,7 +725,7 @@ int test_scene_pending_render_work_clears_unlit_background(TstContext* suite, co
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.02f, 0.03f, 0.04f, 1.0f));
@@ -758,7 +758,7 @@ int test_scene_hidden_visual_first_visible_later_uploads(TstContext* suite, cons
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
@@ -814,7 +814,7 @@ int test_scene_hidden_indexed_mesh_first_visible_later_uploads(TstContext* suite
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     DvzVisual* visual = dvz_mesh(scene, 0);
     AT(visual != NULL);
@@ -915,7 +915,7 @@ int test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes(
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
     DvzSampledField* field = dvz_sampled_field(
@@ -1063,7 +1063,7 @@ int test_scene_partial_update_uploads_only_range(TstContext* suite, const TstCas
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, desc);
+    DvzPanel* panel = dvz_panel(figure, &desc);
     AT(panel != NULL);
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
@@ -1144,7 +1144,7 @@ int test_scene_repeated_partial_updates_across_frames(TstContext* suite, const T
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, desc);
+    DvzPanel* panel = dvz_panel(figure, &desc);
     AT(panel != NULL);
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
@@ -1227,7 +1227,7 @@ int test_scene_partial_update_merges_ranges_before_emit(TstContext* suite, const
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, desc);
+    DvzPanel* panel = dvz_panel(figure, &desc);
     AT(panel != NULL);
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
@@ -1297,8 +1297,8 @@ int test_scene_multiple_panels_multiple_point_visuals_emit(TstContext* suite, co
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 128, 64, 0);
     AT(figure != NULL);
-    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
-    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
     AT(left != NULL);
     AT(right != NULL);
 
@@ -1617,7 +1617,7 @@ int test_scene_visual_scene_occlusion_flags(TstContext* suite, const TstCase* it
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     AT(panel != NULL);
 
     DvzVisual* occluder = dvz_mesh(scene, 0);
@@ -1675,7 +1675,7 @@ int test_scene_visual_scene_occlusion_frame_plan(TstContext* suite, const TstCas
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
     DvzVisual* occluder = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
@@ -1798,7 +1798,7 @@ int test_scene_visual_scene_occlusion_emits_drp2(TstContext* suite, const TstCas
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
     DvzVisual* occluder = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
@@ -1957,7 +1957,7 @@ int test_scene_volume_slice_uses_volume_occlusion(TstContext* suite, const TstCa
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
     DvzSampledField* field = dvz_sampled_field(
@@ -2133,7 +2133,7 @@ int test_scene_volume_slice_uses_generic_scene_occlusion(TstContext* suite, cons
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
     DvzSampledField* field = dvz_sampled_field(
@@ -2539,7 +2539,7 @@ int test_scene_pixel_depth_cue_toggle_switches_pipeline(TstContext* suite, const
 
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     DvzVisual* pixel = dvz_pixel(scene, 0);
     AT(scene != NULL);
     AT(figure != NULL);
@@ -2613,7 +2613,7 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
     DvzVisual* point = dvz_point(scene, 0);

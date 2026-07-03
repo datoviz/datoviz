@@ -94,7 +94,7 @@ static DvzFigure* _gui_test_figure(DvzScene* scene, uint32_t width, uint32_t hei
         return NULL;
 
     DvzPanelDesc full = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, full);
+    DvzPanel* panel = dvz_panel(figure, &full);
     if (panel == NULL)
         return NULL;
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.04f, 0.05f, 0.07f, 1.0f));

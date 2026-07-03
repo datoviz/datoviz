@@ -164,7 +164,7 @@ static DvzScene* _make_scene(SceneState* state)
     panel_desc.y = 0.0f;
     panel_desc.width = 1.0f;
     panel_desc.height = 1.0f;
-    DvzPanel* panel = figure != nullptr ? dvz_panel(figure, panel_desc) : nullptr;
+    DvzPanel* panel = figure != nullptr ? dvz_panel(figure, &panel_desc) : nullptr;
     DvzVisual* visual = panel != nullptr ? dvz_point(scene, 0) : nullptr;
     if (figure == nullptr || panel == nullptr || visual == nullptr)
     {

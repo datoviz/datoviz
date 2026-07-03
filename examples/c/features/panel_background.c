@@ -126,8 +126,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     if (panel == NULL)
         return false;
-    if (!dvz_panel_set_desc(
-            panel, (DvzPanelDesc){.x = 0.10f, .y = 0.12f, .width = 0.80f, .height = 0.76f}))
+    if (dvz_panel_set_desc(
+            panel,
+            &(DvzPanelDesc){.x = 0.10f, .y = 0.12f, .width = 0.80f, .height = 0.76f}) !=
+        DVZ_OK)
         return false;
     DvzPanelBackgroundDesc background = {DVZ_STRUCT_INIT_FIELDS(DvzPanelBackgroundDesc),
         .type = DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT,

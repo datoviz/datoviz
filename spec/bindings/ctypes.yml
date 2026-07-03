@@ -47,6 +47,7 @@ smoke_symbols:
   - dvz_controller_id
   - dvz_scene_destroy
   - dvz_figure
+  - dvz_panel_desc
   - dvz_panel_full
   - dvz_capability_snapshot
   - dvz_view_capabilities

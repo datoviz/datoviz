@@ -638,7 +638,7 @@ static AppSceneOcclusionCapture _app_source_over_scene_occlusion_capture_center(
         dvz_scene_destroy(scene);
         return out;
     }
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     if (panel == NULL)
     {
         dvz_scene_destroy(scene);
@@ -754,7 +754,7 @@ static AppWboitCapture _app_wboit_capture_center(TstContext* suite, bool reverse
         dvz_scene_destroy(scene);
         return out;
     }
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     if (panel == NULL)
     {
         dvz_scene_destroy(scene);
@@ -1094,7 +1094,7 @@ static AppRgbaCapture _app_edl_point_capture(TstContext* suite, bool enabled)
         dvz_scene_destroy(scene);
         return out;
     }
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     if (panel == NULL)
     {
         dvz_scene_destroy(scene);
@@ -1251,7 +1251,7 @@ static DvzScene* _app_timer_test_scene(DvzFigure** out_figure)
         dvz_scene_destroy(scene);
         return NULL;
     }
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     if (panel == NULL)
     {
         dvz_scene_destroy(scene);
@@ -1278,7 +1278,7 @@ int test_app_offscreen(TstContext* suite, const TstCase* item)
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, desc);
+    DvzPanel* panel = dvz_panel(figure, &desc);
     AT(panel != NULL);
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
@@ -1381,7 +1381,7 @@ int test_app_view_desc_offscreen_scale(TstContext* suite, const TstCase* item)
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 80, 60, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
     DvzApp* app = _app_test_create(suite, scene);
@@ -1472,7 +1472,7 @@ int test_app_view_desc_offscreen_exact_pixels(TstContext* suite, const TstCase* 
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 0, 0, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
     DvzApp* app = _app_test_create(suite, scene);
@@ -1617,7 +1617,7 @@ int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanel* panel =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
     AT(panel != NULL);
 
     DvzVisual* visual = dvz_point(scene, 0);
@@ -1739,7 +1739,7 @@ int test_app_offscreen_query_requests_notify_hosted_callback(
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanel* panel =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
     AT(panel != NULL);
 
     DvzVisual* points = dvz_point(scene, 0);
@@ -1835,7 +1835,7 @@ int test_app_offscreen_shared_scene_request_frame_subscribers(
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanel* panel =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
     AT(panel != NULL);
 
     DvzApp* app1 = _app_test_create(suite, scene);
@@ -2243,7 +2243,7 @@ int test_app_offscreen_panel_three_visuals_all_drawn(TstContext* suite, const Ts
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     AT(panel != NULL);
 
     /* Three non-overlapping points: red (left), green (center), blue (right). */
@@ -2337,7 +2337,7 @@ int test_app_offscreen_point_depth_orders_overlap(TstContext* suite, const TstCa
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
     DvzVisual* near_visual = dvz_point(scene, 0);
@@ -2413,7 +2413,7 @@ int test_app_offscreen_point_depth_cue_darkens_far(TstContext* suite, const TstC
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
     DvzVisual* visual = dvz_point(scene, 0);
@@ -2497,7 +2497,7 @@ int test_app_offscreen_point_default_edge_has_fractional_pixels(
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     dvz_panel_set_background_color(panel, dvz_color_rgba(0, 0, 0, 255));
 
@@ -2573,7 +2573,7 @@ int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* ite
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, desc);
+    DvzPanel* panel = dvz_panel(figure, &desc);
     AT(panel != NULL);
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
@@ -2644,7 +2644,7 @@ int test_app_offscreen_path_join_has_no_center_gap(TstContext* suite, const TstC
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     DvzVisual* visual = dvz_path(scene, 0);
     AT(visual != NULL);
@@ -2756,7 +2756,7 @@ static int _app_render_path_join_stats(
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 128, 128, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
@@ -2904,7 +2904,7 @@ int test_app_offscreen_path_closed_star_seam_has_pixels(TstContext* suite, const
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 128, 128, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
@@ -2993,7 +2993,7 @@ int test_app_offscreen_pixel_square_has_nonblank_pixels(TstContext* suite, const
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     DvzVisual* visual = dvz_pixel(scene, 0);
     AT(visual != NULL);
@@ -3066,7 +3066,7 @@ int test_app_offscreen_points_edl_renders(TstContext* suite, const TstCase* item
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
     DvzVisual* visual = dvz_point(scene, 0);
@@ -3210,7 +3210,7 @@ int test_app_offscreen_mesh_ssao_changes_pixels(TstContext* suite, const TstCase
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 96, 96, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
     DvzColor back_color = {188, 196, 205, 255};
@@ -3300,7 +3300,7 @@ int test_app_offscreen_sphere_ssao_darkens_contact(TstContext* suite, const TstC
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 96, 96, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
     DvzColor back_color = {184, 192, 202, 255};
@@ -3400,7 +3400,7 @@ int test_app_offscreen_records_dvzr_frames(TstContext* suite, const TstCase* ite
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
@@ -3504,7 +3504,7 @@ int test_app_offscreen_image_has_nonblank_pixels(TstContext* suite, const TstCas
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, desc);
+    DvzPanel* panel = dvz_panel(figure, &desc);
     AT(panel != NULL);
     DvzVisual* visual = dvz_image(scene, 0);
     AT(visual != NULL);
@@ -3592,7 +3592,7 @@ int test_app_offscreen_colorbar_has_visible_ramp_and_labels(TstContext* suite, c
     DvzFigure* figure = dvz_figure(scene, 256, 192, 0);
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     AT(panel != NULL);
 
     DvzScale* scale = dvz_scale(
@@ -3740,7 +3740,7 @@ int test_app_offscreen_text_has_nonblank_pixels(TstContext* suite, const TstCase
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     AT(panel != NULL);
 
     DvzVisual* text = _scene_text_visual(scene, 0);
@@ -3822,7 +3822,7 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
     DvzFigure* figure = dvz_figure(scene, 256, 72, 0);
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     AT(panel != NULL);
 
     DvzVisual* text = _scene_text_visual(scene, 0);
@@ -3957,7 +3957,7 @@ int test_app_offscreen_text_block_raster_has_nonblank_pixels(
     DvzFigure* figure = dvz_figure(scene, 128, 96, 0);
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     AT(panel != NULL);
 
     DvzTextBlock block = {0};
@@ -4054,7 +4054,7 @@ int test_app_offscreen_overlay_rich_card_has_visible_pixels(
     DvzFigure* figure = dvz_figure(scene, 256, 160, 0);
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     AT(panel != NULL);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
@@ -4146,7 +4146,7 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstContext* sui
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
@@ -4318,7 +4318,7 @@ int test_app_offscreen_source_over_mesh_depth_and_blend(TstContext* suite, const
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
@@ -4394,7 +4394,7 @@ int test_app_offscreen_depth_peel_mesh_two_layers(TstContext* suite, const TstCa
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
@@ -4489,7 +4489,7 @@ int test_app_offscreen_depth_peel_mesh_three_layers(TstContext* suite, const Tst
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
@@ -4675,7 +4675,7 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstContext* suite, con
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzVisual* near_visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
@@ -4771,7 +4771,7 @@ int test_app_offscreen_lit_primitive_depth_cue_darkens_far(
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     ANN(visual);
@@ -4866,7 +4866,7 @@ int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* i
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     DvzVisual* visual = dvz_mesh(scene, 0);
     ANN(visual);
@@ -5122,7 +5122,7 @@ int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const 
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 128, 96, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     DvzVisual* visual = dvz_mesh(scene, 0);
     ANN(visual);
@@ -5208,7 +5208,7 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 128, 96, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
@@ -5300,7 +5300,7 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 96, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzScale* scale0 = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
@@ -5453,7 +5453,7 @@ int test_app_offscreen_retained_render_second_frame(TstContext* suite, const Tst
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, desc);
+    DvzPanel* panel = dvz_panel(figure, &desc);
     AT(panel != NULL);
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
@@ -5520,7 +5520,7 @@ int test_app_offscreen_image_retained_render_second_frame(TstContext* suite, con
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, desc);
+    DvzPanel* panel = dvz_panel(figure, &desc);
     AT(panel != NULL);
     DvzVisual* visual = dvz_image(scene, 0);
     AT(visual != NULL);
@@ -5605,7 +5605,7 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 96, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.05f, 0.05f, 0.08f, 1.0f));
 
@@ -5741,7 +5741,7 @@ int test_app_offscreen_query_request_steady_state(TstContext* suite, const TstCa
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanel* panel =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
     AT(panel != NULL);
 
     DvzVisual* points = dvz_point(scene, 0);
@@ -5849,7 +5849,7 @@ int test_app_offscreen_gsp_first_slice_smoke(TstContext* suite, const TstCase* i
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanel* panel =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
     AT(panel != NULL);
 
     DvzVisual* image = dvz_image(scene, 0);
@@ -6009,7 +6009,7 @@ int test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke(
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanel* panel =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
     AT(panel != NULL);
 
     DvzVisual* image = dvz_image(scene, 0);
@@ -6171,8 +6171,8 @@ int test_app_offscreen_two_panel_points_light_both_halves(TstContext* suite, con
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 96, 64, 0);
     AT(figure != NULL);
-    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
-    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
     AT(left != NULL);
     AT(right != NULL);
 
@@ -6499,7 +6499,7 @@ int test_app_offscreen_clear_color(TstContext* suite, const TstCase* item)
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, desc);
+    DvzPanel* panel = dvz_panel(figure, &desc);
     (void)panel;
     AT(panel != NULL);
 
@@ -6559,7 +6559,7 @@ int test_app_offscreen_midgray_srgb_readback(TstContext* suite, const TstCase* i
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
@@ -6629,7 +6629,7 @@ int test_app_offscreen_legacy_srgb_blend_readback(TstContext* suite, const TstCa
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     dvz_figure_set_color_pipeline(figure, DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
@@ -6698,7 +6698,7 @@ int test_app_offscreen_linear_color_field_not_decoded(TstContext* suite, const T
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
@@ -6807,7 +6807,7 @@ int test_app_offscreen_alpha_over_nonblack_linear(TstContext* suite, const TstCa
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
@@ -6892,7 +6892,7 @@ int test_app_offscreen_colormap_srgb_lut_linear_blend(TstContext* suite, const T
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
@@ -7005,7 +7005,7 @@ int test_app_capture_rejects_wrong_dimensions(TstContext* suite, const TstCase* 
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, desc);
+    DvzPanel* panel = dvz_panel(figure, &desc);
     AT(panel != NULL);
     (void)panel;
 
@@ -7047,7 +7047,7 @@ int test_app_capture_rejects_undersized_buffer(TstContext* suite, const TstCase*
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, desc);
+    DvzPanel* panel = dvz_panel(figure, &desc);
     AT(panel != NULL);
     (void)panel;
 
@@ -7098,7 +7098,7 @@ int test_app_offscreen_volume_slice_renders_field(TstContext* suite, const TstCa
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -7179,7 +7179,7 @@ int test_app_offscreen_volume_rgba_srgb_linear_blend(TstContext* suite, const Ts
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
@@ -7285,7 +7285,7 @@ int test_app_offscreen_volume_mip_renders_bright_slice(TstContext* suite, const 
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -7373,7 +7373,7 @@ int test_app_offscreen_volume_composite_renders_field(TstContext* suite, const T
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -7457,7 +7457,7 @@ int test_app_offscreen_volume_label_composite_renders_category(
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -7559,7 +7559,7 @@ int test_app_offscreen_volume_label_composite_renders_sparse_category(
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -7666,7 +7666,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
         dvz_scene_destroy(scene);
         return out;
     }
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     if (panel == NULL)
     {
         dvz_scene_destroy(scene);
@@ -8045,7 +8045,7 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzSampledField* field = dvz_sampled_field(
@@ -8213,7 +8213,7 @@ int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, con
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzVisual* occluder = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);

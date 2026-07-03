@@ -557,13 +557,21 @@ DVZ_EXPORT DvzMsaaDesc dvz_msaa_desc(void);
 
 
 /**
+ * Return the default panel descriptor.
+ *
+ * @return full-figure panel descriptor
+ */
+DVZ_EXPORT DvzPanelDesc dvz_panel_desc(void);
+
+
+/**
  * Create a panel inside a figure.
  *
  * @param figure the figure
- * @param desc panel position and size in normalized [0, 1] figure coordinates
+ * @param desc panel position and size in normalized [0, 1] figure coordinates, or NULL for defaults
  * @return the panel
  */
-DVZ_EXPORT DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc);
+DVZ_EXPORT DvzPanel* dvz_panel(DvzFigure* figure, const DvzPanelDesc* desc);
 
 
 /**
@@ -583,9 +591,9 @@ DVZ_EXPORT DvzId dvz_panel_id(const DvzPanel* panel);
  *
  * @param panel the panel
  * @param desc panel position and size in normalized [0, 1] figure coordinates
- * @return whether the descriptor was accepted
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT bool dvz_panel_set_desc(DvzPanel* panel, DvzPanelDesc desc);
+DVZ_EXPORT DvzResult dvz_panel_set_desc(DvzPanel* panel, const DvzPanelDesc* desc);
 
 
 /**

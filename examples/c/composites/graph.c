@@ -489,7 +489,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");
 
-    DvzPanel* panel = dvz_panel(ctx->figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(ctx->figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
     EXAMPLE_CHECK(_configure_panel(panel), "panel configuration failed");
     EXAMPLE_CHECK(_add_graph(ctx->scene, panel), "graph setup failed");

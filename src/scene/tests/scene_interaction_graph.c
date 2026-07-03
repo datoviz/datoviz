@@ -538,16 +538,18 @@ int test_scene_grid_panel_tracks_figure_resize(TstContext* suite, const TstCase*
     AC(colorbar->desc.x, 0.85f, 1e-6f);
     AC(colorbar->desc.width, 0.15f, 1e-6f);
 
-    AT(dvz_panel_set_desc(data, (DvzPanelDesc){.x = 0.1f, .y = 0.1f, .width = 0.8f,
-                                               .height = 0.8f}));
+    AT(dvz_panel_set_desc(
+           data, &(DvzPanelDesc){.x = 0.1f, .y = 0.1f, .width = 0.8f, .height = 0.8f}) ==
+       DVZ_OK);
     dvz_figure_resize(figure, 500, 100);
     AC(data->desc.x, 0.1f, 1e-6f);
     AC(data->desc.width, 0.8f, 1e-6f);
     AC(colorbar->desc.x, 0.88f, 1e-6f);
     AC(colorbar->desc.width, 0.12f, 1e-6f);
 
-    AT(!dvz_panel_set_desc(colorbar, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 0.0f,
-                                                    .height = 1.0f}));
+    AT(dvz_panel_set_desc(
+           colorbar, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 0.0f, .height = 1.0f}) !=
+       DVZ_OK);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -946,7 +948,7 @@ int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item)
      * before the front visual (z=+1). */
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
 
     float pos5[5 * 3] = {0};
     float pos3[3 * 3] = {0};
@@ -1006,7 +1008,7 @@ int test_scene_background_color_creates_fixed_quad(TstContext* suite, const TstC
 
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
 
     /* Initially no visuals. */
     AT(panel->visual_count == 0);
@@ -1055,7 +1057,7 @@ int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const
 
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
 
     DvzPanelBackgroundDesc gradient = {DVZ_STRUCT_INIT_FIELDS(DvzPanelBackgroundDesc),
         .type = DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT,
@@ -1132,7 +1134,7 @@ int test_scene_panel_border_creates_fixed_overlay(TstContext* suite, const TstCa
 
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 100, 80, 0);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
 
     DvzPanelBorderDesc border = dvz_panel_border_desc();
     border.color = dvz_color_rgba(10, 20, 30, 255);
@@ -1203,7 +1205,7 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
 
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 128, 96, 0);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     AT(dvz_panel_set_padding(
         panel, &(DvzPanelReserve){
                    .left_px = 8.0f,
@@ -1354,7 +1356,7 @@ int test_scene_panel_frame_snapshot_core(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 400, 300, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.25f, 0.20f, 0.50f, 0.60f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.25f, 0.20f, 0.50f, 0.60f});
     ANN(panel);
 
     AT(dvz_panel_set_padding(
@@ -1587,7 +1589,7 @@ int test_scene_panel_view3d_state_readback(TstContext* suite, const TstCase* ite
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 320, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzPanelView3DDesc desc = dvz_panel_view3d_desc();
@@ -1655,8 +1657,8 @@ int test_scene_adjacent_panels_plot_scissor_no_bleed(TstContext* suite, const Ts
 
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
-    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
-    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
 
     AT(dvz_panel_set_reserve(left, &(DvzPanelReserve){.right_px = 20.0f}));
     AT(dvz_panel_set_reserve(right, &(DvzPanelReserve){.left_px = 20.0f}));
@@ -1798,7 +1800,7 @@ int test_scene_visual_local_transform_emits_per_visual_mvp(TstContext* suite, co
 
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
 
     vec3 pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor col[1] = {{255, 255, 255, 255}};
@@ -1846,7 +1848,7 @@ int test_scene_visual_data_coord_space_tracks_panel_view2d_resize(
 
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 100, 100, 0);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
 
     DvzPanelView2D view = dvz_panel_view2d();
     view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
@@ -1905,7 +1907,7 @@ int test_scene_equal_aspect_view_and_panel_coord_spaces(TstContext* suite, const
 
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
 
     DvzPanelView2D view = dvz_panel_view2d();
     view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
@@ -1964,7 +1966,7 @@ int test_scene_mesh_local_transform_without_instances(TstContext* suite, const T
 
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     DvzVisual* mesh = dvz_mesh(scene, 0);
 
     vec3 positions[3] = {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
@@ -2007,7 +2009,7 @@ int test_scene_visual_local_transform_family_audit(TstContext* suite, const TstC
     {
         DvzScene* scene = dvz_scene();
         DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
-        DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+        DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
         ANN(panel);
 
         DvzVisual* visual = _local_transform_audit_visual(scene, types[i]);
@@ -2045,7 +2047,7 @@ int test_scene_controller_mode_fixed_emits_separate_mvp(TstContext* suite, const
      * identity, and writes never overwrite each other. */
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     /* Note: we don't actually run a panzoom here — the controller_mode flag alone
      * determines whether the converter writes identity or the controller MVP. */
 
@@ -2113,7 +2115,7 @@ int test_scene_split_pass_visuals_emit_separate_common_mvp(TstContext* suite, co
      * stable visual/pass identity and not just the local slot index. */
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
 
     vec3 pos[1] = {{0.25f, 0.25f, 0.0f}};
     DvzColor opaque_col[1] = {{255, 0, 0, 255}};
@@ -2197,7 +2199,7 @@ int test_scene_panel_one_pass_per_panel(TstContext* suite, const TstCase* item)
 
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
 
     float pos[3 * 3] = {0};
     DvzColor col[3]  = {0};
@@ -2261,8 +2263,8 @@ int test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state(
 
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
-    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0, 0, 0.5f, 1});
-    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0, 0.5f, 1});
+    DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0, 0, 0.5f, 1});
+    DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0, 0.5f, 1});
 
     float pos_l[3] = {-0.5f, 0.0f, 0.0f};
     float pos_r[3] = {0.5f, 0.0f, 0.0f};
@@ -2338,8 +2340,8 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
 
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 128, 64, 0);
-    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
-    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
 
     float pos_l[3] = {-0.6f, 0.0f, 0.0f};
     float pos_r[3] = {0.6f, 0.0f, 0.0f};
@@ -2443,7 +2445,7 @@ int test_scene_overlapping_depth_panels_glsl_clear_depth(TstContext* suite, cons
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 128, 128, 0);
     DvzPanel* main = dvz_panel_full(figure);
-    DvzPanel* inset = dvz_panel(figure, (DvzPanelDesc){0.55f, 0.55f, 0.35f, 0.35f});
+    DvzPanel* inset = dvz_panel(figure, &(DvzPanelDesc){0.55f, 0.55f, 0.35f, 0.35f});
     AT(main != NULL);
     AT(inset != NULL);
 

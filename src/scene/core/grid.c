@@ -604,7 +604,7 @@ DvzPanel* dvz_grid_panel_span(
     if (!dvz_grid_resolve(grid, grid->figure->width, grid->figure->height, cell, &desc))
         return NULL;
 
-    DvzPanel* panel = dvz_panel(grid->figure, desc);
+    DvzPanel* panel = dvz_panel(grid->figure, &desc);
     if (panel == NULL)
         return NULL;
     if (!_scene_grid_attach_panel(grid, panel, cell))

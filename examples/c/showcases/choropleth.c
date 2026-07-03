@@ -718,7 +718,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (ctx->figure == NULL)
         goto fail;
 
-    DvzPanel* panel = dvz_panel(ctx->figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(ctx->figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     if (panel == NULL)
         goto fail;
     if (!_configure_panel(panel, &state->bundle))

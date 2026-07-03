@@ -787,7 +787,7 @@ static bool _orientation_gizmo_refresh_layout(DvzOrientationGizmo* gizmo)
     DvzPanelDesc desc = {0};
     if (!_orientation_gizmo_panel_desc(gizmo->source_panel, &gizmo->desc.placement, &desc))
         return false;
-    if (!dvz_panel_set_desc(gizmo->panel, desc))
+    if (dvz_panel_set_desc(gizmo->panel, &desc) != DVZ_OK)
         return false;
 
     if (gizmo->panel->camera != NULL)
@@ -943,7 +943,7 @@ DvzOrientationGizmo* dvz_orientation_gizmo(
     DvzPanelDesc panel_desc = {0};
     if (!_orientation_gizmo_panel_desc(panel, &resolved.placement, &panel_desc))
         goto fail;
-    gizmo->panel = dvz_panel(panel->figure, panel_desc);
+    gizmo->panel = dvz_panel(panel->figure, &panel_desc);
     if (gizmo->panel == NULL)
         goto fail;
 

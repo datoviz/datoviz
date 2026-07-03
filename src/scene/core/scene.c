@@ -731,17 +731,25 @@ DvzSceneOcclusionDesc dvz_scene_occlusion_desc(void)
 
 
 
-DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
+DvzPanelDesc dvz_panel_desc(void)
+{
+    return (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f};
+}
+
+
+
+DvzPanel* dvz_panel(DvzFigure* figure, const DvzPanelDesc* desc)
 {
     ANN(figure);
-    if (!_panel_desc_valid(desc))
+    DvzPanelDesc panel_desc = desc != NULL ? *desc : dvz_panel_desc();
+    if (!_panel_desc_valid(panel_desc))
         return NULL;
     if (figure->panel_count >= DVZ_SCENE_MAX_PANELS)
         return NULL;
     DvzPanel* panel       = &figure->panels[figure->panel_count++];
     panel->figure         = figure;
     panel->id             = _scene_next_id(figure->scene);
-    panel->desc           = desc;
+    panel->desc           = panel_desc;
     panel->grid           = NULL;
     panel->grid_cell      = (DvzGridCell){0};
     panel->base_reserve   = (DvzPanelReserve){0};
@@ -785,17 +793,17 @@ DvzId dvz_panel_id(const DvzPanel* panel)
  *
  * @param panel the panel
  * @param desc panel position and size in normalized [0, 1] figure coordinates
- * @return whether the descriptor was accepted
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-bool dvz_panel_set_desc(DvzPanel* panel, DvzPanelDesc desc)
+DvzResult dvz_panel_set_desc(DvzPanel* panel, const DvzPanelDesc* desc)
 {
     if (panel == NULL)
-        return false;
-    if (!_panel_desc_valid(desc))
-        return false;
+        return DVZ_ERROR;
+    if (desc == NULL || !_panel_desc_valid(*desc))
+        return DVZ_ERROR;
     panel->grid = NULL;
     panel->grid_cell = (DvzGridCell){0};
-    return _scene_panel_set_desc_internal(panel, desc);
+    return _scene_panel_set_desc_internal(panel, *desc) ? DVZ_OK : DVZ_ERROR;
 }
 
 
@@ -808,7 +816,7 @@ bool dvz_panel_set_desc(DvzPanel* panel, DvzPanelDesc desc)
  */
 DvzPanel* dvz_panel_full(DvzFigure* figure)
 {
-    return dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    return dvz_panel(figure, NULL);
 }
 
 

@@ -170,9 +170,9 @@ int main(int argc, char** argv)
     DvzFigure* figure = dvz_figure(scene, 1200, 720, 0);
     EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
-    DvzPanel* panel_2d = dvz_panel(figure, (DvzPanelDesc){0.04f, 0.08f, 0.44f, 0.84f});
+    DvzPanel* panel_2d = dvz_panel(figure, &(DvzPanelDesc){0.04f, 0.08f, 0.44f, 0.84f});
     EXAMPLE_CHECK(panel_2d != NULL, "dvz_panel() failed for 2D panel");
-    DvzPanel* panel_3d = dvz_panel(figure, (DvzPanelDesc){0.52f, 0.08f, 0.44f, 0.84f});
+    DvzPanel* panel_3d = dvz_panel(figure, &(DvzPanelDesc){0.52f, 0.08f, 0.44f, 0.84f});
     EXAMPLE_CHECK(panel_3d != NULL, "dvz_panel() failed for 3D panel");
     dvz_panel_set_background_color(panel_2d, dvz_color_from_unit(0.06f, 0.07f, 0.09f, 1.0f));
     dvz_panel_set_background_color(panel_3d, dvz_color_from_unit(0.07f, 0.065f, 0.075f, 1.0f));

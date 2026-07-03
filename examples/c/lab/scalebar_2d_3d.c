@@ -273,10 +273,10 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     DvzPanel* panel_2d =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0.00f, .y = 0.00f, .width = 0.50f, .height = 1.0f});
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0.00f, .y = 0.00f, .width = 0.50f, .height = 1.0f});
     EXAMPLE_CHECK(panel_2d != NULL, "dvz_panel(2d) failed");
     DvzPanel* panel_3d =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0.50f, .y = 0.00f, .width = 0.50f, .height = 1.0f});
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0.50f, .y = 0.00f, .width = 0.50f, .height = 1.0f});
     EXAMPLE_CHECK(panel_3d != NULL, "dvz_panel(3d) failed");
 
     dvz_panel_set_background_color(panel_2d, dvz_color_from_unit(0.040f, 0.050f, 0.060f, 1.0f));

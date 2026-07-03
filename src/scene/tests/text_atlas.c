@@ -389,7 +389,7 @@ int test_scene_text_atlas_utf8_runtime_readback(TstContext* suite, const TstCase
     DvzFigure* figure = dvz_figure(scene, width, height, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* text = _scene_text_visual(scene, 0);

@@ -263,10 +263,10 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     DvzPanel* panels[4] = {
-        dvz_panel(figure, (DvzPanelDesc){.x = 0.00f, .y = 0.00f, .width = 0.50f, .height = 0.50f}),
-        dvz_panel(figure, (DvzPanelDesc){.x = 0.50f, .y = 0.00f, .width = 0.50f, .height = 0.50f}),
-        dvz_panel(figure, (DvzPanelDesc){.x = 0.00f, .y = 0.50f, .width = 0.50f, .height = 0.50f}),
-        dvz_panel(figure, (DvzPanelDesc){.x = 0.50f, .y = 0.50f, .width = 0.50f, .height = 0.50f}),
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0.00f, .y = 0.00f, .width = 0.50f, .height = 0.50f}),
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0.50f, .y = 0.00f, .width = 0.50f, .height = 0.50f}),
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0.00f, .y = 0.50f, .width = 0.50f, .height = 0.50f}),
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0.50f, .y = 0.50f, .width = 0.50f, .height = 0.50f}),
     };
     for (uint32_t i = 0; i < 4; i++)
     {

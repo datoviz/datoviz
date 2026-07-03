@@ -208,8 +208,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (ctx->figure == NULL)
         return false;
 
-    DvzPanel* panel_2d = dvz_panel(ctx->figure, (DvzPanelDesc){0.04f, 0.08f, 0.44f, 0.84f});
-    DvzPanel* panel_3d = dvz_panel(ctx->figure, (DvzPanelDesc){0.52f, 0.08f, 0.44f, 0.84f});
+    DvzPanel* panel_2d = dvz_panel(ctx->figure, &(DvzPanelDesc){0.04f, 0.08f, 0.44f, 0.84f});
+    DvzPanel* panel_3d = dvz_panel(ctx->figure, &(DvzPanelDesc){0.52f, 0.08f, 0.44f, 0.84f});
     if (panel_2d == NULL || panel_3d == NULL)
         return false;
     example_graphite_cyan_set_panel_background(panel_2d);

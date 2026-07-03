@@ -209,7 +209,7 @@ int main(int argc, char** argv)
     DvzFigure* figure = dvz_figure(scene, 1000, 700, 0);
     EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.08f, 0.06f, 0.86f, 0.86f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.08f, 0.06f, 0.86f, 0.86f});
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.07f, 0.08f, 0.11f, 1.0f));
 

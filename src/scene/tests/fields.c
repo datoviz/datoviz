@@ -194,7 +194,7 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 100, 100, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(
@@ -442,7 +442,7 @@ int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* it
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 400, 300, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
@@ -539,7 +539,7 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 500, 320, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
@@ -661,7 +661,7 @@ int test_scene_legend_emit_stream_contains_derived_visuals(
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
@@ -745,7 +745,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(
@@ -952,7 +952,7 @@ int test_scene_colorbar_prepare_is_idempotent(TstContext* suite, const TstCase* 
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
@@ -1017,7 +1017,7 @@ int test_scene_colorbar_auto_reserve_tracks_resize(TstContext* suite, const TstC
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
@@ -1081,7 +1081,7 @@ int test_scene_colorbar_left_title_uses_content_lane(TstContext* suite, const Ts
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(
@@ -1146,7 +1146,7 @@ int test_scene_colorbar_attached_respects_panel_padding(TstContext* suite, const
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_padding(
@@ -1253,7 +1253,7 @@ int test_scene_colorbar_detached_placement(TstContext* suite, const TstCase* ite
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){
@@ -1335,7 +1335,7 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
     AT(dvz_panel_set_reserve(panel, &(DvzPanelReserve){.left_px = 24.0f}));
 
@@ -1437,7 +1437,7 @@ static int test_scene_colorbar_explicit_ticks_and_labels(TstContext* suite, cons
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(
@@ -1563,7 +1563,7 @@ int test_scene_colorbar_emit_stream_contains_derived_visuals(
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(
@@ -1691,7 +1691,7 @@ int test_scene_colorbar_invalid_domain_reports_diagnostic(
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
@@ -1734,7 +1734,7 @@ int test_scene_colorbar_rejects_unsupported_requests(TstContext* suite, const Ts
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 256, 256, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
@@ -1773,7 +1773,7 @@ int test_scene_colorbar_rejects_cross_scene_scale(TstContext* suite, const TstCa
 
     DvzFigure* figure = dvz_figure(scene0, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
     DvzScale* foreign_scale = dvz_scale(scene1, NULL);
     ANN(foreign_scale);
@@ -1814,7 +1814,7 @@ int test_scene_image_visual_binds_colormap_scale(TstContext* suite, const TstCas
 
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
@@ -2223,7 +2223,7 @@ int test_scene_image_scalar_texture_uses_bound_scale(TstContext* suite, const Ts
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
@@ -2287,7 +2287,7 @@ int test_scene_image_r16_float_field_uses_bound_scale(TstContext* suite, const T
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
@@ -2362,7 +2362,7 @@ int test_scene_image_r16_snorm_field_uses_bound_scale(TstContext* suite, const T
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
@@ -2702,7 +2702,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstContext* suite, const Ts
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -3176,7 +3176,7 @@ int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* i
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -3386,7 +3386,7 @@ int test_scene_volume_label_slice_uses_categorical_scale(TstContext* suite, cons
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -3466,7 +3466,7 @@ int test_scene_volume_label_composite_uses_first_hit_shader(
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -3539,7 +3539,7 @@ int test_scene_volume_signed_label_composite_uses_first_hit_shader(
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -3610,7 +3610,7 @@ int test_scene_volume_label_sparse_lookup_buffer(TstContext* suite, const TstCas
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -3693,7 +3693,7 @@ int test_scene_volume_signed_label_sparse_lookup_buffer(TstContext* suite, const
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -3776,7 +3776,7 @@ int test_scene_volume_label_mip_reports_unsupported(TstContext* suite, const Tst
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -3834,7 +3834,7 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, c
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzVisual* volume = dvz_volume(scene, 0);
@@ -4234,7 +4234,7 @@ int test_scene_image_field_partial_update_emits_texture_subregion(TstContext* su
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
@@ -4338,7 +4338,7 @@ int test_scene_image_field_resize_emits_texture_reallocation(TstContext* suite, 
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzVisual* image = dvz_image(scene, 0);
@@ -4460,7 +4460,7 @@ int test_scene_shared_field_mixed_full_and_partial_uploads(TstContext* suite, co
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzScale* scale0 = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
@@ -4583,7 +4583,7 @@ int test_scene_scale_guide_descriptor_abi_rejects_invalid_structs(
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzScaleDesc scale_desc = dvz_scale_desc();

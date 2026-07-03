@@ -48,7 +48,7 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 400, 300, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.25f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.25f, 0.0f, 0.5f, 1.0f});
     AT(panel != NULL);
 
     DvzVisual* point = dvz_point(scene, 0);

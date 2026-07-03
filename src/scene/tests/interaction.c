@@ -207,7 +207,7 @@ int test_scene_interaction_core(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     DvzInteractionPolicy* interaction = dvz_interaction(scene);
     DvzSelection* selection = dvz_selection(
         scene,
@@ -249,7 +249,7 @@ int test_scene_interaction_descriptor_abi_rejects_invalid_structs(
     DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzSelectionDesc selection_desc = dvz_selection_desc();
@@ -319,7 +319,7 @@ int test_scene_text_annotation_descriptor_abi_rejects_invalid_structs(
     DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzFontDesc font_desc = dvz_font_desc();
@@ -559,7 +559,7 @@ int test_scene_overlay_descriptor_abi_rejects_invalid_structs(
     DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
     DvzOverlay* overlay = dvz_overlay(panel, 0);
     ANN(overlay);
@@ -608,7 +608,7 @@ int test_scene_item_interaction_defaults_and_lifetime(TstContext* suite, const T
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(figure);
     ANN(panel);
 
@@ -653,7 +653,7 @@ int test_scene_item_interaction_input_queries(TstContext* suite, const TstCase* 
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     DvzInputRouter* router = dvz_input_router();
     ANN(figure);
     ANN(panel);
@@ -704,7 +704,7 @@ int test_scene_item_interaction_applies_results(TstContext* suite, const TstCase
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(figure);
     ANN(panel);
 
@@ -822,7 +822,7 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     DvzLinkChannel* channel = dvz_link_channel(scene, "items");
     DvzSelection* selection = dvz_selection(
         scene,
@@ -1441,7 +1441,7 @@ int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const T
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     DvzSelection* selection = dvz_selection(
         scene,
         &(DvzSelectionDesc){
@@ -1500,7 +1500,7 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(figure);
     ANN(panel);
 
@@ -1651,7 +1651,7 @@ int test_scene_overlay_card_desc_defaults(TstContext* suite, const TstCase* item
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(figure);
     ANN(panel);
     DvzOverlay* overlay = dvz_overlay(panel, 0);
@@ -1681,7 +1681,7 @@ int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCas
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(figure);
     ANN(panel);
 
@@ -1807,7 +1807,7 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     DvzFont* font = dvz_font(
         scene,
         &(DvzFontDesc){DVZ_STRUCT_INIT_FIELDS(DvzFontDesc),
@@ -3121,9 +3121,9 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
     DvzFigure* figure = dvz_figure(scene, 1100, 620, 0);
     ANN(figure);
     DvzPanel* left = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 0.5f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 0.5f, .height = 1.0f});
     DvzPanel* right = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.5f, .y = 0.0f, .width = 0.5f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.5f, .y = 0.0f, .width = 0.5f, .height = 1.0f});
     ANN(left);
     ANN(right);
     dvz_panel_set_background_color(left, dvz_color_from_unit(0.04f, 0.05f, 0.06f, 1.0f));
@@ -3332,7 +3332,7 @@ int test_scene_font_defaults(TstContext* suite, const TstCase* item)
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
     DvzText* text = dvz_text(panel, 0);
     ANN(text);
@@ -3379,7 +3379,7 @@ int test_scene_text_sdf_default_font(TstContext* suite, const TstCase* item)
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* text = _scene_text_visual(scene, 0);
@@ -3414,7 +3414,7 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
 
     DvzText* text = dvz_text(panel, 0);
     ANN(text);
@@ -3733,7 +3733,7 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* text = _scene_text_visual(scene, 0);
@@ -3922,7 +3922,7 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* text = _scene_text_visual(scene, 0);
@@ -4066,7 +4066,7 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* small_text = _scene_text_visual(scene, 0);
@@ -4169,7 +4169,7 @@ int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* ascii = _scene_text_visual(scene, 0);
@@ -4269,7 +4269,7 @@ int test_scene_text_font_atlas_missing_glyph_fallback(TstContext* suite, const T
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* text = _scene_text_visual(scene, 0);
@@ -4321,7 +4321,7 @@ int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* it
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     const uint32_t label_count = 16;
@@ -4397,7 +4397,7 @@ int test_scene_text_panzoom_glyph_anchor_coordinates(TstContext* suite, const Ts
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* text = _scene_text_visual(scene, 0);
@@ -4451,7 +4451,7 @@ int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, con
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzVisual* text = _scene_text_visual(scene, 0);
@@ -4712,7 +4712,7 @@ int test_scene_text_block_image_lowering(TstContext* suite, const TstCase* item)
     DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
     DvzTextBlock block = {0};

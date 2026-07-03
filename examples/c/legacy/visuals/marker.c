@@ -628,7 +628,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     DvzPanel* panel =
-        dvz_panel(figure, (DvzPanelDesc){
+        dvz_panel(figure, &(DvzPanelDesc){
                               MARKER_STRESS_PANEL_X,
                               MARKER_STRESS_PANEL_Y,
                               MARKER_STRESS_PANEL_W,

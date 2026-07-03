@@ -151,7 +151,7 @@ int test_panel_turntable_getter(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     AT(panel->turntable == NULL);
@@ -234,7 +234,7 @@ int test_turntable_scene_binding_uses_panel_input(TstContext* suite, const TstCa
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
     ANN(panel);
 
     DvzController* controller = dvz_turntable(scene, NULL);

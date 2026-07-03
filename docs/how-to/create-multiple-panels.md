@@ -71,9 +71,9 @@ coordinates:
 
 ```c
 DvzPanel* left = dvz_panel(
-    figure, (DvzPanelDesc){.x = 0.08f, .y = 0.16f, .width = 0.40f, .height = 0.68f});
+    figure, &(DvzPanelDesc){.x = 0.08f, .y = 0.16f, .width = 0.40f, .height = 0.68f});
 DvzPanel* right = dvz_panel(
-    figure, (DvzPanelDesc){.x = 0.52f, .y = 0.16f, .width = 0.40f, .height = 0.68f});
+    figure, &(DvzPanelDesc){.x = 0.52f, .y = 0.16f, .width = 0.40f, .height = 0.68f});
 ```
 
 Use `dvz_panel_set_desc()` when a retained panel needs a new normalized rectangle after creation.

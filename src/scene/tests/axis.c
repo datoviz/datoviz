@@ -810,7 +810,7 @@ int test_axis_domain_and_ticks(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
@@ -870,7 +870,7 @@ static int test_axis_minor_ticks(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
@@ -901,7 +901,7 @@ static int test_axis_spine_draws_after_ticks(TstContext* suite, const TstCase* i
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
@@ -943,7 +943,7 @@ static int test_axis_tick_density_tracks_panel_size(TstContext* suite, const Tst
     ANN(narrow_scene);
     DvzFigure* narrow_figure = dvz_figure(narrow_scene, 300, 400, 0);
     ANN(narrow_figure);
-    DvzPanel* narrow_panel = dvz_panel(narrow_figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* narrow_panel = dvz_panel(narrow_figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(narrow_panel);
     AT(dvz_panel_set_domain(narrow_panel, DVZ_DIM_X, 0.0, 10.0) == 0);
     DvzAxis* narrow_axis = dvz_panel_axis(narrow_panel, DVZ_DIM_X);
@@ -955,7 +955,7 @@ static int test_axis_tick_density_tracks_panel_size(TstContext* suite, const Tst
     ANN(wide_scene);
     DvzFigure* wide_figure = dvz_figure(wide_scene, 1300, 400, 0);
     ANN(wide_figure);
-    DvzPanel* wide_panel = dvz_panel(wide_figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* wide_panel = dvz_panel(wide_figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(wide_panel);
     AT(dvz_panel_set_domain(wide_panel, DVZ_DIM_X, 0.0, 10.0) == 0);
     DvzAxis* wide_axis = dvz_panel_axis(wide_panel, DVZ_DIM_X);
@@ -987,7 +987,7 @@ static int test_axis_text_labels(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
@@ -1057,7 +1057,7 @@ static int test_axis_explicit_ticks_and_labels(TstContext* suite, const TstCase*
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
@@ -1117,7 +1117,7 @@ static int test_axis_explicit_reversed_ticks_grid_alignment(
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 10.0, 0.0) == 0);
@@ -1166,7 +1166,7 @@ static int test_axis_numeric_unit_labels(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 5000.0) == 0);
@@ -1218,7 +1218,7 @@ static int test_axis_numeric_offset_labels(TstContext* suite, const TstCase* ite
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 1000000.0, 1000000.00001) == 0);
@@ -1271,7 +1271,7 @@ static int test_axis_unit_offset_labels(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 1000000.0, 1000000.00001) == 0);
@@ -1311,7 +1311,7 @@ static int test_axis_datetime_labels(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
@@ -1402,7 +1402,7 @@ static int test_axis_text_hidpi_scales_glyph_bounds(TstContext* suite, const Tst
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
@@ -1459,7 +1459,7 @@ static int test_axis_text_renderer_style(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
 
@@ -1495,7 +1495,7 @@ static int test_axis_text_updates_after_domain_change(TstContext* suite, const T
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 100.0) == 0);
@@ -1526,7 +1526,7 @@ static int test_axis_text_pixel_reserve(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
@@ -1569,7 +1569,7 @@ static int test_axis_text_inset_panel_coordinates(TstContext* suite, const TstCa
     DvzFigure* figure = dvz_figure(scene, 1000, 700, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.08f, .y = 0.06f, .width = 0.86f, .height = 0.86f});
+        figure, &(DvzPanelDesc){.x = 0.08f, .y = 0.06f, .width = 0.86f, .height = 0.86f});
     ANN(panel);
 
     AT(dvz_panel_set_reserve(
@@ -1660,7 +1660,7 @@ int test_panel_data_model_positions(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     float data[] = {0.0f, -5.0f, 2.0f, 5.0f, 5.0f, 3.0f, 10.0f, 0.0f, 4.0f};
@@ -1705,7 +1705,7 @@ int test_panel_transform_point(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.25f, 0.125f, 0.5f, 0.5f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.25f, 0.125f, 0.5f, 0.5f});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
@@ -1841,7 +1841,7 @@ static int test_axis_plot_margins(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
@@ -1895,7 +1895,7 @@ static int test_axis_panel_reserve(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     float plot_visual[4] = {0};
@@ -2117,7 +2117,7 @@ int test_panel_visible_domain(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     double min = 0.0;
@@ -2155,7 +2155,7 @@ static int test_panel_view2d(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzPanelView2D view = dvz_panel_view2d();
@@ -2276,7 +2276,7 @@ static int test_panel_view2d_reversed_domains(TstContext* suite, const TstCase* 
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     DvzPanelView2D view = dvz_panel_view2d();
@@ -2342,7 +2342,7 @@ int test_axis_panzoom_visible_domain(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 100.0) == 0);
@@ -2469,7 +2469,7 @@ static int test_axis_grid_uses_plot_source_extent(TstContext* suite, const TstCa
     DvzFigure* figure = dvz_figure(scene, 1600, 1200, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){46.0f / 1600.0f, 46.0f / 1200.0f, 737.0f / 1600.0f,
+        figure, &(DvzPanelDesc){46.0f / 1600.0f, 46.0f / 1200.0f, 737.0f / 1600.0f,
                                1096.0f / 1200.0f});
     ANN(panel);
     AT(dvz_panel_set_padding(
@@ -3114,7 +3114,7 @@ static int test_axis_zoom_out_in_grid_regression(TstContext* suite, const TstCas
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 900, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 100.0) == 0);
@@ -3149,7 +3149,7 @@ static int test_axis_panzoom_resize_visual_smoke(TstContext* suite, const TstCas
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 1000, 700, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -10.0, 10.0) == 0);
@@ -3203,7 +3203,7 @@ static int test_axis_static_prepare_idempotent(TstContext* suite, const TstCase*
     DvzFigure* figure = dvz_figure(scene, 1000, 700, 0);
     ANN(figure);
     DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.08f, .y = 0.06f, .width = 0.86f, .height = 0.86f});
+        figure, &(DvzPanelDesc){.x = 0.08f, .y = 0.06f, .width = 0.86f, .height = 0.86f});
     ANN(panel);
 
     AT(dvz_panel_set_reserve(
@@ -3257,7 +3257,7 @@ static int test_axis_visual_clip_rect_panel(TstContext* suite, const TstCase* it
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 240, 180, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_reserve(
@@ -3329,7 +3329,7 @@ int test_axis_dynamic_segment_draw_count(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 100.0) == 0);
@@ -3376,7 +3376,7 @@ int test_axis_descriptor_abi_rejects_invalid_structs(TstContext* suite, const Ts
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(axis);

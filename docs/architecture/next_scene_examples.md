@@ -57,7 +57,7 @@ Fill with random values (use `dvz_rand_float()` or plain `rand()`).
 ```c
 DvzScene*  scene  = dvz_scene();
 DvzFigure* fig    = dvz_figure(scene, 800, 600, 0);
-DvzPanel*  panel  = dvz_panel(fig, dvz_panel_default());
+DvzPanel*  panel  = dvz_panel_full(fig);
 DvzVisual* visual = dvz_point(scene, 0);
 
 dvz_visual_set_data(visual, "position", pos,   N);

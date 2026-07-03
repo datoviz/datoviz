@@ -387,7 +387,7 @@ int test_panel_panzoom_getter(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     AT(panel->panzoom == NULL);
@@ -412,8 +412,8 @@ int test_shared_panzoom_xy_visible_domains(TstContext* suite, const TstCase* ite
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
     ANN(figure);
-    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
-    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
     ANN(left);
     ANN(right);
 
@@ -501,7 +501,7 @@ int test_panzoom_panel_input_uses_hidpi_figure_coordinates(TstContext* suite, co
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzController* controller = dvz_panzoom(scene, NULL);
@@ -569,7 +569,7 @@ int test_panzoom_panel_input_uses_event_window_size_without_resize(
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzController* controller = dvz_panzoom(scene, NULL);
@@ -620,8 +620,8 @@ int test_split_panzoom_x_y_bindings(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
     ANN(figure);
-    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
-    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
     ANN(left);
     ANN(right);
 
@@ -681,7 +681,7 @@ int test_arcball_scene_binding_uses_panel_input(TstContext* suite, const TstCase
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
     ANN(panel);
 
     DvzController* controller = dvz_arcball(scene, NULL);
@@ -729,8 +729,8 @@ int test_arcball_panel_input_uses_hidpi_figure_coordinates(TstContext* suite, co
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
     ANN(figure);
-    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
-    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
     ANN(left);
     ANN(right);
 
@@ -797,8 +797,8 @@ int test_controller_link_arcball_rotation_only_keeps_target_centered(
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
     ANN(figure);
-    DvzPanel* main_panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.75f, 1.0f});
-    DvzPanel* gizmo_panel = dvz_panel(figure, (DvzPanelDesc){0.75f, 0.0f, 0.25f, 0.25f});
+    DvzPanel* main_panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.75f, 1.0f});
+    DvzPanel* gizmo_panel = dvz_panel(figure, &(DvzPanelDesc){0.75f, 0.0f, 0.25f, 0.25f});
     ANN(main_panel);
     ANN(gizmo_panel);
 
@@ -1170,8 +1170,8 @@ int test_controller_link_panzoom_extent_x_equal_aspect_panels(
     DvzScene* scene = dvz_scene();
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 600, 200, 0);
-    DvzPanel* source_panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 2.0f / 3.0f, 1.0f});
-    DvzPanel* target_panel = dvz_panel(figure, (DvzPanelDesc){2.0f / 3.0f, 0.0f, 1.0f / 3.0f, 1.0f});
+    DvzPanel* source_panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 2.0f / 3.0f, 1.0f});
+    DvzPanel* target_panel = dvz_panel(figure, &(DvzPanelDesc){2.0f / 3.0f, 0.0f, 1.0f / 3.0f, 1.0f});
     ANN(source_panel);
     ANN(target_panel);
 
@@ -1227,8 +1227,8 @@ int test_controller_link_panzoom_extent_x_bidirectional_does_not_accumulate_drag
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
     ANN(figure);
-    DvzPanel* top = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 0.5f});
-    DvzPanel* bottom = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.5f, 1.0f, 0.5f});
+    DvzPanel* top = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 0.5f});
+    DvzPanel* bottom = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.5f, 1.0f, 0.5f});
     ANN(top);
     ANN(bottom);
 
@@ -1332,8 +1332,8 @@ int test_controller_link_panzoom_target_pointer_drives_linked_x_only(
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
     ANN(figure);
-    DvzPanel* top = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 0.5f});
-    DvzPanel* bottom = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.5f, 1.0f, 0.5f});
+    DvzPanel* top = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 0.5f});
+    DvzPanel* bottom = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.5f, 1.0f, 0.5f});
     ANN(top);
     ANN(bottom);
 
@@ -1551,8 +1551,8 @@ int test_controller_destroy_detaches_panels_links_and_reuses_slot(
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
     ANN(figure);
-    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
-    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
     ANN(left);
     ANN(right);
 
@@ -1621,7 +1621,7 @@ int test_controller_destroy_preserves_other_panel_bindings(
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzController* x_controller = dvz_panzoom(scene, NULL);
@@ -1663,7 +1663,7 @@ int test_scene_camera_arcball_mvp_composition(TstContext* suite, const TstCase* 
     ANN(scene);
     DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
     ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
     DvzCameraDesc desc = dvz_camera_desc();
