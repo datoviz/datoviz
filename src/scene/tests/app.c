@@ -3310,7 +3310,7 @@ int test_app_offscreen_sphere_ssao_darkens_contact(TstContext* suite, const TstC
 
     DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     AT(sphere != NULL);
-    AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
+    AT(dvz_sphere_set_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
     vec3 positions[4] = {
         {-0.22f, -0.08f, 0.20f},
         {+0.10f, -0.06f, 0.24f},
@@ -5214,7 +5214,8 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.view.eye[2] = 3.0f;
     camera_desc.projection.fov_y = GLM_PI_4f;
-    DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
+    AT(dvz_panel_set_camera_desc(panel, &camera_desc) == 0);
+    DvzCamera* camera = dvz_panel_camera(panel);
     ANN(camera);
     DvzController* arcball_controller = dvz_arcball(scene, NULL);
     ANN(arcball_controller);
@@ -7682,7 +7683,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
         camera_desc.view.target[1] = 0.5f;
         camera_desc.view.target[2] = 0.5f;
         camera_desc.projection.fov_y = GLM_PI_4f;
-        if (dvz_panel_set_camera(panel, &camera_desc) == NULL)
+        if (dvz_panel_set_camera_desc(panel, &camera_desc) != 0)
         {
             dvz_scene_destroy(scene);
             return out;

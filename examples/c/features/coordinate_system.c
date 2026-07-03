@@ -341,7 +341,7 @@ static DvzCameraDesc _camera_desc(void)
 static bool _set_camera(DvzPanel* panel)
 {
     DvzCameraDesc camera = _camera_desc();
-    return dvz_panel_set_camera(panel, &camera) != NULL;
+    return dvz_panel_set_camera_desc(panel, &camera) == 0;
 }
 
 

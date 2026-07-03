@@ -166,7 +166,7 @@ static bool _add_spheres(DvzScene* scene, DvzPanel* panel)
     DvzVisual* spheres = dvz_sphere(scene, 0);
     if (spheres == NULL)
         return false;
-    if (dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
+    if (dvz_sphere_set_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
         return false;
 
     vec3 sphere_positions[SPHERE_COUNT] = {0};

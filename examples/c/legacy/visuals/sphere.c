@@ -290,8 +290,8 @@ static void _apply_sphere_mode(SsaoExampleState* state)
         return;
     DvzSphereMode mode = state->raycast_mode ? DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR :
                                                DVZ_SPHERE_MODE_FAST_IMPOSTOR;
-    if (dvz_sphere_mode(state->sphere, mode) != 0)
-        dvz_fprintf(stderr, "dvz_sphere_mode() failed\n");
+    if (dvz_sphere_set_mode(state->sphere, mode) != 0)
+        dvz_fprintf(stderr, "dvz_sphere_set_mode() failed\n");
 }
 
 
@@ -545,8 +545,8 @@ int main(int argc, char** argv)
     camera_desc.projection.fov_y = 0.72f;
     camera_desc.projection.near_clip = 0.1f;
     camera_desc.projection.far_clip = 100.0f;
-    bool ok = dvz_panel_set_camera(panel, &camera_desc);
-    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
+    DvzResult camera_rc = dvz_panel_set_camera_desc(panel, &camera_desc);
+    EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
 
     positions = (vec3*)dvz_calloc(MAX_SPHERES, sizeof(*positions));
     colors = (DvzColor*)dvz_calloc(MAX_SPHERES, sizeof(DvzColor));

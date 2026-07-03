@@ -309,8 +309,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera_desc.projection.near_clip = 0.020000f;
     camera_desc.projection.far_clip = 100.000000f;
     camera_desc.projection.ortho_height = 2.000000f;
-    DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
-    EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera() failed");
+    DvzResult camera_rc = dvz_panel_set_camera_desc(panel, &camera_desc);
+    DvzCamera* camera = dvz_panel_camera(panel);
+    EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
+    EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera_desc() failed");
     (void)camera;
 
     DvzEdlDesc edl = {

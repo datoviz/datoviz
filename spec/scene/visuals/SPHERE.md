@@ -17,7 +17,7 @@ The implemented path supports:
 
 1. retained `sphere` visual construction via `dvz_sphere()`;
 2. generic data upload with canonical `position`, `color`, and `radius` attributes;
-3. `dvz_sphere_mode()` with `fast_impostor` and `raycast_impostor` modes;
+3. `dvz_sphere_set_mode()` with `fast_impostor` and `raycast_impostor` modes;
 4. material/depth state through the shared scene material path;
 5. color, alpha-to-coverage, and G-buffer shader variants;
 6. SSAO/G-buffer participation;
@@ -148,7 +148,7 @@ are not supported. Per-item material is PBR territory, deferred to the PBR light
 | `render_mode` | `fast_impostor`, `raycast_impostor` | `fast_impostor` |
 
 All set at visual creation time.
-`render_mode` may also be changed on retained sphere visuals through `dvz_sphere_mode()`.
+`render_mode` may also be changed on retained sphere visuals through `dvz_sphere_set_mode()`.
 
 
 ## Transform Model, Stage Participation, Picking

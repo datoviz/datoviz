@@ -1163,11 +1163,11 @@ int main(int argc, char** argv)
     camera_desc.projection.fov_y = 0.68f;
     camera_desc.projection.near_clip = 0.05f;
     camera_desc.projection.far_clip = 100.0f;
-    bool ok = dvz_panel_set_camera(panel, &camera_desc);
-    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
+    DvzResult camera_rc = dvz_panel_set_camera_desc(panel, &camera_desc);
+    EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
 
-    int rc = dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
-    EXAMPLE_CHECK(rc == 0, "dvz_sphere_mode() failed");
+    int rc = dvz_sphere_set_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
+    EXAMPLE_CHECK(rc == 0, "dvz_sphere_set_mode() failed");
 
     DvzVisualDataUpdate sphere_updates[] = {
         {.attr_name = "position", .data = bundle.positions, .item_count = bundle.atom_count},
@@ -1201,7 +1201,7 @@ int main(int argc, char** argv)
         EXAMPLE_CHECK(ribbon != NULL, "dvz_mesh() failed for ribbon");
         EXAMPLE_CHECK(ribbon_index_buffer != NULL, "dvz_scene_buffer() failed for ribbon");
 
-        ok = dvz_scene_buffer_set_data(
+        bool ok = dvz_scene_buffer_set_data(
             ribbon_index_buffer, bundle.ribbon_indices,
             (uint64_t)bundle.ribbon_index_count * sizeof(DvzIndex));
         EXAMPLE_CHECK(ok, "dvz_scene_buffer_set_data() failed for ribbon");

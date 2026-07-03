@@ -741,8 +741,8 @@ int main(int argc, char** argv)
     dvz_memcpy(camera_desc.view.up, sizeof(camera_desc.view.up), view.up, sizeof(view.up));
     camera_desc.projection.near_clip = 0.1f;
     camera_desc.projection.far_clip = view.far_clip;
-    bool ok = dvz_panel_set_camera(panel, &camera_desc);
-    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
+    DvzResult camera_rc = dvz_panel_set_camera_desc(panel, &camera_desc);
+    EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
 
     DvzVisual* visual = dvz_pixel(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_pixel() failed");

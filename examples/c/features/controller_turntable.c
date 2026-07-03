@@ -132,7 +132,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
     DvzCameraDesc camera = example_controller_camera_desc();
-    if (dvz_panel_set_camera(panel, &camera) == NULL)
+    if (dvz_panel_set_camera_desc(panel, &camera) != 0)
         return false;
     DvzReferenceGridDesc grid = dvz_reference_grid_desc();
     grid.plane = DVZ_REFERENCE_GRID_XZ;

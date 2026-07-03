@@ -1165,7 +1165,7 @@ int test_scene_msaa_ssao_blended_overlay_runtime_lowering(TstContext* suite, con
 
     DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     AT(sphere != NULL);
-    AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
+    AT(dvz_sphere_set_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
     vec3 sphere_positions[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor sphere_colors[1] = {{255, 128, 64, 255}};
     float sphere_radii[1] = {0.35f};
@@ -2358,7 +2358,7 @@ int test_scene_sphere_ssao_glsl_executes(TstContext* suite, const TstCase* item)
     AT(panel != NULL);
     DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     AT(sphere != NULL);
-    AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
+    AT(dvz_sphere_set_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
 
     vec3 positions[4] = {
         {-0.30f, -0.25f, 0.15f},

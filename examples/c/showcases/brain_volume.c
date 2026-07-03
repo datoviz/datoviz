@@ -943,8 +943,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera_desc.projection.fov_y = 0.72f;
     camera_desc.projection.near_clip = 0.01f;
     camera_desc.projection.far_clip = 100.0f;
-    ok = dvz_panel_set_camera(panel, &camera_desc);
-    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
+    DvzResult camera_rc = dvz_panel_set_camera_desc(panel, &camera_desc);
+    EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
 
     DvzSampledField* field = dvz_sampled_field(
         ctx->scene, &(DvzSampledFieldDesc){

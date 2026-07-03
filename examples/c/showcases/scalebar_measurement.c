@@ -468,7 +468,7 @@ static bool _add_3d_cloud(DvzScene* scene, DvzPanel* panel, DvzVisual** out)
     camera_desc.projection.fov_y = 0.70f;
     camera_desc.projection.near_clip = 0.1f;
     camera_desc.projection.far_clip = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera_desc))
+    if (dvz_panel_set_camera_desc(panel, &camera_desc) != 0)
         return false;
 
     vec3 positions[CLOUD_COUNT] = {{0}};

@@ -217,7 +217,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         example_graphite_cyan_set_panel_background(panel);
         if (!_add_material_label(panel, labels[i]))
             return false;
-        if (!dvz_panel_set_camera(panel, &camera))
+        if (dvz_panel_set_camera_desc(panel, &camera) != 0)
             return false;
         if (!_add_material_cube(ctx->scene, panel, materials[i], &state->geometry))
             return false;

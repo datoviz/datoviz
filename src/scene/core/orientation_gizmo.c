@@ -957,7 +957,7 @@ DvzOrientationGizmo* dvz_orientation_gizmo(
     camera.projection.fov_y = 0.64f;
     camera.projection.near_clip = 0.05f;
     camera.projection.far_clip = 20.0f;
-    if (dvz_panel_set_camera(gizmo->panel, &camera) == NULL)
+    if (dvz_panel_set_camera_desc(gizmo->panel, &camera) != 0)
         goto fail;
     dvz_panel_set_background_color(gizmo->panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 0.0f));
 

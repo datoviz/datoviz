@@ -151,7 +151,7 @@ static bool _set_camera(DvzPanel* panel)
     camera.projection.fov_y = 0.62f;
     camera.projection.near_clip = 0.05f;
     camera.projection.far_clip = 100.0f;
-    return dvz_panel_set_camera(panel, &camera) != NULL;
+    return dvz_panel_set_camera_desc(panel, &camera) == 0;
 }
 
 

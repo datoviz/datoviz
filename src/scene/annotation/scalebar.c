@@ -166,8 +166,8 @@ static DvzUnits* _scalebar_descriptor_units(DvzAnnotation* annotation)
     DvzUnits* units = dvz_units_create(annotation->scene);
     if (units == NULL)
         return NULL;
-    if (dvz_units_data_to_canonical(units, factor) != 0 ||
-        dvz_units_ladder(units, ladder) != 0)
+    if (dvz_units_set_data_to_canonical(units, factor) != 0 ||
+        dvz_units_set_ladder(units, ladder) != 0)
         return NULL;
     return units;
 }

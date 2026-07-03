@@ -3307,7 +3307,7 @@ void dvz_camera_destroy(
 Destroy a camera.
 
 Use only with standalone cameras returned by `dvz_camera_create()`. Panel-owned cameras returned
-by `dvz_panel_set_camera()` or `dvz_panel_camera()` are destroyed with their owning panel/scene.
+by `dvz_panel_set_camera_desc()` or `dvz_panel_camera()` are destroyed with their owning panel/scene.
 
 Related: [`dvz_camera_create()`](#dvz_camera_create).
 

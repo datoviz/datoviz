@@ -101,7 +101,7 @@ DVZ_EXPORT DvzUnits* dvz_units_builtin(
  * @param factor finite positive conversion factor
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT DvzResult dvz_units_data_to_canonical(DvzUnits* units, double factor);
+DVZ_EXPORT DvzResult dvz_units_set_data_to_canonical(DvzUnits* units, double factor);
 
 
 /**
@@ -111,7 +111,7 @@ DVZ_EXPORT DvzResult dvz_units_data_to_canonical(DvzUnits* units, double factor)
  * @param ladder the display ladder
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT DvzResult dvz_units_ladder(DvzUnits* units, DvzUnitLadder* ladder);
+DVZ_EXPORT DvzResult dvz_units_set_ladder(DvzUnits* units, DvzUnitLadder* ladder);
 
 
 /**
@@ -121,7 +121,7 @@ DVZ_EXPORT DvzResult dvz_units_ladder(DvzUnits* units, DvzUnitLadder* ladder);
  * @param mode display mode
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT DvzResult dvz_units_display_mode(DvzUnits* units, DvzUnitDisplayMode mode);
+DVZ_EXPORT DvzResult dvz_units_set_display_mode(DvzUnits* units, DvzUnitDisplayMode mode);
 
 
 /**
@@ -131,7 +131,7 @@ DVZ_EXPORT DvzResult dvz_units_display_mode(DvzUnits* units, DvzUnitDisplayMode 
  * @param label ladder entry label
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT DvzResult dvz_units_fixed_label(DvzUnits* units, const char* label);
+DVZ_EXPORT DvzResult dvz_units_set_fixed_label(DvzUnits* units, const char* label);
 
 
 /**

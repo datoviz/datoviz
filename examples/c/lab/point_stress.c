@@ -630,8 +630,8 @@ int main(int argc, char** argv)
     camera_desc.view.eye[2] = 4.2f;
     camera_desc.projection.near_clip = 0.1f;
     camera_desc.projection.far_clip = 100.0f;
-    bool ok = dvz_panel_set_camera(panel, &camera_desc);
-    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
+    DvzResult camera_rc = dvz_panel_set_camera_desc(panel, &camera_desc);
+    EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.035f, 0.040f, 0.050f, 1.0f));
 
     DvzVisual* visual = dvz_point(scene, 0);
@@ -656,7 +656,7 @@ int main(int argc, char** argv)
     state.alpha = 0.78f;
     _apply_alpha_to_colors(&state);
     _apply_diameter_to_points(&state);
-    ok = _upload_points(&state);
+    bool ok = _upload_points(&state);
     EXAMPLE_CHECK(ok, "point data upload failed");
 
     int rc = dvz_panel_add_visual(panel, visual, NULL);

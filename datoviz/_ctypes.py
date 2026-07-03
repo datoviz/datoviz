@@ -9325,7 +9325,7 @@ else:
  * Destroy a camera.
  *
  * Use only with standalone cameras returned by `dvz_camera_create()`. Panel-owned cameras returned
- * by `dvz_panel_set_camera()` or `dvz_panel_camera()` are destroyed with their owning panel/scene.
+ * by `dvz_panel_set_camera_desc()` or `dvz_panel_camera()` are destroyed with their owning panel/scene.
  *
  * @param camera the camera
  */"""
@@ -22858,22 +22858,19 @@ else:
 
 
 try:
-    dvz_panel_set_camera = dvz.dvz_panel_set_camera
+    dvz_panel_set_camera_desc = dvz.dvz_panel_set_camera_desc
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_panel_set_camera')
+    _MISSING_FUNCTIONS.append('dvz_panel_set_camera_desc')
 else:
-    dvz_panel_set_camera.__doc__ = """/**
- * Set or replace the camera attached to a panel.
- *
- * The returned camera is borrowed panel-owned state. Do not pass it to `dvz_camera_destroy()`;
- * standalone destruction is only for cameras created with `dvz_camera_create()`.
+    dvz_panel_set_camera_desc.__doc__ = """/**
+ * Set or replace the camera descriptor attached to a panel.
  *
  * @param panel the panel
  * @param desc the camera descriptor, or NULL for defaults
- * @return the panel-owned camera
+ * @return 0 on success, -1 on validation or allocation error
  */"""
-    dvz_panel_set_camera.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzCameraDesc)]
-    dvz_panel_set_camera.restype = ctypes.POINTER(DvzCamera)
+    dvz_panel_set_camera_desc.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzCameraDesc)]
+    dvz_panel_set_camera_desc.restype = ctypes.c_int32
 
 
 try:
@@ -27041,11 +27038,11 @@ else:
 
 
 try:
-    dvz_sphere_mode = dvz.dvz_sphere_mode
+    dvz_sphere_set_mode = dvz.dvz_sphere_set_mode
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_sphere_mode')
+    _MISSING_FUNCTIONS.append('dvz_sphere_set_mode')
 else:
-    dvz_sphere_mode.__doc__ = """/**
+    dvz_sphere_set_mode.__doc__ = """/**
  * Set the sphere impostor rendering mode.
  *
  * `DVZ_SPHERE_MODE_FAST_IMPOSTOR` uses the cheap point-coordinate sphere reconstruction.
@@ -27056,8 +27053,8 @@ else:
  * @param mode the rendering mode
  * @return 0 on success, -1 on error
  */"""
-    dvz_sphere_mode.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_int]
-    dvz_sphere_mode.restype = ctypes.c_int32
+    dvz_sphere_set_mode.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_int]
+    dvz_sphere_set_mode.restype = ctypes.c_int32
 
 
 try:
@@ -29212,67 +29209,67 @@ else:
 
 
 try:
-    dvz_units_data_to_canonical = dvz.dvz_units_data_to_canonical
+    dvz_units_set_data_to_canonical = dvz.dvz_units_set_data_to_canonical
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_units_data_to_canonical')
+    _MISSING_FUNCTIONS.append('dvz_units_set_data_to_canonical')
 else:
-    dvz_units_data_to_canonical.__doc__ = """/**
+    dvz_units_set_data_to_canonical.__doc__ = """/**
  * Set the factor from data coordinates to canonical units.
  *
  * @param units the units object
  * @param factor finite positive conversion factor
  * @return 0 on success, -1 on validation error
  */"""
-    dvz_units_data_to_canonical.argtypes = [ctypes.POINTER(DvzUnits), ctypes.c_double]
-    dvz_units_data_to_canonical.restype = ctypes.c_int32
+    dvz_units_set_data_to_canonical.argtypes = [ctypes.POINTER(DvzUnits), ctypes.c_double]
+    dvz_units_set_data_to_canonical.restype = ctypes.c_int32
 
 
 try:
-    dvz_units_display_mode = dvz.dvz_units_display_mode
+    dvz_units_set_display_mode = dvz.dvz_units_set_display_mode
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_units_display_mode')
+    _MISSING_FUNCTIONS.append('dvz_units_set_display_mode')
 else:
-    dvz_units_display_mode.__doc__ = """/**
+    dvz_units_set_display_mode.__doc__ = """/**
  * Set the unit display mode.
  *
  * @param units the units object
  * @param mode display mode
  * @return 0 on success, -1 on validation error
  */"""
-    dvz_units_display_mode.argtypes = [ctypes.POINTER(DvzUnits), ctypes.c_int]
-    dvz_units_display_mode.restype = ctypes.c_int32
+    dvz_units_set_display_mode.argtypes = [ctypes.POINTER(DvzUnits), ctypes.c_int]
+    dvz_units_set_display_mode.restype = ctypes.c_int32
 
 
 try:
-    dvz_units_fixed_label = dvz.dvz_units_fixed_label
+    dvz_units_set_fixed_label = dvz.dvz_units_set_fixed_label
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_units_fixed_label')
+    _MISSING_FUNCTIONS.append('dvz_units_set_fixed_label')
 else:
-    dvz_units_fixed_label.__doc__ = """/**
+    dvz_units_set_fixed_label.__doc__ = """/**
  * Force a display label for fixed display mode.
  *
  * @param units the units object
  * @param label ladder entry label
  * @return 0 on success, -1 on validation error
  */"""
-    dvz_units_fixed_label.argtypes = [ctypes.POINTER(DvzUnits), ctypes.c_char_p]
-    dvz_units_fixed_label.restype = ctypes.c_int32
+    dvz_units_set_fixed_label.argtypes = [ctypes.POINTER(DvzUnits), ctypes.c_char_p]
+    dvz_units_set_fixed_label.restype = ctypes.c_int32
 
 
 try:
-    dvz_units_ladder = dvz.dvz_units_ladder
+    dvz_units_set_ladder = dvz.dvz_units_set_ladder
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_units_ladder')
+    _MISSING_FUNCTIONS.append('dvz_units_set_ladder')
 else:
-    dvz_units_ladder.__doc__ = """/**
+    dvz_units_set_ladder.__doc__ = """/**
  * Attach a ladder to a units object.
  *
  * @param units the units object
  * @param ladder the display ladder
  * @return 0 on success, -1 on validation error
  */"""
-    dvz_units_ladder.argtypes = [ctypes.POINTER(DvzUnits), ctypes.POINTER(DvzUnitLadder)]
-    dvz_units_ladder.restype = ctypes.c_int32
+    dvz_units_set_ladder.argtypes = [ctypes.POINTER(DvzUnits), ctypes.POINTER(DvzUnitLadder)]
+    dvz_units_set_ladder.restype = ctypes.c_int32
 
 
 try:

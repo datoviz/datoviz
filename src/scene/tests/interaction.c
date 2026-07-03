@@ -2300,7 +2300,7 @@ static int test_scene_units_formatting_core(TstContext* suite, const TstCase* it
 
     DvzUnits* bp = dvz_units_create(scene);
     ANN(bp);
-    AT(dvz_units_ladder(bp, genome) == 0);
+    AT(dvz_units_set_ladder(bp, genome) == 0);
     AT(_scene_units_format(bp, 2500000.0, NULL, label, sizeof(label)));
     AT(strcmp(label, "2.5 Mb") == 0);
 
@@ -2313,7 +2313,7 @@ static int test_scene_units_formatting_core(TstContext* suite, const TstCase* it
     AT(_scene_units_format(bp, 1000.0, &axis_ctx, label, sizeof(label)));
     AT(strcmp(label, "0.001 Mb") == 0);
 
-    AT(dvz_units_fixed_label(bp, "kb") == 0);
+    AT(dvz_units_set_fixed_label(bp, "kb") == 0);
     AT(_scene_units_format(bp, 2500000.0, NULL, label, sizeof(label)));
     AT(strcmp(label, "2500 kb") == 0);
 
@@ -2670,7 +2670,8 @@ static int test_scene_scalebar_3d_world_reference(TstContext* suite, const TstCa
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.view.eye[2] = 3.20f;
     camera_desc.projection.fov_y = 0.74f;
-    DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
+    AT(dvz_panel_set_camera_desc(panel, &camera_desc) == 0);
+    DvzCamera* camera = dvz_panel_camera(panel);
     ANN(camera);
 
     DvzScaleBar* scalebar = dvz_scalebar(
@@ -2747,7 +2748,8 @@ static int test_scene_scalebar_3d_view_plane_rotation_invariant(
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.view.eye[2] = 3.20f;
     camera_desc.projection.fov_y = 0.74f;
-    DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
+    AT(dvz_panel_set_camera_desc(panel, &camera_desc) == 0);
+    DvzCamera* camera = dvz_panel_camera(panel);
     ANN(camera);
 
     DvzController* controller = dvz_arcball(scene, NULL);
@@ -2822,7 +2824,8 @@ static int test_scene_scalebar_3d_view_plane_zoom_scale(
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.view.eye[2] = 3.20f;
     camera_desc.projection.fov_y = 0.74f;
-    DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
+    AT(dvz_panel_set_camera_desc(panel, &camera_desc) == 0);
+    DvzCamera* camera = dvz_panel_camera(panel);
     ANN(camera);
 
     DvzController* controller = dvz_arcball(scene, NULL);
@@ -3171,7 +3174,8 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
     camera_desc.projection.fov_y = 0.74f;
     camera_desc.projection.near_clip = 0.1f;
     camera_desc.projection.far_clip = 100.0f;
-    DvzCamera* camera = dvz_panel_set_camera(right, &camera_desc);
+    AT(dvz_panel_set_camera_desc(right, &camera_desc) == 0);
+    DvzCamera* camera = dvz_panel_camera(right);
     ANN(camera);
 
     DvzScaleBar* right_scalebar = dvz_scalebar(

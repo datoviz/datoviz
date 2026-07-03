@@ -381,7 +381,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
 
-    EXAMPLE_CHECK(example_set_default_3d_camera(panel, 1.15f), "dvz_panel_set_camera() failed");
+    EXAMPLE_CHECK(example_set_default_3d_camera(panel, 1.15f), "dvz_panel_set_camera_desc() failed");
 
     const uint64_t bytes = (uint64_t)FIELD_SIZE * FIELD_SIZE * FIELD_SIZE;
     data = (uint8_t*)dvz_malloc(bytes);

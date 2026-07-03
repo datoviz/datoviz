@@ -71,12 +71,12 @@ DvzVisual* dvz_sphere(DvzScene* scene, uint32_t flags)
  * @param mode the rendering mode
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_sphere_mode(DvzVisual* visual, DvzSphereMode mode)
+DvzResult dvz_sphere_set_mode(DvzVisual* visual, DvzSphereMode mode)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_SPHERE)
     {
-        log_error("dvz_sphere_mode requires a sphere visual");
+        log_error("dvz_sphere_set_mode requires a sphere visual");
         return -1;
     }
     if (mode != DVZ_SPHERE_MODE_FAST_IMPOSTOR && mode != DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR)

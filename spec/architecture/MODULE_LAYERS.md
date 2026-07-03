@@ -61,7 +61,7 @@ It owns scene-independent camera/controller state machines:
 The public controller API is available through `datoviz/controller.h` and
 `datoviz/controller/*.h`. Existing `datoviz/scene/*.h` controller headers remain compatibility
 wrappers for scene-owned constructor APIs such as `dvz_panzoom(DvzScene*, ...)` and
-panel-owned camera APIs such as `dvz_panel_set_camera()`.
+panel-owned camera APIs such as `dvz_panel_set_camera_desc()`.
 
 The implementation boundary is:
 

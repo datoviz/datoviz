@@ -518,8 +518,8 @@ int main(int argc, char** argv)
     camera_desc.view.eye[2] = 3.0f;
     camera_desc.projection.near_clip = 0.1f;
     camera_desc.projection.far_clip = 100.0f;
-    bool ok = dvz_panel_set_camera(panel, &camera_desc);
-    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
+    DvzResult camera_rc = dvz_panel_set_camera_desc(panel, &camera_desc);
+    EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
 
     DvzVisual* visual = dvz_point(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_point() failed");

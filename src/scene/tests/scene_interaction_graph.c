@@ -792,7 +792,7 @@ int test_scene_controller_mode_view_proj_strips_panel_model(
     camera_desc.view.target[2] = 0.0f;
     camera_desc.projection.near_clip = 0.1f;
     camera_desc.projection.far_clip = 100.0f;
-    AT(dvz_panel_set_camera(panel, &camera_desc) != NULL);
+    AT(dvz_panel_set_camera_desc(panel, &camera_desc) == 0);
 
     DvzController* controller = dvz_arcball(scene, NULL);
     ANN(controller);

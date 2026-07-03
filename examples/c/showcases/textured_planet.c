@@ -678,8 +678,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera_desc.projection.fov_y = 0.72f;
     camera_desc.projection.near_clip = 0.05f;
     camera_desc.projection.far_clip = 100.0f;
-    DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
-    EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera() failed");
+    DvzResult camera_rc = dvz_panel_set_camera_desc(panel, &camera_desc);
+    DvzCamera* camera = dvz_panel_camera(panel);
+    EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
+    EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera_desc() failed");
 
     DvzVisual* stars = _create_star_shell(ctx->scene);
     EXAMPLE_CHECK(stars != NULL, "failed to create star shell");

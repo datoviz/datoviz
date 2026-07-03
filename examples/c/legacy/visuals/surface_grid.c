@@ -124,8 +124,8 @@ int main(int argc, char** argv)
     camera_desc.projection.fov_y = 0.72f;
     camera_desc.projection.near_clip = 0.05f;
     camera_desc.projection.far_clip = 100.0f;
-    bool ok = dvz_panel_set_camera(panel, &camera_desc);
-    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
+    DvzResult camera_rc = dvz_panel_set_camera_desc(panel, &camera_desc);
+    EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
 
     DvzGeometrySurfaceGridDesc desc = {
         DVZ_STRUCT_INIT_FIELDS(DvzGeometrySurfaceGridDesc),

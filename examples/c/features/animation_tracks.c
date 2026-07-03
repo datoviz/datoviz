@@ -256,7 +256,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera.projection.fov_y = 0.66f;
     camera.projection.near_clip = 0.05f;
     camera.projection.far_clip = 100.0f;
-    DvzCamera* panel_camera = dvz_panel_set_camera(panel, &camera);
+    if (dvz_panel_set_camera_desc(panel, &camera) != 0)
+        return false;
+    DvzCamera* panel_camera = dvz_panel_camera(panel);
     if (panel_camera == NULL)
         return false;
 

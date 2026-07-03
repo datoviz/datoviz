@@ -65,8 +65,8 @@ labels such as `5 cs` for elapsed time.
 
 ```c
 DvzUnits* units = dvz_units_create(scene);
-dvz_units_data_to_canonical(units, 1e-6);
-dvz_units_ladder(units, metric);
+dvz_units_set_data_to_canonical(units, 1e-6);
+dvz_units_set_ladder(units, metric);
 ```
 
 Interpretation:
@@ -78,8 +78,8 @@ data value -> canonical value -> display value + unit label
 If data coordinates are micrometers and canonical units are meters:
 
 ```c
-dvz_units_data_to_canonical(units, 1e-6);
-dvz_units_ladder(units, metric);
+dvz_units_set_data_to_canonical(units, 1e-6);
+dvz_units_set_ladder(units, metric);
 ```
 
 
@@ -107,8 +107,8 @@ For a signal whose X coordinates are milliseconds:
 
 ```c
 DvzUnits* time_units = dvz_units_create(scene);
-dvz_units_data_to_canonical(time_units, 1e-3);
-dvz_units_ladder(time_units, duration);
+dvz_units_set_data_to_canonical(time_units, 1e-3);
+dvz_units_set_ladder(time_units, duration);
 ```
 
 
@@ -179,8 +179,8 @@ This is equivalent to:
 ```c
 DvzUnitLadder* ladder = dvz_unit_ladder_builtin(scene, builtin);
 DvzUnits* units = dvz_units_create(scene);
-dvz_units_data_to_canonical(units, data_to_canonical);
-dvz_units_ladder(units, ladder);
+dvz_units_set_data_to_canonical(units, data_to_canonical);
+dvz_units_set_ladder(units, ladder);
 ```
 
 Teaching examples should use this helper for default metric length and other common builtin cases.
@@ -215,10 +215,10 @@ typedef enum DvzUnitDisplayMode
 } DvzUnitDisplayMode;
 
 DvzUnits* dvz_units_create(DvzScene* scene);
-int dvz_units_data_to_canonical(DvzUnits* units, double factor);
-int dvz_units_ladder(DvzUnits* units, DvzUnitLadder* ladder);
-int dvz_units_display_mode(DvzUnits* units, DvzUnitDisplayMode mode);
-int dvz_units_fixed_label(DvzUnits* units, const char* label);
+int dvz_units_set_data_to_canonical(DvzUnits* units, double factor);
+int dvz_units_set_ladder(DvzUnits* units, DvzUnitLadder* ladder);
+int dvz_units_set_display_mode(DvzUnits* units, DvzUnitDisplayMode mode);
+int dvz_units_set_fixed_label(DvzUnits* units, const char* label);
 ```
 
 Display modes:
@@ -338,8 +338,8 @@ dvz_scalebar_set_units(sb, length_units);
 DvzUnitLadder* duration = dvz_unit_ladder_builtin(scene, DVZ_UNIT_LADDER_DURATION);
 
 DvzUnits* time_units = dvz_units_create(scene);
-dvz_units_data_to_canonical(time_units, 1e-3); // data units are ms, canonical s
-dvz_units_ladder(time_units, duration);
+dvz_units_set_data_to_canonical(time_units, 1e-3); // data units are ms, canonical s
+dvz_units_set_ladder(time_units, duration);
 
 DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
 dvz_axis_set_units(x_axis, time_units);
@@ -358,9 +358,9 @@ dvz_unit_ladder_add(genome, 1e3, "kb");
 dvz_unit_ladder_add(genome, 1e6, "Mb");
 
 DvzUnits* bp_units = dvz_units_create(scene);
-dvz_units_data_to_canonical(bp_units, 1.0);
-dvz_units_ladder(bp_units, genome);
-dvz_units_display_mode(bp_units, DVZ_UNIT_DISPLAY_AXIS_STABLE);
+dvz_units_set_data_to_canonical(bp_units, 1.0);
+dvz_units_set_ladder(bp_units, genome);
+dvz_units_set_display_mode(bp_units, DVZ_UNIT_DISPLAY_AXIS_STABLE);
 
 dvz_axis_set_units(x_axis, bp_units);
 ```
@@ -375,8 +375,8 @@ dvz_axis_set_datetime_range(x_axis, 0.0, 3600.0, t0, t1);
 
 DvzUnitLadder* duration = dvz_unit_ladder_builtin(scene, DVZ_UNIT_LADDER_DURATION);
 DvzUnits* duration_units = dvz_units_create(scene);
-dvz_units_data_to_canonical(duration_units, 1.0);
-dvz_units_ladder(duration_units, duration);
+dvz_units_set_data_to_canonical(duration_units, 1.0);
+dvz_units_set_ladder(duration_units, duration);
 
 dvz_scalebar_set_units(sb, duration_units);
 ```

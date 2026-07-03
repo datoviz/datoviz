@@ -600,8 +600,8 @@ int main(int argc, char** argv)
     camera_desc.view.eye[2] = eye[2];
     camera_desc.projection.near_clip = 0.01f;
     camera_desc.projection.far_clip = 100.0f;
-    ok = dvz_panel_set_camera(panel, &camera_desc);
-    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
+    DvzResult camera_rc = dvz_panel_set_camera_desc(panel, &camera_desc);
+    EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.018f, 0.020f, 0.024f, 1.0f));
 
     if (edl_enabled)

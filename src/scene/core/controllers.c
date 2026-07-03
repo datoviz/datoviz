@@ -1659,42 +1659,43 @@ DvzController* dvz_panel_controller(DvzPanel* panel, DvzDim dim)
 
 
 /**
- * Set or replace the camera attached to a panel.
+ * Set or replace the camera descriptor attached to a panel.
  *
  * @param panel the panel
  * @param desc the camera descriptor, or NULL for defaults
- * @return the panel-owned camera
+ * @return 0 on success, -1 on validation or allocation error
  */
-DvzCamera* dvz_panel_set_camera(DvzPanel* panel, const DvzCameraDesc* desc)
+DvzResult dvz_panel_set_camera_desc(DvzPanel* panel, const DvzCameraDesc* desc)
 {
-    ANN(panel);
+    if (panel == NULL)
+        return -1;
     if (panel->camera != NULL)
         dvz_camera_destroy(panel->camera);
     panel->camera = _dvz_camera(desc);
-    if (panel->camera != NULL)
+    if (panel->camera == NULL)
+        return -1;
+
+    panel->active_view_kind = DVZ_PANEL_VIEW_KIND_3D;
+    float w = 0.0f;
+    float h = 0.0f;
+    _scene_panel_pixel_size(panel, &w, &h);
+    dvz_camera_resize(panel->camera, w, h);
+    DvzController* seen[3] = {0};
+    uint32_t seen_count = 0;
+    for (uint32_t dim = 0; dim < 3; dim++)
     {
-        panel->active_view_kind = DVZ_PANEL_VIEW_KIND_3D;
-        float w = 0.0f;
-        float h = 0.0f;
-        _scene_panel_pixel_size(panel, &w, &h);
-        dvz_camera_resize(panel->camera, w, h);
-        DvzController* seen[3] = {0};
-        uint32_t seen_count = 0;
-        for (uint32_t dim = 0; dim < 3; dim++)
+        DvzController* controller = panel->controllers[dim];
+        if (_scene_controller_seen(seen, seen_count, controller))
+            continue;
+        seen[seen_count++] = controller;
+        if (controller->type == DVZ_CONTROLLER_TYPE_FLY ||
+            controller->type == DVZ_CONTROLLER_TYPE_TURNTABLE)
         {
-            DvzController* controller = panel->controllers[dim];
-            if (_scene_controller_seen(seen, seen_count, controller))
-                continue;
-            seen[seen_count++] = controller;
-            if (controller->type == DVZ_CONTROLLER_TYPE_FLY ||
-                controller->type == DVZ_CONTROLLER_TYPE_TURNTABLE)
-            {
-                _scene_apply_controller_to_bound_panels(controller);
-            }
+            _scene_apply_controller_to_bound_panels(controller);
         }
     }
     _scene_panel_view3d_dirty(panel);
-    return panel->camera;
+    return 0;
 }
 
 

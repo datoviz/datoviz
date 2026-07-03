@@ -451,7 +451,7 @@ Functions: 387
     | [`dvz_panel_set_background_color()`](#dvz_panel_set_background_color) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_border()`](#dvz_panel_set_border) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_bounds_visible()`](#dvz_panel_set_bounds_visible) | `include/datoviz/scene.h` |
-    | [`dvz_panel_set_camera()`](#dvz_panel_set_camera) | `include/datoviz/scene/camera.h` |
+    | [`dvz_panel_set_camera_desc()`](#dvz_panel_set_camera_desc) | `include/datoviz/scene/camera.h` |
     | [`dvz_panel_set_desc()`](#dvz_panel_set_desc) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_domain()`](#dvz_panel_set_domain) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_edl()`](#dvz_panel_set_edl) | `include/datoviz/scene.h` |
@@ -685,10 +685,10 @@ Functions: 387
     | --- | --- |
     | [`dvz_units_builtin()`](#dvz_units_builtin) | `include/datoviz/scene/scale.h` |
     | [`dvz_units_create()`](#dvz_units_create) | `include/datoviz/scene/scale.h` |
-    | [`dvz_units_data_to_canonical()`](#dvz_units_data_to_canonical) | `include/datoviz/scene/scale.h` |
-    | [`dvz_units_display_mode()`](#dvz_units_display_mode) | `include/datoviz/scene/scale.h` |
-    | [`dvz_units_fixed_label()`](#dvz_units_fixed_label) | `include/datoviz/scene/scale.h` |
-    | [`dvz_units_ladder()`](#dvz_units_ladder) | `include/datoviz/scene/scale.h` |
+    | [`dvz_units_set_data_to_canonical()`](#dvz_units_set_data_to_canonical) | `include/datoviz/scene/scale.h` |
+    | [`dvz_units_set_display_mode()`](#dvz_units_set_display_mode) | `include/datoviz/scene/scale.h` |
+    | [`dvz_units_set_fixed_label()`](#dvz_units_set_fixed_label) | `include/datoviz/scene/scale.h` |
+    | [`dvz_units_set_ladder()`](#dvz_units_set_ladder) | `include/datoviz/scene/scale.h` |
 
     ### Vline
 
@@ -4873,7 +4873,7 @@ The returned camera is borrowed panel-owned state. Do not pass it to `dvz_camera
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/camera.h`:51._
+_Declared in `include/datoviz/scene/camera.h`:48._
 
 ### `dvz_panel_clear_background()`
 
@@ -5610,10 +5610,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:1304._
 
-### `dvz_panel_set_camera()`
+### `dvz_panel_set_camera_desc()`
 
-```c title="dvz_panel_set_camera"
-DvzCamera * dvz_panel_set_camera(
+```c title="dvz_panel_set_camera_desc"
+DvzResult dvz_panel_set_camera_desc(
     DvzPanel * panel,
     const DvzCameraDesc * desc
 );
@@ -5621,18 +5621,15 @@ DvzCamera * dvz_panel_set_camera(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `DvzCamera *` | the panel-owned camera |
+| return | `DvzResult` | 0 on success, -1 on validation or allocation error |
 | `panel` | `DvzPanel *` | the panel |
 | `desc` | `const DvzCameraDesc *` | the camera descriptor, or NULL for defaults |
 
-Set or replace the camera attached to a panel.
-
-The returned camera is borrowed panel-owned state. Do not pass it to `dvz_camera_destroy()`;
-standalone destruction is only for cameras created with `dvz_camera_create()`.
+Set or replace the camera descriptor attached to a panel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/camera.h`:40._
+_Declared in `include/datoviz/scene/camera.h`:37._
 
 ### `dvz_panel_set_desc()`
 
@@ -8945,10 +8942,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/scale.h`:82._
 
-### `dvz_units_data_to_canonical()`
+### `dvz_units_set_data_to_canonical()`
 
-```c title="dvz_units_data_to_canonical"
-DvzResult dvz_units_data_to_canonical(
+```c title="dvz_units_set_data_to_canonical"
+DvzResult dvz_units_set_data_to_canonical(
     DvzUnits * units,
     double factor
 );
@@ -8966,10 +8963,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/scale.h`:104._
 
-### `dvz_units_display_mode()`
+### `dvz_units_set_display_mode()`
 
-```c title="dvz_units_display_mode"
-DvzResult dvz_units_display_mode(
+```c title="dvz_units_set_display_mode"
+DvzResult dvz_units_set_display_mode(
     DvzUnits * units,
     DvzUnitDisplayMode mode
 );
@@ -8987,10 +8984,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/scale.h`:124._
 
-### `dvz_units_fixed_label()`
+### `dvz_units_set_fixed_label()`
 
-```c title="dvz_units_fixed_label"
-DvzResult dvz_units_fixed_label(
+```c title="dvz_units_set_fixed_label"
+DvzResult dvz_units_set_fixed_label(
     DvzUnits * units,
     const char * label
 );
@@ -9008,10 +9005,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/scale.h`:134._
 
-### `dvz_units_ladder()`
+### `dvz_units_set_ladder()`
 
-```c title="dvz_units_ladder"
-DvzResult dvz_units_ladder(
+```c title="dvz_units_set_ladder"
+DvzResult dvz_units_set_ladder(
     DvzUnits * units,
     DvzUnitLadder * ladder
 );

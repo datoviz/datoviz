@@ -34,7 +34,7 @@ Create with `dvz_sphere(scene, flags)`. The canonical example enables lighting, 
 | Kind | Attributes |
 | --- | --- |
 | Required | `position` (`vec3` center), `radius` (`float`, object-space), `color` (RGBA8) |
-| Optional | mode through `dvz_sphere_mode()`; material; depth cue; alpha mode; depth test; transform; visual-wide scale bindings |
+| Optional | mode through `dvz_sphere_set_mode()`; material; depth cue; alpha mode; depth test; transform; visual-wide scale bindings |
 
 ## Picking And Probing
 

@@ -713,7 +713,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera.projection.fov_y = 0.58f;
     camera.projection.near_clip = 0.05f;
     camera.projection.far_clip = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera))
+    if (dvz_panel_set_camera_desc(panel, &camera) != 0)
         goto error;
 
     DvzController* controller = dvz_arcball(ctx->scene, NULL);

@@ -283,7 +283,7 @@ Functions: 208
     | Function | Header |
     | --- | --- |
     | [`dvz_sphere()`](#dvz_sphere) | `include/datoviz/scene.h` |
-    | [`dvz_sphere_mode()`](#dvz_sphere_mode) | `include/datoviz/scene.h` |
+    | [`dvz_sphere_set_mode()`](#dvz_sphere_set_mode) | `include/datoviz/scene.h` |
 
     ### Splat
 
@@ -3053,10 +3053,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:2713._
 
-### `dvz_sphere_mode()`
+### `dvz_sphere_set_mode()`
 
-```c title="dvz_sphere_mode"
-DvzResult dvz_sphere_mode(
+```c title="dvz_sphere_set_mode"
+DvzResult dvz_sphere_set_mode(
     DvzVisual * visual,
     DvzSphereMode mode
 );

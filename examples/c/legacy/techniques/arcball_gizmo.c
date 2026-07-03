@@ -943,8 +943,8 @@ int main(int argc, char** argv)
     camera_desc.projection.fov_y = 0.72f;
     camera_desc.projection.near_clip = 0.05f;
     camera_desc.projection.far_clip = 100.0f;
-    bool ok = dvz_panel_set_camera(main_panel, &camera_desc);
-    EXAMPLE_CHECK(ok, "dvz_panel_set_camera(main_panel) failed");
+    DvzResult camera_rc = dvz_panel_set_camera_desc(main_panel, &camera_desc);
+    EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc(main_panel) failed");
 
     DvzCameraDesc gizmo_camera_desc = dvz_camera_desc();
     gizmo_camera_desc.view.target[0] = 0.0f;
@@ -962,8 +962,8 @@ int main(int argc, char** argv)
     gizmo_camera_desc.projection.fov_y = 0.76f;
     gizmo_camera_desc.projection.near_clip = 0.05f;
     gizmo_camera_desc.projection.far_clip = 100.0f;
-    ok = dvz_panel_set_camera(gizmo_panel, &gizmo_camera_desc);
-    EXAMPLE_CHECK(ok, "dvz_panel_set_camera(gizmo_panel) failed");
+    camera_rc = dvz_panel_set_camera_desc(gizmo_panel, &gizmo_camera_desc);
+    EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc(gizmo_panel) failed");
 
     DvzVisual* cube_visual = dvz_mesh(scene, 0);
     DvzVisual* gizmo_axes_visual = dvz_mesh(scene, 0);

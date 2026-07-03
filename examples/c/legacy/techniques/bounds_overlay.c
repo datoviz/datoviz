@@ -190,8 +190,10 @@ int main(int argc, char** argv)
     camera_desc.projection.fov_y = 0.72f;
     camera_desc.projection.near_clip = 0.05f;
     camera_desc.projection.far_clip = 100.0f;
-    DvzCamera* camera = dvz_panel_set_camera(panel_3d, &camera_desc);
-    EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera() failed for 3D panel");
+    DvzResult camera_rc = dvz_panel_set_camera_desc(panel_3d, &camera_desc);
+    DvzCamera* camera = dvz_panel_camera(panel_3d);
+    EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed for 3D panel");
+    EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera_desc() failed for 3D panel");
 
     DvzVisual* points = dvz_point(scene, 0);
     EXAMPLE_CHECK(points != NULL, "dvz_point() failed");
@@ -211,8 +213,8 @@ int main(int argc, char** argv)
 
     DvzVisual* spheres = dvz_sphere(scene, 0);
     EXAMPLE_CHECK(spheres != NULL, "dvz_sphere() failed");
-    rc = dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
-    EXAMPLE_CHECK(rc == 0, "dvz_sphere_mode() failed");
+    rc = dvz_sphere_set_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
+    EXAMPLE_CHECK(rc == 0, "dvz_sphere_set_mode() failed");
     vec3 sphere_positions[SPHERE_COUNT] = {0};
     DvzColor sphere_colors[SPHERE_COUNT] = {0};
     float sphere_radii[SPHERE_COUNT] = {0};

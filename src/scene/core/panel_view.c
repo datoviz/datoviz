@@ -427,7 +427,7 @@ DvzResult dvz_panel_set_view3d_desc(DvzPanel* panel, const DvzPanelView3DDesc* d
     }
     if (!_panel_view3d_desc_validate(desc))
         return -1;
-    if (dvz_panel_set_camera(panel, &desc->camera) == NULL)
+    if (dvz_panel_set_camera_desc(panel, &desc->camera) != 0)
         return -1;
     panel->active_view_kind = DVZ_PANEL_VIEW_KIND_3D;
     return 0;

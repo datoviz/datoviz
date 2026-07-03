@@ -43,7 +43,7 @@ camera.up[2] = 0.0f;
 camera.near = 0.01f;
 camera.far = 100.0f;
 
-dvz_panel_set_camera(panel, &camera);
+dvz_panel_set_camera_desc(panel, &camera);
 ```
 
 Attach a controller after setting the camera when the example needs interactive navigation. Orbit,

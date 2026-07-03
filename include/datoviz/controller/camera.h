@@ -252,7 +252,7 @@ DVZ_EXPORT void dvz_camera_mvp(DvzCamera* camera, DvzMVP* mvp);
  * Destroy a camera.
  *
  * Use only with standalone cameras returned by `dvz_camera_create()`. Panel-owned cameras returned
- * by `dvz_panel_set_camera()` or `dvz_panel_camera()` are destroyed with their owning panel/scene.
+ * by `dvz_panel_set_camera_desc()` or `dvz_panel_camera()` are destroyed with their owning panel/scene.
  *
  * @param camera the camera
  */

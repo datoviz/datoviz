@@ -271,7 +271,7 @@ static bool _add_spheres(DvzScene* scene, DvzPanel* panel)
     DvzVisual* spheres = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     if (spheres == NULL)
         return false;
-    if (dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
+    if (dvz_sphere_set_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
         return false;
 
     DvzVisualDataUpdate updates[] = {
@@ -301,7 +301,7 @@ static bool _set_camera(DvzPanel* panel)
     camera.projection.fov_y = 0.60f;
     camera.projection.near_clip = 0.05f;
     camera.projection.far_clip = 100.0f;
-    return dvz_panel_set_camera(panel, &camera) != NULL;
+    return dvz_panel_set_camera_desc(panel, &camera) == 0;
 }
 
 

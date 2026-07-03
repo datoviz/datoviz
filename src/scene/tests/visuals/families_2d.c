@@ -172,7 +172,7 @@ int test_scene_sphere_mode(TstContext* suite, const TstCase* item)
     AT(_visual_family_state(sphere)->sphere_mode == DVZ_SPHERE_MODE_FAST_IMPOSTOR);
     AT(_visual_family_state(sphere)->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_FAST_IMPOSTOR);
 
-    AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
+    AT(dvz_sphere_set_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
     AT(_visual_family_state(sphere)->sphere_mode == DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
     AT(_visual_family_state(sphere)->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
     AT(_visual_family_state(sphere)->material_params_dirty);
@@ -181,7 +181,7 @@ int test_scene_sphere_mode(TstContext* suite, const TstCase* item)
            sphere, (float[3]){0.0f, 0.0f, 1.0f}, 0.2f, 0.7f, 0.8f, 64.0f) == 0);
     AT(_visual_family_state(sphere)->sphere_mode == DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
     AT(_visual_family_state(sphere)->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
-    AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_FAST_IMPOSTOR) == 0);
+    AT(dvz_sphere_set_mode(sphere, DVZ_SPHERE_MODE_FAST_IMPOSTOR) == 0);
     AT(_visual_family_state(sphere)->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_FAST_IMPOSTOR);
 
     dvz_scene_destroy(scene);

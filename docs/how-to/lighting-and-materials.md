@@ -67,7 +67,7 @@ material lighting.
 
 ```c
 DvzVisual* spheres = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
-dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
+dvz_sphere_set_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
 dvz_visual_set_data(spheres, "position", position, sphere_count);
 dvz_visual_set_data(spheres, "radius", radius, sphere_count);
 dvz_visual_set_data(spheres, "color", color, sphere_count);

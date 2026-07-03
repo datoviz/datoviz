@@ -72,7 +72,7 @@ then use a camera and a 3D controller:
 ```c
 DvzCameraDesc camera = dvz_camera_desc();
 camera.eye[2] = 3.0f;
-dvz_panel_set_camera(panel, &camera);
+dvz_panel_set_camera_desc(panel, &camera);
 
 DvzController* controller = dvz_arcball(scene, NULL);
 dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ);

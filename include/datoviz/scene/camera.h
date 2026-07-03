@@ -28,16 +28,13 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 /**
- * Set or replace the camera attached to a panel.
- *
- * The returned camera is borrowed panel-owned state. Do not pass it to `dvz_camera_destroy()`;
- * standalone destruction is only for cameras created with `dvz_camera_create()`.
+ * Set or replace the camera descriptor attached to a panel.
  *
  * @param panel the panel
  * @param desc the camera descriptor, or NULL for defaults
- * @return the panel-owned camera
+ * @return 0 on success, -1 on validation or allocation error
  */
-DVZ_EXPORT DvzCamera* dvz_panel_set_camera(DvzPanel* panel, const DvzCameraDesc* desc);
+DVZ_EXPORT DvzResult dvz_panel_set_camera_desc(DvzPanel* panel, const DvzCameraDesc* desc);
 
 
 /**

@@ -2724,7 +2724,7 @@ DVZ_EXPORT DvzVisual* dvz_sphere(DvzScene* scene, uint32_t flags);
  * @param mode the rendering mode
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_sphere_mode(DvzVisual* visual, DvzSphereMode mode);
+DVZ_EXPORT DvzResult dvz_sphere_set_mode(DvzVisual* visual, DvzSphereMode mode);
 
 
 /**

@@ -117,7 +117,7 @@ static bool _add_spheres(DvzScene* scene, DvzPanel* panel)
     DvzVisual* visual = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     if (visual == NULL)
         return false;
-    if (dvz_sphere_mode(visual, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
+    if (dvz_sphere_set_mode(visual, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
         return false;
 
     DvzMaterialDesc material = example_default_standard_material_desc();
@@ -158,7 +158,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
 
-    EXAMPLE_CHECK(example_set_default_3d_camera(panel, 1.0f), "dvz_panel_set_camera() failed");
+    EXAMPLE_CHECK(example_set_default_3d_camera(panel, 1.0f), "dvz_panel_set_camera_desc() failed");
 
     EXAMPLE_CHECK(_add_spheres(ctx->scene, panel), "sphere visual setup failed");
 

@@ -337,7 +337,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (visual == NULL)
         goto error;
     dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM);
-    if (dvz_sphere_mode(visual, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
+    if (dvz_sphere_set_mode(visual, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
         goto error;
 
     DvzMaterialDesc material = example_default_standard_material_desc();

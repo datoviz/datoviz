@@ -1843,7 +1843,7 @@ int test_scene_sphere_query_resolves_camera_arcball_item(TstContext* suite, cons
     camera_desc.projection.fov_y = 0.66f;
     camera_desc.projection.near_clip = 0.05f;
     camera_desc.projection.far_clip = 100.0f;
-    AT(dvz_panel_set_camera(panel, &camera_desc) != NULL);
+    AT(dvz_panel_set_camera_desc(panel, &camera_desc) == 0);
 
     DvzController* arcball_controller = dvz_arcball(scene, NULL);
     ANN(arcball_controller);
@@ -1855,7 +1855,7 @@ int test_scene_sphere_query_resolves_camera_arcball_item(TstContext* suite, cons
     DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     ANN(sphere);
     dvz_visual_set_query_capabilities(sphere, DVZ_QUERY_CAPABILITY_ITEM);
-    AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
+    AT(dvz_sphere_set_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
     vec3 positions[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor colors[1] = {{255, 0, 0, 255}};
     float radii[1] = {0.25f};
@@ -1943,7 +1943,7 @@ int test_scene_sphere_query_preserves_camera_arcball_y_orientation(
     camera_desc.projection.fov_y = 0.66f;
     camera_desc.projection.near_clip = 0.05f;
     camera_desc.projection.far_clip = 100.0f;
-    AT(dvz_panel_set_camera(panel, &camera_desc) != NULL);
+    AT(dvz_panel_set_camera_desc(panel, &camera_desc) == 0);
 
     DvzController* arcball_controller = dvz_arcball(scene, NULL);
     ANN(arcball_controller);
@@ -1955,7 +1955,7 @@ int test_scene_sphere_query_preserves_camera_arcball_y_orientation(
     DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     ANN(sphere);
     dvz_visual_set_query_capabilities(sphere, DVZ_QUERY_CAPABILITY_ITEM);
-    AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
+    AT(dvz_sphere_set_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
     vec3 positions[2] = {
         {0.0f, -0.45f, 0.0f},
         {0.0f, +0.45f, 0.0f},

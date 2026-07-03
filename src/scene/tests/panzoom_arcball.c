@@ -812,7 +812,8 @@ int test_controller_link_arcball_rotation_only_keeps_target_centered(
     main_camera_desc.view.up[0] = 0.0f;
     main_camera_desc.view.up[1] = 0.0f;
     main_camera_desc.view.up[2] = 1.0f;
-    DvzCamera* main_camera = dvz_panel_set_camera(main_panel, &main_camera_desc);
+    AT(dvz_panel_set_camera_desc(main_panel, &main_camera_desc) == 0);
+    DvzCamera* main_camera = dvz_panel_camera(main_panel);
     ANN(main_camera);
 
     DvzCameraDesc gizmo_camera_desc = dvz_camera_desc();
@@ -825,7 +826,8 @@ int test_controller_link_arcball_rotation_only_keeps_target_centered(
     gizmo_camera_desc.view.up[0] = 0.0f;
     gizmo_camera_desc.view.up[1] = 1.0f;
     gizmo_camera_desc.view.up[2] = 0.0f;
-    DvzCamera* gizmo_camera = dvz_panel_set_camera(gizmo_panel, &gizmo_camera_desc);
+    AT(dvz_panel_set_camera_desc(gizmo_panel, &gizmo_camera_desc) == 0);
+    DvzCamera* gizmo_camera = dvz_panel_camera(gizmo_panel);
     ANN(gizmo_camera);
 
     DvzController* main_controller = dvz_arcball(scene, NULL);
@@ -992,7 +994,8 @@ int test_orientation_gizmo_create_place_resize_and_visibility(
     camera_desc.view.up[0] = 0.0f;
     camera_desc.view.up[1] = 0.0f;
     camera_desc.view.up[2] = 1.0f;
-    DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
+    AT(dvz_panel_set_camera_desc(panel, &camera_desc) == 0);
+    DvzCamera* camera = dvz_panel_camera(panel);
     ANN(camera);
 
     DvzController* controller = dvz_arcball(scene, NULL);
@@ -1676,7 +1679,8 @@ int test_scene_camera_arcball_mvp_composition(TstContext* suite, const TstCase* 
     desc.projection.fov_y = GLM_PI_4f;
     desc.projection.near_clip = 0.1f;
     desc.projection.far_clip = 100.0f;
-    DvzCamera* camera = dvz_panel_set_camera(panel, &desc);
+    AT(dvz_panel_set_camera_desc(panel, &desc) == 0);
+    DvzCamera* camera = dvz_panel_camera(panel);
     ANN(camera);
     AT(dvz_panel_camera(panel) == camera);
 

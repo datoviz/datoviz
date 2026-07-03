@@ -81,7 +81,7 @@ static bool _add_sphere_lattice(DvzScene* scene, DvzPanel* panel, bool cue_enabl
     DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     if (sphere == NULL)
         return false;
-    if (dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
+    if (dvz_sphere_set_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
         return false;
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = SPHERE_COUNT},
@@ -136,7 +136,7 @@ static bool _set_camera(DvzPanel* panel)
     camera.projection.fov_y = 0.58f;
     camera.projection.near_clip = 0.05f;
     camera.projection.far_clip = 100.0f;
-    return dvz_panel_set_camera(panel, &camera) != NULL;
+    return dvz_panel_set_camera_desc(panel, &camera) == 0;
 }
 
 

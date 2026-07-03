@@ -362,7 +362,7 @@ int dvz_wasm_api_panel_set_camera(
     desc.projection.fov_y = fov_y;
     desc.projection.near_clip = near;
     desc.projection.far_clip = far;
-    if (dvz_panel_set_camera(panel->panel, &desc) == NULL)
+    if (dvz_panel_set_camera_desc(panel->panel, &desc) != 0)
         return _fail(panel->owner, "WASM panel camera setup failed");
     return 0;
 }

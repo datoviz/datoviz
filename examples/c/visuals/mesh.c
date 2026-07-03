@@ -139,7 +139,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
     example_graphite_cyan_set_panel_background(panel);
 
-    EXAMPLE_CHECK(example_set_default_3d_camera(panel, 1.0f), "dvz_panel_set_camera() failed");
+    EXAMPLE_CHECK(example_set_default_3d_camera(panel, 1.0f), "dvz_panel_set_camera_desc() failed");
 
     EXAMPLE_CHECK(_add_mesh(ctx->scene, panel, &state->geometry), "mesh visual setup failed");
 

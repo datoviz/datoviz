@@ -17,7 +17,7 @@ Landed on 2026-05-28:
 2. `marker/api.c` owns `dvz_marker()`, marker style defaults, marker-to-point style conversion, and
    marker style validation.
 3. `pixel/api.c` owns `dvz_pixel()`.
-4. `sphere/api.c` owns `dvz_sphere()` and `dvz_sphere_mode()`.
+4. `sphere/api.c` owns `dvz_sphere()` and `dvz_sphere_set_mode()`.
 5. `splat/api.c` owns `dvz_splat()`.
 6. `stroke/common.c` owns shared stroke cap/join validation, stroke-quad cache release, path-stroke
    cache release, and path-backed subpath copying.
@@ -89,7 +89,7 @@ Do not create empty placeholder files. A family folder should contain only code 
 Move code into `api.c` when it is tied to one public visual family:
 
 1. public constructor such as `dvz_point()` or `dvz_sphere()`;
-2. public family setters such as `dvz_point_set_style()` or `dvz_sphere_mode()`;
+2. public family setters such as `dvz_point_set_style()` or `dvz_sphere_set_mode()`;
 3. default family descriptors such as `dvz_marker_style()`;
 4. validation for family-specific style, mode, cap, or shape state;
 5. tiny conversion helpers that only serve that family API.

@@ -535,7 +535,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     camera_desc.projection.near_clip = 0.05f;
     camera_desc.projection.far_clip = 100.0f;
     EXAMPLE_CHECK(
-        dvz_panel_set_camera(panel, &camera_desc) != NULL, "dvz_panel_set_camera() failed");
+        dvz_panel_set_camera_desc(panel, &camera_desc) == 0, "dvz_panel_set_camera_desc() failed");
 
     DvzVisual* spheres = dvz_sphere(ctx->scene, DVZ_SPHERE_FLAGS_LIGHTING);
     DvzVisual* selection = dvz_sphere(ctx->scene, DVZ_SPHERE_FLAGS_LIGHTING);
@@ -543,11 +543,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(
         spheres != NULL && selection != NULL && crosshair != NULL, "visual creation failed");
     EXAMPLE_CHECK(
-        dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0,
-        "dvz_sphere_mode() failed");
+        dvz_sphere_set_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0,
+        "dvz_sphere_set_mode() failed");
     EXAMPLE_CHECK(
-        dvz_sphere_mode(selection, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0,
-        "dvz_sphere_mode(selection) failed");
+        dvz_sphere_set_mode(selection, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0,
+        "dvz_sphere_set_mode(selection) failed");
 
     DvzMaterialDesc material = dvz_material_desc();
     material.model = DVZ_MATERIAL_MODEL_STANDARD;

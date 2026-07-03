@@ -442,14 +442,14 @@ DvzUnits* dvz_units_builtin(
     DvzUnits* units = dvz_units_create(scene);
     if (units == NULL)
         return NULL;
-    if (dvz_units_data_to_canonical(units, data_to_canonical) != 0 ||
-        dvz_units_ladder(units, ladder) != 0)
+    if (dvz_units_set_data_to_canonical(units, data_to_canonical) != 0 ||
+        dvz_units_set_ladder(units, ladder) != 0)
         return NULL;
     return units;
 }
 
 
-DvzResult dvz_units_data_to_canonical(DvzUnits* units, double factor)
+DvzResult dvz_units_set_data_to_canonical(DvzUnits* units, double factor)
 {
     if (units == NULL || !isfinite(factor) || factor <= 0.0)
         return -1;
@@ -458,7 +458,7 @@ DvzResult dvz_units_data_to_canonical(DvzUnits* units, double factor)
 }
 
 
-DvzResult dvz_units_ladder(DvzUnits* units, DvzUnitLadder* ladder)
+DvzResult dvz_units_set_ladder(DvzUnits* units, DvzUnitLadder* ladder)
 {
     if (units == NULL || ladder == NULL || !ladder->active || ladder->entry_count == 0)
         return -1;
@@ -467,7 +467,7 @@ DvzResult dvz_units_ladder(DvzUnits* units, DvzUnitLadder* ladder)
 }
 
 
-DvzResult dvz_units_display_mode(DvzUnits* units, DvzUnitDisplayMode mode)
+DvzResult dvz_units_set_display_mode(DvzUnits* units, DvzUnitDisplayMode mode)
 {
     if (units == NULL || mode < DVZ_UNIT_DISPLAY_AUTO || mode > DVZ_UNIT_DISPLAY_FIXED)
         return -1;
@@ -476,7 +476,7 @@ DvzResult dvz_units_display_mode(DvzUnits* units, DvzUnitDisplayMode mode)
 }
 
 
-DvzResult dvz_units_fixed_label(DvzUnits* units, const char* label)
+DvzResult dvz_units_set_fixed_label(DvzUnits* units, const char* label)
 {
     if (units == NULL || label == NULL || units->ladder == NULL ||
         _unit_ladder_entry_by_label(units->ladder, label) == NULL)

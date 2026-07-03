@@ -86,7 +86,7 @@ static bool _add_lit_spheres(DvzScene* scene, DvzPanel* panel, uint32_t variant)
     DvzVisual* visual = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     if (visual == NULL)
         return false;
-    if (dvz_sphere_mode(visual, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
+    if (dvz_sphere_set_mode(visual, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0)
         return false;
 
     DvzMaterialDesc material = dvz_standard_material_desc();
@@ -212,7 +212,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         example_graphite_cyan_set_panel_background(panel);
         if (!_add_lighting_label(panel, labels[i]))
             return false;
-        if (!dvz_panel_set_camera(panel, &camera))
+        if (dvz_panel_set_camera_desc(panel, &camera) != 0)
             return false;
         if (!_add_lit_spheres(ctx->scene, panel, i))
             return false;

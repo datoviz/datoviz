@@ -1752,8 +1752,8 @@ int main(int argc, char** argv)
     camera_desc.projection.fov_y = 0.78539816339f;
     camera_desc.projection.near_clip = 0.01f;
     camera_desc.projection.far_clip = 100.0f;
-    bool ok = dvz_panel_set_camera(panel, &camera_desc);
-    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
+    DvzResult camera_rc = dvz_panel_set_camera_desc(panel, &camera_desc);
+    EXAMPLE_CHECK(camera_rc == 0, "dvz_panel_set_camera_desc() failed");
 
     DvzSampledField* field = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){

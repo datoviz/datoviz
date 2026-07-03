@@ -337,7 +337,9 @@ DvzCamera* example_set_default_3d_camera(DvzPanel* panel, float extent)
         return NULL;
 
     DvzCameraDesc camera = example_default_3d_camera_desc(extent);
-    return dvz_panel_set_camera(panel, &camera);
+    if (dvz_panel_set_camera_desc(panel, &camera) != 0)
+        return NULL;
+    return dvz_panel_camera(panel);
 }
 
 
