@@ -37,6 +37,11 @@ smoke_symbols:
   - dvz_figure_id
   - dvz_panel_id
   - dvz_visual_id
+  - dvz_visual_family
+  - dvz_visual_family_name
+  - dvz_visual_attr_count
+  - dvz_visual_attr_info
+  - dvz_visual_attr_supported
   - dvz_sampled_field_id
   - dvz_scale_id
   - dvz_colormap_id

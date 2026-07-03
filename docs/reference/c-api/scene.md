@@ -2511,7 +2511,7 @@ Attached compute passes are emitted before the figure render passes.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2222._
+_Declared in `include/datoviz/scene.h`:2274._
 
 ### `dvz_figure_color_pipeline()`
 
@@ -2666,7 +2666,7 @@ Detach a scene compute pass from a figure.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2232._
+_Declared in `include/datoviz/scene.h`:2284._
 
 ### `dvz_figure_resize()`
 
@@ -3807,7 +3807,7 @@ categorical scale with `dvz_visual_set_scale(labels, "labels", scale)`.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3494._
+_Declared in `include/datoviz/scene.h`:3546._
 
 ### `dvz_labels_clear_selected()`
 
@@ -3826,7 +3826,7 @@ Clear the selected label ID on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3533._
+_Declared in `include/datoviz/scene.h`:3585._
 
 ### `dvz_labels_set_background()`
 
@@ -3847,7 +3847,7 @@ Set the transparent background label ID on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3514._
+_Declared in `include/datoviz/scene.h`:3566._
 
 ### `dvz_labels_set_boundary()`
 
@@ -3872,7 +3872,7 @@ Configure boundary rendering on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3558._
+_Declared in `include/datoviz/scene.h`:3610._
 
 ### `dvz_labels_set_fallback_seed()`
 
@@ -3893,7 +3893,7 @@ Set the deterministic fallback-color seed on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3568._
+_Declared in `include/datoviz/scene.h`:3620._
 
 ### `dvz_labels_set_hidden()`
 
@@ -3916,7 +3916,7 @@ Set the hidden label IDs on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3545._
+_Declared in `include/datoviz/scene.h`:3597._
 
 ### `dvz_labels_set_opacity()`
 
@@ -3937,7 +3937,7 @@ Set the global opacity multiplier on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3504._
+_Declared in `include/datoviz/scene.h`:3556._
 
 ### `dvz_labels_set_selected()`
 
@@ -3958,7 +3958,7 @@ Set the selected label ID on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3524._
+_Declared in `include/datoviz/scene.h`:3576._
 
 ### `dvz_labels_set_slice_axis()`
 
@@ -3979,7 +3979,7 @@ Set the first-slice axis for a 3D labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3578._
+_Declared in `include/datoviz/scene.h`:3630._
 
 ### `dvz_labels_set_slice_position()`
 
@@ -4000,7 +4000,7 @@ Set the first-slice position for a 3D labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3588._
+_Declared in `include/datoviz/scene.h`:3640._
 
 ### `dvz_labels_state()`
 
@@ -4019,7 +4019,7 @@ Return the retained labels state for inspection.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3597._
+_Declared in `include/datoviz/scene.h`:3649._
 
 ## Legend
 
@@ -4801,7 +4801,7 @@ Return the union of all visible visual bounds attached to one panel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2015._
+_Declared in `include/datoviz/scene.h`:2067._
 
 ### `dvz_panel_bounds_visible()`
 
@@ -6109,7 +6109,7 @@ to the figure.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2003._
+_Declared in `include/datoviz/scene.h`:2055._
 
 ## Panzoom
 
@@ -6997,7 +6997,7 @@ or `sizeof(uint16_t)` for 16-bit).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2092._
+_Declared in `include/datoviz/scene.h`:2144._
 
 ### `dvz_scene_buffer_desc()`
 
@@ -7015,7 +7015,7 @@ Related: [`dvz_scene_buffer()`](#dvz_scene_buffer).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2100._
+_Declared in `include/datoviz/scene.h`:2152._
 
 ### `dvz_scene_buffer_destroy()`
 
@@ -7033,7 +7033,7 @@ Destroy a scene-owned buffer resource.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2108._
+_Declared in `include/datoviz/scene.h`:2160._
 
 ### `dvz_scene_buffer_get_desc()`
 
@@ -7052,7 +7052,7 @@ Return the immutable buffer descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2132._
+_Declared in `include/datoviz/scene.h`:2184._
 
 ### `dvz_scene_buffer_resource_key()`
 
@@ -7079,7 +7079,7 @@ external buffer without scanning draw commands.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2148._
+_Declared in `include/datoviz/scene.h`:2200._
 
 ### `dvz_scene_buffer_set_data()`
 
@@ -7105,7 +7105,7 @@ release or reuse it immediately after a successful or failed call.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2123._
+_Declared in `include/datoviz/scene.h`:2175._
 
 ### `dvz_scene_clock_dt()`
 
@@ -7167,7 +7167,7 @@ buffer bindings that are lowered into DRP2 before figure render passes.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2162._
+_Declared in `include/datoviz/scene.h`:2214._
 
 ### `dvz_scene_compute_desc()`
 
@@ -7185,7 +7185,7 @@ Related: [`dvz_scene_compute()`](#dvz_scene_compute).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2170._
+_Declared in `include/datoviz/scene.h`:2222._
 
 ### `dvz_scene_compute_destroy()`
 
@@ -7203,7 +7203,7 @@ Destroy a scene-owned compute pass and detach it from all figures.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2178._
+_Declared in `include/datoviz/scene.h`:2230._
 
 ### `dvz_scene_compute_set_buffer()`
 
@@ -7235,7 +7235,7 @@ buffers only. Ranges are passed through to the DRP2 bind group.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2208._
+_Declared in `include/datoviz/scene.h`:2260._
 
 ### `dvz_scene_compute_set_dispatch()`
 
@@ -7260,7 +7260,7 @@ Set the dispatch size for a scene compute pass.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2191._
+_Declared in `include/datoviz/scene.h`:2243._
 
 ### `dvz_scene_destroy()`
 

@@ -342,6 +342,51 @@ int test_scene_visual_attr_source_and_mutability_metadata(TstContext* suite, con
 }
 
 
+int test_scene_visual_public_introspection(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(point);
+    DvzVisual* segment = dvz_segment(scene, 0);
+    ANN(segment);
+
+    AT(dvz_visual_family(NULL) == DVZ_SCENE_VISUAL_FAMILY_NONE);
+    AT(dvz_visual_family(point) == DVZ_SCENE_VISUAL_FAMILY_POINT);
+    AT(strcmp(dvz_visual_family_name(DVZ_SCENE_VISUAL_FAMILY_POINT), "point") == 0);
+    AT(strcmp(dvz_visual_family_name(DVZ_SCENE_VISUAL_FAMILY_NONE), "none") == 0);
+
+    AT(dvz_visual_attr_count(point) == 4);
+    DvzVisualAttrInfo info = {0};
+    AT(dvz_visual_attr_info(point, 0, &info) == DVZ_OK);
+    AT(strcmp(info.name, "position") == 0);
+    AT(info.item_size == 3 * sizeof(float));
+    AT((info.source_mask & (1u << DVZ_VISUAL_ATTR_SOURCE_PER_ITEM)) != 0);
+    AT(info.default_format == DVZ_VISUAL_ATTR_FORMAT_DEFAULT);
+    AT(!info.instance);
+
+    AT(dvz_visual_attr_info(point, 2, &info) == DVZ_OK);
+    AT(strcmp(info.name, "diameter_px") == 0);
+    AT(info.item_size == sizeof(float));
+    AT(dvz_visual_attr_supported(point, "diameter_px"));
+    AT(dvz_visual_attr_supported(point, "size"));
+    AT(!dvz_visual_attr_supported(point, "opacity"));
+    AT(!dvz_visual_attr_supported(NULL, "position"));
+
+    AT(dvz_visual_attr_info(segment, 3, &info) == DVZ_OK);
+    AT(strcmp(info.name, "stroke_width_px") == 0);
+    AT(info.item_size == sizeof(float));
+    AT(dvz_visual_attr_info(point, dvz_visual_attr_count(point), &info) == DVZ_ERROR);
+    AT(dvz_visual_attr_info(point, 0, NULL) == DVZ_ERROR);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Verify public read-only views over retained dense visual data.
  *

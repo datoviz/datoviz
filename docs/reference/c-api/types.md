@@ -4061,6 +4061,12 @@ typedef struct DvzVisualAttachDesc DvzVisualAttachDesc;
 typedef enum DvzVisualAttrFormat DvzVisualAttrFormat;
 ```
 
+#### `DvzVisualAttrInfo`
+
+```c
+typedef struct DvzVisualAttrInfo DvzVisualAttrInfo;
+```
+
 #### `DvzVisualAttrMutability`
 
 ```c
@@ -5019,6 +5025,18 @@ struct DvzVisualAttachDesc {
     DvzVisualCoordSpace coord_space;
     DvzVisualClipRect clip_rect;
     DvzVisualViewportRect viewport_rect;
+};
+```
+
+#### `DvzVisualAttrInfo`
+
+```c
+struct DvzVisualAttrInfo {
+    const char * name;
+    uint32_t item_size;
+    uint32_t source_mask;
+    DvzVisualAttrFormat default_format;
+    _Bool instance;
 };
 ```
 

@@ -1174,6 +1174,17 @@ struct DvzVisualDataView
 typedef struct DvzVisualDataView DvzVisualDataView;
 
 
+struct DvzVisualAttrInfo
+{
+    const char* name;
+    uint32_t item_size;
+    uint32_t source_mask;
+    DvzVisualAttrFormat default_format;
+    bool instance;
+};
+typedef struct DvzVisualAttrInfo DvzVisualAttrInfo;
+
+
 struct DvzItemRange
 {
     uint32_t first_item;

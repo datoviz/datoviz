@@ -1639,6 +1639,58 @@ DVZ_EXPORT DvzId dvz_visual_id(const DvzVisual* visual);
 
 
 /**
+ * Return the family of a visual.
+ *
+ * @param visual the visual
+ * @return the visual family, or DVZ_SCENE_VISUAL_FAMILY_NONE when visual is NULL
+ */
+DVZ_EXPORT DvzSceneVisualFamily dvz_visual_family(const DvzVisual* visual);
+
+
+/**
+ * Return the stable public name of a visual family.
+ *
+ * @param family the visual family
+ * @return the family name, or "none" for unknown/none
+ */
+DVZ_EXPORT const char* dvz_visual_family_name(DvzSceneVisualFamily family);
+
+
+/**
+ * Return the number of public attributes accepted by a visual family.
+ *
+ * @param visual the visual
+ * @return the number of supported public attributes, or 0 when visual is NULL
+ */
+DVZ_EXPORT uint32_t dvz_visual_attr_count(const DvzVisual* visual);
+
+
+/**
+ * Copy public metadata for one visual attribute.
+ *
+ * The returned `name` pointer is owned by Datoviz and remains valid for the process lifetime.
+ * `source_mask` uses `(1u << DvzVisualAttrSource)` bits.
+ *
+ * @param visual the visual
+ * @param index attribute index in [0, `dvz_visual_attr_count()`)
+ * @param out output attribute metadata
+ * @return DVZ_OK on success, DVZ_ERROR on invalid arguments
+ */
+DVZ_EXPORT DvzResult
+dvz_visual_attr_info(const DvzVisual* visual, uint32_t index, DvzVisualAttrInfo* out);
+
+
+/**
+ * Return whether a visual accepts one public attribute name.
+ *
+ * @param visual the visual
+ * @param attr_name public attribute name
+ * @return whether the attribute is accepted by the visual family
+ */
+DVZ_EXPORT bool dvz_visual_attr_supported(const DvzVisual* visual, const char* attr_name);
+
+
+/**
  * Set visual visibility.
  *
  * @param visual the visual
