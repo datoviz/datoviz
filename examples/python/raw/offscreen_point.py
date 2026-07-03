@@ -80,8 +80,8 @@ def main(argv: list[str] | None = None) -> int:
             print('raw offscreen point: SKIP (dvz_view_offscreen() failed)')
             return 0
 
-        if dvz.dvz_app_render_once(app) != 0:
-            raise RuntimeError('dvz_app_render_once() failed')
+        if dvz.dvz_view_render_once(view) != 0:
+            raise RuntimeError('dvz_view_render_once() failed')
         if dvz.dvz_view_capture_png(view, str(output).encode()) != 0:
             raise RuntimeError('dvz_view_capture_png() failed')
         if not output.exists() or output.stat().st_size == 0:

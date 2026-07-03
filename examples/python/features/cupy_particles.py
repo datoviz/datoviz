@@ -34,7 +34,7 @@ def _skip(reason: str) -> int:
 
 def _make_style(count: int):
     colors = (dvz.DvzColor * count)()
-    sizes = (ctypes.c_float * count)()
+    diameters = (ctypes.c_float * count)()
 
     for i in range(count):
         u = (i + 0.5) / count
@@ -50,15 +50,15 @@ def _make_style(count: int):
             int(190 + 55 * (1.0 - core)),
             max(1, int((100 + 100 * core) * edge)),
         )
-        sizes[i] = 2.0 + 1.0 * core
-    return colors, sizes
+        diameters[i] = 2.0 + 1.0 * core
+    return colors, diameters
 
 
-def _set_style(visual, colors, sizes, count: int) -> None:
+def _set_style(visual, colors, diameters, count: int) -> None:
     if dvz.dvz_visual_set_data(visual, b'color', _void_p(colors), count) != 0:
         raise RuntimeError('dvz_visual_set_data(color) failed')
-    if dvz.dvz_visual_set_data(visual, b'size', _void_p(sizes), count) != 0:
-        raise RuntimeError('dvz_visual_set_data(size) failed')
+    if dvz.dvz_visual_set_data(visual, b'diameter_px', _void_p(diameters), count) != 0:
+        raise RuntimeError('dvz_visual_set_data(diameter_px) failed')
 
 
 def _build_scene(scene, positions: dvz_cuda.CudaSceneBuffer, count: int):
@@ -68,15 +68,15 @@ def _build_scene(scene, positions: dvz_cuda.CudaSceneBuffer, count: int):
     if not figure or not panel or not visual:
         raise RuntimeError('scene setup failed')
 
-    dvz.dvz_panel_set_background_color(panel, 0.005, 0.007, 0.014, 1.0)
+    dvz.dvz_panel_set_background_color(panel, dvz.DvzColor(1, 2, 4, 255))
     if dvz.dvz_visual_set_alpha_mode(visual, dvz.DvzAlphaMode.DVZ_ALPHA_BLENDED) != 0:
         raise RuntimeError('dvz_visual_set_alpha_mode() failed')
     if dvz.dvz_visual_set_depth_test(visual, False) != 0:
         raise RuntimeError('dvz_visual_set_depth_test() failed')
 
     positions.bind_attr(visual, 'position')
-    colors, sizes = _make_style(count)
-    _set_style(visual, colors, sizes, count)
+    colors, diameters = _make_style(count)
+    _set_style(visual, colors, diameters, count)
     if dvz.dvz_panel_add_visual(panel, visual, None) != 0:
         raise RuntimeError('dvz_panel_add_visual() failed')
 
@@ -85,7 +85,7 @@ def _build_scene(scene, positions: dvz_cuda.CudaSceneBuffer, count: int):
         raise RuntimeError('dvz_panzoom() failed')
     if dvz.dvz_panel_bind_controller(panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY) != 0:
         raise RuntimeError('dvz_panel_bind_controller() failed')
-    return figure, panel, visual, colors, sizes
+    return figure, panel, visual, colors, diameters
 
 
 class ParticleStepper:
@@ -144,8 +144,10 @@ def main(argv: list[str] | None = None) -> int:
                 dtype='float32',
                 usage=('vertex', 'storage'),
             )
-            figure, panel, visual, colors, sizes = _build_scene(scene, positions, args.particles)
-            refresh_style = lambda: _set_style(visual, colors, sizes, args.particles)
+            figure, panel, visual, colors, diameters = _build_scene(
+                scene, positions, args.particles
+            )
+            refresh_style = lambda: _set_style(visual, colors, diameters, args.particles)
             app, view = cuda.live_app(
                 figure, WIDTH, HEIGHT, b'cupy_particles', after_resources=refresh_style
             )

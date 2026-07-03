@@ -1,7 +1,8 @@
 """
 # Matplotlib/Datoviz performance comparison
 
-On a simple interactive 2D scatter plot with axes.
+Legacy benchmark comparing Matplotlib with the older Datoviz object-oriented Python facade on a
+simple interactive 2D scatter plot with axes. Outputs are written under `build/benchmarks`.
 
 ---
 tags:
@@ -66,9 +67,10 @@ FACTOR = 1.02
 MAX_FRAMES = 100
 
 CURDIR = Path(__file__).parent.resolve()
+ROOT = CURDIR.parents[1]
+OUTPUT_DIR = ROOT / 'build' / 'benchmarks'
 BENCHMARK_ID = str(uuid.uuid4())[:8]
-BENCHMARK_ID = 'debug'  # DEBUG
-RESULTS_PATH = CURDIR / f'benchmark_results_{BENCHMARK_ID}.json'
+RESULTS_PATH = OUTPUT_DIR / f'benchmark_results_{BENCHMARK_ID}.json'
 
 
 # -------------------------------------------------------------------------------------------------
@@ -129,8 +131,13 @@ def generate_data(n):
     return x, y, color, color / 255.0, size
 
 
-# Store generated data for all n
-DATA = {n: generate_data(n) for n in N_VALUES}
+DATA_CACHE = {}
+
+
+def get_data(n):
+    if n not in DATA_CACHE:
+        DATA_CACHE[n] = generate_data(n)
+    return DATA_CACHE[n]
 
 # -------------------------------------------------------------------------------------------------
 # Benchmark Datoviz
@@ -138,10 +145,11 @@ DATA = {n: generate_data(n) for n in N_VALUES}
 
 
 def run_datoviz(n, benchmark=True, screenshot=False):
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     if screenshot:
-        os.environ['DVZ_CAPTURE_PNG'] = str(CURDIR / f'screenshot_dvz_{n}.png')
+        os.environ['DVZ_CAPTURE_PNG'] = str(OUTPUT_DIR / f'screenshot_dvz_{n}.png')
 
-    x, y, color_uint8, _, size = DATA[n]
+    x, y, color_uint8, _, size = get_data(n)
     app = dvz.App(background='white')
     figure = app.figure(W, H)
     panel = figure.panel()
@@ -201,6 +209,8 @@ def run_datoviz(n, benchmark=True, screenshot=False):
 
 
 def run_matplotlib(n, benchmark=True, screenshot=False):
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
     # Too slow
     if n > 1e6:
         return {
@@ -210,7 +220,7 @@ def run_matplotlib(n, benchmark=True, screenshot=False):
             'first_frame_time': None,
         }
 
-    x, y, _, color_float, size = DATA[n]
+    x, y, _, color_float, size = get_data(n)
     fig, ax = plt.subplots(figsize=(W / DPI, H / DPI), dpi=DPI)
     ax.set_xlim(XLIM)
     ax.set_ylim(YLIM)
@@ -220,7 +230,7 @@ def run_matplotlib(n, benchmark=True, screenshot=False):
     plt.show(block=False)
 
     if screenshot:
-        fig.savefig(CURDIR / f'screenshot_mpl_{n}.png', dpi=150)
+        fig.savefig(OUTPUT_DIR / f'screenshot_mpl_{n}.png', dpi=150)
 
     t_start = time.perf_counter()
     frame_count = 0
@@ -332,6 +342,7 @@ def get_system_info():
 
 
 def plot_results():
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     COLORS = {
         'matplotlib': '#4698c6',
         'datoviz': '#554596',
@@ -430,7 +441,7 @@ def plot_results():
     axes[0, 0].legend(fontsize=8, loc='upper right', frameon=False)
     fig.suptitle('Datoviz vs Matplotlib Performance (scatter plot)', fontsize=12)
     plt.tight_layout()
-    fig.savefig(CURDIR / 'benchmark.png', dpi=150)
+    fig.savefig(OUTPUT_DIR / 'benchmark.png', dpi=150)
     plt.show()
 
 
@@ -440,6 +451,8 @@ def plot_results():
 
 
 def main():
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
     parser = argparse.ArgumentParser(description='Datoviz vs Matplotlib benchmark.')
     parser.add_argument('--benchmark', action='store_true', help='Run the benchmark')
     parser.add_argument('--plot', action='store_true', help='Plot benchmark results')

@@ -117,8 +117,8 @@ async def _run(output: Path) -> int:
             if not task.done():
                 await task
 
-        if dvz.dvz_app_render_once(app) != 0:
-            raise RuntimeError('dvz_app_render_once() failed')
+        if dvz.dvz_view_render_once(raw_view) != 0:
+            raise RuntimeError('dvz_view_render_once() failed')
         if dvz.dvz_view_capture_png(raw_view, str(output).encode()) != 0:
             raise RuntimeError('dvz_view_capture_png() failed')
         if not output.exists() or output.stat().st_size == 0:
