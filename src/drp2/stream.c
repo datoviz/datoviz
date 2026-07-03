@@ -137,6 +137,25 @@ static void _copy_label(char* dst, uint64_t dst_size, const char* src)
 /*************************************************************************************************/
 
 /**
+ * Return the default CreateTexture descriptor.
+ *
+ * @return initialized descriptor
+ */
+DvzDrp2TextureDesc dvz_drp2_texture_desc(void)
+{
+    return (DvzDrp2TextureDesc){
+        .struct_size = sizeof(DvzDrp2TextureDesc),
+        .format = DVZ_FORMAT_R8G8B8A8_UNORM,
+        .usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC |
+                 DVZ_DRP2_TEXTURE_USAGE_COPY_DST,
+        .sample_count = 1,
+        .color_role = DVZ_DRP2_COLOR_ROLE_NONE,
+    };
+}
+
+
+
+/**
  * Create an empty DRP2 command stream.
  *
  * @return the command stream
@@ -530,10 +549,12 @@ bool dvz_drp2_stream_destroy_buffer(DvzDrp2CommandStream* stream, uint64_t buffe
 bool dvz_drp2_stream_create_texture_2d(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height)
 {
-    return dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, id, width, height, DVZ_FORMAT_R8G8B8A8_UNORM,
-        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC |
-            DVZ_DRP2_TEXTURE_USAGE_COPY_DST);
+    DvzDrp2TextureDesc desc = dvz_drp2_texture_desc();
+    desc.id = id;
+    desc.width = width;
+    desc.height = height;
+    desc.depth = 1;
+    return dvz_drp2_stream_create_texture(stream, &desc);
 }
 
 
@@ -551,8 +572,13 @@ bool dvz_drp2_stream_create_texture_2d(
 bool dvz_drp2_stream_create_texture_2d_usage(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t usage)
 {
-    return dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, id, width, height, DVZ_FORMAT_R8G8B8A8_UNORM, usage);
+    DvzDrp2TextureDesc desc = dvz_drp2_texture_desc();
+    desc.id = id;
+    desc.width = width;
+    desc.height = height;
+    desc.depth = 1;
+    desc.usage = usage;
+    return dvz_drp2_stream_create_texture(stream, &desc);
 }
 
 
@@ -572,61 +598,45 @@ bool dvz_drp2_stream_create_texture_2d_format_usage(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, DvzFormat format,
     uint32_t usage)
 {
-    return dvz_drp2_stream_create_texture_2d_format_usage_samples(
-        stream, id, width, height, format, usage, 1);
+    DvzDrp2TextureDesc desc = dvz_drp2_texture_desc();
+    desc.id = id;
+    desc.width = width;
+    desc.height = height;
+    desc.depth = 1;
+    desc.format = format;
+    desc.usage = usage;
+    return dvz_drp2_stream_create_texture(stream, &desc);
 }
 
 
 
 /**
- * Append a CreateTexture command for a 2D texture with explicit format, usage, and samples.
+ * Append a CreateTexture command from a descriptor.
  *
  * @param stream the command stream
- * @param id the texture id
- * @param width the texture width
- * @param height the texture height
- * @param format texture format token
- * @param usage texture usage flags
- * @param sample_count raster sample count, with 0 treated as 1
+ * @param desc the texture descriptor
  * @return whether the command was appended
  */
-bool dvz_drp2_stream_create_texture_2d_format_usage_samples(
-    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, DvzFormat format,
-    uint32_t usage, uint32_t sample_count)
+bool dvz_drp2_stream_create_texture(
+    DvzDrp2CommandStream* stream, const DvzDrp2TextureDesc* desc)
 {
+    if (desc == NULL)
+        return false;
+    if (desc->struct_size != 0 && desc->struct_size < sizeof(DvzDrp2TextureDesc))
+        return false;
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_TEXTURE);
     if (command == NULL)
         return false;
-    command->u.create_texture.id = id;
-    command->u.create_texture.width = width;
-    command->u.create_texture.height = height;
-    command->u.create_texture.depth = 1;
-    command->u.create_texture.format = (uint32_t)format;
-    command->u.create_texture.usage = usage;
-    command->u.create_texture.sample_count = sample_count == 0 ? 1 : sample_count;
+    command->u.create_texture.id = desc->id;
+    command->u.create_texture.width = desc->width;
+    command->u.create_texture.height = desc->height;
+    command->u.create_texture.depth = desc->depth == 0 ? 1 : desc->depth;
+    command->u.create_texture.format = (uint32_t)desc->format;
+    command->u.create_texture.usage = desc->usage;
+    command->u.create_texture.sample_count = desc->sample_count == 0 ? 1 : desc->sample_count;
+    command->u.create_texture.color_role = desc->color_role;
     return true;
 }
-
-
-/**
- * Set the semantic color role on the most recently appended CreateTexture command.
- *
- * @param stream the command stream
- * @param color_role texture color role
- * @return whether the most recent command was a CreateTexture command
- */
-bool dvz_drp2_stream_create_texture_set_color_role(
-    DvzDrp2CommandStream* stream, DvzDrp2ColorRole color_role)
-{
-    if (stream == NULL || stream->count == 0)
-        return false;
-    DvzDrp2Command* command = &stream->commands[stream->count - 1];
-    if (command->type != DVZ_DRP2_COMMAND_CREATE_TEXTURE)
-        return false;
-    command->u.create_texture.color_role = color_role;
-    return true;
-}
-
 
 
 /**
@@ -1602,10 +1612,14 @@ bool dvz_drp2_stream_write_texture_2d_region(
 bool dvz_drp2_stream_create_texture_3d(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t depth)
 {
-    return dvz_drp2_stream_create_texture_3d_format_usage(
-        stream, id, width, height, depth, DVZ_FORMAT_R8G8B8A8_UNORM,
-        DVZ_DRP2_TEXTURE_USAGE_COPY_SRC | DVZ_DRP2_TEXTURE_USAGE_COPY_DST |
-            DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING);
+    DvzDrp2TextureDesc desc = dvz_drp2_texture_desc();
+    desc.id = id;
+    desc.width = width;
+    desc.height = height;
+    desc.depth = depth;
+    desc.usage = DVZ_DRP2_TEXTURE_USAGE_COPY_SRC | DVZ_DRP2_TEXTURE_USAGE_COPY_DST |
+                 DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING;
+    return dvz_drp2_stream_create_texture(stream, &desc);
 }
 
 
@@ -1626,17 +1640,14 @@ bool dvz_drp2_stream_create_texture_3d_format_usage(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t depth,
     DvzFormat format, uint32_t usage)
 {
-    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_TEXTURE);
-    if (command == NULL)
-        return false;
-    command->u.create_texture.id    = id;
-    command->u.create_texture.width = width;
-    command->u.create_texture.height = height;
-    command->u.create_texture.depth = depth;
-    command->u.create_texture.format = (uint32_t)format;
-    command->u.create_texture.usage = usage;
-    command->u.create_texture.sample_count = 1;
-    return true;
+    DvzDrp2TextureDesc desc = dvz_drp2_texture_desc();
+    desc.id = id;
+    desc.width = width;
+    desc.height = height;
+    desc.depth = depth;
+    desc.format = format;
+    desc.usage = usage;
+    return dvz_drp2_stream_create_texture(stream, &desc);
 }
 
 

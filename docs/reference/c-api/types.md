@@ -7023,6 +7023,12 @@ typedef struct DvzDrp2RecordingInfo DvzDrp2RecordingInfo;
 typedef struct DvzDrp2RenderPipelineDesc DvzDrp2RenderPipelineDesc;
 ```
 
+#### `DvzDrp2TextureDesc`
+
+```c
+typedef struct DvzDrp2TextureDesc DvzDrp2TextureDesc;
+```
+
 #### `DvzDrp2RuntimeConfig`
 
 ```c
@@ -7408,6 +7414,23 @@ struct DvzDrp2RenderPipelineDesc {
     const uint32_t * attr_locations;
     const DvzFormat * attr_formats;
     const uint32_t * attr_offsets;
+};
+```
+
+#### `DvzDrp2TextureDesc`
+
+```c
+struct DvzDrp2TextureDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    uint64_t id;
+    uint32_t width;
+    uint32_t height;
+    uint32_t depth;
+    DvzFormat format;
+    uint32_t usage;
+    uint32_t sample_count;
+    DvzDrp2ColorRole color_role;
 };
 ```
 

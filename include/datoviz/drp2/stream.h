@@ -171,6 +171,25 @@ DVZ_EXPORT bool dvz_drp2_stream_destroy_buffer(DvzDrp2CommandStream* stream, uin
 
 
 /**
+ * Return the default CreateTexture descriptor.
+ *
+ * @return initialized descriptor
+ */
+DVZ_EXPORT DvzDrp2TextureDesc dvz_drp2_texture_desc(void);
+
+
+/**
+ * Append a CreateTexture command from a descriptor.
+ *
+ * @param stream the command stream
+ * @param desc the texture descriptor
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool
+dvz_drp2_stream_create_texture(DvzDrp2CommandStream* stream, const DvzDrp2TextureDesc* desc);
+
+
+/**
  * Append a CreateTexture command for a 2D render attachment.
  *
  * @param stream the command stream
@@ -213,35 +232,6 @@ DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_usage(
 DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_format_usage(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, DvzFormat format,
     uint32_t usage);
-
-
-/**
- * Append a CreateTexture command for a 2D texture with explicit format, usage, and samples.
- *
- * @param stream the command stream
- * @param id the texture id
- * @param width the texture width
- * @param height the texture height
- * @param format texture format token
- * @param usage texture usage flags
- * @param sample_count raster sample count, with 0 treated as 1
- * @return whether the command was appended
- */
-DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_format_usage_samples(
-    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, DvzFormat format,
-    uint32_t usage, uint32_t sample_count);
-
-
-/**
- * Set the semantic color role on the most recently appended CreateTexture command.
- *
- * @param stream the command stream
- * @param color_role texture color role
- * @return whether the most recent command was a CreateTexture command
- */
-DVZ_EXPORT bool dvz_drp2_stream_create_texture_set_color_role(
-    DvzDrp2CommandStream* stream, DvzDrp2ColorRole color_role);
-
 
 
 /**

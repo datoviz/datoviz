@@ -152,19 +152,33 @@ bool _emitter_emit_upload(
         {
             uint32_t usage =
                 DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING | DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
+            DvzDrp2ColorRole color_role = _drp2_color_role(resource->color_role);
             if (texture_d > 1)
             {
-                if (!dvz_drp2_stream_create_texture_3d_format_usage(
-                        stream, id, texture_w, texture_h, texture_d, format, usage))
+                DvzDrp2TextureDesc desc = dvz_drp2_texture_desc();
+                desc.id = id;
+                desc.width = texture_w;
+                desc.height = texture_h;
+                desc.depth = texture_d;
+                desc.format = format;
+                desc.usage = usage;
+                desc.color_role = color_role;
+                if (!dvz_drp2_stream_create_texture(stream, &desc))
                     return false;
             }
-            else if (!dvz_drp2_stream_create_texture_2d_format_usage(
-                         stream, id, texture_w, texture_h, format, usage))
-                return false;
-            DvzDrp2ColorRole color_role = _drp2_color_role(resource->color_role);
-            if (color_role != DVZ_DRP2_COLOR_ROLE_NONE &&
-                !dvz_drp2_stream_create_texture_set_color_role(stream, color_role))
-                return false;
+            else
+            {
+                DvzDrp2TextureDesc desc = dvz_drp2_texture_desc();
+                desc.id = id;
+                desc.width = texture_w;
+                desc.height = texture_h;
+                desc.depth = 1;
+                desc.format = format;
+                desc.usage = usage;
+                desc.color_role = color_role;
+                if (!dvz_drp2_stream_create_texture(stream, &desc))
+                    return false;
+            }
         }
         if (emitter->resources.first_texture_id == 0)
             emitter->resources.first_texture_id = id;

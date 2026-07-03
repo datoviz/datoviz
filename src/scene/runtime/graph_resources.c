@@ -911,8 +911,15 @@ bool _runtime_resolve_texture_2d(
 
     if (is_new)
     {
-        if (!dvz_drp2_stream_create_texture_2d_format_usage_samples(
-                stream, resource->id, width, height, format, usage, sample_count))
+        DvzDrp2TextureDesc desc = dvz_drp2_texture_desc();
+        desc.id = resource->id;
+        desc.width = width;
+        desc.height = height;
+        desc.depth = 1;
+        desc.format = format;
+        desc.usage = usage;
+        desc.sample_count = sample_count;
+        if (!dvz_drp2_stream_create_texture(stream, &desc))
             return false;
     }
     *out_id = resource->id;

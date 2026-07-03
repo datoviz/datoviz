@@ -39,6 +39,7 @@ typedef struct DvzDrp2BindGroupLayoutEntry DvzDrp2BindGroupLayoutEntry;
 typedef struct DvzDrp2BindGroupEntry DvzDrp2BindGroupEntry;
 typedef struct DvzDrp2ColorAttachment DvzDrp2ColorAttachment;
 typedef struct DvzDrp2ColorTarget DvzDrp2ColorTarget;
+typedef struct DvzDrp2TextureDesc DvzDrp2TextureDesc;
 typedef struct DvzDrp2RenderPipelineDesc DvzDrp2RenderPipelineDesc;
 
 
@@ -93,6 +94,21 @@ struct DvzDrp2ColorTarget
     uint32_t dst_alpha_blend_factor;
     uint32_t alpha_blend_op;
     uint32_t color_write_mask;
+};
+
+
+struct DvzDrp2TextureDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    uint64_t id;
+    uint32_t width;
+    uint32_t height;
+    uint32_t depth;
+    DvzFormat format;
+    uint32_t usage;
+    uint32_t sample_count;
+    DvzDrp2ColorRole color_role;
 };
 
 

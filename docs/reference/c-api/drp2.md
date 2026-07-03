@@ -56,6 +56,7 @@ Functions: 134
     | [`dvz_drp2_recording_stream()`](#dvz_drp2_recording_stream) | `include/datoviz/drp2/recording.h` |
     | [`dvz_drp2_recording_write_stream()`](#dvz_drp2_recording_write_stream) | `include/datoviz/drp2/recording.h` |
     | [`dvz_drp2_render_pipeline_desc()`](#dvz_drp2_render_pipeline_desc) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_texture_desc()`](#dvz_drp2_texture_desc) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_runtime_attach_frame_target()`](#dvz_drp2_runtime_attach_frame_target) | `include/datoviz/drp2/runtime.h` |
     | [`dvz_drp2_runtime_copy_texture_to_frame()`](#dvz_drp2_runtime_copy_texture_to_frame) | `include/datoviz/drp2/runtime.h` |
     | [`dvz_drp2_runtime_destroy()`](#dvz_drp2_runtime_destroy) | `include/datoviz/drp2/runtime.h` |
@@ -98,15 +99,14 @@ Functions: 134
     | [`dvz_drp2_stream_create_shader_module_spirv()`](#dvz_drp2_stream_create_shader_module_spirv) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_create_storage_bind_group()`](#dvz_drp2_stream_create_storage_bind_group) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_create_storage_bind_group_layout()`](#dvz_drp2_stream_create_storage_bind_group_layout) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_create_texture()`](#dvz_drp2_stream_create_texture) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_create_texture_2d()`](#dvz_drp2_stream_create_texture_2d) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_create_texture_2d_format_usage()`](#dvz_drp2_stream_create_texture_2d_format_usage) | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_texture_2d_format_usage_samples()`](#dvz_drp2_stream_create_texture_2d_format_usage_samples) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_create_texture_2d_usage()`](#dvz_drp2_stream_create_texture_2d_usage) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_create_texture_3d()`](#dvz_drp2_stream_create_texture_3d) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_create_texture_3d_format_usage()`](#dvz_drp2_stream_create_texture_3d_format_usage) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_create_texture_sampler_bind_group()`](#dvz_drp2_stream_create_texture_sampler_bind_group) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_create_texture_sampler_bind_group_layout()`](#dvz_drp2_stream_create_texture_sampler_bind_group_layout) | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_create_texture_set_color_role()`](#dvz_drp2_stream_create_texture_set_color_role) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_create_uniform_bind_group()`](#dvz_drp2_stream_create_uniform_bind_group) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_create_uniform_bind_group_layout()`](#dvz_drp2_stream_create_uniform_bind_group_layout) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_destroy()`](#dvz_drp2_stream_destroy) | `include/datoviz/drp2/stream.h` |
@@ -708,6 +708,22 @@ Return the default CreateRenderPipeline descriptor.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:368._
+
+### `dvz_drp2_texture_desc()`
+
+```c title="dvz_drp2_texture_desc"
+DvzDrp2TextureDesc dvz_drp2_texture_desc(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzDrp2TextureDesc` | initialized descriptor |
+
+Return the default CreateTexture descriptor.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/drp2/stream.h`:178._
 
 ### `dvz_drp2_runtime_attach_frame_target()`
 
@@ -1778,6 +1794,27 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:607._
 
+### `dvz_drp2_stream_create_texture()`
+
+```c title="dvz_drp2_stream_create_texture"
+_Bool dvz_drp2_stream_create_texture(
+    DvzDrp2CommandStream * stream,
+    const DvzDrp2TextureDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the command was appended |
+| `stream` | `DvzDrp2CommandStream *` | the command stream |
+| `desc` | `const DvzDrp2TextureDesc *` | the texture descriptor |
+
+Append a CreateTexture command from a descriptor.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/drp2/stream.h`:189._
+
 ### `dvz_drp2_stream_create_texture_2d()`
 
 ```c title="dvz_drp2_stream_create_texture_2d"
@@ -1831,37 +1868,6 @@ Append a CreateTexture command for a 2D texture with explicit format and usage.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:213._
-
-### `dvz_drp2_stream_create_texture_2d_format_usage_samples()`
-
-```c title="dvz_drp2_stream_create_texture_2d_format_usage_samples"
-_Bool dvz_drp2_stream_create_texture_2d_format_usage_samples(
-    DvzDrp2CommandStream * stream,
-    uint64_t id,
-    uint32_t width,
-    uint32_t height,
-    DvzFormat format,
-    uint32_t usage,
-    uint32_t sample_count
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `_Bool` | whether the command was appended |
-| `stream` | `DvzDrp2CommandStream *` | the command stream |
-| `id` | `uint64_t` | the texture id |
-| `width` | `uint32_t` | the texture width |
-| `height` | `uint32_t` | the texture height |
-| `format` | `DvzFormat` | texture format token |
-| `usage` | `uint32_t` | texture usage flags |
-| `sample_count` | `uint32_t` | raster sample count, with 0 treated as 1 |
-
-Append a CreateTexture command for a 2D texture with explicit format, usage, and samples.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/drp2/stream.h`:230._
 
 ### `dvz_drp2_stream_create_texture_2d_usage()`
 
@@ -1995,27 +2001,6 @@ Append a CreateBindGroupLayout command for one sampled texture and one sampler.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:595._
-
-### `dvz_drp2_stream_create_texture_set_color_role()`
-
-```c title="dvz_drp2_stream_create_texture_set_color_role"
-_Bool dvz_drp2_stream_create_texture_set_color_role(
-    DvzDrp2CommandStream * stream,
-    DvzDrp2ColorRole color_role
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `_Bool` | whether the most recent command was a CreateTexture command |
-| `stream` | `DvzDrp2CommandStream *` | the command stream |
-| `color_role` | `DvzDrp2ColorRole` | texture color role |
-
-Set the semantic color role on the most recently appended CreateTexture command.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/drp2/stream.h`:242._
 
 ### `dvz_drp2_stream_create_uniform_bind_group()`
 

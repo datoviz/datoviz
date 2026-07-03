@@ -1411,9 +1411,15 @@ int test_drp2_runtime_vklite_draws_msaa_resolve_render_pass(TstContext* suite, c
         "void main(){color=vec4(0,0,1,1);}"));
     AT(drp2_test_create_render_pipeline(stream, 3, 1, 2, 0));
     AT(dvz_drp2_stream_pipeline_set_multisampling(stream, 2, false));
-    AT(dvz_drp2_stream_create_texture_2d_format_usage_samples(
-        stream, 4, 2, 2, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT,
-        2));
+    DvzDrp2TextureDesc msaa_desc = dvz_drp2_texture_desc();
+    msaa_desc.id = 4;
+    msaa_desc.width = 2;
+    msaa_desc.height = 2;
+    msaa_desc.depth = 1;
+    msaa_desc.format = DVZ_FORMAT_R8G8B8A8_UNORM;
+    msaa_desc.usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT;
+    msaa_desc.sample_count = 2;
+    AT(dvz_drp2_stream_create_texture(stream, &msaa_desc));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 5, 2, 2,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));

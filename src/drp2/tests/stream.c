@@ -145,11 +145,14 @@ int test_drp2_stream_texture_color_role_json(TstContext* suite, const TstCase* i
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
 
-    AT(dvz_drp2_stream_create_texture_2d_format_usage(
-        stream, 20, 2, 2, DVZ_FORMAT_R8G8B8A8_UNORM,
-        DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
-    AT(dvz_drp2_stream_create_texture_set_color_role(
-        stream, DVZ_DRP2_COLOR_ROLE_SRGB_COLOR));
+    DvzDrp2TextureDesc desc = dvz_drp2_texture_desc();
+    desc.id = 20;
+    desc.width = 2;
+    desc.height = 2;
+    desc.depth = 1;
+    desc.usage = DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING;
+    desc.color_role = DVZ_DRP2_COLOR_ROLE_SRGB_COLOR;
+    AT(dvz_drp2_stream_create_texture(stream, &desc));
 
     const DvzDrp2Command* command = dvz_drp2_stream_get(stream, 0);
     ANN(command);
