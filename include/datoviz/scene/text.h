@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/scene/types.h"
 
 
@@ -204,7 +205,7 @@ DVZ_EXPORT void dvz_text_destroy(DvzText* text);
  * @param text the text object
  * @param string the string, or NULL to clear
  */
-DVZ_EXPORT int dvz_text_set_items(
+DVZ_EXPORT DvzResult dvz_text_set_items(
     DvzText* text, const DvzTextItem* items, uint32_t item_count);
 
 
@@ -215,7 +216,7 @@ DVZ_EXPORT int dvz_text_set_items(
  * @param string the string, or NULL to clear
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_text_set_string(DvzText* text, const char* string);
+DVZ_EXPORT DvzResult dvz_text_set_string(DvzText* text, const char* string);
 
 
 /**
@@ -225,7 +226,7 @@ DVZ_EXPORT int dvz_text_set_string(DvzText* text, const char* string);
  * @param position the position in the current placement mode
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_text_set_position(DvzText* text, const double position[3]);
+DVZ_EXPORT DvzResult dvz_text_set_position(DvzText* text, const double position[3]);
 
 
 /**
@@ -235,32 +236,32 @@ DVZ_EXPORT int dvz_text_set_position(DvzText* text, const double position[3]);
  * @param layout the layout descriptor, or NULL for defaults
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_text_set_layout(DvzText* text, const DvzTextLayout* layout);
+DVZ_EXPORT DvzResult dvz_text_set_layout(DvzText* text, const DvzTextLayout* layout);
 
 
-DVZ_EXPORT int
+DVZ_EXPORT DvzResult
 dvz_text_set_strings(DvzText* text, const char* const* strings, uint32_t item_count);
 
 
-DVZ_EXPORT int
+DVZ_EXPORT DvzResult
 dvz_text_set_positions(DvzText* text, const double (*positions)[3], uint32_t item_count);
 
 
-DVZ_EXPORT int
+DVZ_EXPORT DvzResult
 dvz_text_set_offsets(DvzText* text, const float (*offsets)[2], uint32_t item_count);
 
 
-DVZ_EXPORT int
+DVZ_EXPORT DvzResult
 dvz_text_set_anchors(DvzText* text, const float (*anchors)[2], uint32_t item_count);
 
 
-DVZ_EXPORT int dvz_text_set_sizes(DvzText* text, const float* sizes_px, uint32_t item_count);
+DVZ_EXPORT DvzResult dvz_text_set_sizes(DvzText* text, const float* sizes_px, uint32_t item_count);
 
 
-DVZ_EXPORT int dvz_text_set_colors(DvzText* text, const DvzColor* colors, uint32_t item_count);
+DVZ_EXPORT DvzResult dvz_text_set_colors(DvzText* text, const DvzColor* colors, uint32_t item_count);
 
 
-DVZ_EXPORT int dvz_text_set_angles(DvzText* text, const float* angles, uint32_t item_count);
+DVZ_EXPORT DvzResult dvz_text_set_angles(DvzText* text, const float* angles, uint32_t item_count);
 
 
 /**
@@ -270,7 +271,7 @@ DVZ_EXPORT int dvz_text_set_angles(DvzText* text, const float* angles, uint32_t 
  * @param style the style descriptor, or NULL for defaults
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_text_set_style(DvzText* text, const DvzTextStyle* style);
+DVZ_EXPORT DvzResult dvz_text_set_style(DvzText* text, const DvzTextStyle* style);
 
 
 /**
@@ -279,7 +280,7 @@ DVZ_EXPORT int dvz_text_set_style(DvzText* text, const DvzTextStyle* style);
  * @param text the text object
  * @param placement the placement descriptor, or NULL for defaults
  */
-DVZ_EXPORT int dvz_text_set_placement(DvzText* text, const DvzTextPlacement* placement);
+DVZ_EXPORT DvzResult dvz_text_set_placement(DvzText* text, const DvzTextPlacement* placement);
 
 
 /**
@@ -289,7 +290,7 @@ DVZ_EXPORT int dvz_text_set_placement(DvzText* text, const DvzTextPlacement* pla
  * @param renderer renderer selection
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_text_set_renderer(DvzText* text, DvzTextRenderer renderer);
+DVZ_EXPORT DvzResult dvz_text_set_renderer(DvzText* text, DvzTextRenderer renderer);
 
 
 EXTERN_C_OFF

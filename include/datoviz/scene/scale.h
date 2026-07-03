@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/scene/types.h"
 
 
@@ -59,7 +60,7 @@ DVZ_EXPORT DvzUnitLadder* dvz_unit_ladder_create(
  * @param label display unit label
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_unit_ladder_add(DvzUnitLadder* ladder, double factor, const char* label);
+DVZ_EXPORT DvzResult dvz_unit_ladder_add(DvzUnitLadder* ladder, double factor, const char* label);
 
 
 /**
@@ -100,7 +101,7 @@ DVZ_EXPORT DvzUnits* dvz_units_builtin(
  * @param factor finite positive conversion factor
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_units_data_to_canonical(DvzUnits* units, double factor);
+DVZ_EXPORT DvzResult dvz_units_data_to_canonical(DvzUnits* units, double factor);
 
 
 /**
@@ -110,7 +111,7 @@ DVZ_EXPORT int dvz_units_data_to_canonical(DvzUnits* units, double factor);
  * @param ladder the display ladder
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_units_ladder(DvzUnits* units, DvzUnitLadder* ladder);
+DVZ_EXPORT DvzResult dvz_units_ladder(DvzUnits* units, DvzUnitLadder* ladder);
 
 
 /**
@@ -120,7 +121,7 @@ DVZ_EXPORT int dvz_units_ladder(DvzUnits* units, DvzUnitLadder* ladder);
  * @param mode display mode
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_units_display_mode(DvzUnits* units, DvzUnitDisplayMode mode);
+DVZ_EXPORT DvzResult dvz_units_display_mode(DvzUnits* units, DvzUnitDisplayMode mode);
 
 
 /**
@@ -130,7 +131,7 @@ DVZ_EXPORT int dvz_units_display_mode(DvzUnits* units, DvzUnitDisplayMode mode);
  * @param label ladder entry label
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_units_fixed_label(DvzUnits* units, const char* label);
+DVZ_EXPORT DvzResult dvz_units_fixed_label(DvzUnits* units, const char* label);
 
 
 /**
@@ -162,7 +163,7 @@ DVZ_EXPORT DvzDateTimeFormat* dvz_datetime_format_create(DvzScene* scene);
  * @param timezone timezone name
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_datetime_format_timezone(
+DVZ_EXPORT DvzResult dvz_datetime_format_timezone(
     DvzDateTimeFormat* format, const char* timezone);
 
 
@@ -174,7 +175,7 @@ DVZ_EXPORT int dvz_datetime_format_timezone(
  * @param strftime_format C strftime-compatible format
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_datetime_format_rule(
+DVZ_EXPORT DvzResult dvz_datetime_format_rule(
     DvzDateTimeFormat* format, DvzTimeInterval interval, const char* strftime_format);
 
 
@@ -666,7 +667,7 @@ dvz_legend_set_highlights(DvzLegend* legend, const DvzCategoryId* ids, uint32_t 
  * @param scale the scale, or NULL to clear the binding
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* scale);
+DVZ_EXPORT DvzResult dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* scale);
 
 
 EXTERN_C_OFF

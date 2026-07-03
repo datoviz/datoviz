@@ -170,6 +170,40 @@ when they reduce real C call-site noise, but they should not be the only way to 
 state.
 
 
+## Return Values
+
+Use `DvzResult` for stable user-facing operations whose only result is success or failure:
+
+```c
+DvzResult dvz_visual_set_data(...);
+DvzResult dvz_panel_add_visual(...);
+```
+
+`DvzResult` is an `int32_t` status code. `DVZ_OK` is success and `DVZ_ERROR` is the generic failure
+code. APIs returning `DvzResult` must return `0` on success and a negative value on failure. Future
+specific error codes, if added, must also be negative unless a function explicitly returns a
+different status type.
+
+Use `bool` only for predicates or conversion/lookup functions where the return value answers a yes/no
+question:
+
+```c
+bool dvz_visual_depth_test(const DvzVisual* visual);
+bool dvz_panel_transform_point(...);
+```
+
+Do not use `bool` for ordinary mutators just to mean success. A mutator that may fail should return
+`DvzResult`, unless it appends to a fluent command builder whose established local contract is
+"command accepted".
+
+Use pointer returns for constructors and accessors, with `NULL` meaning unavailable or failed. Use
+unsigned integer returns for counts. Keep plain `int` when the function returns a richer integer
+domain rather than success/failure, such as a signed count, a file descriptor, a backend or sink
+result code, a Vulkan-style nonzero result, or a module-specific positive status like
+`DVZ_CANVAS_FRAME_WAIT_SURFACE`. Low-level runtime and interop headers may keep `int` when that
+better preserves the native backend convention.
+
+
 ## Public Struct Rules
 
 Public structs should be zero-initializable unless explicitly documented otherwise. Zero values must

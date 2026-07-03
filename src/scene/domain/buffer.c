@@ -343,7 +343,7 @@ bool dvz_visual_set_buffer(DvzVisual* visual, const char* slot_name, DvzSceneBuf
  * @param index_count the number of indices
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_index_data(
+DvzResult dvz_visual_set_index_data(
     DvzVisual* visual, const DvzIndex* indices, uint32_t index_count)
 {
     if (visual == NULL || indices == NULL || index_count == 0)

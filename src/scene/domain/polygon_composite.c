@@ -868,7 +868,7 @@ DvzVisual* dvz_composite_visual(DvzComposite* composite, const char* role)
  * @param desc attachment options applied to the composite roles
  * @return 0 on success, -1 on error
  */
-int dvz_panel_add_composite(
+DvzResult dvz_panel_add_composite(
     DvzPanel* panel, DvzComposite* composite, const DvzVisualAttachDesc* desc)
 {
     if (

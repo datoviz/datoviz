@@ -468,7 +468,7 @@ DvzVisual* dvz_guide_line_visual(DvzGuideLine* guide, DvzPlotRole role)
 }
 
 
-int dvz_guide_line_set_value(DvzGuideLine* guide, double value)
+DvzResult dvz_guide_line_set_value(DvzGuideLine* guide, double value)
 {
     if (guide == NULL || !guide->active)
         return -1;
@@ -578,7 +578,7 @@ DvzVisual* dvz_guide_span_visual(DvzGuideSpan* span, DvzPlotRole role)
 }
 
 
-int dvz_guide_span_set_range(DvzGuideSpan* span, double min_value, double max_value)
+DvzResult dvz_guide_span_set_range(DvzGuideSpan* span, double min_value, double max_value)
 {
     if (span == NULL || !span->active)
         return -1;

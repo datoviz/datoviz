@@ -19,6 +19,7 @@
 #include "geom/enums.h"
 #include "geom/types.h"
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 
 
 
@@ -81,7 +82,7 @@ DVZ_EXPORT DvzGeometryBounds dvz_geometry_bounds(const DvzGeometry* geometry);
  * @param geometry the geometry
  * @return 0 on success, -1 on invalid input
  */
-DVZ_EXPORT int dvz_geometry_compute_normals(DvzGeometry* geometry);
+DVZ_EXPORT DvzResult dvz_geometry_compute_normals(DvzGeometry* geometry);
 
 
 
@@ -92,7 +93,7 @@ DVZ_EXPORT int dvz_geometry_compute_normals(DvzGeometry* geometry);
  * @param transform affine transform matrix
  * @return 0 on success, -1 on invalid input
  */
-DVZ_EXPORT int dvz_geometry_transform(DvzGeometry* geometry, dmat4 transform);
+DVZ_EXPORT DvzResult dvz_geometry_transform(DvzGeometry* geometry, dmat4 transform);
 
 
 
@@ -232,7 +233,7 @@ DVZ_EXPORT DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* 
  * @param count number of height values
  * @return 0 on success, -1 on invalid input
  */
-DVZ_EXPORT int
+DVZ_EXPORT DvzResult
 dvz_geom_surface_grid_update_heights(DvzGeometry* geometry, const double* heights, uint32_t count);
 
 

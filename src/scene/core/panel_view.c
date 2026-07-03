@@ -271,7 +271,7 @@ DvzPanelView2DDesc dvz_panel_view2d_desc(void)
  * @param view panel 2D view descriptor; NULL clears the view policy
  * @return 0 on success, -1 on validation error
  */
-int dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2D* view)
+DvzResult dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2D* view)
 {
     if (panel == NULL)
         return -1;
@@ -290,7 +290,7 @@ int dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2D* view)
 }
 
 
-int dvz_panel_set_view2d_desc(DvzPanel* panel, const DvzPanelView2DDesc* desc)
+DvzResult dvz_panel_set_view2d_desc(DvzPanel* panel, const DvzPanelView2DDesc* desc)
 {
     if (panel == NULL)
         return -1;
@@ -409,7 +409,7 @@ DvzPanelView3DDesc dvz_panel_view3d_desc(void)
 }
 
 
-int dvz_panel_set_view3d_desc(DvzPanel* panel, const DvzPanelView3DDesc* desc)
+DvzResult dvz_panel_set_view3d_desc(DvzPanel* panel, const DvzPanelView3DDesc* desc)
 {
     if (panel == NULL)
         return -1;

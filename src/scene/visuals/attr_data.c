@@ -248,7 +248,7 @@ bool _mesh_ensure_default_color(DvzVisual* visual, uint32_t item_count)
  * @param item_count the number of attribute items
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_data(
+DvzResult dvz_visual_set_data(
     DvzVisual* visual, const char* attr_name, const void* data, uint32_t item_count)
 {
     ANN(visual);
@@ -348,7 +348,7 @@ int dvz_visual_set_data(
  * @param out output data view
  * @return 0 when dense data is available, -1 otherwise
  */
-int dvz_visual_data(const DvzVisual* visual, const char* attr_name, DvzVisualDataView* out)
+DvzResult dvz_visual_data(const DvzVisual* visual, const char* attr_name, DvzVisualDataView* out)
 {
     if (visual == NULL || attr_name == NULL || out == NULL)
         return -1;
@@ -383,7 +383,7 @@ int dvz_visual_data(const DvzVisual* visual, const char* attr_name, DvzVisualDat
  * @param item_count logical item count
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_item_range(DvzVisual* visual, uint32_t first_item, uint32_t item_count)
+DvzResult dvz_visual_set_item_range(DvzVisual* visual, uint32_t first_item, uint32_t item_count)
 {
     if (visual == NULL)
         return -1;
@@ -488,7 +488,7 @@ bool dvz_visual_get_item_range(const DvzVisual* visual, DvzItemRange* out)
  * @param item_count number of strings
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_strings(
+DvzResult dvz_visual_set_strings(
     DvzVisual* visual, const char* attr_name, const char* const* strings, uint32_t item_count)
 {
     ANN(visual);
@@ -551,7 +551,7 @@ int dvz_visual_set_strings(
  * @param update_count number of update descriptors
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_data_many(
+DvzResult dvz_visual_set_data_many(
     DvzVisual* visual, const DvzVisualDataUpdate* updates, uint32_t update_count)
 {
     ANN(visual);
@@ -779,7 +779,7 @@ int dvz_visual_set_data_many(
  * @param item_count the number of items to replace
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_data_range(
+DvzResult dvz_visual_set_data_range(
     DvzVisual* visual, const char* attr_name, const void* data, uint32_t first_item,
     uint32_t item_count)
 {

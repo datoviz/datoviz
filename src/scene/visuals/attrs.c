@@ -48,7 +48,7 @@
  * @param source the semantic source
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_attr_source(
+DvzResult dvz_visual_set_attr_source(
     DvzVisual* visual, const char* attr_name, DvzVisualAttrSource source)
 {
     ANN(visual);
@@ -117,7 +117,7 @@ DvzVisualAttrSource dvz_visual_attr_source(const DvzVisual* visual, const char* 
  * @param mutability the update-frequency hint
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_attr_mutability(
+DvzResult dvz_visual_set_attr_mutability(
     DvzVisual* visual, const char* attr_name, DvzVisualAttrMutability mutability)
 {
     ANN(visual);
@@ -178,7 +178,7 @@ DvzVisualAttrMutability dvz_visual_attr_mutability(const DvzVisual* visual, cons
  * @param format the storage format
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_attr_format(
+DvzResult dvz_visual_set_attr_format(
     DvzVisual* visual, const char* attr_name, DvzVisualAttrFormat format)
 {
     ANN(visual);
@@ -373,7 +373,7 @@ bool dvz_visual_set_attr_buffer(
  * @param scale the scale, or NULL to clear the binding
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* scale)
+DvzResult dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* scale)
 {
     ANN(visual);
     ANN(slot_name);

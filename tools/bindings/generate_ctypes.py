@@ -245,11 +245,16 @@ CTYPE_MAP = {
     'float': 'ctypes.c_float',
     'double': 'ctypes.c_double',
     'DvzId': 'ctypes.c_uint64',
+    'DvzResult': 'ctypes.c_int32',
     'DvzSize': 'ctypes.c_uint64',
 }
 
 SYNTHETIC_RECORD_CLASSES = {
     'DvzInputEventContent': 'Union',
+}
+
+SCALAR_TYPEDEF_ALIASES = {
+    'DvzResult',
 }
 
 SYNTHETIC_RECORD_FIELDS = {
@@ -729,6 +734,20 @@ def generate(
             argtypes.append(ctype)
         else:
             lines.append(f'{name} = ctypes.CFUNCTYPE({", ".join([result, *argtypes])})\n\n\n')
+
+    for typedef in api.get('typedefs', []):
+        name = typedef.get('name')
+        if name not in SCALAR_TYPEDEF_ALIASES:
+            continue
+        ctype = _ctype_for_type(
+            typedef.get('type', {}),
+            records,
+            enums,
+            value_records=layoutable_records,
+            callbacks=callbacks,
+        )
+        if ctype is not None:
+            lines.append(f'{name} = {ctype}\n\n\n')
 
     layout_records = []
     deferred_layout_records = []

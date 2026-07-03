@@ -71,7 +71,7 @@ DvzVisual* dvz_sphere(DvzScene* scene, uint32_t flags)
  * @param mode the rendering mode
  * @return 0 on success, -1 on error
  */
-int dvz_sphere_mode(DvzVisual* visual, DvzSphereMode mode)
+DvzResult dvz_sphere_mode(DvzVisual* visual, DvzSphereMode mode)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_SPHERE)

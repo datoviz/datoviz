@@ -7875,6 +7875,12 @@ typedef struct DvzQueues DvzQueues;
 typedef struct DvzRendering DvzRendering;
 ```
 
+#### `DvzResult`
+
+```c
+typedef int32_t DvzResult;
+```
+
 #### `DvzSampler`
 
 ```c

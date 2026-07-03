@@ -1033,7 +1033,7 @@ DvzScaleBar* dvz_scalebar(DvzPanel* panel, const DvzScaleBarDesc* desc)
 }
 
 
-int dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim)
+DvzResult dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim)
 {
     DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
     if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR ||
@@ -1047,7 +1047,7 @@ int dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim)
 }
 
 
-int dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor)
+DvzResult dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor)
 {
     DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
     if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR)
@@ -1062,7 +1062,7 @@ int dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor)
 }
 
 
-int dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units)
+DvzResult dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units)
 {
     DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
     if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR || units == NULL ||
@@ -1076,7 +1076,7 @@ int dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units)
 }
 
 
-int dvz_scalebar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units)
+DvzResult dvz_scalebar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units)
 {
     return dvz_scalebar_set_units(scalebar, duration_units);
 }

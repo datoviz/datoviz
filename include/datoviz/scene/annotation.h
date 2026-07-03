@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/scene/types.h"
 
 
@@ -100,7 +101,7 @@ DVZ_EXPORT DvzScaleBar* dvz_scalebar(DvzPanel* panel, const DvzScaleBarDesc* des
  * @param dim dimension
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim);
+DVZ_EXPORT DvzResult dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim);
 
 
 /**
@@ -110,7 +111,7 @@ DVZ_EXPORT int dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim);
  * @param anchor panel anchor
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor);
+DVZ_EXPORT DvzResult dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor);
 
 
 /**
@@ -120,7 +121,7 @@ DVZ_EXPORT int dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anc
  * @param units units object
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units);
+DVZ_EXPORT DvzResult dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units);
 
 
 /**
@@ -130,7 +131,7 @@ DVZ_EXPORT int dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units);
  * @param duration_units duration units object
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_scalebar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units);
+DVZ_EXPORT DvzResult dvz_scalebar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units);
 
 
 /**

@@ -1526,7 +1526,7 @@ bool _dvz_figure_fly_update(DvzFigure* figure, double dt)
  * @param dims dimension mask
  * @return 0 on success, -1 on validation error
  */
-int dvz_panel_bind_controller(DvzPanel* panel, DvzController* controller, DvzDimMask dims)
+DvzResult dvz_panel_bind_controller(DvzPanel* panel, DvzController* controller, DvzDimMask dims)
 {
     if (panel == NULL || panel->figure == NULL || panel->figure->scene == NULL ||
         controller == NULL || !controller->active)
@@ -1624,7 +1624,7 @@ int dvz_panel_bind_controller(DvzPanel* panel, DvzController* controller, DvzDim
  * @param router input router to subscribe to, or NULL to disconnect
  * @return 0 on success, -1 on validation error
  */
-int dvz_panel_connect_input(DvzPanel* panel, DvzInputRouter* router)
+DvzResult dvz_panel_connect_input(DvzPanel* panel, DvzInputRouter* router)
 {
     if (panel == NULL)
         return -1;

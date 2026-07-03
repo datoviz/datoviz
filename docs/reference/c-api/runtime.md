@@ -3274,7 +3274,7 @@ Related: [`dvz_camera_destroy()`](#dvz_camera_destroy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:132._
+_Declared in `include/datoviz/controller/camera.h`:133._
 
 ### `dvz_camera_desc()`
 
@@ -3290,7 +3290,7 @@ Return a default perspective camera descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:122._
+_Declared in `include/datoviz/controller/camera.h`:123._
 
 ### `dvz_camera_destroy()`
 
@@ -3313,12 +3313,12 @@ Related: [`dvz_camera_create()`](#dvz_camera_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:258._
+_Declared in `include/datoviz/controller/camera.h`:259._
 
 ### `dvz_camera_get_orthographic_bounds()`
 
 ```c title="dvz_camera_get_orthographic_bounds"
-int dvz_camera_get_orthographic_bounds(
+DvzResult dvz_camera_get_orthographic_bounds(
     const DvzCamera * camera,
     float * out_left,
     float * out_right,
@@ -3331,7 +3331,7 @@ int dvz_camera_get_orthographic_bounds(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `int` | 0 when explicit bounds are active, -1 otherwise |
+| return | `DvzResult` | 0 when explicit bounds are active, -1 otherwise |
 | `camera` | `const DvzCamera *` | the camera |
 | `out_left` | `float *` | output left orthographic bound |
 | `out_right` | `float *` | output right orthographic bound |
@@ -3344,7 +3344,7 @@ Return explicit orthographic projection bounds.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:223._
+_Declared in `include/datoviz/controller/camera.h`:224._
 
 ### `dvz_camera_get_projection()`
 
@@ -3364,7 +3364,7 @@ Return camera projection parameters.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:161._
+_Declared in `include/datoviz/controller/camera.h`:162._
 
 ### `dvz_camera_get_view()`
 
@@ -3384,7 +3384,7 @@ Return a camera view transform.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:152._
+_Declared in `include/datoviz/controller/camera.h`:153._
 
 ### `dvz_camera_mvp()`
 
@@ -3404,7 +3404,7 @@ Fill the view and projection matrices of an MVP struct from the camera state.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:246._
+_Declared in `include/datoviz/controller/camera.h`:247._
 
 ### `dvz_camera_projection()`
 
@@ -3420,7 +3420,7 @@ Return a default perspective camera projection.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:113._
+_Declared in `include/datoviz/controller/camera.h`:114._
 
 ### `dvz_camera_resize()`
 
@@ -3442,7 +3442,7 @@ Update the camera viewport size.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:236._
+_Declared in `include/datoviz/controller/camera.h`:237._
 
 ### `dvz_camera_set_orthographic()`
 
@@ -3466,12 +3466,12 @@ Set orthographic projection parameters.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:186._
+_Declared in `include/datoviz/controller/camera.h`:187._
 
 ### `dvz_camera_set_orthographic_bounds()`
 
 ```c title="dvz_camera_set_orthographic_bounds"
-int dvz_camera_set_orthographic_bounds(
+DvzResult dvz_camera_set_orthographic_bounds(
     DvzCamera * camera,
     float left,
     float right,
@@ -3484,7 +3484,7 @@ int dvz_camera_set_orthographic_bounds(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `int` | 0 on success, -1 on invalid bounds |
+| return | `DvzResult` | 0 on success, -1 on invalid bounds |
 | `camera` | `DvzCamera *` | the camera |
 | `left` | `float` | left orthographic bound |
 | `right` | `float` | right orthographic bound |
@@ -3500,7 +3500,7 @@ pairs. Unlike `dvz_camera_set_orthographic()`, these bounds are not rewritten on
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:206._
+_Declared in `include/datoviz/controller/camera.h`:207._
 
 ### `dvz_camera_set_perspective()`
 
@@ -3524,7 +3524,7 @@ Set perspective projection parameters.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:173._
+_Declared in `include/datoviz/controller/camera.h`:174._
 
 ### `dvz_camera_set_view()`
 
@@ -3544,7 +3544,7 @@ Set a camera view transform.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:142._
+_Declared in `include/datoviz/controller/camera.h`:143._
 
 ### `dvz_camera_view()`
 
@@ -3560,7 +3560,7 @@ Return a default camera view.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:104._
+_Declared in `include/datoviz/controller/camera.h`:105._
 
 ## Circular
 

@@ -60,7 +60,7 @@ DvzVisual* dvz_path(DvzScene* scene, uint32_t flags)
  * @param end_cap cap applied to each open subpath end
  * @return 0 on success, -1 on validation error
  */
-int dvz_path_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentCap end_cap)
+DvzResult dvz_path_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentCap end_cap)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_PATH)
@@ -97,7 +97,7 @@ int dvz_path_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentCap 
  * @param miter_limit positive finite miter limit
  * @return 0 on success, -1 on validation error
  */
-int dvz_path_set_join(DvzVisual* visual, DvzPathJoin join, float miter_limit)
+DvzResult dvz_path_set_join(DvzVisual* visual, DvzPathJoin join, float miter_limit)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_PATH)
@@ -139,7 +139,7 @@ int dvz_path_set_join(DvzVisual* visual, DvzPathJoin join, float miter_limit)
  * @param lengths point count for each subpath
  * @return 0 on success, -1 on error
  */
-int dvz_path_set_subpaths(DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths)
+DvzResult dvz_path_set_subpaths(DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_PATH)

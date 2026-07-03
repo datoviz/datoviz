@@ -4389,7 +4389,7 @@ static float _view_content_scale(DvzView* win)
  * @param surface external surface description
  * @return 0 on success, negative on error
  */
-int dvz_view_update_external_surface(
+DvzResult dvz_view_update_external_surface(
     DvzView* win, const DvzWindowExternalSurfaceInfo* surface)
 {
     ANN(win);
@@ -4421,7 +4421,7 @@ int dvz_view_update_external_surface(
  * @param owned_by_datoviz whether Datoviz should destroy the surface
  * @return 0 on success, negative on error
  */
-int dvz_ffi_view_update_external_surface(
+DvzResult dvz_ffi_view_update_external_surface(
     DvzView* win, void* instance, uint64_t surface, uint32_t framebuffer_width,
     uint32_t framebuffer_height, float scale_x, float scale_y, bool owned_by_datoviz)
 {
@@ -4478,7 +4478,7 @@ int dvz_view_release_external_surface(DvzView* win)
  * @param content_scale_y vertical content scale
  * @return 0 on success, negative on error
  */
-int dvz_view_emit_resize(
+DvzResult dvz_view_emit_resize(
     DvzView* win, uint32_t framebuffer_width, uint32_t framebuffer_height,
     uint32_t window_width, uint32_t window_height, float content_scale_x, float content_scale_y)
 {
@@ -4515,7 +4515,7 @@ int dvz_view_emit_resize(
  * @param mods keyboard modifier bit mask
  * @return 0 on success, negative on error
  */
-int dvz_view_emit_pointer(
+DvzResult dvz_view_emit_pointer(
     DvzView* win, DvzPointerEventType type, float x, float y, float window_width,
     float window_height, DvzPointerButton button, int mods)
 {
@@ -4552,7 +4552,7 @@ int dvz_view_emit_pointer(
  * @param mods keyboard modifier bit mask
  * @return 0 on success, negative on error
  */
-int dvz_view_emit_wheel(
+DvzResult dvz_view_emit_wheel(
     DvzView* win, float x, float y, float window_width, float window_height, float dx,
     float dy, int mods)
 {
@@ -4584,7 +4584,7 @@ int dvz_view_emit_wheel(
  * @param mods keyboard modifier bit mask
  * @return 0 on success, negative on error
  */
-int
+DvzResult
 dvz_view_emit_key(DvzView* win, DvzKeyboardEventType type, DvzKeyCode key, int mods)
 {
     ANN(win);
@@ -4818,7 +4818,7 @@ void dvz_view_set_user_scale(DvzView* win, float scale)
  * @param panel the panel
  * @return 0 on success, -1 on validation error
  */
-int dvz_view_connect_panel(DvzView* win, DvzPanel* panel)
+DvzResult dvz_view_connect_panel(DvzView* win, DvzPanel* panel)
 {
     if (win == NULL || panel == NULL)
         return -1;
@@ -4841,7 +4841,7 @@ int dvz_view_connect_panel(DvzView* win, DvzPanel* panel)
  * @param dims dimension mask
  * @return 0 on success, -1 on validation error
  */
-int dvz_view_bind_controller(
+DvzResult dvz_view_bind_controller(
     DvzView* win, DvzPanel* panel, DvzController* controller, DvzDimMask dims)
 {
     if (win == NULL || panel == NULL || controller == NULL)
@@ -4966,7 +4966,7 @@ DvzTurntable* dvz_view_turntable(
 
 
 
-int dvz_view_capture_png(DvzView* win, const char* path)
+DvzResult dvz_view_capture_png(DvzView* win, const char* path)
 {
     ANN(win);
     ANN(path);
@@ -5041,7 +5041,7 @@ DvzAppCaptureConfig dvz_app_capture_config_from_env(const char* basename)
  * @param config capture configuration
  * @return 0 on success, negative on error
  */
-int dvz_view_capture_start(DvzView* win, const DvzAppCaptureConfig* config)
+DvzResult dvz_view_capture_start(DvzView* win, const DvzAppCaptureConfig* config)
 {
     ANN(win);
     if (!_app_capture_config_validate(config))
@@ -5146,7 +5146,7 @@ int dvz_view_capture_start(DvzView* win, const DvzAppCaptureConfig* config)
  * @param basename fallback output basename
  * @return 0 on success, negative on error
  */
-int dvz_view_capture_from_env(DvzView* win, const char* basename)
+DvzResult dvz_view_capture_from_env(DvzView* win, const char* basename)
 {
     ANN(win);
     DvzAppCaptureConfig config = dvz_app_capture_config_from_env(basename);
@@ -5161,7 +5161,7 @@ int dvz_view_capture_from_env(DvzView* win, const char* basename)
  * @param win the view
  * @return 0 on success, negative on error
  */
-int dvz_view_capture_stop(DvzView* win)
+DvzResult dvz_view_capture_stop(DvzView* win)
 {
     ANN(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
@@ -5206,7 +5206,7 @@ int dvz_view_capture_stop(DvzView* win)
  * @param path output recording directory path
  * @return 0 on success, negative on error
  */
-int dvz_view_record_start(DvzView* win, const char* path)
+DvzResult dvz_view_record_start(DvzView* win, const char* path)
 {
     ANN(win);
     ANN(path);
@@ -5243,7 +5243,7 @@ int dvz_view_record_start(DvzView* win, const char* path)
  * @param win the view
  * @return 0 on success, negative on error
  */
-int dvz_view_record_stop(DvzView* win)
+DvzResult dvz_view_record_stop(DvzView* win)
 {
     ANN(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
@@ -5269,7 +5269,7 @@ int dvz_view_record_stop(DvzView* win)
  * @param path input recording directory path
  * @return 0 on success, negative on error
  */
-int dvz_view_replay_start(DvzView* win, const char* path)
+DvzResult dvz_view_replay_start(DvzView* win, const char* path)
 {
     ANN(win);
     ANN(path);
@@ -5313,7 +5313,7 @@ int dvz_view_replay_start(DvzView* win, const char* path)
  * @param win the view
  * @return 0 on success, negative on error
  */
-int dvz_view_replay_stop(DvzView* win)
+DvzResult dvz_view_replay_stop(DvzView* win)
 {
     ANN(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
@@ -5409,7 +5409,7 @@ uint32_t dvz_view_replay_frame_count(const DvzView* win)
  * @param height height in pixels
  * @return 0 on success, negative on error
  */
-int dvz_view_resize(DvzView* win, uint32_t width, uint32_t height)
+DvzResult dvz_view_resize(DvzView* win, uint32_t width, uint32_t height)
 {
     return dvz_view_resize_scaled(win, width, height, 1.0f);
 }
@@ -5424,7 +5424,7 @@ int dvz_view_resize(DvzView* win, uint32_t width, uint32_t height)
  * @param device_scale physical pixels per logical pixel
  * @return 0 on success, negative on error
  */
-int dvz_view_resize_scaled(
+DvzResult dvz_view_resize_scaled(
     DvzView* win, uint32_t logical_width, uint32_t logical_height, float device_scale)
 {
     ANN(win);
@@ -5532,7 +5532,7 @@ void dvz_view_wake(DvzView* win)
  * @param user_data opaque pointer forwarded to the callback
  * @return 0 on success, negative on invalid input or overflow
  */
-int dvz_view_post(DvzView* win, DvzViewPostCallback callback, void* user_data)
+DvzResult dvz_view_post(DvzView* win, DvzViewPostCallback callback, void* user_data)
 {
     if (win == NULL || callback == NULL)
         return -1;

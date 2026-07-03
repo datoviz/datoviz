@@ -118,7 +118,7 @@ DvzVisual* dvz_labels(DvzScene* scene, uint32_t flags)
  * @param opacity opacity multiplier in [0, 1]
  * @return 0 on success, -1 on error
  */
-int dvz_labels_set_opacity(DvzVisual* visual, float opacity)
+DvzResult dvz_labels_set_opacity(DvzVisual* visual, float opacity)
 {
     ANN(visual);
     if (!_labels_state_mutation_allowed(visual, "set labels opacity"))
@@ -142,7 +142,7 @@ int dvz_labels_set_opacity(DvzVisual* visual, float opacity)
  * @param label_id background label ID
  * @return 0 on success, -1 on error
  */
-int dvz_labels_set_background(DvzVisual* visual, DvzCategoryId label_id)
+DvzResult dvz_labels_set_background(DvzVisual* visual, DvzCategoryId label_id)
 {
     ANN(visual);
     if (!_labels_state_mutation_allowed(visual, "set labels background"))
@@ -161,7 +161,7 @@ int dvz_labels_set_background(DvzVisual* visual, DvzCategoryId label_id)
  * @param label_id selected label ID
  * @return 0 on success, -1 on error
  */
-int dvz_labels_set_selected(DvzVisual* visual, DvzCategoryId label_id)
+DvzResult dvz_labels_set_selected(DvzVisual* visual, DvzCategoryId label_id)
 {
     ANN(visual);
     if (!_labels_state_mutation_allowed(visual, "set labels selection"))
@@ -180,7 +180,7 @@ int dvz_labels_set_selected(DvzVisual* visual, DvzCategoryId label_id)
  * @param visual the labels visual
  * @return 0 on success, -1 on error
  */
-int dvz_labels_clear_selected(DvzVisual* visual)
+DvzResult dvz_labels_clear_selected(DvzVisual* visual)
 {
     ANN(visual);
     if (!_labels_state_mutation_allowed(visual, "clear labels selection"))
@@ -201,7 +201,7 @@ int dvz_labels_clear_selected(DvzVisual* visual)
  * @param count hidden label ID count
  * @return 0 on success, -1 on error
  */
-int dvz_labels_set_hidden(DvzVisual* visual, const DvzCategoryId* ids, uint32_t count)
+DvzResult dvz_labels_set_hidden(DvzVisual* visual, const DvzCategoryId* ids, uint32_t count)
 {
     ANN(visual);
     if (!_labels_state_mutation_allowed(visual, "set hidden labels"))
@@ -239,7 +239,7 @@ int dvz_labels_set_hidden(DvzVisual* visual, const DvzCategoryId* ids, uint32_t 
  * @param color boundary color
  * @return 0 on success, -1 on error
  */
-int dvz_labels_set_boundary(DvzVisual* visual, bool enabled, float width_px, DvzColor color)
+DvzResult dvz_labels_set_boundary(DvzVisual* visual, bool enabled, float width_px, DvzColor color)
 {
     ANN(visual);
     if (!_labels_state_mutation_allowed(visual, "set labels boundary"))
@@ -265,7 +265,7 @@ int dvz_labels_set_boundary(DvzVisual* visual, bool enabled, float width_px, Dvz
  * @param seed fallback-color seed
  * @return 0 on success, -1 on error
  */
-int dvz_labels_set_fallback_seed(DvzVisual* visual, uint32_t seed)
+DvzResult dvz_labels_set_fallback_seed(DvzVisual* visual, uint32_t seed)
 {
     ANN(visual);
     if (!_labels_state_mutation_allowed(visual, "set labels fallback seed"))
@@ -284,7 +284,7 @@ int dvz_labels_set_fallback_seed(DvzVisual* visual, uint32_t seed)
  * @param axis slice axis
  * @return 0 on success, -1 on error
  */
-int dvz_labels_set_slice_axis(DvzVisual* visual, DvzVolumeAxis axis)
+DvzResult dvz_labels_set_slice_axis(DvzVisual* visual, DvzVolumeAxis axis)
 {
     ANN(visual);
     if (!_labels_state_mutation_allowed(visual, "set labels slice axis"))
@@ -308,7 +308,7 @@ int dvz_labels_set_slice_axis(DvzVisual* visual, DvzVolumeAxis axis)
  * @param position normalized slice position in [0, 1]
  * @return 0 on success, -1 on error
  */
-int dvz_labels_set_slice_position(DvzVisual* visual, double position)
+DvzResult dvz_labels_set_slice_position(DvzVisual* visual, double position)
 {
     ANN(visual);
     if (!_labels_state_mutation_allowed(visual, "set labels slice position"))

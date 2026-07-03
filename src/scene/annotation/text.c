@@ -475,7 +475,7 @@ void dvz_text_destroy(DvzText* text)
  * @param text the text object
  * @param string the string, or NULL to clear
  */
-int dvz_text_set_items(DvzText* text, const DvzTextItem* items, uint32_t item_count)
+DvzResult dvz_text_set_items(DvzText* text, const DvzTextItem* items, uint32_t item_count)
 {
     ANN(text);
     if (item_count > 0 && items == NULL)
@@ -508,7 +508,7 @@ int dvz_text_set_items(DvzText* text, const DvzTextItem* items, uint32_t item_co
 }
 
 
-int dvz_text_set_string(DvzText* text, const char* string)
+DvzResult dvz_text_set_string(DvzText* text, const char* string)
 {
     ANN(text);
     DvzTextItem item = {DVZ_STRUCT_INIT_FIELDS(DvzTextItem), .string = string};
@@ -529,7 +529,7 @@ int dvz_text_set_string(DvzText* text, const char* string)
 }
 
 
-int dvz_text_set_position(DvzText* text, const double position[3])
+DvzResult dvz_text_set_position(DvzText* text, const double position[3])
 {
     ANN(text);
     ANN(position);
@@ -543,7 +543,7 @@ int dvz_text_set_position(DvzText* text, const double position[3])
 }
 
 
-int dvz_text_set_layout(DvzText* text, const DvzTextLayout* layout)
+DvzResult dvz_text_set_layout(DvzText* text, const DvzTextLayout* layout)
 {
     ANN(text);
     if (layout != NULL && !_text_layout_validate(layout))
@@ -566,7 +566,7 @@ static int _text_check_item_count(const DvzText* text, uint32_t item_count)
 }
 
 
-int dvz_text_set_strings(DvzText* text, const char* const* strings, uint32_t item_count)
+DvzResult dvz_text_set_strings(DvzText* text, const char* const* strings, uint32_t item_count)
 {
     ANN(text);
     ANN(strings);
@@ -596,7 +596,7 @@ int dvz_text_set_strings(DvzText* text, const char* const* strings, uint32_t ite
 }
 
 
-int dvz_text_set_positions(DvzText* text, const double (*positions)[3], uint32_t item_count)
+DvzResult dvz_text_set_positions(DvzText* text, const double (*positions)[3], uint32_t item_count)
 {
     ANN(text);
     ANN(positions);
@@ -608,7 +608,7 @@ int dvz_text_set_positions(DvzText* text, const double (*positions)[3], uint32_t
 }
 
 
-int dvz_text_set_offsets(DvzText* text, const float (*offsets)[2], uint32_t item_count)
+DvzResult dvz_text_set_offsets(DvzText* text, const float (*offsets)[2], uint32_t item_count)
 {
     ANN(text);
     ANN(offsets);
@@ -620,7 +620,7 @@ int dvz_text_set_offsets(DvzText* text, const float (*offsets)[2], uint32_t item
 }
 
 
-int dvz_text_set_anchors(DvzText* text, const float (*anchors)[2], uint32_t item_count)
+DvzResult dvz_text_set_anchors(DvzText* text, const float (*anchors)[2], uint32_t item_count)
 {
     ANN(text);
     ANN(anchors);
@@ -632,7 +632,7 @@ int dvz_text_set_anchors(DvzText* text, const float (*anchors)[2], uint32_t item
 }
 
 
-int dvz_text_set_sizes(DvzText* text, const float* sizes_px, uint32_t item_count)
+DvzResult dvz_text_set_sizes(DvzText* text, const float* sizes_px, uint32_t item_count)
 {
     ANN(text);
     ANN(sizes_px);
@@ -644,7 +644,7 @@ int dvz_text_set_sizes(DvzText* text, const float* sizes_px, uint32_t item_count
 }
 
 
-int dvz_text_set_colors(DvzText* text, const DvzColor* colors, uint32_t item_count)
+DvzResult dvz_text_set_colors(DvzText* text, const DvzColor* colors, uint32_t item_count)
 {
     ANN(text);
     ANN(colors);
@@ -656,7 +656,7 @@ int dvz_text_set_colors(DvzText* text, const DvzColor* colors, uint32_t item_cou
 }
 
 
-int dvz_text_set_angles(DvzText* text, const float* angles, uint32_t item_count)
+DvzResult dvz_text_set_angles(DvzText* text, const float* angles, uint32_t item_count)
 {
     ANN(text);
     ANN(angles);
@@ -676,7 +676,7 @@ int dvz_text_set_angles(DvzText* text, const float* angles, uint32_t item_count)
  * @param style the style descriptor, or NULL for defaults
  * @return 0 on success, -1 on error
  */
-int dvz_text_set_style(DvzText* text, const DvzTextStyle* style)
+DvzResult dvz_text_set_style(DvzText* text, const DvzTextStyle* style)
 {
     ANN(text);
     if (style != NULL && !_text_style_validate(style))
@@ -705,7 +705,7 @@ int dvz_text_set_style(DvzText* text, const DvzTextStyle* style)
  * @param text the text object
  * @param placement the placement descriptor, or NULL for defaults
  */
-int dvz_text_set_placement(DvzText* text, const DvzTextPlacement* placement)
+DvzResult dvz_text_set_placement(DvzText* text, const DvzTextPlacement* placement)
 {
     ANN(text);
     if (placement != NULL && !_text_placement_validate(placement))
@@ -738,7 +738,7 @@ int dvz_text_set_placement(DvzText* text, const DvzTextPlacement* placement)
  * @param renderer renderer selection
  * @return 0 on success, -1 on error
  */
-int dvz_text_set_renderer(DvzText* text, DvzTextRenderer renderer)
+DvzResult dvz_text_set_renderer(DvzText* text, DvzTextRenderer renderer)
 {
     ANN(text);
     if (!_text_renderer_supported(renderer))

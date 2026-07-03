@@ -650,7 +650,7 @@ DvzSymbolId dvz_symbol_msdf(
  * @param symbols the symbol set, or NULL to clear
  * @return 0 on success, -1 on error
  */
-int dvz_marker_set_symbols(DvzVisual* visual, DvzSymbolSet* symbols)
+DvzResult dvz_marker_set_symbols(DvzVisual* visual, DvzSymbolSet* symbols)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_MARKER)
@@ -694,7 +694,7 @@ int dvz_marker_set_symbols(DvzVisual* visual, DvzSymbolSet* symbols)
  * @param builtin the built-in symbol
  * @return 0 on success, -1 on error
  */
-int dvz_marker_set_symbol(DvzVisual* visual, DvzSymbolBuiltin builtin)
+DvzResult dvz_marker_set_symbol(DvzVisual* visual, DvzSymbolBuiltin builtin)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_MARKER)
@@ -749,7 +749,7 @@ int dvz_marker_set_symbol(DvzVisual* visual, DvzSymbolBuiltin builtin)
  * @param style the marker style descriptor, or NULL to restore defaults
  * @return 0 on success, -1 on error
  */
-int dvz_marker_set_style(DvzVisual* visual, const DvzMarkerStyle* style)
+DvzResult dvz_marker_set_style(DvzVisual* visual, const DvzMarkerStyle* style)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_MARKER)

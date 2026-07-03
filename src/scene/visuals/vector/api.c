@@ -99,7 +99,7 @@ DvzVisual* dvz_vector(DvzScene* scene, uint32_t flags)
  * @param style style descriptor, or NULL for defaults
  * @return 0 on success, -1 on validation error
  */
-int dvz_vector_set_style(DvzVisual* visual, const DvzVectorStyle* style)
+DvzResult dvz_vector_set_style(DvzVisual* visual, const DvzVectorStyle* style)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_VECTOR)
@@ -176,7 +176,7 @@ int dvz_vector_set_style(DvzVisual* visual, const DvzVectorStyle* style)
  * @param lengths point count for each subpath
  * @return 0 on success, -1 on error
  */
-int dvz_vector_set_subpaths(DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths)
+DvzResult dvz_vector_set_subpaths(DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_VECTOR)

@@ -860,7 +860,7 @@ static void _bounds_apply_visual_transform(const DvzVisual* visual, DvzBounds* b
  * @param out output bounding box
  * @return 0 when bounds are available, -1 otherwise
  */
-int dvz_visual_bounds(const DvzVisual* visual, DvzBounds* out)
+DvzResult dvz_visual_bounds(const DvzVisual* visual, DvzBounds* out)
 {
     ANN(visual);
     ANN(out);
@@ -890,7 +890,7 @@ int dvz_visual_bounds(const DvzVisual* visual, DvzBounds* out)
  * @param out output bounding box
  * @return 0 when bounds are available, -1 otherwise
  */
-int dvz_panel_visual_bounds(
+DvzResult dvz_panel_visual_bounds(
     const DvzPanel* panel, const DvzVisual* visual, DvzBoundsSpace space, DvzBounds* out)
 {
     ANN(panel);
@@ -925,7 +925,7 @@ int dvz_panel_visual_bounds(
  * @param out output bounding box
  * @return 0 when at least one visible visual has bounds, -1 otherwise
  */
-int dvz_panel_bounds(const DvzPanel* panel, DvzBoundsSpace space, DvzBounds* out)
+DvzResult dvz_panel_bounds(const DvzPanel* panel, DvzBoundsSpace space, DvzBounds* out)
 {
     ANN(panel);
     ANN(out);
@@ -961,7 +961,7 @@ int dvz_panel_bounds(const DvzPanel* panel, DvzBoundsSpace space, DvzBounds* out
  * @param visible whether bounds boxes should be shown
  * @return 0 on success, -1 on error
  */
-int dvz_panel_set_bounds_visible(DvzPanel* panel, bool visible)
+DvzResult dvz_panel_set_bounds_visible(DvzPanel* panel, bool visible)
 {
     ANN(panel);
     if (panel->figure == NULL)

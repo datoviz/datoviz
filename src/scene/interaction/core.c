@@ -1875,7 +1875,7 @@ DvzSelectionVisualStyle dvz_selection_visual_style(void)
  * @param style style descriptor, or NULL for defaults
  * @return 0 on success, -1 on error
  */
-int dvz_selection_set_visual_style(DvzSelection* selection, const DvzSelectionVisualStyle* style)
+DvzResult dvz_selection_set_visual_style(DvzSelection* selection, const DvzSelectionVisualStyle* style)
 {
     ANN(selection);
     if (!_selection_visual_style_abi_validate(style))
@@ -1911,7 +1911,7 @@ int dvz_selection_set_visual_style(DvzSelection* selection, const DvzSelectionVi
  * @param query the query result
  * @return 0 on success, -1 on error
  */
-int dvz_selection_apply_query(DvzSelection* selection, const DvzQueryResult* query)
+DvzResult dvz_selection_apply_query(DvzSelection* selection, const DvzQueryResult* query)
 {
     ANN(selection);
     ANN(query);
@@ -2113,7 +2113,7 @@ void dvz_hover_clear(DvzHover* hover)
  * @param style style descriptor, or NULL for defaults
  * @return 0 on success, -1 on error
  */
-int dvz_hover_set_visual_style(DvzHover* hover, const DvzItemStateVisualStyle* style)
+DvzResult dvz_hover_set_visual_style(DvzHover* hover, const DvzItemStateVisualStyle* style)
 {
     ANN(hover);
     if (!_item_state_visual_style_abi_validate(style))
@@ -2145,7 +2145,7 @@ int dvz_hover_set_visual_style(DvzHover* hover, const DvzItemStateVisualStyle* s
  * @param query query result
  * @return 0 on success, -1 on error
  */
-int dvz_hover_apply_query(DvzHover* hover, const DvzQueryResult* query)
+DvzResult dvz_hover_apply_query(DvzHover* hover, const DvzQueryResult* query)
 {
     ANN(hover);
     ANN(query);
@@ -2708,7 +2708,7 @@ void dvz_overlay_card_destroy(DvzOverlayCard* card)
  * @param style the style descriptor, or NULL for defaults
  * @return 0 on success, -1 on error
  */
-int dvz_overlay_card_set_style(DvzOverlayCard* card, const DvzOverlayCardStyle* style)
+DvzResult dvz_overlay_card_set_style(DvzOverlayCard* card, const DvzOverlayCardStyle* style)
 {
     ANN(card);
     if (!card->active)
@@ -2757,7 +2757,7 @@ void dvz_overlay_card_set_text(DvzOverlayCard* card, const char* text)
  * @param desc rich text descriptor
  * @return 0 on success, -1 on error
  */
-int dvz_overlay_card_set_rich_text(DvzOverlayCard* card, const DvzOverlayRichTextDesc* desc)
+DvzResult dvz_overlay_card_set_rich_text(DvzOverlayCard* card, const DvzOverlayRichTextDesc* desc)
 {
     ANN(card);
     if (!card->active || desc == NULL || desc->source == NULL)

@@ -934,7 +934,7 @@ void _scene_release_visual_scale(DvzVisual* visual)
  * @param desc optional attachment descriptor
  * @return 0 on success, -1 on error
  */
-int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual, const DvzVisualAttachDesc* desc)
+DvzResult dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual, const DvzVisualAttachDesc* desc)
 {
     ANN(panel);
     ANN(visual);
@@ -1322,7 +1322,7 @@ void dvz_visual_set_query_capabilities(DvzVisual* visual, uint32_t capabilities)
  * @param item_count the number of link keys
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_link_keys(
+DvzResult dvz_visual_set_link_keys(
     DvzVisual* visual, DvzLinkChannel* channel, const uint64_t* link_keys, uint32_t item_count)
 {
     ANN(visual);
@@ -1405,7 +1405,7 @@ void dvz_visual_set_visible(DvzVisual* visual, bool visible)
  * @param transform retained local model transform
  * @return 0 on success, -1 on validation error
  */
-int dvz_visual_set_transform(DvzVisual* visual, mat4 transform)
+DvzResult dvz_visual_set_transform(DvzVisual* visual, mat4 transform)
 {
     ANN(visual);
     ANN(transform);
@@ -1442,7 +1442,7 @@ bool dvz_visual_has_transform(const DvzVisual* visual)
  * @param out output local model transform
  * @return 0 on success, -1 on validation error
  */
-int dvz_visual_get_transform(const DvzVisual* visual, mat4 out)
+DvzResult dvz_visual_get_transform(const DvzVisual* visual, mat4 out)
 {
     ANN(visual);
     ANN(out);
@@ -1465,7 +1465,7 @@ int dvz_visual_get_transform(const DvzVisual* visual, mat4 out)
  * @param visual the visual
  * @return 0 on success, -1 on validation error
  */
-int dvz_visual_clear_transform(DvzVisual* visual)
+DvzResult dvz_visual_clear_transform(DvzVisual* visual)
 {
     ANN(visual);
     if (!_scene_visual_mutation_allowed(visual->scene, "clear visual transform"))
@@ -1486,7 +1486,7 @@ int dvz_visual_clear_transform(DvzVisual* visual)
  * @param desc transform descriptor, or NULL to clear the future transform slot
  * @return 0 on success, -1 on validation error or unsupported transform kind
  */
-int dvz_visual_set_transform_desc(DvzVisual* visual, const DvzVisualTransformDesc* desc)
+DvzResult dvz_visual_set_transform_desc(DvzVisual* visual, const DvzVisualTransformDesc* desc)
 {
     ANN(visual);
     DvzVisualTransformDesc default_desc = dvz_visual_transform_desc();
@@ -1514,7 +1514,7 @@ int dvz_visual_set_transform_desc(DvzVisual* visual, const DvzVisualTransformDes
  * @param desc shader descriptor, or NULL to clear the future shader slot
  * @return 0 on success, -1 on validation error or unsupported shader kind
  */
-int dvz_visual_set_shader_desc(DvzVisual* visual, const DvzVisualShaderDesc* desc)
+DvzResult dvz_visual_set_shader_desc(DvzVisual* visual, const DvzVisualShaderDesc* desc)
 {
     ANN(visual);
     DvzVisualShaderDesc default_desc = dvz_visual_shader_desc();

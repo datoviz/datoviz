@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/scene/types.h"
 
 
@@ -110,7 +111,7 @@ DVZ_EXPORT DvzVisual* dvz_guide_line_visual(DvzGuideLine* guide, DvzPlotRole rol
  * @param value new X or Y value, depending on orientation
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_guide_line_set_value(DvzGuideLine* guide, double value);
+DVZ_EXPORT DvzResult dvz_guide_line_set_value(DvzGuideLine* guide, double value);
 
 
 /**
@@ -170,7 +171,7 @@ DVZ_EXPORT DvzVisual* dvz_guide_span_visual(DvzGuideSpan* span, DvzPlotRole role
  * @param max_value second range endpoint
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int
+DVZ_EXPORT DvzResult
 dvz_guide_span_set_range(DvzGuideSpan* span, double min_value, double max_value);
 
 
@@ -198,7 +199,7 @@ DVZ_EXPORT DvzBars* dvz_bars(DvzPanel* panel, const DvzBarsDesc* desc);
  * @param values bar terminal values
  * @return 0 on success, -1 on validation/allocation error
  */
-DVZ_EXPORT int dvz_bars_set_intervals(
+DVZ_EXPORT DvzResult dvz_bars_set_intervals(
     DvzBars* bars, uint32_t count, const double* starts, const double* ends,
     const double* values);
 
@@ -212,7 +213,7 @@ DVZ_EXPORT int dvz_bars_set_intervals(
  * @param desc bars descriptor
  * @return 0 on success, -1 on validation/allocation error
  */
-DVZ_EXPORT int dvz_bars_set_style(DvzBars* bars, const DvzBarsDesc* desc);
+DVZ_EXPORT DvzResult dvz_bars_set_style(DvzBars* bars, const DvzBarsDesc* desc);
 
 
 /**
@@ -251,7 +252,7 @@ DVZ_EXPORT DvzBand* dvz_band(DvzPanel* panel, const DvzBandDesc* desc);
  * @param upper upper Y coordinates
  * @return 0 on success, -1 on validation/allocation error
  */
-DVZ_EXPORT int dvz_band_set_bounds(
+DVZ_EXPORT DvzResult dvz_band_set_bounds(
     DvzBand* band, uint32_t count, const double* x, const double* lower, const double* upper);
 
 
@@ -267,7 +268,7 @@ DVZ_EXPORT int dvz_band_set_bounds(
  * @param y Y coordinates
  * @return 0 on success, -1 on validation/allocation error
  */
-DVZ_EXPORT int
+DVZ_EXPORT DvzResult
 dvz_band_set_center(DvzBand* band, uint32_t count, const double* x, const double* y);
 
 
@@ -281,7 +282,7 @@ dvz_band_set_center(DvzBand* band, uint32_t count, const double* x, const double
  * @param desc band descriptor
  * @return 0 on success, -1 on validation/allocation error
  */
-DVZ_EXPORT int dvz_band_set_style(DvzBand* band, const DvzBandDesc* desc);
+DVZ_EXPORT DvzResult dvz_band_set_style(DvzBand* band, const DvzBandDesc* desc);
 
 
 /**

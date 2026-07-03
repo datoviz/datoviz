@@ -184,7 +184,7 @@ DvzPolygonStyle dvz_polygon_style(void)
  * @param desc borrowed polygon descriptor
  * @return 0 on success, -1 on invalid input or allocation failure
  */
-int dvz_polygon_geometry(DvzPolygon* polygon, const DvzPolygonDesc* desc)
+DvzResult dvz_polygon_geometry(DvzPolygon* polygon, const DvzPolygonDesc* desc)
 {
     if (polygon == NULL || polygon->scene == NULL || desc == NULL)
         return -1;
@@ -252,7 +252,7 @@ int dvz_polygon_geometry(DvzPolygon* polygon, const DvzPolygonDesc* desc)
  * @param xy borrowed XY vertex array
  * @return 0 on success, -1 on invalid input or allocation failure
  */
-int dvz_polygon_outer(DvzPolygon* polygon, uint32_t count, const dvec2* xy)
+DvzResult dvz_polygon_outer(DvzPolygon* polygon, uint32_t count, const dvec2* xy)
 {
     if (polygon == NULL || xy == NULL)
         return -1;
@@ -286,7 +286,7 @@ int dvz_polygon_outer(DvzPolygon* polygon, uint32_t count, const dvec2* xy)
  * @param xy borrowed XY vertex array
  * @return 0 on success, -1 on invalid input or allocation failure
  */
-int dvz_polygon_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, const dvec2* xy)
+DvzResult dvz_polygon_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, const dvec2* xy)
 {
     if (polygon == NULL || polygon->outer.xy == NULL || xy == NULL)
         return -1;
@@ -335,7 +335,7 @@ int dvz_polygon_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, c
  * @param id stable user id
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_id(DvzPolygon* polygon, uint64_t id)
+DvzResult dvz_polygon_id(DvzPolygon* polygon, uint64_t id)
 {
     if (polygon == NULL || polygon->scene == NULL)
         return -1;
@@ -355,7 +355,7 @@ int dvz_polygon_id(DvzPolygon* polygon, uint64_t id)
  * @param visible whether the polygon should render
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_visible(DvzPolygon* polygon, bool visible)
+DvzResult dvz_polygon_visible(DvzPolygon* polygon, bool visible)
 {
     if (polygon == NULL || polygon->scene == NULL)
         return -1;
@@ -378,7 +378,7 @@ int dvz_polygon_visible(DvzPolygon* polygon, bool visible)
  * @param style polygon style descriptor
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_style(DvzPolygon* polygon, const DvzPolygonStyle* style)
+DvzResult dvz_polygon_set_style(DvzPolygon* polygon, const DvzPolygonStyle* style)
 {
     if (polygon == NULL || polygon->scene == NULL || !_polygon_style_valid(style))
         return -1;
@@ -407,7 +407,7 @@ int dvz_polygon_set_style(DvzPolygon* polygon, const DvzPolygonStyle* style)
  * @param color RGBA fill color
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_fill_color(DvzPolygon* polygon, const DvzColor color)
+DvzResult dvz_polygon_fill_color(DvzPolygon* polygon, const DvzColor color)
 {
     if (polygon == NULL || polygon->scene == NULL)
         return -1;
@@ -427,7 +427,7 @@ int dvz_polygon_fill_color(DvzPolygon* polygon, const DvzColor color)
  * @param color RGBA stroke color
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_stroke_color(DvzPolygon* polygon, const DvzColor color)
+DvzResult dvz_polygon_stroke_color(DvzPolygon* polygon, const DvzColor color)
 {
     if (polygon == NULL || polygon->scene == NULL)
         return -1;
@@ -447,7 +447,7 @@ int dvz_polygon_stroke_color(DvzPolygon* polygon, const DvzColor color)
  * @param width stroke width in pixels
  * @return 0 on success, -1 on invalid input
  */
-int dvz_polygon_stroke_width_px(DvzPolygon* polygon, float width)
+DvzResult dvz_polygon_stroke_width_px(DvzPolygon* polygon, float width)
 {
     if (polygon == NULL || polygon->scene == NULL || !isfinite(width) || width < 0.0f)
         return -1;
@@ -469,7 +469,7 @@ int dvz_polygon_stroke_width_px(DvzPolygon* polygon, float width)
  * @param end_cap cap applied to each ring end
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_stroke_caps(DvzPolygon* polygon, DvzSegmentCap start_cap, DvzSegmentCap end_cap)
+DvzResult dvz_polygon_stroke_caps(DvzPolygon* polygon, DvzSegmentCap start_cap, DvzSegmentCap end_cap)
 {
     if (
         polygon == NULL || polygon->scene == NULL || !_polygon_stroke_cap_valid(start_cap) ||
@@ -498,7 +498,7 @@ int dvz_polygon_stroke_caps(DvzPolygon* polygon, DvzSegmentCap start_cap, DvzSeg
  * @param miter_limit positive finite miter limit
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_stroke_join(DvzPolygon* polygon, DvzPathJoin join, float miter_limit)
+DvzResult dvz_polygon_stroke_join(DvzPolygon* polygon, DvzPathJoin join, float miter_limit)
 {
     if (
         polygon == NULL || polygon->scene == NULL || !_polygon_stroke_join_valid(join) ||

@@ -76,7 +76,7 @@ Initialize a default depth-cue descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:283._
+_Declared in `include/datoviz/ffi.h`:284._
 
 ### `dvz_ffi_field_geometry()`
 
@@ -95,7 +95,7 @@ Initialize a default sampled-field geometry descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:220._
+_Declared in `include/datoviz/ffi.h`:221._
 
 ### `dvz_ffi_geometry_arrow_desc()`
 
@@ -114,7 +114,7 @@ Initialize a default arrow geometry descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:103._
+_Declared in `include/datoviz/ffi.h`:104._
 
 ### `dvz_ffi_geometry_cone_desc()`
 
@@ -133,7 +133,7 @@ Initialize a default cone geometry descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:112._
+_Declared in `include/datoviz/ffi.h`:113._
 
 ### `dvz_ffi_geometry_cube_desc()`
 
@@ -152,7 +152,7 @@ Initialize a default cube geometry descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:121._
+_Declared in `include/datoviz/ffi.h`:122._
 
 ### `dvz_ffi_geometry_cylinder_desc()`
 
@@ -171,7 +171,7 @@ Initialize a default cylinder geometry descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:130._
+_Declared in `include/datoviz/ffi.h`:131._
 
 ### `dvz_ffi_geometry_disc_desc()`
 
@@ -190,7 +190,7 @@ Initialize a default disc geometry descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:139._
+_Declared in `include/datoviz/ffi.h`:140._
 
 ### `dvz_ffi_geometry_plane_desc()`
 
@@ -209,7 +209,7 @@ Initialize a default plane geometry descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:148._
+_Declared in `include/datoviz/ffi.h`:149._
 
 ### `dvz_ffi_geometry_regular_polygon_desc()`
 
@@ -228,7 +228,7 @@ Initialize a default regular-polygon geometry descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:157._
+_Declared in `include/datoviz/ffi.h`:158._
 
 ### `dvz_ffi_geometry_sector_desc()`
 
@@ -247,7 +247,7 @@ Initialize a default sector geometry descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:166._
+_Declared in `include/datoviz/ffi.h`:167._
 
 ### `dvz_ffi_geometry_sphere_desc()`
 
@@ -266,7 +266,7 @@ Initialize a default sphere geometry descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:175._
+_Declared in `include/datoviz/ffi.h`:176._
 
 ### `dvz_ffi_geometry_star_desc()`
 
@@ -285,7 +285,7 @@ Initialize a default star geometry descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:184._
+_Declared in `include/datoviz/ffi.h`:185._
 
 ### `dvz_ffi_geometry_surface_grid_desc()`
 
@@ -304,7 +304,7 @@ Initialize a default surface-grid geometry descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:193._
+_Declared in `include/datoviz/ffi.h`:194._
 
 ### `dvz_ffi_geometry_torus_desc()`
 
@@ -323,7 +323,7 @@ Initialize a default torus geometry descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:202._
+_Declared in `include/datoviz/ffi.h`:203._
 
 ### `dvz_ffi_material_desc()`
 
@@ -342,7 +342,7 @@ Initialize a default material descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:256._
+_Declared in `include/datoviz/ffi.h`:257._
 
 ### `dvz_ffi_overlay_card_desc()`
 
@@ -361,7 +361,7 @@ Initialize a default overlay-card descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:310._
+_Declared in `include/datoviz/ffi.h`:311._
 
 ### `dvz_ffi_overlay_card_style()`
 
@@ -380,7 +380,7 @@ Initialize a default overlay-card style descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:301._
+_Declared in `include/datoviz/ffi.h`:302._
 
 ### `dvz_ffi_panel_background_desc()`
 
@@ -399,7 +399,7 @@ Initialize a default panel background descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:247._
+_Declared in `include/datoviz/ffi.h`:248._
 
 ### `dvz_ffi_phong_material_desc()`
 
@@ -418,7 +418,7 @@ Initialize a default Phong material descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:265._
+_Declared in `include/datoviz/ffi.h`:266._
 
 ### `dvz_ffi_polygon_desc()`
 
@@ -437,7 +437,7 @@ Initialize a default polygon descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:211._
+_Declared in `include/datoviz/ffi.h`:212._
 
 ### `dvz_ffi_reference_grid_desc()`
 
@@ -456,7 +456,7 @@ Initialize a default reference-grid descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:229._
+_Declared in `include/datoviz/ffi.h`:230._
 
 ### `dvz_ffi_scalebar_desc()`
 
@@ -475,7 +475,7 @@ Initialize a default scale-bar descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:292._
+_Declared in `include/datoviz/ffi.h`:293._
 
 ### `dvz_ffi_standard_material_desc()`
 
@@ -494,7 +494,7 @@ Initialize a default standard material descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:274._
+_Declared in `include/datoviz/ffi.h`:275._
 
 ### `dvz_ffi_view_external_surface()`
 
@@ -533,12 +533,12 @@ dvz_view_external_surface().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:64._
+_Declared in `include/datoviz/ffi.h`:65._
 
 ### `dvz_ffi_view_update_external_surface()`
 
 ```c title="dvz_ffi_view_update_external_surface"
-int dvz_ffi_view_update_external_surface(
+DvzResult dvz_ffi_view_update_external_surface(
     DvzView * view,
     void * instance,
     uint64_t surface,
@@ -552,7 +552,7 @@ int dvz_ffi_view_update_external_surface(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `int` | 0 on success, negative on error |
+| return | `DvzResult` | 0 on success, negative on error |
 | `view` | `DvzView *` | view created with dvz_view_external_surface() or dvz_ffi_view_external_surface() |
 | `instance` | `void *` | borrowed VkInstance handle as an opaque pointer, or NULL for surface loss |
 | `surface` | `uint64_t` | borrowed or Datoviz-owned VkSurfaceKHR handle value, or zero for surface loss |
@@ -570,7 +570,7 @@ dvz_view_update_external_surface().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:87._
+_Declared in `include/datoviz/ffi.h`:88._
 
 ### `dvz_ffi_visual_transform_desc()`
 
@@ -589,4 +589,4 @@ Initialize a default visual transform descriptor through an out pointer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/ffi.h`:238._
+_Declared in `include/datoviz/ffi.h`:239._

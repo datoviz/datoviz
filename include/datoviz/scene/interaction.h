@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/drp2/types.h"
 #include "datoviz/scene/types.h"
 
@@ -122,7 +123,7 @@ DVZ_EXPORT void dvz_visual_set_query_capabilities(DvzVisual* visual, uint32_t ca
  * @param item_count number of keys
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_visual_set_link_keys(
+DVZ_EXPORT DvzResult dvz_visual_set_link_keys(
     DvzVisual* visual, DvzLinkChannel* channel, const uint64_t* link_keys, uint32_t item_count);
 
 
@@ -217,7 +218,7 @@ DVZ_EXPORT DvzSelectionVisualStyle dvz_selection_visual_style(void);
  * @param style the visual style descriptor, or NULL for defaults
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_selection_set_visual_style(
+DVZ_EXPORT DvzResult dvz_selection_set_visual_style(
     DvzSelection* selection, const DvzSelectionVisualStyle* style);
 
 
@@ -228,7 +229,7 @@ DVZ_EXPORT int dvz_selection_set_visual_style(
  * @param query the query result
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_selection_apply_query(
+DVZ_EXPORT DvzResult dvz_selection_apply_query(
     DvzSelection* selection, const DvzQueryResult* query);
 
 
@@ -303,7 +304,7 @@ DVZ_EXPORT void dvz_hover_clear(DvzHover* hover);
  * @param style the visual style descriptor, or NULL for defaults
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_hover_set_visual_style(DvzHover* hover, const DvzItemStateVisualStyle* style);
+DVZ_EXPORT DvzResult dvz_hover_set_visual_style(DvzHover* hover, const DvzItemStateVisualStyle* style);
 
 
 /**
@@ -313,7 +314,7 @@ DVZ_EXPORT int dvz_hover_set_visual_style(DvzHover* hover, const DvzItemStateVis
  * @param query the query result
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_hover_apply_query(DvzHover* hover, const DvzQueryResult* query);
+DVZ_EXPORT DvzResult dvz_hover_apply_query(DvzHover* hover, const DvzQueryResult* query);
 
 
 
@@ -388,7 +389,7 @@ DVZ_EXPORT DvzQueryRequest dvz_query_request(void);
  * @param request the request descriptor, or NULL for defaults
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_panel_query(
+DVZ_EXPORT DvzResult dvz_panel_query(
     DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
 
 
@@ -413,7 +414,7 @@ DVZ_EXPORT bool dvz_scene_poll_query(DvzScene* scene, DvzQueryResult* out_result
  * @param out_result output result
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_panel_query_now(
+DVZ_EXPORT DvzResult dvz_panel_query_now(
     DvzPanel* panel, DvzDrp2Runtime* runtime, double x, double y, const DvzQueryRequest* request,
     DvzQueryResult* out_result);
 

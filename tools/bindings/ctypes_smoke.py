@@ -225,6 +225,8 @@ def main() -> int:
 
     import datoviz.raw as dvz  # noqa: PLC0415
 
+    assert dvz.DvzResult is ctypes.c_int32
+
     for symbol in _smoke_symbols():
         assert hasattr(dvz, symbol), f'missing datoviz.raw.{symbol}'
 
@@ -253,7 +255,7 @@ def main() -> int:
         ctypes.c_bool,
     ]
     assert dvz.dvz_ffi_view_update_external_surface.argtypes == expected_update_args
-    assert dvz.dvz_ffi_view_update_external_surface.restype == ctypes.c_int
+    assert dvz.dvz_ffi_view_update_external_surface.restype == ctypes.c_int32
 
     t0 = dvz.dvz_time_monotonic_ns()
     t1 = dvz.dvz_time_monotonic_ns()

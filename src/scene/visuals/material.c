@@ -592,7 +592,7 @@ void _material_params_upload_payload(const DvzVisual* visual, DvzSceneMaterialPa
  * @param desc the material descriptor, or NULL to restore defaults
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_material(DvzVisual* visual, const DvzMaterialDesc* desc)
+DvzResult dvz_visual_set_material(DvzVisual* visual, const DvzMaterialDesc* desc)
 {
     ANN(visual);
     if (!_material_visual_supported(visual->type))
@@ -622,7 +622,7 @@ int dvz_visual_set_material(DvzVisual* visual, const DvzMaterialDesc* desc)
  * @param desc the depth-cue descriptor, or NULL to disable depth cueing
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_depth_cue(DvzVisual* visual, const DvzDepthCueDesc* desc)
+DvzResult dvz_visual_set_depth_cue(DvzVisual* visual, const DvzDepthCueDesc* desc)
 {
     ANN(visual);
     if (!_material_depth_cue_supported(visual->type))
@@ -648,7 +648,7 @@ int dvz_visual_set_depth_cue(DvzVisual* visual, const DvzDepthCueDesc* desc)
  * @param enabled whether depth testing is enabled
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_depth_test(DvzVisual* visual, bool enabled)
+DvzResult dvz_visual_set_depth_test(DvzVisual* visual, bool enabled)
 {
     ANN(visual);
     if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual depth test"))
@@ -682,7 +682,7 @@ bool dvz_visual_depth_test(const DvzVisual* visual)
  * @param mode the alpha handling mode
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_alpha_mode(DvzVisual* visual, DvzAlphaMode mode)
+DvzResult dvz_visual_set_alpha_mode(DvzVisual* visual, DvzAlphaMode mode)
 {
     ANN(visual);
     if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual alpha mode"))
@@ -721,7 +721,7 @@ DvzAlphaMode dvz_visual_alpha_mode(const DvzVisual* visual)
  * @param enabled whether the visual should sample panel volume occlusion
  * @return 0 on success, -1 on validation error
  */
-int dvz_visual_set_volume_occluded(DvzVisual* visual, bool enabled)
+DvzResult dvz_visual_set_volume_occluded(DvzVisual* visual, bool enabled)
 {
     ANN(visual);
     if (!_scene_visual_mutation_allowed(visual->scene, "set volume occlusion"))
@@ -739,7 +739,7 @@ int dvz_visual_set_volume_occluded(DvzVisual* visual, bool enabled)
  * @param enabled whether the visual should act as a scene occluder
  * @return 0 on success, -1 on validation error
  */
-int dvz_visual_set_scene_occluder(DvzVisual* visual, bool enabled)
+DvzResult dvz_visual_set_scene_occluder(DvzVisual* visual, bool enabled)
 {
     ANN(visual);
     if (!_scene_visual_mutation_allowed(visual->scene, "set scene occluder"))
@@ -757,7 +757,7 @@ int dvz_visual_set_scene_occluder(DvzVisual* visual, bool enabled)
  * @param enabled whether the visual should be attenuated by scene occlusion
  * @return 0 on success, -1 on validation error
  */
-int dvz_visual_set_scene_occluded(DvzVisual* visual, bool enabled)
+DvzResult dvz_visual_set_scene_occluded(DvzVisual* visual, bool enabled)
 {
     ANN(visual);
     if (!_scene_visual_mutation_allowed(visual->scene, "set scene occluded"))

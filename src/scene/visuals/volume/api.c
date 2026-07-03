@@ -179,7 +179,7 @@ DvzVisual* dvz_volume(DvzScene* scene, uint32_t flags)
  * @param opacity opacity multiplier in [0, 1]
  * @return 0 on success, -1 on error
  */
-int dvz_volume_set_opacity(DvzVisual* visual, float opacity)
+DvzResult dvz_volume_set_opacity(DvzVisual* visual, float opacity)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
@@ -209,7 +209,7 @@ int dvz_volume_set_opacity(DvzVisual* visual, float opacity)
  * @param sampling the sampling mode
  * @return 0 on success, -1 on error
  */
-int dvz_volume_set_sampling(DvzVisual* visual, DvzVolumeSamplingMode sampling)
+DvzResult dvz_volume_set_sampling(DvzVisual* visual, DvzVolumeSamplingMode sampling)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
@@ -239,7 +239,7 @@ int dvz_volume_set_sampling(DvzVisual* visual, DvzVolumeSamplingMode sampling)
  * @param mode the render mode
  * @return 0 on success, -1 on error
  */
-int dvz_volume_set_render_mode(DvzVisual* visual, DvzVolumeRenderMode mode)
+DvzResult dvz_volume_set_render_mode(DvzVisual* visual, DvzVolumeRenderMode mode)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
@@ -281,7 +281,7 @@ int dvz_volume_set_render_mode(DvzVisual* visual, DvzVolumeRenderMode mode)
  * @param axis axis normal for slice plane selection
  * @return 0 on success, -1 on error
  */
-int dvz_volume_set_slice_axis(DvzVisual* visual, DvzVolumeAxis axis)
+DvzResult dvz_volume_set_slice_axis(DvzVisual* visual, DvzVolumeAxis axis)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
@@ -311,7 +311,7 @@ int dvz_volume_set_slice_axis(DvzVisual* visual, DvzVolumeAxis axis)
  * @param position normalized slice coordinate in [0, 1]
  * @return 0 on success, -1 on error
  */
-int dvz_volume_set_slice_position(DvzVisual* visual, double position)
+DvzResult dvz_volume_set_slice_position(DvzVisual* visual, double position)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
@@ -341,7 +341,7 @@ int dvz_volume_set_slice_position(DvzVisual* visual, double position)
  * @param step_count number of raymarch samples
  * @return 0 on success, -1 on error
  */
-int dvz_volume_set_step_count(DvzVisual* visual, uint32_t step_count)
+DvzResult dvz_volume_set_step_count(DvzVisual* visual, uint32_t step_count)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
@@ -372,7 +372,7 @@ int dvz_volume_set_step_count(DvzVisual* visual, uint32_t step_count)
  * @param bounds_max maximum object-space coordinate
  * @return 0 on success, -1 on error
  */
-int dvz_volume_set_bounds(
+DvzResult dvz_volume_set_bounds(
     DvzVisual* visual, const double bounds_min[3], const double bounds_max[3])
 {
     ANN(visual);
@@ -415,7 +415,7 @@ int dvz_volume_set_bounds(
  * @param axis_flip optional per-texture-axis flips
  * @return 0 on success, -1 on error
  */
-int dvz_volume_set_axis_mapping(
+DvzResult dvz_volume_set_axis_mapping(
     DvzVisual* visual, const uint32_t axis_order[3], const bool axis_flip[3])
 {
     ANN(visual);
@@ -457,7 +457,7 @@ int dvz_volume_set_axis_mapping(
  * @param max maximum scalar value mapped to 1
  * @return 0 on success, -1 on error
  */
-int dvz_volume_set_value_range(DvzVisual* visual, double min, double max)
+DvzResult dvz_volume_set_value_range(DvzVisual* visual, double min, double max)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
@@ -489,7 +489,7 @@ int dvz_volume_set_value_range(DvzVisual* visual, double min, double max)
  * @param count number of stops
  * @return 0 on success, -1 on error
  */
-int dvz_volume_set_alpha_stops(DvzVisual* visual, const DvzVolumeAlphaStop* stops, uint32_t count)
+DvzResult dvz_volume_set_alpha_stops(DvzVisual* visual, const DvzVolumeAlphaStop* stops, uint32_t count)
 {
     ANN(visual);
     ANN(stops);
@@ -546,7 +546,7 @@ int dvz_volume_set_alpha_stops(DvzVisual* visual, const DvzVolumeAlphaStop* stop
  * @param clip_max maximum normalized clip coordinate
  * @return 0 on success, -1 on error
  */
-int dvz_volume_set_clipping_box(
+DvzResult dvz_volume_set_clipping_box(
     DvzVisual* visual, const double clip_min[3], const double clip_max[3])
 {
     ANN(visual);
@@ -590,7 +590,7 @@ int dvz_volume_set_clipping_box(
  * @param keep_positive whether to keep the positive side of the plane
  * @return 0 on success, -1 on error
  */
-int dvz_volume_set_clipping_plane(
+DvzResult dvz_volume_set_clipping_plane(
     DvzVisual* visual, const double point[3], const double normal[3], bool keep_positive)
 {
     ANN(visual);
@@ -639,7 +639,7 @@ int dvz_volume_set_clipping_plane(
  * @param visual the volume visual
  * @return 0 on success, -1 on error
  */
-int dvz_volume_clear_clipping_plane(DvzVisual* visual)
+DvzResult dvz_volume_clear_clipping_plane(DvzVisual* visual)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
@@ -670,7 +670,7 @@ int dvz_volume_clear_clipping_plane(DvzVisual* visual)
  * @param visual the volume visual
  * @return 0 on success, -1 on error
  */
-int dvz_volume_clear_clipping(DvzVisual* visual)
+DvzResult dvz_volume_clear_clipping(DvzVisual* visual)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_VOLUME)

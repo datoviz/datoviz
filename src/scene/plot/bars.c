@@ -422,7 +422,7 @@ DvzBars* dvz_bars(DvzPanel* panel, const DvzBarsDesc* desc)
 
 
 
-int dvz_bars_set_intervals(
+DvzResult dvz_bars_set_intervals(
     DvzBars* bars, uint32_t count, const double* starts, const double* ends,
     const double* values)
 {
@@ -465,7 +465,7 @@ int dvz_bars_set_intervals(
 }
 
 
-int dvz_bars_set_style(DvzBars* bars, const DvzBarsDesc* desc)
+DvzResult dvz_bars_set_style(DvzBars* bars, const DvzBarsDesc* desc)
 {
     if (bars == NULL || !bars->active || desc == NULL)
         return -1;

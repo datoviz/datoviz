@@ -541,7 +541,7 @@ DvzBand* dvz_band(DvzPanel* panel, const DvzBandDesc* desc)
 
 
 
-int dvz_band_set_bounds(
+DvzResult dvz_band_set_bounds(
     DvzBand* band, uint32_t count, const double* x, const double* lower, const double* upper)
 {
     if (band == NULL || !band->active)
@@ -580,7 +580,7 @@ int dvz_band_set_bounds(
 
 
 
-int dvz_band_set_center(DvzBand* band, uint32_t count, const double* x, const double* y)
+DvzResult dvz_band_set_center(DvzBand* band, uint32_t count, const double* x, const double* y)
 {
     if (band == NULL || !band->active)
         return -1;
@@ -613,7 +613,7 @@ int dvz_band_set_center(DvzBand* band, uint32_t count, const double* x, const do
 }
 
 
-int dvz_band_set_style(DvzBand* band, const DvzBandDesc* desc)
+DvzResult dvz_band_set_style(DvzBand* band, const DvzBandDesc* desc)
 {
     if (band == NULL || !band->active || desc == NULL)
         return -1;

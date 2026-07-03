@@ -31,6 +31,17 @@ typedef struct DvzColor DvzColor;
 typedef struct DvzColorf DvzColorf;
 typedef struct DvzTime   DvzTime;
 
+typedef int32_t DvzResult;
+
+
+
+/*************************************************************************************************/
+/*  Result codes                                                                                 */
+/*************************************************************************************************/
+
+#define DVZ_OK    ((DvzResult)0)
+#define DVZ_ERROR ((DvzResult)-1)
+
 
 
 /*************************************************************************************************/

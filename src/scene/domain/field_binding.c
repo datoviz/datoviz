@@ -213,7 +213,7 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
  * @param height the texture height in pixels
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_texture_rgba8(
+DvzResult dvz_visual_set_texture_rgba8(
     DvzVisual* visual, const uint8_t* rgba, uint32_t width, uint32_t height)
 {
     ANN(visual);
@@ -265,7 +265,7 @@ int dvz_visual_set_texture_rgba8(
  * @param height the texture height in pixels
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_texture_r32f(
+DvzResult dvz_visual_set_texture_r32f(
     DvzVisual* visual, const float* values, uint32_t width, uint32_t height)
 {
     ANN(visual);

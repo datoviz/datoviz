@@ -327,7 +327,7 @@ static int _panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max
  * @param max data maximum
  * @return 0 on success, -1 on validation error
  */
-int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max)
+DvzResult dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max)
 {
     return _panel_set_domain(panel, dim, min, max, false);
 }

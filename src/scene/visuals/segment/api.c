@@ -57,7 +57,7 @@ DvzVisual* dvz_segment(DvzScene* scene, uint32_t flags)
  * @param end_cap cap applied to the end endpoint
  * @return 0 on success, -1 on validation error
  */
-int dvz_segment_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentCap end_cap)
+DvzResult dvz_segment_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentCap end_cap)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_SEGMENT)

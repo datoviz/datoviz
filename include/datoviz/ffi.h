@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/geom/types.h"
 #include "datoviz/scene/field.h"
 #include "datoviz/scene/overlay.h"
@@ -84,7 +85,7 @@ DVZ_EXPORT DvzView* dvz_ffi_view_external_surface(
  * @param owned_by_datoviz whether Datoviz should destroy the surface
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_ffi_view_update_external_surface(
+DVZ_EXPORT DvzResult dvz_ffi_view_update_external_surface(
     DvzView* view, void* instance, uint64_t surface, uint32_t framebuffer_width,
     uint32_t framebuffer_height, float scale_x, float scale_y, bool owned_by_datoviz);
 

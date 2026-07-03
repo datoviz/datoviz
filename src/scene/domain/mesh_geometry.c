@@ -155,7 +155,7 @@ static void _mesh_geometry_copy_dvec2(vec2* out, const double* in, uint32_t coun
  * @param geometry the CPU geometry object
  * @return 0 on success, -1 on invalid input or upload failure
  */
-int dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry)
+DvzResult dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry)
 {
     if (
         visual == NULL || visual->type != DVZ_VISUAL_TYPE_MESH || geometry == NULL ||

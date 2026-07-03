@@ -1201,7 +1201,7 @@ DvzGeometryBounds dvz_geometry_bounds(const DvzGeometry* geometry)
  * @param geometry the geometry
  * @return 0 on success, -1 on invalid input
  */
-int dvz_geometry_compute_normals(DvzGeometry* geometry)
+DvzResult dvz_geometry_compute_normals(DvzGeometry* geometry)
 {
     if (geometry == NULL || geometry->positions == NULL || geometry->normals == NULL ||
         geometry->indices == NULL || geometry->vertex_count == 0 || geometry->index_count == 0 ||
@@ -1257,7 +1257,7 @@ int dvz_geometry_compute_normals(DvzGeometry* geometry)
  * @param transform affine transform matrix
  * @return 0 on success, -1 on invalid input
  */
-int dvz_geometry_transform(DvzGeometry* geometry, dmat4 transform)
+DvzResult dvz_geometry_transform(DvzGeometry* geometry, dmat4 transform)
 {
     if (geometry == NULL || transform == NULL || geometry->positions == NULL ||
         geometry->vertex_count == 0)
@@ -1904,7 +1904,7 @@ DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* desc)
  * @param count number of height values
  * @return 0 on success, -1 on invalid input
  */
-int dvz_geom_surface_grid_update_heights(
+DvzResult dvz_geom_surface_grid_update_heights(
     DvzGeometry* geometry, const double* heights, uint32_t count)
 {
     if (geometry == NULL || heights == NULL || geometry->type != DVZ_GEOMETRY_SURFACE_GRID ||

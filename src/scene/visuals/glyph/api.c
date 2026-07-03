@@ -53,7 +53,7 @@ DvzVisual* dvz_glyph(DvzScene* scene, uint32_t flags)
  * @param atlas the text atlas
  * @return 0 on success, -1 on error
  */
-int dvz_glyph_set_atlas(DvzVisual* visual, const DvzTextAtlas* atlas)
+DvzResult dvz_glyph_set_atlas(DvzVisual* visual, const DvzTextAtlas* atlas)
 {
     if (visual == NULL || atlas == NULL)
         return -1;

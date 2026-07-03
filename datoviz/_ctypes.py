@@ -4728,6 +4728,9 @@ DvzWindowGlfwMouseButtonCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.POINTE
 DvzWindowGlfwScrollCallback = ctypes.CFUNCTYPE(ctypes.c_bool, ctypes.POINTER(DvzWindow), ctypes.c_double, ctypes.c_double, ctypes.c_void_p)
 
 
+DvzResult = ctypes.c_int32
+
+
 DvzAnimPhaseDesc._fields_ = [
     ('struct_size', ctypes.c_uint32),
     ('flags', ctypes.c_uint32),
@@ -8250,7 +8253,7 @@ else:
  * @return 0 on success, -1 on validation/allocation error
  */"""
     dvz_band_set_bounds.argtypes = [ctypes.POINTER(DvzBand), ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
-    dvz_band_set_bounds.restype = ctypes.c_int
+    dvz_band_set_bounds.restype = ctypes.c_int32
 
 
 try:
@@ -8271,7 +8274,7 @@ else:
  * @return 0 on success, -1 on validation/allocation error
  */"""
     dvz_band_set_center.argtypes = [ctypes.POINTER(DvzBand), ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
-    dvz_band_set_center.restype = ctypes.c_int
+    dvz_band_set_center.restype = ctypes.c_int32
 
 
 try:
@@ -8290,7 +8293,7 @@ else:
  * @return 0 on success, -1 on validation/allocation error
  */"""
     dvz_band_set_style.argtypes = [ctypes.POINTER(DvzBand), ctypes.POINTER(DvzBandDesc)]
-    dvz_band_set_style.restype = ctypes.c_int
+    dvz_band_set_style.restype = ctypes.c_int32
 
 
 try:
@@ -8715,7 +8718,7 @@ else:
  * @return 0 on success, -1 on validation/allocation error
  */"""
     dvz_bars_set_intervals.argtypes = [ctypes.POINTER(DvzBars), ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
-    dvz_bars_set_intervals.restype = ctypes.c_int
+    dvz_bars_set_intervals.restype = ctypes.c_int32
 
 
 try:
@@ -8733,7 +8736,7 @@ else:
  * @return 0 on success, -1 on validation/allocation error
  */"""
     dvz_bars_set_style.argtypes = [ctypes.POINTER(DvzBars), ctypes.POINTER(DvzBarsDesc)]
-    dvz_bars_set_style.restype = ctypes.c_int
+    dvz_bars_set_style.restype = ctypes.c_int32
 
 
 try:
@@ -9317,7 +9320,7 @@ else:
  * @return 0 when explicit bounds are active, -1 otherwise
  */"""
     dvz_camera_get_orthographic_bounds.argtypes = [ctypes.POINTER(DvzCamera), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float)]
-    dvz_camera_get_orthographic_bounds.restype = ctypes.c_int
+    dvz_camera_get_orthographic_bounds.restype = ctypes.c_int32
 
 
 try:
@@ -9447,7 +9450,7 @@ else:
  * @return 0 on success, -1 on invalid bounds
  */"""
     dvz_camera_set_orthographic_bounds.argtypes = [ctypes.POINTER(DvzCamera), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_camera_set_orthographic_bounds.restype = ctypes.c_int
+    dvz_camera_set_orthographic_bounds.restype = ctypes.c_int32
 
 
 try:
@@ -11475,7 +11478,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_datetime_format_rule.argtypes = [ctypes.POINTER(DvzDateTimeFormat), ctypes.c_int, ctypes.c_char_p]
-    dvz_datetime_format_rule.restype = ctypes.c_int
+    dvz_datetime_format_rule.restype = ctypes.c_int32
 
 
 try:
@@ -11493,7 +11496,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_datetime_format_timezone.argtypes = [ctypes.POINTER(DvzDateTimeFormat), ctypes.c_char_p]
-    dvz_datetime_format_timezone.restype = ctypes.c_int
+    dvz_datetime_format_timezone.restype = ctypes.c_int32
 
 
 try:
@@ -15093,7 +15096,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_ffi_view_update_external_surface.argtypes = [ctypes.POINTER(DvzView), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_float, ctypes.c_float, ctypes.c_bool]
-    dvz_ffi_view_update_external_surface.restype = ctypes.c_int
+    dvz_ffi_view_update_external_surface.restype = ctypes.c_int32
 
 
 try:
@@ -16759,7 +16762,7 @@ else:
  * @return 0 on success, -1 on invalid input
  */"""
     dvz_geom_surface_grid_update_heights.argtypes = [ctypes.POINTER(DvzGeometry), ctypes.POINTER(ctypes.c_double), ctypes.c_uint32]
-    dvz_geom_surface_grid_update_heights.restype = ctypes.c_int
+    dvz_geom_surface_grid_update_heights.restype = ctypes.c_int32
 
 
 try:
@@ -16834,7 +16837,7 @@ else:
  * @return 0 on success, -1 on invalid input
  */"""
     dvz_geometry_compute_normals.argtypes = [ctypes.POINTER(DvzGeometry)]
-    dvz_geometry_compute_normals.restype = ctypes.c_int
+    dvz_geometry_compute_normals.restype = ctypes.c_int32
 
 
 try:
@@ -17124,7 +17127,7 @@ else:
  * @return 0 on success, -1 on invalid input
  */"""
     dvz_geometry_transform.argtypes = [ctypes.POINTER(DvzGeometry), ((ctypes.c_double * 4) * 4)]
-    dvz_geometry_transform.restype = ctypes.c_int
+    dvz_geometry_transform.restype = ctypes.c_int32
 
 
 try:
@@ -17163,7 +17166,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_glyph_set_atlas.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzTextAtlas)]
-    dvz_glyph_set_atlas.restype = ctypes.c_int
+    dvz_glyph_set_atlas.restype = ctypes.c_int32
 
 
 try:
@@ -17491,7 +17494,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_graph_edge_colors.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
-    dvz_graph_edge_colors.restype = ctypes.c_int
+    dvz_graph_edge_colors.restype = ctypes.c_int32
 
 
 try:
@@ -17512,7 +17515,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_graph_edge_controls.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 3), (ctypes.c_void_p * 3)]
-    dvz_graph_edge_controls.restype = ctypes.c_int
+    dvz_graph_edge_controls.restype = ctypes.c_int32
 
 
 try:
@@ -17530,7 +17533,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_graph_edge_ids.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint64)]
-    dvz_graph_edge_ids.restype = ctypes.c_int
+    dvz_graph_edge_ids.restype = ctypes.c_int32
 
 
 try:
@@ -17562,7 +17565,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_graph_edge_widths.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_float)]
-    dvz_graph_edge_widths.restype = ctypes.c_int
+    dvz_graph_edge_widths.restype = ctypes.c_int32
 
 
 try:
@@ -17582,7 +17585,7 @@ else:
  * @return 0 on success, -1 on invalid endpoints or allocation failure
  */"""
     dvz_graph_edges.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32)]
-    dvz_graph_edges.restype = ctypes.c_int
+    dvz_graph_edges.restype = ctypes.c_int32
 
 
 try:
@@ -17600,7 +17603,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_graph_node_colors.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
-    dvz_graph_node_colors.restype = ctypes.c_int
+    dvz_graph_node_colors.restype = ctypes.c_int32
 
 
 try:
@@ -17618,7 +17621,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_graph_node_ids.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint64)]
-    dvz_graph_node_ids.restype = ctypes.c_int
+    dvz_graph_node_ids.restype = ctypes.c_int32
 
 
 try:
@@ -17636,7 +17639,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_graph_node_positions.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 3)]
-    dvz_graph_node_positions.restype = ctypes.c_int
+    dvz_graph_node_positions.restype = ctypes.c_int32
 
 
 try:
@@ -17654,7 +17657,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_graph_node_sizes.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_float)]
-    dvz_graph_node_sizes.restype = ctypes.c_int
+    dvz_graph_node_sizes.restype = ctypes.c_int32
 
 
 try:
@@ -17672,7 +17675,7 @@ else:
  * @return 0 on success, -1 on invalid endpoints or allocation failure
  */"""
     dvz_graph_set_edge_count.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32]
-    dvz_graph_set_edge_count.restype = ctypes.c_int
+    dvz_graph_set_edge_count.restype = ctypes.c_int32
 
 
 try:
@@ -17692,7 +17695,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_graph_set_edge_style.argtypes = [ctypes.POINTER(DvzGraph), ctypes.POINTER(DvzGraphEdgeStyle)]
-    dvz_graph_set_edge_style.restype = ctypes.c_int
+    dvz_graph_set_edge_style.restype = ctypes.c_int32
 
 
 try:
@@ -17711,7 +17714,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_graph_set_node_count.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32]
-    dvz_graph_set_node_count.restype = ctypes.c_int
+    dvz_graph_set_node_count.restype = ctypes.c_int32
 
 
 try:
@@ -19030,7 +19033,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_guide_line_set_value.argtypes = [ctypes.POINTER(DvzGuideLine), ctypes.c_double]
-    dvz_guide_line_set_value.restype = ctypes.c_int
+    dvz_guide_line_set_value.restype = ctypes.c_int32
 
 
 try:
@@ -19095,7 +19098,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_guide_span_set_range.argtypes = [ctypes.POINTER(DvzGuideSpan), ctypes.c_double, ctypes.c_double]
-    dvz_guide_span_set_range.restype = ctypes.c_int
+    dvz_guide_span_set_range.restype = ctypes.c_int32
 
 
 try:
@@ -19163,7 +19166,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_hover_apply_query.argtypes = [ctypes.POINTER(DvzHover), ctypes.POINTER(DvzQueryResult)]
-    dvz_hover_apply_query.restype = ctypes.c_int
+    dvz_hover_apply_query.restype = ctypes.c_int32
 
 
 try:
@@ -19224,7 +19227,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_hover_set_visual_style.argtypes = [ctypes.POINTER(DvzHover), ctypes.POINTER(DvzItemStateVisualStyle)]
-    dvz_hover_set_visual_style.restype = ctypes.c_int
+    dvz_hover_set_visual_style.restype = ctypes.c_int32
 
 
 try:
@@ -19478,7 +19481,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_image_set_sampling.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_int]
-    dvz_image_set_sampling.restype = ctypes.c_int
+    dvz_image_set_sampling.restype = ctypes.c_int32
 
 
 try:
@@ -21016,7 +21019,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_labels_clear_selected.argtypes = [ctypes.POINTER(DvzVisual)]
-    dvz_labels_clear_selected.restype = ctypes.c_int
+    dvz_labels_clear_selected.restype = ctypes.c_int32
 
 
 try:
@@ -21032,7 +21035,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_labels_set_background.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_long]
-    dvz_labels_set_background.restype = ctypes.c_int
+    dvz_labels_set_background.restype = ctypes.c_int32
 
 
 try:
@@ -21050,7 +21053,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_labels_set_boundary.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_bool, ctypes.c_float, DvzColor]
-    dvz_labels_set_boundary.restype = ctypes.c_int
+    dvz_labels_set_boundary.restype = ctypes.c_int32
 
 
 try:
@@ -21066,7 +21069,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_labels_set_fallback_seed.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_uint32]
-    dvz_labels_set_fallback_seed.restype = ctypes.c_int
+    dvz_labels_set_fallback_seed.restype = ctypes.c_int32
 
 
 try:
@@ -21083,7 +21086,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_labels_set_hidden.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_void_p, ctypes.c_uint32]
-    dvz_labels_set_hidden.restype = ctypes.c_int
+    dvz_labels_set_hidden.restype = ctypes.c_int32
 
 
 try:
@@ -21099,7 +21102,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_labels_set_opacity.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_float]
-    dvz_labels_set_opacity.restype = ctypes.c_int
+    dvz_labels_set_opacity.restype = ctypes.c_int32
 
 
 try:
@@ -21115,7 +21118,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_labels_set_selected.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_long]
-    dvz_labels_set_selected.restype = ctypes.c_int
+    dvz_labels_set_selected.restype = ctypes.c_int32
 
 
 try:
@@ -21131,7 +21134,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_labels_set_slice_axis.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_int]
-    dvz_labels_set_slice_axis.restype = ctypes.c_int
+    dvz_labels_set_slice_axis.restype = ctypes.c_int32
 
 
 try:
@@ -21147,7 +21150,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_labels_set_slice_position.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_double]
-    dvz_labels_set_slice_position.restype = ctypes.c_int
+    dvz_labels_set_slice_position.restype = ctypes.c_int32
 
 
 try:
@@ -21437,7 +21440,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_marker_set_style.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzMarkerStyle)]
-    dvz_marker_set_style.restype = ctypes.c_int
+    dvz_marker_set_style.restype = ctypes.c_int32
 
 
 try:
@@ -21456,7 +21459,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_marker_set_symbol.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_int]
-    dvz_marker_set_symbol.restype = ctypes.c_int
+    dvz_marker_set_symbol.restype = ctypes.c_int32
 
 
 try:
@@ -21475,7 +21478,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_marker_set_symbols.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzSymbolSet)]
-    dvz_marker_set_symbols.restype = ctypes.c_int
+    dvz_marker_set_symbols.restype = ctypes.c_int32
 
 
 try:
@@ -21567,7 +21570,7 @@ else:
  * @return 0 on success, -1 on invalid input or upload failure
  */"""
     dvz_mesh_set_geometry.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzGeometry)]
-    dvz_mesh_set_geometry.restype = ctypes.c_int
+    dvz_mesh_set_geometry.restype = ctypes.c_int32
 
 
 try:
@@ -22038,7 +22041,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_overlay_card_set_rich_text.argtypes = [ctypes.POINTER(DvzOverlayCard), ctypes.POINTER(DvzOverlayRichTextDesc)]
-    dvz_overlay_card_set_rich_text.restype = ctypes.c_int
+    dvz_overlay_card_set_rich_text.restype = ctypes.c_int32
 
 
 try:
@@ -22054,7 +22057,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_overlay_card_set_style.argtypes = [ctypes.POINTER(DvzOverlayCard), ctypes.POINTER(DvzOverlayCardStyle)]
-    dvz_overlay_card_set_style.restype = ctypes.c_int
+    dvz_overlay_card_set_style.restype = ctypes.c_int32
 
 
 try:
@@ -22148,7 +22151,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_panel_add_composite.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzComposite), ctypes.POINTER(DvzVisualAttachDesc)]
-    dvz_panel_add_composite.restype = ctypes.c_int
+    dvz_panel_add_composite.restype = ctypes.c_int32
 
 
 try:
@@ -22168,7 +22171,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_panel_add_visual.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzVisualAttachDesc)]
-    dvz_panel_add_visual.restype = ctypes.c_int
+    dvz_panel_add_visual.restype = ctypes.c_int32
 
 
 try:
@@ -22219,7 +22222,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_panel_bind_controller.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzController), ctypes.c_uint]
-    dvz_panel_bind_controller.restype = ctypes.c_int
+    dvz_panel_bind_controller.restype = ctypes.c_int32
 
 
 try:
@@ -22252,7 +22255,7 @@ else:
  * @return 0 when at least one visible visual has bounds, -1 otherwise
  */"""
     dvz_panel_bounds.argtypes = [ctypes.POINTER(DvzPanel), ctypes.c_int, ctypes.POINTER(DvzBounds)]
-    dvz_panel_bounds.restype = ctypes.c_int
+    dvz_panel_bounds.restype = ctypes.c_int32
 
 
 try:
@@ -22345,7 +22348,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_panel_connect_input.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzInputRouter)]
-    dvz_panel_connect_input.restype = ctypes.c_int
+    dvz_panel_connect_input.restype = ctypes.c_int32
 
 
 try:
@@ -22678,7 +22681,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_panel_query.argtypes = [ctypes.POINTER(DvzPanel), ctypes.c_double, ctypes.c_double, ctypes.POINTER(DvzQueryRequest)]
-    dvz_panel_query.restype = ctypes.c_int
+    dvz_panel_query.restype = ctypes.c_int32
 
 
 try:
@@ -22696,7 +22699,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_panel_query_data.argtypes = [ctypes.POINTER(DvzPanel), ctypes.c_double, ctypes.c_double, ctypes.POINTER(DvzQueryRequest)]
-    dvz_panel_query_data.restype = ctypes.c_int
+    dvz_panel_query_data.restype = ctypes.c_int32
 
 
 try:
@@ -22716,7 +22719,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_panel_query_now.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzDrp2Runtime), ctypes.c_double, ctypes.c_double, ctypes.POINTER(DvzQueryRequest), ctypes.POINTER(DvzQueryResult)]
-    dvz_panel_query_now.restype = ctypes.c_int
+    dvz_panel_query_now.restype = ctypes.c_int32
 
 
 try:
@@ -22837,7 +22840,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_panel_set_bounds_visible.argtypes = [ctypes.POINTER(DvzPanel), ctypes.c_bool]
-    dvz_panel_set_bounds_visible.restype = ctypes.c_int
+    dvz_panel_set_bounds_visible.restype = ctypes.c_int32
 
 
 try:
@@ -22898,7 +22901,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_panel_set_domain.argtypes = [ctypes.POINTER(DvzPanel), ctypes.c_int, ctypes.c_double, ctypes.c_double]
-    dvz_panel_set_domain.restype = ctypes.c_int
+    dvz_panel_set_domain.restype = ctypes.c_int32
 
 
 try:
@@ -22997,7 +23000,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_panel_set_scene_occlusion.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzSceneOcclusionDesc)]
-    dvz_panel_set_scene_occlusion.restype = ctypes.c_int
+    dvz_panel_set_scene_occlusion.restype = ctypes.c_int32
 
 
 try:
@@ -23038,7 +23041,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_panel_set_view2d.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelView2D)]
-    dvz_panel_set_view2d.restype = ctypes.c_int
+    dvz_panel_set_view2d.restype = ctypes.c_int32
 
 
 try:
@@ -23057,7 +23060,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_panel_set_view2d_desc.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelView2DDesc)]
-    dvz_panel_set_view2d_desc.restype = ctypes.c_int
+    dvz_panel_set_view2d_desc.restype = ctypes.c_int32
 
 
 try:
@@ -23075,7 +23078,7 @@ else:
  * @return 0 on success, -1 on validation/allocation error
  */"""
     dvz_panel_set_view3d_desc.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelView3DDesc)]
-    dvz_panel_set_view3d_desc.restype = ctypes.c_int
+    dvz_panel_set_view3d_desc.restype = ctypes.c_int32
 
 
 try:
@@ -23092,7 +23095,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_panel_set_volume_occluder.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzVolumeOcclusionDesc)]
-    dvz_panel_set_volume_occluder.restype = ctypes.c_int
+    dvz_panel_set_volume_occluder.restype = ctypes.c_int32
 
 
 try:
@@ -23255,7 +23258,7 @@ else:
  * @return 0 when bounds are available, -1 otherwise
  */"""
     dvz_panel_visual_bounds.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzVisual), ctypes.c_int, ctypes.POINTER(DvzBounds)]
-    dvz_panel_visual_bounds.restype = ctypes.c_int
+    dvz_panel_visual_bounds.restype = ctypes.c_int32
 
 
 try:
@@ -23581,7 +23584,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_path_set_caps.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_int, ctypes.c_int]
-    dvz_path_set_caps.restype = ctypes.c_int
+    dvz_path_set_caps.restype = ctypes.c_int32
 
 
 try:
@@ -23601,7 +23604,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_path_set_join.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_int, ctypes.c_float]
-    dvz_path_set_join.restype = ctypes.c_int
+    dvz_path_set_join.restype = ctypes.c_int32
 
 
 try:
@@ -23621,7 +23624,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_path_set_subpaths.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32)]
-    dvz_path_set_subpaths.restype = ctypes.c_int
+    dvz_path_set_subpaths.restype = ctypes.c_int32
 
 
 try:
@@ -23786,7 +23789,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_point_set_style.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzPointStyleDesc)]
-    dvz_point_set_style.restype = ctypes.c_int
+    dvz_point_set_style.restype = ctypes.c_int32
 
 
 try:
@@ -23932,7 +23935,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_fill_color.argtypes = [ctypes.POINTER(DvzPolygon), DvzColor]
-    dvz_polygon_fill_color.restype = ctypes.c_int
+    dvz_polygon_fill_color.restype = ctypes.c_int32
 
 
 try:
@@ -23948,7 +23951,7 @@ else:
  * @return 0 on success, -1 on invalid input or allocation failure
  */"""
     dvz_polygon_geometry.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.POINTER(DvzPolygonDesc)]
-    dvz_polygon_geometry.restype = ctypes.c_int
+    dvz_polygon_geometry.restype = ctypes.c_int32
 
 
 try:
@@ -23969,7 +23972,7 @@ else:
  * @return 0 on success, -1 on invalid input or allocation failure
  */"""
     dvz_polygon_hole.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 2)]
-    dvz_polygon_hole.restype = ctypes.c_int
+    dvz_polygon_hole.restype = ctypes.c_int32
 
 
 try:
@@ -23985,7 +23988,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_id.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint64]
-    dvz_polygon_id.restype = ctypes.c_int
+    dvz_polygon_id.restype = ctypes.c_int32
 
 
 try:
@@ -24002,7 +24005,7 @@ else:
  * @return 0 on success, -1 on invalid input or allocation failure
  */"""
     dvz_polygon_outer.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint32, (ctypes.c_void_p * 2)]
-    dvz_polygon_outer.restype = ctypes.c_int
+    dvz_polygon_outer.restype = ctypes.c_int32
 
 
 try:
@@ -24084,7 +24087,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_set_region_fill_color.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, DvzColor]
-    dvz_polygon_set_region_fill_color.restype = ctypes.c_int
+    dvz_polygon_set_region_fill_color.restype = ctypes.c_int32
 
 
 try:
@@ -24102,7 +24105,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_set_region_fill_colors.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
-    dvz_polygon_set_region_fill_colors.restype = ctypes.c_int
+    dvz_polygon_set_region_fill_colors.restype = ctypes.c_int32
 
 
 try:
@@ -24119,7 +24122,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_set_region_geometry.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.POINTER(DvzPolygonDesc)]
-    dvz_polygon_set_region_geometry.restype = ctypes.c_int
+    dvz_polygon_set_region_geometry.restype = ctypes.c_int32
 
 
 try:
@@ -24136,7 +24139,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_set_region_id.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint64]
-    dvz_polygon_set_region_id.restype = ctypes.c_int
+    dvz_polygon_set_region_id.restype = ctypes.c_int32
 
 
 try:
@@ -24154,7 +24157,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_set_region_ids.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint64)]
-    dvz_polygon_set_region_ids.restype = ctypes.c_int
+    dvz_polygon_set_region_ids.restype = ctypes.c_int32
 
 
 try:
@@ -24171,7 +24174,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_set_region_stroke_color.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, DvzColor]
-    dvz_polygon_set_region_stroke_color.restype = ctypes.c_int
+    dvz_polygon_set_region_stroke_color.restype = ctypes.c_int32
 
 
 try:
@@ -24189,7 +24192,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_set_region_stroke_colors.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
-    dvz_polygon_set_region_stroke_colors.restype = ctypes.c_int
+    dvz_polygon_set_region_stroke_colors.restype = ctypes.c_int32
 
 
 try:
@@ -24206,7 +24209,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_set_region_stroke_width_px.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_float]
-    dvz_polygon_set_region_stroke_width_px.restype = ctypes.c_int
+    dvz_polygon_set_region_stroke_width_px.restype = ctypes.c_int32
 
 
 try:
@@ -24224,7 +24227,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_set_region_stroke_widths_px.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_float)]
-    dvz_polygon_set_region_stroke_widths_px.restype = ctypes.c_int
+    dvz_polygon_set_region_stroke_widths_px.restype = ctypes.c_int32
 
 
 try:
@@ -24242,7 +24245,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_set_region_visibilities.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_bool)]
-    dvz_polygon_set_region_visibilities.restype = ctypes.c_int
+    dvz_polygon_set_region_visibilities.restype = ctypes.c_int32
 
 
 try:
@@ -24259,7 +24262,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_set_region_visible.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_bool]
-    dvz_polygon_set_region_visible.restype = ctypes.c_int
+    dvz_polygon_set_region_visible.restype = ctypes.c_int32
 
 
 try:
@@ -24276,7 +24279,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_set_stroke_caps.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_int, ctypes.c_int]
-    dvz_polygon_set_stroke_caps.restype = ctypes.c_int
+    dvz_polygon_set_stroke_caps.restype = ctypes.c_int32
 
 
 try:
@@ -24293,7 +24296,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_set_stroke_join.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_int, ctypes.c_float]
-    dvz_polygon_set_stroke_join.restype = ctypes.c_int
+    dvz_polygon_set_stroke_join.restype = ctypes.c_int32
 
 
 try:
@@ -24312,7 +24315,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_set_style.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.POINTER(DvzPolygonStyle)]
-    dvz_polygon_set_style.restype = ctypes.c_int
+    dvz_polygon_set_style.restype = ctypes.c_int32
 
 
 try:
@@ -24329,7 +24332,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_stroke_caps.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_int, ctypes.c_int]
-    dvz_polygon_stroke_caps.restype = ctypes.c_int
+    dvz_polygon_stroke_caps.restype = ctypes.c_int32
 
 
 try:
@@ -24345,7 +24348,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_stroke_color.argtypes = [ctypes.POINTER(DvzPolygon), DvzColor]
-    dvz_polygon_stroke_color.restype = ctypes.c_int
+    dvz_polygon_stroke_color.restype = ctypes.c_int32
 
 
 try:
@@ -24362,7 +24365,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_stroke_join.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_int, ctypes.c_float]
-    dvz_polygon_stroke_join.restype = ctypes.c_int
+    dvz_polygon_stroke_join.restype = ctypes.c_int32
 
 
 try:
@@ -24378,7 +24381,7 @@ else:
  * @return 0 on success, -1 on invalid input
  */"""
     dvz_polygon_stroke_width_px.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_float]
-    dvz_polygon_stroke_width_px.restype = ctypes.c_int
+    dvz_polygon_stroke_width_px.restype = ctypes.c_int32
 
 
 try:
@@ -24408,7 +24411,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_polygon_visible.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_bool]
-    dvz_polygon_visible.restype = ctypes.c_int
+    dvz_polygon_visible.restype = ctypes.c_int32
 
 
 try:
@@ -25621,7 +25624,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_scalebar_set_anchor.argtypes = [ctypes.c_void_p, ctypes.c_int]
-    dvz_scalebar_set_anchor.restype = ctypes.c_int
+    dvz_scalebar_set_anchor.restype = ctypes.c_int32
 
 
 try:
@@ -25637,7 +25640,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_scalebar_set_dimension.argtypes = [ctypes.c_void_p, ctypes.c_int]
-    dvz_scalebar_set_dimension.restype = ctypes.c_int
+    dvz_scalebar_set_dimension.restype = ctypes.c_int32
 
 
 try:
@@ -25653,7 +25656,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_scalebar_set_duration_units.argtypes = [ctypes.c_void_p, ctypes.POINTER(DvzUnits)]
-    dvz_scalebar_set_duration_units.restype = ctypes.c_int
+    dvz_scalebar_set_duration_units.restype = ctypes.c_int32
 
 
 try:
@@ -25669,7 +25672,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_scalebar_set_units.argtypes = [ctypes.c_void_p, ctypes.POINTER(DvzUnits)]
-    dvz_scalebar_set_units.restype = ctypes.c_int
+    dvz_scalebar_set_units.restype = ctypes.c_int32
 
 
 try:
@@ -26295,7 +26298,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_segment_set_caps.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_int, ctypes.c_int]
-    dvz_segment_set_caps.restype = ctypes.c_int
+    dvz_segment_set_caps.restype = ctypes.c_int32
 
 
 try:
@@ -26327,7 +26330,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_selection_apply_query.argtypes = [ctypes.POINTER(DvzSelection), ctypes.POINTER(DvzQueryResult)]
-    dvz_selection_apply_query.restype = ctypes.c_int
+    dvz_selection_apply_query.restype = ctypes.c_int32
 
 
 try:
@@ -26422,7 +26425,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_selection_set_visual_style.argtypes = [ctypes.POINTER(DvzSelection), ctypes.POINTER(DvzSelectionVisualStyle)]
-    dvz_selection_set_visual_style.restype = ctypes.c_int
+    dvz_selection_set_visual_style.restype = ctypes.c_int32
 
 
 try:
@@ -26967,7 +26970,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_sphere_mode.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_int]
-    dvz_sphere_mode.restype = ctypes.c_int
+    dvz_sphere_mode.restype = ctypes.c_int32
 
 
 try:
@@ -28331,7 +28334,7 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_anchors')
 else:
     dvz_text_set_anchors.argtypes = [ctypes.POINTER(DvzText), (ctypes.c_void_p * 2), ctypes.c_uint32]
-    dvz_text_set_anchors.restype = ctypes.c_int
+    dvz_text_set_anchors.restype = ctypes.c_int32
 
 
 try:
@@ -28340,7 +28343,7 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_angles')
 else:
     dvz_text_set_angles.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(ctypes.c_float), ctypes.c_uint32]
-    dvz_text_set_angles.restype = ctypes.c_int
+    dvz_text_set_angles.restype = ctypes.c_int32
 
 
 try:
@@ -28349,7 +28352,7 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_colors')
 else:
     dvz_text_set_colors.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(DvzColor), ctypes.c_uint32]
-    dvz_text_set_colors.restype = ctypes.c_int
+    dvz_text_set_colors.restype = ctypes.c_int32
 
 
 try:
@@ -28364,7 +28367,7 @@ else:
  * @param string the string, or NULL to clear
  */"""
     dvz_text_set_items.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(DvzTextItem), ctypes.c_uint32]
-    dvz_text_set_items.restype = ctypes.c_int
+    dvz_text_set_items.restype = ctypes.c_int32
 
 
 try:
@@ -28380,7 +28383,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_text_set_layout.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(DvzTextLayout)]
-    dvz_text_set_layout.restype = ctypes.c_int
+    dvz_text_set_layout.restype = ctypes.c_int32
 
 
 try:
@@ -28389,7 +28392,7 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_offsets')
 else:
     dvz_text_set_offsets.argtypes = [ctypes.POINTER(DvzText), (ctypes.c_void_p * 2), ctypes.c_uint32]
-    dvz_text_set_offsets.restype = ctypes.c_int
+    dvz_text_set_offsets.restype = ctypes.c_int32
 
 
 try:
@@ -28404,7 +28407,7 @@ else:
  * @param placement the placement descriptor, or NULL for defaults
  */"""
     dvz_text_set_placement.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(DvzTextPlacement)]
-    dvz_text_set_placement.restype = ctypes.c_int
+    dvz_text_set_placement.restype = ctypes.c_int32
 
 
 try:
@@ -28420,7 +28423,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_text_set_position.argtypes = [ctypes.POINTER(DvzText), (ctypes.c_double * 3)]
-    dvz_text_set_position.restype = ctypes.c_int
+    dvz_text_set_position.restype = ctypes.c_int32
 
 
 try:
@@ -28429,7 +28432,7 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_positions')
 else:
     dvz_text_set_positions.argtypes = [ctypes.POINTER(DvzText), (ctypes.c_void_p * 3), ctypes.c_uint32]
-    dvz_text_set_positions.restype = ctypes.c_int
+    dvz_text_set_positions.restype = ctypes.c_int32
 
 
 try:
@@ -28445,7 +28448,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_text_set_renderer.argtypes = [ctypes.POINTER(DvzText), ctypes.c_int]
-    dvz_text_set_renderer.restype = ctypes.c_int
+    dvz_text_set_renderer.restype = ctypes.c_int32
 
 
 try:
@@ -28454,7 +28457,7 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_sizes')
 else:
     dvz_text_set_sizes.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(ctypes.c_float), ctypes.c_uint32]
-    dvz_text_set_sizes.restype = ctypes.c_int
+    dvz_text_set_sizes.restype = ctypes.c_int32
 
 
 try:
@@ -28470,7 +28473,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_text_set_string.argtypes = [ctypes.POINTER(DvzText), ctypes.c_char_p]
-    dvz_text_set_string.restype = ctypes.c_int
+    dvz_text_set_string.restype = ctypes.c_int32
 
 
 try:
@@ -28479,7 +28482,7 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_strings')
 else:
     dvz_text_set_strings.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(ctypes.c_char_p), ctypes.c_uint32]
-    dvz_text_set_strings.restype = ctypes.c_int
+    dvz_text_set_strings.restype = ctypes.c_int32
 
 
 try:
@@ -28495,7 +28498,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_text_set_style.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(DvzTextStyle)]
-    dvz_text_set_style.restype = ctypes.c_int
+    dvz_text_set_style.restype = ctypes.c_int32
 
 
 try:
@@ -29038,7 +29041,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_unit_ladder_add.argtypes = [ctypes.POINTER(DvzUnitLadder), ctypes.c_double, ctypes.c_char_p]
-    dvz_unit_ladder_add.restype = ctypes.c_int
+    dvz_unit_ladder_add.restype = ctypes.c_int32
 
 
 try:
@@ -29134,7 +29137,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_units_data_to_canonical.argtypes = [ctypes.POINTER(DvzUnits), ctypes.c_double]
-    dvz_units_data_to_canonical.restype = ctypes.c_int
+    dvz_units_data_to_canonical.restype = ctypes.c_int32
 
 
 try:
@@ -29150,7 +29153,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_units_display_mode.argtypes = [ctypes.POINTER(DvzUnits), ctypes.c_int]
-    dvz_units_display_mode.restype = ctypes.c_int
+    dvz_units_display_mode.restype = ctypes.c_int32
 
 
 try:
@@ -29166,7 +29169,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_units_fixed_label.argtypes = [ctypes.POINTER(DvzUnits), ctypes.c_char_p]
-    dvz_units_fixed_label.restype = ctypes.c_int
+    dvz_units_fixed_label.restype = ctypes.c_int32
 
 
 try:
@@ -29182,7 +29185,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_units_ladder.argtypes = [ctypes.POINTER(DvzUnits), ctypes.POINTER(DvzUnitLadder)]
-    dvz_units_ladder.restype = ctypes.c_int
+    dvz_units_ladder.restype = ctypes.c_int32
 
 
 try:
@@ -29252,7 +29255,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_vector_set_style.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzVectorStyle)]
-    dvz_vector_set_style.restype = ctypes.c_int
+    dvz_vector_set_style.restype = ctypes.c_int32
 
 
 try:
@@ -29272,7 +29275,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_vector_set_subpaths.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32)]
-    dvz_vector_set_subpaths.restype = ctypes.c_int
+    dvz_vector_set_subpaths.restype = ctypes.c_int32
 
 
 try:
@@ -29395,7 +29398,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_view_bind_controller.argtypes = [ctypes.POINTER(DvzView), ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzController), ctypes.c_uint]
-    dvz_view_bind_controller.restype = ctypes.c_int
+    dvz_view_bind_controller.restype = ctypes.c_int32
 
 
 try:
@@ -29451,7 +29454,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_view_capture_from_env.argtypes = [ctypes.POINTER(DvzView), ctypes.c_char_p]
-    dvz_view_capture_from_env.restype = ctypes.c_int
+    dvz_view_capture_from_env.restype = ctypes.c_int32
 
 
 try:
@@ -29471,7 +29474,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_view_capture_png.argtypes = [ctypes.POINTER(DvzView), ctypes.c_char_p]
-    dvz_view_capture_png.restype = ctypes.c_int
+    dvz_view_capture_png.restype = ctypes.c_int32
 
 
 try:
@@ -29491,7 +29494,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_view_capture_start.argtypes = [ctypes.POINTER(DvzView), ctypes.POINTER(DvzAppCaptureConfig)]
-    dvz_view_capture_start.restype = ctypes.c_int
+    dvz_view_capture_start.restype = ctypes.c_int32
 
 
 try:
@@ -29509,7 +29512,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_view_capture_stop.argtypes = [ctypes.POINTER(DvzView)]
-    dvz_view_capture_stop.restype = ctypes.c_int
+    dvz_view_capture_stop.restype = ctypes.c_int32
 
 
 try:
@@ -29525,7 +29528,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_view_connect_panel.argtypes = [ctypes.POINTER(DvzView), ctypes.POINTER(DvzPanel)]
-    dvz_view_connect_panel.restype = ctypes.c_int
+    dvz_view_connect_panel.restype = ctypes.c_int32
 
 
 try:
@@ -29588,7 +29591,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_view_emit_key.argtypes = [ctypes.POINTER(DvzView), ctypes.c_int, ctypes.c_int, ctypes.c_int]
-    dvz_view_emit_key.restype = ctypes.c_int
+    dvz_view_emit_key.restype = ctypes.c_int32
 
 
 try:
@@ -29610,7 +29613,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_view_emit_pointer.argtypes = [ctypes.POINTER(DvzView), ctypes.c_int, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_int, ctypes.c_int]
-    dvz_view_emit_pointer.restype = ctypes.c_int
+    dvz_view_emit_pointer.restype = ctypes.c_int32
 
 
 try:
@@ -29634,7 +29637,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_view_emit_resize.argtypes = [ctypes.POINTER(DvzView), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_float, ctypes.c_float]
-    dvz_view_emit_resize.restype = ctypes.c_int
+    dvz_view_emit_resize.restype = ctypes.c_int32
 
 
 try:
@@ -29656,7 +29659,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_view_emit_wheel.argtypes = [ctypes.POINTER(DvzView), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_int]
-    dvz_view_emit_wheel.restype = ctypes.c_int
+    dvz_view_emit_wheel.restype = ctypes.c_int32
 
 
 try:
@@ -29844,7 +29847,7 @@ else:
  * @return 0 on success, negative on invalid input or queue overflow
  */"""
     _dvz_view_post.argtypes = [ctypes.POINTER(DvzView), DvzViewPostCallback, ctypes.c_void_p]
-    _dvz_view_post.restype = ctypes.c_int
+    _dvz_view_post.restype = ctypes.c_int32
     def dvz_view_post(view, callback, user_data):
         callback = _callback_store_subscription(DvzViewPostCallback, view, callback, user_data)
         return _dvz_view_post(view, callback, user_data)
@@ -29870,7 +29873,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_view_record_start.argtypes = [ctypes.POINTER(DvzView), ctypes.c_char_p]
-    dvz_view_record_start.restype = ctypes.c_int
+    dvz_view_record_start.restype = ctypes.c_int32
 
 
 try:
@@ -29885,7 +29888,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_view_record_stop.argtypes = [ctypes.POINTER(DvzView)]
-    dvz_view_record_stop.restype = ctypes.c_int
+    dvz_view_record_stop.restype = ctypes.c_int32
 
 
 try:
@@ -30037,7 +30040,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_view_replay_start.argtypes = [ctypes.POINTER(DvzView), ctypes.c_char_p]
-    dvz_view_replay_start.restype = ctypes.c_int
+    dvz_view_replay_start.restype = ctypes.c_int32
 
 
 try:
@@ -30052,7 +30055,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_view_replay_stop.argtypes = [ctypes.POINTER(DvzView)]
-    dvz_view_replay_stop.restype = ctypes.c_int
+    dvz_view_replay_stop.restype = ctypes.c_int32
 
 
 try:
@@ -30089,7 +30092,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_view_resize.argtypes = [ctypes.POINTER(DvzView), ctypes.c_uint32, ctypes.c_uint32]
-    dvz_view_resize.restype = ctypes.c_int
+    dvz_view_resize.restype = ctypes.c_int32
 
 
 try:
@@ -30111,7 +30114,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_view_resize_scaled.argtypes = [ctypes.POINTER(DvzView), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_float]
-    dvz_view_resize_scaled.restype = ctypes.c_int
+    dvz_view_resize_scaled.restype = ctypes.c_int32
 
 
 try:
@@ -30379,7 +30382,7 @@ else:
  * @return 0 on success, negative on error
  */"""
     dvz_view_update_external_surface.argtypes = [ctypes.POINTER(DvzView), ctypes.POINTER(DvzWindowExternalSurfaceInfo)]
-    dvz_view_update_external_surface.restype = ctypes.c_int
+    dvz_view_update_external_surface.restype = ctypes.c_int32
 
 
 try:
@@ -30515,7 +30518,7 @@ else:
  * @return 0 when bounds are available, -1 otherwise
  */"""
     dvz_visual_bounds.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzBounds)]
-    dvz_visual_bounds.restype = ctypes.c_int
+    dvz_visual_bounds.restype = ctypes.c_int32
 
 
 try:
@@ -30544,7 +30547,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_clear_transform.argtypes = [ctypes.POINTER(DvzVisual)]
-    dvz_visual_clear_transform.restype = ctypes.c_int
+    dvz_visual_clear_transform.restype = ctypes.c_int32
 
 
 try:
@@ -30565,7 +30568,7 @@ else:
  * @return 0 when dense data is available, -1 otherwise
  */"""
     dvz_visual_data.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.POINTER(DvzVisualDataView)]
-    dvz_visual_data.restype = ctypes.c_int
+    dvz_visual_data.restype = ctypes.c_int32
 
 
 try:
@@ -30631,7 +30634,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_get_transform.argtypes = [ctypes.POINTER(DvzVisual), ((ctypes.c_float * 4) * 4)]
-    dvz_visual_get_transform.restype = ctypes.c_int
+    dvz_visual_get_transform.restype = ctypes.c_int32
 
 
 try:
@@ -30682,7 +30685,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_alpha_mode.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_int]
-    dvz_visual_set_alpha_mode.restype = ctypes.c_int
+    dvz_visual_set_alpha_mode.restype = ctypes.c_int32
 
 
 try:
@@ -30733,7 +30736,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_attr_format.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.c_int]
-    dvz_visual_set_attr_format.restype = ctypes.c_int
+    dvz_visual_set_attr_format.restype = ctypes.c_int32
 
 
 try:
@@ -30753,7 +30756,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_attr_mutability.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.c_int]
-    dvz_visual_set_attr_mutability.restype = ctypes.c_int
+    dvz_visual_set_attr_mutability.restype = ctypes.c_int32
 
 
 try:
@@ -30774,7 +30777,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_attr_source.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.c_int]
-    dvz_visual_set_attr_source.restype = ctypes.c_int
+    dvz_visual_set_attr_source.restype = ctypes.c_int32
 
 
 try:
@@ -30835,7 +30838,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_data.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.c_void_p, ctypes.c_uint32]
-    dvz_visual_set_data.restype = ctypes.c_int
+    dvz_visual_set_data.restype = ctypes.c_int32
 
 
 try:
@@ -30863,7 +30866,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_data_many.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzVisualDataUpdate), ctypes.c_uint32]
-    dvz_visual_set_data_many.restype = ctypes.c_int
+    dvz_visual_set_data_many.restype = ctypes.c_int32
 
 
 try:
@@ -30890,7 +30893,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_data_range.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint32]
-    dvz_visual_set_data_range.restype = ctypes.c_int
+    dvz_visual_set_data_range.restype = ctypes.c_int32
 
 
 try:
@@ -30911,7 +30914,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_depth_cue.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzDepthCueDesc)]
-    dvz_visual_set_depth_cue.restype = ctypes.c_int
+    dvz_visual_set_depth_cue.restype = ctypes.c_int32
 
 
 try:
@@ -30931,7 +30934,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_depth_test.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_bool]
-    dvz_visual_set_depth_test.restype = ctypes.c_int
+    dvz_visual_set_depth_test.restype = ctypes.c_int32
 
 
 try:
@@ -30974,7 +30977,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_index_data.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_void_p, ctypes.c_uint32]
-    dvz_visual_set_index_data.restype = ctypes.c_int
+    dvz_visual_set_index_data.restype = ctypes.c_int32
 
 
 try:
@@ -30996,7 +30999,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_item_range.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_uint32, ctypes.c_uint32]
-    dvz_visual_set_item_range.restype = ctypes.c_int
+    dvz_visual_set_item_range.restype = ctypes.c_int32
 
 
 try:
@@ -31017,7 +31020,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_link_keys.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzLinkChannel), ctypes.POINTER(ctypes.c_uint64), ctypes.c_uint32]
-    dvz_visual_set_link_keys.restype = ctypes.c_int
+    dvz_visual_set_link_keys.restype = ctypes.c_int32
 
 
 try:
@@ -31037,7 +31040,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_material.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzMaterialDesc)]
-    dvz_visual_set_material.restype = ctypes.c_int
+    dvz_visual_set_material.restype = ctypes.c_int32
 
 
 try:
@@ -31075,7 +31078,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_scale.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.POINTER(DvzScale)]
-    dvz_visual_set_scale.restype = ctypes.c_int
+    dvz_visual_set_scale.restype = ctypes.c_int32
 
 
 try:
@@ -31091,7 +31094,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_visual_set_scene_occluded.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_bool]
-    dvz_visual_set_scene_occluded.restype = ctypes.c_int
+    dvz_visual_set_scene_occluded.restype = ctypes.c_int32
 
 
 try:
@@ -31107,7 +31110,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_visual_set_scene_occluder.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_bool]
-    dvz_visual_set_scene_occluder.restype = ctypes.c_int
+    dvz_visual_set_scene_occluder.restype = ctypes.c_int32
 
 
 try:
@@ -31126,7 +31129,7 @@ else:
  * @return 0 on success, -1 on validation error or unsupported shader kind
  */"""
     dvz_visual_set_shader_desc.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzVisualShaderDesc)]
-    dvz_visual_set_shader_desc.restype = ctypes.c_int
+    dvz_visual_set_shader_desc.restype = ctypes.c_int32
 
 
 try:
@@ -31147,7 +31150,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_strings.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.POINTER(ctypes.c_char_p), ctypes.c_uint32]
-    dvz_visual_set_strings.restype = ctypes.c_int
+    dvz_visual_set_strings.restype = ctypes.c_int32
 
 
 try:
@@ -31171,7 +31174,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_texture_r32f.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(ctypes.c_float), ctypes.c_uint32, ctypes.c_uint32]
-    dvz_visual_set_texture_r32f.restype = ctypes.c_int
+    dvz_visual_set_texture_r32f.restype = ctypes.c_int32
 
 
 try:
@@ -31195,7 +31198,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_texture_rgba8.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint32, ctypes.c_uint32]
-    dvz_visual_set_texture_rgba8.restype = ctypes.c_int
+    dvz_visual_set_texture_rgba8.restype = ctypes.c_int32
 
 
 try:
@@ -31214,7 +31217,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_visual_set_transform.argtypes = [ctypes.POINTER(DvzVisual), ((ctypes.c_float * 4) * 4)]
-    dvz_visual_set_transform.restype = ctypes.c_int
+    dvz_visual_set_transform.restype = ctypes.c_int32
 
 
 try:
@@ -31233,7 +31236,7 @@ else:
  * @return 0 on success, -1 on validation error or unsupported transform kind
  */"""
     dvz_visual_set_transform_desc.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzVisualTransformDesc)]
-    dvz_visual_set_transform_desc.restype = ctypes.c_int
+    dvz_visual_set_transform_desc.restype = ctypes.c_int32
 
 
 try:
@@ -31264,7 +31267,7 @@ else:
  * @return 0 on success, -1 on validation error
  */"""
     dvz_visual_set_volume_occluded.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_bool]
-    dvz_visual_set_volume_occluded.restype = ctypes.c_int
+    dvz_visual_set_volume_occluded.restype = ctypes.c_int32
 
 
 try:
@@ -31333,7 +31336,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_volume_clear_clipping.argtypes = [ctypes.POINTER(DvzVisual)]
-    dvz_volume_clear_clipping.restype = ctypes.c_int
+    dvz_volume_clear_clipping.restype = ctypes.c_int32
 
 
 try:
@@ -31348,7 +31351,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_volume_clear_clipping_plane.argtypes = [ctypes.POINTER(DvzVisual)]
-    dvz_volume_clear_clipping_plane.restype = ctypes.c_int
+    dvz_volume_clear_clipping_plane.restype = ctypes.c_int32
 
 
 try:
@@ -31379,7 +31382,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_volume_set_alpha_stops.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzVolumeAlphaStop), ctypes.c_uint32]
-    dvz_volume_set_alpha_stops.restype = ctypes.c_int
+    dvz_volume_set_alpha_stops.restype = ctypes.c_int32
 
 
 try:
@@ -31400,7 +31403,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_volume_set_axis_mapping.argtypes = [ctypes.POINTER(DvzVisual), (ctypes.c_uint32 * 3), (ctypes.c_bool * 3)]
-    dvz_volume_set_axis_mapping.restype = ctypes.c_int
+    dvz_volume_set_axis_mapping.restype = ctypes.c_int32
 
 
 try:
@@ -31420,7 +31423,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_volume_set_bounds.argtypes = [ctypes.POINTER(DvzVisual), (ctypes.c_double * 3), (ctypes.c_double * 3)]
-    dvz_volume_set_bounds.restype = ctypes.c_int
+    dvz_volume_set_bounds.restype = ctypes.c_int32
 
 
 try:
@@ -31437,7 +31440,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_volume_set_clipping_box.argtypes = [ctypes.POINTER(DvzVisual), (ctypes.c_double * 3), (ctypes.c_double * 3)]
-    dvz_volume_set_clipping_box.restype = ctypes.c_int
+    dvz_volume_set_clipping_box.restype = ctypes.c_int32
 
 
 try:
@@ -31458,7 +31461,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_volume_set_clipping_plane.argtypes = [ctypes.POINTER(DvzVisual), (ctypes.c_double * 3), (ctypes.c_double * 3), ctypes.c_bool]
-    dvz_volume_set_clipping_plane.restype = ctypes.c_int
+    dvz_volume_set_clipping_plane.restype = ctypes.c_int32
 
 
 try:
@@ -31474,7 +31477,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_volume_set_opacity.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_float]
-    dvz_volume_set_opacity.restype = ctypes.c_int
+    dvz_volume_set_opacity.restype = ctypes.c_int32
 
 
 try:
@@ -31490,7 +31493,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_volume_set_render_mode.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_int]
-    dvz_volume_set_render_mode.restype = ctypes.c_int
+    dvz_volume_set_render_mode.restype = ctypes.c_int32
 
 
 try:
@@ -31506,7 +31509,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_volume_set_sampling.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_int]
-    dvz_volume_set_sampling.restype = ctypes.c_int
+    dvz_volume_set_sampling.restype = ctypes.c_int32
 
 
 try:
@@ -31522,7 +31525,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_volume_set_slice_axis.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_int]
-    dvz_volume_set_slice_axis.restype = ctypes.c_int
+    dvz_volume_set_slice_axis.restype = ctypes.c_int32
 
 
 try:
@@ -31538,7 +31541,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_volume_set_slice_position.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_double]
-    dvz_volume_set_slice_position.restype = ctypes.c_int
+    dvz_volume_set_slice_position.restype = ctypes.c_int32
 
 
 try:
@@ -31554,7 +31557,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_volume_set_step_count.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_uint32]
-    dvz_volume_set_step_count.restype = ctypes.c_int
+    dvz_volume_set_step_count.restype = ctypes.c_int32
 
 
 try:
@@ -31571,7 +31574,7 @@ else:
  * @return 0 on success, -1 on error
  */"""
     dvz_volume_set_value_range.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_double, ctypes.c_double]
-    dvz_volume_set_value_range.restype = ctypes.c_int
+    dvz_volume_set_value_range.restype = ctypes.c_int32
 
 
 try:

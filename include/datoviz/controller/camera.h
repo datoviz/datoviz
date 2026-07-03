@@ -19,6 +19,7 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/math/types.h"
 #include "datoviz/controller/panzoom.h" /* for DvzMVP */
 
@@ -203,7 +204,7 @@ DVZ_EXPORT void dvz_camera_set_orthographic(
  * @param far far clipping plane
  * @return 0 on success, -1 on invalid bounds
  */
-DVZ_EXPORT int dvz_camera_set_orthographic_bounds(
+DVZ_EXPORT DvzResult dvz_camera_set_orthographic_bounds(
     DvzCamera* camera, float left, float right, float bottom, float top, float near, float far);
 
 
@@ -220,7 +221,7 @@ DVZ_EXPORT int dvz_camera_set_orthographic_bounds(
  * @param out_far output far clipping plane
  * @return 0 when explicit bounds are active, -1 otherwise
  */
-DVZ_EXPORT int dvz_camera_get_orthographic_bounds(
+DVZ_EXPORT DvzResult dvz_camera_get_orthographic_bounds(
     const DvzCamera* camera, float* out_left, float* out_right, float* out_bottom, float* out_top,
     float* out_near, float* out_far);
 

@@ -144,7 +144,7 @@ uint32_t dvz_polygon_set_add(DvzPolygonSet* set, const DvzPolygonDesc* desc)
  * @param desc borrowed polygon descriptor
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_region_geometry(
+DvzResult dvz_polygon_set_region_geometry(
     DvzPolygonSet* set, uint32_t polygon_index, const DvzPolygonDesc* desc)
 {
     if (
@@ -180,7 +180,7 @@ int dvz_polygon_set_region_geometry(
  * @param id stable user id
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_region_id(DvzPolygonSet* set, uint32_t polygon_index, uint64_t id)
+DvzResult dvz_polygon_set_region_id(DvzPolygonSet* set, uint32_t polygon_index, uint64_t id)
 {
     if (set == NULL || set->scene == NULL || polygon_index >= set->polygon_count)
         return -1;
@@ -203,7 +203,7 @@ int dvz_polygon_set_region_id(DvzPolygonSet* set, uint32_t polygon_index, uint64
  * @param ids borrowed stable user id array
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_region_ids(
+DvzResult dvz_polygon_set_region_ids(
     DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const uint64_t* ids)
 {
     if (
@@ -234,7 +234,7 @@ int dvz_polygon_set_region_ids(
  * @param visible whether the region should render
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_region_visible(DvzPolygonSet* set, uint32_t polygon_index, bool visible)
+DvzResult dvz_polygon_set_region_visible(DvzPolygonSet* set, uint32_t polygon_index, bool visible)
 {
     if (set == NULL || set->scene == NULL || polygon_index >= set->polygon_count)
         return -1;
@@ -261,7 +261,7 @@ int dvz_polygon_set_region_visible(DvzPolygonSet* set, uint32_t polygon_index, b
  * @param visible borrowed visibility array
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_region_visibilities(
+DvzResult dvz_polygon_set_region_visibilities(
     DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const bool* visible)
 {
     if (
@@ -300,7 +300,7 @@ int dvz_polygon_set_region_visibilities(
  * @param color RGBA fill color
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_region_fill_color(
+DvzResult dvz_polygon_set_region_fill_color(
     DvzPolygonSet* set, uint32_t polygon_index, const DvzColor color)
 {
     if (
@@ -327,7 +327,7 @@ int dvz_polygon_set_region_fill_color(
  * @param colors RGBA fill colors
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_region_fill_colors(
+DvzResult dvz_polygon_set_region_fill_colors(
     DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors)
 {
     if (
@@ -359,7 +359,7 @@ int dvz_polygon_set_region_fill_colors(
  * @param color RGBA stroke color
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_region_stroke_color(
+DvzResult dvz_polygon_set_region_stroke_color(
     DvzPolygonSet* set, uint32_t polygon_index, const DvzColor color)
 {
     if (
@@ -386,7 +386,7 @@ int dvz_polygon_set_region_stroke_color(
  * @param colors RGBA stroke colors
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_region_stroke_colors(
+DvzResult dvz_polygon_set_region_stroke_colors(
     DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors)
 {
     if (
@@ -418,7 +418,7 @@ int dvz_polygon_set_region_stroke_colors(
  * @param width stroke width in pixels
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_region_stroke_width_px(DvzPolygonSet* set, uint32_t polygon_index, float width)
+DvzResult dvz_polygon_set_region_stroke_width_px(DvzPolygonSet* set, uint32_t polygon_index, float width)
 {
     if (
         set == NULL || set->scene == NULL || !isfinite(width) || width < 0.0f ||
@@ -446,7 +446,7 @@ int dvz_polygon_set_region_stroke_width_px(DvzPolygonSet* set, uint32_t polygon_
  * @param widths stroke widths in pixels
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_region_stroke_widths_px(
+DvzResult dvz_polygon_set_region_stroke_widths_px(
     DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const float* widths)
 {
     if (
@@ -512,7 +512,7 @@ static bool _polygon_set_stroke_join_valid(DvzPathJoin join)
  * @param end_cap cap applied to each ring end
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_stroke_caps(
+DvzResult dvz_polygon_set_stroke_caps(
     DvzPolygonSet* set, DvzSegmentCap start_cap, DvzSegmentCap end_cap)
 {
     if (
@@ -542,7 +542,7 @@ int dvz_polygon_set_stroke_caps(
  * @param miter_limit positive finite miter limit
  * @return 0 on success, -1 on error
  */
-int dvz_polygon_set_stroke_join(DvzPolygonSet* set, DvzPathJoin join, float miter_limit)
+DvzResult dvz_polygon_set_stroke_join(DvzPolygonSet* set, DvzPathJoin join, float miter_limit)
 {
     if (
         set == NULL || set->scene == NULL || !_polygon_set_stroke_join_valid(join) ||

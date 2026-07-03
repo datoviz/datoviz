@@ -111,7 +111,7 @@ DvzVisual* dvz_point(DvzScene* scene, uint32_t flags)
  * @param desc the point style descriptor, or NULL to restore defaults
  * @return 0 on success, -1 on error
  */
-int dvz_point_set_style(DvzVisual* visual, const DvzPointStyleDesc* desc)
+DvzResult dvz_point_set_style(DvzVisual* visual, const DvzPointStyleDesc* desc)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_POINT)

@@ -871,7 +871,7 @@ bool dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc)
  * @param desc scene occlusion descriptor, or NULL to disable
  * @return 0 on success, -1 on validation error
  */
-int dvz_panel_set_scene_occlusion(DvzPanel* panel, const DvzSceneOcclusionDesc* desc)
+DvzResult dvz_panel_set_scene_occlusion(DvzPanel* panel, const DvzSceneOcclusionDesc* desc)
 {
     ANN(panel);
     if (!_scene_occlusion_desc_validate(desc))
@@ -908,7 +908,7 @@ int dvz_panel_set_scene_occlusion(DvzPanel* panel, const DvzSceneOcclusionDesc* 
  * @param desc volume occlusion descriptor, or NULL to disable
  * @return 0 on success, -1 on validation error
  */
-int dvz_panel_set_volume_occluder(
+DvzResult dvz_panel_set_volume_occluder(
     DvzPanel* panel, DvzVisual* volume, const DvzVolumeOcclusionDesc* desc)
 {
     ANN(panel);

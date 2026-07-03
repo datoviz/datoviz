@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/scene/types.h"
 
 
@@ -158,7 +159,7 @@ DVZ_EXPORT void dvz_overlay_card_destroy(DvzOverlayCard* card);
  * @param style the style descriptor, or NULL for defaults
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_overlay_card_set_style(
+DVZ_EXPORT DvzResult dvz_overlay_card_set_style(
     DvzOverlayCard* card, const DvzOverlayCardStyle* style);
 
 
@@ -178,7 +179,7 @@ DVZ_EXPORT void dvz_overlay_card_set_text(DvzOverlayCard* card, const char* text
  * @param desc rich text descriptor
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_overlay_card_set_rich_text(
+DVZ_EXPORT DvzResult dvz_overlay_card_set_rich_text(
     DvzOverlayCard* card, const DvzOverlayRichTextDesc* desc);
 
 

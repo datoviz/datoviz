@@ -47,7 +47,7 @@ DvzVisual* dvz_image(DvzScene* scene, uint32_t flags)
  * @param sampling the image sampler filter mode
  * @return 0 on success, -1 on error
  */
-int dvz_image_set_sampling(DvzVisual* visual, DvzImageSampling sampling)
+DvzResult dvz_image_set_sampling(DvzVisual* visual, DvzImageSampling sampling)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_IMAGE)

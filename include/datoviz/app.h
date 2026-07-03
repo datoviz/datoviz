@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/font.h"
 #include "datoviz/input/enums.h"
 #include "datoviz/input/keycodes.h"
@@ -452,7 +453,7 @@ DVZ_EXPORT DvzView* dvz_view_glfw(
  * @param content_scale_y vertical content scale
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_view_emit_resize(
+DVZ_EXPORT DvzResult dvz_view_emit_resize(
     DvzView* view, uint32_t framebuffer_width, uint32_t framebuffer_height,
     uint32_t window_width, uint32_t window_height, float content_scale_x, float content_scale_y);
 
@@ -470,7 +471,7 @@ DVZ_EXPORT int dvz_view_emit_resize(
  * @param mods keyboard modifier bit mask
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_view_emit_pointer(
+DVZ_EXPORT DvzResult dvz_view_emit_pointer(
     DvzView* view, DvzPointerEventType type, float x, float y, float window_width,
     float window_height, DvzPointerButton button, int mods);
 
@@ -488,7 +489,7 @@ DVZ_EXPORT int dvz_view_emit_pointer(
  * @param mods keyboard modifier bit mask
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_view_emit_wheel(
+DVZ_EXPORT DvzResult dvz_view_emit_wheel(
     DvzView* view, float x, float y, float window_width, float window_height, float dx,
     float dy, int mods);
 
@@ -502,7 +503,7 @@ DVZ_EXPORT int dvz_view_emit_wheel(
  * @param mods keyboard modifier bit mask
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int
+DVZ_EXPORT DvzResult
 dvz_view_emit_key(DvzView* view, DvzKeyboardEventType type, DvzKeyCode key, int mods);
 
 
@@ -635,7 +636,7 @@ DVZ_EXPORT void dvz_view_set_user_scale(DvzView* view, float scale);
  * @param panel the panel
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_view_connect_panel(DvzView* view, DvzPanel* panel);
+DVZ_EXPORT DvzResult dvz_view_connect_panel(DvzView* view, DvzPanel* panel);
 
 
 /**
@@ -647,7 +648,7 @@ DVZ_EXPORT int dvz_view_connect_panel(DvzView* view, DvzPanel* panel);
  * @param dims dimension mask
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_view_bind_controller(
+DVZ_EXPORT DvzResult dvz_view_bind_controller(
     DvzView* view, DvzPanel* panel, DvzController* controller, DvzDimMask dims);
 
 
@@ -710,7 +711,7 @@ DVZ_EXPORT DvzTurntable* dvz_view_turntable(
  * @param path output file path
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_view_capture_png(DvzView* view, const char* path);
+DVZ_EXPORT DvzResult dvz_view_capture_png(DvzView* view, const char* path);
 
 
 /**
@@ -749,7 +750,7 @@ DVZ_EXPORT DvzAppCaptureConfig dvz_app_capture_config_from_env(const char* basen
  * @param config capture configuration, or NULL for dvz_app_capture_config()
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_view_capture_start(
+DVZ_EXPORT DvzResult dvz_view_capture_start(
     DvzView* view, const DvzAppCaptureConfig* config);
 
 
@@ -764,7 +765,7 @@ DVZ_EXPORT int dvz_view_capture_start(
  * @param basename fallback output basename, or NULL for "capture"
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_view_capture_from_env(DvzView* view, const char* basename);
+DVZ_EXPORT DvzResult dvz_view_capture_from_env(DvzView* view, const char* basename);
 
 
 /**
@@ -776,7 +777,7 @@ DVZ_EXPORT int dvz_view_capture_from_env(DvzView* view, const char* basename);
  * @param view the view
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_view_capture_stop(DvzView* view);
+DVZ_EXPORT DvzResult dvz_view_capture_stop(DvzView* view);
 
 
 /**
@@ -790,7 +791,7 @@ DVZ_EXPORT int dvz_view_capture_stop(DvzView* view);
  * @param path output recording directory path
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_view_record_start(DvzView* view, const char* path);
+DVZ_EXPORT DvzResult dvz_view_record_start(DvzView* view, const char* path);
 
 
 /**
@@ -799,7 +800,7 @@ DVZ_EXPORT int dvz_view_record_start(DvzView* view, const char* path);
  * @param view the view
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_view_record_stop(DvzView* view);
+DVZ_EXPORT DvzResult dvz_view_record_stop(DvzView* view);
 
 
 /**
@@ -812,7 +813,7 @@ DVZ_EXPORT int dvz_view_record_stop(DvzView* view);
  * @param path input `.dvzr` recording directory
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_view_replay_start(DvzView* view, const char* path);
+DVZ_EXPORT DvzResult dvz_view_replay_start(DvzView* view, const char* path);
 
 
 /**
@@ -821,7 +822,7 @@ DVZ_EXPORT int dvz_view_replay_start(DvzView* view, const char* path);
  * @param view the view
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_view_replay_stop(DvzView* view);
+DVZ_EXPORT DvzResult dvz_view_replay_stop(DvzView* view);
 
 
 /**
@@ -875,7 +876,7 @@ DVZ_EXPORT uint32_t dvz_view_replay_frame_count(const DvzView* view);
  * @param height height in pixels
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_view_resize(DvzView* view, uint32_t width, uint32_t height);
+DVZ_EXPORT DvzResult dvz_view_resize(DvzView* view, uint32_t width, uint32_t height);
 
 
 /**
@@ -891,7 +892,7 @@ DVZ_EXPORT int dvz_view_resize(DvzView* view, uint32_t width, uint32_t height);
  * @param device_scale physical pixels per logical pixel
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_view_resize_scaled(
+DVZ_EXPORT DvzResult dvz_view_resize_scaled(
     DvzView* view, uint32_t logical_width, uint32_t logical_height, float device_scale);
 
 
@@ -951,7 +952,7 @@ DVZ_EXPORT void dvz_view_wake(DvzView* view);
  * @param user_data opaque pointer forwarded to the callback
  * @return 0 on success, negative on invalid input or queue overflow
  */
-DVZ_EXPORT int
+DVZ_EXPORT DvzResult
 dvz_view_post(DvzView* view, DvzViewPostCallback callback, void* user_data);
 
 

@@ -328,7 +328,7 @@ DvzGraphEdgeStyle dvz_graph_edge_style(void)
  * @param node_count number of nodes
  * @return 0 on success, -1 on error
  */
-int dvz_graph_set_node_count(DvzGraph* graph, uint32_t node_count)
+DvzResult dvz_graph_set_node_count(DvzGraph* graph, uint32_t node_count)
 {
     if (graph == NULL || graph->scene == NULL || node_count == 0)
         return -1;
@@ -365,7 +365,7 @@ int dvz_graph_set_node_count(DvzGraph* graph, uint32_t node_count)
  * @param positions borrowed node positions
  * @return 0 on success, -1 on error
  */
-int dvz_graph_node_positions(
+DvzResult dvz_graph_node_positions(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const dvec3* positions)
 {
     if (
@@ -397,7 +397,7 @@ int dvz_graph_node_positions(
  * @param edge_count number of edges
  * @return 0 on success, -1 on invalid endpoints or allocation failure
  */
-int dvz_graph_set_edge_count(DvzGraph* graph, uint32_t edge_count)
+DvzResult dvz_graph_set_edge_count(DvzGraph* graph, uint32_t edge_count)
 {
     if (graph == NULL || graph->scene == NULL || graph->node_count == 0)
         return -1;
@@ -435,7 +435,7 @@ int dvz_graph_set_edge_count(DvzGraph* graph, uint32_t edge_count)
  * @param endpoints borrowed packed endpoint array: source0, target0, source1, target1, ...
  * @return 0 on success, -1 on invalid endpoints or allocation failure
  */
-int dvz_graph_edges(
+DvzResult dvz_graph_edges(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const uint32_t* endpoints)
 {
     if (
@@ -477,7 +477,7 @@ int dvz_graph_edges(
  * @param ids borrowed user-id array
  * @return 0 on success, -1 on error
  */
-int dvz_graph_node_ids(
+DvzResult dvz_graph_node_ids(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const uint64_t* ids)
 {
     if (
@@ -505,7 +505,7 @@ int dvz_graph_node_ids(
  * @param ids borrowed user-id array
  * @return 0 on success, -1 on error
  */
-int dvz_graph_edge_ids(
+DvzResult dvz_graph_edge_ids(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const uint64_t* ids)
 {
     if (
@@ -531,7 +531,7 @@ int dvz_graph_edge_ids(
  * @param style edge style descriptor
  * @return 0 on success, -1 on error
  */
-int dvz_graph_set_edge_style(DvzGraph* graph, const DvzGraphEdgeStyle* style)
+DvzResult dvz_graph_set_edge_style(DvzGraph* graph, const DvzGraphEdgeStyle* style)
 {
     if (graph == NULL || graph->scene == NULL || !_graph_edge_style_valid(style))
     {
@@ -563,7 +563,7 @@ int dvz_graph_set_edge_style(DvzGraph* graph, const DvzGraphEdgeStyle* style)
  * @param control1 borrowed second control point array
  * @return 0 on success, -1 on error
  */
-int dvz_graph_edge_controls(
+DvzResult dvz_graph_edge_controls(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const dvec3* control0,
     const dvec3* control1)
 {
@@ -594,7 +594,7 @@ int dvz_graph_edge_controls(
 
 
 
-int dvz_graph_node_colors(
+DvzResult dvz_graph_node_colors(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const DvzColor* colors)
 {
     if (
@@ -614,7 +614,7 @@ int dvz_graph_node_colors(
 
 
 
-int dvz_graph_node_sizes(
+DvzResult dvz_graph_node_sizes(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const float* sizes)
 {
     if (
@@ -639,7 +639,7 @@ int dvz_graph_node_sizes(
 
 
 
-int dvz_graph_edge_colors(
+DvzResult dvz_graph_edge_colors(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const DvzColor* colors)
 {
     if (
@@ -659,7 +659,7 @@ int dvz_graph_edge_colors(
 
 
 
-int dvz_graph_edge_widths(
+DvzResult dvz_graph_edge_widths(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const float* widths)
 {
     if (

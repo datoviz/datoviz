@@ -378,7 +378,7 @@ void dvz_camera_set_orthographic(DvzCamera* camera, float height, float near, fl
  * @param far far clipping plane
  * @return 0 on success, -1 on invalid bounds
  */
-int dvz_camera_set_orthographic_bounds(
+DvzResult dvz_camera_set_orthographic_bounds(
     DvzCamera* camera, float left, float right, float bottom, float top, float near, float far)
 {
     ANN(camera);
@@ -409,7 +409,7 @@ int dvz_camera_set_orthographic_bounds(
  * @param out_far output far clipping plane
  * @return 0 when explicit bounds are active, -1 otherwise
  */
-int dvz_camera_get_orthographic_bounds(
+DvzResult dvz_camera_get_orthographic_bounds(
     const DvzCamera* camera, float* out_left, float* out_right, float* out_bottom, float* out_top,
     float* out_near, float* out_far)
 {

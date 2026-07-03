@@ -73,7 +73,7 @@ DVZ_EXPORT DvzView* dvz_view_external_surface(
  * @param surface external Vulkan surface description
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_view_update_external_surface(
+DVZ_EXPORT DvzResult dvz_view_update_external_surface(
     DvzView* view, const DvzWindowExternalSurfaceInfo* surface);
 
 
