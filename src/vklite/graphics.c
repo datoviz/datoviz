@@ -339,7 +339,8 @@ void dvz_graphics_layout(DvzGraphics* graphics, VkPipelineLayout layout)
 
 
 
-void dvz_graphics_primitive(DvzGraphics* graphics, VkPrimitiveTopology topology, int flags)
+void dvz_graphics_primitive(
+    DvzGraphics* graphics, VkPrimitiveTopology topology, DvzGraphicsFlags flags)
 {
     ANN(graphics);
     graphics->input_assembly.topology = topology;
@@ -352,7 +353,7 @@ void dvz_graphics_primitive(DvzGraphics* graphics, VkPrimitiveTopology topology,
 
 
 
-void dvz_graphics_primitive_restart(DvzGraphics* graphics, int flags)
+void dvz_graphics_primitive_restart(DvzGraphics* graphics, DvzGraphicsFlags flags)
 {
     ANN(graphics);
     graphics->input_assembly.primitiveRestartEnable = flags != 0;
@@ -365,7 +366,8 @@ void dvz_graphics_primitive_restart(DvzGraphics* graphics, int flags)
 
 
 
-void dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode polygon_mode, int flags)
+void dvz_graphics_polygon_mode(
+    DvzGraphics* graphics, VkPolygonMode polygon_mode, DvzGraphicsFlags flags)
 {
     ANN(graphics);
     graphics->rasterization.polygonMode = polygon_mode;
@@ -379,7 +381,8 @@ void dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode polygon_mode
 
 
 
-void dvz_graphics_cull_mode(DvzGraphics* graphics, VkCullModeFlags cull_mode, int flags)
+void dvz_graphics_cull_mode(
+    DvzGraphics* graphics, VkCullModeFlags cull_mode, DvzGraphicsFlags flags)
 {
     ANN(graphics);
     graphics->rasterization.cullMode = cull_mode;
@@ -392,7 +395,8 @@ void dvz_graphics_cull_mode(DvzGraphics* graphics, VkCullModeFlags cull_mode, in
 
 
 
-void dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front_face, int flags)
+void
+dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front_face, DvzGraphicsFlags flags)
 {
     ANN(graphics);
     graphics->rasterization.frontFace = front_face;
@@ -406,7 +410,8 @@ void dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front_face, int 
 
 
 void dvz_graphics_depth(
-    DvzGraphics* graphics, bool clamp, bool depth_write, VkCompareOp compare, int flags)
+    DvzGraphics* graphics, bool clamp, bool depth_write, VkCompareOp compare,
+    DvzGraphicsFlags flags)
 {
     ANN(graphics);
 
@@ -426,7 +431,8 @@ void dvz_graphics_depth(
 
 
 
-void dvz_graphics_depth_bounds(DvzGraphics* graphics, float min, float max, int flags)
+void dvz_graphics_depth_bounds(
+    DvzGraphics* graphics, float min, float max, DvzGraphicsFlags flags)
 {
     ANN(graphics);
     graphics->depth_stencil.depthBoundsTestEnable = flags != 0;
@@ -443,7 +449,8 @@ void dvz_graphics_depth_bounds(DvzGraphics* graphics, float min, float max, int 
 
 
 void dvz_graphics_depth_bias(
-    DvzGraphics* graphics, float constant_factor, float clamp, float slope_factor, int flags)
+    DvzGraphics* graphics, float constant_factor, float clamp, float slope_factor,
+    DvzGraphicsFlags flags)
 {
     ANN(graphics);
     graphics->rasterization.depthBiasEnable = flags != 0;
@@ -463,7 +470,7 @@ void dvz_graphics_depth_bias(
 void dvz_graphics_stencil(
     DvzGraphics* graphics, VkStencilFaceFlags mask, VkStencilOp fail, VkStencilOp pass,
     VkStencilOp depth_fail, VkCompareOp compare, uint32_t compare_mask, uint32_t write_mask,
-    uint32_t reference, int flags)
+    uint32_t reference, DvzGraphicsFlags flags)
 {
     ANN(graphics);
 
@@ -502,7 +509,8 @@ void dvz_graphics_stencil(
 
 
 void dvz_graphics_scissor(
-    DvzGraphics* graphics, int32_t x, int32_t y, uint32_t width, uint32_t height, int flags)
+    DvzGraphics* graphics, int32_t x, int32_t y, uint32_t width, uint32_t height,
+    DvzGraphicsFlags flags)
 {
     ANN(graphics);
     graphics->scissor =
@@ -518,7 +526,7 @@ void dvz_graphics_scissor(
 
 void dvz_graphics_viewport(
     DvzGraphics* graphics, float x, float y, float width, float height, float min_depth,
-    float max_depth, int flags)
+    float max_depth, DvzGraphicsFlags flags)
 {
     ANN(graphics);
     graphics->viewport = (VkViewport){
@@ -537,7 +545,7 @@ void dvz_graphics_viewport(
 
 
 
-void dvz_graphics_blend(DvzGraphics* graphics, vec4 constants, int flags)
+void dvz_graphics_blend(DvzGraphics* graphics, vec4 constants, DvzGraphicsFlags flags)
 {
     ANN(graphics);
     glm_vec4_copy(constants, graphics->blend.blendConstants);

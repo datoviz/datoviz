@@ -62,7 +62,7 @@ typedef enum
     DVZ_GRAPHICS_FLAGS_DISABLE = 0,
     DVZ_GRAPHICS_FLAGS_FIXED = 1,
     DVZ_GRAPHICS_FLAGS_DYNAMIC = 2,
-} DvzGraphicFlags;
+} DvzGraphicsFlags;
 
 
 /*************************************************************************************************/
@@ -206,7 +206,8 @@ DVZ_EXPORT void dvz_graphics_layout(DvzGraphics* graphics, VkPipelineLayout layo
  * @param flags indicate whether this setting is fixed or dynamic state set in the command buffer
  */
 DVZ_EXPORT void
-dvz_graphics_primitive(DvzGraphics* graphics, VkPrimitiveTopology topology, int flags);
+dvz_graphics_primitive(
+    DvzGraphics* graphics, VkPrimitiveTopology topology, DvzGraphicsFlags flags);
 
 
 
@@ -217,7 +218,7 @@ dvz_graphics_primitive(DvzGraphics* graphics, VkPrimitiveTopology topology, int 
  * @param graphics the graphics pipeline
  * @param flags indicate whether this setting is fixed or dynamic state set in the command buffer
  */
-DVZ_EXPORT void dvz_graphics_primitive_restart(DvzGraphics* graphics, int flags);
+DVZ_EXPORT void dvz_graphics_primitive_restart(DvzGraphics* graphics, DvzGraphicsFlags flags);
 
 
 
@@ -229,7 +230,8 @@ DVZ_EXPORT void dvz_graphics_primitive_restart(DvzGraphics* graphics, int flags)
  * @param flags indicate whether this setting is fixed or dynamic state set in the command buffer
  */
 DVZ_EXPORT void
-dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode polygon_mode, int flags);
+dvz_graphics_polygon_mode(
+    DvzGraphics* graphics, VkPolygonMode polygon_mode, DvzGraphicsFlags flags);
 
 
 
@@ -241,7 +243,8 @@ dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode polygon_mode, int
  * @param flags indicate whether this setting is fixed or dynamic state set in the command buffer
  */
 DVZ_EXPORT void
-dvz_graphics_cull_mode(DvzGraphics* graphics, VkCullModeFlags cull_mode, int flags);
+dvz_graphics_cull_mode(
+    DvzGraphics* graphics, VkCullModeFlags cull_mode, DvzGraphicsFlags flags);
 
 
 
@@ -252,7 +255,8 @@ dvz_graphics_cull_mode(DvzGraphics* graphics, VkCullModeFlags cull_mode, int fla
  * @param front_face the front face
  * @param flags indicate whether this setting is fixed or dynamic state set in the command buffer
  */
-DVZ_EXPORT void dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front_face, int flags);
+DVZ_EXPORT void
+dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front_face, DvzGraphicsFlags flags);
 
 
 
@@ -266,7 +270,8 @@ DVZ_EXPORT void dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front
  * @param flags indicate whether this setting is fixed or dynamic state set in the command buffer
  */
 DVZ_EXPORT void dvz_graphics_depth(
-    DvzGraphics* graphics, bool clamp, bool depth_write, VkCompareOp compare, int flags);
+    DvzGraphics* graphics, bool clamp, bool depth_write, VkCompareOp compare,
+    DvzGraphicsFlags flags);
 
 
 
@@ -278,7 +283,8 @@ DVZ_EXPORT void dvz_graphics_depth(
  * @param max the maximum depth bound
  * @param flags indicate whether this setting is fixed or dynamic state set in the command buffer
  */
-DVZ_EXPORT void dvz_graphics_depth_bounds(DvzGraphics* graphics, float min, float max, int flags);
+DVZ_EXPORT void
+dvz_graphics_depth_bounds(DvzGraphics* graphics, float min, float max, DvzGraphicsFlags flags);
 
 
 
@@ -293,7 +299,7 @@ DVZ_EXPORT void dvz_graphics_depth_bounds(DvzGraphics* graphics, float min, floa
  */
 DVZ_EXPORT void dvz_graphics_depth_bias(
     DvzGraphics* graphics, //
-    float constant_factor, float clamp, float slope_factor, int flags);
+    float constant_factor, float clamp, float slope_factor, DvzGraphicsFlags flags);
 
 
 
@@ -314,7 +320,7 @@ DVZ_EXPORT void dvz_graphics_depth_bias(
 DVZ_EXPORT void dvz_graphics_stencil(
     DvzGraphics* graphics, VkStencilFaceFlags mask, VkStencilOp fail, VkStencilOp pass,
     VkStencilOp depth_fail, VkCompareOp compare, uint32_t compare_mask, uint32_t write_mask,
-    uint32_t reference, int flags);
+    uint32_t reference, DvzGraphicsFlags flags);
 
 
 
@@ -329,7 +335,8 @@ DVZ_EXPORT void dvz_graphics_stencil(
  * @param flags indicate whether this setting is fixed or dynamic state set in the command buffer
  */
 DVZ_EXPORT void dvz_graphics_scissor(
-    DvzGraphics* graphics, int32_t x, int32_t y, uint32_t width, uint32_t height, int flags);
+    DvzGraphics* graphics, int32_t x, int32_t y, uint32_t width, uint32_t height,
+    DvzGraphicsFlags flags);
 
 
 
@@ -347,7 +354,7 @@ DVZ_EXPORT void dvz_graphics_scissor(
  */
 DVZ_EXPORT void dvz_graphics_viewport(
     DvzGraphics* graphics, float x, float y, float width, float height, float min_depth,
-    float max_depth, int flags);
+    float max_depth, DvzGraphicsFlags flags);
 
 
 /**
@@ -358,7 +365,8 @@ DVZ_EXPORT void dvz_graphics_viewport(
  * @param flags indicate whether the blend constants are fixed or dynamic state set in the
  * command buffer
  */
-DVZ_EXPORT void dvz_graphics_blend(DvzGraphics* graphics, vec4 constants, int flags);
+DVZ_EXPORT void
+dvz_graphics_blend(DvzGraphics* graphics, vec4 constants, DvzGraphicsFlags flags);
 
 
 
