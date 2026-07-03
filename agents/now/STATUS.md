@@ -19,7 +19,10 @@ Pre-RC1 execution order:
 3. Prepare the RC1 source bundle, release notes, tag, and publication rehearsal.
 4. Install, inspect, and smoke-test the built wheels, including native dependencies and the CMake
    consumer check.
-5. Keep the v0.3 visible parity audit and public API/status disposition table reconciled.
+5. Keep the v0.3 visible parity audit and public API/status disposition table reconciled before
+   RC1: specifically re-check `docs/reference/feature-status.md`,
+   `docs/reference/project-status.md`, `docs/reference/v03-visible-parity.md`, generated C API
+   docs, raw `ctypes` docs/policy, and the GSP/VisPy2 boundary language for contradictions.
 6. Polish the WebGPU/WASM story: supported live routes, experimental scope, diagnostics, and
    non-parity boundaries.
 7. Proofread the public docs, gallery pages, generated matrices, screenshots, and example metadata.

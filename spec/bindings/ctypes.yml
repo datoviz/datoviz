@@ -256,6 +256,122 @@ skipped_functions:
     Current generator output excludes functions whose signatures still require by-value records,
     unions, or other layouts that are intentionally not emitted until their ABI policy is explicit.
     Keep this list synchronized with datoviz._ctypes._SKIPPED_FUNCTIONS.
+  dispositions:
+    dvz_attachment_clear:
+      disposition: intentional-skip
+      reason: >
+        Low-level vklite rendering helper taking VkClearValue by value. This is Vulkan-shaped
+        runtime plumbing, not a raw Python user workflow.
+    dvz_cmd_rendering_default:
+      disposition: intentional-skip
+      reason: >
+        Low-level command-buffer helper combining borrowed Vulkan handles and VkClearValue by
+        value. Python should use scene, app, canvas, or explicit vklite helpers instead.
+    dvz_depth_cue_desc:
+      disposition: ffi-helper
+      helper: dvz_ffi_depth_cue_desc
+      reason: >
+        User-facing descriptor default is useful, but the raw binding uses the pointer-output FFI
+        helper to avoid by-value layout hazards.
+    dvz_device_config:
+      disposition: intentional-skip
+      reason: >
+        Device configuration contains Vulkan feature-chain state and is advanced runtime setup.
+        Do not add a Python wrapper unless a concrete supported Python device-configuration
+        workflow requires one.
+    dvz_field_geometry:
+      disposition: ffi-helper
+      helper: dvz_ffi_field_geometry
+      reason: >
+        User-facing sampled-field geometry default is available through the pointer-output FFI
+        helper.
+    dvz_gpu_ctx_config:
+      disposition: intentional-skip
+      reason: >
+        GPU-context configuration is low-level runtime/Vulkan setup. Keep skipped for raw Python
+        unless a concrete supported workflow needs a safe opaque configuration API.
+    dvz_material_desc:
+      disposition: ffi-helper
+      helper: dvz_ffi_material_desc
+      reason: >
+        User-facing material descriptor default is available through the pointer-output FFI helper.
+    dvz_overlay_card_desc:
+      disposition: ffi-helper
+      helper: dvz_ffi_overlay_card_desc
+      reason: >
+        User-facing overlay-card descriptor default is available through the pointer-output FFI
+        helper.
+    dvz_overlay_card_style:
+      disposition: ffi-helper
+      helper: dvz_ffi_overlay_card_style
+      reason: >
+        User-facing overlay-card style default is available through the pointer-output FFI helper.
+    dvz_panel_background_desc:
+      disposition: ffi-helper
+      helper: dvz_ffi_panel_background_desc
+      reason: >
+        User-facing panel-background descriptor default is available through the pointer-output FFI
+        helper.
+    dvz_phong_material_desc:
+      disposition: ffi-helper
+      helper: dvz_ffi_phong_material_desc
+      reason: >
+        User-facing Phong material descriptor default is available through the pointer-output FFI
+        helper.
+    dvz_polygon_desc:
+      disposition: ffi-helper
+      helper: dvz_ffi_polygon_desc
+      reason: >
+        User-facing polygon triangulation descriptor default is available through the pointer-output
+        FFI helper.
+    dvz_reference_grid_desc:
+      disposition: ffi-helper
+      helper: dvz_ffi_reference_grid_desc
+      reason: >
+        User-facing reference-grid descriptor default is available through the pointer-output FFI
+        helper.
+    dvz_scalebar_desc:
+      disposition: ffi-helper
+      helper: dvz_ffi_scalebar_desc
+      reason: >
+        User-facing scale-bar descriptor default is available through the pointer-output FFI helper.
+    dvz_standard_material_desc:
+      disposition: ffi-helper
+      helper: dvz_ffi_standard_material_desc
+      reason: >
+        User-facing standard material descriptor default is available through the pointer-output FFI
+        helper.
+    dvz_surface_capabilities:
+      disposition: intentional-skip
+      reason: >
+        Returns VkSurfaceCapabilitiesKHR by value. This is low-level swapchain capability plumbing
+        with Vulkan layout details, not a default raw Python workflow.
+    dvz_surface_extent:
+      disposition: intentional-skip
+      reason: >
+        Returns VkExtent2D by value from the low-level surface cache. Prefer scalar or higher-level
+        view/window APIs for Python-facing size information.
+    dvz_surface_preferred_format:
+      disposition: intentional-skip
+      reason: >
+        Returns VkSurfaceFormatKHR by value. This is Vulkan presentation setup and should not be
+        promoted to raw Python without a concrete interop need.
+    dvz_swapchain_extent:
+      disposition: intentional-skip
+      reason: >
+        Returns VkExtent2D by value from a low-level swapchain wrapper. Python-facing workflows
+        should use view/window sizing APIs.
+    dvz_visual_transform_desc:
+      disposition: ffi-helper
+      helper: dvz_ffi_visual_transform_desc
+      reason: >
+        User-facing visual-transform descriptor default is available through the pointer-output FFI
+        helper.
+    dvz_window_external_surface_info:
+      disposition: intentional-skip
+      reason: >
+        Native external-surface descriptor is backend plumbing. Raw Python already has scalar FFI
+        helpers for the supported hosted-surface update path.
   expected:
     - dvz_attachment_clear
     - dvz_cmd_rendering_default

@@ -12,7 +12,8 @@ validated layout record, so `dvz_frame_plan_emit_config()` is emitted directly b
 
 The remaining skipped functions are listed in `spec/bindings/ctypes.yml` under
 `skipped_functions.expected`, and must stay synchronized with
-`datoviz._ctypes._SKIPPED_FUNCTIONS`.
+`datoviz._ctypes._SKIPPED_FUNCTIONS`. Their current dispositions are recorded in
+`skipped_functions.dispositions`.
 
 
 ## Decision
@@ -28,8 +29,8 @@ needs them and a safe binding shape exists.
 
 ## Recommended next work
 
-1. Classify each of the remaining 21 skipped functions in `spec/bindings/ctypes.yml`.
-2. For each function, choose one disposition:
+1. Keep the 21-function disposition table in `spec/bindings/ctypes.yml` current.
+2. For any changed function, choose one disposition:
    - `emit`: add the record to `layout_records.include` only if the full ABI layout is stable and
      user-facing.
    - `ffi-helper`: add a narrowly named `dvz_ffi_*` helper only when the canonical C function is
