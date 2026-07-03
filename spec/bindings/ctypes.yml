@@ -64,7 +64,7 @@ smoke_symbols:
   - dvz_view_capabilities
   - dvz_view_resize_scaled_xy
   - dvz_query_request
-  - dvz_panel_query
+  - dvz_panel_query_px
   - dvz_panel_query_data
   - dvz_panel_transform_point
   - dvz_panel_position_to_data
@@ -99,6 +99,7 @@ layout_records:
     - DvzInteropBufferExport
     - DvzInteropBufferExportConfig
     - DvzDrp2RenderPipelineDesc
+    - DvzFramePlanEmitConfig
     - DvzFramePlanUploadDesc
     - DvzInputEvent
     - DvzPointerWheelEvent
@@ -261,7 +262,6 @@ skipped_functions:
     - dvz_depth_cue_desc
     - dvz_device_config
     - dvz_field_geometry
-    - dvz_frame_plan_emit_config
     - dvz_gpu_ctx_config
     - dvz_material_desc
     - dvz_overlay_card_desc

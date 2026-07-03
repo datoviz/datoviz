@@ -412,7 +412,7 @@ DvzFramePlanEmitConfig dvz_frame_plan_emit_config(void);
 
 Return the default FramePlan-to-DRP2 emission configuration.
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/frame_plan.h`:415._
 

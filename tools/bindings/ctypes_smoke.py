@@ -257,6 +257,10 @@ def main() -> int:
     assert dvz.dvz_ffi_view_update_external_surface.argtypes == expected_update_args
     assert dvz.dvz_ffi_view_update_external_surface.restype == ctypes.c_int32
 
+    assert ctypes.sizeof(dvz.DvzFramePlanEmitConfig) > 0
+    emit_cfg_value = dvz.dvz_frame_plan_emit_config()
+    assert emit_cfg_value.struct_size == ctypes.sizeof(dvz.DvzFramePlanEmitConfig)
+
     t0 = dvz.dvz_time_monotonic_ns()
     t1 = dvz.dvz_time_monotonic_ns()
     assert isinstance(t0, int)
