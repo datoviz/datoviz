@@ -45,6 +45,10 @@ smoke_symbols:
   - dvz_visual_validate
   - dvz_sampled_field_id
   - dvz_scale_id
+  - dvz_scale_domain
+  - dvz_scale_view_range
+  - dvz_scale_category_count
+  - dvz_scale_category
   - dvz_colormap_id
   - dvz_colorbar_id
   - dvz_legend_id
@@ -58,6 +62,7 @@ smoke_symbols:
   - dvz_panel_full
   - dvz_capability_snapshot
   - dvz_view_capabilities
+  - dvz_view_resize_scaled_xy
   - dvz_query_request
   - dvz_panel_query
   - dvz_panel_query_data

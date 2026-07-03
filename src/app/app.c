@@ -5427,12 +5427,32 @@ DvzResult dvz_view_resize(DvzView* win, uint32_t width, uint32_t height)
 DvzResult dvz_view_resize_scaled(
     DvzView* win, uint32_t logical_width, uint32_t logical_height, float device_scale)
 {
+    return dvz_view_resize_scaled_xy(
+        win, logical_width, logical_height, device_scale, device_scale);
+}
+
+
+/**
+ * Resize a view's logical and framebuffer extent with explicit per-axis device scale.
+ *
+ * @param win the view
+ * @param logical_width logical width in pixels
+ * @param logical_height logical height in pixels
+ * @param device_scale_x physical pixels per logical pixel along X
+ * @param device_scale_y physical pixels per logical pixel along Y
+ * @return 0 on success, negative on error
+ */
+DvzResult dvz_view_resize_scaled_xy(
+    DvzView* win, uint32_t logical_width, uint32_t logical_height, float device_scale_x,
+    float device_scale_y)
+{
     ANN(win);
     if (logical_width == 0 || logical_height == 0)
         return -1;
-    device_scale = _view_valid_scale(device_scale);
-    uint32_t framebuffer_width = _view_round_size((float)logical_width * device_scale);
-    uint32_t framebuffer_height = _view_round_size((float)logical_height * device_scale);
+    device_scale_x = _view_valid_scale(device_scale_x);
+    device_scale_y = _view_valid_scale(device_scale_y);
+    uint32_t framebuffer_width = _view_round_size((float)logical_width * device_scale_x);
+    uint32_t framebuffer_height = _view_round_size((float)logical_height * device_scale_y);
     if (framebuffer_width == 0 || framebuffer_height == 0)
         return -1;
 
@@ -5441,17 +5461,18 @@ DvzResult dvz_view_resize_scaled(
         return -1;
     dvz_window_backend_emit_resize(
         win->window, framebuffer_width, framebuffer_height, logical_width, logical_height,
-        device_scale, device_scale);
+        device_scale_x, device_scale_y);
     _view_update_size_state(
-        win, logical_width, logical_height, framebuffer_width, framebuffer_height, device_scale,
-        device_scale);
+        win, logical_width, logical_height, framebuffer_width, framebuffer_height, device_scale_x,
+        device_scale_y);
     _view_sync_figure_layout_size(win);
     dvz_view_request_frame(win);
     return 0;
 #else
     (void)logical_width;
     (void)logical_height;
-    (void)device_scale;
+    (void)device_scale_x;
+    (void)device_scale_y;
     return -1;
 #endif
 }

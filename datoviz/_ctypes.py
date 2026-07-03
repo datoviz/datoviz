@@ -25435,6 +25435,41 @@ else:
 
 
 try:
+    dvz_scale_category = dvz.dvz_scale_category
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_scale_category')
+else:
+    dvz_scale_category.__doc__ = """/**
+ * Copy one retained categorical entry from a scale.
+ *
+ * The copied label pointer, when non-NULL, points to scale-owned storage and remains valid until
+ * the scale categories are changed or the scale is destroyed.
+ *
+ * @param scale the scale
+ * @param index category index
+ * @param out copied category descriptor
+ * @return true when a category was copied
+ */"""
+    dvz_scale_category.argtypes = [ctypes.POINTER(DvzScale), ctypes.c_uint32, ctypes.POINTER(DvzScaleCategory)]
+    dvz_scale_category.restype = ctypes.c_bool
+
+
+try:
+    dvz_scale_category_count = dvz.dvz_scale_category_count
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_scale_category_count')
+else:
+    dvz_scale_category_count.__doc__ = """/**
+ * Return the number of retained categorical entries on a scale.
+ *
+ * @param scale the scale
+ * @return category count, or 0 when the scale is invalid or has no explicit categories
+ */"""
+    dvz_scale_category_count.argtypes = [ctypes.POINTER(DvzScale)]
+    dvz_scale_category_count.restype = ctypes.c_uint32
+
+
+try:
     dvz_scale_desc = dvz.dvz_scale_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_scale_desc')
@@ -25460,6 +25495,25 @@ else:
  */"""
     dvz_scale_destroy.argtypes = [ctypes.POINTER(DvzScale)]
     dvz_scale_destroy.restype = None
+
+
+try:
+    dvz_scale_domain = dvz.dvz_scale_domain
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_scale_domain')
+else:
+    dvz_scale_domain.__doc__ = """/**
+ * Copy the semantic domain from a scale.
+ *
+ * Returns false when the scale is invalid or no explicit domain has been set.
+ *
+ * @param scale the scale
+ * @param out_min domain minimum
+ * @param out_max domain maximum
+ * @return true when an explicit domain was copied
+ */"""
+    dvz_scale_domain.argtypes = [ctypes.POINTER(DvzScale), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
+    dvz_scale_domain.restype = ctypes.c_bool
 
 
 try:
@@ -25604,6 +25658,25 @@ else:
  */"""
     dvz_scale_update_categories.argtypes = [ctypes.POINTER(DvzScale), ctypes.POINTER(DvzScaleCategory), ctypes.c_uint32]
     dvz_scale_update_categories.restype = ctypes.c_bool
+
+
+try:
+    dvz_scale_view_range = dvz.dvz_scale_view_range
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_scale_view_range')
+else:
+    dvz_scale_view_range.__doc__ = """/**
+ * Copy the current visible range from a scale.
+ *
+ * Returns false when the scale is invalid or no explicit view range has been set.
+ *
+ * @param scale the scale
+ * @param out_min view-range minimum
+ * @param out_max view-range maximum
+ * @return true when an explicit view range was copied
+ */"""
+    dvz_scale_view_range.argtypes = [ctypes.POINTER(DvzScale), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
+    dvz_scale_view_range.restype = ctypes.c_bool
 
 
 try:
@@ -30132,6 +30205,28 @@ else:
 
 
 try:
+    dvz_view_resize_scaled_xy = dvz.dvz_view_resize_scaled_xy
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_view_resize_scaled_xy')
+else:
+    dvz_view_resize_scaled_xy.__doc__ = """/**
+ * Resize a view with distinct logical dimensions and per-axis device scale.
+ *
+ * This is intended for hosted/offscreen views displayed in a container whose X and Y device scales
+ * differ. Most callers should use `dvz_view_resize_scaled()` when the scale is uniform.
+ *
+ * @param view the view
+ * @param logical_width logical width in pixels
+ * @param logical_height logical height in pixels
+ * @param device_scale_x physical pixels per logical pixel along X
+ * @param device_scale_y physical pixels per logical pixel along Y
+ * @return 0 on success, negative on error
+ */"""
+    dvz_view_resize_scaled_xy.argtypes = [ctypes.POINTER(DvzView), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_float, ctypes.c_float]
+    dvz_view_resize_scaled_xy.restype = ctypes.c_int32
+
+
+try:
     dvz_view_resolved_size = dvz.dvz_view_resolved_size
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_view_resolved_size')
@@ -32355,7 +32450,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1549
+_GENERATED_FUNCTION_COUNT = 1554
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_field_geometry', 'dvz_frame_plan_emit_config', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_panel_background_desc', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scalebar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
 _DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzTextStyle', 'DvzTextPlacement', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzFontDesc', 'DvzFontDefaults', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzContainer', 'DvzContainerIterator', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RawFallback', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzObject', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2D', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewSizeDesc', 'DvzViewDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]

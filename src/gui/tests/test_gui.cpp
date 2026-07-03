@@ -391,6 +391,17 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     AT(framebuffer_height == 240);
     AC(dvz_view_device_scale(source_win), 2.0f, 1e-6f);
 
+    AT(dvz_view_resize_scaled_xy(source_win, 160, 120, 2.0f, 1.5f) == 0);
+    dvz_view_logical_size(source_win, &logical_width, &logical_height);
+    dvz_view_framebuffer_size(source_win, &framebuffer_width, &framebuffer_height);
+    DvzScaleXY device_scale = dvz_view_device_scale_xy(source_win);
+    AT(logical_width == 160);
+    AT(logical_height == 120);
+    AT(framebuffer_width == 320);
+    AT(framebuffer_height == 180);
+    AC(device_scale.x, 2.0f, 1e-6f);
+    AC(device_scale.y, 1.5f, 1e-6f);
+
     DvzGuiViewportConfig invalid_viewport = config;
     invalid_viewport.struct_size = 0;
     AT_EXPECTED_ERROR_STRICT(

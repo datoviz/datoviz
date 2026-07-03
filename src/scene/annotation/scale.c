@@ -399,6 +399,16 @@ void dvz_scale_set_domain(DvzScale* scale, double min, double max)
 }
 
 
+bool dvz_scale_domain(const DvzScale* scale, double* out_min, double* out_max)
+{
+    if (scale == NULL || !scale->has_domain || out_min == NULL || out_max == NULL)
+        return false;
+    *out_min = scale->domain_min;
+    *out_max = scale->domain_max;
+    return true;
+}
+
+
 
 /**
  * Set the current visible range on a scale.
@@ -414,6 +424,16 @@ void dvz_scale_set_view_range(DvzScale* scale, double min, double max)
     scale->view_max = max;
     scale->has_view_range = true;
     _scene_mark_scale_dirty(scale);
+}
+
+
+bool dvz_scale_view_range(const DvzScale* scale, double* out_min, double* out_max)
+{
+    if (scale == NULL || !scale->has_view_range || out_min == NULL || out_max == NULL)
+        return false;
+    *out_min = scale->view_min;
+    *out_max = scale->view_max;
+    return true;
 }
 
 
@@ -497,6 +517,28 @@ bool dvz_scale_set_categories(
     }
     scale->category_count = count;
     _scene_mark_scale_dirty(scale);
+    return true;
+}
+
+
+uint32_t dvz_scale_category_count(const DvzScale* scale)
+{
+    return scale != NULL ? scale->category_count : 0;
+}
+
+
+bool dvz_scale_category(const DvzScale* scale, uint32_t index, DvzScaleCategory* out)
+{
+    if (scale == NULL || out == NULL || index >= scale->category_count)
+        return false;
+    const DvzScaleCategoryState* state = &scale->categories[index];
+    *out = (DvzScaleCategory){
+        .category_id = state->category_id,
+        .order = state->order,
+        .label = state->has_label ? state->label : NULL,
+        .color = state->color,
+        .flags = state->flags,
+    };
     return true;
 }
 

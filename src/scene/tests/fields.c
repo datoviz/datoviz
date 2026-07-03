@@ -220,6 +220,10 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
     AT(strcmp(scale->format.unit, "um") == 0);
     AT(strcmp(scale->format.suffix, " depth") == 0);
 
+    double out_min = 0.0;
+    double out_max = 0.0;
+    AT(!dvz_scale_domain(scale, &out_min, &out_max));
+    AT(!dvz_scale_view_range(scale, &out_min, &out_max));
     dvz_scale_set_domain(scale, -600.0, 0.0);
     dvz_scale_set_view_range(scale, -300.0, -50.0);
     AT(scale->has_domain);
@@ -228,6 +232,12 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
     AT(scale->has_view_range);
     AT(scale->view_min == -300.0);
     AT(scale->view_max == -50.0);
+    AT(dvz_scale_domain(scale, &out_min, &out_max));
+    AT(out_min == -600.0);
+    AT(out_max == 0.0);
+    AT(dvz_scale_view_range(scale, &out_min, &out_max));
+    AT(out_min == -300.0);
+    AT(out_max == -50.0);
 
     DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_MAGMA);
     ANN(colormap);
@@ -337,6 +347,7 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
     };
     AT(dvz_scale_set_categories(categorical, categories, 3));
     AT(categorical->category_count == 3);
+    AT(dvz_scale_category_count(categorical) == 3);
     AT(categorical->categories[0].category_id == 7);
     AT(categorical->categories[0].order == 2);
     AT(categorical->categories[0].has_label);
@@ -345,6 +356,16 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
     AT(categorical->categories[1].category_id == -3);
     AT(categorical->categories[2].category_id == 4000000000LL);
     AT(!categorical->categories[2].has_label);
+    DvzScaleCategory out_category = {0};
+    AT(dvz_scale_category(categorical, 0, &out_category));
+    AT(out_category.category_id == 7);
+    AT(out_category.order == 2);
+    AT(strcmp(out_category.label, "Beta") == 0);
+    AT(out_category.color.r == 220);
+    AT(dvz_scale_category(categorical, 2, &out_category));
+    AT(out_category.category_id == 4000000000LL);
+    AT(out_category.label == NULL);
+    AT(!dvz_scale_category(categorical, 3, &out_category));
 
     DvzScaleCategory duplicate[2] = {
         {.category_id = -4, .order = 0, .label = "First", .color = {1, 2, 3, 255}},
@@ -382,6 +403,7 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
     }
     AT(dvz_scale_set_categories(categorical, many_categories, 96));
     AT(categorical->category_count == 96);
+    AT(dvz_scale_category_count(categorical) == 96);
     AT(categorical->category_capacity >= 96);
     AT(categorical->categories[95].category_id == 1095);
 
@@ -392,6 +414,7 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
 
     AT(dvz_scale_set_categories(categorical, NULL, 0));
     AT(categorical->category_count == 0);
+    AT(dvz_scale_category_count(categorical) == 0);
     AT(categorical->category_capacity == 0);
     AT(categorical->categories == NULL);
 

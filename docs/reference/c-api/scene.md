@@ -18,7 +18,7 @@ Common workflows:
 - [Configure cameras](../../how-to/configure-cameras.md)
 - [Pick and probe](../../how-to/pick-and-probe.md)
 
-Functions: 383
+Functions: 387
 
 ## Symbol Groups
 
@@ -60,7 +60,7 @@ Functions: 383
 | [Query](#query) | 1 | `include/datoviz/scene/interaction.h` |
 | [Reference](#reference) | 4 | `include/datoviz/scene.h` |
 | [Sampled](#sampled) | 9 | `include/datoviz/scene/field.h` |
-| [Scale](#scale) | 11 | `include/datoviz/scene/scale.h` |
+| [Scale](#scale) | 15 | `include/datoviz/scene/scale.h` |
 | [Scalebar](#scalebar) | 6 | `include/datoviz/scene/annotation.h` |
 | [Scene](#scene) | 35 | 3 headers |
 | [Selection](#selection) | 9 | `include/datoviz/scene/interaction.h` |
@@ -530,8 +530,11 @@ Functions: 383
     | Function | Header |
     | --- | --- |
     | [`dvz_scale()`](#dvz_scale) | `include/datoviz/scene/scale.h` |
+    | [`dvz_scale_category()`](#dvz_scale_category) | `include/datoviz/scene/scale.h` |
+    | [`dvz_scale_category_count()`](#dvz_scale_category_count) | `include/datoviz/scene/scale.h` |
     | [`dvz_scale_desc()`](#dvz_scale_desc) | `include/datoviz/scene/scale.h` |
     | [`dvz_scale_destroy()`](#dvz_scale_destroy) | `include/datoviz/scene/scale.h` |
+    | [`dvz_scale_domain()`](#dvz_scale_domain) | `include/datoviz/scene/scale.h` |
     | [`dvz_scale_id()`](#dvz_scale_id) | `include/datoviz/scene/scale.h` |
     | [`dvz_scale_remove_categories()`](#dvz_scale_remove_categories) | `include/datoviz/scene/scale.h` |
     | [`dvz_scale_set_categories()`](#dvz_scale_set_categories) | `include/datoviz/scene/scale.h` |
@@ -540,6 +543,7 @@ Functions: 383
     | [`dvz_scale_set_format()`](#dvz_scale_set_format) | `include/datoviz/scene/scale.h` |
     | [`dvz_scale_set_view_range()`](#dvz_scale_set_view_range) | `include/datoviz/scene/scale.h` |
     | [`dvz_scale_update_categories()`](#dvz_scale_update_categories) | `include/datoviz/scene/scale.h` |
+    | [`dvz_scale_view_range()`](#dvz_scale_view_range) | `include/datoviz/scene/scale.h` |
 
     ### Scalebar
 
@@ -1710,7 +1714,7 @@ Create a panel-attached colorbar bound to a scale.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:455._
+_Declared in `include/datoviz/scene/scale.h`:505._
 
 ### `dvz_colorbar_clear_ticks()`
 
@@ -1729,7 +1733,7 @@ Clear explicit tick positions and labels for one colorbar.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:543._
+_Declared in `include/datoviz/scene/scale.h`:593._
 
 ### `dvz_colorbar_desc()`
 
@@ -1747,7 +1751,7 @@ Related: [`dvz_colorbar()`](#dvz_colorbar).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:436._
+_Declared in `include/datoviz/scene/scale.h`:486._
 
 ### `dvz_colorbar_destroy()`
 
@@ -1765,7 +1769,7 @@ Destroy a colorbar.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:473._
+_Declared in `include/datoviz/scene/scale.h`:523._
 
 ### `dvz_colorbar_id()`
 
@@ -1784,7 +1788,7 @@ Return the scene-local identity of a colorbar.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:465._
+_Declared in `include/datoviz/scene/scale.h`:515._
 
 ### `dvz_colorbar_set_anchor()`
 
@@ -1808,7 +1812,7 @@ use horizontal orientation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:506._
+_Declared in `include/datoviz/scene/scale.h`:556._
 
 ### `dvz_colorbar_set_format()`
 
@@ -1828,7 +1832,7 @@ Override formatting policy on a colorbar.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:482._
+_Declared in `include/datoviz/scene/scale.h`:532._
 
 ### `dvz_colorbar_set_layout()`
 
@@ -1853,7 +1857,7 @@ colorbar anchors must match the requested orientation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:520._
+_Declared in `include/datoviz/scene/scale.h`:570._
 
 ### `dvz_colorbar_set_orientation()`
 
@@ -1873,7 +1877,7 @@ Set the colorbar orientation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:492._
+_Declared in `include/datoviz/scene/scale.h`:542._
 
 ### `dvz_colorbar_set_ticks()`
 
@@ -1897,7 +1901,7 @@ colorbar formatting is used.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:533._
+_Declared in `include/datoviz/scene/scale.h`:583._
 
 ### `dvz_colorbar_set_title()`
 
@@ -1917,7 +1921,7 @@ Set the colorbar title.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:552._
+_Declared in `include/datoviz/scene/scale.h`:602._
 
 ### `dvz_colorbar_ticks()`
 
@@ -1933,7 +1937,7 @@ Return the default explicit colorbar tick descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:444._
+_Declared in `include/datoviz/scene/scale.h`:494._
 
 ## Colormap
 
@@ -1956,7 +1960,7 @@ Create a scene-owned colormap object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:322._
+_Declared in `include/datoviz/scene/scale.h`:372._
 
 ### `dvz_colormap_builtin()`
 
@@ -1977,7 +1981,7 @@ Create a scene-owned built-in colormap object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:349._
+_Declared in `include/datoviz/scene/scale.h`:399._
 
 ### `dvz_colormap_builtin_sample()`
 
@@ -2000,7 +2004,7 @@ Sample a built-in colormap at a normalized coordinate.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:388._
+_Declared in `include/datoviz/scene/scale.h`:438._
 
 ### `dvz_colormap_custom()`
 
@@ -2028,7 +2032,7 @@ mapping the normalized scalar coordinate to [0, count - 1].
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:365._
+_Declared in `include/datoviz/scene/scale.h`:415._
 
 ### `dvz_colormap_desc()`
 
@@ -2046,7 +2050,7 @@ Related: [`dvz_colormap()`](#dvz_colormap).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:339._
+_Declared in `include/datoviz/scene/scale.h`:389._
 
 ### `dvz_colormap_destroy()`
 
@@ -2064,7 +2068,7 @@ Destroy a colormap object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:397._
+_Declared in `include/datoviz/scene/scale.h`:447._
 
 ### `dvz_colormap_id()`
 
@@ -2083,7 +2087,7 @@ Return the scene-local identity of a colormap.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:331._
+_Declared in `include/datoviz/scene/scale.h`:381._
 
 ### `dvz_colormap_sample()`
 
@@ -2106,7 +2110,7 @@ Sample a scene-owned colormap at a normalized coordinate.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:377._
+_Declared in `include/datoviz/scene/scale.h`:427._
 
 ### `dvz_colormap_set_center()`
 
@@ -2128,7 +2132,7 @@ Invalid colormap handles are ignored.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:423._
+_Declared in `include/datoviz/scene/scale.h`:473._
 
 ### `dvz_colormap_set_stops()`
 
@@ -2154,7 +2158,7 @@ default mapping policy.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:411._
+_Declared in `include/datoviz/scene/scale.h`:461._
 
 ## Controller
 
@@ -4072,7 +4076,7 @@ Create a panel-attached legend bound to a categorical scale.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:576._
+_Declared in `include/datoviz/scene/scale.h`:626._
 
 ### `dvz_legend_clear_highlight()`
 
@@ -4091,7 +4095,7 @@ Clear all highlighted categorical legend entries.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:634._
+_Declared in `include/datoviz/scene/scale.h`:684._
 
 ### `dvz_legend_desc()`
 
@@ -4109,7 +4113,7 @@ Related: [`dvz_legend()`](#dvz_legend).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:565._
+_Declared in `include/datoviz/scene/scale.h`:615._
 
 ### `dvz_legend_destroy()`
 
@@ -4127,7 +4131,7 @@ Destroy a legend.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:594._
+_Declared in `include/datoviz/scene/scale.h`:644._
 
 ### `dvz_legend_id()`
 
@@ -4146,7 +4150,7 @@ Return the scene-local identity of a legend.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:586._
+_Declared in `include/datoviz/scene/scale.h`:636._
 
 ### `dvz_legend_set_highlight()`
 
@@ -4169,7 +4173,7 @@ This is presentation state only: the bound scale category color and label are un
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:625._
+_Declared in `include/datoviz/scene/scale.h`:675._
 
 ### `dvz_legend_set_highlights()`
 
@@ -4194,7 +4198,7 @@ This is presentation state only: the bound scale category colors and labels are 
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:648._
+_Declared in `include/datoviz/scene/scale.h`:698._
 
 ### `dvz_legend_set_layout()`
 
@@ -4215,7 +4219,7 @@ Update legend layout and placement parameters.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:604._
+_Declared in `include/datoviz/scene/scale.h`:654._
 
 ### `dvz_legend_set_title()`
 
@@ -4235,7 +4239,7 @@ Set the legend title.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:613._
+_Declared in `include/datoviz/scene/scale.h`:663._
 
 ## Link
 
@@ -6631,6 +6635,51 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/scale.h`:205._
 
+### `dvz_scale_category()`
+
+```c title="dvz_scale_category"
+_Bool dvz_scale_category(
+    const DvzScale * scale,
+    uint32_t index,
+    DvzScaleCategory * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | true when a category was copied |
+| `scale` | `const DvzScale *` | the scale |
+| `index` | `uint32_t` | category index |
+| `out` | `DvzScaleCategory *` | copied category descriptor |
+
+Copy one retained categorical entry from a scale.
+
+The copied label pointer, when non-NULL, points to scale-owned storage and remains valid until
+the scale categories are changed or the scale is destroyed.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/scale.h`:333._
+
+### `dvz_scale_category_count()`
+
+```c title="dvz_scale_category_count"
+uint32_t dvz_scale_category_count(
+    const DvzScale * scale
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `uint32_t` | category count, or 0 when the scale is invalid or has no explicit categories |
+| `scale` | `const DvzScale *` | the scale |
+
+Return the number of retained categorical entries on a scale.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/scale.h`:318._
+
 ### `dvz_scale_desc()`
 
 ```c title="dvz_scale_desc"
@@ -6666,6 +6715,31 @@ Destroy a scale object.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/scale.h`:222._
+
+### `dvz_scale_domain()`
+
+```c title="dvz_scale_domain"
+_Bool dvz_scale_domain(
+    const DvzScale * scale,
+    double * out_min,
+    double * out_max
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | true when an explicit domain was copied |
+| `scale` | `const DvzScale *` | the scale |
+| `out_min` | `double *` | domain minimum |
+| `out_max` | `double *` | domain maximum |
+
+Copy the semantic domain from a scale.
+
+Returns false when the scale is invalid or no explicit domain has been set.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/scale.h`:247._
 
 ### `dvz_scale_id()`
 
@@ -6709,7 +6783,7 @@ Entries are valid only on categorical scales. Missing ids are ignored.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:311._
+_Declared in `include/datoviz/scene/scale.h`:361._
 
 ### `dvz_scale_set_categories()`
 
@@ -6735,7 +6809,7 @@ and restores palette-index fallback for categorical mapping.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:282._
+_Declared in `include/datoviz/scene/scale.h`:308._
 
 ### `dvz_scale_set_colormap()`
 
@@ -6757,7 +6831,7 @@ Passing NULL clears the binding. Invalid scale handles are ignored.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:257._
+_Declared in `include/datoviz/scene/scale.h`:283._
 
 ### `dvz_scale_set_domain()`
 
@@ -6803,7 +6877,7 @@ Passing NULL clears the override. Invalid descriptors are ignored.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:268._
+_Declared in `include/datoviz/scene/scale.h`:294._
 
 ### `dvz_scale_set_view_range()`
 
@@ -6827,7 +6901,7 @@ Invalid ranges are ignored and leave the previous range unchanged.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:246._
+_Declared in `include/datoviz/scene/scale.h`:259._
 
 ### `dvz_scale_update_categories()`
 
@@ -6853,7 +6927,32 @@ replaced in place. New entries are appended. Duplicate ids in the input batch ar
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:297._
+_Declared in `include/datoviz/scene/scale.h`:347._
+
+### `dvz_scale_view_range()`
+
+```c title="dvz_scale_view_range"
+_Bool dvz_scale_view_range(
+    const DvzScale * scale,
+    double * out_min,
+    double * out_max
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | true when an explicit view range was copied |
+| `scale` | `const DvzScale *` | the scale |
+| `out_min` | `double *` | view-range minimum |
+| `out_max` | `double *` | view-range maximum |
+
+Copy the current visible range from a scale.
+
+Returns false when the scale is invalid or no explicit view range has been set.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/scale.h`:272._
 
 ## Scalebar
 

@@ -897,6 +897,24 @@ DVZ_EXPORT DvzResult dvz_view_resize_scaled(
 
 
 /**
+ * Resize a view with distinct logical dimensions and per-axis device scale.
+ *
+ * This is intended for hosted/offscreen views displayed in a container whose X and Y device scales
+ * differ. Most callers should use `dvz_view_resize_scaled()` when the scale is uniform.
+ *
+ * @param view the view
+ * @param logical_width logical width in pixels
+ * @param logical_height logical height in pixels
+ * @param device_scale_x physical pixels per logical pixel along X
+ * @param device_scale_y physical pixels per logical pixel along Y
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT DvzResult dvz_view_resize_scaled_xy(
+    DvzView* view, uint32_t logical_width, uint32_t logical_height, float device_scale_x,
+    float device_scale_y);
+
+
+/**
  * Enable or disable rendering for a view.
  *
  * Disabled windows remain owned by the app but dvz_view_render_once() skips them. This is

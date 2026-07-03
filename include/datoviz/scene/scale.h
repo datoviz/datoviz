@@ -235,6 +235,19 @@ DVZ_EXPORT void dvz_scale_set_domain(DvzScale* scale, double min, double max);
 
 
 /**
+ * Copy the semantic domain from a scale.
+ *
+ * Returns false when the scale is invalid or no explicit domain has been set.
+ *
+ * @param scale the scale
+ * @param out_min domain minimum
+ * @param out_max domain maximum
+ * @return true when an explicit domain was copied
+ */
+DVZ_EXPORT bool dvz_scale_domain(const DvzScale* scale, double* out_min, double* out_max);
+
+
+/**
  * Set the current visible range on a scale.
  *
  * Invalid ranges are ignored and leave the previous range unchanged.
@@ -244,6 +257,19 @@ DVZ_EXPORT void dvz_scale_set_domain(DvzScale* scale, double min, double max);
  * @param max the view-range maximum
  */
 DVZ_EXPORT void dvz_scale_set_view_range(DvzScale* scale, double min, double max);
+
+
+/**
+ * Copy the current visible range from a scale.
+ *
+ * Returns false when the scale is invalid or no explicit view range has been set.
+ *
+ * @param scale the scale
+ * @param out_min view-range minimum
+ * @param out_max view-range maximum
+ * @return true when an explicit view range was copied
+ */
+DVZ_EXPORT bool dvz_scale_view_range(const DvzScale* scale, double* out_min, double* out_max);
 
 
 /**
@@ -281,6 +307,30 @@ DVZ_EXPORT void dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* forma
  */
 DVZ_EXPORT bool dvz_scale_set_categories(
     DvzScale* scale, const DvzScaleCategory* categories, uint32_t count);
+
+
+/**
+ * Return the number of retained categorical entries on a scale.
+ *
+ * @param scale the scale
+ * @return category count, or 0 when the scale is invalid or has no explicit categories
+ */
+DVZ_EXPORT uint32_t dvz_scale_category_count(const DvzScale* scale);
+
+
+/**
+ * Copy one retained categorical entry from a scale.
+ *
+ * The copied label pointer, when non-NULL, points to scale-owned storage and remains valid until
+ * the scale categories are changed or the scale is destroyed.
+ *
+ * @param scale the scale
+ * @param index category index
+ * @param out copied category descriptor
+ * @return true when a category was copied
+ */
+DVZ_EXPORT bool
+dvz_scale_category(const DvzScale* scale, uint32_t index, DvzScaleCategory* out);
 
 
 /**

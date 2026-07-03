@@ -18,7 +18,7 @@ Common workflows:
 - [Handle input events](../../how-to/input-events.md)
 - [Save screenshots](../../how-to/capture-an-image.md)
 
-Functions: 203
+Functions: 204
 
 ## Symbol Groups
 
@@ -32,7 +32,7 @@ Functions: 203
 | [Pointer](#pointer) | 5 | `include/datoviz/input/pointer.h` |
 | [Stream](#stream) | 17 | `include/datoviz/stream.h`, `include/datoviz/video.h` |
 | [Video](#video) | 2 | `include/datoviz/video.h` |
-| [View](#view) | 58 | 3 headers |
+| [View](#view) | 59 | 3 headers |
 | [Window](#window) | 39 | `include/datoviz/window.h`, `include/datoviz/window/backend.h` |
 
 ??? info "Grouped symbol index"
@@ -229,6 +229,7 @@ Functions: 203
     | [`dvz_view_request_frame()`](#dvz_view_request_frame) | `include/datoviz/app.h` |
     | [`dvz_view_resize()`](#dvz_view_resize) | `include/datoviz/app.h` |
     | [`dvz_view_resize_scaled()`](#dvz_view_resize_scaled) | `include/datoviz/app.h` |
+    | [`dvz_view_resize_scaled_xy()`](#dvz_view_resize_scaled_xy) | `include/datoviz/app.h` |
     | [`dvz_view_resolved_size()`](#dvz_view_resolved_size) | `include/datoviz/app.h` |
     | [`dvz_view_set_frame_callback()`](#dvz_view_set_frame_callback) | `include/datoviz/app.h` |
     | [`dvz_view_set_gui_callback()`](#dvz_view_set_gui_callback) | `include/datoviz/gui.h` |
@@ -410,7 +411,7 @@ error
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:1015._
+_Declared in `include/datoviz/app.h`:1033._
 
 ### `dvz_app_resources()`
 
@@ -450,7 +451,7 @@ continuous mode renders active windows until every interactive window closes.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:1028._
+_Declared in `include/datoviz/app.h`:1046._
 
 ### `dvz_app_vk_instance()`
 
@@ -3323,7 +3324,7 @@ remain valid until the callback has run.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/app.h`:956._
+_Declared in `include/datoviz/app.h`:974._
 
 ### `dvz_view_record_start()`
 
@@ -3409,7 +3410,7 @@ Return whether rendering is enabled for a view.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:917._
+_Declared in `include/datoviz/app.h`:935._
 
 ### `dvz_view_render_once()`
 
@@ -3434,7 +3435,7 @@ surface is unavailable, after a disabled-view no-op, or a negative error code
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:1005._
+_Declared in `include/datoviz/app.h`:1023._
 
 ### `dvz_view_render_scale()`
 
@@ -3600,7 +3601,7 @@ example QWindow::requestUpdate(), QWidget::update(), an SDL wakeup, or a Tk idle
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:928._
+_Declared in `include/datoviz/app.h`:946._
 
 ### `dvz_view_resize()`
 
@@ -3657,6 +3658,36 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/app.h`:895._
 
+### `dvz_view_resize_scaled_xy()`
+
+```c title="dvz_view_resize_scaled_xy"
+DvzResult dvz_view_resize_scaled_xy(
+    DvzView * view,
+    uint32_t logical_width,
+    uint32_t logical_height,
+    float device_scale_x,
+    float device_scale_y
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, negative on error |
+| `view` | `DvzView *` | the view |
+| `logical_width` | `uint32_t` | logical width in pixels |
+| `logical_height` | `uint32_t` | logical height in pixels |
+| `device_scale_x` | `float` | physical pixels per logical pixel along X |
+| `device_scale_y` | `float` | physical pixels per logical pixel along Y |
+
+Resize a view with distinct logical dimensions and per-axis device scale.
+
+This is intended for hosted/offscreen views displayed in a container whose X and Y device scales
+differ. Most callers should use `dvz_view_resize_scaled()` when the scale is uniform.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/app.h`:912._
+
 ### `dvz_view_resolved_size()`
 
 ```c title="dvz_view_resolved_size"
@@ -3700,7 +3731,7 @@ the callback are therefore allowed and become visible on the next frame.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/app.h`:985._
+_Declared in `include/datoviz/app.h`:1003._
 
 ### `dvz_view_set_gui_callback()`
 
@@ -3748,7 +3779,7 @@ intended for hosted/offscreen integrations such as hidden dock tabs.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:908._
+_Declared in `include/datoviz/app.h`:926._
 
 ### `dvz_view_set_request_frame_callback()`
 
@@ -3773,7 +3804,7 @@ render by itself. The host remains responsible for calling dvz_view_render_once(
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/app.h`:969._
+_Declared in `include/datoviz/app.h`:987._
 
 ### `dvz_view_set_user_scale()`
 
@@ -4021,7 +4052,7 @@ thread by dvz_view_render_once().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:940._
+_Declared in `include/datoviz/app.h`:958._
 
 ## Window
 
