@@ -360,7 +360,7 @@ static DvzFramePlanClipRect _scene_visual_clip_rect(
     DvzFramePlanClipRect explicit_clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
     if (_scene_visual_explicit_clip_rect(attach, &explicit_clip_rect))
         return explicit_clip_rect;
-    if (visual->type == DVZ_VISUAL_TYPE_GLYPH && attach->coord_space == DVZ_COORD_DATA)
+    if (visual->type == DVZ_VISUAL_TYPE_GLYPH && attach->coord_space == DVZ_VISUAL_COORD_DATA)
         return DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
     if (visual->ops != NULL && visual->ops->panel_clip_rect)
     {
@@ -394,7 +394,7 @@ static DvzFramePlanViewportRect _scene_visual_viewport_rect(
     {
         return DVZ_FRAME_PLAN_VIEWPORT_PANEL;
     }
-    if (attach->coord_space == DVZ_COORD_DATA || attach->coord_space == DVZ_COORD_VIEW)
+    if (attach->coord_space == DVZ_VISUAL_COORD_DATA || attach->coord_space == DVZ_VISUAL_COORD_VIEW)
     {
         return DVZ_FRAME_PLAN_VIEWPORT_PLOT;
     }
@@ -551,8 +551,8 @@ static bool _scene_append_visual_to_render_pass(
         return false;
     node->u.render.visual_mvp[slot] = visual_mvp;
     node->u.render.visual_has_mvp[slot] =
-        visual->has_local_transform || attach->coord_space == DVZ_COORD_DATA ||
-        attach->coord_space == DVZ_COORD_PANEL ||
+        visual->has_local_transform || attach->coord_space == DVZ_VISUAL_COORD_DATA ||
+        attach->coord_space == DVZ_VISUAL_COORD_PANEL ||
         attach->controller_mode == DVZ_CONTROLLER_APPLY_VIEW_PROJ;
     return true;
 }

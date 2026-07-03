@@ -88,7 +88,7 @@ static bool _add_domain_shape(DvzScene* scene, DvzPanel* panel, DvzColor color)
     if (dvz_path_set_join(path, DVZ_PATH_JOIN_ROUND, 4.0f) != 0)
         return false;
     DvzVisualAttachDesc path_attach = {
-        DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .coord_space = DVZ_COORD_DATA};
+        DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .coord_space = DVZ_VISUAL_COORD_DATA};
     if (dvz_panel_add_visual(panel, path, &path_attach) != 0)
         return false;
 

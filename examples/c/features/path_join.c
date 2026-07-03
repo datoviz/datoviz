@@ -283,7 +283,7 @@ _add_join_column(DvzScene* scene, DvzPanel* panel, DvzPathJoin join, float cx, D
         return false;
 
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_VIEW;
+    attach.coord_space = DVZ_VISUAL_COORD_VIEW;
     return dvz_panel_add_visual(panel, visual, &attach) == 0;
 }
 

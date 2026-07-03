@@ -312,7 +312,7 @@ static bool _bounds_overlay_units_per_px(
     if (!(plot_width > 0.0f) || !(plot_height > 0.0f))
         return false;
 
-    if (attach->coord_space == DVZ_COORD_DATA)
+    if (attach->coord_space == DVZ_VISUAL_COORD_DATA)
     {
         double xmin = 0.0;
         double xmax = 0.0;
@@ -330,7 +330,7 @@ static bool _bounds_overlay_units_per_px(
         return isfinite(*out_x) && isfinite(*out_y);
     }
 
-    if (attach->coord_space == DVZ_COORD_VIEW)
+    if (attach->coord_space == DVZ_VISUAL_COORD_VIEW)
     {
         float visual[4] = {0};
         _scene_panel_plot_visual_rect(panel, visual);

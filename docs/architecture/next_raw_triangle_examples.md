@@ -57,7 +57,7 @@ added so examples (and future user code) can compile GLSL strings without going 
  * @param stage   VK_SHADER_STAGE_VERTEX_BIT or VK_SHADER_STAGE_FRAGMENT_BIT
  * @param glsl    null-terminated GLSL source
  * @param out_size receives the byte size of the returned buffer
- * @returns heap-allocated SPIR-V words (caller must dvz_free()), or NULL on error
+ * @returns heap-allocated SPIR-V words (caller must dvz_memory_free()), or NULL on error
  */
 DVZ_EXPORT uint32_t* dvz_compile_glsl(VkShaderStageFlagBits stage,
                                        const char* glsl,

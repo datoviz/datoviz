@@ -789,7 +789,7 @@ DVZ_EXPORT void dvz_panel_frame_unref(DvzPanelFrameSnapshot* snapshot);
  * Figure, panel, inner, and plot pixel spaces use logical pixels. Panel pixels are local to the
  * outer panel rectangle and match `dvz_panel_query()` coordinates. DATA coordinates use the
  * current visible data domain. VIEW coordinates are the visual coordinates used by visuals attached
- * with `DVZ_COORD_VIEW`.
+ * with `DVZ_VISUAL_COORD_VIEW`.
  *
  * @param panel the panel
  * @param from source coordinate space
@@ -1063,7 +1063,7 @@ DVZ_EXPORT DvzVisualShaderDesc dvz_visual_shader_desc(void);
  * @param visual the visual
  * @param desc per-visual attachment options (z_layer, controller_mode, coord_space, clip_rect,
  *             viewport_rect); pass NULL for defaults (z_layer=0,
- *             controller_mode=DVZ_CONTROLLER_APPLY, coord_space=DVZ_COORD_DATA,
+ *             controller_mode=DVZ_CONTROLLER_APPLY, coord_space=DVZ_VISUAL_COORD_DATA,
  *             clip_rect=DVZ_VISUAL_CLIP_AUTO, viewport_rect=DVZ_VISUAL_VIEWPORT_AUTO)
  * @return 0 on success, -1 on error
  */
@@ -2808,7 +2808,7 @@ DVZ_EXPORT DvzGraphEdgeStyle dvz_graph_edge_style(void);
  * @param node_count number of nodes
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_graph_node_count(DvzGraph* graph, uint32_t node_count);
+DVZ_EXPORT int dvz_graph_set_node_count(DvzGraph* graph, uint32_t node_count);
 
 
 /**
@@ -2833,7 +2833,7 @@ DVZ_EXPORT int dvz_graph_node_positions(
  * @param edge_count number of edges
  * @return 0 on success, -1 on invalid endpoints or allocation failure
  */
-DVZ_EXPORT int dvz_graph_edge_count(DvzGraph* graph, uint32_t edge_count);
+DVZ_EXPORT int dvz_graph_set_edge_count(DvzGraph* graph, uint32_t edge_count);
 
 
 /**

@@ -1958,7 +1958,7 @@ int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstC
     AT(fill_attach->generated_role == DVZ_GENERATED_VISUAL_GUIDE_FILL);
     AT(outline_attach->generated_role == DVZ_GENERATED_VISUAL_GUIDE_OUTLINE);
     AT(fill_attach->z_layer < line_attach->z_layer);
-    AT(fill_attach->coord_space == DVZ_COORD_DATA);
+    AT(fill_attach->coord_space == DVZ_VISUAL_COORD_DATA);
     AT(fill_attach->controller_mode == DVZ_CONTROLLER_APPLY);
     AT(line_policy.clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT);
     AT(line_policy.viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PLOT);
@@ -3492,7 +3492,7 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
         {
             found_data_attach = true;
             AT(panel->visuals[i].controller_mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL);
-            AT(panel->visuals[i].coord_space == DVZ_COORD_DATA);
+            AT(panel->visuals[i].coord_space == DVZ_VISUAL_COORD_DATA);
         }
     }
     AT(found_data_attach);

@@ -72,7 +72,7 @@ static bool _add_geometry(DvzScene* scene, DvzPanel* panel, DvzGeometry* geometr
         return false;
     }
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_DATA;
+    attach.coord_space = DVZ_VISUAL_COORD_DATA;
     const bool ok = dvz_mesh_set_geometry(mesh, geometry) == 0 &&
                     dvz_panel_add_visual(panel, mesh, &attach) == 0;
     dvz_geometry_destroy(geometry);

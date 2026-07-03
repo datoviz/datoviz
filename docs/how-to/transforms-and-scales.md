@@ -61,12 +61,12 @@ dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
 dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
 
 DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-attach.coord_space = DVZ_COORD_DATA;
+attach.coord_space = DVZ_VISUAL_COORD_DATA;
 dvz_panel_add_visual(panel, visual, &attach);
 ```
 
-Use `DVZ_COORD_VIEW` only when positions are already normalized view coordinates, typically around
-`[-1, +1]`. Use `DVZ_COORD_PANEL` for panel-fixed overlays. See
+Use `DVZ_VISUAL_COORD_VIEW` only when positions are already normalized view coordinates, typically around
+`[-1, +1]`. Use `DVZ_VISUAL_COORD_PANEL` for panel-fixed overlays. See
 [Use coordinate systems](coordinate-systems.md) for the full coordinate-space distinction.
 
 ## User Scale
@@ -118,7 +118,7 @@ new positions every frame when the vertex data itself is unchanged.
 ## Common Mistakes
 
 - Using transforms to compensate for a wrong panel domain.
-- Uploading pre-normalized view coordinates with the default `DVZ_COORD_DATA` attachment, then
+- Uploading pre-normalized view coordinates with the default `DVZ_VISUAL_COORD_DATA` attachment, then
   adding a transform to make the result look right.
 - Applying both data scaling and visual scaling without documenting the final units.
 - Expecting `dvz_view_set_user_scale()` to change data coordinates or camera distance.

@@ -276,7 +276,7 @@ DVZ_EXPORT int dvz_canvas_capture_rgba_into(
  * @param out_height destination height in pixels
  * @param out_rgba destination pointer receiving an allocated sRGB RGBA8 buffer
  * @returns 0 on success or a negative error code
- * @note caller owns `*out_rgba` and must release it with `dvz_free()`
+ * @note caller owns `*out_rgba` and must release it with `dvz_memory_free()`
  */
 DVZ_EXPORT int
 dvz_canvas_capture_rgba(

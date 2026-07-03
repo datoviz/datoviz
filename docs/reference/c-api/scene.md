@@ -4680,7 +4680,7 @@ int dvz_panel_add_visual(
 Add a visual to a panel.
 
 defaults (z_layer=0, controller_mode=DVZ_CONTROLLER_APPLY,
-coord_space=DVZ_COORD_DATA)
+coord_space=DVZ_VISUAL_COORD_DATA)
 
 Raw ctypes: emitted.
 
@@ -5652,7 +5652,7 @@ Convert one 2D point between explicit panel coordinate spaces.
 Figure, panel, inner, and plot pixel spaces use logical pixels. Panel pixels are local to the
 outer panel rectangle and match `dvz_panel_query()` coordinates. DATA coordinates use the
 current visible data domain. VIEW coordinates are the visual coordinates used by visuals attached
-with `DVZ_COORD_VIEW`.
+with `DVZ_VISUAL_COORD_VIEW`.
 
 Raw ctypes: emitted.
 

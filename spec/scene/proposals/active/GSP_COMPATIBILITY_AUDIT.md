@@ -94,7 +94,7 @@ longer open RC1 blockers.
 | High-level Python object model | Maintain GSP scene/session/layer objects and translate to Datoviz public C calls | Public handles and stable ids |
 | Protocol ID registry | Keep GSP ids in adapter maps unless Datoviz adds explicit user ids | Public Datoviz object id getters or stable mapping hooks |
 | NumPy dtype/shape validation | Validate arrays before calling raw ctypes or Datoviz top-level facade | `dvz_visual_set_data*`, sampled fields, scene buffers |
-| Nonlinear transforms/projections | Apply unsupported nonlinear or projection transforms in GSP/producer code before upload for v0.4; ordinary 2D panel mapping should upload DATA coordinates and attach with `DVZ_COORD_DATA` | Datoviz DATA/VIEW/PANEL coordinates and matrix transforms |
+| Nonlinear transforms/projections | Apply unsupported nonlinear or projection transforms in GSP/producer code before upload for v0.4; ordinary 2D panel mapping should upload DATA coordinates and attach with `DVZ_VISUAL_COORD_DATA` | Datoviz DATA/VIEW/PANEL coordinates and matrix transforms |
 | Vector export | Route to Matplotlib/reference backend for early GSP | Datoviz raster capture only |
 | JSON/protocol serialization | Keep in GSP; local Datoviz path should use pointers/buffers | Public C ABI |
 | Virtual/out-of-core data policy | Decide streaming/cache behavior in GSP | Datoviz region/range update APIs |

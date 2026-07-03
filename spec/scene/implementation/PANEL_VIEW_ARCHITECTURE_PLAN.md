@@ -47,9 +47,9 @@ Remove compatibility-era names instead of carrying them into the v0.4 release su
 
 Require explicit coordinate-space selection through:
 
-1. `DVZ_COORD_VIEW`: metric panel view coordinates, affected by equal-aspect panel framing;
-2. `DVZ_COORD_DATA`: data/domain coordinates, mapped through panel DATA -> VIEW;
-3. `DVZ_COORD_PANEL`: normalized panel coordinates, intentionally viewport-shaped.
+1. `DVZ_VISUAL_COORD_VIEW`: metric panel view coordinates, affected by equal-aspect panel framing;
+2. `DVZ_VISUAL_COORD_DATA`: data/domain coordinates, mapped through panel DATA -> VIEW;
+3. `DVZ_VISUAL_COORD_PANEL`: normalized panel coordinates, intentionally viewport-shaped.
 
 The release-candidate panel view API names are:
 
@@ -100,7 +100,7 @@ Scene emission should preserve these rules:
    drawing;
 3. when draw order returns to a panel-clipped or panel-coordinate visual, viewport and scissor must
    return to the panel rectangle;
-4. fixed overlays, panel backgrounds, borders, and other `DVZ_COORD_PANEL` adornments remain in
+4. fixed overlays, panel backgrounds, borders, and other `DVZ_VISUAL_COORD_PANEL` adornments remain in
    panel coordinates and do not inherit the plot viewport;
 5. framebuffer, native, and WebGPU emission paths must derive viewport and scissor from the same
    frame-plan plot descriptor.
@@ -173,8 +173,8 @@ resolved panel extents.
 
 Before or alongside the API break, update canonical specs so they no longer describe the old model:
 
-1. `spec/scene/pipeline/TRANSFORM_PIPELINE.md`: replace `DVZ_COORD_VISUAL` with `DVZ_COORD_VIEW`
-   and `DVZ_COORD_PANEL`; state that panel view/framing owns aspect policy.
+1. `spec/scene/pipeline/TRANSFORM_PIPELINE.md`: replace `DVZ_COORD_VISUAL` with `DVZ_VISUAL_COORD_VIEW`
+   and `DVZ_VISUAL_COORD_PANEL`; state that panel view/framing owns aspect policy.
 2. `spec/scene/core/PANEL_LAYOUT.md`: make plot rect versus panel rect interaction explicit for
    the view resolver.
 3. `spec/scene/interaction/CONTROLLERS.md`: clarify that panzoom aspect is gesture policy only;
@@ -216,7 +216,7 @@ Focused coverage should include:
 1. equal-aspect VIEW-coordinate geometry on wide and tall panels;
 2. DATA-coordinate transforms after resize and reserve changes;
 3. axes/grid tick alignment against resolved visible DATA domains;
-4. `DVZ_COORD_PANEL` stretch behavior;
+4. `DVZ_VISUAL_COORD_PANEL` stretch behavior;
 5. linked `EXTENT_X` and `EXTENT_Y` behavior across different panel aspect ratios;
 6. plot-clipped draw emission uses matching plot viewport and plot scissor;
 7. panning near plot boundaries does not make grid lines disappear or reappear from one-pixel

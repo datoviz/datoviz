@@ -4502,7 +4502,7 @@ uint32_t * dvz_compile_glsl(
 
 Compile a GLSL source string to SPIR-V using shaderc (lazy-loaded).
 
-The returned buffer is heap-allocated and must be freed with dvz_free().
+The returned buffer is heap-allocated and must be freed with dvz_memory_free().
 Returns NULL if shaderc is unavailable or compilation fails.
 
 Raw ctypes: emitted.
@@ -9196,7 +9196,7 @@ uint8_t * dvz_load_png(
 
 Decode a PNG image from memory into tightly packed RGB8 pixels.
 
-with dvz_free()
+with dvz_memory_free()
 
 Raw ctypes: emitted.
 
@@ -9226,7 +9226,7 @@ int dvz_make_png(
 
 Compress an sRGB RGB8 image to PNG and write it to a memory buffer.
 
-dvz_free()
+dvz_memory_free()
 
 Raw ctypes: emitted.
 
@@ -10045,7 +10045,7 @@ void * dvz_parse_npy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `void *` | owned buffer containing the array elements, or NULL on failure; free with dvz_free() |
+| return | `void *` | owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free() |
 | `size` | `DvzSize` | of the file |
 | `npy_bytes` | `char *` | the contents of the NPY file |
 
@@ -10391,7 +10391,7 @@ void * dvz_read_file(
 
 Read a binary file.
 
-dvz_free()
+dvz_memory_free()
 
 Raw ctypes: emitted.
 
@@ -10408,7 +10408,7 @@ char * dvz_read_gz(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `char *` | owned decompressed buffer, or NULL on failure; free with dvz_free() |
+| return | `char *` | owned decompressed buffer, or NULL on failure; free with dvz_memory_free() |
 | `filename` | `const char *` | path of the GZIP compressed file to open |
 | `size` | `DvzSize *` |  |
 
@@ -10452,7 +10452,7 @@ void * dvz_read_npy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `void *` | owned buffer containing the array elements, or NULL on failure; free with dvz_free() |
+| return | `void *` | owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free() |
 | `filename` | `const char *` | path of the file to open |
 | `size` | `DvzSize *` |  |
 
@@ -10474,7 +10474,7 @@ uint8_t * dvz_read_ppm(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `uint8_t *` | owned tightly packed RGB8 pixel buffer, or NULL on failure; free with dvz_free() |
+| return | `uint8_t *` | owned tightly packed RGB8 pixel buffer, or NULL on failure; free with dvz_memory_free() |
 | `filename` | `const char *` | path of the file to open |
 | `width` | `int *` |  |
 | `height` | `int *` |  |

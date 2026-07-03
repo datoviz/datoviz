@@ -78,7 +78,7 @@ DRP2 emission.
 
 ## Panel Domains
 
-The panel owns a source data-space domain per dimension for visuals attached with `DVZ_COORD_DATA`
+The panel owns a source data-space domain per dimension for visuals attached with `DVZ_VISUAL_COORD_DATA`
 unless a per-visual override is provided. The panel view resolver may derive fitted and visible
 domains from this source state, but it must not rewrite the source domain to apply view aspect
 policy. `DvzDataDomain` has:
@@ -133,17 +133,17 @@ DataSpace -> coord_transform -> Cartesian DataSpace -> domain normalization -> V
 Zero-initialized params use defaults. Panel domains always refer to the post-transform Cartesian
 space. Polar axes, graticules, map tiling/LOD, and geographic tick formatting are deferred.
 
-The installed v0.4 public ABI supports `coord_space=DVZ_COORD_VIEW`, `coord_space=DVZ_COORD_DATA`,
-and `coord_space=DVZ_COORD_PANEL` in `DvzVisualAttachDesc`. Future pixel-space, domain-override, or
+The installed v0.4 public ABI supports `coord_space=DVZ_VISUAL_COORD_VIEW`, `coord_space=DVZ_VISUAL_COORD_DATA`,
+and `coord_space=DVZ_VISUAL_COORD_PANEL` in `DvzVisualAttachDesc`. Future pixel-space, domain-override, or
 nonlinear transform descriptor fields should be appended to `DvzVisualAttachDesc` or introduced
 through a new growable descriptor with the same `struct_size`/`flags` prologue. v0.4 must reject
 unknown attachment flags or unsupported coordinate-space values rather than accepting no-op
 projection requests.
 
 `dvz_visual_attach_desc()` and `dvz_panel_add_visual(panel, visual, NULL)` default to
-`coord_space=DVZ_COORD_DATA`. Without an explicit panel domain, DATA uses the default `[-1, +1]`
+`coord_space=DVZ_VISUAL_COORD_DATA`. Without an explicit panel domain, DATA uses the default `[-1, +1]`
 domain and therefore maps normalized examples like VIEW. With explicit domains or axes, uploaded
-positions are interpreted as semantic data coordinates. Use `DVZ_COORD_VIEW` explicitly for
+positions are interpreted as semantic data coordinates. Use `DVZ_VISUAL_COORD_VIEW` explicitly for
 pre-normalized view-space/reference visuals.
 
 
@@ -169,7 +169,7 @@ overrides.
 
 | Field | Rule |
 |---|---|
-| `coord_space` | `DVZ_COORD_VIEW`, `DVZ_COORD_DATA`, or `DVZ_COORD_PANEL`; pixel space is future work |
+| `coord_space` | `DVZ_VISUAL_COORD_VIEW`, `DVZ_VISUAL_COORD_DATA`, or `DVZ_VISUAL_COORD_PANEL`; pixel space is future work |
 | `clip_rect` | `DVZ_VISUAL_CLIP_AUTO`, `DVZ_VISUAL_CLIP_PANEL`, or `DVZ_VISUAL_CLIP_PLOT` |
 | `viewport_rect` | `DVZ_VISUAL_VIEWPORT_AUTO`, `DVZ_VISUAL_VIEWPORT_PANEL`, `DVZ_VISUAL_VIEWPORT_PLOT`, or `DVZ_VISUAL_VIEWPORT_TARGET` |
 | `coord_transform` / `transform_params` | future field: optional pre-normalization transform |
@@ -181,9 +181,9 @@ Coordinate-space meanings:
 
 | Value | Meaning |
 |---|---|
-| `DVZ_COORD_VIEW` | metric panel view coordinates, affected by equal-aspect panel view fit |
-| `DVZ_COORD_DATA` | mapped through panel DATA domains and the resolved DATA-to-VIEW model |
-| `DVZ_COORD_PANEL` | normalized panel coordinates over the full panel rectangle, intentionally viewport-shaped |
+| `DVZ_VISUAL_COORD_VIEW` | metric panel view coordinates, affected by equal-aspect panel view fit |
+| `DVZ_VISUAL_COORD_DATA` | mapped through panel DATA domains and the resolved DATA-to-VIEW model |
+| `DVZ_VISUAL_COORD_PANEL` | normalized panel coordinates over the full panel rectangle, intentionally viewport-shaped |
 
 `coord_space` and `controller_mode` are independent. Typical combinations include
 default `DATA+APPLY` for data visuals, `PANEL+FIXED` for static panel overlays, and

@@ -834,8 +834,8 @@ int test_axis_domain_and_ticks(TstContext* suite, const TstCase* item)
     AT(panel->visuals[1].generated_role == DVZ_GENERATED_VISUAL_AXIS_GRID);
     AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
     AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_APPLY);
-    AT(panel->visuals[0].coord_space == DVZ_COORD_VIEW);
-    AT(panel->visuals[1].coord_space == DVZ_COORD_VIEW);
+    AT(panel->visuals[0].coord_space == DVZ_VISUAL_COORD_VIEW);
+    AT(panel->visuals[1].coord_space == DVZ_VISUAL_COORD_VIEW);
     AT(marks_policy.clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PANEL);
     AT(marks_policy.viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PANEL);
     AT(grid_policy.clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT);
@@ -2677,7 +2677,7 @@ static int test_axis_data_visual_mvp_uses_view_extent_after_resize(
     AT(dvz_visual_set_data(point, "size", sizes, 2) == 0);
 
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_DATA;
+    attach.coord_space = DVZ_VISUAL_COORD_DATA;
     AT(dvz_panel_add_visual(panel, point, &attach) == 0);
 
     dvz_figure_resize(figure, 1605, 1330);
@@ -2740,7 +2740,7 @@ static int test_axis_default_data_attachment_uses_default_domain(
     AT(dvz_visual_set_data(point, "color", colors, 2) == 0);
     AT(dvz_visual_set_data(point, "size", sizes, 2) == 0);
     AT(dvz_panel_add_visual(panel, point, NULL) == 0);
-    AT(panel->visuals[0].coord_space == DVZ_COORD_DATA);
+    AT(panel->visuals[0].coord_space == DVZ_VISUAL_COORD_DATA);
 
     DvzFramePlan* plan = dvz_frame_plan("axis.default_data_attachment", 0);
     ANN(plan);
@@ -2809,7 +2809,7 @@ static int test_axis_default_data_zero_differs_from_explicit_view_zero(
     AT(dvz_visual_set_data(view_point, "color", &color, 1) == 0);
     AT(dvz_visual_set_data(view_point, "size", &size, 1) == 0);
     DvzVisualAttachDesc view_attach = dvz_visual_attach_desc();
-    view_attach.coord_space = DVZ_COORD_VIEW;
+    view_attach.coord_space = DVZ_VISUAL_COORD_VIEW;
     AT(dvz_panel_add_visual(panel, view_point, &view_attach) == 0);
 
     DvzFramePlan* plan = dvz_frame_plan("axis.data_zero_vs_view_zero", 0);
@@ -2987,7 +2987,7 @@ static int test_axis_integer_lattice_panzoom_alignment(TstContext* suite, const 
     };
     AT(dvz_visual_set_data_many(point, updates, 3) == 0);
     DvzVisualAttachDesc view_attach = dvz_visual_attach_desc();
-    view_attach.coord_space = DVZ_COORD_VIEW;
+    view_attach.coord_space = DVZ_VISUAL_COORD_VIEW;
     AT(dvz_panel_add_visual(panel, point, &view_attach) == 0);
 
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);

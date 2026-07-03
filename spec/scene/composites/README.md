@@ -144,9 +144,9 @@ Recommended first API shape:
 
 ```c
 DvzGraph* graph = dvz_graph(scene, 0);
-dvz_graph_node_count(graph, node_count);
+dvz_graph_set_node_count(graph, node_count);
 dvz_graph_node_positions(graph, 0, node_count, positions);
-dvz_graph_edge_count(graph, edge_count);
+dvz_graph_set_edge_count(graph, edge_count);
 dvz_graph_edges(graph, 0, edge_count, endpoints); // packed source,target pairs
 dvz_graph_node_ids(graph, 0, node_count, node_ids);
 dvz_graph_edge_ids(graph, 0, edge_count, edge_ids);

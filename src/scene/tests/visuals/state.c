@@ -28,7 +28,7 @@ int test_scene_visual_attach_default_coord_space(TstContext* suite, const TstCas
     (void)item;
 
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    AT(attach.coord_space == DVZ_COORD_DATA);
+    AT(attach.coord_space == DVZ_VISUAL_COORD_DATA);
     AT(attach.clip_rect == DVZ_VISUAL_CLIP_AUTO);
     AT(attach.viewport_rect == DVZ_VISUAL_VIEWPORT_AUTO);
 
@@ -50,7 +50,7 @@ int test_scene_visual_attach_default_coord_space(TstContext* suite, const TstCas
     AT(panel->visuals[1].visual == explicit_visual);
     AT(panel->visuals[0].z_layer == panel->visuals[1].z_layer);
     AT(panel->visuals[0].controller_mode == panel->visuals[1].controller_mode);
-    AT(panel->visuals[0].coord_space == DVZ_COORD_DATA);
+    AT(panel->visuals[0].coord_space == DVZ_VISUAL_COORD_DATA);
     AT(panel->visuals[0].coord_space == panel->visuals[1].coord_space);
     AT(panel->visuals[0].clip_rect == DVZ_VISUAL_CLIP_AUTO);
     AT(panel->visuals[0].clip_rect == panel->visuals[1].clip_rect);
@@ -1067,7 +1067,7 @@ int test_scene_panel_bounds_overlay_sphere_exact_radius_bounds(
     ANN(panel->bounds_visual);
     const DvzPanelAttach* overlay_attach = _scene_test_panel_attach(panel, panel->bounds_visual);
     ANN(overlay_attach);
-    AT(overlay_attach->coord_space == DVZ_COORD_DATA);
+    AT(overlay_attach->coord_space == DVZ_VISUAL_COORD_DATA);
 
     int start_idx = _attr_index(panel->bounds_visual, "position_start");
     int end_idx = _attr_index(panel->bounds_visual, "position_end");
@@ -1473,15 +1473,15 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
 
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
     attach.z_layer = 5;
-    attach.coord_space = DVZ_COORD_DATA;
+    attach.coord_space = DVZ_VISUAL_COORD_DATA;
     AT(dvz_panel_add_composite(panel, composite, &attach) == 0);
     AT(panel->visual_count == 2);
     AT(panel->visuals[0].visual == fill);
     AT(panel->visuals[0].z_layer == 5);
-    AT(panel->visuals[0].coord_space == DVZ_COORD_DATA);
+    AT(panel->visuals[0].coord_space == DVZ_VISUAL_COORD_DATA);
     AT(panel->visuals[1].visual == stroke);
     AT(panel->visuals[1].z_layer == 6);
-    AT(panel->visuals[1].coord_space == DVZ_COORD_DATA);
+    AT(panel->visuals[1].coord_space == DVZ_VISUAL_COORD_DATA);
     AT(dvz_panel_add_composite(panel, composite, NULL) == 0);
     AT(panel->visual_count == 2);
 
@@ -1642,7 +1642,7 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     ANN(composite);
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
     attach.z_layer = 3;
-    attach.coord_space = DVZ_COORD_DATA;
+    attach.coord_space = DVZ_VISUAL_COORD_DATA;
     AT(dvz_panel_add_composite(panel, composite, &attach) == 0);
     AT(panel->visual_count == 2);
 
@@ -1652,10 +1652,10 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     ANN(stroke);
     AT(panel->visuals[0].visual == fill);
     AT(panel->visuals[0].z_layer == 3);
-    AT(panel->visuals[0].coord_space == DVZ_COORD_DATA);
+    AT(panel->visuals[0].coord_space == DVZ_VISUAL_COORD_DATA);
     AT(panel->visuals[1].visual == stroke);
     AT(panel->visuals[1].z_layer == 4);
-    AT(panel->visuals[1].coord_space == DVZ_COORD_DATA);
+    AT(panel->visuals[1].coord_space == DVZ_VISUAL_COORD_DATA);
 
     DvzVisualDataView position_view = {0};
     AT(dvz_visual_data(fill, "position", &position_view) == 0);
@@ -1776,10 +1776,10 @@ int test_scene_graph_composite(TstContext* suite, const TstCase* item)
         {1.0, 0.0, 0.0},
         {0.5, 1.0, 0.0},
     };
-    AT(dvz_graph_node_count(graph, 3) == 0);
+    AT(dvz_graph_set_node_count(graph, 3) == 0);
     AT(dvz_graph_node_positions(graph, 0, 3, positions) == 0);
     const uint32_t edges[4] = {0, 1, 1, 2};
-    AT(dvz_graph_edge_count(graph, 2) == 0);
+    AT(dvz_graph_set_edge_count(graph, 2) == 0);
     AT(dvz_graph_edges(graph, 0, 2, edges) == 0);
     const uint64_t node_ids[3] = {101, 102, 103};
     const uint64_t edge_ids[2] = {201, 202};

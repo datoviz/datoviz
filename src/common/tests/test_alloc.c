@@ -21,6 +21,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "datoviz/common/functions.h"
 #include "test_common.h"
 #include "testing.h"
 #include "datoviz/math/types.h"
@@ -43,7 +44,8 @@ int test_alloc_basic(TstContext* suite, const TstCase* tstitem)
     AT(buffer != NULL);
     for (uint32_t i = 0; i < 128; i++)
         buffer[i] = (uint8_t)i;
-    dvz_free(buffer);
+    dvz_memory_free(buffer);
+    dvz_memory_free(NULL);
 
     // calloc zero initialisation and realloc growth
     uint32_t* values = (uint32_t*)dvz_calloc(4, sizeof(uint32_t));

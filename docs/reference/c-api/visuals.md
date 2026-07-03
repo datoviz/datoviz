@@ -150,13 +150,13 @@ Functions: 202
     | [`dvz_graph_destroy()`](#dvz_graph_destroy) | `include/datoviz/scene.h` |
     | [`dvz_graph_edge_colors()`](#dvz_graph_edge_colors) | `include/datoviz/scene.h` |
     | [`dvz_graph_edge_controls()`](#dvz_graph_edge_controls) | `include/datoviz/scene.h` |
-    | [`dvz_graph_edge_count()`](#dvz_graph_edge_count) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_edge_count()`](#dvz_graph_set_edge_count) | `include/datoviz/scene.h` |
     | [`dvz_graph_edge_ids()`](#dvz_graph_edge_ids) | `include/datoviz/scene.h` |
     | [`dvz_graph_edge_style()`](#dvz_graph_edge_style) | `include/datoviz/scene.h` |
     | [`dvz_graph_edge_widths()`](#dvz_graph_edge_widths) | `include/datoviz/scene.h` |
     | [`dvz_graph_edges()`](#dvz_graph_edges) | `include/datoviz/scene.h` |
     | [`dvz_graph_node_colors()`](#dvz_graph_node_colors) | `include/datoviz/scene.h` |
-    | [`dvz_graph_node_count()`](#dvz_graph_node_count) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_node_count()`](#dvz_graph_set_node_count) | `include/datoviz/scene.h` |
     | [`dvz_graph_node_ids()`](#dvz_graph_node_ids) | `include/datoviz/scene.h` |
     | [`dvz_graph_node_positions()`](#dvz_graph_node_positions) | `include/datoviz/scene.h` |
     | [`dvz_graph_node_sizes()`](#dvz_graph_node_sizes) | `include/datoviz/scene.h` |
@@ -1437,10 +1437,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:2730._
 
-### `dvz_graph_edge_count()`
+### `dvz_graph_set_edge_count()`
 
-```c title="dvz_graph_edge_count"
-int dvz_graph_edge_count(
+```c title="dvz_graph_set_edge_count"
+int dvz_graph_set_edge_count(
     DvzGraph * graph,
     uint32_t edge_count
 );
@@ -1578,10 +1578,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:2745._
 
-### `dvz_graph_node_count()`
+### `dvz_graph_set_node_count()`
 
-```c title="dvz_graph_node_count"
-int dvz_graph_node_count(
+```c title="dvz_graph_set_node_count"
+int dvz_graph_set_node_count(
     DvzGraph * graph,
     uint32_t node_count
 );

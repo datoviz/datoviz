@@ -185,7 +185,7 @@ bool _scene_panel_sync_fly_pivot_marker(DvzPanel* panel)
         DvzVisualAttachDesc attach = dvz_visual_attach_desc();
         attach.z_layer = 10000;
         attach.controller_mode = DVZ_CONTROLLER_APPLY;
-        attach.coord_space = DVZ_COORD_VIEW;
+        attach.coord_space = DVZ_VISUAL_COORD_VIEW;
         if (dvz_panel_add_visual(panel, marker, &attach) != 0)
         {
             return false;

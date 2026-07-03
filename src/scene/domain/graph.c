@@ -328,7 +328,7 @@ DvzGraphEdgeStyle dvz_graph_edge_style(void)
  * @param node_count number of nodes
  * @return 0 on success, -1 on error
  */
-int dvz_graph_node_count(DvzGraph* graph, uint32_t node_count)
+int dvz_graph_set_node_count(DvzGraph* graph, uint32_t node_count)
 {
     if (graph == NULL || graph->scene == NULL || node_count == 0)
         return -1;
@@ -397,7 +397,7 @@ int dvz_graph_node_positions(
  * @param edge_count number of edges
  * @return 0 on success, -1 on invalid endpoints or allocation failure
  */
-int dvz_graph_edge_count(DvzGraph* graph, uint32_t edge_count)
+int dvz_graph_set_edge_count(DvzGraph* graph, uint32_t edge_count)
 {
     if (graph == NULL || graph->scene == NULL || graph->node_count == 0)
         return -1;

@@ -14,9 +14,9 @@ domain.
 
 | Space | Use when | API hook |
 | --- | --- | --- |
-| `DVZ_COORD_DATA` | Positions are scientific or application data values. | This is the default when `dvz_panel_add_visual()` receives `NULL`; set panel domains when data has non-default ranges. |
-| `DVZ_COORD_VIEW` | Positions are already in panel view coordinates, usually `[-1, +1]`. | Attach explicitly with `coord_space = DVZ_COORD_VIEW`. |
-| `DVZ_COORD_PANEL` | Positions are normalized to the panel itself for fixed overlays. | Attach with `coord_space = DVZ_COORD_PANEL`. |
+| `DVZ_VISUAL_COORD_DATA` | Positions are scientific or application data values. | This is the default when `dvz_panel_add_visual()` receives `NULL`; set panel domains when data has non-default ranges. |
+| `DVZ_VISUAL_COORD_VIEW` | Positions are already in panel view coordinates, usually `[-1, +1]`. | Attach explicitly with `coord_space = DVZ_VISUAL_COORD_VIEW`. |
+| `DVZ_VISUAL_COORD_PANEL` | Positions are normalized to the panel itself for fixed overlays. | Attach with `coord_space = DVZ_VISUAL_COORD_PANEL`. |
 
 Pointer, query, and overlay code often needs pixel-space conversions instead of attachment-space
 selection. Use `dvz_panel_transform_point()` for one-point conversions between these explicit panel
@@ -56,7 +56,7 @@ domain; it does not rewrite the uploaded source positions.
 // Positions already use the view coordinate range.
 dvz_visual_set_data(visual, "position", positions, count);
 DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-attach.coord_space = DVZ_COORD_VIEW;
+attach.coord_space = DVZ_VISUAL_COORD_VIEW;
 dvz_panel_add_visual(panel, visual, &attach);
 ```
 
@@ -123,7 +123,7 @@ path as rendering.
 
 - Uploading pixel coordinates to a data-space panel.
 - Uploading pre-normalized view coordinates but leaving the visual in the default
-  `DVZ_COORD_DATA` space.
+  `DVZ_VISUAL_COORD_DATA` space.
 - Setting only one axis domain and expecting aspect-preserving 2D navigation.
 - Using a visual transform to compensate for a wrong data domain.
 - Mixing 2D panzoom with 3D orbit/arcball camera control.

@@ -43,9 +43,9 @@ The implemented public API uses panel 2D view names as the release-candidate nam
 
 Coordinate spaces are split so users can choose whether equal aspect applies:
 
-1. `DVZ_COORD_VIEW`: metric panel view coordinates, affected by equal-aspect view fit;
-2. `DVZ_COORD_DATA`: data/domain coordinates, mapped through panel DATA -> VIEW;
-3. `DVZ_COORD_PANEL`: normalized panel coordinates, intentionally viewport-shaped.
+1. `DVZ_VISUAL_COORD_VIEW`: metric panel view coordinates, affected by equal-aspect view fit;
+2. `DVZ_VISUAL_COORD_DATA`: data/domain coordinates, mapped through panel DATA -> VIEW;
+3. `DVZ_VISUAL_COORD_PANEL`: normalized panel coordinates, intentionally viewport-shaped.
 
 
 ## Implementation
@@ -64,7 +64,7 @@ wide panels use `[-plot_aspect, +plot_aspect] x [-1, +1]`; tall panels use
 `[-1, +1] x [-1 / plot_aspect, +1 / plot_aspect]`. The invariant is that one VIEW unit maps to the
 same pixel scale along X and Y.
 
-`DVZ_COORD_PANEL` attachments intentionally keep the old normalized-panel behavior and may stretch
+`DVZ_VISUAL_COORD_PANEL` attachments intentionally keep the old normalized-panel behavior and may stretch
 with the panel rectangle.
 
 
@@ -89,7 +89,7 @@ Focused tests cover:
 1. equal-aspect DATA domains and resize behavior in `src/scene/tests/axis.c`;
 2. equal-aspect axes/grid alignment in `src/scene/tests/axis.c`;
 3. DATA-coordinate visual transforms after resize in `src/scene/tests/scene_interaction_graph.c`;
-4. `DVZ_COORD_VIEW` versus `DVZ_COORD_PANEL` frame-plan MVP behavior in
+4. `DVZ_VISUAL_COORD_VIEW` versus `DVZ_VISUAL_COORD_PANEL` frame-plan MVP behavior in
    `src/scene/tests/scene_interaction_graph.c`;
 5. linked panzoom extent behavior in `src/scene/tests/panzoom_arcball.c`.
 

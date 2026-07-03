@@ -91,7 +91,7 @@ static bool _add_signal(DvzScene* scene, DvzPanel* panel)
     if (dvz_path_set_caps(path, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) != 0)
         return false;
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_VIEW;
+    attach.coord_space = DVZ_VISUAL_COORD_VIEW;
     if (dvz_panel_add_visual(panel, path, &attach) != 0)
         return false;
 

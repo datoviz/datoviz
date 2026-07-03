@@ -389,13 +389,13 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
     DvzGraph* graph = dvz_graph(scene, 0);
     if (graph == NULL)
         return false;
-    int rc = dvz_graph_node_count(graph, NODE_COUNT);
+    int rc = dvz_graph_set_node_count(graph, NODE_COUNT);
     if (rc != 0)
         return false;
     rc = dvz_graph_node_positions(graph, 0, NODE_COUNT, (const dvec3*)positions);
     if (rc != 0)
         return false;
-    rc = dvz_graph_edge_count(graph, EDGE_COUNT);
+    rc = dvz_graph_set_edge_count(graph, EDGE_COUNT);
     if (rc != 0)
         return false;
     rc = dvz_graph_edges(graph, 0, EDGE_COUNT, edges);
@@ -471,7 +471,7 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
         return false;
     rc = dvz_panel_add_composite(
         panel, composite, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
-                                                .coord_space = DVZ_COORD_DATA,
+                                                .coord_space = DVZ_VISUAL_COORD_DATA,
                                                 .z_layer = 0});
     return rc == 0;
 }

@@ -623,7 +623,7 @@ static bool _add_choropleth_polygons(
                  panel, composite,
                  &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
                                         .z_layer = 0,
-                                        .coord_space = DVZ_COORD_DATA}) == 0;
+                                        .coord_space = DVZ_VISUAL_COORD_DATA}) == 0;
     }
 
     return ok;

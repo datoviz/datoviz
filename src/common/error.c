@@ -16,6 +16,7 @@
 
 #include <stdlib.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/common/functions.h"
 
@@ -35,4 +36,11 @@ void dvz_error_callback(DvzErrorCallback cb)
     ANN(cb);
     // log_debug("Registering an error callback function");
     error_callback = cb;
+}
+
+
+
+void dvz_memory_free(void* pointer)
+{
+    dvz_free(pointer);
 }

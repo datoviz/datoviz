@@ -262,7 +262,7 @@ DVZ_EXPORT void dvz_gpu_ctx_destroy(DvzGpuCtx* ctx);
 /**
  * Compile a GLSL source string to SPIR-V using shaderc (lazy-loaded).
  *
- * The returned buffer is heap-allocated and must be freed with dvz_free().
+ * The returned buffer is heap-allocated and must be freed with dvz_memory_free().
  * Returns NULL if shaderc is unavailable or compilation fails.
  *
  * @param stage   shader stage: "vertex", "fragment", or "compute"

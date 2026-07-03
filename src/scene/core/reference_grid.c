@@ -472,7 +472,7 @@ DvzReferenceGrid* dvz_reference_grid(DvzPanel* panel, const DvzReferenceGridDesc
         goto fail;
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
     attach.controller_mode = DVZ_CONTROLLER_APPLY_VIEW_PROJ;
-    attach.coord_space = DVZ_COORD_VIEW;
+    attach.coord_space = DVZ_VISUAL_COORD_VIEW;
     if (dvz_panel_add_visual(panel, grid->visual, &attach) != 0)
         goto fail;
 

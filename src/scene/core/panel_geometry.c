@@ -329,7 +329,7 @@ bool _scene_panel_attachment_mvp(
     ANN(attach);
     ANN(out);
 
-    if (attach->coord_space == DVZ_COORD_PANEL)
+    if (attach->coord_space == DVZ_VISUAL_COORD_PANEL)
         _scene_panel_apply_panel_mvp(panel, out);
     else if (apply_mvp != NULL)
         *out = *apply_mvp;
@@ -348,7 +348,7 @@ bool _scene_panel_attachment_mvp(
         glm_mat4_identity(out->model);
     }
 
-    if (attach->coord_space == DVZ_COORD_DATA)
+    if (attach->coord_space == DVZ_VISUAL_COORD_DATA)
     {
         mat4 data = GLM_MAT4_IDENTITY_INIT;
         mat4 composed = GLM_MAT4_IDENTITY_INIT;

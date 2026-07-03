@@ -196,7 +196,7 @@ static bool _text_prepare_batched_visual(DvzFigure* figure, DvzText* text)
     attach.z_layer = INT32_MAX / 4;
     attach.controller_mode =
         screen_placement ? DVZ_CONTROLLER_FIXED : DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL;
-    attach.coord_space = text->placement.mode == DVZ_TEXT_PLACEMENT_DATA ? DVZ_COORD_DATA : DVZ_COORD_VIEW;
+    attach.coord_space = text->placement.mode == DVZ_TEXT_PLACEMENT_DATA ? DVZ_VISUAL_COORD_DATA : DVZ_VISUAL_COORD_VIEW;
 
     if (text->visual != NULL && text->visual->type != DVZ_VISUAL_TYPE_TEXT)
     {
@@ -353,9 +353,9 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     attach.controller_mode =
         screen_placement ? DVZ_CONTROLLER_FIXED : DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL;
     if (text->placement.mode == DVZ_TEXT_PLACEMENT_DATA)
-        attach.coord_space = DVZ_COORD_DATA;
+        attach.coord_space = DVZ_VISUAL_COORD_DATA;
     else
-        attach.coord_space = DVZ_COORD_VIEW;
+        attach.coord_space = DVZ_VISUAL_COORD_VIEW;
     uint32_t visible = 0;
     DvzSampledField* atlas = NULL;
     DvzTextAtlas* font_atlas = NULL;

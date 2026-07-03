@@ -2667,7 +2667,7 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
     DvzVisualAttachDesc fixed = dvz_visual_attach_desc();
     fixed.z_layer = 0;
     fixed.controller_mode = DVZ_CONTROLLER_FIXED;
-    fixed.coord_space = DVZ_COORD_VIEW;
+    fixed.coord_space = DVZ_VISUAL_COORD_VIEW;
     AT(dvz_panel_add_visual(panel, point, NULL) == 0);
     AT(dvz_panel_add_visual(panel, pixel, NULL) == 0);
     AT(dvz_panel_add_visual(panel, primitive, NULL) == 0);

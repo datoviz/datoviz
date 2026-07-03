@@ -65,8 +65,8 @@ static bool _visual_attach_desc_validate(const DvzVisualAttachDesc* desc)
         return false;
     }
     if (
-        desc->coord_space != DVZ_COORD_VIEW && desc->coord_space != DVZ_COORD_DATA &&
-        desc->coord_space != DVZ_COORD_PANEL)
+        desc->coord_space != DVZ_VISUAL_COORD_VIEW && desc->coord_space != DVZ_VISUAL_COORD_DATA &&
+        desc->coord_space != DVZ_VISUAL_COORD_PANEL)
     {
         log_error("invalid visual coordinate space");
         return false;
@@ -278,7 +278,7 @@ DvzVisualAttachDesc dvz_visual_attach_desc(void)
         DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
         .z_layer = 0,
         .controller_mode = DVZ_CONTROLLER_APPLY,
-        .coord_space = DVZ_COORD_DATA,
+        .coord_space = DVZ_VISUAL_COORD_DATA,
         .clip_rect = DVZ_VISUAL_CLIP_AUTO,
         .viewport_rect = DVZ_VISUAL_VIEWPORT_AUTO,
     };

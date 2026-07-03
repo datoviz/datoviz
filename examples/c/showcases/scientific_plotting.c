@@ -161,7 +161,7 @@ static void _fill_autocorrelogram(double starts[CORR_BINS], double ends[CORR_BIN
 static bool _add_data_visual(DvzPanel* panel, DvzVisual* visual, int32_t z_layer)
 {
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_DATA;
+    attach.coord_space = DVZ_VISUAL_COORD_DATA;
     attach.z_layer = z_layer;
     return dvz_panel_add_visual(panel, visual, &attach) == 0;
 }

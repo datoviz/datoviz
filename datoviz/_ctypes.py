@@ -3310,14 +3310,14 @@ DVZ_VISUAL_CLIP_PLOT = DvzVisualClipRect.DVZ_VISUAL_CLIP_PLOT
 
 
 class DvzVisualCoordSpace(CtypesEnum):
-    DVZ_COORD_VIEW = 0
-    DVZ_COORD_DATA = 1
-    DVZ_COORD_PANEL = 2
+    DVZ_VISUAL_COORD_VIEW = 0
+    DVZ_VISUAL_COORD_DATA = 1
+    DVZ_VISUAL_COORD_PANEL = 2
 
 
-DVZ_COORD_VIEW = DvzVisualCoordSpace.DVZ_COORD_VIEW
-DVZ_COORD_DATA = DvzVisualCoordSpace.DVZ_COORD_DATA
-DVZ_COORD_PANEL = DvzVisualCoordSpace.DVZ_COORD_PANEL
+DVZ_VISUAL_COORD_VIEW = DvzVisualCoordSpace.DVZ_VISUAL_COORD_VIEW
+DVZ_VISUAL_COORD_DATA = DvzVisualCoordSpace.DVZ_VISUAL_COORD_DATA
+DVZ_VISUAL_COORD_PANEL = DvzVisualCoordSpace.DVZ_VISUAL_COORD_PANEL
 
 
 class DvzVisualShaderKind(CtypesEnum):
@@ -4619,7 +4619,7 @@ class DvzInputEventContent(ctypes.Union):
 DvzAnimPhaseCallback = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzAnimation), ctypes.c_float, ctypes.c_float, ctypes.c_void_p)
 
 
-DvzAnimTimerCallback = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzAnimation), ctypes.c_double, ctypes.c_double, ctypes.c_ulonglong, ctypes.c_void_p)
+DvzAnimTimerCallback = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzAnimation), ctypes.c_double, ctypes.c_double, ctypes.c_ulong, ctypes.c_void_p)
 
 
 DvzCanvasDraw = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzCanvas), ctypes.POINTER(DvzStreamFrame), ctypes.c_void_p)
@@ -5682,7 +5682,7 @@ DvzQueryResult._fields_ = [
     ('value_kind', ctypes.c_int),
     ('scalar', ctypes.c_double),
     ('vector', (ctypes.c_double * 4)),
-    ('category_id', ctypes.c_longlong),
+    ('category_id', ctypes.c_long),
     ('label', (ctypes.c_char * 128)),
     ('unit', (ctypes.c_char * 32)),
     ('scale', ctypes.POINTER(DvzScale)),
@@ -5815,10 +5815,10 @@ DvzLabelDesc._fields_ = [
 
 DvzLabelsState._fields_ = [
     ('opacity', ctypes.c_float),
-    ('background_id', ctypes.c_longlong),
+    ('background_id', ctypes.c_long),
     ('selected_enabled', ctypes.c_bool),
-    ('selected_id', ctypes.c_longlong),
-    ('hidden_ids', (ctypes.c_longlong * 256)),
+    ('selected_id', ctypes.c_long),
+    ('hidden_ids', (ctypes.c_long * 256)),
     ('hidden_count', ctypes.c_uint32),
     ('boundary_enabled', ctypes.c_bool),
     ('boundary_width_px', ctypes.c_float),
@@ -6142,7 +6142,7 @@ DvzSampledFieldDesc._fields_ = [
 
 
 DvzScaleCategory._fields_ = [
-    ('category_id', ctypes.c_longlong),
+    ('category_id', ctypes.c_long),
     ('order', ctypes.c_uint32),
     ('label', ctypes.c_char_p),
     ('color', DvzColor),
@@ -6808,7 +6808,7 @@ else:
  * @returns allocation size in bytes
  */"""
     dvz_allocation_size.argtypes = [ctypes.POINTER(DvzAllocation)]
-    dvz_allocation_size.restype = ctypes.c_ulonglong
+    dvz_allocation_size.restype = ctypes.c_ulong
 
 
 try:
@@ -6847,7 +6847,7 @@ else:
  * @param size number of bytes to copy
  * @return 0 on success, -1 on failure
  */"""
-    dvz_allocator_copy_from.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_void_p, ctypes.c_ulonglong]
+    dvz_allocator_copy_from.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulong, ctypes.c_void_p, ctypes.c_ulong]
     dvz_allocator_copy_from.restype = ctypes.c_int
 
 
@@ -6866,7 +6866,7 @@ else:
  * @param size number of bytes to copy
  * @return 0 on success, -1 on failure
  */"""
-    dvz_allocator_copy_to.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_void_p, ctypes.c_ulonglong]
+    dvz_allocator_copy_to.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulong, ctypes.c_void_p, ctypes.c_ulong]
     dvz_allocator_copy_to.restype = ctypes.c_int
 
 
@@ -7000,7 +7000,7 @@ else:
  * @param size the number of bytes to flush
  * @returns 0 on success, -1 on failure
  */"""
-    dvz_allocator_flush.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_allocator_flush.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulong, ctypes.c_ulong]
     dvz_allocator_flush.restype = ctypes.c_int
 
 
@@ -7111,7 +7111,7 @@ else:
  * @param size the number of bytes to invalidate
  * @returns 0 on success, -1 on failure
  */"""
-    dvz_allocator_invalidate.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_allocator_invalidate.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulong, ctypes.c_ulong]
     dvz_allocator_invalidate.restype = ctypes.c_int
 
 
@@ -8040,7 +8040,7 @@ else:
  * @param t1 timestamp corresponding to data1, in microseconds since Unix epoch UTC
  * @return whether the mapping was updated
  */"""
-    dvz_axis_set_datetime_range.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_double, ctypes.c_double, ctypes.c_longlong, ctypes.c_longlong]
+    dvz_axis_set_datetime_range.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_double, ctypes.c_double, ctypes.c_long, ctypes.c_long]
     dvz_axis_set_datetime_range.restype = ctypes.c_bool
 
 
@@ -8338,7 +8338,7 @@ else:
  * @param src the source access
  * @param dst the destination access
  */"""
-    dvz_barrier_buffer_access.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_barrier_buffer_access.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
     dvz_barrier_buffer_access.restype = None
 
 
@@ -8370,7 +8370,7 @@ else:
  * @param src the source stages
  * @param dst the destination stages
  */"""
-    dvz_barrier_buffer_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_barrier_buffer_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
     dvz_barrier_buffer_stage.restype = None
 
 
@@ -8386,7 +8386,7 @@ else:
  * @param src the source access
  * @param dst the destination access
  */"""
-    dvz_barrier_image_access.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_barrier_image_access.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
     dvz_barrier_image_access.restype = None
 
 
@@ -8481,7 +8481,7 @@ else:
  * @param src the source stages
  * @param dst the destination stages
  */"""
-    dvz_barrier_image_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_barrier_image_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
     dvz_barrier_image_stage.restype = None
 
 
@@ -8497,7 +8497,7 @@ else:
  * @param src the source access
  * @param dst the destination access
  */"""
-    dvz_barrier_memory_access.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_barrier_memory_access.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
     dvz_barrier_memory_access.restype = None
 
 
@@ -8513,7 +8513,7 @@ else:
  * @param src the source stages
  * @param dst the destination stages
  */"""
-    dvz_barrier_memory_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_barrier_memory_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
     dvz_barrier_memory_stage.restype = None
 
 
@@ -8548,7 +8548,7 @@ else:
  * @param size the size
  * @returns the buffer barrier
  */"""
-    dvz_barriers_buffer.argtypes = [ctypes.POINTER(DvzBarriers), ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
+    dvz_barriers_buffer.argtypes = [ctypes.POINTER(DvzBarriers), ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
     dvz_barriers_buffer.restype = ctypes.c_void_p
 
 
@@ -9546,7 +9546,7 @@ else:
  * @param out_height destination height in pixels
  * @param out_rgba destination pointer receiving an allocated sRGB RGBA8 buffer
  * @returns 0 on success or a negative error code
- * @note caller owns `*out_rgba` and must release it with `dvz_free()`
+ * @note caller owns `*out_rgba` and must release it with `dvz_memory_free()`
  */"""
     dvz_canvas_capture_rgba.argtypes = [ctypes.POINTER(DvzCanvas), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8))]
     dvz_canvas_capture_rgba.restype = ctypes.c_int
@@ -10929,7 +10929,7 @@ else:
     dvz_compile_glsl.__doc__ = """/**
  * Compile a GLSL source string to SPIR-V using shaderc (lazy-loaded).
  *
- * The returned buffer is heap-allocated and must be freed with dvz_free().
+ * The returned buffer is heap-allocated and must be freed with dvz_memory_free().
  * Returns NULL if shaderc is unavailable or compilation fails.
  *
  * @param stage   shader stage: "vertex", "fragment", or "compute"
@@ -17552,24 +17552,6 @@ else:
 
 
 try:
-    dvz_graph_edge_count = dvz.dvz_graph_edge_count
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_edge_count')
-else:
-    dvz_graph_edge_count.__doc__ = """/**
- * Replace the graph edge array and reset edge style defaults.
- *
- * Edge endpoints are left at their default values until `dvz_graph_edges()` is called.
- *
- * @param graph the graph
- * @param edge_count number of edges
- * @return 0 on success, -1 on invalid endpoints or allocation failure
- */"""
-    dvz_graph_edge_count.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32]
-    dvz_graph_edge_count.restype = ctypes.c_int
-
-
-try:
     dvz_graph_edge_ids = dvz.dvz_graph_edge_ids
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_graph_edge_ids')
@@ -17658,25 +17640,6 @@ else:
 
 
 try:
-    dvz_graph_node_count = dvz.dvz_graph_node_count
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_node_count')
-else:
-    dvz_graph_node_count.__doc__ = """/**
- * Replace the graph node array and reset node style defaults.
- *
- * Existing edges are discarded because their endpoints may no longer be valid. Call
- * `dvz_graph_node_positions()` after this function to set or update semantic node positions.
- *
- * @param graph the graph
- * @param node_count number of nodes
- * @return 0 on success, -1 on error
- */"""
-    dvz_graph_node_count.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32]
-    dvz_graph_node_count.restype = ctypes.c_int
-
-
-try:
     dvz_graph_node_ids = dvz.dvz_graph_node_ids
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_graph_node_ids')
@@ -17731,6 +17694,24 @@ else:
 
 
 try:
+    dvz_graph_set_edge_count = dvz.dvz_graph_set_edge_count
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_edge_count')
+else:
+    dvz_graph_set_edge_count.__doc__ = """/**
+ * Replace the graph edge array and reset edge style defaults.
+ *
+ * Edge endpoints are left at their default values until `dvz_graph_edges()` is called.
+ *
+ * @param graph the graph
+ * @param edge_count number of edges
+ * @return 0 on success, -1 on invalid endpoints or allocation failure
+ */"""
+    dvz_graph_set_edge_count.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32]
+    dvz_graph_set_edge_count.restype = ctypes.c_int
+
+
+try:
     dvz_graph_set_edge_style = dvz.dvz_graph_set_edge_style
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_graph_set_edge_style')
@@ -17748,6 +17729,25 @@ else:
  */"""
     dvz_graph_set_edge_style.argtypes = [ctypes.POINTER(DvzGraph), ctypes.POINTER(DvzGraphEdgeStyle)]
     dvz_graph_set_edge_style.restype = ctypes.c_int
+
+
+try:
+    dvz_graph_set_node_count = dvz.dvz_graph_set_node_count
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_node_count')
+else:
+    dvz_graph_set_node_count.__doc__ = """/**
+ * Replace the graph node array and reset node style defaults.
+ *
+ * Existing edges are discarded because their endpoints may no longer be valid. Call
+ * `dvz_graph_node_positions()` after this function to set or update semantic node positions.
+ *
+ * @param graph the graph
+ * @param node_count number of nodes
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_graph_set_node_count.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32]
+    dvz_graph_set_node_count.restype = ctypes.c_int
 
 
 try:
@@ -21067,7 +21067,7 @@ else:
  * @param label_id background label ID
  * @return 0 on success, -1 on error
  */"""
-    dvz_labels_set_background.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_longlong]
+    dvz_labels_set_background.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_long]
     dvz_labels_set_background.restype = ctypes.c_int
 
 
@@ -21150,7 +21150,7 @@ else:
  * @param label_id selected label ID
  * @return 0 on success, -1 on error
  */"""
-    dvz_labels_set_selected.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_longlong]
+    dvz_labels_set_selected.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_long]
     dvz_labels_set_selected.restype = ctypes.c_int
 
 
@@ -21290,7 +21290,7 @@ else:
  * @param id category id to highlight
  * @return true when the highlight state was accepted
  */"""
-    dvz_legend_set_highlight.argtypes = [ctypes.POINTER(DvzLegend), ctypes.c_longlong]
+    dvz_legend_set_highlight.argtypes = [ctypes.POINTER(DvzLegend), ctypes.c_long]
     dvz_legend_set_highlight.restype = ctypes.c_bool
 
 
@@ -21388,7 +21388,7 @@ else:
  * @param[out] height decoded image height
  * @returns RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
  *
- * @note Free the returned buffer with dvz_free().
+ * @note Free the returned buffer with dvz_memory_free().
  */"""
     dvz_load_jpeg.argtypes = [ctypes.c_uint64, ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
     dvz_load_jpeg.restype = ctypes.POINTER(ctypes.c_uint8)
@@ -21407,7 +21407,7 @@ else:
  * @param[out] width decoded image width
  * @param[out] height decoded image height
  * @returns owned RGB8 pixel buffer allocated with the Datoviz allocator, or NULL on failure; free
- * with dvz_free()
+ * with dvz_memory_free()
  */"""
     dvz_load_png.argtypes = [ctypes.c_uint64, ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
     dvz_load_png.restype = ctypes.POINTER(ctypes.c_uint8)
@@ -21426,7 +21426,7 @@ else:
  * @param rgb pointer to tightly packed sRGB RGB8 pixels
  * @param size pointer to a variable that will contain the size of the buffer
  * @param out pointer to an owned PNG byte buffer allocated with the Datoviz allocator; free with
- * dvz_free()
+ * dvz_memory_free()
  */"""
     dvz_make_png.argtypes = [ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint64), ctypes.POINTER(ctypes.POINTER(None))]
     dvz_make_png.restype = ctypes.c_int
@@ -21546,6 +21546,23 @@ else:
  */"""
     dvz_mean.argtypes = [ctypes.c_uint32, ctypes.POINTER(ctypes.c_double)]
     dvz_mean.restype = ctypes.c_double
+
+
+try:
+    dvz_memory_free = dvz.dvz_memory_free
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_memory_free')
+else:
+    dvz_memory_free.__doc__ = """/**
+ * Release memory returned by Datoviz public APIs.
+ *
+ * Use this function for owned buffers returned through public API calls such as file loading,
+ * shader compilation, screenshots, and readbacks. Passing NULL is allowed.
+ *
+ * @param pointer pointer returned by a Datoviz public API, or NULL
+ */"""
+    dvz_memory_free.argtypes = [ctypes.c_void_p]
+    dvz_memory_free.restype = None
 
 
 try:
@@ -22182,7 +22199,7 @@ else:
  * @param visual the visual
  * @param desc per-visual attachment options (z_layer, controller_mode, coord_space, clip_rect,
  *             viewport_rect); pass NULL for defaults (z_layer=0,
- *             controller_mode=DVZ_CONTROLLER_APPLY, coord_space=DVZ_COORD_DATA,
+ *             controller_mode=DVZ_CONTROLLER_APPLY, coord_space=DVZ_VISUAL_COORD_DATA,
  *             clip_rect=DVZ_VISUAL_CLIP_AUTO, viewport_rect=DVZ_VISUAL_VIEWPORT_AUTO)
  * @return 0 on success, -1 on error
  */"""
@@ -23125,7 +23142,7 @@ else:
  * Figure, panel, inner, and plot pixel spaces use logical pixels. Panel pixels are local to the
  * outer panel rectangle and match `dvz_panel_query()` coordinates. DATA coordinates use the
  * current visible data domain. VIEW coordinates are the visual coordinates used by visuals attached
- * with `DVZ_COORD_VIEW`.
+ * with `DVZ_VISUAL_COORD_VIEW`.
  *
  * @param panel the panel
  * @param from source coordinate space
@@ -23541,7 +23558,7 @@ else:
  *
  * @param size of the file
  * @param npy_bytes the contents of the NPY file
- * @returns owned buffer containing the array elements, or NULL on failure; free with dvz_free()
+ * @returns owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free()
  */"""
     dvz_parse_npy.argtypes = [ctypes.c_uint64, ctypes.c_char_p]
     dvz_parse_npy.restype = ctypes.c_void_p
@@ -24700,7 +24717,7 @@ else:
  * @param filename path of the file to open
  * @param[out] size of the file
  * @returns owned byte buffer allocated with the Datoviz allocator, or NULL on failure; free with
- * dvz_free()
+ * dvz_memory_free()
  */"""
     dvz_read_file.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
     dvz_read_file.restype = ctypes.c_void_p
@@ -24716,7 +24733,7 @@ else:
  *
  * @param filename path of the GZIP compressed file to open
  * @param[out] size of the decompressed buffer
- * @returns owned decompressed buffer, or NULL on failure; free with dvz_free()
+ * @returns owned decompressed buffer, or NULL on failure; free with dvz_memory_free()
  */"""
     dvz_read_gz.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
     dvz_read_gz.restype = ctypes.c_char_p
@@ -24735,7 +24752,7 @@ else:
  * @param[out] height decoded image height
  * @returns RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
  *
- * @note Free the returned buffer with dvz_free().
+ * @note Free the returned buffer with dvz_memory_free().
  */"""
     dvz_read_jpeg.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
     dvz_read_jpeg.restype = ctypes.POINTER(ctypes.c_uint8)
@@ -24751,7 +24768,7 @@ else:
  *
  * @param filename path of the file to open
  * @param[out] size of the file
- * @returns owned buffer containing the array elements, or NULL on failure; free with dvz_free()
+ * @returns owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free()
  */"""
     dvz_read_npy.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
     dvz_read_npy.restype = ctypes.c_void_p
@@ -24768,7 +24785,7 @@ else:
  * @param filename path of the file to open
  * @param[out] width width of the image
  * @param[out] height of the image
- * @returns owned tightly packed RGB8 pixel buffer, or NULL on failure; free with dvz_free()
+ * @returns owned tightly packed RGB8 pixel buffer, or NULL on failure; free with dvz_memory_free()
  */"""
     dvz_read_ppm.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
     dvz_read_ppm.restype = ctypes.POINTER(ctypes.c_uint8)
@@ -27396,7 +27413,7 @@ else:
  * @param value the value to signal, if using a timeline semaphore
  * @param stage the stage in the queue's execution that depends on that wait.
  */"""
-    dvz_submit_signal.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_ulonglong]
+    dvz_submit_signal.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_ulong]
     dvz_submit_signal.restype = None
 
 
@@ -27431,7 +27448,7 @@ else:
  * @param value the value to wait on, if using a timeline semaphore
  * @param stage the stage in the queue's execution that depends on that wait.
  */"""
-    dvz_submit_wait.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_ulonglong]
+    dvz_submit_wait.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_ulong]
     dvz_submit_wait.restype = None
 
 
@@ -32242,7 +32259,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1540
+_GENERATED_FUNCTION_COUNT = 1541
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_field_geometry', 'dvz_frame_plan_emit_config', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_panel_background_desc', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scalebar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
 _DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzTextStyle', 'DvzTextPlacement', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzFontDesc', 'DvzFontDefaults', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzContainer', 'DvzContainerIterator', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RawFallback', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RuntimeConfig', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFly', 'DvzFlyDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzObject', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2D', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoom', 'DvzPanzoomDesc', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntable', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewSizeDesc', 'DvzViewDesc', 'DvzVisualAttachDesc', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]

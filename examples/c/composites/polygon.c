@@ -127,7 +127,7 @@ static bool _add_holed_polygon(DvzScene* scene, DvzPanel* panel)
         return false;
 
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-    attach.coord_space = DVZ_COORD_DATA;
+    attach.coord_space = DVZ_VISUAL_COORD_DATA;
     rc = dvz_panel_add_composite(panel, composite, &attach);
     return rc == 0;
 }
@@ -214,7 +214,7 @@ static bool _add_polygon_set(DvzScene* scene, DvzPanel* panel)
 
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
     attach.z_layer = 2;
-    attach.coord_space = DVZ_COORD_DATA;
+    attach.coord_space = DVZ_VISUAL_COORD_DATA;
     rc = dvz_panel_add_composite(panel, composite, &attach);
     return rc == 0;
 }

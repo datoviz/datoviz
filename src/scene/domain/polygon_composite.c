@@ -150,8 +150,8 @@ static bool _composite_attach_desc_valid(const DvzVisualAttachDesc* desc)
         return false;
     }
     if (
-        desc->coord_space != DVZ_COORD_VIEW && desc->coord_space != DVZ_COORD_DATA &&
-        desc->coord_space != DVZ_COORD_PANEL)
+        desc->coord_space != DVZ_VISUAL_COORD_VIEW && desc->coord_space != DVZ_VISUAL_COORD_DATA &&
+        desc->coord_space != DVZ_VISUAL_COORD_PANEL)
     {
         log_error("invalid visual coordinate space");
         return false;
@@ -904,7 +904,7 @@ int dvz_panel_add_composite(
         slot->visual = visual;
         slot->z_layer = (desc != NULL ? desc->z_layer : 0) + composite->visuals[i].z_offset;
         slot->controller_mode = desc != NULL ? desc->controller_mode : DVZ_CONTROLLER_APPLY;
-        slot->coord_space = desc != NULL ? desc->coord_space : DVZ_COORD_VIEW;
+        slot->coord_space = desc != NULL ? desc->coord_space : DVZ_VISUAL_COORD_VIEW;
         slot->clip_rect = desc != NULL ? desc->clip_rect : DVZ_VISUAL_CLIP_AUTO;
         slot->viewport_rect = desc != NULL ? desc->viewport_rect : DVZ_VISUAL_VIEWPORT_AUTO;
         slot->insertion_index = panel->visual_count;

@@ -256,9 +256,9 @@ explicitly exports it.
 
 The public v0.4 coordinate-space surface is:
 
-1. `DVZ_COORD_VIEW`: metric panel view coordinates, affected by panel view/framing policy;
-2. `DVZ_COORD_DATA`: source data/domain coordinates mapped through the panel DATA-to-VIEW model;
-3. `DVZ_COORD_PANEL`: normalized panel coordinates over the full panel rectangle, intentionally
+1. `DVZ_VISUAL_COORD_VIEW`: metric panel view coordinates, affected by panel view/framing policy;
+2. `DVZ_VISUAL_COORD_DATA`: source data/domain coordinates mapped through the panel DATA-to-VIEW model;
+3. `DVZ_VISUAL_COORD_PANEL`: normalized panel coordinates over the full panel rectangle, intentionally
    viewport-shaped.
 
 `DVZ_COORD_VISUAL` is not part of the v0.4 release surface. Callers must choose the intended

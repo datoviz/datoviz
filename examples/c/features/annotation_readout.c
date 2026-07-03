@@ -133,7 +133,7 @@ static bool _add_points(
     return dvz_panel_add_visual(
                panel, points,
                &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
-                   .coord_space = DVZ_COORD_DATA}) == 0;
+                   .coord_space = DVZ_VISUAL_COORD_DATA}) == 0;
 }
 
 

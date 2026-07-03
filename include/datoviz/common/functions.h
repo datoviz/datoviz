@@ -47,6 +47,17 @@ DVZ_EXPORT void dvz_error_callback(DvzErrorCallback cb);
 
 
 /**
+ * Release memory returned by Datoviz public APIs.
+ *
+ * Use this function for owned buffers returned through public API calls such as file loading,
+ * shader compilation, screenshots, and readbacks. Passing NULL is allowed.
+ *
+ * @param pointer pointer returned by a Datoviz public API, or NULL
+ */
+DVZ_EXPORT void dvz_memory_free(void* pointer);
+
+
+/**
  * Return a monotonic timestamp in nanoseconds.
  *
  * @return monotonic timestamp in nanoseconds
