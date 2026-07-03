@@ -34,9 +34,12 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  EXAMPLE_WINDOW_WIDTH
-#define HEIGHT EXAMPLE_WINDOW_HEIGHT
+#define WIDTH  720u
+#define HEIGHT 520u
 #define POINT_COUNT 8u
+#define FIRST_WINDOW_X  64
+#define FIRST_WINDOW_Y  96
+#define WINDOW_GAP_X    32
 
 
 
@@ -70,6 +73,30 @@ static bool _add_points(
         return false;
 
     return dvz_panel_add_visual(panel, point, NULL) == 0;
+}
+
+
+/**
+ * Create one positioned native GLFW view.
+ *
+ * @param app app driving the view
+ * @param figure figure rendered in the view
+ * @param title native window title
+ * @param x initial monitor-space X position
+ * @param y initial monitor-space Y position
+ * @return view handle, or NULL
+ */
+static DvzView*
+_positioned_view(DvzApp* app, DvzFigure* figure, const char* title, int32_t x, int32_t y)
+{
+    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_GLFW);
+    desc.logical_width = WIDTH;
+    desc.logical_height = HEIGHT;
+    desc.title = title;
+    desc.has_position = true;
+    desc.x = x;
+    desc.y = y;
+    return dvz_view(app, figure, &desc);
 }
 
 
@@ -144,8 +171,11 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* overview_view = dvz_view_glfw(app, overview, WIDTH, HEIGHT, "multi_window overview");
-    DvzView* detail_view = dvz_view_glfw(app, detail, WIDTH, HEIGHT, "multi_window detail");
+    DvzView* overview_view =
+        _positioned_view(app, overview, "multi_window overview", FIRST_WINDOW_X, FIRST_WINDOW_Y);
+    DvzView* detail_view = _positioned_view(
+        app, detail, "multi_window detail", FIRST_WINDOW_X + (int32_t)WIDTH + WINDOW_GAP_X,
+        FIRST_WINDOW_Y);
     EXAMPLE_CHECK(
         overview_view != NULL && detail_view != NULL,
         "dvz_view_glfw() failed (GLFW unavailable?)");
