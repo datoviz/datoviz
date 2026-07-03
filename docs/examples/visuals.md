@@ -110,7 +110,7 @@ retained straight and curved vector visual example.
 
 `supported` `visuals`<br><span>`primitive`, `capture`</span>
 
-topology-parametric triangles rendered with the retained primitive visual.
+line and triangle topologies rendered with the retained primitive visual.
 
 </div>
 

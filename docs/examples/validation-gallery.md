@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Public C examples in manifest: 106
-- Examples declaring screenshot validation: 92
+- Public C examples in manifest: 109
+- Examples declaring screenshot validation: 93
 - Examples that should have video or motion evidence: 7
 
 ## Commands
@@ -37,8 +37,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [Path With 2D Axes](gallery/features/path_axes_2d.md) | [`examples/c/features/axes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axes_2d.c) | `supported` | `smoke+screenshot` |
 | [Coordinate System](gallery/features/feature_coordinate_system.md) | [`examples/c/features/coordinate_system.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/coordinate_system.c) | `supported` | `smoke+screenshot` |
 | [Axis Labels](gallery/features/feature_axis_labels.md) | [`examples/c/features/axis_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axis_labels.c) | `supported` | `smoke+screenshot` |
-| [2D Sampled Field](gallery/features/feature_sampled_field_2d.md) | [`examples/c/features/sampled_field_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_2d.c) | `supported` | `smoke+screenshot` |
-| [3D Sampled Field](gallery/features/feature_sampled_field_3d.md) | [`examples/c/features/sampled_field_3d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_3d.c) | `supported` | `smoke+screenshot` |
+| [Sampled Field Update](gallery/features/feature_sampled_field_update.md) | [`examples/c/features/sampled_field_update.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_update.c) | `supported` | `smoke+screenshot` |
 | [Text Block](gallery/features/feature_text_block.md) | [`examples/c/features/text_block.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/text_block.c) | `supported` | `smoke+screenshot` |
 | [Overlay Card](gallery/features/feature_overlay_card.md) | [`examples/c/features/overlay_card.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/overlay_card.c) | `supported` | `smoke+screenshot` |
 | [Arcball Controller](gallery/features/feature_controller_arcball.md) | [`examples/c/features/controller_arcball.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c) | `supported` | `smoke+interaction+screenshot` |
@@ -53,6 +52,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [User Scale](gallery/features/feature_user_scale.md) | [`examples/c/features/user_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/user_scale.c) | `supported` | `smoke+interaction+screenshot` |
 | [Animation Tracks](gallery/features/feature_animation_tracks.md) | [`examples/c/features/animation_tracks.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/animation_tracks.c) | `supported` | `smoke+interaction+screenshot` |
 | [Compute Buffer Animation](gallery/features/feature_compute_buffer_animation.md) | [`examples/c/features/compute_buffer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/compute_buffer_animation.c) | `experimental` | `smoke+screenshot` |
+| [Eye-Dome Lighting](gallery/features/technique_edl.md) | [`examples/c/features/technique_edl.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_edl.c) | `experimental` | `smoke+screenshot` |
 | [Screen-Space Ambient Occlusion](gallery/features/technique_ssao.md) | [`examples/c/features/technique_ssao.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_ssao.c) | `supported` | `smoke+screenshot` |
 | [Multisample Antialiasing](gallery/features/technique_msaa.md) | [`examples/c/features/technique_msaa.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_msaa.c) | `supported` | `smoke+screenshot` |
 | [Depth Cue](gallery/features/technique_depth_cue.md) | [`examples/c/features/technique_depth_cue.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_cue.c) | `supported` | `smoke+screenshot` |
@@ -89,6 +89,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [Builtin Shapes 3D](gallery/features/feature_builtin_shapes_3d.md) | [`examples/c/features/builtin_shapes_3d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_3d.c) | `supported` | `smoke+screenshot` |
 | [OBJ Loading](gallery/features/feature_obj_loading.md) | [`examples/c/features/obj_loading.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/obj_loading.c) | `supported` | `smoke+screenshot` |
 | [Label Probe](gallery/features/feature_probe_labels.md) | [`examples/c/features/probe_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c) | `supported` | `smoke+readback+screenshot` |
+| [Datetime Axis](gallery/features/feature_datetime_axis.md) | [`examples/c/features/datetime_axis.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/datetime_axis.c) | `experimental` | `smoke+screenshot` |
 | [Timer Animation](gallery/features/feature_timer_animation.md) | [`examples/c/features/timer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/timer_animation.c) | `supported` | `smoke+screenshot` |
 | [Marker Symbols](gallery/features/feature_marker_symbols.md) | [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c) | `supported` | `smoke+screenshot` |
 | [Categorical Legend](gallery/features/feature_legend_categorical.md) | [`examples/c/features/legend_categorical.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c) | `experimental` | `smoke+screenshot` |

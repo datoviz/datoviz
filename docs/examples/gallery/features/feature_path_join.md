@@ -14,7 +14,7 @@ acute stroked path joins for visual regression inspection.
 
 ## Preview
 
-![Path Join](../../../assets/gallery/v0.4/features/feature_path_join.webp)
+_Media pending._
 
 ## Source
 

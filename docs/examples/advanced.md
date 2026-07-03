@@ -32,7 +32,7 @@ _Media pending._
 
 `experimental` `advanced`<br><span>`advanced`, `drp2`, `vklite`, `low-level`</span>
 
-raw_triangle_drp2 — triangle rendered via a hand-written DRP2 command stream.
+triangle rendered via a hand-written DRP2 command stream.
 
 </div>
 
@@ -44,7 +44,7 @@ _Media pending._
 
 `experimental` `advanced`<br><span>`advanced`, `vklite`, `canvas`, `low-level`</span>
 
-raw_triangle_vklite — vklite draw commands into DvzCanvas.
+vklite draw commands into DvzCanvas.
 
 </div>
 

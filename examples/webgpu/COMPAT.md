@@ -27,7 +27,7 @@ now has 66 promoted routes backed by canonical C examples or portable C scenario
 `path_axes_2d`, `feature_axis_labels`, `feature_panel_multi`, `feature_panel_linked`,
 `feature_text_block`, `feature_overlay_card`, `feature_guide_lines`, `feature_guide_spans`,
 `feature_bars_bands`, `feature_controller_fly`, `feature_controller_turntable`,
-`feature_sampled_field_2d`, `colormap_scale`,
+`feature_sampled_field_update`, `colormap_scale`,
 `panel_background`, `composite_polygon`, `linked_panels_axes_panzoom`,
 `scalebar_measurement_workflow`, `showcase_surface_grid`, `us_state_choropleth`,
 `update_partial`, `feature_update_visual_data`, `feature_visibility`,
@@ -82,7 +82,7 @@ this shell with the known headless external WebGPU instance-loss skip at `QueueS
 promoted routes; native PNG smokes passed for the examples.
 
 Recorded local image/color-scale promotion proof on 2026-06-10: `just wasm-scene-smoke` passed
-with `feature_sampled_field_2d`, `feature_colormap_scale`, and `feature_panel_background`
+with `feature_sampled_field_update`, `feature_colormap_scale`, and `feature_panel_background`
 registered in the WASM scenario table and covered by targeted stream-shape checks; `just
 webgpu-browser-smoke` exited successfully in this shell with the known headless external WebGPU
 instance-loss skip at `QueueSubmit` for all three new live routes; native PNG smokes passed for all

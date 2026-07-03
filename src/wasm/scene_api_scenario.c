@@ -60,7 +60,7 @@ DvzScenarioSpec dvz_example_scalebar_units_scenario(void);
 DvzScenarioSpec dvz_example_selection_mesh_instances_scenario(void);
 DvzScenarioSpec dvz_example_selection_pixel_scenario(void);
 DvzScenarioSpec dvz_example_selection_sphere_scenario(void);
-DvzScenarioSpec dvz_example_sampled_field_2d_scenario(void);
+DvzScenarioSpec dvz_example_sampled_field_update_scenario(void);
 DvzScenarioSpec dvz_example_text_block_scenario(void);
 DvzScenarioSpec dvz_example_depth_test_scenario(void);
 DvzScenarioSpec dvz_showcase_linked_probe_colorbar_scenario(void);
@@ -234,7 +234,7 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
     case 48:
         return dvz_example_controller_turntable_scenario();
     case 49:
-        return dvz_example_sampled_field_2d_scenario();
+        return dvz_example_sampled_field_update_scenario();
     case 50:
         return dvz_example_colormap_scale_scenario();
     case 51:

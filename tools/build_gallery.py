@@ -122,8 +122,7 @@ FEATURE_PAGE_GROUPS = (
         "feature_obj_loading",
     ]),
     ("Scientific", [
-        "feature_sampled_field_2d",
-        "feature_sampled_field_3d",
+        "feature_sampled_field_update",
         "feature_isolines",
         "feature_datetime_axis",
         "image_probe",
@@ -198,8 +197,7 @@ INDEX_FEATURE_GROUPS = (
         "feature_controller_turntable",
     ]),
     ("Scientific", [
-        "feature_sampled_field_2d",
-        "feature_sampled_field_3d",
+        "feature_sampled_field_update",
         "feature_isolines",
         "feature_marker_symbols",
     ]),

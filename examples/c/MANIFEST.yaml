@@ -222,12 +222,11 @@ batches:
     - feature_builtin_shapes_3d
     - feature_obj_loading
     - visual_glyph
-    - feature_sampled_field_3d
     - feature_volume_occlusion
 
   review-16-images-fields:
     - visual_image
-    - feature_sampled_field_2d
+    - feature_sampled_field_update
     - feature_isolines
     - volume
     - brain_volume
@@ -433,41 +432,24 @@ examples:
         - labels
     agent_copy_safe: true
 
-  - id: feature_sampled_field_2d
-    title: 2D Sampled Field
+  - id: feature_sampled_field_update
+    title: Sampled Field Update
     stage: v0.4_required
     category: feature
-    primary_feature: sampled-field-2d
+    primary_feature: sampled-field-update
     lane: features
-    source: examples/c/features/sampled_field_2d.c
+    source: examples/c/features/sampled_field_update.c
     validation: smoke+screenshot
     data:
       kind: synthetic
     webgpu:
       status: webgpu-live
-      route: examples/webgpu/live.html?id=feature_sampled_field_2d
+      route: examples/webgpu/live.html?id=feature_sampled_field_update
       requirements:
         - sampled-field
         - image
+        - frame-callbacks
         - colormap
-    agent_copy_safe: true
-
-  - id: feature_sampled_field_3d
-    title: 3D Sampled Field
-    stage: v0.4_required
-    category: feature
-    primary_feature: sampled-field-3d
-    lane: features
-    source: examples/c/features/sampled_field_3d.c
-    validation: smoke+screenshot
-    data:
-      kind: synthetic
-    webgpu:
-      status: webgpu-planned
-      requirements:
-        - sampled-field
-        - volume
-        - texture-3d
     agent_copy_safe: true
 
   - id: feature_text_block

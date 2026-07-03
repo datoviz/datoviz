@@ -147,9 +147,9 @@ export const LIVE_EXAMPLES = [
     scenarioId: "feature_axis_labels",
   },
   {
-    id: "feature_sampled_field_2d",
-    label: "2D Sampled Field",
-    scenarioId: "feature_sampled_field_2d",
+    id: "feature_sampled_field_update",
+    label: "Sampled Field Update",
+    scenarioId: "feature_sampled_field_update",
   },
   {
     id: "colormap_scale",

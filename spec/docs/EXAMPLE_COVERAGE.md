@@ -241,8 +241,7 @@ scaffolding, but the feature must be the visible point of the example.
 
 | ID | Source | State | Expected rendered result | Teaches and limits |
 | --- | --- | --- | --- | --- |
-| `feature.sampled_field_2d` | `examples/c/features/sampled_field_2d.c` | `ready-now` | A 2D scalar field rendered through a plain image or pixel visual. | Teaches sampled-field resource shape and mapping. Put colorbar in `feature.colorbar`. |
-| `feature.sampled_field_3d` | `examples/c/features/sampled_field_3d.c` | `ready-now` | A small 3D field rendered as a volume or slice with deterministic range. | Teaches 3D sampled-field resource setup. Avoid full volume interaction UI. |
+| `feature.sampled_field_update` | `examples/c/features/sampled_field_update.c` | `ready-now` | One scene-owned 2D sampled field reused by two image visuals while a subregion is updated. | Teaches sampled-field ownership, reuse, and dirty-region updates. Use `visual.volume` for the 3D volume path. |
 | `feature.colormap_scale` | `examples/c/features/colormap_scale.c` | `ready-now` | One scalar-colored visual with a perceptually uniform colormap and clear min/max effect. | Teaches scalar-to-color mapping. Do not add a colorbar unless this row is merged with `feature.colorbar`. |
 | `feature.colorbar` | `examples/c/features/colorbar.c` | `ready-now` | One scalar-colored visual plus a readable continuous colorbar with range labels. | Teaches colorbar attachment and scale semantics. Avoid probe callbacks. |
 | `feature.legend_categorical` | `examples/c/features/legend_categorical.c` | `experimental` | A small categorical visual with a compact legend mapping colors or shapes to labels. | Include only if categorical legends are public. Avoid statistical or plotting-layer semantics. |

@@ -2,11 +2,11 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 110,
+  "count": 109,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 69,
+    "feature": 68,
     "runtime": 5,
     "showcase": 15,
     "start": 1,
@@ -16,11 +16,11 @@
     "diagnostic": 1,
     "experimental": 14,
     "prototype": 3,
-    "supported": 92
+    "supported": 91
   },
   "agent_copy_safe": {
     "false": 28,
-    "true": 82
+    "true": 81
   },
   "examples": [
     {
@@ -192,46 +192,25 @@
       "primary_feature": "axis-labels"
     },
     {
-      "id": "feature_sampled_field_2d",
-      "title": "2D Sampled Field",
+      "id": "feature_sampled_field_update",
+      "title": "Sampled Field Update",
       "category": "feature",
       "lane": "features",
       "stage": "v0.4_required",
       "status": "supported",
-      "source": "examples/c/features/sampled_field_2d.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_2d.c",
-      "page": "gallery/features/feature_sampled_field_2d.md",
-      "summary": "scene-owned 2D sampled field bound to an image visual.",
+      "source": "examples/c/features/sampled_field_update.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_update.c",
+      "page": "gallery/features/feature_sampled_field_update.md",
+      "summary": "one scene-owned sampled field reused by two image visuals.",
       "validation": "smoke+screenshot",
-      "build_command": "just example-c features/sampled_field_2d",
-      "smoke_command": "./build/examples/c/features/sampled_field_2d --png",
+      "build_command": "just example-c features/sampled_field_update",
+      "smoke_command": "./build/examples/c/features/sampled_field_update --png",
       "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
       },
-      "primary_feature": "sampled-field-2d"
-    },
-    {
-      "id": "feature_sampled_field_3d",
-      "title": "3D Sampled Field",
-      "category": "feature",
-      "lane": "features",
-      "stage": "v0.4_required",
-      "status": "supported",
-      "source": "examples/c/features/sampled_field_3d.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_3d.c",
-      "page": "gallery/features/feature_sampled_field_3d.md",
-      "summary": "scene-owned 3D sampled field bound to a volume visual.",
-      "validation": "smoke+screenshot",
-      "build_command": "just example-c features/sampled_field_3d",
-      "smoke_command": "./build/examples/c/features/sampled_field_3d --png",
-      "agent_copy_safe": true,
-      "tags": [],
-      "data": {
-        "kind": "synthetic"
-      },
-      "primary_feature": "sampled-field-3d"
+      "primary_feature": "sampled-field-update"
     },
     {
       "id": "feature_text_block",

@@ -4,7 +4,7 @@
 
 Browse app lifecycle, native windowing, offscreen capture, recording, replay, and media export examples.
 
-Coverage: 4 runtime examples (2 supported, 2 experimental).
+Coverage: 5 runtime examples (3 supported, 2 experimental).
 
 Each card links to a detail page with preview media, source code, and validation metadata.
 
@@ -21,6 +21,18 @@ _Media pending._
 `supported` `runtime`
 
 direct GLFW app path without the scenario runner.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Multi Window](gallery/runtime/feature_multi_window.md)
+
+_Media pending._
+
+`supported` `runtime`
+
+one app driving two native GLFW windows.
 
 </div>
 

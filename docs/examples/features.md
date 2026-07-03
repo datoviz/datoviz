@@ -4,7 +4,7 @@
 
 Browse isolated examples for layout, navigation, adornments, rendering, interaction, animation, and diagnostics.
 
-Coverage: 66 feature examples (61 supported, 4 experimental, 1 diagnostic).
+Coverage: 68 feature examples (61 supported, 6 experimental, 1 diagnostic).
 
 Each card links to a detail page with preview media, source code, and validation metadata.
 
@@ -28,7 +28,7 @@ smallest runner-backed retained scene with one point visual.
 
 ### [Coordinate System](gallery/features/feature_coordinate_system.md)
 
-[![Coordinate System](../assets/gallery/v0.4/features/feature_coordinate_system.webp)](gallery/features/feature_coordinate_system.md)
+_Media pending._
 
 `supported` `features`
 
@@ -88,7 +88,7 @@ two panels linked on X panzoom extent with independent Y panzoom state.
 
 ### [Panel View 2D](gallery/features/feature_panel_view2d.md)
 
-[![Panel View 2D](../assets/gallery/v0.4/features/feature_panel_view2d.webp)](gallery/features/feature_panel_view2d.md)
+_Media pending._
 
 `supported` `features`
 
@@ -117,6 +117,18 @@ fixed graphite-cyan panel background behind a simple visual.
 `supported` `features`
 
 screen-space marker, path, and axis scaling controlled by a GUI slider.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [View Size Policies](gallery/features/feature_view_size_policies.md)
+
+_Media pending._
+
+`supported` `features`<br><span>`view-size`, `framebuffer`, `window`</span>
+
+explicit canvas/window/framebuffer size policy selection.
 
 </div>
 
@@ -454,7 +466,7 @@ tessellated cubic Bezier curve rendered as a retained path.
 
 ### [Path Join](gallery/features/feature_path_join.md)
 
-[![Path Join](../assets/gallery/v0.4/features/feature_path_join.webp)](gallery/features/feature_path_join.md)
+_Media pending._
 
 `supported` `features`
 
@@ -482,25 +494,13 @@ Wavefront OBJ mesh loading through geom/fileio helpers.
 
 <div class="card" markdown="1">
 
-### [2D Sampled Field](gallery/features/feature_sampled_field_2d.md)
+### [Sampled Field Update](gallery/features/feature_sampled_field_update.md)
 
-[![2D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_2d.webp)](gallery/features/feature_sampled_field_2d.md)
-
-`supported` `features`
-
-scene-owned 2D sampled field bound to an image visual.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [3D Sampled Field](gallery/features/feature_sampled_field_3d.md)
-
-[![3D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_3d.webp)](gallery/features/feature_sampled_field_3d.md)
+_Media pending._
 
 `supported` `features`
 
-scene-owned 3D sampled field bound to a volume visual.
+one scene-owned sampled field reused by two image visuals.
 
 </div>
 
@@ -513,6 +513,18 @@ scene-owned 3D sampled field bound to a volume visual.
 `supported` `features`
 
 CPU contour extraction rendered as retained segment overlays.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Datetime Axis](gallery/features/feature_datetime_axis.md)
+
+_Media pending._
+
+`experimental` `features`<br><span>`axes`, `datetime`, `time-series`</span>
+
+compact data coordinates with retained UTC datetime labels.
 
 </div>
 
@@ -855,6 +867,24 @@ _Media pending._
 `experimental` `features`
 
 retained scene JSON serialization diagnostic.
+
+</div>
+
+</div>
+
+## Other
+
+<div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
+### [Eye-Dome Lighting](gallery/features/technique_edl.md)
+
+[![Eye-Dome Lighting](../assets/gallery/v0.4/features/technique_edl.webp)](gallery/features/technique_edl.md)
+
+`experimental` `features`
+
+Eye-Dome Lighting applied to a dense retained point cloud.
 
 </div>
 

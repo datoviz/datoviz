@@ -52,7 +52,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_sphere.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/scalebar.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/scalebar_units.c
-    ${PROJECT_SOURCE_DIR}/examples/c/features/sampled_field_2d.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/sampled_field_update.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/text_block.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/technique_depth_test.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/timer_animation.c

@@ -55,7 +55,7 @@ animated textured mouse mesh with trajectory and skeleton trails.
     | `name` | Synthetic mouse animation validation bundle |
     | `source` | https://osf.io/h3ec5/ |
     | `license` | generated fallback; upstream OSF terms require review for real assets |
-    | `preprocessing` | python tools/data/prepare_synthetic_mouse.py |
+    | `preprocessing` | python tools/data/prepare_synthetic_mouse.py --force |
     | `cache_prepared_path` | .cache/datoviz/examples/synthetic_mouse/prepared |
 
     Generated media is prepared in the `data` submodule and linked from this page.

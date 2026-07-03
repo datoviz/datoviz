@@ -10,7 +10,7 @@
 <span>Primitive</span>
 </nav>
 
-topology-parametric triangles rendered with the retained primitive visual.
+line and triangle topologies rendered with the retained primitive visual.
 
 ## Preview
 

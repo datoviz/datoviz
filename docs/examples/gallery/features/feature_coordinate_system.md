@@ -14,7 +14,7 @@ interactive 3D RGB-axis proof of the Datoviz scene coordinate convention.
 
 ## Preview
 
-![Coordinate System](../../../assets/gallery/v0.4/features/feature_coordinate_system.webp)
+_Media pending._
 
 ## Source
 

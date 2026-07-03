@@ -10,7 +10,7 @@
 <span>Raw Triangle Vklite</span>
 </nav>
 
-raw_triangle_vklite — vklite draw commands into DvzCanvas.
+vklite draw commands into DvzCanvas.
 
 ## Preview
 

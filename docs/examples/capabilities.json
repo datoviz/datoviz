@@ -3,11 +3,11 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 110,
+  "example_count": 109,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 69,
+    "feature": 68,
     "runtime": 5,
     "showcase": 15,
     "start": 1,
@@ -17,11 +17,11 @@
     "diagnostic": 1,
     "experimental": 14,
     "prototype": 3,
-    "supported": 92
+    "supported": 91
   },
   "agent_copy_safe": {
     "false": 28,
-    "true": 82
+    "true": 81
   },
   "capabilities": {
     "composites": {
@@ -157,7 +157,7 @@
         ]
       },
       "synthetic": {
-        "count": 101,
+        "count": 100,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -232,22 +232,13 @@
             "page": "gallery/features/feature_axis_labels.md"
           },
           {
-            "id": "feature_sampled_field_2d",
-            "title": "2D Sampled Field",
+            "id": "feature_sampled_field_update",
+            "title": "Sampled Field Update",
             "category": "feature",
             "status": "supported",
             "agent_copy_safe": true,
-            "source": "examples/c/features/sampled_field_2d.c",
-            "page": "gallery/features/feature_sampled_field_2d.md"
-          },
-          {
-            "id": "feature_sampled_field_3d",
-            "title": "3D Sampled Field",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/sampled_field_3d.c",
-            "page": "gallery/features/feature_sampled_field_3d.md"
+            "source": "examples/c/features/sampled_field_update.c",
+            "page": "gallery/features/feature_sampled_field_update.md"
           },
           {
             "id": "feature_text_block",
@@ -1758,31 +1749,17 @@
           }
         ]
       },
-      "sampled-field-2d": {
+      "sampled-field-update": {
         "count": 1,
         "examples": [
           {
-            "id": "feature_sampled_field_2d",
-            "title": "2D Sampled Field",
+            "id": "feature_sampled_field_update",
+            "title": "Sampled Field Update",
             "category": "feature",
             "status": "supported",
             "agent_copy_safe": true,
-            "source": "examples/c/features/sampled_field_2d.c",
-            "page": "gallery/features/feature_sampled_field_2d.md"
-          }
-        ]
-      },
-      "sampled-field-3d": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_sampled_field_3d",
-            "title": "3D Sampled Field",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/sampled_field_3d.c",
-            "page": "gallery/features/feature_sampled_field_3d.md"
+            "source": "examples/c/features/sampled_field_update.c",
+            "page": "gallery/features/feature_sampled_field_update.md"
           }
         ]
       },

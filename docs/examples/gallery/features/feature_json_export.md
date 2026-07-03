@@ -54,6 +54,6 @@ _Media pending._
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_input_events">Previous: Input Events</a>
+<a href="../feature_input_events">Previous: Input Events</a> · <a href="../technique_edl">Next: Eye-Dome Lighting</a>
 </div>
 </nav>

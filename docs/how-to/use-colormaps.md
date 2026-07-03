@@ -93,4 +93,4 @@ categorical scale and legend when the numbers name classes rather than ordered m
 
     - [Scalar Color Scale](../examples/gallery/features/colormap_scale.md) - Source: `examples/c/features/colormap_scale.c`
     - [Colorbar](../examples/gallery/features/colorbar.md) - Source: `examples/c/features/colorbar.c`
-    - [2D Sampled Field](../examples/gallery/features/feature_sampled_field_2d.md) - Source: `examples/c/features/sampled_field_2d.c`
+    - [Sampled Field Update](../examples/gallery/features/feature_sampled_field_update.md) - Source: `examples/c/features/sampled_field_update.c`

@@ -65,6 +65,6 @@ Wavefront OBJ mesh loading through geom/fileio helpers.
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_path_join">Previous: Path Join</a> · <a href="../feature_sampled_field_2d">Next: 2D Sampled Field</a>
+<a href="../feature_path_join">Previous: Path Join</a> · <a href="../feature_sampled_field_update">Next: Sampled Field Update</a>
 </div>
 </nav>

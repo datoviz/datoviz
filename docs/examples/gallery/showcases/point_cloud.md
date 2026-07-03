@@ -55,7 +55,7 @@ RESEPI RGB LiDAR dense point cloud.
     | `name` | RESEPI GENM2X colorized benchmark point cloud |
     | `source` | https://lidarpayload.com/sample-data/ |
     | `license` | Public RESEPI sample data; usage follows the source site's terms |
-    | `preprocessing` | python tools/data/prepare_point_cloud.py |
+    | `preprocessing` | python tools/data/prepare_point_cloud.py --force |
     | `cache_prepared_path` | .cache/datoviz/examples/point_cloud/prepared |
 
     Generated media is prepared in the `data` submodule and linked from this page.

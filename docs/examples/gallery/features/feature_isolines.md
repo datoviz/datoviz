@@ -65,6 +65,6 @@ CPU contour extraction rendered as retained segment overlays.
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_sampled_field_3d">Previous: 3D Sampled Field</a> · <a href="../image_probe">Next: Image Probe</a>
+<a href="../feature_sampled_field_update">Previous: Sampled Field Update</a> · <a href="../feature_datetime_axis">Next: Datetime Axis</a>
 </div>
 </nav>

@@ -4,7 +4,7 @@
 
 Browse the generated Datoviz v0.4 example gallery.
 
-Coverage: 15 showcases, 17 visuals and composites, 66 feature examples, 4 runtime examples, and 3 advanced examples.
+Coverage: 15 showcases, 17 visuals and composites, 68 feature examples, 5 runtime examples, and 3 advanced examples.
 
 Each card links to a detail page with preview media, source code, and validation metadata.
 
@@ -258,7 +258,7 @@ retained straight and curved vector visual example.
 
 [![Primitive](../assets/gallery/v0.4/visuals/visual_primitive.webp)](gallery/visuals/visual_primitive.md)
 
-topology-parametric triangles rendered with the retained primitive visual.
+line and triangle topologies rendered with the retained primitive visual.
 
 </div>
 
@@ -502,21 +502,11 @@ constrained turntable controller around a small 3D mesh.
 
 <div class="card" markdown="1">
 
-### [2D Sampled Field](gallery/features/feature_sampled_field_2d.md)
+### [Sampled Field Update](gallery/features/feature_sampled_field_update.md)
 
-[![2D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_2d.webp)](gallery/features/feature_sampled_field_2d.md)
+_Media pending._
 
-scene-owned 2D sampled field bound to an image visual.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [3D Sampled Field](gallery/features/feature_sampled_field_3d.md)
-
-[![3D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_3d.webp)](gallery/features/feature_sampled_field_3d.md)
-
-scene-owned 3D sampled field bound to a volume visual.
+one scene-owned sampled field reused by two image visuals.
 
 </div>
 
@@ -634,7 +624,7 @@ retained sphere hover and click selection.
 
 </div>
 
-[Browse all 66 feature examples](features.md) — controllers, adornments, interaction, animation, rendering, and more.
+[Browse all 68 feature examples](features.md) — controllers, adornments, interaction, animation, rendering, and more.
 
 ## Runtime & Capture
 
@@ -651,6 +641,16 @@ Selected app lifecycle, capture, recording, and export examples are shown below.
 _Media pending._
 
 direct GLFW app path without the scenario runner.
+
+</div>
+
+<div class="card" markdown="1">
+
+### [Multi Window](gallery/runtime/feature_multi_window.md)
+
+_Media pending._
+
+one app driving two native GLFW windows.
 
 </div>
 
@@ -698,4 +698,4 @@ record an offscreen app view and replay it into a second offscreen view.
 
 </div>
 
-[Browse all 4 runtime examples](runtime.md).
+[Browse all 5 runtime examples](runtime.md).

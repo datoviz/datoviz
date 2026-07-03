@@ -10,7 +10,7 @@
 <span>Raw Triangle DRP2</span>
 </nav>
 
-raw_triangle_drp2 — triangle rendered via a hand-written DRP2 command stream.
+triangle rendered via a hand-written DRP2 command stream.
 
 ## Preview
 

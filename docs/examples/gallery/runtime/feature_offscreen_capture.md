@@ -54,6 +54,6 @@ _Media pending._
 <a href="../../../runtime">Runtime & Capture</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_app_glfw">Previous: GLFW App</a> · <a href="../feature_video_export">Next: Video Export</a>
+<a href="../feature_multi_window">Previous: Multi Window</a> · <a href="../feature_video_export">Next: Video Export</a>
 </div>
 </nav>

@@ -2,7 +2,7 @@
 
 Render regular 2D or 3D scalar data as image, texture, or volume content.
 
-![2D Sampled Field](../assets/gallery/v0.4/features/feature_sampled_field_2d.webp)
+![Sampled Field Update](../assets/gallery/v0.4/features/feature_sampled_field_update.webp)
 
 ## Task Workflow
 
@@ -170,6 +170,6 @@ handling is explicit.
 
 ??? example "Related examples"
 
-    - [2D Sampled Field](../examples/gallery/features/feature_sampled_field_2d.md) - Source: `examples/c/features/sampled_field_2d.c`
-    - [3D Sampled Field](../examples/gallery/features/feature_sampled_field_3d.md) - Source: `examples/c/features/sampled_field_3d.c`
+    - [Sampled Field Update](../examples/gallery/features/feature_sampled_field_update.md) - Source: `examples/c/features/sampled_field_update.c`
+    - [Volume](../examples/gallery/visuals/volume.md) - Source: `examples/c/visuals/volume.c`
     - [Textured Mesh](../examples/gallery/features/feature_mesh_texture.md) - Source: `examples/c/features/mesh_texture.c`

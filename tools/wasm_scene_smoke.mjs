@@ -2298,7 +2298,7 @@ try {
     "feature_bars_bands",
     "feature_controller_fly",
     "feature_controller_turntable",
-    "feature_sampled_field_2d",
+    "feature_sampled_field_update",
     "feature_colormap_scale",
     "feature_panel_background",
     "composite_polygon",
@@ -2360,7 +2360,10 @@ try {
   requireOk(scenarioId === "feature_timer_animation", `unexpected scenario id ${scenarioId}`);
   const scenarioTitlePtr = Module._dvz_wasm_api_scenario_title(timerScenarioIndex);
   requireOk(scenarioTitlePtr !== 0, "WASM scenario 0 has no title");
-  requireOk(Module.UTF8ToString(scenarioTitlePtr) === "timer_animation", "unexpected scenario title");
+  requireOk(
+    Module.UTF8ToString(scenarioTitlePtr) === "Timer Animation",
+    "unexpected scenario title",
+  );
   requireOk(Module._dvz_wasm_api_scenario_width(timerScenarioIndex) === 1280, "unexpected scenario width");
   requireOk(Module._dvz_wasm_api_scenario_height(timerScenarioIndex) === 720, "unexpected scenario height");
   requireOk(Module._dvz_wasm_api_scenario_fps(timerScenarioIndex) === 60, "unexpected scenario fps");
@@ -3192,8 +3195,8 @@ try {
       (stream, label) => expectControllerMeshScenarioStreamShape(stream, label),
     ],
     [
-      "feature_sampled_field_2d",
-      "sampled field 2d",
+      "feature_sampled_field_update",
+      "sampled field update",
       (stream, label) => expectSampledField2DScenarioStreamShape(stream, label),
     ],
     [

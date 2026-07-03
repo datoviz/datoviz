@@ -29,8 +29,7 @@ source material.
 | `feature_panel_linked` | `features/panel_linked.c` | Feature proof. |
 | `path_axes_2d` | `features/axes_2d.c` | Feature proof. |
 | `feature_axis_labels` | `features/axis_labels.c` | Feature proof. |
-| `feature_sampled_field_2d` | `features/sampled_field_2d.c` | Feature proof. |
-| `feature_sampled_field_3d` | `features/sampled_field_3d.c` | Feature proof. |
+| `feature_sampled_field_update` | `features/sampled_field_update.c` | Feature proof. |
 | `feature_text_block` | `features/text_block.c` | Feature proof. |
 | `feature_overlay_card` | `features/overlay_card.c` | Feature proof. |
 | `feature_controller_arcball` | `features/controller_arcball.c` | Feature proof. |
