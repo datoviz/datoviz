@@ -42,6 +42,7 @@ typedef struct
 {
     DvzCallbackId unsubscribe_id;
     uint32_t unsubscribe_calls;
+    bool unsubscribe_ok;
     uint32_t follower_calls;
 } DispatchRecorder;
 
@@ -197,7 +198,7 @@ _unsubscribe_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void*
     ANN(user_data);
     DispatchRecorder* recorder = user_data;
     recorder->unsubscribe_calls++;
-    AT(dvz_input_unsubscribe(router, recorder->unsubscribe_id));
+    recorder->unsubscribe_ok = dvz_input_unsubscribe(router, recorder->unsubscribe_id);
 }
 
 
@@ -350,6 +351,7 @@ int test_router_unsubscribe(TstContext* suite, const TstCase* item)
         _make_event(DVZ_POINTER_EVENT_PRESS, 0.0f, 0.0f, DVZ_POINTER_BUTTON_LEFT, 1);
     dvz_input_emit_pointer(router, &event);
     AT(recorder.unsubscribe_calls == 1);
+    AT(recorder.unsubscribe_ok);
     AT(recorder.follower_calls == 1);
     AT(!dvz_input_unsubscribe(router, recorder.unsubscribe_id));
     AT(dvz_input_unsubscribe(router, follower_id));
