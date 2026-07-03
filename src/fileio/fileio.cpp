@@ -140,13 +140,15 @@ error:
 
 
 
-void* dvz_parse_npy(DvzSize size, char* npy_bytes)
+void* dvz_parse_npy(const void* bytes, DvzSize size_bytes)
 {
     // Ensure the buffer is valid
-    if (size < 10 || npy_bytes == NULL)
+    if (size_bytes < 10 || bytes == NULL)
     {
         return NULL;
     }
+
+    const uint8_t* npy_bytes = (const uint8_t*)bytes;
 
     // Check the .npy magic string
     if (memcmp(npy_bytes, "\x93NUMPY", 6) != 0)
@@ -155,21 +157,20 @@ void* dvz_parse_npy(DvzSize size, char* npy_bytes)
     }
 
     // Extract the header length (at byte 8 and 9 for v1.0/1.1)
-    const uint8_t* bytes = (const uint8_t*)npy_bytes;
     uint16_t header_len = 0;
-    dvz_memcpy(&header_len, sizeof(header_len), bytes + 8, sizeof(header_len));
+    dvz_memcpy(&header_len, sizeof(header_len), npy_bytes + 8, sizeof(header_len));
 
     // Calculate the offset of the array data
     DvzSize data_offset = 10 + header_len;
 
     // Ensure the offset is within bounds
-    if (data_offset > size)
+    if (data_offset > size_bytes)
     {
         return NULL;
     }
 
     // Calculate the size of the array data
-    DvzSize array_data_size = size - data_offset;
+    DvzSize array_data_size = size_bytes - data_offset;
 
     // Allocate memory for the output buffer
     char* array_data = (char*)dvz_malloc(array_data_size);
@@ -421,9 +422,10 @@ int dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* s
 
 
 
-uint8_t* dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint32_t* height)
+uint8_t*
+dvz_load_png(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* height)
 {
-    ASSERT(size > 0);
+    ASSERT(size_bytes > 0);
     ANN(bytes);
     ANN(width);
     ANN(height);
@@ -432,8 +434,8 @@ uint8_t* dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint3
     std::vector<uint8_t> image_data;
     uint32_t img_width, img_height;
     uint32_t channels;
-    bool success =
-        fpng::fpng_decode_memory(bytes, size, image_data, img_width, img_height, channels, 3);
+    bool success = fpng::fpng_decode_memory(
+        bytes, size_bytes, image_data, img_width, img_height, channels, 3);
 
     if (!success)
     {

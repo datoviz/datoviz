@@ -28,14 +28,15 @@
 
 char error_message[2048] = {0};
 DvzErrorCallback error_callback = NULL;
+void* error_callback_user_data = NULL;
 
 
 
-void dvz_error_callback(DvzErrorCallback cb)
+void dvz_error_set_callback(DvzErrorCallback cb, void* user_data)
 {
-    ANN(cb);
     // log_debug("Registering an error callback function");
     error_callback = cb;
+    error_callback_user_data = user_data;
 }
 
 

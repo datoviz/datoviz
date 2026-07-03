@@ -138,7 +138,7 @@ callback_functions:
     - dvz_view_set_gui_callback
     - dvz_view_set_request_frame_callback
   global:
-    - dvz_error_callback
+    - dvz_error_set_callback
 
 owned_string_returns:
   dvz_drp2_stream_json:

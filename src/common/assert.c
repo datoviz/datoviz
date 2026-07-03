@@ -43,7 +43,7 @@ void dvz_assert(bool assertion, const char* message, const char* filename, int l
         // Call the error callback if there is one.
         if (error_callback)
         {
-            error_callback(error_message);
+            error_callback(DVZ_LOG_LEVEL_ERROR, error_message, error_callback_user_data);
         }
 
         // Exit the process.

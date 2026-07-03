@@ -69,11 +69,11 @@ DVZ_EXPORT void* dvz_read_npy(const char* filename, DvzSize* size);
 /**
  * Read a NumPy NPY file from memory.
  *
- * @param size of the file
- * @param npy_bytes the contents of the NPY file
+ * @param bytes the contents of the NPY file
+ * @param size_bytes size of the file in bytes
  * @returns owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free()
  */
-DVZ_EXPORT void* dvz_parse_npy(DvzSize size, char* npy_bytes);
+DVZ_EXPORT void* dvz_parse_npy(const void* bytes, DvzSize size_bytes);
 
 
 
@@ -161,15 +161,15 @@ dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size,
 /**
  * Decode a PNG image from memory into tightly packed RGB8 pixels.
  *
- * @param size size of the PNG byte buffer
  * @param bytes PNG byte buffer
+ * @param size_bytes size of the PNG byte buffer in bytes
  * @param[out] width decoded image width
  * @param[out] height decoded image height
  * @returns owned RGB8 pixel buffer allocated with the Datoviz allocator, or NULL on failure; free
  * with dvz_memory_free()
  */
 DVZ_EXPORT uint8_t*
-dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint32_t* height);
+dvz_load_png(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* height);
 
 
 

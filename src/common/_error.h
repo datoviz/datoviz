@@ -29,6 +29,7 @@ EXTERN_C_ON
 
 extern char error_message[2048];
 extern DvzErrorCallback error_callback;
+extern void* error_callback_user_data;
 
 
 EXTERN_C_OFF

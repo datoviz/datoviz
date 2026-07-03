@@ -2022,6 +2022,17 @@ DVZ_LEGEND_PLACEMENT_ATTACHED = DvzLegendPlacementMode.DVZ_LEGEND_PLACEMENT_ATTA
 DVZ_LEGEND_PLACEMENT_DETACHED = DvzLegendPlacementMode.DVZ_LEGEND_PLACEMENT_DETACHED
 
 
+class DvzLogLevel(CtypesEnum):
+    DVZ_LOG_LEVEL_ERROR = 0
+    DVZ_LOG_LEVEL_WARNING = 1
+    DVZ_LOG_LEVEL_INFO = 2
+
+
+DVZ_LOG_LEVEL_ERROR = DvzLogLevel.DVZ_LOG_LEVEL_ERROR
+DVZ_LOG_LEVEL_WARNING = DvzLogLevel.DVZ_LOG_LEVEL_WARNING
+DVZ_LOG_LEVEL_INFO = DvzLogLevel.DVZ_LOG_LEVEL_INFO
+
+
 class DvzMVPFlags(CtypesEnum):
     DVZ_MVP_FLAGS_NONE = 0
     DVZ_MVP_FLAGS_ISOTROPIC_LOCAL = 1
@@ -4666,7 +4677,7 @@ DvzCanvasDraw = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzCanvas), ctypes.POINTER
 DvzCanvasLiveImageCallback = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.POINTER(DvzCanvasLiveImageFrame), ctypes.c_void_p)
 
 
-DvzErrorCallback = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
+DvzErrorCallback = ctypes.CFUNCTYPE(None, ctypes.c_int, ctypes.c_char_p, ctypes.c_void_p)
 
 
 DvzGuiCallback = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzGui), ctypes.POINTER(DvzView), ctypes.c_void_p)
@@ -14597,23 +14608,24 @@ else:
 
 
 try:
-    _dvz_error_callback = dvz.dvz_error_callback
+    _dvz_error_set_callback = dvz.dvz_error_set_callback
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_error_callback')
+    _MISSING_FUNCTIONS.append('dvz_error_set_callback')
 else:
-    _dvz_error_callback.__doc__ = """/**
- * Register an error callback, a C function taking as input a string.
+    _dvz_error_set_callback.__doc__ = """/**
+ * Register an error callback.
  *
  * @param cb the error callback
+ * @param user_data opaque pointer passed to the callback
  */"""
-    _dvz_error_callback.argtypes = [DvzErrorCallback]
-    _dvz_error_callback.restype = None
-    def dvz_error_callback(cb):
-        cb = _callback_store_global('dvz_error_callback', DvzErrorCallback, cb)
-        return _dvz_error_callback(cb)
-    dvz_error_callback.__doc__ = _dvz_error_callback.__doc__
-    dvz_error_callback.argtypes = _dvz_error_callback.argtypes
-    dvz_error_callback.restype = _dvz_error_callback.restype
+    _dvz_error_set_callback.argtypes = [DvzErrorCallback, ctypes.c_void_p]
+    _dvz_error_set_callback.restype = None
+    def dvz_error_set_callback(cb, user_data):
+        cb = _callback_store_global('dvz_error_set_callback', DvzErrorCallback, cb)
+        return _dvz_error_set_callback(cb, user_data)
+    dvz_error_set_callback.__doc__ = _dvz_error_set_callback.__doc__
+    dvz_error_set_callback.argtypes = _dvz_error_set_callback.argtypes
+    dvz_error_set_callback.restype = _dvz_error_set_callback.restype
 
 
 try:
@@ -21334,14 +21346,14 @@ else:
     dvz_load_png.__doc__ = """/**
  * Decode a PNG image from memory into tightly packed RGB8 pixels.
  *
- * @param size size of the PNG byte buffer
  * @param bytes PNG byte buffer
+ * @param size_bytes size of the PNG byte buffer in bytes
  * @param[out] width decoded image width
  * @param[out] height decoded image height
  * @returns owned RGB8 pixel buffer allocated with the Datoviz allocator, or NULL on failure; free
  * with dvz_memory_free()
  */"""
-    dvz_load_png.argtypes = [ctypes.c_uint64, ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
+    dvz_load_png.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
     dvz_load_png.restype = ctypes.POINTER(ctypes.c_uint8)
 
 
@@ -23515,11 +23527,11 @@ else:
     dvz_parse_npy.__doc__ = """/**
  * Read a NumPy NPY file from memory.
  *
- * @param size of the file
- * @param npy_bytes the contents of the NPY file
+ * @param bytes the contents of the NPY file
+ * @param size_bytes size of the file in bytes
  * @returns owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free()
  */"""
-    dvz_parse_npy.argtypes = [ctypes.c_uint64, ctypes.c_char_p]
+    dvz_parse_npy.argtypes = [ctypes.c_void_p, ctypes.c_uint64]
     dvz_parse_npy.restype = ctypes.c_void_p
 
 

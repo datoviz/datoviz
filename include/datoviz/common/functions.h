@@ -26,8 +26,16 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef enum
+{
+    DVZ_LOG_LEVEL_ERROR = 0,
+    DVZ_LOG_LEVEL_WARNING = 1,
+    DVZ_LOG_LEVEL_INFO = 2,
+} DvzLogLevel;
+
+
 // Error callback function type.
-typedef void (*DvzErrorCallback)(const char* message);
+typedef void (*DvzErrorCallback)(DvzLogLevel level, const char* message, void* user_data);
 
 
 
@@ -39,11 +47,12 @@ EXTERN_C_ON
 
 
 /**
- * Register an error callback, a C function taking as input a string.
+ * Register an error callback.
  *
  * @param cb the error callback
+ * @param user_data opaque pointer passed to the callback
  */
-DVZ_EXPORT void dvz_error_callback(DvzErrorCallback cb);
+DVZ_EXPORT void dvz_error_set_callback(DvzErrorCallback cb, void* user_data);
 
 
 /**

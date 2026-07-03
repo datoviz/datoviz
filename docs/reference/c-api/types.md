@@ -7656,7 +7656,7 @@ typedef enum DvzEasing DvzEasing;
 #### `DvzErrorCallback`
 
 ```c
-typedef void (*)(const char *) DvzErrorCallback;
+typedef void (*)(DvzLogLevel, const char *, void *) DvzErrorCallback;
 ```
 
 #### `DvzFence`
@@ -7801,6 +7801,12 @@ typedef struct DvzInteropBufferExport DvzInteropBufferExport;
 
 ```c
 typedef struct DvzInteropBufferExportConfig DvzInteropBufferExportConfig;
+```
+
+#### `DvzLogLevel`
+
+```c
+typedef enum DvzLogLevel DvzLogLevel;
 ```
 
 #### `DvzMVP`
@@ -8514,6 +8520,14 @@ DVZ_GRAPHICS_FLAGS_DYNAMIC = 2,
 
 ```c
 DVZ_INSTANCE_VALIDATION_FLAGS = 1,
+```
+
+#### `DvzLogLevel`
+
+```c
+DVZ_LOG_LEVEL_ERROR = 0,
+DVZ_LOG_LEVEL_WARNING = 1,
+DVZ_LOG_LEVEL_INFO = 2,
 ```
 
 #### `DvzMVPFlags`

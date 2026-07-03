@@ -427,7 +427,7 @@ Functions: 576
 
     | Function | Header |
     | --- | --- |
-    | [`dvz_error_callback()`](#dvz_error_callback) | `include/datoviz/common/functions.h` |
+    | [`dvz_error_set_callback()`](#dvz_error_set_callback) | `include/datoviz/common/functions.h` |
 
     ### Fence
 
@@ -5848,23 +5848,25 @@ _Declared in `include/datoviz/math/anim.h`:97._
 
 ## Error
 
-### `dvz_error_callback()`
+### `dvz_error_set_callback()`
 
-```c title="dvz_error_callback"
-void dvz_error_callback(
-    DvzErrorCallback cb
+```c title="dvz_error_set_callback"
+void dvz_error_set_callback(
+    DvzErrorCallback cb,
+    void * user_data
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `cb` | `DvzErrorCallback` | the error callback |
+| `user_data` | `void *` | opaque pointer passed to the callback |
 
-Register an error callback, a C function taking as input a string.
+Register an error callback.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/common/functions.h`:46._
+_Declared in `include/datoviz/common/functions.h`:55._
 
 ## Fence
 
@@ -9297,8 +9299,8 @@ _Declared in `include/datoviz/fileio/fileio.h`:192._
 
 ```c title="dvz_load_png"
 uint8_t * dvz_load_png(
-    DvzSize size,
-    unsigned char * bytes,
+    const void * bytes,
+    DvzSize size_bytes,
     uint32_t * width,
     uint32_t * height
 );
@@ -9307,8 +9309,8 @@ uint8_t * dvz_load_png(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `uint8_t *` | owned RGB8 pixel buffer allocated with the Datoviz allocator, or NULL on failure; free |
-| `size` | `DvzSize` | size of the PNG byte buffer |
-| `bytes` | `unsigned char *` | PNG byte buffer |
+| `bytes` | `const void *` | PNG byte buffer |
+| `size_bytes` | `DvzSize` | size of the PNG byte buffer in bytes |
 | `width` | `uint32_t *` |  |
 | `height` | `uint32_t *` |  |
 
@@ -9394,7 +9396,7 @@ shader compilation, screenshots, and readbacks. Passing NULL is allowed.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/common/functions.h`:57._
+_Declared in `include/datoviz/common/functions.h`:66._
 
 ## Min
 
@@ -10200,16 +10202,16 @@ _Declared in `include/datoviz/controller/panzoom.h`:221._
 
 ```c title="dvz_parse_npy"
 void * dvz_parse_npy(
-    DvzSize size,
-    char * npy_bytes
+    const void * bytes,
+    DvzSize size_bytes
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `void *` | owned buffer containing the array elements, or NULL on failure; free with dvz_memory_free() |
-| `size` | `DvzSize` | of the file |
-| `npy_bytes` | `char *` | the contents of the NPY file |
+| `bytes` | `const void *` | the contents of the NPY file |
+| `size_bytes` | `DvzSize` | size of the file in bytes |
 
 Read a NumPy NPY file from memory.
 
@@ -12893,7 +12895,7 @@ Return a monotonic timestamp in nanoseconds.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/common/functions.h`:65._
+_Declared in `include/datoviz/common/functions.h`:74._
 
 ## Turntable
 
