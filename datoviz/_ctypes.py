@@ -3724,6 +3724,10 @@ class DvzDrp2RecordingInfo(ctypes.Structure):
     pass
 
 
+class DvzDrp2RenderPipelineDesc(ctypes.Structure):
+    pass
+
+
 class DvzDrp2Runtime(ctypes.Structure):
     pass
 
@@ -3801,6 +3805,10 @@ class DvzFramePlanNode(ctypes.Structure):
 
 
 class DvzFramePlanPacketResult(ctypes.Structure):
+    pass
+
+
+class DvzFramePlanUploadDesc(ctypes.Structure):
     pass
 
 
@@ -5212,6 +5220,27 @@ DvzDrp2RecordingInfo._fields_ = [
 ]
 
 
+DvzDrp2RenderPipelineDesc._fields_ = [
+    ('struct_size', ctypes.c_uint32),
+    ('flags', ctypes.c_uint32),
+    ('id', ctypes.c_uint64),
+    ('vertex_shader_module_id', ctypes.c_uint64),
+    ('fragment_shader_module_id', ctypes.c_uint64),
+    ('vertex_buffer_slots', ctypes.c_uint32),
+    ('topology', ctypes.c_int),
+    ('bind_group_layout_count', ctypes.c_uint32),
+    ('bind_group_layout_ids', ctypes.POINTER(ctypes.c_uint64)),
+    ('binding_count', ctypes.c_uint32),
+    ('binding_strides', ctypes.POINTER(ctypes.c_uint32)),
+    ('binding_step_modes', ctypes.POINTER(ctypes.c_uint32)),
+    ('attr_count', ctypes.c_uint32),
+    ('attr_bindings', ctypes.POINTER(ctypes.c_uint32)),
+    ('attr_locations', ctypes.POINTER(ctypes.c_uint32)),
+    ('attr_formats', ctypes.POINTER(ctypes.c_int)),
+    ('attr_offsets', ctypes.POINTER(ctypes.c_uint32)),
+]
+
+
 DvzDrp2RuntimeConfig._fields_ = [
     ('struct_size', ctypes.c_uint32),
     ('flags', ctypes.c_uint32),
@@ -5308,6 +5337,29 @@ DvzFramePlanCopyDesc._fields_ = [
     ('dst_offset', ctypes.c_uint64),
     ('byte_size', ctypes.c_uint64),
     ('request_id', ctypes.c_uint64),
+]
+
+
+DvzFramePlanUploadDesc._fields_ = [
+    ('struct_size', ctypes.c_uint32),
+    ('flags', ctypes.c_uint32),
+    ('resource_id', ctypes.c_char_p),
+    ('byte_offset', ctypes.c_uint64),
+    ('byte_size', ctypes.c_uint64),
+    ('data_tag', ctypes.c_char_p),
+    ('data', ctypes.c_void_p),
+    ('topology', ctypes.c_int),
+    ('texture_format', ctypes.c_int),
+    ('texture_bytes_per_texel', ctypes.c_uint32),
+    ('texture_width', ctypes.c_uint32),
+    ('texture_height', ctypes.c_uint32),
+    ('texture_depth', ctypes.c_uint32),
+    ('texture_alloc_width', ctypes.c_uint32),
+    ('texture_alloc_height', ctypes.c_uint32),
+    ('texture_alloc_depth', ctypes.c_uint32),
+    ('texture_origin_x', ctypes.c_uint32),
+    ('texture_origin_y', ctypes.c_uint32),
+    ('texture_origin_z', ctypes.c_uint32),
 ]
 
 
@@ -12404,6 +12456,20 @@ else:
 
 
 try:
+    dvz_drp2_render_pipeline_desc = dvz.dvz_drp2_render_pipeline_desc
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_drp2_render_pipeline_desc')
+else:
+    dvz_drp2_render_pipeline_desc.__doc__ = """/**
+ * Return the default CreateRenderPipeline descriptor.
+ *
+ * @return initialized descriptor
+ */"""
+    dvz_drp2_render_pipeline_desc.argtypes = []
+    dvz_drp2_render_pipeline_desc.restype = DvzDrp2RenderPipelineDesc
+
+
+try:
     dvz_drp2_runtime_attach_frame_target = dvz.dvz_drp2_runtime_attach_frame_target
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_drp2_runtime_attach_frame_target')
@@ -13042,101 +13108,19 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_drp2_stream_create_render_pipeline')
 else:
     dvz_drp2_stream_create_render_pipeline.__doc__ = """/**
- * Append a CreateRenderPipeline command.
- *
- * @param stream the command stream
- * @param id the pipeline id
- * @param vertex_shader_module_id the vertex shader module id
- * @param fragment_shader_module_id the fragment shader module id
- * @param vertex_buffer_slots the number of required vertex buffer slots
- * @return whether the command was appended
- */"""
-    dvz_drp2_stream_create_render_pipeline.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint64, ctypes.c_uint64, ctypes.c_uint32]
-    dvz_drp2_stream_create_render_pipeline.restype = ctypes.c_bool
-
-
-try:
-    dvz_drp2_stream_create_render_pipeline_ex = dvz.dvz_drp2_stream_create_render_pipeline_ex
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_stream_create_render_pipeline_ex')
-else:
-    dvz_drp2_stream_create_render_pipeline_ex.__doc__ = """/**
- * Append a CreateRenderPipeline command with explicit vertex input layout and topology.
- *
- * `binding_count` and `attr_count` must be at most `DVZ_DRP2_MAX_BINDINGS`. Count-zero pointer
- * arrays may be NULL; non-zero counts require all matching arrays. Oversized or missing arrays are
- * rejected and no command is appended.
- *
- * @param stream the command stream
- * @param id the pipeline id
- * @param vertex_shader_module_id the vertex shader module id
- * @param fragment_shader_module_id the fragment shader module id
- * @param vertex_buffer_slots the number of required vertex buffer slots
- * @param topology primitive topology token
- * @param binding_count number of vertex binding descriptors
- * @param binding_strides stride in bytes for each binding
- * @param attr_count number of vertex attribute descriptors
- * @param attr_bindings binding index for each attribute
- * @param attr_locations shader location for each attribute
- * @param attr_formats DvzFormat token for each attribute
- * @param attr_offsets byte offset within the binding for each attribute
- * @return whether the command was appended
- */"""
-    dvz_drp2_stream_create_render_pipeline_ex.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint64, ctypes.c_uint64, ctypes.c_uint32, ctypes.c_int, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32), ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_uint32)]
-    dvz_drp2_stream_create_render_pipeline_ex.restype = ctypes.c_bool
-
-
-try:
-    dvz_drp2_stream_create_render_pipeline_ex2 = dvz.dvz_drp2_stream_create_render_pipeline_ex2
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_stream_create_render_pipeline_ex2')
-else:
-    dvz_drp2_stream_create_render_pipeline_ex2.__doc__ = """/**
- * Append a CreateRenderPipeline command with explicit vertex layout, topology, and step modes.
+ * Append a CreateRenderPipeline command from a descriptor.
  *
  * `binding_count` and `attr_count` must be at most `DVZ_DRP2_MAX_BINDINGS`. Count-zero pointer
  * arrays may be NULL; non-zero counts require all matching arrays except `binding_step_modes`,
- * which may be NULL to select per-vertex stepping. Oversized or missing arrays are rejected and no
- * command is appended.
+ * which may be NULL to select per-vertex stepping. `bind_group_layout_count` must be at most
+ * `DVZ_DRP2_MAX_BIND_GROUPS`. Oversized or missing arrays are rejected and no command is appended.
  *
  * @param stream the command stream
- * @param id the pipeline id
- * @param vertex_shader_module_id the vertex shader module id
- * @param fragment_shader_module_id the fragment shader module id
- * @param vertex_buffer_slots the number of required vertex buffer slots
- * @param topology primitive topology token
- * @param binding_count number of vertex binding descriptors
- * @param binding_strides stride in bytes for each binding
- * @param binding_step_modes DvzDrp2VertexStepMode value for each binding
- * @param attr_count number of vertex attribute descriptors
- * @param attr_bindings binding index for each attribute
- * @param attr_locations shader location for each attribute
- * @param attr_formats DvzFormat token for each attribute
- * @param attr_offsets byte offset within the binding for each attribute
+ * @param desc the render-pipeline descriptor
  * @return whether the command was appended
  */"""
-    dvz_drp2_stream_create_render_pipeline_ex2.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint64, ctypes.c_uint64, ctypes.c_uint32, ctypes.c_int, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_uint32)]
-    dvz_drp2_stream_create_render_pipeline_ex2.restype = ctypes.c_bool
-
-
-try:
-    dvz_drp2_stream_create_render_pipeline_with_bind_group_layout = dvz.dvz_drp2_stream_create_render_pipeline_with_bind_group_layout
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_stream_create_render_pipeline_with_bind_group_layout')
-else:
-    dvz_drp2_stream_create_render_pipeline_with_bind_group_layout.__doc__ = """/**
- * Append a CreateRenderPipeline command with one bind-group layout.
- *
- * @param stream the command stream
- * @param id the pipeline id
- * @param vertex_shader_module_id the vertex shader module id
- * @param fragment_shader_module_id the fragment shader module id
- * @param vertex_buffer_slots the number of required vertex buffer slots
- * @param bind_group_layout_id the bind-group layout id for slot 0
- * @return whether the command was appended
- */"""
-    dvz_drp2_stream_create_render_pipeline_with_bind_group_layout.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint64, ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint64]
-    dvz_drp2_stream_create_render_pipeline_with_bind_group_layout.restype = ctypes.c_bool
+    dvz_drp2_stream_create_render_pipeline.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.POINTER(DvzDrp2RenderPipelineDesc)]
+    dvz_drp2_stream_create_render_pipeline.restype = ctypes.c_bool
 
 
 try:
@@ -13893,8 +13877,8 @@ else:
     dvz_drp2_stream_pipeline_set_bind_group_layout.__doc__ = """/**
  * Attach a bind-group layout to the most recently appended CreateRenderPipeline command.
  *
- * Use after `dvz_drp2_stream_create_render_pipeline_ex` to combine an explicit vertex layout
- * with a bind-group layout (mirrors what `_with_bind_group_layout` does on its own).
+ * Descriptor-based creation can set bind-group layouts directly. This helper remains available
+ * for incremental stream-building code that appends optional layout state after creation.
  *
  * @param stream the command stream
  * @param bind_group_layout_id the bind-group layout id (0 = none)
@@ -16545,155 +16529,36 @@ else:
 
 
 try:
-    dvz_frame_plan_upload_set_texture_3d_allocation_extent = dvz.dvz_frame_plan_upload_set_texture_3d_allocation_extent
+    dvz_frame_plan_upload_desc = dvz.dvz_frame_plan_upload_desc
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_frame_plan_upload_set_texture_3d_allocation_extent')
+    _MISSING_FUNCTIONS.append('dvz_frame_plan_upload_desc')
 else:
-    dvz_frame_plan_upload_set_texture_3d_allocation_extent.__doc__ = """/**
- * Tag the most recently appended 3D texture upload node with the full allocation extent.
+    dvz_frame_plan_upload_desc.__doc__ = """/**
+ * Return the default FramePlan upload descriptor.
  *
- * @param plan the FramePlan
- * @param width full texture allocation width in texels
- * @param height full texture allocation height in texels
- * @param depth full texture allocation depth in texels
- * @return whether the allocation extent was applied
+ * @return default upload descriptor
  */"""
-    dvz_frame_plan_upload_set_texture_3d_allocation_extent.argtypes = [ctypes.POINTER(DvzFramePlan), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
-    dvz_frame_plan_upload_set_texture_3d_allocation_extent.restype = ctypes.c_bool
+    dvz_frame_plan_upload_desc.argtypes = []
+    dvz_frame_plan_upload_desc.restype = DvzFramePlanUploadDesc
 
 
 try:
-    dvz_frame_plan_upload_set_texture_3d_extent = dvz.dvz_frame_plan_upload_set_texture_3d_extent
+    dvz_frame_plan_upload_ex = dvz.dvz_frame_plan_upload_ex
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_frame_plan_upload_set_texture_3d_extent')
+    _MISSING_FUNCTIONS.append('dvz_frame_plan_upload_ex')
 else:
-    dvz_frame_plan_upload_set_texture_3d_extent.__doc__ = """/**
- * Mark the most recently appended upload node as a 3D texture write of the given extent.
+    dvz_frame_plan_upload_ex.__doc__ = """/**
+ * Append an upload node from a descriptor.
+ *
+ * Use this for texture uploads, topology hints, or byte uploads that need explicit metadata at node
+ * creation time. Texture writes are selected by non-zero `texture_width`.
  *
  * @param plan the FramePlan
- * @param width written texture-region width in texels
- * @param height written texture-region height in texels
- * @param depth written texture-region depth in texels
- * @return whether the hint was applied (false if the most recent node is not an upload)
+ * @param desc upload descriptor
+ * @return whether the node was appended
  */"""
-    dvz_frame_plan_upload_set_texture_3d_extent.argtypes = [ctypes.POINTER(DvzFramePlan), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
-    dvz_frame_plan_upload_set_texture_3d_extent.restype = ctypes.c_bool
-
-
-try:
-    dvz_frame_plan_upload_set_texture_3d_region = dvz.dvz_frame_plan_upload_set_texture_3d_region
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_frame_plan_upload_set_texture_3d_region')
-else:
-    dvz_frame_plan_upload_set_texture_3d_region.__doc__ = """/**
- * Tag the most recently appended texture upload node with a 3D sub-region origin.
- *
- * @param plan the FramePlan
- * @param origin_x destination x offset in texels
- * @param origin_y destination y offset in texels
- * @param origin_z destination z offset in texels
- * @return whether the origin was applied
- */"""
-    dvz_frame_plan_upload_set_texture_3d_region.argtypes = [ctypes.POINTER(DvzFramePlan), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
-    dvz_frame_plan_upload_set_texture_3d_region.restype = ctypes.c_bool
-
-
-try:
-    dvz_frame_plan_upload_set_texture_allocation_extent = dvz.dvz_frame_plan_upload_set_texture_allocation_extent
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_frame_plan_upload_set_texture_allocation_extent')
-else:
-    dvz_frame_plan_upload_set_texture_allocation_extent.__doc__ = """/**
- * Tag the most recently appended texture upload node with the full allocation extent.
- *
- * Use this when the write extent is a sub-region and the converter must know the complete texture
- * extent without relying on prior cached runtime state.
- *
- * @param plan the FramePlan
- * @param width full texture allocation width in pixels
- * @param height full texture allocation height in pixels
- * @return whether the allocation extent was applied
- */"""
-    dvz_frame_plan_upload_set_texture_allocation_extent.argtypes = [ctypes.POINTER(DvzFramePlan), ctypes.c_uint32, ctypes.c_uint32]
-    dvz_frame_plan_upload_set_texture_allocation_extent.restype = ctypes.c_bool
-
-
-try:
-    dvz_frame_plan_upload_set_texture_extent = dvz.dvz_frame_plan_upload_set_texture_extent
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_frame_plan_upload_set_texture_extent')
-else:
-    dvz_frame_plan_upload_set_texture_extent.__doc__ = """/**
- * Mark the most recently appended upload node as a 2D texture write of the given extent.
- *
- * `byte_size` on that node should equal `width * height * 4` (RGBA8). When `width` and
- * `height` are non-zero the converter routes the upload to a 2D texture (via
- * CreateTexture + WriteTexture) instead of a vertex buffer. Unless an allocation extent is set
- * separately, this write extent is also used as the texture allocation extent.
- *
- * @param plan the FramePlan
- * @param width written texture-region width in pixels
- * @param height written texture-region height in pixels
- * @return whether the hint was applied (false if the most recent node is not an upload)
- */"""
-    dvz_frame_plan_upload_set_texture_extent.argtypes = [ctypes.POINTER(DvzFramePlan), ctypes.c_uint32, ctypes.c_uint32]
-    dvz_frame_plan_upload_set_texture_extent.restype = ctypes.c_bool
-
-
-try:
-    dvz_frame_plan_upload_set_texture_format = dvz.dvz_frame_plan_upload_set_texture_format
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_frame_plan_upload_set_texture_format')
-else:
-    dvz_frame_plan_upload_set_texture_format.__doc__ = """/**
- * Tag the most recently appended texture upload node with an explicit format.
- *
- * @param plan the FramePlan
- * @param format texture format token
- * @param bytes_per_texel bytes in one texel for row-stride calculation
- * @return whether the format was applied
- */"""
-    dvz_frame_plan_upload_set_texture_format.argtypes = [ctypes.POINTER(DvzFramePlan), ctypes.c_int, ctypes.c_uint32]
-    dvz_frame_plan_upload_set_texture_format.restype = ctypes.c_bool
-
-
-try:
-    dvz_frame_plan_upload_set_texture_region = dvz.dvz_frame_plan_upload_set_texture_region
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_frame_plan_upload_set_texture_region')
-else:
-    dvz_frame_plan_upload_set_texture_region.__doc__ = """/**
- * Tag the most recently appended texture upload node with a 2D sub-region origin.
- *
- * Use after `dvz_frame_plan_upload_set_texture_extent()`. The extent still names the upload
- * size, while this call sets the destination origin within the texture.
- *
- * @param plan the FramePlan
- * @param origin_x destination x offset in texels
- * @param origin_y destination y offset in texels
- * @return whether the origin was applied
- */"""
-    dvz_frame_plan_upload_set_texture_region.argtypes = [ctypes.POINTER(DvzFramePlan), ctypes.c_uint32, ctypes.c_uint32]
-    dvz_frame_plan_upload_set_texture_region.restype = ctypes.c_bool
-
-
-try:
-    dvz_frame_plan_upload_set_topology = dvz.dvz_frame_plan_upload_set_topology
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_frame_plan_upload_set_topology')
-else:
-    dvz_frame_plan_upload_set_topology.__doc__ = """/**
- * Tag the most recently appended upload node with a primitive topology hint.
- *
- * Used by visual families that pick topology at the visual level (`dvz_primitive`).
- * Pass `UINT32_MAX` to clear the hint.
- *
- * @param plan the FramePlan
- * @param topology the primitive topology (DvzPrimitiveTopology), or UINT32_MAX
- * @return whether the hint was applied (false if the most recent node is not an upload)
- */"""
-    dvz_frame_plan_upload_set_topology.argtypes = [ctypes.POINTER(DvzFramePlan), ctypes.c_uint32]
-    dvz_frame_plan_upload_set_topology.restype = ctypes.c_bool
+    dvz_frame_plan_upload_ex.argtypes = [ctypes.POINTER(DvzFramePlan), ctypes.POINTER(DvzFramePlanUploadDesc)]
+    dvz_frame_plan_upload_ex.restype = ctypes.c_bool
 
 
 try:
@@ -32373,7 +32238,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1553
+_GENERATED_FUNCTION_COUNT = 1545
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_field_geometry', 'dvz_frame_plan_emit_config', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_panel_background_desc', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scalebar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
-_DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzTextStyle', 'DvzTextPlacement', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzFontDesc', 'DvzFontDefaults', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzContainer', 'DvzContainerIterator', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RawFallback', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RuntimeConfig', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzObject', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2D', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewSizeDesc', 'DvzViewDesc', 'DvzVisualAttachDesc', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
+_DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzTextStyle', 'DvzTextPlacement', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzFontDesc', 'DvzFontDefaults', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzContainer', 'DvzContainerIterator', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RawFallback', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzObject', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2D', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewSizeDesc', 'DvzViewDesc', 'DvzVisualAttachDesc', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]

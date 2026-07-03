@@ -123,8 +123,12 @@ bool _emitter_emit_render_compat(
         return false;
     if (ok && is_new)
     {
-        ok = ok && dvz_drp2_stream_create_render_pipeline(
-                       stream, pipe_id, vs_id, fs_id, vertex_buffer_count);
+        DvzDrp2RenderPipelineDesc pipeline = dvz_drp2_render_pipeline_desc();
+        pipeline.id = pipe_id;
+        pipeline.vertex_shader_module_id = vs_id;
+        pipeline.fragment_shader_module_id = fs_id;
+        pipeline.vertex_buffer_slots = vertex_buffer_count;
+        ok = ok && dvz_drp2_stream_create_render_pipeline(stream, &pipeline);
         if (ok && cfg != NULL && cfg->color_target_format != 0)
             ok = dvz_drp2_stream_pipeline_set_color_target(
                 stream, 0, _render_pass_scene_color_target_format(cfg));

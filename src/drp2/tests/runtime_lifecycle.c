@@ -194,7 +194,7 @@ int test_drp2_runtime_frame_target_validation(TstContext* suite, const TstCase* 
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_shader_module(stream, 1, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 2, "fragment", "@fragment fn main() {}"));
-    AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
+    AT(drp2_test_create_render_pipeline(stream, 3, 1, 2, 0));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 4));
     AT(dvz_drp2_stream_begin_render_pass(stream, 5, 4, 7));
     AT(dvz_drp2_stream_set_pipeline(stream, 5, 3));

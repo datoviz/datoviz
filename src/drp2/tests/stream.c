@@ -22,6 +22,7 @@
 #include "../_stream.h"
 #include "datoviz/drp2.h"
 #include "test_drp2.h"
+#include "test_drp2_helpers.h"
 #include "testing.h"
 #include "vulkan_core.h"
 
@@ -652,9 +653,20 @@ int test_drp2_render_pipeline_step_modes_json(TstContext* suite, const TstCase* 
     };
     uint32_t offsets[3] = {0, 0, 0};
 
-    AT(dvz_drp2_stream_create_render_pipeline_ex2(
-        stream, 10, 9000, 9001, 3, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 3, strides,
-        step_modes, 3, bindings, locations, formats, offsets));
+    DvzDrp2RenderPipelineDesc pipeline = dvz_drp2_render_pipeline_desc();
+    pipeline.id = 10;
+    pipeline.vertex_shader_module_id = 9000;
+    pipeline.fragment_shader_module_id = 9001;
+    pipeline.vertex_buffer_slots = 3;
+    pipeline.binding_count = 3;
+    pipeline.binding_strides = strides;
+    pipeline.binding_step_modes = step_modes;
+    pipeline.attr_count = 3;
+    pipeline.attr_bindings = bindings;
+    pipeline.attr_locations = locations;
+    pipeline.attr_formats = formats;
+    pipeline.attr_offsets = offsets;
+    AT(dvz_drp2_stream_create_render_pipeline(stream, &pipeline));
 
     char* json = dvz_drp2_stream_json(stream, "pipeline_step_modes");
     ANN(json);
@@ -683,19 +695,29 @@ int test_drp2_render_pipeline_rejects_vertex_layout_overflow(TstContext* suite, 
     DvzFormat formats[DVZ_DRP2_MAX_BINDINGS + 1] = {0};
     uint32_t offsets[DVZ_DRP2_MAX_BINDINGS + 1] = {0};
 
-    AT(!dvz_drp2_stream_create_render_pipeline_ex2(
-        stream, 10, 9000, 9001, 1, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-        DVZ_DRP2_MAX_BINDINGS + 1, strides, NULL, 1, bindings, locations, formats, offsets));
+    DvzDrp2RenderPipelineDesc pipeline = dvz_drp2_render_pipeline_desc();
+    pipeline.id = 10;
+    pipeline.vertex_shader_module_id = 9000;
+    pipeline.fragment_shader_module_id = 9001;
+    pipeline.vertex_buffer_slots = 1;
+    pipeline.binding_count = DVZ_DRP2_MAX_BINDINGS + 1;
+    pipeline.binding_strides = strides;
+    pipeline.attr_count = 1;
+    pipeline.attr_bindings = bindings;
+    pipeline.attr_locations = locations;
+    pipeline.attr_formats = formats;
+    pipeline.attr_offsets = offsets;
+    AT(!dvz_drp2_stream_create_render_pipeline(stream, &pipeline));
     AT(dvz_drp2_stream_count(stream) == 0);
 
-    AT(!dvz_drp2_stream_create_render_pipeline_ex2(
-        stream, 10, 9000, 9001, 1, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 1, strides, NULL,
-        DVZ_DRP2_MAX_BINDINGS + 1, bindings, locations, formats, offsets));
+    pipeline.binding_count = 1;
+    pipeline.attr_count = DVZ_DRP2_MAX_BINDINGS + 1;
+    AT(!dvz_drp2_stream_create_render_pipeline(stream, &pipeline));
     AT(dvz_drp2_stream_count(stream) == 0);
 
-    AT(!dvz_drp2_stream_create_render_pipeline_ex2(
-        stream, 10, 9000, 9001, 1, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 1, NULL, NULL, 1,
-        bindings, locations, formats, offsets));
+    pipeline.attr_count = 1;
+    pipeline.binding_strides = NULL;
+    AT(!dvz_drp2_stream_create_render_pipeline(stream, &pipeline));
     AT(dvz_drp2_stream_count(stream) == 0);
 
     dvz_drp2_stream_destroy(stream);
@@ -712,7 +734,7 @@ int test_drp2_render_pipeline_color_targets_json(TstContext* suite, const TstCas
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
 
-    AT(dvz_drp2_stream_create_render_pipeline(stream, 10, 9000, 9001, 0));
+    AT(drp2_test_create_render_pipeline(stream, 10, 9000, 9001, 0));
     AT(dvz_drp2_stream_pipeline_set_color_target(
         stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, DVZ_FORMAT_R16_SFLOAT));
@@ -761,7 +783,7 @@ int test_drp2_render_pipeline_raster_state(TstContext* suite, const TstCase* ite
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
 
-    AT(dvz_drp2_stream_create_render_pipeline(stream, 10, 9000, 9001, 0));
+    AT(drp2_test_create_render_pipeline(stream, 10, 9000, 9001, 0));
     AT(dvz_drp2_stream_pipeline_set_raster_state(
         stream, DVZ_CULL_MODE_BACK, DVZ_FRONT_FACE_CLOCKWISE));
 
@@ -784,7 +806,7 @@ int test_drp2_render_pipeline_raster_state(TstContext* suite, const TstCase* ite
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_shader_module(stream, 1, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 2, "fragment", "@fragment fn main() {}"));
-    AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
+    AT(drp2_test_create_render_pipeline(stream, 3, 1, 2, 0));
     AT(dvz_drp2_stream_pipeline_set_raster_state(
         stream, DVZ_CULL_MODE_BACK, DVZ_FRONT_FACE_CLOCKWISE));
     DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
@@ -826,7 +848,7 @@ int test_drp2_render_pipeline_raster_state(TstContext* suite, const TstCase* ite
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_shader_module(stream, 1, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 2, "fragment", "@fragment fn main() {}"));
-    AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
+    AT(drp2_test_create_render_pipeline(stream, 3, 1, 2, 0));
     AT(dvz_drp2_stream_pipeline_set_raster_state(stream, 0x80000000u, DVZ_FRONT_FACE_CLOCKWISE));
     result = dvz_drp2_validate_stream(stream);
     AT(!result.ok);
@@ -839,7 +861,7 @@ int test_drp2_render_pipeline_raster_state(TstContext* suite, const TstCase* ite
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_shader_module(stream, 1, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 2, "fragment", "@fragment fn main() {}"));
-    AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
+    AT(drp2_test_create_render_pipeline(stream, 3, 1, 2, 0));
     AT(dvz_drp2_stream_pipeline_set_raster_state(stream, DVZ_CULL_MODE_BACK, 99));
     result = dvz_drp2_validate_stream(stream);
     AT(!result.ok);
@@ -894,7 +916,7 @@ int test_drp2_wboit_accumulation_resolve_stream(TstContext* suite, const TstCase
     AT(dvz_drp2_stream_create_shader_module(
         stream, 11, "FRAGMENT",
         "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0); }"));
-    AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 1));
+    AT(drp2_test_create_render_pipeline(stream, 12, 10, 11, 1));
     AT(dvz_drp2_stream_pipeline_set_color_target(
         stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, DVZ_FORMAT_R16_SFLOAT));
@@ -917,7 +939,7 @@ int test_drp2_wboit_accumulation_resolve_stream(TstContext* suite, const TstCase
         "@group(0) @binding(2) var samp: sampler; "
         "@fragment fn main() -> @location(0) vec4f { "
         "return textureSample(accum, samp, vec2f(0.5)); }"));
-    AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+    AT(drp2_test_create_render_pipeline_with_bind_group_layout(
         stream, 22, 20, 21, 0, 3));
 
     AT(dvz_drp2_stream_create_texture_2d_format_usage(

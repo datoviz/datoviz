@@ -26,6 +26,12 @@ typedef struct DvzFramePlanPacketResult DvzFramePlanPacketResult;
 typedef enum DvzFramePlanPacketStatus DvzFramePlanPacketStatus;
 ```
 
+#### `DvzFramePlanUploadDesc`
+
+```c
+typedef struct DvzFramePlanUploadDesc DvzFramePlanUploadDesc;
+```
+
 ### Enums
 
 #### `DvzFramePlanPacketStatus`
@@ -63,6 +69,32 @@ struct DvzFramePlanCopyDesc {
 
 ```c
 typedef struct DvzFramePlanPacketResult DvzFramePlanPacketResult;
+```
+
+#### `DvzFramePlanUploadDesc`
+
+```c
+struct DvzFramePlanUploadDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    const char * resource_id;
+    uint64_t byte_offset;
+    uint64_t byte_size;
+    const char * data_tag;
+    const void * data;
+    DvzPrimitiveTopology topology;
+    DvzFormat texture_format;
+    uint32_t texture_bytes_per_texel;
+    uint32_t texture_width;
+    uint32_t texture_height;
+    uint32_t texture_depth;
+    uint32_t texture_alloc_width;
+    uint32_t texture_alloc_height;
+    uint32_t texture_alloc_depth;
+    uint32_t texture_origin_x;
+    uint32_t texture_origin_y;
+    uint32_t texture_origin_z;
+};
 ```
 
 ## Scene API
@@ -6949,6 +6981,12 @@ typedef struct DvzDrp2Recording DvzDrp2Recording;
 typedef struct DvzDrp2RecordingInfo DvzDrp2RecordingInfo;
 ```
 
+#### `DvzDrp2RenderPipelineDesc`
+
+```c
+typedef struct DvzDrp2RenderPipelineDesc DvzDrp2RenderPipelineDesc;
+```
+
 #### `DvzDrp2RuntimeConfig`
 
 ```c
@@ -7310,6 +7348,30 @@ struct DvzDrp2RecordingInfo {
     double t_present;
     double fps_cap;
     const char * backend_hint;
+};
+```
+
+#### `DvzDrp2RenderPipelineDesc`
+
+```c
+struct DvzDrp2RenderPipelineDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    uint64_t id;
+    uint64_t vertex_shader_module_id;
+    uint64_t fragment_shader_module_id;
+    uint32_t vertex_buffer_slots;
+    DvzPrimitiveTopology topology;
+    uint32_t bind_group_layout_count;
+    const uint64_t * bind_group_layout_ids;
+    uint32_t binding_count;
+    const uint32_t * binding_strides;
+    const uint32_t * binding_step_modes;
+    uint32_t attr_count;
+    const uint32_t * attr_bindings;
+    const uint32_t * attr_locations;
+    const DvzFormat * attr_formats;
+    const uint32_t * attr_offsets;
 };
 ```
 

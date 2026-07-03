@@ -1736,7 +1736,14 @@ bool _emitter_emit_compute_assisted_render(
     if (pipe_id == 0)
         return false;
     if (ok && is_new)
-        ok = ok && dvz_drp2_stream_create_render_pipeline(stream, pipe_id, vs_id, fs_id, 1);
+    {
+        DvzDrp2RenderPipelineDesc pipeline = dvz_drp2_render_pipeline_desc();
+        pipeline.id = pipe_id;
+        pipeline.vertex_shader_module_id = vs_id;
+        pipeline.fragment_shader_module_id = fs_id;
+        pipeline.vertex_buffer_slots = 1;
+        ok = ok && dvz_drp2_stream_create_render_pipeline(stream, &pipeline);
+    }
 
     uint64_t scene_color_id = 0;
     uint64_t final_color_id = 0;

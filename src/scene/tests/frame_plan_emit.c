@@ -51,6 +51,36 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+static bool _test_create_render_pipeline(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
+    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots)
+{
+    DvzDrp2RenderPipelineDesc desc = dvz_drp2_render_pipeline_desc();
+    desc.id = id;
+    desc.vertex_shader_module_id = vertex_shader_module_id;
+    desc.fragment_shader_module_id = fragment_shader_module_id;
+    desc.vertex_buffer_slots = vertex_buffer_slots;
+    return dvz_drp2_stream_create_render_pipeline(stream, &desc);
+}
+
+
+static bool _test_create_render_pipeline_with_layout(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
+    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
+    uint64_t bind_group_layout_id)
+{
+    uint64_t layouts[1] = {bind_group_layout_id};
+    DvzDrp2RenderPipelineDesc desc = dvz_drp2_render_pipeline_desc();
+    desc.id = id;
+    desc.vertex_shader_module_id = vertex_shader_module_id;
+    desc.fragment_shader_module_id = fragment_shader_module_id;
+    desc.vertex_buffer_slots = vertex_buffer_slots;
+    desc.bind_group_layout_count = 1;
+    desc.bind_group_layout_ids = layouts;
+    return dvz_drp2_stream_create_render_pipeline(stream, &desc);
+}
+
+
 typedef enum
 {
     SCENE_DVZR_VISUAL_POINT,
@@ -872,7 +902,7 @@ static int _depth_peel_emit_pipeline_setup(DvzDrp2CommandStream* stream)
         stream, 11, "FRAGMENT", "glsl",
         "#version 450\nlayout(location=0)out vec4 color;"
         "void main(){color=vec4(0.05,0.05,0.05,1.0);}"));
-    AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
+    AT(_test_create_render_pipeline(stream, 12, 10, 11, 0));
     AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, DVZ_COMPARE_OP_LESS_OR_EQUAL));
 
     AT(dvz_drp2_stream_create_shader_module_format(stream, 20, "VERTEX", "glsl", fullscreen_vs));
@@ -882,7 +912,7 @@ static int _depth_peel_emit_pipeline_setup(DvzDrp2CommandStream* stream)
         "layout(location=1)out vec4 back_accum;layout(location=2)out vec4 depth_pair;"
         "void main(){front_accum=vec4(0.25,0,0,1);back_accum=vec4(0,0.25,0,1);"
         "depth_pair=vec4(gl_FragCoord.z,1.0-gl_FragCoord.z,0,1);}"));
-    AT(dvz_drp2_stream_create_render_pipeline(stream, 22, 20, 21, 0));
+    AT(_test_create_render_pipeline(stream, 22, 20, 21, 0));
     AT(dvz_drp2_stream_pipeline_set_color_target(
         stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_target(
@@ -900,7 +930,7 @@ static int _depth_peel_emit_pipeline_setup(DvzDrp2CommandStream* stream)
         "layout(location=2)out vec4 depth_pair;"
         "void main(){front_accum=vec4(0);back_accum=vec4(0,0.25,0,1);"
         "depth_pair=vec4(gl_FragCoord.z,1.0-gl_FragCoord.z,0,1);}"));
-    AT(dvz_drp2_stream_create_render_pipeline(stream, 32, 30, 31, 0));
+    AT(_test_create_render_pipeline(stream, 32, 30, 31, 0));
     AT(dvz_drp2_stream_pipeline_set_color_target(
         stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT));
     AT(dvz_drp2_stream_pipeline_set_color_target(
@@ -921,7 +951,7 @@ static int _depth_peel_emit_pipeline_setup(DvzDrp2CommandStream* stream)
         "vec4 f=texelFetch(sampler2D(front_accum,samp),uv,0);"
         "vec4 b=texelFetch(sampler2D(back_accum,samp),uv,0);"
         "color=vec4(f.r,b.g,0.0,1.0);}"));
-    AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+    AT(_test_create_render_pipeline_with_layout(
         stream, 42, 40, 41, 0, 3));
     return 0;
 }

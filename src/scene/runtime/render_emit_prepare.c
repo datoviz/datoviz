@@ -361,11 +361,21 @@ bool _emitter_prepare_render_multi(
                     ok = ok &&
                          _create_scene_occlusion_bind_group_layout(stream, scene_occlusion_bgl_id);
             }
-            ok = ok && dvz_drp2_stream_create_render_pipeline_ex2(
-                           stream, pipe_id, vs_id, fs_id, pipeline.vertex_buffer_count,
-                           pipeline.topology, pipeline.binding_count, pipeline.strides,
-                           pipeline.step_modes, pipeline.attr_count, pipeline.bindings,
-                           pipeline.locations, pipeline.formats, pipeline.offsets);
+            DvzDrp2RenderPipelineDesc pipe_desc = dvz_drp2_render_pipeline_desc();
+            pipe_desc.id = pipe_id;
+            pipe_desc.vertex_shader_module_id = vs_id;
+            pipe_desc.fragment_shader_module_id = fs_id;
+            pipe_desc.vertex_buffer_slots = pipeline.vertex_buffer_count;
+            pipe_desc.topology = pipeline.topology;
+            pipe_desc.binding_count = pipeline.binding_count;
+            pipe_desc.binding_strides = pipeline.strides;
+            pipe_desc.binding_step_modes = pipeline.step_modes;
+            pipe_desc.attr_count = pipeline.attr_count;
+            pipe_desc.attr_bindings = pipeline.bindings;
+            pipe_desc.attr_locations = pipeline.locations;
+            pipe_desc.attr_formats = pipeline.formats;
+            pipe_desc.attr_offsets = pipeline.offsets;
+            ok = ok && dvz_drp2_stream_create_render_pipeline(stream, &pipe_desc);
             if (ok && pass_sample_count > 1)
                 ok = dvz_drp2_stream_pipeline_set_multisampling(
                     stream, pass_sample_count, pipeline.alpha_to_coverage);

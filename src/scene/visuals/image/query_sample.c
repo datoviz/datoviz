@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "datoviz/math/_cglm.h"
+#include "frame_plan/frame_plan.h"
 #include "image/internal.h"
 #include "../../query/internal.h"
 #include "_alloc.h"

@@ -22,6 +22,7 @@
 #include "../_stream.h"
 #include "datoviz/drp2.h"
 #include "test_drp2.h"
+#include "test_drp2_helpers.h"
 #include "testing.h"
 #include "vulkan_core.h"
 
@@ -366,7 +367,7 @@ int test_drp2_recording_render_jsonl_no_raw_fallback(TstContext* suite, const Ts
         stream, 1, 8, 8, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
     AT(dvz_drp2_stream_create_shader_module_format(stream, 2, "vertex", "wgsl", "vertex-main"));
     AT(dvz_drp2_stream_create_shader_module_format(stream, 3, "fragment", "wgsl", "fragment-main"));
-    AT(dvz_drp2_stream_create_render_pipeline(stream, 4, 2, 3, 0));
+    AT(drp2_test_create_render_pipeline(stream, 4, 2, 3, 0));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 5));
     AT(dvz_drp2_stream_begin_render_pass_clear(stream, 6, 5, 1, 0.25f, 0.5f, 0.75f, 1.0f));
     AT(dvz_drp2_stream_set_viewport(stream, 6, 0.0f, 0.0f, 4.0f, 4.0f));

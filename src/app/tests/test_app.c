@@ -831,7 +831,11 @@ static int test_app_trace_fingerprint_keeps_pipeline_attachment_state(
     ANN(a);
     ANN(b);
 
-    AT(dvz_drp2_stream_create_render_pipeline(a, 10, 1, 2, 0));
+    DvzDrp2RenderPipelineDesc pipeline = dvz_drp2_render_pipeline_desc();
+    pipeline.id = 10;
+    pipeline.vertex_shader_module_id = 1;
+    pipeline.fragment_shader_module_id = 2;
+    AT(dvz_drp2_stream_create_render_pipeline(a, &pipeline));
     AT(dvz_drp2_stream_pipeline_set_raster_state(
         a, DVZ_CULL_MODE_FRONT, DVZ_FRONT_FACE_CLOCKWISE));
     AT(dvz_drp2_stream_pipeline_set_color_target(a, 0, DVZ_FORMAT_R8G8B8A8_UNORM));
@@ -840,7 +844,7 @@ static int test_app_trace_fingerprint_keeps_pipeline_attachment_state(
         DVZ_BLEND_OP_REVERSE_SUBTRACT, DVZ_BLEND_FACTOR_DST_COLOR,
         DVZ_BLEND_FACTOR_ONE_MINUS_DST_COLOR, DVZ_BLEND_OP_MIN, DVZ_MASK_COLOR_ALL));
 
-    AT(dvz_drp2_stream_create_render_pipeline(b, 10, 1, 2, 0));
+    AT(dvz_drp2_stream_create_render_pipeline(b, &pipeline));
     AT(dvz_drp2_stream_pipeline_set_raster_state(
         b, DVZ_CULL_MODE_FRONT, DVZ_FRONT_FACE_CLOCKWISE));
     AT(dvz_drp2_stream_pipeline_set_color_target(b, 0, DVZ_FORMAT_R8G8B8A8_SNORM));

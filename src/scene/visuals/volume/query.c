@@ -21,6 +21,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/math/_cglm.h"
+#include "frame_plan/frame_plan.h"
 #include "colorizer.h"
 #include "domain/field_internal.h"
 #include "scene_emit/visual_lowering.h"

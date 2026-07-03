@@ -25,6 +25,7 @@
 #include "domain/field_internal.h"
 #include "scene_emit/internal.h"
 #include "_scene_resource_key.h"
+#include "frame_plan/frame_plan.h"
 #include "colorizer.h"
 #include "image/upload_payload.h"
 #include "registry/registry.h"

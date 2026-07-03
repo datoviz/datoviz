@@ -21,6 +21,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/math/_cglm.h"
+#include "frame_plan/frame_plan.h"
 #include "image/internal.h"
 #include "_visual_pipeline.h"
 #include "registry/registry.h"

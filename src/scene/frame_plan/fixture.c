@@ -74,9 +74,19 @@ static bool _emit_fixture_triangle_pipeline(DvzDrp2CommandStream* stream)
     uint32_t locations[1] = {0};
     DvzFormat formats[1]  = {DVZ_FORMAT_R32G32B32_SFLOAT};
     uint32_t offsets[1]   = {0};
-    return dvz_drp2_stream_create_render_pipeline_ex(
-        stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER, 1,
-        DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 1, strides, 1, bindings, locations, formats, offsets);
+    DvzDrp2RenderPipelineDesc pipeline = dvz_drp2_render_pipeline_desc();
+    pipeline.id = DRP2_ID_PIPELINE;
+    pipeline.vertex_shader_module_id = DRP2_ID_VERTEX_SHADER;
+    pipeline.fragment_shader_module_id = DRP2_ID_FRAGMENT_SHADER;
+    pipeline.vertex_buffer_slots = 1;
+    pipeline.binding_count = 1;
+    pipeline.binding_strides = strides;
+    pipeline.attr_count = 1;
+    pipeline.attr_bindings = bindings;
+    pipeline.attr_locations = locations;
+    pipeline.attr_formats = formats;
+    pipeline.attr_offsets = offsets;
+    return dvz_drp2_stream_create_render_pipeline(stream, &pipeline);
 }
 
 
@@ -336,6 +346,14 @@ _emit_texture_render(
     if (texture_id == 0)
         return false;
 
+    uint64_t layouts[1] = {DRP2_ID_BIND_GROUP_LAYOUT};
+    DvzDrp2RenderPipelineDesc pipeline = dvz_drp2_render_pipeline_desc();
+    pipeline.id = DRP2_ID_PIPELINE;
+    pipeline.vertex_shader_module_id = DRP2_ID_VERTEX_SHADER;
+    pipeline.fragment_shader_module_id = DRP2_ID_FRAGMENT_SHADER;
+    pipeline.bind_group_layout_count = 1;
+    pipeline.bind_group_layout_ids = layouts;
+
     return dvz_drp2_stream_create_sampler(stream, DRP2_ID_SAMPLER) &&
            dvz_drp2_stream_create_texture_sampler_bind_group_layout(
                stream, DRP2_ID_BIND_GROUP_LAYOUT) &&
@@ -345,9 +363,7 @@ _emit_texture_render(
            _emit_shader(
                stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", _texture_fragment_wgsl(),
                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_TEXTURE, true), cfg) &&
-           dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
-               stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER, 0,
-               DRP2_ID_BIND_GROUP_LAYOUT) &&
+           dvz_drp2_stream_create_render_pipeline(stream, &pipeline) &&
            dvz_drp2_stream_create_texture_sampler_bind_group(
                stream, DRP2_ID_BIND_GROUP, DRP2_ID_BIND_GROUP_LAYOUT, texture_id, DRP2_ID_SAMPLER) &&
            dvz_drp2_stream_create_texture_2d(stream, DRP2_ID_COLOR_TARGET, 4, 4) &&

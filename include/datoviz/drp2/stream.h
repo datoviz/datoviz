@@ -361,110 +361,35 @@ dvz_drp2_stream_destroy_shader_module(DvzDrp2CommandStream* stream, uint64_t sha
 
 
 /**
- * Append a CreateRenderPipeline command.
+ * Return the default CreateRenderPipeline descriptor.
  *
- * @param stream the command stream
- * @param id the pipeline id
- * @param vertex_shader_module_id the vertex shader module id
- * @param fragment_shader_module_id the fragment shader module id
- * @param vertex_buffer_slots the number of required vertex buffer slots
- * @return whether the command was appended
+ * @return initialized descriptor
  */
-DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline(
-    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
-    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots);
+DVZ_EXPORT DvzDrp2RenderPipelineDesc dvz_drp2_render_pipeline_desc(void);
 
 
 
 /**
- * Append a CreateRenderPipeline command with one bind-group layout.
- *
- * @param stream the command stream
- * @param id the pipeline id
- * @param vertex_shader_module_id the vertex shader module id
- * @param fragment_shader_module_id the fragment shader module id
- * @param vertex_buffer_slots the number of required vertex buffer slots
- * @param bind_group_layout_id the bind-group layout id for slot 0
- * @return whether the command was appended
- */
-DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
-    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
-    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
-    uint64_t bind_group_layout_id);
-
-
-
-/**
- * Append a CreateRenderPipeline command with explicit vertex input layout and topology.
- *
- * `binding_count` and `attr_count` must be at most `DVZ_DRP2_MAX_BINDINGS`. Count-zero pointer
- * arrays may be NULL; non-zero counts require all matching arrays. Oversized or missing arrays are
- * rejected and no command is appended.
- *
- * @param stream the command stream
- * @param id the pipeline id
- * @param vertex_shader_module_id the vertex shader module id
- * @param fragment_shader_module_id the fragment shader module id
- * @param vertex_buffer_slots the number of required vertex buffer slots
- * @param topology primitive topology token
- * @param binding_count number of vertex binding descriptors
- * @param binding_strides stride in bytes for each binding
- * @param attr_count number of vertex attribute descriptors
- * @param attr_bindings binding index for each attribute
- * @param attr_locations shader location for each attribute
- * @param attr_formats DvzFormat token for each attribute
- * @param attr_offsets byte offset within the binding for each attribute
- * @return whether the command was appended
- */
-DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline_ex(
-    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
-    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
-    DvzPrimitiveTopology topology,
-    uint32_t binding_count, const uint32_t* binding_strides,
-    uint32_t attr_count, const uint32_t* attr_bindings, const uint32_t* attr_locations,
-    const DvzFormat* attr_formats, const uint32_t* attr_offsets);
-
-
-
-/**
- * Append a CreateRenderPipeline command with explicit vertex layout, topology, and step modes.
+ * Append a CreateRenderPipeline command from a descriptor.
  *
  * `binding_count` and `attr_count` must be at most `DVZ_DRP2_MAX_BINDINGS`. Count-zero pointer
  * arrays may be NULL; non-zero counts require all matching arrays except `binding_step_modes`,
- * which may be NULL to select per-vertex stepping. Oversized or missing arrays are rejected and no
- * command is appended.
+ * which may be NULL to select per-vertex stepping. `bind_group_layout_count` must be at most
+ * `DVZ_DRP2_MAX_BIND_GROUPS`. Oversized or missing arrays are rejected and no command is appended.
  *
  * @param stream the command stream
- * @param id the pipeline id
- * @param vertex_shader_module_id the vertex shader module id
- * @param fragment_shader_module_id the fragment shader module id
- * @param vertex_buffer_slots the number of required vertex buffer slots
- * @param topology primitive topology token
- * @param binding_count number of vertex binding descriptors
- * @param binding_strides stride in bytes for each binding
- * @param binding_step_modes DvzDrp2VertexStepMode value for each binding
- * @param attr_count number of vertex attribute descriptors
- * @param attr_bindings binding index for each attribute
- * @param attr_locations shader location for each attribute
- * @param attr_formats DvzFormat token for each attribute
- * @param attr_offsets byte offset within the binding for each attribute
+ * @param desc the render-pipeline descriptor
  * @return whether the command was appended
  */
-DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline_ex2(
-    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
-    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
-    DvzPrimitiveTopology topology,
-    uint32_t binding_count, const uint32_t* binding_strides,
-    const uint32_t* binding_step_modes,
-    uint32_t attr_count, const uint32_t* attr_bindings, const uint32_t* attr_locations,
-    const DvzFormat* attr_formats, const uint32_t* attr_offsets);
+DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline(
+    DvzDrp2CommandStream* stream, const DvzDrp2RenderPipelineDesc* desc);
 
 
 /**
  * Attach a bind-group layout to the most recently appended CreateRenderPipeline command.
  *
- * Use after `dvz_drp2_stream_create_render_pipeline_ex` to combine an explicit vertex layout
- * with a bind-group layout (mirrors what `_with_bind_group_layout` does on its own).
+ * Descriptor-based creation can set bind-group layouts directly. This helper remains available
+ * for incremental stream-building code that appends optional layout state after creation.
  *
  * @param stream the command stream
  * @param bind_group_layout_id the bind-group layout id (0 = none)

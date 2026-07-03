@@ -317,11 +317,19 @@ bool _render_pass_emit_final_encode(
     if (pipe_id == 0)
         return false;
     if (ok && is_new)
+    {
+        uint64_t layouts[1] = {bgl_id};
+        DvzDrp2RenderPipelineDesc pipeline = dvz_drp2_render_pipeline_desc();
+        pipeline.id = pipe_id;
+        pipeline.vertex_shader_module_id = vs_id;
+        pipeline.fragment_shader_module_id = fs_id;
+        pipeline.bind_group_layout_count = 1;
+        pipeline.bind_group_layout_ids = layouts;
         ok = ok &&
-             dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
-                 stream, pipe_id, vs_id, fs_id, 0, bgl_id) &&
+             dvz_drp2_stream_create_render_pipeline(stream, &pipeline) &&
              dvz_drp2_stream_pipeline_set_color_target(
                  stream, 0, cfg != NULL ? cfg->color_target_format : DVZ_FORMAT_R8G8B8A8_UNORM);
+    }
 
     uint64_t pass_id = _emitter_next_transient_id(emitter);
     ok = ok &&

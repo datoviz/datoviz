@@ -39,6 +39,7 @@ typedef struct DvzDrp2BindGroupLayoutEntry DvzDrp2BindGroupLayoutEntry;
 typedef struct DvzDrp2BindGroupEntry DvzDrp2BindGroupEntry;
 typedef struct DvzDrp2ColorAttachment DvzDrp2ColorAttachment;
 typedef struct DvzDrp2ColorTarget DvzDrp2ColorTarget;
+typedef struct DvzDrp2RenderPipelineDesc DvzDrp2RenderPipelineDesc;
 
 
 
@@ -92,4 +93,26 @@ struct DvzDrp2ColorTarget
     uint32_t dst_alpha_blend_factor;
     uint32_t alpha_blend_op;
     uint32_t color_write_mask;
+};
+
+
+struct DvzDrp2RenderPipelineDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    uint64_t id;
+    uint64_t vertex_shader_module_id;
+    uint64_t fragment_shader_module_id;
+    uint32_t vertex_buffer_slots;
+    DvzPrimitiveTopology topology;
+    uint32_t bind_group_layout_count;
+    const uint64_t* bind_group_layout_ids;
+    uint32_t binding_count;
+    const uint32_t* binding_strides;
+    const uint32_t* binding_step_modes;
+    uint32_t attr_count;
+    const uint32_t* attr_bindings;
+    const uint32_t* attr_locations;
+    const DvzFormat* attr_formats;
+    const uint32_t* attr_offsets;
 };

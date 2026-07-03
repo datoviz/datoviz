@@ -71,6 +71,8 @@ smoke_symbols:
   - dvz_ffi_overlay_card_desc
   - dvz_ffi_view_external_surface
   - dvz_ffi_view_update_external_surface
+  - dvz_drp2_render_pipeline_desc
+  - dvz_frame_plan_upload_desc
   - dvz_interop_buffer_export_from_buffer
   - dvz_interop_buffer_wait_timeline
   - dvz_interop_gpu_ctx
@@ -83,6 +85,8 @@ layout_records:
     - DvzFieldRegion
     - DvzInteropBufferExport
     - DvzInteropBufferExportConfig
+    - DvzDrp2RenderPipelineDesc
+    - DvzFramePlanUploadDesc
     - DvzInputEvent
     - DvzPointerWheelEvent
     - DvzPointerDragEvent

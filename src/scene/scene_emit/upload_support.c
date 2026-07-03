@@ -24,6 +24,7 @@
 #include "_scene.h"
 #include "scene_emit/internal.h"
 #include "_scene_resource_key.h"
+#include "frame_plan/frame_plan.h"
 #include "_visual_internal.h"
 #include "core/panel_layout_internal.h"
 #include "domain/buffer_internal.h"

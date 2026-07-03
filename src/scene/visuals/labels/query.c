@@ -22,6 +22,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/math/_cglm.h"
+#include "frame_plan/frame_plan.h"
 #include "image/internal.h"
 #include "colorizer.h"
 #include "domain/field_internal.h"

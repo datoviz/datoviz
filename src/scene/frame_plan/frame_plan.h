@@ -561,6 +561,29 @@ bool dvz_frame_plan_render_metadata_complete(const DvzFramePlan* plan);
 
 bool dvz_frame_plan_upload_metadata(DvzFramePlan* plan, const DvzFramePlanUploadMeta* metadata);
 
+bool dvz_frame_plan_upload_set_topology(DvzFramePlan* plan, uint32_t topology);
+
+bool dvz_frame_plan_upload_set_texture_extent(
+    DvzFramePlan* plan, uint32_t width, uint32_t height);
+
+bool dvz_frame_plan_upload_set_texture_3d_extent(
+    DvzFramePlan* plan, uint32_t width, uint32_t height, uint32_t depth);
+
+bool dvz_frame_plan_upload_set_texture_format(
+    DvzFramePlan* plan, DvzFormat format, uint32_t bytes_per_texel);
+
+bool dvz_frame_plan_upload_set_texture_allocation_extent(
+    DvzFramePlan* plan, uint32_t width, uint32_t height);
+
+bool dvz_frame_plan_upload_set_texture_3d_allocation_extent(
+    DvzFramePlan* plan, uint32_t width, uint32_t height, uint32_t depth);
+
+bool dvz_frame_plan_upload_set_texture_region(
+    DvzFramePlan* plan, uint32_t origin_x, uint32_t origin_y);
+
+bool dvz_frame_plan_upload_set_texture_3d_region(
+    DvzFramePlan* plan, uint32_t origin_x, uint32_t origin_y, uint32_t origin_z);
+
 bool dvz_frame_plan_graph_resource(DvzFramePlan* plan, const DvzFrameGraphResource* resource);
 
 uint32_t dvz_frame_plan_graph_resource_count(const DvzFramePlan* plan);

@@ -52,6 +52,21 @@ static uint32_t _scene_color_target_format(const DvzFramePlanEmitConfig* cfg)
 }
 
 
+static bool _create_pipeline_with_layout(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
+    uint64_t fragment_shader_module_id, uint64_t bind_group_layout_id)
+{
+    uint64_t layouts[1] = {bind_group_layout_id};
+    DvzDrp2RenderPipelineDesc desc = dvz_drp2_render_pipeline_desc();
+    desc.id = id;
+    desc.vertex_shader_module_id = vertex_shader_module_id;
+    desc.fragment_shader_module_id = fragment_shader_module_id;
+    desc.bind_group_layout_count = 1;
+    desc.bind_group_layout_ids = layouts;
+    return dvz_drp2_stream_create_render_pipeline(stream, &desc);
+}
+
+
 
 bool _emitter_prepare_gbuffer_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
@@ -308,8 +323,8 @@ bool _emitter_prepare_edl_targets(
         return false;
     if (ok && is_new)
         ok = ok &&
-             dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
-                 stream, out->resolve_pipeline_id, vs_id, fs_id, 0, out->resolve_bgl_id) &&
+             _create_pipeline_with_layout(
+                 stream, out->resolve_pipeline_id, vs_id, fs_id, out->resolve_bgl_id) &&
              dvz_drp2_stream_pipeline_set_color_target(stream, 0, final_format);
     return ok;
 }
@@ -718,8 +733,8 @@ bool _emitter_prepare_ssao_targets(
         return false;
     if (ok && is_new)
         ok = ok &&
-             dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
-                 stream, out->ssao_pipeline_id, vs_id, fs_id, 0, out->ssao_bgl_id) &&
+             _create_pipeline_with_layout(
+                 stream, out->ssao_pipeline_id, vs_id, fs_id, out->ssao_bgl_id) &&
              dvz_drp2_stream_pipeline_set_color_target(stream, 0, DVZ_FORMAT_R8_UNORM);
 
     if (blur_pass != NULL)
@@ -748,8 +763,8 @@ bool _emitter_prepare_ssao_targets(
             return false;
         if (ok && is_new)
             ok = ok &&
-                 dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
-                     stream, out->blur_pipeline_id, vs_id, fs_id, 0, out->blur_bgl_id) &&
+                 _create_pipeline_with_layout(
+                     stream, out->blur_pipeline_id, vs_id, fs_id, out->blur_bgl_id) &&
                  dvz_drp2_stream_pipeline_set_color_target(stream, 0, DVZ_FORMAT_R8_UNORM);
     }
 
@@ -779,8 +794,8 @@ bool _emitter_prepare_ssao_targets(
     if (ok && is_new)
     {
         ok = ok &&
-             dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
-                 stream, out->composite_pipeline_id, vs_id, fs_id, 0, out->composite_bgl_id) &&
+             _create_pipeline_with_layout(
+                 stream, out->composite_pipeline_id, vs_id, fs_id, out->composite_bgl_id) &&
              dvz_drp2_stream_pipeline_set_color_target(stream, 0, final_format) &&
              dvz_drp2_stream_pipeline_set_color_blend(
                  stream, 0, DVZ_BLEND_FACTOR_SRC_ALPHA, DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
@@ -1011,8 +1026,8 @@ bool _emitter_prepare_wboit_targets(
     if (ok && is_new)
     {
         ok = ok &&
-             dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
-                 stream, out->resolve_pipeline_id, vs_id, fs_id, 0, out->resolve_bgl_id) &&
+             _create_pipeline_with_layout(
+                 stream, out->resolve_pipeline_id, vs_id, fs_id, out->resolve_bgl_id) &&
              dvz_drp2_stream_pipeline_set_color_target(stream, 0, final_format) &&
              dvz_drp2_stream_pipeline_set_color_blend(
                  stream, 0, DVZ_BLEND_FACTOR_SRC_ALPHA, DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
@@ -1317,8 +1332,8 @@ bool _emitter_prepare_depth_peel_targets(
     if (ok && is_new)
     {
         ok = ok &&
-             dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
-                 stream, out->composite_pipeline_id, vs_id, fs_id, 0, out->composite_bgl_id) &&
+             _create_pipeline_with_layout(
+                 stream, out->composite_pipeline_id, vs_id, fs_id, out->composite_bgl_id) &&
              dvz_drp2_stream_pipeline_set_color_target(stream, 0, final_format) &&
              dvz_drp2_stream_pipeline_set_color_blend(
                  stream, 0, DVZ_BLEND_FACTOR_SRC_ALPHA, DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,

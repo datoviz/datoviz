@@ -48,6 +48,40 @@ bool drp2_test_captured_log_contains(const TstContext* suite, const char* needle
 
 
 
+bool drp2_test_create_render_pipeline(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
+    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots)
+{
+    DvzDrp2RenderPipelineDesc desc = dvz_drp2_render_pipeline_desc();
+    desc.id = id;
+    desc.vertex_shader_module_id = vertex_shader_module_id;
+    desc.fragment_shader_module_id = fragment_shader_module_id;
+    desc.vertex_buffer_slots = vertex_buffer_slots;
+    return dvz_drp2_stream_create_render_pipeline(stream, &desc);
+}
+
+
+
+bool drp2_test_create_render_pipeline_with_bind_group_layout(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
+    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
+    uint64_t bind_group_layout_id)
+{
+    DvzDrp2RenderPipelineDesc desc = dvz_drp2_render_pipeline_desc();
+    desc.id = id;
+    desc.vertex_shader_module_id = vertex_shader_module_id;
+    desc.fragment_shader_module_id = fragment_shader_module_id;
+    desc.vertex_buffer_slots = vertex_buffer_slots;
+    if (bind_group_layout_id != 0)
+    {
+        desc.bind_group_layout_count = 1;
+        desc.bind_group_layout_ids = &bind_group_layout_id;
+    }
+    return dvz_drp2_stream_create_render_pipeline(stream, &desc);
+}
+
+
+
 #if DVZ_DRP2_HAS_VKLITE
 typedef struct
 {
@@ -193,7 +227,7 @@ DvzDrp2CommandStream* drp2_test_valid_render_stream(void)
     dvz_drp2_stream_write_buffer(stream, 1, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA==");
     dvz_drp2_stream_create_shader_module(stream, 2, "vertex", "@vertex fn main() {}");
     dvz_drp2_stream_create_shader_module(stream, 3, "fragment", "@fragment fn main() {}");
-    dvz_drp2_stream_create_render_pipeline(stream, 4, 2, 3, 1);
+    drp2_test_create_render_pipeline(stream, 4, 2, 3, 1);
     dvz_drp2_stream_create_texture_2d(stream, 5, 4, 4);
     dvz_drp2_stream_begin_command_encoder(stream, 6);
     dvz_drp2_stream_begin_render_pass(stream, 7, 6, 5);
@@ -217,7 +251,7 @@ DvzDrp2CommandStream* drp2_test_valid_indexed_render_stream(void)
     dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer");
     dvz_drp2_stream_create_shader_module(stream, 2, "vertex", "@vertex fn main() {}");
     dvz_drp2_stream_create_shader_module(stream, 3, "fragment", "@fragment fn main() {}");
-    dvz_drp2_stream_create_render_pipeline(stream, 4, 2, 3, 1);
+    drp2_test_create_render_pipeline(stream, 4, 2, 3, 1);
     dvz_drp2_stream_create_buffer(stream, 11, 64, DVZ_DRP2_BUFFER_USAGE_VERTEX);
     dvz_drp2_stream_create_buffer(stream, 12, 64, DVZ_DRP2_BUFFER_USAGE_INDEX);
     dvz_drp2_stream_create_texture_2d(stream, 5, 4, 4);

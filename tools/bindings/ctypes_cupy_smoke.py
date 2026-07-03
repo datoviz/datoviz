@@ -46,7 +46,7 @@ def _render_drp2_external_buffer(
         binding_step = (ctypes.c_uint32 * 1)(DVZ_DRP2_VERTEX_STEP_MODE_VERTEX)
         attr_binding = (ctypes.c_uint32 * 1)(0)
         attr_location = (ctypes.c_uint32 * 1)(0)
-        attr_format = (ctypes.c_uint32 * 1)(VK_FORMAT_R32G32_SFLOAT)
+        attr_format = (ctypes.c_int * 1)(VK_FORMAT_R32G32_SFLOAT)
         attr_offset = (ctypes.c_uint32 * 1)(0)
 
         stream = dvz.dvz_drp2_stream()
@@ -76,23 +76,22 @@ def _render_drp2_external_buffer(
             ),
             'fragment shader',
         )
+        pipeline = dvz.dvz_drp2_render_pipeline_desc()
+        pipeline.id = 4
+        pipeline.vertex_shader_module_id = 2
+        pipeline.fragment_shader_module_id = 3
+        pipeline.vertex_buffer_slots = 1
+        pipeline.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+        pipeline.binding_count = 1
+        pipeline.binding_strides = binding_stride
+        pipeline.binding_step_modes = binding_step
+        pipeline.attr_count = 1
+        pipeline.attr_bindings = attr_binding
+        pipeline.attr_locations = attr_location
+        pipeline.attr_formats = attr_format
+        pipeline.attr_offsets = attr_offset
         _check_drp2(
-            dvz.dvz_drp2_stream_create_render_pipeline_ex2(
-                stream,
-                4,
-                2,
-                3,
-                1,
-                VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-                1,
-                binding_stride,
-                binding_step,
-                1,
-                attr_binding,
-                attr_location,
-                attr_format,
-                attr_offset,
-            ),
+            dvz.dvz_drp2_stream_create_render_pipeline(stream, ctypes.byref(pipeline)),
             'render pipeline',
         )
         _check_drp2(

@@ -785,57 +785,16 @@ bool dvz_drp2_stream_destroy_shader_module(
 
 
 /**
- * Append a CreateRenderPipeline command.
+ * Return the default CreateRenderPipeline descriptor.
  *
- * @param stream the command stream
- * @param id the pipeline id
- * @param vertex_shader_module_id the vertex shader module id
- * @param fragment_shader_module_id the fragment shader module id
- * @param vertex_buffer_slots the number of required vertex buffer slots
- * @return whether the command was appended
+ * @return initialized descriptor
  */
-bool dvz_drp2_stream_create_render_pipeline(
-    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
-    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots)
+DvzDrp2RenderPipelineDesc dvz_drp2_render_pipeline_desc(void)
 {
-    return dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
-        stream, id, vertex_shader_module_id, fragment_shader_module_id, vertex_buffer_slots, 0);
-}
-
-
-
-/**
- * Append a CreateRenderPipeline command with one bind-group layout.
- *
- * @param stream the command stream
- * @param id the pipeline id
- * @param vertex_shader_module_id the vertex shader module id
- * @param fragment_shader_module_id the fragment shader module id
- * @param vertex_buffer_slots the number of required vertex buffer slots
- * @param bind_group_layout_id the bind-group layout id for slot 0
- * @return whether the command was appended
- */
-bool dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
-    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
-    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots, uint64_t bind_group_layout_id)
-{
-    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE);
-    if (command == NULL)
-        return false;
-    command->u.create_render_pipeline.id = id;
-    command->u.create_render_pipeline.vertex_shader_module_id = vertex_shader_module_id;
-    command->u.create_render_pipeline.fragment_shader_module_id = fragment_shader_module_id;
-    command->u.create_render_pipeline.vertex_buffer_slots = vertex_buffer_slots;
-    command->u.create_render_pipeline.sample_count = 1;
-    command->u.create_render_pipeline.color_target_count = 1;
-    command->u.create_render_pipeline.color_targets[0].format = 0;
-    command->u.create_render_pipeline.color_targets[0].color_write_mask = 0xFu;
-    if (bind_group_layout_id != 0)
-    {
-        command->u.create_render_pipeline.bind_group_layout_count = 1;
-        command->u.create_render_pipeline.bind_group_layout_ids[0] = bind_group_layout_id;
-    }
-    return true;
+    return (DvzDrp2RenderPipelineDesc){
+        .struct_size = sizeof(DvzDrp2RenderPipelineDesc),
+        .topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+    };
 }
 
 
@@ -1064,38 +1023,26 @@ bool dvz_drp2_stream_pipeline_set_builtin_identity(
 
 
 
-bool dvz_drp2_stream_create_render_pipeline_ex(
-    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
-    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
-    DvzPrimitiveTopology topology,
-    uint32_t binding_count, const uint32_t* binding_strides,
-    uint32_t attr_count, const uint32_t* attr_bindings, const uint32_t* attr_locations,
-    const DvzFormat* attr_formats, const uint32_t* attr_offsets)
+bool dvz_drp2_stream_create_render_pipeline(
+    DvzDrp2CommandStream* stream, const DvzDrp2RenderPipelineDesc* desc)
 {
-    return dvz_drp2_stream_create_render_pipeline_ex2(
-        stream, id, vertex_shader_module_id, fragment_shader_module_id, vertex_buffer_slots,
-        topology, binding_count, binding_strides, NULL, attr_count, attr_bindings,
-        attr_locations, attr_formats, attr_offsets);
-}
-
-
-
-bool dvz_drp2_stream_create_render_pipeline_ex2(
-    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
-    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
-    DvzPrimitiveTopology topology,
-    uint32_t binding_count, const uint32_t* binding_strides,
-    const uint32_t* binding_step_modes,
-    uint32_t attr_count, const uint32_t* attr_bindings, const uint32_t* attr_locations,
-    const DvzFormat* attr_formats, const uint32_t* attr_offsets)
-{
+    if (desc == NULL)
+        return false;
+    if (desc->struct_size != 0 && desc->struct_size < sizeof(DvzDrp2RenderPipelineDesc))
+        return false;
+    uint32_t binding_count = desc->binding_count;
+    uint32_t attr_count = desc->attr_count;
     if (binding_count > DVZ_DRP2_MAX_BINDINGS || attr_count > DVZ_DRP2_MAX_BINDINGS)
         return false;
-    if (binding_count > 0 && binding_strides == NULL)
+    if (desc->bind_group_layout_count > DVZ_DRP2_MAX_BIND_GROUPS)
+        return false;
+    if (desc->bind_group_layout_count > 0 && desc->bind_group_layout_ids == NULL)
+        return false;
+    if (binding_count > 0 && desc->binding_strides == NULL)
         return false;
     if (attr_count > 0 &&
-        (attr_bindings == NULL || attr_locations == NULL || attr_formats == NULL ||
-         attr_offsets == NULL))
+        (desc->attr_bindings == NULL || desc->attr_locations == NULL ||
+         desc->attr_formats == NULL || desc->attr_offsets == NULL))
     {
         return false;
     }
@@ -1103,11 +1050,13 @@ bool dvz_drp2_stream_create_render_pipeline_ex2(
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE);
     if (command == NULL)
         return false;
-    command->u.create_render_pipeline.id = id;
-    command->u.create_render_pipeline.vertex_shader_module_id = vertex_shader_module_id;
-    command->u.create_render_pipeline.fragment_shader_module_id = fragment_shader_module_id;
-    command->u.create_render_pipeline.vertex_buffer_slots = vertex_buffer_slots;
-    command->u.create_render_pipeline.bind_group_layout_count = 0;
+    command->u.create_render_pipeline.id = desc->id;
+    command->u.create_render_pipeline.vertex_shader_module_id = desc->vertex_shader_module_id;
+    command->u.create_render_pipeline.fragment_shader_module_id = desc->fragment_shader_module_id;
+    command->u.create_render_pipeline.vertex_buffer_slots = desc->vertex_buffer_slots;
+    command->u.create_render_pipeline.bind_group_layout_count = desc->bind_group_layout_count;
+    for (uint32_t i = 0; i < desc->bind_group_layout_count; i++)
+        command->u.create_render_pipeline.bind_group_layout_ids[i] = desc->bind_group_layout_ids[i];
     command->u.create_render_pipeline.has_depth_attachment = false;
     command->u.create_render_pipeline.depth_write_enabled = false;
     command->u.create_render_pipeline.depth_compare_op = DVZ_COMPARE_OP_ALWAYS;
@@ -1119,23 +1068,24 @@ bool dvz_drp2_stream_create_render_pipeline_ex2(
     command->u.create_render_pipeline.color_target_count = 1;
     command->u.create_render_pipeline.color_targets[0].format = 0;
     command->u.create_render_pipeline.color_targets[0].color_write_mask = 0xFu;
-    command->u.create_render_pipeline.topology = (uint32_t)topology;
+    command->u.create_render_pipeline.topology = (uint32_t)desc->topology;
     uint32_t nb = binding_count;
     command->u.create_render_pipeline.binding_count = nb;
     for (uint32_t i = 0; i < nb; i++)
     {
-        command->u.create_render_pipeline.binding_strides[i] = binding_strides[i];
+        command->u.create_render_pipeline.binding_strides[i] = desc->binding_strides[i];
         command->u.create_render_pipeline.binding_step_modes[i] =
-            binding_step_modes != NULL ? binding_step_modes[i] : DVZ_DRP2_VERTEX_STEP_MODE_VERTEX;
+            desc->binding_step_modes != NULL ? desc->binding_step_modes[i] :
+                                               DVZ_DRP2_VERTEX_STEP_MODE_VERTEX;
     }
     uint32_t na = attr_count;
     command->u.create_render_pipeline.attr_count = na;
     for (uint32_t i = 0; i < na; i++)
     {
-        command->u.create_render_pipeline.attr_bindings[i]  = attr_bindings[i];
-        command->u.create_render_pipeline.attr_locations[i] = attr_locations[i];
-        command->u.create_render_pipeline.attr_formats[i]   = (uint32_t)attr_formats[i];
-        command->u.create_render_pipeline.attr_offsets[i]   = attr_offsets[i];
+        command->u.create_render_pipeline.attr_bindings[i]  = desc->attr_bindings[i];
+        command->u.create_render_pipeline.attr_locations[i] = desc->attr_locations[i];
+        command->u.create_render_pipeline.attr_formats[i]   = (uint32_t)desc->attr_formats[i];
+        command->u.create_render_pipeline.attr_offsets[i]   = desc->attr_offsets[i];
     }
     return true;
 }

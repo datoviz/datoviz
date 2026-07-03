@@ -53,6 +53,30 @@ typedef struct DvzFramePlanCopyDesc
 } DvzFramePlanCopyDesc;
 
 
+typedef struct DvzFramePlanUploadDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    const char* resource_id;
+    uint64_t byte_offset;
+    uint64_t byte_size;
+    const char* data_tag;
+    const void* data;
+    DvzPrimitiveTopology topology;
+    DvzFormat texture_format;
+    uint32_t texture_bytes_per_texel;
+    uint32_t texture_width;
+    uint32_t texture_height;
+    uint32_t texture_depth;
+    uint32_t texture_alloc_width;
+    uint32_t texture_alloc_height;
+    uint32_t texture_alloc_depth;
+    uint32_t texture_origin_x;
+    uint32_t texture_origin_y;
+    uint32_t texture_origin_z;
+} DvzFramePlanUploadDesc;
+
+
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
@@ -64,6 +88,13 @@ typedef struct DvzFramePlanCopyDesc
  * @return default copy descriptor
  */
 DVZ_EXPORT DvzFramePlanCopyDesc dvz_frame_plan_copy_desc(void);
+
+/**
+ * Return the default FramePlan upload descriptor.
+ *
+ * @return default upload descriptor
+ */
+DVZ_EXPORT DvzFramePlanUploadDesc dvz_frame_plan_upload_desc(void);
 
 /**
  * Return the default capability snapshot.
@@ -226,117 +257,17 @@ DVZ_EXPORT bool dvz_frame_plan_upload_bytes(
     const char* data_tag, const void* data);
 
 
-
 /**
- * Tag the most recently appended upload node with a primitive topology hint.
+ * Append an upload node from a descriptor.
  *
- * Used by visual families that pick topology at the visual level (`dvz_primitive`).
- * Pass `UINT32_MAX` to clear the hint.
+ * Use this for texture uploads, topology hints, or byte uploads that need explicit metadata at node
+ * creation time. Texture writes are selected by non-zero `texture_width`.
  *
  * @param plan the FramePlan
- * @param topology the primitive topology (DvzPrimitiveTopology), or UINT32_MAX
- * @return whether the hint was applied (false if the most recent node is not an upload)
+ * @param desc upload descriptor
+ * @return whether the node was appended
  */
-DVZ_EXPORT bool dvz_frame_plan_upload_set_topology(DvzFramePlan* plan, uint32_t topology);
-
-
-
-/**
- * Mark the most recently appended upload node as a 2D texture write of the given extent.
- *
- * `byte_size` on that node should equal `width * height * 4` (RGBA8). When `width` and
- * `height` are non-zero the converter routes the upload to a 2D texture (via
- * CreateTexture + WriteTexture) instead of a vertex buffer. Unless an allocation extent is set
- * separately, this write extent is also used as the texture allocation extent.
- *
- * @param plan the FramePlan
- * @param width written texture-region width in pixels
- * @param height written texture-region height in pixels
- * @return whether the hint was applied (false if the most recent node is not an upload)
- */
-DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_extent(
-    DvzFramePlan* plan, uint32_t width, uint32_t height);
-
-
-/**
- * Mark the most recently appended upload node as a 3D texture write of the given extent.
- *
- * @param plan the FramePlan
- * @param width written texture-region width in texels
- * @param height written texture-region height in texels
- * @param depth written texture-region depth in texels
- * @return whether the hint was applied (false if the most recent node is not an upload)
- */
-DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_3d_extent(
-    DvzFramePlan* plan, uint32_t width, uint32_t height, uint32_t depth);
-
-
-/**
- * Tag the most recently appended texture upload node with an explicit format.
- *
- * @param plan the FramePlan
- * @param format texture format token
- * @param bytes_per_texel bytes in one texel for row-stride calculation
- * @return whether the format was applied
- */
-DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_format(
-    DvzFramePlan* plan, DvzFormat format, uint32_t bytes_per_texel);
-
-
-/**
- * Tag the most recently appended texture upload node with the full allocation extent.
- *
- * Use this when the write extent is a sub-region and the converter must know the complete texture
- * extent without relying on prior cached runtime state.
- *
- * @param plan the FramePlan
- * @param width full texture allocation width in pixels
- * @param height full texture allocation height in pixels
- * @return whether the allocation extent was applied
- */
-DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_allocation_extent(
-    DvzFramePlan* plan, uint32_t width, uint32_t height);
-
-
-/**
- * Tag the most recently appended 3D texture upload node with the full allocation extent.
- *
- * @param plan the FramePlan
- * @param width full texture allocation width in texels
- * @param height full texture allocation height in texels
- * @param depth full texture allocation depth in texels
- * @return whether the allocation extent was applied
- */
-DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_3d_allocation_extent(
-    DvzFramePlan* plan, uint32_t width, uint32_t height, uint32_t depth);
-
-
-/**
- * Tag the most recently appended texture upload node with a 2D sub-region origin.
- *
- * Use after `dvz_frame_plan_upload_set_texture_extent()`. The extent still names the upload
- * size, while this call sets the destination origin within the texture.
- *
- * @param plan the FramePlan
- * @param origin_x destination x offset in texels
- * @param origin_y destination y offset in texels
- * @return whether the origin was applied
- */
-DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_region(
-    DvzFramePlan* plan, uint32_t origin_x, uint32_t origin_y);
-
-
-/**
- * Tag the most recently appended texture upload node with a 3D sub-region origin.
- *
- * @param plan the FramePlan
- * @param origin_x destination x offset in texels
- * @param origin_y destination y offset in texels
- * @param origin_z destination z offset in texels
- * @return whether the origin was applied
- */
-DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_3d_region(
-    DvzFramePlan* plan, uint32_t origin_x, uint32_t origin_y, uint32_t origin_z);
+DVZ_EXPORT bool dvz_frame_plan_upload_ex(DvzFramePlan* plan, const DvzFramePlanUploadDesc* desc);
 
 
 

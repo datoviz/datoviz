@@ -14,7 +14,7 @@
  * and DvzCanvas, constructs a DRP2 command stream from scratch, executes it
  * with the vklite runtime, downloads the pixels, and saves a PNG.
  *
- * Vertex layout is declared explicitly via dvz_drp2_stream_create_render_pipeline_ex().
+ * Vertex layout is declared explicitly via DvzDrp2RenderPipelineDesc.
  *
  * It is intentionally verbose — the goal is to show every step of the
  * protocol so that developers of other scientific-visualization libraries can
@@ -177,11 +177,19 @@ int main(int argc, char** argv)
         DvzFormat formats[2]  = {DVZ_FORMAT_R32G32_SFLOAT,      /* inPos:   vec2                */
                                  DVZ_FORMAT_R32G32B32_SFLOAT};  /* inColor: vec3                */
         uint32_t offsets[2]   = {0, 2 * sizeof(float)};
-        dvz_drp2_stream_create_render_pipeline_ex(
-            stream, ID_PIPE, ID_VS, ID_FS, /*slots=*/1,
-            DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-            /*bindings=*/1, strides,
-            /*attrs=*/2, bindings, locations, formats, offsets);
+        DvzDrp2RenderPipelineDesc pipe = dvz_drp2_render_pipeline_desc();
+        pipe.id = ID_PIPE;
+        pipe.vertex_shader_module_id = ID_VS;
+        pipe.fragment_shader_module_id = ID_FS;
+        pipe.vertex_buffer_slots = 1;
+        pipe.binding_count = 1;
+        pipe.binding_strides = strides;
+        pipe.attr_count = 2;
+        pipe.attr_bindings = bindings;
+        pipe.attr_locations = locations;
+        pipe.attr_formats = formats;
+        pipe.attr_offsets = offsets;
+        dvz_drp2_stream_create_render_pipeline(stream, &pipe);
     }
 
     /* Color target texture: RENDER_ATTACHMENT so it can be drawn into, COPY_SRC so it can

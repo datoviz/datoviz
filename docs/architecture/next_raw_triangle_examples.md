@@ -355,7 +355,12 @@ dvz_drp2_stream_create_buffer(stream, ID_READBUF,
 dvz_drp2_stream_create_shader_module_format(stream, ID_VS, "vertex",   "glsl", VERT_GLSL);
 dvz_drp2_stream_create_shader_module_format(stream, ID_FS, "fragment", "glsl", FRAG_GLSL);
 
-dvz_drp2_stream_create_render_pipeline(stream, ID_PIPELINE, ID_VS, ID_FS, /*n_color_att=*/1);
+DvzDrp2RenderPipelineDesc pipe = dvz_drp2_render_pipeline_desc();
+pipe.id = ID_PIPELINE;
+pipe.vertex_shader_module_id = ID_VS;
+pipe.fragment_shader_module_id = ID_FS;
+pipe.vertex_buffer_slots = 1;
+dvz_drp2_stream_create_render_pipeline(stream, &pipe);
 
 dvz_drp2_stream_create_texture_2d(stream, ID_COLOR_TEX, WIDTH, HEIGHT);
 

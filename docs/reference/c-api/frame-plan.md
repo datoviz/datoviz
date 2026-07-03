@@ -16,7 +16,7 @@ Common workflows:
 - [DRP2 overview](../drp2/index.md)
 - [WebGPU portability](../../explanation/portability-webgpu.md)
 
-Functions: 47
+Functions: 41
 
 ## Symbol Groups
 
@@ -24,7 +24,7 @@ Functions: 47
 | --- | ---: | --- |
 | [Capability](#capability) | 2 | `include/datoviz/scene/frame_plan.h` |
 | [Diagnostic](#diagnostic) | 4 | `include/datoviz/scene/frame_plan.h` |
-| [Frame](#frame) | 41 | `include/datoviz/scene/frame_packets.h`, `include/datoviz/scene/frame_plan.h` |
+| [Frame](#frame) | 35 | `include/datoviz/scene/frame_packets.h`, `include/datoviz/scene/frame_plan.h` |
 
 ??? info "Grouped symbol index"
 
@@ -81,14 +81,8 @@ Functions: 47
     | [`dvz_frame_plan_render_visual()`](#dvz_frame_plan_render_visual) | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_frame_plan_upload()`](#dvz_frame_plan_upload) | `include/datoviz/scene/frame_plan.h` |
     | [`dvz_frame_plan_upload_bytes()`](#dvz_frame_plan_upload_bytes) | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_upload_set_texture_3d_allocation_extent()`](#dvz_frame_plan_upload_set_texture_3d_allocation_extent) | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_upload_set_texture_3d_extent()`](#dvz_frame_plan_upload_set_texture_3d_extent) | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_upload_set_texture_3d_region()`](#dvz_frame_plan_upload_set_texture_3d_region) | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_upload_set_texture_allocation_extent()`](#dvz_frame_plan_upload_set_texture_allocation_extent) | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_upload_set_texture_extent()`](#dvz_frame_plan_upload_set_texture_extent) | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_upload_set_texture_format()`](#dvz_frame_plan_upload_set_texture_format) | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_upload_set_texture_region()`](#dvz_frame_plan_upload_set_texture_region) | `include/datoviz/scene/frame_plan.h` |
-    | [`dvz_frame_plan_upload_set_topology()`](#dvz_frame_plan_upload_set_topology) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_upload_desc()`](#dvz_frame_plan_upload_desc) | `include/datoviz/scene/frame_plan.h` |
+    | [`dvz_frame_plan_upload_ex()`](#dvz_frame_plan_upload_ex) | `include/datoviz/scene/frame_plan.h` |
 
 ## Capability
 
@@ -106,7 +100,7 @@ Return the default capability snapshot.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:73._
+_Declared in `include/datoviz/scene/frame_plan.h`:104._
 
 ### `dvz_capability_snapshot_copy()`
 
@@ -126,7 +120,7 @@ Copy a capability snapshot.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:84._
+_Declared in `include/datoviz/scene/frame_plan.h`:115._
 
 ## Diagnostic
 
@@ -149,7 +143,7 @@ Add a diagnostic message.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:104._
+_Declared in `include/datoviz/scene/frame_plan.h`:135._
 
 ### `dvz_diagnostic_report_count()`
 
@@ -168,7 +162,7 @@ Return a diagnostic count.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:114._
+_Declared in `include/datoviz/scene/frame_plan.h`:145._
 
 ### `dvz_diagnostic_report_get()`
 
@@ -189,7 +183,7 @@ Return a diagnostic message.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:126._
+_Declared in `include/datoviz/scene/frame_plan.h`:157._
 
 ### `dvz_diagnostic_report_init()`
 
@@ -207,7 +201,7 @@ Initialize a diagnostic report.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:93._
+_Declared in `include/datoviz/scene/frame_plan.h`:124._
 
 ## Frame
 
@@ -230,7 +224,7 @@ Create an empty FramePlan.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:137._
+_Declared in `include/datoviz/scene/frame_plan.h`:168._
 
 ### `dvz_frame_plan_clear()`
 
@@ -253,7 +247,7 @@ Append a clear-only render node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:403._
+_Declared in `include/datoviz/scene/frame_plan.h`:334._
 
 ### `dvz_frame_plan_compute()`
 
@@ -280,7 +274,7 @@ Append a compute node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:353._
+_Declared in `include/datoviz/scene/frame_plan.h`:284._
 
 ### `dvz_frame_plan_compute_read()`
 
@@ -301,7 +295,7 @@ Add a resource read to the most recent compute node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:365._
+_Declared in `include/datoviz/scene/frame_plan.h`:296._
 
 ### `dvz_frame_plan_compute_write()`
 
@@ -322,7 +316,7 @@ Add a resource write to the most recent compute node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:376._
+_Declared in `include/datoviz/scene/frame_plan.h`:307._
 
 ### `dvz_frame_plan_copy()`
 
@@ -347,7 +341,7 @@ Append a copy node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:427._
+_Declared in `include/datoviz/scene/frame_plan.h`:358._
 
 ### `dvz_frame_plan_copy_desc()`
 
@@ -365,7 +359,7 @@ Related: [`dvz_frame_plan_copy()`](#dvz_frame_plan_copy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:66._
+_Declared in `include/datoviz/scene/frame_plan.h`:90._
 
 ### `dvz_frame_plan_copy_ex()`
 
@@ -386,7 +380,7 @@ Append an explicit texture-to-buffer copy node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:439._
+_Declared in `include/datoviz/scene/frame_plan.h`:370._
 
 ### `dvz_frame_plan_destroy()`
 
@@ -404,7 +398,7 @@ Destroy a FramePlan.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:146._
+_Declared in `include/datoviz/scene/frame_plan.h`:177._
 
 ### `dvz_frame_plan_emit_config()`
 
@@ -420,7 +414,7 @@ Return the default FramePlan-to-DRP2 emission configuration.
 
 Raw ctypes: skipped by binding policy.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:484._
+_Declared in `include/datoviz/scene/frame_plan.h`:415._
 
 ### `dvz_frame_plan_emit_drp2()`
 
@@ -443,7 +437,7 @@ Emit a DRP2 command stream from a FramePlan in fixture mode.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:475._
+_Declared in `include/datoviz/scene/frame_plan.h`:406._
 
 ### `dvz_frame_plan_emit_drp2_ex()`
 
@@ -468,7 +462,7 @@ Emit a DRP2 command stream from a FramePlan with explicit fixture options.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:496._
+_Declared in `include/datoviz/scene/frame_plan.h`:427._
 
 ### `dvz_frame_plan_emitter()`
 
@@ -484,7 +478,7 @@ Create a persistent FramePlan-to-DRP2 emitter for runtime-mode streams.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:506._
+_Declared in `include/datoviz/scene/frame_plan.h`:437._
 
 ### `dvz_frame_plan_emitter_destroy()`
 
@@ -502,7 +496,7 @@ Destroy a persistent FramePlan-to-DRP2 emitter.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:514._
+_Declared in `include/datoviz/scene/frame_plan.h`:445._
 
 ### `dvz_frame_plan_emitter_emit_drp2()`
 
@@ -529,7 +523,7 @@ Emit a runtime-mode DRP2 command stream from a FramePlan.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:527._
+_Declared in `include/datoviz/scene/frame_plan.h`:458._
 
 ### `dvz_frame_plan_emitter_emit_drp2_packets()`
 
@@ -586,7 +580,7 @@ not stable public resource names.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:544._
+_Declared in `include/datoviz/scene/frame_plan.h`:475._
 
 ### `dvz_frame_plan_json()`
 
@@ -605,7 +599,7 @@ Serialize a FramePlan as deterministic debug JSON.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:463._
+_Declared in `include/datoviz/scene/frame_plan.h`:394._
 
 ### `dvz_frame_plan_json_destroy()`
 
@@ -623,7 +617,7 @@ Destroy a JSON string returned by dvz_frame_plan_json().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:553._
+_Declared in `include/datoviz/scene/frame_plan.h`:484._
 
 ### `dvz_frame_plan_node_count()`
 
@@ -642,7 +636,7 @@ Return a FramePlan node count.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:156._
+_Declared in `include/datoviz/scene/frame_plan.h`:187._
 
 ### `dvz_frame_plan_node_get()`
 
@@ -663,7 +657,7 @@ Return a FramePlan node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:168._
+_Declared in `include/datoviz/scene/frame_plan.h`:199._
 
 ### `dvz_frame_plan_node_type()`
 
@@ -682,7 +676,7 @@ Return a FramePlan node type.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:178._
+_Declared in `include/datoviz/scene/frame_plan.h`:209._
 
 ### `dvz_frame_plan_packet_result_destroy()`
 
@@ -811,7 +805,7 @@ Append a readback node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:453._
+_Declared in `include/datoviz/scene/frame_plan.h`:384._
 
 ### `dvz_frame_plan_render()`
 
@@ -836,7 +830,7 @@ Append a render node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:389._
+_Declared in `include/datoviz/scene/frame_plan.h`:320._
 
 ### `dvz_frame_plan_render_pass_role()`
 
@@ -855,7 +849,7 @@ Return a FramePlan render node pass role.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:189._
+_Declared in `include/datoviz/scene/frame_plan.h`:220._
 
 ### `dvz_frame_plan_render_visual()`
 
@@ -876,7 +870,7 @@ Add a visual to the most recent render node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:414._
+_Declared in `include/datoviz/scene/frame_plan.h`:345._
 
 ### `dvz_frame_plan_upload()`
 
@@ -903,7 +897,7 @@ Append an upload node.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:203._
+_Declared in `include/datoviz/scene/frame_plan.h`:234._
 
 ### `dvz_frame_plan_upload_bytes()`
 
@@ -936,206 +930,46 @@ or packet encoding copies it into an arena. Keep texture payloads alive through 
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:224._
+_Declared in `include/datoviz/scene/frame_plan.h`:255._
 
-### `dvz_frame_plan_upload_set_texture_3d_allocation_extent()`
+### `dvz_frame_plan_upload_desc()`
 
-```c title="dvz_frame_plan_upload_set_texture_3d_allocation_extent"
-_Bool dvz_frame_plan_upload_set_texture_3d_allocation_extent(
-    DvzFramePlan * plan,
-    uint32_t width,
-    uint32_t height,
-    uint32_t depth
-);
+```c title="dvz_frame_plan_upload_desc"
+DvzFramePlanUploadDesc dvz_frame_plan_upload_desc(void);
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the allocation extent was applied |
-| `plan` | `DvzFramePlan *` | the FramePlan |
-| `width` | `uint32_t` | full texture allocation width in texels |
-| `height` | `uint32_t` | full texture allocation height in texels |
-| `depth` | `uint32_t` | full texture allocation depth in texels |
+| return | `DvzFramePlanUploadDesc` | default upload descriptor |
 
-Tag the most recently appended 3D texture upload node with the full allocation extent.
+Return the default FramePlan upload descriptor.
+
+Related: [`dvz_frame_plan_upload()`](#dvz_frame_plan_upload).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/frame_plan.h`:310._
+_Declared in `include/datoviz/scene/frame_plan.h`:97._
 
-### `dvz_frame_plan_upload_set_texture_3d_extent()`
+### `dvz_frame_plan_upload_ex()`
 
-```c title="dvz_frame_plan_upload_set_texture_3d_extent"
-_Bool dvz_frame_plan_upload_set_texture_3d_extent(
+```c title="dvz_frame_plan_upload_ex"
+_Bool dvz_frame_plan_upload_ex(
     DvzFramePlan * plan,
-    uint32_t width,
-    uint32_t height,
-    uint32_t depth
+    const DvzFramePlanUploadDesc * desc
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the hint was applied (false if the most recent node is not an upload) |
+| return | `_Bool` | whether the node was appended |
 | `plan` | `DvzFramePlan *` | the FramePlan |
-| `width` | `uint32_t` | written texture-region width in texels |
-| `height` | `uint32_t` | written texture-region height in texels |
-| `depth` | `uint32_t` | written texture-region depth in texels |
+| `desc` | `const DvzFramePlanUploadDesc *` | upload descriptor |
 
-Mark the most recently appended upload node as a 3D texture write of the given extent.
+Append an upload node from a descriptor.
+
+Use this for texture uploads, topology hints, or byte uploads that need explicit metadata at node
+creation time. Texture writes are selected by non-zero `texture_width`.
 
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/frame_plan.h`:270._
-
-### `dvz_frame_plan_upload_set_texture_3d_region()`
-
-```c title="dvz_frame_plan_upload_set_texture_3d_region"
-_Bool dvz_frame_plan_upload_set_texture_3d_region(
-    DvzFramePlan * plan,
-    uint32_t origin_x,
-    uint32_t origin_y,
-    uint32_t origin_z
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `_Bool` | whether the origin was applied |
-| `plan` | `DvzFramePlan *` | the FramePlan |
-| `origin_x` | `uint32_t` | destination x offset in texels |
-| `origin_y` | `uint32_t` | destination y offset in texels |
-| `origin_z` | `uint32_t` | destination z offset in texels |
-
-Tag the most recently appended texture upload node with a 3D sub-region origin.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/frame_plan.h`:338._
-
-### `dvz_frame_plan_upload_set_texture_allocation_extent()`
-
-```c title="dvz_frame_plan_upload_set_texture_allocation_extent"
-_Bool dvz_frame_plan_upload_set_texture_allocation_extent(
-    DvzFramePlan * plan,
-    uint32_t width,
-    uint32_t height
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `_Bool` | whether the allocation extent was applied |
-| `plan` | `DvzFramePlan *` | the FramePlan |
-| `width` | `uint32_t` | full texture allocation width in pixels |
-| `height` | `uint32_t` | full texture allocation height in pixels |
-
-Tag the most recently appended texture upload node with the full allocation extent.
-
-Use this when the write extent is a sub-region and the converter must know the complete texture
-extent without relying on prior cached runtime state.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/frame_plan.h`:297._
-
-### `dvz_frame_plan_upload_set_texture_extent()`
-
-```c title="dvz_frame_plan_upload_set_texture_extent"
-_Bool dvz_frame_plan_upload_set_texture_extent(
-    DvzFramePlan * plan,
-    uint32_t width,
-    uint32_t height
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `_Bool` | whether the hint was applied (false if the most recent node is not an upload) |
-| `plan` | `DvzFramePlan *` | the FramePlan |
-| `width` | `uint32_t` | written texture-region width in pixels |
-| `height` | `uint32_t` | written texture-region height in pixels |
-
-Mark the most recently appended upload node as a 2D texture write of the given extent.
-
-`byte_size` on that node should equal `width * height * 4` (RGBA8). When `width` and
-`height` are non-zero the converter routes the upload to a 2D texture (via
-CreateTexture + WriteTexture) instead of a vertex buffer. Unless an allocation extent is set
-separately, this write extent is also used as the texture allocation extent.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/frame_plan.h`:257._
-
-### `dvz_frame_plan_upload_set_texture_format()`
-
-```c title="dvz_frame_plan_upload_set_texture_format"
-_Bool dvz_frame_plan_upload_set_texture_format(
-    DvzFramePlan * plan,
-    DvzFormat format,
-    uint32_t bytes_per_texel
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `_Bool` | whether the format was applied |
-| `plan` | `DvzFramePlan *` | the FramePlan |
-| `format` | `DvzFormat` | texture format token |
-| `bytes_per_texel` | `uint32_t` | bytes in one texel for row-stride calculation |
-
-Tag the most recently appended texture upload node with an explicit format.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/frame_plan.h`:282._
-
-### `dvz_frame_plan_upload_set_texture_region()`
-
-```c title="dvz_frame_plan_upload_set_texture_region"
-_Bool dvz_frame_plan_upload_set_texture_region(
-    DvzFramePlan * plan,
-    uint32_t origin_x,
-    uint32_t origin_y
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `_Bool` | whether the origin was applied |
-| `plan` | `DvzFramePlan *` | the FramePlan |
-| `origin_x` | `uint32_t` | destination x offset in texels |
-| `origin_y` | `uint32_t` | destination y offset in texels |
-
-Tag the most recently appended texture upload node with a 2D sub-region origin.
-
-Use after `dvz_frame_plan_upload_set_texture_extent()`. The extent still names the upload
-size, while this call sets the destination origin within the texture.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/frame_plan.h`:325._
-
-### `dvz_frame_plan_upload_set_topology()`
-
-```c title="dvz_frame_plan_upload_set_topology"
-_Bool dvz_frame_plan_upload_set_topology(
-    DvzFramePlan * plan,
-    uint32_t topology
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `_Bool` | whether the hint was applied (false if the most recent node is not an upload) |
-| `plan` | `DvzFramePlan *` | the FramePlan |
-| `topology` | `uint32_t` | the primitive topology (DvzPrimitiveTopology), or UINT32_MAX |
-
-Tag the most recently appended upload node with a primitive topology hint.
-
-Used by visual families that pick topology at the visual level (`dvz_primitive`).
-Pass `UINT32_MAX` to clear the hint.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/frame_plan.h`:240._
