@@ -192,6 +192,7 @@ static int test_app_config_defaults(TstContext* suite, const TstCase* item)
     AT(!config.enable_canvas_extensions);
     AT(config.enable_glfw_extensions);
     AT(config.schedule_mode == DVZ_APP_SCHEDULE_ON_DEMAND);
+    AT(config.exit_policy == DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED);
     AT(config.fps_cap == 0);
     DvzFontDefaults fonts = dvz_font_defaults();
     AT(strcmp(config.font_defaults.sans.family, fonts.sans.family) == 0);

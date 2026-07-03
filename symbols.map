@@ -49,6 +49,8 @@ dvz_app_destroy
 dvz_app_render_once
 dvz_app_resources
 dvz_app_run
+dvz_app_should_stop
+dvz_app_stop
 dvz_app_vk_instance
 dvz_app_with_config
 dvz_app_with_resources

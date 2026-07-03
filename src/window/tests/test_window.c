@@ -90,6 +90,11 @@ int test_window_config_rejects_invalid_abi(TstContext* suite, const TstCase* ite
     cfg.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &cfg) == NULL);
 
+    cfg = dvz_window_config();
+    AT(!cfg.has_position);
+    AT(cfg.x == 0);
+    AT(cfg.y == 0);
+
     dvz_window_host_destroy(host);
     return 0;
 }

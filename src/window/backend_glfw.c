@@ -620,6 +620,14 @@ static void _glfw_window_size_callback(GLFWwindow* handle, int width, int height
 
 
 
+static void _glfw_window_close_callback(GLFWwindow* handle)
+{
+    glfwSetWindowShouldClose(handle, GLFW_TRUE);
+    glfwPostEmptyEvent();
+}
+
+
+
 static void _glfw_scale_callback(GLFWwindow* handle, float scale_x, float scale_y)
 {
     DvzWindow* window = _glfw_window(handle);
@@ -713,6 +721,8 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
         return false;
     }
     glfwSetWindowUserPointer(handle, window);
+    if (config->has_position)
+        glfwSetWindowPos(handle, config->x, config->y);
 
     DvzWindowMetrics metrics = _glfw_configure_initial_metrics(
         handle, _glfw_requested_logical_extent(config), config->hidpi_policy);
@@ -724,6 +734,7 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
     glfwSetCharCallback(handle, _glfw_char_callback);
     glfwSetFramebufferSizeCallback(handle, _glfw_framebuffer_callback);
     glfwSetWindowSizeCallback(handle, _glfw_window_size_callback);
+    glfwSetWindowCloseCallback(handle, _glfw_window_close_callback);
     glfwSetWindowContentScaleCallback(handle, _glfw_scale_callback);
     dvz_window_backend_set_handle(window, handle);
 

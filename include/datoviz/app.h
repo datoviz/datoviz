@@ -72,6 +72,14 @@ typedef enum DvzAppScheduleMode
 } DvzAppScheduleMode;
 
 
+typedef enum DvzAppExitPolicy
+{
+    DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED,
+    DVZ_APP_EXIT_WHEN_ANY_WINDOW_CLOSED,
+    DVZ_APP_EXIT_NEVER,
+} DvzAppExitPolicy;
+
+
 typedef enum DvzAppCaptureFlags
 {
     DVZ_APP_CAPTURE_NONE = 0,
@@ -131,6 +139,7 @@ struct DvzAppConfig
     bool enable_canvas_extensions;
     bool enable_glfw_extensions;
     DvzAppScheduleMode schedule_mode;
+    DvzAppExitPolicy exit_policy;
     double fps_cap;
     DvzFontDefaults font_defaults;
 };
@@ -232,6 +241,10 @@ struct DvzViewDesc
 
     const char* title;
     const DvzWindowExternalSurfaceInfo* external_surface;
+
+    bool has_position;
+    int32_t x;
+    int32_t y;
 };
 
 
@@ -306,6 +319,23 @@ DVZ_EXPORT DvzApp* dvz_app_with_resources(
  * @param app the app
  */
 DVZ_EXPORT void dvz_app_destroy(DvzApp* app);
+
+
+/**
+ * Request that a running app loop stops at the next scheduler checkpoint.
+ *
+ * @param app app whose run loop should stop
+ */
+DVZ_EXPORT void dvz_app_stop(DvzApp* app);
+
+
+/**
+ * Return whether an app stop has been requested.
+ *
+ * @param app app to inspect
+ * @return whether dvz_app_stop() has been called
+ */
+DVZ_EXPORT bool dvz_app_should_stop(const DvzApp* app);
 
 
 
@@ -1038,10 +1068,11 @@ DVZ_EXPORT int dvz_app_render_once(DvzApp* app);
  *
  * Finite runs render the requested number of frames. Interactive runs (`frame_count == 0`) use
  * the app scheduler: on-demand mode waits for resize/input/request-frame invalidation, while
- * continuous mode renders active windows until every interactive window closes.
+ * continuous mode renders active windows until the configured exit policy or dvz_app_stop() stops
+ * the loop.
  *
  * @param app the app
- * @param frame_count number of frames to render (0 = interactive loop until all windows close)
+ * @param frame_count number of frames to render (0 = interactive loop)
  */
 DVZ_EXPORT void dvz_app_run(DvzApp* app, uint32_t frame_count);
 

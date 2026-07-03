@@ -200,6 +200,7 @@ struct DvzApp
 {
     DvzScene* scene;
     DvzAppConfig config;
+    bool stop_requested;
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     DvzGpuCtx*      gpu_ctx;
     DvzDrp2Runtime* runtime;
@@ -237,6 +238,14 @@ static bool _app_config_validate(const DvzAppConfig* config)
     if (!DVZ_STRUCT_VALID(config, DvzAppConfig, DVZ_APP_CONFIG_KNOWN_FLAGS))
     {
         log_error("invalid DvzAppConfig ABI prologue");
+        return false;
+    }
+    if (
+        config->exit_policy != DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED &&
+        config->exit_policy != DVZ_APP_EXIT_WHEN_ANY_WINDOW_CLOSED &&
+        config->exit_policy != DVZ_APP_EXIT_NEVER)
+    {
+        log_error("invalid DvzAppConfig exit_policy");
         return false;
     }
     return true;
@@ -301,6 +310,7 @@ static DvzAppConfig _app_config_defaults(void)
     config.enable_canvas_extensions = false;
     config.enable_glfw_extensions = true;
     config.schedule_mode = DVZ_APP_SCHEDULE_ON_DEMAND;
+    config.exit_policy = DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED;
     config.fps_cap = 0.0;
     config.font_defaults = dvz_font_defaults();
     return config;
@@ -1564,6 +1574,19 @@ static void _app_host_wait_until(DvzApp* app, uint64_t deadline_ns)
 }
 
 
+/**
+ * Return whether one interactive view has received a native close request.
+ *
+ * @param win view to inspect
+ * @return whether the view is closed for scheduling purposes
+ */
+static bool _view_close_requested(DvzView* win)
+{
+    ANN(win);
+    return win->is_interactive && win->window != NULL && dvz_window_should_close(win->window);
+}
+
+
 
 /**
  * Return whether at least one interactive view is still open.
@@ -1577,10 +1600,54 @@ static bool _app_any_interactive_window_open(DvzApp* app)
     for (uint32_t i = 0; i < app->view_count; i++)
     {
         DvzView* win = &app->views[i];
-        if (win->is_interactive && win->window != NULL && !dvz_window_should_close(win->window))
+        if (win->is_interactive && win->window != NULL && !_view_close_requested(win))
             return true;
     }
     return false;
+}
+
+
+/**
+ * Return whether any interactive view has received a native close request.
+ *
+ * @param app app to inspect
+ * @return whether at least one interactive view was closed
+ */
+static bool _app_any_interactive_window_closed(DvzApp* app)
+{
+    ANN(app);
+    for (uint32_t i = 0; i < app->view_count; i++)
+    {
+        DvzView* win = &app->views[i];
+        if (_view_close_requested(win))
+            return true;
+    }
+    return false;
+}
+
+
+/**
+ * Return whether the interactive app loop should terminate.
+ *
+ * @param app app to inspect
+ * @return whether dvz_app_run(app, 0) should return
+ */
+static bool _app_should_exit(DvzApp* app)
+{
+    ANN(app);
+    if (app->stop_requested)
+        return true;
+    switch (app->config.exit_policy)
+    {
+    case DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED:
+        return !_app_any_interactive_window_open(app);
+    case DVZ_APP_EXIT_WHEN_ANY_WINDOW_CLOSED:
+        return _app_any_interactive_window_closed(app);
+    case DVZ_APP_EXIT_NEVER:
+        return false;
+    default:
+        return !_app_any_interactive_window_open(app);
+    }
 }
 
 
@@ -1601,7 +1668,7 @@ static bool _app_has_continuous_work(DvzApp* app)
     for (uint32_t i = 0; i < app->view_count; i++)
     {
         DvzView* win = &app->views[i];
-        if (win->is_interactive && win->window != NULL && dvz_window_should_close(win->window))
+        if (_view_close_requested(win))
             continue;
         if (win->render_enabled && win->frame_callback != NULL)
             return true;
@@ -1665,7 +1732,7 @@ static bool _app_has_pending_windows(DvzApp* app)
     for (uint32_t i = 0; i < app->view_count; i++)
     {
         DvzView* win = &app->views[i];
-        if (win->is_interactive && win->window != NULL && dvz_window_should_close(win->window))
+        if (_view_close_requested(win))
             continue;
         if (
             win->render_enabled &&
@@ -1693,7 +1760,7 @@ static uint64_t _app_next_continuous_deadline(DvzApp* app)
         DvzView* win = &app->views[i];
         if (!win->render_enabled || win->next_frame_ns == 0)
             continue;
-        if (win->is_interactive && win->window != NULL && dvz_window_should_close(win->window))
+        if (_view_close_requested(win))
             continue;
         if (deadline == 0 || win->next_frame_ns < deadline)
             deadline = win->next_frame_ns;
@@ -1718,7 +1785,7 @@ static bool _view_should_render(DvzView* win, bool continuous, uint64_t now)
         return false;
     if (win->canvas == NULL)
         return false;
-    if (win->is_interactive && win->window != NULL && dvz_window_should_close(win->window))
+    if (_view_close_requested(win))
         return false;
     if (continuous)
     {
@@ -3838,6 +3905,31 @@ void dvz_app_destroy(DvzApp* app)
 }
 
 
+void dvz_app_stop(DvzApp* app)
+{
+    ANN(app);
+    app->stop_requested = true;
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (app->window_host != NULL)
+    {
+        for (uint32_t i = 0; i < app->view_count; i++)
+        {
+            DvzView* win = &app->views[i];
+            if (win->window != NULL)
+                dvz_window_host_request_frame(app->window_host, win->window);
+        }
+    }
+#endif
+}
+
+
+bool dvz_app_should_stop(const DvzApp* app)
+{
+    ANN(app);
+    return app->stop_requested;
+}
+
+
 
 /*************************************************************************************************/
 /*  View management                                                                            */
@@ -3862,7 +3954,8 @@ _view_create_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t 
 
 
 static DvzView* _view_create_glfw(
-    DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title);
+    DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title,
+    bool has_position, int32_t x, int32_t y);
 
 
 static DvzView* _view_create_external_surface(
@@ -4006,7 +4099,8 @@ DvzView* dvz_view(DvzApp* app, DvzFigure* figure, const DvzViewDesc* desc)
         break;
     case DVZ_VIEW_GLFW:
         win = _view_create_glfw(
-            app, figure, resolved.logical_width, resolved.logical_height, resolved.title);
+            app, figure, resolved.logical_width, resolved.logical_height, resolved.title,
+            resolved.has_position, resolved.x, resolved.y);
         break;
     case DVZ_VIEW_EXTERNAL_SURFACE:
         if (resolved.external_surface == NULL)
@@ -4099,7 +4193,8 @@ _view_create_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t 
 
 static DvzView*
 _view_create_glfw(
-    DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title)
+    DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title,
+    bool has_position, int32_t x, int32_t y)
 {
     ANN(app);
     ANN(figure);
@@ -4113,6 +4208,9 @@ _view_create_glfw(
     wcfg.height = height;
     if (title != NULL)
         wcfg.title = title;
+    wcfg.has_position = has_position;
+    wcfg.x = x;
+    wcfg.y = y;
     DvzWindow* window = dvz_window_create(app->window_host, DVZ_BACKEND_GLFW, &wcfg);
     if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_GLFW)
     {
@@ -4175,6 +4273,9 @@ _view_create_glfw(
     (void)width;
     (void)height;
     (void)title;
+    (void)has_position;
+    (void)x;
+    (void)y;
     return NULL;
 #endif
 }
@@ -5671,6 +5772,8 @@ int dvz_view_render_once(DvzView* win)
         return 0;
     if (win->canvas == NULL)
         return -1;
+    if (_view_close_requested(win))
+        return 0;
 
     bool dirty_before = win->dirty;
     bool requested_before = win->frame_requested;
@@ -5754,9 +5857,11 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
 
     if (frame_count == 0)
     {
-        /* Interactive mode: loop until every interactive window requests close. */
+        /* Interactive mode: loop until the configured app exit policy or dvz_app_stop() trips. */
         for (;;)
         {
+            if (_app_should_exit(app))
+                break;
             bool continuous = _app_has_continuous_work(app);
             bool pending = _app_has_pending_windows(app);
             if (continuous)
@@ -5773,7 +5878,7 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
             else
                 _app_host_poll(app);
 
-            if (!_app_any_interactive_window_open(app))
+            if (_app_should_exit(app))
                 break;
 
             continuous = _app_has_continuous_work(app);
@@ -5809,10 +5914,14 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
     {
         for (uint32_t f = 0; f < frame_count; f++)
         {
+            if (app->stop_requested)
+                break;
             dvz_window_host_poll(app->window_host);
             for (uint32_t i = 0; i < app->view_count; i++)
             {
                 DvzView* win = &app->views[i];
+                if (_view_close_requested(win))
+                    continue;
                 (void)dvz_view_render_once(win);
             }
         }

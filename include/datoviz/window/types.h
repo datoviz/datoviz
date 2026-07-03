@@ -80,6 +80,9 @@ struct DvzWindowConfig
     bool visible;
     float user_scale;
     DvzHiDpiPolicy hidpi_policy;
+    bool has_position;
+    int32_t x;
+    int32_t y;
 };
 
 

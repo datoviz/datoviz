@@ -647,6 +647,9 @@ DvzWindowConfig dvz_window_config(void)
         .visible = true,
         .user_scale = 1.f,
         .hidpi_policy = DVZ_HIDPI_AUTO,
+        .has_position = false,
+        .x = 0,
+        .y = 0,
     };
     return config;
 }

@@ -5177,6 +5177,12 @@ typedef enum DvzAppCaptureFlags DvzAppCaptureFlags;
 typedef struct DvzAppConfig DvzAppConfig;
 ```
 
+#### `DvzAppExitPolicy`
+
+```c
+typedef enum DvzAppExitPolicy DvzAppExitPolicy;
+```
+
 #### `DvzAppFlags`
 
 ```c
@@ -5866,6 +5872,14 @@ DVZ_APP_CAPTURE_VIDEO = 2,
 DVZ_APP_CAPTURE_PNG = 4,
 ```
 
+#### `DvzAppExitPolicy`
+
+```c
+DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED = 0,
+DVZ_APP_EXIT_WHEN_ANY_WINDOW_CLOSED = 1,
+DVZ_APP_EXIT_NEVER = 2,
+```
+
 #### `DvzAppFlags`
 
 ```c
@@ -6275,6 +6289,7 @@ struct DvzAppConfig {
     _Bool enable_canvas_extensions;
     _Bool enable_glfw_extensions;
     DvzAppScheduleMode schedule_mode;
+    DvzAppExitPolicy exit_policy;
     double fps_cap;
     DvzFontDefaults font_defaults;
 };
@@ -6729,6 +6744,9 @@ struct DvzViewDesc {
     float render_scale;
     const char * title;
     const DvzWindowExternalSurfaceInfo * external_surface;
+    _Bool has_position;
+    int32_t x;
+    int32_t y;
 };
 ```
 
@@ -6796,6 +6814,9 @@ struct DvzWindowConfig {
     _Bool visible;
     float user_scale;
     DvzHiDpiPolicy hidpi_policy;
+    _Bool has_position;
+    int32_t x;
+    int32_t y;
 };
 ```
 

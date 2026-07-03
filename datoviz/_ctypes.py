@@ -267,6 +267,17 @@ DVZ_APP_CAPTURE_VIDEO = DvzAppCaptureFlags.DVZ_APP_CAPTURE_VIDEO
 DVZ_APP_CAPTURE_PNG = DvzAppCaptureFlags.DVZ_APP_CAPTURE_PNG
 
 
+class DvzAppExitPolicy(CtypesEnum):
+    DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED = 0
+    DVZ_APP_EXIT_WHEN_ANY_WINDOW_CLOSED = 1
+    DVZ_APP_EXIT_NEVER = 2
+
+
+DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED = DvzAppExitPolicy.DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED
+DVZ_APP_EXIT_WHEN_ANY_WINDOW_CLOSED = DvzAppExitPolicy.DVZ_APP_EXIT_WHEN_ANY_WINDOW_CLOSED
+DVZ_APP_EXIT_NEVER = DvzAppExitPolicy.DVZ_APP_EXIT_NEVER
+
+
 class DvzAppFlags(CtypesEnum):
     DVZ_APP_FLAGS_NONE = 0
     DVZ_APP_FLAGS_OFFSCREEN = 32768
@@ -4871,6 +4882,7 @@ DvzAppConfig._fields_ = [
     ('enable_canvas_extensions', ctypes.c_bool),
     ('enable_glfw_extensions', ctypes.c_bool),
     ('schedule_mode', ctypes.c_int),
+    ('exit_policy', ctypes.c_int),
     ('fps_cap', ctypes.c_double),
     ('font_defaults', DvzFontDefaults),
 ]
@@ -6607,6 +6619,9 @@ DvzViewDesc._fields_ = [
     ('render_scale', ctypes.c_float),
     ('title', ctypes.c_char_p),
     ('external_surface', ctypes.POINTER(DvzWindowExternalSurfaceInfo)),
+    ('has_position', ctypes.c_bool),
+    ('x', ctypes.c_int32),
+    ('y', ctypes.c_int32),
 ]
 
 
@@ -6712,6 +6727,9 @@ DvzWindowConfig._fields_ = [
     ('visible', ctypes.c_bool),
     ('user_scale', ctypes.c_float),
     ('hidpi_policy', ctypes.c_int),
+    ('has_position', ctypes.c_bool),
+    ('x', ctypes.c_int32),
+    ('y', ctypes.c_int32),
 ]
 
 
@@ -7639,13 +7657,43 @@ else:
  *
  * Finite runs render the requested number of frames. Interactive runs (`frame_count == 0`) use
  * the app scheduler: on-demand mode waits for resize/input/request-frame invalidation, while
- * continuous mode renders active windows until every interactive window closes.
+ * continuous mode renders active windows until the configured exit policy or dvz_app_stop() stops
+ * the loop.
  *
  * @param app the app
- * @param frame_count number of frames to render (0 = interactive loop until all windows close)
+ * @param frame_count number of frames to render (0 = interactive loop)
  */"""
     dvz_app_run.argtypes = [ctypes.POINTER(DvzApp), ctypes.c_uint32]
     dvz_app_run.restype = None
+
+
+try:
+    dvz_app_should_stop = dvz.dvz_app_should_stop
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_app_should_stop')
+else:
+    dvz_app_should_stop.__doc__ = """/**
+ * Return whether an app stop has been requested.
+ *
+ * @param app app to inspect
+ * @return whether dvz_app_stop() has been called
+ */"""
+    dvz_app_should_stop.argtypes = [ctypes.POINTER(DvzApp)]
+    dvz_app_should_stop.restype = ctypes.c_bool
+
+
+try:
+    dvz_app_stop = dvz.dvz_app_stop
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_app_stop')
+else:
+    dvz_app_stop.__doc__ = """/**
+ * Request that a running app loop stops at the next scheduler checkpoint.
+ *
+ * @param app app whose run loop should stop
+ */"""
+    dvz_app_stop.argtypes = [ctypes.POINTER(DvzApp)]
+    dvz_app_stop.restype = None
 
 
 try:
@@ -32472,7 +32520,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1553
+_GENERATED_FUNCTION_COUNT = 1555
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_field_geometry', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_panel_background_desc', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scalebar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
 _DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzTextStyle', 'DvzTextPlacement', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzFontDesc', 'DvzFontDefaults', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzContainer', 'DvzContainerIterator', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RawFallback', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzObject', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2D', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewSizeDesc', 'DvzViewDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]
