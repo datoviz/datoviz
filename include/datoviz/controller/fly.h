@@ -88,53 +88,6 @@ struct DvzFlyDesc
 
 
 
-struct DvzFly
-{
-    DvzFlyMode mode;
-    int flags;
-
-    vec2 viewport_origin;
-    vec2 viewport_size;
-    bool has_viewport;
-    bool interacting;
-
-    vec3 world_up;
-    vec3 position;
-    float yaw;
-    float pitch;
-    float roll;
-
-    vec3 position_init;
-    float yaw_init;
-    float pitch_init;
-    float roll_init;
-
-    float speed;
-    float fast_multiplier;
-    float slow_multiplier;
-    float look_speed;
-    float wheel_speed;
-
-    bool key_forward;
-    bool key_backward;
-    bool key_left;
-    bool key_right;
-    bool key_up;
-    bool key_down;
-    bool key_fast;
-    bool key_slow;
-
-    bool has_pivot;
-    vec3 pivot;
-    float pivot_distance;
-    bool pivot_marker_visible;
-    double pivot_marker_time_left;
-
-    DvzCamera* camera;
-};
-
-
-
 EXTERN_C_ON
 
 /*************************************************************************************************/

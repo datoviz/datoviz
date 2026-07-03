@@ -127,9 +127,13 @@ static void _sync_arcball_controls(SsaoDemoState* state)
         return;
 
     dvz_arcball_angles(state->plain_arcball, state->arcball_angles);
-    state->arcball_zoom = state->plain_arcball->zoom;
-    state->arcball_pan[0] = state->plain_arcball->pan[0];
-    state->arcball_pan[1] = state->plain_arcball->pan[1];
+    DvzArcballState arcball = {0};
+    if (dvz_arcball_state(state->plain_arcball, &arcball))
+    {
+        state->arcball_zoom = arcball.zoom;
+        state->arcball_pan[0] = arcball.pan[0];
+        state->arcball_pan[1] = arcball.pan[1];
+    }
 }
 
 

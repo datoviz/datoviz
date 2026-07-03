@@ -48,6 +48,7 @@ typedef enum
 
 typedef struct DvzPanzoom DvzPanzoom;
 typedef struct DvzMVP DvzMVP;
+typedef struct DvzPanzoomState DvzPanzoomState;
 typedef struct DvzPanzoomEval DvzPanzoomEval;
 typedef struct DvzPanzoomResolved DvzPanzoomResolved;
 
@@ -75,26 +76,11 @@ typedef enum
 
 
 
-struct DvzPanzoom
+struct DvzPanzoomState
 {
-    vec2 viewport_origin;
-    vec2 viewport_size;
-    int  flags;
-    bool has_viewport;
-    bool interacting;
-
     vec2 pan;
-    vec2 pan_center;
     vec2 zoom;
-    vec2 zoom_center;
-    vec2 zoom_min;
-    vec2 zoom_max;
-    bool has_zoom_limits;
-
-    vec2 pan_lock;
-    vec2 zoom_lock;
-    bool pan_locked[2];
-    bool zoom_locked[2];
+    bool interacting;
 };
 
 
@@ -202,6 +188,16 @@ DVZ_EXPORT bool dvz_panzoom_zoom_limits(DvzPanzoom* pz, vec2 min_zoom, vec2 max_
  * @return whether the extent was written
  */
 DVZ_EXPORT bool dvz_panzoom_extent(const DvzPanzoom* pz, float out[4]);
+
+
+/**
+ * Copy the current panzoom state.
+ *
+ * @param pz the panzoom controller
+ * @param out target state snapshot
+ * @return whether the state was written
+ */
+DVZ_EXPORT bool dvz_panzoom_state(const DvzPanzoom* pz, DvzPanzoomState* out);
 
 
 

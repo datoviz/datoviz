@@ -113,9 +113,13 @@ static void _sync_arcball_controls(EdlDemoState* state)
         return;
 
     dvz_arcball_angles(state->arcball, state->arcball_angles);
-    state->arcball_zoom = state->arcball->zoom;
-    state->arcball_pan[0] = state->arcball->pan[0];
-    state->arcball_pan[1] = state->arcball->pan[1];
+    DvzArcballState arcball = {0};
+    if (dvz_arcball_state(state->arcball, &arcball))
+    {
+        state->arcball_zoom = arcball.zoom;
+        state->arcball_pan[0] = arcball.pan[0];
+        state->arcball_pan[1] = arcball.pan[1];
+    }
 }
 
 

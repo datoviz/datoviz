@@ -20,7 +20,7 @@
 #include "_assertions.h"
 #include "_controller.h"
 #include "_log.h"
-#include "datoviz/controller/fly.h"
+#include "controller_internal.h"
 #include "datoviz/math/_cglm.h"
 
 

@@ -80,11 +80,13 @@ static bool _panzoom_changed(const LinkedPanelsState* state, uint32_t index)
     if (state == NULL || index >= PANEL_COUNT || state->panzooms[index] == NULL)
         return false;
 
-    const DvzPanzoom* pz = state->panzooms[index];
-    return fabsf(pz->pan[0] - state->last_pan[index][0]) > LINK_EPSILON ||
-           fabsf(pz->pan[1] - state->last_pan[index][1]) > LINK_EPSILON ||
-           fabsf(pz->zoom[0] - state->last_zoom[index][0]) > LINK_EPSILON ||
-           fabsf(pz->zoom[1] - state->last_zoom[index][1]) > LINK_EPSILON;
+    DvzPanzoomState pz = {0};
+    if (!dvz_panzoom_state(state->panzooms[index], &pz))
+        return false;
+    return fabsf(pz.pan[0] - state->last_pan[index][0]) > LINK_EPSILON ||
+           fabsf(pz.pan[1] - state->last_pan[index][1]) > LINK_EPSILON ||
+           fabsf(pz.zoom[0] - state->last_zoom[index][0]) > LINK_EPSILON ||
+           fabsf(pz.zoom[1] - state->last_zoom[index][1]) > LINK_EPSILON;
 }
 
 
@@ -103,10 +105,13 @@ static void _snapshot_panzooms(LinkedPanelsState* state)
         DvzPanzoom* pz = state->panzooms[i];
         if (pz == NULL)
             continue;
-        state->last_pan[i][0] = pz->pan[0];
-        state->last_pan[i][1] = pz->pan[1];
-        state->last_zoom[i][0] = pz->zoom[0];
-        state->last_zoom[i][1] = pz->zoom[1];
+        DvzPanzoomState current = {0};
+        if (!dvz_panzoom_state(pz, &current))
+            continue;
+        state->last_pan[i][0] = current.pan[0];
+        state->last_pan[i][1] = current.pan[1];
+        state->last_zoom[i][0] = current.zoom[0];
+        state->last_zoom[i][1] = current.zoom[1];
     }
 }
 
@@ -123,22 +128,12 @@ static void _copy_panzoom_state(const DvzPanzoom* source, DvzPanzoom* target)
     if (source == NULL || target == NULL)
         return;
 
-    target->pan[0] = source->pan[0];
-    target->pan[1] = source->pan[1];
-    target->pan_center[0] = source->pan_center[0];
-    target->pan_center[1] = source->pan_center[1];
-    target->zoom[0] = source->zoom[0];
-    target->zoom[1] = source->zoom[1];
-    target->zoom_center[0] = source->zoom_center[0];
-    target->zoom_center[1] = source->zoom_center[1];
-    target->pan_lock[0] = source->pan_lock[0];
-    target->pan_lock[1] = source->pan_lock[1];
-    target->zoom_lock[0] = source->zoom_lock[0];
-    target->zoom_lock[1] = source->zoom_lock[1];
-    target->pan_locked[0] = source->pan_locked[0];
-    target->pan_locked[1] = source->pan_locked[1];
-    target->zoom_locked[0] = source->zoom_locked[0];
-    target->zoom_locked[1] = source->zoom_locked[1];
+    DvzPanzoomState state = {0};
+    if (!dvz_panzoom_state(source, &state))
+        return;
+    dvz_panzoom_pan(target, state.pan);
+    dvz_panzoom_zoom(target, state.zoom);
+    dvz_panzoom_end(target);
 }
 
 
@@ -239,19 +234,21 @@ static void _linked_panels_frame(DvzView* win, void* user_data)
             if (i != source)
                 _copy_panzoom_state(state->panzooms[source], state->panzooms[i]);
         }
-        DvzPanzoom* pz = state->panzooms[source];
+        DvzPanzoomState pz = {0};
+        (void)dvz_panzoom_state(state->panzooms[source], &pz);
         fprintf(
             stdout,
             "linked panzoom frame=%u source=top-%u pan=(%.3f, %.3f) zoom=(%.3f, %.3f)\n",
-            state->frame, source + 1, pz->pan[0], pz->pan[1], pz->zoom[0], pz->zoom[1]);
+            state->frame, source + 1, pz.pan[0], pz.pan[1], pz.zoom[0], pz.zoom[1]);
     }
     else if (source < PANEL_COUNT)
     {
-        DvzPanzoom* pz = state->panzooms[source];
+        DvzPanzoomState pz = {0};
+        (void)dvz_panzoom_state(state->panzooms[source], &pz);
         fprintf(
             stdout,
             "independent panzoom frame=%u source=bottom pan=(%.3f, %.3f) zoom=(%.3f, %.3f)\n",
-            state->frame, pz->pan[0], pz->pan[1], pz->zoom[0], pz->zoom[1]);
+            state->frame, pz.pan[0], pz.pan[1], pz.zoom[0], pz.zoom[1]);
     }
 
     _snapshot_panzooms(state);

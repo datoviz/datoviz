@@ -117,15 +117,20 @@ static void _debug_dump_arcball(const char* name, DvzArcball* arcball)
     mat4 model = {0};
     dvz_arcball_angles(arcball, angles);
     dvz_arcball_model(arcball, model);
+    DvzArcballState state = {0};
+    bool has_state = dvz_arcball_state(arcball, &state);
 
     dvz_fprintf(stderr, "arcball %s:\n", _debug_name(name, "unnamed"));
     dvz_fprintf(
         stderr, "dvz_arcball_initial(arcball, (vec3){%+.6ff, %+.6ff, %+.6ff});\n",
         angles[0], angles[1], angles[2]);
-    dvz_fprintf(stderr, "dvz_arcball_zoom(arcball, %.6ff);\n", arcball->zoom);
-    dvz_fprintf(
-        stderr, "dvz_arcball_pan(arcball, (vec2){%+.6ff, %+.6ff});\n", arcball->pan[0],
-        arcball->pan[1]);
+    if (has_state)
+    {
+        dvz_fprintf(stderr, "dvz_arcball_zoom(arcball, %.6ff);\n", state.zoom);
+        dvz_fprintf(
+            stderr, "dvz_arcball_pan(arcball, (vec2){%+.6ff, %+.6ff});\n", state.pan[0],
+            state.pan[1]);
+    }
 
     dvz_fprintf(stderr, "arcball model matrix:\n");
     for (uint32_t row = 0; row < 4; row++)
@@ -147,14 +152,19 @@ static void _debug_dump_arcball(const char* name, DvzArcball* arcball)
 static void _debug_dump_panzoom(const char* name, DvzPanzoom* panzoom)
 {
     ANN(panzoom);
+    DvzPanzoomState state = {0};
+    bool has_state = dvz_panzoom_state(panzoom, &state);
 
     dvz_fprintf(stderr, "panzoom %s:\n", _debug_name(name, "unnamed"));
-    dvz_fprintf(
-        stderr, "dvz_panzoom_pan(panzoom, (vec2){%+.6ff, %+.6ff});\n", panzoom->pan[0],
-        panzoom->pan[1]);
-    dvz_fprintf(
-        stderr, "dvz_panzoom_zoom(panzoom, (vec2){%.6ff, %.6ff});\n", panzoom->zoom[0],
-        panzoom->zoom[1]);
+    if (has_state)
+    {
+        dvz_fprintf(
+            stderr, "dvz_panzoom_pan(panzoom, (vec2){%+.6ff, %+.6ff});\n", state.pan[0],
+            state.pan[1]);
+        dvz_fprintf(
+            stderr, "dvz_panzoom_zoom(panzoom, (vec2){%.6ff, %.6ff});\n", state.zoom[0],
+            state.zoom[1]);
+    }
 
     float extent[4] = {0};
     if (dvz_panzoom_extent(panzoom, extent))

@@ -24,6 +24,7 @@
 #include "_log.h"
 #include "_scene.h"
 #include "animation_internal.h"
+#include "controller_internal.h"
 
 
 

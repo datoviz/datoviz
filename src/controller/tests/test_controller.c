@@ -17,6 +17,7 @@
 #include <math.h>
 
 #include "_assertions.h"
+#include "controller_internal.h"
 #include "datoviz/controller.h"
 #include "datoviz/math/_cglm.h"
 #include "test_controller.h"

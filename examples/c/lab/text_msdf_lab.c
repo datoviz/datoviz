@@ -381,10 +381,13 @@ static bool panzoom_changed(TextMsdfLabState* state, uint32_t source)
     DvzPanzoom* pz = state->sources[source].panzoom;
     if (pz == NULL)
         return false;
-    return pz->pan[0] != state->last_pan[source][0] ||
-           pz->pan[1] != state->last_pan[source][1] ||
-           pz->zoom[0] != state->last_zoom[source][0] ||
-           pz->zoom[1] != state->last_zoom[source][1];
+    DvzPanzoomState current = {0};
+    if (!dvz_panzoom_state(pz, &current))
+        return false;
+    return current.pan[0] != state->last_pan[source][0] ||
+           current.pan[1] != state->last_pan[source][1] ||
+           current.zoom[0] != state->last_zoom[source][0] ||
+           current.zoom[1] != state->last_zoom[source][1];
 }
 
 
@@ -399,8 +402,11 @@ static void copy_panzoom(DvzPanzoom* dst, const DvzPanzoom* src)
 {
     ANN(dst);
     ANN(src);
-    dvz_panzoom_pan(dst, (vec2){src->pan[0], src->pan[1]});
-    dvz_panzoom_zoom(dst, (vec2){src->zoom[0], src->zoom[1]});
+    DvzPanzoomState state = {0};
+    if (!dvz_panzoom_state(src, &state))
+        return;
+    dvz_panzoom_pan(dst, state.pan);
+    dvz_panzoom_zoom(dst, state.zoom);
     dvz_panzoom_end(dst);
 }
 
@@ -419,10 +425,13 @@ static void store_panzooms(TextMsdfLabState* state)
         DvzPanzoom* pz = state->sources[i].panzoom;
         if (pz == NULL)
             continue;
-        state->last_pan[i][0] = pz->pan[0];
-        state->last_pan[i][1] = pz->pan[1];
-        state->last_zoom[i][0] = pz->zoom[0];
-        state->last_zoom[i][1] = pz->zoom[1];
+        DvzPanzoomState current = {0};
+        if (!dvz_panzoom_state(pz, &current))
+            continue;
+        state->last_pan[i][0] = current.pan[0];
+        state->last_pan[i][1] = current.pan[1];
+        state->last_zoom[i][0] = current.zoom[0];
+        state->last_zoom[i][1] = current.zoom[1];
     }
 }
 

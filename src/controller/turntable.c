@@ -20,8 +20,8 @@
 #include "_assertions.h"
 #include "_controller.h"
 #include "_log.h"
+#include "controller_internal.h"
 #include "datoviz/math/_cglm.h"
-#include "datoviz/controller/turntable.h"
 
 
 

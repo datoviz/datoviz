@@ -20,7 +20,7 @@
 #include "_assertions.h"
 #include "_controller.h"
 #include "_log.h"
-#include "datoviz/controller/arcball.h"
+#include "controller_internal.h"
 #include "datoviz/math/_cglm.h"
 
 
@@ -390,6 +390,19 @@ void dvz_arcball_pan(DvzArcball* arcball, vec2 pan)
     ANN(arcball);
     glm_vec2_copy(pan, arcball->pan);
     glm_vec2_copy(pan, arcball->pan_center);
+}
+
+
+bool dvz_arcball_state(const DvzArcball* arcball, DvzArcballState* out)
+{
+    if (arcball == NULL || out == NULL)
+        return false;
+
+    out->zoom = arcball->zoom;
+    out->pan[0] = arcball->pan[0];
+    out->pan[1] = arcball->pan[1];
+    out->interacting = arcball->interacting;
+    return true;
 }
 
 

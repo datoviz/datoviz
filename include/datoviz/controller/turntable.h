@@ -80,46 +80,6 @@ struct DvzTurntableDesc
 
 
 
-struct DvzTurntable
-{
-    int flags;
-
-    vec2 viewport_origin;
-    vec2 viewport_size;
-    bool has_viewport;
-    bool interacting;
-
-    vec3 pivot;
-    vec3 eye;
-    vec3 up;
-
-    vec3 pivot_init;
-    float distance_init;
-    float yaw_init;
-    float pitch_init;
-
-    float distance;
-    float yaw;
-    float pitch;
-
-    float yaw_speed;
-    float pitch_speed;
-    float zoom_speed;
-    float pan_speed;
-
-    float min_pitch;
-    float max_pitch;
-    float min_distance;
-    float max_distance;
-
-    bool pivot_marker_visible;
-    double pivot_marker_time_left;
-
-    DvzCamera* camera;
-};
-
-
-
 EXTERN_C_ON
 
 /*************************************************************************************************/

@@ -30,6 +30,7 @@
 #include "_scene.h"
 #include "_technique.h"
 #include "../../app/_app.h"
+#include "controller_internal.h"
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"

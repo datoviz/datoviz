@@ -20,6 +20,7 @@
 #include "_assertions.h"
 #include "_controllers.h"
 #include "_scene.h"
+#include "controller_internal.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
 

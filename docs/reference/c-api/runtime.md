@@ -18,7 +18,7 @@ Common workflows:
 - [vklite overview](../../advanced/vklite.md)
 - [Canvas and stream API](../../advanced/canvas.md)
 
-Functions: 574
+Functions: 576
 
 ## Symbol Groups
 
@@ -26,7 +26,7 @@ Functions: 574
 | --- | ---: | --- |
 | [Allocation](#allocation) | 8 | `include/datoviz/vk/memory.h`, `include/datoviz/vk/memory_interop.h` |
 | [Allocator](#allocator) | 18 | `include/datoviz/vk/memory.h`, `include/datoviz/vk/memory_interop.h` |
-| [Arcball](#arcball) | 21 | `include/datoviz/controller/arcball.h` |
+| [Arcball](#arcball) | 22 | `include/datoviz/controller/arcball.h` |
 | [Attachment](#attachment) | 4 | `include/datoviz/vklite/rendering.h` |
 | [Barrier](#barrier) | 12 | `include/datoviz/vklite/sync.h` |
 | [Barriers](#barriers) | 10 | `include/datoviz/vklite/sync.h` |
@@ -66,7 +66,7 @@ Functions: 574
 | [Mock](#mock) | 12 | `include/datoviz/math/mock.h` |
 | [Normalize](#normalize) | 1 | `include/datoviz/math/stats.h` |
 | [Obj](#obj) | 4 | `include/datoviz/common/obj.h` |
-| [Panzoom](#panzoom) | 19 | `include/datoviz/controller/panzoom.h` |
+| [Panzoom](#panzoom) | 20 | `include/datoviz/controller/panzoom.h` |
 | [Parse](#parse) | 1 | `include/datoviz/fileio/fileio.h` |
 | [Prng](#prng) | 3 | `include/datoviz/math/prng.h` |
 | [Queue](#queue) | 6 | `include/datoviz/vk/queues.h` |
@@ -153,6 +153,7 @@ Functions: 574
     | [`dvz_arcball_rotate()`](#dvz_arcball_rotate) | `include/datoviz/controller/arcball.h` |
     | [`dvz_arcball_rotate_axis()`](#dvz_arcball_rotate_axis) | `include/datoviz/controller/arcball.h` |
     | [`dvz_arcball_set()`](#dvz_arcball_set) | `include/datoviz/controller/arcball.h` |
+    | [`dvz_arcball_state()`](#dvz_arcball_state) | `include/datoviz/controller/arcball.h` |
     | [`dvz_arcball_zoom()`](#dvz_arcball_zoom) | `include/datoviz/controller/arcball.h` |
 
     ### Attachment
@@ -722,6 +723,7 @@ Functions: 574
     | [`dvz_panzoom_reset()`](#dvz_panzoom_reset) | `include/datoviz/controller/panzoom.h` |
     | [`dvz_panzoom_resize()`](#dvz_panzoom_resize) | `include/datoviz/controller/panzoom.h` |
     | [`dvz_panzoom_resolve()`](#dvz_panzoom_resolve) | `include/datoviz/controller/panzoom.h` |
+    | [`dvz_panzoom_state()`](#dvz_panzoom_state) | `include/datoviz/controller/panzoom.h` |
     | [`dvz_panzoom_viewport()`](#dvz_panzoom_viewport) | `include/datoviz/controller/panzoom.h` |
     | [`dvz_panzoom_zoom()`](#dvz_panzoom_zoom) | `include/datoviz/controller/panzoom.h` |
     | [`dvz_panzoom_zoom_limits()`](#dvz_panzoom_zoom_limits) | `include/datoviz/controller/panzoom.h` |
@@ -1630,7 +1632,7 @@ Read current Euler angles.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:189._
+_Declared in `include/datoviz/controller/arcball.h`:190._
 
 ### `dvz_arcball_connect()`
 
@@ -1650,7 +1652,7 @@ Subscribe the arcball to an input router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:244._
+_Declared in `include/datoviz/controller/arcball.h`:245._
 
 ### `dvz_arcball_constrain()`
 
@@ -1670,7 +1672,7 @@ Set a rotation constraint axis.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:182._
+_Declared in `include/datoviz/controller/arcball.h`:183._
 
 ### `dvz_arcball_create()`
 
@@ -1691,7 +1693,7 @@ Related: [`dvz_arcball_destroy()`](#dvz_arcball_destroy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:110._
+_Declared in `include/datoviz/controller/arcball.h`:101._
 
 ### `dvz_arcball_desc()`
 
@@ -1701,7 +1703,7 @@ DvzArcballDesc dvz_arcball_desc(void);
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:100._
+_Declared in `include/datoviz/controller/arcball.h`:91._
 
 ### `dvz_arcball_destroy()`
 
@@ -1721,7 +1723,7 @@ Related: [`dvz_arcball_create()`](#dvz_arcball_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:258._
+_Declared in `include/datoviz/controller/arcball.h`:259._
 
 ### `dvz_arcball_disconnect()`
 
@@ -1741,7 +1743,7 @@ Unsubscribe the arcball from a router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:251._
+_Declared in `include/datoviz/controller/arcball.h`:252._
 
 ### `dvz_arcball_end()`
 
@@ -1759,7 +1761,7 @@ Commit the in-flight rotation into the accumulated matrix (call at drag stop).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:212._
+_Declared in `include/datoviz/controller/arcball.h`:213._
 
 ### `dvz_arcball_initial()`
 
@@ -1779,7 +1781,7 @@ Set the initial Euler angles and reset.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:117._
+_Declared in `include/datoviz/controller/arcball.h`:108._
 
 ### `dvz_arcball_is_interacting()`
 
@@ -1798,7 +1800,7 @@ Return whether the pointer is currently interacting with the arcball.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:228._
+_Declared in `include/datoviz/controller/arcball.h`:229._
 
 ### `dvz_arcball_model()`
 
@@ -1820,7 +1822,7 @@ Arcball pan and zoom are camera view state and are not included here.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:205._
+_Declared in `include/datoviz/controller/arcball.h`:206._
 
 ### `dvz_arcball_mvp()`
 
@@ -1841,7 +1843,7 @@ Rotation is applied to the model matrix; pan and zoom are applied to view.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:220._
+_Declared in `include/datoviz/controller/arcball.h`:221._
 
 ### `dvz_arcball_pan()`
 
@@ -1861,7 +1863,7 @@ Set the camera view-plane pan offset.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:159._
+_Declared in `include/datoviz/controller/arcball.h`:150._
 
 ### `dvz_arcball_pan_shift()`
 
@@ -1881,7 +1883,7 @@ Apply an incremental panel-plane pan shift in pixels.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:168._
+_Declared in `include/datoviz/controller/arcball.h`:169._
 
 ### `dvz_arcball_pointer()`
 
@@ -1902,7 +1904,7 @@ Process a pointer event and update arcball state.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:237._
+_Declared in `include/datoviz/controller/arcball.h`:238._
 
 ### `dvz_arcball_reset()`
 
@@ -1920,7 +1922,7 @@ Reset to the initial orientation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:124._
+_Declared in `include/datoviz/controller/arcball.h`:115._
 
 ### `dvz_arcball_resize()`
 
@@ -1942,7 +1944,7 @@ Update the viewport size (call on window resize).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:175._
+_Declared in `include/datoviz/controller/arcball.h`:176._
 
 ### `dvz_arcball_rotate()`
 
@@ -1964,7 +1966,7 @@ Apply an in-flight rotation from two NDC screen positions.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:196._
+_Declared in `include/datoviz/controller/arcball.h`:197._
 
 ### `dvz_arcball_rotate_axis()`
 
@@ -1986,7 +1988,7 @@ Apply an incremental rotation around an axis to the accumulated orientation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:141._
+_Declared in `include/datoviz/controller/arcball.h`:132._
 
 ### `dvz_arcball_set()`
 
@@ -2006,7 +2008,28 @@ Set the orientation directly from Euler angles.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:131._
+_Declared in `include/datoviz/controller/arcball.h`:122._
+
+### `dvz_arcball_state()`
+
+```c title="dvz_arcball_state"
+_Bool dvz_arcball_state(
+    const DvzArcball * arcball,
+    DvzArcballState * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the state was written |
+| `arcball` | `const DvzArcball *` | arcball controller |
+| `out` | `DvzArcballState *` | target state snapshot |
+
+Copy the current arcball state.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/controller/arcball.h`:160._
 
 ### `dvz_arcball_zoom()`
 
@@ -2026,7 +2049,7 @@ Set the camera dolly factor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:150._
+_Declared in `include/datoviz/controller/arcball.h`:141._
 
 ## Attachment
 
@@ -6032,7 +6055,7 @@ Apply the current fly pose to the attached camera.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:376._
+_Declared in `include/datoviz/controller/fly.h`:329._
 
 ### `dvz_fly_clear_pivot()`
 
@@ -6050,7 +6073,7 @@ Clear the optional orbit pivot.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:326._
+_Declared in `include/datoviz/controller/fly.h`:279._
 
 ### `dvz_fly_connect()`
 
@@ -6070,7 +6093,7 @@ Subscribe the fly controller to an input router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:418._
+_Declared in `include/datoviz/controller/fly.h`:371._
 
 ### `dvz_fly_create()`
 
@@ -6091,7 +6114,7 @@ Related: [`dvz_fly_destroy()`](#dvz_fly_destroy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:159._
+_Declared in `include/datoviz/controller/fly.h`:112._
 
 ### `dvz_fly_desc()`
 
@@ -6107,7 +6130,7 @@ Return a default fly-controller descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:149._
+_Declared in `include/datoviz/controller/fly.h`:102._
 
 ### `dvz_fly_destroy()`
 
@@ -6127,7 +6150,7 @@ Related: [`dvz_fly_create()`](#dvz_fly_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:437._
+_Declared in `include/datoviz/controller/fly.h`:390._
 
 ### `dvz_fly_disconnect()`
 
@@ -6147,7 +6170,7 @@ Unsubscribe the fly controller from an input router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:428._
+_Declared in `include/datoviz/controller/fly.h`:381._
 
 ### `dvz_fly_get_position()`
 
@@ -6167,7 +6190,7 @@ Return the current position.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:287._
+_Declared in `include/datoviz/controller/fly.h`:240._
 
 ### `dvz_fly_get_target()`
 
@@ -6187,7 +6210,7 @@ Return the current look-at target.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:297._
+_Declared in `include/datoviz/controller/fly.h`:250._
 
 ### `dvz_fly_get_up()`
 
@@ -6207,7 +6230,7 @@ Return the current up vector.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:307._
+_Declared in `include/datoviz/controller/fly.h`:260._
 
 ### `dvz_fly_has_pivot()`
 
@@ -6226,7 +6249,7 @@ Return whether an orbit pivot is set.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:336._
+_Declared in `include/datoviz/controller/fly.h`:289._
 
 ### `dvz_fly_initial()`
 
@@ -6252,7 +6275,7 @@ Set the initial pose from angles and reset.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:205._
+_Declared in `include/datoviz/controller/fly.h`:158._
 
 ### `dvz_fly_initial_lookat()`
 
@@ -6274,7 +6297,7 @@ Set the initial pose from a look-at point and reset.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:216._
+_Declared in `include/datoviz/controller/fly.h`:169._
 
 ### `dvz_fly_keyboard()`
 
@@ -6295,7 +6318,7 @@ Process a keyboard event.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:408._
+_Declared in `include/datoviz/controller/fly.h`:361._
 
 ### `dvz_fly_look_at_pivot()`
 
@@ -6313,7 +6336,7 @@ Reorient the camera toward the active pivot without moving the eye.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:345._
+_Declared in `include/datoviz/controller/fly.h`:298._
 
 ### `dvz_fly_move_forward()`
 
@@ -6333,7 +6356,7 @@ Move forward along the active movement direction.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:236._
+_Declared in `include/datoviz/controller/fly.h`:189._
 
 ### `dvz_fly_move_right()`
 
@@ -6353,7 +6376,7 @@ Move right relative to the active movement direction.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:246._
+_Declared in `include/datoviz/controller/fly.h`:199._
 
 ### `dvz_fly_move_up()`
 
@@ -6373,7 +6396,7 @@ Move up along the fly controller's world-up direction.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:256._
+_Declared in `include/datoviz/controller/fly.h`:209._
 
 ### `dvz_fly_orbit()`
 
@@ -6396,7 +6419,7 @@ Orbit the camera around the active pivot.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:357._
+_Declared in `include/datoviz/controller/fly.h`:310._
 
 ### `dvz_fly_pivot()`
 
@@ -6416,7 +6439,7 @@ Set or move the optional orbit pivot while preserving the camera eye.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:317._
+_Declared in `include/datoviz/controller/fly.h`:270._
 
 ### `dvz_fly_pointer()`
 
@@ -6437,7 +6460,7 @@ Process a pointer event.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:397._
+_Declared in `include/datoviz/controller/fly.h`:350._
 
 ### `dvz_fly_reset()`
 
@@ -6455,7 +6478,7 @@ Reset a fly controller to its initial pose.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:168._
+_Declared in `include/datoviz/controller/fly.h`:121._
 
 ### `dvz_fly_resize()`
 
@@ -6477,7 +6500,7 @@ Update the viewport size.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:192._
+_Declared in `include/datoviz/controller/fly.h`:145._
 
 ### `dvz_fly_roll()`
 
@@ -6497,7 +6520,7 @@ Roll the fly camera around its view direction.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:277._
+_Declared in `include/datoviz/controller/fly.h`:230._
 
 ### `dvz_fly_rotate()`
 
@@ -6519,7 +6542,7 @@ Rotate the fly view direction.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:267._
+_Declared in `include/datoviz/controller/fly.h`:220._
 
 ### `dvz_fly_set_camera()`
 
@@ -6539,7 +6562,7 @@ Attach a camera updated by this fly controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:367._
+_Declared in `include/datoviz/controller/fly.h`:320._
 
 ### `dvz_fly_set_mode()`
 
@@ -6559,7 +6582,7 @@ Set the movement mode.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:226._
+_Declared in `include/datoviz/controller/fly.h`:179._
 
 ### `dvz_fly_update()`
 
@@ -6579,7 +6602,7 @@ Advance held-key movement.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:386._
+_Declared in `include/datoviz/controller/fly.h`:339._
 
 ### `dvz_fly_viewport()`
 
@@ -6605,7 +6628,7 @@ Update the viewport rectangle in window coordinates.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:181._
+_Declared in `include/datoviz/controller/fly.h`:134._
 
 ## Font
 
@@ -9781,7 +9804,7 @@ The panzoom pointer callback will be registered; call dvz_panzoom_disconnect() t
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:260._
+_Declared in `include/datoviz/controller/panzoom.h`:256._
 
 ### `dvz_panzoom_create()`
 
@@ -9802,7 +9825,7 @@ Related: [`dvz_panzoom_destroy()`](#dvz_panzoom_destroy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:148._
+_Declared in `include/datoviz/controller/panzoom.h`:134._
 
 ### `dvz_panzoom_desc()`
 
@@ -9812,7 +9835,7 @@ DvzPanzoomDesc dvz_panzoom_desc(void);
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:138._
+_Declared in `include/datoviz/controller/panzoom.h`:124._
 
 ### `dvz_panzoom_destroy()`
 
@@ -9832,7 +9855,7 @@ Related: [`dvz_panzoom_create()`](#dvz_panzoom_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:274._
+_Declared in `include/datoviz/controller/panzoom.h`:270._
 
 ### `dvz_panzoom_disconnect()`
 
@@ -9852,7 +9875,7 @@ Unsubscribe the panzoom from a router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:267._
+_Declared in `include/datoviz/controller/panzoom.h`:263._
 
 ### `dvz_panzoom_end()`
 
@@ -9870,7 +9893,7 @@ Commit the current pan/zoom as the new drag baseline (call at drag stop).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:232._
+_Declared in `include/datoviz/controller/panzoom.h`:228._
 
 ### `dvz_panzoom_extent()`
 
@@ -9891,7 +9914,7 @@ Return the visible extent in visual coordinates.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:204._
+_Declared in `include/datoviz/controller/panzoom.h`:190._
 
 ### `dvz_panzoom_mvp()`
 
@@ -9912,7 +9935,7 @@ The model matrix is left untouched.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:240._
+_Declared in `include/datoviz/controller/panzoom.h`:236._
 
 ### `dvz_panzoom_pan()`
 
@@ -9932,7 +9955,7 @@ Set the pan offset in NDC.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:176._
+_Declared in `include/datoviz/controller/panzoom.h`:162._
 
 ### `dvz_panzoom_pan_shift()`
 
@@ -9954,7 +9977,7 @@ Apply a pan shift (pixel delta).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:211._
+_Declared in `include/datoviz/controller/panzoom.h`:207._
 
 ### `dvz_panzoom_pointer()`
 
@@ -9975,7 +9998,7 @@ Process a pointer event and update panzoom state.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:252._
+_Declared in `include/datoviz/controller/panzoom.h`:248._
 
 ### `dvz_panzoom_reset()`
 
@@ -9993,7 +10016,7 @@ Reset to the identity transform.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:155._
+_Declared in `include/datoviz/controller/panzoom.h`:141._
 
 ### `dvz_panzoom_resize()`
 
@@ -10015,7 +10038,7 @@ Update the viewport size (call on window resize).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:162._
+_Declared in `include/datoviz/controller/panzoom.h`:148._
 
 ### `dvz_panzoom_resolve()`
 
@@ -10035,7 +10058,28 @@ _Bool dvz_panzoom_resolve(
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:242._
+_Declared in `include/datoviz/controller/panzoom.h`:238._
+
+### `dvz_panzoom_state()`
+
+```c title="dvz_panzoom_state"
+_Bool dvz_panzoom_state(
+    const DvzPanzoom * pz,
+    DvzPanzoomState * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the state was written |
+| `pz` | `const DvzPanzoom *` | the panzoom controller |
+| `out` | `DvzPanzoomState *` | target state snapshot |
+
+Copy the current panzoom state.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/controller/panzoom.h`:200._
 
 ### `dvz_panzoom_viewport()`
 
@@ -10061,7 +10105,7 @@ Update the viewport rectangle in window coordinates.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:169._
+_Declared in `include/datoviz/controller/panzoom.h`:155._
 
 ### `dvz_panzoom_zoom()`
 
@@ -10081,7 +10125,7 @@ Set the zoom factors.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:183._
+_Declared in `include/datoviz/controller/panzoom.h`:169._
 
 ### `dvz_panzoom_zoom_limits()`
 
@@ -10104,7 +10148,7 @@ Set zoom limits.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:194._
+_Declared in `include/datoviz/controller/panzoom.h`:180._
 
 ### `dvz_panzoom_zoom_shift()`
 
@@ -10126,7 +10170,7 @@ Apply a zoom shift driven by right-drag (pixel delta + anchor).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:218._
+_Declared in `include/datoviz/controller/panzoom.h`:214._
 
 ### `dvz_panzoom_zoom_wheel()`
 
@@ -10148,7 +10192,7 @@ Apply a wheel zoom.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:225._
+_Declared in `include/datoviz/controller/panzoom.h`:221._
 
 ## Parse
 
@@ -12869,7 +12913,7 @@ Apply the turntable pose to the attached camera.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:241._
+_Declared in `include/datoviz/controller/turntable.h`:201._
 
 ### `dvz_turntable_connect()`
 
@@ -12889,7 +12933,7 @@ Subscribe the turntable to an input router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:262._
+_Declared in `include/datoviz/controller/turntable.h`:222._
 
 ### `dvz_turntable_create()`
 
@@ -12910,7 +12954,7 @@ Related: [`dvz_turntable_destroy()`](#dvz_turntable_destroy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:144._
+_Declared in `include/datoviz/controller/turntable.h`:104._
 
 ### `dvz_turntable_desc()`
 
@@ -12926,7 +12970,7 @@ Return a default turntable descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:134._
+_Declared in `include/datoviz/controller/turntable.h`:94._
 
 ### `dvz_turntable_destroy()`
 
@@ -12946,7 +12990,7 @@ Related: [`dvz_turntable_create()`](#dvz_turntable_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:281._
+_Declared in `include/datoviz/controller/turntable.h`:241._
 
 ### `dvz_turntable_disconnect()`
 
@@ -12966,7 +13010,7 @@ Unsubscribe the turntable from an input router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:272._
+_Declared in `include/datoviz/controller/turntable.h`:232._
 
 ### `dvz_turntable_dolly()`
 
@@ -12986,7 +13030,7 @@ Dolly toward or away from the pivot.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:210._
+_Declared in `include/datoviz/controller/turntable.h`:170._
 
 ### `dvz_turntable_orbit()`
 
@@ -13008,7 +13052,7 @@ Orbit around the pivot.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:200._
+_Declared in `include/datoviz/controller/turntable.h`:160._
 
 ### `dvz_turntable_pan()`
 
@@ -13030,7 +13074,7 @@ Pan the pivot in the current view plane.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:222._
+_Declared in `include/datoviz/controller/turntable.h`:182._
 
 ### `dvz_turntable_pivot()`
 
@@ -13050,7 +13094,7 @@ Set the pivot while preserving the current camera eye.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:188._
+_Declared in `include/datoviz/controller/turntable.h`:148._
 
 ### `dvz_turntable_pointer()`
 
@@ -13071,7 +13115,7 @@ Process a pointer event.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:252._
+_Declared in `include/datoviz/controller/turntable.h`:212._
 
 ### `dvz_turntable_reset()`
 
@@ -13089,7 +13133,7 @@ Reset a turntable to its initial pose.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:153._
+_Declared in `include/datoviz/controller/turntable.h`:113._
 
 ### `dvz_turntable_resize()`
 
@@ -13111,7 +13155,7 @@ Update the viewport size.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:178._
+_Declared in `include/datoviz/controller/turntable.h`:138._
 
 ### `dvz_turntable_set_camera()`
 
@@ -13131,7 +13175,7 @@ Attach a camera updated by this turntable.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:232._
+_Declared in `include/datoviz/controller/turntable.h`:192._
 
 ### `dvz_turntable_viewport()`
 
@@ -13157,7 +13201,7 @@ Update the viewport rectangle in window coordinates.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:167._
+_Declared in `include/datoviz/controller/turntable.h`:127._
 
 ## Vec2
 

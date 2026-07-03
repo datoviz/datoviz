@@ -6224,6 +6224,12 @@ struct DvzAppResources {
 };
 ```
 
+#### `DvzArcball`
+
+```c
+typedef struct DvzArcball DvzArcball;
+```
+
 #### `DvzCanvas`
 
 ```c
@@ -6295,6 +6301,12 @@ struct DvzExtent {
     uint32_t width;
     uint32_t height;
 };
+```
+
+#### `DvzFly`
+
+```c
+typedef struct DvzFly DvzFly;
 ```
 
 #### `DvzFrameTiming`
@@ -6585,6 +6597,12 @@ struct DvzStreamSinkRequest {
     const char * backend;
     const void * config;
 };
+```
+
+#### `DvzTurntable`
+
+```c
+typedef struct DvzTurntable DvzTurntable;
 ```
 
 #### `DvzVideoEncoderConfig`
@@ -7345,6 +7363,12 @@ typedef uint32_t DvzAllocationFlags;
 typedef enum DvzArcballFlags DvzArcballFlags;
 ```
 
+#### `DvzArcballState`
+
+```c
+typedef struct DvzArcballState DvzArcballState;
+```
+
 #### `DvzAttachment`
 
 ```c
@@ -7727,6 +7751,12 @@ typedef enum DvzPanzoomFlags DvzPanzoomFlags;
 
 ```c
 typedef struct DvzPanzoomResolved DvzPanzoomResolved;
+```
+
+#### `DvzPanzoomState`
+
+```c
+typedef struct DvzPanzoomState DvzPanzoomState;
 ```
 
 #### `DvzPolygonMode`
@@ -8553,25 +8583,6 @@ DVZ_VERTEX_INPUT_RATE_INSTANCE = 1,
 typedef struct DvzAllocation DvzAllocation;
 ```
 
-#### `DvzArcball`
-
-```c
-struct DvzArcball {
-    vec2 viewport_size;
-    int flags;
-    mat4 mat;
-    vec3 init;
-    vec4 rotation;
-    vec3 constrain;
-    mat4 view;
-    float zoom;
-    vec2 pan;
-    vec2 pan_center;
-    _Bool has_view;
-    _Bool interacting;
-};
-```
-
 #### `DvzArcballDesc`
 
 ```c
@@ -8581,6 +8592,16 @@ struct DvzArcballDesc {
     float width;
     float height;
     uint32_t controller_flags;
+};
+```
+
+#### `DvzArcballState`
+
+```c
+struct DvzArcballState {
+    float zoom;
+    vec2 pan;
+    _Bool interacting;
 };
 ```
 
@@ -8752,47 +8773,6 @@ struct DvzDeviceQueueRequest {
 
 ```c
 typedef struct DvzFence DvzFence;
-```
-
-#### `DvzFly`
-
-```c
-struct DvzFly {
-    DvzFlyMode mode;
-    int flags;
-    vec2 viewport_origin;
-    vec2 viewport_size;
-    _Bool has_viewport;
-    _Bool interacting;
-    vec3 world_up;
-    vec3 position;
-    float yaw;
-    float pitch;
-    float roll;
-    vec3 position_init;
-    float yaw_init;
-    float pitch_init;
-    float roll_init;
-    float speed;
-    float fast_multiplier;
-    float slow_multiplier;
-    float look_speed;
-    float wheel_speed;
-    _Bool key_forward;
-    _Bool key_backward;
-    _Bool key_left;
-    _Bool key_right;
-    _Bool key_up;
-    _Bool key_down;
-    _Bool key_fast;
-    _Bool key_slow;
-    _Bool has_pivot;
-    vec3 pivot;
-    float pivot_distance;
-    _Bool pivot_marker_visible;
-    double pivot_marker_time_left;
-    DvzCamera * camera;
-};
 ```
 
 #### `DvzFlyDesc`
@@ -8998,24 +8978,7 @@ struct DvzObject {
 #### `DvzPanzoom`
 
 ```c
-struct DvzPanzoom {
-    vec2 viewport_origin;
-    vec2 viewport_size;
-    int flags;
-    _Bool has_viewport;
-    _Bool interacting;
-    vec2 pan;
-    vec2 pan_center;
-    vec2 zoom;
-    vec2 zoom_center;
-    vec2 zoom_min;
-    vec2 zoom_max;
-    _Bool has_zoom_limits;
-    vec2 pan_lock;
-    vec2 zoom_lock;
-    _Bool[2] pan_locked;
-    _Bool[2] zoom_locked;
-};
+typedef struct DvzPanzoom DvzPanzoom;
 ```
 
 #### `DvzPanzoomDesc`
@@ -9046,6 +9009,16 @@ struct DvzPanzoomEval {
 struct DvzPanzoomResolved {
     DvzMVP mvp;
     float[4] visible_extent;
+};
+```
+
+#### `DvzPanzoomState`
+
+```c
+struct DvzPanzoomState {
+    vec2 pan;
+    vec2 zoom;
+    _Bool interacting;
 };
 ```
 
@@ -9155,39 +9128,6 @@ struct DvzSwapchainConfig {
 struct DvzTime {
     uint64_t seconds;
     uint64_t nanoseconds;
-};
-```
-
-#### `DvzTurntable`
-
-```c
-struct DvzTurntable {
-    int flags;
-    vec2 viewport_origin;
-    vec2 viewport_size;
-    _Bool has_viewport;
-    _Bool interacting;
-    vec3 pivot;
-    vec3 eye;
-    vec3 up;
-    vec3 pivot_init;
-    float distance_init;
-    float yaw_init;
-    float pitch_init;
-    float distance;
-    float yaw;
-    float pitch;
-    float yaw_speed;
-    float pitch_speed;
-    float zoom_speed;
-    float pan_speed;
-    float min_pitch;
-    float max_pitch;
-    float min_distance;
-    float max_distance;
-    _Bool pivot_marker_visible;
-    double pivot_marker_time_left;
-    DvzCamera * camera;
 };
 ```
 

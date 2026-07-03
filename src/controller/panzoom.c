@@ -21,8 +21,8 @@
 #include "_assertions.h"
 #include "_controller.h"
 #include "_log.h"
+#include "controller_internal.h"
 #include "datoviz/math/_cglm.h"
-#include "datoviz/controller/panzoom.h"
 
 
 
@@ -494,6 +494,21 @@ bool dvz_panzoom_extent(const DvzPanzoom* pz, float out[4])
     out[1] = -pz->pan[0] + 1.0f / pz->zoom[0];
     out[2] = -pz->pan[1] - 1.0f / pz->zoom[1];
     out[3] = -pz->pan[1] + 1.0f / pz->zoom[1];
+    return true;
+}
+
+
+
+bool dvz_panzoom_state(const DvzPanzoom* pz, DvzPanzoomState* out)
+{
+    if (pz == NULL || out == NULL)
+        return false;
+
+    out->pan[0] = pz->pan[0];
+    out->pan[1] = pz->pan[1];
+    out->zoom[0] = pz->zoom[0];
+    out->zoom[1] = pz->zoom[1];
+    out->interacting = pz->interacting;
     return true;
 }
 

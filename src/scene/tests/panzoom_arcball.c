@@ -19,6 +19,7 @@
 #include "_assertions.h"
 #include "_controllers.h"
 #include "_scene.h"
+#include "controller_internal.h"
 #include "core/orientation_gizmo_internal.h"
 #include "core/scene_notify_internal.h"
 #include "datoviz/math/_cglm.h"

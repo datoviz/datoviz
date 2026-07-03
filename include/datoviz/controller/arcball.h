@@ -50,6 +50,7 @@ typedef enum
 /*************************************************************************************************/
 
 typedef struct DvzArcball DvzArcball;
+typedef struct DvzArcballState DvzArcballState;
 
 
 
@@ -57,21 +58,11 @@ typedef struct DvzArcball DvzArcball;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzArcball
+struct DvzArcballState
 {
-    vec2   viewport_size;
-    int    flags;
-
-    mat4 mat;        /* accumulated model matrix */
-    vec3 init;       /* initial Euler angles (used by reset) */
-    vec4 rotation;   /* in-flight quaternion (while dragging); same layout as cglm versor */
-    vec3 constrain;  /* constrain axis; null if no constraint */
-    mat4 view;        /* optional camera view used to interpret drag axes */
-    float zoom;      /* multiplicative camera dolly factor */
-    vec2 pan;        /* camera view-plane pan offset */
-    vec2 pan_center; /* committed pan baseline used during right/middle drag */
-    bool has_view;   /* true when view carries a camera-space drag basis */
-    bool interacting; /* true while the pointer is controlling the arcball */
+    float zoom;
+    vec2 pan;
+    bool interacting;
 };
 
 
@@ -157,6 +148,16 @@ DVZ_EXPORT void dvz_arcball_zoom(DvzArcball* arcball, float zoom);
  * @param pan panel-plane pan offset
  */
 DVZ_EXPORT void dvz_arcball_pan(DvzArcball* arcball, vec2 pan);
+
+
+/**
+ * Copy the current arcball state.
+ *
+ * @param arcball arcball controller
+ * @param out target state snapshot
+ * @return whether the state was written
+ */
+DVZ_EXPORT bool dvz_arcball_state(const DvzArcball* arcball, DvzArcballState* out);
 
 
 /**

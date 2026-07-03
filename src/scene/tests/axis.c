@@ -25,6 +25,7 @@
 #include "annotation/axis_internal.h"
 #include "core/generated_visual_policy.h"
 #include "annotation/prepare_internal.h"
+#include "controller_internal.h"
 #include "core/figure_emit_internal.h"
 #include "scene_emit/scene_emit.h"
 #include "datoviz/drp2/stream.h"
