@@ -295,6 +295,7 @@ pages:
       - load
       - make
       - map
+      - memory
       - mean
       - mock
       - mutex

@@ -40,7 +40,7 @@ Keep these short constructors or concise scene-object factories:
 - `dvz_panel_full(figure)`;
 - visual-family constructors such as `dvz_point(scene, flags)`, `dvz_marker(scene, flags)`,
   `dvz_mesh(scene, flags)`, and similar;
-- common retained scene/domain helpers such as `dvz_scale(scene, NULL)`, `dvz_scalebar(panel)`,
+- common retained scene/domain helpers such as `dvz_scale(scene, NULL)`, `dvz_scalebar(panel, NULL)`,
   and controller constructors with an optional descriptor pointer.
 
 Normalize these toward descriptors:

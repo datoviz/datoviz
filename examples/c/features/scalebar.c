@@ -133,7 +133,7 @@ static bool _add_scalebar(DvzScene* scene, DvzPanel* panel)
         },
     };
 
-    DvzAnnotation* scalebar = dvz_annotation_scalebar(panel, &desc);
+    DvzScaleBar* scalebar = dvz_scalebar(panel, &desc);
     return scalebar != NULL && dvz_scalebar_set_units((DvzScaleBar*)scalebar, length_units) == 0;
 }
 

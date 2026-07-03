@@ -967,13 +967,13 @@ bool _scalebar_prepare_visual(DvzFigure* figure, DvzAnnotation* annotation)
 /*************************************************************************************************/
 
 /**
- * Create a retained scale-bar annotation.
+ * Create a retained scale bar.
  *
  * @param panel the panel
- * @param desc the scale-bar descriptor
- * @return the annotation, or NULL on allocation failure
+ * @param desc the scale-bar descriptor, or NULL for defaults
+ * @return the scale bar, or NULL on allocation failure
  */
-DvzAnnotation* dvz_annotation_scalebar(DvzPanel* panel, const DvzScaleBarDesc* desc)
+DvzScaleBar* dvz_scalebar(DvzPanel* panel, const DvzScaleBarDesc* desc)
 {
     ANN(panel);
     if (panel->figure == NULL || panel->figure->scene == NULL)
@@ -1019,18 +1019,11 @@ DvzAnnotation* dvz_annotation_scalebar(DvzPanel* panel, const DvzScaleBarDesc* d
     annotation->dirty_flags = DVZ_TEXT_DIRTY_ALL;
     annotation->version = 1;
     _scene_notify_request_frame(panel->figure);
-    return annotation;
+    return (DvzScaleBar*)annotation;
 }
 
 
-DvzScaleBar* dvz_scalebar(DvzPanel* panel)
-{
-    DvzScaleBarDesc desc = dvz_scalebar_desc();
-    return dvz_annotation_scalebar(panel, &desc);
-}
-
-
-int dvz_scalebar_dimension(DvzScaleBar* scalebar, DvzDim dim)
+int dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim)
 {
     DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
     if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR ||
@@ -1044,7 +1037,7 @@ int dvz_scalebar_dimension(DvzScaleBar* scalebar, DvzDim dim)
 }
 
 
-int dvz_scalebar_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor)
+int dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor)
 {
     DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
     if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR)
@@ -1073,7 +1066,7 @@ int dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units)
 }
 
 
-int dvz_scalebar_set_duration(DvzScaleBar* scalebar, DvzUnits* duration_units)
+int dvz_scalebar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units)
 {
     return dvz_scalebar_set_units(scalebar, duration_units);
 }

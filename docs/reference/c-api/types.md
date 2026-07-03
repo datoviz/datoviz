@@ -49,7 +49,7 @@ struct DvzFramePlanCopyDesc {
     uint32_t src_attachment_index;
     uint32_t[3] src_origin;
     uint32_t[3] extent;
-    uint32_t format;
+    DvzFormat format;
     uint32_t bytes_per_texel;
     uint64_t bytes_per_row;
     uint32_t rows_per_image;
@@ -477,6 +477,24 @@ typedef struct DvzGridCell DvzGridCell;
 typedef enum DvzGridSizeMode DvzGridSizeMode;
 ```
 
+#### `DvzGuideHit`
+
+```c
+typedef struct DvzGuideHit DvzGuideHit;
+```
+
+#### `DvzGuideKind`
+
+```c
+typedef enum DvzGuideKind DvzGuideKind;
+```
+
+#### `DvzGuideLayout`
+
+```c
+typedef struct DvzGuideLayout DvzGuideLayout;
+```
+
 #### `DvzGuideLine`
 
 ```c
@@ -493,6 +511,18 @@ typedef struct DvzGuideLineDesc DvzGuideLineDesc;
 
 ```c
 typedef enum DvzGuideOrientation DvzGuideOrientation;
+```
+
+#### `DvzGuidePart`
+
+```c
+typedef enum DvzGuidePart DvzGuidePart;
+```
+
+#### `DvzGuideRole`
+
+```c
+typedef enum DvzGuideRole DvzGuideRole;
 ```
 
 #### `DvzGuideSpan`
@@ -705,6 +735,18 @@ typedef enum DvzPanelCoordSpace DvzPanelCoordSpace;
 typedef struct DvzPanelDesc DvzPanelDesc;
 ```
 
+#### `DvzPanelFrameInfo`
+
+```c
+typedef struct DvzPanelFrameInfo DvzPanelFrameInfo;
+```
+
+#### `DvzPanelFrameSnapshot`
+
+```c
+typedef struct DvzPanelFrameSnapshot DvzPanelFrameSnapshot;
+```
+
 #### `DvzPanelReserve`
 
 ```c
@@ -723,10 +765,40 @@ typedef struct DvzPanelView2D DvzPanelView2D;
 typedef enum DvzPanelView2DAspect DvzPanelView2DAspect;
 ```
 
+#### `DvzPanelView2DDesc`
+
+```c
+typedef struct DvzPanelView2DDesc DvzPanelView2DDesc;
+```
+
 #### `DvzPanelView2DMode`
 
 ```c
 typedef enum DvzPanelView2DMode DvzPanelView2DMode;
+```
+
+#### `DvzPanelView2DState`
+
+```c
+typedef struct DvzPanelView2DState DvzPanelView2DState;
+```
+
+#### `DvzPanelView3DDesc`
+
+```c
+typedef struct DvzPanelView3DDesc DvzPanelView3DDesc;
+```
+
+#### `DvzPanelView3DState`
+
+```c
+typedef struct DvzPanelView3DState DvzPanelView3DState;
+```
+
+#### `DvzPanelViewKind`
+
+```c
+typedef enum DvzPanelViewKind DvzPanelViewKind;
 ```
 
 #### `DvzPinnedReadout`
@@ -817,6 +889,18 @@ typedef struct DvzReferenceGridDesc DvzReferenceGridDesc;
 
 ```c
 typedef enum DvzReferenceGridPlane DvzReferenceGridPlane;
+```
+
+#### `DvzRenderedContribution`
+
+```c
+typedef struct DvzRenderedContribution DvzRenderedContribution;
+```
+
+#### `DvzRenderedContributionKind`
+
+```c
+typedef enum DvzRenderedContributionKind DvzRenderedContributionKind;
 ```
 
 #### `DvzSampledField`
@@ -1481,11 +1565,57 @@ DVZ_GRID_SIZE_WEIGHT = 0,
 DVZ_GRID_SIZE_FIXED_PX = 1,
 ```
 
+#### `DvzGuideKind`
+
+```c
+DVZ_GUIDE_KIND_NONE = 0,
+DVZ_GUIDE_KIND_AXIS = 1,
+DVZ_GUIDE_KIND_COLORBAR = 2,
+DVZ_GUIDE_KIND_LEGEND = 3,
+DVZ_GUIDE_KIND_GUIDE_LINE = 4,
+DVZ_GUIDE_KIND_GUIDE_SPAN = 5,
+```
+
 #### `DvzGuideOrientation`
 
 ```c
 DVZ_GUIDE_ORIENTATION_HORIZONTAL = 0,
 DVZ_GUIDE_ORIENTATION_VERTICAL = 1,
+```
+
+#### `DvzGuidePart`
+
+```c
+DVZ_GUIDE_PART_NONE = 0,
+DVZ_GUIDE_PART_BOX = 1,
+DVZ_GUIDE_PART_LINE = 2,
+DVZ_GUIDE_PART_FILL = 3,
+DVZ_GUIDE_PART_OUTLINE = 4,
+DVZ_GUIDE_PART_TEXT = 5,
+DVZ_GUIDE_PART_RAMP = 6,
+DVZ_GUIDE_PART_TICK = 7,
+DVZ_GUIDE_PART_GRID = 8,
+```
+
+#### `DvzGuideRole`
+
+```c
+DVZ_GUIDE_ROLE_NONE = 0,
+DVZ_GUIDE_ROLE_X_AXIS = 1,
+DVZ_GUIDE_ROLE_Y_AXIS = 2,
+DVZ_GUIDE_ROLE_AXIS_GRID = 3,
+DVZ_GUIDE_ROLE_AXIS_TICK_LABEL = 4,
+DVZ_GUIDE_ROLE_AXIS_LABEL = 5,
+DVZ_GUIDE_ROLE_COLORBAR = 6,
+DVZ_GUIDE_ROLE_COLORBAR_RAMP = 7,
+DVZ_GUIDE_ROLE_COLORBAR_TICK_LABEL = 8,
+DVZ_GUIDE_ROLE_COLORBAR_TITLE = 9,
+DVZ_GUIDE_ROLE_LEGEND = 10,
+DVZ_GUIDE_ROLE_LEGEND_ENTRY = 11,
+DVZ_GUIDE_ROLE_LEGEND_TITLE = 12,
+DVZ_GUIDE_ROLE_GUIDE_LINE = 13,
+DVZ_GUIDE_ROLE_GUIDE_SPAN = 14,
+DVZ_GUIDE_ROLE_GUIDE_LABEL = 15,
 ```
 
 #### `DvzHorizontalAnchor`
@@ -1575,6 +1705,14 @@ DVZ_PANEL_VIEW2D_NONE = 0,
 DVZ_PANEL_VIEW2D_CONTAIN = 1,
 ```
 
+#### `DvzPanelViewKind`
+
+```c
+DVZ_PANEL_VIEW_KIND_NONE = 0,
+DVZ_PANEL_VIEW_KIND_2D = 1,
+DVZ_PANEL_VIEW_KIND_3D = 2,
+```
+
 #### `DvzPlacementSpace`
 
 ```c
@@ -1658,6 +1796,14 @@ DVZ_REFERENCE_GRID_XY = 0,
 DVZ_REFERENCE_GRID_XZ = 1,
 DVZ_REFERENCE_GRID_YZ = 2,
 DVZ_REFERENCE_GRID_CUSTOM = 3,
+```
+
+#### `DvzRenderedContributionKind`
+
+```c
+DVZ_RENDERED_CONTRIBUTION_NONE = 0,
+DVZ_RENDERED_CONTRIBUTION_VISUAL = 1,
+DVZ_RENDERED_CONTRIBUTION_GUIDE = 2,
 ```
 
 #### `DvzScaleBarLabelPosition`
@@ -2122,12 +2268,6 @@ struct DvzBounds {
 };
 ```
 
-#### `DvzCamera`
-
-```c
-typedef struct DvzCamera DvzCamera;
-```
-
 #### `DvzCameraMotionDesc`
 
 ```c
@@ -2361,7 +2501,7 @@ struct DvzFramePlanEmitConfig {
     DvzColorPipeline color_pipeline;
     _Bool external_color_target;
     uint64_t color_target_id;
-    uint32_t color_target_format;
+    DvzFormat color_target_format;
     uint32_t target_width;
     uint32_t target_height;
     float device_scale_x;
@@ -2400,6 +2540,51 @@ struct DvzGridCell {
     uint32_t col;
     uint32_t row_span;
     uint32_t col_span;
+};
+```
+
+#### `DvzGuideHit`
+
+```c
+struct DvzGuideHit {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzId snapshot_id;
+    DvzId guide_id;
+    DvzGuideKind kind;
+    DvzGuideRole role;
+    DvzGuidePart part;
+    DvzRect box_px;
+    float[2] point_px;
+    double data_value;
+    uint32_t item_index;
+    _Bool hit;
+    _Bool has_data_value;
+    _Bool has_item_index;
+    char[128] label;
+};
+```
+
+#### `DvzGuideLayout`
+
+```c
+struct DvzGuideLayout {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzId snapshot_id;
+    DvzId guide_id;
+    DvzGuideKind kind;
+    DvzGuideRole role;
+    DvzGuidePart part;
+    DvzRect box_px;
+    float[2] anchor_px;
+    double data_value;
+    uint32_t item_index;
+    _Bool has_box;
+    _Bool has_anchor;
+    _Bool has_data_value;
+    _Bool has_item_index;
+    char[128] label;
 };
 ```
 
@@ -2707,8 +2892,8 @@ struct DvzPanelBackgroundDesc {
     uint32_t flags;
     DvzPanelBackgroundType type;
     float[4] color;
-    struct (unnamed struct at include/datoviz/scene/types.h:329:5) gradient;
-    struct (unnamed struct at include/datoviz/scene/types.h:337:5) image;
+    struct (unnamed struct at include/datoviz/scene/types.h:339:5) gradient;
+    struct (unnamed struct at include/datoviz/scene/types.h:347:5) image;
 };
 ```
 
@@ -2736,6 +2921,57 @@ struct DvzPanelDesc {
 };
 ```
 
+#### `DvzPanelFrameInfo`
+
+```c
+struct DvzPanelFrameInfo {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzId snapshot_id;
+    DvzId figure_id;
+    DvzId panel_id;
+    DvzId view_id;
+    DvzPanelViewKind view_kind;
+    uint64_t panel_revision;
+    uint64_t layout_revision;
+    uint64_t view_revision;
+    uint64_t guide_revision;
+    uint64_t visual_revision;
+    uint32_t logical_width_px;
+    uint32_t logical_height_px;
+    float framebuffer_width_px;
+    float framebuffer_height_px;
+    float device_scale_x;
+    float device_scale_y;
+    float user_scale;
+    DvzRect panel_rect_px;
+    DvzRect inner_rect_px;
+    DvzRect plot_rect_px;
+    DvzRect grid_clip_rect_px;
+    float[4] plot_view;
+    float[4] view_extent;
+    float[4] controller_extent;
+    double[2] source_data_x;
+    double[2] source_data_y;
+    double[2] visible_data_x;
+    double[2] visible_data_y;
+    uint64_t data_to_view_padding;
+    mat4 data_to_view;
+    _Bool has_view2d;
+    _Bool has_valid_source_x;
+    _Bool has_valid_source_y;
+    _Bool has_valid_visible_x;
+    _Bool has_valid_visible_y;
+    DvzDiagnosticReport diagnostics;
+};
+```
+
+#### `DvzPanelFrameSnapshot`
+
+```c
+typedef struct DvzPanelFrameSnapshot DvzPanelFrameSnapshot;
+```
+
 #### `DvzPanelReserve`
 
 ```c
@@ -2756,6 +2992,75 @@ struct DvzPanelView2D {
     DvzPanelView2DMode mode;
     DvzPanelView2DAspect aspect;
     double padding;
+};
+```
+
+#### `DvzPanelView2DDesc`
+
+```c
+struct DvzPanelView2DDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzPanelView2DMode mode;
+    DvzPanelView2DAspect aspect;
+    double padding;
+    double[2] domain_x;
+    double[2] domain_y;
+    _Bool has_domain_x;
+    _Bool has_domain_y;
+};
+```
+
+#### `DvzPanelView2DState`
+
+```c
+struct DvzPanelView2DState {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzId view_id;
+    uint64_t revision;
+    _Bool enabled;
+    DvzPanelView2DMode mode;
+    DvzPanelView2DAspect aspect;
+    double padding;
+    double[2] domain_x;
+    double[2] domain_y;
+    _Bool has_domain_x;
+    _Bool has_domain_y;
+    float[4] view_extent;
+    uint32_t[3] data_to_view_padding;
+    mat4 data_to_view;
+    _Bool has_valid_source_x;
+    _Bool has_valid_source_y;
+};
+```
+
+#### `DvzPanelView3DDesc`
+
+```c
+struct DvzPanelView3DDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzCameraDesc camera;
+};
+```
+
+#### `DvzPanelView3DState`
+
+```c
+struct DvzPanelView3DState {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzId view_id;
+    uint64_t revision;
+    _Bool enabled;
+    DvzCameraView view;
+    DvzCameraProjection projection;
+    _Bool has_explicit_orthographic_bounds;
+    float[6] orthographic_bounds;
+    mat4 model_matrix;
+    mat4 view_matrix;
+    mat4 projection_matrix;
 };
 ```
 
@@ -2888,6 +3193,24 @@ struct DvzReferenceGridDesc {
     _Bool show_major;
     _Bool show_axes;
     _Bool depth_test;
+};
+```
+
+#### `DvzRenderedContribution`
+
+```c
+struct DvzRenderedContribution {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzId snapshot_id;
+    DvzId contribution_id;
+    DvzId guide_id;
+    DvzId visual_id;
+    DvzRenderedContributionKind kind;
+    DvzGuideRole role;
+    DvzGuidePart part;
+    DvzRect box_px;
+    char[128] label;
 };
 ```
 
@@ -3718,6 +4041,12 @@ typedef enum DvzVisualAttrMutability DvzVisualAttrMutability;
 typedef enum DvzVisualAttrSource DvzVisualAttrSource;
 ```
 
+#### `DvzVisualClipRect`
+
+```c
+typedef enum DvzVisualClipRect DvzVisualClipRect;
+```
+
 #### `DvzVisualCoordSpace`
 
 ```c
@@ -3770,6 +4099,12 @@ typedef enum DvzVisualTransformKind DvzVisualTransformKind;
 
 ```c
 typedef enum DvzVisualTransformSpace DvzVisualTransformSpace;
+```
+
+#### `DvzVisualViewportRect`
+
+```c
+typedef enum DvzVisualViewportRect DvzVisualViewportRect;
 ```
 
 #### `DvzVolumeAlphaStop`
@@ -4024,6 +4359,14 @@ DVZ_VISUAL_ATTR_SOURCE_PER_SPAN = 2,
 DVZ_VISUAL_ATTR_SOURCE_PER_GROUP = 3,
 ```
 
+#### `DvzVisualClipRect`
+
+```c
+DVZ_VISUAL_CLIP_AUTO = 0,
+DVZ_VISUAL_CLIP_PANEL = 1,
+DVZ_VISUAL_CLIP_PLOT = 2,
+```
+
 #### `DvzVisualCoordSpace`
 
 ```c
@@ -4064,6 +4407,15 @@ DVZ_VISUAL_TRANSFORM_CUSTOM = 3,
 DVZ_VISUAL_TRANSFORM_SPACE_DATA = 0,
 DVZ_VISUAL_TRANSFORM_SPACE_VISUAL = 1,
 DVZ_VISUAL_TRANSFORM_SPACE_PANEL = 2,
+```
+
+#### `DvzVisualViewportRect`
+
+```c
+DVZ_VISUAL_VIEWPORT_AUTO = 0,
+DVZ_VISUAL_VIEWPORT_PANEL = 1,
+DVZ_VISUAL_VIEWPORT_PLOT = 2,
+DVZ_VISUAL_VIEWPORT_TARGET = 3,
 ```
 
 #### `DvzVolumeAxis`
@@ -4633,6 +4985,8 @@ struct DvzVisualAttachDesc {
     int32_t z_layer;
     DvzControllerMode controller_mode;
     DvzVisualCoordSpace coord_space;
+    DvzVisualClipRect clip_rect;
+    DvzVisualViewportRect viewport_rect;
 };
 ```
 
@@ -5049,6 +5403,12 @@ typedef struct DvzPanzoom DvzPanzoom;
 typedef struct DvzPanzoomDesc DvzPanzoomDesc;
 ```
 
+#### `DvzPhysicalMetricsSource`
+
+```c
+typedef enum DvzPhysicalMetricsSource DvzPhysicalMetricsSource;
+```
+
 #### `DvzPointerButton`
 
 ```c
@@ -5107,6 +5467,18 @@ typedef struct DvzPointerWheelEvent DvzPointerWheelEvent;
 
 ```c
 typedef void (*)(DvzInputRouter *, const DvzInputResizeEvent *, void *) DvzResizeCallback;
+```
+
+#### `DvzResolvedExactness`
+
+```c
+typedef enum DvzResolvedExactness DvzResolvedExactness;
+```
+
+#### `DvzResolvedViewSize`
+
+```c
+typedef struct DvzResolvedViewSize DvzResolvedViewSize;
 ```
 
 #### `DvzScaleCallback`
@@ -5263,6 +5635,18 @@ typedef void (*)(DvzView *, void *) DvzViewPostCallback;
 
 ```c
 typedef void (*)(DvzView *, void *) DvzViewRequestFrameCallback;
+```
+
+#### `DvzViewSizeDesc`
+
+```c
+typedef struct DvzViewSizeDesc DvzViewSizeDesc;
+```
+
+#### `DvzViewSizePolicy`
+
+```c
+typedef enum DvzViewSizePolicy DvzViewSizePolicy;
 ```
 
 #### `DvzWindow`
@@ -5677,6 +6061,17 @@ DVZ_KEY_MODIFIER_ALT = 4,
 DVZ_KEY_MODIFIER_SUPER = 8,
 ```
 
+#### `DvzPhysicalMetricsSource`
+
+```c
+DVZ_PHYSICAL_METRICS_NONE = 0,
+DVZ_PHYSICAL_METRICS_MONITOR_EDID = 1,
+DVZ_PHYSICAL_METRICS_GLFW_MONITOR_SIZE = 2,
+DVZ_PHYSICAL_METRICS_PLATFORM_API = 3,
+DVZ_PHYSICAL_METRICS_USER_OVERRIDE = 4,
+DVZ_PHYSICAL_METRICS_ESTIMATED = 5,
+```
+
 #### `DvzPointerButton`
 
 ```c
@@ -5711,6 +6106,14 @@ DVZ_POINTER_STATE_CLICK = 3,
 DVZ_POINTER_STATE_CLICK_PRESS = 4,
 DVZ_POINTER_STATE_DOUBLE_CLICK = 5,
 DVZ_POINTER_STATE_DRAGGING = 11,
+```
+
+#### `DvzResolvedExactness`
+
+```c
+DVZ_RESOLVED_EXACT = 0,
+DVZ_RESOLVED_APPROXIMATE = 1,
+DVZ_RESOLVED_UNKNOWN = 2,
 ```
 
 #### `DvzSizeSpace`
@@ -5760,6 +6163,15 @@ DVZ_VIDEO_MUX_MP4_POST = 2,
 DVZ_VIEW_OFFSCREEN = 0,
 DVZ_VIEW_GLFW = 1,
 DVZ_VIEW_EXTERNAL_SURFACE = 2,
+```
+
+#### `DvzViewSizePolicy`
+
+```c
+DVZ_VIEW_SIZE_FRAMEBUFFER_PX = 0,
+DVZ_VIEW_SIZE_HOST_LOGICAL_PX = 1,
+DVZ_VIEW_SIZE_REFERENCE_PX = 2,
+DVZ_VIEW_SIZE_PHYSICAL_MM = 3,
 ```
 
 ### Records
@@ -6049,6 +6461,37 @@ struct DvzPointerWheelEvent {
 };
 ```
 
+#### `DvzResolvedViewSize`
+
+```c
+struct DvzResolvedViewSize {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzViewSizePolicy requested_policy;
+    double requested_width;
+    double requested_height;
+    double reference_dpi;
+    double canvas_width_px;
+    double canvas_height_px;
+    uint32_t host_logical_width;
+    uint32_t host_logical_height;
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    double device_scale_x;
+    double device_scale_y;
+    double canvas_to_host_scale_x;
+    double canvas_to_host_scale_y;
+    double framebuffer_per_canvas_px_x;
+    double framebuffer_per_canvas_px_y;
+    double target_width_mm;
+    double target_height_mm;
+    double estimated_width_mm;
+    double estimated_height_mm;
+    DvzPhysicalMetricsSource physical_metrics_source;
+    DvzResolvedExactness exactness;
+};
+```
+
 #### `DvzScaleXY`
 
 ```c
@@ -6190,6 +6633,7 @@ struct DvzViewDesc {
     uint32_t struct_size;
     uint32_t flags;
     DvzViewKind kind;
+    DvzViewSizeDesc size;
     uint32_t logical_width;
     uint32_t logical_height;
     uint32_t framebuffer_width;
@@ -6199,6 +6643,23 @@ struct DvzViewDesc {
     float render_scale;
     const char * title;
     const DvzWindowExternalSurfaceInfo * external_surface;
+};
+```
+
+#### `DvzViewSizeDesc`
+
+```c
+struct DvzViewSizeDesc {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzViewSizePolicy policy;
+    double width;
+    double height;
+    double reference_dpi;
+    double requested_device_scale;
+    double monitor_dpi_x_override;
+    double monitor_dpi_y_override;
+    _Bool strict_framebuffer_size;
 };
 ```
 
@@ -6914,6 +7375,18 @@ typedef struct VkMemoryBarrier2 DvzBarrierMemory;
 typedef struct DvzBarriers DvzBarriers;
 ```
 
+#### `DvzBlendFactor`
+
+```c
+typedef enum DvzBlendFactor DvzBlendFactor;
+```
+
+#### `DvzBlendOp`
+
+```c
+typedef enum DvzBlendOp DvzBlendOp;
+```
+
 #### `DvzBox`
 
 ```c
@@ -6986,6 +7459,12 @@ typedef struct DvzColorf DvzColorf;
 typedef struct DvzCommands DvzCommands;
 ```
 
+#### `DvzCompareOp`
+
+```c
+typedef enum DvzCompareOp DvzCompareOp;
+```
+
 #### `DvzCompute`
 
 ```c
@@ -7008,18 +7487,6 @@ typedef struct DvzContainerIterator DvzContainerIterator;
 
 ```c
 typedef enum DvzCullMode DvzCullMode;
-```
-
-#### `DvzDatFlags`
-
-```c
-typedef enum DvzDatFlags DvzDatFlags;
-```
-
-#### `DvzDatUsage`
-
-```c
-typedef enum DvzDatUsage DvzDatUsage;
 ```
 
 #### `DvzDefaultQueue`
@@ -7400,12 +7867,6 @@ typedef struct DvzSwapchain DvzSwapchain;
 typedef struct DvzSwapchainConfig DvzSwapchainConfig;
 ```
 
-#### `DvzTexFlags`
-
-```c
-typedef enum DvzTexFlags DvzTexFlags;
-```
-
 #### `DvzTime`
 
 ```c
@@ -7416,12 +7877,6 @@ typedef struct DvzTime DvzTime;
 
 ```c
 typedef enum DvzTurntableFlags DvzTurntableFlags;
-```
-
-#### `DvzUploadFlags`
-
-```c
-typedef enum DvzUploadFlags DvzUploadFlags;
 ```
 
 #### `DvzVertexInputRate`
@@ -7661,6 +8116,36 @@ DVZ_ARCBALL_FLAGS_NONE = 0,
 DVZ_ARCBALL_FLAGS_CONSTRAIN = 1,
 ```
 
+#### `DvzBlendFactor`
+
+```c
+DVZ_BLEND_FACTOR_ZERO = 0,
+DVZ_BLEND_FACTOR_ONE = 1,
+DVZ_BLEND_FACTOR_SRC_COLOR = 2,
+DVZ_BLEND_FACTOR_ONE_MINUS_SRC_COLOR = 3,
+DVZ_BLEND_FACTOR_DST_COLOR = 4,
+DVZ_BLEND_FACTOR_ONE_MINUS_DST_COLOR = 5,
+DVZ_BLEND_FACTOR_SRC_ALPHA = 6,
+DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA = 7,
+DVZ_BLEND_FACTOR_DST_ALPHA = 8,
+DVZ_BLEND_FACTOR_ONE_MINUS_DST_ALPHA = 9,
+DVZ_BLEND_FACTOR_CONSTANT_COLOR = 10,
+DVZ_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR = 11,
+DVZ_BLEND_FACTOR_CONSTANT_ALPHA = 12,
+DVZ_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA = 13,
+DVZ_BLEND_FACTOR_SRC_ALPHA_SATURATE = 14,
+```
+
+#### `DvzBlendOp`
+
+```c
+DVZ_BLEND_OP_ADD = 0,
+DVZ_BLEND_OP_SUBTRACT = 1,
+DVZ_BLEND_OP_REVERSE_SUBTRACT = 2,
+DVZ_BLEND_OP_MIN = 3,
+DVZ_BLEND_OP_MAX = 4,
+```
+
 #### `DvzBoxExtentStrategy`
 
 ```c
@@ -7694,32 +8179,26 @@ DVZ_MASK_COLOR_A = 8,
 DVZ_MASK_COLOR_ALL = 15,
 ```
 
+#### `DvzCompareOp`
+
+```c
+DVZ_COMPARE_OP_NEVER = 0,
+DVZ_COMPARE_OP_LESS = 1,
+DVZ_COMPARE_OP_EQUAL = 2,
+DVZ_COMPARE_OP_LESS_OR_EQUAL = 3,
+DVZ_COMPARE_OP_GREATER = 4,
+DVZ_COMPARE_OP_NOT_EQUAL = 5,
+DVZ_COMPARE_OP_GREATER_OR_EQUAL = 6,
+DVZ_COMPARE_OP_ALWAYS = 7,
+```
+
 #### `DvzCullMode`
 
 ```c
 DVZ_CULL_MODE_NONE = 0,
 DVZ_CULL_MODE_FRONT = 1,
 DVZ_CULL_MODE_BACK = 2,
-```
-
-#### `DvzDatFlags`
-
-```c
-DVZ_DAT_FLAGS_NONE = 0,
-DVZ_DAT_FLAGS_STANDALONE = 256,
-DVZ_DAT_FLAGS_MAPPABLE = 512,
-DVZ_DAT_FLAGS_DUP = 1024,
-DVZ_DAT_FLAGS_KEEP_ON_RESIZE = 4096,
-DVZ_DAT_FLAGS_PERSISTENT_STAGING = 8192,
-```
-
-#### `DvzDatUsage`
-
-```c
-DVZ_DAT_USAGE_FREQUENT_NONE = 0,
-DVZ_DAT_USAGE_FREQUENT_UPLOAD = 1,
-DVZ_DAT_USAGE_FREQUENT_DOWNLOAD = 2,
-DVZ_DAT_USAGE_FREQUENT_RESIZE = 4,
+DVZ_CULL_MODE_FRONT_AND_BACK = 3,
 ```
 
 #### `DvzDefaultQueue`
@@ -7842,6 +8321,14 @@ DVZ_FORMAT_B8G8R8A8_UNORM = 44,
 DVZ_FORMAT_B8G8R8A8_SRGB = 50,
 DVZ_FORMAT_R16_UNORM = 70,
 DVZ_FORMAT_R16_SNORM = 71,
+DVZ_FORMAT_R16_UINT = 74,
+DVZ_FORMAT_R16_SINT = 75,
+DVZ_FORMAT_R16_SFLOAT = 76,
+DVZ_FORMAT_R16G16B16A16_UNORM = 91,
+DVZ_FORMAT_R16G16B16A16_SNORM = 92,
+DVZ_FORMAT_R16G16B16A16_UINT = 95,
+DVZ_FORMAT_R16G16B16A16_SINT = 96,
+DVZ_FORMAT_R16G16B16A16_SFLOAT = 97,
 DVZ_FORMAT_R32_UINT = 98,
 DVZ_FORMAT_R32_SINT = 99,
 DVZ_FORMAT_R32_SFLOAT = 100,
@@ -7866,6 +8353,12 @@ DVZ_FORMAT_R64G64B64_SFLOAT = 118,
 DVZ_FORMAT_R64G64B64A64_UINT = 119,
 DVZ_FORMAT_R64G64B64A64_SINT = 120,
 DVZ_FORMAT_R64G64B64A64_SFLOAT = 121,
+DVZ_FORMAT_D16_UNORM = 124,
+DVZ_FORMAT_X8_D24_UNORM_PACK32 = 125,
+DVZ_FORMAT_D32_SFLOAT = 126,
+DVZ_FORMAT_D16_UNORM_S8_UINT = 128,
+DVZ_FORMAT_D24_UNORM_S8_UINT = 129,
+DVZ_FORMAT_D32_SFLOAT_S8_UINT = 130,
 ```
 
 #### `DvzFrontFace`
@@ -8035,13 +8528,6 @@ DVZ_SHADER_FRAGMENT = 16,
 DVZ_SHADER_COMPUTE = 32,
 ```
 
-#### `DvzTexFlags`
-
-```c
-DVZ_TEX_FLAGS_NONE = 0,
-DVZ_TEX_FLAGS_PERSISTENT_STAGING = 8192,
-```
-
 #### `DvzTurntableFlags`
 
 ```c
@@ -8050,12 +8536,6 @@ DVZ_TURNTABLE_FLAGS_INVERT_Y = 1,
 DVZ_TURNTABLE_FLAGS_ALLOW_PAN = 2,
 DVZ_TURNTABLE_FLAGS_WRAP_YAW = 4,
 DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE = 8,
-```
-
-#### `DvzUploadFlags`
-
-```c
-DVZ_UPLOAD_FLAGS_NOCOPY = 2048,
 ```
 
 #### `DvzVertexInputRate`
@@ -8132,6 +8612,12 @@ struct DvzBox {
 
 ```c
 typedef struct DvzBufferViews DvzBufferViews;
+```
+
+#### `DvzCamera`
+
+```c
+typedef struct DvzCamera DvzCamera;
 ```
 
 #### `DvzCameraDesc`

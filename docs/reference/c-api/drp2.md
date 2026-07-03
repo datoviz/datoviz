@@ -1597,13 +1597,13 @@ _Bool dvz_drp2_stream_create_render_pipeline_ex(
     uint64_t vertex_shader_module_id,
     uint64_t fragment_shader_module_id,
     uint32_t vertex_buffer_slots,
-    uint32_t topology,
+    DvzPrimitiveTopology topology,
     uint32_t binding_count,
     const uint32_t * binding_strides,
     uint32_t attr_count,
     const uint32_t * attr_bindings,
     const uint32_t * attr_locations,
-    const uint32_t * attr_formats,
+    const DvzFormat * attr_formats,
     const uint32_t * attr_offsets
 );
 ```
@@ -1616,13 +1616,13 @@ _Bool dvz_drp2_stream_create_render_pipeline_ex(
 | `vertex_shader_module_id` | `uint64_t` | the vertex shader module id |
 | `fragment_shader_module_id` | `uint64_t` | the fragment shader module id |
 | `vertex_buffer_slots` | `uint32_t` | the number of required vertex buffer slots |
-| `topology` | `uint32_t` | VkPrimitiveTopology value (e.g. VK_PRIMITIVE_TOPOLOGY_POINT_LIST) |
+| `topology` | `DvzPrimitiveTopology` | primitive topology token |
 | `binding_count` | `uint32_t` | number of vertex binding descriptors |
 | `binding_strides` | `const uint32_t *` | stride in bytes for each binding |
 | `attr_count` | `uint32_t` | number of vertex attribute descriptors |
 | `attr_bindings` | `const uint32_t *` | binding index for each attribute |
 | `attr_locations` | `const uint32_t *` | shader location for each attribute |
-| `attr_formats` | `const uint32_t *` | VkFormat for each attribute |
+| `attr_formats` | `const DvzFormat *` | DvzFormat token for each attribute |
 | `attr_offsets` | `const uint32_t *` | byte offset within the binding for each attribute |
 
 Append a CreateRenderPipeline command with explicit vertex input layout and topology.
@@ -1644,14 +1644,14 @@ _Bool dvz_drp2_stream_create_render_pipeline_ex2(
     uint64_t vertex_shader_module_id,
     uint64_t fragment_shader_module_id,
     uint32_t vertex_buffer_slots,
-    uint32_t topology,
+    DvzPrimitiveTopology topology,
     uint32_t binding_count,
     const uint32_t * binding_strides,
     const uint32_t * binding_step_modes,
     uint32_t attr_count,
     const uint32_t * attr_bindings,
     const uint32_t * attr_locations,
-    const uint32_t * attr_formats,
+    const DvzFormat * attr_formats,
     const uint32_t * attr_offsets
 );
 ```
@@ -1664,14 +1664,14 @@ _Bool dvz_drp2_stream_create_render_pipeline_ex2(
 | `vertex_shader_module_id` | `uint64_t` | the vertex shader module id |
 | `fragment_shader_module_id` | `uint64_t` | the fragment shader module id |
 | `vertex_buffer_slots` | `uint32_t` | the number of required vertex buffer slots |
-| `topology` | `uint32_t` | VkPrimitiveTopology value (e.g. VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST) |
+| `topology` | `DvzPrimitiveTopology` | primitive topology token |
 | `binding_count` | `uint32_t` | number of vertex binding descriptors |
 | `binding_strides` | `const uint32_t *` | stride in bytes for each binding |
 | `binding_step_modes` | `const uint32_t *` | DvzDrp2VertexStepMode value for each binding |
 | `attr_count` | `uint32_t` | number of vertex attribute descriptors |
 | `attr_bindings` | `const uint32_t *` | binding index for each attribute |
 | `attr_locations` | `const uint32_t *` | shader location for each attribute |
-| `attr_formats` | `const uint32_t *` | VkFormat for each attribute |
+| `attr_formats` | `const DvzFormat *` | DvzFormat token for each attribute |
 | `attr_offsets` | `const uint32_t *` | byte offset within the binding for each attribute |
 
 Append a CreateRenderPipeline command with explicit vertex layout, topology, and step modes.
@@ -1924,7 +1924,7 @@ _Bool dvz_drp2_stream_create_texture_2d_format_usage(
     uint64_t id,
     uint32_t width,
     uint32_t height,
-    uint32_t format,
+    DvzFormat format,
     uint32_t usage
 );
 ```
@@ -1936,7 +1936,7 @@ _Bool dvz_drp2_stream_create_texture_2d_format_usage(
 | `id` | `uint64_t` | the texture id |
 | `width` | `uint32_t` | the texture width |
 | `height` | `uint32_t` | the texture height |
-| `format` | `uint32_t` | texture format, using VkFormat values |
+| `format` | `DvzFormat` | texture format token |
 | `usage` | `uint32_t` | texture usage flags |
 
 Append a CreateTexture command for a 2D texture with explicit format and usage.
@@ -1953,7 +1953,7 @@ _Bool dvz_drp2_stream_create_texture_2d_format_usage_samples(
     uint64_t id,
     uint32_t width,
     uint32_t height,
-    uint32_t format,
+    DvzFormat format,
     uint32_t usage,
     uint32_t sample_count
 );
@@ -1966,7 +1966,7 @@ _Bool dvz_drp2_stream_create_texture_2d_format_usage_samples(
 | `id` | `uint64_t` | the texture id |
 | `width` | `uint32_t` | the texture width |
 | `height` | `uint32_t` | the texture height |
-| `format` | `uint32_t` | texture format, using VkFormat values |
+| `format` | `DvzFormat` | texture format token |
 | `usage` | `uint32_t` | texture usage flags |
 | `sample_count` | `uint32_t` | raster sample count, with 0 treated as 1 |
 
@@ -2039,7 +2039,7 @@ _Bool dvz_drp2_stream_create_texture_3d_format_usage(
     uint32_t width,
     uint32_t height,
     uint32_t depth,
-    uint32_t format,
+    DvzFormat format,
     uint32_t usage
 );
 ```
@@ -2052,7 +2052,7 @@ _Bool dvz_drp2_stream_create_texture_3d_format_usage(
 | `width` | `uint32_t` | the texture width |
 | `height` | `uint32_t` | the texture height |
 | `depth` | `uint32_t` | the texture depth (number of slices) |
-| `format` | `uint32_t` | texture format, using VkFormat values |
+| `format` | `DvzFormat` | texture format token |
 | `usage` | `uint32_t` | texture usage flags |
 
 Append a CreateTexture command for a 3D texture with explicit format and usage.
@@ -2828,13 +2828,13 @@ _Declared in `include/datoviz/drp2/stream.h`:579._
 _Bool dvz_drp2_stream_pipeline_set_color_blend(
     DvzDrp2CommandStream * stream,
     uint32_t idx,
-    uint32_t src_color,
-    uint32_t dst_color,
-    uint32_t color_op,
-    uint32_t src_alpha,
-    uint32_t dst_alpha,
-    uint32_t alpha_op,
-    uint32_t color_write_mask
+    DvzBlendFactor src_color,
+    DvzBlendFactor dst_color,
+    DvzBlendOp color_op,
+    DvzBlendFactor src_alpha,
+    DvzBlendFactor dst_alpha,
+    DvzBlendOp alpha_op,
+    DvzColorMask color_write_mask
 );
 ```
 
@@ -2843,13 +2843,13 @@ _Bool dvz_drp2_stream_pipeline_set_color_blend(
 | return | `_Bool` | whether the most recent command was a CreateRenderPipeline and was updated |
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `idx` | `uint32_t` | the color target index |
-| `src_color` | `uint32_t` | source color blend factor |
-| `dst_color` | `uint32_t` | destination color blend factor |
-| `color_op` | `uint32_t` | color blend operation |
-| `src_alpha` | `uint32_t` | source alpha blend factor |
-| `dst_alpha` | `uint32_t` | destination alpha blend factor |
-| `alpha_op` | `uint32_t` | alpha blend operation |
-| `color_write_mask` | `uint32_t` | color component write mask |
+| `src_color` | `DvzBlendFactor` | source color blend factor |
+| `dst_color` | `DvzBlendFactor` | destination color blend factor |
+| `color_op` | `DvzBlendOp` | color blend operation |
+| `src_alpha` | `DvzBlendFactor` | source alpha blend factor |
+| `dst_alpha` | `DvzBlendFactor` | destination alpha blend factor |
+| `alpha_op` | `DvzBlendOp` | alpha blend operation |
+| `color_write_mask` | `DvzColorMask` | color component write mask |
 
 Set one color target blend state on the most recently appended CreateRenderPipeline command.
 
@@ -2863,7 +2863,7 @@ _Declared in `include/datoviz/drp2/stream.h`:564._
 _Bool dvz_drp2_stream_pipeline_set_color_target(
     DvzDrp2CommandStream * stream,
     uint32_t idx,
-    uint32_t format
+    DvzFormat format
 );
 ```
 
@@ -2872,7 +2872,7 @@ _Bool dvz_drp2_stream_pipeline_set_color_target(
 | return | `_Bool` | whether the most recent command was a CreateRenderPipeline and was updated |
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `idx` | `uint32_t` | the color target index |
-| `format` | `uint32_t` | backend-native texture format enum value |
+| `format` | `DvzFormat` | texture format token |
 
 Set one color target format on the most recently appended CreateRenderPipeline command.
 
@@ -2886,7 +2886,7 @@ _Declared in `include/datoviz/drp2/stream.h`:546._
 _Bool dvz_drp2_stream_pipeline_set_depth_state(
     DvzDrp2CommandStream * stream,
     _Bool depth_write_enabled,
-    uint32_t depth_compare_op
+    DvzCompareOp depth_compare_op
 );
 ```
 
@@ -2895,7 +2895,7 @@ _Bool dvz_drp2_stream_pipeline_set_depth_state(
 | return | `_Bool` | whether the most recent command was a CreateRenderPipeline and was updated |
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
 | `depth_write_enabled` | `_Bool` | whether depth writes are enabled |
-| `depth_compare_op` | `uint32_t` | VkCompareOp value used for depth testing |
+| `depth_compare_op` | `DvzCompareOp` | depth compare operation |
 
 Attach depth state to the most recently appended CreateRenderPipeline command.
 
@@ -2931,8 +2931,8 @@ _Declared in `include/datoviz/drp2/stream.h`:534._
 ```c title="dvz_drp2_stream_pipeline_set_raster_state"
 _Bool dvz_drp2_stream_pipeline_set_raster_state(
     DvzDrp2CommandStream * stream,
-    uint32_t cull_mode,
-    uint32_t front_face
+    DvzCullMode cull_mode,
+    DvzFrontFace front_face
 );
 ```
 
@@ -2940,8 +2940,8 @@ _Bool dvz_drp2_stream_pipeline_set_raster_state(
 | --- | --- | --- |
 | return | `_Bool` | whether the most recent command was a CreateRenderPipeline and was updated |
 | `stream` | `DvzDrp2CommandStream *` | the command stream |
-| `cull_mode` | `uint32_t` | VkCullModeFlags value |
-| `front_face` | `uint32_t` | VkFrontFace value |
+| `cull_mode` | `DvzCullMode` | face culling mode |
+| `front_face` | `DvzFrontFace` | front-face winding |
 
 Attach raster state to the most recently appended CreateRenderPipeline command.
 

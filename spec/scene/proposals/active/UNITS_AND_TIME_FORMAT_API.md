@@ -263,16 +263,16 @@ Long-term retained-object API:
 
 ```c
 DvzScaleBar* dvz_scalebar(DvzPanel* panel);
-int dvz_scalebar_dimension(DvzScaleBar* scalebar, DvzDim dim);
-int dvz_scalebar_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor);
+int dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim);
+int dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor);
 int dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units);
-int dvz_scalebar_set_duration(DvzScaleBar* scalebar, DvzUnits* duration_units);
+int dvz_scalebar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units);
 ```
 
 Existing descriptor bridge:
 
 ```c
-DvzAnnotation* dvz_annotation_scalebar(DvzPanel* panel, const DvzScaleBarDesc* desc);
+DvzAnnotation* dvz_scalebar(DvzPanel* panel, const DvzScaleBarDesc* desc);
 ```
 
 The descriptor path should remain available in v0.4. Internally, `.unit + .data_to_unit` should be
@@ -327,7 +327,7 @@ time zones must emit clear diagnostics.
 DvzUnits* length_units =
     dvz_units_builtin(scene, DVZ_UNIT_LADDER_METRIC_LENGTH, 1e-3); // data mm -> canonical m
 
-DvzScaleBar* sb = dvz_scalebar(panel);
+DvzScaleBar* sb = dvz_scalebar(panel, NULL);
 dvz_scalebar_set_units(sb, length_units);
 ```
 
@@ -344,7 +344,7 @@ dvz_units_ladder(time_units, duration);
 DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
 dvz_axis_set_units(x_axis, time_units);
 
-DvzScaleBar* sb = dvz_scalebar(panel);
+DvzScaleBar* sb = dvz_scalebar(panel, NULL);
 dvz_scalebar_set_units(sb, time_units);
 ```
 
@@ -508,6 +508,6 @@ Preferred v0.4 decisions:
    Fractional seconds should be formatted by Datoviz because C `strftime()` does not standardize a
    portable `%f` directive.
 6. Land the retained-object `DvzScaleBar*` API with the units work if implementation time permits.
-   Keep `dvz_annotation_scalebar()` as the descriptor bridge for ABI-oriented C callers, tests, and
+   Keep `dvz_scalebar()` as the descriptor bridge for ABI-oriented C callers, tests, and
    generated bindings. If implementation time gets tight, the retained API may bridge internally to
    `DvzAnnotation*`, but public teaching examples should use the retained setter path.

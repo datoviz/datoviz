@@ -4,7 +4,7 @@
 
 Lower-level Vulkan, vklite, math, geometry, file, and utility APIs.
 
-!!! info "Status: advanced/unstable"
+!!! info "Status: mixed tiers; see spec/api/status.yml"
 
     This generated page lists exported C functions classified by the v0.4 C API
     reference policy. Raw Python `ctypes` call forms are documented separately.
@@ -18,7 +18,7 @@ Common workflows:
 - [vklite overview](../../advanced/vklite.md)
 - [Canvas and stream API](../../advanced/canvas.md)
 
-Functions: 570
+Functions: 574
 
 ## Symbol Groups
 
@@ -32,7 +32,7 @@ Functions: 570
 | [Barriers](#barriers) | 10 | `include/datoviz/vklite/sync.h` |
 | [Box](#box) | 6 | `include/datoviz/math/box.h` |
 | [Buffer](#buffer) | 23 | `include/datoviz/vklite/buffers.h` |
-| [Camera](#camera) | 11 | `include/datoviz/controller/camera.h` |
+| [Camera](#camera) | 14 | `include/datoviz/controller/camera.h` |
 | [Circular](#circular) | 2 | `include/datoviz/math/anim.h` |
 | [Cmd](#cmd) | 31 | 8 headers |
 | [Command](#command) | 2 | `include/datoviz/vklite/commands.h` |
@@ -61,6 +61,7 @@ Functions: 570
 | [Load](#load) | 2 | `include/datoviz/fileio/fileio.h` |
 | [Make](#make) | 1 | `include/datoviz/fileio/fileio.h` |
 | [Mean](#mean) | 1 | `include/datoviz/math/stats.h` |
+| [Memory](#memory) | 1 | `include/datoviz/common/functions.h` |
 | [Min](#min) | 1 | `include/datoviz/math/stats.h` |
 | [Mock](#mock) | 12 | `include/datoviz/math/mock.h` |
 | [Normalize](#normalize) | 1 | `include/datoviz/math/stats.h` |
@@ -241,11 +242,14 @@ Functions: 570
     | [`dvz_camera_create()`](#dvz_camera_create) | `include/datoviz/controller/camera.h` |
     | [`dvz_camera_desc()`](#dvz_camera_desc) | `include/datoviz/controller/camera.h` |
     | [`dvz_camera_destroy()`](#dvz_camera_destroy) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_get_orthographic_bounds()`](#dvz_camera_get_orthographic_bounds) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_get_projection()`](#dvz_camera_get_projection) | `include/datoviz/controller/camera.h` |
     | [`dvz_camera_get_view()`](#dvz_camera_get_view) | `include/datoviz/controller/camera.h` |
     | [`dvz_camera_mvp()`](#dvz_camera_mvp) | `include/datoviz/controller/camera.h` |
     | [`dvz_camera_projection()`](#dvz_camera_projection) | `include/datoviz/controller/camera.h` |
     | [`dvz_camera_resize()`](#dvz_camera_resize) | `include/datoviz/controller/camera.h` |
     | [`dvz_camera_set_orthographic()`](#dvz_camera_set_orthographic) | `include/datoviz/controller/camera.h` |
+    | [`dvz_camera_set_orthographic_bounds()`](#dvz_camera_set_orthographic_bounds) | `include/datoviz/controller/camera.h` |
     | [`dvz_camera_set_perspective()`](#dvz_camera_set_perspective) | `include/datoviz/controller/camera.h` |
     | [`dvz_camera_set_view()`](#dvz_camera_set_view) | `include/datoviz/controller/camera.h` |
     | [`dvz_camera_view()`](#dvz_camera_view) | `include/datoviz/controller/camera.h` |
@@ -655,6 +659,12 @@ Functions: 570
     | Function | Header |
     | --- | --- |
     | [`dvz_mean()`](#dvz_mean) | `include/datoviz/math/stats.h` |
+
+    ### Memory
+
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_memory_free()`](#dvz_memory_free) | `include/datoviz/common/functions.h` |
 
     ### Min
 
@@ -3255,7 +3265,7 @@ DvzCameraDesc dvz_camera_desc(void);
 
 Return a default perspective camera descriptor.
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/controller/camera.h`:122._
 
@@ -3280,7 +3290,58 @@ Related: [`dvz_camera_create()`](#dvz_camera_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:211._
+_Declared in `include/datoviz/controller/camera.h`:258._
+
+### `dvz_camera_get_orthographic_bounds()`
+
+```c title="dvz_camera_get_orthographic_bounds"
+int dvz_camera_get_orthographic_bounds(
+    const DvzCamera * camera,
+    float * out_left,
+    float * out_right,
+    float * out_bottom,
+    float * out_top,
+    float * out_near,
+    float * out_far
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `int` | 0 when explicit bounds are active, -1 otherwise |
+| `camera` | `const DvzCamera *` | the camera |
+| `out_left` | `float *` | output left orthographic bound |
+| `out_right` | `float *` | output right orthographic bound |
+| `out_bottom` | `float *` | output bottom orthographic bound |
+| `out_top` | `float *` | output top orthographic bound |
+| `out_near` | `float *` | output near clipping plane |
+| `out_far` | `float *` | output far clipping plane |
+
+Return explicit orthographic projection bounds.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/controller/camera.h`:223._
+
+### `dvz_camera_get_projection()`
+
+```c title="dvz_camera_get_projection"
+void dvz_camera_get_projection(
+    const DvzCamera * camera,
+    DvzCameraProjection * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `camera` | `const DvzCamera *` | the camera |
+| `out` | `DvzCameraProjection *` | output camera projection |
+
+Return camera projection parameters.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/controller/camera.h`:161._
 
 ### `dvz_camera_get_view()`
 
@@ -3320,7 +3381,7 @@ Fill the view and projection matrices of an MVP struct from the camera state.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:199._
+_Declared in `include/datoviz/controller/camera.h`:246._
 
 ### `dvz_camera_projection()`
 
@@ -3358,7 +3419,7 @@ Update the camera viewport size.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:189._
+_Declared in `include/datoviz/controller/camera.h`:236._
 
 ### `dvz_camera_set_orthographic()`
 
@@ -3382,7 +3443,41 @@ Set orthographic projection parameters.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:177._
+_Declared in `include/datoviz/controller/camera.h`:186._
+
+### `dvz_camera_set_orthographic_bounds()`
+
+```c title="dvz_camera_set_orthographic_bounds"
+int dvz_camera_set_orthographic_bounds(
+    DvzCamera * camera,
+    float left,
+    float right,
+    float bottom,
+    float top,
+    float near,
+    float far
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `int` | 0 on success, -1 on invalid bounds |
+| `camera` | `DvzCamera *` | the camera |
+| `left` | `float` | left orthographic bound |
+| `right` | `float` | right orthographic bound |
+| `bottom` | `float` | bottom orthographic bound |
+| `top` | `float` | top orthographic bound |
+| `near` | `float` | near clipping plane |
+| `far` | `float` | far clipping plane |
+
+Set explicit orthographic projection bounds.
+
+This preserves the bounds exactly as supplied, including reversed left/right or bottom/top
+pairs. Unlike `dvz_camera_set_orthographic()`, these bounds are not rewritten on resize.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/controller/camera.h`:206._
 
 ### `dvz_camera_set_perspective()`
 
@@ -3406,7 +3501,7 @@ Set perspective projection parameters.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/camera.h`:164._
+_Declared in `include/datoviz/controller/camera.h`:173._
 
 ### `dvz_camera_set_view()`
 
@@ -3440,7 +3535,7 @@ DvzCameraView dvz_camera_view(void);
 
 Return a default camera view.
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/controller/camera.h`:104._
 
@@ -6010,7 +6105,7 @@ DvzFlyDesc dvz_fly_desc(void);
 
 Return a default fly-controller descriptor.
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/controller/fly.h`:149._
 
@@ -9254,6 +9349,29 @@ Compute the mean of an array of double values.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/math/stats.h`:40._
+
+## Memory
+
+### `dvz_memory_free()`
+
+```c title="dvz_memory_free"
+void dvz_memory_free(
+    void * pointer
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `pointer` | `void *` | pointer returned by a Datoviz public API, or NULL |
+
+Release memory returned by Datoviz public APIs.
+
+Use this function for owned buffers returned through public API calls such as file loading,
+shader compilation, screenshots, and readbacks. Passing NULL is allowed.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/common/functions.h`:57._
 
 ## Min
 
@@ -12731,7 +12849,7 @@ Return a monotonic timestamp in nanoseconds.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/common/functions.h`:54._
+_Declared in `include/datoviz/common/functions.h`:65._
 
 ## Turntable
 
@@ -12806,7 +12924,7 @@ DvzTurntableDesc dvz_turntable_desc(void);
 
 Return a default turntable descriptor.
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: emitted.
 
 _Declared in `include/datoviz/controller/turntable.h`:134._
 

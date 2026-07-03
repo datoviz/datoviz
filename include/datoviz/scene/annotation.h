@@ -81,26 +81,16 @@ DVZ_EXPORT DvzAnnotation* dvz_annotation_label(DvzPanel* panel, const DvzLabelDe
 
 
 /**
- * Create a retained 2D scale-bar annotation attached to a panel.
- *
- * @param panel the panel
- * @param desc the scale-bar descriptor
- * @return the annotation
- */
-DVZ_EXPORT DvzAnnotation* dvz_annotation_scalebar(
-    DvzPanel* panel, const DvzScaleBarDesc* desc);
-
-
-/**
  * Create a retained scale bar attached to a panel.
  *
- * `DvzScaleBar` is a typed alias for the retained annotation object returned here. Destroy it with
- * `dvz_annotation_destroy((DvzAnnotation*)scalebar)`.
+ * `DvzScaleBar` is a typed alias for the retained annotation object returned here. Pass NULL for
+ * the default descriptor. Destroy it with `dvz_annotation_destroy((DvzAnnotation*)scalebar)`.
  *
  * @param panel the panel
+ * @param desc the scale-bar descriptor, or NULL for defaults
  * @return the scale bar
  */
-DVZ_EXPORT DvzScaleBar* dvz_scalebar(DvzPanel* panel);
+DVZ_EXPORT DvzScaleBar* dvz_scalebar(DvzPanel* panel, const DvzScaleBarDesc* desc);
 
 
 /**
@@ -110,7 +100,7 @@ DVZ_EXPORT DvzScaleBar* dvz_scalebar(DvzPanel* panel);
  * @param dim dimension
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_scalebar_dimension(DvzScaleBar* scalebar, DvzDim dim);
+DVZ_EXPORT int dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim);
 
 
 /**
@@ -120,7 +110,7 @@ DVZ_EXPORT int dvz_scalebar_dimension(DvzScaleBar* scalebar, DvzDim dim);
  * @param anchor panel anchor
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_scalebar_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor);
+DVZ_EXPORT int dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor);
 
 
 /**
@@ -136,13 +126,11 @@ DVZ_EXPORT int dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units);
 /**
  * Attach duration units to a retained scale bar.
  *
- * This is an alias for dvz_scalebar_set_units() in the first retained scale-bar slice.
- *
  * @param scalebar the scale bar
  * @param duration_units duration units object
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_scalebar_set_duration(DvzScaleBar* scalebar, DvzUnits* duration_units);
+DVZ_EXPORT int dvz_scalebar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units);
 
 
 /**

@@ -1072,7 +1072,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:257._
 ```c title="dvz_frame_plan_upload_set_texture_format"
 _Bool dvz_frame_plan_upload_set_texture_format(
     DvzFramePlan * plan,
-    uint32_t format,
+    DvzFormat format,
     uint32_t bytes_per_texel
 );
 ```
@@ -1081,7 +1081,7 @@ _Bool dvz_frame_plan_upload_set_texture_format(
 | --- | --- | --- |
 | return | `_Bool` | whether the format was applied |
 | `plan` | `DvzFramePlan *` | the FramePlan |
-| `format` | `uint32_t` | texture format, using VkFormat values |
+| `format` | `DvzFormat` | texture format token |
 | `bytes_per_texel` | `uint32_t` | bytes in one texel for row-stride calculation |
 
 Tag the most recently appended texture upload node with an explicit format.

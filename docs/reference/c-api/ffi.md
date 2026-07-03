@@ -4,7 +4,7 @@
 
 Pointer-oriented helper functions for raw ctypes, WASM, and foreign runtimes.
 
-!!! info "Status: supported ABI helpers"
+!!! info "Status: advanced/unstable"
 
     This generated page lists exported C functions classified by the v0.4 C API
     reference policy. Raw Python `ctypes` call forms are documented separately.

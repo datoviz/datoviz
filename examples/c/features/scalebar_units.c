@@ -134,7 +134,7 @@ static bool _add_time_scalebar(DvzScene* scene, DvzPanel* panel)
         },
     };
 
-    DvzAnnotation* scalebar = dvz_annotation_scalebar(panel, &desc);
+    DvzScaleBar* scalebar = dvz_scalebar(panel, &desc);
     return scalebar != NULL && dvz_scalebar_set_units((DvzScaleBar*)scalebar, duration_units) == 0;
 }
 

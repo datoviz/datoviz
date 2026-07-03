@@ -30,9 +30,9 @@ dvz_colorbar_set_title(colorbar, "Intensity");
 ```
 
 ```c
-DvzScaleBar* scalebar = dvz_scalebar(panel);
-dvz_scalebar_dimension(scalebar, DVZ_DIM_X);
-dvz_scalebar_anchor(scalebar, DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT);
+DvzScaleBar* scalebar = dvz_scalebar(panel, NULL);
+dvz_scalebar_set_dimension(scalebar, DVZ_DIM_X);
+dvz_scalebar_set_anchor(scalebar, DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT);
 ```
 
 ```c

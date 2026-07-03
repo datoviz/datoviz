@@ -7433,22 +7433,6 @@ else:
 
 
 try:
-    dvz_annotation_scalebar = dvz.dvz_annotation_scalebar
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_annotation_scalebar')
-else:
-    dvz_annotation_scalebar.__doc__ = """/**
- * Create a retained 2D scale-bar annotation attached to a panel.
- *
- * @param panel the panel
- * @param desc the scale-bar descriptor
- * @return the annotation
- */"""
-    dvz_annotation_scalebar.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzScaleBarDesc)]
-    dvz_annotation_scalebar.restype = ctypes.POINTER(DvzAnnotation)
-
-
-try:
     dvz_annotation_set_format = dvz.dvz_annotation_set_format
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_annotation_set_format')
@@ -25617,64 +25601,63 @@ else:
     dvz_scalebar.__doc__ = """/**
  * Create a retained scale bar attached to a panel.
  *
- * `DvzScaleBar` is a typed alias for the retained annotation object returned here. Destroy it with
- * `dvz_annotation_destroy((DvzAnnotation*)scalebar)`.
+ * `DvzScaleBar` is a typed alias for the retained annotation object returned here. Pass NULL for
+ * the default descriptor. Destroy it with `dvz_annotation_destroy((DvzAnnotation*)scalebar)`.
  *
  * @param panel the panel
+ * @param desc the scale-bar descriptor, or NULL for defaults
  * @return the scale bar
  */"""
-    dvz_scalebar.argtypes = [ctypes.POINTER(DvzPanel)]
+    dvz_scalebar.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzScaleBarDesc)]
     dvz_scalebar.restype = ctypes.c_void_p
 
 
 try:
-    dvz_scalebar_anchor = dvz.dvz_scalebar_anchor
+    dvz_scalebar_set_anchor = dvz.dvz_scalebar_set_anchor
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_scalebar_anchor')
+    _MISSING_FUNCTIONS.append('dvz_scalebar_set_anchor')
 else:
-    dvz_scalebar_anchor.__doc__ = """/**
+    dvz_scalebar_set_anchor.__doc__ = """/**
  * Set the panel anchor of a retained scale bar.
  *
  * @param scalebar the scale bar
  * @param anchor panel anchor
  * @return 0 on success, -1 on validation error
  */"""
-    dvz_scalebar_anchor.argtypes = [ctypes.c_void_p, ctypes.c_int]
-    dvz_scalebar_anchor.restype = ctypes.c_int
+    dvz_scalebar_set_anchor.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    dvz_scalebar_set_anchor.restype = ctypes.c_int
 
 
 try:
-    dvz_scalebar_dimension = dvz.dvz_scalebar_dimension
+    dvz_scalebar_set_dimension = dvz.dvz_scalebar_set_dimension
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_scalebar_dimension')
+    _MISSING_FUNCTIONS.append('dvz_scalebar_set_dimension')
 else:
-    dvz_scalebar_dimension.__doc__ = """/**
+    dvz_scalebar_set_dimension.__doc__ = """/**
  * Set the data dimension measured by a retained scale bar.
  *
  * @param scalebar the scale bar
  * @param dim dimension
  * @return 0 on success, -1 on validation error
  */"""
-    dvz_scalebar_dimension.argtypes = [ctypes.c_void_p, ctypes.c_int]
-    dvz_scalebar_dimension.restype = ctypes.c_int
+    dvz_scalebar_set_dimension.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    dvz_scalebar_set_dimension.restype = ctypes.c_int
 
 
 try:
-    dvz_scalebar_set_duration = dvz.dvz_scalebar_set_duration
+    dvz_scalebar_set_duration_units = dvz.dvz_scalebar_set_duration_units
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_scalebar_set_duration')
+    _MISSING_FUNCTIONS.append('dvz_scalebar_set_duration_units')
 else:
-    dvz_scalebar_set_duration.__doc__ = """/**
+    dvz_scalebar_set_duration_units.__doc__ = """/**
  * Attach duration units to a retained scale bar.
- *
- * This is an alias for dvz_scalebar_set_units() in the first retained scale-bar slice.
  *
  * @param scalebar the scale bar
  * @param duration_units duration units object
  * @return 0 on success, -1 on validation error
  */"""
-    dvz_scalebar_set_duration.argtypes = [ctypes.c_void_p, ctypes.POINTER(DvzUnits)]
-    dvz_scalebar_set_duration.restype = ctypes.c_int
+    dvz_scalebar_set_duration_units.argtypes = [ctypes.c_void_p, ctypes.POINTER(DvzUnits)]
+    dvz_scalebar_set_duration_units.restype = ctypes.c_int
 
 
 try:
@@ -32259,7 +32242,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1541
+_GENERATED_FUNCTION_COUNT = 1540
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_field_geometry', 'dvz_frame_plan_emit_config', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_panel_background_desc', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scalebar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
 _DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzTextStyle', 'DvzTextPlacement', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzFontDesc', 'DvzFontDefaults', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzContainer', 'DvzContainerIterator', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RawFallback', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RuntimeConfig', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFly', 'DvzFlyDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzObject', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2D', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoom', 'DvzPanzoomDesc', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntable', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewSizeDesc', 'DvzViewDesc', 'DvzVisualAttachDesc', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]
