@@ -130,7 +130,7 @@ panel to also appear in its normal position on screen.
 The returned handle would be passed to any visual that accepts a texture attribute:
 
 ```text
-dvz_visual_set_texture(image_visual, tex)
+dvz_visual_set_texture_rgba8(image_visual, tex)
 ```
 
 This would allow the rendered output of one panel to appear as a texture in another visual,

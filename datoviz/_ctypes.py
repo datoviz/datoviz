@@ -31286,11 +31286,35 @@ else:
 
 
 try:
-    dvz_visual_set_texture = dvz.dvz_visual_set_texture
+    dvz_visual_set_texture_r32f = dvz.dvz_visual_set_texture_r32f
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_visual_set_texture')
+    _MISSING_FUNCTIONS.append('dvz_visual_set_texture_r32f')
 else:
-    dvz_visual_set_texture.__doc__ = """/**
+    dvz_visual_set_texture_r32f.__doc__ = """/**
+ * Attach a 2D scalar R32F texture to an image or glyph visual.
+ *
+ * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
+ * binds it to the visual's `"field"` slot. The owned sampled field uses
+ * `DVZ_FIELD_SEMANTIC_SCALAR` and `DVZ_COLOR_ROLE_DATA`. The bound scale and colormap are applied
+ * on the CPU during emit to produce the RGBA texture used by the current first-slice image runtime
+ * path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
+ *
+ * @param visual the visual (must be of type IMAGE or GLYPH)
+ * @param values scalar R32F pixel data, tightly packed, row-major
+ * @param width the texture width in pixels
+ * @param height the texture height in pixels
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_visual_set_texture_r32f.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(ctypes.c_float), ctypes.c_uint32, ctypes.c_uint32]
+    dvz_visual_set_texture_r32f.restype = ctypes.c_int
+
+
+try:
+    dvz_visual_set_texture_rgba8 = dvz.dvz_visual_set_texture_rgba8
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_visual_set_texture_rgba8')
+else:
+    dvz_visual_set_texture_rgba8.__doc__ = """/**
  * Attach a 2D RGBA8 sRGB-color texture to an image, glyph, or mesh visual.
  *
  * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
@@ -31305,32 +31329,8 @@ else:
  * @param height the texture height in pixels
  * @return 0 on success, -1 on error
  */"""
-    dvz_visual_set_texture.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint32]
-    dvz_visual_set_texture.restype = ctypes.c_int
-
-
-try:
-    dvz_visual_set_texture_f32 = dvz.dvz_visual_set_texture_f32
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_visual_set_texture_f32')
-else:
-    dvz_visual_set_texture_f32.__doc__ = """/**
- * Attach a 2D scalar F32 texture to an image or glyph visual.
- *
- * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
- * binds it to the visual's `"field"` slot. The owned sampled field uses
- * `DVZ_FIELD_SEMANTIC_SCALAR` and `DVZ_COLOR_ROLE_DATA`. The bound scale and colormap are applied
- * on the CPU during emit to produce the RGBA texture used by the current first-slice image runtime
- * path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
- *
- * @param visual the visual (must be of type IMAGE or GLYPH)
- * @param values scalar F32 pixel data, tightly packed, row-major
- * @param width the texture width in pixels
- * @param height the texture height in pixels
- * @return 0 on success, -1 on error
- */"""
-    dvz_visual_set_texture_f32.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(ctypes.c_float), ctypes.c_uint32, ctypes.c_uint32]
-    dvz_visual_set_texture_f32.restype = ctypes.c_int
+    dvz_visual_set_texture_rgba8.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint32, ctypes.c_uint32]
+    dvz_visual_set_texture_rgba8.restype = ctypes.c_int
 
 
 try:

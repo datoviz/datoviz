@@ -146,7 +146,7 @@ static void _lab_update_image(SchedulerLabState* state)
         }
     }
     if (
-        dvz_visual_set_texture(
+        dvz_visual_set_texture_rgba8(
             state->image, state->image_rgba, LAB_IMAGE_SIZE, LAB_IMAGE_SIZE) == 0)
         state->mutation_count++;
 }

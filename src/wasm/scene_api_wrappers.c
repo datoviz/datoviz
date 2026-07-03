@@ -618,7 +618,7 @@ int dvz_wasm_api_visual_set_texture_rgba8(
         return _fail(visual != NULL ? visual->owner : NULL, "invalid WASM RGBA8 texture upload");
     }
     _clear_payload(visual->owner);
-    if (dvz_visual_set_texture(visual->visual, rgba, width, height) != 0)
+    if (dvz_visual_set_texture_rgba8(visual->visual, (const uint8_t*)rgba, width, height) != 0)
     {
         char diagnostic[DVZ_SCENE_DIAGNOSTIC_SIZE];
         int ret = snprintf(

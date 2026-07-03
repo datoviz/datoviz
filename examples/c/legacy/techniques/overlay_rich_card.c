@@ -210,7 +210,7 @@ static bool _add_probe_field(
     int rc = dvz_visual_set_data_many(field, updates, 3);
     if (rc != 0)
         return false;
-    rc = dvz_visual_set_texture(field, pixels, FIELD_WIDTH, FIELD_HEIGHT);
+    rc = dvz_visual_set_texture_rgba8(field, (const uint8_t*)pixels, FIELD_WIDTH, FIELD_HEIGHT);
     if (rc != 0)
         return false;
     dvz_visual_set_query_capabilities(field, DVZ_QUERY_CAPABILITY_PIXEL);

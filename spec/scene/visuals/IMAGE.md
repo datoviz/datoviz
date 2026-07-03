@@ -21,7 +21,7 @@ The active native implementation is a first slice with two geometry paths:
 - per-item rectangle geometry: `position` is one item anchor, `extent` is one `vec2`
   display rectangle size, and optional `tex_rect` supplies one atlas UV rectangle per item,
 - texture data comes from a 2D `SampledField` bound through `dvz_visual_set_field()`, or from the
-  transitional `dvz_visual_set_texture()` / `dvz_visual_set_texture_f32()` helpers,
+  transitional `dvz_visual_set_texture_rgba8()` / `dvz_visual_set_texture_r32f()` helpers,
 - RGBA8 image fields upload directly, while scalar fields are currently mapped through the bound
   `Scale`/`Colormap` into an RGBA staging texture before emission,
 - image probing uses the same quad vertex/UV contract and must be updated alongside any geometry

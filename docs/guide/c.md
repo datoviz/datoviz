@@ -86,7 +86,7 @@ visuals/text
 | `dvz_drp2_stream_write_buffer_bytes()` | Append a write-buffer command from raw bytes |
 | `dvz_primitive()` | Create a topology-parametric primitive visual |
 | `dvz_image()` | Create a 2-D image visual |
-| `dvz_visual_set_texture()` | Upload CPU pixel bytes as a 2-D RGBA8 texture |
+| `dvz_visual_set_texture_rgba8()` | Upload CPU pixel bytes as a 2-D RGBA8 texture |
 
 ---
 

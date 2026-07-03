@@ -618,7 +618,7 @@ static DvzVisual* _background_visual(DvzScene* scene, const DenseDataset* datase
     };
     if (dvz_visual_set_data(visual, "position", positions, 4) != 0 ||
         dvz_visual_set_data(visual, "texcoords", texcoords, 4) != 0 ||
-        dvz_visual_set_texture(
+        dvz_visual_set_texture_rgba8(
             visual, dataset->image_rgba, dataset->image_width, dataset->image_height) != 0)
     {
         return NULL;
@@ -639,7 +639,7 @@ static bool _upload_background(DenseState* state)
     ANN(state);
     if (state->background == NULL || state->dataset.image_rgba == NULL)
         return true;
-    return dvz_visual_set_texture(
+    return dvz_visual_set_texture_rgba8(
                state->background, state->dataset.image_rgba, state->dataset.image_width,
                state->dataset.image_height) == 0;
 }

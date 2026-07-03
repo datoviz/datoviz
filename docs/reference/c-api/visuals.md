@@ -390,8 +390,8 @@ Functions: 202
     | [`dvz_visual_set_scene_occluder()`](#dvz_visual_set_scene_occluder) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_shader_desc()`](#dvz_visual_set_shader_desc) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_strings()`](#dvz_visual_set_strings) | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_texture()`](#dvz_visual_set_texture) | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_texture_f32()`](#dvz_visual_set_texture_f32) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_texture_r32f()`](#dvz_visual_set_texture_r32f) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_texture_rgba8()`](#dvz_visual_set_texture_rgba8) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_transform()`](#dvz_visual_set_transform) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_transform_desc()`](#dvz_visual_set_transform_desc) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_visible()`](#dvz_visual_set_visible) | `include/datoviz/scene.h` |
@@ -4493,12 +4493,43 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:2021._
 
-### `dvz_visual_set_texture()`
+### `dvz_visual_set_texture_r32f()`
 
-```c title="dvz_visual_set_texture"
-int dvz_visual_set_texture(
+```c title="dvz_visual_set_texture_r32f"
+int dvz_visual_set_texture_r32f(
     DvzVisual * visual,
-    const void * rgba,
+    const float * values,
+    uint32_t width,
+    uint32_t height
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `int` | 0 on success, -1 on error |
+| `visual` | `DvzVisual *` | the visual (must be of type IMAGE or GLYPH) |
+| `values` | `const float *` | scalar R32F pixel data, tightly packed, row-major |
+| `width` | `uint32_t` | the texture width in pixels |
+| `height` | `uint32_t` | the texture height in pixels |
+
+Attach a 2D scalar R32F texture to an image or glyph visual.
+
+Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
+binds it to the visual's `"field"` slot. The owned sampled field uses
+`DVZ_FIELD_SEMANTIC_SCALAR` and `DVZ_COLOR_ROLE_DATA`. The bound scale and colormap are applied
+on the CPU during emit to produce the RGBA texture used by the current first-slice image runtime
+path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3836._
+
+### `dvz_visual_set_texture_rgba8()`
+
+```c title="dvz_visual_set_texture_rgba8"
+int dvz_visual_set_texture_rgba8(
+    DvzVisual * visual,
+    const uint8_t * rgba,
     uint32_t width,
     uint32_t height
 );
@@ -4508,7 +4539,7 @@ int dvz_visual_set_texture(
 | --- | --- | --- |
 | return | `int` | 0 on success, -1 on error |
 | `visual` | `DvzVisual *` | the visual (must be of type IMAGE, GLYPH, or MESH) |
-| `rgba` | `const void *` | RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes) |
+| `rgba` | `const uint8_t *` | RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes) |
 | `width` | `uint32_t` | the texture width in pixels |
 | `height` | `uint32_t` | the texture height in pixels |
 
@@ -4523,37 +4554,6 @@ code.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:3817._
-
-### `dvz_visual_set_texture_f32()`
-
-```c title="dvz_visual_set_texture_f32"
-int dvz_visual_set_texture_f32(
-    DvzVisual * visual,
-    const float * values,
-    uint32_t width,
-    uint32_t height
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `int` | 0 on success, -1 on error |
-| `visual` | `DvzVisual *` | the visual (must be of type IMAGE or GLYPH) |
-| `values` | `const float *` | scalar F32 pixel data, tightly packed, row-major |
-| `width` | `uint32_t` | the texture width in pixels |
-| `height` | `uint32_t` | the texture height in pixels |
-
-Attach a 2D scalar F32 texture to an image or glyph visual.
-
-Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
-binds it to the visual's `"field"` slot. The owned sampled field uses
-`DVZ_FIELD_SEMANTIC_SCALAR` and `DVZ_COLOR_ROLE_DATA`. The bound scale and colormap are applied
-on the CPU during emit to produce the RGBA texture used by the current first-slice image runtime
-path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3836._
 
 ### `dvz_visual_set_transform()`
 

@@ -3814,12 +3814,12 @@ DVZ_EXPORT const DvzVolumeState* dvz_volume_state(const DvzVisual* visual);
  * @param height the texture height in pixels
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_visual_set_texture(
-    DvzVisual* visual, const void* rgba, uint32_t width, uint32_t height);
+DVZ_EXPORT int dvz_visual_set_texture_rgba8(
+    DvzVisual* visual, const uint8_t* rgba, uint32_t width, uint32_t height);
 
 
 /**
- * Attach a 2D scalar F32 texture to an image or glyph visual.
+ * Attach a 2D scalar R32F texture to an image or glyph visual.
  *
  * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
  * binds it to the visual's `"field"` slot. The owned sampled field uses
@@ -3828,12 +3828,12 @@ DVZ_EXPORT int dvz_visual_set_texture(
  * path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
  *
  * @param visual the visual (must be of type IMAGE or GLYPH)
- * @param values scalar F32 pixel data, tightly packed, row-major
+ * @param values scalar R32F pixel data, tightly packed, row-major
  * @param width the texture width in pixels
  * @param height the texture height in pixels
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_visual_set_texture_f32(
+DVZ_EXPORT int dvz_visual_set_texture_r32f(
     DvzVisual* visual, const float* values, uint32_t width, uint32_t height);
 
 

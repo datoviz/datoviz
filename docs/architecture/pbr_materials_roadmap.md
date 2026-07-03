@@ -141,11 +141,11 @@ long-term standard metallic-roughness intent.
 If material texture maps become public, prefer semantic slots over shader-specific names:
 
 ```c
-dvz_visual_set_texture(mesh, "base_color", field_or_texture);
-dvz_visual_set_texture(mesh, "metallic_roughness", field_or_texture);
-dvz_visual_set_texture(mesh, "normal", field_or_texture);
-dvz_visual_set_texture(mesh, "emissive", field_or_texture);
-dvz_visual_set_texture(mesh, "occlusion", field_or_texture);
+dvz_visual_set_texture_rgba8(mesh, "base_color", field_or_texture);
+dvz_visual_set_texture_rgba8(mesh, "metallic_roughness", field_or_texture);
+dvz_visual_set_texture_rgba8(mesh, "normal", field_or_texture);
+dvz_visual_set_texture_rgba8(mesh, "emissive", field_or_texture);
+dvz_visual_set_texture_rgba8(mesh, "occlusion", field_or_texture);
 ```
 
 The exact texture object type can remain undecided. The important early decision is the slot

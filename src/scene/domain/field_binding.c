@@ -213,8 +213,8 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
  * @param height the texture height in pixels
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_texture(
-    DvzVisual* visual, const void* rgba, uint32_t width, uint32_t height)
+int dvz_visual_set_texture_rgba8(
+    DvzVisual* visual, const uint8_t* rgba, uint32_t width, uint32_t height)
 {
     ANN(visual);
     bool is_mesh = visual->type == DVZ_VISUAL_TYPE_MESH;
@@ -222,12 +222,12 @@ int dvz_visual_set_texture(
         visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH &&
         !is_mesh)
     {
-        log_error("dvz_visual_set_texture is only supported for image, glyph, and mesh visuals");
+        log_error("dvz_visual_set_texture_rgba8 is only supported for image, glyph, and mesh visuals");
         return -1;
     }
     if (rgba == NULL || width == 0 || height == 0)
     {
-        log_error("dvz_visual_set_texture: NULL data or zero extent (%ux%u)", width, height);
+        log_error("dvz_visual_set_texture_rgba8: NULL data or zero extent (%ux%u)", width, height);
         return -1;
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set RGBA8 texture"))
@@ -253,30 +253,30 @@ int dvz_visual_set_texture(
 
 
 /**
- * Attach a 2D scalar F32 texture to an image or glyph visual.
+ * Attach a 2D scalar R32F texture to an image or glyph visual.
  *
  * The scalar data must remain valid until emit time. The bound scale and
  * colormap are applied on the CPU during emit to produce the RGBA texture used
  * by the current first-slice image runtime path.
  *
  * @param visual the visual (must be of type IMAGE or GLYPH)
- * @param values scalar F32 pixel data, tightly packed, row-major
+ * @param values scalar R32F pixel data, tightly packed, row-major
  * @param width the texture width in pixels
  * @param height the texture height in pixels
  * @return 0 on success, -1 on error
  */
-int dvz_visual_set_texture_f32(
+int dvz_visual_set_texture_r32f(
     DvzVisual* visual, const float* values, uint32_t width, uint32_t height)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH)
     {
-        log_error("dvz_visual_set_texture_f32 is only supported for image and glyph visuals");
+        log_error("dvz_visual_set_texture_r32f is only supported for image and glyph visuals");
         return -1;
     }
     if (values == NULL || width == 0 || height == 0)
     {
-        log_error("dvz_visual_set_texture_f32: NULL data or zero extent (%ux%u)", width, height);
+        log_error("dvz_visual_set_texture_r32f: NULL data or zero extent (%ux%u)", width, height);
         return -1;
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set scalar image texture"))

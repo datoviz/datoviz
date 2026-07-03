@@ -184,7 +184,7 @@ same constructor with a different topology — no new visual code required.
 Done. `examples/c/visuals/image.c` renders a 16×16 procedural RGBA texture on a quad covering
 most of the panel. The visual accepts `"position"` (four clip-space corners, TRIANGLE_STRIP
 order TL/BL/TR/BR), `"texcoords"` (four UV pairs), and a texture supplied via
-`dvz_visual_set_texture(visual, pixels, width, height)`.
+`dvz_visual_set_texture_rgba8(visual, pixels, width, height)`.
 
 Scene tests cover both CPU-side emit (stream is non-empty, no diagnostics) and app-layer
 pixel readback (`test_app_offscreen_image_has_nonblank_pixels` checks that a solid-red texture

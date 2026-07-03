@@ -1775,7 +1775,7 @@ int test_app_offscreen_query_requests_notify_hosted_callback(
     }
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
@@ -3529,7 +3529,7 @@ int test_app_offscreen_image_has_nonblank_pixels(TstContext* suite, const TstCas
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
@@ -5539,7 +5539,7 @@ int test_app_offscreen_image_retained_render_second_frame(TstContext* suite, con
     }
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
@@ -5661,7 +5661,7 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
 
     AT(dvz_visual_set_data(image, "position", image_positions, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", image_texcoords, 4) == 0);
-    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
@@ -5776,7 +5776,7 @@ int test_app_offscreen_query_request_steady_state(TstContext* suite, const TstCa
     }
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
@@ -5876,7 +5876,7 @@ int test_app_offscreen_gsp_first_slice_smoke(TstContext* suite, const TstCase* i
     }
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(
            panel, image,
            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) ==
@@ -6039,7 +6039,7 @@ int test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke(
     }
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(
            panel, image,
            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) ==
@@ -6933,7 +6933,7 @@ int test_app_offscreen_colormap_srgb_lut_linear_blend(TstContext* suite, const T
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
     AT(dvz_visual_set_scale(image, "color", scale) == 0);
-    AT(dvz_visual_set_texture_f32(image, values, 4, 4) == 0);
+    AT(dvz_visual_set_texture_r32f(image, values, 4, 4) == 0);
     AT(dvz_visual_set_alpha_mode(image, DVZ_ALPHA_BLENDED) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
