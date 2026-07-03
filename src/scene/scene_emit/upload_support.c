@@ -618,7 +618,7 @@ void _scene_emit_visual_dense_attr_uploads(
                 node->u.upload.buffer_usage = _scene_buffer_drp2_usage(attr->buffer->desc.usage);
                 node->u.upload.item_stride = attr->buffer->desc.stride;
                 if (upload_position_topology && strcmp(attr->name, "position") == 0)
-                    dvz_frame_plan_upload_set_topology(plan, (uint32_t)_visual_family_state(visual)->topology);
+                    node->u.upload.topology = (uint32_t)_visual_family_state(visual)->topology;
             }
             emitted_buffers[buffer_idx] = true;
             continue;
@@ -649,7 +649,10 @@ void _scene_emit_visual_dense_attr_uploads(
             plan, visual, visual_index, role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX,
             attr->item_count);
         if (upload_position_topology && strcmp(attr->name, "position") == 0)
-            dvz_frame_plan_upload_set_topology(plan, (uint32_t)_visual_family_state(visual)->topology);
+        {
+            DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+            node->u.upload.topology = (uint32_t)_visual_family_state(visual)->topology;
+        }
     }
 }
 
@@ -761,7 +764,8 @@ void _scene_emit_visual_buffer_payloads(
         }
         else if (position_topology != 0 && strcmp(payload->name, "position") == 0)
         {
-            dvz_frame_plan_upload_set_topology(plan, position_topology);
+            DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+            node->u.upload.topology = position_topology;
         }
     }
 }

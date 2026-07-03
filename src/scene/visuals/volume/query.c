@@ -417,14 +417,42 @@ static bool _volume_query_build_sample(
         dvz_frame_plan("figure.query.volume.sample", ctx->pending->request.request_id);
     out_plan->scratch.plan = plan;
     bool ok = plan != NULL;
-    ok = ok && dvz_frame_plan_upload_bytes(
-                   plan, "volume_query0_position", 0, position_bytes, "position",
-                   pos_attr->data) &&
-         dvz_frame_plan_upload_set_topology(plan, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST) &&
+    DvzFramePlanUploadDesc position_upload = dvz_frame_plan_upload_desc();
+    position_upload.resource_id = "volume_query0_position";
+    position_upload.byte_size = position_bytes;
+    position_upload.data_tag = "position";
+    position_upload.data = pos_attr->data;
+    position_upload.topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    DvzFramePlanUploadDesc texture_upload = dvz_frame_plan_upload_desc();
+    texture_upload.resource_id = "volume_query0_texture";
+    texture_upload.byte_size = texture_bytes;
+    texture_upload.data_tag = "texture";
+    texture_upload.data = field->data;
+    texture_upload.texture_format = texture_format;
+    texture_upload.texture_bytes_per_texel = bytes_per_texel;
+    texture_upload.texture_width = field->desc.width;
+    texture_upload.texture_height = field->desc.height;
+    texture_upload.texture_depth = field->desc.depth;
+    texture_upload.texture_alloc_width = field->desc.width;
+    texture_upload.texture_alloc_height = field->desc.height;
+    texture_upload.texture_alloc_depth = field->desc.depth;
+    DvzFramePlanUploadDesc transfer_upload = dvz_frame_plan_upload_desc();
+    transfer_upload.resource_id = "volume_query0_transfer";
+    transfer_upload.byte_size = sizeof(VOLUME_QUERY_DUMMY_TRANSFER_RGBA);
+    transfer_upload.data_tag = "volume_transfer";
+    transfer_upload.data = VOLUME_QUERY_DUMMY_TRANSFER_RGBA;
+    transfer_upload.texture_format = DVZ_FORMAT_R8G8B8A8_UNORM;
+    transfer_upload.texture_bytes_per_texel = 4;
+    transfer_upload.texture_width = 1;
+    transfer_upload.texture_height = 1;
+    transfer_upload.texture_depth = 1;
+    transfer_upload.texture_alloc_width = 1;
+    transfer_upload.texture_alloc_height = 1;
+    transfer_upload.texture_alloc_depth = 1;
+    ok = ok && dvz_frame_plan_upload_ex(plan, &position_upload) &&
          dvz_frame_plan_upload_bytes(
              plan, "volume_query0_texcoords", 0, texcoord_bytes, "texcoords", uvw_attr->data) &&
-         dvz_frame_plan_upload_bytes(
-             plan, "volume_query0_texture", 0, texture_bytes, "texture", field->data) &&
+         dvz_frame_plan_upload_ex(plan, &texture_upload) &&
          dvz_frame_plan_upload_metadata(
              plan,
              &(DvzFramePlanUploadMeta){
@@ -434,15 +462,7 @@ static bool _volume_query_build_sample(
                  .visual_index = UINT32_MAX,
                  .buffer_index = UINT32_MAX,
              }) &&
-         dvz_frame_plan_upload_set_texture_format(plan, texture_format, bytes_per_texel) &&
-         dvz_frame_plan_upload_set_texture_3d_extent(
-             plan, field->desc.width, field->desc.height, field->desc.depth) &&
-         dvz_frame_plan_upload_set_texture_3d_allocation_extent(
-             plan, field->desc.width, field->desc.height, field->desc.depth) &&
-         dvz_frame_plan_upload_set_texture_3d_region(plan, 0, 0, 0) &&
-         dvz_frame_plan_upload_bytes(
-             plan, "volume_query0_transfer", 0, sizeof(VOLUME_QUERY_DUMMY_TRANSFER_RGBA),
-             "volume_transfer", VOLUME_QUERY_DUMMY_TRANSFER_RGBA) &&
+         dvz_frame_plan_upload_ex(plan, &transfer_upload) &&
          dvz_frame_plan_upload_metadata(
              plan,
              &(DvzFramePlanUploadMeta){
@@ -451,11 +471,7 @@ static bool _volume_query_build_sample(
                  .color_role = DVZ_COLOR_ROLE_SRGB_COLOR,
                  .visual_index = UINT32_MAX,
                  .buffer_index = UINT32_MAX,
-             }) &&
-         dvz_frame_plan_upload_set_texture_format(plan, DVZ_FORMAT_R8G8B8A8_UNORM, 4) &&
-         dvz_frame_plan_upload_set_texture_extent(plan, 1, 1) &&
-         dvz_frame_plan_upload_set_texture_allocation_extent(plan, 1, 1) &&
-         dvz_frame_plan_upload_set_texture_region(plan, 0, 0);
+             });
 
     DvzFramePlanVisualMeta metadata = {0};
     metadata.has_metadata = true;
@@ -668,10 +684,13 @@ static bool _volume_query_build(
     DvzFramePlan* plan = dvz_frame_plan("figure.query.volume", ctx->pending->request.request_id);
     out_plan->scratch.plan = plan;
     bool ok = plan != NULL;
-    ok = ok && dvz_frame_plan_upload_bytes(
-                   plan, "query0_position", 0, position_bytes, "position", pos_attr->data);
-    if (ok)
-        ok = dvz_frame_plan_upload_set_topology(plan, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    DvzFramePlanUploadDesc position_upload = dvz_frame_plan_upload_desc();
+    position_upload.resource_id = "query0_position";
+    position_upload.byte_size = position_bytes;
+    position_upload.data_tag = "position";
+    position_upload.data = pos_attr->data;
+    position_upload.topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    ok = ok && dvz_frame_plan_upload_ex(plan, &position_upload);
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.query_ids);
 

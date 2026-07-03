@@ -37,6 +37,38 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+static bool _scene_emit_texture_upload_ex(
+    DvzFramePlan* plan, const char* resource_id, uint64_t byte_size, const char* data_tag,
+    const void* data, DvzFramePlanUploadMeta metadata, DvzFormat texture_format,
+    uint32_t bytes_per_texel, uint32_t width, uint32_t height, uint32_t depth,
+    uint32_t alloc_width, uint32_t alloc_height, uint32_t alloc_depth, uint32_t origin_x,
+    uint32_t origin_y, uint32_t origin_z)
+{
+    ANN(plan);
+    ANN(resource_id);
+
+    DvzFramePlanUploadDesc upload = dvz_frame_plan_upload_desc();
+    upload.resource_id = resource_id;
+    upload.byte_size = byte_size;
+    upload.data_tag = data_tag;
+    upload.data = data;
+    upload.texture_format = texture_format;
+    upload.texture_bytes_per_texel = bytes_per_texel;
+    upload.texture_width = width;
+    upload.texture_height = height;
+    upload.texture_depth = depth;
+    upload.texture_alloc_width = alloc_width;
+    upload.texture_alloc_height = alloc_height;
+    upload.texture_alloc_depth = alloc_depth;
+    upload.texture_origin_x = origin_x;
+    upload.texture_origin_y = origin_y;
+    upload.texture_origin_z = origin_z;
+
+    return dvz_frame_plan_upload_ex(plan, &upload) &&
+           dvz_frame_plan_upload_metadata(plan, &metadata);
+}
+
+
 /**
  * Emit one sampled field as a texture upload node.
  *
@@ -56,9 +88,6 @@ bool _scene_emit_sampled_field_texture_upload(
     if (!_scene_sampled_field_texture_upload_payload(field, &payload))
         return false;
 
-    if (!dvz_frame_plan_upload_bytes(plan, resource_id, 0, payload.byte_size, "field", payload.data))
-        return false;
-
     DvzFramePlanUploadMeta metadata = {0};
     metadata.kind = payload.texture_3d ? DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_3D
                                        : DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D;
@@ -66,27 +95,14 @@ bool _scene_emit_sampled_field_texture_upload(
     metadata.color_role = payload.color_role;
     metadata.visual_index = UINT32_MAX;
     metadata.buffer_index = UINT32_MAX;
-    if (!dvz_frame_plan_upload_metadata(plan, &metadata) ||
-        !dvz_frame_plan_upload_set_texture_format(
-            plan, payload.texture_format, payload.bytes_per_texel))
-        return false;
 
-    if (payload.texture_3d)
-    {
-        return dvz_frame_plan_upload_set_texture_3d_extent(
-                   plan, payload.region.width, payload.region.height, payload.region.depth) &&
-               dvz_frame_plan_upload_set_texture_3d_allocation_extent(
-                   plan, payload.allocation_width, payload.allocation_height,
-                   payload.allocation_depth) &&
-               dvz_frame_plan_upload_set_texture_3d_region(
-                   plan, payload.region.x, payload.region.y, payload.region.z);
-    }
-
-    return dvz_frame_plan_upload_set_texture_extent(
-               plan, payload.region.width, payload.region.height) &&
-           dvz_frame_plan_upload_set_texture_allocation_extent(
-               plan, payload.allocation_width, payload.allocation_height) &&
-           dvz_frame_plan_upload_set_texture_region(plan, payload.region.x, payload.region.y);
+    const uint32_t depth = payload.texture_3d ? payload.region.depth : 1;
+    const uint32_t alloc_depth = payload.texture_3d ? payload.allocation_depth : 1;
+    return _scene_emit_texture_upload_ex(
+        plan, resource_id, payload.byte_size, "field", payload.data, metadata,
+        payload.texture_format, payload.bytes_per_texel, payload.region.width,
+        payload.region.height, depth, payload.allocation_width, payload.allocation_height,
+        alloc_depth, payload.region.x, payload.region.y, payload.texture_3d ? payload.region.z : 0);
 }
 
 
@@ -182,22 +198,19 @@ static void _scene_emit_image_like_texture_upload(
             figure, visual, visual_index, tex_resource_id, sizeof(tex_resource_id)))
         return;
 
-    dvz_frame_plan_upload_bytes(
-        plan, tex_resource_id, 0, payload.byte_size, "texture", payload.data);
-    dvz_frame_plan_upload_metadata(
-        plan,
-        &(DvzFramePlanUploadMeta){
-            .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
-            .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
-            .color_role = payload.color_role,
-            .visual_type = (uint32_t)visual->type,
-            .visual_index = visual_index,
-            .buffer_index = UINT32_MAX,
-        });
-    dvz_frame_plan_upload_set_texture_extent(plan, payload.region.width, payload.region.height);
-    dvz_frame_plan_upload_set_texture_allocation_extent(
-        plan, payload.allocation_width, payload.allocation_height);
-    dvz_frame_plan_upload_set_texture_region(plan, payload.region.x, payload.region.y);
+    DvzFramePlanUploadMeta metadata = {
+        .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
+        .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+        .color_role = payload.color_role,
+        .visual_type = (uint32_t)visual->type,
+        .visual_index = visual_index,
+        .buffer_index = UINT32_MAX,
+    };
+    _scene_emit_texture_upload_ex(
+        plan, tex_resource_id, payload.byte_size, "texture", payload.data, metadata,
+        DVZ_FORMAT_NONE, 0, payload.region.width, payload.region.height, 1,
+        payload.allocation_width, payload.allocation_height, 1, payload.region.x,
+        payload.region.y, 0);
 }
 
 
@@ -241,21 +254,17 @@ static void _scene_emit_marker_symbol_texture_upload(
     if (!_scene_visual_texture_resource_key(
             figure, visual, visual_index, tex_resource_id, sizeof(tex_resource_id)))
         return;
-    if (!dvz_frame_plan_upload_bytes(
-            plan, tex_resource_id, 0, page->byte_size, "marker_symbol_atlas", page->data) ||
-        !dvz_frame_plan_upload_metadata(
-            plan,
-            &(DvzFramePlanUploadMeta){
-                .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
-                .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
-                .color_role = _marker_symbol_atlas_color_role(symbol_source_kind),
-                .visual_index = visual_index,
-                .buffer_index = UINT32_MAX,
-            }) ||
-        !dvz_frame_plan_upload_set_texture_format(plan, texture_format, bytes_per_texel) ||
-        !dvz_frame_plan_upload_set_texture_extent(plan, page->width, page->height) ||
-        !dvz_frame_plan_upload_set_texture_allocation_extent(plan, page->width, page->height) ||
-        !dvz_frame_plan_upload_set_texture_region(plan, 0, 0))
+    DvzFramePlanUploadMeta metadata = {
+        .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
+        .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+        .color_role = _marker_symbol_atlas_color_role(symbol_source_kind),
+        .visual_index = visual_index,
+        .buffer_index = UINT32_MAX,
+    };
+    if (!_scene_emit_texture_upload_ex(
+            plan, tex_resource_id, page->byte_size, "marker_symbol_atlas", page->data, metadata,
+            texture_format, bytes_per_texel, page->width, page->height, 1, page->width,
+            page->height, 1, 0, 0, 0))
     {
         log_error("marker symbol atlas texture upload failed");
         return;
@@ -287,26 +296,20 @@ static void _scene_emit_volume_source_texture_upload(
     if (!_scene_visual_texture_resource_key(
             figure, visual, visual_index, tex_resource_id, sizeof(tex_resource_id)))
         return;
-    if (!dvz_frame_plan_upload_bytes(plan, tex_resource_id, 0, payload.byte_size, "field",
-                                     payload.data) ||
-        !dvz_frame_plan_upload_metadata(
-            plan,
-            &(DvzFramePlanUploadMeta){
-                .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_3D,
-                .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
-                .color_role = payload.color_role,
-                .visual_type = (uint32_t)visual->type,
-                .visual_index = visual_index,
-                .buffer_index = UINT32_MAX,
-            }) ||
-        !dvz_frame_plan_upload_set_texture_format(
-            plan, payload.texture_format, payload.bytes_per_texel) ||
-        !dvz_frame_plan_upload_set_texture_3d_extent(
-            plan, payload.region.width, payload.region.height, payload.region.depth) ||
-        !dvz_frame_plan_upload_set_texture_3d_allocation_extent(
-            plan, payload.allocation_width, payload.allocation_height, payload.allocation_depth) ||
-        !dvz_frame_plan_upload_set_texture_3d_region(
-            plan, payload.region.x, payload.region.y, payload.region.z))
+    DvzFramePlanUploadMeta metadata = {
+        .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_3D,
+        .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+        .color_role = payload.color_role,
+        .visual_type = (uint32_t)visual->type,
+        .visual_index = visual_index,
+        .buffer_index = UINT32_MAX,
+    };
+    if (!_scene_emit_texture_upload_ex(
+            plan, tex_resource_id, payload.byte_size, "field", payload.data, metadata,
+            payload.texture_format, payload.bytes_per_texel, payload.region.width,
+            payload.region.height, payload.region.depth, payload.allocation_width,
+            payload.allocation_height, payload.allocation_depth, payload.region.x,
+            payload.region.y, payload.region.z))
     {
         log_error("volume visual texture upload failed");
         return;
@@ -338,23 +341,19 @@ static void _scene_emit_volume_transfer_texture_upload(
         return;
 
     char transfer_resource_id[128];
+    DvzFramePlanUploadMeta metadata = {
+        .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
+        .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+        .color_role = DVZ_COLOR_ROLE_SRGB_COLOR,
+        .visual_index = UINT32_MAX,
+        .buffer_index = UINT32_MAX,
+    };
     if (!_scene_resource_key_volume_transfer(
             visual_index, transfer_resource_id, sizeof(transfer_resource_id)) ||
-        !dvz_frame_plan_upload_bytes(
-            plan, transfer_resource_id, 0, payload.byte_size, "volume_transfer", payload.data) ||
-        !dvz_frame_plan_upload_metadata(
-            plan,
-            &(DvzFramePlanUploadMeta){
-                .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
-                .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
-                .color_role = DVZ_COLOR_ROLE_SRGB_COLOR,
-                .visual_index = UINT32_MAX,
-                .buffer_index = UINT32_MAX,
-            }) ||
-        !dvz_frame_plan_upload_set_texture_format(plan, DVZ_FORMAT_R8G8B8A8_UNORM, 4) ||
-        !dvz_frame_plan_upload_set_texture_extent(plan, payload.width, 1) ||
-        !dvz_frame_plan_upload_set_texture_allocation_extent(plan, payload.width, 1) ||
-        !dvz_frame_plan_upload_set_texture_region(plan, 0, 0))
+        !_scene_emit_texture_upload_ex(
+            plan, transfer_resource_id, payload.byte_size, "volume_transfer", payload.data,
+            metadata, DVZ_FORMAT_R8G8B8A8_UNORM, 4, payload.width, 1, 1, payload.width, 1, 1, 0,
+            0, 0))
     {
         log_error("volume transfer texture upload failed");
         return;

@@ -42,6 +42,29 @@
 
 /*************************************************************************************************/
 
+static bool _test_frame_plan_upload_texture_2d(
+    DvzFramePlan* plan, const char* resource_id, uint64_t byte_offset, uint64_t byte_size,
+    const char* data_tag, const void* data, uint32_t width, uint32_t height,
+    uint32_t alloc_width, uint32_t alloc_height, uint32_t origin_x, uint32_t origin_y)
+{
+    DvzFramePlanUploadDesc upload = dvz_frame_plan_upload_desc();
+    upload.resource_id = resource_id;
+    upload.byte_offset = byte_offset;
+    upload.byte_size = byte_size;
+    upload.data_tag = data_tag;
+    upload.data = data;
+    upload.texture_width = width;
+    upload.texture_height = height;
+    upload.texture_depth = 1;
+    upload.texture_alloc_width = alloc_width;
+    upload.texture_alloc_height = alloc_height;
+    upload.texture_alloc_depth = alloc_width != 0 || alloc_height != 0 ? 1 : 0;
+    upload.texture_origin_x = origin_x;
+    upload.texture_origin_y = origin_y;
+    return dvz_frame_plan_upload_ex(plan, &upload);
+}
+
+
 int test_scene_capabilities_diagnostics(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -651,9 +674,8 @@ int test_frame_plan_render_image_metadata_wgsl_uses_typed_labels(
     };
 
     AT(dvz_frame_plan_upload(plan, "typed-image-uv", 0, 4 * 2 * sizeof(float), ""));
-    AT(dvz_frame_plan_upload_bytes(
-        plan, "typed-image-texture", 0, sizeof(pixels), "", pixels));
-    AT(dvz_frame_plan_upload_set_texture_extent(plan, 2, 2));
+    AT(_test_frame_plan_upload_texture_2d(
+        plan, "typed-image-texture", 0, sizeof(pixels), "", pixels, 2, 2, 0, 0, 0, 0));
     AT(dvz_frame_plan_upload(plan, "typed-image-position", 0, 4 * 3 * sizeof(float), ""));
     AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
     AT(dvz_frame_plan_render_visual(plan, "typed-img-quad"));
@@ -739,9 +761,8 @@ int test_frame_plan_render_textured_mesh_metadata_wgsl_uses_typed_labels(
         255, 255, 255, 255,
     };
 
-    AT(dvz_frame_plan_upload_bytes(
-        plan, "typed-mesh-texture", 0, sizeof(pixels), "", pixels));
-    AT(dvz_frame_plan_upload_set_texture_extent(plan, 2, 2));
+    AT(_test_frame_plan_upload_texture_2d(
+        plan, "typed-mesh-texture", 0, sizeof(pixels), "", pixels, 2, 2, 0, 0, 0, 0));
     AT(dvz_frame_plan_upload(plan, "typed-mesh-normal", 0, 3 * 3 * sizeof(float), ""));
     AT(dvz_frame_plan_upload(plan, "typed-mesh-color", 0, 3 * sizeof(DvzColor), ""));
     AT(dvz_frame_plan_upload(plan, "typed-mesh-uv", 0, 3 * 2 * sizeof(float), ""));
@@ -1158,10 +1179,8 @@ int test_frame_plan_texture_upload_json_includes_region(TstContext* suite, const
     DvzFramePlan* plan = dvz_frame_plan("figure.texture", 11);
     ANN(plan);
 
-    AT(dvz_frame_plan_upload(plan, "tex.image.rgba", 0, 8, "image.rgba.patch"));
-    AT(dvz_frame_plan_upload_set_texture_extent(plan, 2, 1));
-    AT(dvz_frame_plan_upload_set_texture_allocation_extent(plan, 4, 4));
-    AT(dvz_frame_plan_upload_set_texture_region(plan, 1, 2));
+    AT(_test_frame_plan_upload_texture_2d(
+        plan, "tex.image.rgba", 0, 8, "image.rgba.patch", NULL, 2, 1, 4, 4, 1, 2));
 
     char* json = dvz_frame_plan_json(plan);
     ANN(json);
@@ -1192,9 +1211,9 @@ int test_frame_plan_texture_upload_json_includes_color_role(
     metadata.visual_index = UINT32_MAX;
     metadata.buffer_index = UINT32_MAX;
 
-    AT(dvz_frame_plan_upload(plan, "tex.image.rgba", 0, 16, "image.rgba"));
+    AT(_test_frame_plan_upload_texture_2d(
+        plan, "tex.image.rgba", 0, 16, "image.rgba", NULL, 2, 2, 0, 0, 0, 0));
     AT(dvz_frame_plan_upload_metadata(plan, &metadata));
-    AT(dvz_frame_plan_upload_set_texture_extent(plan, 2, 2));
 
     char* json = dvz_frame_plan_json(plan);
     ANN(json);

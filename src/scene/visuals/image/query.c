@@ -426,11 +426,13 @@ static bool _image_query_build(const DvzSceneQueryBuildContext* ctx, DvzSceneQue
     DvzFramePlan* plan = dvz_frame_plan("figure.query.image", ctx->pending->request.request_id);
     out_plan->scratch.plan = plan;
     bool ok = plan != NULL;
-    ok = ok && dvz_frame_plan_upload_bytes(
-                   plan, "query0_position", 0, position_bytes, "position",
-                   out_plan->scratch.query_positions);
-    if (ok)
-        ok = dvz_frame_plan_upload_set_topology(plan, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    DvzFramePlanUploadDesc position_upload = dvz_frame_plan_upload_desc();
+    position_upload.resource_id = "query0_position";
+    position_upload.byte_size = position_bytes;
+    position_upload.data_tag = "position";
+    position_upload.data = out_plan->scratch.query_positions;
+    position_upload.topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    ok = ok && dvz_frame_plan_upload_ex(plan, &position_upload);
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.query_ids);
 

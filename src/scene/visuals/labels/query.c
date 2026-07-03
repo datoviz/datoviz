@@ -625,14 +625,29 @@ static bool _labels_query_build(
     DvzFramePlan* plan = dvz_frame_plan("figure.query.labels", ctx->pending->request.request_id);
     out_plan->scratch.plan = plan;
     bool ok = plan != NULL;
-    ok = ok && dvz_frame_plan_upload_bytes(
-                   plan, "labels_query0_position", 0, position_bytes, "position",
-                   position_data) &&
-         dvz_frame_plan_upload_set_topology(plan, topology) &&
+    DvzFramePlanUploadDesc position_upload = dvz_frame_plan_upload_desc();
+    position_upload.resource_id = "labels_query0_position";
+    position_upload.byte_size = position_bytes;
+    position_upload.data_tag = "position";
+    position_upload.data = position_data;
+    position_upload.topology = topology;
+    DvzFramePlanUploadDesc texture_upload = dvz_frame_plan_upload_desc();
+    texture_upload.resource_id = "labels_query0_texture";
+    texture_upload.byte_size = texture_bytes;
+    texture_upload.data_tag = "texture";
+    texture_upload.data = field->data;
+    texture_upload.texture_format = texture_format;
+    texture_upload.texture_bytes_per_texel = bytes_per_texel;
+    texture_upload.texture_width = field->desc.width;
+    texture_upload.texture_height = field->desc.height;
+    texture_upload.texture_depth = 1;
+    texture_upload.texture_alloc_width = field->desc.width;
+    texture_upload.texture_alloc_height = field->desc.height;
+    texture_upload.texture_alloc_depth = 1;
+    ok = ok && dvz_frame_plan_upload_ex(plan, &position_upload) &&
          dvz_frame_plan_upload_bytes(
              plan, "labels_query0_texcoords", 0, texcoord_bytes, "texcoords", texcoord_data) &&
-         dvz_frame_plan_upload_bytes(
-             plan, "labels_query0_texture", 0, texture_bytes, "texture", field->data) &&
+         dvz_frame_plan_upload_ex(plan, &texture_upload) &&
          dvz_frame_plan_upload_metadata(
              plan,
              &(DvzFramePlanUploadMeta){
@@ -641,11 +656,7 @@ static bool _labels_query_build(
                  .color_role = field->desc.color_role,
                  .visual_index = UINT32_MAX,
                  .buffer_index = UINT32_MAX,
-             }) &&
-         dvz_frame_plan_upload_set_texture_format(plan, texture_format, bytes_per_texel) &&
-         dvz_frame_plan_upload_set_texture_extent(plan, field->desc.width, field->desc.height) &&
-         dvz_frame_plan_upload_set_texture_allocation_extent(
-             plan, field->desc.width, field->desc.height);
+             });
 
     DvzFramePlanVisualMeta metadata = {0};
     metadata.has_metadata = true;

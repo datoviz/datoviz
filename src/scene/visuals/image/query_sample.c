@@ -320,15 +320,28 @@ bool _scene_image_query_plan(
     bool ok = plan != NULL;
     if (include_static_uploads)
     {
-        ok = ok && dvz_frame_plan_upload_bytes(
-                       plan, "query0_position", 0, position_bytes, "position", position_data);
-        ok = ok && dvz_frame_plan_upload_set_topology(
-                       plan, generated_rect ? DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
-                                             : DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
+        DvzFramePlanUploadDesc position_upload = dvz_frame_plan_upload_desc();
+        position_upload.resource_id = "query0_position";
+        position_upload.byte_size = position_bytes;
+        position_upload.data_tag = "position";
+        position_upload.data = position_data;
+        position_upload.topology = generated_rect ? DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+                                                  : DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+        ok = ok && dvz_frame_plan_upload_ex(plan, &position_upload);
         ok = ok && dvz_frame_plan_upload_bytes(
                        plan, "query0_texcoords", 0, texcoord_bytes, "texcoords", texcoord_data);
-        ok = ok && dvz_frame_plan_upload_bytes(
-                       plan, "query0_texture", 0, texture_bytes, "texture", texture_data) &&
+        DvzFramePlanUploadDesc texture_upload = dvz_frame_plan_upload_desc();
+        texture_upload.resource_id = "query0_texture";
+        texture_upload.byte_size = texture_bytes;
+        texture_upload.data_tag = "texture";
+        texture_upload.data = texture_data;
+        texture_upload.texture_width = texture_width;
+        texture_upload.texture_height = texture_height;
+        texture_upload.texture_depth = 1;
+        texture_upload.texture_alloc_width = texture_width;
+        texture_upload.texture_alloc_height = texture_height;
+        texture_upload.texture_alloc_depth = 1;
+        ok = ok && dvz_frame_plan_upload_ex(plan, &texture_upload) &&
              dvz_frame_plan_upload_metadata(
                  plan,
                  &(DvzFramePlanUploadMeta){
@@ -337,10 +350,7 @@ bool _scene_image_query_plan(
                      .color_role = texture_color_role,
                      .visual_index = UINT32_MAX,
                      .buffer_index = UINT32_MAX,
-                 }) &&
-             dvz_frame_plan_upload_set_texture_extent(plan, texture_width, texture_height) &&
-             dvz_frame_plan_upload_set_texture_allocation_extent(
-                 plan, texture_width, texture_height);
+                 });
     }
     ok = ok && dvz_frame_plan_render_panel(
                    plan, "panel.query.image", "target.query.image", false,

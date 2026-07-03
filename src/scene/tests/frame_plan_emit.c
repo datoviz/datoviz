@@ -51,6 +51,29 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+static bool _test_frame_plan_upload_texture_2d(
+    DvzFramePlan* plan, const char* resource_id, uint64_t byte_offset, uint64_t byte_size,
+    const char* data_tag, const void* data, uint32_t width, uint32_t height,
+    uint32_t alloc_width, uint32_t alloc_height, uint32_t origin_x, uint32_t origin_y)
+{
+    DvzFramePlanUploadDesc upload = dvz_frame_plan_upload_desc();
+    upload.resource_id = resource_id;
+    upload.byte_offset = byte_offset;
+    upload.byte_size = byte_size;
+    upload.data_tag = data_tag;
+    upload.data = data;
+    upload.texture_width = width;
+    upload.texture_height = height;
+    upload.texture_depth = 1;
+    upload.texture_alloc_width = alloc_width;
+    upload.texture_alloc_height = alloc_height;
+    upload.texture_alloc_depth = alloc_width != 0 || alloc_height != 0 ? 1 : 0;
+    upload.texture_origin_x = origin_x;
+    upload.texture_origin_y = origin_y;
+    return dvz_frame_plan_upload_ex(plan, &upload);
+}
+
+
 static bool _test_create_render_pipeline(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
     uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots)
@@ -1715,8 +1738,8 @@ int test_frame_plan_emit_drp2_rejects_small_caps(TstContext* suite, const TstCas
 
     DvzFramePlan* texture_plan = dvz_frame_plan("figure.convert.small_bind_group_caps", 19);
     ANN(texture_plan);
-    AT(dvz_frame_plan_upload(texture_plan, "tex.image.rgba", 0, 16, "image.rgba"));
-    AT(dvz_frame_plan_upload_set_texture_extent(texture_plan, 2, 2));
+    AT(_test_frame_plan_upload_texture_2d(
+        texture_plan, "tex.image.rgba", 0, 16, "image.rgba", NULL, 2, 2, 0, 0, 0, 0));
     AT(dvz_frame_plan_render(texture_plan, "panel.0", "target.panel.0.color", false));
     AT(_frame_plan_render_image_fixture_visual(
         texture_plan, "visual.image.0", "buf.image.position", "buf.image.texcoords",
@@ -1973,8 +1996,8 @@ int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
     ANN(frame1);
     AT(_frame_plan_upload_image_fixture_geometry(
         frame0, "buf.image.position", "buf.image.texcoords"));
-    AT(dvz_frame_plan_upload(frame0, "tex.image.rgba", 0, 16, "image.rgba.0"));
-    AT(dvz_frame_plan_upload_set_texture_extent(frame0, 2, 2));
+    AT(_test_frame_plan_upload_texture_2d(
+        frame0, "tex.image.rgba", 0, 16, "image.rgba.0", NULL, 2, 2, 0, 0, 0, 0));
     AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.query", false));
     AT(_frame_plan_render_image_fixture_visual(
         frame0, "visual.image.0", "buf.image.position", "buf.image.texcoords",
@@ -1984,8 +2007,8 @@ int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
 
     AT(_frame_plan_upload_image_fixture_geometry(
         frame1, "buf.image.position", "buf.image.texcoords"));
-    AT(dvz_frame_plan_upload(frame1, "tex.image.rgba", 0, 16, "image.rgba.1"));
-    AT(dvz_frame_plan_upload_set_texture_extent(frame1, 2, 2));
+    AT(_test_frame_plan_upload_texture_2d(
+        frame1, "tex.image.rgba", 0, 16, "image.rgba.1", NULL, 2, 2, 0, 0, 0, 0));
     AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.query", false));
     AT(_frame_plan_render_image_fixture_visual(
         frame1, "visual.image.0", "buf.image.position", "buf.image.texcoords",
@@ -2390,8 +2413,8 @@ int test_frame_plan_emit_drp2_texture_sampling(TstContext* suite, const TstCase*
     DvzFramePlan* plan = dvz_frame_plan("figure.texture.convert", 13);
     ANN(plan);
 
-    AT(dvz_frame_plan_upload(plan, "tex.image.rgba", 0, 16, "image.rgba"));
-    AT(dvz_frame_plan_upload_set_texture_extent(plan, 2, 2));
+    AT(_test_frame_plan_upload_texture_2d(
+        plan, "tex.image.rgba", 0, 16, "image.rgba", NULL, 2, 2, 0, 0, 0, 0));
     AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
     AT(_frame_plan_render_image_fixture_visual(
         plan, "visual.image.0", "buf.image.position", "buf.image.texcoords", "tex.image.rgba"));
@@ -2786,8 +2809,8 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, co
 
     AT(_frame_plan_upload_image_fixture_geometry(
         frame0, "buf.image.position", "buf.image.texcoords"));
-    AT(dvz_frame_plan_upload(frame0, "tex.resize.rgba", 0, 16, "image.rgba.0"));
-    AT(dvz_frame_plan_upload_set_texture_extent(frame0, 2, 2));
+    AT(_test_frame_plan_upload_texture_2d(
+        frame0, "tex.resize.rgba", 0, 16, "image.rgba.0", NULL, 2, 2, 0, 0, 0, 0));
     AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.query", false));
     AT(_frame_plan_render_image_fixture_visual(
         frame0, "visual.image.resize", "buf.image.position", "buf.image.texcoords",
@@ -2795,8 +2818,8 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, co
 
     AT(_frame_plan_upload_image_fixture_geometry(
         frame1, "buf.image.position", "buf.image.texcoords"));
-    AT(dvz_frame_plan_upload(frame1, "tex.resize.rgba", 0, 16, "image.rgba.1"));
-    AT(dvz_frame_plan_upload_set_texture_extent(frame1, 2, 2));
+    AT(_test_frame_plan_upload_texture_2d(
+        frame1, "tex.resize.rgba", 0, 16, "image.rgba.1", NULL, 2, 2, 0, 0, 0, 0));
     AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.query", false));
     AT(_frame_plan_render_image_fixture_visual(
         frame1, "visual.image.resize", "buf.image.position", "buf.image.texcoords",
@@ -2804,8 +2827,8 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, co
 
     AT(_frame_plan_upload_image_fixture_geometry(
         frame2, "buf.image.position", "buf.image.texcoords"));
-    AT(dvz_frame_plan_upload(frame2, "tex.resize.rgba", 0, 64, "image.rgba.2"));
-    AT(dvz_frame_plan_upload_set_texture_extent(frame2, 4, 4));
+    AT(_test_frame_plan_upload_texture_2d(
+        frame2, "tex.resize.rgba", 0, 64, "image.rgba.2", NULL, 4, 4, 0, 0, 0, 0));
     AT(dvz_frame_plan_render(frame2, "panel.0", "target.panel.0.query", false));
     AT(_frame_plan_render_image_fixture_visual(
         frame2, "visual.image.resize", "buf.image.position", "buf.image.texcoords",
@@ -2813,10 +2836,8 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, co
 
     AT(_frame_plan_upload_image_fixture_geometry(
         frame3, "buf.image.position", "buf.image.texcoords"));
-    AT(dvz_frame_plan_upload(frame3, "tex.partial.rgba", 0, 4, "image.rgba.3"));
-    AT(dvz_frame_plan_upload_set_texture_extent(frame3, 1, 1));
-    AT(dvz_frame_plan_upload_set_texture_allocation_extent(frame3, 4, 4));
-    AT(dvz_frame_plan_upload_set_texture_region(frame3, 3, 3));
+    AT(_test_frame_plan_upload_texture_2d(
+        frame3, "tex.partial.rgba", 0, 4, "image.rgba.3", NULL, 1, 1, 4, 4, 3, 3));
     AT(dvz_frame_plan_render(frame3, "panel.0", "target.panel.0.query", false));
     AT(_frame_plan_render_image_fixture_visual(
         frame3, "visual.image.partial", "buf.image.position", "buf.image.texcoords",
@@ -3259,8 +3280,8 @@ int test_frame_plan_emitter_runtime_texture_two_frames(TstContext* suite, const 
     ANN(frame1);
     AT(_frame_plan_upload_image_fixture_geometry(
         frame0, "buf.image.position", "buf.image.texcoords"));
-    AT(dvz_frame_plan_upload(frame0, "tex.image.rgba", 0, 16, "image.rgba.0"));
-    AT(dvz_frame_plan_upload_set_texture_extent(frame0, 2, 2));
+    AT(_test_frame_plan_upload_texture_2d(
+        frame0, "tex.image.rgba", 0, 16, "image.rgba.0", NULL, 2, 2, 0, 0, 0, 0));
     AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.query", false));
     AT(_frame_plan_render_image_fixture_visual(
         frame0, "visual.image.0", "buf.image.position", "buf.image.texcoords",
@@ -3270,8 +3291,8 @@ int test_frame_plan_emitter_runtime_texture_two_frames(TstContext* suite, const 
 
     AT(_frame_plan_upload_image_fixture_geometry(
         frame1, "buf.image.position", "buf.image.texcoords"));
-    AT(dvz_frame_plan_upload(frame1, "tex.image.rgba", 0, 16, "image.rgba.1"));
-    AT(dvz_frame_plan_upload_set_texture_extent(frame1, 2, 2));
+    AT(_test_frame_plan_upload_texture_2d(
+        frame1, "tex.image.rgba", 0, 16, "image.rgba.1", NULL, 2, 2, 0, 0, 0, 0));
     AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.query", false));
     AT(_frame_plan_render_image_fixture_visual(
         frame1, "visual.image.0", "buf.image.position", "buf.image.texcoords",
