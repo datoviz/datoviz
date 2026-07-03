@@ -166,6 +166,7 @@ FEATURE_PAGE_GROUPS = (
 RUNTIME_PAGE_GROUPS = (
     ("Windows & Hosting", [
         "feature_app_glfw",
+        "feature_multi_window",
     ]),
     ("Capture & Export", [
         "feature_offscreen_capture",

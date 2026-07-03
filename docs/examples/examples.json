@@ -2,12 +2,12 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 106,
+  "count": 107,
   "categories": {
     "advanced": 3,
     "composite": 2,
     "feature": 66,
-    "runtime": 4,
+    "runtime": 5,
     "showcase": 15,
     "start": 1,
     "visual": 15
@@ -16,11 +16,11 @@
     "diagnostic": 1,
     "experimental": 12,
     "prototype": 3,
-    "supported": 90
+    "supported": 91
   },
   "agent_copy_safe": {
     "false": 27,
-    "true": 79
+    "true": 80
   },
   "examples": [
     {
@@ -788,6 +788,27 @@
         "kind": "synthetic"
       },
       "primary_runtime": "app-glfw"
+    },
+    {
+      "id": "feature_multi_window",
+      "title": "Multi Window",
+      "category": "runtime",
+      "lane": "runtime",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/runtime/multi_window.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/multi_window.c",
+      "page": "gallery/runtime/feature_multi_window.md",
+      "summary": "one app driving two native GLFW windows.",
+      "validation": "smoke+interaction",
+      "build_command": "just example-c runtime/multi_window",
+      "smoke_command": "./build/examples/c/runtime/multi_window --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_runtime": "multi-window"
     },
     {
       "id": "feature_offscreen_capture",

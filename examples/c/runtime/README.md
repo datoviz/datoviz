@@ -5,6 +5,7 @@ belong here. Keep these examples focused on how a Datoviz program is hosted or p
 scene-level retained capabilities belong in `../features/`.
 
 - `app_glfw.c`: direct GLFW app/view lifecycle without the scenario runner.
+- `multi_window.c`: one app driving two native GLFW windows.
 - `offscreen_capture.c`: direct offscreen render-once PNG capture.
 - `record_replay.c`: experimental DVZR app recording and live replay.
 - `video_export.c`: direct offscreen MP4 export with `dvz_view_capture_start()`/stop.

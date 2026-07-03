@@ -3,12 +3,12 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 106,
+  "example_count": 107,
   "categories": {
     "advanced": 3,
     "composite": 2,
     "feature": 66,
-    "runtime": 4,
+    "runtime": 5,
     "showcase": 15,
     "start": 1,
     "visual": 15
@@ -17,11 +17,11 @@
     "diagnostic": 1,
     "experimental": 12,
     "prototype": 3,
-    "supported": 90
+    "supported": 91
   },
   "agent_copy_safe": {
     "false": 27,
-    "true": 79
+    "true": 80
   },
   "capabilities": {
     "composites": {
@@ -157,7 +157,7 @@
         ]
       },
       "synthetic": {
-        "count": 97,
+        "count": 98,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -482,6 +482,15 @@
             "agent_copy_safe": true,
             "source": "examples/c/runtime/app_glfw.c",
             "page": "gallery/runtime/feature_app_glfw.md"
+          },
+          {
+            "id": "feature_multi_window",
+            "title": "Multi Window",
+            "category": "runtime",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/runtime/multi_window.c",
+            "page": "gallery/runtime/feature_multi_window.md"
           },
           {
             "id": "feature_offscreen_capture",
@@ -1973,6 +1982,20 @@
             "agent_copy_safe": true,
             "source": "examples/c/runtime/app_glfw.c",
             "page": "gallery/runtime/feature_app_glfw.md"
+          }
+        ]
+      },
+      "multi-window": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_multi_window",
+            "title": "Multi Window",
+            "category": "runtime",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/runtime/multi_window.c",
+            "page": "gallery/runtime/feature_multi_window.md"
           }
         ]
       },
