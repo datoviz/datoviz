@@ -40,7 +40,6 @@ dvz_annotation
 dvz_annotation_desc
 dvz_annotation_destroy
 dvz_annotation_label
-dvz_annotation_scalebar
 dvz_annotation_set_format
 dvz_app
 dvz_app_capture_config
