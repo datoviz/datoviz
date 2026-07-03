@@ -135,7 +135,7 @@ DvzBox dvz_box_extent(DvzBox box, float width, float height, DvzBoxExtentStrateg
  * @returns the merged box
  */
 DVZ_EXPORT DvzBox
-dvz_box_merge(uint32_t box_count, DvzBox* boxes, DvzBoxMergeStrategy strategy);
+dvz_box_merge(uint32_t box_count, const DvzBox* boxes, DvzBoxMergeStrategy strategy);
 
 
 

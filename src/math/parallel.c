@@ -100,7 +100,7 @@ void dvz_threads_default(void)
 
 
 
-inline double dvz_mean(uint32_t n, double* values)
+inline double dvz_mean(uint32_t n, const double* values)
 {
     ASSERT(n > 0);
     ASSERT(values != NULL);
@@ -153,7 +153,7 @@ inline void dvz_normalize_bytes(vec2 min_max, uint32_t count, float* values, uin
 
 
 
-inline void dvz_range(uint32_t n, double* values, dvec2 min_max)
+inline void dvz_range(uint32_t n, const double* values, dvec2 min_max)
 {
     ASSERT(n > 0);
     ASSERT(values != NULL);

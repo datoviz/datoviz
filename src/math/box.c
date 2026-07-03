@@ -120,7 +120,7 @@ DvzBox dvz_box_extent(DvzBox box, float width, float height, DvzBoxExtentStrateg
 
 
 
-DvzBox dvz_box_merge(uint32_t box_count, DvzBox* boxes, DvzBoxMergeStrategy strategy)
+DvzBox dvz_box_merge(uint32_t box_count, const DvzBox* boxes, DvzBoxMergeStrategy strategy)
 {
     if (box_count == 0)
     {

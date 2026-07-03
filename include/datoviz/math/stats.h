@@ -37,7 +37,7 @@ EXTERN_C_ON
  * @param values an array of double numbers
  * @returns the mean
  */
-DVZ_EXPORT double dvz_mean(uint32_t n, double* values);
+DVZ_EXPORT double dvz_mean(uint32_t n, const double* values);
 
 
 
@@ -71,7 +71,7 @@ DVZ_EXPORT void dvz_normalize_bytes(vec2 min_max, uint32_t count, float* values,
  * @param values an array of double numbers
  * @param[out] min_max the min and max values
  */
-DVZ_EXPORT void dvz_range(uint32_t n, double* values, dvec2 min_max);
+DVZ_EXPORT void dvz_range(uint32_t n, const double* values, dvec2 min_max);
 
 
 
