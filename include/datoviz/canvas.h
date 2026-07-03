@@ -25,6 +25,7 @@
 
 #include "canvas/enums.h"
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/input/router.h"
 #include "datoviz/stream/frame_stream.h"
 #include "datoviz/video.h"
@@ -256,11 +257,12 @@ DVZ_EXPORT DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas);
  * @param width expected frame width in pixels
  * @param height expected frame height in pixels
  * @param out_rgba destination buffer receiving sRGB RGBA8 pixels
- * @param out_size size of `out_rgba` in bytes
+ * @param out_size_bytes size of `out_rgba` in bytes
  * @returns 0 on success or a negative error code
  */
 DVZ_EXPORT int dvz_canvas_capture_rgba_into(
-    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba, size_t out_size);
+    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba,
+    DvzSize out_size_bytes);
 
 
 

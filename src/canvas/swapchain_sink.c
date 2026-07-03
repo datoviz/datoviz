@@ -1794,15 +1794,15 @@ void dvz_canvas_swapchain_handles_refreshed(DvzCanvas* canvas)
  * @param canvas canvas owning the swapchain
  * @param width expected frame width
  * @param height expected frame height
- * @param out_size destination buffer size in bytes
+ * @param out_size_bytes destination buffer size in bytes
  * @param state_out resolved swapchain state on success
  * @param slot_out resolved source slot on success
  * @param expected_size_out expected destination size in bytes on success
  * @returns 0 when capture preconditions are satisfied, or -1 on failure
  */
 static int canvas_capture_validate(
-    DvzCanvas* canvas, uint32_t width, uint32_t height, size_t out_size, DvzCanvasSwapchain** state_out,
-    DvzCanvasSwapchainSlot** slot_out, size_t* expected_size_out)
+    DvzCanvas* canvas, uint32_t width, uint32_t height, DvzSize out_size_bytes,
+    DvzCanvasSwapchain** state_out, DvzCanvasSwapchainSlot** slot_out, size_t* expected_size_out)
 {
     ANN(canvas);
     ANN(state_out);
@@ -1841,9 +1841,11 @@ static int canvas_capture_validate(
             extent.height, width, height);
         return -1;
     }
-    if (out_size < expected_size)
+    if (out_size_bytes < expected_size)
     {
-        log_error("canvas capture destination buffer too small (%zu < %zu)", out_size, expected_size);
+        log_error(
+            "canvas capture destination buffer too small (%zu < %zu)",
+            (size_t)out_size_bytes, expected_size);
         return -1;
     }
 
@@ -1977,18 +1979,20 @@ static int canvas_capture_copy_to_staging(
  * @param width expected frame width
  * @param height expected frame height
  * @param out_rgba destination buffer
- * @param out_size destination buffer size in bytes
+ * @param out_size_bytes destination buffer size in bytes
  * @returns 0 on success or -1 on failure
  */
 int dvz_canvas_swapchain_capture_rgba_into(
-    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba, size_t out_size)
+    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba,
+    DvzSize out_size_bytes)
 {
     ANN(canvas);
     ANN(out_rgba);
     DvzCanvasSwapchain* state = NULL;
     DvzCanvasSwapchainSlot* slot = NULL;
     size_t expected_size = 0;
-    if (canvas_capture_validate(canvas, width, height, out_size, &state, &slot, &expected_size) != 0)
+    if (canvas_capture_validate(
+            canvas, width, height, out_size_bytes, &state, &slot, &expected_size) != 0)
     {
         return -1;
     }

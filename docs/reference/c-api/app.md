@@ -552,7 +552,7 @@ RGBA8 color with straight linear alpha.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:297._
+_Declared in `include/datoviz/canvas.h`:299._
 
 ### `dvz_canvas_capture_rgba()`
 
@@ -581,7 +581,7 @@ must remain in linear float or data space.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:282._
+_Declared in `include/datoviz/canvas.h`:284._
 
 ### `dvz_canvas_capture_rgba_into()`
 
@@ -591,7 +591,7 @@ int dvz_canvas_capture_rgba_into(
     uint32_t width,
     uint32_t height,
     uint8_t * out_rgba,
-    size_t out_size
+    DvzSize out_size_bytes
 );
 ```
 
@@ -602,7 +602,7 @@ int dvz_canvas_capture_rgba_into(
 | `width` | `uint32_t` | expected frame width in pixels |
 | `height` | `uint32_t` | expected frame height in pixels |
 | `out_rgba` | `uint8_t *` | destination buffer receiving sRGB RGBA8 pixels |
-| `out_size` | `size_t` | size of `out_rgba` in bytes |
+| `out_size_bytes` | `DvzSize` | size of `out_rgba` in bytes |
 
 Capture the latest presented canvas frame into a caller-provided RGBA buffer.
 
@@ -612,7 +612,7 @@ must remain in linear float or data space.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:262._
+_Declared in `include/datoviz/canvas.h`:263._
 
 ### `dvz_canvas_config()`
 
@@ -630,7 +630,7 @@ Related: [`dvz_canvas_create()`](#dvz_canvas_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:143._
+_Declared in `include/datoviz/canvas.h`:144._
 
 ### `dvz_canvas_configure_live_image_sink()`
 
@@ -653,7 +653,7 @@ Enable or disable the live-image sink attached to the canvas stream.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:324._
+_Declared in `include/datoviz/canvas.h`:326._
 
 ### `dvz_canvas_configure_video_sink()`
 
@@ -676,7 +676,7 @@ Enable or disable the video sink attached to the canvas stream.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:311._
+_Declared in `include/datoviz/canvas.h`:313._
 
 ### `dvz_canvas_create()`
 
@@ -697,7 +697,7 @@ Related: [`dvz_canvas_destroy()`](#dvz_canvas_destroy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:161._
+_Declared in `include/datoviz/canvas.h`:162._
 
 ### `dvz_canvas_destroy()`
 
@@ -717,7 +717,7 @@ Related: [`dvz_canvas_create()`](#dvz_canvas_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:170._
+_Declared in `include/datoviz/canvas.h`:171._
 
 ### `dvz_canvas_frame()`
 
@@ -738,7 +738,7 @@ surface is unavailable, or a negative error code when acquisition fails
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:193._
+_Declared in `include/datoviz/canvas.h`:194._
 
 ### `dvz_canvas_input()`
 
@@ -757,7 +757,7 @@ Expose the input router owned by the canvas window.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:244._
+_Declared in `include/datoviz/canvas.h`:245._
 
 ### `dvz_canvas_live_image_sink_config()`
 
@@ -773,7 +773,7 @@ Return a default live-image sink configuration.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:151._
+_Declared in `include/datoviz/canvas.h`:152._
 
 ### `dvz_canvas_offscreen_runtime_state()`
 
@@ -792,7 +792,7 @@ Return the offscreen-mode runtime state for diagnostics.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:234._
+_Declared in `include/datoviz/canvas.h`:235._
 
 ### `dvz_canvas_present_runtime_state()`
 
@@ -811,7 +811,7 @@ Return the present-mode runtime state for diagnostics.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:223._
+_Declared in `include/datoviz/canvas.h`:224._
 
 ### `dvz_canvas_render_mode()`
 
@@ -830,7 +830,7 @@ Return the configured render mode for a canvas.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:213._
+_Declared in `include/datoviz/canvas.h`:214._
 
 ### `dvz_canvas_set_draw_callback()`
 
@@ -852,7 +852,7 @@ Register a draw callback executed whenever dvz_canvas_frame() succeeds.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/canvas.h`:182._
+_Declared in `include/datoviz/canvas.h`:183._
 
 ### `dvz_canvas_stream()`
 
@@ -871,7 +871,7 @@ Access the stream underpinning the canvas.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:335._
+_Declared in `include/datoviz/canvas.h`:337._
 
 ### `dvz_canvas_submit()`
 
@@ -890,7 +890,7 @@ Submit the current frame to the internal stream and attached sinks.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:203._
+_Declared in `include/datoviz/canvas.h`:204._
 
 ### `dvz_canvas_timings()`
 
@@ -911,7 +911,7 @@ Read the recorded frame timings.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/canvas.h`:346._
+_Declared in `include/datoviz/canvas.h`:348._
 
 ## Gui
 

@@ -977,7 +977,8 @@ static void canvas_init_offscreen_frame(const DvzCanvas* canvas, DvzStreamFrame*
 
 
 static int canvas_offscreen_capture_rgba_into(
-    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba, size_t out_size)
+    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba,
+    DvzSize out_size_bytes)
 {
     ANN(canvas);
     ANN(out_rgba);
@@ -999,10 +1000,11 @@ static int canvas_offscreen_capture_rgba_into(
         return -1;
     }
     size_t expected_size = (size_t)width * (size_t)height * 4;
-    if (out_size < expected_size)
+    if (out_size_bytes < expected_size)
     {
         log_error(
-            "offscreen capture destination buffer too small (%zu < %zu)", out_size,
+            "offscreen capture destination buffer too small (%zu < %zu)",
+            (size_t)out_size_bytes,
             expected_size);
         return -1;
     }
@@ -1598,24 +1600,27 @@ DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas)
  * @param width expected frame width
  * @param height expected frame height
  * @param out_rgba destination RGBA buffer
- * @param out_size destination buffer size in bytes
+ * @param out_size_bytes destination buffer size in bytes
  * @returns 0 on success or a negative error code
  */
 int dvz_canvas_capture_rgba_into(
-    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba, size_t out_size)
+    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba,
+    DvzSize out_size_bytes)
 {
     ANN(canvas);
     ANN(out_rgba);
     if (canvas_is_offscreen_mode(canvas))
     {
-        return canvas_offscreen_capture_rgba_into(canvas, width, height, out_rgba, out_size);
+        return canvas_offscreen_capture_rgba_into(
+            canvas, width, height, out_rgba, out_size_bytes);
     }
     if (width == 0 || height == 0)
     {
         log_error("canvas capture requires non-zero dimensions");
         return -1;
     }
-    return dvz_canvas_swapchain_capture_rgba_into(canvas, width, height, out_rgba, out_size);
+    return dvz_canvas_swapchain_capture_rgba_into(
+        canvas, width, height, out_rgba, out_size_bytes);
 }
 
 

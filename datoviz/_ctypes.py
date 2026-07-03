@@ -9599,10 +9599,10 @@ else:
  * @param width expected frame width in pixels
  * @param height expected frame height in pixels
  * @param out_rgba destination buffer receiving sRGB RGBA8 pixels
- * @param out_size size of `out_rgba` in bytes
+ * @param out_size_bytes size of `out_rgba` in bytes
  * @returns 0 on success or a negative error code
  */"""
-    dvz_canvas_capture_rgba_into.argtypes = [ctypes.POINTER(DvzCanvas), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint8), ctypes.c_size_t]
+    dvz_canvas_capture_rgba_into.argtypes = [ctypes.POINTER(DvzCanvas), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint64]
     dvz_canvas_capture_rgba_into.restype = ctypes.c_int
 
 

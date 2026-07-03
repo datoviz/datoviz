@@ -203,7 +203,8 @@ bool dvz_canvas_swapchain_handles_dirty(const DvzCanvas* canvas);
 void dvz_canvas_swapchain_handles_refreshed(DvzCanvas* canvas);
 
 int dvz_canvas_swapchain_capture_rgba_into(
-    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba, size_t out_size);
+    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba,
+    DvzSize out_size_bytes);
 
 void dvz_canvas_swapchain_test_fail_slot(DvzCanvas* canvas, int32_t slot_index);
 
