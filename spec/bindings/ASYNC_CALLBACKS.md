@@ -80,9 +80,9 @@ function-pointer parameters as `ctypes.c_void_p`. This unblocks APIs such as:
 4. `dvz_view_set_request_frame_callback()`
 5. `dvz_view_post()`
 
-The generated/raw Python layer must keep callback objects alive until the matching unsubscribe,
-clear, or destroy path runs. A small registry keyed by function name and owner pointer is sufficient
-for the first slice.
+The generated/raw Python layer must keep callback objects alive until the matching token-based
+unsubscribe, clear, or destroy path runs. A small registry keyed by returned subscription id is
+sufficient for the first slice.
 
 
 ## Python Event Loop Integration

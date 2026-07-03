@@ -201,7 +201,8 @@ def callback(router, event_ptr, user_data):
     event = event_ptr.contents
     print(event.pos[0], event.pos[1])
 
-dvz.dvz_input_subscribe_pointer(router, callback, None)
+callback_id = dvz.dvz_input_subscribe_pointer(router, callback, None)
+dvz.dvz_input_unsubscribe(router, callback_id)
 ```
 
 The generated raw layer should:

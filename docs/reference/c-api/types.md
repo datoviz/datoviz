@@ -5213,6 +5213,18 @@ typedef struct DvzArcballDesc DvzArcballDesc;
 typedef enum DvzBackend DvzBackend;
 ```
 
+#### `DvzCallbackId`
+
+```c
+typedef uint64_t DvzCallbackId;
+```
+
+#### `DvzCallbackIdSpecial`
+
+```c
+typedef enum DvzCallbackIdSpecial DvzCallbackIdSpecial;
+```
+
 #### `DvzCanvas`
 
 ```c
@@ -5880,6 +5892,12 @@ DVZ_BACKEND_OFFSCREEN = 3,
 DVZ_BACKEND_WRAP = 4,
 ```
 
+#### `DvzCallbackIdSpecial`
+
+```c
+DVZ_CALLBACK_ID_NONE = 0,
+```
+
 #### `DvzCanvasFlags`
 
 ```c
@@ -6422,7 +6440,7 @@ struct DvzGuiViewportConfig {
 ```c
 struct DvzInputEvent {
     DvzInputEventType type;
-    union (unnamed union at include/datoviz/input/router.h:86:5) content;
+    union (unnamed union at include/datoviz/input/router.h:95:5) content;
 };
 ```
 

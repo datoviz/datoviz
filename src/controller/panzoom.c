@@ -748,7 +748,10 @@ void dvz_panzoom_connect(DvzPanzoom* pz, DvzInputRouter* router)
     {
         dvz_panzoom_resize(pz, (float)r.window_width, (float)r.window_height);
     }
-    dvz_input_subscribe_event(router, _panzoom_input_callback, pz);
+    if (pz->input_router != NULL && pz->input_subscription_id != DVZ_CALLBACK_ID_NONE)
+        dvz_input_unsubscribe(pz->input_router, pz->input_subscription_id);
+    pz->input_router = router;
+    pz->input_subscription_id = dvz_input_subscribe_event(router, _panzoom_input_callback, pz);
 }
 
 
@@ -757,7 +760,12 @@ void dvz_panzoom_disconnect(DvzPanzoom* pz, DvzInputRouter* router)
 {
     ANN(pz);
     ANN(router);
-    dvz_input_unsubscribe_event(router, _panzoom_input_callback, pz);
+    if (pz->input_subscription_id != DVZ_CALLBACK_ID_NONE)
+    {
+        dvz_input_unsubscribe(pz->input_router != NULL ? pz->input_router : router, pz->input_subscription_id);
+        pz->input_router = NULL;
+        pz->input_subscription_id = DVZ_CALLBACK_ID_NONE;
+    }
 }
 
 

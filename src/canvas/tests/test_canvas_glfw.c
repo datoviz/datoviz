@@ -2101,6 +2101,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
 
     bool interactive_loop = false;
     bool keep_running = true;
+    DvzCallbackId keyboard_subscription_id = DVZ_CALLBACK_ID_NONE;
     DvzInputRouter* router = dvz_canvas_input(canvas);
     const char* loop_env = getenv("DVZ_CANVAS_GLFW_LOOP");
     bool keep_looping = false;
@@ -2115,7 +2116,8 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     if (keep_looping && router)
     {
         interactive_loop = true;
-        dvz_input_subscribe_keyboard(router, canvas_glfw_keyboard_callback, &keep_running);
+        keyboard_subscription_id =
+            dvz_input_subscribe_keyboard(router, canvas_glfw_keyboard_callback, &keep_running);
     }
 
     DvzClock loop_clock = dvz_clock();
@@ -2157,7 +2159,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
 
     if (interactive_loop && router)
     {
-        dvz_input_unsubscribe_keyboard(router, canvas_glfw_keyboard_callback, &keep_running);
+        dvz_input_unsubscribe(router, keyboard_subscription_id);
     }
 
     double elapsed_s = dvz_clock_interval(&loop_clock);

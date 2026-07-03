@@ -198,6 +198,17 @@ def _callback_pop_subscription(callback_type, owner, callback, user_data):
     return _CALLBACK_KEEPALIVE.pop(key, None) or _callback_coerce(callback_type, callback)
 
 
+def _callback_store_subscription_id(owner, subscription_id, callback):
+    if subscription_id:
+        _CALLBACK_KEEPALIVE[('subscription_id', _ptr_value(owner), int(subscription_id))] = callback
+    return subscription_id
+
+
+def _callback_pop_subscription_id(owner, subscription_id):
+    if subscription_id:
+        _CALLBACK_KEEPALIVE.pop(('subscription_id', _ptr_value(owner), int(subscription_id)), None)
+
+
 def _callback_store_setter(function_name, callback_type, owner, callback):
     key = _callback_setter_key(function_name, callback_type, owner)
     if callback is None:
@@ -845,7 +856,7 @@ def generate(
             if name in owned_string_returns and result == 'ctypes.c_char_p':
                 result = 'ctypes.c_void_p'
             lines.append('try:\n')
-            raw_name = f'_{name}' if callback_param_indices else name
+            raw_name = f'_{name}' if callback_param_indices or name == 'dvz_input_unsubscribe' else name
             lines.append(f'    {raw_name} = dvz.{name}\n')
             lines.append('except AttributeError:\n')
             lines.append(f"    _MISSING_FUNCTIONS.append('{name}')\n")
@@ -880,10 +891,29 @@ def generate(
                 elif callback_kind == 'subscription' or (
                     callback_kind is None and name.startswith('dvz_input_subscribe')
                 ):
-                    lines.append(
-                        f'        {callback_name} = _callback_store_subscription'
-                        f'({callback_type}, {owner_name}, {callback_name}, {user_data_name})\n'
-                    )
+                    if name.startswith('dvz_input_subscribe'):
+                        lines.append(
+                            f'        {callback_name} = '
+                            f'_callback_coerce({callback_type}, {callback_name})\n'
+                        )
+                        lines.append(
+                            f'        subscription_id = {raw_name}({call_args})\n'
+                        )
+                        lines.append(
+                            f'        return _callback_store_subscription_id'
+                            f'({owner_name}, subscription_id, {callback_name})\n'
+                        )
+                        lines.append(f'    {name}.__doc__ = {raw_name}.__doc__\n')
+                        lines.append(f'    {name}.argtypes = {raw_name}.argtypes\n')
+                        lines.append(f'    {name}.restype = {raw_name}.restype\n')
+                        lines.append('\n\n')
+                        emitted.append(name)
+                        continue
+                    else:
+                        lines.append(
+                            f'        {callback_name} = _callback_store_subscription'
+                            f'({callback_type}, {owner_name}, {callback_name}, {user_data_name})\n'
+                        )
                 elif callback_kind == 'setter' or (callback_kind is None and '_set_' in name):
                     lines.append(
                         f"        {callback_name} = _callback_store_setter('{name}', "
@@ -902,6 +932,25 @@ def generate(
                         f'({callback_type}, {owner_name}, {callback_name}, {user_data_name})\n'
                     )
                 lines.append(f'        return {raw_name}({call_args})\n')
+                lines.append(f'    {name}.__doc__ = {raw_name}.__doc__\n')
+                lines.append(f'    {name}.argtypes = {raw_name}.argtypes\n')
+                lines.append(f'    {name}.restype = {raw_name}.restype\n')
+            elif name == 'dvz_input_unsubscribe':
+                param_names = [
+                    param.get('name') or f'arg{i}'
+                    for i, param in enumerate(function.get('parameters', []))
+                ]
+                signature = ', '.join(param_names)
+                call_args = ', '.join(param_names)
+                owner_name = param_names[0] if param_names else 'None'
+                subscription_id_name = param_names[1] if len(param_names) > 1 else '0'
+                lines.append(f'    def {name}({signature}):\n')
+                lines.append(f'        ok = {raw_name}({call_args})\n')
+                lines.append('        if ok:\n')
+                lines.append(
+                    f'            _callback_pop_subscription_id({owner_name}, {subscription_id_name})\n'
+                )
+                lines.append('        return ok\n')
                 lines.append(f'    {name}.__doc__ = {raw_name}.__doc__\n')
                 lines.append(f'    {name}.argtypes = {raw_name}.argtypes\n')
                 lines.append(f'    {name}.restype = {raw_name}.restype\n')

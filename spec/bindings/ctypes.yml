@@ -127,12 +127,6 @@ callback_functions:
     - dvz_input_subscribe_resize
     - dvz_input_subscribe_scale
     - dvz_view_post
-  unsubscribe:
-    - dvz_input_unsubscribe_event
-    - dvz_input_unsubscribe_keyboard
-    - dvz_input_unsubscribe_pointer
-    - dvz_input_unsubscribe_resize
-    - dvz_input_unsubscribe_scale
   setter:
     - dvz_canvas_set_draw_callback
     - dvz_view_set_frame_callback

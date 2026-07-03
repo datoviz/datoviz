@@ -19,6 +19,7 @@
 #include "datoviz/drp2/types.h"
 #include "datoviz/geom/types.h"
 #include "datoviz/math/_cglm.h"
+#include "datoviz/input/router.h"
 #include "datoviz/scene/animation.h"
 #include "datoviz/controller/arcball.h"
 #include "datoviz/controller/camera.h"
@@ -1965,6 +1966,7 @@ struct DvzPanel
     DvzFly* fly;         /* optional fly camera controller (borrowed from scene-owned handle) */
     DvzController* controllers[3]; /* optional scene-owned spatial controller bindings */
     DvzInputRouter* input_router; /* optional router subscribed through panel-local dispatch */
+    DvzCallbackId input_subscription_id;
     DvzVisual* fly_pivot_marker_visual; /* optional navigation overlay marker visual */
     DvzVisual* bounds_visual; /* optional panel-owned visible bounds overlay */
     DvzVisual* bounds_occluded_visual; /* optional panel-owned occluded bounds overlay */

@@ -624,7 +624,11 @@ void dvz_arcball_connect(DvzArcball* arcball, DvzInputRouter* router)
     DvzInputResizeEvent r;
     if (dvz_input_router_last_resize(router, &r) && r.window_width > 0 && r.window_height > 0)
         dvz_arcball_resize(arcball, (float)r.window_width, (float)r.window_height);
-    dvz_input_subscribe_event(router, _arcball_input_callback, arcball);
+    if (arcball->input_router != NULL && arcball->input_subscription_id != DVZ_CALLBACK_ID_NONE)
+        dvz_input_unsubscribe(arcball->input_router, arcball->input_subscription_id);
+    arcball->input_router = router;
+    arcball->input_subscription_id =
+        dvz_input_subscribe_event(router, _arcball_input_callback, arcball);
 }
 
 
@@ -633,7 +637,14 @@ void dvz_arcball_disconnect(DvzArcball* arcball, DvzInputRouter* router)
 {
     ANN(arcball);
     ANN(router);
-    dvz_input_unsubscribe_event(router, _arcball_input_callback, arcball);
+    if (arcball->input_subscription_id != DVZ_CALLBACK_ID_NONE)
+    {
+        DvzInputRouter* subscribed_router =
+            arcball->input_router != NULL ? arcball->input_router : router;
+        dvz_input_unsubscribe(subscribed_router, arcball->input_subscription_id);
+        arcball->input_router = NULL;
+        arcball->input_subscription_id = DVZ_CALLBACK_ID_NONE;
+    }
 }
 
 

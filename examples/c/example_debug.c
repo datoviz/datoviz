@@ -529,7 +529,8 @@ bool example_debug_install(ExampleDebug* debug, int argc, char** argv)
     if (debug->input == NULL)
         return false;
 
-    dvz_input_subscribe_keyboard(debug->input, _debug_keyboard, debug);
+    debug->input_subscription_id =
+        dvz_input_subscribe_keyboard(debug->input, _debug_keyboard, debug);
     debug->installed = true;
     dvz_fprintf(stderr, "example debug: D dump state, S save PNG, R reset controllers\n");
     return true;
@@ -546,7 +547,8 @@ void example_debug_uninstall(ExampleDebug* debug)
 {
     if (debug == NULL || !debug->installed || debug->input == NULL)
         return;
-    dvz_input_unsubscribe_keyboard(debug->input, _debug_keyboard, debug);
+    dvz_input_unsubscribe(debug->input, debug->input_subscription_id);
+    debug->input_subscription_id = DVZ_CALLBACK_ID_NONE;
     debug->installed = false;
     debug->input = NULL;
 }

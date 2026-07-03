@@ -14,6 +14,7 @@
 #include "datoviz/controller/fly.h"
 #include "datoviz/controller/panzoom.h"
 #include "datoviz/controller/turntable.h"
+#include "datoviz/input/router.h"
 
 
 
@@ -24,6 +25,8 @@ struct DvzPanzoom
     int  flags;
     bool has_viewport;
     bool interacting;
+    DvzInputRouter* input_router;
+    DvzCallbackId input_subscription_id;
 
     vec2 pan;
     vec2 pan_center;
@@ -56,6 +59,8 @@ struct DvzArcball
     vec2 pan_center;  /* committed pan baseline used during right/middle drag */
     bool has_view;    /* true when view carries a camera-space drag basis */
     bool interacting; /* true while the pointer is controlling the arcball */
+    DvzInputRouter* input_router;
+    DvzCallbackId input_subscription_id;
 };
 
 
@@ -69,6 +74,8 @@ struct DvzFly
     vec2 viewport_size;
     bool has_viewport;
     bool interacting;
+    DvzInputRouter* input_router;
+    DvzCallbackId input_subscription_id;
 
     vec3 world_up;
     vec3 position;
@@ -115,6 +122,8 @@ struct DvzTurntable
     vec2 viewport_size;
     bool has_viewport;
     bool interacting;
+    DvzInputRouter* input_router;
+    DvzCallbackId input_subscription_id;
 
     vec3 pivot;
     vec3 eye;

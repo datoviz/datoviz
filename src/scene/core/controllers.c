@@ -1630,12 +1630,13 @@ DvzResult dvz_panel_connect_input(DvzPanel* panel, DvzInputRouter* router)
         return -1;
     if (panel->input_router == router)
         return 0;
-    if (panel->input_router != NULL)
-        dvz_input_unsubscribe_event(
-            panel->input_router, _scene_panel_input_callback, panel);
+    if (panel->input_router != NULL && panel->input_subscription_id != DVZ_CALLBACK_ID_NONE)
+        dvz_input_unsubscribe(panel->input_router, panel->input_subscription_id);
     panel->input_router = router;
+    panel->input_subscription_id = DVZ_CALLBACK_ID_NONE;
     if (router != NULL)
-        dvz_input_subscribe_event(router, _scene_panel_input_callback, panel);
+        panel->input_subscription_id =
+            dvz_input_subscribe_event(router, _scene_panel_input_callback, panel);
     return 0;
 }
 

@@ -123,6 +123,7 @@ typedef struct DvzCanvasApp
     int key_prev_escape;
     int key_prev_s;
     int key_prev_r;
+    DvzCallbackId keyboard_subscription_id;
     uint64_t scene_frame_index;
     bool scene_last_ok;
     bool scene_reported_ok;
@@ -1325,7 +1326,8 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
     DvzInputRouter* router = dvz_canvas_input(app->canvas);
     if (router != NULL)
     {
-        dvz_input_subscribe_keyboard(router, _dvz_canvas_keyboard, app);
+        app->keyboard_subscription_id =
+            dvz_input_subscribe_keyboard(router, _dvz_canvas_keyboard, app);
     }
     return true;
 }
@@ -1353,7 +1355,8 @@ static void _dvz_canvas_destroy(DvzCanvasApp* app)
         DvzInputRouter* router = dvz_canvas_input(app->canvas);
         if (router != NULL)
         {
-            dvz_input_unsubscribe_keyboard(router, _dvz_canvas_keyboard, app);
+            dvz_input_unsubscribe(router, app->keyboard_subscription_id);
+            app->keyboard_subscription_id = DVZ_CALLBACK_ID_NONE;
         }
         dvz_canvas_set_draw_callback(app->canvas, NULL, NULL);
     }

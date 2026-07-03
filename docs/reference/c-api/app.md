@@ -18,7 +18,7 @@ Common workflows:
 - [Handle input events](../../how-to/input-events.md)
 - [Save screenshots](../../how-to/capture-an-image.md)
 
-Functions: 207
+Functions: 203
 
 ## Symbol Groups
 
@@ -27,7 +27,7 @@ Functions: 207
 | [App](#app) | 11 | `include/datoviz/app.h`, `include/datoviz/app_interop.h` |
 | [Canvas](#canvas) | 18 | `include/datoviz/canvas.h` |
 | [Gui](#gui) | 32 | `include/datoviz/gui.h` |
-| [Input](#input) | 19 | `include/datoviz/input/pointer.h`, `include/datoviz/input/router.h` |
+| [Input](#input) | 15 | `include/datoviz/input/pointer.h`, `include/datoviz/input/router.h` |
 | [Keyboard](#keyboard) | 6 | `include/datoviz/input/keyboard.h` |
 | [Pointer](#pointer) | 5 | `include/datoviz/input/pointer.h` |
 | [Stream](#stream) | 17 | `include/datoviz/stream.h`, `include/datoviz/video.h` |
@@ -131,11 +131,7 @@ Functions: 207
     | [`dvz_input_subscribe_resize()`](#dvz_input_subscribe_resize) | `include/datoviz/input/router.h` |
     | [`dvz_input_subscribe_scale()`](#dvz_input_subscribe_scale) | `include/datoviz/input/router.h` |
     | [`dvz_input_timestamp_ns()`](#dvz_input_timestamp_ns) | `include/datoviz/input/pointer.h` |
-    | [`dvz_input_unsubscribe_event()`](#dvz_input_unsubscribe_event) | `include/datoviz/input/router.h` |
-    | [`dvz_input_unsubscribe_keyboard()`](#dvz_input_unsubscribe_keyboard) | `include/datoviz/input/router.h` |
-    | [`dvz_input_unsubscribe_pointer()`](#dvz_input_unsubscribe_pointer) | `include/datoviz/input/router.h` |
-    | [`dvz_input_unsubscribe_resize()`](#dvz_input_unsubscribe_resize) | `include/datoviz/input/router.h` |
-    | [`dvz_input_unsubscribe_scale()`](#dvz_input_unsubscribe_scale) | `include/datoviz/input/router.h` |
+    | [`dvz_input_unsubscribe()`](#dvz_input_unsubscribe) | `include/datoviz/input/router.h` |
 
     ### Keyboard
 
@@ -1712,7 +1708,7 @@ Emit a union input event.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/router.h`:254._
+_Declared in `include/datoviz/input/router.h`:243._
 
 ### `dvz_input_emit_keyboard()`
 
@@ -1732,7 +1728,7 @@ Emit a keyboard event. Callbacks run synchronously on the emitting thread.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/router.h`:166._
+_Declared in `include/datoviz/input/router.h`:173._
 
 ### `dvz_input_emit_pointer()`
 
@@ -1752,7 +1748,7 @@ Emit a pointer event. Callbacks run synchronously on the emitting thread.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/router.h`:143._
+_Declared in `include/datoviz/input/router.h`:156._
 
 ### `dvz_input_emit_resize()`
 
@@ -1772,7 +1768,7 @@ Emit a resize event. Callbacks run synchronously on the emitting thread.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/router.h`:190._
+_Declared in `include/datoviz/input/router.h`:191._
 
 ### `dvz_input_emit_scale()`
 
@@ -1792,7 +1788,7 @@ Emit a scale event. Callbacks run synchronously on the emitting thread.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/router.h`:227._
+_Declared in `include/datoviz/input/router.h`:222._
 
 ### `dvz_input_router()`
 
@@ -1804,7 +1800,7 @@ Create a new router instance.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/router.h`:106._
+_Declared in `include/datoviz/input/router.h`:115._
 
 ### `dvz_input_router_destroy()`
 
@@ -1822,7 +1818,7 @@ Destroy a router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/router.h`:115._
+_Declared in `include/datoviz/input/router.h`:124._
 
 ### `dvz_input_router_last_resize()`
 
@@ -1848,12 +1844,12 @@ next resize.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/router.h`:204._
+_Declared in `include/datoviz/input/router.h`:205._
 
 ### `dvz_input_subscribe_event()`
 
 ```c title="dvz_input_subscribe_event"
-void dvz_input_subscribe_event(
+DvzCallbackId dvz_input_subscribe_event(
     DvzInputRouter * router,
     DvzInputCallback callback,
     void * user_data
@@ -1862,6 +1858,7 @@ void dvz_input_subscribe_event(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzCallbackId` | subscription id, or `DVZ_CALLBACK_ID_NONE` on failure |
 | `router` | `DvzInputRouter *` |  |
 | `callback` | `DvzInputCallback` |  |
 | `user_data` | `void *` |  |
@@ -1874,12 +1871,12 @@ gesture-derived pointer events such as click, double-click, drag-start, drag, an
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/input/router.h`:239._
+_Declared in `include/datoviz/input/router.h`:236._
 
 ### `dvz_input_subscribe_keyboard()`
 
 ```c title="dvz_input_subscribe_keyboard"
-void dvz_input_subscribe_keyboard(
+DvzCallbackId dvz_input_subscribe_keyboard(
     DvzInputRouter * router,
     DvzKeyboardCallback callback,
     void * user_data
@@ -1888,6 +1885,7 @@ void dvz_input_subscribe_keyboard(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzCallbackId` | subscription id, or `DVZ_CALLBACK_ID_NONE` on failure |
 | `router` | `DvzInputRouter *` |  |
 | `callback` | `DvzKeyboardCallback` |  |
 | `user_data` | `void *` |  |
@@ -1896,12 +1894,12 @@ Subscribe to keyboard events.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/input/router.h`:150._
+_Declared in `include/datoviz/input/router.h`:165._
 
 ### `dvz_input_subscribe_pointer()`
 
 ```c title="dvz_input_subscribe_pointer"
-void dvz_input_subscribe_pointer(
+DvzCallbackId dvz_input_subscribe_pointer(
     DvzInputRouter * router,
     DvzPointerCallback callback,
     void * user_data
@@ -1910,6 +1908,7 @@ void dvz_input_subscribe_pointer(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzCallbackId` | subscription id, or `DVZ_CALLBACK_ID_NONE` on failure |
 | `router` | `DvzInputRouter *` |  |
 | `callback` | `DvzPointerCallback` |  |
 | `user_data` | `void *` |  |
@@ -1923,12 +1922,12 @@ drag-start, drag, and drag-stop are emitted on the union input stream; use
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/input/router.h`:128._
+_Declared in `include/datoviz/input/router.h`:139._
 
 ### `dvz_input_subscribe_resize()`
 
 ```c title="dvz_input_subscribe_resize"
-void dvz_input_subscribe_resize(
+DvzCallbackId dvz_input_subscribe_resize(
     DvzInputRouter * router,
     DvzResizeCallback callback,
     void * user_data
@@ -1937,6 +1936,7 @@ void dvz_input_subscribe_resize(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzCallbackId` | subscription id, or `DVZ_CALLBACK_ID_NONE` on failure |
 | `router` | `DvzInputRouter *` |  |
 | `callback` | `DvzResizeCallback` |  |
 | `user_data` | `void *` |  |
@@ -1945,12 +1945,12 @@ Subscribe to resize events.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/input/router.h`:174._
+_Declared in `include/datoviz/input/router.h`:183._
 
 ### `dvz_input_subscribe_scale()`
 
 ```c title="dvz_input_subscribe_scale"
-void dvz_input_subscribe_scale(
+DvzCallbackId dvz_input_subscribe_scale(
     DvzInputRouter * router,
     DvzScaleCallback callback,
     void * user_data
@@ -1959,6 +1959,7 @@ void dvz_input_subscribe_scale(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzCallbackId` | subscription id, or `DVZ_CALLBACK_ID_NONE` on failure |
 | `router` | `DvzInputRouter *` |  |
 | `callback` | `DvzScaleCallback` |  |
 | `user_data` | `void *` |  |
@@ -1967,7 +1968,7 @@ Subscribe to content scale events.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/input/router.h`:212._
+_Declared in `include/datoviz/input/router.h`:215._
 
 ### `dvz_input_timestamp_ns()`
 
@@ -1981,115 +1982,28 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/input/pointer.h`:113._
 
-### `dvz_input_unsubscribe_event()`
+### `dvz_input_unsubscribe()`
 
-```c title="dvz_input_unsubscribe_event"
-void dvz_input_unsubscribe_event(
+```c title="dvz_input_unsubscribe"
+_Bool dvz_input_unsubscribe(
     DvzInputRouter * router,
-    DvzInputCallback callback,
-    void * user_data
+    DvzCallbackId id
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `router` | `DvzInputRouter *` |  |
-| `callback` | `DvzInputCallback` |  |
-| `user_data` | `void *` |  |
+| `id` | `DvzCallbackId` |  |
 
-Unsubscribe from union-style input events.
+Unsubscribe from any router callback by subscription id.
 
-Raw ctypes: not emitted by the current generated binding.
-
-_Declared in `include/datoviz/input/router.h`:247._
-
-### `dvz_input_unsubscribe_keyboard()`
-
-```c title="dvz_input_unsubscribe_keyboard"
-void dvz_input_unsubscribe_keyboard(
-    DvzInputRouter * router,
-    DvzKeyboardCallback callback,
-    void * user_data
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `router` | `DvzInputRouter *` |  |
-| `callback` | `DvzKeyboardCallback` |  |
-| `user_data` | `void *` |  |
-
-Unsubscribe from keyboard events.
+Returns true when a callback was removed and false when @p id is `DVZ_CALLBACK_ID_NONE` or is not
+currently registered on this router.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/input/router.h`:158._
-
-### `dvz_input_unsubscribe_pointer()`
-
-```c title="dvz_input_unsubscribe_pointer"
-void dvz_input_unsubscribe_pointer(
-    DvzInputRouter * router,
-    DvzPointerCallback callback,
-    void * user_data
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `router` | `DvzInputRouter *` |  |
-| `callback` | `DvzPointerCallback` |  |
-| `user_data` | `void *` |  |
-
-Unsubscribe from pointer events.
-
-Raw ctypes: not emitted by the current generated binding.
-
-_Declared in `include/datoviz/input/router.h`:135._
-
-### `dvz_input_unsubscribe_resize()`
-
-```c title="dvz_input_unsubscribe_resize"
-void dvz_input_unsubscribe_resize(
-    DvzInputRouter * router,
-    DvzResizeCallback callback,
-    void * user_data
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `router` | `DvzInputRouter *` |  |
-| `callback` | `DvzResizeCallback` |  |
-| `user_data` | `void *` |  |
-
-Unsubscribe from resize events.
-
-Raw ctypes: not emitted by the current generated binding.
-
-_Declared in `include/datoviz/input/router.h`:181._
-
-### `dvz_input_unsubscribe_scale()`
-
-```c title="dvz_input_unsubscribe_scale"
-void dvz_input_unsubscribe_scale(
-    DvzInputRouter * router,
-    DvzScaleCallback callback,
-    void * user_data
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `router` | `DvzInputRouter *` |  |
-| `callback` | `DvzScaleCallback` |  |
-| `user_data` | `void *` |  |
-
-Unsubscribe from content scale events.
-
-Raw ctypes: not emitted by the current generated binding.
-
-_Declared in `include/datoviz/input/router.h`:219._
+_Declared in `include/datoviz/input/router.h`:149._
 
 ## Keyboard
 

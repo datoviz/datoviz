@@ -1143,7 +1143,10 @@ void dvz_fly_connect(DvzFly* fly, DvzInputRouter* router)
     {
         dvz_fly_resize(fly, (float)r.window_width, (float)r.window_height);
     }
-    dvz_input_subscribe_event(router, _fly_input_callback, fly);
+    if (fly->input_router != NULL && fly->input_subscription_id != DVZ_CALLBACK_ID_NONE)
+        dvz_input_unsubscribe(fly->input_router, fly->input_subscription_id);
+    fly->input_router = router;
+    fly->input_subscription_id = dvz_input_subscribe_event(router, _fly_input_callback, fly);
 }
 
 
@@ -1158,7 +1161,13 @@ void dvz_fly_disconnect(DvzFly* fly, DvzInputRouter* router)
 {
     ANN(fly);
     ANN(router);
-    dvz_input_unsubscribe_event(router, _fly_input_callback, fly);
+    if (fly->input_subscription_id != DVZ_CALLBACK_ID_NONE)
+    {
+        DvzInputRouter* subscribed_router = fly->input_router != NULL ? fly->input_router : router;
+        dvz_input_unsubscribe(subscribed_router, fly->input_subscription_id);
+        fly->input_router = NULL;
+        fly->input_subscription_id = DVZ_CALLBACK_ID_NONE;
+    }
 }
 
 

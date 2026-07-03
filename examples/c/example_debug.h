@@ -67,6 +67,7 @@ typedef struct ExampleDebug
 {
     DvzView* view;
     DvzInputRouter* input;
+    DvzCallbackId input_subscription_id;
     const char* exe;
     const char* basename;
     bool installed;

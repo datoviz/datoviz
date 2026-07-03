@@ -181,6 +181,17 @@ def _callback_pop_subscription(callback_type, owner, callback, user_data):
     return _CALLBACK_KEEPALIVE.pop(key, None) or _callback_coerce(callback_type, callback)
 
 
+def _callback_store_subscription_id(owner, subscription_id, callback):
+    if subscription_id:
+        _CALLBACK_KEEPALIVE[('subscription_id', _ptr_value(owner), int(subscription_id))] = callback
+    return subscription_id
+
+
+def _callback_pop_subscription_id(owner, subscription_id):
+    if subscription_id:
+        _CALLBACK_KEEPALIVE.pop(('subscription_id', _ptr_value(owner), int(subscription_id)), None)
+
+
 def _callback_store_setter(function_name, callback_type, owner, callback):
     key = _callback_setter_key(function_name, callback_type, owner)
     if callback is None:
@@ -411,6 +422,13 @@ DVZ_BUILTIN_COLORMAP_INFERNO = DvzBuiltinColormap.DVZ_BUILTIN_COLORMAP_INFERNO
 DVZ_BUILTIN_COLORMAP_CIVIDIS = DvzBuiltinColormap.DVZ_BUILTIN_COLORMAP_CIVIDIS
 DVZ_BUILTIN_COLORMAP_TURBO = DvzBuiltinColormap.DVZ_BUILTIN_COLORMAP_TURBO
 DVZ_BUILTIN_COLORMAP_GRAY = DvzBuiltinColormap.DVZ_BUILTIN_COLORMAP_GRAY
+
+
+class DvzCallbackIdSpecial(CtypesEnum):
+    DVZ_CALLBACK_ID_NONE = 0
+
+
+DVZ_CALLBACK_ID_NONE = DvzCallbackIdSpecial.DVZ_CALLBACK_ID_NONE
 
 
 class DvzCameraType(CtypesEnum):
@@ -20092,12 +20110,15 @@ else:
  * This stream carries pointer, keyboard, resize, and scale events in one callback. When a
  * `DvzPointerGestureHandler` is attached to the router, this stream also receives
  * gesture-derived pointer events such as click, double-click, drag-start, drag, and drag-stop.
+ *
+ * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_event.argtypes = [ctypes.POINTER(DvzInputRouter), DvzInputCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_event.restype = None
+    _dvz_input_subscribe_event.restype = ctypes.c_ulong
     def dvz_input_subscribe_event(router, callback, user_data):
-        callback = _callback_store_subscription(DvzInputCallback, router, callback, user_data)
-        return _dvz_input_subscribe_event(router, callback, user_data)
+        callback = _callback_coerce(DvzInputCallback, callback)
+        subscription_id = _dvz_input_subscribe_event(router, callback, user_data)
+        return _callback_store_subscription_id(router, subscription_id, callback)
     dvz_input_subscribe_event.__doc__ = _dvz_input_subscribe_event.__doc__
     dvz_input_subscribe_event.argtypes = _dvz_input_subscribe_event.argtypes
     dvz_input_subscribe_event.restype = _dvz_input_subscribe_event.restype
@@ -20110,12 +20131,15 @@ except AttributeError:
 else:
     _dvz_input_subscribe_keyboard.__doc__ = """/**
  * Subscribe to keyboard events.
+ *
+ * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_keyboard.argtypes = [ctypes.POINTER(DvzInputRouter), DvzKeyboardCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_keyboard.restype = None
+    _dvz_input_subscribe_keyboard.restype = ctypes.c_ulong
     def dvz_input_subscribe_keyboard(router, callback, user_data):
-        callback = _callback_store_subscription(DvzKeyboardCallback, router, callback, user_data)
-        return _dvz_input_subscribe_keyboard(router, callback, user_data)
+        callback = _callback_coerce(DvzKeyboardCallback, callback)
+        subscription_id = _dvz_input_subscribe_keyboard(router, callback, user_data)
+        return _callback_store_subscription_id(router, subscription_id, callback)
     dvz_input_subscribe_keyboard.__doc__ = _dvz_input_subscribe_keyboard.__doc__
     dvz_input_subscribe_keyboard.argtypes = _dvz_input_subscribe_keyboard.argtypes
     dvz_input_subscribe_keyboard.restype = _dvz_input_subscribe_keyboard.restype
@@ -20133,12 +20157,15 @@ else:
  * directly through `dvz_input_emit_pointer()`. Gesture-derived events such as click, double-click,
  * drag-start, drag, and drag-stop are emitted on the union input stream; use
  * `dvz_input_subscribe_event()` when those higher-level pointer events are needed.
+ *
+ * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_pointer.argtypes = [ctypes.POINTER(DvzInputRouter), DvzPointerCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_pointer.restype = None
+    _dvz_input_subscribe_pointer.restype = ctypes.c_ulong
     def dvz_input_subscribe_pointer(router, callback, user_data):
-        callback = _callback_store_subscription(DvzPointerCallback, router, callback, user_data)
-        return _dvz_input_subscribe_pointer(router, callback, user_data)
+        callback = _callback_coerce(DvzPointerCallback, callback)
+        subscription_id = _dvz_input_subscribe_pointer(router, callback, user_data)
+        return _callback_store_subscription_id(router, subscription_id, callback)
     dvz_input_subscribe_pointer.__doc__ = _dvz_input_subscribe_pointer.__doc__
     dvz_input_subscribe_pointer.argtypes = _dvz_input_subscribe_pointer.argtypes
     dvz_input_subscribe_pointer.restype = _dvz_input_subscribe_pointer.restype
@@ -20151,12 +20178,15 @@ except AttributeError:
 else:
     _dvz_input_subscribe_resize.__doc__ = """/**
  * Subscribe to resize events.
+ *
+ * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_resize.argtypes = [ctypes.POINTER(DvzInputRouter), DvzResizeCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_resize.restype = None
+    _dvz_input_subscribe_resize.restype = ctypes.c_ulong
     def dvz_input_subscribe_resize(router, callback, user_data):
-        callback = _callback_store_subscription(DvzResizeCallback, router, callback, user_data)
-        return _dvz_input_subscribe_resize(router, callback, user_data)
+        callback = _callback_coerce(DvzResizeCallback, callback)
+        subscription_id = _dvz_input_subscribe_resize(router, callback, user_data)
+        return _callback_store_subscription_id(router, subscription_id, callback)
     dvz_input_subscribe_resize.__doc__ = _dvz_input_subscribe_resize.__doc__
     dvz_input_subscribe_resize.argtypes = _dvz_input_subscribe_resize.argtypes
     dvz_input_subscribe_resize.restype = _dvz_input_subscribe_resize.restype
@@ -20169,12 +20199,15 @@ except AttributeError:
 else:
     _dvz_input_subscribe_scale.__doc__ = """/**
  * Subscribe to content scale events.
+ *
+ * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_scale.argtypes = [ctypes.POINTER(DvzInputRouter), DvzScaleCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_scale.restype = None
+    _dvz_input_subscribe_scale.restype = ctypes.c_ulong
     def dvz_input_subscribe_scale(router, callback, user_data):
-        callback = _callback_store_subscription(DvzScaleCallback, router, callback, user_data)
-        return _dvz_input_subscribe_scale(router, callback, user_data)
+        callback = _callback_coerce(DvzScaleCallback, callback)
+        subscription_id = _dvz_input_subscribe_scale(router, callback, user_data)
+        return _callback_store_subscription_id(router, subscription_id, callback)
     dvz_input_subscribe_scale.__doc__ = _dvz_input_subscribe_scale.__doc__
     dvz_input_subscribe_scale.argtypes = _dvz_input_subscribe_scale.argtypes
     dvz_input_subscribe_scale.restype = _dvz_input_subscribe_scale.restype
@@ -20193,93 +20226,26 @@ else:
 
 
 try:
-    _dvz_input_unsubscribe_event = dvz.dvz_input_unsubscribe_event
+    _dvz_input_unsubscribe = dvz.dvz_input_unsubscribe
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_input_unsubscribe_event')
+    _MISSING_FUNCTIONS.append('dvz_input_unsubscribe')
 else:
-    _dvz_input_unsubscribe_event.__doc__ = """/**
- * Unsubscribe from union-style input events.
+    _dvz_input_unsubscribe.__doc__ = """/**
+ * Unsubscribe from any router callback by subscription id.
+ *
+ * Returns true when a callback was removed and false when @p id is `DVZ_CALLBACK_ID_NONE` or is not
+ * currently registered on this router.
  */"""
-    _dvz_input_unsubscribe_event.argtypes = [ctypes.POINTER(DvzInputRouter), DvzInputCallback, ctypes.c_void_p]
-    _dvz_input_unsubscribe_event.restype = None
-    def dvz_input_unsubscribe_event(router, callback, user_data):
-        callback = _callback_pop_subscription(DvzInputCallback, router, callback, user_data)
-        return _dvz_input_unsubscribe_event(router, callback, user_data)
-    dvz_input_unsubscribe_event.__doc__ = _dvz_input_unsubscribe_event.__doc__
-    dvz_input_unsubscribe_event.argtypes = _dvz_input_unsubscribe_event.argtypes
-    dvz_input_unsubscribe_event.restype = _dvz_input_unsubscribe_event.restype
-
-
-try:
-    _dvz_input_unsubscribe_keyboard = dvz.dvz_input_unsubscribe_keyboard
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_input_unsubscribe_keyboard')
-else:
-    _dvz_input_unsubscribe_keyboard.__doc__ = """/**
- * Unsubscribe from keyboard events.
- */"""
-    _dvz_input_unsubscribe_keyboard.argtypes = [ctypes.POINTER(DvzInputRouter), DvzKeyboardCallback, ctypes.c_void_p]
-    _dvz_input_unsubscribe_keyboard.restype = None
-    def dvz_input_unsubscribe_keyboard(router, callback, user_data):
-        callback = _callback_pop_subscription(DvzKeyboardCallback, router, callback, user_data)
-        return _dvz_input_unsubscribe_keyboard(router, callback, user_data)
-    dvz_input_unsubscribe_keyboard.__doc__ = _dvz_input_unsubscribe_keyboard.__doc__
-    dvz_input_unsubscribe_keyboard.argtypes = _dvz_input_unsubscribe_keyboard.argtypes
-    dvz_input_unsubscribe_keyboard.restype = _dvz_input_unsubscribe_keyboard.restype
-
-
-try:
-    _dvz_input_unsubscribe_pointer = dvz.dvz_input_unsubscribe_pointer
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_input_unsubscribe_pointer')
-else:
-    _dvz_input_unsubscribe_pointer.__doc__ = """/**
- * Unsubscribe from pointer events.
- */"""
-    _dvz_input_unsubscribe_pointer.argtypes = [ctypes.POINTER(DvzInputRouter), DvzPointerCallback, ctypes.c_void_p]
-    _dvz_input_unsubscribe_pointer.restype = None
-    def dvz_input_unsubscribe_pointer(router, callback, user_data):
-        callback = _callback_pop_subscription(DvzPointerCallback, router, callback, user_data)
-        return _dvz_input_unsubscribe_pointer(router, callback, user_data)
-    dvz_input_unsubscribe_pointer.__doc__ = _dvz_input_unsubscribe_pointer.__doc__
-    dvz_input_unsubscribe_pointer.argtypes = _dvz_input_unsubscribe_pointer.argtypes
-    dvz_input_unsubscribe_pointer.restype = _dvz_input_unsubscribe_pointer.restype
-
-
-try:
-    _dvz_input_unsubscribe_resize = dvz.dvz_input_unsubscribe_resize
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_input_unsubscribe_resize')
-else:
-    _dvz_input_unsubscribe_resize.__doc__ = """/**
- * Unsubscribe from resize events.
- */"""
-    _dvz_input_unsubscribe_resize.argtypes = [ctypes.POINTER(DvzInputRouter), DvzResizeCallback, ctypes.c_void_p]
-    _dvz_input_unsubscribe_resize.restype = None
-    def dvz_input_unsubscribe_resize(router, callback, user_data):
-        callback = _callback_pop_subscription(DvzResizeCallback, router, callback, user_data)
-        return _dvz_input_unsubscribe_resize(router, callback, user_data)
-    dvz_input_unsubscribe_resize.__doc__ = _dvz_input_unsubscribe_resize.__doc__
-    dvz_input_unsubscribe_resize.argtypes = _dvz_input_unsubscribe_resize.argtypes
-    dvz_input_unsubscribe_resize.restype = _dvz_input_unsubscribe_resize.restype
-
-
-try:
-    _dvz_input_unsubscribe_scale = dvz.dvz_input_unsubscribe_scale
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_input_unsubscribe_scale')
-else:
-    _dvz_input_unsubscribe_scale.__doc__ = """/**
- * Unsubscribe from content scale events.
- */"""
-    _dvz_input_unsubscribe_scale.argtypes = [ctypes.POINTER(DvzInputRouter), DvzScaleCallback, ctypes.c_void_p]
-    _dvz_input_unsubscribe_scale.restype = None
-    def dvz_input_unsubscribe_scale(router, callback, user_data):
-        callback = _callback_pop_subscription(DvzScaleCallback, router, callback, user_data)
-        return _dvz_input_unsubscribe_scale(router, callback, user_data)
-    dvz_input_unsubscribe_scale.__doc__ = _dvz_input_unsubscribe_scale.__doc__
-    dvz_input_unsubscribe_scale.argtypes = _dvz_input_unsubscribe_scale.argtypes
-    dvz_input_unsubscribe_scale.restype = _dvz_input_unsubscribe_scale.restype
+    _dvz_input_unsubscribe.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.c_ulong]
+    _dvz_input_unsubscribe.restype = ctypes.c_bool
+    def dvz_input_unsubscribe(router, id):
+        ok = _dvz_input_unsubscribe(router, id)
+        if ok:
+            _callback_pop_subscription_id(router, id)
+        return ok
+    dvz_input_unsubscribe.__doc__ = _dvz_input_unsubscribe.__doc__
+    dvz_input_unsubscribe.argtypes = _dvz_input_unsubscribe.argtypes
+    dvz_input_unsubscribe.restype = _dvz_input_unsubscribe.restype
 
 
 try:
@@ -32389,7 +32355,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1553
+_GENERATED_FUNCTION_COUNT = 1549
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_field_geometry', 'dvz_frame_plan_emit_config', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_panel_background_desc', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scalebar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
 _DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzTextStyle', 'DvzTextPlacement', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzFontDesc', 'DvzFontDefaults', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzContainer', 'DvzContainerIterator', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RawFallback', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzObject', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2D', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewSizeDesc', 'DvzViewDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]

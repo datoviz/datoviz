@@ -39,6 +39,13 @@ typedef enum DvzInputEventType
 
 
 
+typedef enum DvzCallbackIdSpecial
+{
+    DVZ_CALLBACK_ID_NONE = 0,
+} DvzCallbackIdSpecial;
+
+
+
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
@@ -47,6 +54,8 @@ typedef struct DvzInputResizeEvent DvzInputResizeEvent;
 typedef struct DvzInputScaleEvent DvzInputScaleEvent;
 typedef struct DvzInputEvent DvzInputEvent;
 typedef struct DvzInputRouter DvzInputRouter;
+
+typedef uint64_t DvzCallbackId;
 
 typedef void (*DvzPointerCallback)(DvzInputRouter*, const DvzPointerEvent*, void*);
 typedef void (*DvzKeyboardCallback)(DvzInputRouter*, const DvzKeyboardEvent*, void*);
@@ -123,17 +132,21 @@ DVZ_EXPORT void dvz_input_router_destroy(DvzInputRouter* router);
  * directly through `dvz_input_emit_pointer()`. Gesture-derived events such as click, double-click,
  * drag-start, drag, and drag-stop are emitted on the union input stream; use
  * `dvz_input_subscribe_event()` when those higher-level pointer events are needed.
+ *
+ * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */
-DVZ_EXPORT void
+DVZ_EXPORT DvzCallbackId
 dvz_input_subscribe_pointer(DvzInputRouter* router, DvzPointerCallback callback, void* user_data);
 
 
 
 /**
- * Unsubscribe from pointer events.
+ * Unsubscribe from any router callback by subscription id.
+ *
+ * Returns true when a callback was removed and false when @p id is `DVZ_CALLBACK_ID_NONE` or is not
+ * currently registered on this router.
  */
-DVZ_EXPORT void dvz_input_unsubscribe_pointer(
-    DvzInputRouter* router, DvzPointerCallback callback, void* user_data);
+DVZ_EXPORT bool dvz_input_unsubscribe(DvzInputRouter* router, DvzCallbackId id);
 
 
 
@@ -146,16 +159,10 @@ DVZ_EXPORT void dvz_input_emit_pointer(DvzInputRouter* router, const DvzPointerE
 
 /**
  * Subscribe to keyboard events.
+ *
+ * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */
-DVZ_EXPORT void dvz_input_subscribe_keyboard(
-    DvzInputRouter* router, DvzKeyboardCallback callback, void* user_data);
-
-
-
-/**
- * Unsubscribe from keyboard events.
- */
-DVZ_EXPORT void dvz_input_unsubscribe_keyboard(
+DVZ_EXPORT DvzCallbackId dvz_input_subscribe_keyboard(
     DvzInputRouter* router, DvzKeyboardCallback callback, void* user_data);
 
 
@@ -169,17 +176,11 @@ DVZ_EXPORT void dvz_input_emit_keyboard(DvzInputRouter* router, const DvzKeyboar
 
 /**
  * Subscribe to resize events.
+ *
+ * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */
-DVZ_EXPORT void
+DVZ_EXPORT DvzCallbackId
 dvz_input_subscribe_resize(DvzInputRouter* router, DvzResizeCallback callback, void* user_data);
-
-
-
-/**
- * Unsubscribe from resize events.
- */
-DVZ_EXPORT void dvz_input_unsubscribe_resize(
-    DvzInputRouter* router, DvzResizeCallback callback, void* user_data);
 
 
 
@@ -207,17 +208,11 @@ dvz_input_router_last_resize(const DvzInputRouter* router, DvzInputResizeEvent* 
 
 /**
  * Subscribe to content scale events.
+ *
+ * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */
-DVZ_EXPORT void
+DVZ_EXPORT DvzCallbackId
 dvz_input_subscribe_scale(DvzInputRouter* router, DvzScaleCallback callback, void* user_data);
-
-
-
-/**
- * Unsubscribe from content scale events.
- */
-DVZ_EXPORT void dvz_input_unsubscribe_scale(
-    DvzInputRouter* router, DvzScaleCallback callback, void* user_data);
 
 
 
@@ -234,17 +229,11 @@ DVZ_EXPORT void dvz_input_emit_scale(DvzInputRouter* router, const DvzInputScale
  * This stream carries pointer, keyboard, resize, and scale events in one callback. When a
  * `DvzPointerGestureHandler` is attached to the router, this stream also receives
  * gesture-derived pointer events such as click, double-click, drag-start, drag, and drag-stop.
+ *
+ * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */
-DVZ_EXPORT void
+DVZ_EXPORT DvzCallbackId
 dvz_input_subscribe_event(DvzInputRouter* router, DvzInputCallback callback, void* user_data);
-
-
-
-/**
- * Unsubscribe from union-style input events.
- */
-DVZ_EXPORT void
-dvz_input_unsubscribe_event(DvzInputRouter* router, DvzInputCallback callback, void* user_data);
 
 
 

@@ -41,6 +41,7 @@
 struct DvzPointerGestureHandler
 {
     DvzInputRouter* router;
+    DvzCallbackId subscription_id;
     DvzPointerState state;
     DvzPointerButton button;
     vec2 press_pos;
@@ -467,7 +468,7 @@ DvzPointerGestureHandler* dvz_pointer_gesture_handler(DvzInputRouter* router)
         (DvzPointerGestureHandler*)dvz_calloc(1, sizeof(DvzPointerGestureHandler));
     handler->router = router;
     handler->state = DVZ_POINTER_STATE_RELEASE;
-    dvz_input_subscribe_pointer(router, _pointer_router_callback, handler);
+    handler->subscription_id = dvz_input_subscribe_pointer(router, _pointer_router_callback, handler);
     return handler;
 }
 
@@ -478,6 +479,6 @@ void dvz_pointer_gesture_handler_destroy(DvzPointerGestureHandler* handler)
     if (handler == NULL)
         return;
     if (handler->router != NULL)
-        dvz_input_unsubscribe_pointer(handler->router, _pointer_router_callback, handler);
+        dvz_input_unsubscribe(handler->router, handler->subscription_id);
     dvz_free(handler);
 }

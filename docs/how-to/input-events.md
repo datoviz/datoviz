@@ -60,7 +60,8 @@ static void on_input(DvzInputRouter* router, const DvzInputEvent* event, void* u
 }
 
 DvzInputRouter* router = dvz_view_input(view);
-dvz_input_subscribe_event(router, on_input, &state);
+DvzCallbackId callback_id = dvz_input_subscribe_event(router, on_input, &state);
+dvz_input_unsubscribe(router, callback_id);
 ```
 
 The related example uses this same route:

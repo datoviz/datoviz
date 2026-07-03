@@ -611,8 +611,10 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
 
     GuiInputRecorder recorder_a = {};
     GuiInputRecorder recorder_b = {};
-    dvz_input_subscribe_pointer(router_a, _gui_record_pointer, &recorder_a);
-    dvz_input_subscribe_pointer(router_b, _gui_record_pointer, &recorder_b);
+    DvzCallbackId id_a =
+        dvz_input_subscribe_pointer(router_a, _gui_record_pointer, &recorder_a);
+    DvzCallbackId id_b =
+        dvz_input_subscribe_pointer(router_b, _gui_record_pointer, &recorder_b);
 
     _gui_emit_pointer(router_a, DVZ_POINTER_EVENT_MOVE);
     AT(recorder_a.count == 1);
@@ -624,8 +626,8 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     AT(recorder_b.count == 1);
     AT(recorder_b.last_type == DVZ_POINTER_EVENT_PRESS);
 
-    dvz_input_unsubscribe_pointer(router_a, _gui_record_pointer, &recorder_a);
-    dvz_input_unsubscribe_pointer(router_b, _gui_record_pointer, &recorder_b);
+    dvz_input_unsubscribe(router_a, id_a);
+    dvz_input_unsubscribe(router_b, id_b);
     dvz_gui_viewport_destroy(viewport_a);
     dvz_gui_viewport_destroy(viewport_b);
     dvz_app_destroy(app);

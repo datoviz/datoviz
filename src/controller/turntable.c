@@ -780,7 +780,14 @@ void dvz_turntable_connect(DvzTurntable* turntable, DvzInputRouter* router)
     {
         dvz_turntable_resize(turntable, (float)r.window_width, (float)r.window_height);
     }
-    dvz_input_subscribe_event(router, _turntable_input_callback, turntable);
+    if (turntable->input_router != NULL &&
+        turntable->input_subscription_id != DVZ_CALLBACK_ID_NONE)
+    {
+        dvz_input_unsubscribe(turntable->input_router, turntable->input_subscription_id);
+    }
+    turntable->input_router = router;
+    turntable->input_subscription_id =
+        dvz_input_subscribe_event(router, _turntable_input_callback, turntable);
 }
 
 
@@ -795,7 +802,14 @@ void dvz_turntable_disconnect(DvzTurntable* turntable, DvzInputRouter* router)
 {
     ANN(turntable);
     ANN(router);
-    dvz_input_unsubscribe_event(router, _turntable_input_callback, turntable);
+    if (turntable->input_subscription_id != DVZ_CALLBACK_ID_NONE)
+    {
+        DvzInputRouter* subscribed_router =
+            turntable->input_router != NULL ? turntable->input_router : router;
+        dvz_input_unsubscribe(subscribed_router, turntable->input_subscription_id);
+        turntable->input_router = NULL;
+        turntable->input_subscription_id = DVZ_CALLBACK_ID_NONE;
+    }
 }
 
 

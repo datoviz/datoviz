@@ -50,6 +50,7 @@
 
 typedef struct InputEventsState
 {
+    DvzCallbackId input_subscription_id;
     uint32_t pointer_count;
     uint32_t keyboard_count;
     uint32_t resize_count;
@@ -483,7 +484,7 @@ static void _subscribe_events(DvzInputRouter* router, InputEventsState* state)
 {
     ANN(router);
     ANN(state);
-    dvz_input_subscribe_event(router, _input_events_event, state);
+    state->input_subscription_id = dvz_input_subscribe_event(router, _input_events_event, state);
 }
 
 
@@ -498,7 +499,8 @@ static void _unsubscribe_events(DvzInputRouter* router, InputEventsState* state)
 {
     ANN(router);
     ANN(state);
-    dvz_input_unsubscribe_event(router, _input_events_event, state);
+    dvz_input_unsubscribe(router, state->input_subscription_id);
+    state->input_subscription_id = DVZ_CALLBACK_ID_NONE;
 }
 
 

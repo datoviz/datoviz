@@ -275,7 +275,8 @@ def main() -> int:
     router = dvz.dvz_input_router()
     assert bool(router)
     user_data = ctypes.c_void_p(1234)
-    dvz.dvz_input_subscribe_pointer(router, on_pointer, user_data)
+    pointer_id = dvz.dvz_input_subscribe_pointer(router, on_pointer, user_data)
+    assert pointer_id != 0
     dvz.dvz_pointer_emit_position(
         router,
         dvz.DvzPointerEventType.DVZ_POINTER_EVENT_MOVE,
@@ -290,7 +291,7 @@ def main() -> int:
         None,
     )
     assert calls == [1234]
-    dvz.dvz_input_unsubscribe_pointer(router, on_pointer, user_data)
+    assert dvz.dvz_input_unsubscribe(router, pointer_id)
     dvz.dvz_pointer_emit_position(
         router,
         dvz.DvzPointerEventType.DVZ_POINTER_EVENT_MOVE,
@@ -317,7 +318,8 @@ def main() -> int:
     recorder = PointerRecorder()
     router = dvz.dvz_input_router()
     assert bool(router)
-    dvz.dvz_input_subscribe_pointer(router, recorder.on_pointer, user_data)
+    pointer_id = dvz.dvz_input_subscribe_pointer(router, recorder.on_pointer, user_data)
+    assert pointer_id != 0
     dvz.dvz_pointer_emit_position(
         router,
         dvz.DvzPointerEventType.DVZ_POINTER_EVENT_MOVE,
@@ -332,7 +334,7 @@ def main() -> int:
         None,
     )
     assert recorder.calls == [1234]
-    dvz.dvz_input_unsubscribe_pointer(router, recorder.on_pointer, user_data)
+    assert dvz.dvz_input_unsubscribe(router, pointer_id)
     dvz.dvz_pointer_emit_position(
         router,
         dvz.DvzPointerEventType.DVZ_POINTER_EVENT_MOVE,

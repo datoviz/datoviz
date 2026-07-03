@@ -205,10 +205,10 @@ class _InputAdapter:
         self._keyboard_callback = self._on_keyboard
         self._resize_callback = self._on_resize
         self._scale_callback = self._on_scale
-        self._pointer_subscribed = False
-        self._keyboard_subscribed = False
-        self._resize_subscribed = False
-        self._scale_subscribed = False
+        self._pointer_subscription_id = 0
+        self._keyboard_subscription_id = 0
+        self._resize_subscription_id = 0
+        self._scale_subscription_id = 0
 
     def pointer(self, event_name: str = 'all'):
         """Register a handler for a pointer event name."""
@@ -269,18 +269,22 @@ class _InputAdapter:
 
         if self._closed:
             return
-        if self._pointer_subscribed:
-            raw.dvz_input_unsubscribe_pointer(self.router, self._pointer_callback, None)
-        if self._keyboard_subscribed:
-            raw.dvz_input_unsubscribe_keyboard(self.router, self._keyboard_callback, None)
-        if self._resize_subscribed:
-            raw.dvz_input_unsubscribe_resize(self.router, self._resize_callback, None)
-        if self._scale_subscribed:
-            raw.dvz_input_unsubscribe_scale(self.router, self._scale_callback, None)
+        if self._pointer_subscription_id:
+            raw.dvz_input_unsubscribe(self.router, self._pointer_subscription_id)
+        if self._keyboard_subscription_id:
+            raw.dvz_input_unsubscribe(self.router, self._keyboard_subscription_id)
+        if self._resize_subscription_id:
+            raw.dvz_input_unsubscribe(self.router, self._resize_subscription_id)
+        if self._scale_subscription_id:
+            raw.dvz_input_unsubscribe(self.router, self._scale_subscription_id)
         self._pointer_handlers.clear()
         self._keyboard_handlers.clear()
         self._resize_handlers.clear()
         self._scale_handlers.clear()
+        self._pointer_subscription_id = 0
+        self._keyboard_subscription_id = 0
+        self._resize_subscription_id = 0
+        self._scale_subscription_id = 0
         self._closed = True
 
     def _assert_open(self) -> None:
@@ -288,24 +292,28 @@ class _InputAdapter:
             raise RuntimeError('Datoviz host input adapter is closed')
 
     def _ensure_pointer_subscribed(self) -> None:
-        if not self._pointer_subscribed:
-            raw.dvz_input_subscribe_pointer(self.router, self._pointer_callback, None)
-            self._pointer_subscribed = True
+        if not self._pointer_subscription_id:
+            self._pointer_subscription_id = raw.dvz_input_subscribe_pointer(
+                self.router, self._pointer_callback, None
+            )
 
     def _ensure_keyboard_subscribed(self) -> None:
-        if not self._keyboard_subscribed:
-            raw.dvz_input_subscribe_keyboard(self.router, self._keyboard_callback, None)
-            self._keyboard_subscribed = True
+        if not self._keyboard_subscription_id:
+            self._keyboard_subscription_id = raw.dvz_input_subscribe_keyboard(
+                self.router, self._keyboard_callback, None
+            )
 
     def _ensure_resize_subscribed(self) -> None:
-        if not self._resize_subscribed:
-            raw.dvz_input_subscribe_resize(self.router, self._resize_callback, None)
-            self._resize_subscribed = True
+        if not self._resize_subscription_id:
+            self._resize_subscription_id = raw.dvz_input_subscribe_resize(
+                self.router, self._resize_callback, None
+            )
 
     def _ensure_scale_subscribed(self) -> None:
-        if not self._scale_subscribed:
-            raw.dvz_input_subscribe_scale(self.router, self._scale_callback, None)
-            self._scale_subscribed = True
+        if not self._scale_subscription_id:
+            self._scale_subscription_id = raw.dvz_input_subscribe_scale(
+                self.router, self._scale_callback, None
+            )
 
     def _on_pointer(self, _router, event_ptr, _user_data) -> None:
         event = _copy_pointer_event(event_ptr)

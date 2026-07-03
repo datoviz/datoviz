@@ -40,6 +40,7 @@ typedef struct
 
 typedef struct
 {
+    DvzCallbackId unsubscribe_id;
     uint32_t unsubscribe_calls;
     uint32_t follower_calls;
 } DispatchRecorder;
@@ -196,7 +197,7 @@ _unsubscribe_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void*
     ANN(user_data);
     DispatchRecorder* recorder = user_data;
     recorder->unsubscribe_calls++;
-    dvz_input_unsubscribe_pointer(router, _unsubscribe_pointer, user_data);
+    AT(dvz_input_unsubscribe(router, recorder->unsubscribe_id));
 }
 
 
@@ -316,12 +317,17 @@ int test_router_callbacks(TstContext* suite, const TstCase* item)
     ANN(suite);
     DvzInputRouter* router = dvz_input_router();
     int state = 0;
-    dvz_input_subscribe_pointer(router, _router_callback_one, &state);
-    dvz_input_subscribe_pointer(router, _router_callback_two, &state);
+    DvzCallbackId id0 = dvz_input_subscribe_pointer(router, _router_callback_one, &state);
+    DvzCallbackId id1 = dvz_input_subscribe_pointer(router, _router_callback_two, &state);
+    AT(id0 != DVZ_CALLBACK_ID_NONE);
+    AT(id1 != DVZ_CALLBACK_ID_NONE);
+    AT(id0 != id1);
     DvzPointerEvent event =
         _make_event(DVZ_POINTER_EVENT_PRESS, 10.0f, 5.0f, DVZ_POINTER_BUTTON_LEFT, 1);
     dvz_input_emit_pointer(router, &event);
     AT(state == 2);
+    AT(dvz_input_unsubscribe(router, id0));
+    AT(!dvz_input_unsubscribe(router, id0));
     dvz_input_router_destroy(router);
     return 0;
 }
@@ -336,13 +342,17 @@ int test_router_unsubscribe(TstContext* suite, const TstCase* item)
     ANN(suite);
     DvzInputRouter* router = dvz_input_router();
     DispatchRecorder recorder = {0};
-    dvz_input_subscribe_pointer(router, _unsubscribe_pointer, &recorder);
-    dvz_input_subscribe_pointer(router, _follower_pointer, &recorder);
+    recorder.unsubscribe_id = dvz_input_subscribe_pointer(router, _unsubscribe_pointer, &recorder);
+    DvzCallbackId follower_id = dvz_input_subscribe_pointer(router, _follower_pointer, &recorder);
+    AT(recorder.unsubscribe_id != DVZ_CALLBACK_ID_NONE);
+    AT(follower_id != DVZ_CALLBACK_ID_NONE);
     DvzPointerEvent event =
         _make_event(DVZ_POINTER_EVENT_PRESS, 0.0f, 0.0f, DVZ_POINTER_BUTTON_LEFT, 1);
     dvz_input_emit_pointer(router, &event);
     AT(recorder.unsubscribe_calls == 1);
     AT(recorder.follower_calls == 1);
+    AT(!dvz_input_unsubscribe(router, recorder.unsubscribe_id));
+    AT(dvz_input_unsubscribe(router, follower_id));
     dvz_input_router_destroy(router);
     return 0;
 }
