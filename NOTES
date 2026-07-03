@@ -13,3 +13,9 @@ visuals volume example, anything to fix in the code? the bounding box: can't we 
 
 
 
+
+scalars color/colorbar gsp example:
+
+FPS   32.6 (33 frames in 1.014 s)19:40:42.377 T105 E       validation.h:0166: validation layer: vkQueueSubmit2(): pSubmits[0] command buffer VkCommandBuffer 0xe1c57e0 expects VkImage 0x9390000000939 (subresource: aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT, mipLevel = 0, arrayLayer = 0) to be in layout VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL.
+The Vulkan spec states: If a descriptor with type equal to any of VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT is accessed as a result of this command, all image subresources identified by that descriptor must be in the image layout identified when the descriptor was written (https://vulkan.lunarg.com/doc/view/1.4.328.1/linux/antora/spec/latest/chapters/drawing.html#VUID-vkCmdDraw-None-09600)
+
