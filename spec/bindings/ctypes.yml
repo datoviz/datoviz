@@ -42,6 +42,7 @@ smoke_symbols:
   - dvz_visual_attr_count
   - dvz_visual_attr_info
   - dvz_visual_attr_supported
+  - dvz_visual_validate
   - dvz_sampled_field_id
   - dvz_scale_id
   - dvz_colormap_id
@@ -52,6 +53,7 @@ smoke_symbols:
   - dvz_controller_id
   - dvz_scene_destroy
   - dvz_figure
+  - dvz_figure_validate
   - dvz_panel_desc
   - dvz_panel_full
   - dvz_capability_snapshot

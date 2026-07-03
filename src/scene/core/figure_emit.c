@@ -167,6 +167,113 @@ static bool _scene_figure_validate_transparency_modes(
 }
 
 
+static void _figure_validation_report(DvzDiagnosticReport* report, const char* message)
+{
+    if (report != NULL && message != NULL)
+        (void)dvz_diagnostic_report_add(report, message);
+}
+
+
+bool dvz_figure_validate(
+    const DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report)
+{
+    bool ok = true;
+    if (report != NULL)
+        dvz_diagnostic_report_init(report);
+    if (figure == NULL)
+    {
+        _figure_validation_report(report, "figure validation failed: figure is NULL");
+        return false;
+    }
+    if (figure->scene == NULL)
+    {
+        _figure_validation_report(report, "figure validation failed: figure has no scene");
+        ok = false;
+    }
+    if (figure->width == 0 || figure->height == 0)
+    {
+        _figure_validation_report(report, "figure validation failed: figure extent is zero");
+        ok = false;
+    }
+
+    DvzCapabilitySnapshot default_caps;
+    if (caps == NULL)
+    {
+        default_caps = dvz_capability_snapshot();
+        caps = &default_caps;
+    }
+    if (!dvz_capability_snapshot_valid(caps))
+    {
+        _figure_validation_report(report, "figure validation failed: invalid capability snapshot");
+        ok = false;
+    }
+
+    char message[DVZ_SCENE_DIAGNOSTIC_SIZE];
+    for (uint32_t pi = 0; pi < figure->panel_count; pi++)
+    {
+        const DvzPanel* panel = &figure->panels[pi];
+        if (panel->figure != figure)
+        {
+            dvz_snprintf(
+                message, sizeof(message),
+                "figure validation failed: panel %u does not point back to its figure", pi);
+            _figure_validation_report(report, message);
+            ok = false;
+        }
+        if (!_panel_desc_valid(panel->desc))
+        {
+            dvz_snprintf(
+                message, sizeof(message),
+                "figure validation failed: panel %u has an invalid descriptor", pi);
+            _figure_validation_report(report, message);
+            ok = false;
+        }
+
+        bool has_wboit = false;
+        bool has_depth_peel = false;
+        for (uint32_t vi = 0; vi < panel->visual_count; vi++)
+        {
+            const DvzVisual* visual = panel->visuals[vi].visual;
+            if (visual == NULL)
+            {
+                dvz_snprintf(
+                    message, sizeof(message),
+                    "figure validation failed: panel %u visual attachment %u is NULL", pi, vi);
+                _figure_validation_report(report, message);
+                ok = false;
+                continue;
+            }
+            if (visual->scene != figure->scene)
+            {
+                dvz_snprintf(
+                    message, sizeof(message),
+                    "figure validation failed: panel %u visual attachment %u belongs to another "
+                    "scene",
+                    pi, vi);
+                _figure_validation_report(report, message);
+                ok = false;
+            }
+            if (!dvz_visual_validate(visual, report))
+                ok = false;
+            if (!visual->visible)
+                continue;
+            has_wboit = has_wboit || visual->alpha_mode == DVZ_ALPHA_WBOIT;
+            has_depth_peel = has_depth_peel || visual->alpha_mode == DVZ_ALPHA_DEPTH_PEEL;
+        }
+        if (has_wboit && has_depth_peel)
+        {
+            dvz_snprintf(
+                message, sizeof(message),
+                "figure validation failed: panel %u mixes WBOIT and depth-peeling transparency",
+                pi);
+            _figure_validation_report(report, message);
+            ok = false;
+        }
+    }
+    return ok;
+}
+
+
 
 /**
  * Clamp a requested sample count to a supported power-of-two sample count.

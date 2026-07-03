@@ -387,6 +387,55 @@ int test_scene_visual_public_introspection(TstContext* suite, const TstCase* ite
 }
 
 
+int test_scene_public_validation(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(point);
+    DvzVisual* pixel = dvz_pixel(scene, 0);
+    ANN(pixel);
+    AT(dvz_panel_add_visual(panel, point, NULL) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, pixel, NULL) == DVZ_OK);
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_visual_validate(point, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(dvz_figure_validate(figure, NULL, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    AT(dvz_visual_set_alpha_mode(point, DVZ_ALPHA_WBOIT) == DVZ_OK);
+    AT(dvz_visual_set_alpha_mode(pixel, DVZ_ALPHA_DEPTH_PEEL) == DVZ_OK);
+    AT(!dvz_figure_validate(figure, NULL, &report));
+    AT(dvz_diagnostic_report_count(&report) == 1);
+    AT(strstr(dvz_diagnostic_report_get(&report, 0), "mixes WBOIT") != NULL);
+
+    DvzVisualAttr* bad = &point->attrs[point->attr_count++];
+    snprintf(bad->name, sizeof(bad->name), "%s", "opacity");
+    bad->data = NULL;
+    bad->item_count = 0;
+    bad->item_size = sizeof(float);
+    bad->format = DVZ_VISUAL_ATTR_FORMAT_DEFAULT;
+    bad->source = DVZ_VISUAL_ATTR_SOURCE_PER_ITEM;
+    bad->mutability = DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC;
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_visual_validate(point, &report));
+    AT(dvz_diagnostic_report_count(&report) == 1);
+    AT(strstr(dvz_diagnostic_report_get(&report, 0), "unsupported") != NULL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Verify public read-only views over retained dense visual data.
  *

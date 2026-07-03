@@ -434,6 +434,22 @@ DVZ_EXPORT DvzTurntable* dvz_controller_turntable(DvzController* controller);
 
 
 /**
+ * Validate retained figure state without emitting a frame.
+ *
+ * This checks panel layout, panel attachments, visual-local invariants, and retained scene rules
+ * that can be evaluated without backend resources. Pass NULL for `caps` to use default
+ * capabilities.
+ *
+ * @param figure the figure
+ * @param caps optional capability snapshot
+ * @param report output diagnostic report (nullable)
+ * @return whether the retained figure state is valid
+ */
+DVZ_EXPORT bool dvz_figure_validate(
+    const DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report);
+
+
+/**
  * Emit an immutable frame artifact from a retained figure.
  *
  * The artifact owns the DRP2 command stream snapshot, frozen upload payload bytes, and split packet
@@ -1688,6 +1704,19 @@ dvz_visual_attr_info(const DvzVisual* visual, uint32_t index, DvzVisualAttrInfo*
  * @return whether the attribute is accepted by the visual family
  */
 DVZ_EXPORT bool dvz_visual_attr_supported(const DvzVisual* visual, const char* attr_name);
+
+
+/**
+ * Validate retained visual-local state.
+ *
+ * This checks that stored attributes are supported by the visual family and that retained attribute
+ * metadata is internally consistent.
+ *
+ * @param visual the visual
+ * @param report output diagnostic report (nullable)
+ * @return whether the retained visual state is valid
+ */
+DVZ_EXPORT bool dvz_visual_validate(const DvzVisual* visual, DvzDiagnosticReport* report);
 
 
 /**

@@ -872,6 +872,8 @@ int test_scene_visual_attr_source_and_mutability_metadata(TstContext* suite, con
 
 int test_scene_visual_public_introspection(TstContext* suite, const TstCase* item);
 
+int test_scene_public_validation(TstContext* suite, const TstCase* item);
+
 int test_scene_visual_data_view(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_item_range_api(TstContext* suite, const TstCase* item);

@@ -15,6 +15,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdio.h>
 #include <string.h>
 
 #include "_visual_internal.h"
@@ -176,4 +177,91 @@ bool dvz_visual_attr_supported(const DvzVisual* visual, const char* attr_name)
     if (visual == NULL || attr_name == NULL)
         return false;
     return _visual_family_attr_desc(visual->type, attr_name) != NULL;
+}
+
+
+static void _visual_validation_report(DvzDiagnosticReport* report, const char* message)
+{
+    if (report != NULL && message != NULL)
+        (void)dvz_diagnostic_report_add(report, message);
+}
+
+
+bool dvz_visual_validate(const DvzVisual* visual, DvzDiagnosticReport* report)
+{
+    bool ok = true;
+    if (visual == NULL)
+    {
+        _visual_validation_report(report, "visual validation failed: visual is NULL");
+        return false;
+    }
+    const DvzVisualFamilyOps* ops = visual->ops != NULL ? visual->ops :
+                                                           _scene_visual_family_ops(visual->type);
+    if (visual->scene == NULL)
+    {
+        _visual_validation_report(report, "visual validation failed: visual has no scene");
+        ok = false;
+    }
+    if (ops == NULL)
+    {
+        _visual_validation_report(report, "visual validation failed: unknown visual family");
+        return false;
+    }
+
+    char message[DVZ_SCENE_DIAGNOSTIC_SIZE];
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+    {
+        const DvzVisualAttr* attr = &visual->attrs[i];
+        if (attr->name[0] == '\0')
+        {
+            snprintf(
+                message, sizeof(message),
+                "visual validation failed: visual %llu attribute %u has no name",
+                (unsigned long long)visual->id, i);
+            _visual_validation_report(report, message);
+            ok = false;
+            continue;
+        }
+        if (_visual_family_attr_desc(visual->type, attr->name) == NULL)
+        {
+            snprintf(
+                message, sizeof(message),
+                "visual validation failed: %s visual attribute '%s' is unsupported", ops->name,
+                attr->name);
+            _visual_validation_report(report, message);
+            ok = false;
+            continue;
+        }
+        if (!_attr_source_supported(visual->type, attr->name, attr->source))
+        {
+            snprintf(
+                message, sizeof(message),
+                "visual validation failed: %s visual attribute '%s' has unsupported source %d",
+                ops->name, attr->name, (int)attr->source);
+            _visual_validation_report(report, message);
+            ok = false;
+        }
+        uint32_t expected_size =
+            _attr_item_size_for_format(visual->type, attr->name, attr->format);
+        if (expected_size == 0 || attr->item_size != expected_size)
+        {
+            snprintf(
+                message, sizeof(message),
+                "visual validation failed: %s visual attribute '%s' has item size %u, expected "
+                "%u",
+                ops->name, attr->name, attr->item_size, expected_size);
+            _visual_validation_report(report, message);
+            ok = false;
+        }
+        if (attr->item_count > 0 && attr->data == NULL && attr->buffer == NULL)
+        {
+            snprintf(
+                message, sizeof(message),
+                "visual validation failed: %s visual attribute '%s' has items but no payload",
+                ops->name, attr->name);
+            _visual_validation_report(report, message);
+            ok = false;
+        }
+    }
+    return ok;
 }
