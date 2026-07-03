@@ -1651,6 +1651,66 @@ static bool _app_should_exit(DvzApp* app)
 }
 
 
+/**
+ * Release runtime resources for one closed interactive view.
+ *
+ * @param win view to close
+ */
+static void _view_close_runtime_resources(DvzView* win)
+{
+    ANN(win);
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+    if (win->gui != NULL)
+    {
+        _dvz_gui_destroy(win->gui);
+        win->gui = NULL;
+    }
+#endif
+    if (win->canvas != NULL)
+    {
+        dvz_canvas_destroy(win->canvas);
+        win->canvas = NULL;
+    }
+    if (win->recorder != NULL)
+    {
+        (void)dvz_drp2_recorder_close(win->recorder);
+        win->recorder = NULL;
+    }
+    if (win->replay_recording != NULL)
+    {
+        dvz_drp2_recording_close(win->replay_recording);
+        win->replay_recording = NULL;
+    }
+    if (win->window != NULL)
+    {
+        dvz_window_destroy(win->window);
+        win->window = NULL;
+    }
+    win->render_enabled = false;
+    win->is_interactive = false;
+    win->dirty = false;
+    win->frame_requested = false;
+    win->next_frame_ns = 0;
+}
+
+
+/**
+ * Destroy native windows that have received a close request.
+ *
+ * @param app app to inspect
+ */
+static void _app_reap_closed_views(DvzApp* app)
+{
+    ANN(app);
+    for (uint32_t i = 0; i < app->view_count; i++)
+    {
+        DvzView* win = &app->views[i];
+        if (_view_close_requested(win))
+            _view_close_runtime_resources(win);
+    }
+}
+
+
 
 /**
  * Return whether the app has active continuous rendering work.
@@ -5878,6 +5938,12 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
             else
                 _app_host_poll(app);
 
+            if (_app_should_exit(app))
+            {
+                _app_reap_closed_views(app);
+                break;
+            }
+            _app_reap_closed_views(app);
             if (_app_should_exit(app))
                 break;
 
