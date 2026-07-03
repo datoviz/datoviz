@@ -922,8 +922,6 @@ dvz_panel_get_reserve
 dvz_panel_inner_rect_px
 dvz_panel_layout_reserve
 dvz_panel_plot_rect_px
-dvz_panel_query
-dvz_panel_query_now
 dvz_panel_set_background
 dvz_panel_set_background_color
 dvz_panel_set_border
