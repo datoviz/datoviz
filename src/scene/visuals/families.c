@@ -694,6 +694,7 @@ static void _panel_background_detach(DvzPanel* panel)
     if (panel->background_visual == NULL)
     {
         panel->background_type = DVZ_PANEL_BACKGROUND_NONE;
+        panel->background = dvz_panel_background_desc();
         return;
     }
 
@@ -712,6 +713,7 @@ static void _panel_background_detach(DvzPanel* panel)
     dvz_visual_destroy(panel->background_visual);
     panel->background_visual = NULL;
     panel->background_type = DVZ_PANEL_BACKGROUND_NONE;
+    panel->background = dvz_panel_background_desc();
     if (panel->figure != NULL)
         _scene_notify_request_frame(panel->figure);
 }
@@ -1066,6 +1068,7 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
             return false;
         }
         panel->background_type = background->type;
+        panel->background = *background;
         _panel_background_mark_colorbars_dirty(panel);
         return true;
     }
@@ -1125,12 +1128,23 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
             return false;
         }
         panel->background_type = DVZ_PANEL_BACKGROUND_IMAGE;
+        panel->background = *background;
+        panel->background.image.rgba = NULL;
         _panel_background_mark_colorbars_dirty(panel);
         return true;
     }
 
     log_error("dvz_panel_set_background: unknown background type");
     return false;
+}
+
+
+bool dvz_panel_background(const DvzPanel* panel, DvzPanelBackgroundDesc* out)
+{
+    if (panel == NULL || out == NULL)
+        return false;
+    *out = panel->background;
+    return true;
 }
 
 
@@ -1260,6 +1274,15 @@ bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
     panel->border = *border;
     dvz_visual_set_visible(panel->border_visual, true);
     _scene_notify_request_frame(panel->figure);
+    return true;
+}
+
+
+bool dvz_panel_border(const DvzPanel* panel, DvzPanelBorderDesc* out)
+{
+    if (panel == NULL || out == NULL)
+        return false;
+    *out = panel->border;
     return true;
 }
 

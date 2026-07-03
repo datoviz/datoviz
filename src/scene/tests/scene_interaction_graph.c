@@ -1013,9 +1013,15 @@ int test_scene_background_color_creates_fixed_quad(TstContext* suite, const TstC
     /* Initially no visuals. */
     AT(panel->visual_count == 0);
     AT(panel->background_visual == NULL);
+    DvzPanelBackgroundDesc background_out = {0};
+    AT(dvz_panel_background(panel, &background_out));
+    AT(background_out.type == DVZ_PANEL_BACKGROUND_NONE);
+    AT(!dvz_panel_background(NULL, &background_out));
+    AT(!dvz_panel_background(panel, NULL));
 
     /* First call: creates a hidden background visual at z_layer=-1, FIXED. */
-    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.1f, 0.2f, 0.3f, 1.0f));
+    DvzColor bg_color = dvz_color_from_unit(0.1f, 0.2f, 0.3f, 1.0f);
+    dvz_panel_set_background_color(panel, bg_color);
     AT(panel->visual_count == 1);
     ANN(panel->background_visual);
     AT(panel->visuals[0].visual == panel->background_visual);
@@ -1024,6 +1030,11 @@ int test_scene_background_color_creates_fixed_quad(TstContext* suite, const TstC
     AT(panel->visuals[0].has_generated_role);
     AT(panel->visuals[0].generated_role == DVZ_GENERATED_VISUAL_PANEL_BACKGROUND);
     AT(panel->background_type == DVZ_PANEL_BACKGROUND_COLOR);
+    AT(dvz_panel_background(panel, &background_out));
+    AT(background_out.type == DVZ_PANEL_BACKGROUND_COLOR);
+    AC(background_out.color[0], (float)bg_color.r / 255.0f, 1e-6f);
+    AC(background_out.color[1], (float)bg_color.g / 255.0f, 1e-6f);
+    AC(background_out.color[2], (float)bg_color.b / 255.0f, 1e-6f);
 
     /* Second call with a different color: updates in place, no new visual. */
     DvzVisual* before = panel->background_visual;
@@ -1072,6 +1083,11 @@ int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const
     AT(panel->visual_count == 1);
     ANN(panel->background_visual);
     AT(panel->background_type == DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT);
+    DvzPanelBackgroundDesc background_out = {0};
+    AT(dvz_panel_background(panel, &background_out));
+    AT(background_out.type == DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT);
+    AC(background_out.gradient.end[0], 1.0f, 1e-6f);
+    AC(background_out.gradient.color1[2], 1.0f, 1e-6f);
     AT(panel->background_visual->type == DVZ_VISUAL_TYPE_PRIMITIVE);
     AT(panel->visuals[0].z_layer == -1);
     AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
@@ -1095,6 +1111,9 @@ int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const
     AT(dvz_panel_set_background(panel, &gradient));
     AT(panel->visual_count == 1);
     AT(panel->background_visual == gradient_visual);
+    AT(dvz_panel_background(panel, &background_out));
+    AC(background_out.gradient.end[0], 0.0f, 1e-6f);
+    AC(background_out.gradient.end[1], 1.0f, 1e-6f);
 
     uint8_t pixels[2 * 2 * 4] = {
         255, 0, 0, 255, 0, 255, 0, 255,
@@ -1109,6 +1128,11 @@ int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const
     ANN(panel->background_visual);
     AT(panel->background_visual != gradient_visual);
     AT(panel->background_type == DVZ_PANEL_BACKGROUND_IMAGE);
+    AT(dvz_panel_background(panel, &background_out));
+    AT(background_out.type == DVZ_PANEL_BACKGROUND_IMAGE);
+    AT(background_out.image.rgba == NULL);
+    AT(background_out.image.width == 2);
+    AT(background_out.image.height == 2);
     AT(panel->background_visual->type == DVZ_VISUAL_TYPE_IMAGE);
     AT(_visual_family_state(panel->background_visual)->field != NULL);
     AT(_visual_family_state(panel->background_visual)->field->desc.width == 2);
@@ -1121,6 +1145,8 @@ int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const
     AT(panel->visual_count == 0);
     AT(panel->background_visual == NULL);
     AT(panel->background_type == DVZ_PANEL_BACKGROUND_NONE);
+    AT(dvz_panel_background(panel, &background_out));
+    AT(background_out.type == DVZ_PANEL_BACKGROUND_NONE);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1142,6 +1168,11 @@ int test_scene_panel_border_creates_fixed_overlay(TstContext* suite, const TstCa
     border.inset_px = 4.0f;
 
     AT(panel->border_visual == NULL);
+    DvzPanelBorderDesc border_out = {0};
+    AT(dvz_panel_border(panel, &border_out));
+    AT(!border_out.visible);
+    AT(!dvz_panel_border(NULL, &border_out));
+    AT(!dvz_panel_border(panel, NULL));
     AT(dvz_panel_set_border(panel, &border));
     AT(panel->visual_count == 1);
     ANN(panel->border_visual);
@@ -1153,6 +1184,11 @@ int test_scene_panel_border_creates_fixed_overlay(TstContext* suite, const TstCa
     AT(panel->border_visual->type == DVZ_VISUAL_TYPE_SEGMENT);
     AT(panel->border.visible);
     AT(panel->border.width_px == 2.0f);
+    AT(dvz_panel_border(panel, &border_out));
+    AT(border_out.visible);
+    AC(border_out.width_px, 2.0f, 1e-6f);
+    AC(border_out.inset_px, 4.0f, 1e-6f);
+    AT(border_out.color.r == 10);
 
     int start_idx = _attr_index(panel->border_visual, "position_start");
     int width_idx = _attr_index(panel->border_visual, "line_width");
@@ -1177,6 +1213,8 @@ int test_scene_panel_border_creates_fixed_overlay(TstContext* suite, const TstCa
     AT(dvz_panel_set_border(panel, &border));
     AT(panel->visual_count == 1);
     AT(panel->border_visual == before);
+    AT(dvz_panel_border(panel, &border_out));
+    AC(border_out.inset_px, 8.0f, 1e-6f);
     starts = (const float*)panel->border_visual->attrs[start_idx].data;
     AC(starts[0], -0.84f, 1e-6f);
 
@@ -1188,6 +1226,8 @@ int test_scene_panel_border_creates_fixed_overlay(TstContext* suite, const TstCa
     AT(panel->visual_count == 0);
     AT(panel->border_visual == NULL);
     AT(!panel->border.visible);
+    AT(dvz_panel_border(panel, &border_out));
+    AT(!border_out.visible);
 
     border.visible = false;
     AT(dvz_panel_set_border(panel, &border));

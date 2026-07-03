@@ -774,6 +774,9 @@ DvzPanel* dvz_panel(DvzFigure* figure, const DvzPanelDesc* desc)
     panel->bounds_visual = NULL;
     panel->bounds_occluded_visual = NULL;
     panel->bounds_visible = false;
+    panel->background_visual = NULL;
+    panel->background_type = DVZ_PANEL_BACKGROUND_NONE;
+    panel->background = dvz_panel_background_desc();
     panel->border_visual = NULL;
     panel->border = dvz_panel_border_desc();
     panel->border.visible = false;

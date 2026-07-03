@@ -463,7 +463,7 @@ Destroy a scene-owned composite render view.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3440._
+_Declared in `include/datoviz/scene.h`:3464._
 
 ### `dvz_composite_visual()`
 
@@ -486,7 +486,7 @@ Polygon composites currently expose "fill" and "stroke" roles.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3471._
+_Declared in `include/datoviz/scene.h`:3495._
 
 ### `dvz_composite_visual_at()`
 
@@ -507,7 +507,7 @@ Return a generated visual by role index.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3459._
+_Declared in `include/datoviz/scene.h`:3483._
 
 ### `dvz_composite_visual_count()`
 
@@ -526,7 +526,7 @@ Return the number of generated visuals owned by a composite.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3449._
+_Declared in `include/datoviz/scene.h`:3473._
 
 ## Depth
 
@@ -544,7 +544,7 @@ Return default depth-cue options.
 
 Raw ctypes: available through `dvz_ffi_depth_cue_desc()`.
 
-_Declared in `include/datoviz/scene.h`:2424._
+_Declared in `include/datoviz/scene.h`:2448._
 
 ## Edl
 
@@ -562,7 +562,7 @@ Return default Eye-Dome Lighting options.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1198._
+_Declared in `include/datoviz/scene.h`:1222._
 
 ## Geom
 
@@ -1295,7 +1295,7 @@ bound 2D sampled field. Positive `angle` rotates counter-clockwise in rendered y
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3692._
+_Declared in `include/datoviz/scene.h`:3716._
 
 ### `dvz_glyph_set_atlas()`
 
@@ -1319,7 +1319,7 @@ the glyph shader. The atlas remains owned by the font's scene and must outlive t
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3705._
+_Declared in `include/datoviz/scene.h`:3729._
 
 ## Graph
 
@@ -1346,7 +1346,7 @@ external to the first public API slice and can update node positions through
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2872._
+_Declared in `include/datoviz/scene.h`:2896._
 
 ### `dvz_graph_composite()`
 
@@ -1369,7 +1369,7 @@ Graph composites expose `"edges"` and `"nodes"` roles.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3068._
+_Declared in `include/datoviz/scene.h`:3092._
 
 ### `dvz_graph_destroy()`
 
@@ -1387,7 +1387,7 @@ Destroy a scene-owned graph object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2880._
+_Declared in `include/datoviz/scene.h`:2904._
 
 ### `dvz_graph_edge_colors()`
 
@@ -1412,7 +1412,7 @@ Set a range of graph edge colors.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3041._
+_Declared in `include/datoviz/scene.h`:3065._
 
 ### `dvz_graph_edge_controls()`
 
@@ -1441,7 +1441,7 @@ If omitted, Bezier mode derives gentle XY control points from each edge's endpoi
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2998._
+_Declared in `include/datoviz/scene.h`:3022._
 
 ### `dvz_graph_edge_ids()`
 
@@ -1466,7 +1466,7 @@ Set stable graph edge user ids.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2968._
+_Declared in `include/datoviz/scene.h`:2992._
 
 ### `dvz_graph_edge_style()`
 
@@ -1482,7 +1482,7 @@ Return the default graph edge style descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2888._
+_Declared in `include/datoviz/scene.h`:2912._
 
 ### `dvz_graph_edge_widths()`
 
@@ -1507,7 +1507,7 @@ Set a range of graph edge stroke widths in pixels.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3055._
+_Declared in `include/datoviz/scene.h`:3079._
 
 ### `dvz_graph_edges()`
 
@@ -1534,7 +1534,7 @@ Edge endpoints reference node indices in the current graph node array.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2941._
+_Declared in `include/datoviz/scene.h`:2965._
 
 ### `dvz_graph_node_colors()`
 
@@ -1559,7 +1559,7 @@ Set a range of graph node colors.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3013._
+_Declared in `include/datoviz/scene.h`:3037._
 
 ### `dvz_graph_node_ids()`
 
@@ -1584,7 +1584,7 @@ Set stable graph node user ids.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2955._
+_Declared in `include/datoviz/scene.h`:2979._
 
 ### `dvz_graph_node_positions()`
 
@@ -1609,7 +1609,7 @@ Update graph node positions without changing node styles or edges.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2913._
+_Declared in `include/datoviz/scene.h`:2937._
 
 ### `dvz_graph_node_sizes()`
 
@@ -1634,7 +1634,7 @@ Set a range of graph node sizes in pixels.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3027._
+_Declared in `include/datoviz/scene.h`:3051._
 
 ### `dvz_graph_set_edge_count()`
 
@@ -1657,7 +1657,7 @@ Edge endpoints are left at their default values until `dvz_graph_edges()` is cal
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2926._
+_Declared in `include/datoviz/scene.h`:2950._
 
 ### `dvz_graph_set_edge_style()`
 
@@ -1682,7 +1682,7 @@ Configure graph edge rendering.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2983._
+_Declared in `include/datoviz/scene.h`:3007._
 
 ### `dvz_graph_set_node_count()`
 
@@ -1706,7 +1706,7 @@ Existing edges are discarded because their endpoints may no longer be valid. Cal
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2901._
+_Declared in `include/datoviz/scene.h`:2925._
 
 ## Image
 
@@ -1736,7 +1736,7 @@ to scene-owned sampled fields internally.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3547._
+_Declared in `include/datoviz/scene.h`:3571._
 
 ### `dvz_image_set_sampling()`
 
@@ -1760,7 +1760,7 @@ minification and magnification sampler for pixel-exact image rendering.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3560._
+_Declared in `include/datoviz/scene.h`:3584._
 
 ## Marker
 
@@ -1791,7 +1791,7 @@ code-SDF shapes include the v0.3 marker vocabulary plus target.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2699._
+_Declared in `include/datoviz/scene.h`:2723._
 
 ### `dvz_marker_set_style()`
 
@@ -1816,7 +1816,7 @@ and `DVZ_SHAPE_ASPECT_OUTLINE` draws the fill with an edge.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2632._
+_Declared in `include/datoviz/scene.h`:2656._
 
 ### `dvz_marker_set_symbol()`
 
@@ -1840,7 +1840,7 @@ existing dense item count, usually from `"position"`.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2606._
+_Declared in `include/datoviz/scene.h`:2630._
 
 ### `dvz_marker_set_symbols()`
 
@@ -1864,7 +1864,7 @@ built-in/texture-backed or mixed-encoding arrays are rejected for now.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2593._
+_Declared in `include/datoviz/scene.h`:2617._
 
 ### `dvz_marker_style()`
 
@@ -1884,7 +1884,7 @@ remains the fill color; `edge_color` and `stroke_width_px` apply when the aspect
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2618._
+_Declared in `include/datoviz/scene.h`:2642._
 
 ## Material
 
@@ -1906,7 +1906,7 @@ factor, light direction `(-0.45, 0.35, 0.82)`, ambient `0.24`, diffuse `0.82`, s
 
 Raw ctypes: available through `dvz_ffi_material_desc()`.
 
-_Declared in `include/datoviz/scene.h`:2379._
+_Declared in `include/datoviz/scene.h`:2403._
 
 ## Mesh
 
@@ -1935,7 +1935,7 @@ First retained slice: meshes use a triangle-list topology with `position` (vec3)
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2845._
+_Declared in `include/datoviz/scene.h`:2869._
 
 ### `dvz_mesh_set_geometry()`
 
@@ -1959,7 +1959,7 @@ copied into the visual's retained attribute and index buffers.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2858._
+_Declared in `include/datoviz/scene.h`:2882._
 
 ## Msaa
 
@@ -2004,7 +2004,7 @@ A path accepts `position` (vec3), `color` (RGBA8), and optional per-point `strok
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3485._
+_Declared in `include/datoviz/scene.h`:3509._
 
 ### `dvz_path_set_caps()`
 
@@ -2030,7 +2030,7 @@ slice caps are none, round, triangle-in, triangle-out, square, and butt.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3500._
+_Declared in `include/datoviz/scene.h`:3524._
 
 ### `dvz_path_set_join()`
 
@@ -2056,7 +2056,7 @@ the local stroke width. Round and bevel joins ignore the limit.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3515._
+_Declared in `include/datoviz/scene.h`:3539._
 
 ### `dvz_path_set_subpaths()`
 
@@ -2082,7 +2082,7 @@ the path position count at emission time.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3529._
+_Declared in `include/datoviz/scene.h`:3553._
 
 ## Phong
 
@@ -2103,7 +2103,7 @@ The descriptor uses `DVZ_MATERIAL_MODEL_PHONG` with the same defaults as
 
 Raw ctypes: available through `dvz_ffi_phong_material_desc()`.
 
-_Declared in `include/datoviz/scene.h`:2390._
+_Declared in `include/datoviz/scene.h`:2414._
 
 ## Pixel
 
@@ -2130,7 +2130,7 @@ bitfield). WGSL/WebGPU emission lowers each item to an instanced quad.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2681._
+_Declared in `include/datoviz/scene.h`:2705._
 
 ## Point
 
@@ -2158,7 +2158,7 @@ Renders screen-space antialiased circular sprites with `position` (vec3), `color
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2652._
+_Declared in `include/datoviz/scene.h`:2676._
 
 ### `dvz_point_set_style()`
 
@@ -2183,7 +2183,7 @@ and `DVZ_SHAPE_ASPECT_OUTLINE` draws the fill with an edge.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2465._
+_Declared in `include/datoviz/scene.h`:2489._
 
 ### `dvz_point_style_desc()`
 
@@ -2203,7 +2203,7 @@ attribute remains the fill color; `edge_color` and `stroke_width_px` apply when 
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2451._
+_Declared in `include/datoviz/scene.h`:2475._
 
 ## Polygon
 
@@ -2228,7 +2228,7 @@ A polygon represents one filled region with one outer ring and optional hole rin
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3080._
+_Declared in `include/datoviz/scene.h`:3104._
 
 ### `dvz_polygon_composite()`
 
@@ -2249,7 +2249,7 @@ Create a scene-owned composite render view for a polygon.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3230._
+_Declared in `include/datoviz/scene.h`:3254._
 
 ### `dvz_polygon_desc()`
 
@@ -2285,7 +2285,7 @@ Destroy a scene-owned polygon object and release its copied ring data.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3088._
+_Declared in `include/datoviz/scene.h`:3112._
 
 ### `dvz_polygon_fill_color()`
 
@@ -2306,7 +2306,7 @@ Set the polygon fill color.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3176._
+_Declared in `include/datoviz/scene.h`:3200._
 
 ### `dvz_polygon_geometry()`
 
@@ -2327,7 +2327,7 @@ Replace all polygon rings from a borrowed descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3106._
+_Declared in `include/datoviz/scene.h`:3130._
 
 ### `dvz_polygon_hole()`
 
@@ -2355,7 +2355,7 @@ replaces that hole.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3133._
+_Declared in `include/datoviz/scene.h`:3157._
 
 ### `dvz_polygon_id()`
 
@@ -2376,7 +2376,7 @@ Set the stable user id associated with a polygon.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3143._
+_Declared in `include/datoviz/scene.h`:3167._
 
 ### `dvz_polygon_outer()`
 
@@ -2399,7 +2399,7 @@ Replace the polygon outer ring while preserving existing holes.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3117._
+_Declared in `include/datoviz/scene.h`:3141._
 
 ### `dvz_polygon_set()`
 
@@ -2423,7 +2423,7 @@ style.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3243._
+_Declared in `include/datoviz/scene.h`:3267._
 
 ### `dvz_polygon_set_add()`
 
@@ -2444,7 +2444,7 @@ Append one polygon region to a polygon set.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3261._
+_Declared in `include/datoviz/scene.h`:3285._
 
 ### `dvz_polygon_set_composite()`
 
@@ -2465,7 +2465,7 @@ Create a scene-owned composite render view for a polygon set.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3432._
+_Declared in `include/datoviz/scene.h`:3456._
 
 ### `dvz_polygon_set_destroy()`
 
@@ -2483,7 +2483,7 @@ Destroy a scene-owned polygon set object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3251._
+_Declared in `include/datoviz/scene.h`:3275._
 
 ### `dvz_polygon_set_region_fill_color()`
 
@@ -2506,7 +2506,7 @@ Set one polygon region's fill color.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3334._
+_Declared in `include/datoviz/scene.h`:3358._
 
 ### `dvz_polygon_set_region_fill_colors()`
 
@@ -2531,7 +2531,7 @@ Set a contiguous range of polygon region fill colors.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3347._
+_Declared in `include/datoviz/scene.h`:3371._
 
 ### `dvz_polygon_set_region_geometry()`
 
@@ -2554,7 +2554,7 @@ Replace one polygon region's rings.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3272._
+_Declared in `include/datoviz/scene.h`:3296._
 
 ### `dvz_polygon_set_region_id()`
 
@@ -2577,7 +2577,7 @@ Set one polygon region's stable user id.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3285._
+_Declared in `include/datoviz/scene.h`:3309._
 
 ### `dvz_polygon_set_region_ids()`
 
@@ -2602,7 +2602,7 @@ Set a contiguous range of polygon region stable user ids.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3297._
+_Declared in `include/datoviz/scene.h`:3321._
 
 ### `dvz_polygon_set_region_stroke_color()`
 
@@ -2625,7 +2625,7 @@ Set one polygon region's stroke color.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3359._
+_Declared in `include/datoviz/scene.h`:3383._
 
 ### `dvz_polygon_set_region_stroke_colors()`
 
@@ -2650,7 +2650,7 @@ Set a contiguous range of polygon region stroke colors.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3372._
+_Declared in `include/datoviz/scene.h`:3396._
 
 ### `dvz_polygon_set_region_stroke_width_px()`
 
@@ -2673,7 +2673,7 @@ Set one polygon region's stroke width in pixels.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3385._
+_Declared in `include/datoviz/scene.h`:3409._
 
 ### `dvz_polygon_set_region_stroke_widths_px()`
 
@@ -2698,7 +2698,7 @@ Set a contiguous range of polygon region stroke widths.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3397._
+_Declared in `include/datoviz/scene.h`:3421._
 
 ### `dvz_polygon_set_region_visibilities()`
 
@@ -2723,7 +2723,7 @@ Set a contiguous range of polygon region visibilities.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3322._
+_Declared in `include/datoviz/scene.h`:3346._
 
 ### `dvz_polygon_set_region_visible()`
 
@@ -2746,7 +2746,7 @@ Set one polygon region's visibility.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3310._
+_Declared in `include/datoviz/scene.h`:3334._
 
 ### `dvz_polygon_set_stroke_caps()`
 
@@ -2769,7 +2769,7 @@ Configure polygon-set stroke endpoint caps.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3410._
+_Declared in `include/datoviz/scene.h`:3434._
 
 ### `dvz_polygon_set_stroke_join()`
 
@@ -2792,7 +2792,7 @@ Configure polygon-set stroke joins.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3422._
+_Declared in `include/datoviz/scene.h`:3446._
 
 ### `dvz_polygon_set_style()`
 
@@ -2816,7 +2816,7 @@ for applying defaults or several style fields atomically.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3166._
+_Declared in `include/datoviz/scene.h`:3190._
 
 ### `dvz_polygon_stroke_caps()`
 
@@ -2839,7 +2839,7 @@ Configure polygon stroke endpoint caps.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3208._
+_Declared in `include/datoviz/scene.h`:3232._
 
 ### `dvz_polygon_stroke_color()`
 
@@ -2860,7 +2860,7 @@ Set the polygon stroke color.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3186._
+_Declared in `include/datoviz/scene.h`:3210._
 
 ### `dvz_polygon_stroke_join()`
 
@@ -2883,7 +2883,7 @@ Configure polygon stroke joins.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3220._
+_Declared in `include/datoviz/scene.h`:3244._
 
 ### `dvz_polygon_stroke_width_px()`
 
@@ -2904,7 +2904,7 @@ Set the polygon stroke width in pixels.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3196._
+_Declared in `include/datoviz/scene.h`:3220._
 
 ### `dvz_polygon_style()`
 
@@ -2920,7 +2920,7 @@ Return the default polygon style descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3096._
+_Declared in `include/datoviz/scene.h`:3120._
 
 ### `dvz_polygon_visible()`
 
@@ -2941,7 +2941,7 @@ Set polygon visibility.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3153._
+_Declared in `include/datoviz/scene.h`:3177._
 
 ## Primitive
 
@@ -2970,7 +2970,7 @@ built-in shaders. Accepts `position` (vec3) and `color` (RGBA8), plus optional `
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2828._
+_Declared in `include/datoviz/scene.h`:2852._
 
 ## Segment
 
@@ -2998,7 +2998,7 @@ both ends.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2742._
+_Declared in `include/datoviz/scene.h`:2766._
 
 ### `dvz_segment_set_caps()`
 
@@ -3024,7 +3024,7 @@ slice caps are none, round, triangle-in, triangle-out, square, and butt.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2757._
+_Declared in `include/datoviz/scene.h`:2781._
 
 ## Sphere
 
@@ -3051,7 +3051,7 @@ fragment shader, writes sphere-surface depth, and uses analytic antialiasing at 
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2713._
+_Declared in `include/datoviz/scene.h`:2737._
 
 ### `dvz_sphere_set_mode()`
 
@@ -3076,7 +3076,7 @@ shader for more accurate surface position, normal, and depth.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2727._
+_Declared in `include/datoviz/scene.h`:2751._
 
 ## Splat
 
@@ -3104,7 +3104,7 @@ projected 3D covariance.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2667._
+_Declared in `include/datoviz/scene.h`:2691._
 
 ## Ssao
 
@@ -3122,7 +3122,7 @@ Return default screen-space ambient occlusion options.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1233._
+_Declared in `include/datoviz/scene.h`:1257._
 
 ## Standard
 
@@ -3144,7 +3144,7 @@ metallic `0`, no emissive contribution, and rim contribution `0.10`.
 
 Raw ctypes: available through `dvz_ffi_standard_material_desc()`.
 
-_Declared in `include/datoviz/scene.h`:2402._
+_Declared in `include/datoviz/scene.h`:2426._
 
 ## Symbol
 
@@ -3178,7 +3178,7 @@ through a scene-owned atlas texture.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2520._
+_Declared in `include/datoviz/scene.h`:2544._
 
 ### `dvz_symbol_builtin()`
 
@@ -3202,7 +3202,7 @@ Built-in symbol ids are stable within the set and currently match the correspond
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2492._
+_Declared in `include/datoviz/scene.h`:2516._
 
 ### `dvz_symbol_image_desc()`
 
@@ -3221,7 +3221,7 @@ ignored for bitmap sources.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2503._
+_Declared in `include/datoviz/scene.h`:2527._
 
 ### `dvz_symbol_msdf()`
 
@@ -3253,7 +3253,7 @@ distance-field range in source pixels when nonzero.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2558._
+_Declared in `include/datoviz/scene.h`:2582._
 
 ### `dvz_symbol_sdf()`
 
@@ -3285,7 +3285,7 @@ distance-field range in source pixels when nonzero.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2539._
+_Declared in `include/datoviz/scene.h`:2563._
 
 ### `dvz_symbol_set()`
 
@@ -3310,7 +3310,7 @@ parity slices.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2479._
+_Declared in `include/datoviz/scene.h`:2503._
 
 ### `dvz_symbol_svg_path()`
 
@@ -3343,7 +3343,7 @@ function returns `DVZ_SYMBOL_ID_INVALID` if Datoviz was built without msdfgen SV
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2578._
+_Declared in `include/datoviz/scene.h`:2602._
 
 ## Tessellate
 
@@ -3488,7 +3488,7 @@ path points, optionally grouped by dvz_vector_set_subpaths().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2785._
+_Declared in `include/datoviz/scene.h`:2809._
 
 ### `dvz_vector_set_style()`
 
@@ -3512,7 +3512,7 @@ Passing NULL restores the defaults.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2798._
+_Declared in `include/datoviz/scene.h`:2822._
 
 ### `dvz_vector_set_subpaths()`
 
@@ -3538,7 +3538,7 @@ order and must sum to the vector visual's path-point count at emission time.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2812._
+_Declared in `include/datoviz/scene.h`:2836._
 
 ### `dvz_vector_style()`
 
@@ -3557,7 +3557,7 @@ each dense `vector` attribute before endpoint derivation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2768._
+_Declared in `include/datoviz/scene.h`:2792._
 
 ## Visual
 
@@ -3578,7 +3578,7 @@ Return the visual alpha handling mode.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1805._
+_Declared in `include/datoviz/scene.h`:1829._
 
 ### `dvz_visual_attach_desc()`
 
@@ -3613,7 +3613,7 @@ Return the number of public attributes accepted by a visual family.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1681._
+_Declared in `include/datoviz/scene.h`:1705._
 
 ### `dvz_visual_attr_format()`
 
@@ -3636,7 +3636,7 @@ Missing attributes return the family default format.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1964._
+_Declared in `include/datoviz/scene.h`:1988._
 
 ### `dvz_visual_attr_info()`
 
@@ -3662,7 +3662,7 @@ The returned `name` pointer is owned by Datoviz and remains valid for the proces
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1696._
+_Declared in `include/datoviz/scene.h`:1720._
 
 ### `dvz_visual_attr_mutability()`
 
@@ -3685,7 +3685,7 @@ Missing attributes default to `DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC`.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1932._
+_Declared in `include/datoviz/scene.h`:1956._
 
 ### `dvz_visual_attr_source()`
 
@@ -3708,7 +3708,7 @@ Missing attributes default to `DVZ_VISUAL_ATTR_SOURCE_PER_ITEM`.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1904._
+_Declared in `include/datoviz/scene.h`:1928._
 
 ### `dvz_visual_attr_supported()`
 
@@ -3729,7 +3729,7 @@ Return whether a visual accepts one public attribute name.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1706._
+_Declared in `include/datoviz/scene.h`:1730._
 
 ### `dvz_visual_bounds()`
 
@@ -3754,7 +3754,7 @@ expose CPU-side bounds in this first slice.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2068._
+_Declared in `include/datoviz/scene.h`:2092._
 
 ### `dvz_visual_clear_item_range()`
 
@@ -3772,7 +3772,7 @@ Clear the active logical item range and restore full visual participation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2041._
+_Declared in `include/datoviz/scene.h`:2065._
 
 ### `dvz_visual_clear_transform()`
 
@@ -3791,7 +3791,7 @@ Clear the retained visual-local transform back to identity.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1875._
+_Declared in `include/datoviz/scene.h`:1899._
 
 ### `dvz_visual_data()`
 
@@ -3818,7 +3818,7 @@ through this first-slice view.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2015._
+_Declared in `include/datoviz/scene.h`:2039._
 
 ### `dvz_visual_depth_test()`
 
@@ -3837,7 +3837,7 @@ Return whether depth testing is enabled for the visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1751._
+_Declared in `include/datoviz/scene.h`:1775._
 
 ### `dvz_visual_destroy()`
 
@@ -3855,7 +3855,7 @@ Destroy a visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1645._
+_Declared in `include/datoviz/scene.h`:1669._
 
 ### `dvz_visual_family()`
 
@@ -3874,7 +3874,7 @@ Return the family of a visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1663._
+_Declared in `include/datoviz/scene.h`:1687._
 
 ### `dvz_visual_family_name()`
 
@@ -3893,7 +3893,7 @@ Return the stable public name of a visual family.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1672._
+_Declared in `include/datoviz/scene.h`:1696._
 
 ### `dvz_visual_get_item_range()`
 
@@ -3917,7 +3917,7 @@ distinguish an explicitly full active range from a cleared range.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2054._
+_Declared in `include/datoviz/scene.h`:2078._
 
 ### `dvz_visual_get_transform()`
 
@@ -3940,7 +3940,7 @@ When no transform is retained, this writes identity to `out`.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1866._
+_Declared in `include/datoviz/scene.h`:1890._
 
 ### `dvz_visual_has_transform()`
 
@@ -3959,7 +3959,7 @@ Return whether a visual has a retained local transform.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1854._
+_Declared in `include/datoviz/scene.h`:1878._
 
 ### `dvz_visual_id()`
 
@@ -3978,7 +3978,7 @@ Return the scene-local identity of a visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1654._
+_Declared in `include/datoviz/scene.h`:1678._
 
 ### `dvz_visual_set_alpha_mode()`
 
@@ -4004,7 +4004,7 @@ order-independent transparency path.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1766._
+_Declared in `include/datoviz/scene.h`:1790._
 
 ### `dvz_visual_set_attr_buffer()`
 
@@ -4039,7 +4039,7 @@ emits no CPU upload for that attribute.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2365._
+_Declared in `include/datoviz/scene.h`:2389._
 
 ### `dvz_visual_set_attr_format()`
 
@@ -4069,7 +4069,7 @@ requires a continuous scale bound to the semantic `"color"` slot.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1950._
+_Declared in `include/datoviz/scene.h`:1974._
 
 ### `dvz_visual_set_attr_mutability()`
 
@@ -4095,7 +4095,7 @@ callers know that an attribute is static or updated every frame.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1918._
+_Declared in `include/datoviz/scene.h`:1942._
 
 ### `dvz_visual_set_attr_source()`
 
@@ -4122,7 +4122,7 @@ before dense data is attached to the attribute.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1890._
+_Declared in `include/datoviz/scene.h`:1914._
 
 ### `dvz_visual_set_buffer()`
 
@@ -4148,7 +4148,7 @@ buffer must advertise `DVZ_SCENE_BUFFER_USAGE_INDEX`.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2328._
+_Declared in `include/datoviz/scene.h`:2352._
 
 ### `dvz_visual_set_data()`
 
@@ -4198,7 +4198,7 @@ Related: [`dvz_visual_set_data_many()`](#dvz_visual_set_data_many), [`dvz_visual
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1999._
+_Declared in `include/datoviz/scene.h`:2023._
 
 ### `dvz_visual_set_data_many()`
 
@@ -4234,7 +4234,7 @@ Related: [`dvz_visual_set_data()`](#dvz_visual_set_data).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2134._
+_Declared in `include/datoviz/scene.h`:2158._
 
 ### `dvz_visual_set_data_range()`
 
@@ -4271,7 +4271,7 @@ Related: [`dvz_visual_set_data()`](#dvz_visual_set_data).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2156._
+_Declared in `include/datoviz/scene.h`:2180._
 
 ### `dvz_visual_set_depth_cue()`
 
@@ -4297,7 +4297,7 @@ normalized clip depth after the visual's scene transform. Pass NULL to disable d
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2439._
+_Declared in `include/datoviz/scene.h`:2463._
 
 ### `dvz_visual_set_depth_test()`
 
@@ -4322,7 +4322,7 @@ geometry. Disabling it is primarily useful for diagnostics and overlays.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1742._
+_Declared in `include/datoviz/scene.h`:1766._
 
 ### `dvz_visual_set_field()`
 
@@ -4377,7 +4377,7 @@ binds it to the visual's `"index"` slot. Use `dvz_scene_buffer()` plus
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2344._
+_Declared in `include/datoviz/scene.h`:2368._
 
 ### `dvz_visual_set_item_range()`
 
@@ -4405,7 +4405,7 @@ supported family for this v0.4 slice.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2033._
+_Declared in `include/datoviz/scene.h`:2057._
 
 ### `dvz_visual_set_link_keys()`
 
@@ -4458,7 +4458,7 @@ shader path is broadened. Pass NULL to restore default material parameters.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2416._
+_Declared in `include/datoviz/scene.h`:2440._
 
 ### `dvz_visual_set_query_capabilities()`
 
@@ -4528,7 +4528,7 @@ Mark a visual as sampling panel scene occlusion.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1796._
+_Declared in `include/datoviz/scene.h`:1820._
 
 ### `dvz_visual_set_scene_occluder()`
 
@@ -4549,7 +4549,7 @@ Mark a visual as contributing front depth to panel scene occlusion.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1786._
+_Declared in `include/datoviz/scene.h`:1810._
 
 ### `dvz_visual_set_shader_desc()`
 
@@ -4573,7 +4573,7 @@ replacement are reserved for future releases and return -1.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1832._
+_Declared in `include/datoviz/scene.h`:1856._
 
 ### `dvz_visual_set_strings()`
 
@@ -4601,7 +4601,7 @@ per-item dense attributes.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2111._
+_Declared in `include/datoviz/scene.h`:2135._
 
 ### `dvz_visual_set_texture_r32f()`
 
@@ -4632,7 +4632,7 @@ path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3926._
+_Declared in `include/datoviz/scene.h`:3950._
 
 ### `dvz_visual_set_texture_rgba8()`
 
@@ -4663,7 +4663,7 @@ code.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3907._
+_Declared in `include/datoviz/scene.h`:3931._
 
 ### `dvz_visual_set_transform()`
 
@@ -4687,7 +4687,7 @@ controller/view transforms.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1845._
+_Declared in `include/datoviz/scene.h`:1869._
 
 ### `dvz_visual_set_transform_desc()`
 
@@ -4713,7 +4713,7 @@ Related: [`dvz_visual_set_transform()`](#dvz_visual_set_transform).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1819._
+_Declared in `include/datoviz/scene.h`:1843._
 
 ### `dvz_visual_set_visible()`
 
@@ -4733,7 +4733,7 @@ Set visual visibility.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1728._
+_Declared in `include/datoviz/scene.h`:1752._
 
 ### `dvz_visual_set_volume_occluded()`
 
@@ -4754,7 +4754,7 @@ Mark a visual as embedded in the panel volume occluder.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1776._
+_Declared in `include/datoviz/scene.h`:1800._
 
 ### `dvz_visual_shader_desc()`
 
@@ -4816,7 +4816,7 @@ metadata is internally consistent.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1719._
+_Declared in `include/datoviz/scene.h`:1743._
 
 ## Volume
 
@@ -4843,7 +4843,7 @@ supports full-volume composite rendering by default, plus slice and MIP modes.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3719._
+_Declared in `include/datoviz/scene.h`:3743._
 
 ### `dvz_volume_clear_clipping()`
 
@@ -4862,7 +4862,7 @@ Disable all clipping on a volume visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3880._
+_Declared in `include/datoviz/scene.h`:3904._
 
 ### `dvz_volume_clear_clipping_plane()`
 
@@ -4881,7 +4881,7 @@ Disable arbitrary plane clipping on a volume visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3871._
+_Declared in `include/datoviz/scene.h`:3895._
 
 ### `dvz_volume_occlusion_desc()`
 
@@ -4897,7 +4897,7 @@ Return default volume-occlusion options.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:1256._
+_Declared in `include/datoviz/scene.h`:1280._
 
 ### `dvz_volume_set_alpha_stops()`
 
@@ -4920,7 +4920,7 @@ Set piecewise-linear opacity stops for scalar volume transfer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3833._
+_Declared in `include/datoviz/scene.h`:3857._
 
 ### `dvz_volume_set_axis_mapping()`
 
@@ -4947,7 +4947,7 @@ all flips.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3810._
+_Declared in `include/datoviz/scene.h`:3834._
 
 ### `dvz_volume_set_bounds()`
 
@@ -4973,7 +4973,7 @@ They are useful for displaying anisotropic volumes in their physical aspect rati
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3795._
+_Declared in `include/datoviz/scene.h`:3819._
 
 ### `dvz_volume_set_clipping_box()`
 
@@ -4996,7 +4996,7 @@ Enable axis-aligned clipping on a volume visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3846._
+_Declared in `include/datoviz/scene.h`:3870._
 
 ### `dvz_volume_set_clipping_plane()`
 
@@ -5024,7 +5024,7 @@ The plane is defined in normalized volume coordinates. Voxels for which
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3861._
+_Declared in `include/datoviz/scene.h`:3885._
 
 ### `dvz_volume_set_opacity()`
 
@@ -5045,7 +5045,7 @@ Set the global opacity multiplier on a volume visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3729._
+_Declared in `include/datoviz/scene.h`:3753._
 
 ### `dvz_volume_set_render_mode()`
 
@@ -5066,7 +5066,7 @@ Set the volume render mode.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3750._
+_Declared in `include/datoviz/scene.h`:3774._
 
 ### `dvz_volume_set_sampling()`
 
@@ -5087,7 +5087,7 @@ Set the texture sampling mode on a volume visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3740._
+_Declared in `include/datoviz/scene.h`:3764._
 
 ### `dvz_volume_set_slice_axis()`
 
@@ -5108,7 +5108,7 @@ Set the volume slice axis.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3760._
+_Declared in `include/datoviz/scene.h`:3784._
 
 ### `dvz_volume_set_slice_position()`
 
@@ -5129,7 +5129,7 @@ Set the normalized volume slice position.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3770._
+_Declared in `include/datoviz/scene.h`:3794._
 
 ### `dvz_volume_set_step_count()`
 
@@ -5150,7 +5150,7 @@ Set the volume raymarch step count used by MIP and composite rendering.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3780._
+_Declared in `include/datoviz/scene.h`:3804._
 
 ### `dvz_volume_set_value_range()`
 
@@ -5173,7 +5173,7 @@ Set the scalar value range used before transfer texture lookup.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3822._
+_Declared in `include/datoviz/scene.h`:3846._
 
 ### `dvz_volume_state()`
 
@@ -5192,4 +5192,4 @@ Return the retained volume state for inspection.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3889._
+_Declared in `include/datoviz/scene.h`:3913._

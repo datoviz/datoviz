@@ -1138,6 +1138,20 @@ dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* backgrou
 
 
 /**
+ * Copy the current panel background descriptor.
+ *
+ * Image background pixels are copied into scene-owned visual state when set; the returned image
+ * descriptor reports type and dimensions but has `image.rgba == NULL`.
+ *
+ * @param panel the panel
+ * @param out output background descriptor
+ * @return true when a descriptor was written
+ */
+DVZ_EXPORT bool dvz_panel_background(
+    const DvzPanel* panel, DvzPanelBackgroundDesc* out);
+
+
+/**
  * Clear a panel background.
  *
  * @param panel the panel
@@ -1180,6 +1194,16 @@ DVZ_EXPORT DvzPanelBorderDesc dvz_panel_border_desc(void);
  * @return whether the border was updated
  */
 DVZ_EXPORT bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border);
+
+
+/**
+ * Copy the current panel border descriptor.
+ *
+ * @param panel the panel
+ * @param out output border descriptor
+ * @return true when a descriptor was written
+ */
+DVZ_EXPORT bool dvz_panel_border(const DvzPanel* panel, DvzPanelBorderDesc* out);
 
 
 /**

@@ -1987,6 +1987,7 @@ struct DvzPanel
      * existing visual instead of stacking new ones. */
     DvzVisual* background_visual;
     DvzPanelBackgroundType background_type;
+    DvzPanelBackgroundDesc background;
     DvzVisual* border_visual;
     DvzPanelBorderDesc border;
 
