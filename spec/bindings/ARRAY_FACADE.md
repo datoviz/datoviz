@@ -10,6 +10,9 @@ Related RC-lane GSP backend readiness work lives in
 [`../api/GSP_BACKEND_READINESS.md`](../api/GSP_BACKEND_READINESS.md), especially the
 `dvz_visual_set_data_many()` facade and offscreen capture-to-memory requirements.
 
+Raw `ctypes` generation, skipped-function disposition, and FFI-helper policy are covered in
+[CTYPES_POLICY.md](CTYPES_POLICY.md).
+
 
 ## Decision
 
