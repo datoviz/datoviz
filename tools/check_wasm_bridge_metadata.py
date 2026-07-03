@@ -42,6 +42,7 @@ def _manifest_live_entries(path: Path) -> list[dict[str, str]]:
                 "id": str(entry["id"]),
                 "title": str(entry["title"]),
                 "route_id": route_ids[0],
+                "scenario_id": str(webgpu.get("scenario_id") or entry["id"]),
             }
         )
     return out
@@ -102,13 +103,23 @@ def main(argv: list[str] | None = None) -> int:
     smoke_ids = _smoke_expected_scenarios(SMOKE_PATH)
 
     manifest_route_ids = [entry["route_id"] for entry in manifest_live]
+    manifest_scenario_ids = [entry["scenario_id"] for entry in manifest_live]
     live_ids = [entry["id"] for entry in live_js]
     live_scenario_ids = [entry["scenario_id"] for entry in live_js]
 
+    bad_route_ids = [
+        entry for entry in manifest_live if entry["route_id"] != entry["id"]
+    ]
+    if bad_route_ids:
+        return _fail(f"webgpu-live route ids must match example ids: {bad_route_ids}")
     if len(set(manifest_route_ids)) != len(manifest_route_ids):
         return _fail("duplicate webgpu-live route ids in examples/c/MANIFEST.yaml")
     if set(manifest_route_ids) != set(live_ids):
         return _fail("examples/webgpu/live_examples.js ids do not match manifest webgpu-live routes")
+    if set(manifest_scenario_ids) != set(live_scenario_ids):
+        return _fail(
+            "examples/webgpu/live_examples.js scenario ids do not match manifest webgpu.scenario_id"
+        )
     if c_count != c_cases:
         return _fail(f"DVZ_WASM_API_SCENARIO_COUNT={c_count}, but scenario switch has {c_cases} cases")
     if c_count != len(smoke_ids):

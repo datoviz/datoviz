@@ -14,7 +14,11 @@ const negativePaths = readdirSync(negativeFixtureDir)
   .map((name) => `/spec/drp2/fixtures/negative/${name}`);
 
 const manifest = {
-  generated_from: "spec/drp2/fixtures/positive/*.json",
+  generated_from: {
+    positive: "spec/drp2/fixtures/positive/*.json",
+    webgpu_streams: "examples/webgpu/streams/*_wgsl.json",
+    negative_parity: "spec/drp2/fixtures/negative/*.json",
+  },
   positive: paths,
   webgpu_streams: [
     "/examples/webgpu/streams/attachment_multi_color_wgsl.json",

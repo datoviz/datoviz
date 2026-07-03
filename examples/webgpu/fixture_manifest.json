@@ -1,5 +1,9 @@
 {
-  "generated_from": "spec/drp2/fixtures/positive/*.json",
+  "generated_from": {
+    "positive": "spec/drp2/fixtures/positive/*.json",
+    "webgpu_streams": "examples/webgpu/streams/*_wgsl.json",
+    "negative_parity": "spec/drp2/fixtures/negative/*.json"
+  },
   "positive": [
     "/spec/drp2/fixtures/positive/compute_pass_dispatch_with_pipeline.json",
     "/spec/drp2/fixtures/positive/compute_pass_finish_basic.json",

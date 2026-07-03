@@ -34,13 +34,13 @@ Current source-of-truth files:
 
 As of 2026-06-10:
 
-1. Manifest counts: `68 webgpu-live`, `14 webgpu-planned`, `11 webgpu-deferred`,
-   `13 native-only`, and `8` lab-only entries without WebGPU status.
+1. Manifest counts: `66 webgpu-live`, with remaining examples explicitly classified as
+   `webgpu-planned`, `webgpu-deferred`, `native-only`, or non-public lab material.
 2. Live routes cover basic scene, timer animation, triangulation, builtin shapes 2D/3D, isolines,
    animation tracks, OBJ loading, picking, pixel/sphere/mesh selection, image probe, compute buffer
    animation, GPU particle smoke, standalone visual-family routes, panel single/grid/multi/linked
    basics, panzoom, axes, text block, overlay card, guide lines/spans, bars/bands, sampled-field
-   and colormap-scale routes, panel background, fly/turntable/orbit controller examples, colorbar,
+   and colormap-scale routes, panel background, fly/turntable controller examples, colorbar,
    scale bars, categorical legend, annotation readout, linked probe/colorbar, scientific plotting,
    vector, wind field, polygon composite, linked panels with axes, scale-bar measurement workflow,
    surface-grid showcase, U.S. state choropleth, textured planets and protein showcases, retained

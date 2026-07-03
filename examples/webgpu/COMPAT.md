@@ -30,11 +30,14 @@ now has 66 promoted routes backed by canonical C examples or portable C scenario
 `feature_sampled_field_2d`, `colormap_scale`,
 `panel_background`, `composite_polygon`, `linked_panels_axes_panzoom`,
 `scalebar_measurement_workflow`, `showcase_surface_grid`, `us_state_choropleth`,
-`feature_update_partial`, `feature_update_visual_data`, `feature_visibility`,
+`update_partial`, `feature_update_visual_data`, `feature_visibility`,
 `technique_depth_test`, `alpha_blending`, `feature_material_mesh`, `feature_lighting`,
-`textured_terrain_or_planet`, `protein_arcball_viewer`, `visual_point`, `visual_pixel`,
+`textured_terrain_or_planet`, `protein_arcball_viewer`, `point_2d`, `visual_pixel`,
 `visual_marker`, `visual_primitive`, `visual_segment`, `visual_path`, `visual_image`,
 `visual_mesh`, `sphere_impostor`, `visual_text`, `visual_glyph`, and `visual_labels`.
+
+This list uses public route IDs. When a route ID differs from the compiled C/WASM scenario ID,
+`examples/c/MANIFEST.yaml` records the mapping in `webgpu.scenario_id`.
 
 Remaining RC promotions are:
 

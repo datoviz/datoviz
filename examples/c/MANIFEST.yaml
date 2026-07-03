@@ -20,13 +20,14 @@ taxonomy:
     primary_runtime: required for runtime examples
     primary_composite: required for composite examples
     tags: searchable labels for docs, agents, and gallery filters
-    data.kind: synthetic | simulated | real | prepared
+    data.kind: synthetic | simulated | generated | real | prepared
     capture.mode: scenario by default; custom requires capture.reason
     capture.size: optional WxH override; defaults to defaults.public_capture
     portability: portable-scenario | native-only | browser-only
     webgpu.status: webgpu-live | webgpu-planned | webgpu-deferred | native-only | browser-only
     webgpu.route: live browser route for webgpu-live examples
-    webgpu.requirements: requirement tags used by the scenario runner and website routing
+    webgpu.scenario_id: compiled C/WASM scenario id when it differs from the public route id
+    webgpu.requirements: browser capability tags used by website routing and diagnostics
     agent_copy_safe: true only for examples suitable as starting points for generated user code
   tag_not_folder:
     - workflow
@@ -55,6 +56,63 @@ defaults:
   palette: graphite_cyan
   public_capture: 1920x1080
   seed: 12345
+
+non_public_examples:
+  - id: lab_axis_lattice_smoke
+    title: Axis Lattice Smoke
+    stage: lab
+    lane: lab
+    source: examples/c/lab/axis_lattice_smoke.c
+    validation: smoke
+
+  - id: lab_point_stress
+    title: Point Stress
+    stage: lab
+    lane: lab
+    source: examples/c/lab/point_stress.c
+    validation: manual+performance
+
+  - id: lab_protein_viewer
+    title: Protein Viewer Workbench
+    stage: lab
+    lane: lab
+    source: examples/c/lab/protein_viewer.c
+    validation: manual
+
+  - id: lab_record_dvzr
+    title: DVZR Recorder
+    stage: lab
+    lane: lab
+    source: examples/c/lab/record_dvzr.c
+    validation: manual
+
+  - id: lab_replay_dvzr
+    title: DVZR Replay
+    stage: lab
+    lane: lab
+    source: examples/c/lab/replay_dvzr.c
+    validation: manual
+
+  - id: lab_scalebar_2d_3d
+    title: Scale Bar 2D/3D Lab
+    stage: lab
+    lane: lab
+    source: examples/c/lab/scalebar_2d_3d.c
+    validation: manual
+
+  - id: lab_text_msdf_diagnostics
+    title: Text MSDF Diagnostics
+    stage: lab
+    lane: lab
+    source: examples/c/lab/text_msdf_diagnostics.c
+    validation: manual
+
+  - id: lab_text_msdf_lab
+    title: Text MSDF Lab
+    stage: lab
+    lane: lab
+    source: examples/c/lab/text_msdf_lab.c
+    validation: manual
 
 batches:
   review-00-foundation:
@@ -758,7 +816,7 @@ examples:
 
   - id: technique_edl
     title: Eye-Dome Lighting
-    stage: lab
+    stage: v0.4_experimental
     category: feature
     primary_feature: edl
     lane: features
@@ -991,6 +1049,32 @@ examples:
       reason: demonstrates native hosted event injection APIs
     agent_copy_safe: true
 
+  - id: feature_view_size_policies
+    title: View Size Policies
+    stage: v0.4_required
+    category: feature
+    primary_feature: view-size-policy
+    lane: features
+    source: examples/c/features/view_size_policies.c
+    validation: smoke+interaction
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - native-view
+        - view-size-policy
+      reason: demonstrates native window, framebuffer, and physical-size policies
+    agent_copy_safe: true
+    gallery:
+      card: small
+      status_label: supported
+    tags:
+      - view-size
+      - framebuffer
+      - window
+
   - id: feature_record_replay
     title: Record Replay
     stage: v0.4_experimental
@@ -1195,6 +1279,7 @@ examples:
     webgpu:
       status: webgpu-live
       route: examples/webgpu/live.html?id=scale_bar
+      scenario_id: feature_scalebar
       requirements:
         - scale-bar
         - text
@@ -1214,6 +1299,7 @@ examples:
     webgpu:
       status: webgpu-live
       route: examples/webgpu/live.html?id=scalebar_units
+      scenario_id: feature_scalebar_units
       requirements:
         - scale-bar
         - text
@@ -1258,6 +1344,7 @@ examples:
     webgpu:
       status: webgpu-live
       route: examples/webgpu/live.html?id=colorbar
+      scenario_id: feature_colorbar
       requirements:
         - colorbar
         - image
@@ -1283,6 +1370,7 @@ examples:
     webgpu:
       status: webgpu-live
       route: examples/webgpu/live.html?id=colormap_scale
+      scenario_id: feature_colormap_scale
       requirements:
         - colormap
         - point
@@ -1301,6 +1389,7 @@ examples:
     webgpu:
       status: webgpu-live
       route: examples/webgpu/live.html?id=annotation_readout
+      scenario_id: feature_annotation_readout
       requirements:
         - annotation
         - readout
@@ -1321,6 +1410,7 @@ examples:
     webgpu:
       status: webgpu-live
       route: examples/webgpu/live.html?id=update_partial
+      scenario_id: feature_update_partial
       requirements:
         - buffer-update
         - point
@@ -1398,6 +1488,7 @@ examples:
     webgpu:
       status: webgpu-live
       route: examples/webgpu/live.html?id=alpha_blending
+      scenario_id: feature_alpha_blending
       requirements:
         - alpha-blending
         - primitive
@@ -1416,6 +1507,7 @@ examples:
     webgpu:
       status: webgpu-live
       route: examples/webgpu/live.html?id=panel_background
+      scenario_id: feature_panel_background
       requirements:
         - panel-background
         - primitive
@@ -1454,6 +1546,7 @@ examples:
     webgpu:
       status: webgpu-live
       route: examples/webgpu/live.html?id=image_probe
+      scenario_id: feature_image_probe
       requirements:
         - image
         - query-readback
@@ -1643,6 +1736,33 @@ examples:
         - panzoom
     agent_copy_safe: true
 
+  - id: feature_datetime_axis
+    title: Datetime Axis
+    stage: v0.4_experimental
+    category: feature
+    primary_feature: datetime-axis
+    lane: features
+    source: examples/c/features/datetime_axis.c
+    validation: smoke+screenshot
+    data:
+      kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-deferred
+      requirements:
+        - axes
+        - text
+        - datetime
+      reason: datetime formatting is experimental and outside the RC browser subset
+    agent_copy_safe: true
+    gallery:
+      card: small
+      status_label: experimental
+    tags:
+      - axes
+      - datetime
+      - time-series
+
   - id: feature_timer_animation
     title: Timer Animation
     stage: v0.4_required
@@ -1762,6 +1882,7 @@ examples:
     webgpu:
       status: webgpu-live
       route: examples/webgpu/live.html?id=point_2d
+      scenario_id: visual_point
       requirements:
         - point
         - panzoom
@@ -2708,41 +2829,6 @@ examples:
       - glfw
       - host-integration
 
-  - id: lab_axis_lattice_smoke
-    title: Axis Lattice Smoke
-    stage: lab
-    lane: lab
-    source: examples/c/lab/axis_lattice_smoke.c
-    validation: smoke
-
-  - id: lab_point_stress
-    title: Point Stress
-    stage: lab
-    lane: lab
-    source: examples/c/lab/point_stress.c
-    validation: manual+performance
-
-  - id: lab_protein_viewer
-    title: Protein Viewer Workbench
-    stage: lab
-    lane: lab
-    source: examples/c/lab/protein_viewer.c
-    validation: manual
-
-  - id: lab_record_dvzr
-    title: DVZR Recorder
-    stage: lab
-    lane: lab
-    source: examples/c/lab/record_dvzr.c
-    validation: manual
-
-  - id: lab_replay_dvzr
-    title: DVZR Replay
-    stage: lab
-    lane: lab
-    source: examples/c/lab/replay_dvzr.c
-    validation: manual
-
   - id: start_scatter
     title: Scatter Plot
     lane: start
@@ -2754,24 +2840,3 @@ examples:
     webgpu:
       status: webgpu-deferred
     agent_copy_safe: true
-
-  - id: lab_scalebar_2d_3d
-    title: Scale Bar 2D/3D Lab
-    stage: lab
-    lane: lab
-    source: examples/c/lab/scalebar_2d_3d.c
-    validation: manual
-
-  - id: lab_text_msdf_diagnostics
-    title: Text MSDF Diagnostics
-    stage: lab
-    lane: lab
-    source: examples/c/lab/text_msdf_diagnostics.c
-    validation: manual
-
-  - id: lab_text_msdf_lab
-    title: Text MSDF Lab
-    stage: lab
-    lane: lab
-    source: examples/c/lab/text_msdf_lab.c
-    validation: manual

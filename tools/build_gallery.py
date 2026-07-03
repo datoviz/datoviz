@@ -85,6 +85,7 @@ FEATURE_PAGE_GROUPS = (
         "feature_panel_view2d",
         "panel_background",
         "feature_user_scale",
+        "feature_view_size_policies",
         "feature_visual_transform",
         "feature_visibility",
     ]),
@@ -124,6 +125,7 @@ FEATURE_PAGE_GROUPS = (
         "feature_sampled_field_2d",
         "feature_sampled_field_3d",
         "feature_isolines",
+        "feature_datetime_axis",
         "image_probe",
     ]),
     ("3D Rendering", [

@@ -2,11 +2,11 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 107,
+  "count": 110,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 66,
+    "feature": 69,
     "runtime": 5,
     "showcase": 15,
     "start": 1,
@@ -14,13 +14,13 @@
   },
   "statuses": {
     "diagnostic": 1,
-    "experimental": 12,
+    "experimental": 14,
     "prototype": 3,
-    "supported": 91
+    "supported": 92
   },
   "agent_copy_safe": {
-    "false": 27,
-    "true": 80
+    "false": 28,
+    "true": 82
   },
   "examples": [
     {
@@ -601,6 +601,27 @@
       "primary_feature": "scene-compute-buffer"
     },
     {
+      "id": "technique_edl",
+      "title": "Eye-Dome Lighting",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/features/technique_edl.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_edl.c",
+      "page": "gallery/features/technique_edl.md",
+      "summary": "Eye-Dome Lighting applied to a dense retained point cloud.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/technique_edl",
+      "smoke_command": "./build/examples/c/features/technique_edl --png",
+      "agent_copy_safe": false,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "edl"
+    },
+    {
       "id": "technique_ssao",
       "title": "Screen-Space Ambient Occlusion",
       "category": "feature",
@@ -851,6 +872,31 @@
         "kind": "synthetic"
       },
       "primary_feature": "input-events"
+    },
+    {
+      "id": "feature_view_size_policies",
+      "title": "View Size Policies",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/view_size_policies.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/view_size_policies.c",
+      "page": "gallery/features/feature_view_size_policies.md",
+      "summary": "explicit canvas/window/framebuffer size policy selection.",
+      "validation": "smoke+interaction",
+      "build_command": "just example-c features/view_size_policies",
+      "smoke_command": "./build/examples/c/features/view_size_policies --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "view-size",
+        "framebuffer",
+        "window"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "view-size-policy"
     },
     {
       "id": "feature_record_replay",
@@ -1551,6 +1597,31 @@
         "kind": "synthetic"
       },
       "primary_feature": "probe-labels"
+    },
+    {
+      "id": "feature_datetime_axis",
+      "title": "Datetime Axis",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/features/datetime_axis.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/datetime_axis.c",
+      "page": "gallery/features/feature_datetime_axis.md",
+      "summary": "compact data coordinates with retained UTC datetime labels.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/datetime_axis",
+      "smoke_command": "./build/examples/c/features/datetime_axis --png",
+      "agent_copy_safe": true,
+      "tags": [
+        "axes",
+        "datetime",
+        "time-series"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "datetime-axis"
     },
     {
       "id": "feature_timer_animation",
