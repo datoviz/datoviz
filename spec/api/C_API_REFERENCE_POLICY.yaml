@@ -196,6 +196,7 @@ pages:
       - include/datoviz/gui/**
       - include/datoviz/imgui.h
       - include/datoviz/video.h
+      - include/datoviz/video/types.h
     prefixes:
       - app
       - canvas

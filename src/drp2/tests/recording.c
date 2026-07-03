@@ -198,7 +198,7 @@ int test_drp2_recording_linear_roundtrip(TstContext* suite, const TstCase* item)
         stream, 1, 0, sizeof(buffer_payload), buffer_payload));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 2, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
-    AT(dvz_drp2_stream_write_texture_2d_region_bytes(
+    AT(dvz_drp2_stream_write_texture_2d_region_borrowed(
         stream, 2, 0, 0, 0, 2, 2, 8, 2, texture_payload));
 
     DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
@@ -221,7 +221,7 @@ int test_drp2_recording_linear_roundtrip(TstContext* suite, const TstCase* item)
         update_stream, 1, 0, sizeof(buffer_payload), buffer_payload));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         update_stream, 2, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
-    AT(dvz_drp2_stream_write_texture_2d_region_bytes(
+    AT(dvz_drp2_stream_write_texture_2d_region_borrowed(
         update_stream, 2, 0, 0, 0, 2, 2, 8, 2, texture_payload));
 
     DvzDrp2RecordingInfo info = {

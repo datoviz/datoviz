@@ -14395,15 +14395,16 @@ else:
 
 
 try:
-    dvz_drp2_stream_write_texture_2d_bytes = dvz.dvz_drp2_stream_write_texture_2d_bytes
+    dvz_drp2_stream_write_texture_2d_borrowed = dvz.dvz_drp2_stream_write_texture_2d_borrowed
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_2d_bytes')
+    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_2d_borrowed')
 else:
-    dvz_drp2_stream_write_texture_2d_bytes.__doc__ = """/**
- * Append a WriteTexture command for a full 2D mip level using raw bytes.
+    dvz_drp2_stream_write_texture_2d_borrowed.__doc__ = """/**
+ * Append a WriteTexture command for a full 2D mip level using borrowed raw bytes.
  *
- * Mirrors `dvz_drp2_stream_write_buffer_bytes`: the runtime path consumes the borrowed
- * pointer directly with no base64 round-trip; JSON serialization re-encodes lazily.
+ * The runtime path consumes the borrowed pointer directly with no base64 round-trip. JSON
+ * serialization re-encodes lazily. The caller must keep `data` alive until the stream has executed
+ * or has been serialized.
  *
  * @param stream the command stream
  * @param texture_id the destination texture id
@@ -14415,8 +14416,8 @@ else:
  * @param data raw pixel bytes (must remain valid until the stream executes)
  * @return whether the command was appended
  */"""
-    dvz_drp2_stream_write_texture_2d_bytes.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p]
-    dvz_drp2_stream_write_texture_2d_bytes.restype = ctypes.c_bool
+    dvz_drp2_stream_write_texture_2d_borrowed.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p]
+    dvz_drp2_stream_write_texture_2d_borrowed.restype = ctypes.c_bool
 
 
 try:
@@ -14444,14 +14445,14 @@ else:
 
 
 try:
-    dvz_drp2_stream_write_texture_2d_region_bytes = dvz.dvz_drp2_stream_write_texture_2d_region_bytes
+    dvz_drp2_stream_write_texture_2d_region_borrowed = dvz.dvz_drp2_stream_write_texture_2d_region_borrowed
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_2d_region_bytes')
+    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_2d_region_borrowed')
 else:
-    dvz_drp2_stream_write_texture_2d_region_bytes.__doc__ = """/**
- * Append a WriteTexture command for a 2D sub-region using raw bytes.
+    dvz_drp2_stream_write_texture_2d_region_borrowed.__doc__ = """/**
+ * Append a WriteTexture command for a 2D sub-region using borrowed raw bytes.
  *
- * Mirrors `dvz_drp2_stream_write_texture_2d_bytes` for the in-process runtime path.
+ * Mirrors `dvz_drp2_stream_write_texture_2d_borrowed` for the in-process runtime path.
  *
  * @param stream the command stream
  * @param texture_id the destination texture id
@@ -14465,8 +14466,8 @@ else:
  * @param data raw pixel bytes (must remain valid until the stream executes)
  * @return whether the command was appended
  */"""
-    dvz_drp2_stream_write_texture_2d_region_bytes.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p]
-    dvz_drp2_stream_write_texture_2d_region_bytes.restype = ctypes.c_bool
+    dvz_drp2_stream_write_texture_2d_region_borrowed.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p]
+    dvz_drp2_stream_write_texture_2d_region_borrowed.restype = ctypes.c_bool
 
 
 try:
@@ -14496,14 +14497,14 @@ else:
 
 
 try:
-    dvz_drp2_stream_write_texture_3d_bytes = dvz.dvz_drp2_stream_write_texture_3d_bytes
+    dvz_drp2_stream_write_texture_3d_borrowed = dvz.dvz_drp2_stream_write_texture_3d_borrowed
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_3d_bytes')
+    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_3d_borrowed')
 else:
-    dvz_drp2_stream_write_texture_3d_bytes.__doc__ = """/**
- * Append a WriteTexture command for a 3D sub-region using raw bytes.
+    dvz_drp2_stream_write_texture_3d_borrowed.__doc__ = """/**
+ * Append a WriteTexture command for a 3D sub-region using borrowed raw bytes.
  *
- * Mirrors `dvz_drp2_stream_write_texture_2d_bytes` for 3D texture uploads.
+ * Mirrors `dvz_drp2_stream_write_texture_2d_borrowed` for 3D texture uploads.
  *
  * @param stream the command stream
  * @param texture_id the destination texture id
@@ -14519,8 +14520,8 @@ else:
  * @param data raw pixel bytes (must remain valid until the stream executes)
  * @return whether the command was appended
  */"""
-    dvz_drp2_stream_write_texture_3d_bytes.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p]
-    dvz_drp2_stream_write_texture_3d_bytes.restype = ctypes.c_bool
+    dvz_drp2_stream_write_texture_3d_borrowed.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p]
+    dvz_drp2_stream_write_texture_3d_borrowed.restype = ctypes.c_bool
 
 
 try:

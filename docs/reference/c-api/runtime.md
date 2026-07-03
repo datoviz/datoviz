@@ -2717,7 +2717,7 @@ _Declared in `include/datoviz/math/box.h`:125._
 ```c title="dvz_box_merge"
 DvzBox dvz_box_merge(
     uint32_t box_count,
-    DvzBox * boxes,
+    const DvzBox * boxes,
     DvzBoxMergeStrategy strategy
 );
 ```
@@ -2726,7 +2726,7 @@ DvzBox dvz_box_merge(
 | --- | --- | --- |
 | return | `DvzBox` | the merged box |
 | `box_count` | `uint32_t` | the number of boxes to merge |
-| `boxes` | `DvzBox *` | the boxes to merge |
+| `boxes` | `const DvzBox *` | the boxes to merge |
 | `strategy` | `DvzBoxMergeStrategy` | the merge strategy |
 
 Merge a number of boxes into a single box.
@@ -3743,7 +3743,7 @@ Bind a graphics pipeline.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:502._
+_Declared in `include/datoviz/vklite/graphics.h`:510._
 
 ### `dvz_cmd_bind_index_buffer()`
 
@@ -7117,7 +7117,7 @@ _Declared in `include/datoviz/vklite/graphics.h`:160._
 void dvz_graphics_blend(
     DvzGraphics * graphics,
     vec4 constants,
-    int flags
+    DvzGraphicsFlags flags
 );
 ```
 
@@ -7125,7 +7125,7 @@ void dvz_graphics_blend(
 | --- | --- | --- |
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 | `constants` | `vec4` | the blending constants |
-| `flags` | `int` | indicate whether the blend constants are fixed or dynamic state set in the |
+| `flags` | `DvzGraphicsFlags` | indicate whether the blend constants are fixed or dynamic state set in the |
 
 Set the blending constants for the pipeline.
 
@@ -7133,7 +7133,7 @@ command buffer
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:361._
+_Declared in `include/datoviz/vklite/graphics.h`:369._
 
 ### `dvz_graphics_blend_alpha()`
 
@@ -7159,7 +7159,7 @@ Set the alpha blending parameters of a color attachment.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:390._
+_Declared in `include/datoviz/vklite/graphics.h`:398._
 
 ### `dvz_graphics_blend_color()`
 
@@ -7187,7 +7187,7 @@ Set the color blending parameters of a color attachment.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:375._
+_Declared in `include/datoviz/vklite/graphics.h`:383._
 
 ### `dvz_graphics_color_attachment_count()`
 
@@ -7206,7 +7206,7 @@ Return the number of configured color attachments on a graphics wrapper.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:471._
+_Declared in `include/datoviz/vklite/graphics.h`:479._
 
 ### `dvz_graphics_color_write_mask()`
 
@@ -7228,7 +7228,7 @@ Set the color write mask of a color attachment.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:403._
+_Declared in `include/datoviz/vklite/graphics.h`:411._
 
 ### `dvz_graphics_create()`
 
@@ -7252,7 +7252,7 @@ Related: [`dvz_graphics_destroy()`](#dvz_graphics_destroy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:431._
+_Declared in `include/datoviz/vklite/graphics.h`:439._
 
 ### `dvz_graphics_create_wrapper()`
 
@@ -7281,7 +7281,7 @@ _Declared in `include/datoviz/vklite/graphics.h`:86._
 void dvz_graphics_cull_mode(
     DvzGraphics * graphics,
     VkCullModeFlags cull_mode,
-    int flags
+    DvzGraphicsFlags flags
 );
 ```
 
@@ -7289,13 +7289,13 @@ void dvz_graphics_cull_mode(
 | --- | --- | --- |
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 | `cull_mode` | `VkCullModeFlags` | the cull mode |
-| `flags` | `int` | indicate whether this setting is fixed or dynamic state set in the command buffer |
+| `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
 Set the graphics cull mode.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:244._
+_Declared in `include/datoviz/vklite/graphics.h`:246._
 
 ### `dvz_graphics_depth()`
 
@@ -7305,7 +7305,7 @@ void dvz_graphics_depth(
     _Bool clamp,
     _Bool depth_write,
     VkCompareOp compare,
-    int flags
+    DvzGraphicsFlags flags
 );
 ```
 
@@ -7315,13 +7315,13 @@ void dvz_graphics_depth(
 | `clamp` | `_Bool` | enable or disable depth clamp |
 | `depth_write` | `_Bool` | enable or disable the depth write |
 | `compare` | `VkCompareOp` | depth compare operation |
-| `flags` | `int` | indicate whether this setting is fixed or dynamic state set in the command buffer |
+| `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
 Set the depth test.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:268._
+_Declared in `include/datoviz/vklite/graphics.h`:272._
 
 ### `dvz_graphics_depth_bias()`
 
@@ -7331,7 +7331,7 @@ void dvz_graphics_depth_bias(
     float constant_factor,
     float clamp,
     float slope_factor,
-    int flags
+    DvzGraphicsFlags flags
 );
 ```
 
@@ -7341,13 +7341,13 @@ void dvz_graphics_depth_bias(
 | `constant_factor` | `float` | the depth bias constant factor |
 | `clamp` | `float` | the depth bias clamp |
 | `slope_factor` | `float` | the depth bias slope factor |
-| `flags` | `int` | indicate whether this setting is fixed or dynamic state set in the command buffer |
+| `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
 Enable or disable the depth bias.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:294._
+_Declared in `include/datoviz/vklite/graphics.h`:300._
 
 ### `dvz_graphics_depth_bounds()`
 
@@ -7356,7 +7356,7 @@ void dvz_graphics_depth_bounds(
     DvzGraphics * graphics,
     float min,
     float max,
-    int flags
+    DvzGraphicsFlags flags
 );
 ```
 
@@ -7365,13 +7365,13 @@ void dvz_graphics_depth_bounds(
 | `graphics` | `DvzGraphics *` | the graphics pipieline |
 | `min` | `float` | the minimum depth bound |
 | `max` | `float` | the maximum depth bound |
-| `flags` | `int` | indicate whether this setting is fixed or dynamic state set in the command buffer |
+| `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
 Set the depth bounds.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:281._
+_Declared in `include/datoviz/vklite/graphics.h`:287._
 
 ### `dvz_graphics_destroy()`
 
@@ -7394,7 +7394,7 @@ Related: [`dvz_graphics_create()`](#dvz_graphics_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:483._
+_Declared in `include/datoviz/vklite/graphics.h`:491._
 
 ### `dvz_graphics_free()`
 
@@ -7412,7 +7412,7 @@ Free a graphics wrapper allocated by dvz_graphics_create_wrapper().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:492._
+_Declared in `include/datoviz/vklite/graphics.h`:500._
 
 ### `dvz_graphics_front_face()`
 
@@ -7420,7 +7420,7 @@ _Declared in `include/datoviz/vklite/graphics.h`:492._
 void dvz_graphics_front_face(
     DvzGraphics * graphics,
     VkFrontFace front_face,
-    int flags
+    DvzGraphicsFlags flags
 );
 ```
 
@@ -7428,13 +7428,13 @@ void dvz_graphics_front_face(
 | --- | --- | --- |
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 | `front_face` | `VkFrontFace` | the front face |
-| `flags` | `int` | indicate whether this setting is fixed or dynamic state set in the command buffer |
+| `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
 Set the graphics front face.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:255._
+_Declared in `include/datoviz/vklite/graphics.h`:259._
 
 ### `dvz_graphics_handle()`
 
@@ -7453,7 +7453,7 @@ Return the Vulkan pipeline handle owned by a graphics wrapper.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:441._
+_Declared in `include/datoviz/vklite/graphics.h`:449._
 
 ### `dvz_graphics_layout()`
 
@@ -7492,7 +7492,7 @@ Return the pipeline layout bound to a graphics wrapper.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:451._
+_Declared in `include/datoviz/vklite/graphics.h`:459._
 
 ### `dvz_graphics_multisampling()`
 
@@ -7518,7 +7518,7 @@ shading
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:416._
+_Declared in `include/datoviz/vklite/graphics.h`:424._
 
 ### `dvz_graphics_polygon_mode()`
 
@@ -7526,7 +7526,7 @@ _Declared in `include/datoviz/vklite/graphics.h`:416._
 void dvz_graphics_polygon_mode(
     DvzGraphics * graphics,
     VkPolygonMode polygon_mode,
-    int flags
+    DvzGraphicsFlags flags
 );
 ```
 
@@ -7534,13 +7534,13 @@ void dvz_graphics_polygon_mode(
 | --- | --- | --- |
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 | `polygon_mode` | `VkPolygonMode` | the polygon mode |
-| `flags` | `int` | indicate whether this setting is fixed or dynamic state set in the command buffer |
+| `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
 Set the graphics polygon mode.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:232._
+_Declared in `include/datoviz/vklite/graphics.h`:233._
 
 ### `dvz_graphics_primitive()`
 
@@ -7548,7 +7548,7 @@ _Declared in `include/datoviz/vklite/graphics.h`:232._
 void dvz_graphics_primitive(
     DvzGraphics * graphics,
     VkPrimitiveTopology topology,
-    int flags
+    DvzGraphicsFlags flags
 );
 ```
 
@@ -7556,7 +7556,7 @@ void dvz_graphics_primitive(
 | --- | --- | --- |
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
 | `topology` | `VkPrimitiveTopology` | the primitive topology |
-| `flags` | `int` | indicate whether this setting is fixed or dynamic state set in the command buffer |
+| `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
 Set the graphics pipeline primitive topology
 
@@ -7569,21 +7569,21 @@ _Declared in `include/datoviz/vklite/graphics.h`:209._
 ```c title="dvz_graphics_primitive_restart"
 void dvz_graphics_primitive_restart(
     DvzGraphics * graphics,
-    int flags
+    DvzGraphicsFlags flags
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `graphics` | `DvzGraphics *` | the graphics pipeline |
-| `flags` | `int` | indicate whether this setting is fixed or dynamic state set in the command buffer |
+| `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
 Set whether a special index value (when using indexed rendering) allows to restart the
 primitive.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:220._
+_Declared in `include/datoviz/vklite/graphics.h`:221._
 
 ### `dvz_graphics_scissor()`
 
@@ -7594,7 +7594,7 @@ void dvz_graphics_scissor(
     int32_t y,
     uint32_t width,
     uint32_t height,
-    int flags
+    DvzGraphicsFlags flags
 );
 ```
 
@@ -7605,13 +7605,13 @@ void dvz_graphics_scissor(
 | `y` | `int32_t` | the offset y |
 | `width` | `uint32_t` | the width |
 | `height` | `uint32_t` | the height |
-| `flags` | `int` | indicate whether this setting is fixed or dynamic state set in the command buffer |
+| `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
 Set the scissor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:331._
+_Declared in `include/datoviz/vklite/graphics.h`:337._
 
 ### `dvz_graphics_shader()`
 
@@ -7652,7 +7652,7 @@ Return the number of configured shader stages on a graphics wrapper.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:461._
+_Declared in `include/datoviz/vklite/graphics.h`:469._
 
 ### `dvz_graphics_spec()`
 
@@ -7695,7 +7695,7 @@ void dvz_graphics_stencil(
     uint32_t compare_mask,
     uint32_t write_mask,
     uint32_t reference,
-    int flags
+    DvzGraphicsFlags flags
 );
 ```
 
@@ -7710,13 +7710,13 @@ void dvz_graphics_stencil(
 | `compare_mask` | `uint32_t` | bits of the stencil values participating in the stencil test |
 | `write_mask` | `uint32_t` | bits of the stencil values updated by the stencil test in the attachment |
 | `reference` | `uint32_t` | stencil reference value |
-| `flags` | `int` | indicate whether this setting is fixed or dynamic state set in the command buffer |
+| `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
 Set the stencil test.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:314._
+_Declared in `include/datoviz/vklite/graphics.h`:320._
 
 ### `dvz_graphics_vertex_attr()`
 
@@ -7779,7 +7779,7 @@ void dvz_graphics_viewport(
     float height,
     float min_depth,
     float max_depth,
-    int flags
+    DvzGraphicsFlags flags
 );
 ```
 
@@ -7792,13 +7792,13 @@ void dvz_graphics_viewport(
 | `height` | `float` | the height |
 | `min_depth` | `float` | the minimum depth |
 | `max_depth` | `float` | the maximum depth |
-| `flags` | `int` | indicate whether this setting is fixed or dynamic state set in the command buffer |
+| `flags` | `DvzGraphicsFlags` | indicate whether this setting is fixed or dynamic state set in the command buffer |
 
 Set the viewport.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/graphics.h`:348._
+_Declared in `include/datoviz/vklite/graphics.h`:355._
 
 ## Image
 
@@ -9359,7 +9359,7 @@ _Declared in `include/datoviz/fileio/fileio.h`:157._
 ```c title="dvz_mean"
 double dvz_mean(
     uint32_t n,
-    double * values
+    const double * values
 );
 ```
 
@@ -9367,7 +9367,7 @@ double dvz_mean(
 | --- | --- | --- |
 | return | `double` | the mean |
 | `n` | `uint32_t` | the number of values |
-| `values` | `double *` | an array of double numbers |
+| `values` | `const double *` | an array of double numbers |
 
 Compute the mean of an array of double values.
 
@@ -10519,7 +10519,7 @@ _Declared in `include/datoviz/math/rand.h`:73._
 ```c title="dvz_range"
 void dvz_range(
     uint32_t n,
-    double * values,
+    const double * values,
     dvec2 min_max
 );
 ```
@@ -10527,7 +10527,7 @@ void dvz_range(
 | Field | Type | Description |
 | --- | --- | --- |
 | `n` | `uint32_t` | the number of values |
-| `values` | `double *` | an array of double numbers |
+| `values` | `const double *` | an array of double numbers |
 | `min_max` | `dvec2` |  |
 
 Compute the range of an array of double values.

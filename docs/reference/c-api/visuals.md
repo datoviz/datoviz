@@ -4622,7 +4622,7 @@ DvzResult dvz_visual_set_texture_r32f(
 | `values` | `const float *` | scalar R32F pixel data, tightly packed, row-major |
 | `width` | `uint32_t` | the texture width in pixels |
 | `height` | `uint32_t` | the texture height in pixels |
-| `size_bytes` | `DvzSize` | number of bytes available at values; must equal `width * height * sizeof(float)` |
+| `size_bytes` | `DvzSize` | number of bytes available at @p values; must equal `width * height * sizeof(float)` |
 
 Attach a 2D scalar R32F texture to an image or glyph visual.
 
@@ -4634,7 +4634,7 @@ path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3950._
+_Declared in `include/datoviz/scene.h`:3953._
 
 ### `dvz_visual_set_texture_rgba8()`
 
@@ -4655,7 +4655,7 @@ DvzResult dvz_visual_set_texture_rgba8(
 | `rgba` | `const uint8_t *` | RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes) |
 | `width` | `uint32_t` | the texture width in pixels |
 | `height` | `uint32_t` | the texture height in pixels |
-| `size_bytes` | `DvzSize` | number of bytes available at rgba; must equal `width * height * 4` |
+| `size_bytes` | `DvzSize` | number of bytes available at @p rgba; must equal `width * height * 4` |
 
 Attach a 2D RGBA8 sRGB-color texture to an image, glyph, or mesh visual.
 
@@ -4667,7 +4667,7 @@ code.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3931._
+_Declared in `include/datoviz/scene.h`:3932._
 
 ### `dvz_visual_set_transform()`
 

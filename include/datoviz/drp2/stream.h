@@ -780,10 +780,11 @@ DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d(
 
 
 /**
- * Append a WriteTexture command for a full 2D mip level using raw bytes.
+ * Append a WriteTexture command for a full 2D mip level using borrowed raw bytes.
  *
- * Mirrors `dvz_drp2_stream_write_buffer_bytes`: the runtime path consumes the borrowed
- * pointer directly with no base64 round-trip; JSON serialization re-encodes lazily.
+ * The runtime path consumes the borrowed pointer directly with no base64 round-trip. JSON
+ * serialization re-encodes lazily. The caller must keep `data` alive until the stream has executed
+ * or has been serialized.
  *
  * @param stream the command stream
  * @param texture_id the destination texture id
@@ -795,15 +796,15 @@ DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d(
  * @param data raw pixel bytes (must remain valid until the stream executes)
  * @return whether the command was appended
  */
-DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d_bytes(
+DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d_borrowed(
     DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level, uint32_t width,
     uint32_t height, uint32_t bytes_per_row, uint32_t rows_per_image, const void* data);
 
 
 /**
- * Append a WriteTexture command for a 2D sub-region using raw bytes.
+ * Append a WriteTexture command for a 2D sub-region using borrowed raw bytes.
  *
- * Mirrors `dvz_drp2_stream_write_texture_2d_bytes` for the in-process runtime path.
+ * Mirrors `dvz_drp2_stream_write_texture_2d_borrowed` for the in-process runtime path.
  *
  * @param stream the command stream
  * @param texture_id the destination texture id
@@ -817,7 +818,7 @@ DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d_bytes(
  * @param data raw pixel bytes (must remain valid until the stream executes)
  * @return whether the command was appended
  */
-DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d_region_bytes(
+DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d_region_borrowed(
     DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level, uint32_t origin_x,
     uint32_t origin_y, uint32_t width, uint32_t height, uint32_t bytes_per_row,
     uint32_t rows_per_image, const void* data);
@@ -870,9 +871,9 @@ DVZ_EXPORT bool dvz_drp2_stream_write_texture_3d(
 
 
 /**
- * Append a WriteTexture command for a 3D sub-region using raw bytes.
+ * Append a WriteTexture command for a 3D sub-region using borrowed raw bytes.
  *
- * Mirrors `dvz_drp2_stream_write_texture_2d_bytes` for 3D texture uploads.
+ * Mirrors `dvz_drp2_stream_write_texture_2d_borrowed` for 3D texture uploads.
  *
  * @param stream the command stream
  * @param texture_id the destination texture id
@@ -888,7 +889,7 @@ DVZ_EXPORT bool dvz_drp2_stream_write_texture_3d(
  * @param data raw pixel bytes (must remain valid until the stream executes)
  * @return whether the command was appended
  */
-DVZ_EXPORT bool dvz_drp2_stream_write_texture_3d_bytes(
+DVZ_EXPORT bool dvz_drp2_stream_write_texture_3d_borrowed(
     DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level,
     uint32_t origin_x, uint32_t origin_y, uint32_t origin_z,
     uint32_t width, uint32_t height, uint32_t depth,

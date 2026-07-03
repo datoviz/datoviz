@@ -661,17 +661,17 @@ int test_drp2_runtime_validate_write_texture_3d_formats(TstContext* suite, const
     AT(dvz_drp2_stream_create_texture_3d_format_usage(
         stream, 1, 3, 2, 2, DVZ_FORMAT_R8_UNORM,
         DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
-    AT(dvz_drp2_stream_write_texture_3d_bytes(
+    AT(dvz_drp2_stream_write_texture_3d_borrowed(
         stream, 1, 0, 0, 0, 0, 3, 2, 2, 3, 2, r8_values));
     AT(dvz_drp2_stream_create_texture_3d_format_usage(
         stream, 2, 2, 2, 2, DVZ_FORMAT_R16_UNORM,
         DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
-    AT(dvz_drp2_stream_write_texture_3d_bytes(
+    AT(dvz_drp2_stream_write_texture_3d_borrowed(
         stream, 2, 0, 0, 0, 0, 2, 2, 2, 2 * sizeof(uint16_t), 2, r16_values));
     AT(dvz_drp2_stream_create_texture_3d_format_usage(
         stream, 3, 2, 2, 2, DVZ_FORMAT_R32G32_UINT,
         DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
-    AT(dvz_drp2_stream_write_texture_3d_bytes(
+    AT(dvz_drp2_stream_write_texture_3d_borrowed(
         stream, 3, 0, 0, 0, 0, 2, 2, 2, 2 * 2 * sizeof(uint32_t), 2, rg32_values));
 
     const DvzDrp2Command* r8_texture = dvz_drp2_stream_get(stream, 2);
@@ -713,7 +713,7 @@ int test_drp2_runtime_rejects_write_texture_format_row_layout(
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_3d_format_usage(
         stream, 1, 2, 2, 2, DVZ_FORMAT_R16_UNORM, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
-    AT(dvz_drp2_stream_write_texture_3d_bytes(
+    AT(dvz_drp2_stream_write_texture_3d_borrowed(
         stream, 1, 0, 0, 0, 0, 2, 2, 2, 3, 2, values));
 
     DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);

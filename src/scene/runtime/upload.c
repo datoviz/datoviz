@@ -211,14 +211,14 @@ bool _emitter_emit_upload(
         }
         if (texture_d > 1 || d > 1 || node->u.upload.texture_origin_z != 0)
         {
-            return dvz_drp2_stream_write_texture_3d_bytes(
+            return dvz_drp2_stream_write_texture_3d_borrowed(
                 stream, id, 0, node->u.upload.texture_origin_x, node->u.upload.texture_origin_y,
                 node->u.upload.texture_origin_z, w, h, d, bpr, h, node->u.upload.data);
         }
         if (node->u.upload.texture_origin_x == 0 && node->u.upload.texture_origin_y == 0)
-            return dvz_drp2_stream_write_texture_2d_bytes(
+            return dvz_drp2_stream_write_texture_2d_borrowed(
                 stream, id, 0, w, h, bpr, h, node->u.upload.data);
-        return dvz_drp2_stream_write_texture_2d_region_bytes(
+        return dvz_drp2_stream_write_texture_2d_region_borrowed(
             stream, id, 0, node->u.upload.texture_origin_x, node->u.upload.texture_origin_y, w, h,
             bpr, h, node->u.upload.data);
     }

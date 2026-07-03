@@ -2525,7 +2525,7 @@ Access the built-in video sink backend that encodes stream frames.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/video.h`:153._
+_Declared in `include/datoviz/video.h`:144._
 
 ### `dvz_stream_start()`
 
@@ -2630,7 +2630,7 @@ fields from the stream; standalone encoder creation resolves them to 1080p60.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/video.h`:131._
+_Declared in `include/datoviz/video.h`:122._
 
 ### `dvz_video_sink_config()`
 
@@ -2651,7 +2651,7 @@ bitstream
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/video.h`:144._
+_Declared in `include/datoviz/video.h`:135._
 
 ## View
 

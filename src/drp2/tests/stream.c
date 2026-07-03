@@ -265,7 +265,7 @@ int test_drp2_stream_json_payload_refs(TstContext* suite, const TstCase* item)
         255, 255, 0,   255,
     };
     AT(dvz_drp2_stream_write_buffer_bytes(stream, 1, 0, sizeof(buffer_payload), buffer_payload));
-    AT(dvz_drp2_stream_write_texture_2d_bytes(stream, 2, 0, 2, 2, 8, 2, texture_payload));
+    AT(dvz_drp2_stream_write_texture_2d_borrowed(stream, 2, 0, 2, 2, 8, 2, texture_payload));
 
     AT(dvz_drp2_stream_payload_count(stream) == 2);
     AT(dvz_drp2_stream_payload_command_index(stream, 0) == 0);

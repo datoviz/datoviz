@@ -7023,12 +7023,6 @@ typedef struct DvzDrp2RecordingInfo DvzDrp2RecordingInfo;
 typedef struct DvzDrp2RenderPipelineDesc DvzDrp2RenderPipelineDesc;
 ```
 
-#### `DvzDrp2TextureDesc`
-
-```c
-typedef struct DvzDrp2TextureDesc DvzDrp2TextureDesc;
-```
-
 #### `DvzDrp2RuntimeConfig`
 
 ```c
@@ -7039,6 +7033,12 @@ typedef struct DvzDrp2RuntimeConfig DvzDrp2RuntimeConfig;
 
 ```c
 typedef enum DvzDrp2ShaderStageFlags DvzDrp2ShaderStageFlags;
+```
+
+#### `DvzDrp2TextureDesc`
+
+```c
+typedef struct DvzDrp2TextureDesc DvzDrp2TextureDesc;
 ```
 
 #### `DvzDrp2TextureUsageFlags`
@@ -7417,6 +7417,18 @@ struct DvzDrp2RenderPipelineDesc {
 };
 ```
 
+#### `DvzDrp2RuntimeConfig`
+
+```c
+struct DvzDrp2RuntimeConfig {
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzDevice * device;
+    DvzVma * allocator;
+    _Bool semantic_only;
+};
+```
+
 #### `DvzDrp2TextureDesc`
 
 ```c
@@ -7431,18 +7443,6 @@ struct DvzDrp2TextureDesc {
     uint32_t usage;
     uint32_t sample_count;
     DvzDrp2ColorRole color_role;
-};
-```
-
-#### `DvzDrp2RuntimeConfig`
-
-```c
-struct DvzDrp2RuntimeConfig {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzDevice * device;
-    DvzVma * allocator;
-    _Bool semantic_only;
 };
 ```
 
@@ -7742,16 +7742,16 @@ typedef struct DvzGpuCtxConfig DvzGpuCtxConfig;
 typedef struct DvzGpuInfo DvzGpuInfo;
 ```
 
-#### `DvzGraphicFlags`
-
-```c
-typedef enum DvzGraphicFlags DvzGraphicFlags;
-```
-
 #### `DvzGraphics`
 
 ```c
 typedef struct DvzGraphics DvzGraphics;
+```
+
+#### `DvzGraphicsFlags`
+
+```c
+typedef enum DvzGraphicsFlags DvzGraphicsFlags;
 ```
 
 #### `DvzId`
@@ -8531,7 +8531,7 @@ DVZ_FRONT_FACE_COUNTER_CLOCKWISE = 0,
 DVZ_FRONT_FACE_CLOCKWISE = 1,
 ```
 
-#### `DvzGraphicFlags`
+#### `DvzGraphicsFlags`
 
 ```c
 DVZ_GRAPHICS_FLAGS_DISABLE = 0,

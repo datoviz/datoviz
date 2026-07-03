@@ -260,7 +260,7 @@ int test_drp2_runtime_vklite_samples_3d_texture(TstContext* suite, const TstCase
     AT(dvz_drp2_stream_create_texture_3d_format_usage(
         stream, 6, 2, 2, 2, DVZ_FORMAT_R8G8B8A8_UNORM,
         DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
-    AT(dvz_drp2_stream_write_texture_3d_bytes(
+    AT(dvz_drp2_stream_write_texture_3d_borrowed(
         stream, 6, 0, 0, 0, 0, 2, 2, 2, 8, 2, voxels));
     AT(dvz_drp2_stream_create_texture_sampler_bind_group(stream, 7, 3, 6, 5));
     AT(dvz_drp2_stream_create_texture_2d_usage(
@@ -2451,7 +2451,7 @@ int test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate(
     AT(dvz_drp2_stream_create_texture_2d_usage(
         setup, 6, 2, 2,
         DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
-    AT(dvz_drp2_stream_write_texture_2d_bytes(setup, 6, 0, 2, 2, 8, 2, red));
+    AT(dvz_drp2_stream_write_texture_2d_borrowed(setup, 6, 0, 2, 2, 8, 2, red));
     AT(dvz_drp2_stream_create_texture_sampler_bind_group(setup, 7, 3, 6, 5));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         setup, 8, 2, 2,
@@ -2481,7 +2481,7 @@ int test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate(
     AT(dvz_drp2_stream_create_texture_2d_usage(
         resized, 6, 4, 4,
         DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
-    AT(dvz_drp2_stream_write_texture_2d_bytes(resized, 6, 0, 4, 4, 16, 4, green));
+    AT(dvz_drp2_stream_write_texture_2d_borrowed(resized, 6, 0, 4, 4, 16, 4, green));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         resized, 18, 2, 2,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
@@ -2595,7 +2595,7 @@ int test_drp2_runtime_vklite_refreshes_bind_group_after_buffer_sampler_recreate(
     AT(dvz_drp2_stream_create_texture_2d_usage(
         setup, 8, 2, 2,
         DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
-    AT(dvz_drp2_stream_write_texture_2d_bytes(setup, 8, 0, 2, 2, 8, 2, blue_texture));
+    AT(dvz_drp2_stream_write_texture_2d_borrowed(setup, 8, 0, 2, 2, 8, 2, blue_texture));
     AT(dvz_drp2_stream_create_uniform_bind_group(setup, 12, 3, 5, 0, 16));
     AT(dvz_drp2_stream_create_bind_group_entries(setup, 13, 4, 1, &storage_entry));
     AT(dvz_drp2_stream_create_texture_sampler_bind_group(setup, 14, 10, 8, 7));
@@ -2699,7 +2699,7 @@ int test_drp2_runtime_vklite_refresh_defers_retired_descriptors(
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 6, 2, 2,
         DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
-    AT(dvz_drp2_stream_write_texture_2d_bytes(stream, 6, 0, 2, 2, 8, 2, rgba));
+    AT(dvz_drp2_stream_write_texture_2d_borrowed(stream, 6, 0, 2, 2, 8, 2, rgba));
     AT(dvz_drp2_stream_create_texture_sampler_bind_group(stream, 7, 3, 6, 5));
 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);

@@ -1706,7 +1706,7 @@ bool dvz_drp2_stream_write_texture_3d(
 
 
 /**
- * Append a WriteTexture command for a 3D texture subregion using raw bytes.
+ * Append a WriteTexture command for a 3D texture subregion using borrowed raw bytes.
  *
  * @param stream the command stream
  * @param texture_id the destination texture id
@@ -1719,10 +1719,10 @@ bool dvz_drp2_stream_write_texture_3d(
  * @param depth the written depth
  * @param bytes_per_row the source bytes per row
  * @param rows_per_image the source rows per image
- * @param data raw texture bytes
+ * @param data raw texture bytes; borrowed until execution or serialization
  * @return whether the command was appended
  */
-bool dvz_drp2_stream_write_texture_3d_bytes(
+bool dvz_drp2_stream_write_texture_3d_borrowed(
     DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level,
     uint32_t origin_x, uint32_t origin_y, uint32_t origin_z,
     uint32_t width, uint32_t height, uint32_t depth,
@@ -2673,7 +2673,7 @@ bool dvz_drp2_stream_write_buffer_bytes(
 }
 
 
-bool dvz_drp2_stream_write_texture_2d_bytes(
+bool dvz_drp2_stream_write_texture_2d_borrowed(
     DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level, uint32_t width,
     uint32_t height, uint32_t bytes_per_row, uint32_t rows_per_image, const void* data)
 {
@@ -2698,7 +2698,7 @@ bool dvz_drp2_stream_write_texture_2d_bytes(
 }
 
 
-bool dvz_drp2_stream_write_texture_2d_region_bytes(
+bool dvz_drp2_stream_write_texture_2d_region_borrowed(
     DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level, uint32_t origin_x,
     uint32_t origin_y, uint32_t width, uint32_t height, uint32_t bytes_per_row,
     uint32_t rows_per_image, const void* data)
