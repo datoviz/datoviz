@@ -510,7 +510,7 @@ static DvzScenarioSpec _graph_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "composite_graph",
-        .title = "composite_graph",
+        .title = "Graph Composite",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

@@ -97,7 +97,7 @@ static DvzScenarioSpec _reference_grid_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_reference_grid",
-        .title = "reference_grid",
+        .title = "Reference Grid",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

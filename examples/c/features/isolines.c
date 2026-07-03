@@ -297,7 +297,7 @@ DvzScenarioSpec dvz_example_isolines_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_isolines",
-        .title = "isolines",
+        .title = "Isolines",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

@@ -231,7 +231,7 @@ DvzScenarioSpec dvz_example_update_visual_data_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_update_visual_data",
-        .title = "update_visual_data",
+        .title = "Visual Data Update",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

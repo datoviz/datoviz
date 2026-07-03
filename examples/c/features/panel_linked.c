@@ -223,7 +223,7 @@ DvzScenarioSpec dvz_example_panel_linked_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_panel_linked",
-        .title = "panel_linked",
+        .title = "Linked Panels",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

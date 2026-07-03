@@ -177,7 +177,7 @@ DvzScenarioSpec dvz_example_panel_grid_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_panel_grid",
-        .title = "panel_grid",
+        .title = "Panel Grid",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

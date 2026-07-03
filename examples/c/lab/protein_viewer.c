@@ -1012,7 +1012,7 @@ static void _protein_gui(DvzGui* gui, DvzView* win, void* user_data)
             .roughness = state->roughness,
             .rim_strength = state->rim_strength,
         };
-        bool material_changed = dvz_example_gui_material(gui, &material);
+        bool material_changed = example_gui_material(gui, &material);
         state->standard_material = material.standard_material;
         state->ambient = material.ambient;
         state->diffuse = material.diffuse;
@@ -1041,7 +1041,7 @@ static void _protein_gui(DvzGui* gui, DvzView* win, void* user_data)
             .min_samples = 2.0f,
             .max_samples = 16.0f,
         };
-        bool msaa_changed = dvz_example_gui_msaa(gui, &msaa);
+        bool msaa_changed = example_gui_msaa(gui, &msaa);
         state->msaa_enabled = msaa.enabled;
         state->msaa_alpha_to_coverage = msaa.alpha_to_coverage;
         state->msaa_samples = msaa.samples;
@@ -1063,7 +1063,7 @@ static void _protein_gui(DvzGui* gui, DvzView* win, void* user_data)
             .blur_radius = state->ssao_blur_radius,
             .blur_radius_max = 16.0f,
         };
-        bool ssao_changed = dvz_example_gui_ssao(gui, &ssao);
+        bool ssao_changed = example_gui_ssao(gui, &ssao);
         state->ssao_enabled = ssao.enabled;
         state->ssao_blur = ssao.blur;
         state->ssao_radius = ssao.radius;

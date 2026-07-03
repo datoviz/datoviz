@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "_alloc.h"
 #include "datoviz/gui.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
@@ -129,15 +130,15 @@ static void _print_settings(const EdlDemoState* state)
     if (state == NULL)
         return;
 
-    fprintf(stderr, "technique_edl settings:\n");
-    fprintf(stderr, "dvz_arcball_set(arcball, (vec3){%+.6ff, %+.6ff, %+.6ff});\n",
+    dvz_fprintf(stderr, "technique_edl settings:\n");
+    dvz_fprintf(stderr, "dvz_arcball_set(arcball, (vec3){%+.6ff, %+.6ff, %+.6ff});\n",
             state->arcball_angles[0], state->arcball_angles[1], state->arcball_angles[2]);
-    fprintf(stderr, "dvz_arcball_zoom(arcball, %.6ff);\n", state->arcball_zoom);
-    fprintf(stderr, "dvz_arcball_pan(arcball, (vec2){%+.6ff, %+.6ff});\n",
+    dvz_fprintf(stderr, "dvz_arcball_zoom(arcball, %.6ff);\n", state->arcball_zoom);
+    dvz_fprintf(stderr, "dvz_arcball_pan(arcball, (vec2){%+.6ff, %+.6ff});\n",
             state->arcball_pan[0], state->arcball_pan[1]);
-    fprintf(stderr, "edl.radius = %.6ff;\n", state->edl.radius);
-    fprintf(stderr, "edl.strength = %.6ff;\n", state->edl.strength);
-    fprintf(stderr, "edl.depth_scale = %.6ff;\n", state->edl.depth_scale);
+    dvz_fprintf(stderr, "edl.radius = %.6ff;\n", state->edl.radius);
+    dvz_fprintf(stderr, "edl.strength = %.6ff;\n", state->edl.strength);
+    dvz_fprintf(stderr, "edl.depth_scale = %.6ff;\n", state->edl.depth_scale);
 }
 
 
@@ -246,7 +247,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (out_user != NULL)
         *out_user = NULL;
 
-    EdlDemoState* state = (EdlDemoState*)calloc(1, sizeof(*state));
+    EdlDemoState* state = (EdlDemoState*)dvz_calloc(1, sizeof(*state));
     if (state == NULL)
         return false;
     if (out_user != NULL)
@@ -336,7 +337,7 @@ static void _edl_gui(DvzGui* gui, DvzView* view, void* user_data)
     if (dvz_gui_begin(gui, "EDL calibration", NULL, 0))
     {
         dvz_gui_separator_text(gui, "Lighting");
-        if (dvz_example_gui_edl(gui, &state->edl))
+        if (example_gui_edl(gui, &state->edl))
             _apply_edl(state);
 
         dvz_gui_separator_text(gui, "Arcball");
@@ -393,7 +394,7 @@ static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView*
 static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 {
     (void)ctx;
-    free(user);
+    dvz_free(user);
 }
 
 
@@ -407,7 +408,7 @@ static DvzScenarioSpec _edl_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "technique_edl",
-        .title = "edl",
+        .title = "Eye-Dome Lighting",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

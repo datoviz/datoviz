@@ -36,8 +36,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1280u
-#define HEIGHT 720u
+#define WIDTH  EXAMPLE_WINDOW_WIDTH
+#define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define POINT_COUNT 5u
 
 
@@ -82,6 +82,21 @@ static DvzViewSizeDesc _parse_size_policy(int argc, char** argv)
 
 
 
+static bool _parse_frame_count(int argc, char** argv, uint32_t* out)
+{
+    if (out == NULL)
+        return false;
+
+    const char* value = NULL;
+    if (example_arg_value(argc, argv, "--frames", &value))
+        return example_parse_u32(value, out);
+
+    *out = example_frame_count_any(argc, argv);
+    return true;
+}
+
+
+
 static bool _add_points(DvzScene* scene, DvzPanel* panel)
 {
     vec3 positions[POINT_COUNT] = {
@@ -121,19 +136,24 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
 
 static void _print_resolved(const DvzResolvedViewSize* resolved)
 {
-    printf("policy: %s\n", _policy_name(resolved->requested_policy));
-    printf("canvas_px: %.1fx%.1f\n", resolved->canvas_width_px, resolved->canvas_height_px);
-    printf(
+    dvz_fprintf(stdout, "policy: %s\n", _policy_name(resolved->requested_policy));
+    dvz_fprintf(
+        stdout, "canvas_px: %.1fx%.1f\n", resolved->canvas_width_px, resolved->canvas_height_px);
+    dvz_fprintf(
+        stdout,
         "host_logical_px: %ux%u\n", resolved->host_logical_width,
         resolved->host_logical_height);
-    printf(
+    dvz_fprintf(
+        stdout,
         "framebuffer_px: %ux%u\n", resolved->framebuffer_width,
         resolved->framebuffer_height);
-    printf(
+    dvz_fprintf(
+        stdout,
         "framebuffer_per_canvas_px: %.3fx%.3f\n", resolved->framebuffer_per_canvas_px_x,
         resolved->framebuffer_per_canvas_px_y);
     if (resolved->target_width_mm > 0.0 && resolved->target_height_mm > 0.0)
-        printf(
+        dvz_fprintf(
+            stdout,
             "target_physical_mm: %.1fx%.1f\n", resolved->target_width_mm,
             resolved->target_height_mm);
 }
@@ -149,6 +169,9 @@ int main(int argc, char** argv)
     int ret = 1;
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
+    uint32_t frame_count = 0;
+
+    EXAMPLE_CHECK(_parse_frame_count(argc, argv, &frame_count), "invalid --frames value");
 
     scene = dvz_scene();
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
@@ -168,7 +191,7 @@ int main(int argc, char** argv)
 
     DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_GLFW);
     desc.size = size;
-    desc.title = "view_size_policies";
+    desc.title = "View Size Policies";
     DvzView* view = dvz_view(app, figure, &desc);
     EXAMPLE_CHECK(view != NULL, "dvz_view() failed");
     EXAMPLE_CHECK(dvz_view_panzoom(view, panel, NULL) != NULL, "dvz_view_panzoom() failed");
@@ -176,7 +199,7 @@ int main(int argc, char** argv)
     DvzResolvedViewSize resolved = dvz_view_resolved_size(view);
     _print_resolved(&resolved);
 
-    dvz_app_run(app, example_frame_count_any(argc, argv));
+    dvz_app_run(app, frame_count);
     ret = 0;
 
 cleanup:

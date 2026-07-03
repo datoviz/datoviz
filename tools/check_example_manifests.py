@@ -29,6 +29,7 @@ PUBLIC_C_DIRS = (
     ROOT / "examples/c/advanced",
 )
 DATA_KINDS = {"synthetic", "simulated", "generated", "real", "prepared"}
+IGNORED_SOURCE_TITLE_CHECKS = {"examples/c/runtime/multi_window.c"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -76,6 +77,7 @@ def _check_manifest_semantics(manifest_path: Path) -> bool:
     ok = True
     entries = manifest["examples"]
     sources = {str(entry.get("source")) for entry in entries if entry.get("source")}
+    by_source = {str(entry.get("source")): entry for entry in entries if entry.get("source")}
 
     for entry in entries:
         entry_id = str(entry.get("id", "<missing>"))
@@ -95,6 +97,22 @@ def _check_manifest_semantics(manifest_path: Path) -> bool:
             if source not in sources:
                 print(f"public C example has no manifest row: {source}")
                 ok = False
+            elif source not in IGNORED_SOURCE_TITLE_CHECKS:
+                entry = by_source[source]
+                text = path.read_text(encoding="utf8")
+                titles = []
+                for match in re.finditer(
+                    r"return\s*\(DvzScenarioSpec\)\s*\{(?P<body>.*?)\};", text, re.S
+                ):
+                    title_match = re.search(r"\.title\s*=\s*\"([^\"]+)\"", match.group("body"))
+                    if title_match is not None:
+                        titles.append(title_match.group(1))
+                if len(titles) == 1 and titles[0] != str(entry["title"]):
+                    print(
+                        f"{source}: scenario title {titles[0]!r} "
+                        f"does not match manifest title {entry['title']!r}"
+                    )
+                    ok = False
 
     live_js = _live_js_entries(ROOT / "examples/webgpu/live_examples.js")
     live_by_route = {entry["id"]: entry["scenario_id"] for entry in live_js}

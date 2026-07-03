@@ -231,7 +231,7 @@ DvzScenarioSpec dvz_visual_primitive_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "visual_primitive",
-        .title = "visual_primitive",
+        .title = "Primitive",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

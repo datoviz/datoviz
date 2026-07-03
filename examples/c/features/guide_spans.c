@@ -267,7 +267,7 @@ DvzScenarioSpec dvz_example_guide_spans_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_guide_spans",
-        .title = "guide_spans",
+        .title = "Guide Spans",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

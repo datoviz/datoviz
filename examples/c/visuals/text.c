@@ -149,7 +149,7 @@ DvzScenarioSpec dvz_visual_text_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "visual_text",
-        .title = "visual_text",
+        .title = "Text",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

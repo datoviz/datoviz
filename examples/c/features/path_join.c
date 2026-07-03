@@ -348,7 +348,7 @@ DvzScenarioSpec dvz_example_path_join_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_path_join",
-        .title = "path_join",
+        .title = "Path Join",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

@@ -115,7 +115,7 @@ DvzScenarioSpec dvz_example_basic_scene_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_basic_scene",
-        .title = "basic_scene",
+        .title = "Basic Scene",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

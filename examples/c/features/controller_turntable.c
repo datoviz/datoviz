@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "_alloc.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
@@ -117,7 +118,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (out_user != NULL)
         *out_user = NULL;
 
-    ControllerTurntableState* state = (ControllerTurntableState*)calloc(1, sizeof(*state));
+    ControllerTurntableState* state = (ControllerTurntableState*)dvz_calloc(1, sizeof(*state));
     if (state == NULL)
         return false;
     if (out_user != NULL)
@@ -191,7 +192,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
         return;
     if (state->geometry != NULL)
         dvz_geometry_destroy(state->geometry);
-    free(state);
+    dvz_free(state);
 }
 
 
@@ -205,7 +206,7 @@ DvzScenarioSpec dvz_example_controller_turntable_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_controller_turntable",
-        .title = "controller_turntable",
+        .title = "Turntable Controller",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

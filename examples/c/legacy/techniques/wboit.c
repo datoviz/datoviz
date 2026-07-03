@@ -235,7 +235,7 @@ static void _mesh_wboit_gui(DvzGui* gui, DvzView* win, void* user_data)
         dvz_gui_separator_text(gui, "Lighting");
         changed |= dvz_gui_slider_float(gui, "Ambient", &state->cube_ambient, 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Diffuse", &state->cube_diffuse, 0.0f, 1.5f);
-        changed |= dvz_example_gui_vec3(
+        changed |= example_gui_vec3(
             gui, "Light direction", state->cube_light_direction, -1.0f, 1.0f, "%.2f");
         if (dvz_gui_button(gui, "Reset"))
         {

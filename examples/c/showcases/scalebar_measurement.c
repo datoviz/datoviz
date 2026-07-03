@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
@@ -541,7 +542,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     bool ok = false;
     ScalebarMeasurementState* state =
-        (ScalebarMeasurementState*)calloc(1, sizeof(*state));
+        (ScalebarMeasurementState*)dvz_calloc(1, sizeof(*state));
     if (state == NULL)
         return false;
     if (out_user != NULL)
@@ -663,7 +664,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     if (state == NULL)
         return;
     dvz_track_destroy(state->specimen_rotation);
-    free(state);
+    dvz_free(state);
 }
 
 
@@ -672,7 +673,7 @@ DvzScenarioSpec dvz_showcase_scalebar_measurement_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "scalebar_measurement_workflow",
-        .title = "scalebar_measurement",
+        .title = "Scale Bar Measurement Workflow",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

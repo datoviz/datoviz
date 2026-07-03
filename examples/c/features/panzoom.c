@@ -188,7 +188,7 @@ DvzScenarioSpec dvz_example_panzoom_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_panzoom",
-        .title = "panzoom",
+        .title = "Panzoom",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

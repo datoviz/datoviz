@@ -238,7 +238,7 @@ DvzScenarioSpec dvz_visual_segment_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "visual_segment",
-        .title = "visual_segment",
+        .title = "Segment",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

@@ -248,7 +248,7 @@ DvzScenarioSpec dvz_example_depth_test_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "technique_depth_test",
-        .title = "depth_test",
+        .title = "Depth Test Toggle",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

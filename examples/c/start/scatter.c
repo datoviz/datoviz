@@ -22,8 +22,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/scene.h"
 #include "example_style.h"
@@ -54,28 +54,43 @@ DvzScenarioSpec dvz_start_scatter_scenario(void);
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static float _randf(void) { return (float)rand() / (float)RAND_MAX; }
+static uint32_t _rng_next(uint32_t* state)
+{
+    ANN(state);
+
+    uint32_t value = *state;
+    value ^= value << 13;
+    value ^= value >> 17;
+    value ^= value << 5;
+    *state = value;
+    return value;
+}
+
+static float _randf(uint32_t* state)
+{
+    return (float)(_rng_next(state) >> 8) / (float)0x01000000u;
+}
 
 static void _fill_scatter(
-    vec3 positions[POINT_COUNT], DvzColor colors[POINT_COUNT], float diameters[POINT_COUNT])
+    vec3* positions, DvzColor* colors, float* diameters)
 {
     ANN(positions);
     ANN(colors);
     ANN(diameters);
 
-    srand(SEED);
+    uint32_t rng = SEED;
     for (uint32_t i = 0; i < POINT_COUNT; i++)
     {
-        positions[i][0] = 2.0f * _randf() - 1.0f;
-        positions[i][1] = 2.0f * _randf() - 1.0f;
+        positions[i][0] = 2.0f * _randf(&rng) - 1.0f;
+        positions[i][1] = 2.0f * _randf(&rng) - 1.0f;
         positions[i][2] = 0.0f;
 
-        colors[i].r = (uint8_t)(_randf() * 255);
-        colors[i].g = (uint8_t)(_randf() * 255);
-        colors[i].b = (uint8_t)(_randf() * 255);
+        colors[i].r = (uint8_t)(_randf(&rng) * 255);
+        colors[i].g = (uint8_t)(_randf(&rng) * 255);
+        colors[i].b = (uint8_t)(_randf(&rng) * 255);
         colors[i].a = 200;
 
-        diameters[i] = 4.0f + 8.0f * _randf();
+        diameters[i] = 4.0f + 8.0f * _randf(&rng);
     }
 }
 
@@ -93,14 +108,18 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
     ANN(scene);
     ANN(panel);
 
-    vec3 positions[POINT_COUNT] = {{0}};
-    DvzColor colors[POINT_COUNT] = {{0}};
-    float diameters[POINT_COUNT] = {0};
+    bool ok = false;
+    vec3* positions = (vec3*)dvz_calloc(POINT_COUNT, sizeof(*positions));
+    DvzColor* colors = (DvzColor*)dvz_calloc(POINT_COUNT, sizeof(*colors));
+    float* diameters = (float*)dvz_calloc(POINT_COUNT, sizeof(*diameters));
+    if (positions == NULL || colors == NULL || diameters == NULL)
+        goto cleanup;
+
     _fill_scatter(positions, colors, diameters);
 
     DvzVisual* point = dvz_point(scene, 0);
     if (point == NULL)
-        return false;
+        goto cleanup;
 
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
@@ -108,19 +127,25 @@ static bool _add_points(DvzScene* scene, DvzPanel* panel)
         {.attr_name = "diameter_px", .data = diameters, .item_count = POINT_COUNT},
     };
     if (dvz_visual_set_data_many(point, updates, DVZ_ARRAY_COUNT(updates)) != 0)
-        return false;
+        goto cleanup;
 
     DvzPointStyleDesc style = dvz_point_style_desc();
     style.aspect = DVZ_SHAPE_ASPECT_FILLED;
     style.stroke_width_px = 0.0f;
     if (dvz_point_set_style(point, &style) != 0)
-        return false;
+        goto cleanup;
     if (dvz_visual_set_depth_test(point, false) != 0)
-        return false;
+        goto cleanup;
     if (dvz_visual_set_alpha_mode(point, DVZ_ALPHA_BLENDED) != 0)
-        return false;
+        goto cleanup;
 
-    return dvz_panel_add_visual(panel, point, NULL) == 0;
+    ok = dvz_panel_add_visual(panel, point, NULL) == 0;
+
+cleanup:
+    dvz_free(diameters);
+    dvz_free(colors);
+    dvz_free(positions);
+    return ok;
 }
 
 
@@ -158,7 +183,7 @@ DvzScenarioSpec dvz_start_scatter_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "start_scatter",
-        .title = "scatter",
+        .title = "Scatter Plot",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

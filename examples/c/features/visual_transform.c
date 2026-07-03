@@ -212,7 +212,7 @@ static DvzScenarioSpec _visual_transform_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_visual_transform",
-        .title = "visual_transform",
+        .title = "Visual Transform",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

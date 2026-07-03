@@ -352,7 +352,7 @@ static DvzScenarioSpec _volume_occlusion_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_volume_occlusion",
-        .title = "volume_occlusion",
+        .title = "Volume Occlusion",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

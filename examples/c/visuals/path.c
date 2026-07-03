@@ -209,7 +209,7 @@ DvzScenarioSpec dvz_visual_path_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "visual_path",
-        .title = "visual_path",
+        .title = "Path",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

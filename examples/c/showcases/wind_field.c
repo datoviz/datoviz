@@ -1171,7 +1171,7 @@ DvzScenarioSpec dvz_showcase_wind_field_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "showcase_wind_field",
-        .title = "showcase_wind_field",
+        .title = "Wind Field",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

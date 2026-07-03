@@ -156,7 +156,7 @@ DvzScenarioSpec dvz_example_panel_background_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_panel_background",
-        .title = "panel_background",
+        .title = "Panel Background",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

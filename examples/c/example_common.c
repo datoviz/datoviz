@@ -145,6 +145,10 @@ bool example_arg_value_prefix(int argc, char** argv, const char* prefix, const c
 /**
  * Build an output path next to the example executable.
  *
+ * When DVZ_CAPTURE_DIR and DVZ_CAPTURE_BASENAME are set, the requested basename is replaced
+ * while preserving suffixes derived from the executable name. For example, record_replay_original
+ * becomes ${DVZ_CAPTURE_BASENAME}_original, keeping multi-output examples collision-free.
+ *
  * @param exe executable path from argv[0]
  * @param name output file name
  * @param out destination path buffer
@@ -159,9 +163,29 @@ void example_outpath(const char* exe, const char* name, char* out, size_t size)
     const char* capture_basename = getenv("DVZ_CAPTURE_BASENAME");
     const char* dot = strrchr(name, '.');
     if (capture_dir != NULL && capture_dir[0] != '\0' && capture_basename != NULL &&
-        capture_basename[0] != '\0' && dot != NULL && dot[1] != '\0')
+        capture_basename[0] != '\0')
     {
-        dvz_snprintf(out, size, "%s/%s%s", capture_dir, capture_basename, dot);
+        const char* suffix = "";
+        int suffix_len = 0;
+
+        const char* exe_name = exe != NULL ? strrchr(exe, '/') : NULL;
+        exe_name = exe_name != NULL ? exe_name + 1 : exe;
+        if (exe_name != NULL && exe_name[0] != '\0')
+        {
+            const char* exe_dot = strrchr(exe_name, '.');
+            size_t exe_stem_len = exe_dot != NULL ? (size_t)(exe_dot - exe_name) : strlen(exe_name);
+            size_t name_stem_len = dot != NULL ? (size_t)(dot - name) : strlen(name);
+            if (exe_stem_len > 0 && name_stem_len >= exe_stem_len &&
+                strncmp(name, exe_name, exe_stem_len) == 0)
+            {
+                suffix = name + exe_stem_len;
+                suffix_len = (int)(name_stem_len - exe_stem_len);
+            }
+        }
+
+        dvz_snprintf(
+            out, size, "%s/%s%.*s%s", capture_dir, capture_basename, suffix_len, suffix,
+            dot != NULL ? dot : "");
         return;
     }
 

@@ -257,7 +257,7 @@ DvzScenarioSpec dvz_visual_pixel_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "visual_pixel",
-        .title = "visual_pixel",
+        .title = "Pixel",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

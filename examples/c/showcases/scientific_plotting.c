@@ -566,7 +566,7 @@ DvzScenarioSpec dvz_showcase_scientific_plotting_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "scientific_plotting_workflow",
-        .title = "scientific_plotting",
+        .title = "Scientific Plotting Workflow",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

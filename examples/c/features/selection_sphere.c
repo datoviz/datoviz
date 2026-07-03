@@ -428,7 +428,7 @@ DvzScenarioSpec dvz_example_selection_sphere_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_selection_sphere",
-        .title = "selection_sphere",
+        .title = "Sphere Selection",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

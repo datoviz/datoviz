@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "_alloc.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
@@ -233,7 +234,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     *out_user = NULL;
 
-    AnimationTracksState* state = (AnimationTracksState*)calloc(1, sizeof(AnimationTracksState));
+    AnimationTracksState* state = (AnimationTracksState*)dvz_calloc(1, sizeof(AnimationTracksState));
     if (state == NULL)
         return false;
     *out_user = state;
@@ -316,7 +317,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
     dvz_track_destroy(state->camera_target);
     if (state->geometry != NULL)
         dvz_geometry_destroy(state->geometry);
-    free(state);
+    dvz_free(state);
 }
 
 
@@ -330,7 +331,7 @@ DvzScenarioSpec dvz_example_animation_tracks_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_animation_tracks",
-        .title = "animation_tracks",
+        .title = "Animation Tracks",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

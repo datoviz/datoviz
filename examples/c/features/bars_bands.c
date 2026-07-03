@@ -201,7 +201,7 @@ DvzScenarioSpec dvz_example_bars_bands_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_bars_bands",
-        .title = "bars_bands",
+        .title = "Bars And Bands",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

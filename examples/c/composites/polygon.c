@@ -255,7 +255,7 @@ DvzScenarioSpec dvz_composite_polygon_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "composite_polygon",
-        .title = "composite_polygon",
+        .title = "Polygon Composite",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

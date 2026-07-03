@@ -238,7 +238,7 @@ DvzScenarioSpec dvz_example_visibility_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_visibility",
-        .title = "visibility",
+        .title = "Visual Visibility",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

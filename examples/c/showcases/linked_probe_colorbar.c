@@ -914,7 +914,7 @@ DvzScenarioSpec dvz_showcase_linked_probe_colorbar_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "linked_panels_probe_colorbar",
-        .title = "linked_probe_colorbar",
+        .title = "Linked Probe With Colorbar",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

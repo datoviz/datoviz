@@ -300,7 +300,7 @@ DvzScenarioSpec dvz_visual_marker_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "visual_marker",
-        .title = "visual_marker",
+        .title = "Marker",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

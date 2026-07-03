@@ -352,7 +352,7 @@ DvzScenarioSpec dvz_example_user_scale_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_user_scale",
-        .title = "user_scale",
+        .title = "User Scale",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

@@ -89,17 +89,17 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-bool dvz_example_gui_material(DvzGui* gui, DvzExampleGuiMaterialControls* controls);
+bool example_gui_material(DvzGui* gui, DvzExampleGuiMaterialControls* controls);
 
-bool dvz_example_gui_msaa(DvzGui* gui, DvzExampleGuiMsaaControls* controls);
+bool example_gui_msaa(DvzGui* gui, DvzExampleGuiMsaaControls* controls);
 
-bool dvz_example_gui_edl(DvzGui* gui, DvzExampleGuiEdlControls* controls);
+bool example_gui_edl(DvzGui* gui, DvzExampleGuiEdlControls* controls);
 
-bool dvz_example_gui_ssao(DvzGui* gui, DvzExampleGuiSsaoControls* controls);
+bool example_gui_ssao(DvzGui* gui, DvzExampleGuiSsaoControls* controls);
 
-bool dvz_example_gui_clip_box(DvzGui* gui, const char* label, float clip_min[3], float clip_max[3]);
+bool example_gui_clip_box(DvzGui* gui, const char* label, float clip_min[3], float clip_max[3]);
 
-bool dvz_example_gui_vec3(
+bool example_gui_vec3(
     DvzGui* gui, const char* label, float value[3], float min, float max, const char* format);
 
 EXTERN_C_OFF

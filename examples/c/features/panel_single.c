@@ -134,7 +134,7 @@ DvzScenarioSpec dvz_example_panel_single_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_panel_single",
-        .title = "panel_single",
+        .title = "Single Panel",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

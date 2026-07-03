@@ -191,7 +191,7 @@ DvzScenarioSpec dvz_visual_sphere_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "sphere_impostor",
-        .title = "visual_sphere",
+        .title = "Sphere",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

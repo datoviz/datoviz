@@ -802,7 +802,7 @@ DvzScenarioSpec dvz_showcase_textured_planet_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "textured_terrain_or_planet",
-        .title = "textured planets",
+        .title = "Textured Planets",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

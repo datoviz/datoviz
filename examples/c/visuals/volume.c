@@ -480,7 +480,7 @@ static DvzScenarioSpec _volume_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "volume",
-        .title = "visual_volume",
+        .title = "Volume",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

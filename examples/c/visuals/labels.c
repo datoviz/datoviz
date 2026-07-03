@@ -332,7 +332,7 @@ DvzScenarioSpec dvz_visual_labels_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "visual_labels",
-        .title = "visual_labels",
+        .title = "Labels",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

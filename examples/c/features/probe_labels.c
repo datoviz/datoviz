@@ -723,7 +723,7 @@ static DvzScenarioSpec _probe_labels_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_probe_labels",
-        .title = "probe_labels",
+        .title = "Label Probe",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

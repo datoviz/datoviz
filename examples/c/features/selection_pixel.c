@@ -474,7 +474,7 @@ DvzScenarioSpec dvz_example_selection_pixel_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_selection_pixel",
-        .title = "selection_pixel",
+        .title = "Pixel Selection",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

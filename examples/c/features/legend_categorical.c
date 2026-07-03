@@ -244,7 +244,7 @@ DvzScenarioSpec dvz_example_legend_categorical_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_legend_categorical",
-        .title = "legend_categorical",
+        .title = "Categorical Legend",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

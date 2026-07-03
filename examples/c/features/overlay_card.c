@@ -197,7 +197,7 @@ DvzScenarioSpec dvz_example_overlay_card_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_overlay_card",
-        .title = "overlay_card",
+        .title = "Overlay Card",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

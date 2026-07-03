@@ -417,7 +417,7 @@ DvzScenarioSpec dvz_example_coordinate_system_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_coordinate_system",
-        .title = "coordinate_system",
+        .title = "Coordinate System",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

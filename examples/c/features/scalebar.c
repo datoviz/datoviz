@@ -191,7 +191,7 @@ DvzScenarioSpec dvz_example_scalebar_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_scalebar",
-        .title = "scalebar",
+        .title = "Scale Bar",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

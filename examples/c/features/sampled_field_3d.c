@@ -243,7 +243,7 @@ static DvzScenarioSpec _sampled_field_3d_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_sampled_field_3d",
-        .title = "sampled_field_3d",
+        .title = "3D Sampled Field",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

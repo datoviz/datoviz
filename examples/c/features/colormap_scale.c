@@ -173,7 +173,7 @@ DvzScenarioSpec dvz_example_colormap_scale_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_colormap_scale",
-        .title = "colormap_scale",
+        .title = "Scalar Color Scale",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

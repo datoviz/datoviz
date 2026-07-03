@@ -537,7 +537,7 @@ static DvzScenarioSpec _marker_symbols_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_marker_symbols",
-        .title = "feature_marker_symbols",
+        .title = "Marker Symbols",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

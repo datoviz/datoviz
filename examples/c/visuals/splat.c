@@ -174,7 +174,7 @@ static DvzScenarioSpec _splat_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "visual_splat",
-        .title = "visual_splat",
+        .title = "Splat",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

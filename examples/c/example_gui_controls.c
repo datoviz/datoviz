@@ -53,7 +53,7 @@ static float _control_max(float value, float fallback)
  * @param controls material controls edited in place
  * @return whether a material field changed
  */
-bool dvz_example_gui_material(DvzGui* gui, DvzExampleGuiMaterialControls* controls)
+bool example_gui_material(DvzGui* gui, DvzExampleGuiMaterialControls* controls)
 {
     ANN(gui);
     ANN(controls);
@@ -85,7 +85,7 @@ bool dvz_example_gui_material(DvzGui* gui, DvzExampleGuiMaterialControls* contro
  * @param controls MSAA controls edited in place
  * @return whether an MSAA field changed
  */
-bool dvz_example_gui_msaa(DvzGui* gui, DvzExampleGuiMsaaControls* controls)
+bool example_gui_msaa(DvzGui* gui, DvzExampleGuiMsaaControls* controls)
 {
     ANN(gui);
     ANN(controls);
@@ -109,7 +109,7 @@ bool dvz_example_gui_msaa(DvzGui* gui, DvzExampleGuiMsaaControls* controls)
  * @param controls EDL controls edited in place
  * @return whether an EDL field changed
  */
-bool dvz_example_gui_edl(DvzGui* gui, DvzExampleGuiEdlControls* controls)
+bool example_gui_edl(DvzGui* gui, DvzExampleGuiEdlControls* controls)
 {
     ANN(gui);
     ANN(controls);
@@ -131,7 +131,7 @@ bool dvz_example_gui_edl(DvzGui* gui, DvzExampleGuiEdlControls* controls)
  * @param controls SSAO controls edited in place
  * @return whether an SSAO field changed
  */
-bool dvz_example_gui_ssao(DvzGui* gui, DvzExampleGuiSsaoControls* controls)
+bool example_gui_ssao(DvzGui* gui, DvzExampleGuiSsaoControls* controls)
 {
     ANN(gui);
     ANN(controls);
@@ -173,7 +173,7 @@ bool dvz_example_gui_ssao(DvzGui* gui, DvzExampleGuiSsaoControls* controls)
  * @param clip_max clip upper bounds edited in place
  * @return whether a clip bound changed
  */
-bool dvz_example_gui_clip_box(DvzGui* gui, const char* label, float clip_min[3], float clip_max[3])
+bool example_gui_clip_box(DvzGui* gui, const char* label, float clip_min[3], float clip_max[3])
 {
     ANN(gui);
     ANN(label);
@@ -207,7 +207,7 @@ bool dvz_example_gui_clip_box(DvzGui* gui, const char* label, float clip_min[3],
  * @param format optional display format
  * @return whether a vector component changed
  */
-bool dvz_example_gui_vec3(
+bool example_gui_vec3(
     DvzGui* gui, const char* label, float value[3], float min, float max, const char* format)
 {
     ANN(gui);

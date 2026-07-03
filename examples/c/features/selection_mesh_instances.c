@@ -530,7 +530,7 @@ DvzScenarioSpec dvz_example_selection_mesh_instances_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_selection_mesh_instances",
-        .title = "selection_mesh_instances",
+        .title = "Mesh Instance Selection",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

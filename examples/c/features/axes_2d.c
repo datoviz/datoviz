@@ -221,7 +221,7 @@ DvzScenarioSpec dvz_example_axes_2d_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "path_axes_2d",
-        .title = "path_axes_2d",
+        .title = "Path With 2D Axes",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

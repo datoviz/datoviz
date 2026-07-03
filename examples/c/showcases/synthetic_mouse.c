@@ -768,7 +768,7 @@ static DvzScenarioSpec _synthetic_mouse_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "showcase_synthetic_mouse",
-        .title = "synthetic_mouse",
+        .title = "Synthetic Mouse",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

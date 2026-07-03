@@ -252,7 +252,7 @@ DvzScenarioSpec dvz_example_panel_multi_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_panel_multi",
-        .title = "panel_multi",
+        .title = "Multiple Panels",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

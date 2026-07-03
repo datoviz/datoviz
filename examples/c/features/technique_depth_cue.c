@@ -238,7 +238,7 @@ static DvzScenarioSpec _depth_cue_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "technique_depth_cue",
-        .title = "depth_cue",
+        .title = "Depth Cue",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

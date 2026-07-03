@@ -266,7 +266,7 @@ DvzScenarioSpec dvz_visual_point_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "visual_point",
-        .title = "visual_point",
+        .title = "Point",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

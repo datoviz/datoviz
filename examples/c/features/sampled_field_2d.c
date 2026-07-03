@@ -253,7 +253,7 @@ DvzScenarioSpec dvz_example_sampled_field_2d_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_sampled_field_2d",
-        .title = "sampled_field_2d",
+        .title = "2D Sampled Field",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

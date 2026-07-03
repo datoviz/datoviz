@@ -6,7 +6,7 @@
 
 /* video_export - write a bounded offscreen animation with the app capture API.
  *
- * Example: runtime.video_export
+ * Scenario: runtime.video_export
  * Style: runtime, graphite_cyan, 1920x1080 output target
  *
  * Build:  just example-c runtime/video_export
@@ -24,6 +24,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "datoviz/app.h"
@@ -352,8 +353,13 @@ int main(int argc, char** argv)
     {
         DvzAppCaptureConfig capture = dvz_app_capture_config();
         capture.flags = DVZ_APP_CAPTURE_VIDEO;
-        capture.directory = ".";
-        capture.basename = "video_export";
+        const char* capture_dir = getenv("DVZ_CAPTURE_DIR");
+        const char* capture_basename = getenv("DVZ_CAPTURE_BASENAME");
+        capture.directory =
+            capture_dir != NULL && capture_dir[0] != '\0' ? capture_dir : ".";
+        capture.basename = capture_basename != NULL && capture_basename[0] != '\0'
+                               ? capture_basename
+                               : "video_export";
         capture.fps = FPS;
         capture.video_capture_mode = DVZ_VIDEO_CAPTURE_CPU_READBACK;
 

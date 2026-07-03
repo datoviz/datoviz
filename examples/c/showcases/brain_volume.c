@@ -13,6 +13,7 @@
  * Run:     ./build/examples/c/showcases/brain_volume --live
  * Smoke:   ./build/examples/c/showcases/brain_volume --png
  * Data:    data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz
+ * Prepare: python tools/data/prepare_brain_volume.py
  */
 
 
@@ -1064,7 +1065,7 @@ static DvzScenarioSpec _brain_volume_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "brain_volume",
-        .title = "brain_volume",
+        .title = "Allen Mouse Brain",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

@@ -251,7 +251,7 @@ static DvzScenarioSpec _datetime_axis_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "datetime_axis",
-        .title = "datetime_axis",
+        .title = "Datetime Axis",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

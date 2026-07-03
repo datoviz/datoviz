@@ -127,7 +127,7 @@ DvzScenarioSpec dvz_example_axis_labels_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_axis_labels",
-        .title = "axis_labels",
+        .title = "Axis Labels",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

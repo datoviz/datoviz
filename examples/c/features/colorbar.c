@@ -325,7 +325,7 @@ DvzScenarioSpec dvz_example_colorbar_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_colorbar",
-        .title = "colorbar",
+        .title = "Colorbar",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

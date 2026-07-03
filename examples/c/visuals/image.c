@@ -340,7 +340,7 @@ DvzScenarioSpec dvz_visual_image_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "visual_image",
-        .title = "visual_image",
+        .title = "Image",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

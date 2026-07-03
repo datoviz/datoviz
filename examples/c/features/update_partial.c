@@ -219,7 +219,7 @@ DvzScenarioSpec dvz_example_update_partial_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_update_partial",
-        .title = "update_partial",
+        .title = "Partial Data Update",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

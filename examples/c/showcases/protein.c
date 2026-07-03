@@ -693,7 +693,7 @@ DvzScenarioSpec dvz_showcase_protein_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "protein_arcball_viewer",
-        .title = "protein",
+        .title = "Protein",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

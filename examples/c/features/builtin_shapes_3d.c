@@ -242,7 +242,7 @@ DvzScenarioSpec dvz_example_builtin_shapes_3d_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_builtin_shapes_3d",
-        .title = "builtin_shapes_3d",
+        .title = "Builtin Shapes 3D",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

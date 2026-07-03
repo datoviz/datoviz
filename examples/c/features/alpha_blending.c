@@ -167,7 +167,7 @@ DvzScenarioSpec dvz_example_alpha_blending_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_alpha_blending",
-        .title = "alpha_blending",
+        .title = "Alpha Blending",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

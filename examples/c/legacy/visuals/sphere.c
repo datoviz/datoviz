@@ -430,7 +430,7 @@ static void _ssao_gui(DvzGui* gui, DvzView* win, void* user_data)
             .roughness = state->roughness,
             .rim_strength = state->rim_strength,
         };
-        material_changed |= dvz_example_gui_material(gui, &material);
+        material_changed |= example_gui_material(gui, &material);
         state->standard_material = material.standard_material;
         state->ambient = material.ambient;
         state->diffuse = material.diffuse;
@@ -447,7 +447,7 @@ static void _ssao_gui(DvzGui* gui, DvzView* win, void* user_data)
             .min_samples = 2.0f,
             .max_samples = 8.0f,
         };
-        msaa_changed |= dvz_example_gui_msaa(gui, &msaa);
+        msaa_changed |= example_gui_msaa(gui, &msaa);
         state->msaa_enabled = msaa.enabled;
         state->msaa_alpha_to_coverage = msaa.alpha_to_coverage;
         state->msaa_sample_count = msaa.samples;
@@ -472,7 +472,7 @@ static void _ssao_gui(DvzGui* gui, DvzView* win, void* user_data)
             .blur_depth_sigma = state->blur_depth_sigma,
             .blur_normal_sigma = state->blur_normal_sigma,
         };
-        ssao_changed |= dvz_example_gui_ssao(gui, &ssao);
+        ssao_changed |= example_gui_ssao(gui, &ssao);
         state->ssao_enabled = ssao.enabled;
         state->blur_enabled = ssao.blur;
         state->debug_view = ssao.debug_view;

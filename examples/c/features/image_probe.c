@@ -788,7 +788,7 @@ DvzScenarioSpec dvz_example_image_probe_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_image_probe",
-        .title = "image_probe",
+        .title = "Image Probe",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

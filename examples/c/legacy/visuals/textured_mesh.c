@@ -342,7 +342,7 @@ static void _textured_mesh_gui(DvzGui* gui, DvzView* win, void* user_data)
             .roughness = state->roughness,
             .rim_strength = state->rim_strength,
         };
-        material_changed |= dvz_example_gui_material(gui, &material);
+        material_changed |= example_gui_material(gui, &material);
         state->standard_material = material.standard_material;
         state->ambient = material.ambient;
         state->diffuse = material.diffuse;

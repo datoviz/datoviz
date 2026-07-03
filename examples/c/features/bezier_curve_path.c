@@ -251,7 +251,7 @@ static DvzScenarioSpec _bezier_curve_path_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_bezier_curve_path",
-        .title = "bezier_curve_path",
+        .title = "Bezier Curve Path",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

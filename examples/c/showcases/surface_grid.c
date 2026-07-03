@@ -225,7 +225,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (ctx == NULL)
         return false;
 
-    SurfaceGridState* state = (SurfaceGridState*)calloc(1, sizeof(*state));
+    SurfaceGridState* state = (SurfaceGridState*)dvz_calloc(1, sizeof(*state));
     if (state == NULL)
         return false;
     if (out_user != NULL)
@@ -316,7 +316,7 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
         dvz_geometry_edges_destroy(state->edges);
     if (state->geometry != NULL)
         dvz_geometry_destroy(state->geometry);
-    free(state);
+    dvz_free(state);
 }
 
 
@@ -330,7 +330,7 @@ DvzScenarioSpec dvz_showcase_surface_grid_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "showcase_surface_grid",
-        .title = "surface_grid",
+        .title = "Surface Grid",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

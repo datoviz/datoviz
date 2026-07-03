@@ -248,7 +248,7 @@ static DvzScenarioSpec _msaa_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "technique_msaa",
-        .title = "msaa",
+        .title = "Multisample Antialiasing",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

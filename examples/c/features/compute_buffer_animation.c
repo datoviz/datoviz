@@ -250,7 +250,7 @@ DvzScenarioSpec dvz_example_compute_buffer_animation_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_compute_buffer_animation",
-        .title = "compute_buffer_animation",
+        .title = "Compute Buffer Animation",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

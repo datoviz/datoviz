@@ -345,7 +345,7 @@ DvzScenarioSpec dvz_visual_glyph_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "visual_glyph",
-        .title = "visual_glyph",
+        .title = "Font Atlas Glyphs",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

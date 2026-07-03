@@ -633,7 +633,7 @@ static DvzScenarioSpec _embedding_atlas_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "showcase_embedding_atlas",
-        .title = "embedding_atlas",
+        .title = "Embedding Atlas",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

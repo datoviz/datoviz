@@ -241,7 +241,7 @@ DvzScenarioSpec dvz_example_annotation_readout_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_annotation_readout",
-        .title = "annotation_readout",
+        .title = "Annotation Readout",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

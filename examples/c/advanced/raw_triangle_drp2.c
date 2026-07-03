@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* raw_triangle_drp2 — triangle rendered via a hand-written DRP2 command stream.
+/* raw_triangle_drp2 - triangle rendered via a hand-written DRP2 command stream.
  *
  * Scenario: advanced_raw_triangle_drp2
  * Style: advanced, native-only, low-level DRP2/vklite, 1920x1080 output target
@@ -16,13 +16,13 @@
  *
  * Vertex layout is declared explicitly via DvzDrp2RenderPipelineDesc.
  *
- * It is intentionally verbose — the goal is to show every step of the
+ * It is intentionally verbose: the goal is to show every step of the
  * protocol so that developers of other scientific-visualization libraries can
  * understand how DRP2 works and experiment with it directly.
  *
  * Build:  just example-c advanced/raw_triangle_drp2
  * Run:    ./build/examples/c/advanced/raw_triangle_drp2
- *         → raw_triangle_drp2.png
+ *         raw_triangle_drp2.png
  */
 
 #include <stdint.h>
@@ -31,6 +31,7 @@
 
 #include <vulkan/vulkan_core.h>
 
+#include "_alloc.h"
 #include "datoviz/drp2.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/vk/gpu_ctx.h"
@@ -39,7 +40,7 @@
 
 
 /*************************************************************************************************/
-/*  Constants — stable DRP2 object IDs (arbitrary u64, unique within the stream)                */
+/*  Constants: stable DRP2 object IDs (arbitrary u64, unique within the stream)                 */
 /*************************************************************************************************/
 
 #define ID_VBUF     1   /* vertex buffer                         */
@@ -73,7 +74,7 @@ static const Vertex TRIANGLE[3] = {
 
 
 /*************************************************************************************************/
-/*  Shaders — same GLSL as raw_triangle_vklite.c                                                */
+/*  Shaders: same GLSL as raw_triangle_vklite.c                                                 */
 /*************************************************************************************************/
 
 static const char* VERT_GLSL =
@@ -117,7 +118,7 @@ int main(int argc, char** argv)
     };
     dvz_gpu_ctx_config_features13(&gpu_cfg, &feat13);
     DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
-    if (!ctx) { fprintf(stderr, "GPU context creation failed\n"); return 1; }
+    if (!ctx) { dvz_fprintf(stderr, "GPU context creation failed\n"); return 1; }
 
 
     /* ------------------------------------------------------------------------------------------
@@ -128,7 +129,7 @@ int main(int argc, char** argv)
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&rt_cfg);
     if (!runtime)
     {
-        fprintf(stderr, "DRP2 runtime creation failed\n");
+        dvz_fprintf(stderr, "DRP2 runtime creation failed\n");
         dvz_gpu_ctx_destroy(ctx);
         return 1;
     }
@@ -138,17 +139,17 @@ int main(int argc, char** argv)
      * 3. Build the DRP2 command stream.
      *
      *    Each dvz_drp2_stream_*() call appends one protocol command.  The stream is fully
-     *    declarative — nothing hits the GPU until dvz_drp2_runtime_execute().
+     *    declarative: nothing hits the GPU until dvz_drp2_runtime_execute().
      * ------------------------------------------------------------------------------------------ */
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
 
-    /* Handshake — required by the protocol before any resource command. */
+    /* Handshake: required by the protocol before any resource command. */
     dvz_drp2_stream_hello_renderer(stream, "raw_triangle_drp2");
     dvz_drp2_stream_renderer_hello_reply(stream, "vklite");
 
     /* --- Resources -------------------------------------------------------- */
 
-    /* Vertex buffer: size = 3 × sizeof(Vertex).
+    /* Vertex buffer: size = 3 * sizeof(Vertex).
        COPY_DST is required to receive the write_buffer upload. */
     dvz_drp2_stream_create_buffer(
         stream, ID_VBUF, sizeof(TRIANGLE),
@@ -158,7 +159,7 @@ int main(int argc, char** argv)
     dvz_drp2_stream_write_buffer_bytes(
         stream, ID_VBUF, 0, sizeof(TRIANGLE), TRIANGLE);
 
-    /* Readback buffer: WIDTH × HEIGHT × 4 bytes RGBA, usage = COPY_DST.
+    /* Readback buffer: WIDTH * HEIGHT * 4 bytes RGBA, usage = COPY_DST.
        The rendered texture will be copied here before CPU download. */
     dvz_drp2_stream_create_buffer(
         stream, ID_RBUF,
@@ -169,7 +170,7 @@ int main(int argc, char** argv)
     dvz_drp2_stream_create_shader_module_format(stream, ID_VS, "vertex",   "glsl", VERT_GLSL);
     dvz_drp2_stream_create_shader_module_format(stream, ID_FS, "fragment", "glsl", FRAG_GLSL);
 
-    /* Render pipeline: explicit vertex layout — binding 0 stride=20 (vec2+vec3), TRIANGLE_LIST. */
+    /* Render pipeline: explicit vertex layout, binding 0 stride=20 (vec2+vec3), TRIANGLE_LIST. */
     {
         uint32_t strides[1]   = {5 * sizeof(float)};           /* binding 0: Vertex = 5 floats */
         uint32_t bindings[2]  = {0, 0};                        /* both attrs from binding 0    */
@@ -220,7 +221,7 @@ int main(int argc, char** argv)
         /*dst_offset=*/0, WIDTH, HEIGHT,
         /*bytes_per_row=*/WIDTH * 4, /*rows_per_image=*/HEIGHT);
 
-    /* Close the encoder → produces command buffer ID_CMDBUF. */
+    /* Close the encoder, producing command buffer ID_CMDBUF. */
     dvz_drp2_stream_finish_command_encoder(stream, ID_ENC, ID_CMDBUF);
 
     /* Submit the command buffer to the GPU. */
@@ -233,8 +234,9 @@ int main(int argc, char** argv)
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     if (!result.ok)
     {
-        fprintf(stderr, "DRP2 execution failed (command %u, code %d)\n",
-                result.command_index, result.code);
+        dvz_fprintf(
+            stderr, "DRP2 execution failed (command %u, code %d)\n", result.command_index,
+            result.code);
         dvz_drp2_stream_destroy(stream);
         dvz_drp2_runtime_destroy(runtime);
         dvz_gpu_ctx_destroy(ctx);
@@ -246,10 +248,10 @@ int main(int argc, char** argv)
      * 5. Download pixels from the GPU readback buffer and save a PNG.
      * ------------------------------------------------------------------------------------------ */
     uint64_t pixel_count = (uint64_t)WIDTH * HEIGHT * 4;
-    uint8_t* pixels = (uint8_t*)calloc((size_t)pixel_count, 1);
+    uint8_t* pixels = (uint8_t*)dvz_calloc((size_t)pixel_count, 1);
     if (!pixels)
     {
-        fprintf(stderr, "Out of memory\n");
+        dvz_fprintf(stderr, "Out of memory\n");
         dvz_drp2_stream_destroy(stream);
         dvz_drp2_runtime_destroy(runtime);
         dvz_gpu_ctx_destroy(ctx);
@@ -260,9 +262,9 @@ int main(int argc, char** argv)
     char out[512];
     example_outpath(argv[0], "raw_triangle_drp2.png", out, sizeof(out));
     dvz_write_png(out, WIDTH, HEIGHT, pixels);
-    free(pixels);
+    dvz_free(pixels);
 
-    printf("raw_triangle_drp2: saved %s\n", out);
+    dvz_fprintf(stdout, "raw_triangle_drp2: saved %s\n", out);
 
 
     /* ------------------------------------------------------------------------------------------

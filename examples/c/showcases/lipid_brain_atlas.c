@@ -594,7 +594,7 @@ static DvzScenarioSpec _lipid_brain_atlas_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "showcase_lipid_brain_atlas",
-        .title = "lipid_brain_atlas",
+        .title = "Lipid Brain Atlas",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

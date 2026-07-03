@@ -12,7 +12,7 @@
  * Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_cloud.bin`.
  * Generate it from the upstream LAZ source with:
  *
- *   python tools/data/prepare_point_cloud.py
+ *   python tools/data/prepare_point_cloud.py --force
  *
  * Build:  just example-c showcases/point_cloud
  * Run:    ./build/examples/c/showcases/point_cloud --live
@@ -381,7 +381,7 @@ static DvzScenarioSpec _point_cloud_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "point_cloud",
-        .title = "point_cloud",
+        .title = "Point Cloud",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

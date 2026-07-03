@@ -163,7 +163,7 @@ static DvzScenarioSpec _json_export_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_json_export",
-        .title = "json_export",
+        .title = "JSON Export",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

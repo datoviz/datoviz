@@ -780,7 +780,7 @@ DvzScenarioSpec dvz_showcase_us_state_choropleth_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "us_state_choropleth",
-        .title = "us_state_choropleth",
+        .title = "U.S. State Choropleth",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

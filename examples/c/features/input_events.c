@@ -457,24 +457,6 @@ static void _input_events_event(DvzInputRouter* router, const DvzInputEvent* eve
 /*************************************************************************************************/
 
 /**
- * Return whether a command-line flag is present.
- *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @param flag flag to find
- * @return whether the flag is present
- */
-static bool _has_arg(int argc, char** argv, const char* flag)
-{
-    for (int i = 1; i < argc; i++)
-        if (strcmp(argv[i], flag) == 0)
-            return true;
-    return false;
-}
-
-
-
-/**
  * Subscribe all event callbacks used by the example.
  *
  * @param router input router
@@ -676,7 +658,13 @@ cleanup:
 
 int main(int argc, char** argv)
 {
-    if (_has_arg(argc, argv, "--synthetic") || _has_arg(argc, argv, "--png"))
+    if (example_arg_has(argc, argv, "--png"))
+    {
+        dvz_fprintf(
+            stderr, "input_events: --png is not supported; use --synthetic for headless smoke\n");
+        return 1;
+    }
+    if (example_arg_has(argc, argv, "--synthetic"))
         return _run_synthetic();
     return _run_live(argc, argv);
 }

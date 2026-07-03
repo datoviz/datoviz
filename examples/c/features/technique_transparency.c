@@ -303,7 +303,7 @@ static DvzScenarioSpec _transparency_order_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "technique_transparency",
-        .title = "transparency_order",
+        .title = "Transparency Order",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

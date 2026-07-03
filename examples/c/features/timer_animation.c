@@ -222,7 +222,7 @@ DvzScenarioSpec dvz_example_timer_animation_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_timer_animation",
-        .title = "timer_animation",
+        .title = "Timer Animation",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

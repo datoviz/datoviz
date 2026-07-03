@@ -266,7 +266,7 @@ DvzScenarioSpec dvz_example_guide_lines_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_guide_lines",
-        .title = "guide_lines",
+        .title = "Guide Lines",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

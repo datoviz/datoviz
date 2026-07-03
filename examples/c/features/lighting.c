@@ -250,7 +250,7 @@ DvzScenarioSpec dvz_example_lighting_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_lighting",
-        .title = "lighting",
+        .title = "Lighting",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

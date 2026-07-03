@@ -720,7 +720,7 @@ DvzScenarioSpec dvz_showcase_gpu_particle_smoke_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "showcase_gpu_particle_smoke",
-        .title = "gpu_particle_smoke",
+        .title = "GPU Particle Smoke",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

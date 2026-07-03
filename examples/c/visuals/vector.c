@@ -330,7 +330,7 @@ DvzScenarioSpec dvz_visual_vector_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "visual_vector",
-        .title = "visual_vector",
+        .title = "Vector",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

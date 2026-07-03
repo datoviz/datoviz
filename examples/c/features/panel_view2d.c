@@ -238,7 +238,7 @@ static DvzScenarioSpec _panel_view2d_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_panel_view2d",
-        .title = "panel_view2d",
+        .title = "Panel View 2D",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

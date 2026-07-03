@@ -324,13 +324,13 @@ static void _volume_glfw_gui(DvzGui* gui, DvzView* win, void* user_data)
         changed |= dvz_gui_slider_float(gui, "TF ramp", &state->tf_ramp, 0.05f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "TF alpha", &state->tf_alpha, 0.0f, 1.0f);
         changed |= dvz_gui_checkbox(gui, "Clip", &state->clipping);
-        changed |= dvz_example_gui_clip_box(gui, "Clip box", state->clip_min, state->clip_max);
+        changed |= example_gui_clip_box(gui, "Clip box", state->clip_min, state->clip_max);
         changed |= dvz_gui_checkbox(gui, "Clip plane", &state->clip_plane);
         changed |= dvz_gui_checkbox(gui, "Keep positive side", &state->plane_keep_positive);
         dvz_gui_separator_text(gui, "Clip plane");
-        changed |= dvz_example_gui_vec3(
+        changed |= example_gui_vec3(
             gui, "Plane point", state->clip_plane_point, 0.0f, 1.0f, "%.2f");
-        changed |= dvz_example_gui_vec3(
+        changed |= example_gui_vec3(
             gui, "Plane normal", state->clip_plane_normal, -1.0f, 1.0f, "%.2f");
         if (dvz_gui_button(gui, "Reset"))
         {

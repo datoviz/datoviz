@@ -2412,7 +2412,7 @@
         "name": "Synthetic mouse animation validation bundle",
         "source": "https://osf.io/h3ec5/",
         "license": "generated fallback; upstream OSF terms require review for real assets",
-        "preprocessing": "python tools/data/prepare_synthetic_mouse.py",
+        "preprocessing": "python tools/data/prepare_synthetic_mouse.py --force",
         "cache_prepared_path": ".cache/datoviz/examples/synthetic_mouse/prepared"
       }
     },
@@ -2513,7 +2513,7 @@
         "name": "RESEPI GENM2X colorized benchmark point cloud",
         "source": "https://lidarpayload.com/sample-data/",
         "license": "Public RESEPI sample data; usage follows the source site's terms",
-        "preprocessing": "python tools/data/prepare_point_cloud.py",
+        "preprocessing": "python tools/data/prepare_point_cloud.py --force",
         "cache_prepared_path": ".cache/datoviz/examples/point_cloud/prepared"
       }
     },
@@ -2563,7 +2563,7 @@
       "source": "examples/c/advanced/raw_triangle_vklite.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/raw_triangle_vklite.c",
       "page": "gallery/advanced/advanced_raw_triangle_vklite.md",
-      "summary": "raw_triangle_vklite \u2014 vklite draw commands into DvzCanvas.",
+      "summary": "vklite draw commands into DvzCanvas.",
       "validation": "smoke+png",
       "build_command": "just example-c advanced/raw_triangle_vklite",
       "smoke_command": "./build/examples/c/advanced/raw_triangle_vklite --png",
@@ -2588,7 +2588,7 @@
       "source": "examples/c/advanced/raw_triangle_drp2.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/raw_triangle_drp2.c",
       "page": "gallery/advanced/advanced_raw_triangle_drp2.md",
-      "summary": "raw_triangle_drp2 \u2014 triangle rendered via a hand-written DRP2 command stream.",
+      "summary": "triangle rendered via a hand-written DRP2 command stream.",
       "validation": "smoke+png",
       "build_command": "just example-c advanced/raw_triangle_drp2",
       "smoke_command": "./build/examples/c/advanced/raw_triangle_drp2 --png",

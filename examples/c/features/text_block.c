@@ -141,7 +141,7 @@ DvzScenarioSpec dvz_example_text_block_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_text_block",
-        .title = "text_block",
+        .title = "Text Block",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

@@ -252,7 +252,7 @@ static DvzScenarioSpec _bounds_overlay_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_bounds_overlay",
-        .title = "bounds_overlay",
+        .title = "Bounds Overlay",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

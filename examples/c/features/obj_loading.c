@@ -268,7 +268,7 @@ DvzScenarioSpec dvz_example_obj_loading_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "feature_obj_loading",
-        .title = "obj_loading",
+        .title = "OBJ Loading",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,

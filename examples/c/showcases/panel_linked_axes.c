@@ -819,7 +819,7 @@ DvzScenarioSpec dvz_showcase_linked_panel_axes_scenario(void)
 {
     return (DvzScenarioSpec){
         .id = "linked_panels_axes_panzoom",
-        .title = "panel_linked_axes",
+        .title = "Linked Panels With Axes",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
