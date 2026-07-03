@@ -252,7 +252,8 @@ static bool _add_image(
         return false;
     if (dvz_visual_set_data(image, "texcoords", texcoords, 4) != 0)
         return false;
-    if (dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, width, height) != 0)
+    if (dvz_visual_set_texture_rgba8(
+            image, (const uint8_t*)pixels, width, height, (DvzSize)width * height * 4u) != 0)
         return false;
     if (dvz_visual_set_depth_test(image, false) != 0)
         return false;

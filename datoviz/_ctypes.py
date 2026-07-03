@@ -31370,9 +31370,10 @@ else:
  * @param values scalar R32F pixel data, tightly packed, row-major
  * @param width the texture width in pixels
  * @param height the texture height in pixels
+ * @param size_bytes number of bytes available at @p values; must equal `width * height * sizeof(float)`
  * @return 0 on success, -1 on error
  */"""
-    dvz_visual_set_texture_r32f.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(ctypes.c_float), ctypes.c_uint32, ctypes.c_uint32]
+    dvz_visual_set_texture_r32f.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(ctypes.c_float), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint64]
     dvz_visual_set_texture_r32f.restype = ctypes.c_int32
 
 
@@ -31394,9 +31395,10 @@ else:
  * @param rgba RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes)
  * @param width the texture width in pixels
  * @param height the texture height in pixels
+ * @param size_bytes number of bytes available at @p rgba; must equal `width * height * 4`
  * @return 0 on success, -1 on error
  */"""
-    dvz_visual_set_texture_rgba8.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint32, ctypes.c_uint32]
+    dvz_visual_set_texture_rgba8.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint64]
     dvz_visual_set_texture_rgba8.restype = ctypes.c_int32
 
 

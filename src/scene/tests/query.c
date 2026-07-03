@@ -606,7 +606,7 @@ int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* ite
     }
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -904,7 +904,7 @@ int test_scene_image_query_generated_rect_samples_position(
     AT(dvz_visual_set_data(image, "position", position, 1) == 0);
     AT(dvz_visual_set_data(image, "extent", extent, 1) == 0);
     AT(dvz_visual_set_data(image, "anchor", anchor, 1) == 0);
-    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 8, 8) == 0);
+    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 8, 8, 8u * 8u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -1014,7 +1014,7 @@ int test_scene_image_query_panzoom_samples_transformed_position(
     }
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 8, 8) == 0);
+    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 8, 8, 8u * 8u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -1115,7 +1115,7 @@ int test_scene_image_query_reuses_retained_request_executor(
     }
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -1219,7 +1219,7 @@ int test_scene_image_sample_query_readback_failure(TstContext* suite, const TstC
     }
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -4002,7 +4002,7 @@ int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const T
     }
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =

@@ -2008,7 +2008,7 @@ int test_scene_texture_wrappers_set_explicit_color_roles(TstContext* suite, cons
         {0, 0, 255, 255},
         {128, 128, 128, 255},
     };
-    AT(dvz_visual_set_texture_rgba8(rgba_image, (const uint8_t*)rgba_pixels, 2, 2) == 0);
+    AT(dvz_visual_set_texture_rgba8(rgba_image, (const uint8_t*)rgba_pixels, 2, 2, 2u * 2u * 4u) == 0);
     DvzVisualFamilyState* rgba_state = _visual_family_state(rgba_image);
     ANN(rgba_state);
     ANN(rgba_state->field);
@@ -2020,7 +2020,7 @@ int test_scene_texture_wrappers_set_explicit_color_roles(TstContext* suite, cons
     DvzVisual* scalar_image = dvz_image(scene, 0);
     ANN(scalar_image);
     const float scalar_pixels[4] = {0.0f, 0.25f, 0.5f, 1.0f};
-    AT(dvz_visual_set_texture_r32f(scalar_image, scalar_pixels, 2, 2) == 0);
+    AT(dvz_visual_set_texture_r32f(scalar_image, scalar_pixels, 2, 2, 2u * 2u * sizeof(float)) == 0);
     DvzVisualFamilyState* scalar_state = _visual_family_state(scalar_image);
     ANN(scalar_state);
     ANN(scalar_state->field);
@@ -2279,7 +2279,7 @@ int test_scene_image_scalar_texture_uses_bound_scale(TstContext* suite, const Ts
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture_r32f(visual, pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_r32f(visual, pixels, 4, 4, 4u * 4u * sizeof(float)) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();

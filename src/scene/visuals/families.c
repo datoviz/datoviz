@@ -1107,7 +1107,8 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
                 dvz_visual_set_data(bg, "texcoords", texcoords, 4) != 0 ||
                 dvz_visual_set_texture_rgba8(
                     bg, background->image.rgba, background->image.width,
-                    background->image.height) != 0)
+                    background->image.height,
+                    (DvzSize)background->image.width * background->image.height * 4u) != 0)
             {
                 log_error("dvz_panel_set_background: failed to set image background data");
                 dvz_visual_destroy(bg);
@@ -1122,7 +1123,8 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
         }
         else if (dvz_visual_set_texture_rgba8(
                      panel->background_visual, background->image.rgba, background->image.width,
-                     background->image.height) != 0)
+                     background->image.height,
+                     (DvzSize)background->image.width * background->image.height * 4u) != 0)
         {
             log_error("dvz_panel_set_background: failed to update image background texture");
             return false;

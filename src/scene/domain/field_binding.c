@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <stdbool.h>
+#include <inttypes.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -33,6 +34,16 @@
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+static bool _field_binding_mul_u64_overflows(uint64_t a, uint64_t b, uint64_t* out)
+{
+    ANN(out);
+    if (a != 0 && b > UINT64_MAX / a)
+        return true;
+    *out = a * b;
+    return false;
+}
+
 
 /**
  * Ensure one texture-backed visual owns a compatible sampled field.
@@ -214,7 +225,8 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
  * @return 0 on success, -1 on error
  */
 DvzResult dvz_visual_set_texture_rgba8(
-    DvzVisual* visual, const uint8_t* rgba, uint32_t width, uint32_t height)
+    DvzVisual* visual, const uint8_t* rgba, uint32_t width, uint32_t height,
+    DvzSize size_bytes)
 {
     ANN(visual);
     bool is_mesh = visual->type == DVZ_VISUAL_TYPE_MESH;
@@ -228,6 +240,17 @@ DvzResult dvz_visual_set_texture_rgba8(
     if (rgba == NULL || width == 0 || height == 0)
     {
         log_error("dvz_visual_set_texture_rgba8: NULL data or zero extent (%ux%u)", width, height);
+        return -1;
+    }
+    uint64_t expected_size = 0;
+    if (
+        _field_binding_mul_u64_overflows((uint64_t)width, (uint64_t)height, &expected_size) ||
+        _field_binding_mul_u64_overflows(expected_size, 4u, &expected_size) ||
+        (uint64_t)size_bytes != expected_size)
+    {
+        log_error(
+            "dvz_visual_set_texture_rgba8: size_bytes must be width * height * 4 (%" PRIu64 ")",
+            expected_size);
         return -1;
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set RGBA8 texture"))
@@ -266,7 +289,8 @@ DvzResult dvz_visual_set_texture_rgba8(
  * @return 0 on success, -1 on error
  */
 DvzResult dvz_visual_set_texture_r32f(
-    DvzVisual* visual, const float* values, uint32_t width, uint32_t height)
+    DvzVisual* visual, const float* values, uint32_t width, uint32_t height,
+    DvzSize size_bytes)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH)
@@ -277,6 +301,18 @@ DvzResult dvz_visual_set_texture_r32f(
     if (values == NULL || width == 0 || height == 0)
     {
         log_error("dvz_visual_set_texture_r32f: NULL data or zero extent (%ux%u)", width, height);
+        return -1;
+    }
+    uint64_t expected_size = 0;
+    if (
+        _field_binding_mul_u64_overflows((uint64_t)width, (uint64_t)height, &expected_size) ||
+        _field_binding_mul_u64_overflows(expected_size, (uint64_t)sizeof(float), &expected_size) ||
+        (uint64_t)size_bytes != expected_size)
+    {
+        log_error(
+            "dvz_visual_set_texture_r32f: size_bytes must be width * height * sizeof(float) "
+            "(%" PRIu64 ")",
+            expected_size);
         return -1;
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set scalar image texture"))

@@ -3926,10 +3926,12 @@ DVZ_EXPORT const DvzVolumeState* dvz_volume_state(const DvzVisual* visual);
  * @param rgba RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes)
  * @param width the texture width in pixels
  * @param height the texture height in pixels
+ * @param size_bytes number of bytes available at @p rgba; must equal `width * height * 4`
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult dvz_visual_set_texture_rgba8(
-    DvzVisual* visual, const uint8_t* rgba, uint32_t width, uint32_t height);
+    DvzVisual* visual, const uint8_t* rgba, uint32_t width, uint32_t height,
+    DvzSize size_bytes);
 
 
 /**
@@ -3945,10 +3947,12 @@ DVZ_EXPORT DvzResult dvz_visual_set_texture_rgba8(
  * @param values scalar R32F pixel data, tightly packed, row-major
  * @param width the texture width in pixels
  * @param height the texture height in pixels
+ * @param size_bytes number of bytes available at @p values; must equal `width * height * sizeof(float)`
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult dvz_visual_set_texture_r32f(
-    DvzVisual* visual, const float* values, uint32_t width, uint32_t height);
+    DvzVisual* visual, const float* values, uint32_t width, uint32_t height,
+    DvzSize size_bytes);
 
 
 EXTERN_C_OFF

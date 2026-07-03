@@ -4610,7 +4610,8 @@ DvzResult dvz_visual_set_texture_r32f(
     DvzVisual * visual,
     const float * values,
     uint32_t width,
-    uint32_t height
+    uint32_t height,
+    DvzSize size_bytes
 );
 ```
 
@@ -4621,6 +4622,7 @@ DvzResult dvz_visual_set_texture_r32f(
 | `values` | `const float *` | scalar R32F pixel data, tightly packed, row-major |
 | `width` | `uint32_t` | the texture width in pixels |
 | `height` | `uint32_t` | the texture height in pixels |
+| `size_bytes` | `DvzSize` | number of bytes available at values; must equal `width * height * sizeof(float)` |
 
 Attach a 2D scalar R32F texture to an image or glyph visual.
 
@@ -4641,7 +4643,8 @@ DvzResult dvz_visual_set_texture_rgba8(
     DvzVisual * visual,
     const uint8_t * rgba,
     uint32_t width,
-    uint32_t height
+    uint32_t height,
+    DvzSize size_bytes
 );
 ```
 
@@ -4652,6 +4655,7 @@ DvzResult dvz_visual_set_texture_rgba8(
 | `rgba` | `const uint8_t *` | RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes) |
 | `width` | `uint32_t` | the texture width in pixels |
 | `height` | `uint32_t` | the texture height in pixels |
+| `size_bytes` | `DvzSize` | number of bytes available at rgba; must equal `width * height * 4` |
 
 Attach a 2D RGBA8 sRGB-color texture to an image, glyph, or mesh visual.
 

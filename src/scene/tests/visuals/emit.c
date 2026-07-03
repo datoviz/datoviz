@@ -376,7 +376,7 @@ int test_scene_image_emit(TstContext* suite, const TstCase* item)
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -417,7 +417,7 @@ int test_scene_image_multi_item_emit(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
     AT(dvz_visual_set_data(visual, "extent", extents, 2) == 0);
     AT(dvz_visual_set_data(visual, "tex_rect", tex_rects, 2) == 0);
-    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -533,7 +533,7 @@ int test_scene_image_pixel_anchor_emit_wgsl(TstContext* suite, const TstCase* it
     AT(dvz_visual_set_data(visual, "extent_px", extents, 1) == 0);
     AT(dvz_visual_set_data(visual, "anchor", anchors, 1) == 0);
     AT(dvz_visual_set_data(visual, "tex_rect", tex_rects, 1) == 0);
-    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(
            panel, visual,
            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
@@ -679,7 +679,7 @@ int test_scene_glyph_emit_glsl(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 6) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 6) == 0);
     AT(dvz_visual_set_data(visual, "angle", angles, 6) == 0);
-    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -844,7 +844,7 @@ int test_scene_image_emit_wgsl(TstContext* suite, const TstCase* item)
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -919,7 +919,7 @@ int test_scene_image_sampling_nearest_emits_sampler_filters(TstContext* suite, c
 
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -1438,7 +1438,7 @@ int test_scene_image_emit_uses_common_and_texture_sets(TstContext* suite, const 
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -1593,7 +1593,7 @@ int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCa
     ANN(image);
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", image_uv, 4) == 0);
-    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4) == 0);
+    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
     vec3 mesh_pos[4] = {
