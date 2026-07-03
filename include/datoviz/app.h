@@ -25,8 +25,8 @@
 #include "datoviz/input/enums.h"
 #include "datoviz/input/keycodes.h"
 #include "datoviz/scene/types.h"
-#include "datoviz/video.h"
-#include "datoviz/window/types.h"
+#include "datoviz/video/types.h"
+#include "datoviz/window/size.h"
 
 
 

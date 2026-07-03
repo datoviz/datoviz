@@ -22,6 +22,7 @@
 
 #include "datoviz/common/macros.h"
 #include "datoviz/runner/enums.h"
+#include "datoviz/window/size.h"
 
 
 
@@ -45,8 +46,6 @@ typedef struct DvzWindowHost DvzWindowHost;
 typedef struct DvzWindow DvzWindow;
 typedef struct DvzWindowSurface DvzWindowSurface;
 typedef struct DvzWindowConfig DvzWindowConfig;
-typedef struct DvzExtent DvzExtent;
-typedef struct DvzScaleXY DvzScaleXY;
 typedef struct DvzWindowMetrics DvzWindowMetrics;
 
 
@@ -54,15 +53,6 @@ typedef struct DvzWindowMetrics DvzWindowMetrics;
 /*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
-
-typedef enum DvzSizeSpace
-{
-    DVZ_SIZE_LOGICAL,
-    DVZ_SIZE_NATIVE,
-    DVZ_SIZE_SURFACE,
-    DVZ_SIZE_RENDER,
-} DvzSizeSpace;
-
 
 typedef enum DvzHiDpiPolicy
 {
@@ -90,22 +80,6 @@ struct DvzWindowConfig
     bool visible;
     float user_scale;
     DvzHiDpiPolicy hidpi_policy;
-};
-
-
-
-struct DvzExtent
-{
-    uint32_t width;
-    uint32_t height;
-};
-
-
-
-struct DvzScaleXY
-{
-    float x;
-    float y;
 };
 
 

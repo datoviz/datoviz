@@ -26,6 +26,7 @@
 
 #include "datoviz/common/macros.h"
 #include "datoviz/stream.h"
+#include "datoviz/video/types.h"
 
 
 
@@ -55,16 +56,6 @@ typedef enum
     DVZ_VIDEO_MUX_MP4_STREAMING = 1, // save to mp4 directly
     DVZ_VIDEO_MUX_MP4_POST = 2,      // save to temporary raw file and then mux with built-in muxer
 } DvzVideoMux;
-
-
-
-// Video capture strategy used by the sink.
-typedef enum
-{
-    DVZ_VIDEO_CAPTURE_AUTO = 0,           // choose the best available path at runtime
-    DVZ_VIDEO_CAPTURE_EXTERNAL = 1,       // use external memory/semaphore interop
-    DVZ_VIDEO_CAPTURE_CPU_READBACK = 2,   // read back RGBA to CPU before encoding
-} DvzVideoCaptureMode;
 
 
 
