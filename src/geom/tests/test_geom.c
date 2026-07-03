@@ -462,8 +462,11 @@ int test_geometry_obj_loader(TstContext* suite, const TstCase* tstitem)
         "v 1 0 0\n"
         "v 1 1 0\n"
         "v -1 1 0\n"
-        "vn 0 0 1\n"
-        "f 1//1 2//1 3//1 4//1\n";
+        "vt 0 0\n"
+        "vt 1 0\n"
+        "vt 1 1\n"
+        "vt 0 1\n"
+        "f 1/1 2/2 3/3 4/4\n";
     AT(fwrite(obj, 1, sizeof(obj) - 1u, fp) == sizeof(obj) - 1u);
     fclose(fp);
 
