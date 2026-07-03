@@ -181,6 +181,7 @@ pages:
         href: ../../how-to/capture-an-image.md
     headers:
       - include/datoviz/app.h
+      - include/datoviz/app_interop.h
       - include/datoviz/canvas.h
       - include/datoviz/canvas/**
       - include/datoviz/window.h

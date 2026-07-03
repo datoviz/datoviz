@@ -55,6 +55,10 @@ The current C surface already contains the core pieces needed by host-owned UI t
    `dvz_view_emit_key()` inject normalized host events.
 9. `dvz_view_set_request_frame_callback()` lets Datoviz ask a passive host to schedule a repaint.
 
+Native C/C++ hosted adapters include `<datoviz/app_interop.h>` for the Vulkan-facing app/view
+helpers and `<datoviz/window/backend.h>` for `DvzWindowExternalSurfaceInfo`. The default
+`<datoviz/app.h>` header intentionally avoids exposing Vulkan SDK types.
+
 
 ## Native Qt Adapter
 

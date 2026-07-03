@@ -7,6 +7,7 @@
 headers:
   include:
     - datoviz/app.h
+    - datoviz/app_interop.h
     - datoviz/canvas.h
     - datoviz/common.h
     - datoviz/drp2.h

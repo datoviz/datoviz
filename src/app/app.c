@@ -29,6 +29,7 @@
 #include "_time_utils.h"
 #include "_trace.h"
 #include "datoviz/app.h"
+#include "datoviz/app_interop.h"
 #include "datoviz/ffi.h"
 #include "datoviz/gui.h"
 #include "datoviz/input/router.h"

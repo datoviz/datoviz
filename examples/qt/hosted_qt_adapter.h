@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "datoviz/app.h"
+#include "datoviz/app_interop.h"
 #include "datoviz/scene.h"
 
 
@@ -73,4 +74,3 @@ class DvzQtHostedWindow : public QWindow
 
 bool dvz_qt_instance_extensions(
     const QGuiApplication& app, std::vector<const char*>* extensions, const char* log_name);
-

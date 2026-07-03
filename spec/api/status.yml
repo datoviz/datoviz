@@ -104,6 +104,16 @@ modules:
     docs_group: app
     rationale: null
 
+  - module: app_interop
+    headers:
+      - include/datoviz/app_interop.h
+    tier: advanced
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: app
+    rationale: Opt-in native toolkit and Vulkan surface integration API.
+
   - module: scene
     headers:
       - include/datoviz/scene.h

@@ -26,6 +26,7 @@
 #include "fileio.h"
 #include "gui.h"
 #include "imgui.h"
+#include "app_interop.h"
 #include "runner.h"
 #include "stream.h"
 #include "video.h"

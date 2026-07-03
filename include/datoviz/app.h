@@ -19,8 +19,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "datoviz/vk/vulkan.h"
-
 #include "datoviz/common/macros.h"
 #include "datoviz/font.h"
 #include "datoviz/input/enums.h"
@@ -302,18 +300,6 @@ DVZ_EXPORT DvzApp* dvz_app_with_resources(
 
 
 /**
- * Return the Vulkan instance owned by the app.
- *
- * Hosted integrations use this borrowed handle to create their native VkSurfaceKHR after passing
- * required instance extensions to dvz_app_with_config().
- *
- * @param app the app
- * @return borrowed Vulkan instance handle, or VK_NULL_HANDLE when unavailable
- */
-DVZ_EXPORT VkInstance dvz_app_vk_instance(DvzApp* app);
-
-
-/**
  * Destroy the app and all owned resources (canvases, windows, runtime, GPU context).
  *
  * @param app the app
@@ -449,50 +435,6 @@ dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t heig
  */
 DVZ_EXPORT DvzView* dvz_view_glfw(
     DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title);
-
-
-/**
- * Create a hosted present view around an externally-owned Vulkan surface.
- *
- * The caller owns the native event loop and must create the Vulkan surface using the instance
- * extensions passed to dvz_app_with_config().  Datoviz owns only the rendering objects built on
- * top of the supplied surface unless surface->owned_by_datoviz is true.
- *
- * @param app the app
- * @param figure the figure to render (borrowed)
- * @param surface external Vulkan surface description
- * @return the view handle, or NULL on failure
- */
-DVZ_EXPORT DvzView* dvz_view_external_surface(
-    DvzApp* app, DvzFigure* figure, const DvzWindowExternalSurfaceInfo* surface);
-
-
-/**
- * Update the hosted external surface associated with a view.
- *
- * Use this when the host toolkit recreates or resizes its native surface.  A NULL surface handle is
- * accepted to mark the surface temporarily unavailable; rendering then returns
- * DVZ_CANVAS_FRAME_WAIT_SURFACE until a valid surface is supplied again.
- *
- * @param view view created with dvz_view_external_surface()
- * @param surface external Vulkan surface description
- * @return 0 on success, negative on error
- */
-DVZ_EXPORT int dvz_view_update_external_surface(
-    DvzView* view, const DvzWindowExternalSurfaceInfo* surface);
-
-
-/**
- * Release a hosted external surface before the host destroys it.
- *
- * Clears the request-frame callback, marks the surface temporarily unavailable, and runs one
- * render-once step so the present swapchain observes the unavailable surface and releases borrowed
- * surface-dependent objects. The host remains responsible for destroying the VkSurfaceKHR.
- *
- * @param view view created with dvz_view_external_surface()
- * @return DVZ_CANVAS_FRAME_WAIT_SURFACE on clean release, or a negative error code
- */
-DVZ_EXPORT int dvz_view_release_external_surface(DvzView* view);
 
 
 /**

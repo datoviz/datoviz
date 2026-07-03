@@ -26,6 +26,7 @@
 #include <stdlib.h>
 
 #include "datoviz/app.h"
+#include "datoviz/app_interop.h"
 #include "datoviz/canvas.h"
 #include "datoviz/input/pointer.h"
 #include "datoviz/scene.h"

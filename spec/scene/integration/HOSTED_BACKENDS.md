@@ -70,6 +70,10 @@ also exposes the hosted hooks external hosts need:
 
 External hosts can step Datoviz without handing over their event loop.
 
+Native hosted adapters include `<datoviz/app_interop.h>` for Vulkan-facing app/view helpers. This
+keeps `<datoviz/app.h>` focused on the ordinary app surface while preserving the hosted rendering
+contract as an explicit opt-in API.
+
 The active concepts are:
 
 1. `DvzApp`: owns the scene-level app context and shared runtime setup.

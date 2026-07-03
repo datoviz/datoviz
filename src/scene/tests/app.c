@@ -32,6 +32,7 @@
 #include "../../app/_app.h"
 #include "controller_internal.h"
 #include "datoviz/app.h"
+#include "datoviz/app_interop.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
 #include "datoviz/ffi.h"
