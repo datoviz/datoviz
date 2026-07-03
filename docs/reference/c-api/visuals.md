@@ -536,7 +536,7 @@ DvzDepthCueDesc dvz_depth_cue_desc(void);
 
 Return default depth-cue options.
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: available through `dvz_ffi_depth_cue_desc()`.
 
 _Declared in `include/datoviz/scene.h`:2334._
 
@@ -1898,7 +1898,7 @@ The default material is the fast Phong model with opaque alpha, full opacity, a 
 factor, light direction `(-0.45, 0.35, 0.82)`, ambient `0.24`, diffuse `0.82`, specular
 `0.24`, and shininess `26`.
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: available through `dvz_ffi_material_desc()`.
 
 _Declared in `include/datoviz/scene.h`:2289._
 
@@ -2095,7 +2095,7 @@ Return default Phong visual material options.
 The descriptor uses `DVZ_MATERIAL_MODEL_PHONG` with the same defaults as
 `dvz_material_desc()`.
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: available through `dvz_ffi_phong_material_desc()`.
 
 _Declared in `include/datoviz/scene.h`:2300._
 
@@ -2259,7 +2259,7 @@ Return a default polygon descriptor.
 
 Related: [`dvz_polygon()`](#dvz_polygon).
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: available through `dvz_ffi_polygon_desc()`.
 
 _Declared in `include/datoviz/geom.h`:402._
 
@@ -3136,7 +3136,7 @@ The descriptor uses `DVZ_MATERIAL_MODEL_STANDARD` with opaque alpha, full opacit
 base-color factor, light direction `(-0.45, 0.35, 0.82)`, roughness `0.62`, specular `0.34`,
 metallic `0`, no emissive contribution, and rim contribution `0.10`.
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: available through `dvz_ffi_standard_material_desc()`.
 
 _Declared in `include/datoviz/scene.h`:2312._
 
@@ -4680,7 +4680,7 @@ Return the default future visual transform descriptor.
 v0.4 accepts only `DVZ_VISUAL_TRANSFORM_NONE` through the descriptor path. Use
 dvz_visual_set_transform() for the supported affine visual-local transform.
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: available through `dvz_ffi_visual_transform_desc()`.
 
 _Declared in `include/datoviz/scene.h`:1045._
 

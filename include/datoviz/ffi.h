@@ -21,6 +21,8 @@
 
 #include "datoviz/common/macros.h"
 #include "datoviz/geom/types.h"
+#include "datoviz/scene/field.h"
+#include "datoviz/scene/overlay.h"
 #include "datoviz/scene/types.h"
 
 
@@ -201,12 +203,111 @@ DVZ_EXPORT bool dvz_ffi_geometry_torus_desc(DvzGeometryTorusDesc* out);
 
 
 /**
+ * Initialize a default polygon descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */
+DVZ_EXPORT bool dvz_ffi_polygon_desc(DvzPolygonDesc* out);
+
+
+/**
+ * Initialize a default sampled-field geometry descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */
+DVZ_EXPORT bool dvz_ffi_field_geometry(DvzFieldGeometry* out);
+
+
+/**
  * Initialize a default reference-grid descriptor through an out pointer.
  *
  * @param out output descriptor
  * @return true on success, false when out is NULL
  */
 DVZ_EXPORT bool dvz_ffi_reference_grid_desc(DvzReferenceGridDesc* out);
+
+
+/**
+ * Initialize a default visual transform descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */
+DVZ_EXPORT bool dvz_ffi_visual_transform_desc(DvzVisualTransformDesc* out);
+
+
+/**
+ * Initialize a default panel background descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */
+DVZ_EXPORT bool dvz_ffi_panel_background_desc(DvzPanelBackgroundDesc* out);
+
+
+/**
+ * Initialize a default material descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */
+DVZ_EXPORT bool dvz_ffi_material_desc(DvzMaterialDesc* out);
+
+
+/**
+ * Initialize a default Phong material descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */
+DVZ_EXPORT bool dvz_ffi_phong_material_desc(DvzMaterialDesc* out);
+
+
+/**
+ * Initialize a default standard material descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */
+DVZ_EXPORT bool dvz_ffi_standard_material_desc(DvzMaterialDesc* out);
+
+
+/**
+ * Initialize a default depth-cue descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */
+DVZ_EXPORT bool dvz_ffi_depth_cue_desc(DvzDepthCueDesc* out);
+
+
+/**
+ * Initialize a default scale-bar descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */
+DVZ_EXPORT bool dvz_ffi_scalebar_desc(DvzScaleBarDesc* out);
+
+
+/**
+ * Initialize a default overlay-card style descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */
+DVZ_EXPORT bool dvz_ffi_overlay_card_style(DvzOverlayCardStyle* out);
+
+
+/**
+ * Initialize a default overlay-card descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */
+DVZ_EXPORT bool dvz_ffi_overlay_card_desc(DvzOverlayCardDesc* out);
 
 
 EXTERN_C_OFF

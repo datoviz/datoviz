@@ -23,6 +23,7 @@
 #include "_scene.h"
 #include "_visual_internal.h"
 #include "field_internal.h"
+#include "datoviz/ffi.h"
 
 
 
@@ -175,6 +176,15 @@ DvzFieldGeometry dvz_field_geometry(void)
     geometry.spacing[1] = 1.0;
     geometry.spacing[2] = 1.0;
     return geometry;
+}
+
+
+bool dvz_ffi_field_geometry(DvzFieldGeometry* out)
+{
+    if (out == NULL)
+        return false;
+    *out = dvz_field_geometry();
+    return true;
 }
 
 

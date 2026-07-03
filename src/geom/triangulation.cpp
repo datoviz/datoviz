@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/geom.h"
+#include "datoviz/ffi.h"
 
 #include <array>
 #include <cmath>
@@ -272,6 +273,15 @@ DvzPolygonDesc dvz_polygon_desc(void)
     desc.struct_size = DVZ_STRUCT_SIZE(DvzPolygonDesc);
     desc.flags = 0;
     return desc;
+}
+
+
+bool dvz_ffi_polygon_desc(DvzPolygonDesc* out)
+{
+    if (out == nullptr)
+        return false;
+    *out = dvz_polygon_desc();
+    return true;
 }
 
 

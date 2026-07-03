@@ -33,6 +33,7 @@
 #include "_visual_internal.h"
 #include "annotation/scale_internal.h"
 #include "bindings_internal.h"
+#include "datoviz/ffi.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
 #include "domain/buffer_internal.h"
@@ -299,6 +300,15 @@ DvzVisualTransformDesc dvz_visual_transform_desc(void)
 }
 
 
+bool dvz_ffi_visual_transform_desc(DvzVisualTransformDesc* out)
+{
+    if (out == NULL)
+        return false;
+    *out = dvz_visual_transform_desc();
+    return true;
+}
+
+
 
 DvzVisualShaderDesc dvz_visual_shader_desc(void)
 {
@@ -321,6 +331,15 @@ DvzPanelBackgroundDesc dvz_panel_background_desc(void)
     desc.gradient.color0[3] = 1.0f;
     desc.gradient.color1[3] = 1.0f;
     return desc;
+}
+
+
+bool dvz_ffi_panel_background_desc(DvzPanelBackgroundDesc* out)
+{
+    if (out == NULL)
+        return false;
+    *out = dvz_panel_background_desc();
+    return true;
 }
 
 

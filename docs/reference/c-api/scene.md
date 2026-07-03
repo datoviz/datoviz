@@ -2458,7 +2458,7 @@ DvzFieldGeometry dvz_field_geometry(void);
 
 Return the default sampled-field geometry descriptor.
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: available through `dvz_ffi_field_geometry()`.
 
 _Declared in `include/datoviz/scene/field.h`:175._
 
@@ -4407,7 +4407,7 @@ Return the default overlay-card descriptor.
 
 Related: [`dvz_overlay_card()`](#dvz_overlay_card).
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: available through `dvz_ffi_overlay_card_desc()`.
 
 _Declared in `include/datoviz/scene/overlay.h`:124._
 
@@ -4567,7 +4567,7 @@ DvzOverlayCardStyle dvz_overlay_card_style(void);
 
 Return the default overlay-card style.
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: available through `dvz_ffi_overlay_card_style()`.
 
 _Declared in `include/datoviz/scene/overlay.h`:116._
 
@@ -4732,7 +4732,7 @@ DvzPanelBackgroundDesc dvz_panel_background_desc(void);
 
 Return the default panel background descriptor.
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: available through `dvz_ffi_panel_background_desc()`.
 
 _Declared in `include/datoviz/scene.h`:1094._
 
@@ -6848,7 +6848,7 @@ Return the default scale-bar annotation descriptor.
 
 Related: [`dvz_scalebar()`](#dvz_scalebar).
 
-Raw ctypes: skipped by binding policy.
+Raw ctypes: available through `dvz_ffi_scalebar_desc()`.
 
 _Declared in `include/datoviz/scene/annotation.h`:51._
 

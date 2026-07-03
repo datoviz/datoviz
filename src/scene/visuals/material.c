@@ -27,6 +27,7 @@
 #include "core/scene_notify_internal.h"
 #include "_scene_resource_key.h"
 #include "_visual_internal.h"
+#include "datoviz/ffi.h"
 #include "datoviz/scene.h"
 #include "registry/registry.h"
 
@@ -92,6 +93,15 @@ DvzMaterialDesc dvz_material_desc(void)
 }
 
 
+bool dvz_ffi_material_desc(DvzMaterialDesc* out)
+{
+    if (out == NULL)
+        return false;
+    *out = dvz_material_desc();
+    return true;
+}
+
+
 DvzDepthCueDesc dvz_depth_cue_desc(void)
 {
     return (DvzDepthCueDesc){
@@ -105,6 +115,15 @@ DvzDepthCueDesc dvz_depth_cue_desc(void)
         .density = 3.0f,
         .background_color = {0.0f, 0.0f, 0.0f, 1.0f},
     };
+}
+
+
+bool dvz_ffi_depth_cue_desc(DvzDepthCueDesc* out)
+{
+    if (out == NULL)
+        return false;
+    *out = dvz_depth_cue_desc();
+    return true;
 }
 
 
@@ -122,6 +141,15 @@ DvzMaterialDesc dvz_phong_material_desc(void)
 }
 
 
+bool dvz_ffi_phong_material_desc(DvzMaterialDesc* out)
+{
+    if (out == NULL)
+        return false;
+    *out = dvz_phong_material_desc();
+    return true;
+}
+
+
 
 /**
  * Return the default public standard material descriptor.
@@ -133,6 +161,15 @@ DvzMaterialDesc dvz_standard_material_desc(void)
     DvzMaterialDesc desc = dvz_material_desc();
     desc.model = DVZ_MATERIAL_MODEL_STANDARD;
     return desc;
+}
+
+
+bool dvz_ffi_standard_material_desc(DvzMaterialDesc* out)
+{
+    if (out == NULL)
+        return false;
+    *out = dvz_standard_material_desc();
+    return true;
 }
 
 

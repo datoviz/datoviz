@@ -31,6 +31,7 @@
 #include "core/scene_notify_internal.h"
 #include "core/units_internal.h"
 #include "core/panel_layout_internal.h"
+#include "datoviz/ffi.h"
 #include "datoviz/scene.h"
 #include "text_internal.h"
 
@@ -92,6 +93,15 @@ DvzScaleBarDesc dvz_scalebar_desc(void)
         .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement)},
         .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc)},
     };
+}
+
+
+bool dvz_ffi_scalebar_desc(DvzScaleBarDesc* out)
+{
+    if (out == NULL)
+        return false;
+    *out = dvz_scalebar_desc();
+    return true;
 }
 
 

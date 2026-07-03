@@ -107,7 +107,18 @@ def load_raw_ctypes_status(path: Path = CTYPES_PATH) -> RawCtypesStatus:
         "dvz_geometry_star_desc": "dvz_ffi_geometry_star_desc",
         "dvz_geometry_surface_grid_desc": "dvz_ffi_geometry_surface_grid_desc",
         "dvz_geometry_torus_desc": "dvz_ffi_geometry_torus_desc",
+        "dvz_polygon_desc": "dvz_ffi_polygon_desc",
+        "dvz_field_geometry": "dvz_ffi_field_geometry",
         "dvz_reference_grid_desc": "dvz_ffi_reference_grid_desc",
+        "dvz_visual_transform_desc": "dvz_ffi_visual_transform_desc",
+        "dvz_panel_background_desc": "dvz_ffi_panel_background_desc",
+        "dvz_material_desc": "dvz_ffi_material_desc",
+        "dvz_phong_material_desc": "dvz_ffi_phong_material_desc",
+        "dvz_standard_material_desc": "dvz_ffi_standard_material_desc",
+        "dvz_depth_cue_desc": "dvz_ffi_depth_cue_desc",
+        "dvz_scalebar_desc": "dvz_ffi_scalebar_desc",
+        "dvz_overlay_card_style": "dvz_ffi_overlay_card_style",
+        "dvz_overlay_card_desc": "dvz_ffi_overlay_card_desc",
     }
     return RawCtypesStatus(frozenset(emitted), skipped, ffi_wrappers)
 

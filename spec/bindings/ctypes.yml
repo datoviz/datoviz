@@ -57,6 +57,17 @@ smoke_symbols:
   - dvz_panel_data_to_position
   - dvz_figure_process_queries
   - dvz_scene_poll_query
+  - dvz_ffi_polygon_desc
+  - dvz_ffi_field_geometry
+  - dvz_ffi_visual_transform_desc
+  - dvz_ffi_panel_background_desc
+  - dvz_ffi_material_desc
+  - dvz_ffi_phong_material_desc
+  - dvz_ffi_standard_material_desc
+  - dvz_ffi_depth_cue_desc
+  - dvz_ffi_scalebar_desc
+  - dvz_ffi_overlay_card_style
+  - dvz_ffi_overlay_card_desc
   - dvz_ffi_view_external_surface
   - dvz_ffi_view_update_external_surface
   - dvz_interop_buffer_export_from_buffer

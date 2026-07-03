@@ -30,6 +30,7 @@
 #include "_visual_internal.h"
 #include "annotation/prepare_internal.h"
 #include "core/format_state_internal.h"
+#include "datoviz/ffi.h"
 #include "datoviz/font.h"
 #include "datoviz/scene/interaction.h"
 #include "datoviz/scene/overlay.h"
@@ -2588,6 +2589,15 @@ DvzOverlayCardStyle dvz_overlay_card_style(void)
 }
 
 
+bool dvz_ffi_overlay_card_style(DvzOverlayCardStyle* out)
+{
+    if (out == NULL)
+        return false;
+    *out = dvz_overlay_card_style();
+    return true;
+}
+
+
 DvzOverlayCardDesc dvz_overlay_card_desc(void)
 {
     DvzSceneCard card = {0};
@@ -2598,6 +2608,15 @@ DvzOverlayCardDesc dvz_overlay_card_desc(void)
         .anchor_px = {card.anchor_px[0], card.anchor_px[1]},
         .offset_px = {card.offset_px[0], card.offset_px[1]},
     };
+}
+
+
+bool dvz_ffi_overlay_card_desc(DvzOverlayCardDesc* out)
+{
+    if (out == NULL)
+        return false;
+    *out = dvz_overlay_card_desc();
+    return true;
 }
 
 

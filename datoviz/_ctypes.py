@@ -14715,6 +14715,36 @@ else:
 
 
 try:
+    dvz_ffi_depth_cue_desc = dvz.dvz_ffi_depth_cue_desc
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_ffi_depth_cue_desc')
+else:
+    dvz_ffi_depth_cue_desc.__doc__ = """/**
+ * Initialize a default depth-cue descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */"""
+    dvz_ffi_depth_cue_desc.argtypes = [ctypes.POINTER(DvzDepthCueDesc)]
+    dvz_ffi_depth_cue_desc.restype = ctypes.c_bool
+
+
+try:
+    dvz_ffi_field_geometry = dvz.dvz_ffi_field_geometry
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_ffi_field_geometry')
+else:
+    dvz_ffi_field_geometry.__doc__ = """/**
+ * Initialize a default sampled-field geometry descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */"""
+    dvz_ffi_field_geometry.argtypes = [ctypes.POINTER(DvzFieldGeometry)]
+    dvz_ffi_field_geometry.restype = ctypes.c_bool
+
+
+try:
     dvz_ffi_geometry_arrow_desc = dvz.dvz_ffi_geometry_arrow_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_ffi_geometry_arrow_desc')
@@ -14895,6 +14925,96 @@ else:
 
 
 try:
+    dvz_ffi_material_desc = dvz.dvz_ffi_material_desc
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_ffi_material_desc')
+else:
+    dvz_ffi_material_desc.__doc__ = """/**
+ * Initialize a default material descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */"""
+    dvz_ffi_material_desc.argtypes = [ctypes.POINTER(DvzMaterialDesc)]
+    dvz_ffi_material_desc.restype = ctypes.c_bool
+
+
+try:
+    dvz_ffi_overlay_card_desc = dvz.dvz_ffi_overlay_card_desc
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_ffi_overlay_card_desc')
+else:
+    dvz_ffi_overlay_card_desc.__doc__ = """/**
+ * Initialize a default overlay-card descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */"""
+    dvz_ffi_overlay_card_desc.argtypes = [ctypes.POINTER(DvzOverlayCardDesc)]
+    dvz_ffi_overlay_card_desc.restype = ctypes.c_bool
+
+
+try:
+    dvz_ffi_overlay_card_style = dvz.dvz_ffi_overlay_card_style
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_ffi_overlay_card_style')
+else:
+    dvz_ffi_overlay_card_style.__doc__ = """/**
+ * Initialize a default overlay-card style descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */"""
+    dvz_ffi_overlay_card_style.argtypes = [ctypes.POINTER(DvzOverlayCardStyle)]
+    dvz_ffi_overlay_card_style.restype = ctypes.c_bool
+
+
+try:
+    dvz_ffi_panel_background_desc = dvz.dvz_ffi_panel_background_desc
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_ffi_panel_background_desc')
+else:
+    dvz_ffi_panel_background_desc.__doc__ = """/**
+ * Initialize a default panel background descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */"""
+    dvz_ffi_panel_background_desc.argtypes = [ctypes.POINTER(DvzPanelBackgroundDesc)]
+    dvz_ffi_panel_background_desc.restype = ctypes.c_bool
+
+
+try:
+    dvz_ffi_phong_material_desc = dvz.dvz_ffi_phong_material_desc
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_ffi_phong_material_desc')
+else:
+    dvz_ffi_phong_material_desc.__doc__ = """/**
+ * Initialize a default Phong material descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */"""
+    dvz_ffi_phong_material_desc.argtypes = [ctypes.POINTER(DvzMaterialDesc)]
+    dvz_ffi_phong_material_desc.restype = ctypes.c_bool
+
+
+try:
+    dvz_ffi_polygon_desc = dvz.dvz_ffi_polygon_desc
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_ffi_polygon_desc')
+else:
+    dvz_ffi_polygon_desc.__doc__ = """/**
+ * Initialize a default polygon descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */"""
+    dvz_ffi_polygon_desc.argtypes = [ctypes.POINTER(DvzPolygonDesc)]
+    dvz_ffi_polygon_desc.restype = ctypes.c_bool
+
+
+try:
     dvz_ffi_reference_grid_desc = dvz.dvz_ffi_reference_grid_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_ffi_reference_grid_desc')
@@ -14907,6 +15027,36 @@ else:
  */"""
     dvz_ffi_reference_grid_desc.argtypes = [ctypes.POINTER(DvzReferenceGridDesc)]
     dvz_ffi_reference_grid_desc.restype = ctypes.c_bool
+
+
+try:
+    dvz_ffi_scalebar_desc = dvz.dvz_ffi_scalebar_desc
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_ffi_scalebar_desc')
+else:
+    dvz_ffi_scalebar_desc.__doc__ = """/**
+ * Initialize a default scale-bar descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */"""
+    dvz_ffi_scalebar_desc.argtypes = [ctypes.POINTER(DvzScaleBarDesc)]
+    dvz_ffi_scalebar_desc.restype = ctypes.c_bool
+
+
+try:
+    dvz_ffi_standard_material_desc = dvz.dvz_ffi_standard_material_desc
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_ffi_standard_material_desc')
+else:
+    dvz_ffi_standard_material_desc.__doc__ = """/**
+ * Initialize a default standard material descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */"""
+    dvz_ffi_standard_material_desc.argtypes = [ctypes.POINTER(DvzMaterialDesc)]
+    dvz_ffi_standard_material_desc.restype = ctypes.c_bool
 
 
 try:
@@ -14960,6 +15110,21 @@ else:
  */"""
     dvz_ffi_view_update_external_surface.argtypes = [ctypes.POINTER(DvzView), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_float, ctypes.c_float, ctypes.c_bool]
     dvz_ffi_view_update_external_surface.restype = ctypes.c_int
+
+
+try:
+    dvz_ffi_visual_transform_desc = dvz.dvz_ffi_visual_transform_desc
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_ffi_visual_transform_desc')
+else:
+    dvz_ffi_visual_transform_desc.__doc__ = """/**
+ * Initialize a default visual transform descriptor through an out pointer.
+ *
+ * @param out output descriptor
+ * @return true on success, false when out is NULL
+ */"""
+    dvz_ffi_visual_transform_desc.argtypes = [ctypes.POINTER(DvzVisualTransformDesc)]
+    dvz_ffi_visual_transform_desc.restype = ctypes.c_bool
 
 
 try:
@@ -32208,7 +32373,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1542
+_GENERATED_FUNCTION_COUNT = 1553
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_field_geometry', 'dvz_frame_plan_emit_config', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_panel_background_desc', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scalebar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
 _DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzTextStyle', 'DvzTextPlacement', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzFontDesc', 'DvzFontDefaults', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzContainer', 'DvzContainerIterator', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RawFallback', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RuntimeConfig', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzObject', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2D', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewSizeDesc', 'DvzViewDesc', 'DvzVisualAttachDesc', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]
