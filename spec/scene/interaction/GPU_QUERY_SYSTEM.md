@@ -22,8 +22,8 @@ Foundation now present in the tree:
 
 1. `DvzQueryRequest`, `DvzQueryResult`, query profiles, query statuses, and value kinds live in the
    public scene headers.
-2. `dvz_panel_query()`, `dvz_scene_poll_query()`, `dvz_figure_process_queries()`, and
-   `dvz_panel_query_now()` now use native query pending/result queues. `dvz_panel_query_data()`
+2. `dvz_panel_query_px()`, `dvz_scene_poll_query()`, `dvz_figure_process_queries()`, and
+   `dvz_panel_query_now_px()` now use native query pending/result queues. `dvz_panel_query_data()`
    converts data-coordinate query points through the public panel transform helper before queuing.
 3. `DvzCapabilitySnapshot` carries query/readback capability fields, and the app layer populates the
    Vulkan-facing readback and integer-format facts available today.
@@ -116,7 +116,7 @@ Replace the public pick/probe split with one panel query API. The exact C signat
 during implementation, but the intended shape is:
 
 ```c
-int dvz_panel_query(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
+int dvz_panel_query_px(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
 int dvz_panel_query_data(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
 bool dvz_scene_poll_query(DvzScene* scene, DvzQueryResult* out_result);
 uint32_t dvz_figure_process_queries(
@@ -126,12 +126,12 @@ uint32_t dvz_figure_process_queries(
 An optional blocking helper may exist for tests/tools:
 
 ```c
-int dvz_panel_query_now(
+int dvz_panel_query_now_px(
     DvzPanel* panel, DvzDrp2Runtime* runtime, double x, double y,
     const DvzQueryRequest* request, DvzQueryResult* out_result);
 ```
 
-`dvz_panel_query()` uses outer-panel-local logical pixels, the `DVZ_PANEL_COORD_PANEL_PX` frame in
+`dvz_panel_query_px()` uses outer-panel-local logical pixels, the `DVZ_PANEL_COORD_PANEL_PX` frame in
 `DvzPanelCoordSpace`. Callers that start from figure pixels, plot pixels, view coordinates, or data
 coordinates should convert with `dvz_panel_transform_point()`, `dvz_panel_position_to_data()`, or
 `dvz_panel_data_to_position()` instead of duplicating panel geometry math.

@@ -22,19 +22,19 @@ The core question is: what rendered scene contribution is under this panel coord
 The current v0.4 direction uses:
 
 ```c
-int dvz_panel_query(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
+int dvz_panel_query_px(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
 int dvz_panel_query_data(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
 bool dvz_scene_poll_query(DvzScene* scene, DvzQueryResult* out_result);
 uint32_t dvz_figure_process_queries(
     DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps);
-int dvz_panel_query_now(
+int dvz_panel_query_now_px(
     DvzPanel* panel, DvzDrp2Runtime* runtime, double x, double y,
     const DvzQueryRequest* request, DvzQueryResult* out_result);
 ```
 
 Check the generated [scene C API](c-api/scene.md) for exact signatures in the current tree.
 
-`dvz_panel_query()` takes `DVZ_PANEL_COORD_PANEL_PX` coordinates: logical pixels local to the outer
+`dvz_panel_query_px()` takes `DVZ_PANEL_COORD_PANEL_PX` coordinates: logical pixels local to the outer
 panel rectangle. `DvzQueryResult.panel_position` echoes the same coordinate frame. Convert pointers,
 plot pixels, and data points with `dvz_panel_transform_point()`; use `dvz_panel_query_data()` when
 the query point is already in panel data coordinates.

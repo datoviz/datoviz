@@ -584,9 +584,9 @@ static void _queue_probe(ImageProbeState* state)
     request.request_id = PROBE_REQUEST_ID;
     request.target = DVZ_SCENE_TARGET_PIXEL;
 
-    const int rc = dvz_panel_query(state->panel, state->cursor_x, state->cursor_y, &request);
+    const int rc = dvz_panel_query_px(state->panel, state->cursor_x, state->cursor_y, &request);
     if (rc != 0)
-        dvz_fprintf(stderr, "dvz_panel_query() failed\n");
+        dvz_fprintf(stderr, "dvz_panel_query_px() failed\n");
 }
 
 

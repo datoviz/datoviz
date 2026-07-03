@@ -325,7 +325,7 @@ static int _item_interaction_queue_query(
     request.request_id = request_id;
     request.target = interaction->desc.target;
     request.hit_policy = interaction->desc.hit_policy;
-    if (dvz_panel_query(interaction->panel, x, y, &request) != 0)
+    if (dvz_panel_query_px(interaction->panel, x, y, &request) != 0)
         return -1;
 
     if (interaction->scene->pending_query_count == 0)

@@ -171,20 +171,26 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         goto error;
 
     DvzGuideSpanDesc vdesc = dvz_guide_span_desc();
+    vdesc.orientation = DVZ_GUIDE_ORIENTATION_VERTICAL;
+    vdesc.min_value = 1.2;
+    vdesc.max_value = 2.8;
     vdesc.fill_color = dvz_color_rgba(76, 201, 240, 42);
     vdesc.outline_color = dvz_color_rgba(76, 201, 240, 170);
     vdesc.outline_width_px = 2.0f;
     vdesc.label = "window";
-    state->vspan = dvz_vspan(panel, 1.2, 2.8, &vdesc);
+    state->vspan = dvz_guide_span(panel, &vdesc);
     if (state->vspan == NULL)
         goto error;
 
     DvzGuideSpanDesc hdesc = dvz_guide_span_desc();
+    hdesc.orientation = DVZ_GUIDE_ORIENTATION_HORIZONTAL;
+    hdesc.min_value = 0.72;
+    hdesc.max_value = 1.28;
     hdesc.fill_color = dvz_color_rgba(255, 183, 3, 36);
     hdesc.outline_color = dvz_color_rgba(255, 183, 3, 170);
     hdesc.outline_width_px = 2.0f;
     hdesc.label = "target band";
-    state->hspan = dvz_hspan(panel, 0.72, 1.28, &hdesc);
+    state->hspan = dvz_guide_span(panel, &hdesc);
     if (state->hspan == NULL)
         goto error;
 

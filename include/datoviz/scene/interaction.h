@@ -389,7 +389,7 @@ DVZ_EXPORT DvzQueryRequest dvz_query_request(void);
  * @param request the request descriptor, or NULL for defaults
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_panel_query(
+DVZ_EXPORT DvzResult dvz_panel_query_px(
     DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
 
 
@@ -414,7 +414,7 @@ DVZ_EXPORT bool dvz_scene_poll_query(DvzScene* scene, DvzQueryResult* out_result
  * @param out_result output result
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_panel_query_now(
+DVZ_EXPORT DvzResult dvz_panel_query_now_px(
     DvzPanel* panel, DvzDrp2Runtime* runtime, double x, double y, const DvzQueryRequest* request,
     DvzQueryResult* out_result);
 

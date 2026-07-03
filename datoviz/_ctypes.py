@@ -19173,23 +19173,6 @@ else:
 
 
 try:
-    dvz_hline = dvz.dvz_hline
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_hline')
-else:
-    dvz_hline.__doc__ = """/**
- * Create a horizontal guide line at one Y data coordinate.
- *
- * @param panel the panel
- * @param y Y data coordinate
- * @param desc optional guide-line descriptor; NULL uses defaults
- * @return the guide line, or NULL on validation/allocation error
- */"""
-    dvz_hline.argtypes = [ctypes.POINTER(DvzPanel), ctypes.c_double, ctypes.POINTER(DvzGuideLineDesc)]
-    dvz_hline.restype = ctypes.POINTER(DvzGuideLine)
-
-
-try:
     dvz_hover = dvz.dvz_hover
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_hover')
@@ -19280,24 +19263,6 @@ else:
  */"""
     dvz_hover_set_visual_style.argtypes = [ctypes.POINTER(DvzHover), ctypes.POINTER(DvzItemStateVisualStyle)]
     dvz_hover_set_visual_style.restype = ctypes.c_int32
-
-
-try:
-    dvz_hspan = dvz.dvz_hspan
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_hspan')
-else:
-    dvz_hspan.__doc__ = """/**
- * Create a horizontal guide span between two Y data coordinates.
- *
- * @param panel the panel
- * @param y0 first Y data coordinate
- * @param y1 second Y data coordinate
- * @param desc optional guide-span descriptor; NULL uses defaults
- * @return the guide span, or NULL on validation/allocation error
- */"""
-    dvz_hspan.argtypes = [ctypes.POINTER(DvzPanel), ctypes.c_double, ctypes.c_double, ctypes.POINTER(DvzGuideSpanDesc)]
-    dvz_hspan.restype = ctypes.POINTER(DvzGuideSpan)
 
 
 try:
@@ -22681,24 +22646,6 @@ else:
 
 
 try:
-    dvz_panel_query = dvz.dvz_panel_query
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_panel_query')
-else:
-    dvz_panel_query.__doc__ = """/**
- * Queue an explicit GPU-backed query request on a panel.
- *
- * @param panel the panel
- * @param x the panel-local logical x coordinate, origin at the outer panel rectangle
- * @param y the panel-local logical y coordinate, origin at the outer panel rectangle
- * @param request the request descriptor, or NULL for defaults
- * @return 0 on success, -1 on error
- */"""
-    dvz_panel_query.argtypes = [ctypes.POINTER(DvzPanel), ctypes.c_double, ctypes.c_double, ctypes.POINTER(DvzQueryRequest)]
-    dvz_panel_query.restype = ctypes.c_int32
-
-
-try:
     dvz_panel_query_data = dvz.dvz_panel_query_data
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_panel_query_data')
@@ -22717,11 +22664,11 @@ else:
 
 
 try:
-    dvz_panel_query_now = dvz.dvz_panel_query_now
+    dvz_panel_query_now_px = dvz.dvz_panel_query_now_px
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_panel_query_now')
+    _MISSING_FUNCTIONS.append('dvz_panel_query_now_px')
 else:
-    dvz_panel_query_now.__doc__ = """/**
+    dvz_panel_query_now_px.__doc__ = """/**
  * Queue and synchronously resolve a query through a DRP2 runtime.
  *
  * @param panel the panel
@@ -22732,8 +22679,26 @@ else:
  * @param out_result output result
  * @return 0 on success, -1 on error
  */"""
-    dvz_panel_query_now.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzDrp2Runtime), ctypes.c_double, ctypes.c_double, ctypes.POINTER(DvzQueryRequest), ctypes.POINTER(DvzQueryResult)]
-    dvz_panel_query_now.restype = ctypes.c_int32
+    dvz_panel_query_now_px.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzDrp2Runtime), ctypes.c_double, ctypes.c_double, ctypes.POINTER(DvzQueryRequest), ctypes.POINTER(DvzQueryResult)]
+    dvz_panel_query_now_px.restype = ctypes.c_int32
+
+
+try:
+    dvz_panel_query_px = dvz.dvz_panel_query_px
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_panel_query_px')
+else:
+    dvz_panel_query_px.__doc__ = """/**
+ * Queue an explicit GPU-backed query request on a panel.
+ *
+ * @param panel the panel
+ * @param x the panel-local logical x coordinate, origin at the outer panel rectangle
+ * @param y the panel-local logical y coordinate, origin at the outer panel rectangle
+ * @param request the request descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_panel_query_px.argtypes = [ctypes.POINTER(DvzPanel), ctypes.c_double, ctypes.c_double, ctypes.POINTER(DvzQueryRequest)]
+    dvz_panel_query_px.restype = ctypes.c_int32
 
 
 try:
@@ -23118,7 +23083,7 @@ else:
  * Convert one 2D point between explicit panel coordinate spaces.
  *
  * Figure, panel, inner, and plot pixel spaces use logical pixels. Panel pixels are local to the
- * outer panel rectangle and match `dvz_panel_query()` coordinates. DATA coordinates use the
+ * outer panel rectangle and match `dvz_panel_query_px()` coordinates. DATA coordinates use the
  * current visible data domain. VIEW coordinates are the visual coordinates used by visuals attached
  * with `DVZ_VISUAL_COORD_VIEW`.
  *
@@ -31494,23 +31459,6 @@ else:
 
 
 try:
-    dvz_vline = dvz.dvz_vline
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_vline')
-else:
-    dvz_vline.__doc__ = """/**
- * Create a vertical guide line at one X data coordinate.
- *
- * @param panel the panel
- * @param x X data coordinate
- * @param desc optional guide-line descriptor; NULL uses defaults
- * @return the guide line, or NULL on validation/allocation error
- */"""
-    dvz_vline.argtypes = [ctypes.POINTER(DvzPanel), ctypes.c_double, ctypes.POINTER(DvzGuideLineDesc)]
-    dvz_vline.restype = ctypes.POINTER(DvzGuideLine)
-
-
-try:
     dvz_volume = dvz.dvz_volume
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_volume')
@@ -31796,24 +31744,6 @@ else:
  */"""
     dvz_volume_state.argtypes = [ctypes.POINTER(DvzVisual)]
     dvz_volume_state.restype = ctypes.POINTER(DvzVolumeState)
-
-
-try:
-    dvz_vspan = dvz.dvz_vspan
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_vspan')
-else:
-    dvz_vspan.__doc__ = """/**
- * Create a vertical guide span between two X data coordinates.
- *
- * @param panel the panel
- * @param x0 first X data coordinate
- * @param x1 second X data coordinate
- * @param desc optional guide-span descriptor; NULL uses defaults
- * @return the guide span, or NULL on validation/allocation error
- */"""
-    dvz_vspan.argtypes = [ctypes.POINTER(DvzPanel), ctypes.c_double, ctypes.c_double, ctypes.POINTER(DvzGuideSpanDesc)]
-    dvz_vspan.restype = ctypes.POINTER(DvzGuideSpan)
 
 
 try:
@@ -32447,7 +32377,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1554
+_GENERATED_FUNCTION_COUNT = 1550
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_field_geometry', 'dvz_frame_plan_emit_config', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_panel_background_desc', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scalebar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
 _DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzTextStyle', 'DvzTextPlacement', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzFontDesc', 'DvzFontDefaults', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzContainer', 'DvzContainerIterator', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RawFallback', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzObject', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2D', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewSizeDesc', 'DvzViewDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]

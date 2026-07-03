@@ -1502,13 +1502,18 @@ int test_scene_panel_frame_snapshot_guide_layouts(TstContext* suite, const TstCa
     AT(dvz_axis_set_ticks(dvz_panel_axis(panel, DVZ_DIM_X), &ticks));
 
     DvzGuideLineDesc line_desc = dvz_guide_line_desc();
+    line_desc.orientation = DVZ_GUIDE_ORIENTATION_HORIZONTAL;
+    line_desc.value = 0.25;
     line_desc.label = "threshold";
-    DvzGuideLine* line = dvz_hline(panel, 0.25, &line_desc);
+    DvzGuideLine* line = dvz_guide_line(panel, &line_desc);
     ANN(line);
 
     DvzGuideSpanDesc span_desc = dvz_guide_span_desc();
+    span_desc.orientation = DVZ_GUIDE_ORIENTATION_VERTICAL;
+    span_desc.min_value = 0.20;
+    span_desc.max_value = 0.40;
     span_desc.label = "window";
-    DvzGuideSpan* span = dvz_vspan(panel, 0.20, 0.40, &span_desc);
+    DvzGuideSpan* span = dvz_guide_span(panel, &span_desc);
     ANN(span);
 
     _scene_prepare_axis_visuals(figure);

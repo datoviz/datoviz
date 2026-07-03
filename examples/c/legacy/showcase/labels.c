@@ -641,14 +641,14 @@ static void _labels_frame_callback(DvzView* win, void* user_data)
 
     if (state->cursor_valid && state->panel != NULL)
     {
-        int rc = dvz_panel_query(
+        int rc = dvz_panel_query_px(
             state->panel, state->cursor_x, state->cursor_y,
             &(DvzQueryRequest){
                 .request_id = ++state->next_query_request_id,
                 .target = DVZ_SCENE_TARGET_SEGMENT,
             });
         if (rc != 0)
-            dvz_fprintf(stderr, "dvz_panel_query(labels) failed\n");
+            dvz_fprintf(stderr, "dvz_panel_query_px(labels) failed\n");
         if (win != NULL)
             dvz_view_request_frame(win);
     }

@@ -108,9 +108,9 @@ They must:
 4. work from C examples and from future GSP/VisPy2 wrappers;
 5. lower through built-in visuals rather than custom backend commands.
 
-Convenience names such as `dvz_hline()` and `dvz_vline()` are acceptable in Datoviz because the
-semantic object is still a guide annotation. They are not a commitment to a full Matplotlib-style
-plotting API in C.
+Matplotlib-style line and span convenience names stay out of the canonical Datoviz C API. C callers
+create guide annotations through explicit descriptors and future plotting wrappers may add shorthand
+above Datoviz.
 
 
 ## Band And Error-Margin Policy

@@ -1799,12 +1799,12 @@ int test_app_offscreen_query_requests_notify_hosted_callback(
     AppRequestFrameProbe request_probe = {0};
     dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
 
-    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 1}) == 0);
+    AT(dvz_panel_query_px(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 1}) == 0);
     AT(request_probe.calls == 1);
     AT(request_probe.last_window == win);
     AT(_dvz_view_scheduler_should_render(win, false, 0));
 
-    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 2}) == 0);
+    AT(dvz_panel_query_px(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 2}) == 0);
     AT(request_probe.calls == 2);
     AT(request_probe.last_window == win);
     AT(_dvz_view_scheduler_should_render(win, false, 0));
@@ -1870,14 +1870,14 @@ int test_app_offscreen_shared_scene_request_frame_subscribers(
     dvz_view_set_request_frame_callback(win1, _app_request_frame_probe_callback, &probe1);
     dvz_view_set_request_frame_callback(win2, _app_request_frame_probe_callback, &probe2);
 
-    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 1}) == 0);
+    AT(dvz_panel_query_px(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 1}) == 0);
     AT(probe1.calls == 1);
     AT(probe1.last_window == win1);
     AT(probe2.calls == 1);
     AT(probe2.last_window == win2);
 
     dvz_app_destroy(app1);
-    AT(dvz_panel_query(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 2}) == 0);
+    AT(dvz_panel_query_px(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 2}) == 0);
     AT(probe1.calls == 1);
     AT(probe2.calls == 2);
     AT(probe2.last_window == win2);
@@ -5796,10 +5796,10 @@ int test_app_offscreen_query_request_steady_state(TstContext* suite, const TstCa
     {
         uint64_t first_id = 100 + frame;
         uint64_t second_id = 200 + frame;
-        AT(dvz_panel_query(
+        AT(dvz_panel_query_px(
                panel, 32.0, 32.0,
                &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = first_id, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
-        AT(dvz_panel_query(
+        AT(dvz_panel_query_px(
                panel, 32.0, 32.0,
                &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = second_id, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
         AT(scene->pending_query_count == 2);
@@ -5926,8 +5926,8 @@ int test_app_offscreen_gsp_first_slice_smoke(TstContext* suite, const TstCase* i
     DvzQueryRequest image_request = dvz_query_request();
     image_request.request_id = 1002;
     image_request.target = DVZ_SCENE_TARGET_PIXEL;
-    AT(dvz_panel_query(panel, 32.0, 32.0, &point_request) == 0);
-    AT(dvz_panel_query(panel, 8.0, 8.0, &image_request) == 0);
+    AT(dvz_panel_query_px(panel, 32.0, 32.0, &point_request) == 0);
+    AT(dvz_panel_query_px(panel, 8.0, 8.0, &image_request) == 0);
 
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
 
@@ -6322,7 +6322,7 @@ int test_app_offscreen_marker_query_selection_preserves_vertical_orientation(
     request.request_id = 42;
     request.target = DVZ_SCENE_TARGET_ITEM;
     request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
-    AT(dvz_panel_query(panel, 32.0, 48.0, &request) == 0);
+    AT(dvz_panel_query_px(panel, 32.0, 48.0, &request) == 0);
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
 
     DvzQueryResult result = {0};
@@ -6438,7 +6438,7 @@ int test_app_offscreen_pixel_query_selection_preserves_vertical_orientation(
     request.request_id = 43;
     request.target = DVZ_SCENE_TARGET_ITEM;
     request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
-    AT(dvz_panel_query(panel, 32.0, 48.0, &request) == 0);
+    AT(dvz_panel_query_px(panel, 32.0, 48.0, &request) == 0);
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
 
     DvzQueryResult result = {0};

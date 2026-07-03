@@ -37,14 +37,14 @@ and alpha rules as rendering.
 The public interaction primitive should become a unified panel query API:
 
 ```c
-int dvz_panel_query(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
+int dvz_panel_query_px(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
 int dvz_panel_query_data(DvzPanel* panel, double x, double y, const DvzQueryRequest* request);
 bool dvz_panel_transform_point(
     DvzPanel* panel, DvzPanelCoordSpace from, DvzPanelCoordSpace to, double x, double y,
     double* out_x, double* out_y);
 ```
 
-`dvz_panel_query()` takes `DVZ_PANEL_COORD_PANEL_PX` coordinates: logical pixels local to the
+`dvz_panel_query_px()` takes `DVZ_PANEL_COORD_PANEL_PX` coordinates: logical pixels local to the
 outer panel rectangle. `dvz_panel_query_data()` converts panel data coordinates through the same
 public transform helper before queuing the query.
 

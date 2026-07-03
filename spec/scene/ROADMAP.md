@@ -51,7 +51,7 @@ High-payoff showcase order:
 The durable query architecture is [interaction/GPU_QUERY_SYSTEM.md](interaction/GPU_QUERY_SYSTEM.md).
 Preserved follow-up direction:
 
-1. keep public interaction centered on `dvz_panel_query()` and `DvzQueryResult`;
+1. keep public interaction centered on `dvz_panel_query_px()` and `DvzQueryResult`;
 2. keep rendered visual query authority GPU-only;
 3. keep generic query code under `src/scene/query/` and visual policy in family query files;
 4. use `r32uint` as the baseline query profile and `rg32uint` as the preferred 64-bit profile;

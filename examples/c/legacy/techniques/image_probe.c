@@ -253,14 +253,14 @@ static void _image_probe_frame(DvzView* win, void* user_data)
 
     if (state->cursor_valid)
     {
-        if (dvz_panel_query(
+        if (dvz_panel_query_px(
                 state->panel, state->cursor_x, state->cursor_y,
                 &(DvzQueryRequest){
                     .request_id = 0,
                     .target = DVZ_SCENE_TARGET_PIXEL,
                 }) != 0)
         {
-            dvz_fprintf(stderr, "dvz_panel_query() failed\n");
+            dvz_fprintf(stderr, "dvz_panel_query_px() failed\n");
         }
     }
 }

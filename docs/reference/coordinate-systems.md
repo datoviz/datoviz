@@ -22,7 +22,7 @@ Public panel point transforms use the `DvzPanelCoordSpace` enum:
 | API space | Meaning |
 | --- | --- |
 | `DVZ_PANEL_COORD_FIGURE_PX` | Logical figure-layout pixels. |
-| `DVZ_PANEL_COORD_PANEL_PX` | Logical pixels local to the outer panel rectangle. This is the input frame for `dvz_panel_query()` and the frame echoed in `DvzQueryResult.panel_position`. |
+| `DVZ_PANEL_COORD_PANEL_PX` | Logical pixels local to the outer panel rectangle. This is the input frame for `dvz_panel_query_px()` and the frame echoed in `DvzQueryResult.panel_position`. |
 | `DVZ_PANEL_COORD_INNER_PX` | Logical pixels local to the inner panel rectangle after panel reserves. |
 | `DVZ_PANEL_COORD_PLOT_PX` | Logical pixels local to the plot rectangle. |
 | `DVZ_PANEL_COORD_DATA` | Panel data/domain coordinates in the current visible domain. |
@@ -88,7 +88,7 @@ or plot boundaries.
 
 Pointer input starts in host-window or figure coordinates at the public scene boundary. Query calls
 use outer-panel-local logical pixels. Convert pointer positions with `dvz_event_window_to_figure()`
-and `dvz_panel_transform_point()` as needed before queuing `dvz_panel_query()`. If the application
+and `dvz_panel_transform_point()` as needed before queuing `dvz_panel_query_px()`. If the application
 already has data coordinates, `dvz_panel_query_data()` performs the data-to-panel conversion before
 queuing the query.
 

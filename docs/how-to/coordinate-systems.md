@@ -25,7 +25,7 @@ spaces:
 | Space | Meaning |
 | --- | --- |
 | `DVZ_PANEL_COORD_FIGURE_PX` | Logical pixels in the figure layout. |
-| `DVZ_PANEL_COORD_PANEL_PX` | Logical pixels local to the outer panel rectangle. This is the coordinate frame used by `dvz_panel_query()`. |
+| `DVZ_PANEL_COORD_PANEL_PX` | Logical pixels local to the outer panel rectangle. This is the coordinate frame used by `dvz_panel_query_px()`. |
 | `DVZ_PANEL_COORD_INNER_PX` | Logical pixels local to the inner panel rectangle after reserves. |
 | `DVZ_PANEL_COORD_PLOT_PX` | Logical pixels local to the plot rectangle. |
 | `DVZ_PANEL_COORD_DATA` | Panel data/domain coordinates in the current visible domain. |
@@ -114,7 +114,7 @@ legends, annotations, or application state.
 
 Pointer input and queries start from host or figure pixels, then pass through the target panel and
 panel transform. Convert figure pointer coordinates with `dvz_panel_transform_point()` before
-calling `dvz_panel_query()`, or call `dvz_panel_query_data()` when the application already has a
+calling `dvz_panel_query_px()`, or call `dvz_panel_query_data()` when the application already has a
 data-coordinate query point. Do not treat CPU geometry coordinates as a substitute for rendered
 query behavior; pick/probe results should follow the same transform, clipping, depth, and shader
 path as rendering.

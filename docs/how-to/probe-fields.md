@@ -28,7 +28,7 @@ dvz_visual_set_query_capabilities(image, DVZ_QUERY_CAPABILITY_PIXEL);
 DvzQueryRequest request = dvz_query_request();
 request.request_id = 1;
 request.target = DVZ_SCENE_TARGET_PIXEL;
-if (dvz_panel_query(panel, cursor_x, cursor_y, &request) != 0)
+if (dvz_panel_query_px(panel, cursor_x, cursor_y, &request) != 0)
     return;
 
 // Poll after frame execution. Live scenario examples do this from their post-frame callback.
@@ -52,7 +52,7 @@ while (dvz_scene_poll_query(scene, &query))
 }
 ```
 
-`dvz_panel_query()` validates the rendered hit and returns outer-panel-local coordinates. Convert
+`dvz_panel_query_px()` validates the rendered hit and returns outer-panel-local coordinates. Convert
 them to data coordinates with `dvz_panel_position_to_data()` before applying your application's
 field indexing policy. The application still maps the data coordinate to a texel, interpolated
 sample, or transformed mesh UV and reads the scalar value it owns. If you already have a data
@@ -60,7 +60,7 @@ coordinate, `dvz_panel_query_data()` queues the equivalent panel query directly.
 
 The live scenario helper used by `examples/c/features/image_probe.c` queues the same request through
 `dvz_scenario_panel_query()` so the example can run in native and browser scenario hosts. Plain C
-applications should use `dvz_panel_query()` unless they are inside the scenario runner.
+applications should use `dvz_panel_query_px()` unless they are inside the scenario runner.
 
 For an image with a colorbar and cursor readout, keep the sampled field, scalar normalization,
 colorbar range, and probe coordinate transform synchronized. A readout that samples a different

@@ -281,22 +281,29 @@ static bool _add_autocorrelogram(DvzScene* scene, DvzPanel* panel)
         return false;
 
     DvzGuideSpanDesc span_desc = dvz_guide_span_desc();
+    span_desc.orientation = DVZ_GUIDE_ORIENTATION_VERTICAL;
+    span_desc.min_value = -2.0;
+    span_desc.max_value = 2.0;
     span_desc.fill_color = dvz_color_rgba(239, 71, 111, 42);
     span_desc.outline_color = dvz_color_rgba(239, 71, 111, 165);
     span_desc.outline_width_px = 1.5f;
-    if (dvz_vspan(panel, -2.0, 2.0, &span_desc) == NULL)
+    if (dvz_guide_span(panel, &span_desc) == NULL)
         return false;
 
     DvzGuideLineDesc baseline = dvz_guide_line_desc();
+    baseline.orientation = DVZ_GUIDE_ORIENTATION_HORIZONTAL;
+    baseline.value = 38.0;
     baseline.color = dvz_color_rgba(128, 255, 219, 220);
     baseline.stroke_width_px = 2.25f;
-    if (dvz_hline(panel, 38.0, &baseline) == NULL)
+    if (dvz_guide_line(panel, &baseline) == NULL)
         return false;
 
     DvzGuideLineDesc zero = dvz_guide_line_desc();
+    zero.orientation = DVZ_GUIDE_ORIENTATION_VERTICAL;
+    zero.value = 0.0;
     zero.color = dvz_color_rgba(255, 183, 3, 220);
     zero.stroke_width_px = 2.0f;
-    if (dvz_vline(panel, 0.0, &zero) == NULL)
+    if (dvz_guide_line(panel, &zero) == NULL)
         return false;
 
     DvzColor text = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT);
@@ -448,10 +455,12 @@ static bool _add_stacked_traces(DvzScene* scene, DvzPanel* panel)
     _fill_stacked_traces(positions, colors, widths, subpaths);
 
     DvzGuideLineDesc cursor = dvz_guide_line_desc();
+    cursor.orientation = DVZ_GUIDE_ORIENTATION_VERTICAL;
+    cursor.value = 5.0;
     cursor.color = dvz_color_rgba(76, 201, 240, 200);
     cursor.stroke_width_px = 1.75f;
     cursor.label = "probe";
-    if (dvz_vline(panel, 5.0, &cursor) == NULL)
+    if (dvz_guide_line(panel, &cursor) == NULL)
         return false;
 
     DvzVisual* traces = dvz_path(scene, 0);

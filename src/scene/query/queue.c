@@ -262,7 +262,7 @@ static void _query_remove_pending_at(DvzScene* scene, uint32_t index)
  * @param request query request, or NULL for defaults
  * @return 0 on success, -1 on failure
  */
-DvzResult dvz_panel_query(DvzPanel* panel, double x, double y, const DvzQueryRequest* request)
+DvzResult dvz_panel_query_px(DvzPanel* panel, double x, double y, const DvzQueryRequest* request)
 {
     ANN(panel);
     if (!_query_request_validate(request))
@@ -312,7 +312,7 @@ DvzResult dvz_panel_query_data(DvzPanel* panel, double x, double y, const DvzQue
     {
         return -1;
     }
-    return dvz_panel_query(panel, panel_px[0], panel_px[1], request);
+    return dvz_panel_query_px(panel, panel_px[0], panel_px[1], request);
 }
 
 
@@ -386,14 +386,14 @@ uint32_t dvz_figure_process_queries(
  * @param out_result output query result
  * @return 0 on success, -1 on failure
  */
-DvzResult dvz_panel_query_now(
+DvzResult dvz_panel_query_now_px(
     DvzPanel* panel, DvzDrp2Runtime* runtime, double x, double y, const DvzQueryRequest* request,
     DvzQueryResult* out_result)
 {
     ANN(panel);
     ANN(runtime);
     ANN(out_result);
-    if (panel->figure == NULL || dvz_panel_query(panel, x, y, request) != 0)
+    if (panel->figure == NULL || dvz_panel_query_px(panel, x, y, request) != 0)
         return -1;
 
     (void)dvz_figure_process_queries(panel->figure, runtime, NULL);

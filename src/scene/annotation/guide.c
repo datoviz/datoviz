@@ -441,25 +441,6 @@ DvzGuideLine* dvz_guide_line(DvzPanel* panel, const DvzGuideLineDesc* desc)
 
 
 
-DvzGuideLine* dvz_hline(DvzPanel* panel, double y, const DvzGuideLineDesc* desc)
-{
-    DvzGuideLineDesc resolved = desc != NULL ? *desc : dvz_guide_line_desc();
-    resolved.orientation = DVZ_GUIDE_ORIENTATION_HORIZONTAL;
-    resolved.value = y;
-    return dvz_guide_line(panel, &resolved);
-}
-
-
-
-DvzGuideLine* dvz_vline(DvzPanel* panel, double x, const DvzGuideLineDesc* desc)
-{
-    DvzGuideLineDesc resolved = desc != NULL ? *desc : dvz_guide_line_desc();
-    resolved.orientation = DVZ_GUIDE_ORIENTATION_VERTICAL;
-    resolved.value = x;
-    return dvz_guide_line(panel, &resolved);
-}
-
-
 DvzVisual* dvz_guide_line_visual(DvzGuideLine* guide, DvzPlotRole role)
 {
     if (guide == NULL || !guide->active)
@@ -537,29 +518,6 @@ DvzGuideSpan* dvz_guide_span(DvzPanel* panel, const DvzGuideSpanDesc* desc)
     return span;
 }
 
-
-
-DvzGuideSpan* dvz_hspan(
-    DvzPanel* panel, double y0, double y1, const DvzGuideSpanDesc* desc)
-{
-    DvzGuideSpanDesc resolved = desc != NULL ? *desc : dvz_guide_span_desc();
-    resolved.orientation = DVZ_GUIDE_ORIENTATION_HORIZONTAL;
-    resolved.min_value = y0;
-    resolved.max_value = y1;
-    return dvz_guide_span(panel, &resolved);
-}
-
-
-
-DvzGuideSpan* dvz_vspan(
-    DvzPanel* panel, double x0, double x1, const DvzGuideSpanDesc* desc)
-{
-    DvzGuideSpanDesc resolved = desc != NULL ? *desc : dvz_guide_span_desc();
-    resolved.orientation = DVZ_GUIDE_ORIENTATION_VERTICAL;
-    resolved.min_value = x0;
-    resolved.max_value = x1;
-    return dvz_guide_span(panel, &resolved);
-}
 
 
 DvzVisual* dvz_guide_span_visual(DvzGuideSpan* span, DvzPlotRole role)

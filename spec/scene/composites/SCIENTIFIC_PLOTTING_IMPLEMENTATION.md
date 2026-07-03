@@ -31,11 +31,11 @@ Preferred public object names:
 | Concept | Preferred Datoviz API | Notes |
 | --- | --- | --- |
 | guide line | `DvzGuideLine`, `dvz_guide_line()` | generic retained object |
-| horizontal guide line | `dvz_hline()` | convenience wrapper over guide line |
-| vertical guide line | `dvz_vline()` | convenience wrapper over guide line |
+| horizontal guide line | `dvz_guide_line()` with `DVZ_GUIDE_ORIENTATION_HORIZONTAL` | explicit descriptor |
+| vertical guide line | `dvz_guide_line()` with `DVZ_GUIDE_ORIENTATION_VERTICAL` | explicit descriptor |
 | guide span | `DvzGuideSpan`, `dvz_guide_span()` | filled interval in one dimension |
-| horizontal span | `dvz_hspan()` | convenience wrapper over guide span |
-| vertical span | `dvz_vspan()` | convenience wrapper over guide span |
+| horizontal span | `dvz_guide_span()` with `DVZ_GUIDE_ORIENTATION_HORIZONTAL` | explicit descriptor |
+| vertical span | `dvz_guide_span()` with `DVZ_GUIDE_ORIENTATION_VERTICAL` | explicit descriptor |
 | bars/intervals | `DvzBars`, `dvz_bars()` | rendering object, not statistical `hist()` |
 | band/ribbon | `DvzBand`, `dvz_band()` | uncertainty region plus optional center path |
 
@@ -147,12 +147,7 @@ DvzGuideLineDesc dvz_guide_line_desc(void);
 DvzGuideSpanDesc dvz_guide_span_desc(void);
 
 DvzGuideLine* dvz_guide_line(DvzPanel* panel, const DvzGuideLineDesc* desc);
-DvzGuideLine* dvz_hline(DvzPanel* panel, double y, const DvzGuideLineDesc* desc);
-DvzGuideLine* dvz_vline(DvzPanel* panel, double x, const DvzGuideLineDesc* desc);
-
 DvzGuideSpan* dvz_guide_span(DvzPanel* panel, const DvzGuideSpanDesc* desc);
-DvzGuideSpan* dvz_hspan(DvzPanel* panel, double y0, double y1, const DvzGuideSpanDesc* desc);
-DvzGuideSpan* dvz_vspan(DvzPanel* panel, double x0, double x1, const DvzGuideSpanDesc* desc);
 ```
 
 First-slice lowering:

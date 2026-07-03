@@ -463,7 +463,7 @@ static void _queue_probe_query(LiveProbeState* state)
         return;
     }
 
-    int rc = dvz_panel_query(
+    int rc = dvz_panel_query_px(
         state->panel, panel_x, panel_y,
         &(DvzQueryRequest){
             .request_id = 0,
@@ -471,7 +471,7 @@ static void _queue_probe_query(LiveProbeState* state)
         });
     if (rc != 0)
     {
-        dvz_fprintf(stderr, "dvz_panel_query() failed\n");
+        dvz_fprintf(stderr, "dvz_panel_query_px() failed\n");
         return;
     }
 

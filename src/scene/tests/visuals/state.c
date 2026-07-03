@@ -2340,11 +2340,11 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
 
     DvzQueryRequest request = dvz_query_request();
     request.struct_size = DVZ_STRUCT_SIZE(DvzQueryRequest) - 1;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_query(panel, 0.0, 0.0, &request) < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_query_px(panel, 0.0, 0.0, &request) < 0);
 
     request = dvz_query_request();
     request.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_query(panel, 0.0, 0.0, &request) < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_query_px(panel, 0.0, 0.0, &request) < 0);
 
     DvzEdlDesc edl = dvz_edl_desc();
     edl.struct_size = 0;

@@ -424,11 +424,18 @@ int test_scene_guide_descriptor_abi_rejects_invalid_structs(
     span.max_value = 1.0;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_guide_span(panel, &span) == NULL);
 
-    DvzGuideLine* valid_line = dvz_hline(panel, 0.0, NULL);
+    DvzGuideLineDesc valid_line_desc = dvz_guide_line_desc();
+    valid_line_desc.orientation = DVZ_GUIDE_ORIENTATION_HORIZONTAL;
+    valid_line_desc.value = 0.0;
+    DvzGuideLine* valid_line = dvz_guide_line(panel, &valid_line_desc);
     ANN(valid_line);
     AT_EXPECTED_ERROR_STRICT(suite, dvz_guide_line_set_value(valid_line, NAN) < 0);
 
-    DvzGuideSpan* valid_span = dvz_vspan(panel, -1.0, 1.0, NULL);
+    DvzGuideSpanDesc valid_span_desc = dvz_guide_span_desc();
+    valid_span_desc.orientation = DVZ_GUIDE_ORIENTATION_VERTICAL;
+    valid_span_desc.min_value = -1.0;
+    valid_span_desc.max_value = 1.0;
+    DvzGuideSpan* valid_span = dvz_guide_span(panel, &valid_span_desc);
     ANN(valid_span);
     AT_EXPECTED_ERROR_STRICT(
         suite, dvz_guide_span_set_range(valid_span, 1.0, 1.0) < 0);
@@ -1909,10 +1916,12 @@ int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstC
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -2.0, 2.0) == 0);
 
     DvzGuideLineDesc line_desc = dvz_guide_line_desc();
+    line_desc.orientation = DVZ_GUIDE_ORIENTATION_HORIZONTAL;
+    line_desc.value = 0.5;
     line_desc.color = dvz_color_rgba(76, 201, 240, 220);
     line_desc.stroke_width_px = 3.0f;
     line_desc.label = "threshold";
-    DvzGuideLine* hline = dvz_hline(panel, 0.5, &line_desc);
+    DvzGuideLine* hline = dvz_guide_line(panel, &line_desc);
     ANN(hline);
     AT(scene->guide_line_count == 1);
     AT(hline->line_visual != NULL);
@@ -1921,11 +1930,14 @@ int test_scene_guide_line_and_span_prepare_visuals(TstContext* suite, const TstC
     AT(dvz_guide_line_visual(hline, DVZ_PLOT_ROLE_FILL) == NULL);
 
     DvzGuideSpanDesc span_desc = dvz_guide_span_desc();
+    span_desc.orientation = DVZ_GUIDE_ORIENTATION_VERTICAL;
+    span_desc.min_value = 2.0;
+    span_desc.max_value = 4.0;
     span_desc.fill_color = dvz_color_rgba(239, 71, 111, 48);
     span_desc.outline_color = dvz_color_rgba(239, 71, 111, 180);
     span_desc.outline_width_px = 2.0f;
     span_desc.label = "window";
-    DvzGuideSpan* vspan = dvz_vspan(panel, 2.0, 4.0, &span_desc);
+    DvzGuideSpan* vspan = dvz_guide_span(panel, &span_desc);
     ANN(vspan);
     AT(scene->guide_span_count == 1);
     AT(vspan->fill_visual != NULL);

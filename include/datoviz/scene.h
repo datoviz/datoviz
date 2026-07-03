@@ -812,7 +812,7 @@ DVZ_EXPORT void dvz_panel_frame_unref(DvzPanelFrameSnapshot* snapshot);
  * Convert one 2D point between explicit panel coordinate spaces.
  *
  * Figure, panel, inner, and plot pixel spaces use logical pixels. Panel pixels are local to the
- * outer panel rectangle and match `dvz_panel_query()` coordinates. DATA coordinates use the
+ * outer panel rectangle and match `dvz_panel_query_px()` coordinates. DATA coordinates use the
  * current visible data domain. VIEW coordinates are the visual coordinates used by visuals attached
  * with `DVZ_VISUAL_COORD_VIEW`.
  *

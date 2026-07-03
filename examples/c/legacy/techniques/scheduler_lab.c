@@ -203,8 +203,8 @@ static void _lab_queue_item_query_at(SchedulerLabState* state, double x, double 
         .target = DVZ_SCENE_TARGET_ITEM,
         .hit_policy = DVZ_QUERY_HIT_FRONTMOST,
     };
-    if (dvz_panel_query(state->panel, x, y, &request) != 0)
-        dvz_fprintf(stderr, "dvz_panel_query(item) failed\n");
+    if (dvz_panel_query_px(state->panel, x, y, &request) != 0)
+        dvz_fprintf(stderr, "dvz_panel_query_px(item) failed\n");
 }
 
 
@@ -237,8 +237,8 @@ static void _lab_queue_pixel_query_at(SchedulerLabState* state, double x, double
         .request_id = state->pixel_query_request_count,
         .target = DVZ_SCENE_TARGET_PIXEL,
     };
-    if (dvz_panel_query(state->panel, x, y, &request) != 0)
-        dvz_fprintf(stderr, "dvz_panel_query(pixel) failed\n");
+    if (dvz_panel_query_px(state->panel, x, y, &request) != 0)
+        dvz_fprintf(stderr, "dvz_panel_query_px(pixel) failed\n");
 }
 
 

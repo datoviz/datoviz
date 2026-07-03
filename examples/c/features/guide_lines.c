@@ -176,18 +176,22 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         goto error;
 
     DvzGuideLineDesc hdesc = dvz_guide_line_desc();
+    hdesc.orientation = DVZ_GUIDE_ORIENTATION_HORIZONTAL;
+    hdesc.value = 0.45;
     hdesc.color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
     hdesc.stroke_width_px = 3.0f;
     hdesc.label = "threshold";
-    state->hline = dvz_hline(panel, 0.45, &hdesc);
+    state->hline = dvz_guide_line(panel, &hdesc);
     if (state->hline == NULL)
         goto error;
 
     DvzGuideLineDesc vdesc = dvz_guide_line_desc();
+    vdesc.orientation = DVZ_GUIDE_ORIENTATION_VERTICAL;
+    vdesc.value = 3.6;
     vdesc.color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY);
     vdesc.stroke_width_px = 2.5f;
     vdesc.label = "event";
-    state->vline = dvz_vline(panel, 3.6, &vdesc);
+    state->vline = dvz_guide_line(panel, &vdesc);
     if (state->vline == NULL)
         goto error;
 

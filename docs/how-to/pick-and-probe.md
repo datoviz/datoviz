@@ -15,7 +15,7 @@ is a sampled field value at a data coordinate.
 
 1. Enable query support on the visual with `dvz_visual_set_query_capabilities()`.
 2. Convert pointer input to outer-panel-local logical pixel coordinates.
-3. Queue a panel query with `dvz_panel_query()`.
+3. Queue a panel query with `dvz_panel_query_px()`.
 4. Poll resolved results with `dvz_scene_poll_query()` after subsequent frames.
 5. Map `resolved_id` or `link_key` back to application data.
 6. Update hover, selection, or readout state from the query result.
@@ -30,7 +30,7 @@ request.request_id = 1;
 request.target = DVZ_SCENE_TARGET_ITEM;
 request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
 
-dvz_panel_query(panel, panel_x, panel_y, &request);
+dvz_panel_query_px(panel, panel_x, panel_y, &request);
 
 DvzQueryResult result = {0};
 while (dvz_scene_poll_query(scene, &result))
@@ -54,7 +54,7 @@ rectangle, not raw window coordinates. When the pointer event comes from the sce
 the scenario helper shown in `examples/c/features/picking.c`. In a direct app or hosted
 integration, first translate host-window coordinates to figure coordinates with
 `dvz_event_window_to_figure()` when needed, then convert figure to panel pixels with
-`dvz_panel_transform_point()` before calling `dvz_panel_query()`.
+`dvz_panel_transform_point()` before calling `dvz_panel_query_px()`.
 
 When the application already has a data-coordinate point, use `dvz_panel_query_data()` or convert it
 with `dvz_panel_data_to_position()`.

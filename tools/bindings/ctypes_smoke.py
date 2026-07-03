@@ -51,7 +51,7 @@ def _run_gsp_query_smoke(dvz) -> None:
         assert request.struct_size == ctypes.sizeof(dvz.DvzQueryRequest)
         request.request_id = 123
         request.target = dvz.DvzSceneTargetKind.DVZ_SCENE_TARGET_ITEM
-        assert dvz.dvz_panel_query(panel, 10.0, 10.0, ctypes.byref(request)) == 0
+        assert dvz.dvz_panel_query_px(panel, 10.0, 10.0, ctypes.byref(request)) == 0
 
         processed = dvz.dvz_figure_process_queries(figure, None, ctypes.byref(caps))
         assert processed == 1
@@ -72,7 +72,7 @@ def _run_gsp_query_smoke(dvz) -> None:
             request = dvz.dvz_query_request()
             request.request_id = request_id
             request.target = target
-            assert dvz.dvz_panel_query(panel, 10.0, 10.0, ctypes.byref(request)) == 0
+            assert dvz.dvz_panel_query_px(panel, 10.0, 10.0, ctypes.byref(request)) == 0
 
         processed = dvz.dvz_figure_process_queries(figure, None, ctypes.byref(caps))
         assert processed == 2

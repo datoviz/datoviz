@@ -488,8 +488,8 @@ static void _embedding_post_frame(DvzScenarioContext* ctx, void* user_data)
         request.target = DVZ_SCENE_TARGET_ITEM;
         request.hit_policy = DVZ_QUERY_HIT_FRONTMOST;
 
-        if (dvz_panel_query(state->panel, state->cursor_x, state->cursor_y, &request) != 0)
-            fprintf(stderr, "dvz_panel_query() failed\n");
+        if (dvz_panel_query_px(state->panel, state->cursor_x, state->cursor_y, &request) != 0)
+            fprintf(stderr, "dvz_panel_query_px() failed\n");
     }
 }
 

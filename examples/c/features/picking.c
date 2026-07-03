@@ -192,14 +192,14 @@ static void _picking_pointer(const DvzScenarioPointerEvent* event, void* user_da
     if (event->type == DVZ_SCENARIO_POINTER_MOVE)
     {
         request.request_id = QUERY_HOVER_ID;
-        if (dvz_panel_query(state->panel, x, y, &request) != 0)
-            fprintf(stderr, "dvz_panel_query() failed\n");
+        if (dvz_panel_query_px(state->panel, x, y, &request) != 0)
+            fprintf(stderr, "dvz_panel_query_px() failed\n");
     }
     else if (event->type == DVZ_SCENARIO_POINTER_CLICK && event->button == DVZ_POINTER_BUTTON_LEFT)
     {
         request.request_id = QUERY_CLICK_ID;
-        if (dvz_panel_query(state->panel, x, y, &request) != 0)
-            fprintf(stderr, "dvz_panel_query(click) failed\n");
+        if (dvz_panel_query_px(state->panel, x, y, &request) != 0)
+            fprintf(stderr, "dvz_panel_query_px(click) failed\n");
     }
 }
 

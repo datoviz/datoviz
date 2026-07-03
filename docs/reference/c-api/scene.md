@@ -18,7 +18,7 @@ Common workflows:
 - [Configure cameras](../../how-to/configure-cameras.md)
 - [Pick and probe](../../how-to/pick-and-probe.md)
 
-Functions: 387
+Functions: 383
 
 ## Symbol Groups
 
@@ -42,9 +42,7 @@ Functions: 387
 | [Format](#format) | 1 | `include/datoviz/scene/scale.h` |
 | [Grid](#grid) | 8 | `include/datoviz/scene.h` |
 | [Guide](#guide) | 8 | `include/datoviz/scene/plot.h` |
-| [Hline](#hline) | 1 | `include/datoviz/scene/plot.h` |
 | [Hover](#hover) | 6 | `include/datoviz/scene/interaction.h` |
-| [Hspan](#hspan) | 1 | `include/datoviz/scene/plot.h` |
 | [Interaction](#interaction) | 7 | `include/datoviz/scene/interaction.h` |
 | [Item](#item) | 6 | `include/datoviz/scene/interaction.h` |
 | [Label](#label) | 1 | `include/datoviz/scene/annotation.h` |
@@ -70,8 +68,6 @@ Functions: 387
 | [Turntable](#turntable) | 1 | `include/datoviz/scene/turntable.h` |
 | [Unit](#unit) | 4 | `include/datoviz/scene/scale.h` |
 | [Units](#units) | 6 | `include/datoviz/scene/scale.h` |
-| [Vline](#vline) | 1 | `include/datoviz/scene/plot.h` |
-| [Vspan](#vspan) | 1 | `include/datoviz/scene/plot.h` |
 
 ??? info "Grouped symbol index"
 
@@ -286,12 +282,6 @@ Functions: 387
     | [`dvz_guide_span_set_range()`](#dvz_guide_span_set_range) | `include/datoviz/scene/plot.h` |
     | [`dvz_guide_span_visual()`](#dvz_guide_span_visual) | `include/datoviz/scene/plot.h` |
 
-    ### Hline
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_hline()`](#dvz_hline) | `include/datoviz/scene/plot.h` |
-
     ### Hover
 
     | Function | Header |
@@ -302,12 +292,6 @@ Functions: 387
     | [`dvz_hover_desc()`](#dvz_hover_desc) | `include/datoviz/scene/interaction.h` |
     | [`dvz_hover_destroy()`](#dvz_hover_destroy) | `include/datoviz/scene/interaction.h` |
     | [`dvz_hover_set_visual_style()`](#dvz_hover_set_visual_style) | `include/datoviz/scene/interaction.h` |
-
-    ### Hspan
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_hspan()`](#dvz_hspan) | `include/datoviz/scene/plot.h` |
 
     ### Interaction
 
@@ -442,9 +426,9 @@ Functions: 387
     | [`dvz_panel_inner_rect_px()`](#dvz_panel_inner_rect_px) | `include/datoviz/scene.h` |
     | [`dvz_panel_plot_rect_px()`](#dvz_panel_plot_rect_px) | `include/datoviz/scene.h` |
     | [`dvz_panel_position_to_data()`](#dvz_panel_position_to_data) | `include/datoviz/scene.h` |
-    | [`dvz_panel_query()`](#dvz_panel_query) | `include/datoviz/scene/interaction.h` |
     | [`dvz_panel_query_data()`](#dvz_panel_query_data) | `include/datoviz/scene.h` |
-    | [`dvz_panel_query_now()`](#dvz_panel_query_now) | `include/datoviz/scene/interaction.h` |
+    | [`dvz_panel_query_now_px()`](#dvz_panel_query_now_px) | `include/datoviz/scene/interaction.h` |
+    | [`dvz_panel_query_px()`](#dvz_panel_query_px) | `include/datoviz/scene/interaction.h` |
     | [`dvz_panel_resolve_frame()`](#dvz_panel_resolve_frame) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_axes_2d()`](#dvz_panel_set_axes_2d) | `include/datoviz/scene.h` |
     | [`dvz_panel_set_background()`](#dvz_panel_set_background) | `include/datoviz/scene.h` |
@@ -689,18 +673,6 @@ Functions: 387
     | [`dvz_units_set_display_mode()`](#dvz_units_set_display_mode) | `include/datoviz/scene/scale.h` |
     | [`dvz_units_set_fixed_label()`](#dvz_units_set_fixed_label) | `include/datoviz/scene/scale.h` |
     | [`dvz_units_set_ladder()`](#dvz_units_set_ladder) | `include/datoviz/scene/scale.h` |
-
-    ### Vline
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_vline()`](#dvz_vline) | `include/datoviz/scene/plot.h` |
-
-    ### Vspan
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_vspan()`](#dvz_vspan) | `include/datoviz/scene/plot.h` |
 
 ## Anim
 
@@ -1428,7 +1400,7 @@ Create a retained band/ribbon attached to one panel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/plot.h`:239._
+_Declared in `include/datoviz/scene/plot.h`:191._
 
 ### `dvz_band_desc()`
 
@@ -1476,7 +1448,7 @@ gaps.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/plot.h`:255._
+_Declared in `include/datoviz/scene/plot.h`:207._
 
 ### `dvz_band_set_center()`
 
@@ -1504,7 +1476,7 @@ If absent and the descriptor enables the center line, the line is derived from t
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/plot.h`:272._
+_Declared in `include/datoviz/scene/plot.h`:224._
 
 ### `dvz_band_set_style()`
 
@@ -1528,7 +1500,7 @@ corresponding role visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/plot.h`:285._
+_Declared in `include/datoviz/scene/plot.h`:237._
 
 ### `dvz_band_visual()`
 
@@ -1552,7 +1524,7 @@ and `DVZ_PLOT_ROLE_BOUNDS`.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/plot.h`:298._
+_Declared in `include/datoviz/scene/plot.h`:250._
 
 ## Bars
 
@@ -1575,7 +1547,7 @@ Create a retained explicit-interval bar series attached to one panel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/plot.h`:185._
+_Declared in `include/datoviz/scene/plot.h`:137._
 
 ### `dvz_bars_desc()`
 
@@ -1624,7 +1596,7 @@ Arrays are copied into scene-owned storage.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/plot.h`:202._
+_Declared in `include/datoviz/scene/plot.h`:154._
 
 ### `dvz_bars_set_style()`
 
@@ -1647,7 +1619,7 @@ The descriptor is copied. Enabling an outline after construction creates the out
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/plot.h`:216._
+_Declared in `include/datoviz/scene/plot.h`:168._
 
 ### `dvz_bars_visual()`
 
@@ -1671,7 +1643,7 @@ Advanced inspection escape hatch. Valid roles are `DVZ_PLOT_ROLE_FILL` and
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/plot.h`:229._
+_Declared in `include/datoviz/scene/plot.h`:181._
 
 ## Camera
 
@@ -3256,7 +3228,7 @@ Update a guide line data-coordinate value.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/plot.h`:114._
+_Declared in `include/datoviz/scene/plot.h`:92._
 
 ### `dvz_guide_line_visual()`
 
@@ -3279,7 +3251,7 @@ Advanced inspection escape hatch. Only `DVZ_PLOT_ROLE_LINE` is valid for guide l
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/plot.h`:104._
+_Declared in `include/datoviz/scene/plot.h`:82._
 
 ### `dvz_guide_span()`
 
@@ -3300,7 +3272,7 @@ Create a retained guide span attached to one panel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/plot.h`:124._
+_Declared in `include/datoviz/scene/plot.h`:102._
 
 ### `dvz_guide_span_desc()`
 
@@ -3341,7 +3313,7 @@ Update a guide span data-coordinate range.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/plot.h`:175._
+_Declared in `include/datoviz/scene/plot.h`:127._
 
 ### `dvz_guide_span_visual()`
 
@@ -3365,32 +3337,7 @@ Advanced inspection escape hatch. Valid roles are `DVZ_PLOT_ROLE_FILL` and
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/plot.h`:163._
-
-## Hline
-
-### `dvz_hline()`
-
-```c title="dvz_hline"
-DvzGuideLine * dvz_hline(
-    DvzPanel * panel,
-    double y,
-    const DvzGuideLineDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGuideLine *` | the guide line, or NULL on validation/allocation error |
-| `panel` | `DvzPanel *` | the panel |
-| `y` | `double` | Y data coordinate |
-| `desc` | `const DvzGuideLineDesc *` | optional guide-line descriptor; NULL uses defaults |
-
-Create a horizontal guide line at one Y data coordinate.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/plot.h`:81._
+_Declared in `include/datoviz/scene/plot.h`:115._
 
 ## Hover
 
@@ -3513,33 +3460,6 @@ defaults.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/interaction.h`:307._
-
-## Hspan
-
-### `dvz_hspan()`
-
-```c title="dvz_hspan"
-DvzGuideSpan * dvz_hspan(
-    DvzPanel * panel,
-    double y0,
-    double y1,
-    const DvzGuideSpanDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGuideSpan *` | the guide span, or NULL on validation/allocation error |
-| `panel` | `DvzPanel *` | the panel |
-| `y0` | `double` | first Y data coordinate |
-| `y1` | `double` | second Y data coordinate |
-| `desc` | `const DvzGuideSpanDesc *` | optional guide-span descriptor; NULL uses defaults |
-
-Create a horizontal guide span between two Y data coordinates.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/plot.h`:137._
 
 ## Interaction
 
@@ -5381,31 +5301,6 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:840._
 
-### `dvz_panel_query()`
-
-```c title="dvz_panel_query"
-DvzResult dvz_panel_query(
-    DvzPanel * panel,
-    double x,
-    double y,
-    const DvzQueryRequest * request
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `panel` | `DvzPanel *` | the panel |
-| `x` | `double` | the panel-local logical x coordinate, origin at the outer panel rectangle |
-| `y` | `double` | the panel-local logical y coordinate, origin at the outer panel rectangle |
-| `request` | `const DvzQueryRequest *` | the request descriptor, or NULL for defaults |
-
-Queue an explicit GPU-backed query request on a panel.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/interaction.h`:392._
-
 ### `dvz_panel_query_data()`
 
 ```c title="dvz_panel_query_data"
@@ -5431,10 +5326,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:866._
 
-### `dvz_panel_query_now()`
+### `dvz_panel_query_now_px()`
 
-```c title="dvz_panel_query_now"
-DvzResult dvz_panel_query_now(
+```c title="dvz_panel_query_now_px"
+DvzResult dvz_panel_query_now_px(
     DvzPanel * panel,
     DvzDrp2Runtime * runtime,
     double x,
@@ -5459,6 +5354,31 @@ Queue and synchronously resolve a query through a DRP2 runtime.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/interaction.h`:417._
+
+### `dvz_panel_query_px()`
+
+```c title="dvz_panel_query_px"
+DvzResult dvz_panel_query_px(
+    DvzPanel * panel,
+    double x,
+    double y,
+    const DvzQueryRequest * request
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `panel` | `DvzPanel *` | the panel |
+| `x` | `double` | the panel-local logical x coordinate, origin at the outer panel rectangle |
+| `y` | `double` | the panel-local logical y coordinate, origin at the outer panel rectangle |
+| `request` | `const DvzQueryRequest *` | the request descriptor, or NULL for defaults |
+
+Queue an explicit GPU-backed query request on a panel.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/interaction.h`:392._
 
 ### `dvz_panel_resolve_frame()`
 
@@ -5956,7 +5876,7 @@ _Bool dvz_panel_transform_point(
 Convert one 2D point between explicit panel coordinate spaces.
 
 Figure, panel, inner, and plot pixel spaces use logical pixels. Panel pixels are local to the
-outer panel rectangle and match `dvz_panel_query()` coordinates. DATA coordinates use the
+outer panel rectangle and match `dvz_panel_query_px()` coordinates. DATA coordinates use the
 current visible data domain. VIEW coordinates are the visual coordinates used by visuals attached
 with `DVZ_VISUAL_COORD_VIEW`.
 
@@ -9025,55 +8945,3 @@ Attach a ladder to a units object.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/scale.h`:114._
-
-## Vline
-
-### `dvz_vline()`
-
-```c title="dvz_vline"
-DvzGuideLine * dvz_vline(
-    DvzPanel * panel,
-    double x,
-    const DvzGuideLineDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGuideLine *` | the guide line, or NULL on validation/allocation error |
-| `panel` | `DvzPanel *` | the panel |
-| `x` | `double` | X data coordinate |
-| `desc` | `const DvzGuideLineDesc *` | optional guide-line descriptor; NULL uses defaults |
-
-Create a vertical guide line at one X data coordinate.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/plot.h`:92._
-
-## Vspan
-
-### `dvz_vspan()`
-
-```c title="dvz_vspan"
-DvzGuideSpan * dvz_vspan(
-    DvzPanel * panel,
-    double x0,
-    double x1,
-    const DvzGuideSpanDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGuideSpan *` | the guide span, or NULL on validation/allocation error |
-| `panel` | `DvzPanel *` | the panel |
-| `x0` | `double` | first X data coordinate |
-| `x1` | `double` | second X data coordinate |
-| `desc` | `const DvzGuideSpanDesc *` | optional guide-span descriptor; NULL uses defaults |
-
-Create a vertical guide span between two X data coordinates.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/plot.h`:150._
