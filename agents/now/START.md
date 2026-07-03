@@ -31,9 +31,12 @@ as real implementation, not scaffolding.
    schemas, fixtures, or scene DRP2 emission.
 6. Use [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md) before changing
    the top-level Python package, raw-binding generation, or NumPy/array argument adaptation.
-7. Use [HANDOFF_MARKER_TRIANGLE_ANGLE_CONVENTION.md](HANDOFF_MARKER_TRIANGLE_ANGLE_CONVENTION.md)
+7. Use [HANDOFF_CTYPES_SKIPPED_FUNCTIONS.md](HANDOFF_CTYPES_SKIPPED_FUNCTIONS.md) before changing
+   raw `ctypes` skipped-function policy, adding FFI helpers, or deciding whether low-level runtime
+   functions should be bound from Python.
+8. Use [HANDOFF_MARKER_TRIANGLE_ANGLE_CONVENTION.md](HANDOFF_MARKER_TRIANGLE_ANGLE_CONVENTION.md)
    before changing marker angle, marker shape, symbol, or GSP-facing marker semantics.
-8. Use [HANDOFF_AXIS_GUIDE_VIEWPORT_REFACTOR.md](HANDOFF_AXIS_GUIDE_VIEWPORT_REFACTOR.md) before
+9. Use [HANDOFF_AXIS_GUIDE_VIEWPORT_REFACTOR.md](HANDOFF_AXIS_GUIDE_VIEWPORT_REFACTOR.md) before
    changing 2D axes, grid lines, guides, View2D domains, aspect ratio, or plot/panel viewport
    behavior.
 
