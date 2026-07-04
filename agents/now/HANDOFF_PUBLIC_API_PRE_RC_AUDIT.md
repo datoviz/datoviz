@@ -42,6 +42,60 @@ Use these defaults unless the code audit finds a stronger local reason:
     over public macros when a real type or helper is intended.
 
 
+## Nested Descriptor Cleanup Audit
+
+Maintainer concern: nested public descriptors such as `DvzScaleBarDesc` embedding
+`DvzTextStyle`, `DvzTextPlacement`, and `DvzFormatDesc` are not ideal for a stable C/ABI/FFI
+surface. They make designated initialization noisy, couple ABI layout across multiple public
+records, complicate raw `ctypes`, and make defaulting ambiguous when both the outer and inner
+records carry `struct_size` and `flags`.
+
+Policy for the v0.4 cleanup:
+
+1. Do not nest descriptor-like public structs by value inside other public descriptors.
+2. Treat "descriptor-like" as any public struct with `uint32_t struct_size` and `uint32_t flags`,
+   even when its name is `Style`, `Policy`, `Info`, or `Defaults` rather than `Desc`.
+3. Small value records may remain nested by value: examples include `DvzColor`, `DvzRect`,
+   `DvzPlacement`, `DvzCameraView`, `DvzCameraProjection`, `DvzPhongMaterial`,
+   `DvzStandardMaterial`, and `DvzPolygonRing`.
+4. Prefer minimal creation descriptors plus explicit setters for secondary style, layout,
+   formatting, placement, tick-policy, or backend-specific configuration.
+5. Pointer-to-descriptor fields are less severe than by-value nesting, but should still be reviewed
+   for ownership, lifetime, backend leakage, and whether a setter or separate constructor argument
+   is clearer.
+
+Complete audit as of July 2026, using the criterion above:
+
+| Owner | Nested field(s) | Location | Preferred disposition |
+| --- | --- | --- | --- |
+| `DvzAppConfig` | `DvzFontDefaults font_defaults` | `include/datoviz/app.h:133` | Avoid deep defaults nesting. Prefer app/font default setters or a separate optional font-defaults config path. |
+| `DvzFontDefaults` | `DvzFontDesc sans`, `DvzFontDesc mono` | `include/datoviz/font.h:42` | Avoid descriptor-in-defaults nesting. Prefer explicit font-default fields or setter/copy helpers. |
+| `DvzViewDesc` | `DvzViewSizeDesc size` | `include/datoviz/app.h:225` | Candidate exception only if `DvzViewSizeDesc` becomes a plain value record. Otherwise flatten or make view sizing a separate constructor/setter path. Remove duplicate legacy size fields while doing this. |
+| `DvzViewDesc` | `const DvzWindowExternalSurfaceInfo* external_surface` | `include/datoviz/app.h:225`, `include/datoviz/window/backend.h:91` | Pointer case, lower nesting risk but high backend-boundary risk. Move to backend/interop path during backend-neutral app API cleanup. |
+| `DvzOverlayCardDesc` | `const DvzOverlayCardStyle* style` | `include/datoviz/scene/overlay.h:67` | Pointer case. Prefer `dvz_overlay_card_set_style()` or copy-by-value style after creation; document copy/lifetime if retained. |
+| `DvzPanelView3DDesc` | `DvzCameraDesc camera` | `include/datoviz/scene/types.h:704` | Do not nest `Desc` in `Desc`. Flatten to `DvzCameraView` plus `DvzCameraProjection`, or pass `const DvzCameraDesc*` directly to the 3D view API. |
+| `DvzPanelAxes2DDesc` | `DvzAxisTickPolicy tick_policy`, `DvzAxisStyle x_style`, `DvzAxisStyle y_style` | `include/datoviz/scene/types.h:785` | Split. Keep creation desc to labels/coarse flags; use setters for tick policy and per-axis styles. |
+| `DvzGraphEdgeStyle` | `DvzBezierTessellationDesc tessellation` | `include/datoviz/scene/types.h:946` | Flatten to `tessellation_segment_count` and `tessellation_tolerance`, or set tessellation separately. |
+| `DvzSelectionVisualStyle` | `DvzItemStateVisualStyle selected`, `DvzItemStateVisualStyle unselected` | `include/datoviz/scene/types.h:1253` | Convert item-state style into a plain value style without `struct_size`/`flags`, or use selected/unselected style setters. |
+| `DvzScaleDesc` | `DvzFormatDesc format` | `include/datoviz/scene/types.h:1380` | Remove from creation desc; `dvz_scale_set_format()` already exists. Creation should cover `kind`, `label`, and `unit`. |
+| `DvzAnnotationDesc` | `DvzTextStyle style`, `DvzTextPlacement placement` | `include/datoviz/scene/types.h:1582` | Either make text style/placement plain value records or keep annotation creation minimal and use style/placement setters. |
+| `DvzLabelDesc` | `DvzTextStyle style`, `DvzTextPlacement placement` | `include/datoviz/scene/types.h:1595` | Same as annotation: avoid embedding descriptor-like text style/placement unless they become plain value records. |
+| `DvzScaleBarDesc` | `DvzTextStyle label_style`, `DvzTextPlacement placement`, `DvzFormatDesc format` | `include/datoviz/scene/types.h:1607` | Highest-priority cleanup. Keep the creation desc to scale-bar identity, units, geometry, length bounds, offset, line/tick styling; move label style, placement, and format to setters. |
+
+Suggested execution order:
+
+1. Clean `DvzScaleBarDesc`, `DvzScaleDesc`, and `DvzPanelAxes2DDesc` first. These are user-facing,
+   noisy in examples, and easy to improve with retained-object setters.
+2. Clean annotation/label/text style and placement next. Decide whether `DvzTextStyle` and
+   `DvzTextPlacement` are plain value records or versioned descriptors, then apply that decision
+   consistently.
+3. Clean app/view/font/backend nesting while doing the backend-neutral app API wave.
+4. Clean lower-risk style/config cases: `DvzGraphEdgeStyle`, `DvzSelectionVisualStyle`, and
+   `DvzOverlayCardDesc`.
+5. Regenerate raw `ctypes`, generated C docs, and examples in the same checkpoint as each public
+   struct break.
+
+
 ## Non-Negotiable Pickup Rules
 
 1. Read `AGENTS.md`, `agents/now/START.md`, `agents/now/STATUS.md`, and this handoff first.
