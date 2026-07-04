@@ -127,10 +127,13 @@ Exit criteria:
 1. Feature/status docs exist and use `supported`, `experimental`, `advanced/unstable`, `deferred`,
    and `external/GSP`; final RC work reconciles them with the visible parity audit and known gaps.
 2. No feature-freeze blocker in [STATUS.md](STATUS.md) is unclassified.
-3. Retained textured mesh remains in validation with deterministic proof.
-4. Text, axes, ticks, colorbars, annotations, scale bars, and retained visuals are represented in
+3. The aggressive public API/ABI consistency campaign has either landed or every remaining item has
+   an explicit defer/classify decision in
+   [HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md](HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md).
+4. Retained textured mesh remains in validation with deterministic proof.
+5. Text, axes, ticks, colorbars, annotations, scale bars, and retained visuals are represented in
    examples or tests.
-5. Qt/PyQt hosting remains classified as `supported, optional provider`, with bridge diagnostics
+6. Qt/PyQt hosting remains classified as `supported, optional provider`, with bridge diagnostics
    and wheel checks kept explicit.
 
 Suggested validation:

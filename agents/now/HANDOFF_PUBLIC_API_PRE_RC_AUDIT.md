@@ -1,6 +1,6 @@
 # Public API Pre-RC Audit Handoff
 
-Status: active pre-RC cleanup candidate.
+Status: approved pre-RC API/ABI cleanup campaign.
 
 Purpose: preserve the July 2026 user-side public API consistency audit and give a future agent a
 concrete plan to implement, validate, commit, and push the cleanup. The audit focused on function
@@ -10,6 +10,36 @@ accidental public symbols.
 Primary recommendation: break API/ABI now where the current surface is accidental, transitional,
 hard to bind correctly, or inconsistent with v0.4 architecture. Do not preserve v0.3 compatibility
 when it conflicts with a cleaner v0.4 surface.
+
+Maintainer decision, July 2026: use the pre-RC window aggressively. It is critically important that
+the v0.4 API is internally consistent before RC1, even if that means broad source/ABI breaks across
+examples, docs, tests, raw `ctypes`, and public C headers.
+
+
+## Maintainer Decisions
+
+Use these defaults unless the code audit finds a stronger local reason:
+
+1. Remove unused, legacy, transitional, or accidental public APIs aggressively.
+2. Do not preserve v0.3 compatibility aliases when they weaken v0.4 naming, architecture, binding
+   safety, ownership clarity, or consistency.
+3. Migrate examples, tests, docs, generated bindings, and generated references in the same
+   checkpoint commits as the API breaks.
+4. Keep `datoviz.raw` exact to the exported ABI, but do not let raw `ctypes` expose known ownership
+   traps such as owned `char*` returns bound as `c_char_p`.
+5. Prefer backend-neutral stable app API names. GLFW-specific setup and conversion helpers belong
+   in backend or interop surfaces unless deliberately classified as stable ABI.
+6. Keep DRP2/vklite protocol and runtime escape hatches public only where useful, and classify them
+   as advanced/unstable. Move fixture, JSON/base64 convenience, raw fallback, and development
+   diagnostics out of the stable public surface where practical.
+7. Use `DvzResult` for ordinary fallible Datoviz APIs, `bool` for predicates, raw integer returns
+   for non-error status/count values, and Vulkan-native result codes only in Vulkan escape hatches.
+8. Enforce one argument-ordering convention: object first; selector/config/range next; payload
+   pointers before counts/sizes; byte-buffer APIs use `bytes, size_bytes`.
+9. Make ownership and borrowing explicit with `const` resource arguments, copy-out descriptor/info
+   APIs, and explicit free APIs or FFI policy for owned pointer returns.
+10. Remove or prefix unprefixed public support macros. Prefer typedefs and inline/static helpers
+    over public macros when a real type or helper is intended.
 
 
 ## Non-Negotiable Pickup Rules
