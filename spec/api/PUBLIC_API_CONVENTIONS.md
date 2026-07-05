@@ -29,20 +29,24 @@ The v0.4 public ABI uses three deliberate C namespaces:
 Do not add ad-hoc `_ffi` suffix functions. When a binding needs a pointer-output version of a
 canonical by-value initializer, keep the canonical C initializer and add a `dvz_ffi_*` wrapper.
 
-When a public object has subroles, role/property setters use:
+Public retained-state mutators should use:
 
 ```text
-dvz_<object>_<role>_<property>()
+dvz_<object>_set_<property>()
 ```
 
-Examples:
+When a public object has subroles, include the role after `set`:
 
 ```text
-dvz_polygon_fill_color()
-dvz_polygon_stroke_width_px()
-dvz_graph_node_sizes()
-dvz_graph_edge_colors()
+dvz_polygon_set_fill_color()
+dvz_polygon_set_stroke_width_px()
+dvz_graph_set_node_sizes()
+dvz_graph_set_edge_colors()
 ```
+
+Use this rule for functions that set, replace, update, or configure retained object state. Do not
+force `set` into constructors, destructors, descriptor/style initializers, accessors, predicates,
+or action verbs whose primary meaning is not retained-state mutation.
 
 Backend or third-party names should not appear in high-level user APIs unless the user is selecting
 an explicit backend policy such as a triangulation backend.
@@ -129,11 +133,11 @@ coordinated leaf visuals internally.
 Typed semantic object APIs remain the normal user path:
 
 ```text
-dvz_polygon_geometry()
-dvz_polygon_fill_color()
+dvz_polygon_set_geometry()
+dvz_polygon_set_fill_color()
 dvz_polygon_set_region_fill_color()
-dvz_graph_node_sizes()
-dvz_graph_edge_colors()
+dvz_graph_set_node_sizes()
+dvz_graph_set_edge_colors()
 ```
 
 Composites provide the generic panel attachment path:
@@ -245,6 +249,16 @@ The umbrella `<datoviz.h>` should stay scene/app-first. Advanced Vulkan, vklite,
 runtime internals should be included through their explicit module headers by callers that need
 them.
 
+Stable public headers should not include backend SPI as an implementation convenience. Keep ordinary
+user-facing headers backend-neutral, and put backend registration, native handles, GLFW hooks,
+external/wrapped surface details, and Vulkan surface handles behind explicit backend or interop
+headers.
+
+`advanced.h` is the opt-in umbrella for advanced, low-level, backend-facing, integration, and
+runtime APIs. Umbrellas whose names imply a full subsystem, such as `vk.h`, must either include the
+complete public subsystem or document their deliberately narrow scope directly; avoid ambiguous
+partial umbrella headers.
+
 For RC1, existing advanced runtime APIs should be documented as `advanced/unstable` rather than
 hidden wholesale. Hide or remove only specific accidental symbols whose ownership and release role
 are clearly internal.
@@ -280,13 +294,28 @@ replace bulk data, and bulk data setters should not implicitly change style poli
 descriptor explicitly says so.
 
 
+## Support Helpers
+
+Public support helpers must not return pointers to static mutable storage. Prefer caller-provided
+output buffers, explicit owned-return/free pairs, or value returns. Convenience wrappers that hide
+storage ownership are not acceptable in the stable public surface when a reentrant form is practical.
+
+The canonical byte-size formatting helper should use the safe shape:
+
+```c
+char* dvz_pretty_size(DvzSize size, char* out, size_t out_size);
+```
+
+Do not expose a zero-buffer-argument `dvz_pretty_size()` returning an internal static buffer.
+
+
 ## Examples
 
 Preferred:
 
 ```c
-dvz_polygon_stroke_width_px(polygon, 1.0f);
-dvz_graph_node_colors(graph, 0, node_count, colors);
+dvz_polygon_set_stroke_width_px(polygon, 1.0f);
+dvz_graph_set_node_colors(graph, 0, node_count, colors);
 dvz_triangulate_polygon(source, &desc);
 ```
 

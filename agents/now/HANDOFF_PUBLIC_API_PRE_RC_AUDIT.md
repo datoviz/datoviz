@@ -447,14 +447,28 @@ Completed checkpoints:
      and `just test scenario_runner` selected 0 tests with the current filter names; exact
      `view_desc` and `offscreen_small` filters were rerun and passed.
 
-Current working-tree noise to leave untouched unless explicitly approved in the current turn:
+Current working-tree noise to leave untouched unless explicitly approved in the current turn: none
+known at this checkpoint.
 
-- unstaged `NOTES` maintainer scratch notes.
+Next recommended checkpoints, in safe execution order:
 
-Next recommended checkpoint: remaining API cleanup is mostly case-by-case classification rather
-than safe mechanical editing. The best next decision is whether DRP2 fixture/JSON/base64/raw
-fallback APIs should remain public advanced/unstable surface or move behind diagnostics/test-only
-headers.
+1. Remove the public static-buffer `dvz_pretty_size()` helper. First migrate every current call site
+   to `dvz_pretty_size_r()` or a private local-buffer helper, regenerate/validate, and only then
+   rename `dvz_pretty_size_r()` to `dvz_pretty_size()` once the old zero-buffer-argument function no
+   longer exists anywhere in public headers, source, generated bindings, generated docs, examples,
+   or specs.
+2. Run the full public mutator naming audit under the stricter
+   `dvz_<object>_set_<property>()` convention recorded in `spec/api/PUBLIC_API_CONVENTIONS.md`.
+   Rename graph/polygon mutators and any other obvious retained-state mutators before RC where the
+   result is clearer and not mechanically absurd.
+3. Rename public `dvz_geom_*` functions to the single `dvz_geometry_*` naming family.
+4. Split stable `window.h` from backend SPI so ordinary window users do not include backend
+   registration, GLFW hooks, wrap-surface helpers, or Vulkan surface details.
+5. Make `vk.h` a complete low-level Vulkan umbrella if headers parse cleanly together; otherwise
+   document it explicitly as a narrow GPU-context umbrella and direct advanced users to explicit
+   `datoviz/vk/*.h` includes.
+6. Then continue DRP2/result-type/array-ordering support-surface cleanup using the maintainer
+   decisions below.
 
 
 ## Maintainer Decisions
@@ -481,6 +495,21 @@ Use these defaults unless the code audit finds a stronger local reason:
    APIs, and explicit free APIs or FFI policy for owned pointer returns.
 10. Remove or prefix unprefixed public support macros. Prefer typedefs and inline/static helpers
     over public macros when a real type or helper is intended.
+11. Do not expose public APIs that return pointers to static mutable storage. Replace
+    `dvz_pretty_size()` with the reentrant buffer-taking helper shape; after migration, reuse the
+    canonical `dvz_pretty_size()` name for the safe `(DvzSize size, char* out, size_t out_size)`
+    signature.
+12. Use `dvz_<object>_set_<property>()` for public retained-state mutators. Audit graph, polygon,
+    plot, text, scale, annotation, visual-family, scene/app, and runtime-facing APIs before RC;
+    keep non-mutating accessors, constructors/destructors, descriptor/style initializers,
+    predicates, and true action verbs outside the forced setter pattern.
+13. Use `dvz_geometry_*` as the single public geometry naming family. Rename current
+    `dvz_geom_*` constructors/update helpers before RC and do not keep compatibility aliases.
+14. Keep stable app/window-facing APIs backend-neutral. Put backend registration, GLFW hooks,
+    wrap-surface helpers, and Vulkan surface details behind explicit backend/interop headers.
+15. Keep `advanced.h` as the opt-in advanced umbrella. Make `vk.h` either a complete low-level
+    Vulkan umbrella or explicitly documented as a narrow GPU-context umbrella; avoid ambiguous
+    partial-umbrella behavior before RC.
 
 
 ## Nested Descriptor Cleanup Audit
@@ -781,14 +810,9 @@ Preferred fix:
 
 ## Lower-Priority Polish
 
-- Normalize graph and polygon mutators to `*_set_*`, for example `dvz_graph_set_edges()` and
-  `dvz_polygon_set_fill_color()`.
-- Decide whether geometry factories should be `dvz_geom_*` or `dvz_geometry_*`, then keep one
-  public naming family.
-- Split stable `window.h` from backend SPI if window APIs are meant to be user-facing; currently
-  `window.h` includes backend registration and wrap-surface internals.
-- Review `advanced.h` and `vk.h` umbrella consistency. Either make `vk.h` the full low-level Vulkan
-  umbrella or split/rename it so omissions are intentional.
+Former lower-priority polish items are now approved pre-RC cleanup work: graph/polygon and broader
+mutator naming audit, `dvz_geometry_*` naming unification, stable window/backend header split, and
+`vk.h` umbrella clarification/completion.
 
 
 ## Suggested Execution Plan
@@ -806,8 +830,9 @@ generated ctypes, generated docs if applicable, and examples in sync.
 2. **Stable scene naming cleanup**
    - Completed: collapse 2D view APIs.
    - Completed: normalize scale-bar spelling.
-   - Remaining decision: normalize graph/polygon mutator names only if this supersedes the current
-     public API convention examples that intentionally use role/property setter names.
+   - Approved: normalize retained-state mutators to `dvz_<object>_set_<property>()`; start with
+     graph/polygon and audit the rest of the public scene surface.
+   - Approved: rename public `dvz_geom_*` functions to `dvz_geometry_*`.
    - Completed: change `dvz_sampled_field_destroy()` to `void`.
    - Validation: scene tests, examples that use affected APIs, `just ctypes-check`.
 
@@ -823,8 +848,11 @@ generated ctypes, generated docs if applicable, and examples in sync.
    - Completed: fix canvas flags.
    - Completed: rename stable app-facing GLFW view names to backend-neutral window names.
    - Completed: collapse `DvzViewDesc` creation sizing onto `size_policy`/`size_*`.
-   - Remaining decisions: classify GLFW conversion/numeric compatibility, standardize
-     `DvzResult` versus raw `int`, and split stable window API from backend SPI if scope permits.
+   - Approved: split stable `window.h` from backend SPI.
+   - Approved: make `vk.h` complete if feasible, otherwise document the intentionally narrow
+     umbrella scope.
+   - Remaining decisions: classify GLFW conversion/numeric compatibility and standardize
+     `DvzResult` versus raw `int`.
    - Validation: app/canvas/window/input tests and hosted/offscreen examples where available.
 
 5. **Advanced DRP2/vklite classification cleanup**
