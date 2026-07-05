@@ -1266,6 +1266,31 @@ Result: all passed. This slice converted stable retained scale, colormap, colorb
 annotation-format, and overlay-card mutators from `void` to `DvzResult`, surfacing existing
 validation failures as `DVZ_ERROR`.
 
+Validation for the scene-control mutator slice:
+
+```sh
+just build
+just ctypes
+just ctypes-check
+python3 tools/build_api_c.py
+python3 tools/build_api_c.py --check
+python3 tools/check_api_status.py
+just docs-api
+just docs-api-check
+just test scene/interaction
+just test scene/scene-graph
+just test query
+just test frame-plan
+just test app
+just test arcball
+just ctypes-smoke
+just ctypes-python-smoke
+```
+
+Result: all passed. This slice converted scene font defaults/capabilities, figure resize/color
+pipeline, orientation-gizmo/reference-grid visibility, and visual query-capability setters from
+`void` to `DvzResult`.
+
 
 ## Validation Baseline For Future Agent
 

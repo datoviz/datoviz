@@ -332,11 +332,13 @@ int test_scene_text_annotation_descriptor_abi_rejects_invalid_structs(
 
     DvzFontDefaults font_defaults = dvz_font_defaults();
     font_defaults.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, (dvz_scene_set_font_defaults(scene, &font_defaults), true));
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_scene_set_font_defaults(scene, &font_defaults) == DVZ_ERROR);
 
     font_defaults = dvz_font_defaults();
     font_defaults.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, (dvz_scene_set_font_defaults(scene, &font_defaults), true));
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_scene_set_font_defaults(scene, &font_defaults) == DVZ_ERROR);
 
     DvzText* text = dvz_text(panel, 0);
     ANN(text);
@@ -776,7 +778,7 @@ int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstC
     ANN(selection);
     ANN(visual);
 
-    dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM);
+    AT(dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM) == DVZ_OK);
     AT(visual->query_capabilities == DVZ_QUERY_CAPABILITY_ITEM);
     AT(dvz_visual_set_link_keys(visual, channel, keys, 3) == 0);
     AT(visual->link_channel == channel);
@@ -3345,7 +3347,7 @@ int test_scene_font_defaults(TstContext* suite, const TstCase* item)
     custom.sans_family = "Scene Sans";
     custom.sans_style = "Book";
     custom.text_size_px = 19.0f;
-    dvz_scene_set_font_defaults(scene, &custom);
+    AT(dvz_scene_set_font_defaults(scene, &custom) == DVZ_OK);
     defaults = dvz_scene_font_defaults(scene);
     AT(strcmp(defaults.sans_family, "Scene Sans") == 0);
     AT(strcmp(defaults.sans_style, "Book") == 0);
@@ -3368,7 +3370,7 @@ int test_scene_font_defaults(TstContext* suite, const TstCase* item)
     AT(dvz_text_set_style(text, &default_style) == 0);
     AT(text->style.size_px == 21.0f);
 
-    dvz_scene_set_font_defaults(scene, NULL);
+    AT(dvz_scene_set_font_defaults(scene, NULL) == DVZ_OK);
     defaults = dvz_scene_font_defaults(scene);
     AT(strcmp(defaults.sans_family, built_in.sans_family) == 0);
     AT(defaults.text_size_px == built_in.text_size_px);
@@ -3396,7 +3398,7 @@ int test_scene_text_sdf_default_font(TstContext* suite, const TstCase* item)
     defaults.sans_family = "SDF Default";
     defaults.sans_style = "Book";
     defaults.text_size_px = 18.0f;
-    dvz_scene_set_font_defaults(scene, &defaults);
+    AT(dvz_scene_set_font_defaults(scene, &defaults) == DVZ_OK);
 
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     ANN(figure);
@@ -3519,7 +3521,7 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
     }
     AT(found_data_attach);
 
-    dvz_figure_resize(figure, 800, 600);
+    AT(dvz_figure_resize(figure, 800, 600) == DVZ_OK);
     _scene_prepare_text_visuals(figure);
     glyph = _visual_family_state(text->visual)->text.glyph_visual;
     ANN(glyph);

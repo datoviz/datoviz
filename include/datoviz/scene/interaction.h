@@ -107,8 +107,9 @@ DVZ_EXPORT void dvz_interaction_set_auto_pin_readout(
  *
  * @param visual the visual
  * @param capabilities bitwise OR of DvzQueryCapabilityFlag values
+ * @return DVZ_OK when the capabilities were accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_visual_set_query_capabilities(DvzVisual* visual, uint32_t capabilities);
+DVZ_EXPORT DvzResult dvz_visual_set_query_capabilities(DvzVisual* visual, uint32_t capabilities);
 
 
 /**

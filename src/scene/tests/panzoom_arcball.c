@@ -1095,18 +1095,18 @@ int test_orientation_gizmo_create_place_resize_and_visibility(
     AT(dvz_visual_get_transform(gizmo->axes_visual, axes_transform) == 0);
     AT(_test_mat4_close(axes_transform, expected, 1e-5f));
 
-    dvz_figure_resize(figure, 1200, 900);
+    AT(dvz_figure_resize(figure, 1200, 900) == DVZ_OK);
     _scene_prepare_orientation_gizmos(figure);
     AC(gizmo->panel->desc.x, 1034.0f / 1200.0f, 1e-6f);
     AC(gizmo->panel->desc.y, 734.0f / 900.0f, 1e-6f);
     AC(gizmo->panel->desc.width, 150.0f / 1200.0f, 1e-6f);
     AC(gizmo->panel->desc.height, 150.0f / 900.0f, 1e-6f);
 
-    dvz_orientation_gizmo_set_visible(gizmo, false);
+    AT(dvz_orientation_gizmo_set_visible(gizmo, false) == DVZ_OK);
     AT(!gizmo->visible);
     AT(!gizmo->axes_visual->visible);
     AT(!gizmo->rings_visual->visible);
-    dvz_orientation_gizmo_set_visible(gizmo, true);
+    AT(dvz_orientation_gizmo_set_visible(gizmo, true) == DVZ_OK);
     AT(gizmo->visible);
     AT(gizmo->axes_visual->visible);
     AT(gizmo->rings_visual->visible);

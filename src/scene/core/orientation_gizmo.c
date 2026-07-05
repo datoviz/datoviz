@@ -1038,19 +1038,20 @@ void dvz_orientation_gizmo_destroy(DvzOrientationGizmo* gizmo)
  * @param gizmo the orientation gizmo
  * @param visible whether the gizmo should be visible
  */
-void dvz_orientation_gizmo_set_visible(DvzOrientationGizmo* gizmo, bool visible)
+DvzResult dvz_orientation_gizmo_set_visible(DvzOrientationGizmo* gizmo, bool visible)
 {
     if (gizmo == NULL || !gizmo->active)
-        return;
+        return DVZ_ERROR;
     if (gizmo->visible == visible)
-        return;
+        return DVZ_OK;
     gizmo->visible = visible;
     if (gizmo->axes_visual != NULL)
-        dvz_visual_set_visible(gizmo->axes_visual, visible && gizmo->desc.show_axes);
+        (void)dvz_visual_set_visible(gizmo->axes_visual, visible && gizmo->desc.show_axes);
     if (gizmo->rings_visual != NULL)
-        dvz_visual_set_visible(gizmo->rings_visual, visible && gizmo->desc.show_axes);
+        (void)dvz_visual_set_visible(gizmo->rings_visual, visible && gizmo->desc.show_axes);
     gizmo->version = gizmo->version == UINT64_MAX ? 1 : gizmo->version + 1;
     _scene_notify_request_frame(gizmo->source_panel != NULL ? gizmo->source_panel->figure : NULL);
+    return DVZ_OK;
 }
 
 

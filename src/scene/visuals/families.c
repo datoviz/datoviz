@@ -1332,10 +1332,11 @@ bool _scene_panel_refresh_border(DvzPanel* panel)
  * @param visual the visual
  * @param capabilities the capability mask
  */
-void dvz_visual_set_query_capabilities(DvzVisual* visual, uint32_t capabilities)
+DvzResult dvz_visual_set_query_capabilities(DvzVisual* visual, uint32_t capabilities)
 {
     ANN(visual);
     visual->query_capabilities = capabilities;
+    return DVZ_OK;
 }
 
 

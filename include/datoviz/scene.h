@@ -77,8 +77,9 @@ DVZ_EXPORT DvzId dvz_scene_id(const DvzScene* scene);
  *
  * @param scene the scene
  * @param defaults font defaults, or NULL for dvz_font_defaults()
+ * @return DVZ_OK when the defaults were accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_scene_set_font_defaults(DvzScene* scene, const DvzFontDefaults* defaults);
+DVZ_EXPORT DvzResult dvz_scene_set_font_defaults(DvzScene* scene, const DvzFontDefaults* defaults);
 
 
 /**
@@ -95,8 +96,9 @@ DVZ_EXPORT DvzFontDefaults dvz_scene_font_defaults(const DvzScene* scene);
  *
  * @param scene the scene
  * @param caps the capability snapshot
+ * @return DVZ_OK when the capabilities were accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_scene_set_capabilities(DvzScene* scene, const DvzCapabilitySnapshot* caps);
+DVZ_EXPORT DvzResult dvz_scene_set_capabilities(DvzScene* scene, const DvzCapabilitySnapshot* caps);
 
 
 /**
@@ -169,8 +171,9 @@ DVZ_EXPORT DvzScene* dvz_figure_scene(DvzFigure* figure);
  * @param figure the figure
  * @param width width in logical pixels
  * @param height height in logical pixels
+ * @return DVZ_OK when the size was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height);
+DVZ_EXPORT DvzResult dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height);
 
 
 /**
@@ -217,8 +220,10 @@ DVZ_EXPORT bool dvz_figure_window_to_layout(
  *
  * @param figure the figure
  * @param pipeline the color pipeline
+ * @return DVZ_OK when the pipeline was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_figure_set_color_pipeline(DvzFigure* figure, DvzColorPipeline pipeline);
+DVZ_EXPORT DvzResult dvz_figure_set_color_pipeline(
+    DvzFigure* figure, DvzColorPipeline pipeline);
 
 
 /**
@@ -951,8 +956,9 @@ DVZ_EXPORT void dvz_orientation_gizmo_destroy(DvzOrientationGizmo* gizmo);
  *
  * @param gizmo the orientation gizmo
  * @param visible whether the gizmo should be visible
+ * @return DVZ_OK when the visibility was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_orientation_gizmo_set_visible(DvzOrientationGizmo* gizmo, bool visible);
+DVZ_EXPORT DvzResult dvz_orientation_gizmo_set_visible(DvzOrientationGizmo* gizmo, bool visible);
 
 
 /*************************************************************************************************/
@@ -993,8 +999,9 @@ DVZ_EXPORT void dvz_reference_grid_destroy(DvzReferenceGrid* grid);
  *
  * @param grid the reference grid
  * @param visible whether the grid should be visible
+ * @return DVZ_OK when the visibility was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_reference_grid_set_visible(DvzReferenceGrid* grid, bool visible);
+DVZ_EXPORT DvzResult dvz_reference_grid_set_visible(DvzReferenceGrid* grid, bool visible);
 
 
 /**

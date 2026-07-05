@@ -15227,9 +15227,10 @@ else:
  * @param figure the figure
  * @param width width in logical pixels
  * @param height height in logical pixels
+ * @return DVZ_OK when the size was accepted, DVZ_ERROR on error
  */"""
     dvz_figure_resize.argtypes = [ctypes.POINTER(DvzFigure), ctypes.c_uint32, ctypes.c_uint32]
-    dvz_figure_resize.restype = None
+    dvz_figure_resize.restype = ctypes.c_int32
 
 
 try:
@@ -15260,9 +15261,10 @@ else:
  *
  * @param figure the figure
  * @param pipeline the color pipeline
+ * @return DVZ_OK when the pipeline was accepted, DVZ_ERROR on error
  */"""
     dvz_figure_set_color_pipeline.argtypes = [ctypes.POINTER(DvzFigure), ctypes.c_int]
-    dvz_figure_set_color_pipeline.restype = None
+    dvz_figure_set_color_pipeline.restype = ctypes.c_int32
 
 
 try:
@@ -21558,9 +21560,10 @@ else:
  *
  * @param gizmo the orientation gizmo
  * @param visible whether the gizmo should be visible
+ * @return DVZ_OK when the visibility was accepted, DVZ_ERROR on error
  */"""
     dvz_orientation_gizmo_set_visible.argtypes = [ctypes.POINTER(DvzOrientationGizmo), ctypes.c_bool]
-    dvz_orientation_gizmo_set_visible.restype = None
+    dvz_orientation_gizmo_set_visible.restype = ctypes.c_int32
 
 
 try:
@@ -24468,9 +24471,10 @@ else:
  *
  * @param grid the reference grid
  * @param visible whether the grid should be visible
+ * @return DVZ_OK when the visibility was accepted, DVZ_ERROR on error
  */"""
     dvz_reference_grid_set_visible.argtypes = [ctypes.POINTER(DvzReferenceGrid), ctypes.c_bool]
-    dvz_reference_grid_set_visible.restype = None
+    dvz_reference_grid_set_visible.restype = ctypes.c_int32
 
 
 try:
@@ -25940,9 +25944,10 @@ else:
  *
  * @param scene the scene
  * @param caps the capability snapshot
+ * @return DVZ_OK when the capabilities were accepted, DVZ_ERROR on error
  */"""
     dvz_scene_set_capabilities.argtypes = [ctypes.POINTER(DvzScene), ctypes.POINTER(DvzCapabilitySnapshot)]
-    dvz_scene_set_capabilities.restype = None
+    dvz_scene_set_capabilities.restype = ctypes.c_int32
 
 
 try:
@@ -25978,9 +25983,10 @@ else:
  *
  * @param scene the scene
  * @param defaults font defaults, or NULL for dvz_font_defaults()
+ * @return DVZ_OK when the defaults were accepted, DVZ_ERROR on error
  */"""
     dvz_scene_set_font_defaults.argtypes = [ctypes.POINTER(DvzScene), ctypes.POINTER(DvzFontDefaults)]
-    dvz_scene_set_font_defaults.restype = None
+    dvz_scene_set_font_defaults.restype = ctypes.c_int32
 
 
 try:
@@ -30993,9 +30999,10 @@ else:
  *
  * @param visual the visual
  * @param capabilities bitwise OR of DvzQueryCapabilityFlag values
+ * @return DVZ_OK when the capabilities were accepted, DVZ_ERROR on error
  */"""
     dvz_visual_set_query_capabilities.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_uint32]
-    dvz_visual_set_query_capabilities.restype = None
+    dvz_visual_set_query_capabilities.restype = ctypes.c_int32
 
 
 try:

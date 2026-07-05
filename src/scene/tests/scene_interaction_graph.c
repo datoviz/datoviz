@@ -762,10 +762,10 @@ int test_scene_reference_grid_api_and_geometry(TstContext* suite, const TstCase*
     AC(widths[12], desc.axis_width_px, 1e-6f);
     AC(widths[13], desc.minor_width_px, 1e-6f);
 
-    dvz_reference_grid_set_visible(grid, false);
+    AT(dvz_reference_grid_set_visible(grid, false) == DVZ_OK);
     AT(!grid->visible);
     AT(!grid->visual->visible);
-    dvz_reference_grid_set_visible(grid, true);
+    AT(dvz_reference_grid_set_visible(grid, true) == DVZ_OK);
     AT(grid->visible);
     AT(grid->visual->visible);
 
@@ -1220,7 +1220,7 @@ int test_scene_panel_border_creates_fixed_overlay(TstContext* suite, const TstCa
     starts = (const float*)panel->border_visual->attrs[start_idx].data;
     AC(starts[0], -0.84f, 1e-6f);
 
-    dvz_figure_resize(figure, 200, 80);
+    AT(dvz_figure_resize(figure, 200, 80) == DVZ_OK);
     starts = (const float*)panel->border_visual->attrs[start_idx].data;
     AC(starts[0], -0.92f, 1e-6f);
 

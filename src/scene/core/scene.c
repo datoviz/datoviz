@@ -290,12 +290,13 @@ DvzId dvz_scene_id(const DvzScene* scene)
  * @param scene the scene
  * @param defaults font defaults, or NULL for built-in defaults
  */
-void dvz_scene_set_font_defaults(DvzScene* scene, const DvzFontDefaults* defaults)
+DvzResult dvz_scene_set_font_defaults(DvzScene* scene, const DvzFontDefaults* defaults)
 {
     ANN(scene);
     if (!_font_defaults_validate(defaults))
-        return;
+        return DVZ_ERROR;
     scene->font_defaults = defaults != NULL ? *defaults : dvz_font_defaults();
+    return DVZ_OK;
 }
 
 
@@ -313,12 +314,13 @@ DvzFontDefaults dvz_scene_font_defaults(const DvzScene* scene)
 }
 
 
-void dvz_scene_set_capabilities(DvzScene* scene, const DvzCapabilitySnapshot* caps)
+DvzResult dvz_scene_set_capabilities(DvzScene* scene, const DvzCapabilitySnapshot* caps)
 {
     ANN(scene);
     if (!dvz_capability_snapshot_valid(caps))
-        return;
+        return DVZ_ERROR;
     dvz_capability_snapshot_copy(&scene->caps, caps);
+    return DVZ_OK;
 }
 
 
@@ -508,11 +510,11 @@ static void _scene_panel_reset(DvzPanel* panel, bool detach_grid)
  * @param width width in logical pixels
  * @param height height in logical pixels
  */
-void dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height)
+DvzResult dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height)
 {
     ANN(figure);
     if (figure->width == width && figure->height == height)
-        return;
+        return DVZ_OK;
     figure->width = width;
     figure->height = height;
     (void)_scene_figure_resolve_layouts(figure);
@@ -529,6 +531,7 @@ void dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height)
         }
     }
     _scene_notify_request_frame(figure);
+    return DVZ_OK;
 }
 
 
@@ -598,15 +601,16 @@ bool dvz_figure_window_to_layout(
 }
 
 
-void dvz_figure_set_color_pipeline(DvzFigure* figure, DvzColorPipeline pipeline)
+DvzResult dvz_figure_set_color_pipeline(DvzFigure* figure, DvzColorPipeline pipeline)
 {
     ANN(figure);
     if (pipeline != DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND)
         pipeline = DVZ_COLOR_PIPELINE_LINEAR_SRGB;
     if (figure->color_pipeline == pipeline)
-        return;
+        return DVZ_OK;
     figure->color_pipeline = pipeline;
     _scene_notify_request_frame(figure);
+    return DVZ_OK;
 }
 
 
