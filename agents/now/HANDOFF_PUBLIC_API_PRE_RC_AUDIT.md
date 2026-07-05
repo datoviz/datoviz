@@ -449,8 +449,7 @@ Completed checkpoints:
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
-- dirty `data` submodule state;
-- untracked `paper/paper.pdf`.
+- unstaged `NOTES` maintainer scratch notes.
 
 Next recommended checkpoint: remaining API cleanup is mostly case-by-case classification rather
 than safe mechanical editing. The best next decision is whether DRP2 fixture/JSON/base64/raw
