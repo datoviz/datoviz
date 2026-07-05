@@ -140,7 +140,7 @@ DVZ_EXPORT DvzCamera* dvz_camera_create(const DvzCameraDesc* desc);
  * @param camera the camera
  * @param view the camera view
  */
-DVZ_EXPORT void dvz_camera_set_view(DvzCamera* camera, const DvzCameraView* view);
+DVZ_EXPORT DvzResult dvz_camera_set_view(DvzCamera* camera, const DvzCameraView* view);
 
 
 
@@ -171,7 +171,7 @@ DVZ_EXPORT void dvz_camera_get_projection(const DvzCamera* camera, DvzCameraProj
  * @param near near clipping plane
  * @param far far clipping plane
  */
-DVZ_EXPORT void dvz_camera_set_perspective(
+DVZ_EXPORT DvzResult dvz_camera_set_perspective(
     DvzCamera* camera, float fov_y, float near, float far);
 
 
@@ -184,7 +184,7 @@ DVZ_EXPORT void dvz_camera_set_perspective(
  * @param near near clipping plane
  * @param far far clipping plane
  */
-DVZ_EXPORT void dvz_camera_set_orthographic(
+DVZ_EXPORT DvzResult dvz_camera_set_orthographic(
     DvzCamera* camera, float height, float near, float far);
 
 
@@ -234,7 +234,7 @@ DVZ_EXPORT DvzResult dvz_camera_get_orthographic_bounds(
  * @param width viewport width in pixels
  * @param height viewport height in pixels
  */
-DVZ_EXPORT void dvz_camera_resize(DvzCamera* camera, float width, float height);
+DVZ_EXPORT DvzResult dvz_camera_resize(DvzCamera* camera, float width, float height);
 
 
 

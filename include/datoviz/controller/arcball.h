@@ -26,6 +26,7 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/input/pointer.h"
 #include "datoviz/input/router.h"
 #include "datoviz/math/types.h"
@@ -105,21 +106,21 @@ DVZ_EXPORT DvzArcball* dvz_arcball_create(const DvzArcballDesc* desc);
 /**
  * Set the initial Euler angles and reset.
  */
-DVZ_EXPORT void dvz_arcball_initial(DvzArcball* arcball, vec3 angles);
+DVZ_EXPORT DvzResult dvz_arcball_initial(DvzArcball* arcball, vec3 angles);
 
 
 
 /**
  * Reset to the initial orientation.
  */
-DVZ_EXPORT void dvz_arcball_reset(DvzArcball* arcball);
+DVZ_EXPORT DvzResult dvz_arcball_reset(DvzArcball* arcball);
 
 
 
 /**
  * Set the orientation directly from Euler angles.
  */
-DVZ_EXPORT void dvz_arcball_set(DvzArcball* arcball, vec3 angles);
+DVZ_EXPORT DvzResult dvz_arcball_set(DvzArcball* arcball, vec3 angles);
 
 
 /**
@@ -129,7 +130,7 @@ DVZ_EXPORT void dvz_arcball_set(DvzArcball* arcball, vec3 angles);
  * @param angle rotation angle in radians
  * @param axis rotation axis
  */
-DVZ_EXPORT void dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, vec3 axis);
+DVZ_EXPORT DvzResult dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, vec3 axis);
 
 
 /**
@@ -138,7 +139,7 @@ DVZ_EXPORT void dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, vec3 a
  * @param arcball arcball controller
  * @param zoom uniform zoom factor
  */
-DVZ_EXPORT void dvz_arcball_zoom(DvzArcball* arcball, float zoom);
+DVZ_EXPORT DvzResult dvz_arcball_zoom(DvzArcball* arcball, float zoom);
 
 
 /**
@@ -147,7 +148,7 @@ DVZ_EXPORT void dvz_arcball_zoom(DvzArcball* arcball, float zoom);
  * @param arcball arcball controller
  * @param pan panel-plane pan offset
  */
-DVZ_EXPORT void dvz_arcball_pan(DvzArcball* arcball, vec2 pan);
+DVZ_EXPORT DvzResult dvz_arcball_pan(DvzArcball* arcball, vec2 pan);
 
 
 /**
@@ -166,21 +167,21 @@ DVZ_EXPORT bool dvz_arcball_state(const DvzArcball* arcball, DvzArcballState* ou
  * @param arcball arcball controller
  * @param shift_px shift in viewport pixels
  */
-DVZ_EXPORT void dvz_arcball_pan_shift(DvzArcball* arcball, vec2 shift_px);
+DVZ_EXPORT DvzResult dvz_arcball_pan_shift(DvzArcball* arcball, vec2 shift_px);
 
 
 
 /**
  * Update the viewport size (call on window resize).
  */
-DVZ_EXPORT void dvz_arcball_resize(DvzArcball* arcball, float width, float height);
+DVZ_EXPORT DvzResult dvz_arcball_resize(DvzArcball* arcball, float width, float height);
 
 
 
 /**
  * Set a rotation constraint axis.
  */
-DVZ_EXPORT void dvz_arcball_constrain(DvzArcball* arcball, vec3 axis);
+DVZ_EXPORT DvzResult dvz_arcball_constrain(DvzArcball* arcball, vec3 axis);
 
 
 
@@ -194,7 +195,7 @@ DVZ_EXPORT void dvz_arcball_angles(DvzArcball* arcball, vec3 out_angles);
 /**
  * Apply an in-flight rotation from two NDC screen positions.
  */
-DVZ_EXPORT void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos);
+DVZ_EXPORT DvzResult dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos);
 
 
 
@@ -203,14 +204,14 @@ DVZ_EXPORT void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_
  *
  * Arcball pan and zoom are camera view state and are not included here.
  */
-DVZ_EXPORT void dvz_arcball_model(DvzArcball* arcball, mat4 model);
+DVZ_EXPORT DvzResult dvz_arcball_model(DvzArcball* arcball, mat4 model);
 
 
 
 /**
  * Commit the in-flight rotation into the accumulated matrix (call at drag stop).
  */
-DVZ_EXPORT void dvz_arcball_end(DvzArcball* arcball);
+DVZ_EXPORT DvzResult dvz_arcball_end(DvzArcball* arcball);
 
 
 
@@ -242,14 +243,14 @@ DVZ_EXPORT bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* 
 /**
  * Subscribe the arcball to an input router.
  */
-DVZ_EXPORT void dvz_arcball_connect(DvzArcball* arcball, DvzInputRouter* router);
+DVZ_EXPORT DvzResult dvz_arcball_connect(DvzArcball* arcball, DvzInputRouter* router);
 
 
 
 /**
  * Unsubscribe the arcball from a router.
  */
-DVZ_EXPORT void dvz_arcball_disconnect(DvzArcball* arcball, DvzInputRouter* router);
+DVZ_EXPORT DvzResult dvz_arcball_disconnect(DvzArcball* arcball, DvzInputRouter* router);
 
 
 

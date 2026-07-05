@@ -57,7 +57,8 @@ int test_turntable_orbit_preserves_distance(TstContext* suite, const TstCase* it
 
     DvzTurntable* turntable = _dvz_turntable(NULL);
     ANN(turntable);
-    dvz_turntable_orbit(turntable, GLM_PI_2f, 0.0f);
+    AT(dvz_turntable_orbit(turntable, GLM_PI_2f, 0.0f) == DVZ_OK);
+    AT(dvz_turntable_orbit(NULL, GLM_PI_2f, 0.0f) == DVZ_ERROR);
     AC(turntable->distance, 3.0f, 1e-5f);
     AC(turntable->eye[0], -3.0f, 1e-5f);
     AC(turntable->eye[1], 0.0f, 1e-5f);
@@ -90,7 +91,7 @@ int test_turntable_z_up_orbit_uses_xy_plane(TstContext* suite, const TstCase* it
     AC(turntable->eye[1], 0.0f, 1e-5f);
     AC(turntable->eye[2], 0.0f, 1e-5f);
 
-    dvz_turntable_orbit(turntable, GLM_PI_2f, 0.0f);
+    AT(dvz_turntable_orbit(turntable, GLM_PI_2f, 0.0f) == DVZ_OK);
     AC(turntable->distance, 3.0f, 1e-5f);
     AC(turntable->eye[0], 0.0f, 1e-4f);
     AC(turntable->eye[1], 3.0f, 1e-5f);
@@ -109,7 +110,7 @@ int test_turntable_pivot_preserves_eye(TstContext* suite, const TstCase* item)
 
     DvzTurntable* turntable = _dvz_turntable(NULL);
     ANN(turntable);
-    dvz_turntable_pivot(turntable, (vec3){1.0f, 0.0f, 3.0f});
+    AT(dvz_turntable_pivot(turntable, (vec3){1.0f, 0.0f, 3.0f}) == DVZ_OK);
     AC(turntable->eye[0], 0.0f, 1e-5f);
     AC(turntable->eye[1], 0.0f, 1e-5f);
     AC(turntable->eye[2], 3.0f, 1e-5f);
@@ -129,7 +130,7 @@ int test_turntable_pan_moves_pivot_and_eye(TstContext* suite, const TstCase* ite
 
     DvzTurntable* turntable = _dvz_turntable(NULL);
     ANN(turntable);
-    dvz_turntable_pan(turntable, 1.0f, 2.0f);
+    AT(dvz_turntable_pan(turntable, 1.0f, 2.0f) == DVZ_OK);
     AC(turntable->pivot[0], 1.0f, 1e-5f);
     AC(turntable->pivot[1], 2.0f, 1e-5f);
     AC(turntable->pivot[2], 0.0f, 1e-5f);
@@ -187,14 +188,14 @@ int test_turntable_pitch_and_distance_clamps(TstContext* suite, const TstCase* i
     DvzTurntable* turntable = _dvz_turntable(&desc);
     ANN(turntable);
 
-    dvz_turntable_orbit(turntable, 0.0f, 10.0f);
+    AT(dvz_turntable_orbit(turntable, 0.0f, 10.0f) == DVZ_OK);
     AC(turntable->pitch, 0.25f, 1e-5f);
-    dvz_turntable_orbit(turntable, 0.0f, -10.0f);
+    AT(dvz_turntable_orbit(turntable, 0.0f, -10.0f) == DVZ_OK);
     AC(turntable->pitch, -0.25f, 1e-5f);
 
-    dvz_turntable_dolly(turntable, -10.0f);
+    AT(dvz_turntable_dolly(turntable, -10.0f) == DVZ_OK);
     AC(turntable->distance, 2.0f, 1e-5f);
-    dvz_turntable_dolly(turntable, +10.0f);
+    AT(dvz_turntable_dolly(turntable, +10.0f) == DVZ_OK);
     AC(turntable->distance, 4.0f, 1e-5f);
 
     dvz_turntable_destroy(turntable);
@@ -210,8 +211,8 @@ int test_turntable_double_click_resets(TstContext* suite, const TstCase* item)
 
     DvzTurntable* turntable = _dvz_turntable(NULL);
     ANN(turntable);
-    dvz_turntable_orbit(turntable, 0.5f, 0.2f);
-    dvz_turntable_dolly(turntable, -1.0f);
+    AT(dvz_turntable_orbit(turntable, 0.5f, 0.2f) == DVZ_OK);
+    AT(dvz_turntable_dolly(turntable, -1.0f) == DVZ_OK);
 
     DvzPointerEvent ev = {.type = DVZ_POINTER_EVENT_DOUBLE_CLICK};
     AT(dvz_turntable_pointer(turntable, &ev));

@@ -7696,7 +7696,7 @@ else:
  * Subscribe the arcball to an input router.
  */"""
     dvz_arcball_connect.argtypes = [ctypes.POINTER(DvzArcball), ctypes.POINTER(DvzInputRouter)]
-    dvz_arcball_connect.restype = None
+    dvz_arcball_connect.restype = ctypes.c_int32
 
 
 try:
@@ -7708,7 +7708,7 @@ else:
  * Set a rotation constraint axis.
  */"""
     dvz_arcball_constrain.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 3)]
-    dvz_arcball_constrain.restype = None
+    dvz_arcball_constrain.restype = ctypes.c_int32
 
 
 try:
@@ -7756,7 +7756,7 @@ else:
  * Unsubscribe the arcball from a router.
  */"""
     dvz_arcball_disconnect.argtypes = [ctypes.POINTER(DvzArcball), ctypes.POINTER(DvzInputRouter)]
-    dvz_arcball_disconnect.restype = None
+    dvz_arcball_disconnect.restype = ctypes.c_int32
 
 
 try:
@@ -7768,7 +7768,7 @@ else:
  * Commit the in-flight rotation into the accumulated matrix (call at drag stop).
  */"""
     dvz_arcball_end.argtypes = [ctypes.POINTER(DvzArcball)]
-    dvz_arcball_end.restype = None
+    dvz_arcball_end.restype = ctypes.c_int32
 
 
 try:
@@ -7780,7 +7780,7 @@ else:
  * Set the initial Euler angles and reset.
  */"""
     dvz_arcball_initial.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 3)]
-    dvz_arcball_initial.restype = None
+    dvz_arcball_initial.restype = ctypes.c_int32
 
 
 try:
@@ -7808,7 +7808,7 @@ else:
  * Arcball pan and zoom are camera view state and are not included here.
  */"""
     dvz_arcball_model.argtypes = [ctypes.POINTER(DvzArcball), ((ctypes.c_float * 4) * 4)]
-    dvz_arcball_model.restype = None
+    dvz_arcball_model.restype = ctypes.c_int32
 
 
 try:
@@ -7836,7 +7836,7 @@ else:
  * @param pan panel-plane pan offset
  */"""
     dvz_arcball_pan.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 2)]
-    dvz_arcball_pan.restype = None
+    dvz_arcball_pan.restype = ctypes.c_int32
 
 
 try:
@@ -7851,7 +7851,7 @@ else:
  * @param shift_px shift in viewport pixels
  */"""
     dvz_arcball_pan_shift.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 2)]
-    dvz_arcball_pan_shift.restype = None
+    dvz_arcball_pan_shift.restype = ctypes.c_int32
 
 
 try:
@@ -7877,7 +7877,7 @@ else:
  * Reset to the initial orientation.
  */"""
     dvz_arcball_reset.argtypes = [ctypes.POINTER(DvzArcball)]
-    dvz_arcball_reset.restype = None
+    dvz_arcball_reset.restype = ctypes.c_int32
 
 
 try:
@@ -7889,7 +7889,7 @@ else:
  * Update the viewport size (call on window resize).
  */"""
     dvz_arcball_resize.argtypes = [ctypes.POINTER(DvzArcball), ctypes.c_float, ctypes.c_float]
-    dvz_arcball_resize.restype = None
+    dvz_arcball_resize.restype = ctypes.c_int32
 
 
 try:
@@ -7901,7 +7901,7 @@ else:
  * Apply an in-flight rotation from two NDC screen positions.
  */"""
     dvz_arcball_rotate.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 2), (ctypes.c_float * 2)]
-    dvz_arcball_rotate.restype = None
+    dvz_arcball_rotate.restype = ctypes.c_int32
 
 
 try:
@@ -7917,7 +7917,7 @@ else:
  * @param axis rotation axis
  */"""
     dvz_arcball_rotate_axis.argtypes = [ctypes.POINTER(DvzArcball), ctypes.c_float, (ctypes.c_float * 3)]
-    dvz_arcball_rotate_axis.restype = None
+    dvz_arcball_rotate_axis.restype = ctypes.c_int32
 
 
 try:
@@ -7929,7 +7929,7 @@ else:
  * Set the orientation directly from Euler angles.
  */"""
     dvz_arcball_set.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 3)]
-    dvz_arcball_set.restype = None
+    dvz_arcball_set.restype = ctypes.c_int32
 
 
 try:
@@ -7960,7 +7960,7 @@ else:
  * @param zoom uniform zoom factor
  */"""
     dvz_arcball_zoom.argtypes = [ctypes.POINTER(DvzArcball), ctypes.c_float]
-    dvz_arcball_zoom.restype = None
+    dvz_arcball_zoom.restype = ctypes.c_int32
 
 
 try:
@@ -9510,7 +9510,7 @@ else:
  * @param height viewport height in pixels
  */"""
     dvz_camera_resize.argtypes = [ctypes.POINTER(DvzCamera), ctypes.c_float, ctypes.c_float]
-    dvz_camera_resize.restype = None
+    dvz_camera_resize.restype = ctypes.c_int32
 
 
 try:
@@ -9527,7 +9527,7 @@ else:
  * @param far far clipping plane
  */"""
     dvz_camera_set_orthographic.argtypes = [ctypes.POINTER(DvzCamera), ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_camera_set_orthographic.restype = None
+    dvz_camera_set_orthographic.restype = ctypes.c_int32
 
 
 try:
@@ -9568,7 +9568,7 @@ else:
  * @param far far clipping plane
  */"""
     dvz_camera_set_perspective.argtypes = [ctypes.POINTER(DvzCamera), ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_camera_set_perspective.restype = None
+    dvz_camera_set_perspective.restype = ctypes.c_int32
 
 
 try:
@@ -9583,7 +9583,7 @@ else:
  * @param view the camera view
  */"""
     dvz_camera_set_view.argtypes = [ctypes.POINTER(DvzCamera), ctypes.POINTER(DvzCameraView)]
-    dvz_camera_set_view.restype = None
+    dvz_camera_set_view.restype = ctypes.c_int32
 
 
 try:
@@ -15381,7 +15381,7 @@ else:
  * @param fly the fly controller
  */"""
     dvz_fly_apply_camera.argtypes = [ctypes.POINTER(DvzFly)]
-    dvz_fly_apply_camera.restype = None
+    dvz_fly_apply_camera.restype = ctypes.c_int32
 
 
 try:
@@ -15395,7 +15395,7 @@ else:
  * @param fly the fly controller
  */"""
     dvz_fly_clear_pivot.argtypes = [ctypes.POINTER(DvzFly)]
-    dvz_fly_clear_pivot.restype = None
+    dvz_fly_clear_pivot.restype = ctypes.c_int32
 
 
 try:
@@ -15410,7 +15410,7 @@ else:
  * @param router input router
  */"""
     dvz_fly_connect.argtypes = [ctypes.POINTER(DvzFly), ctypes.POINTER(DvzInputRouter)]
-    dvz_fly_connect.restype = None
+    dvz_fly_connect.restype = ctypes.c_int32
 
 
 try:
@@ -15468,7 +15468,7 @@ else:
  * @param router input router
  */"""
     dvz_fly_disconnect.argtypes = [ctypes.POINTER(DvzFly), ctypes.POINTER(DvzInputRouter)]
-    dvz_fly_disconnect.restype = None
+    dvz_fly_disconnect.restype = ctypes.c_int32
 
 
 try:
@@ -15546,7 +15546,7 @@ else:
  * @param roll initial roll angle in radians
  */"""
     dvz_fly_initial.argtypes = [ctypes.POINTER(DvzFly), (ctypes.c_float * 3), ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_fly_initial.restype = None
+    dvz_fly_initial.restype = ctypes.c_int32
 
 
 try:
@@ -15562,7 +15562,7 @@ else:
  * @param target initial look-at target
  */"""
     dvz_fly_initial_lookat.argtypes = [ctypes.POINTER(DvzFly), (ctypes.c_float * 3), (ctypes.c_float * 3)]
-    dvz_fly_initial_lookat.restype = None
+    dvz_fly_initial_lookat.restype = ctypes.c_int32
 
 
 try:
@@ -15592,7 +15592,7 @@ else:
  * @param fly the fly controller
  */"""
     dvz_fly_look_at_pivot.argtypes = [ctypes.POINTER(DvzFly)]
-    dvz_fly_look_at_pivot.restype = None
+    dvz_fly_look_at_pivot.restype = ctypes.c_int32
 
 
 try:
@@ -15607,7 +15607,7 @@ else:
  * @param amount movement amount in world units
  */"""
     dvz_fly_move_forward.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float]
-    dvz_fly_move_forward.restype = None
+    dvz_fly_move_forward.restype = ctypes.c_int32
 
 
 try:
@@ -15622,7 +15622,7 @@ else:
  * @param amount movement amount in world units
  */"""
     dvz_fly_move_right.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float]
-    dvz_fly_move_right.restype = None
+    dvz_fly_move_right.restype = ctypes.c_int32
 
 
 try:
@@ -15637,7 +15637,7 @@ else:
  * @param amount movement amount in world units
  */"""
     dvz_fly_move_up.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float]
-    dvz_fly_move_up.restype = None
+    dvz_fly_move_up.restype = ctypes.c_int32
 
 
 try:
@@ -15654,7 +15654,7 @@ else:
  * @return whether the orbit was applied
  */"""
     dvz_fly_orbit.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float, ctypes.c_float]
-    dvz_fly_orbit.restype = ctypes.c_bool
+    dvz_fly_orbit.restype = ctypes.c_int32
 
 
 try:
@@ -15669,7 +15669,7 @@ else:
  * @param pivot new world-space pivot point
  */"""
     dvz_fly_pivot.argtypes = [ctypes.POINTER(DvzFly), (ctypes.c_float * 3)]
-    dvz_fly_pivot.restype = None
+    dvz_fly_pivot.restype = ctypes.c_int32
 
 
 try:
@@ -15699,7 +15699,7 @@ else:
  * @param fly the fly controller
  */"""
     dvz_fly_reset.argtypes = [ctypes.POINTER(DvzFly)]
-    dvz_fly_reset.restype = None
+    dvz_fly_reset.restype = ctypes.c_int32
 
 
 try:
@@ -15715,7 +15715,7 @@ else:
  * @param height viewport height in pixels
  */"""
     dvz_fly_resize.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float, ctypes.c_float]
-    dvz_fly_resize.restype = None
+    dvz_fly_resize.restype = ctypes.c_int32
 
 
 try:
@@ -15730,7 +15730,7 @@ else:
  * @param dx roll delta in radians
  */"""
     dvz_fly_roll.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float]
-    dvz_fly_roll.restype = None
+    dvz_fly_roll.restype = ctypes.c_int32
 
 
 try:
@@ -15746,7 +15746,7 @@ else:
  * @param dy pitch delta in radians
  */"""
     dvz_fly_rotate.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float, ctypes.c_float]
-    dvz_fly_rotate.restype = None
+    dvz_fly_rotate.restype = ctypes.c_int32
 
 
 try:
@@ -15761,7 +15761,7 @@ else:
  * @param camera the camera to update, or NULL
  */"""
     dvz_fly_set_camera.argtypes = [ctypes.POINTER(DvzFly), ctypes.POINTER(DvzCamera)]
-    dvz_fly_set_camera.restype = None
+    dvz_fly_set_camera.restype = ctypes.c_int32
 
 
 try:
@@ -15776,7 +15776,7 @@ else:
  * @param mode movement mode
  */"""
     dvz_fly_set_mode.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_int]
-    dvz_fly_set_mode.restype = None
+    dvz_fly_set_mode.restype = ctypes.c_int32
 
 
 try:
@@ -15791,7 +15791,7 @@ else:
  * @param dt elapsed time in seconds
  */"""
     dvz_fly_update.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_double]
-    dvz_fly_update.restype = None
+    dvz_fly_update.restype = ctypes.c_int32
 
 
 try:
@@ -15809,7 +15809,7 @@ else:
  * @param height viewport height in window pixels
  */"""
     dvz_fly_viewport.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_fly_viewport.restype = None
+    dvz_fly_viewport.restype = ctypes.c_int32
 
 
 try:
@@ -22958,7 +22958,7 @@ else:
  * The panzoom pointer callback will be registered; call dvz_panzoom_disconnect() to remove it.
  */"""
     dvz_panzoom_connect.argtypes = [ctypes.POINTER(DvzPanzoom), ctypes.POINTER(DvzInputRouter)]
-    dvz_panzoom_connect.restype = None
+    dvz_panzoom_connect.restype = ctypes.c_int32
 
 
 try:
@@ -23006,7 +23006,7 @@ else:
  * Unsubscribe the panzoom from a router.
  */"""
     dvz_panzoom_disconnect.argtypes = [ctypes.POINTER(DvzPanzoom), ctypes.POINTER(DvzInputRouter)]
-    dvz_panzoom_disconnect.restype = None
+    dvz_panzoom_disconnect.restype = ctypes.c_int32
 
 
 try:
@@ -23018,7 +23018,7 @@ else:
  * Commit the current pan/zoom as the new drag baseline (call at drag stop).
  */"""
     dvz_panzoom_end.argtypes = [ctypes.POINTER(DvzPanzoom)]
-    dvz_panzoom_end.restype = None
+    dvz_panzoom_end.restype = ctypes.c_int32
 
 
 try:
@@ -23059,7 +23059,7 @@ else:
  * Set the pan offset in NDC.
  */"""
     dvz_panzoom_pan.argtypes = [ctypes.POINTER(DvzPanzoom), (ctypes.c_float * 2)]
-    dvz_panzoom_pan.restype = None
+    dvz_panzoom_pan.restype = ctypes.c_int32
 
 
 try:
@@ -23071,7 +23071,7 @@ else:
  * Apply a pan shift (pixel delta).
  */"""
     dvz_panzoom_pan_shift.argtypes = [ctypes.POINTER(DvzPanzoom), (ctypes.c_float * 2), (ctypes.c_float * 2)]
-    dvz_panzoom_pan_shift.restype = None
+    dvz_panzoom_pan_shift.restype = ctypes.c_int32
 
 
 try:
@@ -23097,7 +23097,7 @@ else:
  * Reset to the identity transform.
  */"""
     dvz_panzoom_reset.argtypes = [ctypes.POINTER(DvzPanzoom)]
-    dvz_panzoom_reset.restype = None
+    dvz_panzoom_reset.restype = ctypes.c_int32
 
 
 try:
@@ -23109,7 +23109,7 @@ else:
  * Update the viewport size (call on window resize).
  */"""
     dvz_panzoom_resize.argtypes = [ctypes.POINTER(DvzPanzoom), ctypes.c_float, ctypes.c_float]
-    dvz_panzoom_resize.restype = None
+    dvz_panzoom_resize.restype = ctypes.c_int32
 
 
 try:
@@ -23146,7 +23146,7 @@ else:
  * Update the viewport rectangle in window coordinates.
  */"""
     dvz_panzoom_viewport.argtypes = [ctypes.POINTER(DvzPanzoom), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_panzoom_viewport.restype = None
+    dvz_panzoom_viewport.restype = ctypes.c_int32
 
 
 try:
@@ -23158,7 +23158,7 @@ else:
  * Set the zoom factors.
  */"""
     dvz_panzoom_zoom.argtypes = [ctypes.POINTER(DvzPanzoom), (ctypes.c_float * 2)]
-    dvz_panzoom_zoom.restype = None
+    dvz_panzoom_zoom.restype = ctypes.c_int32
 
 
 try:
@@ -23187,7 +23187,7 @@ else:
  * Apply a zoom shift driven by right-drag (pixel delta + anchor).
  */"""
     dvz_panzoom_zoom_shift.argtypes = [ctypes.POINTER(DvzPanzoom), (ctypes.c_float * 2), (ctypes.c_float * 2)]
-    dvz_panzoom_zoom_shift.restype = None
+    dvz_panzoom_zoom_shift.restype = ctypes.c_int32
 
 
 try:
@@ -23199,7 +23199,7 @@ else:
  * Apply a wheel zoom.
  */"""
     dvz_panzoom_zoom_wheel.argtypes = [ctypes.POINTER(DvzPanzoom), (ctypes.c_float * 2), (ctypes.c_float * 2)]
-    dvz_panzoom_zoom_wheel.restype = None
+    dvz_panzoom_zoom_wheel.restype = ctypes.c_int32
 
 
 try:
@@ -28671,7 +28671,7 @@ else:
  * @param turntable the turntable controller
  */"""
     dvz_turntable_apply_camera.argtypes = [ctypes.POINTER(DvzTurntable)]
-    dvz_turntable_apply_camera.restype = None
+    dvz_turntable_apply_camera.restype = ctypes.c_int32
 
 
 try:
@@ -28686,7 +28686,7 @@ else:
  * @param router input router
  */"""
     dvz_turntable_connect.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.POINTER(DvzInputRouter)]
-    dvz_turntable_connect.restype = None
+    dvz_turntable_connect.restype = ctypes.c_int32
 
 
 try:
@@ -28744,7 +28744,7 @@ else:
  * @param router input router
  */"""
     dvz_turntable_disconnect.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.POINTER(DvzInputRouter)]
-    dvz_turntable_disconnect.restype = None
+    dvz_turntable_disconnect.restype = ctypes.c_int32
 
 
 try:
@@ -28759,7 +28759,7 @@ else:
  * @param amount distance delta
  */"""
     dvz_turntable_dolly.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.c_float]
-    dvz_turntable_dolly.restype = None
+    dvz_turntable_dolly.restype = ctypes.c_int32
 
 
 try:
@@ -28775,7 +28775,7 @@ else:
  * @param pitch_delta pitch delta in radians
  */"""
     dvz_turntable_orbit.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.c_float, ctypes.c_float]
-    dvz_turntable_orbit.restype = None
+    dvz_turntable_orbit.restype = ctypes.c_int32
 
 
 try:
@@ -28791,7 +28791,7 @@ else:
  * @param up_amount up-axis pan amount
  */"""
     dvz_turntable_pan.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.c_float, ctypes.c_float]
-    dvz_turntable_pan.restype = None
+    dvz_turntable_pan.restype = ctypes.c_int32
 
 
 try:
@@ -28806,7 +28806,7 @@ else:
  * @param pivot new world-space pivot
  */"""
     dvz_turntable_pivot.argtypes = [ctypes.POINTER(DvzTurntable), (ctypes.c_float * 3)]
-    dvz_turntable_pivot.restype = None
+    dvz_turntable_pivot.restype = ctypes.c_int32
 
 
 try:
@@ -28836,7 +28836,7 @@ else:
  * @param turntable the turntable controller
  */"""
     dvz_turntable_reset.argtypes = [ctypes.POINTER(DvzTurntable)]
-    dvz_turntable_reset.restype = None
+    dvz_turntable_reset.restype = ctypes.c_int32
 
 
 try:
@@ -28852,7 +28852,7 @@ else:
  * @param height viewport height in pixels
  */"""
     dvz_turntable_resize.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.c_float, ctypes.c_float]
-    dvz_turntable_resize.restype = None
+    dvz_turntable_resize.restype = ctypes.c_int32
 
 
 try:
@@ -28867,7 +28867,7 @@ else:
  * @param camera the camera to update, or NULL
  */"""
     dvz_turntable_set_camera.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.POINTER(DvzCamera)]
-    dvz_turntable_set_camera.restype = None
+    dvz_turntable_set_camera.restype = ctypes.c_int32
 
 
 try:
@@ -28885,7 +28885,7 @@ else:
  * @param height viewport height in window pixels
  */"""
     dvz_turntable_viewport.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_turntable_viewport.restype = None
+    dvz_turntable_viewport.restype = ctypes.c_int32
 
 
 try:

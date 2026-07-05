@@ -565,6 +565,20 @@ Completed checkpoints:
      `just test scene/scene-graph`, `just test visuals`, `just test app`,
      `just test compute`, `just example-c features/compute_buffer_animation --png`,
      `just ctypes-smoke`, `just ctypes-python-smoke`, and `git diff --check`.
+49. Pending checkpoint: `api: return results from low-level controller mutators`
+   - Changed fallible low-level controller object mutators from `void`/mutating `bool` to
+     `DvzResult` across camera, arcball, panzoom, turntable, and fly controllers.
+   - Left destroy functions as `void`, getters/output writers as `void`, and pointer/state/event
+     predicates as `bool`.
+   - Updated focused controller and scene-controller tests to assert `DVZ_OK`/`DVZ_ERROR` for
+     representative success and invalid-input paths.
+   - Validation passed: stale signature scan, `just build`, `just test controller`,
+     `just test panzoom`, `just test arcball`, `just test turntable`, `just test fly`,
+     `just test app`, `just test query`, `just test axis`, `just test interaction`,
+     `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `python3 tools/check_api_status.py`,
+     `just docs-api`, `just docs-api-check`, `just ctypes-smoke`, and
+     `just ctypes-python-smoke`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn: none
 known at this checkpoint.

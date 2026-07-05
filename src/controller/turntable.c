@@ -384,7 +384,8 @@ _turntable_input_callback(DvzInputRouter* router, const DvzInputEvent* ev, void*
     {
         const DvzInputResizeEvent* r = &ev->content.resize;
         if (!turntable->has_viewport && r->window_width > 0 && r->window_height > 0)
-            dvz_turntable_resize(turntable, (float)r->window_width, (float)r->window_height);
+            (void)dvz_turntable_resize(
+                turntable, (float)r->window_width, (float)r->window_height);
     }
 }
 
@@ -491,7 +492,7 @@ DvzTurntable* _dvz_turntable(const DvzTurntableDesc* desc)
     turntable->distance_init = turntable->distance;
     turntable->yaw_init = turntable->yaw;
     turntable->pitch_init = turntable->pitch;
-    dvz_turntable_reset(turntable);
+    (void)dvz_turntable_reset(turntable);
     return turntable;
 }
 
@@ -514,9 +515,10 @@ DvzTurntable* dvz_turntable_create(const DvzTurntableDesc* desc)
  *
  * @param turntable the turntable controller
  */
-void dvz_turntable_reset(DvzTurntable* turntable)
+DvzResult dvz_turntable_reset(DvzTurntable* turntable)
 {
-    ANN(turntable);
+    if (turntable == NULL)
+        return DVZ_ERROR;
     glm_vec3_copy(turntable->pivot_init, turntable->pivot);
     turntable->distance = _turntable_clamp_distance(turntable, turntable->distance_init);
     turntable->yaw = turntable->yaw_init;
@@ -525,7 +527,8 @@ void dvz_turntable_reset(DvzTurntable* turntable)
     turntable->pitch = _turntable_clamp_pitch(turntable, turntable->pitch_init);
     turntable->interacting = false;
     _turntable_update_eye(turntable);
-    dvz_turntable_apply_camera(turntable);
+    (void)dvz_turntable_apply_camera(turntable);
+    return DVZ_OK;
 }
 
 
@@ -539,15 +542,17 @@ void dvz_turntable_reset(DvzTurntable* turntable)
  * @param width viewport width in window pixels
  * @param height viewport height in window pixels
  */
-void dvz_turntable_viewport(
+DvzResult dvz_turntable_viewport(
     DvzTurntable* turntable, float x, float y, float width, float height)
 {
-    ANN(turntable);
+    if (turntable == NULL)
+        return DVZ_ERROR;
     turntable->viewport_origin[0] = x;
     turntable->viewport_origin[1] = y;
     turntable->viewport_size[0] = width > 0.0f ? width : DVZ_TURNTABLE_DEFAULT_WIDTH;
     turntable->viewport_size[1] = height > 0.0f ? height : DVZ_TURNTABLE_DEFAULT_HEIGHT;
     turntable->has_viewport = true;
+    return DVZ_OK;
 }
 
 
@@ -559,11 +564,13 @@ void dvz_turntable_viewport(
  * @param width viewport width in pixels
  * @param height viewport height in pixels
  */
-void dvz_turntable_resize(DvzTurntable* turntable, float width, float height)
+DvzResult dvz_turntable_resize(DvzTurntable* turntable, float width, float height)
 {
-    ANN(turntable);
+    if (turntable == NULL)
+        return DVZ_ERROR;
     turntable->viewport_size[0] = width > 0.0f ? width : DVZ_TURNTABLE_DEFAULT_WIDTH;
     turntable->viewport_size[1] = height > 0.0f ? height : DVZ_TURNTABLE_DEFAULT_HEIGHT;
+    return DVZ_OK;
 }
 
 
@@ -574,14 +581,16 @@ void dvz_turntable_resize(DvzTurntable* turntable, float width, float height)
  * @param turntable the turntable controller
  * @param pivot new world-space pivot
  */
-void dvz_turntable_pivot(DvzTurntable* turntable, vec3 pivot)
+DvzResult dvz_turntable_pivot(DvzTurntable* turntable, vec3 pivot)
 {
-    ANN(turntable);
+    if (turntable == NULL)
+        return DVZ_ERROR;
     glm_vec3_copy(pivot, turntable->pivot);
     _turntable_update_angles_from_eye(turntable);
     turntable->pivot_marker_visible = true;
     turntable->pivot_marker_time_left = DVZ_TURNTABLE_MARKER_S;
-    dvz_turntable_apply_camera(turntable);
+    (void)dvz_turntable_apply_camera(turntable);
+    return DVZ_OK;
 }
 
 
@@ -593,9 +602,10 @@ void dvz_turntable_pivot(DvzTurntable* turntable, vec3 pivot)
  * @param yaw_delta yaw delta in radians
  * @param pitch_delta pitch delta in radians
  */
-void dvz_turntable_orbit(DvzTurntable* turntable, float yaw_delta, float pitch_delta)
+DvzResult dvz_turntable_orbit(DvzTurntable* turntable, float yaw_delta, float pitch_delta)
 {
-    ANN(turntable);
+    if (turntable == NULL)
+        return DVZ_ERROR;
     turntable->yaw += yaw_delta;
     if ((turntable->flags & DVZ_TURNTABLE_FLAGS_WRAP_YAW) != 0)
         turntable->yaw = _turntable_wrap_angle(turntable->yaw);
@@ -605,7 +615,8 @@ void dvz_turntable_orbit(DvzTurntable* turntable, float yaw_delta, float pitch_d
     turntable->pivot_marker_visible = true;
     turntable->pivot_marker_time_left = DVZ_TURNTABLE_MARKER_S;
     _turntable_update_eye(turntable);
-    dvz_turntable_apply_camera(turntable);
+    (void)dvz_turntable_apply_camera(turntable);
+    return DVZ_OK;
 }
 
 
@@ -616,12 +627,14 @@ void dvz_turntable_orbit(DvzTurntable* turntable, float yaw_delta, float pitch_d
  * @param turntable the turntable controller
  * @param amount distance delta
  */
-void dvz_turntable_dolly(DvzTurntable* turntable, float amount)
+DvzResult dvz_turntable_dolly(DvzTurntable* turntable, float amount)
 {
-    ANN(turntable);
+    if (turntable == NULL)
+        return DVZ_ERROR;
     turntable->distance = _turntable_clamp_distance(turntable, turntable->distance + amount);
     _turntable_update_eye(turntable);
-    dvz_turntable_apply_camera(turntable);
+    (void)dvz_turntable_apply_camera(turntable);
+    return DVZ_OK;
 }
 
 
@@ -633,11 +646,12 @@ void dvz_turntable_dolly(DvzTurntable* turntable, float amount)
  * @param right_amount right-axis pan amount
  * @param up_amount up-axis pan amount
  */
-void dvz_turntable_pan(DvzTurntable* turntable, float right_amount, float up_amount)
+DvzResult dvz_turntable_pan(DvzTurntable* turntable, float right_amount, float up_amount)
 {
-    ANN(turntable);
+    if (turntable == NULL)
+        return DVZ_ERROR;
     if ((turntable->flags & DVZ_TURNTABLE_FLAGS_ALLOW_PAN) == 0)
-        return;
+        return DVZ_ERROR;
     vec3 front = {0}, right = {0}, up = {0}, delta = {0}, tmp = {0};
     _turntable_basis(turntable, front, right, up);
     glm_vec3_scale(right, right_amount, delta);
@@ -647,7 +661,8 @@ void dvz_turntable_pan(DvzTurntable* turntable, float right_amount, float up_amo
     glm_vec3_add(turntable->eye, delta, turntable->eye);
     turntable->pivot_marker_visible = true;
     turntable->pivot_marker_time_left = DVZ_TURNTABLE_MARKER_S;
-    dvz_turntable_apply_camera(turntable);
+    (void)dvz_turntable_apply_camera(turntable);
+    return DVZ_OK;
 }
 
 
@@ -658,11 +673,14 @@ void dvz_turntable_pan(DvzTurntable* turntable, float right_amount, float up_amo
  * @param turntable the turntable controller
  * @param camera the camera to update, or NULL
  */
-void dvz_turntable_set_camera(DvzTurntable* turntable, DvzCamera* camera)
+DvzResult dvz_turntable_set_camera(DvzTurntable* turntable, DvzCamera* camera)
 {
-    ANN(turntable);
+    if (turntable == NULL)
+        return DVZ_ERROR;
     turntable->camera = camera;
-    dvz_turntable_apply_camera(turntable);
+    if (camera == NULL)
+        return DVZ_OK;
+    return dvz_turntable_apply_camera(turntable);
 }
 
 
@@ -672,11 +690,12 @@ void dvz_turntable_set_camera(DvzTurntable* turntable, DvzCamera* camera)
  *
  * @param turntable the turntable controller
  */
-void dvz_turntable_apply_camera(DvzTurntable* turntable)
+DvzResult dvz_turntable_apply_camera(DvzTurntable* turntable)
 {
-    ANN(turntable);
+    if (turntable == NULL)
+        return DVZ_ERROR;
     if (turntable->camera == NULL)
-        return;
+        return DVZ_ERROR;
     vec3 front = {0}, right = {0}, up = {0};
     _turntable_basis(turntable, front, right, up);
     DvzCameraView view = {
@@ -684,7 +703,7 @@ void dvz_turntable_apply_camera(DvzTurntable* turntable)
         .target = {turntable->pivot[0], turntable->pivot[1], turntable->pivot[2]},
         .up = {up[0], up[1], up[2]},
     };
-    dvz_camera_set_view(turntable->camera, &view);
+    return dvz_camera_set_view(turntable->camera, &view);
 }
 
 
@@ -732,7 +751,7 @@ bool dvz_turntable_pointer(DvzTurntable* turntable, const DvzPointerEvent* ev)
         float dy = ev->pos[1] - ev->content.d.last_pos[1];
         if (ev->button == DVZ_POINTER_BUTTON_LEFT)
         {
-            dvz_turntable_orbit(
+            (void)dvz_turntable_orbit(
                 turntable, turntable->yaw_speed * dx / width * GLM_PIf,
                 -turntable->pitch_speed * dy / height * GLM_PIf);
             turntable->interacting = true;
@@ -741,7 +760,7 @@ bool dvz_turntable_pointer(DvzTurntable* turntable, const DvzPointerEvent* ev)
         if (ev->button == DVZ_POINTER_BUTTON_MIDDLE || ev->button == DVZ_POINTER_BUTTON_RIGHT)
         {
             float scale = turntable->pan_speed * turntable->distance;
-            dvz_turntable_pan(turntable, -dx * scale, +dy * scale);
+            (void)dvz_turntable_pan(turntable, -dx * scale, +dy * scale);
             turntable->interacting = true;
             return true;
         }
@@ -749,11 +768,11 @@ bool dvz_turntable_pointer(DvzTurntable* turntable, const DvzPointerEvent* ev)
     }
 
     case DVZ_POINTER_EVENT_DOUBLE_CLICK:
-        dvz_turntable_reset(turntable);
+        (void)dvz_turntable_reset(turntable);
         return true;
 
     case DVZ_POINTER_EVENT_WHEEL:
-        dvz_turntable_dolly(turntable, -turntable->zoom_speed * ev->content.w.dir[1]);
+        (void)dvz_turntable_dolly(turntable, -turntable->zoom_speed * ev->content.w.dir[1]);
         return true;
 
     default:
@@ -770,15 +789,15 @@ bool dvz_turntable_pointer(DvzTurntable* turntable, const DvzPointerEvent* ev)
  * @param turntable the turntable controller
  * @param router input router
  */
-void dvz_turntable_connect(DvzTurntable* turntable, DvzInputRouter* router)
+DvzResult dvz_turntable_connect(DvzTurntable* turntable, DvzInputRouter* router)
 {
-    ANN(turntable);
-    ANN(router);
+    if (turntable == NULL || router == NULL)
+        return DVZ_ERROR;
     DvzInputResizeEvent r;
     if (!turntable->has_viewport && dvz_input_router_last_resize(router, &r) &&
         r.window_width > 0 && r.window_height > 0)
     {
-        dvz_turntable_resize(turntable, (float)r.window_width, (float)r.window_height);
+        (void)dvz_turntable_resize(turntable, (float)r.window_width, (float)r.window_height);
     }
     if (turntable->input_router != NULL &&
         turntable->input_subscription_id != DVZ_CALLBACK_ID_NONE)
@@ -788,6 +807,7 @@ void dvz_turntable_connect(DvzTurntable* turntable, DvzInputRouter* router)
     turntable->input_router = router;
     turntable->input_subscription_id =
         dvz_input_subscribe_event(router, _turntable_input_callback, turntable);
+    return turntable->input_subscription_id != DVZ_CALLBACK_ID_NONE ? DVZ_OK : DVZ_ERROR;
 }
 
 
@@ -798,10 +818,10 @@ void dvz_turntable_connect(DvzTurntable* turntable, DvzInputRouter* router)
  * @param turntable the turntable controller
  * @param router input router
  */
-void dvz_turntable_disconnect(DvzTurntable* turntable, DvzInputRouter* router)
+DvzResult dvz_turntable_disconnect(DvzTurntable* turntable, DvzInputRouter* router)
 {
-    ANN(turntable);
-    ANN(router);
+    if (turntable == NULL || router == NULL)
+        return DVZ_ERROR;
     if (turntable->input_subscription_id != DVZ_CALLBACK_ID_NONE)
     {
         DvzInputRouter* subscribed_router =
@@ -810,6 +830,7 @@ void dvz_turntable_disconnect(DvzTurntable* turntable, DvzInputRouter* router)
         turntable->input_router = NULL;
         turntable->input_subscription_id = DVZ_CALLBACK_ID_NONE;
     }
+    return DVZ_OK;
 }
 
 

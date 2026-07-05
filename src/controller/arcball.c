@@ -146,7 +146,7 @@ static void _arcball_zoom_wheel(DvzArcball* arcball, vec2 dir)
     ANN(arcball);
     if (dir[1] == 0.0f)
         return;
-    dvz_arcball_zoom(arcball, arcball->zoom * expf(DVZ_ARCBALL_ZOOM_WHEEL_COEF * dir[1]));
+    (void)dvz_arcball_zoom(arcball, arcball->zoom * expf(DVZ_ARCBALL_ZOOM_WHEEL_COEF * dir[1]));
 }
 
 
@@ -210,7 +210,7 @@ _arcball_input_callback(DvzInputRouter* router, const DvzInputEvent* ev, void* u
     {
         const DvzInputResizeEvent* r = &ev->content.resize;
         if (r->window_width > 0 && r->window_height > 0)
-            dvz_arcball_resize(arcball, (float)r->window_width, (float)r->window_height);
+            (void)dvz_arcball_resize(arcball, (float)r->window_width, (float)r->window_height);
     }
 }
 
@@ -261,7 +261,7 @@ DvzArcball* _dvz_arcball(float width, float height, int flags)
     arcball->viewport_size[0] = width;
     arcball->viewport_size[1] = height;
     glm_mat4_identity(arcball->view);
-    dvz_arcball_reset(arcball);
+    (void)dvz_arcball_reset(arcball);
     return arcball;
 }
 
@@ -311,33 +311,39 @@ void _dvz_arcball_clear_view(DvzArcball* arcball)
 
 
 
-void dvz_arcball_initial(DvzArcball* arcball, vec3 angles)
+DvzResult dvz_arcball_initial(DvzArcball* arcball, vec3 angles)
 {
-    ANN(arcball);
+    if (arcball == NULL)
+        return DVZ_ERROR;
     glm_vec3_copy(angles, arcball->init);
-    dvz_arcball_reset(arcball);
+    return dvz_arcball_reset(arcball);
 }
 
 
 
-void dvz_arcball_reset(DvzArcball* arcball)
+DvzResult dvz_arcball_reset(DvzArcball* arcball)
 {
-    ANN(arcball);
-    dvz_arcball_set(arcball, arcball->init);
+    if (arcball == NULL)
+        return DVZ_ERROR;
+    if (dvz_arcball_set(arcball, arcball->init) != DVZ_OK)
+        return DVZ_ERROR;
     glm_quat_identity(arcball->rotation);
     arcball->zoom = 1.0f;
     glm_vec2_zero(arcball->pan);
     glm_vec2_zero(arcball->pan_center);
     arcball->interacting = false;
+    return DVZ_OK;
 }
 
 
 
-void dvz_arcball_set(DvzArcball* arcball, vec3 angles)
+DvzResult dvz_arcball_set(DvzArcball* arcball, vec3 angles)
 {
-    ANN(arcball);
+    if (arcball == NULL)
+        return DVZ_ERROR;
     glm_euler(angles, arcball->mat);
     glm_quat_identity(arcball->rotation);
+    return DVZ_OK;
 }
 
 
@@ -349,20 +355,22 @@ void dvz_arcball_set(DvzArcball* arcball, vec3 angles)
  * @param angle rotation angle in radians
  * @param axis rotation axis
  */
-void dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, vec3 axis)
+DvzResult dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, vec3 axis)
 {
-    ANN(arcball);
+    if (arcball == NULL)
+        return DVZ_ERROR;
     if (angle == 0.0f)
-        return;
+        return DVZ_OK;
     if (glm_vec3_norm(axis) == 0.0f)
     {
         log_warn("null arcball rotation axis, ignoring");
-        return;
+        return DVZ_ERROR;
     }
 
     mat4 rot = GLM_MAT4_IDENTITY_INIT;
     glm_rotate_make(rot, angle, axis);
     glm_mat4_mul(rot, arcball->mat, arcball->mat);
+    return DVZ_OK;
 }
 
 
@@ -372,10 +380,12 @@ void dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, vec3 axis)
  * @param arcball arcball controller
  * @param zoom uniform zoom factor
  */
-void dvz_arcball_zoom(DvzArcball* arcball, float zoom)
+DvzResult dvz_arcball_zoom(DvzArcball* arcball, float zoom)
 {
-    ANN(arcball);
+    if (arcball == NULL)
+        return DVZ_ERROR;
     arcball->zoom = _clampf(zoom, DVZ_ARCBALL_ZOOM_MIN, DVZ_ARCBALL_ZOOM_MAX);
+    return DVZ_OK;
 }
 
 
@@ -385,11 +395,13 @@ void dvz_arcball_zoom(DvzArcball* arcball, float zoom)
  * @param arcball arcball controller
  * @param pan panel-plane pan offset
  */
-void dvz_arcball_pan(DvzArcball* arcball, vec2 pan)
+DvzResult dvz_arcball_pan(DvzArcball* arcball, vec2 pan)
 {
-    ANN(arcball);
+    if (arcball == NULL)
+        return DVZ_ERROR;
     glm_vec2_copy(pan, arcball->pan);
     glm_vec2_copy(pan, arcball->pan_center);
+    return DVZ_OK;
 }
 
 
@@ -412,35 +424,41 @@ bool dvz_arcball_state(const DvzArcball* arcball, DvzArcballState* out)
  * @param arcball arcball controller
  * @param shift_px shift in viewport pixels
  */
-void dvz_arcball_pan_shift(DvzArcball* arcball, vec2 shift_px)
+DvzResult dvz_arcball_pan_shift(DvzArcball* arcball, vec2 shift_px)
 {
-    ANN(arcball);
+    if (arcball == NULL)
+        return DVZ_ERROR;
     glm_vec2_copy(arcball->pan, arcball->pan_center);
     _arcball_pan_drag(arcball, shift_px);
     glm_vec2_copy(arcball->pan, arcball->pan_center);
+    return DVZ_OK;
 }
 
 
 
-void dvz_arcball_resize(DvzArcball* arcball, float width, float height)
+DvzResult dvz_arcball_resize(DvzArcball* arcball, float width, float height)
 {
-    ANN(arcball);
+    if (arcball == NULL)
+        return DVZ_ERROR;
     arcball->viewport_size[0] = width;
     arcball->viewport_size[1] = height;
+    return DVZ_OK;
 }
 
 
 
-void dvz_arcball_constrain(DvzArcball* arcball, vec3 axis)
+DvzResult dvz_arcball_constrain(DvzArcball* arcball, vec3 axis)
 {
-    ANN(arcball);
+    if (arcball == NULL)
+        return DVZ_ERROR;
     if (glm_vec3_norm(axis) == 0.0f)
     {
         log_warn("null arcball constrain axis, ignoring");
-        return;
+        return DVZ_ERROR;
     }
     glm_vec3_normalize_to(axis, arcball->constrain);
     arcball->flags |= DVZ_ARCBALL_FLAGS_CONSTRAIN;
+    return DVZ_OK;
 }
 
 
@@ -453,9 +471,10 @@ void dvz_arcball_angles(DvzArcball* arcball, vec3 out_angles)
 
 
 
-void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos)
+DvzResult dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos)
 {
-    ANN(arcball);
+    if (arcball == NULL)
+        return DVZ_ERROR;
 
     versor cur_ball = {0}, prev_ball = {0};
     _screen_to_arcball(cur_pos, cur_ball);
@@ -485,27 +504,32 @@ void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos)
         arcball->rotation[3] = 0.0f;
     }
     glm_quat_normalize(arcball->rotation);
+    return DVZ_OK;
 }
 
 
 
-void dvz_arcball_model(DvzArcball* arcball, mat4 model)
+DvzResult dvz_arcball_model(DvzArcball* arcball, mat4 model)
 {
-    ANN(arcball);
+    if (arcball == NULL)
+        return DVZ_ERROR;
     mat4 rot = GLM_MAT4_IDENTITY_INIT;
     _arcball_drag_rotation_matrix(arcball, rot);
     glm_mat4_mul(rot, arcball->mat, model);
+    return DVZ_OK;
 }
 
 
 
-void dvz_arcball_end(DvzArcball* arcball)
+DvzResult dvz_arcball_end(DvzArcball* arcball)
 {
-    ANN(arcball);
+    if (arcball == NULL)
+        return DVZ_ERROR;
     mat4 rot = GLM_MAT4_IDENTITY_INIT;
     _arcball_drag_rotation_matrix(arcball, rot);
     glm_mat4_mul(rot, arcball->mat, arcball->mat);
     glm_quat_identity(arcball->rotation);
+    return DVZ_OK;
 }
 
 
@@ -514,7 +538,7 @@ void dvz_arcball_mvp(DvzArcball* arcball, DvzMVP* mvp)
 {
     ANN(arcball);
     ANN(mvp);
-    dvz_arcball_model(arcball, mvp->model);
+    (void)dvz_arcball_model(arcball, mvp->model);
     _arcball_camera_mvp(arcball, mvp);
 }
 
@@ -579,7 +603,7 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
                 -1.0f + 2.0f * ev->content.d.press_pos[0] / width,
                 +1.0f - 2.0f * ev->content.d.press_pos[1] / height,
             };
-            dvz_arcball_rotate(arcball, cur_pos, last_pos);
+            (void)dvz_arcball_rotate(arcball, cur_pos, last_pos);
         }
         else if (
             (ev->button == DVZ_POINTER_BUTTON_MIDDLE || ev->button == DVZ_POINTER_BUTTON_RIGHT) &&
@@ -592,13 +616,13 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
         break;
 
     case DVZ_POINTER_EVENT_DRAG_STOP:
-        dvz_arcball_end(arcball);
+        (void)dvz_arcball_end(arcball);
         glm_vec2_copy(arcball->pan, arcball->pan_center);
         arcball->interacting = false;
         break;
 
     case DVZ_POINTER_EVENT_DOUBLE_CLICK:
-        dvz_arcball_reset(arcball);
+        (void)dvz_arcball_reset(arcball);
         break;
 
     case DVZ_POINTER_EVENT_WHEEL:
@@ -617,26 +641,27 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
 
 
 
-void dvz_arcball_connect(DvzArcball* arcball, DvzInputRouter* router)
+DvzResult dvz_arcball_connect(DvzArcball* arcball, DvzInputRouter* router)
 {
-    ANN(arcball);
-    ANN(router);
+    if (arcball == NULL || router == NULL)
+        return DVZ_ERROR;
     DvzInputResizeEvent r;
     if (dvz_input_router_last_resize(router, &r) && r.window_width > 0 && r.window_height > 0)
-        dvz_arcball_resize(arcball, (float)r.window_width, (float)r.window_height);
+        (void)dvz_arcball_resize(arcball, (float)r.window_width, (float)r.window_height);
     if (arcball->input_router != NULL && arcball->input_subscription_id != DVZ_CALLBACK_ID_NONE)
         dvz_input_unsubscribe(arcball->input_router, arcball->input_subscription_id);
     arcball->input_router = router;
     arcball->input_subscription_id =
         dvz_input_subscribe_event(router, _arcball_input_callback, arcball);
+    return arcball->input_subscription_id != DVZ_CALLBACK_ID_NONE ? DVZ_OK : DVZ_ERROR;
 }
 
 
 
-void dvz_arcball_disconnect(DvzArcball* arcball, DvzInputRouter* router)
+DvzResult dvz_arcball_disconnect(DvzArcball* arcball, DvzInputRouter* router)
 {
-    ANN(arcball);
-    ANN(router);
+    if (arcball == NULL || router == NULL)
+        return DVZ_ERROR;
     if (arcball->input_subscription_id != DVZ_CALLBACK_ID_NONE)
     {
         DvzInputRouter* subscribed_router =
@@ -645,6 +670,7 @@ void dvz_arcball_disconnect(DvzArcball* arcball, DvzInputRouter* router)
         arcball->input_router = NULL;
         arcball->input_subscription_id = DVZ_CALLBACK_ID_NONE;
     }
+    return DVZ_OK;
 }
 
 

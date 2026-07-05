@@ -452,7 +452,7 @@ static void _fly_input_callback(DvzInputRouter* router, const DvzInputEvent* ev,
     {
         const DvzInputResizeEvent* r = &ev->content.resize;
         if (!fly->has_viewport && r->window_width > 0 && r->window_height > 0)
-            dvz_fly_resize(fly, (float)r->window_width, (float)r->window_height);
+            (void)dvz_fly_resize(fly, (float)r->window_width, (float)r->window_height);
     }
 }
 
@@ -533,7 +533,7 @@ DvzFly* _dvz_fly(const DvzFlyDesc* desc)
     fly->wheel_speed = desc->wheel_speed;
 
     if (desc->use_angles)
-        dvz_fly_initial(
+        (void)dvz_fly_initial(
             fly, (vec3){
                      desc->initial_view.eye[0],
                      desc->initial_view.eye[1],
@@ -541,7 +541,7 @@ DvzFly* _dvz_fly(const DvzFlyDesc* desc)
                  },
             desc->yaw, desc->pitch, desc->roll);
     else
-        dvz_fly_initial_lookat(
+        (void)dvz_fly_initial_lookat(
             fly, (vec3){
                      desc->initial_view.eye[0],
                      desc->initial_view.eye[1],
@@ -571,9 +571,10 @@ DvzFly* dvz_fly_create(const DvzFlyDesc* desc) { return _dvz_fly(desc); }
  *
  * @param fly the fly controller
  */
-void dvz_fly_reset(DvzFly* fly)
+DvzResult dvz_fly_reset(DvzFly* fly)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     glm_vec3_copy(fly->position_init, fly->position);
     fly->yaw = fly->yaw_init;
     fly->pitch = fly->pitch_init;
@@ -587,7 +588,8 @@ void dvz_fly_reset(DvzFly* fly)
     fly->key_down = false;
     fly->key_fast = false;
     fly->key_slow = false;
-    dvz_fly_apply_camera(fly);
+    (void)dvz_fly_apply_camera(fly);
+    return DVZ_OK;
 }
 
 
@@ -601,14 +603,16 @@ void dvz_fly_reset(DvzFly* fly)
  * @param width viewport width in window pixels
  * @param height viewport height in window pixels
  */
-void dvz_fly_viewport(DvzFly* fly, float x, float y, float width, float height)
+DvzResult dvz_fly_viewport(DvzFly* fly, float x, float y, float width, float height)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     fly->viewport_origin[0] = x;
     fly->viewport_origin[1] = y;
     fly->viewport_size[0] = width > 0.0f ? width : DVZ_FLY_DEFAULT_WIDTH;
     fly->viewport_size[1] = height > 0.0f ? height : DVZ_FLY_DEFAULT_HEIGHT;
     fly->has_viewport = true;
+    return DVZ_OK;
 }
 
 
@@ -620,11 +624,13 @@ void dvz_fly_viewport(DvzFly* fly, float x, float y, float width, float height)
  * @param width viewport width in pixels
  * @param height viewport height in pixels
  */
-void dvz_fly_resize(DvzFly* fly, float width, float height)
+DvzResult dvz_fly_resize(DvzFly* fly, float width, float height)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     fly->viewport_size[0] = width > 0.0f ? width : DVZ_FLY_DEFAULT_WIDTH;
     fly->viewport_size[1] = height > 0.0f ? height : DVZ_FLY_DEFAULT_HEIGHT;
+    return DVZ_OK;
 }
 
 
@@ -638,14 +644,15 @@ void dvz_fly_resize(DvzFly* fly, float width, float height)
  * @param pitch initial pitch angle in radians
  * @param roll initial roll angle in radians
  */
-void dvz_fly_initial(DvzFly* fly, vec3 position, float yaw, float pitch, float roll)
+DvzResult dvz_fly_initial(DvzFly* fly, vec3 position, float yaw, float pitch, float roll)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     glm_vec3_copy(position, fly->position_init);
     fly->yaw_init = _fly_wrap_angle(yaw);
     fly->pitch_init = _fly_clamp_pitch(pitch);
     fly->roll_init = (fly->flags & DVZ_FLY_FLAGS_DISABLE_ROLL) != 0 ? 0.0f : _fly_wrap_angle(roll);
-    dvz_fly_reset(fly);
+    return dvz_fly_reset(fly);
 }
 
 
@@ -657,16 +664,17 @@ void dvz_fly_initial(DvzFly* fly, vec3 position, float yaw, float pitch, float r
  * @param position initial camera position
  * @param target initial look-at target
  */
-void dvz_fly_initial_lookat(DvzFly* fly, vec3 position, vec3 target)
+DvzResult dvz_fly_initial_lookat(DvzFly* fly, vec3 position, vec3 target)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     vec3 dir = {0};
     glm_vec3_sub(target, position, dir);
     float yaw = -GLM_PI_2f;
     float pitch = 0.0f;
     if (!_fly_angles_from_dir(dir, fly->world_up, &yaw, &pitch))
         log_warn("invalid fly initial look-at direction, using default orientation");
-    dvz_fly_initial(fly, position, yaw, pitch, 0.0f);
+    return dvz_fly_initial(fly, position, yaw, pitch, 0.0f);
 }
 
 
@@ -677,10 +685,12 @@ void dvz_fly_initial_lookat(DvzFly* fly, vec3 position, vec3 target)
  * @param fly the fly controller
  * @param mode movement mode
  */
-void dvz_fly_set_mode(DvzFly* fly, DvzFlyMode mode)
+DvzResult dvz_fly_set_mode(DvzFly* fly, DvzFlyMode mode)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     fly->mode = mode;
+    return DVZ_OK;
 }
 
 
@@ -691,14 +701,16 @@ void dvz_fly_set_mode(DvzFly* fly, DvzFlyMode mode)
  * @param fly the fly controller
  * @param amount movement amount in world units
  */
-void dvz_fly_move_forward(DvzFly* fly, float amount)
+DvzResult dvz_fly_move_forward(DvzFly* fly, float amount)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     vec3 forward = {0}, right = {0}, up = {0}, move = {0};
     _fly_movement_basis(fly, forward, right, up);
     glm_vec3_scale(forward, amount, move);
     glm_vec3_add(fly->position, move, fly->position);
-    dvz_fly_apply_camera(fly);
+    (void)dvz_fly_apply_camera(fly);
+    return DVZ_OK;
 }
 
 
@@ -709,14 +721,16 @@ void dvz_fly_move_forward(DvzFly* fly, float amount)
  * @param fly the fly controller
  * @param amount movement amount in world units
  */
-void dvz_fly_move_right(DvzFly* fly, float amount)
+DvzResult dvz_fly_move_right(DvzFly* fly, float amount)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     vec3 forward = {0}, right = {0}, up = {0}, move = {0};
     _fly_movement_basis(fly, forward, right, up);
     glm_vec3_scale(right, amount, move);
     glm_vec3_add(fly->position, move, fly->position);
-    dvz_fly_apply_camera(fly);
+    (void)dvz_fly_apply_camera(fly);
+    return DVZ_OK;
 }
 
 
@@ -727,9 +741,10 @@ void dvz_fly_move_right(DvzFly* fly, float amount)
  * @param fly the fly controller
  * @param amount movement amount in world units
  */
-void dvz_fly_move_up(DvzFly* fly, float amount)
+DvzResult dvz_fly_move_up(DvzFly* fly, float amount)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     vec3 up = {0}, move = {0};
     glm_vec3_copy(fly->world_up, up);
     if (!_vec3_valid(up))
@@ -737,7 +752,8 @@ void dvz_fly_move_up(DvzFly* fly, float amount)
     glm_vec3_normalize(up);
     glm_vec3_scale(up, amount, move);
     glm_vec3_add(fly->position, move, fly->position);
-    dvz_fly_apply_camera(fly);
+    (void)dvz_fly_apply_camera(fly);
+    return DVZ_OK;
 }
 
 
@@ -749,14 +765,16 @@ void dvz_fly_move_up(DvzFly* fly, float amount)
  * @param dx yaw delta in radians
  * @param dy pitch delta in radians
  */
-void dvz_fly_rotate(DvzFly* fly, float dx, float dy)
+DvzResult dvz_fly_rotate(DvzFly* fly, float dx, float dy)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     if ((fly->flags & DVZ_FLY_FLAGS_INVERT_Y) != 0)
         dy = -dy;
     fly->yaw = _fly_wrap_angle(fly->yaw + dx);
     fly->pitch = _fly_clamp_pitch(fly->pitch + dy);
-    dvz_fly_apply_camera(fly);
+    (void)dvz_fly_apply_camera(fly);
+    return DVZ_OK;
 }
 
 
@@ -767,13 +785,15 @@ void dvz_fly_rotate(DvzFly* fly, float dx, float dy)
  * @param fly the fly controller
  * @param dx roll delta in radians
  */
-void dvz_fly_roll(DvzFly* fly, float dx)
+DvzResult dvz_fly_roll(DvzFly* fly, float dx)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     if ((fly->flags & DVZ_FLY_FLAGS_DISABLE_ROLL) != 0)
-        return;
+        return DVZ_ERROR;
     fly->roll = _fly_wrap_angle(fly->roll + dx);
-    dvz_fly_apply_camera(fly);
+    (void)dvz_fly_apply_camera(fly);
+    return DVZ_OK;
 }
 
 
@@ -836,14 +856,15 @@ void dvz_fly_get_up(const DvzFly* fly, vec3 out_up)
  * @param fly the fly controller
  * @param pivot new world-space pivot point
  */
-void dvz_fly_pivot(DvzFly* fly, vec3 pivot)
+DvzResult dvz_fly_pivot(DvzFly* fly, vec3 pivot)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     glm_vec3_copy(pivot, fly->pivot);
     fly->has_pivot = true;
     fly->pivot_marker_visible = true;
     fly->pivot_marker_time_left = DVZ_FLY_PIVOT_MARKER_S;
-    dvz_fly_look_at_pivot(fly);
+    return dvz_fly_look_at_pivot(fly);
 }
 
 
@@ -853,13 +874,15 @@ void dvz_fly_pivot(DvzFly* fly, vec3 pivot)
  *
  * @param fly the fly controller
  */
-void dvz_fly_clear_pivot(DvzFly* fly)
+DvzResult dvz_fly_clear_pivot(DvzFly* fly)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     fly->has_pivot = false;
     fly->pivot_distance = 0.0f;
     fly->pivot_marker_visible = false;
     fly->pivot_marker_time_left = 0.0;
+    return DVZ_OK;
 }
 
 
@@ -884,11 +907,12 @@ bool dvz_fly_has_pivot(const DvzFly* fly)
  *
  * @param fly the fly controller
  */
-void dvz_fly_look_at_pivot(DvzFly* fly)
+DvzResult dvz_fly_look_at_pivot(DvzFly* fly)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     if (!fly->has_pivot)
-        return;
+        return DVZ_ERROR;
     vec3 dir = {0};
     glm_vec3_sub(fly->pivot, fly->position, dir);
     fly->pivot_distance = glm_vec3_norm(dir);
@@ -897,8 +921,10 @@ void dvz_fly_look_at_pivot(DvzFly* fly)
     {
         fly->yaw = yaw;
         fly->pitch = pitch;
-        dvz_fly_apply_camera(fly);
+        (void)dvz_fly_apply_camera(fly);
+        return DVZ_OK;
     }
+    return DVZ_ERROR;
 }
 
 
@@ -911,11 +937,12 @@ void dvz_fly_look_at_pivot(DvzFly* fly)
  * @param pitch_delta pitch delta in radians
  * @return whether the orbit was applied
  */
-bool dvz_fly_orbit(DvzFly* fly, float yaw_delta, float pitch_delta)
+DvzResult dvz_fly_orbit(DvzFly* fly, float yaw_delta, float pitch_delta)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     if (!fly->has_pivot || fly->pivot_distance <= 0.0f)
-        return false;
+        return DVZ_ERROR;
 
     fly->yaw = _fly_wrap_angle(fly->yaw + yaw_delta);
     fly->pitch = _fly_clamp_pitch(fly->pitch + pitch_delta);
@@ -926,8 +953,8 @@ bool dvz_fly_orbit(DvzFly* fly, float yaw_delta, float pitch_delta)
     glm_vec3_add(fly->pivot, offset, fly->position);
     fly->pivot_marker_visible = true;
     fly->pivot_marker_time_left = DVZ_FLY_PIVOT_MARKER_S;
-    dvz_fly_apply_camera(fly);
-    return true;
+    (void)dvz_fly_apply_camera(fly);
+    return DVZ_OK;
 }
 
 
@@ -938,11 +965,14 @@ bool dvz_fly_orbit(DvzFly* fly, float yaw_delta, float pitch_delta)
  * @param fly the fly controller
  * @param camera the camera to update, or NULL
  */
-void dvz_fly_set_camera(DvzFly* fly, DvzCamera* camera)
+DvzResult dvz_fly_set_camera(DvzFly* fly, DvzCamera* camera)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     fly->camera = camera;
-    dvz_fly_apply_camera(fly);
+    if (camera == NULL)
+        return DVZ_OK;
+    return dvz_fly_apply_camera(fly);
 }
 
 
@@ -952,11 +982,12 @@ void dvz_fly_set_camera(DvzFly* fly, DvzCamera* camera)
  *
  * @param fly the fly controller
  */
-void dvz_fly_apply_camera(DvzFly* fly)
+DvzResult dvz_fly_apply_camera(DvzFly* fly)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     if (fly->camera == NULL)
-        return;
+        return DVZ_ERROR;
     vec3 target = {0}, up = {0};
     dvz_fly_get_target(fly, target);
     dvz_fly_get_up(fly, up);
@@ -965,7 +996,7 @@ void dvz_fly_apply_camera(DvzFly* fly)
         .target = {target[0], target[1], target[2]},
         .up = {up[0], up[1], up[2]},
     };
-    dvz_camera_set_view(fly->camera, &view);
+    return dvz_camera_set_view(fly->camera, &view);
 }
 
 
@@ -976,11 +1007,12 @@ void dvz_fly_apply_camera(DvzFly* fly)
  * @param fly the fly controller
  * @param dt elapsed time in seconds
  */
-void dvz_fly_update(DvzFly* fly, double dt)
+DvzResult dvz_fly_update(DvzFly* fly, double dt)
 {
-    ANN(fly);
+    if (fly == NULL)
+        return DVZ_ERROR;
     if (dt <= 0.0)
-        return;
+        return DVZ_ERROR;
 
     float speed = fly->speed;
     if (fly->key_fast)
@@ -1006,11 +1038,11 @@ void dvz_fly_update(DvzFly* fly, double dt)
         up -= DVZ_FLY_VERTICAL_SPEED * amount;
 
     if (forward != 0.0f)
-        dvz_fly_move_forward(fly, forward);
+        (void)dvz_fly_move_forward(fly, forward);
     if (right != 0.0f)
-        dvz_fly_move_right(fly, right);
+        (void)dvz_fly_move_right(fly, right);
     if (up != 0.0f)
-        dvz_fly_move_up(fly, up);
+        (void)dvz_fly_move_up(fly, up);
 
     if (fly->pivot_marker_time_left > 0.0)
     {
@@ -1018,6 +1050,7 @@ void dvz_fly_update(DvzFly* fly, double dt)
         if (fly->pivot_marker_time_left <= 0.0 && !fly->interacting)
             fly->pivot_marker_visible = false;
     }
+    return DVZ_OK;
 }
 
 
@@ -1068,7 +1101,7 @@ bool dvz_fly_pointer(DvzFly* fly, const DvzPointerEvent* ev)
         {
             float dx = fly->look_speed * delta[0] / width * GLM_PIf;
             float dy = -fly->look_speed * delta[1] / height * GLM_PIf;
-            dvz_fly_rotate(fly, dx, dy);
+            (void)dvz_fly_rotate(fly, dx, dy);
             fly->interacting = true;
             return true;
         }
@@ -1076,14 +1109,14 @@ bool dvz_fly_pointer(DvzFly* fly, const DvzPointerEvent* ev)
         {
             float dx = -fly->look_speed * delta[0] / width * GLM_PIf;
             float dy = +fly->look_speed * delta[1] / height * GLM_PIf;
-            fly->interacting = dvz_fly_orbit(fly, dx, dy);
+            fly->interacting = dvz_fly_orbit(fly, dx, dy) == DVZ_OK;
             return fly->interacting;
         }
         if (ev->button == DVZ_POINTER_BUTTON_RIGHT)
         {
             float scale = 2.0f * fly->speed;
-            dvz_fly_move_right(fly, scale * delta[0] / width);
-            dvz_fly_move_up(fly, -DVZ_FLY_VERTICAL_SPEED * scale * delta[1] / height);
+            (void)dvz_fly_move_right(fly, scale * delta[0] / width);
+            (void)dvz_fly_move_up(fly, -DVZ_FLY_VERTICAL_SPEED * scale * delta[1] / height);
             fly->interacting = true;
             return true;
         }
@@ -1091,11 +1124,11 @@ bool dvz_fly_pointer(DvzFly* fly, const DvzPointerEvent* ev)
     }
 
     case DVZ_POINTER_EVENT_DOUBLE_CLICK:
-        dvz_fly_reset(fly);
+        (void)dvz_fly_reset(fly);
         return true;
 
     case DVZ_POINTER_EVENT_WHEEL:
-        dvz_fly_move_forward(fly, fly->wheel_speed * ev->content.w.dir[1]);
+        (void)dvz_fly_move_forward(fly, fly->wheel_speed * ev->content.w.dir[1]);
         return true;
 
     default:
@@ -1119,7 +1152,7 @@ bool dvz_fly_keyboard(DvzFly* fly, const DvzKeyboardEvent* ev)
     ANN(ev);
     if (ev->type == DVZ_KEYBOARD_EVENT_PRESS && ev->key == DVZ_KEY_R)
     {
-        dvz_fly_reset(fly);
+        (void)dvz_fly_reset(fly);
         return true;
     }
     return _fly_keyboard_state(fly, ev);
@@ -1133,20 +1166,21 @@ bool dvz_fly_keyboard(DvzFly* fly, const DvzKeyboardEvent* ev)
  * @param fly the fly controller
  * @param router input router
  */
-void dvz_fly_connect(DvzFly* fly, DvzInputRouter* router)
+DvzResult dvz_fly_connect(DvzFly* fly, DvzInputRouter* router)
 {
-    ANN(fly);
-    ANN(router);
+    if (fly == NULL || router == NULL)
+        return DVZ_ERROR;
     DvzInputResizeEvent r;
     if (!fly->has_viewport && dvz_input_router_last_resize(router, &r) && r.window_width > 0 &&
         r.window_height > 0)
     {
-        dvz_fly_resize(fly, (float)r.window_width, (float)r.window_height);
+        (void)dvz_fly_resize(fly, (float)r.window_width, (float)r.window_height);
     }
     if (fly->input_router != NULL && fly->input_subscription_id != DVZ_CALLBACK_ID_NONE)
         dvz_input_unsubscribe(fly->input_router, fly->input_subscription_id);
     fly->input_router = router;
     fly->input_subscription_id = dvz_input_subscribe_event(router, _fly_input_callback, fly);
+    return fly->input_subscription_id != DVZ_CALLBACK_ID_NONE ? DVZ_OK : DVZ_ERROR;
 }
 
 
@@ -1157,10 +1191,10 @@ void dvz_fly_connect(DvzFly* fly, DvzInputRouter* router)
  * @param fly the fly controller
  * @param router input router
  */
-void dvz_fly_disconnect(DvzFly* fly, DvzInputRouter* router)
+DvzResult dvz_fly_disconnect(DvzFly* fly, DvzInputRouter* router)
 {
-    ANN(fly);
-    ANN(router);
+    if (fly == NULL || router == NULL)
+        return DVZ_ERROR;
     if (fly->input_subscription_id != DVZ_CALLBACK_ID_NONE)
     {
         DvzInputRouter* subscribed_router = fly->input_router != NULL ? fly->input_router : router;
@@ -1168,6 +1202,7 @@ void dvz_fly_disconnect(DvzFly* fly, DvzInputRouter* router)
         fly->input_router = NULL;
         fly->input_subscription_id = DVZ_CALLBACK_ID_NONE;
     }
+    return DVZ_OK;
 }
 
 

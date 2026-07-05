@@ -22,6 +22,7 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/input/pointer.h"
 #include "datoviz/input/router.h"
 #include "datoviz/math/types.h"
@@ -138,20 +139,20 @@ DVZ_EXPORT DvzPanzoom* dvz_panzoom_create(const DvzPanzoomDesc* desc);
 /**
  * Reset to the identity transform.
  */
-DVZ_EXPORT void dvz_panzoom_reset(DvzPanzoom* pz);
+DVZ_EXPORT DvzResult dvz_panzoom_reset(DvzPanzoom* pz);
 
 
 
 /**
  * Update the viewport size (call on window resize).
  */
-DVZ_EXPORT void dvz_panzoom_resize(DvzPanzoom* pz, float width, float height);
+DVZ_EXPORT DvzResult dvz_panzoom_resize(DvzPanzoom* pz, float width, float height);
 
 
 /**
  * Update the viewport rectangle in window coordinates.
  */
-DVZ_EXPORT void
+DVZ_EXPORT DvzResult
 dvz_panzoom_viewport(DvzPanzoom* pz, float x, float y, float width, float height);
 
 
@@ -159,14 +160,14 @@ dvz_panzoom_viewport(DvzPanzoom* pz, float x, float y, float width, float height
 /**
  * Set the pan offset in NDC.
  */
-DVZ_EXPORT void dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan);
+DVZ_EXPORT DvzResult dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan);
 
 
 
 /**
  * Set the zoom factors.
  */
-DVZ_EXPORT void dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom);
+DVZ_EXPORT DvzResult dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom);
 
 
 /**
@@ -204,28 +205,28 @@ DVZ_EXPORT bool dvz_panzoom_state(const DvzPanzoom* pz, DvzPanzoomState* out);
 /**
  * Apply a pan shift (pixel delta).
  */
-DVZ_EXPORT void dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
+DVZ_EXPORT DvzResult dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
 
 
 
 /**
  * Apply a zoom shift driven by right-drag (pixel delta + anchor).
  */
-DVZ_EXPORT void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
+DVZ_EXPORT DvzResult dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
 
 
 
 /**
  * Apply a wheel zoom.
  */
-DVZ_EXPORT void dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px);
+DVZ_EXPORT DvzResult dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px);
 
 
 
 /**
  * Commit the current pan/zoom as the new drag baseline (call at drag stop).
  */
-DVZ_EXPORT void dvz_panzoom_end(DvzPanzoom* pz);
+DVZ_EXPORT DvzResult dvz_panzoom_end(DvzPanzoom* pz);
 
 
 
@@ -253,14 +254,14 @@ DVZ_EXPORT bool dvz_panzoom_pointer(DvzPanzoom* pz, const DvzPointerEvent* ev);
  * Subscribe the panzoom to an input router.
  * The panzoom pointer callback will be registered; call dvz_panzoom_disconnect() to remove it.
  */
-DVZ_EXPORT void dvz_panzoom_connect(DvzPanzoom* pz, DvzInputRouter* router);
+DVZ_EXPORT DvzResult dvz_panzoom_connect(DvzPanzoom* pz, DvzInputRouter* router);
 
 
 
 /**
  * Unsubscribe the panzoom from a router.
  */
-DVZ_EXPORT void dvz_panzoom_disconnect(DvzPanzoom* pz, DvzInputRouter* router);
+DVZ_EXPORT DvzResult dvz_panzoom_disconnect(DvzPanzoom* pz, DvzInputRouter* router);
 
 
 

@@ -147,16 +147,16 @@ static void _camera_apply_desc(DvzCamera* camera, const DvzCameraDesc* desc)
 {
     ANN(camera);
     ANN(desc);
-    dvz_camera_set_view(camera, &desc->view);
+    (void)dvz_camera_set_view(camera, &desc->view);
     if (desc->projection.type == DVZ_CAMERA_ORTHOGRAPHIC)
     {
-        dvz_camera_set_orthographic(
+        (void)dvz_camera_set_orthographic(
             camera, desc->projection.ortho_height, desc->projection.near_clip,
             desc->projection.far_clip);
     }
     else
     {
-        dvz_camera_set_perspective(
+        (void)dvz_camera_set_perspective(
             camera, desc->projection.fov_y, desc->projection.near_clip,
             desc->projection.far_clip);
     }
@@ -245,7 +245,7 @@ DvzCamera* dvz_camera_create(const DvzCameraDesc* desc)
     DvzCamera* camera = (DvzCamera*)dvz_calloc(1, sizeof(DvzCamera));
     if (camera == NULL)
         return NULL;
-    dvz_camera_resize(camera, DVZ_CAMERA_DEFAULT_WIDTH, DVZ_CAMERA_DEFAULT_HEIGHT);
+    (void)dvz_camera_resize(camera, DVZ_CAMERA_DEFAULT_WIDTH, DVZ_CAMERA_DEFAULT_HEIGHT);
     _camera_apply_desc(camera, desc);
     return camera;
 }
@@ -270,16 +270,17 @@ DvzCamera* _dvz_camera(const DvzCameraDesc* desc)
  * @param camera the camera
  * @param view the camera view
  */
-void dvz_camera_set_view(DvzCamera* camera, const DvzCameraView* view)
+DvzResult dvz_camera_set_view(DvzCamera* camera, const DvzCameraView* view)
 {
-    ANN(camera);
-    ANN(view);
+    if (camera == NULL || view == NULL)
+        return DVZ_ERROR;
     for (uint32_t i = 0; i < 3; i++)
     {
         camera->eye[i] = view->eye[i];
         camera->target[i] = view->target[i];
         camera->up[i] = view->up[i];
     }
+    return DVZ_OK;
 }
 
 
@@ -330,16 +331,18 @@ void dvz_camera_get_projection(const DvzCamera* camera, DvzCameraProjection* out
  * @param near near clipping plane
  * @param far far clipping plane
  */
-void dvz_camera_set_perspective(DvzCamera* camera, float fov_y, float near, float far)
+DvzResult dvz_camera_set_perspective(DvzCamera* camera, float fov_y, float near, float far)
 {
-    ANN(camera);
+    if (camera == NULL)
+        return DVZ_ERROR;
     if (!_camera_valid_perspective(fov_y, near, far))
-        return;
+        return DVZ_ERROR;
     camera->type = DVZ_CAMERA_PERSPECTIVE;
     camera->ortho_has_bounds = false;
     camera->fov_y = fov_y;
     camera->near_clip = near;
     camera->far_clip = far;
+    return DVZ_OK;
 }
 
 
@@ -352,16 +355,18 @@ void dvz_camera_set_perspective(DvzCamera* camera, float fov_y, float near, floa
  * @param near near clipping plane
  * @param far far clipping plane
  */
-void dvz_camera_set_orthographic(DvzCamera* camera, float height, float near, float far)
+DvzResult dvz_camera_set_orthographic(DvzCamera* camera, float height, float near, float far)
 {
-    ANN(camera);
+    if (camera == NULL)
+        return DVZ_ERROR;
     if (!_camera_valid_orthographic(height, near, far))
-        return;
+        return DVZ_ERROR;
     camera->type = DVZ_CAMERA_ORTHOGRAPHIC;
     camera->ortho_has_bounds = false;
     camera->ortho_height = height;
     camera->near_clip = near;
     camera->far_clip = far;
+    return DVZ_OK;
 }
 
 
@@ -440,9 +445,10 @@ DvzResult dvz_camera_get_orthographic_bounds(
  * @param width viewport width in pixels
  * @param height viewport height in pixels
  */
-void dvz_camera_resize(DvzCamera* camera, float width, float height)
+DvzResult dvz_camera_resize(DvzCamera* camera, float width, float height)
 {
-    ANN(camera);
+    if (camera == NULL)
+        return DVZ_ERROR;
     if (width <= 0.0f)
         width = DVZ_CAMERA_DEFAULT_WIDTH;
     if (height <= 0.0f)
@@ -450,6 +456,7 @@ void dvz_camera_resize(DvzCamera* camera, float width, float height)
     camera->viewport_size[0] = width;
     camera->viewport_size[1] = height;
     camera->aspect = width / height;
+    return DVZ_OK;
 }
 
 

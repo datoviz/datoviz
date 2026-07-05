@@ -22,6 +22,7 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/input/keyboard.h"
 #include "datoviz/input/pointer.h"
 #include "datoviz/input/router.h"
@@ -118,7 +119,7 @@ DVZ_EXPORT DvzFly* dvz_fly_create(const DvzFlyDesc* desc);
  *
  * @param fly the fly controller
  */
-DVZ_EXPORT void dvz_fly_reset(DvzFly* fly);
+DVZ_EXPORT DvzResult dvz_fly_reset(DvzFly* fly);
 
 
 
@@ -131,7 +132,7 @@ DVZ_EXPORT void dvz_fly_reset(DvzFly* fly);
  * @param width viewport width in window pixels
  * @param height viewport height in window pixels
  */
-DVZ_EXPORT void dvz_fly_viewport(DvzFly* fly, float x, float y, float width, float height);
+DVZ_EXPORT DvzResult dvz_fly_viewport(DvzFly* fly, float x, float y, float width, float height);
 
 
 
@@ -142,7 +143,7 @@ DVZ_EXPORT void dvz_fly_viewport(DvzFly* fly, float x, float y, float width, flo
  * @param width viewport width in pixels
  * @param height viewport height in pixels
  */
-DVZ_EXPORT void dvz_fly_resize(DvzFly* fly, float width, float height);
+DVZ_EXPORT DvzResult dvz_fly_resize(DvzFly* fly, float width, float height);
 
 
 
@@ -155,7 +156,7 @@ DVZ_EXPORT void dvz_fly_resize(DvzFly* fly, float width, float height);
  * @param pitch initial pitch angle in radians
  * @param roll initial roll angle in radians
  */
-DVZ_EXPORT void dvz_fly_initial(DvzFly* fly, vec3 position, float yaw, float pitch, float roll);
+DVZ_EXPORT DvzResult dvz_fly_initial(DvzFly* fly, vec3 position, float yaw, float pitch, float roll);
 
 
 
@@ -166,7 +167,7 @@ DVZ_EXPORT void dvz_fly_initial(DvzFly* fly, vec3 position, float yaw, float pit
  * @param position initial camera position
  * @param target initial look-at target
  */
-DVZ_EXPORT void dvz_fly_initial_lookat(DvzFly* fly, vec3 position, vec3 target);
+DVZ_EXPORT DvzResult dvz_fly_initial_lookat(DvzFly* fly, vec3 position, vec3 target);
 
 
 
@@ -176,7 +177,7 @@ DVZ_EXPORT void dvz_fly_initial_lookat(DvzFly* fly, vec3 position, vec3 target);
  * @param fly the fly controller
  * @param mode movement mode
  */
-DVZ_EXPORT void dvz_fly_set_mode(DvzFly* fly, DvzFlyMode mode);
+DVZ_EXPORT DvzResult dvz_fly_set_mode(DvzFly* fly, DvzFlyMode mode);
 
 
 
@@ -186,7 +187,7 @@ DVZ_EXPORT void dvz_fly_set_mode(DvzFly* fly, DvzFlyMode mode);
  * @param fly the fly controller
  * @param amount movement amount in world units
  */
-DVZ_EXPORT void dvz_fly_move_forward(DvzFly* fly, float amount);
+DVZ_EXPORT DvzResult dvz_fly_move_forward(DvzFly* fly, float amount);
 
 
 
@@ -196,7 +197,7 @@ DVZ_EXPORT void dvz_fly_move_forward(DvzFly* fly, float amount);
  * @param fly the fly controller
  * @param amount movement amount in world units
  */
-DVZ_EXPORT void dvz_fly_move_right(DvzFly* fly, float amount);
+DVZ_EXPORT DvzResult dvz_fly_move_right(DvzFly* fly, float amount);
 
 
 
@@ -206,7 +207,7 @@ DVZ_EXPORT void dvz_fly_move_right(DvzFly* fly, float amount);
  * @param fly the fly controller
  * @param amount movement amount in world units
  */
-DVZ_EXPORT void dvz_fly_move_up(DvzFly* fly, float amount);
+DVZ_EXPORT DvzResult dvz_fly_move_up(DvzFly* fly, float amount);
 
 
 
@@ -217,7 +218,7 @@ DVZ_EXPORT void dvz_fly_move_up(DvzFly* fly, float amount);
  * @param dx yaw delta in radians
  * @param dy pitch delta in radians
  */
-DVZ_EXPORT void dvz_fly_rotate(DvzFly* fly, float dx, float dy);
+DVZ_EXPORT DvzResult dvz_fly_rotate(DvzFly* fly, float dx, float dy);
 
 
 
@@ -227,7 +228,7 @@ DVZ_EXPORT void dvz_fly_rotate(DvzFly* fly, float dx, float dy);
  * @param fly the fly controller
  * @param dx roll delta in radians
  */
-DVZ_EXPORT void dvz_fly_roll(DvzFly* fly, float dx);
+DVZ_EXPORT DvzResult dvz_fly_roll(DvzFly* fly, float dx);
 
 
 
@@ -267,7 +268,7 @@ DVZ_EXPORT void dvz_fly_get_up(const DvzFly* fly, vec3 out_up);
  * @param fly the fly controller
  * @param pivot new world-space pivot point
  */
-DVZ_EXPORT void dvz_fly_pivot(DvzFly* fly, vec3 pivot);
+DVZ_EXPORT DvzResult dvz_fly_pivot(DvzFly* fly, vec3 pivot);
 
 
 
@@ -276,7 +277,7 @@ DVZ_EXPORT void dvz_fly_pivot(DvzFly* fly, vec3 pivot);
  *
  * @param fly the fly controller
  */
-DVZ_EXPORT void dvz_fly_clear_pivot(DvzFly* fly);
+DVZ_EXPORT DvzResult dvz_fly_clear_pivot(DvzFly* fly);
 
 
 
@@ -295,7 +296,7 @@ DVZ_EXPORT bool dvz_fly_has_pivot(const DvzFly* fly);
  *
  * @param fly the fly controller
  */
-DVZ_EXPORT void dvz_fly_look_at_pivot(DvzFly* fly);
+DVZ_EXPORT DvzResult dvz_fly_look_at_pivot(DvzFly* fly);
 
 
 
@@ -307,7 +308,7 @@ DVZ_EXPORT void dvz_fly_look_at_pivot(DvzFly* fly);
  * @param pitch_delta pitch delta in radians
  * @return whether the orbit was applied
  */
-DVZ_EXPORT bool dvz_fly_orbit(DvzFly* fly, float yaw_delta, float pitch_delta);
+DVZ_EXPORT DvzResult dvz_fly_orbit(DvzFly* fly, float yaw_delta, float pitch_delta);
 
 
 
@@ -317,7 +318,7 @@ DVZ_EXPORT bool dvz_fly_orbit(DvzFly* fly, float yaw_delta, float pitch_delta);
  * @param fly the fly controller
  * @param camera the camera to update, or NULL
  */
-DVZ_EXPORT void dvz_fly_set_camera(DvzFly* fly, DvzCamera* camera);
+DVZ_EXPORT DvzResult dvz_fly_set_camera(DvzFly* fly, DvzCamera* camera);
 
 
 
@@ -326,7 +327,7 @@ DVZ_EXPORT void dvz_fly_set_camera(DvzFly* fly, DvzCamera* camera);
  *
  * @param fly the fly controller
  */
-DVZ_EXPORT void dvz_fly_apply_camera(DvzFly* fly);
+DVZ_EXPORT DvzResult dvz_fly_apply_camera(DvzFly* fly);
 
 
 
@@ -336,7 +337,7 @@ DVZ_EXPORT void dvz_fly_apply_camera(DvzFly* fly);
  * @param fly the fly controller
  * @param dt elapsed time in seconds
  */
-DVZ_EXPORT void dvz_fly_update(DvzFly* fly, double dt);
+DVZ_EXPORT DvzResult dvz_fly_update(DvzFly* fly, double dt);
 
 
 
@@ -368,7 +369,7 @@ DVZ_EXPORT bool dvz_fly_keyboard(DvzFly* fly, const DvzKeyboardEvent* ev);
  * @param fly the fly controller
  * @param router input router
  */
-DVZ_EXPORT void dvz_fly_connect(DvzFly* fly, DvzInputRouter* router);
+DVZ_EXPORT DvzResult dvz_fly_connect(DvzFly* fly, DvzInputRouter* router);
 
 
 
@@ -378,7 +379,7 @@ DVZ_EXPORT void dvz_fly_connect(DvzFly* fly, DvzInputRouter* router);
  * @param fly the fly controller
  * @param router input router
  */
-DVZ_EXPORT void dvz_fly_disconnect(DvzFly* fly, DvzInputRouter* router);
+DVZ_EXPORT DvzResult dvz_fly_disconnect(DvzFly* fly, DvzInputRouter* router);
 
 
 
