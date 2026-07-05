@@ -166,19 +166,6 @@ static bool _add_transparent_cubes(DvzScene* scene, DvzPanel* panel, DvzAlphaMod
 
 
 /**
- * Set the shared 3D camera used by all panels.
- *
- * @param panel target panel
- * @return true on success
- */
-static bool _set_camera(DvzPanel* panel)
-{
-    return example_set_default_3d_camera(panel, 1.0f) != NULL;
-}
-
-
-
-/**
  * Set the shared arcball orientation used by all panels.
  *
  * @param ctx scenario context
@@ -269,7 +256,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_annotation_set_placement(annotation, &label_placement) != 0)
         return false;
 
-    if (!_set_camera(blended) || !_set_camera(wboit) || !_set_camera(peel))
+    if (example_set_default_3d_camera(blended, 1.0f) == NULL ||
+        example_set_default_3d_camera(wboit, 1.0f) == NULL ||
+        example_set_default_3d_camera(peel, 1.0f) == NULL)
         return false;
     DvzController* controllers[3] = {
         _bind_arcball(ctx, blended),

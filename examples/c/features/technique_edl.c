@@ -143,12 +143,6 @@ static void _print_settings(const EdlDemoState* state)
 
 
 
-static bool _set_camera(DvzPanel* panel)
-{
-    return example_set_default_3d_camera(panel, 1.0f) != NULL;
-}
-
-
 
 static DvzController* _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel, vec3 angles)
 {
@@ -291,7 +285,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_annotation_set_placement(annotation, &label_placement) != 0)
         return false;
 
-    if (!_set_camera(plain) || !_set_camera(lit))
+    if (example_set_default_3d_camera(plain, 1.0f) == NULL ||
+        example_set_default_3d_camera(lit, 1.0f) == NULL)
         return false;
     state->arcball_angles[0] = +0.616f;
     state->arcball_angles[1] = -0.403f;

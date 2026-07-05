@@ -287,18 +287,6 @@ static bool _add_spheres(DvzScene* scene, DvzPanel* panel)
 
 
 
-/**
- * Set the shared SSAO camera.
- *
- * @param panel target panel
- * @return true on success
- */
-static bool _set_camera(DvzPanel* panel)
-{
-    return example_set_default_3d_camera(panel, 1.0f) != NULL;
-}
-
-
 static DvzController* _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel, vec3 angles)
 {
     DvzController* controller = dvz_arcball(ctx->scene, NULL);
@@ -383,7 +371,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (annotation == NULL || dvz_annotation_set_style(annotation, &label_style) != 0 ||
         dvz_annotation_set_placement(annotation, &label_placement) != 0)
         return false;
-    if (!_set_camera(plain) || !_set_camera(ssao_panel))
+    if (example_set_default_3d_camera(plain, 1.0f) == NULL ||
+        example_set_default_3d_camera(ssao_panel, 1.0f) == NULL)
         return false;
     if (!_add_occlusion_mesh(ctx->scene, plain) || !_add_spheres(ctx->scene, plain) ||
         !_add_occlusion_mesh(ctx->scene, ssao_panel) || !_add_spheres(ctx->scene, ssao_panel))

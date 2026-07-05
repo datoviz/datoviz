@@ -121,18 +121,6 @@ static bool _add_sphere_lattice(DvzScene* scene, DvzPanel* panel, bool cue_enabl
 
 
 
-/**
- * Set the depth-cue camera.
- *
- * @param panel target panel
- * @return true on success
- */
-static bool _set_camera(DvzPanel* panel)
-{
-    return example_set_default_3d_camera(panel, 1.0f) != NULL;
-}
-
-
 static DvzController* _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel)
 {
     DvzController* controller = dvz_arcball(ctx->scene, NULL);
@@ -210,7 +198,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_annotation_set_placement(annotation, &label_placement) != 0)
         return false;
 
-    if (!_set_camera(plain) || !_set_camera(cued))
+    if (example_set_default_3d_camera(plain, 1.0f) == NULL ||
+        example_set_default_3d_camera(cued, 1.0f) == NULL)
         return false;
     DvzController* plain_controller = _bind_arcball(ctx, plain);
     DvzController* cued_controller = _bind_arcball(ctx, cued);

@@ -333,20 +333,6 @@ static DvzCameraDesc _camera_desc(void)
 
 
 /**
- * Set up the default camera used for static smoke captures.
- *
- * @param panel target panel
- * @return true when the camera was set
- */
-static bool _set_camera(DvzPanel* panel)
-{
-    DvzCameraDesc camera = _camera_desc();
-    return dvz_panel_set_camera_desc(panel, &camera) == 0;
-}
-
-
-
-/**
  * Attach a turntable controller so the live example is mouse-inspectable.
  *
  * @param ctx scenario context
@@ -400,10 +386,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    return _set_camera(panel) && _add_reference_grid(panel) &&
-           _add_axis_arrow(ctx->scene, panel, 0) && _add_axis_arrow(ctx->scene, panel, 1) &&
-           _add_axis_arrow(ctx->scene, panel, 2) && _add_origin(ctx->scene, panel) &&
-           _add_axis_labels(panel) && _bind_turntable(ctx, panel);
+    DvzCameraDesc camera = _camera_desc();
+    if (dvz_panel_set_camera_desc(panel, &camera) != 0)
+        return false;
+
+    return _add_reference_grid(panel) && _add_axis_arrow(ctx->scene, panel, 0) &&
+           _add_axis_arrow(ctx->scene, panel, 1) && _add_axis_arrow(ctx->scene, panel, 2) &&
+           _add_origin(ctx->scene, panel) && _add_axis_labels(panel) &&
+           _bind_turntable(ctx, panel);
 }
 
 

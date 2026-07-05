@@ -118,19 +118,6 @@ static bool _add_cube_cluster(DvzScene* scene, DvzPanel* panel)
 
 
 /**
- * Set the shared 3D camera used by both panels.
- *
- * @param panel target panel
- * @return true on success
- */
-static bool _set_camera(DvzPanel* panel)
-{
-    return example_set_default_3d_camera(panel, 1.0f) != NULL;
-}
-
-
-
-/**
  * Set the shared arcball orientation used by both panels.
  *
  * @param ctx scenario context
@@ -214,7 +201,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_annotation_set_placement(annotation, &label_placement) != 0)
         return false;
 
-    if (!_set_camera(single) || !_set_camera(multisample))
+    if (example_set_default_3d_camera(single, 1.0f) == NULL ||
+        example_set_default_3d_camera(multisample, 1.0f) == NULL)
         return false;
     DvzController* single_controller = _bind_arcball(ctx, single);
     DvzController* multisample_controller = _bind_arcball(ctx, multisample);

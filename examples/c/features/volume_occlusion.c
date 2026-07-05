@@ -201,19 +201,6 @@ static bool _configure_volume(DvzScene* scene, DvzVisual* visual, DvzVolumeRende
 
 
 /**
- * Set the shared camera used by each comparison panel.
- *
- * @param panel target panel
- * @return true on success
- */
-static bool _set_camera(DvzPanel* panel)
-{
-    return example_set_default_3d_camera(panel, 1.0f) != NULL;
-}
-
-
-
-/**
  * Add the volume/slice pair to one panel, optionally enabling slice attenuation by the volume.
  *
  * @param scene scene owning visuals
@@ -308,7 +295,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         goto error;
     example_graphite_cyan_set_panel_background(plain);
     example_graphite_cyan_set_panel_background(occluded);
-    if (!_set_camera(plain) || !_set_camera(occluded))
+    if (example_set_default_3d_camera(plain, 1.0f) == NULL ||
+        example_set_default_3d_camera(occluded, 1.0f) == NULL)
         goto error;
 
     DvzSampledField* field = _field(ctx->scene, state);
