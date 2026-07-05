@@ -696,7 +696,7 @@ Create a camera motion animation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:552._
+_Declared in `include/datoviz/scene/animation.h`:555._
 
 ### `dvz_anim_destroy()`
 
@@ -714,7 +714,7 @@ Destroy an animation handle owned by its scene.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:614._
+_Declared in `include/datoviz/scene/animation.h`:622._
 
 ### `dvz_anim_phase()`
 
@@ -735,7 +735,7 @@ Create a wrapped linear phase animation driven by the scene clock.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:512._
+_Declared in `include/datoviz/scene/animation.h`:515._
 
 ### `dvz_anim_phase_desc()`
 
@@ -753,12 +753,12 @@ Related: [`dvz_anim_phase()`](#dvz_anim_phase).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:355._
+_Declared in `include/datoviz/scene/animation.h`:358._
 
 ### `dvz_anim_phase_set_value()`
 
 ```c title="dvz_anim_phase_set_value"
-void dvz_anim_phase_set_value(
+DvzResult dvz_anim_phase_set_value(
     DvzAnimation * animation,
     float value
 );
@@ -766,6 +766,7 @@ void dvz_anim_phase_set_value(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the value was accepted, DVZ_ERROR on error |
 | `animation` | `DvzAnimation *` | phase animation handle |
 | `value` | `float` | new phase value, wrapped into the configured interval |
 
@@ -773,12 +774,12 @@ Set the current value of a phase animation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:586._
+_Declared in `include/datoviz/scene/animation.h`:592._
 
 ### `dvz_anim_set_interaction_policy()`
 
 ```c title="dvz_anim_set_interaction_policy"
-void dvz_anim_set_interaction_policy(
+DvzResult dvz_anim_set_interaction_policy(
     DvzAnimation * animation,
     DvzController * controller,
     DvzAnimInteractionPolicy policy,
@@ -788,6 +789,7 @@ void dvz_anim_set_interaction_policy(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the policy was accepted, DVZ_ERROR on error |
 | `animation` | `DvzAnimation *` | animation handle |
 | `controller` | `DvzController *` | controller to observe, or NULL to clear policy |
 | `policy` | `DvzAnimInteractionPolicy` | interaction policy |
@@ -797,12 +799,12 @@ Set how an animation responds to an interactive controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:563._
+_Declared in `include/datoviz/scene/animation.h`:567._
 
 ### `dvz_anim_set_speed()`
 
 ```c title="dvz_anim_set_speed"
-void dvz_anim_set_speed(
+DvzResult dvz_anim_set_speed(
     DvzAnimation * animation,
     float speed
 );
@@ -810,6 +812,7 @@ void dvz_anim_set_speed(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the speed was accepted, DVZ_ERROR on error |
 | `animation` | `DvzAnimation *` | animation handle |
 | `speed` | `float` | scalar speed in units per second |
 
@@ -818,12 +821,12 @@ animations.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:577._
+_Declared in `include/datoviz/scene/animation.h`:582._
 
 ### `dvz_anim_start()`
 
 ```c title="dvz_anim_start"
-void dvz_anim_start(
+DvzResult dvz_anim_start(
     DvzAnimation * animation,
     double t_start
 );
@@ -831,6 +834,7 @@ void dvz_anim_start(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the animation was started, DVZ_ERROR on error |
 | `animation` | `DvzAnimation *` | animation handle |
 | `t_start` | `double` | scene-clock start time, or 0 for immediate start |
 
@@ -838,25 +842,26 @@ Start or restart an animation at a scene-clock time.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:596._
+_Declared in `include/datoviz/scene/animation.h`:603._
 
 ### `dvz_anim_stop()`
 
 ```c title="dvz_anim_stop"
-void dvz_anim_stop(
+DvzResult dvz_anim_stop(
     DvzAnimation * animation
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the animation was stopped, DVZ_ERROR on error |
 | `animation` | `DvzAnimation *` | animation handle |
 
 Stop an animation while keeping the handle valid.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:605._
+_Declared in `include/datoviz/scene/animation.h`:613._
 
 ### `dvz_anim_timer()`
 
@@ -877,7 +882,7 @@ Create a timer animation driven by the scene clock.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:502._
+_Declared in `include/datoviz/scene/animation.h`:505._
 
 ### `dvz_anim_timer_desc()`
 
@@ -895,7 +900,7 @@ Related: [`dvz_anim_timer()`](#dvz_anim_timer).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:347._
+_Declared in `include/datoviz/scene/animation.h`:350._
 
 ### `dvz_anim_track()`
 
@@ -920,7 +925,7 @@ Create a generic track animation driven by the scene clock.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/scene/animation.h`:524._
+_Declared in `include/datoviz/scene/animation.h`:527._
 
 ### `dvz_anim_visual_transform()`
 
@@ -943,7 +948,7 @@ Create a visual-local transform animation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:539._
+_Declared in `include/datoviz/scene/animation.h`:542._
 
 ## Annotation
 
@@ -1703,7 +1708,7 @@ Return a default camera motion descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:419._
+_Declared in `include/datoviz/scene/animation.h`:422._
 
 ## Colorbar
 
@@ -3409,7 +3414,7 @@ Create a retained hover object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:279._
+_Declared in `include/datoviz/scene/interaction.h`:286._
 
 ### `dvz_hover_apply_query()`
 
@@ -3430,25 +3435,26 @@ Apply one query result to a hover object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:318._
+_Declared in `include/datoviz/scene/interaction.h`:326._
 
 ### `dvz_hover_clear()`
 
 ```c title="dvz_hover_clear"
-void dvz_hover_clear(
+DvzResult dvz_hover_clear(
     DvzHover * hover
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the hover state was cleared, DVZ_ERROR on error |
 | `hover` | `DvzHover *` | the hover object |
 
 Clear the hovered item.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:295._
+_Declared in `include/datoviz/scene/interaction.h`:303._
 
 ### `dvz_hover_desc()`
 
@@ -3466,7 +3472,7 @@ Related: [`dvz_hover()`](#dvz_hover).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:269._
+_Declared in `include/datoviz/scene/interaction.h`:276._
 
 ### `dvz_hover_destroy()`
 
@@ -3484,7 +3490,7 @@ Destroy a hover object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:287._
+_Declared in `include/datoviz/scene/interaction.h`:294._
 
 ### `dvz_hover_set_visual_style()`
 
@@ -3508,7 +3514,7 @@ defaults.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:308._
+_Declared in `include/datoviz/scene/interaction.h`:316._
 
 ## Interaction
 
@@ -3534,7 +3540,7 @@ _Declared in `include/datoviz/scene/interaction.h`:38._
 ### `dvz_interaction_bind_panel()`
 
 ```c title="dvz_interaction_bind_panel"
-void dvz_interaction_bind_panel(
+DvzResult dvz_interaction_bind_panel(
     DvzInteractionPolicy * interaction,
     DvzPanel * panel
 );
@@ -3542,6 +3548,7 @@ void dvz_interaction_bind_panel(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the panel was accepted, DVZ_ERROR on error |
 | `interaction` | `DvzInteractionPolicy *` | the interaction policy |
 | `panel` | `DvzPanel *` | the panel |
 
@@ -3549,7 +3556,7 @@ Bind an interaction policy to a panel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:55._
+_Declared in `include/datoviz/scene/interaction.h`:56._
 
 ### `dvz_interaction_destroy()`
 
@@ -3572,7 +3579,7 @@ _Declared in `include/datoviz/scene/interaction.h`:46._
 ### `dvz_interaction_set_auto_pin_readout()`
 
 ```c title="dvz_interaction_set_auto_pin_readout"
-void dvz_interaction_set_auto_pin_readout(
+DvzResult dvz_interaction_set_auto_pin_readout(
     DvzInteractionPolicy * interaction,
     _Bool enabled
 );
@@ -3580,6 +3587,7 @@ void dvz_interaction_set_auto_pin_readout(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the flag was accepted, DVZ_ERROR on error |
 | `interaction` | `DvzInteractionPolicy *` | the interaction policy |
 | `enabled` | `_Bool` | true to enable automatic pinning |
 
@@ -3589,12 +3597,12 @@ Invalid interaction handles are ignored.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:96._
+_Declared in `include/datoviz/scene/interaction.h`:102._
 
 ### `dvz_interaction_set_link_channel()`
 
 ```c title="dvz_interaction_set_link_channel"
-void dvz_interaction_set_link_channel(
+DvzResult dvz_interaction_set_link_channel(
     DvzInteractionPolicy * interaction,
     DvzLinkChannel * channel
 );
@@ -3602,6 +3610,7 @@ void dvz_interaction_set_link_channel(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the channel was accepted, DVZ_ERROR on error |
 | `interaction` | `DvzInteractionPolicy *` | the interaction policy |
 | `channel` | `DvzLinkChannel *` | the link channel |
 
@@ -3609,12 +3618,12 @@ Set the active link channel used by an interaction policy.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:74._
+_Declared in `include/datoviz/scene/interaction.h`:78._
 
 ### `dvz_interaction_set_query_hit_policy()`
 
 ```c title="dvz_interaction_set_query_hit_policy"
-void dvz_interaction_set_query_hit_policy(
+DvzResult dvz_interaction_set_query_hit_policy(
     DvzInteractionPolicy * interaction,
     DvzQueryHitPolicy policy
 );
@@ -3622,6 +3631,7 @@ void dvz_interaction_set_query_hit_policy(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the policy was accepted, DVZ_ERROR on error |
 | `interaction` | `DvzInteractionPolicy *` | the interaction policy |
 | `policy` | `DvzQueryHitPolicy` | the hit-selection policy |
 
@@ -3629,12 +3639,12 @@ Set the hit-selection policy used for panel queries.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:84._
+_Declared in `include/datoviz/scene/interaction.h`:89._
 
 ### `dvz_interaction_set_selection()`
 
 ```c title="dvz_interaction_set_selection"
-void dvz_interaction_set_selection(
+DvzResult dvz_interaction_set_selection(
     DvzInteractionPolicy * interaction,
     DvzSelection * selection
 );
@@ -3642,6 +3652,7 @@ void dvz_interaction_set_selection(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the selection was accepted, DVZ_ERROR on error |
 | `interaction` | `DvzInteractionPolicy *` | the interaction policy |
 | `selection` | `DvzSelection *` | the selection |
 
@@ -3649,7 +3660,7 @@ Attach a retained selection object to an interaction policy.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:64._
+_Declared in `include/datoviz/scene/interaction.h`:67._
 
 ## Item
 
@@ -3672,7 +3683,7 @@ Create a panel-bound item interaction controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:341._
+_Declared in `include/datoviz/scene/interaction.h`:349._
 
 ### `dvz_item_interaction_desc()`
 
@@ -3690,7 +3701,7 @@ Related: [`dvz_item_interaction()`](#dvz_item_interaction).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:331._
+_Declared in `include/datoviz/scene/interaction.h`:339._
 
 ### `dvz_item_interaction_destroy()`
 
@@ -3708,7 +3719,7 @@ Destroy a panel-bound item interaction controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:350._
+_Declared in `include/datoviz/scene/interaction.h`:358._
 
 ### `dvz_item_interaction_hover()`
 
@@ -3727,7 +3738,7 @@ Return the hover object used by an item interaction controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:359._
+_Declared in `include/datoviz/scene/interaction.h`:367._
 
 ### `dvz_item_interaction_selection()`
 
@@ -3746,7 +3757,7 @@ Return the selection object used by an item interaction controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:368._
+_Declared in `include/datoviz/scene/interaction.h`:376._
 
 ### `dvz_item_state_visual_style()`
 
@@ -3762,7 +3773,7 @@ Return the default item-state visual style.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:172._
+_Declared in `include/datoviz/scene/interaction.h`:178._
 
 ## Label
 
@@ -4232,7 +4243,7 @@ Create a scene-owned link channel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:143._
+_Declared in `include/datoviz/scene/interaction.h`:149._
 
 ### `dvz_link_channel_destroy()`
 
@@ -4250,7 +4261,7 @@ Destroy a link channel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:151._
+_Declared in `include/datoviz/scene/interaction.h`:157._
 
 ## Orientation
 
@@ -5462,7 +5473,7 @@ Queue and synchronously resolve a query through a DRP2 runtime.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:418._
+_Declared in `include/datoviz/scene/interaction.h`:426._
 
 ### `dvz_panel_query_px()`
 
@@ -5487,7 +5498,7 @@ Queue an explicit GPU-backed query request on a panel.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:393._
+_Declared in `include/datoviz/scene/interaction.h`:401._
 
 ### `dvz_panel_resolve_frame()`
 
@@ -6169,7 +6180,7 @@ Destroy a pinned readout object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:458._
+_Declared in `include/datoviz/scene/interaction.h`:466._
 
 ### `dvz_pinned_readout_query()`
 
@@ -6190,12 +6201,12 @@ Create a pinned readout from a resolved query result.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:449._
+_Declared in `include/datoviz/scene/interaction.h`:457._
 
 ### `dvz_pinned_readout_set_format()`
 
 ```c title="dvz_pinned_readout_set_format"
-void dvz_pinned_readout_set_format(
+DvzResult dvz_pinned_readout_set_format(
     DvzPinnedReadout * readout,
     const DvzFormatDesc * format
 );
@@ -6203,6 +6214,7 @@ void dvz_pinned_readout_set_format(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the format was accepted, DVZ_ERROR on error |
 | `readout` | `DvzPinnedReadout *` | the pinned readout |
 | `format` | `const DvzFormatDesc *` | the format descriptor, or NULL to clear the override |
 
@@ -6210,7 +6222,7 @@ Override formatting for a pinned readout.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:467._
+_Declared in `include/datoviz/scene/interaction.h`:476._
 
 ## Placement
 
@@ -6307,7 +6319,7 @@ Return the default query request descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:381._
+_Declared in `include/datoviz/scene/interaction.h`:389._
 
 ## Reference
 
@@ -7304,7 +7316,7 @@ Return the last scene clock delta in seconds.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:329._
+_Declared in `include/datoviz/scene/animation.h`:332._
 
 ### `dvz_scene_clock_time()`
 
@@ -7323,7 +7335,7 @@ Return the current scene clock time in seconds.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:319._
+_Declared in `include/datoviz/scene/animation.h`:322._
 
 ### `dvz_scene_compute()`
 
@@ -7646,7 +7658,7 @@ Return whether the scene has at least one active animation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:338._
+_Declared in `include/datoviz/scene/animation.h`:341._
 
 ### `dvz_scene_hover()`
 
@@ -7670,7 +7682,7 @@ for the panel or scene destruction and must not be mutated or retained.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:434._
+_Declared in `include/datoviz/scene/interaction.h`:442._
 
 ### `dvz_scene_id()`
 
@@ -7770,7 +7782,7 @@ Poll one resolved query result from the scene.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:404._
+_Declared in `include/datoviz/scene/interaction.h`:412._
 
 ### `dvz_scene_set_capabilities()`
 
@@ -7796,7 +7808,7 @@ _Declared in `include/datoviz/scene.h`:101._
 ### `dvz_scene_set_clock_mode()`
 
 ```c title="dvz_scene_set_clock_mode"
-void dvz_scene_set_clock_mode(
+DvzResult dvz_scene_set_clock_mode(
     DvzScene * scene,
     DvzSceneClockMode mode
 );
@@ -7804,6 +7816,7 @@ void dvz_scene_set_clock_mode(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the mode was accepted, DVZ_ERROR on error |
 | `scene` | `DvzScene *` | target scene |
 | `mode` | `DvzSceneClockMode` | realtime, fixed-step, or external clock mode |
 
@@ -7816,7 +7829,7 @@ dvz_scene_step_external().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:285._
+_Declared in `include/datoviz/scene/animation.h`:286._
 
 ### `dvz_scene_set_font_defaults()`
 
@@ -7845,7 +7858,7 @@ _Declared in `include/datoviz/scene.h`:82._
 ### `dvz_scene_set_fps()`
 
 ```c title="dvz_scene_set_fps"
-void dvz_scene_set_fps(
+DvzResult dvz_scene_set_fps(
     DvzScene * scene,
     double fps
 );
@@ -7853,6 +7866,7 @@ void dvz_scene_set_fps(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the frame rate was accepted, DVZ_ERROR on error |
 | `scene` | `DvzScene *` | target scene |
 | `fps` | `double` | frames per second, must be positive |
 
@@ -7860,12 +7874,12 @@ Set the scene clock frame rate used by fixed-step mode.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:295._
+_Declared in `include/datoviz/scene/animation.h`:297._
 
 ### `dvz_scene_step_external()`
 
 ```c title="dvz_scene_step_external"
-void dvz_scene_step_external(
+DvzResult dvz_scene_step_external(
     DvzScene * scene,
     double t,
     double dt
@@ -7874,6 +7888,7 @@ void dvz_scene_step_external(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the external step was accepted, DVZ_ERROR on error |
 | `scene` | `DvzScene *` | target scene |
 | `t` | `double` | current host time in seconds, normally relative to the start of the scene |
 | `dt` | `double` | elapsed host time in seconds since the previous frame |
@@ -7886,7 +7901,7 @@ supplied time/delta verbatim after validation, and runs animation callbacks once
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:309._
+_Declared in `include/datoviz/scene/animation.h`:312._
 
 ## Selection
 
@@ -7909,7 +7924,7 @@ Create a retained selection object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:182._
+_Declared in `include/datoviz/scene/interaction.h`:188._
 
 ### `dvz_selection_apply_query()`
 
@@ -7930,25 +7945,26 @@ Apply one query result to a selection object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:233._
+_Declared in `include/datoviz/scene/interaction.h`:240._
 
 ### `dvz_selection_clear()`
 
 ```c title="dvz_selection_clear"
-void dvz_selection_clear(
+DvzResult dvz_selection_clear(
     DvzSelection * selection
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK when the selection was cleared, DVZ_ERROR on error |
 | `selection` | `DvzSelection *` | the selection |
 
 Clear the contents of a selection object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:198._
+_Declared in `include/datoviz/scene/interaction.h`:205._
 
 ### `dvz_selection_copy()`
 
@@ -7973,7 +7989,7 @@ output buffer is large enough; extra entries are not copied.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:256._
+_Declared in `include/datoviz/scene/interaction.h`:263._
 
 ### `dvz_selection_count()`
 
@@ -7992,7 +8008,7 @@ Return the number of resolved targets currently stored in a selection object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:243._
+_Declared in `include/datoviz/scene/interaction.h`:250._
 
 ### `dvz_selection_desc()`
 
@@ -8010,7 +8026,7 @@ Related: [`dvz_selection()`](#dvz_selection).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:164._
+_Declared in `include/datoviz/scene/interaction.h`:170._
 
 ### `dvz_selection_destroy()`
 
@@ -8028,7 +8044,7 @@ Destroy a selection object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:190._
+_Declared in `include/datoviz/scene/interaction.h`:196._
 
 ### `dvz_selection_set_visual_style()`
 
@@ -8052,7 +8068,7 @@ defaults.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:222._
+_Declared in `include/datoviz/scene/interaction.h`:229._
 
 ### `dvz_selection_visual_style()`
 
@@ -8071,7 +8087,7 @@ unselected point-like items are dimmed while a selection is active.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:209._
+_Declared in `include/datoviz/scene/interaction.h`:216._
 
 ## Text
 
@@ -8622,7 +8638,7 @@ Create a 2D circle track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:455._
+_Declared in `include/datoviz/scene/animation.h`:458._
 
 ### `dvz_track_circle2_desc()`
 
@@ -8640,7 +8656,7 @@ Related: [`dvz_track_circle2()`](#dvz_track_circle2).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:387._
+_Declared in `include/datoviz/scene/animation.h`:390._
 
 ### `dvz_track_circle3()`
 
@@ -8659,7 +8675,7 @@ Create a 3D circle track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:464._
+_Declared in `include/datoviz/scene/animation.h`:467._
 
 ### `dvz_track_circle3_desc()`
 
@@ -8677,7 +8693,7 @@ Related: [`dvz_track_circle3()`](#dvz_track_circle3).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:395._
+_Declared in `include/datoviz/scene/animation.h`:398._
 
 ### `dvz_track_constant()`
 
@@ -8696,7 +8712,7 @@ Create a constant typed track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:428._
+_Declared in `include/datoviz/scene/animation.h`:431._
 
 ### `dvz_track_constant_desc()`
 
@@ -8714,7 +8730,7 @@ Related: [`dvz_track_constant()`](#dvz_track_constant).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:363._
+_Declared in `include/datoviz/scene/animation.h`:366._
 
 ### `dvz_track_destroy()`
 
@@ -8732,7 +8748,7 @@ Destroy a track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:492._
+_Declared in `include/datoviz/scene/animation.h`:495._
 
 ### `dvz_track_eval()`
 
@@ -8755,7 +8771,7 @@ Evaluate a track at local time.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:484._
+_Declared in `include/datoviz/scene/animation.h`:487._
 
 ### `dvz_track_keyframes()`
 
@@ -8774,7 +8790,7 @@ Create a keyframed typed track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:446._
+_Declared in `include/datoviz/scene/animation.h`:449._
 
 ### `dvz_track_keyframes_desc()`
 
@@ -8792,7 +8808,7 @@ Related: [`dvz_track_keyframes()`](#dvz_track_keyframes).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:379._
+_Declared in `include/datoviz/scene/animation.h`:382._
 
 ### `dvz_track_linear()`
 
@@ -8811,7 +8827,7 @@ Create a linear typed track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:437._
+_Declared in `include/datoviz/scene/animation.h`:440._
 
 ### `dvz_track_linear_desc()`
 
@@ -8829,7 +8845,7 @@ Related: [`dvz_track_linear()`](#dvz_track_linear).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:371._
+_Declared in `include/datoviz/scene/animation.h`:374._
 
 ### `dvz_track_rotation()`
 
@@ -8848,7 +8864,7 @@ Create a quaternion rotation track.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:473._
+_Declared in `include/datoviz/scene/animation.h`:476._
 
 ### `dvz_track_rotation_desc()`
 
@@ -8866,7 +8882,7 @@ Related: [`dvz_track_rotation()`](#dvz_track_rotation).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:403._
+_Declared in `include/datoviz/scene/animation.h`:406._
 
 ## Transform
 
@@ -8884,7 +8900,7 @@ Return a default transform motion descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/animation.h`:411._
+_Declared in `include/datoviz/scene/animation.h`:414._
 
 ## Turntable
 

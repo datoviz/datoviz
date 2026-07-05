@@ -220,11 +220,12 @@ int test_scene_interaction_core(TstContext* suite, const TstCase* item)
     ANN(selection);
     ANN(channel);
 
-    dvz_interaction_bind_panel(interaction, panel);
-    dvz_interaction_set_selection(interaction, selection);
-    dvz_interaction_set_link_channel(interaction, channel);
-    dvz_interaction_set_query_hit_policy(interaction, DVZ_QUERY_HIT_OPAQUE_PREFERRED);
-    dvz_interaction_set_auto_pin_readout(interaction, true);
+    AT(dvz_interaction_bind_panel(interaction, panel) == DVZ_OK);
+    AT(dvz_interaction_set_selection(interaction, selection) == DVZ_OK);
+    AT(dvz_interaction_set_link_channel(interaction, channel) == DVZ_OK);
+    AT(dvz_interaction_set_query_hit_policy(interaction, DVZ_QUERY_HIT_OPAQUE_PREFERRED)
+       == DVZ_OK);
+    AT(dvz_interaction_set_auto_pin_readout(interaction, true) == DVZ_OK);
 
     AT(panel->interaction == interaction);
     AT(interaction->panel == panel);
@@ -1205,7 +1206,7 @@ int test_scene_pixel_hover_selection_item_state(TstContext* suite, const TstCase
     item_state = (const uint32_t*)pixel->attrs[state_idx].data;
     AT(item_state[2] == DVZ_ITEM_STATE_SELECTED);
 
-    dvz_selection_clear(selection);
+    AT(dvz_selection_clear(selection) == DVZ_OK);
     item_state = (const uint32_t*)pixel->attrs[state_idx].data;
     AT(item_state[2] == DVZ_ITEM_STATE_NONE);
 
@@ -1309,7 +1310,7 @@ int test_scene_sphere_hover_selection_item_state(TstContext* suite, const TstCas
     item_state = (const uint32_t*)sphere->attrs[state_idx].data;
     AT(item_state[1] == DVZ_ITEM_STATE_SELECTED);
 
-    dvz_selection_clear(selection);
+    AT(dvz_selection_clear(selection) == DVZ_OK);
     item_state = (const uint32_t*)sphere->attrs[state_idx].data;
     AT(item_state[1] == DVZ_ITEM_STATE_NONE);
 
@@ -1439,7 +1440,7 @@ int test_scene_mesh_instance_hover_selection_item_state(TstContext* suite, const
     item_state = (const uint32_t*)mesh->attrs[state_idx].data;
     AT(item_state[1] == DVZ_ITEM_STATE_SELECTED);
 
-    dvz_selection_clear(selection);
+    AT(dvz_selection_clear(selection) == DVZ_OK);
     item_state = (const uint32_t*)mesh->attrs[state_idx].data;
     AT(item_state[1] == DVZ_ITEM_STATE_NONE);
 
@@ -1495,7 +1496,7 @@ int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const T
     AT(_visual_family_state(selection->card.text_visual)->text.glyph_visual->visible);
     AT(!selection->card.dirty);
 
-    dvz_selection_clear(selection);
+    AT(dvz_selection_clear(selection) == DVZ_OK);
     AT(selection->card_panel == NULL);
     AT(!selection->card.visible);
     AT(!selection->card.background_visual->visible);

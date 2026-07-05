@@ -814,18 +814,19 @@ DvzCameraMotionDesc dvz_camera_motion_desc(void)
  * @param scene target scene
  * @param mode realtime or offline clock mode
  */
-void dvz_scene_set_clock_mode(DvzScene* scene, DvzSceneClockMode mode)
+DvzResult dvz_scene_set_clock_mode(DvzScene* scene, DvzSceneClockMode mode)
 {
     ANN(scene);
     if (mode != DVZ_SCENE_CLOCK_REALTIME && mode != DVZ_SCENE_CLOCK_FIXED_STEP &&
         mode != DVZ_SCENE_CLOCK_EXTERNAL)
     {
         log_error("invalid scene clock mode");
-        return;
+        return DVZ_ERROR;
     }
     scene->clock.mode = mode;
     scene->clock.dt = 0.0;
     scene->clock.initialized = false;
+    return DVZ_OK;
 }
 
 
@@ -836,15 +837,16 @@ void dvz_scene_set_clock_mode(DvzScene* scene, DvzSceneClockMode mode)
  * @param scene target scene
  * @param fps frames per second, must be positive
  */
-void dvz_scene_set_fps(DvzScene* scene, double fps)
+DvzResult dvz_scene_set_fps(DvzScene* scene, double fps)
 {
     ANN(scene);
     if (fps <= 0.0)
     {
         log_error("scene clock fps must be positive");
-        return;
+        return DVZ_ERROR;
     }
     scene->clock.fps = fps;
+    return DVZ_OK;
 }
 
 
@@ -876,16 +878,17 @@ double dvz_scene_clock_dt(const DvzScene* scene)
 }
 
 
-void dvz_scene_step_external(DvzScene* scene, double t, double dt)
+DvzResult dvz_scene_step_external(DvzScene* scene, double t, double dt)
 {
     if (scene == NULL)
-        return;
+        return DVZ_ERROR;
     if (!isfinite(t) || !isfinite(dt) || dt < 0.0)
     {
         log_error("external scene clock step requires finite t and non-negative dt");
-        return;
+        return DVZ_ERROR;
     }
     _dvz_scene_animations_step_external(scene, t, dt);
+    return DVZ_OK;
 }
 
 
@@ -1405,7 +1408,7 @@ dvz_anim_camera_motion(DvzScene* scene, DvzCamera* camera, const DvzCameraMotion
 
 
 
-void dvz_anim_set_interaction_policy(
+DvzResult dvz_anim_set_interaction_policy(
     DvzAnimation* animation, DvzController* controller, DvzAnimInteractionPolicy policy,
     double idle_s)
 {
@@ -1414,6 +1417,7 @@ void dvz_anim_set_interaction_policy(
     animation->interaction_policy = controller == NULL ? DVZ_ANIM_INTERACTION_CONTINUE : policy;
     animation->interaction_idle_s = idle_s > 0.0 ? idle_s : 0.0;
     animation->last_interaction_t = animation->scene != NULL ? animation->scene->clock.t : 0.0;
+    return DVZ_OK;
 }
 
 
@@ -1425,13 +1429,13 @@ void dvz_anim_set_interaction_policy(
  * @param animation animation handle
  * @param speed scalar speed in units per second
  */
-void dvz_anim_set_speed(DvzAnimation* animation, float speed)
+DvzResult dvz_anim_set_speed(DvzAnimation* animation, float speed)
 {
     ANN(animation);
     if (!isfinite(speed))
     {
         log_error("animation speed must be finite");
-        return;
+        return DVZ_ERROR;
     }
     if (animation->type == DVZ_ANIMATION_PHASE)
         animation->phase_speed = speed;
@@ -1440,6 +1444,7 @@ void dvz_anim_set_speed(DvzAnimation* animation, float speed)
         animation->type == DVZ_ANIMATION_VISUAL_TRANSFORM ||
         animation->type == DVZ_ANIMATION_CAMERA_MOTION)
         animation->speed = speed;
+    return DVZ_OK;
 }
 
 
@@ -1450,18 +1455,19 @@ void dvz_anim_set_speed(DvzAnimation* animation, float speed)
  * @param animation phase animation handle
  * @param value new phase value
  */
-void dvz_anim_phase_set_value(DvzAnimation* animation, float value)
+DvzResult dvz_anim_phase_set_value(DvzAnimation* animation, float value)
 {
     ANN(animation);
     if (animation->type != DVZ_ANIMATION_PHASE)
-        return;
+        return DVZ_ERROR;
     if (!isfinite(value))
     {
         log_error("phase animation value must be finite");
-        return;
+        return DVZ_ERROR;
     }
     animation->phase_value =
         _animation_wrap_phase(value, animation->phase_wrap_min, animation->phase_wrap_max);
+    return DVZ_OK;
 }
 
 
@@ -1472,11 +1478,11 @@ void dvz_anim_phase_set_value(DvzAnimation* animation, float value)
  * @param animation animation handle
  * @param t_start scene-clock start time, or 0 for immediate start
  */
-void dvz_anim_start(DvzAnimation* animation, double t_start)
+DvzResult dvz_anim_start(DvzAnimation* animation, double t_start)
 {
     ANN(animation);
     if (animation->scene == NULL)
-        return;
+        return DVZ_ERROR;
     double start = t_start;
     if (start <= 0.0)
         start = animation->scene->clock.t;
@@ -1490,6 +1496,7 @@ void dvz_anim_start(DvzAnimation* animation, double t_start)
         animation->next_fire_t = start + animation->period_s;
     }
     animation->active = true;
+    return DVZ_OK;
 }
 
 
@@ -1499,10 +1506,11 @@ void dvz_anim_start(DvzAnimation* animation, double t_start)
  *
  * @param animation animation handle
  */
-void dvz_anim_stop(DvzAnimation* animation)
+DvzResult dvz_anim_stop(DvzAnimation* animation)
 {
     ANN(animation);
     animation->active = false;
+    return DVZ_OK;
 }
 
 

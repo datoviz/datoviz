@@ -1613,7 +1613,7 @@ void dvz_interaction_destroy(DvzInteractionPolicy* interaction)
  * @param interaction the interaction policy
  * @param panel the panel
  */
-void dvz_interaction_bind_panel(DvzInteractionPolicy* interaction, DvzPanel* panel)
+DvzResult dvz_interaction_bind_panel(DvzInteractionPolicy* interaction, DvzPanel* panel)
 {
     ANN(interaction);
     ANN(panel);
@@ -1621,12 +1621,13 @@ void dvz_interaction_bind_panel(DvzInteractionPolicy* interaction, DvzPanel* pan
         interaction->scene != panel->figure->scene)
     {
         log_error("cannot bind an interaction policy across scenes");
-        return;
+        return DVZ_ERROR;
     }
     if (interaction->panel != NULL && interaction->panel->interaction == interaction)
         interaction->panel->interaction = NULL;
     panel->interaction = interaction;
     interaction->panel = panel;
+    return DVZ_OK;
 }
 
 
@@ -1637,15 +1638,17 @@ void dvz_interaction_bind_panel(DvzInteractionPolicy* interaction, DvzPanel* pan
  * @param interaction the interaction policy
  * @param selection the selection
  */
-void dvz_interaction_set_selection(DvzInteractionPolicy* interaction, DvzSelection* selection)
+DvzResult dvz_interaction_set_selection(
+    DvzInteractionPolicy* interaction, DvzSelection* selection)
 {
     ANN(interaction);
     if (selection != NULL && selection->scene != interaction->scene)
     {
         log_error("cannot bind a selection from a different scene");
-        return;
+        return DVZ_ERROR;
     }
     interaction->selection = selection;
+    return DVZ_OK;
 }
 
 
@@ -1656,16 +1659,17 @@ void dvz_interaction_set_selection(DvzInteractionPolicy* interaction, DvzSelecti
  * @param interaction the interaction policy
  * @param channel the link channel
  */
-void dvz_interaction_set_link_channel(
+DvzResult dvz_interaction_set_link_channel(
     DvzInteractionPolicy* interaction, DvzLinkChannel* channel)
 {
     ANN(interaction);
     if (channel != NULL && channel->scene != interaction->scene)
     {
         log_error("cannot bind a link channel from a different scene");
-        return;
+        return DVZ_ERROR;
     }
     interaction->link_channel = channel;
+    return DVZ_OK;
 }
 
 
@@ -1676,11 +1680,12 @@ void dvz_interaction_set_link_channel(
  * @param interaction the interaction policy
  * @param policy the hit-selection policy
  */
-void dvz_interaction_set_query_hit_policy(
+DvzResult dvz_interaction_set_query_hit_policy(
     DvzInteractionPolicy* interaction, DvzQueryHitPolicy policy)
 {
     ANN(interaction);
     interaction->query_hit_policy = policy;
+    return DVZ_OK;
 }
 
 
@@ -1691,10 +1696,11 @@ void dvz_interaction_set_query_hit_policy(
  * @param interaction the interaction policy
  * @param enabled whether auto pinning is enabled
  */
-void dvz_interaction_set_auto_pin_readout(DvzInteractionPolicy* interaction, bool enabled)
+DvzResult dvz_interaction_set_auto_pin_readout(DvzInteractionPolicy* interaction, bool enabled)
 {
     ANN(interaction);
     interaction->auto_pin_readout = enabled;
+    return DVZ_OK;
 }
 
 
@@ -1859,12 +1865,13 @@ void dvz_selection_destroy(DvzSelection* selection)
  *
  * @param selection the selection
  */
-void dvz_selection_clear(DvzSelection* selection)
+DvzResult dvz_selection_clear(DvzSelection* selection)
 {
     ANN(selection);
     _selection_clear_items(selection);
     (void)_selection_sync_item_state(selection);
     _selection_card_hide(selection);
+    return DVZ_OK;
 }
 
 
@@ -2130,7 +2137,7 @@ void dvz_hover_destroy(DvzHover* hover)
  *
  * @param hover the hover
  */
-void dvz_hover_clear(DvzHover* hover)
+DvzResult dvz_hover_clear(DvzHover* hover)
 {
     ANN(hover);
     DvzScene* scene = hover->scene;
@@ -2138,6 +2145,7 @@ void dvz_hover_clear(DvzHover* hover)
     hover->item = (DvzSelectionItem){0};
     if (scene != NULL)
         (void)_item_state_sync_scene(scene, "clear hover item_state");
+    return DVZ_OK;
 }
 
 
@@ -3026,15 +3034,16 @@ void dvz_pinned_readout_destroy(DvzPinnedReadout* readout)
  * @param readout the pinned readout
  * @param format the format descriptor, or NULL to clear the override
  */
-void dvz_pinned_readout_set_format(DvzPinnedReadout* readout, const DvzFormatDesc* format)
+DvzResult dvz_pinned_readout_set_format(DvzPinnedReadout* readout, const DvzFormatDesc* format)
 {
     ANN(readout);
     if (!_scene_format_desc_validate(format))
-        return;
+        return DVZ_ERROR;
     readout->has_format = format != NULL;
     _scene_format_state_copy(&readout->format, format);
     _readout_refresh_text(readout);
     dvz_strlcpy(readout->card.text, readout->text, sizeof(readout->card.text));
     readout->card.dirty = true;
     _scene_notify_request_frame(readout->panel != NULL ? readout->panel->figure : NULL);
+    return DVZ_OK;
 }

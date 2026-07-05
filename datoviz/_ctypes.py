@@ -7168,9 +7168,10 @@ else:
  *
  * @param animation phase animation handle
  * @param value new phase value, wrapped into the configured interval
+ * @return DVZ_OK when the value was accepted, DVZ_ERROR on error
  */"""
     dvz_anim_phase_set_value.argtypes = [ctypes.POINTER(DvzAnimation), ctypes.c_float]
-    dvz_anim_phase_set_value.restype = None
+    dvz_anim_phase_set_value.restype = ctypes.c_int32
 
 
 try:
@@ -7185,9 +7186,10 @@ else:
  * @param controller controller to observe, or NULL to clear policy
  * @param policy interaction policy
  * @param idle_s idle duration for resume-after-idle policies
+ * @return DVZ_OK when the policy was accepted, DVZ_ERROR on error
  */"""
     dvz_anim_set_interaction_policy.argtypes = [ctypes.POINTER(DvzAnimation), ctypes.POINTER(DvzController), ctypes.c_int, ctypes.c_double]
-    dvz_anim_set_interaction_policy.restype = None
+    dvz_anim_set_interaction_policy.restype = ctypes.c_int32
 
 
 try:
@@ -7201,9 +7203,10 @@ else:
  *
  * @param animation animation handle
  * @param speed scalar speed in units per second
+ * @return DVZ_OK when the speed was accepted, DVZ_ERROR on error
  */"""
     dvz_anim_set_speed.argtypes = [ctypes.POINTER(DvzAnimation), ctypes.c_float]
-    dvz_anim_set_speed.restype = None
+    dvz_anim_set_speed.restype = ctypes.c_int32
 
 
 try:
@@ -7216,9 +7219,10 @@ else:
  *
  * @param animation animation handle
  * @param t_start scene-clock start time, or 0 for immediate start
+ * @return DVZ_OK when the animation was started, DVZ_ERROR on error
  */"""
     dvz_anim_start.argtypes = [ctypes.POINTER(DvzAnimation), ctypes.c_double]
-    dvz_anim_start.restype = None
+    dvz_anim_start.restype = ctypes.c_int32
 
 
 try:
@@ -7230,9 +7234,10 @@ else:
  * Stop an animation while keeping the handle valid.
  *
  * @param animation animation handle
+ * @return DVZ_OK when the animation was stopped, DVZ_ERROR on error
  */"""
     dvz_anim_stop.argtypes = [ctypes.POINTER(DvzAnimation)]
-    dvz_anim_stop.restype = None
+    dvz_anim_stop.restype = ctypes.c_int32
 
 
 try:
@@ -19131,9 +19136,10 @@ else:
  * Clear the hovered item.
  *
  * @param hover the hover object
+ * @return DVZ_OK when the hover state was cleared, DVZ_ERROR on error
  */"""
     dvz_hover_clear.argtypes = [ctypes.POINTER(DvzHover)]
-    dvz_hover_clear.restype = None
+    dvz_hover_clear.restype = ctypes.c_int32
 
 
 try:
@@ -20430,9 +20436,10 @@ else:
  *
  * @param interaction the interaction policy
  * @param panel the panel
+ * @return DVZ_OK when the panel was accepted, DVZ_ERROR on error
  */"""
     dvz_interaction_bind_panel.argtypes = [ctypes.POINTER(DvzInteractionPolicy), ctypes.POINTER(DvzPanel)]
-    dvz_interaction_bind_panel.restype = None
+    dvz_interaction_bind_panel.restype = ctypes.c_int32
 
 
 try:
@@ -20461,9 +20468,10 @@ else:
  *
  * @param interaction the interaction policy
  * @param enabled true to enable automatic pinning
+ * @return DVZ_OK when the flag was accepted, DVZ_ERROR on error
  */"""
     dvz_interaction_set_auto_pin_readout.argtypes = [ctypes.POINTER(DvzInteractionPolicy), ctypes.c_bool]
-    dvz_interaction_set_auto_pin_readout.restype = None
+    dvz_interaction_set_auto_pin_readout.restype = ctypes.c_int32
 
 
 try:
@@ -20476,9 +20484,10 @@ else:
  *
  * @param interaction the interaction policy
  * @param channel the link channel
+ * @return DVZ_OK when the channel was accepted, DVZ_ERROR on error
  */"""
     dvz_interaction_set_link_channel.argtypes = [ctypes.POINTER(DvzInteractionPolicy), ctypes.POINTER(DvzLinkChannel)]
-    dvz_interaction_set_link_channel.restype = None
+    dvz_interaction_set_link_channel.restype = ctypes.c_int32
 
 
 try:
@@ -20491,9 +20500,10 @@ else:
  *
  * @param interaction the interaction policy
  * @param policy the hit-selection policy
+ * @return DVZ_OK when the policy was accepted, DVZ_ERROR on error
  */"""
     dvz_interaction_set_query_hit_policy.argtypes = [ctypes.POINTER(DvzInteractionPolicy), ctypes.c_int]
-    dvz_interaction_set_query_hit_policy.restype = None
+    dvz_interaction_set_query_hit_policy.restype = ctypes.c_int32
 
 
 try:
@@ -20506,9 +20516,10 @@ else:
  *
  * @param interaction the interaction policy
  * @param selection the selection
+ * @return DVZ_OK when the selection was accepted, DVZ_ERROR on error
  */"""
     dvz_interaction_set_selection.argtypes = [ctypes.POINTER(DvzInteractionPolicy), ctypes.POINTER(DvzSelection)]
-    dvz_interaction_set_selection.restype = None
+    dvz_interaction_set_selection.restype = ctypes.c_int32
 
 
 try:
@@ -23322,9 +23333,10 @@ else:
  *
  * @param readout the pinned readout
  * @param format the format descriptor, or NULL to clear the override
+ * @return DVZ_OK when the format was accepted, DVZ_ERROR on error
  */"""
     dvz_pinned_readout_set_format.argtypes = [ctypes.POINTER(DvzPinnedReadout), ctypes.POINTER(DvzFormatDesc)]
-    dvz_pinned_readout_set_format.restype = None
+    dvz_pinned_readout_set_format.restype = ctypes.c_int32
 
 
 try:
@@ -25965,9 +25977,10 @@ else:
  *
  * @param scene target scene
  * @param mode realtime, fixed-step, or external clock mode
+ * @return DVZ_OK when the mode was accepted, DVZ_ERROR on error
  */"""
     dvz_scene_set_clock_mode.argtypes = [ctypes.POINTER(DvzScene), ctypes.c_int]
-    dvz_scene_set_clock_mode.restype = None
+    dvz_scene_set_clock_mode.restype = ctypes.c_int32
 
 
 try:
@@ -25999,9 +26012,10 @@ else:
  *
  * @param scene target scene
  * @param fps frames per second, must be positive
+ * @return DVZ_OK when the frame rate was accepted, DVZ_ERROR on error
  */"""
     dvz_scene_set_fps.argtypes = [ctypes.POINTER(DvzScene), ctypes.c_double]
-    dvz_scene_set_fps.restype = None
+    dvz_scene_set_fps.restype = ctypes.c_int32
 
 
 try:
@@ -26019,9 +26033,10 @@ else:
  * @param scene target scene
  * @param t current host time in seconds, normally relative to the start of the scene
  * @param dt elapsed host time in seconds since the previous frame
+ * @return DVZ_OK when the external step was accepted, DVZ_ERROR on error
  */"""
     dvz_scene_step_external.argtypes = [ctypes.POINTER(DvzScene), ctypes.c_double, ctypes.c_double]
-    dvz_scene_step_external.restype = None
+    dvz_scene_step_external.restype = ctypes.c_int32
 
 
 try:
@@ -26106,9 +26121,10 @@ else:
  * Clear the contents of a selection object.
  *
  * @param selection the selection
+ * @return DVZ_OK when the selection was cleared, DVZ_ERROR on error
  */"""
     dvz_selection_clear.argtypes = [ctypes.POINTER(DvzSelection)]
-    dvz_selection_clear.restype = None
+    dvz_selection_clear.restype = ctypes.c_int32
 
 
 try:

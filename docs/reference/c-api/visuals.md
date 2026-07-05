@@ -4457,7 +4457,7 @@ The keys are copied before return. Passing zero entries clears the binding for t
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:127._
+_Declared in `include/datoviz/scene/interaction.h`:133._
 
 ### `dvz_visual_set_material()`
 
@@ -4503,7 +4503,7 @@ Declare the query capabilities exposed by a visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/interaction.h`:112._
+_Declared in `include/datoviz/scene/interaction.h`:118._
 
 ### `dvz_visual_set_scale()`
 
