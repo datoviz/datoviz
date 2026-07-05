@@ -119,7 +119,7 @@ integer is only a constructor input; it is not the storage model.
 Style and scalar appearance APIs should pass `DvzColor` by value:
 
 ```c
-int dvz_polygon_fill_color(DvzPolygon* polygon, DvzColor color);
+int dvz_polygon_set_fill_color(DvzPolygon* polygon, DvzColor color);
 int dvz_text_color(DvzText* text, DvzColor color);
 int dvz_axis_grid_color(DvzAxis* axis, DvzColor color);
 ```

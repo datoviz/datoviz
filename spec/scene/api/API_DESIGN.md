@@ -109,8 +109,8 @@ attached to a panel like a visual:
 
 ```c
 DvzPolygon* polygon = dvz_polygon(scene, 0);
-dvz_polygon_geometry(polygon, &geom_polygon);
-dvz_polygon_fill_color(polygon, fill);
+dvz_polygon_set_geometry(polygon, &geom_polygon);
+dvz_polygon_set_fill_color(polygon, fill);
 
 DvzComposite* view = dvz_polygon_composite(polygon, 0);
 dvz_panel_add_composite(panel, view, NULL);

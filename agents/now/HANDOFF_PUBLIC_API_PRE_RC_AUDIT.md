@@ -454,8 +454,8 @@ Next recommended checkpoints, in safe execution order:
 
 1. Continue the full public mutator naming audit under the stricter
    `dvz_<object>_set_<property>()` convention recorded in `spec/api/PUBLIC_API_CONVENTIONS.md`.
-   The polygon aggregate rename is complete. Next audit graph, singular polygon, plot, text, and
-   any other obvious retained-state mutators before RC.
+   The polygon aggregate, singular polygon, and graph mutator renames are complete. Next audit plot,
+   text, and any other obvious retained-state mutators before RC.
 2. Rename public `dvz_geom_*` functions to the single `dvz_geometry_*` naming family.
 3. Split stable `window.h` from backend SPI so ordinary window users do not include backend
    registration, GLFW hooks, wrap-surface helpers, or Vulkan surface details.
@@ -834,8 +834,9 @@ generated ctypes, generated docs if applicable, and examples in sync.
    - Completed: rename public `DvzPolygonSet`/`dvz_polygon_set_*` to
      `DvzPolygons`/`dvz_polygons_*`, with `dvz_polygons_add_region()` for creation and
      `dvz_polygons_set_region_*()` for retained region mutation.
-   - Approved: audit graph mutators and then the rest of the public scene surface for the same
-     naming rule.
+   - Completed: rename singular polygon and graph retained mutators to the
+     `dvz_<object>_set_<property>()` shape.
+   - Approved: audit plot, text, and the rest of the public scene surface for the same naming rule.
    - Approved: rename public `dvz_geom_*` functions to `dvz_geometry_*`.
    - Completed: change `dvz_sampled_field_destroy()` to `void`.
    - Validation: scene tests, examples that use affected APIs, `just ctypes-check`.

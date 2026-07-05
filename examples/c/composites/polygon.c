@@ -98,27 +98,27 @@ static bool _add_holed_polygon(DvzScene* scene, DvzPanel* panel)
     DvzPolygon* polygon = dvz_polygon(scene, 0);
     if (polygon == NULL)
         return false;
-    int rc = dvz_polygon_geometry(
+    int rc = dvz_polygon_set_geometry(
         polygon, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
                                    .outer = {.xy = outer, .count = DVZ_ARRAY_COUNT(outer)}});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_hole(polygon, 0, DVZ_ARRAY_COUNT(hole), hole);
+    rc = dvz_polygon_set_hole(polygon, 0, DVZ_ARRAY_COUNT(hole), hole);
     if (rc != 0)
         return false;
-    rc = dvz_polygon_id(polygon, 10);
+    rc = dvz_polygon_set_id(polygon, 10);
     if (rc != 0)
         return false;
-    rc = dvz_polygon_fill_color(polygon, (DvzColor){36, 151, 178, 210});
+    rc = dvz_polygon_set_fill_color(polygon, (DvzColor){36, 151, 178, 210});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_stroke_color(polygon, (DvzColor){214, 240, 255, 255});
+    rc = dvz_polygon_set_stroke_color(polygon, (DvzColor){214, 240, 255, 255});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_stroke_width_px(polygon, 8.0f);
+    rc = dvz_polygon_set_stroke_width_px(polygon, 8.0f);
     if (rc != 0)
         return false;
-    rc = dvz_polygon_stroke_join(polygon, DVZ_PATH_JOIN_ROUND, 4.0f);
+    rc = dvz_polygon_set_stroke_join(polygon, DVZ_PATH_JOIN_ROUND, 4.0f);
     if (rc != 0)
         return false;
 

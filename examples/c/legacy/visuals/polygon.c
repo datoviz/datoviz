@@ -120,7 +120,7 @@ static bool _add_polygon(DvzScene* scene, DvzPanel* panel, PolygonExampleState* 
 
     const DvzPolygonRing holes[1] = {{.xy = POLYGON_HOLE, .count = 4}};
 
-    int rc = dvz_polygon_geometry(
+    int rc = dvz_polygon_set_geometry(
         polygon,
         &(DvzPolygonDesc){
             DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
@@ -131,13 +131,13 @@ static bool _add_polygon(DvzScene* scene, DvzPanel* panel, PolygonExampleState* 
     if (rc != 0)
         return false;
 
-    rc = dvz_polygon_fill_color(polygon, (DvzColor){62, 142, 188, 220});
+    rc = dvz_polygon_set_fill_color(polygon, (DvzColor){62, 142, 188, 220});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_stroke_color(polygon, (DvzColor){18, 39, 54, 255});
+    rc = dvz_polygon_set_stroke_color(polygon, (DvzColor){18, 39, 54, 255});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_stroke_width_px(polygon, state->polygon_width);
+    rc = dvz_polygon_set_stroke_width_px(polygon, state->polygon_width);
     if (rc != 0)
         return false;
 
@@ -460,7 +460,7 @@ static void _apply_polygon_controls(PolygonExampleState* state)
 
     const DvzPathJoin join = (DvzPathJoin)state->join;
     if (state->polygon != NULL)
-        (void)dvz_polygon_stroke_width_px(state->polygon, state->polygon_width);
+        (void)dvz_polygon_set_stroke_width_px(state->polygon, state->polygon_width);
     if (state->set != NULL)
     {
         (void)dvz_polygons_set_region_stroke_width_px(

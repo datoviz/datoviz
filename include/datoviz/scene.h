@@ -2869,7 +2869,7 @@ DVZ_EXPORT DvzResult dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry*
  *
  * A graph stores user-provided node positions and indexed edges. Layout algorithms are intentionally
  * external to the first public API slice and can update node positions through
- * `dvz_graph_node_positions()`.
+ * `dvz_graph_set_node_positions()`.
  *
  * @param scene the scene
  * @param flags reserved graph flags
@@ -2898,7 +2898,7 @@ DVZ_EXPORT DvzGraphEdgeStyle dvz_graph_edge_style(void);
  * Replace the graph node array and reset node style defaults.
  *
  * Existing edges are discarded because their endpoints may no longer be valid. Call
- * `dvz_graph_node_positions()` after this function to set or update semantic node positions.
+ * `dvz_graph_set_node_positions()` after this function to set or update semantic node positions.
  *
  * @param graph the graph
  * @param node_count number of nodes
@@ -2916,14 +2916,14 @@ DVZ_EXPORT DvzResult dvz_graph_set_node_count(DvzGraph* graph, uint32_t node_cou
  * @param positions borrowed node positions
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_graph_node_positions(
+DVZ_EXPORT DvzResult dvz_graph_set_node_positions(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const dvec3* positions);
 
 
 /**
  * Replace the graph edge array and reset edge style defaults.
  *
- * Edge endpoints are left at their default values until `dvz_graph_edges()` is called.
+ * Edge endpoints are left at their default values until `dvz_graph_set_edge_endpoints()` is called.
  *
  * @param graph the graph
  * @param edge_count number of edges
@@ -2944,7 +2944,7 @@ DVZ_EXPORT DvzResult dvz_graph_set_edge_count(DvzGraph* graph, uint32_t edge_cou
  * @return 0 on success, -1 on invalid endpoints or allocation failure
  */
 DVZ_EXPORT DvzResult
-dvz_graph_edges(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
+dvz_graph_set_edge_endpoints(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
                 const uint32_t* endpoints);
 
 
@@ -2958,7 +2958,8 @@ dvz_graph_edges(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_graph_node_ids(DvzGraph* graph, uint32_t first_node, uint32_t node_count, const uint64_t* ids);
+dvz_graph_set_node_ids(
+    DvzGraph* graph, uint32_t first_node, uint32_t node_count, const uint64_t* ids);
 
 
 /**
@@ -2971,7 +2972,7 @@ dvz_graph_node_ids(DvzGraph* graph, uint32_t first_node, uint32_t node_count, co
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_graph_edge_ids(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
+dvz_graph_set_edge_ids(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
                    const uint64_t* ids);
 
 
@@ -3001,7 +3002,7 @@ DVZ_EXPORT DvzResult dvz_graph_set_edge_style(DvzGraph* graph, const DvzGraphEdg
  * @param control1 borrowed second control point array
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_graph_edge_controls(
+DVZ_EXPORT DvzResult dvz_graph_set_edge_controls(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const dvec3* control0,
     const dvec3* control1);
 
@@ -3016,7 +3017,7 @@ DVZ_EXPORT DvzResult dvz_graph_edge_controls(
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_graph_node_colors(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
+dvz_graph_set_node_colors(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
                       const DvzColor* colors);
 
 
@@ -3030,7 +3031,7 @@ dvz_graph_node_colors(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_graph_node_sizes(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
+dvz_graph_set_node_sizes(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
                      const float* sizes);
 
 
@@ -3044,7 +3045,7 @@ dvz_graph_node_sizes(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_graph_edge_colors(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
+dvz_graph_set_edge_colors(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
                       const DvzColor* colors);
 
 
@@ -3058,7 +3059,7 @@ dvz_graph_edge_colors(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_graph_edge_widths(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
+dvz_graph_set_edge_widths(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
                       const float* widths);
 
 
@@ -3109,7 +3110,7 @@ DVZ_EXPORT DvzPolygonStyle dvz_polygon_style(void);
  * @param desc borrowed polygon descriptor
  * @return 0 on success, -1 on invalid input or allocation failure
  */
-DVZ_EXPORT DvzResult dvz_polygon_geometry(DvzPolygon* polygon, const DvzPolygonDesc* desc);
+DVZ_EXPORT DvzResult dvz_polygon_set_geometry(DvzPolygon* polygon, const DvzPolygonDesc* desc);
 
 
 /**
@@ -3120,7 +3121,7 @@ DVZ_EXPORT DvzResult dvz_polygon_geometry(DvzPolygon* polygon, const DvzPolygonD
  * @param xy borrowed XY vertex array
  * @return 0 on success, -1 on invalid input or allocation failure
  */
-DVZ_EXPORT DvzResult dvz_polygon_outer(DvzPolygon* polygon, uint32_t count, const dvec2* xy);
+DVZ_EXPORT DvzResult dvz_polygon_set_outer(DvzPolygon* polygon, uint32_t count, const dvec2* xy);
 
 
 /**
@@ -3136,7 +3137,7 @@ DVZ_EXPORT DvzResult dvz_polygon_outer(DvzPolygon* polygon, uint32_t count, cons
  * @return 0 on success, -1 on invalid input or allocation failure
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, const dvec2* xy);
+dvz_polygon_set_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, const dvec2* xy);
 
 
 /**
@@ -3146,7 +3147,7 @@ dvz_polygon_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, const
  * @param id stable user id
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_id(DvzPolygon* polygon, uint64_t id);
+DVZ_EXPORT DvzResult dvz_polygon_set_id(DvzPolygon* polygon, uint64_t id);
 
 
 /**
@@ -3156,7 +3157,7 @@ DVZ_EXPORT DvzResult dvz_polygon_id(DvzPolygon* polygon, uint64_t id);
  * @param visible whether the polygon should render
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_visible(DvzPolygon* polygon, bool visible);
+DVZ_EXPORT DvzResult dvz_polygon_set_visible(DvzPolygon* polygon, bool visible);
 
 
 /**
@@ -3179,7 +3180,7 @@ DVZ_EXPORT DvzResult dvz_polygon_set_style(DvzPolygon* polygon, const DvzPolygon
  * @param color RGBA fill color
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_fill_color(DvzPolygon* polygon, const DvzColor color);
+DVZ_EXPORT DvzResult dvz_polygon_set_fill_color(DvzPolygon* polygon, const DvzColor color);
 
 
 /**
@@ -3189,7 +3190,7 @@ DVZ_EXPORT DvzResult dvz_polygon_fill_color(DvzPolygon* polygon, const DvzColor 
  * @param color RGBA stroke color
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_stroke_color(DvzPolygon* polygon, const DvzColor color);
+DVZ_EXPORT DvzResult dvz_polygon_set_stroke_color(DvzPolygon* polygon, const DvzColor color);
 
 
 /**
@@ -3199,7 +3200,7 @@ DVZ_EXPORT DvzResult dvz_polygon_stroke_color(DvzPolygon* polygon, const DvzColo
  * @param width stroke width in pixels
  * @return 0 on success, -1 on invalid input
  */
-DVZ_EXPORT DvzResult dvz_polygon_stroke_width_px(DvzPolygon* polygon, float width);
+DVZ_EXPORT DvzResult dvz_polygon_set_stroke_width_px(DvzPolygon* polygon, float width);
 
 
 /**
@@ -3211,7 +3212,7 @@ DVZ_EXPORT DvzResult dvz_polygon_stroke_width_px(DvzPolygon* polygon, float widt
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_stroke_caps(DvzPolygon* polygon, DvzSegmentCap start_cap, DvzSegmentCap end_cap);
+dvz_polygon_set_stroke_caps(DvzPolygon* polygon, DvzSegmentCap start_cap, DvzSegmentCap end_cap);
 
 
 /**
@@ -3223,7 +3224,7 @@ dvz_polygon_stroke_caps(DvzPolygon* polygon, DvzSegmentCap start_cap, DvzSegment
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_stroke_join(DvzPolygon* polygon, DvzPathJoin join, float miter_limit);
+dvz_polygon_set_stroke_join(DvzPolygon* polygon, DvzPathJoin join, float miter_limit);
 
 
 /**

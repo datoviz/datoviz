@@ -149,10 +149,10 @@ dvz_<object>_<role>_<property>()
 Examples:
 
 ```text
-dvz_polygon_fill_color()
-dvz_polygon_stroke_width_px()
-dvz_graph_node_sizes()
-dvz_graph_edge_colors()
+dvz_polygon_set_fill_color()
+dvz_polygon_set_stroke_width_px()
+dvz_graph_set_node_sizes()
+dvz_graph_set_edge_colors()
 ```
 
 Advanced APIs may expose generated visuals by stable role names, such as `"fill"`, `"stroke"`,

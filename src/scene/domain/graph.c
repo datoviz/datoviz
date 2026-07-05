@@ -364,7 +364,7 @@ DvzResult dvz_graph_set_node_count(DvzGraph* graph, uint32_t node_count)
  * @param positions borrowed node positions
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_graph_node_positions(
+DvzResult dvz_graph_set_node_positions(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const dvec3* positions)
 {
     if (
@@ -434,7 +434,7 @@ DvzResult dvz_graph_set_edge_count(DvzGraph* graph, uint32_t edge_count)
  * @param endpoints borrowed packed endpoint array: source0, target0, source1, target1, ...
  * @return 0 on success, -1 on invalid endpoints or allocation failure
  */
-DvzResult dvz_graph_edges(
+DvzResult dvz_graph_set_edge_endpoints(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const uint32_t* endpoints)
 {
     if (
@@ -476,7 +476,7 @@ DvzResult dvz_graph_edges(
  * @param ids borrowed user-id array
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_graph_node_ids(
+DvzResult dvz_graph_set_node_ids(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const uint64_t* ids)
 {
     if (
@@ -504,7 +504,7 @@ DvzResult dvz_graph_node_ids(
  * @param ids borrowed user-id array
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_graph_edge_ids(
+DvzResult dvz_graph_set_edge_ids(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const uint64_t* ids)
 {
     if (
@@ -566,7 +566,7 @@ DvzResult dvz_graph_set_edge_style(DvzGraph* graph, const DvzGraphEdgeStyle* sty
  * @param control1 borrowed second control point array
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_graph_edge_controls(
+DvzResult dvz_graph_set_edge_controls(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const dvec3* control0,
     const dvec3* control1)
 {
@@ -597,7 +597,7 @@ DvzResult dvz_graph_edge_controls(
 
 
 
-DvzResult dvz_graph_node_colors(
+DvzResult dvz_graph_set_node_colors(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const DvzColor* colors)
 {
     if (
@@ -617,7 +617,7 @@ DvzResult dvz_graph_node_colors(
 
 
 
-DvzResult dvz_graph_node_sizes(
+DvzResult dvz_graph_set_node_sizes(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const float* sizes)
 {
     if (
@@ -642,7 +642,7 @@ DvzResult dvz_graph_node_sizes(
 
 
 
-DvzResult dvz_graph_edge_colors(
+DvzResult dvz_graph_set_edge_colors(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const DvzColor* colors)
 {
     if (
@@ -662,7 +662,7 @@ DvzResult dvz_graph_edge_colors(
 
 
 
-DvzResult dvz_graph_edge_widths(
+DvzResult dvz_graph_set_edge_widths(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const float* widths)
 {
     if (

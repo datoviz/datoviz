@@ -149,19 +149,19 @@ Functions: 206
     | [`dvz_graph()`](#dvz_graph) | `include/datoviz/scene.h` |
     | [`dvz_graph_composite()`](#dvz_graph_composite) | `include/datoviz/scene.h` |
     | [`dvz_graph_destroy()`](#dvz_graph_destroy) | `include/datoviz/scene.h` |
-    | [`dvz_graph_edge_colors()`](#dvz_graph_edge_colors) | `include/datoviz/scene.h` |
-    | [`dvz_graph_edge_controls()`](#dvz_graph_edge_controls) | `include/datoviz/scene.h` |
-    | [`dvz_graph_edge_ids()`](#dvz_graph_edge_ids) | `include/datoviz/scene.h` |
     | [`dvz_graph_edge_style()`](#dvz_graph_edge_style) | `include/datoviz/scene.h` |
-    | [`dvz_graph_edge_widths()`](#dvz_graph_edge_widths) | `include/datoviz/scene.h` |
-    | [`dvz_graph_edges()`](#dvz_graph_edges) | `include/datoviz/scene.h` |
-    | [`dvz_graph_node_colors()`](#dvz_graph_node_colors) | `include/datoviz/scene.h` |
-    | [`dvz_graph_node_ids()`](#dvz_graph_node_ids) | `include/datoviz/scene.h` |
-    | [`dvz_graph_node_positions()`](#dvz_graph_node_positions) | `include/datoviz/scene.h` |
-    | [`dvz_graph_node_sizes()`](#dvz_graph_node_sizes) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_edge_colors()`](#dvz_graph_set_edge_colors) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_edge_controls()`](#dvz_graph_set_edge_controls) | `include/datoviz/scene.h` |
     | [`dvz_graph_set_edge_count()`](#dvz_graph_set_edge_count) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_edge_endpoints()`](#dvz_graph_set_edge_endpoints) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_edge_ids()`](#dvz_graph_set_edge_ids) | `include/datoviz/scene.h` |
     | [`dvz_graph_set_edge_style()`](#dvz_graph_set_edge_style) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_edge_widths()`](#dvz_graph_set_edge_widths) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_node_colors()`](#dvz_graph_set_node_colors) | `include/datoviz/scene.h` |
     | [`dvz_graph_set_node_count()`](#dvz_graph_set_node_count) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_node_ids()`](#dvz_graph_set_node_ids) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_node_positions()`](#dvz_graph_set_node_positions) | `include/datoviz/scene.h` |
+    | [`dvz_graph_set_node_sizes()`](#dvz_graph_set_node_sizes) | `include/datoviz/scene.h` |
 
     ### Image
 
@@ -236,18 +236,18 @@ Functions: 206
     | [`dvz_polygon_composite()`](#dvz_polygon_composite) | `include/datoviz/scene.h` |
     | [`dvz_polygon_desc()`](#dvz_polygon_desc) | `include/datoviz/geom.h` |
     | [`dvz_polygon_destroy()`](#dvz_polygon_destroy) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_fill_color()`](#dvz_polygon_fill_color) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_geometry()`](#dvz_polygon_geometry) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_hole()`](#dvz_polygon_hole) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_id()`](#dvz_polygon_id) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_outer()`](#dvz_polygon_outer) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_fill_color()`](#dvz_polygon_set_fill_color) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_geometry()`](#dvz_polygon_set_geometry) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_hole()`](#dvz_polygon_set_hole) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_id()`](#dvz_polygon_set_id) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_outer()`](#dvz_polygon_set_outer) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_stroke_caps()`](#dvz_polygon_set_stroke_caps) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_stroke_color()`](#dvz_polygon_set_stroke_color) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_stroke_join()`](#dvz_polygon_set_stroke_join) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_stroke_width_px()`](#dvz_polygon_set_stroke_width_px) | `include/datoviz/scene.h` |
     | [`dvz_polygon_set_style()`](#dvz_polygon_set_style) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_stroke_caps()`](#dvz_polygon_stroke_caps) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_stroke_color()`](#dvz_polygon_stroke_color) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_stroke_join()`](#dvz_polygon_stroke_join) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_stroke_width_px()`](#dvz_polygon_stroke_width_px) | `include/datoviz/scene.h` |
+    | [`dvz_polygon_set_visible()`](#dvz_polygon_set_visible) | `include/datoviz/scene.h` |
     | [`dvz_polygon_style()`](#dvz_polygon_style) | `include/datoviz/scene.h` |
-    | [`dvz_polygon_visible()`](#dvz_polygon_visible) | `include/datoviz/scene.h` |
 
     ### Polygons
 
@@ -467,7 +467,7 @@ Destroy a scene-owned composite render view.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3446._
+_Declared in `include/datoviz/scene.h`:3447._
 
 ### `dvz_composite_visual()`
 
@@ -490,7 +490,7 @@ Polygon composites currently expose "fill" and "stroke" roles.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3477._
+_Declared in `include/datoviz/scene.h`:3478._
 
 ### `dvz_composite_visual_at()`
 
@@ -511,7 +511,7 @@ Return a generated visual by role index.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3465._
+_Declared in `include/datoviz/scene.h`:3466._
 
 ### `dvz_composite_visual_count()`
 
@@ -530,7 +530,7 @@ Return the number of generated visuals owned by a composite.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3455._
+_Declared in `include/datoviz/scene.h`:3456._
 
 ## Depth
 
@@ -1299,7 +1299,7 @@ bound 2D sampled field. Positive `angle` rotates counter-clockwise in rendered y
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3697._
+_Declared in `include/datoviz/scene.h`:3698._
 
 ### `dvz_glyph_set_atlas()`
 
@@ -1323,7 +1323,7 @@ the glyph shader. The atlas remains owned by the font's scene and must outlive t
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3710._
+_Declared in `include/datoviz/scene.h`:3711._
 
 ## Graph
 
@@ -1346,7 +1346,7 @@ Create a scene-owned semantic graph object.
 
 A graph stores user-provided node positions and indexed edges. Layout algorithms are intentionally
 external to the first public API slice and can update node positions through
-`dvz_graph_node_positions()`.
+`dvz_graph_set_node_positions()`.
 
 Raw ctypes: emitted.
 
@@ -1373,7 +1373,7 @@ Graph composites expose `"edges"` and `"nodes"` roles.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3074._
+_Declared in `include/datoviz/scene.h`:3075._
 
 ### `dvz_graph_destroy()`
 
@@ -1393,10 +1393,26 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:2886._
 
-### `dvz_graph_edge_colors()`
+### `dvz_graph_edge_style()`
 
-```c title="dvz_graph_edge_colors"
-DvzResult dvz_graph_edge_colors(
+```c title="dvz_graph_edge_style"
+DvzGraphEdgeStyle dvz_graph_edge_style(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzGraphEdgeStyle` | default graph edge style |
+
+Return the default graph edge style descriptor.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:2894._
+
+### `dvz_graph_set_edge_colors()`
+
+```c title="dvz_graph_set_edge_colors"
+DvzResult dvz_graph_set_edge_colors(
     DvzGraph * graph,
     uint32_t first_edge,
     uint32_t edge_count,
@@ -1416,12 +1432,12 @@ Set a range of graph edge colors.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3047._
+_Declared in `include/datoviz/scene.h`:3048._
 
-### `dvz_graph_edge_controls()`
+### `dvz_graph_set_edge_controls()`
 
-```c title="dvz_graph_edge_controls"
-DvzResult dvz_graph_edge_controls(
+```c title="dvz_graph_set_edge_controls"
+DvzResult dvz_graph_set_edge_controls(
     DvzGraph * graph,
     uint32_t first_edge,
     uint32_t edge_count,
@@ -1445,78 +1461,35 @@ If omitted, Bezier mode derives gentle XY control points from each edge's endpoi
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3004._
+_Declared in `include/datoviz/scene.h`:3005._
 
-### `dvz_graph_edge_ids()`
+### `dvz_graph_set_edge_count()`
 
-```c title="dvz_graph_edge_ids"
-DvzResult dvz_graph_edge_ids(
+```c title="dvz_graph_set_edge_count"
+DvzResult dvz_graph_set_edge_count(
     DvzGraph * graph,
-    uint32_t first_edge,
-    uint32_t edge_count,
-    const uint64_t * ids
+    uint32_t edge_count
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
+| return | `DvzResult` | 0 on success, -1 on invalid endpoints or allocation failure |
 | `graph` | `DvzGraph *` | the graph |
-| `first_edge` | `uint32_t` | first edge index |
 | `edge_count` | `uint32_t` | number of edges |
-| `ids` | `const uint64_t *` | borrowed user-id array |
 
-Set stable graph edge user ids.
+Replace the graph edge array and reset edge style defaults.
 
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:2974._
-
-### `dvz_graph_edge_style()`
-
-```c title="dvz_graph_edge_style"
-DvzGraphEdgeStyle dvz_graph_edge_style(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGraphEdgeStyle` | default graph edge style |
-
-Return the default graph edge style descriptor.
+Edge endpoints are left at their default values until `dvz_graph_set_edge_endpoints()` is called.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2894._
+_Declared in `include/datoviz/scene.h`:2932._
 
-### `dvz_graph_edge_widths()`
+### `dvz_graph_set_edge_endpoints()`
 
-```c title="dvz_graph_edge_widths"
-DvzResult dvz_graph_edge_widths(
-    DvzGraph * graph,
-    uint32_t first_edge,
-    uint32_t edge_count,
-    const float * widths
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `graph` | `DvzGraph *` | the graph |
-| `first_edge` | `uint32_t` | first edge index |
-| `edge_count` | `uint32_t` | number of edges |
-| `widths` | `const float *` | borrowed edge widths |
-
-Set a range of graph edge stroke widths in pixels.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3061._
-
-### `dvz_graph_edges()`
-
-```c title="dvz_graph_edges"
-DvzResult dvz_graph_edges(
+```c title="dvz_graph_set_edge_endpoints"
+DvzResult dvz_graph_set_edge_endpoints(
     DvzGraph * graph,
     uint32_t first_edge,
     uint32_t edge_count,
@@ -1540,38 +1513,13 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:2947._
 
-### `dvz_graph_node_colors()`
+### `dvz_graph_set_edge_ids()`
 
-```c title="dvz_graph_node_colors"
-DvzResult dvz_graph_node_colors(
+```c title="dvz_graph_set_edge_ids"
+DvzResult dvz_graph_set_edge_ids(
     DvzGraph * graph,
-    uint32_t first_node,
-    uint32_t node_count,
-    const DvzColor * colors
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `graph` | `DvzGraph *` | the graph |
-| `first_node` | `uint32_t` | first node index |
-| `node_count` | `uint32_t` | number of nodes |
-| `colors` | `const DvzColor *` | borrowed RGBA colors |
-
-Set a range of graph node colors.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3019._
-
-### `dvz_graph_node_ids()`
-
-```c title="dvz_graph_node_ids"
-DvzResult dvz_graph_node_ids(
-    DvzGraph * graph,
-    uint32_t first_node,
-    uint32_t node_count,
+    uint32_t first_edge,
+    uint32_t edge_count,
     const uint64_t * ids
 );
 ```
@@ -1580,88 +1528,15 @@ DvzResult dvz_graph_node_ids(
 | --- | --- | --- |
 | return | `DvzResult` | 0 on success, -1 on error |
 | `graph` | `DvzGraph *` | the graph |
-| `first_node` | `uint32_t` | first node index |
-| `node_count` | `uint32_t` | number of nodes |
+| `first_edge` | `uint32_t` | first edge index |
+| `edge_count` | `uint32_t` | number of edges |
 | `ids` | `const uint64_t *` | borrowed user-id array |
 
-Set stable graph node user ids.
+Set stable graph edge user ids.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2961._
-
-### `dvz_graph_node_positions()`
-
-```c title="dvz_graph_node_positions"
-DvzResult dvz_graph_node_positions(
-    DvzGraph * graph,
-    uint32_t first_node,
-    uint32_t node_count,
-    const dvec3 * positions
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `graph` | `DvzGraph *` | the graph |
-| `first_node` | `uint32_t` | first node index |
-| `node_count` | `uint32_t` | number of node positions to update |
-| `positions` | `const dvec3 *` | borrowed node positions |
-
-Update graph node positions without changing node styles or edges.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:2919._
-
-### `dvz_graph_node_sizes()`
-
-```c title="dvz_graph_node_sizes"
-DvzResult dvz_graph_node_sizes(
-    DvzGraph * graph,
-    uint32_t first_node,
-    uint32_t node_count,
-    const float * sizes
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `graph` | `DvzGraph *` | the graph |
-| `first_node` | `uint32_t` | first node index |
-| `node_count` | `uint32_t` | number of nodes |
-| `sizes` | `const float *` | borrowed node sizes |
-
-Set a range of graph node sizes in pixels.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3033._
-
-### `dvz_graph_set_edge_count()`
-
-```c title="dvz_graph_set_edge_count"
-DvzResult dvz_graph_set_edge_count(
-    DvzGraph * graph,
-    uint32_t edge_count
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on invalid endpoints or allocation failure |
-| `graph` | `DvzGraph *` | the graph |
-| `edge_count` | `uint32_t` | number of edges |
-
-Replace the graph edge array and reset edge style defaults.
-
-Edge endpoints are left at their default values until `dvz_graph_edges()` is called.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:2932._
+_Declared in `include/datoviz/scene.h`:2975._
 
 ### `dvz_graph_set_edge_style()`
 
@@ -1686,7 +1561,57 @@ Configure graph edge rendering.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:2989._
+_Declared in `include/datoviz/scene.h`:2990._
+
+### `dvz_graph_set_edge_widths()`
+
+```c title="dvz_graph_set_edge_widths"
+DvzResult dvz_graph_set_edge_widths(
+    DvzGraph * graph,
+    uint32_t first_edge,
+    uint32_t edge_count,
+    const float * widths
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `graph` | `DvzGraph *` | the graph |
+| `first_edge` | `uint32_t` | first edge index |
+| `edge_count` | `uint32_t` | number of edges |
+| `widths` | `const float *` | borrowed edge widths |
+
+Set a range of graph edge stroke widths in pixels.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3062._
+
+### `dvz_graph_set_node_colors()`
+
+```c title="dvz_graph_set_node_colors"
+DvzResult dvz_graph_set_node_colors(
+    DvzGraph * graph,
+    uint32_t first_node,
+    uint32_t node_count,
+    const DvzColor * colors
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `graph` | `DvzGraph *` | the graph |
+| `first_node` | `uint32_t` | first node index |
+| `node_count` | `uint32_t` | number of nodes |
+| `colors` | `const DvzColor *` | borrowed RGBA colors |
+
+Set a range of graph node colors.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3020._
 
 ### `dvz_graph_set_node_count()`
 
@@ -1706,11 +1631,86 @@ DvzResult dvz_graph_set_node_count(
 Replace the graph node array and reset node style defaults.
 
 Existing edges are discarded because their endpoints may no longer be valid. Call
-`dvz_graph_node_positions()` after this function to set or update semantic node positions.
+`dvz_graph_set_node_positions()` after this function to set or update semantic node positions.
 
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:2907._
+
+### `dvz_graph_set_node_ids()`
+
+```c title="dvz_graph_set_node_ids"
+DvzResult dvz_graph_set_node_ids(
+    DvzGraph * graph,
+    uint32_t first_node,
+    uint32_t node_count,
+    const uint64_t * ids
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `graph` | `DvzGraph *` | the graph |
+| `first_node` | `uint32_t` | first node index |
+| `node_count` | `uint32_t` | number of nodes |
+| `ids` | `const uint64_t *` | borrowed user-id array |
+
+Set stable graph node user ids.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:2961._
+
+### `dvz_graph_set_node_positions()`
+
+```c title="dvz_graph_set_node_positions"
+DvzResult dvz_graph_set_node_positions(
+    DvzGraph * graph,
+    uint32_t first_node,
+    uint32_t node_count,
+    const dvec3 * positions
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `graph` | `DvzGraph *` | the graph |
+| `first_node` | `uint32_t` | first node index |
+| `node_count` | `uint32_t` | number of node positions to update |
+| `positions` | `const dvec3 *` | borrowed node positions |
+
+Update graph node positions without changing node styles or edges.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:2919._
+
+### `dvz_graph_set_node_sizes()`
+
+```c title="dvz_graph_set_node_sizes"
+DvzResult dvz_graph_set_node_sizes(
+    DvzGraph * graph,
+    uint32_t first_node,
+    uint32_t node_count,
+    const float * sizes
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `graph` | `DvzGraph *` | the graph |
+| `first_node` | `uint32_t` | first node index |
+| `node_count` | `uint32_t` | number of nodes |
+| `sizes` | `const float *` | borrowed node sizes |
+
+Set a range of graph node sizes in pixels.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3034._
 
 ## Image
 
@@ -1739,7 +1739,7 @@ sampled field via `dvz_visual_set_field()`.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3552._
+_Declared in `include/datoviz/scene.h`:3553._
 
 ### `dvz_image_set_sampling()`
 
@@ -1763,7 +1763,7 @@ minification and magnification sampler for pixel-exact image rendering.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3565._
+_Declared in `include/datoviz/scene.h`:3566._
 
 ## Marker
 
@@ -2007,7 +2007,7 @@ A path accepts `position` (vec3), `color` (RGBA8), and optional per-point `strok
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3491._
+_Declared in `include/datoviz/scene.h`:3492._
 
 ### `dvz_path_set_caps()`
 
@@ -2033,7 +2033,7 @@ slice caps are none, round, triangle-in, triangle-out, square, and butt.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3506._
+_Declared in `include/datoviz/scene.h`:3507._
 
 ### `dvz_path_set_join()`
 
@@ -2059,7 +2059,7 @@ the local stroke width. Round and bevel joins ignore the limit.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3521._
+_Declared in `include/datoviz/scene.h`:3522._
 
 ### `dvz_path_set_subpaths()`
 
@@ -2085,7 +2085,7 @@ the path position count at emission time.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3535._
+_Declared in `include/datoviz/scene.h`:3536._
 
 ## Phong
 
@@ -2231,7 +2231,7 @@ A polygon represents one filled region with one outer ring and optional hole rin
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3086._
+_Declared in `include/datoviz/scene.h`:3087._
 
 ### `dvz_polygon_composite()`
 
@@ -2252,7 +2252,7 @@ Create a scene-owned composite render view for a polygon.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3236._
+_Declared in `include/datoviz/scene.h`:3237._
 
 ### `dvz_polygon_desc()`
 
@@ -2288,12 +2288,12 @@ Destroy a scene-owned polygon object and release its copied ring data.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3094._
+_Declared in `include/datoviz/scene.h`:3095._
 
-### `dvz_polygon_fill_color()`
+### `dvz_polygon_set_fill_color()`
 
-```c title="dvz_polygon_fill_color"
-DvzResult dvz_polygon_fill_color(
+```c title="dvz_polygon_set_fill_color"
+DvzResult dvz_polygon_set_fill_color(
     DvzPolygon * polygon,
     const DvzColor color
 );
@@ -2309,12 +2309,12 @@ Set the polygon fill color.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3182._
+_Declared in `include/datoviz/scene.h`:3183._
 
-### `dvz_polygon_geometry()`
+### `dvz_polygon_set_geometry()`
 
-```c title="dvz_polygon_geometry"
-DvzResult dvz_polygon_geometry(
+```c title="dvz_polygon_set_geometry"
+DvzResult dvz_polygon_set_geometry(
     DvzPolygon * polygon,
     const DvzPolygonDesc * desc
 );
@@ -2330,12 +2330,12 @@ Replace all polygon rings from a borrowed descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3112._
+_Declared in `include/datoviz/scene.h`:3113._
 
-### `dvz_polygon_hole()`
+### `dvz_polygon_set_hole()`
 
-```c title="dvz_polygon_hole"
-DvzResult dvz_polygon_hole(
+```c title="dvz_polygon_set_hole"
+DvzResult dvz_polygon_set_hole(
     DvzPolygon * polygon,
     uint32_t hole_index,
     uint32_t count,
@@ -2358,12 +2358,12 @@ replaces that hole.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3139._
+_Declared in `include/datoviz/scene.h`:3140._
 
-### `dvz_polygon_id()`
+### `dvz_polygon_set_id()`
 
-```c title="dvz_polygon_id"
-DvzResult dvz_polygon_id(
+```c title="dvz_polygon_set_id"
+DvzResult dvz_polygon_set_id(
     DvzPolygon * polygon,
     uint64_t id
 );
@@ -2379,12 +2379,12 @@ Set the stable user id associated with a polygon.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3149._
+_Declared in `include/datoviz/scene.h`:3150._
 
-### `dvz_polygon_outer()`
+### `dvz_polygon_set_outer()`
 
-```c title="dvz_polygon_outer"
-DvzResult dvz_polygon_outer(
+```c title="dvz_polygon_set_outer"
+DvzResult dvz_polygon_set_outer(
     DvzPolygon * polygon,
     uint32_t count,
     const dvec2 * xy
@@ -2402,7 +2402,95 @@ Replace the polygon outer ring while preserving existing holes.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3123._
+_Declared in `include/datoviz/scene.h`:3124._
+
+### `dvz_polygon_set_stroke_caps()`
+
+```c title="dvz_polygon_set_stroke_caps"
+DvzResult dvz_polygon_set_stroke_caps(
+    DvzPolygon * polygon,
+    DvzSegmentCap start_cap,
+    DvzSegmentCap end_cap
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `polygon` | `DvzPolygon *` | the polygon |
+| `start_cap` | `DvzSegmentCap` | cap applied to each ring start |
+| `end_cap` | `DvzSegmentCap` | cap applied to each ring end |
+
+Configure polygon stroke endpoint caps.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3215._
+
+### `dvz_polygon_set_stroke_color()`
+
+```c title="dvz_polygon_set_stroke_color"
+DvzResult dvz_polygon_set_stroke_color(
+    DvzPolygon * polygon,
+    const DvzColor color
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `polygon` | `DvzPolygon *` | the polygon |
+| `color` | `const DvzColor` | RGBA stroke color |
+
+Set the polygon stroke color.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3193._
+
+### `dvz_polygon_set_stroke_join()`
+
+```c title="dvz_polygon_set_stroke_join"
+DvzResult dvz_polygon_set_stroke_join(
+    DvzPolygon * polygon,
+    DvzPathJoin join,
+    float miter_limit
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `polygon` | `DvzPolygon *` | the polygon |
+| `join` | `DvzPathJoin` | join style |
+| `miter_limit` | `float` | positive finite miter limit |
+
+Configure polygon stroke joins.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3227._
+
+### `dvz_polygon_set_stroke_width_px()`
+
+```c title="dvz_polygon_set_stroke_width_px"
+DvzResult dvz_polygon_set_stroke_width_px(
+    DvzPolygon * polygon,
+    float width
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on invalid input |
+| `polygon` | `DvzPolygon *` | the polygon |
+| `width` | `float` | stroke width in pixels |
+
+Set the polygon stroke width in pixels.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3203._
 
 ### `dvz_polygon_set_style()`
 
@@ -2426,116 +2514,12 @@ for applying defaults or several style fields atomically.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3172._
+_Declared in `include/datoviz/scene.h`:3173._
 
-### `dvz_polygon_stroke_caps()`
+### `dvz_polygon_set_visible()`
 
-```c title="dvz_polygon_stroke_caps"
-DvzResult dvz_polygon_stroke_caps(
-    DvzPolygon * polygon,
-    DvzSegmentCap start_cap,
-    DvzSegmentCap end_cap
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `polygon` | `DvzPolygon *` | the polygon |
-| `start_cap` | `DvzSegmentCap` | cap applied to each ring start |
-| `end_cap` | `DvzSegmentCap` | cap applied to each ring end |
-
-Configure polygon stroke endpoint caps.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3214._
-
-### `dvz_polygon_stroke_color()`
-
-```c title="dvz_polygon_stroke_color"
-DvzResult dvz_polygon_stroke_color(
-    DvzPolygon * polygon,
-    const DvzColor color
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `polygon` | `DvzPolygon *` | the polygon |
-| `color` | `const DvzColor` | RGBA stroke color |
-
-Set the polygon stroke color.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3192._
-
-### `dvz_polygon_stroke_join()`
-
-```c title="dvz_polygon_stroke_join"
-DvzResult dvz_polygon_stroke_join(
-    DvzPolygon * polygon,
-    DvzPathJoin join,
-    float miter_limit
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `polygon` | `DvzPolygon *` | the polygon |
-| `join` | `DvzPathJoin` | join style |
-| `miter_limit` | `float` | positive finite miter limit |
-
-Configure polygon stroke joins.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3226._
-
-### `dvz_polygon_stroke_width_px()`
-
-```c title="dvz_polygon_stroke_width_px"
-DvzResult dvz_polygon_stroke_width_px(
-    DvzPolygon * polygon,
-    float width
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on invalid input |
-| `polygon` | `DvzPolygon *` | the polygon |
-| `width` | `float` | stroke width in pixels |
-
-Set the polygon stroke width in pixels.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3202._
-
-### `dvz_polygon_style()`
-
-```c title="dvz_polygon_style"
-DvzPolygonStyle dvz_polygon_style(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzPolygonStyle` | default polygon style |
-
-Return the default polygon style descriptor.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3102._
-
-### `dvz_polygon_visible()`
-
-```c title="dvz_polygon_visible"
-DvzResult dvz_polygon_visible(
+```c title="dvz_polygon_set_visible"
+DvzResult dvz_polygon_set_visible(
     DvzPolygon * polygon,
     _Bool visible
 );
@@ -2551,7 +2535,23 @@ Set polygon visibility.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3159._
+_Declared in `include/datoviz/scene.h`:3160._
+
+### `dvz_polygon_style()`
+
+```c title="dvz_polygon_style"
+DvzPolygonStyle dvz_polygon_style(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzPolygonStyle` | default polygon style |
+
+Return the default polygon style descriptor.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:3103._
 
 ## Polygons
 
@@ -2577,7 +2577,7 @@ style.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3249._
+_Declared in `include/datoviz/scene.h`:3250._
 
 ### `dvz_polygons_add_region()`
 
@@ -2598,7 +2598,7 @@ Append one polygon region to a polygon set.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3267._
+_Declared in `include/datoviz/scene.h`:3268._
 
 ### `dvz_polygons_composite()`
 
@@ -2619,7 +2619,7 @@ Create a scene-owned composite render view for a polygon set.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3438._
+_Declared in `include/datoviz/scene.h`:3439._
 
 ### `dvz_polygons_destroy()`
 
@@ -2637,7 +2637,7 @@ Destroy a scene-owned polygon set object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3257._
+_Declared in `include/datoviz/scene.h`:3258._
 
 ### `dvz_polygons_set_region_fill_color()`
 
@@ -2660,7 +2660,7 @@ Set one polygon region's fill color.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3340._
+_Declared in `include/datoviz/scene.h`:3341._
 
 ### `dvz_polygons_set_region_fill_colors()`
 
@@ -2685,7 +2685,7 @@ Set a contiguous range of polygon region fill colors.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3353._
+_Declared in `include/datoviz/scene.h`:3354._
 
 ### `dvz_polygons_set_region_geometry()`
 
@@ -2708,7 +2708,7 @@ Replace one polygon region's rings.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3278._
+_Declared in `include/datoviz/scene.h`:3279._
 
 ### `dvz_polygons_set_region_id()`
 
@@ -2731,7 +2731,7 @@ Set one polygon region's stable user id.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3291._
+_Declared in `include/datoviz/scene.h`:3292._
 
 ### `dvz_polygons_set_region_ids()`
 
@@ -2756,7 +2756,7 @@ Set a contiguous range of polygon region stable user ids.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3303._
+_Declared in `include/datoviz/scene.h`:3304._
 
 ### `dvz_polygons_set_region_stroke_color()`
 
@@ -2779,7 +2779,7 @@ Set one polygon region's stroke color.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3365._
+_Declared in `include/datoviz/scene.h`:3366._
 
 ### `dvz_polygons_set_region_stroke_colors()`
 
@@ -2804,7 +2804,7 @@ Set a contiguous range of polygon region stroke colors.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3378._
+_Declared in `include/datoviz/scene.h`:3379._
 
 ### `dvz_polygons_set_region_stroke_width_px()`
 
@@ -2827,7 +2827,7 @@ Set one polygon region's stroke width in pixels.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3391._
+_Declared in `include/datoviz/scene.h`:3392._
 
 ### `dvz_polygons_set_region_stroke_widths_px()`
 
@@ -2852,7 +2852,7 @@ Set a contiguous range of polygon region stroke widths.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3403._
+_Declared in `include/datoviz/scene.h`:3404._
 
 ### `dvz_polygons_set_region_visibilities()`
 
@@ -2877,7 +2877,7 @@ Set a contiguous range of polygon region visibilities.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3328._
+_Declared in `include/datoviz/scene.h`:3329._
 
 ### `dvz_polygons_set_region_visible()`
 
@@ -2900,7 +2900,7 @@ Set one polygon region's visibility.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3316._
+_Declared in `include/datoviz/scene.h`:3317._
 
 ### `dvz_polygons_set_stroke_caps()`
 
@@ -2923,7 +2923,7 @@ Configure polygon-set stroke endpoint caps.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3416._
+_Declared in `include/datoviz/scene.h`:3417._
 
 ### `dvz_polygons_set_stroke_join()`
 
@@ -2946,7 +2946,7 @@ Configure polygon-set stroke joins.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3428._
+_Declared in `include/datoviz/scene.h`:3429._
 
 ## Primitive
 
@@ -4786,7 +4786,7 @@ supports full-volume composite rendering by default, plus slice and MIP modes.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3724._
+_Declared in `include/datoviz/scene.h`:3725._
 
 ### `dvz_volume_clear_clipping()`
 
@@ -4805,7 +4805,7 @@ Disable all clipping on a volume visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3885._
+_Declared in `include/datoviz/scene.h`:3886._
 
 ### `dvz_volume_clear_clipping_plane()`
 
@@ -4824,7 +4824,7 @@ Disable arbitrary plane clipping on a volume visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3876._
+_Declared in `include/datoviz/scene.h`:3877._
 
 ### `dvz_volume_occlusion_desc()`
 
@@ -4863,7 +4863,7 @@ Set piecewise-linear opacity stops for scalar volume transfer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3838._
+_Declared in `include/datoviz/scene.h`:3839._
 
 ### `dvz_volume_set_axis_mapping()`
 
@@ -4890,7 +4890,7 @@ all flips.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3815._
+_Declared in `include/datoviz/scene.h`:3816._
 
 ### `dvz_volume_set_bounds()`
 
@@ -4916,7 +4916,7 @@ They are useful for displaying anisotropic volumes in their physical aspect rati
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3800._
+_Declared in `include/datoviz/scene.h`:3801._
 
 ### `dvz_volume_set_clipping_box()`
 
@@ -4939,7 +4939,7 @@ Enable axis-aligned clipping on a volume visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3851._
+_Declared in `include/datoviz/scene.h`:3852._
 
 ### `dvz_volume_set_clipping_plane()`
 
@@ -4967,7 +4967,7 @@ The plane is defined in normalized volume coordinates. Voxels for which
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3866._
+_Declared in `include/datoviz/scene.h`:3867._
 
 ### `dvz_volume_set_opacity()`
 
@@ -4988,7 +4988,7 @@ Set the global opacity multiplier on a volume visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3734._
+_Declared in `include/datoviz/scene.h`:3735._
 
 ### `dvz_volume_set_render_mode()`
 
@@ -5009,7 +5009,7 @@ Set the volume render mode.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3755._
+_Declared in `include/datoviz/scene.h`:3756._
 
 ### `dvz_volume_set_sampling()`
 
@@ -5030,7 +5030,7 @@ Set the texture sampling mode on a volume visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3745._
+_Declared in `include/datoviz/scene.h`:3746._
 
 ### `dvz_volume_set_slice_axis()`
 
@@ -5051,7 +5051,7 @@ Set the volume slice axis.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3765._
+_Declared in `include/datoviz/scene.h`:3766._
 
 ### `dvz_volume_set_slice_position()`
 
@@ -5072,7 +5072,7 @@ Set the normalized volume slice position.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3775._
+_Declared in `include/datoviz/scene.h`:3776._
 
 ### `dvz_volume_set_step_count()`
 
@@ -5093,7 +5093,7 @@ Set the volume raymarch step count used by MIP and composite rendering.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3785._
+_Declared in `include/datoviz/scene.h`:3786._
 
 ### `dvz_volume_set_value_range()`
 
@@ -5116,7 +5116,7 @@ Set the scalar value range used before transfer texture lookup.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3827._
+_Declared in `include/datoviz/scene.h`:3828._
 
 ### `dvz_volume_state()`
 
@@ -5135,4 +5135,4 @@ Return the retained volume state for inspection.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3894._
+_Declared in `include/datoviz/scene.h`:3895._

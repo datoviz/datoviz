@@ -17440,7 +17440,7 @@ else:
  *
  * A graph stores user-provided node positions and indexed edges. Layout algorithms are intentionally
  * external to the first public API slice and can update node positions through
- * `dvz_graph_node_positions()`.
+ * `dvz_graph_set_node_positions()`.
  *
  * @param scene the scene
  * @param flags reserved graph flags
@@ -17483,63 +17483,6 @@ else:
 
 
 try:
-    dvz_graph_edge_colors = dvz.dvz_graph_edge_colors
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_edge_colors')
-else:
-    dvz_graph_edge_colors.__doc__ = """/**
- * Set a range of graph edge colors.
- *
- * @param graph the graph
- * @param first_edge first edge index
- * @param edge_count number of edges
- * @param colors borrowed RGBA colors
- * @return 0 on success, -1 on error
- */"""
-    dvz_graph_edge_colors.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
-    dvz_graph_edge_colors.restype = ctypes.c_int32
-
-
-try:
-    dvz_graph_edge_controls = dvz.dvz_graph_edge_controls
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_edge_controls')
-else:
-    dvz_graph_edge_controls.__doc__ = """/**
- * Configure explicit cubic Bezier control points for graph edges.
- *
- * If omitted, Bezier mode derives gentle XY control points from each edge's endpoints.
- *
- * @param graph the graph
- * @param first_edge first edge index
- * @param edge_count number of edge controls to update
- * @param control0 borrowed first control point array
- * @param control1 borrowed second control point array
- * @return 0 on success, -1 on error
- */"""
-    dvz_graph_edge_controls.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 3), (ctypes.c_void_p * 3)]
-    dvz_graph_edge_controls.restype = ctypes.c_int32
-
-
-try:
-    dvz_graph_edge_ids = dvz.dvz_graph_edge_ids
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_edge_ids')
-else:
-    dvz_graph_edge_ids.__doc__ = """/**
- * Set stable graph edge user ids.
- *
- * @param graph the graph
- * @param first_edge first edge index
- * @param edge_count number of edges
- * @param ids borrowed user-id array
- * @return 0 on success, -1 on error
- */"""
-    dvz_graph_edge_ids.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint64)]
-    dvz_graph_edge_ids.restype = ctypes.c_int32
-
-
-try:
     dvz_graph_edge_style = dvz.dvz_graph_edge_style
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_graph_edge_style')
@@ -17554,113 +17497,42 @@ else:
 
 
 try:
-    dvz_graph_edge_widths = dvz.dvz_graph_edge_widths
+    dvz_graph_set_edge_colors = dvz.dvz_graph_set_edge_colors
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_edge_widths')
+    _MISSING_FUNCTIONS.append('dvz_graph_set_edge_colors')
 else:
-    dvz_graph_edge_widths.__doc__ = """/**
- * Set a range of graph edge stroke widths in pixels.
+    dvz_graph_set_edge_colors.__doc__ = """/**
+ * Set a range of graph edge colors.
  *
  * @param graph the graph
  * @param first_edge first edge index
  * @param edge_count number of edges
- * @param widths borrowed edge widths
- * @return 0 on success, -1 on error
- */"""
-    dvz_graph_edge_widths.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_float)]
-    dvz_graph_edge_widths.restype = ctypes.c_int32
-
-
-try:
-    dvz_graph_edges = dvz.dvz_graph_edges
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_edges')
-else:
-    dvz_graph_edges.__doc__ = """/**
- * Update graph edge endpoints.
- *
- * Edge endpoints reference node indices in the current graph node array.
- *
- * @param graph the graph
- * @param first_edge first edge index
- * @param edge_count number of edges
- * @param endpoints borrowed packed endpoint array: source0, target0, source1, target1, ...
- * @return 0 on success, -1 on invalid endpoints or allocation failure
- */"""
-    dvz_graph_edges.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32)]
-    dvz_graph_edges.restype = ctypes.c_int32
-
-
-try:
-    dvz_graph_node_colors = dvz.dvz_graph_node_colors
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_node_colors')
-else:
-    dvz_graph_node_colors.__doc__ = """/**
- * Set a range of graph node colors.
- *
- * @param graph the graph
- * @param first_node first node index
- * @param node_count number of nodes
  * @param colors borrowed RGBA colors
  * @return 0 on success, -1 on error
  */"""
-    dvz_graph_node_colors.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
-    dvz_graph_node_colors.restype = ctypes.c_int32
+    dvz_graph_set_edge_colors.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
+    dvz_graph_set_edge_colors.restype = ctypes.c_int32
 
 
 try:
-    dvz_graph_node_ids = dvz.dvz_graph_node_ids
+    dvz_graph_set_edge_controls = dvz.dvz_graph_set_edge_controls
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_node_ids')
+    _MISSING_FUNCTIONS.append('dvz_graph_set_edge_controls')
 else:
-    dvz_graph_node_ids.__doc__ = """/**
- * Set stable graph node user ids.
+    dvz_graph_set_edge_controls.__doc__ = """/**
+ * Configure explicit cubic Bezier control points for graph edges.
+ *
+ * If omitted, Bezier mode derives gentle XY control points from each edge's endpoints.
  *
  * @param graph the graph
- * @param first_node first node index
- * @param node_count number of nodes
- * @param ids borrowed user-id array
+ * @param first_edge first edge index
+ * @param edge_count number of edge controls to update
+ * @param control0 borrowed first control point array
+ * @param control1 borrowed second control point array
  * @return 0 on success, -1 on error
  */"""
-    dvz_graph_node_ids.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint64)]
-    dvz_graph_node_ids.restype = ctypes.c_int32
-
-
-try:
-    dvz_graph_node_positions = dvz.dvz_graph_node_positions
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_node_positions')
-else:
-    dvz_graph_node_positions.__doc__ = """/**
- * Update graph node positions without changing node styles or edges.
- *
- * @param graph the graph
- * @param first_node first node index
- * @param node_count number of node positions to update
- * @param positions borrowed node positions
- * @return 0 on success, -1 on error
- */"""
-    dvz_graph_node_positions.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 3)]
-    dvz_graph_node_positions.restype = ctypes.c_int32
-
-
-try:
-    dvz_graph_node_sizes = dvz.dvz_graph_node_sizes
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_node_sizes')
-else:
-    dvz_graph_node_sizes.__doc__ = """/**
- * Set a range of graph node sizes in pixels.
- *
- * @param graph the graph
- * @param first_node first node index
- * @param node_count number of nodes
- * @param sizes borrowed node sizes
- * @return 0 on success, -1 on error
- */"""
-    dvz_graph_node_sizes.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_float)]
-    dvz_graph_node_sizes.restype = ctypes.c_int32
+    dvz_graph_set_edge_controls.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 3), (ctypes.c_void_p * 3)]
+    dvz_graph_set_edge_controls.restype = ctypes.c_int32
 
 
 try:
@@ -17671,7 +17543,7 @@ else:
     dvz_graph_set_edge_count.__doc__ = """/**
  * Replace the graph edge array and reset edge style defaults.
  *
- * Edge endpoints are left at their default values until `dvz_graph_edges()` is called.
+ * Edge endpoints are left at their default values until `dvz_graph_set_edge_endpoints()` is called.
  *
  * @param graph the graph
  * @param edge_count number of edges
@@ -17679,6 +17551,44 @@ else:
  */"""
     dvz_graph_set_edge_count.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32]
     dvz_graph_set_edge_count.restype = ctypes.c_int32
+
+
+try:
+    dvz_graph_set_edge_endpoints = dvz.dvz_graph_set_edge_endpoints
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_edge_endpoints')
+else:
+    dvz_graph_set_edge_endpoints.__doc__ = """/**
+ * Update graph edge endpoints.
+ *
+ * Edge endpoints reference node indices in the current graph node array.
+ *
+ * @param graph the graph
+ * @param first_edge first edge index
+ * @param edge_count number of edges
+ * @param endpoints borrowed packed endpoint array: source0, target0, source1, target1, ...
+ * @return 0 on success, -1 on invalid endpoints or allocation failure
+ */"""
+    dvz_graph_set_edge_endpoints.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32)]
+    dvz_graph_set_edge_endpoints.restype = ctypes.c_int32
+
+
+try:
+    dvz_graph_set_edge_ids = dvz.dvz_graph_set_edge_ids
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_edge_ids')
+else:
+    dvz_graph_set_edge_ids.__doc__ = """/**
+ * Set stable graph edge user ids.
+ *
+ * @param graph the graph
+ * @param first_edge first edge index
+ * @param edge_count number of edges
+ * @param ids borrowed user-id array
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_graph_set_edge_ids.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint64)]
+    dvz_graph_set_edge_ids.restype = ctypes.c_int32
 
 
 try:
@@ -17702,6 +17612,42 @@ else:
 
 
 try:
+    dvz_graph_set_edge_widths = dvz.dvz_graph_set_edge_widths
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_edge_widths')
+else:
+    dvz_graph_set_edge_widths.__doc__ = """/**
+ * Set a range of graph edge stroke widths in pixels.
+ *
+ * @param graph the graph
+ * @param first_edge first edge index
+ * @param edge_count number of edges
+ * @param widths borrowed edge widths
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_graph_set_edge_widths.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_float)]
+    dvz_graph_set_edge_widths.restype = ctypes.c_int32
+
+
+try:
+    dvz_graph_set_node_colors = dvz.dvz_graph_set_node_colors
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_node_colors')
+else:
+    dvz_graph_set_node_colors.__doc__ = """/**
+ * Set a range of graph node colors.
+ *
+ * @param graph the graph
+ * @param first_node first node index
+ * @param node_count number of nodes
+ * @param colors borrowed RGBA colors
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_graph_set_node_colors.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
+    dvz_graph_set_node_colors.restype = ctypes.c_int32
+
+
+try:
     dvz_graph_set_node_count = dvz.dvz_graph_set_node_count
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_graph_set_node_count')
@@ -17710,7 +17656,7 @@ else:
  * Replace the graph node array and reset node style defaults.
  *
  * Existing edges are discarded because their endpoints may no longer be valid. Call
- * `dvz_graph_node_positions()` after this function to set or update semantic node positions.
+ * `dvz_graph_set_node_positions()` after this function to set or update semantic node positions.
  *
  * @param graph the graph
  * @param node_count number of nodes
@@ -17718,6 +17664,60 @@ else:
  */"""
     dvz_graph_set_node_count.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32]
     dvz_graph_set_node_count.restype = ctypes.c_int32
+
+
+try:
+    dvz_graph_set_node_ids = dvz.dvz_graph_set_node_ids
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_node_ids')
+else:
+    dvz_graph_set_node_ids.__doc__ = """/**
+ * Set stable graph node user ids.
+ *
+ * @param graph the graph
+ * @param first_node first node index
+ * @param node_count number of nodes
+ * @param ids borrowed user-id array
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_graph_set_node_ids.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint64)]
+    dvz_graph_set_node_ids.restype = ctypes.c_int32
+
+
+try:
+    dvz_graph_set_node_positions = dvz.dvz_graph_set_node_positions
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_node_positions')
+else:
+    dvz_graph_set_node_positions.__doc__ = """/**
+ * Update graph node positions without changing node styles or edges.
+ *
+ * @param graph the graph
+ * @param first_node first node index
+ * @param node_count number of node positions to update
+ * @param positions borrowed node positions
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_graph_set_node_positions.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 3)]
+    dvz_graph_set_node_positions.restype = ctypes.c_int32
+
+
+try:
+    dvz_graph_set_node_sizes = dvz.dvz_graph_set_node_sizes
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_node_sizes')
+else:
+    dvz_graph_set_node_sizes.__doc__ = """/**
+ * Set a range of graph node sizes in pixels.
+ *
+ * @param graph the graph
+ * @param first_node first node index
+ * @param node_count number of nodes
+ * @param sizes borrowed node sizes
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_graph_set_node_sizes.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_float)]
+    dvz_graph_set_node_sizes.restype = ctypes.c_int32
 
 
 try:
@@ -23600,43 +23600,43 @@ else:
 
 
 try:
-    dvz_polygon_fill_color = dvz.dvz_polygon_fill_color
+    dvz_polygon_set_fill_color = dvz.dvz_polygon_set_fill_color
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_fill_color')
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_fill_color')
 else:
-    dvz_polygon_fill_color.__doc__ = """/**
+    dvz_polygon_set_fill_color.__doc__ = """/**
  * Set the polygon fill color.
  *
  * @param polygon the polygon
  * @param color RGBA fill color
  * @return 0 on success, -1 on error
  */"""
-    dvz_polygon_fill_color.argtypes = [ctypes.POINTER(DvzPolygon), DvzColor]
-    dvz_polygon_fill_color.restype = ctypes.c_int32
+    dvz_polygon_set_fill_color.argtypes = [ctypes.POINTER(DvzPolygon), DvzColor]
+    dvz_polygon_set_fill_color.restype = ctypes.c_int32
 
 
 try:
-    dvz_polygon_geometry = dvz.dvz_polygon_geometry
+    dvz_polygon_set_geometry = dvz.dvz_polygon_set_geometry
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_geometry')
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_geometry')
 else:
-    dvz_polygon_geometry.__doc__ = """/**
+    dvz_polygon_set_geometry.__doc__ = """/**
  * Replace all polygon rings from a borrowed descriptor.
  *
  * @param polygon the polygon
  * @param desc borrowed polygon descriptor
  * @return 0 on success, -1 on invalid input or allocation failure
  */"""
-    dvz_polygon_geometry.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.POINTER(DvzPolygonDesc)]
-    dvz_polygon_geometry.restype = ctypes.c_int32
+    dvz_polygon_set_geometry.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.POINTER(DvzPolygonDesc)]
+    dvz_polygon_set_geometry.restype = ctypes.c_int32
 
 
 try:
-    dvz_polygon_hole = dvz.dvz_polygon_hole
+    dvz_polygon_set_hole = dvz.dvz_polygon_set_hole
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_hole')
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_hole')
 else:
-    dvz_polygon_hole.__doc__ = """/**
+    dvz_polygon_set_hole.__doc__ = """/**
  * Append or replace one polygon hole ring.
  *
  * Passing hole_index equal to the current hole count appends a new hole. Passing a smaller index
@@ -23648,32 +23648,32 @@ else:
  * @param xy borrowed XY vertex array
  * @return 0 on success, -1 on invalid input or allocation failure
  */"""
-    dvz_polygon_hole.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 2)]
-    dvz_polygon_hole.restype = ctypes.c_int32
+    dvz_polygon_set_hole.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 2)]
+    dvz_polygon_set_hole.restype = ctypes.c_int32
 
 
 try:
-    dvz_polygon_id = dvz.dvz_polygon_id
+    dvz_polygon_set_id = dvz.dvz_polygon_set_id
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_id')
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_id')
 else:
-    dvz_polygon_id.__doc__ = """/**
+    dvz_polygon_set_id.__doc__ = """/**
  * Set the stable user id associated with a polygon.
  *
  * @param polygon the polygon
  * @param id stable user id
  * @return 0 on success, -1 on error
  */"""
-    dvz_polygon_id.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint64]
-    dvz_polygon_id.restype = ctypes.c_int32
+    dvz_polygon_set_id.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint64]
+    dvz_polygon_set_id.restype = ctypes.c_int32
 
 
 try:
-    dvz_polygon_outer = dvz.dvz_polygon_outer
+    dvz_polygon_set_outer = dvz.dvz_polygon_set_outer
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_outer')
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_outer')
 else:
-    dvz_polygon_outer.__doc__ = """/**
+    dvz_polygon_set_outer.__doc__ = """/**
  * Replace the polygon outer ring while preserving existing holes.
  *
  * @param polygon the polygon
@@ -23681,8 +23681,74 @@ else:
  * @param xy borrowed XY vertex array
  * @return 0 on success, -1 on invalid input or allocation failure
  */"""
-    dvz_polygon_outer.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint32, (ctypes.c_void_p * 2)]
-    dvz_polygon_outer.restype = ctypes.c_int32
+    dvz_polygon_set_outer.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint32, (ctypes.c_void_p * 2)]
+    dvz_polygon_set_outer.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygon_set_stroke_caps = dvz.dvz_polygon_set_stroke_caps
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_stroke_caps')
+else:
+    dvz_polygon_set_stroke_caps.__doc__ = """/**
+ * Configure polygon stroke endpoint caps.
+ *
+ * @param polygon the polygon
+ * @param start_cap cap applied to each ring start
+ * @param end_cap cap applied to each ring end
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygon_set_stroke_caps.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_int, ctypes.c_int]
+    dvz_polygon_set_stroke_caps.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygon_set_stroke_color = dvz.dvz_polygon_set_stroke_color
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_stroke_color')
+else:
+    dvz_polygon_set_stroke_color.__doc__ = """/**
+ * Set the polygon stroke color.
+ *
+ * @param polygon the polygon
+ * @param color RGBA stroke color
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygon_set_stroke_color.argtypes = [ctypes.POINTER(DvzPolygon), DvzColor]
+    dvz_polygon_set_stroke_color.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygon_set_stroke_join = dvz.dvz_polygon_set_stroke_join
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_stroke_join')
+else:
+    dvz_polygon_set_stroke_join.__doc__ = """/**
+ * Configure polygon stroke joins.
+ *
+ * @param polygon the polygon
+ * @param join join style
+ * @param miter_limit positive finite miter limit
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygon_set_stroke_join.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_int, ctypes.c_float]
+    dvz_polygon_set_stroke_join.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygon_set_stroke_width_px = dvz.dvz_polygon_set_stroke_width_px
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_stroke_width_px')
+else:
+    dvz_polygon_set_stroke_width_px.__doc__ = """/**
+ * Set the polygon stroke width in pixels.
+ *
+ * @param polygon the polygon
+ * @param width stroke width in pixels
+ * @return 0 on success, -1 on invalid input
+ */"""
+    dvz_polygon_set_stroke_width_px.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_float]
+    dvz_polygon_set_stroke_width_px.restype = ctypes.c_int32
 
 
 try:
@@ -23705,69 +23771,19 @@ else:
 
 
 try:
-    dvz_polygon_stroke_caps = dvz.dvz_polygon_stroke_caps
+    dvz_polygon_set_visible = dvz.dvz_polygon_set_visible
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_stroke_caps')
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_visible')
 else:
-    dvz_polygon_stroke_caps.__doc__ = """/**
- * Configure polygon stroke endpoint caps.
+    dvz_polygon_set_visible.__doc__ = """/**
+ * Set polygon visibility.
  *
  * @param polygon the polygon
- * @param start_cap cap applied to each ring start
- * @param end_cap cap applied to each ring end
+ * @param visible whether the polygon should render
  * @return 0 on success, -1 on error
  */"""
-    dvz_polygon_stroke_caps.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_int, ctypes.c_int]
-    dvz_polygon_stroke_caps.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_stroke_color = dvz.dvz_polygon_stroke_color
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_stroke_color')
-else:
-    dvz_polygon_stroke_color.__doc__ = """/**
- * Set the polygon stroke color.
- *
- * @param polygon the polygon
- * @param color RGBA stroke color
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_stroke_color.argtypes = [ctypes.POINTER(DvzPolygon), DvzColor]
-    dvz_polygon_stroke_color.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_stroke_join = dvz.dvz_polygon_stroke_join
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_stroke_join')
-else:
-    dvz_polygon_stroke_join.__doc__ = """/**
- * Configure polygon stroke joins.
- *
- * @param polygon the polygon
- * @param join join style
- * @param miter_limit positive finite miter limit
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_stroke_join.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_int, ctypes.c_float]
-    dvz_polygon_stroke_join.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_stroke_width_px = dvz.dvz_polygon_stroke_width_px
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_stroke_width_px')
-else:
-    dvz_polygon_stroke_width_px.__doc__ = """/**
- * Set the polygon stroke width in pixels.
- *
- * @param polygon the polygon
- * @param width stroke width in pixels
- * @return 0 on success, -1 on invalid input
- */"""
-    dvz_polygon_stroke_width_px.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_float]
-    dvz_polygon_stroke_width_px.restype = ctypes.c_int32
+    dvz_polygon_set_visible.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_bool]
+    dvz_polygon_set_visible.restype = ctypes.c_int32
 
 
 try:
@@ -23782,22 +23798,6 @@ else:
  */"""
     dvz_polygon_style.argtypes = []
     dvz_polygon_style.restype = DvzPolygonStyle
-
-
-try:
-    dvz_polygon_visible = dvz.dvz_polygon_visible
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_visible')
-else:
-    dvz_polygon_visible.__doc__ = """/**
- * Set polygon visibility.
- *
- * @param polygon the polygon
- * @param visible whether the polygon should render
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_visible.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_bool]
-    dvz_polygon_visible.restype = ctypes.c_int32
 
 
 try:
