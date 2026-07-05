@@ -2111,102 +2111,6 @@ DVZ_MATERIAL_MODEL_PHONG = DvzMaterialModel.DVZ_MATERIAL_MODEL_PHONG
 DVZ_MATERIAL_MODEL_STANDARD = DvzMaterialModel.DVZ_MATERIAL_MODEL_STANDARD
 
 
-class DvzObjectStatus(CtypesEnum):
-    DVZ_OBJECT_STATUS_NONE = 0
-    DVZ_OBJECT_STATUS_ALLOC = 1
-    DVZ_OBJECT_STATUS_DESTROYED = 2
-    DVZ_OBJECT_STATUS_INIT = 3
-    DVZ_OBJECT_STATUS_CREATED = 4
-    DVZ_OBJECT_STATUS_NEED_RECREATE = 5
-    DVZ_OBJECT_STATUS_NEED_UPDATE = 6
-    DVZ_OBJECT_STATUS_NEED_DESTROY = 7
-    DVZ_OBJECT_STATUS_INACTIVE = 8
-    DVZ_OBJECT_STATUS_INVALID = 9
-
-
-DVZ_OBJECT_STATUS_NONE = DvzObjectStatus.DVZ_OBJECT_STATUS_NONE
-DVZ_OBJECT_STATUS_ALLOC = DvzObjectStatus.DVZ_OBJECT_STATUS_ALLOC
-DVZ_OBJECT_STATUS_DESTROYED = DvzObjectStatus.DVZ_OBJECT_STATUS_DESTROYED
-DVZ_OBJECT_STATUS_INIT = DvzObjectStatus.DVZ_OBJECT_STATUS_INIT
-DVZ_OBJECT_STATUS_CREATED = DvzObjectStatus.DVZ_OBJECT_STATUS_CREATED
-DVZ_OBJECT_STATUS_NEED_RECREATE = DvzObjectStatus.DVZ_OBJECT_STATUS_NEED_RECREATE
-DVZ_OBJECT_STATUS_NEED_UPDATE = DvzObjectStatus.DVZ_OBJECT_STATUS_NEED_UPDATE
-DVZ_OBJECT_STATUS_NEED_DESTROY = DvzObjectStatus.DVZ_OBJECT_STATUS_NEED_DESTROY
-DVZ_OBJECT_STATUS_INACTIVE = DvzObjectStatus.DVZ_OBJECT_STATUS_INACTIVE
-DVZ_OBJECT_STATUS_INVALID = DvzObjectStatus.DVZ_OBJECT_STATUS_INVALID
-
-
-class DvzObjectType(CtypesEnum):
-    DVZ_OBJECT_TYPE_UNDEFINED = 0
-    DVZ_OBJECT_TYPE_INSTANCE = 1
-    DVZ_OBJECT_TYPE_DEVICE = 2
-    DVZ_OBJECT_TYPE_HOST = 3
-    DVZ_OBJECT_TYPE_GPU = 4
-    DVZ_OBJECT_TYPE_WINDOW = 5
-    DVZ_OBJECT_TYPE_GUI_WINDOW = 6
-    DVZ_OBJECT_TYPE_SWAPCHAIN = 7
-    DVZ_OBJECT_TYPE_CANVAS = 8
-    DVZ_OBJECT_TYPE_BOARD = 9
-    DVZ_OBJECT_TYPE_COMMANDS = 10
-    DVZ_OBJECT_TYPE_BUFFER = 11
-    DVZ_OBJECT_TYPE_DAT = 12
-    DVZ_OBJECT_TYPE_TEX = 13
-    DVZ_OBJECT_TYPE_IMAGES = 14
-    DVZ_OBJECT_TYPE_SAMPLER = 15
-    DVZ_OBJECT_TYPE_BINDINGS = 16
-    DVZ_OBJECT_TYPE_COMPUTE = 17
-    DVZ_OBJECT_TYPE_GRAPHICS = 18
-    DVZ_OBJECT_TYPE_SHADER = 19
-    DVZ_OBJECT_TYPE_PIPE = 20
-    DVZ_OBJECT_TYPE_BARRIER = 21
-    DVZ_OBJECT_TYPE_FENCES = 22
-    DVZ_OBJECT_TYPE_SEMAPHORES = 23
-    DVZ_OBJECT_TYPE_RENDERPASS = 24
-    DVZ_OBJECT_TYPE_FRAMEBUFFER = 25
-    DVZ_OBJECT_TYPE_WORKSPACE = 26
-    DVZ_OBJECT_TYPE_PIPELIB = 27
-    DVZ_OBJECT_TYPE_SUBMIT = 28
-    DVZ_OBJECT_TYPE_SCREENCAST = 29
-    DVZ_OBJECT_TYPE_TIMER = 30
-    DVZ_OBJECT_TYPE_ARRAY = 31
-    DVZ_OBJECT_TYPE_CUSTOM = 32
-
-
-DVZ_OBJECT_TYPE_UNDEFINED = DvzObjectType.DVZ_OBJECT_TYPE_UNDEFINED
-DVZ_OBJECT_TYPE_INSTANCE = DvzObjectType.DVZ_OBJECT_TYPE_INSTANCE
-DVZ_OBJECT_TYPE_DEVICE = DvzObjectType.DVZ_OBJECT_TYPE_DEVICE
-DVZ_OBJECT_TYPE_HOST = DvzObjectType.DVZ_OBJECT_TYPE_HOST
-DVZ_OBJECT_TYPE_GPU = DvzObjectType.DVZ_OBJECT_TYPE_GPU
-DVZ_OBJECT_TYPE_WINDOW = DvzObjectType.DVZ_OBJECT_TYPE_WINDOW
-DVZ_OBJECT_TYPE_GUI_WINDOW = DvzObjectType.DVZ_OBJECT_TYPE_GUI_WINDOW
-DVZ_OBJECT_TYPE_SWAPCHAIN = DvzObjectType.DVZ_OBJECT_TYPE_SWAPCHAIN
-DVZ_OBJECT_TYPE_CANVAS = DvzObjectType.DVZ_OBJECT_TYPE_CANVAS
-DVZ_OBJECT_TYPE_BOARD = DvzObjectType.DVZ_OBJECT_TYPE_BOARD
-DVZ_OBJECT_TYPE_COMMANDS = DvzObjectType.DVZ_OBJECT_TYPE_COMMANDS
-DVZ_OBJECT_TYPE_BUFFER = DvzObjectType.DVZ_OBJECT_TYPE_BUFFER
-DVZ_OBJECT_TYPE_DAT = DvzObjectType.DVZ_OBJECT_TYPE_DAT
-DVZ_OBJECT_TYPE_TEX = DvzObjectType.DVZ_OBJECT_TYPE_TEX
-DVZ_OBJECT_TYPE_IMAGES = DvzObjectType.DVZ_OBJECT_TYPE_IMAGES
-DVZ_OBJECT_TYPE_SAMPLER = DvzObjectType.DVZ_OBJECT_TYPE_SAMPLER
-DVZ_OBJECT_TYPE_BINDINGS = DvzObjectType.DVZ_OBJECT_TYPE_BINDINGS
-DVZ_OBJECT_TYPE_COMPUTE = DvzObjectType.DVZ_OBJECT_TYPE_COMPUTE
-DVZ_OBJECT_TYPE_GRAPHICS = DvzObjectType.DVZ_OBJECT_TYPE_GRAPHICS
-DVZ_OBJECT_TYPE_SHADER = DvzObjectType.DVZ_OBJECT_TYPE_SHADER
-DVZ_OBJECT_TYPE_PIPE = DvzObjectType.DVZ_OBJECT_TYPE_PIPE
-DVZ_OBJECT_TYPE_BARRIER = DvzObjectType.DVZ_OBJECT_TYPE_BARRIER
-DVZ_OBJECT_TYPE_FENCES = DvzObjectType.DVZ_OBJECT_TYPE_FENCES
-DVZ_OBJECT_TYPE_SEMAPHORES = DvzObjectType.DVZ_OBJECT_TYPE_SEMAPHORES
-DVZ_OBJECT_TYPE_RENDERPASS = DvzObjectType.DVZ_OBJECT_TYPE_RENDERPASS
-DVZ_OBJECT_TYPE_FRAMEBUFFER = DvzObjectType.DVZ_OBJECT_TYPE_FRAMEBUFFER
-DVZ_OBJECT_TYPE_WORKSPACE = DvzObjectType.DVZ_OBJECT_TYPE_WORKSPACE
-DVZ_OBJECT_TYPE_PIPELIB = DvzObjectType.DVZ_OBJECT_TYPE_PIPELIB
-DVZ_OBJECT_TYPE_SUBMIT = DvzObjectType.DVZ_OBJECT_TYPE_SUBMIT
-DVZ_OBJECT_TYPE_SCREENCAST = DvzObjectType.DVZ_OBJECT_TYPE_SCREENCAST
-DVZ_OBJECT_TYPE_TIMER = DvzObjectType.DVZ_OBJECT_TYPE_TIMER
-DVZ_OBJECT_TYPE_ARRAY = DvzObjectType.DVZ_OBJECT_TYPE_ARRAY
-DVZ_OBJECT_TYPE_CUSTOM = DvzObjectType.DVZ_OBJECT_TYPE_CUSTOM
-
-
 class DvzOverlayCardFlag(CtypesEnum):
     DVZ_OVERLAY_CARD_HIDDEN = 1
 
@@ -3664,14 +3568,6 @@ class DvzCompute(ctypes.Structure):
     pass
 
 
-class DvzContainer(ctypes.Structure):
-    pass
-
-
-class DvzContainerIterator(ctypes.Structure):
-    pass
-
-
 class DvzController(ctypes.Structure):
     pass
 
@@ -4149,10 +4045,6 @@ class DvzMaterialDesc(ctypes.Structure):
 
 
 class DvzMsaaDesc(ctypes.Structure):
-    pass
-
-
-class DvzObject(ctypes.Structure):
     pass
 
 
@@ -4683,7 +4575,7 @@ class DvzInputEventContent(ctypes.Union):
 DvzAnimPhaseCallback = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzAnimation), ctypes.c_float, ctypes.c_float, ctypes.c_void_p)
 
 
-DvzAnimTimerCallback = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzAnimation), ctypes.c_double, ctypes.c_double, ctypes.c_ulong, ctypes.c_void_p)
+DvzAnimTimerCallback = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzAnimation), ctypes.c_double, ctypes.c_double, ctypes.c_ulonglong, ctypes.c_void_p)
 
 
 DvzCanvasDraw = ctypes.CFUNCTYPE(None, ctypes.POINTER(DvzCanvas), ctypes.POINTER(DvzStreamFrame), ctypes.c_void_p)
@@ -5159,22 +5051,6 @@ DvzColormapDesc._fields_ = [
 DvzColormapStop._fields_ = [
     ('position', ctypes.c_double),
     ('rgba', (ctypes.c_uint8 * 4)),
-]
-
-
-DvzContainer._fields_ = [
-    ('count', ctypes.c_uint32),
-    ('capacity', ctypes.c_uint32),
-    ('type', ctypes.c_int),
-    ('items', ctypes.POINTER(ctypes.POINTER(None))),
-    ('item_size', ctypes.c_size_t),
-]
-
-
-DvzContainerIterator._fields_ = [
-    ('container', ctypes.POINTER(DvzContainer)),
-    ('idx', ctypes.c_uint32),
-    ('item', ctypes.c_void_p),
 ]
 
 
@@ -5797,7 +5673,7 @@ DvzQueryResult._fields_ = [
     ('value_kind', ctypes.c_int),
     ('scalar', ctypes.c_double),
     ('vector', (ctypes.c_double * 4)),
-    ('category_id', ctypes.c_long),
+    ('category_id', ctypes.c_longlong),
     ('label', (ctypes.c_char * 128)),
     ('unit', (ctypes.c_char * 32)),
     ('scale', ctypes.POINTER(DvzScale)),
@@ -5930,10 +5806,10 @@ DvzLabelDesc._fields_ = [
 
 DvzLabelsState._fields_ = [
     ('opacity', ctypes.c_float),
-    ('background_id', ctypes.c_long),
+    ('background_id', ctypes.c_longlong),
     ('selected_enabled', ctypes.c_bool),
-    ('selected_id', ctypes.c_long),
-    ('hidden_ids', (ctypes.c_long * 256)),
+    ('selected_id', ctypes.c_longlong),
+    ('hidden_ids', (ctypes.c_longlong * 256)),
     ('hidden_count', ctypes.c_uint32),
     ('boundary_enabled', ctypes.c_bool),
     ('boundary_width_px', ctypes.c_float),
@@ -5986,15 +5862,6 @@ DvzMsaaDesc._fields_ = [
     ('enabled', ctypes.c_bool),
     ('sample_count', ctypes.c_uint32),
     ('alpha_to_coverage', ctypes.c_bool),
-]
-
-
-DvzObject._fields_ = [
-    ('type', ctypes.c_int),
-    ('status', ctypes.c_int),
-    ('request', ctypes.c_int),
-    ('group_id', ctypes.c_uint32),
-    ('id', ctypes.c_uint64),
 ]
 
 
@@ -6244,7 +6111,7 @@ DvzSampledFieldDesc._fields_ = [
 
 
 DvzScaleCategory._fields_ = [
-    ('category_id', ctypes.c_long),
+    ('category_id', ctypes.c_longlong),
     ('order', ctypes.c_uint32),
     ('label', ctypes.c_char_p),
     ('color', DvzColor),
@@ -6895,7 +6762,7 @@ else:
  * @returns allocation size in bytes
  */"""
     dvz_allocation_size.argtypes = [ctypes.POINTER(DvzAllocation)]
-    dvz_allocation_size.restype = ctypes.c_ulong
+    dvz_allocation_size.restype = ctypes.c_ulonglong
 
 
 try:
@@ -6934,7 +6801,7 @@ else:
  * @param size number of bytes to copy
  * @return 0 on success, -1 on failure
  */"""
-    dvz_allocator_copy_from.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulong, ctypes.c_void_p, ctypes.c_ulong]
+    dvz_allocator_copy_from.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_void_p, ctypes.c_ulonglong]
     dvz_allocator_copy_from.restype = ctypes.c_int
 
 
@@ -6953,7 +6820,7 @@ else:
  * @param size number of bytes to copy
  * @return 0 on success, -1 on failure
  */"""
-    dvz_allocator_copy_to.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulong, ctypes.c_void_p, ctypes.c_ulong]
+    dvz_allocator_copy_to.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_void_p, ctypes.c_ulonglong]
     dvz_allocator_copy_to.restype = ctypes.c_int
 
 
@@ -7087,7 +6954,7 @@ else:
  * @param size the number of bytes to flush
  * @returns 0 on success, -1 on failure
  */"""
-    dvz_allocator_flush.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulong, ctypes.c_ulong]
+    dvz_allocator_flush.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_allocator_flush.restype = ctypes.c_int
 
 
@@ -7198,7 +7065,7 @@ else:
  * @param size the number of bytes to invalidate
  * @returns 0 on success, -1 on failure
  */"""
-    dvz_allocator_invalidate.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulong, ctypes.c_ulong]
+    dvz_allocator_invalidate.argtypes = [ctypes.POINTER(DvzVma), ctypes.POINTER(DvzAllocation), ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_allocator_invalidate.restype = ctypes.c_int
 
 
@@ -8157,7 +8024,7 @@ else:
  * @param t1 timestamp corresponding to data1, in microseconds since Unix epoch UTC
  * @return whether the mapping was updated
  */"""
-    dvz_axis_set_datetime_range.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_double, ctypes.c_double, ctypes.c_long, ctypes.c_long]
+    dvz_axis_set_datetime_range.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_double, ctypes.c_double, ctypes.c_longlong, ctypes.c_longlong]
     dvz_axis_set_datetime_range.restype = ctypes.c_bool
 
 
@@ -8455,7 +8322,7 @@ else:
  * @param src the source access
  * @param dst the destination access
  */"""
-    dvz_barrier_buffer_access.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
+    dvz_barrier_buffer_access.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_barrier_buffer_access.restype = None
 
 
@@ -8487,7 +8354,7 @@ else:
  * @param src the source stages
  * @param dst the destination stages
  */"""
-    dvz_barrier_buffer_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
+    dvz_barrier_buffer_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_barrier_buffer_stage.restype = None
 
 
@@ -8503,7 +8370,7 @@ else:
  * @param src the source access
  * @param dst the destination access
  */"""
-    dvz_barrier_image_access.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
+    dvz_barrier_image_access.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_barrier_image_access.restype = None
 
 
@@ -8598,7 +8465,7 @@ else:
  * @param src the source stages
  * @param dst the destination stages
  */"""
-    dvz_barrier_image_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
+    dvz_barrier_image_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_barrier_image_stage.restype = None
 
 
@@ -8614,7 +8481,7 @@ else:
  * @param src the source access
  * @param dst the destination access
  */"""
-    dvz_barrier_memory_access.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
+    dvz_barrier_memory_access.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_barrier_memory_access.restype = None
 
 
@@ -8630,7 +8497,7 @@ else:
  * @param src the source stages
  * @param dst the destination stages
  */"""
-    dvz_barrier_memory_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
+    dvz_barrier_memory_stage.argtypes = [ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_barrier_memory_stage.restype = None
 
 
@@ -8665,7 +8532,7 @@ else:
  * @param size the size
  * @returns the buffer barrier
  */"""
-    dvz_barriers_buffer.argtypes = [ctypes.POINTER(DvzBarriers), ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
+    dvz_barriers_buffer.argtypes = [ctypes.POINTER(DvzBarriers), ctypes.c_void_p, ctypes.c_ulonglong, ctypes.c_ulonglong]
     dvz_barriers_buffer.restype = ctypes.c_void_p
 
 
@@ -11284,137 +11151,6 @@ else:
  */"""
     dvz_compute_spec.argtypes = [ctypes.POINTER(DvzCompute), ctypes.c_uint32, ctypes.c_uint64, ctypes.c_uint64, ctypes.c_void_p]
     dvz_compute_spec.restype = None
-
-
-try:
-    dvz_container = dvz.dvz_container
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container')
-else:
-    dvz_container.__doc__ = """/**
- * Create a container that will contain an arbitrary number of objects of the same type.
- *
- * @param count initial number of objects in the container
- * @param item_size size of each object, in bytes
- * @param type object type
- */"""
-    dvz_container.argtypes = [ctypes.c_uint32, ctypes.c_size_t, ctypes.c_int]
-    dvz_container.restype = DvzContainer
-
-
-try:
-    dvz_container_alloc = dvz.dvz_container_alloc
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container_alloc')
-else:
-    dvz_container_alloc.__doc__ = """/**
- * Get a pointer to a new object in the container.
- *
- * If the container is full, it will be automatically resized.
- *
- * @param container the container
- * @returns a pointer to an allocated object
- */"""
-    dvz_container_alloc.argtypes = [ctypes.POINTER(DvzContainer)]
-    dvz_container_alloc.restype = ctypes.c_void_p
-
-
-try:
-    dvz_container_delete_if_destroyed = dvz.dvz_container_delete_if_destroyed
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container_delete_if_destroyed')
-else:
-    dvz_container_delete_if_destroyed.__doc__ = """/**
- * Free a given object in the constainer if it was previously destroyed.
- *
- * @param container the container
- * @param idx the index of the object within the container
- */"""
-    dvz_container_delete_if_destroyed.argtypes = [ctypes.POINTER(DvzContainer), ctypes.c_uint32]
-    dvz_container_delete_if_destroyed.restype = None
-
-
-try:
-    dvz_container_destroy = dvz.dvz_container_destroy
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container_destroy')
-else:
-    dvz_container_destroy.__doc__ = """/**
- * Destroy a container.
- *
- * Free all remaining objects, as well as the container itself.
- *
- * !!! warning
- *     All objects in the container must have been destroyed beforehand, since the generic
- *     container does not know how to properly destroy objects that were created with Vulkan.
- *
- * @param container the container
- * @param idx the index of the object within the container
- */"""
-    dvz_container_destroy.argtypes = [ctypes.POINTER(DvzContainer)]
-    dvz_container_destroy.restype = None
-
-
-try:
-    dvz_container_get = dvz.dvz_container_get
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container_get')
-else:
-    dvz_container_get.__doc__ = """/**
- * Return the object at a given index.
- *
- * @param container the container
- * @param idx the index of the object within the container
- * @param returns a pointer to the object at the specified index
- */"""
-    dvz_container_get.argtypes = [ctypes.POINTER(DvzContainer), ctypes.c_uint32]
-    dvz_container_get.restype = ctypes.c_void_p
-
-
-try:
-    dvz_container_get_created = dvz.dvz_container_get_created
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container_get_created')
-else:
-    dvz_container_get_created.__doc__ = """/**
- * Return the n-th created object.
- *
- * @param container the container
- * @param idx the index of the object within the container
- * @param returns a pointer to the created object at the specified index
- */"""
-    dvz_container_get_created.argtypes = [ctypes.POINTER(DvzContainer), ctypes.c_uint32]
-    dvz_container_get_created.restype = ctypes.c_void_p
-
-
-try:
-    dvz_container_iter = dvz.dvz_container_iter
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container_iter')
-else:
-    dvz_container_iter.__doc__ = """/**
- * Continue an already-started loop iteration on a container.
- *
- * @param container the container
- * @returns a pointer to the next object in the container, or NULL at the end
- */"""
-    dvz_container_iter.argtypes = [ctypes.POINTER(DvzContainerIterator)]
-    dvz_container_iter.restype = None
-
-
-try:
-    dvz_container_iterator = dvz.dvz_container_iterator
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container_iterator')
-else:
-    dvz_container_iterator.__doc__ = """/**
- * Start a loop iteration over all valid objects within the container.
- *
- * @param container the container
- * @returns a pointer to the first object
- */"""
-    dvz_container_iterator.argtypes = [ctypes.POINTER(DvzContainer)]
-    dvz_container_iterator.restype = DvzContainerIterator
 
 
 try:
@@ -20185,7 +19921,7 @@ else:
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_event.argtypes = [ctypes.POINTER(DvzInputRouter), DvzInputCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_event.restype = ctypes.c_ulong
+    _dvz_input_subscribe_event.restype = ctypes.c_ulonglong
     def dvz_input_subscribe_event(router, callback, user_data):
         callback = _callback_coerce(DvzInputCallback, callback)
         subscription_id = _dvz_input_subscribe_event(router, callback, user_data)
@@ -20206,7 +19942,7 @@ else:
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_keyboard.argtypes = [ctypes.POINTER(DvzInputRouter), DvzKeyboardCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_keyboard.restype = ctypes.c_ulong
+    _dvz_input_subscribe_keyboard.restype = ctypes.c_ulonglong
     def dvz_input_subscribe_keyboard(router, callback, user_data):
         callback = _callback_coerce(DvzKeyboardCallback, callback)
         subscription_id = _dvz_input_subscribe_keyboard(router, callback, user_data)
@@ -20232,7 +19968,7 @@ else:
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_pointer.argtypes = [ctypes.POINTER(DvzInputRouter), DvzPointerCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_pointer.restype = ctypes.c_ulong
+    _dvz_input_subscribe_pointer.restype = ctypes.c_ulonglong
     def dvz_input_subscribe_pointer(router, callback, user_data):
         callback = _callback_coerce(DvzPointerCallback, callback)
         subscription_id = _dvz_input_subscribe_pointer(router, callback, user_data)
@@ -20253,7 +19989,7 @@ else:
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_resize.argtypes = [ctypes.POINTER(DvzInputRouter), DvzResizeCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_resize.restype = ctypes.c_ulong
+    _dvz_input_subscribe_resize.restype = ctypes.c_ulonglong
     def dvz_input_subscribe_resize(router, callback, user_data):
         callback = _callback_coerce(DvzResizeCallback, callback)
         subscription_id = _dvz_input_subscribe_resize(router, callback, user_data)
@@ -20274,7 +20010,7 @@ else:
  * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
  */"""
     _dvz_input_subscribe_scale.argtypes = [ctypes.POINTER(DvzInputRouter), DvzScaleCallback, ctypes.c_void_p]
-    _dvz_input_subscribe_scale.restype = ctypes.c_ulong
+    _dvz_input_subscribe_scale.restype = ctypes.c_ulonglong
     def dvz_input_subscribe_scale(router, callback, user_data):
         callback = _callback_coerce(DvzScaleCallback, callback)
         subscription_id = _dvz_input_subscribe_scale(router, callback, user_data)
@@ -20307,7 +20043,7 @@ else:
  * Returns true when a callback was removed and false when @p id is `DVZ_CALLBACK_ID_NONE` or is not
  * currently registered on this router.
  */"""
-    _dvz_input_unsubscribe.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.c_ulong]
+    _dvz_input_unsubscribe.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.c_ulonglong]
     _dvz_input_unsubscribe.restype = ctypes.c_bool
     def dvz_input_unsubscribe(router, id):
         ok = _dvz_input_unsubscribe(router, id)
@@ -21105,7 +20841,7 @@ else:
  * @param label_id background label ID
  * @return 0 on success, -1 on error
  */"""
-    dvz_labels_set_background.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_long]
+    dvz_labels_set_background.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_longlong]
     dvz_labels_set_background.restype = ctypes.c_int32
 
 
@@ -21188,7 +20924,7 @@ else:
  * @param label_id selected label ID
  * @return 0 on success, -1 on error
  */"""
-    dvz_labels_set_selected.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_long]
+    dvz_labels_set_selected.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_longlong]
     dvz_labels_set_selected.restype = ctypes.c_int32
 
 
@@ -21328,7 +21064,7 @@ else:
  * @param id category id to highlight
  * @return true when the highlight state was accepted
  */"""
-    dvz_legend_set_highlight.argtypes = [ctypes.POINTER(DvzLegend), ctypes.c_long]
+    dvz_legend_set_highlight.argtypes = [ctypes.POINTER(DvzLegend), ctypes.c_longlong]
     dvz_legend_set_highlight.restype = ctypes.c_bool
 
 
@@ -21884,65 +21620,6 @@ else:
  */"""
     dvz_normalize_bytes.argtypes = [(ctypes.c_float * 2), ctypes.c_uint32, ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_uint8)]
     dvz_normalize_bytes.restype = None
-
-
-try:
-    dvz_obj_created = dvz.dvz_obj_created
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_obj_created')
-else:
-    dvz_obj_created.__doc__ = """/**
- * Mark an object as successfully created on the GPU.
- *
- * @param obj the object
- */"""
-    dvz_obj_created.argtypes = [ctypes.POINTER(DvzObject)]
-    dvz_obj_created.restype = None
-
-
-try:
-    dvz_obj_destroyed = dvz.dvz_obj_destroyed
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_obj_destroyed')
-else:
-    dvz_obj_destroyed.__doc__ = """/**
- * Mark an object as destroyed.
- *
- * @param obj the object
- */"""
-    dvz_obj_destroyed.argtypes = [ctypes.POINTER(DvzObject)]
-    dvz_obj_destroyed.restype = None
-
-
-try:
-    dvz_obj_init = dvz.dvz_obj_init
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_obj_init')
-else:
-    dvz_obj_init.__doc__ = """/**
- * Initialize an object.
- *
- * Memory for the object has been allocated and its fields properly initialized.
- *
- * @param obj the object
- */"""
-    dvz_obj_init.argtypes = [ctypes.POINTER(DvzObject)]
-    dvz_obj_init.restype = None
-
-
-try:
-    dvz_obj_is_created = dvz.dvz_obj_is_created
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_obj_is_created')
-else:
-    dvz_obj_is_created.__doc__ = """/**
- * Whether an object has been successfully created.
- *
- * @param obj the object
- * @returns a boolean indicated whether the object has been successfully created
- */"""
-    dvz_obj_is_created.argtypes = [ctypes.POINTER(DvzObject)]
-    dvz_obj_is_created.restype = ctypes.c_bool
 
 
 try:
@@ -27585,7 +27262,7 @@ else:
  * @param value the value to signal, if using a timeline semaphore
  * @param stage the stage in the queue's execution that depends on that wait.
  */"""
-    dvz_submit_signal.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_ulong]
+    dvz_submit_signal.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_ulonglong]
     dvz_submit_signal.restype = None
 
 
@@ -27620,7 +27297,7 @@ else:
  * @param value the value to wait on, if using a timeline semaphore
  * @param stage the stage in the queue's execution that depends on that wait.
  */"""
-    dvz_submit_wait.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_ulong]
+    dvz_submit_wait.argtypes = [ctypes.POINTER(DvzSubmit), ctypes.c_void_p, ctypes.c_uint64, ctypes.c_ulonglong]
     dvz_submit_wait.restype = None
 
 
@@ -32520,7 +32197,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1555
+_GENERATED_FUNCTION_COUNT = 1543
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_field_geometry', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_panel_background_desc', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scalebar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
-_DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzTextStyle', 'DvzTextPlacement', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzFontDesc', 'DvzFontDefaults', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzContainer', 'DvzContainerIterator', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RawFallback', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzObject', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2D', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewSizeDesc', 'DvzViewDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
+_DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzTextStyle', 'DvzTextPlacement', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzFontDesc', 'DvzFontDefaults', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RawFallback', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2D', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewSizeDesc', 'DvzViewDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]

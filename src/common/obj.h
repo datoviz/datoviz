@@ -168,7 +168,7 @@ EXTERN_C_ON
  *
  * @param obj the object
  */
-DVZ_EXPORT void dvz_obj_init(DvzObject* obj);
+void dvz_obj_init(DvzObject* obj);
 
 
 
@@ -177,7 +177,7 @@ DVZ_EXPORT void dvz_obj_init(DvzObject* obj);
  *
  * @param obj the object
  */
-DVZ_EXPORT void dvz_obj_created(DvzObject* obj);
+void dvz_obj_created(DvzObject* obj);
 
 
 
@@ -186,7 +186,7 @@ DVZ_EXPORT void dvz_obj_created(DvzObject* obj);
  *
  * @param obj the object
  */
-DVZ_EXPORT void dvz_obj_destroyed(DvzObject* obj);
+void dvz_obj_destroyed(DvzObject* obj);
 
 
 
@@ -196,7 +196,7 @@ DVZ_EXPORT void dvz_obj_destroyed(DvzObject* obj);
  * @param obj the object
  * @returns a boolean indicated whether the object has been successfully created
  */
-DVZ_EXPORT bool dvz_obj_is_created(DvzObject* obj);
+bool dvz_obj_is_created(DvzObject* obj);
 
 
 /*************************************************************************************************/
@@ -210,7 +210,7 @@ DVZ_EXPORT bool dvz_obj_is_created(DvzObject* obj);
  * @param item_size size of each object, in bytes
  * @param type object type
  */
-DVZ_EXPORT DvzContainer dvz_container(uint32_t count, size_t item_size, DvzObjectType type);
+DvzContainer dvz_container(uint32_t count, size_t item_size, DvzObjectType type);
 
 
 
@@ -220,7 +220,7 @@ DVZ_EXPORT DvzContainer dvz_container(uint32_t count, size_t item_size, DvzObjec
  * @param container the container
  * @param idx the index of the object within the container
  */
-DVZ_EXPORT void dvz_container_delete_if_destroyed(DvzContainer* container, uint32_t idx);
+void dvz_container_delete_if_destroyed(DvzContainer* container, uint32_t idx);
 
 
 
@@ -232,7 +232,7 @@ DVZ_EXPORT void dvz_container_delete_if_destroyed(DvzContainer* container, uint3
  * @param container the container
  * @returns a pointer to an allocated object
  */
-DVZ_EXPORT void* dvz_container_alloc(DvzContainer* container);
+void* dvz_container_alloc(DvzContainer* container);
 
 
 
@@ -243,7 +243,7 @@ DVZ_EXPORT void* dvz_container_alloc(DvzContainer* container);
  * @param idx the index of the object within the container
  * @param returns a pointer to the object at the specified index
  */
-DVZ_EXPORT void* dvz_container_get(DvzContainer* container, uint32_t idx);
+void* dvz_container_get(DvzContainer* container, uint32_t idx);
 
 
 
@@ -253,7 +253,7 @@ DVZ_EXPORT void* dvz_container_get(DvzContainer* container, uint32_t idx);
  * @param container the container
  * @returns a pointer to the next object in the container, or NULL at the end
  */
-DVZ_EXPORT void dvz_container_iter(DvzContainerIterator* iterator);
+void dvz_container_iter(DvzContainerIterator* iterator);
 
 
 
@@ -263,7 +263,7 @@ DVZ_EXPORT void dvz_container_iter(DvzContainerIterator* iterator);
  * @param container the container
  * @returns a pointer to the first object
  */
-DVZ_EXPORT DvzContainerIterator dvz_container_iterator(DvzContainer* container);
+DvzContainerIterator dvz_container_iterator(DvzContainer* container);
 
 
 
@@ -274,7 +274,7 @@ DVZ_EXPORT DvzContainerIterator dvz_container_iterator(DvzContainer* container);
  * @param idx the index of the object within the container
  * @param returns a pointer to the created object at the specified index
  */
-DVZ_EXPORT void* dvz_container_get_created(DvzContainer* container, uint32_t idx);
+void* dvz_container_get_created(DvzContainer* container, uint32_t idx);
 
 
 
@@ -290,7 +290,7 @@ DVZ_EXPORT void* dvz_container_get_created(DvzContainer* container, uint32_t idx
  * @param container the container
  * @param idx the index of the object within the container
  */
-DVZ_EXPORT void dvz_container_destroy(DvzContainer* container);
+void dvz_container_destroy(DvzContainer* container);
 
 
 

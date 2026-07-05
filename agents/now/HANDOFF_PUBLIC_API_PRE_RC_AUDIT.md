@@ -454,6 +454,52 @@ Next wave target: public exposure cleanup. First fix or deliberately classify th
 `video/types.h` manifest gap, then remove or demote accidental/internal public surfaces such as
 object/container declarations, legacy scene aliases, and mock-data helpers.
 
+### Public Exposure Cleanup: Object Container Slice
+
+Status: complete.
+
+Changes:
+
+1. Classified `include/datoviz/video/types.h` in `spec/api/status.yml`.
+2. Moved `include/datoviz/common/obj.h` to private `src/common/obj.h`.
+3. Removed object/container lifecycle declarations from installed headers, generated C reference,
+   and generated raw `ctypes`.
+4. Removed unnecessary public `common/obj.h` includes from `vklite/commands.h` and
+   `vklite/sampler.h`; internal users now include the private header.
+
+Header/API delta:
+
+1. Installed public headers: 112 -> 111.
+2. `DVZ_EXPORT` occurrences in installed public headers: 1585 -> 1573.
+3. Extracted public API: 1564 functions, 303 records, 187 enums, with no `dvz_obj_*`,
+   `dvz_container_*`, `DvzObject`, or `DvzContainer` entries.
+
+Validation:
+
+```sh
+python3 tools/check_api_status.py
+just build
+just ctypes
+just ctypes-check
+just docs-api
+just docs-api-check
+just test common
+just ctypes-smoke
+git diff --check
+```
+
+Result: all passed.
+
+`just spec-check` now passes API status, DRP2 metadata, WASM metadata, fixture tests, WebGPU
+preflight, scheduler tests, scene query source guard, and scene architecture source guard. It still
+fails on the pre-existing scene visual-boundary guard findings recorded in the baseline.
+
+Dynamic-symbol note: the macOS split-library build still needs the object lifecycle functions
+visible from `libdatoviz_core.dylib` for `libdatoviz_vk.dylib` and vklite code. A true dynamic
+export-list cleanup should be handled as a separate linkage/packaging wave; this slice removes the
+object/container surface from installed headers, generated docs, raw `ctypes`, and public API
+extraction.
+
 
 ## Validation Baseline For Future Agent
 

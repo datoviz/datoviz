@@ -209,6 +209,7 @@ modules:
   - module: video
     headers:
       - include/datoviz/video.h
+      - include/datoviz/video/types.h
     tier: advanced
     umbrella: advanced
     raw_binding: true

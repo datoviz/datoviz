@@ -28,7 +28,7 @@
 #include "_buffers.h"
 #include "_compat.h"
 #include "_log.h"
-#include "datoviz/common/obj.h"
+#include "obj.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/memory.h"

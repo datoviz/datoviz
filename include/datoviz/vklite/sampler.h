@@ -20,7 +20,6 @@
 #include "datoviz/vk/vulkan.h"
 
 #include "datoviz/common/macros.h"
-#include "datoviz/common/obj.h"
 
 
 

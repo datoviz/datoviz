@@ -18,7 +18,7 @@
 
 #include <stdint.h>
 
-#include "datoviz/common/obj.h"
+#include "obj.h"
 #include "datoviz/vk/enums.h"
 #include "datoviz/vklite/shader.h"
 

@@ -21,7 +21,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
-#include "datoviz/common/obj.h"
+#include "obj.h"
 #include "datoviz/math/arithm.h"
 
 

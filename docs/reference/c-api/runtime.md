@@ -18,7 +18,7 @@ Common workflows:
 - [vklite overview](../../advanced/vklite.md)
 - [Canvas and stream API](../../advanced/canvas.md)
 
-Functions: 576
+Functions: 564
 
 ## Symbol Groups
 
@@ -39,7 +39,6 @@ Functions: 576
 | [Commands](#commands) | 9 | `include/datoviz/vklite/commands.h` |
 | [Compile](#compile) | 1 | `include/datoviz/vk/gpu_ctx.h` |
 | [Compute](#compute) | 10 | `include/datoviz/vklite/compute.h` |
-| [Container](#container) | 8 | `include/datoviz/common/obj.h` |
 | [Descriptors](#descriptors) | 7 | `include/datoviz/vklite/descriptors.h` |
 | [Device](#device) | 20 | `include/datoviz/vk/device.h`, `include/datoviz/vk/memory.h` |
 | [Dmat4](#dmat4) | 8 | `include/datoviz/math/vec.h` |
@@ -65,7 +64,6 @@ Functions: 576
 | [Min](#min) | 1 | `include/datoviz/math/stats.h` |
 | [Mock](#mock) | 12 | `include/datoviz/math/mock.h` |
 | [Normalize](#normalize) | 1 | `include/datoviz/math/stats.h` |
-| [Obj](#obj) | 4 | `include/datoviz/common/obj.h` |
 | [Panzoom](#panzoom) | 20 | `include/datoviz/controller/panzoom.h` |
 | [Parse](#parse) | 1 | `include/datoviz/fileio/fileio.h` |
 | [Prng](#prng) | 3 | `include/datoviz/math/prng.h` |
@@ -339,19 +337,6 @@ Functions: 576
     | [`dvz_compute_layout_handle()`](#dvz_compute_layout_handle) | `include/datoviz/vklite/compute.h` |
     | [`dvz_compute_shader()`](#dvz_compute_shader) | `include/datoviz/vklite/compute.h` |
     | [`dvz_compute_spec()`](#dvz_compute_spec) | `include/datoviz/vklite/compute.h` |
-
-    ### Container
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_container()`](#dvz_container) | `include/datoviz/common/obj.h` |
-    | [`dvz_container_alloc()`](#dvz_container_alloc) | `include/datoviz/common/obj.h` |
-    | [`dvz_container_delete_if_destroyed()`](#dvz_container_delete_if_destroyed) | `include/datoviz/common/obj.h` |
-    | [`dvz_container_destroy()`](#dvz_container_destroy) | `include/datoviz/common/obj.h` |
-    | [`dvz_container_get()`](#dvz_container_get) | `include/datoviz/common/obj.h` |
-    | [`dvz_container_get_created()`](#dvz_container_get_created) | `include/datoviz/common/obj.h` |
-    | [`dvz_container_iter()`](#dvz_container_iter) | `include/datoviz/common/obj.h` |
-    | [`dvz_container_iterator()`](#dvz_container_iterator) | `include/datoviz/common/obj.h` |
 
     ### Descriptors
 
@@ -695,15 +680,6 @@ Functions: 576
     | Function | Header |
     | --- | --- |
     | [`dvz_normalize_bytes()`](#dvz_normalize_bytes) | `include/datoviz/math/stats.h` |
-
-    ### Obj
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_obj_created()`](#dvz_obj_created) | `include/datoviz/common/obj.h` |
-    | [`dvz_obj_destroyed()`](#dvz_obj_destroyed) | `include/datoviz/common/obj.h` |
-    | [`dvz_obj_init()`](#dvz_obj_init) | `include/datoviz/common/obj.h` |
-    | [`dvz_obj_is_created()`](#dvz_obj_is_created) | `include/datoviz/common/obj.h` |
 
     ### Panzoom
 
@@ -3654,7 +3630,7 @@ Start recording a command buffer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:160._
+_Declared in `include/datoviz/vklite/commands.h`:159._
 
 ### `dvz_cmd_begin_result()`
 
@@ -3673,7 +3649,7 @@ Start recording a command buffer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:151._
+_Declared in `include/datoviz/vklite/commands.h`:150._
 
 ### `dvz_cmd_bind_compute()`
 
@@ -4187,7 +4163,7 @@ Stop recording a command buffer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:179._
+_Declared in `include/datoviz/vklite/commands.h`:178._
 
 ### `dvz_cmd_end_result()`
 
@@ -4206,7 +4182,7 @@ Stop recording a command buffer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:170._
+_Declared in `include/datoviz/vklite/commands.h`:169._
 
 ### `dvz_cmd_release()`
 
@@ -4228,7 +4204,7 @@ wrapper allocation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:201._
+_Declared in `include/datoviz/vklite/commands.h`:200._
 
 ### `dvz_cmd_rendering_begin()`
 
@@ -4312,7 +4288,7 @@ Reset a command buffer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:188._
+_Declared in `include/datoviz/vklite/commands.h`:187._
 
 ### `dvz_cmd_submit()`
 
@@ -4332,7 +4308,7 @@ This function blocks the queue so it is not optimal.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:224._
+_Declared in `include/datoviz/vklite/commands.h`:223._
 
 ### `dvz_cmd_submit_result()`
 
@@ -4353,7 +4329,7 @@ This function blocks the queue so it is not optimal.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:213._
+_Declared in `include/datoviz/vklite/commands.h`:212._
 
 ## Command
 
@@ -4376,7 +4352,7 @@ Allocate a single primary command buffer from the device command pool of a queue
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:99._
+_Declared in `include/datoviz/vklite/commands.h`:98._
 
 ### `dvz_command_buffer_free()`
 
@@ -4398,7 +4374,7 @@ Free a single command buffer from the device command pool of a queue family.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:111._
+_Declared in `include/datoviz/vklite/commands.h`:110._
 
 ## Commands
 
@@ -4427,7 +4403,7 @@ Reinitializing a live wrapper requires dvz_commands_destroy() first.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:88._
+_Declared in `include/datoviz/vklite/commands.h`:87._
 
 ### `dvz_commands_count()`
 
@@ -4446,7 +4422,7 @@ Return the number of command buffers managed by a wrapper.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:131._
+_Declared in `include/datoviz/vklite/commands.h`:130._
 
 ### `dvz_commands_create_wrapper()`
 
@@ -4467,7 +4443,7 @@ dvz_commands_create_wrapper().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:63._
+_Declared in `include/datoviz/vklite/commands.h`:62._
 
 ### `dvz_commands_current()`
 
@@ -4487,7 +4463,7 @@ Set the current command buffer index.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:141._
+_Declared in `include/datoviz/vklite/commands.h`:140._
 
 ### `dvz_commands_destroy()`
 
@@ -4508,7 +4484,7 @@ a reusable initialized state.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:236._
+_Declared in `include/datoviz/vklite/commands.h`:235._
 
 ### `dvz_commands_free()`
 
@@ -4526,7 +4502,7 @@ Free a commands wrapper allocated by dvz_commands_create_wrapper().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:72._
+_Declared in `include/datoviz/vklite/commands.h`:71._
 
 ### `dvz_commands_handle()`
 
@@ -4545,7 +4521,7 @@ Return the Vulkan handle of the currently-selected command buffers.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:121._
+_Declared in `include/datoviz/vklite/commands.h`:120._
 
 ### `dvz_commands_wrap()`
 
@@ -4571,7 +4547,7 @@ not supported for wrappers created by this function because no queue is supplied
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:251._
+_Declared in `include/datoviz/vklite/commands.h`:250._
 
 ### `dvz_commands_wrap_borrowed_recording()`
 
@@ -4597,7 +4573,7 @@ Vulkan.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:266._
+_Declared in `include/datoviz/vklite/commands.h`:265._
 
 ## Compile
 
@@ -4842,173 +4818,6 @@ Set a specialization constant.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/vklite/compute.h`:114._
-
-## Container
-
-### `dvz_container()`
-
-```c title="dvz_container"
-DvzContainer dvz_container(
-    uint32_t count,
-    size_t item_size,
-    DvzObjectType type
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `count` | `uint32_t` | initial number of objects in the container |
-| `item_size` | `size_t` | size of each object, in bytes |
-| `type` | `DvzObjectType` | object type |
-
-Create a container that will contain an arbitrary number of objects of the same type.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:213._
-
-### `dvz_container_alloc()`
-
-```c title="dvz_container_alloc"
-void * dvz_container_alloc(
-    DvzContainer * container
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `void *` | a pointer to an allocated object |
-| `container` | `DvzContainer *` | the container |
-
-Get a pointer to a new object in the container.
-
-If the container is full, it will be automatically resized.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:235._
-
-### `dvz_container_delete_if_destroyed()`
-
-```c title="dvz_container_delete_if_destroyed"
-void dvz_container_delete_if_destroyed(
-    DvzContainer * container,
-    uint32_t idx
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `container` | `DvzContainer *` | the container |
-| `idx` | `uint32_t` | the index of the object within the container |
-
-Free a given object in the constainer if it was previously destroyed.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:223._
-
-### `dvz_container_destroy()`
-
-```c title="dvz_container_destroy"
-void dvz_container_destroy(
-    DvzContainer * container
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `container` | `DvzContainer *` | the container |
-
-Destroy a container.
-
-Free all remaining objects, as well as the container itself.
-
-!!! warning
-All objects in the container must have been destroyed beforehand, since the generic
-container does not know how to properly destroy objects that were created with Vulkan.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:293._
-
-### `dvz_container_get()`
-
-```c title="dvz_container_get"
-void * dvz_container_get(
-    DvzContainer * container,
-    uint32_t idx
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `container` | `DvzContainer *` | the container |
-| `idx` | `uint32_t` | the index of the object within the container |
-
-Return the object at a given index.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:246._
-
-### `dvz_container_get_created()`
-
-```c title="dvz_container_get_created"
-void * dvz_container_get_created(
-    DvzContainer * container,
-    uint32_t idx
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `container` | `DvzContainer *` | the container |
-| `idx` | `uint32_t` | the index of the object within the container |
-
-Return the n-th created object.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:277._
-
-### `dvz_container_iter()`
-
-```c title="dvz_container_iter"
-void dvz_container_iter(
-    DvzContainerIterator * iterator
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `void` | a pointer to the next object in the container, or NULL at the end |
-| `iterator` | `DvzContainerIterator *` |  |
-
-Continue an already-started loop iteration on a container.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:256._
-
-### `dvz_container_iterator()`
-
-```c title="dvz_container_iterator"
-DvzContainerIterator dvz_container_iterator(
-    DvzContainer * container
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzContainerIterator` | a pointer to the first object |
-| `container` | `DvzContainer *` | the container |
-
-Start a loop iteration over all valid objects within the container.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:266._
 
 ## Descriptors
 
@@ -9708,83 +9517,6 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/math/stats.h`:63._
 
-## Obj
-
-### `dvz_obj_created()`
-
-```c title="dvz_obj_created"
-void dvz_obj_created(
-    DvzObject * obj
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `obj` | `DvzObject *` | the object |
-
-Mark an object as successfully created on the GPU.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:180._
-
-### `dvz_obj_destroyed()`
-
-```c title="dvz_obj_destroyed"
-void dvz_obj_destroyed(
-    DvzObject * obj
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `obj` | `DvzObject *` | the object |
-
-Mark an object as destroyed.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:189._
-
-### `dvz_obj_init()`
-
-```c title="dvz_obj_init"
-void dvz_obj_init(
-    DvzObject * obj
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `obj` | `DvzObject *` | the object |
-
-Initialize an object.
-
-Memory for the object has been allocated and its fields properly initialized.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:171._
-
-### `dvz_obj_is_created()`
-
-```c title="dvz_obj_is_created"
-_Bool dvz_obj_is_created(
-    DvzObject * obj
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `_Bool` | a boolean indicated whether the object has been successfully created |
-| `obj` | `DvzObject *` | the object |
-
-Whether an object has been successfully created.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:199._
-
 ## Panzoom
 
 ### `dvz_panzoom_connect()`
@@ -11052,7 +10784,7 @@ requires dvz_sampler_destroy() first.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:83._
+_Declared in `include/datoviz/vklite/sampler.h`:82._
 
 ### `dvz_sampler_address_mode()`
 
@@ -11074,7 +10806,7 @@ Set the sampler address mode
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:114._
+_Declared in `include/datoviz/vklite/sampler.h`:113._
 
 ### `dvz_sampler_anisotropy()`
 
@@ -11094,7 +10826,7 @@ Set the anisotropy.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:125._
+_Declared in `include/datoviz/vklite/sampler.h`:124._
 
 ### `dvz_sampler_create()`
 
@@ -11118,7 +10850,7 @@ Related: [`dvz_sampler_destroy()`](#dvz_sampler_destroy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:138._
+_Declared in `include/datoviz/vklite/sampler.h`:137._
 
 ### `dvz_sampler_create_wrapper()`
 
@@ -11139,7 +10871,7 @@ dvz_sampler_create_wrapper().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:69._
+_Declared in `include/datoviz/vklite/sampler.h`:68._
 
 ### `dvz_sampler_destroy()`
 
@@ -11162,7 +10894,7 @@ Related: [`dvz_sampler_create()`](#dvz_sampler_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:150._
+_Declared in `include/datoviz/vklite/sampler.h`:149._
 
 ### `dvz_sampler_free()`
 
@@ -11180,7 +10912,7 @@ Free a sampler wrapper allocated by dvz_sampler_create_wrapper().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:169._
+_Declared in `include/datoviz/vklite/sampler.h`:168._
 
 ### `dvz_sampler_handle()`
 
@@ -11199,7 +10931,7 @@ Return the Vulkan sampler handle.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:160._
+_Declared in `include/datoviz/vklite/sampler.h`:159._
 
 ### `dvz_sampler_mag_filter()`
 
@@ -11219,7 +10951,7 @@ Set the sampler mag filter.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:103._
+_Declared in `include/datoviz/vklite/sampler.h`:102._
 
 ### `dvz_sampler_min_filter()`
 
@@ -11239,7 +10971,7 @@ Set the sampler min filter.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:93._
+_Declared in `include/datoviz/vklite/sampler.h`:92._
 
 ## Semaphore
 

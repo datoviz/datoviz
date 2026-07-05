@@ -18,7 +18,7 @@
 
 #include <vulkan/vulkan_core.h>
 
-#include "datoviz/common/obj.h"
+#include "obj.h"
 #include "datoviz/vklite/sampler.h"
 
 

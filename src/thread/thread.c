@@ -20,7 +20,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "atomic_internal.h"
-#include "datoviz/common/obj.h"
+#include "obj.h"
 #include "mutex_internal.h"
 #include "thread_internal.h"
 

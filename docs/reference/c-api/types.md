@@ -7637,18 +7637,6 @@ typedef enum DvzCompareOp DvzCompareOp;
 typedef struct DvzCompute DvzCompute;
 ```
 
-#### `DvzContainer`
-
-```c
-typedef struct DvzContainer DvzContainer;
-```
-
-#### `DvzContainerIterator`
-
-```c
-typedef struct DvzContainerIterator DvzContainerIterator;
-```
-
 #### `DvzCullMode`
 
 ```c
@@ -7863,24 +7851,6 @@ typedef struct DvzMVP DvzMVP;
 
 ```c
 typedef enum DvzMVPFlags DvzMVPFlags;
-```
-
-#### `DvzObject`
-
-```c
-typedef struct DvzObject DvzObject;
-```
-
-#### `DvzObjectStatus`
-
-```c
-typedef enum DvzObjectStatus DvzObjectStatus;
-```
-
-#### `DvzObjectType`
-
-```c
-typedef enum DvzObjectType DvzObjectType;
 ```
 
 #### `DvzPanzoomEval`
@@ -8581,59 +8551,6 @@ DVZ_MVP_FLAGS_NONE = 0,
 DVZ_MVP_FLAGS_ISOTROPIC_LOCAL = 1,
 ```
 
-#### `DvzObjectStatus`
-
-```c
-DVZ_OBJECT_STATUS_NONE = 0,
-DVZ_OBJECT_STATUS_ALLOC = 1,
-DVZ_OBJECT_STATUS_DESTROYED = 2,
-DVZ_OBJECT_STATUS_INIT = 3,
-DVZ_OBJECT_STATUS_CREATED = 4,
-DVZ_OBJECT_STATUS_NEED_RECREATE = 5,
-DVZ_OBJECT_STATUS_NEED_UPDATE = 6,
-DVZ_OBJECT_STATUS_NEED_DESTROY = 7,
-DVZ_OBJECT_STATUS_INACTIVE = 8,
-DVZ_OBJECT_STATUS_INVALID = 9,
-```
-
-#### `DvzObjectType`
-
-```c
-DVZ_OBJECT_TYPE_UNDEFINED = 0,
-DVZ_OBJECT_TYPE_INSTANCE = 1,
-DVZ_OBJECT_TYPE_DEVICE = 2,
-DVZ_OBJECT_TYPE_HOST = 3,
-DVZ_OBJECT_TYPE_GPU = 4,
-DVZ_OBJECT_TYPE_WINDOW = 5,
-DVZ_OBJECT_TYPE_GUI_WINDOW = 6,
-DVZ_OBJECT_TYPE_SWAPCHAIN = 7,
-DVZ_OBJECT_TYPE_CANVAS = 8,
-DVZ_OBJECT_TYPE_BOARD = 9,
-DVZ_OBJECT_TYPE_COMMANDS = 10,
-DVZ_OBJECT_TYPE_BUFFER = 11,
-DVZ_OBJECT_TYPE_DAT = 12,
-DVZ_OBJECT_TYPE_TEX = 13,
-DVZ_OBJECT_TYPE_IMAGES = 14,
-DVZ_OBJECT_TYPE_SAMPLER = 15,
-DVZ_OBJECT_TYPE_BINDINGS = 16,
-DVZ_OBJECT_TYPE_COMPUTE = 17,
-DVZ_OBJECT_TYPE_GRAPHICS = 18,
-DVZ_OBJECT_TYPE_SHADER = 19,
-DVZ_OBJECT_TYPE_PIPE = 20,
-DVZ_OBJECT_TYPE_BARRIER = 21,
-DVZ_OBJECT_TYPE_FENCES = 22,
-DVZ_OBJECT_TYPE_SEMAPHORES = 23,
-DVZ_OBJECT_TYPE_RENDERPASS = 24,
-DVZ_OBJECT_TYPE_FRAMEBUFFER = 25,
-DVZ_OBJECT_TYPE_WORKSPACE = 26,
-DVZ_OBJECT_TYPE_PIPELIB = 27,
-DVZ_OBJECT_TYPE_SUBMIT = 28,
-DVZ_OBJECT_TYPE_SCREENCAST = 29,
-DVZ_OBJECT_TYPE_TIMER = 30,
-DVZ_OBJECT_TYPE_ARRAY = 31,
-DVZ_OBJECT_TYPE_CUSTOM = 32,
-```
-
 #### `DvzPanzoomFlags`
 
 ```c
@@ -8870,28 +8787,6 @@ typedef struct DvzCommands DvzCommands;
 typedef struct DvzCompute DvzCompute;
 ```
 
-#### `DvzContainer`
-
-```c
-struct DvzContainer {
-    uint32_t count;
-    uint32_t capacity;
-    DvzObjectType type;
-    void ** items;
-    size_t item_size;
-};
-```
-
-#### `DvzContainerIterator`
-
-```c
-struct DvzContainerIterator {
-    DvzContainer * container;
-    uint32_t idx;
-    void * item;
-};
-```
-
 #### `DvzDescriptors`
 
 ```c
@@ -9122,18 +9017,6 @@ struct DvzMVP {
     mat4 proj;
     float time;
     uint32_t flags;
-};
-```
-
-#### `DvzObject`
-
-```c
-struct DvzObject {
-    DvzObjectType type;
-    DvzObjectStatus status;
-    int request;
-    uint32_t group_id;
-    uint64_t id;
 };
 ```
 

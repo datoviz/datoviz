@@ -443,17 +443,18 @@ void dvz_app_run(
 | Field | Type | Description |
 | --- | --- | --- |
 | `app` | `DvzApp *` | the app |
-| `frame_count` | `uint32_t` | number of frames to render (0 = interactive loop until all windows close) |
+| `frame_count` | `uint32_t` | number of frames to render (0 = interactive loop) |
 
 Run the frame loop.
 
 Finite runs render the requested number of frames. Interactive runs (`frame_count == 0`) use
 the app scheduler: on-demand mode waits for resize/input/request-frame invalidation, while
-continuous mode renders active windows until every interactive window closes.
+continuous mode renders active windows until the configured exit policy or dvz_app_stop() stops
+the loop.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/app.h`:1076._
+_Declared in `include/datoviz/app.h`:1077._
 
 ### `dvz_app_should_stop()`
 
