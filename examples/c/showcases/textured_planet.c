@@ -746,7 +746,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         "dvz_scenario_bind_controller() failed");
 
     DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
+    rotation_desc.axis[0] = 0.0f;
     rotation_desc.axis[1] = 1.0f;
+    rotation_desc.axis[2] = 0.0f;
     rotation_desc.speed_rad_per_sec = 1.0f;
     state->spin_rotation = dvz_track_rotation(&rotation_desc);
     EXAMPLE_CHECK(state->spin_rotation != NULL, "dvz_track_rotation(planet) failed");
