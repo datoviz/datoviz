@@ -446,6 +446,23 @@ Completed checkpoints:
    - Validation caveat: `just test app/view_desc`, `just test app/offscreen_small_view_clamps_layout`,
      and `just test scenario_runner` selected 0 tests with the current filter names; exact
      `view_desc` and `offscreen_small` filters were rerun and passed.
+41. `aadd6b4db` `api: split window backend header`
+   - Removed `window/backend.h` from the public `window.h` include path so backend vtables, GLFW
+     hooks, and wrap-surface helpers require explicit backend/advanced includes.
+   - Kept `advanced.h` as the opt-in umbrella by including both `window.h` and
+     `window/backend.h`.
+   - Split API-status ownership between the low-level window host header and backend SPI, and
+     added `datoviz/window/backend.h` to the ctypes extraction header list so raw bindings and C
+     docs keep the advanced backend API visible.
+   - Made internal tests and window code include backend/router headers explicitly instead of
+     relying on transitive includes.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `python3 tools/check_api_status.py`, `just build`,
+     `just test window`, `just ctypes-smoke`, `just docs-api-check`,
+     `just ctypes-python-smoke`, and `git diff --check`.
+   - Remaining caveat: `DvzWindowSurface` still carries Vulkan handle types through
+     `window/types.h`, so a fully Vulkan-free window surface record would be a later ABI break if
+     desired.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn: none
 known at this checkpoint.
