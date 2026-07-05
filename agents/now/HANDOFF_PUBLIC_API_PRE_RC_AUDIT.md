@@ -94,7 +94,7 @@ Completed checkpoints:
      `python3 tools/build_api_c.py --check`, `just build`, `just test scene/axis`,
      `just test scene/scene-graph`, `just test app`, `just spec-check`, stale-reference scan, and
      `git diff --check`.
-10. `b60e2dc4e` `api: normalize scale-bar API spelling`
+10. `11bbfd8b4` `api: normalize scale-bar API spelling`
    - Renamed the public `dvz_scalebar*` family to `dvz_scale_bar*`, matching the `DvzScaleBar`
      type spelling.
    - Renamed the raw FFI helper from `dvz_ffi_scalebar_desc()` to
