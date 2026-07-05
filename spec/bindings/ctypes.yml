@@ -142,6 +142,8 @@ callback_functions:
     - dvz_error_set_callback
 
 owned_string_returns:
+  dvz_read_gz:
+    destroy: dvz_memory_free
   dvz_drp2_stream_json:
     destroy: dvz_drp2_stream_json_destroy
   dvz_drp2_stream_json_payload_refs:

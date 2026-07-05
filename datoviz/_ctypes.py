@@ -24330,7 +24330,7 @@ else:
  * @returns owned decompressed buffer, or NULL on failure; free with dvz_memory_free()
  */"""
     dvz_read_gz.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
-    dvz_read_gz.restype = ctypes.c_char_p
+    dvz_read_gz.restype = ctypes.c_void_p
 
 
 try:
