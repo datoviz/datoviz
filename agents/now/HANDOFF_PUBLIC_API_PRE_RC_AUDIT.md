@@ -275,16 +275,14 @@ Complete audit as of July 2026, using the criterion above:
 | `DvzScaleDesc` | `DvzFormatDesc format` | `include/datoviz/scene/types.h:1380` | Done in `256b4e018`: creation covers `kind`, `label`, and `unit`; format uses `dvz_scale_set_format()`. |
 | `DvzAnnotationDesc` | `DvzTextStyle style`, `DvzTextPlacement placement` | `include/datoviz/scene/types.h:1582` | Done in `343f32154`: creation is minimal; style and placement use retained setters. |
 | `DvzLabelDesc` | `DvzTextStyle style`, `DvzTextPlacement placement` | `include/datoviz/scene/types.h:1595` | Done in `343f32154`: creation is minimal; style and placement use retained setters. |
-| `DvzScaleBarDesc` | `DvzTextStyle label_style`, `DvzTextPlacement placement`, `DvzFormatDesc format` | `include/datoviz/scene/types.h:1607` | Highest-priority cleanup. Keep the creation desc to scale-bar identity, units, geometry, length bounds, offset, line/tick styling; move label style, placement, and format to setters. |
+| `DvzScaleBarDesc` | `DvzTextStyle label_style`, `DvzTextPlacement placement`, `DvzFormatDesc format` | `include/datoviz/scene/types.h:1607` | Done in `256b4e018`: creation desc keeps identity, units, geometry, length bounds, offset, line/tick styling; label style, placement, and format use setters. |
 
 Suggested execution order:
 
 1. Scale, panel axes, annotation/label, graph edge, selection, overlay card, font defaults, and
    panel 3D view descriptor cleanup are complete.
 2. Clean remaining app/view/backend nesting while doing the backend-neutral app API wave.
-3. Keep `DvzScaleBarDesc` as the remaining high-priority scene descriptor cleanup if still present
-   in the current header.
-5. Regenerate raw `ctypes`, generated C docs, and examples in the same checkpoint as each public
+3. Regenerate raw `ctypes`, generated C docs, and examples in the same checkpoint as each public
    struct break.
 
 
