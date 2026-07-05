@@ -1,40 +1,37 @@
 # Datoviz
 
-Datoviz is a C-first GPU rendering engine for scientific visualization. The active `v0.4-dev`
-branch is preparing v0.4 release candidates around a retained scene API, DRP2 command streams, and
-the native Vulkan/vklite/canvas runtime.
+Datoviz is a GPU-powered visualization engine for scientific data. It helps you build fast,
+interactive 2D and 3D views when ordinary plotting tools become too slow or too limited.
 
-The v0.4 branch is not a compatibility layer for the v0.3 Python plotting API. It is the low-level
-engine surface that higher-level projects such as GSP/VisPy2 can target.
+Use it when you need to display many points, images, meshes, volumes, annotations, or custom
+scientific scenes. Datoviz provides a C scene/app API, a low-level Python interface that accepts
+NumPy arrays for supported data uploads, native desktop rendering through Vulkan, and an
+experimental browser path through WebGPU/WASM.
 
 
-## Current Status
+## Install
 
-The latest published package on PyPI is still v0.3.x. For v0.4 testing, build from source until a
-v0.4 release-candidate package is published.
+For Python users, the intended v0.4 install command is:
 
-Release-facing v0.4 surfaces:
+```sh
+pip install datoviz
+```
 
-- C scene/app API in `include/datoviz/`
-- installed CMake and pkg-config metadata for C/C++ consumers
-- generated `datoviz.raw` Python `ctypes` bindings for the exported C ABI
-- top-level `import datoviz as dvz` array-aware direct-engine facade for policy-declared calls
-- experimental WebGPU/WASM browser subset for promoted examples
-- optional Qt/PyQt hosting through the separately built `datoviz_qtbridge` provider
+During release-candidate testing, the release notes may ask you to use a pre-release command
+instead:
 
-Explicitly out of scope for v0.4:
+```sh
+pip install --pre datoviz
+```
 
-- v0.3 source or ABI compatibility
-- high-level Python plotting wrappers inside Datoviz
-- full WebGPU parity with native Vulkan
-- publication-quality PDF/SVG/vector export
-- general-purpose compute APIs beyond the narrow experimental compute-to-render path
-
-See [Project status](https://datoviz.org/reference/project-status/) and
-[Feature status](https://datoviz.org/reference/feature-status/) for the public status tables.
+For C/C++ integration, local development, or platform validation, build from source as described
+below.
 
 
 ## Build From Source
+
+Build from source when you need the current development branch, want to contribute, or need local
+C/C++ integration before packaged artifacts are available for your platform.
 
 Prerequisites:
 
@@ -60,14 +57,11 @@ Editable Python install for local testing:
 pip install -e .
 ```
 
-`pip install datoviz` currently installs the v0.3 stable package unless you explicitly install a
-v0.4 pre-release artifact.
-
 
 ## Minimal Python Example
 
-The top-level Python module keeps C-shaped `dvz_*` names while adapting policy-declared NumPy array
-arguments. Use `datoviz.raw` only when you need exact generated `ctypes` signatures.
+This example creates one point visual with 10,000 random points. Each visual attribute gets one
+array: positions, colors, and point diameters.
 
 ```python
 import numpy as np
@@ -97,18 +91,20 @@ dvz.run(scene, figure, title="Scatter plot")
 ```
 
 
-## Runtime Model
+## Which Layer Should I Use?
 
-The active v0.4 path is:
+| Need | Use |
+| --- | --- |
+| Python code with NumPy arrays and Datoviz visuals | `import datoviz as dvz` |
+| Native application or C/C++ integration | C scene/app API |
+| Exact low-level C binding access from Python | `datoviz.raw` generated `ctypes` layer |
+| Browser rendering for supported examples | experimental WebGPU/WASM subset |
+| High-level scientific plotting | VisPy2/GSP when that layer is available |
 
-```text
-scene frame plans -> DvzSceneFrameArtifact -> DRP2 packet/stream snapshots ->
-vklite/canvas/stream -> app
-```
+Datoviz v0.4 is not a compatibility layer for the old Datoviz v0.3 Python plotting API. It is the
+lower-level engine that higher-level plotting projects can build on.
 
-Scene emission produces frame artifacts and command stream snapshots consumed by the native runtime
-or by the experimental WebGPU/WASM path. DRP2 and low-level runtime APIs are useful for contributors
-and backend work, but ordinary users should start from the scene/app APIs.
+See [Choose your layer](https://datoviz.org/start/choose-your-layer/) for more detail.
 
 
 ## Documentation
