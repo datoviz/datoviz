@@ -1,71 +1,138 @@
 # Add Visuals to a Panel
 
-Create a visual family, upload its attributes, and attach it to a panel.
+Add a visual when you want a panel to draw a dataset: points, lines, an image, a mesh, text labels,
+or another visual family.
 
 ![Point](../assets/gallery/v0.4/visuals/point_2d.webp)
 
 ## Task Workflow
 
-Choose the visual family that matches the primitive you want to draw. Create the visual from the
-scene, upload all required attributes with the same item count, then add the visual to the target
-panel.
+A visual is a renderable collection of related items. For a point visual, the items are points. For
+an image visual, the items are image corners and texture coordinates. For a mesh visual, the items
+are vertices, triangles, or instances depending on the mesh setup.
 
-Batch aggressively. A visual is a batch of similar items, not a single mark. Prefer one visual with
-large `position`, `color`, `diameter_px`, or equivalent attribute arrays over many visuals with one or
-a few items each.
+The usual workflow is:
 
-## Basic Call Sequence
+1. Choose the visual family that matches what you want to draw.
+2. Create one visual from the scene.
+3. Prepare the data arrays required by that visual family.
+4. Upload each array to the matching visual attribute.
+5. Add the visual to the panel where it should appear.
 
-```c
-DvzVisual* visual = dvz_point(scene, 0);
-dvz_visual_set_data(visual, "position", pos, n);
-dvz_visual_set_data(visual, "color", color, n);
-dvz_visual_set_data(visual, "diameter_px", diameter_px, n);
-dvz_panel_add_visual(panel, visual, NULL);
-```
+Uploading data prepares the visual, but it does not draw anything by itself. The visual becomes part
+of a figure only after `dvz_panel_add_visual()`.
 
-Use `NULL` for the default panel attachment: draw layer `0`, controller mode
-`DVZ_CONTROLLER_APPLY`, and coordinate space `DVZ_VISUAL_COORD_DATA`.
 
-## Attachment Options
+## Basic Point Visual
 
-The third argument to `dvz_panel_add_visual()` is an optional `DvzVisualAttachDesc`. Use it when the
-visual needs a non-default draw layer, coordinate interpretation, or controller behavior.
+This example adds three points to an existing `scene` and `panel`.
 
-```c
-DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-attach.coord_space = DVZ_VISUAL_COORD_VIEW;
-attach.z_layer = 1;
-dvz_panel_add_visual(panel, visual, &attach);
-```
+=== "Python"
 
-The most common attachment choices are:
+    ```python
+    import numpy as np
+    import datoviz as dvz
 
-| Field | Default | Use when |
+    # Three points, each with x/y/z coordinates. z is 0, so the points lie in a
+    # 2D plane.
+    positions = np.asarray(
+        [
+            [-0.5, -0.25, 0.0],
+            [0.0, 0.35, 0.0],
+            [0.5, -0.25, 0.0],
+        ],
+        dtype=np.float32,
+        order="C",
+    )
+
+    # One RGBA color per point. Alpha is 255, so every point is fully opaque.
+    colors = np.asarray(
+        [
+            [0, 200, 255, 255],
+            [255, 210, 80, 255],
+            [255, 90, 110, 255],
+        ],
+        dtype=np.uint8,
+        order="C",
+    )
+
+    # One size per point, measured in screen pixels.
+    diameters = np.asarray([24.0, 36.0, 24.0], dtype=np.float32, order="C")
+
+    # Create one point visual for all three points.
+    visual = dvz.dvz_point(scene, 0)
+
+    # Attach each array to the visual attribute with the same name used by the
+    # point visual reference.
+    dvz.dvz_visual_set_data(visual, "position", positions)
+    dvz.dvz_visual_set_data(visual, "color", colors)
+    dvz.dvz_visual_set_data(visual, "diameter_px", diameters)
+
+    # Add the prepared visual to the panel so it will be drawn.
+    dvz.dvz_panel_add_visual(panel, visual, None)
+    ```
+
+=== "C"
+
+    ```c
+    const uint32_t n = 3;
+
+    /* Three points, each with x/y/z coordinates. z is 0, so the points lie in a
+     * 2D plane. */
+    const vec3 positions[3] = {
+        {-0.5f, -0.25f, 0.0f},
+        {+0.0f, +0.35f, 0.0f},
+        {+0.5f, -0.25f, 0.0f},
+    };
+
+    /* One RGBA color per point. Alpha is 255, so every point is fully opaque. */
+    const DvzColor colors[3] = {
+        {0, 200, 255, 255},
+        {255, 210, 80, 255},
+        {255, 90, 110, 255},
+    };
+
+    /* One size per point, measured in screen pixels. */
+    const float diameters[3] = {24.0f, 36.0f, 24.0f};
+
+    /* Create one point visual for all three points. */
+    DvzVisual* visual = dvz_point(scene, 0);
+
+    /* Attach each array to the visual attribute with the same name used by the
+     * point visual reference. */
+    dvz_visual_set_data(visual, "position", positions, n);
+    dvz_visual_set_data(visual, "color", colors, n);
+    dvz_visual_set_data(visual, "diameter_px", diameters, n);
+
+    /* Add the prepared visual to the panel so it will be drawn. */
+    dvz_panel_add_visual(panel, visual, NULL);
+    ```
+
+
+## Choosing Attributes
+
+Each visual family has its own attribute names and array shapes. A point visual commonly uses:
+
+| Attribute | Meaning | Typical shape |
 | --- | --- | --- |
-| `coord_space` | `DVZ_VISUAL_COORD_DATA` | Set `DVZ_VISUAL_COORD_VIEW` for pre-normalized view positions, or `DVZ_VISUAL_COORD_PANEL` for panel-fixed overlays. |
-| `z_layer` | `0` | Draw one visual in front of or behind another visual in the same panel. |
-| `controller_mode` | `DVZ_CONTROLLER_APPLY` | Keep the default for ordinary data visuals; use specialized modes only when the example or reference page requires them. |
+| `position` | point coordinates | `(n, 3)` float values |
+| `color` | one RGBA color per point | `(n, 4)` 8-bit values |
+| `diameter_px` | point diameter in screen pixels | `(n,)` float values |
 
-Set panel domains before attaching data-coordinate visuals:
+Other visual families use different attributes. An image visual needs image corners and texture
+coordinates. A path visual needs ordered vertices. A mesh visual needs geometry and may also need
+per-instance transforms.
 
-```c
-dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
-dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
+Do not assume that an attribute exists for every family. When changing visual families, check the
+[visual family reference](../reference/visual-families/index.md).
 
-dvz_panel_add_visual(panel, visual, NULL);
-```
 
-See [Use coordinate systems](coordinate-systems.md) before mixing data, view, and panel coordinate
-spaces.
+## Keeping Arrays Aligned
 
-## Attributes
+Related per-item arrays should describe the same items in the same order. In the point example,
+`positions[0]`, `colors[0]`, and `diameters[0]` all describe the first point.
 
-Attribute names, item counts, and defaults are visual-specific. The point visual uses `position`,
-`color`, and `diameter_px`; mesh, image, text, volume, and path visuals use different attribute names
-and data layouts.
-
-Keep related per-item arrays aligned:
+For point visuals, these arrays should normally have the same item count:
 
 ```c
 dvz_visual_set_data(visual, "position", positions, count);
@@ -73,11 +140,8 @@ dvz_visual_set_data(visual, "color", colors, count);
 dvz_visual_set_data(visual, "diameter_px", diameters, count);
 ```
 
-Do not assume an attribute exists just because another visual family has a similar field. Check the
-visual family reference when moving between families.
-
-Use `dvz_visual_set_data_many()` when several attributes should become visible as one coherent
-update:
+Use `dvz_visual_set_data_many()` in C when several attributes should be checked and uploaded
+together:
 
 ```c
 DvzVisualDataUpdate updates[] = {
@@ -88,24 +152,71 @@ DvzVisualDataUpdate updates[] = {
 dvz_visual_set_data_many(visual, updates, 3);
 ```
 
-## When to Split Visuals
 
-Split one logical dataset into several visuals only when there is a real rendering or lifetime
-boundary:
+## Grouping Items Into Visuals
 
-- different visual family;
-- different material, alpha mode, depth behavior, or technique path;
-- different panel attachment, coordinate space, or draw layer;
-- different transform, lifetime, or update cadence;
-- different shared geometry for mesh instancing.
+Prefer one visual that contains many related items over many small visuals with only a few items
+each. For example, if 100 points belong to the same dataset and use the same point visual settings,
+put them in one point visual with 100 positions, colors, and diameters.
 
-Keep style differences inside one visual when the style is already an attribute, such as point
-color, diameter_px, symbol, radius, or per-item transform.
+Create a separate visual when there is a real difference in how the data should be drawn:
+
+- a different visual family, such as points versus lines;
+- a different panel;
+- a different coordinate space or draw layer;
+- a different material, alpha mode, or depth behavior;
+- a different update schedule, such as static background data versus frequently changing data.
+
+Style differences should stay inside one visual when they are ordinary attributes. Point color,
+point size, marker symbol, and per-item transform are examples of styles that can usually vary
+within one visual.
+
+
+## Attachment Options
+
+Most visuals can use the default attachment:
+
+```c
+dvz_panel_add_visual(panel, visual, NULL);
+```
+
+The default means: draw in the panel's data coordinate space, let the panel controller affect the
+visual, and use draw layer `0`.
+
+Use an explicit `DvzVisualAttachDesc` only when the visual needs a non-default placement. For
+example, this attaches a visual in view coordinates and draws it above layer `0` visuals:
+
+```c
+DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+attach.coord_space = DVZ_VISUAL_COORD_VIEW;
+attach.z_layer = 1;
+dvz_panel_add_visual(panel, visual, &attach);
+```
+
+The common attachment choices are:
+
+| Field | Default | Use when |
+| --- | --- | --- |
+| `coord_space` | `DVZ_VISUAL_COORD_DATA` | Use a non-data coordinate space for overlays or view-fixed elements. |
+| `z_layer` | `0` | Draw one visual in front of or behind another visual in the same panel. |
+| `controller_mode` | `DVZ_CONTROLLER_APPLY` | Keep the default for ordinary data visuals. |
+
+Set panel domains before attaching data-coordinate visuals when you want explicit data limits:
+
+```c
+dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
+dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
+dvz_panel_add_visual(panel, visual, NULL);
+```
+
+See [Use coordinate systems](coordinate-systems.md) before mixing data, view, and panel coordinate
+spaces.
+
 
 ## Instanced Meshes
 
 Use mesh instancing when many objects share the same triangle geometry and differ only by placement
-or orientation. Common cases include cube fields, repeated markers built from geometry, and many
+or orientation. Common cases include repeated cubes, repeated markers built from geometry, and many
 copies of the same imported mesh.
 
 Create one mesh visual, set the shared geometry once, then upload one `"instance_transform"` matrix
@@ -119,30 +230,18 @@ dvz_panel_add_visual(panel, mesh, NULL);
 ```
 
 Use separate mesh visuals only when copies need different materials, techniques, panel attachments,
-lifetimes, or update schedules.
+or update schedules.
 
-
-## Important Details
-
-Attribute names and array shapes are visual-specific. Use the visual family reference when moving
-between point, image, mesh, text, and volume data.
-
-Create separate visuals only for real boundaries: a different visual family, material or technique,
-panel attachment, transform, lifetime, or update frequency. Style differences that are represented
-as attributes should stay inside the same visual.
-
-Adding a visual to a panel does not copy it into that panel as an independent object. The scene owns
-the visual; panel attachment records where and how it is drawn. If the same visual is attached to
-multiple panels, keep its data layout compatible with every attachment.
 
 ## Common Mistakes
 
-- Uploading different counts for related attributes.
-- Reusing point attributes on another visual family without checking that family's reference page.
-- Creating many tiny visuals instead of batching items into one visual.
-- Creating a visual but never attaching it to a panel.
-- Uploading pre-normalized view coordinates with the default `DVZ_VISUAL_COORD_DATA` coordinate space.
-- Splitting by color or size when those are ordinary per-item attributes.
+- Creating a visual but never adding it to a panel.
+- Uploading arrays with different item counts for attributes that describe the same items.
+- Reusing point attribute names on another visual family without checking that family's reference.
+- Creating many small visuals when one visual could hold the same related items.
+- Splitting by color or size when color or size can be an ordinary per-item attribute.
+- Using view or panel coordinates with the default data-coordinate attachment.
+
 
 ## See Also
 
