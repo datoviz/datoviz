@@ -298,6 +298,16 @@ Completed checkpoints:
    - Validation passed: `just ctypes`, `just ctypes-check`, `just ctypes-smoke`,
      `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, `just docs-api-check`,
      `just build`, `just test math`, `just test geom`, `just spec-check`, and `git diff --check`.
+28. `bff88625d` `api: export complete box helper surface`
+   - Added `DVZ_EXPORT` to the public `dvz_box_normalize_2D()`,
+     `dvz_box_normalize_polygon()`, `dvz_box_normalize_3D()`, and `dvz_box_inverse()` declarations.
+   - Made `dvz_box_normalize_1D()` take `const double* pos`.
+   - Removed the public/source `dvz_box_print()` debug helper instead of stabilizing stdout output.
+   - Regenerated raw `ctypes` and generated C API docs.
+   - Exported symbol delta: added four `dvz_box_*` symbols; no exported functions were removed.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just ctypes-smoke`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, `just docs-api-check`,
+     `just build`, `just test math`, `just spec-check`, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -599,7 +609,8 @@ Preferred fix:
 
 Status: `dvz_load_jpeg()` byte-buffer argument order normalized by `52e38e358`, `DvzAlpha`
 replaced with a typedef by `2a340b51c`, and unprefixed math support macros plus the
-`_PRETTY_SIZE` buffer cleaned by `2ac43481c`; other support-header leakage remains open.
+`_PRETTY_SIZE` buffer cleaned by `2ac43481c`; public `dvz_box_*` declarations without export were
+resolved by `bff88625d`. Other support-header leakage remains open.
 
 Public support headers leak unprefixed macros, mutable TU-local buffers, test resources, and
 inconsistent byte-buffer signatures.
@@ -608,7 +619,8 @@ References:
 
 - `include/datoviz/math/types.h`: review remaining public constants/helpers such as `M_PI` and
   `dvz_pretty_size()` for intended stable support-header scope
-- `include/datoviz/math/box.h`: public declarations that lack `DVZ_EXPORT`
+- `include/datoviz/math/box.h`: resolved by `bff88625d`; the public helper set is now exported and
+  generated in raw `ctypes`/C docs
 - `include/datoviz/fileio/fileio.h`: `dvz_load_png(bytes, size)` versus
   `dvz_load_jpeg(size, bytes)`, `int*` PPM dimensions, `unsigned long*` resource sizes,
   `dvz_resource_testdata()`
