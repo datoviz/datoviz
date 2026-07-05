@@ -71,7 +71,7 @@ The active first-slice API currently exposes retained dense arrays:
 
 ```c
 dvz_visual_set_data(visual, attr_name, data, item_count)
-dvz_visual_set_data_range(visual, attr_name, data, first_item, item_count)
+dvz_visual_set_data_range(visual, attr_name, first_item, data, item_count)
 ```
 
 For the active point visual, `position`, `color`, and `size` are dense per-item attributes with the

@@ -146,7 +146,7 @@ def main() -> int:
             raise RuntimeError('facade dvz_visual_set_data(color) failed')
         if dvz.dvz_visual_set_data(visual, 'diameter_px', diameters) != 0:
             raise RuntimeError('facade dvz_visual_set_data(diameter_px) failed')
-        if dvz.dvz_visual_set_data_range(visual, 'position', updated, 1) != 0:
+        if dvz.dvz_visual_set_data_range(visual, 'position', 1, updated) != 0:
             raise RuntimeError('facade dvz_visual_set_data_range(position) failed')
     finally:
         dvz.dvz_scene_destroy(scene)

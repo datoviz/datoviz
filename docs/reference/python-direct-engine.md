@@ -65,7 +65,7 @@ dvz.dvz_panel_add_visual(panel, points, None)
 raw C function. For slice updates after a full allocation, use:
 
 ```python
-dvz.dvz_visual_set_data_range(points, "position", positions_chunk, first_item)
+dvz.dvz_visual_set_data_range(points, "position", first_item, positions_chunk)
 ```
 
 The facade may copy non-contiguous arrays for the duration of the call. Prefer preparing arrays with

@@ -2154,14 +2154,14 @@ DVZ_EXPORT DvzResult dvz_visual_set_data_many(
  * The payload is copied before this function returns. The caller keeps ownership of `data` and may
  * release or reuse it immediately after a successful or failed call.
  *
- * @param data packed array of item_count items borrowed for the duration of the call
  * @param first_item index of the first item to update
+ * @param data packed array of item_count items borrowed for the duration of the call
  * @param item_count number of items to update
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult dvz_visual_set_data_range(
-    DvzVisual* visual, const char* attr_name, const void* data,
-    uint32_t first_item, uint32_t item_count);
+    DvzVisual* visual, const char* attr_name, uint32_t first_item, const void* data,
+    uint32_t item_count);
 
 
 /**

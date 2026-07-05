@@ -382,13 +382,13 @@ dvz_visual_set_data_many.argtypes = getattr(_raw.dvz_visual_set_data_many, "argt
 dvz_visual_set_data_many.restype = getattr(_raw.dvz_visual_set_data_many, "restype", None)
 
 
-def dvz_visual_set_data_range(visual, attr_name, data, first_item, item_count=None):
+def dvz_visual_set_data_range(visual, attr_name, first_item, data, item_count=None):
     _attr_name_bytes = _encode_string(attr_name, 'attr_name')
-    _data_ptr, _data_array = _array_arg(data, 'data', _raw.dvz_visual_set_data_range, 2, None)
+    _data_ptr, _data_array = _array_arg(data, 'data', _raw.dvz_visual_set_data_range, 3, None)
     if item_count is None:
         item_count = _shape0_count(_data_array, 'data')
     _keepalive = (_attr_name_bytes, _data_array,)
-    return _raw.dvz_visual_set_data_range(visual, _attr_name_bytes, _data_ptr, first_item, item_count)
+    return _raw.dvz_visual_set_data_range(visual, _attr_name_bytes, first_item, _data_ptr, item_count)
 
 
 dvz_visual_set_data_range.__doc__ = getattr(_raw.dvz_visual_set_data_range, "__doc__", None)

@@ -4239,8 +4239,8 @@ _Declared in `include/datoviz/scene.h`:2140._
 DvzResult dvz_visual_set_data_range(
     DvzVisual * visual,
     const char * attr_name,
-    const void * data,
     uint32_t first_item,
+    const void * data,
     uint32_t item_count
 );
 ```
@@ -4250,8 +4250,8 @@ DvzResult dvz_visual_set_data_range(
 | return | `DvzResult` | 0 on success, -1 on error |
 | `visual` | `DvzVisual *` | the visual |
 | `attr_name` | `const char *` | attribute name |
-| `data` | `const void *` | packed array of item_count items borrowed for the duration of the call |
 | `first_item` | `uint32_t` | index of the first item to update |
+| `data` | `const void *` | packed array of item_count items borrowed for the duration of the call |
 | `item_count` | `uint32_t` | number of items to update |
 
 Write a contiguous sub-range of attribute data to a visual.

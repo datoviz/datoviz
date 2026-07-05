@@ -1103,7 +1103,7 @@ int test_scene_partial_update_uploads_only_range(TstContext* suite, const TstCas
         new_pos[3 * i + 1] = 0.5f;
         new_pos[3 * i + 2] = 0.0f;
     }
-    AT(dvz_visual_set_data_range(visual, "position", new_pos, 5, 5) == 0);
+    AT(dvz_visual_set_data_range(visual, "position", 5, new_pos, 5) == 0);
 
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream2 = _test_scene_emit_stream(figure, &caps, &report);
@@ -1185,7 +1185,7 @@ int test_scene_repeated_partial_updates_across_frames(TstContext* suite, const T
     };
     uint64_t frame2_offset = 2 * item_size;
     uint64_t frame2_size = 3 * item_size;
-    AT(dvz_visual_set_data_range(visual, "position", frame2_pos, 2, 3) == 0);
+    AT(dvz_visual_set_data_range(visual, "position", 2, frame2_pos, 3) == 0);
 
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream2 = _test_scene_emit_stream(figure, &caps, &report);
@@ -1201,7 +1201,7 @@ int test_scene_repeated_partial_updates_across_frames(TstContext* suite, const T
     };
     uint64_t frame3_offset = 10 * item_size;
     uint64_t frame3_size = 2 * item_size;
-    AT(dvz_visual_set_data_range(visual, "position", frame3_pos, 10, 2) == 0);
+    AT(dvz_visual_set_data_range(visual, "position", 10, frame3_pos, 2) == 0);
 
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream3 = _test_scene_emit_stream(figure, &caps, &report);
@@ -1268,8 +1268,8 @@ int test_scene_partial_update_merges_ranges_before_emit(TstContext* suite, const
         0.25f, 0.1f, 0.0f,
         0.35f, 0.1f, 0.0f,
     };
-    AT(dvz_visual_set_data_range(visual, "position", update_a, 2, 2) == 0);
-    AT(dvz_visual_set_data_range(visual, "position", update_b, 8, 3) == 0);
+    AT(dvz_visual_set_data_range(visual, "position", 2, update_a, 2) == 0);
+    AT(dvz_visual_set_data_range(visual, "position", 8, update_b, 3) == 0);
 
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream2 = _test_scene_emit_stream(figure, &caps, &report);
@@ -1385,7 +1385,7 @@ int test_scene_multiple_panels_multiple_point_visuals_emit(TstContext* suite, co
     _test_scene_stream_destroy(stream1);
 
     float size_update[2] = {10.0f, 11.0f};
-    AT(dvz_visual_set_data_range(visual_b, "size", size_update, 1, 2) == 0);
+    AT(dvz_visual_set_data_range(visual_b, "size", 1, size_update, 2) == 0);
 
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream2 = _test_scene_emit_stream(figure, &caps, &report);

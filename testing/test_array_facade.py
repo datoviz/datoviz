@@ -86,7 +86,7 @@ def fake_facade(monkeypatch):
         [ctypes.c_void_p, ctypes.POINTER(DvzVisualDataUpdate), ctypes.c_uint32]
     )
     raw.dvz_visual_set_data_range = _raw_function(
-        [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint32]
+        [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_uint32]
     )
     raw.dvz_visual_set_index_data = _raw_function(
         [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint32), ctypes.c_uint32]
@@ -182,9 +182,9 @@ def test_visual_set_data_range_infers_count_after_first_item(fake_facade):
     raw, facade = fake_facade
     data = np.arange(4, dtype=np.float32).reshape(2, 2)
 
-    facade.dvz_visual_set_data_range(ctypes.c_void_p(2), 'position', data, 5)
+    facade.dvz_visual_set_data_range(ctypes.c_void_p(2), 'position', 5, data)
 
-    _, attr_name, pointer, first_item, item_count = raw.dvz_visual_set_data_range.calls[-1]
+    _, attr_name, first_item, pointer, item_count = raw.dvz_visual_set_data_range.calls[-1]
     assert attr_name == b'position'
     assert pointer.value == data.ctypes.data
     assert first_item == 5

@@ -757,7 +757,7 @@ int test_scene_visual_bounds_point_and_range_update(TstContext* suite, const Tst
     AT(_scene_visuals_bounds_expect(&bounds, 3, -2.0, -3.0, -1.0, +4.0, +5.0, +2.0) == 0);
 
     vec3 update[1] = {{+8.0f, +2.0f, +4.0f}};
-    AT(dvz_visual_set_data_range(visual, "position", update, 1, 1) == 0);
+    AT(dvz_visual_set_data_range(visual, "position", 1, update, 1) == 0);
     AT(dvz_visual_bounds(visual, &bounds) == 0);
     AT(_scene_visuals_bounds_expect(&bounds, 3, -2.0, +1.0, -1.0, +8.0, +5.0, +4.0) == 0);
 
@@ -2891,7 +2891,7 @@ int test_scene_rejects_range_update_without_full_allocation(TstContext* suite, c
 
     tst_log_capture_begin(suite);
     AT_EXPECTED_ERROR_STRICT(
-        suite, dvz_visual_set_data_range(visual, "position", update, 0, 1) == -1);
+        suite, dvz_visual_set_data_range(visual, "position", 0, update, 1) == -1);
     AT(_captured_log_contains(suite, "range update requires prior full allocation"));
 
     dvz_scene_destroy(scene);
@@ -2971,7 +2971,7 @@ int test_scene_stream_snapshot_freezes_upload_payloads(TstContext* suite, const 
     AT(stream != NULL);
 
     float update[2] = {10.0f, 12.0f};
-    AT(dvz_visual_set_data_range(visual, "size", update, 0, 2) == 0);
+    AT(dvz_visual_set_data_range(visual, "size", 0, update, 2) == 0);
 
     bool found_size_upload = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
@@ -3091,7 +3091,7 @@ int test_scene_artifact_allows_mutation_after_emit(TstContext* suite, const TstC
     (void)arena_size;
 
     float update[2] = {10.0f, 12.0f};
-    AT(dvz_visual_set_data_range(visual, "size", update, 0, 2) == 0);
+    AT(dvz_visual_set_data_range(visual, "size", 0, update, 2) == 0);
     AT(dvz_drp2_stream_count(artifact_stream) > 0);
 
     dvz_scene_frame_artifact_destroy(artifact);

@@ -116,7 +116,7 @@ static bool _upload_partial_positions(DvzVisual* visual)
         {+0.16f, +0.34f, 0.0f},
     };
 
-    return dvz_visual_set_data_range(visual, "position", moved_positions, 2, 2) == 0;
+    return dvz_visual_set_data_range(visual, "position", 2, moved_positions, 2) == 0;
 }
 
 

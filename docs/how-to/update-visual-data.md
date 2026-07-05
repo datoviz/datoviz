@@ -45,7 +45,7 @@ dvz_visual_set_data_many(visual, updates, 3);
 When only a contiguous range changes:
 
 ```c
-dvz_visual_set_data_range(visual, "color", color + first, first, count);
+dvz_visual_set_data_range(visual, "color", first, color + first, count);
 ```
 
 For animation, call the update from a timer, frame callback, or host event path before the next

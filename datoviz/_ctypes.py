@@ -30851,12 +30851,12 @@ else:
  * The payload is copied before this function returns. The caller keeps ownership of `data` and may
  * release or reuse it immediately after a successful or failed call.
  *
- * @param data packed array of item_count items borrowed for the duration of the call
  * @param first_item index of the first item to update
+ * @param data packed array of item_count items borrowed for the duration of the call
  * @param item_count number of items to update
  * @return 0 on success, -1 on error
  */"""
-    dvz_visual_set_data_range.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint32]
+    dvz_visual_set_data_range.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_uint32]
     dvz_visual_set_data_range.restype = ctypes.c_int32
 
 
