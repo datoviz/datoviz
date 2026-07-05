@@ -89,6 +89,7 @@ hooks:
 nav:
   - Home: 'index.md'
   - Get Started:
+    - Overview: 'start/index.md'
     - Install: 'start/install.md'
     - Quickstart: 'start/quickstart.md'
     - AI-assisted workflow: 'start/ai-workflow.md'

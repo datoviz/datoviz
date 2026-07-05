@@ -7,29 +7,29 @@ Use Datoviz when you want to explore many points, images, meshes, volumes, annot
 scientific scenes, either on the desktop with Vulkan, using C or Python bindings, or in the browser
 with experimental WebGPU support.
 
-<a href="examples/gallery/showcases/protein_arcball_viewer.md"><img src="assets/gallery/v0.4/showcases/protein_arcball_viewer.webp" alt="Protein Viewer" style="width:100%;border-radius:8px;margin:1.5rem 0 2rem;display:block;"></a>
+<a href="examples/gallery/showcases/protein_arcball_viewer/"><img src="assets/gallery/v0.4/showcases/protein_arcball_viewer.webp" alt="Protein Viewer" style="width:100%;border-radius:8px;margin:1.5rem 0 2rem;display:block;"></a>
 
 
 ## Start Here
 
 <div class="dvz-nav-grid">
-<a class="dvz-nav-card" href="start/install.md">
+<a class="dvz-nav-card" href="start/install/">
 <strong>Install</strong>
 <span>Choose the right setup path for Python, C/C++, macOS, Linux, or Windows.</span>
 </a>
-<a class="dvz-nav-card" href="start/quickstart.md">
+<a class="dvz-nav-card" href="start/quickstart/">
 <strong>Quickstart</strong>
 <span>Run one scatter plot and learn the three basic parts: scene, panel, and visual.</span>
 </a>
-<a class="dvz-nav-card" href="examples/index.md">
+<a class="dvz-nav-card" href="examples/">
 <strong>Examples</strong>
 <span>Browse working visuals, features, and showcases before writing your own code.</span>
 </a>
-<a class="dvz-nav-card" href="how-to/create-a-scene.md">
+<a class="dvz-nav-card" href="how-to/create-a-scene/">
 <strong>How-To Guides</strong>
 <span>Learn focused tasks such as adding axes, colorbars, interaction, and offscreen output.</span>
 </a>
-<a class="dvz-nav-card" href="reference/index.md">
+<a class="dvz-nav-card" href="reference/">
 <strong>Reference</strong>
 <span>Look up visual families, attribute names, API status, and platform support.</span>
 </a>
