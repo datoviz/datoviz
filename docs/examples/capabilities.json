@@ -15,9 +15,9 @@
   },
   "statuses": {
     "diagnostic": 1,
-    "experimental": 14,
-    "prototype": 3,
-    "supported": 92
+    "experimental": 17,
+    "prototype": 1,
+    "supported": 91
   },
   "agent_copy_safe": {
     "false": 28,
@@ -62,7 +62,7 @@
             "id": "showcase_embedding_atlas",
             "title": "Embedding Atlas",
             "category": "showcase",
-            "status": "supported",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/embedding_atlas.c",
             "page": "gallery/showcases/showcase_embedding_atlas.md"
@@ -71,7 +71,7 @@
             "id": "showcase_synthetic_mouse",
             "title": "Synthetic Mouse",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/synthetic_mouse.c",
             "page": "gallery/showcases/showcase_synthetic_mouse.md"
@@ -94,7 +94,7 @@
             "id": "showcase_lipid_brain_atlas",
             "title": "Lipid Brain Atlas",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/lipid_brain_atlas.c",
             "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
@@ -2174,7 +2174,7 @@
             "id": "showcase_synthetic_mouse",
             "title": "Synthetic Mouse",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/synthetic_mouse.c",
             "page": "gallery/showcases/showcase_synthetic_mouse.md"
@@ -2238,7 +2238,7 @@
             "id": "showcase_synthetic_mouse",
             "title": "Synthetic Mouse",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/synthetic_mouse.c",
             "page": "gallery/showcases/showcase_synthetic_mouse.md"
@@ -2657,7 +2657,7 @@
             "id": "showcase_lipid_brain_atlas",
             "title": "Lipid Brain Atlas",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/lipid_brain_atlas.c",
             "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
@@ -2801,7 +2801,7 @@
             "id": "showcase_embedding_atlas",
             "title": "Embedding Atlas",
             "category": "showcase",
-            "status": "supported",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/embedding_atlas.c",
             "page": "gallery/showcases/showcase_embedding_atlas.md"
@@ -3052,7 +3052,7 @@
             "id": "showcase_lipid_brain_atlas",
             "title": "Lipid Brain Atlas",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/lipid_brain_atlas.c",
             "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
@@ -3136,7 +3136,7 @@
             "id": "showcase_lipid_brain_atlas",
             "title": "Lipid Brain Atlas",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/lipid_brain_atlas.c",
             "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
@@ -3293,7 +3293,7 @@
             "id": "showcase_embedding_atlas",
             "title": "Embedding Atlas",
             "category": "showcase",
-            "status": "supported",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/embedding_atlas.c",
             "page": "gallery/showcases/showcase_embedding_atlas.md"
@@ -3406,7 +3406,7 @@
             "id": "showcase_embedding_atlas",
             "title": "Embedding Atlas",
             "category": "showcase",
-            "status": "supported",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/embedding_atlas.c",
             "page": "gallery/showcases/showcase_embedding_atlas.md"
@@ -3415,7 +3415,7 @@
             "id": "showcase_lipid_brain_atlas",
             "title": "Lipid Brain Atlas",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/lipid_brain_atlas.c",
             "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
@@ -3539,7 +3539,7 @@
             "id": "showcase_embedding_atlas",
             "title": "Embedding Atlas",
             "category": "showcase",
-            "status": "supported",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/embedding_atlas.c",
             "page": "gallery/showcases/showcase_embedding_atlas.md"
@@ -3604,7 +3604,7 @@
             "id": "showcase_embedding_atlas",
             "title": "Embedding Atlas",
             "category": "showcase",
-            "status": "supported",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/embedding_atlas.c",
             "page": "gallery/showcases/showcase_embedding_atlas.md"
@@ -3650,7 +3650,7 @@
             "id": "showcase_lipid_brain_atlas",
             "title": "Lipid Brain Atlas",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/lipid_brain_atlas.c",
             "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
@@ -3691,7 +3691,7 @@
             "id": "showcase_synthetic_mouse",
             "title": "Synthetic Mouse",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/synthetic_mouse.c",
             "page": "gallery/showcases/showcase_synthetic_mouse.md"
@@ -3732,7 +3732,7 @@
             "id": "showcase_lipid_brain_atlas",
             "title": "Lipid Brain Atlas",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/lipid_brain_atlas.c",
             "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
@@ -3842,7 +3842,7 @@
             "id": "showcase_embedding_atlas",
             "title": "Embedding Atlas",
             "category": "showcase",
-            "status": "supported",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/embedding_atlas.c",
             "page": "gallery/showcases/showcase_embedding_atlas.md"
@@ -3851,7 +3851,7 @@
             "id": "showcase_lipid_brain_atlas",
             "title": "Lipid Brain Atlas",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/lipid_brain_atlas.c",
             "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
@@ -3860,7 +3860,7 @@
             "id": "showcase_synthetic_mouse",
             "title": "Synthetic Mouse",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/synthetic_mouse.c",
             "page": "gallery/showcases/showcase_synthetic_mouse.md"
@@ -3920,7 +3920,7 @@
             "id": "showcase_embedding_atlas",
             "title": "Embedding Atlas",
             "category": "showcase",
-            "status": "supported",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/embedding_atlas.c",
             "page": "gallery/showcases/showcase_embedding_atlas.md"
@@ -3948,7 +3948,7 @@
             "id": "showcase_synthetic_mouse",
             "title": "Synthetic Mouse",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/synthetic_mouse.c",
             "page": "gallery/showcases/showcase_synthetic_mouse.md"
@@ -4105,7 +4105,7 @@
             "id": "showcase_embedding_atlas",
             "title": "Embedding Atlas",
             "category": "showcase",
-            "status": "supported",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/embedding_atlas.c",
             "page": "gallery/showcases/showcase_embedding_atlas.md"
@@ -4114,7 +4114,7 @@
             "id": "showcase_synthetic_mouse",
             "title": "Synthetic Mouse",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/synthetic_mouse.c",
             "page": "gallery/showcases/showcase_synthetic_mouse.md"
@@ -4179,7 +4179,7 @@
             "id": "showcase_synthetic_mouse",
             "title": "Synthetic Mouse",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/synthetic_mouse.c",
             "page": "gallery/showcases/showcase_synthetic_mouse.md"
@@ -4207,7 +4207,7 @@
             "id": "showcase_synthetic_mouse",
             "title": "Synthetic Mouse",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/synthetic_mouse.c",
             "page": "gallery/showcases/showcase_synthetic_mouse.md"
@@ -4286,7 +4286,7 @@
             "id": "showcase_lipid_brain_atlas",
             "title": "Lipid Brain Atlas",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/lipid_brain_atlas.c",
             "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
@@ -4295,7 +4295,7 @@
             "id": "showcase_synthetic_mouse",
             "title": "Synthetic Mouse",
             "category": "showcase",
-            "status": "prototype",
+            "status": "experimental",
             "agent_copy_safe": false,
             "source": "examples/c/showcases/synthetic_mouse.c",
             "page": "gallery/showcases/showcase_synthetic_mouse.md"

@@ -60,56 +60,56 @@ defaults:
 non_public_examples:
   - id: lab_axis_lattice_smoke
     title: Axis Lattice Smoke
-    stage: lab
+    stage: v0.4_experimental
     lane: lab
     source: examples/c/lab/axis_lattice_smoke.c
     validation: smoke
 
   - id: lab_point_stress
     title: Point Stress
-    stage: lab
+    stage: v0.4_experimental
     lane: lab
     source: examples/c/lab/point_stress.c
     validation: manual+performance
 
   - id: lab_protein_viewer
     title: Protein Viewer Workbench
-    stage: lab
+    stage: v0.4_experimental
     lane: lab
     source: examples/c/lab/protein_viewer.c
     validation: manual
 
   - id: lab_record_dvzr
     title: DVZR Recorder
-    stage: lab
+    stage: v0.4_experimental
     lane: lab
     source: examples/c/lab/record_dvzr.c
     validation: manual
 
   - id: lab_replay_dvzr
     title: DVZR Replay
-    stage: lab
+    stage: v0.4_experimental
     lane: lab
     source: examples/c/lab/replay_dvzr.c
     validation: manual
 
   - id: lab_scalebar_2d_3d
     title: Scale Bar 2D/3D Lab
-    stage: lab
+    stage: v0.4_experimental
     lane: lab
     source: examples/c/lab/scalebar_2d_3d.c
     validation: manual
 
   - id: lab_text_msdf_diagnostics
     title: Text MSDF Diagnostics
-    stage: lab
+    stage: v0.4_experimental
     lane: lab
     source: examples/c/lab/text_msdf_diagnostics.c
     validation: manual
 
   - id: lab_text_msdf_lab
     title: Text MSDF Lab
-    stage: lab
+    stage: v0.4_experimental
     lane: lab
     source: examples/c/lab/text_msdf_lab.c
     validation: manual
@@ -255,12 +255,9 @@ batches:
     - scalebar_measurement_workflow
     - us_state_choropleth
     - protein_arcball_viewer
-    - showcase_embedding_atlas
-    - showcase_lipid_brain_atlas
 
   review-21-showcases-spatial-a:
     - showcase_wind_field
-    - showcase_synthetic_mouse
     - showcase_surface_grid
     - point_cloud
     - textured_terrain_or_planet
@@ -268,16 +265,6 @@ batches:
   review-22-advanced-runtime:
     - advanced_raw_triangle_vklite
     - advanced_external_surface_glfw
-    - lab_record_dvzr
-    - lab_replay_dvzr
-    - lab_point_stress
-
-  review-23-lab-text-scale:
-    - lab_axis_lattice_smoke
-    - lab_protein_viewer
-    - lab_scalebar_2d_3d
-    - lab_text_msdf_diagnostics
-    - lab_text_msdf_lab
 
 examples:
   - id: feature_basic_scene
@@ -2481,7 +2468,7 @@ examples:
 
   - id: showcase_embedding_atlas
     title: Embedding Atlas
-    stage: v0.4_required
+    stage: v0.4_experimental
     category: showcase
     lane: showcases
     source: examples/c/showcases/embedding_atlas.c
@@ -2506,7 +2493,7 @@ examples:
       cache_prepared_path: .cache/datoviz/examples/embedding_atlas/prepared
     gallery:
       card: section
-      status_label: supported
+      status_label: experimental
     tags:
       - scientific
       - synthetic
@@ -2519,7 +2506,7 @@ examples:
 
   - id: showcase_lipid_brain_atlas
     title: Lipid Brain Atlas
-    stage: v0.4_required
+    stage: v0.4_experimental
     category: showcase
     lane: showcases
     source: examples/c/showcases/lipid_brain_atlas.c
@@ -2553,7 +2540,7 @@ examples:
         committed to the repository.
     gallery:
       card: section
-      status_label: prototype
+      status_label: experimental
     tags:
       - scientific
       - real-data
@@ -2566,7 +2553,7 @@ examples:
 
   - id: showcase_synthetic_mouse
     title: Synthetic Mouse
-    stage: v0.4_required
+    stage: v0.4_experimental
     category: showcase
     lane: showcases
     source: examples/c/showcases/synthetic_mouse.c
@@ -2591,7 +2578,7 @@ examples:
       cache_prepared_path: .cache/datoviz/examples/synthetic_mouse/prepared
     gallery:
       card: section
-      status_label: prototype
+      status_label: experimental
     tags:
       - scientific
       - synthetic
