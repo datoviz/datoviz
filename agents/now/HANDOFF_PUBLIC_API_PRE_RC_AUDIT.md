@@ -244,6 +244,14 @@ Completed checkpoints:
    - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
      `python3 tools/build_api_c.py --check`, `just build`, `just test canvas`, `just spec-check`,
      stale-reference scan, and `git diff --check`.
+23. `c437357b3` `bindings: treat read_gz return as owned pointer`
+   - Added `dvz_read_gz()` to the raw `ctypes` owned-return policy with `dvz_memory_free()` as the
+     destroy function.
+   - Regenerated raw `ctypes` so `dvz_read_gz.restype` is `ctypes.c_void_p` instead of
+     `ctypes.c_char_p`, preserving the allocator-owned pointer for explicit freeing.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just ctypes-smoke`,
+     `just docs-api-check`, `python3 tools/build_api_c.py --check`, focused generated-binding
+     assertion, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -400,6 +408,8 @@ Status:
 
 
 ### 3. Fix Raw `ctypes` Ownership Traps
+
+Status: completed for identified owned-return traps by `6ab5814aa` and `c437357b3`.
 
 Owned pointer returns and fixed-array pointer types currently generate unsafe or awkward raw ctypes.
 
