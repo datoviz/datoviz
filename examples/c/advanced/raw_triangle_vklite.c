@@ -11,21 +11,19 @@
  *
  * Shows how to write your own Vulkan draw commands using vklite helpers while
  * letting DvzCanvas manage all presentation plumbing (offscreen images, frame
- * timing, submission, video recording). The draw callback is identical for
- * every backend; only the canvas configuration differs.
+ * timing, and submission).
  *
  * Usage:
- *   ./raw_triangle_vklite [--png|--video]
+ *   ./raw_triangle_vklite
  *
- *   --png    render one frame, save raw_triangle_vklite.png (default)
- *   --video  render 120 frames, save raw_triangle_vklite.mp4
+ *   Render one frame, save raw_triangle_vklite.png.
  *
  * NOTE: GLFW onscreen rendering requires Vulkan surface extensions to be
  * requested at instance creation time, which DvzGpuCtx does not expose today.
  * It will be added in a follow-up commit using the raw dvz_instance_create path.
  *
  * Build:  just example-c advanced/raw_triangle_vklite
- * Run:    ./build/examples/c/advanced/raw_triangle_vklite [--png|--video]
+ * Run:    ./build/examples/c/advanced/raw_triangle_vklite
  */
 
 #include <stdint.h>
@@ -37,7 +35,6 @@
 
 #include "datoviz/canvas.h"
 #include "datoviz/stream/frame_stream.h"
-#include "datoviz/video.h"
 #include "datoviz/vk/enums.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vklite.h"
@@ -246,9 +243,7 @@ static void draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void* 
 
 int main(int argc, char** argv)
 {
-    const bool video_mode =
-        example_arg_has(argc, argv, "--video") || example_arg_has(argc, argv, "video");
-    bool video_enabled = false;
+    (void)argc;
 
     /* GPU context: dynamicRendering + synchronization2 required by DvzCanvas. */
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
@@ -266,7 +261,7 @@ int main(int argc, char** argv)
     DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
     if (!ctx) { dvz_fprintf(stderr, "GPU context creation failed\n"); return 1; }
 
-    /* Window + canvas (offscreen for both modes) */
+    /* Window + canvas */
     DvzWindowHost* host = dvz_window_host();
     DvzWindowConfig wcfg = dvz_window_config();
     wcfg.width  = WIDTH;
@@ -281,24 +276,6 @@ int main(int argc, char** argv)
     DvzCanvas* canvas = dvz_canvas_create(&ccfg);
     if (!canvas) { dvz_fprintf(stderr, "Canvas creation failed\n"); dvz_window_destroy(window); dvz_window_host_destroy(host); dvz_gpu_ctx_destroy(ctx); return 1; }
 
-    /* Video sink */
-    if (video_mode) {
-        DvzVideoSinkConfig vsink = dvz_video_sink_config();
-        vsink.encoder.backend  = "auto";
-        vsink.encoder.width    = wcfg.width;
-        vsink.encoder.height   = wcfg.height;
-        vsink.encoder.fps      = 30;
-        char mp4_out[512], h26x_out[512];
-        example_outpath(argv[0], "raw_triangle_vklite.mp4", mp4_out, sizeof(mp4_out));
-        example_outpath(argv[0], "raw_triangle_vklite.h26x", h26x_out, sizeof(h26x_out));
-        vsink.encoder.mp4_path = mp4_out;
-        vsink.encoder.raw_path = h26x_out;
-        if (dvz_canvas_configure_video_sink(canvas, true, &vsink) != 0)
-            dvz_fprintf(stderr, "Warning: video sink could not be enabled\n");
-        else
-            video_enabled = true;
-    }
-
     /* Triangle state: compile shaders, build pipeline, upload vertices */
     TriState state = {0};
     if (tri_state_create(&state, dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx)) != 0) {
@@ -312,25 +289,15 @@ int main(int argc, char** argv)
     dvz_canvas_set_draw_callback(canvas, draw_triangle, &state);
 
     /* Frame loop */
-    uint32_t n_frames = video_mode ? 120 : 1;
-    for (uint32_t i = 0; i < n_frames; i++) {
-        dvz_window_host_poll(host);
-        int rc = dvz_canvas_frame(canvas);
-        if (rc != DVZ_CANVAS_FRAME_READY) break;
+    dvz_window_host_poll(host);
+    int rc = dvz_canvas_frame(canvas);
+    if (rc == DVZ_CANVAS_FRAME_READY)
         dvz_canvas_submit(canvas);
-    }
 
-    /* Save PNG for offscreen mode */
-    if (!video_mode) {
-        char png_out[512];
-        example_outpath(argv[0], "raw_triangle_vklite.png", png_out, sizeof(png_out));
-        dvz_canvas_capture_png(canvas, png_out);
-        dvz_fprintf(stdout, "raw_triangle_vklite: saved %s\n", png_out);
-    } else if (video_enabled) {
-        char mp4_msg[512];
-        example_outpath(argv[0], "raw_triangle_vklite.mp4", mp4_msg, sizeof(mp4_msg));
-        dvz_fprintf(stdout, "raw_triangle_vklite: saved %s\n", mp4_msg);
-    }
+    char png_out[512];
+    example_outpath(argv[0], "raw_triangle_vklite.png", png_out, sizeof(png_out));
+    dvz_canvas_capture_png(canvas, png_out);
+    dvz_fprintf(stdout, "raw_triangle_vklite: saved %s\n", png_out);
 
     /* Cleanup */
     tri_state_destroy(&state);
