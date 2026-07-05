@@ -24451,7 +24451,7 @@ else:
  * @param[out] height of the image
  * @returns owned tightly packed RGB8 pixel buffer, or NULL on failure; free with dvz_memory_free()
  */"""
-    dvz_read_ppm.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+    dvz_read_ppm.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
     dvz_read_ppm.restype = ctypes.POINTER(ctypes.c_uint8)
 
 

@@ -10189,8 +10189,8 @@ _Declared in `include/datoviz/fileio/fileio.h`:65._
 ```c title="dvz_read_ppm"
 uint8_t * dvz_read_ppm(
     const char * filename,
-    int * width,
-    int * height
+    uint32_t * width,
+    uint32_t * height
 );
 ```
 
@@ -10198,8 +10198,8 @@ uint8_t * dvz_read_ppm(
 | --- | --- | --- |
 | return | `uint8_t *` | owned tightly packed RGB8 pixel buffer, or NULL on failure; free with dvz_memory_free() |
 | `filename` | `const char *` | path of the file to open |
-| `width` | `int *` |  |
-| `height` | `int *` |  |
+| `width` | `uint32_t *` |  |
+| `height` | `uint32_t *` |  |
 
 Read a PPM image file.
 
