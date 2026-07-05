@@ -4236,7 +4236,7 @@ int test_scene_sampled_field_destroy_clears_visual_binding(TstContext* suite, co
     AT(_visual_family_state(image)->field == field);
     AT(strcmp(_visual_family_state(image)->field_slot, "field") == 0);
 
-    AT(dvz_sampled_field_destroy(field));
+    dvz_sampled_field_destroy(field);
     AT(_visual_family_state(image)->field == NULL);
     AT(_visual_family_state(image)->field_slot[0] == '\0');
 

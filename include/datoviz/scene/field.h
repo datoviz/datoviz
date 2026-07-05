@@ -209,9 +209,8 @@ DVZ_EXPORT DvzId dvz_sampled_field_id(const DvzSampledField* field);
  * Any visual bindings to this field are cleared.
  *
  * @param field the sampled field
- * @return true on success, false on error
  */
-DVZ_EXPORT bool dvz_sampled_field_destroy(DvzSampledField* field);
+DVZ_EXPORT void dvz_sampled_field_destroy(DvzSampledField* field);
 
 
 /**

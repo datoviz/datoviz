@@ -1555,7 +1555,7 @@ void _scene_text_block_destroy(DvzTextBlock* block)
     }
     if (block->image_field != NULL)
     {
-        (void)dvz_sampled_field_destroy(block->image_field);
+        dvz_sampled_field_destroy(block->image_field);
         block->image_field = NULL;
     }
     if (block->rgba != NULL)

@@ -24785,10 +24785,9 @@ else:
  * Any visual bindings to this field are cleared.
  *
  * @param field the sampled field
- * @return true on success, false on error
  */"""
     dvz_sampled_field_destroy.argtypes = [ctypes.POINTER(DvzSampledField)]
-    dvz_sampled_field_destroy.restype = ctypes.c_bool
+    dvz_sampled_field_destroy.restype = None
 
 
 try:

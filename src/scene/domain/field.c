@@ -297,17 +297,15 @@ DvzSampledField* dvz_sampled_field(DvzScene* scene, const DvzSampledFieldDesc* d
  * Destroy a sampled field.
  *
  * @param field the sampled field
- * @return true on success, false on error
  */
-bool dvz_sampled_field_destroy(DvzSampledField* field)
+void dvz_sampled_field_destroy(DvzSampledField* field)
 {
     if (field == NULL)
-        return false;
+        return;
     if (!_scene_visual_mutation_allowed(field->scene, "destroy sampled field"))
-        return false;
+        return;
     _scene_release_field_bindings(field);
     _scene_field_reset(field);
-    return true;
 }
 
 

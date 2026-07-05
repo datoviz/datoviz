@@ -4347,7 +4347,7 @@ accept the `"texture"` slot for a first-slice RGBA8 2D texture. Volume visuals a
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/field.h`:308._
+_Declared in `include/datoviz/scene/field.h`:307._
 
 ### `dvz_visual_set_index_data()`
 

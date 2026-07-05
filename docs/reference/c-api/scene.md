@@ -6415,14 +6415,13 @@ _Declared in `include/datoviz/scene/field.h`:167._
 ### `dvz_sampled_field_destroy()`
 
 ```c title="dvz_sampled_field_destroy"
-_Bool dvz_sampled_field_destroy(
+void dvz_sampled_field_destroy(
     DvzSampledField * field
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true on success, false on error |
 | `field` | `DvzSampledField *` | the sampled field |
 
 Destroy a sampled field.
@@ -6431,7 +6430,7 @@ Any visual bindings to this field are cleared.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/field.h`:214._
+_Declared in `include/datoviz/scene/field.h`:213._
 
 ### `dvz_sampled_field_get_desc()`
 
@@ -6453,7 +6452,7 @@ resized. Callers must not cast away const or retain it past field lifetime.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/field.h`:287._
+_Declared in `include/datoviz/scene/field.h`:286._
 
 ### `dvz_sampled_field_id()`
 
@@ -6504,7 +6503,7 @@ extent and is copied before return.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/field.h`:247._
+_Declared in `include/datoviz/scene/field.h`:246._
 
 ### `dvz_sampled_field_set_data()`
 
@@ -6529,7 +6528,7 @@ empty view is rejected.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/field.h`:228._
+_Declared in `include/datoviz/scene/field.h`:227._
 
 ### `dvz_sampled_field_set_geometry()`
 
@@ -6550,7 +6549,7 @@ Update the field geometry metadata.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/field.h`:274._
+_Declared in `include/datoviz/scene/field.h`:273._
 
 ### `dvz_sampled_field_update_region()`
 
@@ -6576,7 +6575,7 @@ subregion and is copied before return.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/field.h`:263._
+_Declared in `include/datoviz/scene/field.h`:262._
 
 ## Scale
 
