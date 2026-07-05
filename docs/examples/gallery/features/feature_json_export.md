@@ -12,15 +12,17 @@
 
 Scene JSON serialization diagnostic.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Scene JSON serialization diagnostic.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
-_Media pending._
+_Screenshot not required for this example._
 
 ## Source
 
@@ -37,8 +39,9 @@ _Media pending._
     - Lane: `features`
     - Status: `experimental`
     - Source: [`examples/c/features/json_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/json_export.c)
-    - WebGPU status: `native-only`
-    - WebGPU requirements: `diagnostics`
+    - Browser support: Native only
+    - Browser note: scene JSON is a native diagnostic/fixture surface, not a live browser route
+    - Browser capability tags: `diagnostics`
 
     ### Data
 

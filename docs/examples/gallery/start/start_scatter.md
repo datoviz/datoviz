@@ -12,11 +12,13 @@
 
 Quickstart scatter plot: 10 000 random colored points with pan/zoom.
 
-## About This Example
+## What This Shows
 
-This example is a compact Datoviz scene. Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
+Quickstart scatter plot: 10 000 random colored points with pan/zoom.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
@@ -37,7 +39,7 @@ It uses synthetic data, so you can run it without downloading a dataset.
     - Lane: `start`
     - Status: `supported`
     - Source: [`examples/c/start/scatter.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/start/scatter.c)
-    - WebGPU status: `webgpu-deferred`
+    - Browser support: Deferred
 
     ### Data
 

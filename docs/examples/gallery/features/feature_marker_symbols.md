@@ -12,11 +12,13 @@
 
 Marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
@@ -37,8 +39,9 @@ It uses synthetic data, so you can run it without downloading a dataset.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c)
-    - WebGPU status: `webgpu-deferred`
-    - WebGPU requirements: `marker`, `symbol-set`, `glyph-atlas`
+    - Browser support: Deferred
+    - Browser note: marker symbol-set and mixed atlas encoding parity are not in the RC WebGPU path yet
+    - Browser capability tags: `marker`, `symbol-set`, `glyph-atlas`
 
     ### Tags
 

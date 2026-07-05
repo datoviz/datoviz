@@ -12,11 +12,13 @@
 
 Scale bar with a custom time-unit string.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Scale bar with a custom time-unit string.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 A live WebGPU version is available in the browser preview when supported.
 
@@ -49,9 +51,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/scalebar_units.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar_units.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=scalebar_units"><code>examples/webgpu/live.html?id=scalebar_units</code></a>
-    - WebGPU requirements: `scale-bar`, `text`, `panzoom`
+    - Browser capability tags: `scale-bar`, `text`, `panzoom`
 
     ### Data
 

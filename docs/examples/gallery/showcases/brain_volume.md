@@ -12,15 +12,33 @@
 
 Local Allen mouse brain RGBA volume and occluded slice.
 
-## About This Example
+## What This Shows
 
-This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Local Allen mouse brain RGBA volume and occluded slice.
 
-It uses `prepared` data; check the details below for dataset information.
+Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+This example expects prepared data. Use the preparation command below if the data is missing.
 
 ## Preview
 
 ![Allen Mouse Brain](../../../assets/gallery/v0.4/showcases/brain_volume.webp)
+
+## Data Requirements
+
+This example expects prepared data. Use the preparation command below if the data is missing.
+
+- Dataset: Allen mouse brain RGBA volume
+- Source: Allen Mouse Brain Common Coordinate Framework average template, annotation volume, structure graph, and selected structure meshes
+- Source URL: http://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/; https://alleninstitute.org/legal/terms-of-use
+
+Preparation command:
+
+```sh
+python tools/data/prepare_brain_volume.py
+```
+
+License note: Allen Institute Terms of Use apply; public use must follow Allen Institute citation requirements.
 
 ## Source
 
@@ -37,8 +55,8 @@ It uses `prepared` data; check the details below for dataset information.
     - Lane: `showcases`
     - Status: `prototype`
     - Source: [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c)
-    - WebGPU status: `webgpu-planned`
-    - WebGPU requirements: `volume`, `texture-3d`, `arcball`
+    - Browser support: Planned
+    - Browser capability tags: `volume`, `texture-3d`, `arcball`
 
     ### Tags
 

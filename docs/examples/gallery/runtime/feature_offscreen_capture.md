@@ -12,11 +12,13 @@
 
 Render an exact-pixel offscreen view once and write a PNG.
 
-## About This Example
+## What This Shows
 
-This runtime example demonstrates how a scene is presented, captured, recorded, or exported. Use it when you need to control how Datoviz runs, not only what it draws.
+Render an exact-pixel offscreen view once and write a PNG.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it when you need to control how Datoviz presents, captures, records, or exports a scene, not only what the scene draws.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
@@ -37,8 +39,9 @@ It uses synthetic data, so you can run it without downloading a dataset.
     - Lane: `runtime`
     - Status: `supported`
     - Source: [`examples/c/runtime/offscreen_capture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/offscreen_capture.c)
-    - WebGPU status: `native-only`
-    - WebGPU requirements: `native-capture`
+    - Browser support: Native only
+    - Browser note: writes a native offscreen PNG through the app capture path
+    - Browser capability tags: `native-capture`
 
     ### Data
 

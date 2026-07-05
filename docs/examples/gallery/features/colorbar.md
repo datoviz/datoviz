@@ -12,11 +12,13 @@
 
 Deterministic scalar image with one continuous colorbar.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Deterministic scalar image with one continuous colorbar.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 A live WebGPU version is available in the browser preview when supported.
 
@@ -49,9 +51,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colorbar.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=colorbar"><code>examples/webgpu/live.html?id=colorbar</code></a>
-    - WebGPU requirements: `colorbar`, `image`, `sampled-field`, `text`
+    - Browser capability tags: `colorbar`, `image`, `sampled-field`, `text`
 
     ### Tags
 

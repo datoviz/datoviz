@@ -12,11 +12,13 @@
 
 Clean semantic polygon and polygon-set composites.
 
-## About This Example
+## What This Shows
 
-This example is a compact Datoviz scene. Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
+Clean semantic polygon and polygon-set composites.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
+
+No external data is needed; the example generates its data.
 
 A live WebGPU version is available in the browser preview when supported.
 
@@ -49,9 +51,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `composites`
     - Status: `supported`
     - Source: [`examples/c/composites/polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=composite_polygon"><code>examples/webgpu/live.html?id=composite_polygon</code></a>
-    - WebGPU requirements: `composite`, `polygon-set`, `primitive`, `segment`, `panzoom`
+    - Browser capability tags: `composite`, `polygon-set`, `primitive`, `segment`, `panzoom`
 
     ### Tags
 

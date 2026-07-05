@@ -12,11 +12,13 @@
 
 Interactive 3D RGB-axis proof of the Datoviz scene coordinate convention.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Interactive 3D RGB-axis proof of the Datoviz scene coordinate convention.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
@@ -37,8 +39,8 @@ It uses synthetic data, so you can run it without downloading a dataset.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/coordinate_system.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/coordinate_system.c)
-    - WebGPU status: `webgpu-planned`
-    - WebGPU requirements: `mesh`, `reference-grid`, `text`, `controller`
+    - Browser support: Planned
+    - Browser capability tags: `mesh`, `reference-grid`, `text`, `controller`
 
     ### Data
 

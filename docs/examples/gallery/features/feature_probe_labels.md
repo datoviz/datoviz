@@ -12,11 +12,13 @@
 
 Categorical labels query proof with deterministic label-id readout.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Categorical labels query proof with deterministic label-id readout.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
@@ -37,8 +39,8 @@ It uses synthetic data, so you can run it without downloading a dataset.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/probe_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c)
-    - WebGPU status: `webgpu-planned`
-    - WebGPU requirements: `labels`, `query-readback`, `panzoom`
+    - Browser support: Planned
+    - Browser capability tags: `labels`, `query-readback`, `panzoom`
 
     ### Data
 

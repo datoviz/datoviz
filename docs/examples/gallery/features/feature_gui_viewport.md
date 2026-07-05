@@ -12,17 +12,19 @@
 
 Dockable Dear ImGui window containing a live Datoviz render target.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Dockable Dear ImGui window containing a live Datoviz render target.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 The example includes interaction; try using the mouse or keyboard while it runs.
 
 ## Preview
 
-_Media pending._
+_Screenshot not required for this example._
 
 ## Source
 
@@ -39,8 +41,9 @@ _Media pending._
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/gui_viewport.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_viewport.c)
-    - WebGPU status: `native-only`
-    - WebGPU requirements: `gui`, `native-view`
+    - Browser support: Native only
+    - Browser note: dockable GUI viewports require native ImGui and an offscreen native source view
+    - Browser capability tags: `gui`, `native-view`
 
     ### Data
 

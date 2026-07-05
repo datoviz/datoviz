@@ -12,11 +12,13 @@
 
 Unified marker hover and selection proof.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Unified marker hover and selection proof.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 The example includes interaction; try using the mouse or keyboard while it runs.
 
@@ -26,7 +28,7 @@ A live WebGPU version is available in the browser preview when supported.
 
 === "Screenshot"
 
-    _Media pending._
+    _Screenshot not required for this example._
 
 === "Live WebGPU"
 
@@ -51,9 +53,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/picking.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/picking.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_picking"><code>examples/webgpu/live.html?id=feature_picking</code></a>
-    - WebGPU requirements: `marker`, `panzoom`, `query-readback`, `frame-callbacks`
+    - Browser capability tags: `marker`, `panzoom`, `query-readback`, `frame-callbacks`
 
     ### Data
 

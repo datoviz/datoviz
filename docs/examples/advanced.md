@@ -16,7 +16,7 @@ Each card links to a detail page with preview media, source code, and example me
 
 ### [External Surface GLFW](gallery/advanced/advanced_external_surface_glfw.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 `experimental` `advanced`<br><span>`advanced`, `external-surface`, `glfw`, `host-integration`</span>
 
@@ -28,7 +28,7 @@ Host-owned GLFW loop using Datoviz hosted rendering.
 
 ### [Raw Triangle DRP2](gallery/advanced/advanced_raw_triangle_drp2.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 `experimental` `advanced`<br><span>`advanced`, `drp2`, `vklite`, `low-level`</span>
 
@@ -40,7 +40,7 @@ Triangle rendered via a hand-written DRP2 command stream.
 
 ### [Raw Triangle Vklite](gallery/advanced/advanced_raw_triangle_vklite.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 `experimental` `advanced`<br><span>`advanced`, `vklite`, `canvas`, `low-level`</span>
 

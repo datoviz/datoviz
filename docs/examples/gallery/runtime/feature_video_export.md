@@ -12,15 +12,17 @@
 
 Write a bounded offscreen animation with the app capture API.
 
-## About This Example
+## What This Shows
 
-This runtime example demonstrates how a scene is presented, captured, recorded, or exported. Use it when you need to control how Datoviz runs, not only what it draws.
+Write a bounded offscreen animation with the app capture API.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it when you need to control how Datoviz presents, captures, records, or exports a scene, not only what the scene draws.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
-_Media pending._
+_Screenshot not required for this example._
 
 ## Source
 
@@ -37,8 +39,9 @@ _Media pending._
     - Lane: `runtime`
     - Status: `experimental`
     - Source: [`examples/c/runtime/video_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/video_export.c)
-    - WebGPU status: `native-only`
-    - WebGPU requirements: `native-capture`
+    - Browser support: Native only
+    - Browser note: video export uses native capture backends in v0.4
+    - Browser capability tags: `native-capture`
 
     ### Tags
 

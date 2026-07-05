@@ -12,11 +12,13 @@
 
 Generated height-field mesh with a derived wireframe overlay.
 
-## About This Example
+## What This Shows
 
-This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Generated height-field mesh with a derived wireframe overlay.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+No external data is needed; the example generates its data.
 
 A live WebGPU version is available in the browser preview when supported.
 
@@ -49,9 +51,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `showcases`
     - Status: `supported`
     - Source: [`examples/c/showcases/surface_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcase_surface_grid"><code>examples/webgpu/live.html?id=showcase_surface_grid</code></a>
-    - WebGPU requirements: `mesh`, `segment`, `arcball`
+    - Browser capability tags: `mesh`, `segment`, `arcball`
 
     ### Tags
 

@@ -12,11 +12,13 @@
 
 Side-by-side volume occluder attenuation on an embedded slice.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Side-by-side volume occluder attenuation on an embedded slice.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
@@ -37,8 +39,8 @@ It uses synthetic data, so you can run it without downloading a dataset.
     - Lane: `features`
     - Status: `experimental`
     - Source: [`examples/c/features/volume_occlusion.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/volume_occlusion.c)
-    - WebGPU status: `webgpu-deferred`
-    - WebGPU requirements: `volume`, `scene-occlusion`
+    - Browser support: Deferred
+    - Browser capability tags: `volume`, `scene-occlusion`
 
     ### Data
 

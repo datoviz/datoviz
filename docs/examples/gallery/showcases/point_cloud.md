@@ -12,15 +12,32 @@
 
 RESEPI RGB LiDAR dense point cloud.
 
-## About This Example
+## What This Shows
 
-This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+RESEPI RGB LiDAR dense point cloud.
 
-It uses `prepared` data; check the details below for dataset information.
+Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+This example expects prepared data. Use the preparation command below if the data is missing.
 
 ## Preview
 
 ![Point Cloud](../../../assets/gallery/v0.4/showcases/point_cloud.webp)
+
+## Data Requirements
+
+This example expects prepared data. Use the preparation command below if the data is missing.
+
+- Dataset: RESEPI GENM2X colorized benchmark point cloud
+- Source: https://lidarpayload.com/sample-data/
+
+Preparation command:
+
+```sh
+python tools/data/prepare_point_cloud.py --force
+```
+
+License note: Public RESEPI sample data; usage follows the source site's terms
 
 ## Source
 
@@ -37,8 +54,9 @@ It uses `prepared` data; check the details below for dataset information.
     - Lane: `showcases`
     - Status: `supported`
     - Source: [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c)
-    - WebGPU status: `webgpu-deferred`
-    - WebGPU requirements: `pixel`, `dense-point-cloud`, `depth-postprocess`, `gui`, `fly`
+    - Browser support: Deferred
+    - Browser note: the public point-cloud showcase depends on large prepared data, native GUI controls, and EDL-style rendering
+    - Browser capability tags: `pixel`, `dense-point-cloud`, `depth-postprocess`, `gui`, `fly`
 
     ### Tags
 

@@ -40,7 +40,7 @@ Scene API compute-to-graphics particle smoke showcase.
 
 ### [Linked Panels With Axes](gallery/showcases/linked_panels_axes_panzoom.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 `supported` `showcases`<br><span>`workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic`</span>
 

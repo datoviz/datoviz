@@ -57,8 +57,11 @@ def _media_fields(example: build_gallery.Example) -> dict[str, Any]:
 def _webgpu_fields(example: build_gallery.Example) -> dict[str, Any]:
     item: dict[str, Any] = {
         "webgpu_status": example.webgpu_status,
+        "webgpu_status_label": build_gallery.webgpu_status_label(example.webgpu_status),
         "webgpu_requirements": list(example.webgpu_requirements),
     }
+    if example.webgpu_reason:
+        item["webgpu_reason"] = example.webgpu_reason
     if example.webgpu:
         item["webgpu"] = example.webgpu
     if example.webgpu_route:
@@ -82,7 +85,6 @@ def _json_example(example: build_gallery.Example, entry: dict[str, Any]) -> dict
         "validation": example.validation,
         "build_command": f"just example-c {example.rel_executable}",
         "smoke_command": f"./build/examples/c/{example.rel_executable} --png",
-        "agent_copy_safe": example.agent_copy_safe,
         "tags": list(example.tags),
         "data": example.data,
         "data_kind": str(example.data.get("kind", "")),
@@ -106,7 +108,6 @@ def build_payload(manifest_path: Path) -> dict[str, Any]:
     entries = _manifest_entries_by_id(manifest)
     category_counts = Counter(example.category for example in examples)
     status_counts = Counter(example.status for example in examples)
-    copy_safe_counts = Counter(str(example.agent_copy_safe).lower() for example in examples)
 
     return {
         "schema": SCHEMA,
@@ -115,7 +116,6 @@ def build_payload(manifest_path: Path) -> dict[str, Any]:
         "count": len(examples),
         "categories": dict(sorted(category_counts.items())),
         "statuses": dict(sorted(status_counts.items())),
-        "agent_copy_safe": dict(sorted(copy_safe_counts.items())),
         "examples": [_json_example(example, entries[example.id]) for example in examples],
     }
 

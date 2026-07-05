@@ -18,10 +18,6 @@
     "prototype": 1,
     "supported": 90
   },
-  "agent_copy_safe": {
-    "false": 25,
-    "true": 80
-  },
   "examples": [
     {
       "id": "feature_basic_scene",
@@ -37,7 +33,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/basic_scene",
       "smoke_command": "./build/examples/c/features/basic_scene --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -52,6 +47,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "point"
       ],
@@ -80,7 +76,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/panel_single",
       "smoke_command": "./build/examples/c/features/panel_single --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -95,6 +90,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "panel",
         "point"
@@ -125,7 +121,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/panel_grid",
       "smoke_command": "./build/examples/c/features/panel_grid --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -140,6 +135,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "panel-grid",
         "point"
@@ -170,7 +166,6 @@
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/panel_multi",
       "smoke_command": "./build/examples/c/features/panel_multi --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -185,6 +180,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "panel-grid",
         "multi-panel",
@@ -219,7 +215,6 @@
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/panel_linked",
       "smoke_command": "./build/examples/c/features/panel_linked --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -234,6 +229,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "panel-grid",
         "linked-panels",
@@ -268,7 +264,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/axes_2d",
       "smoke_command": "./build/examples/c/features/axes_2d --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -283,6 +278,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "path",
         "axes",
@@ -317,7 +313,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/coordinate_system",
       "smoke_command": "./build/examples/c/features/coordinate_system --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -332,6 +327,7 @@
         }
       },
       "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "mesh",
         "reference-grid",
@@ -363,7 +359,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/axis_labels",
       "smoke_command": "./build/examples/c/features/axis_labels --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -378,6 +373,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "axes",
         "text",
@@ -410,7 +406,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/sampled_field_update",
       "smoke_command": "./build/examples/c/features/sampled_field_update --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -425,6 +420,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "sampled-field",
         "image",
@@ -459,7 +455,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/text_block",
       "smoke_command": "./build/examples/c/features/text_block --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -474,6 +469,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "text",
         "glyph-atlas"
@@ -504,7 +500,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/overlay_card",
       "smoke_command": "./build/examples/c/features/overlay_card --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -519,6 +514,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "overlay",
         "text",
@@ -551,7 +547,6 @@
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/controller_arcball",
       "smoke_command": "./build/examples/c/features/controller_arcball --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -566,6 +561,7 @@
         }
       },
       "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "controller",
         "arcball",
@@ -595,7 +591,6 @@
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/camera_manual",
       "smoke_command": "./build/examples/c/features/camera_manual --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -610,6 +605,7 @@
         }
       },
       "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "camera",
         "mesh",
@@ -641,7 +637,6 @@
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/orientation_gizmo",
       "smoke_command": "./build/examples/c/features/orientation_gizmo --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -656,6 +651,7 @@
         }
       },
       "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "orientation-gizmo",
         "overlay",
@@ -687,7 +683,6 @@
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/reference_grid",
       "smoke_command": "./build/examples/c/features/reference_grid --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -702,6 +697,7 @@
         }
       },
       "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "reference-grid",
         "segment",
@@ -731,7 +727,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/bounds_overlay",
       "smoke_command": "./build/examples/c/features/bounds_overlay --png",
-      "agent_copy_safe": false,
       "tags": [
         "diagnostic",
         "bounds",
@@ -752,6 +747,7 @@
         }
       },
       "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "bounds-overlay",
         "point",
@@ -783,7 +779,6 @@
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/controller_fly",
       "smoke_command": "./build/examples/c/features/controller_fly --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -798,6 +793,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "controller",
         "fly",
@@ -830,7 +826,6 @@
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/controller_turntable",
       "smoke_command": "./build/examples/c/features/controller_turntable --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -845,6 +840,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "controller",
         "turntable",
@@ -877,7 +873,6 @@
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/mesh_texture",
       "smoke_command": "./build/examples/c/features/mesh_texture --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -892,6 +887,7 @@
         }
       },
       "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "mesh",
         "sampled-field",
@@ -925,7 +921,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/material_mesh",
       "smoke_command": "./build/examples/c/features/material_mesh --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -940,6 +935,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "mesh",
         "material",
@@ -974,7 +970,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/lighting",
       "smoke_command": "./build/examples/c/features/lighting --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -989,6 +984,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "sphere",
         "material",
@@ -1023,7 +1019,6 @@
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/user_scale",
       "smoke_command": "./build/examples/c/features/user_scale --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1038,12 +1033,14 @@
         }
       },
       "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
       "webgpu_requirements": [
         "marker",
         "panzoom",
         "path",
         "gui"
       ],
+      "webgpu_reason": "the user-scale control is a native ImGui slider on a Datoviz app view",
       "webgpu": {
         "status": "native-only",
         "requirements": [
@@ -1070,7 +1067,6 @@
       "validation": "smoke+interaction",
       "build_command": "just example-c features/gui_controls",
       "smoke_command": "./build/examples/c/features/gui_controls --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1085,9 +1081,11 @@
         }
       },
       "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
       "webgpu_requirements": [
         "gui"
       ],
+      "webgpu_reason": "Datoviz GUI controls require the native ImGui/GLFW app path",
       "webgpu": {
         "status": "native-only",
         "requirements": [
@@ -1111,7 +1109,6 @@
       "validation": "smoke+interaction",
       "build_command": "just example-c features/gui_viewport",
       "smoke_command": "./build/examples/c/features/gui_viewport --png",
-      "agent_copy_safe": false,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1126,10 +1123,12 @@
         }
       },
       "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
       "webgpu_requirements": [
         "gui",
         "native-view"
       ],
+      "webgpu_reason": "dockable GUI viewports require native ImGui and an offscreen native source view",
       "webgpu": {
         "status": "native-only",
         "requirements": [
@@ -1154,7 +1153,6 @@
       "validation": "smoke+interaction",
       "build_command": "just example-c features/gui_cimgui",
       "smoke_command": "./build/examples/c/features/gui_cimgui --png",
-      "agent_copy_safe": false,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1169,9 +1167,11 @@
         }
       },
       "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
       "webgpu_requirements": [
         "gui"
       ],
+      "webgpu_reason": "raw cimgui access requires the native ImGui app path",
       "webgpu": {
         "status": "native-only",
         "requirements": [
@@ -1195,7 +1195,6 @@
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/animation_tracks",
       "smoke_command": "./build/examples/c/features/animation_tracks --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1210,6 +1209,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "mesh",
         "frame-callbacks",
@@ -1244,7 +1244,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/compute_buffer_animation",
       "smoke_command": "./build/examples/c/features/compute_buffer_animation --png",
-      "agent_copy_safe": false,
       "tags": [
         "scene-compute",
         "storage-buffer",
@@ -1263,6 +1262,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "scene-buffers",
         "storage-buffers",
@@ -1299,7 +1299,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/technique_edl",
       "smoke_command": "./build/examples/c/features/technique_edl --png",
-      "agent_copy_safe": false,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1314,6 +1313,7 @@
         }
       },
       "webgpu_status": "webgpu-deferred",
+      "webgpu_status_label": "Deferred",
       "webgpu_requirements": [
         "depth-postprocess"
       ],
@@ -1339,7 +1339,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/technique_ssao",
       "smoke_command": "./build/examples/c/features/technique_ssao --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1354,6 +1353,7 @@
         }
       },
       "webgpu_status": "webgpu-deferred",
+      "webgpu_status_label": "Deferred",
       "webgpu_requirements": [
         "gbuffer",
         "depth-postprocess"
@@ -1381,7 +1381,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/technique_msaa",
       "smoke_command": "./build/examples/c/features/technique_msaa --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1396,6 +1395,7 @@
         }
       },
       "webgpu_status": "webgpu-deferred",
+      "webgpu_status_label": "Deferred",
       "webgpu_requirements": [
         "multisample"
       ],
@@ -1421,7 +1421,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/technique_depth_cue",
       "smoke_command": "./build/examples/c/features/technique_depth_cue --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1436,6 +1435,7 @@
         }
       },
       "webgpu_status": "webgpu-deferred",
+      "webgpu_status_label": "Deferred",
       "webgpu_requirements": [
         "depth-cue"
       ],
@@ -1461,7 +1461,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/technique_transparency",
       "smoke_command": "./build/examples/c/features/technique_transparency --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1476,6 +1475,7 @@
         }
       },
       "webgpu_status": "webgpu-deferred",
+      "webgpu_status_label": "Deferred",
       "webgpu_requirements": [
         "wboit",
         "depth-peeling"
@@ -1503,7 +1503,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/volume_occlusion",
       "smoke_command": "./build/examples/c/features/volume_occlusion --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1518,6 +1517,7 @@
         }
       },
       "webgpu_status": "webgpu-deferred",
+      "webgpu_status_label": "Deferred",
       "webgpu_requirements": [
         "volume",
         "scene-occlusion"
@@ -1545,7 +1545,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/guide_lines",
       "smoke_command": "./build/examples/c/features/guide_lines --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1560,6 +1559,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "segment",
         "overlay",
@@ -1592,7 +1592,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/guide_spans",
       "smoke_command": "./build/examples/c/features/guide_spans --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1607,6 +1606,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "primitive",
         "overlay",
@@ -1639,7 +1639,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/bars_bands",
       "smoke_command": "./build/examples/c/features/bars_bands --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1654,6 +1653,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "primitive",
         "segment",
@@ -1688,7 +1688,6 @@
       "validation": "smoke+interaction",
       "build_command": "just example-c runtime/app_glfw",
       "smoke_command": "./build/examples/c/runtime/app_glfw --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1703,9 +1702,11 @@
         }
       },
       "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
       "webgpu_requirements": [
         "native-view"
       ],
+      "webgpu_reason": "direct GLFW app lifecycle is native-only",
       "webgpu": {
         "status": "native-only",
         "requirements": [
@@ -1729,7 +1730,6 @@
       "validation": "smoke+interaction",
       "build_command": "just example-c runtime/multi_window",
       "smoke_command": "./build/examples/c/runtime/multi_window --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1744,10 +1744,12 @@
         }
       },
       "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
       "webgpu_requirements": [
         "native-view",
         "multi-window"
       ],
+      "webgpu_reason": "multiple native GLFW windows are native-only",
       "webgpu": {
         "status": "native-only",
         "requirements": [
@@ -1772,7 +1774,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c runtime/offscreen_capture",
       "smoke_command": "./build/examples/c/runtime/offscreen_capture --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1787,9 +1788,11 @@
         }
       },
       "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
       "webgpu_requirements": [
         "native-capture"
       ],
+      "webgpu_reason": "writes a native offscreen PNG through the app capture path",
       "webgpu": {
         "status": "native-only",
         "requirements": [
@@ -1813,7 +1816,6 @@
       "validation": "smoke+interaction",
       "build_command": "just example-c features/input_events",
       "smoke_command": "./build/examples/c/features/input_events --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1828,10 +1830,12 @@
         }
       },
       "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
       "webgpu_requirements": [
         "native-view",
         "input-events"
       ],
+      "webgpu_reason": "demonstrates native hosted event injection APIs",
       "webgpu": {
         "status": "native-only",
         "requirements": [
@@ -1856,7 +1860,6 @@
       "validation": "smoke+capture",
       "build_command": "just example-c runtime/record_replay",
       "smoke_command": "./build/examples/c/runtime/record_replay --png",
-      "agent_copy_safe": false,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1871,9 +1874,11 @@
         }
       },
       "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
       "webgpu_requirements": [
         "native-capture"
       ],
+      "webgpu_reason": "DVZR app recording and replay use native runtime capture plumbing",
       "webgpu": {
         "status": "native-only",
         "requirements": [
@@ -1897,7 +1902,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/visual_transform",
       "smoke_command": "./build/examples/c/features/visual_transform --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1912,6 +1916,7 @@
         }
       },
       "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "visual-transform",
         "mesh"
@@ -1939,7 +1944,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/panel_view2d",
       "smoke_command": "./build/examples/c/features/panel_view2d --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1954,6 +1958,7 @@
         }
       },
       "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "panel-view",
         "panzoom",
@@ -1983,7 +1988,6 @@
       "validation": "smoke+stdout",
       "build_command": "just example-c features/json_export",
       "smoke_command": "./build/examples/c/features/json_export --png",
-      "agent_copy_safe": false,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -1998,9 +2002,11 @@
         }
       },
       "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
       "webgpu_requirements": [
         "diagnostics"
       ],
+      "webgpu_reason": "scene JSON is a native diagnostic/fixture surface, not a live browser route",
       "webgpu": {
         "status": "native-only",
         "requirements": [
@@ -2024,7 +2030,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/bezier_curve_path",
       "smoke_command": "./build/examples/c/features/bezier_curve_path --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -2039,6 +2044,7 @@
         }
       },
       "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "path",
         "segment",
@@ -2068,7 +2074,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/path_join",
       "smoke_command": "./build/examples/c/features/path_join --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -2083,6 +2088,7 @@
         }
       },
       "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "path"
       ],
@@ -2108,7 +2114,6 @@
       "validation": "smoke+interaction",
       "build_command": "just example-c showcases/panel_linked_axes",
       "smoke_command": "./build/examples/c/showcases/panel_linked_axes --png",
-      "agent_copy_safe": false,
       "tags": [
         "workflow",
         "linked-panels",
@@ -2129,6 +2134,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "panel-grid",
         "linked-panels",
@@ -2164,7 +2170,6 @@
       "validation": "smoke+readback+interaction+screenshot",
       "build_command": "just example-c showcases/linked_probe_colorbar",
       "smoke_command": "./build/examples/c/showcases/linked_probe_colorbar --png",
-      "agent_copy_safe": false,
       "tags": [
         "workflow",
         "image",
@@ -2187,6 +2192,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "panel-grid",
         "linked-panels",
@@ -2224,7 +2230,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/scientific_plotting",
       "smoke_command": "./build/examples/c/showcases/scientific_plotting --png",
-      "agent_copy_safe": false,
       "tags": [
         "workflow",
         "scientific",
@@ -2247,6 +2252,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "axes",
         "primitive",
@@ -2284,7 +2290,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/scalebar",
       "smoke_command": "./build/examples/c/features/scalebar --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -2299,6 +2304,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "scale-bar",
         "text",
@@ -2332,7 +2338,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/scalebar_units",
       "smoke_command": "./build/examples/c/features/scalebar_units --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -2347,6 +2352,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "scale-bar",
         "text",
@@ -2380,7 +2386,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/scalebar_measurement",
       "smoke_command": "./build/examples/c/showcases/scalebar_measurement --png",
-      "agent_copy_safe": false,
       "tags": [
         "workflow",
         "scale-bar",
@@ -2400,6 +2405,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "scale-bar",
         "text",
@@ -2435,7 +2441,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/colorbar",
       "smoke_command": "./build/examples/c/features/colorbar --png",
-      "agent_copy_safe": true,
       "tags": [
         "colorbar",
         "scalar-field",
@@ -2455,6 +2460,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "colorbar",
         "image",
@@ -2490,7 +2496,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/colormap_scale",
       "smoke_command": "./build/examples/c/features/colormap_scale --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -2505,6 +2510,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "colormap",
         "point"
@@ -2536,7 +2542,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/annotation_readout",
       "smoke_command": "./build/examples/c/features/annotation_readout --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -2551,6 +2556,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "annotation",
         "readout",
@@ -2586,7 +2592,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/update_partial",
       "smoke_command": "./build/examples/c/features/update_partial --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -2601,6 +2606,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "buffer-update",
         "point",
@@ -2634,7 +2640,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/update_visual_data",
       "smoke_command": "./build/examples/c/features/update_visual_data --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -2649,6 +2654,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "buffer-update",
         "visual-update",
@@ -2683,7 +2689,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/visibility",
       "smoke_command": "./build/examples/c/features/visibility --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -2698,6 +2703,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "visual-visibility",
         "point",
@@ -2730,7 +2736,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/technique_depth_test",
       "smoke_command": "./build/examples/c/features/technique_depth_test --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -2745,6 +2750,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "depth-test",
         "point",
@@ -2777,7 +2783,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/alpha_blending",
       "smoke_command": "./build/examples/c/features/alpha_blending --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -2792,6 +2797,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "alpha-blending",
         "primitive"
@@ -2823,7 +2829,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/panel_background",
       "smoke_command": "./build/examples/c/features/panel_background --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -2838,6 +2843,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "panel-background",
         "primitive"
@@ -2869,7 +2875,6 @@
       "validation": "smoke+interaction",
       "build_command": "just example-c features/panzoom",
       "smoke_command": "./build/examples/c/features/panzoom --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -2884,6 +2889,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "controller",
         "panzoom",
@@ -2916,7 +2922,6 @@
       "validation": "smoke+readback+screenshot",
       "build_command": "just example-c features/image_probe",
       "smoke_command": "./build/examples/c/features/image_probe --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -2931,6 +2936,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "image",
         "query-readback",
@@ -2964,7 +2970,6 @@
       "validation": "smoke+interaction",
       "build_command": "just example-c features/picking",
       "smoke_command": "./build/examples/c/features/picking --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -2979,6 +2984,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "marker",
         "panzoom",
@@ -3013,7 +3019,6 @@
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/selection_pixel",
       "smoke_command": "./build/examples/c/features/selection_pixel --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -3028,6 +3033,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "pixel",
         "controller",
@@ -3064,7 +3070,6 @@
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/selection_sphere",
       "smoke_command": "./build/examples/c/features/selection_sphere --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -3079,6 +3084,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "sphere",
         "arcball",
@@ -3113,7 +3119,6 @@
       "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/selection_mesh_instances",
       "smoke_command": "./build/examples/c/features/selection_mesh_instances --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -3128,6 +3133,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "mesh",
         "arcball",
@@ -3162,7 +3168,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/isolines",
       "smoke_command": "./build/examples/c/features/isolines --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -3177,6 +3182,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "mesh",
         "segment",
@@ -3211,7 +3217,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/builtin_shapes_2d",
       "smoke_command": "./build/examples/c/features/builtin_shapes_2d --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -3226,6 +3231,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "mesh",
         "controller"
@@ -3256,7 +3262,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/builtin_shapes_3d",
       "smoke_command": "./build/examples/c/features/builtin_shapes_3d --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -3271,6 +3276,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "mesh",
         "controller",
@@ -3303,7 +3309,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/obj_loading",
       "smoke_command": "./build/examples/c/features/obj_loading --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -3318,6 +3323,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "mesh",
         "controller",
@@ -3350,7 +3356,6 @@
       "validation": "smoke+readback+screenshot",
       "build_command": "just example-c features/probe_labels",
       "smoke_command": "./build/examples/c/features/probe_labels --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -3365,6 +3370,7 @@
         }
       },
       "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "labels",
         "query-readback",
@@ -3394,7 +3400,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/timer_animation",
       "smoke_command": "./build/examples/c/features/timer_animation --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -3409,6 +3414,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "point",
         "frame-callbacks"
@@ -3439,7 +3445,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/marker_symbols",
       "smoke_command": "./build/examples/c/features/marker_symbols --png",
-      "agent_copy_safe": true,
       "tags": [
         "marker",
         "symbol-set",
@@ -3460,11 +3465,13 @@
         }
       },
       "webgpu_status": "webgpu-deferred",
+      "webgpu_status_label": "Deferred",
       "webgpu_requirements": [
         "marker",
         "symbol-set",
         "glyph-atlas"
       ],
+      "webgpu_reason": "marker symbol-set and mixed atlas encoding parity are not in the RC WebGPU path yet",
       "webgpu": {
         "status": "webgpu-deferred",
         "requirements": [
@@ -3490,7 +3497,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c features/legend_categorical",
       "smoke_command": "./build/examples/c/features/legend_categorical --png",
-      "agent_copy_safe": false,
       "tags": [
         "categorical-scale",
         "legend",
@@ -3510,6 +3516,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "legend",
         "categorical-scale",
@@ -3544,7 +3551,6 @@
       "validation": "smoke+optional-video",
       "build_command": "just example-c runtime/video_export",
       "smoke_command": "./build/examples/c/runtime/video_export --png",
-      "agent_copy_safe": true,
       "tags": [
         "app-capture",
         "video",
@@ -3563,9 +3569,11 @@
         }
       },
       "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
       "webgpu_requirements": [
         "native-capture"
       ],
+      "webgpu_reason": "video export uses native capture backends in v0.4",
       "webgpu": {
         "status": "native-only",
         "requirements": [
@@ -3589,7 +3597,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/point",
       "smoke_command": "./build/examples/c/visuals/point --png",
-      "agent_copy_safe": true,
       "tags": [
         "point",
         "panzoom",
@@ -3608,6 +3615,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "point",
         "panzoom"
@@ -3639,7 +3647,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/pixel",
       "smoke_command": "./build/examples/c/visuals/pixel --png",
-      "agent_copy_safe": true,
       "tags": [
         "pixel",
         "panzoom",
@@ -3658,6 +3665,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "pixel",
         "panzoom"
@@ -3688,7 +3696,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/marker",
       "smoke_command": "./build/examples/c/visuals/marker --png",
-      "agent_copy_safe": true,
       "tags": [
         "marker",
         "panzoom",
@@ -3707,6 +3714,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "marker",
         "panzoom"
@@ -3737,7 +3745,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/primitive",
       "smoke_command": "./build/examples/c/visuals/primitive --png",
-      "agent_copy_safe": true,
       "tags": [
         "primitive",
         "capture"
@@ -3755,6 +3762,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "primitive"
       ],
@@ -3783,7 +3791,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/segment",
       "smoke_command": "./build/examples/c/visuals/segment --png",
-      "agent_copy_safe": true,
       "tags": [
         "segment",
         "panzoom",
@@ -3802,6 +3809,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "segment",
         "panzoom"
@@ -3832,7 +3840,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/vector",
       "smoke_command": "./build/examples/c/visuals/vector --png",
-      "agent_copy_safe": true,
       "tags": [
         "vector",
         "path",
@@ -3852,6 +3859,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "vector",
         "path",
@@ -3884,7 +3892,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/path",
       "smoke_command": "./build/examples/c/visuals/path --png",
-      "agent_copy_safe": true,
       "tags": [
         "path",
         "capture"
@@ -3902,6 +3909,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "path",
         "panzoom"
@@ -3932,7 +3940,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/image",
       "smoke_command": "./build/examples/c/visuals/image --png",
-      "agent_copy_safe": true,
       "tags": [
         "image",
         "sampled-field",
@@ -3951,6 +3958,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "image",
         "sampled-field",
@@ -3983,7 +3991,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/mesh",
       "smoke_command": "./build/examples/c/visuals/mesh --png",
-      "agent_copy_safe": true,
       "tags": [
         "mesh",
         "indexed-geometry",
@@ -4003,6 +4010,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "mesh",
         "indexed-geometry",
@@ -4035,7 +4043,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/sphere",
       "smoke_command": "./build/examples/c/visuals/sphere --png",
-      "agent_copy_safe": true,
       "tags": [
         "sphere",
         "arcball",
@@ -4054,6 +4061,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "sphere",
         "arcball"
@@ -4084,7 +4092,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/splat",
       "smoke_command": "./build/examples/c/visuals/splat --png",
-      "agent_copy_safe": false,
       "tags": [
         "splat",
         "panzoom",
@@ -4103,10 +4110,12 @@
         }
       },
       "webgpu_status": "webgpu-deferred",
+      "webgpu_status_label": "Deferred",
       "webgpu_requirements": [
         "splat",
         "alpha-blending"
       ],
+      "webgpu_reason": "splat rendering is experimental and outside the RC browser subset",
       "webgpu": {
         "status": "webgpu-deferred",
         "requirements": [
@@ -4131,7 +4140,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/text",
       "smoke_command": "./build/examples/c/visuals/text --png",
-      "agent_copy_safe": true,
       "tags": [
         "text",
         "capture"
@@ -4149,6 +4157,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "text",
         "glyph-atlas"
@@ -4179,7 +4188,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/glyph",
       "smoke_command": "./build/examples/c/visuals/glyph --png",
-      "agent_copy_safe": false,
       "tags": [
         "glyph",
         "font-atlas",
@@ -4200,6 +4208,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "glyph",
         "glyph-atlas",
@@ -4232,7 +4241,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/labels",
       "smoke_command": "./build/examples/c/visuals/labels --png",
-      "agent_copy_safe": true,
       "tags": [
         "labels",
         "categorical-scale",
@@ -4252,6 +4260,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "labels",
         "categorical-scale",
@@ -4284,7 +4293,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c visuals/volume",
       "smoke_command": "./build/examples/c/visuals/volume --png",
-      "agent_copy_safe": true,
       "tags": [
         "sampled-field",
         "volume",
@@ -4306,6 +4314,7 @@
         }
       },
       "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "volume",
         "sampled-field",
@@ -4337,7 +4346,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c composites/polygon",
       "smoke_command": "./build/examples/c/composites/polygon --png",
-      "agent_copy_safe": true,
       "tags": [
         "composite",
         "polygon",
@@ -4358,6 +4366,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "composite",
         "polygon-set",
@@ -4394,7 +4403,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c composites/graph",
       "smoke_command": "./build/examples/c/composites/graph --png",
-      "agent_copy_safe": true,
       "tags": [
         "composite",
         "graph",
@@ -4415,6 +4423,7 @@
         }
       },
       "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "composite",
         "marker",
@@ -4448,7 +4457,6 @@
       "validation": "smoke+screenshot+manual",
       "build_command": "just example-c showcases/choropleth",
       "smoke_command": "./build/examples/c/showcases/choropleth --png",
-      "agent_copy_safe": false,
       "tags": [
         "scientific",
         "real-data",
@@ -4473,6 +4481,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "composite",
         "polygon-set",
@@ -4525,7 +4534,6 @@
       "validation": "smoke+screenshot+manual",
       "build_command": "just example-c showcases/protein",
       "smoke_command": "./build/examples/c/showcases/protein --png",
-      "agent_copy_safe": false,
       "tags": [
         "scientific",
         "real-data",
@@ -4546,6 +4554,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "sphere",
         "arcball",
@@ -4596,7 +4605,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/wind_field",
       "smoke_command": "./build/examples/c/showcases/wind_field --png",
-      "agent_copy_safe": false,
       "tags": [
         "scientific",
         "synthetic",
@@ -4619,6 +4627,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "image",
         "vector",
@@ -4654,7 +4663,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/gpu_particle_smoke",
       "smoke_command": "./build/examples/c/showcases/gpu_particle_smoke --png",
-      "agent_copy_safe": false,
       "tags": [
         "compute",
         "simulation",
@@ -4676,6 +4684,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "scene-buffers",
         "storage-buffers",
@@ -4711,7 +4720,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/surface_grid",
       "smoke_command": "./build/examples/c/showcases/surface_grid --png",
-      "agent_copy_safe": false,
       "tags": [
         "scientific",
         "synthetic",
@@ -4733,6 +4741,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "mesh",
         "segment",
@@ -4764,7 +4773,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/brain_volume",
       "smoke_command": "./build/examples/c/showcases/brain_volume --png",
-      "agent_copy_safe": false,
       "tags": [
         "scientific",
         "real-data",
@@ -4787,6 +4795,7 @@
         }
       },
       "webgpu_status": "webgpu-planned",
+      "webgpu_status_label": "Planned",
       "webgpu_requirements": [
         "volume",
         "texture-3d",
@@ -4825,7 +4834,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/point_cloud",
       "smoke_command": "./build/examples/c/showcases/point_cloud --png",
-      "agent_copy_safe": false,
       "tags": [
         "real-data",
         "pixel",
@@ -4849,6 +4857,7 @@
         }
       },
       "webgpu_status": "webgpu-deferred",
+      "webgpu_status_label": "Deferred",
       "webgpu_requirements": [
         "pixel",
         "dense-point-cloud",
@@ -4856,6 +4865,7 @@
         "gui",
         "fly"
       ],
+      "webgpu_reason": "the public point-cloud showcase depends on large prepared data, native GUI controls, and EDL-style rendering",
       "webgpu": {
         "status": "webgpu-deferred",
         "requirements": [
@@ -4889,7 +4899,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c showcases/textured_planet",
       "smoke_command": "./build/examples/c/showcases/textured_planet --png",
-      "agent_copy_safe": false,
       "tags": [
         "real-data",
         "mesh",
@@ -4911,6 +4920,7 @@
         }
       },
       "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "mesh",
         "sampled-field",
@@ -4953,7 +4963,6 @@
       "validation": "smoke+png",
       "build_command": "just example-c advanced/raw_triangle_vklite",
       "smoke_command": "./build/examples/c/advanced/raw_triangle_vklite --png",
-      "agent_copy_safe": false,
       "tags": [
         "advanced",
         "vklite",
@@ -4973,10 +4982,12 @@
         }
       },
       "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
       "webgpu_requirements": [
         "vklite",
         "canvas"
       ],
+      "webgpu_reason": "raw vklite command recording is a native runtime example",
       "webgpu": {
         "status": "native-only",
         "requirements": [
@@ -5000,7 +5011,6 @@
       "validation": "smoke+png",
       "build_command": "just example-c advanced/raw_triangle_drp2",
       "smoke_command": "./build/examples/c/advanced/raw_triangle_drp2 --png",
-      "agent_copy_safe": false,
       "tags": [
         "advanced",
         "drp2",
@@ -5020,10 +5030,12 @@
         }
       },
       "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
       "webgpu_requirements": [
         "drp2",
         "vklite"
       ],
+      "webgpu_reason": "hand-written DRP2 native execution is a low-level runtime example",
       "webgpu": {
         "status": "native-only",
         "requirements": [
@@ -5047,7 +5059,6 @@
       "validation": "native-smoke",
       "build_command": "just example-c advanced/external_surface_glfw",
       "smoke_command": "./build/examples/c/advanced/external_surface_glfw --png",
-      "agent_copy_safe": false,
       "tags": [
         "advanced",
         "external-surface",
@@ -5067,11 +5078,13 @@
         }
       },
       "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
       "webgpu_requirements": [
         "native-view",
         "external-surface",
         "glfw"
       ],
+      "webgpu_reason": "external Vulkan surfaces are native host-integration objects",
       "webgpu": {
         "status": "native-only",
         "requirements": [
@@ -5096,7 +5109,6 @@
       "validation": "smoke+screenshot",
       "build_command": "just example-c start/scatter",
       "smoke_command": "./build/examples/c/start/scatter --png",
-      "agent_copy_safe": true,
       "tags": [],
       "data": {
         "kind": "synthetic"
@@ -5111,6 +5123,7 @@
         }
       },
       "webgpu_status": "webgpu-deferred",
+      "webgpu_status_label": "Deferred",
       "webgpu_requirements": [],
       "webgpu": {
         "status": "webgpu-deferred"

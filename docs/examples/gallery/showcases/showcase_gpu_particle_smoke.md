@@ -12,11 +12,13 @@
 
 Scene API compute-to-graphics particle smoke showcase.
 
-## About This Example
+## What This Shows
 
-This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Scene API compute-to-graphics particle smoke showcase.
 
-It uses `simulated` data; check the details below for dataset information.
+Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+No downloaded dataset is needed; the example simulates its data.
 
 A live WebGPU version is available in the browser preview when supported.
 
@@ -49,9 +51,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `showcases`
     - Status: `experimental`
     - Source: [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcase_gpu_particle_smoke"><code>examples/webgpu/live.html?id=showcase_gpu_particle_smoke</code></a>
-    - WebGPU requirements: `scene-buffers`, `storage-buffers`, `scene-compute`, `point`, `alpha-blending`
+    - Browser capability tags: `scene-buffers`, `storage-buffers`, `scene-compute`, `point`, `alpha-blending`
 
     ### Tags
 

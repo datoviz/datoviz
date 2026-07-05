@@ -12,11 +12,13 @@
 
 Gaussian splat visual with deterministic screen-space ellipses.
 
-## About This Example
+## What This Shows
 
-This is a focused visual-family example. It keeps the scene small so you can see how this kind of visual is created, which data arrays it needs, and what the rendered result should look like.
+Gaussian splat visual with deterministic screen-space ellipses.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to inspect the visual-family setup, the data arrays attached to the visual, and the rendered result before adding the same visual to a larger scene.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
@@ -38,8 +40,9 @@ It uses synthetic data, so you can run it without downloading a dataset.
     - Status: `experimental`
     - Source: [`examples/c/visuals/splat.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/splat.c)
     - Reference: [Splat visual family](../../../reference/visual-families/splat.md)
-    - WebGPU status: `webgpu-deferred`
-    - WebGPU requirements: `splat`, `alpha-blending`
+    - Browser support: Deferred
+    - Browser note: splat rendering is experimental and outside the RC browser subset
+    - Browser capability tags: `splat`, `alpha-blending`
 
     ### Tags
 

@@ -12,11 +12,13 @@
 
 Contiguous U.S. state population-density choropleth.
 
-## About This Example
+## What This Shows
 
-This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Contiguous U.S. state population-density choropleth.
 
-It uses `prepared` data; check the details below for dataset information.
+Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+This example expects prepared data. Use the preparation command below if the data is missing.
 
 A live WebGPU version is available in the browser preview when supported.
 
@@ -34,6 +36,22 @@ A live WebGPU version is available in the browser preview when supported.
 
     <a href="../../../webgpu/live.html?id=us_state_choropleth">Open the live WebGPU example</a>.
 
+## Data Requirements
+
+This example expects prepared data. Use the preparation command below if the data is missing.
+
+- Dataset: Contiguous U.S. state population density
+- Source: U.S. Census Bureau 2024 cartographic state boundaries and Vintage 2025 state population estimates
+- Source URL: https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_20m.zip; https://www2.census.gov/programs-surveys/popest/tables/2020-2025/state/totals/NST-EST2025-POP.xlsx
+
+Preparation command:
+
+```sh
+python tools/data/prepare_us_state_choropleth.py
+```
+
+License note: U.S. Census Bureau public data; cite the Census Bureau as source.
+
 ## Source
 
 === "C"
@@ -49,9 +67,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `showcases`
     - Status: `supported`
     - Source: [`examples/c/showcases/choropleth.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/choropleth.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=us_state_choropleth"><code>examples/webgpu/live.html?id=us_state_choropleth</code></a>
-    - WebGPU requirements: `composite`, `polygon-set`, `colorbar`, `panzoom`
+    - Browser capability tags: `composite`, `polygon-set`, `colorbar`, `panzoom`
 
     ### Tags
 

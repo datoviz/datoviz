@@ -31,7 +31,6 @@ def _example_ref(example: dict[str, Any]) -> dict[str, Any]:
         "title": example["title"],
         "category": example["category"],
         "status": example["status"],
-        "agent_copy_safe": example["agent_copy_safe"],
         "source": example["source"],
         "page": example["page"],
     }
@@ -90,7 +89,6 @@ def build_payload(manifest_path: Path) -> dict[str, Any]:
         "example_count": examples_payload["count"],
         "categories": examples_payload["categories"],
         "statuses": examples_payload["statuses"],
-        "agent_copy_safe": examples_payload["agent_copy_safe"],
         "capabilities": {
             group: _summarize_group(items) for group, items in sorted(capabilities.items())
         },

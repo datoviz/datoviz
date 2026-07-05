@@ -12,11 +12,13 @@
 
 Scale-aware overview, detail, and 3D measurement workflow.
 
-## About This Example
+## What This Shows
 
-This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Scale-aware overview, detail, and 3D measurement workflow.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+No external data is needed; the example generates its data.
 
 A live WebGPU version is available in the browser preview when supported.
 
@@ -49,9 +51,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `showcases`
     - Status: `supported`
     - Source: [`examples/c/showcases/scalebar_measurement.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scalebar_measurement.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=scalebar_measurement_workflow"><code>examples/webgpu/live.html?id=scalebar_measurement_workflow</code></a>
-    - WebGPU requirements: `scale-bar`, `text`, `panel-grid`, `mesh`, `panzoom`
+    - Browser capability tags: `scale-bar`, `text`, `panel-grid`, `mesh`, `panzoom`
 
     ### Tags
 

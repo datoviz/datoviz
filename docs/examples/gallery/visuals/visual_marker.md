@@ -12,11 +12,13 @@
 
 Marker visual with deterministic symbol, fill, stroke, size, and angle
 
-## About This Example
+## What This Shows
 
-This is a focused visual-family example. It keeps the scene small so you can see how this kind of visual is created, which data arrays it needs, and what the rendered result should look like.
+Marker visual with deterministic symbol, fill, stroke, size, and angle.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to inspect the visual-family setup, the data arrays attached to the visual, and the rendered result before adding the same visual to a larger scene.
+
+No external data is needed; the example generates its data.
 
 A live WebGPU version is available in the browser preview when supported.
 
@@ -50,9 +52,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Status: `supported`
     - Source: [`examples/c/visuals/marker.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/marker.c)
     - Reference: [Marker visual family](../../../reference/visual-families/marker.md)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_marker"><code>examples/webgpu/live.html?id=visual_marker</code></a>
-    - WebGPU requirements: `marker`, `panzoom`
+    - Browser capability tags: `marker`, `panzoom`
 
     ### Tags
 

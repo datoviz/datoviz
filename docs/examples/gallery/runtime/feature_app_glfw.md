@@ -12,17 +12,19 @@
 
 Direct GLFW app path without the scenario runner.
 
-## About This Example
+## What This Shows
 
-This runtime example demonstrates how a scene is presented, captured, recorded, or exported. Use it when you need to control how Datoviz runs, not only what it draws.
+Direct GLFW app path without the scenario runner.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it when you need to control how Datoviz presents, captures, records, or exports a scene, not only what the scene draws.
+
+No external data is needed; the example generates its data.
 
 The example includes interaction; try using the mouse or keyboard while it runs.
 
 ## Preview
 
-_Media pending._
+_Screenshot not required for this example._
 
 ## Source
 
@@ -39,8 +41,9 @@ _Media pending._
     - Lane: `runtime`
     - Status: `supported`
     - Source: [`examples/c/runtime/app_glfw.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/app_glfw.c)
-    - WebGPU status: `native-only`
-    - WebGPU requirements: `native-view`
+    - Browser support: Native only
+    - Browser note: direct GLFW app lifecycle is native-only
+    - Browser capability tags: `native-view`
 
     ### Data
 

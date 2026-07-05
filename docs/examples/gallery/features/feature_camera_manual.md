@@ -12,11 +12,13 @@
 
 Explicit perspective-camera setup with eye, target, up, and clip planes.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Explicit perspective-camera setup with eye, target, up, and clip planes.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 The example includes interaction; try using the mouse or keyboard while it runs.
 
@@ -39,8 +41,8 @@ The example includes interaction; try using the mouse or keyboard while it runs.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/camera_manual.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/camera_manual.c)
-    - WebGPU status: `webgpu-planned`
-    - WebGPU requirements: `camera`, `mesh`, `controller`, `arcball`
+    - Browser support: Planned
+    - Browser capability tags: `camera`, `mesh`, `controller`, `arcball`
 
     ### Data
 

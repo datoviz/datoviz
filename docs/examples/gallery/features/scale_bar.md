@@ -12,11 +12,13 @@
 
 Minimal scale bar attached to one 2D panel.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Minimal scale bar attached to one 2D panel.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 A live WebGPU version is available in the browser preview when supported.
 
@@ -49,9 +51,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/scalebar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=scale_bar"><code>examples/webgpu/live.html?id=scale_bar</code></a>
-    - WebGPU requirements: `scale-bar`, `text`, `panzoom`
+    - Browser capability tags: `scale-bar`, `text`, `panzoom`
 
     ### Data
 

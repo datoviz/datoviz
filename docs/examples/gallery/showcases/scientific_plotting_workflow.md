@@ -12,11 +12,13 @@
 
 Histogram, guide annotations, stacked traces, and error bands.
 
-## About This Example
+## What This Shows
 
-This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Histogram, guide annotations, stacked traces, and error bands.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+No external data is needed; the example generates its data.
 
 A live WebGPU version is available in the browser preview when supported.
 
@@ -49,9 +51,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `showcases`
     - Status: `supported`
     - Source: [`examples/c/showcases/scientific_plotting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scientific_plotting.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=scientific_plotting_workflow"><code>examples/webgpu/live.html?id=scientific_plotting_workflow</code></a>
-    - WebGPU requirements: `axes`, `primitive`, `segment`, `path`, `text`, `panzoom`
+    - Browser capability tags: `axes`, `primitive`, `segment`, `path`, `text`, `panzoom`
 
     ### Tags
 

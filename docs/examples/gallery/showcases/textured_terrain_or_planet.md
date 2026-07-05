@@ -12,11 +12,13 @@
 
 UV textured planet mesh via dvz_mesh + sampled fields.
 
-## About This Example
+## What This Shows
 
-This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+UV textured planet mesh via dvz_mesh + sampled fields.
 
-It uses `real` data; check the details below for dataset information.
+Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+This example uses real source data. Check the source, license, and preparation command before redistributing it.
 
 A live WebGPU version is available in the browser preview when supported.
 
@@ -34,6 +36,22 @@ A live WebGPU version is available in the browser preview when supported.
 
     <a href="../../../webgpu/live.html?id=textured_terrain_or_planet">Open the live WebGPU example</a>.
 
+## Data Requirements
+
+This example uses real source data. Check the source, license, and preparation command before redistributing it.
+
+- Dataset: NASA Earth and Mars equirectangular texture maps
+- Source: data/assets/textures/world.200412.3x5400x2700.jpg; data/assets/textures/earth.jpg; data/assets/textures/mars_viking_mdim21.jpg
+- Source URL: https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/; https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m
+
+Preparation command:
+
+```sh
+none; committed JPEG texture maps are loaded directly from data/assets/textures
+```
+
+License note: NASA media usage guidelines and USGS/NASA public-domain source-data terms apply; acknowledge NASA, NASA Ames, JPL, and USGS as source where relevant.
+
 ## Source
 
 === "C"
@@ -49,9 +67,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `showcases`
     - Status: `supported`
     - Source: [`examples/c/showcases/textured_planet.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=textured_terrain_or_planet"><code>examples/webgpu/live.html?id=textured_terrain_or_planet</code></a>
-    - WebGPU requirements: `mesh`, `sampled-field`, `texture`, `arcball`
+    - Browser capability tags: `mesh`, `sampled-field`, `texture`, `arcball`
 
     ### Tags
 

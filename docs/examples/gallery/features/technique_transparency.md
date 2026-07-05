@@ -12,11 +12,13 @@
 
 Source-over, WBOIT, and depth-peel transparency on overlapping cubes.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Source-over, WBOIT, and depth-peel transparency on overlapping cubes.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
@@ -37,8 +39,8 @@ It uses synthetic data, so you can run it without downloading a dataset.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/technique_transparency.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_transparency.c)
-    - WebGPU status: `webgpu-deferred`
-    - WebGPU requirements: `wboit`, `depth-peeling`
+    - Browser support: Deferred
+    - Browser capability tags: `wboit`, `depth-peeling`
 
     ### Data
 

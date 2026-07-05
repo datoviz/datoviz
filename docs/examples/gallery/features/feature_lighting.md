@@ -12,11 +12,13 @@
 
 Compare lit sphere clusters with different material and light settings.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Compare lit sphere clusters with different material and light settings.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 A live WebGPU version is available in the browser preview when supported.
 
@@ -49,9 +51,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/lighting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/lighting.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_lighting"><code>examples/webgpu/live.html?id=feature_lighting</code></a>
-    - WebGPU requirements: `sphere`, `material`, `lighting`, `arcball`
+    - Browser capability tags: `sphere`, `material`, `lighting`, `arcball`
 
     ### Data
 

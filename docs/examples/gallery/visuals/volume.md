@@ -12,11 +12,13 @@
 
 Deterministic gyroid scalar field rendered with the volume visual.
 
-## About This Example
+## What This Shows
 
-This is a focused visual-family example. It keeps the scene small so you can see how this kind of visual is created, which data arrays it needs, and what the rendered result should look like.
+Deterministic gyroid scalar field rendered with the volume visual.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to inspect the visual-family setup, the data arrays attached to the visual, and the rendered result before adding the same visual to a larger scene.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
@@ -38,8 +40,8 @@ It uses synthetic data, so you can run it without downloading a dataset.
     - Status: `supported`
     - Source: [`examples/c/visuals/volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/volume.c)
     - Reference: [Volume visual family](../../../reference/visual-families/volume.md)
-    - WebGPU status: `webgpu-planned`
-    - WebGPU requirements: `volume`, `sampled-field`, `texture-3d`, `arcball`
+    - Browser support: Planned
+    - Browser capability tags: `volume`, `sampled-field`, `texture-3d`, `arcball`
 
     ### Tags
 

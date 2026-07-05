@@ -12,15 +12,17 @@
 
 Triangle rendered via a hand-written DRP2 command stream.
 
-## About This Example
+## What This Shows
 
-This advanced example is intended for users who already understand the basic scene, panel, and visual workflow. It may use lower-level integration patterns than ordinary visualization code.
+Triangle rendered via a hand-written DRP2 command stream.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it after you understand the basic scene, panel, and visual workflow. It may rely on lower-level integration patterns than ordinary visualization code.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
-_Media pending._
+_Screenshot not required for this example._
 
 ## Source
 
@@ -37,8 +39,9 @@ _Media pending._
     - Lane: `advanced`
     - Status: `experimental`
     - Source: [`examples/c/advanced/raw_triangle_drp2.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/raw_triangle_drp2.c)
-    - WebGPU status: `native-only`
-    - WebGPU requirements: `drp2`, `vklite`
+    - Browser support: Native only
+    - Browser note: hand-written DRP2 native execution is a low-level runtime example
+    - Browser capability tags: `drp2`, `vklite`
 
     ### Tags
 

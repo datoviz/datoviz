@@ -12,11 +12,13 @@
 
 Tessellated cubic Bezier curve rendered as a path.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Tessellated cubic Bezier curve rendered as a path.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
@@ -37,8 +39,8 @@ It uses synthetic data, so you can run it without downloading a dataset.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/bezier_curve_path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bezier_curve_path.c)
-    - WebGPU status: `webgpu-planned`
-    - WebGPU requirements: `path`, `segment`, `marker`
+    - Browser support: Planned
+    - Browser capability tags: `path`, `segment`, `marker`
 
     ### Data
 

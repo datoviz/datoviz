@@ -12,11 +12,13 @@
 
 Acute stroked path joins for visual regression inspection.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Acute stroked path joins for visual regression inspection.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
@@ -37,8 +39,8 @@ It uses synthetic data, so you can run it without downloading a dataset.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/path_join.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/path_join.c)
-    - WebGPU status: `webgpu-planned`
-    - WebGPU requirements: `path`
+    - Browser support: Planned
+    - Browser capability tags: `path`
 
     ### Data
 

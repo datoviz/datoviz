@@ -12,11 +12,13 @@
 
 Linked image panels with one probe readout and shared colorbar.
 
-## About This Example
+## What This Shows
 
-This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+Linked image panels with one probe readout and shared colorbar.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+No external data is needed; the example generates its data.
 
 The example includes interaction; try using the mouse or keyboard while it runs.
 
@@ -51,9 +53,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `showcases`
     - Status: `supported`
     - Source: [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=linked_panels_probe_colorbar"><code>examples/webgpu/live.html?id=linked_panels_probe_colorbar</code></a>
-    - WebGPU requirements: `panel-grid`, `linked-panels`, `image`, `colorbar`, `query-readback`, `readout`
+    - Browser capability tags: `panel-grid`, `linked-panels`, `image`, `colorbar`, `query-readback`, `readout`
 
     ### Tags
 

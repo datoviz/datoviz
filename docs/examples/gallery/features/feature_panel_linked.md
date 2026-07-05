@@ -12,11 +12,13 @@
 
 Two panels linked on X panzoom extent with independent Y panzoom state.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Two panels linked on X panzoom extent with independent Y panzoom state.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 The example includes interaction; try using the mouse or keyboard while it runs.
 
@@ -51,9 +53,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/panel_linked.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_linked.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_linked"><code>examples/webgpu/live.html?id=feature_panel_linked</code></a>
-    - WebGPU requirements: `panel-grid`, `linked-panels`, `panzoom`, `point`
+    - Browser capability tags: `panel-grid`, `linked-panels`, `panzoom`, `point`
 
     ### Data
 

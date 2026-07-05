@@ -108,7 +108,7 @@ Scale-aware overview, detail, and 3D measurement workflow.
 
 ### [Linked Panels With Axes](gallery/showcases/linked_panels_axes_panzoom.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 Linked temporal panels with a spanning summary panel.
 
@@ -608,7 +608,7 @@ Selected windowing, capture, recording, and export examples are shown below.
 
 ### [GLFW App](gallery/runtime/feature_app_glfw.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 Direct GLFW app path without the scenario runner.
 
@@ -618,7 +618,7 @@ Direct GLFW app path without the scenario runner.
 
 ### [Multi Window](gallery/runtime/feature_multi_window.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 One app driving two native GLFW windows.
 
@@ -644,7 +644,7 @@ Render an exact-pixel offscreen view once and write a PNG.
 
 ### [Video Export](gallery/runtime/feature_video_export.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 Write a bounded offscreen animation with the app capture API.
 
@@ -660,7 +660,7 @@ Write a bounded offscreen animation with the app capture API.
 
 ### [Record Replay](gallery/runtime/feature_record_replay.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 Record an offscreen app view and replay it into a second offscreen view.
 

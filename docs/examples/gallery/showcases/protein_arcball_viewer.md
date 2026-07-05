@@ -12,11 +12,13 @@
 
 RCSB PDB protein structure rendered as clustered spheres.
 
-## About This Example
+## What This Shows
 
-This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+RCSB PDB protein structure rendered as clustered spheres.
 
-It uses `real` data; check the details below for dataset information.
+Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+This example uses real source data. Check the source, license, and preparation command before redistributing it.
 
 A live WebGPU version is available in the browser preview when supported.
 
@@ -34,6 +36,22 @@ A live WebGPU version is available in the browser preview when supported.
 
     <a href="../../../webgpu/live.html?id=protein_arcball_viewer">Open the live WebGPU example</a>.
 
+## Data Requirements
+
+This example uses real source data. Check the source, license, and preparation command before redistributing it.
+
+- Dataset: RCSB PDB protein structure
+- Source: https://files.rcsb.org/download/{pdb_id}.pdb
+- Source URL: https://www.wwpdb.org/about/usage-policies
+
+Preparation command:
+
+```sh
+python tools/data/prepare_protein_arcball.py 1UBQ --regenerate
+```
+
+License note: PDB archive coordinate files are available under CC0 1.0; attribute original structure authors where possible.
+
 ## Source
 
 === "C"
@@ -49,9 +67,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `showcases`
     - Status: `supported`
     - Source: [`examples/c/showcases/protein.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/protein.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=protein_arcball_viewer"><code>examples/webgpu/live.html?id=protein_arcball_viewer</code></a>
-    - WebGPU requirements: `sphere`, `arcball`, `material`, `real-data`
+    - Browser capability tags: `sphere`, `arcball`, `material`, `real-data`
 
     ### Tags
 

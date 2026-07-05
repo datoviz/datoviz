@@ -166,7 +166,7 @@ Explicit perspective-camera setup with eye, target, up, and clip planes.
 
 ### [Panzoom](gallery/features/feature_panzoom.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 `supported` `features`
 
@@ -676,7 +676,7 @@ Diagnostic visual bounds in 2D and 3D panels.
 
 ### [Picking](gallery/features/feature_picking.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 `supported` `features`
 
@@ -796,7 +796,7 @@ Point visual with full data replacement.
 
 ### [GUI Controls](gallery/features/feature_gui_controls.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 `supported` `features`
 
@@ -808,7 +808,7 @@ Curated Datoviz GUI controls mutating one point visual.
 
 ### [GUI Viewport](gallery/features/feature_gui_viewport.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 `supported` `features`
 
@@ -820,7 +820,7 @@ Dockable Dear ImGui window containing a live Datoviz render target.
 
 ### [Raw cimgui GUI](gallery/features/feature_gui_cimgui.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 `supported` `features`
 
@@ -838,7 +838,7 @@ Raw cimgui calls inside a Datoviz GUI callback.
 
 ### [Input Events](gallery/features/feature_input_events.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 `supported` `features`
 
@@ -850,7 +850,7 @@ Live native keyboard, pointer, wheel, and resize event logging.
 
 ### [JSON Export](gallery/features/feature_json_export.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 `experimental` `features`
 

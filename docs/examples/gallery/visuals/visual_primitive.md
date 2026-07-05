@@ -12,11 +12,13 @@
 
 Line and triangle topologies rendered with the primitive visual.
 
-## About This Example
+## What This Shows
 
-This is a focused visual-family example. It keeps the scene small so you can see how this kind of visual is created, which data arrays it needs, and what the rendered result should look like.
+Line and triangle topologies rendered with the primitive visual.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to inspect the visual-family setup, the data arrays attached to the visual, and the rendered result before adding the same visual to a larger scene.
+
+No external data is needed; the example generates its data.
 
 A live WebGPU version is available in the browser preview when supported.
 
@@ -50,9 +52,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Status: `supported`
     - Source: [`examples/c/visuals/primitive.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/primitive.c)
     - Reference: [Primitive visual family](../../../reference/visual-families/primitive.md)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_primitive"><code>examples/webgpu/live.html?id=visual_primitive</code></a>
-    - WebGPU requirements: `primitive`
+    - Browser capability tags: `primitive`
 
     ### Tags
 

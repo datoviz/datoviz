@@ -16,7 +16,7 @@ Each card links to a detail page with preview media, source code, and example me
 
 ### [GLFW App](gallery/runtime/feature_app_glfw.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 `supported` `runtime`
 
@@ -28,7 +28,7 @@ Direct GLFW app path without the scenario runner.
 
 ### [Multi Window](gallery/runtime/feature_multi_window.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 `supported` `runtime`
 
@@ -58,7 +58,7 @@ Render an exact-pixel offscreen view once and write a PNG.
 
 ### [Video Export](gallery/runtime/feature_video_export.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 `experimental` `runtime`<br><span>`app-capture`, `video`, `animation`</span>
 
@@ -76,7 +76,7 @@ Write a bounded offscreen animation with the app capture API.
 
 ### [Record Replay](gallery/runtime/feature_record_replay.md)
 
-_Media pending._
+_Screenshot not required for this example._
 
 `experimental` `runtime`
 

@@ -12,11 +12,13 @@
 
 Sphere hover and click selection.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Sphere hover and click selection.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 The example includes interaction; try using the mouse or keyboard while it runs.
 
@@ -51,9 +53,9 @@ A live WebGPU version is available in the browser preview when supported.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/selection_sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_sphere.c)
-    - WebGPU status: `webgpu-live`
+    - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_selection_sphere"><code>examples/webgpu/live.html?id=feature_selection_sphere</code></a>
-    - WebGPU requirements: `sphere`, `arcball`, `query-readback`, `frame-callbacks`
+    - Browser capability tags: `sphere`, `arcball`, `query-readback`, `frame-callbacks`
 
     ### Data
 

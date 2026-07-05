@@ -12,11 +12,13 @@
 
 Screen-space marker, path, and axis scaling controlled by a GUI slider.
 
-## About This Example
+## What This Shows
 
-This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+Screen-space marker, path, and axis scaling controlled by a GUI slider.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it to see the feature in isolation before combining the same pattern with other visuals, panels, controllers, or annotations.
+
+No external data is needed; the example generates its data.
 
 The example includes interaction; try using the mouse or keyboard while it runs.
 
@@ -39,8 +41,9 @@ The example includes interaction; try using the mouse or keyboard while it runs.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/user_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/user_scale.c)
-    - WebGPU status: `native-only`
-    - WebGPU requirements: `marker`, `panzoom`, `path`, `gui`
+    - Browser support: Native only
+    - Browser note: the user-scale control is a native ImGui slider on a Datoviz app view
+    - Browser capability tags: `marker`, `panzoom`, `path`, `gui`
 
     ### Data
 

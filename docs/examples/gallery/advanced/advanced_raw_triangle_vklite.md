@@ -12,15 +12,17 @@
 
 Vklite draw commands into DvzCanvas.
 
-## About This Example
+## What This Shows
 
-This advanced example is intended for users who already understand the basic scene, panel, and visual workflow. It may use lower-level integration patterns than ordinary visualization code.
+Vklite draw commands into DvzCanvas.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it after you understand the basic scene, panel, and visual workflow. It may rely on lower-level integration patterns than ordinary visualization code.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
-_Media pending._
+_Screenshot not required for this example._
 
 ## Source
 
@@ -37,8 +39,9 @@ _Media pending._
     - Lane: `advanced`
     - Status: `experimental`
     - Source: [`examples/c/advanced/raw_triangle_vklite.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/raw_triangle_vklite.c)
-    - WebGPU status: `native-only`
-    - WebGPU requirements: `vklite`, `canvas`
+    - Browser support: Native only
+    - Browser note: raw vklite command recording is a native runtime example
+    - Browser capability tags: `vklite`, `canvas`
 
     ### Tags
 

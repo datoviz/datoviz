@@ -12,11 +12,13 @@
 
 Deterministic brain-connectivity graph composite.
 
-## About This Example
+## What This Shows
 
-This example is a compact Datoviz scene. Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
+Deterministic brain-connectivity graph composite.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
@@ -37,8 +39,8 @@ It uses synthetic data, so you can run it without downloading a dataset.
     - Lane: `composites`
     - Status: `supported`
     - Source: [`examples/c/composites/graph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c)
-    - WebGPU status: `webgpu-planned`
-    - WebGPU requirements: `composite`, `marker`, `bezier-edges`, `path`, `panzoom`
+    - Browser support: Planned
+    - Browser capability tags: `composite`, `marker`, `bezier-edges`, `path`, `panzoom`
 
     ### Tags
 

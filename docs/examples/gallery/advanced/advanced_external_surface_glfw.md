@@ -12,15 +12,17 @@
 
 Host-owned GLFW loop using Datoviz hosted rendering.
 
-## About This Example
+## What This Shows
 
-This advanced example is intended for users who already understand the basic scene, panel, and visual workflow. It may use lower-level integration patterns than ordinary visualization code.
+Host-owned GLFW loop using Datoviz hosted rendering.
 
-It uses synthetic data, so you can run it without downloading a dataset.
+Use it after you understand the basic scene, panel, and visual workflow. It may rely on lower-level integration patterns than ordinary visualization code.
+
+No external data is needed; the example generates its data.
 
 ## Preview
 
-_Media pending._
+_Screenshot not required for this example._
 
 ## Source
 
@@ -37,8 +39,9 @@ _Media pending._
     - Lane: `advanced`
     - Status: `experimental`
     - Source: [`examples/c/advanced/external_surface_glfw.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/external_surface_glfw.c)
-    - WebGPU status: `native-only`
-    - WebGPU requirements: `native-view`, `external-surface`, `glfw`
+    - Browser support: Native only
+    - Browser note: external Vulkan surfaces are native host-integration objects
+    - Browser capability tags: `native-view`, `external-surface`, `glfw`
 
     ### Tags
 
