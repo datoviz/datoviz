@@ -60,7 +60,6 @@ screen diameter_px unless the data is updated.
 | Build | `just example-c visuals/marker` |
 | Smoke | `./build/examples/c/visuals/marker --png` |
 | Validation | `smoke+screenshot` |
-| Agent copy-safe | yes |
 
 ## See Also
 

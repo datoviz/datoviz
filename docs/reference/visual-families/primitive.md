@@ -56,7 +56,6 @@ triangle list, strip, and fan setup.
 | Build | `just example-c visuals/primitive` |
 | Smoke | `./build/examples/c/visuals/primitive --png` |
 | Validation | `smoke+screenshot` |
-| Agent copy-safe | yes |
 
 ## See Also
 

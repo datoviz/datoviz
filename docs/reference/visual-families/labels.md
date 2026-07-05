@@ -57,7 +57,6 @@ depth testing and enables alpha blending.
 | Build | `just example-c visuals/labels` |
 | Smoke | `./build/examples/c/visuals/labels --png` |
 | Validation | `smoke+screenshot` |
-| Agent copy-safe | yes |
 
 ## See Also
 

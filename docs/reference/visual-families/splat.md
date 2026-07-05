@@ -46,7 +46,8 @@ overlap, center-depth ordering, and lack of sorting limit interpretation.
 ## Backend Notes
 
 Native support exists. WebGPU is deferred in the manifest because splat rendering is outside the RC
-browser subset. The canonical example is not agent copy-safe.
+browser subset. The canonical example is intended for advanced visual-family inspection rather than
+as a first example.
 
 ## Canonical Example
 
@@ -57,7 +58,6 @@ browser subset. The canonical example is not agent copy-safe.
 | Build | `just example-c visuals/splat` |
 | Smoke | `./build/examples/c/visuals/splat --png` |
 | Validation | `smoke+screenshot` |
-| Agent copy-safe | no |
 
 ## See Also
 

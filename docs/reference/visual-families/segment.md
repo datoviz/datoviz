@@ -54,7 +54,6 @@ triangle-out, square, and butt. Dashes and per-item cap attributes are deferred.
 | Build | `just example-c visuals/segment` |
 | Smoke | `./build/examples/c/visuals/segment --png` |
 | Validation | `smoke+screenshot` |
-| Agent copy-safe | yes |
 
 ## See Also
 

@@ -55,7 +55,6 @@ disables depth testing for a 2D panzoom panel.
 | Build | `just example-c visuals/pixel` |
 | Smoke | `./build/examples/c/visuals/pixel --png` |
 | Validation | `smoke+screenshot` |
-| Agent copy-safe | yes |
 
 ## See Also
 

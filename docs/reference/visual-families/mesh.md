@@ -58,7 +58,6 @@ Native and WebGPU paths are active for indexed geometry. The canonical example u
 | Build | `just example-c visuals/mesh` |
 | Smoke | `./build/examples/c/visuals/mesh --png` |
 | Validation | `smoke+screenshot` |
-| Agent copy-safe | yes |
 
 ## See Also
 

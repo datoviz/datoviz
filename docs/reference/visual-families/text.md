@@ -58,7 +58,6 @@ glyph atlas rendering.
 | Build | `just example-c visuals/text` |
 | Smoke | `./build/examples/c/visuals/text --png` |
 | Validation | `smoke+screenshot` |
-| Agent copy-safe | yes |
 
 ## See Also
 

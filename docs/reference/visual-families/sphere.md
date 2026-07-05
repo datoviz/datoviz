@@ -55,7 +55,6 @@ shader and uses analytic antialiasing at silhouettes.
 | Build | `just example-c visuals/sphere` |
 | Smoke | `./build/examples/c/visuals/sphere --png` |
 | Validation | `smoke+screenshot` |
-| Agent copy-safe | yes |
 
 ## See Also
 

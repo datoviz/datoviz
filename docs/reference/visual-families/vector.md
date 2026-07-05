@@ -57,7 +57,6 @@ vectors.
 | Build | `just example-c visuals/vector` |
 | Smoke | `./build/examples/c/visuals/vector --png` |
 | Validation | `smoke+screenshot` |
-| Agent copy-safe | yes |
 
 ## See Also
 

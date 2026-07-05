@@ -47,7 +47,7 @@ text objects when interaction should be string-based.
 ## Backend Notes
 
 Native and WebGPU paths are active for atlas-backed glyph rendering. The family is experimental and
-the canonical example is not agent copy-safe.
+the canonical example is intended for low-level text work rather than as a first text example.
 
 ## Canonical Example
 
@@ -58,7 +58,6 @@ the canonical example is not agent copy-safe.
 | Build | `just example-c visuals/glyph` |
 | Smoke | `./build/examples/c/visuals/glyph --png` |
 | Validation | `smoke+screenshot` |
-| Agent copy-safe | no |
 
 ## See Also
 

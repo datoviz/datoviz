@@ -56,7 +56,6 @@ validated.
 | Build | `just example-c visuals/volume` |
 | Smoke | `./build/examples/c/visuals/volume --png` |
 | Validation | `smoke+screenshot` |
-| Agent copy-safe | yes |
 
 ## See Also
 

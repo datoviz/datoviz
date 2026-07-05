@@ -56,7 +56,6 @@ Depth testing is a visual option; the example disables it for a 2D panzoom panel
 | Build | `just example-c visuals/point` |
 | Smoke | `./build/examples/c/visuals/point --png` |
 | Validation | `smoke+screenshot` |
-| Agent copy-safe | yes |
 
 ## See Also
 

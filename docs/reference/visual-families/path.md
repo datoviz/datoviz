@@ -56,7 +56,6 @@ attributes are deferred.
 | Build | `just example-c visuals/path` |
 | Smoke | `./build/examples/c/visuals/path --png` |
 | Validation | `smoke+screenshot` |
-| Agent copy-safe | yes |
 
 ## See Also
 
