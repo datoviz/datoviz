@@ -28,9 +28,43 @@ features/technique_depth_cue
 features/technique_transparency
 - simplify the code, some internal functions seem useless
 
+features/compute_buffer_animation
+- frame rate very inconsistent and the speed of animation depends on the frame rate which is wrong
+
+
+showcases/embedding_atlas
+showcases/lipid_brain_atlas
+showcases/synthetic_mouse
+all lab examples
+- these should be marked experimental and REMOVED from the batch reviews
+
+
+showcases/textured_planet
+- the rotation axis is seriously wrong
+- when quitting:
+FPS   19.4 (20 frames in 1.030 s)16:21:26.190 T784 E       validation.h:0166: validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0xb200000000b2 that is currently in use by VkCommandBuffer 0x602b3b15d6a0.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.328.1/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+16:21:26.194 T784 E       validation.h:0166: validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0xb400000000b4 that is currently in use by VkCommandBuffer 0x602b3b15d6a0.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.328.1/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+16:21:26.200 T784 E       validation.h:0166: validation layer: vkFreeDescriptorSets(): pDescriptorSets[0] can't be called on VkDescriptorSet 0x4c000000004c that is currently in use by VkCommandBuffer 0x602b3b15d6a0.
+The Vulkan spec states: All submitted commands that refer to any element of pDescriptorSets must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.328.1/linux/antora/spec/latest/chapters/descriptorsets.html#VUID-vkFreeDescriptorSets-pDescriptorSets-00309)
+16:21:26.200 T784 E       validation.h:0166: validation layer: vkDestroyPipeline(): can't be called on VkPipeline 0x440000000044 that is currently in use by VkCommandBuffer 0x602b3b15d6a0.
+The Vulkan spec states: All submitted commands that refer to pipeline must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.328.1/linux/antora/spec/latest/chapters/pipelines.html#VUID-vkDestroyPipeline-pipeline-00765)
+
+
+examples/c/advanced/raw_triangle_vklite.c
+- remove the video-related code in that example
+
+
+
+
 
 is this really necessary? audit all examples where this function appears
 static bool _set_camera(DvzPanel* panel)
+
+
+
+
 
 
 
