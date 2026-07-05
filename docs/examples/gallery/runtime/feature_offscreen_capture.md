@@ -20,7 +20,7 @@ It uses synthetic data, so you can run it without downloading a dataset.
 
 ## Preview
 
-_Media pending._
+![Offscreen Capture](../../../assets/gallery/v0.4/runtime/feature_offscreen_capture.webp)
 
 ## Source
 

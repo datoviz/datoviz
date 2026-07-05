@@ -20,7 +20,7 @@ It uses synthetic data, so you can run it without downloading a dataset.
 
 ## Preview
 
-_Media pending._
+![Path Join](../../../assets/gallery/v0.4/features/feature_path_join.webp)
 
 ## Source
 

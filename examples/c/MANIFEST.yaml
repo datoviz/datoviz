@@ -54,7 +54,7 @@ folders:
 
 defaults:
   palette: graphite_cyan
-  public_capture: 1920x1080
+  public_capture: 1280x720
   seed: 12345
 
 non_public_examples:
@@ -1727,7 +1727,7 @@ examples:
 
   - id: feature_datetime_axis
     title: Datetime Axis
-    stage: v0.4_experimental
+    stage: v0.4_required
     category: feature
     primary_feature: datetime-axis
     lane: features
@@ -1742,11 +1742,10 @@ examples:
         - axes
         - text
         - datetime
-      reason: datetime formatting is experimental and outside the RC browser subset
+      reason: datetime formatting is outside the RC browser subset
     agent_copy_safe: true
     gallery:
       card: small
-      status_label: experimental
     tags:
       - axes
       - datetime

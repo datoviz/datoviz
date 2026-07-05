@@ -326,7 +326,7 @@
       "media": {
         "screenshot": {
           "expected": true,
-          "status": "pending",
+          "status": "available",
           "source": "data/gallery/v0.4/features/feature_coordinate_system.png",
           "site_asset": "/assets/gallery/v0.4/features/feature_coordinate_system.webp"
         }
@@ -419,7 +419,7 @@
       "media": {
         "screenshot": {
           "expected": true,
-          "status": "pending",
+          "status": "available",
           "source": "data/gallery/v0.4/features/feature_sampled_field_update.png",
           "site_asset": "/assets/gallery/v0.4/features/feature_sampled_field_update.webp"
         }
@@ -604,7 +604,7 @@
       "media": {
         "screenshot": {
           "expected": true,
-          "status": "pending",
+          "status": "available",
           "source": "data/gallery/v0.4/features/feature_camera_manual.png",
           "site_asset": "/assets/gallery/v0.4/features/feature_camera_manual.webp"
         }
@@ -1781,7 +1781,7 @@
       "media": {
         "screenshot": {
           "expected": true,
-          "status": "pending",
+          "status": "available",
           "source": "data/gallery/v0.4/runtime/feature_offscreen_capture.png",
           "site_asset": "/assets/gallery/v0.4/runtime/feature_offscreen_capture.webp"
         }
@@ -1948,7 +1948,7 @@
       "media": {
         "screenshot": {
           "expected": true,
-          "status": "pending",
+          "status": "available",
           "source": "data/gallery/v0.4/features/feature_panel_view2d.png",
           "site_asset": "/assets/gallery/v0.4/features/feature_panel_view2d.webp"
         }
@@ -2077,7 +2077,7 @@
       "media": {
         "screenshot": {
           "expected": true,
-          "status": "pending",
+          "status": "available",
           "source": "data/gallery/v0.4/features/feature_path_join.png",
           "site_asset": "/assets/gallery/v0.4/features/feature_path_join.webp"
         }

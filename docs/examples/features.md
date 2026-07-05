@@ -28,7 +28,7 @@ Smallest scene with one point visual.
 
 ### [Coordinate System](gallery/features/feature_coordinate_system.md)
 
-_Media pending._
+[![Coordinate System](../assets/gallery/v0.4/features/feature_coordinate_system.webp)](gallery/features/feature_coordinate_system.md)
 
 `supported` `features`
 
@@ -88,7 +88,7 @@ Two panels linked on X panzoom extent with independent Y panzoom state.
 
 ### [Panel View 2D](gallery/features/feature_panel_view2d.md)
 
-_Media pending._
+[![Panel View 2D](../assets/gallery/v0.4/features/feature_panel_view2d.webp)](gallery/features/feature_panel_view2d.md)
 
 `supported` `features`
 
@@ -154,7 +154,7 @@ Visual visibility toggled by a scene timer.
 
 ### [Manual Camera](gallery/features/feature_camera_manual.md)
 
-_Media pending._
+[![Manual Camera](../assets/gallery/v0.4/features/feature_camera_manual.webp)](gallery/features/feature_camera_manual.md)
 
 `supported` `features`
 
@@ -466,7 +466,7 @@ Tessellated cubic Bezier curve rendered as a path.
 
 ### [Path Join](gallery/features/feature_path_join.md)
 
-_Media pending._
+[![Path Join](../assets/gallery/v0.4/features/feature_path_join.webp)](gallery/features/feature_path_join.md)
 
 `supported` `features`
 
@@ -496,7 +496,7 @@ Wavefront OBJ mesh loading through geom/fileio helpers.
 
 ### [Sampled Field Update](gallery/features/feature_sampled_field_update.md)
 
-_Media pending._
+[![Sampled Field Update](../assets/gallery/v0.4/features/feature_sampled_field_update.webp)](gallery/features/feature_sampled_field_update.md)
 
 `supported` `features`
 

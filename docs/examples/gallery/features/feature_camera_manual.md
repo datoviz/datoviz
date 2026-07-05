@@ -22,7 +22,7 @@ The example includes interaction; try using the mouse or keyboard while it runs.
 
 ## Preview
 
-_Media pending._
+![Manual Camera](../../../assets/gallery/v0.4/features/feature_camera_manual.webp)
 
 ## Source
 

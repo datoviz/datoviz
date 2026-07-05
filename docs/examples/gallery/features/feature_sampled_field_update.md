@@ -24,7 +24,7 @@ A live WebGPU version is available in the browser preview when supported.
 
 === "Screenshot"
 
-    _Media pending._
+    ![Sampled Field Update](../../../assets/gallery/v0.4/features/feature_sampled_field_update.webp)
 
 === "Live WebGPU"
 

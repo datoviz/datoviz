@@ -20,7 +20,7 @@ It uses synthetic data, so you can run it without downloading a dataset.
 
 ## Preview
 
-_Media pending._
+![Coordinate System](../../../assets/gallery/v0.4/features/feature_coordinate_system.webp)
 
 ## Source
 

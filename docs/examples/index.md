@@ -474,7 +474,7 @@ Constrained turntable controller around a small 3D mesh.
 
 ### [Sampled Field Update](gallery/features/feature_sampled_field_update.md)
 
-_Media pending._
+[![Sampled Field Update](../assets/gallery/v0.4/features/feature_sampled_field_update.webp)](gallery/features/feature_sampled_field_update.md)
 
 One scene-owned sampled field reused by two image visuals.
 
@@ -634,7 +634,7 @@ One app driving two native GLFW windows.
 
 ### [Offscreen Capture](gallery/runtime/feature_offscreen_capture.md)
 
-_Media pending._
+[![Offscreen Capture](../assets/gallery/v0.4/runtime/feature_offscreen_capture.webp)](gallery/runtime/feature_offscreen_capture.md)
 
 Render an exact-pixel offscreen view once and write a PNG.
 

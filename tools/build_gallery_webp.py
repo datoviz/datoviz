@@ -115,6 +115,8 @@ def generate_gallery_webp(
     lanes = lanes or set()
     selected = []
     for example in examples:
+        if "screenshot" not in example.validation:
+            continue
         if ids and example.id not in ids:
             continue
         if lanes and example.lane not in lanes:

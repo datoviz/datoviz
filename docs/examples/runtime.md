@@ -46,7 +46,7 @@ One app driving two native GLFW windows.
 
 ### [Offscreen Capture](gallery/runtime/feature_offscreen_capture.md)
 
-_Media pending._
+[![Offscreen Capture](../assets/gallery/v0.4/runtime/feature_offscreen_capture.webp)](gallery/runtime/feature_offscreen_capture.md)
 
 `supported` `runtime`
 
