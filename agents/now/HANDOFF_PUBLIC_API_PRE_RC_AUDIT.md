@@ -252,6 +252,22 @@ Completed checkpoints:
    - Validation passed: `just ctypes`, `just ctypes-check`, `just ctypes-smoke`,
      `just docs-api-check`, `python3 tools/build_api_c.py --check`, focused generated-binding
      assertion, and `git diff --check`.
+24. `3a17d5b14` `api: rename glfw view API to window`
+   - Renamed stable app-facing `DVZ_VIEW_GLFW` and `dvz_view_glfw()` to backend-neutral
+     `DVZ_VIEW_WINDOW` and `dvz_view_window()`.
+   - Migrated examples, tests, docs, generated raw `ctypes`, generated C API docs, and the Python
+     facade `run()` helper.
+   - Exported symbol delta: removed `dvz_view_glfw`; added `dvz_view_window`. `DvzViewKind` enum
+     spelling changed before RC1 while preserving the underlying numeric value.
+   - Validation passed: stale old-name scan, `just ctypes`, `just ctypes-check`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, `just build`,
+     `just spec-check`, `just ctypes-smoke`, `just docs-api-check`,
+     `just test app/view_size_policy_resolve`, `just test gui/widget_wrapper_symbols`, and
+     `git diff --check`.
+   - Local validation caveat: full `just test app` and `just test gui` were started concurrently,
+     then rerun serially for `app`; both attempts hung in the GLFW-backed
+     `gui/config_inherits_app_font_defaults` process after earlier checks had passed, so the stuck
+     sessions were terminated instead of used as pass/fail evidence.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -447,6 +463,9 @@ Preferred fix:
 
 
 ### 5. Decide Whether GLFW Is Stable API Or Backend Detail
+
+Status: stable app-facing view names renamed by `3a17d5b14`; remaining GLFW conversion helpers and
+numeric compatibility comments still need a separate backend/interop classification decision.
 
 The default public API exposes GLFW-specific names and compatibility assumptions.
 
