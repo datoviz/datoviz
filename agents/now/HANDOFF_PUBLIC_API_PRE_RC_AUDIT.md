@@ -214,6 +214,16 @@ Completed checkpoints:
    - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
      `python3 tools/build_api_c.py --check`, `just build`, `just test app`, `just test gui`,
      `just spec-check`, stale-reference scan, and `git diff --check`.
+20. `a2d6863e5` `api: remove external surface from view descriptor`
+   - Removed `const DvzWindowExternalSurfaceInfo* external_surface` from `DvzViewDesc`.
+   - Kept hosted native-surface creation on the dedicated `dvz_view_external_surface()` API, which
+     now calls the internal external-surface view path directly.
+   - Updated generated raw `ctypes` and generated C API docs.
+   - Exported symbol delta: no exported functions were added or removed; `DvzViewDesc` ABI layout
+     changed.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just build`, `just test app`, `just spec-check`,
+     stale-reference scan, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -278,7 +288,7 @@ Complete audit as of July 2026, using the criterion above:
 | `DvzAppConfig` | `DvzFontDefaults font_defaults` | `include/datoviz/app.h:133` | Done in `cb58878f6`: flattened to scalar `font_*` defaults fields. |
 | `DvzFontDefaults` | `DvzFontDesc sans`, `DvzFontDesc mono` | `include/datoviz/font.h:42` | Done in `787982697`: flattened to prefixed scalar sans/mono font default fields. |
 | `DvzViewDesc` | `DvzViewSizeDesc size` | `include/datoviz/app.h:225` | Candidate exception only if `DvzViewSizeDesc` becomes a plain value record. Otherwise flatten or make view sizing a separate constructor/setter path. Remove duplicate legacy size fields while doing this. |
-| `DvzViewDesc` | `const DvzWindowExternalSurfaceInfo* external_surface` | `include/datoviz/app.h:225`, `include/datoviz/window/backend.h:91` | Pointer case, lower nesting risk but high backend-boundary risk. Move to backend/interop path during backend-neutral app API cleanup. |
+| `DvzViewDesc` | `const DvzWindowExternalSurfaceInfo* external_surface` | `include/datoviz/app.h:225`, `include/datoviz/window/backend.h:91` | Done in `a2d6863e5`: hosted surface creation uses `dvz_view_external_surface()` directly. |
 | `DvzOverlayCardDesc` | `const DvzOverlayCardStyle* style` | `include/datoviz/scene/overlay.h:67` | Done in `ebd35bb00`: creation no longer carries style; use `dvz_overlay_card_set_style()` after creation. |
 | `DvzPanelView3DDesc` | `DvzCameraDesc camera` | `include/datoviz/scene/types.h:704` | Done in `8642a2efd`: flattened to `DvzCameraView view` and `DvzCameraProjection projection`. |
 | `DvzPanelAxes2DDesc` | `DvzAxisTickPolicy tick_policy`, `DvzAxisStyle x_style`, `DvzAxisStyle y_style` | `include/datoviz/scene/types.h:785` | Done in `977881068`: creation desc is labels/coarse flags only; tick policy and styles use setters. |
