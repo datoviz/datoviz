@@ -782,7 +782,6 @@ Preferred fix:
 
 ## Lower-Priority Polish
 
-- Rename `dvz_scalebar_*` to `dvz_scale_bar_*` for consistency with `DvzScaleBar`.
 - Normalize graph and polygon mutators to `*_set_*`, for example `dvz_graph_set_edges()` and
   `dvz_polygon_set_fill_color()`.
 - Decide whether geometry factories should be `dvz_geom_*` or `dvz_geometry_*`, then keep one
@@ -802,27 +801,31 @@ generated ctypes, generated docs if applicable, and examples in sync.
    - Completed: remove or demote internal object/container API.
    - Completed: remove legacy clock aliases.
    - Completed: remove or demote mock-data helpers.
-   - Next: remove transitional texture wrappers, or rename them as explicit sampled field helpers.
+   - Completed: remove transitional texture wrappers.
    - Validation: `just ctypes`, `just ctypes-check`, narrow compile/build check.
 
 2. **Stable scene naming cleanup**
-   - Collapse 2D view APIs.
-   - Normalize scale-bar spelling.
-   - Normalize graph/polygon mutator names.
+   - Completed: collapse 2D view APIs.
+   - Completed: normalize scale-bar spelling.
+   - Remaining decision: normalize graph/polygon mutator names only if this supersedes the current
+     public API convention examples that intentionally use role/property setter names.
    - Completed: change `dvz_sampled_field_destroy()` to `void`.
    - Validation: scene tests, examples that use affected APIs, `just ctypes-check`.
 
 3. **Signature and ownership cleanup**
-   - Standardize array/count order.
-   - Tighten `const` on bind-only resources and read-only queries.
-   - Replace borrowed descriptor getters with copy-out APIs.
+   - Completed: normalize `dvz_visual_set_data_range()` argument order.
+   - Completed: tighten `const` on identified bind-only resources and read-only queries.
+   - Completed: replace identified borrowed descriptor getters with copy-out APIs.
+   - Remaining decision: broader graph, polygon, plot, text, and low-level runtime argument
+     ordering needs case-by-case API review.
    - Validation: affected C tests, raw ctypes regeneration/check, Python smoke if bindings changed.
 
 4. **Runtime/app consistency cleanup**
-   - Fix canvas flags.
-   - Decide GLFW-neutral app names.
-   - Standardize `DvzResult` versus raw `int`.
-   - Split stable window API from backend SPI if scope permits.
+   - Completed: fix canvas flags.
+   - Completed: rename stable app-facing GLFW view names to backend-neutral window names.
+   - Completed: collapse `DvzViewDesc` creation sizing onto `size_policy`/`size_*`.
+   - Remaining decisions: classify GLFW conversion/numeric compatibility, standardize
+     `DvzResult` versus raw `int`, and split stable window API from backend SPI if scope permits.
    - Validation: app/canvas/window/input tests and hosted/offscreen examples where available.
 
 5. **Advanced DRP2/vklite classification cleanup**
