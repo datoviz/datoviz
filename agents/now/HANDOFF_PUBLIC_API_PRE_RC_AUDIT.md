@@ -181,13 +181,23 @@ Completed checkpoints:
      `python3 tools/build_api_c.py --check`, `just build`, `just test app`, `just test gui`,
      `just test scene/interaction`, `just spec-check`, stale-reference scan, and
      `git diff --check`.
+17. `ebd35bb00` `api: split overlay card styling from descriptors`
+   - Removed `const DvzOverlayCardStyle* style` from `DvzOverlayCardDesc`.
+   - Kept card creation focused on text, placement, layout, and card flags; styling now uses the
+     retained `dvz_overlay_card_set_style()` path after creation.
+   - Migrated overlay examples, app/interaction tests, generated C API docs, and ABI validation.
+   - Exported symbol delta: no exported functions were added or removed; `DvzOverlayCardDesc` ABI
+     layout changed.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just build`, `just test scene/interaction`,
+     `just test app`, `just spec-check`, stale-reference scan, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
 - dirty `data` submodule state;
 - untracked `paper/paper.pdf`.
 
-Next recommended checkpoint: continue the descriptor-flattening campaign with app/view/font defaults.
+Next recommended checkpoint: continue the descriptor-flattening campaign with app/view defaults.
 
 
 ## Maintainer Decisions
@@ -246,7 +256,7 @@ Complete audit as of July 2026, using the criterion above:
 | `DvzFontDefaults` | `DvzFontDesc sans`, `DvzFontDesc mono` | `include/datoviz/font.h:42` | Done in `787982697`: flattened to prefixed scalar sans/mono font default fields. |
 | `DvzViewDesc` | `DvzViewSizeDesc size` | `include/datoviz/app.h:225` | Candidate exception only if `DvzViewSizeDesc` becomes a plain value record. Otherwise flatten or make view sizing a separate constructor/setter path. Remove duplicate legacy size fields while doing this. |
 | `DvzViewDesc` | `const DvzWindowExternalSurfaceInfo* external_surface` | `include/datoviz/app.h:225`, `include/datoviz/window/backend.h:91` | Pointer case, lower nesting risk but high backend-boundary risk. Move to backend/interop path during backend-neutral app API cleanup. |
-| `DvzOverlayCardDesc` | `const DvzOverlayCardStyle* style` | `include/datoviz/scene/overlay.h:67` | Pointer case. Prefer `dvz_overlay_card_set_style()` or copy-by-value style after creation; document copy/lifetime if retained. |
+| `DvzOverlayCardDesc` | `const DvzOverlayCardStyle* style` | `include/datoviz/scene/overlay.h:67` | Done in `ebd35bb00`: creation no longer carries style; use `dvz_overlay_card_set_style()` after creation. |
 | `DvzPanelView3DDesc` | `DvzCameraDesc camera` | `include/datoviz/scene/types.h:704` | Do not nest `Desc` in `Desc`. Flatten to `DvzCameraView` plus `DvzCameraProjection`, or pass `const DvzCameraDesc*` directly to the 3D view API. |
 | `DvzPanelAxes2DDesc` | `DvzAxisTickPolicy tick_policy`, `DvzAxisStyle x_style`, `DvzAxisStyle y_style` | `include/datoviz/scene/types.h:785` | Split. Keep creation desc to labels/coarse flags; use setters for tick policy and per-axis styles. |
 | `DvzGraphEdgeStyle` | `DvzBezierTessellationDesc tessellation` | `include/datoviz/scene/types.h:946` | Flatten to `tessellation_segment_count` and `tessellation_tolerance`, or set tessellation separately. |
