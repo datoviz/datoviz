@@ -540,7 +540,7 @@ Completed checkpoints:
      `python3 tools/check_api_status.py`, `just build`, `just test grid`,
      `just docs-api-check`, `just ctypes-smoke`, `just ctypes-python-smoke`, and
      `git diff --check`.
-47. `api: return results from panel axis mutators`
+47. `83920ae5c` `api: return results from panel axis mutators`
    - Changed grid layout setters, panel layout/chrome setters, and retained axis setters from
      `bool` to `DvzResult`, preserving `bool` for accessors, predicates, and geometry resolution.
    - Migrated examples, scene tests, wasm wrappers, and Python facade smoke expectations from
@@ -551,7 +551,7 @@ Completed checkpoints:
      `just build`, `just test axis`, `just test grid`, `just test scene/scene-graph`,
      `just test fields`, `just test app`, `just test visuals`, `just ctypes-smoke`,
      `just ctypes-python-smoke`, and `git diff --check`.
-48. Pending checkpoint: `api: return results from scene buffer mutators`
+48. `68355ddb9` `api: return results from scene buffer mutators`
    - Changed the remaining stable scene fallible mutators from `bool` to `DvzResult`:
      `dvz_panel_set_background()`, `dvz_scene_buffer_set_data()`,
      `dvz_scene_compute_set_dispatch()`, `dvz_scene_compute_set_buffer()`,
@@ -565,7 +565,7 @@ Completed checkpoints:
      `just test scene/scene-graph`, `just test visuals`, `just test app`,
      `just test compute`, `just example-c features/compute_buffer_animation --png`,
      `just ctypes-smoke`, `just ctypes-python-smoke`, and `git diff --check`.
-49. Pending checkpoint: `api: return results from low-level controller mutators`
+49. `915a6a5ae` `api: return results from low-level controller mutators`
    - Changed fallible low-level controller object mutators from `void`/mutating `bool` to
      `DvzResult` across camera, arcball, panzoom, turntable, and fly controllers.
    - Left destroy functions as `void`, getters/output writers as `void`, and pointer/state/event
