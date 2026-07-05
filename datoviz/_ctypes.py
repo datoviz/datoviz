@@ -14237,11 +14237,11 @@ else:
 
 
 try:
-    dvz_drp2_stream_write_buffer = dvz.dvz_drp2_stream_write_buffer
+    dvz_drp2_stream_write_buffer_base64 = dvz.dvz_drp2_stream_write_buffer_base64
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_buffer')
+    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_buffer_base64')
 else:
-    dvz_drp2_stream_write_buffer.__doc__ = """/**
+    dvz_drp2_stream_write_buffer_base64.__doc__ = """/**
  * Append a WriteBuffer command.
  *
  * @param stream the command stream
@@ -14251,8 +14251,8 @@ else:
  * @param data_base64 base64-encoded payload
  * @return whether the command was appended
  */"""
-    dvz_drp2_stream_write_buffer.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint64, ctypes.c_uint64, ctypes.c_char_p]
-    dvz_drp2_stream_write_buffer.restype = ctypes.c_bool
+    dvz_drp2_stream_write_buffer_base64.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint64, ctypes.c_uint64, ctypes.c_char_p]
+    dvz_drp2_stream_write_buffer_base64.restype = ctypes.c_bool
 
 
 try:
@@ -14264,7 +14264,7 @@ else:
  * Append a WriteBuffer command from raw bytes.
  *
  * In-process callers that have a raw byte pointer should prefer this entry
- * point over dvz_drp2_stream_write_buffer (which takes a pre-encoded base64
+ * point over dvz_drp2_stream_write_buffer_base64 (which takes a pre-encoded base64
  * string and is intended for JSON wire-loading paths).
  *
  * The stream owns a copy of `data`. The base64 string is computed lazily, only
@@ -14286,11 +14286,11 @@ else:
 
 
 try:
-    dvz_drp2_stream_write_texture_2d = dvz.dvz_drp2_stream_write_texture_2d
+    dvz_drp2_stream_write_texture_2d_base64 = dvz.dvz_drp2_stream_write_texture_2d_base64
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_2d')
+    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_2d_base64')
 else:
-    dvz_drp2_stream_write_texture_2d.__doc__ = """/**
+    dvz_drp2_stream_write_texture_2d_base64.__doc__ = """/**
  * Append a WriteTexture command.
  *
  * @param stream the command stream
@@ -14303,8 +14303,8 @@ else:
  * @param data_base64 base64-encoded payload
  * @return whether the command was appended
  */"""
-    dvz_drp2_stream_write_texture_2d.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
-    dvz_drp2_stream_write_texture_2d.restype = ctypes.c_bool
+    dvz_drp2_stream_write_texture_2d_base64.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
+    dvz_drp2_stream_write_texture_2d_base64.restype = ctypes.c_bool
 
 
 try:
@@ -14334,11 +14334,11 @@ else:
 
 
 try:
-    dvz_drp2_stream_write_texture_2d_region = dvz.dvz_drp2_stream_write_texture_2d_region
+    dvz_drp2_stream_write_texture_2d_region_base64 = dvz.dvz_drp2_stream_write_texture_2d_region_base64
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_2d_region')
+    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_2d_region_base64')
 else:
-    dvz_drp2_stream_write_texture_2d_region.__doc__ = """/**
+    dvz_drp2_stream_write_texture_2d_region_base64.__doc__ = """/**
  * Append a WriteTexture command for a 2D sub-region with explicit origin.
  *
  * @param stream the command stream
@@ -14353,8 +14353,8 @@ else:
  * @param data_base64 base64-encoded payload
  * @return whether the command was appended
  */"""
-    dvz_drp2_stream_write_texture_2d_region.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
-    dvz_drp2_stream_write_texture_2d_region.restype = ctypes.c_bool
+    dvz_drp2_stream_write_texture_2d_region_base64.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
+    dvz_drp2_stream_write_texture_2d_region_base64.restype = ctypes.c_bool
 
 
 try:
@@ -14384,11 +14384,11 @@ else:
 
 
 try:
-    dvz_drp2_stream_write_texture_3d = dvz.dvz_drp2_stream_write_texture_3d
+    dvz_drp2_stream_write_texture_3d_base64 = dvz.dvz_drp2_stream_write_texture_3d_base64
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_3d')
+    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_3d_base64')
 else:
-    dvz_drp2_stream_write_texture_3d.__doc__ = """/**
+    dvz_drp2_stream_write_texture_3d_base64.__doc__ = """/**
  * Append a WriteTexture command for a 3D sub-region.
  *
  * @param stream the command stream
@@ -14405,8 +14405,8 @@ else:
  * @param data_base64 base64-encoded payload
  * @return whether the command was appended
  */"""
-    dvz_drp2_stream_write_texture_3d.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
-    dvz_drp2_stream_write_texture_3d.restype = ctypes.c_bool
+    dvz_drp2_stream_write_texture_3d_base64.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
+    dvz_drp2_stream_write_texture_3d_base64.restype = ctypes.c_bool
 
 
 try:

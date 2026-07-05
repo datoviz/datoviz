@@ -729,7 +729,7 @@ dvz_drp2_stream_destroy_bind_group(DvzDrp2CommandStream* stream, uint64_t bind_g
  * @param data_base64 base64-encoded payload
  * @return whether the command was appended
  */
-DVZ_EXPORT bool dvz_drp2_stream_write_buffer(
+DVZ_EXPORT bool dvz_drp2_stream_write_buffer_base64(
     DvzDrp2CommandStream* stream, uint64_t buffer_id, uint64_t offset, uint64_t size,
     const char* data_base64);
 
@@ -738,7 +738,7 @@ DVZ_EXPORT bool dvz_drp2_stream_write_buffer(
  * Append a WriteBuffer command from raw bytes.
  *
  * In-process callers that have a raw byte pointer should prefer this entry
- * point over dvz_drp2_stream_write_buffer (which takes a pre-encoded base64
+ * point over dvz_drp2_stream_write_buffer_base64 (which takes a pre-encoded base64
  * string and is intended for JSON wire-loading paths).
  *
  * The stream owns a copy of `data`. The base64 string is computed lazily, only
@@ -774,7 +774,7 @@ DVZ_EXPORT bool dvz_drp2_stream_write_buffer_bytes(
  * @param data_base64 base64-encoded payload
  * @return whether the command was appended
  */
-DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d(
+DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d_base64(
     DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level, uint32_t width,
     uint32_t height, uint32_t bytes_per_row, uint32_t rows_per_image, const char* data_base64);
 
@@ -839,7 +839,7 @@ DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d_region_borrowed(
  * @param data_base64 base64-encoded payload
  * @return whether the command was appended
  */
-DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d_region(
+DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d_region_base64(
     DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level,
     uint32_t origin_x, uint32_t origin_y,
     uint32_t width, uint32_t height,
@@ -863,7 +863,7 @@ DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d_region(
  * @param data_base64 base64-encoded payload
  * @return whether the command was appended
  */
-DVZ_EXPORT bool dvz_drp2_stream_write_texture_3d(
+DVZ_EXPORT bool dvz_drp2_stream_write_texture_3d_base64(
     DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level,
     uint32_t origin_x, uint32_t origin_y, uint32_t origin_z,
     uint32_t width, uint32_t height, uint32_t depth,

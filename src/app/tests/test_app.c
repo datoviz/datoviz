@@ -750,11 +750,11 @@ static int test_app_trace_fingerprint_ignores_frame_handles_and_payloads(
     ANN(a);
     ANN(b);
 
-    AT(dvz_drp2_stream_write_buffer(a, 42, 8, 4, "AAAA"));
+    AT(dvz_drp2_stream_write_buffer_base64(a, 42, 8, 4, "AAAA"));
     AT(dvz_drp2_stream_finish_command_encoder(a, 7, 100));
     AT(dvz_drp2_stream_queue_submit(a, 100, 200));
 
-    AT(dvz_drp2_stream_write_buffer(b, 42, 8, 4, "BBBB"));
+    AT(dvz_drp2_stream_write_buffer_base64(b, 42, 8, 4, "BBBB"));
     AT(dvz_drp2_stream_finish_command_encoder(b, 7, 101));
     AT(dvz_drp2_stream_queue_submit(b, 101, 201));
 
@@ -780,8 +780,8 @@ static int test_app_trace_fingerprint_keeps_write_ranges(TstContext* suite, cons
     ANN(a);
     ANN(b);
 
-    AT(dvz_drp2_stream_write_buffer(a, 42, 8, 4, "AAAA"));
-    AT(dvz_drp2_stream_write_buffer(b, 42, 12, 4, "AAAA"));
+    AT(dvz_drp2_stream_write_buffer_base64(a, 42, 8, 4, "AAAA"));
+    AT(dvz_drp2_stream_write_buffer_base64(b, 42, 12, 4, "AAAA"));
 
     uint64_t fa = 0;
     uint64_t fb = 0;

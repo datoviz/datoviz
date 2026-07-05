@@ -155,13 +155,13 @@ Functions: 134
     | [`dvz_drp2_stream_set_vertex_buffer()`](#dvz_drp2_stream_set_vertex_buffer) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_set_viewport()`](#dvz_drp2_stream_set_viewport) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_shader_set_builtin_identity()`](#dvz_drp2_stream_shader_set_builtin_identity) | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_write_buffer()`](#dvz_drp2_stream_write_buffer) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_write_buffer_base64()`](#dvz_drp2_stream_write_buffer_base64) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_write_buffer_bytes()`](#dvz_drp2_stream_write_buffer_bytes) | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_write_texture_2d()`](#dvz_drp2_stream_write_texture_2d) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_write_texture_2d_base64()`](#dvz_drp2_stream_write_texture_2d_base64) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_write_texture_2d_borrowed()`](#dvz_drp2_stream_write_texture_2d_borrowed) | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_write_texture_2d_region()`](#dvz_drp2_stream_write_texture_2d_region) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_write_texture_2d_region_base64()`](#dvz_drp2_stream_write_texture_2d_region_base64) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_write_texture_2d_region_borrowed()`](#dvz_drp2_stream_write_texture_2d_region_borrowed) | `include/datoviz/drp2/stream.h` |
-    | [`dvz_drp2_stream_write_texture_3d()`](#dvz_drp2_stream_write_texture_3d) | `include/datoviz/drp2/stream.h` |
+    | [`dvz_drp2_stream_write_texture_3d_base64()`](#dvz_drp2_stream_write_texture_3d_base64) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_stream_write_texture_3d_borrowed()`](#dvz_drp2_stream_write_texture_3d_borrowed) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_texture_desc()`](#dvz_drp2_texture_desc) | `include/datoviz/drp2/stream.h` |
     | [`dvz_drp2_validate_stream()`](#dvz_drp2_validate_stream) | `include/datoviz/drp2/runtime.h` |
@@ -3157,10 +3157,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:335._
 
-### `dvz_drp2_stream_write_buffer()`
+### `dvz_drp2_stream_write_buffer_base64()`
 
-```c title="dvz_drp2_stream_write_buffer"
-_Bool dvz_drp2_stream_write_buffer(
+```c title="dvz_drp2_stream_write_buffer_base64"
+_Bool dvz_drp2_stream_write_buffer_base64(
     DvzDrp2CommandStream * stream,
     uint64_t buffer_id,
     uint64_t offset,
@@ -3208,7 +3208,7 @@ _Bool dvz_drp2_stream_write_buffer_bytes(
 Append a WriteBuffer command from raw bytes.
 
 In-process callers that have a raw byte pointer should prefer this entry
-point over dvz_drp2_stream_write_buffer (which takes a pre-encoded base64
+point over dvz_drp2_stream_write_buffer_base64 (which takes a pre-encoded base64
 string and is intended for JSON wire-loading paths).
 
 The stream owns a copy of `data`. The base64 string is computed lazily, only
@@ -3223,10 +3223,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:758._
 
-### `dvz_drp2_stream_write_texture_2d()`
+### `dvz_drp2_stream_write_texture_2d_base64()`
 
-```c title="dvz_drp2_stream_write_texture_2d"
-_Bool dvz_drp2_stream_write_texture_2d(
+```c title="dvz_drp2_stream_write_texture_2d_base64"
+_Bool dvz_drp2_stream_write_texture_2d_base64(
     DvzDrp2CommandStream * stream,
     uint64_t texture_id,
     uint32_t mip_level,
@@ -3293,10 +3293,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:799._
 
-### `dvz_drp2_stream_write_texture_2d_region()`
+### `dvz_drp2_stream_write_texture_2d_region_base64()`
 
-```c title="dvz_drp2_stream_write_texture_2d_region"
-_Bool dvz_drp2_stream_write_texture_2d_region(
+```c title="dvz_drp2_stream_write_texture_2d_region_base64"
+_Bool dvz_drp2_stream_write_texture_2d_region_base64(
     DvzDrp2CommandStream * stream,
     uint64_t texture_id,
     uint32_t mip_level,
@@ -3369,10 +3369,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/drp2/stream.h`:821._
 
-### `dvz_drp2_stream_write_texture_3d()`
+### `dvz_drp2_stream_write_texture_3d_base64()`
 
-```c title="dvz_drp2_stream_write_texture_3d"
-_Bool dvz_drp2_stream_write_texture_3d(
+```c title="dvz_drp2_stream_write_texture_3d_base64"
+_Bool dvz_drp2_stream_write_texture_3d_base64(
     DvzDrp2CommandStream * stream,
     uint64_t texture_id,
     uint32_t mip_level,
