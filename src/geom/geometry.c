@@ -1128,10 +1128,10 @@ DvzGeometry* dvz_geometry(uint32_t vertex_count, uint32_t index_count)
  *
  * @param geometry the geometry
  */
-void dvz_geometry_reset(DvzGeometry* geometry)
+DvzResult dvz_geometry_reset(DvzGeometry* geometry)
 {
     if (geometry == NULL)
-        return;
+        return DVZ_ERROR;
 
     dvz_free(geometry->positions);
     dvz_free(geometry->normals);
@@ -1140,6 +1140,7 @@ void dvz_geometry_reset(DvzGeometry* geometry)
     dvz_free(geometry->indices);
 
     dvz_memset(geometry, sizeof(DvzGeometry), 0, sizeof(DvzGeometry));
+    return DVZ_OK;
 }
 
 
@@ -1154,7 +1155,7 @@ void dvz_geometry_destroy(DvzGeometry* geometry)
     if (geometry == NULL)
         return;
 
-    dvz_geometry_reset(geometry);
+    (void)dvz_geometry_reset(geometry);
     dvz_free(geometry);
 }
 

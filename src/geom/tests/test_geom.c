@@ -42,7 +42,8 @@ int test_geometry_alloc(TstContext* suite, const TstCase* tstitem)
     AT(geometry->texcoords != NULL);
     AT(geometry->indices != NULL);
 
-    dvz_geometry_reset(geometry);
+    AT(dvz_geometry_reset(geometry) == DVZ_OK);
+    AT(dvz_geometry_reset(NULL) == DVZ_ERROR);
     AT(geometry->vertex_count == 0);
     AT(geometry->positions == NULL);
     AT(geometry->indices == NULL);

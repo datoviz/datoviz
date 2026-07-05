@@ -2073,7 +2073,7 @@ Emit a keyboard event on the router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/keyboard.h`:103._
+_Declared in `include/datoviz/input/keyboard.h`:106._
 
 ### `dvz_keyboard_modifier_bit()`
 
@@ -2091,7 +2091,7 @@ Return the modifier bit mask for a key.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/keyboard.h`:67._
+_Declared in `include/datoviz/input/keyboard.h`:68._
 
 ### `dvz_keyboard_modifier_state()`
 
@@ -2103,7 +2103,7 @@ Create a modifier tracker.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/keyboard.h`:74._
+_Declared in `include/datoviz/input/keyboard.h`:75._
 
 ### `dvz_keyboard_modifier_state_destroy()`
 
@@ -2121,7 +2121,7 @@ Destroy a modifier tracker.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/keyboard.h`:81._
+_Declared in `include/datoviz/input/keyboard.h`:82._
 
 ### `dvz_keyboard_modifier_state_mods()`
 
@@ -2139,12 +2139,12 @@ Return the current modifier mask.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/keyboard.h`:96._
+_Declared in `include/datoviz/input/keyboard.h`:99._
 
 ### `dvz_keyboard_modifier_state_update()`
 
 ```c title="dvz_keyboard_modifier_state_update"
-void dvz_keyboard_modifier_state_update(
+DvzResult dvz_keyboard_modifier_state_update(
     DvzKeyboardModifierState * state,
     DvzKeyboardEventType type,
     DvzKeyCode key
@@ -2153,6 +2153,7 @@ void dvz_keyboard_modifier_state_update(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on validation error |
 | `state` | `DvzKeyboardModifierState *` |  |
 | `type` | `DvzKeyboardEventType` |  |
 | `key` | `DvzKeyCode` |  |
@@ -2161,7 +2162,7 @@ Update the modifier tracker with a keyboard event.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/input/keyboard.h`:88._
+_Declared in `include/datoviz/input/keyboard.h`:91._
 
 ## Pointer
 

@@ -441,7 +441,7 @@ Return a default Bezier tessellation descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:420._
+_Declared in `include/datoviz/geom.h`:421._
 
 ## Composite
 
@@ -602,7 +602,7 @@ Create an indexed Z-axis arrow geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:374._
+_Declared in `include/datoviz/geom.h`:375._
 
 ### `dvz_geometry_arrow_desc()`
 
@@ -620,7 +620,7 @@ Related: [`dvz_geometry_arrow()`](#dvz_geometry_arrow).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:365._
+_Declared in `include/datoviz/geom.h`:366._
 
 ### `dvz_geometry_bounds()`
 
@@ -639,7 +639,7 @@ Compute the bounds of a geometry object's positions.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:75._
+_Declared in `include/datoviz/geom.h`:76._
 
 ### `dvz_geometry_compute_normals()`
 
@@ -658,7 +658,7 @@ Recompute smooth vertex normals from triangle indices.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:85._
+_Declared in `include/datoviz/geom.h`:86._
 
 ### `dvz_geometry_cone()`
 
@@ -677,7 +677,7 @@ Create an indexed Z-axis cone geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:340._
+_Declared in `include/datoviz/geom.h`:341._
 
 ### `dvz_geometry_cone_desc()`
 
@@ -695,7 +695,7 @@ Related: [`dvz_geometry_cone()`](#dvz_geometry_cone).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:331._
+_Declared in `include/datoviz/geom.h`:332._
 
 ### `dvz_geometry_contours()`
 
@@ -722,7 +722,7 @@ Extract contour line segments from indexed triangle geometry and per-vertex scal
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:141._
+_Declared in `include/datoviz/geom.h`:142._
 
 ### `dvz_geometry_contours_destroy()`
 
@@ -740,7 +740,7 @@ Destroy extracted contour segments.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:152._
+_Declared in `include/datoviz/geom.h`:153._
 
 ### `dvz_geometry_cube()`
 
@@ -759,7 +759,7 @@ Create an indexed cube geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:170._
+_Declared in `include/datoviz/geom.h`:171._
 
 ### `dvz_geometry_cube_desc()`
 
@@ -777,7 +777,7 @@ Related: [`dvz_geometry_cube()`](#dvz_geometry_cube).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:161._
+_Declared in `include/datoviz/geom.h`:162._
 
 ### `dvz_geometry_cylinder()`
 
@@ -796,7 +796,7 @@ Create an indexed Z-axis cylinder geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:323._
+_Declared in `include/datoviz/geom.h`:324._
 
 ### `dvz_geometry_cylinder_desc()`
 
@@ -814,7 +814,7 @@ Related: [`dvz_geometry_cylinder()`](#dvz_geometry_cylinder).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:314._
+_Declared in `include/datoviz/geom.h`:315._
 
 ### `dvz_geometry_destroy()`
 
@@ -832,7 +832,7 @@ Destroy a geometry object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:65._
+_Declared in `include/datoviz/geom.h`:66._
 
 ### `dvz_geometry_disc()`
 
@@ -851,7 +851,7 @@ Create an indexed XY disc geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:255._
+_Declared in `include/datoviz/geom.h`:256._
 
 ### `dvz_geometry_disc_desc()`
 
@@ -869,7 +869,7 @@ Related: [`dvz_geometry_disc()`](#dvz_geometry_disc).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:246._
+_Declared in `include/datoviz/geom.h`:247._
 
 ### `dvz_geometry_edges()`
 
@@ -888,7 +888,7 @@ Derive a unique edge list from indexed triangle geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:118._
+_Declared in `include/datoviz/geom.h`:119._
 
 ### `dvz_geometry_edges_destroy()`
 
@@ -906,7 +906,7 @@ Destroy a derived geometry edge list.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:127._
+_Declared in `include/datoviz/geom.h`:128._
 
 ### `dvz_geometry_merge()`
 
@@ -927,7 +927,7 @@ Merge several geometry objects into one indexed geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:108._
+_Declared in `include/datoviz/geom.h`:109._
 
 ### `dvz_geometry_obj()`
 
@@ -951,7 +951,7 @@ fans and texture coordinates/materials are ignored.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:395._
+_Declared in `include/datoviz/geom.h`:396._
 
 ### `dvz_geometry_obj_desc()`
 
@@ -969,7 +969,7 @@ Related: [`dvz_geometry_obj()`](#dvz_geometry_obj).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:382._
+_Declared in `include/datoviz/geom.h`:383._
 
 ### `dvz_geometry_plane()`
 
@@ -988,7 +988,7 @@ Create an indexed XY plane geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:188._
+_Declared in `include/datoviz/geom.h`:189._
 
 ### `dvz_geometry_plane_desc()`
 
@@ -1006,7 +1006,7 @@ Related: [`dvz_geometry_plane()`](#dvz_geometry_plane).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:179._
+_Declared in `include/datoviz/geom.h`:180._
 
 ### `dvz_geometry_regular_polygon()`
 
@@ -1025,7 +1025,7 @@ Create an indexed XY regular-polygon geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:289._
+_Declared in `include/datoviz/geom.h`:290._
 
 ### `dvz_geometry_regular_polygon_desc()`
 
@@ -1043,25 +1043,26 @@ Related: [`dvz_geometry_regular_polygon()`](#dvz_geometry_regular_polygon).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:280._
+_Declared in `include/datoviz/geom.h`:281._
 
 ### `dvz_geometry_reset()`
 
 ```c title="dvz_geometry_reset"
-void dvz_geometry_reset(
+DvzResult dvz_geometry_reset(
     DvzGeometry * geometry
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on validation error |
 | `geometry` | `DvzGeometry *` | the geometry |
 
 Free all buffers owned by a geometry object and reset it to an empty state.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:56._
+_Declared in `include/datoviz/geom.h`:57._
 
 ### `dvz_geometry_sector()`
 
@@ -1080,7 +1081,7 @@ Create an indexed XY sector geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:272._
+_Declared in `include/datoviz/geom.h`:273._
 
 ### `dvz_geometry_sector_desc()`
 
@@ -1098,7 +1099,7 @@ Related: [`dvz_geometry_sector()`](#dvz_geometry_sector).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:263._
+_Declared in `include/datoviz/geom.h`:264._
 
 ### `dvz_geometry_sphere()`
 
@@ -1117,7 +1118,7 @@ Create an indexed UV-sphere geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:206._
+_Declared in `include/datoviz/geom.h`:207._
 
 ### `dvz_geometry_sphere_desc()`
 
@@ -1135,7 +1136,7 @@ Related: [`dvz_geometry_sphere()`](#dvz_geometry_sphere).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:197._
+_Declared in `include/datoviz/geom.h`:198._
 
 ### `dvz_geometry_star()`
 
@@ -1154,7 +1155,7 @@ Create an indexed XY star geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:306._
+_Declared in `include/datoviz/geom.h`:307._
 
 ### `dvz_geometry_star_desc()`
 
@@ -1172,7 +1173,7 @@ Related: [`dvz_geometry_star()`](#dvz_geometry_star).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:297._
+_Declared in `include/datoviz/geom.h`:298._
 
 ### `dvz_geometry_surface_grid()`
 
@@ -1191,7 +1192,7 @@ Create an indexed structured surface-grid geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:224._
+_Declared in `include/datoviz/geom.h`:225._
 
 ### `dvz_geometry_surface_grid_desc()`
 
@@ -1209,7 +1210,7 @@ Related: [`dvz_geometry_surface_grid()`](#dvz_geometry_surface_grid).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:215._
+_Declared in `include/datoviz/geom.h`:216._
 
 ### `dvz_geometry_surface_grid_update_heights()`
 
@@ -1232,7 +1233,7 @@ Update the heights of an existing structured surface-grid geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:237._
+_Declared in `include/datoviz/geom.h`:238._
 
 ### `dvz_geometry_torus()`
 
@@ -1251,7 +1252,7 @@ Create an indexed torus geometry around the Z axis.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:357._
+_Declared in `include/datoviz/geom.h`:358._
 
 ### `dvz_geometry_torus_desc()`
 
@@ -1269,7 +1270,7 @@ Related: [`dvz_geometry_torus()`](#dvz_geometry_torus).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:348._
+_Declared in `include/datoviz/geom.h`:349._
 
 ### `dvz_geometry_transform()`
 
@@ -1290,7 +1291,7 @@ Apply an affine transform to positions and normals in place.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:96._
+_Declared in `include/datoviz/geom.h`:97._
 
 ## Glyph
 
@@ -2288,7 +2289,7 @@ Related: [`dvz_polygon()`](#dvz_polygon).
 
 Raw ctypes: available through `dvz_ffi_polygon_desc()`.
 
-_Declared in `include/datoviz/geom.h`:404._
+_Declared in `include/datoviz/geom.h`:405._
 
 ### `dvz_polygon_destroy()`
 
@@ -3395,7 +3396,7 @@ Tessellate a cubic Bezier curve into an owned point path.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:457._
+_Declared in `include/datoviz/geom.h`:458._
 
 ### `dvz_tessellate_quadratic_bezier()`
 
@@ -3420,7 +3421,7 @@ Tessellate a quadratic Bezier curve into an owned point path.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:443._
+_Declared in `include/datoviz/geom.h`:444._
 
 ## Tessellated
 
@@ -3440,7 +3441,7 @@ Destroy a tessellated path.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:467._
+_Declared in `include/datoviz/geom.h`:468._
 
 ## Triangulate
 
@@ -3463,7 +3464,7 @@ Triangulate a polygon with optional holes into indexed XY mesh geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:431._
+_Declared in `include/datoviz/geom.h`:432._
 
 ## Triangulation
 
@@ -3481,7 +3482,7 @@ Return a default triangulation descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:412._
+_Declared in `include/datoviz/geom.h`:413._
 
 ## Vector
 

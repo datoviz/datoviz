@@ -16923,9 +16923,10 @@ else:
  * Free all buffers owned by a geometry object and reset it to an empty state.
  *
  * @param geometry the geometry
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_geometry_reset.argtypes = [ctypes.POINTER(DvzGeometry)]
-    dvz_geometry_reset.restype = None
+    dvz_geometry_reset.restype = ctypes.c_int32
 
 
 try:
@@ -20861,9 +20862,11 @@ except AttributeError:
 else:
     dvz_keyboard_modifier_state_update.__doc__ = """/**
  * Update the modifier tracker with a keyboard event.
+ *
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_keyboard_modifier_state_update.argtypes = [ctypes.POINTER(DvzKeyboardModifierState), ctypes.c_int, ctypes.c_int]
-    dvz_keyboard_modifier_state_update.restype = None
+    dvz_keyboard_modifier_state_update.restype = ctypes.c_int32
 
 
 try:

@@ -1354,6 +1354,27 @@ user-scale, and callback setters from `void` to `DvzResult`. A first parallel bu
 hit process-isolated exit-127 failures while the build was still relinking; sequential reruns of
 `just test app` and `just test gui` passed.
 
+Validation for the stable geometry/input utility mutator slice:
+
+```sh
+just build
+just ctypes
+just ctypes-check
+python3 tools/build_api_c.py
+python3 tools/build_api_c.py --check
+python3 tools/check_api_status.py
+just docs-api
+just docs-api-check
+just test geom
+just test input
+just ctypes-smoke
+just ctypes-python-smoke
+```
+
+Result: all passed. This slice converted stable `dvz_geometry_reset()` and
+`dvz_keyboard_modifier_state_update()` from `void` to `DvzResult`, with tests covering success and
+validation-error paths.
+
 
 ## Validation Baseline For Future Agent
 

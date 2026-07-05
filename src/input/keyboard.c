@@ -82,17 +82,21 @@ void dvz_keyboard_modifier_state_destroy(DvzKeyboardModifierState* state)
 
 
 
-void dvz_keyboard_modifier_state_update(
+DvzResult dvz_keyboard_modifier_state_update(
     DvzKeyboardModifierState* state, DvzKeyboardEventType type, DvzKeyCode key)
 {
-    ANN(state);
+    if (state == NULL)
+        return DVZ_ERROR;
     if (!_is_key_modifier(key))
-        return;
+        return DVZ_ERROR;
     int mask = dvz_keyboard_modifier_bit(key);
     if (type == DVZ_KEYBOARD_EVENT_PRESS || type == DVZ_KEYBOARD_EVENT_REPEAT)
         state->mods |= mask;
     else if (type == DVZ_KEYBOARD_EVENT_RELEASE)
         state->mods &= ~mask;
+    else
+        return DVZ_ERROR;
+    return DVZ_OK;
 }
 
 

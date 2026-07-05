@@ -368,10 +368,14 @@ int test_keyboard_modifiers(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     DvzKeyboardModifierState* state = dvz_keyboard_modifier_state();
-    dvz_keyboard_modifier_state_update(state, DVZ_KEYBOARD_EVENT_PRESS, DVZ_KEY_LEFT_SHIFT);
+    AT(dvz_keyboard_modifier_state_update(state, DVZ_KEYBOARD_EVENT_PRESS, DVZ_KEY_LEFT_SHIFT) ==
+       DVZ_OK);
     AT(dvz_keyboard_modifier_state_mods(state) == DVZ_KEY_MODIFIER_SHIFT);
-    dvz_keyboard_modifier_state_update(state, DVZ_KEYBOARD_EVENT_RELEASE, DVZ_KEY_LEFT_SHIFT);
+    AT(dvz_keyboard_modifier_state_update(state, DVZ_KEYBOARD_EVENT_RELEASE, DVZ_KEY_LEFT_SHIFT) ==
+       DVZ_OK);
     AT(dvz_keyboard_modifier_state_mods(state) == 0);
+    AT(dvz_keyboard_modifier_state_update(state, DVZ_KEYBOARD_EVENT_PRESS, DVZ_KEY_A) ==
+       DVZ_ERROR);
     dvz_keyboard_modifier_state_destroy(state);
     return 0;
 }

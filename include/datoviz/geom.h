@@ -52,8 +52,9 @@ DVZ_EXPORT DvzGeometry* dvz_geometry(uint32_t vertex_count, uint32_t index_count
  * Free all buffers owned by a geometry object and reset it to an empty state.
  *
  * @param geometry the geometry
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_geometry_reset(DvzGeometry* geometry);
+DVZ_EXPORT DvzResult dvz_geometry_reset(DvzGeometry* geometry);
 
 
 
