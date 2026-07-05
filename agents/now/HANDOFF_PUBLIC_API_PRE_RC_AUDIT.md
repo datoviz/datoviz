@@ -69,15 +69,23 @@ Completed checkpoints:
      raw `ctypes`, and generated C API docs to use `DVZ_SCENE_CLOCK_*` names.
    - Validation passed: `just ctypes`, `just ctypes-check`, `just build`, `just test app`,
      `just test scene/animation`, `just spec-check`, and `git diff --check`.
+7. `6ab5814aa` `api: remove public mock data helpers`
+   - Removed `include/datoviz/math/mock.h`, `src/math/mock.c`, and the `dvzmath.h` umbrella include.
+   - Regenerated raw `ctypes` and generated C API docs, removing 12 exported mock-data helpers from
+     the public API surface.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just configure`, `just build`, `just test math`,
+     `just spec-check`, stale-reference scan, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
 - dirty `data` submodule state;
 - untracked `paper/paper.pdf`.
 
-Next recommended checkpoint: demote or remove the public mock-data helpers in
-`include/datoviz/math/mock.h`. They return owned arrays and currently create awkward/raw-ctypes
-ownership traps. Keep the transitional texture wrappers as a separate follow-up decision.
+Next recommended checkpoint: decide and execute the transitional texture wrapper cleanup for
+`dvz_visual_set_texture_rgba8()` and `dvz_visual_set_texture_r32f()`. Preferred direction is to
+remove them from the stable public surface unless a concrete replacement path needs a renamed,
+slot-explicit sampled-field helper.
 
 
 ## Maintainer Decisions
@@ -412,9 +420,8 @@ generated ctypes, generated docs if applicable, and examples in sync.
 1. **API exposure cleanup**
    - Completed: remove or demote internal object/container API.
    - Completed: remove legacy clock aliases.
-   - Next: remove or demote mock-data helpers.
-   - Decide separately: remove transitional texture wrappers, or rename them as explicit sampled
-     field helpers.
+   - Completed: remove or demote mock-data helpers.
+   - Next: remove transitional texture wrappers, or rename them as explicit sampled field helpers.
    - Validation: `just ctypes`, `just ctypes-check`, narrow compile/build check.
 
 2. **Stable scene naming cleanup**
