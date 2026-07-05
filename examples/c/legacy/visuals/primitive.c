@@ -360,8 +360,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed");
 
-    state.win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "primitive");
-    EXAMPLE_CHECK(state.win != NULL, "dvz_view_glfw() failed");
+    state.win = dvz_view_window(app, figure, WIDTH, HEIGHT, "primitive");
+    EXAMPLE_CHECK(state.win != NULL, "dvz_view_window() failed");
 
     DvzArcball* arcball = dvz_view_arcball(state.win, panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");

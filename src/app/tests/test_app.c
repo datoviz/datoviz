@@ -270,7 +270,7 @@ static int test_app_view_size_policy_resolve(TstContext* suite, const TstCase* i
     AT(fabs(resolved.estimated_width_mm - resolved.target_width_mm) < 1e-9);
 
     DvzViewSizeDesc host = dvz_view_size_desc_host_logical_px(320, 240);
-    resolved = dvz_view_size_resolve(&host, DVZ_VIEW_GLFW);
+    resolved = dvz_view_size_resolve(&host, DVZ_VIEW_WINDOW);
     AT(resolved.requested_policy == DVZ_VIEW_SIZE_HOST_LOGICAL_PX);
     AT(resolved.host_logical_width == 320);
     AT(resolved.framebuffer_width == 320);
@@ -279,7 +279,7 @@ static int test_app_view_size_policy_resolve(TstContext* suite, const TstCase* i
 
     DvzViewSizeDesc reference = dvz_view_size_desc_reference_px(960.0, 540.0, 96.0);
     reference.requested_device_scale = 2.0;
-    resolved = dvz_view_size_resolve(&reference, DVZ_VIEW_GLFW);
+    resolved = dvz_view_size_resolve(&reference, DVZ_VIEW_WINDOW);
     AT(resolved.requested_policy == DVZ_VIEW_SIZE_REFERENCE_PX);
     AT(resolved.host_logical_width == 960);
     AT(resolved.host_logical_height == 540);
@@ -291,7 +291,7 @@ static int test_app_view_size_policy_resolve(TstContext* suite, const TstCase* i
     reference.monitor_dpi_x_override = 139.2;
     reference.monitor_dpi_y_override = 139.2;
     reference.requested_device_scale = 1.0;
-    resolved = dvz_view_size_resolve(&reference, DVZ_VIEW_GLFW);
+    resolved = dvz_view_size_resolve(&reference, DVZ_VIEW_WINDOW);
     AT(resolved.physical_metrics_source == DVZ_PHYSICAL_METRICS_USER_OVERRIDE);
     AT(resolved.framebuffer_width == 1392);
     AT(resolved.framebuffer_height == 783);
@@ -303,7 +303,7 @@ static int test_app_view_size_policy_resolve(TstContext* suite, const TstCase* i
     physical.monitor_dpi_x_override = 192.0;
     physical.monitor_dpi_y_override = 192.0;
     physical.requested_device_scale = 2.0;
-    resolved = dvz_view_size_resolve(&physical, DVZ_VIEW_GLFW);
+    resolved = dvz_view_size_resolve(&physical, DVZ_VIEW_WINDOW);
     AT(resolved.requested_policy == DVZ_VIEW_SIZE_PHYSICAL_MM);
     AT(resolved.host_logical_width == 960);
     AT(resolved.host_logical_height == 480);

@@ -20,11 +20,11 @@ def _facade():
 
 
 def run(scene, figure, width=800, height=600, title="Datoviz"):
-    """Open a GLFW window, run the event loop, then destroy the app and scene."""
+    """Open a native window, run the event loop, then destroy the app and scene."""
     from . import raw as _raw
     title_bytes = title.encode() if isinstance(title, str) else title
     app = _raw.dvz_app(scene)
-    _raw.dvz_view_glfw(app, figure, width, height, title_bytes)
+    _raw.dvz_view_window(app, figure, width, height, title_bytes)
     _raw.dvz_app_run(app, 0)
     _raw.dvz_app_destroy(app)
     _raw.dvz_scene_destroy(scene)

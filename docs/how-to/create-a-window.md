@@ -1,6 +1,6 @@
 # Open an Interactive Window
 
-Run a scene in a native GLFW window for desktop interaction.
+Run a scene in a native window for desktop interaction.
 
 ## Use This When
 
@@ -16,11 +16,11 @@ native window.
 ## Minimal Sequence
 
 Build the retained scene first: create the scene, figure, panel, visuals, data, and panel
-attachments. Then create the native app and attach a GLFW view to the figure.
+attachments. Then create the native app and attach a window view to the figure.
 
 ```c
 DvzApp* app = dvz_app(scene);
-DvzView* view = dvz_view_glfw(app, figure, width, height, "Datoviz");
+DvzView* view = dvz_view_window(app, figure, width, height, "Datoviz");
 dvz_view_panzoom(view, panel, NULL);
 
 dvz_app_run(app, 0);
@@ -37,7 +37,7 @@ tests or deterministic captures.
 | `DvzScene` | `dvz_scene()` | Owns retained figures, panels, visuals, data, and scene state. | Destroy after the app. |
 | `DvzFigure` | `dvz_figure()` | Describes the rendered figure attached to a view. | Owned by the scene. |
 | `DvzApp` | `dvz_app(scene)` | Owns the live runtime, GPU context, scheduler, and views. | Destroy explicitly with `dvz_app_destroy()`. |
-| `DvzView` | `dvz_view_glfw()` | Native visible window for one figure. | Owned by the app. |
+| `DvzView` | `dvz_view_window()` | Native visible window for one figure. | Owned by the app. |
 
 The usual order is:
 
@@ -59,11 +59,11 @@ callbacks and GUI overlays should also be registered before `dvz_app_run()`.
 
 ## Backend Status
 
-`dvz_view_glfw()` is native-only. It opens a desktop GLFW window and is not part of the WebGPU/WASM
-browser path. The generated gallery marks the canonical GLFW app example as `native-only` with the
-`native-view` requirement.
+`dvz_view_window()` is native-only. It opens a desktop window through the configured native backend
+and is not part of the WebGPU/WASM browser path. The generated gallery marks the canonical native
+app example as `native-only` with the `native-view` requirement.
 
-`dvz_view_glfw()` can return `NULL` when GLFW is unavailable, no display is available, window
+`dvz_view_window()` can return `NULL` when GLFW is unavailable, no display is available, window
 creation fails, or the GPU/runtime cannot be initialized. In automated environments, prefer
 `dvz_view_offscreen()`.
 
@@ -90,9 +90,9 @@ the app scheduler render until the user closes the window.
 ## Common Mistakes
 
 - Creating the app before the scene has a figure and attached visuals.
-- Forgetting to check whether `dvz_app()` or `dvz_view_glfw()` returned `NULL`.
+- Forgetting to check whether `dvz_app()` or `dvz_view_window()` returned `NULL`.
 - Binding controllers after `dvz_app_run()`, when the interactive loop is already active.
-- Capturing a PNG from a GLFW view before the first frame has rendered.
+- Capturing a PNG from a native window view before the first frame has rendered.
 - Running a native window path in headless CI instead of using `dvz_view_offscreen()`.
 - Sharing platform window handles without using the external-surface integration path.
 

@@ -868,7 +868,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(app != NULL, "dense_points: dvz_app() failed (no GPU or display?)");
 
     DvzView* win =
-        dvz_view_glfw(app, figure, WIDTH, HEIGHT, "Dense spatial omics points");
+        dvz_view_window(app, figure, WIDTH, HEIGHT, "Dense spatial omics points");
     EXAMPLE_CHECK(win != NULL, "dense_points: GLFW window creation failed");
 
     DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();

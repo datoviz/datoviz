@@ -209,7 +209,6 @@ Functions: 206
     | [`dvz_view_external_surface()`](#dvz_view_external_surface) | `include/datoviz/app_interop.h` |
     | [`dvz_view_fly()`](#dvz_view_fly) | `include/datoviz/app.h` |
     | [`dvz_view_framebuffer_size()`](#dvz_view_framebuffer_size) | `include/datoviz/app.h` |
-    | [`dvz_view_glfw()`](#dvz_view_glfw) | `include/datoviz/app.h` |
     | [`dvz_view_gui()`](#dvz_view_gui) | `include/datoviz/gui.h` |
     | [`dvz_view_input()`](#dvz_view_input) | `include/datoviz/app.h` |
     | [`dvz_view_logical_size()`](#dvz_view_logical_size) | `include/datoviz/app.h` |
@@ -248,6 +247,7 @@ Functions: 206
     | [`dvz_view_update_external_surface()`](#dvz_view_update_external_surface) | `include/datoviz/app_interop.h` |
     | [`dvz_view_user_scale()`](#dvz_view_user_scale) | `include/datoviz/app.h` |
     | [`dvz_view_wake()`](#dvz_view_wake) | `include/datoviz/app.h` |
+    | [`dvz_view_window()`](#dvz_view_window) | `include/datoviz/app.h` |
 
     ### Window
 
@@ -3190,39 +3190,6 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/app.h`:637._
 
-### `dvz_view_glfw()`
-
-```c title="dvz_view_glfw"
-DvzView * dvz_view_glfw(
-    DvzApp * app,
-    DvzFigure * figure,
-    uint32_t width,
-    uint32_t height,
-    const char * title
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzView *` | the view handle, or NULL on failure |
-| `app` | `DvzApp *` | the app |
-| `figure` | `DvzFigure *` | the figure to render (borrowed) |
-| `width` | `uint32_t` | window width in pixels |
-| `height` | `uint32_t` | window height in pixels |
-| `title` | `const char *` | window title string, or NULL for a default title |
-
-Create an interactive GLFW view for a figure.
-
-Opens a visible window backed by a present (swapchain) canvas.  The frame loop started by
-dvz_app_run(app, 0) drives rendering until the user closes the window.
-
-Requires that the platform supports GLFW and that a display is available.  Returns NULL when
-GLFW is unavailable or window creation fails.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/app.h`:485._
-
 ### `dvz_view_gui()`
 
 ```c title="dvz_view_gui"
@@ -4093,6 +4060,39 @@ thread by dvz_view_render_once().
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/app.h`:1006._
+
+### `dvz_view_window()`
+
+```c title="dvz_view_window"
+DvzView * dvz_view_window(
+    DvzApp * app,
+    DvzFigure * figure,
+    uint32_t width,
+    uint32_t height,
+    const char * title
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzView *` | the view handle, or NULL on failure |
+| `app` | `DvzApp *` | the app |
+| `figure` | `DvzFigure *` | the figure to render (borrowed) |
+| `width` | `uint32_t` | window width in pixels |
+| `height` | `uint32_t` | window height in pixels |
+| `title` | `const char *` | window title string, or NULL for a default title |
+
+Create an interactive native-window view for a figure.
+
+Opens a visible window backed by a present (swapchain) canvas.  The frame loop started by
+dvz_app_run(app, 0) drives rendering until the user closes the window.
+
+Uses the configured native window backend. Returns NULL when the backend is unavailable, no
+display is available, or window creation fails.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/app.h`:485._
 
 ## Window
 

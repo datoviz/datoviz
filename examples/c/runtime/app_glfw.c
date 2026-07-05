@@ -82,8 +82,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* view = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "app_glfw");
-    EXAMPLE_CHECK(view != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* view = dvz_view_window(app, figure, WIDTH, HEIGHT, "app_glfw");
+    EXAMPLE_CHECK(view != NULL, "dvz_view_window() failed (GLFW unavailable?)");
     EXAMPLE_CHECK(dvz_view_panzoom(view, panel, NULL) != NULL, "dvz_view_panzoom() failed");
 
     dvz_app_run(app, example_frame_count(argc, argv));

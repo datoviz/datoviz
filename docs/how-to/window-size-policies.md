@@ -24,7 +24,7 @@ Use `DvzViewSizeDesc` when you need explicit control over those spaces.
 ## Example
 
 ```c
-DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_GLFW);
+DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_WINDOW);
 DvzViewSizeDesc size = dvz_view_size_desc_reference_px(1280.0, 720.0, 96.0);
 desc.size_policy = size.policy;
 desc.size_width = size.width;

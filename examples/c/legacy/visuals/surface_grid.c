@@ -161,7 +161,7 @@ int main(int argc, char** argv)
 
     app = dvz_app(scene);
     DvzView* win =
-        app != NULL ? dvz_view_glfw(app, figure, WIDTH, HEIGHT, "surface grid") : NULL;
+        app != NULL ? dvz_view_window(app, figure, WIDTH, HEIGHT, "surface grid") : NULL;
     EXAMPLE_CHECK(app != NULL && win != NULL, "app/window setup failed");
 
     DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);

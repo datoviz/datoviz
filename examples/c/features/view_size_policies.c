@@ -177,7 +177,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzViewSizeDesc size = _parse_size_policy(argc, argv);
-    DvzResolvedViewSize initial = dvz_view_size_resolve(&size, DVZ_VIEW_GLFW);
+    DvzResolvedViewSize initial = dvz_view_size_resolve(&size, DVZ_VIEW_WINDOW);
 
     DvzFigure* figure = dvz_figure(
         scene, initial.host_logical_width, initial.host_logical_height, 0);
@@ -189,7 +189,7 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_GLFW);
+    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_WINDOW);
     desc.size_policy = size.policy;
     desc.size_width = size.width;
     desc.size_height = size.height;

@@ -505,7 +505,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzView* win = probe ? dvz_view_offscreen(app, figure, WIDTH, HEIGHT) :
-                           dvz_view_glfw(app, figure, WIDTH, HEIGHT, "axis_lattice_smoke");
+                           dvz_view_window(app, figure, WIDTH, HEIGHT, "axis_lattice_smoke");
     EXAMPLE_CHECK(win != NULL, "view creation failed (GPU/display unavailable?)");
 
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);

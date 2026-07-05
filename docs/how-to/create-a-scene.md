@@ -18,7 +18,7 @@ owns the runtime used to render them.
 | Visual | Homogeneous retained batch of renderable items. | Visual-family constructors such as `dvz_point()`. |
 | Controller | Navigation state bound to one or more panel dimensions. | `dvz_panzoom()`, `dvz_arcball()`, and related helpers. |
 | Adornment | Scene-level context such as axes, labels, colorbars, legends, or scale bars. | Panel/adornment helpers. |
-| App and view | Runtime presentation path for an existing scene and figure. | `dvz_app()`, `dvz_view_glfw()`, or offscreen view helpers. |
+| App and view | Runtime presentation path for an existing scene and figure. | `dvz_app()`, `dvz_view_window()`, or offscreen view helpers. |
 
 Keep those layers separate. Build retained scene state first; then choose how to present or capture
 it.
@@ -47,7 +47,7 @@ dvz_visual_set_data(visual, "diameter_px", diameter_px, n);
 dvz_panel_add_visual(panel, visual, NULL);
 
 DvzApp* app = dvz_app(scene);
-dvz_view_glfw(app, figure, width, height, "Datoviz");
+dvz_view_window(app, figure, width, height, "Datoviz");
 dvz_app_run(app, 0);
 dvz_app_destroy(app);
 dvz_scene_destroy(scene);

@@ -4215,7 +4215,7 @@ DvzView* dvz_view(DvzApp* app, DvzFigure* figure, const DvzViewDesc* desc)
         win = _view_create_offscreen(
             app, figure, resolved.framebuffer_width, resolved.framebuffer_height);
         break;
-    case DVZ_VIEW_GLFW:
+    case DVZ_VIEW_WINDOW:
         win = _view_create_glfw(
             app, figure, resolved.logical_width, resolved.logical_height, resolved.title,
             resolved.has_position, resolved.x, resolved.y);
@@ -4229,7 +4229,7 @@ DvzView* dvz_view(DvzApp* app, DvzFigure* figure, const DvzViewDesc* desc)
     if (win == NULL)
         return NULL;
 
-    if (resolved.kind == DVZ_VIEW_GLFW)
+    if (resolved.kind == DVZ_VIEW_WINDOW)
     {
         _view_apply_desc_scales(win, &resolved);
         _view_refresh_size_state(win, NULL);
@@ -4361,7 +4361,7 @@ _view_create_glfw(
     }
     win->app            = app;
     win->figure         = figure;
-    win->kind           = DVZ_VIEW_GLFW;
+    win->kind           = DVZ_VIEW_WINDOW;
     win->window         = window;
     win->canvas         = canvas;
     win->target_id      = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->view_count;
@@ -4496,7 +4496,7 @@ dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t heig
 
 
 /**
- * Create an interactive GLFW view.
+ * Create an interactive native-window view.
  *
  * @param app app that owns the rendering runtime
  * @param figure figure rendered into the view
@@ -4505,10 +4505,10 @@ dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t heig
  * @param title window title
  * @return view handle, or NULL on failure
  */
-DvzView* dvz_view_glfw(
+DvzView* dvz_view_window(
     DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title)
 {
-    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_GLFW);
+    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_WINDOW);
     desc.logical_width = width;
     desc.logical_height = height;
     desc.title = title;

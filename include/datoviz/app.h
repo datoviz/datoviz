@@ -92,7 +92,7 @@ typedef enum DvzAppCaptureFlags
 typedef enum DvzViewKind
 {
     DVZ_VIEW_OFFSCREEN,
-    DVZ_VIEW_GLFW,
+    DVZ_VIEW_WINDOW,
     DVZ_VIEW_EXTERNAL_SURFACE,
 } DvzViewKind;
 
@@ -467,13 +467,13 @@ dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t heig
 
 
 /**
- * Create an interactive GLFW view for a figure.
+ * Create an interactive native-window view for a figure.
  *
  * Opens a visible window backed by a present (swapchain) canvas.  The frame loop started by
  * dvz_app_run(app, 0) drives rendering until the user closes the window.
  *
- * Requires that the platform supports GLFW and that a display is available.  Returns NULL when
- * GLFW is unavailable or window creation fails.
+ * Uses the configured native window backend. Returns NULL when the backend is unavailable, no
+ * display is available, or window creation fails.
  *
  * @param app the app
  * @param figure the figure to render (borrowed)
@@ -482,7 +482,7 @@ dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t heig
  * @param title window title string, or NULL for a default title
  * @return the view handle, or NULL on failure
  */
-DVZ_EXPORT DvzView* dvz_view_glfw(
+DVZ_EXPORT DvzView* dvz_view_window(
     DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title);
 
 

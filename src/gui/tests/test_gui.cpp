@@ -346,7 +346,7 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
 
     DvzView* source_win = dvz_view_offscreen(app, source_figure, 160, 120);
     DvzView* host_win =
-        dvz_view_glfw(app, host_figure, 640, 480, "test_gui_viewport_resize_hidden_smoke");
+        dvz_view_window(app, host_figure, 640, 480, "test_gui_viewport_resize_hidden_smoke");
     if (source_win == NULL || host_win == NULL)
     {
         log_warn("test_gui_viewport_resize_hidden_smoke skipped: view creation failed");
@@ -497,9 +497,9 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
     }
 
     DvzView* null_win =
-        dvz_view_glfw(null_app, null_figure, 320, 240, "test_gui_null_font_defaults");
+        dvz_view_window(null_app, null_figure, 320, 240, "test_gui_null_font_defaults");
     DvzView* explicit_win =
-        dvz_view_glfw(explicit_app, explicit_figure, 320, 240, "test_gui_explicit_font_defaults");
+        dvz_view_window(explicit_app, explicit_figure, 320, 240, "test_gui_explicit_font_defaults");
     if (null_win == NULL || explicit_win == NULL)
     {
         log_warn("test_gui_config_inherits_app_font_defaults skipped: view creation failed");
@@ -586,7 +586,7 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     }
 
     DvzView* host_win =
-        dvz_view_glfw(app, host_figure, 640, 480, "test_gui_multi_viewport_input_routers");
+        dvz_view_window(app, host_figure, 640, 480, "test_gui_multi_viewport_input_routers");
     if (host_win == NULL)
     {
         log_warn("test_gui_multi_viewport_input_routers skipped: GLFW window creation failed");

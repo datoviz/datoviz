@@ -837,7 +837,7 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     if (resolved.presentation == DVZ_RUNNER_PRESENT_GLFW)
     {
         const char* title = spec->title != NULL ? spec->title : spec->id;
-        DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_GLFW);
+        DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_WINDOW);
         desc.logical_width = ctx.logical_width;
         desc.logical_height = ctx.logical_height;
         desc.framebuffer_width = ctx.framebuffer_width;

@@ -3181,12 +3181,12 @@ DVZ_VIDEO_MUX_MP4_POST = DvzVideoMux.DVZ_VIDEO_MUX_MP4_POST
 
 class DvzViewKind(CtypesEnum):
     DVZ_VIEW_OFFSCREEN = 0
-    DVZ_VIEW_GLFW = 1
+    DVZ_VIEW_WINDOW = 1
     DVZ_VIEW_EXTERNAL_SURFACE = 2
 
 
 DVZ_VIEW_OFFSCREEN = DvzViewKind.DVZ_VIEW_OFFSCREEN
-DVZ_VIEW_GLFW = DvzViewKind.DVZ_VIEW_GLFW
+DVZ_VIEW_WINDOW = DvzViewKind.DVZ_VIEW_WINDOW
 DVZ_VIEW_EXTERNAL_SURFACE = DvzViewKind.DVZ_VIEW_EXTERNAL_SURFACE
 
 
@@ -29449,31 +29449,6 @@ else:
 
 
 try:
-    dvz_view_glfw = dvz.dvz_view_glfw
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_view_glfw')
-else:
-    dvz_view_glfw.__doc__ = """/**
- * Create an interactive GLFW view for a figure.
- *
- * Opens a visible window backed by a present (swapchain) canvas.  The frame loop started by
- * dvz_app_run(app, 0) drives rendering until the user closes the window.
- *
- * Requires that the platform supports GLFW and that a display is available.  Returns NULL when
- * GLFW is unavailable or window creation fails.
- *
- * @param app the app
- * @param figure the figure to render (borrowed)
- * @param width window width in pixels
- * @param height window height in pixels
- * @param title window title string, or NULL for a default title
- * @return the view handle, or NULL on failure
- */"""
-    dvz_view_glfw.argtypes = [ctypes.POINTER(DvzApp), ctypes.POINTER(DvzFigure), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
-    dvz_view_glfw.restype = ctypes.POINTER(DvzView)
-
-
-try:
     dvz_view_gui = dvz.dvz_view_gui
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_view_gui')
@@ -30170,6 +30145,31 @@ else:
  */"""
     dvz_view_wake.argtypes = [ctypes.POINTER(DvzView)]
     dvz_view_wake.restype = None
+
+
+try:
+    dvz_view_window = dvz.dvz_view_window
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_view_window')
+else:
+    dvz_view_window.__doc__ = """/**
+ * Create an interactive native-window view for a figure.
+ *
+ * Opens a visible window backed by a present (swapchain) canvas.  The frame loop started by
+ * dvz_app_run(app, 0) drives rendering until the user closes the window.
+ *
+ * Uses the configured native window backend. Returns NULL when the backend is unavailable, no
+ * display is available, or window creation fails.
+ *
+ * @param app the app
+ * @param figure the figure to render (borrowed)
+ * @param width window width in pixels
+ * @param height window height in pixels
+ * @param title window title string, or NULL for a default title
+ * @return the view handle, or NULL on failure
+ */"""
+    dvz_view_window.argtypes = [ctypes.POINTER(DvzApp), ctypes.POINTER(DvzFigure), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
+    dvz_view_window.restype = ctypes.POINTER(DvzView)
 
 
 try:

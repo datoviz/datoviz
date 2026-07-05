@@ -45,7 +45,7 @@ records can stay post-RC1 unless the first adapter needs them.
 
 | GSP need | Current Datoviz surface | Evidence inspected | Notes |
 |---|---|---|---|
-| Scene/figure/panel/app/view creation | `dvz_scene()`, `dvz_figure()`, `dvz_panel()`, `dvz_app()`, `dvz_view_offscreen()`, `dvz_view_glfw()` | `include/datoviz/scene.h`, `include/datoviz/app.h`, `src/app/app.c` | Public C flow matches `scene -> figure -> panel -> view -> render`. |
+| Scene/figure/panel/app/view creation | `dvz_scene()`, `dvz_figure()`, `dvz_panel()`, `dvz_app()`, `dvz_view_offscreen()`, `dvz_view_window()` | `include/datoviz/scene.h`, `include/datoviz/app.h`, `src/app/app.c` | Public C flow matches `scene -> figure -> panel -> view -> render`. |
 | Scene-to-runtime boundary | `dvz_figure_emit_frame()`, `DvzSceneFrameArtifact`, `dvz_scene_frame_artifact_stream()`, app-owned `DvzView` execution | `spec/scene/core/RUNTIME_BOUNDARY.md`, `include/datoviz/scene.h`, `src/app/app.c` | Runtime consumes artifact-owned DRP2 streams; scene does not expose backend handles. |
 | Default/static capability snapshot | `DvzCapabilitySnapshot`, `dvz_capability_snapshot()`, `dvz_scene_set_capabilities()` | `include/datoviz/scene/types.h`, `include/datoviz/scene/frame_plan.h`, `src/scene/frame_plan/capabilities.c` | Useful for tests and planning, but not a live runtime query. |
 | Query/readback capability fields | Snapshot includes readback, integer format, render-target format, profile, and row-pitch fields | `include/datoviz/scene/types.h`, `src/app/app.c`, `src/scene/query/policy.c` | More complete than the original GSP prep baseline. |
