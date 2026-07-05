@@ -2,20 +2,21 @@
 
 These instructions target Datoviz v0.4.
 
-For most Python users, installation should be:
+Before v0.4 packages are published, build Datoviz from source for v0.4 testing. The current stable
+PyPI package is still the v0.3 line and should not be used for these v0.4 docs.
+
+After v0.4 packages are published, the normal Python install command will be:
 
 ```sh
 pip install datoviz
 ```
 
-During the release-candidate phase, the exact PyPI command may temporarily need a pre-release flag
-or an explicit version, for example:
+During the release-candidate phase, use the exact command from the release notes. It may temporarily
+need a pre-release flag or an explicit version, for example:
 
 ```sh
 pip install --pre datoviz
 ```
-
-Use the normal `pip install datoviz` command unless the v0.4 release notes say otherwise.
 
 
 ## Choose Your Path
@@ -32,8 +33,11 @@ Use the normal `pip install datoviz` command unless the v0.4 release notes say o
 
 ## Python Package
 
-Create a virtual environment first. This keeps Datoviz and its Python dependencies separate from
-your system Python.
+Use this section after v0.4 packages or release-candidate artifacts are available. Until then, use
+[Build from source](#build-from-source).
+
+Create a virtual environment first. This keeps Datoviz and its Python dependencies separate from your
+system Python.
 
 === "macOS / Linux"
 
@@ -41,7 +45,7 @@ your system Python.
     python -m venv .venv
     source .venv/bin/activate
     python -m pip install --upgrade pip
-    pip install datoviz
+    pip install --pre datoviz
     ```
 
 === "Windows PowerShell"
@@ -50,13 +54,13 @@ your system Python.
     py -m venv .venv
     .\.venv\Scripts\Activate.ps1
     python -m pip install --upgrade pip
-    pip install datoviz
+    pip install --pre datoviz
     ```
 
-During the RC phase, replace the last command with the pre-release command if needed:
+After the final v0.4 package is published, replace the last command with:
 
 ```sh
-pip install --pre datoviz
+pip install datoviz
 ```
 
 Check that Python can import Datoviz:
@@ -186,7 +190,7 @@ Native Windows with Visual Studio is a more advanced path:
 5. Select the `msvc` CMake preset and build.
 
 Native Windows Python wheels are part of the v0.4 packaging path. During RC testing, use the exact
-package command from the release notes if it differs from `pip install datoviz`.
+package command from the release notes.
 
 
 ## Check Your Install
@@ -227,12 +231,12 @@ You should see a window with colored points that you can pan and zoom. Continue 
 
 | Package path | v0.4 status |
 | --- | --- |
-| `pip install datoviz` | intended normal Python install command for v0.4 |
-| `pip install --pre datoviz` | possible temporary RC command if the v0.4 package is published as a pre-release |
+| `pip install datoviz` | intended normal Python install command after v0.4 packages are published |
+| `pip install --pre datoviz` | possible RC command if the v0.4 package is published as a pre-release |
 | Source build | available for development, C/C++ integration, and package validation |
 | C/C++ local integration | available from a source build |
 | vcpkg | planned package path after a stable release tag |
 | conda-forge | planned package path after release tag and platform validation |
 
-If a package command changes during the RC phase, the release notes should be treated as the source
-of truth.
+Before v0.4 packages are published, the source build is the v0.4 path. If a package command changes
+during the RC phase, the release notes should be treated as the source of truth.

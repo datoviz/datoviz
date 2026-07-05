@@ -17,7 +17,7 @@ the runtime, platform, and asset assumptions used to create it.
 | Need | Use |
 | --- | --- |
 | Record an offscreen or GLFW app view and replay it in another app view | `dvz_view_record_start()` and `dvz_view_replay_start()` |
-| Replay a saved recording into a live native window | `examples/c/lab/replay_dvzr.c` |
+| Replay a saved recording into a live native window | the same app replay calls on a window-backed view |
 | Execute a recording directly against a DRP2 runtime | `dvz_drp2_recording_open()` plus `dvz_drp2_recording_execute_*()` |
 | Build or inspect hand-written DRP2 command streams | `examples/c/advanced/raw_triangle_drp2.c` |
 
@@ -72,20 +72,9 @@ Record an offscreen scene, replay it, and write comparison PNGs:
 The feature example writes `record_replay.dvzr/`, `record_replay_original.png`, and
 `record_replay_replay.png` next to the executable.
 
-Record with the lab example and replay the same directory through the standalone replay tool:
-
-```sh
-./build/examples/c/lab/record_dvzr
-./build/examples/c/lab/replay_dvzr ./build/examples/c/lab/record_dvzr.dvzr
-```
-
-Useful replay options:
-
-```sh
-./build/examples/c/lab/replay_dvzr --fast path/to/recording.dvzr
-./build/examples/c/lab/replay_dvzr --loop --speed 0.5 path/to/recording.dvzr
-./build/examples/c/lab/replay_dvzr --frames 120 path/to/recording.dvzr
-```
+Standalone replay tools may exist in the lab tree during development, but lab examples are not part
+of the public release proof. Public code should start from the runtime recording example and the app
+replay functions above.
 
 ## Lower-Level DRP2 Recording
 

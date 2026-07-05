@@ -44,6 +44,9 @@ axis is the item count.
 import numpy as np
 import datoviz as dvz
 
+scene = dvz.dvz_scene()
+figure = dvz.dvz_figure(scene, 800, 600, 0)
+panel = dvz.dvz_panel_full(figure)
 points = dvz.dvz_point(scene, 0)
 
 positions = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)
@@ -65,6 +68,8 @@ dvz.dvz_panel_add_visual(panel, points, None)
 raw C function. For slice updates after a full allocation, use:
 
 ```python
+first_item = 0
+positions_chunk = np.array([[0.1, 0.0, 0.0]], dtype=np.float32)
 dvz.dvz_visual_set_data_range(points, "position", first_item, positions_chunk)
 ```
 

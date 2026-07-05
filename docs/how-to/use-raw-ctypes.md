@@ -36,15 +36,20 @@ raw.dvz_scene_destroy(scene)
 Use the reference binding page for exact symbol names, pointer/count calls, callback types, and
 opaque handle behavior.
 
-For visual attribute uploads, raw calls require explicit byte strings, pointers, and item counts:
+For visual attribute uploads, raw calls require explicit byte strings, pointers, and item counts.
+The next fragment assumes you already created a `points` visual with `raw.dvz_point(scene, 0)`:
 
 ```python
 import ctypes
 import numpy as np
 import datoviz.raw as raw
 
-positions = np.asarray(positions, dtype=np.float32, order="C")
-colors = np.asarray(colors, dtype=np.uint8, order="C")
+positions = np.array(
+    [[-0.5, -0.5, 0.0], [0.5, -0.5, 0.0], [0.0, 0.5, 0.0]], dtype=np.float32
+)
+colors = np.array(
+    [[255, 80, 80, 255], [80, 255, 160, 255], [80, 160, 255, 255]], dtype=np.uint8
+)
 
 raw.dvz_visual_set_data(
     points,

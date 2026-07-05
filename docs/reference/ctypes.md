@@ -123,7 +123,9 @@ import ctypes
 import numpy as np
 import datoviz.raw as raw
 
-positions = np.asarray(positions, dtype=np.float32, order="C")
+positions = np.array(
+    [[-0.5, -0.5, 0.0], [0.5, -0.5, 0.0], [0.0, 0.5, 0.0]], dtype=np.float32
+)
 
 raw.dvz_visual_set_data(
     points,
@@ -143,7 +145,7 @@ The raw binding keeps exact C names:
 
 | C surface | Raw Python surface |
 | --- | --- |
-| `dvz_*` functions | `dvz.dvz_*` functions |
+| `dvz_*` functions | `raw.dvz_*` functions |
 | `Dvz*` structs and handles | generated `ctypes` classes or pointer-like handles |
 | `DVZ_*` constants and enum values | generated constants or enum-compatible values |
 | callback typedefs | generated `ctypes.CFUNCTYPE` types where supported |
@@ -167,7 +169,8 @@ Use these rules unless a specific function documents a narrower contract:
 5. do not rely on `datoviz._ctypes` internals for ownership or lifetime behavior.
 
 Owned `char*` returns are represented as `ctypes.c_void_p`, not `ctypes.c_char_p`, so the original
-pointer can be passed to the matching destroy function:
+pointer is preserved. Some generated destroy signatures currently accept `ctypes.c_char_p`, so cast
+the pointer at the destroy call:
 
 ```python
 ptr = raw.dvz_scene_json(scene)
@@ -175,7 +178,7 @@ try:
     text = ctypes.string_at(ptr).decode("utf8") if ptr else None
 finally:
     if ptr:
-        raw.dvz_scene_json_destroy(ptr)
+        raw.dvz_scene_json_destroy(ctypes.cast(ptr, ctypes.c_char_p))
 ```
 
 Callback and host-helper behavior is still experimental. Thin Python helpers may exist for event

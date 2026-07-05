@@ -49,9 +49,9 @@ Bind a color scale to the image when the scalar values should be colormapped:
 dvz_visual_set_scale(image, "color", scale);
 ```
 
-Use `dvz_visual_set_field()` for image, labels, mesh texture, and volume sampled fields. The older
-texture convenience wrappers still exist, but new examples should keep dimensions, format, semantic
-role, and row pitch explicit in the sampled-field descriptor and data view.
+Use `dvz_visual_set_field()` for image, labels, mesh texture, and volume sampled fields. Public
+examples should keep dimensions, format, semantic role, and row pitch explicit in the sampled-field
+descriptor and data view.
 
 ## Categorical Labels
 

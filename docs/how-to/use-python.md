@@ -22,14 +22,19 @@ Choose the import surface first:
 import numpy as np
 import datoviz as dvz
 
+positions = np.array(
+    [[-0.5, -0.5, 0.0], [0.5, -0.5, 0.0], [0.0, 0.5, 0.0]], dtype=np.float32
+)
+colors = np.array(
+    [[255, 80, 80, 255], [80, 255, 160, 255], [80, 160, 255, 255]], dtype=np.uint8
+)
+diameters = np.array([18.0, 18.0, 18.0], dtype=np.float32)
+
 scene = dvz.dvz_scene()
 figure = dvz.dvz_figure(scene, 800, 600, 0)
 panel = dvz.dvz_panel_full(figure)
 
 points = dvz.dvz_point(scene, 0)
-positions = np.asarray(positions, dtype=np.float32, order="C")
-colors = np.asarray(colors, dtype=np.uint8, order="C")
-diameters = np.asarray(diameters, dtype=np.float32, order="C")
 
 dvz.dvz_visual_set_data(points, "position", positions)
 dvz.dvz_visual_set_data(points, "color", colors)

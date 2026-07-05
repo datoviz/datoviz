@@ -1,7 +1,8 @@
 # Quickstart: Rendering in 10 Minutes
 
-**Prerequisites:** Datoviz installed with `pip install datoviz`, installed from a v0.4 pre-release
-package, or built from source — see [Install](install.md).
+**Prerequisites:** Datoviz v0.4 installed from source or from a v0.4 release-candidate package. The
+stable PyPI package may still be the v0.3 line during the pre-RC phase, so check
+[Install](install.md) before using `pip install datoviz`.
 
 This page builds one complete visualization: 10,000 random points in an interactive window. You can
 drag to pan and scroll to zoom. No data files are needed.

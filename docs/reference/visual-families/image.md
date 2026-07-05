@@ -39,7 +39,7 @@ sampling is intended for pixel-exact image/checkerboard rendering.
 | Kind | Attributes |
 | --- | --- |
 | Required | sampled field bound to `"field"` plus placement attributes |
-| Placement forms | legacy four-corner `position` (`vec3[4]`) and `texcoords` (`vec2[4]`), or retained per-item `position` plus `extent` |
+| Placement forms | four-corner `position` (`vec3[4]`) and `texcoords` (`vec2[4]`), or retained per-item `position` plus `extent` |
 | Optional | `tex_rect`; `anchor`; scale bound to `"color"`; alpha mode; depth test; transform |
 
 ## Picking And Probing
@@ -49,8 +49,8 @@ positions to image coordinates and sampled field values.
 
 ## Backend Notes
 
-Native and WebGPU paths are active for 2D sampled fields. Legacy texture convenience wrappers lower
-to scene-owned sampled fields internally.
+Native and WebGPU paths are active for 2D sampled fields. Public examples should bind scene-owned
+sampled fields explicitly with `dvz_visual_set_field()`.
 
 ## Canonical Example
 
@@ -61,7 +61,6 @@ to scene-owned sampled fields internally.
 | Build | `just example-c visuals/image` |
 | Smoke | `./build/examples/c/visuals/image --png` |
 | Validation | `smoke+screenshot` |
-| Agent copy-safe | yes |
 
 ## See Also
 

@@ -11,14 +11,17 @@ experimental browser path through WebGPU/WASM.
 
 ## Install
 
-For Python users, the intended v0.4 install command is:
+Before v0.4 packages are published, build Datoviz from source for v0.4 testing. The current stable
+PyPI package is still the v0.3 line.
+
+After v0.4 packages are published, the normal Python install command will be:
 
 ```sh
 pip install datoviz
 ```
 
-During release-candidate testing, the release notes may ask you to use a pre-release command
-instead:
+During release-candidate testing, use the exact command from the release notes. It may require a
+pre-release flag or an explicit version:
 
 ```sh
 pip install --pre datoviz
