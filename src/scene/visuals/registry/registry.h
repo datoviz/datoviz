@@ -78,6 +78,7 @@ typedef bool (*DvzVisualFamilyAfterAttrFn)(
 struct DvzVisualFamilyOps
 {
     DvzVisualType type;
+    DvzSceneVisualFamily family;
     const char* name;
     DvzRenderableKind renderable_kind;
     DvzSceneVisualDescKind desc_kind;
@@ -121,6 +122,10 @@ struct DvzVisualFamilyOps
 /*************************************************************************************************/
 
 const DvzVisualFamilyOps* _scene_visual_family_ops(DvzVisualType type);
+
+const DvzVisualFamilyOps* _scene_visual_family_ops_for_family(DvzSceneVisualFamily family);
+
+DvzSceneVisualFamily _scene_visual_family_from_type(DvzVisualType type);
 
 uint32_t _scene_visual_family_ops_count(void);
 

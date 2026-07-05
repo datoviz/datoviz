@@ -215,7 +215,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_visual_default_bounds, _scene_point_visual_bind_desc,
          _scene_point_visual_pipeline_desc, _scene_point_visual_shader_desc,
          _scene_point_visual_draw_desc, _scene_point_visual_desc_from_metadata),
-     .renderable_kind = DVZ_RENDERABLE_POINT_LIKE, .desc_kind = DVZ_SCENE_VISUAL_DESC_POINT,
+     .family = DVZ_SCENE_VISUAL_FAMILY_POINT, .renderable_kind = DVZ_RENDERABLE_POINT_LIKE,
+     .desc_kind = DVZ_SCENE_VISUAL_DESC_POINT,
      .attrs = POINT_ATTRS, .attr_count = DVZ_ARRAY_COUNT(POINT_ATTRS),
      .expected_attrs = "position, color, diameter_px, item_state",
      .attr_alias_public = "diameter_px", .attr_alias_storage = "size",
@@ -227,7 +228,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_visual_default_bounds, _scene_pixel_visual_bind_desc,
          _scene_pixel_visual_pipeline_desc, _scene_pixel_visual_shader_desc,
          _scene_pixel_visual_draw_desc, _scene_pixel_visual_desc_from_metadata),
-     .renderable_kind = DVZ_RENDERABLE_POINT_LIKE, .desc_kind = DVZ_SCENE_VISUAL_DESC_PIXEL,
+     .family = DVZ_SCENE_VISUAL_FAMILY_PIXEL, .renderable_kind = DVZ_RENDERABLE_POINT_LIKE,
+     .desc_kind = DVZ_SCENE_VISUAL_DESC_PIXEL,
      .attrs = PIXEL_ATTRS, .attr_count = DVZ_ARRAY_COUNT(PIXEL_ATTRS),
      .expected_attrs = "position, color, pixel_size_px, item_state",
      .attr_alias_public = "pixel_size_px", .attr_alias_storage = "size",
@@ -238,7 +240,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_marker_visual_bind_desc, _scene_marker_visual_pipeline_desc,
          _scene_marker_visual_shader_desc, _scene_marker_visual_draw_desc,
          _scene_marker_visual_desc_from_metadata),
-     .renderable_kind = DVZ_RENDERABLE_POINT_LIKE, .desc_kind = DVZ_SCENE_VISUAL_DESC_MARKER,
+     .family = DVZ_SCENE_VISUAL_FAMILY_MARKER, .renderable_kind = DVZ_RENDERABLE_POINT_LIKE,
+     .desc_kind = DVZ_SCENE_VISUAL_DESC_MARKER,
      .attrs = MARKER_ATTRS, .attr_count = DVZ_ARRAY_COUNT(MARKER_ATTRS),
      .expected_attrs = "position, color, diameter_px, item_state, angle, shape/symbol, tex_rect",
      .attr_alias_public = "diameter_px", .attr_alias_storage = "size",
@@ -250,7 +253,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_segment_visual_bounds, _scene_segment_visual_bind_desc,
          _scene_segment_visual_pipeline_desc, _scene_segment_visual_shader_desc,
          _scene_segment_visual_draw_desc, _scene_segment_visual_desc_from_metadata),
-     .renderable_kind = DVZ_RENDERABLE_STROKE_QUAD, .desc_kind = DVZ_SCENE_VISUAL_DESC_SEGMENT,
+     .family = DVZ_SCENE_VISUAL_FAMILY_SEGMENT, .renderable_kind = DVZ_RENDERABLE_STROKE_QUAD,
+     .desc_kind = DVZ_SCENE_VISUAL_DESC_SEGMENT,
      .attrs = SEGMENT_ATTRS, .attr_count = DVZ_ARRAY_COUNT(SEGMENT_ATTRS),
      .expected_attrs = "position_start, position_end, color, stroke_width_px",
      .attr_alias_public = "stroke_width_px", .attr_alias_storage = "line_width",
@@ -261,7 +265,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_visual_default_bounds, _scene_path_visual_bind_desc,
          _scene_path_visual_pipeline_desc, _scene_path_visual_shader_desc,
          _scene_path_visual_draw_desc, _scene_path_visual_desc_from_metadata),
-     .renderable_kind = DVZ_RENDERABLE_PATH_STROKE, .desc_kind = DVZ_SCENE_VISUAL_DESC_PATH,
+     .family = DVZ_SCENE_VISUAL_FAMILY_PATH, .renderable_kind = DVZ_RENDERABLE_PATH_STROKE,
+     .desc_kind = DVZ_SCENE_VISUAL_DESC_PATH,
      .default_material_kind = DVZ_MATERIAL_KIND_LIT,
      .default_material_model = DVZ_MATERIAL_MODEL_PHONG,
      .attrs = PATH_ATTRS, .attr_count = DVZ_ARRAY_COUNT(PATH_ATTRS),
@@ -275,7 +280,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_image_visual_bounds, _scene_image_visual_bind_desc,
          _scene_image_visual_pipeline_desc, _scene_image_visual_shader_desc,
          _scene_image_visual_draw_desc, _scene_image_visual_desc_from_metadata),
-     .renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD, .desc_kind = DVZ_SCENE_VISUAL_DESC_IMAGE,
+     .family = DVZ_SCENE_VISUAL_FAMILY_IMAGE, .renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD,
+     .desc_kind = DVZ_SCENE_VISUAL_DESC_IMAGE,
      .attrs = IMAGE_ATTRS, .attr_count = DVZ_ARRAY_COUNT(IMAGE_ATTRS),
      .expected_attrs = "position, extent, position_px, extent_px, anchor, tex_rect, texcoords",
      .fill_metadata = _scene_image_visual_fill_metadata, .supports_scale = true},
@@ -284,7 +290,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_mesh_visual_bind_desc, _scene_mesh_visual_pipeline_desc,
          _scene_mesh_visual_shader_desc, _scene_mesh_visual_draw_desc,
          _scene_mesh_visual_desc_from_metadata),
-     .renderable_kind = DVZ_RENDERABLE_INDEXED_MESH, .desc_kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
+     .family = DVZ_SCENE_VISUAL_FAMILY_MESH, .renderable_kind = DVZ_RENDERABLE_INDEXED_MESH,
+     .desc_kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
      .default_material_kind = DVZ_MATERIAL_KIND_LIT,
      .default_material_model = DVZ_MATERIAL_MODEL_PHONG, .supports_material = true,
      .supports_depth_cue = true,
@@ -297,7 +304,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_volume_visual_bounds, _scene_volume_visual_bind_desc,
          _scene_volume_visual_pipeline_desc, _scene_volume_visual_shader_desc,
          _scene_volume_visual_draw_desc, _scene_volume_visual_desc_from_metadata),
-     .renderable_kind = DVZ_RENDERABLE_VOLUME_PROXY, .desc_kind = DVZ_SCENE_VISUAL_DESC_VOLUME,
+     .family = DVZ_SCENE_VISUAL_FAMILY_VOLUME, .renderable_kind = DVZ_RENDERABLE_VOLUME_PROXY,
+     .desc_kind = DVZ_SCENE_VISUAL_DESC_VOLUME,
      .default_material_kind = DVZ_MATERIAL_KIND_VOLUME,
      .attrs = VOLUME_ATTRS, .attr_count = DVZ_ARRAY_COUNT(VOLUME_ATTRS),
      .expected_attrs = "position, texcoords, plus a bound 3D field",
@@ -308,7 +316,9 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_visual_default_bounds, _scene_primitive_visual_bind_desc,
          _scene_primitive_visual_pipeline_desc, _scene_primitive_visual_shader_desc,
          _scene_primitive_visual_draw_desc, _scene_primitive_visual_desc_from_metadata),
-     .renderable_kind = DVZ_RENDERABLE_INDEXED_MESH, .desc_kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
+     .family = DVZ_SCENE_VISUAL_FAMILY_PRIMITIVE,
+     .renderable_kind = DVZ_RENDERABLE_INDEXED_MESH,
+     .desc_kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
      .default_material_kind = DVZ_MATERIAL_KIND_LIT,
      .default_material_model = DVZ_MATERIAL_MODEL_PHONG, .supports_material = true,
      .supports_depth_cue = true, .attrs = PRIMITIVE_ATTRS,
@@ -320,7 +330,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_sphere_visual_bounds, _scene_sphere_visual_bind_desc,
          _scene_sphere_visual_pipeline_desc, _scene_sphere_visual_shader_desc,
          _scene_sphere_visual_draw_desc, _scene_sphere_visual_desc_from_metadata),
-     .renderable_kind = DVZ_RENDERABLE_POINT_LIKE, .desc_kind = DVZ_SCENE_VISUAL_DESC_SPHERE,
+     .family = DVZ_SCENE_VISUAL_FAMILY_SPHERE, .renderable_kind = DVZ_RENDERABLE_POINT_LIKE,
+     .desc_kind = DVZ_SCENE_VISUAL_DESC_SPHERE,
      .default_material_kind = DVZ_MATERIAL_KIND_LIT,
      .default_material_model = DVZ_MATERIAL_MODEL_PHONG, .supports_material = true,
      .supports_depth_cue = true, .attrs = SPHERE_ATTRS,
@@ -333,7 +344,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_glyph_visual_bounds, _scene_glyph_visual_bind_desc,
          _scene_glyph_visual_pipeline_desc, _scene_glyph_visual_shader_desc,
          _scene_glyph_visual_draw_desc, _scene_glyph_visual_desc_from_metadata),
-     .renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD, .desc_kind = DVZ_SCENE_VISUAL_DESC_GLYPH,
+     .family = DVZ_SCENE_VISUAL_FAMILY_GLYPH, .renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD,
+     .desc_kind = DVZ_SCENE_VISUAL_DESC_GLYPH,
      .attrs = GLYPH_ATTRS, .attr_count = DVZ_ARRAY_COUNT(GLYPH_ATTRS),
      .expected_attrs = "position, bounds, texcoords, color, angle, plus a bound 2D field",
      .upload_position_topology = true, .panel_clip_rect = true,
@@ -343,6 +355,7 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_visual_default_bounds, _scene_text_visual_bind_desc,
          _scene_text_visual_pipeline_desc, _scene_text_visual_shader_desc,
          _scene_text_visual_draw_desc, NULL),
+     .family = DVZ_SCENE_VISUAL_FAMILY_TEXT,
      .attrs = TEXT_ATTRS, .attr_count = DVZ_ARRAY_COUNT(TEXT_ATTRS),
      .expected_attrs = "text strings plus position, anchor, size, color, angle",
      .reset_state = _scene_text_visual_reset_state, .skip_visual_uploads = true},
@@ -351,7 +364,7 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_visual_default_bounds, _scene_labels_visual_bind_desc,
          _scene_labels_visual_pipeline_desc, _scene_labels_visual_shader_desc,
          _scene_labels_visual_draw_desc, _scene_labels_visual_desc_from_metadata),
-     .renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD,
+     .family = DVZ_SCENE_VISUAL_FAMILY_LABELS, .renderable_kind = DVZ_RENDERABLE_TEXTURED_QUAD,
      .attrs = IMAGE_ATTRS, .attr_count = DVZ_ARRAY_COUNT(IMAGE_ATTRS),
      .expected_attrs = "position, extent, position_px, extent_px, anchor, tex_rect, texcoords",
      .init_state = _scene_labels_visual_init_state,
@@ -362,7 +375,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_visual_default_bounds, _scene_splat_visual_bind_desc,
          _scene_splat_visual_pipeline_desc, _scene_splat_visual_shader_desc,
          _scene_splat_visual_draw_desc, _scene_splat_visual_desc_from_metadata),
-     .renderable_kind = DVZ_RENDERABLE_POINT_LIKE, .desc_kind = DVZ_SCENE_VISUAL_DESC_SPLAT,
+     .family = DVZ_SCENE_VISUAL_FAMILY_SPLAT, .renderable_kind = DVZ_RENDERABLE_POINT_LIKE,
+     .desc_kind = DVZ_SCENE_VISUAL_DESC_SPLAT,
      .attrs = SPLAT_ATTRS, .attr_count = DVZ_ARRAY_COUNT(SPLAT_ATTRS),
      .expected_attrs = "position, color, sigma, angle",
      .validate_attr = _scene_splat_visual_validate_attr},
@@ -371,6 +385,7 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
          _scene_vector_visual_bounds, _scene_vector_visual_bind_desc,
          _scene_vector_visual_pipeline_desc, _scene_vector_visual_shader_desc,
          _scene_vector_visual_draw_desc, _scene_vector_visual_desc_from_metadata),
+     .family = DVZ_SCENE_VISUAL_FAMILY_VECTOR,
      .attrs = VECTOR_ATTRS, .attr_count = DVZ_ARRAY_COUNT(VECTOR_ATTRS),
      .expected_attrs = "position, optional vector, color, stroke_width_px",
      .attr_alias_public = "stroke_width_px", .attr_alias_storage = "line_width",
@@ -400,6 +415,38 @@ const DvzVisualFamilyOps* _scene_visual_family_ops(DvzVisualType type)
             return &VISUAL_FAMILY_OPS[i];
     }
     return NULL;
+}
+
+
+
+/**
+ * Return the registered visual-family operations for one public visual family.
+ *
+ * @param family public visual family
+ * @return registered operations, or NULL when the family is not active
+ */
+const DvzVisualFamilyOps* _scene_visual_family_ops_for_family(DvzSceneVisualFamily family)
+{
+    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(VISUAL_FAMILY_OPS); i++)
+    {
+        if (VISUAL_FAMILY_OPS[i].family == family)
+            return &VISUAL_FAMILY_OPS[i];
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Return the public visual family for one retained visual type.
+ *
+ * @param type retained visual type
+ * @return public visual family, or NONE when the type is not active
+ */
+DvzSceneVisualFamily _scene_visual_family_from_type(DvzVisualType type)
+{
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops(type);
+    return ops != NULL ? ops->family : DVZ_SCENE_VISUAL_FAMILY_NONE;
 }
 
 
