@@ -124,8 +124,8 @@ The default style is selected-normal and unselected-dimmed:
 
 ```text
 DvzSelectionVisualStyle style = dvz_selection_visual_style();
-style.unselected.flags = DVZ_ITEM_STATE_VISUAL_ALPHA;
-style.unselected.alpha = 0.25f;
+style.unselected_visual_flags = DVZ_ITEM_STATE_VISUAL_ALPHA;
+style.unselected_alpha = 0.25f;
 ```
 
 The visual style can be updated at any time:

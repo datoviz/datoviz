@@ -6299,10 +6299,10 @@ int test_app_offscreen_marker_query_selection_preserves_vertical_orientation(
         });
     AT(selection != NULL);
     DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
-    selection_style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
-    selection_style.selected.tint = (DvzColor){255, 220, 20, 255};
-    selection_style.selected.tint_mix = 1.0f;
-    selection_style.unselected.visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
+    selection_style.selected_visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    selection_style.selected_tint = (DvzColor){255, 220, 20, 255};
+    selection_style.selected_tint_mix = 1.0f;
+    selection_style.unselected_visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
     AT(dvz_selection_set_visual_style(selection, &selection_style) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
@@ -6415,10 +6415,10 @@ int test_app_offscreen_pixel_query_selection_preserves_vertical_orientation(
         });
     AT(selection != NULL);
     DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
-    selection_style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
-    selection_style.selected.tint = (DvzColor){255, 220, 20, 255};
-    selection_style.selected.tint_mix = 1.0f;
-    selection_style.unselected.visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
+    selection_style.selected_visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    selection_style.selected_tint = (DvzColor){255, 220, 20, 255};
+    selection_style.selected_tint_mix = 1.0f;
+    selection_style.unselected_visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
     AT(dvz_selection_set_visual_style(selection, &selection_style) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);

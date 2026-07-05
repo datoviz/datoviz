@@ -1241,8 +1241,16 @@ struct DvzSelectionVisualStyle
 {
     uint32_t struct_size;
     uint32_t flags;
-    DvzItemStateVisualStyle selected;
-    DvzItemStateVisualStyle unselected;
+    uint32_t selected_visual_flags;
+    float selected_alpha;
+    DvzColor selected_tint;
+    float selected_tint_mix;
+    float selected_scale;
+    uint32_t unselected_visual_flags;
+    float unselected_alpha;
+    DvzColor unselected_tint;
+    float unselected_tint_mix;
+    float unselected_scale;
 };
 typedef struct DvzSelectionVisualStyle DvzSelectionVisualStyle;
 

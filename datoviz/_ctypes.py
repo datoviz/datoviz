@@ -6165,8 +6165,16 @@ DvzSelectionItem._fields_ = [
 DvzSelectionVisualStyle._fields_ = [
     ('struct_size', ctypes.c_uint32),
     ('flags', ctypes.c_uint32),
-    ('selected', DvzItemStateVisualStyle),
-    ('unselected', DvzItemStateVisualStyle),
+    ('selected_visual_flags', ctypes.c_uint32),
+    ('selected_alpha', ctypes.c_float),
+    ('selected_tint', DvzColor),
+    ('selected_tint_mix', ctypes.c_float),
+    ('selected_scale', ctypes.c_float),
+    ('unselected_visual_flags', ctypes.c_uint32),
+    ('unselected_alpha', ctypes.c_float),
+    ('unselected_tint', DvzColor),
+    ('unselected_tint_mix', ctypes.c_float),
+    ('unselected_scale', ctypes.c_float),
 ]
 
 

@@ -291,7 +291,7 @@ int test_scene_interaction_descriptor_abi_rejects_invalid_structs(
         suite, dvz_selection_set_visual_style(selection, &selection_style) < 0);
 
     selection_style = dvz_selection_visual_style();
-    selection_style.selected.struct_size = 0;
+    selection_style.selected_scale = NAN;
     AT_EXPECTED_ERROR_STRICT(
         suite, dvz_selection_set_visual_style(selection, &selection_style) < 0);
 
@@ -773,18 +773,18 @@ int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstC
     AT(visual->link_key_count == 3);
     AT(visual->link_keys[1] == 11);
     DvzSelectionVisualStyle style = dvz_selection_visual_style();
-    AT(style.selected.visual_flags == DVZ_ITEM_STATE_VISUAL_NONE);
-    AT(style.unselected.visual_flags == DVZ_ITEM_STATE_VISUAL_ALPHA);
-    AC(style.unselected.alpha, 0.25f, 1e-6f);
-    AC(style.selected.scale, 1.0f, 1e-6f);
+    AT(style.selected_visual_flags == DVZ_ITEM_STATE_VISUAL_NONE);
+    AT(style.unselected_visual_flags == DVZ_ITEM_STATE_VISUAL_ALPHA);
+    AC(style.unselected_alpha, 0.25f, 1e-6f);
+    AC(style.selected_scale, 1.0f, 1e-6f);
     AC(dvz_item_state_visual_style().scale, 1.0f, 1e-6f);
-    style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
-    style.selected.tint = (DvzColor){255, 183, 3, 255};
-    style.selected.tint_mix = 1.0f;
-    style.unselected.visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
+    style.selected_visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    style.selected_tint = (DvzColor){255, 183, 3, 255};
+    style.selected_tint_mix = 1.0f;
+    style.unselected_visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
     AT(dvz_selection_set_visual_style(selection, &style) == 0);
-    AT(selection->visual_style.selected.visual_flags == DVZ_ITEM_STATE_VISUAL_TINT);
-    AT(selection->visual_style.unselected.visual_flags == DVZ_ITEM_STATE_VISUAL_NONE);
+    AT(selection->visual_style.selected_visual_flags == DVZ_ITEM_STATE_VISUAL_TINT);
+    AT(selection->visual_style.unselected_visual_flags == DVZ_ITEM_STATE_VISUAL_NONE);
 
     DvzQueryResult query = {
         .request_id = 1,
@@ -1151,9 +1151,9 @@ int test_scene_pixel_hover_selection_item_state(TstContext* suite, const TstCase
     AT(dvz_hover_set_visual_style(hover, &hover_style) == 0);
 
     DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
-    selection_style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
-    selection_style.selected.tint = (DvzColor){255, 190, 64, 255};
-    selection_style.selected.tint_mix = 1.0f;
+    selection_style.selected_visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    selection_style.selected_tint = (DvzColor){255, 190, 64, 255};
+    selection_style.selected_tint_mix = 1.0f;
     AT(dvz_selection_set_visual_style(selection, &selection_style) == 0);
 
     DvzQueryResult hit = {
@@ -1256,9 +1256,9 @@ int test_scene_sphere_hover_selection_item_state(TstContext* suite, const TstCas
     AT(dvz_hover_set_visual_style(hover, &hover_style) == 0);
 
     DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
-    selection_style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
-    selection_style.selected.tint = (DvzColor){255, 190, 64, 255};
-    selection_style.selected.tint_mix = 1.0f;
+    selection_style.selected_visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    selection_style.selected_tint = (DvzColor){255, 190, 64, 255};
+    selection_style.selected_tint_mix = 1.0f;
     AT(dvz_selection_set_visual_style(selection, &selection_style) == 0);
 
     DvzQueryResult hit = {
@@ -1374,9 +1374,9 @@ int test_scene_mesh_instance_hover_selection_item_state(TstContext* suite, const
     AT(dvz_hover_set_visual_style(hover, &hover_style) == 0);
 
     DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
-    selection_style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
-    selection_style.selected.tint = (DvzColor){255, 190, 64, 255};
-    selection_style.selected.tint_mix = 1.0f;
+    selection_style.selected_visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    selection_style.selected_tint = (DvzColor){255, 190, 64, 255};
+    selection_style.selected_tint_mix = 1.0f;
     AT(dvz_selection_set_visual_style(selection, &selection_style) == 0);
 
     DvzQueryResult hit = {

@@ -203,12 +203,6 @@ static bool _selection_visual_style_abi_validate(const DvzSelectionVisualStyle* 
         log_error("invalid DvzSelectionVisualStyle ABI prologue");
         return false;
     }
-    if (
-        !_item_state_visual_style_abi_validate(&style->selected) ||
-        !_item_state_visual_style_abi_validate(&style->unselected))
-    {
-        return false;
-    }
     return true;
 }
 
@@ -589,6 +583,55 @@ static void _item_state_store_style_params(
 }
 
 
+static DvzItemStateVisualStyle _selection_selected_style(const DvzSelectionVisualStyle* style)
+{
+    ANN(style);
+    return (DvzItemStateVisualStyle){
+        DVZ_STRUCT_INIT_FIELDS(DvzItemStateVisualStyle),
+        .visual_flags = style->selected_visual_flags,
+        .alpha = style->selected_alpha,
+        .tint = style->selected_tint,
+        .tint_mix = style->selected_tint_mix,
+        .scale = style->selected_scale,
+    };
+}
+
+
+static DvzItemStateVisualStyle _selection_unselected_style(const DvzSelectionVisualStyle* style)
+{
+    ANN(style);
+    return (DvzItemStateVisualStyle){
+        DVZ_STRUCT_INIT_FIELDS(DvzItemStateVisualStyle),
+        .visual_flags = style->unselected_visual_flags,
+        .alpha = style->unselected_alpha,
+        .tint = style->unselected_tint,
+        .tint_mix = style->unselected_tint_mix,
+        .scale = style->unselected_scale,
+    };
+}
+
+
+static DvzSelectionVisualStyle _selection_visual_style_from_item_styles(
+    const DvzItemStateVisualStyle* selected, const DvzItemStateVisualStyle* unselected)
+{
+    ANN(selected);
+    ANN(unselected);
+    return (DvzSelectionVisualStyle){
+        DVZ_STRUCT_INIT_FIELDS(DvzSelectionVisualStyle),
+        .selected_visual_flags = selected->visual_flags,
+        .selected_alpha = selected->alpha,
+        .selected_tint = selected->tint,
+        .selected_tint_mix = selected->tint_mix,
+        .selected_scale = selected->scale,
+        .unselected_visual_flags = unselected->visual_flags,
+        .unselected_alpha = unselected->alpha,
+        .unselected_tint = unselected->tint,
+        .unselected_tint_mix = unselected->tint_mix,
+        .unselected_scale = unselected->scale,
+    };
+}
+
+
 
 /**
  * Return the first active selection style in the scene.
@@ -650,21 +693,20 @@ static void _item_state_sync_visual_style(DvzScene* scene, DvzVisual* visual)
     ANN(scene);
     ANN(visual);
     DvzItemStateVisualStyle normal = dvz_item_state_visual_style();
-    DvzSelectionVisualStyle selection_style = {
-        DVZ_STRUCT_INIT_FIELDS(DvzSelectionVisualStyle),
-        .selected = normal,
-        .unselected = normal,
-    };
+    DvzSelectionVisualStyle selection_style =
+        _selection_visual_style_from_item_styles(&normal, &normal);
     DvzItemStateVisualStyle hover_style = normal;
     (void)_item_state_active_selection_style(scene, &selection_style);
     (void)_item_state_active_hover_style(scene, &hover_style);
+    DvzItemStateVisualStyle selected_style = _selection_selected_style(&selection_style);
+    DvzItemStateVisualStyle unselected_style = _selection_unselected_style(&selection_style);
 
     DvzSceneItemStateStyleParams* item_params =
         &_visual_family_state(visual)->item_state_style_params;
     _item_state_store_style_params(
-        item_params->selected, item_params->selected_tint, &selection_style.selected);
+        item_params->selected, item_params->selected_tint, &selected_style);
     _item_state_store_style_params(
-        item_params->unselected, item_params->unselected_tint, &selection_style.unselected);
+        item_params->unselected, item_params->unselected_tint, &unselected_style);
     _item_state_store_style_params(item_params->hovered, item_params->hovered_tint, &hover_style);
     _visual_family_state(visual)->item_state_style_params_dirty = true;
 
@@ -1859,11 +1901,7 @@ DvzSelectionVisualStyle dvz_selection_visual_style(void)
     DvzItemStateVisualStyle unselected = normal;
     unselected.visual_flags = DVZ_ITEM_STATE_VISUAL_ALPHA;
     unselected.alpha = 0.25f;
-    return (DvzSelectionVisualStyle){
-        DVZ_STRUCT_INIT_FIELDS(DvzSelectionVisualStyle),
-        .selected = normal,
-        .unselected = unselected,
-    };
+    return _selection_visual_style_from_item_styles(&normal, &unselected);
 }
 
 
@@ -1883,18 +1921,18 @@ DvzResult dvz_selection_set_visual_style(DvzSelection* selection, const DvzSelec
     DvzSelectionVisualStyle resolved = style != NULL ? *style : dvz_selection_visual_style();
     const uint32_t supported_flags =
         DVZ_ITEM_STATE_VISUAL_ALPHA | DVZ_ITEM_STATE_VISUAL_TINT | DVZ_ITEM_STATE_VISUAL_SCALE;
-    if ((resolved.selected.visual_flags & ~supported_flags) != 0 ||
-        (resolved.unselected.visual_flags & ~supported_flags) != 0)
+    if ((resolved.selected_visual_flags & ~supported_flags) != 0 ||
+        (resolved.unselected_visual_flags & ~supported_flags) != 0)
     {
         log_error("unsupported selection visual style flags");
         return -1;
     }
     if (
-        !isfinite(resolved.selected.alpha) || !isfinite(resolved.selected.tint_mix) ||
-        !isfinite(resolved.selected.scale) || !isfinite(resolved.unselected.alpha) ||
-        !isfinite(resolved.unselected.tint_mix) || !isfinite(resolved.unselected.scale))
+        !isfinite(resolved.selected_alpha) || !isfinite(resolved.selected_tint_mix) ||
+        !isfinite(resolved.selected_scale) || !isfinite(resolved.unselected_alpha) ||
+        !isfinite(resolved.unselected_tint_mix) || !isfinite(resolved.unselected_scale))
     {
-        log_error("selection visual alpha and tint_mix values must be finite");
+        log_error("selection visual alpha, tint_mix, and scale values must be finite");
         return -1;
     }
 
