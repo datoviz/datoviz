@@ -4072,9 +4072,9 @@ int test_app_offscreen_overlay_rich_card_has_visible_pixels(
             .text = "fallback",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_RIGHT,
             .offset_px = {12.0f, 10.0f},
-            .style = &style,
         });
     AT(card != NULL);
+    AT(dvz_overlay_card_set_style(card, &style) == 0);
     AT(dvz_overlay_card_set_rich_text(
            card,
            &(DvzOverlayRichTextDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayRichTextDesc),

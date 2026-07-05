@@ -2845,7 +2845,6 @@ struct DvzOverlayCardDesc {
     DvzOverlayCardPlacement placement;
     float[2] anchor_px;
     float[2] offset_px;
-    const DvzOverlayCardStyle * style;
     uint32_t card_flags;
 };
 ```

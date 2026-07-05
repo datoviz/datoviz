@@ -587,14 +587,12 @@ int test_scene_overlay_descriptor_abi_rejects_invalid_structs(
     card_desc.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_overlay_card(overlay, &card_desc) == NULL);
 
-    DvzOverlayCardStyle style = dvz_overlay_card_style();
-    style.struct_size = 0;
-    card_desc = dvz_overlay_card_desc();
-    card_desc.style = &style;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_overlay_card(overlay, &card_desc) == NULL);
-
     DvzOverlayCard* card = dvz_overlay_card(overlay, NULL);
     ANN(card);
+
+    DvzOverlayCardStyle style = dvz_overlay_card_style();
+    style.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_overlay_card_set_style(card, &style) < 0);
 
     style = dvz_overlay_card_style();
     style.flags = 1;
@@ -1530,10 +1528,10 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
             .text = "overlay",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_TOP_RIGHT,
             .anchor_px = {40.0f, 50.0f},
-            .offset_px = {8.0f, 6.0f},
-            .style = &style});
+            .offset_px = {8.0f, 6.0f}});
     ANN(overlay);
     ANN(card);
+    AT(dvz_overlay_card_set_style(card, &style) == 0);
     AT(card->active);
     AT(card->panel == panel);
     AT(card->card.visible);
@@ -1659,7 +1657,6 @@ int test_scene_overlay_card_desc_defaults(TstContext* suite, const TstCase* item
     AC(desc.anchor_px[1], 0.0f, 1e-6f);
     AC(desc.offset_px[0], 12.0f, 1e-6f);
     AC(desc.offset_px[1], 12.0f, 1e-6f);
-    AT(desc.style == NULL);
     AT(desc.card_flags == 0);
 
     DvzScene* scene = dvz_scene();
@@ -1711,9 +1708,9 @@ int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCas
         &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = "fallback",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_TOP_LEFT,
-            .offset_px = {16.0f, 18.0f},
-            .style = &style});
+            .offset_px = {16.0f, 18.0f}});
     ANN(card);
+    AT(dvz_overlay_card_set_style(card, &style) == 0);
 
     AT(dvz_overlay_card_set_rich_text(
            card,

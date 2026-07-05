@@ -250,8 +250,6 @@ static bool _overlay_card_desc_validate(const DvzOverlayCardDesc* desc)
         log_error("invalid DvzOverlayCardDesc ABI prologue");
         return false;
     }
-    if (!_overlay_card_style_validate(desc->style))
-        return false;
     return true;
 }
 
@@ -2696,8 +2694,6 @@ DvzOverlayCard* dvz_overlay_card(DvzOverlay* overlay, const DvzOverlayCardDesc* 
     card->active = true;
     card->flags = resolved.card_flags;
     _scene_card_init(&card->card, overlay->panel);
-    if (_scene_card_apply_style(&card->card, resolved.style) != 0)
-        return NULL;
     if (resolved.text != NULL)
         dvz_strlcpy(card->card.text, resolved.text, sizeof(card->card.text));
     card->card.placement = resolved.placement;

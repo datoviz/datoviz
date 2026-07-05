@@ -113,14 +113,16 @@ static DvzOverlayCard* _add_card(
     style.text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.max_text_chars = 128;
 
-    return dvz_overlay_card(
+    DvzOverlayCard* card = dvz_overlay_card(
         overlay,
         &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = text,
             .placement = placement,
             .offset_px = {offset_x, offset_y},
-            .style = &style,
         });
+    if (card == NULL || dvz_overlay_card_set_style(card, &style) != 0)
+        return NULL;
+    return card;
 }
 
 

@@ -238,14 +238,16 @@ static DvzOverlayCard* _add_plain_header(DvzOverlay* overlay)
     style.text_size_px = 16.0f;
     style.text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
 
-    return dvz_overlay_card(
+    DvzOverlayCard* card = dvz_overlay_card(
         overlay,
         &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = "image probe readout",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_TOP_LEFT,
             .offset_px = {18.0f, 18.0f},
-            .style = &style,
         });
+    if (card == NULL || dvz_overlay_card_set_style(card, &style) != 0)
+        return NULL;
+    return card;
 }
 
 
@@ -578,9 +580,10 @@ int main(int argc, char** argv)
             .text = "fallback",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_RIGHT,
             .offset_px = {22.0f, 22.0f},
-            .style = &rich_style,
         });
     EXAMPLE_CHECK(rich != NULL, "failed to create rich overlay card shell");
+    EXAMPLE_CHECK(
+        dvz_overlay_card_set_style(rich, &rich_style) == 0, "failed to style rich overlay card");
 
     int rc = _set_probe_card_rich_text(
         rich,

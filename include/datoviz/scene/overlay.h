@@ -72,7 +72,6 @@ typedef struct DvzOverlayCardDesc
     DvzOverlayCardPlacement placement;
     float anchor_px[2];
     float offset_px[2];
-    const DvzOverlayCardStyle* style;
     uint32_t card_flags;
 } DvzOverlayCardDesc;
 

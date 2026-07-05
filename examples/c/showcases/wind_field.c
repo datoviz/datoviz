@@ -865,9 +865,8 @@ static bool _add_probe(DvzScene* scene, DvzPanel* panel)
             .text = readout,
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_RIGHT,
             .offset_px = {-112.0f, -46.0f},
-            .style = &card_style,
         });
-    return card != NULL;
+    return card != NULL && dvz_overlay_card_set_style(card, &card_style) == 0;
 }
 
 

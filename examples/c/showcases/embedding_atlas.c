@@ -387,14 +387,16 @@ static DvzOverlayCard* _add_readout(DvzPanel* panel)
     style.text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.max_text_chars = 160u;
 
-    return dvz_overlay_card(
+    DvzOverlayCard* card = dvz_overlay_card(
         overlay,
         &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = "Embedding Atlas",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_LEFT,
             .offset_px = {28.0f, -46.0f},
-            .style = &style,
         });
+    if (card == NULL || dvz_overlay_card_set_style(card, &style) != 0)
+        return NULL;
+    return card;
 }
 
 

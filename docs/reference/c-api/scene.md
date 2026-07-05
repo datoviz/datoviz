@@ -4346,7 +4346,7 @@ Create a panel overlay object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/overlay.h`:101._
+_Declared in `include/datoviz/scene/overlay.h`:100._
 
 ### `dvz_overlay_card()`
 
@@ -4367,7 +4367,7 @@ Create a card attached to a panel overlay.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/overlay.h`:143._
+_Declared in `include/datoviz/scene/overlay.h`:142._
 
 ### `dvz_overlay_card_clear_rich_text()`
 
@@ -4385,7 +4385,7 @@ Clear rich text content and return the card to the plain GPU text path.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/overlay.h`:191._
+_Declared in `include/datoviz/scene/overlay.h`:190._
 
 ### `dvz_overlay_card_desc()`
 
@@ -4403,7 +4403,7 @@ Related: [`dvz_overlay_card()`](#dvz_overlay_card).
 
 Raw ctypes: available through `dvz_ffi_overlay_card_desc()`.
 
-_Declared in `include/datoviz/scene/overlay.h`:125._
+_Declared in `include/datoviz/scene/overlay.h`:124._
 
 ### `dvz_overlay_card_destroy()`
 
@@ -4421,7 +4421,7 @@ Destroy an overlay card.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/overlay.h`:152._
+_Declared in `include/datoviz/scene/overlay.h`:151._
 
 ### `dvz_overlay_card_set_layout()`
 
@@ -4443,7 +4443,7 @@ Set the panel-local pixel layout of an overlay card.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/overlay.h`:201._
+_Declared in `include/datoviz/scene/overlay.h`:200._
 
 ### `dvz_overlay_card_set_placement()`
 
@@ -4465,7 +4465,7 @@ Set semantic placement for an overlay card.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/overlay.h`:212._
+_Declared in `include/datoviz/scene/overlay.h`:211._
 
 ### `dvz_overlay_card_set_rich_text()`
 
@@ -4486,7 +4486,7 @@ Set rich text displayed in an overlay card.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/overlay.h`:182._
+_Declared in `include/datoviz/scene/overlay.h`:181._
 
 ### `dvz_overlay_card_set_style()`
 
@@ -4507,7 +4507,7 @@ Set an overlay card style.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/overlay.h`:162._
+_Declared in `include/datoviz/scene/overlay.h`:161._
 
 ### `dvz_overlay_card_set_text()`
 
@@ -4527,7 +4527,7 @@ Set the text displayed in an overlay card.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/overlay.h`:172._
+_Declared in `include/datoviz/scene/overlay.h`:171._
 
 ### `dvz_overlay_card_set_visible()`
 
@@ -4547,7 +4547,7 @@ Show or hide an overlay card.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/overlay.h`:222._
+_Declared in `include/datoviz/scene/overlay.h`:221._
 
 ### `dvz_overlay_card_style()`
 
@@ -4563,7 +4563,7 @@ Return the default overlay-card style.
 
 Raw ctypes: available through `dvz_ffi_overlay_card_style()`.
 
-_Declared in `include/datoviz/scene/overlay.h`:117._
+_Declared in `include/datoviz/scene/overlay.h`:116._
 
 ### `dvz_overlay_destroy()`
 
@@ -4581,7 +4581,7 @@ Destroy a panel overlay object and hide its cards.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/overlay.h`:109._
+_Declared in `include/datoviz/scene/overlay.h`:108._
 
 ### `dvz_overlay_rich_text_desc()`
 
@@ -4597,7 +4597,7 @@ Return the default overlay rich-text descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/overlay.h`:133._
+_Declared in `include/datoviz/scene/overlay.h`:132._
 
 ## Panel
 
