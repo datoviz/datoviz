@@ -191,6 +191,17 @@ Completed checkpoints:
    - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
      `python3 tools/build_api_c.py --check`, `just build`, `just test scene/interaction`,
      `just test app`, `just spec-check`, stale-reference scan, and `git diff --check`.
+18. `8642a2efd` `api: flatten panel view3d descriptor`
+   - Replaced nested `DvzCameraDesc camera` in `DvzPanelView3DDesc` with `DvzCameraView view` and
+     `DvzCameraProjection projection`.
+   - Kept `dvz_panel_set_view3d_desc()` internally reconstructing a local `DvzCameraDesc` so the
+     existing panel-owned camera path remains unchanged.
+   - Updated generated raw `ctypes`, generated C API docs, and scene-graph view state tests.
+   - Exported symbol delta: no exported functions were added or removed; `DvzPanelView3DDesc` ABI
+     layout changed.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just build`, `just test scene/scene-graph`,
+     `just spec-check`, stale-reference scan, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -257,7 +268,7 @@ Complete audit as of July 2026, using the criterion above:
 | `DvzViewDesc` | `DvzViewSizeDesc size` | `include/datoviz/app.h:225` | Candidate exception only if `DvzViewSizeDesc` becomes a plain value record. Otherwise flatten or make view sizing a separate constructor/setter path. Remove duplicate legacy size fields while doing this. |
 | `DvzViewDesc` | `const DvzWindowExternalSurfaceInfo* external_surface` | `include/datoviz/app.h:225`, `include/datoviz/window/backend.h:91` | Pointer case, lower nesting risk but high backend-boundary risk. Move to backend/interop path during backend-neutral app API cleanup. |
 | `DvzOverlayCardDesc` | `const DvzOverlayCardStyle* style` | `include/datoviz/scene/overlay.h:67` | Done in `ebd35bb00`: creation no longer carries style; use `dvz_overlay_card_set_style()` after creation. |
-| `DvzPanelView3DDesc` | `DvzCameraDesc camera` | `include/datoviz/scene/types.h:704` | Do not nest `Desc` in `Desc`. Flatten to `DvzCameraView` plus `DvzCameraProjection`, or pass `const DvzCameraDesc*` directly to the 3D view API. |
+| `DvzPanelView3DDesc` | `DvzCameraDesc camera` | `include/datoviz/scene/types.h:704` | Done in `8642a2efd`: flattened to `DvzCameraView view` and `DvzCameraProjection projection`. |
 | `DvzPanelAxes2DDesc` | `DvzAxisTickPolicy tick_policy`, `DvzAxisStyle x_style`, `DvzAxisStyle y_style` | `include/datoviz/scene/types.h:785` | Split. Keep creation desc to labels/coarse flags; use setters for tick policy and per-axis styles. |
 | `DvzGraphEdgeStyle` | `DvzBezierTessellationDesc tessellation` | `include/datoviz/scene/types.h:946` | Flatten to `tessellation_segment_count` and `tessellation_tolerance`, or set tessellation separately. |
 | `DvzSelectionVisualStyle` | `DvzItemStateVisualStyle selected`, `DvzItemStateVisualStyle unselected` | `include/datoviz/scene/types.h:1253` | Done in `4afdfb53d`: flattened to prefixed selected/unselected scalar style fields. |
