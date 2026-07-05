@@ -1,105 +1,183 @@
 # Install
 
-Datoviz v0.4 is still pre-release. The current public path is to build it from source. Public
-v0.4 Python wheels, vcpkg packages, and conda packages are planned, but they are not the stable
-installation path yet.
+These instructions target Datoviz v0.4.
 
-If you run:
+For most Python users, installation should be:
 
 ```sh
 pip install datoviz
 ```
 
-you currently get the older v0.3 package from PyPI, not the v0.4 documentation described here.
+During the release-candidate phase, the exact PyPI command may temporarily need a pre-release flag
+or an explicit version, for example:
+
+```sh
+pip install --pre datoviz
+```
+
+Use the normal `pip install datoviz` command unless the v0.4 release notes say otherwise.
 
 
 ## Choose Your Path
 
-| You want to... | Use this path |
+| If you want to... | Start here |
 | --- | --- |
-| Try the v0.4 Python examples today | Build from source, then run `pip install -e .` |
-| Use Datoviz from C or C++ today | Build from source and link against the local build |
-| Use a published Python package | Wait for the v0.4 pre-release wheels, or explicitly install one once published |
-| Use Windows with the fewest surprises | Use WSL2 with Ubuntu 24.04 for now |
-| Package Datoviz for another project | Use the source build today; vcpkg and conda packaging are still pre-release work |
+| Use Datoviz from Python | [Python package](#python-package) |
+| Use Datoviz from C or C++ | [C and C++](#c-and-c) |
+| Build Datoviz yourself | [Build from source](#build-from-source) |
+| Work on macOS | [macOS notes](#macos-notes) |
+| Work on Linux | [Linux notes](#linux-notes) |
+| Work on Windows | [Windows notes](#windows-notes) |
 
 
-## What You Need
+## Python Package
 
-Datoviz needs a recent compiler, CMake, Python, and a GPU that supports Vulkan.
+Create a virtual environment first. This keeps Datoviz and its Python dependencies separate from
+your system Python.
+
+=== "macOS / Linux"
+
+    ```sh
+    python -m venv .venv
+    source .venv/bin/activate
+    python -m pip install --upgrade pip
+    pip install datoviz
+    ```
+
+=== "Windows PowerShell"
+
+    ```powershell
+    py -m venv .venv
+    .\.venv\Scripts\Activate.ps1
+    python -m pip install --upgrade pip
+    pip install datoviz
+    ```
+
+During the RC phase, replace the last command with the pre-release command if needed:
+
+```sh
+pip install --pre datoviz
+```
+
+Check that Python can import Datoviz:
+
+```sh
+python -c "import datoviz as dvz; print('datoviz import ok')"
+```
+
+Then continue with the [Quickstart](quickstart.md).
+
+
+## C And C++
+
+For C or C++ applications, you need the native Datoviz library, headers, and runtime assets.
+
+The intended release path is to use an installed Datoviz package and link against the exported CMake
+package or command-line configuration helper. A typical CMake project will look like this:
+
+```cmake
+find_package(datoviz CONFIG REQUIRED)
+target_link_libraries(my_app PRIVATE datoviz::datoviz)
+```
+
+If packaged C/C++ artifacts are not available yet for your platform, build Datoviz from source and
+link against that local build.
+
+
+## Build From Source
+
+Build from source when you want the current development version, need C/C++ integration before
+packages are published, or want to contribute to Datoviz.
+
+You need:
 
 | Requirement | Why it is needed |
 | --- | --- |
-| Git | downloads the source tree and its submodules |
+| Git | downloads the source tree and submodules |
 | CMake 3.21+ | configures the native build |
-| GCC 12+ or Clang 15+ | compiles the C/C++ code |
+| GCC 12+, Clang 15+, Apple Clang, or Visual Studio 2022 | compiles the native code |
 | Ninja | recommended build backend |
 | `just` | runs the project build commands used in this documentation |
-| Python 3.10+ and NumPy | runs the Python direct-engine layer and documentation tools |
-| Vulkan-capable GPU | renders the native desktop examples |
+| Python 3.10+ and NumPy | runs Python examples and documentation tools |
+| Vulkan-capable GPU | renders native desktop examples |
 | Shader tools | `glslc` and `glslangValidator` compile shader assets |
 
+Clone the repository with submodules:
 
-## Linux
-
-Ubuntu 24.04 is the easiest Linux path.
-
-```bash
-sudo apt install build-essential cmake curl gcc git ccache ninja-build \
-  xorg-dev clang-format patchelf tree libfreetype-dev glslang-tools
-
-curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
-```
-
-Then clone and build:
-
-```bash
+```sh
 git clone https://github.com/datoviz/datoviz.git --recursive
 cd datoviz
+```
+
+For the v0.4 development branch:
+
+```sh
 git checkout v0.4-dev
+```
+
+Build Datoviz:
+
+```sh
 just build
-just build   # run a second time if the first pass stops on generated assets
+```
+
+If the first build stops after generating assets, run the same command once more:
+
+```sh
+just build
+```
+
+Install the local Python package from the checkout:
+
+```sh
 pip install -e .
 ```
 
 
-## macOS
+## macOS Notes
 
 Install Apple's command-line tools and the Homebrew packages used by the build:
 
-```bash
+```sh
 xcode-select --install
 brew install cmake just ninja glslang
-```
-
-Then clone and build:
-
-```bash
-git clone https://github.com/datoviz/datoviz.git --recursive
-cd datoviz
-git checkout v0.4-dev
-just build
-just build   # run a second time if the first pass stops on generated assets
-pip install -e .
 ```
 
 Datoviz uses Vulkan through MoltenVK on macOS. The source build prepares the runtime path used by
 the examples and tests.
 
 
-## Windows
+## Linux Notes
 
-The recommended Windows path for v0.4 testing is WSL2 with Ubuntu 24.04.
+Ubuntu 24.04 is the easiest Linux path.
+
+```sh
+sudo apt install build-essential cmake curl gcc git ccache ninja-build \
+  xorg-dev clang-format patchelf tree libfreetype-dev glslang-tools
+```
+
+Install `just` if it is not already available:
+
+```sh
+curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
+```
+
+Linux desktop examples need a Vulkan-capable GPU and working graphics drivers.
+
+
+## Windows Notes
+
+For the fewest surprises during v0.4 testing, use WSL2 with Ubuntu 24.04:
 
 ```powershell
 wsl --install
 ```
 
-Install Ubuntu 24.04 from the Microsoft Store, open the Ubuntu shell, then follow the Linux
-instructions above. On current Windows 11 systems with Intel, AMD, or NVIDIA drivers, WSLg usually
+Install Ubuntu 24.04 from the Microsoft Store, open the Ubuntu shell, then follow the Linux source
+build instructions. On current Windows 11 systems with Intel, AMD, or NVIDIA drivers, WSLg usually
 provides Vulkan GPU passthrough for desktop examples.
 
-Native Windows with Visual Studio is supported by the build system, but it is a more advanced path:
+Native Windows with Visual Studio is a more advanced path:
 
 1. Install Visual Studio 2022 with the "Desktop development with C++" workload.
 2. Install the LunarG Vulkan SDK and make sure `glslc` and `glslangValidator` are on `PATH`.
@@ -107,36 +185,36 @@ Native Windows with Visual Studio is supported by the build system, but it is a 
 4. Open the Datoviz folder in Visual Studio.
 5. Select the `msvc` CMake preset and build.
 
-Native Windows Python wheels are part of the v0.4 release-candidate package work, but they are not
-the public install path until the pre-release artifacts are uploaded.
+Native Windows Python wheels are part of the v0.4 packaging path. During RC testing, use the exact
+package command from the release notes if it differs from `pip install datoviz`.
 
 
-## Check the Build
+## Check Your Install
 
-Run the full test suite when you have time:
+For Python, run:
 
-```bash
-just test
+```sh
+python -c "import datoviz as dvz; print('datoviz import ok')"
 ```
 
-For a quicker check while learning the library:
+For a source checkout, run a small test target:
 
-```bash
+```sh
 just test scene
 ```
 
 Some GPU and window tests need the repository runtime environment. If you use `direnv`, run:
 
-```bash
+```sh
 direnv exec . just test scene
 ```
 
 
 ## Run One Example
 
-Build and open the quickstart scatter plot:
+From a source checkout, build and open the quickstart scatter plot:
 
-```bash
+```sh
 just example-c start/scatter
 ./build/examples/c/start/scatter --live
 ```
@@ -147,13 +225,14 @@ You should see a window with colored points that you can pan and zoom. Continue 
 
 ## Package Status
 
-| Package path | Current v0.4 status |
+| Package path | v0.4 status |
 | --- | --- |
-| `pip install datoviz` | installs v0.3.x from PyPI today |
-| v0.4 Python wheels | release-candidate artifacts have been validated in CI; public upload is pending |
-| Source build | current recommended v0.4 path |
+| `pip install datoviz` | intended normal Python install command for v0.4 |
+| `pip install --pre datoviz` | possible temporary RC command if the v0.4 package is published as a pre-release |
+| Source build | available for development, C/C++ integration, and package validation |
 | C/C++ local integration | available from a source build |
-| vcpkg | draft overlay exists; publication waits for a stable release tag |
-| conda-forge | draft recipe exists; feedstock submission waits for release tag and platform proof |
+| vcpkg | planned package path after a stable release tag |
+| conda-forge | planned package path after release tag and platform validation |
 
-Until packages are published, use the source build for reproducible v0.4 testing.
+If a package command changes during the RC phase, the release notes should be treated as the source
+of truth.
