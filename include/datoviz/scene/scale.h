@@ -717,7 +717,8 @@ dvz_legend_set_highlights(DvzLegend* legend, const DvzCategoryId* ids, uint32_t 
  * @param scale the scale, or NULL to clear the binding
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* scale);
+DVZ_EXPORT DvzResult
+dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, const DvzScale* scale);
 
 
 EXTERN_C_OFF

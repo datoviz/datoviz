@@ -4483,7 +4483,7 @@ _Declared in `include/datoviz/scene/interaction.h`:111._
 DvzResult dvz_visual_set_scale(
     DvzVisual * visual,
     const char * slot_name,
-    DvzScale * scale
+    const DvzScale * scale
 );
 ```
 
@@ -4492,7 +4492,7 @@ DvzResult dvz_visual_set_scale(
 | return | `DvzResult` | 0 on success, -1 on error |
 | `visual` | `DvzVisual *` | the visual |
 | `slot_name` | `const char *` | the semantic slot name |
-| `scale` | `DvzScale *` | the scale, or NULL to clear the binding |
+| `scale` | `const DvzScale *` | the scale, or NULL to clear the binding |
 
 Bind a scene-owned scale to a named visual slot.
 
@@ -4504,7 +4504,7 @@ scale.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:720._
+_Declared in `include/datoviz/scene/scale.h`:721._
 
 ### `dvz_visual_set_scene_occluded()`
 

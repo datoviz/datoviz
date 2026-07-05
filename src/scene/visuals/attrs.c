@@ -373,10 +373,17 @@ bool dvz_visual_set_attr_buffer(
  * @param scale the scale, or NULL to clear the binding
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* scale)
+DvzResult dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, const DvzScale* scale)
 {
     ANN(visual);
     ANN(slot_name);
+    union
+    {
+        const DvzScale* borrowed;
+        DvzScale* scene_owned;
+    } scale_ptr = {.borrowed = scale};
+    DvzScale* bound_scale = scale_ptr.scene_owned;
+
     if (scale != NULL && scale->scene != visual->scene)
     {
         log_error("cannot bind a scale from a different scene");
@@ -401,8 +408,9 @@ DvzResult dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScal
         if (!_scene_visual_mutation_allowed(visual->scene, "bind scale"))
             return -1;
         _scene_release_visual_scale(visual);
-        if (scale != NULL)
-            _visual_binding_assign(visual, DVZ_VISUAL_BINDING_SCALE, slot_name, scale, false);
+        if (bound_scale != NULL)
+            _visual_binding_assign(
+                visual, DVZ_VISUAL_BINDING_SCALE, slot_name, bound_scale, false);
         DvzVisualAttr* attr = NULL;
         int attr_idx = _attr_index(visual, "color");
         if (attr_idx >= 0)
@@ -444,8 +452,8 @@ DvzResult dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScal
     if (!_scene_visual_mutation_allowed(visual->scene, "bind scale"))
         return -1;
     _scene_release_visual_scale(visual);
-    if (scale != NULL)
-        _visual_binding_assign(visual, DVZ_VISUAL_BINDING_SCALE, slot_name, scale, false);
+    if (bound_scale != NULL)
+        _visual_binding_assign(visual, DVZ_VISUAL_BINDING_SCALE, slot_name, bound_scale, false);
     if (has_bound_profile &&
         (_scene_sample_profile_uses_continuous_colorizer(&bound_profile) ||
          _scene_sample_profile_is_integer_label(&bound_profile)))
