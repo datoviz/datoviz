@@ -224,13 +224,26 @@ Completed checkpoints:
    - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
      `python3 tools/build_api_c.py --check`, `just build`, `just test app`, `just spec-check`,
      stale-reference scan, and `git diff --check`.
+21. `29b84d068` `api: flatten view size descriptor fields`
+   - Replaced nested `DvzViewSizeDesc size` in `DvzViewDesc` with scalar `size_*` fields.
+   - Kept `DvzViewSizeDesc` as the reusable value record for policy constructors and internal
+     view-size resolution; app internals reconstruct it from the flattened view descriptor.
+   - Left the older `logical_*` and `framebuffer_*` scalar fields in place pending a separate
+     view-size API simplification decision.
+   - Exported symbol delta: no exported functions were added or removed; `DvzViewDesc` ABI layout
+     changed.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just build`, `just test app`, `just spec-check`,
+     stale-reference scan, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
 - dirty `data` submodule state;
 - untracked `paper/paper.pdf`.
 
-Next recommended checkpoint: continue the descriptor-flattening campaign with app/view defaults.
+Next recommended checkpoint: choose whether to simplify `DvzViewDesc` size configuration further by
+removing the older duplicate `logical_*`/`framebuffer_*` scalar fields or adding a public helper for
+copying `DvzViewSizeDesc` values into the flattened descriptor.
 
 
 ## Maintainer Decisions
@@ -287,7 +300,7 @@ Complete audit as of July 2026, using the criterion above:
 | --- | --- | --- | --- |
 | `DvzAppConfig` | `DvzFontDefaults font_defaults` | `include/datoviz/app.h:133` | Done in `cb58878f6`: flattened to scalar `font_*` defaults fields. |
 | `DvzFontDefaults` | `DvzFontDesc sans`, `DvzFontDesc mono` | `include/datoviz/font.h:42` | Done in `787982697`: flattened to prefixed scalar sans/mono font default fields. |
-| `DvzViewDesc` | `DvzViewSizeDesc size` | `include/datoviz/app.h:225` | Candidate exception only if `DvzViewSizeDesc` becomes a plain value record. Otherwise flatten or make view sizing a separate constructor/setter path. Remove duplicate legacy size fields while doing this. |
+| `DvzViewDesc` | `DvzViewSizeDesc size` | `include/datoviz/app.h:225` | Done in `29b84d068`: flattened to scalar `size_*` fields while retaining `DvzViewSizeDesc` as the reusable policy value record. Duplicate legacy size scalar fields remain for a separate view-size API simplification decision. |
 | `DvzViewDesc` | `const DvzWindowExternalSurfaceInfo* external_surface` | `include/datoviz/app.h:225`, `include/datoviz/window/backend.h:91` | Done in `a2d6863e5`: hosted surface creation uses `dvz_view_external_surface()` directly. |
 | `DvzOverlayCardDesc` | `const DvzOverlayCardStyle* style` | `include/datoviz/scene/overlay.h:67` | Done in `ebd35bb00`: creation no longer carries style; use `dvz_overlay_card_set_style()` after creation. |
 | `DvzPanelView3DDesc` | `DvzCameraDesc camera` | `include/datoviz/scene/types.h:704` | Done in `8642a2efd`: flattened to `DvzCameraView view` and `DvzCameraProjection projection`. |
@@ -301,9 +314,9 @@ Complete audit as of July 2026, using the criterion above:
 
 Suggested execution order:
 
-1. Scale, panel axes, annotation/label, graph edge, selection, overlay card, font defaults, and
-   panel 3D view descriptor cleanup are complete.
-2. Clean remaining app/view/backend nesting while doing the backend-neutral app API wave.
+1. Nested descriptor cleanup is complete under the July 2026 audit criterion.
+2. Clean any remaining app/view/backend API naming or duplication during the backend-neutral app
+   API wave.
 3. Regenerate raw `ctypes`, generated C docs, and examples in the same checkpoint as each public
    struct break.
 
