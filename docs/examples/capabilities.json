@@ -3,25 +3,25 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 110,
+  "example_count": 105,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 69,
+    "feature": 67,
     "runtime": 5,
-    "showcase": 15,
+    "showcase": 12,
     "start": 1,
     "visual": 15
   },
   "statuses": {
     "diagnostic": 1,
-    "experimental": 17,
+    "experimental": 13,
     "prototype": 1,
-    "supported": 91
+    "supported": 90
   },
   "agent_copy_safe": {
-    "false": 28,
-    "true": 82
+    "false": 25,
+    "true": 80
   },
   "capabilities": {
     "composites": {
@@ -55,31 +55,8 @@
       }
     },
     "data_kinds": {
-      "generated": {
-        "count": 2,
-        "examples": [
-          {
-            "id": "showcase_embedding_atlas",
-            "title": "Embedding Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/embedding_atlas.c",
-            "page": "gallery/showcases/showcase_embedding_atlas.md"
-          },
-          {
-            "id": "showcase_synthetic_mouse",
-            "title": "Synthetic Mouse",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/synthetic_mouse.c",
-            "page": "gallery/showcases/showcase_synthetic_mouse.md"
-          }
-        ]
-      },
       "prepared": {
-        "count": 4,
+        "count": 3,
         "examples": [
           {
             "id": "us_state_choropleth",
@@ -89,15 +66,6 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/choropleth.c",
             "page": "gallery/showcases/us_state_choropleth.md"
-          },
-          {
-            "id": "showcase_lipid_brain_atlas",
-            "title": "Lipid Brain Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/lipid_brain_atlas.c",
-            "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
           },
           {
             "id": "brain_volume",
@@ -157,7 +125,7 @@
         ]
       },
       "synthetic": {
-        "count": 101,
+        "count": 99,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -520,15 +488,6 @@
             "page": "gallery/features/feature_input_events.md"
           },
           {
-            "id": "feature_view_size_policies",
-            "title": "View Size Policies",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/view_size_policies.c",
-            "page": "gallery/features/feature_view_size_policies.md"
-          },
-          {
             "id": "feature_record_replay",
             "title": "Record Replay",
             "category": "runtime",
@@ -815,15 +774,6 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/probe_labels.c",
             "page": "gallery/features/feature_probe_labels.md"
-          },
-          {
-            "id": "feature_datetime_axis",
-            "title": "Datetime Axis",
-            "category": "feature",
-            "status": "experimental",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/datetime_axis.c",
-            "page": "gallery/features/feature_datetime_axis.md"
           },
           {
             "id": "feature_timer_animation",
@@ -1321,20 +1271,6 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/coordinate_system.c",
             "page": "gallery/features/feature_coordinate_system.md"
-          }
-        ]
-      },
-      "datetime-axis": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_datetime_axis",
-            "title": "Datetime Axis",
-            "category": "feature",
-            "status": "experimental",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/datetime_axis.c",
-            "page": "gallery/features/feature_datetime_axis.md"
           }
         ]
       },
@@ -1982,20 +1918,6 @@
           }
         ]
       },
-      "view-size-policy": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_view_size_policies",
-            "title": "View Size Policies",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/view_size_policies.c",
-            "page": "gallery/features/feature_view_size_policies.md"
-          }
-        ]
-      },
       "visibility": {
         "count": 1,
         "examples": [
@@ -2159,7 +2081,7 @@
         ]
       },
       "animation": {
-        "count": 2,
+        "count": 1,
         "examples": [
           {
             "id": "feature_video_export",
@@ -2169,15 +2091,6 @@
             "agent_copy_safe": true,
             "source": "examples/c/runtime/video_export.c",
             "page": "gallery/runtime/feature_video_export.md"
-          },
-          {
-            "id": "showcase_synthetic_mouse",
-            "title": "Synthetic Mouse",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/synthetic_mouse.c",
-            "page": "gallery/showcases/showcase_synthetic_mouse.md"
           }
         ]
       },
@@ -2196,7 +2109,7 @@
         ]
       },
       "arcball": {
-        "count": 8,
+        "count": 7,
         "examples": [
           {
             "id": "visual_mesh",
@@ -2235,15 +2148,6 @@
             "page": "gallery/showcases/protein_arcball_viewer.md"
           },
           {
-            "id": "showcase_synthetic_mouse",
-            "title": "Synthetic Mouse",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/synthetic_mouse.c",
-            "page": "gallery/showcases/showcase_synthetic_mouse.md"
-          },
-          {
             "id": "showcase_surface_grid",
             "title": "Surface Grid",
             "category": "showcase",
@@ -2273,7 +2177,7 @@
         ]
       },
       "axes": {
-        "count": 2,
+        "count": 1,
         "examples": [
           {
             "id": "linked_panels_axes_panzoom",
@@ -2283,15 +2187,6 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/panel_linked_axes.c",
             "page": "gallery/showcases/linked_panels_axes_panzoom.md"
-          },
-          {
-            "id": "feature_datetime_axis",
-            "title": "Datetime Axis",
-            "category": "feature",
-            "status": "experimental",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/datetime_axis.c",
-            "page": "gallery/features/feature_datetime_axis.md"
           }
         ]
       },
@@ -2615,7 +2510,7 @@
         ]
       },
       "colorbar": {
-        "count": 5,
+        "count": 4,
         "examples": [
           {
             "id": "linked_panels_probe_colorbar",
@@ -2652,15 +2547,6 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/wind_field.c",
             "page": "gallery/showcases/showcase_wind_field.md"
-          },
-          {
-            "id": "showcase_lipid_brain_atlas",
-            "title": "Lipid Brain Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/lipid_brain_atlas.c",
-            "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
           }
         ]
       },
@@ -2707,20 +2593,6 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/gpu_particle_smoke.c",
             "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
-          }
-        ]
-      },
-      "datetime": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_datetime_axis",
-            "title": "Datetime Axis",
-            "category": "feature",
-            "status": "experimental",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/datetime_axis.c",
-            "page": "gallery/features/feature_datetime_axis.md"
           }
         ]
       },
@@ -2794,20 +2666,6 @@
           }
         ]
       },
-      "embedding": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "showcase_embedding_atlas",
-            "title": "Embedding Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/embedding_atlas.c",
-            "page": "gallery/showcases/showcase_embedding_atlas.md"
-          }
-        ]
-      },
       "external-surface": {
         "count": 1,
         "examples": [
@@ -2861,20 +2719,6 @@
             "agent_copy_safe": false,
             "source": "examples/c/visuals/glyph.c",
             "page": "gallery/visuals/visual_glyph.md"
-          }
-        ]
-      },
-      "framebuffer": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_view_size_policies",
-            "title": "View Size Policies",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/view_size_policies.c",
-            "page": "gallery/features/feature_view_size_policies.md"
           }
         ]
       },
@@ -3019,7 +2863,7 @@
         ]
       },
       "image": {
-        "count": 4,
+        "count": 3,
         "examples": [
           {
             "id": "linked_panels_probe_colorbar",
@@ -3047,15 +2891,6 @@
             "agent_copy_safe": true,
             "source": "examples/c/visuals/image.c",
             "page": "gallery/visuals/visual_image.md"
-          },
-          {
-            "id": "showcase_lipid_brain_atlas",
-            "title": "Lipid Brain Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/lipid_brain_atlas.c",
-            "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
           }
         ]
       },
@@ -3126,20 +2961,6 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/linked_probe_colorbar.c",
             "page": "gallery/showcases/linked_panels_probe_colorbar.md"
-          }
-        ]
-      },
-      "lipid-atlas": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "showcase_lipid_brain_atlas",
-            "title": "Lipid Brain Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/lipid_brain_atlas.c",
-            "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
           }
         ]
       },
@@ -3286,22 +3107,8 @@
           }
         ]
       },
-      "overlay-card": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "showcase_embedding_atlas",
-            "title": "Embedding Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/embedding_atlas.c",
-            "page": "gallery/showcases/showcase_embedding_atlas.md"
-          }
-        ]
-      },
       "panzoom": {
-        "count": 13,
+        "count": 11,
         "examples": [
           {
             "id": "linked_panels_axes_panzoom",
@@ -3401,24 +3208,6 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/choropleth.c",
             "page": "gallery/showcases/us_state_choropleth.md"
-          },
-          {
-            "id": "showcase_embedding_atlas",
-            "title": "Embedding Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/embedding_atlas.c",
-            "page": "gallery/showcases/showcase_embedding_atlas.md"
-          },
-          {
-            "id": "showcase_lipid_brain_atlas",
-            "title": "Lipid Brain Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/lipid_brain_atlas.c",
-            "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
           }
         ]
       },
@@ -3497,7 +3286,7 @@
         ]
       },
       "point": {
-        "count": 5,
+        "count": 4,
         "examples": [
           {
             "id": "feature_bounds_overlay",
@@ -3534,15 +3323,6 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/gpu_particle_smoke.c",
             "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
-          },
-          {
-            "id": "showcase_embedding_atlas",
-            "title": "Embedding Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/embedding_atlas.c",
-            "page": "gallery/showcases/showcase_embedding_atlas.md"
           }
         ]
       },
@@ -3597,20 +3377,6 @@
           }
         ]
       },
-      "query-readback": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "showcase_embedding_atlas",
-            "title": "Embedding Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/embedding_atlas.c",
-            "page": "gallery/showcases/showcase_embedding_atlas.md"
-          }
-        ]
-      },
       "readout": {
         "count": 1,
         "examples": [
@@ -3626,7 +3392,7 @@
         ]
       },
       "real-data": {
-        "count": 6,
+        "count": 5,
         "examples": [
           {
             "id": "us_state_choropleth",
@@ -3645,15 +3411,6 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/protein.c",
             "page": "gallery/showcases/protein_arcball_viewer.md"
-          },
-          {
-            "id": "showcase_lipid_brain_atlas",
-            "title": "Lipid Brain Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/lipid_brain_atlas.c",
-            "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
           },
           {
             "id": "brain_volume",
@@ -3684,22 +3441,8 @@
           }
         ]
       },
-      "reference-grid": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "showcase_synthetic_mouse",
-            "title": "Synthetic Mouse",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/synthetic_mouse.c",
-            "page": "gallery/showcases/showcase_synthetic_mouse.md"
-          }
-        ]
-      },
       "sampled-field": {
-        "count": 5,
+        "count": 4,
         "examples": [
           {
             "id": "linked_panels_probe_colorbar",
@@ -3727,15 +3470,6 @@
             "agent_copy_safe": true,
             "source": "examples/c/visuals/volume.c",
             "page": "gallery/visuals/volume.md"
-          },
-          {
-            "id": "showcase_lipid_brain_atlas",
-            "title": "Lipid Brain Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/lipid_brain_atlas.c",
-            "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
           },
           {
             "id": "textured_terrain_or_planet",
@@ -3800,7 +3534,7 @@
         ]
       },
       "scientific": {
-        "count": 9,
+        "count": 6,
         "examples": [
           {
             "id": "scientific_plotting_workflow",
@@ -3837,33 +3571,6 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/wind_field.c",
             "page": "gallery/showcases/showcase_wind_field.md"
-          },
-          {
-            "id": "showcase_embedding_atlas",
-            "title": "Embedding Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/embedding_atlas.c",
-            "page": "gallery/showcases/showcase_embedding_atlas.md"
-          },
-          {
-            "id": "showcase_lipid_brain_atlas",
-            "title": "Lipid Brain Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/lipid_brain_atlas.c",
-            "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
-          },
-          {
-            "id": "showcase_synthetic_mouse",
-            "title": "Synthetic Mouse",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/synthetic_mouse.c",
-            "page": "gallery/showcases/showcase_synthetic_mouse.md"
           },
           {
             "id": "showcase_surface_grid",
@@ -3913,20 +3620,6 @@
           }
         ]
       },
-      "selection": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "showcase_embedding_atlas",
-            "title": "Embedding Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/embedding_atlas.c",
-            "page": "gallery/showcases/showcase_embedding_atlas.md"
-          }
-        ]
-      },
       "simulation": {
         "count": 1,
         "examples": [
@@ -3938,20 +3631,6 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/gpu_particle_smoke.c",
             "page": "gallery/showcases/showcase_gpu_particle_smoke.md"
-          }
-        ]
-      },
-      "skeleton": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "showcase_synthetic_mouse",
-            "title": "Synthetic Mouse",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/synthetic_mouse.c",
-            "page": "gallery/showcases/showcase_synthetic_mouse.md"
           }
         ]
       },
@@ -4072,7 +3751,7 @@
         ]
       },
       "synthetic": {
-        "count": 6,
+        "count": 4,
         "examples": [
           {
             "id": "linked_panels_axes_panzoom",
@@ -4100,24 +3779,6 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/wind_field.c",
             "page": "gallery/showcases/showcase_wind_field.md"
-          },
-          {
-            "id": "showcase_embedding_atlas",
-            "title": "Embedding Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/embedding_atlas.c",
-            "page": "gallery/showcases/showcase_embedding_atlas.md"
-          },
-          {
-            "id": "showcase_synthetic_mouse",
-            "title": "Synthetic Mouse",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/synthetic_mouse.c",
-            "page": "gallery/showcases/showcase_synthetic_mouse.md"
           },
           {
             "id": "showcase_surface_grid",
@@ -4169,48 +3830,6 @@
             "agent_copy_safe": false,
             "source": "examples/c/visuals/glyph.c",
             "page": "gallery/visuals/visual_glyph.md"
-          }
-        ]
-      },
-      "textured-mesh": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "showcase_synthetic_mouse",
-            "title": "Synthetic Mouse",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/synthetic_mouse.c",
-            "page": "gallery/showcases/showcase_synthetic_mouse.md"
-          }
-        ]
-      },
-      "time-series": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_datetime_axis",
-            "title": "Datetime Axis",
-            "category": "feature",
-            "status": "experimental",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/datetime_axis.c",
-            "page": "gallery/features/feature_datetime_axis.md"
-          }
-        ]
-      },
-      "trajectory": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "showcase_synthetic_mouse",
-            "title": "Synthetic Mouse",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/synthetic_mouse.c",
-            "page": "gallery/showcases/showcase_synthetic_mouse.md"
           }
         ]
       },
@@ -4271,7 +3890,7 @@
         ]
       },
       "video": {
-        "count": 3,
+        "count": 1,
         "examples": [
           {
             "id": "feature_video_export",
@@ -4281,38 +3900,6 @@
             "agent_copy_safe": true,
             "source": "examples/c/runtime/video_export.c",
             "page": "gallery/runtime/feature_video_export.md"
-          },
-          {
-            "id": "showcase_lipid_brain_atlas",
-            "title": "Lipid Brain Atlas",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/lipid_brain_atlas.c",
-            "page": "gallery/showcases/showcase_lipid_brain_atlas.md"
-          },
-          {
-            "id": "showcase_synthetic_mouse",
-            "title": "Synthetic Mouse",
-            "category": "showcase",
-            "status": "experimental",
-            "agent_copy_safe": false,
-            "source": "examples/c/showcases/synthetic_mouse.c",
-            "page": "gallery/showcases/showcase_synthetic_mouse.md"
-          }
-        ]
-      },
-      "view-size": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_view_size_policies",
-            "title": "View Size Policies",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/view_size_policies.c",
-            "page": "gallery/features/feature_view_size_policies.md"
           }
         ]
       },
@@ -4401,20 +3988,6 @@
             "agent_copy_safe": false,
             "source": "examples/c/showcases/wind_field.c",
             "page": "gallery/showcases/showcase_wind_field.md"
-          }
-        ]
-      },
-      "window": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "feature_view_size_policies",
-            "title": "View Size Policies",
-            "category": "feature",
-            "status": "supported",
-            "agent_copy_safe": true,
-            "source": "examples/c/features/view_size_policies.c",
-            "page": "gallery/features/feature_view_size_policies.md"
           }
         ]
       },

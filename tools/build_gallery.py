@@ -337,6 +337,19 @@ def load_manifest(path: Path) -> dict:
     return manifest
 
 
+def reviewed_example_ids(manifest: dict) -> set[str]:
+    """Return example IDs that are approved for public website generation."""
+    batches = manifest.get("batches") or {}
+    if not isinstance(batches, dict):
+        return set()
+    ids: set[str] = set()
+    for batch_ids in batches.values():
+        if batch_ids is None:
+            continue
+        ids.update(str(id_) for id_ in batch_ids)
+    return ids
+
+
 def status_from_entry(entry: dict) -> str:
     gallery = entry.get("gallery") or {}
     if gallery.get("status_label"):
@@ -381,7 +394,11 @@ def extract_c_summary(path: Path) -> str:
 
 def collect_examples(manifest: dict) -> list[Example]:
     examples: list[Example] = []
+    reviewed_ids = reviewed_example_ids(manifest)
     for entry in manifest["examples"]:
+        id_ = str(entry["id"])
+        if reviewed_ids and id_ not in reviewed_ids:
+            continue
         raw_category = entry.get("category")
         if raw_category is not None:
             category = str(raw_category)
@@ -412,7 +429,7 @@ def collect_examples(manifest: dict) -> list[Example]:
             encoding=entry.get("encoding") or {},
             webgpu=entry.get("webgpu") or {},
             agent_copy_safe=entry.get("agent_copy_safe"),
-            python_source=PYTHON_SOURCE_BY_ID.get(str(entry["id"])),
+            python_source=PYTHON_SOURCE_BY_ID.get(id_),
         )
         examples.append(example)
     return examples

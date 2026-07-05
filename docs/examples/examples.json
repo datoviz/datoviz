@@ -2,25 +2,25 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 110,
+  "count": 105,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 69,
+    "feature": 67,
     "runtime": 5,
-    "showcase": 15,
+    "showcase": 12,
     "start": 1,
     "visual": 15
   },
   "statuses": {
     "diagnostic": 1,
-    "experimental": 17,
+    "experimental": 13,
     "prototype": 1,
-    "supported": 91
+    "supported": 90
   },
   "agent_copy_safe": {
-    "false": 28,
-    "true": 82
+    "false": 25,
+    "true": 80
   },
   "examples": [
     {
@@ -1843,53 +1843,6 @@
       "primary_feature": "input-events"
     },
     {
-      "id": "feature_view_size_policies",
-      "title": "View Size Policies",
-      "category": "feature",
-      "lane": "features",
-      "stage": "v0.4_required",
-      "status": "supported",
-      "source": "examples/c/features/view_size_policies.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/view_size_policies.c",
-      "page": "gallery/features/feature_view_size_policies.md",
-      "summary": "Explicit canvas/window/framebuffer size policy selection.",
-      "validation": "smoke+interaction",
-      "build_command": "just example-c features/view_size_policies",
-      "smoke_command": "./build/examples/c/features/view_size_policies --png",
-      "agent_copy_safe": true,
-      "tags": [
-        "view-size",
-        "framebuffer",
-        "window"
-      ],
-      "data": {
-        "kind": "synthetic"
-      },
-      "data_kind": "synthetic",
-      "media": {
-        "screenshot": {
-          "expected": false,
-          "status": "not-required",
-          "source": "data/gallery/v0.4/features/feature_view_size_policies.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_view_size_policies.webp"
-        }
-      },
-      "webgpu_status": "native-only",
-      "webgpu_requirements": [
-        "native-view",
-        "view-size-policy"
-      ],
-      "webgpu": {
-        "status": "native-only",
-        "requirements": [
-          "native-view",
-          "view-size-policy"
-        ],
-        "reason": "demonstrates native window, framebuffer, and physical-size policies"
-      },
-      "primary_feature": "view-size-policy"
-    },
-    {
       "id": "feature_record_replay",
       "title": "Record Replay",
       "category": "runtime",
@@ -3428,55 +3381,6 @@
       "primary_feature": "probe-labels"
     },
     {
-      "id": "feature_datetime_axis",
-      "title": "Datetime Axis",
-      "category": "feature",
-      "lane": "features",
-      "stage": "v0.4_experimental",
-      "status": "experimental",
-      "source": "examples/c/features/datetime_axis.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/datetime_axis.c",
-      "page": "gallery/features/feature_datetime_axis.md",
-      "summary": "Compact data coordinates with UTC datetime labels.",
-      "validation": "smoke+screenshot",
-      "build_command": "just example-c features/datetime_axis",
-      "smoke_command": "./build/examples/c/features/datetime_axis --png",
-      "agent_copy_safe": true,
-      "tags": [
-        "axes",
-        "datetime",
-        "time-series"
-      ],
-      "data": {
-        "kind": "synthetic"
-      },
-      "data_kind": "synthetic",
-      "media": {
-        "screenshot": {
-          "expected": true,
-          "status": "pending",
-          "source": "data/gallery/v0.4/features/feature_datetime_axis.png",
-          "site_asset": "/assets/gallery/v0.4/features/feature_datetime_axis.webp"
-        }
-      },
-      "webgpu_status": "webgpu-deferred",
-      "webgpu_requirements": [
-        "axes",
-        "text",
-        "datetime"
-      ],
-      "webgpu": {
-        "status": "webgpu-deferred",
-        "requirements": [
-          "axes",
-          "text",
-          "datetime"
-        ],
-        "reason": "datetime formatting is experimental and outside the RC browser subset"
-      },
-      "primary_feature": "datetime-axis"
-    },
-    {
       "id": "feature_timer_animation",
       "title": "Timer Animation",
       "category": "feature",
@@ -4792,203 +4696,6 @@
       },
       "webgpu_route": "examples/webgpu/live.html?id=showcase_gpu_particle_smoke",
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcase_gpu_particle_smoke"
-    },
-    {
-      "id": "showcase_embedding_atlas",
-      "title": "Embedding Atlas",
-      "category": "showcase",
-      "lane": "showcases",
-      "stage": "v0.4_experimental",
-      "status": "experimental",
-      "source": "examples/c/showcases/embedding_atlas.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/embedding_atlas.c",
-      "page": "gallery/showcases/showcase_embedding_atlas.md",
-      "summary": "Interactive prepared AI embedding atlas.",
-      "validation": "smoke+interaction+screenshot",
-      "build_command": "just example-c showcases/embedding_atlas",
-      "smoke_command": "./build/examples/c/showcases/embedding_atlas --png",
-      "agent_copy_safe": false,
-      "tags": [
-        "scientific",
-        "synthetic",
-        "embedding",
-        "point",
-        "panzoom",
-        "query-readback",
-        "selection",
-        "overlay-card"
-      ],
-      "data": {
-        "kind": "generated"
-      },
-      "data_kind": "generated",
-      "media": {
-        "screenshot": {
-          "expected": true,
-          "status": "available",
-          "source": "data/gallery/v0.4/showcases/showcase_embedding_atlas.png",
-          "site_asset": "/assets/gallery/v0.4/showcases/showcase_embedding_atlas.webp"
-        }
-      },
-      "webgpu_status": "webgpu-planned",
-      "webgpu_requirements": [
-        "point",
-        "panzoom",
-        "query-readback",
-        "selection",
-        "overlay"
-      ],
-      "webgpu": {
-        "status": "webgpu-planned",
-        "requirements": [
-          "point",
-          "panzoom",
-          "query-readback",
-          "selection",
-          "overlay"
-        ],
-        "reason": "requires prepared generated data; browser promotion must package data rather than use a runtime synthetic fallback"
-      },
-      "dataset": {
-        "name": "Synthetic embedding atlas",
-        "source": "deterministic local generation",
-        "license": "generated under repository license",
-        "preprocessing": "python tools/data/prepare_embedding_atlas.py --force",
-        "cache_prepared_path": ".cache/datoviz/examples/embedding_atlas/prepared"
-      }
-    },
-    {
-      "id": "showcase_lipid_brain_atlas",
-      "title": "Lipid Brain Atlas",
-      "category": "showcase",
-      "lane": "showcases",
-      "stage": "v0.4_experimental",
-      "status": "experimental",
-      "source": "examples/c/showcases/lipid_brain_atlas.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/lipid_brain_atlas.c",
-      "page": "gallery/showcases/showcase_lipid_brain_atlas.md",
-      "summary": "Section/channel lipid intensity showcase.",
-      "validation": "smoke+screenshot+video",
-      "build_command": "just example-c showcases/lipid_brain_atlas",
-      "smoke_command": "./build/examples/c/showcases/lipid_brain_atlas --png",
-      "agent_copy_safe": false,
-      "tags": [
-        "scientific",
-        "real-data",
-        "lipid-atlas",
-        "image",
-        "sampled-field",
-        "colorbar",
-        "panzoom",
-        "video"
-      ],
-      "data": {
-        "kind": "prepared"
-      },
-      "data_kind": "prepared",
-      "media": {
-        "screenshot": {
-          "expected": true,
-          "status": "available",
-          "source": "data/gallery/v0.4/showcases/showcase_lipid_brain_atlas.png",
-          "site_asset": "/assets/gallery/v0.4/showcases/showcase_lipid_brain_atlas.webp"
-        }
-      },
-      "webgpu_status": "webgpu-deferred",
-      "webgpu_requirements": [
-        "image",
-        "sampled-field",
-        "colorbar",
-        "panzoom",
-        "video"
-      ],
-      "webgpu": {
-        "status": "webgpu-deferred",
-        "requirements": [
-          "image",
-          "sampled-field",
-          "colorbar",
-          "panzoom",
-          "video"
-        ],
-        "reason": "this showcase depends on prepared data and video-oriented gallery plumbing; no runtime synthetic fallback is allowed"
-      },
-      "dataset": {
-        "name": "Lipid Brain Atlas peaks parquet",
-        "source": "https://zenodo.org/records/15379499",
-        "source_url": "https://zenodo.org/records/15379499",
-        "license": "Zenodo record terms apply; verify the record license before redistributing the raw 49.4 GB parquet file.",
-        "citation": "Fusar Bassini, Luca. Lipid Brain Atlas - biorXiv; Peaks Parquet Dataset. Zenodo, 2025.",
-        "preprocessing": "python tools/data/prepare_lipid_brain_atlas.py --synthetic --force",
-        "cache_prepared_path": ".cache/datoviz/examples/lipid_brain_atlas/prepared",
-        "raw_cache_path": "$DVZ_DATASET_CACHE/lipid_brain_atlas/peaks.parquet",
-        "provenance": "The release gallery path uses deterministic synthetic prepared data unless the real Zenodo parquet is downloaded into the external dataset cache; raw downloads are not committed to the repository."
-      }
-    },
-    {
-      "id": "showcase_synthetic_mouse",
-      "title": "Synthetic Mouse",
-      "category": "showcase",
-      "lane": "showcases",
-      "stage": "v0.4_experimental",
-      "status": "experimental",
-      "source": "examples/c/showcases/synthetic_mouse.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/synthetic_mouse.c",
-      "page": "gallery/showcases/showcase_synthetic_mouse.md",
-      "summary": "Animated textured mouse mesh with trajectory and skeleton trails.",
-      "validation": "smoke+screenshot+video",
-      "build_command": "just example-c showcases/synthetic_mouse",
-      "smoke_command": "./build/examples/c/showcases/synthetic_mouse --png",
-      "agent_copy_safe": false,
-      "tags": [
-        "scientific",
-        "synthetic",
-        "textured-mesh",
-        "animation",
-        "skeleton",
-        "trajectory",
-        "reference-grid",
-        "arcball",
-        "video"
-      ],
-      "data": {
-        "kind": "generated"
-      },
-      "data_kind": "generated",
-      "media": {
-        "screenshot": {
-          "expected": true,
-          "status": "available",
-          "source": "data/gallery/v0.4/showcases/showcase_synthetic_mouse.png",
-          "site_asset": "/assets/gallery/v0.4/showcases/showcase_synthetic_mouse.webp"
-        }
-      },
-      "webgpu_status": "webgpu-deferred",
-      "webgpu_requirements": [
-        "textured-mesh",
-        "animation",
-        "reference-grid",
-        "arcball",
-        "video"
-      ],
-      "webgpu": {
-        "status": "webgpu-deferred",
-        "requirements": [
-          "textured-mesh",
-          "animation",
-          "reference-grid",
-          "arcball",
-          "video"
-        ],
-        "reason": "this showcase needs textured animation and video-oriented gallery plumbing beyond the RC browser subset"
-      },
-      "dataset": {
-        "name": "Synthetic mouse animation validation bundle",
-        "source": "https://osf.io/h3ec5/",
-        "license": "generated fallback; upstream OSF terms require review for real assets",
-        "preprocessing": "python tools/data/prepare_synthetic_mouse.py --force",
-        "cache_prepared_path": ".cache/datoviz/examples/synthetic_mouse/prepared"
-      }
     },
     {
       "id": "showcase_surface_grid",

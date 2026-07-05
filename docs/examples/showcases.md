@@ -4,7 +4,7 @@
 
 Browse composed scenes demonstrating scientific workflows, real data, and polished demos.
 
-Coverage: 15 examples (10 supported, 4 experimental, 1 prototype).
+Coverage: 12 examples (10 supported, 1 experimental, 1 prototype).
 
 Each card links to a detail page with preview media, source code, and example metadata.
 
@@ -21,18 +21,6 @@ Each card links to a detail page with preview media, source code, and example me
 `prototype` `showcases`<br><span>`scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, ...</span>
 
 Local Allen mouse brain RGBA volume and occluded slice.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Embedding Atlas](gallery/showcases/showcase_embedding_atlas.md)
-
-[![Embedding Atlas](../assets/gallery/v0.4/showcases/showcase_embedding_atlas.webp)](gallery/showcases/showcase_embedding_atlas.md)
-
-`experimental` `showcases`<br><span>`scientific`, `synthetic`, `embedding`, `point`, `panzoom`, ...</span>
-
-Interactive prepared AI embedding atlas.
 
 </div>
 
@@ -69,18 +57,6 @@ Linked temporal panels with a spanning summary panel.
 `supported` `showcases`<br><span>`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, ...</span>
 
 Linked image panels with one probe readout and shared colorbar.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Lipid Brain Atlas](gallery/showcases/showcase_lipid_brain_atlas.md)
-
-[![Lipid Brain Atlas](../assets/gallery/v0.4/showcases/showcase_lipid_brain_atlas.webp)](gallery/showcases/showcase_lipid_brain_atlas.md)
-
-`experimental` `showcases`<br><span>`scientific`, `real-data`, `lipid-atlas`, `image`, `sampled-field`, ...</span>
-
-Section/channel lipid intensity showcase.
 
 </div>
 
@@ -141,18 +117,6 @@ Histogram, guide annotations, stacked traces, and error bands.
 `supported` `showcases`<br><span>`scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, ...</span>
 
 Generated height-field mesh with a derived wireframe overlay.
-
-</div>
-
-<div class="card" markdown="1">
-
-### [Synthetic Mouse](gallery/showcases/showcase_synthetic_mouse.md)
-
-[![Synthetic Mouse](../assets/gallery/v0.4/showcases/showcase_synthetic_mouse.webp)](gallery/showcases/showcase_synthetic_mouse.md)
-
-`experimental` `showcases`<br><span>`scientific`, `synthetic`, `textured-mesh`, `animation`, `skeleton`, ...</span>
-
-Animated textured mouse mesh with trajectory and skeleton trails.
 
 </div>
 

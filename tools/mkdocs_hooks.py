@@ -149,7 +149,13 @@ def on_pre_build(**kwargs):
     remove_example_docstrings()
     import sys
     sys.path.insert(0, str(CURDIR))
+    import build_gallery_webp
     import gen_start_thumbs
+
+    try:
+        build_gallery_webp.generate_gallery_webp(quiet_missing=True)
+    except Exception as exc:
+        print(f"mkdocs: gallery WebP generation failed: {exc}")
     gen_start_thumbs.generate()
 
 

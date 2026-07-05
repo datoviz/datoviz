@@ -67,6 +67,6 @@ A live WebGPU version is available in the browser preview when supported.
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_datetime_axis">Previous: Datetime Axis</a> · <a href="../feature_lighting">Next: Lighting</a>
+<a href="../feature_isolines">Previous: Isolines</a> · <a href="../feature_lighting">Next: Lighting</a>
 </div>
 </nav>

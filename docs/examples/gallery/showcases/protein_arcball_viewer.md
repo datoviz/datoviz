@@ -94,6 +94,6 @@ A live WebGPU version is available in the browser preview when supported.
 <a href="../../../showcases">Showcases</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../showcase_synthetic_mouse">Previous: Synthetic Mouse</a> · <a href="../point_cloud">Next: Point Cloud</a>
+<a href="../brain_volume">Previous: Allen Mouse Brain</a> · <a href="../point_cloud">Next: Point Cloud</a>
 </div>
 </nav>

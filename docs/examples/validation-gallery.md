@@ -8,9 +8,9 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Public C examples in manifest: 110
-- Examples declaring screenshot validation: 94
-- Examples that should have video or motion evidence: 7
+- Public C examples in manifest: 105
+- Examples declaring screenshot validation: 90
+- Examples that should have video or motion evidence: 5
 
 ## Commands
 
@@ -90,7 +90,6 @@ and should be committed through that submodule, not copied into the main reposit
 | [Builtin Shapes 3D](gallery/features/feature_builtin_shapes_3d.md) | [`examples/c/features/builtin_shapes_3d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_3d.c) | `supported` | `smoke+screenshot` |
 | [OBJ Loading](gallery/features/feature_obj_loading.md) | [`examples/c/features/obj_loading.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/obj_loading.c) | `supported` | `smoke+screenshot` |
 | [Label Probe](gallery/features/feature_probe_labels.md) | [`examples/c/features/probe_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c) | `supported` | `smoke+readback+screenshot` |
-| [Datetime Axis](gallery/features/feature_datetime_axis.md) | [`examples/c/features/datetime_axis.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/datetime_axis.c) | `experimental` | `smoke+screenshot` |
 | [Timer Animation](gallery/features/feature_timer_animation.md) | [`examples/c/features/timer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/timer_animation.c) | `supported` | `smoke+screenshot` |
 | [Marker Symbols](gallery/features/feature_marker_symbols.md) | [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c) | `supported` | `smoke+screenshot` |
 | [Categorical Legend](gallery/features/feature_legend_categorical.md) | [`examples/c/features/legend_categorical.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c) | `experimental` | `smoke+screenshot` |
@@ -115,9 +114,6 @@ and should be committed through that submodule, not copied into the main reposit
 | [Protein](gallery/showcases/protein_arcball_viewer.md) | [`examples/c/showcases/protein.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/protein.c) | `supported` | `smoke+screenshot+manual` |
 | [Wind Field](gallery/showcases/showcase_wind_field.md) | [`examples/c/showcases/wind_field.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/wind_field.c) | `supported` | `smoke+screenshot` |
 | [GPU Particle Smoke](gallery/showcases/showcase_gpu_particle_smoke.md) | [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c) | `experimental` | `smoke+screenshot` |
-| [Embedding Atlas](gallery/showcases/showcase_embedding_atlas.md) | [`examples/c/showcases/embedding_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/embedding_atlas.c) | `experimental` | `smoke+interaction+screenshot` |
-| [Lipid Brain Atlas](gallery/showcases/showcase_lipid_brain_atlas.md) | [`examples/c/showcases/lipid_brain_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/lipid_brain_atlas.c) | `experimental` | `smoke+screenshot+video` |
-| [Synthetic Mouse](gallery/showcases/showcase_synthetic_mouse.md) | [`examples/c/showcases/synthetic_mouse.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/synthetic_mouse.c) | `experimental` | `smoke+screenshot+video` |
 | [Surface Grid](gallery/showcases/showcase_surface_grid.md) | [`examples/c/showcases/surface_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c) | `supported` | `smoke+screenshot` |
 | [Allen Mouse Brain](gallery/showcases/brain_volume.md) | [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c) | `prototype` | `smoke+screenshot` |
 | [Point Cloud](gallery/showcases/point_cloud.md) | [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c) | `supported` | `smoke+screenshot` |

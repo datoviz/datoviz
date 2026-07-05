@@ -71,6 +71,6 @@ It uses `prepared` data; check the details below for dataset information.
 <a href="../../../showcases">Showcases</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../showcase_lipid_brain_atlas">Next: Lipid Brain Atlas</a>
+<a href="../protein_arcball_viewer">Next: Protein</a>
 </div>
 </nav>
