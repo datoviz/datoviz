@@ -261,7 +261,7 @@ static bool _set_frame(LipidAtlasState* state, uint32_t section, uint32_t channe
 
     const uint64_t pixels = (uint64_t)state->data.width * state->data.height;
     memcpy(state->current_values, _frame_values(&state->data, section, channel), pixels * sizeof(float));
-    if (!dvz_sampled_field_update_region(
+    if (dvz_sampled_field_update_region(
             state->field,
             (DvzFieldRegion){
                 .x = 0,
@@ -275,7 +275,7 @@ static bool _set_frame(LipidAtlasState* state, uint32_t section, uint32_t channe
                 .data = state->current_values,
                 .bytes_per_row = state->data.width * sizeof(float),
                 .rows_per_image = state->data.height,
-            }))
+            }) != DVZ_OK)
     {
         return false;
     }
@@ -388,16 +388,16 @@ static bool _add_image(DvzScene* scene, DvzPanel* panel, DvzScale* scale, LipidA
                });
     if (field == NULL)
         return false;
-    if (!dvz_sampled_field_set_data(
+    if (dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                        .data = state->current_values,
                        .bytes_per_row = state->data.width * sizeof(float),
                        .rows_per_image = state->data.height,
-                   }))
+                   }) != DVZ_OK)
     {
         return false;
     }
-    if (!dvz_visual_set_field(image, "field", field))
+    if (dvz_visual_set_field(image, "field", field) != DVZ_OK)
         return false;
     if (dvz_visual_set_depth_test(image, false) != 0)
         return false;

@@ -669,9 +669,9 @@ int dvz_wasm_api_visual_set_labels_s32(
     view.data = values;
     view.bytes_per_row = (uint64_t)width * sizeof(int32_t);
     view.rows_per_image = height;
-    if (!dvz_sampled_field_set_data(field, &view))
+    if (dvz_sampled_field_set_data(field, &view) != DVZ_OK)
         return _fail(visual->owner, "WASM S32 labels field upload failed");
-    if (!dvz_visual_set_field(visual->visual, "field", field))
+    if (dvz_visual_set_field(visual->visual, "field", field) != DVZ_OK)
         return _fail(visual->owner, "WASM S32 labels field bind failed");
 
     DvzScale* scale = dvz_scale(

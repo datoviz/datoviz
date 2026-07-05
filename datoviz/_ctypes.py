@@ -24796,10 +24796,10 @@ else:
  * @param height new field height in samples
  * @param depth new field depth in samples (must be 1 for 2D fields)
  * @param view the uploaded data view for the new extent
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_sampled_field_resize.argtypes = [ctypes.POINTER(DvzSampledField), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzFieldDataView)]
-    dvz_sampled_field_resize.restype = ctypes.c_bool
+    dvz_sampled_field_resize.restype = ctypes.c_int32
 
 
 try:
@@ -24816,10 +24816,10 @@ else:
  *
  * @param field the sampled field
  * @param view the uploaded data view
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_sampled_field_set_data.argtypes = [ctypes.POINTER(DvzSampledField), ctypes.POINTER(DvzFieldDataView)]
-    dvz_sampled_field_set_data.restype = ctypes.c_bool
+    dvz_sampled_field_set_data.restype = ctypes.c_int32
 
 
 try:
@@ -24832,10 +24832,10 @@ else:
  *
  * @param field the sampled field
  * @param geometry the geometry descriptor
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_sampled_field_set_geometry.argtypes = [ctypes.POINTER(DvzSampledField), ctypes.POINTER(DvzFieldGeometry)]
-    dvz_sampled_field_set_geometry.restype = ctypes.c_bool
+    dvz_sampled_field_set_geometry.restype = ctypes.c_int32
 
 
 try:
@@ -24852,10 +24852,10 @@ else:
  * @param field the sampled field
  * @param region the updated sample-space region
  * @param view the uploaded data view
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_sampled_field_update_region.argtypes = [ctypes.POINTER(DvzSampledField), DvzFieldRegion, ctypes.POINTER(DvzFieldDataView)]
-    dvz_sampled_field_update_region.restype = ctypes.c_bool
+    dvz_sampled_field_update_region.restype = ctypes.c_int32
 
 
 try:
@@ -30872,10 +30872,10 @@ else:
  * @param visual the visual
  * @param slot_name the semantic slot name
  * @param field the field, or NULL to clear the binding
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_visual_set_field.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.POINTER(DvzSampledField)]
-    dvz_visual_set_field.restype = ctypes.c_bool
+    dvz_visual_set_field.restype = ctypes.c_int32
 
 
 try:

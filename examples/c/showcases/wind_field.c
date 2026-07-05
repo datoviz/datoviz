@@ -470,16 +470,16 @@ static bool _add_wind_image(
                });
     if (field == NULL)
         return false;
-    if (!dvz_sampled_field_set_data(
+    if (dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                        .data = values,
                        .bytes_per_row = FIELD_WIDTH * sizeof(float),
                        .rows_per_image = FIELD_HEIGHT,
-                   }))
+                   }) != DVZ_OK)
     {
         return false;
     }
-    if (!dvz_visual_set_field(image, "field", field))
+    if (dvz_visual_set_field(image, "field", field) != DVZ_OK)
         return false;
     if (dvz_visual_set_depth_test(image, false) != 0)
         return false;
@@ -956,20 +956,20 @@ static bool _update_wind_image(WindShowcaseState* state, float time_s)
 
     _fill_scalar_field(state->values, time_s);
     return dvz_sampled_field_update_region(
-        state->field,
-        (DvzFieldRegion){
-            .x = 0,
-            .y = 0,
-            .z = 0,
-            .width = FIELD_WIDTH,
-            .height = FIELD_HEIGHT,
-            .depth = 1,
-        },
-        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-            .data = state->values,
-            .bytes_per_row = FIELD_WIDTH * sizeof(float),
-            .rows_per_image = FIELD_HEIGHT,
-        });
+               state->field,
+               (DvzFieldRegion){
+                   .x = 0,
+                   .y = 0,
+                   .z = 0,
+                   .width = FIELD_WIDTH,
+                   .height = FIELD_HEIGHT,
+                   .depth = 1,
+               },
+               &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                   .data = state->values,
+                   .bytes_per_row = FIELD_WIDTH * sizeof(float),
+                   .rows_per_image = FIELD_HEIGHT,
+               }) == DVZ_OK;
 }
 
 

@@ -315,19 +315,19 @@ void dvz_sampled_field_destroy(DvzSampledField* field)
  *
  * @param field the sampled field
  * @param geometry the geometry descriptor
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-bool dvz_sampled_field_set_geometry(
+DvzResult dvz_sampled_field_set_geometry(
     DvzSampledField* field, const DvzFieldGeometry* geometry)
 {
     ANN(field);
     ANN(geometry);
     if (!_field_geometry_validate(geometry))
-        return false;
+        return DVZ_ERROR;
     if (!_scene_visual_mutation_allowed(field->scene, "update sampled field geometry"))
-        return false;
+        return DVZ_ERROR;
     field->geometry = *geometry;
-    return true;
+    return DVZ_OK;
 }
 
 

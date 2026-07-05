@@ -395,16 +395,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(field != NULL, "dvz_sampled_field() failed");
 
     ok = dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){
-                   DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = data,
-                   .bytes_per_row = FIELD_SIZE, .rows_per_image = FIELD_SIZE});
+             field, &(DvzFieldDataView){
+                        DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = data,
+                        .bytes_per_row = FIELD_SIZE, .rows_per_image = FIELD_SIZE}) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data() failed");
     dvz_free(data);
     data = NULL;
 
     DvzVisual* volume = dvz_volume(ctx->scene, 0);
     EXAMPLE_CHECK(volume != NULL, "dvz_volume() failed");
-    ok = dvz_visual_set_field(volume, "field", field);
+    ok = dvz_visual_set_field(volume, "field", field) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_field() failed");
     ok = _configure_volume(volume);
     EXAMPLE_CHECK(ok, "volume configuration failed");

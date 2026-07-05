@@ -119,10 +119,10 @@ static DvzSampledField* _field(DvzScene* scene, VolumeOcclusionState* state)
                    .width = FIELD_SIZE, .height = FIELD_SIZE, .depth = FIELD_SIZE});
     if (field == NULL)
         return NULL;
-    if (!dvz_sampled_field_set_data(
+    if (dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){
                        DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = state->voxels,
-                       .bytes_per_row = FIELD_SIZE, .rows_per_image = FIELD_SIZE}))
+                       .bytes_per_row = FIELD_SIZE, .rows_per_image = FIELD_SIZE}) != DVZ_OK)
         return NULL;
     return field;
 }
@@ -229,9 +229,9 @@ static bool _add_volume_pair(
     DvzVisual* slice = dvz_volume(scene, 0);
     if (volume == NULL || slice == NULL)
         return false;
-    if (!dvz_visual_set_field(volume, "field", field))
+    if (dvz_visual_set_field(volume, "field", field) != DVZ_OK)
         return false;
-    if (!dvz_visual_set_field(slice, "field", field))
+    if (dvz_visual_set_field(slice, "field", field) != DVZ_OK)
         return false;
     if (!_configure_volume(scene, volume, DVZ_VOLUME_RENDER_COMPOSITE))
         return false;

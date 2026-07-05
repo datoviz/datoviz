@@ -314,11 +314,11 @@ static DvzSampledField* _add_texture(DvzScene* scene, const MouseData* data)
                    .depth = 1});
     if (texture == NULL)
         return NULL;
-    if (!dvz_sampled_field_set_data(
+    if (dvz_sampled_field_set_data(
             texture, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                          .data = data->texture,
                          .bytes_per_row = data->texture_width * sizeof(DvzColor),
-                         .rows_per_image = data->texture_height}))
+                         .rows_per_image = data->texture_height}) != DVZ_OK)
         return NULL;
     return texture;
 }
@@ -388,7 +388,7 @@ _add_mesh(DvzScene* scene, DvzPanel* panel, MouseState* state, DvzSampledField* 
     material.phong.shininess = 24.0f;
     if (dvz_visual_set_material(mesh, &material) != 0)
         return false;
-    if (!dvz_visual_set_field(mesh, "texture", texture))
+    if (dvz_visual_set_field(mesh, "texture", texture) != DVZ_OK)
         return false;
     if (dvz_panel_add_visual(panel, mesh, NULL) != 0)
         return false;

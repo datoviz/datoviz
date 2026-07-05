@@ -1298,7 +1298,7 @@ static bool _text_atlas_upload_rgba(
     view.data = rgba;
     view.bytes_per_row = (uint64_t)width * 4u;
     view.rows_per_image = height;
-    if (field == NULL || !dvz_sampled_field_set_data(field, &view))
+    if (field == NULL || dvz_sampled_field_set_data(field, &view) != DVZ_OK)
         return false;
     atlas->field = field;
     return true;
@@ -1414,7 +1414,7 @@ static bool _text_atlas_replace_field_data(DvzSampledField* field, const DvzSamp
         region_view.data = data + offset;
         region_view.bytes_per_row = (uint64_t)src->desc.width * 4u;
         region_view.rows_per_image = src->desc.height;
-        return dvz_sampled_field_update_region(field, region, &region_view);
+        return dvz_sampled_field_update_region(field, region, &region_view) == DVZ_OK;
     }
     if (field->data != NULL && field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM &&
         field->desc.dim == DVZ_FIELD_DIM_2D && field->desc.depth == 1)
@@ -1425,7 +1425,7 @@ static bool _text_atlas_replace_field_data(DvzSampledField* field, const DvzSamp
     view.data = src->data;
     view.bytes_per_row = (uint64_t)src->desc.width * 4u;
     view.rows_per_image = src->desc.height;
-    return dvz_sampled_field_set_data(field, &view);
+    return dvz_sampled_field_set_data(field, &view) == DVZ_OK;
 }
 
 
@@ -2182,7 +2182,8 @@ static bool _text_atlas_try_append(
             view.data = grown;
             view.bytes_per_row = (uint64_t)target_width * 4u;
             view.rows_per_image = target_height;
-            ok = dvz_sampled_field_resize(atlas->field, target_width, target_height, 1, &view);
+            ok = dvz_sampled_field_resize(atlas->field, target_width, target_height, 1, &view) ==
+                 DVZ_OK;
         }
         if (ok)
         {

@@ -1083,6 +1083,47 @@ object/container surface from installed headers, generated docs, raw `ctypes`, a
 extraction.
 
 
+## Recent Result-Type Cleanup
+
+Status: in progress on `api/pre-rc-cleanup`.
+
+Completed after the grid setter rename:
+
+1. Text, labels, and volume mutator naming/order audit found no public API changes needed:
+   text and labels already use `dvz_<object>_set_<property>()`, and volume setters already use
+   payload-before-count ordering where relevant.
+2. Converted sampled-field user-facing mutators from raw `bool` success/failure returns to
+   `DvzResult`:
+   `dvz_sampled_field_set_data()`, `dvz_sampled_field_resize()`,
+   `dvz_sampled_field_update_region()`, `dvz_sampled_field_set_geometry()`, and
+   `dvz_visual_set_field()`.
+3. Updated C examples, scene tests, text/glyph internals, wasm wrappers, generated raw `ctypes`,
+   and generated C API reference signatures to use `DVZ_OK`/`DVZ_ERROR`.
+
+Validation for the sampled-field slice:
+
+```sh
+just ctypes
+just ctypes-check
+python3 tools/build_api_c.py
+python3 tools/build_api_c.py --check
+python3 tools/check_api_status.py
+just build
+just test fields
+just test app
+just test visuals
+just ctypes-smoke
+just ctypes-python-smoke
+just docs-api
+just docs-api-check
+```
+
+Result: all passed. The next coherent result-type slice is the remaining stable
+scale/colorbar/legend bool mutators in `include/datoviz/scene/scale.h`; panel/axis layout setters
+and low-level DRP2 stream-builder bool APIs should remain separate commits because their call-site
+blast radius and subsystem conventions differ.
+
+
 ## Validation Baseline For Future Agent
 
 Minimum after any public API change:

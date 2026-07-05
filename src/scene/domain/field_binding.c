@@ -122,9 +122,9 @@ void _scene_release_field_bindings(DvzSampledField* field)
  * @param visual the visual
  * @param slot_name the field slot name
  * @param field the sampled field, or NULL to clear the binding
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-bool dvz_visual_set_field(
+DvzResult dvz_visual_set_field(
     DvzVisual* visual, const char* slot_name, const DvzSampledField* field)
 {
     ANN(visual);
@@ -139,7 +139,7 @@ bool dvz_visual_set_field(
     if (field != NULL && field->scene != visual->scene)
     {
         log_error("cannot bind a sampled field from a different scene");
-        return false;
+        return DVZ_ERROR;
     }
     if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH &&
         visual->type != DVZ_VISUAL_TYPE_VOLUME && visual->type != DVZ_VISUAL_TYPE_LABELS &&
@@ -147,7 +147,7 @@ bool dvz_visual_set_field(
     {
         log_error(
             "dvz_visual_set_field is only supported for image, glyph, volume, labels, and mesh visuals");
-        return false;
+        return DVZ_ERROR;
     }
     bool mesh_texture_slot =
         visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(slot_name, "texture") == 0;
@@ -156,7 +156,7 @@ bool dvz_visual_set_field(
         log_error(
             "unsupported visual field slot '%s' (expected 'field' or mesh 'texture')",
             slot_name);
-        return false;
+        return DVZ_ERROR;
     }
     if (field != NULL &&
         (visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_GLYPH ||
@@ -164,19 +164,19 @@ bool dvz_visual_set_field(
         field->desc.dim != DVZ_FIELD_DIM_2D)
     {
         log_error("image, glyph, labels, and mesh visuals require a 2D sampled field");
-        return false;
+        return DVZ_ERROR;
     }
     if (field != NULL && visual->type == DVZ_VISUAL_TYPE_MESH &&
         field->desc.format != DVZ_FIELD_FORMAT_RGBA8_UNORM)
     {
         log_error("mesh texture fields require RGBA8_UNORM format in the first slice");
-        return false;
+        return DVZ_ERROR;
     }
     if (field != NULL && visual->type == DVZ_VISUAL_TYPE_LABELS &&
         field->desc.semantic != DVZ_FIELD_SEMANTIC_LABEL)
     {
         log_error("labels visuals require a sampled field with LABEL semantic");
-        return false;
+        return DVZ_ERROR;
     }
     DvzSceneSampleProfile profile = {0};
     bool supported_profile =
@@ -186,13 +186,13 @@ bool dvz_visual_set_field(
     if (field != NULL && visual->type == DVZ_VISUAL_TYPE_LABELS && !supported_profile)
     {
         log_error("labels visuals require an R8/R16/R32 signed or unsigned integer field");
-        return false;
+        return DVZ_ERROR;
     }
     if (field != NULL && visual->type == DVZ_VISUAL_TYPE_VOLUME &&
         field->desc.dim != DVZ_FIELD_DIM_3D)
     {
         log_error("volume visuals require a 3D sampled field");
-        return false;
+        return DVZ_ERROR;
     }
     if (
         field != NULL && visual->type == DVZ_VISUAL_TYPE_VOLUME && supported_profile &&
@@ -200,10 +200,10 @@ bool dvz_visual_set_field(
         _visual_family_state(visual)->volume.render_mode == DVZ_VOLUME_RENDER_MIP)
     {
         log_error("label volumes only support slice and composite render modes");
-        return false;
+        return DVZ_ERROR;
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "bind sampled field"))
-        return false;
+        return DVZ_ERROR;
 
     if (_visual_family_state(visual)->field != bound_field)
         _scene_release_visual_field(visual);
@@ -218,7 +218,7 @@ bool dvz_visual_set_field(
         _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
     }
     _scene_notify_visual_changed(visual);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -267,15 +267,15 @@ DvzResult _scene_visual_set_texture_rgba8(
         visual, DVZ_FIELD_FORMAT_RGBA8_UNORM, DVZ_FIELD_SEMANTIC_COLOR, width, height);
     if (field == NULL)
         return -1;
-    if (!dvz_sampled_field_set_data(
+    if (dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                        .data = rgba,
                        .bytes_per_row = (uint64_t)width * 4u,
                        .rows_per_image = height,
-                   }))
+                   }) != DVZ_OK)
         return -1;
     const char* slot_name = is_mesh ? "texture" : "field";
-    if (!dvz_visual_set_field(visual, slot_name, field))
+    if (dvz_visual_set_field(visual, slot_name, field) != DVZ_OK)
         return -1;
     _visual_binding_assign(visual, DVZ_VISUAL_BINDING_FIELD, slot_name, field, true);
     return 0;
@@ -329,14 +329,14 @@ DvzResult _scene_visual_set_texture_r32f(
         visual, DVZ_FIELD_FORMAT_R32_FLOAT, DVZ_FIELD_SEMANTIC_SCALAR, width, height);
     if (field == NULL)
         return -1;
-    if (!dvz_sampled_field_set_data(
+    if (dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                        .data = values,
                        .bytes_per_row = (uint64_t)width * sizeof(float),
                        .rows_per_image = height,
-                   }))
+                   }) != DVZ_OK)
         return -1;
-    if (!dvz_visual_set_field(visual, "field", field))
+    if (dvz_visual_set_field(visual, "field", field) != DVZ_OK)
         return -1;
     _visual_binding_assign(visual, DVZ_VISUAL_BINDING_FIELD, "field", field, true);
     return 0;

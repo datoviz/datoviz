@@ -670,14 +670,14 @@ int main(int argc, char** argv)
     float values[FIELD_SIZE * FIELD_SIZE] = {0};
     _fill_field(values);
     bool ok = dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                   .data = values,
-                   .bytes_per_row = FIELD_SIZE * sizeof(float),
-                   .rows_per_image = FIELD_SIZE,
-               });
+                  field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                             .data = values,
+                             .bytes_per_row = FIELD_SIZE * sizeof(float),
+                             .rows_per_image = FIELD_SIZE,
+                         }) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data() failed");
 
-    ok = dvz_visual_set_field(image, "field", field);
+    ok = dvz_visual_set_field(image, "field", field) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_field() failed");
 
     rc = dvz_panel_add_visual(panel, image, NULL);

@@ -6477,7 +6477,7 @@ _Declared in `include/datoviz/scene/field.h`:286._
 ### `dvz_sampled_field_resize()`
 
 ```c title="dvz_sampled_field_resize"
-_Bool dvz_sampled_field_resize(
+DvzResult dvz_sampled_field_resize(
     DvzSampledField * field,
     uint32_t width,
     uint32_t height,
@@ -6488,7 +6488,7 @@ _Bool dvz_sampled_field_resize(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true on success, false on error |
+| return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on error |
 | `field` | `DvzSampledField *` | the sampled field |
 | `width` | `uint32_t` | new field width in samples |
 | `height` | `uint32_t` | new field height in samples |
@@ -6509,7 +6509,7 @@ _Declared in `include/datoviz/scene/field.h`:246._
 ### `dvz_sampled_field_set_data()`
 
 ```c title="dvz_sampled_field_set_data"
-_Bool dvz_sampled_field_set_data(
+DvzResult dvz_sampled_field_set_data(
     DvzSampledField * field,
     const DvzFieldDataView * view
 );
@@ -6517,7 +6517,7 @@ _Bool dvz_sampled_field_set_data(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true on success, false on error |
+| return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on error |
 | `field` | `DvzSampledField *` | the sampled field |
 | `view` | `const DvzFieldDataView *` | the uploaded data view |
 
@@ -6534,7 +6534,7 @@ _Declared in `include/datoviz/scene/field.h`:227._
 ### `dvz_sampled_field_set_geometry()`
 
 ```c title="dvz_sampled_field_set_geometry"
-_Bool dvz_sampled_field_set_geometry(
+DvzResult dvz_sampled_field_set_geometry(
     DvzSampledField * field,
     const DvzFieldGeometry * geometry
 );
@@ -6542,7 +6542,7 @@ _Bool dvz_sampled_field_set_geometry(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true on success, false on error |
+| return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on error |
 | `field` | `DvzSampledField *` | the sampled field |
 | `geometry` | `const DvzFieldGeometry *` | the geometry descriptor |
 
@@ -6555,7 +6555,7 @@ _Declared in `include/datoviz/scene/field.h`:273._
 ### `dvz_sampled_field_update_region()`
 
 ```c title="dvz_sampled_field_update_region"
-_Bool dvz_sampled_field_update_region(
+DvzResult dvz_sampled_field_update_region(
     DvzSampledField * field,
     DvzFieldRegion region,
     const DvzFieldDataView * view
@@ -6564,7 +6564,7 @@ _Bool dvz_sampled_field_update_region(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true on success, false on error |
+| return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on error |
 | `field` | `DvzSampledField *` | the sampled field |
 | `region` | `DvzFieldRegion` | the updated sample-space region |
 | `view` | `const DvzFieldDataView *` | the uploaded data view |

@@ -859,14 +859,14 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
                });
     ANN(field);
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = pixels, .bytes_per_row = 2 * 4, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = pixels, .bytes_per_row = 2 * 4, .rows_per_image = 2}) == DVZ_OK);
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
     AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
     AT(dvz_visual_set_buffer(visual, "index", index_buffer));
-    AT(dvz_visual_set_field(visual, "texture", field));
+    AT(dvz_visual_set_field(visual, "texture", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();

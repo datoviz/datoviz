@@ -115,11 +115,11 @@ static DvzSampledField* _add_texture(
                    .depth = 1});
     if (texture == NULL)
         return NULL;
-    if (!dvz_sampled_field_set_data(
+    if (dvz_sampled_field_set_data(
             texture, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                          .data = pixels,
                          .bytes_per_row = TEXTURE_WIDTH * 4u,
-                         .rows_per_image = TEXTURE_HEIGHT}))
+                         .rows_per_image = TEXTURE_HEIGHT}) != DVZ_OK)
         return NULL;
     return texture;
 }
@@ -162,7 +162,7 @@ static bool _add_textured_mesh(
     DvzMaterialDesc material = example_default_phong_material_desc();
     if (dvz_visual_set_material(visual, &material) != 0)
         return false;
-    if (!dvz_visual_set_field(visual, "texture", texture))
+    if (dvz_visual_set_field(visual, "texture", texture) != DVZ_OK)
         return false;
     return dvz_panel_add_visual(panel, visual, NULL) == 0;
 }

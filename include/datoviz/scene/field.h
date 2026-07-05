@@ -222,9 +222,9 @@ DVZ_EXPORT void dvz_sampled_field_destroy(DvzSampledField* field);
  *
  * @param field the sampled field
  * @param view the uploaded data view
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_sampled_field_set_data(
+DVZ_EXPORT DvzResult dvz_sampled_field_set_data(
     DvzSampledField* field, const DvzFieldDataView* view);
 
 
@@ -241,9 +241,9 @@ DVZ_EXPORT bool dvz_sampled_field_set_data(
  * @param height new field height in samples
  * @param depth new field depth in samples (must be 1 for 2D fields)
  * @param view the uploaded data view for the new extent
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_sampled_field_resize(
+DVZ_EXPORT DvzResult dvz_sampled_field_resize(
     DvzSampledField* field, uint32_t width, uint32_t height, uint32_t depth,
     const DvzFieldDataView* view);
 
@@ -257,9 +257,9 @@ DVZ_EXPORT bool dvz_sampled_field_resize(
  * @param field the sampled field
  * @param region the updated sample-space region
  * @param view the uploaded data view
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_sampled_field_update_region(
+DVZ_EXPORT DvzResult dvz_sampled_field_update_region(
     DvzSampledField* field, DvzFieldRegion region, const DvzFieldDataView* view);
 
 
@@ -268,9 +268,9 @@ DVZ_EXPORT bool dvz_sampled_field_update_region(
  *
  * @param field the sampled field
  * @param geometry the geometry descriptor
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_sampled_field_set_geometry(
+DVZ_EXPORT DvzResult dvz_sampled_field_set_geometry(
     DvzSampledField* field, const DvzFieldGeometry* geometry);
 
 
@@ -302,9 +302,9 @@ DVZ_EXPORT bool dvz_sampled_field_info(const DvzSampledField* field, DvzSampledF
  * @param visual the visual
  * @param slot_name the semantic slot name
  * @param field the field, or NULL to clear the binding
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_visual_set_field(
+DVZ_EXPORT DvzResult dvz_visual_set_field(
     DvzVisual* visual, const char* slot_name, const DvzSampledField* field);
 
 

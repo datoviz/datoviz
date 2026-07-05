@@ -995,10 +995,10 @@ int test_scene_image_linear_color_emit_wgsl(TstContext* suite, const TstCase* it
                    .data = pixels,
                    .bytes_per_row = 2 * sizeof(DvzColor),
                    .rows_per_image = 2,
-               }));
+               }) == DVZ_OK);
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_field(visual, "field", field));
+    AT(dvz_visual_set_field(visual, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -1245,8 +1245,8 @@ static int _labels_emit_figure(
                    .data = values,
                    .bytes_per_row = bytes_per_row,
                    .rows_per_image = 2,
-               }));
-    AT(dvz_visual_set_field(labels, "field", field));
+               }) == DVZ_OK);
+    AT(dvz_visual_set_field(labels, "field", field) == DVZ_OK);
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);

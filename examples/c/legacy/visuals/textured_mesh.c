@@ -451,14 +451,14 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(texture != NULL, "dvz_sampled_field() failed");
 
     ok = dvz_sampled_field_set_data(
-        texture, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                     .data = pixels,
-                     .bytes_per_row = texture_width * 4,
-                     .rows_per_image = texture_height,
-                 });
+             texture, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                          .data = pixels,
+                          .bytes_per_row = texture_width * 4,
+                          .rows_per_image = texture_height,
+                      }) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data() failed");
 
-    ok = dvz_visual_set_field(visual, "texture", texture);
+    ok = dvz_visual_set_field(visual, "texture", texture) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_field(texture) failed");
     _state_apply_material(&gui_state);
 

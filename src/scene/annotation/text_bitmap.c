@@ -257,12 +257,12 @@ DvzSampledField* _text_bitmap_atlas_field(DvzScene* scene)
     desc.height = height;
     DvzSampledField* field = dvz_sampled_field(scene, &desc);
     if (field == NULL ||
-        !dvz_sampled_field_set_data(
+        dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                        .data = rgba,
                        .bytes_per_row = (uint64_t)width * 4u,
                        .rows_per_image = height,
-                   }))
+                   }) != DVZ_OK)
     {
         dvz_free(rgba);
         return NULL;

@@ -700,10 +700,10 @@ int test_scene_image_query_plan_preserves_linear_color_role(
                    .data = pixels,
                    .bytes_per_row = 2 * sizeof(DvzColor),
                    .rows_per_image = 2,
-               }));
+               }) == DVZ_OK);
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_field(image, "field", field));
+    AT(dvz_visual_set_field(image, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
     DvzPendingQueryRequest pending = {
@@ -796,10 +796,10 @@ int test_scene_image_query_linear_color_sample_not_decoded(
             .data = pixels,
             .bytes_per_row = 4 * sizeof(DvzColor),
             .rows_per_image = 4,
-        }));
+        }) == DVZ_OK);
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_field(image, "field", field));
+    AT(dvz_visual_set_field(image, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -2867,8 +2867,8 @@ int test_scene_volume_query_resolves_sample(TstContext* suite, const TstCase* it
     ANN(field);
     const uint8_t voxels[8] = {128, 128, 128, 128, 128, 128, 128, 128};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
-    AT(dvz_visual_set_field(volume, "field", field));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
+    AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -2960,8 +2960,8 @@ int test_scene_volume_query_resolves_label_sample(TstContext* suite, const TstCa
             .data = voxels,
             .bytes_per_row = 2 * sizeof(uint16_t),
             .rows_per_image = 2,
-        }));
-    AT(dvz_visual_set_field(volume, "field", field));
+        }) == DVZ_OK);
+    AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
 
     DvzScale* scale = dvz_scale(
         scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL, .label = "regions"});
@@ -3073,8 +3073,8 @@ static int _test_scene_volume_query_label_sample_value(
             .data = data,
             .bytes_per_row = bytes_per_row,
             .rows_per_image = 2,
-        }));
-    AT(dvz_visual_set_field(volume, "field", field));
+        }) == DVZ_OK);
+    AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
 
     DvzScale* scale = dvz_scale(
         scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL, .label = "regions"});
@@ -3212,8 +3212,8 @@ int test_scene_volume_query_resolves_sample_uvw_profile(TstContext* suite, const
     ANN(field);
     const uint8_t voxels[8] = {128, 128, 128, 128, 128, 128, 128, 128};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
-    AT(dvz_visual_set_field(volume, "field", field));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
+    AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -3298,8 +3298,8 @@ int test_scene_volume_sample_query_rejects_deferred_policies(
     ANN(field);
     const uint8_t voxels[8] = {128, 128, 128, 128, 128, 128, 128, 128};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
-    AT(dvz_visual_set_field(volume, "field", field));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
+    AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
 
     AT(dvz_panel_query_px(
@@ -3360,8 +3360,8 @@ int test_scene_volume_sample_query_rejects_unsupported_format(
     ANN(field);
     const uint8_t voxels[8] = {1, 1, 1, 1, 1, 1, 1, 1};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
-    AT(dvz_visual_set_field(volume, "field", field));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
+    AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
 
     AT(dvz_panel_query_px(
@@ -3435,8 +3435,8 @@ int test_scene_volume_sample_query_readback_failure(TstContext* suite, const Tst
     ANN(field);
     const uint8_t voxels[8] = {128, 128, 128, 128, 128, 128, 128, 128};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
-    AT(dvz_visual_set_field(volume, "field", field));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
+    AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -3544,8 +3544,8 @@ int test_scene_labels_query_resolves_category(TstContext* suite, const TstCase* 
                    .data = label_data,
                    .bytes_per_row = 4 * sizeof(int32_t),
                    .rows_per_image = 4,
-               }));
-    AT(dvz_visual_set_field(labels, "field", field));
+               }) == DVZ_OK);
+    AT(dvz_visual_set_field(labels, "field", field) == DVZ_OK);
     AT(dvz_labels_set_background(labels, 0) == 0);
 
     DvzScale* scale = dvz_scale(
@@ -3702,8 +3702,8 @@ int test_scene_labels_query_high_unsigned_id(TstContext* suite, const TstCase* i
                    .data = label_data,
                    .bytes_per_row = 4 * sizeof(uint32_t),
                    .rows_per_image = 4,
-               }));
-    AT(dvz_visual_set_field(labels, "field", field));
+               }) == DVZ_OK);
+    AT(dvz_visual_set_field(labels, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, labels, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -3908,8 +3908,8 @@ int test_scene_labels_query_readback_failure(TstContext* suite, const TstCase* i
                    .data = label_data,
                    .bytes_per_row = 4 * sizeof(int32_t),
                    .rows_per_image = 4,
-               }));
-    AT(dvz_visual_set_field(labels, "field", field));
+               }) == DVZ_OK);
+    AT(dvz_visual_set_field(labels, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, labels, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =

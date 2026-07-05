@@ -1766,20 +1766,20 @@ int main(int argc, char** argv)
                });
     EXAMPLE_CHECK(field != NULL, "dvz_sampled_field() failed");
     ok = dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                   .data = volume_data.voxels,
-                   .bytes_per_row = volume_data.width * 4,
-                   .rows_per_image = volume_data.height,
-               });
+             field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                        .data = volume_data.voxels,
+                        .bytes_per_row = volume_data.width * 4,
+                        .rows_per_image = volume_data.height,
+                    }) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data() failed");
 
     DvzVisual* volume_3d = dvz_volume(scene, 0);
     DvzVisual* volume_slice = dvz_volume(scene, 0);
     EXAMPLE_CHECK(volume_3d != NULL && volume_slice != NULL, "dvz_volume() failed");
-    ok = dvz_visual_set_field(volume_3d, "field", field);
+    ok = dvz_visual_set_field(volume_3d, "field", field) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_field(volume_3d) failed");
 
-    ok = dvz_visual_set_field(volume_slice, "field", field);
+    ok = dvz_visual_set_field(volume_slice, "field", field) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_field(volume_slice) failed");
 
     int rc = dvz_visual_set_alpha_mode(volume_3d, DVZ_ALPHA_WBOIT);

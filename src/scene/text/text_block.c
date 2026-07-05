@@ -2052,8 +2052,8 @@ int _scene_text_block_realize_image(
         block->image_width != block->raster_width || block->image_height != block->raster_height;
     if (image_size_changed)
     {
-        if (!dvz_sampled_field_resize(
-                block->image_field, block->raster_width, block->raster_height, 1, &view))
+        if (dvz_sampled_field_resize(
+                block->image_field, block->raster_width, block->raster_height, 1, &view) != DVZ_OK)
             return -1;
         block->image_width = block->raster_width;
         block->image_height = block->raster_height;
@@ -2061,7 +2061,7 @@ int _scene_text_block_realize_image(
     }
     else if (block->image_raster_version != block->raster_version)
     {
-        if (!dvz_sampled_field_set_data(block->image_field, &view))
+        if (dvz_sampled_field_set_data(block->image_field, &view) != DVZ_OK)
             return -1;
         block->image_raster_version = block->raster_version;
     }
@@ -2103,7 +2103,7 @@ int _scene_text_block_realize_image(
     }
     if (_visual_family_state(block->image_visual)->field != block->image_field)
     {
-        if (!dvz_visual_set_field(block->image_visual, "field", block->image_field))
+        if (dvz_visual_set_field(block->image_visual, "field", block->image_field) != DVZ_OK)
             return -1;
     }
     if (!block->image_attached)

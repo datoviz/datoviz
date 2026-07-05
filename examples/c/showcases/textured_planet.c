@@ -412,11 +412,11 @@ static bool _create_planet_texture(
         return false;
 
     return dvz_sampled_field_set_data(
-        texture->field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                            .data = texture->pixels,
-                            .bytes_per_row = texture->width * 4,
-                            .rows_per_image = texture->height,
-                        });
+               texture->field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                                   .data = texture->pixels,
+                                   .bytes_per_row = texture->width * 4,
+                                   .rows_per_image = texture->height,
+                               }) == DVZ_OK;
 }
 
 
@@ -579,7 +579,7 @@ static bool _state_apply_planet(TexturedPlanetState* state, bool report_error)
         return false;
     }
 
-    return dvz_visual_set_field(state->visual, "texture", texture->field);
+    return dvz_visual_set_field(state->visual, "texture", texture->field) == DVZ_OK;
 }
 
 
@@ -725,7 +725,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         EXAMPLE_CHECK(ok, "failed to create planet texture");
     }
 
-    ok = dvz_visual_set_field(visual, "texture", state->textures[state->planet_index].field);
+    ok = dvz_visual_set_field(visual, "texture", state->textures[state->planet_index].field) ==
+         DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_field(texture) failed");
 
     rc = dvz_panel_add_visual(panel, visual, NULL);

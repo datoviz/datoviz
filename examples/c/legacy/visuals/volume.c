@@ -428,18 +428,18 @@ int main(int argc, char** argv)
                });
     EXAMPLE_CHECK(field != NULL, "dvz_sampled_field() failed");
     ok = dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                   .data = data,
-                   .bytes_per_row = VOLUME_SIZE,
-                   .rows_per_image = VOLUME_SIZE,
-               });
+             field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                        .data = data,
+                        .bytes_per_row = VOLUME_SIZE,
+                        .rows_per_image = VOLUME_SIZE,
+                    }) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data() failed");
     dvz_free(data);
     data = NULL;
 
     DvzVisual* volume = dvz_volume(scene, 0);
     EXAMPLE_CHECK(volume != NULL, "dvz_volume() failed");
-    ok = dvz_visual_set_field(volume, "field", field);
+    ok = dvz_visual_set_field(volume, "field", field) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_field() failed");
 
     int rc = dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED);

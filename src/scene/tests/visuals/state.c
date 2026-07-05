@@ -171,8 +171,8 @@ int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCa
     ANN(field);
     uint8_t base[4 * 4 * 4] = {0};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = base, .bytes_per_row = 4 * 4, .rows_per_image = 4}));
-    AT(dvz_visual_set_field(image, "field", field));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = base, .bytes_per_row = 4 * 4, .rows_per_image = 4}) == DVZ_OK);
+    AT(dvz_visual_set_field(image, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -185,7 +185,7 @@ int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCa
     uint8_t patch[2 * 4] = {1, 2, 3, 4, 5, 6, 7, 8};
     AT(dvz_sampled_field_update_region(
         field, (DvzFieldRegion){.x = 1, .y = 2, .z = 0, .width = 2, .height = 1, .depth = 1},
-        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = patch, .bytes_per_row = 2 * 4, .rows_per_image = 1}));
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = patch, .bytes_per_row = 2 * 4, .rows_per_image = 1}) == DVZ_OK);
 
     char* json = dvz_scene_json(scene);
     ANN(json);

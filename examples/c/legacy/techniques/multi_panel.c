@@ -155,19 +155,19 @@ static bool _add_image_panel(DvzScene* scene, DvzPanel* panel)
                });
     if (field == NULL)
         return false;
-    if (!dvz_sampled_field_set_data(
+    if (dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                        .data = pixels,
                        .bytes_per_row = IMG * 4,
                        .rows_per_image = IMG,
-                   }))
+                   }) != DVZ_OK)
     {
         return false;
     }
 
     if (dvz_visual_set_data(visual, "position", positions, 4) != 0 ||
         dvz_visual_set_data(visual, "texcoords", texcoords, 4) != 0 ||
-        !dvz_visual_set_field(visual, "field", field))
+        dvz_visual_set_field(visual, "field", field) != DVZ_OK)
     {
         return false;
     }

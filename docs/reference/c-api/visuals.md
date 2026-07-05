@@ -4350,7 +4350,7 @@ _Declared in `include/datoviz/scene.h`:1748._
 ### `dvz_visual_set_field()`
 
 ```c title="dvz_visual_set_field"
-_Bool dvz_visual_set_field(
+DvzResult dvz_visual_set_field(
     DvzVisual * visual,
     const char * slot_name,
     const DvzSampledField * field
@@ -4359,7 +4359,7 @@ _Bool dvz_visual_set_field(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true on success, false on error |
+| return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on error |
 | `visual` | `DvzVisual *` | the visual |
 | `slot_name` | `const char *` | the semantic slot name |
 | `field` | `const DvzSampledField *` | the field, or NULL to clear the binding |

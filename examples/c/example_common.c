@@ -341,7 +341,7 @@ bool example_visual_set_rgba8_field(
         field = dvz_sampled_field(scene, &desc);
         if (field == NULL)
             return false;
-        if (!dvz_sampled_field_set_data(field, &view))
+        if (dvz_sampled_field_set_data(field, &view) != DVZ_OK)
             return false;
     }
     else
@@ -357,14 +357,14 @@ bool example_visual_set_rgba8_field(
 
         bool ok = false;
         if (desc.width == width && desc.height == height && desc.depth == 1)
-            ok = dvz_sampled_field_set_data(field, &view);
+            ok = dvz_sampled_field_set_data(field, &view) == DVZ_OK;
         else
-            ok = dvz_sampled_field_resize(field, width, height, 1, &view);
+            ok = dvz_sampled_field_resize(field, width, height, 1, &view) == DVZ_OK;
         if (!ok)
             return false;
     }
 
-    if (!dvz_visual_set_field(visual, slot_name, field))
+    if (dvz_visual_set_field(visual, slot_name, field) != DVZ_OK)
         return false;
     if (field_io != NULL)
         *field_io = field;

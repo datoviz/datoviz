@@ -64,5 +64,5 @@ DvzResult dvz_glyph_set_atlas(DvzVisual* visual, const DvzTextAtlas* atlas)
 
     _visual_family_state(visual)->glyph_atlas_encoding = atlas->encoding;
     _visual_family_state(visual)->glyph_distance_range_px = atlas->distance_range_px;
-    return dvz_visual_set_field(visual, "field", atlas->field) ? 0 : -1;
+    return dvz_visual_set_field(visual, "field", atlas->field) == DVZ_OK ? 0 : -1;
 }

@@ -485,14 +485,14 @@ int test_scene_panel_graph_failure_reports_specific_diagnostic(TstContext* suite
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
 
     DvzVisual* volume = dvz_volume(scene, 0);
     DvzVisual* slice = dvz_volume(scene, 0);
     AT(volume != NULL);
     AT(slice != NULL);
-    AT(dvz_visual_set_field(volume, "field", field));
-    AT(dvz_visual_set_field(slice, "field", field));
+    AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
+    AT(dvz_visual_set_field(slice, "field", field) == DVZ_OK);
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) == 0);
     AT(dvz_volume_set_render_mode(slice, DVZ_VOLUME_RENDER_SLICE) == 0);
     AT(dvz_visual_set_volume_occluded(slice, true) == 0);
@@ -2636,7 +2636,7 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
 
     DvzVisual* volume = dvz_volume(scene, 0);
     DvzVisual* slice = dvz_volume(scene, 0);
@@ -2666,8 +2666,8 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     ANN(index_buffer);
     AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
 
-    AT(dvz_visual_set_field(volume, "field", field));
-    AT(dvz_visual_set_field(slice, "field", field));
+    AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
+    AT(dvz_visual_set_field(slice, "field", field) == DVZ_OK);
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) == 0);
     AT(dvz_volume_set_render_mode(slice, DVZ_VOLUME_RENDER_SLICE) == 0);
     AT(dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) == 0);
@@ -2817,7 +2817,7 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
 
     DvzVisual* volume = dvz_volume(scene, 0);
     DvzVisual* slice = dvz_volume(scene, 0);
@@ -2853,8 +2853,8 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     ANN(index_buffer);
     AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
 
-    AT(dvz_visual_set_field(volume, "field", field));
-    AT(dvz_visual_set_field(slice, "field", field));
+    AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
+    AT(dvz_visual_set_field(slice, "field", field) == DVZ_OK);
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
     AT(dvz_volume_set_step_count(volume, 16) == 0);
     AT(dvz_volume_set_render_mode(slice, DVZ_VOLUME_RENDER_SLICE) == 0);
