@@ -10484,10 +10484,10 @@ else:
  * Clear explicit tick positions and labels for one colorbar.
  *
  * @param colorbar the colorbar
- * @return whether the colorbar was updated
+ * @return DVZ_OK when the colorbar was updated, DVZ_ERROR on error
  */"""
     dvz_colorbar_clear_ticks.argtypes = [ctypes.POINTER(DvzColorbar)]
-    dvz_colorbar_clear_ticks.restype = ctypes.c_bool
+    dvz_colorbar_clear_ticks.restype = ctypes.c_int32
 
 
 try:
@@ -10546,10 +10546,10 @@ else:
  *
  * @param colorbar the colorbar
  * @param anchor the panel-edge anchor
- * @return true when the anchor was accepted
+ * @return DVZ_OK when the anchor was accepted, DVZ_ERROR on error
  */"""
     dvz_colorbar_set_anchor.argtypes = [ctypes.POINTER(DvzColorbar), ctypes.c_int]
-    dvz_colorbar_set_anchor.restype = ctypes.c_bool
+    dvz_colorbar_set_anchor.restype = ctypes.c_int32
 
 
 try:
@@ -10581,10 +10581,10 @@ else:
  *
  * @param colorbar the colorbar
  * @param desc layout descriptor
- * @return true when the layout was accepted
+ * @return DVZ_OK when the layout was accepted, DVZ_ERROR on error
  */"""
     dvz_colorbar_set_layout.argtypes = [ctypes.POINTER(DvzColorbar), ctypes.POINTER(DvzColorbarDesc)]
-    dvz_colorbar_set_layout.restype = ctypes.c_bool
+    dvz_colorbar_set_layout.restype = ctypes.c_int32
 
 
 try:
@@ -10615,10 +10615,10 @@ else:
  *
  * @param colorbar the colorbar
  * @param ticks explicit tick descriptor
- * @return whether the explicit ticks were stored
+ * @return DVZ_OK when the explicit ticks were stored, DVZ_ERROR on error
  */"""
     dvz_colorbar_set_ticks.argtypes = [ctypes.POINTER(DvzColorbar), ctypes.POINTER(DvzColorbarTicks)]
-    dvz_colorbar_set_ticks.restype = ctypes.c_bool
+    dvz_colorbar_set_ticks.restype = ctypes.c_int32
 
 
 try:
@@ -21068,10 +21068,10 @@ else:
  * Clear all highlighted categorical legend entries.
  *
  * @param legend the legend
- * @return true when the highlight state was accepted
+ * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */"""
     dvz_legend_clear_highlight.argtypes = [ctypes.POINTER(DvzLegend)]
-    dvz_legend_clear_highlight.restype = ctypes.c_bool
+    dvz_legend_clear_highlight.restype = ctypes.c_int32
 
 
 try:
@@ -21129,10 +21129,10 @@ else:
  *
  * @param legend the legend
  * @param id category id to highlight
- * @return true when the highlight state was accepted
+ * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */"""
     dvz_legend_set_highlight.argtypes = [ctypes.POINTER(DvzLegend), ctypes.c_long]
-    dvz_legend_set_highlight.restype = ctypes.c_bool
+    dvz_legend_set_highlight.restype = ctypes.c_int32
 
 
 try:
@@ -21148,10 +21148,10 @@ else:
  * @param legend the legend
  * @param ids category ids to highlight
  * @param count number of highlighted category ids
- * @return true when the highlight state was accepted
+ * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */"""
     dvz_legend_set_highlights.argtypes = [ctypes.POINTER(DvzLegend), ctypes.c_void_p, ctypes.c_uint32]
-    dvz_legend_set_highlights.restype = ctypes.c_bool
+    dvz_legend_set_highlights.restype = ctypes.c_int32
 
 
 try:
@@ -21164,10 +21164,10 @@ else:
  *
  * @param legend the legend
  * @param desc layout descriptor
- * @return true when the layout was accepted
+ * @return DVZ_OK when the layout was accepted, DVZ_ERROR on error
  */"""
     dvz_legend_set_layout.argtypes = [ctypes.POINTER(DvzLegend), ctypes.POINTER(DvzLegendDesc)]
-    dvz_legend_set_layout.restype = ctypes.c_bool
+    dvz_legend_set_layout.restype = ctypes.c_int32
 
 
 try:
@@ -25278,10 +25278,10 @@ else:
  * @param scale the scale
  * @param ids category ids to remove
  * @param count the number of ids
- * @return true when the category table was updated
+ * @return DVZ_OK when the category table was updated, DVZ_ERROR on error
  */"""
     dvz_scale_remove_categories.argtypes = [ctypes.POINTER(DvzScale), ctypes.c_void_p, ctypes.c_uint32]
-    dvz_scale_remove_categories.restype = ctypes.c_bool
+    dvz_scale_remove_categories.restype = ctypes.c_int32
 
 
 try:
@@ -25298,10 +25298,10 @@ else:
  * @param scale the scale
  * @param categories category entry array, or NULL to clear
  * @param count the number of category entries
- * @return true when the category table was accepted
+ * @return DVZ_OK when the category table was accepted, DVZ_ERROR on error
  */"""
     dvz_scale_set_categories.argtypes = [ctypes.POINTER(DvzScale), ctypes.POINTER(DvzScaleCategory), ctypes.c_uint32]
-    dvz_scale_set_categories.restype = ctypes.c_bool
+    dvz_scale_set_categories.restype = ctypes.c_int32
 
 
 try:
@@ -25388,10 +25388,10 @@ else:
  * @param scale the scale
  * @param categories category entry array
  * @param count the number of category entries
- * @return true when the category table was accepted
+ * @return DVZ_OK when the category table was accepted, DVZ_ERROR on error
  */"""
     dvz_scale_update_categories.argtypes = [ctypes.POINTER(DvzScale), ctypes.POINTER(DvzScaleCategory), ctypes.c_uint32]
-    dvz_scale_update_categories.restype = ctypes.c_bool
+    dvz_scale_update_categories.restype = ctypes.c_int32
 
 
 try:

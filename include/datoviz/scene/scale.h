@@ -303,9 +303,9 @@ DVZ_EXPORT void dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* forma
  * @param scale the scale
  * @param categories category entry array, or NULL to clear
  * @param count the number of category entries
- * @return true when the category table was accepted
+ * @return DVZ_OK when the category table was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_scale_set_categories(
+DVZ_EXPORT DvzResult dvz_scale_set_categories(
     DvzScale* scale, const DvzScaleCategory* categories, uint32_t count);
 
 
@@ -342,9 +342,9 @@ dvz_scale_category(const DvzScale* scale, uint32_t index, DvzScaleCategory* out)
  * @param scale the scale
  * @param categories category entry array
  * @param count the number of category entries
- * @return true when the category table was accepted
+ * @return DVZ_OK when the category table was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_scale_update_categories(
+DVZ_EXPORT DvzResult dvz_scale_update_categories(
     DvzScale* scale, const DvzScaleCategory* categories, uint32_t count);
 
 
@@ -356,9 +356,9 @@ DVZ_EXPORT bool dvz_scale_update_categories(
  * @param scale the scale
  * @param ids category ids to remove
  * @param count the number of ids
- * @return true when the category table was updated
+ * @return DVZ_OK when the category table was updated, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_scale_remove_categories(
+DVZ_EXPORT DvzResult dvz_scale_remove_categories(
     DvzScale* scale, const DvzCategoryId* ids, uint32_t count);
 
 
@@ -551,9 +551,9 @@ DVZ_EXPORT void dvz_colorbar_set_orientation(
  *
  * @param colorbar the colorbar
  * @param anchor the panel-edge anchor
- * @return true when the anchor was accepted
+ * @return DVZ_OK when the anchor was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor anchor);
+DVZ_EXPORT DvzResult dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor anchor);
 
 
 /**
@@ -565,9 +565,9 @@ DVZ_EXPORT bool dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor an
  *
  * @param colorbar the colorbar
  * @param desc layout descriptor
- * @return true when the layout was accepted
+ * @return DVZ_OK when the layout was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc);
+DVZ_EXPORT DvzResult dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc);
 
 
 /**
@@ -578,9 +578,9 @@ DVZ_EXPORT bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbar
  *
  * @param colorbar the colorbar
  * @param ticks explicit tick descriptor
- * @return whether the explicit ticks were stored
+ * @return DVZ_OK when the explicit ticks were stored, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_colorbar_set_ticks(
+DVZ_EXPORT DvzResult dvz_colorbar_set_ticks(
     DvzColorbar* colorbar, const DvzColorbarTicks* ticks);
 
 
@@ -588,9 +588,9 @@ DVZ_EXPORT bool dvz_colorbar_set_ticks(
  * Clear explicit tick positions and labels for one colorbar.
  *
  * @param colorbar the colorbar
- * @return whether the colorbar was updated
+ * @return DVZ_OK when the colorbar was updated, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_colorbar_clear_ticks(DvzColorbar* colorbar);
+DVZ_EXPORT DvzResult dvz_colorbar_clear_ticks(DvzColorbar* colorbar);
 
 
 /**
@@ -649,9 +649,9 @@ DVZ_EXPORT void dvz_legend_destroy(DvzLegend* legend);
  *
  * @param legend the legend
  * @param desc layout descriptor
- * @return true when the layout was accepted
+ * @return DVZ_OK when the layout was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* desc);
+DVZ_EXPORT DvzResult dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* desc);
 
 
 /**
@@ -670,18 +670,18 @@ DVZ_EXPORT void dvz_legend_set_title(DvzLegend* legend, const char* title);
  *
  * @param legend the legend
  * @param id category id to highlight
- * @return true when the highlight state was accepted
+ * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_legend_set_highlight(DvzLegend* legend, DvzCategoryId id);
+DVZ_EXPORT DvzResult dvz_legend_set_highlight(DvzLegend* legend, DvzCategoryId id);
 
 
 /**
  * Clear all highlighted categorical legend entries.
  *
  * @param legend the legend
- * @return true when the highlight state was accepted
+ * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_legend_clear_highlight(DvzLegend* legend);
+DVZ_EXPORT DvzResult dvz_legend_clear_highlight(DvzLegend* legend);
 
 
 /**
@@ -692,9 +692,9 @@ DVZ_EXPORT bool dvz_legend_clear_highlight(DvzLegend* legend);
  * @param legend the legend
  * @param ids category ids to highlight
  * @param count number of highlighted category ids
- * @return true when the highlight state was accepted
+ * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool
+DVZ_EXPORT DvzResult
 dvz_legend_set_highlights(DvzLegend* legend, const DvzCategoryId* ids, uint32_t count);
 
 

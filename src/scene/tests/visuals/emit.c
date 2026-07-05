@@ -1255,7 +1255,7 @@ static int _labels_emit_figure(
         {.category_id = 17, .order = 1, .label = "cell 17", .color = {40, 180, 80, 180}},
         {.category_id = 4000000000LL, .order = 2, .label = "large", .color = {40, 80, 220, 180}},
     };
-    AT(dvz_scale_set_categories(scale, categories, 3));
+    AT(dvz_scale_set_categories(scale, categories, 3) == DVZ_OK);
     AT(dvz_visual_set_scale(labels, "labels", scale) == 0);
     AT(dvz_panel_add_visual(panel, labels, NULL) == 0);
 

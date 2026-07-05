@@ -110,11 +110,11 @@ def main() -> int:
         colorbar = dvz.dvz_colorbar(panel, scale, None)
         if not colorbar:
             raise RuntimeError('dvz_colorbar() failed')
-        if not dvz.dvz_colorbar_set_ticks(
+        if dvz.dvz_colorbar_set_ticks(
             colorbar, np.array([0.0, 0.5, 1.0], dtype=np.float64), ['low', 'mid', 'high']
-        ):
+        ) != 0:
             raise RuntimeError('facade dvz_colorbar_set_ticks() failed')
-        if not dvz.dvz_colorbar_clear_ticks(colorbar):
+        if dvz.dvz_colorbar_clear_ticks(colorbar) != 0:
             raise RuntimeError('dvz_colorbar_clear_ticks() failed')
 
         visual = dvz.dvz_point(scene, 0)

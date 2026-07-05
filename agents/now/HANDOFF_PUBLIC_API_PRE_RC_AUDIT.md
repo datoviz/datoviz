@@ -1099,6 +1099,13 @@ Completed after the grid setter rename:
    `dvz_visual_set_field()`.
 3. Updated C examples, scene tests, text/glyph internals, wasm wrappers, generated raw `ctypes`,
    and generated C API reference signatures to use `DVZ_OK`/`DVZ_ERROR`.
+4. Converted stable scale/colorbar/legend mutators from raw `bool` success/failure returns to
+   `DvzResult`: `dvz_scale_set_categories()`, `dvz_scale_update_categories()`,
+   `dvz_scale_remove_categories()`, `dvz_colorbar_set_anchor()`,
+   `dvz_colorbar_set_layout()`, `dvz_colorbar_set_ticks()`,
+   `dvz_colorbar_clear_ticks()`, `dvz_legend_set_layout()`,
+   `dvz_legend_set_highlight()`, `dvz_legend_clear_highlight()`, and
+   `dvz_legend_set_highlights()`.
 
 Validation for the sampled-field slice:
 
@@ -1119,9 +1126,28 @@ just docs-api-check
 ```
 
 Result: all passed. The next coherent result-type slice is the remaining stable
-scale/colorbar/legend bool mutators in `include/datoviz/scene/scale.h`; panel/axis layout setters
-and low-level DRP2 stream-builder bool APIs should remain separate commits because their call-site
-blast radius and subsystem conventions differ.
+panel/axis layout setters in `include/datoviz/scene.h`; low-level DRP2 stream-builder bool APIs
+should remain a separate advanced-surface decision because their call-site blast radius and
+subsystem conventions differ.
+
+Validation for the scale/colorbar/legend slice:
+
+```sh
+just ctypes
+just ctypes-check
+python3 tools/build_api_c.py
+python3 tools/build_api_c.py --check
+python3 tools/check_api_status.py
+just build
+just test fields
+just test app
+just ctypes-smoke
+just ctypes-python-smoke
+just docs-api
+just docs-api-check
+```
+
+Result: all passed.
 
 
 ## Validation Baseline For Future Agent

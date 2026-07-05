@@ -692,7 +692,7 @@ int dvz_wasm_api_visual_set_labels_s32(
             colors_rgba[4 * i + 0], colors_rgba[4 * i + 1], colors_rgba[4 * i + 2],
             colors_rgba[4 * i + 3]);
     }
-    bool ok = dvz_scale_set_categories(scale, categories, category_count);
+    bool ok = dvz_scale_set_categories(scale, categories, category_count) == DVZ_OK;
     free(categories);
     if (!ok)
         return _fail(visual->owner, "WASM S32 labels categories failed");

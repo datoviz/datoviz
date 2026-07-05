@@ -474,30 +474,30 @@ void dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* format)
  * @param scale the scale
  * @param categories category entry array, or NULL to clear
  * @param count the number of category entries
- * @return true when the category table was accepted
+ * @return DVZ_OK when the category table was accepted, DVZ_ERROR on error
  */
-bool dvz_scale_set_categories(
+DvzResult dvz_scale_set_categories(
     DvzScale* scale, const DvzScaleCategory* categories, uint32_t count)
 {
     ANN(scale);
     if (scale->kind != DVZ_SCALE_CATEGORICAL)
     {
         log_error("scale categories are valid only for categorical scales");
-        return false;
+        return DVZ_ERROR;
     }
     if (categories == NULL || count == 0)
     {
         _scale_release_categories(scale);
         _scene_mark_scale_dirty(scale);
-        return true;
+        return DVZ_OK;
     }
     if (_scale_categories_have_duplicate_ids(categories, count))
     {
         log_error("duplicate scale category id");
-        return false;
+        return DVZ_ERROR;
     }
     if (!_scale_reserve_categories(scale, count))
-        return false;
+        return DVZ_ERROR;
 
     for (uint32_t i = 0; i < count; i++)
     {
@@ -511,7 +511,7 @@ bool dvz_scale_set_categories(
     }
     scale->category_count = count;
     _scene_mark_scale_dirty(scale);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -543,23 +543,23 @@ bool dvz_scale_category(const DvzScale* scale, uint32_t index, DvzScaleCategory*
  * @param scale the scale
  * @param categories category entry array
  * @param count the number of category entries
- * @return true when the category table was accepted
+ * @return DVZ_OK when the category table was accepted, DVZ_ERROR on error
  */
-bool dvz_scale_update_categories(
+DvzResult dvz_scale_update_categories(
     DvzScale* scale, const DvzScaleCategory* categories, uint32_t count)
 {
     ANN(scale);
     if (scale->kind != DVZ_SCALE_CATEGORICAL)
     {
         log_error("scale categories are valid only for categorical scales");
-        return false;
+        return DVZ_ERROR;
     }
     if (categories == NULL || count == 0)
-        return true;
+        return DVZ_OK;
     if (_scale_categories_have_duplicate_ids(categories, count))
     {
         log_error("duplicate scale category id");
-        return false;
+        return DVZ_ERROR;
     }
 
     uint32_t append_count = 0;
@@ -573,10 +573,10 @@ bool dvz_scale_update_categories(
         log_error(
             "too many scale categories: %u > %u", scale->category_count + append_count,
             DVZ_SCENE_MAX_SCALE_CATEGORIES);
-        return false;
+        return DVZ_ERROR;
     }
     if (!_scale_reserve_categories(scale, scale->category_count + append_count))
-        return false;
+        return DVZ_ERROR;
 
     for (uint32_t i = 0; i < count; i++)
     {
@@ -586,7 +586,7 @@ bool dvz_scale_update_categories(
         _scale_category_copy(&scale->categories[(uint32_t)index], &categories[i]);
     }
     _scene_mark_scale_dirty(scale);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -596,18 +596,18 @@ bool dvz_scale_update_categories(
  * @param scale the scale
  * @param ids category ids to remove
  * @param count the number of ids
- * @return true when the category table was updated
+ * @return DVZ_OK when the category table was updated, DVZ_ERROR on error
  */
-bool dvz_scale_remove_categories(DvzScale* scale, const DvzCategoryId* ids, uint32_t count)
+DvzResult dvz_scale_remove_categories(DvzScale* scale, const DvzCategoryId* ids, uint32_t count)
 {
     ANN(scale);
     if (scale->kind != DVZ_SCALE_CATEGORICAL)
     {
         log_error("scale categories are valid only for categorical scales");
-        return false;
+        return DVZ_ERROR;
     }
     if (ids == NULL || count == 0)
-        return true;
+        return DVZ_OK;
 
     bool changed = false;
     for (uint32_t i = 0; i < count; i++)
@@ -626,5 +626,5 @@ bool dvz_scale_remove_categories(DvzScale* scale, const DvzCategoryId* ids, uint
     }
     if (changed)
         _scene_mark_scale_dirty(scale);
-    return true;
+    return DVZ_OK;
 }

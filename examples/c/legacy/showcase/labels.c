@@ -769,7 +769,7 @@ int main(int argc, char** argv)
     DvzScaleCategory categories[CATEGORY_COUNT] = {0};
     for (uint32_t i = 0; i < CATEGORY_COUNT; i++)
         _set_category(&categories[i], CATEGORY_IDS[i], i, CATEGORY_NAMES[i]);
-    bool ok = dvz_scale_set_categories(labels_scale, categories, CATEGORY_COUNT);
+    bool ok = dvz_scale_set_categories(labels_scale, categories, CATEGORY_COUNT) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_scale_set_categories() failed");
 
     DvzSampledField* label_field = dvz_sampled_field(

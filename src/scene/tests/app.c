@@ -7510,7 +7510,7 @@ int test_app_offscreen_volume_label_composite_renders_category(
         .label = "green",
         .color = {0, 255, 0, 255},
     };
-    AT(dvz_scale_set_categories(scale, &category, 1));
+    AT(dvz_scale_set_categories(scale, &category, 1) == DVZ_OK);
     AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
     AT(dvz_volume_set_step_count(volume, 16) == 0);
@@ -7612,7 +7612,7 @@ int test_app_offscreen_volume_label_composite_renders_sparse_category(
         .label = "magenta",
         .color = {255, 0, 255, 255},
     };
-    AT(dvz_scale_set_categories(scale, &category, 1));
+    AT(dvz_scale_set_categories(scale, &category, 1) == DVZ_OK);
     AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
     AT(dvz_volume_set_step_count(volume, 16) == 0);

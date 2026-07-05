@@ -346,7 +346,7 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
         {.category_id = -3, .order = 1, .label = "Alpha", .color = {40, 220, 40, 255}},
         {.category_id = 4000000000LL, .order = 3, .label = NULL, .color = {40, 40, 220, 255}},
     };
-    AT(dvz_scale_set_categories(categorical, categories, 3));
+    AT(dvz_scale_set_categories(categorical, categories, 3) == DVZ_OK);
     AT(categorical->category_count == 3);
     AT(dvz_scale_category_count(categorical) == 3);
     AT(categorical->categories[0].category_id == 7);
@@ -372,7 +372,7 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
         {.category_id = -4, .order = 0, .label = "First", .color = {1, 2, 3, 255}},
         {.category_id = -4, .order = 1, .label = "Second", .color = {4, 5, 6, 255}},
     };
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_scale_set_categories(categorical, duplicate, 2));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_scale_set_categories(categorical, duplicate, 2) == DVZ_ERROR);
     AT(categorical->category_count == 3);
     AT(categorical->categories[0].category_id == 7);
 
@@ -380,7 +380,7 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
         {.category_id = -3, .order = 4, .label = "Updated", .color = {10, 20, 30, 255}},
         {.category_id = -100, .order = 0, .label = NULL, .color = {80, 90, 100, 255}},
     };
-    AT(dvz_scale_update_categories(categorical, patch, 2));
+    AT(dvz_scale_update_categories(categorical, patch, 2) == DVZ_OK);
     AT(categorical->category_count == 4);
     AT(categorical->categories[1].category_id == -3);
     AT(categorical->categories[1].order == 4);
@@ -388,7 +388,7 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
     AT(categorical->categories[3].category_id == -100);
 
     DvzCategoryId remove_ids[2] = {-100, 12345};
-    AT(dvz_scale_remove_categories(categorical, remove_ids, 2));
+    AT(dvz_scale_remove_categories(categorical, remove_ids, 2) == DVZ_OK);
     AT(categorical->category_count == 3);
     AT(categorical->categories[2].category_id == 4000000000LL);
 
@@ -402,7 +402,7 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
             .color = {(uint8_t)i, 0, 255, 255},
         };
     }
-    AT(dvz_scale_set_categories(categorical, many_categories, 96));
+    AT(dvz_scale_set_categories(categorical, many_categories, 96) == DVZ_OK);
     AT(categorical->category_count == 96);
     AT(dvz_scale_category_count(categorical) == 96);
     AT(categorical->category_capacity >= 96);
@@ -410,10 +410,10 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
 
     DvzScale* continuous = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(continuous);
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_scale_set_categories(continuous, categories, 3));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_scale_set_categories(continuous, categories, 3) == DVZ_ERROR);
     AT(continuous->category_count == 0);
 
-    AT(dvz_scale_set_categories(categorical, NULL, 0));
+    AT(dvz_scale_set_categories(categorical, NULL, 0) == DVZ_OK);
     AT(categorical->category_count == 0);
     AT(dvz_scale_category_count(categorical) == 0);
     AT(categorical->category_capacity == 0);
@@ -475,7 +475,7 @@ int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* it
         {.category_id = 1, .order = 0, .label = "One", .color = {255, 0, 0, 255}},
         {.category_id = 2, .order = 1, .label = "Two", .color = {0, 255, 0, 255}},
     };
-    AT(dvz_scale_set_categories(scale, categories, 2));
+    AT(dvz_scale_set_categories(scale, categories, 2) == DVZ_OK);
 
     DvzLegend* legend = dvz_legend(
         panel, scale, &(DvzLegendDesc){DVZ_STRUCT_INIT_FIELDS(DvzLegendDesc),
@@ -517,7 +517,7 @@ int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* it
                         .width_px = 80.0f,
                         .height_px = 120.0f,
                     },
-                }));
+                }) == DVZ_OK);
     AT(legend->placement_mode == DVZ_LEGEND_PLACEMENT_DETACHED);
     AT(legend->text_renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
     AT(fabsf(panel->legend_reserve.right_px) < 1e-6f);
@@ -574,7 +574,7 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
         {.category_id = -7, .order = 3, .label = NULL, .color = {40, 40, 220, 255}},
         {.category_id = 4000000000LL, .order = 4, .label = NULL, .color = {220, 220, 40, 255}},
     };
-    AT(dvz_scale_set_categories(scale, categories, 4));
+    AT(dvz_scale_set_categories(scale, categories, 4) == DVZ_OK);
 
     DvzLegend* legend = dvz_legend(
         panel, scale, &(DvzLegendDesc){DVZ_STRUCT_INIT_FIELDS(DvzLegendDesc),
@@ -635,7 +635,7 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
     AT(first_position.data == first_ptr);
 
     uint64_t version = legend->version;
-    AT(dvz_legend_set_highlight(legend, -7));
+    AT(dvz_legend_set_highlight(legend, -7) == DVZ_OK);
     AT(legend->highlight_count == 1);
     AT(legend->highlighted_ids[0] == -7);
     AT(legend->dirty);
@@ -652,7 +652,7 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
     AT(fabsf(sizes[3] - 12.0f) < 1e-6f);
 
     DvzCategoryId highlights[2] = {-7, 4000000000LL};
-    AT(dvz_legend_set_highlights(legend, highlights, 2));
+    AT(dvz_legend_set_highlights(legend, highlights, 2) == DVZ_OK);
     _scene_prepare_legend_visuals(figure, NULL);
     AT(dvz_visual_data(legend->mark_visual, "diameter_px", &size_view) == 0);
     sizes = (const float*)size_view.data;
@@ -660,7 +660,7 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
     AT(sizes[2] > 12.0f);
     AT(sizes[3] > 12.0f);
 
-    AT(dvz_legend_clear_highlight(legend));
+    AT(dvz_legend_clear_highlight(legend) == DVZ_OK);
     _scene_prepare_legend_visuals(figure, NULL);
     AT(dvz_visual_data(legend->mark_visual, "diameter_px", &size_view) == 0);
     sizes = (const float*)size_view.data;
@@ -694,7 +694,7 @@ int test_scene_legend_emit_stream_contains_derived_visuals(
         {.category_id = 1, .order = 0, .label = "A", .color = {255, 80, 80, 255}},
         {.category_id = 2, .order = 1, .label = "B", .color = {80, 255, 80, 255}},
     };
-    AT(dvz_scale_set_categories(scale, categories, 2));
+    AT(dvz_scale_set_categories(scale, categories, 2) == DVZ_OK);
     DvzLegend* legend = dvz_legend(
         panel, scale, &(DvzLegendDesc){DVZ_STRUCT_INIT_FIELDS(DvzLegendDesc),
                           .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
@@ -904,7 +904,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
 
     dvz_colorbar_set_orientation(colorbar, DVZ_COLORBAR_ORIENTATION_HORIZONTAL);
     AT(colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM);
-    AT(dvz_colorbar_set_anchor(colorbar, DVZ_SCENE_ANCHOR_PANEL_BOTTOM));
+    AT(dvz_colorbar_set_anchor(colorbar, DVZ_SCENE_ANCHOR_PANEL_BOTTOM) == DVZ_OK);
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(dvz_panel_get_reserve(panel, &reserve));
     AT(fabsf(reserve.left_px - 32.0f) < 1e-6f);
@@ -934,7 +934,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
                           .width_px = 48.0f,
                           .height_px = 240.0f,
                       },
-                  }));
+                  }) == DVZ_OK);
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(colorbar->placement_mode == DVZ_COLORBAR_PLACEMENT_DETACHED);
     AT(fabsf(colorbar->ramp_width_px - 24.0f) < 1e-6f);
@@ -950,7 +950,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
                       .reserve_px = 80.0f,
                       .ramp_width_px = 20.0f,
                       .title = "Live layout",
-                  }));
+                  }) == DVZ_OK);
     AT(strcmp(colorbar->title, "Live layout") == 0);
     AT(dvz_panel_get_reserve(panel, &reserve));
     AT(reserve.right_px > 112.0f);
@@ -1500,7 +1500,7 @@ static int test_scene_colorbar_explicit_ticks_and_labels(TstContext* suite, cons
         .values = values,
         .labels = labels,
     };
-    AT(dvz_colorbar_set_ticks(colorbar, &ticks));
+    AT(dvz_colorbar_set_ticks(colorbar, &ticks) == DVZ_OK);
     dvz_strlcpy(label0, "mutated", sizeof(label0));
     dvz_strlcpy(label1, "changed", sizeof(label1));
     dvz_strlcpy(label2, "edited", sizeof(label2));
@@ -1528,49 +1528,49 @@ static int test_scene_colorbar_explicit_ticks_and_labels(TstContext* suite, cons
     AT(dvz_colorbar_set_ticks(
         colorbar, &(DvzColorbarTicks){DVZ_STRUCT_INIT_FIELDS(DvzColorbarTicks),
                                       .count = 2,
-                                      .values = numeric_values}));
+                                      .values = numeric_values}) == DVZ_OK);
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(colorbar->tick_count == 2);
     AT(strcmp(colorbar->text_labels[0], "v=0.25") == 0);
     AT(strcmp(colorbar->text_labels[1], "v=0.75") == 0);
 
     AT(dvz_colorbar_set_ticks(
-        colorbar, &(DvzColorbarTicks){DVZ_STRUCT_INIT_FIELDS(DvzColorbarTicks), .count = 0}));
+        colorbar, &(DvzColorbarTicks){DVZ_STRUCT_INIT_FIELDS(DvzColorbarTicks), .count = 0}) == DVZ_OK);
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(colorbar->tick_count == 0);
     AT(colorbar->text_count == 0);
     AT(!colorbar->tick_visual->visible);
 
-    AT(dvz_colorbar_clear_ticks(colorbar));
+    AT(dvz_colorbar_clear_ticks(colorbar) == DVZ_OK);
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(colorbar->tick_count >= 2);
 
     AT(dvz_colorbar_set_ticks(
         colorbar, &(DvzColorbarTicks){DVZ_STRUCT_INIT_FIELDS(DvzColorbarTicks),
                                       .count = 2,
-                                      .values = numeric_values}));
+                                      .values = numeric_values}) == DVZ_OK);
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(colorbar->tick_count == 2);
 
     const double bad_value[] = {NAN};
-    AT(!dvz_colorbar_set_ticks(
+    AT(dvz_colorbar_set_ticks(
         colorbar, &(DvzColorbarTicks){DVZ_STRUCT_INIT_FIELDS(DvzColorbarTicks),
                                       .count = 1,
-                                      .values = bad_value}));
+                                      .values = bad_value}) == DVZ_ERROR);
     const char* missing_label[] = {"ok", NULL};
-    AT(!dvz_colorbar_set_ticks(
+    AT(dvz_colorbar_set_ticks(
         colorbar, &(DvzColorbarTicks){DVZ_STRUCT_INIT_FIELDS(DvzColorbarTicks),
                                       .count = 2,
                                       .values = numeric_values,
-                                      .labels = missing_label}));
+                                      .labels = missing_label}) == DVZ_ERROR);
     char overlong[DVZ_SCENE_LABEL_SIZE + 1] = {0};
     memset(overlong, 'x', DVZ_SCENE_LABEL_SIZE);
     const char* overlong_labels[] = {overlong};
-    AT(!dvz_colorbar_set_ticks(
+    AT(dvz_colorbar_set_ticks(
         colorbar, &(DvzColorbarTicks){DVZ_STRUCT_INIT_FIELDS(DvzColorbarTicks),
                                       .count = 1,
                                       .values = numeric_values,
-                                      .labels = overlong_labels}));
+                                      .labels = overlong_labels}) == DVZ_ERROR);
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(colorbar->tick_count == 2);
     AT(fabs(colorbar->ticks[0] - 0.25) < 1e-9);
@@ -1791,8 +1791,7 @@ int test_scene_colorbar_rejects_unsupported_requests(TstContext* suite, const Ts
 
     colorbar = dvz_colorbar(panel, scale, NULL);
     ANN(colorbar);
-    AT_EXPECTED_ERROR_STRICT(
-        suite, !dvz_colorbar_set_anchor(colorbar, DVZ_SCENE_ANCHOR_SCREEN));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_colorbar_set_anchor(colorbar, DVZ_SCENE_ANCHOR_SCREEN) == DVZ_ERROR);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2096,7 +2095,7 @@ int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const Ts
         {.category_id = -1, .order = 0, .label = "unassigned", .color = {128, 128, 128, 120}},
         {.category_id = 42, .order = 1, .label = "cell 42", .color = {0, 255, 0, 180}},
     };
-    AT(dvz_scale_set_categories(scale, categories, 2));
+    AT(dvz_scale_set_categories(scale, categories, 2) == DVZ_OK);
     AT(dvz_visual_set_scale(labels, "labels", scale) == 0);
     AT(_visual_family_state(labels)->scale == scale);
     AT(strcmp(_visual_family_state(labels)->scale_slot, "labels") == 0);
@@ -3484,7 +3483,7 @@ int test_scene_volume_label_slice_uses_categorical_scale(TstContext* suite, cons
         {.category_id = 1, .order = 1, .label = "one", .color = {255, 0, 0, 255}},
         {.category_id = 2, .order = 2, .label = "two", .color = {0, 255, 0, 255}},
     };
-    AT(dvz_scale_set_categories(scale, categories, 3));
+    AT(dvz_scale_set_categories(scale, categories, 3) == DVZ_OK);
     AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_SLICE) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
@@ -3564,7 +3563,7 @@ int test_scene_volume_label_composite_uses_first_hit_shader(
         {.category_id = 1, .order = 1, .label = "one", .color = {255, 0, 0, 255}},
         {.category_id = 2, .order = 2, .label = "two", .color = {0, 255, 0, 255}},
     };
-    AT(dvz_scale_set_categories(scale, categories, 3));
+    AT(dvz_scale_set_categories(scale, categories, 3) == DVZ_OK);
     AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
@@ -3636,7 +3635,7 @@ int test_scene_volume_signed_label_composite_uses_first_hit_shader(
         {.category_id = -1, .order = 0, .label = "minus one", .color = {255, 0, 0, 255}},
         {.category_id = 2, .order = 1, .label = "two", .color = {0, 255, 0, 255}},
     };
-    AT(dvz_scale_set_categories(scale, categories, 2));
+    AT(dvz_scale_set_categories(scale, categories, 2) == DVZ_OK);
     AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
@@ -3707,7 +3706,7 @@ int test_scene_volume_label_sparse_lookup_buffer(TstContext* suite, const TstCas
         {.category_id = 23, .order = 0, .label = "low", .color = {1, 2, 3, 4}},
         {.category_id = 4000000000LL, .order = 1, .label = "high", .color = {5, 6, 7, 8}},
     };
-    AT(dvz_scale_set_categories(scale, categories, 2));
+    AT(dvz_scale_set_categories(scale, categories, 2) == DVZ_OK);
     AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
@@ -3790,7 +3789,7 @@ int test_scene_volume_signed_label_sparse_lookup_buffer(TstContext* suite, const
         {.category_id = -7, .order = 0, .label = "negative", .color = {9, 10, 11, 12}},
         {.category_id = 23, .order = 1, .label = "positive", .color = {1, 2, 3, 4}},
     };
-    AT(dvz_scale_set_categories(scale, categories, 2));
+    AT(dvz_scale_set_categories(scale, categories, 2) == DVZ_OK);
     AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
@@ -3875,7 +3874,7 @@ int test_scene_volume_label_mip_reports_unsupported(TstContext* suite, const Tst
         .label = "one",
         .color = {255, 0, 0, 255},
     };
-    AT(dvz_scale_set_categories(scale, &category, 1));
+    AT(dvz_scale_set_categories(scale, &category, 1) == DVZ_OK);
     AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
 
     AT_EXPECTED_ERROR_STRICT(suite, dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) != 0);
@@ -4688,7 +4687,7 @@ int test_scene_scale_guide_descriptor_abi_rejects_invalid_structs(
     ANN(colorbar);
     colorbar_desc = dvz_colorbar_desc();
     colorbar_desc.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_colorbar_set_layout(colorbar, &colorbar_desc));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_colorbar_set_layout(colorbar, &colorbar_desc) == DVZ_ERROR);
 
     format = dvz_format_desc();
     format.flags = 1;
@@ -4706,7 +4705,7 @@ int test_scene_scale_guide_descriptor_abi_rejects_invalid_structs(
     ANN(legend);
     legend_desc = dvz_legend_desc();
     legend_desc.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_legend_set_layout(legend, &legend_desc));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_legend_set_layout(legend, &legend_desc) == DVZ_ERROR);
 
     dvz_scene_destroy(scene);
     return 0;

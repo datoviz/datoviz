@@ -1732,14 +1732,14 @@ _Declared in `include/datoviz/scene/scale.h`:505._
 ### `dvz_colorbar_clear_ticks()`
 
 ```c title="dvz_colorbar_clear_ticks"
-_Bool dvz_colorbar_clear_ticks(
+DvzResult dvz_colorbar_clear_ticks(
     DvzColorbar * colorbar
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the colorbar was updated |
+| return | `DvzResult` | DVZ_OK when the colorbar was updated, DVZ_ERROR on error |
 | `colorbar` | `DvzColorbar *` | the colorbar |
 
 Clear explicit tick positions and labels for one colorbar.
@@ -1806,7 +1806,7 @@ _Declared in `include/datoviz/scene/scale.h`:515._
 ### `dvz_colorbar_set_anchor()`
 
 ```c title="dvz_colorbar_set_anchor"
-_Bool dvz_colorbar_set_anchor(
+DvzResult dvz_colorbar_set_anchor(
     DvzColorbar * colorbar,
     DvzSceneAnchor anchor
 );
@@ -1814,7 +1814,7 @@ _Bool dvz_colorbar_set_anchor(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true when the anchor was accepted |
+| return | `DvzResult` | DVZ_OK when the anchor was accepted, DVZ_ERROR on error |
 | `colorbar` | `DvzColorbar *` | the colorbar |
 | `anchor` | `DvzSceneAnchor` | the panel-edge anchor |
 
@@ -1850,7 +1850,7 @@ _Declared in `include/datoviz/scene/scale.h`:532._
 ### `dvz_colorbar_set_layout()`
 
 ```c title="dvz_colorbar_set_layout"
-_Bool dvz_colorbar_set_layout(
+DvzResult dvz_colorbar_set_layout(
     DvzColorbar * colorbar,
     const DvzColorbarDesc * desc
 );
@@ -1858,7 +1858,7 @@ _Bool dvz_colorbar_set_layout(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true when the layout was accepted |
+| return | `DvzResult` | DVZ_OK when the layout was accepted, DVZ_ERROR on error |
 | `colorbar` | `DvzColorbar *` | the colorbar |
 | `desc` | `const DvzColorbarDesc *` | layout descriptor |
 
@@ -1895,7 +1895,7 @@ _Declared in `include/datoviz/scene/scale.h`:542._
 ### `dvz_colorbar_set_ticks()`
 
 ```c title="dvz_colorbar_set_ticks"
-_Bool dvz_colorbar_set_ticks(
+DvzResult dvz_colorbar_set_ticks(
     DvzColorbar * colorbar,
     const DvzColorbarTicks * ticks
 );
@@ -1903,7 +1903,7 @@ _Bool dvz_colorbar_set_ticks(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the explicit ticks were stored |
+| return | `DvzResult` | DVZ_OK when the explicit ticks were stored, DVZ_ERROR on error |
 | `colorbar` | `DvzColorbar *` | the colorbar |
 | `ticks` | `const DvzColorbarTicks *` | explicit tick descriptor |
 
@@ -4042,14 +4042,14 @@ _Declared in `include/datoviz/scene/scale.h`:626._
 ### `dvz_legend_clear_highlight()`
 
 ```c title="dvz_legend_clear_highlight"
-_Bool dvz_legend_clear_highlight(
+DvzResult dvz_legend_clear_highlight(
     DvzLegend * legend
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true when the highlight state was accepted |
+| return | `DvzResult` | DVZ_OK when the highlight state was accepted, DVZ_ERROR on error |
 | `legend` | `DvzLegend *` | the legend |
 
 Clear all highlighted categorical legend entries.
@@ -4116,7 +4116,7 @@ _Declared in `include/datoviz/scene/scale.h`:636._
 ### `dvz_legend_set_highlight()`
 
 ```c title="dvz_legend_set_highlight"
-_Bool dvz_legend_set_highlight(
+DvzResult dvz_legend_set_highlight(
     DvzLegend * legend,
     DvzCategoryId id
 );
@@ -4124,7 +4124,7 @@ _Bool dvz_legend_set_highlight(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true when the highlight state was accepted |
+| return | `DvzResult` | DVZ_OK when the highlight state was accepted, DVZ_ERROR on error |
 | `legend` | `DvzLegend *` | the legend |
 | `id` | `DvzCategoryId` | category id to highlight |
 
@@ -4139,7 +4139,7 @@ _Declared in `include/datoviz/scene/scale.h`:675._
 ### `dvz_legend_set_highlights()`
 
 ```c title="dvz_legend_set_highlights"
-_Bool dvz_legend_set_highlights(
+DvzResult dvz_legend_set_highlights(
     DvzLegend * legend,
     const DvzCategoryId * ids,
     uint32_t count
@@ -4148,7 +4148,7 @@ _Bool dvz_legend_set_highlights(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true when the highlight state was accepted |
+| return | `DvzResult` | DVZ_OK when the highlight state was accepted, DVZ_ERROR on error |
 | `legend` | `DvzLegend *` | the legend |
 | `ids` | `const DvzCategoryId *` | category ids to highlight |
 | `count` | `uint32_t` | number of highlighted category ids |
@@ -4164,7 +4164,7 @@ _Declared in `include/datoviz/scene/scale.h`:698._
 ### `dvz_legend_set_layout()`
 
 ```c title="dvz_legend_set_layout"
-_Bool dvz_legend_set_layout(
+DvzResult dvz_legend_set_layout(
     DvzLegend * legend,
     const DvzLegendDesc * desc
 );
@@ -4172,7 +4172,7 @@ _Bool dvz_legend_set_layout(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true when the layout was accepted |
+| return | `DvzResult` | DVZ_OK when the layout was accepted, DVZ_ERROR on error |
 | `legend` | `DvzLegend *` | the legend |
 | `desc` | `const DvzLegendDesc *` | layout descriptor |
 
@@ -6918,7 +6918,7 @@ _Declared in `include/datoviz/scene/scale.h`:214._
 ### `dvz_scale_remove_categories()`
 
 ```c title="dvz_scale_remove_categories"
-_Bool dvz_scale_remove_categories(
+DvzResult dvz_scale_remove_categories(
     DvzScale * scale,
     const DvzCategoryId * ids,
     uint32_t count
@@ -6927,7 +6927,7 @@ _Bool dvz_scale_remove_categories(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true when the category table was updated |
+| return | `DvzResult` | DVZ_OK when the category table was updated, DVZ_ERROR on error |
 | `scale` | `DvzScale *` | the scale |
 | `ids` | `const DvzCategoryId *` | category ids to remove |
 | `count` | `uint32_t` | the number of ids |
@@ -6943,7 +6943,7 @@ _Declared in `include/datoviz/scene/scale.h`:361._
 ### `dvz_scale_set_categories()`
 
 ```c title="dvz_scale_set_categories"
-_Bool dvz_scale_set_categories(
+DvzResult dvz_scale_set_categories(
     DvzScale * scale,
     const DvzScaleCategory * categories,
     uint32_t count
@@ -6952,7 +6952,7 @@ _Bool dvz_scale_set_categories(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true when the category table was accepted |
+| return | `DvzResult` | DVZ_OK when the category table was accepted, DVZ_ERROR on error |
 | `scale` | `DvzScale *` | the scale |
 | `categories` | `const DvzScaleCategory *` | category entry array, or NULL to clear |
 | `count` | `uint32_t` | the number of category entries |
@@ -7061,7 +7061,7 @@ _Declared in `include/datoviz/scene/scale.h`:259._
 ### `dvz_scale_update_categories()`
 
 ```c title="dvz_scale_update_categories"
-_Bool dvz_scale_update_categories(
+DvzResult dvz_scale_update_categories(
     DvzScale * scale,
     const DvzScaleCategory * categories,
     uint32_t count
@@ -7070,7 +7070,7 @@ _Bool dvz_scale_update_categories(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true when the category table was accepted |
+| return | `DvzResult` | DVZ_OK when the category table was accepted, DVZ_ERROR on error |
 | `scale` | `DvzScale *` | the scale |
 | `categories` | `const DvzScaleCategory *` | category entry array |
 | `count` | `uint32_t` | the number of category entries |

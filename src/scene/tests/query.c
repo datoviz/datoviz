@@ -2972,7 +2972,7 @@ int test_scene_volume_query_resolves_label_sample(TstContext* suite, const TstCa
         .label = "region 23",
         .color = {20, 120, 220, 255},
     };
-    AT(dvz_scale_set_categories(scale, &category, 1));
+    AT(dvz_scale_set_categories(scale, &category, 1) == DVZ_OK);
     AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
 
@@ -3085,7 +3085,7 @@ static int _test_scene_volume_query_label_sample_value(
         .label = label,
         .color = {20, 120, 220, 255},
     };
-    AT(dvz_scale_set_categories(scale, &category, 1));
+    AT(dvz_scale_set_categories(scale, &category, 1) == DVZ_OK);
     AT(dvz_visual_set_scale(volume, "labels", scale) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
 
@@ -3557,7 +3557,7 @@ int test_scene_labels_query_resolves_category(TstContext* suite, const TstCase* 
         {.category_id = 23, .order = 2, .label = "twenty three", .color = {0, 0, 255, 255}},
         {.category_id = 31, .order = 3, .label = "thirty one", .color = {255, 255, 0, 255}},
     };
-    AT(dvz_scale_set_categories(scale, categories, 4));
+    AT(dvz_scale_set_categories(scale, categories, 4) == DVZ_OK);
     AT(dvz_visual_set_scale(labels, "labels", scale) == 0);
     AT(dvz_panel_add_visual(panel, labels, NULL) == 0);
 

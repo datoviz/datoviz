@@ -202,7 +202,7 @@ static DvzScale* _add_labels_scale(DvzScene* scene)
         categories[i].color = example_graphite_cyan_color(roles[i]);
         categories[i].color.a = 224u;
     }
-    return dvz_scale_set_categories(scale, categories, LABEL_COUNT) ? scale : NULL;
+    return dvz_scale_set_categories(scale, categories, LABEL_COUNT) == DVZ_OK ? scale : NULL;
 }
 
 
