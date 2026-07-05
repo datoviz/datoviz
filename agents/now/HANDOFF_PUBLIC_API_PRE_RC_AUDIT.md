@@ -286,6 +286,18 @@ Completed checkpoints:
    - Validation passed: `just ctypes`, `just ctypes-check`, `just ctypes-smoke`,
      `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, `just build`,
      `just spec-check`, and `git diff --check`.
+27. `2ac43481c` `api: prefix support math macros`
+   - Renamed public support macros to `DVZ_*`: `DVZ_2PI`, `DVZ_INV_255`, `DVZ_EPSILON`,
+     `DVZ_MIN`, `DVZ_MAX`, `DVZ_CLIP`, `DVZ_GB`, `DVZ_MB`, `DVZ_KB`, and
+     `DVZ_PRETTY_SIZE_THRESHOLD`.
+   - Removed the file-scope `_PRETTY_SIZE` buffer from the public header; `dvz_pretty_size()` now
+     uses a function-local thread-local buffer where supported.
+   - Migrated internal Datoviz call sites and legacy examples.
+   - Exported symbol delta: no exported functions were added or removed; public macro spellings
+     changed before RC1.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just ctypes-smoke`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, `just docs-api-check`,
+     `just build`, `just test math`, `just test geom`, `just spec-check`, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -585,16 +597,17 @@ Preferred fix:
 
 ### 10. Clean Support-Header Leakage
 
-Status: `dvz_load_jpeg()` byte-buffer argument order normalized by `52e38e358`, and the
-`DvzAlpha` macro replaced with a typedef by `2a340b51c`; other support-header leakage remains open.
+Status: `dvz_load_jpeg()` byte-buffer argument order normalized by `52e38e358`, `DvzAlpha`
+replaced with a typedef by `2a340b51c`, and unprefixed math support macros plus the
+`_PRETTY_SIZE` buffer cleaned by `2ac43481c`; other support-header leakage remains open.
 
 Public support headers leak unprefixed macros, mutable TU-local buffers, test resources, and
 inconsistent byte-buffer signatures.
 
 References:
 
-- `include/datoviz/math/types.h`: `MIN`, `MAX`, `CLIP`, `GB`, `MB`, `KB`, `EPSILON`,
-  `_PRETTY_SIZE`, `DvzAlpha` macro
+- `include/datoviz/math/types.h`: review remaining public constants/helpers such as `M_PI` and
+  `dvz_pretty_size()` for intended stable support-header scope
 - `include/datoviz/math/box.h`: public declarations that lack `DVZ_EXPORT`
 - `include/datoviz/fileio/fileio.h`: `dvz_load_png(bytes, size)` versus
   `dvz_load_jpeg(size, bytes)`, `int*` PPM dimensions, `unsigned long*` resource sizes,
