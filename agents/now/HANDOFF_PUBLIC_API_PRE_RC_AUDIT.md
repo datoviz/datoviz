@@ -400,6 +400,22 @@ Completed checkpoints:
      `just test scene/fields`, `just test scene/text-atlas`, `just ctypes-smoke`,
      `just docs-api-check`, `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`,
      and `git diff --check`.
+37. `94ceaa74f` `api: prefix public pi constants`
+   - Removed the Datoviz public-header fallback definition of unprefixed `M_PI`.
+   - Added prefixed `DVZ_PI` and `DVZ_PI_2` constants next to existing `DVZ_2PI`.
+   - Migrated Datoviz source, examples, and tests from `M_PI`/`M_PI_2` to `DVZ_PI`/`DVZ_PI_2`.
+   - Exported symbol delta: no exported functions were added or removed; public macro surface
+     changed before RC1.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just build`, `just test math`,
+     `just test geom`, `just test scene/animation`, `just docs-api-check`,
+     `python3 tools/build_api_c.py --check`, and `git diff --check`.
+38. `efeec1679` `api: remove unused public math macros`
+   - Removed unused `DVZ_ZERO_OFFSET`, which exposed a mutable public-header static backing array.
+   - Removed unused unprefixed `fsizeof` support macro.
+   - Exported symbol delta: no exported functions were added or removed; public macro surface
+     changed before RC1.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just build`, `just test math`,
+     `just docs-api-check`, `python3 tools/build_api_c.py --check`, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -697,19 +713,21 @@ Preferred fix:
 ### 10. Clean Support-Header Leakage
 
 Status: `dvz_load_jpeg()` byte-buffer argument order normalized by `52e38e358`, `DvzAlpha`
-replaced with a typedef by `2a340b51c`, and unprefixed math support macros plus the
-`_PRETTY_SIZE` buffer cleaned by `2ac43481c`; public `dvz_box_*` declarations without export were
-resolved by `bff88625d`; `dvz_read_ppm()` dimensions normalized by `4fb4be416`; embedded resource
-sizes and stale texture/testdata accessors cleaned by `dc1617d8f`. Other support-header leakage
-remains open.
+replaced with a typedef by `2a340b51c`, unprefixed math support macros plus the `_PRETTY_SIZE`
+buffer cleaned by `2ac43481c`, public `dvz_box_*` declarations without export resolved by
+`bff88625d`, `dvz_read_ppm()` dimensions normalized by `4fb4be416`, embedded resource sizes and
+stale texture/testdata accessors cleaned by `dc1617d8f`, public `M_PI` replaced with `DVZ_PI` by
+`94ceaa74f`, and unused `DVZ_ZERO_OFFSET`/`fsizeof` removed by `efeec1679`. Remaining
+support-header work is mostly classification of intentionally public support constants/macros.
 
 Public support headers leak unprefixed macros, mutable TU-local buffers, test resources, and
 inconsistent byte-buffer signatures.
 
 References:
 
-- `include/datoviz/math/types.h`: review remaining public constants/helpers such as `M_PI` and
-  `dvz_pretty_size()` for intended stable support-header scope
+- `include/datoviz/math/types.h`: review remaining public constants/helpers such as `DVZ_MIN`,
+  `DVZ_MAX`, `DVZ_CLIP`, `DVZ_ARRAY_COUNT`, `DVZ_BOX_NDC`, and `dvz_pretty_size()` for intended
+  stable support-header scope
 - `include/datoviz/math/box.h`: resolved by `bff88625d`; the public helper set is now exported and
   generated in raw `ctypes`/C docs
 - `include/datoviz/fileio/fileio.h`: `dvz_load_png(bytes, size)` versus
@@ -718,12 +736,11 @@ References:
 
 Preferred fix:
 
-- Prefix public macros (`DVZ_MIN`, `DVZ_MAX`, etc.) or remove them from public headers.
-- Replace `#define DvzAlpha uint8_t` with `typedef uint8_t DvzAlpha`.
-- Keep only reentrant `dvz_pretty_size_r()` or make `dvz_pretty_size()` thread-safe.
-- Export and document the full `dvz_box_*` group or make non-exported declarations private.
-- Normalize byte-buffer APIs to `bytes, size_bytes`, use unsigned dimensions, use `DvzSize*` or
-  `size_t*` consistently, make borrowed resources `const`, and demote `dvz_resource_testdata()`.
+- Decide whether remaining prefixed support macros in `math/types.h` are intended stable public
+  support API or should move behind typed helpers.
+- `dvz_pretty_size()` is now thread-local where the compiler supports C11 or C++ thread-local
+  storage; decide whether the non-C11 fallback is acceptable or whether only `dvz_pretty_size_r()`
+  should remain public.
 
 
 ## Lower-Priority Polish
