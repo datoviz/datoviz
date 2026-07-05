@@ -95,6 +95,32 @@ On 2026-06-18 macOS arm64:
   Python/CMake consumer smokes.
 
 
+## Distribution Decisions
+
+- Windows pip wheels are MSVC/vcpkg-built and must include `datoviz.dll`, the MSVC
+  `datoviz.lib` import library, wheel-local CMake package files, and required vcpkg runtime DLLs.
+- MSVC users consume Datoviz through CMake `find_package(datoviz CONFIG REQUIRED)`, not
+  `datoviz-config`. `datoviz-config` remains a GCC-compatible Linux, macOS, and MSYS2/MinGW
+  convenience.
+- Windows DLL discovery is explicit: downstream CMake consumers should copy `datoviz.dll` next to
+  their executable or add the wheel/prefix runtime directory to `PATH`; Python wheels configure
+  `os.add_dll_directory()` before loading `datoviz.raw`.
+- Visual Studio source builds use the CMake preset path with Visual Studio 2022, Vulkan SDK, and
+  vcpkg. A dedicated Visual Studio walkthrough is documentation work, not an engineering blocker.
+- vcpkg remains the preferred Windows C/C++ package-manager path: publish the overlay first after a
+  stable source bundle exists, then submit the official registry PR after validation.
+- conda-forge should use the split-package proposal: `libdatoviz` for the native library and
+  headers, `datoviz` for Python bindings depending on `libdatoviz`.
+- Conda packages use dynamic conda-forge dependencies with `DVZ_VENDORED_DEPS=OFF`; pip wheels keep
+  their vendored/static dependency policy where required for portable wheel payloads.
+- Headless conda validation must prove `import datoviz`, `import datoviz.raw`, `raw.dvz_scene()`,
+  and `raw.dvz_scene_destroy()` do not require a live Vulkan device.
+- Chocolatey and winget are out of scope for v0.4 because they are application installers, not the
+  C library distribution path. MSYS2, nix/nixpkgs, rpm, Docker, conan, and similar channels remain
+  community-driven or post-v0.4 unless release scope changes.
+- Spack is low-effort and release-tag-gated; do not let it block wheel, conda, or vcpkg proof.
+
+
 ## Active Blockers
 
 1. Validate the vcpkg overlay on Windows with vcpkg installed; replace placeholder source-bundle

@@ -16,6 +16,21 @@ Detailed references:
 - vcpkg overlay draft: [../../vcpkg-overlay/README.md](../../vcpkg-overlay/README.md).
 
 
+## Package Policy Snapshot
+
+- Use one explicit release source bundle for wheels, conda, and vcpkg; do not use GitHub
+  auto-generated archives for package-manager proof.
+- Windows wheels must continue to carry the MSVC DLL/import-library pair, bundled CMake package
+  files, required vcpkg runtime DLLs, and installed-wheel CMake consumer proof.
+- The conda-forge proposal is split output packages: `libdatoviz` for the C library and headers,
+  `datoviz` for Python bindings. Conda validation must remain headless-safe through raw scene
+  create/destroy without creating a Vulkan device.
+- vcpkg overlay publication waits for the stable source bundle and SHA512; official vcpkg registry
+  submission follows overlay validation.
+- Chocolatey and winget are out of scope for v0.4. Spack, Homebrew, `.deb`, rpm, conan, Docker,
+  and nix remain lower-priority or post-v0.4 unless release scope changes.
+
+
 ## Local Preflight
 
 Run the repeatable local distribution preflight:
