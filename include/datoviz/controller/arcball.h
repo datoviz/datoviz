@@ -105,6 +105,10 @@ DVZ_EXPORT DvzArcball* dvz_arcball_create(const DvzArcballDesc* desc);
 
 /**
  * Set the initial Euler angles and reset.
+ *
+ * @param arcball arcball controller
+ * @param angles initial Euler angles
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_initial(DvzArcball* arcball, vec3 angles);
 
@@ -112,6 +116,9 @@ DVZ_EXPORT DvzResult dvz_arcball_initial(DvzArcball* arcball, vec3 angles);
 
 /**
  * Reset to the initial orientation.
+ *
+ * @param arcball arcball controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_reset(DvzArcball* arcball);
 
@@ -119,6 +126,10 @@ DVZ_EXPORT DvzResult dvz_arcball_reset(DvzArcball* arcball);
 
 /**
  * Set the orientation directly from Euler angles.
+ *
+ * @param arcball arcball controller
+ * @param angles Euler angles
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_set(DvzArcball* arcball, vec3 angles);
 
@@ -129,6 +140,7 @@ DVZ_EXPORT DvzResult dvz_arcball_set(DvzArcball* arcball, vec3 angles);
  * @param arcball arcball controller
  * @param angle rotation angle in radians
  * @param axis rotation axis
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, vec3 axis);
 
@@ -138,6 +150,7 @@ DVZ_EXPORT DvzResult dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, v
  *
  * @param arcball arcball controller
  * @param zoom uniform zoom factor
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_zoom(DvzArcball* arcball, float zoom);
 
@@ -147,6 +160,7 @@ DVZ_EXPORT DvzResult dvz_arcball_zoom(DvzArcball* arcball, float zoom);
  *
  * @param arcball arcball controller
  * @param pan panel-plane pan offset
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_pan(DvzArcball* arcball, vec2 pan);
 
@@ -166,6 +180,7 @@ DVZ_EXPORT bool dvz_arcball_state(const DvzArcball* arcball, DvzArcballState* ou
  *
  * @param arcball arcball controller
  * @param shift_px shift in viewport pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_pan_shift(DvzArcball* arcball, vec2 shift_px);
 
@@ -173,6 +188,11 @@ DVZ_EXPORT DvzResult dvz_arcball_pan_shift(DvzArcball* arcball, vec2 shift_px);
 
 /**
  * Update the viewport size (call on window resize).
+ *
+ * @param arcball arcball controller
+ * @param width viewport width in pixels
+ * @param height viewport height in pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_resize(DvzArcball* arcball, float width, float height);
 
@@ -180,6 +200,10 @@ DVZ_EXPORT DvzResult dvz_arcball_resize(DvzArcball* arcball, float width, float 
 
 /**
  * Set a rotation constraint axis.
+ *
+ * @param arcball arcball controller
+ * @param axis rotation constraint axis
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_constrain(DvzArcball* arcball, vec3 axis);
 
@@ -194,6 +218,11 @@ DVZ_EXPORT void dvz_arcball_angles(DvzArcball* arcball, vec3 out_angles);
 
 /**
  * Apply an in-flight rotation from two NDC screen positions.
+ *
+ * @param arcball arcball controller
+ * @param cur_pos current pointer position in normalized device coordinates
+ * @param last_pos previous pointer position in normalized device coordinates
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos);
 
@@ -203,6 +232,10 @@ DVZ_EXPORT DvzResult dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 
  * Compute the model matrix (accumulated × in-flight rotation).
  *
  * Arcball pan and zoom are camera view state and are not included here.
+ *
+ * @param arcball arcball controller
+ * @param model output model matrix
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_model(DvzArcball* arcball, mat4 model);
 
@@ -210,6 +243,9 @@ DVZ_EXPORT DvzResult dvz_arcball_model(DvzArcball* arcball, mat4 model);
 
 /**
  * Commit the in-flight rotation into the accumulated matrix (call at drag stop).
+ *
+ * @param arcball arcball controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_end(DvzArcball* arcball);
 
@@ -242,6 +278,10 @@ DVZ_EXPORT bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* 
 
 /**
  * Subscribe the arcball to an input router.
+ *
+ * @param arcball arcball controller
+ * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_connect(DvzArcball* arcball, DvzInputRouter* router);
 
@@ -249,6 +289,10 @@ DVZ_EXPORT DvzResult dvz_arcball_connect(DvzArcball* arcball, DvzInputRouter* ro
 
 /**
  * Unsubscribe the arcball from a router.
+ *
+ * @param arcball arcball controller
+ * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_disconnect(DvzArcball* arcball, DvzInputRouter* router);
 

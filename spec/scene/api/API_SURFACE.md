@@ -354,7 +354,7 @@ controller model transform.
 4. optional axis length and style knobs.
 
 The implementation should lower the triad to ordinary generated mesh geometry. Geometry generation
-belongs in `geom` through `dvz_geom_gizmo_axes()` once that generator lands; scene/app owns inset
+belongs in `geom` through `dvz_geometry_gizmo_axes()` once that generator lands; scene/app owns inset
 placement, synchronization, redraw requests, viewport/scissor handling, and depth policy.
 
 Do not use the old v0.3 `panel.gizmo()` name as the C contract. Bindings may add a shorter alias

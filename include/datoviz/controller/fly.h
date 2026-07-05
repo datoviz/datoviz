@@ -118,6 +118,7 @@ DVZ_EXPORT DvzFly* dvz_fly_create(const DvzFlyDesc* desc);
  * Reset a fly controller to its initial pose.
  *
  * @param fly the fly controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_reset(DvzFly* fly);
 
@@ -131,6 +132,7 @@ DVZ_EXPORT DvzResult dvz_fly_reset(DvzFly* fly);
  * @param y viewport y origin in window pixels
  * @param width viewport width in window pixels
  * @param height viewport height in window pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_viewport(DvzFly* fly, float x, float y, float width, float height);
 
@@ -142,6 +144,7 @@ DVZ_EXPORT DvzResult dvz_fly_viewport(DvzFly* fly, float x, float y, float width
  * @param fly the fly controller
  * @param width viewport width in pixels
  * @param height viewport height in pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_resize(DvzFly* fly, float width, float height);
 
@@ -155,6 +158,7 @@ DVZ_EXPORT DvzResult dvz_fly_resize(DvzFly* fly, float width, float height);
  * @param yaw initial yaw angle in radians
  * @param pitch initial pitch angle in radians
  * @param roll initial roll angle in radians
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_initial(DvzFly* fly, vec3 position, float yaw, float pitch, float roll);
 
@@ -166,6 +170,7 @@ DVZ_EXPORT DvzResult dvz_fly_initial(DvzFly* fly, vec3 position, float yaw, floa
  * @param fly the fly controller
  * @param position initial camera position
  * @param target initial look-at target
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_initial_lookat(DvzFly* fly, vec3 position, vec3 target);
 
@@ -176,6 +181,7 @@ DVZ_EXPORT DvzResult dvz_fly_initial_lookat(DvzFly* fly, vec3 position, vec3 tar
  *
  * @param fly the fly controller
  * @param mode movement mode
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_set_mode(DvzFly* fly, DvzFlyMode mode);
 
@@ -186,6 +192,7 @@ DVZ_EXPORT DvzResult dvz_fly_set_mode(DvzFly* fly, DvzFlyMode mode);
  *
  * @param fly the fly controller
  * @param amount movement amount in world units
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_move_forward(DvzFly* fly, float amount);
 
@@ -196,6 +203,7 @@ DVZ_EXPORT DvzResult dvz_fly_move_forward(DvzFly* fly, float amount);
  *
  * @param fly the fly controller
  * @param amount movement amount in world units
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_move_right(DvzFly* fly, float amount);
 
@@ -206,6 +214,7 @@ DVZ_EXPORT DvzResult dvz_fly_move_right(DvzFly* fly, float amount);
  *
  * @param fly the fly controller
  * @param amount movement amount in world units
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_move_up(DvzFly* fly, float amount);
 
@@ -217,6 +226,7 @@ DVZ_EXPORT DvzResult dvz_fly_move_up(DvzFly* fly, float amount);
  * @param fly the fly controller
  * @param dx yaw delta in radians
  * @param dy pitch delta in radians
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_rotate(DvzFly* fly, float dx, float dy);
 
@@ -227,6 +237,7 @@ DVZ_EXPORT DvzResult dvz_fly_rotate(DvzFly* fly, float dx, float dy);
  *
  * @param fly the fly controller
  * @param dx roll delta in radians
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_roll(DvzFly* fly, float dx);
 
@@ -267,6 +278,7 @@ DVZ_EXPORT void dvz_fly_get_up(const DvzFly* fly, vec3 out_up);
  *
  * @param fly the fly controller
  * @param pivot new world-space pivot point
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_pivot(DvzFly* fly, vec3 pivot);
 
@@ -276,6 +288,7 @@ DVZ_EXPORT DvzResult dvz_fly_pivot(DvzFly* fly, vec3 pivot);
  * Clear the optional orbit pivot.
  *
  * @param fly the fly controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_clear_pivot(DvzFly* fly);
 
@@ -295,6 +308,7 @@ DVZ_EXPORT bool dvz_fly_has_pivot(const DvzFly* fly);
  * Reorient the camera toward the active pivot without moving the eye.
  *
  * @param fly the fly controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_look_at_pivot(DvzFly* fly);
 
@@ -306,7 +320,7 @@ DVZ_EXPORT DvzResult dvz_fly_look_at_pivot(DvzFly* fly);
  * @param fly the fly controller
  * @param yaw_delta yaw delta in radians
  * @param pitch_delta pitch delta in radians
- * @return whether the orbit was applied
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_orbit(DvzFly* fly, float yaw_delta, float pitch_delta);
 
@@ -317,6 +331,7 @@ DVZ_EXPORT DvzResult dvz_fly_orbit(DvzFly* fly, float yaw_delta, float pitch_del
  *
  * @param fly the fly controller
  * @param camera the camera to update, or NULL
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_set_camera(DvzFly* fly, DvzCamera* camera);
 
@@ -326,6 +341,7 @@ DVZ_EXPORT DvzResult dvz_fly_set_camera(DvzFly* fly, DvzCamera* camera);
  * Apply the current fly pose to the attached camera.
  *
  * @param fly the fly controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_apply_camera(DvzFly* fly);
 
@@ -336,6 +352,7 @@ DVZ_EXPORT DvzResult dvz_fly_apply_camera(DvzFly* fly);
  *
  * @param fly the fly controller
  * @param dt elapsed time in seconds
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_update(DvzFly* fly, double dt);
 
@@ -368,6 +385,7 @@ DVZ_EXPORT bool dvz_fly_keyboard(DvzFly* fly, const DvzKeyboardEvent* ev);
  *
  * @param fly the fly controller
  * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_connect(DvzFly* fly, DvzInputRouter* router);
 
@@ -378,6 +396,7 @@ DVZ_EXPORT DvzResult dvz_fly_connect(DvzFly* fly, DvzInputRouter* router);
  *
  * @param fly the fly controller
  * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_fly_disconnect(DvzFly* fly, DvzInputRouter* router);
 

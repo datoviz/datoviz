@@ -300,7 +300,7 @@ it behind a descriptor-based C API:
 
 ```c
 DvzGeometryPlyDesc dvz_geometry_ply_desc(void);
-DvzGeometry* dvz_geom_ply(const char* path, const DvzGeometryPlyDesc* desc);
+DvzGeometry* dvz_geometry_ply(const char* path, const DvzGeometryPlyDesc* desc);
 ```
 
 Initial PLY support should cover positions, normals, RGB/RGBA colors, triangle faces, optional face

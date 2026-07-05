@@ -7694,6 +7694,10 @@ except AttributeError:
 else:
     dvz_arcball_connect.__doc__ = """/**
  * Subscribe the arcball to an input router.
+ *
+ * @param arcball arcball controller
+ * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_connect.argtypes = [ctypes.POINTER(DvzArcball), ctypes.POINTER(DvzInputRouter)]
     dvz_arcball_connect.restype = ctypes.c_int32
@@ -7706,6 +7710,10 @@ except AttributeError:
 else:
     dvz_arcball_constrain.__doc__ = """/**
  * Set a rotation constraint axis.
+ *
+ * @param arcball arcball controller
+ * @param axis rotation constraint axis
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_constrain.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 3)]
     dvz_arcball_constrain.restype = ctypes.c_int32
@@ -7754,6 +7762,10 @@ except AttributeError:
 else:
     dvz_arcball_disconnect.__doc__ = """/**
  * Unsubscribe the arcball from a router.
+ *
+ * @param arcball arcball controller
+ * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_disconnect.argtypes = [ctypes.POINTER(DvzArcball), ctypes.POINTER(DvzInputRouter)]
     dvz_arcball_disconnect.restype = ctypes.c_int32
@@ -7766,6 +7778,9 @@ except AttributeError:
 else:
     dvz_arcball_end.__doc__ = """/**
  * Commit the in-flight rotation into the accumulated matrix (call at drag stop).
+ *
+ * @param arcball arcball controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_end.argtypes = [ctypes.POINTER(DvzArcball)]
     dvz_arcball_end.restype = ctypes.c_int32
@@ -7778,6 +7793,10 @@ except AttributeError:
 else:
     dvz_arcball_initial.__doc__ = """/**
  * Set the initial Euler angles and reset.
+ *
+ * @param arcball arcball controller
+ * @param angles initial Euler angles
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_initial.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 3)]
     dvz_arcball_initial.restype = ctypes.c_int32
@@ -7806,6 +7825,10 @@ else:
  * Compute the model matrix (accumulated × in-flight rotation).
  *
  * Arcball pan and zoom are camera view state and are not included here.
+ *
+ * @param arcball arcball controller
+ * @param model output model matrix
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_model.argtypes = [ctypes.POINTER(DvzArcball), ((ctypes.c_float * 4) * 4)]
     dvz_arcball_model.restype = ctypes.c_int32
@@ -7834,6 +7857,7 @@ else:
  *
  * @param arcball arcball controller
  * @param pan panel-plane pan offset
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_pan.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 2)]
     dvz_arcball_pan.restype = ctypes.c_int32
@@ -7849,6 +7873,7 @@ else:
  *
  * @param arcball arcball controller
  * @param shift_px shift in viewport pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_pan_shift.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 2)]
     dvz_arcball_pan_shift.restype = ctypes.c_int32
@@ -7875,6 +7900,9 @@ except AttributeError:
 else:
     dvz_arcball_reset.__doc__ = """/**
  * Reset to the initial orientation.
+ *
+ * @param arcball arcball controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_reset.argtypes = [ctypes.POINTER(DvzArcball)]
     dvz_arcball_reset.restype = ctypes.c_int32
@@ -7887,6 +7915,11 @@ except AttributeError:
 else:
     dvz_arcball_resize.__doc__ = """/**
  * Update the viewport size (call on window resize).
+ *
+ * @param arcball arcball controller
+ * @param width viewport width in pixels
+ * @param height viewport height in pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_resize.argtypes = [ctypes.POINTER(DvzArcball), ctypes.c_float, ctypes.c_float]
     dvz_arcball_resize.restype = ctypes.c_int32
@@ -7899,6 +7932,11 @@ except AttributeError:
 else:
     dvz_arcball_rotate.__doc__ = """/**
  * Apply an in-flight rotation from two NDC screen positions.
+ *
+ * @param arcball arcball controller
+ * @param cur_pos current pointer position in normalized device coordinates
+ * @param last_pos previous pointer position in normalized device coordinates
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_rotate.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 2), (ctypes.c_float * 2)]
     dvz_arcball_rotate.restype = ctypes.c_int32
@@ -7915,6 +7953,7 @@ else:
  * @param arcball arcball controller
  * @param angle rotation angle in radians
  * @param axis rotation axis
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_rotate_axis.argtypes = [ctypes.POINTER(DvzArcball), ctypes.c_float, (ctypes.c_float * 3)]
     dvz_arcball_rotate_axis.restype = ctypes.c_int32
@@ -7927,6 +7966,10 @@ except AttributeError:
 else:
     dvz_arcball_set.__doc__ = """/**
  * Set the orientation directly from Euler angles.
+ *
+ * @param arcball arcball controller
+ * @param angles Euler angles
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_set.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 3)]
     dvz_arcball_set.restype = ctypes.c_int32
@@ -7958,6 +8001,7 @@ else:
  *
  * @param arcball arcball controller
  * @param zoom uniform zoom factor
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_zoom.argtypes = [ctypes.POINTER(DvzArcball), ctypes.c_float]
     dvz_arcball_zoom.restype = ctypes.c_int32
@@ -9418,7 +9462,7 @@ else:
  * @param out_top output top orthographic bound
  * @param out_near output near clipping plane
  * @param out_far output far clipping plane
- * @return 0 when explicit bounds are active, -1 otherwise
+ * @return DVZ_OK when explicit bounds are active, DVZ_ERROR otherwise
  */"""
     dvz_camera_get_orthographic_bounds.argtypes = [ctypes.POINTER(DvzCamera), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float)]
     dvz_camera_get_orthographic_bounds.restype = ctypes.c_int32
@@ -9508,6 +9552,7 @@ else:
  * @param camera the camera
  * @param width viewport width in pixels
  * @param height viewport height in pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_camera_resize.argtypes = [ctypes.POINTER(DvzCamera), ctypes.c_float, ctypes.c_float]
     dvz_camera_resize.restype = ctypes.c_int32
@@ -9525,6 +9570,7 @@ else:
  * @param height vertical world-space extent
  * @param near near clipping plane
  * @param far far clipping plane
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_camera_set_orthographic.argtypes = [ctypes.POINTER(DvzCamera), ctypes.c_float, ctypes.c_float, ctypes.c_float]
     dvz_camera_set_orthographic.restype = ctypes.c_int32
@@ -9548,7 +9594,7 @@ else:
  * @param top top orthographic bound
  * @param near near clipping plane
  * @param far far clipping plane
- * @return 0 on success, -1 on invalid bounds
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_camera_set_orthographic_bounds.argtypes = [ctypes.POINTER(DvzCamera), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
     dvz_camera_set_orthographic_bounds.restype = ctypes.c_int32
@@ -9566,6 +9612,7 @@ else:
  * @param fov_y vertical field-of-view angle, in radians
  * @param near near clipping plane
  * @param far far clipping plane
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_camera_set_perspective.argtypes = [ctypes.POINTER(DvzCamera), ctypes.c_float, ctypes.c_float, ctypes.c_float]
     dvz_camera_set_perspective.restype = ctypes.c_int32
@@ -9581,6 +9628,7 @@ else:
  *
  * @param camera the camera
  * @param view the camera view
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_camera_set_view.argtypes = [ctypes.POINTER(DvzCamera), ctypes.POINTER(DvzCameraView)]
     dvz_camera_set_view.restype = ctypes.c_int32
@@ -15379,6 +15427,7 @@ else:
  * Apply the current fly pose to the attached camera.
  *
  * @param fly the fly controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_apply_camera.argtypes = [ctypes.POINTER(DvzFly)]
     dvz_fly_apply_camera.restype = ctypes.c_int32
@@ -15393,6 +15442,7 @@ else:
  * Clear the optional orbit pivot.
  *
  * @param fly the fly controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_clear_pivot.argtypes = [ctypes.POINTER(DvzFly)]
     dvz_fly_clear_pivot.restype = ctypes.c_int32
@@ -15408,6 +15458,7 @@ else:
  *
  * @param fly the fly controller
  * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_connect.argtypes = [ctypes.POINTER(DvzFly), ctypes.POINTER(DvzInputRouter)]
     dvz_fly_connect.restype = ctypes.c_int32
@@ -15466,6 +15517,7 @@ else:
  *
  * @param fly the fly controller
  * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_disconnect.argtypes = [ctypes.POINTER(DvzFly), ctypes.POINTER(DvzInputRouter)]
     dvz_fly_disconnect.restype = ctypes.c_int32
@@ -15544,6 +15596,7 @@ else:
  * @param yaw initial yaw angle in radians
  * @param pitch initial pitch angle in radians
  * @param roll initial roll angle in radians
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_initial.argtypes = [ctypes.POINTER(DvzFly), (ctypes.c_float * 3), ctypes.c_float, ctypes.c_float, ctypes.c_float]
     dvz_fly_initial.restype = ctypes.c_int32
@@ -15560,6 +15613,7 @@ else:
  * @param fly the fly controller
  * @param position initial camera position
  * @param target initial look-at target
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_initial_lookat.argtypes = [ctypes.POINTER(DvzFly), (ctypes.c_float * 3), (ctypes.c_float * 3)]
     dvz_fly_initial_lookat.restype = ctypes.c_int32
@@ -15590,6 +15644,7 @@ else:
  * Reorient the camera toward the active pivot without moving the eye.
  *
  * @param fly the fly controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_look_at_pivot.argtypes = [ctypes.POINTER(DvzFly)]
     dvz_fly_look_at_pivot.restype = ctypes.c_int32
@@ -15605,6 +15660,7 @@ else:
  *
  * @param fly the fly controller
  * @param amount movement amount in world units
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_move_forward.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float]
     dvz_fly_move_forward.restype = ctypes.c_int32
@@ -15620,6 +15676,7 @@ else:
  *
  * @param fly the fly controller
  * @param amount movement amount in world units
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_move_right.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float]
     dvz_fly_move_right.restype = ctypes.c_int32
@@ -15635,6 +15692,7 @@ else:
  *
  * @param fly the fly controller
  * @param amount movement amount in world units
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_move_up.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float]
     dvz_fly_move_up.restype = ctypes.c_int32
@@ -15651,7 +15709,7 @@ else:
  * @param fly the fly controller
  * @param yaw_delta yaw delta in radians
  * @param pitch_delta pitch delta in radians
- * @return whether the orbit was applied
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_orbit.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float, ctypes.c_float]
     dvz_fly_orbit.restype = ctypes.c_int32
@@ -15667,6 +15725,7 @@ else:
  *
  * @param fly the fly controller
  * @param pivot new world-space pivot point
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_pivot.argtypes = [ctypes.POINTER(DvzFly), (ctypes.c_float * 3)]
     dvz_fly_pivot.restype = ctypes.c_int32
@@ -15697,6 +15756,7 @@ else:
  * Reset a fly controller to its initial pose.
  *
  * @param fly the fly controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_reset.argtypes = [ctypes.POINTER(DvzFly)]
     dvz_fly_reset.restype = ctypes.c_int32
@@ -15713,6 +15773,7 @@ else:
  * @param fly the fly controller
  * @param width viewport width in pixels
  * @param height viewport height in pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_resize.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float, ctypes.c_float]
     dvz_fly_resize.restype = ctypes.c_int32
@@ -15728,6 +15789,7 @@ else:
  *
  * @param fly the fly controller
  * @param dx roll delta in radians
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_roll.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float]
     dvz_fly_roll.restype = ctypes.c_int32
@@ -15744,6 +15806,7 @@ else:
  * @param fly the fly controller
  * @param dx yaw delta in radians
  * @param dy pitch delta in radians
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_rotate.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float, ctypes.c_float]
     dvz_fly_rotate.restype = ctypes.c_int32
@@ -15759,6 +15822,7 @@ else:
  *
  * @param fly the fly controller
  * @param camera the camera to update, or NULL
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_set_camera.argtypes = [ctypes.POINTER(DvzFly), ctypes.POINTER(DvzCamera)]
     dvz_fly_set_camera.restype = ctypes.c_int32
@@ -15774,6 +15838,7 @@ else:
  *
  * @param fly the fly controller
  * @param mode movement mode
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_set_mode.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_int]
     dvz_fly_set_mode.restype = ctypes.c_int32
@@ -15789,6 +15854,7 @@ else:
  *
  * @param fly the fly controller
  * @param dt elapsed time in seconds
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_update.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_double]
     dvz_fly_update.restype = ctypes.c_int32
@@ -15807,6 +15873,7 @@ else:
  * @param y viewport y origin in window pixels
  * @param width viewport width in window pixels
  * @param height viewport height in window pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_viewport.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
     dvz_fly_viewport.restype = ctypes.c_int32
@@ -22956,6 +23023,10 @@ else:
     dvz_panzoom_connect.__doc__ = """/**
  * Subscribe the panzoom to an input router.
  * The panzoom pointer callback will be registered; call dvz_panzoom_disconnect() to remove it.
+ *
+ * @param pz panzoom controller
+ * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_connect.argtypes = [ctypes.POINTER(DvzPanzoom), ctypes.POINTER(DvzInputRouter)]
     dvz_panzoom_connect.restype = ctypes.c_int32
@@ -23004,6 +23075,10 @@ except AttributeError:
 else:
     dvz_panzoom_disconnect.__doc__ = """/**
  * Unsubscribe the panzoom from a router.
+ *
+ * @param pz panzoom controller
+ * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_disconnect.argtypes = [ctypes.POINTER(DvzPanzoom), ctypes.POINTER(DvzInputRouter)]
     dvz_panzoom_disconnect.restype = ctypes.c_int32
@@ -23016,6 +23091,9 @@ except AttributeError:
 else:
     dvz_panzoom_end.__doc__ = """/**
  * Commit the current pan/zoom as the new drag baseline (call at drag stop).
+ *
+ * @param pz panzoom controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_end.argtypes = [ctypes.POINTER(DvzPanzoom)]
     dvz_panzoom_end.restype = ctypes.c_int32
@@ -23057,6 +23135,10 @@ except AttributeError:
 else:
     dvz_panzoom_pan.__doc__ = """/**
  * Set the pan offset in NDC.
+ *
+ * @param pz panzoom controller
+ * @param pan pan offset
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_pan.argtypes = [ctypes.POINTER(DvzPanzoom), (ctypes.c_float * 2)]
     dvz_panzoom_pan.restype = ctypes.c_int32
@@ -23069,6 +23151,11 @@ except AttributeError:
 else:
     dvz_panzoom_pan_shift.__doc__ = """/**
  * Apply a pan shift (pixel delta).
+ *
+ * @param pz panzoom controller
+ * @param shift_px shift in viewport pixels
+ * @param center_px pointer center in viewport pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_pan_shift.argtypes = [ctypes.POINTER(DvzPanzoom), (ctypes.c_float * 2), (ctypes.c_float * 2)]
     dvz_panzoom_pan_shift.restype = ctypes.c_int32
@@ -23095,6 +23182,9 @@ except AttributeError:
 else:
     dvz_panzoom_reset.__doc__ = """/**
  * Reset to the identity transform.
+ *
+ * @param pz panzoom controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_reset.argtypes = [ctypes.POINTER(DvzPanzoom)]
     dvz_panzoom_reset.restype = ctypes.c_int32
@@ -23107,6 +23197,11 @@ except AttributeError:
 else:
     dvz_panzoom_resize.__doc__ = """/**
  * Update the viewport size (call on window resize).
+ *
+ * @param pz panzoom controller
+ * @param width viewport width in pixels
+ * @param height viewport height in pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_resize.argtypes = [ctypes.POINTER(DvzPanzoom), ctypes.c_float, ctypes.c_float]
     dvz_panzoom_resize.restype = ctypes.c_int32
@@ -23144,6 +23239,13 @@ except AttributeError:
 else:
     dvz_panzoom_viewport.__doc__ = """/**
  * Update the viewport rectangle in window coordinates.
+ *
+ * @param pz panzoom controller
+ * @param x viewport x origin in window pixels
+ * @param y viewport y origin in window pixels
+ * @param width viewport width in window pixels
+ * @param height viewport height in window pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_viewport.argtypes = [ctypes.POINTER(DvzPanzoom), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
     dvz_panzoom_viewport.restype = ctypes.c_int32
@@ -23156,6 +23258,10 @@ except AttributeError:
 else:
     dvz_panzoom_zoom.__doc__ = """/**
  * Set the zoom factors.
+ *
+ * @param pz panzoom controller
+ * @param zoom zoom factors
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_zoom.argtypes = [ctypes.POINTER(DvzPanzoom), (ctypes.c_float * 2)]
     dvz_panzoom_zoom.restype = ctypes.c_int32
@@ -23185,6 +23291,11 @@ except AttributeError:
 else:
     dvz_panzoom_zoom_shift.__doc__ = """/**
  * Apply a zoom shift driven by right-drag (pixel delta + anchor).
+ *
+ * @param pz panzoom controller
+ * @param shift_px shift in viewport pixels
+ * @param center_px zoom anchor in viewport pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_zoom_shift.argtypes = [ctypes.POINTER(DvzPanzoom), (ctypes.c_float * 2), (ctypes.c_float * 2)]
     dvz_panzoom_zoom_shift.restype = ctypes.c_int32
@@ -23197,6 +23308,11 @@ except AttributeError:
 else:
     dvz_panzoom_zoom_wheel.__doc__ = """/**
  * Apply a wheel zoom.
+ *
+ * @param pz panzoom controller
+ * @param dir wheel direction
+ * @param center_px zoom anchor in viewport pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_zoom_wheel.argtypes = [ctypes.POINTER(DvzPanzoom), (ctypes.c_float * 2), (ctypes.c_float * 2)]
     dvz_panzoom_zoom_wheel.restype = ctypes.c_int32
@@ -28669,6 +28785,7 @@ else:
  * Apply the turntable pose to the attached camera.
  *
  * @param turntable the turntable controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_apply_camera.argtypes = [ctypes.POINTER(DvzTurntable)]
     dvz_turntable_apply_camera.restype = ctypes.c_int32
@@ -28684,6 +28801,7 @@ else:
  *
  * @param turntable the turntable controller
  * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_connect.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.POINTER(DvzInputRouter)]
     dvz_turntable_connect.restype = ctypes.c_int32
@@ -28742,6 +28860,7 @@ else:
  *
  * @param turntable the turntable controller
  * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_disconnect.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.POINTER(DvzInputRouter)]
     dvz_turntable_disconnect.restype = ctypes.c_int32
@@ -28757,6 +28876,7 @@ else:
  *
  * @param turntable the turntable controller
  * @param amount distance delta
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_dolly.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.c_float]
     dvz_turntable_dolly.restype = ctypes.c_int32
@@ -28773,6 +28893,7 @@ else:
  * @param turntable the turntable controller
  * @param yaw_delta yaw delta in radians
  * @param pitch_delta pitch delta in radians
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_orbit.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.c_float, ctypes.c_float]
     dvz_turntable_orbit.restype = ctypes.c_int32
@@ -28789,6 +28910,7 @@ else:
  * @param turntable the turntable controller
  * @param right_amount right-axis pan amount
  * @param up_amount up-axis pan amount
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_pan.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.c_float, ctypes.c_float]
     dvz_turntable_pan.restype = ctypes.c_int32
@@ -28804,6 +28926,7 @@ else:
  *
  * @param turntable the turntable controller
  * @param pivot new world-space pivot
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_pivot.argtypes = [ctypes.POINTER(DvzTurntable), (ctypes.c_float * 3)]
     dvz_turntable_pivot.restype = ctypes.c_int32
@@ -28834,6 +28957,7 @@ else:
  * Reset a turntable to its initial pose.
  *
  * @param turntable the turntable controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_reset.argtypes = [ctypes.POINTER(DvzTurntable)]
     dvz_turntable_reset.restype = ctypes.c_int32
@@ -28850,6 +28974,7 @@ else:
  * @param turntable the turntable controller
  * @param width viewport width in pixels
  * @param height viewport height in pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_resize.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.c_float, ctypes.c_float]
     dvz_turntable_resize.restype = ctypes.c_int32
@@ -28865,6 +28990,7 @@ else:
  *
  * @param turntable the turntable controller
  * @param camera the camera to update, or NULL
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_set_camera.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.POINTER(DvzCamera)]
     dvz_turntable_set_camera.restype = ctypes.c_int32
@@ -28883,6 +29009,7 @@ else:
  * @param y viewport y origin in window pixels
  * @param width viewport width in window pixels
  * @param height viewport height in window pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_viewport.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
     dvz_turntable_viewport.restype = ctypes.c_int32

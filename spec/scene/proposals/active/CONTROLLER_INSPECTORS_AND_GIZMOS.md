@@ -118,7 +118,7 @@ An orientation gizmo is a small non-editing axis triad that shows view orientati
 
 Recommended properties:
 
-1. generated from `geom` arrows or a dedicated `dvz_geom_gizmo_axes()` helper;
+1. generated from `geom` arrows or a dedicated `dvz_geometry_gizmo_axes()` helper;
 2. rendered in a small fixed viewport or overlay panel;
 3. follows the main 3D view rotation through a rotation-only controller state link;
 4. ignores main view translation and zoom;
@@ -132,7 +132,7 @@ This belongs above raw geometry and below generic application UI: geometry gener
 Recommended first implementation slice:
 
 1. add a retained `DvzOrientationGizmo` scene object, attached to one panel;
-2. generate the triad with `dvz_geom_gizmo_axes()` once `geom` is available, or with the nearest
+2. generate the triad with `dvz_geometry_gizmo_axes()` once `geom` is available, or with the nearest
    active geometry helper as a temporary internal bridge;
 3. render into a small panel-local inset or overlay viewport, not into the main world depth range;
 4. synchronize only orientation from the panel's 3D controller or camera state;

@@ -110,6 +110,7 @@ DVZ_EXPORT DvzTurntable* dvz_turntable_create(const DvzTurntableDesc* desc);
  * Reset a turntable to its initial pose.
  *
  * @param turntable the turntable controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_turntable_reset(DvzTurntable* turntable);
 
@@ -123,6 +124,7 @@ DVZ_EXPORT DvzResult dvz_turntable_reset(DvzTurntable* turntable);
  * @param y viewport y origin in window pixels
  * @param width viewport width in window pixels
  * @param height viewport height in window pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult
 dvz_turntable_viewport(DvzTurntable* turntable, float x, float y, float width, float height);
@@ -135,6 +137,7 @@ dvz_turntable_viewport(DvzTurntable* turntable, float x, float y, float width, f
  * @param turntable the turntable controller
  * @param width viewport width in pixels
  * @param height viewport height in pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_turntable_resize(DvzTurntable* turntable, float width, float height);
 
@@ -145,6 +148,7 @@ DVZ_EXPORT DvzResult dvz_turntable_resize(DvzTurntable* turntable, float width, 
  *
  * @param turntable the turntable controller
  * @param pivot new world-space pivot
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_turntable_pivot(DvzTurntable* turntable, vec3 pivot);
 
@@ -156,6 +160,7 @@ DVZ_EXPORT DvzResult dvz_turntable_pivot(DvzTurntable* turntable, vec3 pivot);
  * @param turntable the turntable controller
  * @param yaw_delta yaw delta in radians
  * @param pitch_delta pitch delta in radians
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult
 dvz_turntable_orbit(DvzTurntable* turntable, float yaw_delta, float pitch_delta);
@@ -167,6 +172,7 @@ dvz_turntable_orbit(DvzTurntable* turntable, float yaw_delta, float pitch_delta)
  *
  * @param turntable the turntable controller
  * @param amount distance delta
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_turntable_dolly(DvzTurntable* turntable, float amount);
 
@@ -178,6 +184,7 @@ DVZ_EXPORT DvzResult dvz_turntable_dolly(DvzTurntable* turntable, float amount);
  * @param turntable the turntable controller
  * @param right_amount right-axis pan amount
  * @param up_amount up-axis pan amount
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult
 dvz_turntable_pan(DvzTurntable* turntable, float right_amount, float up_amount);
@@ -189,6 +196,7 @@ dvz_turntable_pan(DvzTurntable* turntable, float right_amount, float up_amount);
  *
  * @param turntable the turntable controller
  * @param camera the camera to update, or NULL
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_turntable_set_camera(DvzTurntable* turntable, DvzCamera* camera);
 
@@ -198,6 +206,7 @@ DVZ_EXPORT DvzResult dvz_turntable_set_camera(DvzTurntable* turntable, DvzCamera
  * Apply the turntable pose to the attached camera.
  *
  * @param turntable the turntable controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_turntable_apply_camera(DvzTurntable* turntable);
 
@@ -219,6 +228,7 @@ DVZ_EXPORT bool dvz_turntable_pointer(DvzTurntable* turntable, const DvzPointerE
  *
  * @param turntable the turntable controller
  * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_turntable_connect(DvzTurntable* turntable, DvzInputRouter* router);
 
@@ -229,6 +239,7 @@ DVZ_EXPORT DvzResult dvz_turntable_connect(DvzTurntable* turntable, DvzInputRout
  *
  * @param turntable the turntable controller
  * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_turntable_disconnect(DvzTurntable* turntable, DvzInputRouter* router);
 
