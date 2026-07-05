@@ -403,7 +403,7 @@ static bool _add_panel_scalebar(
     };
     _copy_color(desc.line_color, color, 255u);
     _copy_color(desc.label_style.color, color, 255u);
-    DvzScaleBar* scalebar = dvz_scalebar(panel, &desc);
+    DvzScaleBar* scalebar = dvz_scale_bar(panel, &desc);
     return scalebar != NULL;
 }
 
@@ -443,7 +443,7 @@ static bool _add_world_scalebar(DvzPanel* panel)
     };
     _copy_color(desc.line_color, color, 255u);
     _copy_color(desc.label_style.color, color, 255u);
-    DvzScaleBar* scalebar = dvz_scalebar(panel, &desc);
+    DvzScaleBar* scalebar = dvz_scale_bar(panel, &desc);
     return scalebar != NULL;
 }
 

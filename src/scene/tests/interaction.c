@@ -372,13 +372,13 @@ int test_scene_text_annotation_descriptor_abi_rejects_invalid_structs(
     label_desc.style.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_annotation_label(panel, &label_desc) == NULL);
 
-    DvzScaleBarDesc scalebar_desc = dvz_scalebar_desc();
+    DvzScaleBarDesc scalebar_desc = dvz_scale_bar_desc();
     scalebar_desc.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_scalebar(panel, &scalebar_desc) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_scale_bar(panel, &scalebar_desc) == NULL);
 
-    scalebar_desc = dvz_scalebar_desc();
+    scalebar_desc = dvz_scale_bar_desc();
     scalebar_desc.format.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_scalebar(panel, &scalebar_desc) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_scale_bar(panel, &scalebar_desc) == NULL);
 
     dvz_text_destroy(text);
     dvz_scene_destroy(scene);
@@ -2371,7 +2371,7 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
     ANN(panel);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 0.01) == 0);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -2517,9 +2517,9 @@ static int test_scene_scalebar_duration_units(TstContext* suite, const TstCase* 
 
     DvzUnits* duration = dvz_units_builtin(scene, DVZ_UNIT_LADDER_DURATION, 1e-3);
     ANN(duration);
-    DvzScaleBar* scalebar = dvz_scalebar(panel, NULL);
+    DvzScaleBar* scalebar = dvz_scale_bar(panel, NULL);
     ANN(scalebar);
-    AT(dvz_scalebar_set_units(scalebar, duration) == 0);
+    AT(dvz_scale_bar_set_units(scalebar, duration) == 0);
 
     _scene_prepare_text_visuals(figure);
     DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
@@ -2551,7 +2551,7 @@ static int test_scene_scalebar_update_churn(TstContext* suite, const TstCase* it
     ANN(panel);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 0.010) == 0);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -2686,7 +2686,7 @@ static int test_scene_scalebar_3d_world_reference(TstContext* suite, const TstCa
     DvzCamera* camera = dvz_panel_camera(panel);
     ANN(camera);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -2770,7 +2770,7 @@ static int test_scene_scalebar_3d_view_plane_rotation_invariant(
     ANN(arcball);
     AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -2846,7 +2846,7 @@ static int test_scene_scalebar_3d_view_plane_zoom_scale(
     ANN(arcball);
     AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -2915,7 +2915,7 @@ static int test_scene_scalebar_render_emit_keeps_upload_sources(
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 0.010) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, 0.006) == 0);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -3007,7 +3007,7 @@ static int test_scene_scalebar_minimal_stream(TstContext* suite, const TstCase* 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 0.010) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, 0.006) == 0);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -3157,7 +3157,7 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
     AT(dvz_visual_set_data_many(left_points, left_updates, 3) == 0);
     AT(dvz_panel_add_visual(left, left_points, NULL) == 0);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         left,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -3190,7 +3190,7 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
     DvzCamera* camera = dvz_panel_camera(right);
     ANN(camera);
 
-    DvzScaleBar* right_scalebar = dvz_scalebar(
+    DvzScaleBar* right_scalebar = dvz_scale_bar(
         right,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,

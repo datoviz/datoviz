@@ -125,7 +125,7 @@ static bool _add_2d_scalebar(DvzPanel* panel)
 {
     ANN(panel);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -161,7 +161,7 @@ static bool _add_3d_scalebar(DvzPanel* panel)
 {
     ANN(panel);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,

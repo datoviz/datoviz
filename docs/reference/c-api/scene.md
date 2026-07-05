@@ -58,8 +58,7 @@ Functions: 383
 | [Query](#query) | 1 | `include/datoviz/scene/interaction.h` |
 | [Reference](#reference) | 4 | `include/datoviz/scene.h` |
 | [Sampled](#sampled) | 9 | `include/datoviz/scene/field.h` |
-| [Scale](#scale) | 15 | `include/datoviz/scene/scale.h` |
-| [Scalebar](#scalebar) | 6 | `include/datoviz/scene/annotation.h` |
+| [Scale](#scale) | 21 | `include/datoviz/scene/annotation.h`, `include/datoviz/scene/scale.h` |
 | [Scene](#scene) | 35 | 3 headers |
 | [Selection](#selection) | 9 | `include/datoviz/scene/interaction.h` |
 | [Text](#text) | 24 | `include/datoviz/scene/text.h` |
@@ -514,6 +513,12 @@ Functions: 383
     | Function | Header |
     | --- | --- |
     | [`dvz_scale()`](#dvz_scale) | `include/datoviz/scene/scale.h` |
+    | [`dvz_scale_bar()`](#dvz_scale_bar) | `include/datoviz/scene/annotation.h` |
+    | [`dvz_scale_bar_desc()`](#dvz_scale_bar_desc) | `include/datoviz/scene/annotation.h` |
+    | [`dvz_scale_bar_set_anchor()`](#dvz_scale_bar_set_anchor) | `include/datoviz/scene/annotation.h` |
+    | [`dvz_scale_bar_set_dimension()`](#dvz_scale_bar_set_dimension) | `include/datoviz/scene/annotation.h` |
+    | [`dvz_scale_bar_set_duration_units()`](#dvz_scale_bar_set_duration_units) | `include/datoviz/scene/annotation.h` |
+    | [`dvz_scale_bar_set_units()`](#dvz_scale_bar_set_units) | `include/datoviz/scene/annotation.h` |
     | [`dvz_scale_category()`](#dvz_scale_category) | `include/datoviz/scene/scale.h` |
     | [`dvz_scale_category_count()`](#dvz_scale_category_count) | `include/datoviz/scene/scale.h` |
     | [`dvz_scale_desc()`](#dvz_scale_desc) | `include/datoviz/scene/scale.h` |
@@ -528,17 +533,6 @@ Functions: 383
     | [`dvz_scale_set_view_range()`](#dvz_scale_set_view_range) | `include/datoviz/scene/scale.h` |
     | [`dvz_scale_update_categories()`](#dvz_scale_update_categories) | `include/datoviz/scene/scale.h` |
     | [`dvz_scale_view_range()`](#dvz_scale_view_range) | `include/datoviz/scene/scale.h` |
-
-    ### Scalebar
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_scalebar()`](#dvz_scalebar) | `include/datoviz/scene/annotation.h` |
-    | [`dvz_scalebar_desc()`](#dvz_scalebar_desc) | `include/datoviz/scene/annotation.h` |
-    | [`dvz_scalebar_set_anchor()`](#dvz_scalebar_set_anchor) | `include/datoviz/scene/annotation.h` |
-    | [`dvz_scalebar_set_dimension()`](#dvz_scalebar_set_dimension) | `include/datoviz/scene/annotation.h` |
-    | [`dvz_scalebar_set_duration_units()`](#dvz_scalebar_set_duration_units) | `include/datoviz/scene/annotation.h` |
-    | [`dvz_scalebar_set_units()`](#dvz_scalebar_set_units) | `include/datoviz/scene/annotation.h` |
 
     ### Scene
 
@@ -6558,6 +6552,132 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/scale.h`:205._
 
+### `dvz_scale_bar()`
+
+```c title="dvz_scale_bar"
+DvzScaleBar * dvz_scale_bar(
+    DvzPanel * panel,
+    const DvzScaleBarDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzScaleBar *` | the scale bar |
+| `panel` | `DvzPanel *` | the panel |
+| `desc` | `const DvzScaleBarDesc *` | the scale-bar descriptor, or NULL for defaults |
+
+Create a retained scale bar attached to a panel.
+
+`DvzScaleBar` is a typed alias for the retained annotation object returned here. Pass NULL for
+the default descriptor. Destroy it with `dvz_annotation_destroy((DvzAnnotation*)scalebar)`.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/annotation.h`:94._
+
+### `dvz_scale_bar_desc()`
+
+```c title="dvz_scale_bar_desc"
+DvzScaleBarDesc dvz_scale_bar_desc(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzScaleBarDesc` | default scale-bar descriptor |
+
+Return the default scale-bar annotation descriptor.
+
+Related: [`dvz_scale_bar()`](#dvz_scale_bar).
+
+Raw ctypes: available through `dvz_ffi_scale_bar_desc()`.
+
+_Declared in `include/datoviz/scene/annotation.h`:52._
+
+### `dvz_scale_bar_set_anchor()`
+
+```c title="dvz_scale_bar_set_anchor"
+DvzResult dvz_scale_bar_set_anchor(
+    DvzScaleBar * scalebar,
+    DvzSceneAnchor anchor
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on validation error |
+| `scalebar` | `DvzScaleBar *` | the scale bar |
+| `anchor` | `DvzSceneAnchor` | panel anchor |
+
+Set the panel anchor of a retained scale bar.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/annotation.h`:114._
+
+### `dvz_scale_bar_set_dimension()`
+
+```c title="dvz_scale_bar_set_dimension"
+DvzResult dvz_scale_bar_set_dimension(
+    DvzScaleBar * scalebar,
+    DvzDim dim
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on validation error |
+| `scalebar` | `DvzScaleBar *` | the scale bar |
+| `dim` | `DvzDim` | dimension |
+
+Set the data dimension measured by a retained scale bar.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/annotation.h`:104._
+
+### `dvz_scale_bar_set_duration_units()`
+
+```c title="dvz_scale_bar_set_duration_units"
+DvzResult dvz_scale_bar_set_duration_units(
+    DvzScaleBar * scalebar,
+    DvzUnits * duration_units
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on validation error |
+| `scalebar` | `DvzScaleBar *` | the scale bar |
+| `duration_units` | `DvzUnits *` | duration units object |
+
+Attach duration units to a retained scale bar.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/annotation.h`:134._
+
+### `dvz_scale_bar_set_units()`
+
+```c title="dvz_scale_bar_set_units"
+DvzResult dvz_scale_bar_set_units(
+    DvzScaleBar * scalebar,
+    DvzUnits * units
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on validation error |
+| `scalebar` | `DvzScaleBar *` | the scale bar |
+| `units` | `DvzUnits *` | units object |
+
+Attach numeric units to a retained scale bar.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene/annotation.h`:124._
+
 ### `dvz_scale_category()`
 
 ```c title="dvz_scale_category"
@@ -6876,134 +6996,6 @@ Returns false when the scale is invalid or no explicit view range has been set.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene/scale.h`:272._
-
-## Scalebar
-
-### `dvz_scalebar()`
-
-```c title="dvz_scalebar"
-DvzScaleBar * dvz_scalebar(
-    DvzPanel * panel,
-    const DvzScaleBarDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzScaleBar *` | the scale bar |
-| `panel` | `DvzPanel *` | the panel |
-| `desc` | `const DvzScaleBarDesc *` | the scale-bar descriptor, or NULL for defaults |
-
-Create a retained scale bar attached to a panel.
-
-`DvzScaleBar` is a typed alias for the retained annotation object returned here. Pass NULL for
-the default descriptor. Destroy it with `dvz_annotation_destroy((DvzAnnotation*)scalebar)`.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/annotation.h`:94._
-
-### `dvz_scalebar_desc()`
-
-```c title="dvz_scalebar_desc"
-DvzScaleBarDesc dvz_scalebar_desc(void);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzScaleBarDesc` | default scale-bar descriptor |
-
-Return the default scale-bar annotation descriptor.
-
-Related: [`dvz_scalebar()`](#dvz_scalebar).
-
-Raw ctypes: available through `dvz_ffi_scalebar_desc()`.
-
-_Declared in `include/datoviz/scene/annotation.h`:52._
-
-### `dvz_scalebar_set_anchor()`
-
-```c title="dvz_scalebar_set_anchor"
-DvzResult dvz_scalebar_set_anchor(
-    DvzScaleBar * scalebar,
-    DvzSceneAnchor anchor
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on validation error |
-| `scalebar` | `DvzScaleBar *` | the scale bar |
-| `anchor` | `DvzSceneAnchor` | panel anchor |
-
-Set the panel anchor of a retained scale bar.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/annotation.h`:114._
-
-### `dvz_scalebar_set_dimension()`
-
-```c title="dvz_scalebar_set_dimension"
-DvzResult dvz_scalebar_set_dimension(
-    DvzScaleBar * scalebar,
-    DvzDim dim
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on validation error |
-| `scalebar` | `DvzScaleBar *` | the scale bar |
-| `dim` | `DvzDim` | dimension |
-
-Set the data dimension measured by a retained scale bar.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/annotation.h`:104._
-
-### `dvz_scalebar_set_duration_units()`
-
-```c title="dvz_scalebar_set_duration_units"
-DvzResult dvz_scalebar_set_duration_units(
-    DvzScaleBar * scalebar,
-    DvzUnits * duration_units
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on validation error |
-| `scalebar` | `DvzScaleBar *` | the scale bar |
-| `duration_units` | `DvzUnits *` | duration units object |
-
-Attach duration units to a retained scale bar.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/annotation.h`:134._
-
-### `dvz_scalebar_set_units()`
-
-```c title="dvz_scalebar_set_units"
-DvzResult dvz_scalebar_set_units(
-    DvzScaleBar * scalebar,
-    DvzUnits * units
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on validation error |
-| `scalebar` | `DvzScaleBar *` | the scale bar |
-| `units` | `DvzUnits *` | units object |
-
-Attach numeric units to a retained scale bar.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene/annotation.h`:124._
 
 ## Scene
 

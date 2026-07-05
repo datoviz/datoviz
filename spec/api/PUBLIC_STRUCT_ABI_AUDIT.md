@@ -90,7 +90,7 @@ These public caller-authored structs already have the ABI prologue and initializ
 | `DvzTextPlacement` | `dvz_text_placement()` |
 | `DvzAnnotationDesc` | `dvz_annotation_desc()` |
 | `DvzLabelDesc` | `dvz_label_desc()` |
-| `DvzScaleBarDesc` | `dvz_scalebar_desc()` |
+| `DvzScaleBarDesc` | `dvz_scale_bar_desc()` |
 | `DvzFieldGeometry` | `dvz_field_geometry()` |
 | `DvzFieldDataView` | `dvz_field_data_view()` |
 | `DvzOverlayCardStyle` | `dvz_overlay_card_style()` |

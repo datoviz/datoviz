@@ -94,15 +94,27 @@ Completed checkpoints:
      `python3 tools/build_api_c.py --check`, `just build`, `just test scene/axis`,
      `just test scene/scene-graph`, `just test app`, `just spec-check`, stale-reference scan, and
      `git diff --check`.
+10. `b60e2dc4e` `api: normalize scale-bar API spelling`
+   - Renamed the public `dvz_scalebar*` family to `dvz_scale_bar*`, matching the `DvzScaleBar`
+     type spelling.
+   - Renamed the raw FFI helper from `dvz_ffi_scalebar_desc()` to
+     `dvz_ffi_scale_bar_desc()`.
+   - Migrated examples, tests, binding policy, generated raw `ctypes`, and generated C API docs.
+   - Exported symbol delta: removed `dvz_scalebar`, `dvz_scalebar_desc`,
+     `dvz_scalebar_set_dimension`, `dvz_scalebar_set_anchor`, `dvz_scalebar_set_units`,
+     `dvz_scalebar_set_duration_units`, and `dvz_ffi_scalebar_desc`; added the corresponding
+     `dvz_scale_bar*` and `dvz_ffi_scale_bar_desc` symbols.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just build`, `just test scene/interaction`,
+     `just spec-check`, stale-reference scan, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
 - dirty `data` submodule state;
 - untracked `paper/paper.pdf`.
 
-Next recommended checkpoint: continue stable scene naming cleanup. Preferred next slice is the
-scale-bar spelling/API pass (`ScaleBar`/`scalebar` naming consistency) before moving to broader
-app/backend-neutral naming.
+Next recommended checkpoint: start the descriptor-flattening slice with `DvzScaleBarDesc` and
+`DvzScaleDesc`, keeping it separate from the completed scale-bar spelling churn.
 
 
 ## Maintainer Decisions

@@ -290,7 +290,7 @@ DVZ_EXPORT bool dvz_ffi_depth_cue_desc(DvzDepthCueDesc* out);
  * @param out output descriptor
  * @return true on success, false when out is NULL
  */
-DVZ_EXPORT bool dvz_ffi_scalebar_desc(DvzScaleBarDesc* out);
+DVZ_EXPORT bool dvz_ffi_scale_bar_desc(DvzScaleBarDesc* out);
 
 
 /**

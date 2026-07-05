@@ -41,7 +41,7 @@ slice.
 | Colormap | yes | yes, `DvzColormap` | yes | active for image/volume colormap binding | no | capture only | scale/field tests | colorbar slice |
 | Continuous colorbar | yes | yes, `DvzColorbar` | yes | ramp, ticks, title, and labels active | no | raster capture only | colorbar realization and app/offscreen smoke | shared layout and categorical legend follow-up |
 | Discrete legend | yes, broad | no active public handle | no | no | no | no | none | [LEGEND_SLICE.md](LEGEND_SLICE.md) |
-| Scale bar measurement | yes | yes, `dvz_scalebar()` | yes | 2D and 3D first slices active | no | raster capture only | formatting, realization, stream, and churn tests | release validation smoke |
+| Scale bar measurement | yes | yes, `dvz_scale_bar()` | yes | 2D and 3D first slices active | no | raster capture only | formatting, realization, stream, and churn tests | release validation smoke |
 | Dimension measurement | proposal only | no dedicated public handle | no | no | no | no | none | after label and text slices |
 
 

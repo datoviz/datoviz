@@ -79,7 +79,7 @@ smoke_symbols:
   - dvz_ffi_phong_material_desc
   - dvz_ffi_standard_material_desc
   - dvz_ffi_depth_cue_desc
-  - dvz_ffi_scalebar_desc
+  - dvz_ffi_scale_bar_desc
   - dvz_ffi_overlay_card_style
   - dvz_ffi_overlay_card_desc
   - dvz_ffi_view_external_surface
@@ -330,9 +330,9 @@ skipped_functions:
       reason: >
         User-facing reference-grid descriptor default is available through the pointer-output FFI
         helper.
-    dvz_scalebar_desc:
+    dvz_scale_bar_desc:
       disposition: ffi-helper
-      helper: dvz_ffi_scalebar_desc
+      helper: dvz_ffi_scale_bar_desc
       reason: >
         User-facing scale-bar descriptor default is available through the pointer-output FFI helper.
     dvz_standard_material_desc:
@@ -386,7 +386,7 @@ skipped_functions:
     - dvz_phong_material_desc
     - dvz_polygon_desc
     - dvz_reference_grid_desc
-    - dvz_scalebar_desc
+    - dvz_scale_bar_desc
     - dvz_standard_material_desc
     - dvz_surface_capabilities
     - dvz_surface_extent

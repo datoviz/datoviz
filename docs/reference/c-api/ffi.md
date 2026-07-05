@@ -51,7 +51,7 @@ Functions: 26
     | [`dvz_ffi_phong_material_desc()`](#dvz_ffi_phong_material_desc) | `include/datoviz/ffi.h` |
     | [`dvz_ffi_polygon_desc()`](#dvz_ffi_polygon_desc) | `include/datoviz/ffi.h` |
     | [`dvz_ffi_reference_grid_desc()`](#dvz_ffi_reference_grid_desc) | `include/datoviz/ffi.h` |
-    | [`dvz_ffi_scalebar_desc()`](#dvz_ffi_scalebar_desc) | `include/datoviz/ffi.h` |
+    | [`dvz_ffi_scale_bar_desc()`](#dvz_ffi_scale_bar_desc) | `include/datoviz/ffi.h` |
     | [`dvz_ffi_standard_material_desc()`](#dvz_ffi_standard_material_desc) | `include/datoviz/ffi.h` |
     | [`dvz_ffi_view_external_surface()`](#dvz_ffi_view_external_surface) | `include/datoviz/ffi.h` |
     | [`dvz_ffi_view_update_external_surface()`](#dvz_ffi_view_update_external_surface) | `include/datoviz/ffi.h` |
@@ -458,10 +458,10 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/ffi.h`:230._
 
-### `dvz_ffi_scalebar_desc()`
+### `dvz_ffi_scale_bar_desc()`
 
-```c title="dvz_ffi_scalebar_desc"
-_Bool dvz_ffi_scalebar_desc(
+```c title="dvz_ffi_scale_bar_desc"
+_Bool dvz_ffi_scale_bar_desc(
     DvzScaleBarDesc * out
 );
 ```

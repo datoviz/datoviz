@@ -49,7 +49,7 @@ DVZ_EXPORT DvzLabelDesc dvz_label_desc(void);
  *
  * @return default scale-bar descriptor
  */
-DVZ_EXPORT DvzScaleBarDesc dvz_scalebar_desc(void);
+DVZ_EXPORT DvzScaleBarDesc dvz_scale_bar_desc(void);
 
 
 /**
@@ -91,7 +91,7 @@ DVZ_EXPORT DvzAnnotation* dvz_annotation_label(DvzPanel* panel, const DvzLabelDe
  * @param desc the scale-bar descriptor, or NULL for defaults
  * @return the scale bar
  */
-DVZ_EXPORT DvzScaleBar* dvz_scalebar(DvzPanel* panel, const DvzScaleBarDesc* desc);
+DVZ_EXPORT DvzScaleBar* dvz_scale_bar(DvzPanel* panel, const DvzScaleBarDesc* desc);
 
 
 /**
@@ -101,7 +101,7 @@ DVZ_EXPORT DvzScaleBar* dvz_scalebar(DvzPanel* panel, const DvzScaleBarDesc* des
  * @param dim dimension
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT DvzResult dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim);
+DVZ_EXPORT DvzResult dvz_scale_bar_set_dimension(DvzScaleBar* scalebar, DvzDim dim);
 
 
 /**
@@ -111,7 +111,7 @@ DVZ_EXPORT DvzResult dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim di
  * @param anchor panel anchor
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT DvzResult dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor);
+DVZ_EXPORT DvzResult dvz_scale_bar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor);
 
 
 /**
@@ -121,7 +121,7 @@ DVZ_EXPORT DvzResult dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnch
  * @param units units object
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT DvzResult dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units);
+DVZ_EXPORT DvzResult dvz_scale_bar_set_units(DvzScaleBar* scalebar, DvzUnits* units);
 
 
 /**
@@ -131,7 +131,7 @@ DVZ_EXPORT DvzResult dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* uni
  * @param duration_units duration units object
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT DvzResult dvz_scalebar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units);
+DVZ_EXPORT DvzResult dvz_scale_bar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units);
 
 
 /**

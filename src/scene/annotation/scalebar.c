@@ -85,7 +85,7 @@ static bool _scalebar_desc_validate(const DvzScaleBarDesc* desc)
  *
  * @return default scale-bar descriptor
  */
-DvzScaleBarDesc dvz_scalebar_desc(void)
+DvzScaleBarDesc dvz_scale_bar_desc(void)
 {
     return (DvzScaleBarDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
@@ -96,11 +96,11 @@ DvzScaleBarDesc dvz_scalebar_desc(void)
 }
 
 
-bool dvz_ffi_scalebar_desc(DvzScaleBarDesc* out)
+bool dvz_ffi_scale_bar_desc(DvzScaleBarDesc* out)
 {
     if (out == NULL)
         return false;
-    *out = dvz_scalebar_desc();
+    *out = dvz_scale_bar_desc();
     return true;
 }
 
@@ -983,14 +983,14 @@ bool _scalebar_prepare_visual(DvzFigure* figure, DvzAnnotation* annotation)
  * @param desc the scale-bar descriptor, or NULL for defaults
  * @return the scale bar, or NULL on allocation failure
  */
-DvzScaleBar* dvz_scalebar(DvzPanel* panel, const DvzScaleBarDesc* desc)
+DvzScaleBar* dvz_scale_bar(DvzPanel* panel, const DvzScaleBarDesc* desc)
 {
     ANN(panel);
     if (panel->figure == NULL || panel->figure->scene == NULL)
         return NULL;
     if (!_scalebar_desc_validate(desc))
         return NULL;
-    DvzScaleBarDesc fallback = dvz_scalebar_desc();
+    DvzScaleBarDesc fallback = dvz_scale_bar_desc();
     if (desc == NULL)
         desc = &fallback;
 
@@ -1033,7 +1033,7 @@ DvzScaleBar* dvz_scalebar(DvzPanel* panel, const DvzScaleBarDesc* desc)
 }
 
 
-DvzResult dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim)
+DvzResult dvz_scale_bar_set_dimension(DvzScaleBar* scalebar, DvzDim dim)
 {
     DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
     if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR ||
@@ -1047,7 +1047,7 @@ DvzResult dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim)
 }
 
 
-DvzResult dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor)
+DvzResult dvz_scale_bar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor)
 {
     DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
     if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR)
@@ -1062,7 +1062,7 @@ DvzResult dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor)
 }
 
 
-DvzResult dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units)
+DvzResult dvz_scale_bar_set_units(DvzScaleBar* scalebar, DvzUnits* units)
 {
     DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
     if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR || units == NULL ||
@@ -1076,7 +1076,7 @@ DvzResult dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units)
 }
 
 
-DvzResult dvz_scalebar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units)
+DvzResult dvz_scale_bar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units)
 {
-    return dvz_scalebar_set_units(scalebar, duration_units);
+    return dvz_scale_bar_set_units(scalebar, duration_units);
 }

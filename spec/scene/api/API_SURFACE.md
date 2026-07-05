@@ -85,7 +85,7 @@ The first public header split has landed. Treat these groups as implemented APIs
     scene resources,
 12. rendered label annotations through the text/glyph path,
 13. rendered continuous colorbar ramp, ticks, title, and labels,
-14. rendered 2D/3D scale bars through `dvz_scalebar()`,
+14. rendered 2D/3D scale bars through `dvz_scale_bar()`,
 15. retained categorical scale entries and rendered categorical legends,
 16. semantic polygon and polygon-set composites lowered to fill/stroke visuals,
 17. retained per-visual local transforms with copy-out inspection helpers.

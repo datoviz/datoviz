@@ -88,7 +88,7 @@ static bool _add_scalebar(DvzPanel* panel, DvzTextRenderer renderer)
     if (rc != 0)
         return false;
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
