@@ -6490,7 +6490,6 @@ DvzViewDesc._fields_ = [
     ('user_scale', ctypes.c_float),
     ('render_scale', ctypes.c_float),
     ('title', ctypes.c_char_p),
-    ('external_surface', ctypes.POINTER(DvzWindowExternalSurfaceInfo)),
     ('has_position', ctypes.c_bool),
     ('x', ctypes.c_int32),
     ('y', ctypes.c_int32),

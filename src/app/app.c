@@ -4200,10 +4200,8 @@ DvzView* dvz_view(DvzApp* app, DvzFigure* figure, const DvzViewDesc* desc)
             resolved.has_position, resolved.x, resolved.y);
         break;
     case DVZ_VIEW_EXTERNAL_SURFACE:
-        if (resolved.external_surface == NULL)
-            return NULL;
-        win = _view_create_external_surface(app, figure, resolved.external_surface);
-        break;
+        log_error("use dvz_view_external_surface() to create external-surface views");
+        return NULL;
     default:
         return NULL;
     }
@@ -4509,15 +4507,7 @@ DvzView* dvz_view_glfw(
 DvzView* dvz_view_external_surface(
     DvzApp* app, DvzFigure* figure, const DvzWindowExternalSurfaceInfo* surface)
 {
-    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_EXTERNAL_SURFACE);
-    desc.external_surface = surface;
-    if (surface != NULL)
-    {
-        desc.framebuffer_width = surface->extent.width;
-        desc.framebuffer_height = surface->extent.height;
-        desc.device_scale = _view_valid_scale(surface->scale_x);
-    }
-    return dvz_view(app, figure, &desc);
+    return _view_create_external_surface(app, figure, surface);
 }
 
 

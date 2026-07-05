@@ -6733,7 +6733,6 @@ struct DvzViewDesc {
     float user_scale;
     float render_scale;
     const char * title;
-    const DvzWindowExternalSurfaceInfo * external_surface;
     _Bool has_position;
     int32_t x;
     int32_t y;

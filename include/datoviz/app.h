@@ -252,7 +252,6 @@ struct DvzViewDesc
     float render_scale;
 
     const char* title;
-    const DvzWindowExternalSurfaceInfo* external_surface;
 
     bool has_position;
     int32_t x;
