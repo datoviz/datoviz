@@ -46,7 +46,10 @@ A scatter plot of 10 000 random points with pan/zoom:
     import numpy as np
     import datoviz as dvz
 
-    # Create random 2D positions, one RGBA color per point, and a point size in pixels.
+    # Each point is described by three arrays with the same length.
+    # - pos: one x/y/z position per point. z is 0, so this is a 2D scatter plot.
+    # - color: one red/green/blue/alpha color per point, stored as 8-bit RGBA values.
+    # - diameters: one point size per point, measured in screen pixels.
     N = 10_000
     pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
     pos[:, 2] = 0.0
@@ -54,23 +57,28 @@ A scatter plot of 10 000 random points with pan/zoom:
     color[:, 3] = 255
     diameters = np.full(N, 5.0, dtype=np.float32)
 
-    # Create one figure with one drawing area.
+    # Create the scene structure: one scene, one figure, and one full-size panel.
+    # The panel is the drawing area where the scatter plot will appear.
     scene = dvz.dvz_scene()
     figure = dvz.dvz_figure(scene, 800, 600, 0)
     panel = dvz.dvz_panel_full(figure)
 
-    # Let the user drag to pan and scroll to zoom in the X/Y plane.
+    # Add mouse interaction to the panel. Pan/zoom is limited to X and Y because
+    # the points are flat, with z = 0.
     controller = dvz.dvz_panzoom(scene, None)
     dvz.dvz_panel_bind_controller(panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
 
-    # A point visual draws all points in one GPU batch.
+    # Create one point visual for the whole dataset. Each data call attaches
+    # one array to a named visual attribute.
     visual = dvz.dvz_point(scene, 0)
     dvz.dvz_visual_set_data(visual, "position", pos)
     dvz.dvz_visual_set_data(visual, "color", color)
     dvz.dvz_visual_set_data(visual, "diameter_px", diameters)
+
+    # Add the visual to the panel so it becomes part of the figure.
     dvz.dvz_panel_add_visual(panel, visual, None)
 
-    # Open a window and keep it open until the user closes it.
+    # Open a window and keep the app running until the user closes it.
     dvz.run(scene, figure, title="Scatter plot")
     ```
 
@@ -82,9 +90,13 @@ A scatter plot of 10 000 random points with pan/zoom:
     #include "datoviz/app.h"
     #include "datoviz/scene.h"
 
+    #define N 10000
+
     int main(void) {
-        /* Create random 2D positions, one RGBA color per point, and a point size in pixels. */
-        int N = 10000;
+        /* Each point is described by three arrays with the same length.
+         * pos stores x/y/z positions. z is 0, so this is a 2D scatter plot.
+         * color stores one 8-bit RGBA color per point.
+         * diameter_px stores one point size per point, measured in screen pixels. */
         float pos[N * 3], diameter_px[N];
         uint8_t color[N * 4];
         for (int i = 0; i < N; i++) {
@@ -98,23 +110,28 @@ A scatter plot of 10 000 random points with pan/zoom:
             diameter_px[i] = 5.0f;
         }
 
-        /* Create one figure with one drawing area. */
+        /* Create the scene structure: one scene, one figure, and one full-size panel.
+         * The panel is the drawing area where the scatter plot will appear. */
         DvzScene* scene = dvz_scene();
         DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
         DvzPanel* panel = dvz_panel_full(figure);
 
-        /* Let the user drag to pan and scroll to zoom in the X/Y plane. */
+        /* Add mouse interaction to the panel. Pan/zoom is limited to X and Y because
+         * the points are flat, with z = 0. */
         DvzController* controller = dvz_panzoom(scene, NULL);
         dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY);
 
-        /* A point visual draws all points in one GPU batch. */
+        /* Create one point visual for the whole dataset. Each data call attaches
+         * one C array to a named visual attribute. */
         DvzVisual* visual = dvz_point(scene, 0);
         dvz_visual_set_data(visual, "position", pos, N);
         dvz_visual_set_data(visual, "color", color, N);
         dvz_visual_set_data(visual, "diameter_px", diameter_px, N);
+
+        /* Add the visual to the panel so it becomes part of the figure. */
         dvz_panel_add_visual(panel, visual, NULL);
 
-        /* Open a window and keep it open until the user closes it. */
+        /* Open a window and keep the app running until the user closes it. */
         DvzApp* app = dvz_app(scene);
         dvz_view_window(app, figure, 800, 600, "Scatter plot");
         dvz_app_run(app, 0);
