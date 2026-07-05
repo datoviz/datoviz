@@ -70,6 +70,7 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Large-data rendering strategy gallery: density rendering, progressive refinement, tile streaming, GPU instancing, and out-of-core resource policies beyond current point/pixel/path update proofs | `spec/scene/examples/PLANNING.md`, `spec/scene/examples/PLANNING.md` |
 | Full exact OIT beyond active WBOIT and depth-peeling modes | `spec/scene/semantics/TRANSPARENCY.md` |
 | `wiggle` promotion to a full visual family | `spec/scene/semantics/VISUAL_FAMILIES.md` |
+| Composition-layer rendering so generated underlays, ordinary data, and overlays preserve ordering across opaque and transparent passes | `spec/scene/proposals/future/COMPOSITION_LAYER_RENDERING.md` |
 
 
 ## No Target Set
