@@ -51,11 +51,17 @@ examples-run *args: build
     @just examples "$@"
 
 [positional-arguments]
-review batch *args:
+review *args:
     #!/usr/bin/env bash
     set -euo pipefail
+    batch=""
+    tool_args=("$@")
+    if [[ "$#" -gt 0 && "${1}" != -* ]]; then
+        batch="${1}"
+        tool_args=("${@:2}")
+    fi
     run_build=1
-    for arg in "$@"; do
+    for arg in "${tool_args[@]}"; do
         if [[ "${arg}" == "--code" ]]; then
             run_build=0
         fi
@@ -63,7 +69,18 @@ review batch *args:
     if [[ "${run_build}" -eq 1 ]]; then
         just build
     fi
-    python3 tools/run_c_examples.py --batch "{{batch}}" "$@"
+    if [[ -n "${batch}" ]]; then
+        python3 tools/run_c_examples.py --batch "${batch}" "${tool_args[@]}"
+    else
+        mapfile -t batches < <(python3 -c 'from pathlib import Path; import yaml; manifest = yaml.safe_load(Path("examples/c/MANIFEST.yaml").read_text()) or {}; print("\n".join((manifest.get("batches") or {}).keys()))')
+        if [[ "${#batches[@]}" -eq 0 ]]; then
+            echo "No review batches defined." >&2
+            exit 1
+        fi
+        for batch_name in "${batches[@]}"; do
+            python3 tools/run_c_examples.py --batch "${batch_name}" "${tool_args[@]}"
+        done
+    fi
 
 review-batches:
     #!/usr/bin/env python3
