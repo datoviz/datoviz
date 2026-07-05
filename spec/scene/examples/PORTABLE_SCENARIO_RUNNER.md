@@ -420,7 +420,7 @@ int dvz_scenario_run_native(
     const DvzScenarioSpec* spec, const DvzRunnerConfig* config)
 {
     DvzScene* scene = dvz_scene();
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_FIXED_STEP);
     dvz_scene_set_fps(scene, config->fps > 0 ? config->fps : spec->fps);
 
     DvzScenarioContext ctx = {

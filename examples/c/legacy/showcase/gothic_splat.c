@@ -657,7 +657,7 @@ int main(int argc, char** argv)
     DvzFly* fly = dvz_view_fly(win, panel, &fly_desc);
     EXAMPLE_CHECK(fly != NULL, "failed to create or bind fly controller");
 
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
     dvz_app_run(app, example_frame_count(argc, argv));
 

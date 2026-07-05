@@ -697,7 +697,7 @@ int main(int argc, char** argv)
     dvz_view_set_gui_callback(win, _point_stress_gui, &state);
     dvz_view_set_frame_callback(win, _point_stress_frame, &state);
 
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;

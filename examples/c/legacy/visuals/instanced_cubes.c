@@ -230,7 +230,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.70f, 0.0f, +0.28f});
 
-    dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_CLOCK_OFFLINE : DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_SCENE_CLOCK_FIXED_STEP : DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
     rc = dvz_view_capture_start(win, &capture);

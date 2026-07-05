@@ -31,10 +31,6 @@ typedef enum
     DVZ_SCENE_CLOCK_REALTIME = 0,
     DVZ_SCENE_CLOCK_FIXED_STEP,
     DVZ_SCENE_CLOCK_EXTERNAL,
-
-    /* Compatibility aliases.  New code should use the explicit DVZ_SCENE_CLOCK_* names. */
-    DVZ_CLOCK_REALTIME = DVZ_SCENE_CLOCK_REALTIME,
-    DVZ_CLOCK_OFFLINE = DVZ_SCENE_CLOCK_FIXED_STEP,
 } DvzSceneClockMode;
 
 

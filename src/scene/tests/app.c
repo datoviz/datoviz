@@ -1900,7 +1900,7 @@ int test_app_offscreen_timer_advances_in_app_run(TstContext* suite, const TstCas
     AT(scene != NULL);
     ANN(figure);
 
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_FIXED_STEP);
     dvz_scene_set_fps(scene, 4.0);
     AppTimerProbe probe = {0};
     DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
@@ -1948,7 +1948,7 @@ int test_app_offscreen_timer_advances_in_render_once(TstContext* suite, const Ts
     AT(scene != NULL);
     ANN(figure);
 
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_FIXED_STEP);
     dvz_scene_set_fps(scene, 8.0);
     AppTimerProbe probe = {0};
     DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
@@ -2011,7 +2011,7 @@ int test_app_offscreen_render_enabled_gate(TstContext* suite, const TstCase* ite
     AT(scene != NULL);
     ANN(figure);
 
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_FIXED_STEP);
     dvz_scene_set_fps(scene, 8.0);
     AppTimerProbe timer_probe = {0};
     DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();

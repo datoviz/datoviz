@@ -1254,7 +1254,7 @@ int main(int argc, char** argv)
         dvz_view_bind_controller(win, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
         "dvz_view_bind_controller() failed");
     dvz_arcball_initial(arcball, (vec3){+0.70f, 0.0f, +0.30f});
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
     DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();

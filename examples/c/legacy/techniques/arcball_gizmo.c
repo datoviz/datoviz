@@ -1055,7 +1055,7 @@ int main(int argc, char** argv)
         DVZ_CONTROLLER_LINK_ONE_WAY);
     EXAMPLE_CHECK(gizmo_link != NULL, "failed to link main arcball rotation to inset gizmo");
 
-    dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_CLOCK_OFFLINE : DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_SCENE_CLOCK_FIXED_STEP : DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
     rc = dvz_view_capture_start(win, &capture);

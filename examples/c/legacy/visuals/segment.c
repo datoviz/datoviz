@@ -689,7 +689,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
     dvz_view_set_gui_callback(state.win, _segment_gui, &state);
     dvz_view_set_frame_callback(state.win, _segment_frame, &state);
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
     dvz_app_run(app, example_frame_count(argc, argv));
