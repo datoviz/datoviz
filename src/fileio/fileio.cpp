@@ -483,21 +483,23 @@ dvz_load_png(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* h
 /**
  * Decode a JPEG image from memory into tightly packed RGBA8 pixels.
  *
- * @param size size of the JPEG byte buffer
  * @param bytes JPEG byte buffer
+ * @param size_bytes size of the JPEG byte buffer in bytes
  * @param width decoded image width
  * @param height decoded image height
  * @return RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
  */
 uint8_t*
-dvz_load_jpeg(DvzSize size, const unsigned char* bytes, uint32_t* width, uint32_t* height)
+dvz_load_jpeg(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* height)
 {
     if (width != NULL)
         *width = 0;
     if (height != NULL)
         *height = 0;
 
-    if (size == 0 || size > (DvzSize)INT_MAX || bytes == NULL || width == NULL || height == NULL)
+    if (
+        size_bytes == 0 || size_bytes > (DvzSize)INT_MAX || bytes == NULL || width == NULL ||
+        height == NULL)
     {
         log_error("invalid JPEG buffer");
         return NULL;
@@ -507,7 +509,8 @@ dvz_load_jpeg(DvzSize size, const unsigned char* bytes, uint32_t* width, uint32_
     int decoded_height = 0;
     int decoded_channels = 0;
     uint8_t* rgba = stbi_load_from_memory(
-        bytes, (int)size, &decoded_width, &decoded_height, &decoded_channels, 4);
+        (const stbi_uc*)bytes, (int)size_bytes, &decoded_width, &decoded_height, &decoded_channels,
+        4);
     if (rgba == NULL)
     {
         log_error("unable to decode JPEG image: %s", stbi_failure_reason());
@@ -554,7 +557,7 @@ uint8_t* dvz_read_jpeg(const char* filename, uint32_t* width, uint32_t* height)
     if (bytes == NULL)
         return NULL;
 
-    uint8_t* rgba = dvz_load_jpeg(size, bytes, width, height);
+    uint8_t* rgba = dvz_load_jpeg(bytes, size, width, height);
     dvz_free(bytes);
     return rgba;
 }

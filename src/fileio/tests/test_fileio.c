@@ -166,7 +166,7 @@ int test_jpeg_bytes_earth(TstContext* suite, const TstCase* tstitem)
 
     uint32_t width = 0;
     uint32_t height = 0;
-    uint8_t* rgba = dvz_load_jpeg(size, bytes, &width, &height);
+    uint8_t* rgba = dvz_load_jpeg(bytes, size, &width, &height);
     AT(rgba != NULL);
     AT(width == 5400);
     AT(height == 2700);

@@ -21198,15 +21198,15 @@ else:
     dvz_load_jpeg.__doc__ = """/**
  * Decode a JPEG image from memory into tightly packed RGBA8 pixels.
  *
- * @param size size of the JPEG byte buffer
  * @param bytes JPEG byte buffer
+ * @param size_bytes size of the JPEG byte buffer in bytes
  * @param[out] width decoded image width
  * @param[out] height decoded image height
  * @returns RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
  *
  * @note Free the returned buffer with dvz_memory_free().
  */"""
-    dvz_load_jpeg.argtypes = [ctypes.c_uint64, ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
+    dvz_load_jpeg.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
     dvz_load_jpeg.restype = ctypes.POINTER(ctypes.c_uint8)
 
 

@@ -180,8 +180,8 @@ dvz_load_png(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* h
 /**
  * Decode a JPEG image from memory into tightly packed RGBA8 pixels.
  *
- * @param size size of the JPEG byte buffer
  * @param bytes JPEG byte buffer
+ * @param size_bytes size of the JPEG byte buffer in bytes
  * @param[out] width decoded image width
  * @param[out] height decoded image height
  * @returns RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
@@ -189,7 +189,7 @@ dvz_load_png(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* h
  * @note Free the returned buffer with dvz_memory_free().
  */
 DVZ_EXPORT uint8_t*
-dvz_load_jpeg(DvzSize size, const unsigned char* bytes, uint32_t* width, uint32_t* height);
+dvz_load_jpeg(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* height);
 
 
 

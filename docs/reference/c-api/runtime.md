@@ -9065,8 +9065,8 @@ _Declared in `include/datoviz/math/anim.h`:159._
 
 ```c title="dvz_load_jpeg"
 uint8_t * dvz_load_jpeg(
-    DvzSize size,
-    const unsigned char * bytes,
+    const void * bytes,
+    DvzSize size_bytes,
     uint32_t * width,
     uint32_t * height
 );
@@ -9075,8 +9075,8 @@ uint8_t * dvz_load_jpeg(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `uint8_t *` | RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure |
-| `size` | `DvzSize` | size of the JPEG byte buffer |
-| `bytes` | `const unsigned char *` | JPEG byte buffer |
+| `bytes` | `const void *` | JPEG byte buffer |
+| `size_bytes` | `DvzSize` | size of the JPEG byte buffer in bytes |
 | `width` | `uint32_t *` |  |
 | `height` | `uint32_t *` |  |
 
