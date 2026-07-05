@@ -1,65 +1,71 @@
 # AI-Assisted Workflow
 
-Datoviz v0.4 works well with coding assistants when the prompt includes current v0.4 context. The
-API is flat and consistent, and the best results come from giving the assistant one complete path:
-the Quickstart, one relevant How-To page, one canonical example, and one Reference page. Verify
-generated code against the local API before treating it as release-quality code.
+You can ask a coding assistant to write Datoviz examples for you. The simplest approach is to send
+the assistant to the documentation site and describe what you want to see.
 
 
-## Why It Works
+## Start With This Prompt
 
-- Every function follows one convention: `dvz_<noun>_<verb>`.
-- The scene graph is shallow: scene → figure → panel → visual.
-- Ownership is explicit — no hidden state or magic constructors.
-- Canonical examples under `examples/c/...` are the executable source of truth.
+Copy this prompt and replace the task with your own visualization:
 
+```text
+Use https://datoviz.org/ to write a Datoviz v0.4 example.
 
-## Workflow
+Task: create a scatter plot of 10,000 points, colored by a scalar value, with pan and zoom.
 
-1. Open [Quickstart](quickstart.md) and copy the relevant pattern.
-2. Add one [How-To](../how-to/create-a-scene.md) page for the task and one generated
-   [Example](../examples/index.md) page for the visual or feature.
-3. Specify Python or C and ask for v0.4 API only.
-4. Verify function names and attribute names against the linked Reference page before running the
-   output.
-
-For Python, prefer `import datoviz as dvz` over Python raw `ctypes` unless you need explicit pointer
-control. For C, use the Quickstart C pattern and canonical `examples/c/...` sources as structural
-templates.
-
-
-## Prompt Template
-
+Use the current Datoviz v0.4 API documented on the website.
+Prefer Python with `import datoviz as dvz` unless I ask for C.
+If you are unsure which function or attribute name to use, say which documentation page you checked
+and what is still unclear.
+Return a complete example I can run.
 ```
-You are helping me write a Datoviz v0.4 visualization.
 
-Context:
-- Quickstart pattern: [paste the relevant Quickstart section]
-- Task guide: [paste one How-To page]
-- Canonical example: [paste or link one generated Example page]
-- Reference page: [paste one relevant Reference page]
+For C code, change the language line:
 
-Task: [describe what you want, e.g. "a scatter plot of 5000 points colored by a scalar value,
-with a colorbar and pan/zoom"]
-
-Requirements:
-- Python: use `import datoviz as dvz`; `dvz.run(scene, figure, title="...")` is acceptable for
-  quickstart-style scripts
-- C: follow the minimal code pattern structure from the Quickstart and canonical example
-- Use v0.4 API only — do not use v0.3 Pythonic names or any function not shown in the reference
-- Do not invent function names; if something is not in the reference, ask me
-
-Output: a complete, self-contained script I can run directly.
+```text
+Use C instead of Python. Follow the style of the documented C examples.
 ```
 
 
-## Tips
+## Make the Request Specific
 
-- If the output uses raw C names in Python without the `dvz.` module prefix, ask the model to
-  switch to the top-level `import datoviz as dvz` facade or to explicit `datoviz.raw`.
-- If the model invents functions, paste the [visual family reference](../reference/visual-families/index.md)
-  for the specific visual type you need.
-- For iterative work, ask the model to change one thing at a time rather than regenerating
-  the full script — it's easier to spot regressions.
-- For complex layouts (multiple panels, linked axes, colorbars), include a relevant
-  [How-To guide](../how-to/create-multiple-panels.md) in the context.
+A good request says what should appear on screen. For example:
+
+| Instead of... | Write... |
+| --- | --- |
+| "make a plot" | "show 50,000 2D points colored by a scalar value" |
+| "add controls" | "let me pan and zoom the X/Y view with the mouse" |
+| "make it 3D" | "show 3D points with an arcball controller" |
+| "export it" | "render one frame to a PNG without opening a window" |
+
+
+## What the Assistant Should Use
+
+The assistant should browse the same public pages you use:
+
+- [Quickstart](quickstart.md) for the first complete Python and C examples.
+- [Examples](../examples/index.md) for working visual and feature examples.
+- [How-To Guides](../how-to/create-a-scene.md) for focused tasks.
+- [Reference](../reference/index.md) for exact visual names, attribute names, and feature status.
+
+For Python, the normal v0.4 starting point is:
+
+```python
+import datoviz as dvz
+```
+
+Datoviz v0.4 does not provide old high-level plotting helpers such as `datoviz.scatter()` or
+`datoviz.imshow()`. If an assistant generates those names, ask it to check the v0.4 documentation
+again.
+
+
+## A Useful Follow-Up
+
+After the assistant writes code, ask:
+
+```text
+Which Datoviz documentation pages did you use, and which function or attribute names came from
+each page?
+```
+
+This makes it easier to spot invented functions before running the code.

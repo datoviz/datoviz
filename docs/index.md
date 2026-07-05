@@ -1,30 +1,38 @@
 # Datoviz
 
-**GPU rendering engine for scientific visualization** — built for scientists and developers who
-need to explore large datasets interactively. Native Vulkan targets large 2D and 3D scientific
-scenes; browser support is an experimental WebGPU subset for promoted examples.
+Datoviz is a GPU-powered visualization engine for scientific data. It helps you build fast,
+interactive 2D and 3D views when ordinary plotting tools become too slow or too limited.
+
+Use Datoviz when you want to explore many points, images, meshes, volumes, annotations, or custom
+scientific scenes on a desktop GPU. The v0.4 documentation focuses on the current API: Python
+calls that stay close to the C API, native Vulkan rendering, and a small experimental WebGPU
+browser path.
 
 <a href="examples/gallery/showcases/protein_arcball_viewer.md"><img src="assets/gallery/v0.4/showcases/protein_arcball_viewer.webp" alt="Protein Viewer" style="width:100%;border-radius:8px;margin:1.5rem 0 2rem;display:block;"></a>
 
 
-## Documentation
+## Start Here
 
 <div class="dvz-nav-grid">
 <a class="dvz-nav-card" href="start/install.md">
-<strong>Get Started</strong>
-<span>Install Datoviz and run your first visualization in Python or C.</span>
+<strong>Install</strong>
+<span>Choose the right setup path for Python, C/C++, macOS, Linux, or Windows.</span>
 </a>
-<a class="dvz-nav-card" href="how-to/create-a-scene.md">
-<strong>How-To Guides</strong>
-<span>Task-focused recipes: axes, colorbars, panzoom, picking, offscreen rendering, and more.</span>
-</a>
-<a class="dvz-nav-card" href="reference/index.md">
-<strong>Reference</strong>
-<span>C and Python API, visual families, feature status, and platform support.</span>
+<a class="dvz-nav-card" href="start/quickstart.md">
+<strong>Quickstart</strong>
+<span>Run one scatter plot and learn the three basic parts: scene, panel, and visual.</span>
 </a>
 <a class="dvz-nav-card" href="examples/index.md">
 <strong>Examples</strong>
-<span>Gallery of visualizations organized by visual type, feature, and technique.</span>
+<span>Browse working visuals, features, and showcases before writing your own code.</span>
+</a>
+<a class="dvz-nav-card" href="how-to/create-a-scene.md">
+<strong>How-To Guides</strong>
+<span>Learn focused tasks such as adding axes, colorbars, interaction, and offscreen output.</span>
+</a>
+<a class="dvz-nav-card" href="reference/index.md">
+<strong>Reference</strong>
+<span>Look up visual families, attribute names, API status, and platform support.</span>
 </a>
 </div>
 
@@ -39,7 +47,7 @@ A scatter plot of 10 000 random points with pan/zoom:
     import numpy as np
     import datoviz as dvz
 
-    # --- data ---
+    # Create random 2D positions, one RGBA color per point, and a point size in pixels.
     N = 10_000
     pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
     pos[:, 2] = 0.0
@@ -47,23 +55,23 @@ A scatter plot of 10 000 random points with pan/zoom:
     color[:, 3] = 255
     diameters = np.full(N, 5.0, dtype=np.float32)
 
-    # --- scene ---
+    # Create one figure with one drawing area.
     scene = dvz.dvz_scene()
     figure = dvz.dvz_figure(scene, 800, 600, 0)
     panel = dvz.dvz_panel_full(figure)
-    # enable pan/zoom on XY axes
+
+    # Let the user drag to pan and scroll to zoom in the X/Y plane.
     controller = dvz.dvz_panzoom(scene, None)
     dvz.dvz_panel_bind_controller(panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
 
-    # --- visual ---
+    # A point visual draws all points in one GPU batch.
     visual = dvz.dvz_point(scene, 0)
     dvz.dvz_visual_set_data(visual, "position", pos)
     dvz.dvz_visual_set_data(visual, "color", color)
     dvz.dvz_visual_set_data(visual, "diameter_px", diameters)
     dvz.dvz_panel_add_visual(panel, visual, None)
 
-    # --- run ---
-    # quickstart convenience; robust apps can use dvz_app/dvz_view_* directly
+    # Open a window and keep it open until the user closes it.
     dvz.run(scene, figure, title="Scatter plot")
     ```
 
@@ -76,7 +84,7 @@ A scatter plot of 10 000 random points with pan/zoom:
     #include "datoviz/scene.h"
 
     int main(void) {
-        /* data */
+        /* Create random 2D positions, one RGBA color per point, and a point size in pixels. */
         int N = 10000;
         float pos[N * 3], diameter_px[N];
         uint8_t color[N * 4];
@@ -91,22 +99,23 @@ A scatter plot of 10 000 random points with pan/zoom:
             diameter_px[i] = 5.0f;
         }
 
-        /* scene */
+        /* Create one figure with one drawing area. */
         DvzScene* scene = dvz_scene();
         DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
         DvzPanel* panel = dvz_panel_full(figure);
-        /* enable pan/zoom on XY axes */
+
+        /* Let the user drag to pan and scroll to zoom in the X/Y plane. */
         DvzController* controller = dvz_panzoom(scene, NULL);
         dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY);
 
-        /* visual */
+        /* A point visual draws all points in one GPU batch. */
         DvzVisual* visual = dvz_point(scene, 0);
         dvz_visual_set_data(visual, "position", pos, N);
         dvz_visual_set_data(visual, "color", color, N);
         dvz_visual_set_data(visual, "diameter_px", diameter_px, N);
         dvz_panel_add_visual(panel, visual, NULL);
 
-        /* run; for offscreen PNG use dvz_view_offscreen() and dvz_view_capture_png(). */
+        /* Open a window and keep it open until the user closes it. */
         DvzApp* app = dvz_app(scene);
         dvz_view_window(app, figure, 800, 600, "Scatter plot");
         dvz_app_run(app, 0);

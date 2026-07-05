@@ -3,7 +3,8 @@
 **Prerequisites:** Datoviz built from source or installed from a local v0.4 package — see
 [Install](install.md).
 
-Render 10,000 random scatter points in an interactive window with pan-and-zoom. No external data files needed.
+This page builds one complete visualization: 10,000 random points in an interactive window. You can
+drag to pan and scroll to zoom. No data files are needed.
 
 
 ## Full example
@@ -14,7 +15,7 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
     import numpy as np
     import datoviz as dvz
 
-    # --- data ---
+    # Create random 2D positions, one RGBA color per point, and a point size in pixels.
     N = 10_000
     pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
     pos[:, 2] = 0.0
@@ -22,23 +23,23 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
     color[:, 3] = 255
     diameters = np.full(N, 5.0, dtype=np.float32)
 
-    # --- scene ---
+    # Create one figure with one drawing area.
     scene = dvz.dvz_scene()
     figure = dvz.dvz_figure(scene, 800, 600, 0)
     panel = dvz.dvz_panel_full(figure)
-    # enable pan/zoom on XY axes
+
+    # Let the user drag to pan and scroll to zoom in the X/Y plane.
     controller = dvz.dvz_panzoom(scene, None)
     dvz.dvz_panel_bind_controller(panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK_XY)
 
-    # --- visual ---
+    # A point visual draws all points in one GPU batch.
     visual = dvz.dvz_point(scene, 0)
     dvz.dvz_visual_set_data(visual, "position", pos)
     dvz.dvz_visual_set_data(visual, "color", color)
     dvz.dvz_visual_set_data(visual, "diameter_px", diameters)
     dvz.dvz_panel_add_visual(panel, visual, None)
 
-    # --- run ---
-    # quickstart convenience; robust apps can use dvz_app/dvz_view_* directly
+    # Open a window and keep it open until the user closes it.
     dvz.run(scene, figure, title="Scatter plot")
     ```
 
@@ -56,7 +57,7 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
     int main(void) {
         srand((unsigned)time(NULL));
 
-        /* data */
+        /* Create random 2D positions, one RGBA color per point, and a point size in pixels. */
         float pos[N * 3], diameter_px[N];
         uint8_t color[N * 4];
         for (int i = 0; i < N; i++) {
@@ -70,15 +71,16 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
             diameter_px[i] = 5.0f;
         }
 
-        /* scene */
+        /* Create one figure with one drawing area. */
         DvzScene* scene = dvz_scene();
         DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
         DvzPanel* panel = dvz_panel_full(figure);
-        /* enable pan/zoom on XY axes */
+
+        /* Let the user drag to pan and scroll to zoom in the X/Y plane. */
         DvzController* controller = dvz_panzoom(scene, NULL);
         dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY);
 
-        /* visual */
+        /* A point visual draws all points in one GPU batch. */
         DvzVisual* visual = dvz_point(scene, 0);
         dvz_visual_set_data(visual, "position", pos, N);
         dvz_visual_set_data(visual, "color", color, N);
@@ -86,13 +88,9 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
         dvz_panel_add_visual(panel, visual, NULL);
 
         DvzApp* app = dvz_app(scene);
-        /* open a window and run until closed */
+        /* Open a window and keep it open until the user closes it. */
         dvz_view_window(app, figure, 800, 600, "Scatter plot");
         dvz_app_run(app, 0);
-        /* for offscreen PNG instead, replace the three lines above with:
-             DvzView* view = dvz_view_offscreen(app, figure, 800, 600);
-             dvz_app_run(app, 1);
-             dvz_view_capture_png(view, "output.png"); */
 
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
@@ -133,20 +131,22 @@ A dark window containing 10,000 colored dots. Drag to pan, scroll to zoom.
 
 ## How it works
 
-**Data arrays** — Positions are `(N, 3)` float32 arrays in normalized coordinates `[-1, 1]`. Colors are `(N, 4)` uint8 RGBA in `[0, 255]`. Diameters are per-point pixel sizes.
+**Data arrays** - The example creates three arrays with one row per point. `position` stores
+`x`, `y`, and `z` coordinates. `color` stores red, green, blue, and alpha values. `diameter_px`
+stores the point size in screen pixels.
 
-**Scene hierarchy** — A `scene` is the root container. A `figure` holds one or more panels at a given pixel size. A `panel` is a viewport that owns a controller and one or more visuals.
+**Scene, figure, panel** - A `scene` is the whole visualization. A `figure` is the image area, here
+800 by 600 pixels. A `panel` is the part of the figure where the scatter plot is drawn. This
+quickstart uses one full-size panel.
 
-**Controller** — `dvz_panzoom` attaches pan-and-zoom navigation to the panel. `dvz_panel_bind_controller` connects it, optionally restricting which axes respond.
+**Controller** - `dvz_panzoom` adds mouse interaction. `dvz_panel_bind_controller` connects it to
+the panel and limits the interaction to the X and Y axes.
 
-**Visual** — `dvz_point` is the GPU-accelerated scatter renderer. `dvz_visual_set_data` uploads each named attribute (`position`, `color`, `diameter_px`) to the GPU.
+**Visual** - A visual is the thing being drawn. `dvz_point` creates a point visual, and
+`dvz_visual_set_data` gives it the arrays it needs: positions, colors, and point sizes.
 
-**Run vs. capture** — In Python, `dvz.run(scene, figure)` opens a GLFW window and blocks until
-closed; `dvz.capture(scene, figure, path="output.png")` renders one frame offscreen to a PNG. These
-helpers are quickstart conveniences and destroy the app and scene before returning. Robust Python
-apps can call the C-shaped `dvz_app`, `dvz_view_window`, `dvz_view_offscreen`, and capture APIs
-directly. In C, `dvz_view_window` + `dvz_app_run(app, 0)` opens a window and loops; for headless PNG
-output, use `dvz_view_offscreen` + `dvz_app_run(app, 1)` + `dvz_view_capture_png` instead.
+**Run** - `dvz.run(scene, figure)` opens the window in the Python example. The C example uses the
+longer app/view calls directly because C does not have the same quickstart helper.
 
 
 ## Next steps
