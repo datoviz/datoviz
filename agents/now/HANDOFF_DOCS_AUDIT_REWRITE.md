@@ -3,13 +3,14 @@
 Status: planned pre-RC documentation campaign.
 
 This handoff is for a high-capacity agent auditing, restructuring, proofreading, and rewriting the
-public Datoviz v0.4 documentation and website before RC publication.
+public Datoviz v0.4 documentation and website before RC publication. This is the single active
+handoff for the public documentation rewrite; older public-doc audit notes have been folded here.
 
 
 ## Start Condition
 
-Do not start the broad rewrite until the completed pre-RC public API cleanup branch has landed on
-`v0.4-dev` or the maintainer explicitly freezes the public API surface for documentation work.
+The completed pre-RC public API cleanup branch has landed on `v0.4-dev`; the broad documentation
+rewrite is unblocked.
 
 The documentation must describe the final pre-RC API, not transitional pre-cleanup APIs. Treat
 headers, exported API manifests, generated ctypes policy, examples, and generated references at
@@ -93,14 +94,14 @@ Read these before planning:
 
 Where documentation-planning files conflict, prefer
 `spec/docs/V04_DOCUMENTATION_DECISIONS.md` and reconcile the older planning text in the same
-campaign. The current desired public structure is five sections:
+campaign. Keep the main user path centered on:
 
 ```text
-Get Started / Examples / How-To / Reference / Advanced
+Get Started / Examples / How-To / Reference
 ```
 
-Contributor and release-maintainer docs may remain reachable, but they should not dominate the main
-user path.
+Internals, contributor, and release-maintainer docs may remain reachable, but they should not
+dominate the public user path.
 
 
 ## Audience And Positioning
@@ -140,6 +141,140 @@ Required qualities:
 6. strong cross-links between task guides, examples, visual-family pages, and API reference;
 7. website media that loads cleanly and explains the actual public surface;
 8. no stale v0.3 promises, hidden compatibility assumptions, or obsolete Pythonic wrapper examples.
+
+
+## Known Findings To Preserve
+
+These are concrete public-site issues found before this handoff was consolidated. Verify each
+against the current tree before editing, then fix or explicitly close it.
+
+### Release And Install Posture
+
+The public site has drifted between source-only, RC artifact-ready, and final-release language.
+Known pages to reconcile together:
+
+1. `docs/start/install.md`;
+2. `docs/releases/v0.4.0rc1.md`;
+3. `mkdocs.yml` release navigation;
+4. `README.md`;
+5. `docs/how-to/c-integration.md`;
+6. `docs/reference/build-options.md`.
+
+Decide the current public state with the maintainer if unclear. Do not leave one page saying
+"source only" while another advertises passed or published wheels.
+
+### First-User Journey
+
+Important orientation pages have existed outside the main Get Started path:
+
+1. `docs/start/what-is-datoviz.md`;
+2. `docs/start/choose-your-layer.md`;
+3. `docs/start/first-c-program.md`.
+
+Make "what Datoviz is" and "which layer to use" visible in Get Started, or merge their essential
+content into the first-run pages. Replace placeholder first-C-program content with a real
+walkthrough or remove it from public discovery until complete.
+
+### Stale Or Weak Snippets
+
+The README first Python example previously used `"diameter"` while current marker docs use
+`"diameter_px"`. Verify README, homepage, quickstart, and reference examples agree on attribute
+names and call order.
+
+Some "minimal" Python snippets used undefined variables such as `positions`, `colors`, or
+`diameters`. Known pages to check:
+
+1. `docs/how-to/use-python.md`;
+2. `docs/how-to/use-raw-ctypes.md`;
+3. `docs/reference/python-direct-engine.md`.
+
+Make snippets fully runnable when they are presented as copy/paste examples. If a snippet is
+intentionally partial, label it that way and link to the canonical runnable example.
+
+### Gallery Generation And Missing Pages
+
+Generated public gallery pages have drifted from manifest metadata. Previously observed missing
+pages included:
+
+1. `technique_edl`;
+2. `feature_multi_window`;
+3. `feature_view_size_policies`;
+4. `feature_datetime_axis`.
+
+Regenerate from metadata rather than hand-editing generated gallery Markdown. Add or strengthen a
+check that every public `docs/examples/examples.json` page exists and that public manifest examples
+appear in the generated matrix or have an explicit visible exclusion.
+
+### Gallery User Experience
+
+Generated detail pages have read like metadata dumps rather than polished user pages. Check for:
+
+1. duplicate breadcrumbs such as `Examples / Examples`;
+2. terse lowercase descriptions;
+3. important native/WebGPU status hidden inside collapsed details;
+4. data preparation commands hidden inside collapsed details;
+5. maintainer-oriented fields such as `Agent copy-safe`, `Build`, `Smoke`, and `Validation`;
+6. generic data-submodule wording shown for synthetic or cache-backed examples;
+7. `_Media pending._` on supported public examples.
+
+Preferred fixes:
+
+1. show visible support and WebGPU status badges near the preview;
+2. show visible data prerequisites before source links;
+3. make runtime-data wording conditional for synthetic, cached, data-submodule, and generated-media
+   cases;
+4. keep maintainer-only fields collapsed or move them to contributor docs;
+5. make the start example visible in the examples index with a real Start lane/card;
+6. generate media before RC or visibly label the reason for a media gap.
+
+### WebGPU Status And Counts
+
+Individual example pages should surface WebGPU status without requiring users to open collapsed
+metadata. `docs/reference/webgpu-subset.md`, the WebGPU matrix, gallery pages, and live-route
+registry should agree on counts and route status. Non-live pages should link to the matrix or subset
+page so users can distinguish planned/deferred from broken.
+
+Improve unknown-route handling in `examples/webgpu/live.js` by linking back to the matrix or example
+index when relevant.
+
+### Reference Discoverability
+
+If reference index pages present a page as core material, navigation should make that page easy to
+rediscover. Pages to check include:
+
+1. `docs/reference/project-status.md`;
+2. `docs/reference/visual-attributes.md`;
+3. `docs/reference/queries.md`;
+4. `docs/reference/errors-and-logging.md`;
+5. explanation pages linked from `docs/explanation/`.
+
+Either bring them into navigation where users expect them, or stop presenting them as primary
+reference pages.
+
+### Public Reference Language
+
+Generated C reference and public docs should not leak internal transitional terms. Search public
+docs and generated references for terms such as `WIP`, `placeholder`, `<fill`, `legacy path`, and
+ambiguous "old API" wording.
+
+Prefer public support-status phrasing:
+
+1. "current supported slice" instead of "WIP";
+2. "four-corner form" or "corner-vertex compatibility form" instead of "legacy path" when the input
+   remains valid v0.4 behavior.
+
+Fix generated reference wording at the source comment or generator layer, then rebuild generated
+outputs.
+
+### Release Tags, Citation, And Version Metadata
+
+Public docs previously used `GIT_TAG v0.4.0` before the final release existed. Before final release,
+use `v0.4-dev`, `v0.4.0rc1`, or `<release-tag>` with explicit wording. At final release, replace
+placeholders with the real tag.
+
+Align `CITATION.cff`, `docs/reference/citation.md`, release notes, and actual tag state. Do not
+imply a final Zenodo DOI or final v0.4.0 release before it exists; RC citation examples should be
+clearly provisional.
 
 Generated docs must be handled through their source metadata, templates, or generation tools.
 Do not hand-edit generated gallery Markdown as the primary fix. The current generated-gallery source
@@ -227,6 +362,27 @@ commits with direct messages.
    links, search/navigation consistency.
 10. **Final proofread and validation:** full pass for tone, structure, broken links, stale claims,
     generated drift, and repository hygiene.
+
+
+## Optional Parallel Work Split
+
+If the coordinator uses subagents, keep write ownership disjoint and sequence generated outputs
+after source metadata/template changes.
+
+1. **Coordinator:** confirm publication target, enforce scope, sequence generation, review returned
+   patches for overlap, run final validation, and commit coherent checkpoints.
+2. **First-user journey and release posture:** own `docs/index.md`, `docs/start/`,
+   `docs/releases/`, `mkdocs.yml`, `README.md`, and citation files when version wording is in
+   scope.
+3. **Gallery generator and metadata:** own `tools/build_gallery.py`, `docs/examples/`,
+   `docs/examples/gallery/`, `docs/examples/examples.json`, `docs/examples/capabilities.json`,
+   public metadata corrections in `examples/c/MANIFEST.yaml`, and user-facing route diagnostics in
+   `examples/webgpu/live.js`.
+4. **How-to pages and snippets:** own `docs/how-to/`, `docs/start/quickstart.md`,
+   `docs/reference/python-direct-engine.md`, and `docs/reference/ctypes.md`.
+5. **Reference and status polish:** own `docs/reference/`, generated C reference source comments or
+   generator files when needed, and reference nav/index changes coordinated with the first-user
+   journey owner.
 
 
 ## Validation

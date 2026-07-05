@@ -1,11 +1,13 @@
 # Datoviz v0.4 Documentation Plan
 
-Status: active documentation roadmap. Updated: 2026-06-15.
+Status: active documentation roadmap. Updated: 2026-07-05.
 
 
 ## Next Steps (agent-ready, in priority order)
 
 Decisions behind these tasks are in `spec/docs/V04_DOCUMENTATION_DECISIONS.md`. Read that first.
+For the broad public documentation audit and rewrite, use
+[HANDOFF_DOCS_AUDIT_REWRITE.md](HANDOFF_DOCS_AUDIT_REWRITE.md) as the single active handoff.
 
 ### 1. `wind_globe.c` showcase example
 Spec: `spec/scene/examples/scenarios/WIND_GLOBE.md`. Self-contained, fully specced.
@@ -13,12 +15,11 @@ Earth mesh + wind vector arrows + streamlines in 3D, arcball controller, dark ba
 Extends `showcases/textured_planet.c` and `showcases/wind_field.c`.
 Output: 1600×900 PNG hero screenshot.
 
-### 2. Doc restructure — MkDocs nav
-Reorganize `mkdocs.yml` and `docs/` from the current 7-section Diataxis structure to the
-5-section structure decided in `V04_DOCUMENTATION_DECISIONS.md`:
-Get Started / Examples / How-To / Reference / Advanced.
-Reconcile `spec/docs/INFORMATION_ARCHITECTURE.md` with `V04_DOCUMENTATION_DECISIONS.md`.
-Move existing pages into the new structure; stub missing pages.
+### 2. Public documentation audit and rewrite
+Use [HANDOFF_DOCS_AUDIT_REWRITE.md](HANDOFF_DOCS_AUDIT_REWRITE.md). The MkDocs navigation
+restructure has landed; remaining work is public-site audit, release/install posture, first-user
+journey, gallery generation, snippet quality, WebGPU status, reference/status polish, and final
+strict-build validation.
 
 ### 3. Quickstart + AI-assisted workflow pages
 Keep the active start path concise:
