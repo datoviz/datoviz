@@ -107,14 +107,28 @@ Completed checkpoints:
    - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
      `python3 tools/build_api_c.py --check`, `just build`, `just test scene/interaction`,
      `just spec-check`, stale-reference scan, and `git diff --check`.
+11. `256b4e018` `api: flatten scale descriptor styling`
+   - Removed nested `DvzFormatDesc format` from `DvzScaleDesc`; callers now use
+     `dvz_scale_set_format()` after scale creation.
+   - Removed nested `DvzTextStyle label_style`, `DvzTextPlacement placement`, and
+     `DvzFormatDesc format` from `DvzScaleBarDesc`.
+   - Added retained scale-bar setters: `dvz_scale_bar_set_label_style()`,
+     `dvz_scale_bar_set_placement()`, and `dvz_scale_bar_set_format()`.
+   - Exported symbol delta: added the three retained `dvz_scale_bar_set_*` setters above; no
+     exported functions were removed in this checkpoint, but `DvzScaleDesc` and
+     `DvzScaleBarDesc` ABI layout changed.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just build`, `just test scene/fields`,
+     `just test scene/interaction`, `just spec-check`, stale-reference scan, and
+     `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
 - dirty `data` submodule state;
 - untracked `paper/paper.pdf`.
 
-Next recommended checkpoint: start the descriptor-flattening slice with `DvzScaleBarDesc` and
-`DvzScaleDesc`, keeping it separate from the completed scale-bar spelling churn.
+Next recommended checkpoint: continue the descriptor-flattening campaign with
+`DvzPanelAxes2DDesc`, keeping it separate from the completed scale/scale-bar descriptor churn.
 
 
 ## Maintainer Decisions
