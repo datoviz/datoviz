@@ -976,13 +976,13 @@ int main(int argc, char** argv)
         {240, 82, 82, 255},  {78, 154, 246, 255},  {96, 190, 126, 255},
         {250, 202, 70, 255}, {172, 105, 235, 255}, {236, 112, 74, 255},
     };
-    cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+    cube = dvz_geometry_cube(&(DvzGeometryCubeDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
         .size = CUBE_SIZE,
         .face_colors = face_colors,
         .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT,
     });
-    EXAMPLE_CHECK(cube != NULL, "dvz_geom_cube() failed");
+    EXAMPLE_CHECK(cube != NULL, "dvz_geometry_cube() failed");
 
     ok = dvz_mesh_set_geometry(cube_visual, cube) == 0;
     EXAMPLE_CHECK(ok, "dvz_mesh_set_geometry() failed for cube");

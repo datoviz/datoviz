@@ -159,7 +159,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     const bool ok =
         _add_geometry(
             ctx->scene, panel,
-            dvz_geom_cube(&(DvzGeometryCubeDesc){
+            dvz_geometry_cube(&(DvzGeometryCubeDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
                 .center = {-0.92, 0.00, +0.42},
                 .size = 0.58,
@@ -167,7 +167,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             })) &&
         _add_geometry(
             ctx->scene, panel,
-            dvz_geom_sphere(&(DvzGeometrySphereDesc){
+            dvz_geometry_sphere(&(DvzGeometrySphereDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
                 .center = {+0.00, 0.02, +0.42},
                 .radius = 0.36,
@@ -177,7 +177,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             })) &&
         _add_y_up_geometry(
             ctx->scene, panel,
-            dvz_geom_cylinder(&(DvzGeometryCylinderDesc){
+            dvz_geometry_cylinder(&(DvzGeometryCylinderDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryCylinderDesc),
                 .radius = 0.24,
                 .height = 0.82,
@@ -187,7 +187,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             (dvec3){+0.92, 0.00, +0.42}) &&
         _add_y_up_geometry(
             ctx->scene, panel,
-            dvz_geom_cone(&(DvzGeometryConeDesc){
+            dvz_geometry_cone(&(DvzGeometryConeDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryConeDesc),
                 .radius = 0.34,
                 .height = 0.86,
@@ -197,7 +197,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             (dvec3){-0.92, 0.00, -0.42}) &&
         _add_y_up_geometry(
             ctx->scene, panel,
-            dvz_geom_torus(&(DvzGeometryTorusDesc){
+            dvz_geometry_torus(&(DvzGeometryTorusDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryTorusDesc),
                 .major_radius = 0.36,
                 .minor_radius = 0.105,
@@ -208,7 +208,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             (dvec3){+0.00, 0.05, -0.42}) &&
         _add_y_up_geometry(
             ctx->scene, panel,
-            dvz_geom_arrow(&(DvzGeometryArrowDesc){
+            dvz_geometry_arrow(&(DvzGeometryArrowDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryArrowDesc),
                 .length = 1.00,
                 .shaft_radius = 0.075,

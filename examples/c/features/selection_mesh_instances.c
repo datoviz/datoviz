@@ -221,7 +221,7 @@ static DvzVisual* _selection_cube_mesh(DvzScene* scene)
     if (visual == NULL)
         return NULL;
 
-    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+    DvzGeometry* cube = dvz_geometry_cube(&(DvzGeometryCubeDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
         .size = 0.32,
         .face_colors = face_colors,

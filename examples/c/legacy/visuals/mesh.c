@@ -91,13 +91,13 @@ int main(int argc, char** argv)
         {171, 71, 188, 255},
         {255, 112, 67, 255},
     };
-    cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+    cube = dvz_geometry_cube(&(DvzGeometryCubeDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
         .size = MESH_CUBE_SIZE,
         .face_colors = face_colors,
         .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT,
     });
-    EXAMPLE_CHECK(cube != NULL, "dvz_geom_cube() failed");
+    EXAMPLE_CHECK(cube != NULL, "dvz_geometry_cube() failed");
 
     bool uploaded = dvz_mesh_set_geometry(visual, cube) == 0;
     EXAMPLE_CHECK(uploaded, "dvz_mesh_set_geometry() failed");

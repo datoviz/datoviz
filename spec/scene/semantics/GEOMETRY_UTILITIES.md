@@ -58,10 +58,10 @@ Generators produce ordinary indexed geometry payloads.
 | Generator | Descriptor controls | Notes |
 |---|---|---|
 | primitive solids | cube, sphere, cylinder, cone, torus, arrow, classic polyhedra | cube, sphere, cylinder, cone, torus, and arrow implemented; classic polyhedra remain targeted |
-| `dvz_geom_plane` | center, width, height, z offset, color | implemented as indexed XY plane |
+| `dvz_geometry_plane` | center, width, height, z offset, color | implemented as indexed XY plane |
 | `dvz_geom_gizmo_axes` | axis length, shaft/head dimensions, tessellation, per-axis colors | scene/app owns pinning and camera sync |
-| `dvz_geom_surface_grid` | rows/cols, height/color arrays, origin, basis, height policy, normals, metadata | implemented with row/column provenance and height updates; richer update helpers remain future work |
-| `dvz_geom_obj` | path, fallback color | first Wavefront OBJ slice supports vertices, normals, and polygon faces triangulated as fans |
+| `dvz_geometry_surface_grid` | rows/cols, height/color arrays, origin, basis, height policy, normals, metadata | implemented with row/column provenance and height updates; richer update helpers remain future work |
+| `dvz_geometry_obj` | path, fallback color | first Wavefront OBJ slice supports vertices, normals, and polygon faces triangulated as fans |
 
 
 ## Derived Mesh Overlays

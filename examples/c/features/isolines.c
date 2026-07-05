@@ -232,7 +232,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     desc.origin[1] = -0.775;
     desc.col_basis[0] = 2.10 / (double)(GRID_COLS - 1u);
     desc.row_basis[1] = 1.55 / (double)(GRID_ROWS - 1u);
-    DvzGeometry* geometry = dvz_geom_surface_grid(&desc);
+    DvzGeometry* geometry = dvz_geometry_surface_grid(&desc);
     double* values = (double*)dvz_calloc(GRID_ROWS * GRID_COLS, sizeof(double));
     if (geometry == NULL || values == NULL)
         goto error;

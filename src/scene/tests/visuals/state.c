@@ -1461,7 +1461,7 @@ int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item)
         .cols = 2,
         .colors = colors,
     };
-    DvzGeometry* geometry = dvz_geom_surface_grid(&desc);
+    DvzGeometry* geometry = dvz_geometry_surface_grid(&desc);
     ANN(geometry);
 
     AT(dvz_mesh_set_geometry(visual, geometry) == 0);

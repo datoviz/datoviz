@@ -6,7 +6,7 @@
 
 /* surface_grid - generated height-field mesh via geom -> scene mesh upload.
  *
- * Opens a GLFW window showing a lit structured surface generated with `dvz_geom_surface_grid()`
+ * Opens a GLFW window showing a lit structured surface generated with `dvz_geometry_surface_grid()`
  * and uploaded through explicit mesh visual data. This example is the first visible pressure test
  * for the v0.4 CPU geom -> mesh visual path.
  *
@@ -139,8 +139,8 @@ int main(int argc, char** argv)
         .height_axis = {0.0, 0.0, 1.0},
         .height_scale = 1.0,
     };
-    geometry = dvz_geom_surface_grid(&desc);
-    EXAMPLE_CHECK(geometry != NULL, "dvz_geom_surface_grid() failed");
+    geometry = dvz_geometry_surface_grid(&desc);
+    EXAMPLE_CHECK(geometry != NULL, "dvz_geometry_surface_grid() failed");
 
     DvzVisual* visual = dvz_mesh(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_mesh() failed");

@@ -60,33 +60,33 @@ int test_geometry_descriptor_abi(TstContext* suite, const TstCase* tstitem)
 
     DvzGeometryCubeDesc cube = dvz_geometry_cube_desc();
     cube.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_cube(&cube) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_geometry_cube(&cube) == NULL);
 
     DvzGeometryPlaneDesc plane = dvz_geometry_plane_desc();
     plane.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_plane(&plane) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_geometry_plane(&plane) == NULL);
 
     DvzGeometrySphereDesc sphere = dvz_geometry_sphere_desc();
     sphere.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_sphere(&sphere) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_geometry_sphere(&sphere) == NULL);
 
     DvzGeometrySurfaceGridDesc grid = dvz_geometry_surface_grid_desc();
     grid.rows = 2;
     grid.cols = 2;
     grid.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_surface_grid(&grid) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_geometry_surface_grid(&grid) == NULL);
 
     DvzGeometryDiscDesc disc = dvz_geometry_disc_desc();
     disc.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_disc(&disc) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_geometry_disc(&disc) == NULL);
 
     DvzGeometryTorusDesc torus = dvz_geometry_torus_desc();
     torus.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_torus(&torus) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_geometry_torus(&torus) == NULL);
 
     DvzGeometryObjDesc obj = dvz_geometry_obj_desc();
     obj.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_geom_obj("missing.obj", &obj) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_geometry_obj("missing.obj", &obj) == NULL);
 
     const dvec2 xy[3] = {{0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}};
     DvzPolygonDesc polygon = dvz_polygon_desc();
@@ -123,7 +123,7 @@ int test_geometry_cube(TstContext* suite, const TstCase* tstitem)
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc), .center = {1.0, 2.0, 3.0}, .size = 2.0};
     desc.color = dvz_color_rgba(10, 20, 30, 255);
 
-    DvzGeometry* cube = dvz_geom_cube(&desc);
+    DvzGeometry* cube = dvz_geometry_cube(&desc);
     AT(cube != NULL);
     AT(cube->type == DVZ_GEOMETRY_CUBE);
     AT(cube->vertex_count == 24);
@@ -151,7 +151,7 @@ int test_geometry_cube(TstContext* suite, const TstCase* tstitem)
         {239, 83, 80, 255},  {66, 165, 245, 255}, {102, 187, 106, 255},
         {255, 202, 40, 255}, {171, 71, 188, 255}, {255, 112, 67, 255},
     };
-    DvzGeometry* colored_cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+    DvzGeometry* colored_cube = dvz_geometry_cube(&(DvzGeometryCubeDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
         .size = 1.0,
         .face_colors = face_colors,
@@ -171,7 +171,7 @@ int test_geometry_cube(TstContext* suite, const TstCase* tstitem)
     }
     dvz_geometry_destroy(colored_cube);
 
-    AT(dvz_geom_cube(&(DvzGeometryCubeDesc){
+    AT(dvz_geometry_cube(&(DvzGeometryCubeDesc){
            DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
            .size = 1.0,
            .face_colors = face_colors,
@@ -190,7 +190,7 @@ int test_geometry_plane(TstContext* suite, const TstCase* tstitem)
     DvzGeometryPlaneDesc desc = {
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryPlaneDesc), .center = {2.0, 3.0, 4.0}, .width = 4.0,
         .height = 2.0};
-    DvzGeometry* plane = dvz_geom_plane(&desc);
+    DvzGeometry* plane = dvz_geometry_plane(&desc);
     AT(plane != NULL);
     AT(plane->type == DVZ_GEOMETRY_PLANE);
     AT(plane->vertex_count == 4);
@@ -238,7 +238,7 @@ int test_geometry_surface_grid(TstContext* suite, const TstCase* tstitem)
         .heights = heights,
         .colors = colors,
     };
-    DvzGeometry* grid = dvz_geom_surface_grid(&desc);
+    DvzGeometry* grid = dvz_geometry_surface_grid(&desc);
     AT(grid != NULL);
     AT(grid->type == DVZ_GEOMETRY_SURFACE_GRID);
     AT(grid->flags & DVZ_GEOMETRY_INDEXING_SURFACE_GRID);
@@ -263,7 +263,7 @@ int test_geometry_surface_grid(TstContext* suite, const TstCase* tstitem)
 
     DvzGeometrySurfaceGridDesc invalid = {
         DVZ_STRUCT_INIT_FIELDS(DvzGeometrySurfaceGridDesc), .rows = 1, .cols = 3};
-    AT(dvz_geom_surface_grid(&invalid) == NULL);
+    AT(dvz_geometry_surface_grid(&invalid) == NULL);
 
     dvz_geometry_destroy(grid);
     return 0;
@@ -287,7 +287,7 @@ int test_geometry_surface_grid_update(TstContext* suite, const TstCase* tstitem)
         .height_axis = {0.0, 0.0, 1.0},
         .height_scale = 2.0,
     };
-    DvzGeometry* grid = dvz_geom_surface_grid(&desc);
+    DvzGeometry* grid = dvz_geometry_surface_grid(&desc);
     AT(grid != NULL);
     AT(grid->grid_rows == 2);
     AT(grid->grid_cols == 2);
@@ -298,7 +298,7 @@ int test_geometry_surface_grid_update(TstContext* suite, const TstCase* tstitem)
     AC(grid->grid_height_scale, 2.0, EPS);
 
     double updated[4] = {0.0, 1.0, 2.0, 3.0};
-    AT(dvz_geom_surface_grid_update_heights(grid, updated, 4) == 0);
+    AT(dvz_geometry_surface_grid_update_heights(grid, updated, 4) == 0);
     AC(grid->positions[0][0], 10.0, EPS);
     AC(grid->positions[0][1], 20.0, EPS);
     AC(grid->positions[0][2], 30.0, EPS);
@@ -309,10 +309,10 @@ int test_geometry_surface_grid_update(TstContext* suite, const TstCase* tstitem)
     AC(grid->positions[3][1], 23.0, EPS);
     AC(grid->positions[3][2], 36.0, EPS);
 
-    AT(dvz_geom_surface_grid_update_heights(grid, updated, 3) == -1);
-    DvzGeometry* plane = dvz_geom_plane(NULL);
+    AT(dvz_geometry_surface_grid_update_heights(grid, updated, 3) == -1);
+    DvzGeometry* plane = dvz_geometry_plane(NULL);
     AT(plane != NULL);
-    AT(dvz_geom_surface_grid_update_heights(plane, updated, 4) == -1);
+    AT(dvz_geometry_surface_grid_update_heights(plane, updated, 4) == -1);
 
     dvz_geometry_destroy(plane);
     dvz_geometry_destroy(grid);
@@ -332,7 +332,7 @@ int test_geometry_sphere(TstContext* suite, const TstCase* tstitem)
         .rings = 4,
         .sectors = 8,
     };
-    DvzGeometry* sphere = dvz_geom_sphere(&desc);
+    DvzGeometry* sphere = dvz_geometry_sphere(&desc);
     AT(sphere != NULL);
     AT(sphere->type == DVZ_GEOMETRY_SPHERE);
     AT(sphere->vertex_count == 45);
@@ -358,7 +358,7 @@ int test_geometry_sphere(TstContext* suite, const TstCase* tstitem)
     }
     AC(sphere->texcoords[0][0], 0.0, EPS);
     AC(sphere->texcoords[8][0], 1.0, EPS);
-    AT(dvz_geom_sphere(&(DvzGeometrySphereDesc){
+    AT(dvz_geometry_sphere(&(DvzGeometrySphereDesc){
            DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc), .radius = -1.0}) == NULL);
 
     dvz_geometry_destroy(sphere);
@@ -372,7 +372,7 @@ int test_geometry_builtin_shapes(TstContext* suite, const TstCase* tstitem)
     ANN(suite);
     (void)tstitem;
 
-    DvzGeometry* disc = dvz_geom_disc(&(DvzGeometryDiscDesc){
+    DvzGeometry* disc = dvz_geometry_disc(&(DvzGeometryDiscDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryDiscDesc), .radius = 1.0, .segments = 8});
     AT(disc != NULL);
     AT(disc->vertex_count == 9);
@@ -380,7 +380,7 @@ int test_geometry_builtin_shapes(TstContext* suite, const TstCase* tstitem)
     AT(disc->flags & DVZ_GEOMETRY_INDEXING_TRIANGLES);
     dvz_geometry_destroy(disc);
 
-    DvzGeometry* sector = dvz_geom_sector(&(DvzGeometrySectorDesc){
+    DvzGeometry* sector = dvz_geometry_sector(&(DvzGeometrySectorDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometrySectorDesc), .radius = 1.0, .sweep_angle = DVZ_PI,
         .segments = 4});
     AT(sector != NULL);
@@ -388,14 +388,14 @@ int test_geometry_builtin_shapes(TstContext* suite, const TstCase* tstitem)
     AT(sector->index_count == 12);
     dvz_geometry_destroy(sector);
 
-    DvzGeometry* polygon = dvz_geom_regular_polygon(&(DvzGeometryRegularPolygonDesc){
+    DvzGeometry* polygon = dvz_geometry_regular_polygon(&(DvzGeometryRegularPolygonDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryRegularPolygonDesc), .radius = 1.0, .sides = 5});
     AT(polygon != NULL);
     AT(polygon->vertex_count == 6);
     AT(polygon->index_count == 15);
     dvz_geometry_destroy(polygon);
 
-    DvzGeometry* star = dvz_geom_star(&(DvzGeometryStarDesc){
+    DvzGeometry* star = dvz_geometry_star(&(DvzGeometryStarDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryStarDesc), .outer_radius = 1.0, .inner_radius = 0.4,
         .points = 5});
     AT(star != NULL);
@@ -403,7 +403,7 @@ int test_geometry_builtin_shapes(TstContext* suite, const TstCase* tstitem)
     AT(star->index_count == 30);
     dvz_geometry_destroy(star);
 
-    DvzGeometry* cylinder = dvz_geom_cylinder(&(DvzGeometryCylinderDesc){
+    DvzGeometry* cylinder = dvz_geometry_cylinder(&(DvzGeometryCylinderDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryCylinderDesc), .radius = 1.0, .height = 2.0,
         .sectors = 8});
     AT(cylinder != NULL);
@@ -412,7 +412,7 @@ int test_geometry_builtin_shapes(TstContext* suite, const TstCase* tstitem)
     AT(cylinder->index_count == 96);
     dvz_geometry_destroy(cylinder);
 
-    DvzGeometry* cone = dvz_geom_cone(&(DvzGeometryConeDesc){
+    DvzGeometry* cone = dvz_geometry_cone(&(DvzGeometryConeDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryConeDesc), .radius = 1.0, .height = 2.0, .sectors = 8});
     AT(cone != NULL);
     AT(cone->type == DVZ_GEOMETRY_CONE);
@@ -420,7 +420,7 @@ int test_geometry_builtin_shapes(TstContext* suite, const TstCase* tstitem)
     AT(cone->index_count == 48);
     dvz_geometry_destroy(cone);
 
-    DvzGeometry* torus = dvz_geom_torus(&(DvzGeometryTorusDesc){
+    DvzGeometry* torus = dvz_geometry_torus(&(DvzGeometryTorusDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryTorusDesc), .major_radius = 1.0, .minor_radius = 0.2,
         .rings = 8, .sectors = 6});
     AT(torus != NULL);
@@ -429,7 +429,7 @@ int test_geometry_builtin_shapes(TstContext* suite, const TstCase* tstitem)
     AT(torus->index_count == 288);
     dvz_geometry_destroy(torus);
 
-    DvzGeometry* arrow = dvz_geom_arrow(&(DvzGeometryArrowDesc){
+    DvzGeometry* arrow = dvz_geometry_arrow(&(DvzGeometryArrowDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryArrowDesc), .length = 2.0, .shaft_radius = 0.1,
         .head_radius = 0.28, .head_length = 0.55, .sectors = 8});
     AT(arrow != NULL);
@@ -438,9 +438,9 @@ int test_geometry_builtin_shapes(TstContext* suite, const TstCase* tstitem)
     AT(arrow->index_count == 144);
     dvz_geometry_destroy(arrow);
 
-    AT(dvz_geom_disc(&(DvzGeometryDiscDesc){
+    AT(dvz_geometry_disc(&(DvzGeometryDiscDesc){
            DVZ_STRUCT_INIT_FIELDS(DvzGeometryDiscDesc), .radius = 1.0, .segments = 2}) == NULL);
-    AT(dvz_geom_arrow(&(DvzGeometryArrowDesc){
+    AT(dvz_geometry_arrow(&(DvzGeometryArrowDesc){
            DVZ_STRUCT_INIT_FIELDS(DvzGeometryArrowDesc), .length = 1.0, .shaft_radius = 0.1,
            .head_radius = 0.2, .head_length = 1.0, .sectors = 8}) == NULL);
 
@@ -470,7 +470,7 @@ int test_geometry_obj_loader(TstContext* suite, const TstCase* tstitem)
     AT(fwrite(obj, 1, sizeof(obj) - 1u, fp) == sizeof(obj) - 1u);
     fclose(fp);
 
-    DvzGeometry* geometry = dvz_geom_obj(
+    DvzGeometry* geometry = dvz_geometry_obj(
         path, &(DvzGeometryObjDesc){
                   DVZ_STRUCT_INIT_FIELDS(DvzGeometryObjDesc),
                   .color = dvz_color_rgba(10, 20, 30, 255),
@@ -501,7 +501,7 @@ int test_geometry_transform(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 
-    DvzGeometry* plane = dvz_geom_plane(NULL);
+    DvzGeometry* plane = dvz_geometry_plane(NULL);
     AT(plane != NULL);
 
     dmat4 transform = _DMAT4_IDENTITY_INIT;
@@ -541,8 +541,8 @@ int test_geometry_merge(TstContext* suite, const TstCase* tstitem)
     DvzGeometryPlaneDesc desc1 = {
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryPlaneDesc), .center = {2.0, 0.0, 0.0}, .width = 1.0,
         .height = 1.0};
-    DvzGeometry* plane0 = dvz_geom_plane(&desc0);
-    DvzGeometry* plane1 = dvz_geom_plane(&desc1);
+    DvzGeometry* plane0 = dvz_geometry_plane(&desc0);
+    DvzGeometry* plane1 = dvz_geometry_plane(&desc1);
     AT(plane0 != NULL);
     AT(plane1 != NULL);
 
@@ -575,7 +575,7 @@ int test_geometry_edges(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 
-    DvzGeometry* plane = dvz_geom_plane(NULL);
+    DvzGeometry* plane = dvz_geometry_plane(NULL);
     AT(plane != NULL);
 
     DvzGeometryEdges* edges = dvz_geometry_edges(plane);
@@ -613,7 +613,7 @@ int test_geometry_contours(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 
-    DvzGeometry* plane = dvz_geom_plane(NULL);
+    DvzGeometry* plane = dvz_geometry_plane(NULL);
     AT(plane != NULL);
 
     double values[4] = {0};

@@ -105,7 +105,7 @@ static bool _add_transparent_cube(
         face_colors[i].a = alpha;
     }
 
-    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+    DvzGeometry* cube = dvz_geometry_cube(&(DvzGeometryCubeDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
         .size = size,
         .face_colors = face_colors,

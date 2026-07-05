@@ -456,13 +456,12 @@ Next recommended checkpoints, in safe execution order:
    `dvz_<object>_set_<property>()` convention recorded in `spec/api/PUBLIC_API_CONVENTIONS.md`.
    The polygon aggregate, singular polygon, and graph mutator renames are complete. Next audit plot,
    text, and any other obvious retained-state mutators before RC.
-2. Rename public `dvz_geom_*` functions to the single `dvz_geometry_*` naming family.
-3. Split stable `window.h` from backend SPI so ordinary window users do not include backend
+2. Split stable `window.h` from backend SPI so ordinary window users do not include backend
    registration, GLFW hooks, wrap-surface helpers, or Vulkan surface details.
-4. Make `vk.h` a complete low-level Vulkan umbrella if headers parse cleanly together; otherwise
+3. Make `vk.h` a complete low-level Vulkan umbrella if headers parse cleanly together; otherwise
    document it explicitly as a narrow GPU-context umbrella and direct advanced users to explicit
    `datoviz/vk/*.h` includes.
-5. Then continue DRP2/result-type/array-ordering support-surface cleanup using the maintainer
+4. Then continue DRP2/result-type/array-ordering support-surface cleanup using the maintainer
    decisions below.
 
 
@@ -504,7 +503,8 @@ Use these defaults unless the code audit finds a stronger local reason:
     does not currently create `*_set_set_*` mutators and should be left alone unless a later audit
     finds a concrete public naming problem.
 13. Use `dvz_geometry_*` as the single public geometry naming family. Rename current
-    `dvz_geom_*` constructors/update helpers before RC and do not keep compatibility aliases.
+    `dvz_geom_*` constructors/update helpers before RC and do not keep compatibility aliases. This
+    rename is complete for the current public constructor/update helper set.
 14. Keep stable app/window-facing APIs backend-neutral. Put backend registration, GLFW hooks,
     wrap-surface helpers, and Vulkan surface details behind explicit backend/interop headers.
 15. Keep `advanced.h` as the opt-in advanced umbrella. Make `vk.h` either a complete low-level
@@ -837,7 +837,7 @@ generated ctypes, generated docs if applicable, and examples in sync.
    - Completed: rename singular polygon and graph retained mutators to the
      `dvz_<object>_set_<property>()` shape.
    - Approved: audit plot, text, and the rest of the public scene surface for the same naming rule.
-   - Approved: rename public `dvz_geom_*` functions to `dvz_geometry_*`.
+   - Completed: rename public `dvz_geom_*` functions to `dvz_geometry_*`.
    - Completed: change `dvz_sampled_field_destroy()` to `void`.
    - Validation: scene tests, examples that use affected APIs, `just ctypes-check`.
 

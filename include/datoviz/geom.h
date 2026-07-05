@@ -167,7 +167,7 @@ DVZ_EXPORT DvzGeometryCubeDesc dvz_geometry_cube_desc(void);
  * @param desc optional cube descriptor
  * @return the new geometry, or NULL on failure
  */
-DVZ_EXPORT DvzGeometry* dvz_geom_cube(const DvzGeometryCubeDesc* desc);
+DVZ_EXPORT DvzGeometry* dvz_geometry_cube(const DvzGeometryCubeDesc* desc);
 
 
 
@@ -185,7 +185,7 @@ DVZ_EXPORT DvzGeometryPlaneDesc dvz_geometry_plane_desc(void);
  * @param desc optional plane descriptor
  * @return the new geometry, or NULL on failure
  */
-DVZ_EXPORT DvzGeometry* dvz_geom_plane(const DvzGeometryPlaneDesc* desc);
+DVZ_EXPORT DvzGeometry* dvz_geometry_plane(const DvzGeometryPlaneDesc* desc);
 
 
 
@@ -203,7 +203,7 @@ DVZ_EXPORT DvzGeometrySphereDesc dvz_geometry_sphere_desc(void);
  * @param desc optional sphere descriptor
  * @return the new geometry, or NULL on failure
  */
-DVZ_EXPORT DvzGeometry* dvz_geom_sphere(const DvzGeometrySphereDesc* desc);
+DVZ_EXPORT DvzGeometry* dvz_geometry_sphere(const DvzGeometrySphereDesc* desc);
 
 
 
@@ -221,7 +221,7 @@ DVZ_EXPORT DvzGeometrySurfaceGridDesc dvz_geometry_surface_grid_desc(void);
  * @param desc surface-grid descriptor
  * @return the new geometry, or NULL on failure
  */
-DVZ_EXPORT DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* desc);
+DVZ_EXPORT DvzGeometry* dvz_geometry_surface_grid(const DvzGeometrySurfaceGridDesc* desc);
 
 
 
@@ -234,7 +234,8 @@ DVZ_EXPORT DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* 
  * @return 0 on success, -1 on invalid input
  */
 DVZ_EXPORT DvzResult
-dvz_geom_surface_grid_update_heights(DvzGeometry* geometry, const double* heights, uint32_t count);
+dvz_geometry_surface_grid_update_heights(
+    DvzGeometry* geometry, const double* heights, uint32_t count);
 
 
 /**
@@ -251,7 +252,7 @@ DVZ_EXPORT DvzGeometryDiscDesc dvz_geometry_disc_desc(void);
  * @param desc optional disc descriptor
  * @return the new geometry, or NULL on failure
  */
-DVZ_EXPORT DvzGeometry* dvz_geom_disc(const DvzGeometryDiscDesc* desc);
+DVZ_EXPORT DvzGeometry* dvz_geometry_disc(const DvzGeometryDiscDesc* desc);
 
 
 /**
@@ -268,7 +269,7 @@ DVZ_EXPORT DvzGeometrySectorDesc dvz_geometry_sector_desc(void);
  * @param desc optional sector descriptor
  * @return the new geometry, or NULL on failure
  */
-DVZ_EXPORT DvzGeometry* dvz_geom_sector(const DvzGeometrySectorDesc* desc);
+DVZ_EXPORT DvzGeometry* dvz_geometry_sector(const DvzGeometrySectorDesc* desc);
 
 
 /**
@@ -285,7 +286,7 @@ DVZ_EXPORT DvzGeometryRegularPolygonDesc dvz_geometry_regular_polygon_desc(void)
  * @param desc optional regular-polygon descriptor
  * @return the new geometry, or NULL on failure
  */
-DVZ_EXPORT DvzGeometry* dvz_geom_regular_polygon(const DvzGeometryRegularPolygonDesc* desc);
+DVZ_EXPORT DvzGeometry* dvz_geometry_regular_polygon(const DvzGeometryRegularPolygonDesc* desc);
 
 
 /**
@@ -302,7 +303,7 @@ DVZ_EXPORT DvzGeometryStarDesc dvz_geometry_star_desc(void);
  * @param desc optional star descriptor
  * @return the new geometry, or NULL on failure
  */
-DVZ_EXPORT DvzGeometry* dvz_geom_star(const DvzGeometryStarDesc* desc);
+DVZ_EXPORT DvzGeometry* dvz_geometry_star(const DvzGeometryStarDesc* desc);
 
 
 /**
@@ -319,7 +320,7 @@ DVZ_EXPORT DvzGeometryCylinderDesc dvz_geometry_cylinder_desc(void);
  * @param desc optional cylinder descriptor
  * @return the new geometry, or NULL on failure
  */
-DVZ_EXPORT DvzGeometry* dvz_geom_cylinder(const DvzGeometryCylinderDesc* desc);
+DVZ_EXPORT DvzGeometry* dvz_geometry_cylinder(const DvzGeometryCylinderDesc* desc);
 
 
 /**
@@ -336,7 +337,7 @@ DVZ_EXPORT DvzGeometryConeDesc dvz_geometry_cone_desc(void);
  * @param desc optional cone descriptor
  * @return the new geometry, or NULL on failure
  */
-DVZ_EXPORT DvzGeometry* dvz_geom_cone(const DvzGeometryConeDesc* desc);
+DVZ_EXPORT DvzGeometry* dvz_geometry_cone(const DvzGeometryConeDesc* desc);
 
 
 /**
@@ -353,7 +354,7 @@ DVZ_EXPORT DvzGeometryTorusDesc dvz_geometry_torus_desc(void);
  * @param desc optional torus descriptor
  * @return the new geometry, or NULL on failure
  */
-DVZ_EXPORT DvzGeometry* dvz_geom_torus(const DvzGeometryTorusDesc* desc);
+DVZ_EXPORT DvzGeometry* dvz_geometry_torus(const DvzGeometryTorusDesc* desc);
 
 
 /**
@@ -370,7 +371,7 @@ DVZ_EXPORT DvzGeometryArrowDesc dvz_geometry_arrow_desc(void);
  * @param desc optional arrow descriptor
  * @return the new geometry, or NULL on failure
  */
-DVZ_EXPORT DvzGeometry* dvz_geom_arrow(const DvzGeometryArrowDesc* desc);
+DVZ_EXPORT DvzGeometry* dvz_geometry_arrow(const DvzGeometryArrowDesc* desc);
 
 
 /**
@@ -391,7 +392,7 @@ DVZ_EXPORT DvzGeometryObjDesc dvz_geometry_obj_desc(void);
  * @param desc optional loader descriptor
  * @return the loaded geometry, or NULL on unsupported input or I/O failure
  */
-DVZ_EXPORT DvzGeometry* dvz_geom_obj(const char* filename, const DvzGeometryObjDesc* desc);
+DVZ_EXPORT DvzGeometry* dvz_geometry_obj(const char* filename, const DvzGeometryObjDesc* desc);
 
 
 

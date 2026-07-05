@@ -283,7 +283,7 @@ Add a clean v0.4 loader API instead of copying the v0.3 `dvz_shape_obj()` surfac
 
 ```c
 DvzGeometryObjDesc dvz_geometry_obj_desc(void);
-DvzGeometry* dvz_geom_obj(const char* path, const DvzGeometryObjDesc* desc);
+DvzGeometry* dvz_geometry_obj(const char* path, const DvzGeometryObjDesc* desc);
 ```
 
 Implemented first slice: `v`, `vn`, and polygonal `f` records; faces are triangulated as fans;

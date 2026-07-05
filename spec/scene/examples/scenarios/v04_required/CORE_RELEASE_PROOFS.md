@@ -84,7 +84,7 @@ single orbiting/arcball camera. Classic polyhedra remain planned.
 
 Wavefront OBJ file-loading proof.
 
-Minimal target: a tiny self-contained OBJ mesh loaded through `dvz_geom_obj()` and rendered as a
+Minimal target: a tiny self-contained OBJ mesh loaded through `dvz_geometry_obj()` and rendered as a
 retained mesh. PLY remains planned and glTF 2.0 is v0.5 asset-import work.
 
 

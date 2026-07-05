@@ -16568,222 +16568,6 @@ else:
 
 
 try:
-    dvz_geom_arrow = dvz.dvz_geom_arrow
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_arrow')
-else:
-    dvz_geom_arrow.__doc__ = """/**
- * Create an indexed Z-axis arrow geometry.
- *
- * @param desc optional arrow descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_arrow.argtypes = [ctypes.POINTER(DvzGeometryArrowDesc)]
-    dvz_geom_arrow.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_cone = dvz.dvz_geom_cone
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_cone')
-else:
-    dvz_geom_cone.__doc__ = """/**
- * Create an indexed Z-axis cone geometry.
- *
- * @param desc optional cone descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_cone.argtypes = [ctypes.POINTER(DvzGeometryConeDesc)]
-    dvz_geom_cone.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_cube = dvz.dvz_geom_cube
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_cube')
-else:
-    dvz_geom_cube.__doc__ = """/**
- * Create an indexed cube geometry.
- *
- * @param desc optional cube descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_cube.argtypes = [ctypes.POINTER(DvzGeometryCubeDesc)]
-    dvz_geom_cube.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_cylinder = dvz.dvz_geom_cylinder
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_cylinder')
-else:
-    dvz_geom_cylinder.__doc__ = """/**
- * Create an indexed Z-axis cylinder geometry.
- *
- * @param desc optional cylinder descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_cylinder.argtypes = [ctypes.POINTER(DvzGeometryCylinderDesc)]
-    dvz_geom_cylinder.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_disc = dvz.dvz_geom_disc
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_disc')
-else:
-    dvz_geom_disc.__doc__ = """/**
- * Create an indexed XY disc geometry.
- *
- * @param desc optional disc descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_disc.argtypes = [ctypes.POINTER(DvzGeometryDiscDesc)]
-    dvz_geom_disc.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_obj = dvz.dvz_geom_obj
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_obj')
-else:
-    dvz_geom_obj.__doc__ = """/**
- * Load a Wavefront OBJ mesh as indexed geometry.
- *
- * The first loader slice supports `v`, `vn`, and polygonal `f` records. Faces are triangulated as
- * fans and texture coordinates/materials are ignored.
- *
- * @param filename OBJ file path
- * @param desc optional loader descriptor
- * @return the loaded geometry, or NULL on unsupported input or I/O failure
- */"""
-    dvz_geom_obj.argtypes = [ctypes.c_char_p, ctypes.POINTER(DvzGeometryObjDesc)]
-    dvz_geom_obj.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_plane = dvz.dvz_geom_plane
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_plane')
-else:
-    dvz_geom_plane.__doc__ = """/**
- * Create an indexed XY plane geometry.
- *
- * @param desc optional plane descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_plane.argtypes = [ctypes.POINTER(DvzGeometryPlaneDesc)]
-    dvz_geom_plane.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_regular_polygon = dvz.dvz_geom_regular_polygon
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_regular_polygon')
-else:
-    dvz_geom_regular_polygon.__doc__ = """/**
- * Create an indexed XY regular-polygon geometry.
- *
- * @param desc optional regular-polygon descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_regular_polygon.argtypes = [ctypes.POINTER(DvzGeometryRegularPolygonDesc)]
-    dvz_geom_regular_polygon.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_sector = dvz.dvz_geom_sector
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_sector')
-else:
-    dvz_geom_sector.__doc__ = """/**
- * Create an indexed XY sector geometry.
- *
- * @param desc optional sector descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_sector.argtypes = [ctypes.POINTER(DvzGeometrySectorDesc)]
-    dvz_geom_sector.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_sphere = dvz.dvz_geom_sphere
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_sphere')
-else:
-    dvz_geom_sphere.__doc__ = """/**
- * Create an indexed UV-sphere geometry.
- *
- * @param desc optional sphere descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_sphere.argtypes = [ctypes.POINTER(DvzGeometrySphereDesc)]
-    dvz_geom_sphere.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_star = dvz.dvz_geom_star
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_star')
-else:
-    dvz_geom_star.__doc__ = """/**
- * Create an indexed XY star geometry.
- *
- * @param desc optional star descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_star.argtypes = [ctypes.POINTER(DvzGeometryStarDesc)]
-    dvz_geom_star.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_surface_grid = dvz.dvz_geom_surface_grid
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_surface_grid')
-else:
-    dvz_geom_surface_grid.__doc__ = """/**
- * Create an indexed structured surface-grid geometry.
- *
- * @param desc surface-grid descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_surface_grid.argtypes = [ctypes.POINTER(DvzGeometrySurfaceGridDesc)]
-    dvz_geom_surface_grid.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_surface_grid_update_heights = dvz.dvz_geom_surface_grid_update_heights
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_surface_grid_update_heights')
-else:
-    dvz_geom_surface_grid_update_heights.__doc__ = """/**
- * Update the heights of an existing structured surface-grid geometry.
- *
- * @param geometry the surface-grid geometry
- * @param heights row-major height values
- * @param count number of height values
- * @return 0 on success, -1 on invalid input
- */"""
-    dvz_geom_surface_grid_update_heights.argtypes = [ctypes.POINTER(DvzGeometry), ctypes.POINTER(ctypes.c_double), ctypes.c_uint32]
-    dvz_geom_surface_grid_update_heights.restype = ctypes.c_int32
-
-
-try:
-    dvz_geom_torus = dvz.dvz_geom_torus
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_torus')
-else:
-    dvz_geom_torus.__doc__ = """/**
- * Create an indexed torus geometry around the Z axis.
- *
- * @param desc optional torus descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_torus.argtypes = [ctypes.POINTER(DvzGeometryTorusDesc)]
-    dvz_geom_torus.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
     dvz_geometry = dvz.dvz_geometry
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_geometry')
@@ -16797,6 +16581,21 @@ else:
  */"""
     dvz_geometry.argtypes = [ctypes.c_uint32, ctypes.c_uint32]
     dvz_geometry.restype = ctypes.POINTER(DvzGeometry)
+
+
+try:
+    dvz_geometry_arrow = dvz.dvz_geometry_arrow
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_arrow')
+else:
+    dvz_geometry_arrow.__doc__ = """/**
+ * Create an indexed Z-axis arrow geometry.
+ *
+ * @param desc optional arrow descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_arrow.argtypes = [ctypes.POINTER(DvzGeometryArrowDesc)]
+    dvz_geometry_arrow.restype = ctypes.POINTER(DvzGeometry)
 
 
 try:
@@ -16841,6 +16640,21 @@ else:
  */"""
     dvz_geometry_compute_normals.argtypes = [ctypes.POINTER(DvzGeometry)]
     dvz_geometry_compute_normals.restype = ctypes.c_int32
+
+
+try:
+    dvz_geometry_cone = dvz.dvz_geometry_cone
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_cone')
+else:
+    dvz_geometry_cone.__doc__ = """/**
+ * Create an indexed Z-axis cone geometry.
+ *
+ * @param desc optional cone descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_cone.argtypes = [ctypes.POINTER(DvzGeometryConeDesc)]
+    dvz_geometry_cone.restype = ctypes.POINTER(DvzGeometry)
 
 
 try:
@@ -16891,6 +16705,21 @@ else:
 
 
 try:
+    dvz_geometry_cube = dvz.dvz_geometry_cube
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_cube')
+else:
+    dvz_geometry_cube.__doc__ = """/**
+ * Create an indexed cube geometry.
+ *
+ * @param desc optional cube descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_cube.argtypes = [ctypes.POINTER(DvzGeometryCubeDesc)]
+    dvz_geometry_cube.restype = ctypes.POINTER(DvzGeometry)
+
+
+try:
     dvz_geometry_cube_desc = dvz.dvz_geometry_cube_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_geometry_cube_desc')
@@ -16902,6 +16731,21 @@ else:
  */"""
     dvz_geometry_cube_desc.argtypes = []
     dvz_geometry_cube_desc.restype = DvzGeometryCubeDesc
+
+
+try:
+    dvz_geometry_cylinder = dvz.dvz_geometry_cylinder
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_cylinder')
+else:
+    dvz_geometry_cylinder.__doc__ = """/**
+ * Create an indexed Z-axis cylinder geometry.
+ *
+ * @param desc optional cylinder descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_cylinder.argtypes = [ctypes.POINTER(DvzGeometryCylinderDesc)]
+    dvz_geometry_cylinder.restype = ctypes.POINTER(DvzGeometry)
 
 
 try:
@@ -16930,6 +16774,21 @@ else:
  */"""
     dvz_geometry_destroy.argtypes = [ctypes.POINTER(DvzGeometry)]
     dvz_geometry_destroy.restype = None
+
+
+try:
+    dvz_geometry_disc = dvz.dvz_geometry_disc
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_disc')
+else:
+    dvz_geometry_disc.__doc__ = """/**
+ * Create an indexed XY disc geometry.
+ *
+ * @param desc optional disc descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_disc.argtypes = [ctypes.POINTER(DvzGeometryDiscDesc)]
+    dvz_geometry_disc.restype = ctypes.POINTER(DvzGeometry)
 
 
 try:
@@ -16992,6 +16851,25 @@ else:
 
 
 try:
+    dvz_geometry_obj = dvz.dvz_geometry_obj
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_obj')
+else:
+    dvz_geometry_obj.__doc__ = """/**
+ * Load a Wavefront OBJ mesh as indexed geometry.
+ *
+ * The first loader slice supports `v`, `vn`, and polygonal `f` records. Faces are triangulated as
+ * fans and texture coordinates/materials are ignored.
+ *
+ * @param filename OBJ file path
+ * @param desc optional loader descriptor
+ * @return the loaded geometry, or NULL on unsupported input or I/O failure
+ */"""
+    dvz_geometry_obj.argtypes = [ctypes.c_char_p, ctypes.POINTER(DvzGeometryObjDesc)]
+    dvz_geometry_obj.restype = ctypes.POINTER(DvzGeometry)
+
+
+try:
     dvz_geometry_obj_desc = dvz.dvz_geometry_obj_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_geometry_obj_desc')
@@ -17006,6 +16884,21 @@ else:
 
 
 try:
+    dvz_geometry_plane = dvz.dvz_geometry_plane
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_plane')
+else:
+    dvz_geometry_plane.__doc__ = """/**
+ * Create an indexed XY plane geometry.
+ *
+ * @param desc optional plane descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_plane.argtypes = [ctypes.POINTER(DvzGeometryPlaneDesc)]
+    dvz_geometry_plane.restype = ctypes.POINTER(DvzGeometry)
+
+
+try:
     dvz_geometry_plane_desc = dvz.dvz_geometry_plane_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_geometry_plane_desc')
@@ -17017,6 +16910,21 @@ else:
  */"""
     dvz_geometry_plane_desc.argtypes = []
     dvz_geometry_plane_desc.restype = DvzGeometryPlaneDesc
+
+
+try:
+    dvz_geometry_regular_polygon = dvz.dvz_geometry_regular_polygon
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_regular_polygon')
+else:
+    dvz_geometry_regular_polygon.__doc__ = """/**
+ * Create an indexed XY regular-polygon geometry.
+ *
+ * @param desc optional regular-polygon descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_regular_polygon.argtypes = [ctypes.POINTER(DvzGeometryRegularPolygonDesc)]
+    dvz_geometry_regular_polygon.restype = ctypes.POINTER(DvzGeometry)
 
 
 try:
@@ -17048,6 +16956,21 @@ else:
 
 
 try:
+    dvz_geometry_sector = dvz.dvz_geometry_sector
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_sector')
+else:
+    dvz_geometry_sector.__doc__ = """/**
+ * Create an indexed XY sector geometry.
+ *
+ * @param desc optional sector descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_sector.argtypes = [ctypes.POINTER(DvzGeometrySectorDesc)]
+    dvz_geometry_sector.restype = ctypes.POINTER(DvzGeometry)
+
+
+try:
     dvz_geometry_sector_desc = dvz.dvz_geometry_sector_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_geometry_sector_desc')
@@ -17059,6 +16982,21 @@ else:
  */"""
     dvz_geometry_sector_desc.argtypes = []
     dvz_geometry_sector_desc.restype = DvzGeometrySectorDesc
+
+
+try:
+    dvz_geometry_sphere = dvz.dvz_geometry_sphere
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_sphere')
+else:
+    dvz_geometry_sphere.__doc__ = """/**
+ * Create an indexed UV-sphere geometry.
+ *
+ * @param desc optional sphere descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_sphere.argtypes = [ctypes.POINTER(DvzGeometrySphereDesc)]
+    dvz_geometry_sphere.restype = ctypes.POINTER(DvzGeometry)
 
 
 try:
@@ -17076,6 +17014,21 @@ else:
 
 
 try:
+    dvz_geometry_star = dvz.dvz_geometry_star
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_star')
+else:
+    dvz_geometry_star.__doc__ = """/**
+ * Create an indexed XY star geometry.
+ *
+ * @param desc optional star descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_star.argtypes = [ctypes.POINTER(DvzGeometryStarDesc)]
+    dvz_geometry_star.restype = ctypes.POINTER(DvzGeometry)
+
+
+try:
     dvz_geometry_star_desc = dvz.dvz_geometry_star_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_geometry_star_desc')
@@ -17090,6 +17043,21 @@ else:
 
 
 try:
+    dvz_geometry_surface_grid = dvz.dvz_geometry_surface_grid
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_surface_grid')
+else:
+    dvz_geometry_surface_grid.__doc__ = """/**
+ * Create an indexed structured surface-grid geometry.
+ *
+ * @param desc surface-grid descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_surface_grid.argtypes = [ctypes.POINTER(DvzGeometrySurfaceGridDesc)]
+    dvz_geometry_surface_grid.restype = ctypes.POINTER(DvzGeometry)
+
+
+try:
     dvz_geometry_surface_grid_desc = dvz.dvz_geometry_surface_grid_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_geometry_surface_grid_desc')
@@ -17101,6 +17069,38 @@ else:
  */"""
     dvz_geometry_surface_grid_desc.argtypes = []
     dvz_geometry_surface_grid_desc.restype = DvzGeometrySurfaceGridDesc
+
+
+try:
+    dvz_geometry_surface_grid_update_heights = dvz.dvz_geometry_surface_grid_update_heights
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_surface_grid_update_heights')
+else:
+    dvz_geometry_surface_grid_update_heights.__doc__ = """/**
+ * Update the heights of an existing structured surface-grid geometry.
+ *
+ * @param geometry the surface-grid geometry
+ * @param heights row-major height values
+ * @param count number of height values
+ * @return 0 on success, -1 on invalid input
+ */"""
+    dvz_geometry_surface_grid_update_heights.argtypes = [ctypes.POINTER(DvzGeometry), ctypes.POINTER(ctypes.c_double), ctypes.c_uint32]
+    dvz_geometry_surface_grid_update_heights.restype = ctypes.c_int32
+
+
+try:
+    dvz_geometry_torus = dvz.dvz_geometry_torus
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_torus')
+else:
+    dvz_geometry_torus.__doc__ = """/**
+ * Create an indexed torus geometry around the Z axis.
+ *
+ * @param desc optional torus descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_torus.argtypes = [ctypes.POINTER(DvzGeometryTorusDesc)]
+    dvz_geometry_torus.restype = ctypes.POINTER(DvzGeometry)
 
 
 try:

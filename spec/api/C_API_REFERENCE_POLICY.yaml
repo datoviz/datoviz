@@ -135,7 +135,6 @@ pages:
       - bezier
       - depth
       - edl
-      - geom
       - geometry
       - glyph
       - graph

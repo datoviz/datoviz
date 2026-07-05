@@ -138,7 +138,7 @@ static DvzSampledField* _add_texture(
 static bool _add_textured_mesh(
     DvzScene* scene, DvzPanel* panel, DvzSampledField* texture, DvzGeometry** out_geometry)
 {
-    DvzGeometry* sphere = dvz_geom_sphere(&(DvzGeometrySphereDesc){
+    DvzGeometry* sphere = dvz_geometry_sphere(&(DvzGeometrySphereDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
         .radius = 0.82,
         .sectors = 128,

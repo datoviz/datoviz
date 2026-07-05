@@ -28,8 +28,7 @@ Functions: 206
 | [Composite](#composite) | 4 | `include/datoviz/scene.h` |
 | [Depth](#depth) | 1 | `include/datoviz/scene.h` |
 | [Edl](#edl) | 1 | `include/datoviz/scene.h` |
-| [Geom](#geom) | 14 | `include/datoviz/geom.h` |
-| [Geometry](#geometry) | 24 | `include/datoviz/geom.h` |
+| [Geometry](#geometry) | 38 | `include/datoviz/geom.h` |
 | [Glyph](#glyph) | 2 | `include/datoviz/scene.h` |
 | [Graph](#graph) | 16 | `include/datoviz/scene.h` |
 | [Image](#image) | 2 | `include/datoviz/scene.h` |
@@ -87,51 +86,46 @@ Functions: 206
     | --- | --- |
     | [`dvz_edl_desc()`](#dvz_edl_desc) | `include/datoviz/scene.h` |
 
-    ### Geom
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_geom_arrow()`](#dvz_geom_arrow) | `include/datoviz/geom.h` |
-    | [`dvz_geom_cone()`](#dvz_geom_cone) | `include/datoviz/geom.h` |
-    | [`dvz_geom_cube()`](#dvz_geom_cube) | `include/datoviz/geom.h` |
-    | [`dvz_geom_cylinder()`](#dvz_geom_cylinder) | `include/datoviz/geom.h` |
-    | [`dvz_geom_disc()`](#dvz_geom_disc) | `include/datoviz/geom.h` |
-    | [`dvz_geom_obj()`](#dvz_geom_obj) | `include/datoviz/geom.h` |
-    | [`dvz_geom_plane()`](#dvz_geom_plane) | `include/datoviz/geom.h` |
-    | [`dvz_geom_regular_polygon()`](#dvz_geom_regular_polygon) | `include/datoviz/geom.h` |
-    | [`dvz_geom_sector()`](#dvz_geom_sector) | `include/datoviz/geom.h` |
-    | [`dvz_geom_sphere()`](#dvz_geom_sphere) | `include/datoviz/geom.h` |
-    | [`dvz_geom_star()`](#dvz_geom_star) | `include/datoviz/geom.h` |
-    | [`dvz_geom_surface_grid()`](#dvz_geom_surface_grid) | `include/datoviz/geom.h` |
-    | [`dvz_geom_surface_grid_update_heights()`](#dvz_geom_surface_grid_update_heights) | `include/datoviz/geom.h` |
-    | [`dvz_geom_torus()`](#dvz_geom_torus) | `include/datoviz/geom.h` |
-
     ### Geometry
 
     | Function | Header |
     | --- | --- |
     | [`dvz_geometry()`](#dvz_geometry) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_arrow()`](#dvz_geometry_arrow) | `include/datoviz/geom.h` |
     | [`dvz_geometry_arrow_desc()`](#dvz_geometry_arrow_desc) | `include/datoviz/geom.h` |
     | [`dvz_geometry_bounds()`](#dvz_geometry_bounds) | `include/datoviz/geom.h` |
     | [`dvz_geometry_compute_normals()`](#dvz_geometry_compute_normals) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_cone()`](#dvz_geometry_cone) | `include/datoviz/geom.h` |
     | [`dvz_geometry_cone_desc()`](#dvz_geometry_cone_desc) | `include/datoviz/geom.h` |
     | [`dvz_geometry_contours()`](#dvz_geometry_contours) | `include/datoviz/geom.h` |
     | [`dvz_geometry_contours_destroy()`](#dvz_geometry_contours_destroy) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_cube()`](#dvz_geometry_cube) | `include/datoviz/geom.h` |
     | [`dvz_geometry_cube_desc()`](#dvz_geometry_cube_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_cylinder()`](#dvz_geometry_cylinder) | `include/datoviz/geom.h` |
     | [`dvz_geometry_cylinder_desc()`](#dvz_geometry_cylinder_desc) | `include/datoviz/geom.h` |
     | [`dvz_geometry_destroy()`](#dvz_geometry_destroy) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_disc()`](#dvz_geometry_disc) | `include/datoviz/geom.h` |
     | [`dvz_geometry_disc_desc()`](#dvz_geometry_disc_desc) | `include/datoviz/geom.h` |
     | [`dvz_geometry_edges()`](#dvz_geometry_edges) | `include/datoviz/geom.h` |
     | [`dvz_geometry_edges_destroy()`](#dvz_geometry_edges_destroy) | `include/datoviz/geom.h` |
     | [`dvz_geometry_merge()`](#dvz_geometry_merge) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_obj()`](#dvz_geometry_obj) | `include/datoviz/geom.h` |
     | [`dvz_geometry_obj_desc()`](#dvz_geometry_obj_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_plane()`](#dvz_geometry_plane) | `include/datoviz/geom.h` |
     | [`dvz_geometry_plane_desc()`](#dvz_geometry_plane_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_regular_polygon()`](#dvz_geometry_regular_polygon) | `include/datoviz/geom.h` |
     | [`dvz_geometry_regular_polygon_desc()`](#dvz_geometry_regular_polygon_desc) | `include/datoviz/geom.h` |
     | [`dvz_geometry_reset()`](#dvz_geometry_reset) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_sector()`](#dvz_geometry_sector) | `include/datoviz/geom.h` |
     | [`dvz_geometry_sector_desc()`](#dvz_geometry_sector_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_sphere()`](#dvz_geometry_sphere) | `include/datoviz/geom.h` |
     | [`dvz_geometry_sphere_desc()`](#dvz_geometry_sphere_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_star()`](#dvz_geometry_star) | `include/datoviz/geom.h` |
     | [`dvz_geometry_star_desc()`](#dvz_geometry_star_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_surface_grid()`](#dvz_geometry_surface_grid) | `include/datoviz/geom.h` |
     | [`dvz_geometry_surface_grid_desc()`](#dvz_geometry_surface_grid_desc) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_surface_grid_update_heights()`](#dvz_geometry_surface_grid_update_heights) | `include/datoviz/geom.h` |
+    | [`dvz_geometry_torus()`](#dvz_geometry_torus) | `include/datoviz/geom.h` |
     | [`dvz_geometry_torus_desc()`](#dvz_geometry_torus_desc) | `include/datoviz/geom.h` |
     | [`dvz_geometry_transform()`](#dvz_geometry_transform) | `include/datoviz/geom.h` |
 
@@ -447,7 +441,7 @@ Return a default Bezier tessellation descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:419._
+_Declared in `include/datoviz/geom.h`:420._
 
 ## Composite
 
@@ -568,283 +562,6 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:1222._
 
-## Geom
-
-### `dvz_geom_arrow()`
-
-```c title="dvz_geom_arrow"
-DvzGeometry * dvz_geom_arrow(
-    const DvzGeometryArrowDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGeometry *` | the new geometry, or NULL on failure |
-| `desc` | `const DvzGeometryArrowDesc *` | optional arrow descriptor |
-
-Create an indexed Z-axis arrow geometry.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/geom.h`:373._
-
-### `dvz_geom_cone()`
-
-```c title="dvz_geom_cone"
-DvzGeometry * dvz_geom_cone(
-    const DvzGeometryConeDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGeometry *` | the new geometry, or NULL on failure |
-| `desc` | `const DvzGeometryConeDesc *` | optional cone descriptor |
-
-Create an indexed Z-axis cone geometry.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/geom.h`:339._
-
-### `dvz_geom_cube()`
-
-```c title="dvz_geom_cube"
-DvzGeometry * dvz_geom_cube(
-    const DvzGeometryCubeDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGeometry *` | the new geometry, or NULL on failure |
-| `desc` | `const DvzGeometryCubeDesc *` | optional cube descriptor |
-
-Create an indexed cube geometry.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/geom.h`:170._
-
-### `dvz_geom_cylinder()`
-
-```c title="dvz_geom_cylinder"
-DvzGeometry * dvz_geom_cylinder(
-    const DvzGeometryCylinderDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGeometry *` | the new geometry, or NULL on failure |
-| `desc` | `const DvzGeometryCylinderDesc *` | optional cylinder descriptor |
-
-Create an indexed Z-axis cylinder geometry.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/geom.h`:322._
-
-### `dvz_geom_disc()`
-
-```c title="dvz_geom_disc"
-DvzGeometry * dvz_geom_disc(
-    const DvzGeometryDiscDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGeometry *` | the new geometry, or NULL on failure |
-| `desc` | `const DvzGeometryDiscDesc *` | optional disc descriptor |
-
-Create an indexed XY disc geometry.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/geom.h`:254._
-
-### `dvz_geom_obj()`
-
-```c title="dvz_geom_obj"
-DvzGeometry * dvz_geom_obj(
-    const char * filename,
-    const DvzGeometryObjDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGeometry *` | the loaded geometry, or NULL on unsupported input or I/O failure |
-| `filename` | `const char *` | OBJ file path |
-| `desc` | `const DvzGeometryObjDesc *` | optional loader descriptor |
-
-Load a Wavefront OBJ mesh as indexed geometry.
-
-The first loader slice supports `v`, `vn`, and polygonal `f` records. Faces are triangulated as
-fans and texture coordinates/materials are ignored.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/geom.h`:394._
-
-### `dvz_geom_plane()`
-
-```c title="dvz_geom_plane"
-DvzGeometry * dvz_geom_plane(
-    const DvzGeometryPlaneDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGeometry *` | the new geometry, or NULL on failure |
-| `desc` | `const DvzGeometryPlaneDesc *` | optional plane descriptor |
-
-Create an indexed XY plane geometry.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/geom.h`:188._
-
-### `dvz_geom_regular_polygon()`
-
-```c title="dvz_geom_regular_polygon"
-DvzGeometry * dvz_geom_regular_polygon(
-    const DvzGeometryRegularPolygonDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGeometry *` | the new geometry, or NULL on failure |
-| `desc` | `const DvzGeometryRegularPolygonDesc *` | optional regular-polygon descriptor |
-
-Create an indexed XY regular-polygon geometry.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/geom.h`:288._
-
-### `dvz_geom_sector()`
-
-```c title="dvz_geom_sector"
-DvzGeometry * dvz_geom_sector(
-    const DvzGeometrySectorDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGeometry *` | the new geometry, or NULL on failure |
-| `desc` | `const DvzGeometrySectorDesc *` | optional sector descriptor |
-
-Create an indexed XY sector geometry.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/geom.h`:271._
-
-### `dvz_geom_sphere()`
-
-```c title="dvz_geom_sphere"
-DvzGeometry * dvz_geom_sphere(
-    const DvzGeometrySphereDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGeometry *` | the new geometry, or NULL on failure |
-| `desc` | `const DvzGeometrySphereDesc *` | optional sphere descriptor |
-
-Create an indexed UV-sphere geometry.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/geom.h`:206._
-
-### `dvz_geom_star()`
-
-```c title="dvz_geom_star"
-DvzGeometry * dvz_geom_star(
-    const DvzGeometryStarDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGeometry *` | the new geometry, or NULL on failure |
-| `desc` | `const DvzGeometryStarDesc *` | optional star descriptor |
-
-Create an indexed XY star geometry.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/geom.h`:305._
-
-### `dvz_geom_surface_grid()`
-
-```c title="dvz_geom_surface_grid"
-DvzGeometry * dvz_geom_surface_grid(
-    const DvzGeometrySurfaceGridDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGeometry *` | the new geometry, or NULL on failure |
-| `desc` | `const DvzGeometrySurfaceGridDesc *` | surface-grid descriptor |
-
-Create an indexed structured surface-grid geometry.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/geom.h`:224._
-
-### `dvz_geom_surface_grid_update_heights()`
-
-```c title="dvz_geom_surface_grid_update_heights"
-DvzResult dvz_geom_surface_grid_update_heights(
-    DvzGeometry * geometry,
-    const double * heights,
-    uint32_t count
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on invalid input |
-| `geometry` | `DvzGeometry *` | the surface-grid geometry |
-| `heights` | `const double *` | row-major height values |
-| `count` | `uint32_t` | number of height values |
-
-Update the heights of an existing structured surface-grid geometry.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/geom.h`:237._
-
-### `dvz_geom_torus()`
-
-```c title="dvz_geom_torus"
-DvzGeometry * dvz_geom_torus(
-    const DvzGeometryTorusDesc * desc
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzGeometry *` | the new geometry, or NULL on failure |
-| `desc` | `const DvzGeometryTorusDesc *` | optional torus descriptor |
-
-Create an indexed torus geometry around the Z axis.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/geom.h`:356._
-
 ## Geometry
 
 ### `dvz_geometry()`
@@ -868,6 +585,25 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/geom.h`:47._
 
+### `dvz_geometry_arrow()`
+
+```c title="dvz_geometry_arrow"
+DvzGeometry * dvz_geometry_arrow(
+    const DvzGeometryArrowDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzGeometry *` | the new geometry, or NULL on failure |
+| `desc` | `const DvzGeometryArrowDesc *` | optional arrow descriptor |
+
+Create an indexed Z-axis arrow geometry.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/geom.h`:374._
+
 ### `dvz_geometry_arrow_desc()`
 
 ```c title="dvz_geometry_arrow_desc"
@@ -880,9 +616,11 @@ DvzGeometryArrowDesc dvz_geometry_arrow_desc(void);
 
 Return a default arrow geometry descriptor.
 
+Related: [`dvz_geometry_arrow()`](#dvz_geometry_arrow).
+
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:364._
+_Declared in `include/datoviz/geom.h`:365._
 
 ### `dvz_geometry_bounds()`
 
@@ -922,6 +660,25 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/geom.h`:85._
 
+### `dvz_geometry_cone()`
+
+```c title="dvz_geometry_cone"
+DvzGeometry * dvz_geometry_cone(
+    const DvzGeometryConeDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzGeometry *` | the new geometry, or NULL on failure |
+| `desc` | `const DvzGeometryConeDesc *` | optional cone descriptor |
+
+Create an indexed Z-axis cone geometry.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/geom.h`:340._
+
 ### `dvz_geometry_cone_desc()`
 
 ```c title="dvz_geometry_cone_desc"
@@ -934,9 +691,11 @@ DvzGeometryConeDesc dvz_geometry_cone_desc(void);
 
 Return a default cone geometry descriptor.
 
+Related: [`dvz_geometry_cone()`](#dvz_geometry_cone).
+
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:330._
+_Declared in `include/datoviz/geom.h`:331._
 
 ### `dvz_geometry_contours()`
 
@@ -983,6 +742,25 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/geom.h`:152._
 
+### `dvz_geometry_cube()`
+
+```c title="dvz_geometry_cube"
+DvzGeometry * dvz_geometry_cube(
+    const DvzGeometryCubeDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzGeometry *` | the new geometry, or NULL on failure |
+| `desc` | `const DvzGeometryCubeDesc *` | optional cube descriptor |
+
+Create an indexed cube geometry.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/geom.h`:170._
+
 ### `dvz_geometry_cube_desc()`
 
 ```c title="dvz_geometry_cube_desc"
@@ -995,9 +773,30 @@ DvzGeometryCubeDesc dvz_geometry_cube_desc(void);
 
 Return a default cube geometry descriptor.
 
+Related: [`dvz_geometry_cube()`](#dvz_geometry_cube).
+
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/geom.h`:161._
+
+### `dvz_geometry_cylinder()`
+
+```c title="dvz_geometry_cylinder"
+DvzGeometry * dvz_geometry_cylinder(
+    const DvzGeometryCylinderDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzGeometry *` | the new geometry, or NULL on failure |
+| `desc` | `const DvzGeometryCylinderDesc *` | optional cylinder descriptor |
+
+Create an indexed Z-axis cylinder geometry.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/geom.h`:323._
 
 ### `dvz_geometry_cylinder_desc()`
 
@@ -1011,9 +810,11 @@ DvzGeometryCylinderDesc dvz_geometry_cylinder_desc(void);
 
 Return a default cylinder geometry descriptor.
 
+Related: [`dvz_geometry_cylinder()`](#dvz_geometry_cylinder).
+
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:313._
+_Declared in `include/datoviz/geom.h`:314._
 
 ### `dvz_geometry_destroy()`
 
@@ -1033,6 +834,25 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/geom.h`:65._
 
+### `dvz_geometry_disc()`
+
+```c title="dvz_geometry_disc"
+DvzGeometry * dvz_geometry_disc(
+    const DvzGeometryDiscDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzGeometry *` | the new geometry, or NULL on failure |
+| `desc` | `const DvzGeometryDiscDesc *` | optional disc descriptor |
+
+Create an indexed XY disc geometry.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/geom.h`:255._
+
 ### `dvz_geometry_disc_desc()`
 
 ```c title="dvz_geometry_disc_desc"
@@ -1045,9 +865,11 @@ DvzGeometryDiscDesc dvz_geometry_disc_desc(void);
 
 Return a default disc geometry descriptor.
 
+Related: [`dvz_geometry_disc()`](#dvz_geometry_disc).
+
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:245._
+_Declared in `include/datoviz/geom.h`:246._
 
 ### `dvz_geometry_edges()`
 
@@ -1107,6 +929,30 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/geom.h`:108._
 
+### `dvz_geometry_obj()`
+
+```c title="dvz_geometry_obj"
+DvzGeometry * dvz_geometry_obj(
+    const char * filename,
+    const DvzGeometryObjDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzGeometry *` | the loaded geometry, or NULL on unsupported input or I/O failure |
+| `filename` | `const char *` | OBJ file path |
+| `desc` | `const DvzGeometryObjDesc *` | optional loader descriptor |
+
+Load a Wavefront OBJ mesh as indexed geometry.
+
+The first loader slice supports `v`, `vn`, and polygonal `f` records. Faces are triangulated as
+fans and texture coordinates/materials are ignored.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/geom.h`:395._
+
 ### `dvz_geometry_obj_desc()`
 
 ```c title="dvz_geometry_obj_desc"
@@ -1119,9 +965,30 @@ DvzGeometryObjDesc dvz_geometry_obj_desc(void);
 
 Return a default Wavefront OBJ geometry loader descriptor.
 
+Related: [`dvz_geometry_obj()`](#dvz_geometry_obj).
+
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:381._
+_Declared in `include/datoviz/geom.h`:382._
+
+### `dvz_geometry_plane()`
+
+```c title="dvz_geometry_plane"
+DvzGeometry * dvz_geometry_plane(
+    const DvzGeometryPlaneDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzGeometry *` | the new geometry, or NULL on failure |
+| `desc` | `const DvzGeometryPlaneDesc *` | optional plane descriptor |
+
+Create an indexed XY plane geometry.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/geom.h`:188._
 
 ### `dvz_geometry_plane_desc()`
 
@@ -1135,9 +1002,30 @@ DvzGeometryPlaneDesc dvz_geometry_plane_desc(void);
 
 Return a default plane geometry descriptor.
 
+Related: [`dvz_geometry_plane()`](#dvz_geometry_plane).
+
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/geom.h`:179._
+
+### `dvz_geometry_regular_polygon()`
+
+```c title="dvz_geometry_regular_polygon"
+DvzGeometry * dvz_geometry_regular_polygon(
+    const DvzGeometryRegularPolygonDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzGeometry *` | the new geometry, or NULL on failure |
+| `desc` | `const DvzGeometryRegularPolygonDesc *` | optional regular-polygon descriptor |
+
+Create an indexed XY regular-polygon geometry.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/geom.h`:289._
 
 ### `dvz_geometry_regular_polygon_desc()`
 
@@ -1151,9 +1039,11 @@ DvzGeometryRegularPolygonDesc dvz_geometry_regular_polygon_desc(void);
 
 Return a default regular-polygon geometry descriptor.
 
+Related: [`dvz_geometry_regular_polygon()`](#dvz_geometry_regular_polygon).
+
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:279._
+_Declared in `include/datoviz/geom.h`:280._
 
 ### `dvz_geometry_reset()`
 
@@ -1173,6 +1063,25 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/geom.h`:56._
 
+### `dvz_geometry_sector()`
+
+```c title="dvz_geometry_sector"
+DvzGeometry * dvz_geometry_sector(
+    const DvzGeometrySectorDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzGeometry *` | the new geometry, or NULL on failure |
+| `desc` | `const DvzGeometrySectorDesc *` | optional sector descriptor |
+
+Create an indexed XY sector geometry.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/geom.h`:272._
+
 ### `dvz_geometry_sector_desc()`
 
 ```c title="dvz_geometry_sector_desc"
@@ -1185,9 +1094,30 @@ DvzGeometrySectorDesc dvz_geometry_sector_desc(void);
 
 Return a default sector geometry descriptor.
 
+Related: [`dvz_geometry_sector()`](#dvz_geometry_sector).
+
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:262._
+_Declared in `include/datoviz/geom.h`:263._
+
+### `dvz_geometry_sphere()`
+
+```c title="dvz_geometry_sphere"
+DvzGeometry * dvz_geometry_sphere(
+    const DvzGeometrySphereDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzGeometry *` | the new geometry, or NULL on failure |
+| `desc` | `const DvzGeometrySphereDesc *` | optional sphere descriptor |
+
+Create an indexed UV-sphere geometry.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/geom.h`:206._
 
 ### `dvz_geometry_sphere_desc()`
 
@@ -1201,9 +1131,30 @@ DvzGeometrySphereDesc dvz_geometry_sphere_desc(void);
 
 Return a default sphere geometry descriptor.
 
+Related: [`dvz_geometry_sphere()`](#dvz_geometry_sphere).
+
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/geom.h`:197._
+
+### `dvz_geometry_star()`
+
+```c title="dvz_geometry_star"
+DvzGeometry * dvz_geometry_star(
+    const DvzGeometryStarDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzGeometry *` | the new geometry, or NULL on failure |
+| `desc` | `const DvzGeometryStarDesc *` | optional star descriptor |
+
+Create an indexed XY star geometry.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/geom.h`:306._
 
 ### `dvz_geometry_star_desc()`
 
@@ -1217,9 +1168,30 @@ DvzGeometryStarDesc dvz_geometry_star_desc(void);
 
 Return a default star geometry descriptor.
 
+Related: [`dvz_geometry_star()`](#dvz_geometry_star).
+
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:296._
+_Declared in `include/datoviz/geom.h`:297._
+
+### `dvz_geometry_surface_grid()`
+
+```c title="dvz_geometry_surface_grid"
+DvzGeometry * dvz_geometry_surface_grid(
+    const DvzGeometrySurfaceGridDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzGeometry *` | the new geometry, or NULL on failure |
+| `desc` | `const DvzGeometrySurfaceGridDesc *` | surface-grid descriptor |
+
+Create an indexed structured surface-grid geometry.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/geom.h`:224._
 
 ### `dvz_geometry_surface_grid_desc()`
 
@@ -1233,9 +1205,53 @@ DvzGeometrySurfaceGridDesc dvz_geometry_surface_grid_desc(void);
 
 Return a default surface-grid geometry descriptor.
 
+Related: [`dvz_geometry_surface_grid()`](#dvz_geometry_surface_grid).
+
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/geom.h`:215._
+
+### `dvz_geometry_surface_grid_update_heights()`
+
+```c title="dvz_geometry_surface_grid_update_heights"
+DvzResult dvz_geometry_surface_grid_update_heights(
+    DvzGeometry * geometry,
+    const double * heights,
+    uint32_t count
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on invalid input |
+| `geometry` | `DvzGeometry *` | the surface-grid geometry |
+| `heights` | `const double *` | row-major height values |
+| `count` | `uint32_t` | number of height values |
+
+Update the heights of an existing structured surface-grid geometry.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/geom.h`:237._
+
+### `dvz_geometry_torus()`
+
+```c title="dvz_geometry_torus"
+DvzGeometry * dvz_geometry_torus(
+    const DvzGeometryTorusDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `DvzGeometry *` | the new geometry, or NULL on failure |
+| `desc` | `const DvzGeometryTorusDesc *` | optional torus descriptor |
+
+Create an indexed torus geometry around the Z axis.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/geom.h`:357._
 
 ### `dvz_geometry_torus_desc()`
 
@@ -1249,9 +1265,11 @@ DvzGeometryTorusDesc dvz_geometry_torus_desc(void);
 
 Return a default torus geometry descriptor.
 
+Related: [`dvz_geometry_torus()`](#dvz_geometry_torus).
+
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:347._
+_Declared in `include/datoviz/geom.h`:348._
 
 ### `dvz_geometry_transform()`
 
@@ -2270,7 +2288,7 @@ Related: [`dvz_polygon()`](#dvz_polygon).
 
 Raw ctypes: available through `dvz_ffi_polygon_desc()`.
 
-_Declared in `include/datoviz/geom.h`:403._
+_Declared in `include/datoviz/geom.h`:404._
 
 ### `dvz_polygon_destroy()`
 
@@ -3377,7 +3395,7 @@ Tessellate a cubic Bezier curve into an owned point path.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:456._
+_Declared in `include/datoviz/geom.h`:457._
 
 ### `dvz_tessellate_quadratic_bezier()`
 
@@ -3402,7 +3420,7 @@ Tessellate a quadratic Bezier curve into an owned point path.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:442._
+_Declared in `include/datoviz/geom.h`:443._
 
 ## Tessellated
 
@@ -3422,7 +3440,7 @@ Destroy a tessellated path.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:466._
+_Declared in `include/datoviz/geom.h`:467._
 
 ## Triangulate
 
@@ -3445,7 +3463,7 @@ Triangulate a polygon with optional holes into indexed XY mesh geometry.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:430._
+_Declared in `include/datoviz/geom.h`:431._
 
 ## Triangulation
 
@@ -3463,7 +3481,7 @@ Return a default triangulation descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/geom.h`:411._
+_Declared in `include/datoviz/geom.h`:412._
 
 ## Vector
 

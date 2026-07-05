@@ -353,7 +353,7 @@ _add_mesh(DvzScene* scene, DvzPanel* panel, MouseState* state, DvzSampledField* 
     if (mesh == NULL)
         return false;
 
-    DvzGeometry* geometry = dvz_geom_sphere(&(DvzGeometrySphereDesc){
+    DvzGeometry* geometry = dvz_geometry_sphere(&(DvzGeometrySphereDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
         .radius = 1.0,
         .sectors = 64,

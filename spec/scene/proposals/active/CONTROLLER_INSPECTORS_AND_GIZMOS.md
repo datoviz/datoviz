@@ -236,7 +236,7 @@ grid.
 The low-level path should look like:
 
 ```text
-DvzGeometry* geom = dvz_geom_surface_grid(&desc);
+DvzGeometry* geom = dvz_geometry_surface_grid(&desc);
 DvzMeshResource* mesh = dvz_scene_mesh_resource(scene, geom);
 DvzVisual* visual = dvz_mesh(scene, mesh, &mesh_desc);
 ```

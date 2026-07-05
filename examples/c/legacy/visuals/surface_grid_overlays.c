@@ -6,7 +6,7 @@
 
 /* surface_grid_overlays - generated mesh with segment-based wireframe and contour overlays.
  *
- * Opens a GLFW window showing a lit structured surface generated with `dvz_geom_surface_grid()`.
+ * Opens a GLFW window showing a lit structured surface generated with `dvz_geometry_surface_grid()`.
  * The wireframe and isoline overlays are derived with CPU-side geom helpers, then rendered as
  * ordinary segment visuals. This keeps mesh geometry, overlay derivation, and stroke rendering
  * separated in the v0.4 scene path.
@@ -482,7 +482,7 @@ static bool _state_rebuild_geometry(SurfaceOverlayState* state)
         .height_axis = {0.0, 0.0, 1.0},
         .height_scale = state->height_scale,
     };
-    DvzGeometry* geometry = dvz_geom_surface_grid(&desc);
+    DvzGeometry* geometry = dvz_geometry_surface_grid(&desc);
     if (geometry == NULL)
         return false;
 

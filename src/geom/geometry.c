@@ -1609,7 +1609,7 @@ void dvz_geometry_contours_destroy(DvzGeometryContours* contours)
  * @param desc optional cube descriptor
  * @return the new geometry, or NULL on failure
  */
-DvzGeometry* dvz_geom_cube(const DvzGeometryCubeDesc* desc)
+DvzGeometry* dvz_geometry_cube(const DvzGeometryCubeDesc* desc)
 {
     if (!_geometry_cube_desc_validate(desc))
         return NULL;
@@ -1689,7 +1689,7 @@ DvzGeometry* dvz_geom_cube(const DvzGeometryCubeDesc* desc)
  * @param desc optional plane descriptor
  * @return the new geometry, or NULL on failure
  */
-DvzGeometry* dvz_geom_plane(const DvzGeometryPlaneDesc* desc)
+DvzGeometry* dvz_geometry_plane(const DvzGeometryPlaneDesc* desc)
 {
     if (!_geometry_plane_desc_validate(desc))
         return NULL;
@@ -1743,7 +1743,7 @@ DvzGeometry* dvz_geom_plane(const DvzGeometryPlaneDesc* desc)
  * @param desc optional sphere descriptor
  * @return the new geometry, or NULL on failure
  */
-DvzGeometry* dvz_geom_sphere(const DvzGeometrySphereDesc* desc)
+DvzGeometry* dvz_geometry_sphere(const DvzGeometrySphereDesc* desc)
 {
     if (!_geometry_sphere_desc_validate(desc))
         return NULL;
@@ -1827,7 +1827,7 @@ DvzGeometry* dvz_geom_sphere(const DvzGeometrySphereDesc* desc)
  * @param desc surface-grid descriptor
  * @return the new geometry, or NULL on failure
  */
-DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* desc)
+DvzGeometry* dvz_geometry_surface_grid(const DvzGeometrySurfaceGridDesc* desc)
 {
     if (!_geometry_surface_grid_desc_validate(desc))
         return NULL;
@@ -1904,7 +1904,7 @@ DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* desc)
  * @param count number of height values
  * @return 0 on success, -1 on invalid input
  */
-DvzResult dvz_geom_surface_grid_update_heights(
+DvzResult dvz_geometry_surface_grid_update_heights(
     DvzGeometry* geometry, const double* heights, uint32_t count)
 {
     if (geometry == NULL || heights == NULL || geometry->type != DVZ_GEOMETRY_SURFACE_GRID ||
@@ -1942,7 +1942,7 @@ DvzResult dvz_geom_surface_grid_update_heights(
  * @param desc optional disc descriptor
  * @return the new geometry, or NULL on failure
  */
-DvzGeometry* dvz_geom_disc(const DvzGeometryDiscDesc* desc)
+DvzGeometry* dvz_geometry_disc(const DvzGeometryDiscDesc* desc)
 {
     if (!_geometry_disc_desc_validate(desc))
         return NULL;
@@ -1992,7 +1992,7 @@ DvzGeometry* dvz_geom_disc(const DvzGeometryDiscDesc* desc)
  * @param desc optional sector descriptor
  * @return the new geometry, or NULL on failure
  */
-DvzGeometry* dvz_geom_sector(const DvzGeometrySectorDesc* desc)
+DvzGeometry* dvz_geometry_sector(const DvzGeometrySectorDesc* desc)
 {
     if (!_geometry_sector_desc_validate(desc))
         return NULL;
@@ -2057,7 +2057,7 @@ DvzGeometry* dvz_geom_sector(const DvzGeometrySectorDesc* desc)
  * @param desc optional regular-polygon descriptor
  * @return the new geometry, or NULL on failure
  */
-DvzGeometry* dvz_geom_regular_polygon(const DvzGeometryRegularPolygonDesc* desc)
+DvzGeometry* dvz_geometry_regular_polygon(const DvzGeometryRegularPolygonDesc* desc)
 {
     if (!_geometry_regular_polygon_desc_validate(desc))
         return NULL;
@@ -2069,7 +2069,7 @@ DvzGeometry* dvz_geom_regular_polygon(const DvzGeometryRegularPolygonDesc* desc)
     if (cfg.radius <= 0.0 || cfg.sides < 3u)
         return NULL;
 
-    return dvz_geom_disc(&(DvzGeometryDiscDesc){
+    return dvz_geometry_disc(&(DvzGeometryDiscDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryDiscDesc),
         .center = {cfg.center[0], cfg.center[1], cfg.center[2]},
         .radius = cfg.radius,
@@ -2086,7 +2086,7 @@ DvzGeometry* dvz_geom_regular_polygon(const DvzGeometryRegularPolygonDesc* desc)
  * @param desc optional star descriptor
  * @return the new geometry, or NULL on failure
  */
-DvzGeometry* dvz_geom_star(const DvzGeometryStarDesc* desc)
+DvzGeometry* dvz_geometry_star(const DvzGeometryStarDesc* desc)
 {
     if (!_geometry_star_desc_validate(desc))
         return NULL;
@@ -2139,7 +2139,7 @@ DvzGeometry* dvz_geom_star(const DvzGeometryStarDesc* desc)
  * @param desc optional cylinder descriptor
  * @return the new geometry, or NULL on failure
  */
-DvzGeometry* dvz_geom_cylinder(const DvzGeometryCylinderDesc* desc)
+DvzGeometry* dvz_geometry_cylinder(const DvzGeometryCylinderDesc* desc)
 {
     if (!_geometry_cylinder_desc_validate(desc))
         return NULL;
@@ -2243,7 +2243,7 @@ DvzGeometry* dvz_geom_cylinder(const DvzGeometryCylinderDesc* desc)
  * @param desc optional cone descriptor
  * @return the new geometry, or NULL on failure
  */
-DvzGeometry* dvz_geom_cone(const DvzGeometryConeDesc* desc)
+DvzGeometry* dvz_geometry_cone(const DvzGeometryConeDesc* desc)
 {
     if (!_geometry_cone_desc_validate(desc))
         return NULL;
@@ -2320,7 +2320,7 @@ DvzGeometry* dvz_geom_cone(const DvzGeometryConeDesc* desc)
  * @param desc optional torus descriptor
  * @return the new geometry, or NULL on failure
  */
-DvzGeometry* dvz_geom_torus(const DvzGeometryTorusDesc* desc)
+DvzGeometry* dvz_geometry_torus(const DvzGeometryTorusDesc* desc)
 {
     if (!_geometry_torus_desc_validate(desc))
         return NULL;
@@ -2395,7 +2395,7 @@ DvzGeometry* dvz_geom_torus(const DvzGeometryTorusDesc* desc)
  * @param desc optional arrow descriptor
  * @return the new geometry, or NULL on failure
  */
-DvzGeometry* dvz_geom_arrow(const DvzGeometryArrowDesc* desc)
+DvzGeometry* dvz_geometry_arrow(const DvzGeometryArrowDesc* desc)
 {
     if (!_geometry_arrow_desc_validate(desc))
         return NULL;
@@ -2412,7 +2412,7 @@ DvzGeometry* dvz_geom_arrow(const DvzGeometryArrowDesc* desc)
     }
 
     const double shaft_height = cfg.length - cfg.head_length;
-    DvzGeometry* shaft = dvz_geom_cylinder(&(DvzGeometryCylinderDesc){
+    DvzGeometry* shaft = dvz_geometry_cylinder(&(DvzGeometryCylinderDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryCylinderDesc),
         .center = {cfg.center[0], cfg.center[1], cfg.center[2] - 0.5 * cfg.head_length},
         .radius = cfg.shaft_radius,
@@ -2420,7 +2420,7 @@ DvzGeometry* dvz_geom_arrow(const DvzGeometryArrowDesc* desc)
         .sectors = cfg.sectors,
         .color = cfg.color,
     });
-    DvzGeometry* head = dvz_geom_cone(&(DvzGeometryConeDesc){
+    DvzGeometry* head = dvz_geometry_cone(&(DvzGeometryConeDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryConeDesc),
         .center = {cfg.center[0], cfg.center[1], cfg.center[2] + 0.5 * shaft_height},
         .radius = cfg.head_radius,
