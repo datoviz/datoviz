@@ -505,16 +505,40 @@ Completed checkpoints:
      `python3 tools/check_api_status.py`, `just build`, `just test drp2`, `just test app`,
      `just ctypes-smoke`, `just docs-api-check`, `just ctypes-python-smoke`, and
      `git diff --check`.
+45. `b2c5b6f71` `api: order plot and polygon data arguments`
+   - Reordered non-ranged payload/count public APIs so borrowed data arrays precede their count:
+     `dvz_bars_set_intervals(bars, starts, ends, values, count)`,
+     `dvz_band_set_bounds(band, x, lower, upper, count)`,
+     `dvz_band_set_center(band, x, y, count)`,
+     `dvz_polygon_set_outer(polygon, xy, count)`, and
+     `dvz_polygon_set_hole(polygon, hole_index, xy, count)`.
+   - Left range-update APIs such as `dvz_polygons_set_region_*s(first, count, data)` unchanged
+     because `first,count` are the range selector, not a trailing payload size.
+   - Updated examples, tests, specs, generated raw `ctypes`, and generated C API docs.
+   - Exported symbol delta: no symbols added or removed; five public ABI signatures changed before
+     RC1.
+   - Validation passed: stale old-order scan, `just ctypes`, `just ctypes-check`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, `just docs-api`,
+     `just docs-api-check`, `python3 tools/check_api_status.py`, `just build`,
+     `just test scene/interaction`, `just test polygon`, `just test bars`, `just test band`,
+     `just example-c features/bars_bands --png`, `just example-c composites/polygon --png`,
+     `just ctypes-smoke`, `just ctypes-python-smoke`, and `git diff --check`.
+   - Validation caveat: `just test scene/visuals/state` selected 0 tests; exact `polygon`,
+     `bars`, and `band` filters were rerun and passed. `just spec-check` still fails on the
+     existing scene visual-boundary guard in `src/scene/visuals/attrs.c`; API status,
+     DRP2/WebGPU fixtures, scheduler tests, query guard, and architecture guard passed before that
+     failure.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn: none
 known at this checkpoint.
 
 Next recommended checkpoints, in safe execution order:
 
-1. Continue the full public mutator naming audit under the stricter
-   `dvz_<object>_set_<property>()` convention recorded in `spec/api/PUBLIC_API_CONVENTIONS.md`.
-   The polygon aggregate, singular polygon, and graph mutator renames are complete. Next audit plot,
-   text, and any other obvious retained-state mutators before RC.
+1. Continue the full public mutator naming and argument-order audit under the stricter
+   `dvz_<object>_set_<property>()` and object/selector/payload/count conventions recorded in
+   `spec/api/PUBLIC_API_CONVENTIONS.md`. The polygon aggregate, singular polygon, graph mutator
+   renames, and plot/single-polygon payload-count argument ordering are complete. Next audit text,
+   labels/volume setters, grid sizing, and any other obvious retained-state mutators before RC.
 2. Split stable `window.h` from backend SPI so ordinary window users do not include backend
    registration, GLFW hooks, or wrap-surface helpers. This include-boundary split is complete:
    `window.h` no longer includes `window/backend.h`, `advanced.h` opts into both, and ctypes parses
@@ -783,17 +807,19 @@ Preferred fix:
 
 ### 7. Pick One Array/Count Argument Convention
 
-Status: `dvz_visual_set_data_range()` argument order normalized by `643950728`. Broader graph,
-polygon, plot, text, and low-level runtime conventions still need case-by-case API review before
-changing.
+Status: `dvz_visual_set_data_range()` argument order normalized by `643950728`.
+Plot/band setters and single-polygon ring setters normalized by `b2c5b6f71`. Graph and polygon-set
+range-update APIs intentionally keep `first,count` before payload arrays because that pair is the
+range selector. Broader text, labels/volume, grid, and low-level runtime conventions still need
+case-by-case API review before changing.
 
 Adjacent APIs mix `data, count` and `count, data`.
 
 References:
 
-- `include/datoviz/scene.h`: graph/polygon/range APIs beyond the completed
-  `dvz_visual_set_data_range()` cleanup
-- `include/datoviz/scene/plot.h`: bars and band setters
+- `include/datoviz/scene.h`: text, labels/volume, grid, and any range APIs beyond the completed
+  `dvz_visual_set_data_range()` and polygon ring cleanup
+- `include/datoviz/scene/plot.h`: bars and band setters are complete
 - `include/datoviz/scene/text.h`: text batch setters
 
 Preferred convention:
@@ -915,10 +941,11 @@ generated ctypes, generated docs if applicable, and examples in sync.
 
 3. **Signature and ownership cleanup**
    - Completed: normalize `dvz_visual_set_data_range()` argument order.
+   - Completed: normalize non-ranged plot/band and single-polygon ring data/count argument order.
    - Completed: tighten `const` on identified bind-only resources and read-only queries.
    - Completed: replace identified borrowed descriptor getters with copy-out APIs.
-   - Remaining decision: broader graph, polygon, plot, text, and low-level runtime argument
-     ordering needs case-by-case API review.
+   - Remaining decision: broader text, labels/volume, grid, and low-level runtime argument ordering
+     needs case-by-case API review.
    - Validation: affected C tests, raw ctypes regeneration/check, Python smoke if bindings changed.
 
 4. **Runtime/app consistency cleanup**
