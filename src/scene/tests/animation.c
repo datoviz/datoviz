@@ -793,7 +793,7 @@ int test_scene_animation_tracks(TstContext* suite, const TstCase* item)
     DvzTrack* rotation = dvz_track_rotation(&(DvzTrackRotationDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzTrackRotationDesc),
         .axis = {0.0f, 0.0f, 1.0f},
-        .speed_rad_per_sec = (float)M_PI,
+        .speed_rad_per_sec = (float)DVZ_PI,
     });
     ANN(rotation);
     versor q = GLM_QUAT_IDENTITY_INIT;
@@ -825,7 +825,7 @@ int test_scene_animation_visual_transform(TstContext* suite, const TstCase* item
     DvzTrack* rotation = dvz_track_rotation(&(DvzTrackRotationDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzTrackRotationDesc),
         .axis = {0.0f, 0.0f, 1.0f},
-        .speed_rad_per_sec = (float)M_PI,
+        .speed_rad_per_sec = (float)DVZ_PI,
     });
     ANN(rotation);
     DvzAnimation* animation = dvz_anim_visual_transform(

@@ -932,7 +932,7 @@ DvzGeometrySectorDesc dvz_geometry_sector_desc(void)
     return (DvzGeometrySectorDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometrySectorDesc),
         .radius = 1.0,
-        .sweep_angle = 0.5 * M_PI,
+        .sweep_angle = 0.5 * DVZ_PI,
         .segments = DVZ_GEOM_SECTOR_DEFAULT_SEGMENTS,
     };
 }
@@ -1775,7 +1775,7 @@ DvzGeometry* dvz_geom_sphere(const DvzGeometrySphereDesc* desc)
     for (uint32_t ring = 0; ring <= cfg.rings; ring++)
     {
         const double v = (double)ring / (double)cfg.rings;
-        const double theta = M_PI * v;
+        const double theta = DVZ_PI * v;
         const double st = sin(theta);
         const double ct = cos(theta);
         for (uint32_t sector = 0; sector <= cfg.sectors; sector++)
@@ -2116,7 +2116,7 @@ DvzGeometry* dvz_geom_star(const DvzGeometryStarDesc* desc)
     for (uint32_t i = 0; i < outer_count; i++)
     {
         const double radius = i % 2u == 0 ? cfg.outer_radius : cfg.inner_radius;
-        const double t = -0.5 * M_PI + DVZ_2PI * (double)i / (double)outer_count;
+        const double t = -0.5 * DVZ_PI + DVZ_2PI * (double)i / (double)outer_count;
         const double c = cos(t);
         const double s = sin(t);
         const dvec3 position = {

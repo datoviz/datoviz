@@ -151,11 +151,11 @@ static void _make_texture(uint8_t* pixels, uint32_t width, uint32_t height)
     for (uint32_t y = 0; y < height; y++)
     {
         const double v = (double)y / (double)(height - 1);
-        const double lat = (0.5 - v) * M_PI;
+        const double lat = (0.5 - v) * DVZ_PI;
         for (uint32_t x = 0; x < width; x++)
         {
             const double u = (double)x / (double)(width - 1);
-            const double lon = (u - 0.5) * 2.0 * M_PI;
+            const double lon = (u - 0.5) * 2.0 * DVZ_PI;
             const double bands = sin(12.0 * lon + 1.7 * sin(5.0 * lat)) +
                                  0.72 * sin(9.0 * lat + 2.2 * cos(3.0 * lon)) +
                                  0.38 * sin(21.0 * (lon + lat));
@@ -173,7 +173,7 @@ static void _make_texture(uint8_t* pixels, uint32_t width, uint32_t height)
             {
                 const double warm = _clamp01(0.5 + 0.5 * sin(5.0 * lon - 7.0 * lat));
                 r = 0.20 + 0.38 * warm;
-                g = 0.34 + 0.32 * (1.0 - fabs(lat) / (0.5 * M_PI));
+                g = 0.34 + 0.32 * (1.0 - fabs(lat) / (0.5 * DVZ_PI));
                 b = 0.16 + 0.12 * (1.0 - warm);
             }
             else

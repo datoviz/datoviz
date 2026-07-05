@@ -78,7 +78,7 @@ static void _fill_texture(uint8_t pixels[TEXTURE_WIDTH * TEXTURE_HEIGHT * 4])
         {
             const float u = (float)x / (float)TEXTURE_WIDTH;
             const float v = (float)y / (float)(TEXTURE_HEIGHT - 1u);
-            const float pole_fade = powf(sinf((float)M_PI * v), 1.75f);
+            const float pole_fade = powf(sinf((float)DVZ_PI * v), 1.75f);
             const float lon = pole_fade * sinf(TAU * 8.0f * u);
             const float wave = pole_fade * sinf(TAU * (3.0f * u + 1.5f * v));
             const float lat = 0.5f + 0.5f * cosf(TAU * 4.0f * v);

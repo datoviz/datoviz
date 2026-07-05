@@ -31,11 +31,11 @@
 // from: https://raw.githubusercontent.com/nicolausYes/easing-functions/master/src/easing.cpp
 // see also: https://easings.net
 
-static double easeInSine(double t) { return sin(M_PI_2 * t); }
+static double easeInSine(double t) { return sin(DVZ_PI_2 * t); }
 
-static double easeOutSine(double t) { return sin(M_PI_2 * t); }
+static double easeOutSine(double t) { return sin(DVZ_PI_2 * t); }
 
-static double easeInOutSine(double t) { return 0.5 * (1 + sin(M_PI * (t - 0.5))); }
+static double easeInOutSine(double t) { return 0.5 * (1 + sin(DVZ_PI * (t - 0.5))); }
 
 static double easeInQuad(double t) { return t * t; }
 
@@ -143,13 +143,13 @@ static double easeInOutBack(double t)
 static double easeInElastic(double t)
 {
     double t2 = t * t;
-    return t2 * t2 * sin(t * M_PI * 4.5);
+    return t2 * t2 * sin(t * DVZ_PI * 4.5);
 }
 
 static double easeOutElastic(double t)
 {
     double t2 = (t - 1) * (t - 1);
-    return 1 - t2 * t2 * cos(t * M_PI * 4.5);
+    return 1 - t2 * t2 * cos(t * DVZ_PI * 4.5);
 }
 
 static double easeInOutElastic(double t)
@@ -158,32 +158,32 @@ static double easeInOutElastic(double t)
     if (t < 0.45)
     {
         t2 = t * t;
-        return 8 * t2 * t2 * sin(t * M_PI * 9);
+        return 8 * t2 * t2 * sin(t * DVZ_PI * 9);
     }
     else if (t < 0.55)
     {
-        return 0.5 + 0.75 * sin(t * M_PI * 4);
+        return 0.5 + 0.75 * sin(t * DVZ_PI * 4);
     }
     else
     {
         t2 = (t - 1) * (t - 1);
-        return 1 - 8 * t2 * t2 * sin(t * M_PI * 9);
+        return 1 - 8 * t2 * t2 * sin(t * DVZ_PI * 9);
     }
 }
 
-static double easeInBounce(double t) { return pow(2, 6 * (t - 1)) * fabs(sin(t * M_PI * 3.5)); }
+static double easeInBounce(double t) { return pow(2, 6 * (t - 1)) * fabs(sin(t * DVZ_PI * 3.5)); }
 
-static double easeOutBounce(double t) { return 1 - pow(2, -6 * t) * fabs(cos(t * M_PI * 3.5)); }
+static double easeOutBounce(double t) { return 1 - pow(2, -6 * t) * fabs(cos(t * DVZ_PI * 3.5)); }
 
 static double easeInOutBounce(double t)
 {
     if (t < 0.5)
     {
-        return 8 * pow(2, 8 * (t - 1)) * fabs(sin(t * M_PI * 7));
+        return 8 * pow(2, 8 * (t - 1)) * fabs(sin(t * DVZ_PI * 7));
     }
     else
     {
-        return 1 - 8 * pow(2, -8 * t) * fabs(sin(t * M_PI * 7));
+        return 1 - 8 * pow(2, -8 * t) * fabs(sin(t * DVZ_PI * 7));
     }
 }
 
@@ -355,7 +355,7 @@ void dvz_circular_2D(vec2 center, float radius, float angle, float t, vec2 out)
 
 void dvz_circular_3D(vec3 pos_init, vec3 center, vec3 axis, float t, vec3 out)
 {
-    float angle = 2 * M_PI * t;
+    float angle = 2 * DVZ_PI * t;
 
     vec3 a = {0};
     glm_normalize_to(axis, a);

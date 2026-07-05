@@ -381,7 +381,7 @@ int test_geometry_builtin_shapes(TstContext* suite, const TstCase* tstitem)
     dvz_geometry_destroy(disc);
 
     DvzGeometry* sector = dvz_geom_sector(&(DvzGeometrySectorDesc){
-        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySectorDesc), .radius = 1.0, .sweep_angle = M_PI,
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySectorDesc), .radius = 1.0, .sweep_angle = DVZ_PI,
         .segments = 4});
     AT(sector != NULL);
     AT(sector->vertex_count == 6);
