@@ -269,21 +269,21 @@ Complete audit as of July 2026, using the criterion above:
 | `DvzViewDesc` | `const DvzWindowExternalSurfaceInfo* external_surface` | `include/datoviz/app.h:225`, `include/datoviz/window/backend.h:91` | Pointer case, lower nesting risk but high backend-boundary risk. Move to backend/interop path during backend-neutral app API cleanup. |
 | `DvzOverlayCardDesc` | `const DvzOverlayCardStyle* style` | `include/datoviz/scene/overlay.h:67` | Done in `ebd35bb00`: creation no longer carries style; use `dvz_overlay_card_set_style()` after creation. |
 | `DvzPanelView3DDesc` | `DvzCameraDesc camera` | `include/datoviz/scene/types.h:704` | Done in `8642a2efd`: flattened to `DvzCameraView view` and `DvzCameraProjection projection`. |
-| `DvzPanelAxes2DDesc` | `DvzAxisTickPolicy tick_policy`, `DvzAxisStyle x_style`, `DvzAxisStyle y_style` | `include/datoviz/scene/types.h:785` | Split. Keep creation desc to labels/coarse flags; use setters for tick policy and per-axis styles. |
-| `DvzGraphEdgeStyle` | `DvzBezierTessellationDesc tessellation` | `include/datoviz/scene/types.h:946` | Flatten to `tessellation_segment_count` and `tessellation_tolerance`, or set tessellation separately. |
+| `DvzPanelAxes2DDesc` | `DvzAxisTickPolicy tick_policy`, `DvzAxisStyle x_style`, `DvzAxisStyle y_style` | `include/datoviz/scene/types.h:785` | Done in `977881068`: creation desc is labels/coarse flags only; tick policy and styles use setters. |
+| `DvzGraphEdgeStyle` | `DvzBezierTessellationDesc tessellation` | `include/datoviz/scene/types.h:946` | Done in `26adba228`: flattened to scalar tessellation segment count and tolerance fields. |
 | `DvzSelectionVisualStyle` | `DvzItemStateVisualStyle selected`, `DvzItemStateVisualStyle unselected` | `include/datoviz/scene/types.h:1253` | Done in `4afdfb53d`: flattened to prefixed selected/unselected scalar style fields. |
-| `DvzScaleDesc` | `DvzFormatDesc format` | `include/datoviz/scene/types.h:1380` | Remove from creation desc; `dvz_scale_set_format()` already exists. Creation should cover `kind`, `label`, and `unit`. |
+| `DvzScaleDesc` | `DvzFormatDesc format` | `include/datoviz/scene/types.h:1380` | Done in `256b4e018`: creation covers `kind`, `label`, and `unit`; format uses `dvz_scale_set_format()`. |
 | `DvzAnnotationDesc` | `DvzTextStyle style`, `DvzTextPlacement placement` | `include/datoviz/scene/types.h:1582` | Done in `343f32154`: creation is minimal; style and placement use retained setters. |
 | `DvzLabelDesc` | `DvzTextStyle style`, `DvzTextPlacement placement` | `include/datoviz/scene/types.h:1595` | Done in `343f32154`: creation is minimal; style and placement use retained setters. |
 | `DvzScaleBarDesc` | `DvzTextStyle label_style`, `DvzTextPlacement placement`, `DvzFormatDesc format` | `include/datoviz/scene/types.h:1607` | Highest-priority cleanup. Keep the creation desc to scale-bar identity, units, geometry, length bounds, offset, line/tick styling; move label style, placement, and format to setters. |
 
 Suggested execution order:
 
-1. Clean `DvzScaleBarDesc`, `DvzScaleDesc`, and `DvzPanelAxes2DDesc` first. These are user-facing,
-   noisy in examples, and easy to improve with retained-object setters.
-2. Annotation/label text style and placement cleanup is complete.
-3. Clean app/view/font/backend nesting while doing the backend-neutral app API wave.
-4. Clean remaining lower-risk style/config cases such as `DvzOverlayCardDesc`.
+1. Scale, panel axes, annotation/label, graph edge, selection, overlay card, font defaults, and
+   panel 3D view descriptor cleanup are complete.
+2. Clean remaining app/view/backend nesting while doing the backend-neutral app API wave.
+3. Keep `DvzScaleBarDesc` as the remaining high-priority scene descriptor cleanup if still present
+   in the current header.
 5. Regenerate raw `ctypes`, generated C docs, and examples in the same checkpoint as each public
    struct break.
 
