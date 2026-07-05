@@ -286,7 +286,7 @@ DVZ_EXPORT bool dvz_grid_set_gutter(DvzGrid* grid, float x_px, float y_px);
  * @return whether the size was accepted
  */
 DVZ_EXPORT bool
-dvz_grid_col_size(DvzGrid* grid, uint32_t col, DvzGridSizeMode mode, float value);
+dvz_grid_set_col_size(DvzGrid* grid, uint32_t col, DvzGridSizeMode mode, float value);
 
 
 /**
@@ -299,7 +299,7 @@ dvz_grid_col_size(DvzGrid* grid, uint32_t col, DvzGridSizeMode mode, float value
  * @return whether the size was accepted
  */
 DVZ_EXPORT bool
-dvz_grid_row_size(DvzGrid* grid, uint32_t row, DvzGridSizeMode mode, float value);
+dvz_grid_set_row_size(DvzGrid* grid, uint32_t row, DvzGridSizeMode mode, float value);
 
 
 /**

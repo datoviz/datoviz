@@ -365,9 +365,9 @@ int test_scene_grid_resolve_weights_fixed_and_spans(TstContext* suite, const Tst
                   .left_px = 40.0f, .right_px = 20.0f, .top_px = 10.0f,
                   .bottom_px = 30.0f}));
     AT(dvz_grid_set_gutter(grid, 10.0f, 20.0f));
-    AT(dvz_grid_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.0f));
-    AT(dvz_grid_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 2.0f));
-    AT(dvz_grid_col_size(grid, 2, DVZ_GRID_SIZE_FIXED_PX, 60.0f));
+    AT(dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.0f));
+    AT(dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 2.0f));
+    AT(dvz_grid_set_col_size(grid, 2, DVZ_GRID_SIZE_FIXED_PX, 60.0f));
 
     DvzPanelDesc main = {0};
     AT(dvz_grid_resolve(
@@ -412,8 +412,8 @@ int test_scene_grid_resolve_rejects_invalid_inputs(TstContext* suite, const TstC
 
     AT(!dvz_figure_grid(figure, 0, 2));
     AT(!dvz_figure_grid(figure, 2, 0));
-    AT(!dvz_grid_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 0.0f));
-    AT(!dvz_grid_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, -1.0f));
+    AT(!dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 0.0f));
+    AT(!dvz_grid_set_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, -1.0f));
     AT(!dvz_grid_set_gutter(grid, -1.0f, 0.0f));
     AT(!dvz_grid_set_margins(grid, &(DvzPanelReserve){.left_px = -1.0f}));
 
@@ -451,7 +451,7 @@ int test_scene_grid_panel_recomputes_before_emit(TstContext* suite, const TstCas
     ANN(left);
     ANN(right);
 
-    AT(dvz_grid_col_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 60.0f));
+    AT(dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 60.0f));
 
     float pos[3] = {0.0f, 0.0f, 0.0f};
     DvzColor col = {255, 255, 255, 255};
@@ -521,7 +521,7 @@ int test_scene_grid_panel_tracks_figure_resize(TstContext* suite, const TstCase*
     DvzGrid* grid = dvz_figure_grid(figure, 1, 2);
     ANN(grid);
     AT(dvz_grid_set_gutter(grid, 10.0f, 0.0f));
-    AT(dvz_grid_col_size(grid, 1, DVZ_GRID_SIZE_FIXED_PX, 60.0f));
+    AT(dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_FIXED_PX, 60.0f));
 
     DvzPanel* data = dvz_grid_panel(grid, 0, 0);
     DvzPanel* colorbar = dvz_grid_panel(grid, 0, 1);

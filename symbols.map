@@ -665,12 +665,12 @@ dvz_graphics_stencil
 dvz_graphics_vertex_attr
 dvz_graphics_vertex_binding
 dvz_graphics_viewport
-dvz_grid_col_size
+dvz_grid_set_col_size
 dvz_grid_destroy
 dvz_grid_panel
 dvz_grid_panel_span
 dvz_grid_resolve
-dvz_grid_row_size
+dvz_grid_set_row_size
 dvz_grid_set_gutter
 dvz_grid_set_margins
 dvz_gui_begin

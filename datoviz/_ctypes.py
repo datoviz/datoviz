@@ -18242,24 +18242,6 @@ else:
 
 
 try:
-    dvz_grid_col_size = dvz.dvz_grid_col_size
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_grid_col_size')
-else:
-    dvz_grid_col_size.__doc__ = """/**
- * Set one grid column size.
- *
- * @param grid the grid
- * @param col zero-based column index
- * @param mode size mode
- * @param value weight or fixed logical-pixel size
- * @return whether the size was accepted
- */"""
-    dvz_grid_col_size.argtypes = [ctypes.POINTER(DvzGrid), ctypes.c_uint32, ctypes.c_int, ctypes.c_float]
-    dvz_grid_col_size.restype = ctypes.c_bool
-
-
-try:
     dvz_grid_destroy = dvz.dvz_grid_destroy
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_grid_destroy')
@@ -18332,21 +18314,21 @@ else:
 
 
 try:
-    dvz_grid_row_size = dvz.dvz_grid_row_size
+    dvz_grid_set_col_size = dvz.dvz_grid_set_col_size
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_grid_row_size')
+    _MISSING_FUNCTIONS.append('dvz_grid_set_col_size')
 else:
-    dvz_grid_row_size.__doc__ = """/**
- * Set one grid row size.
+    dvz_grid_set_col_size.__doc__ = """/**
+ * Set one grid column size.
  *
  * @param grid the grid
- * @param row zero-based row index
+ * @param col zero-based column index
  * @param mode size mode
  * @param value weight or fixed logical-pixel size
  * @return whether the size was accepted
  */"""
-    dvz_grid_row_size.argtypes = [ctypes.POINTER(DvzGrid), ctypes.c_uint32, ctypes.c_int, ctypes.c_float]
-    dvz_grid_row_size.restype = ctypes.c_bool
+    dvz_grid_set_col_size.argtypes = [ctypes.POINTER(DvzGrid), ctypes.c_uint32, ctypes.c_int, ctypes.c_float]
+    dvz_grid_set_col_size.restype = ctypes.c_bool
 
 
 try:
@@ -18380,6 +18362,24 @@ else:
  */"""
     dvz_grid_set_margins.argtypes = [ctypes.POINTER(DvzGrid), ctypes.POINTER(DvzPanelReserve)]
     dvz_grid_set_margins.restype = ctypes.c_bool
+
+
+try:
+    dvz_grid_set_row_size = dvz.dvz_grid_set_row_size
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_grid_set_row_size')
+else:
+    dvz_grid_set_row_size.__doc__ = """/**
+ * Set one grid row size.
+ *
+ * @param grid the grid
+ * @param row zero-based row index
+ * @param mode size mode
+ * @param value weight or fixed logical-pixel size
+ * @return whether the size was accepted
+ */"""
+    dvz_grid_set_row_size.argtypes = [ctypes.POINTER(DvzGrid), ctypes.c_uint32, ctypes.c_int, ctypes.c_float]
+    dvz_grid_set_row_size.restype = ctypes.c_bool
 
 
 try:

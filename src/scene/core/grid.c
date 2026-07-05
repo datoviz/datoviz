@@ -312,7 +312,7 @@ bool dvz_grid_set_gutter(DvzGrid* grid, float x_px, float y_px)
  * @param value weight or fixed logical-pixel size
  * @return whether the size was accepted
  */
-bool dvz_grid_col_size(DvzGrid* grid, uint32_t col, DvzGridSizeMode mode, float value)
+bool dvz_grid_set_col_size(DvzGrid* grid, uint32_t col, DvzGridSizeMode mode, float value)
 {
     if (grid == NULL || col >= grid->cols || !_grid_track_valid(mode, value))
         return false;
@@ -333,7 +333,7 @@ bool dvz_grid_col_size(DvzGrid* grid, uint32_t col, DvzGridSizeMode mode, float 
  * @param value weight or fixed logical-pixel size
  * @return whether the size was accepted
  */
-bool dvz_grid_row_size(DvzGrid* grid, uint32_t row, DvzGridSizeMode mode, float value)
+bool dvz_grid_set_row_size(DvzGrid* grid, uint32_t row, DvzGridSizeMode mode, float value)
 {
     if (grid == NULL || row >= grid->rows || !_grid_track_valid(mode, value))
         return false;

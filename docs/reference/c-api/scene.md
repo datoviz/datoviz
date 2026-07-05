@@ -261,14 +261,14 @@ Functions: 388
 
     | Function | Header |
     | --- | --- |
-    | [`dvz_grid_col_size()`](#dvz_grid_col_size) | `include/datoviz/scene.h` |
     | [`dvz_grid_destroy()`](#dvz_grid_destroy) | `include/datoviz/scene.h` |
     | [`dvz_grid_panel()`](#dvz_grid_panel) | `include/datoviz/scene.h` |
     | [`dvz_grid_panel_span()`](#dvz_grid_panel_span) | `include/datoviz/scene.h` |
     | [`dvz_grid_resolve()`](#dvz_grid_resolve) | `include/datoviz/scene.h` |
-    | [`dvz_grid_row_size()`](#dvz_grid_row_size) | `include/datoviz/scene.h` |
+    | [`dvz_grid_set_col_size()`](#dvz_grid_set_col_size) | `include/datoviz/scene.h` |
     | [`dvz_grid_set_gutter()`](#dvz_grid_set_gutter) | `include/datoviz/scene.h` |
     | [`dvz_grid_set_margins()`](#dvz_grid_set_margins) | `include/datoviz/scene.h` |
+    | [`dvz_grid_set_row_size()`](#dvz_grid_set_row_size) | `include/datoviz/scene.h` |
 
     ### Guide
 
@@ -3017,31 +3017,6 @@ _Declared in `include/datoviz/scene/scale.h`:187._
 
 ## Grid
 
-### `dvz_grid_col_size()`
-
-```c title="dvz_grid_col_size"
-_Bool dvz_grid_col_size(
-    DvzGrid * grid,
-    uint32_t col,
-    DvzGridSizeMode mode,
-    float value
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `_Bool` | whether the size was accepted |
-| `grid` | `DvzGrid *` | the grid |
-| `col` | `uint32_t` | zero-based column index |
-| `mode` | `DvzGridSizeMode` | size mode |
-| `value` | `float` | weight or fixed logical-pixel size |
-
-Set one grid column size.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:289._
-
 ### `dvz_grid_destroy()`
 
 ```c title="dvz_grid_destroy"
@@ -3140,12 +3115,12 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:315._
 
-### `dvz_grid_row_size()`
+### `dvz_grid_set_col_size()`
 
-```c title="dvz_grid_row_size"
-_Bool dvz_grid_row_size(
+```c title="dvz_grid_set_col_size"
+_Bool dvz_grid_set_col_size(
     DvzGrid * grid,
-    uint32_t row,
+    uint32_t col,
     DvzGridSizeMode mode,
     float value
 );
@@ -3155,15 +3130,15 @@ _Bool dvz_grid_row_size(
 | --- | --- | --- |
 | return | `_Bool` | whether the size was accepted |
 | `grid` | `DvzGrid *` | the grid |
-| `row` | `uint32_t` | zero-based row index |
+| `col` | `uint32_t` | zero-based column index |
 | `mode` | `DvzGridSizeMode` | size mode |
 | `value` | `float` | weight or fixed logical-pixel size |
 
-Set one grid row size.
+Set one grid column size.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:302._
+_Declared in `include/datoviz/scene.h`:289._
 
 ### `dvz_grid_set_gutter()`
 
@@ -3208,6 +3183,31 @@ Set fixed logical-pixel margins around one grid.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:265._
+
+### `dvz_grid_set_row_size()`
+
+```c title="dvz_grid_set_row_size"
+_Bool dvz_grid_set_row_size(
+    DvzGrid * grid,
+    uint32_t row,
+    DvzGridSizeMode mode,
+    float value
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the size was accepted |
+| `grid` | `DvzGrid *` | the grid |
+| `row` | `uint32_t` | zero-based row index |
+| `mode` | `DvzGridSizeMode` | size mode |
+| `value` | `float` | weight or fixed logical-pixel size |
+
+Set one grid row size.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/scene.h`:302._
 
 ## Guide
 

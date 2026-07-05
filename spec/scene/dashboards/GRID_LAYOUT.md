@@ -157,11 +157,11 @@ dvz_grid_set_margins(grid, &(DvzPanelReserve){
     .left_px = 48.0f, .right_px = 16.0f, .bottom_px = 36.0f, .top_px = 12.0f});
 dvz_grid_set_gutter(grid, 8.0f, 8.0f);
 
-dvz_grid_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.0f);
-dvz_grid_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 2.0f);
-dvz_grid_col_size(grid, 2, DVZ_GRID_SIZE_WEIGHT, 1.0f);
-dvz_grid_row_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.0f);
-dvz_grid_row_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 1.0f);
+dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.0f);
+dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 2.0f);
+dvz_grid_set_col_size(grid, 2, DVZ_GRID_SIZE_WEIGHT, 1.0f);
+dvz_grid_set_row_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.0f);
+dvz_grid_set_row_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 1.0f);
 
 DvzPanel* main = dvz_grid_panel_span(grid, 0, 0, 1, 2);
 DvzPanel* side = dvz_grid_panel_span(grid, 0, 2, 2, 1);

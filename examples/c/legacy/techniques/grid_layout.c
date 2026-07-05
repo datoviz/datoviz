@@ -166,21 +166,21 @@ int main(int argc, char** argv)
     ok = dvz_grid_set_gutter(grid, 12.0f, 12.0f);
     EXAMPLE_CHECK(ok, "dvz_grid_set_gutter() failed");
 
-    ok = dvz_grid_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.35f);
-    EXAMPLE_CHECK(ok, "dvz_grid_col_size(col 0) failed");
-    ok = dvz_grid_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 0.95f);
-    EXAMPLE_CHECK(ok, "dvz_grid_col_size(col 1) failed");
-    ok = dvz_grid_col_size(grid, 2, DVZ_GRID_SIZE_FIXED_PX, 210.0f);
-    EXAMPLE_CHECK(ok, "dvz_grid_col_size(col 2) failed");
-    ok = dvz_grid_col_size(grid, 3, DVZ_GRID_SIZE_FIXED_PX, 64.0f);
-    EXAMPLE_CHECK(ok, "dvz_grid_col_size(col 3) failed");
+    ok = dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.35f);
+    EXAMPLE_CHECK(ok, "dvz_grid_set_col_size(col 0) failed");
+    ok = dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 0.95f);
+    EXAMPLE_CHECK(ok, "dvz_grid_set_col_size(col 1) failed");
+    ok = dvz_grid_set_col_size(grid, 2, DVZ_GRID_SIZE_FIXED_PX, 210.0f);
+    EXAMPLE_CHECK(ok, "dvz_grid_set_col_size(col 2) failed");
+    ok = dvz_grid_set_col_size(grid, 3, DVZ_GRID_SIZE_FIXED_PX, 64.0f);
+    EXAMPLE_CHECK(ok, "dvz_grid_set_col_size(col 3) failed");
 
-    ok = dvz_grid_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 180.0f);
-    EXAMPLE_CHECK(ok, "dvz_grid_row_size(row 0) failed");
-    ok = dvz_grid_row_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 1.45f);
-    EXAMPLE_CHECK(ok, "dvz_grid_row_size(row 1) failed");
-    ok = dvz_grid_row_size(grid, 2, DVZ_GRID_SIZE_WEIGHT, 0.90f);
-    EXAMPLE_CHECK(ok, "dvz_grid_row_size(row 2) failed");
+    ok = dvz_grid_set_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 180.0f);
+    EXAMPLE_CHECK(ok, "dvz_grid_set_row_size(row 0) failed");
+    ok = dvz_grid_set_row_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 1.45f);
+    EXAMPLE_CHECK(ok, "dvz_grid_set_row_size(row 1) failed");
+    ok = dvz_grid_set_row_size(grid, 2, DVZ_GRID_SIZE_WEIGHT, 0.90f);
+    EXAMPLE_CHECK(ok, "dvz_grid_set_row_size(row 2) failed");
 
     DvzPanel* panels[PLOT_COUNT] = {
         dvz_grid_panel_span(grid, 0, 0, 2, 2),
