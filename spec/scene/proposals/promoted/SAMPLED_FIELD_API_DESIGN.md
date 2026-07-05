@@ -125,5 +125,3 @@ than adapt silently. Do not add public `RGB*` formats in the first pass; callers
 3. Decide whether zero `bytes_per_row` / `rows_per_image` means tight packing or whether the fields
    are always explicit.
 4. Decide whether probe results expose direct field handles, stable field ids, or both.
-5. Treat `dvz_visual_set_texture_rgba8(...)` and `dvz_visual_set_texture_r32f(...)` as transitional image
-   convenience wrappers once the shared field path is implemented.

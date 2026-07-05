@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "scene_api_internal.h"
+#include "domain/field_internal.h"
 
 
 
@@ -618,7 +619,7 @@ int dvz_wasm_api_visual_set_texture_rgba8(
         return _fail(visual != NULL ? visual->owner : NULL, "invalid WASM RGBA8 texture upload");
     }
     _clear_payload(visual->owner);
-    if (dvz_visual_set_texture_rgba8(
+    if (_scene_visual_set_texture_rgba8(
             visual->visual, (const uint8_t*)rgba, width, height,
             (DvzSize)width * height * 4u) != 0)
     {

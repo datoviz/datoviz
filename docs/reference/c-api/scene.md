@@ -3761,7 +3761,7 @@ categorical scale with `dvz_visual_set_scale(labels, "labels", scale)`.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3599._
+_Declared in `include/datoviz/scene.h`:3598._
 
 ### `dvz_labels_clear_selected()`
 
@@ -3780,7 +3780,7 @@ Clear the selected label ID on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3638._
+_Declared in `include/datoviz/scene.h`:3637._
 
 ### `dvz_labels_set_background()`
 
@@ -3801,7 +3801,7 @@ Set the transparent background label ID on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3619._
+_Declared in `include/datoviz/scene.h`:3618._
 
 ### `dvz_labels_set_boundary()`
 
@@ -3826,7 +3826,7 @@ Configure boundary rendering on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3663._
+_Declared in `include/datoviz/scene.h`:3662._
 
 ### `dvz_labels_set_fallback_seed()`
 
@@ -3847,7 +3847,7 @@ Set the deterministic fallback-color seed on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3673._
+_Declared in `include/datoviz/scene.h`:3672._
 
 ### `dvz_labels_set_hidden()`
 
@@ -3870,7 +3870,7 @@ Set the hidden label IDs on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3650._
+_Declared in `include/datoviz/scene.h`:3649._
 
 ### `dvz_labels_set_opacity()`
 
@@ -3891,7 +3891,7 @@ Set the global opacity multiplier on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3609._
+_Declared in `include/datoviz/scene.h`:3608._
 
 ### `dvz_labels_set_selected()`
 
@@ -3912,7 +3912,7 @@ Set the selected label ID on a labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3629._
+_Declared in `include/datoviz/scene.h`:3628._
 
 ### `dvz_labels_set_slice_axis()`
 
@@ -3933,7 +3933,7 @@ Set the first-slice axis for a 3D labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3683._
+_Declared in `include/datoviz/scene.h`:3682._
 
 ### `dvz_labels_set_slice_position()`
 
@@ -3954,7 +3954,7 @@ Set the first-slice position for a 3D labels visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3693._
+_Declared in `include/datoviz/scene.h`:3692._
 
 ### `dvz_labels_state()`
 
@@ -3973,7 +3973,7 @@ Return the retained labels state for inspection.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3702._
+_Declared in `include/datoviz/scene.h`:3701._
 
 ## Legend
 

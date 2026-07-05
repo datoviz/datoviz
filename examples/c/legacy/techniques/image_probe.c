@@ -310,8 +310,10 @@ int main(int argc, char** argv)
     rc = dvz_visual_set_data(image, "texcoords", texcoords, 4);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(texcoords) failed");
 
-    rc = dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, IMG, IMG, sizeof(pixels));
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_texture_rgba8() failed");
+    EXAMPLE_CHECK(
+        example_visual_set_rgba8_field(scene, image, "field", (const uint8_t*)pixels, IMG, IMG,
+                                       NULL),
+        "example_visual_set_rgba8_field() failed");
     dvz_visual_set_query_capabilities(image, DVZ_QUERY_CAPABILITY_PIXEL);
 
     rc = dvz_panel_add_visual(panel, image, NULL);

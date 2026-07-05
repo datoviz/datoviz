@@ -28,6 +28,7 @@
 #include "_technique.h"
 #include "_visual_pipeline.h"
 #include "../../drp2/_stream.h"
+#include "domain/field_internal.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
 #include "datoviz/scene.h"
@@ -501,7 +502,7 @@ static bool _add_dvzr_visual(DvzScene* scene, DvzPanel* panel, SceneDvzrVisualKi
         }
         return dvz_visual_set_data(visual, "position", positions, 4) == 0 &&
                dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0 &&
-               dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0 &&
+               _scene_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0 &&
                dvz_panel_add_visual(panel, visual, NULL) == 0;
     }
 

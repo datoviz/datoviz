@@ -18,7 +18,7 @@ Common workflows:
 - [Update visual data](../../how-to/update-visual-data.md)
 - [Visual families reference](../visual-families/index.md)
 
-Functions: 208
+Functions: 206
 
 ## Symbol Groups
 
@@ -54,7 +54,7 @@ Functions: 208
 | [Triangulate](#triangulate) | 1 | `include/datoviz/geom.h` |
 | [Triangulation](#triangulation) | 1 | `include/datoviz/geom.h` |
 | [Vector](#vector) | 4 | `include/datoviz/scene.h` |
-| [Visual](#visual) | 51 | 4 headers |
+| [Visual](#visual) | 49 | 4 headers |
 | [Volume](#volume) | 17 | `include/datoviz/scene.h` |
 
 ??? info "Grouped symbol index"
@@ -395,8 +395,6 @@ Functions: 208
     | [`dvz_visual_set_scene_occluder()`](#dvz_visual_set_scene_occluder) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_shader_desc()`](#dvz_visual_set_shader_desc) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_strings()`](#dvz_visual_set_strings) | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_texture_r32f()`](#dvz_visual_set_texture_r32f) | `include/datoviz/scene.h` |
-    | [`dvz_visual_set_texture_rgba8()`](#dvz_visual_set_texture_rgba8) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_transform()`](#dvz_visual_set_transform) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_transform_desc()`](#dvz_visual_set_transform_desc) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_visible()`](#dvz_visual_set_visible) | `include/datoviz/scene.h` |
@@ -1295,7 +1293,7 @@ bound 2D sampled field. Positive `angle` rotates counter-clockwise in rendered y
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3716._
+_Declared in `include/datoviz/scene.h`:3715._
 
 ### `dvz_glyph_set_atlas()`
 
@@ -1319,7 +1317,7 @@ the glyph shader. The atlas remains owned by the font's scene and must outlive t
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3729._
+_Declared in `include/datoviz/scene.h`:3728._
 
 ## Graph
 
@@ -1730,13 +1728,12 @@ Create an image visual.
 First-slice scope: one sampled 2D texture per visual. The legacy path accepts `position`
 (vec3, 4 corner vertices in triangle-strip order) and `texcoords` (vec2, matching UVs).
 The retained per-item path accepts one anchor `position` and `extent` per image item, with
-optional `tex_rect` atlas rectangles and per-item `anchor`. Bind a sampled field via
-`dvz_visual_set_field()`. The legacy texture convenience wrappers remain available and lower
-to scene-owned sampled fields internally.
+optional `tex_rect` atlas rectangles and per-item `anchor`. Bind texture data with a scene-owned
+sampled field via `dvz_visual_set_field()`.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3571._
+_Declared in `include/datoviz/scene.h`:3570._
 
 ### `dvz_image_set_sampling()`
 
@@ -1760,7 +1757,7 @@ minification and magnification sampler for pixel-exact image rendering.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3584._
+_Declared in `include/datoviz/scene.h`:3583._
 
 ## Marker
 
@@ -4603,72 +4600,6 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/scene.h`:2135._
 
-### `dvz_visual_set_texture_r32f()`
-
-```c title="dvz_visual_set_texture_r32f"
-DvzResult dvz_visual_set_texture_r32f(
-    DvzVisual * visual,
-    const float * values,
-    uint32_t width,
-    uint32_t height,
-    DvzSize size_bytes
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `visual` | `DvzVisual *` | the visual (must be of type IMAGE or GLYPH) |
-| `values` | `const float *` | scalar R32F pixel data, tightly packed, row-major |
-| `width` | `uint32_t` | the texture width in pixels |
-| `height` | `uint32_t` | the texture height in pixels |
-| `size_bytes` | `DvzSize` | number of bytes available at @p values; must equal `width * height * sizeof(float)` |
-
-Attach a 2D scalar R32F texture to an image or glyph visual.
-
-Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
-binds it to the visual's `"field"` slot. The owned sampled field uses
-`DVZ_FIELD_SEMANTIC_SCALAR` and `DVZ_COLOR_ROLE_DATA`. The bound scale and colormap are applied
-on the CPU during emit to produce the RGBA texture used by the current first-slice image runtime
-path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3953._
-
-### `dvz_visual_set_texture_rgba8()`
-
-```c title="dvz_visual_set_texture_rgba8"
-DvzResult dvz_visual_set_texture_rgba8(
-    DvzVisual * visual,
-    const uint8_t * rgba,
-    uint32_t width,
-    uint32_t height,
-    DvzSize size_bytes
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzResult` | 0 on success, -1 on error |
-| `visual` | `DvzVisual *` | the visual (must be of type IMAGE, GLYPH, or MESH) |
-| `rgba` | `const uint8_t *` | RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes) |
-| `width` | `uint32_t` | the texture width in pixels |
-| `height` | `uint32_t` | the texture height in pixels |
-| `size_bytes` | `DvzSize` | number of bytes available at @p rgba; must equal `width * height * 4` |
-
-Attach a 2D RGBA8 sRGB-color texture to an image, glyph, or mesh visual.
-
-Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
-binds it to the visual's `"field"` slot for image/glyph visuals or `"texture"` slot for mesh
-visuals. The owned sampled field uses `DVZ_FIELD_SEMANTIC_COLOR` and
-`DVZ_COLOR_ROLE_SRGB_COLOR`. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new
-code.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/scene.h`:3932._
-
 ### `dvz_visual_set_transform()`
 
 ```c title="dvz_visual_set_transform"
@@ -4847,7 +4778,7 @@ supports full-volume composite rendering by default, plus slice and MIP modes.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3743._
+_Declared in `include/datoviz/scene.h`:3742._
 
 ### `dvz_volume_clear_clipping()`
 
@@ -4866,7 +4797,7 @@ Disable all clipping on a volume visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3904._
+_Declared in `include/datoviz/scene.h`:3903._
 
 ### `dvz_volume_clear_clipping_plane()`
 
@@ -4885,7 +4816,7 @@ Disable arbitrary plane clipping on a volume visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3895._
+_Declared in `include/datoviz/scene.h`:3894._
 
 ### `dvz_volume_occlusion_desc()`
 
@@ -4924,7 +4855,7 @@ Set piecewise-linear opacity stops for scalar volume transfer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3857._
+_Declared in `include/datoviz/scene.h`:3856._
 
 ### `dvz_volume_set_axis_mapping()`
 
@@ -4951,7 +4882,7 @@ all flips.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3834._
+_Declared in `include/datoviz/scene.h`:3833._
 
 ### `dvz_volume_set_bounds()`
 
@@ -4977,7 +4908,7 @@ They are useful for displaying anisotropic volumes in their physical aspect rati
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3819._
+_Declared in `include/datoviz/scene.h`:3818._
 
 ### `dvz_volume_set_clipping_box()`
 
@@ -5000,7 +4931,7 @@ Enable axis-aligned clipping on a volume visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3870._
+_Declared in `include/datoviz/scene.h`:3869._
 
 ### `dvz_volume_set_clipping_plane()`
 
@@ -5028,7 +4959,7 @@ The plane is defined in normalized volume coordinates. Voxels for which
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3885._
+_Declared in `include/datoviz/scene.h`:3884._
 
 ### `dvz_volume_set_opacity()`
 
@@ -5049,7 +4980,7 @@ Set the global opacity multiplier on a volume visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3753._
+_Declared in `include/datoviz/scene.h`:3752._
 
 ### `dvz_volume_set_render_mode()`
 
@@ -5070,7 +5001,7 @@ Set the volume render mode.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3774._
+_Declared in `include/datoviz/scene.h`:3773._
 
 ### `dvz_volume_set_sampling()`
 
@@ -5091,7 +5022,7 @@ Set the texture sampling mode on a volume visual.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3764._
+_Declared in `include/datoviz/scene.h`:3763._
 
 ### `dvz_volume_set_slice_axis()`
 
@@ -5112,7 +5043,7 @@ Set the volume slice axis.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3784._
+_Declared in `include/datoviz/scene.h`:3783._
 
 ### `dvz_volume_set_slice_position()`
 
@@ -5133,7 +5064,7 @@ Set the normalized volume slice position.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3794._
+_Declared in `include/datoviz/scene.h`:3793._
 
 ### `dvz_volume_set_step_count()`
 
@@ -5154,7 +5085,7 @@ Set the volume raymarch step count used by MIP and composite rendering.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3804._
+_Declared in `include/datoviz/scene.h`:3803._
 
 ### `dvz_volume_set_value_range()`
 
@@ -5177,7 +5108,7 @@ Set the scalar value range used before transfer texture lookup.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3846._
+_Declared in `include/datoviz/scene.h`:3845._
 
 ### `dvz_volume_state()`
 
@@ -5196,4 +5127,4 @@ Return the retained volume state for inspection.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene.h`:3913._
+_Declared in `include/datoviz/scene.h`:3912._

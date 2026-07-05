@@ -26,6 +26,7 @@
 #include "_visual_internal.h"
 #include "annotation/colormap_internal.h"
 #include "annotation/prepare_internal.h"
+#include "domain/field_internal.h"
 #include "scene_emit/internal.h"
 #include "scene_emit/scene_emit.h"
 #include "colorizer.h"
@@ -1992,7 +1993,7 @@ int test_scene_sampled_field_color_role_rejects_invalid_semantics(
 }
 
 
-int test_scene_texture_wrappers_set_explicit_color_roles(TstContext* suite, const TstCase* item)
+int test_scene_sampled_fields_set_explicit_color_roles(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -2008,7 +2009,21 @@ int test_scene_texture_wrappers_set_explicit_color_roles(TstContext* suite, cons
         {0, 0, 255, 255},
         {128, 128, 128, 255},
     };
-    AT(dvz_visual_set_texture_rgba8(rgba_image, (const uint8_t*)rgba_pixels, 2, 2, 2u * 2u * 4u) == 0);
+    DvzSampledFieldDesc rgba_field_desc = dvz_sampled_field_desc();
+    rgba_field_desc.dim = DVZ_FIELD_DIM_2D;
+    rgba_field_desc.format = DVZ_FIELD_FORMAT_RGBA8_UNORM;
+    rgba_field_desc.semantic = DVZ_FIELD_SEMANTIC_COLOR;
+    rgba_field_desc.color_role = DVZ_COLOR_ROLE_SRGB_COLOR;
+    rgba_field_desc.width = 2;
+    rgba_field_desc.height = 2;
+    rgba_field_desc.depth = 1;
+    DvzSampledField* rgba_field = dvz_sampled_field(scene, &rgba_field_desc);
+    ANN(rgba_field);
+    AT(dvz_sampled_field_set_data(
+        rgba_field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                                        .data = rgba_pixels, .bytes_per_row = 2u * 4u,
+                                        .rows_per_image = 2u}));
+    AT(dvz_visual_set_field(rgba_image, "field", rgba_field));
     DvzVisualFamilyState* rgba_state = _visual_family_state(rgba_image);
     ANN(rgba_state);
     ANN(rgba_state->field);
@@ -2020,7 +2035,22 @@ int test_scene_texture_wrappers_set_explicit_color_roles(TstContext* suite, cons
     DvzVisual* scalar_image = dvz_image(scene, 0);
     ANN(scalar_image);
     const float scalar_pixels[4] = {0.0f, 0.25f, 0.5f, 1.0f};
-    AT(dvz_visual_set_texture_r32f(scalar_image, scalar_pixels, 2, 2, 2u * 2u * sizeof(float)) == 0);
+    DvzSampledFieldDesc scalar_field_desc = dvz_sampled_field_desc();
+    scalar_field_desc.dim = DVZ_FIELD_DIM_2D;
+    scalar_field_desc.format = DVZ_FIELD_FORMAT_R32_FLOAT;
+    scalar_field_desc.semantic = DVZ_FIELD_SEMANTIC_SCALAR;
+    scalar_field_desc.color_role = DVZ_COLOR_ROLE_DATA;
+    scalar_field_desc.width = 2;
+    scalar_field_desc.height = 2;
+    scalar_field_desc.depth = 1;
+    DvzSampledField* scalar_field = dvz_sampled_field(scene, &scalar_field_desc);
+    ANN(scalar_field);
+    AT(dvz_sampled_field_set_data(
+        scalar_field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                                          .data = scalar_pixels,
+                                          .bytes_per_row = 2u * sizeof(float),
+                                          .rows_per_image = 2u}));
+    AT(dvz_visual_set_field(scalar_image, "field", scalar_field));
     DvzVisualFamilyState* scalar_state = _visual_family_state(scalar_image);
     ANN(scalar_state);
     ANN(scalar_state->field);
@@ -2279,7 +2309,7 @@ int test_scene_image_scalar_texture_uses_bound_scale(TstContext* suite, const Ts
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture_r32f(visual, pixels, 4, 4, 4u * 4u * sizeof(float)) == 0);
+    AT(_scene_visual_set_texture_r32f(visual, pixels, 4, 4, 4u * 4u * sizeof(float)) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -4758,7 +4788,7 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_image_visual_binds_colormap_scale);
     TST_CASE(test_scene_sampled_field_color_role_defaults);
     TST_CASE(test_scene_sampled_field_color_role_rejects_invalid_semantics);
-    TST_CASE(test_scene_texture_wrappers_set_explicit_color_roles);
+    TST_CASE(test_scene_sampled_fields_set_explicit_color_roles);
     TST_CASE(test_scene_labels_visual_binds_categorical_scale);
     TST_CASE(test_scene_labels_state_setters);
     TST_CASE(test_scene_visual_scale_rejects_cross_scene_scale);

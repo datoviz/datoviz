@@ -18,6 +18,7 @@
 #include "_visual_internal.h"
 #include "annotation/prepare_internal.h"
 #include "core/scene_notify_internal.h"
+#include "domain/field_internal.h"
 
 
 
@@ -122,7 +123,7 @@ static DvzVisual* _local_transform_audit_visual(DvzScene* scene, DvzVisualType t
         visual = dvz_image(scene, 0);
         if (visual == NULL || dvz_visual_set_data(visual, "position", positions, 4) != 0 ||
             dvz_visual_set_data(visual, "texcoords", texcoords, 4) != 0 ||
-            dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) != 0)
+            _scene_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) != 0)
             return NULL;
         break;
     }

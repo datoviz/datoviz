@@ -224,7 +224,7 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
  * @param height the texture height in pixels
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_visual_set_texture_rgba8(
+DvzResult _scene_visual_set_texture_rgba8(
     DvzVisual* visual, const uint8_t* rgba, uint32_t width, uint32_t height,
     DvzSize size_bytes)
 {
@@ -234,12 +234,12 @@ DvzResult dvz_visual_set_texture_rgba8(
         visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH &&
         !is_mesh)
     {
-        log_error("dvz_visual_set_texture_rgba8 is only supported for image, glyph, and mesh visuals");
+        log_error("_scene_visual_set_texture_rgba8 is only supported for image, glyph, and mesh visuals");
         return -1;
     }
     if (rgba == NULL || width == 0 || height == 0)
     {
-        log_error("dvz_visual_set_texture_rgba8: NULL data or zero extent (%ux%u)", width, height);
+        log_error("_scene_visual_set_texture_rgba8: NULL data or zero extent (%ux%u)", width, height);
         return -1;
     }
     uint64_t expected_size = 0;
@@ -249,7 +249,7 @@ DvzResult dvz_visual_set_texture_rgba8(
         (uint64_t)size_bytes != expected_size)
     {
         log_error(
-            "dvz_visual_set_texture_rgba8: size_bytes must be width * height * 4 (%" PRIu64 ")",
+            "_scene_visual_set_texture_rgba8: size_bytes must be width * height * 4 (%" PRIu64 ")",
             expected_size);
         return -1;
     }
@@ -288,19 +288,19 @@ DvzResult dvz_visual_set_texture_rgba8(
  * @param height the texture height in pixels
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_visual_set_texture_r32f(
+DvzResult _scene_visual_set_texture_r32f(
     DvzVisual* visual, const float* values, uint32_t width, uint32_t height,
     DvzSize size_bytes)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH)
     {
-        log_error("dvz_visual_set_texture_r32f is only supported for image and glyph visuals");
+        log_error("_scene_visual_set_texture_r32f is only supported for image and glyph visuals");
         return -1;
     }
     if (values == NULL || width == 0 || height == 0)
     {
-        log_error("dvz_visual_set_texture_r32f: NULL data or zero extent (%ux%u)", width, height);
+        log_error("_scene_visual_set_texture_r32f: NULL data or zero extent (%ux%u)", width, height);
         return -1;
     }
     uint64_t expected_size = 0;
@@ -310,7 +310,7 @@ DvzResult dvz_visual_set_texture_r32f(
         (uint64_t)size_bytes != expected_size)
     {
         log_error(
-            "dvz_visual_set_texture_r32f: size_bytes must be width * height * sizeof(float) "
+            "_scene_visual_set_texture_r32f: size_bytes must be width * height * sizeof(float) "
             "(%" PRIu64 ")",
             expected_size);
         return -1;

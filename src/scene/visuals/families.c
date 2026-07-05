@@ -1105,7 +1105,7 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
             }
             if (dvz_visual_set_data(bg, "position", positions, 4) != 0 ||
                 dvz_visual_set_data(bg, "texcoords", texcoords, 4) != 0 ||
-                dvz_visual_set_texture_rgba8(
+                _scene_visual_set_texture_rgba8(
                     bg, background->image.rgba, background->image.width,
                     background->image.height,
                     (DvzSize)background->image.width * background->image.height * 4u) != 0)
@@ -1121,7 +1121,7 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
                 return false;
             }
         }
-        else if (dvz_visual_set_texture_rgba8(
+        else if (_scene_visual_set_texture_rgba8(
                      panel->background_visual, background->image.rgba, background->image.width,
                      background->image.height,
                      (DvzSize)background->image.width * background->image.height * 4u) != 0)

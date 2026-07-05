@@ -19114,9 +19114,8 @@ else:
  * First-slice scope: one sampled 2D texture per visual. The legacy path accepts `position`
  * (vec3, 4 corner vertices in triangle-strip order) and `texcoords` (vec2, matching UVs).
  * The retained per-item path accepts one anchor `position` and `extent` per image item, with
- * optional `tex_rect` atlas rectangles and per-item `anchor`. Bind a sampled field via
- * `dvz_visual_set_field()`. The legacy texture convenience wrappers remain available and lower
- * to scene-owned sampled fields internally.
+ * optional `tex_rect` atlas rectangles and per-item `anchor`. Bind texture data with a scene-owned
+ * sampled field via `dvz_visual_set_field()`.
  *
  * @param scene the scene
  * @param flags variant flags
@@ -30925,56 +30924,6 @@ else:
 
 
 try:
-    dvz_visual_set_texture_r32f = dvz.dvz_visual_set_texture_r32f
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_visual_set_texture_r32f')
-else:
-    dvz_visual_set_texture_r32f.__doc__ = """/**
- * Attach a 2D scalar R32F texture to an image or glyph visual.
- *
- * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
- * binds it to the visual's `"field"` slot. The owned sampled field uses
- * `DVZ_FIELD_SEMANTIC_SCALAR` and `DVZ_COLOR_ROLE_DATA`. The bound scale and colormap are applied
- * on the CPU during emit to produce the RGBA texture used by the current first-slice image runtime
- * path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
- *
- * @param visual the visual (must be of type IMAGE or GLYPH)
- * @param values scalar R32F pixel data, tightly packed, row-major
- * @param width the texture width in pixels
- * @param height the texture height in pixels
- * @param size_bytes number of bytes available at @p values; must equal `width * height * sizeof(float)`
- * @return 0 on success, -1 on error
- */"""
-    dvz_visual_set_texture_r32f.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(ctypes.c_float), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint64]
-    dvz_visual_set_texture_r32f.restype = ctypes.c_int32
-
-
-try:
-    dvz_visual_set_texture_rgba8 = dvz.dvz_visual_set_texture_rgba8
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_visual_set_texture_rgba8')
-else:
-    dvz_visual_set_texture_rgba8.__doc__ = """/**
- * Attach a 2D RGBA8 sRGB-color texture to an image, glyph, or mesh visual.
- *
- * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
- * binds it to the visual's `"field"` slot for image/glyph visuals or `"texture"` slot for mesh
- * visuals. The owned sampled field uses `DVZ_FIELD_SEMANTIC_COLOR` and
- * `DVZ_COLOR_ROLE_SRGB_COLOR`. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new
- * code.
- *
- * @param visual the visual (must be of type IMAGE, GLYPH, or MESH)
- * @param rgba RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes)
- * @param width the texture width in pixels
- * @param height the texture height in pixels
- * @param size_bytes number of bytes available at @p rgba; must equal `width * height * 4`
- * @return 0 on success, -1 on error
- */"""
-    dvz_visual_set_texture_rgba8.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint64]
-    dvz_visual_set_texture_rgba8.restype = ctypes.c_int32
-
-
-try:
     dvz_visual_set_transform = dvz.dvz_visual_set_transform
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_visual_set_transform')
@@ -31998,7 +31947,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1531
+_GENERATED_FUNCTION_COUNT = 1529
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_field_geometry', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_panel_background_desc', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scalebar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
 _DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzTextStyle', 'DvzTextPlacement', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzFontDesc', 'DvzFontDefaults', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RawFallback', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2D', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewSizeDesc', 'DvzViewDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]

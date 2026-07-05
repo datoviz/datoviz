@@ -210,9 +210,8 @@ static bool _add_probe_field(
     int rc = dvz_visual_set_data_many(field, updates, 3);
     if (rc != 0)
         return false;
-    rc = dvz_visual_set_texture_rgba8(
-        field, (const uint8_t*)pixels, FIELD_WIDTH, FIELD_HEIGHT, sizeof(pixels));
-    if (rc != 0)
+    if (!example_visual_set_rgba8_field(
+            scene, field, "field", (const uint8_t*)pixels, FIELD_WIDTH, FIELD_HEIGHT, NULL))
         return false;
     dvz_visual_set_query_capabilities(field, DVZ_QUERY_CAPABILITY_PIXEL);
     rc = dvz_panel_add_visual(panel, field, &(DvzVisualAttachDesc){.z_layer = -1});

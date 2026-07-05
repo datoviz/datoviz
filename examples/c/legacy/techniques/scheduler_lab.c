@@ -57,6 +57,7 @@ typedef struct SchedulerLabState
     DvzInputRouter* router;
     DvzVisual* points;
     DvzVisual* image;
+    DvzSampledField* image_field;
 
     float diameters[LAB_POINT_COUNT];
     float point_size;
@@ -146,10 +147,12 @@ static void _lab_update_image(SchedulerLabState* state)
         }
     }
     if (
-        dvz_visual_set_texture_rgba8(
-            state->image, state->image_rgba, LAB_IMAGE_SIZE, LAB_IMAGE_SIZE,
-            sizeof(state->image_rgba)) == 0)
+        example_visual_set_rgba8_field(
+            state->scene, state->image, "field", state->image_rgba, LAB_IMAGE_SIZE,
+            LAB_IMAGE_SIZE, &state->image_field))
+    {
         state->mutation_count++;
+    }
 }
 
 

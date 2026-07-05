@@ -515,9 +515,8 @@ _image_visual(DvzScene* scene, const uint8_t* pixels, DvzAlphaMode alpha_mode)
     rc = dvz_visual_set_data(visual, "texcoords", texcoords, 4);
     if (rc != 0)
         return NULL;
-    rc = dvz_visual_set_texture_rgba8(
-        visual, (const uint8_t*)pixels, TEX_W, TEX_H, sizeof(pixels));
-    if (rc != 0)
+    if (!example_visual_set_rgba8_field(
+            scene, visual, "field", (const uint8_t*)pixels, TEX_W, TEX_H, NULL))
         return NULL;
     rc = dvz_visual_set_alpha_mode(visual, alpha_mode);
     if (rc != 0)

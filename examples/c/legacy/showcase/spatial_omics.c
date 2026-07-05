@@ -99,9 +99,11 @@ struct DenseDataset
 
 struct DenseState
 {
+    DvzScene* scene;
     DenseDataset dataset;
     DvzVisual* points;
     DvzVisual* background;
+    DvzSampledField* background_field;
     uint8_t* upload_colors;
     float* upload_sizes;
     uint32_t upload_capacity;
@@ -596,7 +598,8 @@ static bool _upload_points(DenseState* state)
  * @param dataset loaded dataset
  * @return initialized image visual, or NULL
  */
-static DvzVisual* _background_visual(DvzScene* scene, const DenseDataset* dataset)
+static DvzVisual*
+_background_visual(DvzScene* scene, const DenseDataset* dataset, DvzSampledField** out_field)
 {
     if (scene == NULL || dataset == NULL || dataset->image_rgba == NULL)
         return NULL;
@@ -618,9 +621,9 @@ static DvzVisual* _background_visual(DvzScene* scene, const DenseDataset* datase
     };
     if (dvz_visual_set_data(visual, "position", positions, 4) != 0 ||
         dvz_visual_set_data(visual, "texcoords", texcoords, 4) != 0 ||
-        dvz_visual_set_texture_rgba8(
-            visual, dataset->image_rgba, dataset->image_width, dataset->image_height,
-            (DvzSize)dataset->image_width * dataset->image_height * 4u) != 0)
+        !example_visual_set_rgba8_field(
+            scene, visual, "field", dataset->image_rgba, dataset->image_width,
+            dataset->image_height, out_field))
     {
         return NULL;
     }
@@ -640,10 +643,9 @@ static bool _upload_background(DenseState* state)
     ANN(state);
     if (state->background == NULL || state->dataset.image_rgba == NULL)
         return true;
-    return dvz_visual_set_texture_rgba8(
-               state->background, state->dataset.image_rgba, state->dataset.image_width,
-               state->dataset.image_height,
-               (DvzSize)state->dataset.image_width * state->dataset.image_height * 4u) == 0;
+    return example_visual_set_rgba8_field(
+        state->scene, state->background, "field", state->dataset.image_rgba,
+        state->dataset.image_width, state->dataset.image_height, &state->background_field);
 }
 
 
@@ -825,7 +827,8 @@ int main(int argc, char** argv)
 
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.035f, 0.040f, 0.052f, 1.0f));
 
-    DvzVisual* background = _background_visual(scene, &dataset);
+    DvzSampledField* background_field = NULL;
+    DvzVisual* background = _background_visual(scene, &dataset, &background_field);
     if (background != NULL)
     {
         (void)dvz_panel_add_visual(
@@ -845,9 +848,11 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(rc == 0, "dense_points: point visual attach failed");
 
     state = (DenseState){
+        .scene = scene,
         .dataset = dataset,
         .points = points,
         .background = background,
+        .background_field = background_field,
         .point_size = 2.0f,
         .opacity = 0.72f,
         .background_visible = true,

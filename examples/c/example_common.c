@@ -295,6 +295,84 @@ uint32_t example_frame_count_any(int argc, char** argv)
 }
 
 
+
+/**
+ * Bind or refresh an RGBA8 sampled field on a visual.
+ *
+ * @param scene scene owning the sampled field
+ * @param visual destination visual
+ * @param slot_name visual sampled-field slot
+ * @param rgba tightly packed RGBA8 texels
+ * @param width field width
+ * @param height field height
+ * @param field_io optional retained field pointer
+ * @return true on success
+ */
+bool example_visual_set_rgba8_field(
+    DvzScene* scene,
+    DvzVisual* visual,
+    const char* slot_name,
+    const uint8_t* rgba,
+    uint32_t width,
+    uint32_t height,
+    DvzSampledField** field_io)
+{
+    if (scene == NULL || visual == NULL || slot_name == NULL || rgba == NULL || width == 0 ||
+        height == 0)
+        return false;
+
+    DvzFieldDataView view = dvz_field_data_view();
+    view.data = rgba;
+    view.bytes_per_row = (uint64_t)width * 4u;
+    view.rows_per_image = height;
+
+    DvzSampledField* field = field_io != NULL ? *field_io : NULL;
+    if (field == NULL)
+    {
+        DvzSampledFieldDesc desc = dvz_sampled_field_desc();
+        desc.dim = DVZ_FIELD_DIM_2D;
+        desc.format = DVZ_FIELD_FORMAT_RGBA8_UNORM;
+        desc.semantic = DVZ_FIELD_SEMANTIC_COLOR;
+        desc.color_role = DVZ_COLOR_ROLE_SRGB_COLOR;
+        desc.width = width;
+        desc.height = height;
+        desc.depth = 1;
+
+        field = dvz_sampled_field(scene, &desc);
+        if (field == NULL)
+            return false;
+        if (!dvz_sampled_field_set_data(field, &view))
+            return false;
+    }
+    else
+    {
+        const DvzSampledFieldDesc* desc = dvz_sampled_field_get_desc(field);
+        if (
+            desc == NULL || desc->dim != DVZ_FIELD_DIM_2D ||
+            desc->format != DVZ_FIELD_FORMAT_RGBA8_UNORM ||
+            desc->semantic != DVZ_FIELD_SEMANTIC_COLOR)
+        {
+            return false;
+        }
+
+        bool ok = false;
+        if (desc->width == width && desc->height == height && desc->depth == 1)
+            ok = dvz_sampled_field_set_data(field, &view);
+        else
+            ok = dvz_sampled_field_resize(field, width, height, 1, &view);
+        if (!ok)
+            return false;
+    }
+
+    if (!dvz_visual_set_field(visual, slot_name, field))
+        return false;
+    if (field_io != NULL)
+        *field_io = field;
+    return true;
+}
+
+
+
 /**
  * Run an app view with the configured capture lifecycle.
  *

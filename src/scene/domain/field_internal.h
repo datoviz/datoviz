@@ -99,3 +99,11 @@ void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field);
 void _scene_release_visual_field(DvzVisual* visual);
 
 void _scene_release_field_bindings(DvzSampledField* field);
+
+DvzResult _scene_visual_set_texture_rgba8(
+    DvzVisual* visual, const uint8_t* rgba, uint32_t width, uint32_t height,
+    DvzSize size_bytes);
+
+DvzResult _scene_visual_set_texture_r32f(
+    DvzVisual* visual, const float* values, uint32_t width, uint32_t height,
+    DvzSize size_bytes);

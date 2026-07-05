@@ -3560,9 +3560,8 @@ DVZ_EXPORT DvzResult dvz_path_set_subpaths(
  * First-slice scope: one sampled 2D texture per visual. The legacy path accepts `position`
  * (vec3, 4 corner vertices in triangle-strip order) and `texcoords` (vec2, matching UVs).
  * The retained per-item path accepts one anchor `position` and `extent` per image item, with
- * optional `tex_rect` atlas rectangles and per-item `anchor`. Bind a sampled field via
- * `dvz_visual_set_field()`. The legacy texture convenience wrappers remain available and lower
- * to scene-owned sampled fields internally.
+ * optional `tex_rect` atlas rectangles and per-item `anchor`. Bind texture data with a scene-owned
+ * sampled field via `dvz_visual_set_field()`.
  *
  * @param scene the scene
  * @param flags variant flags
@@ -3911,48 +3910,6 @@ DVZ_EXPORT DvzResult dvz_volume_clear_clipping(DvzVisual* visual);
  * @return the volume state, or NULL on error
  */
 DVZ_EXPORT const DvzVolumeState* dvz_volume_state(const DvzVisual* visual);
-
-
-/**
- * Attach a 2D RGBA8 sRGB-color texture to an image, glyph, or mesh visual.
- *
- * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
- * binds it to the visual's `"field"` slot for image/glyph visuals or `"texture"` slot for mesh
- * visuals. The owned sampled field uses `DVZ_FIELD_SEMANTIC_COLOR` and
- * `DVZ_COLOR_ROLE_SRGB_COLOR`. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new
- * code.
- *
- * @param visual the visual (must be of type IMAGE, GLYPH, or MESH)
- * @param rgba RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes)
- * @param width the texture width in pixels
- * @param height the texture height in pixels
- * @param size_bytes number of bytes available at @p rgba; must equal `width * height * 4`
- * @return 0 on success, -1 on error
- */
-DVZ_EXPORT DvzResult dvz_visual_set_texture_rgba8(
-    DvzVisual* visual, const uint8_t* rgba, uint32_t width, uint32_t height,
-    DvzSize size_bytes);
-
-
-/**
- * Attach a 2D scalar R32F texture to an image or glyph visual.
- *
- * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
- * binds it to the visual's `"field"` slot. The owned sampled field uses
- * `DVZ_FIELD_SEMANTIC_SCALAR` and `DVZ_COLOR_ROLE_DATA`. The bound scale and colormap are applied
- * on the CPU during emit to produce the RGBA texture used by the current first-slice image runtime
- * path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
- *
- * @param visual the visual (must be of type IMAGE or GLYPH)
- * @param values scalar R32F pixel data, tightly packed, row-major
- * @param width the texture width in pixels
- * @param height the texture height in pixels
- * @param size_bytes number of bytes available at @p values; must equal `width * height * sizeof(float)`
- * @return 0 on success, -1 on error
- */
-DVZ_EXPORT DvzResult dvz_visual_set_texture_r32f(
-    DvzVisual* visual, const float* values, uint32_t width, uint32_t height,
-    DvzSize size_bytes);
 
 
 EXTERN_C_OFF

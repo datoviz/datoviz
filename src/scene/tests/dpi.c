@@ -19,6 +19,7 @@
 
 #include "_assertions.h"
 #include "../../drp2/_stream.h"
+#include "domain/field_internal.h"
 #include "frame_plan/frame_plan.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
@@ -70,7 +71,7 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
     AT(dvz_visual_set_data(image, "position_px", image_pos, 1) == 0);
     AT(dvz_visual_set_data(image, "extent_px", image_extent, 1) == 0);
     AT(dvz_visual_set_data(image, "anchor", image_anchor, 1) == 0);
-    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)image_pixels, 4, 4, 4u * 4u * 4u) == 0);
+    AT(_scene_visual_set_texture_rgba8(image, (const uint8_t*)image_pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(
            panel, image,
            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);

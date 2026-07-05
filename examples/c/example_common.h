@@ -140,6 +140,15 @@ bool example_configure_equal_aspect_panel(
 
 bool example_configure_compact_grid(DvzGrid* grid, float gutter_x_px, float gutter_y_px);
 
+bool example_visual_set_rgba8_field(
+    DvzScene* scene,
+    DvzVisual* visual,
+    const char* slot_name,
+    const uint8_t* rgba,
+    uint32_t width,
+    uint32_t height,
+    DvzSampledField** field_io);
+
 DvzVisual* example_graphite_cyan_cube_mesh(
     DvzScene* scene,
     double size,
