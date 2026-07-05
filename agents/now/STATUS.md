@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active RC preparation. Updated: 2026-06-22.
+Status: active RC preparation. Updated: 2026-07-05.
 
 Keep this file short. Durable behavior belongs in `spec/`; completed history belongs in git
 history, not in agent archives.
@@ -8,20 +8,21 @@ history, not in agent archives.
 
 ## Current Pickup
 
-Next critical path: follow the Pre-RC1 execution order below, then move directly to RC1 release
-notes, tag, artifacts, and publication checks.
+Next critical path: execute the public API/ABI cleanup campaign on `api/pre-rc-cleanup`, then move
+directly to RC1 release notes, tag, artifacts, and publication checks.
 
 Pre-RC1 execution order:
 
-1. Run the v0.4 Git history cleanup if it is still desired before stable RC refs exist.
-2. Keep the now-green wheel matrix in release evidence and inspect downloaded artifacts before
-   upload.
-3. Prepare the RC1 source bundle, release notes, tag, and publication rehearsal.
-4. Install, inspect, and smoke-test the built wheels, including native dependencies and the CMake
-   consumer check.
-5. Complete the reopened aggressive public API/ABI consistency campaign before RC1. The maintainer
+1. Complete the reopened aggressive public API/ABI consistency campaign before RC1. The maintainer
    decision is to break API/ABI now where removal, renaming, argument-ordering, ownership,
-   backend-neutral naming, or raw-binding safety improves the v0.4 public contract.
+   backend-neutral naming, or raw-binding safety improves the v0.4 public contract. Use
+   [HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md](HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md).
+2. Run the v0.4 Git history cleanup if it is still desired before stable RC refs exist.
+3. Keep the now-green wheel matrix in release evidence and inspect downloaded artifacts before
+   upload.
+4. Prepare the RC1 source bundle, release notes, tag, and publication rehearsal.
+5. Install, inspect, and smoke-test the built wheels, including native dependencies and the CMake
+   consumer check.
 6. Keep the v0.3 visible parity audit and public API/status disposition table reconciled before
    RC1: specifically re-check `docs/reference/feature-status.md`,
    `docs/reference/project-status.md`, `docs/reference/v03-visible-parity.md`, generated C API
@@ -42,6 +43,11 @@ and force-push guardrails are recorded in [RELEASE.md](RELEASE.md#0-pre-rc-git-h
 Release decision: explicit linear `f16`/`f32` scientific image export/readback is deferred beyond
 RC1. The v0.4.0 capture contract is sRGB RGBA8 screenshot/export pixels.
 
+Pre-RC architecture refactor status: complete. The mechanical API tiering, backend-neutral render
+types, DRP2 metadata authority, WASM bridge split, and panel render planner checkpoint commits have
+landed on `v0.4-dev`; optional scene internal-state splitting is deferred. Do not restart the old
+architecture plan from agent notes.
+
 Blockers:
 
 | Lane | Status | Next proof |
@@ -52,7 +58,7 @@ Blockers:
 | Compute+graphics experimental path | DRP2 `ResourceBarrier`, FramePlan scene compute lowering, WebGPU fixture parity, and the C `gpu_particle_smoke` showcase are active. CPU command-generation proof passed on 2026-06-04. Native Vulkan compute+graphics proof passed on 2026-06-17: `test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes`, `test_vklite_compute_1`, `test_technique_compute_graphics`, and `examples/c/showcases/gpu_particle_smoke.c --png` with artifact `build/release-evidence/gpu_particle_smoke.png`. | Keep the slice classified as experimental in the feature/status table: native proof exists, but this is a narrow scene-compute/DRP2 interop path, not a general compute framework. |
 | Qt/PyQt hosted path | Native Qt hosting and the optional `datoviz_qtbridge` provider are active. On 2026-06-18, `DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build`, `./build/examples/qt/hosted_qt_smoke 120`, `./build/examples/qt/hosted_qt_widgets --smoke-ms 1000`, `DATOVIZ_QTBRIDGE_LIBRARY=build/qtbridge/libdatoviz_qtbridge.so uv run --isolated --with PyQt6 python -m datoviz.qt`, and the hosted PyQt smoke passed after updating the example to pass `DvzColor` to the raw background-color API. The isolated probe reported bridge Qt 6.11.1 and PyQt Qt 6.11.0; the system PyQt6 package in this shell lacks `QVulkanInstance` and is not a valid PyQt hosting proof. Public docs classify this as `supported, optional provider`. | Keep packaging/install diagnostics explicit for missing bridge, unsupported PyQt/PySide bindings, and Qt runtime mismatches; retain optional wheel checks with `--qt-probe optional`. |
 | v0.3 visible parity audit | Public table landed in `docs/reference/v03-visible-parity.md`, classifying visible v0.3-era capabilities as fixed, experimental, deferred, or external/GSP without preserving old APIs. | Keep it reconciled with feature/status docs, installed headers, generated C reference, and known gaps before RC1. |
-| Public API/status cleanup | Reopened as an active pre-RC blocker by July 2026 maintainer decision. The branch should use the pre-RC window for aggressive API/ABI breaks where they improve v0.4 consistency: remove unused legacy/internal public APIs, collapse transitional aliases, normalize naming and argument ordering, tighten ownership/constness, make stable app-facing names backend-neutral, classify DRP2/vklite protocol escape hatches as advanced/unstable, and keep raw `ctypes` exact but safe from known ownership traps. Earlier hardening still applies: raw ctypes and generated C reference track exported `DVZ_EXPORT` ABI, `dvz_ffi_*` is the explicit FFI helper namespace, owned string returns are policy-marked, and FramePlan packet APIs are intentionally classified advanced/unstable. | Execute [HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md](HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md) as checkpointed API waves. After public header/export/binding changes, run `just ctypes`, `just ctypes-check`, focused tests, and `git diff --check`; keep examples, docs, generated bindings, and generated references in sync with each API break. |
+| Public API/status cleanup | Reopened as an active pre-RC blocker by July 2026 maintainer decision. Work branch: `api/pre-rc-cleanup`. Use the pre-RC window for aggressive API/ABI breaks where they improve v0.4 consistency: remove unused legacy/internal public APIs, collapse transitional aliases, normalize naming and argument ordering, tighten ownership/constness, make stable app-facing names backend-neutral, classify DRP2/vklite protocol escape hatches as advanced/unstable, and keep raw `ctypes` exact but safe from known ownership traps. Earlier hardening still applies: raw ctypes and generated C reference track exported `DVZ_EXPORT` ABI, `dvz_ffi_*` is the explicit FFI helper namespace, owned string returns are policy-marked, and FramePlan packet APIs are intentionally classified advanced/unstable. | Execute [HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md](HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md) as checkpointed API waves. After public header/export/binding changes, run `just ctypes`, `just ctypes-check`, focused tests, exported symbol/header delta checks, and `git diff --check`; keep examples, docs, generated bindings, and generated references in sync with each API break. |
 | Release example proof | Partial for the full RC, but the 2026-06-09 `EXAMPLES_NOTES.md` ledger is closed: source/gallery polish, `showcases/surface_grid`, `features/bounds_overlay`, runtime/readability fixes, scenario-helper audit, comment metadata audit, and builtin-shapes parity audit are resolved with native smoke or explicit audit evidence. | Continue broader release proof outside `EXAMPLES_NOTES.md`: visible parity table, API disposition, and any additional focused native evidence where the environment supports Vulkan. |
 
 Closed first slices that should stay in validation: frame artifact scene emission, raw `ctypes`,
@@ -80,11 +86,13 @@ alpha-preserving PNG bytes can be deferred.
 
 ## Active Lanes
 
-1. **Release closure:** visible parity audit, final API/status reconciliation, known gaps.
-2. **Example proof:** C examples and fixture smokes for the declared release surface, especially
+1. **Public API/ABI cleanup:** execute `HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md` on
+   `api/pre-rc-cleanup`; break API/ABI now when it improves v0.4 consistency.
+2. **Release closure:** visible parity audit, final API/status reconciliation, known gaps.
+3. **Example proof:** C examples and fixture smokes for the declared release surface, especially
    one short feature example per public v0.4 feature, retained textured mesh, and composed
    annotation/layout examples.
-3. **WebGPU/WASM RC examples:** portable scenario host, native event/query scenario migrations,
+4. **WebGPU/WASM RC examples:** portable scenario host, native event/query scenario migrations,
    browser scenario event delivery, live website examples for most non-desktop scene scenarios,
    current subset diagnostics, compute particles, narrow request/query/readback,
    manifest-backed example classification, and browser/runner smoke evidence. Live gallery routes
@@ -93,15 +101,15 @@ alpha-preserving PNG bytes can be deferred.
    route, a query/readback route, a compute route, and a few targeted smoke rows for newly promoted
    capability clusters are enough. Broad `wasm-*` sampler pages are development aids, not the
    public promotion surface.
-4. **Compute+graphics:** minimal DRP2 sync objects/barriers, native compute-to-render proof,
+5. **Compute+graphics:** minimal DRP2 sync objects/barriers, native compute-to-render proof,
    WebGPU parity diagnostics, and the C-first particle-smoke gallery target remain active. Native
    Vulkan proof is recorded; keep RC work focused on honest experimental status and artifact
    retention rather than broadening into a general compute framework.
-5. **Runtime hardening:** concrete scene -> DRP2 -> vklite/canvas/app lifetime, resize, descriptor,
+6. **Runtime hardening:** concrete scene -> DRP2 -> vklite/canvas/app lifetime, resize, descriptor,
    repeated-frame, or churn bugs.
-6. **Qt/PyQt provider:** optional Qt bridge shared library, dynamic Python loader, binding
+7. **Qt/PyQt provider:** optional Qt bridge shared library, dynamic Python loader, binding
    diagnostics, and hosted PyQt smoke proof.
-7. **Docs inventory:** public header inventory, ownership notes, raw `ctypes` scope, array-aware
+8. **Docs inventory:** public header inventory, ownership notes, raw `ctypes` scope, array-aware
    Python facade scope, WebGPU/WASM scope, known issues, and GSP/VisPy2 boundary.
 
 Current runtime/WebGPU guardrail: keep texture-backed scene visuals on typed visual/draw-contract
