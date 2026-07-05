@@ -8238,13 +8238,18 @@ DvzResult dvz_text_set_anchors(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `text` | `DvzText *` |  |
-| `anchors` | `const float (*)[2]` |  |
-| `item_count` | `uint32_t` |  |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `text` | `DvzText *` | the text object |
+| `anchors` | `const float (*)[2]` | normalized text anchors |
+| `item_count` | `uint32_t` | number of anchors |
+
+Replace the text anchors of an existing retained text collection.
+
+Anchors are copied before return. `item_count` must match the current collection item count.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/text.h`:255._
+_Declared in `include/datoviz/scene/text.h`:302._
 
 ### `dvz_text_set_angles()`
 
@@ -8258,13 +8263,18 @@ DvzResult dvz_text_set_angles(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `text` | `DvzText *` |  |
-| `angles` | `const float *` |  |
-| `item_count` | `uint32_t` |  |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `text` | `DvzText *` | the text object |
+| `angles` | `const float *` | rotation angles in radians |
+| `item_count` | `uint32_t` | number of angles |
+
+Replace the rotation angles of an existing retained text collection.
+
+Angles are copied before return. `item_count` must match the current collection item count.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/text.h`:264._
+_Declared in `include/datoviz/scene/text.h`:341._
 
 ### `dvz_text_set_colors()`
 
@@ -8278,13 +8288,18 @@ DvzResult dvz_text_set_colors(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `text` | `DvzText *` |  |
-| `colors` | `const DvzColor *` |  |
-| `item_count` | `uint32_t` |  |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `text` | `DvzText *` | the text object |
+| `colors` | `const DvzColor *` | text colors |
+| `item_count` | `uint32_t` | number of colors |
+
+Replace the colors of an existing retained text collection.
+
+Colors are copied before return. `item_count` must match the current collection item count.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/text.h`:261._
+_Declared in `include/datoviz/scene/text.h`:328._
 
 ### `dvz_text_set_items()`
 
@@ -8298,15 +8313,20 @@ DvzResult dvz_text_set_items(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
 | `text` | `DvzText *` | the text object |
-| `items` | `const DvzTextItem *` |  |
-| `item_count` | `uint32_t` |  |
+| `items` | `const DvzTextItem *` | text items to copy, or NULL when `item_count` is 0 |
+| `item_count` | `uint32_t` | number of text items |
 
-Set the UTF-8 content of a retained text object.
+Replace all items in a retained text collection.
+
+Strings, positions, offsets, anchors, sizes, colors, and angles are copied before return. Passing
+`item_count == 0` clears the collection; otherwise `items` must point to `item_count` entries.
+Use this function when several per-item properties should change atomically.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/text.h`:208._
+_Declared in `include/datoviz/scene/text.h`:214._
 
 ### `dvz_text_set_layout()`
 
@@ -8327,7 +8347,7 @@ Set the layout of a retained text collection.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/text.h`:239._
+_Declared in `include/datoviz/scene/text.h`:245._
 
 ### `dvz_text_set_offsets()`
 
@@ -8341,13 +8361,18 @@ DvzResult dvz_text_set_offsets(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `text` | `DvzText *` |  |
-| `offsets` | `const float (*)[2]` |  |
-| `item_count` | `uint32_t` |  |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `text` | `DvzText *` | the text object |
+| `offsets` | `const float (*)[2]` | logical-pixel offsets |
+| `item_count` | `uint32_t` | number of offsets |
+
+Replace the logical-pixel offsets of an existing retained text collection.
+
+Offsets are copied before return. `item_count` must match the current collection item count.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/text.h`:251._
+_Declared in `include/datoviz/scene/text.h`:288._
 
 ### `dvz_text_set_placement()`
 
@@ -8360,6 +8385,7 @@ DvzResult dvz_text_set_placement(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | 0 on success, -1 on error |
 | `text` | `DvzText *` | the text object |
 | `placement` | `const DvzTextPlacement *` | the placement descriptor, or NULL for defaults |
 
@@ -8367,7 +8393,7 @@ Set the placement of a retained text object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/text.h`:283._
+_Declared in `include/datoviz/scene/text.h`:361._
 
 ### `dvz_text_set_position()`
 
@@ -8388,7 +8414,7 @@ Set the position of a retained one-item text collection.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/text.h`:229._
+_Declared in `include/datoviz/scene/text.h`:235._
 
 ### `dvz_text_set_positions()`
 
@@ -8402,13 +8428,18 @@ DvzResult dvz_text_set_positions(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `text` | `DvzText *` |  |
-| `positions` | `const double (*)[3]` |  |
-| `item_count` | `uint32_t` |  |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `text` | `DvzText *` | the text object |
+| `positions` | `const double (*)[3]` | positions in the current placement mode |
+| `item_count` | `uint32_t` | number of positions |
+
+Replace the positions of an existing retained text collection.
+
+Positions are copied before return. `item_count` must match the current collection item count.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/text.h`:247._
+_Declared in `include/datoviz/scene/text.h`:274._
 
 ### `dvz_text_set_renderer()`
 
@@ -8429,7 +8460,7 @@ Select the renderer used by a retained text object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/text.h`:293._
+_Declared in `include/datoviz/scene/text.h`:371._
 
 ### `dvz_text_set_sizes()`
 
@@ -8443,13 +8474,18 @@ DvzResult dvz_text_set_sizes(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `text` | `DvzText *` |  |
-| `sizes_px` | `const float *` |  |
-| `item_count` | `uint32_t` |  |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `text` | `DvzText *` | the text object |
+| `sizes_px` | `const float *` | logical-pixel text sizes |
+| `item_count` | `uint32_t` | number of sizes |
+
+Replace the text sizes of an existing retained text collection.
+
+Sizes are copied before return. `item_count` must match the current collection item count.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/text.h`:258._
+_Declared in `include/datoviz/scene/text.h`:315._
 
 ### `dvz_text_set_string()`
 
@@ -8470,7 +8506,7 @@ Set the UTF-8 content of a retained one-item text collection.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/text.h`:219._
+_Declared in `include/datoviz/scene/text.h`:225._
 
 ### `dvz_text_set_strings()`
 
@@ -8484,13 +8520,19 @@ DvzResult dvz_text_set_strings(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `text` | `DvzText *` |  |
-| `strings` | `const char *const *` |  |
-| `item_count` | `uint32_t` |  |
+| return | `DvzResult` | 0 on success, -1 on error |
+| `text` | `DvzText *` | the text object |
+| `strings` | `const char *const *` | UTF-8 strings to copy |
+| `item_count` | `uint32_t` | number of strings |
+
+Replace the UTF-8 strings of an existing retained text collection.
+
+String contents are copied before return. `item_count` must match the current collection item
+count.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/text.h`:243._
+_Declared in `include/datoviz/scene/text.h`:260._
 
 ### `dvz_text_set_style()`
 
@@ -8511,7 +8553,7 @@ Set the style of a retained text object.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/text.h`:274._
+_Declared in `include/datoviz/scene/text.h`:351._
 
 ### `dvz_text_style()`
 

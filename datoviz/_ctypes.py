@@ -28116,6 +28116,16 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_anchors')
 else:
+    dvz_text_set_anchors.__doc__ = """/**
+ * Replace the text anchors of an existing retained text collection.
+ *
+ * Anchors are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param anchors normalized text anchors
+ * @param item_count number of anchors
+ * @return 0 on success, -1 on error
+ */"""
     dvz_text_set_anchors.argtypes = [ctypes.POINTER(DvzText), (ctypes.c_void_p * 2), ctypes.c_uint32]
     dvz_text_set_anchors.restype = ctypes.c_int32
 
@@ -28125,6 +28135,16 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_angles')
 else:
+    dvz_text_set_angles.__doc__ = """/**
+ * Replace the rotation angles of an existing retained text collection.
+ *
+ * Angles are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param angles rotation angles in radians
+ * @param item_count number of angles
+ * @return 0 on success, -1 on error
+ */"""
     dvz_text_set_angles.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(ctypes.c_float), ctypes.c_uint32]
     dvz_text_set_angles.restype = ctypes.c_int32
 
@@ -28134,6 +28154,16 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_colors')
 else:
+    dvz_text_set_colors.__doc__ = """/**
+ * Replace the colors of an existing retained text collection.
+ *
+ * Colors are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param colors text colors
+ * @param item_count number of colors
+ * @return 0 on success, -1 on error
+ */"""
     dvz_text_set_colors.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(DvzColor), ctypes.c_uint32]
     dvz_text_set_colors.restype = ctypes.c_int32
 
@@ -28144,10 +28174,16 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_items')
 else:
     dvz_text_set_items.__doc__ = """/**
- * Set the UTF-8 content of a retained text object.
+ * Replace all items in a retained text collection.
+ *
+ * Strings, positions, offsets, anchors, sizes, colors, and angles are copied before return. Passing
+ * `item_count == 0` clears the collection; otherwise `items` must point to `item_count` entries.
+ * Use this function when several per-item properties should change atomically.
  *
  * @param text the text object
- * @param string the string, or NULL to clear
+ * @param items text items to copy, or NULL when `item_count` is 0
+ * @param item_count number of text items
+ * @return 0 on success, -1 on error
  */"""
     dvz_text_set_items.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(DvzTextItem), ctypes.c_uint32]
     dvz_text_set_items.restype = ctypes.c_int32
@@ -28174,6 +28210,16 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_offsets')
 else:
+    dvz_text_set_offsets.__doc__ = """/**
+ * Replace the logical-pixel offsets of an existing retained text collection.
+ *
+ * Offsets are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param offsets logical-pixel offsets
+ * @param item_count number of offsets
+ * @return 0 on success, -1 on error
+ */"""
     dvz_text_set_offsets.argtypes = [ctypes.POINTER(DvzText), (ctypes.c_void_p * 2), ctypes.c_uint32]
     dvz_text_set_offsets.restype = ctypes.c_int32
 
@@ -28188,6 +28234,7 @@ else:
  *
  * @param text the text object
  * @param placement the placement descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
  */"""
     dvz_text_set_placement.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(DvzTextPlacement)]
     dvz_text_set_placement.restype = ctypes.c_int32
@@ -28214,6 +28261,16 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_positions')
 else:
+    dvz_text_set_positions.__doc__ = """/**
+ * Replace the positions of an existing retained text collection.
+ *
+ * Positions are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param positions positions in the current placement mode
+ * @param item_count number of positions
+ * @return 0 on success, -1 on error
+ */"""
     dvz_text_set_positions.argtypes = [ctypes.POINTER(DvzText), (ctypes.c_void_p * 3), ctypes.c_uint32]
     dvz_text_set_positions.restype = ctypes.c_int32
 
@@ -28239,6 +28296,16 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_sizes')
 else:
+    dvz_text_set_sizes.__doc__ = """/**
+ * Replace the text sizes of an existing retained text collection.
+ *
+ * Sizes are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param sizes_px logical-pixel text sizes
+ * @param item_count number of sizes
+ * @return 0 on success, -1 on error
+ */"""
     dvz_text_set_sizes.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(ctypes.c_float), ctypes.c_uint32]
     dvz_text_set_sizes.restype = ctypes.c_int32
 
@@ -28264,6 +28331,17 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_strings')
 else:
+    dvz_text_set_strings.__doc__ = """/**
+ * Replace the UTF-8 strings of an existing retained text collection.
+ *
+ * String contents are copied before return. `item_count` must match the current collection item
+ * count.
+ *
+ * @param text the text object
+ * @param strings UTF-8 strings to copy
+ * @param item_count number of strings
+ * @return 0 on success, -1 on error
+ */"""
     dvz_text_set_strings.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(ctypes.c_char_p), ctypes.c_uint32]
     dvz_text_set_strings.restype = ctypes.c_int32
 
