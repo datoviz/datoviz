@@ -129,14 +129,7 @@ static bool _add_sphere_lattice(DvzScene* scene, DvzPanel* panel, bool cue_enabl
  */
 static bool _set_camera(DvzPanel* panel)
 {
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.view.eye[0] = 0.0f;
-    camera.view.eye[1] = 1.05f;
-    camera.view.eye[2] = 3.45f;
-    camera.projection.fov_y = 0.58f;
-    camera.projection.near_clip = 0.05f;
-    camera.projection.far_clip = 100.0f;
-    return dvz_panel_set_camera_desc(panel, &camera) == 0;
+    return example_set_default_3d_camera(panel, 1.0f) != NULL;
 }
 
 

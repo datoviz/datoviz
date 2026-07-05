@@ -163,6 +163,7 @@ batches:
     - feature_bars_bands
 
   review-07-cameras-3d:
+    - feature_camera_manual
     - feature_controller_arcball
     - feature_controller_fly
     - feature_controller_turntable
@@ -505,6 +506,25 @@ examples:
         - controller
         - arcball
         - mesh
+    agent_copy_safe: true
+
+  - id: feature_camera_manual
+    title: Manual Camera
+    stage: v0.4_required
+    category: feature
+    primary_feature: camera-manual
+    lane: features
+    source: examples/c/features/camera_manual.c
+    validation: smoke+interaction+screenshot
+    data:
+      kind: synthetic
+    webgpu:
+      status: webgpu-planned
+      requirements:
+        - camera
+        - mesh
+        - controller
+        - arcball
     agent_copy_safe: true
 
   - id: feature_orientation_gizmo

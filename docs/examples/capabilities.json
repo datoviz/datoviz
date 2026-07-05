@@ -3,11 +3,11 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 109,
+  "example_count": 110,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 68,
+    "feature": 69,
     "runtime": 5,
     "showcase": 15,
     "start": 1,
@@ -17,11 +17,11 @@
     "diagnostic": 1,
     "experimental": 14,
     "prototype": 3,
-    "supported": 91
+    "supported": 92
   },
   "agent_copy_safe": {
     "false": 28,
-    "true": 81
+    "true": 82
   },
   "capabilities": {
     "composites": {
@@ -157,7 +157,7 @@
         ]
       },
       "synthetic": {
-        "count": 100,
+        "count": 101,
         "examples": [
           {
             "id": "feature_basic_scene",
@@ -266,6 +266,15 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/controller_arcball.c",
             "page": "gallery/features/feature_controller_arcball.md"
+          },
+          {
+            "id": "feature_camera_manual",
+            "title": "Manual Camera",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/camera_manual.c",
+            "page": "gallery/features/feature_camera_manual.md"
           },
           {
             "id": "feature_orientation_gizmo",
@@ -1200,6 +1209,20 @@
             "agent_copy_safe": true,
             "source": "examples/c/features/builtin_shapes_3d.c",
             "page": "gallery/features/feature_builtin_shapes_3d.md"
+          }
+        ]
+      },
+      "camera-manual": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "feature_camera_manual",
+            "title": "Manual Camera",
+            "category": "feature",
+            "status": "supported",
+            "agent_copy_safe": true,
+            "source": "examples/c/features/camera_manual.c",
+            "page": "gallery/features/feature_camera_manual.md"
           }
         ]
       },

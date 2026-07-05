@@ -196,15 +196,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!dvz_grid_set_gutter(grid, 24.0f, 0.0f))
         return false;
 
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.view.eye[0] = 0.0f;
-    camera.view.eye[1] = 1.10f;
-    camera.view.eye[2] = 3.45f;
-    camera.view.up[1] = 1.0f;
-    camera.view.up[2] = 0.0f;
-    camera.projection.fov_y = 0.66f;
-    camera.projection.near_clip = 0.05f;
-    camera.projection.far_clip = 100.0f;
+    DvzCameraDesc camera = example_default_3d_camera_desc(1.0f);
     DvzController* controllers[3] = {0};
     const char* labels[3] = {"Matte key light", "Glossy side light", "Rim highlight"};
     for (uint32_t i = 0; i < 3u; i++)
