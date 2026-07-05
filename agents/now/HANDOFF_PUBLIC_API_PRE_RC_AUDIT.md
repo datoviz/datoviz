@@ -473,6 +473,22 @@ Completed checkpoints:
      `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, `just build`,
      `just test vk`, `just ctypes-smoke`, `just docs-api-check`, `just ctypes-python-smoke`, and
      `git diff --check`.
+43. `af13ad996` `api: mark drp2 base64 payload writers`
+   - Renamed the public DRP2 string-payload upload helpers to make base64 explicit:
+     `dvz_drp2_stream_write_buffer_base64()`,
+     `dvz_drp2_stream_write_texture_2d_base64()`,
+     `dvz_drp2_stream_write_texture_2d_region_base64()`, and
+     `dvz_drp2_stream_write_texture_3d_base64()`.
+   - Updated tests, scene/frame-plan fixture emitters that still synthesize base64 zero payloads,
+     generated raw `ctypes`, generated C API docs, and `symbols.map`.
+   - The raw-byte and borrowed upload helpers remain the primary in-process path:
+     `dvz_drp2_stream_write_buffer_bytes()` and `dvz_drp2_stream_write_texture_*_borrowed()`.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, stale old-name scan, `just build`,
+     `just test drp2`, `just test app`, `just ctypes-smoke`, `just docs-api-check`,
+     `just ctypes-python-smoke`, and `git diff --check`.
+   - Validation caveat: `just test scene/runtime` selected 0 tests; DRP2 frame-plan emission tests
+     were covered by `just test drp2`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn: none
 known at this checkpoint.
