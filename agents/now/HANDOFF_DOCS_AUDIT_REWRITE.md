@@ -205,6 +205,29 @@ Regenerate from metadata rather than hand-editing generated gallery Markdown. Ad
 check that every public `docs/examples/examples.json` page exists and that public manifest examples
 appear in the generated matrix or have an explicit visible exclusion.
 
+### Example Consistency And Metadata
+
+The docs rewrite should treat `examples/c/MANIFEST.yaml` as the authority for public example IDs,
+titles, categories, data contracts, WebGPU routes, and gallery metadata. Preserve these guardrails:
+
+1. every built public example should have a manifest row or an explicit non-public classification;
+2. lab and legacy examples should not leak into public release proof unless explicitly promoted;
+3. public route IDs, C scenario IDs, and WebGPU live routes must have unambiguous mappings;
+4. public WebGPU route counts should be generated from metadata, not hand-maintained in prose;
+5. `webgpu-live` rows need live routes and scenario IDs; deferred/native-only rows need visible
+   reasons;
+6. prepared, generated, real, or external-data examples must fail with exact preparation commands
+   and must not silently synthesize undeclared runtime fallback data;
+7. examples should not use `--png` for non-capture behavior;
+8. example output paths should preserve distinct artifacts for multi-output examples rather than
+   collapsing everything to one basename;
+9. Python, Qt, integration, and benchmark examples should match the v0.4 API story and avoid stale
+   attribute names such as `"diameter"` where `"diameter_px"` is the public attribute.
+
+If broad example cleanup is needed, keep it subordinate to RC documentation/gallery correctness.
+Do not reopen old example-modernization plans as standalone RC work unless validation finds a
+concrete blocker.
+
 ### Gallery User Experience
 
 Generated detail pages have read like metadata dumps rather than polished user pages. Check for:

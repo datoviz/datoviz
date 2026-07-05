@@ -1,8 +1,11 @@
-# Handoff: Microbubble showcase example using retained visual item ranges
+# Microbubble Showcase Proposal
 
-**Target branch:** `v0.4-dev`, after the completed `api/pre-rc-cleanup` branch is merged.
+Status: future/post-RC showcase proposal. This is not RC1 work unless the maintainer explicitly
+promotes it in the current turn.
 
-**Primary goal:** implement a Datoviz C showcase that renders animated 3D microbubble tracks efficiently with retained GPU data and per-frame visual item-range updates, without custom shaders and without adding domain-specific concepts to Datoviz core.
+Primary goal: implement a Datoviz C showcase that renders animated 3D microbubble tracks
+efficiently with retained GPU data and per-frame visual item-range updates, without custom shaders
+and without adding domain-specific concepts to Datoviz core.
 
 ---
 
@@ -18,7 +21,8 @@ microbubbles outputs/viewer/data/tracks.bin
     -> two retained Datoviz point layers updated via visual item ranges
 ```
 
-The example should prove that the new v0.4 RC visual item-range API supports a real time-sorted scientific event-cloud use case:
+The example should prove that the v0.4 visual item-range API supports a real time-sorted scientific
+event-cloud use case:
 
 ```c
 dvz_visual_set_item_range(visual, first_item, item_count)
@@ -438,7 +442,6 @@ examples/c/CMakeLists.txt
 examples/c/MANIFEST.yaml
 spec/scene/examples/PLANNING.md                 # only if current process requires example planning entry
 docs / generated gallery metadata               # only through existing generation/check process
-agents/now/STATUS.md                            # one short active-lane/status note if implementation becomes RC work
 ```
 
 Do not touch generated files by hand. Use the repo’s existing example-manifest/gallery generation workflow if needed.
@@ -534,7 +537,8 @@ Copy-pasteable prompt:
 ```text
 You are working in my local clone of datoviz/datoviz on v0.4-dev, after the retained visual item-range API has landed.
 
-Implement the native C microbubble showcase described in agents/now/HANDOFF_MICROBUBBLE_EXAMPLE.md.
+Implement the native C microbubble showcase described in
+spec/scene/examples/scenarios/MICROBUBBLES.md.
 
 Important constraints:
 - Do not add Datoviz core semantics for speed, frame, track, intensity, or microbubbles.
