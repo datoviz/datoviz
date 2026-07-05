@@ -15,8 +15,6 @@
 /*************************************************************************************************/
 
 #include <math.h>
-#include <stdio.h>
-
 #include "_assertions.h"
 #include "datoviz/math/box.h"
 #include "datoviz/math/types.h"
@@ -175,7 +173,7 @@ DvzBox dvz_box_merge(uint32_t box_count, const DvzBox* boxes, DvzBoxMergeStrateg
 
 
 void dvz_box_normalize_1D(
-    DvzBox source, DvzBox target, DvzDim dim, uint32_t count, double* pos, vec3* out)
+    DvzBox source, DvzBox target, DvzDim dim, uint32_t count, const double* pos, vec3* out)
 {
     ANN(pos);
     ANN(out);
@@ -220,7 +218,8 @@ void dvz_box_normalize_1D(
 
 
 
-void dvz_box_normalize_2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out)
+void dvz_box_normalize_2D(
+    DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out)
 {
     ANN(pos);
     ANN(out);
@@ -265,7 +264,8 @@ void dvz_box_normalize_polygon(
 
 
 
-void dvz_box_normalize_3D(DvzBox source, DvzBox target, uint32_t count, dvec3* pos, vec3* out)
+void dvz_box_normalize_3D(
+    DvzBox source, DvzBox target, uint32_t count, dvec3* pos, vec3* out)
 {
     ANN(pos);
     ANN(out);
@@ -290,7 +290,7 @@ void dvz_box_normalize_3D(DvzBox source, DvzBox target, uint32_t count, dvec3* p
 
 
 
-void dvz_box_inverse(DvzBox source, DvzBox target, vec3 pos, dvec3* out)
+void dvz_box_inverse(DvzBox source, DvzBox target, const vec3 pos, dvec3* out)
 {
     ANN(pos);
 
@@ -304,13 +304,4 @@ void dvz_box_inverse(DvzBox source, DvzBox target, vec3 pos, dvec3* out)
     (*out)[0] = (pos[0] - target.xmin) / scale_x + source.xmin;
     (*out)[1] = (pos[1] - target.ymin) / scale_y + source.ymin;
     (*out)[2] = (pos[2] - target.zmin) / scale_z + source.zmin;
-}
-
-
-
-void dvz_box_print(DvzBox box)
-{
-    printf(
-        "Box: x: [%g, %g], y: [%g, %g], z: [%g, %g]\n", //
-        box.xmin, box.xmax, box.ymin, box.ymax, box.zmin, box.zmax);
 }

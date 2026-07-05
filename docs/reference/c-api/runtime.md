@@ -18,7 +18,7 @@ Common workflows:
 - [vklite overview](../../advanced/vklite.md)
 - [Canvas and stream API](../../advanced/canvas.md)
 
-Functions: 552
+Functions: 556
 
 ## Symbol Groups
 
@@ -30,7 +30,7 @@ Functions: 552
 | [Attachment](#attachment) | 4 | `include/datoviz/vklite/rendering.h` |
 | [Barrier](#barrier) | 12 | `include/datoviz/vklite/sync.h` |
 | [Barriers](#barriers) | 10 | `include/datoviz/vklite/sync.h` |
-| [Box](#box) | 6 | `include/datoviz/math/box.h` |
+| [Box](#box) | 10 | `include/datoviz/math/box.h` |
 | [Buffer](#buffer) | 23 | `include/datoviz/vklite/buffers.h` |
 | [Camera](#camera) | 14 | `include/datoviz/controller/camera.h` |
 | [Circular](#circular) | 2 | `include/datoviz/math/anim.h` |
@@ -202,8 +202,12 @@ Functions: 552
     | [`dvz_box_aspect()`](#dvz_box_aspect) | `include/datoviz/math/box.h` |
     | [`dvz_box_center()`](#dvz_box_center) | `include/datoviz/math/box.h` |
     | [`dvz_box_extent()`](#dvz_box_extent) | `include/datoviz/math/box.h` |
+    | [`dvz_box_inverse()`](#dvz_box_inverse) | `include/datoviz/math/box.h` |
     | [`dvz_box_merge()`](#dvz_box_merge) | `include/datoviz/math/box.h` |
     | [`dvz_box_normalize_1D()`](#dvz_box_normalize_1d) | `include/datoviz/math/box.h` |
+    | [`dvz_box_normalize_2D()`](#dvz_box_normalize_2d) | `include/datoviz/math/box.h` |
+    | [`dvz_box_normalize_3D()`](#dvz_box_normalize_3d) | `include/datoviz/math/box.h` |
+    | [`dvz_box_normalize_polygon()`](#dvz_box_normalize_polygon) | `include/datoviz/math/box.h` |
 
     ### Buffer
 
@@ -2670,6 +2674,30 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/math/box.h`:125._
 
+### `dvz_box_inverse()`
+
+```c title="dvz_box_inverse"
+void dvz_box_inverse(
+    DvzBox source,
+    DvzBox target,
+    const vec3 pos,
+    dvec3 * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `source` | `DvzBox` | the source box, in data coordinates |
+| `target` | `DvzBox` | the target box, typically in normalized coordinates |
+| `pos` | `const vec3` | the position in the target box |
+| `out` | `dvec3 *` |  |
+
+Perform an inverse transformation of a position from a target box to a source box.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/math/box.h`:208._
+
 ### `dvz_box_merge()`
 
 ```c title="dvz_box_merge"
@@ -2701,7 +2729,7 @@ void dvz_box_normalize_1D(
     DvzBox target,
     DvzDim dim,
     uint32_t count,
-    double * pos,
+    const double * pos,
     vec3 * out
 );
 ```
@@ -2712,16 +2740,92 @@ void dvz_box_normalize_1D(
 | `target` | `DvzBox` | the target box, typically in normalized coordinates |
 | `dim` | `DvzDim` | which dimension |
 | `count` | `uint32_t` | the number of positions to normalize |
-| `pos` | `double *` | the positions to normalize (double precision) |
+| `pos` | `const double *` | the positions to normalize (double precision) |
 | `out` | `vec3 *` |  |
 
 Normalize 1D input positions into a target box.
 
-precision)
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/math/box.h`:153._
+
+### `dvz_box_normalize_2D()`
+
+```c title="dvz_box_normalize_2D"
+void dvz_box_normalize_2D(
+    DvzBox source,
+    DvzBox target,
+    uint32_t count,
+    dvec2 * pos,
+    vec3 * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `source` | `DvzBox` | the source box, in data coordinates |
+| `target` | `DvzBox` | the target box, typically in normalized coordinates |
+| `count` | `uint32_t` | the number of positions to normalize |
+| `pos` | `dvec2 *` | the positions to normalize (double precision) |
+| `out` | `vec3 *` |  |
+
+Normalize 2D input positions into a target box.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/math/box.h`:154._
+_Declared in `include/datoviz/math/box.h`:168._
+
+### `dvz_box_normalize_3D()`
+
+```c title="dvz_box_normalize_3D"
+void dvz_box_normalize_3D(
+    DvzBox source,
+    DvzBox target,
+    uint32_t count,
+    dvec3 * pos,
+    vec3 * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `source` | `DvzBox` | the source box, in data coordinates |
+| `target` | `DvzBox` | the target box, typically in normalized coordinates |
+| `count` | `uint32_t` | the number of positions to normalize |
+| `pos` | `dvec3 *` | the positions to normalize (double precision) |
+| `out` | `vec3 *` |  |
+
+Normalize 3D input positions into a target box.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/math/box.h`:196._
+
+### `dvz_box_normalize_polygon()`
+
+```c title="dvz_box_normalize_polygon"
+void dvz_box_normalize_polygon(
+    DvzBox source,
+    DvzBox target,
+    uint32_t count,
+    dvec2 * pos,
+    dvec2 * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `source` | `DvzBox` | the source box, in data coordinates |
+| `target` | `DvzBox` | the target box, typically in normalized coordinates |
+| `count` | `uint32_t` | the number of positions to normalize |
+| `pos` | `dvec2 *` | the positions to normalize (double precision) |
+| `out` | `dvec2 *` |  |
+
+Normalize 2D input positions into a target box, using dvec2* as output format.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/math/box.h`:181._
 
 ## Buffer
 
