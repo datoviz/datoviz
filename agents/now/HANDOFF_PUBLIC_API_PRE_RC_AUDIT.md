@@ -1396,6 +1396,20 @@ Result: all passed. This slice converted stable `dvz_error_set_callback()`,
 `dvz_threads_set()`, and `dvz_threads_default()` from `void` to `DvzResult`, with common/math tests
 covering the new return values.
 
+Result-type cleanup audit after the stable global setter slice:
+
+- Stable scene/app/geometry/input/common/math retained or object mutators now return `DvzResult`
+  when they can report validation or operation status.
+- Remaining stable `bool` APIs in the scan are predicates/getters, such as
+  `dvz_app_should_stop()`, `dvz_view_render_enabled()`, and `dvz_panel_get_padding()`.
+- Remaining stable `void` APIs in the scan are destructors, `dvz_app_run()` as the blocking loop
+  driver, and immediate-mode GUI calls such as `dvz_gui_same_line()`.
+- Remaining mutator-shaped `void`/`bool` APIs outside stable are classified advanced or
+  experimental in `spec/api/status.yml`: low-level controllers, frame-plan builders, DRP2 streams
+  and runtime, window/backend SPI, Vulkan/vklite builders, and GUI immediate-mode helpers. These
+  keep their existing conventions for now because changing them is a separate advanced-surface
+  policy decision with broader low-level blast radius.
+
 
 ## Validation Baseline For Future Agent
 
