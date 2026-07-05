@@ -120,6 +120,17 @@ typedef struct DvzViewPostItem
 } DvzViewPostItem;
 
 
+typedef struct DvzResolvedViewDesc
+{
+    DvzViewDesc desc;
+    uint32_t logical_width;
+    uint32_t logical_height;
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    float device_scale;
+} DvzResolvedViewDesc;
+
+
 
 struct DvzView
 {
@@ -281,6 +292,29 @@ static bool _app_capture_config_validate(const DvzAppCaptureConfig* config)
 
 
 
+static DvzFontDefaults _app_config_font_defaults(const DvzAppConfig* config)
+{
+    DvzFontDefaults defaults = dvz_font_defaults();
+    if (config == NULL)
+        return defaults;
+    defaults.sans_path = config->font_sans_path;
+    defaults.sans_family = config->font_sans_family;
+    defaults.sans_style = config->font_sans_style;
+    defaults.sans_face_index = config->font_sans_face_index;
+    defaults.sans_font_flags = config->font_sans_font_flags;
+    defaults.mono_path = config->font_mono_path;
+    defaults.mono_family = config->font_mono_family;
+    defaults.mono_style = config->font_mono_style;
+    defaults.mono_face_index = config->font_mono_face_index;
+    defaults.mono_font_flags = config->font_mono_font_flags;
+    defaults.ui_size_px = config->font_ui_size_px;
+    defaults.mono_size_px = config->font_mono_size_px;
+    defaults.text_size_px = config->font_text_size_px;
+    return defaults;
+}
+
+
+
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 static bool _app_external_surface_info_validate(const DvzWindowExternalSurfaceInfo* surface)
 {
@@ -312,7 +346,20 @@ static DvzAppConfig _app_config_defaults(void)
     config.schedule_mode = DVZ_APP_SCHEDULE_ON_DEMAND;
     config.exit_policy = DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED;
     config.fps_cap = 0.0;
-    config.font_defaults = dvz_font_defaults();
+    DvzFontDefaults fonts = dvz_font_defaults();
+    config.font_sans_path = fonts.sans_path;
+    config.font_sans_family = fonts.sans_family;
+    config.font_sans_style = fonts.sans_style;
+    config.font_sans_face_index = fonts.sans_face_index;
+    config.font_sans_font_flags = fonts.sans_font_flags;
+    config.font_mono_path = fonts.mono_path;
+    config.font_mono_family = fonts.mono_family;
+    config.font_mono_style = fonts.mono_style;
+    config.font_mono_face_index = fonts.mono_face_index;
+    config.font_mono_font_flags = fonts.mono_font_flags;
+    config.font_ui_size_px = fonts.ui_size_px;
+    config.font_mono_size_px = fonts.mono_size_px;
+    config.font_text_size_px = fonts.text_size_px;
     return config;
 }
 
@@ -1031,6 +1078,39 @@ static bool _view_size_desc_active(const DvzViewSizeDesc* desc)
 
 
 
+static DvzViewSizeDesc _view_desc_size_desc(const DvzViewDesc* desc)
+{
+    DvzViewSizeDesc size = {DVZ_STRUCT_INIT_FIELDS(DvzViewSizeDesc)};
+    if (desc == NULL)
+        return size;
+    size.policy = desc->size_policy;
+    size.width = desc->size_width;
+    size.height = desc->size_height;
+    size.reference_dpi = desc->size_reference_dpi;
+    size.requested_device_scale = desc->size_requested_device_scale;
+    size.monitor_dpi_x_override = desc->size_monitor_dpi_x_override;
+    size.monitor_dpi_y_override = desc->size_monitor_dpi_y_override;
+    size.strict_framebuffer_size = desc->size_strict_framebuffer_size;
+    return size;
+}
+
+
+static void _view_desc_assign_size(DvzViewDesc* desc, const DvzViewSizeDesc* size)
+{
+    ANN(desc);
+    ANN(size);
+    desc->size_policy = size->policy;
+    desc->size_width = size->width;
+    desc->size_height = size->height;
+    desc->size_reference_dpi = size->reference_dpi;
+    desc->size_requested_device_scale = size->requested_device_scale;
+    desc->size_monitor_dpi_x_override = size->monitor_dpi_x_override;
+    desc->size_monitor_dpi_y_override = size->monitor_dpi_y_override;
+    desc->size_strict_framebuffer_size = size->strict_framebuffer_size;
+}
+
+
+
 static DvzViewSizeDesc _view_size_desc(
     DvzViewSizePolicy policy, double width, double height, double reference_dpi)
 {
@@ -1659,6 +1739,12 @@ static bool _app_should_exit(DvzApp* app)
 static void _view_close_runtime_resources(DvzView* win)
 {
     ANN(win);
+    if (win->app != NULL && win->app->gpu_ctx != NULL)
+    {
+        DvzDevice* device = dvz_gpu_ctx_device(win->app->gpu_ctx);
+        if (device != NULL)
+            dvz_device_wait(device);
+    }
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     if (win->gui != NULL)
     {
@@ -3791,7 +3877,8 @@ dvz_app_with_resources(DvzScene* scene, const DvzAppConfig* config, const DvzApp
         return NULL;
     app->scene = scene;
     app->config = resolved;
-    dvz_scene_set_font_defaults(scene, &resolved.font_defaults);
+    DvzFontDefaults fonts = _app_config_font_defaults(&resolved);
+    dvz_scene_set_font_defaults(scene, &fonts);
     _dvz_app_status_init(&app->status);
 
     /* Window host first — needed to query GLFW surface extensions before building the instance. */
@@ -3922,6 +4009,12 @@ void dvz_app_destroy(DvzApp* app)
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     _dvz_app_status_finish(&app->status);
+    if (app->gpu_ctx != NULL)
+    {
+        DvzDevice* device = dvz_gpu_ctx_device(app->gpu_ctx);
+        if (device != NULL)
+            dvz_device_wait(device);
+    }
     for (uint32_t i = 0; i < app->view_count; i++)
     {
         DvzView* win = &app->views[i];
@@ -3965,9 +4058,10 @@ void dvz_app_destroy(DvzApp* app)
 }
 
 
-void dvz_app_stop(DvzApp* app)
+DvzResult dvz_app_stop(DvzApp* app)
 {
-    ANN(app);
+    if (app == NULL)
+        return DVZ_ERROR;
     app->stop_requested = true;
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     if (app->window_host != NULL)
@@ -3980,6 +4074,7 @@ void dvz_app_stop(DvzApp* app)
         }
     }
 #endif
+    return DVZ_OK;
 }
 
 
@@ -4032,7 +4127,6 @@ DvzViewDesc dvz_view_desc(DvzViewKind kind)
 {
     DvzViewDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzViewDesc)};
     desc.kind = kind;
-    desc.size = (DvzViewSizeDesc){DVZ_STRUCT_INIT_FIELDS(DvzViewSizeDesc)};
     desc.device_scale = 1.0f;
     desc.user_scale = 1.0f;
     desc.render_scale = 1.0f;
@@ -4049,7 +4143,7 @@ DvzViewDesc dvz_view_desc(DvzViewKind kind)
  * @param out resolved descriptor
  */
 static void _view_desc_resolve(
-    const DvzViewDesc* src, const DvzFigure* figure, DvzViewDesc* out)
+    const DvzViewDesc* src, const DvzFigure* figure, DvzResolvedViewDesc* out)
 {
     ANN(out);
     DvzViewDesc desc = src != NULL ? *src : dvz_view_desc(DVZ_VIEW_OFFSCREEN);
@@ -4059,40 +4153,56 @@ static void _view_desc_resolve(
     desc.device_scale = _view_valid_scale(desc.device_scale);
     desc.user_scale = _view_valid_scale(desc.user_scale);
     desc.render_scale = _view_valid_scale(desc.render_scale);
+    float device_scale = desc.device_scale;
+    uint32_t logical_width = 0;
+    uint32_t logical_height = 0;
+    uint32_t framebuffer_width = 0;
+    uint32_t framebuffer_height = 0;
 
-    if (_view_size_desc_active(&desc.size))
+    DvzViewSizeDesc size = _view_desc_size_desc(&desc);
+    if (_view_size_desc_active(&size))
     {
-        if (desc.size.requested_device_scale <= 0.0 || !isfinite(desc.size.requested_device_scale))
-            desc.size.requested_device_scale = desc.device_scale;
-        DvzResolvedViewSize resolved = dvz_view_size_resolve(&desc.size, desc.kind);
-        desc.logical_width = resolved.host_logical_width;
-        desc.logical_height = resolved.host_logical_height;
-        desc.framebuffer_width = resolved.framebuffer_width;
-        desc.framebuffer_height = resolved.framebuffer_height;
-        desc.device_scale = (float)(0.5 * (resolved.device_scale_x + resolved.device_scale_y));
+        if (size.requested_device_scale <= 0.0 || !isfinite(size.requested_device_scale))
+        {
+            size.requested_device_scale = desc.device_scale;
+            desc.size_requested_device_scale = size.requested_device_scale;
+        }
+        DvzResolvedViewSize resolved = dvz_view_size_resolve(&size, desc.kind);
+        logical_width = resolved.host_logical_width;
+        logical_height = resolved.host_logical_height;
+        framebuffer_width = resolved.framebuffer_width;
+        framebuffer_height = resolved.framebuffer_height;
+        device_scale = (float)(0.5 * (resolved.device_scale_x + resolved.device_scale_y));
     }
 
-    if (desc.logical_width == 0 && desc.framebuffer_width > 0)
-        desc.logical_width = _view_round_size((float)desc.framebuffer_width / desc.device_scale);
-    if (desc.logical_height == 0 && desc.framebuffer_height > 0)
-        desc.logical_height = _view_round_size((float)desc.framebuffer_height / desc.device_scale);
+    if (logical_width == 0 && framebuffer_width > 0)
+        logical_width = _view_round_size((float)framebuffer_width / device_scale);
+    if (logical_height == 0 && framebuffer_height > 0)
+        logical_height = _view_round_size((float)framebuffer_height / device_scale);
 
-    if (desc.logical_width == 0 && figure != NULL && figure->width > 0)
-        desc.logical_width = figure->width;
-    if (desc.logical_height == 0 && figure != NULL && figure->height > 0)
-        desc.logical_height = figure->height;
+    if (logical_width == 0 && figure != NULL && figure->width > 0)
+        logical_width = figure->width;
+    if (logical_height == 0 && figure != NULL && figure->height > 0)
+        logical_height = figure->height;
 
-    if (desc.logical_width == 0)
-        desc.logical_width = 800;
-    if (desc.logical_height == 0)
-        desc.logical_height = 600;
+    if (logical_width == 0)
+        logical_width = 800;
+    if (logical_height == 0)
+        logical_height = 600;
 
-    if (desc.framebuffer_width == 0)
-        desc.framebuffer_width = _view_round_size((float)desc.logical_width * desc.device_scale);
-    if (desc.framebuffer_height == 0)
-        desc.framebuffer_height = _view_round_size((float)desc.logical_height * desc.device_scale);
+    if (framebuffer_width == 0)
+        framebuffer_width = _view_round_size((float)logical_width * device_scale);
+    if (framebuffer_height == 0)
+        framebuffer_height = _view_round_size((float)logical_height * device_scale);
 
-    *out = desc;
+    *out = (DvzResolvedViewDesc){
+        .desc = desc,
+        .logical_width = logical_width,
+        .logical_height = logical_height,
+        .framebuffer_width = framebuffer_width,
+        .framebuffer_height = framebuffer_height,
+        .device_scale = device_scale,
+    };
 }
 
 
@@ -4103,16 +4213,16 @@ static void _view_desc_resolve(
  * @param win view to update
  * @param desc resolved descriptor
  */
-static void _view_apply_desc_state(DvzView* win, const DvzViewDesc* desc)
+static void _view_apply_desc_state(DvzView* win, const DvzResolvedViewDesc* resolved)
 {
     ANN(win);
-    ANN(desc);
-    win->requested_size = desc->size;
-    win->user_scale = _view_valid_scale(desc->user_scale);
-    win->render_scale = _view_valid_scale(desc->render_scale);
+    ANN(resolved);
+    win->requested_size = _view_desc_size_desc(&resolved->desc);
+    win->user_scale = _view_valid_scale(resolved->desc.user_scale);
+    win->render_scale = _view_valid_scale(resolved->desc.render_scale);
     _view_update_size_state(
-        win, desc->logical_width, desc->logical_height, desc->framebuffer_width,
-        desc->framebuffer_height, desc->device_scale, desc->device_scale);
+        win, resolved->logical_width, resolved->logical_height, resolved->framebuffer_width,
+        resolved->framebuffer_height, resolved->device_scale, resolved->device_scale);
     _view_sync_figure_layout_size(win);
 }
 
@@ -4123,13 +4233,13 @@ static void _view_apply_desc_state(DvzView* win, const DvzViewDesc* desc)
  * @param win view to update
  * @param desc resolved descriptor
  */
-static void _view_apply_desc_scales(DvzView* win, const DvzViewDesc* desc)
+static void _view_apply_desc_scales(DvzView* win, const DvzResolvedViewDesc* resolved)
 {
     ANN(win);
-    ANN(desc);
-    win->requested_size = desc->size;
-    win->user_scale = _view_valid_scale(desc->user_scale);
-    win->render_scale = _view_valid_scale(desc->render_scale);
+    ANN(resolved);
+    win->requested_size = _view_desc_size_desc(&resolved->desc);
+    win->user_scale = _view_valid_scale(resolved->desc.user_scale);
+    win->render_scale = _view_valid_scale(resolved->desc.render_scale);
 }
 
 
@@ -4147,33 +4257,31 @@ DvzView* dvz_view(DvzApp* app, DvzFigure* figure, const DvzViewDesc* desc)
     ANN(app);
     ANN(figure);
 
-    DvzViewDesc resolved = {0};
+    DvzResolvedViewDesc resolved = {0};
     _view_desc_resolve(desc, figure, &resolved);
 
     DvzView* win = NULL;
-    switch (resolved.kind)
+    switch (resolved.desc.kind)
     {
     case DVZ_VIEW_OFFSCREEN:
         win = _view_create_offscreen(
             app, figure, resolved.framebuffer_width, resolved.framebuffer_height);
         break;
-    case DVZ_VIEW_GLFW:
+    case DVZ_VIEW_WINDOW:
         win = _view_create_glfw(
-            app, figure, resolved.logical_width, resolved.logical_height, resolved.title,
-            resolved.has_position, resolved.x, resolved.y);
+            app, figure, resolved.logical_width, resolved.logical_height, resolved.desc.title,
+            resolved.desc.has_position, resolved.desc.x, resolved.desc.y);
         break;
     case DVZ_VIEW_EXTERNAL_SURFACE:
-        if (resolved.external_surface == NULL)
-            return NULL;
-        win = _view_create_external_surface(app, figure, resolved.external_surface);
-        break;
+        log_error("use dvz_view_external_surface() to create external-surface views");
+        return NULL;
     default:
         return NULL;
     }
     if (win == NULL)
         return NULL;
 
-    if (resolved.kind == DVZ_VIEW_GLFW)
+    if (resolved.desc.kind == DVZ_VIEW_WINDOW)
     {
         _view_apply_desc_scales(win, &resolved);
         _view_refresh_size_state(win, NULL);
@@ -4305,7 +4413,7 @@ _view_create_glfw(
     }
     win->app            = app;
     win->figure         = figure;
-    win->kind           = DVZ_VIEW_GLFW;
+    win->kind           = DVZ_VIEW_WINDOW;
     win->window         = window;
     win->canvas         = canvas;
     win->target_id      = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->view_count;
@@ -4430,17 +4538,15 @@ DvzView*
 dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height)
 {
     DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
-    desc.logical_width = width;
-    desc.logical_height = height;
-    desc.framebuffer_width = width;
-    desc.framebuffer_height = height;
+    DvzViewSizeDesc size = dvz_view_size_desc_framebuffer_px(width, height);
+    _view_desc_assign_size(&desc, &size);
     return dvz_view(app, figure, &desc);
 }
 
 
 
 /**
- * Create an interactive GLFW view.
+ * Create an interactive native-window view.
  *
  * @param app app that owns the rendering runtime
  * @param figure figure rendered into the view
@@ -4449,12 +4555,12 @@ dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t heig
  * @param title window title
  * @return view handle, or NULL on failure
  */
-DvzView* dvz_view_glfw(
+DvzView* dvz_view_window(
     DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title)
 {
-    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_GLFW);
-    desc.logical_width = width;
-    desc.logical_height = height;
+    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_WINDOW);
+    DvzViewSizeDesc size = dvz_view_size_desc_host_logical_px(width, height);
+    _view_desc_assign_size(&desc, &size);
     desc.title = title;
     return dvz_view(app, figure, &desc);
 }
@@ -4472,15 +4578,7 @@ DvzView* dvz_view_glfw(
 DvzView* dvz_view_external_surface(
     DvzApp* app, DvzFigure* figure, const DvzWindowExternalSurfaceInfo* surface)
 {
-    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_EXTERNAL_SURFACE);
-    desc.external_surface = surface;
-    if (surface != NULL)
-    {
-        desc.framebuffer_width = surface->extent.width;
-        desc.framebuffer_height = surface->extent.height;
-        desc.device_scale = _view_valid_scale(surface->scale_x);
-    }
-    return dvz_view(app, figure, &desc);
+    return _view_create_external_surface(app, figure, surface);
 }
 
 
@@ -4957,18 +5055,20 @@ float dvz_view_user_scale(const DvzView* win)
  * @param win the view
  * @param scale positive user scale
  */
-void dvz_view_set_user_scale(DvzView* win, float scale)
+DvzResult dvz_view_set_user_scale(DvzView* win, float scale)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
     if (!isfinite(scale) || scale <= 0.0f)
     {
         log_error("view user scale must be positive and finite");
-        return;
+        return DVZ_ERROR;
     }
     if (win->user_scale == scale)
-        return;
+        return DVZ_OK;
     win->user_scale = scale;
     _view_mark_dirty(win);
+    return DVZ_OK;
 }
 
 
@@ -5500,11 +5600,12 @@ DvzResult dvz_view_replay_stop(DvzView* win)
  * @param win the view
  * @param paced whether replay waits for recorded timestamps
  */
-void dvz_view_replay_set_paced(DvzView* win, bool paced)
+DvzResult dvz_view_replay_set_paced(DvzView* win, bool paced)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
     win->replay_paced = paced;
-    dvz_view_request_frame(win);
+    return dvz_view_request_frame(win);
 }
 
 
@@ -5515,14 +5616,14 @@ void dvz_view_replay_set_paced(DvzView* win, bool paced)
  * @param win the view
  * @param speed speed multiplier
  */
-void dvz_view_replay_set_speed(DvzView* win, double speed)
+DvzResult dvz_view_replay_set_speed(DvzView* win, double speed)
 {
-    ANN(win);
-    if (speed > 0)
-    {
-        win->replay_speed = speed;
-        dvz_view_request_frame(win);
-    }
+    if (win == NULL)
+        return DVZ_ERROR;
+    if (!(speed > 0))
+        return DVZ_ERROR;
+    win->replay_speed = speed;
+    return dvz_view_request_frame(win);
 }
 
 
@@ -5533,11 +5634,12 @@ void dvz_view_replay_set_speed(DvzView* win, double speed)
  * @param win the view
  * @param loop whether replay should loop
  */
-void dvz_view_replay_set_loop(DvzView* win, bool loop)
+DvzResult dvz_view_replay_set_loop(DvzView* win, bool loop)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
     win->replay_loop = loop;
-    dvz_view_request_frame(win);
+    return dvz_view_request_frame(win);
 }
 
 
@@ -5645,11 +5747,13 @@ DvzResult dvz_view_resize_scaled_xy(
  * @param win view to update
  * @param enabled whether rendering should be enabled
  */
-void dvz_view_set_render_enabled(DvzView* win, bool enabled)
+DvzResult dvz_view_set_render_enabled(DvzView* win, bool enabled)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
     win->render_enabled = enabled;
     _view_mark_dirty(win);
+    return DVZ_OK;
 }
 
 
@@ -5673,9 +5777,10 @@ bool dvz_view_render_enabled(const DvzView* win)
  *
  * @param win view requesting a frame
  */
-void dvz_view_request_frame(DvzView* win)
+DvzResult dvz_view_request_frame(DvzView* win)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
     _view_mark_dirty(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     if (win->app != NULL && win->app->window_host != NULL && win->window != NULL)
@@ -5683,6 +5788,7 @@ void dvz_view_request_frame(DvzView* win)
 #endif
     if (win->request_frame_callback != NULL)
         win->request_frame_callback(win, win->request_frame_user_data);
+    return DVZ_OK;
 }
 
 
@@ -5692,16 +5798,17 @@ void dvz_view_request_frame(DvzView* win)
  *
  * @param win view requesting scheduler attention
  */
-void dvz_view_wake(DvzView* win)
+DvzResult dvz_view_wake(DvzView* win)
 {
     if (win == NULL)
-        return;
+        return DVZ_ERROR;
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     if (win->app != NULL && win->app->window_host != NULL && win->window != NULL)
         dvz_window_host_request_frame(win->app->window_host, win->window);
 #endif
     if (win->request_frame_callback != NULL)
         win->request_frame_callback(win, win->request_frame_user_data);
+    return DVZ_OK;
 }
 
 
@@ -5746,22 +5853,26 @@ DvzResult dvz_view_post(DvzView* win, DvzViewPostCallback callback, void* user_d
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
  */
-void dvz_view_set_request_frame_callback(
+DvzResult dvz_view_set_request_frame_callback(
     DvzView* win, DvzViewRequestFrameCallback callback, void* user_data)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
     win->request_frame_callback = callback;
     win->request_frame_user_data = user_data;
+    return DVZ_OK;
 }
 
 
 
-void dvz_view_set_frame_callback(
+DvzResult dvz_view_set_frame_callback(
     DvzView* win, DvzViewFrameCallback callback, void* user_data)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
     win->frame_callback = callback;
     win->frame_user_data = user_data;
+    return DVZ_OK;
 }
 
 
@@ -5781,7 +5892,7 @@ DvzGui* dvz_view_gui(DvzView* win, const DvzGuiConfig* config)
     if (!_dvz_gui_config_validate(config))
         return NULL;
     DvzGuiConfig resolved = config != NULL ? *config : dvz_gui_config();
-    DvzFontDefaults fonts = win->app->config.font_defaults;
+    DvzFontDefaults fonts = _app_config_font_defaults(&win->app->config);
     win->gui = _dvz_gui_create(win->app, win->app->gpu_ctx, win, win->window, &resolved, &fonts);
     if (win->gui != NULL)
         dvz_view_request_frame(win);
@@ -5794,19 +5905,20 @@ DvzGui* dvz_view_gui(DvzView* win, const DvzGuiConfig* config)
 
 
 
-void dvz_view_set_gui_callback(
+DvzResult dvz_view_set_gui_callback(
     DvzView* win, DvzGuiCallback callback, void* user_data)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
-    if (win->gui != NULL)
-    {
-        _dvz_gui_set_callback(win->gui, callback, user_data);
-        dvz_view_request_frame(win);
-    }
+    if (win->gui == NULL)
+        return DVZ_ERROR;
+    _dvz_gui_set_callback(win->gui, callback, user_data);
+    return dvz_view_request_frame(win);
 #else
     (void)callback;
     (void)user_data;
+    return DVZ_ERROR;
 #endif
 }
 

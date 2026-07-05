@@ -168,10 +168,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     ticks.target_count = 7;
     ticks.min_pixel_spacing = 130.0f;
     ticks.minor_per_interval = 3;
-    ok = dvz_axis_set_tick_policy(x_axis, &ticks);
+    ok = dvz_axis_set_tick_policy(x_axis, &ticks) == DVZ_OK;
     if (!ok)
         return false;
-    ok = dvz_axis_set_tick_policy(y_axis, &ticks);
+    ok = dvz_axis_set_tick_policy(y_axis, &ticks) == DVZ_OK;
     if (!ok)
         return false;
 
@@ -181,10 +181,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     ok = example_graphite_cyan_apply_axis_style(y_axis, true, NULL);
     if (!ok)
         return false;
-    ok = dvz_axis_set_grid(x_axis, true);
+    ok = dvz_axis_set_grid(x_axis, true) == DVZ_OK;
     if (!ok)
         return false;
-    ok = dvz_axis_set_grid(y_axis, true);
+    ok = dvz_axis_set_grid(y_axis, true) == DVZ_OK;
     if (!ok)
         return false;
 
@@ -221,18 +221,18 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (rc != 0)
         return false;
     const DvzTimestamp may_1_utc = (DvzTimestamp)1714554000000000LL; /* 2024-05-01 09:00 UTC */
-    ok = dvz_axis_set_datetime(x_axis, datetime);
+    ok = dvz_axis_set_datetime(x_axis, datetime) == DVZ_OK;
     if (!ok)
         return false;
     ok = dvz_axis_set_datetime_range(
-        x_axis, 0.0, 8.0, may_1_utc, may_1_utc + 8LL * 3600LL * 1000000LL);
+             x_axis, 0.0, 8.0, may_1_utc, may_1_utc + 8LL * 3600LL * 1000000LL) == DVZ_OK;
     if (!ok)
         return false;
 
-    ok = dvz_axis_set_label(x_axis, "UTC time");
+    ok = dvz_axis_set_label(x_axis, "UTC time") == DVZ_OK;
     if (!ok)
         return false;
-    ok = dvz_axis_set_label(y_axis, "signal");
+    ok = dvz_axis_set_label(y_axis, "signal") == DVZ_OK;
     if (!ok)
         return false;
 

@@ -806,9 +806,9 @@ class CudaSceneBufferRuntime:
         if self.scene_buffer is None:
             raise RuntimeError('CUDA scene buffer runtime is not open')
         count = self.count if count is None else count
-        if not self.dvz.dvz_visual_set_attr_buffer(
+        if self.dvz.dvz_visual_set_attr_buffer(
             visual, _as_bytes(attr), self.scene_buffer, first, count
-        ):
+        ) != 0:
             raise RuntimeError(f'dvz_visual_set_attr_buffer({attr!r}) failed')
 
     def _emit_setup_stream(self, figure):

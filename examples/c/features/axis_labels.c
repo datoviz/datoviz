@@ -89,9 +89,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     ticks.target_count = 5;
     ticks.min_pixel_spacing = 150.0f;
     ticks.minor_per_interval = 2;
-    if (!dvz_axis_set_tick_policy(x_axis, &ticks))
+    if (dvz_axis_set_tick_policy(x_axis, &ticks) != DVZ_OK)
         return false;
-    if (!dvz_axis_set_tick_policy(y_axis, &ticks))
+    if (dvz_axis_set_tick_policy(y_axis, &ticks) != DVZ_OK)
         return false;
 
     ExampleAxisStyleOptions style = example_graphite_cyan_axis_options();
@@ -104,13 +104,13 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!example_graphite_cyan_apply_axis_style(y_axis, true, &style))
         return false;
 
-    if (!dvz_axis_set_grid(x_axis, true))
+    if (dvz_axis_set_grid(x_axis, true) != DVZ_OK)
         return false;
-    if (!dvz_axis_set_grid(y_axis, true))
+    if (dvz_axis_set_grid(y_axis, true) != DVZ_OK)
         return false;
-    if (!dvz_axis_set_label(x_axis, "sample offset (ms)"))
+    if (dvz_axis_set_label(x_axis, "sample offset (ms)") != DVZ_OK)
         return false;
-    if (!dvz_axis_set_label(y_axis, "normalized response"))
+    if (dvz_axis_set_label(y_axis, "normalized response") != DVZ_OK)
         return false;
 
     return true;

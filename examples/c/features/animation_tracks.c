@@ -91,7 +91,7 @@ static DvzVisual* _graphite_cyan_cube_mesh(
     for (uint32_t i = 0; i < DVZ_GEOM_CUBE_FACE_COUNT; i++)
         face_colors[i] = example_graphite_cyan_color(face_roles[i]);
 
-    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+    DvzGeometry* cube = dvz_geometry_cube(&(DvzGeometryCubeDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
         .size = size,
         .face_colors = face_colors,

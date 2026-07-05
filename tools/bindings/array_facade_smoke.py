@@ -90,11 +90,11 @@ def main() -> int:
         axis = dvz.dvz_panel_axis(panel, dvz.DvzDim.DVZ_DIM_X)
         if not axis:
             raise RuntimeError('dvz_panel_axis() failed')
-        if not dvz.dvz_axis_set_ticks(
+        if dvz.dvz_axis_set_ticks(
             axis, np.array([0.0, 1.0], dtype=np.float64), ['zero', 'one']
-        ):
+        ) != 0:
             raise RuntimeError('facade dvz_axis_set_ticks() failed')
-        if not dvz.dvz_axis_clear_ticks(axis):
+        if dvz.dvz_axis_clear_ticks(axis) != 0:
             raise RuntimeError('dvz_axis_clear_ticks() failed')
 
         scale_desc = dvz.dvz_scale_desc()
@@ -110,11 +110,11 @@ def main() -> int:
         colorbar = dvz.dvz_colorbar(panel, scale, None)
         if not colorbar:
             raise RuntimeError('dvz_colorbar() failed')
-        if not dvz.dvz_colorbar_set_ticks(
+        if dvz.dvz_colorbar_set_ticks(
             colorbar, np.array([0.0, 0.5, 1.0], dtype=np.float64), ['low', 'mid', 'high']
-        ):
+        ) != 0:
             raise RuntimeError('facade dvz_colorbar_set_ticks() failed')
-        if not dvz.dvz_colorbar_clear_ticks(colorbar):
+        if dvz.dvz_colorbar_clear_ticks(colorbar) != 0:
             raise RuntimeError('dvz_colorbar_clear_ticks() failed')
 
         visual = dvz.dvz_point(scene, 0)
@@ -146,7 +146,7 @@ def main() -> int:
             raise RuntimeError('facade dvz_visual_set_data(color) failed')
         if dvz.dvz_visual_set_data(visual, 'diameter_px', diameters) != 0:
             raise RuntimeError('facade dvz_visual_set_data(diameter_px) failed')
-        if dvz.dvz_visual_set_data_range(visual, 'position', updated, 1) != 0:
+        if dvz.dvz_visual_set_data_range(visual, 'position', 1, updated) != 0:
             raise RuntimeError('facade dvz_visual_set_data_range(position) failed')
     finally:
         dvz.dvz_scene_destroy(scene)

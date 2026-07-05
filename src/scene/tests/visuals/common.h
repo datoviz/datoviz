@@ -15,6 +15,7 @@
 #include "datoviz/geom.h"
 #include "datoviz/vk/memory_interop.h"
 #include "datoviz/vklite/sync.h"
+#include "domain/field_internal.h"
 #include "domain/polygon_internal.h"
 #include "registry/registry.h"
 #include "scene_emit/internal.h"

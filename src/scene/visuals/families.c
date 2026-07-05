@@ -969,15 +969,16 @@ DvzResult dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual, const DvzVisu
  *
  * @param panel the panel
  */
-void dvz_panel_clear_background(DvzPanel* panel)
+DvzResult dvz_panel_clear_background(DvzPanel* panel)
 {
     ANN(panel);
     if (panel->figure == NULL || panel->figure->scene == NULL)
-        return;
+        return DVZ_ERROR;
     DvzScene* scene = panel->figure->scene;
     if (!_scene_visual_mutation_allowed(scene, "clear panel background"))
-        return;
+        return DVZ_ERROR;
     _panel_background_detach(panel);
+    return DVZ_OK;
 }
 
 
@@ -989,22 +990,22 @@ void dvz_panel_clear_background(DvzPanel* panel)
  * @param background the background descriptor, or NULL to clear
  * @return whether the background was updated
  */
-bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* background)
+DvzResult dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* background)
 {
     ANN(panel);
     if (!_panel_background_desc_validate(background))
-        return false;
+        return DVZ_ERROR;
     if (panel->figure == NULL || panel->figure->scene == NULL)
-        return false;
+        return DVZ_ERROR;
     DvzScene* scene = panel->figure->scene;
     if (!_scene_visual_mutation_allowed(scene, "set panel background"))
-        return false;
+        return DVZ_ERROR;
 
     if (background == NULL || background->type == DVZ_PANEL_BACKGROUND_NONE)
     {
         _panel_background_detach(panel);
         _panel_background_mark_colorbars_dirty(panel);
-        return true;
+        return DVZ_OK;
     }
 
     /* Fullscreen quad in clip space, TRIANGLE_STRIP order (TL, BL, TR, BR). The visual is
@@ -1046,31 +1047,31 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
             if (bg == NULL)
             {
                 log_error("dvz_panel_set_background: failed to allocate background visual");
-                return false;
+                return DVZ_ERROR;
             }
             if (dvz_visual_set_data(bg, "position", positions, 4) != 0 ||
                 dvz_visual_set_data(bg, "color", colors, 4) != 0)
             {
                 log_error("dvz_panel_set_background: failed to set background data");
                 dvz_visual_destroy(bg);
-                return false;
+                return DVZ_ERROR;
             }
             if (!_panel_background_attach(panel, bg, background->type))
             {
                 log_error("dvz_panel_set_background: failed to attach background visual");
                 dvz_visual_destroy(bg);
-                return false;
+                return DVZ_ERROR;
             }
         }
         else if (dvz_visual_set_data(panel->background_visual, "color", colors, 4) != 0)
         {
             log_error("dvz_panel_set_background: failed to update background color data");
-            return false;
+            return DVZ_ERROR;
         }
         panel->background_type = background->type;
         panel->background = *background;
         _panel_background_mark_colorbars_dirty(panel);
-        return true;
+        return DVZ_OK;
     }
 
     if (background->type == DVZ_PANEL_BACKGROUND_IMAGE)
@@ -1079,7 +1080,7 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
             background->image.height == 0)
         {
             log_error("dvz_panel_set_background: image background requires non-empty RGBA8 data");
-            return false;
+            return DVZ_ERROR;
         }
 
         static const float texcoords[4 * 2] = {
@@ -1101,43 +1102,43 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
             if (bg == NULL)
             {
                 log_error("dvz_panel_set_background: failed to allocate image background visual");
-                return false;
+                return DVZ_ERROR;
             }
             if (dvz_visual_set_data(bg, "position", positions, 4) != 0 ||
                 dvz_visual_set_data(bg, "texcoords", texcoords, 4) != 0 ||
-                dvz_visual_set_texture_rgba8(
+                _scene_visual_set_texture_rgba8(
                     bg, background->image.rgba, background->image.width,
                     background->image.height,
                     (DvzSize)background->image.width * background->image.height * 4u) != 0)
             {
                 log_error("dvz_panel_set_background: failed to set image background data");
                 dvz_visual_destroy(bg);
-                return false;
+                return DVZ_ERROR;
             }
             if (!_panel_background_attach(panel, bg, DVZ_PANEL_BACKGROUND_IMAGE))
             {
                 log_error("dvz_panel_set_background: failed to attach image background visual");
                 dvz_visual_destroy(bg);
-                return false;
+                return DVZ_ERROR;
             }
         }
-        else if (dvz_visual_set_texture_rgba8(
+        else if (_scene_visual_set_texture_rgba8(
                      panel->background_visual, background->image.rgba, background->image.width,
                      background->image.height,
                      (DvzSize)background->image.width * background->image.height * 4u) != 0)
         {
             log_error("dvz_panel_set_background: failed to update image background texture");
-            return false;
+            return DVZ_ERROR;
         }
         panel->background_type = DVZ_PANEL_BACKGROUND_IMAGE;
         panel->background = *background;
         panel->background.image.rgba = NULL;
         _panel_background_mark_colorbars_dirty(panel);
-        return true;
+        return DVZ_OK;
     }
 
     log_error("dvz_panel_set_background: unknown background type");
-    return false;
+    return DVZ_ERROR;
 }
 
 
@@ -1157,7 +1158,7 @@ bool dvz_panel_background(const DvzPanel* panel, DvzPanelBackgroundDesc* out)
  * @param panel the panel
  * @param color RGBA8 background color
  */
-void dvz_panel_set_background_color(DvzPanel* panel, DvzColor color)
+DvzResult dvz_panel_set_background_color(DvzPanel* panel, DvzColor color)
 {
     DvzPanelBackgroundDesc background = dvz_panel_background_desc();
     background.type = DVZ_PANEL_BACKGROUND_COLOR;
@@ -1165,7 +1166,7 @@ void dvz_panel_set_background_color(DvzPanel* panel, DvzColor color)
     background.color[1] = (float)color.g / 255.0f;
     background.color[2] = (float)color.b / 255.0f;
     background.color[3] = (float)color.a / 255.0f;
-    (void)dvz_panel_set_background(panel, &background);
+    return dvz_panel_set_background(panel, &background);
 }
 
 
@@ -1174,15 +1175,16 @@ void dvz_panel_set_background_color(DvzPanel* panel, DvzColor color)
  *
  * @param panel the panel
  */
-void dvz_panel_clear_border(DvzPanel* panel)
+DvzResult dvz_panel_clear_border(DvzPanel* panel)
 {
     ANN(panel);
     if (panel->figure == NULL || panel->figure->scene == NULL)
-        return;
+        return DVZ_ERROR;
     DvzScene* scene = panel->figure->scene;
     if (!_scene_visual_mutation_allowed(scene, "clear panel border"))
-        return;
+        return DVZ_ERROR;
     _panel_border_detach(panel);
+    return DVZ_OK;
 }
 
 
@@ -1193,21 +1195,21 @@ void dvz_panel_clear_border(DvzPanel* panel)
  * @param border the border descriptor, or NULL to clear
  * @return whether the border was updated
  */
-bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
+DvzResult dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
 {
     ANN(panel);
     if (!_panel_border_desc_validate(border))
-        return false;
+        return DVZ_ERROR;
     if (panel->figure == NULL || panel->figure->scene == NULL)
-        return false;
+        return DVZ_ERROR;
     DvzScene* scene = panel->figure->scene;
     if (!_scene_visual_mutation_allowed(scene, "set panel border"))
-        return false;
+        return DVZ_ERROR;
 
     if (border == NULL || !border->visible || border->width_px == 0.0f)
     {
         _panel_border_detach(panel);
-        return true;
+        return DVZ_OK;
     }
 
     vec3 starts[4] = {{0}};
@@ -1217,7 +1219,7 @@ bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
     if (!_panel_border_payload(panel, border, starts, ends, colors, widths))
     {
         log_error("dvz_panel_set_border: failed to resolve border geometry");
-        return false;
+        return DVZ_ERROR;
     }
 
     if (panel->border_visual == NULL)
@@ -1226,14 +1228,14 @@ bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
         if (visual == NULL)
         {
             log_error("dvz_panel_set_border: failed to allocate border visual");
-            return false;
+            return DVZ_ERROR;
         }
         if (dvz_segment_set_caps(visual, DVZ_SEGMENT_CAP_SQUARE, DVZ_SEGMENT_CAP_SQUARE) != 0 ||
             dvz_visual_set_depth_test(visual, false) != 0)
         {
             log_error("dvz_panel_set_border: failed to configure border visual");
             dvz_visual_destroy(visual);
-            return false;
+            return DVZ_ERROR;
         }
 
         DvzVisualDataUpdate updates[4] = {
@@ -1246,7 +1248,7 @@ bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
         {
             log_error("dvz_panel_set_border: failed to set border data");
             dvz_visual_destroy(visual);
-            return false;
+            return DVZ_ERROR;
         }
 
         if (_scene_panel_add_generated_visual(
@@ -1254,7 +1256,7 @@ bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
         {
             log_error("dvz_panel_set_border: failed to attach border visual");
             dvz_visual_destroy(visual);
-            return false;
+            return DVZ_ERROR;
         }
         panel->border_visual = visual;
     }
@@ -1269,14 +1271,14 @@ bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
         if (dvz_visual_set_data_many(panel->border_visual, updates, 4) != 0)
         {
             log_error("dvz_panel_set_border: failed to update border data");
-            return false;
+            return DVZ_ERROR;
         }
     }
 
     panel->border = *border;
     dvz_visual_set_visible(panel->border_visual, true);
     _scene_notify_request_frame(panel->figure);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -1330,10 +1332,11 @@ bool _scene_panel_refresh_border(DvzPanel* panel)
  * @param visual the visual
  * @param capabilities the capability mask
  */
-void dvz_visual_set_query_capabilities(DvzVisual* visual, uint32_t capabilities)
+DvzResult dvz_visual_set_query_capabilities(DvzVisual* visual, uint32_t capabilities)
 {
     ANN(visual);
     visual->query_capabilities = capabilities;
+    return DVZ_OK;
 }
 
 
@@ -1414,11 +1417,12 @@ DvzId dvz_visual_id(const DvzVisual* visual)
  * @param visual the visual
  * @param visible whether the visual should be visible
  */
-void dvz_visual_set_visible(DvzVisual* visual, bool visible)
+DvzResult dvz_visual_set_visible(DvzVisual* visual, bool visible)
 {
     ANN(visual);
     visual->visible = visible;
     _scene_notify_visual_changed(visual);
+    return DVZ_OK;
 }
 
 

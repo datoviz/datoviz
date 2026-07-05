@@ -431,19 +431,20 @@ DvzResult dvz_visual_set_item_range(DvzVisual* visual, uint32_t first_item, uint
  *
  * @param visual the visual
  */
-void dvz_visual_clear_item_range(DvzVisual* visual)
+DvzResult dvz_visual_clear_item_range(DvzVisual* visual)
 {
     if (visual == NULL)
-        return;
+        return DVZ_ERROR;
     if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual item range"))
-        return;
+        return DVZ_ERROR;
     if (!visual->has_item_range)
-        return;
+        return DVZ_OK;
 
     visual->has_item_range = false;
     visual->item_range_first = 0;
     visual->item_range_count = 0;
     _scene_notify_visual_changed(visual);
+    return DVZ_OK;
 }
 
 
@@ -774,13 +775,13 @@ DvzResult dvz_visual_set_data_many(
  *
  * @param visual the visual
  * @param attr_name the attribute name
- * @param data the source data
  * @param first_item the first item to replace
+ * @param data the source data
  * @param item_count the number of items to replace
  * @return 0 on success, -1 on error
  */
 DvzResult dvz_visual_set_data_range(
-    DvzVisual* visual, const char* attr_name, const void* data, uint32_t first_item,
+    DvzVisual* visual, const char* attr_name, uint32_t first_item, const void* data,
     uint32_t item_count)
 {
     ANN(visual);

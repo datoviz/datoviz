@@ -428,18 +428,18 @@ int main(int argc, char** argv)
                });
     EXAMPLE_CHECK(field != NULL, "dvz_sampled_field() failed");
     ok = dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                   .data = data,
-                   .bytes_per_row = VOLUME_SIZE,
-                   .rows_per_image = VOLUME_SIZE,
-               });
+             field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                        .data = data,
+                        .bytes_per_row = VOLUME_SIZE,
+                        .rows_per_image = VOLUME_SIZE,
+                    }) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data() failed");
     dvz_free(data);
     data = NULL;
 
     DvzVisual* volume = dvz_volume(scene, 0);
     EXAMPLE_CHECK(volume != NULL, "dvz_volume() failed");
-    ok = dvz_visual_set_field(volume, "field", field);
+    ok = dvz_visual_set_field(volume, "field", field) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_field() failed");
 
     int rc = dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED);
@@ -480,8 +480,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "volume");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_window(app, figure, WIDTH, HEIGHT, "volume");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
@@ -491,7 +491,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
     dvz_view_set_gui_callback(win, _volume_glfw_gui, &state);
 
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
     DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();

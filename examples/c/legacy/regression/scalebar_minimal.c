@@ -88,28 +88,28 @@ static bool _add_scalebar(DvzPanel* panel, DvzTextRenderer renderer)
     if (rc != 0)
         return false;
 
-    DvzScaleBar* scalebar = dvz_scalebar(
-        panel,
-        &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
-            .dimension = DVZ_DIM_X,
-            .anchor = DVZ_SCENE_ANCHOR_BOTTOM_LEFT,
-            .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
-            .target_length_px = 160.0f,
-            .min_length_px = 90.0f,
-            .max_length_px = 240.0f,
-            .offset_px = {36.0f, 34.0f},
-            .tick_length_px = 12.0f,
-            .line_width_px = 3.0f,
-            .line_color = {245, 248, 252, 255},
-            .unit = "m",
-            .data_to_unit = 1.0,
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 22.0f,
-                .renderer = renderer,
-                .color = {255, 236, 176, 255},
-            },
-        });
-    return scalebar != NULL;
+    DvzScaleBarDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
+        .dimension = DVZ_DIM_X,
+        .anchor = DVZ_SCENE_ANCHOR_BOTTOM_LEFT,
+        .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
+        .target_length_px = 160.0f,
+        .min_length_px = 90.0f,
+        .max_length_px = 240.0f,
+        .offset_px = {36.0f, 34.0f},
+        .tick_length_px = 12.0f,
+        .line_width_px = 3.0f,
+        .line_color = {245, 248, 252, 255},
+        .unit = "m",
+        .data_to_unit = 1.0,
+    };
+    DvzTextStyle label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+        .size_px = 22.0f,
+        .renderer = renderer,
+        .color = {255, 236, 176, 255},
+    };
+    DvzScaleBar* scalebar = dvz_scale_bar(panel, &desc);
+    return scalebar != NULL && dvz_scale_bar_set_label_style(scalebar, &label_style) == 0;
 }
 
 
@@ -150,8 +150,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "scalebar_minimal");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_window(app, figure, WIDTH, HEIGHT, "scalebar_minimal");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");

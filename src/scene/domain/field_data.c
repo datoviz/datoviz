@@ -174,20 +174,20 @@ bool _field_ensure_upload(DvzSampledField* field, uint64_t byte_size)
  *
  * @param field the sampled field
  * @param view the uploaded data view
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-bool dvz_sampled_field_set_data(DvzSampledField* field, const DvzFieldDataView* view)
+DvzResult dvz_sampled_field_set_data(DvzSampledField* field, const DvzFieldDataView* view)
 {
     ANN(field);
     ANN(view);
     if (!_field_data_view_abi_validate(view))
-        return false;
+        return DVZ_ERROR;
     if (!_scene_visual_mutation_allowed(field->scene, "replace sampled field data"))
-        return false;
+        return DVZ_ERROR;
 
     DvzFieldRegion full = _field_full_region(&field->desc);
     if (!_field_data_view_valid(&field->desc, view, &full))
-        return false;
+        return DVZ_ERROR;
 
     if (field->data == NULL)
     {
@@ -195,13 +195,13 @@ bool dvz_sampled_field_set_data(DvzSampledField* field, const DvzFieldDataView* 
         if (field->data == NULL)
         {
             log_error("sampled field allocation failed for %" PRIu64 " bytes", field->data_size);
-            return false;
+            return DVZ_ERROR;
         }
     }
 
     _field_copy_full_data(&field->desc, view, field->data);
     _scene_mark_field_region_dirty(field, full, true);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -214,22 +214,22 @@ bool dvz_sampled_field_set_data(DvzSampledField* field, const DvzFieldDataView* 
  * @param height new field height in samples
  * @param depth new field depth in samples
  * @param view the uploaded data view for the new extent
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-bool dvz_sampled_field_resize(
+DvzResult dvz_sampled_field_resize(
     DvzSampledField* field, uint32_t width, uint32_t height, uint32_t depth,
     const DvzFieldDataView* view)
 {
     ANN(field);
     ANN(view);
     if (!_field_data_view_abi_validate(view))
-        return false;
+        return DVZ_ERROR;
     if (!_scene_visual_mutation_allowed(field->scene, "resize sampled field"))
-        return false;
+        return DVZ_ERROR;
     if (width == 0 || height == 0 || depth == 0)
     {
         log_error("sampled field dimensions must be non-zero");
-        return false;
+        return DVZ_ERROR;
     }
 
     DvzSampledFieldDesc desc = field->desc;
@@ -239,25 +239,25 @@ bool dvz_sampled_field_resize(
     if (desc.dim == DVZ_FIELD_DIM_2D && desc.depth != 1)
     {
         log_error("2D sampled fields must use depth=1");
-        return false;
+        return DVZ_ERROR;
     }
 
     uint64_t data_size = 0;
     if (!_field_expected_data_size(&desc, &data_size))
     {
         log_error("sampled field size overflow");
-        return false;
+        return DVZ_ERROR;
     }
 
     DvzFieldRegion full = _field_full_region(&desc);
     if (!_field_data_view_valid(&desc, view, &full))
-        return false;
+        return DVZ_ERROR;
 
     void* data = dvz_calloc(data_size, 1);
     if (data == NULL)
     {
         log_error("sampled field allocation failed for %" PRIu64 " bytes", data_size);
-        return false;
+        return DVZ_ERROR;
     }
     _field_copy_full_data(&desc, view, data);
 
@@ -267,7 +267,7 @@ bool dvz_sampled_field_resize(
     field->data = data;
     field->data_size = data_size;
     _scene_mark_field_region_dirty(field, full, true);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -278,26 +278,26 @@ bool dvz_sampled_field_resize(
  * @param field the sampled field
  * @param region the updated region
  * @param view the uploaded data view
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-bool dvz_sampled_field_update_region(
+DvzResult dvz_sampled_field_update_region(
     DvzSampledField* field, DvzFieldRegion region, const DvzFieldDataView* view)
 {
     ANN(field);
     ANN(view);
     if (!_field_data_view_abi_validate(view))
-        return false;
+        return DVZ_ERROR;
     if (!_scene_visual_mutation_allowed(field->scene, "update sampled field data"))
-        return false;
+        return DVZ_ERROR;
     if (field->data == NULL)
     {
         log_error("sampled field range update requires prior full allocation");
-        return false;
+        return DVZ_ERROR;
     }
     if (region.width == 0 || region.height == 0 || region.depth == 0)
     {
         log_error("sampled field update region requires non-zero extent");
-        return false;
+        return DVZ_ERROR;
     }
     if (
         region.x + region.width > field->desc.width ||
@@ -305,14 +305,14 @@ bool dvz_sampled_field_update_region(
         region.z + region.depth > field->desc.depth)
     {
         log_error("sampled field update region exceeds field dimensions");
-        return false;
+        return DVZ_ERROR;
     }
     if (!_field_data_view_valid(&field->desc, view, &region))
-        return false;
+        return DVZ_ERROR;
 
     uint32_t bytes_per_texel = 0;
     if (!_field_format_bytes_per_texel(field->desc.format, &bytes_per_texel))
-        return false;
+        return DVZ_ERROR;
     uint64_t src_bytes_per_row =
         view->bytes_per_row != 0 ? view->bytes_per_row
                                  : (uint64_t)region.width * (uint64_t)bytes_per_texel;
@@ -335,5 +335,5 @@ bool dvz_sampled_field_update_region(
         }
     }
     _scene_mark_field_region_dirty(field, region, false);
-    return true;
+    return DVZ_OK;
 }

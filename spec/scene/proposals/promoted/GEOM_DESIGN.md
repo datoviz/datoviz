@@ -88,7 +88,7 @@ Implemented on 2026-05-21:
 4. `dvz_geometry_bounds()` computes F64 bounds;
 5. examples now bridge retained F64 CPU geometry to scene mesh upload paths with explicit local
    conversion helpers and generic visual data calls;
-6. `dvz_geom_cube()` and `dvz_geom_plane()` generate indexed geometry with normals, UVs, and
+6. `dvz_geometry_cube()` and `dvz_geometry_plane()` generate indexed geometry with normals, UVs, and
    zero-initialized color descriptors defaulting to opaque white; cube descriptors also support
    six per-face colors for the duplicated cube-face layout;
 7. focused `geom` tests cover allocation/reset, cube bounds/index validity, plane normals/bounds,
@@ -99,7 +99,7 @@ Implemented on 2026-05-21:
 
 Implemented on 2026-05-22:
 
-1. `dvz_geom_surface_grid()` generates indexed structured grids with row/column descriptors, optional
+1. `dvz_geometry_surface_grid()` generates indexed structured grids with row/column descriptors, optional
    height/color arrays, UVs, smooth normals, and row/column provenance on `DvzGeometry`;
 2. `dvz_geometry_compute_normals()`, `dvz_geometry_transform()`, and `dvz_geometry_merge()` cover the
    first normal/transform/composition operation slice;
@@ -113,8 +113,8 @@ Implemented on 2026-05-22:
 
 Additional v0.4 follow-up work on 2026-05-22 added:
 
-1. `dvz_geom_sphere()` as the first post-cube solid generator;
-2. `dvz_geom_surface_grid_update_heights()` for in-place structured-grid height updates;
+1. `dvz_geometry_sphere()` as the first post-cube solid generator;
+2. `dvz_geometry_surface_grid_update_heights()` for in-place structured-grid height updates;
 3. retained mesh `texcoords` support, with example-local geometry upload code lowering
    `DvzGeometry` UVs into the mesh visual attribute set;
 4. `examples/c/visuals/surface_grid.c` as a visible app-path pressure test for generated geometry.

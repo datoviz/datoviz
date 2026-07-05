@@ -43,8 +43,16 @@ struct DvzFontDefaults
 {
     uint32_t struct_size;
     uint32_t flags;
-    DvzFontDesc sans;
-    DvzFontDesc mono;
+    const char* sans_path;
+    const char* sans_family;
+    const char* sans_style;
+    uint32_t sans_face_index;
+    uint32_t sans_font_flags;
+    const char* mono_path;
+    const char* mono_family;
+    const char* mono_style;
+    uint32_t mono_face_index;
+    uint32_t mono_font_flags;
     float ui_size_px;
     float mono_size_px;
     float text_size_px;

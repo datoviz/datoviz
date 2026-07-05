@@ -106,7 +106,7 @@ A scatter plot of 10 000 random points with pan/zoom:
 
         /* run; for offscreen PNG use dvz_view_offscreen() and dvz_view_capture_png(). */
         DvzApp* app = dvz_app(scene);
-        dvz_view_glfw(app, figure, 800, 600, "Scatter plot");
+        dvz_view_window(app, figure, 800, 600, "Scatter plot");
         dvz_app_run(app, 0);
 
         dvz_app_destroy(app);

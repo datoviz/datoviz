@@ -187,7 +187,7 @@ DvzAttachment* dvz_rendering_color(DvzRendering* rendering, uint32_t idx)
 {
     ANN(rendering);
     ASSERT(idx < DVZ_MAX_ATTACHMENTS);
-    rendering->info.colorAttachmentCount = MAX(rendering->info.colorAttachmentCount, idx + 1);
+    rendering->info.colorAttachmentCount = DVZ_MAX(rendering->info.colorAttachmentCount, idx + 1);
     rendering->attachments[idx].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
     return &rendering->attachments[idx];
 }

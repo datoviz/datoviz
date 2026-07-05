@@ -51,7 +51,7 @@ Most current C examples mix two responsibilities:
 
 1. portable scene logic: scene, figures, panels, visuals, retained data, scene buffers, compute,
    controllers, and per-frame updates;
-2. host/runtime logic: `dvz_app()`, `dvz_view_glfw()`, offscreen views, frame loops, capture,
+2. host/runtime logic: `dvz_app()`, `dvz_view_window()`, offscreen views, frame loops, capture,
    progress output, command-line modes, native window input, and browser lifecycle glue.
 
 That shape is readable for small native examples, but it blocks direct reuse in WASM/WebGPU. A
@@ -420,7 +420,7 @@ int dvz_scenario_run_native(
     const DvzScenarioSpec* spec, const DvzRunnerConfig* config)
 {
     DvzScene* scene = dvz_scene();
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_FIXED_STEP);
     dvz_scene_set_fps(scene, config->fps > 0 ? config->fps : spec->fps);
 
     DvzScenarioContext ctx = {
@@ -440,7 +440,7 @@ int dvz_scenario_run_native(
 
     DvzView* view = NULL;
     if (config->presentation == DVZ_RUNNER_PRESENT_GLFW)
-        view = dvz_view_glfw(app, ctx.figure, ctx.width, ctx.height, spec->title);
+        view = dvz_view_window(app, ctx.figure, ctx.width, ctx.height, spec->title);
     else
         view = dvz_view_offscreen(app, ctx.figure, ctx.width, ctx.height);
 
@@ -631,7 +631,7 @@ dvz_visual_set_data(points, "diameter_px", sizes, count);
 dvz_panel_add_visual(panel, points, NULL);
 
 DvzApp* app = dvz_app(scene);
-DvzView* view = dvz_view_glfw(app, figure, 800, 600, "raw scene");
+DvzView* view = dvz_view_window(app, figure, 800, 600, "raw scene");
 dvz_app_run(app, 0);
 dvz_app_destroy(app);
 dvz_scene_destroy(scene);

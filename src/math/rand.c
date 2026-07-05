@@ -45,5 +45,5 @@ inline double dvz_rand_double(void) { return (double)rand() / (double)(RAND_MAX)
 
 inline double dvz_rand_normal(void)
 {
-    return sqrt(-2.0 * log(dvz_rand_double())) * cos(2 * M_PI * dvz_rand_double());
+    return sqrt(-2.0 * log(dvz_rand_double())) * cos(2 * DVZ_PI * dvz_rand_double());
 }

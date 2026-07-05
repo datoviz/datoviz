@@ -65,7 +65,7 @@ int test_drp2_runtime_validate_render_state_inherited_across_passes(
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_buffer(
         stream, 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX));
-    AT(dvz_drp2_stream_write_buffer(stream, 1, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA=="));
+    AT(dvz_drp2_stream_write_buffer_base64(stream, 1, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA=="));
     AT(dvz_drp2_stream_create_buffer(stream, 10, 16, DVZ_DRP2_BUFFER_USAGE_UNIFORM));
     AT(dvz_drp2_stream_create_uniform_bind_group_layout(stream, 11));
     AT(dvz_drp2_stream_create_uniform_bind_group(stream, 12, 11, 10, 0, 16));
@@ -292,7 +292,7 @@ int test_drp2_runtime_rejects_unknown_buffer_write(TstContext* suite, const TstC
 
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
-    AT(dvz_drp2_stream_write_buffer(stream, 42, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA=="));
+    AT(dvz_drp2_stream_write_buffer_base64(stream, 42, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA=="));
 
     DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
     AT(!result.ok);
@@ -627,7 +627,7 @@ int test_drp2_runtime_validate_write_texture(TstContext* suite, const TstCase* i
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 1, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
-    AT(dvz_drp2_stream_write_texture_2d(stream, 1, 0, 2, 1, 8, 1, "AAAAAAAAAAA="));
+    AT(dvz_drp2_stream_write_texture_2d_base64(stream, 1, 0, 2, 1, 8, 1, "AAAAAAAAAAA="));
 
     DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
     AT(result.ok);
@@ -817,7 +817,7 @@ int test_drp2_runtime_validate_texture_sampler_bind_group(TstContext* suite, con
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 2, 2, 2,
         DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING | DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
-    AT(dvz_drp2_stream_write_texture_2d(stream, 2, 0, 2, 2, 8, 2, "AAAAAAAAAAAAAAAAAAAAAA=="));
+    AT(dvz_drp2_stream_write_texture_2d_base64(stream, 2, 0, 2, 2, 8, 2, "AAAAAAAAAAAAAAAAAAAAAA=="));
     AT(dvz_drp2_stream_create_texture_sampler_bind_group(stream, 13, 100, 2, 200));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 1, 4, 4, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
@@ -1338,7 +1338,7 @@ int test_drp2_runtime_validate_compute_storage_bind_group(TstContext* suite, con
         stream, 2, 36, DVZ_DRP2_BUFFER_USAGE_STORAGE | DVZ_DRP2_BUFFER_USAGE_COPY_DST));
     AT(dvz_drp2_stream_create_buffer(
         stream, 3, 36, DVZ_DRP2_BUFFER_USAGE_STORAGE | DVZ_DRP2_BUFFER_USAGE_VERTEX));
-    AT(dvz_drp2_stream_write_buffer(stream, 2, 0, 36, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+    AT(dvz_drp2_stream_write_buffer_base64(stream, 2, 0, 36, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
     AT(dvz_drp2_stream_create_storage_bind_group(stream, 101, 100, 2, 3, 36));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 20));
     AT(dvz_drp2_stream_begin_compute_pass(stream, 21, 20));
@@ -1543,7 +1543,7 @@ int test_drp2_runtime_rejects_write_texture_out_of_range(TstContext* suite, cons
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 1, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
-    AT(dvz_drp2_stream_write_texture_2d(stream, 1, 0, 3, 1, 12, 1, "AAAAAAAAAAAAAAAA"));
+    AT(dvz_drp2_stream_write_texture_2d_base64(stream, 1, 0, 3, 1, 12, 1, "AAAAAAAAAAAAAAAA"));
 
     DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
     AT(!result.ok);
@@ -1567,7 +1567,7 @@ int test_drp2_runtime_rejects_write_texture_layout_size_overflow(
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_3d(stream, 1, 1, 1, UINT32_MAX));
-    AT(dvz_drp2_stream_write_texture_3d(
+    AT(dvz_drp2_stream_write_texture_3d_base64(
         stream, 1, 0, 0, 0, 0, 1, 1, UINT32_MAX, UINT32_MAX, UINT32_MAX, ""));
 
     DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
@@ -1678,7 +1678,7 @@ int test_drp2_runtime_rejects_use_after_destroy(TstContext* suite, const TstCase
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_buffer(stream, 1, 64, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
     AT(dvz_drp2_stream_destroy_buffer(stream, 1));
-    AT(dvz_drp2_stream_write_buffer(stream, 1, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA=="));
+    AT(dvz_drp2_stream_write_buffer_base64(stream, 1, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA=="));
 
     DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
     AT(!result.ok);

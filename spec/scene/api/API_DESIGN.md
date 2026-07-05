@@ -109,22 +109,22 @@ attached to a panel like a visual:
 
 ```c
 DvzPolygon* polygon = dvz_polygon(scene, 0);
-dvz_polygon_geometry(polygon, &geom_polygon);
-dvz_polygon_fill_color(polygon, fill);
+dvz_polygon_set_geometry(polygon, &geom_polygon);
+dvz_polygon_set_fill_color(polygon, fill);
 
 DvzComposite* view = dvz_polygon_composite(polygon, 0);
 dvz_panel_add_composite(panel, view, NULL);
 ```
 
-Multi-region polygon data uses `DvzPolygonSet`; per-region API names include `region` to avoid
+Multi-region polygon data uses `DvzPolygons`; per-region API names include `region` to avoid
 confusing the object name with the verb "set":
 
 ```c
-DvzPolygonSet* polygons = dvz_polygon_set(scene, 0);
-uint32_t region = dvz_polygon_set_add(polygons, &geom_polygon);
-dvz_polygon_set_region_fill_color(polygons, region, fill);
+DvzPolygons* polygons = dvz_polygons(scene, 0);
+uint32_t region = dvz_polygons_add_region(polygons, &geom_polygon);
+dvz_polygons_set_region_fill_color(polygons, region, fill);
 
-DvzComposite* regions = dvz_polygon_set_composite(polygons, 0);
+DvzComposite* regions = dvz_polygons_composite(polygons, 0);
 dvz_panel_add_composite(panel, regions, NULL);
 ```
 

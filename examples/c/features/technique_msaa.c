@@ -125,14 +125,7 @@ static bool _add_cube_cluster(DvzScene* scene, DvzPanel* panel)
  */
 static bool _set_camera(DvzPanel* panel)
 {
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.view.eye[0] = +0.10f;
-    camera.view.eye[1] = +1.20f;
-    camera.view.eye[2] = +3.10f;
-    camera.projection.fov_y = 0.54f;
-    camera.projection.near_clip = 0.05f;
-    camera.projection.far_clip = 100.0f;
-    return dvz_panel_set_camera_desc(panel, &camera) == 0;
+    return example_set_default_3d_camera(panel, 1.0f) != NULL;
 }
 
 
@@ -185,11 +178,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
     if (grid == NULL)
         return false;
-    if (!dvz_grid_set_margins(
+    if (dvz_grid_set_margins(
             grid, &(DvzPanelReserve){
-                      .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}))
+                      .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}) != DVZ_OK)
         return false;
-    if (!dvz_grid_set_gutter(grid, 30.0f, 0.0f))
+    if (dvz_grid_set_gutter(grid, 30.0f, 0.0f) != DVZ_OK)
         return false;
 
     DvzPanel* single = dvz_grid_panel(grid, 0, 0);
@@ -199,21 +192,26 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_graphite_cyan_set_panel_background(single);
     example_graphite_cyan_set_panel_background(multisample);
 
+    DvzTextStyle label_style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
+    label_style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    DvzTextPlacement label_placement = dvz_text_placement();
+    label_placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    label_placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    label_placement.position[0] = EXAMPLE_PANEL_LABEL_X_PX;
+    label_placement.position[1] = EXAMPLE_PANEL_LABEL_Y_PX;
+    label_placement.text_anchor[0] = 0.0f;
+    label_placement.text_anchor[1] = 0.0f;
+    label_placement.has_text_anchor = true;
     DvzLabelDesc label = dvz_label_desc();
-    label.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
-    label.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
-    label.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
-    label.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
-    label.placement.position[0] = EXAMPLE_PANEL_LABEL_X_PX;
-    label.placement.position[1] = EXAMPLE_PANEL_LABEL_Y_PX;
-    label.placement.text_anchor[0] = 0.0f;
-    label.placement.text_anchor[1] = 0.0f;
-    label.placement.has_text_anchor = true;
     label.text = "single sample";
-    if (dvz_annotation_label(single, &label) == NULL)
+    DvzAnnotation* annotation = dvz_annotation_label(single, &label);
+    if (annotation == NULL || dvz_annotation_set_style(annotation, &label_style) != 0 ||
+        dvz_annotation_set_placement(annotation, &label_placement) != 0)
         return false;
     label.text = "8x MSAA";
-    if (dvz_annotation_label(multisample, &label) == NULL)
+    annotation = dvz_annotation_label(multisample, &label);
+    if (annotation == NULL || dvz_annotation_set_style(annotation, &label_style) != 0 ||
+        dvz_annotation_set_placement(annotation, &label_placement) != 0)
         return false;
 
     if (!_set_camera(single) || !_set_camera(multisample))
@@ -234,7 +232,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     msaa.enabled = true;
     msaa.sample_count = 8u;
     msaa.alpha_to_coverage = false;
-    return dvz_panel_set_msaa(multisample, &msaa);
+    return dvz_panel_set_msaa(multisample, &msaa) == DVZ_OK;
 }
 
 

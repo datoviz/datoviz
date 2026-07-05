@@ -51,8 +51,10 @@ DVZ_EXPORT void dvz_interaction_destroy(DvzInteractionPolicy* interaction);
  *
  * @param interaction the interaction policy
  * @param panel the panel
+ * @return DVZ_OK when the panel was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_interaction_bind_panel(DvzInteractionPolicy* interaction, DvzPanel* panel);
+DVZ_EXPORT DvzResult dvz_interaction_bind_panel(
+    DvzInteractionPolicy* interaction, DvzPanel* panel);
 
 
 /**
@@ -60,8 +62,9 @@ DVZ_EXPORT void dvz_interaction_bind_panel(DvzInteractionPolicy* interaction, Dv
  *
  * @param interaction the interaction policy
  * @param selection the selection
+ * @return DVZ_OK when the selection was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_interaction_set_selection(
+DVZ_EXPORT DvzResult dvz_interaction_set_selection(
     DvzInteractionPolicy* interaction, DvzSelection* selection);
 
 
@@ -70,8 +73,9 @@ DVZ_EXPORT void dvz_interaction_set_selection(
  *
  * @param interaction the interaction policy
  * @param channel the link channel
+ * @return DVZ_OK when the channel was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_interaction_set_link_channel(
+DVZ_EXPORT DvzResult dvz_interaction_set_link_channel(
     DvzInteractionPolicy* interaction, DvzLinkChannel* channel);
 
 
@@ -80,8 +84,9 @@ DVZ_EXPORT void dvz_interaction_set_link_channel(
  *
  * @param interaction the interaction policy
  * @param policy the hit-selection policy
+ * @return DVZ_OK when the policy was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_interaction_set_query_hit_policy(
+DVZ_EXPORT DvzResult dvz_interaction_set_query_hit_policy(
     DvzInteractionPolicy* interaction, DvzQueryHitPolicy policy);
 
 
@@ -92,8 +97,9 @@ DVZ_EXPORT void dvz_interaction_set_query_hit_policy(
  *
  * @param interaction the interaction policy
  * @param enabled true to enable automatic pinning
+ * @return DVZ_OK when the flag was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_interaction_set_auto_pin_readout(
+DVZ_EXPORT DvzResult dvz_interaction_set_auto_pin_readout(
     DvzInteractionPolicy* interaction, bool enabled);
 
 
@@ -107,8 +113,9 @@ DVZ_EXPORT void dvz_interaction_set_auto_pin_readout(
  *
  * @param visual the visual
  * @param capabilities bitwise OR of DvzQueryCapabilityFlag values
+ * @return DVZ_OK when the capabilities were accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_visual_set_query_capabilities(DvzVisual* visual, uint32_t capabilities);
+DVZ_EXPORT DvzResult dvz_visual_set_query_capabilities(DvzVisual* visual, uint32_t capabilities);
 
 
 /**
@@ -193,8 +200,9 @@ DVZ_EXPORT void dvz_selection_destroy(DvzSelection* selection);
  * Clear the contents of a selection object.
  *
  * @param selection the selection
+ * @return DVZ_OK when the selection was cleared, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_selection_clear(DvzSelection* selection);
+DVZ_EXPORT DvzResult dvz_selection_clear(DvzSelection* selection);
 
 
 /**
@@ -290,8 +298,9 @@ DVZ_EXPORT void dvz_hover_destroy(DvzHover* hover);
  * Clear the hovered item.
  *
  * @param hover the hover object
+ * @return DVZ_OK when the hover state was cleared, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_hover_clear(DvzHover* hover);
+DVZ_EXPORT DvzResult dvz_hover_clear(DvzHover* hover);
 
 
 /**
@@ -462,8 +471,9 @@ DVZ_EXPORT void dvz_pinned_readout_destroy(DvzPinnedReadout* readout);
  *
  * @param readout the pinned readout
  * @param format the format descriptor, or NULL to clear the override
+ * @return DVZ_OK when the format was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_pinned_readout_set_format(
+DVZ_EXPORT DvzResult dvz_pinned_readout_set_format(
     DvzPinnedReadout* readout, const DvzFormatDesc* format);
 
 

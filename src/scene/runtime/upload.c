@@ -191,18 +191,18 @@ bool _emitter_emit_upload(
             bool ok = false;
             if (texture_d > 1 || d > 1 || node->u.upload.texture_origin_z != 0)
             {
-                ok = dvz_drp2_stream_write_texture_3d(
+                ok = dvz_drp2_stream_write_texture_3d_base64(
                     stream, id, 0, node->u.upload.texture_origin_x,
                     node->u.upload.texture_origin_y, node->u.upload.texture_origin_z, w, h, d,
                     bpr, h, zero_data);
             }
             else if (node->u.upload.texture_origin_x == 0 && node->u.upload.texture_origin_y == 0)
             {
-                ok = dvz_drp2_stream_write_texture_2d(stream, id, 0, w, h, bpr, h, zero_data);
+                ok = dvz_drp2_stream_write_texture_2d_base64(stream, id, 0, w, h, bpr, h, zero_data);
             }
             else
             {
-                ok = dvz_drp2_stream_write_texture_2d_region(
+                ok = dvz_drp2_stream_write_texture_2d_region_base64(
                     stream, id, 0, node->u.upload.texture_origin_x,
                     node->u.upload.texture_origin_y, w, h, bpr, h, zero_data);
             }
@@ -275,7 +275,7 @@ bool _emitter_emit_upload(
         char* zero_data = _zero_base64_alloc(node->u.upload.byte_size);
         if (zero_data == NULL)
             return false;
-        bool ok = dvz_drp2_stream_write_buffer(
+        bool ok = dvz_drp2_stream_write_buffer_base64(
             stream, id, node->u.upload.byte_offset, node->u.upload.byte_size, zero_data);
         dvz_free(zero_data);
         return ok;
@@ -344,7 +344,7 @@ bool _emitter_emit_compute_buffers(
                        stream, input_id, input_size,
                        DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_STORAGE);
     }
-    ok = ok && dvz_drp2_stream_write_buffer(
+    ok = ok && dvz_drp2_stream_write_buffer_base64(
                    stream, input_id, upload->u.upload.byte_offset, upload->u.upload.byte_size,
                    data);
     if (output_create)

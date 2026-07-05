@@ -387,14 +387,16 @@ static DvzOverlayCard* _add_readout(DvzPanel* panel)
     style.text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.max_text_chars = 160u;
 
-    return dvz_overlay_card(
+    DvzOverlayCard* card = dvz_overlay_card(
         overlay,
         &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = "Embedding Atlas",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_LEFT,
             .offset_px = {28.0f, -46.0f},
-            .style = &style,
         });
+    if (card == NULL || dvz_overlay_card_set_style(card, &style) != 0)
+        return NULL;
+    return card;
 }
 
 
@@ -560,11 +562,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (selection == NULL)
         goto error;
     DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
-    selection_style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT | DVZ_ITEM_STATE_VISUAL_SCALE;
-    selection_style.selected.tint = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
-    selection_style.selected.tint_mix = 1.0f;
-    selection_style.selected.scale = 1.35f;
-    selection_style.unselected.visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
+    selection_style.selected_visual_flags = DVZ_ITEM_STATE_VISUAL_TINT | DVZ_ITEM_STATE_VISUAL_SCALE;
+    selection_style.selected_tint = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING);
+    selection_style.selected_tint_mix = 1.0f;
+    selection_style.selected_scale = 1.35f;
+    selection_style.unselected_visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
     if (dvz_selection_set_visual_style(selection, &selection_style) != 0)
         goto error;
 

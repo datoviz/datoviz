@@ -22,7 +22,7 @@ The active release surface centers on dense retained writes:
 
 ```c
 dvz_visual_set_data(visual, attr_name, data, item_count);
-dvz_visual_set_data_range(visual, attr_name, data, first_item, item_count);
+dvz_visual_set_data_range(visual, attr_name, first_item, data, item_count);
 ```
 
 Range writes update a contiguous item interval for one attribute. Attribute names and element

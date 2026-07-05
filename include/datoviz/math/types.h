@@ -30,25 +30,13 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-#define M_2PI 6.28318530717958647692
-// #define M_PI_2 1.57079632679489650726
+#define DVZ_PI   3.14159265358979323846
+#define DVZ_PI_2 1.57079632679489661923
+#define DVZ_2PI 6.28318530717958647692
 
-#define M_INV_255 0.00392156862745098
+#define DVZ_INV_255 0.00392156862745098
 
-#define EPSILON 1e-10
-
-#if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#endif
-static uint32_t _ZERO_OFFSET[3] = {0, 0, 0};
-#if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
-#define DVZ_ZERO_OFFSET _ZERO_OFFSET
+#define DVZ_EPSILON 1e-10
 
 // Box
 #define DVZ_BOX_NDC                                                                               \
@@ -68,11 +56,11 @@ static uint32_t _ZERO_OFFSET[3] = {0, 0, 0};
 /*  Macros                                                                                       */
 /*************************************************************************************************/
 
-#define MIN(a, b)     (((a) < (b)) ? (a) : (b))
-#define MAX(a, b)     (((a) > (b)) ? (a) : (b))
-#define CLIP(x, a, b) MAX(MIN((x), (b)), (a))
+#define DVZ_MIN(a, b)     (((a) < (b)) ? (a) : (b))
+#define DVZ_MAX(a, b)     (((a) > (b)) ? (a) : (b))
+#define DVZ_CLIP(x, a, b) DVZ_MAX(DVZ_MIN((x), (b)), (a))
 
-// #define TO_BYTE(x)   (uint8_t)round(CLIP((x), 0, 1) * 255)
+// #define TO_BYTE(x)   (uint8_t)round(DVZ_CLIP((x), 0, 1) * 255)
 // #define FROM_BYTE(x) ((x) / 255.0)
 
 
@@ -89,22 +77,20 @@ typedef uint64_t DvzId;
 /*  Byte size                                                                                    */
 /*************************************************************************************************/
 
-#define GB 1073741824
-#define MB 1048576
-#define KB 1024
+#define DVZ_GB 1073741824
+#define DVZ_MB 1048576
+#define DVZ_KB 1024
 
-#define PRETTY_SIZE_THRESHOLD 8192
-
-static char _PRETTY_SIZE[64] = {0};
+#define DVZ_PRETTY_SIZE_THRESHOLD 8192
 
 typedef uint64_t DvzSize;
 
-static inline char* dvz_pretty_size_r(DvzSize size, char* out, size_t out_size)
+static inline char* dvz_pretty_size(DvzSize size, char* out, size_t out_size)
 {
     if (out == NULL || out_size == 0)
         return NULL;
 
-    if (size <= PRETTY_SIZE_THRESHOLD)
+    if (size <= DVZ_PRETTY_SIZE_THRESHOLD)
     {
         snprintf( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
             out, out_size, "%" PRIu64 " bytes", size);
@@ -112,19 +98,19 @@ static inline char* dvz_pretty_size_r(DvzSize size, char* out, size_t out_size)
     }
     float s = (float)size;
     const char* u;
-    if (size >= GB)
+    if (size >= DVZ_GB)
     {
-        s /= GB;
+        s /= DVZ_GB;
         u = "GB";
     }
-    else if (size >= MB)
+    else if (size >= DVZ_MB)
     {
-        s /= MB;
+        s /= DVZ_MB;
         u = "MB";
     }
-    else if (size >= KB)
+    else if (size >= DVZ_KB)
     {
-        s /= KB;
+        s /= DVZ_KB;
         u = "KB";
     }
     else
@@ -136,16 +122,7 @@ static inline char* dvz_pretty_size_r(DvzSize size, char* out, size_t out_size)
     return out;
 }
 
-static inline char* dvz_pretty_size(DvzSize size)
-{
-    // Compatibility helper; not thread-safe and overwritten on the next call in this TU.
-    dvz_pretty_size_r(size, _PRETTY_SIZE, sizeof(_PRETTY_SIZE));
-    return _PRETTY_SIZE;
-}
-
 #define DVZ_ARRAY_COUNT(arr) sizeof((arr)) / sizeof((arr)[0])
-
-#define fsizeof(type, member) sizeof(((type*)0)->member)
 
 
 
@@ -157,7 +134,7 @@ typedef uint8_t cvec2[2];
 typedef uint8_t cvec3[3];
 typedef uint8_t cvec4[4]; // used for color index
 
-#define DvzAlpha uint8_t
+typedef uint8_t DvzAlpha;
 
 
 

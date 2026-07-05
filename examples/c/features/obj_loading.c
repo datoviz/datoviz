@@ -214,7 +214,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     if (!_write_obj_fixture())
         return false;
-    DvzGeometry* geometry = dvz_geom_obj(
+    DvzGeometry* geometry = dvz_geometry_obj(
         OBJ_PATH, &(DvzGeometryObjDesc){
                       DVZ_STRUCT_INIT_FIELDS(DvzGeometryObjDesc),
                       .color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),

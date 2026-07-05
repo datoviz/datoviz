@@ -210,9 +210,8 @@ static bool _add_probe_field(
     int rc = dvz_visual_set_data_many(field, updates, 3);
     if (rc != 0)
         return false;
-    rc = dvz_visual_set_texture_rgba8(
-        field, (const uint8_t*)pixels, FIELD_WIDTH, FIELD_HEIGHT, sizeof(pixels));
-    if (rc != 0)
+    if (!example_visual_set_rgba8_field(
+            scene, field, "field", (const uint8_t*)pixels, FIELD_WIDTH, FIELD_HEIGHT, NULL))
         return false;
     dvz_visual_set_query_capabilities(field, DVZ_QUERY_CAPABILITY_PIXEL);
     rc = dvz_panel_add_visual(panel, field, &(DvzVisualAttachDesc){.z_layer = -1});
@@ -239,14 +238,16 @@ static DvzOverlayCard* _add_plain_header(DvzOverlay* overlay)
     style.text_size_px = 16.0f;
     style.text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
 
-    return dvz_overlay_card(
+    DvzOverlayCard* card = dvz_overlay_card(
         overlay,
         &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = "image probe readout",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_TOP_LEFT,
             .offset_px = {18.0f, 18.0f},
-            .style = &style,
         });
+    if (card == NULL || dvz_overlay_card_set_style(card, &style) != 0)
+        return NULL;
+    return card;
 }
 
 
@@ -579,9 +580,10 @@ int main(int argc, char** argv)
             .text = "fallback",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_RIGHT,
             .offset_px = {22.0f, 22.0f},
-            .style = &rich_style,
         });
     EXAMPLE_CHECK(rich != NULL, "failed to create rich overlay card shell");
+    EXAMPLE_CHECK(
+        dvz_overlay_card_set_style(rich, &rich_style) == 0, "failed to style rich overlay card");
 
     int rc = _set_probe_card_rich_text(
         rich,
@@ -592,8 +594,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "overlay_rich_card");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_window(app, figure, WIDTH, HEIGHT, "overlay_rich_card");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");

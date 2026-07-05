@@ -1591,14 +1591,15 @@ void dvz_colorbar_destroy(DvzColorbar* colorbar)
  * @param colorbar the colorbar
  * @param format the format descriptor, or NULL to clear the override
  */
-void dvz_colorbar_set_format(DvzColorbar* colorbar, const DvzFormatDesc* format)
+DvzResult dvz_colorbar_set_format(DvzColorbar* colorbar, const DvzFormatDesc* format)
 {
     ANN(colorbar);
     if (!_scene_format_desc_validate(format))
-        return;
+        return DVZ_ERROR;
     colorbar->has_format = format != NULL;
     _scene_format_state_copy(&colorbar->format, format);
     _scene_mark_colorbar_dirty(colorbar);
+    return DVZ_OK;
 }
 
 
@@ -1609,17 +1610,18 @@ void dvz_colorbar_set_format(DvzColorbar* colorbar, const DvzFormatDesc* format)
  * @param colorbar the colorbar
  * @param orientation the orientation
  */
-void dvz_colorbar_set_orientation(DvzColorbar* colorbar, DvzColorbarOrientation orientation)
+DvzResult dvz_colorbar_set_orientation(DvzColorbar* colorbar, DvzColorbarOrientation orientation)
 {
     ANN(colorbar);
     if (colorbar->orientation == orientation)
-        return;
+        return DVZ_OK;
     colorbar->orientation = orientation;
     colorbar->reserve_px = _colorbar_default_reserve_px(orientation);
     if (!_colorbar_anchor_matches_orientation(orientation, colorbar->anchor))
         colorbar->anchor = _colorbar_default_anchor(orientation);
     _colorbar_apply_auto_reserve(colorbar);
     _scene_mark_colorbar_dirty(colorbar);
+    return DVZ_OK;
 }
 
 
@@ -1629,15 +1631,15 @@ void dvz_colorbar_set_orientation(DvzColorbar* colorbar, DvzColorbarOrientation 
  *
  * @param colorbar the colorbar
  * @param anchor the panel-edge anchor
- * @return true when the anchor was accepted
+ * @return DVZ_OK when the anchor was accepted, DVZ_ERROR on error
  */
-bool dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor anchor)
+DvzResult dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor anchor)
 {
     ANN(colorbar);
     if (!_colorbar_anchor_supported(anchor))
     {
         log_error("attached colorbar anchor must be a panel edge");
-        return false;
+        return DVZ_ERROR;
     }
     bool changed = colorbar->anchor != anchor;
     if (!_colorbar_anchor_matches_orientation(colorbar->orientation, anchor))
@@ -1650,11 +1652,11 @@ bool dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor anchor)
         changed = true;
     }
     if (!changed)
-        return true;
+        return DVZ_OK;
     colorbar->anchor = anchor;
     _colorbar_apply_auto_reserve(colorbar);
     _scene_mark_colorbar_dirty(colorbar);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -1663,15 +1665,15 @@ bool dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor anchor)
  *
  * @param colorbar the colorbar
  * @param desc layout descriptor
- * @return true when the layout was accepted
+ * @return DVZ_OK when the layout was accepted, DVZ_ERROR on error
  */
-bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc)
+DvzResult dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc)
 {
     ANN(colorbar);
     if (desc == NULL)
-        return false;
+        return DVZ_ERROR;
     if (!_colorbar_desc_validate(desc))
-        return false;
+        return DVZ_ERROR;
     DvzColorbarPlacementMode placement_mode = desc->placement_mode;
     DvzColorbarOrientation orientation = desc->orientation;
     DvzSceneAnchor anchor =
@@ -1679,13 +1681,13 @@ bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc)
     if (placement_mode == DVZ_COLORBAR_PLACEMENT_ATTACHED && !_colorbar_anchor_supported(anchor))
     {
         log_error("attached colorbar anchor must be a panel edge");
-        return false;
+        return DVZ_ERROR;
     }
     if (placement_mode == DVZ_COLORBAR_PLACEMENT_ATTACHED &&
         !_colorbar_anchor_matches_orientation(orientation, anchor))
     {
         log_error("attached colorbar anchor must match its orientation");
-        return false;
+        return DVZ_ERROR;
     }
 
     colorbar->placement_mode = placement_mode;
@@ -1712,7 +1714,7 @@ bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc)
 
     _colorbar_apply_auto_reserve(colorbar);
     _scene_mark_colorbar_dirty(colorbar);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -1721,12 +1723,12 @@ bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc)
  *
  * @param colorbar the colorbar
  * @param ticks explicit tick descriptor
- * @return whether the explicit ticks were stored
+ * @return DVZ_OK when the explicit ticks were stored, DVZ_ERROR on error
  */
-bool dvz_colorbar_set_ticks(DvzColorbar* colorbar, const DvzColorbarTicks* ticks)
+DvzResult dvz_colorbar_set_ticks(DvzColorbar* colorbar, const DvzColorbarTicks* ticks)
 {
     if (colorbar == NULL || !_colorbar_ticks_validate(ticks))
-        return false;
+        return DVZ_ERROR;
 
     colorbar->explicit_ticks_enabled = true;
     colorbar->explicit_tick_labels_set = ticks->labels != NULL;
@@ -1748,7 +1750,7 @@ bool dvz_colorbar_set_ticks(DvzColorbar* colorbar, const DvzColorbarTicks* ticks
         colorbar->explicit_tick_labels[i][0] = '\0';
     }
     _scene_mark_colorbar_dirty(colorbar);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -1756,12 +1758,12 @@ bool dvz_colorbar_set_ticks(DvzColorbar* colorbar, const DvzColorbarTicks* ticks
  * Clear explicit tick positions and labels for one colorbar.
  *
  * @param colorbar the colorbar
- * @return whether the colorbar was updated
+ * @return DVZ_OK when the colorbar was updated, DVZ_ERROR on error
  */
-bool dvz_colorbar_clear_ticks(DvzColorbar* colorbar)
+DvzResult dvz_colorbar_clear_ticks(DvzColorbar* colorbar)
 {
     if (colorbar == NULL)
-        return false;
+        return DVZ_ERROR;
     colorbar->explicit_ticks_enabled = false;
     colorbar->explicit_tick_labels_set = false;
     colorbar->explicit_tick_count = 0;
@@ -1771,7 +1773,7 @@ bool dvz_colorbar_clear_ticks(DvzColorbar* colorbar)
         colorbar->explicit_tick_labels[i][0] = '\0';
     }
     _scene_mark_colorbar_dirty(colorbar);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -1782,14 +1784,15 @@ bool dvz_colorbar_clear_ticks(DvzColorbar* colorbar)
  * @param colorbar the colorbar
  * @param title the title, or NULL to clear
  */
-void dvz_colorbar_set_title(DvzColorbar* colorbar, const char* title)
+DvzResult dvz_colorbar_set_title(DvzColorbar* colorbar, const char* title)
 {
     ANN(colorbar);
     const char* src = title != NULL ? title : "";
     if (strcmp(colorbar->title, src) == 0)
-        return;
+        return DVZ_OK;
     dvz_strlcpy(colorbar->title, src, sizeof(colorbar->title));
     _scene_mark_colorbar_dirty(colorbar);
+    return DVZ_OK;
 }
 
 

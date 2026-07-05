@@ -318,7 +318,7 @@ int test_drp2_runtime_vklite_executes_resource_commands(TstContext* suite, const
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_buffer(
         stream, 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE));
-    AT(dvz_drp2_stream_write_buffer(stream, 1, 0, 16, "AQIDBAUGBwgJCgsMDQ4PEA=="));
+    AT(dvz_drp2_stream_write_buffer_base64(stream, 1, 0, 16, "AQIDBAUGBwgJCgsMDQ4PEA=="));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 2, 2, 2,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
@@ -355,7 +355,7 @@ int test_drp2_runtime_vklite_writes_buffer_contents(TstContext* suite, const Tst
         stream, 1, 32,
         DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ |
             DVZ_DRP2_BUFFER_USAGE_MAP_WRITE));
-    AT(dvz_drp2_stream_write_buffer(stream, 1, 8, 16, "AQIDBAUGBwgJCgsMDQ4PEA=="));
+    AT(dvz_drp2_stream_write_buffer_base64(stream, 1, 8, 16, "AQIDBAUGBwgJCgsMDQ4PEA=="));
 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
@@ -398,7 +398,7 @@ int test_drp2_runtime_vklite_copies_buffer_contents(TstContext* suite, const Tst
             DVZ_DRP2_BUFFER_USAGE_MAP_WRITE));
     AT(dvz_drp2_stream_create_buffer(
         stream, 2, 32, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
-    AT(dvz_drp2_stream_write_buffer(stream, 1, 4, 16, "AQIDBAUGBwgJCgsMDQ4PEA=="));
+    AT(dvz_drp2_stream_write_buffer_base64(stream, 1, 4, 16, "AQIDBAUGBwgJCgsMDQ4PEA=="));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 10));
     AT(dvz_drp2_stream_copy_buffer_to_buffer(stream, 10, 1, 4, 2, 12, 16));
     AT(dvz_drp2_stream_finish_command_encoder(stream, 10, 11));
@@ -841,7 +841,7 @@ int test_drp2_runtime_vklite_writes_texture_contents(TstContext* suite, const Ts
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 1, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
-    AT(dvz_drp2_stream_write_texture_2d(
+    AT(dvz_drp2_stream_write_texture_2d_base64(
         stream, 1, 0, 2, 2, 8, 2, "AQIDBAUGBwgJCgsMDQ4PEA=="));
     AT(dvz_drp2_stream_create_buffer(
         stream, 2, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
@@ -889,7 +889,7 @@ int test_drp2_runtime_vklite_copies_buffer_to_texture(TstContext* suite, const T
         stream, 1, 16,
         DVZ_DRP2_BUFFER_USAGE_COPY_SRC | DVZ_DRP2_BUFFER_USAGE_COPY_DST |
             DVZ_DRP2_BUFFER_USAGE_MAP_WRITE));
-    AT(dvz_drp2_stream_write_buffer(stream, 1, 0, 16, "AQIDBAUGBwgJCgsMDQ4PEA=="));
+    AT(dvz_drp2_stream_write_buffer_base64(stream, 1, 0, 16, "AQIDBAUGBwgJCgsMDQ4PEA=="));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 2, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
     AT(dvz_drp2_stream_create_buffer(
@@ -939,7 +939,7 @@ int test_drp2_runtime_vklite_copies_texture_to_texture(TstContext* suite, const 
         stream, 1, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
     AT(dvz_drp2_stream_create_texture_2d_usage(
         stream, 2, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
-    AT(dvz_drp2_stream_write_texture_2d(
+    AT(dvz_drp2_stream_write_texture_2d_base64(
         stream, 1, 0, 2, 2, 8, 2, "AQIDBAUGBwgJCgsMDQ4PEA=="));
     AT(dvz_drp2_stream_create_buffer(
         stream, 3, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
@@ -2366,7 +2366,7 @@ int test_drp2_runtime_vklite_samples_then_copies_texture(TstContext* suite, cons
         stream, 6, 2, 2,
         DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC |
             DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
-    AT(dvz_drp2_stream_write_texture_2d(
+    AT(dvz_drp2_stream_write_texture_2d_base64(
         stream, 6, 0, 2, 2, 8, 2, "/wAA//8AAP//AAD//wAA/w=="));
     AT(dvz_drp2_stream_create_texture_sampler_bind_group(stream, 7, 3, 6, 5));
     AT(dvz_drp2_stream_create_texture_2d_usage(

@@ -162,8 +162,8 @@ int test_scene_animation_offline_timer_every_frame(TstContext* suite, const TstC
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
-    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_FIXED_STEP);
-    dvz_scene_set_fps(scene, 2.0);
+    AT(dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_FIXED_STEP) == DVZ_OK);
+    AT(dvz_scene_set_fps(scene, 2.0) == DVZ_OK);
 
     TimerTestState state = {0};
     DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
@@ -171,7 +171,7 @@ int test_scene_animation_offline_timer_every_frame(TstContext* suite, const TstC
     timer_desc.user_data = &state;
     DvzAnimation* timer = dvz_anim_timer(scene, &timer_desc);
     ANN(timer);
-    dvz_anim_start(timer, 0.0);
+    AT(dvz_anim_start(timer, 0.0) == DVZ_OK);
 
     _dvz_scene_animations_step(scene, 100);
     AT(state.calls == 1);
@@ -336,7 +336,7 @@ int test_scene_animation_interval_skips_to_due_tick(TstContext* suite, const Tst
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
-    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_EXTERNAL);
+    AT(dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_EXTERNAL) == DVZ_OK);
 
     TimerTestState state = {0};
     DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
@@ -346,16 +346,16 @@ int test_scene_animation_interval_skips_to_due_tick(TstContext* suite, const Tst
     timer_desc.user_data = &state;
     DvzAnimation* timer = dvz_anim_timer(scene, &timer_desc);
     ANN(timer);
-    dvz_anim_start(timer, 0.0);
+    AT(dvz_anim_start(timer, 0.0) == DVZ_OK);
 
-    dvz_scene_step_external(scene, 0.55, 0.55);
+    AT(dvz_scene_step_external(scene, 0.55, 0.55) == DVZ_OK);
     AT(state.calls == 1);
     AT(state.last_tick == 4);
 
-    dvz_scene_step_external(scene, 0.58, 0.03);
+    AT(dvz_scene_step_external(scene, 0.58, 0.03) == DVZ_OK);
     AT(state.calls == 1);
 
-    dvz_scene_step_external(scene, 0.61, 0.03);
+    AT(dvz_scene_step_external(scene, 0.61, 0.03) == DVZ_OK);
     AT(state.calls == 2);
     AT(state.last_tick == 5);
 
@@ -560,12 +560,12 @@ int test_scene_animation_phase_wrap_and_setters(TstContext* suite, const TstCase
     AC((double)state.last_value, 0.1, EPS);
     AC((double)state.last_delta, 0.2, EPS);
 
-    dvz_anim_set_speed(phase, 0.8f);
+    AT(dvz_anim_set_speed(phase, 0.8f) == DVZ_OK);
     _dvz_scene_animations_step(scene, 300);
     AC((double)state.last_value, 0.5, EPS);
     AC((double)state.last_delta, 0.4, EPS);
 
-    dvz_anim_phase_set_value(phase, 1.25f);
+    AT(dvz_anim_phase_set_value(phase, 1.25f) == DVZ_OK);
     _dvz_scene_animations_step(scene, 400);
     AC((double)state.last_value, 0.65, EPS);
     AC((double)state.last_delta, 0.4, EPS);
@@ -605,19 +605,19 @@ int test_scene_animation_phase_stop_restart(TstContext* suite, const TstCase* it
                    .user_data = &state,
                });
     ANN(phase);
-    dvz_anim_start(phase, 0.0);
+    AT(dvz_anim_start(phase, 0.0) == DVZ_OK);
 
     _dvz_scene_animations_step(scene, 100);
     _dvz_scene_animations_step(scene, 200);
     AT(state.calls == 2);
     AC((double)state.last_value, 1.5, EPS);
 
-    dvz_anim_stop(phase);
+    AT(dvz_anim_stop(phase) == DVZ_OK);
     _dvz_scene_animations_step(scene, 300);
     AT(state.calls == 2);
     AC((double)state.last_value, 1.5, EPS);
 
-    dvz_anim_start(phase, 0.0);
+    AT(dvz_anim_start(phase, 0.0) == DVZ_OK);
     _dvz_scene_animations_step(scene, 400);
     AT(state.calls == 3);
     AC((double)state.last_value, 2.0, EPS);
@@ -793,7 +793,7 @@ int test_scene_animation_tracks(TstContext* suite, const TstCase* item)
     DvzTrack* rotation = dvz_track_rotation(&(DvzTrackRotationDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzTrackRotationDesc),
         .axis = {0.0f, 0.0f, 1.0f},
-        .speed_rad_per_sec = (float)M_PI,
+        .speed_rad_per_sec = (float)DVZ_PI,
     });
     ANN(rotation);
     versor q = GLM_QUAT_IDENTITY_INIT;
@@ -825,7 +825,7 @@ int test_scene_animation_visual_transform(TstContext* suite, const TstCase* item
     DvzTrack* rotation = dvz_track_rotation(&(DvzTrackRotationDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzTrackRotationDesc),
         .axis = {0.0f, 0.0f, 1.0f},
-        .speed_rad_per_sec = (float)M_PI,
+        .speed_rad_per_sec = (float)DVZ_PI,
     });
     ANN(rotation);
     DvzAnimation* animation = dvz_anim_visual_transform(
@@ -973,9 +973,9 @@ int test_scene_animation_interaction_stop(TstContext* suite, const TstCase* item
     TrackTestState state = {0};
     DvzAnimation* animation = dvz_anim_track(scene, track, _track_vec3_callback, &state);
     ANN(animation);
-    dvz_anim_set_interaction_policy(
-        animation, controller, DVZ_ANIM_INTERACTION_STOP, 0.0);
-    dvz_anim_start(animation, 0.0);
+    AT(dvz_anim_set_interaction_policy(
+           animation, controller, DVZ_ANIM_INTERACTION_STOP, 0.0) == DVZ_OK);
+    AT(dvz_anim_start(animation, 0.0) == DVZ_OK);
 
     _dvz_scene_animations_step(scene, 0);
     AT(state.calls == 1);

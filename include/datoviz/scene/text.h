@@ -155,7 +155,7 @@ DVZ_EXPORT DvzTextAtlasInfo dvz_text_atlas_info(const DvzTextAtlas* atlas);
  * @param atlas the text atlas
  * @return sampled atlas field, or NULL
  */
-DVZ_EXPORT DvzSampledField* dvz_text_atlas_field(const DvzTextAtlas* atlas);
+DVZ_EXPORT const DvzSampledField* dvz_text_atlas_field(const DvzTextAtlas* atlas);
 
 
 /**
@@ -200,10 +200,16 @@ DVZ_EXPORT void dvz_text_destroy(DvzText* text);
 
 
 /**
- * Set the UTF-8 content of a retained text object.
+ * Replace all items in a retained text collection.
+ *
+ * Strings, positions, offsets, anchors, sizes, colors, and angles are copied before return. Passing
+ * `item_count == 0` clears the collection; otherwise `items` must point to `item_count` entries.
+ * Use this function when several per-item properties should change atomically.
  *
  * @param text the text object
- * @param string the string, or NULL to clear
+ * @param items text items to copy, or NULL when `item_count` is 0
+ * @param item_count number of text items
+ * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult dvz_text_set_items(
     DvzText* text, const DvzTextItem* items, uint32_t item_count);
@@ -239,28 +245,99 @@ DVZ_EXPORT DvzResult dvz_text_set_position(DvzText* text, const double position[
 DVZ_EXPORT DvzResult dvz_text_set_layout(DvzText* text, const DvzTextLayout* layout);
 
 
+/**
+ * Replace the UTF-8 strings of an existing retained text collection.
+ *
+ * String contents are copied before return. `item_count` must match the current collection item
+ * count.
+ *
+ * @param text the text object
+ * @param strings UTF-8 strings to copy
+ * @param item_count number of strings
+ * @return 0 on success, -1 on error
+ */
 DVZ_EXPORT DvzResult
 dvz_text_set_strings(DvzText* text, const char* const* strings, uint32_t item_count);
 
 
+/**
+ * Replace the positions of an existing retained text collection.
+ *
+ * Positions are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param positions positions in the current placement mode
+ * @param item_count number of positions
+ * @return 0 on success, -1 on error
+ */
 DVZ_EXPORT DvzResult
 dvz_text_set_positions(DvzText* text, const double (*positions)[3], uint32_t item_count);
 
 
+/**
+ * Replace the logical-pixel offsets of an existing retained text collection.
+ *
+ * Offsets are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param offsets logical-pixel offsets
+ * @param item_count number of offsets
+ * @return 0 on success, -1 on error
+ */
 DVZ_EXPORT DvzResult
 dvz_text_set_offsets(DvzText* text, const float (*offsets)[2], uint32_t item_count);
 
 
+/**
+ * Replace the text anchors of an existing retained text collection.
+ *
+ * Anchors are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param anchors normalized text anchors
+ * @param item_count number of anchors
+ * @return 0 on success, -1 on error
+ */
 DVZ_EXPORT DvzResult
 dvz_text_set_anchors(DvzText* text, const float (*anchors)[2], uint32_t item_count);
 
 
+/**
+ * Replace the text sizes of an existing retained text collection.
+ *
+ * Sizes are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param sizes_px logical-pixel text sizes
+ * @param item_count number of sizes
+ * @return 0 on success, -1 on error
+ */
 DVZ_EXPORT DvzResult dvz_text_set_sizes(DvzText* text, const float* sizes_px, uint32_t item_count);
 
 
+/**
+ * Replace the colors of an existing retained text collection.
+ *
+ * Colors are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param colors text colors
+ * @param item_count number of colors
+ * @return 0 on success, -1 on error
+ */
 DVZ_EXPORT DvzResult dvz_text_set_colors(DvzText* text, const DvzColor* colors, uint32_t item_count);
 
 
+/**
+ * Replace the rotation angles of an existing retained text collection.
+ *
+ * Angles are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param angles rotation angles in radians
+ * @param item_count number of angles
+ * @return 0 on success, -1 on error
+ */
 DVZ_EXPORT DvzResult dvz_text_set_angles(DvzText* text, const float* angles, uint32_t item_count);
 
 
@@ -279,6 +356,7 @@ DVZ_EXPORT DvzResult dvz_text_set_style(DvzText* text, const DvzTextStyle* style
  *
  * @param text the text object
  * @param placement the placement descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult dvz_text_set_placement(DvzText* text, const DvzTextPlacement* placement);
 

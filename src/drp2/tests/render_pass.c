@@ -71,7 +71,7 @@ int test_drp2_begin_render_pass_multi_color_attachments(TstContext* suite, const
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_buffer(
         stream, 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX));
-    AT(dvz_drp2_stream_write_buffer(stream, 1, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA=="));
+    AT(dvz_drp2_stream_write_buffer_base64(stream, 1, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA=="));
     AT(dvz_drp2_stream_create_shader_module(stream, 2, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 3, "fragment", "@fragment fn main() {}"));
     AT(drp2_test_create_render_pipeline(stream, 4, 2, 3, 1));

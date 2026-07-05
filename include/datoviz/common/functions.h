@@ -19,6 +19,7 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 
 
 
@@ -51,8 +52,9 @@ EXTERN_C_ON
  *
  * @param cb the error callback
  * @param user_data opaque pointer passed to the callback
+ * @return DVZ_OK on success
  */
-DVZ_EXPORT void dvz_error_set_callback(DvzErrorCallback cb, void* user_data);
+DVZ_EXPORT DvzResult dvz_error_set_callback(DvzErrorCallback cb, void* user_data);
 
 
 /**

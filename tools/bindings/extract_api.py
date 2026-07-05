@@ -39,6 +39,7 @@ DEFAULT_HEADERS = [
     'datoviz/vk.h',
     'datoviz/vklite.h',
     'datoviz/window.h',
+    'datoviz/window/backend.h',
 ]
 
 INCLUDE_DIRS = [

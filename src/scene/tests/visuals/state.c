@@ -171,8 +171,8 @@ int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCa
     ANN(field);
     uint8_t base[4 * 4 * 4] = {0};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = base, .bytes_per_row = 4 * 4, .rows_per_image = 4}));
-    AT(dvz_visual_set_field(image, "field", field));
+        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = base, .bytes_per_row = 4 * 4, .rows_per_image = 4}) == DVZ_OK);
+    AT(dvz_visual_set_field(image, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -185,7 +185,7 @@ int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCa
     uint8_t patch[2 * 4] = {1, 2, 3, 4, 5, 6, 7, 8};
     AT(dvz_sampled_field_update_region(
         field, (DvzFieldRegion){.x = 1, .y = 2, .z = 0, .width = 2, .height = 1, .depth = 1},
-        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = patch, .bytes_per_row = 2 * 4, .rows_per_image = 1}));
+        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = patch, .bytes_per_row = 2 * 4, .rows_per_image = 1}) == DVZ_OK);
 
     char* json = dvz_scene_json(scene);
     ANN(json);
@@ -227,10 +227,10 @@ int test_scene_json_includes_buffer_binding_metadata(TstContext* suite, const Ts
     DvzSceneBuffer* buffer = dvz_scene_buffer(
         scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc), .usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(DvzIndex)});
     ANN(buffer);
-    AT(dvz_scene_buffer_set_data(buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(buffer, indices, sizeof(indices)) == DVZ_OK);
     AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
-    AT(dvz_visual_set_buffer(visual, "index", buffer));
+    AT(dvz_visual_set_buffer(visual, "index", buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     char* json = dvz_scene_json(scene);
@@ -543,7 +543,7 @@ int test_scene_visual_item_range_api(TstContext* suite, const TstCase* item)
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_item_range(visual, 4, 1) == -1);
     AT(_captured_log_contains(suite, "exceeds logical item_count 4"));
 
-    dvz_visual_clear_item_range(visual);
+    AT(dvz_visual_clear_item_range(visual) == DVZ_OK);
     AT(dvz_visual_get_item_range(visual, &range));
     AT(range.first_item == 0);
     AT(range.item_count == 4);
@@ -667,8 +667,8 @@ int test_scene_scalar_color_emits_rgba_upload(TstContext* suite, const TstCase* 
         dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                             .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
-    dvz_scale_set_domain(scale, 0.0, 1.0);
-    dvz_scale_set_colormap(scale, colormap);
+    AT(dvz_scale_set_domain(scale, 0.0, 1.0) == DVZ_OK);
+    AT(dvz_scale_set_colormap(scale, colormap) == DVZ_OK);
     AT(dvz_visual_set_scale(pixel, "color", scale) == 0);
     AT(dvz_panel_add_visual(panel, pixel, NULL) == 0);
 
@@ -716,7 +716,7 @@ int test_scene_scalar_color_emits_rgba_upload(TstContext* suite, const TstCase* 
     int attr_idx = _attr_index(pixel, "color");
     AT(attr_idx >= 0);
     AT(pixel->attrs[attr_idx].dirty_item_count == 0);
-    dvz_scale_set_domain(scale, 0.0, 2.0);
+    AT(dvz_scale_set_domain(scale, 0.0, 2.0) == DVZ_OK);
     AT(pixel->attrs[attr_idx].dirty_first_item == 0);
     AT(pixel->attrs[attr_idx].dirty_item_count == N);
 
@@ -757,7 +757,7 @@ int test_scene_visual_bounds_point_and_range_update(TstContext* suite, const Tst
     AT(_scene_visuals_bounds_expect(&bounds, 3, -2.0, -3.0, -1.0, +4.0, +5.0, +2.0) == 0);
 
     vec3 update[1] = {{+8.0f, +2.0f, +4.0f}};
-    AT(dvz_visual_set_data_range(visual, "position", update, 1, 1) == 0);
+    AT(dvz_visual_set_data_range(visual, "position", 1, update, 1) == 0);
     AT(dvz_visual_bounds(visual, &bounds) == 0);
     AT(_scene_visuals_bounds_expect(&bounds, 3, -2.0, +1.0, -1.0, +8.0, +5.0, +4.0) == 0);
 
@@ -908,7 +908,7 @@ int test_scene_panel_visual_bounds_and_union(TstContext* suite, const TstCase* i
     AT(dvz_panel_bounds(panel, DVZ_BOUNDS_SPACE_VISUAL, &bounds) == 0);
     AT(_scene_visuals_bounds_expect(&bounds, 2, -1.0, -1.0, 0.0, +1.0, +1.0, 0.0) == 0);
 
-    dvz_visual_set_visible(right, false);
+    AT(dvz_visual_set_visible(right, false) == DVZ_OK);
     AT(dvz_panel_bounds(panel, DVZ_BOUNDS_SPACE_VISUAL, &bounds) == 0);
     AT(_scene_visuals_bounds_expect(&bounds, 2, -1.0, -1.0, 0.0, 0.0, +1.0, 0.0) == 0);
 
@@ -1210,7 +1210,7 @@ int test_scene_panel_bounds_overlay_emit_runtime(TstContext* suite, const TstCas
 
     DvzMsaaDesc msaa = dvz_msaa_desc();
     msaa.sample_count = 4;
-    AT(dvz_panel_set_msaa(panel, &msaa));
+    AT(dvz_panel_set_msaa(panel, &msaa) == DVZ_OK);
 
     DvzVisual* spheres = dvz_sphere(scene, 0);
     ANN(spheres);
@@ -1461,7 +1461,7 @@ int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item)
         .cols = 2,
         .colors = colors,
     };
-    DvzGeometry* geometry = dvz_geom_surface_grid(&desc);
+    DvzGeometry* geometry = dvz_geometry_surface_grid(&desc);
     ANN(geometry);
 
     AT(dvz_mesh_set_geometry(visual, geometry) == 0);
@@ -1530,7 +1530,7 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
         {1.0, 1.0},
         {0.0, 1.0},
     };
-    AT(dvz_polygon_geometry(
+    AT(dvz_polygon_set_geometry(
            polygon,
            &(DvzPolygonDesc){
                DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
@@ -1539,13 +1539,13 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
 
     const DvzColor fill_color = {20, 40, 200, 255};
     const DvzColor stroke_color = {240, 220, 40, 255};
-    AT(dvz_polygon_fill_color(polygon, fill_color) == 0);
-    AT(dvz_polygon_stroke_color(polygon, stroke_color) == 0);
-    AT(dvz_polygon_stroke_width_px(polygon, 3.0f) == 0);
-    AT(dvz_polygon_id(polygon, 42) == 0);
+    AT(dvz_polygon_set_fill_color(polygon, fill_color) == 0);
+    AT(dvz_polygon_set_stroke_color(polygon, stroke_color) == 0);
+    AT(dvz_polygon_set_stroke_width_px(polygon, 3.0f) == 0);
+    AT(dvz_polygon_set_id(polygon, 42) == 0);
     AT(polygon->user_id == 42);
-    AT(dvz_polygon_stroke_caps(polygon, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_TRIANGLE_OUT) == 0);
-    AT(dvz_polygon_stroke_join(polygon, DVZ_PATH_JOIN_BEVEL, 3.0f) == 0);
+    AT(dvz_polygon_set_stroke_caps(polygon, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_TRIANGLE_OUT) == 0);
+    AT(dvz_polygon_set_stroke_join(polygon, DVZ_PATH_JOIN_BEVEL, 3.0f) == 0);
     DvzPolygonStyle style = dvz_polygon_style();
     style.fill_color = fill_color;
     style.stroke_color = stroke_color;
@@ -1618,7 +1618,7 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     }
     AT(fill_position_version > 0);
     AT(fill_color_version > 0);
-    AT(dvz_polygon_stroke_width_px(polygon, 7.0f) == 0);
+    AT(dvz_polygon_set_stroke_width_px(polygon, 7.0f) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(stroke, "stroke_width_px", &stroke_width_view) == 0);
     widths = stroke_width_view.data;
@@ -1636,7 +1636,7 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     }
 
     const DvzColor fill_update = {200, 30, 40, 255};
-    AT(dvz_polygon_fill_color(polygon, fill_update) == 0);
+    AT(dvz_polygon_set_fill_color(polygon, fill_update) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "color", &fill_color_view) == 0);
     fill_colors = fill_color_view.data;
@@ -1650,7 +1650,7 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
         {0.75, 0.75},
         {0.25, 0.75},
     };
-    AT(dvz_polygon_hole(polygon, 0, 4, hole) == 0);
+    AT(dvz_polygon_set_hole(polygon, 0, hole, 4) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "position", &fill_position_view) == 0);
     AT(fill_position_view.item_count == 8);
@@ -1658,11 +1658,11 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     AT(stroke_position_view.item_count == 10);
     AT(_visual_family_state(stroke)->path.subpath_count == 2);
 
-    AT(dvz_polygon_visible(polygon, false) == 0);
+    AT(dvz_polygon_set_visible(polygon, false) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(!fill->visible);
     AT(!stroke->visible);
-    AT(dvz_polygon_visible(polygon, true) == 0);
+    AT(dvz_polygon_set_visible(polygon, true) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(fill->visible);
     AT(stroke->visible);
@@ -1690,7 +1690,7 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
-    DvzPolygonSet* set = dvz_polygon_set(scene, 0);
+    DvzPolygons* set = dvz_polygons(scene, 0);
     ANN(set);
     const dvec2 left[4] = {
         {0.0, 0.0},
@@ -1704,13 +1704,13 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
         {3.0, 1.0},
         {2.0, 1.0},
     };
-    const uint32_t left_index = dvz_polygon_set_add(
+    const uint32_t left_index = dvz_polygons_add_region(
         set,
         &(DvzPolygonDesc){
             DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
             .outer = {.xy = left, .count = 4},
         });
-    const uint32_t right_index = dvz_polygon_set_add(
+    const uint32_t right_index = dvz_polygons_add_region(
         set,
         &(DvzPolygonDesc){
             DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
@@ -1721,18 +1721,18 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
 
     const DvzColor red = {255, 0, 0, 255};
     const DvzColor green = {0, 255, 0, 255};
-    AT(dvz_polygon_set_region_fill_color(set, left_index, red) == 0);
-    AT(dvz_polygon_set_region_fill_color(set, right_index, green) == 0);
-    AT(dvz_polygon_set_region_stroke_width_px(set, left_index, 2.0f) == 0);
-    AT(dvz_polygon_set_region_stroke_width_px(set, right_index, 4.0f) == 0);
+    AT(dvz_polygons_set_region_fill_color(set, left_index, red) == 0);
+    AT(dvz_polygons_set_region_fill_color(set, right_index, green) == 0);
+    AT(dvz_polygons_set_region_stroke_width_px(set, left_index, 2.0f) == 0);
+    AT(dvz_polygons_set_region_stroke_width_px(set, right_index, 4.0f) == 0);
     const uint64_t ids[2] = {101, 102};
-    AT(dvz_polygon_set_region_ids(set, 0, 2, ids) == 0);
+    AT(dvz_polygons_set_region_ids(set, 0, 2, ids) == 0);
     AT(set->polygons[left_index].user_id == 101);
     AT(set->polygons[right_index].user_id == 102);
-    AT(dvz_polygon_set_stroke_caps(set, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_TRIANGLE_OUT) == 0);
-    AT(dvz_polygon_set_stroke_join(set, DVZ_PATH_JOIN_MITER, 5.0f) == 0);
+    AT(dvz_polygons_set_stroke_caps(set, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_TRIANGLE_OUT) == 0);
+    AT(dvz_polygons_set_stroke_join(set, DVZ_PATH_JOIN_MITER, 5.0f) == 0);
 
-    DvzComposite* composite = dvz_polygon_set_composite(set, 0);
+    DvzComposite* composite = dvz_polygons_composite(set, 0);
     ANN(composite);
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
     attach.z_layer = 3;
@@ -1790,7 +1790,7 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     }
     AT(fill_position_version > 0);
     AT(fill_color_version > 0);
-    AT(dvz_polygon_set_region_stroke_width_px(set, right_index, 7.0f) == 0);
+    AT(dvz_polygons_set_region_stroke_width_px(set, right_index, 7.0f) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(stroke, "stroke_width_px", &stroke_width_view) == 0);
     widths = stroke_width_view.data;
@@ -1809,7 +1809,7 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     }
 
     const DvzColor blue = {0, 0, 255, 255};
-    AT(dvz_polygon_set_region_fill_color(set, right_index, blue) == 0);
+    AT(dvz_polygons_set_region_fill_color(set, right_index, blue) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "color", &color_view) == 0);
     colors = color_view.data;
@@ -1820,9 +1820,9 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     const DvzColor bulk_fill[2] = {{11, 22, 33, 255}, {44, 55, 66, 255}};
     const DvzColor bulk_stroke[2] = {{77, 88, 99, 255}, {111, 122, 133, 255}};
     const float bulk_widths[2] = {1.5f, 2.5f};
-    AT(dvz_polygon_set_region_fill_colors(set, 0, 2, bulk_fill) == 0);
-    AT(dvz_polygon_set_region_stroke_colors(set, 0, 2, bulk_stroke) == 0);
-    AT(dvz_polygon_set_region_stroke_widths_px(set, 0, 2, bulk_widths) == 0);
+    AT(dvz_polygons_set_region_fill_colors(set, 0, 2, bulk_fill) == 0);
+    AT(dvz_polygons_set_region_stroke_colors(set, 0, 2, bulk_stroke) == 0);
+    AT(dvz_polygons_set_region_stroke_widths_px(set, 0, 2, bulk_widths) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "color", &color_view) == 0);
     colors = color_view.data;
@@ -1834,13 +1834,13 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     AC(widths[5], bulk_widths[1], EPS);
 
     const bool one_visible[2] = {true, false};
-    AT(dvz_polygon_set_region_visibilities(set, 0, 2, one_visible) == 0);
+    AT(dvz_polygons_set_region_visibilities(set, 0, 2, one_visible) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "position", &position_view) == 0);
     AT(position_view.item_count == 4);
     AT(dvz_visual_data(stroke, "position", &stroke_position_view) == 0);
     AT(stroke_position_view.item_count == 5);
-    AT(dvz_polygon_set_region_visible(set, left_index, false) == 0);
+    AT(dvz_polygons_set_region_visible(set, left_index, false) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(!fill->visible);
     AT(!stroke->visible);
@@ -1871,14 +1871,14 @@ int test_scene_graph_composite(TstContext* suite, const TstCase* item)
         {0.5, 1.0, 0.0},
     };
     AT(dvz_graph_set_node_count(graph, 3) == 0);
-    AT(dvz_graph_node_positions(graph, 0, 3, positions) == 0);
+    AT(dvz_graph_set_node_positions(graph, 0, 3, positions) == 0);
     const uint32_t edges[4] = {0, 1, 1, 2};
     AT(dvz_graph_set_edge_count(graph, 2) == 0);
-    AT(dvz_graph_edges(graph, 0, 2, edges) == 0);
+    AT(dvz_graph_set_edge_endpoints(graph, 0, 2, edges) == 0);
     const uint64_t node_ids[3] = {101, 102, 103};
     const uint64_t edge_ids[2] = {201, 202};
-    AT(dvz_graph_node_ids(graph, 0, 3, node_ids) == 0);
-    AT(dvz_graph_edge_ids(graph, 0, 2, edge_ids) == 0);
+    AT(dvz_graph_set_node_ids(graph, 0, 3, node_ids) == 0);
+    AT(dvz_graph_set_edge_ids(graph, 0, 2, edge_ids) == 0);
     AT(graph->nodes[0].user_id == 101);
     AT(graph->nodes[2].user_id == 103);
     AT(graph->edges[0].user_id == 201);
@@ -1891,10 +1891,10 @@ int test_scene_graph_composite(TstContext* suite, const TstCase* item)
     const float node_sizes[3] = {10.0f, 20.0f, 30.0f};
     const DvzColor edge_colors[2] = {{220, 220, 220, 255}, {255, 180, 80, 255}};
     const float edge_widths[2] = {2.0f, 4.0f};
-    AT(dvz_graph_node_colors(graph, 0, 3, node_colors) == 0);
-    AT(dvz_graph_node_sizes(graph, 0, 3, node_sizes) == 0);
-    AT(dvz_graph_edge_colors(graph, 0, 2, edge_colors) == 0);
-    AT(dvz_graph_edge_widths(graph, 0, 2, edge_widths) == 0);
+    AT(dvz_graph_set_node_colors(graph, 0, 3, node_colors) == 0);
+    AT(dvz_graph_set_node_sizes(graph, 0, 3, node_sizes) == 0);
+    AT(dvz_graph_set_edge_colors(graph, 0, 2, edge_colors) == 0);
+    AT(dvz_graph_set_edge_widths(graph, 0, 2, edge_widths) == 0);
 
     DvzComposite* composite = dvz_graph_composite(graph, 0);
     ANN(composite);
@@ -1946,7 +1946,7 @@ int test_scene_graph_composite(TstContext* suite, const TstCase* item)
 
     DvzGraphEdgeStyle edge_style = dvz_graph_edge_style();
     edge_style.mode = DVZ_GRAPH_EDGE_MODE_BEZIER;
-    edge_style.tessellation.segment_count = 4;
+    edge_style.tessellation_segment_count = 4;
     AT(dvz_graph_set_edge_style(graph, &edge_style) == 0);
     _scene_prepare_composite_visuals(figure);
     DvzVisual* path_edges = dvz_composite_visual(composite, "edges");
@@ -1962,7 +1962,7 @@ int test_scene_graph_composite(TstContext* suite, const TstCase* item)
     AT(_visual_family_state(path_edges)->path.subpath_lengths[1] == 5);
 
     const dvec3 moved[1] = {{2.0, 0.0, 0.0}};
-    AT(dvz_graph_node_positions(graph, 1, 1, moved) == 0);
+    AT(dvz_graph_set_node_positions(graph, 1, 1, moved) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(node_visual, "position", &node_position_view) == 0);
     node_positions = node_position_view.data;
@@ -2123,7 +2123,7 @@ int test_scene_point_external_position_buffer_emits_no_upload(TstContext* suite,
     };
     DvzSceneBuffer* position = dvz_scene_buffer(scene, &desc);
     ANN(position);
-    AT(dvz_visual_set_attr_buffer(visual, "position", position, 0, 3));
+    AT(dvz_visual_set_attr_buffer(visual, "position", position, 0, 3) == DVZ_OK);
 
     DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     float sizes[3] = {4.0f, 5.0f, 6.0f};
@@ -2198,8 +2198,8 @@ int test_scene_point_storage_position_buffer_emits_usage(TstContext* suite, cons
     };
     DvzSceneBuffer* position = dvz_scene_buffer(scene, &desc);
     ANN(position);
-    AT(dvz_scene_buffer_set_data(position, positions, sizeof(positions)));
-    AT(dvz_visual_set_attr_buffer(visual, "position", position, sizeof(vec3), 3));
+    AT(dvz_scene_buffer_set_data(position, positions, sizeof(positions)) == DVZ_OK);
+    AT(dvz_visual_set_attr_buffer(visual, "position", position, sizeof(vec3), 3) == DVZ_OK);
 
     DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     float sizes[3] = {4.0f, 5.0f, 6.0f};
@@ -2324,19 +2324,19 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
 
     DvzPanelBackgroundDesc background_desc = dvz_panel_background_desc();
     background_desc.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_background(panel, &background_desc));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_background(panel, &background_desc) == DVZ_ERROR);
 
     background_desc = dvz_panel_background_desc();
     background_desc.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_background(panel, &background_desc));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_background(panel, &background_desc) == DVZ_ERROR);
 
     DvzPanelBorderDesc border_desc = dvz_panel_border_desc();
     border_desc.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_border(panel, &border_desc));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_border(panel, &border_desc) == DVZ_ERROR);
 
     border_desc = dvz_panel_border_desc();
     border_desc.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_border(panel, &border_desc));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_border(panel, &border_desc) == DVZ_ERROR);
 
     DvzQueryRequest request = dvz_query_request();
     request.struct_size = DVZ_STRUCT_SIZE(DvzQueryRequest) - 1;
@@ -2348,27 +2348,27 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
 
     DvzEdlDesc edl = dvz_edl_desc();
     edl.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_edl(panel, &edl));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_edl(panel, &edl) == DVZ_ERROR);
 
     edl = dvz_edl_desc();
     edl.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_edl(panel, &edl));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_edl(panel, &edl) == DVZ_ERROR);
 
     DvzMsaaDesc msaa = dvz_msaa_desc();
     msaa.struct_size = DVZ_STRUCT_SIZE(DvzMsaaDesc) - 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_msaa(panel, &msaa));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_msaa(panel, &msaa) == DVZ_ERROR);
 
     msaa = dvz_msaa_desc();
     msaa.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_msaa(panel, &msaa));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_msaa(panel, &msaa) == DVZ_ERROR);
 
     DvzSsaoDesc ssao = dvz_ssao_desc();
     ssao.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_ssao(panel, &ssao));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_ssao(panel, &ssao) == DVZ_ERROR);
 
     ssao = dvz_ssao_desc();
     ssao.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_ssao(panel, &ssao));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_ssao(panel, &ssao) == DVZ_ERROR);
 
     DvzVolumeOcclusionDesc volume_occlusion = dvz_volume_occlusion_desc();
     volume_occlusion.struct_size = DVZ_STRUCT_SIZE(DvzVolumeOcclusionDesc) - 1;
@@ -2460,8 +2460,8 @@ int test_scene_compute_point_position_buffer_emits_drp2(
                    .byte_size = sizeof(positions),
                });
     ANN(position);
-    AT(dvz_scene_buffer_set_data(position, positions, sizeof(positions)));
-    AT(dvz_visual_set_attr_buffer(visual, "position", position, 0, 3));
+    AT(dvz_scene_buffer_set_data(position, positions, sizeof(positions)) == DVZ_OK);
+    AT(dvz_visual_set_attr_buffer(visual, "position", position, 0, 3) == DVZ_OK);
 
     vec4 params = {0.0f, 0.0f, 3.0f, 0.0f};
     DvzSceneBuffer* param = dvz_scene_buffer(
@@ -2471,7 +2471,7 @@ int test_scene_compute_point_position_buffer_emits_drp2(
                    .byte_size = sizeof(params),
                });
     ANN(param);
-    AT(dvz_scene_buffer_set_data(param, &params, sizeof(params)));
+    AT(dvz_scene_buffer_set_data(param, &params, sizeof(params)) == DVZ_OK);
 
     DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     float sizes[3] = {4.0f, 5.0f, 6.0f};
@@ -2498,10 +2498,11 @@ int test_scene_compute_point_position_buffer_emits_drp2(
                });
     ANN(compute);
     AT(dvz_scene_compute_set_buffer(
-        compute, 0, param, DVZ_SCENE_COMPUTE_ACCESS_READ, 0, sizeof(params)));
+           compute, 0, param, DVZ_SCENE_COMPUTE_ACCESS_READ, 0, sizeof(params)) == DVZ_OK);
     AT(dvz_scene_compute_set_buffer(
-        compute, 1, position, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0, sizeof(positions)));
-    AT(dvz_figure_add_compute(figure, compute));
+           compute, 1, position, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0, sizeof(positions)) ==
+       DVZ_OK);
+    AT(dvz_figure_add_compute(figure, compute) == DVZ_OK);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
@@ -2624,7 +2625,7 @@ int test_scene_point_external_position_buffer_executes(TstContext* suite, const 
     };
     DvzSceneBuffer* scene_position = dvz_scene_buffer(scene, &desc);
     ANN(scene_position);
-    AT(dvz_visual_set_attr_buffer(visual, "position", scene_position, 0, 3));
+    AT(dvz_visual_set_attr_buffer(visual, "position", scene_position, 0, 3) == DVZ_OK);
 
     DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     float sizes[3] = {8.0f, 8.0f, 8.0f};
@@ -2891,7 +2892,7 @@ int test_scene_rejects_range_update_without_full_allocation(TstContext* suite, c
 
     tst_log_capture_begin(suite);
     AT_EXPECTED_ERROR_STRICT(
-        suite, dvz_visual_set_data_range(visual, "position", update, 0, 1) == -1);
+        suite, dvz_visual_set_data_range(visual, "position", 0, update, 1) == -1);
     AT(_captured_log_contains(suite, "range update requires prior full allocation"));
 
     dvz_scene_destroy(scene);
@@ -2971,7 +2972,7 @@ int test_scene_stream_snapshot_freezes_upload_payloads(TstContext* suite, const 
     AT(stream != NULL);
 
     float update[2] = {10.0f, 12.0f};
-    AT(dvz_visual_set_data_range(visual, "size", update, 0, 2) == 0);
+    AT(dvz_visual_set_data_range(visual, "size", 0, update, 2) == 0);
 
     bool found_size_upload = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
@@ -3091,7 +3092,7 @@ int test_scene_artifact_allows_mutation_after_emit(TstContext* suite, const TstC
     (void)arena_size;
 
     float update[2] = {10.0f, 12.0f};
-    AT(dvz_visual_set_data_range(visual, "size", update, 0, 2) == 0);
+    AT(dvz_visual_set_data_range(visual, "size", 0, update, 2) == 0);
     AT(dvz_drp2_stream_count(artifact_stream) > 0);
 
     dvz_scene_frame_artifact_destroy(artifact);

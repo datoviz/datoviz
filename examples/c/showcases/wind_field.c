@@ -470,16 +470,16 @@ static bool _add_wind_image(
                });
     if (field == NULL)
         return false;
-    if (!dvz_sampled_field_set_data(
+    if (dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                        .data = values,
                        .bytes_per_row = FIELD_WIDTH * sizeof(float),
                        .rows_per_image = FIELD_HEIGHT,
-                   }))
+                   }) != DVZ_OK)
     {
         return false;
     }
-    if (!dvz_visual_set_field(image, "field", field))
+    if (dvz_visual_set_field(image, "field", field) != DVZ_OK)
         return false;
     if (dvz_visual_set_depth_test(image, false) != 0)
         return false;
@@ -865,9 +865,8 @@ static bool _add_probe(DvzScene* scene, DvzPanel* panel)
             .text = readout,
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_RIGHT,
             .offset_px = {-112.0f, -46.0f},
-            .style = &card_style,
         });
-    return card != NULL;
+    return card != NULL && dvz_overlay_card_set_style(card, &card_style) == 0;
 }
 
 
@@ -887,10 +886,13 @@ static DvzScale* _add_wind_scale(DvzScene* scene)
                    .kind = DVZ_SCALE_CONTINUOUS,
                    .label = "wind speed",
                    .unit = "m/s",
-                   .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0, .trim_trailing_zeros = true},
                });
     if (scale == NULL)
         return NULL;
+    dvz_scale_set_format(
+        scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
+                   .precision = 0,
+                   .trim_trailing_zeros = true});
     dvz_scale_set_domain(scale, 0.0, WIND_SPEED_MAX_MPS);
     dvz_scale_set_view_range(scale, 0.0, WIND_SPEED_MAX_MPS);
 
@@ -954,20 +956,20 @@ static bool _update_wind_image(WindShowcaseState* state, float time_s)
 
     _fill_scalar_field(state->values, time_s);
     return dvz_sampled_field_update_region(
-        state->field,
-        (DvzFieldRegion){
-            .x = 0,
-            .y = 0,
-            .z = 0,
-            .width = FIELD_WIDTH,
-            .height = FIELD_HEIGHT,
-            .depth = 1,
-        },
-        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-            .data = state->values,
-            .bytes_per_row = FIELD_WIDTH * sizeof(float),
-            .rows_per_image = FIELD_HEIGHT,
-        });
+               state->field,
+               (DvzFieldRegion){
+                   .x = 0,
+                   .y = 0,
+                   .z = 0,
+                   .width = FIELD_WIDTH,
+                   .height = FIELD_HEIGHT,
+                   .depth = 1,
+               },
+               &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                   .data = state->values,
+                   .bytes_per_row = FIELD_WIDTH * sizeof(float),
+                   .rows_per_image = FIELD_HEIGHT,
+               }) == DVZ_OK;
 }
 
 

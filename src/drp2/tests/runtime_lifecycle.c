@@ -92,7 +92,7 @@ int test_drp2_runtime_vklite_skeleton_execute_invalid_stream(TstContext* suite, 
     ANN(stream);
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
-    AT(dvz_drp2_stream_write_buffer(stream, 42, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA=="));
+    AT(dvz_drp2_stream_write_buffer_base64(stream, 42, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA=="));
 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(!result.ok);
@@ -336,7 +336,7 @@ int test_drp2_runtime_download_buffer_rejects_out_of_range(TstContext* suite, co
         stream, 1, 32,
         DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ |
             DVZ_DRP2_BUFFER_USAGE_MAP_WRITE));
-    AT(dvz_drp2_stream_write_buffer(stream, 1, 0, 16, "AQIDBAUGBwgJCgsMDQ4PEA=="));
+    AT(dvz_drp2_stream_write_buffer_base64(stream, 1, 0, 16, "AQIDBAUGBwgJCgsMDQ4PEA=="));
 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);

@@ -287,7 +287,7 @@ DvzGeometryObjDesc dvz_geometry_obj_desc(void)
 
 
 
-DvzGeometry* dvz_geom_obj(const char* filename, const DvzGeometryObjDesc* desc)
+DvzGeometry* dvz_geometry_obj(const char* filename, const DvzGeometryObjDesc* desc)
 {
     if (filename == NULL || !_obj_desc_validate(desc))
         return NULL;

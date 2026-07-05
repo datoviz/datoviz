@@ -75,7 +75,7 @@ static const dvec2 POLYGON_SET_REGION1[5] = {
 typedef struct PolygonExampleState
 {
     DvzPolygon* polygon;
-    DvzPolygonSet* set;
+    DvzPolygons* set;
     DvzComposite* polygon_composite;
     DvzComposite* set_composite;
     DvzVisual* triangulation;
@@ -120,7 +120,7 @@ static bool _add_polygon(DvzScene* scene, DvzPanel* panel, PolygonExampleState* 
 
     const DvzPolygonRing holes[1] = {{.xy = POLYGON_HOLE, .count = 4}};
 
-    int rc = dvz_polygon_geometry(
+    int rc = dvz_polygon_set_geometry(
         polygon,
         &(DvzPolygonDesc){
             DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
@@ -131,13 +131,13 @@ static bool _add_polygon(DvzScene* scene, DvzPanel* panel, PolygonExampleState* 
     if (rc != 0)
         return false;
 
-    rc = dvz_polygon_fill_color(polygon, (DvzColor){62, 142, 188, 220});
+    rc = dvz_polygon_set_fill_color(polygon, (DvzColor){62, 142, 188, 220});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_stroke_color(polygon, (DvzColor){18, 39, 54, 255});
+    rc = dvz_polygon_set_stroke_color(polygon, (DvzColor){18, 39, 54, 255});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_stroke_width_px(polygon, state->polygon_width);
+    rc = dvz_polygon_set_stroke_width_px(polygon, state->polygon_width);
     if (rc != 0)
         return false;
 
@@ -178,11 +178,11 @@ static bool _add_polygon_set(DvzScene* scene, DvzPanel* panel, PolygonExampleSta
     if (state == NULL)
         return false;
 
-    DvzPolygonSet* set = dvz_polygon_set(scene, 0);
+    DvzPolygons* set = dvz_polygons(scene, 0);
     if (set == NULL)
         return false;
 
-    const uint32_t first = dvz_polygon_set_add(
+    const uint32_t first = dvz_polygons_add_region(
         set,
         &(DvzPolygonDesc){
             DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
@@ -190,7 +190,7 @@ static bool _add_polygon_set(DvzScene* scene, DvzPanel* panel, PolygonExampleSta
         });
     if (first == UINT32_MAX)
         return false;
-    const uint32_t second = dvz_polygon_set_add(
+    const uint32_t second = dvz_polygons_add_region(
         set,
         &(DvzPolygonDesc){
             DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
@@ -199,26 +199,26 @@ static bool _add_polygon_set(DvzScene* scene, DvzPanel* panel, PolygonExampleSta
     if (second == UINT32_MAX)
         return false;
 
-    int rc = dvz_polygon_set_region_fill_color(set, first, (DvzColor){226, 91, 74, 230});
+    int rc = dvz_polygons_set_region_fill_color(set, first, (DvzColor){226, 91, 74, 230});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_set_region_fill_color(set, second, (DvzColor){238, 190, 76, 230});
+    rc = dvz_polygons_set_region_fill_color(set, second, (DvzColor){238, 190, 76, 230});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_set_region_stroke_color(set, first, (DvzColor){63, 32, 28, 255});
+    rc = dvz_polygons_set_region_stroke_color(set, first, (DvzColor){63, 32, 28, 255});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_set_region_stroke_color(set, second, (DvzColor){72, 49, 12, 255});
+    rc = dvz_polygons_set_region_stroke_color(set, second, (DvzColor){72, 49, 12, 255});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_set_region_stroke_width_px(set, first, state->set_first_width);
+    rc = dvz_polygons_set_region_stroke_width_px(set, first, state->set_first_width);
     if (rc != 0)
         return false;
-    rc = dvz_polygon_set_region_stroke_width_px(set, second, state->set_second_width);
+    rc = dvz_polygons_set_region_stroke_width_px(set, second, state->set_second_width);
     if (rc != 0)
         return false;
 
-    DvzComposite* composite = dvz_polygon_set_composite(set, 0);
+    DvzComposite* composite = dvz_polygons_composite(set, 0);
     if (composite == NULL)
         return false;
 
@@ -460,12 +460,12 @@ static void _apply_polygon_controls(PolygonExampleState* state)
 
     const DvzPathJoin join = (DvzPathJoin)state->join;
     if (state->polygon != NULL)
-        (void)dvz_polygon_stroke_width_px(state->polygon, state->polygon_width);
+        (void)dvz_polygon_set_stroke_width_px(state->polygon, state->polygon_width);
     if (state->set != NULL)
     {
-        (void)dvz_polygon_set_region_stroke_width_px(
+        (void)dvz_polygons_set_region_stroke_width_px(
             state->set, state->set_first, state->set_first_width);
-        (void)dvz_polygon_set_region_stroke_width_px(
+        (void)dvz_polygons_set_region_stroke_width_px(
             state->set, state->set_second, state->set_second_width);
     }
     if (state->polygon_composite != NULL)
@@ -575,8 +575,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "polygon");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_window(app, figure, WIDTH, HEIGHT, "polygon");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");

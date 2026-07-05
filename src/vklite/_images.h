@@ -16,7 +16,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/common/obj.h"
+#include "obj.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vklite/images.h"
 

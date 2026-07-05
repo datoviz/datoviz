@@ -40,7 +40,7 @@ Keep these short constructors or concise scene-object factories:
 - `dvz_panel_full(figure)`;
 - visual-family constructors such as `dvz_point(scene, flags)`, `dvz_marker(scene, flags)`,
   `dvz_mesh(scene, flags)`, and similar;
-- common retained scene/domain helpers such as `dvz_scale(scene, NULL)`, `dvz_scalebar(panel, NULL)`,
+- common retained scene/domain helpers such as `dvz_scale(scene, NULL)`, `dvz_scale_bar(panel, NULL)`,
   and controller constructors with an optional descriptor pointer.
 
 Normalize these toward descriptors:
@@ -60,8 +60,9 @@ The canonical view API should move toward one descriptor path:
 
 ```c
 DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
-desc.logical_width = 800;
-desc.logical_height = 600;
+desc.size_policy = DVZ_VIEW_SIZE_HOST_LOGICAL_PX;
+desc.size_width = 800;
+desc.size_height = 600;
 desc.device_scale = 2.0f;
 desc.user_scale = 1.0f;
 desc.render_scale = 1.0f;
@@ -71,9 +72,9 @@ DvzView* view = dvz_view(app, figure, &desc);
 
 Definitions:
 
-- `logical_width`, `logical_height`: layout size in logical pixels.
-- `framebuffer_width`, `framebuffer_height`: physical render-target size in pixels. These may be
-  derived from logical size and device scale.
+- `DVZ_VIEW_SIZE_HOST_LOGICAL_PX`: requests layout size in logical pixels.
+- `DVZ_VIEW_SIZE_FRAMEBUFFER_PX`: requests physical render-target size in pixels. Logical size may
+  be derived from framebuffer size and device scale.
 - `device_scale`: physical pixels per logical pixel. Native window backends usually own this value.
 - `user_scale`: user-controlled multiplier for UI-like scene quantities such as text size, marker
   edge width, line width, tick sizes, margins, reserves, and overlay padding.
@@ -282,7 +283,7 @@ Add a clean v0.4 loader API instead of copying the v0.3 `dvz_shape_obj()` surfac
 
 ```c
 DvzGeometryObjDesc dvz_geometry_obj_desc(void);
-DvzGeometry* dvz_geom_obj(const char* path, const DvzGeometryObjDesc* desc);
+DvzGeometry* dvz_geometry_obj(const char* path, const DvzGeometryObjDesc* desc);
 ```
 
 Implemented first slice: `v`, `vn`, and polygonal `f` records; faces are triangulated as fans;
@@ -299,7 +300,7 @@ it behind a descriptor-based C API:
 
 ```c
 DvzGeometryPlyDesc dvz_geometry_ply_desc(void);
-DvzGeometry* dvz_geom_ply(const char* path, const DvzGeometryPlyDesc* desc);
+DvzGeometry* dvz_geometry_ply(const char* path, const DvzGeometryPlyDesc* desc);
 ```
 
 Initial PLY support should cover positions, normals, RGB/RGBA colors, triangle faces, optional face

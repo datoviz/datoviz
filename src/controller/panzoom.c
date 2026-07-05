@@ -305,7 +305,7 @@ static void _panzoom_input_callback(
          * the correct rate (window_width is the cursor coordinate space). */
         const DvzInputResizeEvent* r = &ev->content.resize;
         if (!pz->has_viewport && r->window_width > 0 && r->window_height > 0)
-            dvz_panzoom_resize(pz, (float)r->window_width, (float)r->window_height);
+            (void)dvz_panzoom_resize(pz, (float)r->window_width, (float)r->window_height);
     }
 }
 
@@ -358,7 +358,7 @@ DvzPanzoom* _dvz_panzoom(float width, float height, int flags)
     pz->zoom_max[0] = pz->zoom_max[1] = DVZ_PANZOOM_ZOOM_MAX_DEFAULT;
     pz->has_zoom_limits = true;
     pz->flags = flags;
-    dvz_panzoom_reset(pz);
+    (void)dvz_panzoom_reset(pz);
     return pz;
 }
 
@@ -381,9 +381,10 @@ DvzPanzoom* dvz_panzoom_create(const DvzPanzoomDesc* desc)
 
 
 
-void dvz_panzoom_reset(DvzPanzoom* pz)
+DvzResult dvz_panzoom_reset(DvzPanzoom* pz)
 {
-    ANN(pz);
+    if (pz == NULL)
+        return DVZ_ERROR;
     memset(pz->pan, 0, sizeof(pz->pan));
     memset(pz->pan_center, 0, sizeof(pz->pan_center));
     pz->zoom[0] = pz->zoom[1] = 1.0f;
@@ -391,15 +392,18 @@ void dvz_panzoom_reset(DvzPanzoom* pz)
     _clamp_zoom(pz);
     memset(pz->pan_locked, 0, sizeof(pz->pan_locked));
     memset(pz->zoom_locked, 0, sizeof(pz->zoom_locked));
+    return DVZ_OK;
 }
 
 
 
-void dvz_panzoom_resize(DvzPanzoom* pz, float width, float height)
+DvzResult dvz_panzoom_resize(DvzPanzoom* pz, float width, float height)
 {
-    ANN(pz);
+    if (pz == NULL)
+        return DVZ_ERROR;
     pz->viewport_size[0] = width;
     pz->viewport_size[1] = height;
+    return DVZ_OK;
 }
 
 
@@ -413,21 +417,24 @@ void dvz_panzoom_resize(DvzPanzoom* pz, float width, float height)
  * @param width viewport width in window pixels
  * @param height viewport height in window pixels
  */
-void dvz_panzoom_viewport(DvzPanzoom* pz, float x, float y, float width, float height)
+DvzResult dvz_panzoom_viewport(DvzPanzoom* pz, float x, float y, float width, float height)
 {
-    ANN(pz);
+    if (pz == NULL)
+        return DVZ_ERROR;
     pz->viewport_origin[0] = x;
     pz->viewport_origin[1] = y;
     pz->viewport_size[0] = width;
     pz->viewport_size[1] = height;
     pz->has_viewport = true;
+    return DVZ_OK;
 }
 
 
 
-void dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan)
+DvzResult dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan)
 {
-    ANN(pz);
+    if (pz == NULL)
+        return DVZ_ERROR;
     if (!(pz->flags & DVZ_PANZOOM_FLAGS_FIXED_X))
     {
         pz->pan[0] = pan[0];
@@ -438,16 +445,19 @@ void dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan)
         pz->pan[1] = pan[1];
         pz->pan_center[1] = pan[1];
     }
+    return DVZ_OK;
 }
 
 
 
-void dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom)
+DvzResult dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom)
 {
-    ANN(pz);
+    if (pz == NULL)
+        return DVZ_ERROR;
     pz->zoom[0] = _clamp_zoom_value(pz, 0, zoom[0]);
     pz->zoom[1] = _clamp_zoom_value(pz, 1, zoom[1]);
     glm_vec2_copy(pz->zoom, pz->zoom_center);
+    return DVZ_OK;
 }
 
 
@@ -514,9 +524,10 @@ bool dvz_panzoom_state(const DvzPanzoom* pz, DvzPanzoomState* out)
 
 
 
-void dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
+DvzResult dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
 {
-    ANN(pz);
+    if (pz == NULL)
+        return DVZ_ERROR;
     (void)center_px;
 
     vec2 shift = {0};
@@ -531,13 +542,15 @@ void dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
         pz->pan[0] = pz->pan_center[0] + shift[0] / zx;
     if (!(pz->flags & DVZ_PANZOOM_FLAGS_FIXED_Y))
         pz->pan[1] = pz->pan_center[1] + shift[1] / zy;
+    return DVZ_OK;
 }
 
 
 
-void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
+DvzResult dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
 {
-    ANN(pz);
+    if (pz == NULL)
+        return DVZ_ERROR;
 
     vec2 shift = {0};
     _normalize_shift(pz, shift_px, shift);
@@ -571,13 +584,15 @@ void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
         pz->pan[0] = pz->pan_center[0] - px / zx;
     if (!(pz->flags & DVZ_PANZOOM_FLAGS_FIXED_Y))
         pz->pan[1] = pz->pan_center[1] - py / zy;
+    return DVZ_OK;
 }
 
 
 
-void dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px)
+DvzResult dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px)
 {
-    ANN(pz);
+    if (pz == NULL)
+        return DVZ_ERROR;
 
     float w = pz->viewport_size[0];
     float h = pz->viewport_size[1];
@@ -592,18 +607,21 @@ void dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px)
         vec2 shift = {0};
         shift[0] = (float)DVZ_PANZOOM_ZOOM_WHEEL_COEF * d;
         shift[1] = -a * shift[0];
-        dvz_panzoom_zoom_shift(pz, shift, center_px);
-        dvz_panzoom_end(pz);
+        (void)dvz_panzoom_zoom_shift(pz, shift, center_px);
+        (void)dvz_panzoom_end(pz);
     }
+    return DVZ_OK;
 }
 
 
 
-void dvz_panzoom_end(DvzPanzoom* pz)
+DvzResult dvz_panzoom_end(DvzPanzoom* pz)
 {
-    ANN(pz);
+    if (pz == NULL)
+        return DVZ_ERROR;
     glm_vec2_copy(pz->pan, pz->pan_center);
     glm_vec2_copy(pz->zoom, pz->zoom_center);
+    return DVZ_OK;
 }
 
 
@@ -688,7 +706,7 @@ bool dvz_panzoom_pointer(DvzPanzoom* pz, const DvzPointerEvent* ev)
         if (ev->button == DVZ_POINTER_BUTTON_LEFT && ev->content.d.is_press_valid)
         {
             vec2 shift = {ev->content.d.shift[0], ev->content.d.shift[1]};
-            dvz_panzoom_pan_shift(pz, shift, (vec2){0, 0});
+            (void)dvz_panzoom_pan_shift(pz, shift, (vec2){0, 0});
         }
         else if (ev->button == DVZ_POINTER_BUTTON_RIGHT && ev->content.d.is_press_valid)
         {
@@ -703,13 +721,13 @@ bool dvz_panzoom_pointer(DvzPanzoom* pz, const DvzPointerEvent* ev)
                 shift[0] = s;
                 shift[1] = -a * s;
             }
-            dvz_panzoom_zoom_shift(pz, shift, press);
+            (void)dvz_panzoom_zoom_shift(pz, shift, press);
         }
         pz->interacting = true;
         break;
 
     case DVZ_POINTER_EVENT_DRAG_STOP:
-        dvz_panzoom_end(pz);
+        (void)dvz_panzoom_end(pz);
         pz->interacting = false;
         break;
 
@@ -717,12 +735,12 @@ bool dvz_panzoom_pointer(DvzPanzoom* pz, const DvzPointerEvent* ev)
     {
         vec2 dir = {ev->content.w.dir[0], ev->content.w.dir[1]};
         vec2 pos = {ev->pos[0], ev->pos[1]};
-        dvz_panzoom_zoom_wheel(pz, dir, pos);
+        (void)dvz_panzoom_zoom_wheel(pz, dir, pos);
         break;
     }
 
     case DVZ_POINTER_EVENT_DOUBLE_CLICK:
-        dvz_panzoom_reset(pz);
+        (void)dvz_panzoom_reset(pz);
         pz->interacting = false;
         break;
 
@@ -735,10 +753,10 @@ bool dvz_panzoom_pointer(DvzPanzoom* pz, const DvzPointerEvent* ev)
 
 
 
-void dvz_panzoom_connect(DvzPanzoom* pz, DvzInputRouter* router)
+DvzResult dvz_panzoom_connect(DvzPanzoom* pz, DvzInputRouter* router)
 {
-    ANN(pz);
-    ANN(router);
+    if (pz == NULL || router == NULL)
+        return DVZ_ERROR;
     /* Adopt the router's current window dimensions if a resize has already fired
      * (the typical case: the GLFW backend emits a resize at window creation,
      * before the controller is connected). */
@@ -746,26 +764,28 @@ void dvz_panzoom_connect(DvzPanzoom* pz, DvzInputRouter* router)
     if (!pz->has_viewport && dvz_input_router_last_resize(router, &r) && r.window_width > 0 &&
         r.window_height > 0)
     {
-        dvz_panzoom_resize(pz, (float)r.window_width, (float)r.window_height);
+        (void)dvz_panzoom_resize(pz, (float)r.window_width, (float)r.window_height);
     }
     if (pz->input_router != NULL && pz->input_subscription_id != DVZ_CALLBACK_ID_NONE)
         dvz_input_unsubscribe(pz->input_router, pz->input_subscription_id);
     pz->input_router = router;
     pz->input_subscription_id = dvz_input_subscribe_event(router, _panzoom_input_callback, pz);
+    return pz->input_subscription_id != DVZ_CALLBACK_ID_NONE ? DVZ_OK : DVZ_ERROR;
 }
 
 
 
-void dvz_panzoom_disconnect(DvzPanzoom* pz, DvzInputRouter* router)
+DvzResult dvz_panzoom_disconnect(DvzPanzoom* pz, DvzInputRouter* router)
 {
-    ANN(pz);
-    ANN(router);
+    if (pz == NULL || router == NULL)
+        return DVZ_ERROR;
     if (pz->input_subscription_id != DVZ_CALLBACK_ID_NONE)
     {
         dvz_input_unsubscribe(pz->input_router != NULL ? pz->input_router : router, pz->input_subscription_id);
         pz->input_router = NULL;
         pz->input_subscription_id = DVZ_CALLBACK_ID_NONE;
     }
+    return DVZ_OK;
 }
 
 

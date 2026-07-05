@@ -337,7 +337,7 @@ static int _polygon_prepare_stroke(DvzPolygon* polygon, DvzVisual* stroke)
  * @return whether the views were built
  */
 static bool _polygon_set_item_borrowed_desc(
-    const DvzPolygonSetItem* item, DvzPolygonRing* outer, DvzPolygonRing** holes)
+    const DvzPolygonsItem* item, DvzPolygonRing* outer, DvzPolygonRing** holes)
 {
     if (item == NULL || outer == NULL || holes == NULL || item->outer.xy == NULL)
         return false;
@@ -370,7 +370,7 @@ static bool _polygon_set_item_borrowed_desc(
  * @param fill fill mesh visual
  * @return 0 on success, -1 on error
  */
-static int _polygon_set_prepare_fill(DvzPolygonSet* set, DvzVisual* fill)
+static int _polygon_set_prepare_fill(DvzPolygons* set, DvzVisual* fill)
 {
     if (set == NULL || set->polygon_count == 0)
         return -1;
@@ -384,7 +384,7 @@ static int _polygon_set_prepare_fill(DvzPolygonSet* set, DvzVisual* fill)
     uint32_t geometry_count = 0;
     for (uint32_t i = 0; i < set->polygon_count; i++)
     {
-        DvzPolygonSetItem* item = &set->polygons[i];
+        DvzPolygonsItem* item = &set->polygons[i];
         if (!item->active || !item->visible)
             continue;
 
@@ -452,7 +452,7 @@ error:
  * @return updated write offset
  */
 static uint32_t _polygon_set_append_stroke_ring(
-    const DvzPolygonStoredRing* ring, const DvzPolygonSetItem* item, vec3* positions,
+    const DvzPolygonStoredRing* ring, const DvzPolygonsItem* item, vec3* positions,
     DvzColor* colors, float* widths, uint32_t offset)
 {
     const uint32_t count = _polygon_stored_ring_count(ring);
@@ -483,14 +483,14 @@ static uint32_t _polygon_set_append_stroke_ring(
  * @param stroke stroke path visual
  * @return 0 on success, -1 on error
  */
-static int _polygon_set_prepare_stroke(DvzPolygonSet* set, DvzVisual* stroke)
+static int _polygon_set_prepare_stroke(DvzPolygons* set, DvzVisual* stroke)
 {
     uint64_t total_points = 0;
     uint64_t total_subpaths = 0;
     bool any_visible_stroke = false;
     for (uint32_t i = 0; i < set->polygon_count; i++)
     {
-        const DvzPolygonSetItem* item = &set->polygons[i];
+        const DvzPolygonsItem* item = &set->polygons[i];
         if (!item->active || !item->visible)
             continue;
         any_visible_stroke =
@@ -557,7 +557,7 @@ static int _polygon_set_prepare_stroke(DvzPolygonSet* set, DvzVisual* stroke)
     uint32_t subpath = 0;
     for (uint32_t i = 0; i < set->polygon_count; i++)
     {
-        const DvzPolygonSetItem* item = &set->polygons[i];
+        const DvzPolygonsItem* item = &set->polygons[i];
         if (!item->active || !item->visible)
             continue;
 
@@ -609,7 +609,7 @@ static int _polygon_set_composite_prepare(DvzComposite* composite)
         return -1;
     }
 
-    DvzPolygonSet* set = (DvzPolygonSet*)composite->source;
+    DvzPolygons* set = (DvzPolygons*)composite->source;
     if (!set->active || set->polygon_count == 0)
         return -1;
     if (!composite->dirty && composite->source_version_seen == set->version)
@@ -770,7 +770,7 @@ DvzComposite* dvz_polygon_composite(DvzPolygon* polygon, uint32_t flags)
  * @param flags reserved composite flags
  * @return the composite, or NULL on allocation failure
  */
-DvzComposite* dvz_polygon_set_composite(DvzPolygonSet* set, uint32_t flags)
+DvzComposite* dvz_polygons_composite(DvzPolygons* set, uint32_t flags)
 {
     if (set == NULL || set->scene == NULL || !set->active)
         return NULL;

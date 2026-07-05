@@ -627,8 +627,8 @@ static int _run_live(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU?)");
 
-    DvzView* view = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "input_events");
-    EXAMPLE_CHECK(view != NULL, "dvz_view_glfw() failed");
+    DvzView* view = dvz_view_window(app, figure, WIDTH, HEIGHT, "input_events");
+    EXAMPLE_CHECK(view != NULL, "dvz_view_window() failed");
 
     DvzInputRouter* router = dvz_view_input(view);
     EXAMPLE_CHECK(router != NULL, "dvz_view_input() failed");

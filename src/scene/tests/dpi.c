@@ -19,6 +19,7 @@
 
 #include "_assertions.h"
 #include "../../drp2/_stream.h"
+#include "domain/field_internal.h"
 #include "frame_plan/frame_plan.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
@@ -70,7 +71,7 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
     AT(dvz_visual_set_data(image, "position_px", image_pos, 1) == 0);
     AT(dvz_visual_set_data(image, "extent_px", image_extent, 1) == 0);
     AT(dvz_visual_set_data(image, "anchor", image_anchor, 1) == 0);
-    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)image_pixels, 4, 4, 4u * 4u * 4u) == 0);
+    AT(_scene_visual_set_texture_rgba8(image, (const uint8_t*)image_pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(
            panel, image,
            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
@@ -334,7 +335,7 @@ static int test_scene_dpi_user_scale_axis_segment_width(TstContext* suite, const
     style.show_major_ticks = false;
     style.show_minor_ticks = false;
     style.show_grid = false;
-    AT(dvz_axis_set_style(axis, &style));
+    AT(dvz_axis_set_style(axis, &style) == DVZ_OK);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
@@ -407,12 +408,12 @@ static int test_scene_dpi_user_scale_axis_text_gap(TstContext* suite, const TstC
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, +1.0) == 0);
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     AT(y_axis != NULL);
-    AT(dvz_axis_set_label(y_axis, "amplitude"));
+    AT(dvz_axis_set_label(y_axis, "amplitude") == DVZ_OK);
     DvzAxisStyle style = dvz_axis_style();
     style.tick_gap_px = 8.0f;
     style.label_gap_px = 12.0f;
     style.tick_size_px = 16.0f;
-    AT(dvz_axis_set_style(y_axis, &style));
+    AT(dvz_axis_set_style(y_axis, &style) == DVZ_OK);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
@@ -482,7 +483,7 @@ static int test_scene_dpi_user_scale_panel_margin(TstContext* suite, const TstCa
 
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){.left_px = 40.0f, .right_px = 20.0f, .top_px = 30.0f,
-                                  .bottom_px = 10.0f}));
+                                  .bottom_px = 10.0f}) == DVZ_OK);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
@@ -544,7 +545,7 @@ static int test_scene_dpi_user_scale_pixel_reserve(TstContext* suite, const TstC
 
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){.left_px = 40.0f, .right_px = 20.0f, .bottom_px = 36.0f,
-                                        .top_px = 24.0f}));
+                                        .top_px = 24.0f}) == DVZ_OK);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;

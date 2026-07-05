@@ -376,7 +376,7 @@ int test_scene_image_emit(TstContext* suite, const TstCase* item)
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
+    AT(_scene_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -417,7 +417,7 @@ int test_scene_image_multi_item_emit(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
     AT(dvz_visual_set_data(visual, "extent", extents, 2) == 0);
     AT(dvz_visual_set_data(visual, "tex_rect", tex_rects, 2) == 0);
-    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
+    AT(_scene_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -533,7 +533,7 @@ int test_scene_image_pixel_anchor_emit_wgsl(TstContext* suite, const TstCase* it
     AT(dvz_visual_set_data(visual, "extent_px", extents, 1) == 0);
     AT(dvz_visual_set_data(visual, "anchor", anchors, 1) == 0);
     AT(dvz_visual_set_data(visual, "tex_rect", tex_rects, 1) == 0);
-    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
+    AT(_scene_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(
            panel, visual,
            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
@@ -679,7 +679,7 @@ int test_scene_glyph_emit_glsl(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 6) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 6) == 0);
     AT(dvz_visual_set_data(visual, "angle", angles, 6) == 0);
-    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
+    AT(_scene_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -844,7 +844,7 @@ int test_scene_image_emit_wgsl(TstContext* suite, const TstCase* item)
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
+    AT(_scene_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -919,7 +919,7 @@ int test_scene_image_sampling_nearest_emits_sampler_filters(TstContext* suite, c
 
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
+    AT(_scene_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -995,10 +995,10 @@ int test_scene_image_linear_color_emit_wgsl(TstContext* suite, const TstCase* it
                    .data = pixels,
                    .bytes_per_row = 2 * sizeof(DvzColor),
                    .rows_per_image = 2,
-               }));
+               }) == DVZ_OK);
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_field(visual, "field", field));
+    AT(dvz_visual_set_field(visual, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -1245,8 +1245,8 @@ static int _labels_emit_figure(
                    .data = values,
                    .bytes_per_row = bytes_per_row,
                    .rows_per_image = 2,
-               }));
-    AT(dvz_visual_set_field(labels, "field", field));
+               }) == DVZ_OK);
+    AT(dvz_visual_set_field(labels, "field", field) == DVZ_OK);
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
@@ -1255,7 +1255,7 @@ static int _labels_emit_figure(
         {.category_id = 17, .order = 1, .label = "cell 17", .color = {40, 180, 80, 180}},
         {.category_id = 4000000000LL, .order = 2, .label = "large", .color = {40, 80, 220, 180}},
     };
-    AT(dvz_scale_set_categories(scale, categories, 3));
+    AT(dvz_scale_set_categories(scale, categories, 3) == DVZ_OK);
     AT(dvz_visual_set_scale(labels, "labels", scale) == 0);
     AT(dvz_panel_add_visual(panel, labels, NULL) == 0);
 
@@ -1438,7 +1438,7 @@ int test_scene_image_emit_uses_common_and_texture_sets(TstContext* suite, const 
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
+    AT(_scene_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -1593,7 +1593,7 @@ int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCa
     ANN(image);
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", image_uv, 4) == 0);
-    AT(dvz_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
+    AT(_scene_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
     vec3 mesh_pos[4] = {
@@ -1611,12 +1611,12 @@ int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCa
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, mesh_index, sizeof(mesh_index)));
+    AT(dvz_scene_buffer_set_data(index_buffer, mesh_index, sizeof(mesh_index)) == DVZ_OK);
     DvzVisual* mesh = dvz_mesh(scene, 0);
     ANN(mesh);
     AT(dvz_visual_set_data(mesh, "position", mesh_pos, 4) == 0);
     AT(dvz_visual_set_data(mesh, "normal", mesh_normal, 4) == 0);
-    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();

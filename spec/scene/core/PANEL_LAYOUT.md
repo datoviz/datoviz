@@ -199,10 +199,10 @@ By default all columns have equal width and all rows have equal height.
 Override with relative weights or fixed pixel sizes:
 
 ```text
-dvz_grid_col_size(grid, col, DVZ_GRID_SIZE_WEIGHT, 2.0)   // twice as wide as default
-dvz_grid_col_size(grid, col, DVZ_GRID_SIZE_FIXED_PX, 60)  // exactly 60 px wide
-dvz_grid_row_size(grid, row, DVZ_GRID_SIZE_WEIGHT, 1.0)   // default weight
-dvz_grid_row_size(grid, row, DVZ_GRID_SIZE_FIXED_PX, 40)  // exactly 40 px tall
+dvz_grid_set_col_size(grid, col, DVZ_GRID_SIZE_WEIGHT, 2.0)   // twice as wide as default
+dvz_grid_set_col_size(grid, col, DVZ_GRID_SIZE_FIXED_PX, 60)  // exactly 60 px wide
+dvz_grid_set_row_size(grid, row, DVZ_GRID_SIZE_WEIGHT, 1.0)   // default weight
+dvz_grid_set_row_size(grid, row, DVZ_GRID_SIZE_FIXED_PX, 40)  // exactly 40 px tall
 ```
 
 `DVZ_GRID_SIZE_WEIGHT` values are relative to each other — `2.0` and `1.0` means the first column
@@ -249,8 +249,8 @@ with the data column carrying the remaining proportional weight:
 ```text
 // 2-column grid: data panel (proportional) + colorbar (60 px fixed)
 DvzGrid* grid = dvz_figure_grid(fig, 1, 2)
-dvz_grid_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT,    1.0)   // data panel
-dvz_grid_col_size(grid, 1, DVZ_GRID_SIZE_FIXED_PX,  60)    // colorbar slot
+dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT,    1.0)   // data panel
+dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_FIXED_PX,  60)    // colorbar slot
 
 DvzPanel* data_panel  = dvz_grid_panel(grid, 0, 0)
 DvzPanel* cbar_panel  = dvz_grid_panel(grid, 0, 1)
@@ -275,7 +275,7 @@ For a shared colorbar spanning multiple data rows, use a row-span:
 ```text
 DvzGrid* grid = dvz_figure_grid(fig, 3, 2)
 // columns: 0 = data, 1 = colorbar
-dvz_grid_col_size(grid, 1, DVZ_GRID_SIZE_FIXED_PX, 60)
+dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_FIXED_PX, 60)
 // colorbar panel spans all 3 rows
 DvzPanel* cbar_panel = dvz_grid_panel_span(grid, 0, 1, 3, 1)
 ```

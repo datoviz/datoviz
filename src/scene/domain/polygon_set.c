@@ -40,7 +40,7 @@ static bool _polygon_set_range_valid(uint32_t count, uint32_t first, uint32_t it
  *
  * @param set the polygon set
  */
-void _scene_polygon_set_reset(DvzPolygonSet* set)
+void _scene_polygon_set_reset(DvzPolygons* set)
 {
     if (set == NULL)
         return;
@@ -66,13 +66,13 @@ void _scene_polygon_set_reset(DvzPolygonSet* set)
  * @param flags reserved polygon-set flags
  * @return the polygon set, or NULL on allocation failure
  */
-DvzPolygonSet* dvz_polygon_set(DvzScene* scene, uint32_t flags)
+DvzPolygons* dvz_polygons(DvzScene* scene, uint32_t flags)
 {
     ANN(scene);
     if (!_scene_visual_mutation_allowed(scene, "create polygon set"))
         return NULL;
 
-    DvzPolygonSet* set = _scene_alloc_polygon_set(scene);
+    DvzPolygons* set = _scene_alloc_polygon_set(scene);
     if (set == NULL)
         return NULL;
     set->flags = flags;
@@ -85,7 +85,7 @@ DvzPolygonSet* dvz_polygon_set(DvzScene* scene, uint32_t flags)
  *
  * @param set the polygon set
  */
-void dvz_polygon_set_destroy(DvzPolygonSet* set)
+void dvz_polygons_destroy(DvzPolygons* set)
 {
     if (set == NULL || set->scene == NULL)
         return;
@@ -110,7 +110,7 @@ void dvz_polygon_set_destroy(DvzPolygonSet* set)
  * @param desc borrowed polygon descriptor
  * @return the polygon index, or UINT32_MAX on error
  */
-uint32_t dvz_polygon_set_add(DvzPolygonSet* set, const DvzPolygonDesc* desc)
+uint32_t dvz_polygons_add_region(DvzPolygons* set, const DvzPolygonDesc* desc)
 {
     if (set == NULL || set->scene == NULL || desc == NULL)
         return UINT32_MAX;
@@ -120,8 +120,8 @@ uint32_t dvz_polygon_set_add(DvzPolygonSet* set, const DvzPolygonDesc* desc)
         return UINT32_MAX;
 
     const uint32_t index = set->polygon_count;
-    DvzPolygonSetItem* item = &set->polygons[index];
-    dvz_memset(item, sizeof(DvzPolygonSetItem), 0, sizeof(DvzPolygonSetItem));
+    DvzPolygonsItem* item = &set->polygons[index];
+    dvz_memset(item, sizeof(DvzPolygonsItem), 0, sizeof(DvzPolygonsItem));
     _polygon_set_item_default_style(item);
     if (_polygon_set_item_set_geometry(item, desc) != 0)
     {
@@ -144,8 +144,8 @@ uint32_t dvz_polygon_set_add(DvzPolygonSet* set, const DvzPolygonDesc* desc)
  * @param desc borrowed polygon descriptor
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_polygon_set_region_geometry(
-    DvzPolygonSet* set, uint32_t polygon_index, const DvzPolygonDesc* desc)
+DvzResult dvz_polygons_set_region_geometry(
+    DvzPolygons* set, uint32_t polygon_index, const DvzPolygonDesc* desc)
 {
     if (
         set == NULL || set->scene == NULL || polygon_index >= set->polygon_count || desc == NULL)
@@ -155,7 +155,7 @@ DvzResult dvz_polygon_set_region_geometry(
     if (!_scene_visual_mutation_allowed(set->scene, "update polygon set geometry"))
         return -1;
 
-    DvzPolygonSetItem* item = &set->polygons[polygon_index];
+    DvzPolygonsItem* item = &set->polygons[polygon_index];
     if (_polygon_set_item_set_geometry(item, desc) != 0)
         return -1;
     set->version++;
@@ -180,7 +180,7 @@ DvzResult dvz_polygon_set_region_geometry(
  * @param id stable user id
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_polygon_set_region_id(DvzPolygonSet* set, uint32_t polygon_index, uint64_t id)
+DvzResult dvz_polygons_set_region_id(DvzPolygons* set, uint32_t polygon_index, uint64_t id)
 {
     if (set == NULL || set->scene == NULL || polygon_index >= set->polygon_count)
         return -1;
@@ -203,8 +203,8 @@ DvzResult dvz_polygon_set_region_id(DvzPolygonSet* set, uint32_t polygon_index, 
  * @param ids borrowed stable user id array
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_polygon_set_region_ids(
-    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const uint64_t* ids)
+DvzResult dvz_polygons_set_region_ids(
+    DvzPolygons* set, uint32_t first_polygon, uint32_t polygon_count, const uint64_t* ids)
 {
     if (
         set == NULL || set->scene == NULL || ids == NULL ||
@@ -216,7 +216,7 @@ DvzResult dvz_polygon_set_region_ids(
         return -1;
     for (uint32_t i = 0; i < polygon_count; i++)
     {
-        DvzPolygonSetItem* region = &set->polygons[first_polygon + i];
+        DvzPolygonsItem* region = &set->polygons[first_polygon + i];
         region->user_id = ids[i];
         region->version++;
     }
@@ -234,13 +234,13 @@ DvzResult dvz_polygon_set_region_ids(
  * @param visible whether the region should render
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_polygon_set_region_visible(DvzPolygonSet* set, uint32_t polygon_index, bool visible)
+DvzResult dvz_polygons_set_region_visible(DvzPolygons* set, uint32_t polygon_index, bool visible)
 {
     if (set == NULL || set->scene == NULL || polygon_index >= set->polygon_count)
         return -1;
     if (!_scene_visual_mutation_allowed(set->scene, "update polygon set region visibility"))
         return -1;
-    DvzPolygonSetItem* region = &set->polygons[polygon_index];
+    DvzPolygonsItem* region = &set->polygons[polygon_index];
     if (region->visible == visible)
         return 0;
     region->visible = visible;
@@ -261,8 +261,8 @@ DvzResult dvz_polygon_set_region_visible(DvzPolygonSet* set, uint32_t polygon_in
  * @param visible borrowed visibility array
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_polygon_set_region_visibilities(
-    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const bool* visible)
+DvzResult dvz_polygons_set_region_visibilities(
+    DvzPolygons* set, uint32_t first_polygon, uint32_t polygon_count, const bool* visible)
 {
     if (
         set == NULL || set->scene == NULL || visible == NULL ||
@@ -276,7 +276,7 @@ DvzResult dvz_polygon_set_region_visibilities(
     bool changed = false;
     for (uint32_t i = 0; i < polygon_count; i++)
     {
-        DvzPolygonSetItem* region = &set->polygons[first_polygon + i];
+        DvzPolygonsItem* region = &set->polygons[first_polygon + i];
         if (region->visible == visible[i])
             continue;
         region->visible = visible[i];
@@ -300,8 +300,8 @@ DvzResult dvz_polygon_set_region_visibilities(
  * @param color RGBA fill color
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_polygon_set_region_fill_color(
-    DvzPolygonSet* set, uint32_t polygon_index, const DvzColor color)
+DvzResult dvz_polygons_set_region_fill_color(
+    DvzPolygons* set, uint32_t polygon_index, const DvzColor color)
 {
     if (
         set == NULL || set->scene == NULL || polygon_index >= set->polygon_count)
@@ -327,8 +327,8 @@ DvzResult dvz_polygon_set_region_fill_color(
  * @param colors RGBA fill colors
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_polygon_set_region_fill_colors(
-    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors)
+DvzResult dvz_polygons_set_region_fill_colors(
+    DvzPolygons* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors)
 {
     if (
         set == NULL || set->scene == NULL || colors == NULL ||
@@ -340,7 +340,7 @@ DvzResult dvz_polygon_set_region_fill_colors(
         return -1;
     for (uint32_t i = 0; i < polygon_count; i++)
     {
-        DvzPolygonSetItem* region = &set->polygons[first_polygon + i];
+        DvzPolygonsItem* region = &set->polygons[first_polygon + i];
         _polygon_color_copy(&region->fill_color, colors[i]);
         region->version++;
     }
@@ -359,8 +359,8 @@ DvzResult dvz_polygon_set_region_fill_colors(
  * @param color RGBA stroke color
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_polygon_set_region_stroke_color(
-    DvzPolygonSet* set, uint32_t polygon_index, const DvzColor color)
+DvzResult dvz_polygons_set_region_stroke_color(
+    DvzPolygons* set, uint32_t polygon_index, const DvzColor color)
 {
     if (
         set == NULL || set->scene == NULL || polygon_index >= set->polygon_count)
@@ -386,8 +386,8 @@ DvzResult dvz_polygon_set_region_stroke_color(
  * @param colors RGBA stroke colors
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_polygon_set_region_stroke_colors(
-    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors)
+DvzResult dvz_polygons_set_region_stroke_colors(
+    DvzPolygons* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors)
 {
     if (
         set == NULL || set->scene == NULL || colors == NULL ||
@@ -399,7 +399,7 @@ DvzResult dvz_polygon_set_region_stroke_colors(
         return -1;
     for (uint32_t i = 0; i < polygon_count; i++)
     {
-        DvzPolygonSetItem* region = &set->polygons[first_polygon + i];
+        DvzPolygonsItem* region = &set->polygons[first_polygon + i];
         _polygon_color_copy(&region->stroke_color, colors[i]);
         region->version++;
     }
@@ -418,7 +418,7 @@ DvzResult dvz_polygon_set_region_stroke_colors(
  * @param width stroke width in pixels
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_polygon_set_region_stroke_width_px(DvzPolygonSet* set, uint32_t polygon_index, float width)
+DvzResult dvz_polygons_set_region_stroke_width_px(DvzPolygons* set, uint32_t polygon_index, float width)
 {
     if (
         set == NULL || set->scene == NULL || !isfinite(width) || width < 0.0f ||
@@ -446,8 +446,8 @@ DvzResult dvz_polygon_set_region_stroke_width_px(DvzPolygonSet* set, uint32_t po
  * @param widths stroke widths in pixels
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_polygon_set_region_stroke_widths_px(
-    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const float* widths)
+DvzResult dvz_polygons_set_region_stroke_widths_px(
+    DvzPolygons* set, uint32_t first_polygon, uint32_t polygon_count, const float* widths)
 {
     if (
         set == NULL || set->scene == NULL || widths == NULL ||
@@ -464,7 +464,7 @@ DvzResult dvz_polygon_set_region_stroke_widths_px(
         return -1;
     for (uint32_t i = 0; i < polygon_count; i++)
     {
-        DvzPolygonSetItem* region = &set->polygons[first_polygon + i];
+        DvzPolygonsItem* region = &set->polygons[first_polygon + i];
         region->stroke_width_px = widths[i];
         region->version++;
     }
@@ -512,8 +512,8 @@ static bool _polygon_set_stroke_join_valid(DvzPathJoin join)
  * @param end_cap cap applied to each ring end
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_polygon_set_stroke_caps(
-    DvzPolygonSet* set, DvzSegmentCap start_cap, DvzSegmentCap end_cap)
+DvzResult dvz_polygons_set_stroke_caps(
+    DvzPolygons* set, DvzSegmentCap start_cap, DvzSegmentCap end_cap)
 {
     if (
         set == NULL || set->scene == NULL || !_polygon_set_stroke_cap_valid(start_cap) ||
@@ -542,7 +542,7 @@ DvzResult dvz_polygon_set_stroke_caps(
  * @param miter_limit positive finite miter limit
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_polygon_set_stroke_join(DvzPolygonSet* set, DvzPathJoin join, float miter_limit)
+DvzResult dvz_polygons_set_stroke_join(DvzPolygons* set, DvzPathJoin join, float miter_limit)
 {
     if (
         set == NULL || set->scene == NULL || !_polygon_set_stroke_join_valid(join) ||

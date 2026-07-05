@@ -77,8 +77,9 @@ DVZ_EXPORT DvzId dvz_scene_id(const DvzScene* scene);
  *
  * @param scene the scene
  * @param defaults font defaults, or NULL for dvz_font_defaults()
+ * @return DVZ_OK when the defaults were accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_scene_set_font_defaults(DvzScene* scene, const DvzFontDefaults* defaults);
+DVZ_EXPORT DvzResult dvz_scene_set_font_defaults(DvzScene* scene, const DvzFontDefaults* defaults);
 
 
 /**
@@ -95,8 +96,9 @@ DVZ_EXPORT DvzFontDefaults dvz_scene_font_defaults(const DvzScene* scene);
  *
  * @param scene the scene
  * @param caps the capability snapshot
+ * @return DVZ_OK when the capabilities were accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_scene_set_capabilities(DvzScene* scene, const DvzCapabilitySnapshot* caps);
+DVZ_EXPORT DvzResult dvz_scene_set_capabilities(DvzScene* scene, const DvzCapabilitySnapshot* caps);
 
 
 /**
@@ -169,8 +171,9 @@ DVZ_EXPORT DvzScene* dvz_figure_scene(DvzFigure* figure);
  * @param figure the figure
  * @param width width in logical pixels
  * @param height height in logical pixels
+ * @return DVZ_OK when the size was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height);
+DVZ_EXPORT DvzResult dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height);
 
 
 /**
@@ -217,8 +220,10 @@ DVZ_EXPORT bool dvz_figure_window_to_layout(
  *
  * @param figure the figure
  * @param pipeline the color pipeline
+ * @return DVZ_OK when the pipeline was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_figure_set_color_pipeline(DvzFigure* figure, DvzColorPipeline pipeline);
+DVZ_EXPORT DvzResult dvz_figure_set_color_pipeline(
+    DvzFigure* figure, DvzColorPipeline pipeline);
 
 
 /**
@@ -260,9 +265,9 @@ DVZ_EXPORT void dvz_grid_destroy(DvzGrid* grid);
  *
  * @param grid the grid
  * @param margins grid margins, or NULL for zero margins
- * @return whether the margins were accepted
+ * @return DVZ_OK if the margins were accepted, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_grid_set_margins(DvzGrid* grid, const DvzPanelReserve* margins);
+DVZ_EXPORT DvzResult dvz_grid_set_margins(DvzGrid* grid, const DvzPanelReserve* margins);
 
 
 /**
@@ -271,9 +276,9 @@ DVZ_EXPORT bool dvz_grid_set_margins(DvzGrid* grid, const DvzPanelReserve* margi
  * @param grid the grid
  * @param x_px horizontal gutter in logical pixels
  * @param y_px vertical gutter in logical pixels
- * @return whether the gutters were accepted
+ * @return DVZ_OK if the gutters were accepted, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_grid_set_gutter(DvzGrid* grid, float x_px, float y_px);
+DVZ_EXPORT DvzResult dvz_grid_set_gutter(DvzGrid* grid, float x_px, float y_px);
 
 
 /**
@@ -283,10 +288,10 @@ DVZ_EXPORT bool dvz_grid_set_gutter(DvzGrid* grid, float x_px, float y_px);
  * @param col zero-based column index
  * @param mode size mode
  * @param value weight or fixed logical-pixel size
- * @return whether the size was accepted
+ * @return DVZ_OK if the size was accepted, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool
-dvz_grid_col_size(DvzGrid* grid, uint32_t col, DvzGridSizeMode mode, float value);
+DVZ_EXPORT DvzResult
+dvz_grid_set_col_size(DvzGrid* grid, uint32_t col, DvzGridSizeMode mode, float value);
 
 
 /**
@@ -296,10 +301,10 @@ dvz_grid_col_size(DvzGrid* grid, uint32_t col, DvzGridSizeMode mode, float value
  * @param row zero-based row index
  * @param mode size mode
  * @param value weight or fixed logical-pixel size
- * @return whether the size was accepted
+ * @return DVZ_OK if the size was accepted, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool
-dvz_grid_row_size(DvzGrid* grid, uint32_t row, DvzGridSizeMode mode, float value);
+DVZ_EXPORT DvzResult
+dvz_grid_set_row_size(DvzGrid* grid, uint32_t row, DvzGridSizeMode mode, float value);
 
 
 /**
@@ -630,9 +635,9 @@ DVZ_EXPORT DvzPanel* dvz_panel_full(DvzFigure* figure);
  *
  * @param panel the panel
  * @param reserve pixel reservation descriptor, or NULL for zero reserve
- * @return whether the reservation was accepted
+ * @return DVZ_OK if the reservation was accepted, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_panel_set_reserve(DvzPanel* panel, const DvzPanelReserve* reserve);
+DVZ_EXPORT DvzResult dvz_panel_set_reserve(DvzPanel* panel, const DvzPanelReserve* reserve);
 
 
 /**
@@ -656,9 +661,9 @@ DVZ_EXPORT bool dvz_panel_get_reserve(const DvzPanel* panel, DvzPanelReserve* ou
  *
  * @param panel the panel
  * @param padding pixel padding descriptor, or NULL for zero padding
- * @return whether the padding was accepted
+ * @return DVZ_OK if the padding was accepted, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_panel_set_padding(DvzPanel* panel, const DvzPanelReserve* padding);
+DVZ_EXPORT DvzResult dvz_panel_set_padding(DvzPanel* panel, const DvzPanelReserve* padding);
 
 
 /**
@@ -951,8 +956,9 @@ DVZ_EXPORT void dvz_orientation_gizmo_destroy(DvzOrientationGizmo* gizmo);
  *
  * @param gizmo the orientation gizmo
  * @param visible whether the gizmo should be visible
+ * @return DVZ_OK when the visibility was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_orientation_gizmo_set_visible(DvzOrientationGizmo* gizmo, bool visible);
+DVZ_EXPORT DvzResult dvz_orientation_gizmo_set_visible(DvzOrientationGizmo* gizmo, bool visible);
 
 
 /*************************************************************************************************/
@@ -993,8 +999,9 @@ DVZ_EXPORT void dvz_reference_grid_destroy(DvzReferenceGrid* grid);
  *
  * @param grid the reference grid
  * @param visible whether the grid should be visible
+ * @return DVZ_OK when the visibility was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_reference_grid_set_visible(DvzReferenceGrid* grid, bool visible);
+DVZ_EXPORT DvzResult dvz_reference_grid_set_visible(DvzReferenceGrid* grid, bool visible);
 
 
 /**
@@ -1131,9 +1138,9 @@ DVZ_EXPORT DvzPanelBackgroundDesc dvz_panel_background_desc(void);
  *
  * @param panel the panel
  * @param background the background descriptor, or NULL to clear
- * @return whether the background was updated
+ * @return DVZ_OK if the background was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool
+DVZ_EXPORT DvzResult
 dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* background);
 
 
@@ -1155,8 +1162,9 @@ DVZ_EXPORT bool dvz_panel_background(
  * Clear a panel background.
  *
  * @param panel the panel
+ * @return DVZ_OK if the background was cleared, DVZ_ERROR otherwise
  */
-DVZ_EXPORT void dvz_panel_clear_background(DvzPanel* panel);
+DVZ_EXPORT DvzResult dvz_panel_clear_background(DvzPanel* panel);
 
 
 /**
@@ -1169,8 +1177,9 @@ DVZ_EXPORT void dvz_panel_clear_background(DvzPanel* panel);
  *
  * @param panel the panel
  * @param color RGBA8 background color
+ * @return DVZ_OK if the background was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT void dvz_panel_set_background_color(DvzPanel* panel, DvzColor color);
+DVZ_EXPORT DvzResult dvz_panel_set_background_color(DvzPanel* panel, DvzColor color);
 
 
 /**
@@ -1191,9 +1200,9 @@ DVZ_EXPORT DvzPanelBorderDesc dvz_panel_border_desc(void);
  *
  * @param panel the panel
  * @param border border descriptor, or NULL to clear
- * @return whether the border was updated
+ * @return DVZ_OK if the border was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border);
+DVZ_EXPORT DvzResult dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border);
 
 
 /**
@@ -1210,8 +1219,9 @@ DVZ_EXPORT bool dvz_panel_border(const DvzPanel* panel, DvzPanelBorderDesc* out)
  * Clear a panel border.
  *
  * @param panel the panel
+ * @return DVZ_OK if the border was cleared, DVZ_ERROR otherwise
  */
-DVZ_EXPORT void dvz_panel_clear_border(DvzPanel* panel);
+DVZ_EXPORT DvzResult dvz_panel_clear_border(DvzPanel* panel);
 
 
 /**
@@ -1231,9 +1241,9 @@ DVZ_EXPORT DvzEdlDesc dvz_edl_desc(void);
  *
  * @param panel the panel
  * @param desc EDL descriptor, or NULL to disable
- * @return whether the panel EDL state was updated
+ * @return DVZ_OK if the panel EDL state was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_panel_set_edl(DvzPanel* panel, const DvzEdlDesc* desc);
+DVZ_EXPORT DvzResult dvz_panel_set_edl(DvzPanel* panel, const DvzEdlDesc* desc);
 
 
 /**
@@ -1244,9 +1254,9 @@ DVZ_EXPORT bool dvz_panel_set_edl(DvzPanel* panel, const DvzEdlDesc* desc);
  *
  * @param panel the panel
  * @param desc MSAA descriptor, or NULL to disable
- * @return whether the panel MSAA state was updated
+ * @return DVZ_OK if the panel MSAA state was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc);
+DVZ_EXPORT DvzResult dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc);
 
 
 /**
@@ -1267,9 +1277,9 @@ DVZ_EXPORT DvzSsaoDesc dvz_ssao_desc(void);
  *
  * @param panel the panel
  * @param desc SSAO descriptor, or NULL to disable
- * @return whether the panel SSAO state was updated
+ * @return DVZ_OK if the panel SSAO state was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc);
+DVZ_EXPORT DvzResult dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc);
 
 
 /**
@@ -1355,14 +1365,6 @@ DVZ_EXPORT DvzResult dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double mi
 
 
 /**
- * Return the default panel 2D view descriptor.
- *
- * @return panel 2D view descriptor
- */
-DVZ_EXPORT DvzPanelView2D dvz_panel_view2d(void);
-
-
-/**
  * Return the default revisioned panel 2D view descriptor.
  *
  * The descriptor owns both fitting policy and optional ordered DATA-domain endpoints. Reversed
@@ -1374,38 +1376,27 @@ DVZ_EXPORT DvzPanelView2DDesc dvz_panel_view2d_desc(void);
 
 
 /**
- * Set a panel 2D view policy.
- *
- * The panel view owns fitting, aspect, and padding policy for the panel's source data domains.
- * With DVZ_PANEL_VIEW2D_ASPECT_EQUAL, VIEW and DATA coordinates preserve equal X/Y screen scale
- * under the current plot rectangle. Set source limits with `dvz_panel_set_domain()`.
- *
- * @param panel the panel
- * @param view panel 2D view descriptor; NULL clears the view policy
- * @return 0 on success, -1 on validation error
- */
-DVZ_EXPORT DvzResult dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2D* view);
-
-
-/**
- * Set a revisioned panel 2D view descriptor.
+ * Set a panel 2D view descriptor.
  *
  * Passing NULL clears the active 2D view. Explicit descriptor domains are copied into the retained
  * view and synchronized to panel axes for compatibility.
+ * With DVZ_PANEL_VIEW2D_ASPECT_EQUAL, VIEW and DATA coordinates preserve equal X/Y screen scale
+ * under the current plot rectangle.
  *
  * @param panel the panel
  * @param desc panel 2D view descriptor, or NULL to clear
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT DvzResult dvz_panel_set_view2d_desc(DvzPanel* panel, const DvzPanelView2DDesc* desc);
+DVZ_EXPORT DvzResult dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2DDesc* desc);
 
 
 /**
  * Clear a panel 2D view policy without changing the current axis domains.
  *
  * @param panel the panel
+ * @return DVZ_OK if the 2D view policy was cleared, DVZ_ERROR otherwise
  */
-DVZ_EXPORT void dvz_panel_clear_view2d(DvzPanel* panel);
+DVZ_EXPORT DvzResult dvz_panel_clear_view2d(DvzPanel* panel);
 
 /**
  * Return the current resolved panel VIEW extent before panzoom.
@@ -1489,7 +1480,8 @@ DVZ_EXPORT DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim);
 /**
  * Return the default 2D panel axes descriptor.
  *
- * The descriptor enables grid lines in the default X/Y axis styles and leaves labels empty.
+ * The descriptor leaves labels empty. `dvz_panel_set_axes_2d()` applies default tick policy and
+ * grid-enabled default styles when it creates the panel axes.
  *
  * @return default 2D axes descriptor
  */
@@ -1499,15 +1491,16 @@ DVZ_EXPORT DvzPanelAxes2DDesc dvz_panel_axes_2d_desc(void);
 /**
  * Apply common 2D axes defaults to a panel-owned X/Y axis pair.
  *
- * This helper fetches the panel-owned X/Y axes, applies one tick policy to both axes, applies the
- * independent X/Y styles, sets labels, and makes both axes visible. Passing NULL uses
- * dvz_panel_axes_2d_desc().
+ * This helper fetches the panel-owned X/Y axes, applies the default tick policy and grid-enabled
+ * default style to both axes, sets labels, and makes both axes visible. Passing NULL uses
+ * dvz_panel_axes_2d_desc(). Use `dvz_axis_set_tick_policy()` and `dvz_axis_set_style()` for custom
+ * per-axis tick policy or style.
  *
  * @param panel the panel
  * @param desc axes descriptor, or NULL for defaults
- * @return whether the axes were updated
+ * @return DVZ_OK if the axes were updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_panel_set_axes_2d(DvzPanel* panel, const DvzPanelAxes2DDesc* desc);
+DVZ_EXPORT DvzResult dvz_panel_set_axes_2d(DvzPanel* panel, const DvzPanelAxes2DDesc* desc);
 
 
 /**
@@ -1531,9 +1524,9 @@ DVZ_EXPORT DvzAxisStyle dvz_axis_style(void);
  *
  * @param axis the axis
  * @param visible whether the axis is visible
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_visible(DvzAxis* axis, bool visible);
+DVZ_EXPORT DvzResult dvz_axis_set_visible(DvzAxis* axis, bool visible);
 
 
 /**
@@ -1541,9 +1534,9 @@ DVZ_EXPORT bool dvz_axis_set_visible(DvzAxis* axis, bool visible);
  *
  * @param axis the axis
  * @param visible whether grid lines are visible
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_grid(DvzAxis* axis, bool visible);
+DVZ_EXPORT DvzResult dvz_axis_set_grid(DvzAxis* axis, bool visible);
 
 
 /**
@@ -1553,9 +1546,9 @@ DVZ_EXPORT bool dvz_axis_set_grid(DvzAxis* axis, bool visible);
  *
  * @param axis the axis
  * @param label label string, or NULL to clear
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_label(DvzAxis* axis, const char* label);
+DVZ_EXPORT DvzResult dvz_axis_set_label(DvzAxis* axis, const char* label);
 
 
 /**
@@ -1563,9 +1556,9 @@ DVZ_EXPORT bool dvz_axis_set_label(DvzAxis* axis, const char* label);
  *
  * @param axis the axis
  * @param policy tick policy, or NULL for defaults
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy);
+DVZ_EXPORT DvzResult dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy);
 
 
 /**
@@ -1577,9 +1570,9 @@ DVZ_EXPORT bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy*
  *
  * @param axis the axis
  * @param ticks explicit tick descriptor
- * @return whether the explicit ticks were stored
+ * @return DVZ_OK if the explicit ticks were stored, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_ticks(DvzAxis* axis, const DvzAxisTicks* ticks);
+DVZ_EXPORT DvzResult dvz_axis_set_ticks(DvzAxis* axis, const DvzAxisTicks* ticks);
 
 
 /**
@@ -1588,9 +1581,9 @@ DVZ_EXPORT bool dvz_axis_set_ticks(DvzAxis* axis, const DvzAxisTicks* ticks);
  * The axis returns to its automatic tick policy after this call.
  *
  * @param axis the axis
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_clear_ticks(DvzAxis* axis);
+DVZ_EXPORT DvzResult dvz_axis_clear_ticks(DvzAxis* axis);
 
 
 /**
@@ -1598,9 +1591,9 @@ DVZ_EXPORT bool dvz_axis_clear_ticks(DvzAxis* axis);
  *
  * @param axis the axis
  * @param style axis style, or NULL for defaults
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style);
+DVZ_EXPORT DvzResult dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style);
 
 
 /**
@@ -1615,9 +1608,9 @@ DVZ_EXPORT bool dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style);
  * @param right right margin
  * @param bottom bottom margin
  * @param top top margin
- * @return whether the margins were updated
+ * @return DVZ_OK if the margins were updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_plot_margins(
+DVZ_EXPORT DvzResult dvz_axis_set_plot_margins(
     DvzAxis* axis, float left, float right, float bottom, float top);
 
 
@@ -1628,9 +1621,9 @@ DVZ_EXPORT bool dvz_axis_set_plot_margins(
  *
  * @param axis the axis
  * @param units units object, or NULL to restore plain numeric formatting
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_units(DvzAxis* axis, DvzUnits* units);
+DVZ_EXPORT DvzResult dvz_axis_set_units(DvzAxis* axis, DvzUnits* units);
 
 
 /**
@@ -1638,9 +1631,9 @@ DVZ_EXPORT bool dvz_axis_set_units(DvzAxis* axis, DvzUnits* units);
  *
  * @param axis the axis
  * @param format datetime format, or NULL to restore numeric/unit formatting
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_datetime(DvzAxis* axis, DvzDateTimeFormat* format);
+DVZ_EXPORT DvzResult dvz_axis_set_datetime(DvzAxis* axis, DvzDateTimeFormat* format);
 
 
 /**
@@ -1651,9 +1644,9 @@ DVZ_EXPORT bool dvz_axis_set_datetime(DvzAxis* axis, DvzDateTimeFormat* format);
  * @param data1 second data coordinate
  * @param t0 timestamp corresponding to data0, in microseconds since Unix epoch UTC
  * @param t1 timestamp corresponding to data1, in microseconds since Unix epoch UTC
- * @return whether the mapping was updated
+ * @return DVZ_OK if the mapping was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_datetime_range(
+DVZ_EXPORT DvzResult dvz_axis_set_datetime_range(
     DvzAxis* axis, double data0, double data1, DvzTimestamp t0, DvzTimestamp t1);
 
 
@@ -1748,8 +1741,9 @@ DVZ_EXPORT bool dvz_visual_validate(const DvzVisual* visual, DvzDiagnosticReport
  *
  * @param visual the visual
  * @param visible true to show, false to hide
+ * @return DVZ_OK if visibility was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT void dvz_visual_set_visible(DvzVisual* visual, bool visible);
+DVZ_EXPORT DvzResult dvz_visual_set_visible(DvzVisual* visual, bool visible);
 
 
 /**
@@ -2061,8 +2055,9 @@ dvz_visual_set_item_range(DvzVisual* visual, uint32_t first_item, uint32_t item_
  * Clear the active logical item range and restore full visual participation.
  *
  * @param visual the visual
+ * @return DVZ_OK if the item range was cleared, DVZ_ERROR otherwise
  */
-DVZ_EXPORT void dvz_visual_clear_item_range(DvzVisual* visual);
+DVZ_EXPORT DvzResult dvz_visual_clear_item_range(DvzVisual* visual);
 
 
 /**
@@ -2172,14 +2167,14 @@ DVZ_EXPORT DvzResult dvz_visual_set_data_many(
  * The payload is copied before this function returns. The caller keeps ownership of `data` and may
  * release or reuse it immediately after a successful or failed call.
  *
- * @param data packed array of item_count items borrowed for the duration of the call
  * @param first_item index of the first item to update
+ * @param data packed array of item_count items borrowed for the duration of the call
  * @param item_count number of items to update
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult dvz_visual_set_data_range(
-    DvzVisual* visual, const char* attr_name, const void* data,
-    uint32_t first_item, uint32_t item_count);
+    DvzVisual* visual, const char* attr_name, uint32_t first_item, const void* data,
+    uint32_t item_count);
 
 
 /**
@@ -2222,19 +2217,19 @@ DVZ_EXPORT void dvz_scene_buffer_destroy(DvzSceneBuffer* buffer);
  *
  * @param data the packed byte payload borrowed for the duration of the call
  * @param byte_size the payload size in bytes
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool
+DVZ_EXPORT DvzResult
 dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, uint64_t byte_size);
 
 
 /**
- * Return the immutable buffer descriptor.
- *
+ * Copy immutable buffer descriptor information.
  * @param buffer the buffer
- * @return the descriptor, or NULL on error
+ * @param out output buffer descriptor
+ * @return whether the descriptor was copied
  */
-DVZ_EXPORT const DvzSceneBufferDesc* dvz_scene_buffer_get_desc(const DvzSceneBuffer* buffer);
+DVZ_EXPORT bool dvz_scene_buffer_info(const DvzSceneBuffer* buffer, DvzSceneBufferDesc* out);
 
 
 /**
@@ -2290,9 +2285,9 @@ DVZ_EXPORT void dvz_scene_compute_destroy(DvzSceneCompute* compute);
  * @param x workgroup count in X
  * @param y workgroup count in Y
  * @param z workgroup count in Z
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool
+DVZ_EXPORT DvzResult
 dvz_scene_compute_set_dispatch(DvzSceneCompute* compute, uint32_t x, uint32_t y, uint32_t z);
 
 
@@ -2308,9 +2303,9 @@ dvz_scene_compute_set_dispatch(DvzSceneCompute* compute, uint32_t x, uint32_t y,
  * @param access read or read-write access
  * @param byte_offset byte offset into the buffer
  * @param byte_size bound byte range, or 0 for the remaining buffer range
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_scene_compute_set_buffer(
+DVZ_EXPORT DvzResult dvz_scene_compute_set_buffer(
     DvzSceneCompute* compute, uint32_t binding, DvzSceneBuffer* buffer,
     DvzSceneComputeAccess access, uint64_t byte_offset, uint64_t byte_size);
 
@@ -2322,9 +2317,9 @@ DVZ_EXPORT bool dvz_scene_compute_set_buffer(
  *
  * @param figure the figure
  * @param compute the compute pass
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_figure_add_compute(DvzFigure* figure, DvzSceneCompute* compute);
+DVZ_EXPORT DvzResult dvz_figure_add_compute(DvzFigure* figure, DvzSceneCompute* compute);
 
 
 /**
@@ -2332,9 +2327,9 @@ DVZ_EXPORT bool dvz_figure_add_compute(DvzFigure* figure, DvzSceneCompute* compu
  *
  * @param figure the figure
  * @param compute the compute pass
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_figure_remove_compute(DvzFigure* figure, DvzSceneCompute* compute);
+DVZ_EXPORT DvzResult dvz_figure_remove_compute(DvzFigure* figure, DvzSceneCompute* compute);
 
 
 /**
@@ -2346,9 +2341,9 @@ DVZ_EXPORT bool dvz_figure_remove_compute(DvzFigure* figure, DvzSceneCompute* co
  * @param visual the visual
  * @param slot_name the semantic slot name
  * @param buffer the buffer, or NULL to clear the binding
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool
+DVZ_EXPORT DvzResult
 dvz_visual_set_buffer(DvzVisual* visual, const char* slot_name, DvzSceneBuffer* buffer);
 
 
@@ -2384,9 +2379,9 @@ dvz_visual_set_index_data(DvzVisual* visual, const DvzIndex* indices, uint32_t i
  * @param buffer the scene buffer, or NULL to clear the binding
  * @param byte_offset byte offset into the buffer
  * @param item_count number of attribute items
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_visual_set_attr_buffer(
+DVZ_EXPORT DvzResult dvz_visual_set_attr_buffer(
     DvzVisual* visual, const char* attr_name, DvzSceneBuffer* buffer,
     uint64_t byte_offset, uint32_t item_count);
 
@@ -2614,7 +2609,7 @@ DVZ_EXPORT DvzSymbolId dvz_symbol_svg_path(
  * @param symbols the symbol set, or NULL to clear the binding
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_marker_set_symbols(DvzVisual* visual, DvzSymbolSet* symbols);
+DVZ_EXPORT DvzResult dvz_marker_set_symbols(DvzVisual* visual, const DvzSymbolSet* symbols);
 
 
 /**
@@ -2887,7 +2882,7 @@ DVZ_EXPORT DvzResult dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry*
  *
  * A graph stores user-provided node positions and indexed edges. Layout algorithms are intentionally
  * external to the first public API slice and can update node positions through
- * `dvz_graph_node_positions()`.
+ * `dvz_graph_set_node_positions()`.
  *
  * @param scene the scene
  * @param flags reserved graph flags
@@ -2916,7 +2911,7 @@ DVZ_EXPORT DvzGraphEdgeStyle dvz_graph_edge_style(void);
  * Replace the graph node array and reset node style defaults.
  *
  * Existing edges are discarded because their endpoints may no longer be valid. Call
- * `dvz_graph_node_positions()` after this function to set or update semantic node positions.
+ * `dvz_graph_set_node_positions()` after this function to set or update semantic node positions.
  *
  * @param graph the graph
  * @param node_count number of nodes
@@ -2934,14 +2929,14 @@ DVZ_EXPORT DvzResult dvz_graph_set_node_count(DvzGraph* graph, uint32_t node_cou
  * @param positions borrowed node positions
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_graph_node_positions(
+DVZ_EXPORT DvzResult dvz_graph_set_node_positions(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const dvec3* positions);
 
 
 /**
  * Replace the graph edge array and reset edge style defaults.
  *
- * Edge endpoints are left at their default values until `dvz_graph_edges()` is called.
+ * Edge endpoints are left at their default values until `dvz_graph_set_edge_endpoints()` is called.
  *
  * @param graph the graph
  * @param edge_count number of edges
@@ -2962,7 +2957,7 @@ DVZ_EXPORT DvzResult dvz_graph_set_edge_count(DvzGraph* graph, uint32_t edge_cou
  * @return 0 on success, -1 on invalid endpoints or allocation failure
  */
 DVZ_EXPORT DvzResult
-dvz_graph_edges(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
+dvz_graph_set_edge_endpoints(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
                 const uint32_t* endpoints);
 
 
@@ -2976,7 +2971,8 @@ dvz_graph_edges(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_graph_node_ids(DvzGraph* graph, uint32_t first_node, uint32_t node_count, const uint64_t* ids);
+dvz_graph_set_node_ids(
+    DvzGraph* graph, uint32_t first_node, uint32_t node_count, const uint64_t* ids);
 
 
 /**
@@ -2989,7 +2985,7 @@ dvz_graph_node_ids(DvzGraph* graph, uint32_t first_node, uint32_t node_count, co
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_graph_edge_ids(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
+dvz_graph_set_edge_ids(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
                    const uint64_t* ids);
 
 
@@ -3019,7 +3015,7 @@ DVZ_EXPORT DvzResult dvz_graph_set_edge_style(DvzGraph* graph, const DvzGraphEdg
  * @param control1 borrowed second control point array
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_graph_edge_controls(
+DVZ_EXPORT DvzResult dvz_graph_set_edge_controls(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const dvec3* control0,
     const dvec3* control1);
 
@@ -3034,7 +3030,7 @@ DVZ_EXPORT DvzResult dvz_graph_edge_controls(
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_graph_node_colors(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
+dvz_graph_set_node_colors(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
                       const DvzColor* colors);
 
 
@@ -3048,7 +3044,7 @@ dvz_graph_node_colors(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_graph_node_sizes(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
+dvz_graph_set_node_sizes(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
                      const float* sizes);
 
 
@@ -3062,7 +3058,7 @@ dvz_graph_node_sizes(DvzGraph* graph, uint32_t first_node, uint32_t node_count,
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_graph_edge_colors(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
+dvz_graph_set_edge_colors(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
                       const DvzColor* colors);
 
 
@@ -3076,7 +3072,7 @@ dvz_graph_edge_colors(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_graph_edge_widths(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
+dvz_graph_set_edge_widths(DvzGraph* graph, uint32_t first_edge, uint32_t edge_count,
                       const float* widths);
 
 
@@ -3127,18 +3123,18 @@ DVZ_EXPORT DvzPolygonStyle dvz_polygon_style(void);
  * @param desc borrowed polygon descriptor
  * @return 0 on success, -1 on invalid input or allocation failure
  */
-DVZ_EXPORT DvzResult dvz_polygon_geometry(DvzPolygon* polygon, const DvzPolygonDesc* desc);
+DVZ_EXPORT DvzResult dvz_polygon_set_geometry(DvzPolygon* polygon, const DvzPolygonDesc* desc);
 
 
 /**
  * Replace the polygon outer ring while preserving existing holes.
  *
  * @param polygon the polygon
- * @param count number of outer ring vertices
  * @param xy borrowed XY vertex array
+ * @param count number of outer ring vertices
  * @return 0 on success, -1 on invalid input or allocation failure
  */
-DVZ_EXPORT DvzResult dvz_polygon_outer(DvzPolygon* polygon, uint32_t count, const dvec2* xy);
+DVZ_EXPORT DvzResult dvz_polygon_set_outer(DvzPolygon* polygon, const dvec2* xy, uint32_t count);
 
 
 /**
@@ -3149,12 +3145,12 @@ DVZ_EXPORT DvzResult dvz_polygon_outer(DvzPolygon* polygon, uint32_t count, cons
  *
  * @param polygon the polygon
  * @param hole_index hole index to replace, or current hole count to append
- * @param count number of hole ring vertices
  * @param xy borrowed XY vertex array
+ * @param count number of hole ring vertices
  * @return 0 on success, -1 on invalid input or allocation failure
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, const dvec2* xy);
+dvz_polygon_set_hole(DvzPolygon* polygon, uint32_t hole_index, const dvec2* xy, uint32_t count);
 
 
 /**
@@ -3164,7 +3160,7 @@ dvz_polygon_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, const
  * @param id stable user id
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_id(DvzPolygon* polygon, uint64_t id);
+DVZ_EXPORT DvzResult dvz_polygon_set_id(DvzPolygon* polygon, uint64_t id);
 
 
 /**
@@ -3174,7 +3170,7 @@ DVZ_EXPORT DvzResult dvz_polygon_id(DvzPolygon* polygon, uint64_t id);
  * @param visible whether the polygon should render
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_visible(DvzPolygon* polygon, bool visible);
+DVZ_EXPORT DvzResult dvz_polygon_set_visible(DvzPolygon* polygon, bool visible);
 
 
 /**
@@ -3197,7 +3193,7 @@ DVZ_EXPORT DvzResult dvz_polygon_set_style(DvzPolygon* polygon, const DvzPolygon
  * @param color RGBA fill color
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_fill_color(DvzPolygon* polygon, const DvzColor color);
+DVZ_EXPORT DvzResult dvz_polygon_set_fill_color(DvzPolygon* polygon, const DvzColor color);
 
 
 /**
@@ -3207,7 +3203,7 @@ DVZ_EXPORT DvzResult dvz_polygon_fill_color(DvzPolygon* polygon, const DvzColor 
  * @param color RGBA stroke color
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_stroke_color(DvzPolygon* polygon, const DvzColor color);
+DVZ_EXPORT DvzResult dvz_polygon_set_stroke_color(DvzPolygon* polygon, const DvzColor color);
 
 
 /**
@@ -3217,7 +3213,7 @@ DVZ_EXPORT DvzResult dvz_polygon_stroke_color(DvzPolygon* polygon, const DvzColo
  * @param width stroke width in pixels
  * @return 0 on success, -1 on invalid input
  */
-DVZ_EXPORT DvzResult dvz_polygon_stroke_width_px(DvzPolygon* polygon, float width);
+DVZ_EXPORT DvzResult dvz_polygon_set_stroke_width_px(DvzPolygon* polygon, float width);
 
 
 /**
@@ -3229,7 +3225,7 @@ DVZ_EXPORT DvzResult dvz_polygon_stroke_width_px(DvzPolygon* polygon, float widt
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_stroke_caps(DvzPolygon* polygon, DvzSegmentCap start_cap, DvzSegmentCap end_cap);
+dvz_polygon_set_stroke_caps(DvzPolygon* polygon, DvzSegmentCap start_cap, DvzSegmentCap end_cap);
 
 
 /**
@@ -3241,7 +3237,7 @@ dvz_polygon_stroke_caps(DvzPolygon* polygon, DvzSegmentCap start_cap, DvzSegment
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_stroke_join(DvzPolygon* polygon, DvzPathJoin join, float miter_limit);
+dvz_polygon_set_stroke_join(DvzPolygon* polygon, DvzPathJoin join, float miter_limit);
 
 
 /**
@@ -3264,7 +3260,7 @@ DVZ_EXPORT DvzComposite* dvz_polygon_composite(DvzPolygon* polygon, uint32_t fla
  * @param flags reserved polygon-set flags
  * @return the polygon set, or NULL on allocation failure
  */
-DVZ_EXPORT DvzPolygonSet* dvz_polygon_set(DvzScene* scene, uint32_t flags);
+DVZ_EXPORT DvzPolygons* dvz_polygons(DvzScene* scene, uint32_t flags);
 
 
 /**
@@ -3272,7 +3268,7 @@ DVZ_EXPORT DvzPolygonSet* dvz_polygon_set(DvzScene* scene, uint32_t flags);
  *
  * @param set the polygon set
  */
-DVZ_EXPORT void dvz_polygon_set_destroy(DvzPolygonSet* set);
+DVZ_EXPORT void dvz_polygons_destroy(DvzPolygons* set);
 
 
 /**
@@ -3282,7 +3278,7 @@ DVZ_EXPORT void dvz_polygon_set_destroy(DvzPolygonSet* set);
  * @param desc borrowed polygon descriptor
  * @return the polygon index, or UINT32_MAX on error
  */
-DVZ_EXPORT uint32_t dvz_polygon_set_add(DvzPolygonSet* set, const DvzPolygonDesc* desc);
+DVZ_EXPORT uint32_t dvz_polygons_add_region(DvzPolygons* set, const DvzPolygonDesc* desc);
 
 
 /**
@@ -3293,8 +3289,8 @@ DVZ_EXPORT uint32_t dvz_polygon_set_add(DvzPolygonSet* set, const DvzPolygonDesc
  * @param desc borrowed polygon descriptor
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_geometry(
-    DvzPolygonSet* set, uint32_t polygon_index, const DvzPolygonDesc* desc);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_geometry(
+    DvzPolygons* set, uint32_t polygon_index, const DvzPolygonDesc* desc);
 
 
 /**
@@ -3306,7 +3302,7 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_geometry(
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_set_region_id(DvzPolygonSet* set, uint32_t polygon_index, uint64_t id);
+dvz_polygons_set_region_id(DvzPolygons* set, uint32_t polygon_index, uint64_t id);
 
 
 /**
@@ -3318,8 +3314,8 @@ dvz_polygon_set_region_id(DvzPolygonSet* set, uint32_t polygon_index, uint64_t i
  * @param ids borrowed stable user id array
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_ids(
-    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const uint64_t* ids);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_ids(
+    DvzPolygons* set, uint32_t first_polygon, uint32_t polygon_count, const uint64_t* ids);
 
 
 /**
@@ -3331,7 +3327,7 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_ids(
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_set_region_visible(DvzPolygonSet* set, uint32_t polygon_index, bool visible);
+dvz_polygons_set_region_visible(DvzPolygons* set, uint32_t polygon_index, bool visible);
 
 
 /**
@@ -3343,8 +3339,8 @@ dvz_polygon_set_region_visible(DvzPolygonSet* set, uint32_t polygon_index, bool 
  * @param visible borrowed visibility array
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_visibilities(
-    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const bool* visible);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_visibilities(
+    DvzPolygons* set, uint32_t first_polygon, uint32_t polygon_count, const bool* visible);
 
 
 /**
@@ -3355,8 +3351,8 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_visibilities(
  * @param color RGBA fill color
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_fill_color(
-    DvzPolygonSet* set, uint32_t polygon_index, const DvzColor color);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_fill_color(
+    DvzPolygons* set, uint32_t polygon_index, const DvzColor color);
 
 
 /**
@@ -3368,8 +3364,8 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_fill_color(
  * @param colors RGBA fill colors
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_fill_colors(
-    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_fill_colors(
+    DvzPolygons* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors);
 
 
 /**
@@ -3380,8 +3376,8 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_fill_colors(
  * @param color RGBA stroke color
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_stroke_color(
-    DvzPolygonSet* set, uint32_t polygon_index, const DvzColor color);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_stroke_color(
+    DvzPolygons* set, uint32_t polygon_index, const DvzColor color);
 
 
 /**
@@ -3393,8 +3389,8 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_stroke_color(
  * @param colors RGBA stroke colors
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_stroke_colors(
-    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_stroke_colors(
+    DvzPolygons* set, uint32_t first_polygon, uint32_t polygon_count, const DvzColor* colors);
 
 
 /**
@@ -3406,7 +3402,7 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_stroke_colors(
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_set_region_stroke_width_px(DvzPolygonSet* set, uint32_t polygon_index, float width);
+dvz_polygons_set_region_stroke_width_px(DvzPolygons* set, uint32_t polygon_index, float width);
 
 
 /**
@@ -3418,8 +3414,8 @@ dvz_polygon_set_region_stroke_width_px(DvzPolygonSet* set, uint32_t polygon_inde
  * @param widths stroke widths in pixels
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_region_stroke_widths_px(
-    DvzPolygonSet* set, uint32_t first_polygon, uint32_t polygon_count, const float* widths);
+DVZ_EXPORT DvzResult dvz_polygons_set_region_stroke_widths_px(
+    DvzPolygons* set, uint32_t first_polygon, uint32_t polygon_count, const float* widths);
 
 
 /**
@@ -3431,7 +3427,7 @@ DVZ_EXPORT DvzResult dvz_polygon_set_region_stroke_widths_px(
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_set_stroke_caps(DvzPolygonSet* set, DvzSegmentCap start_cap, DvzSegmentCap end_cap);
+dvz_polygons_set_stroke_caps(DvzPolygons* set, DvzSegmentCap start_cap, DvzSegmentCap end_cap);
 
 
 /**
@@ -3443,7 +3439,7 @@ dvz_polygon_set_stroke_caps(DvzPolygonSet* set, DvzSegmentCap start_cap, DvzSegm
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_set_stroke_join(DvzPolygonSet* set, DvzPathJoin join, float miter_limit);
+dvz_polygons_set_stroke_join(DvzPolygons* set, DvzPathJoin join, float miter_limit);
 
 
 /**
@@ -3453,7 +3449,7 @@ dvz_polygon_set_stroke_join(DvzPolygonSet* set, DvzPathJoin join, float miter_li
  * @param flags reserved composite flags
  * @return the composite, or NULL on allocation failure
  */
-DVZ_EXPORT DvzComposite* dvz_polygon_set_composite(DvzPolygonSet* set, uint32_t flags);
+DVZ_EXPORT DvzComposite* dvz_polygons_composite(DvzPolygons* set, uint32_t flags);
 
 
 /**
@@ -3560,9 +3556,8 @@ DVZ_EXPORT DvzResult dvz_path_set_subpaths(
  * First-slice scope: one sampled 2D texture per visual. The legacy path accepts `position`
  * (vec3, 4 corner vertices in triangle-strip order) and `texcoords` (vec2, matching UVs).
  * The retained per-item path accepts one anchor `position` and `extent` per image item, with
- * optional `tex_rect` atlas rectangles and per-item `anchor`. Bind a sampled field via
- * `dvz_visual_set_field()`. The legacy texture convenience wrappers remain available and lower
- * to scene-owned sampled fields internally.
+ * optional `tex_rect` atlas rectangles and per-item `anchor`. Bind texture data with a scene-owned
+ * sampled field via `dvz_visual_set_field()`.
  *
  * @param scene the scene
  * @param flags variant flags
@@ -3911,48 +3906,6 @@ DVZ_EXPORT DvzResult dvz_volume_clear_clipping(DvzVisual* visual);
  * @return the volume state, or NULL on error
  */
 DVZ_EXPORT const DvzVolumeState* dvz_volume_state(const DvzVisual* visual);
-
-
-/**
- * Attach a 2D RGBA8 sRGB-color texture to an image, glyph, or mesh visual.
- *
- * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
- * binds it to the visual's `"field"` slot for image/glyph visuals or `"texture"` slot for mesh
- * visuals. The owned sampled field uses `DVZ_FIELD_SEMANTIC_COLOR` and
- * `DVZ_COLOR_ROLE_SRGB_COLOR`. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new
- * code.
- *
- * @param visual the visual (must be of type IMAGE, GLYPH, or MESH)
- * @param rgba RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes)
- * @param width the texture width in pixels
- * @param height the texture height in pixels
- * @param size_bytes number of bytes available at @p rgba; must equal `width * height * 4`
- * @return 0 on success, -1 on error
- */
-DVZ_EXPORT DvzResult dvz_visual_set_texture_rgba8(
-    DvzVisual* visual, const uint8_t* rgba, uint32_t width, uint32_t height,
-    DvzSize size_bytes);
-
-
-/**
- * Attach a 2D scalar R32F texture to an image or glyph visual.
- *
- * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
- * binds it to the visual's `"field"` slot. The owned sampled field uses
- * `DVZ_FIELD_SEMANTIC_SCALAR` and `DVZ_COLOR_ROLE_DATA`. The bound scale and colormap are applied
- * on the CPU during emit to produce the RGBA texture used by the current first-slice image runtime
- * path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
- *
- * @param visual the visual (must be of type IMAGE or GLYPH)
- * @param values scalar R32F pixel data, tightly packed, row-major
- * @param width the texture width in pixels
- * @param height the texture height in pixels
- * @param size_bytes number of bytes available at @p values; must equal `width * height * sizeof(float)`
- * @return 0 on success, -1 on error
- */
-DVZ_EXPORT DvzResult dvz_visual_set_texture_r32f(
-    DvzVisual* visual, const float* values, uint32_t width, uint32_t height,
-    DvzSize size_bytes);
 
 
 EXTERN_C_OFF

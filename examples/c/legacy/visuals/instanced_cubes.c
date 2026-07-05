@@ -185,13 +185,13 @@ int main(int argc, char** argv)
         {142, 68, 173, 255},
         {244, 81, 30, 255},
     };
-    cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+    cube = dvz_geometry_cube(&(DvzGeometryCubeDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
         .size = CUBE_SIZE,
         .face_colors = face_colors,
         .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT,
     });
-    EXAMPLE_CHECK(cube != NULL, "dvz_geom_cube() failed");
+    EXAMPLE_CHECK(cube != NULL, "dvz_geometry_cube() failed");
 
     ok = dvz_mesh_set_geometry(visual, cube) == 0;
     EXAMPLE_CHECK(ok, "dvz_mesh_set_geometry() failed");
@@ -223,14 +223,14 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "instanced cubes");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_window(app, figure, WIDTH, HEIGHT, "instanced cubes");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.70f, 0.0f, +0.28f});
 
-    dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_CLOCK_OFFLINE : DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_SCENE_CLOCK_FIXED_STEP : DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
     rc = dvz_view_capture_start(win, &capture);

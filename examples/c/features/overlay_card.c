@@ -148,8 +148,8 @@ static bool _add_overlay_card(DvzPanel* panel)
     desc.placement = DVZ_OVERLAY_CARD_PLACEMENT_TOP_RIGHT;
     desc.offset_px[0] = 24.0f;
     desc.offset_px[1] = 24.0f;
-    desc.style = &style;
-    return dvz_overlay_card(overlay, &desc) != NULL;
+    DvzOverlayCard* card = dvz_overlay_card(overlay, &desc);
+    return card != NULL && dvz_overlay_card_set_style(card, &style) == 0;
 }
 
 

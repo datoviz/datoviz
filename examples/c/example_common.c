@@ -295,6 +295,84 @@ uint32_t example_frame_count_any(int argc, char** argv)
 }
 
 
+
+/**
+ * Bind or refresh an RGBA8 sampled field on a visual.
+ *
+ * @param scene scene owning the sampled field
+ * @param visual destination visual
+ * @param slot_name visual sampled-field slot
+ * @param rgba tightly packed RGBA8 texels
+ * @param width field width
+ * @param height field height
+ * @param field_io optional retained field pointer
+ * @return true on success
+ */
+bool example_visual_set_rgba8_field(
+    DvzScene* scene,
+    DvzVisual* visual,
+    const char* slot_name,
+    const uint8_t* rgba,
+    uint32_t width,
+    uint32_t height,
+    DvzSampledField** field_io)
+{
+    if (scene == NULL || visual == NULL || slot_name == NULL || rgba == NULL || width == 0 ||
+        height == 0)
+        return false;
+
+    DvzFieldDataView view = dvz_field_data_view();
+    view.data = rgba;
+    view.bytes_per_row = (uint64_t)width * 4u;
+    view.rows_per_image = height;
+
+    DvzSampledField* field = field_io != NULL ? *field_io : NULL;
+    if (field == NULL)
+    {
+        DvzSampledFieldDesc desc = dvz_sampled_field_desc();
+        desc.dim = DVZ_FIELD_DIM_2D;
+        desc.format = DVZ_FIELD_FORMAT_RGBA8_UNORM;
+        desc.semantic = DVZ_FIELD_SEMANTIC_COLOR;
+        desc.color_role = DVZ_COLOR_ROLE_SRGB_COLOR;
+        desc.width = width;
+        desc.height = height;
+        desc.depth = 1;
+
+        field = dvz_sampled_field(scene, &desc);
+        if (field == NULL)
+            return false;
+        if (dvz_sampled_field_set_data(field, &view) != DVZ_OK)
+            return false;
+    }
+    else
+    {
+        DvzSampledFieldDesc desc = {0};
+        if (
+            !dvz_sampled_field_info(field, &desc) || desc.dim != DVZ_FIELD_DIM_2D ||
+            desc.format != DVZ_FIELD_FORMAT_RGBA8_UNORM ||
+            desc.semantic != DVZ_FIELD_SEMANTIC_COLOR)
+        {
+            return false;
+        }
+
+        bool ok = false;
+        if (desc.width == width && desc.height == height && desc.depth == 1)
+            ok = dvz_sampled_field_set_data(field, &view) == DVZ_OK;
+        else
+            ok = dvz_sampled_field_resize(field, width, height, 1, &view) == DVZ_OK;
+        if (!ok)
+            return false;
+    }
+
+    if (dvz_visual_set_field(visual, slot_name, field) != DVZ_OK)
+        return false;
+    if (field_io != NULL)
+        *field_io = field;
+    return true;
+}
+
+
+
 /**
  * Run an app view with the configured capture lifecycle.
  *
@@ -449,7 +527,7 @@ bool example_configure_equal_aspect_panel(
     if (dvz_panel_set_domain(panel, DVZ_DIM_Y, y.min, y.max) != 0)
         return false;
 
-    DvzPanelView2D view = dvz_panel_view2d();
+    DvzPanelView2DDesc view = dvz_panel_view2d_desc();
     view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
     view.padding = padding;
     return dvz_panel_set_view2d(panel, &view) == 0;
@@ -468,14 +546,14 @@ bool example_configure_compact_grid(DvzGrid* grid, float gutter_x_px, float gutt
 {
     if (grid == NULL)
         return false;
-    if (!dvz_grid_set_margins(
+    if (dvz_grid_set_margins(
             grid,
             &(DvzPanelReserve){
-                .left_px = 56.0f, .right_px = 56.0f, .top_px = 56.0f, .bottom_px = 56.0f}))
+                .left_px = 56.0f, .right_px = 56.0f, .top_px = 56.0f, .bottom_px = 56.0f}) != DVZ_OK)
     {
         return false;
     }
-    return dvz_grid_set_gutter(grid, gutter_x_px, gutter_y_px);
+    return dvz_grid_set_gutter(grid, gutter_x_px, gutter_y_px) == DVZ_OK;
 }
 
 
@@ -505,7 +583,7 @@ DvzVisual* example_graphite_cyan_cube_mesh(
     for (uint32_t i = 0; i < DVZ_GEOM_CUBE_FACE_COUNT; i++)
         face_colors[i] = example_graphite_cyan_color(face_roles[i]);
 
-    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+    DvzGeometry* cube = dvz_geometry_cube(&(DvzGeometryCubeDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
         .size = size,
         .face_colors = face_colors,

@@ -106,21 +106,14 @@ static bool _graph_path_join_valid(DvzPathJoin join)
 
 
 
-static bool _graph_tessellation_valid(const DvzBezierTessellationDesc* desc)
+static bool _graph_tessellation_valid(uint32_t segment_count, double tolerance)
 {
-    if (desc == NULL)
-        return true;
-    if (!DVZ_STRUCT_VALID(desc, DvzBezierTessellationDesc, DVZ_GRAPH_EDGE_STYLE_KNOWN_FLAGS))
-    {
-        log_error("invalid DvzBezierTessellationDesc ABI prologue");
-        return false;
-    }
-    if (desc->segment_count > 65535)
+    if (segment_count > 65535)
     {
         log_error("graph Bezier tessellation segment_count exceeds the supported maximum");
         return false;
     }
-    if (desc->tolerance < 0 || !isfinite(desc->tolerance))
+    if (tolerance < 0 || !isfinite(tolerance))
     {
         log_error("graph Bezier tessellation tolerance must be finite and non-negative");
         return false;
@@ -141,7 +134,7 @@ static bool _graph_edge_style_valid(const DvzGraphEdgeStyle* style)
     }
     if (!_graph_edge_mode_valid(style->mode))
         return false;
-    if (!_graph_tessellation_valid(&style->tessellation))
+    if (!_graph_tessellation_valid(style->tessellation_segment_count, style->tessellation_tolerance))
         return false;
     if (!_graph_segment_cap_valid(style->start_cap) || !_graph_segment_cap_valid(style->end_cap))
         return false;
@@ -175,7 +168,11 @@ DvzGraph* _scene_alloc_graph(DvzScene* scene)
     graph->active = true;
     DvzGraphEdgeStyle style = dvz_graph_edge_style();
     graph->edge_mode = style.mode;
-    graph->tessellation = style.tessellation;
+    graph->tessellation = (DvzBezierTessellationDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzBezierTessellationDesc),
+        .segment_count = style.tessellation_segment_count,
+        .tolerance = style.tessellation_tolerance,
+    };
     graph->edge_cap_start = style.start_cap;
     graph->edge_cap_end = style.end_cap;
     graph->edge_join = style.join;
@@ -308,10 +305,12 @@ void dvz_graph_destroy(DvzGraph* graph)
  */
 DvzGraphEdgeStyle dvz_graph_edge_style(void)
 {
+    DvzBezierTessellationDesc tessellation = dvz_bezier_tessellation_desc();
     return (DvzGraphEdgeStyle){
         DVZ_STRUCT_INIT_FIELDS(DvzGraphEdgeStyle),
         .mode = DVZ_GRAPH_EDGE_MODE_SEGMENT,
-        .tessellation = dvz_bezier_tessellation_desc(),
+        .tessellation_segment_count = tessellation.segment_count,
+        .tessellation_tolerance = tessellation.tolerance,
         .start_cap = DVZ_SEGMENT_CAP_ROUND,
         .end_cap = DVZ_SEGMENT_CAP_ROUND,
         .join = DVZ_PATH_JOIN_ROUND,
@@ -365,7 +364,7 @@ DvzResult dvz_graph_set_node_count(DvzGraph* graph, uint32_t node_count)
  * @param positions borrowed node positions
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_graph_node_positions(
+DvzResult dvz_graph_set_node_positions(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const dvec3* positions)
 {
     if (
@@ -435,7 +434,7 @@ DvzResult dvz_graph_set_edge_count(DvzGraph* graph, uint32_t edge_count)
  * @param endpoints borrowed packed endpoint array: source0, target0, source1, target1, ...
  * @return 0 on success, -1 on invalid endpoints or allocation failure
  */
-DvzResult dvz_graph_edges(
+DvzResult dvz_graph_set_edge_endpoints(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const uint32_t* endpoints)
 {
     if (
@@ -477,7 +476,7 @@ DvzResult dvz_graph_edges(
  * @param ids borrowed user-id array
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_graph_node_ids(
+DvzResult dvz_graph_set_node_ids(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const uint64_t* ids)
 {
     if (
@@ -505,7 +504,7 @@ DvzResult dvz_graph_node_ids(
  * @param ids borrowed user-id array
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_graph_edge_ids(
+DvzResult dvz_graph_set_edge_ids(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const uint64_t* ids)
 {
     if (
@@ -541,7 +540,11 @@ DvzResult dvz_graph_set_edge_style(DvzGraph* graph, const DvzGraphEdgeStyle* sty
         return -1;
 
     graph->edge_mode = style->mode;
-    graph->tessellation = style->tessellation;
+    graph->tessellation = (DvzBezierTessellationDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzBezierTessellationDesc),
+        .segment_count = style->tessellation_segment_count,
+        .tolerance = style->tessellation_tolerance,
+    };
     graph->edge_cap_start = style->start_cap;
     graph->edge_cap_end = style->end_cap;
     graph->edge_join = style->join;
@@ -563,7 +566,7 @@ DvzResult dvz_graph_set_edge_style(DvzGraph* graph, const DvzGraphEdgeStyle* sty
  * @param control1 borrowed second control point array
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_graph_edge_controls(
+DvzResult dvz_graph_set_edge_controls(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const dvec3* control0,
     const dvec3* control1)
 {
@@ -594,7 +597,7 @@ DvzResult dvz_graph_edge_controls(
 
 
 
-DvzResult dvz_graph_node_colors(
+DvzResult dvz_graph_set_node_colors(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const DvzColor* colors)
 {
     if (
@@ -614,7 +617,7 @@ DvzResult dvz_graph_node_colors(
 
 
 
-DvzResult dvz_graph_node_sizes(
+DvzResult dvz_graph_set_node_sizes(
     DvzGraph* graph, uint32_t first_node, uint32_t node_count, const float* sizes)
 {
     if (
@@ -639,7 +642,7 @@ DvzResult dvz_graph_node_sizes(
 
 
 
-DvzResult dvz_graph_edge_colors(
+DvzResult dvz_graph_set_edge_colors(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const DvzColor* colors)
 {
     if (
@@ -659,7 +662,7 @@ DvzResult dvz_graph_edge_colors(
 
 
 
-DvzResult dvz_graph_edge_widths(
+DvzResult dvz_graph_set_edge_widths(
     DvzGraph* graph, uint32_t first_edge, uint32_t edge_count, const float* widths)
 {
     if (

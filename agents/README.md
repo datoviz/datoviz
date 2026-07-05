@@ -21,6 +21,10 @@ This directory is for current agent dispatch and repo-wide agent rules. It is no
 3. [now/RELEASE.md](now/RELEASE.md): release sequence.
 4. [now/DOCUMENTATION.md](now/DOCUMENTATION.md): public documentation release gates.
 
+Task handoffs may live in `now/` only while they are active, blocked, or needed as a guard before
+touching a sensitive surface. Completed execution logs should be summarized in `STATUS.md` if the
+result still matters, then removed from `now/`; git history is the archive.
+
 `rules/` contains detailed agent rules split out of the root entry point:
 
 1. [rules/REPO_HYGIENE.md](rules/REPO_HYGIENE.md)

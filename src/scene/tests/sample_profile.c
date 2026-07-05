@@ -179,7 +179,7 @@ static int test_scene_colorizer_categorical_palette(TstContext* suite, const Tst
         {.category_id = 0, .order = 0, .label = "background", .color = {0, 0, 0, 0}},
         {.category_id = 2, .order = 1, .label = "region", .color = {10, 20, 30, 255}},
     };
-    AT(dvz_scale_set_categories(scale, categories, 2));
+    AT(dvz_scale_set_categories(scale, categories, 2) == DVZ_OK);
 
     DvzSceneColorizer colorizer = {0};
     AT(_scene_colorizer_from_scale(scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer));
@@ -213,7 +213,7 @@ static int test_scene_colorizer_categorical_palette(TstContext* suite, const Tst
         {.category_id = 4000000000LL, .order = 1, .label = "high", .color = {5, 6, 7, 8}},
         {.category_id = 23, .order = 2, .label = "low", .color = {9, 10, 11, 12}},
     };
-    AT(dvz_scale_set_categories(scale, sparse, 3));
+    AT(dvz_scale_set_categories(scale, sparse, 3) == DVZ_OK);
     AT(_scene_colorizer_from_scale(scale, DVZ_SCENE_COLORIZER_CATEGORICAL, &colorizer));
     AT(!_scene_colorizer_dense_palette_extent(&colorizer, &palette_count));
 

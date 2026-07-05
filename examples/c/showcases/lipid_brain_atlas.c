@@ -261,7 +261,7 @@ static bool _set_frame(LipidAtlasState* state, uint32_t section, uint32_t channe
 
     const uint64_t pixels = (uint64_t)state->data.width * state->data.height;
     memcpy(state->current_values, _frame_values(&state->data, section, channel), pixels * sizeof(float));
-    if (!dvz_sampled_field_update_region(
+    if (dvz_sampled_field_update_region(
             state->field,
             (DvzFieldRegion){
                 .x = 0,
@@ -275,7 +275,7 @@ static bool _set_frame(LipidAtlasState* state, uint32_t section, uint32_t channe
                 .data = state->current_values,
                 .bytes_per_row = state->data.width * sizeof(float),
                 .rows_per_image = state->data.height,
-            }))
+            }) != DVZ_OK)
     {
         return false;
     }
@@ -313,12 +313,13 @@ static DvzScale* _add_scale(DvzScene* scene)
         scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                    .kind = DVZ_SCALE_CONTINUOUS,
                    .label = "intensity",
-                   .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
-                              .precision = 2,
-                              .trim_trailing_zeros = true},
                });
     if (scale == NULL)
         return NULL;
+    dvz_scale_set_format(
+        scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
+                   .precision = 2,
+                   .trim_trailing_zeros = true});
 
     dvz_scale_set_domain(scale, 0.0, 1.0);
     dvz_scale_set_view_range(scale, 0.0, 1.0);
@@ -387,16 +388,16 @@ static bool _add_image(DvzScene* scene, DvzPanel* panel, DvzScale* scale, LipidA
                });
     if (field == NULL)
         return false;
-    if (!dvz_sampled_field_set_data(
+    if (dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                        .data = state->current_values,
                        .bytes_per_row = state->data.width * sizeof(float),
                        .rows_per_image = state->data.height,
-                   }))
+                   }) != DVZ_OK)
     {
         return false;
     }
-    if (!dvz_visual_set_field(image, "field", field))
+    if (dvz_visual_set_field(image, "field", field) != DVZ_OK)
         return false;
     if (dvz_visual_set_depth_test(image, false) != 0)
         return false;
@@ -464,14 +465,16 @@ static DvzOverlayCard* _add_readout(DvzPanel* panel)
     style.text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.max_text_chars = 160u;
 
-    return dvz_overlay_card(
+    DvzOverlayCard* card = dvz_overlay_card(
         overlay,
         &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = "Lipid Brain Atlas",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_LEFT,
             .offset_px = {30.0f, -46.0f},
-            .style = &style,
         });
+    if (card == NULL || dvz_overlay_card_set_style(card, &style) != 0)
+        return NULL;
+    return card;
 }
 
 

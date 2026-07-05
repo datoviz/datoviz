@@ -167,8 +167,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* host_view = dvz_view_glfw(app, host_figure, HOST_WIDTH, HOST_HEIGHT, "gui_viewport");
-    EXAMPLE_CHECK(host_view != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* host_view = dvz_view_window(app, host_figure, HOST_WIDTH, HOST_HEIGHT, "gui_viewport");
+    EXAMPLE_CHECK(host_view != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzGui* gui = dvz_view_gui(host_view, NULL);
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");

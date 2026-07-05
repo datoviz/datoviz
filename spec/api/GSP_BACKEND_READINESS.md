@@ -360,8 +360,8 @@ The current top-level facade already exposes this C-shaped convenience:
 dvz.dvz_visual_set_data_range(
     visual,
     "position",
-    positions_chunk,
     first_item,
+    positions_chunk,
 )
 ```
 

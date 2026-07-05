@@ -145,15 +145,15 @@ DVZ_EXPORT DvzBars* dvz_bars(DvzPanel* panel, const DvzBarsDesc* desc);
  * Arrays are copied into scene-owned storage.
  *
  * @param bars the bars object
- * @param count number of bars
  * @param starts interval start values
  * @param ends interval end values
  * @param values bar terminal values
+ * @param count number of bars
  * @return 0 on success, -1 on validation/allocation error
  */
 DVZ_EXPORT DvzResult dvz_bars_set_intervals(
-    DvzBars* bars, uint32_t count, const double* starts, const double* ends,
-    const double* values);
+    DvzBars* bars, const double* starts, const double* ends, const double* values,
+    uint32_t count);
 
 
 /**
@@ -198,14 +198,14 @@ DVZ_EXPORT DvzBand* dvz_band(DvzPanel* panel, const DvzBandDesc* desc);
  * gaps.
  *
  * @param band the band object
- * @param count number of samples
  * @param x X coordinates
  * @param lower lower Y coordinates
  * @param upper upper Y coordinates
+ * @param count number of samples
  * @return 0 on success, -1 on validation/allocation error
  */
 DVZ_EXPORT DvzResult dvz_band_set_bounds(
-    DvzBand* band, uint32_t count, const double* x, const double* lower, const double* upper);
+    DvzBand* band, const double* x, const double* lower, const double* upper, uint32_t count);
 
 
 /**
@@ -215,13 +215,13 @@ DVZ_EXPORT DvzResult dvz_band_set_bounds(
  * `0.5 * (lower + upper)`. Arrays are copied into scene-owned storage. NaN values split the line.
  *
  * @param band the band object
- * @param count number of samples
  * @param x X coordinates
  * @param y Y coordinates
+ * @param count number of samples
  * @return 0 on success, -1 on validation/allocation error
  */
 DVZ_EXPORT DvzResult
-dvz_band_set_center(DvzBand* band, uint32_t count, const double* x, const double* y);
+dvz_band_set_center(DvzBand* band, const double* x, const double* y, uint32_t count);
 
 
 /**

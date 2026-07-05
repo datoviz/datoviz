@@ -78,8 +78,9 @@ int main(int argc, char** argv)
     rc = dvz_visual_set_data(visual, "texcoords", texcoords, 4);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(texcoords) failed");
 
-    rc = dvz_visual_set_texture_rgba8(visual, (const uint8_t*)pixels, 2, 2, sizeof(pixels));
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_texture_rgba8() failed");
+    EXAMPLE_CHECK(
+        example_visual_set_rgba8_field(scene, visual, "field", (const uint8_t*)pixels, 2, 2, NULL),
+        "example_visual_set_rgba8_field() failed");
 
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");

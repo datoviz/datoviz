@@ -119,10 +119,10 @@ static DvzSampledField* _field(DvzScene* scene, VolumeOcclusionState* state)
                    .width = FIELD_SIZE, .height = FIELD_SIZE, .depth = FIELD_SIZE});
     if (field == NULL)
         return NULL;
-    if (!dvz_sampled_field_set_data(
+    if (dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){
                        DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = state->voxels,
-                       .bytes_per_row = FIELD_SIZE, .rows_per_image = FIELD_SIZE}))
+                       .bytes_per_row = FIELD_SIZE, .rows_per_image = FIELD_SIZE}) != DVZ_OK)
         return NULL;
     return field;
 }
@@ -229,9 +229,9 @@ static bool _add_volume_pair(
     DvzVisual* slice = dvz_volume(scene, 0);
     if (volume == NULL || slice == NULL)
         return false;
-    if (!dvz_visual_set_field(volume, "field", field))
+    if (dvz_visual_set_field(volume, "field", field) != DVZ_OK)
         return false;
-    if (!dvz_visual_set_field(slice, "field", field))
+    if (dvz_visual_set_field(slice, "field", field) != DVZ_OK)
         return false;
     if (!_configure_volume(scene, volume, DVZ_VOLUME_RENDER_COMPOSITE))
         return false;
@@ -295,11 +295,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
     if (grid == NULL)
         goto error;
-    if (!dvz_grid_set_margins(
+    if (dvz_grid_set_margins(
             grid, &(DvzPanelReserve){
-                      .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}))
+                      .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}) != DVZ_OK)
         goto error;
-    if (!dvz_grid_set_gutter(grid, 30.0f, 0.0f))
+    if (dvz_grid_set_gutter(grid, 30.0f, 0.0f) != DVZ_OK)
         goto error;
 
     DvzPanel* plain = dvz_grid_panel(grid, 0, 0);

@@ -42,24 +42,16 @@ DvzFontDefaults dvz_font_defaults(void)
 {
     DvzFontDefaults defaults = {
         DVZ_STRUCT_INIT_FIELDS(DvzFontDefaults),
-        .sans =
-            {
-                DVZ_STRUCT_INIT_FIELDS(DvzFontDesc),
-                .path = NULL,
-                .family = "Roboto",
-                .style = "Regular",
-                .face_index = 0,
-                .font_flags = 0,
-            },
-        .mono =
-            {
-                DVZ_STRUCT_INIT_FIELDS(DvzFontDesc),
-                .path = NULL,
-                .family = "Roboto Mono",
-                .style = "Regular",
-                .face_index = 0,
-                .font_flags = 0,
-            },
+        .sans_path = NULL,
+        .sans_family = "Roboto",
+        .sans_style = "Regular",
+        .sans_face_index = 0,
+        .sans_font_flags = 0,
+        .mono_path = NULL,
+        .mono_family = "Roboto Mono",
+        .mono_style = "Regular",
+        .mono_face_index = 0,
+        .mono_font_flags = 0,
         .ui_size_px = 16.0f,
         .mono_size_px = 16.0f,
         .text_size_px = 14.0f,

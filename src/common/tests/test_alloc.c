@@ -46,6 +46,7 @@ int test_alloc_basic(TstContext* suite, const TstCase* tstitem)
         buffer[i] = (uint8_t)i;
     dvz_memory_free(buffer);
     dvz_memory_free(NULL);
+    AT(dvz_error_set_callback(NULL, NULL) == DVZ_OK);
 
     // calloc zero initialisation and realloc growth
     uint32_t* values = (uint32_t*)dvz_calloc(4, sizeof(uint32_t));

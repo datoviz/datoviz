@@ -1,6 +1,6 @@
 # Handoff: Microbubble showcase example using retained visual item ranges
 
-**Target branch:** `v0.4-dev`, after the retained visual item-range slice is merged.
+**Target branch:** `v0.4-dev`, after the completed `api/pre-rc-cleanup` branch is merged.
 
 **Primary goal:** implement a Datoviz C showcase that renders animated 3D microbubble tracks efficiently with retained GPU data and per-frame visual item-range updates, without custom shaders and without adding domain-specific concepts to Datoviz core.
 
@@ -72,8 +72,8 @@ The Python preparation layer owns all domain interpretation.
 The retained visual item-range slice exists and is tested for `point`:
 
 ```c
-int  dvz_visual_set_item_range(DvzVisual* visual, uint32_t first_item, uint32_t item_count);
-void dvz_visual_clear_item_range(DvzVisual* visual);
+DvzResult dvz_visual_set_item_range(DvzVisual* visual, uint32_t first_item, uint32_t item_count);
+DvzResult dvz_visual_clear_item_range(DvzVisual* visual);
 bool dvz_visual_get_item_range(const DvzVisual* visual, DvzItemRange* out);
 ```
 

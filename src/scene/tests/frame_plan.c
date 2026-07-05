@@ -104,15 +104,15 @@ int test_scene_capabilities_diagnostics(TstContext* suite, const TstCase* item)
     DvzScene* scene = dvz_scene();
     ANN(scene);
     caps.max_texture_dimension_2d = 2048;
-    dvz_scene_set_capabilities(scene, &caps);
+    AT(dvz_scene_set_capabilities(scene, &caps) == DVZ_OK);
     AT(scene->caps.max_texture_dimension_2d == 2048);
     invalid = dvz_capability_snapshot();
     invalid.max_texture_dimension_2d = 8192;
     invalid.struct_size = 0;
     AT_EXPECTED_ERROR_STRICT(
         suite,
-        (dvz_scene_set_capabilities(scene, &invalid),
-         scene->caps.max_texture_dimension_2d == 2048));
+        dvz_scene_set_capabilities(scene, &invalid) == DVZ_ERROR &&
+            scene->caps.max_texture_dimension_2d == 2048);
     dvz_scene_destroy(scene);
 
     DvzDiagnosticReport report = {0};

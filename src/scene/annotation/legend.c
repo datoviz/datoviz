@@ -845,22 +845,22 @@ void dvz_legend_destroy(DvzLegend* legend)
  *
  * @param legend the legend
  * @param desc layout descriptor
- * @return true when the layout was accepted
+ * @return DVZ_OK when the layout was accepted, DVZ_ERROR on error
  */
-bool dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* desc)
+DvzResult dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* desc)
 {
     ANN(legend);
     if (desc == NULL)
-        return false;
+        return DVZ_ERROR;
     if (!_legend_desc_validate(desc))
-        return false;
+        return DVZ_ERROR;
     DvzLegendPlacementMode placement_mode = desc->placement_mode;
     DvzSceneAnchor anchor =
         desc->anchor != DVZ_SCENE_ANCHOR_NONE ? desc->anchor : DVZ_SCENE_ANCHOR_PANEL_RIGHT;
     if (placement_mode == DVZ_LEGEND_PLACEMENT_ATTACHED && !_legend_anchor_supported(anchor))
     {
         log_error("attached legend anchor must be a panel edge");
-        return false;
+        return DVZ_ERROR;
     }
     legend->placement_mode = placement_mode;
     legend->anchor = anchor;
@@ -880,7 +880,7 @@ bool dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* desc)
         dvz_strlcpy(legend->title, desc->title, sizeof(legend->title));
     _legend_apply_auto_reserve(legend);
     _scene_mark_legend_dirty(legend);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -890,14 +890,15 @@ bool dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* desc)
  * @param legend the legend
  * @param title the title, or NULL to clear
  */
-void dvz_legend_set_title(DvzLegend* legend, const char* title)
+DvzResult dvz_legend_set_title(DvzLegend* legend, const char* title)
 {
     ANN(legend);
     const char* src = title != NULL ? title : "";
     if (strcmp(legend->title, src) == 0)
-        return;
+        return DVZ_OK;
     dvz_strlcpy(legend->title, src, sizeof(legend->title));
     _scene_mark_legend_dirty(legend);
+    return DVZ_OK;
 }
 
 
@@ -906,9 +907,9 @@ void dvz_legend_set_title(DvzLegend* legend, const char* title)
  *
  * @param legend the legend
  * @param id category id to highlight
- * @return true when the highlight state was accepted
+ * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */
-bool dvz_legend_set_highlight(DvzLegend* legend, DvzCategoryId id)
+DvzResult dvz_legend_set_highlight(DvzLegend* legend, DvzCategoryId id)
 {
     return dvz_legend_set_highlights(legend, &id, 1);
 }
@@ -918,19 +919,19 @@ bool dvz_legend_set_highlight(DvzLegend* legend, DvzCategoryId id)
  * Clear all highlighted categorical legend entries.
  *
  * @param legend the legend
- * @return true when the highlight state was accepted
+ * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */
-bool dvz_legend_clear_highlight(DvzLegend* legend)
+DvzResult dvz_legend_clear_highlight(DvzLegend* legend)
 {
     ANN(legend);
     if (legend->highlight_count == 0)
-        return true;
+        return DVZ_OK;
     dvz_memset(
         legend->highlighted_ids, sizeof(legend->highlighted_ids), 0,
         sizeof(legend->highlighted_ids));
     legend->highlight_count = 0;
     _scene_mark_legend_dirty(legend);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -940,21 +941,21 @@ bool dvz_legend_clear_highlight(DvzLegend* legend)
  * @param legend the legend
  * @param ids category ids to highlight
  * @param count number of highlighted category ids
- * @return true when the highlight state was accepted
+ * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */
-bool dvz_legend_set_highlights(DvzLegend* legend, const DvzCategoryId* ids, uint32_t count)
+DvzResult dvz_legend_set_highlights(DvzLegend* legend, const DvzCategoryId* ids, uint32_t count)
 {
     ANN(legend);
     if (count > DVZ_SCENE_MAX_SCALE_CATEGORIES)
     {
         log_error("too many legend highlights (%" PRIu32 " > %u)", count,
                   DVZ_SCENE_MAX_SCALE_CATEGORIES);
-        return false;
+        return DVZ_ERROR;
     }
     if (count > 0 && ids == NULL)
     {
         log_error("legend highlight ids are required when count is nonzero");
-        return false;
+        return DVZ_ERROR;
     }
 
     if (legend->highlight_count == count)
@@ -969,7 +970,7 @@ bool dvz_legend_set_highlights(DvzLegend* legend, const DvzCategoryId* ids, uint
             }
         }
         if (same)
-            return true;
+            return DVZ_OK;
     }
 
     dvz_memset(
@@ -981,7 +982,7 @@ bool dvz_legend_set_highlights(DvzLegend* legend, const DvzCategoryId* ids, uint
             count * sizeof(DvzCategoryId));
     legend->highlight_count = count;
     _scene_mark_legend_dirty(legend);
-    return true;
+    return DVZ_OK;
 }
 
 

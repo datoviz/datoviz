@@ -291,7 +291,7 @@ bool example_graphite_cyan_apply_axis_style(
 {
     ANN(axis);
     DvzAxisStyle style = example_graphite_cyan_axis_style(vertical, options);
-    return dvz_axis_set_style(axis, &style);
+    return dvz_axis_set_style(axis, &style) == DVZ_OK;
 }
 
 

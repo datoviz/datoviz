@@ -196,8 +196,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "Datoviz DVZR replay");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed");
+    DvzView* win = dvz_view_window(app, figure, WIDTH, HEIGHT, "Datoviz DVZR replay");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed");
 
     if (dvz_view_replay_start(win, args.path) != 0)
     {

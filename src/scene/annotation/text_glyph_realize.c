@@ -595,7 +595,7 @@ bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
             {.attr_name = "angle", .data = angles, .item_count = vertex_count},
         };
         if (dvz_visual_set_data_many(text->visual, updates, 5) != 0 ||
-            !dvz_visual_set_field(text->visual, "field", atlas))
+            dvz_visual_set_field(text->visual, "field", atlas) != DVZ_OK)
         {
             ok = false;
         }
@@ -1230,7 +1230,8 @@ bool _text_visual_prepare(
             {.attr_name = "angle", .data = glyph_angles, .item_count = upload_vertex_count},
         };
         ok = dvz_visual_set_data_many(_visual_family_state(visual)->text.glyph_visual, updates, 5) == 0 &&
-             dvz_visual_set_field(_visual_family_state(visual)->text.glyph_visual, "field", atlas);
+             dvz_visual_set_field(_visual_family_state(visual)->text.glyph_visual, "field", atlas) ==
+                 DVZ_OK;
     }
     if (ok)
     {

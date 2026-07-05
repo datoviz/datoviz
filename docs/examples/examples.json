@@ -2,11 +2,11 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 109,
+  "count": 110,
   "categories": {
     "advanced": 3,
     "composite": 2,
-    "feature": 68,
+    "feature": 69,
     "runtime": 5,
     "showcase": 15,
     "start": 1,
@@ -16,11 +16,11 @@
     "diagnostic": 1,
     "experimental": 14,
     "prototype": 3,
-    "supported": 91
+    "supported": 92
   },
   "agent_copy_safe": {
     "false": 28,
-    "true": 81
+    "true": 82
   },
   "examples": [
     {
@@ -274,6 +274,27 @@
         "kind": "synthetic"
       },
       "primary_feature": "controller-arcball"
+    },
+    {
+      "id": "feature_camera_manual",
+      "title": "Manual Camera",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/camera_manual.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/camera_manual.c",
+      "page": "gallery/features/feature_camera_manual.md",
+      "summary": "explicit perspective-camera setup with eye, target, up, and clip planes.",
+      "validation": "smoke+interaction+screenshot",
+      "build_command": "just example-c features/camera_manual",
+      "smoke_command": "./build/examples/c/features/camera_manual --png",
+      "agent_copy_safe": true,
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "primary_feature": "camera-manual"
     },
     {
       "id": "feature_orientation_gizmo",

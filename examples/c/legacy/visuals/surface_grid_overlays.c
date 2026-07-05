@@ -6,7 +6,7 @@
 
 /* surface_grid_overlays - generated mesh with segment-based wireframe and contour overlays.
  *
- * Opens a GLFW window showing a lit structured surface generated with `dvz_geom_surface_grid()`.
+ * Opens a GLFW window showing a lit structured surface generated with `dvz_geometry_surface_grid()`.
  * The wireframe and isoline overlays are derived with CPU-side geom helpers, then rendered as
  * ordinary segment visuals. This keeps mesh geometry, overlay derivation, and stroke rendering
  * separated in the v0.4 scene path.
@@ -146,7 +146,7 @@ static void _surface_data(double* heights, DvzColor* colors, double* out_min, do
     const double span = zmax > zmin ? zmax - zmin : 1.0;
     for (uint32_t i = 0; i < SURFACE_ROWS * SURFACE_COLS; i++)
     {
-        const double t = CLIP((heights[i] - zmin) / span, 0.0, 1.0);
+        const double t = DVZ_CLIP((heights[i] - zmin) / span, 0.0, 1.0);
         colors[i] = dvz_color_rgb(
             (uint8_t)(34.0 + 206.0 * t),
             (uint8_t)(75.0 + 150.0 * (1.0 - fabs(2.0 * t - 1.0))),
@@ -482,7 +482,7 @@ static bool _state_rebuild_geometry(SurfaceOverlayState* state)
         .height_axis = {0.0, 0.0, 1.0},
         .height_scale = state->height_scale,
     };
-    DvzGeometry* geometry = dvz_geom_surface_grid(&desc);
+    DvzGeometry* geometry = dvz_geometry_surface_grid(&desc);
     if (geometry == NULL)
         return false;
 
@@ -740,7 +740,7 @@ int main(int argc, char** argv)
 
     app = dvz_app(scene);
     DvzView* win =
-        app != NULL ? dvz_view_glfw(app, figure, WIDTH, HEIGHT, "surface grid overlays") : NULL;
+        app != NULL ? dvz_view_window(app, figure, WIDTH, HEIGHT, "surface grid overlays") : NULL;
     EXAMPLE_CHECK(app != NULL && win != NULL, "app/window setup failed");
 
     state.arcball = dvz_view_arcball(win, state.panel, NULL);

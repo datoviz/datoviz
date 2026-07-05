@@ -192,7 +192,7 @@ Custom ladders still use the explicit ladder API.
 ```c
 DvzUnitLadder* dvz_unit_ladder_create(DvzScene* scene, const char* canonical_unit);
 int dvz_unit_ladder_add(DvzUnitLadder* ladder, double factor, const char* label);
-void dvz_unit_ladder_clear(DvzUnitLadder* ladder);
+DvzResult dvz_unit_ladder_clear(DvzUnitLadder* ladder);
 ```
 
 Rules:
@@ -202,6 +202,7 @@ Rules:
 3. entries are sorted by factor before formatting, regardless of insertion order.
 4. duplicate labels or duplicate factors should replace the existing entry or fail with a clear
    diagnostic; choose one policy and test it.
+5. builtin ladders reject custom-entry mutation calls.
 
 
 ### Units Object
@@ -262,17 +263,17 @@ absolute UTC time.
 Long-term retained-object API:
 
 ```c
-DvzScaleBar* dvz_scalebar(DvzPanel* panel);
-int dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim);
-int dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor);
-int dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units);
-int dvz_scalebar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units);
+DvzScaleBar* dvz_scale_bar(DvzPanel* panel);
+int dvz_scale_bar_set_dimension(DvzScaleBar* scalebar, DvzDim dim);
+int dvz_scale_bar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor);
+int dvz_scale_bar_set_units(DvzScaleBar* scalebar, DvzUnits* units);
+int dvz_scale_bar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units);
 ```
 
 Existing descriptor bridge:
 
 ```c
-DvzAnnotation* dvz_scalebar(DvzPanel* panel, const DvzScaleBarDesc* desc);
+DvzAnnotation* dvz_scale_bar(DvzPanel* panel, const DvzScaleBarDesc* desc);
 ```
 
 The descriptor path should remain available in v0.4. Internally, `.unit + .data_to_unit` should be
@@ -327,8 +328,8 @@ time zones must emit clear diagnostics.
 DvzUnits* length_units =
     dvz_units_builtin(scene, DVZ_UNIT_LADDER_METRIC_LENGTH, 1e-3); // data mm -> canonical m
 
-DvzScaleBar* sb = dvz_scalebar(panel, NULL);
-dvz_scalebar_set_units(sb, length_units);
+DvzScaleBar* sb = dvz_scale_bar(panel, NULL);
+dvz_scale_bar_set_units(sb, length_units);
 ```
 
 
@@ -344,8 +345,8 @@ dvz_units_set_ladder(time_units, duration);
 DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
 dvz_axis_set_units(x_axis, time_units);
 
-DvzScaleBar* sb = dvz_scalebar(panel, NULL);
-dvz_scalebar_set_units(sb, time_units);
+DvzScaleBar* sb = dvz_scale_bar(panel, NULL);
+dvz_scale_bar_set_units(sb, time_units);
 ```
 
 
@@ -378,7 +379,7 @@ DvzUnits* duration_units = dvz_units_create(scene);
 dvz_units_set_data_to_canonical(duration_units, 1.0);
 dvz_units_set_ladder(duration_units, duration);
 
-dvz_scalebar_set_units(sb, duration_units);
+dvz_scale_bar_set_units(sb, duration_units);
 ```
 
 
@@ -475,7 +476,7 @@ bool _scene_units_format(
    only way to express unit systems.
 3. Public examples should prefer retained objects and setters over deeply nested descriptor
    literals.
-4. Descriptor constructors such as `dvz_scalebar_desc()` remain appropriate for ABI-oriented C
+4. Descriptor constructors such as `dvz_scale_bar_desc()` remain appropriate for ABI-oriented C
    callers, tests, and generated bindings.
 
 
@@ -508,6 +509,6 @@ Preferred v0.4 decisions:
    Fractional seconds should be formatted by Datoviz because C `strftime()` does not standardize a
    portable `%f` directive.
 6. Land the retained-object `DvzScaleBar*` API with the units work if implementation time permits.
-   Keep `dvz_scalebar()` as the descriptor bridge for ABI-oriented C callers, tests, and
+   Keep `dvz_scale_bar()` as the descriptor bridge for ABI-oriented C callers, tests, and
    generated bindings. If implementation time gets tight, the retained API may bridge internally to
    `DvzAnnotation*`, but public teaching examples should use the retained setter path.

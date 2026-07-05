@@ -72,7 +72,6 @@ typedef struct DvzOverlayCardDesc
     DvzOverlayCardPlacement placement;
     float anchor_px[2];
     float offset_px[2];
-    const DvzOverlayCardStyle* style;
     uint32_t card_flags;
 } DvzOverlayCardDesc;
 
@@ -168,8 +167,9 @@ DVZ_EXPORT DvzResult dvz_overlay_card_set_style(
  *
  * @param card the card
  * @param text the text, or NULL to clear it
+ * @return 0 on success, -1 on error
  */
-DVZ_EXPORT void dvz_overlay_card_set_text(DvzOverlayCard* card, const char* text);
+DVZ_EXPORT DvzResult dvz_overlay_card_set_text(DvzOverlayCard* card, const char* text);
 
 
 /**
@@ -187,8 +187,9 @@ DVZ_EXPORT DvzResult dvz_overlay_card_set_rich_text(
  * Clear rich text content and return the card to the plain GPU text path.
  *
  * @param card the card
+ * @return 0 on success, -1 on error
  */
-DVZ_EXPORT void dvz_overlay_card_clear_rich_text(DvzOverlayCard* card);
+DVZ_EXPORT DvzResult dvz_overlay_card_clear_rich_text(DvzOverlayCard* card);
 
 
 /**
@@ -197,8 +198,9 @@ DVZ_EXPORT void dvz_overlay_card_clear_rich_text(DvzOverlayCard* card);
  * @param card the card
  * @param anchor_px panel-local anchor in logical pixels, or NULL to keep it unchanged
  * @param offset_px offset from the anchor in logical pixels, or NULL to keep it unchanged
+ * @return 0 on success, -1 on error
  */
-DVZ_EXPORT void dvz_overlay_card_set_layout(
+DVZ_EXPORT DvzResult dvz_overlay_card_set_layout(
     DvzOverlayCard* card, const float anchor_px[2], const float offset_px[2]);
 
 
@@ -208,8 +210,9 @@ DVZ_EXPORT void dvz_overlay_card_set_layout(
  * @param card the card
  * @param placement semantic placement mode
  * @param offset_px inward/relative offset in logical pixels, or NULL to keep it unchanged
+ * @return 0 on success, -1 on error
  */
-DVZ_EXPORT void dvz_overlay_card_set_placement(
+DVZ_EXPORT DvzResult dvz_overlay_card_set_placement(
     DvzOverlayCard* card, DvzOverlayCardPlacement placement, const float offset_px[2]);
 
 
@@ -218,7 +221,8 @@ DVZ_EXPORT void dvz_overlay_card_set_placement(
  *
  * @param card the card
  * @param visible whether the card should be visible
+ * @return 0 on success, -1 on error
  */
-DVZ_EXPORT void dvz_overlay_card_set_visible(DvzOverlayCard* card, bool visible);
+DVZ_EXPORT DvzResult dvz_overlay_card_set_visible(DvzOverlayCard* card, bool visible);
 
 EXTERN_C_OFF

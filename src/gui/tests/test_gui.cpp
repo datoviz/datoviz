@@ -346,7 +346,7 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
 
     DvzView* source_win = dvz_view_offscreen(app, source_figure, 160, 120);
     DvzView* host_win =
-        dvz_view_glfw(app, host_figure, 640, 480, "test_gui_viewport_resize_hidden_smoke");
+        dvz_view_window(app, host_figure, 640, 480, "test_gui_viewport_resize_hidden_smoke");
     if (source_win == NULL || host_win == NULL)
     {
         log_warn("test_gui_viewport_resize_hidden_smoke skipped: view creation failed");
@@ -474,12 +474,12 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
     ANN(explicit_figure);
 
     DvzAppConfig app_config = dvz_app_config();
-    app_config.font_defaults.sans.family = "App Sans";
-    app_config.font_defaults.sans.style = "Book";
-    app_config.font_defaults.mono.family = "App Mono";
-    app_config.font_defaults.ui_size_px = 19.0f;
-    app_config.font_defaults.mono_size_px = 17.0f;
-    app_config.font_defaults.text_size_px = 23.0f;
+    app_config.font_sans_family = "App Sans";
+    app_config.font_sans_style = "Book";
+    app_config.font_mono_family = "App Mono";
+    app_config.font_ui_size_px = 19.0f;
+    app_config.font_mono_size_px = 17.0f;
+    app_config.font_text_size_px = 23.0f;
 
     DvzApp* null_app = dvz_app_with_config(null_scene, &app_config);
     DvzApp* explicit_app = dvz_app_with_config(explicit_scene, &app_config);
@@ -497,9 +497,9 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
     }
 
     DvzView* null_win =
-        dvz_view_glfw(null_app, null_figure, 320, 240, "test_gui_null_font_defaults");
+        dvz_view_window(null_app, null_figure, 320, 240, "test_gui_null_font_defaults");
     DvzView* explicit_win =
-        dvz_view_glfw(explicit_app, explicit_figure, 320, 240, "test_gui_explicit_font_defaults");
+        dvz_view_window(explicit_app, explicit_figure, 320, 240, "test_gui_explicit_font_defaults");
     if (null_win == NULL || explicit_win == NULL)
     {
         log_warn("test_gui_config_inherits_app_font_defaults skipped: view creation failed");
@@ -527,12 +527,12 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
 
     DvzFontDefaults null_fonts = _dvz_gui_font_defaults(null_gui);
     DvzFontDefaults explicit_fonts = _dvz_gui_font_defaults(explicit_gui);
-    AT(strcmp(null_fonts.sans.family, "App Sans") == 0);
-    AT(strcmp(explicit_fonts.sans.family, "App Sans") == 0);
-    AT(strcmp(null_fonts.sans.style, "Book") == 0);
-    AT(strcmp(explicit_fonts.sans.style, "Book") == 0);
-    AT(strcmp(null_fonts.mono.family, "App Mono") == 0);
-    AT(strcmp(explicit_fonts.mono.family, "App Mono") == 0);
+    AT(strcmp(null_fonts.sans_family, "App Sans") == 0);
+    AT(strcmp(explicit_fonts.sans_family, "App Sans") == 0);
+    AT(strcmp(null_fonts.sans_style, "Book") == 0);
+    AT(strcmp(explicit_fonts.sans_style, "Book") == 0);
+    AT(strcmp(null_fonts.mono_family, "App Mono") == 0);
+    AT(strcmp(explicit_fonts.mono_family, "App Mono") == 0);
     AC(null_fonts.ui_size_px, 19.0f, 1e-6f);
     AC(explicit_fonts.ui_size_px, 19.0f, 1e-6f);
     AC(null_fonts.mono_size_px, 17.0f, 1e-6f);
@@ -586,7 +586,7 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     }
 
     DvzView* host_win =
-        dvz_view_glfw(app, host_figure, 640, 480, "test_gui_multi_viewport_input_routers");
+        dvz_view_window(app, host_figure, 640, 480, "test_gui_multi_viewport_input_routers");
     if (host_win == NULL)
     {
         log_warn("test_gui_multi_viewport_input_routers skipped: GLFW window creation failed");

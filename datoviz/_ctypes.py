@@ -465,8 +465,8 @@ DVZ_CAMERA_UP_TRACK = DvzCameraUpMode.DVZ_CAMERA_UP_TRACK
 class DvzCanvasFlags(CtypesEnum):
     DVZ_CANVAS_FLAGS_NONE = 0
     DVZ_CANVAS_FLAGS_IMGUI = 1
-    DVZ_CANVAS_FLAGS_FPS = 3
-    DVZ_CANVAS_FLAGS_MONITOR = 5
+    DVZ_CANVAS_FLAGS_FPS = 2
+    DVZ_CANVAS_FLAGS_MONITOR = 4
     DVZ_CANVAS_FLAGS_FULLSCREEN = 8
     DVZ_CANVAS_FLAGS_VSYNC = 16
     DVZ_CANVAS_FLAGS_PICK = 32
@@ -2111,102 +2111,6 @@ DVZ_MATERIAL_MODEL_PHONG = DvzMaterialModel.DVZ_MATERIAL_MODEL_PHONG
 DVZ_MATERIAL_MODEL_STANDARD = DvzMaterialModel.DVZ_MATERIAL_MODEL_STANDARD
 
 
-class DvzObjectStatus(CtypesEnum):
-    DVZ_OBJECT_STATUS_NONE = 0
-    DVZ_OBJECT_STATUS_ALLOC = 1
-    DVZ_OBJECT_STATUS_DESTROYED = 2
-    DVZ_OBJECT_STATUS_INIT = 3
-    DVZ_OBJECT_STATUS_CREATED = 4
-    DVZ_OBJECT_STATUS_NEED_RECREATE = 5
-    DVZ_OBJECT_STATUS_NEED_UPDATE = 6
-    DVZ_OBJECT_STATUS_NEED_DESTROY = 7
-    DVZ_OBJECT_STATUS_INACTIVE = 8
-    DVZ_OBJECT_STATUS_INVALID = 9
-
-
-DVZ_OBJECT_STATUS_NONE = DvzObjectStatus.DVZ_OBJECT_STATUS_NONE
-DVZ_OBJECT_STATUS_ALLOC = DvzObjectStatus.DVZ_OBJECT_STATUS_ALLOC
-DVZ_OBJECT_STATUS_DESTROYED = DvzObjectStatus.DVZ_OBJECT_STATUS_DESTROYED
-DVZ_OBJECT_STATUS_INIT = DvzObjectStatus.DVZ_OBJECT_STATUS_INIT
-DVZ_OBJECT_STATUS_CREATED = DvzObjectStatus.DVZ_OBJECT_STATUS_CREATED
-DVZ_OBJECT_STATUS_NEED_RECREATE = DvzObjectStatus.DVZ_OBJECT_STATUS_NEED_RECREATE
-DVZ_OBJECT_STATUS_NEED_UPDATE = DvzObjectStatus.DVZ_OBJECT_STATUS_NEED_UPDATE
-DVZ_OBJECT_STATUS_NEED_DESTROY = DvzObjectStatus.DVZ_OBJECT_STATUS_NEED_DESTROY
-DVZ_OBJECT_STATUS_INACTIVE = DvzObjectStatus.DVZ_OBJECT_STATUS_INACTIVE
-DVZ_OBJECT_STATUS_INVALID = DvzObjectStatus.DVZ_OBJECT_STATUS_INVALID
-
-
-class DvzObjectType(CtypesEnum):
-    DVZ_OBJECT_TYPE_UNDEFINED = 0
-    DVZ_OBJECT_TYPE_INSTANCE = 1
-    DVZ_OBJECT_TYPE_DEVICE = 2
-    DVZ_OBJECT_TYPE_HOST = 3
-    DVZ_OBJECT_TYPE_GPU = 4
-    DVZ_OBJECT_TYPE_WINDOW = 5
-    DVZ_OBJECT_TYPE_GUI_WINDOW = 6
-    DVZ_OBJECT_TYPE_SWAPCHAIN = 7
-    DVZ_OBJECT_TYPE_CANVAS = 8
-    DVZ_OBJECT_TYPE_BOARD = 9
-    DVZ_OBJECT_TYPE_COMMANDS = 10
-    DVZ_OBJECT_TYPE_BUFFER = 11
-    DVZ_OBJECT_TYPE_DAT = 12
-    DVZ_OBJECT_TYPE_TEX = 13
-    DVZ_OBJECT_TYPE_IMAGES = 14
-    DVZ_OBJECT_TYPE_SAMPLER = 15
-    DVZ_OBJECT_TYPE_BINDINGS = 16
-    DVZ_OBJECT_TYPE_COMPUTE = 17
-    DVZ_OBJECT_TYPE_GRAPHICS = 18
-    DVZ_OBJECT_TYPE_SHADER = 19
-    DVZ_OBJECT_TYPE_PIPE = 20
-    DVZ_OBJECT_TYPE_BARRIER = 21
-    DVZ_OBJECT_TYPE_FENCES = 22
-    DVZ_OBJECT_TYPE_SEMAPHORES = 23
-    DVZ_OBJECT_TYPE_RENDERPASS = 24
-    DVZ_OBJECT_TYPE_FRAMEBUFFER = 25
-    DVZ_OBJECT_TYPE_WORKSPACE = 26
-    DVZ_OBJECT_TYPE_PIPELIB = 27
-    DVZ_OBJECT_TYPE_SUBMIT = 28
-    DVZ_OBJECT_TYPE_SCREENCAST = 29
-    DVZ_OBJECT_TYPE_TIMER = 30
-    DVZ_OBJECT_TYPE_ARRAY = 31
-    DVZ_OBJECT_TYPE_CUSTOM = 32
-
-
-DVZ_OBJECT_TYPE_UNDEFINED = DvzObjectType.DVZ_OBJECT_TYPE_UNDEFINED
-DVZ_OBJECT_TYPE_INSTANCE = DvzObjectType.DVZ_OBJECT_TYPE_INSTANCE
-DVZ_OBJECT_TYPE_DEVICE = DvzObjectType.DVZ_OBJECT_TYPE_DEVICE
-DVZ_OBJECT_TYPE_HOST = DvzObjectType.DVZ_OBJECT_TYPE_HOST
-DVZ_OBJECT_TYPE_GPU = DvzObjectType.DVZ_OBJECT_TYPE_GPU
-DVZ_OBJECT_TYPE_WINDOW = DvzObjectType.DVZ_OBJECT_TYPE_WINDOW
-DVZ_OBJECT_TYPE_GUI_WINDOW = DvzObjectType.DVZ_OBJECT_TYPE_GUI_WINDOW
-DVZ_OBJECT_TYPE_SWAPCHAIN = DvzObjectType.DVZ_OBJECT_TYPE_SWAPCHAIN
-DVZ_OBJECT_TYPE_CANVAS = DvzObjectType.DVZ_OBJECT_TYPE_CANVAS
-DVZ_OBJECT_TYPE_BOARD = DvzObjectType.DVZ_OBJECT_TYPE_BOARD
-DVZ_OBJECT_TYPE_COMMANDS = DvzObjectType.DVZ_OBJECT_TYPE_COMMANDS
-DVZ_OBJECT_TYPE_BUFFER = DvzObjectType.DVZ_OBJECT_TYPE_BUFFER
-DVZ_OBJECT_TYPE_DAT = DvzObjectType.DVZ_OBJECT_TYPE_DAT
-DVZ_OBJECT_TYPE_TEX = DvzObjectType.DVZ_OBJECT_TYPE_TEX
-DVZ_OBJECT_TYPE_IMAGES = DvzObjectType.DVZ_OBJECT_TYPE_IMAGES
-DVZ_OBJECT_TYPE_SAMPLER = DvzObjectType.DVZ_OBJECT_TYPE_SAMPLER
-DVZ_OBJECT_TYPE_BINDINGS = DvzObjectType.DVZ_OBJECT_TYPE_BINDINGS
-DVZ_OBJECT_TYPE_COMPUTE = DvzObjectType.DVZ_OBJECT_TYPE_COMPUTE
-DVZ_OBJECT_TYPE_GRAPHICS = DvzObjectType.DVZ_OBJECT_TYPE_GRAPHICS
-DVZ_OBJECT_TYPE_SHADER = DvzObjectType.DVZ_OBJECT_TYPE_SHADER
-DVZ_OBJECT_TYPE_PIPE = DvzObjectType.DVZ_OBJECT_TYPE_PIPE
-DVZ_OBJECT_TYPE_BARRIER = DvzObjectType.DVZ_OBJECT_TYPE_BARRIER
-DVZ_OBJECT_TYPE_FENCES = DvzObjectType.DVZ_OBJECT_TYPE_FENCES
-DVZ_OBJECT_TYPE_SEMAPHORES = DvzObjectType.DVZ_OBJECT_TYPE_SEMAPHORES
-DVZ_OBJECT_TYPE_RENDERPASS = DvzObjectType.DVZ_OBJECT_TYPE_RENDERPASS
-DVZ_OBJECT_TYPE_FRAMEBUFFER = DvzObjectType.DVZ_OBJECT_TYPE_FRAMEBUFFER
-DVZ_OBJECT_TYPE_WORKSPACE = DvzObjectType.DVZ_OBJECT_TYPE_WORKSPACE
-DVZ_OBJECT_TYPE_PIPELIB = DvzObjectType.DVZ_OBJECT_TYPE_PIPELIB
-DVZ_OBJECT_TYPE_SUBMIT = DvzObjectType.DVZ_OBJECT_TYPE_SUBMIT
-DVZ_OBJECT_TYPE_SCREENCAST = DvzObjectType.DVZ_OBJECT_TYPE_SCREENCAST
-DVZ_OBJECT_TYPE_TIMER = DvzObjectType.DVZ_OBJECT_TYPE_TIMER
-DVZ_OBJECT_TYPE_ARRAY = DvzObjectType.DVZ_OBJECT_TYPE_ARRAY
-DVZ_OBJECT_TYPE_CUSTOM = DvzObjectType.DVZ_OBJECT_TYPE_CUSTOM
-
-
 class DvzOverlayCardFlag(CtypesEnum):
     DVZ_OVERLAY_CARD_HIDDEN = 1
 
@@ -2723,15 +2627,11 @@ class DvzSceneClockMode(CtypesEnum):
     DVZ_SCENE_CLOCK_REALTIME = 0
     DVZ_SCENE_CLOCK_FIXED_STEP = 1
     DVZ_SCENE_CLOCK_EXTERNAL = 2
-    DVZ_CLOCK_REALTIME = 0
-    DVZ_CLOCK_OFFLINE = 1
 
 
 DVZ_SCENE_CLOCK_REALTIME = DvzSceneClockMode.DVZ_SCENE_CLOCK_REALTIME
 DVZ_SCENE_CLOCK_FIXED_STEP = DvzSceneClockMode.DVZ_SCENE_CLOCK_FIXED_STEP
 DVZ_SCENE_CLOCK_EXTERNAL = DvzSceneClockMode.DVZ_SCENE_CLOCK_EXTERNAL
-DVZ_CLOCK_REALTIME = DvzSceneClockMode.DVZ_CLOCK_REALTIME
-DVZ_CLOCK_OFFLINE = DvzSceneClockMode.DVZ_CLOCK_OFFLINE
 
 
 class DvzSceneComputeAccess(CtypesEnum):
@@ -3281,12 +3181,12 @@ DVZ_VIDEO_MUX_MP4_POST = DvzVideoMux.DVZ_VIDEO_MUX_MP4_POST
 
 class DvzViewKind(CtypesEnum):
     DVZ_VIEW_OFFSCREEN = 0
-    DVZ_VIEW_GLFW = 1
+    DVZ_VIEW_WINDOW = 1
     DVZ_VIEW_EXTERNAL_SURFACE = 2
 
 
 DVZ_VIEW_OFFSCREEN = DvzViewKind.DVZ_VIEW_OFFSCREEN
-DVZ_VIEW_GLFW = DvzViewKind.DVZ_VIEW_GLFW
+DVZ_VIEW_WINDOW = DvzViewKind.DVZ_VIEW_WINDOW
 DVZ_VIEW_EXTERNAL_SURFACE = DvzViewKind.DVZ_VIEW_EXTERNAL_SURFACE
 
 
@@ -3472,14 +3372,6 @@ class DvzAnnotation(ctypes.Structure):
     pass
 
 
-class DvzTextStyle(ctypes.Structure):
-    pass
-
-
-class DvzTextPlacement(ctypes.Structure):
-    pass
-
-
 class DvzAnnotationDesc(ctypes.Structure):
     pass
 
@@ -3489,14 +3381,6 @@ class DvzApp(ctypes.Structure):
 
 
 class DvzAppCaptureConfig(ctypes.Structure):
-    pass
-
-
-class DvzFontDesc(ctypes.Structure):
-    pass
-
-
-class DvzFontDefaults(ctypes.Structure):
     pass
 
 
@@ -3664,14 +3548,6 @@ class DvzCompute(ctypes.Structure):
     pass
 
 
-class DvzContainer(ctypes.Structure):
-    pass
-
-
-class DvzContainerIterator(ctypes.Structure):
-    pass
-
-
 class DvzController(ctypes.Structure):
     pass
 
@@ -3741,10 +3617,6 @@ class DvzDrp2ExternalBufferDesc(ctypes.Structure):
 
 
 class DvzDrp2PacketInfo(ctypes.Structure):
-    pass
-
-
-class DvzDrp2RawFallback(ctypes.Structure):
     pass
 
 
@@ -3821,6 +3693,14 @@ class DvzFlyDesc(ctypes.Structure):
 
 
 class DvzFont(ctypes.Structure):
+    pass
+
+
+class DvzFontDefaults(ctypes.Structure):
+    pass
+
+
+class DvzFontDesc(ctypes.Structure):
     pass
 
 
@@ -4152,10 +4032,6 @@ class DvzMsaaDesc(ctypes.Structure):
     pass
 
 
-class DvzObject(ctypes.Structure):
-    pass
-
-
 class DvzOrientationGizmo(ctypes.Structure):
     pass
 
@@ -4213,10 +4089,6 @@ class DvzPanelFrameSnapshot(ctypes.Structure):
 
 
 class DvzPanelReserve(ctypes.Structure):
-    pass
-
-
-class DvzPanelView2D(ctypes.Structure):
     pass
 
 
@@ -4296,11 +4168,11 @@ class DvzPolygonDesc(ctypes.Structure):
     pass
 
 
-class DvzPolygonSet(ctypes.Structure):
+class DvzPolygonStyle(ctypes.Structure):
     pass
 
 
-class DvzPolygonStyle(ctypes.Structure):
+class DvzPolygons(ctypes.Structure):
     pass
 
 
@@ -4516,6 +4388,14 @@ class DvzTextLayout(ctypes.Structure):
     pass
 
 
+class DvzTextPlacement(ctypes.Structure):
+    pass
+
+
+class DvzTextStyle(ctypes.Structure):
+    pass
+
+
 class DvzTime(ctypes.Structure):
     pass
 
@@ -4588,11 +4468,11 @@ class DvzView(ctypes.Structure):
     pass
 
 
-class DvzViewSizeDesc(ctypes.Structure):
+class DvzViewDesc(ctypes.Structure):
     pass
 
 
-class DvzViewDesc(ctypes.Structure):
+class DvzViewSizeDesc(ctypes.Structure):
     pass
 
 
@@ -4802,41 +4682,11 @@ DvzAnimTimerDesc._fields_ = [
 ]
 
 
-DvzTextStyle._fields_ = [
-    ('struct_size', ctypes.c_uint32),
-    ('flags', ctypes.c_uint32),
-    ('font', ctypes.POINTER(DvzFont)),
-    ('size_px', ctypes.c_float),
-    ('renderer', ctypes.c_int),
-    ('color', (ctypes.c_uint8 * 4)),
-    ('style_flags', ctypes.c_uint32),
-    ('bold', ctypes.c_bool),
-    ('italic', ctypes.c_bool),
-    ('underline', ctypes.c_bool),
-]
-
-
-DvzTextPlacement._fields_ = [
-    ('struct_size', ctypes.c_uint32),
-    ('flags', ctypes.c_uint32),
-    ('mode', ctypes.c_int),
-    ('anchor', ctypes.c_int),
-    ('position', (ctypes.c_double * 3)),
-    ('offset', (ctypes.c_float * 2)),
-    ('text_anchor', (ctypes.c_float * 2)),
-    ('has_text_anchor', ctypes.c_bool),
-    ('angle', ctypes.c_float),
-    ('depth_test', ctypes.c_bool),
-]
-
-
 DvzAnnotationDesc._fields_ = [
     ('struct_size', ctypes.c_uint32),
     ('flags', ctypes.c_uint32),
     ('kind', ctypes.c_int),
     ('text', ctypes.c_char_p),
-    ('style', DvzTextStyle),
-    ('placement', DvzTextPlacement),
     ('annotation_flags', ctypes.c_uint32),
 ]
 
@@ -4852,28 +4702,6 @@ DvzAppCaptureConfig._fields_ = [
 ]
 
 
-DvzFontDesc._fields_ = [
-    ('struct_size', ctypes.c_uint32),
-    ('flags', ctypes.c_uint32),
-    ('path', ctypes.c_char_p),
-    ('family', ctypes.c_char_p),
-    ('style', ctypes.c_char_p),
-    ('face_index', ctypes.c_uint32),
-    ('font_flags', ctypes.c_uint32),
-]
-
-
-DvzFontDefaults._fields_ = [
-    ('struct_size', ctypes.c_uint32),
-    ('flags', ctypes.c_uint32),
-    ('sans', DvzFontDesc),
-    ('mono', DvzFontDesc),
-    ('ui_size_px', ctypes.c_float),
-    ('mono_size_px', ctypes.c_float),
-    ('text_size_px', ctypes.c_float),
-]
-
-
 DvzAppConfig._fields_ = [
     ('struct_size', ctypes.c_uint32),
     ('flags', ctypes.c_uint32),
@@ -4884,7 +4712,19 @@ DvzAppConfig._fields_ = [
     ('schedule_mode', ctypes.c_int),
     ('exit_policy', ctypes.c_int),
     ('fps_cap', ctypes.c_double),
-    ('font_defaults', DvzFontDefaults),
+    ('font_sans_path', ctypes.c_char_p),
+    ('font_sans_family', ctypes.c_char_p),
+    ('font_sans_style', ctypes.c_char_p),
+    ('font_sans_face_index', ctypes.c_uint32),
+    ('font_sans_font_flags', ctypes.c_uint32),
+    ('font_mono_path', ctypes.c_char_p),
+    ('font_mono_family', ctypes.c_char_p),
+    ('font_mono_style', ctypes.c_char_p),
+    ('font_mono_face_index', ctypes.c_uint32),
+    ('font_mono_font_flags', ctypes.c_uint32),
+    ('font_ui_size_px', ctypes.c_float),
+    ('font_mono_size_px', ctypes.c_float),
+    ('font_text_size_px', ctypes.c_float),
 ]
 
 
@@ -5162,22 +5002,6 @@ DvzColormapStop._fields_ = [
 ]
 
 
-DvzContainer._fields_ = [
-    ('count', ctypes.c_uint32),
-    ('capacity', ctypes.c_uint32),
-    ('type', ctypes.c_int),
-    ('items', ctypes.POINTER(ctypes.POINTER(None))),
-    ('item_size', ctypes.c_size_t),
-]
-
-
-DvzContainerIterator._fields_ = [
-    ('container', ctypes.POINTER(DvzContainer)),
-    ('idx', ctypes.c_uint32),
-    ('item', ctypes.c_void_p),
-]
-
-
 DvzDataDomain._fields_ = [
     ('min', ctypes.c_double),
     ('max', ctypes.c_double),
@@ -5244,12 +5068,6 @@ DvzDrp2PacketInfo._fields_ = [
     ('arena_size', ctypes.c_uint64),
     ('resource_version', ctypes.c_uint64),
     ('frame_index', ctypes.c_uint64),
-]
-
-
-DvzDrp2RawFallback._fields_ = [
-    ('command_index', ctypes.c_uint32),
-    ('command_type', ctypes.c_int),
 ]
 
 
@@ -5372,6 +5190,36 @@ DvzFlyDesc._fields_ = [
     ('slow_multiplier', ctypes.c_float),
     ('look_speed', ctypes.c_float),
     ('wheel_speed', ctypes.c_float),
+]
+
+
+DvzFontDefaults._fields_ = [
+    ('struct_size', ctypes.c_uint32),
+    ('flags', ctypes.c_uint32),
+    ('sans_path', ctypes.c_char_p),
+    ('sans_family', ctypes.c_char_p),
+    ('sans_style', ctypes.c_char_p),
+    ('sans_face_index', ctypes.c_uint32),
+    ('sans_font_flags', ctypes.c_uint32),
+    ('mono_path', ctypes.c_char_p),
+    ('mono_family', ctypes.c_char_p),
+    ('mono_style', ctypes.c_char_p),
+    ('mono_face_index', ctypes.c_uint32),
+    ('mono_font_flags', ctypes.c_uint32),
+    ('ui_size_px', ctypes.c_float),
+    ('mono_size_px', ctypes.c_float),
+    ('text_size_px', ctypes.c_float),
+]
+
+
+DvzFontDesc._fields_ = [
+    ('struct_size', ctypes.c_uint32),
+    ('flags', ctypes.c_uint32),
+    ('path', ctypes.c_char_p),
+    ('family', ctypes.c_char_p),
+    ('style', ctypes.c_char_p),
+    ('face_index', ctypes.c_uint32),
+    ('font_flags', ctypes.c_uint32),
 ]
 
 
@@ -5668,7 +5516,8 @@ DvzGraphEdgeStyle._fields_ = [
     ('struct_size', ctypes.c_uint32),
     ('flags', ctypes.c_uint32),
     ('mode', ctypes.c_int),
-    ('tessellation', DvzBezierTessellationDesc),
+    ('tessellation_segment_count', ctypes.c_uint32),
+    ('tessellation_tolerance', ctypes.c_double),
     ('start_cap', ctypes.c_int),
     ('end_cap', ctypes.c_int),
     ('join', ctypes.c_int),
@@ -5922,8 +5771,6 @@ DvzLabelDesc._fields_ = [
     ('struct_size', ctypes.c_uint32),
     ('flags', ctypes.c_uint32),
     ('text', ctypes.c_char_p),
-    ('style', DvzTextStyle),
-    ('placement', DvzTextPlacement),
     ('label_flags', ctypes.c_uint32),
 ]
 
@@ -5989,15 +5836,6 @@ DvzMsaaDesc._fields_ = [
 ]
 
 
-DvzObject._fields_ = [
-    ('type', ctypes.c_int),
-    ('status', ctypes.c_int),
-    ('request', ctypes.c_int),
-    ('group_id', ctypes.c_uint32),
-    ('id', ctypes.c_uint64),
-]
-
-
 DvzOrientationGizmoDesc._fields_ = [
     ('struct_size', ctypes.c_uint32),
     ('flags', ctypes.c_uint32),
@@ -6029,9 +5867,6 @@ DvzPanelAxes2DDesc._fields_ = [
     ('flags', ctypes.c_uint32),
     ('x_label', ctypes.c_char_p),
     ('y_label', ctypes.c_char_p),
-    ('tick_policy', DvzAxisTickPolicy),
-    ('x_style', DvzAxisStyle),
-    ('y_style', DvzAxisStyle),
 ]
 
 
@@ -6061,15 +5896,6 @@ DvzPanelReserve._fields_ = [
 ]
 
 
-DvzPanelView2D._fields_ = [
-    ('struct_size', ctypes.c_uint32),
-    ('flags', ctypes.c_uint32),
-    ('mode', ctypes.c_int),
-    ('aspect', ctypes.c_int),
-    ('padding', ctypes.c_double),
-]
-
-
 DvzPanelView2DDesc._fields_ = [
     ('struct_size', ctypes.c_uint32),
     ('flags', ctypes.c_uint32),
@@ -6086,7 +5912,8 @@ DvzPanelView2DDesc._fields_ = [
 DvzPanelView3DDesc._fields_ = [
     ('struct_size', ctypes.c_uint32),
     ('flags', ctypes.c_uint32),
-    ('camera', DvzCameraDesc),
+    ('view', DvzCameraView),
+    ('projection', DvzCameraProjection),
 ]
 
 
@@ -6258,7 +6085,6 @@ DvzScaleDesc._fields_ = [
     ('kind', ctypes.c_int),
     ('label', ctypes.c_char_p),
     ('unit', ctypes.c_char_p),
-    ('format', DvzFormatDesc),
 ]
 
 
@@ -6318,8 +6144,16 @@ DvzSelectionItem._fields_ = [
 DvzSelectionVisualStyle._fields_ = [
     ('struct_size', ctypes.c_uint32),
     ('flags', ctypes.c_uint32),
-    ('selected', DvzItemStateVisualStyle),
-    ('unselected', DvzItemStateVisualStyle),
+    ('selected_visual_flags', ctypes.c_uint32),
+    ('selected_alpha', ctypes.c_float),
+    ('selected_tint', DvzColor),
+    ('selected_tint_mix', ctypes.c_float),
+    ('selected_scale', ctypes.c_float),
+    ('unselected_visual_flags', ctypes.c_uint32),
+    ('unselected_alpha', ctypes.c_float),
+    ('unselected_tint', DvzColor),
+    ('unselected_tint_mix', ctypes.c_float),
+    ('unselected_scale', ctypes.c_float),
 ]
 
 
@@ -6443,6 +6277,34 @@ DvzTextLayout._fields_ = [
     ('line_gap_px', ctypes.c_float),
     ('wrap_width_px', ctypes.c_float),
     ('align', ctypes.c_int),
+]
+
+
+DvzTextPlacement._fields_ = [
+    ('struct_size', ctypes.c_uint32),
+    ('flags', ctypes.c_uint32),
+    ('mode', ctypes.c_int),
+    ('anchor', ctypes.c_int),
+    ('position', (ctypes.c_double * 3)),
+    ('offset', (ctypes.c_float * 2)),
+    ('text_anchor', (ctypes.c_float * 2)),
+    ('has_text_anchor', ctypes.c_bool),
+    ('angle', ctypes.c_float),
+    ('depth_test', ctypes.c_bool),
+]
+
+
+DvzTextStyle._fields_ = [
+    ('struct_size', ctypes.c_uint32),
+    ('flags', ctypes.c_uint32),
+    ('font', ctypes.POINTER(DvzFont)),
+    ('size_px', ctypes.c_float),
+    ('renderer', ctypes.c_int),
+    ('color', (ctypes.c_uint8 * 4)),
+    ('style_flags', ctypes.c_uint32),
+    ('bold', ctypes.c_bool),
+    ('italic', ctypes.c_bool),
+    ('underline', ctypes.c_bool),
 ]
 
 
@@ -6591,6 +6453,28 @@ DvzVideoSinkConfig._fields_ = [
 ]
 
 
+DvzViewDesc._fields_ = [
+    ('struct_size', ctypes.c_uint32),
+    ('flags', ctypes.c_uint32),
+    ('kind', ctypes.c_int),
+    ('size_policy', ctypes.c_int),
+    ('size_width', ctypes.c_double),
+    ('size_height', ctypes.c_double),
+    ('size_reference_dpi', ctypes.c_double),
+    ('size_requested_device_scale', ctypes.c_double),
+    ('size_monitor_dpi_x_override', ctypes.c_double),
+    ('size_monitor_dpi_y_override', ctypes.c_double),
+    ('size_strict_framebuffer_size', ctypes.c_bool),
+    ('device_scale', ctypes.c_float),
+    ('user_scale', ctypes.c_float),
+    ('render_scale', ctypes.c_float),
+    ('title', ctypes.c_char_p),
+    ('has_position', ctypes.c_bool),
+    ('x', ctypes.c_int32),
+    ('y', ctypes.c_int32),
+]
+
+
 DvzViewSizeDesc._fields_ = [
     ('struct_size', ctypes.c_uint32),
     ('flags', ctypes.c_uint32),
@@ -6602,26 +6486,6 @@ DvzViewSizeDesc._fields_ = [
     ('monitor_dpi_x_override', ctypes.c_double),
     ('monitor_dpi_y_override', ctypes.c_double),
     ('strict_framebuffer_size', ctypes.c_bool),
-]
-
-
-DvzViewDesc._fields_ = [
-    ('struct_size', ctypes.c_uint32),
-    ('flags', ctypes.c_uint32),
-    ('kind', ctypes.c_int),
-    ('size', DvzViewSizeDesc),
-    ('logical_width', ctypes.c_uint32),
-    ('logical_height', ctypes.c_uint32),
-    ('framebuffer_width', ctypes.c_uint32),
-    ('framebuffer_height', ctypes.c_uint32),
-    ('device_scale', ctypes.c_float),
-    ('user_scale', ctypes.c_float),
-    ('render_scale', ctypes.c_float),
-    ('title', ctypes.c_char_p),
-    ('external_surface', ctypes.POINTER(DvzWindowExternalSurfaceInfo)),
-    ('has_position', ctypes.c_bool),
-    ('x', ctypes.c_int32),
-    ('y', ctypes.c_int32),
 ]
 
 
@@ -7304,9 +7168,10 @@ else:
  *
  * @param animation phase animation handle
  * @param value new phase value, wrapped into the configured interval
+ * @return DVZ_OK when the value was accepted, DVZ_ERROR on error
  */"""
     dvz_anim_phase_set_value.argtypes = [ctypes.POINTER(DvzAnimation), ctypes.c_float]
-    dvz_anim_phase_set_value.restype = None
+    dvz_anim_phase_set_value.restype = ctypes.c_int32
 
 
 try:
@@ -7321,9 +7186,10 @@ else:
  * @param controller controller to observe, or NULL to clear policy
  * @param policy interaction policy
  * @param idle_s idle duration for resume-after-idle policies
+ * @return DVZ_OK when the policy was accepted, DVZ_ERROR on error
  */"""
     dvz_anim_set_interaction_policy.argtypes = [ctypes.POINTER(DvzAnimation), ctypes.POINTER(DvzController), ctypes.c_int, ctypes.c_double]
-    dvz_anim_set_interaction_policy.restype = None
+    dvz_anim_set_interaction_policy.restype = ctypes.c_int32
 
 
 try:
@@ -7337,9 +7203,10 @@ else:
  *
  * @param animation animation handle
  * @param speed scalar speed in units per second
+ * @return DVZ_OK when the speed was accepted, DVZ_ERROR on error
  */"""
     dvz_anim_set_speed.argtypes = [ctypes.POINTER(DvzAnimation), ctypes.c_float]
-    dvz_anim_set_speed.restype = None
+    dvz_anim_set_speed.restype = ctypes.c_int32
 
 
 try:
@@ -7352,9 +7219,10 @@ else:
  *
  * @param animation animation handle
  * @param t_start scene-clock start time, or 0 for immediate start
+ * @return DVZ_OK when the animation was started, DVZ_ERROR on error
  */"""
     dvz_anim_start.argtypes = [ctypes.POINTER(DvzAnimation), ctypes.c_double]
-    dvz_anim_start.restype = None
+    dvz_anim_start.restype = ctypes.c_int32
 
 
 try:
@@ -7366,9 +7234,10 @@ else:
  * Stop an animation while keeping the handle valid.
  *
  * @param animation animation handle
+ * @return DVZ_OK when the animation was stopped, DVZ_ERROR on error
  */"""
     dvz_anim_stop.argtypes = [ctypes.POINTER(DvzAnimation)]
-    dvz_anim_stop.restype = None
+    dvz_anim_stop.restype = ctypes.c_int32
 
 
 try:
@@ -7529,9 +7398,42 @@ else:
  *
  * @param annotation the annotation
  * @param format the format descriptor, or NULL to clear the override
+ * @return 0 on success, -1 on validation error
  */"""
     dvz_annotation_set_format.argtypes = [ctypes.POINTER(DvzAnnotation), ctypes.POINTER(DvzFormatDesc)]
-    dvz_annotation_set_format.restype = None
+    dvz_annotation_set_format.restype = ctypes.c_int32
+
+
+try:
+    dvz_annotation_set_placement = dvz.dvz_annotation_set_placement
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_annotation_set_placement')
+else:
+    dvz_annotation_set_placement.__doc__ = """/**
+ * Set the placement policy of a retained annotation.
+ *
+ * @param annotation the annotation
+ * @param placement text placement, or NULL for defaults
+ * @return 0 on success, -1 on validation error
+ */"""
+    dvz_annotation_set_placement.argtypes = [ctypes.POINTER(DvzAnnotation), ctypes.POINTER(DvzTextPlacement)]
+    dvz_annotation_set_placement.restype = ctypes.c_int32
+
+
+try:
+    dvz_annotation_set_style = dvz.dvz_annotation_set_style
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_annotation_set_style')
+else:
+    dvz_annotation_set_style.__doc__ = """/**
+ * Set the style of a retained annotation.
+ *
+ * @param annotation the annotation
+ * @param style text style, or NULL for defaults
+ * @return 0 on success, -1 on validation error
+ */"""
+    dvz_annotation_set_style.argtypes = [ctypes.POINTER(DvzAnnotation), ctypes.POINTER(DvzTextStyle)]
+    dvz_annotation_set_style.restype = ctypes.c_int32
 
 
 try:
@@ -7691,9 +7593,10 @@ else:
  * Request that a running app loop stops at the next scheduler checkpoint.
  *
  * @param app app whose run loop should stop
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_app_stop.argtypes = [ctypes.POINTER(DvzApp)]
-    dvz_app_stop.restype = None
+    dvz_app_stop.restype = ctypes.c_int32
 
 
 try:
@@ -7791,9 +7694,13 @@ except AttributeError:
 else:
     dvz_arcball_connect.__doc__ = """/**
  * Subscribe the arcball to an input router.
+ *
+ * @param arcball arcball controller
+ * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_connect.argtypes = [ctypes.POINTER(DvzArcball), ctypes.POINTER(DvzInputRouter)]
-    dvz_arcball_connect.restype = None
+    dvz_arcball_connect.restype = ctypes.c_int32
 
 
 try:
@@ -7803,9 +7710,13 @@ except AttributeError:
 else:
     dvz_arcball_constrain.__doc__ = """/**
  * Set a rotation constraint axis.
+ *
+ * @param arcball arcball controller
+ * @param axis rotation constraint axis
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_constrain.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 3)]
-    dvz_arcball_constrain.restype = None
+    dvz_arcball_constrain.restype = ctypes.c_int32
 
 
 try:
@@ -7851,9 +7762,13 @@ except AttributeError:
 else:
     dvz_arcball_disconnect.__doc__ = """/**
  * Unsubscribe the arcball from a router.
+ *
+ * @param arcball arcball controller
+ * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_disconnect.argtypes = [ctypes.POINTER(DvzArcball), ctypes.POINTER(DvzInputRouter)]
-    dvz_arcball_disconnect.restype = None
+    dvz_arcball_disconnect.restype = ctypes.c_int32
 
 
 try:
@@ -7863,9 +7778,12 @@ except AttributeError:
 else:
     dvz_arcball_end.__doc__ = """/**
  * Commit the in-flight rotation into the accumulated matrix (call at drag stop).
+ *
+ * @param arcball arcball controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_end.argtypes = [ctypes.POINTER(DvzArcball)]
-    dvz_arcball_end.restype = None
+    dvz_arcball_end.restype = ctypes.c_int32
 
 
 try:
@@ -7875,9 +7793,13 @@ except AttributeError:
 else:
     dvz_arcball_initial.__doc__ = """/**
  * Set the initial Euler angles and reset.
+ *
+ * @param arcball arcball controller
+ * @param angles initial Euler angles
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_initial.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 3)]
-    dvz_arcball_initial.restype = None
+    dvz_arcball_initial.restype = ctypes.c_int32
 
 
 try:
@@ -7903,9 +7825,13 @@ else:
  * Compute the model matrix (accumulated × in-flight rotation).
  *
  * Arcball pan and zoom are camera view state and are not included here.
+ *
+ * @param arcball arcball controller
+ * @param model output model matrix
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_model.argtypes = [ctypes.POINTER(DvzArcball), ((ctypes.c_float * 4) * 4)]
-    dvz_arcball_model.restype = None
+    dvz_arcball_model.restype = ctypes.c_int32
 
 
 try:
@@ -7931,9 +7857,10 @@ else:
  *
  * @param arcball arcball controller
  * @param pan panel-plane pan offset
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_pan.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 2)]
-    dvz_arcball_pan.restype = None
+    dvz_arcball_pan.restype = ctypes.c_int32
 
 
 try:
@@ -7946,9 +7873,10 @@ else:
  *
  * @param arcball arcball controller
  * @param shift_px shift in viewport pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_pan_shift.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 2)]
-    dvz_arcball_pan_shift.restype = None
+    dvz_arcball_pan_shift.restype = ctypes.c_int32
 
 
 try:
@@ -7972,9 +7900,12 @@ except AttributeError:
 else:
     dvz_arcball_reset.__doc__ = """/**
  * Reset to the initial orientation.
+ *
+ * @param arcball arcball controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_reset.argtypes = [ctypes.POINTER(DvzArcball)]
-    dvz_arcball_reset.restype = None
+    dvz_arcball_reset.restype = ctypes.c_int32
 
 
 try:
@@ -7984,9 +7915,14 @@ except AttributeError:
 else:
     dvz_arcball_resize.__doc__ = """/**
  * Update the viewport size (call on window resize).
+ *
+ * @param arcball arcball controller
+ * @param width viewport width in pixels
+ * @param height viewport height in pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_resize.argtypes = [ctypes.POINTER(DvzArcball), ctypes.c_float, ctypes.c_float]
-    dvz_arcball_resize.restype = None
+    dvz_arcball_resize.restype = ctypes.c_int32
 
 
 try:
@@ -7996,9 +7932,14 @@ except AttributeError:
 else:
     dvz_arcball_rotate.__doc__ = """/**
  * Apply an in-flight rotation from two NDC screen positions.
+ *
+ * @param arcball arcball controller
+ * @param cur_pos current pointer position in normalized device coordinates
+ * @param last_pos previous pointer position in normalized device coordinates
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_rotate.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 2), (ctypes.c_float * 2)]
-    dvz_arcball_rotate.restype = None
+    dvz_arcball_rotate.restype = ctypes.c_int32
 
 
 try:
@@ -8012,9 +7953,10 @@ else:
  * @param arcball arcball controller
  * @param angle rotation angle in radians
  * @param axis rotation axis
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_rotate_axis.argtypes = [ctypes.POINTER(DvzArcball), ctypes.c_float, (ctypes.c_float * 3)]
-    dvz_arcball_rotate_axis.restype = None
+    dvz_arcball_rotate_axis.restype = ctypes.c_int32
 
 
 try:
@@ -8024,9 +7966,13 @@ except AttributeError:
 else:
     dvz_arcball_set.__doc__ = """/**
  * Set the orientation directly from Euler angles.
+ *
+ * @param arcball arcball controller
+ * @param angles Euler angles
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_set.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 3)]
-    dvz_arcball_set.restype = None
+    dvz_arcball_set.restype = ctypes.c_int32
 
 
 try:
@@ -8055,9 +8001,10 @@ else:
  *
  * @param arcball arcball controller
  * @param zoom uniform zoom factor
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_zoom.argtypes = [ctypes.POINTER(DvzArcball), ctypes.c_float]
-    dvz_arcball_zoom.restype = None
+    dvz_arcball_zoom.restype = ctypes.c_int32
 
 
 try:
@@ -8120,10 +8067,10 @@ else:
  * The axis returns to its automatic tick policy after this call.
  *
  * @param axis the axis
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_clear_ticks.argtypes = [ctypes.POINTER(DvzAxis)]
-    dvz_axis_clear_ticks.restype = ctypes.c_bool
+    dvz_axis_clear_ticks.restype = ctypes.c_int32
 
 
 try:
@@ -8136,10 +8083,10 @@ else:
  *
  * @param axis the axis
  * @param format datetime format, or NULL to restore numeric/unit formatting
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_datetime.argtypes = [ctypes.POINTER(DvzAxis), ctypes.POINTER(DvzDateTimeFormat)]
-    dvz_axis_set_datetime.restype = ctypes.c_bool
+    dvz_axis_set_datetime.restype = ctypes.c_int32
 
 
 try:
@@ -8155,10 +8102,10 @@ else:
  * @param data1 second data coordinate
  * @param t0 timestamp corresponding to data0, in microseconds since Unix epoch UTC
  * @param t1 timestamp corresponding to data1, in microseconds since Unix epoch UTC
- * @return whether the mapping was updated
+ * @return DVZ_OK if the mapping was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_datetime_range.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_double, ctypes.c_double, ctypes.c_long, ctypes.c_long]
-    dvz_axis_set_datetime_range.restype = ctypes.c_bool
+    dvz_axis_set_datetime_range.restype = ctypes.c_int32
 
 
 try:
@@ -8171,10 +8118,10 @@ else:
  *
  * @param axis the axis
  * @param visible whether grid lines are visible
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_grid.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_bool]
-    dvz_axis_set_grid.restype = ctypes.c_bool
+    dvz_axis_set_grid.restype = ctypes.c_int32
 
 
 try:
@@ -8189,10 +8136,10 @@ else:
  *
  * @param axis the axis
  * @param label label string, or NULL to clear
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_label.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_char_p]
-    dvz_axis_set_label.restype = ctypes.c_bool
+    dvz_axis_set_label.restype = ctypes.c_int32
 
 
 try:
@@ -8212,10 +8159,10 @@ else:
  * @param right right margin
  * @param bottom bottom margin
  * @param top top margin
- * @return whether the margins were updated
+ * @return DVZ_OK if the margins were updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_plot_margins.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_axis_set_plot_margins.restype = ctypes.c_bool
+    dvz_axis_set_plot_margins.restype = ctypes.c_int32
 
 
 try:
@@ -8228,10 +8175,10 @@ else:
  *
  * @param axis the axis
  * @param style axis style, or NULL for defaults
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_style.argtypes = [ctypes.POINTER(DvzAxis), ctypes.POINTER(DvzAxisStyle)]
-    dvz_axis_set_style.restype = ctypes.c_bool
+    dvz_axis_set_style.restype = ctypes.c_int32
 
 
 try:
@@ -8244,10 +8191,10 @@ else:
  *
  * @param axis the axis
  * @param policy tick policy, or NULL for defaults
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_tick_policy.argtypes = [ctypes.POINTER(DvzAxis), ctypes.POINTER(DvzAxisTickPolicy)]
-    dvz_axis_set_tick_policy.restype = ctypes.c_bool
+    dvz_axis_set_tick_policy.restype = ctypes.c_int32
 
 
 try:
@@ -8264,10 +8211,10 @@ else:
  *
  * @param axis the axis
  * @param ticks explicit tick descriptor
- * @return whether the explicit ticks were stored
+ * @return DVZ_OK if the explicit ticks were stored, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_ticks.argtypes = [ctypes.POINTER(DvzAxis), ctypes.POINTER(DvzAxisTicks)]
-    dvz_axis_set_ticks.restype = ctypes.c_bool
+    dvz_axis_set_ticks.restype = ctypes.c_int32
 
 
 try:
@@ -8282,10 +8229,10 @@ else:
  *
  * @param axis the axis
  * @param units units object, or NULL to restore plain numeric formatting
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_units.argtypes = [ctypes.POINTER(DvzAxis), ctypes.POINTER(DvzUnits)]
-    dvz_axis_set_units.restype = ctypes.c_bool
+    dvz_axis_set_units.restype = ctypes.c_int32
 
 
 try:
@@ -8298,10 +8245,10 @@ else:
  *
  * @param axis the axis
  * @param visible whether the axis is visible
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_visible.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_bool]
-    dvz_axis_set_visible.restype = ctypes.c_bool
+    dvz_axis_set_visible.restype = ctypes.c_int32
 
 
 try:
@@ -8374,13 +8321,13 @@ else:
  * gaps.
  *
  * @param band the band object
- * @param count number of samples
  * @param x X coordinates
  * @param lower lower Y coordinates
  * @param upper upper Y coordinates
+ * @param count number of samples
  * @return 0 on success, -1 on validation/allocation error
  */"""
-    dvz_band_set_bounds.argtypes = [ctypes.POINTER(DvzBand), ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
+    dvz_band_set_bounds.argtypes = [ctypes.POINTER(DvzBand), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint32]
     dvz_band_set_bounds.restype = ctypes.c_int32
 
 
@@ -8396,12 +8343,12 @@ else:
  * `0.5 * (lower + upper)`. Arrays are copied into scene-owned storage. NaN values split the line.
  *
  * @param band the band object
- * @param count number of samples
  * @param x X coordinates
  * @param y Y coordinates
+ * @param count number of samples
  * @return 0 on success, -1 on validation/allocation error
  */"""
-    dvz_band_set_center.argtypes = [ctypes.POINTER(DvzBand), ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
+    dvz_band_set_center.argtypes = [ctypes.POINTER(DvzBand), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint32]
     dvz_band_set_center.restype = ctypes.c_int32
 
 
@@ -8839,13 +8786,13 @@ else:
  * Arrays are copied into scene-owned storage.
  *
  * @param bars the bars object
- * @param count number of bars
  * @param starts interval start values
  * @param ends interval end values
  * @param values bar terminal values
+ * @param count number of bars
  * @return 0 on success, -1 on validation/allocation error
  */"""
-    dvz_bars_set_intervals.argtypes = [ctypes.POINTER(DvzBars), ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
+    dvz_bars_set_intervals.argtypes = [ctypes.POINTER(DvzBars), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint32]
     dvz_bars_set_intervals.restype = ctypes.c_int32
 
 
@@ -8972,6 +8919,23 @@ else:
 
 
 try:
+    dvz_box_inverse = dvz.dvz_box_inverse
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_box_inverse')
+else:
+    dvz_box_inverse.__doc__ = """/**
+ * Perform an inverse transformation of a position from a target box to a source box.
+ *
+ * @param source the source box, in data coordinates
+ * @param target the target box, typically in normalized coordinates
+ * @param pos the position in the target box
+ * @param[out] out position transformed back into the source box
+ */"""
+    dvz_box_inverse.argtypes = [DvzBox, DvzBox, (ctypes.c_float * 3), (ctypes.c_void_p * 3)]
+    dvz_box_inverse.restype = None
+
+
+try:
     dvz_box_merge = dvz.dvz_box_merge
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_box_merge')
@@ -9001,11 +8965,64 @@ else:
  * @param dim which dimension
  * @param count the number of positions to normalize
  * @param pos the positions to normalize (double precision)
- * @param[out] out (array) pointer to an array with the normalized positions to compute (single
- * precision)
+ * @param[out] out normalized positions to compute, as single-precision 3D positions
  */"""
     dvz_box_normalize_1D.argtypes = [DvzBox, DvzBox, ctypes.c_int, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), (ctypes.c_void_p * 3)]
     dvz_box_normalize_1D.restype = None
+
+
+try:
+    dvz_box_normalize_2D = dvz.dvz_box_normalize_2D
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_box_normalize_2D')
+else:
+    dvz_box_normalize_2D.__doc__ = """/**
+ * Normalize 2D input positions into a target box.
+ *
+ * @param source the source box, in data coordinates
+ * @param target the target box, typically in normalized coordinates
+ * @param count the number of positions to normalize
+ * @param pos the positions to normalize (double precision)
+ * @param[out] out normalized positions to compute, as single-precision 3D positions
+ */"""
+    dvz_box_normalize_2D.argtypes = [DvzBox, DvzBox, ctypes.c_uint32, (ctypes.c_void_p * 2), (ctypes.c_void_p * 3)]
+    dvz_box_normalize_2D.restype = None
+
+
+try:
+    dvz_box_normalize_3D = dvz.dvz_box_normalize_3D
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_box_normalize_3D')
+else:
+    dvz_box_normalize_3D.__doc__ = """/**
+ * Normalize 3D input positions into a target box.
+ *
+ * @param source the source box, in data coordinates
+ * @param target the target box, typically in normalized coordinates
+ * @param count the number of positions to normalize
+ * @param pos the positions to normalize (double precision)
+ * @param[out] out normalized positions to compute, as single-precision 3D positions
+ */"""
+    dvz_box_normalize_3D.argtypes = [DvzBox, DvzBox, ctypes.c_uint32, (ctypes.c_void_p * 3), (ctypes.c_void_p * 3)]
+    dvz_box_normalize_3D.restype = None
+
+
+try:
+    dvz_box_normalize_polygon = dvz.dvz_box_normalize_polygon
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_box_normalize_polygon')
+else:
+    dvz_box_normalize_polygon.__doc__ = """/**
+ * Normalize 2D input positions into a target box, using dvec2* as output format.
+ *
+ * @param source the source box, in data coordinates
+ * @param target the target box, typically in normalized coordinates
+ * @param count the number of positions to normalize
+ * @param pos the positions to normalize (double precision)
+ * @param[out] out normalized positions to compute, as double-precision 2D positions
+ */"""
+    dvz_box_normalize_polygon.argtypes = [DvzBox, DvzBox, ctypes.c_uint32, (ctypes.c_void_p * 2), (ctypes.c_void_p * 2)]
+    dvz_box_normalize_polygon.restype = None
 
 
 try:
@@ -9445,7 +9462,7 @@ else:
  * @param out_top output top orthographic bound
  * @param out_near output near clipping plane
  * @param out_far output far clipping plane
- * @return 0 when explicit bounds are active, -1 otherwise
+ * @return DVZ_OK when explicit bounds are active, DVZ_ERROR otherwise
  */"""
     dvz_camera_get_orthographic_bounds.argtypes = [ctypes.POINTER(DvzCamera), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float)]
     dvz_camera_get_orthographic_bounds.restype = ctypes.c_int32
@@ -9535,9 +9552,10 @@ else:
  * @param camera the camera
  * @param width viewport width in pixels
  * @param height viewport height in pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_camera_resize.argtypes = [ctypes.POINTER(DvzCamera), ctypes.c_float, ctypes.c_float]
-    dvz_camera_resize.restype = None
+    dvz_camera_resize.restype = ctypes.c_int32
 
 
 try:
@@ -9552,9 +9570,10 @@ else:
  * @param height vertical world-space extent
  * @param near near clipping plane
  * @param far far clipping plane
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_camera_set_orthographic.argtypes = [ctypes.POINTER(DvzCamera), ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_camera_set_orthographic.restype = None
+    dvz_camera_set_orthographic.restype = ctypes.c_int32
 
 
 try:
@@ -9575,7 +9594,7 @@ else:
  * @param top top orthographic bound
  * @param near near clipping plane
  * @param far far clipping plane
- * @return 0 on success, -1 on invalid bounds
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_camera_set_orthographic_bounds.argtypes = [ctypes.POINTER(DvzCamera), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
     dvz_camera_set_orthographic_bounds.restype = ctypes.c_int32
@@ -9593,9 +9612,10 @@ else:
  * @param fov_y vertical field-of-view angle, in radians
  * @param near near clipping plane
  * @param far far clipping plane
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_camera_set_perspective.argtypes = [ctypes.POINTER(DvzCamera), ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_camera_set_perspective.restype = None
+    dvz_camera_set_perspective.restype = ctypes.c_int32
 
 
 try:
@@ -9608,9 +9628,10 @@ else:
  *
  * @param camera the camera
  * @param view the camera view
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_camera_set_view.argtypes = [ctypes.POINTER(DvzCamera), ctypes.POINTER(DvzCameraView)]
-    dvz_camera_set_view.restype = None
+    dvz_camera_set_view.restype = ctypes.c_int32
 
 
 try:
@@ -10518,10 +10539,10 @@ else:
  * Clear explicit tick positions and labels for one colorbar.
  *
  * @param colorbar the colorbar
- * @return whether the colorbar was updated
+ * @return DVZ_OK when the colorbar was updated, DVZ_ERROR on error
  */"""
     dvz_colorbar_clear_ticks.argtypes = [ctypes.POINTER(DvzColorbar)]
-    dvz_colorbar_clear_ticks.restype = ctypes.c_bool
+    dvz_colorbar_clear_ticks.restype = ctypes.c_int32
 
 
 try:
@@ -10580,10 +10601,10 @@ else:
  *
  * @param colorbar the colorbar
  * @param anchor the panel-edge anchor
- * @return true when the anchor was accepted
+ * @return DVZ_OK when the anchor was accepted, DVZ_ERROR on error
  */"""
     dvz_colorbar_set_anchor.argtypes = [ctypes.POINTER(DvzColorbar), ctypes.c_int]
-    dvz_colorbar_set_anchor.restype = ctypes.c_bool
+    dvz_colorbar_set_anchor.restype = ctypes.c_int32
 
 
 try:
@@ -10596,9 +10617,10 @@ else:
  *
  * @param colorbar the colorbar
  * @param format the format descriptor, or NULL to clear the override
+ * @return DVZ_OK when the format was accepted, DVZ_ERROR on error
  */"""
     dvz_colorbar_set_format.argtypes = [ctypes.POINTER(DvzColorbar), ctypes.POINTER(DvzFormatDesc)]
-    dvz_colorbar_set_format.restype = None
+    dvz_colorbar_set_format.restype = ctypes.c_int32
 
 
 try:
@@ -10615,10 +10637,10 @@ else:
  *
  * @param colorbar the colorbar
  * @param desc layout descriptor
- * @return true when the layout was accepted
+ * @return DVZ_OK when the layout was accepted, DVZ_ERROR on error
  */"""
     dvz_colorbar_set_layout.argtypes = [ctypes.POINTER(DvzColorbar), ctypes.POINTER(DvzColorbarDesc)]
-    dvz_colorbar_set_layout.restype = ctypes.c_bool
+    dvz_colorbar_set_layout.restype = ctypes.c_int32
 
 
 try:
@@ -10631,9 +10653,10 @@ else:
  *
  * @param colorbar the colorbar
  * @param orientation the orientation
+ * @return DVZ_OK when the orientation was accepted, DVZ_ERROR on error
  */"""
     dvz_colorbar_set_orientation.argtypes = [ctypes.POINTER(DvzColorbar), ctypes.c_int]
-    dvz_colorbar_set_orientation.restype = None
+    dvz_colorbar_set_orientation.restype = ctypes.c_int32
 
 
 try:
@@ -10649,10 +10672,10 @@ else:
  *
  * @param colorbar the colorbar
  * @param ticks explicit tick descriptor
- * @return whether the explicit ticks were stored
+ * @return DVZ_OK when the explicit ticks were stored, DVZ_ERROR on error
  */"""
     dvz_colorbar_set_ticks.argtypes = [ctypes.POINTER(DvzColorbar), ctypes.POINTER(DvzColorbarTicks)]
-    dvz_colorbar_set_ticks.restype = ctypes.c_bool
+    dvz_colorbar_set_ticks.restype = ctypes.c_int32
 
 
 try:
@@ -10665,9 +10688,10 @@ else:
  *
  * @param colorbar the colorbar
  * @param title the title, or NULL to clear
+ * @return DVZ_OK when the title was accepted, DVZ_ERROR on error
  */"""
     dvz_colorbar_set_title.argtypes = [ctypes.POINTER(DvzColorbar), ctypes.c_char_p]
-    dvz_colorbar_set_title.restype = None
+    dvz_colorbar_set_title.restype = ctypes.c_int32
 
 
 try:
@@ -10826,9 +10850,10 @@ else:
  *
  * @param colormap the colormap
  * @param center the semantic center value
+ * @return DVZ_OK when the center was accepted, DVZ_ERROR on error
  */"""
     dvz_colormap_set_center.argtypes = [ctypes.POINTER(DvzColormap), ctypes.c_double]
-    dvz_colormap_set_center.restype = None
+    dvz_colormap_set_center.restype = ctypes.c_int32
 
 
 try:
@@ -10846,9 +10871,10 @@ else:
  * @param colormap the colormap
  * @param stops the color stops
  * @param count the number of stops
+ * @return DVZ_OK when the stops were accepted, DVZ_ERROR on error
  */"""
     dvz_colormap_set_stops.argtypes = [ctypes.POINTER(DvzColormap), ctypes.POINTER(DvzColormapStop), ctypes.c_uint32]
-    dvz_colormap_set_stops.restype = None
+    dvz_colormap_set_stops.restype = ctypes.c_int32
 
 
 try:
@@ -11284,137 +11310,6 @@ else:
  */"""
     dvz_compute_spec.argtypes = [ctypes.POINTER(DvzCompute), ctypes.c_uint32, ctypes.c_uint64, ctypes.c_uint64, ctypes.c_void_p]
     dvz_compute_spec.restype = None
-
-
-try:
-    dvz_container = dvz.dvz_container
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container')
-else:
-    dvz_container.__doc__ = """/**
- * Create a container that will contain an arbitrary number of objects of the same type.
- *
- * @param count initial number of objects in the container
- * @param item_size size of each object, in bytes
- * @param type object type
- */"""
-    dvz_container.argtypes = [ctypes.c_uint32, ctypes.c_size_t, ctypes.c_int]
-    dvz_container.restype = DvzContainer
-
-
-try:
-    dvz_container_alloc = dvz.dvz_container_alloc
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container_alloc')
-else:
-    dvz_container_alloc.__doc__ = """/**
- * Get a pointer to a new object in the container.
- *
- * If the container is full, it will be automatically resized.
- *
- * @param container the container
- * @returns a pointer to an allocated object
- */"""
-    dvz_container_alloc.argtypes = [ctypes.POINTER(DvzContainer)]
-    dvz_container_alloc.restype = ctypes.c_void_p
-
-
-try:
-    dvz_container_delete_if_destroyed = dvz.dvz_container_delete_if_destroyed
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container_delete_if_destroyed')
-else:
-    dvz_container_delete_if_destroyed.__doc__ = """/**
- * Free a given object in the constainer if it was previously destroyed.
- *
- * @param container the container
- * @param idx the index of the object within the container
- */"""
-    dvz_container_delete_if_destroyed.argtypes = [ctypes.POINTER(DvzContainer), ctypes.c_uint32]
-    dvz_container_delete_if_destroyed.restype = None
-
-
-try:
-    dvz_container_destroy = dvz.dvz_container_destroy
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container_destroy')
-else:
-    dvz_container_destroy.__doc__ = """/**
- * Destroy a container.
- *
- * Free all remaining objects, as well as the container itself.
- *
- * !!! warning
- *     All objects in the container must have been destroyed beforehand, since the generic
- *     container does not know how to properly destroy objects that were created with Vulkan.
- *
- * @param container the container
- * @param idx the index of the object within the container
- */"""
-    dvz_container_destroy.argtypes = [ctypes.POINTER(DvzContainer)]
-    dvz_container_destroy.restype = None
-
-
-try:
-    dvz_container_get = dvz.dvz_container_get
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container_get')
-else:
-    dvz_container_get.__doc__ = """/**
- * Return the object at a given index.
- *
- * @param container the container
- * @param idx the index of the object within the container
- * @param returns a pointer to the object at the specified index
- */"""
-    dvz_container_get.argtypes = [ctypes.POINTER(DvzContainer), ctypes.c_uint32]
-    dvz_container_get.restype = ctypes.c_void_p
-
-
-try:
-    dvz_container_get_created = dvz.dvz_container_get_created
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container_get_created')
-else:
-    dvz_container_get_created.__doc__ = """/**
- * Return the n-th created object.
- *
- * @param container the container
- * @param idx the index of the object within the container
- * @param returns a pointer to the created object at the specified index
- */"""
-    dvz_container_get_created.argtypes = [ctypes.POINTER(DvzContainer), ctypes.c_uint32]
-    dvz_container_get_created.restype = ctypes.c_void_p
-
-
-try:
-    dvz_container_iter = dvz.dvz_container_iter
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container_iter')
-else:
-    dvz_container_iter.__doc__ = """/**
- * Continue an already-started loop iteration on a container.
- *
- * @param container the container
- * @returns a pointer to the next object in the container, or NULL at the end
- */"""
-    dvz_container_iter.argtypes = [ctypes.POINTER(DvzContainerIterator)]
-    dvz_container_iter.restype = None
-
-
-try:
-    dvz_container_iterator = dvz.dvz_container_iterator
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_container_iterator')
-else:
-    dvz_container_iterator.__doc__ = """/**
- * Start a loop iteration over all valid objects within the container.
- *
- * @param container the container
- * @returns a pointer to the first object
- */"""
-    dvz_container_iterator.argtypes = [ctypes.POINTER(DvzContainer)]
-    dvz_container_iterator.restype = DvzContainerIterator
 
 
 try:
@@ -12503,37 +12398,6 @@ else:
  */"""
     dvz_drp2_recording_playback.argtypes = [ctypes.POINTER(DvzDrp2Recording), ctypes.POINTER(DvzDrp2Runtime), ctypes.c_bool]
     dvz_drp2_recording_playback.restype = DvzDrp2ValidationResult
-
-
-try:
-    dvz_drp2_recording_raw_fallback = dvz.dvz_drp2_recording_raw_fallback
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_recording_raw_fallback')
-else:
-    dvz_drp2_recording_raw_fallback.__doc__ = """/**
- * Return one raw ABI-local fallback command record.
- *
- * @param recording loaded recording
- * @param fallback_index raw fallback index
- * @return the raw fallback record, valid until the recording is closed, or NULL
- */"""
-    dvz_drp2_recording_raw_fallback.argtypes = [ctypes.POINTER(DvzDrp2Recording), ctypes.c_uint32]
-    dvz_drp2_recording_raw_fallback.restype = ctypes.POINTER(DvzDrp2RawFallback)
-
-
-try:
-    dvz_drp2_recording_raw_fallback_count = dvz.dvz_drp2_recording_raw_fallback_count
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_recording_raw_fallback_count')
-else:
-    dvz_drp2_recording_raw_fallback_count.__doc__ = """/**
- * Return the number of raw ABI-local fallback command records in a loaded recording.
- *
- * @param recording loaded recording
- * @return raw fallback count
- */"""
-    dvz_drp2_recording_raw_fallback_count.argtypes = [ctypes.POINTER(DvzDrp2Recording)]
-    dvz_drp2_recording_raw_fallback_count.restype = ctypes.c_uint32
 
 
 try:
@@ -14392,11 +14256,11 @@ else:
 
 
 try:
-    dvz_drp2_stream_write_buffer = dvz.dvz_drp2_stream_write_buffer
+    dvz_drp2_stream_write_buffer_base64 = dvz.dvz_drp2_stream_write_buffer_base64
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_buffer')
+    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_buffer_base64')
 else:
-    dvz_drp2_stream_write_buffer.__doc__ = """/**
+    dvz_drp2_stream_write_buffer_base64.__doc__ = """/**
  * Append a WriteBuffer command.
  *
  * @param stream the command stream
@@ -14406,8 +14270,8 @@ else:
  * @param data_base64 base64-encoded payload
  * @return whether the command was appended
  */"""
-    dvz_drp2_stream_write_buffer.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint64, ctypes.c_uint64, ctypes.c_char_p]
-    dvz_drp2_stream_write_buffer.restype = ctypes.c_bool
+    dvz_drp2_stream_write_buffer_base64.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint64, ctypes.c_uint64, ctypes.c_char_p]
+    dvz_drp2_stream_write_buffer_base64.restype = ctypes.c_bool
 
 
 try:
@@ -14419,7 +14283,7 @@ else:
  * Append a WriteBuffer command from raw bytes.
  *
  * In-process callers that have a raw byte pointer should prefer this entry
- * point over dvz_drp2_stream_write_buffer (which takes a pre-encoded base64
+ * point over dvz_drp2_stream_write_buffer_base64 (which takes a pre-encoded base64
  * string and is intended for JSON wire-loading paths).
  *
  * The stream owns a copy of `data`. The base64 string is computed lazily, only
@@ -14441,11 +14305,11 @@ else:
 
 
 try:
-    dvz_drp2_stream_write_texture_2d = dvz.dvz_drp2_stream_write_texture_2d
+    dvz_drp2_stream_write_texture_2d_base64 = dvz.dvz_drp2_stream_write_texture_2d_base64
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_2d')
+    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_2d_base64')
 else:
-    dvz_drp2_stream_write_texture_2d.__doc__ = """/**
+    dvz_drp2_stream_write_texture_2d_base64.__doc__ = """/**
  * Append a WriteTexture command.
  *
  * @param stream the command stream
@@ -14458,8 +14322,8 @@ else:
  * @param data_base64 base64-encoded payload
  * @return whether the command was appended
  */"""
-    dvz_drp2_stream_write_texture_2d.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
-    dvz_drp2_stream_write_texture_2d.restype = ctypes.c_bool
+    dvz_drp2_stream_write_texture_2d_base64.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
+    dvz_drp2_stream_write_texture_2d_base64.restype = ctypes.c_bool
 
 
 try:
@@ -14489,11 +14353,11 @@ else:
 
 
 try:
-    dvz_drp2_stream_write_texture_2d_region = dvz.dvz_drp2_stream_write_texture_2d_region
+    dvz_drp2_stream_write_texture_2d_region_base64 = dvz.dvz_drp2_stream_write_texture_2d_region_base64
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_2d_region')
+    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_2d_region_base64')
 else:
-    dvz_drp2_stream_write_texture_2d_region.__doc__ = """/**
+    dvz_drp2_stream_write_texture_2d_region_base64.__doc__ = """/**
  * Append a WriteTexture command for a 2D sub-region with explicit origin.
  *
  * @param stream the command stream
@@ -14508,8 +14372,8 @@ else:
  * @param data_base64 base64-encoded payload
  * @return whether the command was appended
  */"""
-    dvz_drp2_stream_write_texture_2d_region.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
-    dvz_drp2_stream_write_texture_2d_region.restype = ctypes.c_bool
+    dvz_drp2_stream_write_texture_2d_region_base64.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
+    dvz_drp2_stream_write_texture_2d_region_base64.restype = ctypes.c_bool
 
 
 try:
@@ -14539,11 +14403,11 @@ else:
 
 
 try:
-    dvz_drp2_stream_write_texture_3d = dvz.dvz_drp2_stream_write_texture_3d
+    dvz_drp2_stream_write_texture_3d_base64 = dvz.dvz_drp2_stream_write_texture_3d_base64
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_3d')
+    _MISSING_FUNCTIONS.append('dvz_drp2_stream_write_texture_3d_base64')
 else:
-    dvz_drp2_stream_write_texture_3d.__doc__ = """/**
+    dvz_drp2_stream_write_texture_3d_base64.__doc__ = """/**
  * Append a WriteTexture command for a 3D sub-region.
  *
  * @param stream the command stream
@@ -14560,8 +14424,8 @@ else:
  * @param data_base64 base64-encoded payload
  * @return whether the command was appended
  */"""
-    dvz_drp2_stream_write_texture_3d.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
-    dvz_drp2_stream_write_texture_3d.restype = ctypes.c_bool
+    dvz_drp2_stream_write_texture_3d_base64.argtypes = [ctypes.POINTER(DvzDrp2CommandStream), ctypes.c_uint64, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
+    dvz_drp2_stream_write_texture_3d_base64.restype = ctypes.c_bool
 
 
 try:
@@ -14697,9 +14561,10 @@ else:
  *
  * @param cb the error callback
  * @param user_data opaque pointer passed to the callback
+ * @return DVZ_OK on success
  */"""
     _dvz_error_set_callback.argtypes = [DvzErrorCallback, ctypes.c_void_p]
-    _dvz_error_set_callback.restype = None
+    _dvz_error_set_callback.restype = ctypes.c_int32
     def dvz_error_set_callback(cb, user_data):
         cb = _callback_store_global('dvz_error_set_callback', DvzErrorCallback, cb)
         return _dvz_error_set_callback(cb, user_data)
@@ -15140,18 +15005,18 @@ else:
 
 
 try:
-    dvz_ffi_scalebar_desc = dvz.dvz_ffi_scalebar_desc
+    dvz_ffi_scale_bar_desc = dvz.dvz_ffi_scale_bar_desc
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_ffi_scalebar_desc')
+    _MISSING_FUNCTIONS.append('dvz_ffi_scale_bar_desc')
 else:
-    dvz_ffi_scalebar_desc.__doc__ = """/**
+    dvz_ffi_scale_bar_desc.__doc__ = """/**
  * Initialize a default scale-bar descriptor through an out pointer.
  *
  * @param out output descriptor
  * @return true on success, false when out is NULL
  */"""
-    dvz_ffi_scalebar_desc.argtypes = [ctypes.POINTER(DvzScaleBarDesc)]
-    dvz_ffi_scalebar_desc.restype = ctypes.c_bool
+    dvz_ffi_scale_bar_desc.argtypes = [ctypes.POINTER(DvzScaleBarDesc)]
+    dvz_ffi_scale_bar_desc.restype = ctypes.c_bool
 
 
 try:
@@ -15281,10 +15146,10 @@ else:
  *
  * @param figure the figure
  * @param compute the compute pass
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_figure_add_compute.argtypes = [ctypes.POINTER(DvzFigure), ctypes.POINTER(DvzSceneCompute)]
-    dvz_figure_add_compute.restype = ctypes.c_bool
+    dvz_figure_add_compute.restype = ctypes.c_int32
 
 
 try:
@@ -15400,10 +15265,10 @@ else:
  *
  * @param figure the figure
  * @param compute the compute pass
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_figure_remove_compute.argtypes = [ctypes.POINTER(DvzFigure), ctypes.POINTER(DvzSceneCompute)]
-    dvz_figure_remove_compute.restype = ctypes.c_bool
+    dvz_figure_remove_compute.restype = ctypes.c_int32
 
 
 try:
@@ -15417,9 +15282,10 @@ else:
  * @param figure the figure
  * @param width width in logical pixels
  * @param height height in logical pixels
+ * @return DVZ_OK when the size was accepted, DVZ_ERROR on error
  */"""
     dvz_figure_resize.argtypes = [ctypes.POINTER(DvzFigure), ctypes.c_uint32, ctypes.c_uint32]
-    dvz_figure_resize.restype = None
+    dvz_figure_resize.restype = ctypes.c_int32
 
 
 try:
@@ -15450,9 +15316,10 @@ else:
  *
  * @param figure the figure
  * @param pipeline the color pipeline
+ * @return DVZ_OK when the pipeline was accepted, DVZ_ERROR on error
  */"""
     dvz_figure_set_color_pipeline.argtypes = [ctypes.POINTER(DvzFigure), ctypes.c_int]
-    dvz_figure_set_color_pipeline.restype = None
+    dvz_figure_set_color_pipeline.restype = ctypes.c_int32
 
 
 try:
@@ -15560,9 +15427,10 @@ else:
  * Apply the current fly pose to the attached camera.
  *
  * @param fly the fly controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_apply_camera.argtypes = [ctypes.POINTER(DvzFly)]
-    dvz_fly_apply_camera.restype = None
+    dvz_fly_apply_camera.restype = ctypes.c_int32
 
 
 try:
@@ -15574,9 +15442,10 @@ else:
  * Clear the optional orbit pivot.
  *
  * @param fly the fly controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_clear_pivot.argtypes = [ctypes.POINTER(DvzFly)]
-    dvz_fly_clear_pivot.restype = None
+    dvz_fly_clear_pivot.restype = ctypes.c_int32
 
 
 try:
@@ -15589,9 +15458,10 @@ else:
  *
  * @param fly the fly controller
  * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_connect.argtypes = [ctypes.POINTER(DvzFly), ctypes.POINTER(DvzInputRouter)]
-    dvz_fly_connect.restype = None
+    dvz_fly_connect.restype = ctypes.c_int32
 
 
 try:
@@ -15647,9 +15517,10 @@ else:
  *
  * @param fly the fly controller
  * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_disconnect.argtypes = [ctypes.POINTER(DvzFly), ctypes.POINTER(DvzInputRouter)]
-    dvz_fly_disconnect.restype = None
+    dvz_fly_disconnect.restype = ctypes.c_int32
 
 
 try:
@@ -15725,9 +15596,10 @@ else:
  * @param yaw initial yaw angle in radians
  * @param pitch initial pitch angle in radians
  * @param roll initial roll angle in radians
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_initial.argtypes = [ctypes.POINTER(DvzFly), (ctypes.c_float * 3), ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_fly_initial.restype = None
+    dvz_fly_initial.restype = ctypes.c_int32
 
 
 try:
@@ -15741,9 +15613,10 @@ else:
  * @param fly the fly controller
  * @param position initial camera position
  * @param target initial look-at target
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_initial_lookat.argtypes = [ctypes.POINTER(DvzFly), (ctypes.c_float * 3), (ctypes.c_float * 3)]
-    dvz_fly_initial_lookat.restype = None
+    dvz_fly_initial_lookat.restype = ctypes.c_int32
 
 
 try:
@@ -15771,9 +15644,10 @@ else:
  * Reorient the camera toward the active pivot without moving the eye.
  *
  * @param fly the fly controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_look_at_pivot.argtypes = [ctypes.POINTER(DvzFly)]
-    dvz_fly_look_at_pivot.restype = None
+    dvz_fly_look_at_pivot.restype = ctypes.c_int32
 
 
 try:
@@ -15786,9 +15660,10 @@ else:
  *
  * @param fly the fly controller
  * @param amount movement amount in world units
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_move_forward.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float]
-    dvz_fly_move_forward.restype = None
+    dvz_fly_move_forward.restype = ctypes.c_int32
 
 
 try:
@@ -15801,9 +15676,10 @@ else:
  *
  * @param fly the fly controller
  * @param amount movement amount in world units
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_move_right.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float]
-    dvz_fly_move_right.restype = None
+    dvz_fly_move_right.restype = ctypes.c_int32
 
 
 try:
@@ -15816,9 +15692,10 @@ else:
  *
  * @param fly the fly controller
  * @param amount movement amount in world units
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_move_up.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float]
-    dvz_fly_move_up.restype = None
+    dvz_fly_move_up.restype = ctypes.c_int32
 
 
 try:
@@ -15832,10 +15709,10 @@ else:
  * @param fly the fly controller
  * @param yaw_delta yaw delta in radians
  * @param pitch_delta pitch delta in radians
- * @return whether the orbit was applied
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_orbit.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float, ctypes.c_float]
-    dvz_fly_orbit.restype = ctypes.c_bool
+    dvz_fly_orbit.restype = ctypes.c_int32
 
 
 try:
@@ -15848,9 +15725,10 @@ else:
  *
  * @param fly the fly controller
  * @param pivot new world-space pivot point
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_pivot.argtypes = [ctypes.POINTER(DvzFly), (ctypes.c_float * 3)]
-    dvz_fly_pivot.restype = None
+    dvz_fly_pivot.restype = ctypes.c_int32
 
 
 try:
@@ -15878,9 +15756,10 @@ else:
  * Reset a fly controller to its initial pose.
  *
  * @param fly the fly controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_reset.argtypes = [ctypes.POINTER(DvzFly)]
-    dvz_fly_reset.restype = None
+    dvz_fly_reset.restype = ctypes.c_int32
 
 
 try:
@@ -15894,9 +15773,10 @@ else:
  * @param fly the fly controller
  * @param width viewport width in pixels
  * @param height viewport height in pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_resize.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float, ctypes.c_float]
-    dvz_fly_resize.restype = None
+    dvz_fly_resize.restype = ctypes.c_int32
 
 
 try:
@@ -15909,9 +15789,10 @@ else:
  *
  * @param fly the fly controller
  * @param dx roll delta in radians
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_roll.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float]
-    dvz_fly_roll.restype = None
+    dvz_fly_roll.restype = ctypes.c_int32
 
 
 try:
@@ -15925,9 +15806,10 @@ else:
  * @param fly the fly controller
  * @param dx yaw delta in radians
  * @param dy pitch delta in radians
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_rotate.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float, ctypes.c_float]
-    dvz_fly_rotate.restype = None
+    dvz_fly_rotate.restype = ctypes.c_int32
 
 
 try:
@@ -15940,9 +15822,10 @@ else:
  *
  * @param fly the fly controller
  * @param camera the camera to update, or NULL
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_set_camera.argtypes = [ctypes.POINTER(DvzFly), ctypes.POINTER(DvzCamera)]
-    dvz_fly_set_camera.restype = None
+    dvz_fly_set_camera.restype = ctypes.c_int32
 
 
 try:
@@ -15955,9 +15838,10 @@ else:
  *
  * @param fly the fly controller
  * @param mode movement mode
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_set_mode.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_int]
-    dvz_fly_set_mode.restype = None
+    dvz_fly_set_mode.restype = ctypes.c_int32
 
 
 try:
@@ -15970,9 +15854,10 @@ else:
  *
  * @param fly the fly controller
  * @param dt elapsed time in seconds
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_update.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_double]
-    dvz_fly_update.restype = None
+    dvz_fly_update.restype = ctypes.c_int32
 
 
 try:
@@ -15988,9 +15873,10 @@ else:
  * @param y viewport y origin in window pixels
  * @param width viewport width in window pixels
  * @param height viewport height in window pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_fly_viewport.argtypes = [ctypes.POINTER(DvzFly), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_fly_viewport.restype = None
+    dvz_fly_viewport.restype = ctypes.c_int32
 
 
 try:
@@ -16723,222 +16609,6 @@ else:
 
 
 try:
-    dvz_geom_arrow = dvz.dvz_geom_arrow
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_arrow')
-else:
-    dvz_geom_arrow.__doc__ = """/**
- * Create an indexed Z-axis arrow geometry.
- *
- * @param desc optional arrow descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_arrow.argtypes = [ctypes.POINTER(DvzGeometryArrowDesc)]
-    dvz_geom_arrow.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_cone = dvz.dvz_geom_cone
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_cone')
-else:
-    dvz_geom_cone.__doc__ = """/**
- * Create an indexed Z-axis cone geometry.
- *
- * @param desc optional cone descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_cone.argtypes = [ctypes.POINTER(DvzGeometryConeDesc)]
-    dvz_geom_cone.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_cube = dvz.dvz_geom_cube
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_cube')
-else:
-    dvz_geom_cube.__doc__ = """/**
- * Create an indexed cube geometry.
- *
- * @param desc optional cube descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_cube.argtypes = [ctypes.POINTER(DvzGeometryCubeDesc)]
-    dvz_geom_cube.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_cylinder = dvz.dvz_geom_cylinder
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_cylinder')
-else:
-    dvz_geom_cylinder.__doc__ = """/**
- * Create an indexed Z-axis cylinder geometry.
- *
- * @param desc optional cylinder descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_cylinder.argtypes = [ctypes.POINTER(DvzGeometryCylinderDesc)]
-    dvz_geom_cylinder.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_disc = dvz.dvz_geom_disc
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_disc')
-else:
-    dvz_geom_disc.__doc__ = """/**
- * Create an indexed XY disc geometry.
- *
- * @param desc optional disc descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_disc.argtypes = [ctypes.POINTER(DvzGeometryDiscDesc)]
-    dvz_geom_disc.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_obj = dvz.dvz_geom_obj
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_obj')
-else:
-    dvz_geom_obj.__doc__ = """/**
- * Load a Wavefront OBJ mesh as indexed geometry.
- *
- * The first loader slice supports `v`, `vn`, and polygonal `f` records. Faces are triangulated as
- * fans and texture coordinates/materials are ignored.
- *
- * @param filename OBJ file path
- * @param desc optional loader descriptor
- * @return the loaded geometry, or NULL on unsupported input or I/O failure
- */"""
-    dvz_geom_obj.argtypes = [ctypes.c_char_p, ctypes.POINTER(DvzGeometryObjDesc)]
-    dvz_geom_obj.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_plane = dvz.dvz_geom_plane
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_plane')
-else:
-    dvz_geom_plane.__doc__ = """/**
- * Create an indexed XY plane geometry.
- *
- * @param desc optional plane descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_plane.argtypes = [ctypes.POINTER(DvzGeometryPlaneDesc)]
-    dvz_geom_plane.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_regular_polygon = dvz.dvz_geom_regular_polygon
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_regular_polygon')
-else:
-    dvz_geom_regular_polygon.__doc__ = """/**
- * Create an indexed XY regular-polygon geometry.
- *
- * @param desc optional regular-polygon descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_regular_polygon.argtypes = [ctypes.POINTER(DvzGeometryRegularPolygonDesc)]
-    dvz_geom_regular_polygon.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_sector = dvz.dvz_geom_sector
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_sector')
-else:
-    dvz_geom_sector.__doc__ = """/**
- * Create an indexed XY sector geometry.
- *
- * @param desc optional sector descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_sector.argtypes = [ctypes.POINTER(DvzGeometrySectorDesc)]
-    dvz_geom_sector.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_sphere = dvz.dvz_geom_sphere
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_sphere')
-else:
-    dvz_geom_sphere.__doc__ = """/**
- * Create an indexed UV-sphere geometry.
- *
- * @param desc optional sphere descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_sphere.argtypes = [ctypes.POINTER(DvzGeometrySphereDesc)]
-    dvz_geom_sphere.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_star = dvz.dvz_geom_star
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_star')
-else:
-    dvz_geom_star.__doc__ = """/**
- * Create an indexed XY star geometry.
- *
- * @param desc optional star descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_star.argtypes = [ctypes.POINTER(DvzGeometryStarDesc)]
-    dvz_geom_star.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_surface_grid = dvz.dvz_geom_surface_grid
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_surface_grid')
-else:
-    dvz_geom_surface_grid.__doc__ = """/**
- * Create an indexed structured surface-grid geometry.
- *
- * @param desc surface-grid descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_surface_grid.argtypes = [ctypes.POINTER(DvzGeometrySurfaceGridDesc)]
-    dvz_geom_surface_grid.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
-    dvz_geom_surface_grid_update_heights = dvz.dvz_geom_surface_grid_update_heights
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_surface_grid_update_heights')
-else:
-    dvz_geom_surface_grid_update_heights.__doc__ = """/**
- * Update the heights of an existing structured surface-grid geometry.
- *
- * @param geometry the surface-grid geometry
- * @param heights row-major height values
- * @param count number of height values
- * @return 0 on success, -1 on invalid input
- */"""
-    dvz_geom_surface_grid_update_heights.argtypes = [ctypes.POINTER(DvzGeometry), ctypes.POINTER(ctypes.c_double), ctypes.c_uint32]
-    dvz_geom_surface_grid_update_heights.restype = ctypes.c_int32
-
-
-try:
-    dvz_geom_torus = dvz.dvz_geom_torus
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_geom_torus')
-else:
-    dvz_geom_torus.__doc__ = """/**
- * Create an indexed torus geometry around the Z axis.
- *
- * @param desc optional torus descriptor
- * @return the new geometry, or NULL on failure
- */"""
-    dvz_geom_torus.argtypes = [ctypes.POINTER(DvzGeometryTorusDesc)]
-    dvz_geom_torus.restype = ctypes.POINTER(DvzGeometry)
-
-
-try:
     dvz_geometry = dvz.dvz_geometry
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_geometry')
@@ -16952,6 +16622,21 @@ else:
  */"""
     dvz_geometry.argtypes = [ctypes.c_uint32, ctypes.c_uint32]
     dvz_geometry.restype = ctypes.POINTER(DvzGeometry)
+
+
+try:
+    dvz_geometry_arrow = dvz.dvz_geometry_arrow
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_arrow')
+else:
+    dvz_geometry_arrow.__doc__ = """/**
+ * Create an indexed Z-axis arrow geometry.
+ *
+ * @param desc optional arrow descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_arrow.argtypes = [ctypes.POINTER(DvzGeometryArrowDesc)]
+    dvz_geometry_arrow.restype = ctypes.POINTER(DvzGeometry)
 
 
 try:
@@ -16996,6 +16681,21 @@ else:
  */"""
     dvz_geometry_compute_normals.argtypes = [ctypes.POINTER(DvzGeometry)]
     dvz_geometry_compute_normals.restype = ctypes.c_int32
+
+
+try:
+    dvz_geometry_cone = dvz.dvz_geometry_cone
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_cone')
+else:
+    dvz_geometry_cone.__doc__ = """/**
+ * Create an indexed Z-axis cone geometry.
+ *
+ * @param desc optional cone descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_cone.argtypes = [ctypes.POINTER(DvzGeometryConeDesc)]
+    dvz_geometry_cone.restype = ctypes.POINTER(DvzGeometry)
 
 
 try:
@@ -17046,6 +16746,21 @@ else:
 
 
 try:
+    dvz_geometry_cube = dvz.dvz_geometry_cube
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_cube')
+else:
+    dvz_geometry_cube.__doc__ = """/**
+ * Create an indexed cube geometry.
+ *
+ * @param desc optional cube descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_cube.argtypes = [ctypes.POINTER(DvzGeometryCubeDesc)]
+    dvz_geometry_cube.restype = ctypes.POINTER(DvzGeometry)
+
+
+try:
     dvz_geometry_cube_desc = dvz.dvz_geometry_cube_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_geometry_cube_desc')
@@ -17057,6 +16772,21 @@ else:
  */"""
     dvz_geometry_cube_desc.argtypes = []
     dvz_geometry_cube_desc.restype = DvzGeometryCubeDesc
+
+
+try:
+    dvz_geometry_cylinder = dvz.dvz_geometry_cylinder
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_cylinder')
+else:
+    dvz_geometry_cylinder.__doc__ = """/**
+ * Create an indexed Z-axis cylinder geometry.
+ *
+ * @param desc optional cylinder descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_cylinder.argtypes = [ctypes.POINTER(DvzGeometryCylinderDesc)]
+    dvz_geometry_cylinder.restype = ctypes.POINTER(DvzGeometry)
 
 
 try:
@@ -17085,6 +16815,21 @@ else:
  */"""
     dvz_geometry_destroy.argtypes = [ctypes.POINTER(DvzGeometry)]
     dvz_geometry_destroy.restype = None
+
+
+try:
+    dvz_geometry_disc = dvz.dvz_geometry_disc
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_disc')
+else:
+    dvz_geometry_disc.__doc__ = """/**
+ * Create an indexed XY disc geometry.
+ *
+ * @param desc optional disc descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_disc.argtypes = [ctypes.POINTER(DvzGeometryDiscDesc)]
+    dvz_geometry_disc.restype = ctypes.POINTER(DvzGeometry)
 
 
 try:
@@ -17147,6 +16892,25 @@ else:
 
 
 try:
+    dvz_geometry_obj = dvz.dvz_geometry_obj
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_obj')
+else:
+    dvz_geometry_obj.__doc__ = """/**
+ * Load a Wavefront OBJ mesh as indexed geometry.
+ *
+ * The first loader slice supports `v`, `vn`, and polygonal `f` records. Faces are triangulated as
+ * fans and texture coordinates/materials are ignored.
+ *
+ * @param filename OBJ file path
+ * @param desc optional loader descriptor
+ * @return the loaded geometry, or NULL on unsupported input or I/O failure
+ */"""
+    dvz_geometry_obj.argtypes = [ctypes.c_char_p, ctypes.POINTER(DvzGeometryObjDesc)]
+    dvz_geometry_obj.restype = ctypes.POINTER(DvzGeometry)
+
+
+try:
     dvz_geometry_obj_desc = dvz.dvz_geometry_obj_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_geometry_obj_desc')
@@ -17161,6 +16925,21 @@ else:
 
 
 try:
+    dvz_geometry_plane = dvz.dvz_geometry_plane
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_plane')
+else:
+    dvz_geometry_plane.__doc__ = """/**
+ * Create an indexed XY plane geometry.
+ *
+ * @param desc optional plane descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_plane.argtypes = [ctypes.POINTER(DvzGeometryPlaneDesc)]
+    dvz_geometry_plane.restype = ctypes.POINTER(DvzGeometry)
+
+
+try:
     dvz_geometry_plane_desc = dvz.dvz_geometry_plane_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_geometry_plane_desc')
@@ -17172,6 +16951,21 @@ else:
  */"""
     dvz_geometry_plane_desc.argtypes = []
     dvz_geometry_plane_desc.restype = DvzGeometryPlaneDesc
+
+
+try:
+    dvz_geometry_regular_polygon = dvz.dvz_geometry_regular_polygon
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_regular_polygon')
+else:
+    dvz_geometry_regular_polygon.__doc__ = """/**
+ * Create an indexed XY regular-polygon geometry.
+ *
+ * @param desc optional regular-polygon descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_regular_polygon.argtypes = [ctypes.POINTER(DvzGeometryRegularPolygonDesc)]
+    dvz_geometry_regular_polygon.restype = ctypes.POINTER(DvzGeometry)
 
 
 try:
@@ -17197,9 +16991,25 @@ else:
  * Free all buffers owned by a geometry object and reset it to an empty state.
  *
  * @param geometry the geometry
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_geometry_reset.argtypes = [ctypes.POINTER(DvzGeometry)]
-    dvz_geometry_reset.restype = None
+    dvz_geometry_reset.restype = ctypes.c_int32
+
+
+try:
+    dvz_geometry_sector = dvz.dvz_geometry_sector
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_sector')
+else:
+    dvz_geometry_sector.__doc__ = """/**
+ * Create an indexed XY sector geometry.
+ *
+ * @param desc optional sector descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_sector.argtypes = [ctypes.POINTER(DvzGeometrySectorDesc)]
+    dvz_geometry_sector.restype = ctypes.POINTER(DvzGeometry)
 
 
 try:
@@ -17217,6 +17027,21 @@ else:
 
 
 try:
+    dvz_geometry_sphere = dvz.dvz_geometry_sphere
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_sphere')
+else:
+    dvz_geometry_sphere.__doc__ = """/**
+ * Create an indexed UV-sphere geometry.
+ *
+ * @param desc optional sphere descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_sphere.argtypes = [ctypes.POINTER(DvzGeometrySphereDesc)]
+    dvz_geometry_sphere.restype = ctypes.POINTER(DvzGeometry)
+
+
+try:
     dvz_geometry_sphere_desc = dvz.dvz_geometry_sphere_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_geometry_sphere_desc')
@@ -17228,6 +17053,21 @@ else:
  */"""
     dvz_geometry_sphere_desc.argtypes = []
     dvz_geometry_sphere_desc.restype = DvzGeometrySphereDesc
+
+
+try:
+    dvz_geometry_star = dvz.dvz_geometry_star
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_star')
+else:
+    dvz_geometry_star.__doc__ = """/**
+ * Create an indexed XY star geometry.
+ *
+ * @param desc optional star descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_star.argtypes = [ctypes.POINTER(DvzGeometryStarDesc)]
+    dvz_geometry_star.restype = ctypes.POINTER(DvzGeometry)
 
 
 try:
@@ -17245,6 +17085,21 @@ else:
 
 
 try:
+    dvz_geometry_surface_grid = dvz.dvz_geometry_surface_grid
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_surface_grid')
+else:
+    dvz_geometry_surface_grid.__doc__ = """/**
+ * Create an indexed structured surface-grid geometry.
+ *
+ * @param desc surface-grid descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_surface_grid.argtypes = [ctypes.POINTER(DvzGeometrySurfaceGridDesc)]
+    dvz_geometry_surface_grid.restype = ctypes.POINTER(DvzGeometry)
+
+
+try:
     dvz_geometry_surface_grid_desc = dvz.dvz_geometry_surface_grid_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_geometry_surface_grid_desc')
@@ -17256,6 +17111,38 @@ else:
  */"""
     dvz_geometry_surface_grid_desc.argtypes = []
     dvz_geometry_surface_grid_desc.restype = DvzGeometrySurfaceGridDesc
+
+
+try:
+    dvz_geometry_surface_grid_update_heights = dvz.dvz_geometry_surface_grid_update_heights
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_surface_grid_update_heights')
+else:
+    dvz_geometry_surface_grid_update_heights.__doc__ = """/**
+ * Update the heights of an existing structured surface-grid geometry.
+ *
+ * @param geometry the surface-grid geometry
+ * @param heights row-major height values
+ * @param count number of height values
+ * @return 0 on success, -1 on invalid input
+ */"""
+    dvz_geometry_surface_grid_update_heights.argtypes = [ctypes.POINTER(DvzGeometry), ctypes.POINTER(ctypes.c_double), ctypes.c_uint32]
+    dvz_geometry_surface_grid_update_heights.restype = ctypes.c_int32
+
+
+try:
+    dvz_geometry_torus = dvz.dvz_geometry_torus
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_geometry_torus')
+else:
+    dvz_geometry_torus.__doc__ = """/**
+ * Create an indexed torus geometry around the Z axis.
+ *
+ * @param desc optional torus descriptor
+ * @return the new geometry, or NULL on failure
+ */"""
+    dvz_geometry_torus.argtypes = [ctypes.POINTER(DvzGeometryTorusDesc)]
+    dvz_geometry_torus.restype = ctypes.POINTER(DvzGeometry)
 
 
 try:
@@ -17595,7 +17482,7 @@ else:
  *
  * A graph stores user-provided node positions and indexed edges. Layout algorithms are intentionally
  * external to the first public API slice and can update node positions through
- * `dvz_graph_node_positions()`.
+ * `dvz_graph_set_node_positions()`.
  *
  * @param scene the scene
  * @param flags reserved graph flags
@@ -17638,63 +17525,6 @@ else:
 
 
 try:
-    dvz_graph_edge_colors = dvz.dvz_graph_edge_colors
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_edge_colors')
-else:
-    dvz_graph_edge_colors.__doc__ = """/**
- * Set a range of graph edge colors.
- *
- * @param graph the graph
- * @param first_edge first edge index
- * @param edge_count number of edges
- * @param colors borrowed RGBA colors
- * @return 0 on success, -1 on error
- */"""
-    dvz_graph_edge_colors.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
-    dvz_graph_edge_colors.restype = ctypes.c_int32
-
-
-try:
-    dvz_graph_edge_controls = dvz.dvz_graph_edge_controls
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_edge_controls')
-else:
-    dvz_graph_edge_controls.__doc__ = """/**
- * Configure explicit cubic Bezier control points for graph edges.
- *
- * If omitted, Bezier mode derives gentle XY control points from each edge's endpoints.
- *
- * @param graph the graph
- * @param first_edge first edge index
- * @param edge_count number of edge controls to update
- * @param control0 borrowed first control point array
- * @param control1 borrowed second control point array
- * @return 0 on success, -1 on error
- */"""
-    dvz_graph_edge_controls.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 3), (ctypes.c_void_p * 3)]
-    dvz_graph_edge_controls.restype = ctypes.c_int32
-
-
-try:
-    dvz_graph_edge_ids = dvz.dvz_graph_edge_ids
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_edge_ids')
-else:
-    dvz_graph_edge_ids.__doc__ = """/**
- * Set stable graph edge user ids.
- *
- * @param graph the graph
- * @param first_edge first edge index
- * @param edge_count number of edges
- * @param ids borrowed user-id array
- * @return 0 on success, -1 on error
- */"""
-    dvz_graph_edge_ids.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint64)]
-    dvz_graph_edge_ids.restype = ctypes.c_int32
-
-
-try:
     dvz_graph_edge_style = dvz.dvz_graph_edge_style
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_graph_edge_style')
@@ -17709,113 +17539,42 @@ else:
 
 
 try:
-    dvz_graph_edge_widths = dvz.dvz_graph_edge_widths
+    dvz_graph_set_edge_colors = dvz.dvz_graph_set_edge_colors
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_edge_widths')
+    _MISSING_FUNCTIONS.append('dvz_graph_set_edge_colors')
 else:
-    dvz_graph_edge_widths.__doc__ = """/**
- * Set a range of graph edge stroke widths in pixels.
+    dvz_graph_set_edge_colors.__doc__ = """/**
+ * Set a range of graph edge colors.
  *
  * @param graph the graph
  * @param first_edge first edge index
  * @param edge_count number of edges
- * @param widths borrowed edge widths
- * @return 0 on success, -1 on error
- */"""
-    dvz_graph_edge_widths.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_float)]
-    dvz_graph_edge_widths.restype = ctypes.c_int32
-
-
-try:
-    dvz_graph_edges = dvz.dvz_graph_edges
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_edges')
-else:
-    dvz_graph_edges.__doc__ = """/**
- * Update graph edge endpoints.
- *
- * Edge endpoints reference node indices in the current graph node array.
- *
- * @param graph the graph
- * @param first_edge first edge index
- * @param edge_count number of edges
- * @param endpoints borrowed packed endpoint array: source0, target0, source1, target1, ...
- * @return 0 on success, -1 on invalid endpoints or allocation failure
- */"""
-    dvz_graph_edges.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32)]
-    dvz_graph_edges.restype = ctypes.c_int32
-
-
-try:
-    dvz_graph_node_colors = dvz.dvz_graph_node_colors
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_node_colors')
-else:
-    dvz_graph_node_colors.__doc__ = """/**
- * Set a range of graph node colors.
- *
- * @param graph the graph
- * @param first_node first node index
- * @param node_count number of nodes
  * @param colors borrowed RGBA colors
  * @return 0 on success, -1 on error
  */"""
-    dvz_graph_node_colors.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
-    dvz_graph_node_colors.restype = ctypes.c_int32
+    dvz_graph_set_edge_colors.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
+    dvz_graph_set_edge_colors.restype = ctypes.c_int32
 
 
 try:
-    dvz_graph_node_ids = dvz.dvz_graph_node_ids
+    dvz_graph_set_edge_controls = dvz.dvz_graph_set_edge_controls
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_node_ids')
+    _MISSING_FUNCTIONS.append('dvz_graph_set_edge_controls')
 else:
-    dvz_graph_node_ids.__doc__ = """/**
- * Set stable graph node user ids.
+    dvz_graph_set_edge_controls.__doc__ = """/**
+ * Configure explicit cubic Bezier control points for graph edges.
+ *
+ * If omitted, Bezier mode derives gentle XY control points from each edge's endpoints.
  *
  * @param graph the graph
- * @param first_node first node index
- * @param node_count number of nodes
- * @param ids borrowed user-id array
+ * @param first_edge first edge index
+ * @param edge_count number of edge controls to update
+ * @param control0 borrowed first control point array
+ * @param control1 borrowed second control point array
  * @return 0 on success, -1 on error
  */"""
-    dvz_graph_node_ids.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint64)]
-    dvz_graph_node_ids.restype = ctypes.c_int32
-
-
-try:
-    dvz_graph_node_positions = dvz.dvz_graph_node_positions
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_node_positions')
-else:
-    dvz_graph_node_positions.__doc__ = """/**
- * Update graph node positions without changing node styles or edges.
- *
- * @param graph the graph
- * @param first_node first node index
- * @param node_count number of node positions to update
- * @param positions borrowed node positions
- * @return 0 on success, -1 on error
- */"""
-    dvz_graph_node_positions.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 3)]
-    dvz_graph_node_positions.restype = ctypes.c_int32
-
-
-try:
-    dvz_graph_node_sizes = dvz.dvz_graph_node_sizes
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_graph_node_sizes')
-else:
-    dvz_graph_node_sizes.__doc__ = """/**
- * Set a range of graph node sizes in pixels.
- *
- * @param graph the graph
- * @param first_node first node index
- * @param node_count number of nodes
- * @param sizes borrowed node sizes
- * @return 0 on success, -1 on error
- */"""
-    dvz_graph_node_sizes.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_float)]
-    dvz_graph_node_sizes.restype = ctypes.c_int32
+    dvz_graph_set_edge_controls.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 3), (ctypes.c_void_p * 3)]
+    dvz_graph_set_edge_controls.restype = ctypes.c_int32
 
 
 try:
@@ -17826,7 +17585,7 @@ else:
     dvz_graph_set_edge_count.__doc__ = """/**
  * Replace the graph edge array and reset edge style defaults.
  *
- * Edge endpoints are left at their default values until `dvz_graph_edges()` is called.
+ * Edge endpoints are left at their default values until `dvz_graph_set_edge_endpoints()` is called.
  *
  * @param graph the graph
  * @param edge_count number of edges
@@ -17834,6 +17593,44 @@ else:
  */"""
     dvz_graph_set_edge_count.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32]
     dvz_graph_set_edge_count.restype = ctypes.c_int32
+
+
+try:
+    dvz_graph_set_edge_endpoints = dvz.dvz_graph_set_edge_endpoints
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_edge_endpoints')
+else:
+    dvz_graph_set_edge_endpoints.__doc__ = """/**
+ * Update graph edge endpoints.
+ *
+ * Edge endpoints reference node indices in the current graph node array.
+ *
+ * @param graph the graph
+ * @param first_edge first edge index
+ * @param edge_count number of edges
+ * @param endpoints borrowed packed endpoint array: source0, target0, source1, target1, ...
+ * @return 0 on success, -1 on invalid endpoints or allocation failure
+ */"""
+    dvz_graph_set_edge_endpoints.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32)]
+    dvz_graph_set_edge_endpoints.restype = ctypes.c_int32
+
+
+try:
+    dvz_graph_set_edge_ids = dvz.dvz_graph_set_edge_ids
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_edge_ids')
+else:
+    dvz_graph_set_edge_ids.__doc__ = """/**
+ * Set stable graph edge user ids.
+ *
+ * @param graph the graph
+ * @param first_edge first edge index
+ * @param edge_count number of edges
+ * @param ids borrowed user-id array
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_graph_set_edge_ids.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint64)]
+    dvz_graph_set_edge_ids.restype = ctypes.c_int32
 
 
 try:
@@ -17857,6 +17654,42 @@ else:
 
 
 try:
+    dvz_graph_set_edge_widths = dvz.dvz_graph_set_edge_widths
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_edge_widths')
+else:
+    dvz_graph_set_edge_widths.__doc__ = """/**
+ * Set a range of graph edge stroke widths in pixels.
+ *
+ * @param graph the graph
+ * @param first_edge first edge index
+ * @param edge_count number of edges
+ * @param widths borrowed edge widths
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_graph_set_edge_widths.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_float)]
+    dvz_graph_set_edge_widths.restype = ctypes.c_int32
+
+
+try:
+    dvz_graph_set_node_colors = dvz.dvz_graph_set_node_colors
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_node_colors')
+else:
+    dvz_graph_set_node_colors.__doc__ = """/**
+ * Set a range of graph node colors.
+ *
+ * @param graph the graph
+ * @param first_node first node index
+ * @param node_count number of nodes
+ * @param colors borrowed RGBA colors
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_graph_set_node_colors.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
+    dvz_graph_set_node_colors.restype = ctypes.c_int32
+
+
+try:
     dvz_graph_set_node_count = dvz.dvz_graph_set_node_count
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_graph_set_node_count')
@@ -17865,7 +17698,7 @@ else:
  * Replace the graph node array and reset node style defaults.
  *
  * Existing edges are discarded because their endpoints may no longer be valid. Call
- * `dvz_graph_node_positions()` after this function to set or update semantic node positions.
+ * `dvz_graph_set_node_positions()` after this function to set or update semantic node positions.
  *
  * @param graph the graph
  * @param node_count number of nodes
@@ -17873,6 +17706,60 @@ else:
  */"""
     dvz_graph_set_node_count.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32]
     dvz_graph_set_node_count.restype = ctypes.c_int32
+
+
+try:
+    dvz_graph_set_node_ids = dvz.dvz_graph_set_node_ids
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_node_ids')
+else:
+    dvz_graph_set_node_ids.__doc__ = """/**
+ * Set stable graph node user ids.
+ *
+ * @param graph the graph
+ * @param first_node first node index
+ * @param node_count number of nodes
+ * @param ids borrowed user-id array
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_graph_set_node_ids.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint64)]
+    dvz_graph_set_node_ids.restype = ctypes.c_int32
+
+
+try:
+    dvz_graph_set_node_positions = dvz.dvz_graph_set_node_positions
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_node_positions')
+else:
+    dvz_graph_set_node_positions.__doc__ = """/**
+ * Update graph node positions without changing node styles or edges.
+ *
+ * @param graph the graph
+ * @param first_node first node index
+ * @param node_count number of node positions to update
+ * @param positions borrowed node positions
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_graph_set_node_positions.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 3)]
+    dvz_graph_set_node_positions.restype = ctypes.c_int32
+
+
+try:
+    dvz_graph_set_node_sizes = dvz.dvz_graph_set_node_sizes
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_graph_set_node_sizes')
+else:
+    dvz_graph_set_node_sizes.__doc__ = """/**
+ * Set a range of graph node sizes in pixels.
+ *
+ * @param graph the graph
+ * @param first_node first node index
+ * @param node_count number of nodes
+ * @param sizes borrowed node sizes
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_graph_set_node_sizes.argtypes = [ctypes.POINTER(DvzGraph), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_float)]
+    dvz_graph_set_node_sizes.restype = ctypes.c_int32
 
 
 try:
@@ -18438,24 +18325,6 @@ else:
 
 
 try:
-    dvz_grid_col_size = dvz.dvz_grid_col_size
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_grid_col_size')
-else:
-    dvz_grid_col_size.__doc__ = """/**
- * Set one grid column size.
- *
- * @param grid the grid
- * @param col zero-based column index
- * @param mode size mode
- * @param value weight or fixed logical-pixel size
- * @return whether the size was accepted
- */"""
-    dvz_grid_col_size.argtypes = [ctypes.POINTER(DvzGrid), ctypes.c_uint32, ctypes.c_int, ctypes.c_float]
-    dvz_grid_col_size.restype = ctypes.c_bool
-
-
-try:
     dvz_grid_destroy = dvz.dvz_grid_destroy
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_grid_destroy')
@@ -18528,21 +18397,21 @@ else:
 
 
 try:
-    dvz_grid_row_size = dvz.dvz_grid_row_size
+    dvz_grid_set_col_size = dvz.dvz_grid_set_col_size
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_grid_row_size')
+    _MISSING_FUNCTIONS.append('dvz_grid_set_col_size')
 else:
-    dvz_grid_row_size.__doc__ = """/**
- * Set one grid row size.
+    dvz_grid_set_col_size.__doc__ = """/**
+ * Set one grid column size.
  *
  * @param grid the grid
- * @param row zero-based row index
+ * @param col zero-based column index
  * @param mode size mode
  * @param value weight or fixed logical-pixel size
- * @return whether the size was accepted
+ * @return DVZ_OK if the size was accepted, DVZ_ERROR otherwise
  */"""
-    dvz_grid_row_size.argtypes = [ctypes.POINTER(DvzGrid), ctypes.c_uint32, ctypes.c_int, ctypes.c_float]
-    dvz_grid_row_size.restype = ctypes.c_bool
+    dvz_grid_set_col_size.argtypes = [ctypes.POINTER(DvzGrid), ctypes.c_uint32, ctypes.c_int, ctypes.c_float]
+    dvz_grid_set_col_size.restype = ctypes.c_int32
 
 
 try:
@@ -18556,10 +18425,10 @@ else:
  * @param grid the grid
  * @param x_px horizontal gutter in logical pixels
  * @param y_px vertical gutter in logical pixels
- * @return whether the gutters were accepted
+ * @return DVZ_OK if the gutters were accepted, DVZ_ERROR otherwise
  */"""
     dvz_grid_set_gutter.argtypes = [ctypes.POINTER(DvzGrid), ctypes.c_float, ctypes.c_float]
-    dvz_grid_set_gutter.restype = ctypes.c_bool
+    dvz_grid_set_gutter.restype = ctypes.c_int32
 
 
 try:
@@ -18572,10 +18441,28 @@ else:
  *
  * @param grid the grid
  * @param margins grid margins, or NULL for zero margins
- * @return whether the margins were accepted
+ * @return DVZ_OK if the margins were accepted, DVZ_ERROR otherwise
  */"""
     dvz_grid_set_margins.argtypes = [ctypes.POINTER(DvzGrid), ctypes.POINTER(DvzPanelReserve)]
-    dvz_grid_set_margins.restype = ctypes.c_bool
+    dvz_grid_set_margins.restype = ctypes.c_int32
+
+
+try:
+    dvz_grid_set_row_size = dvz.dvz_grid_set_row_size
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_grid_set_row_size')
+else:
+    dvz_grid_set_row_size.__doc__ = """/**
+ * Set one grid row size.
+ *
+ * @param grid the grid
+ * @param row zero-based row index
+ * @param mode size mode
+ * @param value weight or fixed logical-pixel size
+ * @return DVZ_OK if the size was accepted, DVZ_ERROR otherwise
+ */"""
+    dvz_grid_set_row_size.argtypes = [ctypes.POINTER(DvzGrid), ctypes.c_uint32, ctypes.c_int, ctypes.c_float]
+    dvz_grid_set_row_size.restype = ctypes.c_int32
 
 
 try:
@@ -19319,9 +19206,10 @@ else:
  * Clear the hovered item.
  *
  * @param hover the hover object
+ * @return DVZ_OK when the hover state was cleared, DVZ_ERROR on error
  */"""
     dvz_hover_clear.argtypes = [ctypes.POINTER(DvzHover)]
-    dvz_hover_clear.restype = None
+    dvz_hover_clear.restype = ctypes.c_int32
 
 
 try:
@@ -19382,9 +19270,8 @@ else:
  * First-slice scope: one sampled 2D texture per visual. The legacy path accepts `position`
  * (vec3, 4 corner vertices in triangle-strip order) and `texcoords` (vec2, matching UVs).
  * The retained per-item path accepts one anchor `position` and `extent` per image item, with
- * optional `tex_rect` atlas rectangles and per-item `anchor`. Bind a sampled field via
- * `dvz_visual_set_field()`. The legacy texture convenience wrappers remain available and lower
- * to scene-owned sampled fields internally.
+ * optional `tex_rect` atlas rectangles and per-item `anchor`. Bind texture data with a scene-owned
+ * sampled field via `dvz_visual_set_field()`.
  *
  * @param scene the scene
  * @param flags variant flags
@@ -20619,9 +20506,10 @@ else:
  *
  * @param interaction the interaction policy
  * @param panel the panel
+ * @return DVZ_OK when the panel was accepted, DVZ_ERROR on error
  */"""
     dvz_interaction_bind_panel.argtypes = [ctypes.POINTER(DvzInteractionPolicy), ctypes.POINTER(DvzPanel)]
-    dvz_interaction_bind_panel.restype = None
+    dvz_interaction_bind_panel.restype = ctypes.c_int32
 
 
 try:
@@ -20650,9 +20538,10 @@ else:
  *
  * @param interaction the interaction policy
  * @param enabled true to enable automatic pinning
+ * @return DVZ_OK when the flag was accepted, DVZ_ERROR on error
  */"""
     dvz_interaction_set_auto_pin_readout.argtypes = [ctypes.POINTER(DvzInteractionPolicy), ctypes.c_bool]
-    dvz_interaction_set_auto_pin_readout.restype = None
+    dvz_interaction_set_auto_pin_readout.restype = ctypes.c_int32
 
 
 try:
@@ -20665,9 +20554,10 @@ else:
  *
  * @param interaction the interaction policy
  * @param channel the link channel
+ * @return DVZ_OK when the channel was accepted, DVZ_ERROR on error
  */"""
     dvz_interaction_set_link_channel.argtypes = [ctypes.POINTER(DvzInteractionPolicy), ctypes.POINTER(DvzLinkChannel)]
-    dvz_interaction_set_link_channel.restype = None
+    dvz_interaction_set_link_channel.restype = ctypes.c_int32
 
 
 try:
@@ -20680,9 +20570,10 @@ else:
  *
  * @param interaction the interaction policy
  * @param policy the hit-selection policy
+ * @return DVZ_OK when the policy was accepted, DVZ_ERROR on error
  */"""
     dvz_interaction_set_query_hit_policy.argtypes = [ctypes.POINTER(DvzInteractionPolicy), ctypes.c_int]
-    dvz_interaction_set_query_hit_policy.restype = None
+    dvz_interaction_set_query_hit_policy.restype = ctypes.c_int32
 
 
 try:
@@ -20695,9 +20586,10 @@ else:
  *
  * @param interaction the interaction policy
  * @param selection the selection
+ * @return DVZ_OK when the selection was accepted, DVZ_ERROR on error
  */"""
     dvz_interaction_set_selection.argtypes = [ctypes.POINTER(DvzInteractionPolicy), ctypes.POINTER(DvzSelection)]
-    dvz_interaction_set_selection.restype = None
+    dvz_interaction_set_selection.restype = ctypes.c_int32
 
 
 try:
@@ -21038,9 +20930,11 @@ except AttributeError:
 else:
     dvz_keyboard_modifier_state_update.__doc__ = """/**
  * Update the modifier tracker with a keyboard event.
+ *
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_keyboard_modifier_state_update.argtypes = [ctypes.POINTER(DvzKeyboardModifierState), ctypes.c_int, ctypes.c_int]
-    dvz_keyboard_modifier_state_update.restype = None
+    dvz_keyboard_modifier_state_update.restype = ctypes.c_int32
 
 
 try:
@@ -21265,10 +21159,10 @@ else:
  * Clear all highlighted categorical legend entries.
  *
  * @param legend the legend
- * @return true when the highlight state was accepted
+ * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */"""
     dvz_legend_clear_highlight.argtypes = [ctypes.POINTER(DvzLegend)]
-    dvz_legend_clear_highlight.restype = ctypes.c_bool
+    dvz_legend_clear_highlight.restype = ctypes.c_int32
 
 
 try:
@@ -21326,10 +21220,10 @@ else:
  *
  * @param legend the legend
  * @param id category id to highlight
- * @return true when the highlight state was accepted
+ * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */"""
     dvz_legend_set_highlight.argtypes = [ctypes.POINTER(DvzLegend), ctypes.c_long]
-    dvz_legend_set_highlight.restype = ctypes.c_bool
+    dvz_legend_set_highlight.restype = ctypes.c_int32
 
 
 try:
@@ -21345,10 +21239,10 @@ else:
  * @param legend the legend
  * @param ids category ids to highlight
  * @param count number of highlighted category ids
- * @return true when the highlight state was accepted
+ * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */"""
     dvz_legend_set_highlights.argtypes = [ctypes.POINTER(DvzLegend), ctypes.c_void_p, ctypes.c_uint32]
-    dvz_legend_set_highlights.restype = ctypes.c_bool
+    dvz_legend_set_highlights.restype = ctypes.c_int32
 
 
 try:
@@ -21361,10 +21255,10 @@ else:
  *
  * @param legend the legend
  * @param desc layout descriptor
- * @return true when the layout was accepted
+ * @return DVZ_OK when the layout was accepted, DVZ_ERROR on error
  */"""
     dvz_legend_set_layout.argtypes = [ctypes.POINTER(DvzLegend), ctypes.POINTER(DvzLegendDesc)]
-    dvz_legend_set_layout.restype = ctypes.c_bool
+    dvz_legend_set_layout.restype = ctypes.c_int32
 
 
 try:
@@ -21377,9 +21271,10 @@ else:
  *
  * @param legend the legend
  * @param title the title, or NULL to clear
+ * @return DVZ_OK when the title was accepted, DVZ_ERROR on error
  */"""
     dvz_legend_set_title.argtypes = [ctypes.POINTER(DvzLegend), ctypes.c_char_p]
-    dvz_legend_set_title.restype = None
+    dvz_legend_set_title.restype = ctypes.c_int32
 
 
 try:
@@ -21420,15 +21315,15 @@ else:
     dvz_load_jpeg.__doc__ = """/**
  * Decode a JPEG image from memory into tightly packed RGBA8 pixels.
  *
- * @param size size of the JPEG byte buffer
  * @param bytes JPEG byte buffer
+ * @param size_bytes size of the JPEG byte buffer in bytes
  * @param[out] width decoded image width
  * @param[out] height decoded image height
  * @returns RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
  *
  * @note Free the returned buffer with dvz_memory_free().
  */"""
-    dvz_load_jpeg.argtypes = [ctypes.c_uint64, ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
+    dvz_load_jpeg.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
     dvz_load_jpeg.restype = ctypes.POINTER(ctypes.c_uint8)
 
 
@@ -21661,201 +21556,6 @@ else:
 
 
 try:
-    dvz_mock_band = dvz.dvz_mock_band
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_mock_band')
-else:
-    dvz_mock_band.__doc__ = """/**
- * Generate points on a band.
- *
- * @param count the number of positions to generate
- * @param size the size of the band
- * @returns the positions
- */"""
-    dvz_mock_band.argtypes = [ctypes.c_uint32, (ctypes.c_float * 2)]
-    dvz_mock_band.restype = (ctypes.c_void_p * 3)
-
-
-try:
-    dvz_mock_circle = dvz.dvz_mock_circle
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_mock_circle')
-else:
-    dvz_mock_circle.__doc__ = """/**
- * Generate points on a circle.
- *
- * @param count the number of positions to generate
- * @param radius the radius of the circle
- * @returns the positions
- */"""
-    dvz_mock_circle.argtypes = [ctypes.c_uint32, ctypes.c_float]
-    dvz_mock_circle.restype = (ctypes.c_void_p * 3)
-
-
-try:
-    dvz_mock_color = dvz.dvz_mock_color
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_mock_color')
-else:
-    dvz_mock_color.__doc__ = """/**
- * Generate a set of random colors.
- *
- * @param count the number of colors to generate
- * @param alpha the alpha value
- * @returns random colors
- */"""
-    dvz_mock_color.argtypes = [ctypes.c_uint32, ctypes.c_uint8]
-    dvz_mock_color.restype = ctypes.POINTER(DvzColor)
-
-
-try:
-    dvz_mock_fixed = dvz.dvz_mock_fixed
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_mock_fixed')
-else:
-    dvz_mock_fixed.__doc__ = """/**
- * Generate identical 3D positions.
- *
- * @param count the number of positions to generate
- * @param fixed the position
- * @returns the repeated positions
- */"""
-    dvz_mock_fixed.argtypes = [ctypes.c_uint32, (ctypes.c_float * 3)]
-    dvz_mock_fixed.restype = (ctypes.c_void_p * 3)
-
-
-try:
-    dvz_mock_full = dvz.dvz_mock_full
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_mock_full')
-else:
-    dvz_mock_full.__doc__ = """/**
- * Generate an array with the same value.
- *
- * @param count the number of scalars to generate
- * @param value the value
- * @returns the values
- */"""
-    dvz_mock_full.argtypes = [ctypes.c_uint32, ctypes.c_float]
-    dvz_mock_full.restype = ctypes.POINTER(ctypes.c_float)
-
-
-try:
-    dvz_mock_line = dvz.dvz_mock_line
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_mock_line')
-else:
-    dvz_mock_line.__doc__ = """/**
- * Generate 3D positions on a line.
- *
- * @param count the number of positions to generate
- * @param p0 initial position
- * @param p1 terminal position
- * @returns the positions
- */"""
-    dvz_mock_line.argtypes = [ctypes.c_uint32, (ctypes.c_float * 3), (ctypes.c_float * 3)]
-    dvz_mock_line.restype = (ctypes.c_void_p * 3)
-
-
-try:
-    dvz_mock_linspace = dvz.dvz_mock_linspace
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_mock_linspace')
-else:
-    dvz_mock_linspace.__doc__ = """/**
- * Generate an array ranging from an initial value to a final value.
- *
- * @param count the number of scalars to generate
- * @param initial the initial value
- * @param final the final value
- * @returns the values
- */"""
-    dvz_mock_linspace.argtypes = [ctypes.c_uint32, ctypes.c_float, ctypes.c_float]
-    dvz_mock_linspace.restype = ctypes.POINTER(ctypes.c_float)
-
-
-try:
-    dvz_mock_monochrome = dvz.dvz_mock_monochrome
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_mock_monochrome')
-else:
-    dvz_mock_monochrome.__doc__ = """/**
- * Repeat a color in an array.
- *
- * @param count the number of colors to generate
- * @param mono the color to repeat
- * @returns colors
- */"""
-    dvz_mock_monochrome.argtypes = [ctypes.c_uint32, DvzColor]
-    dvz_mock_monochrome.restype = ctypes.POINTER(DvzColor)
-
-
-try:
-    dvz_mock_pos_2D = dvz.dvz_mock_pos_2D
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_mock_pos_2D')
-else:
-    dvz_mock_pos_2D.__doc__ = """/**
- * Generate a set of random 2D positions.
- *
- * @param count the number of positions to generate
- * @param std the standard deviation
- * @returns the positions
- */"""
-    dvz_mock_pos_2D.argtypes = [ctypes.c_uint32, ctypes.c_float]
-    dvz_mock_pos_2D.restype = (ctypes.c_void_p * 3)
-
-
-try:
-    dvz_mock_pos_3D = dvz.dvz_mock_pos_3D
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_mock_pos_3D')
-else:
-    dvz_mock_pos_3D.__doc__ = """/**
- * Generate a set of random 3D positions.
- *
- * @param count the number of positions to generate
- * @param std the standard deviation
- * @returns the positions
- */"""
-    dvz_mock_pos_3D.argtypes = [ctypes.c_uint32, ctypes.c_float]
-    dvz_mock_pos_3D.restype = (ctypes.c_void_p * 3)
-
-
-try:
-    dvz_mock_range = dvz.dvz_mock_range
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_mock_range')
-else:
-    dvz_mock_range.__doc__ = """/**
- * Generate an array of consecutive positive numbers.
- *
- * @param count the number of consecutive integers to generate
- * @param initial the initial value
- * @returns the values
- */"""
-    dvz_mock_range.argtypes = [ctypes.c_uint32, ctypes.c_uint32]
-    dvz_mock_range.restype = ctypes.POINTER(ctypes.c_uint32)
-
-
-try:
-    dvz_mock_uniform = dvz.dvz_mock_uniform
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_mock_uniform')
-else:
-    dvz_mock_uniform.__doc__ = """/**
- * Generate a set of uniformly random scalar values.
- *
- * @param count the number of values to generate
- * @param vmin the minimum value of the interval
- * @param vmax the maximum value of the interval
- * @returns the values
- */"""
-    dvz_mock_uniform.argtypes = [ctypes.c_uint32, ctypes.c_float, ctypes.c_float]
-    dvz_mock_uniform.restype = ctypes.POINTER(ctypes.c_float)
-
-
-try:
     dvz_msaa_desc = dvz.dvz_msaa_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_msaa_desc')
@@ -21884,65 +21584,6 @@ else:
  */"""
     dvz_normalize_bytes.argtypes = [(ctypes.c_float * 2), ctypes.c_uint32, ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_uint8)]
     dvz_normalize_bytes.restype = None
-
-
-try:
-    dvz_obj_created = dvz.dvz_obj_created
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_obj_created')
-else:
-    dvz_obj_created.__doc__ = """/**
- * Mark an object as successfully created on the GPU.
- *
- * @param obj the object
- */"""
-    dvz_obj_created.argtypes = [ctypes.POINTER(DvzObject)]
-    dvz_obj_created.restype = None
-
-
-try:
-    dvz_obj_destroyed = dvz.dvz_obj_destroyed
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_obj_destroyed')
-else:
-    dvz_obj_destroyed.__doc__ = """/**
- * Mark an object as destroyed.
- *
- * @param obj the object
- */"""
-    dvz_obj_destroyed.argtypes = [ctypes.POINTER(DvzObject)]
-    dvz_obj_destroyed.restype = None
-
-
-try:
-    dvz_obj_init = dvz.dvz_obj_init
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_obj_init')
-else:
-    dvz_obj_init.__doc__ = """/**
- * Initialize an object.
- *
- * Memory for the object has been allocated and its fields properly initialized.
- *
- * @param obj the object
- */"""
-    dvz_obj_init.argtypes = [ctypes.POINTER(DvzObject)]
-    dvz_obj_init.restype = None
-
-
-try:
-    dvz_obj_is_created = dvz.dvz_obj_is_created
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_obj_is_created')
-else:
-    dvz_obj_is_created.__doc__ = """/**
- * Whether an object has been successfully created.
- *
- * @param obj the object
- * @returns a boolean indicated whether the object has been successfully created
- */"""
-    dvz_obj_is_created.argtypes = [ctypes.POINTER(DvzObject)]
-    dvz_obj_is_created.restype = ctypes.c_bool
 
 
 try:
@@ -22002,9 +21643,10 @@ else:
  *
  * @param gizmo the orientation gizmo
  * @param visible whether the gizmo should be visible
+ * @return DVZ_OK when the visibility was accepted, DVZ_ERROR on error
  */"""
     dvz_orientation_gizmo_set_visible.argtypes = [ctypes.POINTER(DvzOrientationGizmo), ctypes.c_bool]
-    dvz_orientation_gizmo_set_visible.restype = None
+    dvz_orientation_gizmo_set_visible.restype = ctypes.c_int32
 
 
 try:
@@ -22048,9 +21690,10 @@ else:
  * Clear rich text content and return the card to the plain GPU text path.
  *
  * @param card the card
+ * @return 0 on success, -1 on error
  */"""
     dvz_overlay_card_clear_rich_text.argtypes = [ctypes.POINTER(DvzOverlayCard)]
-    dvz_overlay_card_clear_rich_text.restype = None
+    dvz_overlay_card_clear_rich_text.restype = ctypes.c_int32
 
 
 try:
@@ -22078,9 +21721,10 @@ else:
  * @param card the card
  * @param anchor_px panel-local anchor in logical pixels, or NULL to keep it unchanged
  * @param offset_px offset from the anchor in logical pixels, or NULL to keep it unchanged
+ * @return 0 on success, -1 on error
  */"""
     dvz_overlay_card_set_layout.argtypes = [ctypes.POINTER(DvzOverlayCard), (ctypes.c_float * 2), (ctypes.c_float * 2)]
-    dvz_overlay_card_set_layout.restype = None
+    dvz_overlay_card_set_layout.restype = ctypes.c_int32
 
 
 try:
@@ -22094,9 +21738,10 @@ else:
  * @param card the card
  * @param placement semantic placement mode
  * @param offset_px inward/relative offset in logical pixels, or NULL to keep it unchanged
+ * @return 0 on success, -1 on error
  */"""
     dvz_overlay_card_set_placement.argtypes = [ctypes.POINTER(DvzOverlayCard), ctypes.c_int, (ctypes.c_float * 2)]
-    dvz_overlay_card_set_placement.restype = None
+    dvz_overlay_card_set_placement.restype = ctypes.c_int32
 
 
 try:
@@ -22141,9 +21786,10 @@ else:
  *
  * @param card the card
  * @param text the text, or NULL to clear it
+ * @return 0 on success, -1 on error
  */"""
     dvz_overlay_card_set_text.argtypes = [ctypes.POINTER(DvzOverlayCard), ctypes.c_char_p]
-    dvz_overlay_card_set_text.restype = None
+    dvz_overlay_card_set_text.restype = ctypes.c_int32
 
 
 try:
@@ -22156,9 +21802,10 @@ else:
  *
  * @param card the card
  * @param visible whether the card should be visible
+ * @return 0 on success, -1 on error
  */"""
     dvz_overlay_card_set_visible.argtypes = [ctypes.POINTER(DvzOverlayCard), ctypes.c_bool]
-    dvz_overlay_card_set_visible.restype = None
+    dvz_overlay_card_set_visible.restype = ctypes.c_int32
 
 
 try:
@@ -22253,7 +21900,8 @@ else:
     dvz_panel_axes_2d_desc.__doc__ = """/**
  * Return the default 2D panel axes descriptor.
  *
- * The descriptor enables grid lines in the default X/Y axis styles and leaves labels empty.
+ * The descriptor leaves labels empty. `dvz_panel_set_axes_2d()` applies default tick policy and
+ * grid-enabled default styles when it creates the panel axes.
  *
  * @return default 2D axes descriptor
  */"""
@@ -22405,9 +22053,10 @@ else:
  * Clear a panel background.
  *
  * @param panel the panel
+ * @return DVZ_OK if the background was cleared, DVZ_ERROR otherwise
  */"""
     dvz_panel_clear_background.argtypes = [ctypes.POINTER(DvzPanel)]
-    dvz_panel_clear_background.restype = None
+    dvz_panel_clear_background.restype = ctypes.c_int32
 
 
 try:
@@ -22419,9 +22068,10 @@ else:
  * Clear a panel border.
  *
  * @param panel the panel
+ * @return DVZ_OK if the border was cleared, DVZ_ERROR otherwise
  */"""
     dvz_panel_clear_border.argtypes = [ctypes.POINTER(DvzPanel)]
-    dvz_panel_clear_border.restype = None
+    dvz_panel_clear_border.restype = ctypes.c_int32
 
 
 try:
@@ -22433,9 +22083,10 @@ else:
  * Clear a panel 2D view policy without changing the current axis domains.
  *
  * @param panel the panel
+ * @return DVZ_OK if the 2D view policy was cleared, DVZ_ERROR otherwise
  */"""
     dvz_panel_clear_view2d.argtypes = [ctypes.POINTER(DvzPanel)]
-    dvz_panel_clear_view2d.restype = None
+    dvz_panel_clear_view2d.restype = ctypes.c_int32
 
 
 try:
@@ -22870,16 +22521,17 @@ else:
     dvz_panel_set_axes_2d.__doc__ = """/**
  * Apply common 2D axes defaults to a panel-owned X/Y axis pair.
  *
- * This helper fetches the panel-owned X/Y axes, applies one tick policy to both axes, applies the
- * independent X/Y styles, sets labels, and makes both axes visible. Passing NULL uses
- * dvz_panel_axes_2d_desc().
+ * This helper fetches the panel-owned X/Y axes, applies the default tick policy and grid-enabled
+ * default style to both axes, sets labels, and makes both axes visible. Passing NULL uses
+ * dvz_panel_axes_2d_desc(). Use `dvz_axis_set_tick_policy()` and `dvz_axis_set_style()` for custom
+ * per-axis tick policy or style.
  *
  * @param panel the panel
  * @param desc axes descriptor, or NULL for defaults
- * @return whether the axes were updated
+ * @return DVZ_OK if the axes were updated, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_axes_2d.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelAxes2DDesc)]
-    dvz_panel_set_axes_2d.restype = ctypes.c_bool
+    dvz_panel_set_axes_2d.restype = ctypes.c_int32
 
 
 try:
@@ -22899,10 +22551,10 @@ else:
  *
  * @param panel the panel
  * @param background the background descriptor, or NULL to clear
- * @return whether the background was updated
+ * @return DVZ_OK if the background was updated, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_background.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelBackgroundDesc)]
-    dvz_panel_set_background.restype = ctypes.c_bool
+    dvz_panel_set_background.restype = ctypes.c_int32
 
 
 try:
@@ -22920,9 +22572,10 @@ else:
  *
  * @param panel the panel
  * @param color RGBA8 background color
+ * @return DVZ_OK if the background was updated, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_background_color.argtypes = [ctypes.POINTER(DvzPanel), DvzColor]
-    dvz_panel_set_background_color.restype = None
+    dvz_panel_set_background_color.restype = ctypes.c_int32
 
 
 try:
@@ -22938,10 +22591,10 @@ else:
  *
  * @param panel the panel
  * @param border border descriptor, or NULL to clear
- * @return whether the border was updated
+ * @return DVZ_OK if the border was updated, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_border.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelBorderDesc)]
-    dvz_panel_set_border.restype = ctypes.c_bool
+    dvz_panel_set_border.restype = ctypes.c_int32
 
 
 try:
@@ -23035,10 +22688,10 @@ else:
  *
  * @param panel the panel
  * @param desc EDL descriptor, or NULL to disable
- * @return whether the panel EDL state was updated
+ * @return DVZ_OK if the panel EDL state was updated, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_edl.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzEdlDesc)]
-    dvz_panel_set_edl.restype = ctypes.c_bool
+    dvz_panel_set_edl.restype = ctypes.c_int32
 
 
 try:
@@ -23054,10 +22707,10 @@ else:
  *
  * @param panel the panel
  * @param desc MSAA descriptor, or NULL to disable
- * @return whether the panel MSAA state was updated
+ * @return DVZ_OK if the panel MSAA state was updated, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_msaa.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzMsaaDesc)]
-    dvz_panel_set_msaa.restype = ctypes.c_bool
+    dvz_panel_set_msaa.restype = ctypes.c_int32
 
 
 try:
@@ -23074,10 +22727,10 @@ else:
  *
  * @param panel the panel
  * @param padding pixel padding descriptor, or NULL for zero padding
- * @return whether the padding was accepted
+ * @return DVZ_OK if the padding was accepted, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_padding.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelReserve)]
-    dvz_panel_set_padding.restype = ctypes.c_bool
+    dvz_panel_set_padding.restype = ctypes.c_int32
 
 
 try:
@@ -23094,10 +22747,10 @@ else:
  *
  * @param panel the panel
  * @param reserve pixel reservation descriptor, or NULL for zero reserve
- * @return whether the reservation was accepted
+ * @return DVZ_OK if the reservation was accepted, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_reserve.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelReserve)]
-    dvz_panel_set_reserve.restype = ctypes.c_bool
+    dvz_panel_set_reserve.restype = ctypes.c_int32
 
 
 try:
@@ -23135,10 +22788,10 @@ else:
  *
  * @param panel the panel
  * @param desc SSAO descriptor, or NULL to disable
- * @return whether the panel SSAO state was updated
+ * @return DVZ_OK if the panel SSAO state was updated, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_ssao.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzSsaoDesc)]
-    dvz_panel_set_ssao.restype = ctypes.c_bool
+    dvz_panel_set_ssao.restype = ctypes.c_int32
 
 
 try:
@@ -23147,37 +22800,19 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_panel_set_view2d')
 else:
     dvz_panel_set_view2d.__doc__ = """/**
- * Set a panel 2D view policy.
- *
- * The panel view owns fitting, aspect, and padding policy for the panel's source data domains.
- * With DVZ_PANEL_VIEW2D_ASPECT_EQUAL, VIEW and DATA coordinates preserve equal X/Y screen scale
- * under the current plot rectangle. Set source limits with `dvz_panel_set_domain()`.
- *
- * @param panel the panel
- * @param view panel 2D view descriptor; NULL clears the view policy
- * @return 0 on success, -1 on validation error
- */"""
-    dvz_panel_set_view2d.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelView2D)]
-    dvz_panel_set_view2d.restype = ctypes.c_int32
-
-
-try:
-    dvz_panel_set_view2d_desc = dvz.dvz_panel_set_view2d_desc
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_panel_set_view2d_desc')
-else:
-    dvz_panel_set_view2d_desc.__doc__ = """/**
- * Set a revisioned panel 2D view descriptor.
+ * Set a panel 2D view descriptor.
  *
  * Passing NULL clears the active 2D view. Explicit descriptor domains are copied into the retained
  * view and synchronized to panel axes for compatibility.
+ * With DVZ_PANEL_VIEW2D_ASPECT_EQUAL, VIEW and DATA coordinates preserve equal X/Y screen scale
+ * under the current plot rectangle.
  *
  * @param panel the panel
  * @param desc panel 2D view descriptor, or NULL to clear
  * @return 0 on success, -1 on validation error
  */"""
-    dvz_panel_set_view2d_desc.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelView2DDesc)]
-    dvz_panel_set_view2d_desc.restype = ctypes.c_int32
+    dvz_panel_set_view2d.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelView2DDesc)]
+    dvz_panel_set_view2d.restype = ctypes.c_int32
 
 
 try:
@@ -23237,20 +22872,6 @@ else:
  */"""
     dvz_panel_transform_point.argtypes = [ctypes.POINTER(DvzPanel), ctypes.c_int, ctypes.c_int, (ctypes.c_double * 2), (ctypes.c_double * 2)]
     dvz_panel_transform_point.restype = ctypes.c_bool
-
-
-try:
-    dvz_panel_view2d = dvz.dvz_panel_view2d
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_panel_view2d')
-else:
-    dvz_panel_view2d.__doc__ = """/**
- * Return the default panel 2D view descriptor.
- *
- * @return panel 2D view descriptor
- */"""
-    dvz_panel_view2d.argtypes = []
-    dvz_panel_view2d.restype = DvzPanelView2D
 
 
 try:
@@ -23402,9 +23023,13 @@ else:
     dvz_panzoom_connect.__doc__ = """/**
  * Subscribe the panzoom to an input router.
  * The panzoom pointer callback will be registered; call dvz_panzoom_disconnect() to remove it.
+ *
+ * @param pz panzoom controller
+ * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_connect.argtypes = [ctypes.POINTER(DvzPanzoom), ctypes.POINTER(DvzInputRouter)]
-    dvz_panzoom_connect.restype = None
+    dvz_panzoom_connect.restype = ctypes.c_int32
 
 
 try:
@@ -23450,9 +23075,13 @@ except AttributeError:
 else:
     dvz_panzoom_disconnect.__doc__ = """/**
  * Unsubscribe the panzoom from a router.
+ *
+ * @param pz panzoom controller
+ * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_disconnect.argtypes = [ctypes.POINTER(DvzPanzoom), ctypes.POINTER(DvzInputRouter)]
-    dvz_panzoom_disconnect.restype = None
+    dvz_panzoom_disconnect.restype = ctypes.c_int32
 
 
 try:
@@ -23462,9 +23091,12 @@ except AttributeError:
 else:
     dvz_panzoom_end.__doc__ = """/**
  * Commit the current pan/zoom as the new drag baseline (call at drag stop).
+ *
+ * @param pz panzoom controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_end.argtypes = [ctypes.POINTER(DvzPanzoom)]
-    dvz_panzoom_end.restype = None
+    dvz_panzoom_end.restype = ctypes.c_int32
 
 
 try:
@@ -23503,9 +23135,13 @@ except AttributeError:
 else:
     dvz_panzoom_pan.__doc__ = """/**
  * Set the pan offset in NDC.
+ *
+ * @param pz panzoom controller
+ * @param pan pan offset
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_pan.argtypes = [ctypes.POINTER(DvzPanzoom), (ctypes.c_float * 2)]
-    dvz_panzoom_pan.restype = None
+    dvz_panzoom_pan.restype = ctypes.c_int32
 
 
 try:
@@ -23515,9 +23151,14 @@ except AttributeError:
 else:
     dvz_panzoom_pan_shift.__doc__ = """/**
  * Apply a pan shift (pixel delta).
+ *
+ * @param pz panzoom controller
+ * @param shift_px shift in viewport pixels
+ * @param center_px pointer center in viewport pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_pan_shift.argtypes = [ctypes.POINTER(DvzPanzoom), (ctypes.c_float * 2), (ctypes.c_float * 2)]
-    dvz_panzoom_pan_shift.restype = None
+    dvz_panzoom_pan_shift.restype = ctypes.c_int32
 
 
 try:
@@ -23541,9 +23182,12 @@ except AttributeError:
 else:
     dvz_panzoom_reset.__doc__ = """/**
  * Reset to the identity transform.
+ *
+ * @param pz panzoom controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_reset.argtypes = [ctypes.POINTER(DvzPanzoom)]
-    dvz_panzoom_reset.restype = None
+    dvz_panzoom_reset.restype = ctypes.c_int32
 
 
 try:
@@ -23553,9 +23197,14 @@ except AttributeError:
 else:
     dvz_panzoom_resize.__doc__ = """/**
  * Update the viewport size (call on window resize).
+ *
+ * @param pz panzoom controller
+ * @param width viewport width in pixels
+ * @param height viewport height in pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_resize.argtypes = [ctypes.POINTER(DvzPanzoom), ctypes.c_float, ctypes.c_float]
-    dvz_panzoom_resize.restype = None
+    dvz_panzoom_resize.restype = ctypes.c_int32
 
 
 try:
@@ -23590,9 +23239,16 @@ except AttributeError:
 else:
     dvz_panzoom_viewport.__doc__ = """/**
  * Update the viewport rectangle in window coordinates.
+ *
+ * @param pz panzoom controller
+ * @param x viewport x origin in window pixels
+ * @param y viewport y origin in window pixels
+ * @param width viewport width in window pixels
+ * @param height viewport height in window pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_viewport.argtypes = [ctypes.POINTER(DvzPanzoom), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_panzoom_viewport.restype = None
+    dvz_panzoom_viewport.restype = ctypes.c_int32
 
 
 try:
@@ -23602,9 +23258,13 @@ except AttributeError:
 else:
     dvz_panzoom_zoom.__doc__ = """/**
  * Set the zoom factors.
+ *
+ * @param pz panzoom controller
+ * @param zoom zoom factors
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_zoom.argtypes = [ctypes.POINTER(DvzPanzoom), (ctypes.c_float * 2)]
-    dvz_panzoom_zoom.restype = None
+    dvz_panzoom_zoom.restype = ctypes.c_int32
 
 
 try:
@@ -23631,9 +23291,14 @@ except AttributeError:
 else:
     dvz_panzoom_zoom_shift.__doc__ = """/**
  * Apply a zoom shift driven by right-drag (pixel delta + anchor).
+ *
+ * @param pz panzoom controller
+ * @param shift_px shift in viewport pixels
+ * @param center_px zoom anchor in viewport pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_zoom_shift.argtypes = [ctypes.POINTER(DvzPanzoom), (ctypes.c_float * 2), (ctypes.c_float * 2)]
-    dvz_panzoom_zoom_shift.restype = None
+    dvz_panzoom_zoom_shift.restype = ctypes.c_int32
 
 
 try:
@@ -23643,9 +23308,14 @@ except AttributeError:
 else:
     dvz_panzoom_zoom_wheel.__doc__ = """/**
  * Apply a wheel zoom.
+ *
+ * @param pz panzoom controller
+ * @param dir wheel direction
+ * @param center_px zoom anchor in viewport pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_panzoom_zoom_wheel.argtypes = [ctypes.POINTER(DvzPanzoom), (ctypes.c_float * 2), (ctypes.c_float * 2)]
-    dvz_panzoom_zoom_wheel.restype = None
+    dvz_panzoom_zoom_wheel.restype = ctypes.c_int32
 
 
 try:
@@ -23784,9 +23454,10 @@ else:
  *
  * @param readout the pinned readout
  * @param format the format descriptor, or NULL to clear the override
+ * @return DVZ_OK when the format was accepted, DVZ_ERROR on error
  */"""
     dvz_pinned_readout_set_format.argtypes = [ctypes.POINTER(DvzPinnedReadout), ctypes.POINTER(DvzFormatDesc)]
-    dvz_pinned_readout_set_format.restype = None
+    dvz_pinned_readout_set_format.restype = ctypes.c_int32
 
 
 try:
@@ -24040,43 +23711,43 @@ else:
 
 
 try:
-    dvz_polygon_fill_color = dvz.dvz_polygon_fill_color
+    dvz_polygon_set_fill_color = dvz.dvz_polygon_set_fill_color
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_fill_color')
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_fill_color')
 else:
-    dvz_polygon_fill_color.__doc__ = """/**
+    dvz_polygon_set_fill_color.__doc__ = """/**
  * Set the polygon fill color.
  *
  * @param polygon the polygon
  * @param color RGBA fill color
  * @return 0 on success, -1 on error
  */"""
-    dvz_polygon_fill_color.argtypes = [ctypes.POINTER(DvzPolygon), DvzColor]
-    dvz_polygon_fill_color.restype = ctypes.c_int32
+    dvz_polygon_set_fill_color.argtypes = [ctypes.POINTER(DvzPolygon), DvzColor]
+    dvz_polygon_set_fill_color.restype = ctypes.c_int32
 
 
 try:
-    dvz_polygon_geometry = dvz.dvz_polygon_geometry
+    dvz_polygon_set_geometry = dvz.dvz_polygon_set_geometry
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_geometry')
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_geometry')
 else:
-    dvz_polygon_geometry.__doc__ = """/**
+    dvz_polygon_set_geometry.__doc__ = """/**
  * Replace all polygon rings from a borrowed descriptor.
  *
  * @param polygon the polygon
  * @param desc borrowed polygon descriptor
  * @return 0 on success, -1 on invalid input or allocation failure
  */"""
-    dvz_polygon_geometry.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.POINTER(DvzPolygonDesc)]
-    dvz_polygon_geometry.restype = ctypes.c_int32
+    dvz_polygon_set_geometry.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.POINTER(DvzPolygonDesc)]
+    dvz_polygon_set_geometry.restype = ctypes.c_int32
 
 
 try:
-    dvz_polygon_hole = dvz.dvz_polygon_hole
+    dvz_polygon_set_hole = dvz.dvz_polygon_set_hole
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_hole')
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_hole')
 else:
-    dvz_polygon_hole.__doc__ = """/**
+    dvz_polygon_set_hole.__doc__ = """/**
  * Append or replace one polygon hole ring.
  *
  * Passing hole_index equal to the current hole count appends a new hole. Passing a smaller index
@@ -24084,302 +23755,45 @@ else:
  *
  * @param polygon the polygon
  * @param hole_index hole index to replace, or current hole count to append
- * @param count number of hole ring vertices
  * @param xy borrowed XY vertex array
+ * @param count number of hole ring vertices
  * @return 0 on success, -1 on invalid input or allocation failure
  */"""
-    dvz_polygon_hole.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 2)]
-    dvz_polygon_hole.restype = ctypes.c_int32
+    dvz_polygon_set_hole.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint32, (ctypes.c_void_p * 2), ctypes.c_uint32]
+    dvz_polygon_set_hole.restype = ctypes.c_int32
 
 
 try:
-    dvz_polygon_id = dvz.dvz_polygon_id
+    dvz_polygon_set_id = dvz.dvz_polygon_set_id
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_id')
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_id')
 else:
-    dvz_polygon_id.__doc__ = """/**
+    dvz_polygon_set_id.__doc__ = """/**
  * Set the stable user id associated with a polygon.
  *
  * @param polygon the polygon
  * @param id stable user id
  * @return 0 on success, -1 on error
  */"""
-    dvz_polygon_id.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint64]
-    dvz_polygon_id.restype = ctypes.c_int32
+    dvz_polygon_set_id.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint64]
+    dvz_polygon_set_id.restype = ctypes.c_int32
 
 
 try:
-    dvz_polygon_outer = dvz.dvz_polygon_outer
+    dvz_polygon_set_outer = dvz.dvz_polygon_set_outer
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_outer')
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_outer')
 else:
-    dvz_polygon_outer.__doc__ = """/**
+    dvz_polygon_set_outer.__doc__ = """/**
  * Replace the polygon outer ring while preserving existing holes.
  *
  * @param polygon the polygon
- * @param count number of outer ring vertices
  * @param xy borrowed XY vertex array
+ * @param count number of outer ring vertices
  * @return 0 on success, -1 on invalid input or allocation failure
  */"""
-    dvz_polygon_outer.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint32, (ctypes.c_void_p * 2)]
-    dvz_polygon_outer.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set = dvz.dvz_polygon_set
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set')
-else:
-    dvz_polygon_set.__doc__ = """/**
- * Create a scene-owned semantic polygon set object.
- *
- * A polygon set stores several independent polygon regions. Each region has its own rings and
- * style.
- *
- * @param scene the scene
- * @param flags reserved polygon-set flags
- * @return the polygon set, or NULL on allocation failure
- */"""
-    dvz_polygon_set.argtypes = [ctypes.POINTER(DvzScene), ctypes.c_uint32]
-    dvz_polygon_set.restype = ctypes.POINTER(DvzPolygonSet)
-
-
-try:
-    dvz_polygon_set_add = dvz.dvz_polygon_set_add
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_add')
-else:
-    dvz_polygon_set_add.__doc__ = """/**
- * Append one polygon region to a polygon set.
- *
- * @param set the polygon set
- * @param desc borrowed polygon descriptor
- * @return the polygon index, or UINT32_MAX on error
- */"""
-    dvz_polygon_set_add.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.POINTER(DvzPolygonDesc)]
-    dvz_polygon_set_add.restype = ctypes.c_uint32
-
-
-try:
-    dvz_polygon_set_composite = dvz.dvz_polygon_set_composite
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_composite')
-else:
-    dvz_polygon_set_composite.__doc__ = """/**
- * Create a scene-owned composite render view for a polygon set.
- *
- * @param set the polygon set
- * @param flags reserved composite flags
- * @return the composite, or NULL on allocation failure
- */"""
-    dvz_polygon_set_composite.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32]
-    dvz_polygon_set_composite.restype = ctypes.POINTER(DvzComposite)
-
-
-try:
-    dvz_polygon_set_destroy = dvz.dvz_polygon_set_destroy
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_destroy')
-else:
-    dvz_polygon_set_destroy.__doc__ = """/**
- * Destroy a scene-owned polygon set object.
- *
- * @param set the polygon set
- */"""
-    dvz_polygon_set_destroy.argtypes = [ctypes.POINTER(DvzPolygonSet)]
-    dvz_polygon_set_destroy.restype = None
-
-
-try:
-    dvz_polygon_set_region_fill_color = dvz.dvz_polygon_set_region_fill_color
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_fill_color')
-else:
-    dvz_polygon_set_region_fill_color.__doc__ = """/**
- * Set one polygon region's fill color.
- *
- * @param set the polygon set
- * @param polygon_index polygon index
- * @param color RGBA fill color
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_fill_color.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, DvzColor]
-    dvz_polygon_set_region_fill_color.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_fill_colors = dvz.dvz_polygon_set_region_fill_colors
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_fill_colors')
-else:
-    dvz_polygon_set_region_fill_colors.__doc__ = """/**
- * Set a contiguous range of polygon region fill colors.
- *
- * @param set the polygon set
- * @param first_polygon first polygon index
- * @param polygon_count number of regions to update
- * @param colors RGBA fill colors
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_fill_colors.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
-    dvz_polygon_set_region_fill_colors.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_geometry = dvz.dvz_polygon_set_region_geometry
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_geometry')
-else:
-    dvz_polygon_set_region_geometry.__doc__ = """/**
- * Replace one polygon region's rings.
- *
- * @param set the polygon set
- * @param polygon_index polygon index
- * @param desc borrowed polygon descriptor
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_geometry.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.POINTER(DvzPolygonDesc)]
-    dvz_polygon_set_region_geometry.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_id = dvz.dvz_polygon_set_region_id
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_id')
-else:
-    dvz_polygon_set_region_id.__doc__ = """/**
- * Set one polygon region's stable user id.
- *
- * @param set the polygon set
- * @param polygon_index polygon index
- * @param id stable user id
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_id.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint64]
-    dvz_polygon_set_region_id.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_ids = dvz.dvz_polygon_set_region_ids
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_ids')
-else:
-    dvz_polygon_set_region_ids.__doc__ = """/**
- * Set a contiguous range of polygon region stable user ids.
- *
- * @param set the polygon set
- * @param first_polygon first polygon index
- * @param polygon_count number of regions to update
- * @param ids borrowed stable user id array
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_ids.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint64)]
-    dvz_polygon_set_region_ids.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_stroke_color = dvz.dvz_polygon_set_region_stroke_color
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_stroke_color')
-else:
-    dvz_polygon_set_region_stroke_color.__doc__ = """/**
- * Set one polygon region's stroke color.
- *
- * @param set the polygon set
- * @param polygon_index polygon index
- * @param color RGBA stroke color
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_stroke_color.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, DvzColor]
-    dvz_polygon_set_region_stroke_color.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_stroke_colors = dvz.dvz_polygon_set_region_stroke_colors
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_stroke_colors')
-else:
-    dvz_polygon_set_region_stroke_colors.__doc__ = """/**
- * Set a contiguous range of polygon region stroke colors.
- *
- * @param set the polygon set
- * @param first_polygon first polygon index
- * @param polygon_count number of regions to update
- * @param colors RGBA stroke colors
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_stroke_colors.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
-    dvz_polygon_set_region_stroke_colors.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_stroke_width_px = dvz.dvz_polygon_set_region_stroke_width_px
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_stroke_width_px')
-else:
-    dvz_polygon_set_region_stroke_width_px.__doc__ = """/**
- * Set one polygon region's stroke width in pixels.
- *
- * @param set the polygon set
- * @param polygon_index polygon index
- * @param width stroke width in pixels
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_stroke_width_px.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_float]
-    dvz_polygon_set_region_stroke_width_px.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_stroke_widths_px = dvz.dvz_polygon_set_region_stroke_widths_px
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_stroke_widths_px')
-else:
-    dvz_polygon_set_region_stroke_widths_px.__doc__ = """/**
- * Set a contiguous range of polygon region stroke widths.
- *
- * @param set the polygon set
- * @param first_polygon first polygon index
- * @param polygon_count number of regions to update
- * @param widths stroke widths in pixels
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_stroke_widths_px.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_float)]
-    dvz_polygon_set_region_stroke_widths_px.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_visibilities = dvz.dvz_polygon_set_region_visibilities
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_visibilities')
-else:
-    dvz_polygon_set_region_visibilities.__doc__ = """/**
- * Set a contiguous range of polygon region visibilities.
- *
- * @param set the polygon set
- * @param first_polygon first polygon index
- * @param polygon_count number of regions to update
- * @param visible borrowed visibility array
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_visibilities.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_bool)]
-    dvz_polygon_set_region_visibilities.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_set_region_visible = dvz.dvz_polygon_set_region_visible
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_set_region_visible')
-else:
-    dvz_polygon_set_region_visible.__doc__ = """/**
- * Set one polygon region's visibility.
- *
- * @param set the polygon set
- * @param polygon_index polygon index
- * @param visible whether the region should render
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_set_region_visible.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_uint32, ctypes.c_bool]
-    dvz_polygon_set_region_visible.restype = ctypes.c_int32
+    dvz_polygon_set_outer.argtypes = [ctypes.POINTER(DvzPolygon), (ctypes.c_void_p * 2), ctypes.c_uint32]
+    dvz_polygon_set_outer.restype = ctypes.c_int32
 
 
 try:
@@ -24388,15 +23802,31 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_polygon_set_stroke_caps')
 else:
     dvz_polygon_set_stroke_caps.__doc__ = """/**
- * Configure polygon-set stroke endpoint caps.
+ * Configure polygon stroke endpoint caps.
  *
- * @param set the polygon set
+ * @param polygon the polygon
  * @param start_cap cap applied to each ring start
  * @param end_cap cap applied to each ring end
  * @return 0 on success, -1 on error
  */"""
-    dvz_polygon_set_stroke_caps.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_int, ctypes.c_int]
+    dvz_polygon_set_stroke_caps.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_int, ctypes.c_int]
     dvz_polygon_set_stroke_caps.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygon_set_stroke_color = dvz.dvz_polygon_set_stroke_color
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_stroke_color')
+else:
+    dvz_polygon_set_stroke_color.__doc__ = """/**
+ * Set the polygon stroke color.
+ *
+ * @param polygon the polygon
+ * @param color RGBA stroke color
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygon_set_stroke_color.argtypes = [ctypes.POINTER(DvzPolygon), DvzColor]
+    dvz_polygon_set_stroke_color.restype = ctypes.c_int32
 
 
 try:
@@ -24405,15 +23835,31 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_polygon_set_stroke_join')
 else:
     dvz_polygon_set_stroke_join.__doc__ = """/**
- * Configure polygon-set stroke joins.
+ * Configure polygon stroke joins.
  *
- * @param set the polygon set
+ * @param polygon the polygon
  * @param join join style
  * @param miter_limit positive finite miter limit
  * @return 0 on success, -1 on error
  */"""
-    dvz_polygon_set_stroke_join.argtypes = [ctypes.POINTER(DvzPolygonSet), ctypes.c_int, ctypes.c_float]
+    dvz_polygon_set_stroke_join.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_int, ctypes.c_float]
     dvz_polygon_set_stroke_join.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygon_set_stroke_width_px = dvz.dvz_polygon_set_stroke_width_px
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_stroke_width_px')
+else:
+    dvz_polygon_set_stroke_width_px.__doc__ = """/**
+ * Set the polygon stroke width in pixels.
+ *
+ * @param polygon the polygon
+ * @param width stroke width in pixels
+ * @return 0 on success, -1 on invalid input
+ */"""
+    dvz_polygon_set_stroke_width_px.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_float]
+    dvz_polygon_set_stroke_width_px.restype = ctypes.c_int32
 
 
 try:
@@ -24436,69 +23882,19 @@ else:
 
 
 try:
-    dvz_polygon_stroke_caps = dvz.dvz_polygon_stroke_caps
+    dvz_polygon_set_visible = dvz.dvz_polygon_set_visible
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_stroke_caps')
+    _MISSING_FUNCTIONS.append('dvz_polygon_set_visible')
 else:
-    dvz_polygon_stroke_caps.__doc__ = """/**
- * Configure polygon stroke endpoint caps.
+    dvz_polygon_set_visible.__doc__ = """/**
+ * Set polygon visibility.
  *
  * @param polygon the polygon
- * @param start_cap cap applied to each ring start
- * @param end_cap cap applied to each ring end
+ * @param visible whether the polygon should render
  * @return 0 on success, -1 on error
  */"""
-    dvz_polygon_stroke_caps.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_int, ctypes.c_int]
-    dvz_polygon_stroke_caps.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_stroke_color = dvz.dvz_polygon_stroke_color
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_stroke_color')
-else:
-    dvz_polygon_stroke_color.__doc__ = """/**
- * Set the polygon stroke color.
- *
- * @param polygon the polygon
- * @param color RGBA stroke color
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_stroke_color.argtypes = [ctypes.POINTER(DvzPolygon), DvzColor]
-    dvz_polygon_stroke_color.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_stroke_join = dvz.dvz_polygon_stroke_join
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_stroke_join')
-else:
-    dvz_polygon_stroke_join.__doc__ = """/**
- * Configure polygon stroke joins.
- *
- * @param polygon the polygon
- * @param join join style
- * @param miter_limit positive finite miter limit
- * @return 0 on success, -1 on error
- */"""
-    dvz_polygon_stroke_join.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_int, ctypes.c_float]
-    dvz_polygon_stroke_join.restype = ctypes.c_int32
-
-
-try:
-    dvz_polygon_stroke_width_px = dvz.dvz_polygon_stroke_width_px
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_stroke_width_px')
-else:
-    dvz_polygon_stroke_width_px.__doc__ = """/**
- * Set the polygon stroke width in pixels.
- *
- * @param polygon the polygon
- * @param width stroke width in pixels
- * @return 0 on success, -1 on invalid input
- */"""
-    dvz_polygon_stroke_width_px.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_float]
-    dvz_polygon_stroke_width_px.restype = ctypes.c_int32
+    dvz_polygon_set_visible.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_bool]
+    dvz_polygon_set_visible.restype = ctypes.c_int32
 
 
 try:
@@ -24516,19 +23912,294 @@ else:
 
 
 try:
-    dvz_polygon_visible = dvz.dvz_polygon_visible
+    dvz_polygons = dvz.dvz_polygons
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_polygon_visible')
+    _MISSING_FUNCTIONS.append('dvz_polygons')
 else:
-    dvz_polygon_visible.__doc__ = """/**
- * Set polygon visibility.
+    dvz_polygons.__doc__ = """/**
+ * Create a scene-owned semantic polygon set object.
  *
- * @param polygon the polygon
- * @param visible whether the polygon should render
+ * A polygon set stores several independent polygon regions. Each region has its own rings and
+ * style.
+ *
+ * @param scene the scene
+ * @param flags reserved polygon-set flags
+ * @return the polygon set, or NULL on allocation failure
+ */"""
+    dvz_polygons.argtypes = [ctypes.POINTER(DvzScene), ctypes.c_uint32]
+    dvz_polygons.restype = ctypes.POINTER(DvzPolygons)
+
+
+try:
+    dvz_polygons_add_region = dvz.dvz_polygons_add_region
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_add_region')
+else:
+    dvz_polygons_add_region.__doc__ = """/**
+ * Append one polygon region to a polygon set.
+ *
+ * @param set the polygon set
+ * @param desc borrowed polygon descriptor
+ * @return the polygon index, or UINT32_MAX on error
+ */"""
+    dvz_polygons_add_region.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.POINTER(DvzPolygonDesc)]
+    dvz_polygons_add_region.restype = ctypes.c_uint32
+
+
+try:
+    dvz_polygons_composite = dvz.dvz_polygons_composite
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_composite')
+else:
+    dvz_polygons_composite.__doc__ = """/**
+ * Create a scene-owned composite render view for a polygon set.
+ *
+ * @param set the polygon set
+ * @param flags reserved composite flags
+ * @return the composite, or NULL on allocation failure
+ */"""
+    dvz_polygons_composite.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32]
+    dvz_polygons_composite.restype = ctypes.POINTER(DvzComposite)
+
+
+try:
+    dvz_polygons_destroy = dvz.dvz_polygons_destroy
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_destroy')
+else:
+    dvz_polygons_destroy.__doc__ = """/**
+ * Destroy a scene-owned polygon set object.
+ *
+ * @param set the polygon set
+ */"""
+    dvz_polygons_destroy.argtypes = [ctypes.POINTER(DvzPolygons)]
+    dvz_polygons_destroy.restype = None
+
+
+try:
+    dvz_polygons_set_region_fill_color = dvz.dvz_polygons_set_region_fill_color
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_fill_color')
+else:
+    dvz_polygons_set_region_fill_color.__doc__ = """/**
+ * Set one polygon region's fill color.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param color RGBA fill color
  * @return 0 on success, -1 on error
  */"""
-    dvz_polygon_visible.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_bool]
-    dvz_polygon_visible.restype = ctypes.c_int32
+    dvz_polygons_set_region_fill_color.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, DvzColor]
+    dvz_polygons_set_region_fill_color.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_fill_colors = dvz.dvz_polygons_set_region_fill_colors
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_fill_colors')
+else:
+    dvz_polygons_set_region_fill_colors.__doc__ = """/**
+ * Set a contiguous range of polygon region fill colors.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param colors RGBA fill colors
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_fill_colors.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
+    dvz_polygons_set_region_fill_colors.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_geometry = dvz.dvz_polygons_set_region_geometry
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_geometry')
+else:
+    dvz_polygons_set_region_geometry.__doc__ = """/**
+ * Replace one polygon region's rings.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param desc borrowed polygon descriptor
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_geometry.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.POINTER(DvzPolygonDesc)]
+    dvz_polygons_set_region_geometry.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_id = dvz.dvz_polygons_set_region_id
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_id')
+else:
+    dvz_polygons_set_region_id.__doc__ = """/**
+ * Set one polygon region's stable user id.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param id stable user id
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_id.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_uint64]
+    dvz_polygons_set_region_id.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_ids = dvz.dvz_polygons_set_region_ids
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_ids')
+else:
+    dvz_polygons_set_region_ids.__doc__ = """/**
+ * Set a contiguous range of polygon region stable user ids.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param ids borrowed stable user id array
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_ids.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint64)]
+    dvz_polygons_set_region_ids.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_stroke_color = dvz.dvz_polygons_set_region_stroke_color
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_stroke_color')
+else:
+    dvz_polygons_set_region_stroke_color.__doc__ = """/**
+ * Set one polygon region's stroke color.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param color RGBA stroke color
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_stroke_color.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, DvzColor]
+    dvz_polygons_set_region_stroke_color.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_stroke_colors = dvz.dvz_polygons_set_region_stroke_colors
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_stroke_colors')
+else:
+    dvz_polygons_set_region_stroke_colors.__doc__ = """/**
+ * Set a contiguous range of polygon region stroke colors.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param colors RGBA stroke colors
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_stroke_colors.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzColor)]
+    dvz_polygons_set_region_stroke_colors.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_stroke_width_px = dvz.dvz_polygons_set_region_stroke_width_px
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_stroke_width_px')
+else:
+    dvz_polygons_set_region_stroke_width_px.__doc__ = """/**
+ * Set one polygon region's stroke width in pixels.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param width stroke width in pixels
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_stroke_width_px.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_float]
+    dvz_polygons_set_region_stroke_width_px.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_stroke_widths_px = dvz.dvz_polygons_set_region_stroke_widths_px
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_stroke_widths_px')
+else:
+    dvz_polygons_set_region_stroke_widths_px.__doc__ = """/**
+ * Set a contiguous range of polygon region stroke widths.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param widths stroke widths in pixels
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_stroke_widths_px.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_float)]
+    dvz_polygons_set_region_stroke_widths_px.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_visibilities = dvz.dvz_polygons_set_region_visibilities
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_visibilities')
+else:
+    dvz_polygons_set_region_visibilities.__doc__ = """/**
+ * Set a contiguous range of polygon region visibilities.
+ *
+ * @param set the polygon set
+ * @param first_polygon first polygon index
+ * @param polygon_count number of regions to update
+ * @param visible borrowed visibility array
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_visibilities.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_bool)]
+    dvz_polygons_set_region_visibilities.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_region_visible = dvz.dvz_polygons_set_region_visible
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_region_visible')
+else:
+    dvz_polygons_set_region_visible.__doc__ = """/**
+ * Set one polygon region's visibility.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param visible whether the region should render
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_region_visible.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_uint32, ctypes.c_bool]
+    dvz_polygons_set_region_visible.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_stroke_caps = dvz.dvz_polygons_set_stroke_caps
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_stroke_caps')
+else:
+    dvz_polygons_set_stroke_caps.__doc__ = """/**
+ * Configure polygon-set stroke endpoint caps.
+ *
+ * @param set the polygon set
+ * @param start_cap cap applied to each ring start
+ * @param end_cap cap applied to each ring end
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_stroke_caps.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_int, ctypes.c_int]
+    dvz_polygons_set_stroke_caps.restype = ctypes.c_int32
+
+
+try:
+    dvz_polygons_set_stroke_join = dvz.dvz_polygons_set_stroke_join
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_polygons_set_stroke_join')
+else:
+    dvz_polygons_set_stroke_join.__doc__ = """/**
+ * Configure polygon-set stroke joins.
+ *
+ * @param set the polygon set
+ * @param join join style
+ * @param miter_limit positive finite miter limit
+ * @return 0 on success, -1 on error
+ */"""
+    dvz_polygons_set_stroke_join.argtypes = [ctypes.POINTER(DvzPolygons), ctypes.c_int, ctypes.c_float]
+    dvz_polygons_set_stroke_join.restype = ctypes.c_int32
 
 
 try:
@@ -24836,7 +24507,7 @@ else:
  * @returns owned decompressed buffer, or NULL on failure; free with dvz_memory_free()
  */"""
     dvz_read_gz.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
-    dvz_read_gz.restype = ctypes.c_char_p
+    dvz_read_gz.restype = ctypes.c_void_p
 
 
 try:
@@ -24887,7 +24558,7 @@ else:
  * @param[out] height of the image
  * @returns owned tightly packed RGB8 pixel buffer, or NULL on failure; free with dvz_memory_free()
  */"""
-    dvz_read_ppm.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+    dvz_read_ppm.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
     dvz_read_ppm.restype = ctypes.POINTER(ctypes.c_uint8)
 
 
@@ -24933,9 +24604,10 @@ else:
  *
  * @param grid the reference grid
  * @param visible whether the grid should be visible
+ * @return DVZ_OK when the visibility was accepted, DVZ_ERROR on error
  */"""
     dvz_reference_grid_set_visible.argtypes = [ctypes.POINTER(DvzReferenceGrid), ctypes.c_bool]
-    dvz_reference_grid_set_visible.restype = None
+    dvz_reference_grid_set_visible.restype = ctypes.c_int32
 
 
 try:
@@ -25148,7 +24820,7 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_resource_font')
 else:
-    dvz_resource_font.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_ulong)]
+    dvz_resource_font.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
     dvz_resource_font.restype = ctypes.POINTER(ctypes.c_uint8)
 
 
@@ -25157,7 +24829,7 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_resource_glsl')
 else:
-    dvz_resource_glsl.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_ulong)]
+    dvz_resource_glsl.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
     dvz_resource_glsl.restype = ctypes.c_char_p
 
 
@@ -25167,26 +24839,8 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_resource_shader')
 else:
     dvz_resource_shader.__doc__ = """/*************************************************************************************************/"""
-    dvz_resource_shader.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_ulong)]
+    dvz_resource_shader.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
     dvz_resource_shader.restype = ctypes.POINTER(ctypes.c_uint8)
-
-
-try:
-    dvz_resource_testdata = dvz.dvz_resource_testdata
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_resource_testdata')
-else:
-    dvz_resource_testdata.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_ulong)]
-    dvz_resource_testdata.restype = ctypes.POINTER(ctypes.c_uint8)
-
-
-try:
-    dvz_resource_texture = dvz.dvz_resource_texture
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_resource_texture')
-else:
-    dvz_resource_texture.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_ulong)]
-    dvz_resource_texture.restype = ctypes.POINTER(ctypes.c_uint8)
 
 
 try:
@@ -25194,7 +24848,7 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_resource_wgsl')
 else:
-    dvz_resource_wgsl.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_ulong)]
+    dvz_resource_wgsl.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint64)]
     dvz_resource_wgsl.restype = ctypes.c_char_p
 
 
@@ -25239,28 +24893,9 @@ else:
  * Any visual bindings to this field are cleared.
  *
  * @param field the sampled field
- * @return true on success, false on error
  */"""
     dvz_sampled_field_destroy.argtypes = [ctypes.POINTER(DvzSampledField)]
-    dvz_sampled_field_destroy.restype = ctypes.c_bool
-
-
-try:
-    dvz_sampled_field_get_desc = dvz.dvz_sampled_field_get_desc
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_sampled_field_get_desc')
-else:
-    dvz_sampled_field_get_desc.__doc__ = """/**
- * Return the immutable field descriptor.
- *
- * The returned pointer is borrowed from the field and remains valid until the field is destroyed or
- * resized. Callers must not cast away const or retain it past field lifetime.
- *
- * @param field the sampled field
- * @return the descriptor, or NULL on error
- */"""
-    dvz_sampled_field_get_desc.argtypes = [ctypes.POINTER(DvzSampledField)]
-    dvz_sampled_field_get_desc.restype = ctypes.POINTER(DvzSampledFieldDesc)
+    dvz_sampled_field_destroy.restype = None
 
 
 try:
@@ -25276,6 +24911,24 @@ else:
  */"""
     dvz_sampled_field_id.argtypes = [ctypes.POINTER(DvzSampledField)]
     dvz_sampled_field_id.restype = ctypes.c_uint64
+
+
+try:
+    dvz_sampled_field_info = dvz.dvz_sampled_field_info
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_sampled_field_info')
+else:
+    dvz_sampled_field_info.__doc__ = """/**
+ * Copy immutable field descriptor information.
+ *
+ * The descriptor is copied into caller-owned storage and remains valid after return.
+ *
+ * @param field the sampled field
+ * @param out output field descriptor
+ * @return whether the descriptor was copied
+ */"""
+    dvz_sampled_field_info.argtypes = [ctypes.POINTER(DvzSampledField), ctypes.POINTER(DvzSampledFieldDesc)]
+    dvz_sampled_field_info.restype = ctypes.c_bool
 
 
 try:
@@ -25296,10 +24949,10 @@ else:
  * @param height new field height in samples
  * @param depth new field depth in samples (must be 1 for 2D fields)
  * @param view the uploaded data view for the new extent
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_sampled_field_resize.argtypes = [ctypes.POINTER(DvzSampledField), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(DvzFieldDataView)]
-    dvz_sampled_field_resize.restype = ctypes.c_bool
+    dvz_sampled_field_resize.restype = ctypes.c_int32
 
 
 try:
@@ -25316,10 +24969,10 @@ else:
  *
  * @param field the sampled field
  * @param view the uploaded data view
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_sampled_field_set_data.argtypes = [ctypes.POINTER(DvzSampledField), ctypes.POINTER(DvzFieldDataView)]
-    dvz_sampled_field_set_data.restype = ctypes.c_bool
+    dvz_sampled_field_set_data.restype = ctypes.c_int32
 
 
 try:
@@ -25332,10 +24985,10 @@ else:
  *
  * @param field the sampled field
  * @param geometry the geometry descriptor
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_sampled_field_set_geometry.argtypes = [ctypes.POINTER(DvzSampledField), ctypes.POINTER(DvzFieldGeometry)]
-    dvz_sampled_field_set_geometry.restype = ctypes.c_bool
+    dvz_sampled_field_set_geometry.restype = ctypes.c_int32
 
 
 try:
@@ -25352,10 +25005,10 @@ else:
  * @param field the sampled field
  * @param region the updated sample-space region
  * @param view the uploaded data view
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_sampled_field_update_region.argtypes = [ctypes.POINTER(DvzSampledField), DvzFieldRegion, ctypes.POINTER(DvzFieldDataView)]
-    dvz_sampled_field_update_region.restype = ctypes.c_bool
+    dvz_sampled_field_update_region.restype = ctypes.c_int32
 
 
 try:
@@ -25538,6 +25191,137 @@ else:
 
 
 try:
+    dvz_scale_bar = dvz.dvz_scale_bar
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_scale_bar')
+else:
+    dvz_scale_bar.__doc__ = """/**
+ * Create a retained scale bar attached to a panel.
+ *
+ * `DvzScaleBar` is a typed alias for the retained annotation object returned here. Pass NULL for
+ * the default descriptor. Destroy it with `dvz_annotation_destroy((DvzAnnotation*)scalebar)`.
+ *
+ * @param panel the panel
+ * @param desc the scale-bar descriptor, or NULL for defaults
+ * @return the scale bar
+ */"""
+    dvz_scale_bar.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzScaleBarDesc)]
+    dvz_scale_bar.restype = ctypes.c_void_p
+
+
+try:
+    dvz_scale_bar_set_anchor = dvz.dvz_scale_bar_set_anchor
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_scale_bar_set_anchor')
+else:
+    dvz_scale_bar_set_anchor.__doc__ = """/**
+ * Set the panel anchor of a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param anchor panel anchor
+ * @return 0 on success, -1 on validation error
+ */"""
+    dvz_scale_bar_set_anchor.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    dvz_scale_bar_set_anchor.restype = ctypes.c_int32
+
+
+try:
+    dvz_scale_bar_set_dimension = dvz.dvz_scale_bar_set_dimension
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_scale_bar_set_dimension')
+else:
+    dvz_scale_bar_set_dimension.__doc__ = """/**
+ * Set the data dimension measured by a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param dim dimension
+ * @return 0 on success, -1 on validation error
+ */"""
+    dvz_scale_bar_set_dimension.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    dvz_scale_bar_set_dimension.restype = ctypes.c_int32
+
+
+try:
+    dvz_scale_bar_set_duration_units = dvz.dvz_scale_bar_set_duration_units
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_scale_bar_set_duration_units')
+else:
+    dvz_scale_bar_set_duration_units.__doc__ = """/**
+ * Attach duration units to a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param duration_units duration units object
+ * @return 0 on success, -1 on validation error
+ */"""
+    dvz_scale_bar_set_duration_units.argtypes = [ctypes.c_void_p, ctypes.POINTER(DvzUnits)]
+    dvz_scale_bar_set_duration_units.restype = ctypes.c_int32
+
+
+try:
+    dvz_scale_bar_set_format = dvz.dvz_scale_bar_set_format
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_scale_bar_set_format')
+else:
+    dvz_scale_bar_set_format.__doc__ = """/**
+ * Override formatting policy on a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param format the format descriptor, or NULL to clear the override
+ * @return 0 on success, -1 on validation error
+ */"""
+    dvz_scale_bar_set_format.argtypes = [ctypes.c_void_p, ctypes.POINTER(DvzFormatDesc)]
+    dvz_scale_bar_set_format.restype = ctypes.c_int32
+
+
+try:
+    dvz_scale_bar_set_label_style = dvz.dvz_scale_bar_set_label_style
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_scale_bar_set_label_style')
+else:
+    dvz_scale_bar_set_label_style.__doc__ = """/**
+ * Set the label style of a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param style label style, or NULL for defaults
+ * @return 0 on success, -1 on validation error
+ */"""
+    dvz_scale_bar_set_label_style.argtypes = [ctypes.c_void_p, ctypes.POINTER(DvzTextStyle)]
+    dvz_scale_bar_set_label_style.restype = ctypes.c_int32
+
+
+try:
+    dvz_scale_bar_set_placement = dvz.dvz_scale_bar_set_placement
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_scale_bar_set_placement')
+else:
+    dvz_scale_bar_set_placement.__doc__ = """/**
+ * Set the label placement policy of a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param placement label placement, or NULL for defaults
+ * @return 0 on success, -1 on validation error
+ */"""
+    dvz_scale_bar_set_placement.argtypes = [ctypes.c_void_p, ctypes.POINTER(DvzTextPlacement)]
+    dvz_scale_bar_set_placement.restype = ctypes.c_int32
+
+
+try:
+    dvz_scale_bar_set_units = dvz.dvz_scale_bar_set_units
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_scale_bar_set_units')
+else:
+    dvz_scale_bar_set_units.__doc__ = """/**
+ * Attach numeric units to a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param units units object
+ * @return 0 on success, -1 on validation error
+ */"""
+    dvz_scale_bar_set_units.argtypes = [ctypes.c_void_p, ctypes.POINTER(DvzUnits)]
+    dvz_scale_bar_set_units.restype = ctypes.c_int32
+
+
+try:
     dvz_scale_category = dvz.dvz_scale_category
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_scale_category')
@@ -25647,10 +25431,10 @@ else:
  * @param scale the scale
  * @param ids category ids to remove
  * @param count the number of ids
- * @return true when the category table was updated
+ * @return DVZ_OK when the category table was updated, DVZ_ERROR on error
  */"""
     dvz_scale_remove_categories.argtypes = [ctypes.POINTER(DvzScale), ctypes.c_void_p, ctypes.c_uint32]
-    dvz_scale_remove_categories.restype = ctypes.c_bool
+    dvz_scale_remove_categories.restype = ctypes.c_int32
 
 
 try:
@@ -25667,10 +25451,10 @@ else:
  * @param scale the scale
  * @param categories category entry array, or NULL to clear
  * @param count the number of category entries
- * @return true when the category table was accepted
+ * @return DVZ_OK when the category table was accepted, DVZ_ERROR on error
  */"""
     dvz_scale_set_categories.argtypes = [ctypes.POINTER(DvzScale), ctypes.POINTER(DvzScaleCategory), ctypes.c_uint32]
-    dvz_scale_set_categories.restype = ctypes.c_bool
+    dvz_scale_set_categories.restype = ctypes.c_int32
 
 
 try:
@@ -25685,9 +25469,10 @@ else:
  *
  * @param scale the scale
  * @param colormap the colormap
+ * @return DVZ_OK when the colormap binding was accepted, DVZ_ERROR on error
  */"""
     dvz_scale_set_colormap.argtypes = [ctypes.POINTER(DvzScale), ctypes.POINTER(DvzColormap)]
-    dvz_scale_set_colormap.restype = None
+    dvz_scale_set_colormap.restype = ctypes.c_int32
 
 
 try:
@@ -25703,9 +25488,10 @@ else:
  * @param scale the scale
  * @param min the domain minimum
  * @param max the domain maximum
+ * @return DVZ_OK when the domain was accepted, DVZ_ERROR on error
  */"""
     dvz_scale_set_domain.argtypes = [ctypes.POINTER(DvzScale), ctypes.c_double, ctypes.c_double]
-    dvz_scale_set_domain.restype = None
+    dvz_scale_set_domain.restype = ctypes.c_int32
 
 
 try:
@@ -25720,9 +25506,10 @@ else:
  *
  * @param scale the scale
  * @param format the format descriptor, or NULL to clear the override
+ * @return DVZ_OK when the format was accepted, DVZ_ERROR on error
  */"""
     dvz_scale_set_format.argtypes = [ctypes.POINTER(DvzScale), ctypes.POINTER(DvzFormatDesc)]
-    dvz_scale_set_format.restype = None
+    dvz_scale_set_format.restype = ctypes.c_int32
 
 
 try:
@@ -25738,9 +25525,10 @@ else:
  * @param scale the scale
  * @param min the view-range minimum
  * @param max the view-range maximum
+ * @return DVZ_OK when the view range was accepted, DVZ_ERROR on error
  */"""
     dvz_scale_set_view_range.argtypes = [ctypes.POINTER(DvzScale), ctypes.c_double, ctypes.c_double]
-    dvz_scale_set_view_range.restype = None
+    dvz_scale_set_view_range.restype = ctypes.c_int32
 
 
 try:
@@ -25757,10 +25545,10 @@ else:
  * @param scale the scale
  * @param categories category entry array
  * @param count the number of category entries
- * @return true when the category table was accepted
+ * @return DVZ_OK when the category table was accepted, DVZ_ERROR on error
  */"""
     dvz_scale_update_categories.argtypes = [ctypes.POINTER(DvzScale), ctypes.POINTER(DvzScaleCategory), ctypes.c_uint32]
-    dvz_scale_update_categories.restype = ctypes.c_bool
+    dvz_scale_update_categories.restype = ctypes.c_int32
 
 
 try:
@@ -25780,89 +25568,6 @@ else:
  */"""
     dvz_scale_view_range.argtypes = [ctypes.POINTER(DvzScale), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
     dvz_scale_view_range.restype = ctypes.c_bool
-
-
-try:
-    dvz_scalebar = dvz.dvz_scalebar
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_scalebar')
-else:
-    dvz_scalebar.__doc__ = """/**
- * Create a retained scale bar attached to a panel.
- *
- * `DvzScaleBar` is a typed alias for the retained annotation object returned here. Pass NULL for
- * the default descriptor. Destroy it with `dvz_annotation_destroy((DvzAnnotation*)scalebar)`.
- *
- * @param panel the panel
- * @param desc the scale-bar descriptor, or NULL for defaults
- * @return the scale bar
- */"""
-    dvz_scalebar.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzScaleBarDesc)]
-    dvz_scalebar.restype = ctypes.c_void_p
-
-
-try:
-    dvz_scalebar_set_anchor = dvz.dvz_scalebar_set_anchor
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_scalebar_set_anchor')
-else:
-    dvz_scalebar_set_anchor.__doc__ = """/**
- * Set the panel anchor of a retained scale bar.
- *
- * @param scalebar the scale bar
- * @param anchor panel anchor
- * @return 0 on success, -1 on validation error
- */"""
-    dvz_scalebar_set_anchor.argtypes = [ctypes.c_void_p, ctypes.c_int]
-    dvz_scalebar_set_anchor.restype = ctypes.c_int32
-
-
-try:
-    dvz_scalebar_set_dimension = dvz.dvz_scalebar_set_dimension
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_scalebar_set_dimension')
-else:
-    dvz_scalebar_set_dimension.__doc__ = """/**
- * Set the data dimension measured by a retained scale bar.
- *
- * @param scalebar the scale bar
- * @param dim dimension
- * @return 0 on success, -1 on validation error
- */"""
-    dvz_scalebar_set_dimension.argtypes = [ctypes.c_void_p, ctypes.c_int]
-    dvz_scalebar_set_dimension.restype = ctypes.c_int32
-
-
-try:
-    dvz_scalebar_set_duration_units = dvz.dvz_scalebar_set_duration_units
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_scalebar_set_duration_units')
-else:
-    dvz_scalebar_set_duration_units.__doc__ = """/**
- * Attach duration units to a retained scale bar.
- *
- * @param scalebar the scale bar
- * @param duration_units duration units object
- * @return 0 on success, -1 on validation error
- */"""
-    dvz_scalebar_set_duration_units.argtypes = [ctypes.c_void_p, ctypes.POINTER(DvzUnits)]
-    dvz_scalebar_set_duration_units.restype = ctypes.c_int32
-
-
-try:
-    dvz_scalebar_set_units = dvz.dvz_scalebar_set_units
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_scalebar_set_units')
-else:
-    dvz_scalebar_set_units.__doc__ = """/**
- * Attach numeric units to a retained scale bar.
- *
- * @param scalebar the scale bar
- * @param units units object
- * @return 0 on success, -1 on validation error
- */"""
-    dvz_scalebar_set_units.argtypes = [ctypes.c_void_p, ctypes.POINTER(DvzUnits)]
-    dvz_scalebar_set_units.restype = ctypes.c_int32
 
 
 try:
@@ -25929,18 +25634,18 @@ else:
 
 
 try:
-    dvz_scene_buffer_get_desc = dvz.dvz_scene_buffer_get_desc
+    dvz_scene_buffer_info = dvz.dvz_scene_buffer_info
 except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_scene_buffer_get_desc')
+    _MISSING_FUNCTIONS.append('dvz_scene_buffer_info')
 else:
-    dvz_scene_buffer_get_desc.__doc__ = """/**
- * Return the immutable buffer descriptor.
- *
+    dvz_scene_buffer_info.__doc__ = """/**
+ * Copy immutable buffer descriptor information.
  * @param buffer the buffer
- * @return the descriptor, or NULL on error
+ * @param out output buffer descriptor
+ * @return whether the descriptor was copied
  */"""
-    dvz_scene_buffer_get_desc.argtypes = [ctypes.POINTER(DvzSceneBuffer)]
-    dvz_scene_buffer_get_desc.restype = ctypes.POINTER(DvzSceneBufferDesc)
+    dvz_scene_buffer_info.argtypes = [ctypes.POINTER(DvzSceneBuffer), ctypes.POINTER(DvzSceneBufferDesc)]
+    dvz_scene_buffer_info.restype = ctypes.c_bool
 
 
 try:
@@ -25978,10 +25683,10 @@ else:
  *
  * @param data the packed byte payload borrowed for the duration of the call
  * @param byte_size the payload size in bytes
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_scene_buffer_set_data.argtypes = [ctypes.POINTER(DvzSceneBuffer), ctypes.c_void_p, ctypes.c_uint64]
-    dvz_scene_buffer_set_data.restype = ctypes.c_bool
+    dvz_scene_buffer_set_data.restype = ctypes.c_int32
 
 
 try:
@@ -26078,10 +25783,10 @@ else:
  * @param access read or read-write access
  * @param byte_offset byte offset into the buffer
  * @param byte_size bound byte range, or 0 for the remaining buffer range
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_scene_compute_set_buffer.argtypes = [ctypes.POINTER(DvzSceneCompute), ctypes.c_uint32, ctypes.POINTER(DvzSceneBuffer), ctypes.c_int, ctypes.c_uint64, ctypes.c_uint64]
-    dvz_scene_compute_set_buffer.restype = ctypes.c_bool
+    dvz_scene_compute_set_buffer.restype = ctypes.c_int32
 
 
 try:
@@ -26096,10 +25801,10 @@ else:
  * @param x workgroup count in X
  * @param y workgroup count in Y
  * @param z workgroup count in Z
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_scene_compute_set_dispatch.argtypes = [ctypes.POINTER(DvzSceneCompute), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
-    dvz_scene_compute_set_dispatch.restype = ctypes.c_bool
+    dvz_scene_compute_set_dispatch.restype = ctypes.c_int32
 
 
 try:
@@ -26372,9 +26077,10 @@ else:
  *
  * @param scene the scene
  * @param caps the capability snapshot
+ * @return DVZ_OK when the capabilities were accepted, DVZ_ERROR on error
  */"""
     dvz_scene_set_capabilities.argtypes = [ctypes.POINTER(DvzScene), ctypes.POINTER(DvzCapabilitySnapshot)]
-    dvz_scene_set_capabilities.restype = None
+    dvz_scene_set_capabilities.restype = ctypes.c_int32
 
 
 try:
@@ -26392,9 +26098,10 @@ else:
  *
  * @param scene target scene
  * @param mode realtime, fixed-step, or external clock mode
+ * @return DVZ_OK when the mode was accepted, DVZ_ERROR on error
  */"""
     dvz_scene_set_clock_mode.argtypes = [ctypes.POINTER(DvzScene), ctypes.c_int]
-    dvz_scene_set_clock_mode.restype = None
+    dvz_scene_set_clock_mode.restype = ctypes.c_int32
 
 
 try:
@@ -26410,9 +26117,10 @@ else:
  *
  * @param scene the scene
  * @param defaults font defaults, or NULL for dvz_font_defaults()
+ * @return DVZ_OK when the defaults were accepted, DVZ_ERROR on error
  */"""
     dvz_scene_set_font_defaults.argtypes = [ctypes.POINTER(DvzScene), ctypes.POINTER(DvzFontDefaults)]
-    dvz_scene_set_font_defaults.restype = None
+    dvz_scene_set_font_defaults.restype = ctypes.c_int32
 
 
 try:
@@ -26425,9 +26133,10 @@ else:
  *
  * @param scene target scene
  * @param fps frames per second, must be positive
+ * @return DVZ_OK when the frame rate was accepted, DVZ_ERROR on error
  */"""
     dvz_scene_set_fps.argtypes = [ctypes.POINTER(DvzScene), ctypes.c_double]
-    dvz_scene_set_fps.restype = None
+    dvz_scene_set_fps.restype = ctypes.c_int32
 
 
 try:
@@ -26445,9 +26154,10 @@ else:
  * @param scene target scene
  * @param t current host time in seconds, normally relative to the start of the scene
  * @param dt elapsed host time in seconds since the previous frame
+ * @return DVZ_OK when the external step was accepted, DVZ_ERROR on error
  */"""
     dvz_scene_step_external.argtypes = [ctypes.POINTER(DvzScene), ctypes.c_double, ctypes.c_double]
-    dvz_scene_step_external.restype = None
+    dvz_scene_step_external.restype = ctypes.c_int32
 
 
 try:
@@ -26532,9 +26242,10 @@ else:
  * Clear the contents of a selection object.
  *
  * @param selection the selection
+ * @return DVZ_OK when the selection was cleared, DVZ_ERROR on error
  */"""
     dvz_selection_clear.argtypes = [ctypes.POINTER(DvzSelection)]
-    dvz_selection_clear.restype = None
+    dvz_selection_clear.restype = ctypes.c_int32
 
 
 try:
@@ -28523,6 +28234,16 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_anchors')
 else:
+    dvz_text_set_anchors.__doc__ = """/**
+ * Replace the text anchors of an existing retained text collection.
+ *
+ * Anchors are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param anchors normalized text anchors
+ * @param item_count number of anchors
+ * @return 0 on success, -1 on error
+ */"""
     dvz_text_set_anchors.argtypes = [ctypes.POINTER(DvzText), (ctypes.c_void_p * 2), ctypes.c_uint32]
     dvz_text_set_anchors.restype = ctypes.c_int32
 
@@ -28532,6 +28253,16 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_angles')
 else:
+    dvz_text_set_angles.__doc__ = """/**
+ * Replace the rotation angles of an existing retained text collection.
+ *
+ * Angles are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param angles rotation angles in radians
+ * @param item_count number of angles
+ * @return 0 on success, -1 on error
+ */"""
     dvz_text_set_angles.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(ctypes.c_float), ctypes.c_uint32]
     dvz_text_set_angles.restype = ctypes.c_int32
 
@@ -28541,6 +28272,16 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_colors')
 else:
+    dvz_text_set_colors.__doc__ = """/**
+ * Replace the colors of an existing retained text collection.
+ *
+ * Colors are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param colors text colors
+ * @param item_count number of colors
+ * @return 0 on success, -1 on error
+ */"""
     dvz_text_set_colors.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(DvzColor), ctypes.c_uint32]
     dvz_text_set_colors.restype = ctypes.c_int32
 
@@ -28551,10 +28292,16 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_items')
 else:
     dvz_text_set_items.__doc__ = """/**
- * Set the UTF-8 content of a retained text object.
+ * Replace all items in a retained text collection.
+ *
+ * Strings, positions, offsets, anchors, sizes, colors, and angles are copied before return. Passing
+ * `item_count == 0` clears the collection; otherwise `items` must point to `item_count` entries.
+ * Use this function when several per-item properties should change atomically.
  *
  * @param text the text object
- * @param string the string, or NULL to clear
+ * @param items text items to copy, or NULL when `item_count` is 0
+ * @param item_count number of text items
+ * @return 0 on success, -1 on error
  */"""
     dvz_text_set_items.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(DvzTextItem), ctypes.c_uint32]
     dvz_text_set_items.restype = ctypes.c_int32
@@ -28581,6 +28328,16 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_offsets')
 else:
+    dvz_text_set_offsets.__doc__ = """/**
+ * Replace the logical-pixel offsets of an existing retained text collection.
+ *
+ * Offsets are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param offsets logical-pixel offsets
+ * @param item_count number of offsets
+ * @return 0 on success, -1 on error
+ */"""
     dvz_text_set_offsets.argtypes = [ctypes.POINTER(DvzText), (ctypes.c_void_p * 2), ctypes.c_uint32]
     dvz_text_set_offsets.restype = ctypes.c_int32
 
@@ -28595,6 +28352,7 @@ else:
  *
  * @param text the text object
  * @param placement the placement descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
  */"""
     dvz_text_set_placement.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(DvzTextPlacement)]
     dvz_text_set_placement.restype = ctypes.c_int32
@@ -28621,6 +28379,16 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_positions')
 else:
+    dvz_text_set_positions.__doc__ = """/**
+ * Replace the positions of an existing retained text collection.
+ *
+ * Positions are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param positions positions in the current placement mode
+ * @param item_count number of positions
+ * @return 0 on success, -1 on error
+ */"""
     dvz_text_set_positions.argtypes = [ctypes.POINTER(DvzText), (ctypes.c_void_p * 3), ctypes.c_uint32]
     dvz_text_set_positions.restype = ctypes.c_int32
 
@@ -28646,6 +28414,16 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_sizes')
 else:
+    dvz_text_set_sizes.__doc__ = """/**
+ * Replace the text sizes of an existing retained text collection.
+ *
+ * Sizes are copied before return. `item_count` must match the current collection item count.
+ *
+ * @param text the text object
+ * @param sizes_px logical-pixel text sizes
+ * @param item_count number of sizes
+ * @return 0 on success, -1 on error
+ */"""
     dvz_text_set_sizes.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(ctypes.c_float), ctypes.c_uint32]
     dvz_text_set_sizes.restype = ctypes.c_int32
 
@@ -28671,6 +28449,17 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_text_set_strings')
 else:
+    dvz_text_set_strings.__doc__ = """/**
+ * Replace the UTF-8 strings of an existing retained text collection.
+ *
+ * String contents are copied before return. `item_count` must match the current collection item
+ * count.
+ *
+ * @param text the text object
+ * @param strings UTF-8 strings to copy
+ * @param item_count number of strings
+ * @return 0 on success, -1 on error
+ */"""
     dvz_text_set_strings.argtypes = [ctypes.POINTER(DvzText), ctypes.POINTER(ctypes.c_char_p), ctypes.c_uint32]
     dvz_text_set_strings.restype = ctypes.c_int32
 
@@ -28996,9 +28785,10 @@ else:
  * Apply the turntable pose to the attached camera.
  *
  * @param turntable the turntable controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_apply_camera.argtypes = [ctypes.POINTER(DvzTurntable)]
-    dvz_turntable_apply_camera.restype = None
+    dvz_turntable_apply_camera.restype = ctypes.c_int32
 
 
 try:
@@ -29011,9 +28801,10 @@ else:
  *
  * @param turntable the turntable controller
  * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_connect.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.POINTER(DvzInputRouter)]
-    dvz_turntable_connect.restype = None
+    dvz_turntable_connect.restype = ctypes.c_int32
 
 
 try:
@@ -29069,9 +28860,10 @@ else:
  *
  * @param turntable the turntable controller
  * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_disconnect.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.POINTER(DvzInputRouter)]
-    dvz_turntable_disconnect.restype = None
+    dvz_turntable_disconnect.restype = ctypes.c_int32
 
 
 try:
@@ -29084,9 +28876,10 @@ else:
  *
  * @param turntable the turntable controller
  * @param amount distance delta
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_dolly.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.c_float]
-    dvz_turntable_dolly.restype = None
+    dvz_turntable_dolly.restype = ctypes.c_int32
 
 
 try:
@@ -29100,9 +28893,10 @@ else:
  * @param turntable the turntable controller
  * @param yaw_delta yaw delta in radians
  * @param pitch_delta pitch delta in radians
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_orbit.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.c_float, ctypes.c_float]
-    dvz_turntable_orbit.restype = None
+    dvz_turntable_orbit.restype = ctypes.c_int32
 
 
 try:
@@ -29116,9 +28910,10 @@ else:
  * @param turntable the turntable controller
  * @param right_amount right-axis pan amount
  * @param up_amount up-axis pan amount
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_pan.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.c_float, ctypes.c_float]
-    dvz_turntable_pan.restype = None
+    dvz_turntable_pan.restype = ctypes.c_int32
 
 
 try:
@@ -29131,9 +28926,10 @@ else:
  *
  * @param turntable the turntable controller
  * @param pivot new world-space pivot
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_pivot.argtypes = [ctypes.POINTER(DvzTurntable), (ctypes.c_float * 3)]
-    dvz_turntable_pivot.restype = None
+    dvz_turntable_pivot.restype = ctypes.c_int32
 
 
 try:
@@ -29161,9 +28957,10 @@ else:
  * Reset a turntable to its initial pose.
  *
  * @param turntable the turntable controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_reset.argtypes = [ctypes.POINTER(DvzTurntable)]
-    dvz_turntable_reset.restype = None
+    dvz_turntable_reset.restype = ctypes.c_int32
 
 
 try:
@@ -29177,9 +28974,10 @@ else:
  * @param turntable the turntable controller
  * @param width viewport width in pixels
  * @param height viewport height in pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_resize.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.c_float, ctypes.c_float]
-    dvz_turntable_resize.restype = None
+    dvz_turntable_resize.restype = ctypes.c_int32
 
 
 try:
@@ -29192,9 +28990,10 @@ else:
  *
  * @param turntable the turntable controller
  * @param camera the camera to update, or NULL
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_set_camera.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.POINTER(DvzCamera)]
-    dvz_turntable_set_camera.restype = None
+    dvz_turntable_set_camera.restype = ctypes.c_int32
 
 
 try:
@@ -29210,9 +29009,10 @@ else:
  * @param y viewport y origin in window pixels
  * @param width viewport width in window pixels
  * @param height viewport height in window pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_turntable_viewport.argtypes = [ctypes.POINTER(DvzTurntable), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_turntable_viewport.restype = None
+    dvz_turntable_viewport.restype = ctypes.c_int32
 
 
 try:
@@ -29258,12 +29058,13 @@ else:
     dvz_unit_ladder_clear.__doc__ = """/**
  * Clear all entries from a custom unit ladder.
  *
- * Builtin ladders ignore this call.
+ * Builtin ladders reject this call.
  *
  * @param ladder the ladder
+ * @return DVZ_OK when the ladder was cleared, DVZ_ERROR on error
  */"""
     dvz_unit_ladder_clear.argtypes = [ctypes.POINTER(DvzUnitLadder)]
-    dvz_unit_ladder_clear.restype = None
+    dvz_unit_ladder_clear.restype = ctypes.c_int32
 
 
 try:
@@ -29542,10 +29343,10 @@ else:
     dvz_view.__doc__ = """/**
  * Create a view for a figure from an explicit descriptor.
  *
- * Descriptor dimensions distinguish logical pixels from framebuffer pixels.  For offscreen views,
- * setting only framebuffer_width/framebuffer_height preserves exact-pixel output; setting
- * logical_width/logical_height plus device_scale derives the framebuffer size.  render_scale is
- * tracked separately for future supersampling and does not currently change the framebuffer size.
+ * Descriptor dimensions use the `size_policy` and `size_*` fields.  For offscreen views,
+ * `DVZ_VIEW_SIZE_FRAMEBUFFER_PX` preserves exact-pixel output; `DVZ_VIEW_SIZE_HOST_LOGICAL_PX`
+ * derives the framebuffer size from logical dimensions and device scale.  render_scale is tracked
+ * separately for future supersampling and does not currently change the framebuffer size.
  *
  * @param app the app
  * @param figure the figure to render (borrowed)
@@ -29907,31 +29708,6 @@ else:
 
 
 try:
-    dvz_view_glfw = dvz.dvz_view_glfw
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_view_glfw')
-else:
-    dvz_view_glfw.__doc__ = """/**
- * Create an interactive GLFW view for a figure.
- *
- * Opens a visible window backed by a present (swapchain) canvas.  The frame loop started by
- * dvz_app_run(app, 0) drives rendering until the user closes the window.
- *
- * Requires that the platform supports GLFW and that a display is available.  Returns NULL when
- * GLFW is unavailable or window creation fails.
- *
- * @param app the app
- * @param figure the figure to render (borrowed)
- * @param width window width in pixels
- * @param height window height in pixels
- * @param title window title string, or NULL for a default title
- * @return the view handle, or NULL on failure
- */"""
-    dvz_view_glfw.argtypes = [ctypes.POINTER(DvzApp), ctypes.POINTER(DvzFigure), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
-    dvz_view_glfw.restype = ctypes.POINTER(DvzView)
-
-
-try:
     dvz_view_gui = dvz.dvz_view_gui
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_view_gui')
@@ -30177,9 +29953,10 @@ else:
  *
  * @param view the view
  * @param loop whether the recording should loop
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_view_replay_set_loop.argtypes = [ctypes.POINTER(DvzView), ctypes.c_bool]
-    dvz_view_replay_set_loop.restype = None
+    dvz_view_replay_set_loop.restype = ctypes.c_int32
 
 
 try:
@@ -30192,9 +29969,10 @@ else:
  *
  * @param view the view
  * @param paced whether replay waits for recorded timestamps
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_view_replay_set_paced.argtypes = [ctypes.POINTER(DvzView), ctypes.c_bool]
-    dvz_view_replay_set_paced.restype = None
+    dvz_view_replay_set_paced.restype = ctypes.c_int32
 
 
 try:
@@ -30209,9 +29987,10 @@ else:
  *
  * @param view the view
  * @param speed replay speed multiplier
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_view_replay_set_speed.argtypes = [ctypes.POINTER(DvzView), ctypes.c_double]
-    dvz_view_replay_set_speed.restype = None
+    dvz_view_replay_set_speed.restype = ctypes.c_int32
 
 
 try:
@@ -30260,9 +30039,10 @@ else:
  * example QWindow::requestUpdate(), QWidget::update(), an SDL wakeup, or a Tk idle callback.
  *
  * @param view the view
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_view_request_frame.argtypes = [ctypes.POINTER(DvzView)]
-    dvz_view_request_frame.restype = None
+    dvz_view_request_frame.restype = ctypes.c_int32
 
 
 try:
@@ -30359,9 +30139,10 @@ else:
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     _dvz_view_set_frame_callback.argtypes = [ctypes.POINTER(DvzView), DvzViewFrameCallback, ctypes.c_void_p]
-    _dvz_view_set_frame_callback.restype = None
+    _dvz_view_set_frame_callback.restype = ctypes.c_int32
     def dvz_view_set_frame_callback(view, callback, user_data):
         callback = _callback_store_setter('dvz_view_set_frame_callback', DvzViewFrameCallback, view, callback)
         return _dvz_view_set_frame_callback(view, callback, user_data)
@@ -30384,9 +30165,10 @@ else:
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     _dvz_view_set_gui_callback.argtypes = [ctypes.POINTER(DvzView), DvzGuiCallback, ctypes.c_void_p]
-    _dvz_view_set_gui_callback.restype = None
+    _dvz_view_set_gui_callback.restype = ctypes.c_int32
     def dvz_view_set_gui_callback(view, callback, user_data):
         callback = _callback_store_setter('dvz_view_set_gui_callback', DvzGuiCallback, view, callback)
         return _dvz_view_set_gui_callback(view, callback, user_data)
@@ -30408,9 +30190,10 @@ else:
  *
  * @param view the view
  * @param enabled whether rendering should be enabled
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_view_set_render_enabled.argtypes = [ctypes.POINTER(DvzView), ctypes.c_bool]
-    dvz_view_set_render_enabled.restype = None
+    dvz_view_set_render_enabled.restype = ctypes.c_int32
 
 
 try:
@@ -30427,9 +30210,10 @@ else:
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     _dvz_view_set_request_frame_callback.argtypes = [ctypes.POINTER(DvzView), DvzViewRequestFrameCallback, ctypes.c_void_p]
-    _dvz_view_set_request_frame_callback.restype = None
+    _dvz_view_set_request_frame_callback.restype = ctypes.c_int32
     def dvz_view_set_request_frame_callback(view, callback, user_data):
         callback = _callback_store_setter('dvz_view_set_request_frame_callback', DvzViewRequestFrameCallback, view, callback)
         return _dvz_view_set_request_frame_callback(view, callback, user_data)
@@ -30448,9 +30232,10 @@ else:
  *
  * @param view the view
  * @param scale positive user scale
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_view_set_user_scale.argtypes = [ctypes.POINTER(DvzView), ctypes.c_float]
-    dvz_view_set_user_scale.restype = None
+    dvz_view_set_user_scale.restype = ctypes.c_int32
 
 
 try:
@@ -30625,9 +30410,35 @@ else:
  * thread by dvz_view_render_once().
  *
  * @param view the view
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_view_wake.argtypes = [ctypes.POINTER(DvzView)]
-    dvz_view_wake.restype = None
+    dvz_view_wake.restype = ctypes.c_int32
+
+
+try:
+    dvz_view_window = dvz.dvz_view_window
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_view_window')
+else:
+    dvz_view_window.__doc__ = """/**
+ * Create an interactive native-window view for a figure.
+ *
+ * Opens a visible window backed by a present (swapchain) canvas.  The frame loop started by
+ * dvz_app_run(app, 0) drives rendering until the user closes the window.
+ *
+ * Uses the configured native window backend. Returns NULL when the backend is unavailable, no
+ * display is available, or window creation fails.
+ *
+ * @param app the app
+ * @param figure the figure to render (borrowed)
+ * @param width window width in pixels
+ * @param height window height in pixels
+ * @param title window title string, or NULL for a default title
+ * @return the view handle, or NULL on failure
+ */"""
+    dvz_view_window.argtypes = [ctypes.POINTER(DvzApp), ctypes.POINTER(DvzFigure), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p]
+    dvz_view_window.restype = ctypes.POINTER(DvzView)
 
 
 try:
@@ -30793,9 +30604,10 @@ else:
  * Clear the active logical item range and restore full visual participation.
  *
  * @param visual the visual
+ * @return DVZ_OK if the item range was cleared, DVZ_ERROR otherwise
  */"""
     dvz_visual_clear_item_range.argtypes = [ctypes.POINTER(DvzVisual)]
-    dvz_visual_clear_item_range.restype = None
+    dvz_visual_clear_item_range.restype = ctypes.c_int32
 
 
 try:
@@ -31002,10 +30814,10 @@ else:
  * @param buffer the scene buffer, or NULL to clear the binding
  * @param byte_offset byte offset into the buffer
  * @param item_count number of attribute items
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_visual_set_attr_buffer.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.POINTER(DvzSceneBuffer), ctypes.c_uint64, ctypes.c_uint32]
-    dvz_visual_set_attr_buffer.restype = ctypes.c_bool
+    dvz_visual_set_attr_buffer.restype = ctypes.c_int32
 
 
 try:
@@ -31087,10 +30899,10 @@ else:
  * @param visual the visual
  * @param slot_name the semantic slot name
  * @param buffer the buffer, or NULL to clear the binding
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_visual_set_buffer.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.POINTER(DvzSceneBuffer)]
-    dvz_visual_set_buffer.restype = ctypes.c_bool
+    dvz_visual_set_buffer.restype = ctypes.c_int32
 
 
 try:
@@ -31180,12 +30992,12 @@ else:
  * The payload is copied before this function returns. The caller keeps ownership of `data` and may
  * release or reuse it immediately after a successful or failed call.
  *
- * @param data packed array of item_count items borrowed for the duration of the call
  * @param first_item index of the first item to update
+ * @param data packed array of item_count items borrowed for the duration of the call
  * @param item_count number of items to update
  * @return 0 on success, -1 on error
  */"""
-    dvz_visual_set_data_range.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint32]
+    dvz_visual_set_data_range.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_uint32]
     dvz_visual_set_data_range.restype = ctypes.c_int32
 
 
@@ -31246,10 +31058,10 @@ else:
  * @param visual the visual
  * @param slot_name the semantic slot name
  * @param field the field, or NULL to clear the binding
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_visual_set_field.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.POINTER(DvzSampledField)]
-    dvz_visual_set_field.restype = ctypes.c_bool
+    dvz_visual_set_field.restype = ctypes.c_int32
 
 
 try:
@@ -31346,9 +31158,10 @@ else:
  *
  * @param visual the visual
  * @param capabilities bitwise OR of DvzQueryCapabilityFlag values
+ * @return DVZ_OK when the capabilities were accepted, DVZ_ERROR on error
  */"""
     dvz_visual_set_query_capabilities.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_uint32]
-    dvz_visual_set_query_capabilities.restype = None
+    dvz_visual_set_query_capabilities.restype = ctypes.c_int32
 
 
 try:
@@ -31447,56 +31260,6 @@ else:
 
 
 try:
-    dvz_visual_set_texture_r32f = dvz.dvz_visual_set_texture_r32f
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_visual_set_texture_r32f')
-else:
-    dvz_visual_set_texture_r32f.__doc__ = """/**
- * Attach a 2D scalar R32F texture to an image or glyph visual.
- *
- * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
- * binds it to the visual's `"field"` slot. The owned sampled field uses
- * `DVZ_FIELD_SEMANTIC_SCALAR` and `DVZ_COLOR_ROLE_DATA`. The bound scale and colormap are applied
- * on the CPU during emit to produce the RGBA texture used by the current first-slice image runtime
- * path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
- *
- * @param visual the visual (must be of type IMAGE or GLYPH)
- * @param values scalar R32F pixel data, tightly packed, row-major
- * @param width the texture width in pixels
- * @param height the texture height in pixels
- * @param size_bytes number of bytes available at @p values; must equal `width * height * sizeof(float)`
- * @return 0 on success, -1 on error
- */"""
-    dvz_visual_set_texture_r32f.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(ctypes.c_float), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint64]
-    dvz_visual_set_texture_r32f.restype = ctypes.c_int32
-
-
-try:
-    dvz_visual_set_texture_rgba8 = dvz.dvz_visual_set_texture_rgba8
-except AttributeError:
-    _MISSING_FUNCTIONS.append('dvz_visual_set_texture_rgba8')
-else:
-    dvz_visual_set_texture_rgba8.__doc__ = """/**
- * Attach a 2D RGBA8 sRGB-color texture to an image, glyph, or mesh visual.
- *
- * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
- * binds it to the visual's `"field"` slot for image/glyph visuals or `"texture"` slot for mesh
- * visuals. The owned sampled field uses `DVZ_FIELD_SEMANTIC_COLOR` and
- * `DVZ_COLOR_ROLE_SRGB_COLOR`. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new
- * code.
- *
- * @param visual the visual (must be of type IMAGE, GLYPH, or MESH)
- * @param rgba RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes)
- * @param width the texture width in pixels
- * @param height the texture height in pixels
- * @param size_bytes number of bytes available at @p rgba; must equal `width * height * 4`
- * @return 0 on success, -1 on error
- */"""
-    dvz_visual_set_texture_rgba8.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint64]
-    dvz_visual_set_texture_rgba8.restype = ctypes.c_int32
-
-
-try:
     dvz_visual_set_transform = dvz.dvz_visual_set_transform
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_visual_set_transform')
@@ -31544,9 +31307,10 @@ else:
  *
  * @param visual the visual
  * @param visible true to show, false to hide
+ * @return DVZ_OK if visibility was updated, DVZ_ERROR otherwise
  */"""
     dvz_visual_set_visible.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_bool]
-    dvz_visual_set_visible.restype = None
+    dvz_visual_set_visible.restype = ctypes.c_int32
 
 
 try:
@@ -32520,7 +32284,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_GENERATED_FUNCTION_COUNT = 1555
-_SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_field_geometry', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_panel_background_desc', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scalebar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
-_DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzTextStyle', 'DvzTextPlacement', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzFontDesc', 'DvzFontDefaults', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzContainer', 'DvzContainerIterator', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RawFallback', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzObject', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2D', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewSizeDesc', 'DvzViewDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
+_GENERATED_FUNCTION_COUNT = 1532
+_SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_depth_cue_desc', 'dvz_device_config', 'dvz_field_geometry', 'dvz_gpu_ctx_config', 'dvz_material_desc', 'dvz_overlay_card_desc', 'dvz_overlay_card_style', 'dvz_panel_background_desc', 'dvz_phong_material_desc', 'dvz_polygon_desc', 'dvz_reference_grid_desc', 'dvz_scale_bar_desc', 'dvz_standard_material_desc', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent', 'dvz_visual_transform_desc', 'dvz_window_external_surface_info']
+_DATOVIZ_CTYPES_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzAnnotationDesc', 'DvzAppCaptureConfig', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzDataDomain', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldRegion', 'DvzFlyDesc', 'DvzFontDefaults', 'DvzFontDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzMsaaDesc', 'DvzOrientationGizmoDesc', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzSsaoDesc', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTextPlacement', 'DvzTextStyle', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewDesc', 'DvzViewSizeDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]

@@ -1,12 +1,66 @@
 
+features/technique_ssao
+- i don't see a difference unless i rotate to see the figure from the bottom, i'm not sure it is well calibrated, perhaps better to show just spheres?
+- inspect if the linked arcball is correctly implemented and consistently with all other examples
+- crash upon exit
+    $ ./build/examples/c/features/technique_ssao --live
+    scenario_runner: technique_ssao requirements: native-view
+    15:44:38.612 T399 E       validation.h:0166: validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x12e000000012e that is currently in use by VkCommandBuffer 0x5dd4018c7570.
+    The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.328.1/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+    15:44:38.613 T399 E       validation.h:0166: validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0x1300000000130 that is currently in use by VkCommandBuffer 0x5dd4018c7570.
+    The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.328.1/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+    15:44:38.614 T399 E       validation.h:0166: validation layer: vkFreeDescriptorSets(): pDescriptorSets[0] can't be called on VkDescriptorSet 0x4c000000004c that is currently in use by VkCommandBuffer 0x5dd4018c7570.
+    The Vulkan spec states: All submitted commands that refer to any element of pDescriptorSets must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.328.1/linux/antora/spec/latest/chapters/descriptorsets.html#VUID-vkFreeDescriptorSets-pDescriptorSets-00309)
+    15:44:38.615 T399 E       validation.h:0166: validation layer: vkDestroyPipeline(): can't be called on VkPipeline 0x440000000044 that is currently in use by VkCommandBuffer 0x5dd4018c7570.
+    The Vulkan spec states: All submitted commands that refer to pipeline must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.328.1/linux/antora/spec/latest/chapters/pipelines.html#VUID-vkDestroyPipeline-pipeline-00765)
+
+
+features/technique_msaa
+does not work
+scenario_runner: technique_msaa requirements: mesh,controller,arcball
+15:41:15.228 T367 E              app.c:3233: _app_draw runtime execution failed: code=4 (Usage) command=274/327 type=21 (BeginRenderPass) id=10003(fig0_p1.pass.0)
+  274 = BeginRenderPass id=10003(fig0_p1.pass.0) encoder=10000 target=86(fig0_p1.msaa.color_scope_00006235a03a12c0) clear=load depth=yes depth_target=85(fig0_p1.depth_scope_00006235a03a12c0) clear_depth=1 viewport=(0,0 1x1)
+15:41:15.298 T367 E              app.c:3233: _app_draw runtime execution failed: code=4 (Usage) command=290/343 type=21 (BeginRenderPass) id=10003(fig0_p1.pass.0)
+
+features/technique_depth_cue
+- badly calibrated, improve
+
 features/technique_transparency
-- very slow and seems badly broken, text needs to use msdf
+- simplify the code, some internal functions seem useless
 
-sample field 2D and 3D feature examples, are they really needed? they seem redundant with visuals image and volume examples no?
+features/compute_buffer_animation
+- frame rate very inconsistent and the speed of animation depends on the frame rate which is wrong
 
-isolines example: do we need the manual camera desc, can't we just reuse the common camera helper?
 
-visuals volume example, anything to fix in the code? the bounding box: can't we use an existing datoviz api for that?
+showcases/embedding_atlas
+showcases/lipid_brain_atlas
+showcases/synthetic_mouse
+all lab examples
+- these should be marked experimental and REMOVED from the batch reviews
+
+
+showcases/textured_planet
+- the rotation axis is seriously wrong
+- when quitting:
+FPS   19.4 (20 frames in 1.030 s)16:21:26.190 T784 E       validation.h:0166: validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0xb200000000b2 that is currently in use by VkCommandBuffer 0x602b3b15d6a0.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.328.1/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+16:21:26.194 T784 E       validation.h:0166: validation layer: vkDestroyBuffer(): can't be called on VkBuffer 0xb400000000b4 that is currently in use by VkCommandBuffer 0x602b3b15d6a0.
+The Vulkan spec states: All submitted commands that refer to buffer, either directly or via a VkBufferView, must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.328.1/linux/antora/spec/latest/chapters/resources.html#VUID-vkDestroyBuffer-buffer-00922)
+16:21:26.200 T784 E       validation.h:0166: validation layer: vkFreeDescriptorSets(): pDescriptorSets[0] can't be called on VkDescriptorSet 0x4c000000004c that is currently in use by VkCommandBuffer 0x602b3b15d6a0.
+The Vulkan spec states: All submitted commands that refer to any element of pDescriptorSets must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.328.1/linux/antora/spec/latest/chapters/descriptorsets.html#VUID-vkFreeDescriptorSets-pDescriptorSets-00309)
+16:21:26.200 T784 E       validation.h:0166: validation layer: vkDestroyPipeline(): can't be called on VkPipeline 0x440000000044 that is currently in use by VkCommandBuffer 0x602b3b15d6a0.
+The Vulkan spec states: All submitted commands that refer to pipeline must have completed execution (https://vulkan.lunarg.com/doc/view/1.4.328.1/linux/antora/spec/latest/chapters/pipelines.html#VUID-vkDestroyPipeline-pipeline-00765)
+
+
+examples/c/advanced/raw_triangle_vklite.c
+- remove the video-related code in that example
+
+
+
+
+
+is this really necessary? audit all examples where this function appears
+static bool _set_camera(DvzPanel* panel)
 
 
 

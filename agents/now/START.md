@@ -33,9 +33,12 @@ as real implementation, not scaffolding.
    [../../spec/bindings/CTYPES_POLICY.md](../../spec/bindings/CTYPES_POLICY.md) before changing the
    top-level Python package, raw-binding generation, FFI helpers, or NumPy/array argument
    adaptation.
-7. Use [HANDOFF_MARKER_TRIANGLE_ANGLE_CONVENTION.md](HANDOFF_MARKER_TRIANGLE_ANGLE_CONVENTION.md)
+7. Use [HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md](HANDOFF_PUBLIC_API_PRE_RC_AUDIT.md) as the completed
+   pre-RC API cleanup record before changing public headers, exported API, generated C reference,
+   generated `ctypes`, or public examples.
+8. Use [HANDOFF_MARKER_TRIANGLE_ANGLE_CONVENTION.md](HANDOFF_MARKER_TRIANGLE_ANGLE_CONVENTION.md)
    before changing marker angle, marker shape, symbol, or GSP-facing marker semantics.
-8. Use [HANDOFF_AXIS_GUIDE_VIEWPORT_REFACTOR.md](HANDOFF_AXIS_GUIDE_VIEWPORT_REFACTOR.md) before
+9. Use [HANDOFF_AXIS_GUIDE_VIEWPORT_REFACTOR.md](HANDOFF_AXIS_GUIDE_VIEWPORT_REFACTOR.md) before
    changing 2D axes, grid lines, guides, View2D domains, aspect ratio, or plot/panel viewport
    behavior.
 

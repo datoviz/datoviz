@@ -92,7 +92,7 @@ typedef enum DvzAppCaptureFlags
 typedef enum DvzViewKind
 {
     DVZ_VIEW_OFFSCREEN,
-    DVZ_VIEW_GLFW,
+    DVZ_VIEW_WINDOW,
     DVZ_VIEW_EXTERNAL_SURFACE,
 } DvzViewKind;
 
@@ -141,7 +141,19 @@ struct DvzAppConfig
     DvzAppScheduleMode schedule_mode;
     DvzAppExitPolicy exit_policy;
     double fps_cap;
-    DvzFontDefaults font_defaults;
+    const char* font_sans_path;
+    const char* font_sans_family;
+    const char* font_sans_style;
+    uint32_t font_sans_face_index;
+    uint32_t font_sans_font_flags;
+    const char* font_mono_path;
+    const char* font_mono_family;
+    const char* font_mono_style;
+    uint32_t font_mono_face_index;
+    uint32_t font_mono_font_flags;
+    float font_ui_size_px;
+    float font_mono_size_px;
+    float font_text_size_px;
 };
 
 
@@ -228,19 +240,20 @@ struct DvzViewDesc
     uint32_t flags;
     DvzViewKind kind;
 
-    DvzViewSizeDesc size;
-
-    uint32_t logical_width;
-    uint32_t logical_height;
-    uint32_t framebuffer_width;
-    uint32_t framebuffer_height;
+    DvzViewSizePolicy size_policy;
+    double size_width;
+    double size_height;
+    double size_reference_dpi;
+    double size_requested_device_scale;
+    double size_monitor_dpi_x_override;
+    double size_monitor_dpi_y_override;
+    bool size_strict_framebuffer_size;
 
     float device_scale;
     float user_scale;
     float render_scale;
 
     const char* title;
-    const DvzWindowExternalSurfaceInfo* external_surface;
 
     bool has_position;
     int32_t x;
@@ -325,8 +338,9 @@ DVZ_EXPORT void dvz_app_destroy(DvzApp* app);
  * Request that a running app loop stops at the next scheduler checkpoint.
  *
  * @param app app whose run loop should stop
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_app_stop(DvzApp* app);
+DVZ_EXPORT DvzResult dvz_app_stop(DvzApp* app);
 
 
 /**
@@ -420,10 +434,10 @@ dvz_view_size_resolve(const DvzViewSizeDesc* desc, DvzViewKind kind);
 /**
  * Create a view for a figure from an explicit descriptor.
  *
- * Descriptor dimensions distinguish logical pixels from framebuffer pixels.  For offscreen views,
- * setting only framebuffer_width/framebuffer_height preserves exact-pixel output; setting
- * logical_width/logical_height plus device_scale derives the framebuffer size.  render_scale is
- * tracked separately for future supersampling and does not currently change the framebuffer size.
+ * Descriptor dimensions use the `size_policy` and `size_*` fields.  For offscreen views,
+ * `DVZ_VIEW_SIZE_FRAMEBUFFER_PX` preserves exact-pixel output; `DVZ_VIEW_SIZE_HOST_LOGICAL_PX`
+ * derives the framebuffer size from logical dimensions and device scale.  render_scale is tracked
+ * separately for future supersampling and does not currently change the framebuffer size.
  *
  * @param app the app
  * @param figure the figure to render (borrowed)
@@ -449,13 +463,13 @@ dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t heig
 
 
 /**
- * Create an interactive GLFW view for a figure.
+ * Create an interactive native-window view for a figure.
  *
  * Opens a visible window backed by a present (swapchain) canvas.  The frame loop started by
  * dvz_app_run(app, 0) drives rendering until the user closes the window.
  *
- * Requires that the platform supports GLFW and that a display is available.  Returns NULL when
- * GLFW is unavailable or window creation fails.
+ * Uses the configured native window backend. Returns NULL when the backend is unavailable, no
+ * display is available, or window creation fails.
  *
  * @param app the app
  * @param figure the figure to render (borrowed)
@@ -464,7 +478,7 @@ dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t heig
  * @param title window title string, or NULL for a default title
  * @return the view handle, or NULL on failure
  */
-DVZ_EXPORT DvzView* dvz_view_glfw(
+DVZ_EXPORT DvzView* dvz_view_window(
     DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title);
 
 
@@ -655,8 +669,9 @@ DVZ_EXPORT float dvz_view_user_scale(const DvzView* view);
  *
  * @param view the view
  * @param scale positive user scale
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_set_user_scale(DvzView* view, float scale);
+DVZ_EXPORT DvzResult dvz_view_set_user_scale(DvzView* view, float scale);
 
 
 /**
@@ -860,8 +875,9 @@ DVZ_EXPORT DvzResult dvz_view_replay_stop(DvzView* view);
  *
  * @param view the view
  * @param paced whether replay waits for recorded timestamps
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_replay_set_paced(DvzView* view, bool paced);
+DVZ_EXPORT DvzResult dvz_view_replay_set_paced(DvzView* view, bool paced);
 
 
 /**
@@ -871,8 +887,9 @@ DVZ_EXPORT void dvz_view_replay_set_paced(DvzView* view, bool paced);
  *
  * @param view the view
  * @param speed replay speed multiplier
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_replay_set_speed(DvzView* view, double speed);
+DVZ_EXPORT DvzResult dvz_view_replay_set_speed(DvzView* view, double speed);
 
 
 /**
@@ -882,8 +899,9 @@ DVZ_EXPORT void dvz_view_replay_set_speed(DvzView* view, double speed);
  *
  * @param view the view
  * @param loop whether the recording should loop
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_replay_set_loop(DvzView* view, bool loop);
+DVZ_EXPORT DvzResult dvz_view_replay_set_loop(DvzView* view, bool loop);
 
 
 /**
@@ -952,8 +970,9 @@ DVZ_EXPORT DvzResult dvz_view_resize_scaled_xy(
  *
  * @param view the view
  * @param enabled whether rendering should be enabled
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_set_render_enabled(DvzView* view, bool enabled);
+DVZ_EXPORT DvzResult dvz_view_set_render_enabled(DvzView* view, bool enabled);
 
 
 /**
@@ -972,8 +991,9 @@ DVZ_EXPORT bool dvz_view_render_enabled(const DvzView* view);
  * example QWindow::requestUpdate(), QWidget::update(), an SDL wakeup, or a Tk idle callback.
  *
  * @param view the view
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_request_frame(DvzView* view);
+DVZ_EXPORT DvzResult dvz_view_request_frame(DvzView* view);
 
 
 /**
@@ -984,8 +1004,9 @@ DVZ_EXPORT void dvz_view_request_frame(DvzView* view);
  * thread by dvz_view_render_once().
  *
  * @param view the view
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_wake(DvzView* view);
+DVZ_EXPORT DvzResult dvz_view_wake(DvzView* view);
 
 
 /**
@@ -1013,8 +1034,9 @@ dvz_view_post(DvzView* view, DvzViewPostCallback callback, void* user_data);
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_set_request_frame_callback(
+DVZ_EXPORT DvzResult dvz_view_set_request_frame_callback(
     DvzView* view, DvzViewRequestFrameCallback callback, void* user_data);
 
 
@@ -1028,8 +1050,9 @@ DVZ_EXPORT void dvz_view_set_request_frame_callback(
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void
+DVZ_EXPORT DvzResult
 dvz_view_set_frame_callback(
     DvzView* view, DvzViewFrameCallback callback, void* user_data);
 

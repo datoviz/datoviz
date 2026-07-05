@@ -253,8 +253,8 @@ static bool _add_image(
         return false;
     if (dvz_visual_set_data(image, "texcoords", texcoords, 4) != 0)
         return false;
-    if (dvz_visual_set_texture_rgba8(
-            image, (const uint8_t*)pixels, width, height, (DvzSize)width * height * 4u) != 0)
+    if (!example_visual_set_rgba8_field(scene, image, "field", (const uint8_t*)pixels, width,
+                                        height, NULL))
         return false;
     if (dvz_visual_set_depth_test(image, false) != 0)
         return false;
@@ -395,16 +395,16 @@ static bool _add_panel_scalebar(
         .line_width_px = 2.0f,
         .unit = unit,
         .data_to_unit = data_to_unit,
-        .label_style = {
+    };
+    DvzTextStyle label_style = {
         DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-            .size_px = 16.0f,
-            .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-        },
+        .size_px = 16.0f,
+        .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
     };
     _copy_color(desc.line_color, color, 255u);
-    _copy_color(desc.label_style.color, color, 255u);
-    DvzScaleBar* scalebar = dvz_scalebar(panel, &desc);
-    return scalebar != NULL;
+    _copy_color(label_style.color, color, 255u);
+    DvzScaleBar* scalebar = dvz_scale_bar(panel, &desc);
+    return scalebar != NULL && dvz_scale_bar_set_label_style(scalebar, &label_style) == 0;
 }
 
 
@@ -435,16 +435,16 @@ static bool _add_world_scalebar(DvzPanel* panel)
         .line_width_px = 2.0f,
         .unit = "m",
         .data_to_unit = 0.001,
-        .label_style = {
+    };
+    DvzTextStyle label_style = {
         DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-            .size_px = 16.0f,
-            .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-        },
+        .size_px = 16.0f,
+        .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
     };
     _copy_color(desc.line_color, color, 255u);
-    _copy_color(desc.label_style.color, color, 255u);
-    DvzScaleBar* scalebar = dvz_scalebar(panel, &desc);
-    return scalebar != NULL;
+    _copy_color(label_style.color, color, 255u);
+    DvzScaleBar* scalebar = dvz_scale_bar(panel, &desc);
+    return scalebar != NULL && dvz_scale_bar_set_label_style(scalebar, &label_style) == 0;
 }
 
 
@@ -560,10 +560,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 2, 2);
     EXAMPLE_CHECK(grid != NULL, "dvz_figure_grid() failed");
     ok = dvz_grid_set_margins(
-        grid, &(DvzPanelReserve){.left_px = 36.0f, .right_px = 30.0f, .top_px = 24.0f,
-                                 .bottom_px = 30.0f});
+             grid, &(DvzPanelReserve){.left_px = 36.0f, .right_px = 30.0f, .top_px = 24.0f,
+                                      .bottom_px = 30.0f}) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_margins() failed");
-    ok = dvz_grid_set_gutter(grid, 28.0f, 26.0f);
+    ok = dvz_grid_set_gutter(grid, 28.0f, 26.0f) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_gutter() failed");
 
     DvzPanel* overview = dvz_grid_panel_span(grid, 0, 0, 2, 1);

@@ -345,7 +345,7 @@ dvz_drp2_stream_renderer_hello_reply(stream, "vklite");
 /* Resources */
 dvz_drp2_stream_create_buffer(stream, ID_VBUF,
     sizeof(TRIANGLE), DVZ_DRP2_BUFFER_USAGE_VERTEX);
-dvz_drp2_stream_write_buffer(stream, ID_VBUF, 0, sizeof(TRIANGLE),
+dvz_drp2_stream_write_buffer_base64(stream, ID_VBUF, 0, sizeof(TRIANGLE),
     base64_encode(TRIANGLE, sizeof(TRIANGLE)));  /* see note below */
 
 dvz_drp2_stream_create_buffer(stream, ID_READBUF,
@@ -384,7 +384,7 @@ dvz_drp2_stream_finish_command_encoder(stream, ID_ENCODER, ID_SUBMIT);
 dvz_drp2_stream_queue_submit(stream, ID_SUBMIT, /*fence_id=*/0);
 ```
 
-**Note on `write_buffer` / base64:** `dvz_drp2_stream_write_buffer` takes a base64-encoded
+**Note on `write_buffer` / base64:** `dvz_drp2_stream_write_buffer_base64` takes a base64-encoded
 string (the DRP2 protocol is text-oriented).  Use `dvz_base64_encode` from
 `include/datoviz/common/` (or add a thin wrapper if it is not yet public).  Alternatively
 check whether an overload accepting raw bytes exists; if not, add one as a convenience:

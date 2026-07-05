@@ -197,7 +197,7 @@ int main(int argc, char** argv)
                });
     EXAMPLE_CHECK(index_buffer != NULL, "dvz_scene_buffer() failed");
 
-    ok = dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices));
+    ok = dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_scene_buffer_set_data() failed");
 
     DvzVisualDataUpdate reference_updates[] = {
@@ -214,7 +214,7 @@ int main(int argc, char** argv)
     };
     rc = dvz_visual_set_data_many(cube, cube_updates, 3);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for cube");
-    ok = dvz_visual_set_buffer(cube, "index", index_buffer);
+    ok = dvz_visual_set_buffer(cube, "index", index_buffer) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_buffer() failed");
     dvz_visual_set_alpha_mode(cube, DVZ_ALPHA_DEPTH_PEEL);
 
@@ -227,14 +227,14 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzView* win =
-        dvz_view_glfw(app, figure, WIDTH, HEIGHT, "depth_peel");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+        dvz_view_window(app, figure, WIDTH, HEIGHT, "depth_peel");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.65f, 0.0f, +0.35f});
 
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
     DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();

@@ -571,9 +571,10 @@ int main(int argc, char** argv)
         scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                    .kind = DVZ_SCALE_CONTINUOUS,
                    .label = "Intensity",
-                   .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 2},
                });
     EXAMPLE_CHECK(scale != NULL, "dvz_scale() failed");
+    dvz_scale_set_format(
+        scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 2});
     dvz_scale_set_domain(scale, SCALE_MIN, SCALE_MAX);
     dvz_scale_set_view_range(scale, FIELD_MIN, FIELD_MAX);
 
@@ -669,14 +670,14 @@ int main(int argc, char** argv)
     float values[FIELD_SIZE * FIELD_SIZE] = {0};
     _fill_field(values);
     bool ok = dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                   .data = values,
-                   .bytes_per_row = FIELD_SIZE * sizeof(float),
-                   .rows_per_image = FIELD_SIZE,
-               });
+                  field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                             .data = values,
+                             .bytes_per_row = FIELD_SIZE * sizeof(float),
+                             .rows_per_image = FIELD_SIZE,
+                         }) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data() failed");
 
-    ok = dvz_visual_set_field(image, "field", field);
+    ok = dvz_visual_set_field(image, "field", field) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_field() failed");
 
     rc = dvz_panel_add_visual(panel, image, NULL);
@@ -711,8 +712,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "colorbar");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_window(app, figure, WIDTH, HEIGHT, "colorbar");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
     state.win = win;
 
     DvzGui* gui = dvz_view_gui(win, NULL);

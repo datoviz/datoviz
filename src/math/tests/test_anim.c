@@ -32,8 +32,8 @@ int test_anim_1(TstContext* suite, const TstCase* tstitem)
     double t = 0;
     for (int i = 0; i < (int)DVZ_EASING_COUNT; i++)
     {
-        AC(dvz_easing((DvzEasing)i, t), 0, EPSILON);
-        AC(dvz_easing((DvzEasing)i, 1), 1, EPSILON);
+        AC(dvz_easing((DvzEasing)i, t), 0, DVZ_EPSILON);
+        AC(dvz_easing((DvzEasing)i, 1), 1, DVZ_EPSILON);
     }
     return 0;
 }

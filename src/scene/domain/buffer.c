@@ -204,25 +204,25 @@ void dvz_scene_buffer_destroy(DvzSceneBuffer* buffer)
  * @param buffer the buffer
  * @param data the packed payload
  * @param byte_size the payload size
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-bool dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, uint64_t byte_size)
+DvzResult dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, uint64_t byte_size)
 {
     ANN(buffer);
     ANN(data);
     if (!_scene_visual_mutation_allowed(buffer->scene, "replace scene buffer data"))
-        return false;
+        return DVZ_ERROR;
     if (byte_size == 0)
     {
         log_error("scene buffer payload size must be non-zero");
-        return false;
+        return DVZ_ERROR;
     }
     if (byte_size % buffer->desc.stride != 0)
     {
         log_error(
             "scene buffer payload size %" PRIu64 " is not aligned to stride %u", byte_size,
             buffer->desc.stride);
-        return false;
+        return DVZ_ERROR;
     }
     if (buffer->data != NULL && buffer->desc.byte_size != byte_size)
     {
@@ -235,27 +235,31 @@ bool dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, uint64_
         if (buffer->data == NULL)
         {
             log_error("scene buffer allocation failed for %" PRIu64 " bytes", byte_size);
-            return false;
+            return DVZ_ERROR;
         }
     }
     dvz_memcpy(buffer->data, byte_size, data, byte_size);
     buffer->desc.byte_size = byte_size;
     buffer->dirty = true;
     _scene_notify_buffer_changed(buffer);
-    return true;
+    return DVZ_OK;
 }
 
 
 
 /**
- * Return the immutable buffer descriptor.
+ * Copy immutable buffer descriptor information.
  *
  * @param buffer the buffer
- * @return the descriptor, or NULL on error
+ * @param out output buffer descriptor
+ * @return whether the descriptor was copied
  */
-const DvzSceneBufferDesc* dvz_scene_buffer_get_desc(const DvzSceneBuffer* buffer)
+bool dvz_scene_buffer_info(const DvzSceneBuffer* buffer, DvzSceneBufferDesc* out)
 {
-    return buffer != NULL ? &buffer->desc : NULL;
+    if (buffer == NULL || out == NULL)
+        return false;
+    *out = buffer->desc;
+    return true;
 }
 
 
@@ -288,49 +292,49 @@ bool dvz_scene_buffer_resource_key(const DvzSceneBuffer* buffer, char* out, size
  * @param visual the visual
  * @param slot_name the slot name
  * @param buffer the buffer, or NULL to clear the binding
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-bool dvz_visual_set_buffer(DvzVisual* visual, const char* slot_name, DvzSceneBuffer* buffer)
+DvzResult dvz_visual_set_buffer(DvzVisual* visual, const char* slot_name, DvzSceneBuffer* buffer)
 {
     ANN(visual);
     ANN(slot_name);
     if (buffer != NULL && buffer->scene != visual->scene)
     {
         log_error("cannot bind a buffer from a different scene");
-        return false;
+        return DVZ_ERROR;
     }
     if (visual->type != DVZ_VISUAL_TYPE_PRIMITIVE && visual->type != DVZ_VISUAL_TYPE_MESH)
     {
         log_error("dvz_visual_set_buffer is only supported for primitive and mesh visuals in the first slice");
-        return false;
+        return DVZ_ERROR;
     }
     if (strcmp(slot_name, "index") != 0)
     {
         log_error("unsupported indexed buffer slot '%s' (expected 'index')", slot_name);
-        return false;
+        return DVZ_ERROR;
     }
     if (buffer != NULL)
     {
         if ((buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_INDEX) == 0)
         {
             log_error("indexed draw slot requires a buffer with INDEX usage");
-            return false;
+            return DVZ_ERROR;
         }
         if (buffer->desc.stride != sizeof(uint16_t) && buffer->desc.stride != sizeof(uint32_t))
         {
             log_error("indexed draw buffers require stride 2 or 4 bytes");
-            return false;
+            return DVZ_ERROR;
         }
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "bind scene buffer"))
-        return false;
+        return DVZ_ERROR;
     _scene_release_visual_buffer(visual);
     if (buffer != NULL)
         _visual_binding_assign(visual, DVZ_VISUAL_BINDING_BUFFER, slot_name, buffer, false);
     else
         _visual_binding_clear(visual, DVZ_VISUAL_BINDING_BUFFER);
     _scene_notify_visual_changed(visual);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -366,12 +370,12 @@ DvzResult dvz_visual_set_index_data(
     DvzSceneBuffer* buffer = dvz_scene_buffer(visual->scene, &desc);
     if (buffer == NULL)
         return -1;
-    if (!dvz_scene_buffer_set_data(buffer, indices, byte_size))
+    if (dvz_scene_buffer_set_data(buffer, indices, byte_size) != DVZ_OK)
     {
         dvz_scene_buffer_destroy(buffer);
         return -1;
     }
-    if (!dvz_visual_set_buffer(visual, "index", buffer))
+    if (dvz_visual_set_buffer(visual, "index", buffer) != DVZ_OK)
     {
         dvz_scene_buffer_destroy(buffer);
         return -1;

@@ -283,10 +283,10 @@ static bool _configure_panel(DvzPanel* panel)
 {
     ANN(panel);
     const BrainBounds bounds = _graph_bounds();
-    if (!dvz_panel_set_padding(
+    if (dvz_panel_set_padding(
             panel, &(DvzPanelReserve){
                        .left_px = 24.0f, .right_px = 24.0f, .bottom_px = 18.0f,
-                       .top_px = 18.0f}))
+                       .top_px = 18.0f}) != DVZ_OK)
         return false;
     return example_configure_equal_aspect_panel(
         panel, (DvzDataDomain){.min = bounds.xmin, .max = bounds.xmax},
@@ -392,13 +392,13 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
     int rc = dvz_graph_set_node_count(graph, NODE_COUNT);
     if (rc != 0)
         return false;
-    rc = dvz_graph_node_positions(graph, 0, NODE_COUNT, (const dvec3*)positions);
+    rc = dvz_graph_set_node_positions(graph, 0, NODE_COUNT, (const dvec3*)positions);
     if (rc != 0)
         return false;
     rc = dvz_graph_set_edge_count(graph, EDGE_COUNT);
     if (rc != 0)
         return false;
-    rc = dvz_graph_edges(graph, 0, EDGE_COUNT, edges);
+    rc = dvz_graph_set_edge_endpoints(graph, 0, EDGE_COUNT, edges);
     if (rc != 0)
         return false;
     uint64_t node_ids[NODE_COUNT] = {0};
@@ -407,10 +407,10 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
         node_ids[i] = NODES[i].semantic_id;
     for (uint32_t i = 0; i < EDGE_COUNT; i++)
         edge_ids[i] = EDGES[i].semantic_id;
-    rc = dvz_graph_node_ids(graph, 0, NODE_COUNT, node_ids);
+    rc = dvz_graph_set_node_ids(graph, 0, NODE_COUNT, node_ids);
     if (rc != 0)
         return false;
-    rc = dvz_graph_edge_ids(graph, 0, EDGE_COUNT, edge_ids);
+    rc = dvz_graph_set_edge_ids(graph, 0, EDGE_COUNT, edge_ids);
     if (rc != 0)
         return false;
 
@@ -423,10 +423,10 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
         node_colors[i] = COMMUNITIES[community].color;
         node_sizes[i] = 18.0f + 24.0f * NODES[i].strength;
     }
-    rc = dvz_graph_node_colors(graph, 0, NODE_COUNT, node_colors);
+    rc = dvz_graph_set_node_colors(graph, 0, NODE_COUNT, node_colors);
     if (rc != 0)
         return false;
-    rc = dvz_graph_node_sizes(graph, 0, NODE_COUNT, node_sizes);
+    rc = dvz_graph_set_node_sizes(graph, 0, NODE_COUNT, node_sizes);
     if (rc != 0)
         return false;
 
@@ -440,16 +440,16 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
         edge_colors[i].a = bridge ? 185u : 105u;
         edge_widths[i] = 1.1f + 4.2f * EDGES[i].weight;
     }
-    rc = dvz_graph_edge_colors(graph, 0, EDGE_COUNT, edge_colors);
+    rc = dvz_graph_set_edge_colors(graph, 0, EDGE_COUNT, edge_colors);
     if (rc != 0)
         return false;
-    rc = dvz_graph_edge_widths(graph, 0, EDGE_COUNT, edge_widths);
+    rc = dvz_graph_set_edge_widths(graph, 0, EDGE_COUNT, edge_widths);
     if (rc != 0)
         return false;
 
     DvzGraphEdgeStyle edge_style = dvz_graph_edge_style();
     edge_style.mode = DVZ_GRAPH_EDGE_MODE_BEZIER;
-    edge_style.tessellation.segment_count = 22;
+    edge_style.tessellation_segment_count = 22;
     rc = dvz_graph_set_edge_style(graph, &edge_style);
     if (rc != 0)
         return false;
@@ -460,7 +460,7 @@ static bool _add_graph(DvzScene* scene, DvzPanel* panel)
         dvec3 control0[EDGE_COUNT] = {0};
         dvec3 control1[EDGE_COUNT] = {0};
         _make_bridge_controls(positions, edges, bridge_first_edge, bridge_count, control0, control1);
-        rc = dvz_graph_edge_controls(
+        rc = dvz_graph_set_edge_controls(
             graph, bridge_first_edge, bridge_count, (const dvec3*)control0, (const dvec3*)control1);
         if (rc != 0)
             return false;

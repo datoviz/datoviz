@@ -78,6 +78,7 @@ typedef bool (*DvzVisualFamilyAfterAttrFn)(
 struct DvzVisualFamilyOps
 {
     DvzVisualType type;
+    DvzSceneVisualFamily family;
     const char* name;
     DvzRenderableKind renderable_kind;
     DvzSceneVisualDescKind desc_kind;
@@ -108,6 +109,7 @@ struct DvzVisualFamilyOps
     bool panel_clip_rect;
     bool sampled_field_texture_upload;
     bool supports_scale;
+    bool supports_scalar_color_scale;
     bool categorical_scale;
     bool supports_material;
     bool supports_depth_cue;
@@ -121,6 +123,10 @@ struct DvzVisualFamilyOps
 /*************************************************************************************************/
 
 const DvzVisualFamilyOps* _scene_visual_family_ops(DvzVisualType type);
+
+const DvzVisualFamilyOps* _scene_visual_family_ops_for_family(DvzSceneVisualFamily family);
+
+DvzSceneVisualFamily _scene_visual_family_from_type(DvzVisualType type);
 
 uint32_t _scene_visual_family_ops_count(void);
 

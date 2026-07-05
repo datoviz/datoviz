@@ -515,9 +515,8 @@ _image_visual(DvzScene* scene, const uint8_t* pixels, DvzAlphaMode alpha_mode)
     rc = dvz_visual_set_data(visual, "texcoords", texcoords, 4);
     if (rc != 0)
         return NULL;
-    rc = dvz_visual_set_texture_rgba8(
-        visual, (const uint8_t*)pixels, TEX_W, TEX_H, sizeof(pixels));
-    if (rc != 0)
+    if (!example_visual_set_rgba8_field(
+            scene, visual, "field", (const uint8_t*)pixels, TEX_W, TEX_H, NULL))
         return NULL;
     rc = dvz_visual_set_alpha_mode(visual, alpha_mode);
     if (rc != 0)
@@ -770,7 +769,7 @@ int main(int argc, char** argv)
     DvzScaleCategory categories[CATEGORY_COUNT] = {0};
     for (uint32_t i = 0; i < CATEGORY_COUNT; i++)
         _set_category(&categories[i], CATEGORY_IDS[i], i, CATEGORY_NAMES[i]);
-    bool ok = dvz_scale_set_categories(labels_scale, categories, CATEGORY_COUNT);
+    bool ok = dvz_scale_set_categories(labels_scale, categories, CATEGORY_COUNT) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_scale_set_categories() failed");
 
     DvzSampledField* label_field = dvz_sampled_field(
@@ -784,18 +783,18 @@ int main(int argc, char** argv)
                });
     EXAMPLE_CHECK(label_field != NULL, "dvz_sampled_field(labels) failed");
     ok = dvz_sampled_field_set_data(
-        label_field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                         .data = labels,
-                         .bytes_per_row = TEX_W * sizeof(int32_t),
-                         .rows_per_image = TEX_H,
-                     });
+             label_field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                              .data = labels,
+                              .bytes_per_row = TEX_W * sizeof(int32_t),
+                              .rows_per_image = TEX_H,
+                          }) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data(labels) failed");
 
     DvzVisual* labels_visual = dvz_labels(scene, 0);
     EXAMPLE_CHECK(labels_visual != NULL, "dvz_labels() failed");
     ok = _set_quad_geometry(labels_visual);
     EXAMPLE_CHECK(ok, "labels visual geometry setup failed");
-    ok = dvz_visual_set_field(labels_visual, "field", label_field);
+    ok = dvz_visual_set_field(labels_visual, "field", label_field) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_field(labels) failed");
     int rc = dvz_visual_set_scale(labels_visual, "labels", labels_scale);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_scale(labels) failed");
@@ -822,8 +821,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "labels");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_window(app, figure, WIDTH, HEIGHT, "labels");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
     state.win = win;
 
     DvzInputRouter* router = dvz_view_input(win);

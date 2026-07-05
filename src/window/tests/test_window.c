@@ -17,7 +17,9 @@
 #include "test_window.h"
 #include "_assertions.h"
 #include "datoviz/common.h"
+#include "datoviz/input/router.h"
 #include "datoviz/window.h"
+#include "datoviz/window/backend.h"
 #include "testing.h"
 #include "../window_internal.h"
 

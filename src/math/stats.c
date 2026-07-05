@@ -49,8 +49,8 @@ inline void dvz_min_max(uint32_t n, const float* values, vec2 out_min_max)
     float m = +INFINITY, M = -INFINITY;
     for (uint32_t i = 0; i < n; i++)
     {
-        m = MIN(m, values[i]);
-        M = MAX(M, values[i]);
+        m = DVZ_MIN(m, values[i]);
+        M = DVZ_MAX(M, values[i]);
     }
     ASSERT(m <= M);
     out_min_max[0] = m;
@@ -76,7 +76,7 @@ inline void dvz_normalize_bytes(vec2 min_max, uint32_t count, float* values, uin
     for (uint32_t i = 0; i < count; i++)
     {
         x = (values[i] - m) * d;
-        x = CLIP(x, 0, 1);
+        x = DVZ_CLIP(x, 0, 1);
         out[i] = round(x * 255);
     }
 }

@@ -54,3 +54,4 @@ const char* _visual_family_attr_expected(DvzVisualType type);
 bool _visual_family_attr_source_supported(
     DvzVisualType type, const char* name, DvzVisualAttrSource source);
 
+bool _visual_family_supports_scalar_color_scale(DvzVisualType type);

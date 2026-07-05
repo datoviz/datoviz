@@ -316,13 +316,13 @@ int test_scene_text_public_font_atlas_api(TstContext* suite, const TstCase* item
     AT(info.glyph_count >= 95);
     AT(info.channels == 4);
 
-    DvzSampledField* field = dvz_text_atlas_field(atlas);
+    const DvzSampledField* field = dvz_text_atlas_field(atlas);
     ANN(field);
-    const DvzSampledFieldDesc* field_desc = dvz_sampled_field_get_desc(field);
-    ANN(field_desc);
-    AT(field_desc->width == info.width);
-    AT(field_desc->height == info.height);
-    AT(field_desc->format == DVZ_FIELD_FORMAT_RGBA8_UNORM);
+    DvzSampledFieldDesc field_desc = {0};
+    AT(dvz_sampled_field_info(field, &field_desc));
+    AT(field_desc.width == info.width);
+    AT(field_desc.height == info.height);
+    AT(field_desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM);
 
     DvzVisual* glyph_visual = dvz_glyph(scene, 0);
     ANN(glyph_visual);

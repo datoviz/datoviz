@@ -77,14 +77,14 @@ Current baseline:
 
 1. `DvzPolygonDesc` is the borrowed CPU input for one outer ring plus holes.
 2. `dvz_triangulate_polygon()` produces ordinary `DvzGeometry`.
-3. `DvzPolygon` and `DvzPolygonSet` retain semantic ring/style state.
-4. `dvz_polygon_composite()` and `dvz_polygon_set_composite()` lower to `"fill"` and `"stroke"`.
+3. `DvzPolygon` and `DvzPolygons` retain semantic ring/style state.
+4. `dvz_polygon_composite()` and `dvz_polygons_composite()` lower to `"fill"` and `"stroke"`.
 5. Fill currently uses `mesh`; stroke currently uses `path`.
 
 Implemented v0.4 polish:
 
-1. add stable ids: `dvz_polygon_set_region_id()`, `dvz_polygon_set_region_ids()`, and
-   `dvz_polygon_id()`;
+1. add stable ids: `dvz_polygons_set_region_id()`, `dvz_polygons_set_region_ids()`, and
+   `dvz_polygon_set_id()`;
 2. add region visibility and bulk visibility helpers for polygon sets;
 3. add bulk setters for fill colors, stroke colors, and stroke widths;
 4. expose polygon stroke style helpers for caps, joins, and miter limit without requiring manual
@@ -145,11 +145,11 @@ Recommended first API shape:
 ```c
 DvzGraph* graph = dvz_graph(scene, 0);
 dvz_graph_set_node_count(graph, node_count);
-dvz_graph_node_positions(graph, 0, node_count, positions);
+dvz_graph_set_node_positions(graph, 0, node_count, positions);
 dvz_graph_set_edge_count(graph, edge_count);
-dvz_graph_edges(graph, 0, edge_count, endpoints); // packed source,target pairs
-dvz_graph_node_ids(graph, 0, node_count, node_ids);
-dvz_graph_edge_ids(graph, 0, edge_count, edge_ids);
+dvz_graph_set_edge_endpoints(graph, 0, edge_count, endpoints); // packed source,target pairs
+dvz_graph_set_node_ids(graph, 0, node_count, node_ids);
+dvz_graph_set_edge_ids(graph, 0, edge_count, edge_ids);
 
 DvzGraphEdgeStyle edge_style = dvz_graph_edge_style();
 edge_style.mode = DVZ_GRAPH_EDGE_MODE_SEGMENT;

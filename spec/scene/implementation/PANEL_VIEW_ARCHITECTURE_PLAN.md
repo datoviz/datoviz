@@ -54,9 +54,9 @@ Require explicit coordinate-space selection through:
 The release-candidate panel view API names are:
 
 ```c
-DvzPanelView2D dvz_panel_view2d(void);
-int dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2D* view);
-void dvz_panel_clear_view2d(DvzPanel* panel);
+DvzPanelView2DDesc dvz_panel_view2d_desc(void);
+int dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2DDesc* view);
+DvzResult dvz_panel_clear_view2d(DvzPanel* panel);
 bool dvz_panel_view2d_extent(DvzPanel* panel, float out[4]);
 ```
 
@@ -141,7 +141,7 @@ src/scene/core/panel_view.c
 
 Move or place these responsibilities there:
 
-1. `dvz_panel_view2d()` or its renamed successor;
+1. `dvz_panel_view2d_desc()` or its renamed successor;
 2. `dvz_panel_set_view2d()`;
 3. `dvz_panel_clear_view2d()`;
 4. `dvz_panel_view2d_extent()`;

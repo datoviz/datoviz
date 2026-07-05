@@ -342,9 +342,9 @@ static bool _add_axes(DvzPanel* panel, const char* x_label, const char* y_label)
     ticks.target_count = 6;
     ticks.min_pixel_spacing = 96.0f;
     ticks.minor_per_interval = 3;
-    if (!dvz_axis_set_tick_policy(x_axis, &ticks))
+    if (dvz_axis_set_tick_policy(x_axis, &ticks) != DVZ_OK)
         return false;
-    if (!dvz_axis_set_tick_policy(y_axis, &ticks))
+    if (dvz_axis_set_tick_policy(y_axis, &ticks) != DVZ_OK)
         return false;
     ExampleAxisStyleOptions style = example_graphite_cyan_axis_options();
     style.tick_size_px = 11.0f;
@@ -357,11 +357,11 @@ static bool _add_axes(DvzPanel* panel, const char* x_label, const char* y_label)
     if (!example_graphite_cyan_apply_axis_style(x_axis, false, &style) ||
         !example_graphite_cyan_apply_axis_style(y_axis, true, &style))
         return false;
-    if (!dvz_axis_set_grid(x_axis, true) || !dvz_axis_set_grid(y_axis, true))
+    if (dvz_axis_set_grid(x_axis, true) != DVZ_OK || dvz_axis_set_grid(y_axis, true) != DVZ_OK)
         return false;
-    if (x_label != NULL && !dvz_axis_set_label(x_axis, x_label))
+    if (x_label != NULL && dvz_axis_set_label(x_axis, x_label) != DVZ_OK)
         return false;
-    return dvz_axis_set_label(y_axis, y_label);
+    return dvz_axis_set_label(y_axis, y_label) == DVZ_OK;
 }
 
 
@@ -698,7 +698,7 @@ static bool _set_panel_border(DvzPanel* panel)
     border.color = color;
     border.width_px = 2.25f;
     border.inset_px = 1.125f;
-    return dvz_panel_set_border(panel, &border);
+    return dvz_panel_set_border(panel, &border) == DVZ_OK;
 }
 
 
@@ -738,10 +738,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 3, 2);
     LINKED_AXES_CHECK(grid != NULL, "dvz_figure_grid() failed");
     bool ok = dvz_grid_set_margins(
-        grid, &(DvzPanelReserve){.left_px = 36.0f, .right_px = 30.0f, .top_px = 24.0f,
-                                 .bottom_px = 30.0f});
+                  grid, &(DvzPanelReserve){.left_px = 36.0f, .right_px = 30.0f,
+                                           .top_px = 24.0f, .bottom_px = 30.0f}) == DVZ_OK;
     LINKED_AXES_CHECK(ok, "dvz_grid_set_margins() failed");
-    ok = dvz_grid_set_gutter(grid, 28.0f, 26.0f);
+    ok = dvz_grid_set_gutter(grid, 28.0f, 26.0f) == DVZ_OK;
     LINKED_AXES_CHECK(ok, "dvz_grid_set_gutter() failed");
 
     DvzPanel* signal = dvz_grid_panel(grid, 0, 0);

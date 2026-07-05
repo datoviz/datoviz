@@ -160,27 +160,27 @@ int main(int argc, char** argv)
     DvzGrid* grid = dvz_figure_grid(figure, 3, 4);
     EXAMPLE_CHECK(grid != NULL, "dvz_figure_grid() failed");
     bool ok = dvz_grid_set_margins(
-        grid, &(DvzPanelReserve){.left_px = 24.0f, .right_px = 24.0f, .top_px = 24.0f,
-                                 .bottom_px = 24.0f});
+                  grid, &(DvzPanelReserve){.left_px = 24.0f, .right_px = 24.0f,
+                                           .top_px = 24.0f, .bottom_px = 24.0f}) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_margins() failed");
-    ok = dvz_grid_set_gutter(grid, 12.0f, 12.0f);
+    ok = dvz_grid_set_gutter(grid, 12.0f, 12.0f) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_gutter() failed");
 
-    ok = dvz_grid_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.35f);
-    EXAMPLE_CHECK(ok, "dvz_grid_col_size(col 0) failed");
-    ok = dvz_grid_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 0.95f);
-    EXAMPLE_CHECK(ok, "dvz_grid_col_size(col 1) failed");
-    ok = dvz_grid_col_size(grid, 2, DVZ_GRID_SIZE_FIXED_PX, 210.0f);
-    EXAMPLE_CHECK(ok, "dvz_grid_col_size(col 2) failed");
-    ok = dvz_grid_col_size(grid, 3, DVZ_GRID_SIZE_FIXED_PX, 64.0f);
-    EXAMPLE_CHECK(ok, "dvz_grid_col_size(col 3) failed");
+    ok = dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.35f) == DVZ_OK;
+    EXAMPLE_CHECK(ok, "dvz_grid_set_col_size(col 0) failed");
+    ok = dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 0.95f) == DVZ_OK;
+    EXAMPLE_CHECK(ok, "dvz_grid_set_col_size(col 1) failed");
+    ok = dvz_grid_set_col_size(grid, 2, DVZ_GRID_SIZE_FIXED_PX, 210.0f) == DVZ_OK;
+    EXAMPLE_CHECK(ok, "dvz_grid_set_col_size(col 2) failed");
+    ok = dvz_grid_set_col_size(grid, 3, DVZ_GRID_SIZE_FIXED_PX, 64.0f) == DVZ_OK;
+    EXAMPLE_CHECK(ok, "dvz_grid_set_col_size(col 3) failed");
 
-    ok = dvz_grid_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 180.0f);
-    EXAMPLE_CHECK(ok, "dvz_grid_row_size(row 0) failed");
-    ok = dvz_grid_row_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 1.45f);
-    EXAMPLE_CHECK(ok, "dvz_grid_row_size(row 1) failed");
-    ok = dvz_grid_row_size(grid, 2, DVZ_GRID_SIZE_WEIGHT, 0.90f);
-    EXAMPLE_CHECK(ok, "dvz_grid_row_size(row 2) failed");
+    ok = dvz_grid_set_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 180.0f) == DVZ_OK;
+    EXAMPLE_CHECK(ok, "dvz_grid_set_row_size(row 0) failed");
+    ok = dvz_grid_set_row_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 1.45f) == DVZ_OK;
+    EXAMPLE_CHECK(ok, "dvz_grid_set_row_size(row 1) failed");
+    ok = dvz_grid_set_row_size(grid, 2, DVZ_GRID_SIZE_WEIGHT, 0.90f) == DVZ_OK;
+    EXAMPLE_CHECK(ok, "dvz_grid_set_row_size(row 2) failed");
 
     DvzPanel* panels[PLOT_COUNT] = {
         dvz_grid_panel_span(grid, 0, 0, 2, 2),
@@ -200,17 +200,17 @@ int main(int argc, char** argv)
     dvz_panel_set_background_color(panels[3], dvz_color_from_unit(0.050f, 0.050f, 0.070f, 1.0f));
     dvz_panel_set_background_color(panels[4], dvz_color_from_unit(0.045f, 0.066f, 0.064f, 1.0f));
     ok = dvz_panel_set_background(
-        colorbar_panel,
-        &(DvzPanelBackgroundDesc){
-            .type = DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT,
-            .gradient =
-                {
-                    .start = {0.5f, 1.0f},
-                    .end = {0.5f, 0.0f},
-                    .color0 = {0.10f, 0.14f, 0.32f, 1.0f},
-                    .color1 = {0.98f, 0.72f, 0.18f, 1.0f},
-                },
-        });
+             colorbar_panel,
+             &(DvzPanelBackgroundDesc){
+                 .type = DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT,
+                 .gradient =
+                     {
+                         .start = {0.5f, 1.0f},
+                         .end = {0.5f, 0.0f},
+                         .color0 = {0.10f, 0.14f, 0.32f, 1.0f},
+                         .color1 = {0.98f, 0.72f, 0.18f, 1.0f},
+                     },
+             }) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_panel_set_background() failed");
 
     ok = _add_point_grid(scene, panels[0], 55, 85, 180);
@@ -227,8 +227,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "grid_layout");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_window(app, figure, WIDTH, HEIGHT, "grid_layout");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     ok = _attach_panzoom(scene, win, panels, PLOT_COUNT);
     EXAMPLE_CHECK(ok, "panzoom setup failed");

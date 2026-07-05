@@ -22,7 +22,7 @@
 #include "_commands.h"
 #include "_log.h"
 #include "_vk_utils.h"
-#include "datoviz/common/obj.h"
+#include "obj.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"

@@ -126,12 +126,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 2, 2);
     if (grid == NULL)
         return false;
-    if (!dvz_grid_set_margins(
+    if (dvz_grid_set_margins(
             grid,
             &(DvzPanelReserve){
-                .left_px = 56.0f, .right_px = 56.0f, .top_px = 56.0f, .bottom_px = 56.0f}))
+                .left_px = 56.0f, .right_px = 56.0f, .top_px = 56.0f, .bottom_px = 56.0f}) != DVZ_OK)
         return false;
-    if (!dvz_grid_set_gutter(grid, 36.0f, 36.0f))
+    if (dvz_grid_set_gutter(grid, 36.0f, 36.0f) != DVZ_OK)
         return false;
 
     DvzPanel* panels[PANEL_COUNT] = {
@@ -156,7 +156,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         DvzPanelBorderDesc border = dvz_panel_border_desc();
         border.color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
         border.width_px = 1.5f;
-        if (!dvz_panel_set_border(panels[i], &border))
+        if (dvz_panel_set_border(panels[i], &border) != DVZ_OK)
             return false;
 
         if (!_add_panel_points(ctx->scene, panels[i], accents[i]))

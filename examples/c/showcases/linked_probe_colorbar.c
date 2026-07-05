@@ -222,12 +222,13 @@ static DvzScale* _add_scale(DvzScene* scene)
         scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                    .kind = DVZ_SCALE_CONTINUOUS,
                    .label = "intensity",
-                   .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
-                              .precision = 2,
-                              .trim_trailing_zeros = true},
                });
     if (scale == NULL)
         return NULL;
+    dvz_scale_set_format(
+        scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
+                   .precision = 2,
+                   .trim_trailing_zeros = true});
     dvz_scale_set_domain(scale, 0.0, 1.0);
     dvz_scale_set_view_range(scale, 0.0, 1.0);
 
@@ -293,16 +294,16 @@ static bool _add_image(
                });
     if (field == NULL)
         return false;
-    if (!dvz_sampled_field_set_data(
+    if (dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                        .data = values,
                        .bytes_per_row = FIELD_WIDTH * sizeof(float),
                        .rows_per_image = FIELD_HEIGHT,
-                   }))
+                   }) != DVZ_OK)
     {
         return false;
     }
-    if (!dvz_visual_set_field(image, "field", field))
+    if (dvz_visual_set_field(image, "field", field) != DVZ_OK)
         return false;
     if (dvz_visual_set_depth_test(image, false) != 0)
         return false;
@@ -522,16 +523,16 @@ static bool _add_axes(DvzPanel* panel)
         return false;
     if (!example_graphite_cyan_apply_axis_style(y_axis, true, &options))
         return false;
-    if (!dvz_axis_set_grid(x_axis, true) || !dvz_axis_set_grid(y_axis, true))
+    if (dvz_axis_set_grid(x_axis, true) != DVZ_OK || dvz_axis_set_grid(y_axis, true) != DVZ_OK)
         return false;
 
     DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
     ticks.target_count = 5;
     ticks.min_pixel_spacing = 90.0f;
     ticks.minor_per_interval = 1;
-    if (!dvz_axis_set_tick_policy(x_axis, &ticks))
+    if (dvz_axis_set_tick_policy(x_axis, &ticks) != DVZ_OK)
         return false;
-    return dvz_axis_set_tick_policy(y_axis, &ticks);
+    return dvz_axis_set_tick_policy(y_axis, &ticks) == DVZ_OK;
 }
 
 
@@ -824,10 +825,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
     EXAMPLE_CHECK(grid != NULL, "dvz_figure_grid() failed");
     ok = dvz_grid_set_margins(
-        grid, &(DvzPanelReserve){.left_px = 42.0f, .right_px = 34.0f, .top_px = 46.0f,
-                                 .bottom_px = 34.0f});
+             grid, &(DvzPanelReserve){.left_px = 42.0f, .right_px = 34.0f, .top_px = 46.0f,
+                                      .bottom_px = 34.0f}) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_margins() failed");
-    ok = dvz_grid_set_gutter(grid, 28.0f, 0.0f);
+    ok = dvz_grid_set_gutter(grid, 28.0f, 0.0f) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_gutter() failed");
 
     DvzPanel* source = dvz_grid_panel(grid, 0, 0);

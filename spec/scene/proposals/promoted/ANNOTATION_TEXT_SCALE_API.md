@@ -261,9 +261,9 @@ Measurement annotations should expose semantic setters, not only geometry setter
 Conceptual API shape:
 
 ```text
-dvz_scalebar(panel, flags)
-dvz_scalebar_set_units(sb, units)
-dvz_scalebar_set_anchor(sb, anchor)
+dvz_scale_bar(panel, flags)
+dvz_scale_bar_set_units(sb, units)
+dvz_scale_bar_set_anchor(sb, anchor)
 
 dvz_dimension(panel, flags)
 dvz_dimension_set_points(dim, p0, p1, space)
@@ -349,7 +349,7 @@ text = dvz_text(panel, flags)
 dvz_text_set_string(text, "CA1")
 dvz_text_set_world_position(text, xyz)
 
-sb = dvz_scalebar(panel, flags)
+sb = dvz_scale_bar(panel, flags)
 dim = dvz_dimension(panel, flags)
 ```
 

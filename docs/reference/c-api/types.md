@@ -785,12 +785,6 @@ typedef struct DvzPanelFrameSnapshot DvzPanelFrameSnapshot;
 typedef struct DvzPanelReserve DvzPanelReserve;
 ```
 
-#### `DvzPanelView2D`
-
-```c
-typedef struct DvzPanelView2D DvzPanelView2D;
-```
-
 #### `DvzPanelView2DAspect`
 
 ```c
@@ -1903,8 +1897,6 @@ DVZ_SCENE_BUFFER_USAGE_STORAGE = 8,
 DVZ_SCENE_CLOCK_REALTIME = 0,
 DVZ_SCENE_CLOCK_FIXED_STEP = 1,
 DVZ_SCENE_CLOCK_EXTERNAL = 2,
-DVZ_CLOCK_REALTIME = 0,
-DVZ_CLOCK_OFFLINE = 1,
 ```
 
 #### `DvzSceneComputeAccess`
@@ -2175,8 +2167,6 @@ struct DvzAnnotationDesc {
     uint32_t flags;
     DvzAnnotationKind kind;
     const char * text;
-    DvzTextStyle style;
-    DvzTextPlacement placement;
     uint32_t annotation_flags;
 };
 ```
@@ -2754,8 +2744,6 @@ struct DvzLabelDesc {
     uint32_t struct_size;
     uint32_t flags;
     const char * text;
-    DvzTextStyle style;
-    DvzTextPlacement placement;
     uint32_t label_flags;
 };
 ```
@@ -2857,7 +2845,6 @@ struct DvzOverlayCardDesc {
     DvzOverlayCardPlacement placement;
     float[2] anchor_px;
     float[2] offset_px;
-    const DvzOverlayCardStyle * style;
     uint32_t card_flags;
 };
 ```
@@ -2910,9 +2897,6 @@ struct DvzPanelAxes2DDesc {
     uint32_t flags;
     const char * x_label;
     const char * y_label;
-    DvzAxisTickPolicy tick_policy;
-    DvzAxisStyle x_style;
-    DvzAxisStyle y_style;
 };
 ```
 
@@ -3015,18 +2999,6 @@ struct DvzPanelReserve {
 };
 ```
 
-#### `DvzPanelView2D`
-
-```c
-struct DvzPanelView2D {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzPanelView2DMode mode;
-    DvzPanelView2DAspect aspect;
-    double padding;
-};
-```
-
 #### `DvzPanelView2DDesc`
 
 ```c
@@ -3073,7 +3045,8 @@ struct DvzPanelView2DState {
 struct DvzPanelView3DDesc {
     uint32_t struct_size;
     uint32_t flags;
-    DvzCameraDesc camera;
+    DvzCameraView view;
+    DvzCameraProjection projection;
 };
 ```
 
@@ -3284,9 +3257,6 @@ struct DvzScaleBarDesc {
     DvzSceneAnchor anchor;
     DvzScaleBarReferenceMode reference_mode;
     DvzScaleBarLabelPosition label_position;
-    DvzTextStyle label_style;
-    DvzTextPlacement placement;
-    DvzFormatDesc format;
     const char * unit;
     double data_to_unit;
     double[3] reference_position;
@@ -3324,7 +3294,6 @@ struct DvzScaleDesc {
     DvzScaleKind kind;
     const char * label;
     const char * unit;
-    DvzFormatDesc format;
 };
 ```
 
@@ -3426,8 +3395,16 @@ struct DvzSelectionItem {
 struct DvzSelectionVisualStyle {
     uint32_t struct_size;
     uint32_t flags;
-    DvzItemStateVisualStyle selected;
-    DvzItemStateVisualStyle unselected;
+    uint32_t selected_visual_flags;
+    float selected_alpha;
+    DvzColor selected_tint;
+    float selected_tint_mix;
+    float selected_scale;
+    uint32_t unselected_visual_flags;
+    float unselected_alpha;
+    DvzColor unselected_tint;
+    float unselected_tint_mix;
+    float unselected_scale;
 };
 ```
 
@@ -3941,16 +3918,16 @@ typedef struct DvzPolygonDesc DvzPolygonDesc;
 typedef struct DvzPolygonRing DvzPolygonRing;
 ```
 
-#### `DvzPolygonSet`
-
-```c
-typedef struct DvzPolygonSet DvzPolygonSet;
-```
-
 #### `DvzPolygonStyle`
 
 ```c
 typedef struct DvzPolygonStyle DvzPolygonStyle;
+```
+
+#### `DvzPolygons`
+
+```c
+typedef struct DvzPolygons DvzPolygons;
 ```
 
 #### `DvzSegmentCap`
@@ -4804,7 +4781,8 @@ struct DvzGraphEdgeStyle {
     uint32_t struct_size;
     uint32_t flags;
     DvzGraphEdgeMode mode;
-    DvzBezierTessellationDesc tessellation;
+    uint32_t tessellation_segment_count;
+    double tessellation_tolerance;
     DvzSegmentCap start_cap;
     DvzSegmentCap end_cap;
     DvzPathJoin join;
@@ -4902,12 +4880,6 @@ struct DvzPolygonRing {
 };
 ```
 
-#### `DvzPolygonSet`
-
-```c
-typedef struct DvzPolygonSet DvzPolygonSet;
-```
-
 #### `DvzPolygonStyle`
 
 ```c
@@ -4923,6 +4895,12 @@ struct DvzPolygonStyle {
     DvzPathJoin stroke_join;
     float stroke_miter_limit;
 };
+```
+
+#### `DvzPolygons`
+
+```c
+typedef struct DvzPolygons DvzPolygons;
 ```
 
 #### `DvzSsaoDesc`
@@ -5917,8 +5895,8 @@ DVZ_CALLBACK_ID_NONE = 0,
 ```c
 DVZ_CANVAS_FLAGS_NONE = 0,
 DVZ_CANVAS_FLAGS_IMGUI = 1,
-DVZ_CANVAS_FLAGS_FPS = 3,
-DVZ_CANVAS_FLAGS_MONITOR = 5,
+DVZ_CANVAS_FLAGS_FPS = 2,
+DVZ_CANVAS_FLAGS_MONITOR = 4,
 DVZ_CANVAS_FLAGS_FULLSCREEN = 8,
 DVZ_CANVAS_FLAGS_VSYNC = 16,
 DVZ_CANVAS_FLAGS_PICK = 32,
@@ -6243,7 +6221,7 @@ DVZ_VIDEO_MUX_MP4_POST = 2,
 
 ```c
 DVZ_VIEW_OFFSCREEN = 0,
-DVZ_VIEW_GLFW = 1,
+DVZ_VIEW_WINDOW = 1,
 DVZ_VIEW_EXTERNAL_SURFACE = 2,
 ```
 
@@ -6291,7 +6269,19 @@ struct DvzAppConfig {
     DvzAppScheduleMode schedule_mode;
     DvzAppExitPolicy exit_policy;
     double fps_cap;
-    DvzFontDefaults font_defaults;
+    const char * font_sans_path;
+    const char * font_sans_family;
+    const char * font_sans_style;
+    uint32_t font_sans_face_index;
+    uint32_t font_sans_font_flags;
+    const char * font_mono_path;
+    const char * font_mono_family;
+    const char * font_mono_style;
+    uint32_t font_mono_face_index;
+    uint32_t font_mono_font_flags;
+    float font_ui_size_px;
+    float font_mono_size_px;
+    float font_text_size_px;
 };
 ```
 
@@ -6734,16 +6724,18 @@ struct DvzViewDesc {
     uint32_t struct_size;
     uint32_t flags;
     DvzViewKind kind;
-    DvzViewSizeDesc size;
-    uint32_t logical_width;
-    uint32_t logical_height;
-    uint32_t framebuffer_width;
-    uint32_t framebuffer_height;
+    DvzViewSizePolicy size_policy;
+    double size_width;
+    double size_height;
+    double size_reference_dpi;
+    double size_requested_device_scale;
+    double size_monitor_dpi_x_override;
+    double size_monitor_dpi_y_override;
+    _Bool size_strict_framebuffer_size;
     float device_scale;
     float user_scale;
     float render_scale;
     const char * title;
-    const DvzWindowExternalSurfaceInfo * external_surface;
     _Bool has_position;
     int32_t x;
     int32_t y;
@@ -7006,12 +6998,6 @@ typedef struct DvzDrp2PacketInfo DvzDrp2PacketInfo;
 
 ```c
 typedef enum DvzDrp2PacketKind DvzDrp2PacketKind;
-```
-
-#### `DvzDrp2RawFallback`
-
-```c
-typedef struct DvzDrp2RawFallback DvzDrp2RawFallback;
 ```
 
 #### `DvzDrp2RecordedFrame`
@@ -7368,15 +7354,6 @@ struct DvzDrp2PacketInfo {
 };
 ```
 
-#### `DvzDrp2RawFallback`
-
-```c
-struct DvzDrp2RawFallback {
-    uint32_t command_index;
-    DvzDrp2CommandType command_type;
-};
-```
-
 #### `DvzDrp2RecordedFrame`
 
 ```c
@@ -7497,6 +7474,12 @@ typedef struct DvzAllocation DvzAllocation;
 
 ```c
 typedef uint32_t DvzAllocationFlags;
+```
+
+#### `DvzAlpha`
+
+```c
+typedef uint8_t DvzAlpha;
 ```
 
 #### `DvzArcballFlags`
@@ -7635,18 +7618,6 @@ typedef enum DvzCompareOp DvzCompareOp;
 
 ```c
 typedef struct DvzCompute DvzCompute;
-```
-
-#### `DvzContainer`
-
-```c
-typedef struct DvzContainer DvzContainer;
-```
-
-#### `DvzContainerIterator`
-
-```c
-typedef struct DvzContainerIterator DvzContainerIterator;
 ```
 
 #### `DvzCullMode`
@@ -7863,24 +7834,6 @@ typedef struct DvzMVP DvzMVP;
 
 ```c
 typedef enum DvzMVPFlags DvzMVPFlags;
-```
-
-#### `DvzObject`
-
-```c
-typedef struct DvzObject DvzObject;
-```
-
-#### `DvzObjectStatus`
-
-```c
-typedef enum DvzObjectStatus DvzObjectStatus;
-```
-
-#### `DvzObjectType`
-
-```c
-typedef enum DvzObjectType DvzObjectType;
 ```
 
 #### `DvzPanzoomEval`
@@ -8581,59 +8534,6 @@ DVZ_MVP_FLAGS_NONE = 0,
 DVZ_MVP_FLAGS_ISOTROPIC_LOCAL = 1,
 ```
 
-#### `DvzObjectStatus`
-
-```c
-DVZ_OBJECT_STATUS_NONE = 0,
-DVZ_OBJECT_STATUS_ALLOC = 1,
-DVZ_OBJECT_STATUS_DESTROYED = 2,
-DVZ_OBJECT_STATUS_INIT = 3,
-DVZ_OBJECT_STATUS_CREATED = 4,
-DVZ_OBJECT_STATUS_NEED_RECREATE = 5,
-DVZ_OBJECT_STATUS_NEED_UPDATE = 6,
-DVZ_OBJECT_STATUS_NEED_DESTROY = 7,
-DVZ_OBJECT_STATUS_INACTIVE = 8,
-DVZ_OBJECT_STATUS_INVALID = 9,
-```
-
-#### `DvzObjectType`
-
-```c
-DVZ_OBJECT_TYPE_UNDEFINED = 0,
-DVZ_OBJECT_TYPE_INSTANCE = 1,
-DVZ_OBJECT_TYPE_DEVICE = 2,
-DVZ_OBJECT_TYPE_HOST = 3,
-DVZ_OBJECT_TYPE_GPU = 4,
-DVZ_OBJECT_TYPE_WINDOW = 5,
-DVZ_OBJECT_TYPE_GUI_WINDOW = 6,
-DVZ_OBJECT_TYPE_SWAPCHAIN = 7,
-DVZ_OBJECT_TYPE_CANVAS = 8,
-DVZ_OBJECT_TYPE_BOARD = 9,
-DVZ_OBJECT_TYPE_COMMANDS = 10,
-DVZ_OBJECT_TYPE_BUFFER = 11,
-DVZ_OBJECT_TYPE_DAT = 12,
-DVZ_OBJECT_TYPE_TEX = 13,
-DVZ_OBJECT_TYPE_IMAGES = 14,
-DVZ_OBJECT_TYPE_SAMPLER = 15,
-DVZ_OBJECT_TYPE_BINDINGS = 16,
-DVZ_OBJECT_TYPE_COMPUTE = 17,
-DVZ_OBJECT_TYPE_GRAPHICS = 18,
-DVZ_OBJECT_TYPE_SHADER = 19,
-DVZ_OBJECT_TYPE_PIPE = 20,
-DVZ_OBJECT_TYPE_BARRIER = 21,
-DVZ_OBJECT_TYPE_FENCES = 22,
-DVZ_OBJECT_TYPE_SEMAPHORES = 23,
-DVZ_OBJECT_TYPE_RENDERPASS = 24,
-DVZ_OBJECT_TYPE_FRAMEBUFFER = 25,
-DVZ_OBJECT_TYPE_WORKSPACE = 26,
-DVZ_OBJECT_TYPE_PIPELIB = 27,
-DVZ_OBJECT_TYPE_SUBMIT = 28,
-DVZ_OBJECT_TYPE_SCREENCAST = 29,
-DVZ_OBJECT_TYPE_TIMER = 30,
-DVZ_OBJECT_TYPE_ARRAY = 31,
-DVZ_OBJECT_TYPE_CUSTOM = 32,
-```
-
 #### `DvzPanzoomFlags`
 
 ```c
@@ -8870,28 +8770,6 @@ typedef struct DvzCommands DvzCommands;
 typedef struct DvzCompute DvzCompute;
 ```
 
-#### `DvzContainer`
-
-```c
-struct DvzContainer {
-    uint32_t count;
-    uint32_t capacity;
-    DvzObjectType type;
-    void ** items;
-    size_t item_size;
-};
-```
-
-#### `DvzContainerIterator`
-
-```c
-struct DvzContainerIterator {
-    DvzContainer * container;
-    uint32_t idx;
-    void * item;
-};
-```
-
 #### `DvzDescriptors`
 
 ```c
@@ -8964,8 +8842,16 @@ struct DvzFlyDesc {
 struct DvzFontDefaults {
     uint32_t struct_size;
     uint32_t flags;
-    DvzFontDesc sans;
-    DvzFontDesc mono;
+    const char * sans_path;
+    const char * sans_family;
+    const char * sans_style;
+    uint32_t sans_face_index;
+    uint32_t sans_font_flags;
+    const char * mono_path;
+    const char * mono_family;
+    const char * mono_style;
+    uint32_t mono_face_index;
+    uint32_t mono_font_flags;
     float ui_size_px;
     float mono_size_px;
     float text_size_px;
@@ -9122,18 +9008,6 @@ struct DvzMVP {
     mat4 proj;
     float time;
     uint32_t flags;
-};
-```
-
-#### `DvzObject`
-
-```c
-struct DvzObject {
-    DvzObjectType type;
-    DvzObjectStatus status;
-    int request;
-    uint32_t group_id;
-    uint64_t id;
 };
 ```
 

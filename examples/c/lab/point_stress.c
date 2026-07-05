@@ -311,7 +311,7 @@ static void _apply_depth_and_msaa(PointStressState* state)
 
     if (!state->msaa_enabled)
     {
-        if (!dvz_panel_set_msaa(state->panel, NULL))
+        if (dvz_panel_set_msaa(state->panel, NULL) != DVZ_OK)
             dvz_fprintf(stderr, "dvz_panel_set_msaa(NULL) failed\n");
         return;
     }
@@ -328,7 +328,7 @@ static void _apply_depth_and_msaa(PointStressState* state)
         .sample_count = sample_count,
         .alpha_to_coverage = state->msaa_alpha_to_coverage,
     };
-    if (!dvz_panel_set_msaa(state->panel, &msaa))
+    if (dvz_panel_set_msaa(state->panel, &msaa) != DVZ_OK)
         dvz_fprintf(stderr, "dvz_panel_set_msaa() failed\n");
 }
 
@@ -666,8 +666,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzView* win =
-        dvz_view_glfw(app, figure, WIDTH, HEIGHT, "point");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+        dvz_view_window(app, figure, WIDTH, HEIGHT, "point");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzController* arcball_controller = dvz_arcball(scene, NULL);
     EXAMPLE_CHECK(arcball_controller != NULL, "dvz_arcball() failed");
@@ -697,7 +697,7 @@ int main(int argc, char** argv)
     dvz_view_set_gui_callback(win, _point_stress_gui, &state);
     dvz_view_set_frame_callback(win, _point_stress_frame, &state);
 
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;

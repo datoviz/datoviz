@@ -261,7 +261,7 @@ DvzVisualAttrFormat dvz_visual_attr_format(const DvzVisual* visual, const char* 
  * @param item_count number of attribute items
  * @return whether the binding was updated
  */
-bool dvz_visual_set_attr_buffer(
+DvzResult dvz_visual_set_attr_buffer(
     DvzVisual* visual, const char* attr_name, DvzSceneBuffer* buffer, uint64_t byte_offset,
     uint32_t item_count)
 {
@@ -271,25 +271,25 @@ bool dvz_visual_set_attr_buffer(
     if (buffer != NULL && buffer->scene != visual->scene)
     {
         log_error("cannot bind an attribute buffer from a different scene");
-        return false;
+        return DVZ_ERROR;
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "bind visual attribute buffer"))
-        return false;
+        return DVZ_ERROR;
 
     uint32_t item_size = 0;
     if (!_attr_supported(visual->type, attr_name, &item_size))
-        return false;
+        return DVZ_ERROR;
     item_size = _visual_attr_item_size(visual, attr_name);
     if (item_size == 0)
-        return false;
+        return DVZ_ERROR;
     if (!_attr_source_supported(visual->type, attr_name, DVZ_VISUAL_ATTR_SOURCE_PER_ITEM))
-        return false;
+        return DVZ_ERROR;
 
     DvzVisualAttr* attr = _attr_get_or_create(visual, attr_name, item_size);
     if (attr == NULL)
     {
         log_error("visual attribute '%s' could not be registered", attr_name);
-        return false;
+        return DVZ_ERROR;
     }
 
     if (buffer == NULL)
@@ -299,44 +299,44 @@ bool dvz_visual_set_attr_buffer(
         if (attr->data == NULL)
             attr->item_count = 0;
         _scene_notify_visual_changed(visual);
-        return true;
+        return DVZ_OK;
     }
 
     if (item_count == 0)
     {
         log_error("visual attribute buffer '%s' requires item_count > 0", attr_name);
-        return false;
+        return DVZ_ERROR;
     }
     if (attr->format == DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32)
     {
         log_error("scalar visual attribute buffers are not supported in this CPU-colorized slice");
-        return false;
+        return DVZ_ERROR;
     }
     if ((buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_VERTEX) == 0)
     {
         log_error("visual attribute buffer '%s' requires VERTEX usage", attr_name);
-        return false;
+        return DVZ_ERROR;
     }
     if (buffer->desc.stride != item_size)
     {
         log_error(
             "visual attribute buffer '%s' stride %u does not match item size %u", attr_name,
             buffer->desc.stride, item_size);
-        return false;
+        return DVZ_ERROR;
     }
     if (attr->data != NULL)
     {
         log_error(
             "visual attribute '%s' already has dense data and cannot bind a buffer", attr_name);
-        return false;
+        return DVZ_ERROR;
     }
     if (attr->source != DVZ_VISUAL_ATTR_SOURCE_PER_ITEM)
     {
         log_error("visual attribute buffer '%s' requires PER_ITEM source", attr_name);
-        return false;
+        return DVZ_ERROR;
     }
     if (!_visual_attr_count_consistent(visual, attr_name, item_count))
-        return false;
+        return DVZ_ERROR;
 
     uint64_t byte_size = 0;
     uint64_t byte_end = 0;
@@ -347,7 +347,7 @@ bool dvz_visual_set_attr_buffer(
         log_error(
             "visual attribute buffer '%s' range exceeds buffer size (%" PRIu64 " > %" PRIu64 ")",
             attr_name, byte_end, buffer->desc.byte_size);
-        return false;
+        return DVZ_ERROR;
     }
 
     attr->buffer = buffer;
@@ -357,7 +357,7 @@ bool dvz_visual_set_attr_buffer(
     attr->dirty_item_count = 0;
     _visual_bump_version(&attr->version);
     _scene_notify_visual_changed(visual);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -373,10 +373,17 @@ bool dvz_visual_set_attr_buffer(
  * @param scale the scale, or NULL to clear the binding
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* scale)
+DvzResult dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, const DvzScale* scale)
 {
     ANN(visual);
     ANN(slot_name);
+    union
+    {
+        const DvzScale* borrowed;
+        DvzScale* scene_owned;
+    } scale_ptr = {.borrowed = scale};
+    DvzScale* bound_scale = scale_ptr.scene_owned;
+
     if (scale != NULL && scale->scene != visual->scene)
     {
         log_error("cannot bind a scale from a different scene");
@@ -384,7 +391,7 @@ DvzResult dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScal
     }
     bool point_pixel_scalar_color =
         strcmp(slot_name, "color") == 0 &&
-        (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL) &&
+        _visual_family_supports_scalar_color_scale(visual->type) &&
         dvz_visual_attr_format(visual, "color") == DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32;
     if (visual->ops == NULL || (!visual->ops->supports_scale && !point_pixel_scalar_color))
     {
@@ -401,8 +408,9 @@ DvzResult dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScal
         if (!_scene_visual_mutation_allowed(visual->scene, "bind scale"))
             return -1;
         _scene_release_visual_scale(visual);
-        if (scale != NULL)
-            _visual_binding_assign(visual, DVZ_VISUAL_BINDING_SCALE, slot_name, scale, false);
+        if (bound_scale != NULL)
+            _visual_binding_assign(
+                visual, DVZ_VISUAL_BINDING_SCALE, slot_name, bound_scale, false);
         DvzVisualAttr* attr = NULL;
         int attr_idx = _attr_index(visual, "color");
         if (attr_idx >= 0)
@@ -444,8 +452,8 @@ DvzResult dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScal
     if (!_scene_visual_mutation_allowed(visual->scene, "bind scale"))
         return -1;
     _scene_release_visual_scale(visual);
-    if (scale != NULL)
-        _visual_binding_assign(visual, DVZ_VISUAL_BINDING_SCALE, slot_name, scale, false);
+    if (bound_scale != NULL)
+        _visual_binding_assign(visual, DVZ_VISUAL_BINDING_SCALE, slot_name, bound_scale, false);
     if (has_bound_profile &&
         (_scene_sample_profile_uses_continuous_colorizer(&bound_profile) ||
          _scene_sample_profile_is_integer_label(&bound_profile)))

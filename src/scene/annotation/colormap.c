@@ -494,22 +494,24 @@ void dvz_colormap_destroy(DvzColormap* colormap)
  * @param stops the color stops
  * @param count the number of stops
  */
-void dvz_colormap_set_stops(DvzColormap* colormap, const DvzColormapStop* stops, uint32_t count)
+DvzResult
+dvz_colormap_set_stops(DvzColormap* colormap, const DvzColormapStop* stops, uint32_t count)
 {
     ANN(colormap);
     if (count > DVZ_SCENE_MAX_COLOR_STOPS)
     {
         log_error("too many color stops: %u > %u", count, DVZ_SCENE_MAX_COLOR_STOPS);
-        return;
+        return DVZ_ERROR;
     }
-    if (count > 0)
-        ANN(stops);
+    if (count > 0 && stops == NULL)
+        return DVZ_ERROR;
     _colormap_release_lut(colormap);
     colormap->stop_count = count;
     if (count > 0)
         dvz_memcpy(
             colormap->stops, sizeof(colormap->stops), stops, count * sizeof(DvzColormapStop));
     _scene_mark_colormap_dirty(colormap);
+    return DVZ_OK;
 }
 
 
@@ -520,10 +522,11 @@ void dvz_colormap_set_stops(DvzColormap* colormap, const DvzColormapStop* stops,
  * @param colormap the colormap
  * @param center the semantic center value
  */
-void dvz_colormap_set_center(DvzColormap* colormap, double center)
+DvzResult dvz_colormap_set_center(DvzColormap* colormap, double center)
 {
     ANN(colormap);
     colormap->center = center;
     colormap->has_center = true;
     _scene_mark_colormap_dirty(colormap);
+    return DVZ_OK;
 }

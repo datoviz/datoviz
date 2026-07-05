@@ -29,9 +29,9 @@ void _polygon_ring_reset(DvzPolygonStoredRing* ring);
 
 bool _polygon_ring_copy(const DvzPolygonRing* src, DvzPolygonStoredRing* dst);
 
-void _polygon_set_item_reset(DvzPolygonSetItem* item);
+void _polygon_set_item_reset(DvzPolygonsItem* item);
 
-void _polygon_set_item_default_style(DvzPolygonSetItem* item);
+void _polygon_set_item_default_style(DvzPolygonsItem* item);
 
 int _polygon_copy_desc(
     const DvzPolygonDesc* desc, DvzPolygonStoredRing* outer, DvzPolygonStoredRing** holes,
@@ -43,19 +43,19 @@ bool _polygon_borrowed_desc(
 void _polygon_mark_composites_dirty(DvzPolygon* polygon, bool fill_dirty, bool stroke_dirty);
 
 void _polygon_set_mark_composites_dirty(
-    DvzPolygonSet* set, bool fill_dirty, bool stroke_dirty);
+    DvzPolygons* set, bool fill_dirty, bool stroke_dirty);
 
 DvzPolygon* _scene_alloc_polygon(DvzScene* scene);
 
 void _scene_polygon_reset(DvzPolygon* polygon);
 
-DvzPolygonSet* _scene_alloc_polygon_set(DvzScene* scene);
+DvzPolygons* _scene_alloc_polygon_set(DvzScene* scene);
 
-void _scene_polygon_set_reset(DvzPolygonSet* set);
+void _scene_polygon_set_reset(DvzPolygons* set);
 
-bool _polygon_set_reserve(DvzPolygonSet* set, uint32_t capacity);
+bool _polygon_set_reserve(DvzPolygons* set, uint32_t capacity);
 
-int _polygon_set_item_set_geometry(DvzPolygonSetItem* item, const DvzPolygonDesc* desc);
+int _polygon_set_item_set_geometry(DvzPolygonsItem* item, const DvzPolygonDesc* desc);
 
 void _scene_composite_reset(DvzComposite* composite);
 

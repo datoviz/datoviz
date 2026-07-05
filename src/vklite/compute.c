@@ -92,9 +92,10 @@ void dvz_compute_spec(
 
     if (offset + size >= DVZ_MAX_SPEC_CONST_SIZE)
     {
+        char size_str[64] = {0};
         log_error(
             "the specialization constant data buffer can be no more than %s",
-            dvz_pretty_size(DVZ_MAX_SPEC_CONST_SIZE));
+            dvz_pretty_size(DVZ_MAX_SPEC_CONST_SIZE, size_str, sizeof(size_str)));
         return;
     }
 
@@ -102,8 +103,8 @@ void dvz_compute_spec(
     compute->spec_entries[index].offset = offset;
     compute->spec_entries[index].size = size;
 
-    compute->spec_info.mapEntryCount = MAX(compute->spec_info.mapEntryCount, index + 1);
-    compute->spec_info.dataSize = MAX(compute->spec_info.dataSize, offset + size);
+    compute->spec_info.mapEntryCount = DVZ_MAX(compute->spec_info.mapEntryCount, index + 1);
+    compute->spec_info.dataSize = DVZ_MAX(compute->spec_info.dataSize, offset + size);
     ASSERT(compute->spec_info.dataSize <= DVZ_MAX_SPEC_CONST_SIZE);
 
     // Copy the value in the specialization constant data buffer.

@@ -25,7 +25,7 @@
 #include "_compat.h"
 #include "_instance.h"
 #include "_log.h"
-#include "datoviz/common/obj.h"
+#include "obj.h"
 #include "datoviz/vk/instance.h"
 #include "macros.h"
 #include "validation.h"

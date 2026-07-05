@@ -964,7 +964,7 @@ bool dvz_drp2_stream_pipeline_set_color_target(
     if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         return false;
     command->u.create_render_pipeline.color_target_count =
-        MAX(command->u.create_render_pipeline.color_target_count, idx + 1);
+        DVZ_MAX(command->u.create_render_pipeline.color_target_count, idx + 1);
     command->u.create_render_pipeline.color_targets[idx].format = (uint32_t)format;
     if (command->u.create_render_pipeline.color_targets[idx].color_write_mask == 0)
         command->u.create_render_pipeline.color_targets[idx].color_write_mask = 0xFu;
@@ -985,7 +985,7 @@ bool dvz_drp2_stream_pipeline_set_color_blend(
     if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         return false;
     command->u.create_render_pipeline.color_target_count =
-        MAX(command->u.create_render_pipeline.color_target_count, idx + 1);
+        DVZ_MAX(command->u.create_render_pipeline.color_target_count, idx + 1);
     DvzDrp2ColorTarget* target = &command->u.create_render_pipeline.color_targets[idx];
     target->blend_enabled = true;
     target->src_color_blend_factor = (uint32_t)src_color;
@@ -1490,7 +1490,7 @@ bool dvz_drp2_stream_destroy_bind_group(DvzDrp2CommandStream* stream, uint64_t b
  * @param data_base64 base64-encoded payload
  * @return whether the command was appended
  */
-bool dvz_drp2_stream_write_buffer(
+bool dvz_drp2_stream_write_buffer_base64(
     DvzDrp2CommandStream* stream, uint64_t buffer_id, uint64_t offset, uint64_t size,
     const char* data_base64)
 {
@@ -1532,7 +1532,7 @@ bool dvz_drp2_stream_write_buffer(
  * @param data_base64 base64-encoded payload
  * @return whether the command was appended
  */
-bool dvz_drp2_stream_write_texture_2d(
+bool dvz_drp2_stream_write_texture_2d_base64(
     DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level, uint32_t width,
     uint32_t height, uint32_t bytes_per_row, uint32_t rows_per_image, const char* data_base64)
 {
@@ -1563,7 +1563,7 @@ bool dvz_drp2_stream_write_texture_2d(
 
 
 
-bool dvz_drp2_stream_write_texture_2d_region(
+bool dvz_drp2_stream_write_texture_2d_region_base64(
     DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level,
     uint32_t origin_x, uint32_t origin_y,
     uint32_t width, uint32_t height,
@@ -1669,7 +1669,7 @@ bool dvz_drp2_stream_create_texture_3d_format_usage(
  * @param data_base64 base64-encoded payload
  * @return whether the command was appended
  */
-bool dvz_drp2_stream_write_texture_3d(
+bool dvz_drp2_stream_write_texture_3d_base64(
     DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level,
     uint32_t origin_x, uint32_t origin_y, uint32_t origin_z,
     uint32_t width, uint32_t height, uint32_t depth,

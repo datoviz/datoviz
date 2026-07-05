@@ -135,7 +135,6 @@ pages:
       - bezier
       - depth
       - edl
-      - geom
       - geometry
       - glyph
       - graph
@@ -149,6 +148,7 @@ pages:
       - pixel
       - point
       - polygon
+      - polygons
       - primitive
       - sampled
       - segment

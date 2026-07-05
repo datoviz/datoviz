@@ -22,6 +22,7 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/input/pointer.h"
 #include "datoviz/input/router.h"
 #include "datoviz/math/types.h"
@@ -137,36 +138,59 @@ DVZ_EXPORT DvzPanzoom* dvz_panzoom_create(const DvzPanzoomDesc* desc);
 
 /**
  * Reset to the identity transform.
+ *
+ * @param pz panzoom controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_panzoom_reset(DvzPanzoom* pz);
+DVZ_EXPORT DvzResult dvz_panzoom_reset(DvzPanzoom* pz);
 
 
 
 /**
  * Update the viewport size (call on window resize).
+ *
+ * @param pz panzoom controller
+ * @param width viewport width in pixels
+ * @param height viewport height in pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_panzoom_resize(DvzPanzoom* pz, float width, float height);
+DVZ_EXPORT DvzResult dvz_panzoom_resize(DvzPanzoom* pz, float width, float height);
 
 
 /**
  * Update the viewport rectangle in window coordinates.
+ *
+ * @param pz panzoom controller
+ * @param x viewport x origin in window pixels
+ * @param y viewport y origin in window pixels
+ * @param width viewport width in window pixels
+ * @param height viewport height in window pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void
+DVZ_EXPORT DvzResult
 dvz_panzoom_viewport(DvzPanzoom* pz, float x, float y, float width, float height);
 
 
 
 /**
  * Set the pan offset in NDC.
+ *
+ * @param pz panzoom controller
+ * @param pan pan offset
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan);
+DVZ_EXPORT DvzResult dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan);
 
 
 
 /**
  * Set the zoom factors.
+ *
+ * @param pz panzoom controller
+ * @param zoom zoom factors
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom);
+DVZ_EXPORT DvzResult dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom);
 
 
 /**
@@ -203,29 +227,47 @@ DVZ_EXPORT bool dvz_panzoom_state(const DvzPanzoom* pz, DvzPanzoomState* out);
 
 /**
  * Apply a pan shift (pixel delta).
+ *
+ * @param pz panzoom controller
+ * @param shift_px shift in viewport pixels
+ * @param center_px pointer center in viewport pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
+DVZ_EXPORT DvzResult dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
 
 
 
 /**
  * Apply a zoom shift driven by right-drag (pixel delta + anchor).
+ *
+ * @param pz panzoom controller
+ * @param shift_px shift in viewport pixels
+ * @param center_px zoom anchor in viewport pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
+DVZ_EXPORT DvzResult dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
 
 
 
 /**
  * Apply a wheel zoom.
+ *
+ * @param pz panzoom controller
+ * @param dir wheel direction
+ * @param center_px zoom anchor in viewport pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px);
+DVZ_EXPORT DvzResult dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px);
 
 
 
 /**
  * Commit the current pan/zoom as the new drag baseline (call at drag stop).
+ *
+ * @param pz panzoom controller
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_panzoom_end(DvzPanzoom* pz);
+DVZ_EXPORT DvzResult dvz_panzoom_end(DvzPanzoom* pz);
 
 
 
@@ -252,15 +294,23 @@ DVZ_EXPORT bool dvz_panzoom_pointer(DvzPanzoom* pz, const DvzPointerEvent* ev);
 /**
  * Subscribe the panzoom to an input router.
  * The panzoom pointer callback will be registered; call dvz_panzoom_disconnect() to remove it.
+ *
+ * @param pz panzoom controller
+ * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_panzoom_connect(DvzPanzoom* pz, DvzInputRouter* router);
+DVZ_EXPORT DvzResult dvz_panzoom_connect(DvzPanzoom* pz, DvzInputRouter* router);
 
 
 
 /**
  * Unsubscribe the panzoom from a router.
+ *
+ * @param pz panzoom controller
+ * @param router input router
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_panzoom_disconnect(DvzPanzoom* pz, DvzInputRouter* router);
+DVZ_EXPORT DvzResult dvz_panzoom_disconnect(DvzPanzoom* pz, DvzInputRouter* router);
 
 
 

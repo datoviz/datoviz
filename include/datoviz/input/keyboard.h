@@ -19,6 +19,7 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/input/enums.h"
 #include "datoviz/input/keycodes.h"
 
@@ -84,8 +85,10 @@ DVZ_EXPORT void dvz_keyboard_modifier_state_destroy(DvzKeyboardModifierState* st
 
 /**
  * Update the modifier tracker with a keyboard event.
+ *
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_keyboard_modifier_state_update(
+DVZ_EXPORT DvzResult dvz_keyboard_modifier_state_update(
     DvzKeyboardModifierState* state, DvzKeyboardEventType type, DvzKeyCode key);
 
 

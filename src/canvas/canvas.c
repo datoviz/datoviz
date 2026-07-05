@@ -1257,6 +1257,10 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     {
         return;
     }
+    if (canvas->device != NULL)
+    {
+        dvz_device_wait(canvas->device);
+    }
     dvz_canvas_swapchain_destroy(canvas);
     if (canvas->stream)
     {

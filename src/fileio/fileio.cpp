@@ -315,8 +315,18 @@ int dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const u
 
 
 
-uint8_t* dvz_read_ppm(const char* filename, int* width, int* height)
+uint8_t* dvz_read_ppm(const char* filename, uint32_t* width, uint32_t* height)
 {
+    if (width != NULL)
+        *width = 0;
+    if (height != NULL)
+        *height = 0;
+    if (filename == NULL || width == NULL || height == NULL)
+    {
+        log_error("invalid PPM file arguments");
+        return NULL;
+    }
+
     FILE* fp;
     fp = fopen(filename, "rb");
     if (fp == NULL)
@@ -356,28 +366,46 @@ uint8_t* dvz_read_ppm(const char* filename, int* width, int* height)
 
     ungetc(c, fp);
     // read image size information
-    if (fscanf(fp, "%d %d", width, height) != 2)
+    int parsed_width = 0;
+    int parsed_height = 0;
+    if (fscanf(fp, "%d %d", &parsed_width, &parsed_height) != 2)
     {
         log_error("invalid image size (error loading '%s')", filename);
+        fclose(fp);
         return NULL;
     }
+    if (parsed_width <= 0 || parsed_height <= 0)
+    {
+        log_error("invalid image dimensions (error loading '%s')", filename);
+        fclose(fp);
+        return NULL;
+    }
+    *width = (uint32_t)parsed_width;
+    *height = (uint32_t)parsed_height;
 
     // read rgb component
     int b;
     if (fscanf(fp, "%d", &b) != 1)
     {
         log_error("invalid rgb component (error loading '%s')", filename);
+        fclose(fp);
         return NULL;
     }
     ASSERT(b == 255);
     while (fgetc(fp) != '\n')
         ;
 
-    uint32_t size = (uint32_t)(*width * *height * 3);
+    DvzSize size = (DvzSize)(*width) * (DvzSize)(*height) * 3;
     ASSERT(size > 0);
-    uint8_t* image = (uint8_t*)dvz_calloc(size, sizeof(uint8_t));
+    uint8_t* image = (uint8_t*)dvz_calloc((size_t)size, sizeof(uint8_t));
     ANN(image);
-    fread(image, 1, size, fp);
+    if (fread(image, 1, (size_t)size, fp) != (size_t)size)
+    {
+        log_error("invalid RGB payload (error loading '%s')", filename);
+        dvz_free(image);
+        fclose(fp);
+        return NULL;
+    }
     fclose(fp);
     return image;
 }
@@ -483,21 +511,23 @@ dvz_load_png(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* h
 /**
  * Decode a JPEG image from memory into tightly packed RGBA8 pixels.
  *
- * @param size size of the JPEG byte buffer
  * @param bytes JPEG byte buffer
+ * @param size_bytes size of the JPEG byte buffer in bytes
  * @param width decoded image width
  * @param height decoded image height
  * @return RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
  */
 uint8_t*
-dvz_load_jpeg(DvzSize size, const unsigned char* bytes, uint32_t* width, uint32_t* height)
+dvz_load_jpeg(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* height)
 {
     if (width != NULL)
         *width = 0;
     if (height != NULL)
         *height = 0;
 
-    if (size == 0 || size > (DvzSize)INT_MAX || bytes == NULL || width == NULL || height == NULL)
+    if (
+        size_bytes == 0 || size_bytes > (DvzSize)INT_MAX || bytes == NULL || width == NULL ||
+        height == NULL)
     {
         log_error("invalid JPEG buffer");
         return NULL;
@@ -507,7 +537,8 @@ dvz_load_jpeg(DvzSize size, const unsigned char* bytes, uint32_t* width, uint32_
     int decoded_height = 0;
     int decoded_channels = 0;
     uint8_t* rgba = stbi_load_from_memory(
-        bytes, (int)size, &decoded_width, &decoded_height, &decoded_channels, 4);
+        (const stbi_uc*)bytes, (int)size_bytes, &decoded_width, &decoded_height, &decoded_channels,
+        4);
     if (rgba == NULL)
     {
         log_error("unable to decode JPEG image: %s", stbi_failure_reason());
@@ -554,7 +585,7 @@ uint8_t* dvz_read_jpeg(const char* filename, uint32_t* width, uint32_t* height)
     if (bytes == NULL)
         return NULL;
 
-    uint8_t* rgba = dvz_load_jpeg(size, bytes, width, height);
+    uint8_t* rgba = dvz_load_jpeg(bytes, size, width, height);
     dvz_free(bytes);
     return rgba;
 }

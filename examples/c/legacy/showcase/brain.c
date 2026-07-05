@@ -1766,20 +1766,20 @@ int main(int argc, char** argv)
                });
     EXAMPLE_CHECK(field != NULL, "dvz_sampled_field() failed");
     ok = dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                   .data = volume_data.voxels,
-                   .bytes_per_row = volume_data.width * 4,
-                   .rows_per_image = volume_data.height,
-               });
+             field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                        .data = volume_data.voxels,
+                        .bytes_per_row = volume_data.width * 4,
+                        .rows_per_image = volume_data.height,
+                    }) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data() failed");
 
     DvzVisual* volume_3d = dvz_volume(scene, 0);
     DvzVisual* volume_slice = dvz_volume(scene, 0);
     EXAMPLE_CHECK(volume_3d != NULL && volume_slice != NULL, "dvz_volume() failed");
-    ok = dvz_visual_set_field(volume_3d, "field", field);
+    ok = dvz_visual_set_field(volume_3d, "field", field) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_field(volume_3d) failed");
 
-    ok = dvz_visual_set_field(volume_slice, "field", field);
+    ok = dvz_visual_set_field(volume_slice, "field", field) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_field(volume_slice) failed");
 
     int rc = dvz_visual_set_alpha_mode(volume_3d, DVZ_ALPHA_WBOIT);
@@ -1845,7 +1845,8 @@ int main(int argc, char** argv)
             atlas_index_buffer != NULL, "dvz_scene_buffer() failed for Allen/IBL atlas mesh");
 
         ok = dvz_scene_buffer_set_data(
-            atlas_index_buffer, atlas_mesh.idx, atlas_mesh.index_count * sizeof(DvzIndex));
+                 atlas_index_buffer, atlas_mesh.idx, atlas_mesh.index_count * sizeof(DvzIndex)) ==
+             DVZ_OK;
         EXAMPLE_CHECK(ok, "dvz_scene_buffer_set_data() failed for Allen/IBL atlas mesh");
 
         DvzVisualDataUpdate atlas_mesh_updates[] = {
@@ -1857,7 +1858,7 @@ int main(int argc, char** argv)
         EXAMPLE_CHECK(
             rc == 0, "dvz_visual_set_data_many() failed for Allen/IBL atlas mesh");
 
-        ok = dvz_visual_set_buffer(atlas_mesh_visual, "index", atlas_index_buffer);
+        ok = dvz_visual_set_buffer(atlas_mesh_visual, "index", atlas_index_buffer) == DVZ_OK;
         EXAMPLE_CHECK(ok, "dvz_visual_set_buffer() failed for Allen/IBL atlas mesh");
 
         rc = dvz_visual_set_alpha_mode(atlas_mesh_visual, DVZ_ALPHA_BLENDED);
@@ -1929,8 +1930,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzView* win =
-        dvz_view_glfw(app, figure, WIDTH, HEIGHT, "brain");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+        dvz_view_window(app, figure, WIDTH, HEIGHT, "brain");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
@@ -1939,7 +1940,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
     dvz_view_set_gui_callback(win, _allen_mouse_brain_gui, &state);
 
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
     dvz_app_run(app, frame_count);

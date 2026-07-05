@@ -493,7 +493,7 @@ static void _apply_edl(LidarExampleState* state)
         .strength = state->strength,
         .depth_scale = state->depth_scale,
     };
-    if (!dvz_panel_set_edl(state->panel, &desc))
+    if (dvz_panel_set_edl(state->panel, &desc) != DVZ_OK)
         dvz_fprintf(stderr, "dvz_panel_set_edl() failed\n");
 }
 
@@ -770,8 +770,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "lidar");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_window(app, figure, WIDTH, HEIGHT, "lidar");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzFlyDesc fly_desc = dvz_fly_desc();
     fly_desc.mode = DVZ_FLY_MODE_PLANE;

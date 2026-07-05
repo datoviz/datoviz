@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "scene_api_internal.h"
+#include "domain/field_internal.h"
 
 
 
@@ -237,7 +238,7 @@ int dvz_wasm_api_buffer_set_data(uint32_t buffer_handle, const void* data, uint3
         return _fail(buffer != NULL ? buffer->owner : NULL, "invalid WASM scene buffer upload");
     }
     _clear_payload(buffer->owner);
-    if (!dvz_scene_buffer_set_data(buffer->buffer, data, byte_size))
+    if (dvz_scene_buffer_set_data(buffer->buffer, data, byte_size) != DVZ_OK)
     {
         char diagnostic[DVZ_SCENE_DIAGNOSTIC_SIZE];
         int ret = snprintf(
@@ -422,7 +423,7 @@ int dvz_wasm_api_axis_set_visible(uint32_t axis_handle, uint32_t visible)
     if (axis == NULL || axis->owner == NULL || axis->axis == NULL)
         return _fail(axis != NULL ? axis->owner : NULL, "invalid WASM axis handle");
     _clear_payload(axis->owner);
-    if (!dvz_axis_set_visible(axis->axis, visible != 0))
+    if (dvz_axis_set_visible(axis->axis, visible != 0) != DVZ_OK)
         return _fail(axis->owner, "WASM axis visibility update failed");
     return 0;
 }
@@ -436,7 +437,7 @@ int dvz_wasm_api_axis_set_grid(uint32_t axis_handle, uint32_t visible)
     if (axis == NULL || axis->owner == NULL || axis->axis == NULL)
         return _fail(axis != NULL ? axis->owner : NULL, "invalid WASM axis handle");
     _clear_payload(axis->owner);
-    if (!dvz_axis_set_grid(axis->axis, visible != 0))
+    if (dvz_axis_set_grid(axis->axis, visible != 0) != DVZ_OK)
         return _fail(axis->owner, "WASM axis grid update failed");
     return 0;
 }
@@ -450,7 +451,7 @@ int dvz_wasm_api_axis_set_label(uint32_t axis_handle, const char* label)
     if (axis == NULL || axis->owner == NULL || axis->axis == NULL || label == NULL)
         return _fail(axis != NULL ? axis->owner : NULL, "invalid WASM axis label");
     _clear_payload(axis->owner);
-    if (!dvz_axis_set_label(axis->axis, label))
+    if (dvz_axis_set_label(axis->axis, label) != DVZ_OK)
         return _fail(axis->owner, "WASM axis label update failed");
     return 0;
 }
@@ -465,7 +466,7 @@ int dvz_wasm_api_axis_set_plot_margins(
     if (axis == NULL || axis->owner == NULL || axis->axis == NULL)
         return _fail(axis != NULL ? axis->owner : NULL, "invalid WASM axis handle");
     _clear_payload(axis->owner);
-    if (!dvz_axis_set_plot_margins(axis->axis, left, right, bottom, top))
+    if (dvz_axis_set_plot_margins(axis->axis, left, right, bottom, top) != DVZ_OK)
         return _fail(axis->owner, "WASM axis plot margins update failed");
     return 0;
 }
@@ -591,7 +592,8 @@ int dvz_wasm_api_visual_set_attr_buffer(
             visual != NULL ? visual->owner : NULL, "invalid WASM visual attribute buffer bind");
     }
     _clear_payload(visual->owner);
-    if (!dvz_visual_set_attr_buffer(visual->visual, attr, buffer->buffer, byte_offset, item_count))
+    if (dvz_visual_set_attr_buffer(
+            visual->visual, attr, buffer->buffer, byte_offset, item_count) != DVZ_OK)
     {
         char diagnostic[DVZ_SCENE_DIAGNOSTIC_SIZE];
         int ret = snprintf(
@@ -618,7 +620,7 @@ int dvz_wasm_api_visual_set_texture_rgba8(
         return _fail(visual != NULL ? visual->owner : NULL, "invalid WASM RGBA8 texture upload");
     }
     _clear_payload(visual->owner);
-    if (dvz_visual_set_texture_rgba8(
+    if (_scene_visual_set_texture_rgba8(
             visual->visual, (const uint8_t*)rgba, width, height,
             (DvzSize)width * height * 4u) != 0)
     {
@@ -668,9 +670,9 @@ int dvz_wasm_api_visual_set_labels_s32(
     view.data = values;
     view.bytes_per_row = (uint64_t)width * sizeof(int32_t);
     view.rows_per_image = height;
-    if (!dvz_sampled_field_set_data(field, &view))
+    if (dvz_sampled_field_set_data(field, &view) != DVZ_OK)
         return _fail(visual->owner, "WASM S32 labels field upload failed");
-    if (!dvz_visual_set_field(visual->visual, "field", field))
+    if (dvz_visual_set_field(visual->visual, "field", field) != DVZ_OK)
         return _fail(visual->owner, "WASM S32 labels field bind failed");
 
     DvzScale* scale = dvz_scale(
@@ -691,7 +693,7 @@ int dvz_wasm_api_visual_set_labels_s32(
             colors_rgba[4 * i + 0], colors_rgba[4 * i + 1], colors_rgba[4 * i + 2],
             colors_rgba[4 * i + 3]);
     }
-    bool ok = dvz_scale_set_categories(scale, categories, category_count);
+    bool ok = dvz_scale_set_categories(scale, categories, category_count) == DVZ_OK;
     free(categories);
     if (!ok)
         return _fail(visual->owner, "WASM S32 labels categories failed");

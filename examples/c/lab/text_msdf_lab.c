@@ -947,7 +947,7 @@ int main(int argc, char** argv)
         EXAMPLE_CHECK(state.sources[i].win != NULL, "source view setup failed");
     }
     state.host_win =
-        dvz_view_glfw(app, host_figure, TEXT_MSDF_LAB_HOST_WIDTH, TEXT_MSDF_LAB_HOST_HEIGHT,
+        dvz_view_window(app, host_figure, TEXT_MSDF_LAB_HOST_WIDTH, TEXT_MSDF_LAB_HOST_HEIGHT,
                             "text_msdf_lab");
     EXAMPLE_CHECK(state.host_win != NULL, "host GLFW window setup failed");
 

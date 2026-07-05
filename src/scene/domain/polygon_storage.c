@@ -165,7 +165,7 @@ bool _polygon_ring_copy(const DvzPolygonRing* src, DvzPolygonStoredRing* dst)
  *
  * @param item polygon-set item
  */
-void _polygon_set_item_reset(DvzPolygonSetItem* item)
+void _polygon_set_item_reset(DvzPolygonsItem* item)
 {
     if (item == NULL)
         return;
@@ -176,7 +176,7 @@ void _polygon_set_item_reset(DvzPolygonSetItem* item)
             _polygon_ring_reset(&item->holes[i]);
     }
     dvz_free(item->holes);
-    dvz_memset(item, sizeof(DvzPolygonSetItem), 0, sizeof(DvzPolygonSetItem));
+    dvz_memset(item, sizeof(DvzPolygonsItem), 0, sizeof(DvzPolygonsItem));
 }
 
 
@@ -186,7 +186,7 @@ void _polygon_set_item_reset(DvzPolygonSetItem* item)
  *
  * @param item polygon-set item
  */
-void _polygon_set_item_default_style(DvzPolygonSetItem* item)
+void _polygon_set_item_default_style(DvzPolygonsItem* item)
 {
     ANN(item);
     DvzPolygonStyle style = dvz_polygon_style();
@@ -344,7 +344,7 @@ void _polygon_mark_composites_dirty(DvzPolygon* polygon, bool fill_dirty, bool s
  * @param stroke_dirty whether the stroke role needs refresh
  */
 void _polygon_set_mark_composites_dirty(
-    DvzPolygonSet* set, bool fill_dirty, bool stroke_dirty)
+    DvzPolygons* set, bool fill_dirty, bool stroke_dirty)
 {
     if (set == NULL || set->scene == NULL)
         return;
@@ -414,13 +414,13 @@ DvzPolygon* _scene_alloc_polygon(DvzScene* scene)
  * @param scene the scene
  * @return the polygon set slot, or NULL on capacity exhaustion
  */
-DvzPolygonSet* _scene_alloc_polygon_set(DvzScene* scene)
+DvzPolygons* _scene_alloc_polygon_set(DvzScene* scene)
 {
     if (scene == NULL || scene->polygon_set_count >= DVZ_SCENE_MAX_POLYGON_SETS)
         return NULL;
 
-    DvzPolygonSet* set = &scene->polygon_sets[scene->polygon_set_count++];
-    dvz_memset(set, sizeof(DvzPolygonSet), 0, sizeof(DvzPolygonSet));
+    DvzPolygons* set = &scene->polygon_sets[scene->polygon_set_count++];
+    dvz_memset(set, sizeof(DvzPolygons), 0, sizeof(DvzPolygons));
     set->scene = scene;
     set->active = true;
     set->stroke_cap_start = DVZ_SEGMENT_CAP_BUTT;
@@ -440,13 +440,13 @@ DvzPolygonSet* _scene_alloc_polygon_set(DvzScene* scene)
  * @param capacity required capacity
  * @return whether the reserve succeeded
  */
-bool _polygon_set_reserve(DvzPolygonSet* set, uint32_t capacity)
+bool _polygon_set_reserve(DvzPolygons* set, uint32_t capacity)
 {
     if (set == NULL)
         return false;
     if (capacity <= set->polygon_capacity)
         return true;
-    if (!_polygon_allocation_valid(capacity, sizeof(DvzPolygonSetItem)))
+    if (!_polygon_allocation_valid(capacity, sizeof(DvzPolygonsItem)))
         return false;
 
     uint32_t next_capacity =
@@ -454,15 +454,15 @@ bool _polygon_set_reserve(DvzPolygonSet* set, uint32_t capacity)
     if (next_capacity < capacity)
         next_capacity = capacity;
 
-    DvzPolygonSetItem* next =
-        (DvzPolygonSetItem*)dvz_calloc(next_capacity, sizeof(DvzPolygonSetItem));
+    DvzPolygonsItem* next =
+        (DvzPolygonsItem*)dvz_calloc(next_capacity, sizeof(DvzPolygonsItem));
     if (next == NULL)
         return false;
 
     if (set->polygons != NULL && set->polygon_count > 0)
     {
-        const size_t byte_size = (size_t)set->polygon_count * sizeof(DvzPolygonSetItem);
-        dvz_memcpy(next, (size_t)next_capacity * sizeof(DvzPolygonSetItem), set->polygons,
+        const size_t byte_size = (size_t)set->polygon_count * sizeof(DvzPolygonsItem);
+        dvz_memcpy(next, (size_t)next_capacity * sizeof(DvzPolygonsItem), set->polygons,
                    byte_size);
     }
     dvz_free(set->polygons);
@@ -480,7 +480,7 @@ bool _polygon_set_reserve(DvzPolygonSet* set, uint32_t capacity)
  * @param desc borrowed polygon descriptor
  * @return 0 on success, -1 on error
  */
-int _polygon_set_item_set_geometry(DvzPolygonSetItem* item, const DvzPolygonDesc* desc)
+int _polygon_set_item_set_geometry(DvzPolygonsItem* item, const DvzPolygonDesc* desc)
 {
     if (item == NULL || desc == NULL)
         return -1;

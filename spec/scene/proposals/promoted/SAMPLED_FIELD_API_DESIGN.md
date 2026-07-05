@@ -93,7 +93,7 @@ bool dvz_sampled_field_set_data(DvzSampledField* field, const DvzFieldDataView* 
 bool dvz_sampled_field_update_region(
     DvzSampledField* field, DvzFieldRegion region, const DvzFieldDataView* view);
 bool dvz_sampled_field_set_geometry(DvzSampledField* field, const DvzFieldGeometry* geometry);
-const DvzSampledFieldDesc* dvz_sampled_field_get_desc(const DvzSampledField* field);
+bool dvz_sampled_field_info(const DvzSampledField* field, DvzSampledFieldDesc* out);
 bool dvz_visual_set_field(DvzVisual* visual, const char* slot, DvzSampledField* field);
 ```
 
@@ -125,5 +125,3 @@ than adapt silently. Do not add public `RGB*` formats in the first pass; callers
 3. Decide whether zero `bytes_per_row` / `rows_per_image` means tight packing or whether the fields
    are always explicit.
 4. Decide whether probe results expose direct field handles, stable field ids, or both.
-5. Treat `dvz_visual_set_texture_rgba8(...)` and `dvz_visual_set_texture_r32f(...)` as transitional image
-   convenience wrappers once the shared field path is implemented.

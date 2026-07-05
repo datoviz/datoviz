@@ -1,6 +1,6 @@
 # Axis, Guide, Viewport Refactor Handoff
 
-Status: active architecture refactor lane, started on 2026-06-30.
+Status: completed architecture refactor record; use as guardrails before related changes.
 
 Read this before changing 2D axes, grid lines, guide lines/spans, panel DATA coordinates, View2D,
 aspect-ratio handling, plot/panel viewport logic, or GSP-facing guide behavior.

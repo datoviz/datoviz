@@ -66,11 +66,12 @@ DVZ_EXPORT DvzResult dvz_unit_ladder_add(DvzUnitLadder* ladder, double factor, c
 /**
  * Clear all entries from a custom unit ladder.
  *
- * Builtin ladders ignore this call.
+ * Builtin ladders reject this call.
  *
  * @param ladder the ladder
+ * @return DVZ_OK when the ladder was cleared, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_unit_ladder_clear(DvzUnitLadder* ladder);
+DVZ_EXPORT DvzResult dvz_unit_ladder_clear(DvzUnitLadder* ladder);
 
 
 /**
@@ -230,8 +231,9 @@ DVZ_EXPORT void dvz_scale_destroy(DvzScale* scale);
  * @param scale the scale
  * @param min the domain minimum
  * @param max the domain maximum
+ * @return DVZ_OK when the domain was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_scale_set_domain(DvzScale* scale, double min, double max);
+DVZ_EXPORT DvzResult dvz_scale_set_domain(DvzScale* scale, double min, double max);
 
 
 /**
@@ -255,8 +257,9 @@ DVZ_EXPORT bool dvz_scale_domain(const DvzScale* scale, double* out_min, double*
  * @param scale the scale
  * @param min the view-range minimum
  * @param max the view-range maximum
+ * @return DVZ_OK when the view range was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_scale_set_view_range(DvzScale* scale, double min, double max);
+DVZ_EXPORT DvzResult dvz_scale_set_view_range(DvzScale* scale, double min, double max);
 
 
 /**
@@ -279,8 +282,9 @@ DVZ_EXPORT bool dvz_scale_view_range(const DvzScale* scale, double* out_min, dou
  *
  * @param scale the scale
  * @param colormap the colormap
+ * @return DVZ_OK when the colormap binding was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_scale_set_colormap(DvzScale* scale, DvzColormap* colormap);
+DVZ_EXPORT DvzResult dvz_scale_set_colormap(DvzScale* scale, DvzColormap* colormap);
 
 
 /**
@@ -290,8 +294,9 @@ DVZ_EXPORT void dvz_scale_set_colormap(DvzScale* scale, DvzColormap* colormap);
  *
  * @param scale the scale
  * @param format the format descriptor, or NULL to clear the override
+ * @return DVZ_OK when the format was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* format);
+DVZ_EXPORT DvzResult dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* format);
 
 
 /**
@@ -303,9 +308,9 @@ DVZ_EXPORT void dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* forma
  * @param scale the scale
  * @param categories category entry array, or NULL to clear
  * @param count the number of category entries
- * @return true when the category table was accepted
+ * @return DVZ_OK when the category table was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_scale_set_categories(
+DVZ_EXPORT DvzResult dvz_scale_set_categories(
     DvzScale* scale, const DvzScaleCategory* categories, uint32_t count);
 
 
@@ -342,9 +347,9 @@ dvz_scale_category(const DvzScale* scale, uint32_t index, DvzScaleCategory* out)
  * @param scale the scale
  * @param categories category entry array
  * @param count the number of category entries
- * @return true when the category table was accepted
+ * @return DVZ_OK when the category table was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_scale_update_categories(
+DVZ_EXPORT DvzResult dvz_scale_update_categories(
     DvzScale* scale, const DvzScaleCategory* categories, uint32_t count);
 
 
@@ -356,9 +361,9 @@ DVZ_EXPORT bool dvz_scale_update_categories(
  * @param scale the scale
  * @param ids category ids to remove
  * @param count the number of ids
- * @return true when the category table was updated
+ * @return DVZ_OK when the category table was updated, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_scale_remove_categories(
+DVZ_EXPORT DvzResult dvz_scale_remove_categories(
     DvzScale* scale, const DvzCategoryId* ids, uint32_t count);
 
 
@@ -457,8 +462,9 @@ DVZ_EXPORT void dvz_colormap_destroy(DvzColormap* colormap);
  * @param colormap the colormap
  * @param stops the color stops
  * @param count the number of stops
+ * @return DVZ_OK when the stops were accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_colormap_set_stops(
+DVZ_EXPORT DvzResult dvz_colormap_set_stops(
     DvzColormap* colormap, const DvzColormapStop* stops, uint32_t count);
 
 
@@ -469,8 +475,9 @@ DVZ_EXPORT void dvz_colormap_set_stops(
  *
  * @param colormap the colormap
  * @param center the semantic center value
+ * @return DVZ_OK when the center was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_colormap_set_center(DvzColormap* colormap, double center);
+DVZ_EXPORT DvzResult dvz_colormap_set_center(DvzColormap* colormap, double center);
 
 
 
@@ -528,8 +535,9 @@ DVZ_EXPORT void dvz_colorbar_destroy(DvzColorbar* colorbar);
  *
  * @param colorbar the colorbar
  * @param format the format descriptor, or NULL to clear the override
+ * @return DVZ_OK when the format was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_colorbar_set_format(
+DVZ_EXPORT DvzResult dvz_colorbar_set_format(
     DvzColorbar* colorbar, const DvzFormatDesc* format);
 
 
@@ -538,8 +546,9 @@ DVZ_EXPORT void dvz_colorbar_set_format(
  *
  * @param colorbar the colorbar
  * @param orientation the orientation
+ * @return DVZ_OK when the orientation was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_colorbar_set_orientation(
+DVZ_EXPORT DvzResult dvz_colorbar_set_orientation(
     DvzColorbar* colorbar, DvzColorbarOrientation orientation);
 
 
@@ -551,9 +560,9 @@ DVZ_EXPORT void dvz_colorbar_set_orientation(
  *
  * @param colorbar the colorbar
  * @param anchor the panel-edge anchor
- * @return true when the anchor was accepted
+ * @return DVZ_OK when the anchor was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor anchor);
+DVZ_EXPORT DvzResult dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor anchor);
 
 
 /**
@@ -565,9 +574,9 @@ DVZ_EXPORT bool dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor an
  *
  * @param colorbar the colorbar
  * @param desc layout descriptor
- * @return true when the layout was accepted
+ * @return DVZ_OK when the layout was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc);
+DVZ_EXPORT DvzResult dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc);
 
 
 /**
@@ -578,9 +587,9 @@ DVZ_EXPORT bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbar
  *
  * @param colorbar the colorbar
  * @param ticks explicit tick descriptor
- * @return whether the explicit ticks were stored
+ * @return DVZ_OK when the explicit ticks were stored, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_colorbar_set_ticks(
+DVZ_EXPORT DvzResult dvz_colorbar_set_ticks(
     DvzColorbar* colorbar, const DvzColorbarTicks* ticks);
 
 
@@ -588,9 +597,9 @@ DVZ_EXPORT bool dvz_colorbar_set_ticks(
  * Clear explicit tick positions and labels for one colorbar.
  *
  * @param colorbar the colorbar
- * @return whether the colorbar was updated
+ * @return DVZ_OK when the colorbar was updated, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_colorbar_clear_ticks(DvzColorbar* colorbar);
+DVZ_EXPORT DvzResult dvz_colorbar_clear_ticks(DvzColorbar* colorbar);
 
 
 /**
@@ -598,8 +607,9 @@ DVZ_EXPORT bool dvz_colorbar_clear_ticks(DvzColorbar* colorbar);
  *
  * @param colorbar the colorbar
  * @param title the title, or NULL to clear
+ * @return DVZ_OK when the title was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_colorbar_set_title(DvzColorbar* colorbar, const char* title);
+DVZ_EXPORT DvzResult dvz_colorbar_set_title(DvzColorbar* colorbar, const char* title);
 
 
 
@@ -649,9 +659,9 @@ DVZ_EXPORT void dvz_legend_destroy(DvzLegend* legend);
  *
  * @param legend the legend
  * @param desc layout descriptor
- * @return true when the layout was accepted
+ * @return DVZ_OK when the layout was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* desc);
+DVZ_EXPORT DvzResult dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* desc);
 
 
 /**
@@ -659,8 +669,9 @@ DVZ_EXPORT bool dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* de
  *
  * @param legend the legend
  * @param title the title, or NULL to clear
+ * @return DVZ_OK when the title was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_legend_set_title(DvzLegend* legend, const char* title);
+DVZ_EXPORT DvzResult dvz_legend_set_title(DvzLegend* legend, const char* title);
 
 
 /**
@@ -670,18 +681,18 @@ DVZ_EXPORT void dvz_legend_set_title(DvzLegend* legend, const char* title);
  *
  * @param legend the legend
  * @param id category id to highlight
- * @return true when the highlight state was accepted
+ * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_legend_set_highlight(DvzLegend* legend, DvzCategoryId id);
+DVZ_EXPORT DvzResult dvz_legend_set_highlight(DvzLegend* legend, DvzCategoryId id);
 
 
 /**
  * Clear all highlighted categorical legend entries.
  *
  * @param legend the legend
- * @return true when the highlight state was accepted
+ * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_legend_clear_highlight(DvzLegend* legend);
+DVZ_EXPORT DvzResult dvz_legend_clear_highlight(DvzLegend* legend);
 
 
 /**
@@ -692,9 +703,9 @@ DVZ_EXPORT bool dvz_legend_clear_highlight(DvzLegend* legend);
  * @param legend the legend
  * @param ids category ids to highlight
  * @param count number of highlighted category ids
- * @return true when the highlight state was accepted
+ * @return DVZ_OK when the highlight state was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT bool
+DVZ_EXPORT DvzResult
 dvz_legend_set_highlights(DvzLegend* legend, const DvzCategoryId* ids, uint32_t count);
 
 
@@ -717,7 +728,8 @@ dvz_legend_set_highlights(DvzLegend* legend, const DvzCategoryId* ids, uint32_t 
  * @param scale the scale, or NULL to clear the binding
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* scale);
+DVZ_EXPORT DvzResult
+dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, const DvzScale* scale);
 
 
 EXTERN_C_OFF

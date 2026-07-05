@@ -240,8 +240,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, 1200, 720, "bounds_overlay");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_window(app, figure, 1200, 720, "bounds_overlay");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel_2d, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");

@@ -64,7 +64,7 @@ typedef struct DvzVisual            DvzVisual;
 typedef struct DvzSceneCompute      DvzSceneCompute;
 typedef struct DvzComposite         DvzComposite;
 typedef struct DvzPolygon           DvzPolygon;
-typedef struct DvzPolygonSet        DvzPolygonSet;
+typedef struct DvzPolygons         DvzPolygons;
 typedef struct DvzGraph             DvzGraph;
 typedef struct DvzCamera            DvzCamera;
 typedef struct DvzController        DvzController;
@@ -652,17 +652,6 @@ typedef enum
 } DvzPanelView2DAspect;
 
 
-struct DvzPanelView2D
-{
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzPanelView2DMode mode;
-    DvzPanelView2DAspect aspect;
-    double padding;
-};
-typedef struct DvzPanelView2D DvzPanelView2D;
-
-
 struct DvzPanelView2DDesc
 {
     uint32_t struct_size;
@@ -705,7 +694,8 @@ struct DvzPanelView3DDesc
 {
     uint32_t struct_size;
     uint32_t flags;
-    DvzCameraDesc camera;
+    DvzCameraView view;
+    DvzCameraProjection projection;
 };
 typedef struct DvzPanelView3DDesc DvzPanelView3DDesc;
 
@@ -788,9 +778,6 @@ struct DvzPanelAxes2DDesc
     uint32_t flags;
     const char* x_label;
     const char* y_label;
-    DvzAxisTickPolicy tick_policy;
-    DvzAxisStyle x_style;
-    DvzAxisStyle y_style;
 };
 typedef struct DvzPanelAxes2DDesc DvzPanelAxes2DDesc;
 
@@ -948,7 +935,8 @@ struct DvzGraphEdgeStyle
     uint32_t struct_size;
     uint32_t flags;
     DvzGraphEdgeMode mode;
-    DvzBezierTessellationDesc tessellation;
+    uint32_t tessellation_segment_count;
+    double tessellation_tolerance;
     DvzSegmentCap start_cap;
     DvzSegmentCap end_cap;
     DvzPathJoin join;
@@ -1254,8 +1242,16 @@ struct DvzSelectionVisualStyle
 {
     uint32_t struct_size;
     uint32_t flags;
-    DvzItemStateVisualStyle selected;
-    DvzItemStateVisualStyle unselected;
+    uint32_t selected_visual_flags;
+    float selected_alpha;
+    DvzColor selected_tint;
+    float selected_tint_mix;
+    float selected_scale;
+    uint32_t unselected_visual_flags;
+    float unselected_alpha;
+    DvzColor unselected_tint;
+    float unselected_tint_mix;
+    float unselected_scale;
 };
 typedef struct DvzSelectionVisualStyle DvzSelectionVisualStyle;
 
@@ -1384,7 +1380,6 @@ struct DvzScaleDesc
     DvzScaleKind kind;
     const char* label;
     const char* unit;
-    DvzFormatDesc format;
 };
 typedef struct DvzScaleDesc DvzScaleDesc;
 
@@ -1585,8 +1580,6 @@ struct DvzAnnotationDesc
     uint32_t flags;
     DvzAnnotationKind kind;
     const char* text;
-    DvzTextStyle style;
-    DvzTextPlacement placement;
     uint32_t annotation_flags;
 };
 typedef struct DvzAnnotationDesc DvzAnnotationDesc;
@@ -1597,8 +1590,6 @@ struct DvzLabelDesc
     uint32_t struct_size;
     uint32_t flags;
     const char* text;
-    DvzTextStyle style;
-    DvzTextPlacement placement;
     uint32_t label_flags;
 };
 typedef struct DvzLabelDesc DvzLabelDesc;
@@ -1612,9 +1603,6 @@ struct DvzScaleBarDesc
     DvzSceneAnchor anchor;
     DvzScaleBarReferenceMode reference_mode;
     DvzScaleBarLabelPosition label_position;
-    DvzTextStyle label_style;
-    DvzTextPlacement placement;
-    DvzFormatDesc format;
     const char* unit;
     double data_to_unit;
     double reference_position[3];

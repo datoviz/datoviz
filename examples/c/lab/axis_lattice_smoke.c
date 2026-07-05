@@ -451,9 +451,9 @@ int main(int argc, char** argv)
     ticks.target_count = 11;
     ticks.min_pixel_spacing = 75.0f;
     ticks.minor_per_interval = 0;
-    bool ok = dvz_axis_set_tick_policy(x_axis, &ticks);
+    bool ok = dvz_axis_set_tick_policy(x_axis, &ticks) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_axis_set_tick_policy() failed for X");
-    ok = dvz_axis_set_tick_policy(y_axis, &ticks);
+    ok = dvz_axis_set_tick_policy(y_axis, &ticks) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_axis_set_tick_policy() failed for Y");
 
     DvzAxisStyle x_style = example_graphite_cyan_axis_style(false, NULL);
@@ -471,19 +471,19 @@ int main(int argc, char** argv)
         y_style.grid_color[2] = 80;
         y_style.grid_color[3] = 255;
     }
-    ok = dvz_axis_set_style(x_axis, &x_style);
+    ok = dvz_axis_set_style(x_axis, &x_style) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_axis_set_style() failed for X");
-    ok = dvz_axis_set_style(y_axis, &y_style);
+    ok = dvz_axis_set_style(y_axis, &y_style) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_axis_set_style() failed for Y");
-    ok = dvz_axis_set_grid(x_axis, true);
+    ok = dvz_axis_set_grid(x_axis, true) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_axis_set_grid() failed for X");
-    ok = dvz_axis_set_grid(y_axis, true);
+    ok = dvz_axis_set_grid(y_axis, true) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_axis_set_grid() failed for Y");
     if (!probe)
     {
-        ok = dvz_axis_set_label(x_axis, "x");
+        ok = dvz_axis_set_label(x_axis, "x") == DVZ_OK;
         EXAMPLE_CHECK(ok, "dvz_axis_set_label() failed for X");
-        ok = dvz_axis_set_label(y_axis, "y");
+        ok = dvz_axis_set_label(y_axis, "y") == DVZ_OK;
         EXAMPLE_CHECK(ok, "dvz_axis_set_label() failed for Y");
     }
 
@@ -505,7 +505,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzView* win = probe ? dvz_view_offscreen(app, figure, WIDTH, HEIGHT) :
-                           dvz_view_glfw(app, figure, WIDTH, HEIGHT, "axis_lattice_smoke");
+                           dvz_view_window(app, figure, WIDTH, HEIGHT, "axis_lattice_smoke");
     EXAMPLE_CHECK(win != NULL, "view creation failed (GPU/display unavailable?)");
 
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);

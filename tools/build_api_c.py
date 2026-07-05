@@ -116,7 +116,7 @@ def load_raw_ctypes_status(path: Path = CTYPES_PATH) -> RawCtypesStatus:
         "dvz_phong_material_desc": "dvz_ffi_phong_material_desc",
         "dvz_standard_material_desc": "dvz_ffi_standard_material_desc",
         "dvz_depth_cue_desc": "dvz_ffi_depth_cue_desc",
-        "dvz_scalebar_desc": "dvz_ffi_scalebar_desc",
+        "dvz_scale_bar_desc": "dvz_ffi_scale_bar_desc",
         "dvz_overlay_card_style": "dvz_ffi_overlay_card_style",
         "dvz_overlay_card_desc": "dvz_ffi_overlay_card_desc",
     }

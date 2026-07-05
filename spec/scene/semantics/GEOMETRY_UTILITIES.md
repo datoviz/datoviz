@@ -58,10 +58,10 @@ Generators produce ordinary indexed geometry payloads.
 | Generator | Descriptor controls | Notes |
 |---|---|---|
 | primitive solids | cube, sphere, cylinder, cone, torus, arrow, classic polyhedra | cube, sphere, cylinder, cone, torus, and arrow implemented; classic polyhedra remain targeted |
-| `dvz_geom_plane` | center, width, height, z offset, color | implemented as indexed XY plane |
-| `dvz_geom_gizmo_axes` | axis length, shaft/head dimensions, tessellation, per-axis colors | scene/app owns pinning and camera sync |
-| `dvz_geom_surface_grid` | rows/cols, height/color arrays, origin, basis, height policy, normals, metadata | implemented with row/column provenance and height updates; richer update helpers remain future work |
-| `dvz_geom_obj` | path, fallback color | first Wavefront OBJ slice supports vertices, normals, and polygon faces triangulated as fans |
+| `dvz_geometry_plane` | center, width, height, z offset, color | implemented as indexed XY plane |
+| `dvz_geometry_gizmo_axes` | axis length, shaft/head dimensions, tessellation, per-axis colors | scene/app owns pinning and camera sync |
+| `dvz_geometry_surface_grid` | rows/cols, height/color arrays, origin, basis, height policy, normals, metadata | implemented with row/column provenance and height updates; richer update helpers remain future work |
+| `dvz_geometry_obj` | path, fallback color | first Wavefront OBJ slice supports vertices, normals, and polygon faces triangulated as fans |
 
 
 ## Derived Mesh Overlays
@@ -96,7 +96,7 @@ does not preserve the expected MIT redistribution and commercial-use surface. Tr
 supported only as an explicitly optional external backend. A permissive constrained-Delaunay backend
 such as CDT should be evaluated before adding built-in PSLG support.
 
-Retained scene polygon rendering is a separate layer. `DvzPolygon` and `DvzPolygonSet` own semantic
+Retained scene polygon rendering is a separate layer. `DvzPolygon` and `DvzPolygons` own semantic
 polygon state inside the scene. `DvzComposite` views such as `dvz_polygon_composite()` lower that
 state through ordinary visuals and attach to panels with `dvz_panel_add_composite()`. Geometry
 utilities remain CPU-only and do not own panels, render state, or generated visuals.
@@ -197,6 +197,6 @@ flooding is future compute work.
 | hull | CPU polygon input -> triangulation -> `mesh`/`primitive` |
 | boolean polygons | CPU polygon input -> triangulation -> `mesh` |
 | MSDF/SDF | `Texture2DResource` -> `marker`, `glyph`, or annotation |
-| semantic polygon render view | `DvzPolygon`/`DvzPolygonSet` -> `DvzComposite` -> generated visuals |
+| semantic polygon render view | `DvzPolygon`/`DvzPolygons` -> `DvzComposite` -> generated visuals |
 
 No special resource handling is needed.

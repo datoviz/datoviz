@@ -235,7 +235,7 @@ static void _apply_ssao(SsaoExampleState* state)
         .blur_enabled = state->blur_enabled,
         .debug_view = state->debug_view,
     };
-    if (!dvz_panel_set_ssao(state->panel, &desc))
+    if (dvz_panel_set_ssao(state->panel, &desc) != DVZ_OK)
         dvz_fprintf(stderr, "dvz_panel_set_ssao() failed\n");
 }
 
@@ -272,7 +272,7 @@ static void _apply_msaa(SsaoExampleState* state)
     DvzMsaaDesc desc = dvz_msaa_desc();
     desc.sample_count = sample_count;
     desc.alpha_to_coverage = state->msaa_alpha_to_coverage;
-    if (!dvz_panel_set_msaa(state->panel, &desc))
+    if (dvz_panel_set_msaa(state->panel, &desc) != DVZ_OK)
         dvz_fprintf(stderr, "dvz_panel_set_msaa() failed\n");
 }
 
@@ -576,13 +576,13 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "sphere");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_window(app, figure, WIDTH, HEIGHT, "sphere");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.92f, 0.0f, +0.18f});
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
     DvzExampleVisualSpin spin = {0};

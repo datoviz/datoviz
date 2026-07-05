@@ -440,18 +440,18 @@ void _scene_panel_set_legend_reserve(DvzPanel* panel, const DvzPanelReserve* res
  * @param reserve pixel reservation descriptor, or NULL for zero reserve
  * @return whether the reservation was accepted
  */
-bool dvz_panel_set_reserve(DvzPanel* panel, const DvzPanelReserve* reserve)
+DvzResult dvz_panel_set_reserve(DvzPanel* panel, const DvzPanelReserve* reserve)
 {
     if (panel == NULL)
-        return false;
+        return DVZ_ERROR;
     DvzPanelReserve next = reserve != NULL ? *reserve : (DvzPanelReserve){0};
     if (!_panel_reserve_valid(panel, &next))
-        return false;
+        return DVZ_ERROR;
     if (_panel_reserve_equal(&panel->base_reserve, &next))
-        return true;
+        return DVZ_OK;
     panel->base_reserve = next;
     _panel_update_reserve(panel);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -478,21 +478,21 @@ bool dvz_panel_get_reserve(const DvzPanel* panel, DvzPanelReserve* out)
  * @param padding pixel padding descriptor, or NULL for zero padding
  * @return whether the padding was accepted
  */
-bool dvz_panel_set_padding(DvzPanel* panel, const DvzPanelReserve* padding)
+DvzResult dvz_panel_set_padding(DvzPanel* panel, const DvzPanelReserve* padding)
 {
     if (panel == NULL)
-        return false;
+        return DVZ_ERROR;
     DvzPanelReserve next = padding != NULL ? *padding : (DvzPanelReserve){0};
     if (!_panel_padding_valid(panel, &next))
-        return false;
+        return DVZ_ERROR;
     DvzPanelReserve reserve = panel->base_reserve;
     _panel_reserve_add(&reserve, &panel->axis_reserve);
     _panel_reserve_add(&reserve, &panel->colorbar_reserve);
     _panel_reserve_add(&reserve, &panel->legend_reserve);
     if (!_panel_reserve_valid_for_padding(panel, &reserve, &next))
-        return false;
+        return DVZ_ERROR;
     if (_panel_reserve_equal(&panel->padding, &next))
-        return true;
+        return DVZ_OK;
 
     panel->padding = next;
     bool reserve_changed = _panel_update_reserve(panel);
@@ -501,7 +501,7 @@ bool dvz_panel_set_padding(DvzPanel* panel, const DvzPanelReserve* padding)
         _panel_mark_layout_changed(panel);
         _scene_panel_view_dirty(panel);
     }
-    return true;
+    return DVZ_OK;
 }
 
 

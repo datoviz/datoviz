@@ -419,11 +419,12 @@ DvzResult dvz_unit_ladder_add(DvzUnitLadder* ladder, double factor, const char* 
 }
 
 
-void dvz_unit_ladder_clear(DvzUnitLadder* ladder)
+DvzResult dvz_unit_ladder_clear(DvzUnitLadder* ladder)
 {
     if (ladder == NULL || ladder->builtin)
-        return;
+        return DVZ_ERROR;
     ladder->entry_count = 0;
+    return DVZ_OK;
 }
 
 

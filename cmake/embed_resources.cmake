@@ -6,10 +6,10 @@
 #
 # Generates a .c file with:
 #   static const unsigned char DVZ_RESOURCE_<PREFIX>_<name>[] = { ... };
-#   static const unsigned long DVZ_RESOURCE_<PREFIX>_<name>_size = N;
+#   static const DvzSize DVZ_RESOURCE_<PREFIX>_<name>_size = N;
 #
 # and a lookup function:
-#   const unsigned char* dvz_resource_<prefix>(const char* name, unsigned long* size);
+#   const unsigned char* dvz_resource_<prefix>(const char* name, DvzSize* size);
 #
 # <name> is derived from the filename with extension stripped and non-alnum chars → '_'.
 
@@ -34,10 +34,10 @@ function(create_resources files prefix output)
         string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1," filedata "${filedata}")
 
         file(APPEND "${output}" "static const unsigned char DVZ_RESOURCE_${prefix}_${cname}[] = {${filedata}};\n")
-        file(APPEND "${output}" "static const unsigned long DVZ_RESOURCE_${prefix}_${cname}_size = ${filesize}UL;\n\n")
+        file(APPEND "${output}" "static const DvzSize DVZ_RESOURCE_${prefix}_${cname}_size = ${filesize}ULL;\n\n")
     endforeach()
 
-    file(APPEND "${output}" "const unsigned char* dvz_resource_${prefix}(const char* name, unsigned long* size)\n{\n")
+    file(APPEND "${output}" "const unsigned char* dvz_resource_${prefix}(const char* name, DvzSize* size)\n{\n")
     file(APPEND "${output}" "    if (size) *size = 0;\n")
     foreach(bin IN LISTS files)
         if(NOT EXISTS "${bin}")

@@ -865,7 +865,7 @@ static void* _text_sdf_load_default_font(DvzSize* out_size)
 {
     ANN(out_size);
 #if defined(DVZ_HAS_EMBEDDED_FONTS) && DVZ_HAS_EMBEDDED_FONTS
-    unsigned long embedded_size = 0;
+    DvzSize embedded_size = 0;
     const unsigned char* embedded = dvz_resource_font("Roboto_Regular", &embedded_size);
     if (embedded != NULL && embedded_size > 0)
     {
@@ -1298,7 +1298,7 @@ static bool _text_atlas_upload_rgba(
     view.data = rgba;
     view.bytes_per_row = (uint64_t)width * 4u;
     view.rows_per_image = height;
-    if (field == NULL || !dvz_sampled_field_set_data(field, &view))
+    if (field == NULL || dvz_sampled_field_set_data(field, &view) != DVZ_OK)
         return false;
     atlas->field = field;
     return true;
@@ -1414,7 +1414,7 @@ static bool _text_atlas_replace_field_data(DvzSampledField* field, const DvzSamp
         region_view.data = data + offset;
         region_view.bytes_per_row = (uint64_t)src->desc.width * 4u;
         region_view.rows_per_image = src->desc.height;
-        return dvz_sampled_field_update_region(field, region, &region_view);
+        return dvz_sampled_field_update_region(field, region, &region_view) == DVZ_OK;
     }
     if (field->data != NULL && field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM &&
         field->desc.dim == DVZ_FIELD_DIM_2D && field->desc.depth == 1)
@@ -1425,7 +1425,7 @@ static bool _text_atlas_replace_field_data(DvzSampledField* field, const DvzSamp
     view.data = src->data;
     view.bytes_per_row = (uint64_t)src->desc.width * 4u;
     view.rows_per_image = src->desc.height;
-    return dvz_sampled_field_set_data(field, &view);
+    return dvz_sampled_field_set_data(field, &view) == DVZ_OK;
 }
 
 
@@ -2182,7 +2182,8 @@ static bool _text_atlas_try_append(
             view.data = grown;
             view.bytes_per_row = (uint64_t)target_width * 4u;
             view.rows_per_image = target_height;
-            ok = dvz_sampled_field_resize(atlas->field, target_width, target_height, 1, &view);
+            ok = dvz_sampled_field_resize(atlas->field, target_width, target_height, 1, &view) ==
+                 DVZ_OK;
         }
         if (ok)
         {
@@ -2496,7 +2497,7 @@ DvzTextAtlasInfo dvz_text_atlas_info(const DvzTextAtlas* atlas)
  * @param atlas the text atlas
  * @return sampled atlas field, or NULL
  */
-DvzSampledField* dvz_text_atlas_field(const DvzTextAtlas* atlas)
+const DvzSampledField* dvz_text_atlas_field(const DvzTextAtlas* atlas)
 {
     if (atlas == NULL)
         return NULL;

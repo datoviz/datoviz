@@ -679,9 +679,9 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzView* win =
-        dvz_view_glfw(app, figure, MARKER_STRESS_WIDTH, MARKER_STRESS_HEIGHT,
+        dvz_view_window(app, figure, MARKER_STRESS_WIDTH, MARKER_STRESS_HEIGHT,
                             "marker");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
@@ -690,7 +690,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
 
     dvz_view_set_gui_callback(win, _marker_stress_gui, &state);
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;

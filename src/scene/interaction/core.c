@@ -203,12 +203,6 @@ static bool _selection_visual_style_abi_validate(const DvzSelectionVisualStyle* 
         log_error("invalid DvzSelectionVisualStyle ABI prologue");
         return false;
     }
-    if (
-        !_item_state_visual_style_abi_validate(&style->selected) ||
-        !_item_state_visual_style_abi_validate(&style->unselected))
-    {
-        return false;
-    }
     return true;
 }
 
@@ -256,8 +250,6 @@ static bool _overlay_card_desc_validate(const DvzOverlayCardDesc* desc)
         log_error("invalid DvzOverlayCardDesc ABI prologue");
         return false;
     }
-    if (!_overlay_card_style_validate(desc->style))
-        return false;
     return true;
 }
 
@@ -589,6 +581,55 @@ static void _item_state_store_style_params(
 }
 
 
+static DvzItemStateVisualStyle _selection_selected_style(const DvzSelectionVisualStyle* style)
+{
+    ANN(style);
+    return (DvzItemStateVisualStyle){
+        DVZ_STRUCT_INIT_FIELDS(DvzItemStateVisualStyle),
+        .visual_flags = style->selected_visual_flags,
+        .alpha = style->selected_alpha,
+        .tint = style->selected_tint,
+        .tint_mix = style->selected_tint_mix,
+        .scale = style->selected_scale,
+    };
+}
+
+
+static DvzItemStateVisualStyle _selection_unselected_style(const DvzSelectionVisualStyle* style)
+{
+    ANN(style);
+    return (DvzItemStateVisualStyle){
+        DVZ_STRUCT_INIT_FIELDS(DvzItemStateVisualStyle),
+        .visual_flags = style->unselected_visual_flags,
+        .alpha = style->unselected_alpha,
+        .tint = style->unselected_tint,
+        .tint_mix = style->unselected_tint_mix,
+        .scale = style->unselected_scale,
+    };
+}
+
+
+static DvzSelectionVisualStyle _selection_visual_style_from_item_styles(
+    const DvzItemStateVisualStyle* selected, const DvzItemStateVisualStyle* unselected)
+{
+    ANN(selected);
+    ANN(unselected);
+    return (DvzSelectionVisualStyle){
+        DVZ_STRUCT_INIT_FIELDS(DvzSelectionVisualStyle),
+        .selected_visual_flags = selected->visual_flags,
+        .selected_alpha = selected->alpha,
+        .selected_tint = selected->tint,
+        .selected_tint_mix = selected->tint_mix,
+        .selected_scale = selected->scale,
+        .unselected_visual_flags = unselected->visual_flags,
+        .unselected_alpha = unselected->alpha,
+        .unselected_tint = unselected->tint,
+        .unselected_tint_mix = unselected->tint_mix,
+        .unselected_scale = unselected->scale,
+    };
+}
+
+
 
 /**
  * Return the first active selection style in the scene.
@@ -650,21 +691,20 @@ static void _item_state_sync_visual_style(DvzScene* scene, DvzVisual* visual)
     ANN(scene);
     ANN(visual);
     DvzItemStateVisualStyle normal = dvz_item_state_visual_style();
-    DvzSelectionVisualStyle selection_style = {
-        DVZ_STRUCT_INIT_FIELDS(DvzSelectionVisualStyle),
-        .selected = normal,
-        .unselected = normal,
-    };
+    DvzSelectionVisualStyle selection_style =
+        _selection_visual_style_from_item_styles(&normal, &normal);
     DvzItemStateVisualStyle hover_style = normal;
     (void)_item_state_active_selection_style(scene, &selection_style);
     (void)_item_state_active_hover_style(scene, &hover_style);
+    DvzItemStateVisualStyle selected_style = _selection_selected_style(&selection_style);
+    DvzItemStateVisualStyle unselected_style = _selection_unselected_style(&selection_style);
 
     DvzSceneItemStateStyleParams* item_params =
         &_visual_family_state(visual)->item_state_style_params;
     _item_state_store_style_params(
-        item_params->selected, item_params->selected_tint, &selection_style.selected);
+        item_params->selected, item_params->selected_tint, &selected_style);
     _item_state_store_style_params(
-        item_params->unselected, item_params->unselected_tint, &selection_style.unselected);
+        item_params->unselected, item_params->unselected_tint, &unselected_style);
     _item_state_store_style_params(item_params->hovered, item_params->hovered_tint, &hover_style);
     _visual_family_state(visual)->item_state_style_params_dirty = true;
 
@@ -1573,7 +1613,7 @@ void dvz_interaction_destroy(DvzInteractionPolicy* interaction)
  * @param interaction the interaction policy
  * @param panel the panel
  */
-void dvz_interaction_bind_panel(DvzInteractionPolicy* interaction, DvzPanel* panel)
+DvzResult dvz_interaction_bind_panel(DvzInteractionPolicy* interaction, DvzPanel* panel)
 {
     ANN(interaction);
     ANN(panel);
@@ -1581,12 +1621,13 @@ void dvz_interaction_bind_panel(DvzInteractionPolicy* interaction, DvzPanel* pan
         interaction->scene != panel->figure->scene)
     {
         log_error("cannot bind an interaction policy across scenes");
-        return;
+        return DVZ_ERROR;
     }
     if (interaction->panel != NULL && interaction->panel->interaction == interaction)
         interaction->panel->interaction = NULL;
     panel->interaction = interaction;
     interaction->panel = panel;
+    return DVZ_OK;
 }
 
 
@@ -1597,15 +1638,17 @@ void dvz_interaction_bind_panel(DvzInteractionPolicy* interaction, DvzPanel* pan
  * @param interaction the interaction policy
  * @param selection the selection
  */
-void dvz_interaction_set_selection(DvzInteractionPolicy* interaction, DvzSelection* selection)
+DvzResult dvz_interaction_set_selection(
+    DvzInteractionPolicy* interaction, DvzSelection* selection)
 {
     ANN(interaction);
     if (selection != NULL && selection->scene != interaction->scene)
     {
         log_error("cannot bind a selection from a different scene");
-        return;
+        return DVZ_ERROR;
     }
     interaction->selection = selection;
+    return DVZ_OK;
 }
 
 
@@ -1616,16 +1659,17 @@ void dvz_interaction_set_selection(DvzInteractionPolicy* interaction, DvzSelecti
  * @param interaction the interaction policy
  * @param channel the link channel
  */
-void dvz_interaction_set_link_channel(
+DvzResult dvz_interaction_set_link_channel(
     DvzInteractionPolicy* interaction, DvzLinkChannel* channel)
 {
     ANN(interaction);
     if (channel != NULL && channel->scene != interaction->scene)
     {
         log_error("cannot bind a link channel from a different scene");
-        return;
+        return DVZ_ERROR;
     }
     interaction->link_channel = channel;
+    return DVZ_OK;
 }
 
 
@@ -1636,11 +1680,12 @@ void dvz_interaction_set_link_channel(
  * @param interaction the interaction policy
  * @param policy the hit-selection policy
  */
-void dvz_interaction_set_query_hit_policy(
+DvzResult dvz_interaction_set_query_hit_policy(
     DvzInteractionPolicy* interaction, DvzQueryHitPolicy policy)
 {
     ANN(interaction);
     interaction->query_hit_policy = policy;
+    return DVZ_OK;
 }
 
 
@@ -1651,10 +1696,11 @@ void dvz_interaction_set_query_hit_policy(
  * @param interaction the interaction policy
  * @param enabled whether auto pinning is enabled
  */
-void dvz_interaction_set_auto_pin_readout(DvzInteractionPolicy* interaction, bool enabled)
+DvzResult dvz_interaction_set_auto_pin_readout(DvzInteractionPolicy* interaction, bool enabled)
 {
     ANN(interaction);
     interaction->auto_pin_readout = enabled;
+    return DVZ_OK;
 }
 
 
@@ -1819,12 +1865,13 @@ void dvz_selection_destroy(DvzSelection* selection)
  *
  * @param selection the selection
  */
-void dvz_selection_clear(DvzSelection* selection)
+DvzResult dvz_selection_clear(DvzSelection* selection)
 {
     ANN(selection);
     _selection_clear_items(selection);
     (void)_selection_sync_item_state(selection);
     _selection_card_hide(selection);
+    return DVZ_OK;
 }
 
 
@@ -1859,11 +1906,7 @@ DvzSelectionVisualStyle dvz_selection_visual_style(void)
     DvzItemStateVisualStyle unselected = normal;
     unselected.visual_flags = DVZ_ITEM_STATE_VISUAL_ALPHA;
     unselected.alpha = 0.25f;
-    return (DvzSelectionVisualStyle){
-        DVZ_STRUCT_INIT_FIELDS(DvzSelectionVisualStyle),
-        .selected = normal,
-        .unselected = unselected,
-    };
+    return _selection_visual_style_from_item_styles(&normal, &unselected);
 }
 
 
@@ -1883,18 +1926,18 @@ DvzResult dvz_selection_set_visual_style(DvzSelection* selection, const DvzSelec
     DvzSelectionVisualStyle resolved = style != NULL ? *style : dvz_selection_visual_style();
     const uint32_t supported_flags =
         DVZ_ITEM_STATE_VISUAL_ALPHA | DVZ_ITEM_STATE_VISUAL_TINT | DVZ_ITEM_STATE_VISUAL_SCALE;
-    if ((resolved.selected.visual_flags & ~supported_flags) != 0 ||
-        (resolved.unselected.visual_flags & ~supported_flags) != 0)
+    if ((resolved.selected_visual_flags & ~supported_flags) != 0 ||
+        (resolved.unselected_visual_flags & ~supported_flags) != 0)
     {
         log_error("unsupported selection visual style flags");
         return -1;
     }
     if (
-        !isfinite(resolved.selected.alpha) || !isfinite(resolved.selected.tint_mix) ||
-        !isfinite(resolved.selected.scale) || !isfinite(resolved.unselected.alpha) ||
-        !isfinite(resolved.unselected.tint_mix) || !isfinite(resolved.unselected.scale))
+        !isfinite(resolved.selected_alpha) || !isfinite(resolved.selected_tint_mix) ||
+        !isfinite(resolved.selected_scale) || !isfinite(resolved.unselected_alpha) ||
+        !isfinite(resolved.unselected_tint_mix) || !isfinite(resolved.unselected_scale))
     {
-        log_error("selection visual alpha and tint_mix values must be finite");
+        log_error("selection visual alpha, tint_mix, and scale values must be finite");
         return -1;
     }
 
@@ -2094,7 +2137,7 @@ void dvz_hover_destroy(DvzHover* hover)
  *
  * @param hover the hover
  */
-void dvz_hover_clear(DvzHover* hover)
+DvzResult dvz_hover_clear(DvzHover* hover)
 {
     ANN(hover);
     DvzScene* scene = hover->scene;
@@ -2102,6 +2145,7 @@ void dvz_hover_clear(DvzHover* hover)
     hover->item = (DvzSelectionItem){0};
     if (scene != NULL)
         (void)_item_state_sync_scene(scene, "clear hover item_state");
+    return DVZ_OK;
 }
 
 
@@ -2658,8 +2702,6 @@ DvzOverlayCard* dvz_overlay_card(DvzOverlay* overlay, const DvzOverlayCardDesc* 
     card->active = true;
     card->flags = resolved.card_flags;
     _scene_card_init(&card->card, overlay->panel);
-    if (_scene_card_apply_style(&card->card, resolved.style) != 0)
-        return NULL;
     if (resolved.text != NULL)
         dvz_strlcpy(card->card.text, resolved.text, sizeof(card->card.text));
     card->card.placement = resolved.placement;
@@ -2729,11 +2771,11 @@ DvzResult dvz_overlay_card_set_style(DvzOverlayCard* card, const DvzOverlayCardS
  * @param card the card
  * @param text the text, or NULL to clear it
  */
-void dvz_overlay_card_set_text(DvzOverlayCard* card, const char* text)
+DvzResult dvz_overlay_card_set_text(DvzOverlayCard* card, const char* text)
 {
     ANN(card);
     if (!card->active)
-        return;
+        return DVZ_ERROR;
     if (card->rich_enabled)
     {
         _scene_text_block_destroy(&card->rich_block);
@@ -2744,9 +2786,10 @@ void dvz_overlay_card_set_text(DvzOverlayCard* card, const char* text)
     if (text != NULL)
         dvz_strlcpy(card->card.text, text, sizeof(card->card.text));
     else
-        card->card.text[0] = '\0';
+    card->card.text[0] = '\0';
     card->card.dirty = true;
     _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+    return DVZ_OK;
 }
 
 
@@ -2804,11 +2847,11 @@ DvzResult dvz_overlay_card_set_rich_text(DvzOverlayCard* card, const DvzOverlayR
  *
  * @param card the card
  */
-void dvz_overlay_card_clear_rich_text(DvzOverlayCard* card)
+DvzResult dvz_overlay_card_clear_rich_text(DvzOverlayCard* card)
 {
     ANN(card);
     if (!card->active)
-        return;
+        return DVZ_ERROR;
     _scene_text_block_destroy(&card->rich_block);
     card->rich_enabled = false;
     card->rich_dirty = false;
@@ -2817,6 +2860,7 @@ void dvz_overlay_card_clear_rich_text(DvzOverlayCard* card)
     card->card.content_size_px[1] = 0.0f;
     card->card.dirty = true;
     _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+    return DVZ_OK;
 }
 
 
@@ -2827,12 +2871,12 @@ void dvz_overlay_card_clear_rich_text(DvzOverlayCard* card)
  * @param anchor_px panel-local anchor in logical pixels, or NULL to keep it unchanged
  * @param offset_px offset from the anchor in logical pixels, or NULL to keep it unchanged
  */
-void dvz_overlay_card_set_layout(
+DvzResult dvz_overlay_card_set_layout(
     DvzOverlayCard* card, const float anchor_px[2], const float offset_px[2])
 {
     ANN(card);
     if (!card->active)
-        return;
+        return DVZ_ERROR;
     card->card.placement = DVZ_OVERLAY_CARD_PLACEMENT_PIXEL;
     if (anchor_px != NULL)
     {
@@ -2846,6 +2890,7 @@ void dvz_overlay_card_set_layout(
     }
     card->card.dirty = true;
     _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+    return DVZ_OK;
 }
 
 
@@ -2856,12 +2901,12 @@ void dvz_overlay_card_set_layout(
  * @param placement semantic placement mode
  * @param offset_px inward/relative offset in logical pixels, or NULL to keep it unchanged
  */
-void dvz_overlay_card_set_placement(
+DvzResult dvz_overlay_card_set_placement(
     DvzOverlayCard* card, DvzOverlayCardPlacement placement, const float offset_px[2])
 {
     ANN(card);
     if (!card->active)
-        return;
+        return DVZ_ERROR;
     card->card.placement = placement;
     if (offset_px != NULL)
     {
@@ -2870,6 +2915,7 @@ void dvz_overlay_card_set_placement(
     }
     card->card.dirty = true;
     _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+    return DVZ_OK;
 }
 
 
@@ -2879,11 +2925,11 @@ void dvz_overlay_card_set_placement(
  * @param card the card
  * @param visible whether the card should be visible
  */
-void dvz_overlay_card_set_visible(DvzOverlayCard* card, bool visible)
+DvzResult dvz_overlay_card_set_visible(DvzOverlayCard* card, bool visible)
 {
     ANN(card);
     if (!card->active)
-        return;
+        return DVZ_ERROR;
     card->card.visible = visible;
     card->card.dirty = true;
     if (!visible)
@@ -2892,6 +2938,7 @@ void dvz_overlay_card_set_visible(DvzOverlayCard* card, bool visible)
         _overlay_card_hide_rich(card);
     }
     _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+    return DVZ_OK;
 }
 
 
@@ -2987,15 +3034,16 @@ void dvz_pinned_readout_destroy(DvzPinnedReadout* readout)
  * @param readout the pinned readout
  * @param format the format descriptor, or NULL to clear the override
  */
-void dvz_pinned_readout_set_format(DvzPinnedReadout* readout, const DvzFormatDesc* format)
+DvzResult dvz_pinned_readout_set_format(DvzPinnedReadout* readout, const DvzFormatDesc* format)
 {
     ANN(readout);
     if (!_scene_format_desc_validate(format))
-        return;
+        return DVZ_ERROR;
     readout->has_format = format != NULL;
     _scene_format_state_copy(&readout->format, format);
     _readout_refresh_text(readout);
     dvz_strlcpy(readout->card.text, readout->text, sizeof(readout->card.text));
     readout->card.dirty = true;
     _scene_notify_request_frame(readout->panel != NULL ? readout->panel->figure : NULL);
+    return DVZ_OK;
 }

@@ -78,7 +78,7 @@ static void _fill_texture(uint8_t pixels[TEXTURE_WIDTH * TEXTURE_HEIGHT * 4])
         {
             const float u = (float)x / (float)TEXTURE_WIDTH;
             const float v = (float)y / (float)(TEXTURE_HEIGHT - 1u);
-            const float pole_fade = powf(sinf((float)M_PI * v), 1.75f);
+            const float pole_fade = powf(sinf((float)DVZ_PI * v), 1.75f);
             const float lon = pole_fade * sinf(TAU * 8.0f * u);
             const float wave = pole_fade * sinf(TAU * (3.0f * u + 1.5f * v));
             const float lat = 0.5f + 0.5f * cosf(TAU * 4.0f * v);
@@ -115,11 +115,11 @@ static DvzSampledField* _add_texture(
                    .depth = 1});
     if (texture == NULL)
         return NULL;
-    if (!dvz_sampled_field_set_data(
+    if (dvz_sampled_field_set_data(
             texture, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                          .data = pixels,
                          .bytes_per_row = TEXTURE_WIDTH * 4u,
-                         .rows_per_image = TEXTURE_HEIGHT}))
+                         .rows_per_image = TEXTURE_HEIGHT}) != DVZ_OK)
         return NULL;
     return texture;
 }
@@ -138,7 +138,7 @@ static DvzSampledField* _add_texture(
 static bool _add_textured_mesh(
     DvzScene* scene, DvzPanel* panel, DvzSampledField* texture, DvzGeometry** out_geometry)
 {
-    DvzGeometry* sphere = dvz_geom_sphere(&(DvzGeometrySphereDesc){
+    DvzGeometry* sphere = dvz_geometry_sphere(&(DvzGeometrySphereDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
         .radius = 0.82,
         .sectors = 128,
@@ -162,7 +162,7 @@ static bool _add_textured_mesh(
     DvzMaterialDesc material = example_default_phong_material_desc();
     if (dvz_visual_set_material(visual, &material) != 0)
         return false;
-    if (!dvz_visual_set_field(visual, "texture", texture))
+    if (dvz_visual_set_field(visual, "texture", texture) != DVZ_OK)
         return false;
     return dvz_panel_add_visual(panel, visual, NULL) == 0;
 }

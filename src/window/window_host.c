@@ -22,6 +22,7 @@
 #include "_log.h"
 #include "_time_utils.h"
 #include "datoviz/input/pointer.h"
+#include "datoviz/input/router.h"
 #include "datoviz/window.h"
 #include "window_internal.h"
 

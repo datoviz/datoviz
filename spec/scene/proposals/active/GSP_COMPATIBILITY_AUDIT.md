@@ -45,7 +45,7 @@ records can stay post-RC1 unless the first adapter needs them.
 
 | GSP need | Current Datoviz surface | Evidence inspected | Notes |
 |---|---|---|---|
-| Scene/figure/panel/app/view creation | `dvz_scene()`, `dvz_figure()`, `dvz_panel()`, `dvz_app()`, `dvz_view_offscreen()`, `dvz_view_glfw()` | `include/datoviz/scene.h`, `include/datoviz/app.h`, `src/app/app.c` | Public C flow matches `scene -> figure -> panel -> view -> render`. |
+| Scene/figure/panel/app/view creation | `dvz_scene()`, `dvz_figure()`, `dvz_panel()`, `dvz_app()`, `dvz_view_offscreen()`, `dvz_view_window()` | `include/datoviz/scene.h`, `include/datoviz/app.h`, `src/app/app.c` | Public C flow matches `scene -> figure -> panel -> view -> render`. |
 | Scene-to-runtime boundary | `dvz_figure_emit_frame()`, `DvzSceneFrameArtifact`, `dvz_scene_frame_artifact_stream()`, app-owned `DvzView` execution | `spec/scene/core/RUNTIME_BOUNDARY.md`, `include/datoviz/scene.h`, `src/app/app.c` | Runtime consumes artifact-owned DRP2 streams; scene does not expose backend handles. |
 | Default/static capability snapshot | `DvzCapabilitySnapshot`, `dvz_capability_snapshot()`, `dvz_scene_set_capabilities()` | `include/datoviz/scene/types.h`, `include/datoviz/scene/frame_plan.h`, `src/scene/frame_plan/capabilities.c` | Useful for tests and planning, but not a live runtime query. |
 | Query/readback capability fields | Snapshot includes readback, integer format, render-target format, profile, and row-pitch fields | `include/datoviz/scene/types.h`, `src/app/app.c`, `src/scene/query/policy.c` | More complete than the original GSP prep baseline. |
@@ -55,7 +55,7 @@ records can stay post-RC1 unless the first adapter needs them.
 | Compute buffer binding | `dvz_scene_compute()`, `dvz_scene_compute_set_buffer()`, `dvz_figure_add_compute()` | `include/datoviz/scene.h`, `src/scene/domain/compute.c` | Experimental but already public and FramePlan-backed. |
 | Sampled fields and region updates | `DvzSampledField`, `dvz_sampled_field_set_data()`, `dvz_sampled_field_update_region()`, `dvz_visual_set_field()` | `include/datoviz/scene/field.h`, `src/scene/domain/field*.c` | Covers image/labels/volume texture resource path. |
 | Point visual mapping | `dvz_point()`, dense `position`, `color`, `diameter_px`, optional `item_state` | `include/datoviz/scene.h`, `src/scene/visuals/point/`, `examples/c/visuals/point.c` | First GSP point slice is straightforward. |
-| Image visual mapping | `dvz_image()`, `dvz_visual_set_field()`, `dvz_visual_set_texture_rgba8()`, sampled-field path | `include/datoviz/scene.h`, `include/datoviz/scene/field.h`, `src/scene/visuals/image/` | Retained sampled-field path is preferred over transitional wrappers. |
+| Image visual mapping | `dvz_image()`, sampled fields, `dvz_visual_set_field()` | `include/datoviz/scene.h`, `include/datoviz/scene/field.h`, `src/scene/visuals/image/` | Texture payloads use the shared sampled-field path. |
 | Mesh/primitive mapping | `dvz_mesh()`, `dvz_primitive()`, `dvz_mesh_set_geometry()`, index buffers, textured mesh field binding | `include/datoviz/scene.h`, `src/scene/visuals/mesh/`, `src/scene/visuals/primitive/` | GSP can map basic triangle/primitive data through public C. |
 | Volume first slice | `dvz_volume()`, 3D sampled field, slice/MIP/composite modes, GPU slice sample query | `include/datoviz/scene.h`, `src/scene/visuals/volume/`, `spec/scene/interaction/GPU_QUERY_SYSTEM.md` | Slice queries are active; DVR/MIP semantic query remains deferred. |
 | Text/glyph first slice | `dvz_text`, `dvz_glyph()`, text lowering to glyph visual | `include/datoviz/scene/text.h`, `include/datoviz/scene.h`, `src/scene/text/`, `src/scene/visuals/glyph/` | Rendering exists; query identity is not yet GSP-ready. |
@@ -164,7 +164,7 @@ Public headers:
 | File | Functions/types inspected |
 |---|---|
 | `include/datoviz/scene.h` | `dvz_scene`, `dvz_figure`, `dvz_panel`, `dvz_scene_set_capabilities`, `dvz_figure_emit_frame`, `DvzSceneFrameArtifact`, `dvz_figure_process_queries`, `dvz_visual_set_data`, `dvz_visual_set_data_many`, `dvz_visual_set_data_range`, `dvz_scene_buffer*`, `dvz_visual_set_buffer`, `dvz_visual_set_index_data`, `dvz_visual_set_attr_buffer`, visual constructors |
-| `include/datoviz/scene/types.h` | `DvzCapabilitySnapshot`, `DvzDiagnosticReport`, `DvzVisualTransformDesc`, `DvzVisualAttachDesc`, `DvzQueryRequest`, `DvzQueryResult`, `DvzSelectionItem`, `DvzDataDomain`, `DvzPanelView2D` |
+| `include/datoviz/scene/types.h` | `DvzCapabilitySnapshot`, `DvzDiagnosticReport`, `DvzVisualTransformDesc`, `DvzVisualAttachDesc`, `DvzQueryRequest`, `DvzQueryResult`, `DvzSelectionItem`, `DvzDataDomain`, `DvzPanelView2DDesc` |
 | `include/datoviz/scene/enums.h` | `DvzQueryStatus`, `DvzQueryProfile`, `DvzQueryValueKind`, `DvzQueryCapabilityFlag`, visual/target/coordinate enums |
 | `include/datoviz/scene/interaction.h` | `dvz_visual_set_query_capabilities`, `dvz_query_request`, `dvz_panel_query`, `dvz_scene_poll_query`, `dvz_panel_query_now`, interaction/selection/hover helpers |
 | `include/datoviz/scene/frame_plan.h` | `dvz_capability_snapshot`, `dvz_capability_snapshot_copy`, `DvzFramePlanCopyDesc`, diagnostic helpers |

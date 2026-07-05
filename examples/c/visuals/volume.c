@@ -47,6 +47,8 @@
 #define ROTATION_SPEED_RAD_PER_SEC 0.16f
 
 static const float TAU = 6.28318530718f;
+static const double VOLUME_BOUNDS_MIN[3] = {-0.88, -0.74, -1.04};
+static const double VOLUME_BOUNDS_MAX[3] = {+0.88, +0.74, +1.04};
 
 
 
@@ -250,12 +252,9 @@ static bool _configure_volume(DvzVisual* visual)
 {
     ANN(visual);
 
-    const double bounds_min[3] = {-0.88, -0.74, -1.04};
-    const double bounds_max[3] = {+0.88, +0.74, +1.04};
-
     if (dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED) != 0)
         return false;
-    if (dvz_volume_set_bounds(visual, bounds_min, bounds_max) != 0)
+    if (dvz_volume_set_bounds(visual, VOLUME_BOUNDS_MIN, VOLUME_BOUNDS_MAX) != 0)
         return false;
     if (dvz_volume_set_value_range(visual, 0.0, 0.88) != 0)
         return false;
@@ -283,9 +282,9 @@ static bool _add_boundary_box(DvzScene* scene, DvzPanel* panel, DvzVisual** out)
     ANN(scene);
     ANN(panel);
 
-    const float xmin = -0.88f, xmax = +0.88f;
-    const float ymin = -0.74f, ymax = +0.74f;
-    const float zmin = -1.04f, zmax = +1.04f;
+    const float xmin = (float)VOLUME_BOUNDS_MIN[0], xmax = (float)VOLUME_BOUNDS_MAX[0];
+    const float ymin = (float)VOLUME_BOUNDS_MIN[1], ymax = (float)VOLUME_BOUNDS_MAX[1];
+    const float zmin = (float)VOLUME_BOUNDS_MIN[2], zmax = (float)VOLUME_BOUNDS_MAX[2];
     const vec3 corners[8] = {
         {xmin, ymin, zmin}, {xmax, ymin, zmin}, {xmax, ymax, zmin}, {xmin, ymax, zmin},
         {xmin, ymin, zmax}, {xmax, ymin, zmax}, {xmax, ymax, zmax}, {xmin, ymax, zmax},
@@ -396,16 +395,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(field != NULL, "dvz_sampled_field() failed");
 
     ok = dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){
-                   DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = data,
-                   .bytes_per_row = FIELD_SIZE, .rows_per_image = FIELD_SIZE});
+             field, &(DvzFieldDataView){
+                        DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = data,
+                        .bytes_per_row = FIELD_SIZE, .rows_per_image = FIELD_SIZE}) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data() failed");
     dvz_free(data);
     data = NULL;
 
     DvzVisual* volume = dvz_volume(ctx->scene, 0);
     EXAMPLE_CHECK(volume != NULL, "dvz_volume() failed");
-    ok = dvz_visual_set_field(volume, "field", field);
+    ok = dvz_visual_set_field(volume, "field", field) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_field() failed");
     ok = _configure_volume(volume);
     EXAMPLE_CHECK(ok, "volume configuration failed");

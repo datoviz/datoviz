@@ -184,7 +184,7 @@ Remove all non-legacy example calls to `dvz_panel_set_layout_reserve()`.
 For examples using `example_configure_equal_aspect_panel()`:
 
 1. remove the `DvzPanelLayoutReserve* reserve` parameter;
-2. call `example_graphite_cyan_set_panel_background()` and configure `DvzPanelView2D` only;
+2. call `example_graphite_cyan_set_panel_background()` and configure `DvzPanelView2DDesc` only;
 3. if a specific example needs cosmetic spacing, add a local or shared pixel helper.
 
 Preferred example spacing tools:

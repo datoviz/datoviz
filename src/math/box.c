@@ -15,8 +15,6 @@
 /*************************************************************************************************/
 
 #include <math.h>
-#include <stdio.h>
-
 #include "_assertions.h"
 #include "datoviz/math/box.h"
 #include "datoviz/math/types.h"
@@ -142,20 +140,20 @@ DvzBox dvz_box_merge(uint32_t box_count, const DvzBox* boxes, DvzBoxMergeStrateg
     // Merged box.
     for (uint32_t i = 0; i < box_count; i++)
     {
-        merged.xmin = MIN(merged.xmin, boxes[i].xmin);
-        merged.xmax = MAX(merged.xmax, boxes[i].xmax);
-        merged.ymin = MIN(merged.ymin, boxes[i].ymin);
-        merged.ymax = MAX(merged.ymax, boxes[i].ymax);
-        merged.zmin = MIN(merged.zmin, boxes[i].zmin);
-        merged.zmax = MAX(merged.zmax, boxes[i].zmax);
+        merged.xmin = DVZ_MIN(merged.xmin, boxes[i].xmin);
+        merged.xmax = DVZ_MAX(merged.xmax, boxes[i].xmax);
+        merged.ymin = DVZ_MIN(merged.ymin, boxes[i].ymin);
+        merged.ymax = DVZ_MAX(merged.ymax, boxes[i].ymax);
+        merged.zmin = DVZ_MIN(merged.zmin, boxes[i].zmin);
+        merged.zmax = DVZ_MAX(merged.zmax, boxes[i].zmax);
     }
 
     // Center merge strategy.
     if (strategy == DVZ_BOX_MERGE_CENTER)
     {
-        merged.xmax = MAX(fabs(merged.xmin), fabs(merged.xmax));
-        merged.ymax = MAX(fabs(merged.ymin), fabs(merged.ymax));
-        merged.zmax = MAX(fabs(merged.zmin), fabs(merged.zmax));
+        merged.xmax = DVZ_MAX(fabs(merged.xmin), fabs(merged.xmax));
+        merged.ymax = DVZ_MAX(fabs(merged.ymin), fabs(merged.ymax));
+        merged.zmax = DVZ_MAX(fabs(merged.zmin), fabs(merged.zmax));
         merged.xmin = -merged.xmax;
         merged.ymin = -merged.ymax;
         merged.zmin = -merged.zmax;
@@ -175,7 +173,7 @@ DvzBox dvz_box_merge(uint32_t box_count, const DvzBox* boxes, DvzBoxMergeStrateg
 
 
 void dvz_box_normalize_1D(
-    DvzBox source, DvzBox target, DvzDim dim, uint32_t count, double* pos, vec3* out)
+    DvzBox source, DvzBox target, DvzDim dim, uint32_t count, const double* pos, vec3* out)
 {
     ANN(pos);
     ANN(out);
@@ -220,7 +218,8 @@ void dvz_box_normalize_1D(
 
 
 
-void dvz_box_normalize_2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out)
+void dvz_box_normalize_2D(
+    DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out)
 {
     ANN(pos);
     ANN(out);
@@ -265,7 +264,8 @@ void dvz_box_normalize_polygon(
 
 
 
-void dvz_box_normalize_3D(DvzBox source, DvzBox target, uint32_t count, dvec3* pos, vec3* out)
+void dvz_box_normalize_3D(
+    DvzBox source, DvzBox target, uint32_t count, dvec3* pos, vec3* out)
 {
     ANN(pos);
     ANN(out);
@@ -290,7 +290,7 @@ void dvz_box_normalize_3D(DvzBox source, DvzBox target, uint32_t count, dvec3* p
 
 
 
-void dvz_box_inverse(DvzBox source, DvzBox target, vec3 pos, dvec3* out)
+void dvz_box_inverse(DvzBox source, DvzBox target, const vec3 pos, dvec3* out)
 {
     ANN(pos);
 
@@ -304,13 +304,4 @@ void dvz_box_inverse(DvzBox source, DvzBox target, vec3 pos, dvec3* out)
     (*out)[0] = (pos[0] - target.xmin) / scale_x + source.xmin;
     (*out)[1] = (pos[1] - target.ymin) / scale_y + source.ymin;
     (*out)[2] = (pos[2] - target.zmin) / scale_z + source.zmin;
-}
-
-
-
-void dvz_box_print(DvzBox box)
-{
-    printf(
-        "Box: x: [%g, %g], y: [%g, %g], z: [%g, %g]\n", //
-        box.xmin, box.xmax, box.ymin, box.ymax, box.zmin, box.zmax);
 }

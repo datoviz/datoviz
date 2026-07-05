@@ -97,9 +97,6 @@ static bool _panel_axes_2d_desc_validate(const DvzPanelAxes2DDesc* desc)
         log_error("invalid panel 2D axes descriptor ABI");
         return false;
     }
-    if (!_axis_tick_policy_validate(&desc->tick_policy) || !_axis_style_validate(&desc->x_style) ||
-        !_axis_style_validate(&desc->y_style))
-        return false;
     return true;
 }
 
@@ -414,18 +411,10 @@ DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim)
  */
 DvzPanelAxes2DDesc dvz_panel_axes_2d_desc(void)
 {
-    DvzAxisStyle x_style = _axis_default_style();
-    DvzAxisStyle y_style = _axis_default_style();
-    x_style.show_grid = true;
-    y_style.show_grid = true;
-
     return (DvzPanelAxes2DDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzPanelAxes2DDesc),
         .x_label = NULL,
         .y_label = NULL,
-        .tick_policy = _axis_default_tick_policy(),
-        .x_style = x_style,
-        .y_style = y_style,
     };
 }
 
@@ -437,33 +426,39 @@ DvzPanelAxes2DDesc dvz_panel_axes_2d_desc(void)
  * @param desc axes descriptor, or NULL for defaults
  * @return whether the axes were updated
  */
-bool dvz_panel_set_axes_2d(DvzPanel* panel, const DvzPanelAxes2DDesc* desc)
+DvzResult dvz_panel_set_axes_2d(DvzPanel* panel, const DvzPanelAxes2DDesc* desc)
 {
     if (panel == NULL)
-        return false;
+        return DVZ_ERROR;
     DvzPanelAxes2DDesc resolved = desc != NULL ? *desc : dvz_panel_axes_2d_desc();
     if (!_panel_axes_2d_desc_validate(&resolved))
-        return false;
+        return DVZ_ERROR;
 
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     if (x_axis == NULL || y_axis == NULL)
-        return false;
+        return DVZ_ERROR;
 
-    if (!dvz_axis_set_tick_policy(x_axis, &resolved.tick_policy))
-        return false;
-    if (!dvz_axis_set_tick_policy(y_axis, &resolved.tick_policy))
-        return false;
-    if (!dvz_axis_set_style(x_axis, &resolved.x_style))
-        return false;
-    if (!dvz_axis_set_style(y_axis, &resolved.y_style))
-        return false;
-    if (!dvz_axis_set_label(x_axis, resolved.x_label))
-        return false;
-    if (!dvz_axis_set_label(y_axis, resolved.y_label))
-        return false;
-    if (!dvz_axis_set_visible(x_axis, true))
-        return false;
+    DvzAxisTickPolicy tick_policy = _axis_default_tick_policy();
+    DvzAxisStyle x_style = _axis_default_style();
+    DvzAxisStyle y_style = _axis_default_style();
+    x_style.show_grid = true;
+    y_style.show_grid = true;
+
+    if (dvz_axis_set_tick_policy(x_axis, &tick_policy) != DVZ_OK)
+        return DVZ_ERROR;
+    if (dvz_axis_set_tick_policy(y_axis, &tick_policy) != DVZ_OK)
+        return DVZ_ERROR;
+    if (dvz_axis_set_style(x_axis, &x_style) != DVZ_OK)
+        return DVZ_ERROR;
+    if (dvz_axis_set_style(y_axis, &y_style) != DVZ_OK)
+        return DVZ_ERROR;
+    if (dvz_axis_set_label(x_axis, resolved.x_label) != DVZ_OK)
+        return DVZ_ERROR;
+    if (dvz_axis_set_label(y_axis, resolved.y_label) != DVZ_OK)
+        return DVZ_ERROR;
+    if (dvz_axis_set_visible(x_axis, true) != DVZ_OK)
+        return DVZ_ERROR;
     return dvz_axis_set_visible(y_axis, true);
 }
 
@@ -498,10 +493,10 @@ DvzAxisStyle dvz_axis_style(void)
  * @param visible whether the axis is visible
  * @return whether the axis was updated
  */
-bool dvz_axis_set_visible(DvzAxis* axis, bool visible)
+DvzResult dvz_axis_set_visible(DvzAxis* axis, bool visible)
 {
     if (axis == NULL)
-        return false;
+        return DVZ_ERROR;
     axis->enabled = visible;
     if (axis->visual != NULL && !visible)
         axis->visual->visible = false;
@@ -510,7 +505,7 @@ bool dvz_axis_set_visible(DvzAxis* axis, bool visible)
     if (!visible)
         _axis_hide_text(axis);
     _axis_mark_dirty(axis);
-    return true;
+    return DVZ_OK;
 }
 /**
  * Enable or disable grid lines for one panel-owned axis.
@@ -519,13 +514,13 @@ bool dvz_axis_set_visible(DvzAxis* axis, bool visible)
  * @param visible whether grid lines are visible
  * @return whether the axis was updated
  */
-bool dvz_axis_set_grid(DvzAxis* axis, bool visible)
+DvzResult dvz_axis_set_grid(DvzAxis* axis, bool visible)
 {
     if (axis == NULL)
-        return false;
+        return DVZ_ERROR;
     axis->style.show_grid = visible;
     _axis_mark_dirty(axis);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -537,13 +532,13 @@ bool dvz_axis_set_grid(DvzAxis* axis, bool visible)
  * @param label label string, or NULL to clear
  * @return whether the axis was updated
  */
-bool dvz_axis_set_label(DvzAxis* axis, const char* label)
+DvzResult dvz_axis_set_label(DvzAxis* axis, const char* label)
 {
     if (axis == NULL)
-        return false;
+        return DVZ_ERROR;
     dvz_strlcpy(axis->label, label != NULL ? label : "", sizeof(axis->label));
     _axis_mark_dirty(axis);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -555,16 +550,16 @@ bool dvz_axis_set_label(DvzAxis* axis, const char* label)
  * @param policy tick policy, or NULL for defaults
  * @return whether the axis was updated
  */
-bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy)
+DvzResult dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy)
 {
     if (axis == NULL)
-        return false;
+        return DVZ_ERROR;
     if (!_axis_tick_policy_validate(policy))
-        return false;
+        return DVZ_ERROR;
     axis->tick_policy = policy != NULL ? *policy : _axis_default_tick_policy();
     axis->tick_lstep = 0.0;
     _axis_mark_dirty(axis);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -575,10 +570,10 @@ bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy)
  * @param ticks explicit tick descriptor
  * @return whether the explicit ticks were stored
  */
-bool dvz_axis_set_ticks(DvzAxis* axis, const DvzAxisTicks* ticks)
+DvzResult dvz_axis_set_ticks(DvzAxis* axis, const DvzAxisTicks* ticks)
 {
     if (axis == NULL || !_axis_ticks_validate(ticks))
-        return false;
+        return DVZ_ERROR;
 
     axis->explicit_ticks_enabled = true;
     axis->explicit_tick_labels_set = ticks->labels != NULL;
@@ -601,7 +596,7 @@ bool dvz_axis_set_ticks(DvzAxis* axis, const DvzAxisTicks* ticks)
     }
     axis->tick_lstep = 0.0;
     _axis_mark_dirty(axis);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -611,10 +606,10 @@ bool dvz_axis_set_ticks(DvzAxis* axis, const DvzAxisTicks* ticks)
  * @param axis the axis
  * @return whether the axis was updated
  */
-bool dvz_axis_clear_ticks(DvzAxis* axis)
+DvzResult dvz_axis_clear_ticks(DvzAxis* axis)
 {
     if (axis == NULL)
-        return false;
+        return DVZ_ERROR;
     axis->explicit_ticks_enabled = false;
     axis->explicit_tick_labels_set = false;
     axis->explicit_tick_count = 0;
@@ -625,7 +620,7 @@ bool dvz_axis_clear_ticks(DvzAxis* axis)
     }
     axis->tick_lstep = 0.0;
     _axis_mark_dirty(axis);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -637,15 +632,15 @@ bool dvz_axis_clear_ticks(DvzAxis* axis)
  * @param style axis style, or NULL for defaults
  * @return whether the axis was updated
  */
-bool dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style)
+DvzResult dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style)
 {
     if (axis == NULL)
-        return false;
+        return DVZ_ERROR;
     if (!_axis_style_validate(style))
-        return false;
+        return DVZ_ERROR;
     axis->style = style != NULL ? *style : _axis_default_style();
     _axis_mark_dirty(axis);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -659,21 +654,21 @@ bool dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style)
  * @param top top margin
  * @return whether the margins were updated
  */
-bool dvz_axis_set_plot_margins(
+DvzResult dvz_axis_set_plot_margins(
     DvzAxis* axis, float left, float right, float bottom, float top)
 {
     if (axis == NULL)
-        return false;
+        return DVZ_ERROR;
     if (!isfinite(left) || !isfinite(right) || !isfinite(bottom) || !isfinite(top) ||
         left < 0.0f || right < 0.0f || bottom < 0.0f || top < 0.0f ||
         left + right >= 2.0f || bottom + top >= 2.0f)
-        return false;
+        return DVZ_ERROR;
     axis->style.plot_margin_left = left;
     axis->style.plot_margin_right = right;
     axis->style.plot_margin_bottom = bottom;
     axis->style.plot_margin_top = top;
     _axis_mark_dirty(axis);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -684,20 +679,20 @@ bool dvz_axis_set_plot_margins(
  * @param units units object, or NULL to restore plain numeric formatting
  * @return whether the axis was updated
  */
-bool dvz_axis_set_units(DvzAxis* axis, DvzUnits* units)
+DvzResult dvz_axis_set_units(DvzAxis* axis, DvzUnits* units)
 {
     if (axis == NULL)
-        return false;
+        return DVZ_ERROR;
     if (units != NULL)
     {
         DvzScene* scene =
             axis->panel != NULL && axis->panel->figure != NULL ? axis->panel->figure->scene : NULL;
         if (units->scene != scene || units->ladder == NULL)
-            return false;
+            return DVZ_ERROR;
     }
     axis->units = units;
     _axis_mark_dirty(axis);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -708,22 +703,22 @@ bool dvz_axis_set_units(DvzAxis* axis, DvzUnits* units)
  * @param format datetime format, or NULL to restore numeric/unit formatting
  * @return whether the axis was updated
  */
-bool dvz_axis_set_datetime(DvzAxis* axis, DvzDateTimeFormat* format)
+DvzResult dvz_axis_set_datetime(DvzAxis* axis, DvzDateTimeFormat* format)
 {
     if (axis == NULL)
-        return false;
+        return DVZ_ERROR;
     if (format != NULL)
     {
         DvzScene* scene =
             axis->panel != NULL && axis->panel->figure != NULL ? axis->panel->figure->scene : NULL;
         if (format->scene != scene)
-            return false;
+            return DVZ_ERROR;
     }
     axis->datetime_format = format;
     axis->tick_lstep = 0.0;
     axis->tick_cache_valid = false;
     _axis_mark_dirty(axis);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -737,12 +732,12 @@ bool dvz_axis_set_datetime(DvzAxis* axis, DvzDateTimeFormat* format)
  * @param t1 timestamp corresponding to data1
  * @return whether the mapping was updated
  */
-bool dvz_axis_set_datetime_range(
+DvzResult dvz_axis_set_datetime_range(
     DvzAxis* axis, double data0, double data1, DvzTimestamp t0, DvzTimestamp t1)
 {
     if (axis == NULL || !isfinite(data0) || !isfinite(data1) ||
         fabs(data1 - data0) <= AXIS_EPS || t0 == t1)
-        return false;
+        return DVZ_ERROR;
     axis->datetime_data0 = data0;
     axis->datetime_data1 = data1;
     axis->datetime_t0 = t0;
@@ -751,5 +746,5 @@ bool dvz_axis_set_datetime_range(
     axis->tick_lstep = 0.0;
     axis->tick_cache_valid = false;
     _axis_mark_dirty(axis);
-    return true;
+    return DVZ_OK;
 }

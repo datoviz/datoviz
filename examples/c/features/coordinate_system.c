@@ -168,7 +168,7 @@ static bool _add_geometry(DvzScene* scene, DvzPanel* panel, DvzGeometry* geometr
  */
 static bool _add_axis_arrow(DvzScene* scene, DvzPanel* panel, uint32_t axis)
 {
-    DvzGeometry* arrow = dvz_geom_arrow(&(DvzGeometryArrowDesc){
+    DvzGeometry* arrow = dvz_geometry_arrow(&(DvzGeometryArrowDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryArrowDesc),
         .center = {0.0, 0.0, 0.5 * AXIS_LENGTH},
         .length = AXIS_LENGTH,
@@ -204,7 +204,7 @@ static bool _add_origin(DvzScene* scene, DvzPanel* panel)
 {
     return _add_geometry(
         scene, panel,
-        dvz_geom_sphere(&(DvzGeometrySphereDesc){
+        dvz_geometry_sphere(&(DvzGeometrySphereDesc){
             DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
             .center = {0.0, 0.0, 0.0},
             .radius = 0.075,

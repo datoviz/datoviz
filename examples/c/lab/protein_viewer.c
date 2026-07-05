@@ -724,8 +724,9 @@ static bool _reload_bundle(ProteinExampleState* state, const char* bundle_path)
                 return false;
             }
             bool ok = dvz_scene_buffer_set_data(
-                state->ribbon_index_buffer, state->ribbon_indices_upload,
-                (uint64_t)state->ribbon_index_upload_count * sizeof(DvzIndex));
+                          state->ribbon_index_buffer, state->ribbon_indices_upload,
+                          (uint64_t)state->ribbon_index_upload_count * sizeof(DvzIndex)) ==
+                      DVZ_OK;
             DvzVisualDataUpdate ribbon_updates[] = {
                 {.attr_name = "position",
                  .data = next.ribbon_positions,
@@ -921,7 +922,7 @@ static void _apply_msaa(ProteinExampleState* state)
     DvzMsaaDesc desc = dvz_msaa_desc();
     desc.sample_count = sample_count;
     desc.alpha_to_coverage = state->msaa_alpha_to_coverage;
-    if (!dvz_panel_set_msaa(state->panel, &desc))
+    if (dvz_panel_set_msaa(state->panel, &desc) != DVZ_OK)
         dvz_fprintf(stderr, "dvz_panel_set_msaa() failed\n");
 }
 
@@ -1202,8 +1203,8 @@ int main(int argc, char** argv)
         EXAMPLE_CHECK(ribbon_index_buffer != NULL, "dvz_scene_buffer() failed for ribbon");
 
         bool ok = dvz_scene_buffer_set_data(
-            ribbon_index_buffer, bundle.ribbon_indices,
-            (uint64_t)bundle.ribbon_index_count * sizeof(DvzIndex));
+                      ribbon_index_buffer, bundle.ribbon_indices,
+                      (uint64_t)bundle.ribbon_index_count * sizeof(DvzIndex)) == DVZ_OK;
         EXAMPLE_CHECK(ok, "dvz_scene_buffer_set_data() failed for ribbon");
 
         DvzVisualDataUpdate ribbon_updates[] = {
@@ -1220,7 +1221,7 @@ int main(int argc, char** argv)
         rc = dvz_visual_set_data_many(ribbon, ribbon_updates, 3);
         EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for ribbon");
 
-        ok = dvz_visual_set_buffer(ribbon, "index", ribbon_index_buffer);
+        ok = dvz_visual_set_buffer(ribbon, "index", ribbon_index_buffer) == DVZ_OK;
         EXAMPLE_CHECK(ok, "dvz_visual_set_buffer() failed for ribbon");
 
         rc = dvz_panel_add_visual(panel, ribbon, NULL);
@@ -1243,8 +1244,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzView* win =
-        dvz_view_glfw(app, figure, WIDTH, HEIGHT, "protein_viewer");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+        dvz_view_window(app, figure, WIDTH, HEIGHT, "protein_viewer");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzController* arcball_controller = dvz_arcball(scene, NULL);
     EXAMPLE_CHECK(arcball_controller != NULL, "dvz_arcball() failed");
@@ -1254,7 +1255,7 @@ int main(int argc, char** argv)
         dvz_view_bind_controller(win, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
         "dvz_view_bind_controller() failed");
     dvz_arcball_initial(arcball, (vec3){+0.70f, 0.0f, +0.30f});
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
     DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();

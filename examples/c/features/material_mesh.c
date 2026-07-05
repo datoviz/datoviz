@@ -90,7 +90,7 @@ static bool _add_material_cube(
     for (uint32_t i = 0; i < DVZ_GEOM_CUBE_FACE_COUNT; i++)
         face_colors[i] = example_graphite_cyan_color(face_roles[i]);
 
-    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+    DvzGeometry* cube = dvz_geometry_cube(&(DvzGeometryCubeDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzGeometryCubeDesc),
         .size = 0.72,
         .face_colors = face_colors,
@@ -129,18 +129,21 @@ static bool _add_material_label(DvzPanel* panel, const char* label)
 
     DvzLabelDesc desc = dvz_label_desc();
     desc.text = label;
-    desc.style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
-    desc.style.size_px = LABEL_SIZE;
-    desc.style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
-    desc.style.color[3] = 255u;
-    desc.placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
-    desc.placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
-    desc.placement.position[0] = 20.0f;
-    desc.placement.position[1] = 20.0f;
-    desc.placement.text_anchor[0] = 0.0f;
-    desc.placement.text_anchor[1] = 0.0f;
-    desc.placement.has_text_anchor = true;
-    return dvz_annotation_label(panel, &desc) != NULL;
+    DvzTextStyle style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
+    style.size_px = LABEL_SIZE;
+    style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    style.color[3] = 255u;
+    DvzTextPlacement placement = dvz_text_placement();
+    placement.mode = DVZ_TEXT_PLACEMENT_SCREEN;
+    placement.anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT;
+    placement.position[0] = 20.0f;
+    placement.position[1] = 20.0f;
+    placement.text_anchor[0] = 0.0f;
+    placement.text_anchor[1] = 0.0f;
+    placement.has_text_anchor = true;
+    DvzAnnotation* annotation = dvz_annotation_label(panel, &desc);
+    return annotation != NULL && dvz_annotation_set_style(annotation, &style) == 0 &&
+           dvz_annotation_set_placement(annotation, &placement) == 0;
 }
 
 
@@ -176,20 +179,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 3);
     if (grid == NULL)
         return false;
-    if (!dvz_grid_set_margins(
+    if (dvz_grid_set_margins(
             grid, &(DvzPanelReserve){.left_px = 34.0f, .right_px = 34.0f, .top_px = 40.0f,
-                                     .bottom_px = 40.0f}))
+                                     .bottom_px = 40.0f}) != DVZ_OK)
         return false;
-    if (!dvz_grid_set_gutter(grid, 24.0f, 0.0f))
+    if (dvz_grid_set_gutter(grid, 24.0f, 0.0f) != DVZ_OK)
         return false;
 
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.view.eye[0] = 0.0f;
-    camera.view.eye[1] = 1.22f;
-    camera.view.eye[2] = 3.25f;
-    camera.projection.fov_y = 0.64f;
-    camera.projection.near_clip = 0.05f;
-    camera.projection.far_clip = 100.0f;
+    DvzCameraDesc camera = example_default_3d_camera_desc(1.0f);
     DvzMaterialDesc matte = dvz_phong_material_desc();
     matte.phong.ambient = 0.34f;
     matte.phong.diffuse = 0.84f;

@@ -256,7 +256,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     desc.height_axis[1] = 1.0;
     desc.height_axis[2] = 0.0;
     desc.height_scale = 1.18;
-    state->geometry = dvz_geom_surface_grid(&desc);
+    state->geometry = dvz_geometry_surface_grid(&desc);
     dvz_free(heights);
     dvz_free(colors);
     heights = NULL;

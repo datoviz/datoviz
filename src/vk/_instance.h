@@ -16,7 +16,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/common/obj.h"
+#include "obj.h"
 #include "datoviz/vk/instance.h"
 #include "_gpu.h"
 

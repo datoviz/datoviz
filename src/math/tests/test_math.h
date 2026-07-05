@@ -68,6 +68,8 @@ int test_box_6(TstContext* suite, const TstCase* tstitem);
 
 int test_stats_parallel(TstContext* suite, const TstCase* tstitem);
 
+int test_parallel_thread_config(TstContext* suite, const TstCase* tstitem);
+
 
 
 /*************************************************************************************************/

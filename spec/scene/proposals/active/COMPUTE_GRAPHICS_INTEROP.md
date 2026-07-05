@@ -124,7 +124,7 @@ DvzScene / DvzFigure / DvzPanel
   -> DvzSceneBuffer particles: VERTEX | STORAGE
   -> DvzVisual point attributes bound to particle-buffer offsets
   -> DvzSceneCompute updates the particle buffer every frame
-  -> dvz_view_glfw() presents normal scene rendering
+  -> dvz_view_window() presents normal scene rendering
 ```
 
 

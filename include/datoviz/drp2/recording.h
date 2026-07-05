@@ -34,7 +34,6 @@ EXTERN_C_ON
 typedef struct DvzDrp2RecordingInfo DvzDrp2RecordingInfo;
 typedef struct DvzDrp2Recording DvzDrp2Recording;
 typedef struct DvzDrp2RecordedFrame DvzDrp2RecordedFrame;
-typedef struct DvzDrp2RawFallback DvzDrp2RawFallback;
 typedef struct DvzDrp2Recorder DvzDrp2Recorder;
 
 struct DvzDrp2RecordingInfo
@@ -56,14 +55,6 @@ struct DvzDrp2RecordedFrame
     uint32_t first_command;
     uint32_t command_count;
 };
-
-
-struct DvzDrp2RawFallback
-{
-    uint32_t command_index;
-    DvzDrp2CommandType command_type;
-};
-
 
 
 /*************************************************************************************************/
@@ -170,27 +161,6 @@ DVZ_EXPORT uint32_t dvz_drp2_recording_frame_count(const DvzDrp2Recording* recor
  */
 DVZ_EXPORT const DvzDrp2RecordedFrame*
 dvz_drp2_recording_frame(const DvzDrp2Recording* recording, uint32_t frame_index);
-
-
-/**
- * Return the number of raw ABI-local fallback command records in a loaded recording.
- *
- * @param recording loaded recording
- * @return raw fallback count
- */
-DVZ_EXPORT uint32_t dvz_drp2_recording_raw_fallback_count(
-    const DvzDrp2Recording* recording);
-
-
-/**
- * Return one raw ABI-local fallback command record.
- *
- * @param recording loaded recording
- * @param fallback_index raw fallback index
- * @return the raw fallback record, valid until the recording is closed, or NULL
- */
-DVZ_EXPORT const DvzDrp2RawFallback*
-dvz_drp2_recording_raw_fallback(const DvzDrp2Recording* recording, uint32_t fallback_index);
 
 
 /**

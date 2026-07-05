@@ -196,20 +196,20 @@ static bool _update_patch(
         return false;
 
     return dvz_sampled_field_update_region(
-        field,
-        (DvzFieldRegion){
-            .x = x,
-            .y = y,
-            .z = 0,
-            .width = PATCH_SIZE,
-            .height = PATCH_SIZE,
-            .depth = 1,
-        },
-        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-            .data = patch,
-            .bytes_per_row = PATCH_SIZE * sizeof(float),
-            .rows_per_image = PATCH_SIZE,
-        });
+               field,
+               (DvzFieldRegion){
+                   .x = x,
+                   .y = y,
+                   .z = 0,
+                   .width = PATCH_SIZE,
+                   .height = PATCH_SIZE,
+                   .depth = 1,
+               },
+               &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                   .data = patch,
+                   .bytes_per_row = PATCH_SIZE * sizeof(float),
+                   .rows_per_image = PATCH_SIZE,
+               }) == DVZ_OK;
 }
 
 
@@ -303,7 +303,7 @@ static bool _add_field_image(
         return false;
     if (dvz_visual_set_scale(image, "color", scale) != 0)
         return false;
-    if (!dvz_visual_set_field(image, "field", field))
+    if (dvz_visual_set_field(image, "field", field) != DVZ_OK)
         return false;
     if (dvz_visual_set_depth_test(image, false) != 0)
         return false;
@@ -342,12 +342,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
     if (grid == NULL)
         goto error;
-    if (!dvz_grid_set_margins(
+    if (dvz_grid_set_margins(
             grid,
             &(DvzPanelReserve){
-                .left_px = 64.0f, .right_px = 64.0f, .top_px = 64.0f, .bottom_px = 64.0f}))
+                .left_px = 64.0f, .right_px = 64.0f, .top_px = 64.0f, .bottom_px = 64.0f}) != DVZ_OK)
         goto error;
-    if (!dvz_grid_set_gutter(grid, 34.0f, 0.0f))
+    if (dvz_grid_set_gutter(grid, 34.0f, 0.0f) != DVZ_OK)
         goto error;
 
     DvzPanel* panels[2] = {dvz_grid_panel(grid, 0, 0), dvz_grid_panel(grid, 0, 1)};
@@ -360,7 +360,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         DvzPanelBorderDesc border = dvz_panel_border_desc();
         border.color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
         border.width_px = 1.25f;
-        if (!dvz_panel_set_border(panels[i], &border))
+        if (dvz_panel_set_border(panels[i], &border) != DVZ_OK)
             goto error;
     }
 
@@ -374,11 +374,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
                         .depth = 1});
     if (state->field == NULL)
         goto error;
-    if (!dvz_sampled_field_set_data(
+    if (dvz_sampled_field_set_data(
             state->field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                               .data = state->values,
                               .bytes_per_row = FIELD_WIDTH * sizeof(float),
-                              .rows_per_image = FIELD_HEIGHT}))
+                              .rows_per_image = FIELD_HEIGHT}) != DVZ_OK)
         goto error;
 
     DvzColor left_colors[] = {

@@ -57,8 +57,8 @@ Use offline mode for deterministic video export. A 30-second animation at 60 fps
 Public clock controls remain:
 
 ```c
-void dvz_scene_set_clock_mode(DvzScene* scene, DvzSceneClockMode mode);
-void dvz_scene_set_fps(DvzScene* scene, double fps);
+DvzResult dvz_scene_set_clock_mode(DvzScene* scene, DvzSceneClockMode mode);
+DvzResult dvz_scene_set_fps(DvzScene* scene, double fps);
 double dvz_scene_clock_time(const DvzScene* scene);
 double dvz_scene_clock_dt(const DvzScene* scene);
 bool dvz_scene_has_active_animations(const DvzScene* scene);
@@ -203,10 +203,10 @@ Repeat behavior belongs to the track because it defines how local time maps to v
 Animations are first-class scene objects with stable handles:
 
 ```c
-void dvz_anim_start(DvzAnimation* animation, double t_start);
-void dvz_anim_stop(DvzAnimation* animation);
+DvzResult dvz_anim_start(DvzAnimation* animation, double t_start);
+DvzResult dvz_anim_stop(DvzAnimation* animation);
 void dvz_anim_destroy(DvzAnimation* animation);
-void dvz_anim_set_speed(DvzAnimation* animation, float speed);
+DvzResult dvz_anim_set_speed(DvzAnimation* animation, float speed);
 ```
 
 Stopping an animation does not revert scene state. The last value written remains.
@@ -353,7 +353,7 @@ typedef enum
     DVZ_ANIM_INTERACTION_RESUME_AFTER_IDLE,
 } DvzAnimInteractionPolicy;
 
-void dvz_anim_set_interaction_policy(
+DvzResult dvz_anim_set_interaction_policy(
     DvzAnimation* animation,
     DvzController* controller,
     DvzAnimInteractionPolicy policy,

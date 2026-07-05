@@ -611,7 +611,7 @@ int main(int argc, char** argv)
             .strength = 0.42f,
             .depth_scale = 0.70f,
         };
-        ok = dvz_panel_set_edl(panel, &edl);
+        ok = dvz_panel_set_edl(panel, &edl) == DVZ_OK;
         EXAMPLE_CHECK(ok, "dvz_panel_set_edl() failed");
     }
 
@@ -642,8 +642,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "gothic_splat");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_window(app, figure, WIDTH, HEIGHT, "gothic_splat");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzFlyDesc fly_desc = dvz_fly_desc();
     fly_desc.mode = DVZ_FLY_MODE_PLANE;
@@ -657,7 +657,7 @@ int main(int argc, char** argv)
     DvzFly* fly = dvz_view_fly(win, panel, &fly_desc);
     EXAMPLE_CHECK(fly != NULL, "failed to create or bind fly controller");
 
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
     dvz_app_run(app, example_frame_count(argc, argv));
 

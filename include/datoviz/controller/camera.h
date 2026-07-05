@@ -139,8 +139,9 @@ DVZ_EXPORT DvzCamera* dvz_camera_create(const DvzCameraDesc* desc);
  *
  * @param camera the camera
  * @param view the camera view
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_camera_set_view(DvzCamera* camera, const DvzCameraView* view);
+DVZ_EXPORT DvzResult dvz_camera_set_view(DvzCamera* camera, const DvzCameraView* view);
 
 
 
@@ -170,8 +171,9 @@ DVZ_EXPORT void dvz_camera_get_projection(const DvzCamera* camera, DvzCameraProj
  * @param fov_y vertical field-of-view angle, in radians
  * @param near near clipping plane
  * @param far far clipping plane
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_camera_set_perspective(
+DVZ_EXPORT DvzResult dvz_camera_set_perspective(
     DvzCamera* camera, float fov_y, float near, float far);
 
 
@@ -183,8 +185,9 @@ DVZ_EXPORT void dvz_camera_set_perspective(
  * @param height vertical world-space extent
  * @param near near clipping plane
  * @param far far clipping plane
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_camera_set_orthographic(
+DVZ_EXPORT DvzResult dvz_camera_set_orthographic(
     DvzCamera* camera, float height, float near, float far);
 
 
@@ -202,7 +205,7 @@ DVZ_EXPORT void dvz_camera_set_orthographic(
  * @param top top orthographic bound
  * @param near near clipping plane
  * @param far far clipping plane
- * @return 0 on success, -1 on invalid bounds
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_camera_set_orthographic_bounds(
     DvzCamera* camera, float left, float right, float bottom, float top, float near, float far);
@@ -219,7 +222,7 @@ DVZ_EXPORT DvzResult dvz_camera_set_orthographic_bounds(
  * @param out_top output top orthographic bound
  * @param out_near output near clipping plane
  * @param out_far output far clipping plane
- * @return 0 when explicit bounds are active, -1 otherwise
+ * @return DVZ_OK when explicit bounds are active, DVZ_ERROR otherwise
  */
 DVZ_EXPORT DvzResult dvz_camera_get_orthographic_bounds(
     const DvzCamera* camera, float* out_left, float* out_right, float* out_bottom, float* out_top,
@@ -233,8 +236,9 @@ DVZ_EXPORT DvzResult dvz_camera_get_orthographic_bounds(
  * @param camera the camera
  * @param width viewport width in pixels
  * @param height viewport height in pixels
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_camera_resize(DvzCamera* camera, float width, float height);
+DVZ_EXPORT DvzResult dvz_camera_resize(DvzCamera* camera, float width, float height);
 
 
 

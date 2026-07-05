@@ -110,7 +110,7 @@ bool _attr_format_supported(DvzVisualType type, const char* name, DvzVisualAttrF
     if (format == DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32)
     {
         return strcmp(name, "color") == 0 &&
-               (type == DVZ_VISUAL_TYPE_POINT || type == DVZ_VISUAL_TYPE_PIXEL);
+               _visual_family_supports_scalar_color_scale(type);
     }
     return false;
 }

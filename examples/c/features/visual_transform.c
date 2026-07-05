@@ -179,10 +179,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
     if (grid == NULL)
         return false;
-    if (!dvz_grid_set_margins(grid, &(DvzPanelReserve){.left_px = 36, .right_px = 36,
-                                                       .top_px = 36, .bottom_px = 36}))
+    if (dvz_grid_set_margins(grid, &(DvzPanelReserve){.left_px = 36, .right_px = 36,
+                                                       .top_px = 36, .bottom_px = 36}) != DVZ_OK)
         return false;
-    if (!dvz_grid_set_gutter(grid, 36.0f, 0.0f))
+    if (dvz_grid_set_gutter(grid, 36.0f, 0.0f) != DVZ_OK)
         return false;
 
     DvzPanel* base = dvz_grid_panel(grid, 0, 0);

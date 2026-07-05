@@ -86,7 +86,7 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
 
         DvzApp* app = dvz_app(scene);
         /* open a window and run until closed */
-        dvz_view_glfw(app, figure, 800, 600, "Scatter plot");
+        dvz_view_window(app, figure, 800, 600, "Scatter plot");
         dvz_app_run(app, 0);
         /* for offscreen PNG instead, replace the three lines above with:
              DvzView* view = dvz_view_offscreen(app, figure, 800, 600);
@@ -159,7 +159,7 @@ A dark window containing 10,000 colored dots. Drag to pan, scroll to zoom.
 
 **Visual** — `dvz_point` is the GPU-accelerated scatter renderer. `dvz_visual_set_data` uploads each named attribute (`position`, `color`, `diameter_px`) to the GPU.
 
-**Run vs. capture** — In Python, `dvz.run(scene, figure)` opens a GLFW window and blocks until closed; `dvz.capture(scene, figure, path="output.png")` renders one frame offscreen to a PNG. In C, `dvz_view_glfw` + `dvz_app_run(app, 0)` opens a window and loops; for headless PNG output, use `dvz_view_offscreen` + `dvz_app_run(app, 1)` + `dvz_view_capture_png` instead.
+**Run vs. capture** — In Python, `dvz.run(scene, figure)` opens a GLFW window and blocks until closed; `dvz.capture(scene, figure, path="output.png")` renders one frame offscreen to a PNG. In C, `dvz_view_window` + `dvz_app_run(app, 0)` opens a window and loops; for headless PNG output, use `dvz_view_offscreen` + `dvz_app_run(app, 1)` + `dvz_view_capture_png` instead.
 
 
 ## Next steps

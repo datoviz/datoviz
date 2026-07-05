@@ -151,7 +151,7 @@ _emit_upload(ConverterState* state, DvzDrp2CommandStream* stream, const DvzFrame
         buffer_size = DRP2_FIXTURE_TRIANGLE_VERTEX_BYTES;
     uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX;
     bool ok = dvz_drp2_stream_create_buffer(stream, id, buffer_size, usage) &&
-              dvz_drp2_stream_write_buffer(
+              dvz_drp2_stream_write_buffer_base64(
                   stream, id, node->u.upload.byte_offset, node->u.upload.byte_size, data);
     dvz_free(data);
     return ok;
@@ -186,7 +186,7 @@ static bool _emit_texture_upload(
 
     uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING | DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
     bool ok = dvz_drp2_stream_create_texture_2d_usage(stream, id, 2, 2, usage) &&
-              dvz_drp2_stream_write_texture_2d(stream, id, 0, 2, 2, 8, 2, data);
+              dvz_drp2_stream_write_texture_2d_base64(stream, id, 0, 2, 2, 8, 2, data);
     dvz_free(data);
     return ok;
 }
@@ -230,7 +230,7 @@ static bool _emit_compute_buffers(
     bool ok = dvz_drp2_stream_create_buffer(
                   stream, input_id, upload->u.upload.byte_size,
                   DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_STORAGE) &&
-              dvz_drp2_stream_write_buffer(
+              dvz_drp2_stream_write_buffer_base64(
                   stream, input_id, upload->u.upload.byte_offset, upload->u.upload.byte_size,
                   data) &&
               dvz_drp2_stream_create_buffer(

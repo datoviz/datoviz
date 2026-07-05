@@ -228,20 +228,6 @@ static float _gui_font_size(float size, float fallback)
 
 
 
-static bool _gui_font_desc_validate(const DvzFontDesc* desc)
-{
-    if (desc == NULL)
-        return false;
-    if (!DVZ_STRUCT_VALID(desc, DvzFontDesc, DVZ_FONT_DESC_KNOWN_FLAGS))
-    {
-        log_error("invalid DvzFontDesc ABI prologue");
-        return false;
-    }
-    return true;
-}
-
-
-
 static bool _gui_font_defaults_validate(const DvzFontDefaults* defaults)
 {
     if (defaults == NULL)
@@ -251,8 +237,6 @@ static bool _gui_font_defaults_validate(const DvzFontDefaults* defaults)
         log_error("invalid DvzFontDefaults ABI prologue");
         return false;
     }
-    if (!_gui_font_desc_validate(&defaults->sans) || !_gui_font_desc_validate(&defaults->mono))
-        return false;
     return true;
 }
 
@@ -541,9 +525,9 @@ static void _gui_load_fonts(DvzGui* gui)
     ImFontConfig regular_config = {};
     regular_config.OversampleH = 2;
     regular_config.OversampleV = 1;
-    if (defaults.sans.path != NULL && defaults.sans.path[0] != '\0')
+    if (defaults.sans_path != NULL && defaults.sans_path[0] != '\0')
         gui->font_regular = io.Fonts->AddFontFromFileTTF(
-            defaults.sans.path, font_size, &regular_config, io.Fonts->GetGlyphRangesDefault());
+            defaults.sans_path, font_size, &regular_config, io.Fonts->GetGlyphRangesDefault());
     if (gui->font_regular == NULL)
         gui->font_regular = io.Fonts->AddFontFromMemoryCompressedTTF(
             dvz_gui_font_karla_regular_compressed_data,
@@ -558,9 +542,9 @@ static void _gui_load_fonts(DvzGui* gui)
     ImFontConfig mono_config = {};
     mono_config.OversampleH = 2;
     mono_config.OversampleV = 1;
-    if (defaults.mono.path != NULL && defaults.mono.path[0] != '\0')
+    if (defaults.mono_path != NULL && defaults.mono_path[0] != '\0')
         gui->font_mono = io.Fonts->AddFontFromFileTTF(
-            defaults.mono.path, mono_font_size, &mono_config, io.Fonts->GetGlyphRangesDefault());
+            defaults.mono_path, mono_font_size, &mono_config, io.Fonts->GetGlyphRangesDefault());
     if (gui->font_mono == NULL)
         gui->font_mono = io.Fonts->AddFontFromMemoryCompressedTTF(
             dvz_gui_font_cousine_regular_compressed_data,
@@ -2253,10 +2237,10 @@ dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* con
     DvzGuiViewportConfig cfg = _gui_viewport_config_normalize(config);
     float scale = gui->view != NULL ? dvz_view_device_scale(gui->view) : 1.0f;
     DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
-    desc.logical_width = cfg.initial_width;
-    desc.logical_height = cfg.initial_height;
-    desc.framebuffer_width = _gui_viewport_scale_dimension(cfg.initial_width, scale);
-    desc.framebuffer_height = _gui_viewport_scale_dimension(cfg.initial_height, scale);
+    desc.size_policy = DVZ_VIEW_SIZE_FRAMEBUFFER_PX;
+    desc.size_width = _gui_viewport_scale_dimension(cfg.initial_width, scale);
+    desc.size_height = _gui_viewport_scale_dimension(cfg.initial_height, scale);
+    desc.size_requested_device_scale = scale;
     desc.device_scale = scale;
     DvzView* source = dvz_view(gui->app, figure, &desc);
     if (source == NULL)

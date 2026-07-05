@@ -170,20 +170,20 @@ static bool _update_patch(DvzSampledField* field, uint32_t x, uint32_t y, float 
     float patch[PATCH_SIZE * PATCH_SIZE] = {0};
     _fill_patch(patch, value);
     return dvz_sampled_field_update_region(
-        field,
-        (DvzFieldRegion){
-            .x = x,
-            .y = y,
-            .z = 0,
-            .width = PATCH_SIZE,
-            .height = PATCH_SIZE,
-            .depth = 1,
-        },
-        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-            .data = patch,
-            .bytes_per_row = PATCH_SIZE * sizeof(float),
-            .rows_per_image = PATCH_SIZE,
-        });
+               field,
+               (DvzFieldRegion){
+                   .x = x,
+                   .y = y,
+                   .z = 0,
+                   .width = PATCH_SIZE,
+                   .height = PATCH_SIZE,
+                   .depth = 1,
+               },
+               &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                   .data = patch,
+                   .bytes_per_row = PATCH_SIZE * sizeof(float),
+                   .rows_per_image = PATCH_SIZE,
+               }) == DVZ_OK;
 }
 
 
@@ -306,14 +306,14 @@ int main(int argc, char** argv)
     _fill_field(values);
     _fill_field_patch(values, state.patch_x, state.patch_y, 1.0f);
     bool ok = dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                   .data = values,
-                   .bytes_per_row = FIELD_SIZE * sizeof(float),
-                   .rows_per_image = FIELD_SIZE,
-               });
+                  field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                             .data = values,
+                             .bytes_per_row = FIELD_SIZE * sizeof(float),
+                             .rows_per_image = FIELD_SIZE,
+                         }) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data() failed");
 
-    ok = dvz_visual_set_field(image, "field", field);
+    ok = dvz_visual_set_field(image, "field", field) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_field() failed");
 
     rc = dvz_panel_add_visual(panel, image, NULL);
@@ -325,8 +325,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzView* win =
-        dvz_view_glfw(app, figure, WIDTH, HEIGHT, "image");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+        dvz_view_window(app, figure, WIDTH, HEIGHT, "image");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
     dvz_view_set_frame_callback(win, _texture_update_frame, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));

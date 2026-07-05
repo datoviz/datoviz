@@ -28,10 +28,10 @@ DvzSelection* selection = dvz_selection(
     });
 
 DvzSelectionVisualStyle style = dvz_selection_visual_style();
-style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
-style.selected.tint = highlight_color;
-style.selected.tint_mix = 1.0f;
-style.unselected.visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
+style.selected_visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
+style.selected_tint = highlight_color;
+style.selected_tint_mix = 1.0f;
+style.unselected_visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
 dvz_selection_set_visual_style(selection, &style);
 ```
 

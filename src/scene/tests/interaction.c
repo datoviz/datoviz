@@ -220,11 +220,12 @@ int test_scene_interaction_core(TstContext* suite, const TstCase* item)
     ANN(selection);
     ANN(channel);
 
-    dvz_interaction_bind_panel(interaction, panel);
-    dvz_interaction_set_selection(interaction, selection);
-    dvz_interaction_set_link_channel(interaction, channel);
-    dvz_interaction_set_query_hit_policy(interaction, DVZ_QUERY_HIT_OPAQUE_PREFERRED);
-    dvz_interaction_set_auto_pin_readout(interaction, true);
+    AT(dvz_interaction_bind_panel(interaction, panel) == DVZ_OK);
+    AT(dvz_interaction_set_selection(interaction, selection) == DVZ_OK);
+    AT(dvz_interaction_set_link_channel(interaction, channel) == DVZ_OK);
+    AT(dvz_interaction_set_query_hit_policy(interaction, DVZ_QUERY_HIT_OPAQUE_PREFERRED)
+       == DVZ_OK);
+    AT(dvz_interaction_set_auto_pin_readout(interaction, true) == DVZ_OK);
 
     AT(panel->interaction == interaction);
     AT(interaction->panel == panel);
@@ -291,7 +292,7 @@ int test_scene_interaction_descriptor_abi_rejects_invalid_structs(
         suite, dvz_selection_set_visual_style(selection, &selection_style) < 0);
 
     selection_style = dvz_selection_visual_style();
-    selection_style.selected.struct_size = 0;
+    selection_style.selected_scale = NAN;
     AT_EXPECTED_ERROR_STRICT(
         suite, dvz_selection_set_visual_style(selection, &selection_style) < 0);
 
@@ -332,11 +333,13 @@ int test_scene_text_annotation_descriptor_abi_rejects_invalid_structs(
 
     DvzFontDefaults font_defaults = dvz_font_defaults();
     font_defaults.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, (dvz_scene_set_font_defaults(scene, &font_defaults), true));
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_scene_set_font_defaults(scene, &font_defaults) == DVZ_ERROR);
 
     font_defaults = dvz_font_defaults();
-    font_defaults.sans.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, (dvz_scene_set_font_defaults(scene, &font_defaults), true));
+    font_defaults.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_scene_set_font_defaults(scene, &font_defaults) == DVZ_ERROR);
 
     DvzText* text = dvz_text(panel, 0);
     ANN(text);
@@ -369,16 +372,24 @@ int test_scene_text_annotation_descriptor_abi_rejects_invalid_structs(
     AT_EXPECTED_ERROR_STRICT(suite, dvz_annotation_label(panel, &label_desc) == NULL);
 
     label_desc = dvz_label_desc();
-    label_desc.style.flags = 1;
+    label_desc.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_annotation_label(panel, &label_desc) == NULL);
 
-    DvzScaleBarDesc scalebar_desc = dvz_scalebar_desc();
-    scalebar_desc.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_scalebar(panel, &scalebar_desc) == NULL);
+    label_desc = dvz_label_desc();
+    DvzAnnotation* annotation = dvz_annotation_label(panel, &label_desc);
+    ANN(annotation);
+    text_style = dvz_text_style();
+    text_style.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_annotation_set_style(annotation, &text_style) < 0);
 
-    scalebar_desc = dvz_scalebar_desc();
-    scalebar_desc.format.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_scalebar(panel, &scalebar_desc) == NULL);
+    text_placement = dvz_text_placement();
+    text_placement.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_annotation_set_placement(annotation, &text_placement) < 0);
+
+    DvzScaleBarDesc scalebar_desc = dvz_scale_bar_desc();
+    scalebar_desc.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_scale_bar(panel, &scalebar_desc) == NULL);
 
     dvz_text_destroy(text);
     dvz_scene_destroy(scene);
@@ -478,10 +489,10 @@ int test_scene_bars_descriptor_and_data_validation(TstContext* suite, const TstC
     double starts[] = {0.0};
     double ends[] = {1.0};
     double values[] = {2.0};
-    AT(dvz_bars_set_intervals(bars, 1, starts, ends, values) == 0);
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_bars_set_intervals(bars, 1, NULL, ends, values) < 0);
+    AT(dvz_bars_set_intervals(bars, starts, ends, values, 1) == 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_bars_set_intervals(bars, NULL, ends, values, 1) < 0);
     ends[0] = starts[0];
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_bars_set_intervals(bars, 1, starts, ends, values) < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_bars_set_intervals(bars, starts, ends, values, 1) < 0);
     AT(bars->outline_visual == NULL);
     DvzBarsDesc style = dvz_bars_desc();
     style.outline_width_px = 1.5f;
@@ -531,13 +542,13 @@ int test_scene_band_descriptor_and_data_validation(TstContext* suite, const TstC
     double x[] = {0.0, 1.0};
     double lower[] = {0.0, 0.5};
     double upper[] = {1.0, 1.5};
-    AT(dvz_band_set_bounds(band, 2, x, lower, upper) == 0);
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_bounds(band, 2, NULL, lower, upper) < 0);
+    AT(dvz_band_set_bounds(band, x, lower, upper, 2) == 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_bounds(band, NULL, lower, upper, 2) < 0);
     x[1] = INFINITY;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_bounds(band, 2, x, lower, upper) < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_bounds(band, x, lower, upper, 2) < 0);
     x[1] = NAN;
-    AT(dvz_band_set_bounds(band, 2, x, lower, upper) == 0);
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_center(band, 2, NULL, lower) < 0);
+    AT(dvz_band_set_bounds(band, x, lower, upper, 2) == 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_center(band, NULL, lower, 2) < 0);
     AT(band->bounds_visual == NULL);
     DvzBandDesc style = dvz_band_desc();
     style.show_bounds = true;
@@ -579,14 +590,12 @@ int test_scene_overlay_descriptor_abi_rejects_invalid_structs(
     card_desc.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_overlay_card(overlay, &card_desc) == NULL);
 
-    DvzOverlayCardStyle style = dvz_overlay_card_style();
-    style.struct_size = 0;
-    card_desc = dvz_overlay_card_desc();
-    card_desc.style = &style;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_overlay_card(overlay, &card_desc) == NULL);
-
     DvzOverlayCard* card = dvz_overlay_card(overlay, NULL);
     ANN(card);
+
+    DvzOverlayCardStyle style = dvz_overlay_card_style();
+    style.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_overlay_card_set_style(card, &style) < 0);
 
     style = dvz_overlay_card_style();
     style.flags = 1;
@@ -770,25 +779,25 @@ int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstC
     ANN(selection);
     ANN(visual);
 
-    dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM);
+    AT(dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM) == DVZ_OK);
     AT(visual->query_capabilities == DVZ_QUERY_CAPABILITY_ITEM);
     AT(dvz_visual_set_link_keys(visual, channel, keys, 3) == 0);
     AT(visual->link_channel == channel);
     AT(visual->link_key_count == 3);
     AT(visual->link_keys[1] == 11);
     DvzSelectionVisualStyle style = dvz_selection_visual_style();
-    AT(style.selected.visual_flags == DVZ_ITEM_STATE_VISUAL_NONE);
-    AT(style.unselected.visual_flags == DVZ_ITEM_STATE_VISUAL_ALPHA);
-    AC(style.unselected.alpha, 0.25f, 1e-6f);
-    AC(style.selected.scale, 1.0f, 1e-6f);
+    AT(style.selected_visual_flags == DVZ_ITEM_STATE_VISUAL_NONE);
+    AT(style.unselected_visual_flags == DVZ_ITEM_STATE_VISUAL_ALPHA);
+    AC(style.unselected_alpha, 0.25f, 1e-6f);
+    AC(style.selected_scale, 1.0f, 1e-6f);
     AC(dvz_item_state_visual_style().scale, 1.0f, 1e-6f);
-    style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
-    style.selected.tint = (DvzColor){255, 183, 3, 255};
-    style.selected.tint_mix = 1.0f;
-    style.unselected.visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
+    style.selected_visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    style.selected_tint = (DvzColor){255, 183, 3, 255};
+    style.selected_tint_mix = 1.0f;
+    style.unselected_visual_flags = DVZ_ITEM_STATE_VISUAL_NONE;
     AT(dvz_selection_set_visual_style(selection, &style) == 0);
-    AT(selection->visual_style.selected.visual_flags == DVZ_ITEM_STATE_VISUAL_TINT);
-    AT(selection->visual_style.unselected.visual_flags == DVZ_ITEM_STATE_VISUAL_NONE);
+    AT(selection->visual_style.selected_visual_flags == DVZ_ITEM_STATE_VISUAL_TINT);
+    AT(selection->visual_style.unselected_visual_flags == DVZ_ITEM_STATE_VISUAL_NONE);
 
     DvzQueryResult query = {
         .request_id = 1,
@@ -1155,9 +1164,9 @@ int test_scene_pixel_hover_selection_item_state(TstContext* suite, const TstCase
     AT(dvz_hover_set_visual_style(hover, &hover_style) == 0);
 
     DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
-    selection_style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
-    selection_style.selected.tint = (DvzColor){255, 190, 64, 255};
-    selection_style.selected.tint_mix = 1.0f;
+    selection_style.selected_visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    selection_style.selected_tint = (DvzColor){255, 190, 64, 255};
+    selection_style.selected_tint_mix = 1.0f;
     AT(dvz_selection_set_visual_style(selection, &selection_style) == 0);
 
     DvzQueryResult hit = {
@@ -1197,7 +1206,7 @@ int test_scene_pixel_hover_selection_item_state(TstContext* suite, const TstCase
     item_state = (const uint32_t*)pixel->attrs[state_idx].data;
     AT(item_state[2] == DVZ_ITEM_STATE_SELECTED);
 
-    dvz_selection_clear(selection);
+    AT(dvz_selection_clear(selection) == DVZ_OK);
     item_state = (const uint32_t*)pixel->attrs[state_idx].data;
     AT(item_state[2] == DVZ_ITEM_STATE_NONE);
 
@@ -1260,9 +1269,9 @@ int test_scene_sphere_hover_selection_item_state(TstContext* suite, const TstCas
     AT(dvz_hover_set_visual_style(hover, &hover_style) == 0);
 
     DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
-    selection_style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
-    selection_style.selected.tint = (DvzColor){255, 190, 64, 255};
-    selection_style.selected.tint_mix = 1.0f;
+    selection_style.selected_visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    selection_style.selected_tint = (DvzColor){255, 190, 64, 255};
+    selection_style.selected_tint_mix = 1.0f;
     AT(dvz_selection_set_visual_style(selection, &selection_style) == 0);
 
     DvzQueryResult hit = {
@@ -1301,7 +1310,7 @@ int test_scene_sphere_hover_selection_item_state(TstContext* suite, const TstCas
     item_state = (const uint32_t*)sphere->attrs[state_idx].data;
     AT(item_state[1] == DVZ_ITEM_STATE_SELECTED);
 
-    dvz_selection_clear(selection);
+    AT(dvz_selection_clear(selection) == DVZ_OK);
     item_state = (const uint32_t*)sphere->attrs[state_idx].data;
     AT(item_state[1] == DVZ_ITEM_STATE_NONE);
 
@@ -1348,11 +1357,11 @@ int test_scene_mesh_instance_hover_selection_item_state(TstContext* suite, const
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
     AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(mesh, "color", colors, 4) == 0);
     AT(dvz_visual_set_data(mesh, "instance_transform", transforms, 2) == 0);
-    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
     DvzHover* hover = dvz_hover(
@@ -1378,9 +1387,9 @@ int test_scene_mesh_instance_hover_selection_item_state(TstContext* suite, const
     AT(dvz_hover_set_visual_style(hover, &hover_style) == 0);
 
     DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
-    selection_style.selected.visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
-    selection_style.selected.tint = (DvzColor){255, 190, 64, 255};
-    selection_style.selected.tint_mix = 1.0f;
+    selection_style.selected_visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
+    selection_style.selected_tint = (DvzColor){255, 190, 64, 255};
+    selection_style.selected_tint_mix = 1.0f;
     AT(dvz_selection_set_visual_style(selection, &selection_style) == 0);
 
     DvzQueryResult hit = {
@@ -1431,7 +1440,7 @@ int test_scene_mesh_instance_hover_selection_item_state(TstContext* suite, const
     item_state = (const uint32_t*)mesh->attrs[state_idx].data;
     AT(item_state[1] == DVZ_ITEM_STATE_SELECTED);
 
-    dvz_selection_clear(selection);
+    AT(dvz_selection_clear(selection) == DVZ_OK);
     item_state = (const uint32_t*)mesh->attrs[state_idx].data;
     AT(item_state[1] == DVZ_ITEM_STATE_NONE);
 
@@ -1487,7 +1496,7 @@ int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const T
     AT(_visual_family_state(selection->card.text_visual)->text.glyph_visual->visible);
     AT(!selection->card.dirty);
 
-    dvz_selection_clear(selection);
+    AT(dvz_selection_clear(selection) == DVZ_OK);
     AT(selection->card_panel == NULL);
     AT(!selection->card.visible);
     AT(!selection->card.background_visual->visible);
@@ -1522,10 +1531,10 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
             .text = "overlay",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_TOP_RIGHT,
             .anchor_px = {40.0f, 50.0f},
-            .offset_px = {8.0f, 6.0f},
-            .style = &style});
+            .offset_px = {8.0f, 6.0f}});
     ANN(overlay);
     ANN(card);
+    AT(dvz_overlay_card_set_style(card, &style) == 0);
     AT(card->active);
     AT(card->panel == panel);
     AT(card->card.visible);
@@ -1597,10 +1606,10 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
     AT(card->card.realized_rect_px[0] > 560.0f);
     AC(card->card.realized_rect_px[1], 6.0f, 1e-6f);
 
-    dvz_overlay_card_set_text(card, "updated");
+    AT(dvz_overlay_card_set_text(card, "updated") == DVZ_OK);
     float anchor[2] = {100.0f, 120.0f};
     float offset[2] = {2.0f, 3.0f};
-    dvz_overlay_card_set_layout(card, anchor, offset);
+    AT(dvz_overlay_card_set_layout(card, anchor, offset) == DVZ_OK);
     AT(card->card.dirty);
     AT(strcmp(card->card.text, "updated") == 0);
     AT(card->card.anchor_px[0] == 100.0f);
@@ -1615,15 +1624,16 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
     AC(card->card.realized_rect_px[3], 28.0f, 1e-6f);
 
     float inset[2] = {12.0f, 14.0f};
-    dvz_overlay_card_set_placement(card, DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_LEFT, inset);
+    AT(dvz_overlay_card_set_placement(card, DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_LEFT, inset)
+       == DVZ_OK);
     _scene_prepare_text_visuals(figure);
     AC(card->card.realized_rect_px[0], 12.0f, 1e-6f);
     AC(card->card.realized_rect_px[1] + card->card.realized_rect_px[3], 466.0f, 1e-6f);
 
-    dvz_overlay_card_set_visible(card, false);
+    AT(dvz_overlay_card_set_visible(card, false) == DVZ_OK);
     AT(!card->card.visible);
     AT(!card->card.background_visual->visible);
-    dvz_overlay_card_set_visible(card, true);
+    AT(dvz_overlay_card_set_visible(card, true) == DVZ_OK);
     _scene_prepare_text_visuals(figure);
     AT(card->card.background_visual->visible);
 
@@ -1651,7 +1661,6 @@ int test_scene_overlay_card_desc_defaults(TstContext* suite, const TstCase* item
     AC(desc.anchor_px[1], 0.0f, 1e-6f);
     AC(desc.offset_px[0], 12.0f, 1e-6f);
     AC(desc.offset_px[1], 12.0f, 1e-6f);
-    AT(desc.style == NULL);
     AT(desc.card_flags == 0);
 
     DvzScene* scene = dvz_scene();
@@ -1703,9 +1712,9 @@ int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCas
         &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = "fallback",
             .placement = DVZ_OVERLAY_CARD_PLACEMENT_TOP_LEFT,
-            .offset_px = {16.0f, 18.0f},
-            .style = &style});
+            .offset_px = {16.0f, 18.0f}});
     ANN(card);
+    AT(dvz_overlay_card_set_style(card, &style) == 0);
 
     AT(dvz_overlay_card_set_rich_text(
            card,
@@ -1784,16 +1793,16 @@ int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCas
         AT(!card->rich_dirty);
     }
 
-    dvz_overlay_card_set_visible(card, false);
+    AT(dvz_overlay_card_set_visible(card, false) == DVZ_OK);
     AT(!card->card.background_visual->visible);
     AT(!card->rich_block.image_visual->visible);
 
-    dvz_overlay_card_set_visible(card, true);
+    AT(dvz_overlay_card_set_visible(card, true) == DVZ_OK);
     _scene_prepare_text_visuals(figure);
     AT(card->card.background_visual->visible);
     AT(card->rich_block.image_visual->visible);
 
-    dvz_overlay_card_clear_rich_text(card);
+    AT(dvz_overlay_card_clear_rich_text(card) == DVZ_OK);
     AT(!card->rich_enabled);
     AT(card->rich_block.image_visual == NULL);
     AT(card->card.content == DVZ_SCENE_CARD_CONTENT_TEXT);
@@ -1863,33 +1872,38 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     DvzAnnotation* annotation = dvz_annotation_label(
-        panel,
-        &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc),
-            .text = "peak",
-            .style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .font = font,
-                .size_px = 12.0f,
-                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-            },
-            .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
-                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
-                .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
-            },
-        });
+        panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc), .text = "peak"});
     ANN(annotation);
+    AT(dvz_annotation_set_style(
+           annotation,
+           &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+               .font = font,
+               .size_px = 12.0f,
+               .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+           }) == 0);
+    AT(dvz_annotation_set_placement(
+           annotation,
+           &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
+               .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+               .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+           }) == 0);
     AT(annotation->kind == DVZ_ANNOTATION_LABEL);
     AT(strcmp(annotation->text, "peak") == 0);
     AT(annotation->style.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
     AT(annotation->dirty_flags == DVZ_TEXT_DIRTY_ALL);
-    AT(annotation->version == 1);
+    AT(annotation->version == 3);
 
     annotation->dirty_flags = DVZ_TEXT_DIRTY_NONE;
-    dvz_annotation_set_format(annotation, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 3, .suffix = " ms"});
+    AT(dvz_annotation_set_format(
+           annotation,
+           &(DvzFormatDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 3, .suffix = " ms"})
+       == DVZ_OK);
     AT(annotation->has_format);
     AT(strcmp(annotation->format.suffix, " ms") == 0);
     AT(annotation->dirty_flags ==
        (DVZ_TEXT_DIRTY_STRING | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER));
-    AT(annotation->version == 2);
+    AT(annotation->version == 4);
 
     dvz_annotation_destroy(annotation);
     dvz_font_destroy(font);
@@ -2088,7 +2102,7 @@ int test_scene_bars_prepare_visuals(TstContext* suite, const TstCase* item)
     const double starts[] = {0.0, 1.0};
     const double ends[] = {1.0, 2.0};
     const double values[] = {2.0, -1.0};
-    AT(dvz_bars_set_intervals(bars, 2, starts, ends, values) == 0);
+    AT(dvz_bars_set_intervals(bars, starts, ends, values, 2) == 0);
 
     DvzBarsDesc horizontal_desc = dvz_bars_desc();
     horizontal_desc.orientation = DVZ_BARS_ORIENTATION_HORIZONTAL;
@@ -2100,7 +2114,7 @@ int test_scene_bars_prepare_visuals(TstContext* suite, const TstCase* item)
     const double hstarts[] = {0.0};
     const double hends[] = {10.0};
     const double hvalues[] = {3.0};
-    AT(dvz_bars_set_intervals(horizontal, 1, hstarts, hends, hvalues) == 0);
+    AT(dvz_bars_set_intervals(horizontal, hstarts, hends, hvalues, 1) == 0);
 
     _scene_prepare_bars_visuals(figure);
 
@@ -2194,8 +2208,8 @@ int test_scene_band_prepare_visuals(TstContext* suite, const TstCase* item)
     const double lower[] = {0.0, 0.5, NAN, 1.0, 1.5};
     const double upper[] = {1.0, 1.5, NAN, 2.0, 2.5};
     const double center_y[] = {0.7, 1.1, NAN, 1.8, 2.0};
-    AT(dvz_band_set_bounds(band, 5, x, lower, upper) == 0);
-    AT(dvz_band_set_center(band, 5, x, center_y) == 0);
+    AT(dvz_band_set_bounds(band, x, lower, upper, 5) == 0);
+    AT(dvz_band_set_center(band, x, center_y, 5) == 0);
 
     _scene_prepare_band_visuals(figure);
 
@@ -2240,6 +2254,19 @@ int test_scene_band_prepare_visuals(TstContext* suite, const TstCase* item)
 
     dvz_scene_destroy(scene);
     return 0;
+}
+
+
+static DvzResult _test_scale_bar_set_label_style(
+    DvzScaleBar* scalebar, float size_px, DvzTextRenderer renderer, DvzColor color)
+{
+    DvzTextStyle style = {
+        DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+        .size_px = size_px,
+        .renderer = renderer,
+        .color = {color.r, color.g, color.b, color.a},
+    };
+    return dvz_scale_bar_set_label_style(scalebar, &style);
 }
 
 
@@ -2309,6 +2336,10 @@ static int test_scene_units_formatting_core(TstContext* suite, const TstCase* it
     AT(dvz_unit_ladder_add(genome, 1e3, "kb") == 0);
     AT_EXPECTED_ERROR_STRICT(suite, dvz_unit_ladder_add(genome, 1e3, "kilobase") < 0);
     AT_EXPECTED_ERROR_STRICT(suite, dvz_unit_ladder_add(genome, 1e9, "kb") < 0);
+    AT(dvz_unit_ladder_clear(genome) == DVZ_OK);
+    AT(dvz_unit_ladder_add(genome, 1e6, "Mb") == 0);
+    AT(dvz_unit_ladder_add(genome, 1.0, "bp") == 0);
+    AT(dvz_unit_ladder_add(genome, 1e3, "kb") == 0);
 
     DvzUnits* bp = dvz_units_create(scene);
     ANN(bp);
@@ -2371,7 +2402,7 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
     ANN(panel);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 0.01) == 0);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -2384,13 +2415,11 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
             .offset_px = {20.0f, 20.0f},
             .line_width_px = 2.0f,
             .line_color = {255, 255, 255, 255},
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 10.0f,
-                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-                .color = {255, 255, 255, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 10.0f, DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+           dvz_color_rgba(255, 255, 255, 255)) == 0);
     _scene_prepare_text_visuals(figure);
     ANN(scalebar->scalebar_visual);
     ANN(scalebar->visual);
@@ -2517,9 +2546,9 @@ static int test_scene_scalebar_duration_units(TstContext* suite, const TstCase* 
 
     DvzUnits* duration = dvz_units_builtin(scene, DVZ_UNIT_LADDER_DURATION, 1e-3);
     ANN(duration);
-    DvzScaleBar* scalebar = dvz_scalebar(panel, NULL);
+    DvzScaleBar* scalebar = dvz_scale_bar(panel, NULL);
     ANN(scalebar);
-    AT(dvz_scalebar_set_units(scalebar, duration) == 0);
+    AT(dvz_scale_bar_set_units(scalebar, duration) == 0);
 
     _scene_prepare_text_visuals(figure);
     DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
@@ -2551,7 +2580,7 @@ static int test_scene_scalebar_update_churn(TstContext* suite, const TstCase* it
     ANN(panel);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 0.010) == 0);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -2564,13 +2593,11 @@ static int test_scene_scalebar_update_churn(TstContext* suite, const TstCase* it
             .offset_px = {20.0f, 20.0f},
             .line_width_px = 2.0f,
             .line_color = {255, 255, 255, 255},
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 10.0f,
-                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-                .color = {255, 255, 255, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 10.0f, DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+           dvz_color_rgba(255, 255, 255, 255)) == 0);
     _scene_prepare_text_visuals(figure);
     ANN(scalebar->visual);
     AT(_visual_family_state(scalebar->visual)->text.glyph_visual != NULL);
@@ -2686,7 +2713,7 @@ static int test_scene_scalebar_3d_world_reference(TstContext* suite, const TstCa
     DvzCamera* camera = dvz_panel_camera(panel);
     ANN(camera);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -2703,13 +2730,11 @@ static int test_scene_scalebar_3d_world_reference(TstContext* suite, const TstCa
             .line_color = {255, 255, 255, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 10.0f,
-                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-                .color = {255, 255, 255, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 10.0f, DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+           dvz_color_rgba(255, 255, 255, 255)) == 0);
 
     _scene_prepare_text_visuals(figure);
     ANN(scalebar->scalebar_visual);
@@ -2770,7 +2795,7 @@ static int test_scene_scalebar_3d_view_plane_rotation_invariant(
     ANN(arcball);
     AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -2786,13 +2811,11 @@ static int test_scene_scalebar_3d_view_plane_rotation_invariant(
             .line_color = {255, 255, 255, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 10.0f,
-                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-                .color = {255, 255, 255, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 10.0f, DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+           dvz_color_rgba(255, 255, 255, 255)) == 0);
 
     _scene_prepare_text_visuals(figure);
     ANN(scalebar->scalebar_visual);
@@ -2846,7 +2869,7 @@ static int test_scene_scalebar_3d_view_plane_zoom_scale(
     ANN(arcball);
     AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -2862,13 +2885,11 @@ static int test_scene_scalebar_3d_view_plane_zoom_scale(
             .line_color = {255, 255, 255, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 10.0f,
-                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-                .color = {255, 255, 255, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 10.0f, DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+           dvz_color_rgba(255, 255, 255, 255)) == 0);
 
     _scene_prepare_text_visuals(figure);
     ANN(scalebar->scalebar_visual);
@@ -2915,7 +2936,7 @@ static int test_scene_scalebar_render_emit_keeps_upload_sources(
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 0.010) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, 0.006) == 0);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -2930,13 +2951,11 @@ static int test_scene_scalebar_render_emit_keeps_upload_sources(
             .line_color = {245, 248, 252, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 22.0f,
-                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-                .color = {255, 236, 176, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 22.0f, DVZ_TEXT_RENDERER_MSDF_ATLAS,
+           dvz_color_rgba(255, 236, 176, 255)) == 0);
 
     DvzFramePlan* plan = dvz_frame_plan("figure_0", 0);
     ANN(plan);
@@ -3007,7 +3026,7 @@ static int test_scene_scalebar_minimal_stream(TstContext* suite, const TstCase* 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 0.010) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, 0.006) == 0);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         panel,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -3022,13 +3041,11 @@ static int test_scene_scalebar_minimal_stream(TstContext* suite, const TstCase* 
             .line_color = {245, 248, 252, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 22.0f,
-                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-                .color = {255, 236, 176, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 22.0f, DVZ_TEXT_RENDERER_MSDF_ATLAS,
+           dvz_color_rgba(255, 236, 176, 255)) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
@@ -3157,7 +3174,7 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
     AT(dvz_visual_set_data_many(left_points, left_updates, 3) == 0);
     AT(dvz_panel_add_visual(left, left_points, NULL) == 0);
 
-    DvzScaleBar* scalebar = dvz_scalebar(
+    DvzScaleBar* scalebar = dvz_scale_bar(
         left,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -3172,13 +3189,11 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
             .line_color = {245, 248, 252, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 18.0f,
-                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-                .color = {255, 236, 176, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 18.0f, DVZ_TEXT_RENDERER_MSDF_ATLAS,
+           dvz_color_rgba(255, 236, 176, 255)) == 0);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.view.eye[2] = 3.20f;
@@ -3190,7 +3205,7 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
     DvzCamera* camera = dvz_panel_camera(right);
     ANN(camera);
 
-    DvzScaleBar* right_scalebar = dvz_scalebar(
+    DvzScaleBar* right_scalebar = dvz_scale_bar(
         right,
         &(DvzScaleBarDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
             .dimension = DVZ_DIM_X,
@@ -3207,13 +3222,11 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
             .line_color = {235, 246, 255, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 18.0f,
-                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-                .color = {178, 226, 255, 255},
-            },
         });
     ANN(right_scalebar);
+    AT(_test_scale_bar_set_label_style(
+           right_scalebar, 18.0f, DVZ_TEXT_RENDERER_MSDF_ATLAS,
+           dvz_color_rgba(178, 226, 255, 255)) == 0);
 
     DvzVisual* right_points = dvz_point(scene, 0);
     ANN(right_points);
@@ -3332,17 +3345,17 @@ int test_scene_font_defaults(TstContext* suite, const TstCase* item)
     DvzFontDefaults built_in = dvz_font_defaults();
     DvzTextStyle default_style = dvz_text_style();
     AT(default_style.size_px == 0.0f);
-    AT(strcmp(defaults.sans.family, built_in.sans.family) == 0);
+    AT(strcmp(defaults.sans_family, built_in.sans_family) == 0);
     AT(defaults.text_size_px == built_in.text_size_px);
 
     DvzFontDefaults custom = built_in;
-    custom.sans.family = "Scene Sans";
-    custom.sans.style = "Book";
+    custom.sans_family = "Scene Sans";
+    custom.sans_style = "Book";
     custom.text_size_px = 19.0f;
-    dvz_scene_set_font_defaults(scene, &custom);
+    AT(dvz_scene_set_font_defaults(scene, &custom) == DVZ_OK);
     defaults = dvz_scene_font_defaults(scene);
-    AT(strcmp(defaults.sans.family, "Scene Sans") == 0);
-    AT(strcmp(defaults.sans.style, "Book") == 0);
+    AT(strcmp(defaults.sans_family, "Scene Sans") == 0);
+    AT(strcmp(defaults.sans_style, "Book") == 0);
     AT(defaults.text_size_px == 19.0f);
 
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
@@ -3362,9 +3375,9 @@ int test_scene_font_defaults(TstContext* suite, const TstCase* item)
     AT(dvz_text_set_style(text, &default_style) == 0);
     AT(text->style.size_px == 21.0f);
 
-    dvz_scene_set_font_defaults(scene, NULL);
+    AT(dvz_scene_set_font_defaults(scene, NULL) == DVZ_OK);
     defaults = dvz_scene_font_defaults(scene);
-    AT(strcmp(defaults.sans.family, built_in.sans.family) == 0);
+    AT(strcmp(defaults.sans_family, built_in.sans_family) == 0);
     AT(defaults.text_size_px == built_in.text_size_px);
 
     dvz_scene_destroy(scene);
@@ -3387,10 +3400,10 @@ int test_scene_text_sdf_default_font(TstContext* suite, const TstCase* item)
     DvzScene* scene = dvz_scene();
     ANN(scene);
     DvzFontDefaults defaults = dvz_scene_font_defaults(scene);
-    defaults.sans.family = "SDF Default";
-    defaults.sans.style = "Book";
+    defaults.sans_family = "SDF Default";
+    defaults.sans_style = "Book";
     defaults.text_size_px = 18.0f;
-    dvz_scene_set_font_defaults(scene, &defaults);
+    AT(dvz_scene_set_font_defaults(scene, &defaults) == DVZ_OK);
 
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     ANN(figure);
@@ -3513,7 +3526,7 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
     }
     AT(found_data_attach);
 
-    dvz_figure_resize(figure, 800, 600);
+    AT(dvz_figure_resize(figure, 800, 600) == DVZ_OK);
     _scene_prepare_text_visuals(figure);
     glyph = _visual_family_state(text->visual)->text.glyph_visual;
     ANN(glyph);
@@ -3891,21 +3904,22 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     AT(!glyph->visible);
 
     DvzAnnotation* annotation = dvz_annotation_label(
-        panel,
-        &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc),
-            .text = "A",
-            .style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 8.0f,
-                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-                .color = {255, 255, 255, 255},
-            },
-            .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
-                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
-                .anchor = DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT,
-                .offset = {-4.0f, -4.0f},
-            },
-        });
+        panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc), .text = "A"});
     ANN(annotation);
+    AT(dvz_annotation_set_style(
+           annotation,
+           &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+               .size_px = 8.0f,
+               .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+               .color = {255, 255, 255, 255},
+           }) == 0);
+    AT(dvz_annotation_set_placement(
+           annotation,
+           &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
+               .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+               .anchor = DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT,
+               .offset = {-4.0f, -4.0f},
+           }) == 0);
     _scene_prepare_text_visuals(figure);
     ANN(annotation->visual);
     AT(annotation->visual->type == DVZ_VISUAL_TYPE_GLYPH);
@@ -4040,20 +4054,21 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
     AT(second_min_x > first_max_x + 0.5f);
 
     DvzAnnotation* annotation = dvz_annotation_label(
-        panel,
-        &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc),
-            .text = "A",
-            .style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 14.0f,
-                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-            },
-            .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
-                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
-                .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
-                .offset = {4.0f, 4.0f},
-            },
-        });
+        panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc), .text = "A"});
     ANN(annotation);
+    AT(dvz_annotation_set_style(
+           annotation,
+           &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+               .size_px = 14.0f,
+               .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+           }) == 0);
+    AT(dvz_annotation_set_placement(
+           annotation,
+           &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
+               .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+               .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
+               .offset = {4.0f, 4.0f},
+           }) == 0);
     _scene_prepare_text_visuals(figure);
     ANN(annotation->visual);
     AT(annotation->visual->type == DVZ_VISUAL_TYPE_GLYPH);

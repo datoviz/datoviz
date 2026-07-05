@@ -89,9 +89,10 @@ static bool _add_points(
 static DvzView*
 _positioned_view(DvzApp* app, DvzFigure* figure, const char* title, int32_t x, int32_t y)
 {
-    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_GLFW);
-    desc.logical_width = WIDTH;
-    desc.logical_height = HEIGHT;
+    DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_WINDOW);
+    desc.size_policy = DVZ_VIEW_SIZE_HOST_LOGICAL_PX;
+    desc.size_width = WIDTH;
+    desc.size_height = HEIGHT;
     desc.title = title;
     desc.has_position = true;
     desc.x = x;
@@ -178,7 +179,7 @@ int main(int argc, char** argv)
         FIRST_WINDOW_Y);
     EXAMPLE_CHECK(
         overview_view != NULL && detail_view != NULL,
-        "dvz_view_glfw() failed (GLFW unavailable?)");
+        "dvz_view_window() failed (GLFW unavailable?)");
 
     EXAMPLE_CHECK(
         dvz_view_panzoom(overview_view, overview_panel, NULL) != NULL,

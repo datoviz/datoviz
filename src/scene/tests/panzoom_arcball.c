@@ -111,9 +111,10 @@ int test_panzoom_create_reset(TstContext* suite, const TstCase* item)
     AT(pz->pan[1] == 0.0f);
 
     /* Modify state then reset. */
-    dvz_panzoom_pan(pz, (vec2){0.5f, -0.3f});
-    dvz_panzoom_zoom(pz, (vec2){2.0f, 2.0f});
-    dvz_panzoom_reset(pz);
+    AT(dvz_panzoom_pan(pz, (vec2){0.5f, -0.3f}) == DVZ_OK);
+    AT(dvz_panzoom_zoom(pz, (vec2){2.0f, 2.0f}) == DVZ_OK);
+    AT(dvz_panzoom_reset(pz) == DVZ_OK);
+    AT(dvz_panzoom_reset(NULL) == DVZ_ERROR);
 
     AT(pz->pan[0] == 0.0f);
     AT(pz->pan[1] == 0.0f);
@@ -133,7 +134,7 @@ int test_panzoom_pan_shift(TstContext* suite, const TstCase* item)
     DvzPanzoom* pz = _dvz_panzoom(800.0f, 600.0f, 0);
 
     /* Shift by half the viewport width → pan[0] should move by 1.0 NDC unit (at zoom=1). */
-    dvz_panzoom_pan_shift(pz, (vec2){400.0f, 0.0f}, (vec2){0, 0});
+    AT(dvz_panzoom_pan_shift(pz, (vec2){400.0f, 0.0f}, (vec2){0, 0}) == DVZ_OK);
     /* shift[0] = 2 * 400 / 800 = 1.0; pan[0] = pan_center[0] + 1.0 / zoom[0] = 1.0 */
     AT(fabsf(pz->pan[0] - 1.0f) < 1e-5f);
     AT(fabsf(pz->pan[1]) < 1e-5f);
@@ -150,8 +151,8 @@ int test_panzoom_setters_update_drag_baseline(TstContext* suite, const TstCase* 
 
     DvzPanzoom* pz = _dvz_panzoom(800.0f, 400.0f, 0);
     ANN(pz);
-    dvz_panzoom_zoom(pz, (vec2){2.0f, 2.0f});
-    dvz_panzoom_pan(pz, (vec2){0.20f, -0.10f});
+    AT(dvz_panzoom_zoom(pz, (vec2){2.0f, 2.0f}) == DVZ_OK);
+    AT(dvz_panzoom_pan(pz, (vec2){0.20f, -0.10f}) == DVZ_OK);
 
     AC(pz->zoom_center[0], pz->zoom[0], 1e-6f);
     AC(pz->zoom_center[1], pz->zoom[1], 1e-6f);
@@ -184,17 +185,17 @@ int test_panzoom_zoom_wheel(TstContext* suite, const TstCase* item)
     DvzPanzoom* pz = _dvz_panzoom(800.0f, 800.0f, 0);
 
     /* Positive wheel delta should zoom in regardless of platform. */
-    dvz_panzoom_zoom_wheel(pz, (vec2){0.0f, 1.0f}, (vec2){400.0f, 400.0f});
+    AT(dvz_panzoom_zoom_wheel(pz, (vec2){0.0f, 1.0f}, (vec2){400.0f, 400.0f}) == DVZ_OK);
     AT(pz->zoom[0] > 1.0f);
     AT(pz->zoom[1] > 1.0f);
 
     DvzPanzoom* pz2 = _dvz_panzoom(800.0f, 800.0f, 0);
-    dvz_panzoom_zoom_wheel(pz2, (vec2){0.0f, -1.0f}, (vec2){400.0f, 400.0f});
+    AT(dvz_panzoom_zoom_wheel(pz2, (vec2){0.0f, -1.0f}, (vec2){400.0f, 400.0f}) == DVZ_OK);
     AT(pz2->zoom[0] < 1.0f);
     AT(pz2->zoom[1] < 1.0f);
 
     DvzPanzoom* x_only = _dvz_panzoom(800.0f, 800.0f, DVZ_PANZOOM_FLAGS_FIXED_Y);
-    dvz_panzoom_zoom_wheel(x_only, (vec2){0.0f, 1.0f}, (vec2){400.0f, 400.0f});
+    AT(dvz_panzoom_zoom_wheel(x_only, (vec2){0.0f, 1.0f}, (vec2){400.0f, 400.0f}) == DVZ_OK);
     AT(x_only->zoom[0] > 1.0f);
     AC(x_only->zoom[1], 1.0f, 1e-6f);
     AC(x_only->pan[1], 0.0f, 1e-6f);
@@ -215,13 +216,15 @@ int test_panzoom_zoom_limits(TstContext* suite, const TstCase* item)
     ANN(pz);
 
     AT(dvz_panzoom_zoom_limits(pz, (vec2){0.5f, 0.25f}, (vec2){4.0f, 8.0f}));
-    dvz_panzoom_zoom(pz, (vec2){0.01f, 100.0f});
+    AT(dvz_panzoom_zoom(pz, (vec2){0.01f, 100.0f}) == DVZ_OK);
     AT(fabsf(pz->zoom[0] - 0.5f) < 1e-6f);
     AT(fabsf(pz->zoom[1] - 8.0f) < 1e-6f);
 
-    dvz_panzoom_zoom(pz, (vec2){1.0f, 1.0f});
-    dvz_panzoom_end(pz);
-    dvz_panzoom_zoom_shift(pz, (vec2){100000.0f, -100000.0f}, (vec2){400.0f, 400.0f});
+    AT(dvz_panzoom_zoom(pz, (vec2){1.0f, 1.0f}) == DVZ_OK);
+    AT(dvz_panzoom_end(pz) == DVZ_OK);
+    AT(
+        dvz_panzoom_zoom_shift(pz, (vec2){100000.0f, -100000.0f}, (vec2){400.0f, 400.0f}) ==
+        DVZ_OK);
     AT(pz->zoom[0] <= 4.0f);
     AT(pz->zoom[1] >= 0.25f);
 
@@ -1003,7 +1006,7 @@ int test_orientation_gizmo_create_place_resize_and_visibility(
     AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
     DvzArcball* arcball = dvz_controller_arcball(controller);
     ANN(arcball);
-    dvz_arcball_set(arcball, (vec3){0.35f, -0.20f, 0.15f});
+    AT(dvz_arcball_set(arcball, (vec3){0.35f, -0.20f, 0.15f}) == DVZ_OK);
 
     DvzOrientationGizmoDesc desc = dvz_orientation_gizmo_desc();
     desc.placement = dvz_placement_panel_corner(
@@ -1073,7 +1076,7 @@ int test_orientation_gizmo_create_place_resize_and_visibility(
     AT(_test_mat4_close(axes_transform, expected, 1e-5f));
     AT(_test_mat4_close(rings_transform, expected, 1e-5f));
 
-    dvz_arcball_reset(arcball);
+    AT(dvz_arcball_reset(arcball) == DVZ_OK);
     _scene_prepare_orientation_gizmos(figure);
     _scene_panel_apply_mvp(panel, &source_mvp);
     _scene_panel_apply_mvp(gizmo->panel, &gizmo_mvp);
@@ -1095,18 +1098,18 @@ int test_orientation_gizmo_create_place_resize_and_visibility(
     AT(dvz_visual_get_transform(gizmo->axes_visual, axes_transform) == 0);
     AT(_test_mat4_close(axes_transform, expected, 1e-5f));
 
-    dvz_figure_resize(figure, 1200, 900);
+    AT(dvz_figure_resize(figure, 1200, 900) == DVZ_OK);
     _scene_prepare_orientation_gizmos(figure);
     AC(gizmo->panel->desc.x, 1034.0f / 1200.0f, 1e-6f);
     AC(gizmo->panel->desc.y, 734.0f / 900.0f, 1e-6f);
     AC(gizmo->panel->desc.width, 150.0f / 1200.0f, 1e-6f);
     AC(gizmo->panel->desc.height, 150.0f / 900.0f, 1e-6f);
 
-    dvz_orientation_gizmo_set_visible(gizmo, false);
+    AT(dvz_orientation_gizmo_set_visible(gizmo, false) == DVZ_OK);
     AT(!gizmo->visible);
     AT(!gizmo->axes_visual->visible);
     AT(!gizmo->rings_visual->visible);
-    dvz_orientation_gizmo_set_visible(gizmo, true);
+    AT(dvz_orientation_gizmo_set_visible(gizmo, true) == DVZ_OK);
     AT(gizmo->visible);
     AT(gizmo->axes_visual->visible);
     AT(gizmo->rings_visual->visible);
@@ -1178,7 +1181,7 @@ int test_controller_link_panzoom_extent_x_equal_aspect_panels(
     ANN(source_panel);
     ANN(target_panel);
 
-    DvzPanelView2D view = dvz_panel_view2d();
+    DvzPanelView2DDesc view = dvz_panel_view2d_desc();
     view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
     AT(dvz_panel_set_view2d(source_panel, &view) == 0);
     AT(dvz_panel_set_view2d(target_panel, &view) == 0);
@@ -1689,7 +1692,7 @@ int test_scene_camera_arcball_mvp_composition(TstContext* suite, const TstCase* 
     DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
     ANN(arcball);
     AT(dvz_panel_bind_controller(panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0);
-    dvz_arcball_initial(arcball, (vec3){0.4f, -0.8f, 1.2f});
+    AT(dvz_arcball_initial(arcball, (vec3){0.4f, -0.8f, 1.2f}) == DVZ_OK);
 
     DvzMVP mvp = {0};
     _scene_panel_apply_mvp(panel, &mvp);
@@ -1713,7 +1716,8 @@ int test_arcball_create_reset(TstContext* suite, const TstCase* item)
 
     /* At construction the accumulated matrix should be identity (init angles all zero). */
     mat4 model = GLM_MAT4_IDENTITY_INIT;
-    dvz_arcball_model(arc, model);
+    AT(dvz_arcball_model(arc, model) == DVZ_OK);
+    AT(dvz_arcball_model(NULL, model) == DVZ_ERROR);
     mat4 identity = GLM_MAT4_IDENTITY_INIT;
     AT(memcmp(model, identity, sizeof(mat4)) == 0);
 
@@ -1730,10 +1734,10 @@ int test_arcball_rotate_produces_nonidentity_model(TstContext* suite, const TstC
     DvzArcball* arc = _dvz_arcball(800.0f, 800.0f, 0);
 
     /* Simulate a drag: current position != press position → rotation quaternion not identity. */
-    dvz_arcball_rotate(arc, (vec2){0.5f, 0.0f}, (vec2){0.0f, 0.0f});
+    AT(dvz_arcball_rotate(arc, (vec2){0.5f, 0.0f}, (vec2){0.0f, 0.0f}) == DVZ_OK);
 
     mat4 model = GLM_MAT4_IDENTITY_INIT;
-    dvz_arcball_model(arc, model);
+    AT(dvz_arcball_model(arc, model) == DVZ_OK);
     mat4 identity = GLM_MAT4_IDENTITY_INIT;
     AT(memcmp(model, identity, sizeof(mat4)) != 0);
 
@@ -1749,16 +1753,16 @@ int test_arcball_end_commits_rotation(TstContext* suite, const TstCase* item)
 
     DvzArcball* arc = _dvz_arcball(800.0f, 800.0f, 0);
 
-    dvz_arcball_rotate(arc, (vec2){0.5f, 0.0f}, (vec2){0.0f, 0.0f});
+    AT(dvz_arcball_rotate(arc, (vec2){0.5f, 0.0f}, (vec2){0.0f, 0.0f}) == DVZ_OK);
     mat4 model_before = GLM_MAT4_IDENTITY_INIT;
-    dvz_arcball_model(arc, model_before);
+    AT(dvz_arcball_model(arc, model_before) == DVZ_OK);
 
-    dvz_arcball_end(arc);
+    AT(dvz_arcball_end(arc) == DVZ_OK);
 
     /* After end(), in-flight rotation is identity; mat has been updated.
        dvz_arcball_model should give the same result as before. */
     mat4 model_after = GLM_MAT4_IDENTITY_INIT;
-    dvz_arcball_model(arc, model_after);
+    AT(dvz_arcball_model(arc, model_after) == DVZ_OK);
     AT(memcmp(model_before, model_after, sizeof(mat4)) == 0);
 
     /* The in-flight rotation is now identity — another rotate from same positions gives same. */
@@ -1777,25 +1781,26 @@ int test_arcball_rotate_axis_is_incremental(TstContext* suite, const TstCase* it
 
     DvzArcball* arc = _dvz_arcball(800.0f, 800.0f, 0);
 
-    dvz_arcball_set(arc, (vec3){0.4f, 0.0f, 0.2f});
+    AT(dvz_arcball_set(arc, (vec3){0.4f, 0.0f, 0.2f}) == DVZ_OK);
     mat4 model_before = GLM_MAT4_IDENTITY_INIT;
-    dvz_arcball_model(arc, model_before);
+    AT(dvz_arcball_model(arc, model_before) == DVZ_OK);
 
-    dvz_arcball_rotate_axis(arc, 0.25f, (vec3){0.0f, 1.0f, 0.0f});
+    AT(dvz_arcball_rotate_axis(arc, 0.25f, (vec3){0.0f, 1.0f, 0.0f}) == DVZ_OK);
+    AT(dvz_arcball_rotate_axis(NULL, 0.25f, (vec3){0.0f, 1.0f, 0.0f}) == DVZ_ERROR);
 
     mat4 model_after = GLM_MAT4_IDENTITY_INIT;
-    dvz_arcball_model(arc, model_after);
+    AT(dvz_arcball_model(arc, model_after) == DVZ_OK);
     AT(memcmp(model_before, model_after, sizeof(mat4)) != 0);
 
-    dvz_arcball_rotate(arc, (vec2){0.35f, 0.15f}, (vec2){-0.15f, -0.10f});
-    dvz_arcball_end(arc);
+    AT(dvz_arcball_rotate(arc, (vec2){0.35f, 0.15f}, (vec2){-0.15f, -0.10f}) == DVZ_OK);
+    AT(dvz_arcball_end(arc) == DVZ_OK);
     mat4 model_dragged = GLM_MAT4_IDENTITY_INIT;
-    dvz_arcball_model(arc, model_dragged);
+    AT(dvz_arcball_model(arc, model_dragged) == DVZ_OK);
 
-    dvz_arcball_rotate_axis(arc, 0.25f, (vec3){0.0f, 1.0f, 0.0f});
+    AT(dvz_arcball_rotate_axis(arc, 0.25f, (vec3){0.0f, 1.0f, 0.0f}) == DVZ_OK);
 
     mat4 model_resumed = GLM_MAT4_IDENTITY_INIT;
-    dvz_arcball_model(arc, model_resumed);
+    AT(dvz_arcball_model(arc, model_resumed) == DVZ_OK);
     AT(memcmp(model_dragged, model_resumed, sizeof(mat4)) != 0);
 
     dvz_arcball_destroy(arc);

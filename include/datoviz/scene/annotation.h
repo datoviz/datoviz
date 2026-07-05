@@ -49,7 +49,7 @@ DVZ_EXPORT DvzLabelDesc dvz_label_desc(void);
  *
  * @return default scale-bar descriptor
  */
-DVZ_EXPORT DvzScaleBarDesc dvz_scalebar_desc(void);
+DVZ_EXPORT DvzScaleBarDesc dvz_scale_bar_desc(void);
 
 
 /**
@@ -82,6 +82,28 @@ DVZ_EXPORT DvzAnnotation* dvz_annotation_label(DvzPanel* panel, const DvzLabelDe
 
 
 /**
+ * Set the style of a retained annotation.
+ *
+ * @param annotation the annotation
+ * @param style text style, or NULL for defaults
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT DvzResult dvz_annotation_set_style(
+    DvzAnnotation* annotation, const DvzTextStyle* style);
+
+
+/**
+ * Set the placement policy of a retained annotation.
+ *
+ * @param annotation the annotation
+ * @param placement text placement, or NULL for defaults
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT DvzResult dvz_annotation_set_placement(
+    DvzAnnotation* annotation, const DvzTextPlacement* placement);
+
+
+/**
  * Create a retained scale bar attached to a panel.
  *
  * `DvzScaleBar` is a typed alias for the retained annotation object returned here. Pass NULL for
@@ -91,7 +113,7 @@ DVZ_EXPORT DvzAnnotation* dvz_annotation_label(DvzPanel* panel, const DvzLabelDe
  * @param desc the scale-bar descriptor, or NULL for defaults
  * @return the scale bar
  */
-DVZ_EXPORT DvzScaleBar* dvz_scalebar(DvzPanel* panel, const DvzScaleBarDesc* desc);
+DVZ_EXPORT DvzScaleBar* dvz_scale_bar(DvzPanel* panel, const DvzScaleBarDesc* desc);
 
 
 /**
@@ -101,7 +123,7 @@ DVZ_EXPORT DvzScaleBar* dvz_scalebar(DvzPanel* panel, const DvzScaleBarDesc* des
  * @param dim dimension
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT DvzResult dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim);
+DVZ_EXPORT DvzResult dvz_scale_bar_set_dimension(DvzScaleBar* scalebar, DvzDim dim);
 
 
 /**
@@ -111,7 +133,7 @@ DVZ_EXPORT DvzResult dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim di
  * @param anchor panel anchor
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT DvzResult dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor);
+DVZ_EXPORT DvzResult dvz_scale_bar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor);
 
 
 /**
@@ -121,7 +143,7 @@ DVZ_EXPORT DvzResult dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnch
  * @param units units object
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT DvzResult dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units);
+DVZ_EXPORT DvzResult dvz_scale_bar_set_units(DvzScaleBar* scalebar, DvzUnits* units);
 
 
 /**
@@ -131,7 +153,38 @@ DVZ_EXPORT DvzResult dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* uni
  * @param duration_units duration units object
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT DvzResult dvz_scalebar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units);
+DVZ_EXPORT DvzResult dvz_scale_bar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units);
+
+
+/**
+ * Set the label style of a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param style label style, or NULL for defaults
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT DvzResult dvz_scale_bar_set_label_style(DvzScaleBar* scalebar, const DvzTextStyle* style);
+
+
+/**
+ * Set the label placement policy of a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param placement label placement, or NULL for defaults
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT DvzResult dvz_scale_bar_set_placement(
+    DvzScaleBar* scalebar, const DvzTextPlacement* placement);
+
+
+/**
+ * Override formatting policy on a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param format the format descriptor, or NULL to clear the override
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT DvzResult dvz_scale_bar_set_format(DvzScaleBar* scalebar, const DvzFormatDesc* format);
 
 
 /**
@@ -149,8 +202,9 @@ DVZ_EXPORT void dvz_annotation_destroy(DvzAnnotation* annotation);
  *
  * @param annotation the annotation
  * @param format the format descriptor, or NULL to clear the override
+ * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT void dvz_annotation_set_format(
+DVZ_EXPORT DvzResult dvz_annotation_set_format(
     DvzAnnotation* annotation, const DvzFormatDesc* format);
 
 

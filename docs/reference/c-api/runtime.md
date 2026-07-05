@@ -18,7 +18,7 @@ Common workflows:
 - [vklite overview](../../advanced/vklite.md)
 - [Canvas and stream API](../../advanced/canvas.md)
 
-Functions: 576
+Functions: 554
 
 ## Symbol Groups
 
@@ -30,7 +30,7 @@ Functions: 576
 | [Attachment](#attachment) | 4 | `include/datoviz/vklite/rendering.h` |
 | [Barrier](#barrier) | 12 | `include/datoviz/vklite/sync.h` |
 | [Barriers](#barriers) | 10 | `include/datoviz/vklite/sync.h` |
-| [Box](#box) | 6 | `include/datoviz/math/box.h` |
+| [Box](#box) | 10 | `include/datoviz/math/box.h` |
 | [Buffer](#buffer) | 23 | `include/datoviz/vklite/buffers.h` |
 | [Camera](#camera) | 14 | `include/datoviz/controller/camera.h` |
 | [Circular](#circular) | 2 | `include/datoviz/math/anim.h` |
@@ -39,7 +39,6 @@ Functions: 576
 | [Commands](#commands) | 9 | `include/datoviz/vklite/commands.h` |
 | [Compile](#compile) | 1 | `include/datoviz/vk/gpu_ctx.h` |
 | [Compute](#compute) | 10 | `include/datoviz/vklite/compute.h` |
-| [Container](#container) | 8 | `include/datoviz/common/obj.h` |
 | [Descriptors](#descriptors) | 7 | `include/datoviz/vklite/descriptors.h` |
 | [Device](#device) | 20 | `include/datoviz/vk/device.h`, `include/datoviz/vk/memory.h` |
 | [Dmat4](#dmat4) | 8 | `include/datoviz/math/vec.h` |
@@ -63,9 +62,7 @@ Functions: 576
 | [Mean](#mean) | 1 | `include/datoviz/math/stats.h` |
 | [Memory](#memory) | 1 | `include/datoviz/common/functions.h` |
 | [Min](#min) | 1 | `include/datoviz/math/stats.h` |
-| [Mock](#mock) | 12 | `include/datoviz/math/mock.h` |
 | [Normalize](#normalize) | 1 | `include/datoviz/math/stats.h` |
-| [Obj](#obj) | 4 | `include/datoviz/common/obj.h` |
 | [Panzoom](#panzoom) | 20 | `include/datoviz/controller/panzoom.h` |
 | [Parse](#parse) | 1 | `include/datoviz/fileio/fileio.h` |
 | [Prng](#prng) | 3 | `include/datoviz/math/prng.h` |
@@ -76,7 +73,7 @@ Functions: 576
 | [Read](#read) | 5 | `include/datoviz/fileio/fileio.h` |
 | [Rendering](#rendering) | 12 | `include/datoviz/vklite/rendering.h` |
 | [Resample](#resample) | 1 | `include/datoviz/math/anim.h` |
-| [Resource](#resource) | 6 | `include/datoviz/fileio/fileio.h` |
+| [Resource](#resource) | 4 | `include/datoviz/fileio/fileio.h` |
 | [Sampler](#sampler) | 10 | `include/datoviz/vklite/sampler.h` |
 | [Semaphore](#semaphore) | 10 | `include/datoviz/vklite/sync.h` |
 | [Shader](#shader) | 5 | `include/datoviz/vklite/shader.h` |
@@ -205,8 +202,12 @@ Functions: 576
     | [`dvz_box_aspect()`](#dvz_box_aspect) | `include/datoviz/math/box.h` |
     | [`dvz_box_center()`](#dvz_box_center) | `include/datoviz/math/box.h` |
     | [`dvz_box_extent()`](#dvz_box_extent) | `include/datoviz/math/box.h` |
+    | [`dvz_box_inverse()`](#dvz_box_inverse) | `include/datoviz/math/box.h` |
     | [`dvz_box_merge()`](#dvz_box_merge) | `include/datoviz/math/box.h` |
     | [`dvz_box_normalize_1D()`](#dvz_box_normalize_1d) | `include/datoviz/math/box.h` |
+    | [`dvz_box_normalize_2D()`](#dvz_box_normalize_2d) | `include/datoviz/math/box.h` |
+    | [`dvz_box_normalize_3D()`](#dvz_box_normalize_3d) | `include/datoviz/math/box.h` |
+    | [`dvz_box_normalize_polygon()`](#dvz_box_normalize_polygon) | `include/datoviz/math/box.h` |
 
     ### Buffer
 
@@ -339,19 +340,6 @@ Functions: 576
     | [`dvz_compute_layout_handle()`](#dvz_compute_layout_handle) | `include/datoviz/vklite/compute.h` |
     | [`dvz_compute_shader()`](#dvz_compute_shader) | `include/datoviz/vklite/compute.h` |
     | [`dvz_compute_spec()`](#dvz_compute_spec) | `include/datoviz/vklite/compute.h` |
-
-    ### Container
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_container()`](#dvz_container) | `include/datoviz/common/obj.h` |
-    | [`dvz_container_alloc()`](#dvz_container_alloc) | `include/datoviz/common/obj.h` |
-    | [`dvz_container_delete_if_destroyed()`](#dvz_container_delete_if_destroyed) | `include/datoviz/common/obj.h` |
-    | [`dvz_container_destroy()`](#dvz_container_destroy) | `include/datoviz/common/obj.h` |
-    | [`dvz_container_get()`](#dvz_container_get) | `include/datoviz/common/obj.h` |
-    | [`dvz_container_get_created()`](#dvz_container_get_created) | `include/datoviz/common/obj.h` |
-    | [`dvz_container_iter()`](#dvz_container_iter) | `include/datoviz/common/obj.h` |
-    | [`dvz_container_iterator()`](#dvz_container_iterator) | `include/datoviz/common/obj.h` |
 
     ### Descriptors
 
@@ -673,37 +661,11 @@ Functions: 576
     | --- | --- |
     | [`dvz_min_max()`](#dvz_min_max) | `include/datoviz/math/stats.h` |
 
-    ### Mock
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_mock_band()`](#dvz_mock_band) | `include/datoviz/math/mock.h` |
-    | [`dvz_mock_circle()`](#dvz_mock_circle) | `include/datoviz/math/mock.h` |
-    | [`dvz_mock_color()`](#dvz_mock_color) | `include/datoviz/math/mock.h` |
-    | [`dvz_mock_fixed()`](#dvz_mock_fixed) | `include/datoviz/math/mock.h` |
-    | [`dvz_mock_full()`](#dvz_mock_full) | `include/datoviz/math/mock.h` |
-    | [`dvz_mock_line()`](#dvz_mock_line) | `include/datoviz/math/mock.h` |
-    | [`dvz_mock_linspace()`](#dvz_mock_linspace) | `include/datoviz/math/mock.h` |
-    | [`dvz_mock_monochrome()`](#dvz_mock_monochrome) | `include/datoviz/math/mock.h` |
-    | [`dvz_mock_pos_2D()`](#dvz_mock_pos_2d) | `include/datoviz/math/mock.h` |
-    | [`dvz_mock_pos_3D()`](#dvz_mock_pos_3d) | `include/datoviz/math/mock.h` |
-    | [`dvz_mock_range()`](#dvz_mock_range) | `include/datoviz/math/mock.h` |
-    | [`dvz_mock_uniform()`](#dvz_mock_uniform) | `include/datoviz/math/mock.h` |
-
     ### Normalize
 
     | Function | Header |
     | --- | --- |
     | [`dvz_normalize_bytes()`](#dvz_normalize_bytes) | `include/datoviz/math/stats.h` |
-
-    ### Obj
-
-    | Function | Header |
-    | --- | --- |
-    | [`dvz_obj_created()`](#dvz_obj_created) | `include/datoviz/common/obj.h` |
-    | [`dvz_obj_destroyed()`](#dvz_obj_destroyed) | `include/datoviz/common/obj.h` |
-    | [`dvz_obj_init()`](#dvz_obj_init) | `include/datoviz/common/obj.h` |
-    | [`dvz_obj_is_created()`](#dvz_obj_is_created) | `include/datoviz/common/obj.h` |
 
     ### Panzoom
 
@@ -818,8 +780,6 @@ Functions: 576
     | [`dvz_resource_font()`](#dvz_resource_font) | `include/datoviz/fileio/fileio.h` |
     | [`dvz_resource_glsl()`](#dvz_resource_glsl) | `include/datoviz/fileio/fileio.h` |
     | [`dvz_resource_shader()`](#dvz_resource_shader) | `include/datoviz/fileio/fileio.h` |
-    | [`dvz_resource_testdata()`](#dvz_resource_testdata) | `include/datoviz/fileio/fileio.h` |
-    | [`dvz_resource_texture()`](#dvz_resource_texture) | `include/datoviz/fileio/fileio.h` |
     | [`dvz_resource_wgsl()`](#dvz_resource_wgsl) | `include/datoviz/fileio/fileio.h` |
 
     ### Sampler
@@ -1632,12 +1592,12 @@ Read current Euler angles.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:190._
+_Declared in `include/datoviz/controller/arcball.h`:191._
 
 ### `dvz_arcball_connect()`
 
 ```c title="dvz_arcball_connect"
-void dvz_arcball_connect(
+DvzResult dvz_arcball_connect(
     DvzArcball * arcball,
     DvzInputRouter * router
 );
@@ -1652,12 +1612,12 @@ Subscribe the arcball to an input router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:245._
+_Declared in `include/datoviz/controller/arcball.h`:246._
 
 ### `dvz_arcball_constrain()`
 
 ```c title="dvz_arcball_constrain"
-void dvz_arcball_constrain(
+DvzResult dvz_arcball_constrain(
     DvzArcball * arcball,
     vec3 axis
 );
@@ -1672,7 +1632,7 @@ Set a rotation constraint axis.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:183._
+_Declared in `include/datoviz/controller/arcball.h`:184._
 
 ### `dvz_arcball_create()`
 
@@ -1693,7 +1653,7 @@ Related: [`dvz_arcball_destroy()`](#dvz_arcball_destroy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:101._
+_Declared in `include/datoviz/controller/arcball.h`:102._
 
 ### `dvz_arcball_desc()`
 
@@ -1703,7 +1663,7 @@ DvzArcballDesc dvz_arcball_desc(void);
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:91._
+_Declared in `include/datoviz/controller/arcball.h`:92._
 
 ### `dvz_arcball_destroy()`
 
@@ -1723,12 +1683,12 @@ Related: [`dvz_arcball_create()`](#dvz_arcball_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:259._
+_Declared in `include/datoviz/controller/arcball.h`:260._
 
 ### `dvz_arcball_disconnect()`
 
 ```c title="dvz_arcball_disconnect"
-void dvz_arcball_disconnect(
+DvzResult dvz_arcball_disconnect(
     DvzArcball * arcball,
     DvzInputRouter * router
 );
@@ -1743,12 +1703,12 @@ Unsubscribe the arcball from a router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:252._
+_Declared in `include/datoviz/controller/arcball.h`:253._
 
 ### `dvz_arcball_end()`
 
 ```c title="dvz_arcball_end"
-void dvz_arcball_end(
+DvzResult dvz_arcball_end(
     DvzArcball * arcball
 );
 ```
@@ -1761,12 +1721,12 @@ Commit the in-flight rotation into the accumulated matrix (call at drag stop).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:213._
+_Declared in `include/datoviz/controller/arcball.h`:214._
 
 ### `dvz_arcball_initial()`
 
 ```c title="dvz_arcball_initial"
-void dvz_arcball_initial(
+DvzResult dvz_arcball_initial(
     DvzArcball * arcball,
     vec3 angles
 );
@@ -1781,7 +1741,7 @@ Set the initial Euler angles and reset.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:108._
+_Declared in `include/datoviz/controller/arcball.h`:109._
 
 ### `dvz_arcball_is_interacting()`
 
@@ -1800,12 +1760,12 @@ Return whether the pointer is currently interacting with the arcball.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:229._
+_Declared in `include/datoviz/controller/arcball.h`:230._
 
 ### `dvz_arcball_model()`
 
 ```c title="dvz_arcball_model"
-void dvz_arcball_model(
+DvzResult dvz_arcball_model(
     DvzArcball * arcball,
     mat4 model
 );
@@ -1822,7 +1782,7 @@ Arcball pan and zoom are camera view state and are not included here.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:206._
+_Declared in `include/datoviz/controller/arcball.h`:207._
 
 ### `dvz_arcball_mvp()`
 
@@ -1843,12 +1803,12 @@ Rotation is applied to the model matrix; pan and zoom are applied to view.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:221._
+_Declared in `include/datoviz/controller/arcball.h`:222._
 
 ### `dvz_arcball_pan()`
 
 ```c title="dvz_arcball_pan"
-void dvz_arcball_pan(
+DvzResult dvz_arcball_pan(
     DvzArcball * arcball,
     vec2 pan
 );
@@ -1863,12 +1823,12 @@ Set the camera view-plane pan offset.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:150._
+_Declared in `include/datoviz/controller/arcball.h`:151._
 
 ### `dvz_arcball_pan_shift()`
 
 ```c title="dvz_arcball_pan_shift"
-void dvz_arcball_pan_shift(
+DvzResult dvz_arcball_pan_shift(
     DvzArcball * arcball,
     vec2 shift_px
 );
@@ -1883,7 +1843,7 @@ Apply an incremental panel-plane pan shift in pixels.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:169._
+_Declared in `include/datoviz/controller/arcball.h`:170._
 
 ### `dvz_arcball_pointer()`
 
@@ -1904,12 +1864,12 @@ Process a pointer event and update arcball state.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:238._
+_Declared in `include/datoviz/controller/arcball.h`:239._
 
 ### `dvz_arcball_reset()`
 
 ```c title="dvz_arcball_reset"
-void dvz_arcball_reset(
+DvzResult dvz_arcball_reset(
     DvzArcball * arcball
 );
 ```
@@ -1922,12 +1882,12 @@ Reset to the initial orientation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:115._
+_Declared in `include/datoviz/controller/arcball.h`:116._
 
 ### `dvz_arcball_resize()`
 
 ```c title="dvz_arcball_resize"
-void dvz_arcball_resize(
+DvzResult dvz_arcball_resize(
     DvzArcball * arcball,
     float width,
     float height
@@ -1944,12 +1904,12 @@ Update the viewport size (call on window resize).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:176._
+_Declared in `include/datoviz/controller/arcball.h`:177._
 
 ### `dvz_arcball_rotate()`
 
 ```c title="dvz_arcball_rotate"
-void dvz_arcball_rotate(
+DvzResult dvz_arcball_rotate(
     DvzArcball * arcball,
     vec2 cur_pos,
     vec2 last_pos
@@ -1966,12 +1926,12 @@ Apply an in-flight rotation from two NDC screen positions.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:197._
+_Declared in `include/datoviz/controller/arcball.h`:198._
 
 ### `dvz_arcball_rotate_axis()`
 
 ```c title="dvz_arcball_rotate_axis"
-void dvz_arcball_rotate_axis(
+DvzResult dvz_arcball_rotate_axis(
     DvzArcball * arcball,
     float angle,
     vec3 axis
@@ -1988,12 +1948,12 @@ Apply an incremental rotation around an axis to the accumulated orientation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:132._
+_Declared in `include/datoviz/controller/arcball.h`:133._
 
 ### `dvz_arcball_set()`
 
 ```c title="dvz_arcball_set"
-void dvz_arcball_set(
+DvzResult dvz_arcball_set(
     DvzArcball * arcball,
     vec3 angles
 );
@@ -2008,7 +1968,7 @@ Set the orientation directly from Euler angles.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:122._
+_Declared in `include/datoviz/controller/arcball.h`:123._
 
 ### `dvz_arcball_state()`
 
@@ -2029,12 +1989,12 @@ Copy the current arcball state.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:160._
+_Declared in `include/datoviz/controller/arcball.h`:161._
 
 ### `dvz_arcball_zoom()`
 
 ```c title="dvz_arcball_zoom"
-void dvz_arcball_zoom(
+DvzResult dvz_arcball_zoom(
     DvzArcball * arcball,
     float zoom
 );
@@ -2049,7 +2009,7 @@ Set the camera dolly factor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/arcball.h`:141._
+_Declared in `include/datoviz/controller/arcball.h`:142._
 
 ## Attachment
 
@@ -2712,6 +2672,30 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/math/box.h`:125._
 
+### `dvz_box_inverse()`
+
+```c title="dvz_box_inverse"
+void dvz_box_inverse(
+    DvzBox source,
+    DvzBox target,
+    const vec3 pos,
+    dvec3 * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `source` | `DvzBox` | the source box, in data coordinates |
+| `target` | `DvzBox` | the target box, typically in normalized coordinates |
+| `pos` | `const vec3` | the position in the target box |
+| `out` | `dvec3 *` |  |
+
+Perform an inverse transformation of a position from a target box to a source box.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/math/box.h`:208._
+
 ### `dvz_box_merge()`
 
 ```c title="dvz_box_merge"
@@ -2743,7 +2727,7 @@ void dvz_box_normalize_1D(
     DvzBox target,
     DvzDim dim,
     uint32_t count,
-    double * pos,
+    const double * pos,
     vec3 * out
 );
 ```
@@ -2754,16 +2738,92 @@ void dvz_box_normalize_1D(
 | `target` | `DvzBox` | the target box, typically in normalized coordinates |
 | `dim` | `DvzDim` | which dimension |
 | `count` | `uint32_t` | the number of positions to normalize |
-| `pos` | `double *` | the positions to normalize (double precision) |
+| `pos` | `const double *` | the positions to normalize (double precision) |
 | `out` | `vec3 *` |  |
 
 Normalize 1D input positions into a target box.
 
-precision)
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/math/box.h`:153._
+
+### `dvz_box_normalize_2D()`
+
+```c title="dvz_box_normalize_2D"
+void dvz_box_normalize_2D(
+    DvzBox source,
+    DvzBox target,
+    uint32_t count,
+    dvec2 * pos,
+    vec3 * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `source` | `DvzBox` | the source box, in data coordinates |
+| `target` | `DvzBox` | the target box, typically in normalized coordinates |
+| `count` | `uint32_t` | the number of positions to normalize |
+| `pos` | `dvec2 *` | the positions to normalize (double precision) |
+| `out` | `vec3 *` |  |
+
+Normalize 2D input positions into a target box.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/math/box.h`:154._
+_Declared in `include/datoviz/math/box.h`:168._
+
+### `dvz_box_normalize_3D()`
+
+```c title="dvz_box_normalize_3D"
+void dvz_box_normalize_3D(
+    DvzBox source,
+    DvzBox target,
+    uint32_t count,
+    dvec3 * pos,
+    vec3 * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `source` | `DvzBox` | the source box, in data coordinates |
+| `target` | `DvzBox` | the target box, typically in normalized coordinates |
+| `count` | `uint32_t` | the number of positions to normalize |
+| `pos` | `dvec3 *` | the positions to normalize (double precision) |
+| `out` | `vec3 *` |  |
+
+Normalize 3D input positions into a target box.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/math/box.h`:196._
+
+### `dvz_box_normalize_polygon()`
+
+```c title="dvz_box_normalize_polygon"
+void dvz_box_normalize_polygon(
+    DvzBox source,
+    DvzBox target,
+    uint32_t count,
+    dvec2 * pos,
+    dvec2 * out
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `source` | `DvzBox` | the source box, in data coordinates |
+| `target` | `DvzBox` | the target box, typically in normalized coordinates |
+| `count` | `uint32_t` | the number of positions to normalize |
+| `pos` | `dvec2 *` | the positions to normalize (double precision) |
+| `out` | `dvec2 *` |  |
+
+Normalize 2D input positions into a target box, using dvec2* as output format.
+
+Raw ctypes: emitted.
+
+_Declared in `include/datoviz/math/box.h`:181._
 
 ## Buffer
 
@@ -3425,7 +3485,7 @@ _Declared in `include/datoviz/controller/camera.h`:114._
 ### `dvz_camera_resize()`
 
 ```c title="dvz_camera_resize"
-void dvz_camera_resize(
+DvzResult dvz_camera_resize(
     DvzCamera * camera,
     float width,
     float height
@@ -3447,7 +3507,7 @@ _Declared in `include/datoviz/controller/camera.h`:237._
 ### `dvz_camera_set_orthographic()`
 
 ```c title="dvz_camera_set_orthographic"
-void dvz_camera_set_orthographic(
+DvzResult dvz_camera_set_orthographic(
     DvzCamera * camera,
     float height,
     float near,
@@ -3505,7 +3565,7 @@ _Declared in `include/datoviz/controller/camera.h`:207._
 ### `dvz_camera_set_perspective()`
 
 ```c title="dvz_camera_set_perspective"
-void dvz_camera_set_perspective(
+DvzResult dvz_camera_set_perspective(
     DvzCamera * camera,
     float fov_y,
     float near,
@@ -3529,7 +3589,7 @@ _Declared in `include/datoviz/controller/camera.h`:174._
 ### `dvz_camera_set_view()`
 
 ```c title="dvz_camera_set_view"
-void dvz_camera_set_view(
+DvzResult dvz_camera_set_view(
     DvzCamera * camera,
     const DvzCameraView * view
 );
@@ -3654,7 +3714,7 @@ Start recording a command buffer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:160._
+_Declared in `include/datoviz/vklite/commands.h`:159._
 
 ### `dvz_cmd_begin_result()`
 
@@ -3673,7 +3733,7 @@ Start recording a command buffer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:151._
+_Declared in `include/datoviz/vklite/commands.h`:150._
 
 ### `dvz_cmd_bind_compute()`
 
@@ -4187,7 +4247,7 @@ Stop recording a command buffer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:179._
+_Declared in `include/datoviz/vklite/commands.h`:178._
 
 ### `dvz_cmd_end_result()`
 
@@ -4206,7 +4266,7 @@ Stop recording a command buffer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:170._
+_Declared in `include/datoviz/vklite/commands.h`:169._
 
 ### `dvz_cmd_release()`
 
@@ -4228,7 +4288,7 @@ wrapper allocation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:201._
+_Declared in `include/datoviz/vklite/commands.h`:200._
 
 ### `dvz_cmd_rendering_begin()`
 
@@ -4312,7 +4372,7 @@ Reset a command buffer.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:188._
+_Declared in `include/datoviz/vklite/commands.h`:187._
 
 ### `dvz_cmd_submit()`
 
@@ -4332,7 +4392,7 @@ This function blocks the queue so it is not optimal.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:224._
+_Declared in `include/datoviz/vklite/commands.h`:223._
 
 ### `dvz_cmd_submit_result()`
 
@@ -4353,7 +4413,7 @@ This function blocks the queue so it is not optimal.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:213._
+_Declared in `include/datoviz/vklite/commands.h`:212._
 
 ## Command
 
@@ -4376,7 +4436,7 @@ Allocate a single primary command buffer from the device command pool of a queue
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:99._
+_Declared in `include/datoviz/vklite/commands.h`:98._
 
 ### `dvz_command_buffer_free()`
 
@@ -4398,7 +4458,7 @@ Free a single command buffer from the device command pool of a queue family.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:111._
+_Declared in `include/datoviz/vklite/commands.h`:110._
 
 ## Commands
 
@@ -4427,7 +4487,7 @@ Reinitializing a live wrapper requires dvz_commands_destroy() first.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:88._
+_Declared in `include/datoviz/vklite/commands.h`:87._
 
 ### `dvz_commands_count()`
 
@@ -4446,7 +4506,7 @@ Return the number of command buffers managed by a wrapper.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:131._
+_Declared in `include/datoviz/vklite/commands.h`:130._
 
 ### `dvz_commands_create_wrapper()`
 
@@ -4467,7 +4527,7 @@ dvz_commands_create_wrapper().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:63._
+_Declared in `include/datoviz/vklite/commands.h`:62._
 
 ### `dvz_commands_current()`
 
@@ -4487,7 +4547,7 @@ Set the current command buffer index.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:141._
+_Declared in `include/datoviz/vklite/commands.h`:140._
 
 ### `dvz_commands_destroy()`
 
@@ -4508,7 +4568,7 @@ a reusable initialized state.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:236._
+_Declared in `include/datoviz/vklite/commands.h`:235._
 
 ### `dvz_commands_free()`
 
@@ -4526,7 +4586,7 @@ Free a commands wrapper allocated by dvz_commands_create_wrapper().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:72._
+_Declared in `include/datoviz/vklite/commands.h`:71._
 
 ### `dvz_commands_handle()`
 
@@ -4545,7 +4605,7 @@ Return the Vulkan handle of the currently-selected command buffers.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:121._
+_Declared in `include/datoviz/vklite/commands.h`:120._
 
 ### `dvz_commands_wrap()`
 
@@ -4571,7 +4631,7 @@ not supported for wrappers created by this function because no queue is supplied
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:251._
+_Declared in `include/datoviz/vklite/commands.h`:250._
 
 ### `dvz_commands_wrap_borrowed_recording()`
 
@@ -4597,7 +4657,7 @@ Vulkan.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/commands.h`:266._
+_Declared in `include/datoviz/vklite/commands.h`:265._
 
 ## Compile
 
@@ -4842,173 +4902,6 @@ Set a specialization constant.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/vklite/compute.h`:114._
-
-## Container
-
-### `dvz_container()`
-
-```c title="dvz_container"
-DvzContainer dvz_container(
-    uint32_t count,
-    size_t item_size,
-    DvzObjectType type
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `count` | `uint32_t` | initial number of objects in the container |
-| `item_size` | `size_t` | size of each object, in bytes |
-| `type` | `DvzObjectType` | object type |
-
-Create a container that will contain an arbitrary number of objects of the same type.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:213._
-
-### `dvz_container_alloc()`
-
-```c title="dvz_container_alloc"
-void * dvz_container_alloc(
-    DvzContainer * container
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `void *` | a pointer to an allocated object |
-| `container` | `DvzContainer *` | the container |
-
-Get a pointer to a new object in the container.
-
-If the container is full, it will be automatically resized.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:235._
-
-### `dvz_container_delete_if_destroyed()`
-
-```c title="dvz_container_delete_if_destroyed"
-void dvz_container_delete_if_destroyed(
-    DvzContainer * container,
-    uint32_t idx
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `container` | `DvzContainer *` | the container |
-| `idx` | `uint32_t` | the index of the object within the container |
-
-Free a given object in the constainer if it was previously destroyed.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:223._
-
-### `dvz_container_destroy()`
-
-```c title="dvz_container_destroy"
-void dvz_container_destroy(
-    DvzContainer * container
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `container` | `DvzContainer *` | the container |
-
-Destroy a container.
-
-Free all remaining objects, as well as the container itself.
-
-!!! warning
-All objects in the container must have been destroyed beforehand, since the generic
-container does not know how to properly destroy objects that were created with Vulkan.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:293._
-
-### `dvz_container_get()`
-
-```c title="dvz_container_get"
-void * dvz_container_get(
-    DvzContainer * container,
-    uint32_t idx
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `container` | `DvzContainer *` | the container |
-| `idx` | `uint32_t` | the index of the object within the container |
-
-Return the object at a given index.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:246._
-
-### `dvz_container_get_created()`
-
-```c title="dvz_container_get_created"
-void * dvz_container_get_created(
-    DvzContainer * container,
-    uint32_t idx
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `container` | `DvzContainer *` | the container |
-| `idx` | `uint32_t` | the index of the object within the container |
-
-Return the n-th created object.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:277._
-
-### `dvz_container_iter()`
-
-```c title="dvz_container_iter"
-void dvz_container_iter(
-    DvzContainerIterator * iterator
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `void` | a pointer to the next object in the container, or NULL at the end |
-| `iterator` | `DvzContainerIterator *` |  |
-
-Continue an already-started loop iteration on a container.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:256._
-
-### `dvz_container_iterator()`
-
-```c title="dvz_container_iterator"
-DvzContainerIterator dvz_container_iterator(
-    DvzContainer * container
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzContainerIterator` | a pointer to the first object |
-| `container` | `DvzContainer *` | the container |
-
-Start a loop iteration over all valid objects within the container.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:266._
 
 ## Descriptors
 
@@ -5851,7 +5744,7 @@ _Declared in `include/datoviz/math/anim.h`:97._
 ### `dvz_error_set_callback()`
 
 ```c title="dvz_error_set_callback"
-void dvz_error_set_callback(
+DvzResult dvz_error_set_callback(
     DvzErrorCallback cb,
     void * user_data
 );
@@ -5859,6 +5752,7 @@ void dvz_error_set_callback(
 
 | Field | Type | Description |
 | --- | --- | --- |
+| return | `DvzResult` | DVZ_OK on success |
 | `cb` | `DvzErrorCallback` | the error callback |
 | `user_data` | `void *` | opaque pointer passed to the callback |
 
@@ -5866,7 +5760,7 @@ Register an error callback.
 
 Raw ctypes: not emitted by the current generated binding.
 
-_Declared in `include/datoviz/common/functions.h`:55._
+_Declared in `include/datoviz/common/functions.h`:57._
 
 ## Fence
 
@@ -6044,7 +5938,7 @@ _Declared in `include/datoviz/fileio/fileio.h`:42._
 ### `dvz_fly_apply_camera()`
 
 ```c title="dvz_fly_apply_camera"
-void dvz_fly_apply_camera(
+DvzResult dvz_fly_apply_camera(
     DvzFly * fly
 );
 ```
@@ -6057,12 +5951,12 @@ Apply the current fly pose to the attached camera.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:329._
+_Declared in `include/datoviz/controller/fly.h`:330._
 
 ### `dvz_fly_clear_pivot()`
 
 ```c title="dvz_fly_clear_pivot"
-void dvz_fly_clear_pivot(
+DvzResult dvz_fly_clear_pivot(
     DvzFly * fly
 );
 ```
@@ -6075,12 +5969,12 @@ Clear the optional orbit pivot.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:279._
+_Declared in `include/datoviz/controller/fly.h`:280._
 
 ### `dvz_fly_connect()`
 
 ```c title="dvz_fly_connect"
-void dvz_fly_connect(
+DvzResult dvz_fly_connect(
     DvzFly * fly,
     DvzInputRouter * router
 );
@@ -6095,7 +5989,7 @@ Subscribe the fly controller to an input router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:371._
+_Declared in `include/datoviz/controller/fly.h`:372._
 
 ### `dvz_fly_create()`
 
@@ -6116,7 +6010,7 @@ Related: [`dvz_fly_destroy()`](#dvz_fly_destroy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:112._
+_Declared in `include/datoviz/controller/fly.h`:113._
 
 ### `dvz_fly_desc()`
 
@@ -6132,7 +6026,7 @@ Return a default fly-controller descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:102._
+_Declared in `include/datoviz/controller/fly.h`:103._
 
 ### `dvz_fly_destroy()`
 
@@ -6152,12 +6046,12 @@ Related: [`dvz_fly_create()`](#dvz_fly_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:390._
+_Declared in `include/datoviz/controller/fly.h`:391._
 
 ### `dvz_fly_disconnect()`
 
 ```c title="dvz_fly_disconnect"
-void dvz_fly_disconnect(
+DvzResult dvz_fly_disconnect(
     DvzFly * fly,
     DvzInputRouter * router
 );
@@ -6172,7 +6066,7 @@ Unsubscribe the fly controller from an input router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:381._
+_Declared in `include/datoviz/controller/fly.h`:382._
 
 ### `dvz_fly_get_position()`
 
@@ -6192,7 +6086,7 @@ Return the current position.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:240._
+_Declared in `include/datoviz/controller/fly.h`:241._
 
 ### `dvz_fly_get_target()`
 
@@ -6212,7 +6106,7 @@ Return the current look-at target.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:250._
+_Declared in `include/datoviz/controller/fly.h`:251._
 
 ### `dvz_fly_get_up()`
 
@@ -6232,7 +6126,7 @@ Return the current up vector.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:260._
+_Declared in `include/datoviz/controller/fly.h`:261._
 
 ### `dvz_fly_has_pivot()`
 
@@ -6251,12 +6145,12 @@ Return whether an orbit pivot is set.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:289._
+_Declared in `include/datoviz/controller/fly.h`:290._
 
 ### `dvz_fly_initial()`
 
 ```c title="dvz_fly_initial"
-void dvz_fly_initial(
+DvzResult dvz_fly_initial(
     DvzFly * fly,
     vec3 position,
     float yaw,
@@ -6277,12 +6171,12 @@ Set the initial pose from angles and reset.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:158._
+_Declared in `include/datoviz/controller/fly.h`:159._
 
 ### `dvz_fly_initial_lookat()`
 
 ```c title="dvz_fly_initial_lookat"
-void dvz_fly_initial_lookat(
+DvzResult dvz_fly_initial_lookat(
     DvzFly * fly,
     vec3 position,
     vec3 target
@@ -6299,7 +6193,7 @@ Set the initial pose from a look-at point and reset.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:169._
+_Declared in `include/datoviz/controller/fly.h`:170._
 
 ### `dvz_fly_keyboard()`
 
@@ -6320,12 +6214,12 @@ Process a keyboard event.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:361._
+_Declared in `include/datoviz/controller/fly.h`:362._
 
 ### `dvz_fly_look_at_pivot()`
 
 ```c title="dvz_fly_look_at_pivot"
-void dvz_fly_look_at_pivot(
+DvzResult dvz_fly_look_at_pivot(
     DvzFly * fly
 );
 ```
@@ -6338,12 +6232,12 @@ Reorient the camera toward the active pivot without moving the eye.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:298._
+_Declared in `include/datoviz/controller/fly.h`:299._
 
 ### `dvz_fly_move_forward()`
 
 ```c title="dvz_fly_move_forward"
-void dvz_fly_move_forward(
+DvzResult dvz_fly_move_forward(
     DvzFly * fly,
     float amount
 );
@@ -6358,12 +6252,12 @@ Move forward along the active movement direction.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:189._
+_Declared in `include/datoviz/controller/fly.h`:190._
 
 ### `dvz_fly_move_right()`
 
 ```c title="dvz_fly_move_right"
-void dvz_fly_move_right(
+DvzResult dvz_fly_move_right(
     DvzFly * fly,
     float amount
 );
@@ -6378,12 +6272,12 @@ Move right relative to the active movement direction.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:199._
+_Declared in `include/datoviz/controller/fly.h`:200._
 
 ### `dvz_fly_move_up()`
 
 ```c title="dvz_fly_move_up"
-void dvz_fly_move_up(
+DvzResult dvz_fly_move_up(
     DvzFly * fly,
     float amount
 );
@@ -6398,12 +6292,12 @@ Move up along the fly controller's world-up direction.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:209._
+_Declared in `include/datoviz/controller/fly.h`:210._
 
 ### `dvz_fly_orbit()`
 
 ```c title="dvz_fly_orbit"
-_Bool dvz_fly_orbit(
+DvzResult dvz_fly_orbit(
     DvzFly * fly,
     float yaw_delta,
     float pitch_delta
@@ -6412,7 +6306,7 @@ _Bool dvz_fly_orbit(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the orbit was applied |
+| return | `DvzResult` | whether the orbit was applied |
 | `fly` | `DvzFly *` | the fly controller |
 | `yaw_delta` | `float` | yaw delta in radians |
 | `pitch_delta` | `float` | pitch delta in radians |
@@ -6421,12 +6315,12 @@ Orbit the camera around the active pivot.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:310._
+_Declared in `include/datoviz/controller/fly.h`:311._
 
 ### `dvz_fly_pivot()`
 
 ```c title="dvz_fly_pivot"
-void dvz_fly_pivot(
+DvzResult dvz_fly_pivot(
     DvzFly * fly,
     vec3 pivot
 );
@@ -6441,7 +6335,7 @@ Set or move the optional orbit pivot while preserving the camera eye.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:270._
+_Declared in `include/datoviz/controller/fly.h`:271._
 
 ### `dvz_fly_pointer()`
 
@@ -6462,12 +6356,12 @@ Process a pointer event.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:350._
+_Declared in `include/datoviz/controller/fly.h`:351._
 
 ### `dvz_fly_reset()`
 
 ```c title="dvz_fly_reset"
-void dvz_fly_reset(
+DvzResult dvz_fly_reset(
     DvzFly * fly
 );
 ```
@@ -6480,12 +6374,12 @@ Reset a fly controller to its initial pose.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:121._
+_Declared in `include/datoviz/controller/fly.h`:122._
 
 ### `dvz_fly_resize()`
 
 ```c title="dvz_fly_resize"
-void dvz_fly_resize(
+DvzResult dvz_fly_resize(
     DvzFly * fly,
     float width,
     float height
@@ -6502,12 +6396,12 @@ Update the viewport size.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:145._
+_Declared in `include/datoviz/controller/fly.h`:146._
 
 ### `dvz_fly_roll()`
 
 ```c title="dvz_fly_roll"
-void dvz_fly_roll(
+DvzResult dvz_fly_roll(
     DvzFly * fly,
     float dx
 );
@@ -6522,12 +6416,12 @@ Roll the fly camera around its view direction.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:230._
+_Declared in `include/datoviz/controller/fly.h`:231._
 
 ### `dvz_fly_rotate()`
 
 ```c title="dvz_fly_rotate"
-void dvz_fly_rotate(
+DvzResult dvz_fly_rotate(
     DvzFly * fly,
     float dx,
     float dy
@@ -6544,12 +6438,12 @@ Rotate the fly view direction.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:220._
+_Declared in `include/datoviz/controller/fly.h`:221._
 
 ### `dvz_fly_set_camera()`
 
 ```c title="dvz_fly_set_camera"
-void dvz_fly_set_camera(
+DvzResult dvz_fly_set_camera(
     DvzFly * fly,
     DvzCamera * camera
 );
@@ -6564,12 +6458,12 @@ Attach a camera updated by this fly controller.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:320._
+_Declared in `include/datoviz/controller/fly.h`:321._
 
 ### `dvz_fly_set_mode()`
 
 ```c title="dvz_fly_set_mode"
-void dvz_fly_set_mode(
+DvzResult dvz_fly_set_mode(
     DvzFly * fly,
     DvzFlyMode mode
 );
@@ -6584,12 +6478,12 @@ Set the movement mode.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:179._
+_Declared in `include/datoviz/controller/fly.h`:180._
 
 ### `dvz_fly_update()`
 
 ```c title="dvz_fly_update"
-void dvz_fly_update(
+DvzResult dvz_fly_update(
     DvzFly * fly,
     double dt
 );
@@ -6604,12 +6498,12 @@ Advance held-key movement.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:339._
+_Declared in `include/datoviz/controller/fly.h`:340._
 
 ### `dvz_fly_viewport()`
 
 ```c title="dvz_fly_viewport"
-void dvz_fly_viewport(
+DvzResult dvz_fly_viewport(
     DvzFly * fly,
     float x,
     float y,
@@ -6630,7 +6524,7 @@ Update the viewport rectangle in window coordinates.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/fly.h`:134._
+_Declared in `include/datoviz/controller/fly.h`:135._
 
 ## Font
 
@@ -6651,7 +6545,7 @@ font objects from this policy; ImGui fonts and scene text atlas fonts are not sh
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/font.h`:78._
+_Declared in `include/datoviz/font.h`:86._
 
 ### `dvz_font_desc()`
 
@@ -6667,7 +6561,7 @@ Return an empty font descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/font.h`:67._
+_Declared in `include/datoviz/font.h`:75._
 
 ## Gpu
 
@@ -9274,8 +9168,8 @@ _Declared in `include/datoviz/math/anim.h`:159._
 
 ```c title="dvz_load_jpeg"
 uint8_t * dvz_load_jpeg(
-    DvzSize size,
-    const unsigned char * bytes,
+    const void * bytes,
+    DvzSize size_bytes,
     uint32_t * width,
     uint32_t * height
 );
@@ -9284,8 +9178,8 @@ uint8_t * dvz_load_jpeg(
 | Field | Type | Description |
 | --- | --- | --- |
 | return | `uint8_t *` | RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure |
-| `size` | `DvzSize` | size of the JPEG byte buffer |
-| `bytes` | `const unsigned char *` | JPEG byte buffer |
+| `bytes` | `const void *` | JPEG byte buffer |
+| `size_bytes` | `DvzSize` | size of the JPEG byte buffer in bytes |
 | `width` | `uint32_t *` |  |
 | `height` | `uint32_t *` |  |
 
@@ -9396,7 +9290,7 @@ shader compilation, screenshots, and readbacks. Passing NULL is allowed.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/common/functions.h`:66._
+_Declared in `include/datoviz/common/functions.h`:68._
 
 ## Min
 
@@ -9421,266 +9315,6 @@ Compute the min and max of an array of float values.
 Raw ctypes: emitted.
 
 _Declared in `include/datoviz/math/stats.h`:51._
-
-## Mock
-
-### `dvz_mock_band()`
-
-```c title="dvz_mock_band"
-vec3 * dvz_mock_band(
-    uint32_t count,
-    vec2 size
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `vec3 *` | the positions |
-| `count` | `uint32_t` | the number of positions to generate |
-| `size` | `vec2` | the size of the band |
-
-Generate points on a band.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/math/mock.h`:63._
-
-### `dvz_mock_circle()`
-
-```c title="dvz_mock_circle"
-vec3 * dvz_mock_circle(
-    uint32_t count,
-    float radius
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `vec3 *` | the positions |
-| `count` | `uint32_t` | the number of positions to generate |
-| `radius` | `float` | the radius of the circle |
-
-Generate points on a circle.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/math/mock.h`:52._
-
-### `dvz_mock_color()`
-
-```c title="dvz_mock_color"
-DvzColor * dvz_mock_color(
-    uint32_t count,
-    uint8_t alpha
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzColor *` | random colors |
-| `count` | `uint32_t` | the number of colors to generate |
-| `alpha` | `uint8_t` | the alpha value |
-
-Generate a set of random colors.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/math/mock.h`:154._
-
-### `dvz_mock_fixed()`
-
-```c title="dvz_mock_fixed"
-vec3 * dvz_mock_fixed(
-    uint32_t count,
-    vec3 fixed
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `vec3 *` | the repeated positions |
-| `count` | `uint32_t` | the number of positions to generate |
-| `fixed` | `vec3` | the position |
-
-Generate identical 3D positions.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/math/mock.h`:85._
-
-### `dvz_mock_full()`
-
-```c title="dvz_mock_full"
-float * dvz_mock_full(
-    uint32_t count,
-    float value
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `float *` | the values |
-| `count` | `uint32_t` | the number of scalars to generate |
-| `value` | `float` | the value |
-
-Generate an array with the same value.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/math/mock.h`:120._
-
-### `dvz_mock_line()`
-
-```c title="dvz_mock_line"
-vec3 * dvz_mock_line(
-    uint32_t count,
-    vec3 p0,
-    vec3 p1
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `vec3 *` | the positions |
-| `count` | `uint32_t` | the number of positions to generate |
-| `p0` | `vec3` | initial position |
-| `p1` | `vec3` | terminal position |
-
-Generate 3D positions on a line.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/math/mock.h`:97._
-
-### `dvz_mock_linspace()`
-
-```c title="dvz_mock_linspace"
-float * dvz_mock_linspace(
-    uint32_t count,
-    float initial,
-    float final
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `float *` | the values |
-| `count` | `uint32_t` | the number of scalars to generate |
-| `initial` | `float` | the initial value |
-| `final` | `float` | the final value |
-
-Generate an array ranging from an initial value to a final value.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/math/mock.h`:143._
-
-### `dvz_mock_monochrome()`
-
-```c title="dvz_mock_monochrome"
-DvzColor * dvz_mock_monochrome(
-    uint32_t count,
-    DvzColor mono
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `DvzColor *` | colors |
-| `count` | `uint32_t` | the number of colors to generate |
-| `mono` | `DvzColor` | the color to repeat |
-
-Repeat a color in an array.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/math/mock.h`:165._
-
-### `dvz_mock_pos_2D()`
-
-```c title="dvz_mock_pos_2D"
-vec3 * dvz_mock_pos_2D(
-    uint32_t count,
-    float std
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `vec3 *` | the positions |
-| `count` | `uint32_t` | the number of positions to generate |
-| `std` | `float` | the standard deviation |
-
-Generate a set of random 2D positions.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/math/mock.h`:41._
-
-### `dvz_mock_pos_3D()`
-
-```c title="dvz_mock_pos_3D"
-vec3 * dvz_mock_pos_3D(
-    uint32_t count,
-    float std
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `vec3 *` | the positions |
-| `count` | `uint32_t` | the number of positions to generate |
-| `std` | `float` | the standard deviation |
-
-Generate a set of random 3D positions.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/math/mock.h`:74._
-
-### `dvz_mock_range()`
-
-```c title="dvz_mock_range"
-uint32_t * dvz_mock_range(
-    uint32_t count,
-    uint32_t initial
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `uint32_t *` | the values |
-| `count` | `uint32_t` | the number of consecutive integers to generate |
-| `initial` | `uint32_t` | the initial value |
-
-Generate an array of consecutive positive numbers.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/math/mock.h`:131._
-
-### `dvz_mock_uniform()`
-
-```c title="dvz_mock_uniform"
-float * dvz_mock_uniform(
-    uint32_t count,
-    float vmin,
-    float vmax
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `float *` | the values |
-| `count` | `uint32_t` | the number of values to generate |
-| `vmin` | `float` | the minimum value of the interval |
-| `vmax` | `float` | the maximum value of the interval |
-
-Generate a set of uniformly random scalar values.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/math/mock.h`:109._
 
 ## Normalize
 
@@ -9708,89 +9342,12 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/math/stats.h`:63._
 
-## Obj
-
-### `dvz_obj_created()`
-
-```c title="dvz_obj_created"
-void dvz_obj_created(
-    DvzObject * obj
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `obj` | `DvzObject *` | the object |
-
-Mark an object as successfully created on the GPU.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:180._
-
-### `dvz_obj_destroyed()`
-
-```c title="dvz_obj_destroyed"
-void dvz_obj_destroyed(
-    DvzObject * obj
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `obj` | `DvzObject *` | the object |
-
-Mark an object as destroyed.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:189._
-
-### `dvz_obj_init()`
-
-```c title="dvz_obj_init"
-void dvz_obj_init(
-    DvzObject * obj
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `obj` | `DvzObject *` | the object |
-
-Initialize an object.
-
-Memory for the object has been allocated and its fields properly initialized.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:171._
-
-### `dvz_obj_is_created()`
-
-```c title="dvz_obj_is_created"
-_Bool dvz_obj_is_created(
-    DvzObject * obj
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `_Bool` | a boolean indicated whether the object has been successfully created |
-| `obj` | `DvzObject *` | the object |
-
-Whether an object has been successfully created.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/common/obj.h`:199._
-
 ## Panzoom
 
 ### `dvz_panzoom_connect()`
 
 ```c title="dvz_panzoom_connect"
-void dvz_panzoom_connect(
+DvzResult dvz_panzoom_connect(
     DvzPanzoom * pz,
     DvzInputRouter * router
 );
@@ -9806,7 +9363,7 @@ The panzoom pointer callback will be registered; call dvz_panzoom_disconnect() t
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:256._
+_Declared in `include/datoviz/controller/panzoom.h`:257._
 
 ### `dvz_panzoom_create()`
 
@@ -9827,7 +9384,7 @@ Related: [`dvz_panzoom_destroy()`](#dvz_panzoom_destroy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:134._
+_Declared in `include/datoviz/controller/panzoom.h`:135._
 
 ### `dvz_panzoom_desc()`
 
@@ -9837,7 +9394,7 @@ DvzPanzoomDesc dvz_panzoom_desc(void);
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:124._
+_Declared in `include/datoviz/controller/panzoom.h`:125._
 
 ### `dvz_panzoom_destroy()`
 
@@ -9857,12 +9414,12 @@ Related: [`dvz_panzoom_create()`](#dvz_panzoom_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:270._
+_Declared in `include/datoviz/controller/panzoom.h`:271._
 
 ### `dvz_panzoom_disconnect()`
 
 ```c title="dvz_panzoom_disconnect"
-void dvz_panzoom_disconnect(
+DvzResult dvz_panzoom_disconnect(
     DvzPanzoom * pz,
     DvzInputRouter * router
 );
@@ -9877,12 +9434,12 @@ Unsubscribe the panzoom from a router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:263._
+_Declared in `include/datoviz/controller/panzoom.h`:264._
 
 ### `dvz_panzoom_end()`
 
 ```c title="dvz_panzoom_end"
-void dvz_panzoom_end(
+DvzResult dvz_panzoom_end(
     DvzPanzoom * pz
 );
 ```
@@ -9895,7 +9452,7 @@ Commit the current pan/zoom as the new drag baseline (call at drag stop).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:228._
+_Declared in `include/datoviz/controller/panzoom.h`:229._
 
 ### `dvz_panzoom_extent()`
 
@@ -9916,7 +9473,7 @@ Return the visible extent in visual coordinates.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:190._
+_Declared in `include/datoviz/controller/panzoom.h`:191._
 
 ### `dvz_panzoom_mvp()`
 
@@ -9937,12 +9494,12 @@ The model matrix is left untouched.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:236._
+_Declared in `include/datoviz/controller/panzoom.h`:237._
 
 ### `dvz_panzoom_pan()`
 
 ```c title="dvz_panzoom_pan"
-void dvz_panzoom_pan(
+DvzResult dvz_panzoom_pan(
     DvzPanzoom * pz,
     vec2 pan
 );
@@ -9957,12 +9514,12 @@ Set the pan offset in NDC.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:162._
+_Declared in `include/datoviz/controller/panzoom.h`:163._
 
 ### `dvz_panzoom_pan_shift()`
 
 ```c title="dvz_panzoom_pan_shift"
-void dvz_panzoom_pan_shift(
+DvzResult dvz_panzoom_pan_shift(
     DvzPanzoom * pz,
     vec2 shift_px,
     vec2 center_px
@@ -9979,7 +9536,7 @@ Apply a pan shift (pixel delta).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:207._
+_Declared in `include/datoviz/controller/panzoom.h`:208._
 
 ### `dvz_panzoom_pointer()`
 
@@ -10000,12 +9557,12 @@ Process a pointer event and update panzoom state.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:248._
+_Declared in `include/datoviz/controller/panzoom.h`:249._
 
 ### `dvz_panzoom_reset()`
 
 ```c title="dvz_panzoom_reset"
-void dvz_panzoom_reset(
+DvzResult dvz_panzoom_reset(
     DvzPanzoom * pz
 );
 ```
@@ -10018,12 +9575,12 @@ Reset to the identity transform.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:141._
+_Declared in `include/datoviz/controller/panzoom.h`:142._
 
 ### `dvz_panzoom_resize()`
 
 ```c title="dvz_panzoom_resize"
-void dvz_panzoom_resize(
+DvzResult dvz_panzoom_resize(
     DvzPanzoom * pz,
     float width,
     float height
@@ -10040,7 +9597,7 @@ Update the viewport size (call on window resize).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:148._
+_Declared in `include/datoviz/controller/panzoom.h`:149._
 
 ### `dvz_panzoom_resolve()`
 
@@ -10060,7 +9617,7 @@ _Bool dvz_panzoom_resolve(
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:238._
+_Declared in `include/datoviz/controller/panzoom.h`:239._
 
 ### `dvz_panzoom_state()`
 
@@ -10081,12 +9638,12 @@ Copy the current panzoom state.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:200._
+_Declared in `include/datoviz/controller/panzoom.h`:201._
 
 ### `dvz_panzoom_viewport()`
 
 ```c title="dvz_panzoom_viewport"
-void dvz_panzoom_viewport(
+DvzResult dvz_panzoom_viewport(
     DvzPanzoom * pz,
     float x,
     float y,
@@ -10107,12 +9664,12 @@ Update the viewport rectangle in window coordinates.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:155._
+_Declared in `include/datoviz/controller/panzoom.h`:156._
 
 ### `dvz_panzoom_zoom()`
 
 ```c title="dvz_panzoom_zoom"
-void dvz_panzoom_zoom(
+DvzResult dvz_panzoom_zoom(
     DvzPanzoom * pz,
     vec2 zoom
 );
@@ -10127,7 +9684,7 @@ Set the zoom factors.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:169._
+_Declared in `include/datoviz/controller/panzoom.h`:170._
 
 ### `dvz_panzoom_zoom_limits()`
 
@@ -10150,12 +9707,12 @@ Set zoom limits.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:180._
+_Declared in `include/datoviz/controller/panzoom.h`:181._
 
 ### `dvz_panzoom_zoom_shift()`
 
 ```c title="dvz_panzoom_zoom_shift"
-void dvz_panzoom_zoom_shift(
+DvzResult dvz_panzoom_zoom_shift(
     DvzPanzoom * pz,
     vec2 shift_px,
     vec2 center_px
@@ -10172,12 +9729,12 @@ Apply a zoom shift driven by right-drag (pixel delta + anchor).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:214._
+_Declared in `include/datoviz/controller/panzoom.h`:215._
 
 ### `dvz_panzoom_zoom_wheel()`
 
 ```c title="dvz_panzoom_zoom_wheel"
-void dvz_panzoom_zoom_wheel(
+DvzResult dvz_panzoom_zoom_wheel(
     DvzPanzoom * pz,
     vec2 dir,
     vec2 center_px
@@ -10194,7 +9751,7 @@ Apply a wheel zoom.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/panzoom.h`:221._
+_Declared in `include/datoviz/controller/panzoom.h`:222._
 
 ## Parse
 
@@ -10631,8 +10188,8 @@ _Declared in `include/datoviz/fileio/fileio.h`:65._
 ```c title="dvz_read_ppm"
 uint8_t * dvz_read_ppm(
     const char * filename,
-    int * width,
-    int * height
+    uint32_t * width,
+    uint32_t * height
 );
 ```
 
@@ -10640,8 +10197,8 @@ uint8_t * dvz_read_ppm(
 | --- | --- | --- |
 | return | `uint8_t *` | owned tightly packed RGB8 pixel buffer, or NULL on failure; free with dvz_memory_free() |
 | `filename` | `const char *` | path of the file to open |
-| `width` | `int *` |  |
-| `height` | `int *` |  |
+| `width` | `uint32_t *` |  |
+| `height` | `uint32_t *` |  |
 
 Read a PPM image file.
 
@@ -10923,32 +10480,32 @@ _Declared in `include/datoviz/math/anim.h`:86._
 ```c title="dvz_resource_font"
 const unsigned char * dvz_resource_font(
     const char * name,
-    unsigned long * size
+    DvzSize * size
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `name` | `const char *` |  |
-| `size` | `unsigned long *` |  |
+| `size` | `DvzSize *` |  |
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/fileio/fileio.h`:233._
+_Declared in `include/datoviz/fileio/fileio.h`:228._
 
 ### `dvz_resource_glsl()`
 
 ```c title="dvz_resource_glsl"
 const char * dvz_resource_glsl(
     const char * name,
-    unsigned long * size
+    DvzSize * size
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `name` | `const char *` |  |
-| `size` | `unsigned long *` |  |
+| `size` | `DvzSize *` |  |
 
 Raw ctypes: emitted.
 
@@ -10959,14 +10516,14 @@ _Declared in `include/datoviz/fileio/fileio.h`:223._
 ```c title="dvz_resource_shader"
 const unsigned char * dvz_resource_shader(
     const char * name,
-    unsigned long * size
+    DvzSize * size
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `name` | `const char *` |  |
-| `size` | `unsigned long *` |  |
+| `size` | `DvzSize *` |  |
 
 *********************************************************************************************
 
@@ -10974,55 +10531,19 @@ Raw ctypes: emitted.
 
 _Declared in `include/datoviz/fileio/fileio.h`:215._
 
-### `dvz_resource_testdata()`
-
-```c title="dvz_resource_testdata"
-unsigned char * dvz_resource_testdata(
-    const char * name,
-    unsigned long * size
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `name` | `const char *` |  |
-| `size` | `unsigned long *` |  |
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/fileio/fileio.h`:239._
-
-### `dvz_resource_texture()`
-
-```c title="dvz_resource_texture"
-unsigned char * dvz_resource_texture(
-    const char * name,
-    unsigned long * size
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `name` | `const char *` |  |
-| `size` | `unsigned long *` |  |
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/fileio/fileio.h`:228._
-
 ### `dvz_resource_wgsl()`
 
 ```c title="dvz_resource_wgsl"
 const char * dvz_resource_wgsl(
     const char * name,
-    unsigned long * size
+    DvzSize * size
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `name` | `const char *` |  |
-| `size` | `unsigned long *` |  |
+| `size` | `DvzSize *` |  |
 
 Raw ctypes: emitted.
 
@@ -11052,7 +10573,7 @@ requires dvz_sampler_destroy() first.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:83._
+_Declared in `include/datoviz/vklite/sampler.h`:82._
 
 ### `dvz_sampler_address_mode()`
 
@@ -11074,7 +10595,7 @@ Set the sampler address mode
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:114._
+_Declared in `include/datoviz/vklite/sampler.h`:113._
 
 ### `dvz_sampler_anisotropy()`
 
@@ -11094,7 +10615,7 @@ Set the anisotropy.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:125._
+_Declared in `include/datoviz/vklite/sampler.h`:124._
 
 ### `dvz_sampler_create()`
 
@@ -11118,7 +10639,7 @@ Related: [`dvz_sampler_destroy()`](#dvz_sampler_destroy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:138._
+_Declared in `include/datoviz/vklite/sampler.h`:137._
 
 ### `dvz_sampler_create_wrapper()`
 
@@ -11139,7 +10660,7 @@ dvz_sampler_create_wrapper().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:69._
+_Declared in `include/datoviz/vklite/sampler.h`:68._
 
 ### `dvz_sampler_destroy()`
 
@@ -11162,7 +10683,7 @@ Related: [`dvz_sampler_create()`](#dvz_sampler_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:150._
+_Declared in `include/datoviz/vklite/sampler.h`:149._
 
 ### `dvz_sampler_free()`
 
@@ -11180,7 +10701,7 @@ Free a sampler wrapper allocated by dvz_sampler_create_wrapper().
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:169._
+_Declared in `include/datoviz/vklite/sampler.h`:168._
 
 ### `dvz_sampler_handle()`
 
@@ -11199,7 +10720,7 @@ Return the Vulkan sampler handle.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:160._
+_Declared in `include/datoviz/vklite/sampler.h`:159._
 
 ### `dvz_sampler_mag_filter()`
 
@@ -11219,7 +10740,7 @@ Set the sampler mag filter.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:103._
+_Declared in `include/datoviz/vklite/sampler.h`:102._
 
 ### `dvz_sampler_min_filter()`
 
@@ -11239,7 +10760,7 @@ Set the sampler min filter.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/vklite/sampler.h`:93._
+_Declared in `include/datoviz/vklite/sampler.h`:92._
 
 ## Semaphore
 
@@ -12895,14 +12416,14 @@ Return a monotonic timestamp in nanoseconds.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/common/functions.h`:74._
+_Declared in `include/datoviz/common/functions.h`:76._
 
 ## Turntable
 
 ### `dvz_turntable_apply_camera()`
 
 ```c title="dvz_turntable_apply_camera"
-void dvz_turntable_apply_camera(
+DvzResult dvz_turntable_apply_camera(
     DvzTurntable * turntable
 );
 ```
@@ -12915,12 +12436,12 @@ Apply the turntable pose to the attached camera.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:201._
+_Declared in `include/datoviz/controller/turntable.h`:202._
 
 ### `dvz_turntable_connect()`
 
 ```c title="dvz_turntable_connect"
-void dvz_turntable_connect(
+DvzResult dvz_turntable_connect(
     DvzTurntable * turntable,
     DvzInputRouter * router
 );
@@ -12935,7 +12456,7 @@ Subscribe the turntable to an input router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:222._
+_Declared in `include/datoviz/controller/turntable.h`:223._
 
 ### `dvz_turntable_create()`
 
@@ -12956,7 +12477,7 @@ Related: [`dvz_turntable_destroy()`](#dvz_turntable_destroy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:104._
+_Declared in `include/datoviz/controller/turntable.h`:105._
 
 ### `dvz_turntable_desc()`
 
@@ -12972,7 +12493,7 @@ Return a default turntable descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:94._
+_Declared in `include/datoviz/controller/turntable.h`:95._
 
 ### `dvz_turntable_destroy()`
 
@@ -12992,12 +12513,12 @@ Related: [`dvz_turntable_create()`](#dvz_turntable_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:241._
+_Declared in `include/datoviz/controller/turntable.h`:242._
 
 ### `dvz_turntable_disconnect()`
 
 ```c title="dvz_turntable_disconnect"
-void dvz_turntable_disconnect(
+DvzResult dvz_turntable_disconnect(
     DvzTurntable * turntable,
     DvzInputRouter * router
 );
@@ -13012,12 +12533,12 @@ Unsubscribe the turntable from an input router.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:232._
+_Declared in `include/datoviz/controller/turntable.h`:233._
 
 ### `dvz_turntable_dolly()`
 
 ```c title="dvz_turntable_dolly"
-void dvz_turntable_dolly(
+DvzResult dvz_turntable_dolly(
     DvzTurntable * turntable,
     float amount
 );
@@ -13032,12 +12553,12 @@ Dolly toward or away from the pivot.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:170._
+_Declared in `include/datoviz/controller/turntable.h`:171._
 
 ### `dvz_turntable_orbit()`
 
 ```c title="dvz_turntable_orbit"
-void dvz_turntable_orbit(
+DvzResult dvz_turntable_orbit(
     DvzTurntable * turntable,
     float yaw_delta,
     float pitch_delta
@@ -13054,12 +12575,12 @@ Orbit around the pivot.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:160._
+_Declared in `include/datoviz/controller/turntable.h`:161._
 
 ### `dvz_turntable_pan()`
 
 ```c title="dvz_turntable_pan"
-void dvz_turntable_pan(
+DvzResult dvz_turntable_pan(
     DvzTurntable * turntable,
     float right_amount,
     float up_amount
@@ -13076,12 +12597,12 @@ Pan the pivot in the current view plane.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:182._
+_Declared in `include/datoviz/controller/turntable.h`:183._
 
 ### `dvz_turntable_pivot()`
 
 ```c title="dvz_turntable_pivot"
-void dvz_turntable_pivot(
+DvzResult dvz_turntable_pivot(
     DvzTurntable * turntable,
     vec3 pivot
 );
@@ -13096,7 +12617,7 @@ Set the pivot while preserving the current camera eye.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:148._
+_Declared in `include/datoviz/controller/turntable.h`:149._
 
 ### `dvz_turntable_pointer()`
 
@@ -13117,12 +12638,12 @@ Process a pointer event.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:212._
+_Declared in `include/datoviz/controller/turntable.h`:213._
 
 ### `dvz_turntable_reset()`
 
 ```c title="dvz_turntable_reset"
-void dvz_turntable_reset(
+DvzResult dvz_turntable_reset(
     DvzTurntable * turntable
 );
 ```
@@ -13135,12 +12656,12 @@ Reset a turntable to its initial pose.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:113._
+_Declared in `include/datoviz/controller/turntable.h`:114._
 
 ### `dvz_turntable_resize()`
 
 ```c title="dvz_turntable_resize"
-void dvz_turntable_resize(
+DvzResult dvz_turntable_resize(
     DvzTurntable * turntable,
     float width,
     float height
@@ -13157,12 +12678,12 @@ Update the viewport size.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:138._
+_Declared in `include/datoviz/controller/turntable.h`:139._
 
 ### `dvz_turntable_set_camera()`
 
 ```c title="dvz_turntable_set_camera"
-void dvz_turntable_set_camera(
+DvzResult dvz_turntable_set_camera(
     DvzTurntable * turntable,
     DvzCamera * camera
 );
@@ -13177,12 +12698,12 @@ Attach a camera updated by this turntable.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:192._
+_Declared in `include/datoviz/controller/turntable.h`:193._
 
 ### `dvz_turntable_viewport()`
 
 ```c title="dvz_turntable_viewport"
-void dvz_turntable_viewport(
+DvzResult dvz_turntable_viewport(
     DvzTurntable * turntable,
     float x,
     float y,
@@ -13203,7 +12724,7 @@ Update the viewport rectangle in window coordinates.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/controller/turntable.h`:127._
+_Declared in `include/datoviz/controller/turntable.h`:128._
 
 ## Vec2
 

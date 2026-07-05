@@ -235,9 +235,10 @@ void dvz_graphics_spec(
 
     if (offset + size >= DVZ_MAX_SPEC_CONST_SIZE)
     {
+        char size_str[64] = {0};
         log_error(
             "the specialization constant data buffer can be no more than %s",
-            dvz_pretty_size(DVZ_MAX_SPEC_CONST_SIZE));
+            dvz_pretty_size(DVZ_MAX_SPEC_CONST_SIZE, size_str, sizeof(size_str)));
         return;
     }
 
@@ -247,8 +248,8 @@ void dvz_graphics_spec(
 
     VkSpecializationInfo* spec_info = &graphics->spec_info[shader_idx];
     ANN(spec_info);
-    spec_info->mapEntryCount = MAX(spec_info->mapEntryCount, index + 1);
-    spec_info->dataSize = MAX(spec_info->dataSize, offset + size);
+    spec_info->mapEntryCount = DVZ_MAX(spec_info->mapEntryCount, index + 1);
+    spec_info->dataSize = DVZ_MAX(spec_info->dataSize, offset + size);
     ASSERT(spec_info->dataSize <= DVZ_MAX_SPEC_CONST_SIZE);
 
     // Copy the value in the specialization constant data buffer.
@@ -262,7 +263,7 @@ void dvz_graphics_attachment_color(DvzGraphics* graphics, uint32_t idx, VkFormat
     ANN(graphics);
     graphics->attachments_colors[idx] = format;
     graphics->rendering.colorAttachmentCount =
-        MAX(graphics->rendering.colorAttachmentCount, idx + 1);
+        DVZ_MAX(graphics->rendering.colorAttachmentCount, idx + 1);
     /* Default: write all channels. Callers can override via dvz_graphics_blend_color(). */
     if (graphics->blend_attachments[idx].colorWriteMask == 0)
         graphics->blend_attachments[idx].colorWriteMask = 0xF;

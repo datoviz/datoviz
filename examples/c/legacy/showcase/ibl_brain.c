@@ -661,7 +661,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(index_buffer != NULL, "dvz_scene_buffer() failed");
 
     ok = dvz_scene_buffer_set_data(
-        index_buffer, dataset.mesh_idx, dataset.mesh_index_count * sizeof(DvzIndex));
+             index_buffer, dataset.mesh_idx, dataset.mesh_index_count * sizeof(DvzIndex)) ==
+         DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_scene_buffer_set_data() failed");
 
     BwmExampleState state = {
@@ -695,7 +696,7 @@ int main(int argc, char** argv)
     rc = dvz_visual_set_data_many(mesh, mesh_updates, 2);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for mesh");
 
-    ok = dvz_visual_set_buffer(mesh, "index", index_buffer);
+    ok = dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_buffer() failed");
 
     _apply_shell_material(&state);
@@ -708,8 +709,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "ibl_brain");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_window(app, figure, WIDTH, HEIGHT, "ibl_brain");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
@@ -719,7 +720,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
     dvz_view_set_gui_callback(win, _bwm_gui, &state);
 
-    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_clock_mode(scene, DVZ_SCENE_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
     DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();

@@ -75,35 +75,71 @@ static void _pace_frame(DvzClock* clock, const DvzDrp2RecordedFrame* frame, bool
 
 
 /**
+ * Warn when a recording contains ABI-local raw fallback command blobs.
+ *
+ * @param path recording directory path
+ */
+static void _warn_raw_fallbacks(const char* path)
+{
+    if (path == NULL)
+        return;
+
+    char stream_path[4096] = {0};
+    int written = snprintf(stream_path, sizeof(stream_path), "%s/stream.jsonl", path);
+    if (written <= 0 || (size_t)written >= sizeof(stream_path))
+        return;
+
+    FILE* fp = fopen(stream_path, "rb");
+    if (fp == NULL)
+        return;
+
+    uint32_t count = 0;
+    uint32_t first_index = 0;
+    int first_type = 0;
+    char line[4096] = {0};
+    while (fgets(line, sizeof(line), fp) != NULL)
+    {
+        if (strstr(line, "\"command_blob\":\"") == NULL)
+            continue;
+        if (count == 0)
+        {
+            (void)sscanf(
+                line, "{\"type\":\"command\",\"index\":%" SCNu32 ",\"cmd_type\":%d",
+                &first_index, &first_type);
+        }
+        count++;
+    }
+    fclose(fp);
+
+    if (count == 0)
+        return;
+
+    dvz_fprintf(
+        stderr,
+        "dvz_drp2_player: warning: recording uses %" PRIu32
+        " ABI-local raw fallback command(s); portability is not guaranteed\n",
+        count);
+    dvz_fprintf(
+        stderr, "dvz_drp2_player: first raw fallback at command %" PRIu32 " type %d\n",
+        first_index, first_type);
+}
+
+
+
+/**
  * Play a recording frame by frame through the semantic DRP2 runtime.
  *
  * @param recording loaded recording
+ * @param path recording directory path
  * @param fast whether playback is unpaced
  * @return process exit code
  */
-static int _play_recording(const DvzDrp2Recording* recording, bool fast)
+static int _play_recording(const DvzDrp2Recording* recording, const char* path, bool fast)
 {
     if (recording == NULL)
         return 1;
 
-    uint32_t raw_fallback_count = dvz_drp2_recording_raw_fallback_count(recording);
-    if (raw_fallback_count > 0)
-    {
-        dvz_fprintf(
-            stderr,
-            "dvz_drp2_player: warning: recording uses %" PRIu32
-            " ABI-local raw fallback command(s); portability is not guaranteed\n",
-            raw_fallback_count);
-        const DvzDrp2RawFallback* fallback = dvz_drp2_recording_raw_fallback(recording, 0);
-        if (fallback != NULL)
-        {
-            dvz_fprintf(
-                stderr,
-                "dvz_drp2_player: first raw fallback at command %" PRIu32
-                " type %d\n",
-                fallback->command_index, (int)fallback->command_type);
-        }
-    }
+    _warn_raw_fallbacks(path);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
@@ -202,7 +238,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    int rc = _play_recording(recording, fast);
+    int rc = _play_recording(recording, path, fast);
     dvz_drp2_recording_close(recording);
     return rc;
 }

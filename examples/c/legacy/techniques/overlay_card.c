@@ -113,14 +113,16 @@ static DvzOverlayCard* _add_card(
     style.text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     style.max_text_chars = 128;
 
-    return dvz_overlay_card(
+    DvzOverlayCard* card = dvz_overlay_card(
         overlay,
         &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
             .text = text,
             .placement = placement,
             .offset_px = {offset_x, offset_y},
-            .style = &style,
         });
+    if (card == NULL || dvz_overlay_card_set_style(card, &style) != 0)
+        return NULL;
+    return card;
 }
 
 
@@ -195,8 +197,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "overlay_card");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_window(app, figure, WIDTH, HEIGHT, "overlay_card");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");

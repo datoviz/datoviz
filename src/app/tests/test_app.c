@@ -30,6 +30,7 @@
 #include "datoviz/scene.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/window.h"
+#include "datoviz/window/backend.h"
 #include "test_app.h"
 
 
@@ -195,11 +196,11 @@ static int test_app_config_defaults(TstContext* suite, const TstCase* item)
     AT(config.exit_policy == DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED);
     AT(config.fps_cap == 0);
     DvzFontDefaults fonts = dvz_font_defaults();
-    AT(strcmp(config.font_defaults.sans.family, fonts.sans.family) == 0);
-    AT(strcmp(config.font_defaults.sans.style, fonts.sans.style) == 0);
-    AT(config.font_defaults.ui_size_px == fonts.ui_size_px);
-    AT(config.font_defaults.mono_size_px == fonts.mono_size_px);
-    AT(config.font_defaults.text_size_px == fonts.text_size_px);
+    AT(strcmp(config.font_sans_family, fonts.sans_family) == 0);
+    AT(strcmp(config.font_sans_style, fonts.sans_style) == 0);
+    AT(config.font_ui_size_px == fonts.ui_size_px);
+    AT(config.font_mono_size_px == fonts.mono_size_px);
+    AT(config.font_text_size_px == fonts.text_size_px);
 
     _test_restore_env("DVZ_APP_SCHEDULE", old_schedule != NULL ? saved_schedule : NULL);
     _test_restore_env("DVZ_FPS_CAP", old_fps_cap != NULL ? saved_fps_cap : NULL);
@@ -270,7 +271,7 @@ static int test_app_view_size_policy_resolve(TstContext* suite, const TstCase* i
     AT(fabs(resolved.estimated_width_mm - resolved.target_width_mm) < 1e-9);
 
     DvzViewSizeDesc host = dvz_view_size_desc_host_logical_px(320, 240);
-    resolved = dvz_view_size_resolve(&host, DVZ_VIEW_GLFW);
+    resolved = dvz_view_size_resolve(&host, DVZ_VIEW_WINDOW);
     AT(resolved.requested_policy == DVZ_VIEW_SIZE_HOST_LOGICAL_PX);
     AT(resolved.host_logical_width == 320);
     AT(resolved.framebuffer_width == 320);
@@ -279,7 +280,7 @@ static int test_app_view_size_policy_resolve(TstContext* suite, const TstCase* i
 
     DvzViewSizeDesc reference = dvz_view_size_desc_reference_px(960.0, 540.0, 96.0);
     reference.requested_device_scale = 2.0;
-    resolved = dvz_view_size_resolve(&reference, DVZ_VIEW_GLFW);
+    resolved = dvz_view_size_resolve(&reference, DVZ_VIEW_WINDOW);
     AT(resolved.requested_policy == DVZ_VIEW_SIZE_REFERENCE_PX);
     AT(resolved.host_logical_width == 960);
     AT(resolved.host_logical_height == 540);
@@ -291,7 +292,7 @@ static int test_app_view_size_policy_resolve(TstContext* suite, const TstCase* i
     reference.monitor_dpi_x_override = 139.2;
     reference.monitor_dpi_y_override = 139.2;
     reference.requested_device_scale = 1.0;
-    resolved = dvz_view_size_resolve(&reference, DVZ_VIEW_GLFW);
+    resolved = dvz_view_size_resolve(&reference, DVZ_VIEW_WINDOW);
     AT(resolved.physical_metrics_source == DVZ_PHYSICAL_METRICS_USER_OVERRIDE);
     AT(resolved.framebuffer_width == 1392);
     AT(resolved.framebuffer_height == 783);
@@ -303,7 +304,7 @@ static int test_app_view_size_policy_resolve(TstContext* suite, const TstCase* i
     physical.monitor_dpi_x_override = 192.0;
     physical.monitor_dpi_y_override = 192.0;
     physical.requested_device_scale = 2.0;
-    resolved = dvz_view_size_resolve(&physical, DVZ_VIEW_GLFW);
+    resolved = dvz_view_size_resolve(&physical, DVZ_VIEW_WINDOW);
     AT(resolved.requested_policy == DVZ_VIEW_SIZE_PHYSICAL_MM);
     AT(resolved.host_logical_width == 960);
     AT(resolved.host_logical_height == 480);
@@ -437,9 +438,9 @@ static int test_app_resources_owned_defaults(TstContext* suite, const TstCase* i
     DvzScene* scene = dvz_scene();
     ANN(scene);
     DvzAppConfig config = _test_app_resource_config();
-    config.font_defaults.sans.family = "App Sans";
-    config.font_defaults.sans.style = "Book";
-    config.font_defaults.text_size_px = 17.0f;
+    config.font_sans_family = "App Sans";
+    config.font_sans_style = "Book";
+    config.font_text_size_px = 17.0f;
     DvzApp* app = dvz_app_with_resources(scene, &config, NULL);
     if (app == NULL)
     {
@@ -448,8 +449,8 @@ static int test_app_resources_owned_defaults(TstContext* suite, const TstCase* i
         return 0;
     }
     DvzFontDefaults scene_fonts = dvz_scene_font_defaults(scene);
-    AT(strcmp(scene_fonts.sans.family, "App Sans") == 0);
-    AT(strcmp(scene_fonts.sans.style, "Book") == 0);
+    AT(strcmp(scene_fonts.sans_family, "App Sans") == 0);
+    AT(strcmp(scene_fonts.sans_style, "Book") == 0);
     AT(scene_fonts.text_size_px == 17.0f);
 
     dvz_app_destroy(app);
@@ -749,11 +750,11 @@ static int test_app_trace_fingerprint_ignores_frame_handles_and_payloads(
     ANN(a);
     ANN(b);
 
-    AT(dvz_drp2_stream_write_buffer(a, 42, 8, 4, "AAAA"));
+    AT(dvz_drp2_stream_write_buffer_base64(a, 42, 8, 4, "AAAA"));
     AT(dvz_drp2_stream_finish_command_encoder(a, 7, 100));
     AT(dvz_drp2_stream_queue_submit(a, 100, 200));
 
-    AT(dvz_drp2_stream_write_buffer(b, 42, 8, 4, "BBBB"));
+    AT(dvz_drp2_stream_write_buffer_base64(b, 42, 8, 4, "BBBB"));
     AT(dvz_drp2_stream_finish_command_encoder(b, 7, 101));
     AT(dvz_drp2_stream_queue_submit(b, 101, 201));
 
@@ -779,8 +780,8 @@ static int test_app_trace_fingerprint_keeps_write_ranges(TstContext* suite, cons
     ANN(a);
     ANN(b);
 
-    AT(dvz_drp2_stream_write_buffer(a, 42, 8, 4, "AAAA"));
-    AT(dvz_drp2_stream_write_buffer(b, 42, 12, 4, "AAAA"));
+    AT(dvz_drp2_stream_write_buffer_base64(a, 42, 8, 4, "AAAA"));
+    AT(dvz_drp2_stream_write_buffer_base64(b, 42, 12, 4, "AAAA"));
 
     uint64_t fa = 0;
     uint64_t fb = 0;

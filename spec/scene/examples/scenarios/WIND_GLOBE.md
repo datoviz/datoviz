@@ -26,7 +26,7 @@ sphere) by combining them into a single 3D scene.
 
 ## Feature Pressure
 
-- `dvz_mesh()` with equirectangular texture — textured sphere geometry via `dvz_geom_sphere()`
+- `dvz_mesh()` with equirectangular texture — textured sphere geometry via `dvz_geometry_sphere()`
 - `dvz_vector()` in 3D — wind arrows anchored to sphere surface positions
 - `dvz_path()` in 3D — streamlines as multi-segment curves on sphere surface
 - Arcball controller shared across all three visuals in one panel

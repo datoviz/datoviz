@@ -77,9 +77,6 @@ struct DvzDrp2Recording
     DvzDrp2RecordedFrame* frames;
     uint32_t frame_count;
     uint32_t frame_capacity;
-    DvzDrp2RawFallback* raw_fallbacks;
-    uint32_t raw_fallback_count;
-    uint32_t raw_fallback_capacity;
 };
 
 
@@ -445,40 +442,6 @@ static bool _recording_frame_append(
         return false;
     DvzDrp2RecordedFrame* dst = &recording->frames[recording->frame_count++];
     dvz_memcpy(dst, sizeof(DvzDrp2RecordedFrame), frame, sizeof(DvzDrp2RecordedFrame));
-    return true;
-}
-
-
-
-/**
- * Append one raw fallback record to a loaded recording.
- *
- * @param recording loaded recording
- * @param fallback raw fallback record
- * @return whether the record was appended
- */
-static bool
-_recording_raw_fallback_append(DvzDrp2Recording* recording, const DvzDrp2RawFallback* fallback)
-{
-    ANN(recording);
-    ANN(fallback);
-    if (recording->raw_fallback_count == recording->raw_fallback_capacity)
-    {
-        uint32_t capacity =
-            recording->raw_fallback_capacity == 0 ? 4 : recording->raw_fallback_capacity * 2;
-        if (capacity <= recording->raw_fallback_capacity)
-            return false;
-        uint64_t bytes = 0;
-        if (_dvz_mul_u64_overflows(capacity, sizeof(DvzDrp2RawFallback), &bytes))
-            return false;
-        DvzDrp2RawFallback* raw_fallbacks =
-            (DvzDrp2RawFallback*)dvz_realloc(recording->raw_fallbacks, bytes);
-        if (raw_fallbacks == NULL)
-            return false;
-        recording->raw_fallbacks = raw_fallbacks;
-        recording->raw_fallback_capacity = capacity;
-    }
-    recording->raw_fallbacks[recording->raw_fallback_count++] = *fallback;
     return true;
 }
 
@@ -3222,25 +3185,7 @@ DvzDrp2Recording* dvz_drp2_recording_open(const char* path)
     {
         if (strstr(line, "\"type\":\"command\"") != NULL)
         {
-            bool raw_fallback = strstr(line, "\"command_blob\":\"") != NULL;
-            DvzDrp2RawFallback fallback = {0};
-            uint64_t command_index = 0;
-            uint32_t command_type = 0;
-            if (raw_fallback)
-            {
-                if (!_recording_line_u64(line, "\"index\":", &command_index) ||
-                    !_recording_line_u32(line, "\"cmd_type\":", &command_type) ||
-                    command_index > UINT32_MAX)
-                {
-                    ok = false;
-                    break;
-                }
-                fallback.command_index = (uint32_t)command_index;
-                fallback.command_type = (DvzDrp2CommandType)command_type;
-            }
             ok = _recording_read_command(path, line, stream, owner);
-            if (ok && raw_fallback)
-                ok = _recording_raw_fallback_append(recording, &fallback);
         }
         else if (strstr(line, "\"type\":\"frame\"") != NULL)
             ok = _recording_read_frame(line, recording);
@@ -3271,7 +3216,6 @@ void dvz_drp2_recording_close(DvzDrp2Recording* recording)
         return;
     dvz_drp2_stream_destroy(recording->stream);
     dvz_free(recording->frames);
-    dvz_free(recording->raw_fallbacks);
     dvz_free(recording);
 }
 
@@ -3318,36 +3262,6 @@ const DvzDrp2RecordedFrame* dvz_drp2_recording_frame(
     if (recording == NULL || frame_index >= recording->frame_count)
         return NULL;
     return &recording->frames[frame_index];
-}
-
-
-
-/**
- * Return the number of raw fallback records in a loaded recording.
- *
- * @param recording loaded recording
- * @return raw fallback count
- */
-uint32_t dvz_drp2_recording_raw_fallback_count(const DvzDrp2Recording* recording)
-{
-    return recording != NULL ? recording->raw_fallback_count : 0;
-}
-
-
-
-/**
- * Return one raw fallback record.
- *
- * @param recording loaded recording
- * @param fallback_index raw fallback index
- * @return raw fallback record, or NULL
- */
-const DvzDrp2RawFallback* dvz_drp2_recording_raw_fallback(
-    const DvzDrp2Recording* recording, uint32_t fallback_index)
-{
-    if (recording == NULL || fallback_index >= recording->raw_fallback_count)
-        return NULL;
-    return &recording->raw_fallbacks[fallback_index];
 }
 
 

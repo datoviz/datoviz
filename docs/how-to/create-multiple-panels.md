@@ -46,9 +46,9 @@ Rows and columns default to equal weight. Use fixed-pixel or weighted row/column
 panel is a sidebar, overview, or shared control strip:
 
 ```c
-dvz_grid_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 2.0f);
-dvz_grid_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 1.0f);
-dvz_grid_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 160.0f);
+dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 2.0f);
+dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 1.0f);
+dvz_grid_set_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 160.0f);
 ```
 
 ## Spanning Panels

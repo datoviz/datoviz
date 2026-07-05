@@ -613,10 +613,10 @@ int test_drp2_recording_reports_raw_fallback_command(TstContext* suite, const Ts
         .t_present = 0.0,
         .backend_hint = "semantic",
     };
-    const char* path = "/tmp/dvz_drp2_recording_raw_fallback.dvzr";
+    const char* path = "/tmp/dvz_drp2_recording_raw_blob.dvzr";
     AT(dvz_drp2_recording_write_stream(path, stream, &info));
 
-    FILE* stream_file = fopen("/tmp/dvz_drp2_recording_raw_fallback.dvzr/stream.jsonl", "rb");
+    FILE* stream_file = fopen("/tmp/dvz_drp2_recording_raw_blob.dvzr/stream.jsonl", "rb");
     ANN(stream_file);
     char stream_jsonl[8192] = {0};
     size_t stream_jsonl_size = fread(stream_jsonl, 1, sizeof(stream_jsonl) - 1, stream_file);
@@ -625,15 +625,20 @@ int test_drp2_recording_reports_raw_fallback_command(TstContext* suite, const Ts
     AT(strstr(stream_jsonl, "\"op\":\"CreateBuffer\"") != NULL);
     AT(strstr(stream_jsonl, ".cmd") != NULL);
     AT(strstr(stream_jsonl, "\"command_blob\":\"") != NULL);
+    char fallback_type[64] = {0};
+    snprintf(
+        fallback_type, sizeof(fallback_type), "\"cmd_type\":%d",
+        (int)DVZ_DRP2_COMMAND_DESTROY_BUFFER);
+    AT(strstr(stream_jsonl, fallback_type) != NULL);
 
     DvzDrp2Recording* recording = dvz_drp2_recording_open(path);
     ANN(recording);
-    AT(dvz_drp2_recording_raw_fallback_count(recording) == 1);
-    const DvzDrp2RawFallback* fallback = dvz_drp2_recording_raw_fallback(recording, 0);
+    const DvzDrp2CommandStream* loaded = dvz_drp2_recording_stream(recording);
+    ANN(loaded);
+    AT(dvz_drp2_stream_count(loaded) == dvz_drp2_stream_count(stream));
+    const DvzDrp2Command* fallback = dvz_drp2_stream_get(loaded, 3);
     ANN(fallback);
-    AT(fallback->command_index == 3);
-    AT(fallback->command_type == DVZ_DRP2_COMMAND_DESTROY_BUFFER);
-    AT(dvz_drp2_recording_raw_fallback(recording, 1) == NULL);
+    AT(fallback->type == DVZ_DRP2_COMMAND_DESTROY_BUFFER);
     dvz_drp2_recording_close(recording);
 
     dvz_drp2_stream_destroy(stream);

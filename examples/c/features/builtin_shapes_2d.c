@@ -146,7 +146,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     const bool ok =
         _add_geometry(
             ctx->scene, panel,
-            dvz_geom_plane(&(DvzGeometryPlaneDesc){
+            dvz_geometry_plane(&(DvzGeometryPlaneDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryPlaneDesc),
                 .center = {-0.66, +0.40, 0.0},
                 .width = 0.46,
@@ -155,7 +155,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             })) &&
         _add_geometry(
             ctx->scene, panel,
-            dvz_geom_disc(&(DvzGeometryDiscDesc){
+            dvz_geometry_disc(&(DvzGeometryDiscDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryDiscDesc),
                 .center = {0.0, +0.40, 0.01},
                 .radius = 0.21,
@@ -164,7 +164,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             })) &&
         _add_geometry(
             ctx->scene, panel,
-            dvz_geom_sector(&(DvzGeometrySectorDesc){
+            dvz_geometry_sector(&(DvzGeometrySectorDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometrySectorDesc),
                 .center = {+0.66, +0.40, 0.02},
                 .radius = 0.27,
@@ -175,7 +175,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             })) &&
         _add_geometry(
             ctx->scene, panel,
-            dvz_geom_regular_polygon(&(DvzGeometryRegularPolygonDesc){
+            dvz_geometry_regular_polygon(&(DvzGeometryRegularPolygonDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryRegularPolygonDesc),
                 .center = {-0.66, -0.30, 0.03},
                 .radius = 0.25,
@@ -184,7 +184,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             })) &&
         _add_geometry(
             ctx->scene, panel,
-            dvz_geom_star(&(DvzGeometryStarDesc){
+            dvz_geometry_star(&(DvzGeometryStarDesc){
                 DVZ_STRUCT_INIT_FIELDS(DvzGeometryStarDesc),
                 .center = {0.0, -0.30, 0.04},
                 .outer_radius = 0.28,

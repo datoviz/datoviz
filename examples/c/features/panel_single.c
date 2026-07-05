@@ -96,7 +96,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanelBorderDesc border = dvz_panel_border_desc();
     border.color = example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID);
     border.width_px = 2.0f;
-    if (!dvz_panel_set_border(panel, &border))
+    if (dvz_panel_set_border(panel, &border) != DVZ_OK)
         return false;
 
     DvzVisual* point = dvz_point(ctx->scene, 0);

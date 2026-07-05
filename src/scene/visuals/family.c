@@ -110,3 +110,17 @@ bool _visual_family_attr_source_supported(
         return false;
     return (desc->source_mask & (1u << source)) != 0;
 }
+
+
+
+/**
+ * Return whether a visual family accepts continuous scales on scalar float color attributes.
+ *
+ * @param type the visual type
+ * @return whether scalar color scales are supported
+ */
+bool _visual_family_supports_scalar_color_scale(DvzVisualType type)
+{
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops(type);
+    return ops != NULL && ops->supports_scalar_color_scale;
+}

@@ -210,8 +210,8 @@ Recommended data setter:
 
 ```c
 int dvz_bars_set_intervals(
-    DvzBars* bars, uint32_t count, const double* starts, const double* ends,
-    const double* values);
+    DvzBars* bars, const double* starts, const double* ends, const double* values,
+    uint32_t count);
 ```
 
 For vertical bars, `starts`/`ends` are x interval edges and `values` are y values from `baseline`.
@@ -269,11 +269,11 @@ Recommended setters:
 
 ```c
 int dvz_band_set_bounds(
-    DvzBand* band, uint32_t count, const double* x, const double* lower,
-    const double* upper);
+    DvzBand* band, const double* x, const double* lower, const double* upper,
+    uint32_t count);
 
 int dvz_band_set_center(
-    DvzBand* band, uint32_t count, const double* x, const double* y);
+    DvzBand* band, const double* x, const double* y, uint32_t count);
 ```
 
 `dvz_band_set_center()` is optional. If absent and `show_line` is true, the center may be derived as

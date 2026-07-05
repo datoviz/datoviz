@@ -126,7 +126,7 @@ dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8
  * @param[out] height of the image
  * @returns owned tightly packed RGB8 pixel buffer, or NULL on failure; free with dvz_memory_free()
  */
-DVZ_EXPORT uint8_t* dvz_read_ppm(const char* filename, int* width, int* height);
+DVZ_EXPORT uint8_t* dvz_read_ppm(const char* filename, uint32_t* width, uint32_t* height);
 
 
 
@@ -180,8 +180,8 @@ dvz_load_png(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* h
 /**
  * Decode a JPEG image from memory into tightly packed RGBA8 pixels.
  *
- * @param size size of the JPEG byte buffer
  * @param bytes JPEG byte buffer
+ * @param size_bytes size of the JPEG byte buffer in bytes
  * @param[out] width decoded image width
  * @param[out] height decoded image height
  * @returns RGBA8 pixel buffer allocated with the Datoviz allocator, or NULL on failure
@@ -189,7 +189,7 @@ dvz_load_png(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* h
  * @note Free the returned buffer with dvz_memory_free().
  */
 DVZ_EXPORT uint8_t*
-dvz_load_jpeg(DvzSize size, const unsigned char* bytes, uint32_t* width, uint32_t* height);
+dvz_load_jpeg(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* height);
 
 
 
@@ -212,31 +212,20 @@ DVZ_EXPORT uint8_t* dvz_read_jpeg(const char* filename, uint32_t* width, uint32_
 /*************************************************************************************************/
 
 // Defined in cmake-generated file build/_shaders.c
-DVZ_EXPORT const unsigned char* dvz_resource_shader(const char* name, unsigned long* size);
+DVZ_EXPORT const unsigned char* dvz_resource_shader(const char* name, DvzSize* size);
 
 
 // Defined in cmake-generated file build/_wgsl_shaders.c
-DVZ_EXPORT const char* dvz_resource_wgsl(const char* name, unsigned long* size);
+DVZ_EXPORT const char* dvz_resource_wgsl(const char* name, DvzSize* size);
 
 
 // Defined in cmake-generated file build/_glsl_shaders.c
-DVZ_EXPORT const char* dvz_resource_glsl(const char* name, unsigned long* size);
-
-
-
-// Defined in cmake-generated file build/_textures.c
-DVZ_EXPORT unsigned char* dvz_resource_texture(const char* name, unsigned long* size);
+DVZ_EXPORT const char* dvz_resource_glsl(const char* name, DvzSize* size);
 
 
 
 // Defined in cmake-generated file build/_fonts.c
-DVZ_EXPORT const unsigned char* dvz_resource_font(const char* name, unsigned long* size);
-
-
-
-// Defined in cmake-generated file build/_testdata.c
-// NOTE: only built in the CLI, not in libdatoviz.
-DVZ_EXPORT unsigned char* dvz_resource_testdata(const char* name, unsigned long* size);
+DVZ_EXPORT const unsigned char* dvz_resource_font(const char* name, DvzSize* size);
 
 
 

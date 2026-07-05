@@ -6,7 +6,7 @@
 
 /* surface_grid - generated height-field mesh via geom -> scene mesh upload.
  *
- * Opens a GLFW window showing a lit structured surface generated with `dvz_geom_surface_grid()`
+ * Opens a GLFW window showing a lit structured surface generated with `dvz_geometry_surface_grid()`
  * and uploaded through explicit mesh visual data. This example is the first visible pressure test
  * for the v0.4 CPU geom -> mesh visual path.
  *
@@ -78,7 +78,7 @@ static void _surface_data(double* heights, DvzColor* colors)
             const uint32_t idx = row * SURFACE_COLS + col;
             heights[idx] = wave;
 
-            const double t = CLIP((wave + 0.36) / 0.72, 0.0, 1.0);
+            const double t = DVZ_CLIP((wave + 0.36) / 0.72, 0.0, 1.0);
             colors[idx] = dvz_color_rgb(
                 (uint8_t)(28.0 + 210.0 * t),
                 (uint8_t)(70.0 + 135.0 * (1.0 - fabs(2.0 * t - 1.0))),
@@ -139,8 +139,8 @@ int main(int argc, char** argv)
         .height_axis = {0.0, 0.0, 1.0},
         .height_scale = 1.0,
     };
-    geometry = dvz_geom_surface_grid(&desc);
-    EXAMPLE_CHECK(geometry != NULL, "dvz_geom_surface_grid() failed");
+    geometry = dvz_geometry_surface_grid(&desc);
+    EXAMPLE_CHECK(geometry != NULL, "dvz_geometry_surface_grid() failed");
 
     DvzVisual* visual = dvz_mesh(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_mesh() failed");
@@ -161,7 +161,7 @@ int main(int argc, char** argv)
 
     app = dvz_app(scene);
     DvzView* win =
-        app != NULL ? dvz_view_glfw(app, figure, WIDTH, HEIGHT, "surface grid") : NULL;
+        app != NULL ? dvz_view_window(app, figure, WIDTH, HEIGHT, "surface grid") : NULL;
     EXAMPLE_CHECK(app != NULL && win != NULL, "app/window setup failed");
 
     DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);

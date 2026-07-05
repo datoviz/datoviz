@@ -42,3 +42,5 @@ making v0.4 implementation depend on speculative public APIs.
 5. [RAY_TRACING_FORWARD_COMPAT.md](RAY_TRACING_FORWARD_COMPAT.md): non-v0.4-blocking ray-tracing
    compatibility rationale; current preparation lives in lighting, frame-plan, and unified ray
    rendering specs.
+6. [COMPOSITION_LAYER_RENDERING.md](COMPOSITION_LAYER_RENDERING.md): post-v0.4 plan for preserving
+   underlay/data/overlay ordering across opaque and transparent render passes.

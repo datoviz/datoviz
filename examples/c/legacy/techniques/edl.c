@@ -171,7 +171,7 @@ static void _apply_edl(EdlExampleState* state)
         .strength = state->strength,
         .depth_scale = state->depth_scale,
     };
-    if (!dvz_panel_set_edl(state->panel, &desc))
+    if (dvz_panel_set_edl(state->panel, &desc) != DVZ_OK)
         dvz_fprintf(stderr, "dvz_panel_set_edl() failed\n");
 }
 
@@ -422,8 +422,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "edl");
-    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_window(app, figure, WIDTH, HEIGHT, "edl");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_window() failed (GLFW unavailable?)");
 
     DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");

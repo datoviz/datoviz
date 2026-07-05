@@ -297,17 +297,15 @@ DvzSampledField* dvz_sampled_field(DvzScene* scene, const DvzSampledFieldDesc* d
  * Destroy a sampled field.
  *
  * @param field the sampled field
- * @return true on success, false on error
  */
-bool dvz_sampled_field_destroy(DvzSampledField* field)
+void dvz_sampled_field_destroy(DvzSampledField* field)
 {
     if (field == NULL)
-        return false;
+        return;
     if (!_scene_visual_mutation_allowed(field->scene, "destroy sampled field"))
-        return false;
+        return;
     _scene_release_field_bindings(field);
     _scene_field_reset(field);
-    return true;
 }
 
 
@@ -317,32 +315,36 @@ bool dvz_sampled_field_destroy(DvzSampledField* field)
  *
  * @param field the sampled field
  * @param geometry the geometry descriptor
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-bool dvz_sampled_field_set_geometry(
+DvzResult dvz_sampled_field_set_geometry(
     DvzSampledField* field, const DvzFieldGeometry* geometry)
 {
     ANN(field);
     ANN(geometry);
     if (!_field_geometry_validate(geometry))
-        return false;
+        return DVZ_ERROR;
     if (!_scene_visual_mutation_allowed(field->scene, "update sampled field geometry"))
-        return false;
+        return DVZ_ERROR;
     field->geometry = *geometry;
-    return true;
+    return DVZ_OK;
 }
 
 
 
 /**
- * Return the immutable field descriptor.
+ * Copy immutable field descriptor information.
  *
  * @param field the sampled field
- * @return the descriptor, or NULL on error
+ * @param out output field descriptor
+ * @return whether the descriptor was copied
  */
-const DvzSampledFieldDesc* dvz_sampled_field_get_desc(const DvzSampledField* field)
+bool dvz_sampled_field_info(const DvzSampledField* field, DvzSampledFieldDesc* out)
 {
-    return field != NULL ? &field->desc : NULL;
+    if (field == NULL || out == NULL)
+        return false;
+    *out = field->desc;
+    return true;
 }
 
 

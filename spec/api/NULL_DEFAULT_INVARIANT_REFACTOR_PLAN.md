@@ -60,7 +60,7 @@ Current behavior:
 dvz_view_gui(view, NULL);
 ```
 
-inherits `win->app->config.font_defaults`, but:
+inherits the flattened `win->app->config.font_*` defaults, but:
 
 ```c
 DvzGuiConfig cfg = dvz_gui_config();

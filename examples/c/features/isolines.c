@@ -222,20 +222,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.view.eye[0] = 1.55f;
-    camera.view.eye[1] = -2.00f;
-    camera.view.eye[2] = 1.45f;
-    camera.view.target[0] = 0.0f;
-    camera.view.target[1] = 0.0f;
-    camera.view.target[2] = 0.08f;
-    camera.view.up[0] = 0.0f;
-    camera.view.up[1] = 0.0f;
-    camera.view.up[2] = 1.0f;
-    camera.projection.fov_y = 0.66f;
-    camera.projection.near_clip = 0.05f;
-    camera.projection.far_clip = 100.0f;
-    if (dvz_panel_set_camera_desc(panel, &camera) != 0)
+    if (example_set_default_3d_camera(panel, 1.0f) == NULL)
         return false;
 
     DvzGeometrySurfaceGridDesc desc = dvz_geometry_surface_grid_desc();
@@ -245,7 +232,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     desc.origin[1] = -0.775;
     desc.col_basis[0] = 2.10 / (double)(GRID_COLS - 1u);
     desc.row_basis[1] = 1.55 / (double)(GRID_ROWS - 1u);
-    DvzGeometry* geometry = dvz_geom_surface_grid(&desc);
+    DvzGeometry* geometry = dvz_geometry_surface_grid(&desc);
     double* values = (double*)dvz_calloc(GRID_ROWS * GRID_COLS, sizeof(double));
     if (geometry == NULL || values == NULL)
         goto error;

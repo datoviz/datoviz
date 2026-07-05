@@ -548,8 +548,10 @@ _text_block_resolve_font_slot(DvzScene* scene, const DvzTextBlockLayout* layout,
     if (slot == DVZ_TEXT_BLOCK_FACE_BOLD_ITALIC && layout->bold_italic_font != NULL)
         return layout->bold_italic_font;
 
-    DvzFontDesc desc = scene->font_defaults.sans;
-    const char* family = desc.family != NULL && desc.family[0] != '\0' ? desc.family : "Roboto";
+    const char* family = scene->font_defaults.sans_family != NULL &&
+                                 scene->font_defaults.sans_family[0] != '\0' ?
+                             scene->font_defaults.sans_family :
+                             "Roboto";
     const char* style = "Regular";
     if (slot == DVZ_TEXT_BLOCK_FACE_BOLD)
         style = "Bold";
@@ -559,8 +561,10 @@ _text_block_resolve_font_slot(DvzScene* scene, const DvzTextBlockLayout* layout,
         style = "Bold Italic";
 
     const char* path = NULL;
-    if (slot == DVZ_TEXT_BLOCK_FACE_REGULAR && desc.path != NULL && desc.path[0] != '\0')
-        path = desc.path;
+    if (
+        slot == DVZ_TEXT_BLOCK_FACE_REGULAR && scene->font_defaults.sans_path != NULL &&
+        scene->font_defaults.sans_path[0] != '\0')
+        path = scene->font_defaults.sans_path;
     else if (slot != DVZ_TEXT_BLOCK_FACE_REGULAR)
         path = _text_block_known_font_path(family, style);
     if (slot != DVZ_TEXT_BLOCK_FACE_REGULAR && path == NULL)
@@ -568,6 +572,11 @@ _text_block_resolve_font_slot(DvzScene* scene, const DvzTextBlockLayout* layout,
     if (path != NULL && !_text_block_font_path_available(path))
         return NULL;
 
+    DvzFontDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzFontDesc),
+        .face_index = scene->font_defaults.sans_face_index,
+        .font_flags = scene->font_defaults.sans_font_flags,
+    };
     desc.path = path;
     desc.family = family;
     desc.style = style;
@@ -1546,7 +1555,7 @@ void _scene_text_block_destroy(DvzTextBlock* block)
     }
     if (block->image_field != NULL)
     {
-        (void)dvz_sampled_field_destroy(block->image_field);
+        dvz_sampled_field_destroy(block->image_field);
         block->image_field = NULL;
     }
     if (block->rgba != NULL)
@@ -2043,8 +2052,8 @@ int _scene_text_block_realize_image(
         block->image_width != block->raster_width || block->image_height != block->raster_height;
     if (image_size_changed)
     {
-        if (!dvz_sampled_field_resize(
-                block->image_field, block->raster_width, block->raster_height, 1, &view))
+        if (dvz_sampled_field_resize(
+                block->image_field, block->raster_width, block->raster_height, 1, &view) != DVZ_OK)
             return -1;
         block->image_width = block->raster_width;
         block->image_height = block->raster_height;
@@ -2052,7 +2061,7 @@ int _scene_text_block_realize_image(
     }
     else if (block->image_raster_version != block->raster_version)
     {
-        if (!dvz_sampled_field_set_data(block->image_field, &view))
+        if (dvz_sampled_field_set_data(block->image_field, &view) != DVZ_OK)
             return -1;
         block->image_raster_version = block->raster_version;
     }
@@ -2094,7 +2103,7 @@ int _scene_text_block_realize_image(
     }
     if (_visual_family_state(block->image_visual)->field != block->image_field)
     {
-        if (!dvz_visual_set_field(block->image_visual, "field", block->image_field))
+        if (dvz_visual_set_field(block->image_visual, "field", block->image_field) != DVZ_OK)
             return -1;
     }
     if (!block->image_attached)

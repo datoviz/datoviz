@@ -85,7 +85,7 @@ The first public header split has landed. Treat these groups as implemented APIs
     scene resources,
 12. rendered label annotations through the text/glyph path,
 13. rendered continuous colorbar ramp, ticks, title, and labels,
-14. rendered 2D/3D scale bars through `dvz_scalebar()`,
+14. rendered 2D/3D scale bars through `dvz_scale_bar()`,
 15. retained categorical scale entries and rendered categorical legends,
 16. semantic polygon and polygon-set composites lowered to fill/stroke visuals,
 17. retained per-visual local transforms with copy-out inspection helpers.
@@ -149,10 +149,10 @@ dvz_<object>_<role>_<property>()
 Examples:
 
 ```text
-dvz_polygon_fill_color()
-dvz_polygon_stroke_width_px()
-dvz_graph_node_sizes()
-dvz_graph_edge_colors()
+dvz_polygon_set_fill_color()
+dvz_polygon_set_stroke_width_px()
+dvz_graph_set_node_sizes()
+dvz_graph_set_edge_colors()
 ```
 
 Advanced APIs may expose generated visuals by stable role names, such as `"fill"`, `"stroke"`,
@@ -188,7 +188,7 @@ typedef struct DvzItemRange
 } DvzItemRange;
 
 int dvz_visual_set_item_range(DvzVisual* visual, uint32_t first_item, uint32_t item_count);
-void dvz_visual_clear_item_range(DvzVisual* visual);
+DvzResult dvz_visual_clear_item_range(DvzVisual* visual);
 bool dvz_visual_get_item_range(const DvzVisual* visual, DvzItemRange* out);
 ```
 
@@ -276,7 +276,7 @@ not part of the release surface:
 7. `dvz_panel_clear_domain_fit()`.
 
 The release-candidate names for the surviving view/framing surface are
-`DvzPanelView2D`, `dvz_panel_view2d()`, `dvz_panel_set_view2d()`,
+`DvzPanelView2DDesc`, `dvz_panel_view2d_desc()`, `dvz_panel_set_view2d()`,
 `dvz_panel_clear_view2d()`, and `dvz_panel_view2d_extent()`. The ownership split is fixed: source
 panel domains are not mutated to apply equal-aspect framing.
 
@@ -354,7 +354,7 @@ controller model transform.
 4. optional axis length and style knobs.
 
 The implementation should lower the triad to ordinary generated mesh geometry. Geometry generation
-belongs in `geom` through `dvz_geom_gizmo_axes()` once that generator lands; scene/app owns inset
+belongs in `geom` through `dvz_geometry_gizmo_axes()` once that generator lands; scene/app owns inset
 placement, synchronization, redraw requests, viewport/scissor handling, and depth policy.
 
 Do not use the old v0.3 `panel.gizmo()` name as the C contract. Bindings may add a shorter alias

@@ -115,7 +115,8 @@ int test_controller_camera_create(TstContext* suite, const TstCase* item)
     ANN(camera);
 
     DvzMVP mvp = {0};
-    dvz_camera_resize(camera, 640.0f, 480.0f);
+    AT(dvz_camera_resize(camera, 640.0f, 480.0f) == DVZ_OK);
+    AT(dvz_camera_resize(NULL, 640.0f, 480.0f) == DVZ_ERROR);
     dvz_camera_mvp(camera, &mvp);
     AT(mvp.view[3][2] != 0.0f);
     AT(mvp.proj[0][0] != 0.0f);
@@ -147,7 +148,7 @@ int test_controller_camera_orthographic_bounds(TstContext* suite, const TstCase*
 
     DvzCamera* camera = dvz_camera_create(NULL);
     ANN(camera);
-    dvz_camera_resize(camera, 640.0f, 480.0f);
+    AT(dvz_camera_resize(camera, 640.0f, 480.0f) == DVZ_OK);
 
     DvzMVP mvp = {0};
     mat4 expected = GLM_MAT4_IDENTITY_INIT;
@@ -168,7 +169,7 @@ int test_controller_camera_orthographic_bounds(TstContext* suite, const TstCase*
     AC(far, 100.0f, 1e-6f);
 
     AT(dvz_camera_set_orthographic_bounds(camera, 4.0f, -2.0f, 3.0f, -1.0f, 0.1f, 100.0f) == 0);
-    dvz_camera_resize(camera, 1200.0f, 300.0f);
+    AT(dvz_camera_resize(camera, 1200.0f, 300.0f) == DVZ_OK);
     dvz_camera_mvp(camera, &mvp);
     glm_ortho(4.0f, -2.0f, 3.0f, -1.0f, 0.1f, 100.0f, expected);
     AT(_assert_mat4_close(mvp.proj, expected, 1e-6f) == 0);
@@ -177,14 +178,14 @@ int test_controller_camera_orthographic_bounds(TstContext* suite, const TstCase*
     AT(dvz_camera_set_orthographic_bounds(camera, -1.0f, 1.0f, 1.0f, 1.0f, 0.1f, 100.0f) == -1);
     AT(dvz_camera_set_orthographic_bounds(camera, -1.0f, 1.0f, -1.0f, 1.0f, 5.0f, 5.0f) == -1);
 
-    dvz_camera_set_orthographic(camera, 2.0f, 0.1f, 100.0f);
+    AT(dvz_camera_set_orthographic(camera, 2.0f, 0.1f, 100.0f) == DVZ_OK);
     AT(dvz_camera_get_orthographic_bounds(camera, NULL, NULL, NULL, NULL, NULL, NULL) == -1);
     dvz_camera_mvp(camera, &mvp);
     glm_ortho(-4.0f, 4.0f, -1.0f, 1.0f, 0.1f, 100.0f, expected);
     AT(_assert_mat4_close(mvp.proj, expected, 1e-6f) == 0);
 
     AT(dvz_camera_set_orthographic_bounds(camera, -2.0f, 2.0f, -2.0f, 2.0f, 0.1f, 100.0f) == 0);
-    dvz_camera_set_perspective(camera, GLM_PI_4f, 0.1f, 100.0f);
+    AT(dvz_camera_set_perspective(camera, GLM_PI_4f, 0.1f, 100.0f) == DVZ_OK);
     AT(dvz_camera_get_orthographic_bounds(camera, NULL, NULL, NULL, NULL, NULL, NULL) == -1);
 
     dvz_camera_destroy(camera);

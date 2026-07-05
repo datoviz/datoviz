@@ -224,7 +224,7 @@ DvzDrp2CommandStream* drp2_test_valid_render_stream(void)
     dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer");
     dvz_drp2_stream_create_buffer(
         stream, 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX);
-    dvz_drp2_stream_write_buffer(stream, 1, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA==");
+    dvz_drp2_stream_write_buffer_base64(stream, 1, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA==");
     dvz_drp2_stream_create_shader_module(stream, 2, "vertex", "@vertex fn main() {}");
     dvz_drp2_stream_create_shader_module(stream, 3, "fragment", "@fragment fn main() {}");
     drp2_test_create_render_pipeline(stream, 4, 2, 3, 1);

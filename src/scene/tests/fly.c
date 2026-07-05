@@ -146,9 +146,10 @@ int test_fly_pitch_clamp_and_reset(TstContext* suite, const TstCase* item)
     AT(fly->pitch < GLM_PI_2f);
     AT(fly->pitch > 0.0f);
 
-    dvz_fly_move_forward(fly, 1.0f);
-    dvz_fly_rotate(fly, 0.5f, -1.0f);
-    dvz_fly_reset(fly);
+    AT(dvz_fly_move_forward(fly, 1.0f) == DVZ_OK);
+    AT(dvz_fly_rotate(fly, 0.5f, -1.0f) == DVZ_OK);
+    AT(dvz_fly_reset(fly) == DVZ_OK);
+    AT(dvz_fly_reset(NULL) == DVZ_ERROR);
 
     vec3 pos = {0};
     dvz_fly_get_position(fly, pos);
@@ -179,7 +180,7 @@ int test_fly_free_and_plane_movement(TstContext* suite, const TstCase* item)
 
     DvzFly* free_fly = _dvz_fly(&desc);
     ANN(free_fly);
-    dvz_fly_move_forward(free_fly, 1.0f);
+    AT(dvz_fly_move_forward(free_fly, 1.0f) == DVZ_OK);
     vec3 free_pos = {0};
     dvz_fly_get_position(free_fly, free_pos);
     AT(free_pos[1] > 0.5f);
@@ -188,7 +189,7 @@ int test_fly_free_and_plane_movement(TstContext* suite, const TstCase* item)
     desc.mode = DVZ_FLY_MODE_PLANE;
     DvzFly* plane_fly = _dvz_fly(&desc);
     ANN(plane_fly);
-    dvz_fly_move_forward(plane_fly, 1.0f);
+    AT(dvz_fly_move_forward(plane_fly, 1.0f) == DVZ_OK);
     vec3 plane_pos = {0};
     dvz_fly_get_position(plane_fly, plane_pos);
     AC(plane_pos[1], 0.0f, 1e-5f);
@@ -217,14 +218,14 @@ int test_fly_set_mode(TstContext* suite, const TstCase* item)
 
     DvzFly* fly = _dvz_fly(&desc);
     ANN(fly);
-    dvz_fly_move_forward(fly, 1.0f);
+    AT(dvz_fly_move_forward(fly, 1.0f) == DVZ_OK);
     vec3 pos = {0};
     dvz_fly_get_position(fly, pos);
     AC(pos[1], 0.0f, 1e-5f);
 
-    dvz_fly_reset(fly);
-    dvz_fly_set_mode(fly, DVZ_FLY_MODE_FREE);
-    dvz_fly_move_forward(fly, 1.0f);
+    AT(dvz_fly_reset(fly) == DVZ_OK);
+    AT(dvz_fly_set_mode(fly, DVZ_FLY_MODE_FREE) == DVZ_OK);
+    AT(dvz_fly_move_forward(fly, 1.0f) == DVZ_OK);
     dvz_fly_get_position(fly, pos);
     AT(pos[1] > 0.5f);
 
@@ -250,7 +251,8 @@ int test_fly_keyboard_arrows_update(TstContext* suite, const TstCase* item)
         .mods = 0,
     };
     AT(dvz_fly_keyboard(fly, &press));
-    dvz_fly_update(fly, 0.5);
+    AT(dvz_fly_update(fly, 0.5) == DVZ_OK);
+    AT(dvz_fly_update(fly, 0.0) == DVZ_ERROR);
 
     vec3 pos = {0};
     dvz_fly_get_position(fly, pos);
@@ -262,7 +264,7 @@ int test_fly_keyboard_arrows_update(TstContext* suite, const TstCase* item)
         .mods = 0,
     };
     AT(dvz_fly_keyboard(fly, &release));
-    dvz_fly_update(fly, 0.5);
+    AT(dvz_fly_update(fly, 0.5) == DVZ_OK);
     dvz_fly_get_position(fly, pos);
     AC(pos[2], 2.0f, 1e-5f);
 
@@ -531,7 +533,7 @@ int test_fly_pivot_preserves_eye_and_orbits(TstContext* suite, const TstCase* it
 
     DvzFly* fly = _dvz_fly(NULL);
     ANN(fly);
-    dvz_fly_pivot(fly, (vec3){1.0f, 0.0f, 3.0f});
+    AT(dvz_fly_pivot(fly, (vec3){1.0f, 0.0f, 3.0f}) == DVZ_OK);
     AT(dvz_fly_has_pivot(fly));
     AC(fly->pivot_distance, 1.0f, 1e-5f);
     AT(fly->pivot_marker_visible);
@@ -542,13 +544,14 @@ int test_fly_pivot_preserves_eye_and_orbits(TstContext* suite, const TstCase* it
     AC(pos[1], 0.0f, 1e-5f);
     AC(pos[2], 3.0f, 1e-5f);
 
-    AT(dvz_fly_orbit(fly, GLM_PI_2f, 0.0f));
+    AT(dvz_fly_orbit(fly, GLM_PI_2f, 0.0f) == DVZ_OK);
     dvz_fly_get_position(fly, pos);
     AC(pos[0], 1.0f, 1e-5f);
     AC(pos[1], 0.0f, 1e-5f);
     AC(pos[2], 2.0f, 1e-5f);
 
-    dvz_fly_clear_pivot(fly);
+    AT(dvz_fly_clear_pivot(fly) == DVZ_OK);
+    AT(dvz_fly_orbit(fly, GLM_PI_2f, 0.0f) == DVZ_ERROR);
     AT(!dvz_fly_has_pivot(fly));
     AT(!fly->pivot_marker_visible);
     dvz_fly_destroy(fly);

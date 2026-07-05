@@ -202,7 +202,7 @@ static DvzScale* _add_labels_scale(DvzScene* scene)
         categories[i].color = example_graphite_cyan_color(roles[i]);
         categories[i].color.a = 224u;
     }
-    return dvz_scale_set_categories(scale, categories, LABEL_COUNT) ? scale : NULL;
+    return dvz_scale_set_categories(scale, categories, LABEL_COUNT) == DVZ_OK ? scale : NULL;
 }
 
 
@@ -249,13 +249,13 @@ static bool _add_labels(
                });
     if (field == NULL)
         return false;
-    if (!dvz_sampled_field_set_data(
+    if (dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){
                        DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                        .data = labels,
                        .bytes_per_row = FIELD_WIDTH * sizeof(int32_t),
                        .rows_per_image = FIELD_HEIGHT,
-                   }))
+                   }) != DVZ_OK)
     {
         return false;
     }
@@ -269,7 +269,7 @@ static bool _add_labels(
     };
     if (dvz_visual_set_data_many(visual, updates, 2) != 0)
         return false;
-    if (!dvz_visual_set_field(visual, "field", field))
+    if (dvz_visual_set_field(visual, "field", field) != DVZ_OK)
         return false;
     if (dvz_visual_set_scale(visual, "labels", scale) != 0)
         return false;

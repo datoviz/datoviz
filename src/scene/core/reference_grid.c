@@ -508,15 +508,16 @@ void dvz_reference_grid_destroy(DvzReferenceGrid* grid)
  * @param grid the reference grid
  * @param visible whether the grid should be visible
  */
-void dvz_reference_grid_set_visible(DvzReferenceGrid* grid, bool visible)
+DvzResult dvz_reference_grid_set_visible(DvzReferenceGrid* grid, bool visible)
 {
     if (grid == NULL || !grid->active)
-        return;
+        return DVZ_ERROR;
     if (grid->visible == visible)
-        return;
+        return DVZ_OK;
     grid->visible = visible;
     if (grid->visual != NULL)
-        dvz_visual_set_visible(grid->visual, visible);
+        (void)dvz_visual_set_visible(grid->visual, visible);
     grid->version = grid->version == UINT64_MAX ? 1 : grid->version + 1;
     _scene_notify_request_frame(grid->panel != NULL ? grid->panel->figure : NULL);
+    return DVZ_OK;
 }

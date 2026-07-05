@@ -63,7 +63,7 @@ int test_drp2_stream_append(TstContext* suite, const TstCase* item)
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
     AT(dvz_drp2_stream_create_buffer(
         stream, 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
-    AT(dvz_drp2_stream_write_buffer(stream, 1, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA=="));
+    AT(dvz_drp2_stream_write_buffer_base64(stream, 1, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA=="));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 2));
     AT(dvz_drp2_stream_finish_command_encoder(stream, 2, 3));
     AT(dvz_drp2_stream_queue_submit_readback(stream, 3, 4, 1, 0, 16));
@@ -118,7 +118,7 @@ int test_drp2_stream_json(TstContext* suite, const TstCase* item)
     AT(dvz_drp2_stream_hello_renderer(stream, "fixture-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "fixture-renderer"));
     AT(dvz_drp2_stream_create_buffer(stream, 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
-    AT(dvz_drp2_stream_write_buffer(stream, 1, 4, 4, "AQIDBA=="));
+    AT(dvz_drp2_stream_write_buffer_base64(stream, 1, 4, 4, "AQIDBA=="));
 
     char* json = dvz_drp2_stream_json(stream, "write_buffer_basic_from_c");
     ANN(json);
@@ -395,7 +395,7 @@ int test_drp2_packet_rejects_base64_payloads(TstContext* suite, const TstCase* i
 
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
-    AT(dvz_drp2_stream_write_buffer(stream, 1, 0, 4, "AQIDBA=="));
+    AT(dvz_drp2_stream_write_buffer_base64(stream, 1, 0, 4, "AQIDBA=="));
 
     void* packet = NULL;
     uint64_t packet_size = 0;
@@ -888,7 +888,7 @@ int test_drp2_wboit_accumulation_resolve_stream(TstContext* suite, const TstCase
 
     AT(dvz_drp2_stream_create_buffer(
         stream, 1, 36, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX));
-    AT(dvz_drp2_stream_write_buffer(
+    AT(dvz_drp2_stream_write_buffer_base64(
         stream, 1, 0, 36, "AAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAA"));
     AT(dvz_drp2_stream_create_sampler(stream, 2));
 

@@ -80,9 +80,10 @@ static bool _configure_panel(DvzPanel* panel)
         return false;
     if (!example_graphite_cyan_apply_axis_style(y_axis, true, NULL))
         return false;
-    if (!dvz_axis_set_grid(x_axis, false) || !dvz_axis_set_grid(y_axis, false))
+    if (dvz_axis_set_grid(x_axis, false) != DVZ_OK || dvz_axis_set_grid(y_axis, false) != DVZ_OK)
         return false;
-    return dvz_axis_set_label(x_axis, "sample") && dvz_axis_set_label(y_axis, "value");
+    return dvz_axis_set_label(x_axis, "sample") == DVZ_OK &&
+           dvz_axis_set_label(y_axis, "value") == DVZ_OK;
 }
 
 
@@ -114,7 +115,7 @@ static bool _add_bars(DvzPanel* panel)
     desc.gap_fraction = 0.12f;
 
     DvzBars* bars = dvz_bars(panel, &desc);
-    return bars != NULL && dvz_bars_set_intervals(bars, BAR_COUNT, starts, ends, values) == 0;
+    return bars != NULL && dvz_bars_set_intervals(bars, starts, ends, values, BAR_COUNT) == 0;
 }
 
 
@@ -153,8 +154,8 @@ static bool _add_band(DvzPanel* panel)
     desc.bound_width_px = 1.5f;
 
     DvzBand* band = dvz_band(panel, &desc);
-    return band != NULL && dvz_band_set_bounds(band, BAND_COUNT, x, lower, upper) == 0 &&
-           dvz_band_set_center(band, BAND_COUNT, x, center) == 0;
+    return band != NULL && dvz_band_set_bounds(band, x, lower, upper, BAND_COUNT) == 0 &&
+           dvz_band_set_center(band, x, center, BAND_COUNT) == 0;
 }
 
 

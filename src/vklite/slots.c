@@ -152,8 +152,8 @@ void dvz_slots_binding(
     ANN(slots);
     ASSERT(set < DVZ_MAX_SETS);
     ASSERT(binding < DVZ_MAX_BINDINGS);
-    slots->set_count = MAX(set + 1, slots->set_count);
-    slots->binding_counts[set] = MAX(binding + 1, slots->binding_counts[set]);
+    slots->set_count = DVZ_MAX(set + 1, slots->set_count);
+    slots->binding_counts[set] = DVZ_MAX(binding + 1, slots->binding_counts[set]);
 
     slots->bindings[set][binding].binding = binding;
     slots->bindings[set][binding].descriptorCount = array_count;

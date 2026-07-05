@@ -31,10 +31,6 @@ typedef enum
     DVZ_SCENE_CLOCK_REALTIME = 0,
     DVZ_SCENE_CLOCK_FIXED_STEP,
     DVZ_SCENE_CLOCK_EXTERNAL,
-
-    /* Compatibility aliases.  New code should use the explicit DVZ_SCENE_CLOCK_* names. */
-    DVZ_CLOCK_REALTIME = DVZ_SCENE_CLOCK_REALTIME,
-    DVZ_CLOCK_OFFLINE = DVZ_SCENE_CLOCK_FIXED_STEP,
 } DvzSceneClockMode;
 
 
@@ -285,8 +281,9 @@ EXTERN_C_ON
  *
  * @param scene target scene
  * @param mode realtime, fixed-step, or external clock mode
+ * @return DVZ_OK when the mode was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_scene_set_clock_mode(DvzScene* scene, DvzSceneClockMode mode);
+DVZ_EXPORT DvzResult dvz_scene_set_clock_mode(DvzScene* scene, DvzSceneClockMode mode);
 
 
 
@@ -295,8 +292,9 @@ DVZ_EXPORT void dvz_scene_set_clock_mode(DvzScene* scene, DvzSceneClockMode mode
  *
  * @param scene target scene
  * @param fps frames per second, must be positive
+ * @return DVZ_OK when the frame rate was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_scene_set_fps(DvzScene* scene, double fps);
+DVZ_EXPORT DvzResult dvz_scene_set_fps(DvzScene* scene, double fps);
 
 
 /**
@@ -309,8 +307,9 @@ DVZ_EXPORT void dvz_scene_set_fps(DvzScene* scene, double fps);
  * @param scene target scene
  * @param t current host time in seconds, normally relative to the start of the scene
  * @param dt elapsed host time in seconds since the previous frame
+ * @return DVZ_OK when the external step was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_scene_step_external(DvzScene* scene, double t, double dt);
+DVZ_EXPORT DvzResult dvz_scene_step_external(DvzScene* scene, double t, double dt);
 
 
 
@@ -563,8 +562,9 @@ dvz_anim_camera_motion(DvzScene* scene, DvzCamera* camera, const DvzCameraMotion
  * @param controller controller to observe, or NULL to clear policy
  * @param policy interaction policy
  * @param idle_s idle duration for resume-after-idle policies
+ * @return DVZ_OK when the policy was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_anim_set_interaction_policy(
+DVZ_EXPORT DvzResult dvz_anim_set_interaction_policy(
     DvzAnimation* animation,
     DvzController* controller,
     DvzAnimInteractionPolicy policy,
@@ -577,8 +577,9 @@ DVZ_EXPORT void dvz_anim_set_interaction_policy(
  *
  * @param animation animation handle
  * @param speed scalar speed in units per second
+ * @return DVZ_OK when the speed was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_anim_set_speed(DvzAnimation* animation, float speed);
+DVZ_EXPORT DvzResult dvz_anim_set_speed(DvzAnimation* animation, float speed);
 
 
 /**
@@ -586,8 +587,9 @@ DVZ_EXPORT void dvz_anim_set_speed(DvzAnimation* animation, float speed);
  *
  * @param animation phase animation handle
  * @param value new phase value, wrapped into the configured interval
+ * @return DVZ_OK when the value was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_anim_phase_set_value(DvzAnimation* animation, float value);
+DVZ_EXPORT DvzResult dvz_anim_phase_set_value(DvzAnimation* animation, float value);
 
 
 
@@ -596,8 +598,9 @@ DVZ_EXPORT void dvz_anim_phase_set_value(DvzAnimation* animation, float value);
  *
  * @param animation animation handle
  * @param t_start scene-clock start time, or 0 for immediate start
+ * @return DVZ_OK when the animation was started, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_anim_start(DvzAnimation* animation, double t_start);
+DVZ_EXPORT DvzResult dvz_anim_start(DvzAnimation* animation, double t_start);
 
 
 
@@ -605,8 +608,9 @@ DVZ_EXPORT void dvz_anim_start(DvzAnimation* animation, double t_start);
  * Stop an animation while keeping the handle valid.
  *
  * @param animation animation handle
+ * @return DVZ_OK when the animation was stopped, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_anim_stop(DvzAnimation* animation);
+DVZ_EXPORT DvzResult dvz_anim_stop(DvzAnimation* animation);
 
 
 

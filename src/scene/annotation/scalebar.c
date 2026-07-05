@@ -68,14 +68,6 @@ static bool _scalebar_desc_validate(const DvzScaleBarDesc* desc)
         log_error("invalid scale-bar descriptor ABI");
         return false;
     }
-    if (!_text_style_is_zero(&desc->label_style) && !_text_style_validate(&desc->label_style))
-        return false;
-    if (!_text_placement_is_zero(&desc->placement) &&
-        !_text_placement_validate(&desc->placement))
-        return false;
-    if (!_scene_format_desc_is_zero(&desc->format) &&
-        !_scene_format_desc_validate(&desc->format))
-        return false;
     return true;
 }
 
@@ -85,22 +77,19 @@ static bool _scalebar_desc_validate(const DvzScaleBarDesc* desc)
  *
  * @return default scale-bar descriptor
  */
-DvzScaleBarDesc dvz_scalebar_desc(void)
+DvzScaleBarDesc dvz_scale_bar_desc(void)
 {
     return (DvzScaleBarDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzScaleBarDesc),
-        .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle)},
-        .placement = {DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement)},
-        .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc)},
     };
 }
 
 
-bool dvz_ffi_scalebar_desc(DvzScaleBarDesc* out)
+bool dvz_ffi_scale_bar_desc(DvzScaleBarDesc* out)
 {
     if (out == NULL)
         return false;
-    *out = dvz_scalebar_desc();
+    *out = dvz_scale_bar_desc();
     return true;
 }
 
@@ -801,10 +790,11 @@ static bool _scalebar_prepare_overlay_visual(
     {
         _scene_format_si_value(length_units, desc->unit, resolved.label, sizeof(resolved.label));
     }
+    const DvzTextStyle* label_style = &annotation->style;
     resolved.label_size =
-        _scalebar_positive_or_default(desc->label_style.size_px, DVZ_SCALEBAR_LABEL_SIZE_PX);
+        _scalebar_positive_or_default(label_style->size_px, DVZ_SCALEBAR_LABEL_SIZE_PX);
     resolved.renderer =
-        desc->label_style.renderer != 0 ? desc->label_style.renderer : DVZ_TEXT_RENDERER_MSDF_ATLAS;
+        label_style->renderer != 0 ? label_style->renderer : DVZ_TEXT_RENDERER_MSDF_ATLAS;
     resolved.label_position[0] = horizontal ? 0.5f * (x0 + x1) : x1;
     resolved.label_position[1] = horizontal ? y0 : 0.5f * (y0 + y1);
     float label_gap = DVZ_SCALEBAR_LABEL_GAP_PX;
@@ -815,7 +805,7 @@ static bool _scalebar_prepare_overlay_visual(
     resolved.label_anchor[0] = 0.5f;
     resolved.label_anchor[1] = desc->label_position == DVZ_SCALEBAR_LABEL_ABOVE ? 1.0f : 0.0f;
     uint8_t label_color[4] = {0};
-    _text_style_color(&desc->label_style, label_color);
+    _text_style_color(label_style, label_color);
     resolved.label_color =
         dvz_color_rgba(label_color[0], label_color[1], label_color[2], label_color[3]);
     resolved.label_angle = 0.0f;
@@ -983,14 +973,14 @@ bool _scalebar_prepare_visual(DvzFigure* figure, DvzAnnotation* annotation)
  * @param desc the scale-bar descriptor, or NULL for defaults
  * @return the scale bar, or NULL on allocation failure
  */
-DvzScaleBar* dvz_scalebar(DvzPanel* panel, const DvzScaleBarDesc* desc)
+DvzScaleBar* dvz_scale_bar(DvzPanel* panel, const DvzScaleBarDesc* desc)
 {
     ANN(panel);
     if (panel->figure == NULL || panel->figure->scene == NULL)
         return NULL;
     if (!_scalebar_desc_validate(desc))
         return NULL;
-    DvzScaleBarDesc fallback = dvz_scalebar_desc();
+    DvzScaleBarDesc fallback = dvz_scale_bar_desc();
     if (desc == NULL)
         desc = &fallback;
 
@@ -1008,10 +998,10 @@ DvzScaleBar* dvz_scalebar(DvzPanel* panel, const DvzScaleBarDesc* desc)
         annotation->scalebar.dimension = DVZ_DIM_X;
     if (annotation->scalebar.anchor == DVZ_SCENE_ANCHOR_NONE)
         annotation->scalebar.anchor = DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT;
-    if (annotation->scalebar.label_style.size_px <= 0.0f)
-        annotation->scalebar.label_style.size_px = DVZ_SCALEBAR_LABEL_SIZE_PX;
-    if (annotation->scalebar.label_style.renderer == DVZ_TEXT_RENDERER_AUTO)
-        annotation->scalebar.label_style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    if (annotation->style.size_px <= 0.0f)
+        annotation->style.size_px = DVZ_SCALEBAR_LABEL_SIZE_PX;
+    if (annotation->style.renderer == DVZ_TEXT_RENDERER_AUTO)
+        annotation->style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     if (annotation->scalebar.data_to_unit == 0.0 ||
         !isfinite(annotation->scalebar.data_to_unit))
         annotation->scalebar.data_to_unit = 1.0;
@@ -1033,7 +1023,7 @@ DvzScaleBar* dvz_scalebar(DvzPanel* panel, const DvzScaleBarDesc* desc)
 }
 
 
-DvzResult dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim)
+DvzResult dvz_scale_bar_set_dimension(DvzScaleBar* scalebar, DvzDim dim)
 {
     DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
     if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR ||
@@ -1047,7 +1037,7 @@ DvzResult dvz_scalebar_set_dimension(DvzScaleBar* scalebar, DvzDim dim)
 }
 
 
-DvzResult dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor)
+DvzResult dvz_scale_bar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor)
 {
     DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
     if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR)
@@ -1062,7 +1052,7 @@ DvzResult dvz_scalebar_set_anchor(DvzScaleBar* scalebar, DvzSceneAnchor anchor)
 }
 
 
-DvzResult dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units)
+DvzResult dvz_scale_bar_set_units(DvzScaleBar* scalebar, DvzUnits* units)
 {
     DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
     if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR || units == NULL ||
@@ -1076,7 +1066,67 @@ DvzResult dvz_scalebar_set_units(DvzScaleBar* scalebar, DvzUnits* units)
 }
 
 
-DvzResult dvz_scalebar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units)
+DvzResult dvz_scale_bar_set_duration_units(DvzScaleBar* scalebar, DvzUnits* duration_units)
 {
-    return dvz_scalebar_set_units(scalebar, duration_units);
+    return dvz_scale_bar_set_units(scalebar, duration_units);
+}
+
+
+DvzResult dvz_scale_bar_set_label_style(DvzScaleBar* scalebar, const DvzTextStyle* style)
+{
+    DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
+    if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR)
+        return -1;
+    if (style != NULL && !_text_style_validate(style))
+        return -1;
+    DvzTextStyle resolved = style != NULL ?
+                                *style :
+                                (DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle)};
+    if (resolved.size_px <= 0.0f)
+        resolved.size_px = DVZ_SCALEBAR_LABEL_SIZE_PX;
+    if (resolved.renderer == DVZ_TEXT_RENDERER_AUTO)
+        resolved.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    if (resolved.font != NULL && resolved.font->scene != annotation->scene)
+        return -1;
+    annotation->style = resolved;
+    annotation->dirty_flags |= DVZ_TEXT_DIRTY_STYLE | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
+    annotation->version++;
+    _scene_notify_request_frame(annotation->panel != NULL ? annotation->panel->figure : NULL);
+    return 0;
+}
+
+
+DvzResult dvz_scale_bar_set_placement(
+    DvzScaleBar* scalebar, const DvzTextPlacement* placement)
+{
+    DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
+    if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR)
+        return -1;
+    if (placement != NULL && !_text_placement_validate(placement))
+        return -1;
+    annotation->placement = placement != NULL ?
+                                *placement :
+                                (DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement)};
+    annotation->dirty_flags |=
+        DVZ_TEXT_DIRTY_PLACEMENT | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
+    annotation->version++;
+    _scene_notify_request_frame(annotation->panel != NULL ? annotation->panel->figure : NULL);
+    return 0;
+}
+
+
+DvzResult dvz_scale_bar_set_format(DvzScaleBar* scalebar, const DvzFormatDesc* format)
+{
+    DvzAnnotation* annotation = (DvzAnnotation*)scalebar;
+    if (annotation == NULL || annotation->kind != DVZ_ANNOTATION_SCALEBAR)
+        return -1;
+    if (!_scene_format_desc_validate(format))
+        return -1;
+    annotation->has_format = format != NULL;
+    _scene_format_state_copy(&annotation->format, format);
+    annotation->dirty_flags |=
+        DVZ_TEXT_DIRTY_STRING | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
+    annotation->version++;
+    _scene_notify_request_frame(annotation->panel != NULL ? annotation->panel->figure : NULL);
+    return 0;
 }
