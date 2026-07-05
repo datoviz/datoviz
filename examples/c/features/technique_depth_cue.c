@@ -81,9 +81,9 @@ static void _reset_depth_cue_controls(DepthCueDemoState* state)
     state->mode = 0;
     state->metric = 1;
     state->falloff = 0;
-    state->near_depth = 1.20f;
-    state->far_depth = 3.80f;
-    state->strength = 0.88f;
+    state->near_depth = 3.80f;
+    state->far_depth = 5.80f;
+    state->strength = 1.0f;
     state->density = 0.45f;
     state->background_color[0] = 0.035f;
     state->background_color[1] = 0.047f;
