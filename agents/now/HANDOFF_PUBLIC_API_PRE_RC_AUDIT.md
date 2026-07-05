@@ -319,6 +319,21 @@ Completed checkpoints:
    - Validation passed: `just ctypes`, `just ctypes-check`, `just ctypes-smoke`,
      `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, `just docs-api-check`,
      `just build`, `just test fileio`, `just spec-check`, and `git diff --check`.
+30. `dc1617d8f` `api: normalize embedded resource sizes`
+   - Changed embedded-resource accessor size outputs from `unsigned long*` to `DvzSize*`.
+   - Updated the CMake resource generators and scene shader/text call sites.
+   - Removed stale public `dvz_resource_texture()` and `dvz_resource_testdata()` declarations,
+     which were documented/generated but not exported by the current library.
+   - Regenerated raw `ctypes` and generated C API docs.
+   - Exported symbol delta: removed the stale generated raw/docs surface for
+     `dvz_resource_texture()` and `dvz_resource_testdata()`; no real exported library symbols were
+     removed. The four real `dvz_resource_shader/glsl/wgsl/font` ABI signatures changed before RC1.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just ctypes-smoke`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, `just docs-api-check`,
+     regenerated build-tree `_shaders.c`, `_glsl_shaders.c`, `_wgsl_shaders.c`, and `_fonts.c`,
+     `just build`, `just test fileio`, `just spec-check`, resource symbol-table check, and
+     `git diff --check`.
+   - Validation caveat: `just test scene/shaders` selected 0 tests in this tree.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -621,8 +636,9 @@ Preferred fix:
 Status: `dvz_load_jpeg()` byte-buffer argument order normalized by `52e38e358`, `DvzAlpha`
 replaced with a typedef by `2a340b51c`, and unprefixed math support macros plus the
 `_PRETTY_SIZE` buffer cleaned by `2ac43481c`; public `dvz_box_*` declarations without export were
-resolved by `bff88625d`; `dvz_read_ppm()` dimensions normalized by `4fb4be416`. Other
-support-header leakage remains open.
+resolved by `bff88625d`; `dvz_read_ppm()` dimensions normalized by `4fb4be416`; embedded resource
+sizes and stale texture/testdata accessors cleaned by `dc1617d8f`. Other support-header leakage
+remains open.
 
 Public support headers leak unprefixed macros, mutable TU-local buffers, test resources, and
 inconsistent byte-buffer signatures.
@@ -634,7 +650,8 @@ References:
 - `include/datoviz/math/box.h`: resolved by `bff88625d`; the public helper set is now exported and
   generated in raw `ctypes`/C docs
 - `include/datoviz/fileio/fileio.h`: `dvz_load_png(bytes, size)` versus
-  `dvz_load_jpeg(size, bytes)`, `unsigned long*` resource sizes, `dvz_resource_testdata()`
+  `dvz_load_jpeg(size, bytes)` resolved by `52e38e358`; resource size outputs and stale
+  texture/testdata declarations resolved by `dc1617d8f`
 
 Preferred fix:
 
