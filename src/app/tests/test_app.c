@@ -195,11 +195,11 @@ static int test_app_config_defaults(TstContext* suite, const TstCase* item)
     AT(config.exit_policy == DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED);
     AT(config.fps_cap == 0);
     DvzFontDefaults fonts = dvz_font_defaults();
-    AT(strcmp(config.font_defaults.sans_family, fonts.sans_family) == 0);
-    AT(strcmp(config.font_defaults.sans_style, fonts.sans_style) == 0);
-    AT(config.font_defaults.ui_size_px == fonts.ui_size_px);
-    AT(config.font_defaults.mono_size_px == fonts.mono_size_px);
-    AT(config.font_defaults.text_size_px == fonts.text_size_px);
+    AT(strcmp(config.font_sans_family, fonts.sans_family) == 0);
+    AT(strcmp(config.font_sans_style, fonts.sans_style) == 0);
+    AT(config.font_ui_size_px == fonts.ui_size_px);
+    AT(config.font_mono_size_px == fonts.mono_size_px);
+    AT(config.font_text_size_px == fonts.text_size_px);
 
     _test_restore_env("DVZ_APP_SCHEDULE", old_schedule != NULL ? saved_schedule : NULL);
     _test_restore_env("DVZ_FPS_CAP", old_fps_cap != NULL ? saved_fps_cap : NULL);
@@ -437,9 +437,9 @@ static int test_app_resources_owned_defaults(TstContext* suite, const TstCase* i
     DvzScene* scene = dvz_scene();
     ANN(scene);
     DvzAppConfig config = _test_app_resource_config();
-    config.font_defaults.sans_family = "App Sans";
-    config.font_defaults.sans_style = "Book";
-    config.font_defaults.text_size_px = 17.0f;
+    config.font_sans_family = "App Sans";
+    config.font_sans_style = "Book";
+    config.font_text_size_px = 17.0f;
     DvzApp* app = dvz_app_with_resources(scene, &config, NULL);
     if (app == NULL)
     {

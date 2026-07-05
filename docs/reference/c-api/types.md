@@ -6269,7 +6269,19 @@ struct DvzAppConfig {
     DvzAppScheduleMode schedule_mode;
     DvzAppExitPolicy exit_policy;
     double fps_cap;
-    DvzFontDefaults font_defaults;
+    const char * font_sans_path;
+    const char * font_sans_family;
+    const char * font_sans_style;
+    uint32_t font_sans_face_index;
+    uint32_t font_sans_font_flags;
+    const char * font_mono_path;
+    const char * font_mono_family;
+    const char * font_mono_style;
+    uint32_t font_mono_face_index;
+    uint32_t font_mono_font_flags;
+    float font_ui_size_px;
+    float font_mono_size_px;
+    float font_text_size_px;
 };
 ```
 

@@ -281,6 +281,29 @@ static bool _app_capture_config_validate(const DvzAppCaptureConfig* config)
 
 
 
+static DvzFontDefaults _app_config_font_defaults(const DvzAppConfig* config)
+{
+    DvzFontDefaults defaults = dvz_font_defaults();
+    if (config == NULL)
+        return defaults;
+    defaults.sans_path = config->font_sans_path;
+    defaults.sans_family = config->font_sans_family;
+    defaults.sans_style = config->font_sans_style;
+    defaults.sans_face_index = config->font_sans_face_index;
+    defaults.sans_font_flags = config->font_sans_font_flags;
+    defaults.mono_path = config->font_mono_path;
+    defaults.mono_family = config->font_mono_family;
+    defaults.mono_style = config->font_mono_style;
+    defaults.mono_face_index = config->font_mono_face_index;
+    defaults.mono_font_flags = config->font_mono_font_flags;
+    defaults.ui_size_px = config->font_ui_size_px;
+    defaults.mono_size_px = config->font_mono_size_px;
+    defaults.text_size_px = config->font_text_size_px;
+    return defaults;
+}
+
+
+
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 static bool _app_external_surface_info_validate(const DvzWindowExternalSurfaceInfo* surface)
 {
@@ -312,7 +335,20 @@ static DvzAppConfig _app_config_defaults(void)
     config.schedule_mode = DVZ_APP_SCHEDULE_ON_DEMAND;
     config.exit_policy = DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED;
     config.fps_cap = 0.0;
-    config.font_defaults = dvz_font_defaults();
+    DvzFontDefaults fonts = dvz_font_defaults();
+    config.font_sans_path = fonts.sans_path;
+    config.font_sans_family = fonts.sans_family;
+    config.font_sans_style = fonts.sans_style;
+    config.font_sans_face_index = fonts.sans_face_index;
+    config.font_sans_font_flags = fonts.sans_font_flags;
+    config.font_mono_path = fonts.mono_path;
+    config.font_mono_family = fonts.mono_family;
+    config.font_mono_style = fonts.mono_style;
+    config.font_mono_face_index = fonts.mono_face_index;
+    config.font_mono_font_flags = fonts.mono_font_flags;
+    config.font_ui_size_px = fonts.ui_size_px;
+    config.font_mono_size_px = fonts.mono_size_px;
+    config.font_text_size_px = fonts.text_size_px;
     return config;
 }
 
@@ -3791,7 +3827,8 @@ dvz_app_with_resources(DvzScene* scene, const DvzAppConfig* config, const DvzApp
         return NULL;
     app->scene = scene;
     app->config = resolved;
-    dvz_scene_set_font_defaults(scene, &resolved.font_defaults);
+    DvzFontDefaults fonts = _app_config_font_defaults(&resolved);
+    dvz_scene_set_font_defaults(scene, &fonts);
     _dvz_app_status_init(&app->status);
 
     /* Window host first — needed to query GLFW surface extensions before building the instance. */
@@ -5781,7 +5818,7 @@ DvzGui* dvz_view_gui(DvzView* win, const DvzGuiConfig* config)
     if (!_dvz_gui_config_validate(config))
         return NULL;
     DvzGuiConfig resolved = config != NULL ? *config : dvz_gui_config();
-    DvzFontDefaults fonts = win->app->config.font_defaults;
+    DvzFontDefaults fonts = _app_config_font_defaults(&win->app->config);
     win->gui = _dvz_gui_create(win->app, win->app->gpu_ctx, win, win->window, &resolved, &fonts);
     if (win->gui != NULL)
         dvz_view_request_frame(win);

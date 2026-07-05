@@ -474,12 +474,12 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
     ANN(explicit_figure);
 
     DvzAppConfig app_config = dvz_app_config();
-    app_config.font_defaults.sans_family = "App Sans";
-    app_config.font_defaults.sans_style = "Book";
-    app_config.font_defaults.mono_family = "App Mono";
-    app_config.font_defaults.ui_size_px = 19.0f;
-    app_config.font_defaults.mono_size_px = 17.0f;
-    app_config.font_defaults.text_size_px = 23.0f;
+    app_config.font_sans_family = "App Sans";
+    app_config.font_sans_style = "Book";
+    app_config.font_mono_family = "App Mono";
+    app_config.font_ui_size_px = 19.0f;
+    app_config.font_mono_size_px = 17.0f;
+    app_config.font_text_size_px = 23.0f;
 
     DvzApp* null_app = dvz_app_with_config(null_scene, &app_config);
     DvzApp* explicit_app = dvz_app_with_config(explicit_scene, &app_config);
