@@ -23,6 +23,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "_alloc.h"
 #include "datoviz/scene.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
@@ -38,6 +39,20 @@
 #define POINT_COUNT    6u
 #define WORKGROUP_SIZE 1u
 
+static const float COMPUTE_ANGULAR_SPEED = 3.30f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct ComputeBufferAnimationState
+{
+    DvzSceneBuffer* param;
+    vec4 params;
+} ComputeBufferAnimationState;
+
 
 
 /*************************************************************************************************/
@@ -48,20 +63,19 @@ static const char* COMPUTE_WGSL =
     "struct Params { p: vec4f, }\n"
     "@group(0) @binding(0) var<storage, read> params: Params;\n"
     "@group(0) @binding(1) var<storage, read_write> positions: array<f32>;\n"
-    "@group(0) @binding(2) var<storage, read_write> phases: array<f32>;\n"
+    "@group(0) @binding(2) var<storage, read> phases: array<f32>;\n"
     "@compute @workgroup_size(1)\n"
     "fn main(@builtin(global_invocation_id) global_id: vec3u) {\n"
     "    let i = global_id.x;\n"
     "    let count = u32(params.p.z);\n"
     "    if (i >= count) { return; }\n"
-    "    let phase = phases[i] + params.p.x * (0.65 + 0.18 * f32(i));\n"
+    "    let phase = phases[i] + params.p.x * params.p.y * (0.65 + 0.18 * f32(i));\n"
     "    let denom = max(1.0, f32(count - 1u));\n"
     "    let center = -0.70 + 1.40 * (f32(i) / denom);\n"
     "    let radius = 0.07 + 0.018 * f32((i * 7u) % 4u);\n"
     "    positions[3u * i + 0u] = center + radius * cos(phase);\n"
     "    positions[3u * i + 1u] = 0.18 * sin(0.7 * f32(i)) + radius * sin(phase);\n"
     "    positions[3u * i + 2u] = 0.0;\n"
-    "    phases[i] = phase;\n"
     "}\n";
 
 static const char* COMPUTE_GLSL =
@@ -69,18 +83,17 @@ static const char* COMPUTE_GLSL =
     "layout(local_size_x = 1) in;\n"
     "layout(std430, set = 0, binding = 0) readonly buffer Params { vec4 p; } params;\n"
     "layout(std430, set = 0, binding = 1) buffer Positions { float x[]; } positions;\n"
-    "layout(std430, set = 0, binding = 2) buffer Phases { float x[]; } phases;\n"
+    "layout(std430, set = 0, binding = 2) readonly buffer Phases { float x[]; } phases;\n"
     "void main() {\n"
     "    uint i = gl_GlobalInvocationID.x;\n"
     "    uint count = uint(params.p.z);\n"
     "    if (i >= count) return;\n"
-    "    float phase = phases.x[i] + params.p.x * (0.65 + 0.18 * float(i));\n"
+    "    float phase = phases.x[i] + params.p.x * params.p.y * (0.65 + 0.18 * float(i));\n"
     "    float center = -0.70 + 1.40 * (float(i) / max(1.0, float(count - 1u)));\n"
     "    float radius = 0.07 + 0.018 * float((i * 7u) % 4u);\n"
     "    positions.x[3u * i + 0u] = center + radius * cos(phase);\n"
     "    positions.x[3u * i + 1u] = 0.18 * sin(0.7 * float(i)) + radius * sin(phase);\n"
     "    positions.x[3u * i + 2u] = 0.0;\n"
-    "    phases.x[i] = phase;\n"
     "}\n";
 
 
@@ -123,6 +136,26 @@ static DvzSceneBuffer* _scene_buffer(
 }
 
 
+/**
+ * Upload compute parameters for one scenario time.
+ *
+ * @param state scenario state
+ * @param t scenario time in seconds
+ * @return true on success
+ */
+static bool _upload_compute_params(ComputeBufferAnimationState* state, double t)
+{
+    if (state == NULL || state->param == NULL)
+        return false;
+    state->params[0] = (float)t;
+    state->params[1] = COMPUTE_ANGULAR_SPEED;
+    state->params[2] = (float)POINT_COUNT;
+    state->params[3] = 0.0f;
+    return dvz_scene_buffer_set_data(state->param, state->params, sizeof(state->params)) ==
+           DVZ_OK;
+}
+
+
 
 /**
  * Add the compute-fed point visual and attach the compute pass.
@@ -130,16 +163,19 @@ static DvzSceneBuffer* _scene_buffer(
  * @param scene scene owning objects
  * @param figure figure scheduling compute
  * @param panel panel receiving the visual
+ * @param state scenario state receiving the parameter buffer
  * @return true on success
  */
-static bool _add_compute_points(DvzScene* scene, DvzFigure* figure, DvzPanel* panel)
+static bool _add_compute_points(
+    DvzScene* scene, DvzFigure* figure, DvzPanel* panel, ComputeBufferAnimationState* state)
 {
+    if (state == NULL)
+        return false;
     const vec3 positions[POINT_COUNT] = {
         {-0.72f, -0.24f, 0.0f}, {-0.44f, +0.18f, 0.0f}, {-0.16f, -0.10f, 0.0f},
         {+0.16f, +0.10f, 0.0f}, {+0.44f, -0.18f, 0.0f}, {+0.72f, +0.24f, 0.0f},
     };
     const float phases[POINT_COUNT] = {0.0f, 0.7f, 1.6f, 2.4f, 3.2f, 4.1f};
-    const vec4 params = {0.055f, 0.0f, (float)POINT_COUNT, 0.0f};
     DvzColor colors[POINT_COUNT] = {
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
@@ -153,12 +189,18 @@ static bool _add_compute_points(DvzScene* scene, DvzFigure* figure, DvzPanel* pa
     DvzSceneBuffer* position = _scene_buffer(
         scene, DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec3),
         positions, sizeof(positions));
+    state->params[0] = 0.0f;
+    state->params[1] = COMPUTE_ANGULAR_SPEED;
+    state->params[2] = (float)POINT_COUNT;
+    state->params[3] = 0.0f;
     DvzSceneBuffer* param = _scene_buffer(
-        scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec4), &params, sizeof(params));
+        scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(vec4), state->params,
+        sizeof(state->params));
     DvzSceneBuffer* phase = _scene_buffer(
         scene, DVZ_SCENE_BUFFER_USAGE_STORAGE, sizeof(float), phases, sizeof(phases));
     if (position == NULL || param == NULL || phase == NULL)
         return false;
+    state->param = param;
 
     DvzVisual* point = dvz_point(scene, 0);
     if (point == NULL)
@@ -197,14 +239,14 @@ static bool _add_compute_points(DvzScene* scene, DvzFigure* figure, DvzPanel* pa
     if (compute == NULL)
         return false;
     if (dvz_scene_compute_set_buffer(
-            compute, 0, param, DVZ_SCENE_COMPUTE_ACCESS_READ, 0, sizeof(params)) != DVZ_OK)
+            compute, 0, param, DVZ_SCENE_COMPUTE_ACCESS_READ, 0, sizeof(state->params)) != DVZ_OK)
         return false;
     if (dvz_scene_compute_set_buffer(
             compute, 1, position, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0, sizeof(positions)) !=
         DVZ_OK)
         return false;
     if (dvz_scene_compute_set_buffer(
-            compute, 2, phase, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0, sizeof(phases)) != DVZ_OK)
+            compute, 2, phase, DVZ_SCENE_COMPUTE_ACCESS_READ, 0, sizeof(phases)) != DVZ_OK)
         return false;
     return dvz_figure_add_compute(figure, compute) == DVZ_OK;
 }
@@ -224,20 +266,60 @@ static bool _add_compute_points(DvzScene* scene, DvzFigure* figure, DvzPanel* pa
  */
 static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    if (ctx == NULL)
+    if (ctx == NULL || out_user == NULL)
         return false;
-    if (out_user != NULL)
-        *out_user = NULL;
+
+    ComputeBufferAnimationState* state =
+        (ComputeBufferAnimationState*)dvz_calloc(1, sizeof(ComputeBufferAnimationState));
+    if (state == NULL)
+        return false;
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
-        return false;
+        goto error;
 
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     if (panel == NULL)
-        return false;
+        goto error;
     example_graphite_cyan_set_panel_background(panel);
-    return _add_compute_points(ctx->scene, ctx->figure, panel);
+    if (!_add_compute_points(ctx->scene, ctx->figure, panel, state))
+        goto error;
+
+    *out_user = state;
+    return true;
+
+error:
+    dvz_free(state);
+    return false;
+}
+
+
+
+/**
+ * Advance the scene-compute-buffer scenario for one runner frame.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    if (ctx == NULL || user == NULL)
+        return;
+    (void)_upload_compute_params((ComputeBufferAnimationState*)user, ctx->time);
+}
+
+
+
+/**
+ * Destroy the scene-compute-buffer scenario.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
+{
+    (void)ctx;
+    dvz_free(user);
 }
 
 
@@ -257,9 +339,11 @@ DvzScenarioSpec dvz_example_compute_buffer_animation_scenario(void)
         .fps = 60.0,
         .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_SCENE_BUFFERS |
                         DVZ_SCENARIO_REQ_STORAGE_BUFFERS | DVZ_SCENARIO_REQ_SCENE_COMPUTE |
-                        DVZ_SCENARIO_REQ_CONTINUOUS_FRAMES,
+                        DVZ_SCENARIO_REQ_FRAME_CALLBACKS | DVZ_SCENARIO_REQ_CONTINUOUS_FRAMES,
         .continuous_frames = true,
         .init = _scenario_init,
+        .frame = _scenario_frame,
+        .destroy = _scenario_destroy,
     };
 }
 
