@@ -8270,13 +8270,13 @@ else:
  * gaps.
  *
  * @param band the band object
- * @param count number of samples
  * @param x X coordinates
  * @param lower lower Y coordinates
  * @param upper upper Y coordinates
+ * @param count number of samples
  * @return 0 on success, -1 on validation/allocation error
  */"""
-    dvz_band_set_bounds.argtypes = [ctypes.POINTER(DvzBand), ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
+    dvz_band_set_bounds.argtypes = [ctypes.POINTER(DvzBand), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint32]
     dvz_band_set_bounds.restype = ctypes.c_int32
 
 
@@ -8292,12 +8292,12 @@ else:
  * `0.5 * (lower + upper)`. Arrays are copied into scene-owned storage. NaN values split the line.
  *
  * @param band the band object
- * @param count number of samples
  * @param x X coordinates
  * @param y Y coordinates
+ * @param count number of samples
  * @return 0 on success, -1 on validation/allocation error
  */"""
-    dvz_band_set_center.argtypes = [ctypes.POINTER(DvzBand), ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
+    dvz_band_set_center.argtypes = [ctypes.POINTER(DvzBand), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint32]
     dvz_band_set_center.restype = ctypes.c_int32
 
 
@@ -8735,13 +8735,13 @@ else:
  * Arrays are copied into scene-owned storage.
  *
  * @param bars the bars object
- * @param count number of bars
  * @param starts interval start values
  * @param ends interval end values
  * @param values bar terminal values
+ * @param count number of bars
  * @return 0 on success, -1 on validation/allocation error
  */"""
-    dvz_bars_set_intervals.argtypes = [ctypes.POINTER(DvzBars), ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]
+    dvz_bars_set_intervals.argtypes = [ctypes.POINTER(DvzBars), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint32]
     dvz_bars_set_intervals.restype = ctypes.c_int32
 
 
@@ -23603,11 +23603,11 @@ else:
  *
  * @param polygon the polygon
  * @param hole_index hole index to replace, or current hole count to append
- * @param count number of hole ring vertices
  * @param xy borrowed XY vertex array
+ * @param count number of hole ring vertices
  * @return 0 on success, -1 on invalid input or allocation failure
  */"""
-    dvz_polygon_set_hole.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint32, ctypes.c_uint32, (ctypes.c_void_p * 2)]
+    dvz_polygon_set_hole.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint32, (ctypes.c_void_p * 2), ctypes.c_uint32]
     dvz_polygon_set_hole.restype = ctypes.c_int32
 
 
@@ -23636,11 +23636,11 @@ else:
  * Replace the polygon outer ring while preserving existing holes.
  *
  * @param polygon the polygon
- * @param count number of outer ring vertices
  * @param xy borrowed XY vertex array
+ * @param count number of outer ring vertices
  * @return 0 on success, -1 on invalid input or allocation failure
  */"""
-    dvz_polygon_set_outer.argtypes = [ctypes.POINTER(DvzPolygon), ctypes.c_uint32, (ctypes.c_void_p * 2)]
+    dvz_polygon_set_outer.argtypes = [ctypes.POINTER(DvzPolygon), (ctypes.c_void_p * 2), ctypes.c_uint32]
     dvz_polygon_set_outer.restype = ctypes.c_int32
 
 

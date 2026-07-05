@@ -136,8 +136,8 @@ Common user-facing APIs should be flat and role/property based:
 
 ```c
 dvz_polygon_set_geometry(polygon, &polygon_desc);
-dvz_polygon_set_outer(polygon, count, xy);
-dvz_polygon_set_hole(polygon, hole_index, count, xy);
+dvz_polygon_set_outer(polygon, xy, count);
+dvz_polygon_set_hole(polygon, hole_index, xy, count);
 dvz_polygon_set_fill_color(polygon, color);
 dvz_polygon_set_stroke_color(polygon, color);
 dvz_polygon_set_stroke_width_px(polygon, width);

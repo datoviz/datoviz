@@ -423,8 +423,8 @@ DvzBars* dvz_bars(DvzPanel* panel, const DvzBarsDesc* desc)
 
 
 DvzResult dvz_bars_set_intervals(
-    DvzBars* bars, uint32_t count, const double* starts, const double* ends,
-    const double* values)
+    DvzBars* bars, const double* starts, const double* ends, const double* values,
+    uint32_t count)
 {
     if (bars == NULL || !bars->active)
         return -1;

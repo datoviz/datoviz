@@ -1650,7 +1650,7 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
         {0.75, 0.75},
         {0.25, 0.75},
     };
-    AT(dvz_polygon_set_hole(polygon, 0, 4, hole) == 0);
+    AT(dvz_polygon_set_hole(polygon, 0, hole, 4) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "position", &fill_position_view) == 0);
     AT(fill_position_view.item_count == 8);

@@ -103,7 +103,7 @@ static bool _add_holed_polygon(DvzScene* scene, DvzPanel* panel)
                                    .outer = {.xy = outer, .count = DVZ_ARRAY_COUNT(outer)}});
     if (rc != 0)
         return false;
-    rc = dvz_polygon_set_hole(polygon, 0, DVZ_ARRAY_COUNT(hole), hole);
+    rc = dvz_polygon_set_hole(polygon, 0, hole, DVZ_ARRAY_COUNT(hole));
     if (rc != 0)
         return false;
     rc = dvz_polygon_set_id(polygon, 10);

@@ -2356,8 +2356,8 @@ _Declared in `include/datoviz/scene.h`:3113._
 DvzResult dvz_polygon_set_hole(
     DvzPolygon * polygon,
     uint32_t hole_index,
-    uint32_t count,
-    const dvec2 * xy
+    const dvec2 * xy,
+    uint32_t count
 );
 ```
 
@@ -2366,8 +2366,8 @@ DvzResult dvz_polygon_set_hole(
 | return | `DvzResult` | 0 on success, -1 on invalid input or allocation failure |
 | `polygon` | `DvzPolygon *` | the polygon |
 | `hole_index` | `uint32_t` | hole index to replace, or current hole count to append |
-| `count` | `uint32_t` | number of hole ring vertices |
 | `xy` | `const dvec2 *` | borrowed XY vertex array |
+| `count` | `uint32_t` | number of hole ring vertices |
 
 Append or replace one polygon hole ring.
 
@@ -2404,8 +2404,8 @@ _Declared in `include/datoviz/scene.h`:3150._
 ```c title="dvz_polygon_set_outer"
 DvzResult dvz_polygon_set_outer(
     DvzPolygon * polygon,
-    uint32_t count,
-    const dvec2 * xy
+    const dvec2 * xy,
+    uint32_t count
 );
 ```
 
@@ -2413,8 +2413,8 @@ DvzResult dvz_polygon_set_outer(
 | --- | --- | --- |
 | return | `DvzResult` | 0 on success, -1 on invalid input or allocation failure |
 | `polygon` | `DvzPolygon *` | the polygon |
-| `count` | `uint32_t` | number of outer ring vertices |
 | `xy` | `const dvec2 *` | borrowed XY vertex array |
+| `count` | `uint32_t` | number of outer ring vertices |
 
 Replace the polygon outer ring while preserving existing holes.
 

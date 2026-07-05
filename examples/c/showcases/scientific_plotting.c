@@ -277,7 +277,7 @@ static bool _add_autocorrelogram(DvzScene* scene, DvzPanel* panel)
     bars_desc.outline_width_px = 0.8f;
     bars_desc.gap_fraction = 0.08f;
     DvzBars* bars = dvz_bars(panel, &bars_desc);
-    if (bars == NULL || dvz_bars_set_intervals(bars, CORR_BINS, starts, ends, values) != 0)
+    if (bars == NULL || dvz_bars_set_intervals(bars, starts, ends, values, CORR_BINS) != 0)
         return false;
 
     DvzGuideSpanDesc span_desc = dvz_guide_span_desc();
@@ -401,8 +401,8 @@ static bool _add_mean_error(DvzScene* scene, DvzPanel* panel)
     desc.line_color = dvz_color_rgba(76, 201, 240, 255);
     desc.line_width_px = 5.5f;
     DvzBand* band = dvz_band(panel, &desc);
-    return band != NULL && dvz_band_set_bounds(band, MEAN_COUNT, x, lower, upper) == 0 &&
-           dvz_band_set_center(band, MEAN_COUNT, x, center) == 0;
+    return band != NULL && dvz_band_set_bounds(band, x, lower, upper, MEAN_COUNT) == 0 &&
+           dvz_band_set_center(band, x, center, MEAN_COUNT) == 0;
 }
 
 

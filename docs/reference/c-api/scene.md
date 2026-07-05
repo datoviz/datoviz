@@ -1466,10 +1466,10 @@ _Declared in `include/datoviz/scene/plot.h`:60._
 ```c title="dvz_band_set_bounds"
 DvzResult dvz_band_set_bounds(
     DvzBand * band,
-    uint32_t count,
     const double * x,
     const double * lower,
-    const double * upper
+    const double * upper,
+    uint32_t count
 );
 ```
 
@@ -1477,10 +1477,10 @@ DvzResult dvz_band_set_bounds(
 | --- | --- | --- |
 | return | `DvzResult` | 0 on success, -1 on validation/allocation error |
 | `band` | `DvzBand *` | the band object |
-| `count` | `uint32_t` | number of samples |
 | `x` | `const double *` | X coordinates |
 | `lower` | `const double *` | lower Y coordinates |
 | `upper` | `const double *` | upper Y coordinates |
+| `count` | `uint32_t` | number of samples |
 
 Set lower/upper band bounds.
 
@@ -1496,9 +1496,9 @@ _Declared in `include/datoviz/scene/plot.h`:207._
 ```c title="dvz_band_set_center"
 DvzResult dvz_band_set_center(
     DvzBand * band,
-    uint32_t count,
     const double * x,
-    const double * y
+    const double * y,
+    uint32_t count
 );
 ```
 
@@ -1506,9 +1506,9 @@ DvzResult dvz_band_set_center(
 | --- | --- | --- |
 | return | `DvzResult` | 0 on success, -1 on validation/allocation error |
 | `band` | `DvzBand *` | the band object |
-| `count` | `uint32_t` | number of samples |
 | `x` | `const double *` | X coordinates |
 | `y` | `const double *` | Y coordinates |
+| `count` | `uint32_t` | number of samples |
 
 Set an explicit center line for the band.
 
@@ -1613,10 +1613,10 @@ _Declared in `include/datoviz/scene/plot.h`:52._
 ```c title="dvz_bars_set_intervals"
 DvzResult dvz_bars_set_intervals(
     DvzBars * bars,
-    uint32_t count,
     const double * starts,
     const double * ends,
-    const double * values
+    const double * values,
+    uint32_t count
 );
 ```
 
@@ -1624,10 +1624,10 @@ DvzResult dvz_bars_set_intervals(
 | --- | --- | --- |
 | return | `DvzResult` | 0 on success, -1 on validation/allocation error |
 | `bars` | `DvzBars *` | the bars object |
-| `count` | `uint32_t` | number of bars |
 | `starts` | `const double *` | interval start values |
 | `ends` | `const double *` | interval end values |
 | `values` | `const double *` | bar terminal values |
+| `count` | `uint32_t` | number of bars |
 
 Set explicit bar intervals and values.
 

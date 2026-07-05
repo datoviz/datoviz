@@ -486,10 +486,10 @@ int test_scene_bars_descriptor_and_data_validation(TstContext* suite, const TstC
     double starts[] = {0.0};
     double ends[] = {1.0};
     double values[] = {2.0};
-    AT(dvz_bars_set_intervals(bars, 1, starts, ends, values) == 0);
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_bars_set_intervals(bars, 1, NULL, ends, values) < 0);
+    AT(dvz_bars_set_intervals(bars, starts, ends, values, 1) == 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_bars_set_intervals(bars, NULL, ends, values, 1) < 0);
     ends[0] = starts[0];
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_bars_set_intervals(bars, 1, starts, ends, values) < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_bars_set_intervals(bars, starts, ends, values, 1) < 0);
     AT(bars->outline_visual == NULL);
     DvzBarsDesc style = dvz_bars_desc();
     style.outline_width_px = 1.5f;
@@ -539,13 +539,13 @@ int test_scene_band_descriptor_and_data_validation(TstContext* suite, const TstC
     double x[] = {0.0, 1.0};
     double lower[] = {0.0, 0.5};
     double upper[] = {1.0, 1.5};
-    AT(dvz_band_set_bounds(band, 2, x, lower, upper) == 0);
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_bounds(band, 2, NULL, lower, upper) < 0);
+    AT(dvz_band_set_bounds(band, x, lower, upper, 2) == 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_bounds(band, NULL, lower, upper, 2) < 0);
     x[1] = INFINITY;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_bounds(band, 2, x, lower, upper) < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_bounds(band, x, lower, upper, 2) < 0);
     x[1] = NAN;
-    AT(dvz_band_set_bounds(band, 2, x, lower, upper) == 0);
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_center(band, 2, NULL, lower) < 0);
+    AT(dvz_band_set_bounds(band, x, lower, upper, 2) == 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_band_set_center(band, NULL, lower, 2) < 0);
     AT(band->bounds_visual == NULL);
     DvzBandDesc style = dvz_band_desc();
     style.show_bounds = true;
@@ -2094,7 +2094,7 @@ int test_scene_bars_prepare_visuals(TstContext* suite, const TstCase* item)
     const double starts[] = {0.0, 1.0};
     const double ends[] = {1.0, 2.0};
     const double values[] = {2.0, -1.0};
-    AT(dvz_bars_set_intervals(bars, 2, starts, ends, values) == 0);
+    AT(dvz_bars_set_intervals(bars, starts, ends, values, 2) == 0);
 
     DvzBarsDesc horizontal_desc = dvz_bars_desc();
     horizontal_desc.orientation = DVZ_BARS_ORIENTATION_HORIZONTAL;
@@ -2106,7 +2106,7 @@ int test_scene_bars_prepare_visuals(TstContext* suite, const TstCase* item)
     const double hstarts[] = {0.0};
     const double hends[] = {10.0};
     const double hvalues[] = {3.0};
-    AT(dvz_bars_set_intervals(horizontal, 1, hstarts, hends, hvalues) == 0);
+    AT(dvz_bars_set_intervals(horizontal, hstarts, hends, hvalues, 1) == 0);
 
     _scene_prepare_bars_visuals(figure);
 
@@ -2200,8 +2200,8 @@ int test_scene_band_prepare_visuals(TstContext* suite, const TstCase* item)
     const double lower[] = {0.0, 0.5, NAN, 1.0, 1.5};
     const double upper[] = {1.0, 1.5, NAN, 2.0, 2.5};
     const double center_y[] = {0.7, 1.1, NAN, 1.8, 2.0};
-    AT(dvz_band_set_bounds(band, 5, x, lower, upper) == 0);
-    AT(dvz_band_set_center(band, 5, x, center_y) == 0);
+    AT(dvz_band_set_bounds(band, x, lower, upper, 5) == 0);
+    AT(dvz_band_set_center(band, x, center_y, 5) == 0);
 
     _scene_prepare_band_visuals(figure);
 

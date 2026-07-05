@@ -3117,11 +3117,11 @@ DVZ_EXPORT DvzResult dvz_polygon_set_geometry(DvzPolygon* polygon, const DvzPoly
  * Replace the polygon outer ring while preserving existing holes.
  *
  * @param polygon the polygon
- * @param count number of outer ring vertices
  * @param xy borrowed XY vertex array
+ * @param count number of outer ring vertices
  * @return 0 on success, -1 on invalid input or allocation failure
  */
-DVZ_EXPORT DvzResult dvz_polygon_set_outer(DvzPolygon* polygon, uint32_t count, const dvec2* xy);
+DVZ_EXPORT DvzResult dvz_polygon_set_outer(DvzPolygon* polygon, const dvec2* xy, uint32_t count);
 
 
 /**
@@ -3132,12 +3132,12 @@ DVZ_EXPORT DvzResult dvz_polygon_set_outer(DvzPolygon* polygon, uint32_t count, 
  *
  * @param polygon the polygon
  * @param hole_index hole index to replace, or current hole count to append
- * @param count number of hole ring vertices
  * @param xy borrowed XY vertex array
+ * @param count number of hole ring vertices
  * @return 0 on success, -1 on invalid input or allocation failure
  */
 DVZ_EXPORT DvzResult
-dvz_polygon_set_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, const dvec2* xy);
+dvz_polygon_set_hole(DvzPolygon* polygon, uint32_t hole_index, const dvec2* xy, uint32_t count);
 
 
 /**
