@@ -457,7 +457,11 @@ Next recommended checkpoints, in safe execution order:
    The polygon aggregate, singular polygon, and graph mutator renames are complete. Next audit plot,
    text, and any other obvious retained-state mutators before RC.
 2. Split stable `window.h` from backend SPI so ordinary window users do not include backend
-   registration, GLFW hooks, wrap-surface helpers, or Vulkan surface details.
+   registration, GLFW hooks, or wrap-surface helpers. This include-boundary split is complete:
+   `window.h` no longer includes `window/backend.h`, `advanced.h` opts into both, and ctypes parses
+   the backend header directly. Remaining caveat: `DvzWindowSurface` still carries Vulkan handle
+   types through `window/types.h`, so a full Vulkan-free window surface record would need a
+   separate ABI break if desired.
 3. Make `vk.h` a complete low-level Vulkan umbrella if headers parse cleanly together; otherwise
    document it explicitly as a narrow GPU-context umbrella and direct advanced users to explicit
    `datoviz/vk/*.h` includes.
@@ -505,8 +509,11 @@ Use these defaults unless the code audit finds a stronger local reason:
 13. Use `dvz_geometry_*` as the single public geometry naming family. Rename current
     `dvz_geom_*` constructors/update helpers before RC and do not keep compatibility aliases. This
     rename is complete for the current public constructor/update helper set.
-14. Keep stable app/window-facing APIs backend-neutral. Put backend registration, GLFW hooks,
-    wrap-surface helpers, and Vulkan surface details behind explicit backend/interop headers.
+14. Keep stable app/window-facing APIs backend-neutral. Put backend registration, GLFW hooks, and
+    wrap-surface helpers behind explicit backend/interop headers. `window.h` no longer includes
+    `window/backend.h`; `advanced.h` includes both. `DvzWindowSurface` still exposes Vulkan handles
+    in `window/types.h` and should be treated as an advanced integration record unless a later wave
+    replaces it with a backend-neutral surface-info API.
 15. Keep `advanced.h` as the opt-in advanced umbrella. Make `vk.h` either a complete low-level
     Vulkan umbrella or explicitly documented as a narrow GPU-context umbrella; avoid ambiguous
     partial-umbrella behavior before RC.

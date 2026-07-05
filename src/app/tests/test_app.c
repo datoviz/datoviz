@@ -30,6 +30,7 @@
 #include "datoviz/scene.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/window.h"
+#include "datoviz/window/backend.h"
 #include "test_app.h"
 
 

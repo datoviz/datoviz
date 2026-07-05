@@ -18,6 +18,7 @@
 
 #include "_env.h"
 #include "datoviz/window.h"
+#include "datoviz/window/backend.h"
 
 
 

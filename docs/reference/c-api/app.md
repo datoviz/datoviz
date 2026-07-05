@@ -4281,7 +4281,7 @@ Return the backend currently serving the window.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:198._
+_Declared in `include/datoviz/window.h`:204._
 
 ### `dvz_window_config()`
 
@@ -4299,7 +4299,7 @@ Related: [`dvz_window_create()`](#dvz_window_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:107._
+_Declared in `include/datoviz/window.h`:113._
 
 ### `dvz_window_create()`
 
@@ -4324,7 +4324,7 @@ Related: [`dvz_window_destroy()`](#dvz_window_destroy).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:119._
+_Declared in `include/datoviz/window.h`:125._
 
 ### `dvz_window_destroy()`
 
@@ -4344,7 +4344,7 @@ Related: [`dvz_window_create()`](#dvz_window_create).
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:129._
+_Declared in `include/datoviz/window.h`:135._
 
 ### `dvz_window_external_surface_info()`
 
@@ -4379,7 +4379,7 @@ Check whether a pending frame has yet to be processed.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:188._
+_Declared in `include/datoviz/window.h`:194._
 
 ### `dvz_window_glfw_init()`
 
@@ -4436,7 +4436,7 @@ Create a window host that stores available backends and owned windows.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:38._
+_Declared in `include/datoviz/window.h`:44._
 
 ### `dvz_window_host_destroy()`
 
@@ -4454,7 +4454,7 @@ Destroy a window host and all windows associated with it.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:47._
+_Declared in `include/datoviz/window.h`:53._
 
 ### `dvz_window_host_poll()`
 
@@ -4472,7 +4472,7 @@ Poll every registered backend for events.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:67._
+_Declared in `include/datoviz/window.h`:73._
 
 ### `dvz_window_host_register_backend()`
 
@@ -4492,7 +4492,7 @@ Register a backend so it can be used during window creation.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:57._
+_Declared in `include/datoviz/window.h`:63._
 
 ### `dvz_window_host_request_frame()`
 
@@ -4512,7 +4512,7 @@ Request a frame for the given window.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:94._
+_Declared in `include/datoviz/window.h`:100._
 
 ### `dvz_window_host_required_extension_count()`
 
@@ -4576,7 +4576,7 @@ Wait for backend events, blocking until an event is available when supported.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:75._
+_Declared in `include/datoviz/window.h`:81._
 
 ### `dvz_window_host_wait_timeout()`
 
@@ -4596,7 +4596,7 @@ Wait for backend events with a timeout.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:84._
+_Declared in `include/datoviz/window.h`:90._
 
 ### `dvz_window_metrics()`
 
@@ -4615,7 +4615,7 @@ Return the cached logical/native/surface metrics for the window.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:148._
+_Declared in `include/datoviz/window.h`:154._
 
 ### `dvz_window_register_glfw_backend()`
 
@@ -4706,7 +4706,7 @@ Retrieve the router used to emit input events for the window.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:158._
+_Declared in `include/datoviz/window.h`:164._
 
 ### `dvz_window_set_user_data()`
 
@@ -4726,7 +4726,7 @@ Store an opaque user data pointer on the window.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:168._
+_Declared in `include/datoviz/window.h`:174._
 
 ### `dvz_window_should_close()`
 
@@ -4747,7 +4747,7 @@ Returns false for backends that have no interactive close signal (headless, offs
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:210._
+_Declared in `include/datoviz/window.h`:216._
 
 ### `dvz_window_surface()`
 
@@ -4766,7 +4766,7 @@ Return the cached surface information for the window.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:139._
+_Declared in `include/datoviz/window.h`:145._
 
 ### `dvz_window_user_data()`
 
@@ -4785,7 +4785,7 @@ Read the user data pointer previously stored on a window.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/window.h`:178._
+_Declared in `include/datoviz/window.h`:184._
 
 ### `dvz_window_wrap_attach_surface()`
 

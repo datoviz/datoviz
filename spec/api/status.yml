@@ -198,13 +198,24 @@ modules:
   - module: window
     headers:
       - include/datoviz/window.h
-      - include/datoviz/window/**
+      - include/datoviz/window/size.h
+      - include/datoviz/window/types.h
     tier: advanced
     umbrella: advanced
     raw_binding: true
     python_top_level: false
     docs_group: app
-    rationale: Low-level window host and backend API beneath the app facade.
+    rationale: Low-level window host API beneath the app facade; still exposes Vulkan surface types for advanced integrations.
+
+  - module: window_backend
+    headers:
+      - include/datoviz/window/backend.h
+    tier: advanced
+    umbrella: advanced
+    raw_binding: true
+    python_top_level: false
+    docs_group: app
+    rationale: Backend registration, GLFW hooks, and external Vulkan surface wrapping SPI.
 
   - module: video
     headers:

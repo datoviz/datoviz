@@ -18,9 +18,15 @@
 
 #include <stdbool.h>
 
-#include "datoviz/input/router.h"
-#include "datoviz/window/backend.h"
 #include "datoviz/window/types.h"
+
+
+
+/*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+typedef struct DvzWindowBackend DvzWindowBackend;
 
 
 

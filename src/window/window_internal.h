@@ -22,6 +22,7 @@
 #include "_log.h"
 #include "datoviz/input/pointer.h"
 #include "datoviz/window.h"
+#include "datoviz/window/backend.h"
 #include "datoviz/window/types.h"
 
 

@@ -29,6 +29,7 @@ headers:
     - datoviz/vk/memory_interop.h
     - datoviz/vklite.h
     - datoviz/window.h
+    - datoviz/window/backend.h
 
 smoke_symbols:
   - dvz_time_monotonic_ns
