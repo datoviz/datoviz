@@ -157,14 +157,26 @@ Completed checkpoints:
    - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
      `python3 tools/build_api_c.py --check`, `just build`, `just test scene/interaction`,
      `just test app`, `just spec-check`, stale-reference scan, and `git diff --check`.
+15. `343f32154` `api: split annotation text styling from descriptors`
+   - Removed nested `DvzTextStyle style` and `DvzTextPlacement placement` from
+     `DvzAnnotationDesc` and `DvzLabelDesc`.
+   - Added retained annotation setters: `dvz_annotation_set_style()` and
+     `dvz_annotation_set_placement()`.
+   - Migrated examples, docs, guide internals, scale-bar construction, tests, generated raw
+     `ctypes`, and generated C API docs.
+   - Exported symbol delta: added `dvz_annotation_set_style` and
+     `dvz_annotation_set_placement`; no exported functions were removed. `DvzAnnotationDesc` and
+     `DvzLabelDesc` ABI layouts changed.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just build`, `just test scene/interaction`,
+     `just test app`, `just spec-check`, stale-reference scan, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
 - dirty `data` submodule state;
 - untracked `paper/paper.pdf`.
 
-Next recommended checkpoint: continue the descriptor-flattening campaign with annotation/label text
-style and placement, or app/view/font defaults.
+Next recommended checkpoint: continue the descriptor-flattening campaign with app/view/font defaults.
 
 
 ## Maintainer Decisions
@@ -229,17 +241,15 @@ Complete audit as of July 2026, using the criterion above:
 | `DvzGraphEdgeStyle` | `DvzBezierTessellationDesc tessellation` | `include/datoviz/scene/types.h:946` | Flatten to `tessellation_segment_count` and `tessellation_tolerance`, or set tessellation separately. |
 | `DvzSelectionVisualStyle` | `DvzItemStateVisualStyle selected`, `DvzItemStateVisualStyle unselected` | `include/datoviz/scene/types.h:1253` | Done in `4afdfb53d`: flattened to prefixed selected/unselected scalar style fields. |
 | `DvzScaleDesc` | `DvzFormatDesc format` | `include/datoviz/scene/types.h:1380` | Remove from creation desc; `dvz_scale_set_format()` already exists. Creation should cover `kind`, `label`, and `unit`. |
-| `DvzAnnotationDesc` | `DvzTextStyle style`, `DvzTextPlacement placement` | `include/datoviz/scene/types.h:1582` | Either make text style/placement plain value records or keep annotation creation minimal and use style/placement setters. |
-| `DvzLabelDesc` | `DvzTextStyle style`, `DvzTextPlacement placement` | `include/datoviz/scene/types.h:1595` | Same as annotation: avoid embedding descriptor-like text style/placement unless they become plain value records. |
+| `DvzAnnotationDesc` | `DvzTextStyle style`, `DvzTextPlacement placement` | `include/datoviz/scene/types.h:1582` | Done in `343f32154`: creation is minimal; style and placement use retained setters. |
+| `DvzLabelDesc` | `DvzTextStyle style`, `DvzTextPlacement placement` | `include/datoviz/scene/types.h:1595` | Done in `343f32154`: creation is minimal; style and placement use retained setters. |
 | `DvzScaleBarDesc` | `DvzTextStyle label_style`, `DvzTextPlacement placement`, `DvzFormatDesc format` | `include/datoviz/scene/types.h:1607` | Highest-priority cleanup. Keep the creation desc to scale-bar identity, units, geometry, length bounds, offset, line/tick styling; move label style, placement, and format to setters. |
 
 Suggested execution order:
 
 1. Clean `DvzScaleBarDesc`, `DvzScaleDesc`, and `DvzPanelAxes2DDesc` first. These are user-facing,
    noisy in examples, and easy to improve with retained-object setters.
-2. Clean annotation/label/text style and placement next. Decide whether `DvzTextStyle` and
-   `DvzTextPlacement` are plain value records or versioned descriptors, then apply that decision
-   consistently.
+2. Annotation/label text style and placement cleanup is complete.
 3. Clean app/view/font/backend nesting while doing the backend-neutral app API wave.
 4. Clean remaining lower-risk style/config cases such as `DvzOverlayCardDesc`.
 5. Regenerate raw `ctypes`, generated C docs, and examples in the same checkpoint as each public
