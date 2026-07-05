@@ -63,16 +63,21 @@ Completed checkpoints:
      registry instead of maintaining root-facade enum switches.
    - Validation passed: scene visual boundary checker, `just spec-check`, `just build`,
      `just test scene/scene-graph`, and `git diff --check`.
+6. `a703f01e1` `api: remove legacy scene clock aliases`
+   - Removed `DVZ_CLOCK_REALTIME` and `DVZ_CLOCK_OFFLINE` from `DvzSceneClockMode`.
+   - Updated legacy/lab examples, scene app tests, the portable scenario runner spec, generated
+     raw `ctypes`, and generated C API docs to use `DVZ_SCENE_CLOCK_*` names.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just build`, `just test app`,
+     `just test scene/animation`, `just spec-check`, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
 - dirty `data` submodule state;
 - untracked `paper/paper.pdf`.
 
-Next recommended checkpoint: remove the legacy scene clock aliases
-`DVZ_CLOCK_REALTIME` and `DVZ_CLOCK_OFFLINE`, then regenerate and validate bindings. This is the
-smallest remaining API-breaking slice. After that, continue with public mock-data helper demotion
-and a separate decision on the transitional texture wrappers.
+Next recommended checkpoint: demote or remove the public mock-data helpers in
+`include/datoviz/math/mock.h`. They return owned arrays and currently create awkward/raw-ctypes
+ownership traps. Keep the transitional texture wrappers as a separate follow-up decision.
 
 
 ## Maintainer Decisions
@@ -406,8 +411,8 @@ generated ctypes, generated docs if applicable, and examples in sync.
 
 1. **API exposure cleanup**
    - Completed: remove or demote internal object/container API.
-   - Next: remove legacy clock aliases.
-   - Then: remove or demote mock-data helpers.
+   - Completed: remove legacy clock aliases.
+   - Next: remove or demote mock-data helpers.
    - Decide separately: remove transitional texture wrappers, or rename them as explicit sampled
      field helpers.
    - Validation: `just ctypes`, `just ctypes-check`, narrow compile/build check.
