@@ -571,9 +571,10 @@ int main(int argc, char** argv)
         scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                    .kind = DVZ_SCALE_CONTINUOUS,
                    .label = "Intensity",
-                   .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 2},
                });
     EXAMPLE_CHECK(scale != NULL, "dvz_scale() failed");
+    dvz_scale_set_format(
+        scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 2});
     dvz_scale_set_domain(scale, SCALE_MIN, SCALE_MAX);
     dvz_scale_set_view_range(scale, FIELD_MIN, FIELD_MAX);
 

@@ -395,16 +395,16 @@ static bool _add_panel_scalebar(
         .line_width_px = 2.0f,
         .unit = unit,
         .data_to_unit = data_to_unit,
-        .label_style = {
+    };
+    DvzTextStyle label_style = {
         DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-            .size_px = 16.0f,
-            .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-        },
+        .size_px = 16.0f,
+        .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
     };
     _copy_color(desc.line_color, color, 255u);
-    _copy_color(desc.label_style.color, color, 255u);
+    _copy_color(label_style.color, color, 255u);
     DvzScaleBar* scalebar = dvz_scale_bar(panel, &desc);
-    return scalebar != NULL;
+    return scalebar != NULL && dvz_scale_bar_set_label_style(scalebar, &label_style) == 0;
 }
 
 
@@ -435,16 +435,16 @@ static bool _add_world_scalebar(DvzPanel* panel)
         .line_width_px = 2.0f,
         .unit = "m",
         .data_to_unit = 0.001,
-        .label_style = {
+    };
+    DvzTextStyle label_style = {
         DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-            .size_px = 16.0f,
-            .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-        },
+        .size_px = 16.0f,
+        .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
     };
     _copy_color(desc.line_color, color, 255u);
-    _copy_color(desc.label_style.color, color, 255u);
+    _copy_color(label_style.color, color, 255u);
     DvzScaleBar* scalebar = dvz_scale_bar(panel, &desc);
-    return scalebar != NULL;
+    return scalebar != NULL && dvz_scale_bar_set_label_style(scalebar, &label_style) == 0;
 }
 
 

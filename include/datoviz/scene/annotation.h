@@ -135,6 +135,37 @@ DVZ_EXPORT DvzResult dvz_scale_bar_set_duration_units(DvzScaleBar* scalebar, Dvz
 
 
 /**
+ * Set the label style of a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param style label style, or NULL for defaults
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT DvzResult dvz_scale_bar_set_label_style(DvzScaleBar* scalebar, const DvzTextStyle* style);
+
+
+/**
+ * Set the label placement policy of a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param placement label placement, or NULL for defaults
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT DvzResult dvz_scale_bar_set_placement(
+    DvzScaleBar* scalebar, const DvzTextPlacement* placement);
+
+
+/**
+ * Override formatting policy on a retained scale bar.
+ *
+ * @param scalebar the scale bar
+ * @param format the format descriptor, or NULL to clear the override
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT DvzResult dvz_scale_bar_set_format(DvzScaleBar* scalebar, const DvzFormatDesc* format);
+
+
+/**
  * Destroy a retained annotation object.
  *
  * Also destroys typed annotation aliases such as `DvzScaleBar` after casting to `DvzAnnotation*`.

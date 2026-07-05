@@ -216,14 +216,6 @@ void dvz_annotation_set_format(DvzAnnotation* annotation, const DvzFormatDesc* f
         return;
     annotation->has_format = format != NULL;
     _scene_format_state_copy(&annotation->format, format);
-    if (annotation->kind == DVZ_ANNOTATION_SCALEBAR)
-    {
-        if (format != NULL)
-            annotation->scalebar.format = *format;
-        else
-            dvz_memset(
-                &annotation->scalebar.format, sizeof(DvzFormatDesc), 0, sizeof(DvzFormatDesc));
-    }
     annotation->dirty_flags |=
         DVZ_TEXT_DIRTY_STRING | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
     annotation->version++;

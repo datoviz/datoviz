@@ -887,10 +887,13 @@ static DvzScale* _add_wind_scale(DvzScene* scene)
                    .kind = DVZ_SCALE_CONTINUOUS,
                    .label = "wind speed",
                    .unit = "m/s",
-                   .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0, .trim_trailing_zeros = true},
                });
     if (scale == NULL)
         return NULL;
+    dvz_scale_set_format(
+        scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
+                   .precision = 0,
+                   .trim_trailing_zeros = true});
     dvz_scale_set_domain(scale, 0.0, WIND_SPEED_MAX_MPS);
     dvz_scale_set_view_range(scale, 0.0, WIND_SPEED_MAX_MPS);
 

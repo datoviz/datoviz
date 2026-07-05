@@ -203,15 +203,15 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
                    .kind = DVZ_SCALE_CONTINUOUS,
                    .label = "Depth",
                    .unit = "um",
-                   .format =
-                       (DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
-                           .precision = 2,
-                           .show_unit = true,
-                           .unit = "um",
-                           .suffix = " depth",
-                       },
                });
     ANN(scale);
+    dvz_scale_set_format(
+        scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
+                   .precision = 2,
+                   .show_unit = true,
+                   .unit = "um",
+                   .suffix = " depth",
+               });
     AT(scene->scale_count == 1);
     AT(scale->scene == scene);
     AT(scale->kind == DVZ_SCALE_CONTINUOUS);
@@ -776,9 +776,12 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
         scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                    .kind = DVZ_SCALE_CONTINUOUS,
                    .unit = "u",
-                   .format = (DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 1, .show_unit = true},
                });
     ANN(scale);
+    dvz_scale_set_format(
+        scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
+                   .precision = 1,
+                   .show_unit = true});
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormapStop stops[2] = {
         {.position = 0.0, .rgba = {0, 0, 255, 255}},
@@ -1111,9 +1114,12 @@ int test_scene_colorbar_left_title_uses_content_lane(TstContext* suite, const Ts
     DvzScale* scale = dvz_scale(
         scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                    .kind = DVZ_SCALE_CONTINUOUS,
-                   .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0, .trim_trailing_zeros = true},
                });
     ANN(scale);
+    dvz_scale_set_format(
+        scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
+                   .precision = 0,
+                   .trim_trailing_zeros = true});
     dvz_scale_set_domain(scale, 0.0, 80.0);
     DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
     ANN(colormap);
@@ -1364,8 +1370,11 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
     AT(dvz_panel_set_reserve(panel, &(DvzPanelReserve){.left_px = 24.0f}));
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS, .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0}});
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
+                   .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
+    dvz_scale_set_format(
+        scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0});
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormapStop stops0[2] = {
         {.position = 0.0, .rgba = {0, 0, 255, 255}},
@@ -1467,9 +1476,10 @@ static int test_scene_colorbar_explicit_ticks_and_labels(TstContext* suite, cons
     DvzScale* scale = dvz_scale(
         scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                    .kind = DVZ_SCALE_CONTINUOUS,
-                   .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0},
                });
     ANN(scale);
+    dvz_scale_set_format(
+        scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0});
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
     ANN(colormap);
@@ -1591,8 +1601,11 @@ int test_scene_colorbar_emit_stream_contains_derived_visuals(
     ANN(panel);
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS, .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 1}});
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
+                   .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
+    dvz_scale_set_format(
+        scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 1});
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
     ANN(colormap);
@@ -4645,10 +4658,6 @@ int test_scene_scale_guide_descriptor_abi_rejects_invalid_structs(
 
     scale_desc = dvz_scale_desc();
     scale_desc.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_scale(scene, &scale_desc) == NULL);
-
-    scale_desc = dvz_scale_desc();
-    scale_desc.format.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_scale(scene, &scale_desc) == NULL);
 
     DvzScale* continuous = dvz_scale(scene, NULL);

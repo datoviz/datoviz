@@ -1373,7 +1373,6 @@ struct DvzScaleDesc
     DvzScaleKind kind;
     const char* label;
     const char* unit;
-    DvzFormatDesc format;
 };
 typedef struct DvzScaleDesc DvzScaleDesc;
 
@@ -1601,9 +1600,6 @@ struct DvzScaleBarDesc
     DvzSceneAnchor anchor;
     DvzScaleBarReferenceMode reference_mode;
     DvzScaleBarLabelPosition label_position;
-    DvzTextStyle label_style;
-    DvzTextPlacement placement;
-    DvzFormatDesc format;
     const char* unit;
     double data_to_unit;
     double reference_position[3];

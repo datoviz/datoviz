@@ -126,16 +126,17 @@ static bool _add_time_scalebar(DvzScene* scene, DvzPanel* panel)
         .tick_length_px = 18.0f,
         .line_width_px = 4.0f,
         .line_color = {color.r, color.g, color.b, 255u},
-        .label_style = {
+    };
+    DvzTextStyle label_style = {
         DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-            .size_px = 17.0f,
-            .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-            .color = {color.r, color.g, color.b, 255u},
-        },
+        .size_px = 17.0f,
+        .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+        .color = {color.r, color.g, color.b, 255u},
     };
 
     DvzScaleBar* scalebar = dvz_scale_bar(panel, &desc);
-    return scalebar != NULL && dvz_scale_bar_set_units((DvzScaleBar*)scalebar, duration_units) == 0;
+    return scalebar != NULL && dvz_scale_bar_set_label_style(scalebar, &label_style) == 0 &&
+           dvz_scale_bar_set_units(scalebar, duration_units) == 0;
 }
 
 

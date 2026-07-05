@@ -297,9 +297,6 @@ static bool _scale_desc_validate(const DvzScaleDesc* desc)
         log_error("invalid scale descriptor ABI");
         return false;
     }
-    if (!_scene_format_desc_is_zero(&desc->format) &&
-        !_scene_format_desc_validate(&desc->format))
-        return false;
     return true;
 }
 
@@ -319,7 +316,6 @@ DvzScaleDesc dvz_scale_desc(void)
     return (DvzScaleDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
         .kind = DVZ_SCALE_CONTINUOUS,
-        .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc)},
     };
 }
 
@@ -351,8 +347,6 @@ DvzScale* dvz_scale(DvzScene* scene, const DvzScaleDesc* desc)
         dvz_strlcpy(scale->label, resolved.label, sizeof(scale->label));
     if (resolved.unit != NULL)
         dvz_strlcpy(scale->unit, resolved.unit, sizeof(scale->unit));
-    if (!_scene_format_desc_is_zero(&resolved.format))
-        _scene_format_state_copy(&scale->format, &resolved.format);
     return scale;
 }
 

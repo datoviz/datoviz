@@ -376,10 +376,6 @@ int test_scene_text_annotation_descriptor_abi_rejects_invalid_structs(
     scalebar_desc.struct_size = 0;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_scale_bar(panel, &scalebar_desc) == NULL);
 
-    scalebar_desc = dvz_scale_bar_desc();
-    scalebar_desc.format.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_scale_bar(panel, &scalebar_desc) == NULL);
-
     dvz_text_destroy(text);
     dvz_scene_destroy(scene);
     return 0;
@@ -2243,6 +2239,19 @@ int test_scene_band_prepare_visuals(TstContext* suite, const TstCase* item)
 }
 
 
+static DvzResult _test_scale_bar_set_label_style(
+    DvzScaleBar* scalebar, float size_px, DvzTextRenderer renderer, DvzColor color)
+{
+    DvzTextStyle style = {
+        DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+        .size_px = size_px,
+        .renderer = renderer,
+        .color = {color.r, color.g, color.b, color.a},
+    };
+    return dvz_scale_bar_set_label_style(scalebar, &style);
+}
+
+
 /**
  * Check scale-bar nice-length selection and SI unit formatting.
  *
@@ -2384,13 +2393,11 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
             .offset_px = {20.0f, 20.0f},
             .line_width_px = 2.0f,
             .line_color = {255, 255, 255, 255},
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 10.0f,
-                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-                .color = {255, 255, 255, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 10.0f, DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+           dvz_color_rgba(255, 255, 255, 255)) == 0);
     _scene_prepare_text_visuals(figure);
     ANN(scalebar->scalebar_visual);
     ANN(scalebar->visual);
@@ -2564,13 +2571,11 @@ static int test_scene_scalebar_update_churn(TstContext* suite, const TstCase* it
             .offset_px = {20.0f, 20.0f},
             .line_width_px = 2.0f,
             .line_color = {255, 255, 255, 255},
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 10.0f,
-                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-                .color = {255, 255, 255, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 10.0f, DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+           dvz_color_rgba(255, 255, 255, 255)) == 0);
     _scene_prepare_text_visuals(figure);
     ANN(scalebar->visual);
     AT(_visual_family_state(scalebar->visual)->text.glyph_visual != NULL);
@@ -2703,13 +2708,11 @@ static int test_scene_scalebar_3d_world_reference(TstContext* suite, const TstCa
             .line_color = {255, 255, 255, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 10.0f,
-                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-                .color = {255, 255, 255, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 10.0f, DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+           dvz_color_rgba(255, 255, 255, 255)) == 0);
 
     _scene_prepare_text_visuals(figure);
     ANN(scalebar->scalebar_visual);
@@ -2786,13 +2789,11 @@ static int test_scene_scalebar_3d_view_plane_rotation_invariant(
             .line_color = {255, 255, 255, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 10.0f,
-                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-                .color = {255, 255, 255, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 10.0f, DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+           dvz_color_rgba(255, 255, 255, 255)) == 0);
 
     _scene_prepare_text_visuals(figure);
     ANN(scalebar->scalebar_visual);
@@ -2862,13 +2863,11 @@ static int test_scene_scalebar_3d_view_plane_zoom_scale(
             .line_color = {255, 255, 255, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 10.0f,
-                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-                .color = {255, 255, 255, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 10.0f, DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+           dvz_color_rgba(255, 255, 255, 255)) == 0);
 
     _scene_prepare_text_visuals(figure);
     ANN(scalebar->scalebar_visual);
@@ -2930,13 +2929,11 @@ static int test_scene_scalebar_render_emit_keeps_upload_sources(
             .line_color = {245, 248, 252, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 22.0f,
-                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-                .color = {255, 236, 176, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 22.0f, DVZ_TEXT_RENDERER_MSDF_ATLAS,
+           dvz_color_rgba(255, 236, 176, 255)) == 0);
 
     DvzFramePlan* plan = dvz_frame_plan("figure_0", 0);
     ANN(plan);
@@ -3022,13 +3019,11 @@ static int test_scene_scalebar_minimal_stream(TstContext* suite, const TstCase* 
             .line_color = {245, 248, 252, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 22.0f,
-                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-                .color = {255, 236, 176, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 22.0f, DVZ_TEXT_RENDERER_MSDF_ATLAS,
+           dvz_color_rgba(255, 236, 176, 255)) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
@@ -3172,13 +3167,11 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
             .line_color = {245, 248, 252, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 18.0f,
-                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-                .color = {255, 236, 176, 255},
-            },
         });
     ANN(scalebar);
+    AT(_test_scale_bar_set_label_style(
+           scalebar, 18.0f, DVZ_TEXT_RENDERER_MSDF_ATLAS,
+           dvz_color_rgba(255, 236, 176, 255)) == 0);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.view.eye[2] = 3.20f;
@@ -3207,13 +3200,11 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
             .line_color = {235, 246, 255, 255},
             .unit = "m",
             .data_to_unit = 1.0,
-            .label_style = {DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-                .size_px = 18.0f,
-                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-                .color = {178, 226, 255, 255},
-            },
         });
     ANN(right_scalebar);
+    AT(_test_scale_bar_set_label_style(
+           right_scalebar, 18.0f, DVZ_TEXT_RENDERER_MSDF_ATLAS,
+           dvz_color_rgba(178, 226, 255, 255)) == 0);
 
     DvzVisual* right_points = dvz_point(scene, 0);
     ANN(right_points);

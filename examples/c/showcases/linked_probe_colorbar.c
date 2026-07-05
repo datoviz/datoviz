@@ -222,12 +222,13 @@ static DvzScale* _add_scale(DvzScene* scene)
         scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                    .kind = DVZ_SCALE_CONTINUOUS,
                    .label = "intensity",
-                   .format = {DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
-                              .precision = 2,
-                              .trim_trailing_zeros = true},
                });
     if (scale == NULL)
         return NULL;
+    dvz_scale_set_format(
+        scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
+                   .precision = 2,
+                   .trim_trailing_zeros = true});
     dvz_scale_set_domain(scale, 0.0, 1.0);
     dvz_scale_set_view_range(scale, 0.0, 1.0);
 
