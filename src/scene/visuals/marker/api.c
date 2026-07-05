@@ -650,9 +650,16 @@ DvzSymbolId dvz_symbol_msdf(
  * @param symbols the symbol set, or NULL to clear
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_marker_set_symbols(DvzVisual* visual, DvzSymbolSet* symbols)
+DvzResult dvz_marker_set_symbols(DvzVisual* visual, const DvzSymbolSet* symbols)
 {
     ANN(visual);
+    union
+    {
+        const DvzSymbolSet* borrowed;
+        DvzSymbolSet* scene_owned;
+    } symbols_ptr = {.borrowed = symbols};
+    DvzSymbolSet* bound_symbols = symbols_ptr.scene_owned;
+
     if (visual->type != DVZ_VISUAL_TYPE_MARKER)
     {
         log_error("dvz_marker_set_symbols requires a marker visual");
@@ -666,7 +673,7 @@ DvzResult dvz_marker_set_symbols(DvzVisual* visual, DvzSymbolSet* symbols)
     if (!_scene_visual_mutation_allowed(visual->scene, "bind marker symbols"))
         return -1;
 
-    _visual_family_state(visual)->symbol_set = symbols;
+    _visual_family_state(visual)->symbol_set = bound_symbols;
     _visual_family_state(visual)->symbol_source_kind = DVZ_SYMBOL_SOURCE_NONE;
     _visual_family_state(visual)->glyph_atlas_encoding = DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
     _visual_family_state(visual)->glyph_distance_range_px = 0.0f;

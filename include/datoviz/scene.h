@@ -2596,7 +2596,7 @@ DVZ_EXPORT DvzSymbolId dvz_symbol_svg_path(
  * @param symbols the symbol set, or NULL to clear the binding
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT DvzResult dvz_marker_set_symbols(DvzVisual* visual, DvzSymbolSet* symbols);
+DVZ_EXPORT DvzResult dvz_marker_set_symbols(DvzVisual* visual, const DvzSymbolSet* symbols);
 
 
 /**

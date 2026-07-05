@@ -1844,7 +1844,7 @@ _Declared in `include/datoviz/scene.h`:2612._
 ```c title="dvz_marker_set_symbols"
 DvzResult dvz_marker_set_symbols(
     DvzVisual * visual,
-    DvzSymbolSet * symbols
+    const DvzSymbolSet * symbols
 );
 ```
 
@@ -1852,7 +1852,7 @@ DvzResult dvz_marker_set_symbols(
 | --- | --- | --- |
 | return | `DvzResult` | 0 on success, -1 on error |
 | `visual` | `DvzVisual *` | the marker visual |
-| `symbols` | `DvzSymbolSet *` | the symbol set, or NULL to clear the binding |
+| `symbols` | `const DvzSymbolSet *` | the symbol set, or NULL to clear the binding |
 
 Bind a reusable symbol set to a marker visual.
 
