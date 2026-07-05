@@ -164,109 +164,55 @@ static void _print_settings(const SsaoDemoState* state)
 }
 
 /**
- * Bind copied index data to a mesh.
- *
- * @param scene scene owning the buffer
- * @param mesh mesh visual
- * @param indices index array
- * @param index_count number of indices
- * @return true on success
- */
-static bool
-_set_indices(DvzScene* scene, DvzVisual* mesh, const DvzIndex* indices, uint32_t index_count)
-{
-    DvzSceneBufferDesc desc = dvz_scene_buffer_desc();
-    desc.usage = DVZ_SCENE_BUFFER_USAGE_INDEX;
-    desc.stride = sizeof(DvzIndex);
-    desc.byte_size = (uint64_t)index_count * sizeof(DvzIndex);
-
-    DvzSceneBuffer* buffer = dvz_scene_buffer(scene, &desc);
-    if (buffer == NULL)
-        return false;
-    if (dvz_scene_buffer_set_data(buffer, indices, desc.byte_size) != DVZ_OK)
-        return false;
-    return dvz_visual_set_buffer(mesh, "index", buffer) == DVZ_OK;
-}
-
-
-
-/**
- * Add a small folded mesh that has readable normals for the SSAO G-buffer.
+ * Add an opaque sphere cluster with close contact shadows for SSAO tuning.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
  * @return true on success
  */
-static bool _add_occlusion_mesh(DvzScene* scene, DvzPanel* panel)
+static bool _add_sphere_cluster(DvzScene* scene, DvzPanel* panel)
 {
-    const vec3 positions[8] = {
-        {-0.82f, -0.70f, 0.05f}, {+0.82f, -0.70f, 0.05f}, {-0.82f, -0.04f, 0.34f},
-        {+0.82f, -0.04f, 0.34f}, {-0.64f, +0.08f, 0.08f}, {+0.64f, +0.08f, 0.08f},
-        {-0.64f, +0.72f, 0.36f}, {+0.64f, +0.72f, 0.36f},
+    const vec3 positions[12] = {
+        {-0.54f, -0.36f, -0.18f},
+        {-0.20f, -0.44f, -0.07f},
+        {+0.15f, -0.39f, +0.01f},
+        {+0.49f, -0.23f, -0.15f},
+        {-0.42f, +0.01f, +0.04f},
+        {-0.05f, -0.04f, +0.19f},
+        {+0.33f, +0.05f, +0.13f},
+        {+0.63f, +0.22f, -0.05f},
+        {-0.27f, +0.34f, -0.04f},
+        {+0.08f, +0.34f, +0.08f},
+        {+0.43f, +0.41f, -0.11f},
+        {+0.01f, +0.04f, -0.32f},
     };
-    const vec3 normals[8] = {
-        {0.0f, -0.38f, +0.92f}, {0.0f, -0.38f, +0.92f}, {0.0f, -0.38f, +0.92f},
-        {0.0f, -0.38f, +0.92f}, {0.0f, +0.36f, +0.93f}, {0.0f, +0.36f, +0.93f},
-        {0.0f, +0.36f, +0.93f}, {0.0f, +0.36f, +0.93f},
+    const float radii[12] = {
+        0.30f,
+        0.25f,
+        0.28f,
+        0.24f,
+        0.31f,
+        0.38f,
+        0.30f,
+        0.23f,
+        0.26f,
+        0.32f,
+        0.25f,
+        0.56f,
     };
-    DvzColor colors[8] = {
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
+    DvzColor colors[12] = {
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_TEXT),
-    };
-    const DvzIndex indices[12] = {0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7};
-
-    DvzVisual* mesh = dvz_mesh(scene, 0);
-    if (mesh == NULL)
-        return false;
-
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = 8},
-        {.attr_name = "normal", .data = normals, .item_count = 8},
-        {.attr_name = "color", .data = colors, .item_count = 8},
-    };
-    if (dvz_visual_set_data_many(mesh, updates, 3) != 0)
-        return false;
-    if (!_set_indices(scene, mesh, indices, 12))
-        return false;
-
-    DvzMaterialDesc material = dvz_phong_material_desc();
-    material.phong.ambient = 0.30f;
-    material.phong.diffuse = 0.78f;
-    material.phong.specular = 0.08f;
-    material.phong.shininess = 18.0f;
-    if (dvz_visual_set_material(mesh, &material) != 0)
-        return false;
-
-    return dvz_panel_add_visual(panel, mesh, NULL) == 0;
-}
-
-
-
-/**
- * Add three small opaque spheres close to the mesh.
- *
- * @param scene scene owning the visual
- * @param panel panel receiving the visual
- * @return true on success
- */
-static bool _add_spheres(DvzScene* scene, DvzPanel* panel)
-{
-    const vec3 positions[3] = {
-        {-0.42f, -0.12f, 0.50f},
-        {+0.08f, -0.18f, 0.58f},
-        {+0.44f, +0.18f, 0.46f},
-    };
-    const float radii[3] = {0.18f, 0.24f, 0.16f};
-    DvzColor colors[3] = {
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_PRIMARY),
-        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_ACCENT_SECONDARY),
+        example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID),
     };
 
     DvzVisual* spheres = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
@@ -276,9 +222,9 @@ static bool _add_spheres(DvzScene* scene, DvzPanel* panel)
         return false;
 
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = 3},
-        {.attr_name = "radius", .data = radii, .item_count = 3},
-        {.attr_name = "color", .data = colors, .item_count = 3},
+        {.attr_name = "position", .data = positions, .item_count = 12},
+        {.attr_name = "radius", .data = radii, .item_count = 12},
+        {.attr_name = "color", .data = colors, .item_count = 12},
     };
     if (dvz_visual_set_data_many(spheres, updates, 3) != 0)
         return false;
@@ -374,16 +320,15 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (example_set_default_3d_camera(plain, 1.0f) == NULL ||
         example_set_default_3d_camera(ssao_panel, 1.0f) == NULL)
         return false;
-    if (!_add_occlusion_mesh(ctx->scene, plain) || !_add_spheres(ctx->scene, plain) ||
-        !_add_occlusion_mesh(ctx->scene, ssao_panel) || !_add_spheres(ctx->scene, ssao_panel))
+    if (!_add_sphere_cluster(ctx->scene, plain) || !_add_sphere_cluster(ctx->scene, ssao_panel))
         return false;
 
-    state->arcball_angles[0] = -1.084f;
-    state->arcball_angles[1] = -0.204f;
-    state->arcball_angles[2] = +2.889f;
+    state->arcball_angles[0] = +0.708f;
+    state->arcball_angles[1] = -0.354f;
+    state->arcball_angles[2] = +0.244f;
     state->arcball_zoom = 1.0f;
-    state->arcball_pan[0] = +0.095f;
-    state->arcball_pan[1] = -0.295f;
+    state->arcball_pan[0] = +0.000f;
+    state->arcball_pan[1] = -0.020f;
     DvzController* plain_controller = _bind_arcball(ctx, plain, state->arcball_angles);
     DvzController* ssao_controller = _bind_arcball(ctx, ssao_panel, state->arcball_angles);
     if (plain_controller == NULL || ssao_controller == NULL)
@@ -405,18 +350,18 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         .debug_view = false,
         .show_blur_sigmas = true,
         .show_debug_view = true,
-        .radius = 0.316f,
-        .strength = 2.370f,
-        .bias = 0.034f,
-        .power = 3.087f,
-        .min_visibility = 0.235f,
-        .samples = 31.765f,
+        .radius = 0.385f,
+        .strength = 2.800f,
+        .bias = 0.020f,
+        .power = 2.400f,
+        .min_visibility = 0.220f,
+        .samples = 32.0f,
         .min_samples = 4.0f,
-        .max_samples = 96.0f,
-        .blur_radius = 18.202f,
+        .max_samples = 64.0f,
+        .blur_radius = 10.0f,
         .blur_radius_max = 24.0f,
-        .blur_depth_sigma = 1.089f,
-        .blur_normal_sigma = 0.425f,
+        .blur_depth_sigma = 0.750f,
+        .blur_normal_sigma = 0.380f,
     };
     _apply_ssao(state);
     return true;
@@ -450,12 +395,12 @@ static void _ssao_gui(DvzGui* gui, DvzView* view, void* user_data)
 
         if (dvz_gui_button(gui, "Reset arcball"))
         {
-            state->arcball_angles[0] = -1.084f;
-            state->arcball_angles[1] = -0.204f;
-            state->arcball_angles[2] = +2.889f;
+            state->arcball_angles[0] = +0.708f;
+            state->arcball_angles[1] = -0.354f;
+            state->arcball_angles[2] = +0.244f;
             state->arcball_zoom = 1.0f;
-            state->arcball_pan[0] = +0.095f;
-            state->arcball_pan[1] = -0.295f;
+            state->arcball_pan[0] = +0.000f;
+            state->arcball_pan[1] = -0.020f;
             _apply_arcball(state);
         }
         dvz_gui_same_line(gui, 0.0f, 8.0f);
