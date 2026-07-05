@@ -579,32 +579,40 @@ Completed checkpoints:
      `python3 tools/build_api_c.py --check`, `python3 tools/check_api_status.py`,
      `just docs-api`, `just docs-api-check`, `just ctypes-smoke`, and
      `just ctypes-python-smoke`.
+50. `f4c0af55d` `docs: clarify controller result contracts`
+   - Added explicit `DVZ_OK`/`DVZ_ERROR` return-contract docs to low-level controller mutators that
+     now return `DvzResult`, including the stale `dvz_fly_orbit()` comment.
+   - Updated active geometry planning/spec references from `dvz_geom_*` to the current
+     `dvz_geometry_*` naming.
+   - Regenerated raw `ctypes` docstrings.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just docs-api-check`, stale active-name scan, and
+     `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn: none
 known at this checkpoint.
 
 Next recommended checkpoints, in safe execution order:
 
-1. Continue the full public mutator naming and argument-order audit under the stricter
-   `dvz_<object>_set_<property>()` and object/selector/payload/count conventions recorded in
-   `spec/api/PUBLIC_API_CONVENTIONS.md`. The polygon aggregate, singular polygon, graph mutator
-   renames, plot/single-polygon payload-count argument ordering, and grid sizing setter names are
-   complete. Next audit text, labels/volume setters, low-level runtime mutators, and any other
-   obvious retained-state mutators before RC.
-2. Split stable `window.h` from backend SPI so ordinary window users do not include backend
+1. Treat the stable user-facing mutator naming, argument-order, and result-type audits as complete
+   unless a fresh stale-reference scan finds an active public header, example, or generated doc
+   contradiction. Text, labels, and volume were audited and did not need public API changes.
+2. Keep low-level runtime/protocol builder APIs on their local advanced conventions before RC.
+   Frame-plan builders, DRP2 streams/runtime, window/backend SPI, Vulkan/vklite builders, and GUI
+   immediate-mode helpers are not ordinary user API; changing their bool/int/string conventions now
+   would be higher churn than value.
+3. Split stable `window.h` from backend SPI so ordinary window users do not include backend
    registration, GLFW hooks, or wrap-surface helpers. This include-boundary split is complete:
    `window.h` no longer includes `window/backend.h`, `advanced.h` opts into both, and ctypes parses
    the backend header directly. Remaining caveat: `DvzWindowSurface` still carries Vulkan handle
    types through `window/types.h`, so a full Vulkan-free window surface record would need a
    separate ABI break if desired.
-3. Make `vk.h` a complete low-level Vulkan umbrella if headers parse cleanly together; otherwise
+4. Make `vk.h` a complete low-level Vulkan umbrella if headers parse cleanly together; otherwise
    document it explicitly as a narrow GPU-context umbrella and direct advanced users to explicit
    `datoviz/vk/*.h` includes. This is complete: `vk.h` now includes `vk/vulkan.h`, queue,
    instance/GPU/device, memory, memory interop, GPU-context, and Vulkan macro helpers.
-4. Then continue result-type/array-ordering/support-surface cleanup using the maintainer decisions
-   below. DRP2 base64 writer naming and raw fallback public-surface removal are complete; remaining
-   DRP2 work is stringly typed command arguments and any protocol-specific argument ordering or
-   advanced/unstable classification that still looks accidental.
+5. Keep the remaining prefixed support macros as intentional stable support helpers for RC unless a
+   concrete side-effect or type-safety bug is found.
 
 
 ## Maintainer Decisions
@@ -814,12 +822,14 @@ Preferred fix:
 - Add explicit named combinations only if needed.
 
 
-### 5. Decide Whether GLFW Is Stable API Or Backend Detail
+### 5. Classify GLFW Backend Detail
 
 Status: stable app-facing view names renamed by `3a17d5b14`; remaining GLFW conversion helpers and
-numeric compatibility comments still need a separate backend/interop classification decision.
+numeric compatibility comments are classified as backend/interop details, not ordinary user API.
 
-The default public API exposes GLFW-specific names and compatibility assumptions.
+The default app-facing public API no longer exposes GLFW-specific view constructors. Low-level input
+conversion helpers and numeric compatibility comments may stay where they are for RC because they
+serve backend integration and tests rather than the normal scene/app user path.
 
 References:
 
@@ -830,17 +840,20 @@ References:
 
 Preferred fix:
 
-- Rename stable app-facing concepts to backend-neutral names, such as `DVZ_VIEW_WINDOW` and
+- Done: stable app-facing concepts use backend-neutral names such as `DVZ_VIEW_WINDOW` and
   `dvz_view_window()`.
-- Move GLFW conversion helpers and GLFW-specific setup to backend or interop headers.
-- If numeric GLFW compatibility is intentional ABI, document it as such.
+- Do not move GLFW conversion helpers before RC unless they leak through default user docs or cause
+  an actual include-boundary problem.
+- Treat numeric GLFW compatibility as a backend interop contract, not an ordinary user-facing
+  guarantee.
 
 
 ## Consistency Fixes Worth Doing Before RC
 
 ### 6. Standardize Result Types
 
-Public fallible APIs mix `DvzResult`, `bool`, raw `int`, `int32_t`, and pointer-or-NULL.
+Status: stable user-facing fallible mutators now use `DvzResult`; remaining bool/int conventions
+belong to predicates, richer status domains, constructors/accessors, or advanced runtime builders.
 
 References:
 
@@ -852,9 +865,10 @@ References:
 
 Preferred fix:
 
-- Use `DvzResult` for ordinary Datoviz success/error APIs.
-- Keep raw `int` only where non-error status values are part of the contract.
-- Keep Vulkan-native result codes only in explicitly Vulkan-native escape hatches.
+- Done for stable user-facing mutators and object state setters.
+- Keep raw `int` where non-error status values are part of the contract.
+- Keep Vulkan-native result codes and builder-style bool returns in explicitly advanced runtime and
+  protocol escape hatches.
 
 
 ### 7. Pick One Array/Count Argument Convention
@@ -862,9 +876,9 @@ Preferred fix:
 Status: `dvz_visual_set_data_range()` argument order normalized by `643950728`.
 Plot/band setters and single-polygon ring setters normalized by `b2c5b6f71`; grid sizing setter
 names normalized by `64a67135c`. Graph and polygon-set range-update APIs intentionally keep
-`first,count` before payload arrays because that pair is the range selector. Broader text,
-labels/volume, and low-level runtime conventions still need case-by-case API review before
-changing.
+`first,count` before payload arrays because that pair is the range selector. Text, labels, and
+volume were audited and did not need public API changes; low-level runtime/protocol conventions are
+classified as advanced local contracts before RC.
 
 Adjacent APIs mix `data, count` and `count, data`.
 
@@ -882,7 +896,8 @@ object, selector, range-if-any, data pointer(s), count/size
 ```
 
 Apply this to remaining APIs only after checking whether their count argument is a range selector,
-payload size, or object sizing operation.
+payload size, or object sizing operation. Do not reopen advanced protocol/runtime builders for
+mechanical argument-order churn before RC.
 
 
 ### 8. Tighten Constness And Borrowed Ownership
@@ -906,8 +921,8 @@ Preferred fix:
 ### 9. Clean Or Classify Advanced DRP2
 
 Status: base64 writer naming completed by `af13ad996`; raw fallback public API removal completed by
-`300ca8609`. Remaining work is classification or cleanup of stringly typed command arguments,
-protocol-specific argument ordering, and any JSON/fixture helpers that still look too stable.
+`300ca8609`. Remaining stringly typed command arguments, protocol-specific argument ordering, and
+JSON helpers are classified as advanced/unstable protocol-builder surface for RC.
 
 The DRP2 public headers mix protocol builders, fixture/JSON plumbing, base64 payloads, byte
 payloads, and development replay fallback.
@@ -922,8 +937,8 @@ Preferred fix:
 
 - Done: raw fallback is no longer public; private diagnostics scan `stream.jsonl`.
 - Done: byte-oriented APIs remain primary and base64 string-payload forms carry `_base64`.
-- Replace stringly typed command arguments with enums where feasible; otherwise classify these
-  commands as advanced/unstable.
+- Do not replace stringly typed command arguments with enums before RC unless a concrete schema or
+  validation bug appears; the API-status tier already marks DRP2 as advanced.
 
 
 ### 10. Clean Support-Header Leakage
@@ -935,7 +950,7 @@ current support-helper checkpoint, public `dvz_box_*` declarations without expor
 `bff88625d`, `dvz_read_ppm()` dimensions normalized by `4fb4be416`, embedded resource sizes and
 stale texture/testdata accessors cleaned by `dc1617d8f`, public `M_PI` replaced with `DVZ_PI` by
 `94ceaa74f`, and unused `DVZ_ZERO_OFFSET`/`fsizeof` removed by `efeec1679`. Remaining
-support-header work is mostly classification of intentionally public support constants/macros.
+prefixed support constants/macros are classified as intentional stable support helpers for RC.
 
 Public support headers leak unprefixed macros, mutable TU-local buffers, test resources, and
 inconsistent byte-buffer signatures.
@@ -953,8 +968,8 @@ References:
 
 Preferred fix:
 
-- Decide whether remaining prefixed support macros in `math/types.h` are intended stable public
-  support API or should move behind typed helpers.
+- Done for RC: remaining prefixed support macros in `math/types.h` are intentional stable support
+  helpers.
 - `dvz_pretty_size()` now requires caller-provided storage; no zero-buffer-argument static-storage
   helper remains public.
 
@@ -997,8 +1012,8 @@ generated ctypes, generated docs if applicable, and examples in sync.
    - Completed: normalize non-ranged plot/band and single-polygon ring data/count argument order.
    - Completed: tighten `const` on identified bind-only resources and read-only queries.
    - Completed: replace identified borrowed descriptor getters with copy-out APIs.
-   - Remaining decision: broader text, labels/volume, and low-level runtime argument ordering needs
-     case-by-case API review.
+   - Completed: text, labels, and volume were audited and did not need public API changes.
+   - Classified: low-level runtime argument ordering is advanced local convention before RC.
    - Validation: affected C tests, raw ctypes regeneration/check, Python smoke if bindings changed.
 
 4. **Runtime/app consistency cleanup**
@@ -1008,24 +1023,24 @@ generated ctypes, generated docs if applicable, and examples in sync.
    - Approved: split stable `window.h` from backend SPI.
    - Approved: make `vk.h` complete if feasible, otherwise document the intentionally narrow
      umbrella scope.
-   - Remaining decisions: classify GLFW conversion/numeric compatibility and standardize
-     `DvzResult` versus raw `int`.
+   - Classified: GLFW conversion/numeric compatibility is backend interop detail; stable user-facing
+     fallible mutators use `DvzResult`, while advanced runtime APIs keep local bool/int conventions.
    - Validation: app/canvas/window/input tests and hosted/offscreen examples where available.
 
 5. **Advanced DRP2/vklite classification cleanup**
    - Completed: remove DRP2 raw fallback from stable surface; private diagnostics scan recording
      JSONL files.
    - Completed: rename base64 payload writer APIs with `_base64`.
-   - Remaining: review any JSON fixture APIs that still look too stable.
-   - Align draw argument ordering or classify one layer as protocol-specific.
-   - Add enums for stringly typed command arguments where feasible.
+   - Classified: JSON helpers, protocol-specific argument ordering, and stringly typed command
+     arguments remain advanced/unstable protocol-builder surface before RC.
    - Validation: DRP2 stream tests, frame-plan emission tests, WebGPU/WASM fixture tests if command
      schema changes.
 
 6. **Support-header cleanup**
-   - Prefix/remove public macros.
-   - Normalize file I/O buffer signatures.
-   - Fix `dvz_box_*` export/declaration mismatch.
+   - Completed: public support macros are prefixed or removed; remaining prefixed macros are
+     intentional support helpers.
+   - Completed: file I/O buffer signatures and resource sizes are normalized.
+   - Completed: `dvz_box_*` export/declaration mismatch is resolved.
    - Validation: fileio/math/geom tests, raw ctypes regeneration/check.
 
 
@@ -1124,7 +1139,7 @@ extraction.
 
 ## Recent Result-Type Cleanup
 
-Status: in progress on `api/pre-rc-cleanup`.
+Status: complete on `api/pre-rc-cleanup` for stable user-facing APIs and low-level controllers.
 
 Completed after the grid setter rename:
 
