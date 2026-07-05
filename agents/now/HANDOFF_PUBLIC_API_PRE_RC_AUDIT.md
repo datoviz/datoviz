@@ -145,6 +145,18 @@ Completed checkpoints:
      `python3 tools/build_api_c.py --check`, `just build`, `just test scene/scene-graph`,
      `just example-c composites/graph --png`, `just spec-check`, stale-reference scan, and
      `git diff --check`.
+14. `4afdfb53d` `api: flatten selection visual style`
+   - Replaced nested `DvzItemStateVisualStyle selected` and `unselected` fields in
+     `DvzSelectionVisualStyle` with prefixed scalar style fields.
+   - Kept hover styling on `DvzItemStateVisualStyle`; selection internals convert the flattened
+     public style back to item-state shader payloads.
+   - Preserved the neutral no-active-selection render path while keeping
+     `dvz_selection_visual_style()` as the public default that dims unselected items.
+   - Exported symbol delta: no exported functions were added or removed; `DvzSelectionVisualStyle`
+     ABI layout changed.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just build`, `just test scene/interaction`,
+     `just test app`, `just spec-check`, stale-reference scan, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -152,7 +164,7 @@ Current working-tree noise to leave untouched unless explicitly approved in the 
 - untracked `paper/paper.pdf`.
 
 Next recommended checkpoint: continue the descriptor-flattening campaign with annotation/label text
-style and placement, `DvzSelectionVisualStyle`, or app/view/font defaults.
+style and placement, or app/view/font defaults.
 
 
 ## Maintainer Decisions
@@ -215,7 +227,7 @@ Complete audit as of July 2026, using the criterion above:
 | `DvzPanelView3DDesc` | `DvzCameraDesc camera` | `include/datoviz/scene/types.h:704` | Do not nest `Desc` in `Desc`. Flatten to `DvzCameraView` plus `DvzCameraProjection`, or pass `const DvzCameraDesc*` directly to the 3D view API. |
 | `DvzPanelAxes2DDesc` | `DvzAxisTickPolicy tick_policy`, `DvzAxisStyle x_style`, `DvzAxisStyle y_style` | `include/datoviz/scene/types.h:785` | Split. Keep creation desc to labels/coarse flags; use setters for tick policy and per-axis styles. |
 | `DvzGraphEdgeStyle` | `DvzBezierTessellationDesc tessellation` | `include/datoviz/scene/types.h:946` | Flatten to `tessellation_segment_count` and `tessellation_tolerance`, or set tessellation separately. |
-| `DvzSelectionVisualStyle` | `DvzItemStateVisualStyle selected`, `DvzItemStateVisualStyle unselected` | `include/datoviz/scene/types.h:1253` | Convert item-state style into a plain value style without `struct_size`/`flags`, or use selected/unselected style setters. |
+| `DvzSelectionVisualStyle` | `DvzItemStateVisualStyle selected`, `DvzItemStateVisualStyle unselected` | `include/datoviz/scene/types.h:1253` | Done in `4afdfb53d`: flattened to prefixed selected/unselected scalar style fields. |
 | `DvzScaleDesc` | `DvzFormatDesc format` | `include/datoviz/scene/types.h:1380` | Remove from creation desc; `dvz_scale_set_format()` already exists. Creation should cover `kind`, `label`, and `unit`. |
 | `DvzAnnotationDesc` | `DvzTextStyle style`, `DvzTextPlacement placement` | `include/datoviz/scene/types.h:1582` | Either make text style/placement plain value records or keep annotation creation minimal and use style/placement setters. |
 | `DvzLabelDesc` | `DvzTextStyle style`, `DvzTextPlacement placement` | `include/datoviz/scene/types.h:1595` | Same as annotation: avoid embedding descriptor-like text style/placement unless they become plain value records. |
@@ -229,8 +241,7 @@ Suggested execution order:
    `DvzTextPlacement` are plain value records or versioned descriptors, then apply that decision
    consistently.
 3. Clean app/view/font/backend nesting while doing the backend-neutral app API wave.
-4. Clean lower-risk style/config cases: `DvzGraphEdgeStyle`, `DvzSelectionVisualStyle`, and
-   `DvzOverlayCardDesc`.
+4. Clean remaining lower-risk style/config cases such as `DvzOverlayCardDesc`.
 5. Regenerate raw `ctypes`, generated C docs, and examples in the same checkpoint as each public
    struct break.
 
