@@ -7393,9 +7393,10 @@ else:
  *
  * @param annotation the annotation
  * @param format the format descriptor, or NULL to clear the override
+ * @return 0 on success, -1 on validation error
  */"""
     dvz_annotation_set_format.argtypes = [ctypes.POINTER(DvzAnnotation), ctypes.POINTER(DvzFormatDesc)]
-    dvz_annotation_set_format.restype = None
+    dvz_annotation_set_format.restype = ctypes.c_int32
 
 
 try:
@@ -10562,9 +10563,10 @@ else:
  *
  * @param colorbar the colorbar
  * @param format the format descriptor, or NULL to clear the override
+ * @return DVZ_OK when the format was accepted, DVZ_ERROR on error
  */"""
     dvz_colorbar_set_format.argtypes = [ctypes.POINTER(DvzColorbar), ctypes.POINTER(DvzFormatDesc)]
-    dvz_colorbar_set_format.restype = None
+    dvz_colorbar_set_format.restype = ctypes.c_int32
 
 
 try:
@@ -10597,9 +10599,10 @@ else:
  *
  * @param colorbar the colorbar
  * @param orientation the orientation
+ * @return DVZ_OK when the orientation was accepted, DVZ_ERROR on error
  */"""
     dvz_colorbar_set_orientation.argtypes = [ctypes.POINTER(DvzColorbar), ctypes.c_int]
-    dvz_colorbar_set_orientation.restype = None
+    dvz_colorbar_set_orientation.restype = ctypes.c_int32
 
 
 try:
@@ -10631,9 +10634,10 @@ else:
  *
  * @param colorbar the colorbar
  * @param title the title, or NULL to clear
+ * @return DVZ_OK when the title was accepted, DVZ_ERROR on error
  */"""
     dvz_colorbar_set_title.argtypes = [ctypes.POINTER(DvzColorbar), ctypes.c_char_p]
-    dvz_colorbar_set_title.restype = None
+    dvz_colorbar_set_title.restype = ctypes.c_int32
 
 
 try:
@@ -10792,9 +10796,10 @@ else:
  *
  * @param colormap the colormap
  * @param center the semantic center value
+ * @return DVZ_OK when the center was accepted, DVZ_ERROR on error
  */"""
     dvz_colormap_set_center.argtypes = [ctypes.POINTER(DvzColormap), ctypes.c_double]
-    dvz_colormap_set_center.restype = None
+    dvz_colormap_set_center.restype = ctypes.c_int32
 
 
 try:
@@ -10812,9 +10817,10 @@ else:
  * @param colormap the colormap
  * @param stops the color stops
  * @param count the number of stops
+ * @return DVZ_OK when the stops were accepted, DVZ_ERROR on error
  */"""
     dvz_colormap_set_stops.argtypes = [ctypes.POINTER(DvzColormap), ctypes.POINTER(DvzColormapStop), ctypes.c_uint32]
-    dvz_colormap_set_stops.restype = None
+    dvz_colormap_set_stops.restype = ctypes.c_int32
 
 
 try:
@@ -21180,9 +21186,10 @@ else:
  *
  * @param legend the legend
  * @param title the title, or NULL to clear
+ * @return DVZ_OK when the title was accepted, DVZ_ERROR on error
  */"""
     dvz_legend_set_title.argtypes = [ctypes.POINTER(DvzLegend), ctypes.c_char_p]
-    dvz_legend_set_title.restype = None
+    dvz_legend_set_title.restype = ctypes.c_int32
 
 
 try:
@@ -21597,9 +21604,10 @@ else:
  * Clear rich text content and return the card to the plain GPU text path.
  *
  * @param card the card
+ * @return 0 on success, -1 on error
  */"""
     dvz_overlay_card_clear_rich_text.argtypes = [ctypes.POINTER(DvzOverlayCard)]
-    dvz_overlay_card_clear_rich_text.restype = None
+    dvz_overlay_card_clear_rich_text.restype = ctypes.c_int32
 
 
 try:
@@ -21627,9 +21635,10 @@ else:
  * @param card the card
  * @param anchor_px panel-local anchor in logical pixels, or NULL to keep it unchanged
  * @param offset_px offset from the anchor in logical pixels, or NULL to keep it unchanged
+ * @return 0 on success, -1 on error
  */"""
     dvz_overlay_card_set_layout.argtypes = [ctypes.POINTER(DvzOverlayCard), (ctypes.c_float * 2), (ctypes.c_float * 2)]
-    dvz_overlay_card_set_layout.restype = None
+    dvz_overlay_card_set_layout.restype = ctypes.c_int32
 
 
 try:
@@ -21643,9 +21652,10 @@ else:
  * @param card the card
  * @param placement semantic placement mode
  * @param offset_px inward/relative offset in logical pixels, or NULL to keep it unchanged
+ * @return 0 on success, -1 on error
  */"""
     dvz_overlay_card_set_placement.argtypes = [ctypes.POINTER(DvzOverlayCard), ctypes.c_int, (ctypes.c_float * 2)]
-    dvz_overlay_card_set_placement.restype = None
+    dvz_overlay_card_set_placement.restype = ctypes.c_int32
 
 
 try:
@@ -21690,9 +21700,10 @@ else:
  *
  * @param card the card
  * @param text the text, or NULL to clear it
+ * @return 0 on success, -1 on error
  */"""
     dvz_overlay_card_set_text.argtypes = [ctypes.POINTER(DvzOverlayCard), ctypes.c_char_p]
-    dvz_overlay_card_set_text.restype = None
+    dvz_overlay_card_set_text.restype = ctypes.c_int32
 
 
 try:
@@ -21705,9 +21716,10 @@ else:
  *
  * @param card the card
  * @param visible whether the card should be visible
+ * @return 0 on success, -1 on error
  */"""
     dvz_overlay_card_set_visible.argtypes = [ctypes.POINTER(DvzOverlayCard), ctypes.c_bool]
-    dvz_overlay_card_set_visible.restype = None
+    dvz_overlay_card_set_visible.restype = ctypes.c_int32
 
 
 try:
@@ -25320,9 +25332,10 @@ else:
  *
  * @param scale the scale
  * @param colormap the colormap
+ * @return DVZ_OK when the colormap binding was accepted, DVZ_ERROR on error
  */"""
     dvz_scale_set_colormap.argtypes = [ctypes.POINTER(DvzScale), ctypes.POINTER(DvzColormap)]
-    dvz_scale_set_colormap.restype = None
+    dvz_scale_set_colormap.restype = ctypes.c_int32
 
 
 try:
@@ -25338,9 +25351,10 @@ else:
  * @param scale the scale
  * @param min the domain minimum
  * @param max the domain maximum
+ * @return DVZ_OK when the domain was accepted, DVZ_ERROR on error
  */"""
     dvz_scale_set_domain.argtypes = [ctypes.POINTER(DvzScale), ctypes.c_double, ctypes.c_double]
-    dvz_scale_set_domain.restype = None
+    dvz_scale_set_domain.restype = ctypes.c_int32
 
 
 try:
@@ -25355,9 +25369,10 @@ else:
  *
  * @param scale the scale
  * @param format the format descriptor, or NULL to clear the override
+ * @return DVZ_OK when the format was accepted, DVZ_ERROR on error
  */"""
     dvz_scale_set_format.argtypes = [ctypes.POINTER(DvzScale), ctypes.POINTER(DvzFormatDesc)]
-    dvz_scale_set_format.restype = None
+    dvz_scale_set_format.restype = ctypes.c_int32
 
 
 try:
@@ -25373,9 +25388,10 @@ else:
  * @param scale the scale
  * @param min the view-range minimum
  * @param max the view-range maximum
+ * @return DVZ_OK when the view range was accepted, DVZ_ERROR on error
  */"""
     dvz_scale_set_view_range.argtypes = [ctypes.POINTER(DvzScale), ctypes.c_double, ctypes.c_double]
-    dvz_scale_set_view_range.restype = None
+    dvz_scale_set_view_range.restype = ctypes.c_int32
 
 
 try:

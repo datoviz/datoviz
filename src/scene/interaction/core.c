@@ -2763,11 +2763,11 @@ DvzResult dvz_overlay_card_set_style(DvzOverlayCard* card, const DvzOverlayCardS
  * @param card the card
  * @param text the text, or NULL to clear it
  */
-void dvz_overlay_card_set_text(DvzOverlayCard* card, const char* text)
+DvzResult dvz_overlay_card_set_text(DvzOverlayCard* card, const char* text)
 {
     ANN(card);
     if (!card->active)
-        return;
+        return DVZ_ERROR;
     if (card->rich_enabled)
     {
         _scene_text_block_destroy(&card->rich_block);
@@ -2778,9 +2778,10 @@ void dvz_overlay_card_set_text(DvzOverlayCard* card, const char* text)
     if (text != NULL)
         dvz_strlcpy(card->card.text, text, sizeof(card->card.text));
     else
-        card->card.text[0] = '\0';
+    card->card.text[0] = '\0';
     card->card.dirty = true;
     _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+    return DVZ_OK;
 }
 
 
@@ -2838,11 +2839,11 @@ DvzResult dvz_overlay_card_set_rich_text(DvzOverlayCard* card, const DvzOverlayR
  *
  * @param card the card
  */
-void dvz_overlay_card_clear_rich_text(DvzOverlayCard* card)
+DvzResult dvz_overlay_card_clear_rich_text(DvzOverlayCard* card)
 {
     ANN(card);
     if (!card->active)
-        return;
+        return DVZ_ERROR;
     _scene_text_block_destroy(&card->rich_block);
     card->rich_enabled = false;
     card->rich_dirty = false;
@@ -2851,6 +2852,7 @@ void dvz_overlay_card_clear_rich_text(DvzOverlayCard* card)
     card->card.content_size_px[1] = 0.0f;
     card->card.dirty = true;
     _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+    return DVZ_OK;
 }
 
 
@@ -2861,12 +2863,12 @@ void dvz_overlay_card_clear_rich_text(DvzOverlayCard* card)
  * @param anchor_px panel-local anchor in logical pixels, or NULL to keep it unchanged
  * @param offset_px offset from the anchor in logical pixels, or NULL to keep it unchanged
  */
-void dvz_overlay_card_set_layout(
+DvzResult dvz_overlay_card_set_layout(
     DvzOverlayCard* card, const float anchor_px[2], const float offset_px[2])
 {
     ANN(card);
     if (!card->active)
-        return;
+        return DVZ_ERROR;
     card->card.placement = DVZ_OVERLAY_CARD_PLACEMENT_PIXEL;
     if (anchor_px != NULL)
     {
@@ -2880,6 +2882,7 @@ void dvz_overlay_card_set_layout(
     }
     card->card.dirty = true;
     _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+    return DVZ_OK;
 }
 
 
@@ -2890,12 +2893,12 @@ void dvz_overlay_card_set_layout(
  * @param placement semantic placement mode
  * @param offset_px inward/relative offset in logical pixels, or NULL to keep it unchanged
  */
-void dvz_overlay_card_set_placement(
+DvzResult dvz_overlay_card_set_placement(
     DvzOverlayCard* card, DvzOverlayCardPlacement placement, const float offset_px[2])
 {
     ANN(card);
     if (!card->active)
-        return;
+        return DVZ_ERROR;
     card->card.placement = placement;
     if (offset_px != NULL)
     {
@@ -2904,6 +2907,7 @@ void dvz_overlay_card_set_placement(
     }
     card->card.dirty = true;
     _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+    return DVZ_OK;
 }
 
 
@@ -2913,11 +2917,11 @@ void dvz_overlay_card_set_placement(
  * @param card the card
  * @param visible whether the card should be visible
  */
-void dvz_overlay_card_set_visible(DvzOverlayCard* card, bool visible)
+DvzResult dvz_overlay_card_set_visible(DvzOverlayCard* card, bool visible)
 {
     ANN(card);
     if (!card->active)
-        return;
+        return DVZ_ERROR;
     card->card.visible = visible;
     card->card.dirty = true;
     if (!visible)
@@ -2926,6 +2930,7 @@ void dvz_overlay_card_set_visible(DvzOverlayCard* card, bool visible)
         _overlay_card_hide_rich(card);
     }
     _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+    return DVZ_OK;
 }
 
 

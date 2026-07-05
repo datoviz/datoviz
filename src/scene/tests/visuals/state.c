@@ -667,8 +667,8 @@ int test_scene_scalar_color_emits_rgba_upload(TstContext* suite, const TstCase* 
         dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
                             .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
-    dvz_scale_set_domain(scale, 0.0, 1.0);
-    dvz_scale_set_colormap(scale, colormap);
+    AT(dvz_scale_set_domain(scale, 0.0, 1.0) == DVZ_OK);
+    AT(dvz_scale_set_colormap(scale, colormap) == DVZ_OK);
     AT(dvz_visual_set_scale(pixel, "color", scale) == 0);
     AT(dvz_panel_add_visual(panel, pixel, NULL) == 0);
 
@@ -716,7 +716,7 @@ int test_scene_scalar_color_emits_rgba_upload(TstContext* suite, const TstCase* 
     int attr_idx = _attr_index(pixel, "color");
     AT(attr_idx >= 0);
     AT(pixel->attrs[attr_idx].dirty_item_count == 0);
-    dvz_scale_set_domain(scale, 0.0, 2.0);
+    AT(dvz_scale_set_domain(scale, 0.0, 2.0) == DVZ_OK);
     AT(pixel->attrs[attr_idx].dirty_first_item == 0);
     AT(pixel->attrs[attr_idx].dirty_item_count == N);
 

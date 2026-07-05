@@ -225,15 +225,16 @@ void dvz_annotation_destroy(DvzAnnotation* annotation)
  * @param annotation the annotation
  * @param format the format descriptor, or NULL to clear the override
  */
-void dvz_annotation_set_format(DvzAnnotation* annotation, const DvzFormatDesc* format)
+DvzResult dvz_annotation_set_format(DvzAnnotation* annotation, const DvzFormatDesc* format)
 {
     ANN(annotation);
     if (!_scene_format_desc_validate(format))
-        return;
+        return DVZ_ERROR;
     annotation->has_format = format != NULL;
     _scene_format_state_copy(&annotation->format, format);
     annotation->dirty_flags |=
         DVZ_TEXT_DIRTY_STRING | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
     annotation->version++;
     _scene_notify_request_frame(annotation->panel != NULL ? annotation->panel->figure : NULL);
+    return DVZ_OK;
 }

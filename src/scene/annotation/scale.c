@@ -383,13 +383,14 @@ void dvz_scale_destroy(DvzScale* scale)
  * @param min the domain minimum
  * @param max the domain maximum
  */
-void dvz_scale_set_domain(DvzScale* scale, double min, double max)
+DvzResult dvz_scale_set_domain(DvzScale* scale, double min, double max)
 {
     ANN(scale);
     scale->domain_min = min;
     scale->domain_max = max;
     scale->has_domain = true;
     _scene_mark_scale_dirty(scale);
+    return DVZ_OK;
 }
 
 
@@ -411,13 +412,14 @@ bool dvz_scale_domain(const DvzScale* scale, double* out_min, double* out_max)
  * @param min the view-range minimum
  * @param max the view-range maximum
  */
-void dvz_scale_set_view_range(DvzScale* scale, double min, double max)
+DvzResult dvz_scale_set_view_range(DvzScale* scale, double min, double max)
 {
     ANN(scale);
     scale->view_min = min;
     scale->view_max = max;
     scale->has_view_range = true;
     _scene_mark_scale_dirty(scale);
+    return DVZ_OK;
 }
 
 
@@ -438,16 +440,17 @@ bool dvz_scale_view_range(const DvzScale* scale, double* out_min, double* out_ma
  * @param scale the scale
  * @param colormap the colormap
  */
-void dvz_scale_set_colormap(DvzScale* scale, DvzColormap* colormap)
+DvzResult dvz_scale_set_colormap(DvzScale* scale, DvzColormap* colormap)
 {
     ANN(scale);
     if (colormap != NULL && colormap->scene != scale->scene)
     {
         log_error("cannot bind a colormap from a different scene");
-        return;
+        return DVZ_ERROR;
     }
     scale->colormap = colormap;
     _scene_mark_scale_dirty(scale);
+    return DVZ_OK;
 }
 
 
@@ -458,13 +461,14 @@ void dvz_scale_set_colormap(DvzScale* scale, DvzColormap* colormap)
  * @param scale the scale
  * @param format the format descriptor, or NULL to clear the override
  */
-void dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* format)
+DvzResult dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* format)
 {
     ANN(scale);
     if (!_scene_format_desc_validate(format))
-        return;
+        return DVZ_ERROR;
     _scene_format_state_copy(&scale->format, format);
     _scene_mark_scale_dirty(scale);
+    return DVZ_OK;
 }
 
 

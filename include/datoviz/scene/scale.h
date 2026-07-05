@@ -230,8 +230,9 @@ DVZ_EXPORT void dvz_scale_destroy(DvzScale* scale);
  * @param scale the scale
  * @param min the domain minimum
  * @param max the domain maximum
+ * @return DVZ_OK when the domain was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_scale_set_domain(DvzScale* scale, double min, double max);
+DVZ_EXPORT DvzResult dvz_scale_set_domain(DvzScale* scale, double min, double max);
 
 
 /**
@@ -255,8 +256,9 @@ DVZ_EXPORT bool dvz_scale_domain(const DvzScale* scale, double* out_min, double*
  * @param scale the scale
  * @param min the view-range minimum
  * @param max the view-range maximum
+ * @return DVZ_OK when the view range was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_scale_set_view_range(DvzScale* scale, double min, double max);
+DVZ_EXPORT DvzResult dvz_scale_set_view_range(DvzScale* scale, double min, double max);
 
 
 /**
@@ -279,8 +281,9 @@ DVZ_EXPORT bool dvz_scale_view_range(const DvzScale* scale, double* out_min, dou
  *
  * @param scale the scale
  * @param colormap the colormap
+ * @return DVZ_OK when the colormap binding was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_scale_set_colormap(DvzScale* scale, DvzColormap* colormap);
+DVZ_EXPORT DvzResult dvz_scale_set_colormap(DvzScale* scale, DvzColormap* colormap);
 
 
 /**
@@ -290,8 +293,9 @@ DVZ_EXPORT void dvz_scale_set_colormap(DvzScale* scale, DvzColormap* colormap);
  *
  * @param scale the scale
  * @param format the format descriptor, or NULL to clear the override
+ * @return DVZ_OK when the format was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* format);
+DVZ_EXPORT DvzResult dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* format);
 
 
 /**
@@ -457,8 +461,9 @@ DVZ_EXPORT void dvz_colormap_destroy(DvzColormap* colormap);
  * @param colormap the colormap
  * @param stops the color stops
  * @param count the number of stops
+ * @return DVZ_OK when the stops were accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_colormap_set_stops(
+DVZ_EXPORT DvzResult dvz_colormap_set_stops(
     DvzColormap* colormap, const DvzColormapStop* stops, uint32_t count);
 
 
@@ -469,8 +474,9 @@ DVZ_EXPORT void dvz_colormap_set_stops(
  *
  * @param colormap the colormap
  * @param center the semantic center value
+ * @return DVZ_OK when the center was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_colormap_set_center(DvzColormap* colormap, double center);
+DVZ_EXPORT DvzResult dvz_colormap_set_center(DvzColormap* colormap, double center);
 
 
 
@@ -528,8 +534,9 @@ DVZ_EXPORT void dvz_colorbar_destroy(DvzColorbar* colorbar);
  *
  * @param colorbar the colorbar
  * @param format the format descriptor, or NULL to clear the override
+ * @return DVZ_OK when the format was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_colorbar_set_format(
+DVZ_EXPORT DvzResult dvz_colorbar_set_format(
     DvzColorbar* colorbar, const DvzFormatDesc* format);
 
 
@@ -538,8 +545,9 @@ DVZ_EXPORT void dvz_colorbar_set_format(
  *
  * @param colorbar the colorbar
  * @param orientation the orientation
+ * @return DVZ_OK when the orientation was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_colorbar_set_orientation(
+DVZ_EXPORT DvzResult dvz_colorbar_set_orientation(
     DvzColorbar* colorbar, DvzColorbarOrientation orientation);
 
 
@@ -598,8 +606,9 @@ DVZ_EXPORT DvzResult dvz_colorbar_clear_ticks(DvzColorbar* colorbar);
  *
  * @param colorbar the colorbar
  * @param title the title, or NULL to clear
+ * @return DVZ_OK when the title was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_colorbar_set_title(DvzColorbar* colorbar, const char* title);
+DVZ_EXPORT DvzResult dvz_colorbar_set_title(DvzColorbar* colorbar, const char* title);
 
 
 
@@ -659,8 +668,9 @@ DVZ_EXPORT DvzResult dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDes
  *
  * @param legend the legend
  * @param title the title, or NULL to clear
+ * @return DVZ_OK when the title was accepted, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_legend_set_title(DvzLegend* legend, const char* title);
+DVZ_EXPORT DvzResult dvz_legend_set_title(DvzLegend* legend, const char* title);
 
 
 /**

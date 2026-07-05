@@ -205,13 +205,13 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
                    .unit = "um",
                });
     ANN(scale);
-    dvz_scale_set_format(
+    AT(dvz_scale_set_format(
         scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
                    .precision = 2,
                    .show_unit = true,
                    .unit = "um",
                    .suffix = " depth",
-               });
+               }) == DVZ_OK);
     AT(scene->scale_count == 1);
     AT(scale->scene == scene);
     AT(scale->kind == DVZ_SCALE_CONTINUOUS);
@@ -225,8 +225,8 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
     double out_max = 0.0;
     AT(!dvz_scale_domain(scale, &out_min, &out_max));
     AT(!dvz_scale_view_range(scale, &out_min, &out_max));
-    dvz_scale_set_domain(scale, -600.0, 0.0);
-    dvz_scale_set_view_range(scale, -300.0, -50.0);
+    AT(dvz_scale_set_domain(scale, -600.0, 0.0) == DVZ_OK);
+    AT(dvz_scale_set_view_range(scale, -300.0, -50.0) == DVZ_OK);
     AT(scale->has_domain);
     AT(scale->domain_min == -600.0);
     AT(scale->domain_max == 0.0);
@@ -290,14 +290,14 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
         {.position = 0.0, .rgba = {0, 0, 0, 255}},
         {.position = 1.0, .rgba = {255, 255, 255, 255}},
     };
-    dvz_colormap_set_center(colormap, 0.5);
-    dvz_colormap_set_stops(colormap, stops, 2);
+    AT(dvz_colormap_set_center(colormap, 0.5) == DVZ_OK);
+    AT(dvz_colormap_set_stops(colormap, stops, 2) == DVZ_OK);
     AT(colormap->has_center);
     AT(colormap->center == 0.5);
     AT(colormap->stop_count == 2);
     AT(colormap->stops[1].rgba[0] == 255);
 
-    dvz_scale_set_colormap(scale, colormap);
+    AT(dvz_scale_set_colormap(scale, colormap) == DVZ_OK);
     AT(scale->colormap == colormap);
 
     DvzColorbar* colorbar = dvz_colorbar(
@@ -318,11 +318,11 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
     AT(colorbar->text_renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
     AT(strcmp(colorbar->title, "Depth map") == 0);
 
-    dvz_colorbar_set_format(
+    AT(dvz_colorbar_set_format(
         colorbar, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc),
                        .precision = 0,
                        .unit = "um",
-                   });
+                   }) == DVZ_OK);
     AT(colorbar->has_format);
     AT(colorbar->format.precision == 0);
     AT(strcmp(colorbar->format.unit, "um") == 0);
@@ -498,7 +498,7 @@ int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* it
     AT(fabsf(panel->reserve.right_px - 120.0f) < 1e-6f);
 
     uint64_t version = legend->version;
-    dvz_legend_set_title(legend, "Updated");
+    AT(dvz_legend_set_title(legend, "Updated") == DVZ_OK);
     AT(strcmp(legend->title, "Updated") == 0);
     AT(legend->dirty);
     AT(legend->version > version);
@@ -902,7 +902,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(found_tick_clip);
     dvz_frame_plan_destroy(plan);
 
-    dvz_colorbar_set_orientation(colorbar, DVZ_COLORBAR_ORIENTATION_HORIZONTAL);
+    AT(dvz_colorbar_set_orientation(colorbar, DVZ_COLORBAR_ORIENTATION_HORIZONTAL) == DVZ_OK);
     AT(colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM);
     AT(dvz_colorbar_set_anchor(colorbar, DVZ_SCENE_ANCHOR_PANEL_BOTTOM) == DVZ_OK);
     _scene_prepare_colorbar_visuals(figure, NULL);
@@ -1412,8 +1412,8 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
     AT(colors[2] == 255);
     AT(colors[4 * (ramp_color.item_count - 1)] == 255);
 
-    dvz_scale_set_domain(scale, -10.0, 10.0);
-    dvz_colorbar_set_title(colorbar, "Updated");
+    AT(dvz_scale_set_domain(scale, -10.0, 10.0) == DVZ_OK);
+    AT(dvz_colorbar_set_title(colorbar, "Updated") == DVZ_OK);
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(colorbar->tick_count >= 2);
     AT(strcmp(colorbar->text_labels[0], "-10") == 0);
@@ -1424,7 +1424,7 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
         {.position = 0.0, .rgba = {0, 255, 0, 255}},
         {.position = 1.0, .rgba = {255, 255, 0, 255}},
     };
-    dvz_colormap_set_stops(colormap, stops1, 2);
+    AT(dvz_colormap_set_stops(colormap, stops1, 2) == DVZ_OK);
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(dvz_visual_data(colorbar->ramp_visual, "color", &ramp_color) == 0);
     colors = ramp_color.data;
@@ -1520,7 +1520,7 @@ static int test_scene_colorbar_explicit_ticks_and_labels(TstContext* suite, cons
 
     DvzFormatDesc format = {
         DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 2, .prefix = "v="};
-    dvz_colorbar_set_format(colorbar, &format);
+    AT(dvz_colorbar_set_format(colorbar, &format) == DVZ_OK);
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(strcmp(colorbar->text_labels[0], "under") == 0);
 
@@ -1733,10 +1733,10 @@ int test_scene_colorbar_invalid_domain_reports_diagnostic(
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
-    dvz_scale_set_domain(scale, 1.0, 1.0);
+    AT(dvz_scale_set_domain(scale, 1.0, 1.0) == DVZ_OK);
     DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
     ANN(colormap);
-    dvz_scale_set_colormap(scale, colormap);
+    AT(dvz_scale_set_colormap(scale, colormap) == DVZ_OK);
     DvzColorbar* colorbar = dvz_colorbar(panel, scale, NULL);
     ANN(colorbar);
 
@@ -4665,7 +4665,7 @@ int test_scene_scale_guide_descriptor_abi_rejects_invalid_structs(
 
     DvzFormatDesc format = dvz_format_desc();
     format.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, (dvz_scale_set_format(continuous, &format), true));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_scale_set_format(continuous, &format) == DVZ_ERROR);
 
     DvzColormapDesc colormap_desc = dvz_colormap_desc();
     colormap_desc.struct_size = DVZ_STRUCT_SIZE(DvzColormapDesc) - 1;
@@ -4691,7 +4691,7 @@ int test_scene_scale_guide_descriptor_abi_rejects_invalid_structs(
 
     format = dvz_format_desc();
     format.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, (dvz_colorbar_set_format(colorbar, &format), true));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_colorbar_set_format(colorbar, &format) == DVZ_ERROR);
 
     DvzLegendDesc legend_desc = dvz_legend_desc();
     legend_desc.struct_size = DVZ_STRUCT_SIZE(DvzLegendDesc) - 1;

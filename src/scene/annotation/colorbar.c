@@ -1591,14 +1591,15 @@ void dvz_colorbar_destroy(DvzColorbar* colorbar)
  * @param colorbar the colorbar
  * @param format the format descriptor, or NULL to clear the override
  */
-void dvz_colorbar_set_format(DvzColorbar* colorbar, const DvzFormatDesc* format)
+DvzResult dvz_colorbar_set_format(DvzColorbar* colorbar, const DvzFormatDesc* format)
 {
     ANN(colorbar);
     if (!_scene_format_desc_validate(format))
-        return;
+        return DVZ_ERROR;
     colorbar->has_format = format != NULL;
     _scene_format_state_copy(&colorbar->format, format);
     _scene_mark_colorbar_dirty(colorbar);
+    return DVZ_OK;
 }
 
 
@@ -1609,17 +1610,18 @@ void dvz_colorbar_set_format(DvzColorbar* colorbar, const DvzFormatDesc* format)
  * @param colorbar the colorbar
  * @param orientation the orientation
  */
-void dvz_colorbar_set_orientation(DvzColorbar* colorbar, DvzColorbarOrientation orientation)
+DvzResult dvz_colorbar_set_orientation(DvzColorbar* colorbar, DvzColorbarOrientation orientation)
 {
     ANN(colorbar);
     if (colorbar->orientation == orientation)
-        return;
+        return DVZ_OK;
     colorbar->orientation = orientation;
     colorbar->reserve_px = _colorbar_default_reserve_px(orientation);
     if (!_colorbar_anchor_matches_orientation(orientation, colorbar->anchor))
         colorbar->anchor = _colorbar_default_anchor(orientation);
     _colorbar_apply_auto_reserve(colorbar);
     _scene_mark_colorbar_dirty(colorbar);
+    return DVZ_OK;
 }
 
 
@@ -1782,14 +1784,15 @@ DvzResult dvz_colorbar_clear_ticks(DvzColorbar* colorbar)
  * @param colorbar the colorbar
  * @param title the title, or NULL to clear
  */
-void dvz_colorbar_set_title(DvzColorbar* colorbar, const char* title)
+DvzResult dvz_colorbar_set_title(DvzColorbar* colorbar, const char* title)
 {
     ANN(colorbar);
     const char* src = title != NULL ? title : "";
     if (strcmp(colorbar->title, src) == 0)
-        return;
+        return DVZ_OK;
     dvz_strlcpy(colorbar->title, src, sizeof(colorbar->title));
     _scene_mark_colorbar_dirty(colorbar);
+    return DVZ_OK;
 }
 
 

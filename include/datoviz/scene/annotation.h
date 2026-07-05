@@ -202,8 +202,9 @@ DVZ_EXPORT void dvz_annotation_destroy(DvzAnnotation* annotation);
  *
  * @param annotation the annotation
  * @param format the format descriptor, or NULL to clear the override
+ * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT void dvz_annotation_set_format(
+DVZ_EXPORT DvzResult dvz_annotation_set_format(
     DvzAnnotation* annotation, const DvzFormatDesc* format);
 
 

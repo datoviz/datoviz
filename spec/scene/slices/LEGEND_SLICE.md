@@ -64,7 +64,7 @@ DVZ_EXPORT void dvz_legend_destroy(DvzLegend* legend);
 
 DVZ_EXPORT bool dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* desc);
 
-DVZ_EXPORT void dvz_legend_set_title(DvzLegend* legend, const char* title);
+DVZ_EXPORT DvzResult dvz_legend_set_title(DvzLegend* legend, const char* title);
 ```
 
 Do not implement categorical legends by accepting categorical scales in `dvz_colorbar()`.

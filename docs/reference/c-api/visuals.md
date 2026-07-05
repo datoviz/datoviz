@@ -4531,7 +4531,7 @@ scale.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/scene/scale.h`:721._
+_Declared in `include/datoviz/scene/scale.h`:731._
 
 ### `dvz_visual_set_scene_occluded()`
 

@@ -1243,6 +1243,29 @@ Result: all passed. This slice converted `dvz_panel_clear_background()`,
 `dvz_panel_set_background_color()`, `dvz_panel_clear_border()`, `dvz_panel_clear_view2d()`,
 `dvz_visual_set_visible()`, and `dvz_visual_clear_item_range()` from `void` to `DvzResult`.
 
+Validation for the retained scale/overlay mutator slice:
+
+```sh
+just build
+just ctypes
+just ctypes-check
+python3 tools/build_api_c.py
+python3 tools/build_api_c.py --check
+python3 tools/check_api_status.py
+just docs-api
+just docs-api-check
+just test fields
+just test scene/interaction
+just test visuals
+just test app
+just ctypes-smoke
+just ctypes-python-smoke
+```
+
+Result: all passed. This slice converted stable retained scale, colormap, colorbar, legend,
+annotation-format, and overlay-card mutators from `void` to `DvzResult`, surfacing existing
+validation failures as `DVZ_ERROR`.
+
 
 ## Validation Baseline For Future Agent
 

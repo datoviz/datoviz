@@ -1603,10 +1603,10 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
     AT(card->card.realized_rect_px[0] > 560.0f);
     AC(card->card.realized_rect_px[1], 6.0f, 1e-6f);
 
-    dvz_overlay_card_set_text(card, "updated");
+    AT(dvz_overlay_card_set_text(card, "updated") == DVZ_OK);
     float anchor[2] = {100.0f, 120.0f};
     float offset[2] = {2.0f, 3.0f};
-    dvz_overlay_card_set_layout(card, anchor, offset);
+    AT(dvz_overlay_card_set_layout(card, anchor, offset) == DVZ_OK);
     AT(card->card.dirty);
     AT(strcmp(card->card.text, "updated") == 0);
     AT(card->card.anchor_px[0] == 100.0f);
@@ -1621,15 +1621,16 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
     AC(card->card.realized_rect_px[3], 28.0f, 1e-6f);
 
     float inset[2] = {12.0f, 14.0f};
-    dvz_overlay_card_set_placement(card, DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_LEFT, inset);
+    AT(dvz_overlay_card_set_placement(card, DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_LEFT, inset)
+       == DVZ_OK);
     _scene_prepare_text_visuals(figure);
     AC(card->card.realized_rect_px[0], 12.0f, 1e-6f);
     AC(card->card.realized_rect_px[1] + card->card.realized_rect_px[3], 466.0f, 1e-6f);
 
-    dvz_overlay_card_set_visible(card, false);
+    AT(dvz_overlay_card_set_visible(card, false) == DVZ_OK);
     AT(!card->card.visible);
     AT(!card->card.background_visual->visible);
-    dvz_overlay_card_set_visible(card, true);
+    AT(dvz_overlay_card_set_visible(card, true) == DVZ_OK);
     _scene_prepare_text_visuals(figure);
     AT(card->card.background_visual->visible);
 
@@ -1789,16 +1790,16 @@ int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCas
         AT(!card->rich_dirty);
     }
 
-    dvz_overlay_card_set_visible(card, false);
+    AT(dvz_overlay_card_set_visible(card, false) == DVZ_OK);
     AT(!card->card.background_visual->visible);
     AT(!card->rich_block.image_visual->visible);
 
-    dvz_overlay_card_set_visible(card, true);
+    AT(dvz_overlay_card_set_visible(card, true) == DVZ_OK);
     _scene_prepare_text_visuals(figure);
     AT(card->card.background_visual->visible);
     AT(card->rich_block.image_visual->visible);
 
-    dvz_overlay_card_clear_rich_text(card);
+    AT(dvz_overlay_card_clear_rich_text(card) == DVZ_OK);
     AT(!card->rich_enabled);
     AT(card->rich_block.image_visual == NULL);
     AT(card->card.content == DVZ_SCENE_CARD_CONTENT_TEXT);
@@ -1890,7 +1891,11 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
     AT(annotation->version == 3);
 
     annotation->dirty_flags = DVZ_TEXT_DIRTY_NONE;
-    dvz_annotation_set_format(annotation, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 3, .suffix = " ms"});
+    AT(dvz_annotation_set_format(
+           annotation,
+           &(DvzFormatDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 3, .suffix = " ms"})
+       == DVZ_OK);
     AT(annotation->has_format);
     AT(strcmp(annotation->format.suffix, " ms") == 0);
     AT(annotation->dirty_flags ==

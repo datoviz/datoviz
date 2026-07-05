@@ -890,14 +890,15 @@ DvzResult dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* desc)
  * @param legend the legend
  * @param title the title, or NULL to clear
  */
-void dvz_legend_set_title(DvzLegend* legend, const char* title)
+DvzResult dvz_legend_set_title(DvzLegend* legend, const char* title)
 {
     ANN(legend);
     const char* src = title != NULL ? title : "";
     if (strcmp(legend->title, src) == 0)
-        return;
+        return DVZ_OK;
     dvz_strlcpy(legend->title, src, sizeof(legend->title));
     _scene_mark_legend_dirty(legend);
+    return DVZ_OK;
 }
 
 
