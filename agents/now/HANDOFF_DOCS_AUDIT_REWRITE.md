@@ -50,6 +50,39 @@ These choices are already approved:
    explicit maintainer approval in the current turn.
 
 
+## Public Voice Rules
+
+These rules are mandatory for public pages under `docs/` and for generated public example pages.
+They supersede earlier agent-facing wording when there is a conflict.
+
+1. Write for beginner users first: primarily scientists who may know Python and data analysis, but
+   may not have much C, graphics, or systems-programming experience.
+2. Avoid internal/developer language on public pages unless the page is explicitly in `Advanced`.
+   Do not lead with ownership, lifetimes, transport layers, renderer internals, DRP2, ABI details,
+   or release-process notes on beginner pages.
+3. Explain the user outcome before the API. Start pages with what the user can do, what they will
+   see, and which path to take.
+4. Prefer plain words over architecture shorthand. For example, explain "a panel is the area where
+   a plot is drawn" before using terms like viewport, retained state, lifecycle, or ownership.
+5. Do not make broad claims that are only approximately true. Say "most public functions use
+   `dvz_...` names" rather than "every function follows one convention" unless verified.
+6. Keep Quickstart and first-user pages short and structured. Move side topics such as offscreen
+   capture, raw `ctypes`, CMake integration, and lifecycle edge cases to focused How-To or
+   Reference pages.
+7. The AI-assisted workflow page must be simple. Its main prompt should tell the coding assistant
+   to browse `datoviz.org` and write the requested Datoviz v0.4 example. Do not require users to
+   manually assemble a context bundle of several pages unless they want better precision.
+8. Write installation instructions as decision paths by audience and operating system: Python user,
+   C/C++ user, source build, macOS, Linux, Windows/WSL, native Windows. Be explicit about what is
+   currently public, what is pre-release, and what is not yet published.
+9. Generated examples need more explanation, not less. Each public example should explain:
+   what the example demonstrates, what visual result to expect, which data attributes matter, which
+   user interaction applies, and where to go next. Code comments in examples should describe intent
+   and important choices, not merely restate the function name.
+10. If an example is minimal, say why it is minimal. If it is advanced, say what prior concepts the
+    reader should know before using it.
+
+
 ## Current State
 
 Current public navigation in `mkdocs.yml`:
