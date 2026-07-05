@@ -290,8 +290,8 @@ Completed checkpoints:
    - Renamed public support macros to `DVZ_*`: `DVZ_2PI`, `DVZ_INV_255`, `DVZ_EPSILON`,
      `DVZ_MIN`, `DVZ_MAX`, `DVZ_CLIP`, `DVZ_GB`, `DVZ_MB`, `DVZ_KB`, and
      `DVZ_PRETTY_SIZE_THRESHOLD`.
-   - Removed the file-scope `_PRETTY_SIZE` buffer from the public header; `dvz_pretty_size()` now
-     uses a function-local thread-local buffer where supported.
+   - Removed the file-scope `_PRETTY_SIZE` buffer from the public header; a later checkpoint must
+     remove the temporary thread-local `dvz_pretty_size()` compatibility shape.
    - Migrated internal Datoviz call sites and legacy examples.
    - Exported symbol delta: no exported functions were added or removed; public macro spellings
      changed before RC1.
@@ -452,24 +452,19 @@ known at this checkpoint.
 
 Next recommended checkpoints, in safe execution order:
 
-1. Remove the public static-buffer `dvz_pretty_size()` helper. First migrate every current call site
-   to `dvz_pretty_size_r()` or a private local-buffer helper, regenerate/validate, and only then
-   rename `dvz_pretty_size_r()` to `dvz_pretty_size()` once the old zero-buffer-argument function no
-   longer exists anywhere in public headers, source, generated bindings, generated docs, examples,
-   or specs.
-2. Run the full public mutator naming audit under the stricter
+1. Run the full public mutator naming audit under the stricter
    `dvz_<object>_set_<property>()` convention recorded in `spec/api/PUBLIC_API_CONVENTIONS.md`.
    Rename graph/polygon mutators and any other obvious retained-state mutators before RC. For the
    polygon aggregate, replace public `DvzPolygonSet`/`dvz_polygon_set_*` with
    `DvzPolygons`/`dvz_polygons_*`; use `dvz_polygons_add_region()` for append/create and
    `dvz_polygons_set_region_*()` for retained region mutators.
-3. Rename public `dvz_geom_*` functions to the single `dvz_geometry_*` naming family.
-4. Split stable `window.h` from backend SPI so ordinary window users do not include backend
+2. Rename public `dvz_geom_*` functions to the single `dvz_geometry_*` naming family.
+3. Split stable `window.h` from backend SPI so ordinary window users do not include backend
    registration, GLFW hooks, wrap-surface helpers, or Vulkan surface details.
-5. Make `vk.h` a complete low-level Vulkan umbrella if headers parse cleanly together; otherwise
+4. Make `vk.h` a complete low-level Vulkan umbrella if headers parse cleanly together; otherwise
    document it explicitly as a narrow GPU-context umbrella and direct advanced users to explicit
    `datoviz/vk/*.h` includes.
-6. Then continue DRP2/result-type/array-ordering support-surface cleanup using the maintainer
+5. Then continue DRP2/result-type/array-ordering support-surface cleanup using the maintainer
    decisions below.
 
 
@@ -497,10 +492,8 @@ Use these defaults unless the code audit finds a stronger local reason:
    APIs, and explicit free APIs or FFI policy for owned pointer returns.
 10. Remove or prefix unprefixed public support macros. Prefer typedefs and inline/static helpers
     over public macros when a real type or helper is intended.
-11. Do not expose public APIs that return pointers to static mutable storage. Replace
-    `dvz_pretty_size()` with the reentrant buffer-taking helper shape; after migration, reuse the
-    canonical `dvz_pretty_size()` name for the safe `(DvzSize size, char* out, size_t out_size)`
-    signature.
+11. Do not expose public APIs that return pointers to static mutable storage. The canonical
+    `dvz_pretty_size()` API is the safe `(DvzSize size, char* out, size_t out_size)` signature.
 12. Use `dvz_<object>_set_<property>()` for public retained-state mutators. Audit graph, polygon,
     plot, text, scale, annotation, visual-family, scene/app, and runtime-facing APIs before RC;
     keep non-mutating accessors, constructors/destructors, descriptor/style initializers,
@@ -788,7 +781,8 @@ Preferred fix:
 
 Status: `dvz_load_jpeg()` byte-buffer argument order normalized by `52e38e358`, `DvzAlpha`
 replaced with a typedef by `2a340b51c`, unprefixed math support macros plus the `_PRETTY_SIZE`
-buffer cleaned by `2ac43481c`, public `dvz_box_*` declarations without export resolved by
+buffer cleaned by `2ac43481c`, public `dvz_pretty_size()` made buffer-taking and reentrant by the
+current support-helper checkpoint, public `dvz_box_*` declarations without export resolved by
 `bff88625d`, `dvz_read_ppm()` dimensions normalized by `4fb4be416`, embedded resource sizes and
 stale texture/testdata accessors cleaned by `dc1617d8f`, public `M_PI` replaced with `DVZ_PI` by
 `94ceaa74f`, and unused `DVZ_ZERO_OFFSET`/`fsizeof` removed by `efeec1679`. Remaining
@@ -800,8 +794,8 @@ inconsistent byte-buffer signatures.
 References:
 
 - `include/datoviz/math/types.h`: review remaining public constants/helpers such as `DVZ_MIN`,
-  `DVZ_MAX`, `DVZ_CLIP`, `DVZ_ARRAY_COUNT`, `DVZ_BOX_NDC`, and `dvz_pretty_size()` for intended
-  stable support-header scope
+  `DVZ_MAX`, `DVZ_CLIP`, `DVZ_ARRAY_COUNT`, and `DVZ_BOX_NDC` for intended stable support-header
+  scope
 - `include/datoviz/math/box.h`: resolved by `bff88625d`; the public helper set is now exported and
   generated in raw `ctypes`/C docs
 - `include/datoviz/fileio/fileio.h`: `dvz_load_png(bytes, size)` versus
@@ -812,9 +806,8 @@ Preferred fix:
 
 - Decide whether remaining prefixed support macros in `math/types.h` are intended stable public
   support API or should move behind typed helpers.
-- `dvz_pretty_size()` is now thread-local where the compiler supports C11 or C++ thread-local
-  storage; decide whether the non-C11 fallback is acceptable or whether only `dvz_pretty_size_r()`
-  should remain public.
+- `dvz_pretty_size()` now requires caller-provided storage; no zero-buffer-argument static-storage
+  helper remains public.
 
 
 ## Lower-Priority Polish

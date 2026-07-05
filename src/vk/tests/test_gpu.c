@@ -59,7 +59,11 @@ int test_gpu_props(TstContext* suite, const TstCase* tstitem)
     log_debug("max image dim 2D: %u", props->limits.maxImageDimension2D);
 
     VkPhysicalDeviceVulkan11Properties* props11 = dvz_gpu_properties11(gpu);
-    log_debug("max memory allocation size: %s", dvz_pretty_size(props11->maxMemoryAllocationSize));
+    char allocation_size_str[64] = {0};
+    log_debug(
+        "max memory allocation size: %s",
+        dvz_pretty_size(
+            props11->maxMemoryAllocationSize, allocation_size_str, sizeof(allocation_size_str)));
 
     VkPhysicalDeviceVulkan12Properties* props12 = dvz_gpu_properties12(gpu);
     log_debug(
@@ -67,7 +71,10 @@ int test_gpu_props(TstContext* suite, const TstCase* tstitem)
         props12->maxDescriptorSetUpdateAfterBindSamplers);
 
     VkPhysicalDeviceVulkan13Properties* props13 = dvz_gpu_properties13(gpu);
-    log_debug("max buffer size: %s", dvz_pretty_size(props13->maxBufferSize));
+    char buffer_size_str[64] = {0};
+    log_debug(
+        "max buffer size: %s",
+        dvz_pretty_size(props13->maxBufferSize, buffer_size_str, sizeof(buffer_size_str)));
 
     dvz_instance_destroy(instance);
     return 0;
@@ -97,8 +104,10 @@ int test_gpu_memprops(TstContext* suite, const TstCase* tstitem)
     for (uint32_t i = 0; i < memprops->memoryHeapCount; i++)
     {
         VkMemoryHeap* h = &memprops->memoryHeaps[i];
+        char heap_size_str[64] = {0};
         log_debug(
-            "Heap %u: size=%s %s", i, dvz_pretty_size(h->size),
+            "Heap %u: size=%s %s", i,
+            dvz_pretty_size(h->size, heap_size_str, sizeof(heap_size_str)),
             (h->flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) ? "DEVICE_LOCAL" : "");
     }
 
@@ -121,7 +130,10 @@ int test_gpu_memprops(TstContext* suite, const TstCase* tstitem)
         log_debug("Type %2u: heap=%u  %s", i, t->heapIndex, s);
     }
 
-    log_debug("total VRAM: %s", dvz_pretty_size(dvz_gpu_vram(gpu)));
+    char vram_size_str[64] = {0};
+    log_debug(
+        "total VRAM: %s",
+        dvz_pretty_size(dvz_gpu_vram(gpu), vram_size_str, sizeof(vram_size_str)));
 
     dvz_instance_destroy(instance);
     return 0;

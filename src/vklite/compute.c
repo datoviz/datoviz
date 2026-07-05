@@ -92,9 +92,10 @@ void dvz_compute_spec(
 
     if (offset + size >= DVZ_MAX_SPEC_CONST_SIZE)
     {
+        char size_str[64] = {0};
         log_error(
             "the specialization constant data buffer can be no more than %s",
-            dvz_pretty_size(DVZ_MAX_SPEC_CONST_SIZE));
+            dvz_pretty_size(DVZ_MAX_SPEC_CONST_SIZE, size_str, sizeof(size_str)));
         return;
     }
 

@@ -85,7 +85,7 @@ typedef uint64_t DvzId;
 
 typedef uint64_t DvzSize;
 
-static inline char* dvz_pretty_size_r(DvzSize size, char* out, size_t out_size)
+static inline char* dvz_pretty_size(DvzSize size, char* out, size_t out_size)
 {
     if (out == NULL || out_size == 0)
         return NULL;
@@ -120,19 +120,6 @@ static inline char* dvz_pretty_size_r(DvzSize size, char* out, size_t out_size)
     snprintf( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
         out, out_size, "%.1f %s", s, u);
     return out;
-}
-
-static inline char* dvz_pretty_size(DvzSize size)
-{
-#if defined(__cplusplus)
-    static thread_local char buffer[64] = {0};
-#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-    static _Thread_local char buffer[64] = {0};
-#else
-    static char buffer[64] = {0};
-#endif
-    dvz_pretty_size_r(size, buffer, sizeof(buffer));
-    return buffer;
 }
 
 #define DVZ_ARRAY_COUNT(arr) sizeof((arr)) / sizeof((arr)[0])

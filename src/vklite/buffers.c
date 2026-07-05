@@ -493,10 +493,13 @@ void dvz_buffer_resize(DvzBuffer* buffer, DvzSize size)
 
     if (size <= buffer->req_size)
     {
+        char current_size_str[64] = {0};
+        char requested_size_str[64] = {0};
         log_trace(
             "skip buffer resizing as the buffer size is large enough:"
             "(currently %s, requested %s)",
-            dvz_pretty_size(buffer->req_size), dvz_pretty_size(size));
+            dvz_pretty_size(buffer->req_size, current_size_str, sizeof(current_size_str)),
+            dvz_pretty_size(size, requested_size_str, sizeof(requested_size_str)));
         return;
     }
 
@@ -556,7 +559,8 @@ void dvz_buffer_upload(DvzBuffer* buffer, DvzSize offset, DvzSize size, const vo
         return;
     }
 
-    log_trace("buffer upload of %s", dvz_pretty_size(size));
+    char size_str[64] = {0};
+    log_trace("buffer upload of %s", dvz_pretty_size(size, size_str, sizeof(size_str)));
     if (dvz_allocator_copy_to(buffer->allocator, buffer->alloc, offset, data, size) != 0)
     {
         log_error("failed to upload data to buffer");
@@ -572,7 +576,8 @@ void dvz_buffer_download(DvzBuffer* buffer, DvzSize offset, DvzSize size, void* 
     ANN(data);
     ASSERT(size > 0);
 
-    log_trace("buffer download of %s", dvz_pretty_size(size));
+    char size_str[64] = {0};
+    log_trace("buffer download of %s", dvz_pretty_size(size, size_str, sizeof(size_str)));
     if (dvz_allocator_copy_from(buffer->allocator, buffer->alloc, offset, data, size) != 0)
     {
         log_error("failed to download data from buffer");
