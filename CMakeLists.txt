@@ -391,6 +391,9 @@ else()
     set(GLSL_INCLUDES "")
 endif()
 
+set(DVZ_EMBED_RESOURCES_SCRIPT "${PROJECT_SOURCE_DIR}/cmake/embed_resources.cmake")
+set(DVZ_EMBED_TEXT_RESOURCES_SCRIPT "${PROJECT_SOURCE_DIR}/cmake/embed_text_resources.cmake")
+
 find_program(GLSLC glslc
     HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin"
 )
@@ -423,8 +426,8 @@ if(GLSLC)
             "-DFILES=${_spirv_list_escaped}"
             "-DPREFIX=shader"
             "-DOUTPUT=${SHADERS_C}"
-            -P "${PROJECT_SOURCE_DIR}/cmake/embed_resources.cmake"
-        DEPENDS datoviz_shaders_spirv ${SPIRV_OUTPUTS}
+            -P "${DVZ_EMBED_RESOURCES_SCRIPT}"
+        DEPENDS datoviz_shaders_spirv ${SPIRV_OUTPUTS} "${DVZ_EMBED_RESOURCES_SCRIPT}"
         COMMENT "Embedding SPIR-V shaders into _shaders.c"
     )
     add_custom_target(datoviz_shaders DEPENDS "${SHADERS_C}")
@@ -450,8 +453,8 @@ if(GLSL_TEXT_SOURCES)
             "-DFILES=${_glsl_list_escaped}"
             "-DPREFIX=glsl"
             "-DOUTPUT=${GLSL_SHADERS_C}"
-            -P "${PROJECT_SOURCE_DIR}/cmake/embed_text_resources.cmake"
-        DEPENDS ${GLSL_TEXT_SOURCES}
+            -P "${DVZ_EMBED_TEXT_RESOURCES_SCRIPT}"
+        DEPENDS ${GLSL_TEXT_SOURCES} "${DVZ_EMBED_TEXT_RESOURCES_SCRIPT}"
         COMMENT "Embedding GLSL shaders into _glsl_shaders.c"
     )
     add_custom_target(datoviz_glsl_shaders DEPENDS "${GLSL_SHADERS_C}")
@@ -482,8 +485,8 @@ if(WGSL_SOURCES)
             "-DFILES=${_wgsl_list_escaped}"
             "-DPREFIX=wgsl"
             "-DOUTPUT=${WGSL_SHADERS_C}"
-            -P "${PROJECT_SOURCE_DIR}/cmake/embed_text_resources.cmake"
-        DEPENDS ${WGSL_SOURCES}
+            -P "${DVZ_EMBED_TEXT_RESOURCES_SCRIPT}"
+        DEPENDS ${WGSL_SOURCES} "${DVZ_EMBED_TEXT_RESOURCES_SCRIPT}"
         COMMENT "Embedding WGSL shaders into _wgsl_shaders.c"
     )
     add_custom_target(datoviz_wgsl_shaders DEPENDS "${WGSL_SHADERS_C}")
@@ -513,8 +516,8 @@ if(DVZ_BUILD_SCENE)
             "-DFILES=${_font_list_escaped}"
             "-DPREFIX=font"
             "-DOUTPUT=${FONTS_C}"
-            -P "${PROJECT_SOURCE_DIR}/cmake/embed_resources.cmake"
-        DEPENDS ${FONT_SOURCES}
+            -P "${DVZ_EMBED_RESOURCES_SCRIPT}"
+        DEPENDS ${FONT_SOURCES} "${DVZ_EMBED_RESOURCES_SCRIPT}"
         COMMENT "Embedding scene fonts into _fonts.c"
     )
     add_custom_target(datoviz_fonts DEPENDS "${FONTS_C}")
