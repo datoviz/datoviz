@@ -489,6 +489,22 @@ Completed checkpoints:
      `just ctypes-python-smoke`, and `git diff --check`.
    - Validation caveat: `just test scene/runtime` selected 0 tests; DRP2 frame-plan emission tests
      were covered by `just test drp2`.
+44. `300ca8609` `api: hide drp2 raw fallback diagnostics`
+   - Removed public `DvzDrp2RawFallback`,
+     `dvz_drp2_recording_raw_fallback_count()`, and
+     `dvz_drp2_recording_raw_fallback()` from `recording.h`, `symbols.map`, generated raw
+     `ctypes`, and generated C API docs.
+   - Removed the unused recording-side fallback ledger while preserving old raw command-blob
+     replay through the existing recording reader.
+   - Kept diagnostics in `testing/dvz_drp2_player.c` as a private `stream.jsonl` scan instead of a
+     public recording API.
+   - Updated DRP2 and app tests to assert raw command-blob presence/absence directly from the
+     recording file and replayed stream.
+   - Validation passed: exact stale-name scan, `just ctypes`, `just ctypes-check`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`,
+     `python3 tools/check_api_status.py`, `just build`, `just test drp2`, `just test app`,
+     `just ctypes-smoke`, `just docs-api-check`, `just ctypes-python-smoke`, and
+     `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn: none
 known at this checkpoint.
@@ -509,8 +525,10 @@ Next recommended checkpoints, in safe execution order:
    document it explicitly as a narrow GPU-context umbrella and direct advanced users to explicit
    `datoviz/vk/*.h` includes. This is complete: `vk.h` now includes `vk/vulkan.h`, queue,
    instance/GPU/device, memory, memory interop, GPU-context, and Vulkan macro helpers.
-4. Then continue DRP2/result-type/array-ordering support-surface cleanup using the maintainer
-   decisions below.
+4. Then continue result-type/array-ordering/support-surface cleanup using the maintainer decisions
+   below. DRP2 base64 writer naming and raw fallback public-surface removal are complete; remaining
+   DRP2 work is stringly typed command arguments and any protocol-specific argument ordering or
+   advanced/unstable classification that still looks accidental.
 
 
 ## Maintainer Decisions
@@ -808,6 +826,10 @@ Preferred fix:
 
 ### 9. Clean Or Classify Advanced DRP2
 
+Status: base64 writer naming completed by `af13ad996`; raw fallback public API removal completed by
+`300ca8609`. Remaining work is classification or cleanup of stringly typed command arguments,
+protocol-specific argument ordering, and any JSON/fixture helpers that still look too stable.
+
 The DRP2 public headers mix protocol builders, fixture/JSON plumbing, base64 payloads, byte
 payloads, and development replay fallback.
 
@@ -819,9 +841,8 @@ References:
 
 Preferred fix:
 
-- Remove raw fallback from RC public API, or move it to private/test diagnostics.
-- Make byte-oriented APIs primary.
-- Rename base64 forms with `_base64` or move them to fixture/JSON headers excluded from stable docs.
+- Done: raw fallback is no longer public; private diagnostics scan `stream.jsonl`.
+- Done: byte-oriented APIs remain primary and base64 string-payload forms carry `_base64`.
 - Replace stringly typed command arguments with enums where feasible; otherwise classify these
   commands as advanced/unstable.
 
@@ -912,8 +933,10 @@ generated ctypes, generated docs if applicable, and examples in sync.
    - Validation: app/canvas/window/input tests and hosted/offscreen examples where available.
 
 5. **Advanced DRP2/vklite classification cleanup**
-   - Remove DRP2 raw fallback from stable surface or clearly move it to diagnostics.
-   - Rename or move base64/JSON fixture APIs.
+   - Completed: remove DRP2 raw fallback from stable surface; private diagnostics scan recording
+     JSONL files.
+   - Completed: rename base64 payload writer APIs with `_base64`.
+   - Remaining: review any JSON fixture APIs that still look too stable.
    - Align draw argument ordering or classify one layer as protocol-specific.
    - Add enums for stringly typed command arguments where feasible.
    - Validation: DRP2 stream tests, frame-plan emission tests, WebGPU/WASM fixture tests if command
