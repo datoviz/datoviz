@@ -481,7 +481,8 @@ Next recommended checkpoints, in safe execution order:
    separate ABI break if desired.
 3. Make `vk.h` a complete low-level Vulkan umbrella if headers parse cleanly together; otherwise
    document it explicitly as a narrow GPU-context umbrella and direct advanced users to explicit
-   `datoviz/vk/*.h` includes.
+   `datoviz/vk/*.h` includes. This is complete: `vk.h` now includes `vk/vulkan.h`, queue,
+   instance/GPU/device, memory, memory interop, GPU-context, and Vulkan macro helpers.
 4. Then continue DRP2/result-type/array-ordering support-surface cleanup using the maintainer
    decisions below.
 

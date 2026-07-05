@@ -17,7 +17,12 @@
 /*************************************************************************************************/
 
 #include "vk/enums.h"
+#include "vk/vulkan.h"
+#include "vk/queues.h"
 #include "vk/gpu.h"
-#include "vk/gpu_ctx.h"
 #include "vk/instance.h"
+#include "vk/device.h"
+#include "vk/memory.h"
+#include "vk/memory_interop.h"
+#include "vk/gpu_ctx.h"
 #include "vk/macros.h"

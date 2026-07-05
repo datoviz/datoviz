@@ -26,7 +26,6 @@ headers:
     - datoviz/stream.h
     - datoviz/video.h
     - datoviz/vk.h
-    - datoviz/vk/memory_interop.h
     - datoviz/vklite.h
     - datoviz/window.h
     - datoviz/window/backend.h
