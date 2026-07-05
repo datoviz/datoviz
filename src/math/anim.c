@@ -198,7 +198,7 @@ static void orthonormal_basis(vec3 axis, vec3 u, vec3 v, vec3 w)
     // Construct an orthonormal basis around an axis vector.
     // from: https://stackoverflow.com/a/7753446/1595060
 
-    if (glm_vec3_norm(axis) < EPSILON)
+    if (glm_vec3_norm(axis) < DVZ_EPSILON)
     {
         log_error(
             "norm of input vector {%f, %f, %f} is too small to compute an orthonormal basis.",
@@ -214,7 +214,7 @@ static void orthonormal_basis(vec3 axis, vec3 u, vec3 v, vec3 w)
     vec3 u0 = {1, 0, 0};
 
     // If dot(u0,a) ~= 0, then take u0 = (0,1,0).
-    if (fabs(a[0]) < EPSILON)
+    if (fabs(a[0]) < DVZ_EPSILON)
     {
         u0[0] = 0;
         u0[1] = 1;
@@ -345,7 +345,7 @@ double dvz_resample(double t0, double t1, double t) { return (t - t0) / (t1 - t0
 
 void dvz_circular_2D(vec2 center, float radius, float angle, float t, vec2 out)
 {
-    float a = M_2PI * t + angle;
+    float a = DVZ_2PI * t + angle;
     vec2 u = {cos(a), sin(a)};
     out[0] = center[0] + radius * u[0];
     out[1] = center[1] + radius * u[1];

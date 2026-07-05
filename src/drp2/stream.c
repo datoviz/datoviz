@@ -964,7 +964,7 @@ bool dvz_drp2_stream_pipeline_set_color_target(
     if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         return false;
     command->u.create_render_pipeline.color_target_count =
-        MAX(command->u.create_render_pipeline.color_target_count, idx + 1);
+        DVZ_MAX(command->u.create_render_pipeline.color_target_count, idx + 1);
     command->u.create_render_pipeline.color_targets[idx].format = (uint32_t)format;
     if (command->u.create_render_pipeline.color_targets[idx].color_write_mask == 0)
         command->u.create_render_pipeline.color_targets[idx].color_write_mask = 0xFu;
@@ -985,7 +985,7 @@ bool dvz_drp2_stream_pipeline_set_color_blend(
     if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         return false;
     command->u.create_render_pipeline.color_target_count =
-        MAX(command->u.create_render_pipeline.color_target_count, idx + 1);
+        DVZ_MAX(command->u.create_render_pipeline.color_target_count, idx + 1);
     DvzDrp2ColorTarget* target = &command->u.create_render_pipeline.color_targets[idx];
     target->blend_enabled = true;
     target->src_color_blend_factor = (uint32_t)src_color;

@@ -261,7 +261,7 @@ static bool _symbol_set_rebuild_atlas_page(DvzSymbolSet* symbols, DvzSymbolSourc
         if (UINT32_MAX - width < padded_width)
             return false;
         width += padded_width;
-        height = MAX(height, padded_height);
+        height = DVZ_MAX(height, padded_height);
         entry_count++;
     }
 

@@ -146,7 +146,7 @@ static void _surface_data(double* heights, DvzColor* colors, double* out_min, do
     const double span = zmax > zmin ? zmax - zmin : 1.0;
     for (uint32_t i = 0; i < SURFACE_ROWS * SURFACE_COLS; i++)
     {
-        const double t = CLIP((heights[i] - zmin) / span, 0.0, 1.0);
+        const double t = DVZ_CLIP((heights[i] - zmin) / span, 0.0, 1.0);
         colors[i] = dvz_color_rgb(
             (uint8_t)(34.0 + 206.0 * t),
             (uint8_t)(75.0 + 150.0 * (1.0 - fabs(2.0 * t - 1.0))),

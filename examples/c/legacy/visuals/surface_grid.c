@@ -78,7 +78,7 @@ static void _surface_data(double* heights, DvzColor* colors)
             const uint32_t idx = row * SURFACE_COLS + col;
             heights[idx] = wave;
 
-            const double t = CLIP((wave + 0.36) / 0.72, 0.0, 1.0);
+            const double t = DVZ_CLIP((wave + 0.36) / 0.72, 0.0, 1.0);
             colors[idx] = dvz_color_rgb(
                 (uint8_t)(28.0 + 210.0 * t),
                 (uint8_t)(70.0 + 135.0 * (1.0 - fabs(2.0 * t - 1.0))),

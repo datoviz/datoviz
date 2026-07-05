@@ -403,7 +403,7 @@ static double _geom_dvec3_norm2(const dvec3 v)
 static bool _geom_dvec3_is_zero(const dvec3 v)
 {
     ANN(v);
-    return _geom_dvec3_norm2(v) <= EPSILON * EPSILON;
+    return _geom_dvec3_norm2(v) <= DVZ_EPSILON * DVZ_EPSILON;
 }
 
 
@@ -418,7 +418,7 @@ static bool _geom_dvec3_normalize(dvec3 v)
 {
     ANN(v);
     const double norm2 = _geom_dvec3_norm2(v);
-    if (norm2 <= EPSILON * EPSILON || !isfinite(norm2))
+    if (norm2 <= DVZ_EPSILON * DVZ_EPSILON || !isfinite(norm2))
         return false;
 
     const double inv_norm = 1.0 / sqrt(norm2);
@@ -481,7 +481,7 @@ static bool _geom_dvec3_nearly_equal(const dvec3 a, const dvec3 b)
     ANN(a);
     ANN(b);
     const dvec3 d = {a[0] - b[0], a[1] - b[1], a[2] - b[2]};
-    return _geom_dvec3_norm2(d) <= EPSILON * EPSILON;
+    return _geom_dvec3_norm2(d) <= DVZ_EPSILON * DVZ_EPSILON;
 }
 
 
@@ -784,10 +784,10 @@ static void _geom_contour_intersection(
         return;
 
     const double t = (level - sa) / (sb - sa);
-    if (!isfinite(t) || t < -EPSILON || t > 1.0 + EPSILON)
+    if (!isfinite(t) || t < -DVZ_EPSILON || t > 1.0 + DVZ_EPSILON)
         return;
 
-    _geom_dvec3_lerp(geometry->positions[ia], geometry->positions[ib], CLIP(t, 0.0, 1.0),
+    _geom_dvec3_lerp(geometry->positions[ia], geometry->positions[ib], DVZ_CLIP(t, 0.0, 1.0),
                      points[*count]);
     *count += 1;
 }
@@ -1271,7 +1271,7 @@ DvzResult dvz_geometry_transform(DvzGeometry* geometry, dmat4 transform)
     const double det = a00 * (a11 * a22 - a12 * a21) -
                        a01 * (a10 * a22 - a12 * a20) +
                        a02 * (a10 * a21 - a11 * a20);
-    if (geometry->normals != NULL && fabs(det) <= EPSILON)
+    if (geometry->normals != NULL && fabs(det) <= DVZ_EPSILON)
         return -1;
 
     const double inv_det = det != 0.0 ? 1.0 / det : 0.0;
@@ -1781,7 +1781,7 @@ DvzGeometry* dvz_geom_sphere(const DvzGeometrySphereDesc* desc)
         for (uint32_t sector = 0; sector <= cfg.sectors; sector++)
         {
             const double u = (double)sector / (double)cfg.sectors;
-            const double phi = M_2PI * u;
+            const double phi = DVZ_2PI * u;
             const double cp = cos(phi);
             const double sp = sin(phi);
             const dvec3 normal = {st * cp, st * sp, ct};
@@ -1969,7 +1969,7 @@ DvzGeometry* dvz_geom_disc(const DvzGeometryDiscDesc* desc)
     _geom_set_vertex(geometry, 0, cfg.center, normal, (dvec2){0.5, 0.5}, color);
     for (uint32_t i = 0; i < cfg.segments; i++)
     {
-        const double t = M_2PI * (double)i / (double)cfg.segments;
+        const double t = DVZ_2PI * (double)i / (double)cfg.segments;
         const double c = cos(t);
         const double s = sin(t);
         const dvec3 position = {
@@ -2003,7 +2003,7 @@ DvzGeometry* dvz_geom_sector(const DvzGeometrySectorDesc* desc)
         return NULL;
     if (cfg.segments == 0)
         cfg.segments = DVZ_GEOM_SECTOR_DEFAULT_SEGMENTS;
-    if (cfg.segments < 1u || fabs(cfg.sweep_angle) <= EPSILON)
+    if (cfg.segments < 1u || fabs(cfg.sweep_angle) <= DVZ_EPSILON)
         return NULL;
 
     DvzColor color = {0};
@@ -2116,7 +2116,7 @@ DvzGeometry* dvz_geom_star(const DvzGeometryStarDesc* desc)
     for (uint32_t i = 0; i < outer_count; i++)
     {
         const double radius = i % 2u == 0 ? cfg.outer_radius : cfg.inner_radius;
-        const double t = -0.5 * M_PI + M_2PI * (double)i / (double)outer_count;
+        const double t = -0.5 * M_PI + DVZ_2PI * (double)i / (double)outer_count;
         const double c = cos(t);
         const double s = sin(t);
         const dvec3 position = {
@@ -2169,7 +2169,7 @@ DvzGeometry* dvz_geom_cylinder(const DvzGeometryCylinderDesc* desc)
     for (uint32_t i = 0; i <= cfg.sectors; i++)
     {
         const double u = (double)i / (double)cfg.sectors;
-        const double t = M_2PI * u;
+        const double t = DVZ_2PI * u;
         const double c = cos(t);
         const double s = sin(t);
         const dvec3 normal = {c, s, 0.0};
@@ -2209,7 +2209,7 @@ DvzGeometry* dvz_geom_cylinder(const DvzGeometryCylinderDesc* desc)
     for (uint32_t i = 0; i <= cfg.sectors; i++)
     {
         const double u = (double)i / (double)cfg.sectors;
-        const double t = M_2PI * u;
+        const double t = DVZ_2PI * u;
         const double c = cos(t);
         const double s = sin(t);
         const dvec2 uv = {0.5 + 0.5 * c, 0.5 + 0.5 * s};
@@ -2273,8 +2273,8 @@ DvzGeometry* dvz_geom_cone(const DvzGeometryConeDesc* desc)
     uint32_t index = 0;
     for (uint32_t i = 0; i < cfg.sectors; i++)
     {
-        const double t0 = M_2PI * (double)i / (double)cfg.sectors;
-        const double t1 = M_2PI * (double)(i + 1u) / (double)cfg.sectors;
+        const double t0 = DVZ_2PI * (double)i / (double)cfg.sectors;
+        const double t1 = DVZ_2PI * (double)(i + 1u) / (double)cfg.sectors;
         const dvec3 p0 = {cfg.center[0] + cfg.radius * cos(t0), cfg.center[1] + cfg.radius * sin(t0), z0};
         const dvec3 p1 = {cfg.center[0] + cfg.radius * cos(t1), cfg.center[1] + cfg.radius * sin(t1), z0};
         dvec3 normal = {0};
@@ -2295,7 +2295,7 @@ DvzGeometry* dvz_geom_cone(const DvzGeometryConeDesc* desc)
     for (uint32_t i = 0; i <= cfg.sectors; i++)
     {
         const double u = (double)i / (double)cfg.sectors;
-        const double t = M_2PI * u;
+        const double t = DVZ_2PI * u;
         const double c = cos(t);
         const double s = sin(t);
         _geom_set_vertex(
@@ -2347,13 +2347,13 @@ DvzGeometry* dvz_geom_torus(const DvzGeometryTorusDesc* desc)
     for (uint32_t ring = 0; ring <= cfg.rings; ring++)
     {
         const double u = (double)ring / (double)cfg.rings;
-        const double phi = M_2PI * u;
+        const double phi = DVZ_2PI * u;
         const double cp = cos(phi);
         const double sp = sin(phi);
         for (uint32_t sector = 0; sector <= cfg.sectors; sector++)
         {
             const double v = (double)sector / (double)cfg.sectors;
-            const double theta = M_2PI * v;
+            const double theta = DVZ_2PI * v;
             const double ct = cos(theta);
             const double st = sin(theta);
             const dvec3 normal = {cp * ct, sp * ct, st};

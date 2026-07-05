@@ -142,20 +142,20 @@ DvzBox dvz_box_merge(uint32_t box_count, const DvzBox* boxes, DvzBoxMergeStrateg
     // Merged box.
     for (uint32_t i = 0; i < box_count; i++)
     {
-        merged.xmin = MIN(merged.xmin, boxes[i].xmin);
-        merged.xmax = MAX(merged.xmax, boxes[i].xmax);
-        merged.ymin = MIN(merged.ymin, boxes[i].ymin);
-        merged.ymax = MAX(merged.ymax, boxes[i].ymax);
-        merged.zmin = MIN(merged.zmin, boxes[i].zmin);
-        merged.zmax = MAX(merged.zmax, boxes[i].zmax);
+        merged.xmin = DVZ_MIN(merged.xmin, boxes[i].xmin);
+        merged.xmax = DVZ_MAX(merged.xmax, boxes[i].xmax);
+        merged.ymin = DVZ_MIN(merged.ymin, boxes[i].ymin);
+        merged.ymax = DVZ_MAX(merged.ymax, boxes[i].ymax);
+        merged.zmin = DVZ_MIN(merged.zmin, boxes[i].zmin);
+        merged.zmax = DVZ_MAX(merged.zmax, boxes[i].zmax);
     }
 
     // Center merge strategy.
     if (strategy == DVZ_BOX_MERGE_CENTER)
     {
-        merged.xmax = MAX(fabs(merged.xmin), fabs(merged.xmax));
-        merged.ymax = MAX(fabs(merged.ymin), fabs(merged.ymax));
-        merged.zmax = MAX(fabs(merged.zmin), fabs(merged.zmax));
+        merged.xmax = DVZ_MAX(fabs(merged.xmin), fabs(merged.xmax));
+        merged.ymax = DVZ_MAX(fabs(merged.ymin), fabs(merged.ymax));
+        merged.zmax = DVZ_MAX(fabs(merged.zmin), fabs(merged.zmax));
         merged.xmin = -merged.xmax;
         merged.ymin = -merged.ymax;
         merged.zmin = -merged.zmax;

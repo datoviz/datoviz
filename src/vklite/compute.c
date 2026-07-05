@@ -102,8 +102,8 @@ void dvz_compute_spec(
     compute->spec_entries[index].offset = offset;
     compute->spec_entries[index].size = size;
 
-    compute->spec_info.mapEntryCount = MAX(compute->spec_info.mapEntryCount, index + 1);
-    compute->spec_info.dataSize = MAX(compute->spec_info.dataSize, offset + size);
+    compute->spec_info.mapEntryCount = DVZ_MAX(compute->spec_info.mapEntryCount, index + 1);
+    compute->spec_info.dataSize = DVZ_MAX(compute->spec_info.dataSize, offset + size);
     ASSERT(compute->spec_info.dataSize <= DVZ_MAX_SPEC_CONST_SIZE);
 
     // Copy the value in the specialization constant data buffer.

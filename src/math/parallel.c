@@ -50,7 +50,7 @@ void dvz_threads_set(int num_threads)
     {
         num_threads += num_procs;
     }
-    num_threads = MIN(num_threads, num_procs);
+    num_threads = DVZ_MIN(num_threads, num_procs);
     ASSERT(1 <= num_threads);
     ASSERT(num_threads <= num_procs);
     log_info("setting the number of OpenMP threads to %d/%d", num_threads, num_procs);
@@ -80,7 +80,7 @@ void dvz_threads_default(void)
     if (env == NULL)
     {
         int n = dvz_num_procs();
-        n = MAX(1, n / 2);
+        n = DVZ_MAX(1, n / 2);
         ASSERT(1 <= n);
         dvz_threads_set(n);
     }
@@ -119,8 +119,8 @@ inline void dvz_min_max(uint32_t n, const float* values, vec2 out_min_max)
     float m = +INFINITY, M = -INFINITY;
     for (uint32_t i = 0; i < n; i++)
     {
-        m = MIN(m, values[i]);
-        M = MAX(M, values[i]);
+        m = DVZ_MIN(m, values[i]);
+        M = DVZ_MAX(M, values[i]);
     }
     ASSERT(m <= M);
     out_min_max[0] = m;
@@ -146,7 +146,7 @@ inline void dvz_normalize_bytes(vec2 min_max, uint32_t count, float* values, uin
     for (uint32_t i = 0; i < count; i++)
     {
         x = (values[i] - m) * d;
-        x = CLIP(x, 0, 1);
+        x = DVZ_CLIP(x, 0, 1);
         out[i] = round(x * 255);
     }
 }
