@@ -4032,7 +4032,7 @@ _Declared in `include/datoviz/scene.h`:1772._
 ### `dvz_visual_set_attr_buffer()`
 
 ```c title="dvz_visual_set_attr_buffer"
-_Bool dvz_visual_set_attr_buffer(
+DvzResult dvz_visual_set_attr_buffer(
     DvzVisual * visual,
     const char * attr_name,
     DvzSceneBuffer * buffer,
@@ -4043,7 +4043,7 @@ _Bool dvz_visual_set_attr_buffer(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true on success, false on error |
+| return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on error |
 | `visual` | `DvzVisual *` | the visual |
 | `attr_name` | `const char *` | attribute name |
 | `buffer` | `DvzSceneBuffer *` | the scene buffer, or NULL to clear the binding |
@@ -4150,7 +4150,7 @@ _Declared in `include/datoviz/scene.h`:1896._
 ### `dvz_visual_set_buffer()`
 
 ```c title="dvz_visual_set_buffer"
-_Bool dvz_visual_set_buffer(
+DvzResult dvz_visual_set_buffer(
     DvzVisual * visual,
     const char * slot_name,
     DvzSceneBuffer * buffer
@@ -4159,7 +4159,7 @@ _Bool dvz_visual_set_buffer(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true on success, false on error |
+| return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on error |
 | `visual` | `DvzVisual *` | the visual |
 | `slot_name` | `const char *` | the semantic slot name |
 | `buffer` | `DvzSceneBuffer *` | the buffer, or NULL to clear the binding |

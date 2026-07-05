@@ -183,9 +183,9 @@ _set_indices(DvzScene* scene, DvzVisual* mesh, const DvzIndex* indices, uint32_t
     DvzSceneBuffer* buffer = dvz_scene_buffer(scene, &desc);
     if (buffer == NULL)
         return false;
-    if (!dvz_scene_buffer_set_data(buffer, indices, desc.byte_size))
+    if (dvz_scene_buffer_set_data(buffer, indices, desc.byte_size) != DVZ_OK)
         return false;
-    return dvz_visual_set_buffer(mesh, "index", buffer);
+    return dvz_visual_set_buffer(mesh, "index", buffer) == DVZ_OK;
 }
 
 

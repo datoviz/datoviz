@@ -139,7 +139,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             .color0 = {0.010f, 0.030f, 0.065f, 1.0f},
             .color1 = {0.025f, 0.345f, 0.380f, 1.0f},
         }};
-    if (!dvz_panel_set_background(panel, &background))
+    if (dvz_panel_set_background(panel, &background) != DVZ_OK)
         return false;
 
     return _add_foreground(ctx->scene, panel);

@@ -2270,7 +2270,7 @@ int test_scene_visual_buffer_rejects_cross_scene_buffer(TstContext* suite, const
     DvzVisual* visual = dvz_primitive(scene0, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     ANN(visual);
 
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_visual_set_buffer(visual, "index", foreign_buffer));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_buffer(visual, "index", foreign_buffer) == DVZ_ERROR);
     AT(_captured_log_contains(suite, "different scene"));
 
     dvz_scene_destroy(scene1);

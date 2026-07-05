@@ -580,11 +580,11 @@ int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item)
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
-    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
     AT(!_scene_technique_gbuffer_enabled(scene, panel));
@@ -741,7 +741,7 @@ int test_scene_frame_plan_node_reallocation_safe(TstContext* suite, const TstCas
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     for (uint32_t i = 0; i < 3; i++)
     {
@@ -749,7 +749,7 @@ int test_scene_frame_plan_node_reallocation_safe(TstContext* suite, const TstCas
         AT(mesh != NULL);
         AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
         AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
-        AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+        AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
         AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
     }
 
@@ -1783,13 +1783,13 @@ int test_scene_edl_depth_producer_capabilities(TstContext* suite, const TstCase*
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, mesh_indices, sizeof(mesh_indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, mesh_indices, sizeof(mesh_indices)) == DVZ_OK);
 
     DvzVisual* mesh = dvz_mesh(scene, 0);
     AT(mesh != NULL);
     AT(dvz_visual_set_data(mesh, "position", mesh_positions, 4) == 0);
     AT(dvz_visual_set_data(mesh, "normal", mesh_normals, 4) == 0);
-    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
     AT(dvz_panel_set_edl(
@@ -1944,11 +1944,11 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
-    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
     AT(!_scene_technique_state_ssao_enabled(&panel->techniques));
@@ -2120,11 +2120,11 @@ int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item)
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
-    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
     AT(_scene_technique_state_set_ssao(
         &panel->techniques,
@@ -2281,11 +2281,11 @@ int test_scene_ssao_glsl_executes(TstContext* suite, const TstCase* item)
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
-    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
     AT(_scene_technique_state_set_ssao(
         &panel->techniques,
@@ -2664,7 +2664,7 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
     AT(dvz_visual_set_field(slice, "field", field) == DVZ_OK);
@@ -2674,7 +2674,7 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     AT(dvz_visual_set_alpha_mode(slice, DVZ_ALPHA_BLENDED) == 0);
     AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
-    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_BLENDED) == 0);
 
     AT(dvz_panel_add_visual(
@@ -2851,7 +2851,7 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
     AT(dvz_visual_set_field(slice, "field", field) == DVZ_OK);
@@ -2865,7 +2865,7 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
     AT(dvz_visual_set_data(mesh, "color", colors, 4) == 0);
-    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_BLENDED) == 0);
     AT(dvz_visual_set_depth_test(mesh, true) == 0);
     AT(dvz_visual_set_scene_occluder(mesh, true) == 0);

@@ -1611,12 +1611,12 @@ int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCa
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, mesh_index, sizeof(mesh_index)));
+    AT(dvz_scene_buffer_set_data(index_buffer, mesh_index, sizeof(mesh_index)) == DVZ_OK);
     DvzVisual* mesh = dvz_mesh(scene, 0);
     ANN(mesh);
     AT(dvz_visual_set_data(mesh, "position", mesh_pos, 4) == 0);
     AT(dvz_visual_set_data(mesh, "normal", mesh_normal, 4) == 0);
-    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();

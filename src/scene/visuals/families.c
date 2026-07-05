@@ -989,22 +989,22 @@ void dvz_panel_clear_background(DvzPanel* panel)
  * @param background the background descriptor, or NULL to clear
  * @return whether the background was updated
  */
-bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* background)
+DvzResult dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* background)
 {
     ANN(panel);
     if (!_panel_background_desc_validate(background))
-        return false;
+        return DVZ_ERROR;
     if (panel->figure == NULL || panel->figure->scene == NULL)
-        return false;
+        return DVZ_ERROR;
     DvzScene* scene = panel->figure->scene;
     if (!_scene_visual_mutation_allowed(scene, "set panel background"))
-        return false;
+        return DVZ_ERROR;
 
     if (background == NULL || background->type == DVZ_PANEL_BACKGROUND_NONE)
     {
         _panel_background_detach(panel);
         _panel_background_mark_colorbars_dirty(panel);
-        return true;
+        return DVZ_OK;
     }
 
     /* Fullscreen quad in clip space, TRIANGLE_STRIP order (TL, BL, TR, BR). The visual is
@@ -1046,31 +1046,31 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
             if (bg == NULL)
             {
                 log_error("dvz_panel_set_background: failed to allocate background visual");
-                return false;
+                return DVZ_ERROR;
             }
             if (dvz_visual_set_data(bg, "position", positions, 4) != 0 ||
                 dvz_visual_set_data(bg, "color", colors, 4) != 0)
             {
                 log_error("dvz_panel_set_background: failed to set background data");
                 dvz_visual_destroy(bg);
-                return false;
+                return DVZ_ERROR;
             }
             if (!_panel_background_attach(panel, bg, background->type))
             {
                 log_error("dvz_panel_set_background: failed to attach background visual");
                 dvz_visual_destroy(bg);
-                return false;
+                return DVZ_ERROR;
             }
         }
         else if (dvz_visual_set_data(panel->background_visual, "color", colors, 4) != 0)
         {
             log_error("dvz_panel_set_background: failed to update background color data");
-            return false;
+            return DVZ_ERROR;
         }
         panel->background_type = background->type;
         panel->background = *background;
         _panel_background_mark_colorbars_dirty(panel);
-        return true;
+        return DVZ_OK;
     }
 
     if (background->type == DVZ_PANEL_BACKGROUND_IMAGE)
@@ -1079,7 +1079,7 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
             background->image.height == 0)
         {
             log_error("dvz_panel_set_background: image background requires non-empty RGBA8 data");
-            return false;
+            return DVZ_ERROR;
         }
 
         static const float texcoords[4 * 2] = {
@@ -1101,7 +1101,7 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
             if (bg == NULL)
             {
                 log_error("dvz_panel_set_background: failed to allocate image background visual");
-                return false;
+                return DVZ_ERROR;
             }
             if (dvz_visual_set_data(bg, "position", positions, 4) != 0 ||
                 dvz_visual_set_data(bg, "texcoords", texcoords, 4) != 0 ||
@@ -1112,13 +1112,13 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
             {
                 log_error("dvz_panel_set_background: failed to set image background data");
                 dvz_visual_destroy(bg);
-                return false;
+                return DVZ_ERROR;
             }
             if (!_panel_background_attach(panel, bg, DVZ_PANEL_BACKGROUND_IMAGE))
             {
                 log_error("dvz_panel_set_background: failed to attach image background visual");
                 dvz_visual_destroy(bg);
-                return false;
+                return DVZ_ERROR;
             }
         }
         else if (_scene_visual_set_texture_rgba8(
@@ -1127,17 +1127,17 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
                      (DvzSize)background->image.width * background->image.height * 4u) != 0)
         {
             log_error("dvz_panel_set_background: failed to update image background texture");
-            return false;
+            return DVZ_ERROR;
         }
         panel->background_type = DVZ_PANEL_BACKGROUND_IMAGE;
         panel->background = *background;
         panel->background.image.rgba = NULL;
         _panel_background_mark_colorbars_dirty(panel);
-        return true;
+        return DVZ_OK;
     }
 
     log_error("dvz_panel_set_background: unknown background type");
-    return false;
+    return DVZ_ERROR;
 }
 
 

@@ -469,10 +469,10 @@ static bool _add_dvzr_visual(DvzScene* scene, DvzPanel* panel, SceneDvzrVisualKi
                        .stride = sizeof(DvzIndex),
                    });
         ANN(index_buffer);
-        return dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) &&
+        return dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK &&
                dvz_visual_set_data(visual, "position", positions, 4) == 0 &&
                dvz_visual_set_data(visual, "normal", normals, 4) == 0 &&
-               dvz_visual_set_buffer(visual, "index", index_buffer) &&
+               dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK &&
                dvz_panel_add_visual(panel, visual, NULL) == 0;
     }
 

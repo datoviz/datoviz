@@ -511,13 +511,13 @@ static AppSsaoQuad _app_ssao_add_quad(
                });
     if (index_buffer == NULL)
         return out;
-    if (!dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)))
+    if (dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) != DVZ_OK)
         return out;
 
     if (dvz_visual_set_data(out.visual, "position", positions, 4) != 0 ||
         dvz_visual_set_data(out.visual, "color", colors, 4) != 0 ||
         dvz_visual_set_data(out.visual, "normal", normals, 4) != 0 ||
-        !dvz_visual_set_buffer(out.visual, "index", index_buffer) ||
+        dvz_visual_set_buffer(out.visual, "index", index_buffer) != DVZ_OK ||
         dvz_panel_add_visual(panel, out.visual, NULL) != 0)
     {
         out.visual = NULL;
@@ -4912,12 +4912,12 @@ int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* i
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
     AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
-    AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
     AT(_test_set_phong_material(
            visual, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) == 0);
@@ -5158,12 +5158,12 @@ int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const 
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_data(visual, "position", positions, 24) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 24) == 0);
     AT(dvz_visual_set_data(visual, "normal", normals, 24) == 0);
-    AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
     AT(_test_set_phong_material(
            visual, (float[3]){0.35f, 0.55f, 0.75f}, 0.25f, 0.85f, 0.25f, 32.0f) ==
@@ -5258,12 +5258,12 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_data(visual, "position", positions, 24) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 24) == 0);
     AT(dvz_visual_set_data(visual, "normal", normals, 24) == 0);
-    AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
     AT(_test_set_phong_material(
            visual, (float[3]){0.35f, 0.55f, 0.75f}, 0.25f, 0.85f, 0.25f, 32.0f) ==
@@ -5656,12 +5656,12 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, mesh_indices, sizeof(mesh_indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, mesh_indices, sizeof(mesh_indices)) == DVZ_OK);
 
     AT(dvz_visual_set_data(mesh, "position", mesh_positions, 4) == 0);
     AT(dvz_visual_set_data(mesh, "color", mesh_colors, 4) == 0);
     AT(dvz_visual_set_data(mesh, "normal", mesh_normals, 4) == 0);
-    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(_test_set_phong_material(
            mesh, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) == 0);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
@@ -8119,7 +8119,7 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
     AT(dvz_visual_set_field(slice, "field", field) == DVZ_OK);
@@ -8137,7 +8137,7 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
     AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
     AT(dvz_visual_set_data(mesh, "color", colors, 4) == 0);
-    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_visual_set_depth_test(mesh, true) == 0);
     AT(dvz_visual_set_scene_occluder(mesh, false) == 0);
     dvz_visual_set_visible(mesh, false);

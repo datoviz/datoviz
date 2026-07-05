@@ -191,29 +191,30 @@ void dvz_scene_compute_destroy(DvzSceneCompute* compute)
 }
 
 
-bool dvz_scene_compute_set_dispatch(DvzSceneCompute* compute, uint32_t x, uint32_t y, uint32_t z)
+DvzResult dvz_scene_compute_set_dispatch(
+    DvzSceneCompute* compute, uint32_t x, uint32_t y, uint32_t z)
 {
     ANN(compute);
     if (x == 0 || y == 0 || z == 0)
     {
         log_error("scene compute dispatch dimensions must be non-zero");
-        return false;
+        return DVZ_ERROR;
     }
     compute->dispatch[0] = x;
     compute->dispatch[1] = y;
     compute->dispatch[2] = z;
     _scene_compute_notify(compute);
-    return true;
+    return DVZ_OK;
 }
 
 
-bool dvz_scene_compute_set_buffer(
+DvzResult dvz_scene_compute_set_buffer(
     DvzSceneCompute* compute, uint32_t binding, DvzSceneBuffer* buffer,
     DvzSceneComputeAccess access, uint64_t byte_offset, uint64_t byte_size)
 {
     ANN(compute);
     if (!_scene_visual_mutation_allowed(compute->scene, "bind scene compute buffer"))
-        return false;
+        return DVZ_ERROR;
 
     if (buffer == NULL)
     {
@@ -223,37 +224,37 @@ bool dvz_scene_compute_set_buffer(
             {
                 compute->bindings[i].active = false;
                 _scene_compute_notify(compute);
-                return true;
+                return DVZ_OK;
             }
         }
-        return true;
+        return DVZ_OK;
     }
 
     if (buffer->scene != compute->scene)
     {
         log_error("scene compute buffer belongs to another scene");
-        return false;
+        return DVZ_ERROR;
     }
     if ((buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_STORAGE) == 0)
     {
         log_error("scene compute buffer requires STORAGE usage");
-        return false;
+        return DVZ_ERROR;
     }
     if (buffer->desc.byte_size == 0)
     {
         log_error("scene compute buffer byte_size must be non-zero");
-        return false;
+        return DVZ_ERROR;
     }
     if (byte_offset > buffer->desc.byte_size)
     {
         log_error("scene compute buffer binding range exceeds buffer size");
-        return false;
+        return DVZ_ERROR;
     }
     uint64_t range = byte_size != 0 ? byte_size : buffer->desc.byte_size - byte_offset;
     if (range > buffer->desc.byte_size - byte_offset)
     {
         log_error("scene compute buffer binding range exceeds buffer size");
-        return false;
+        return DVZ_ERROR;
     }
 
     DvzSceneComputeBinding* slot = NULL;
@@ -270,7 +271,7 @@ bool dvz_scene_compute_set_buffer(
         if (compute->binding_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
         {
             log_error("maximum scene compute binding count reached");
-            return false;
+            return DVZ_ERROR;
         }
         slot = &compute->bindings[compute->binding_count++];
     }
@@ -282,36 +283,36 @@ bool dvz_scene_compute_set_buffer(
     slot->byte_offset = byte_offset;
     slot->byte_size = range;
     _scene_compute_notify(compute);
-    return true;
+    return DVZ_OK;
 }
 
 
-bool dvz_figure_add_compute(DvzFigure* figure, DvzSceneCompute* compute)
+DvzResult dvz_figure_add_compute(DvzFigure* figure, DvzSceneCompute* compute)
 {
     ANN(figure);
     ANN(compute);
     if (compute->scene != figure->scene)
     {
         log_error("scene compute belongs to another scene");
-        return false;
+        return DVZ_ERROR;
     }
     for (uint32_t i = 0; i < figure->compute_count; i++)
     {
         if (figure->computes[i] == compute)
-            return true;
+            return DVZ_OK;
     }
     if (figure->compute_count >= DVZ_SCENE_MAX_COMPUTES)
     {
         log_error("maximum figure compute count reached");
-        return false;
+        return DVZ_ERROR;
     }
     figure->computes[figure->compute_count++] = compute;
     _scene_notify_request_frame(figure);
-    return true;
+    return DVZ_OK;
 }
 
 
-bool dvz_figure_remove_compute(DvzFigure* figure, DvzSceneCompute* compute)
+DvzResult dvz_figure_remove_compute(DvzFigure* figure, DvzSceneCompute* compute)
 {
     ANN(figure);
     ANN(compute);
@@ -323,7 +324,7 @@ bool dvz_figure_remove_compute(DvzFigure* figure, DvzSceneCompute* compute)
             figure->computes[j - 1] = figure->computes[j];
         figure->compute_count--;
         _scene_notify_request_frame(figure);
-        return true;
+        return DVZ_OK;
     }
-    return true;
+    return DVZ_OK;
 }

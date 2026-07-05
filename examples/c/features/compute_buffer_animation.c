@@ -117,7 +117,7 @@ static DvzSceneBuffer* _scene_buffer(
     DvzSceneBuffer* buffer = dvz_scene_buffer(scene, &desc);
     if (buffer == NULL)
         return NULL;
-    if (!dvz_scene_buffer_set_data(buffer, data, byte_size))
+    if (dvz_scene_buffer_set_data(buffer, data, byte_size) != DVZ_OK)
         return NULL;
     return buffer;
 }
@@ -163,7 +163,7 @@ static bool _add_compute_points(DvzScene* scene, DvzFigure* figure, DvzPanel* pa
     DvzVisual* point = dvz_point(scene, 0);
     if (point == NULL)
         return false;
-    if (!dvz_visual_set_attr_buffer(point, "position", position, 0, POINT_COUNT))
+    if (dvz_visual_set_attr_buffer(point, "position", position, 0, POINT_COUNT) != DVZ_OK)
         return false;
     if (dvz_visual_set_data(point, "color", colors, POINT_COUNT) != 0)
         return false;
@@ -196,16 +196,17 @@ static bool _add_compute_points(DvzScene* scene, DvzFigure* figure, DvzPanel* pa
     DvzSceneCompute* compute = dvz_scene_compute(scene, &compute_desc);
     if (compute == NULL)
         return false;
-    if (!dvz_scene_compute_set_buffer(
-            compute, 0, param, DVZ_SCENE_COMPUTE_ACCESS_READ, 0, sizeof(params)))
+    if (dvz_scene_compute_set_buffer(
+            compute, 0, param, DVZ_SCENE_COMPUTE_ACCESS_READ, 0, sizeof(params)) != DVZ_OK)
         return false;
-    if (!dvz_scene_compute_set_buffer(
-            compute, 1, position, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0, sizeof(positions)))
+    if (dvz_scene_compute_set_buffer(
+            compute, 1, position, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0, sizeof(positions)) !=
+        DVZ_OK)
         return false;
-    if (!dvz_scene_compute_set_buffer(
-            compute, 2, phase, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0, sizeof(phases)))
+    if (dvz_scene_compute_set_buffer(
+            compute, 2, phase, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0, sizeof(phases)) != DVZ_OK)
         return false;
-    return dvz_figure_add_compute(figure, compute);
+    return dvz_figure_add_compute(figure, compute) == DVZ_OK;
 }
 
 

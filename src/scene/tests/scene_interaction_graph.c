@@ -897,7 +897,7 @@ int test_scene_figure_destroy_cascades_and_reuses_slot(TstContext* suite, const 
                    .dispatch = {1, 1, 1},
                });
     ANN(compute);
-    AT(dvz_figure_add_compute(figure, compute));
+    AT(dvz_figure_add_compute(figure, compute) == DVZ_OK);
     AT(figure->compute_count == 1);
 
     GridDestroyRequestProbe probe = {0};
@@ -929,7 +929,7 @@ int test_scene_figure_destroy_cascades_and_reuses_slot(TstContext* suite, const 
     ANN(reused_panel);
     AT(dvz_panel_add_visual(reused_panel, visual, NULL) == 0);
     AT(dvz_panel_bind_controller(reused_panel, controller, DVZ_DIM_MASK_XY) == 0);
-    AT(dvz_figure_add_compute(reused, compute));
+    AT(dvz_figure_add_compute(reused, compute) == DVZ_OK);
 
     _scene_remove_request_frame_callback(scene, _grid_destroy_request_frame_callback, &probe);
     dvz_scene_destroy(scene);
@@ -1080,7 +1080,7 @@ int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const
             .color1 = {0.0f, 0.0f, 1.0f, 1.0f},
         },
     };
-    AT(dvz_panel_set_background(panel, &gradient));
+    AT(dvz_panel_set_background(panel, &gradient) == DVZ_OK);
     AT(panel->visual_count == 1);
     ANN(panel->background_visual);
     AT(panel->background_type == DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT);
@@ -1109,7 +1109,7 @@ int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const
     DvzVisual* gradient_visual = panel->background_visual;
     gradient.gradient.end[0] = 0.0f;
     gradient.gradient.end[1] = 1.0f;
-    AT(dvz_panel_set_background(panel, &gradient));
+    AT(dvz_panel_set_background(panel, &gradient) == DVZ_OK);
     AT(panel->visual_count == 1);
     AT(panel->background_visual == gradient_visual);
     AT(dvz_panel_background(panel, &background_out));
@@ -1124,7 +1124,7 @@ int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const
         .type = DVZ_PANEL_BACKGROUND_IMAGE,
         .image = {.rgba = pixels, .width = 2, .height = 2},
     };
-    AT(dvz_panel_set_background(panel, &image));
+    AT(dvz_panel_set_background(panel, &image) == DVZ_OK);
     AT(panel->visual_count == 1);
     ANN(panel->background_visual);
     AT(panel->background_visual != gradient_visual);

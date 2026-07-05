@@ -238,7 +238,7 @@ int dvz_wasm_api_buffer_set_data(uint32_t buffer_handle, const void* data, uint3
         return _fail(buffer != NULL ? buffer->owner : NULL, "invalid WASM scene buffer upload");
     }
     _clear_payload(buffer->owner);
-    if (!dvz_scene_buffer_set_data(buffer->buffer, data, byte_size))
+    if (dvz_scene_buffer_set_data(buffer->buffer, data, byte_size) != DVZ_OK)
     {
         char diagnostic[DVZ_SCENE_DIAGNOSTIC_SIZE];
         int ret = snprintf(
@@ -592,7 +592,8 @@ int dvz_wasm_api_visual_set_attr_buffer(
             visual != NULL ? visual->owner : NULL, "invalid WASM visual attribute buffer bind");
     }
     _clear_payload(visual->owner);
-    if (!dvz_visual_set_attr_buffer(visual->visual, attr, buffer->buffer, byte_offset, item_count))
+    if (dvz_visual_set_attr_buffer(
+            visual->visual, attr, buffer->buffer, byte_offset, item_count) != DVZ_OK)
     {
         char diagnostic[DVZ_SCENE_DIAGNOSTIC_SIZE];
         int ret = snprintf(

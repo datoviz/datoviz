@@ -227,10 +227,10 @@ int test_scene_json_includes_buffer_binding_metadata(TstContext* suite, const Ts
     DvzSceneBuffer* buffer = dvz_scene_buffer(
         scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc), .usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(DvzIndex)});
     ANN(buffer);
-    AT(dvz_scene_buffer_set_data(buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(buffer, indices, sizeof(indices)) == DVZ_OK);
     AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
-    AT(dvz_visual_set_buffer(visual, "index", buffer));
+    AT(dvz_visual_set_buffer(visual, "index", buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     char* json = dvz_scene_json(scene);
@@ -2123,7 +2123,7 @@ int test_scene_point_external_position_buffer_emits_no_upload(TstContext* suite,
     };
     DvzSceneBuffer* position = dvz_scene_buffer(scene, &desc);
     ANN(position);
-    AT(dvz_visual_set_attr_buffer(visual, "position", position, 0, 3));
+    AT(dvz_visual_set_attr_buffer(visual, "position", position, 0, 3) == DVZ_OK);
 
     DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     float sizes[3] = {4.0f, 5.0f, 6.0f};
@@ -2198,8 +2198,8 @@ int test_scene_point_storage_position_buffer_emits_usage(TstContext* suite, cons
     };
     DvzSceneBuffer* position = dvz_scene_buffer(scene, &desc);
     ANN(position);
-    AT(dvz_scene_buffer_set_data(position, positions, sizeof(positions)));
-    AT(dvz_visual_set_attr_buffer(visual, "position", position, sizeof(vec3), 3));
+    AT(dvz_scene_buffer_set_data(position, positions, sizeof(positions)) == DVZ_OK);
+    AT(dvz_visual_set_attr_buffer(visual, "position", position, sizeof(vec3), 3) == DVZ_OK);
 
     DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     float sizes[3] = {4.0f, 5.0f, 6.0f};
@@ -2324,11 +2324,11 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
 
     DvzPanelBackgroundDesc background_desc = dvz_panel_background_desc();
     background_desc.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_background(panel, &background_desc));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_background(panel, &background_desc) == DVZ_ERROR);
 
     background_desc = dvz_panel_background_desc();
     background_desc.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_background(panel, &background_desc));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_background(panel, &background_desc) == DVZ_ERROR);
 
     DvzPanelBorderDesc border_desc = dvz_panel_border_desc();
     border_desc.struct_size = 0;
@@ -2460,8 +2460,8 @@ int test_scene_compute_point_position_buffer_emits_drp2(
                    .byte_size = sizeof(positions),
                });
     ANN(position);
-    AT(dvz_scene_buffer_set_data(position, positions, sizeof(positions)));
-    AT(dvz_visual_set_attr_buffer(visual, "position", position, 0, 3));
+    AT(dvz_scene_buffer_set_data(position, positions, sizeof(positions)) == DVZ_OK);
+    AT(dvz_visual_set_attr_buffer(visual, "position", position, 0, 3) == DVZ_OK);
 
     vec4 params = {0.0f, 0.0f, 3.0f, 0.0f};
     DvzSceneBuffer* param = dvz_scene_buffer(
@@ -2471,7 +2471,7 @@ int test_scene_compute_point_position_buffer_emits_drp2(
                    .byte_size = sizeof(params),
                });
     ANN(param);
-    AT(dvz_scene_buffer_set_data(param, &params, sizeof(params)));
+    AT(dvz_scene_buffer_set_data(param, &params, sizeof(params)) == DVZ_OK);
 
     DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     float sizes[3] = {4.0f, 5.0f, 6.0f};
@@ -2498,10 +2498,11 @@ int test_scene_compute_point_position_buffer_emits_drp2(
                });
     ANN(compute);
     AT(dvz_scene_compute_set_buffer(
-        compute, 0, param, DVZ_SCENE_COMPUTE_ACCESS_READ, 0, sizeof(params)));
+           compute, 0, param, DVZ_SCENE_COMPUTE_ACCESS_READ, 0, sizeof(params)) == DVZ_OK);
     AT(dvz_scene_compute_set_buffer(
-        compute, 1, position, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0, sizeof(positions)));
-    AT(dvz_figure_add_compute(figure, compute));
+           compute, 1, position, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0, sizeof(positions)) ==
+       DVZ_OK);
+    AT(dvz_figure_add_compute(figure, compute) == DVZ_OK);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
@@ -2624,7 +2625,7 @@ int test_scene_point_external_position_buffer_executes(TstContext* suite, const 
     };
     DvzSceneBuffer* scene_position = dvz_scene_buffer(scene, &desc);
     ANN(scene_position);
-    AT(dvz_visual_set_attr_buffer(visual, "position", scene_position, 0, 3));
+    AT(dvz_visual_set_attr_buffer(visual, "position", scene_position, 0, 3) == DVZ_OK);
 
     DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     float sizes[3] = {8.0f, 8.0f, 8.0f};

@@ -622,36 +622,39 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     _params_for_state(state, 0.0f, params);
     EXAMPLE_CHECK(
         dvz_scene_buffer_set_data(
-            position_buffer, positions, (uint64_t)PARTICLE_COUNT * sizeof(vec3)),
+            position_buffer, positions, (uint64_t)PARTICLE_COUNT * sizeof(vec3)) == DVZ_OK,
         "position buffer upload failed");
     EXAMPLE_CHECK(
         dvz_scene_buffer_set_data(
-            velocity_buffer, velocities, (uint64_t)PARTICLE_COUNT * sizeof(vec3)),
+            velocity_buffer, velocities, (uint64_t)PARTICLE_COUNT * sizeof(vec3)) == DVZ_OK,
         "velocity buffer upload failed");
     EXAMPLE_CHECK(
-        dvz_scene_buffer_set_data(age_buffer, ages, (uint64_t)PARTICLE_COUNT * sizeof(float)),
+        dvz_scene_buffer_set_data(age_buffer, ages, (uint64_t)PARTICLE_COUNT * sizeof(float)) ==
+            DVZ_OK,
         "age buffer upload failed");
     EXAMPLE_CHECK(
         dvz_scene_buffer_set_data(
-            color_buffer, colors, (uint64_t)PARTICLE_COUNT * sizeof(DvzColor)),
+            color_buffer, colors, (uint64_t)PARTICLE_COUNT * sizeof(DvzColor)) == DVZ_OK,
         "color buffer upload failed");
     EXAMPLE_CHECK(
-        dvz_scene_buffer_set_data(size_buffer, sizes, (uint64_t)PARTICLE_COUNT * sizeof(float)),
+        dvz_scene_buffer_set_data(size_buffer, sizes, (uint64_t)PARTICLE_COUNT * sizeof(float)) ==
+            DVZ_OK,
         "size buffer upload failed");
     EXAMPLE_CHECK(
-        dvz_scene_buffer_set_data(param_buffer, params, sizeof(params)),
+        dvz_scene_buffer_set_data(param_buffer, params, sizeof(params)) == DVZ_OK,
         "param buffer upload failed");
 
     DvzVisual* points = dvz_point(ctx->scene, 0);
     EXAMPLE_CHECK(points != NULL, "dvz_point() failed");
     EXAMPLE_CHECK(
-        dvz_visual_set_attr_buffer(points, "position", position_buffer, 0, PARTICLE_COUNT),
+        dvz_visual_set_attr_buffer(points, "position", position_buffer, 0, PARTICLE_COUNT) ==
+            DVZ_OK,
         "bind point position buffer failed");
     EXAMPLE_CHECK(
-        dvz_visual_set_attr_buffer(points, "color", color_buffer, 0, PARTICLE_COUNT),
+        dvz_visual_set_attr_buffer(points, "color", color_buffer, 0, PARTICLE_COUNT) == DVZ_OK,
         "bind point color buffer failed");
     EXAMPLE_CHECK(
-        dvz_visual_set_attr_buffer(points, "size", size_buffer, 0, PARTICLE_COUNT),
+        dvz_visual_set_attr_buffer(points, "size", size_buffer, 0, PARTICLE_COUNT) == DVZ_OK,
         "bind point size buffer failed");
     EXAMPLE_CHECK(dvz_visual_set_depth_test(points, false) == 0, "disable depth test failed");
     EXAMPLE_CHECK(
@@ -677,24 +680,26 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(compute != NULL, "dvz_scene_compute() failed");
     EXAMPLE_CHECK(
         dvz_scene_compute_set_buffer(
-            compute, 0, param_buffer, DVZ_SCENE_COMPUTE_ACCESS_READ, 0, 3 * sizeof(vec4)),
+            compute, 0, param_buffer, DVZ_SCENE_COMPUTE_ACCESS_READ, 0, 3 * sizeof(vec4)) ==
+            DVZ_OK,
         "bind compute params failed");
     EXAMPLE_CHECK(
         dvz_scene_compute_set_buffer(
             compute, 1, position_buffer, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0,
-            (uint64_t)PARTICLE_COUNT * sizeof(vec3)),
+            (uint64_t)PARTICLE_COUNT * sizeof(vec3)) == DVZ_OK,
         "bind compute positions failed");
     EXAMPLE_CHECK(
         dvz_scene_compute_set_buffer(
             compute, 2, velocity_buffer, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0,
-            (uint64_t)PARTICLE_COUNT * sizeof(vec3)),
+            (uint64_t)PARTICLE_COUNT * sizeof(vec3)) == DVZ_OK,
         "bind compute velocities failed");
     EXAMPLE_CHECK(
         dvz_scene_compute_set_buffer(
             compute, 3, age_buffer, DVZ_SCENE_COMPUTE_ACCESS_READ_WRITE, 0,
-            (uint64_t)PARTICLE_COUNT * sizeof(float)),
+            (uint64_t)PARTICLE_COUNT * sizeof(float)) == DVZ_OK,
         "bind compute ages failed");
-    EXAMPLE_CHECK(dvz_figure_add_compute(ctx->figure, compute), "attach compute pass failed");
+    EXAMPLE_CHECK(
+        dvz_figure_add_compute(ctx->figure, compute) == DVZ_OK, "attach compute pass failed");
 
     ok = true;
 cleanup:

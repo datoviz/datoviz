@@ -724,8 +724,9 @@ static bool _reload_bundle(ProteinExampleState* state, const char* bundle_path)
                 return false;
             }
             bool ok = dvz_scene_buffer_set_data(
-                state->ribbon_index_buffer, state->ribbon_indices_upload,
-                (uint64_t)state->ribbon_index_upload_count * sizeof(DvzIndex));
+                          state->ribbon_index_buffer, state->ribbon_indices_upload,
+                          (uint64_t)state->ribbon_index_upload_count * sizeof(DvzIndex)) ==
+                      DVZ_OK;
             DvzVisualDataUpdate ribbon_updates[] = {
                 {.attr_name = "position",
                  .data = next.ribbon_positions,
@@ -1202,8 +1203,8 @@ int main(int argc, char** argv)
         EXAMPLE_CHECK(ribbon_index_buffer != NULL, "dvz_scene_buffer() failed for ribbon");
 
         bool ok = dvz_scene_buffer_set_data(
-            ribbon_index_buffer, bundle.ribbon_indices,
-            (uint64_t)bundle.ribbon_index_count * sizeof(DvzIndex));
+                      ribbon_index_buffer, bundle.ribbon_indices,
+                      (uint64_t)bundle.ribbon_index_count * sizeof(DvzIndex)) == DVZ_OK;
         EXAMPLE_CHECK(ok, "dvz_scene_buffer_set_data() failed for ribbon");
 
         DvzVisualDataUpdate ribbon_updates[] = {
@@ -1220,7 +1221,7 @@ int main(int argc, char** argv)
         rc = dvz_visual_set_data_many(ribbon, ribbon_updates, 3);
         EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for ribbon");
 
-        ok = dvz_visual_set_buffer(ribbon, "index", ribbon_index_buffer);
+        ok = dvz_visual_set_buffer(ribbon, "index", ribbon_index_buffer) == DVZ_OK;
         EXAMPLE_CHECK(ok, "dvz_visual_set_buffer() failed for ribbon");
 
         rc = dvz_panel_add_visual(panel, ribbon, NULL);

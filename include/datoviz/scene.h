@@ -1131,9 +1131,9 @@ DVZ_EXPORT DvzPanelBackgroundDesc dvz_panel_background_desc(void);
  *
  * @param panel the panel
  * @param background the background descriptor, or NULL to clear
- * @return whether the background was updated
+ * @return DVZ_OK if the background was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool
+DVZ_EXPORT DvzResult
 dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* background);
 
 
@@ -2204,9 +2204,9 @@ DVZ_EXPORT void dvz_scene_buffer_destroy(DvzSceneBuffer* buffer);
  *
  * @param data the packed byte payload borrowed for the duration of the call
  * @param byte_size the payload size in bytes
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool
+DVZ_EXPORT DvzResult
 dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, uint64_t byte_size);
 
 
@@ -2272,9 +2272,9 @@ DVZ_EXPORT void dvz_scene_compute_destroy(DvzSceneCompute* compute);
  * @param x workgroup count in X
  * @param y workgroup count in Y
  * @param z workgroup count in Z
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool
+DVZ_EXPORT DvzResult
 dvz_scene_compute_set_dispatch(DvzSceneCompute* compute, uint32_t x, uint32_t y, uint32_t z);
 
 
@@ -2290,9 +2290,9 @@ dvz_scene_compute_set_dispatch(DvzSceneCompute* compute, uint32_t x, uint32_t y,
  * @param access read or read-write access
  * @param byte_offset byte offset into the buffer
  * @param byte_size bound byte range, or 0 for the remaining buffer range
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_scene_compute_set_buffer(
+DVZ_EXPORT DvzResult dvz_scene_compute_set_buffer(
     DvzSceneCompute* compute, uint32_t binding, DvzSceneBuffer* buffer,
     DvzSceneComputeAccess access, uint64_t byte_offset, uint64_t byte_size);
 
@@ -2304,9 +2304,9 @@ DVZ_EXPORT bool dvz_scene_compute_set_buffer(
  *
  * @param figure the figure
  * @param compute the compute pass
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_figure_add_compute(DvzFigure* figure, DvzSceneCompute* compute);
+DVZ_EXPORT DvzResult dvz_figure_add_compute(DvzFigure* figure, DvzSceneCompute* compute);
 
 
 /**
@@ -2314,9 +2314,9 @@ DVZ_EXPORT bool dvz_figure_add_compute(DvzFigure* figure, DvzSceneCompute* compu
  *
  * @param figure the figure
  * @param compute the compute pass
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_figure_remove_compute(DvzFigure* figure, DvzSceneCompute* compute);
+DVZ_EXPORT DvzResult dvz_figure_remove_compute(DvzFigure* figure, DvzSceneCompute* compute);
 
 
 /**
@@ -2328,9 +2328,9 @@ DVZ_EXPORT bool dvz_figure_remove_compute(DvzFigure* figure, DvzSceneCompute* co
  * @param visual the visual
  * @param slot_name the semantic slot name
  * @param buffer the buffer, or NULL to clear the binding
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool
+DVZ_EXPORT DvzResult
 dvz_visual_set_buffer(DvzVisual* visual, const char* slot_name, DvzSceneBuffer* buffer);
 
 
@@ -2366,9 +2366,9 @@ dvz_visual_set_index_data(DvzVisual* visual, const DvzIndex* indices, uint32_t i
  * @param buffer the scene buffer, or NULL to clear the binding
  * @param byte_offset byte offset into the buffer
  * @param item_count number of attribute items
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */
-DVZ_EXPORT bool dvz_visual_set_attr_buffer(
+DVZ_EXPORT DvzResult dvz_visual_set_attr_buffer(
     DvzVisual* visual, const char* attr_name, DvzSceneBuffer* buffer,
     uint64_t byte_offset, uint32_t item_count);
 

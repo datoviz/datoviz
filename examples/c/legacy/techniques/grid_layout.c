@@ -200,17 +200,17 @@ int main(int argc, char** argv)
     dvz_panel_set_background_color(panels[3], dvz_color_from_unit(0.050f, 0.050f, 0.070f, 1.0f));
     dvz_panel_set_background_color(panels[4], dvz_color_from_unit(0.045f, 0.066f, 0.064f, 1.0f));
     ok = dvz_panel_set_background(
-        colorbar_panel,
-        &(DvzPanelBackgroundDesc){
-            .type = DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT,
-            .gradient =
-                {
-                    .start = {0.5f, 1.0f},
-                    .end = {0.5f, 0.0f},
-                    .color0 = {0.10f, 0.14f, 0.32f, 1.0f},
-                    .color1 = {0.98f, 0.72f, 0.18f, 1.0f},
-                },
-        });
+             colorbar_panel,
+             &(DvzPanelBackgroundDesc){
+                 .type = DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT,
+                 .gradient =
+                     {
+                         .start = {0.5f, 1.0f},
+                         .end = {0.5f, 0.0f},
+                         .color0 = {0.10f, 0.14f, 0.32f, 1.0f},
+                         .color1 = {0.98f, 0.72f, 0.18f, 1.0f},
+                     },
+             }) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_panel_set_background() failed");
 
     ok = _add_point_grid(scene, panels[0], 55, 85, 180);

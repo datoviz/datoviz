@@ -353,7 +353,7 @@ int main(int argc, char** argv)
                });
     EXAMPLE_CHECK(index_buffer != NULL, "dvz_scene_buffer() failed");
 
-    ok = dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices));
+    ok = dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_scene_buffer_set_data() failed");
 
     DvzVisualDataUpdate reference_updates[] = {
@@ -369,7 +369,7 @@ int main(int argc, char** argv)
     };
     rc = dvz_visual_set_data_many(cube, cube_updates, 2);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for cube");
-    ok = dvz_visual_set_buffer(cube, "index", index_buffer);
+    ok = dvz_visual_set_buffer(cube, "index", index_buffer) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_buffer() failed");
     _mesh_wboit_update_cube(&state);
     dvz_visual_set_alpha_mode(cube, DVZ_ALPHA_WBOIT);

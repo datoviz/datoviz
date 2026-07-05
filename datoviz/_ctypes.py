@@ -15085,10 +15085,10 @@ else:
  *
  * @param figure the figure
  * @param compute the compute pass
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_figure_add_compute.argtypes = [ctypes.POINTER(DvzFigure), ctypes.POINTER(DvzSceneCompute)]
-    dvz_figure_add_compute.restype = ctypes.c_bool
+    dvz_figure_add_compute.restype = ctypes.c_int32
 
 
 try:
@@ -15204,10 +15204,10 @@ else:
  *
  * @param figure the figure
  * @param compute the compute pass
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_figure_remove_compute.argtypes = [ctypes.POINTER(DvzFigure), ctypes.POINTER(DvzSceneCompute)]
-    dvz_figure_remove_compute.restype = ctypes.c_bool
+    dvz_figure_remove_compute.restype = ctypes.c_int32
 
 
 try:
@@ -22450,10 +22450,10 @@ else:
  *
  * @param panel the panel
  * @param background the background descriptor, or NULL to clear
- * @return whether the background was updated
+ * @return DVZ_OK if the background was updated, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_background.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelBackgroundDesc)]
-    dvz_panel_set_background.restype = ctypes.c_bool
+    dvz_panel_set_background.restype = ctypes.c_int32
 
 
 try:
@@ -25526,10 +25526,10 @@ else:
  *
  * @param data the packed byte payload borrowed for the duration of the call
  * @param byte_size the payload size in bytes
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_scene_buffer_set_data.argtypes = [ctypes.POINTER(DvzSceneBuffer), ctypes.c_void_p, ctypes.c_uint64]
-    dvz_scene_buffer_set_data.restype = ctypes.c_bool
+    dvz_scene_buffer_set_data.restype = ctypes.c_int32
 
 
 try:
@@ -25626,10 +25626,10 @@ else:
  * @param access read or read-write access
  * @param byte_offset byte offset into the buffer
  * @param byte_size bound byte range, or 0 for the remaining buffer range
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_scene_compute_set_buffer.argtypes = [ctypes.POINTER(DvzSceneCompute), ctypes.c_uint32, ctypes.POINTER(DvzSceneBuffer), ctypes.c_int, ctypes.c_uint64, ctypes.c_uint64]
-    dvz_scene_compute_set_buffer.restype = ctypes.c_bool
+    dvz_scene_compute_set_buffer.restype = ctypes.c_int32
 
 
 try:
@@ -25644,10 +25644,10 @@ else:
  * @param x workgroup count in X
  * @param y workgroup count in Y
  * @param z workgroup count in Z
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_scene_compute_set_dispatch.argtypes = [ctypes.POINTER(DvzSceneCompute), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
-    dvz_scene_compute_set_dispatch.restype = ctypes.c_bool
+    dvz_scene_compute_set_dispatch.restype = ctypes.c_int32
 
 
 try:
@@ -30628,10 +30628,10 @@ else:
  * @param buffer the scene buffer, or NULL to clear the binding
  * @param byte_offset byte offset into the buffer
  * @param item_count number of attribute items
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_visual_set_attr_buffer.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.POINTER(DvzSceneBuffer), ctypes.c_uint64, ctypes.c_uint32]
-    dvz_visual_set_attr_buffer.restype = ctypes.c_bool
+    dvz_visual_set_attr_buffer.restype = ctypes.c_int32
 
 
 try:
@@ -30713,10 +30713,10 @@ else:
  * @param visual the visual
  * @param slot_name the semantic slot name
  * @param buffer the buffer, or NULL to clear the binding
- * @return true on success, false on error
+ * @return DVZ_OK on success, DVZ_ERROR on error
  */"""
     dvz_visual_set_buffer.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_char_p, ctypes.POINTER(DvzSceneBuffer)]
-    dvz_visual_set_buffer.restype = ctypes.c_bool
+    dvz_visual_set_buffer.restype = ctypes.c_int32
 
 
 try:

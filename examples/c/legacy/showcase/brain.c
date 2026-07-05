@@ -1845,7 +1845,8 @@ int main(int argc, char** argv)
             atlas_index_buffer != NULL, "dvz_scene_buffer() failed for Allen/IBL atlas mesh");
 
         ok = dvz_scene_buffer_set_data(
-            atlas_index_buffer, atlas_mesh.idx, atlas_mesh.index_count * sizeof(DvzIndex));
+                 atlas_index_buffer, atlas_mesh.idx, atlas_mesh.index_count * sizeof(DvzIndex)) ==
+             DVZ_OK;
         EXAMPLE_CHECK(ok, "dvz_scene_buffer_set_data() failed for Allen/IBL atlas mesh");
 
         DvzVisualDataUpdate atlas_mesh_updates[] = {
@@ -1857,7 +1858,7 @@ int main(int argc, char** argv)
         EXAMPLE_CHECK(
             rc == 0, "dvz_visual_set_data_many() failed for Allen/IBL atlas mesh");
 
-        ok = dvz_visual_set_buffer(atlas_mesh_visual, "index", atlas_index_buffer);
+        ok = dvz_visual_set_buffer(atlas_mesh_visual, "index", atlas_index_buffer) == DVZ_OK;
         EXAMPLE_CHECK(ok, "dvz_visual_set_buffer() failed for Allen/IBL atlas mesh");
 
         rc = dvz_visual_set_alpha_mode(atlas_mesh_visual, DVZ_ALPHA_BLENDED);

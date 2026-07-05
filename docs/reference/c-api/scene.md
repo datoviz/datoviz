@@ -2511,7 +2511,7 @@ _Declared in `include/datoviz/scene.h`:144._
 ### `dvz_figure_add_compute()`
 
 ```c title="dvz_figure_add_compute"
-_Bool dvz_figure_add_compute(
+DvzResult dvz_figure_add_compute(
     DvzFigure * figure,
     DvzSceneCompute * compute
 );
@@ -2519,7 +2519,7 @@ _Bool dvz_figure_add_compute(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true on success, false on error |
+| return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on error |
 | `figure` | `DvzFigure *` | the figure |
 | `compute` | `DvzSceneCompute *` | the compute pass |
 
@@ -2668,7 +2668,7 @@ _Declared in `include/datoviz/scene.h`:558._
 ### `dvz_figure_remove_compute()`
 
 ```c title="dvz_figure_remove_compute"
-_Bool dvz_figure_remove_compute(
+DvzResult dvz_figure_remove_compute(
     DvzFigure * figure,
     DvzSceneCompute * compute
 );
@@ -2676,7 +2676,7 @@ _Bool dvz_figure_remove_compute(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true on success, false on error |
+| return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on error |
 | `figure` | `DvzFigure *` | the figure |
 | `compute` | `DvzSceneCompute *` | the compute pass |
 
@@ -5524,7 +5524,7 @@ _Declared in `include/datoviz/scene.h`:1492._
 ### `dvz_panel_set_background()`
 
 ```c title="dvz_panel_set_background"
-_Bool dvz_panel_set_background(
+DvzResult dvz_panel_set_background(
     DvzPanel * panel,
     const DvzPanelBackgroundDesc * background
 );
@@ -5532,7 +5532,7 @@ _Bool dvz_panel_set_background(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the background was updated |
+| return | `DvzResult` | DVZ_OK if the background was updated, DVZ_ERROR otherwise |
 | `panel` | `DvzPanel *` | the panel |
 | `background` | `const DvzPanelBackgroundDesc *` | the background descriptor, or NULL to clear |
 
@@ -7240,7 +7240,7 @@ _Declared in `include/datoviz/scene.h`:2235._
 ### `dvz_scene_buffer_set_data()`
 
 ```c title="dvz_scene_buffer_set_data"
-_Bool dvz_scene_buffer_set_data(
+DvzResult dvz_scene_buffer_set_data(
     DvzSceneBuffer * buffer,
     const void * data,
     uint64_t byte_size
@@ -7249,7 +7249,7 @@ _Bool dvz_scene_buffer_set_data(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true on success, false on error |
+| return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on error |
 | `buffer` | `DvzSceneBuffer *` | the buffer |
 | `data` | `const void *` | the packed byte payload borrowed for the duration of the call |
 | `byte_size` | `uint64_t` | the payload size in bytes |
@@ -7364,7 +7364,7 @@ _Declared in `include/datoviz/scene.h`:2265._
 ### `dvz_scene_compute_set_buffer()`
 
 ```c title="dvz_scene_compute_set_buffer"
-_Bool dvz_scene_compute_set_buffer(
+DvzResult dvz_scene_compute_set_buffer(
     DvzSceneCompute * compute,
     uint32_t binding,
     DvzSceneBuffer * buffer,
@@ -7376,7 +7376,7 @@ _Bool dvz_scene_compute_set_buffer(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true on success, false on error |
+| return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on error |
 | `compute` | `DvzSceneCompute *` | the compute pass |
 | `binding` | `uint32_t` | shader binding index |
 | `buffer` | `DvzSceneBuffer *` | scene buffer, or NULL to clear the binding |
@@ -7396,7 +7396,7 @@ _Declared in `include/datoviz/scene.h`:2295._
 ### `dvz_scene_compute_set_dispatch()`
 
 ```c title="dvz_scene_compute_set_dispatch"
-_Bool dvz_scene_compute_set_dispatch(
+DvzResult dvz_scene_compute_set_dispatch(
     DvzSceneCompute * compute,
     uint32_t x,
     uint32_t y,
@@ -7406,7 +7406,7 @@ _Bool dvz_scene_compute_set_dispatch(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | true on success, false on error |
+| return | `DvzResult` | DVZ_OK on success, DVZ_ERROR on error |
 | `compute` | `DvzSceneCompute *` | the compute pass |
 | `x` | `uint32_t` | workgroup count in X |
 | `y` | `uint32_t` | workgroup count in Y |

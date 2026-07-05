@@ -661,7 +661,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(index_buffer != NULL, "dvz_scene_buffer() failed");
 
     ok = dvz_scene_buffer_set_data(
-        index_buffer, dataset.mesh_idx, dataset.mesh_index_count * sizeof(DvzIndex));
+             index_buffer, dataset.mesh_idx, dataset.mesh_index_count * sizeof(DvzIndex)) ==
+         DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_scene_buffer_set_data() failed");
 
     BwmExampleState state = {
@@ -695,7 +696,7 @@ int main(int argc, char** argv)
     rc = dvz_visual_set_data_many(mesh, mesh_updates, 2);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for mesh");
 
-    ok = dvz_visual_set_buffer(mesh, "index", index_buffer);
+    ok = dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_visual_set_buffer() failed");
 
     _apply_shell_material(&state);

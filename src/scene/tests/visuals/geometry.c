@@ -176,11 +176,11 @@ static int _scene_mesh_emit_executes(TstContext* suite)
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
-    AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
     DvzMaterialDesc material = dvz_material_desc();
     material.model = DVZ_MATERIAL_MODEL_STANDARD;
     material.standard.roughness = 0.35f;
@@ -568,11 +568,11 @@ int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstContext* suite, 
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
-    AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
     AT(_visual_family_state(visual)->mesh_default_color);
     bool found_color_attr = false;
@@ -652,11 +652,11 @@ int test_scene_mesh_instance_transform_emits_instanced_draw(TstContext* suite, c
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "instance_transform", transforms, 2) == 0);
-    AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -737,11 +737,11 @@ int test_scene_mesh_emits_depth_attachment(TstContext* suite, const TstCase* ite
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
-    AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -846,7 +846,7 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     DvzSampledField* field = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
@@ -865,7 +865,7 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
     AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
     AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
     AT(dvz_visual_set_field(visual, "texture", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
@@ -1006,12 +1006,12 @@ int test_scene_indexed_primitive_emits_draw_indexed(TstContext* suite, const Tst
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
     AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
-    AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -1085,14 +1085,14 @@ int test_scene_shared_index_buffer_emits_one_upload(TstContext* suite, const Tst
                    .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
 
     AT(dvz_visual_set_data(visual0, "position", positions0, 4) == 0);
     AT(dvz_visual_set_data(visual0, "color", colors0, 4) == 0);
     AT(dvz_visual_set_data(visual1, "position", positions1, 4) == 0);
     AT(dvz_visual_set_data(visual1, "color", colors1, 4) == 0);
-    AT(dvz_visual_set_buffer(visual0, "index", index_buffer));
-    AT(dvz_visual_set_buffer(visual1, "index", index_buffer));
+    AT(dvz_visual_set_buffer(visual0, "index", index_buffer) == DVZ_OK);
+    AT(dvz_visual_set_buffer(visual1, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual0, NULL) == 0);
     AT(dvz_panel_add_visual(panel, visual1, NULL) == 0);
 

@@ -551,6 +551,20 @@ Completed checkpoints:
      `just build`, `just test axis`, `just test grid`, `just test scene/scene-graph`,
      `just test fields`, `just test app`, `just test visuals`, `just ctypes-smoke`,
      `just ctypes-python-smoke`, and `git diff --check`.
+48. Pending checkpoint: `api: return results from scene buffer mutators`
+   - Changed the remaining stable scene fallible mutators from `bool` to `DvzResult`:
+     `dvz_panel_set_background()`, `dvz_scene_buffer_set_data()`,
+     `dvz_scene_compute_set_dispatch()`, `dvz_scene_compute_set_buffer()`,
+     `dvz_figure_add_compute()`, `dvz_figure_remove_compute()`,
+     `dvz_visual_set_buffer()`, and `dvz_visual_set_attr_buffer()`.
+   - Migrated examples, scene tests, wasm wrappers, and Python CUDA interop helper checks from
+     truthiness to explicit `DVZ_OK`/`DVZ_ERROR` handling.
+   - Validation passed: `just build`, `just ctypes`, `just ctypes-check`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`,
+     `python3 tools/check_api_status.py`, `just docs-api`, `just docs-api-check`,
+     `just test scene/scene-graph`, `just test visuals`, `just test app`,
+     `just test compute`, `just example-c features/compute_buffer_animation --png`,
+     `just ctypes-smoke`, `just ctypes-python-smoke`, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn: none
 known at this checkpoint.
@@ -561,8 +575,8 @@ Next recommended checkpoints, in safe execution order:
    `dvz_<object>_set_<property>()` and object/selector/payload/count conventions recorded in
    `spec/api/PUBLIC_API_CONVENTIONS.md`. The polygon aggregate, singular polygon, graph mutator
    renames, plot/single-polygon payload-count argument ordering, and grid sizing setter names are
-   complete. Next audit text, labels/volume setters, compute/visual attr-buffer mutators, and any
-   other obvious retained-state mutators before RC.
+   complete. Next audit text, labels/volume setters, low-level runtime mutators, and any other
+   obvious retained-state mutators before RC.
 2. Split stable `window.h` from backend SPI so ordinary window users do not include backend
    registration, GLFW hooks, or wrap-surface helpers. This include-boundary split is complete:
    `window.h` no longer includes `window/backend.h`, `advanced.h` opts into both, and ctypes parses
