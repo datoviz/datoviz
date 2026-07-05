@@ -1418,11 +1418,13 @@ Result-type cleanup audit after the stable global setter slice:
   `dvz_app_should_stop()`, `dvz_view_render_enabled()`, and `dvz_panel_get_padding()`.
 - Remaining stable `void` APIs in the scan are destructors, `dvz_app_run()` as the blocking loop
   driver, and immediate-mode GUI calls such as `dvz_gui_same_line()`.
+- Low-level controller object mutators now return `DvzResult` after `915a6a5ae`; event handlers,
+  predicates, getters/output writers, and destroy functions keep their existing return contracts.
 - Remaining mutator-shaped `void`/`bool` APIs outside stable are classified advanced or
-  experimental in `spec/api/status.yml`: low-level controllers, frame-plan builders, DRP2 streams
-  and runtime, window/backend SPI, Vulkan/vklite builders, and GUI immediate-mode helpers. These
-  keep their existing conventions for now because changing them is a separate advanced-surface
-  policy decision with broader low-level blast radius.
+  experimental in `spec/api/status.yml`: frame-plan builders, DRP2 streams and runtime,
+  window/backend SPI, Vulkan/vklite builders, and GUI immediate-mode helpers. These keep their
+  existing conventions for now because changing them is a separate advanced-surface policy decision
+  with broader low-level blast radius.
 
 
 ## Validation Baseline For Future Agent
