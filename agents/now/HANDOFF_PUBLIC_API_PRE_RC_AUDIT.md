@@ -463,6 +463,16 @@ Completed checkpoints:
    - Remaining caveat: `DvzWindowSurface` still carries Vulkan handle types through
      `window/types.h`, so a fully Vulkan-free window surface record would be a later ABI break if
      desired.
+42. `c9c2710ad` `api: complete vk umbrella header`
+   - Made `include/datoviz/vk.h` include the complete public Vulkan subsystem:
+     `vk/vulkan.h`, queues, instance/GPU/device, memory, memory interop, GPU-context, and Vulkan
+     macro helpers.
+   - Removed the redundant direct `datoviz/vk/memory_interop.h` entry from the ctypes extraction
+     policy because it is now reached through `datoviz/vk.h`.
+   - Validation passed: `python3 tools/check_api_status.py`, `just ctypes`, `just ctypes-check`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, `just build`,
+     `just test vk`, `just ctypes-smoke`, `just docs-api-check`, `just ctypes-python-smoke`, and
+     `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn: none
 known at this checkpoint.
