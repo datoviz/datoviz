@@ -3436,17 +3436,6 @@ static int test_panel_axes_2d_desc(TstContext* suite, const TstCase* item)
     AT(desc.flags == 0);
     AT(desc.x_label == NULL);
     AT(desc.y_label == NULL);
-    AT(desc.tick_policy.struct_size == DVZ_STRUCT_SIZE(DvzAxisTickPolicy));
-    AT(desc.x_style.struct_size == DVZ_STRUCT_SIZE(DvzAxisStyle));
-    AT(desc.y_style.struct_size == DVZ_STRUCT_SIZE(DvzAxisStyle));
-    AT(desc.x_style.show_grid);
-    AT(desc.y_style.show_grid);
-
-    DvzAxisStyle style = dvz_axis_style();
-    AT(!style.show_grid);
-    style.show_grid = true;
-    AT(memcmp(&desc.x_style, &style, sizeof(DvzAxisStyle)) == 0);
-    AT(memcmp(&desc.y_style, &style, sizeof(DvzAxisStyle)) == 0);
     return 0;
 }
 
@@ -3479,16 +3468,25 @@ static int test_panel_set_axes_2d(TstContext* suite, const TstCase* item)
     DvzPanelAxes2DDesc axes = dvz_panel_axes_2d_desc();
     axes.x_label = "time";
     axes.y_label = "amplitude";
-    axes.tick_policy.target_count = 9;
-    axes.tick_policy.min_pixel_spacing = 42.0f;
-    axes.tick_policy.minor_per_interval = 3;
-    axes.x_style.spine_width = 2.0f;
-    axes.x_style.tick_size_px = 17.0f;
-    axes.x_style.grid_color[0] = 11;
-    axes.y_style.spine_width = 3.0f;
-    axes.y_style.tick_size_px = 23.0f;
-    axes.y_style.grid_color[0] = 99;
     AT(dvz_panel_set_axes_2d(panel, &axes));
+    DvzAxisTickPolicy tick_policy = dvz_axis_tick_policy();
+    tick_policy.target_count = 9;
+    tick_policy.min_pixel_spacing = 42.0f;
+    tick_policy.minor_per_interval = 3;
+    AT(dvz_axis_set_tick_policy(x_axis, &tick_policy));
+    AT(dvz_axis_set_tick_policy(y_axis, &tick_policy));
+    DvzAxisStyle x_style = dvz_axis_style();
+    x_style.show_grid = true;
+    x_style.spine_width = 2.0f;
+    x_style.tick_size_px = 17.0f;
+    x_style.grid_color[0] = 11;
+    DvzAxisStyle y_style = dvz_axis_style();
+    y_style.show_grid = true;
+    y_style.spine_width = 3.0f;
+    y_style.tick_size_px = 23.0f;
+    y_style.grid_color[0] = 99;
+    AT(dvz_axis_set_style(x_axis, &x_style));
+    AT(dvz_axis_set_style(y_axis, &y_style));
 
     AT(strcmp(x_axis->label, "time") == 0);
     AT(strcmp(y_axis->label, "amplitude") == 0);

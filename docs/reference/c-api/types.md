@@ -2902,9 +2902,6 @@ struct DvzPanelAxes2DDesc {
     uint32_t flags;
     const char * x_label;
     const char * y_label;
-    DvzAxisTickPolicy tick_policy;
-    DvzAxisStyle x_style;
-    DvzAxisStyle y_style;
 };
 ```
 
@@ -3264,9 +3261,6 @@ struct DvzScaleBarDesc {
     DvzSceneAnchor anchor;
     DvzScaleBarReferenceMode reference_mode;
     DvzScaleBarLabelPosition label_position;
-    DvzTextStyle label_style;
-    DvzTextPlacement placement;
-    DvzFormatDesc format;
     const char * unit;
     double data_to_unit;
     double[3] reference_position;
@@ -3304,7 +3298,6 @@ struct DvzScaleDesc {
     DvzScaleKind kind;
     const char * label;
     const char * unit;
-    DvzFormatDesc format;
 };
 ```
 

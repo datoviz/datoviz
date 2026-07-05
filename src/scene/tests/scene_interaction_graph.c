@@ -1529,8 +1529,6 @@ int test_scene_panel_frame_snapshot_guide_layouts(TstContext* suite, const TstCa
     DvzPanelAxes2DDesc axes = dvz_panel_axes_2d_desc();
     axes.x_label = "time";
     axes.y_label = "value";
-    axes.x_style.show_grid = true;
-    axes.y_style.show_grid = true;
     AT(dvz_panel_set_axes_2d(panel, &axes));
     const double x_ticks[] = {0.0, 0.5, 1.0};
     const char* x_labels[] = {"zero", "half", "one"};

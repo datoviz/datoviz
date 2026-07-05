@@ -5888,9 +5888,6 @@ DvzPanelAxes2DDesc._fields_ = [
     ('flags', ctypes.c_uint32),
     ('x_label', ctypes.c_char_p),
     ('y_label', ctypes.c_char_p),
-    ('tick_policy', DvzAxisTickPolicy),
-    ('x_style', DvzAxisStyle),
-    ('y_style', DvzAxisStyle),
 ]
 
 
@@ -21716,7 +21713,8 @@ else:
     dvz_panel_axes_2d_desc.__doc__ = """/**
  * Return the default 2D panel axes descriptor.
  *
- * The descriptor enables grid lines in the default X/Y axis styles and leaves labels empty.
+ * The descriptor leaves labels empty. `dvz_panel_set_axes_2d()` applies default tick policy and
+ * grid-enabled default styles when it creates the panel axes.
  *
  * @return default 2D axes descriptor
  */"""
@@ -22333,9 +22331,10 @@ else:
     dvz_panel_set_axes_2d.__doc__ = """/**
  * Apply common 2D axes defaults to a panel-owned X/Y axis pair.
  *
- * This helper fetches the panel-owned X/Y axes, applies one tick policy to both axes, applies the
- * independent X/Y styles, sets labels, and makes both axes visible. Passing NULL uses
- * dvz_panel_axes_2d_desc().
+ * This helper fetches the panel-owned X/Y axes, applies the default tick policy and grid-enabled
+ * default style to both axes, sets labels, and makes both axes visible. Passing NULL uses
+ * dvz_panel_axes_2d_desc(). Use `dvz_axis_set_tick_policy()` and `dvz_axis_set_style()` for custom
+ * per-axis tick policy or style.
  *
  * @param panel the panel
  * @param desc axes descriptor, or NULL for defaults

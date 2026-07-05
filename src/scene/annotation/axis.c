@@ -97,9 +97,6 @@ static bool _panel_axes_2d_desc_validate(const DvzPanelAxes2DDesc* desc)
         log_error("invalid panel 2D axes descriptor ABI");
         return false;
     }
-    if (!_axis_tick_policy_validate(&desc->tick_policy) || !_axis_style_validate(&desc->x_style) ||
-        !_axis_style_validate(&desc->y_style))
-        return false;
     return true;
 }
 
@@ -414,18 +411,10 @@ DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim)
  */
 DvzPanelAxes2DDesc dvz_panel_axes_2d_desc(void)
 {
-    DvzAxisStyle x_style = _axis_default_style();
-    DvzAxisStyle y_style = _axis_default_style();
-    x_style.show_grid = true;
-    y_style.show_grid = true;
-
     return (DvzPanelAxes2DDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzPanelAxes2DDesc),
         .x_label = NULL,
         .y_label = NULL,
-        .tick_policy = _axis_default_tick_policy(),
-        .x_style = x_style,
-        .y_style = y_style,
     };
 }
 
@@ -450,13 +439,19 @@ bool dvz_panel_set_axes_2d(DvzPanel* panel, const DvzPanelAxes2DDesc* desc)
     if (x_axis == NULL || y_axis == NULL)
         return false;
 
-    if (!dvz_axis_set_tick_policy(x_axis, &resolved.tick_policy))
+    DvzAxisTickPolicy tick_policy = _axis_default_tick_policy();
+    DvzAxisStyle x_style = _axis_default_style();
+    DvzAxisStyle y_style = _axis_default_style();
+    x_style.show_grid = true;
+    y_style.show_grid = true;
+
+    if (!dvz_axis_set_tick_policy(x_axis, &tick_policy))
         return false;
-    if (!dvz_axis_set_tick_policy(y_axis, &resolved.tick_policy))
+    if (!dvz_axis_set_tick_policy(y_axis, &tick_policy))
         return false;
-    if (!dvz_axis_set_style(x_axis, &resolved.x_style))
+    if (!dvz_axis_set_style(x_axis, &x_style))
         return false;
-    if (!dvz_axis_set_style(y_axis, &resolved.y_style))
+    if (!dvz_axis_set_style(y_axis, &y_style))
         return false;
     if (!dvz_axis_set_label(x_axis, resolved.x_label))
         return false;
