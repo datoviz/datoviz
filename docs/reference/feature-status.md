@@ -11,7 +11,7 @@ visible capability disposition is tracked in [v0.3 visible parity](v03-visible-p
 | Visual attributes and retained data updates | supported/experimental by attribute path | [Visual attributes](visual-attributes.md) | Dense per-item writes and range updates are active; broader constant/span/group source APIs remain directional unless a family documents support. |
 | Controllers | supported/experimental by controller/backend | [Controllers](controllers.md) | Panzoom and 3D controller examples are active; WebGPU support follows the promoted live-route subset. |
 | Queries, picking, probing, and readback | supported/experimental by target/backend | [Queries](queries.md) | Unified query API is active. Result richness and family/backend parity vary; unsupported capabilities must be explicit. |
-| DRP2/DVZR | advanced/unstable | [DRP2](drp2/index.md) | Backend, fixture, packet, and replay surface for contributors and runtime authors. |
+| DRP2/DVZR | advanced/unstable | [DRP2](drp2/index.md) | Advanced backend, fixture, packet, and replay surface for contributors and runtime authors; not the primary user API. |
 | CPU-side user projection before upload | supported pattern | [Coordinate systems](coordinate-systems.md) | Users may pre-project nonlinear/geographic data on the CPU, then upload ordinary Cartesian positions. |
 | Scene-managed nonlinear coordinate transforms | deferred | [Coordinate systems](coordinate-systems.md) | No v0.4 scene API for panel/domain projections or geographic transforms. |
 | Custom visual/render shaders | deferred | [Visual attributes](visual-attributes.md) | Future work should arrive through custom visual families or descriptors, not built-in shader replacement. |

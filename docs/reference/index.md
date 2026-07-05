@@ -30,7 +30,7 @@ support, and links to minimal examples.
 | [Queries](queries.md) | Unified query model for picking, probing, readback, statuses, and freshness. |
 | [Errors and logging](errors-and-logging.md) | Return/status behavior, diagnostic phases, DRP2 tracing, and common failure classes. |
 
-## Status And Compatibility
+## Status
 
 | Page | Use it for |
 | --- | --- |
@@ -38,7 +38,7 @@ support, and links to minimal examples.
 | [Feature status](feature-status.md) | Feature-by-feature support, deferral, and ownership classification. |
 | [v0.3 visible parity](v03-visible-parity.md) | Fixed, deferred, and external/GSP disposition for visible v0.3-era capabilities. |
 | [Platform support](platform-support.md) | Native platforms, browser/WebGPU requirements, optional providers, and limitations. |
-| [Build options](build-options.md) | CMake options, dependency-source policy, package smoke presets, and FetchContent. |
+| [Build options](build-options.md) | CMake options, dependency-source policy, and source-build configuration. |
 
 ## Backends
 

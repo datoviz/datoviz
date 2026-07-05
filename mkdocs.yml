@@ -92,6 +92,7 @@ nav:
     - Overview: 'start/index.md'
     - Install: 'start/install.md'
     - Quickstart: 'start/quickstart.md'
+    - Choose your layer: 'start/choose-your-layer.md'
     - AI-assisted workflow: 'start/ai-workflow.md'
   - Examples:
     - Overview: 'examples/index.md'
@@ -189,7 +190,7 @@ nav:
       - Visual attributes: 'reference/visual-attributes.md'
       - Queries: 'reference/queries.md'
       - Errors and logging: 'reference/errors-and-logging.md'
-    - Compatibility:
+    - Status:
       - Project status: 'reference/project-status.md'
       - Feature status: 'reference/feature-status.md'
       - v0.3 visible parity: 'reference/v03-visible-parity.md'
@@ -218,9 +219,6 @@ nav:
       - AI agents: 'contributors/ai-agents.md'
       - Agent quickstart: 'contributors/agent-quickstart.md'
     - Release maintainers:
-      - Release notes:
-        - Overview: 'releases/index.md'
-        - v0.4.0rc1 draft: 'releases/v0.4.0rc1.md'
       - Release process: 'contributors/release-process.md'
       - Release flight checklist: 'contributors/release-flight-checklist.md'
       - Release wheels: 'contributors/release-wheels.md'
@@ -238,9 +236,9 @@ not_in_nav: |
   guide/*
   tasks/*
   visuals/*
-  start/choose-your-layer.md
   start/first-c-program.md
   start/what-is-datoviz.md
+  releases/*
   tutorials/index.md
   tutorials/first-scene.md
   reference/api_c.md
