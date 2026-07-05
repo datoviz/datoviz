@@ -20,7 +20,7 @@ Each card links to a detail page with preview media, source code, and example me
 
 `prototype` `showcases`<br><span>`scientific`, `real-data`, `volume`, `volume-slice`, `volume-occlusion`, ...</span>
 
-local Allen mouse brain RGBA volume and occluded slice.
+Local Allen mouse brain RGBA volume and occluded slice.
 
 </div>
 
@@ -32,7 +32,7 @@ local Allen mouse brain RGBA volume and occluded slice.
 
 `experimental` `showcases`<br><span>`scientific`, `synthetic`, `embedding`, `point`, `panzoom`, ...</span>
 
-interactive prepared AI embedding atlas.
+Interactive prepared AI embedding atlas.
 
 </div>
 
@@ -44,7 +44,7 @@ interactive prepared AI embedding atlas.
 
 `experimental` `showcases`<br><span>`compute`, `simulation`, `particles`, `point`, `alpha-blending`, ...</span>
 
-scene API compute-to-graphics particle smoke showcase.
+Scene API compute-to-graphics particle smoke showcase.
 
 </div>
 
@@ -56,7 +56,7 @@ _Media pending._
 
 `supported` `showcases`<br><span>`workflow`, `linked-panels`, `axes`, `panzoom`, `synthetic`</span>
 
-linked temporal panels with a spanning summary panel.
+Linked temporal panels with a spanning summary panel.
 
 </div>
 
@@ -68,7 +68,7 @@ linked temporal panels with a spanning summary panel.
 
 `supported` `showcases`<br><span>`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, ...</span>
 
-linked image panels with one probe readout and shared colorbar.
+Linked image panels with one probe readout and shared colorbar.
 
 </div>
 
@@ -80,7 +80,7 @@ linked image panels with one probe readout and shared colorbar.
 
 `experimental` `showcases`<br><span>`scientific`, `real-data`, `lipid-atlas`, `image`, `sampled-field`, ...</span>
 
-section/channel lipid intensity showcase.
+Section/channel lipid intensity showcase.
 
 </div>
 
@@ -116,7 +116,7 @@ RCSB PDB protein structure rendered as clustered spheres.
 
 `supported` `showcases`<br><span>`workflow`, `scale-bar`, `measurement`, `synthetic`</span>
 
-scale-aware overview, detail, and 3D measurement workflow.
+Scale-aware overview, detail, and 3D measurement workflow.
 
 </div>
 
@@ -128,7 +128,7 @@ scale-aware overview, detail, and 3D measurement workflow.
 
 `supported` `showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
 
-histogram, guide annotations, stacked traces, and error bands.
+Histogram, guide annotations, stacked traces, and error bands.
 
 </div>
 
@@ -140,7 +140,7 @@ histogram, guide annotations, stacked traces, and error bands.
 
 `supported` `showcases`<br><span>`scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, ...</span>
 
-generated height-field mesh with a derived wireframe overlay.
+Generated height-field mesh with a derived wireframe overlay.
 
 </div>
 
@@ -152,7 +152,7 @@ generated height-field mesh with a derived wireframe overlay.
 
 `experimental` `showcases`<br><span>`scientific`, `synthetic`, `textured-mesh`, `animation`, `skeleton`, ...</span>
 
-animated textured mouse mesh with trajectory and skeleton trails.
+Animated textured mouse mesh with trajectory and skeleton trails.
 
 </div>
 
@@ -176,7 +176,7 @@ UV textured planet mesh via dvz_mesh + sampled fields.
 
 `supported` `showcases`<br><span>`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, ...</span>
 
-contiguous U.S. state population-density choropleth.
+Contiguous U.S. state population-density choropleth.
 
 </div>
 
@@ -188,7 +188,7 @@ contiguous U.S. state population-density choropleth.
 
 `supported` `showcases`<br><span>`scientific`, `synthetic`, `scalar-field`, `vector-field`, `wind-field`, ...</span>
 
-synthetic weather-like scalar and vector field showcase.
+Synthetic weather-like scalar and vector field showcase.
 
 </div>
 

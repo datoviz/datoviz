@@ -10,7 +10,13 @@
 <span>Splat</span>
 </nav>
 
-retained Gaussian splat visual with deterministic screen-space ellipses.
+Gaussian splat visual with deterministic screen-space ellipses.
+
+## About This Example
+
+This is a focused visual-family example. It keeps the scene small so you can see how this kind of visual is created, which data arrays it needs, and what the rendered result should look like.
+
+It uses synthetic data, so you can run it without downloading a dataset.
 
 ## Preview
 

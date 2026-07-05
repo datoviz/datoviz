@@ -10,7 +10,13 @@
 <span>Bounds Overlay</span>
 </nav>
 
-diagnostic retained visual bounds in 2D and 3D panels.
+Diagnostic visual bounds in 2D and 3D panels.
+
+## About This Example
+
+This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+
+It uses synthetic data, so you can run it without downloading a dataset.
 
 ## Preview
 

@@ -10,7 +10,13 @@
 <span>External Surface GLFW</span>
 </nav>
 
-host-owned GLFW loop using Datoviz hosted rendering.
+Host-owned GLFW loop using Datoviz hosted rendering.
+
+## About This Example
+
+This advanced example is intended for users who already understand the basic scene, panel, and visual workflow. It may use lower-level integration patterns than ordinary visualization code.
+
+It uses synthetic data, so you can run it without downloading a dataset.
 
 ## Preview
 

@@ -10,7 +10,13 @@
 <span>Bezier Curve Path</span>
 </nav>
 
-tessellated cubic Bezier curve rendered as a retained path.
+Tessellated cubic Bezier curve rendered as a path.
+
+## About This Example
+
+This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+
+It uses synthetic data, so you can run it without downloading a dataset.
 
 ## Preview
 

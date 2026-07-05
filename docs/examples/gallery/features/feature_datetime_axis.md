@@ -10,7 +10,13 @@
 <span>Datetime Axis</span>
 </nav>
 
-compact data coordinates with retained UTC datetime labels.
+Compact data coordinates with UTC datetime labels.
+
+## About This Example
+
+This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+
+It uses synthetic data, so you can run it without downloading a dataset.
 
 ## Preview
 

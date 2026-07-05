@@ -20,7 +20,7 @@ Selected composed examples are shown below.
 
 [![Allen Mouse Brain](../assets/gallery/v0.4/showcases/brain_volume.webp)](gallery/showcases/brain_volume.md)
 
-local Allen mouse brain RGBA volume and occluded slice.
+Local Allen mouse brain RGBA volume and occluded slice.
 
 </div>
 
@@ -30,7 +30,7 @@ local Allen mouse brain RGBA volume and occluded slice.
 
 [![Lipid Brain Atlas](../assets/gallery/v0.4/showcases/showcase_lipid_brain_atlas.webp)](gallery/showcases/showcase_lipid_brain_atlas.md)
 
-section/channel lipid intensity showcase.
+Section/channel lipid intensity showcase.
 
 </div>
 
@@ -40,7 +40,7 @@ section/channel lipid intensity showcase.
 
 [![Embedding Atlas](../assets/gallery/v0.4/showcases/showcase_embedding_atlas.webp)](gallery/showcases/showcase_embedding_atlas.md)
 
-interactive prepared AI embedding atlas.
+Interactive prepared AI embedding atlas.
 
 </div>
 
@@ -50,7 +50,7 @@ interactive prepared AI embedding atlas.
 
 [![Synthetic Mouse](../assets/gallery/v0.4/showcases/showcase_synthetic_mouse.webp)](gallery/showcases/showcase_synthetic_mouse.md)
 
-animated textured mouse mesh with trajectory and skeleton trails.
+Animated textured mouse mesh with trajectory and skeleton trails.
 
 </div>
 
@@ -80,7 +80,7 @@ RESEPI RGB LiDAR dense point cloud.
 
 [![Surface Grid](../assets/gallery/v0.4/showcases/showcase_surface_grid.webp)](gallery/showcases/showcase_surface_grid.md)
 
-generated height-field mesh with a derived wireframe overlay.
+Generated height-field mesh with a derived wireframe overlay.
 
 </div>
 
@@ -100,7 +100,7 @@ UV textured planet mesh via dvz_mesh + sampled fields.
 
 [![Wind Field](../assets/gallery/v0.4/showcases/showcase_wind_field.webp)](gallery/showcases/showcase_wind_field.md)
 
-synthetic weather-like scalar and vector field showcase.
+Synthetic weather-like scalar and vector field showcase.
 
 </div>
 
@@ -110,7 +110,7 @@ synthetic weather-like scalar and vector field showcase.
 
 [![GPU Particle Smoke](../assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp)](gallery/showcases/showcase_gpu_particle_smoke.md)
 
-scene API compute-to-graphics particle smoke showcase.
+Scene API compute-to-graphics particle smoke showcase.
 
 </div>
 
@@ -120,7 +120,7 @@ scene API compute-to-graphics particle smoke showcase.
 
 [![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp)](gallery/showcases/scientific_plotting_workflow.md)
 
-histogram, guide annotations, stacked traces, and error bands.
+Histogram, guide annotations, stacked traces, and error bands.
 
 </div>
 
@@ -130,7 +130,7 @@ histogram, guide annotations, stacked traces, and error bands.
 
 [![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp)](gallery/showcases/scalebar_measurement_workflow.md)
 
-scale-aware overview, detail, and 3D measurement workflow.
+Scale-aware overview, detail, and 3D measurement workflow.
 
 </div>
 
@@ -140,7 +140,7 @@ scale-aware overview, detail, and 3D measurement workflow.
 
 _Media pending._
 
-linked temporal panels with a spanning summary panel.
+Linked temporal panels with a spanning summary panel.
 
 </div>
 
@@ -150,7 +150,7 @@ linked temporal panels with a spanning summary panel.
 
 [![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp)](gallery/showcases/linked_panels_probe_colorbar.md)
 
-linked image panels with one probe readout and shared colorbar.
+Linked image panels with one probe readout and shared colorbar.
 
 </div>
 
@@ -160,7 +160,7 @@ linked image panels with one probe readout and shared colorbar.
 
 [![U.S. State Choropleth](../assets/gallery/v0.4/showcases/us_state_choropleth.webp)](gallery/showcases/us_state_choropleth.md)
 
-contiguous U.S. state population-density choropleth.
+Contiguous U.S. state population-density choropleth.
 
 </div>
 
@@ -182,7 +182,7 @@ Selected visual and composite examples are shown below.
 
 [![Point](../assets/gallery/v0.4/visuals/point_2d.webp)](gallery/visuals/point_2d.md)
 
-deterministic retained 2D point visual baseline.
+Deterministic 2D point visual baseline.
 
 </div>
 
@@ -192,7 +192,7 @@ deterministic retained 2D point visual baseline.
 
 [![Pixel](../assets/gallery/v0.4/visuals/visual_pixel.webp)](gallery/visuals/visual_pixel.md)
 
-deterministic retained pixel visual baseline.
+Deterministic pixel visual baseline.
 
 </div>
 
@@ -202,7 +202,7 @@ deterministic retained pixel visual baseline.
 
 [![Marker](../assets/gallery/v0.4/visuals/visual_marker.webp)](gallery/visuals/visual_marker.md)
 
-retained marker visual with deterministic symbol, fill, stroke, size, and angle
+Marker visual with deterministic symbol, fill, stroke, size, and angle
 
 </div>
 
@@ -212,7 +212,7 @@ retained marker visual with deterministic symbol, fill, stroke, size, and angle
 
 [![Splat](../assets/gallery/v0.4/visuals/visual_splat.webp)](gallery/visuals/visual_splat.md)
 
-retained Gaussian splat visual with deterministic screen-space ellipses.
+Gaussian splat visual with deterministic screen-space ellipses.
 
 </div>
 
@@ -228,7 +228,7 @@ retained Gaussian splat visual with deterministic screen-space ellipses.
 
 [![Segment](../assets/gallery/v0.4/visuals/visual_segment.webp)](gallery/visuals/visual_segment.md)
 
-retained segment visual with independent endpoint-pair strokes and visual-wide cap bands.
+Segment visual with independent endpoint-pair strokes and visual-wide cap bands.
 
 </div>
 
@@ -238,7 +238,7 @@ retained segment visual with independent endpoint-pair strokes and visual-wide c
 
 [![Path](../assets/gallery/v0.4/visuals/visual_path.webp)](gallery/visuals/visual_path.md)
 
-deterministic multi-signal retained path visual.
+Deterministic multi-signal path visual.
 
 </div>
 
@@ -248,7 +248,7 @@ deterministic multi-signal retained path visual.
 
 [![Vector](../assets/gallery/v0.4/visuals/visual_vector.webp)](gallery/visuals/visual_vector.md)
 
-retained straight and curved vector visual example.
+Straight and curved vector visual example.
 
 </div>
 
@@ -258,7 +258,7 @@ retained straight and curved vector visual example.
 
 [![Primitive](../assets/gallery/v0.4/visuals/visual_primitive.webp)](gallery/visuals/visual_primitive.md)
 
-line and triangle topologies rendered with the retained primitive visual.
+Line and triangle topologies rendered with the primitive visual.
 
 </div>
 
@@ -274,7 +274,7 @@ line and triangle topologies rendered with the retained primitive visual.
 
 [![Image](../assets/gallery/v0.4/visuals/visual_image.webp)](gallery/visuals/visual_image.md)
 
-deterministic scalar sampled field rendered with the retained image visual.
+Deterministic scalar sampled field rendered with the image visual.
 
 </div>
 
@@ -284,7 +284,7 @@ deterministic scalar sampled field rendered with the retained image visual.
 
 [![Text](../assets/gallery/v0.4/visuals/visual_text.webp)](gallery/visuals/visual_text.md)
 
-retained semantic text objects lowered to glyph visuals.
+Semantic text objects lowered to glyph visuals.
 
 </div>
 
@@ -294,7 +294,7 @@ retained semantic text objects lowered to glyph visuals.
 
 [![Font Atlas Glyphs](../assets/gallery/v0.4/visuals/visual_glyph.webp)](gallery/visuals/visual_glyph.md)
 
-low-level font atlas glyph quads, distinct from retained semantic text.
+Low-level font atlas glyph quads, distinct from semantic text.
 
 </div>
 
@@ -304,7 +304,7 @@ low-level font atlas glyph quads, distinct from retained semantic text.
 
 [![Labels](../assets/gallery/v0.4/visuals/visual_labels.webp)](gallery/visuals/visual_labels.md)
 
-retained labels visual with a small deterministic integer sampled field.
+Labels visual with a small deterministic integer sampled field.
 
 </div>
 
@@ -320,7 +320,7 @@ retained labels visual with a small deterministic integer sampled field.
 
 [![Mesh](../assets/gallery/v0.4/visuals/visual_mesh.webp)](gallery/visuals/visual_mesh.md)
 
-retained lit indexed cube mesh.
+Lit indexed cube mesh.
 
 </div>
 
@@ -330,7 +330,7 @@ retained lit indexed cube mesh.
 
 [![Sphere](../assets/gallery/v0.4/visuals/sphere_impostor.webp)](gallery/visuals/sphere_impostor.md)
 
-deterministic 3D impostor-sphere cluster with depth, radius, and color variation.
+Deterministic 3D impostor-sphere cluster with depth, radius, and color variation.
 
 </div>
 
@@ -340,7 +340,7 @@ deterministic 3D impostor-sphere cluster with depth, radius, and color variation
 
 [![Volume](../assets/gallery/v0.4/visuals/volume.webp)](gallery/visuals/volume.md)
 
-deterministic gyroid scalar field rendered with the retained volume visual.
+Deterministic gyroid scalar field rendered with the volume visual.
 
 </div>
 
@@ -356,7 +356,7 @@ deterministic gyroid scalar field rendered with the retained volume visual.
 
 [![Polygon Composite](../assets/gallery/v0.4/composites/composite_polygon.webp)](gallery/composites/composite_polygon.md)
 
-clean semantic polygon and polygon-set composites.
+Clean semantic polygon and polygon-set composites.
 
 </div>
 
@@ -366,7 +366,7 @@ clean semantic polygon and polygon-set composites.
 
 [![Graph Composite](../assets/gallery/v0.4/composites/composite_graph.webp)](gallery/composites/composite_graph.md)
 
-deterministic brain-connectivity graph composite.
+Deterministic brain-connectivity graph composite.
 
 </div>
 
@@ -388,7 +388,7 @@ Selected isolated feature examples are shown below.
 
 [![Panel Grid](../assets/gallery/v0.4/features/feature_panel_grid.webp)](gallery/features/feature_panel_grid.md)
 
-four grid-owned panels with clipped panel-local content.
+Four grid-owned panels with clipped panel-local content.
 
 </div>
 
@@ -398,7 +398,7 @@ four grid-owned panels with clipped panel-local content.
 
 [![Multiple Panels](../assets/gallery/v0.4/features/feature_panel_multi.webp)](gallery/features/feature_panel_multi.md)
 
-multiple independent panels with panel-local panzoom controllers.
+Multiple independent panels with panel-local panzoom controllers.
 
 </div>
 
@@ -408,7 +408,7 @@ multiple independent panels with panel-local panzoom controllers.
 
 [![Linked Panels](../assets/gallery/v0.4/features/feature_panel_linked.webp)](gallery/features/feature_panel_linked.md)
 
-two panels linked on X panzoom extent with independent Y panzoom state.
+Two panels linked on X panzoom extent with independent Y panzoom state.
 
 </div>
 
@@ -424,7 +424,7 @@ two panels linked on X panzoom extent with independent Y panzoom state.
 
 [![Axis Labels](../assets/gallery/v0.4/features/feature_axis_labels.webp)](gallery/features/feature_axis_labels.md)
 
-retained axis titles and tick-label placement with plot margins.
+Axis titles and tick-label placement with plot margins.
 
 </div>
 
@@ -434,7 +434,7 @@ retained axis titles and tick-label placement with plot margins.
 
 [![Colorbar](../assets/gallery/v0.4/features/colorbar.webp)](gallery/features/colorbar.md)
 
-deterministic scalar image with one retained continuous colorbar.
+Deterministic scalar image with one continuous colorbar.
 
 </div>
 
@@ -444,7 +444,7 @@ deterministic scalar image with one retained continuous colorbar.
 
 [![Scale Bar](../assets/gallery/v0.4/features/scale_bar.webp)](gallery/features/scale_bar.md)
 
-minimal retained scale bar attached to one 2D panel.
+Minimal scale bar attached to one 2D panel.
 
 </div>
 
@@ -454,7 +454,7 @@ minimal retained scale bar attached to one 2D panel.
 
 [![Scalar Color Scale](../assets/gallery/v0.4/features/colormap_scale.webp)](gallery/features/colormap_scale.md)
 
-point visual with scalar float colors and one retained color scale.
+Point visual with scalar float colors and one color scale.
 
 </div>
 
@@ -470,7 +470,7 @@ point visual with scalar float colors and one retained color scale.
 
 [![Arcball Controller](../assets/gallery/v0.4/features/feature_controller_arcball.webp)](gallery/features/feature_controller_arcball.md)
 
-arcball controller attached to a small 3D mesh.
+Arcball controller attached to a small 3D mesh.
 
 </div>
 
@@ -480,7 +480,7 @@ arcball controller attached to a small 3D mesh.
 
 [![Fly Controller](../assets/gallery/v0.4/features/feature_controller_fly.webp)](gallery/features/feature_controller_fly.md)
 
-fly controller with deterministic camera translation.
+Fly controller with deterministic camera translation.
 
 </div>
 
@@ -490,7 +490,7 @@ fly controller with deterministic camera translation.
 
 [![Turntable Controller](../assets/gallery/v0.4/features/feature_controller_turntable.webp)](gallery/features/feature_controller_turntable.md)
 
-constrained turntable controller around a small 3D mesh.
+Constrained turntable controller around a small 3D mesh.
 
 </div>
 
@@ -506,7 +506,7 @@ constrained turntable controller around a small 3D mesh.
 
 _Media pending._
 
-one scene-owned sampled field reused by two image visuals.
+One scene-owned sampled field reused by two image visuals.
 
 </div>
 
@@ -516,7 +516,7 @@ one scene-owned sampled field reused by two image visuals.
 
 [![Isolines](../assets/gallery/v0.4/features/feature_isolines.webp)](gallery/features/feature_isolines.md)
 
-CPU contour extraction rendered as retained segment overlays.
+CPU contour extraction rendered as segment overlays.
 
 </div>
 
@@ -526,7 +526,7 @@ CPU contour extraction rendered as retained segment overlays.
 
 [![Marker Symbols](../assets/gallery/v0.4/features/feature_marker_symbols.webp)](gallery/features/feature_marker_symbols.md)
 
-marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
+Marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
 </div>
 
@@ -542,7 +542,7 @@ marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
 [![Lighting](../assets/gallery/v0.4/features/feature_lighting.webp)](gallery/features/feature_lighting.md)
 
-compare lit sphere clusters with different material and light settings.
+Compare lit sphere clusters with different material and light settings.
 
 </div>
 
@@ -552,7 +552,7 @@ compare lit sphere clusters with different material and light settings.
 
 [![Textured Mesh](../assets/gallery/v0.4/features/feature_mesh_texture.webp)](gallery/features/feature_mesh_texture.md)
 
-minimal UV textured mesh with a procedural RGBA8 texture.
+Minimal UV textured mesh with a procedural RGBA8 texture.
 
 </div>
 
@@ -562,7 +562,7 @@ minimal UV textured mesh with a procedural RGBA8 texture.
 
 [![Screen-Space Ambient Occlusion](../assets/gallery/v0.4/features/technique_ssao.webp)](gallery/features/technique_ssao.md)
 
-screen-space ambient occlusion on normal-producing mesh geometry.
+Screen-space ambient occlusion on normal-producing mesh geometry.
 
 </div>
 
@@ -572,7 +572,7 @@ screen-space ambient occlusion on normal-producing mesh geometry.
 
 [![Depth Cue](../assets/gallery/v0.4/features/technique_depth_cue.webp)](gallery/features/technique_depth_cue.md)
 
-depth-dependent fading applied to a regular 3D sphere lattice.
+Depth-dependent fading applied to a regular 3D sphere lattice.
 
 </div>
 
@@ -588,7 +588,7 @@ depth-dependent fading applied to a regular 3D sphere lattice.
 
 [![Animation Tracks](../assets/gallery/v0.4/features/feature_animation_tracks.webp)](gallery/features/feature_animation_tracks.md)
 
-retained track-backed visual transform animation.
+Track-backed visual transform animation.
 
 </div>
 
@@ -598,7 +598,7 @@ retained track-backed visual transform animation.
 
 [![Timer Animation](../assets/gallery/v0.4/features/feature_timer_animation.webp)](gallery/features/feature_timer_animation.md)
 
-portable scenario updating retained point data on runner frames.
+Portable scenario updating point data on runner frames.
 
 </div>
 
@@ -608,7 +608,7 @@ portable scenario updating retained point data on runner frames.
 
 [![Image Probe](../assets/gallery/v0.4/features/image_probe.webp)](gallery/features/image_probe.md)
 
-scalar image pixel-query proof with a live probe marker.
+Scalar image pixel-query proof with a live probe marker.
 
 </div>
 
@@ -618,7 +618,7 @@ scalar image pixel-query proof with a live probe marker.
 
 [![Sphere Selection](../assets/gallery/v0.4/features/feature_selection_sphere.webp)](gallery/features/feature_selection_sphere.md)
 
-retained sphere hover and click selection.
+Sphere hover and click selection.
 
 </div>
 
@@ -628,7 +628,7 @@ retained sphere hover and click selection.
 
 ## Runtime & Capture
 
-Selected app lifecycle, capture, recording, and export examples are shown below.
+Selected windowing, capture, recording, and export examples are shown below.
 
 #### Windows & Hosting
 
@@ -640,7 +640,7 @@ Selected app lifecycle, capture, recording, and export examples are shown below.
 
 _Media pending._
 
-direct GLFW app path without the scenario runner.
+Direct GLFW app path without the scenario runner.
 
 </div>
 
@@ -650,7 +650,7 @@ direct GLFW app path without the scenario runner.
 
 _Media pending._
 
-one app driving two native GLFW windows.
+One app driving two native GLFW windows.
 
 </div>
 
@@ -666,7 +666,7 @@ one app driving two native GLFW windows.
 
 _Media pending._
 
-render an exact-pixel offscreen view once and write a PNG.
+Render an exact-pixel offscreen view once and write a PNG.
 
 </div>
 
@@ -676,7 +676,7 @@ render an exact-pixel offscreen view once and write a PNG.
 
 _Media pending._
 
-write a bounded offscreen animation with the app capture API.
+Write a bounded offscreen animation with the app capture API.
 
 </div>
 
@@ -692,7 +692,7 @@ write a bounded offscreen animation with the app capture API.
 
 _Media pending._
 
-record an offscreen app view and replay it into a second offscreen view.
+Record an offscreen app view and replay it into a second offscreen view.
 
 </div>
 

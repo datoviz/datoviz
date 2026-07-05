@@ -10,7 +10,13 @@
 <span>Panel View 2D</span>
 </nav>
 
-panel-owned 2D view framing with equal aspect.
+Panel-owned 2D view framing with equal aspect.
+
+## About This Example
+
+This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+
+It uses synthetic data, so you can run it without downloading a dataset.
 
 ## Preview
 

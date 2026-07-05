@@ -10,7 +10,15 @@
 <span>Segment</span>
 </nav>
 
-retained segment visual with independent endpoint-pair strokes and visual-wide cap bands.
+Segment visual with independent endpoint-pair strokes and visual-wide cap bands.
+
+## About This Example
+
+This is a focused visual-family example. It keeps the scene small so you can see how this kind of visual is created, which data arrays it needs, and what the rendered result should look like.
+
+It uses synthetic data, so you can run it without downloading a dataset.
+
+A live WebGPU version is available in the browser preview when supported.
 
 ## Preview
 

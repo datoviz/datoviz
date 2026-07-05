@@ -237,16 +237,16 @@ PAGE_CONFIG = {
         "title": "Advanced Examples",
         "lanes": ("advanced",),
         "intro": (
-            "Browse low-level runtime, DRP2, and host-integration examples. "
-            "These are not the preferred starting point for ordinary scene code."
+            "Browse advanced runtime and host-integration examples. "
+            "These are useful after you are comfortable with ordinary scene code."
         ),
     },
     "runtime.md": {
         "title": "Runtime & Capture",
         "lanes": ("runtime",),
         "intro": (
-            "Browse app lifecycle, native windowing, offscreen capture, recording, replay, "
-            "and media export examples."
+            "Browse examples for opening windows, rendering offscreen, recording, replaying, "
+            "and exporting media."
         ),
     },
 }
@@ -353,6 +353,10 @@ def normalize_summary(text: str) -> str:
     text = re.sub(r"\s+", " ", text).strip()
     if not text:
         return "Current C-first Datoviz example."
+    text = re.sub(r"\bsmallest runner-backed retained scene\b", "smallest scene", text)
+    text = re.sub(r"\bretained\s+", "", text)
+    if text and text[0].islower():
+        text = text[0].upper() + text[1:]
     return text
 
 
@@ -548,6 +552,87 @@ def render_preview(
         *indent_markdown(live_lines),
         "",
     ]
+
+
+def render_example_explanation(example: Example) -> list[str]:
+    lines = ["## About This Example", ""]
+    if example.lane == "visuals":
+        lines.extend(
+            [
+                (
+                    "This is a focused visual-family example. It keeps the scene small so you can "
+                    "see how this kind of visual is created, which data arrays it needs, and what "
+                    "the rendered result should look like."
+                ),
+                "",
+            ]
+        )
+    elif example.lane == "features":
+        lines.extend(
+            [
+                (
+                    "This is a focused feature example. It shows the smallest useful scene for the "
+                    "feature, so you can see the feature in isolation before using the same pattern "
+                    "in a larger visualization."
+                ),
+                "",
+            ]
+        )
+    elif example.lane == "runtime":
+        lines.extend(
+            [
+                (
+                    "This runtime example demonstrates how a scene is presented, captured, "
+                    "recorded, or exported. Use it when you need to control how Datoviz runs, not "
+                    "only what it draws."
+                ),
+                "",
+            ]
+        )
+    elif example.lane == "showcases":
+        lines.extend(
+            [
+                (
+                    "This showcase combines several Datoviz features into a more complete "
+                    "scientific visualization. Use it as a reference for composition and visual "
+                    "design, then follow the smaller examples for individual building blocks."
+                ),
+                "",
+            ]
+        )
+    elif example.lane == "advanced":
+        lines.extend(
+            [
+                (
+                    "This advanced example is intended for users who already understand the basic "
+                    "scene, panel, and visual workflow. It may use lower-level integration patterns "
+                    "than ordinary visualization code."
+                ),
+                "",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                (
+                    "This example is a compact Datoviz scene. Read it from top to bottom: create "
+                    "data, create a scene, add visuals, then run or capture the result."
+                ),
+                "",
+            ]
+        )
+
+    if example.data:
+        kind = str(example.data.get("kind", ""))
+        if kind == "synthetic":
+            lines.extend(["It uses synthetic data, so you can run it without downloading a dataset.", ""])
+        elif kind:
+            lines.extend([f"It uses `{kind}` data; check the details below for dataset information.", ""])
+    if "interaction" in example.validation:
+        lines.extend(["The example includes interaction; try using the mouse or keyboard while it runs.", ""])
+    if example.webgpu_status == "webgpu-live":
+        lines.extend(["A live WebGPU version is available in the browser preview when supported.", ""])
+    return lines
 
 
 def append_detail_table(lines: list[str], title: str, values: dict) -> None:
@@ -915,7 +1000,7 @@ def render_index(
     lines.extend(["## Runtime & Capture", ""])
     lines.extend(
         [
-            "Selected app lifecycle, capture, recording, and export examples are shown below.",
+            "Selected windowing, capture, recording, and export examples are shown below.",
             "",
         ]
     )
@@ -1028,7 +1113,7 @@ def render_runtime_page(
     lines = generated_header("Runtime & Capture")
     lines.extend(
         render_page_intro(
-            "Browse app lifecycle, native windowing, offscreen capture, recording, replay, and media export examples.",
+            "Browse examples for opening windows, rendering offscreen, recording, replaying, and exporting media.",
             f"Coverage: {len(runtime_examples)} runtime examples ({status_counts(runtime_examples)}).",
         )
     )
@@ -1175,6 +1260,7 @@ def render_example_page(
     lines = generated_header(example.title)
     lines.extend(render_example_nav(example, page_path, previous, next_))
     lines.extend([example.summary, ""])
+    lines.extend(render_example_explanation(example))
     lines.extend(render_preview(example, page_path, image_dir, image_url_base, image_format))
     lines.extend(render_source_tabs(example))
     lines.extend(render_example_details(example, page_path))

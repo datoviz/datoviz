@@ -10,7 +10,15 @@
 <span>GUI Viewport</span>
 </nav>
 
-dockable Dear ImGui window containing a live Datoviz render target.
+Dockable Dear ImGui window containing a live Datoviz render target.
+
+## About This Example
+
+This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+
+It uses synthetic data, so you can run it without downloading a dataset.
+
+The example includes interaction; try using the mouse or keyboard while it runs.
 
 ## Preview
 

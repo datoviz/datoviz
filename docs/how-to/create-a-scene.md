@@ -1,14 +1,14 @@
 # Create a Scene
 
-Create the retained scene hierarchy used by every v0.4 program.
+Create the basic structure used by most Datoviz visualizations.
 
 ![Basic Scene](../assets/gallery/v0.4/features/feature_basic_scene.webp)
 
 ## Task Workflow
 
-Start with a scene, add one figure, create a panel, attach at least one visual, then choose an
-interactive or offscreen view. The scene owns figures, panels, controllers, and visuals; the app
-owns the runtime used to render them.
+Start with a scene, add one figure, create a panel, add at least one visual, then choose how to show
+or save the result. This page uses a small point example so you can see the main pieces without
+extra plotting features.
 
 Use the same object model from C and Python. In Python, prefer the top-level direct-engine facade
 with C-shaped names:
@@ -22,18 +22,17 @@ exact generated `ctypes` pointer/count behavior.
 
 | Object | Role | Created by |
 | --- | --- | --- |
-| Scene | Root retained state: figures, visuals, controllers, scales, sampled fields, and diagnostics. | `dvz_scene()` |
-| Figure | Renderable surface size and panel layout. It is not itself a native window. | `dvz_figure()` |
-| Panel | Viewport with a domain, transforms, controller bindings, visuals, and adornments. | `dvz_panel_full()`, grid helpers, or custom panel descriptors. |
-| Visual | Homogeneous retained batch of renderable items. | Visual-family constructors such as `dvz_point()`. |
-| Controller | Navigation state bound to one or more panel dimensions. | `dvz_panzoom()`, `dvz_arcball()`, and related helpers. |
-| Adornment | Scene-level context such as axes, labels, colorbars, legends, or scale bars. | Panel/adornment helpers. |
-| App and view | Runtime presentation path for an existing scene and figure. | `dvz_app()`, `dvz_view_window()`, or offscreen view helpers. |
+| Scene | The whole visualization: figures, visuals, controllers, scales, and related state. | `dvz_scene()` |
+| Figure | The image area and its panel layout. A figure can later be shown in a window or rendered offscreen. | `dvz_figure()` |
+| Panel | A drawing area inside a figure. A simple plot usually starts with one full-size panel. | `dvz_panel_full()`, grid helpers, or custom panel descriptors. |
+| Visual | A renderable collection such as points, lines, an image, a mesh, or text labels. | Visual-family constructors such as `dvz_point()`. |
+| Controller | Mouse or camera interaction, such as pan/zoom for 2D or arcball rotation for 3D. | `dvz_panzoom()`, `dvz_arcball()`, and related helpers. |
+| Adornment | Extra visual context such as axes, labels, colorbars, legends, or scale bars. | Panel/adornment helpers. |
+| App and view | The part that opens a window, renders frames, or captures an image. | `dvz_app()`, `dvz_view_window()`, or offscreen view helpers. |
 
-Keep those layers separate. Build retained scene state first; then choose how to present or capture
-it.
+Build the scene first, then decide whether to show it in a window or render it offscreen.
 
-Lifecycle checklist:
+Basic checklist:
 
 1. Create the scene.
 2. Create a figure and one or more panels.
@@ -41,7 +40,7 @@ Lifecycle checklist:
 4. Attach visuals, adornments, and controllers to the intended panel.
 5. Create an interactive app/view or an offscreen rendering target.
 6. Run the app or render/capture the frame.
-7. Destroy runtime objects before destroying the scene.
+7. Clean up the app and scene when the program exits.
 
 ## Minimal Call Sequence
 
@@ -130,31 +129,31 @@ Lifecycle checklist:
     dvz_scene_destroy(scene);
     ```
 
-Use `dvz_panel_full()` for a single viewport. Use panel-grid helpers only when the figure has
-multiple coordinated views.
+Use `dvz_panel_full()` for a single drawing area. Use panel-grid helpers only when the figure needs
+multiple coordinated panels.
 
 
 ## Important Details
 
-Create the initial scene hierarchy before `dvz_app_run()`. Retained updates are allowed later, but
-the first frame is easier to reason about when the figure, panels, visuals, controllers, and
-adornments already exist.
+Create the initial scene structure before `dvz_app_run()`. You can update data later, but the first
+frame is easier to understand when the figure, panels, visuals, controllers, and adornments are
+already in place.
 
-Destroy the app before destroying the scene. The app/runtime borrows scene and figure state while
-it renders; the scene is the longer-lived semantic owner.
+Destroy the app before destroying the scene. The app uses the scene while it renders, so the scene
+must remain valid until rendering has stopped.
 
 In C, keep CPU arrays alive until the corresponding `dvz_visual_set_data()` call has returned.
-Retained visual data is then owned by Datoviz. In Python, pass C-contiguous NumPy arrays with the
-dtype and shape required by the visual attribute; the direct-engine facade infers the item count for
-declared dense-data uploads.
+After the call returns, Datoviz has stored the data needed for rendering. In Python, pass
+C-contiguous NumPy arrays with the dtype and shape required by the visual attribute; the
+direct-engine facade infers the item count for declared dense-data uploads.
 
 Uploading data does not make it visible. A visual appears only after `dvz_panel_add_visual()`
 attaches it to a panel.
 
 ## Visual Granularity
 
-Minimize visual count aggressively. Add another visual only when elements need a different visual
-family, shader/material path, panel attachment, transform, lifetime, or update cadence.
+Use a small number of visuals, each with many items. Add another visual when the data needs a
+different visual family, style model, panel, transform, or update pattern.
 
 Datoviz is designed for batching. Prefer a small number of visuals with many items in each visual:
 one point visual with one million points is the intended shape; one million point visuals with one
@@ -163,12 +162,12 @@ cadence so the GPU can draw large batches efficiently.
 
 ## Common Mistakes
 
-- Treating `DvzFigure` as a native window instead of a retained renderable surface.
-- Creating an app before the scene hierarchy is populated, then wondering why nothing draws.
+- Treating `DvzFigure` as a native window instead of an image area that can be shown in a window.
+- Creating an app before the scene has a figure, panel, and visual to draw.
 - Forgetting `dvz_panel_add_visual()`: uploading data does not attach the visual to a panel.
 - Creating many tiny visuals when one batched visual would describe the same data.
 - Mixing pixel coordinates and data coordinates without setting a panel domain or controller.
-- Destroying the scene before the app/runtime that is rendering it.
+- Destroying the scene while an app is still rendering it.
 
 ## See Also
 

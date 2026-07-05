@@ -10,7 +10,13 @@
 <span>Allen Mouse Brain</span>
 </nav>
 
-local Allen mouse brain RGBA volume and occluded slice.
+Local Allen mouse brain RGBA volume and occluded slice.
+
+## About This Example
+
+This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+It uses `prepared` data; check the details below for dataset information.
 
 ## Preview
 

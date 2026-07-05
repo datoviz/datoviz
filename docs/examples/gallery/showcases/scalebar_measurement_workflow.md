@@ -10,7 +10,15 @@
 <span>Scale Bar Measurement Workflow</span>
 </nav>
 
-scale-aware overview, detail, and 3D measurement workflow.
+Scale-aware overview, detail, and 3D measurement workflow.
+
+## About This Example
+
+This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+It uses synthetic data, so you can run it without downloading a dataset.
+
+A live WebGPU version is available in the browser preview when supported.
 
 ## Preview
 

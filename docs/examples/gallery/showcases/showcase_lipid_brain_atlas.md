@@ -10,7 +10,13 @@
 <span>Lipid Brain Atlas</span>
 </nav>
 
-section/channel lipid intensity showcase.
+Section/channel lipid intensity showcase.
+
+## About This Example
+
+This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+It uses `prepared` data; check the details below for dataset information.
 
 ## Preview
 

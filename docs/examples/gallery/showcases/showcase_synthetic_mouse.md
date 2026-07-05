@@ -10,7 +10,13 @@
 <span>Synthetic Mouse</span>
 </nav>
 
-animated textured mouse mesh with trajectory and skeleton trails.
+Animated textured mouse mesh with trajectory and skeleton trails.
+
+## About This Example
+
+This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+It uses `generated` data; check the details below for dataset information.
 
 ## Preview
 

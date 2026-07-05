@@ -10,7 +10,15 @@
 <span>Polygon Composite</span>
 </nav>
 
-clean semantic polygon and polygon-set composites.
+Clean semantic polygon and polygon-set composites.
+
+## About This Example
+
+This example is a compact Datoviz scene. Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
+
+It uses synthetic data, so you can run it without downloading a dataset.
+
+A live WebGPU version is available in the browser preview when supported.
 
 ## Preview
 

@@ -10,7 +10,13 @@
 <span>Visual Transform</span>
 </nav>
 
-retained visual-local affine transform on point visuals.
+Visual-local affine transform on point visuals.
+
+## About This Example
+
+This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+
+It uses synthetic data, so you can run it without downloading a dataset.
 
 ## Preview
 

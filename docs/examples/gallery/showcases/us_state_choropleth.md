@@ -10,7 +10,15 @@
 <span>U.S. State Choropleth</span>
 </nav>
 
-contiguous U.S. state population-density choropleth.
+Contiguous U.S. state population-density choropleth.
+
+## About This Example
+
+This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+It uses `prepared` data; check the details below for dataset information.
+
+A live WebGPU version is available in the browser preview when supported.
 
 ## Preview
 

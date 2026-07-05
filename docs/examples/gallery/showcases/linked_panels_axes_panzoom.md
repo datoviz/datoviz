@@ -10,7 +10,17 @@
 <span>Linked Panels With Axes</span>
 </nav>
 
-linked temporal panels with a spanning summary panel.
+Linked temporal panels with a spanning summary panel.
+
+## About This Example
+
+This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+It uses synthetic data, so you can run it without downloading a dataset.
+
+The example includes interaction; try using the mouse or keyboard while it runs.
+
+A live WebGPU version is available in the browser preview when supported.
 
 ## Preview
 

@@ -10,7 +10,13 @@
 <span>Record Replay</span>
 </nav>
 
-record an offscreen app view and replay it into a second offscreen view.
+Record an offscreen app view and replay it into a second offscreen view.
+
+## About This Example
+
+This runtime example demonstrates how a scene is presented, captured, recorded, or exported. Use it when you need to control how Datoviz runs, not only what it draws.
+
+It uses synthetic data, so you can run it without downloading a dataset.
 
 ## Preview
 

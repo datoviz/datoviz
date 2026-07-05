@@ -10,7 +10,15 @@
 <span>Embedding Atlas</span>
 </nav>
 
-interactive prepared AI embedding atlas.
+Interactive prepared AI embedding atlas.
+
+## About This Example
+
+This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+It uses `generated` data; check the details below for dataset information.
+
+The example includes interaction; try using the mouse or keyboard while it runs.
 
 ## Preview
 

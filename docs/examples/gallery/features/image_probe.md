@@ -10,7 +10,15 @@
 <span>Image Probe</span>
 </nav>
 
-scalar image pixel-query proof with a live probe marker.
+Scalar image pixel-query proof with a live probe marker.
+
+## About This Example
+
+This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+
+It uses synthetic data, so you can run it without downloading a dataset.
+
+A live WebGPU version is available in the browser preview when supported.
 
 ## Preview
 

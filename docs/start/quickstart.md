@@ -142,8 +142,9 @@ quickstart uses one full-size panel.
 **Controller** - `dvz_panzoom` adds mouse interaction. `dvz_panel_bind_controller` connects it to
 the panel and limits the interaction to the X and Y axes.
 
-**Visual** - A visual is the thing being drawn. `dvz_point` creates a point visual, and
-`dvz_visual_set_data` gives it the arrays it needs: positions, colors, and point sizes.
+**Visual** - A visual is a renderable collection, such as points, lines, an image, a mesh, or text
+labels. Here, `dvz_point` creates one point visual, and `dvz_visual_set_data` gives it the arrays it
+needs: positions, colors, and point sizes.
 
 **Run** - `dvz.run(scene, figure)` opens the window in the Python example. The C example uses the
 longer app/view calls directly because C does not have the same quickstart helper.

@@ -10,7 +10,13 @@
 <span>Offscreen Capture</span>
 </nav>
 
-render an exact-pixel offscreen view once and write a PNG.
+Render an exact-pixel offscreen view once and write a PNG.
+
+## About This Example
+
+This runtime example demonstrates how a scene is presented, captured, recorded, or exported. Use it when you need to control how Datoviz runs, not only what it draws.
+
+It uses synthetic data, so you can run it without downloading a dataset.
 
 ## Preview
 

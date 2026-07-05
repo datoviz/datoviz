@@ -10,7 +10,15 @@
 <span>GPU Particle Smoke</span>
 </nav>
 
-scene API compute-to-graphics particle smoke showcase.
+Scene API compute-to-graphics particle smoke showcase.
+
+## About This Example
+
+This showcase combines several Datoviz features into a more complete scientific visualization. Use it as a reference for composition and visual design, then follow the smaller examples for individual building blocks.
+
+It uses `simulated` data; check the details below for dataset information.
+
+A live WebGPU version is available in the browser preview when supported.
 
 ## Preview
 

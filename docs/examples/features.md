@@ -20,7 +20,7 @@ Each card links to a detail page with preview media, source code, and example me
 
 `supported` `features`
 
-smallest runner-backed retained scene with one point visual.
+Smallest scene with one point visual.
 
 </div>
 
@@ -32,7 +32,7 @@ _Media pending._
 
 `supported` `features`
 
-interactive 3D RGB-axis proof of the Datoviz scene coordinate convention.
+Interactive 3D RGB-axis proof of the Datoviz scene coordinate convention.
 
 </div>
 
@@ -44,7 +44,7 @@ interactive 3D RGB-axis proof of the Datoviz scene coordinate convention.
 
 `supported` `features`
 
-one explicit panel rectangle with panel chrome and one visual.
+One explicit panel rectangle with panel chrome and one visual.
 
 </div>
 
@@ -56,7 +56,7 @@ one explicit panel rectangle with panel chrome and one visual.
 
 `supported` `features`
 
-four grid-owned panels with clipped panel-local content.
+Four grid-owned panels with clipped panel-local content.
 
 </div>
 
@@ -68,7 +68,7 @@ four grid-owned panels with clipped panel-local content.
 
 `supported` `features`
 
-multiple independent panels with panel-local panzoom controllers.
+Multiple independent panels with panel-local panzoom controllers.
 
 </div>
 
@@ -80,7 +80,7 @@ multiple independent panels with panel-local panzoom controllers.
 
 `supported` `features`
 
-two panels linked on X panzoom extent with independent Y panzoom state.
+Two panels linked on X panzoom extent with independent Y panzoom state.
 
 </div>
 
@@ -92,7 +92,7 @@ _Media pending._
 
 `supported` `features`
 
-panel-owned 2D view framing with equal aspect.
+Panel-owned 2D view framing with equal aspect.
 
 </div>
 
@@ -104,7 +104,7 @@ panel-owned 2D view framing with equal aspect.
 
 `supported` `features`
 
-fixed graphite-cyan panel background behind a simple visual.
+Fixed graphite-cyan panel background behind a simple visual.
 
 </div>
 
@@ -116,7 +116,7 @@ fixed graphite-cyan panel background behind a simple visual.
 
 `supported` `features`
 
-screen-space marker, path, and axis scaling controlled by a GUI slider.
+Screen-space marker, path, and axis scaling controlled by a GUI slider.
 
 </div>
 
@@ -128,7 +128,7 @@ _Media pending._
 
 `supported` `features`<br><span>`view-size`, `framebuffer`, `window`</span>
 
-explicit canvas/window/framebuffer size policy selection.
+Explicit canvas/window/framebuffer size policy selection.
 
 </div>
 
@@ -140,7 +140,7 @@ explicit canvas/window/framebuffer size policy selection.
 
 `supported` `features`
 
-retained visual-local affine transform on point visuals.
+Visual-local affine transform on point visuals.
 
 </div>
 
@@ -152,7 +152,7 @@ retained visual-local affine transform on point visuals.
 
 `supported` `features`
 
-retained visual visibility toggled by a scene timer.
+Visual visibility toggled by a scene timer.
 
 </div>
 
@@ -170,7 +170,7 @@ _Media pending._
 
 `supported` `features`
 
-explicit perspective-camera setup with eye, target, up, and clip planes.
+Explicit perspective-camera setup with eye, target, up, and clip planes.
 
 </div>
 
@@ -182,7 +182,7 @@ _Media pending._
 
 `supported` `features`
 
-bind a panzoom controller to one panel with a simple 2D visual.
+Bind a panzoom controller to one panel with a simple 2D visual.
 
 </div>
 
@@ -194,7 +194,7 @@ bind a panzoom controller to one panel with a simple 2D visual.
 
 `supported` `features`
 
-arcball controller attached to a small 3D mesh.
+Arcball controller attached to a small 3D mesh.
 
 </div>
 
@@ -206,7 +206,7 @@ arcball controller attached to a small 3D mesh.
 
 `supported` `features`
 
-constrained turntable controller around a small 3D mesh.
+Constrained turntable controller around a small 3D mesh.
 
 </div>
 
@@ -218,7 +218,7 @@ constrained turntable controller around a small 3D mesh.
 
 `supported` `features`
 
-fly controller with deterministic camera translation.
+Fly controller with deterministic camera translation.
 
 </div>
 
@@ -230,7 +230,7 @@ fly controller with deterministic camera translation.
 
 `supported` `features`
 
-panel-attached orientation axes following the panel's rendered orientation.
+Panel-attached orientation axes following the panel's rendered orientation.
 
 </div>
 
@@ -242,7 +242,7 @@ panel-attached orientation axes following the panel's rendered orientation.
 
 `supported` `features`
 
-plane-oriented reference grid in an arcball 3D scene.
+Plane-oriented reference grid in an arcball 3D scene.
 
 </div>
 
@@ -260,7 +260,7 @@ plane-oriented reference grid in an arcball 3D scene.
 
 `supported` `features`
 
-retained axis titles and tick-label placement with plot margins.
+Axis titles and tick-label placement with plot margins.
 
 </div>
 
@@ -272,7 +272,7 @@ retained axis titles and tick-label placement with plot margins.
 
 `supported` `features`
 
-deterministic path with retained 2D axes and tick labels.
+Deterministic path with 2D axes and tick labels.
 
 </div>
 
@@ -284,7 +284,7 @@ deterministic path with retained 2D axes and tick labels.
 
 `supported` `features`
 
-retained horizontal and vertical guide lines in panel data coordinates.
+Horizontal and vertical guide lines in panel data coordinates.
 
 </div>
 
@@ -296,7 +296,7 @@ retained horizontal and vertical guide lines in panel data coordinates.
 
 `supported` `features`
 
-retained horizontal and vertical guide spans in panel data coordinates.
+Horizontal and vertical guide spans in panel data coordinates.
 
 </div>
 
@@ -308,7 +308,7 @@ retained horizontal and vertical guide spans in panel data coordinates.
 
 `supported` `features`
 
-retained bars and uncertainty band plot helpers.
+Bars and uncertainty band plot helpers.
 
 </div>
 
@@ -320,7 +320,7 @@ retained bars and uncertainty band plot helpers.
 
 `supported` `features`
 
-minimal retained scale bar attached to one 2D panel.
+Minimal scale bar attached to one 2D panel.
 
 </div>
 
@@ -332,7 +332,7 @@ minimal retained scale bar attached to one 2D panel.
 
 `supported` `features`
 
-retained scale bar with a custom time-unit string.
+Scale bar with a custom time-unit string.
 
 </div>
 
@@ -344,7 +344,7 @@ retained scale bar with a custom time-unit string.
 
 `supported` `features`<br><span>`colorbar`, `scalar-field`, `image`, `capture`</span>
 
-deterministic scalar image with one retained continuous colorbar.
+Deterministic scalar image with one continuous colorbar.
 
 </div>
 
@@ -356,7 +356,7 @@ deterministic scalar image with one retained continuous colorbar.
 
 `supported` `features`
 
-point visual with scalar float colors and one retained color scale.
+Point visual with scalar float colors and one color scale.
 
 </div>
 
@@ -368,7 +368,7 @@ point visual with scalar float colors and one retained color scale.
 
 `experimental` `features`<br><span>`categorical-scale`, `legend`, `marker`, `capture`</span>
 
-tentative retained categorical legend proof.
+Tentative categorical legend proof.
 
 </div>
 
@@ -380,7 +380,7 @@ tentative retained categorical legend proof.
 
 `supported` `features`
 
-retained label annotation anchored to data.
+Label annotation anchored to data.
 
 </div>
 
@@ -392,7 +392,7 @@ retained label annotation anchored to data.
 
 `supported` `features`
 
-compact retained text block with stable screen placement.
+Compact text block with stable screen placement.
 
 </div>
 
@@ -404,7 +404,7 @@ compact retained text block with stable screen placement.
 
 `supported` `features`
 
-screen-space data readout over a simple panel visual.
+Screen-space data readout over a simple panel visual.
 
 </div>
 
@@ -416,7 +416,7 @@ screen-space data readout over a simple panel visual.
 
 `supported` `features`
 
-categorical labels query proof with deterministic label-id readout.
+Categorical labels query proof with deterministic label-id readout.
 
 </div>
 
@@ -434,7 +434,7 @@ categorical labels query proof with deterministic label-id readout.
 
 `supported` `features`
 
-builtin 2D geometry builders rendered through retained meshes.
+Builtin 2D geometry builders rendered through meshes.
 
 </div>
 
@@ -446,7 +446,7 @@ builtin 2D geometry builders rendered through retained meshes.
 
 `supported` `features`
 
-builtin 3D geometry builders rendered through retained meshes.
+Builtin 3D geometry builders rendered through meshes.
 
 </div>
 
@@ -458,7 +458,7 @@ builtin 3D geometry builders rendered through retained meshes.
 
 `supported` `features`<br><span>`marker`, `symbol-set`, `bitmap-symbol`, `distance-field-symbol`, `svg-path-symbol`</span>
 
-marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
+Marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
 </div>
 
@@ -470,7 +470,7 @@ marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
 
 `supported` `features`
 
-tessellated cubic Bezier curve rendered as a retained path.
+Tessellated cubic Bezier curve rendered as a path.
 
 </div>
 
@@ -482,7 +482,7 @@ _Media pending._
 
 `supported` `features`
 
-acute stroked path joins for visual regression inspection.
+Acute stroked path joins for visual regression inspection.
 
 </div>
 
@@ -512,7 +512,7 @@ _Media pending._
 
 `supported` `features`
 
-one scene-owned sampled field reused by two image visuals.
+One scene-owned sampled field reused by two image visuals.
 
 </div>
 
@@ -524,7 +524,7 @@ one scene-owned sampled field reused by two image visuals.
 
 `supported` `features`
 
-CPU contour extraction rendered as retained segment overlays.
+CPU contour extraction rendered as segment overlays.
 
 </div>
 
@@ -536,7 +536,7 @@ _Media pending._
 
 `experimental` `features`<br><span>`axes`, `datetime`, `time-series`</span>
 
-compact data coordinates with retained UTC datetime labels.
+Compact data coordinates with UTC datetime labels.
 
 </div>
 
@@ -548,7 +548,7 @@ compact data coordinates with retained UTC datetime labels.
 
 `supported` `features`
 
-scalar image pixel-query proof with a live probe marker.
+Scalar image pixel-query proof with a live probe marker.
 
 </div>
 
@@ -566,7 +566,7 @@ scalar image pixel-query proof with a live probe marker.
 
 `supported` `features`
 
-compare lit sphere clusters with different material and light settings.
+Compare lit sphere clusters with different material and light settings.
 
 </div>
 
@@ -578,7 +578,7 @@ compare lit sphere clusters with different material and light settings.
 
 `supported` `features`
 
-minimal UV textured mesh with a procedural RGBA8 texture.
+Minimal UV textured mesh with a procedural RGBA8 texture.
 
 </div>
 
@@ -590,7 +590,7 @@ minimal UV textured mesh with a procedural RGBA8 texture.
 
 `supported` `features`
 
-retained mesh visuals with explicit material parameters.
+Mesh visuals with explicit material parameters.
 
 </div>
 
@@ -602,7 +602,7 @@ retained mesh visuals with explicit material parameters.
 
 `experimental` `features`
 
-side-by-side volume occluder attenuation on an embedded slice.
+Side-by-side volume occluder attenuation on an embedded slice.
 
 </div>
 
@@ -614,7 +614,7 @@ side-by-side volume occluder attenuation on an embedded slice.
 
 `supported` `features`
 
-screen-space ambient occlusion on normal-producing mesh geometry.
+Screen-space ambient occlusion on normal-producing mesh geometry.
 
 </div>
 
@@ -626,7 +626,7 @@ screen-space ambient occlusion on normal-producing mesh geometry.
 
 `supported` `features`
 
-depth-dependent fading applied to a regular 3D sphere lattice.
+Depth-dependent fading applied to a regular 3D sphere lattice.
 
 </div>
 
@@ -638,7 +638,7 @@ depth-dependent fading applied to a regular 3D sphere lattice.
 
 `supported` `features`
 
-side-by-side multisample antialiasing on slanted 3D cube silhouettes.
+Side-by-side multisample antialiasing on slanted 3D cube silhouettes.
 
 </div>
 
@@ -650,7 +650,7 @@ side-by-side multisample antialiasing on slanted 3D cube silhouettes.
 
 `supported` `features`
 
-source-over, WBOIT, and depth-peel transparency on overlapping cubes.
+Source-over, WBOIT, and depth-peel transparency on overlapping cubes.
 
 </div>
 
@@ -662,7 +662,7 @@ source-over, WBOIT, and depth-peel transparency on overlapping cubes.
 
 `supported` `features`
 
-retained primitive visual using per-vertex alpha and source-over blending.
+Primitive visual using per-vertex alpha and source-over blending.
 
 </div>
 
@@ -674,7 +674,7 @@ retained primitive visual using per-vertex alpha and source-over blending.
 
 `supported` `features`
 
-side-by-side visual depth-test toggle with overlapping 3D points.
+Side-by-side visual depth-test toggle with overlapping 3D points.
 
 </div>
 
@@ -686,7 +686,7 @@ side-by-side visual depth-test toggle with overlapping 3D points.
 
 `diagnostic` `features`<br><span>`diagnostic`, `bounds`, `overlay`, `point`, `sphere`</span>
 
-diagnostic retained visual bounds in 2D and 3D panels.
+Diagnostic visual bounds in 2D and 3D panels.
 
 </div>
 
@@ -704,7 +704,7 @@ _Media pending._
 
 `supported` `features`
 
-unified retained marker hover and selection proof.
+Unified marker hover and selection proof.
 
 </div>
 
@@ -716,7 +716,7 @@ unified retained marker hover and selection proof.
 
 `supported` `features`
 
-retained pixel hover and click selection.
+Pixel hover and click selection.
 
 </div>
 
@@ -728,7 +728,7 @@ retained pixel hover and click selection.
 
 `supported` `features`
 
-retained sphere hover and click selection.
+Sphere hover and click selection.
 
 </div>
 
@@ -740,7 +740,7 @@ retained sphere hover and click selection.
 
 `supported` `features`
 
-retained instanced mesh hover and click selection.
+Instanced mesh hover and click selection.
 
 </div>
 
@@ -758,7 +758,7 @@ retained instanced mesh hover and click selection.
 
 `supported` `features`
 
-retained track-backed visual transform animation.
+Track-backed visual transform animation.
 
 </div>
 
@@ -770,7 +770,7 @@ retained track-backed visual transform animation.
 
 `supported` `features`
 
-portable scenario updating retained point data on runner frames.
+Portable scenario updating point data on runner frames.
 
 </div>
 
@@ -782,7 +782,7 @@ portable scenario updating retained point data on runner frames.
 
 `experimental` `features`<br><span>`scene-compute`, `storage-buffer`, `point`</span>
 
-scene compute pass with independent circular point motion.
+Scene compute pass with independent circular point motion.
 
 </div>
 
@@ -794,7 +794,7 @@ scene compute pass with independent circular point motion.
 
 `supported` `features`
 
-point visual with one retained data-range update.
+Point visual with one data-range update.
 
 </div>
 
@@ -806,7 +806,7 @@ point visual with one retained data-range update.
 
 `supported` `features`
 
-retained point visual with full data replacement.
+Point visual with full data replacement.
 
 </div>
 
@@ -824,7 +824,7 @@ _Media pending._
 
 `supported` `features`
 
-curated Datoviz GUI controls mutating one retained point visual.
+Curated Datoviz GUI controls mutating one point visual.
 
 </div>
 
@@ -836,7 +836,7 @@ _Media pending._
 
 `supported` `features`
 
-dockable Dear ImGui window containing a live Datoviz render target.
+Dockable Dear ImGui window containing a live Datoviz render target.
 
 </div>
 
@@ -848,7 +848,7 @@ _Media pending._
 
 `supported` `features`
 
-raw cimgui calls inside a Datoviz GUI callback.
+Raw cimgui calls inside a Datoviz GUI callback.
 
 </div>
 
@@ -866,7 +866,7 @@ _Media pending._
 
 `supported` `features`
 
-live native keyboard, pointer, wheel, and resize event logging.
+Live native keyboard, pointer, wheel, and resize event logging.
 
 </div>
 
@@ -878,7 +878,7 @@ _Media pending._
 
 `experimental` `features`
 
-retained scene JSON serialization diagnostic.
+Scene JSON serialization diagnostic.
 
 </div>
 
@@ -896,7 +896,7 @@ retained scene JSON serialization diagnostic.
 
 `experimental` `features`
 
-Eye-Dome Lighting applied to a dense retained point cloud.
+Eye-Dome Lighting applied to a dense point cloud.
 
 </div>
 

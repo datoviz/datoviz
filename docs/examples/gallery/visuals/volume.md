@@ -10,7 +10,13 @@
 <span>Volume</span>
 </nav>
 
-deterministic gyroid scalar field rendered with the retained volume visual.
+Deterministic gyroid scalar field rendered with the volume visual.
+
+## About This Example
+
+This is a focused visual-family example. It keeps the scene small so you can see how this kind of visual is created, which data arrays it needs, and what the rendered result should look like.
+
+It uses synthetic data, so you can run it without downloading a dataset.
 
 ## Preview
 

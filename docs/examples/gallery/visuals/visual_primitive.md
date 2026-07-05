@@ -10,7 +10,15 @@
 <span>Primitive</span>
 </nav>
 
-line and triangle topologies rendered with the retained primitive visual.
+Line and triangle topologies rendered with the primitive visual.
+
+## About This Example
+
+This is a focused visual-family example. It keeps the scene small so you can see how this kind of visual is created, which data arrays it needs, and what the rendered result should look like.
+
+It uses synthetic data, so you can run it without downloading a dataset.
+
+A live WebGPU version is available in the browser preview when supported.
 
 ## Preview
 

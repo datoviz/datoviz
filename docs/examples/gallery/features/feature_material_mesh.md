@@ -10,7 +10,15 @@
 <span>Mesh Materials</span>
 </nav>
 
-retained mesh visuals with explicit material parameters.
+Mesh visuals with explicit material parameters.
+
+## About This Example
+
+This is a focused feature example. It shows the smallest useful scene for the feature, so you can see the feature in isolation before using the same pattern in a larger visualization.
+
+It uses synthetic data, so you can run it without downloading a dataset.
+
+A live WebGPU version is available in the browser preview when supported.
 
 ## Preview
 

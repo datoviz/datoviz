@@ -10,7 +10,15 @@
 <span>Multi Window</span>
 </nav>
 
-one app driving two native GLFW windows.
+One app driving two native GLFW windows.
+
+## About This Example
+
+This runtime example demonstrates how a scene is presented, captured, recorded, or exported. Use it when you need to control how Datoviz runs, not only what it draws.
+
+It uses synthetic data, so you can run it without downloading a dataset.
+
+The example includes interaction; try using the mouse or keyboard while it runs.
 
 ## Preview
 

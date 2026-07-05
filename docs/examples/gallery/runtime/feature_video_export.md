@@ -10,7 +10,13 @@
 <span>Video Export</span>
 </nav>
 
-write a bounded offscreen animation with the app capture API.
+Write a bounded offscreen animation with the app capture API.
+
+## About This Example
+
+This runtime example demonstrates how a scene is presented, captured, recorded, or exported. Use it when you need to control how Datoviz runs, not only what it draws.
+
+It uses synthetic data, so you can run it without downloading a dataset.
 
 ## Preview
 

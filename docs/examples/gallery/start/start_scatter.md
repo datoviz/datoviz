@@ -10,7 +10,13 @@
 <span>Scatter Plot</span>
 </nav>
 
-quickstart scatter plot: 10 000 random colored points with pan/zoom.
+Quickstart scatter plot: 10 000 random colored points with pan/zoom.
+
+## About This Example
+
+This example is a compact Datoviz scene. Read it from top to bottom: create data, create a scene, add visuals, then run or capture the result.
+
+It uses synthetic data, so you can run it without downloading a dataset.
 
 ## Preview
 
