@@ -1,9 +1,9 @@
 # AI-Assisted Workflow
 
-Datoviz v0.4 works well with coding assistants. The API is flat, consistent, and fully
-described through a small set of stable pages you can paste as context. An LLM can write useful C
-or Python code from the docs when you include the relevant task guide, example page, and reference
-page.
+Datoviz v0.4 works well with coding assistants when the prompt includes current v0.4 context. The
+API is flat and consistent, but the public docs are still being reconciled for the release
+candidate. Use the Quickstart, one relevant How-To page, one canonical example, and one Reference
+page, then verify generated code against the local API.
 
 
 ## Why It Works
@@ -11,7 +11,7 @@ page.
 - Every function follows one convention: `dvz_<noun>_<verb>`.
 - The scene graph is shallow: scene → figure → panel → visual.
 - Ownership is explicit — no hidden state or magic constructors.
-- The public examples are executable and can be used as copy-safe source material.
+- Canonical examples under `examples/c/...` are the executable source of truth.
 
 
 ## Workflow
@@ -20,7 +20,8 @@ page.
 2. Add one [How-To](../how-to/create-a-scene.md) page for the task and one generated
    [Example](../examples/index.md) page for the visual or feature.
 3. Specify Python or C and ask for v0.4 API only.
-4. Paste the output into your project and run it.
+4. Verify function names and attribute names against the linked Reference page before running the
+   output.
 
 For Python, prefer `import datoviz as dvz` over Python raw `ctypes` unless you need explicit pointer
 control. For C, use the Quickstart C pattern and canonical `examples/c/...` sources as structural
@@ -42,7 +43,8 @@ Task: [describe what you want, e.g. "a scatter plot of 5000 points colored by a 
 with a colorbar and pan/zoom"]
 
 Requirements:
-- Python: use `import datoviz as dvz` and `dvz.run(scene, figure, title="...")` to open the window
+- Python: use `import datoviz as dvz`; `dvz.run(scene, figure, title="...")` is acceptable for
+  quickstart-style scripts
 - C: follow the minimal code pattern structure from the Quickstart and canonical example
 - Use v0.4 API only — do not use v0.3 Pythonic names or any function not shown in the reference
 - Do not invent function names; if something is not in the reference, ask me

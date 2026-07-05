@@ -1,6 +1,8 @@
 # Datoviz
 
-**GPU rendering engine for scientific visualization** — built for scientists and developers who need to explore large datasets interactively. Render millions of points, meshes, volumes, and time series in 2D and 3D at high quality, on the desktop or in the browser.
+**GPU rendering engine for scientific visualization** — built for scientists and developers who
+need to explore large datasets interactively. Native Vulkan targets large 2D and 3D scientific
+scenes; browser support is an experimental WebGPU subset for promoted examples.
 
 <a href="examples/gallery/showcases/protein_arcball_viewer.md"><img src="assets/gallery/v0.4/showcases/protein_arcball_viewer.webp" alt="Protein Viewer" style="width:100%;border-radius:8px;margin:1.5rem 0 2rem;display:block;"></a>
 
@@ -61,7 +63,7 @@ A scatter plot of 10 000 random points with pan/zoom:
     dvz.dvz_panel_add_visual(panel, visual, None)
 
     # --- run ---
-    # or replace with dvz.capture(scene, figure, path="output.png") for offscreen PNG
+    # quickstart convenience; robust apps can use dvz_app/dvz_view_* directly
     dvz.run(scene, figure, title="Scatter plot")
     ```
 

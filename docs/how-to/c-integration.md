@@ -45,8 +45,11 @@ Pass `0` to run until the user closes the window; pass a positive frame count fo
 
 ## Build Integration
 
-For wheels installed with `pip`, `datoviz-config` prints the include path, library path, and CMake
-package directory from the active Python environment:
+The public v0.4 package is not published yet. For pre-RC testing, build Datoviz from source and use
+the repository examples or `just c-integration-smoke` as the validation path.
+
+After v0.4 release-candidate wheels are published, `datoviz-config` will print the include path,
+library path, and CMake package directory from the active Python environment:
 
 ```sh
 cc main.c $(datoviz-config --cflags --libs) -o my_datoviz_app
@@ -65,8 +68,8 @@ add_executable(my_datoviz_app main.c)
 target_link_libraries(my_datoviz_app PRIVATE datoviz::datoviz)
 ```
 
-After `pip install datoviz`, point CMake at the wheel package directory when it is not on the normal
-prefix path:
+After installing a v0.4 wheel, point CMake at the wheel package directory when it is not on the
+normal prefix path:
 
 ```sh
 cmake -S . -B build -Ddatoviz_DIR="$(datoviz-config --cmake-dir)"
@@ -79,7 +82,7 @@ Datoviz can also be embedded with CMake `FetchContent` when source integration i
 include(FetchContent)
 FetchContent_Declare(datoviz
     GIT_REPOSITORY https://github.com/datoviz/datoviz.git
-    GIT_TAG v0.4.0
+    GIT_TAG v0.4-dev  # replace with an exact release tag or commit when available
 )
 FetchContent_MakeAvailable(datoviz)
 

@@ -10,8 +10,8 @@ engine surface that higher-level projects such as GSP/VisPy2 can target.
 
 ## Current Status
 
-The latest published package on PyPI is still v0.3.x. For v0.4 testing, build from source until
-release-candidate wheels and system packages are published.
+The latest published package on PyPI is still v0.3.x. For v0.4 testing, build from source until a
+v0.4 release-candidate package is published.
 
 Release-facing v0.4 surfaces:
 
@@ -78,7 +78,7 @@ pos = np.random.uniform(-1, 1, (N, 3)).astype(np.float32)
 pos[:, 2] = 0
 color = np.random.randint(0, 256, (N, 4), dtype=np.uint8)
 color[:, 3] = 255
-diameter = np.full(N, 5.0, dtype=np.float32)
+diameters = np.full(N, 5.0, dtype=np.float32)
 
 scene = dvz.dvz_scene()
 figure = dvz.dvz_figure(scene, 800, 600, 0)
@@ -90,7 +90,7 @@ dvz.dvz_panel_bind_controller(panel, controller, dvz.DvzDimMaskFlag.DVZ_DIM_MASK
 visual = dvz.dvz_point(scene, 0)
 dvz.dvz_visual_set_data(visual, "position", pos)
 dvz.dvz_visual_set_data(visual, "color", color)
-dvz.dvz_visual_set_data(visual, "diameter", diameter)
+dvz.dvz_visual_set_data(visual, "diameter_px", diameters)
 dvz.dvz_panel_add_visual(panel, visual, None)
 
 dvz.run(scene, figure, title="Scatter plot")

@@ -1,10 +1,11 @@
 # Install
 
-Datoviz v0.4 is in active development and not yet available as a release package. The only
-path today is building from source.
+Datoviz v0.4 is in active development and not yet available as a public release package. The only
+public v0.4 path today is building from source.
 
-Release packages — pip wheel and system packages — will be published with the v0.4 release
-candidate. The v0.3 stable release remains available on PyPI in the meantime.
+Release-candidate wheels have passed CI validation, but they are not public install instructions
+until the RC artifacts are uploaded. The v0.3 stable release remains available on PyPI in the
+meantime.
 
 
 ## Prerequisites
@@ -59,7 +60,8 @@ On **native Windows with Visual Studio**, install:
 
 Then open the Datoviz folder in Visual Studio. Visual Studio detects `CMakePresets.json`; select
 the `msvc` preset and build. Native Windows pip wheels are part of the release-candidate package
-set; vcpkg and conda packages wait for release tags and package-manager review.
+set once RC artifacts are published; vcpkg and conda packages wait for release tags and
+package-manager review.
 
 
 ## Clone and Build
@@ -115,8 +117,8 @@ The v0.4 release-candidate packaging work is active:
 
 | Path | Status |
 | --- | --- |
-| `pip install datoviz` | planned primary Python install path for RC wheels |
-| Windows MSVC/vcpkg wheel | active CI path; AMD64 and ARM64 artifacts passed hosted wheel CI |
+| `pip install datoviz` | currently installs v0.3.x unless a v0.4 pre-release artifact is explicitly selected |
+| v0.4 wheels | CI artifacts passed Linux, macOS, and Windows validation; public upload is pending |
 | Windows MSYS2/MinGW source path | supported GCC-compatible path through `datoviz-config` |
 | vcpkg overlay | active draft for C/C++ users; publication waits for a stable release tag |
 | conda-forge | draft recipe builds locally; feedstock submission waits for release tag and platform proof |

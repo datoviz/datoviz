@@ -1,6 +1,7 @@
 # Quickstart: Rendering in 10 Minutes
 
-**Prerequisites:** Datoviz installed — see [Install](install.md).
+**Prerequisites:** Datoviz built from source or installed from a local v0.4 package — see
+[Install](install.md).
 
 Render 10,000 random scatter points in an interactive window with pan-and-zoom. No external data files needed.
 
@@ -37,7 +38,7 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
     dvz.dvz_panel_add_visual(panel, visual, None)
 
     # --- run ---
-    # replace with dvz.capture(scene, figure, path="output.png") for offscreen PNG
+    # quickstart convenience; robust apps can use dvz_app/dvz_view_* directly
     dvz.run(scene, figure, title="Scatter plot")
     ```
 
@@ -112,34 +113,15 @@ Render 10,000 random scatter points in an interactive window with pan-and-zoom. 
 
 === "C"
 
-    Save as `scatter.c` and compile for your platform:
+    From a source checkout, build and run the canonical quickstart example:
 
-    === "Linux"
+    ```sh
+    just example-c start/scatter
+    ./build/examples/c/start/scatter --live
+    ```
 
-        ```sh
-        gcc scatter.c -o scatter -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
-        ./scatter
-        ```
-
-    === "macOS"
-
-        ```sh
-        clang scatter.c -o scatter -I/usr/local/include/datoviz -L/usr/local/lib/datoviz \
-            -Wl,-rpath,/usr/local/lib/datoviz -lm -ldatoviz
-        ./scatter
-        ```
-
-    === "Windows (MSYS2/MinGW)"
-
-        ```sh
-        gcc scatter.c -o scatter -Iinclude/ -Lbuild/ -lm -ldatoviz
-        ./scatter.exe
-        ```
-
-    === "Windows (MSVC)"
-
-        MSVC is supported via CMake. See [Install](install.md) for the CMake package
-        integration, which handles include paths and linking automatically.
+    For a standalone C file outside the repository, use an installed Datoviz package and its
+    exported CMake package or `datoviz-config` helper. See [Use from C or C++](../how-to/c-integration.md).
 
 
 ## What you should see
@@ -159,7 +141,12 @@ A dark window containing 10,000 colored dots. Drag to pan, scroll to zoom.
 
 **Visual** — `dvz_point` is the GPU-accelerated scatter renderer. `dvz_visual_set_data` uploads each named attribute (`position`, `color`, `diameter_px`) to the GPU.
 
-**Run vs. capture** — In Python, `dvz.run(scene, figure)` opens a GLFW window and blocks until closed; `dvz.capture(scene, figure, path="output.png")` renders one frame offscreen to a PNG. In C, `dvz_view_window` + `dvz_app_run(app, 0)` opens a window and loops; for headless PNG output, use `dvz_view_offscreen` + `dvz_app_run(app, 1)` + `dvz_view_capture_png` instead.
+**Run vs. capture** — In Python, `dvz.run(scene, figure)` opens a GLFW window and blocks until
+closed; `dvz.capture(scene, figure, path="output.png")` renders one frame offscreen to a PNG. These
+helpers are quickstart conveniences and destroy the app and scene before returning. Robust Python
+apps can call the C-shaped `dvz_app`, `dvz_view_window`, `dvz_view_offscreen`, and capture APIs
+directly. In C, `dvz_view_window` + `dvz_app_run(app, 0)` opens a window and loops; for headless PNG
+output, use `dvz_view_offscreen` + `dvz_app_run(app, 1)` + `dvz_view_capture_png` instead.
 
 
 ## Next steps

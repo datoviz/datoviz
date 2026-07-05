@@ -1,13 +1,14 @@
 # Citation
 
-Datoviz v0.4 should be cited as software. The final `v0.4.0` release will be archived
-with Zenodo so papers can cite either the exact version DOI or the project concept DOI.
+Datoviz v0.4 should be cited as software. The current branch is still pre-RC; cite the repository,
+commit, or release-candidate tag you used. The final `v0.4.0` release will be archived with Zenodo
+so papers can cite either the exact version DOI or the project concept DOI.
 
 
 ## Preferred Citation
 
-Before the final `v0.4.0` Zenodo archive exists, cite the repository, release candidate,
-or exact commit used:
+Before the final `v0.4.0` Zenodo archive exists, cite the repository, release candidate, or exact
+commit used:
 
 ```text
 Rossant, C. Datoviz: high-performance rendering for scientific data visualization.
@@ -27,7 +28,8 @@ than to a specific version.
 
 ## BibTeX Template
 
-Replace the DOI and date fields after the `v0.4.0` archive is published.
+Use this only after the `v0.4.0` archive is published. Until then, cite the repository, RC tag, or
+commit used.
 
 ```bibtex
 @software{rossant_datoviz_0_4_0,
@@ -44,12 +46,14 @@ Replace the DOI and date fields after the `v0.4.0` archive is published.
 
 ## Methods Text
 
-For methods sections, use wording like:
+After the final release, use wording like:
 
 ```text
 Interactive scientific visualization was implemented with Datoviz v0.4.0, a C-first
 GPU rendering engine using a retained scene API and a Vulkan-based native runtime.
 ```
+
+Before then, replace `v0.4.0` with the exact commit, development version, or RC tag used.
 
 If you use an experimental backend or low-level interface, name it explicitly, for
 example the WebGPU/WASM subset, DRP2 command streams, or generated `datoviz.raw`
