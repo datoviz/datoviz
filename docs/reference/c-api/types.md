@@ -7495,6 +7495,12 @@ typedef struct DvzAllocation DvzAllocation;
 typedef uint32_t DvzAllocationFlags;
 ```
 
+#### `DvzAlpha`
+
+```c
+typedef uint8_t DvzAlpha;
+```
+
 #### `DvzArcballFlags`
 
 ```c
