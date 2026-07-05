@@ -311,7 +311,7 @@ static void _apply_depth_and_msaa(PointStressState* state)
 
     if (!state->msaa_enabled)
     {
-        if (!dvz_panel_set_msaa(state->panel, NULL))
+        if (dvz_panel_set_msaa(state->panel, NULL) != DVZ_OK)
             dvz_fprintf(stderr, "dvz_panel_set_msaa(NULL) failed\n");
         return;
     }
@@ -328,7 +328,7 @@ static void _apply_depth_and_msaa(PointStressState* state)
         .sample_count = sample_count,
         .alpha_to_coverage = state->msaa_alpha_to_coverage,
     };
-    if (!dvz_panel_set_msaa(state->panel, &msaa))
+    if (dvz_panel_set_msaa(state->panel, &msaa) != DVZ_OK)
         dvz_fprintf(stderr, "dvz_panel_set_msaa() failed\n");
 }
 

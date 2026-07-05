@@ -816,7 +816,7 @@ int test_axis_domain_and_ticks(TstContext* suite, const TstCase* item)
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(axis);
-    AT(dvz_axis_set_grid(axis, true));
+    AT(dvz_axis_set_grid(axis, true) == DVZ_OK);
     AT(axis->enabled);
     AT(axis->visual != NULL);
     AT(axis->visual->type == DVZ_VISUAL_TYPE_PRIMITIVE);
@@ -850,7 +850,7 @@ int test_axis_domain_and_ticks(TstContext* suite, const TstCase* item)
     AT(_axis_test_inward_tick_line_count(axis) >= 8);
     AT(_axis_test_inward_minor_tick_line_count(axis) > 0);
 
-    AT(dvz_axis_set_grid(axis, true));
+    AT(dvz_axis_set_grid(axis, true) == DVZ_OK);
     _scene_prepare_axis_visuals(figure);
     AT(axis->grid_visual->visible);
     AT(dvz_visual_alpha_mode(axis->grid_visual) == DVZ_ALPHA_BLENDED);
@@ -883,7 +883,7 @@ static int test_axis_minor_ticks(TstContext* suite, const TstCase* item)
 
     DvzAxisStyle style = axis->style;
     style.show_minor_ticks = false;
-    AT(dvz_axis_set_style(axis, &style));
+    AT(dvz_axis_set_style(axis, &style) == DVZ_OK);
     _scene_prepare_axis_visuals(figure);
     AT(_axis_test_inward_minor_tick_line_count(axis) == 0);
 
@@ -921,7 +921,7 @@ static int test_axis_spine_draws_after_ticks(TstContext* suite, const TstCase* i
     style.minor_tick_color[1] = 80;
     style.minor_tick_color[2] = 90;
     style.minor_tick_color[3] = 255;
-    AT(dvz_axis_set_style(axis, &style));
+    AT(dvz_axis_set_style(axis, &style) == DVZ_OK);
 
     _scene_prepare_axis_visuals(figure);
     AT(axis->visual->visible);
@@ -996,8 +996,8 @@ static int test_axis_text_labels(TstContext* suite, const TstCase* item)
     ANN(axis);
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     ANN(y_axis);
-    AT(dvz_axis_set_label(axis, "Time"));
-    AT(dvz_axis_set_label(y_axis, "Value"));
+    AT(dvz_axis_set_label(axis, "Time") == DVZ_OK);
+    AT(dvz_axis_set_label(y_axis, "Value") == DVZ_OK);
 
     _scene_prepare_axis_visuals(figure);
     ANN(axis->text_visual);
@@ -1037,7 +1037,7 @@ static int test_axis_text_labels(TstContext* suite, const TstCase* item)
     AT(_visual_family_state(axis->text_visual)->text.glyph_visual != NULL);
     AT(_visual_family_state(axis->text_visual)->text.glyph_visual->visible);
 
-    AT(dvz_axis_set_visible(axis, false));
+    AT(dvz_axis_set_visible(axis, false) == DVZ_OK);
     _scene_prepare_axis_visuals(figure);
     AT(!axis->text_visual->visible);
     _scene_prepare_text_visuals(figure);
@@ -1063,7 +1063,7 @@ static int test_axis_explicit_ticks_and_labels(TstContext* suite, const TstCase*
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(axis);
-    AT(dvz_axis_set_grid(axis, true));
+    AT(dvz_axis_set_grid(axis, true) == DVZ_OK);
 
     char label0[16] = "zero";
     char label1[16] = "five";
@@ -1076,7 +1076,7 @@ static int test_axis_explicit_ticks_and_labels(TstContext* suite, const TstCase*
         .values = values,
         .labels = labels,
     };
-    AT(dvz_axis_set_ticks(axis, &ticks));
+    AT(dvz_axis_set_ticks(axis, &ticks) == DVZ_OK);
     dvz_strlcpy(label0, "mutated", sizeof(label0));
     dvz_strlcpy(label1, "changed", sizeof(label1));
     dvz_strlcpy(label2, "edited", sizeof(label2));
@@ -1093,12 +1093,12 @@ static int test_axis_explicit_ticks_and_labels(TstContext* suite, const TstCase*
     AT(strcmp(_visual_family_state(axis->text_visual)->text.strings[2], "ten") == 0);
 
     AT(dvz_axis_set_ticks(
-        axis, &(DvzAxisTicks){DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks), .count = 0}));
+        axis, &(DvzAxisTicks){DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks), .count = 0}) == DVZ_OK);
     _scene_prepare_axis_visuals(figure);
     AT(axis->tick_count == 0);
     AT(!axis->grid_visual->visible);
 
-    AT(dvz_axis_clear_ticks(axis));
+    AT(dvz_axis_clear_ticks(axis) == DVZ_OK);
     _scene_prepare_axis_visuals(figure);
     AT(axis->tick_count >= 5);
 
@@ -1123,12 +1123,12 @@ static int test_axis_explicit_reversed_ticks_grid_alignment(
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 10.0, 0.0) == 0);
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(axis);
-    AT(dvz_axis_set_grid(axis, true));
+    AT(dvz_axis_set_grid(axis, true) == DVZ_OK);
 
     const double reversed[] = {10.0, 5.0, 0.0};
     AT(dvz_axis_set_ticks(
         axis, &(DvzAxisTicks){
-                  DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks), .count = 3, .values = reversed}));
+                  DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks), .count = 3, .values = reversed}) == DVZ_OK);
 
     _scene_prepare_axis_visuals(figure);
     AT(axis->tick_count == 3);
@@ -1143,11 +1143,11 @@ static int test_axis_explicit_reversed_ticks_grid_alignment(
     double too_many[DVZ_SCENE_MAX_AXIS_TICKS + 1] = {0};
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_AXIS_TICKS + 1; i++)
         too_many[i] = (double)i;
-    AT(!dvz_axis_set_ticks(
+    AT(dvz_axis_set_ticks(
         axis,
         &(DvzAxisTicks){DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks),
                         .count = DVZ_SCENE_MAX_AXIS_TICKS + 1,
-                        .values = too_many}));
+                        .values = too_many}) == DVZ_ERROR);
     _scene_prepare_axis_visuals(figure);
     AT(axis->tick_count == 3);
     AT(fabs(axis->ticks[0] - 10.0) < 1e-9);
@@ -1174,7 +1174,7 @@ static int test_axis_numeric_unit_labels(TstContext* suite, const TstCase* item)
     ANN(axis);
     DvzUnits* length = dvz_units_builtin(scene, DVZ_UNIT_LADDER_METRIC_LENGTH, 1e-6);
     ANN(length);
-    AT(dvz_axis_set_units(axis, length));
+    AT(dvz_axis_set_units(axis, length) == DVZ_OK);
 
     _scene_prepare_axis_visuals(figure);
     ANN(axis->text_visual);
@@ -1192,7 +1192,7 @@ static int test_axis_numeric_unit_labels(TstContext* suite, const TstCase* item)
     AT(saw_mm);
     AT(!saw_um);
 
-    AT(dvz_axis_set_units(axis, NULL));
+    AT(dvz_axis_set_units(axis, NULL) == DVZ_OK);
     _scene_prepare_axis_visuals(figure);
     string_count = _visual_family_state(axis->text_visual)->text.string_count;
     bool saw_plain = false;
@@ -1279,7 +1279,7 @@ static int test_axis_unit_offset_labels(TstContext* suite, const TstCase* item)
     ANN(axis);
     DvzUnits* length = dvz_units_builtin(scene, DVZ_UNIT_LADDER_METRIC_LENGTH, 1.0);
     ANN(length);
-    AT(dvz_axis_set_units(axis, length));
+    AT(dvz_axis_set_units(axis, length) == DVZ_OK);
     _scene_prepare_axis_visuals(figure);
     ANN(axis->text_visual);
 
@@ -1322,9 +1322,9 @@ static int test_axis_datetime_labels(TstContext* suite, const TstCase* item)
     const DvzTimestamp may_1_noon = (DvzTimestamp)1714564800000000LL;
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 3600.0) == 0);
-    AT(dvz_axis_set_datetime(axis, format));
+    AT(dvz_axis_set_datetime(axis, format) == DVZ_OK);
     AT(dvz_axis_set_datetime_range(
-        axis, 0.0, 3600.0, may_1_noon, may_1_noon + 3600LL * 1000000LL));
+        axis, 0.0, 3600.0, may_1_noon, may_1_noon + 3600LL * 1000000LL) == DVZ_OK);
     _scene_prepare_axis_visuals(figure);
 
     uint32_t string_count = _visual_family_state(axis->text_visual)->text.string_count;
@@ -1344,7 +1344,7 @@ static int test_axis_datetime_labels(TstContext* suite, const TstCase* item)
     const DvzTimestamp may_1_23h = (DvzTimestamp)1714604400000000LL;
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 7200.0) == 0);
     AT(dvz_axis_set_datetime_range(
-        axis, 0.0, 7200.0, may_1_23h, may_1_23h + 7200LL * 1000000LL));
+        axis, 0.0, 7200.0, may_1_23h, may_1_23h + 7200LL * 1000000LL) == DVZ_OK);
     _scene_prepare_axis_visuals(figure);
 
     string_count = _visual_family_state(axis->text_visual)->text.string_count;
@@ -1363,7 +1363,7 @@ static int test_axis_datetime_labels(TstContext* suite, const TstCase* item)
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 14.0) == 0);
     AT(dvz_axis_set_datetime_range(
-        axis, 0.0, 14.0, may_1_noon, may_1_noon + 14LL * 24LL * 3600LL * 1000000LL));
+        axis, 0.0, 14.0, may_1_noon, may_1_noon + 14LL * 24LL * 3600LL * 1000000LL) == DVZ_OK);
     _scene_prepare_axis_visuals(figure);
 
     string_count = _visual_family_state(axis->text_visual)->text.string_count;
@@ -1376,7 +1376,7 @@ static int test_axis_datetime_labels(TstContext* suite, const TstCase* item)
     }
     AT(saw_date);
 
-    AT(dvz_axis_set_datetime(axis, NULL));
+    AT(dvz_axis_set_datetime(axis, NULL) == DVZ_OK);
     _scene_prepare_axis_visuals(figure);
     string_count = _visual_family_state(axis->text_visual)->text.string_count;
     bool saw_numeric = false;
@@ -1411,8 +1411,8 @@ static int test_axis_text_hidpi_scales_glyph_bounds(TstContext* suite, const Tst
     DvzAxisStyle style = axis->style;
     style.tick_size_px = 18.0f;
     style.label_size_px = 22.0f;
-    AT(dvz_axis_set_style(axis, &style));
-    AT(dvz_axis_set_label(axis, "Time"));
+    AT(dvz_axis_set_style(axis, &style) == DVZ_OK);
+    AT(dvz_axis_set_label(axis, "Time") == DVZ_OK);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
@@ -1472,12 +1472,12 @@ static int test_axis_text_renderer_style(TstContext* suite, const TstCase* item)
 
     DvzAxisStyle style = axis->style;
     style.text_renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
-    AT(dvz_axis_set_style(axis, &style));
+    AT(dvz_axis_set_style(axis, &style) == DVZ_OK);
     _scene_prepare_axis_visuals(figure);
     AT(_visual_family_state(axis->text_visual)->text.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
 
     style.text_renderer = DVZ_TEXT_RENDERER_VECTOR_GPU;
-    AT(dvz_axis_set_style(axis, &style));
+    AT(dvz_axis_set_style(axis, &style) == DVZ_OK);
     _scene_prepare_axis_visuals(figure);
     AT(_visual_family_state(axis->text_visual)->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
 
@@ -1540,7 +1540,7 @@ static int test_axis_text_pixel_reserve(TstContext* suite, const TstCase* item)
 
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){.left_px = 0.0f, .right_px = 0.0f, .bottom_px = 60.0f,
-                                        .top_px = 0.0f}));
+                                        .top_px = 0.0f}) == DVZ_OK);
     _scene_prepare_axis_visuals(figure);
     AT(dvz_visual_data(axis->text_visual, "position", &position_view) == 0);
     positions = (const float*)position_view.data;
@@ -1574,7 +1574,7 @@ static int test_axis_text_inset_panel_coordinates(TstContext* suite, const TstCa
 
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){.left_px = 56.0f, .right_px = 16.0f, .bottom_px = 54.0f,
-                                        .top_px = 12.0f}));
+                                        .top_px = 12.0f}) == DVZ_OK);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -5.0, +5.0) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -5.0, +5.0) == 0);
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
@@ -1740,14 +1740,14 @@ int test_panel_transform_point(TstContext* suite, const TstCase* item)
                    .right_px = 20.0f,
                    .top_px = 30.0f,
                    .bottom_px = 40.0f,
-               }));
+               }) == DVZ_OK);
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){
                    .left_px = 50.0f,
                    .right_px = 70.0f,
                    .top_px = 20.0f,
                    .bottom_px = 30.0f,
-               }));
+               }) == DVZ_OK);
     DvzRect plot = {0};
     AT(dvz_panel_plot_rect_px(panel, &plot));
     AC(plot.x, 260.0f, 1e-4f);
@@ -1779,8 +1779,8 @@ int test_panel_transform_point(TstContext* suite, const TstCase* item)
     AC(roundtrip[0], data[0], 1e-6);
     AC(roundtrip[1], data[1], 1e-6);
 
-    AT(dvz_panel_set_padding(panel, NULL));
-    AT(dvz_panel_set_reserve(panel, NULL));
+    AT(dvz_panel_set_padding(panel, NULL) == DVZ_OK);
+    AT(dvz_panel_set_reserve(panel, NULL) == DVZ_OK);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 100.0) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, 100.0) == 0);
     DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
@@ -1850,8 +1850,8 @@ static int test_axis_plot_margins(TstContext* suite, const TstCase* item)
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     ANN(x_axis);
     ANN(y_axis);
-    AT(dvz_axis_set_plot_margins(x_axis, 0.10f, 0.04f, 0.10f, 0.04f));
-    AT(dvz_axis_set_plot_margins(y_axis, 0.10f, 0.04f, 0.10f, 0.04f));
+    AT(dvz_axis_set_plot_margins(x_axis, 0.10f, 0.04f, 0.10f, 0.04f) == DVZ_OK);
+    AT(dvz_axis_set_plot_margins(y_axis, 0.10f, 0.04f, 0.10f, 0.04f) == DVZ_OK);
 
     float data[] = {0.0f, -5.0f, 2.0f, 5.0f, 5.0f, 3.0f, 10.0f, 0.0f, 4.0f};
     float visual[9] = {0};
@@ -1878,8 +1878,8 @@ static int test_axis_plot_margins(TstContext* suite, const TstCase* item)
     AT(fabsf(data_to_view[3][0] + 1.0f) < 1e-6f);
     AT(fabsf(data_to_view[3][1] - 0.0f) < 1e-6f);
 
-    AT(!dvz_axis_set_plot_margins(x_axis, -0.10f, 0.0f, 0.0f, 0.0f));
-    AT(!dvz_axis_set_plot_margins(x_axis, 1.20f, 0.90f, 0.0f, 0.0f));
+    AT(dvz_axis_set_plot_margins(x_axis, -0.10f, 0.0f, 0.0f, 0.0f) == DVZ_ERROR);
+    AT(dvz_axis_set_plot_margins(x_axis, 1.20f, 0.90f, 0.0f, 0.0f) == DVZ_ERROR);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1918,7 +1918,7 @@ static int test_axis_panel_reserve(TstContext* suite, const TstCase* item)
         .top_px = 45.0f,
         .bottom_px = 15.0f,
     };
-    AT(dvz_panel_set_reserve(panel, &manual_reserve));
+    AT(dvz_panel_set_reserve(panel, &manual_reserve) == DVZ_OK);
     DvzPanelReserve reserve = {0};
     AT(dvz_panel_get_reserve(panel, &reserve));
     AT(fabsf(reserve.left_px - 80.0f) < 1e-6f);
@@ -1953,9 +1953,9 @@ static int test_axis_panel_reserve(TstContext* suite, const TstCase* item)
     AT(fabsf(plot_visual[3] - (1.0f - 90.0f / 900.0f)) < 1e-6f);
     dvz_figure_resize(figure, 800, 600);
 
-    AT(!dvz_panel_set_reserve(
-        panel, &(DvzPanelReserve){.left_px = 600.0f, .right_px = 240.0f}));
-    AT(dvz_panel_set_reserve(panel, NULL));
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){.left_px = 600.0f, .right_px = 240.0f}) == DVZ_ERROR);
+    AT(dvz_panel_set_reserve(panel, NULL) == DVZ_OK);
     AT(dvz_panel_get_reserve(panel, &reserve));
     AT(reserve.left_px == 0.0f && reserve.right_px == 0.0f);
 
@@ -1965,7 +1965,7 @@ static int test_axis_panel_reserve(TstContext* suite, const TstCase* item)
         .top_px = 24.0f,
         .bottom_px = 8.0f,
     };
-    AT(dvz_panel_set_padding(panel, &padding));
+    AT(dvz_panel_set_padding(panel, &padding) == DVZ_OK);
     DvzPanelReserve padding_out = {0};
     AT(dvz_panel_get_padding(panel, &padding_out));
     AT(fabsf(padding_out.left_px - 32.0f) < 1e-6f);
@@ -1983,7 +1983,7 @@ static int test_axis_panel_reserve(TstContext* suite, const TstCase* item)
         .top_px = 30.0f,
         .bottom_px = 50.0f,
     };
-    AT(dvz_panel_set_reserve(panel, &pixel_reserve));
+    AT(dvz_panel_set_reserve(panel, &pixel_reserve) == DVZ_OK);
     DvzPanelReserve pixel_out = {0};
     AT(dvz_panel_get_reserve(panel, &pixel_out));
     AT(fabsf(pixel_out.left_px - 80.0f) < 1e-6f);
@@ -2001,7 +2001,7 @@ static int test_axis_panel_reserve(TstContext* suite, const TstCase* item)
 
     dvz_figure_resize(figure, 1200, 900);
     AT(dvz_panel_get_reserve(panel, &reserve));
-    AT(dvz_panel_set_reserve(panel, &pixel_reserve));
+    AT(dvz_panel_set_reserve(panel, &pixel_reserve) == DVZ_OK);
     AT(dvz_panel_inner_rect_px(panel, &inner_rect));
     AT(fabsf(inner_rect.x - 32.0f) < 1e-4f);
     AT(fabsf(inner_rect.y - 24.0f) < 1e-4f);
@@ -2017,12 +2017,12 @@ static int test_axis_panel_reserve(TstContext* suite, const TstCase* item)
     ANN(x_axis);
     DvzAxisStyle x_style = x_axis->style;
     x_style.reserve_px = 40.0f;
-    AT(dvz_axis_set_style(x_axis, &x_style));
+    AT(dvz_axis_set_style(x_axis, &x_style) == DVZ_OK);
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     ANN(y_axis);
     DvzAxisStyle y_style = y_axis->style;
     y_style.reserve_px = 55.0f;
-    AT(dvz_axis_set_style(y_axis, &y_style));
+    AT(dvz_axis_set_style(y_axis, &y_style) == DVZ_OK);
 
     AT(dvz_panel_get_reserve(panel, &reserve));
     AT(fabsf(reserve.left_px - 135.0f) < 1e-6f);
@@ -2033,16 +2033,16 @@ static int test_axis_panel_reserve(TstContext* suite, const TstCase* item)
     AT(fabsf(plot_rect.width - 897.0f) < 1e-4f);
     AT(fabsf(plot_rect.height - 748.0f) < 1e-4f);
 
-    AT(!dvz_panel_set_padding(
+    AT(dvz_panel_set_padding(
         panel, &(DvzPanelReserve){
                    .left_px = 1000.0f,
                    .right_px = 100.0f,
-               }));
+               }) == DVZ_ERROR);
     AT(dvz_panel_plot_rect_px(panel, &plot_rect));
     AT(fabsf(plot_rect.x - 167.0f) < 1e-4f);
     AT(fabsf(plot_rect.width - 897.0f) < 1e-4f);
 
-    AT(dvz_panel_set_padding(panel, NULL));
+    AT(dvz_panel_set_padding(panel, NULL) == DVZ_OK);
     AT(dvz_panel_plot_rect_px(panel, &plot_rect));
     AT(fabsf(plot_rect.x - 135.0f) < 1e-4f);
     AT(fabsf(plot_rect.y - 30.0f) < 1e-4f);
@@ -2072,8 +2072,8 @@ static int test_axis_auto_reserve_tracks_label_and_resize(TstContext* suite, con
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     ANN(x_axis);
     ANN(y_axis);
-    AT(dvz_axis_set_label(x_axis, "sample offset (ms)"));
-    AT(dvz_axis_set_label(y_axis, "normalized response"));
+    AT(dvz_axis_set_label(x_axis, "sample offset (ms)") == DVZ_OK);
+    AT(dvz_axis_set_label(y_axis, "normalized response") == DVZ_OK);
 
     _scene_prepare_axis_visuals(figure);
     DvzPanelReserve reserve = {0};
@@ -2186,7 +2186,7 @@ static int test_panel_view2d(TstContext* suite, const TstCase* item)
     AT(fabs(min + 0.25) < 1e-9);
     AT(fabs(max - 1.25) < 1e-9);
 
-    AT(dvz_panel_set_reserve(panel, &(DvzPanelReserve){.right_px = 200.0f}));
+    AT(dvz_panel_set_reserve(panel, &(DvzPanelReserve){.right_px = 200.0f}) == DVZ_OK);
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &min, &max));
     AT(fabs(min + 0.50) < 1e-9);
     AT(fabs(max - 1.50) < 1e-9);
@@ -2220,14 +2220,14 @@ static int test_panel_view2d(TstContext* suite, const TstCase* item)
     AT(fabs(x_units_per_px - y_units_per_px) < 1e-9);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 10.0, 20.0) == 0);
-    AT(dvz_panel_set_reserve(panel, NULL));
+    AT(dvz_panel_set_reserve(panel, NULL) == DVZ_OK);
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
     AT(fabs(min - 10.0) < 1e-9);
     AT(fabs(max - 20.0) < 1e-9);
 
     AT(dvz_panel_set_view2d(panel, &view) == 0);
     dvz_panel_clear_view2d(panel);
-    AT(dvz_panel_set_reserve(panel, &(DvzPanelReserve){.right_px = 200.0f}));
+    AT(dvz_panel_set_reserve(panel, &(DvzPanelReserve){.right_px = 200.0f}) == DVZ_OK);
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
     AT(fabs(min - 10.0) < 1e-9);
     AT(fabs(max - 20.0) < 1e-9);
@@ -2365,7 +2365,7 @@ int test_axis_panzoom_visible_domain(TstContext* suite, const TstCase* item)
     AT(axis->ticks[axis->tick_count - 1] >= 50.0);
     double step = axis->tick_lstep;
 
-    AT(dvz_axis_set_grid(axis, true));
+    AT(dvz_axis_set_grid(axis, true) == DVZ_OK);
     _scene_prepare_axis_visuals(figure);
     double lmin = axis->tick_lmin;
     double covered_min = axis->tick_covered_min;
@@ -2398,15 +2398,15 @@ static int test_axis_panzoom_layout_aligns_grid_to_plot(TstContext* suite, const
 
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){.left_px = 64.0f, .right_px = 20.0f, .bottom_px = 45.0f,
-                                        .top_px = 15.0f}));
+                                        .top_px = 15.0f}) == DVZ_OK);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -2.0, 2.0) == 0);
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     ANN(x_axis);
     ANN(y_axis);
-    AT(dvz_axis_set_grid(x_axis, true));
-    AT(dvz_axis_set_grid(y_axis, true));
+    AT(dvz_axis_set_grid(x_axis, true) == DVZ_OK);
+    AT(dvz_axis_set_grid(y_axis, true) == DVZ_OK);
 
     DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
     ANN(pz);
@@ -2474,7 +2474,7 @@ static int test_axis_grid_uses_plot_source_extent(TstContext* suite, const TstCa
     ANN(panel);
     AT(dvz_panel_set_padding(
         panel, &(DvzPanelReserve){.left_px = 82.0f, .right_px = 22.0f, .bottom_px = 78.0f,
-                                  .top_px = 30.0f}));
+                                  .top_px = 30.0f}) == DVZ_OK);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -1.0, +1.0) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, +1.0) == 0);
 
@@ -2482,15 +2482,15 @@ static int test_axis_grid_uses_plot_source_extent(TstContext* suite, const TstCa
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     ANN(x_axis);
     ANN(y_axis);
-    AT(dvz_axis_set_grid(x_axis, true));
-    AT(dvz_axis_set_grid(y_axis, true));
+    AT(dvz_axis_set_grid(x_axis, true) == DVZ_OK);
+    AT(dvz_axis_set_grid(y_axis, true) == DVZ_OK);
 
     DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
     ticks.target_count = 5;
     ticks.min_pixel_spacing = 130.0f;
     ticks.minor_per_interval = 0;
-    AT(dvz_axis_set_tick_policy(x_axis, &ticks));
-    AT(dvz_axis_set_tick_policy(y_axis, &ticks));
+    AT(dvz_axis_set_tick_policy(x_axis, &ticks) == DVZ_OK);
+    AT(dvz_axis_set_tick_policy(y_axis, &ticks) == DVZ_OK);
 
     DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
     ANN(pz);
@@ -2545,18 +2545,18 @@ static int test_axis_grid_style_margins_do_not_double_clip(TstContext* suite, co
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     ANN(x_axis);
     ANN(y_axis);
-    AT(dvz_axis_set_grid(x_axis, true));
-    AT(dvz_axis_set_grid(y_axis, true));
-    AT(dvz_axis_set_plot_margins(x_axis, 0.25f, 0.15f, 0.10f, 0.20f));
-    AT(dvz_axis_set_plot_margins(y_axis, 0.25f, 0.15f, 0.10f, 0.20f));
+    AT(dvz_axis_set_grid(x_axis, true) == DVZ_OK);
+    AT(dvz_axis_set_grid(y_axis, true) == DVZ_OK);
+    AT(dvz_axis_set_plot_margins(x_axis, 0.25f, 0.15f, 0.10f, 0.20f) == DVZ_OK);
+    AT(dvz_axis_set_plot_margins(y_axis, 0.25f, 0.15f, 0.10f, 0.20f) == DVZ_OK);
 
     const double zero[] = {0.0};
     AT(dvz_axis_set_ticks(
         x_axis, &(DvzAxisTicks){DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks), .count = 1,
-                                .values = zero}));
+                                .values = zero}) == DVZ_OK);
     AT(dvz_axis_set_ticks(
         y_axis, &(DvzAxisTicks){DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks), .count = 1,
-                                .values = zero}));
+                                .values = zero}) == DVZ_OK);
 
     _scene_prepare_axis_visuals(figure);
 
@@ -2607,15 +2607,15 @@ static int test_axis_grid_centers_snap_after_panzoom(TstContext* suite, const Ts
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     ANN(x_axis);
     ANN(y_axis);
-    AT(dvz_axis_set_grid(x_axis, true));
-    AT(dvz_axis_set_grid(y_axis, true));
+    AT(dvz_axis_set_grid(x_axis, true) == DVZ_OK);
+    AT(dvz_axis_set_grid(y_axis, true) == DVZ_OK);
 
     DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
     ticks.target_count = 6;
     ticks.min_pixel_spacing = 90.0f;
     ticks.minor_per_interval = 0;
-    AT(dvz_axis_set_tick_policy(x_axis, &ticks));
-    AT(dvz_axis_set_tick_policy(y_axis, &ticks));
+    AT(dvz_axis_set_tick_policy(x_axis, &ticks) == DVZ_OK);
+    AT(dvz_axis_set_tick_policy(y_axis, &ticks) == DVZ_OK);
 
     DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
     ANN(pz);
@@ -2655,14 +2655,14 @@ static int test_axis_data_visual_mvp_uses_view_extent_after_resize(
     ANN(grid);
     AT(dvz_grid_set_margins(
         grid, &(DvzPanelReserve){.left_px = 46.0f, .right_px = 46.0f, .top_px = 46.0f,
-                                 .bottom_px = 58.0f}));
-    AT(dvz_grid_set_gutter(grid, 34.0f, 0.0f));
+                                 .bottom_px = 58.0f}) == DVZ_OK);
+    AT(dvz_grid_set_gutter(grid, 34.0f, 0.0f) == DVZ_OK);
 
     DvzPanel* panel = dvz_grid_panel(grid, 0, 0);
     ANN(panel);
     AT(dvz_panel_set_padding(
         panel, &(DvzPanelReserve){.left_px = 82.0f, .right_px = 22.0f, .bottom_px = 78.0f,
-                                  .top_px = 30.0f}));
+                                  .top_px = 30.0f}) == DVZ_OK);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -1.0, +1.0) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -1.0, +1.0) == 0);
 
@@ -2860,20 +2860,20 @@ static int test_axis_raw_visual_panzoom_alignment(TstContext* suite, const TstCa
 
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){.left_px = 56.0f, .right_px = 16.0f, .bottom_px = 36.0f,
-                                        .top_px = 12.0f}));
+                                        .top_px = 12.0f}) == DVZ_OK);
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     ANN(x_axis);
     ANN(y_axis);
-    AT(dvz_axis_set_grid(x_axis, true));
-    AT(dvz_axis_set_grid(y_axis, true));
+    AT(dvz_axis_set_grid(x_axis, true) == DVZ_OK);
+    AT(dvz_axis_set_grid(y_axis, true) == DVZ_OK);
 
     DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
     ticks.target_count = 11;
     ticks.min_pixel_spacing = 75.0f;
     ticks.minor_per_interval = 0;
-    AT(dvz_axis_set_tick_policy(x_axis, &ticks));
-    AT(dvz_axis_set_tick_policy(y_axis, &ticks));
+    AT(dvz_axis_set_tick_policy(x_axis, &ticks) == DVZ_OK);
+    AT(dvz_axis_set_tick_policy(y_axis, &ticks) == DVZ_OK);
 
     DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
     ANN(pz);
@@ -2967,7 +2967,7 @@ static int test_axis_integer_lattice_panzoom_alignment(TstContext* suite, const 
 
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){.left_px = 56.0f, .right_px = 16.0f, .bottom_px = 36.0f,
-                                        .top_px = 12.0f}));
+                                        .top_px = 12.0f}) == DVZ_OK);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, (double)lattice_max) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, (double)lattice_max) == 0);
     mat4 data_to_view = GLM_MAT4_IDENTITY_INIT;
@@ -2995,14 +2995,14 @@ static int test_axis_integer_lattice_panzoom_alignment(TstContext* suite, const 
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     ANN(x_axis);
     ANN(y_axis);
-    AT(dvz_axis_set_grid(x_axis, true));
-    AT(dvz_axis_set_grid(y_axis, true));
+    AT(dvz_axis_set_grid(x_axis, true) == DVZ_OK);
+    AT(dvz_axis_set_grid(y_axis, true) == DVZ_OK);
     DvzAxisTickPolicy policy = dvz_axis_tick_policy();
     policy.target_count = 11;
     policy.min_pixel_spacing = 75.0f;
     policy.minor_per_interval = 0;
-    AT(dvz_axis_set_tick_policy(x_axis, &policy));
-    AT(dvz_axis_set_tick_policy(y_axis, &policy));
+    AT(dvz_axis_set_tick_policy(x_axis, &policy) == DVZ_OK);
+    AT(dvz_axis_set_tick_policy(y_axis, &policy) == DVZ_OK);
 
     DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
     ANN(pz);
@@ -3120,7 +3120,7 @@ static int test_axis_zoom_out_in_grid_regression(TstContext* suite, const TstCas
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 100.0) == 0);
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(axis);
-    AT(dvz_axis_set_grid(axis, true));
+    AT(dvz_axis_set_grid(axis, true) == DVZ_OK);
 
     DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
     ANN(pz);
@@ -3158,8 +3158,8 @@ static int test_axis_panzoom_resize_visual_smoke(TstContext* suite, const TstCas
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     ANN(x_axis);
     ANN(y_axis);
-    AT(dvz_axis_set_grid(x_axis, true));
-    AT(dvz_axis_set_grid(y_axis, true));
+    AT(dvz_axis_set_grid(x_axis, true) == DVZ_OK);
+    AT(dvz_axis_set_grid(y_axis, true) == DVZ_OK);
 
     DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
     ANN(pz);
@@ -3208,12 +3208,12 @@ static int test_axis_static_prepare_idempotent(TstContext* suite, const TstCase*
 
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){.left_px = 56.0f, .right_px = 0.0f, .bottom_px = 54.0f,
-                                        .top_px = 0.0f}));
+                                        .top_px = 0.0f}) == DVZ_OK);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -5.0, +5.0) == 0);
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(axis);
-    AT(dvz_axis_set_grid(axis, true));
-    AT(dvz_axis_set_label(axis, "x"));
+    AT(dvz_axis_set_grid(axis, true) == DVZ_OK);
+    AT(dvz_axis_set_label(axis, "x") == DVZ_OK);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.supports_color_blending = true;
@@ -3262,11 +3262,11 @@ static int test_axis_visual_clip_rect_panel(TstContext* suite, const TstCase* it
 
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){.left_px = 100.0f, .right_px = 20.0f, .bottom_px = 75.0f,
-                                        .top_px = 15.0f}));
+                                        .top_px = 15.0f}) == DVZ_OK);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(axis);
-    AT(dvz_axis_set_grid(axis, true));
+    AT(dvz_axis_set_grid(axis, true) == DVZ_OK);
 
     DvzVisual* point = dvz_point(scene, 0);
     ANN(point);
@@ -3335,7 +3335,7 @@ int test_axis_dynamic_segment_draw_count(TstContext* suite, const TstCase* item)
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 100.0) == 0);
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(axis);
-    AT(dvz_axis_set_grid(axis, true));
+    AT(dvz_axis_set_grid(axis, true) == DVZ_OK);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.supports_color_blending = true;
@@ -3345,7 +3345,7 @@ int test_axis_dynamic_segment_draw_count(TstContext* suite, const TstCase* item)
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
 
     AT(dvz_axis_set_tick_policy(
-        axis, &(DvzAxisTickPolicy){DVZ_STRUCT_INIT_FIELDS(DvzAxisTickPolicy), .target_count = 12, .min_pixel_spacing = 0.0f}));
+        axis, &(DvzAxisTickPolicy){DVZ_STRUCT_INIT_FIELDS(DvzAxisTickPolicy), .target_count = 12, .min_pixel_spacing = 0.0f}) == DVZ_OK);
     DvzDrp2CommandStream* stream0 = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream0);
     uint32_t draw0 = _axis_test_draw_vertex_count(stream0);
@@ -3354,7 +3354,7 @@ int test_axis_dynamic_segment_draw_count(TstContext* suite, const TstCase* item)
 
     dvz_diagnostic_report_init(&report);
     AT(dvz_axis_set_tick_policy(
-        axis, &(DvzAxisTickPolicy){DVZ_STRUCT_INIT_FIELDS(DvzAxisTickPolicy), .target_count = 2, .min_pixel_spacing = 0.0f}));
+        axis, &(DvzAxisTickPolicy){DVZ_STRUCT_INIT_FIELDS(DvzAxisTickPolicy), .target_count = 2, .min_pixel_spacing = 0.0f}) == DVZ_OK);
     DvzDrp2CommandStream* stream1 = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream1);
     uint32_t draw1 = _axis_test_draw_vertex_count(stream1);
@@ -3383,27 +3383,27 @@ int test_axis_descriptor_abi_rejects_invalid_structs(TstContext* suite, const Ts
 
     DvzAxisTickPolicy policy = dvz_axis_tick_policy();
     policy.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_tick_policy(axis, &policy));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_axis_set_tick_policy(axis, &policy) == DVZ_ERROR);
 
     policy = dvz_axis_tick_policy();
     policy.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_tick_policy(axis, &policy));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_axis_set_tick_policy(axis, &policy) == DVZ_ERROR);
 
     DvzAxisTicks ticks = {DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks)};
     ticks.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_ticks(axis, &ticks));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_axis_set_ticks(axis, &ticks) == DVZ_ERROR);
 
     ticks = (DvzAxisTicks){DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks)};
     ticks.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_ticks(axis, &ticks));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_axis_set_ticks(axis, &ticks) == DVZ_ERROR);
 
     DvzAxisStyle style = dvz_axis_style();
     style.struct_size = DVZ_STRUCT_SIZE(DvzAxisStyle) - 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_style(axis, &style));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_axis_set_style(axis, &style) == DVZ_ERROR);
 
     style = dvz_axis_style();
     style.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_style(axis, &style));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_axis_set_style(axis, &style) == DVZ_ERROR);
 
     DvzPanelView2DDesc view = dvz_panel_view2d_desc();
     view.struct_size = 0;
@@ -3415,11 +3415,11 @@ int test_axis_descriptor_abi_rejects_invalid_structs(TstContext* suite, const Ts
 
     DvzPanelAxes2DDesc axes = dvz_panel_axes_2d_desc();
     axes.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_axes_2d(panel, &axes));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_axes_2d(panel, &axes) == DVZ_ERROR);
 
     axes = dvz_panel_axes_2d_desc();
     axes.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_axes_2d(panel, &axes));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_axes_2d(panel, &axes) == DVZ_ERROR);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -3452,7 +3452,7 @@ static int test_panel_set_axes_2d(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel_full(figure);
     ANN(panel);
 
-    AT(dvz_panel_set_axes_2d(panel, NULL));
+    AT(dvz_panel_set_axes_2d(panel, NULL) == DVZ_OK);
 
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
@@ -3468,13 +3468,13 @@ static int test_panel_set_axes_2d(TstContext* suite, const TstCase* item)
     DvzPanelAxes2DDesc axes = dvz_panel_axes_2d_desc();
     axes.x_label = "time";
     axes.y_label = "amplitude";
-    AT(dvz_panel_set_axes_2d(panel, &axes));
+    AT(dvz_panel_set_axes_2d(panel, &axes) == DVZ_OK);
     DvzAxisTickPolicy tick_policy = dvz_axis_tick_policy();
     tick_policy.target_count = 9;
     tick_policy.min_pixel_spacing = 42.0f;
     tick_policy.minor_per_interval = 3;
-    AT(dvz_axis_set_tick_policy(x_axis, &tick_policy));
-    AT(dvz_axis_set_tick_policy(y_axis, &tick_policy));
+    AT(dvz_axis_set_tick_policy(x_axis, &tick_policy) == DVZ_OK);
+    AT(dvz_axis_set_tick_policy(y_axis, &tick_policy) == DVZ_OK);
     DvzAxisStyle x_style = dvz_axis_style();
     x_style.show_grid = true;
     x_style.spine_width = 2.0f;
@@ -3485,8 +3485,8 @@ static int test_panel_set_axes_2d(TstContext* suite, const TstCase* item)
     y_style.spine_width = 3.0f;
     y_style.tick_size_px = 23.0f;
     y_style.grid_color[0] = 99;
-    AT(dvz_axis_set_style(x_axis, &x_style));
-    AT(dvz_axis_set_style(y_axis, &y_style));
+    AT(dvz_axis_set_style(x_axis, &x_style) == DVZ_OK);
+    AT(dvz_axis_set_style(y_axis, &y_style) == DVZ_OK);
 
     AT(strcmp(x_axis->label, "time") == 0);
     AT(strcmp(y_axis->label, "amplitude") == 0);
@@ -3504,11 +3504,11 @@ static int test_panel_set_axes_2d(TstContext* suite, const TstCase* item)
     AT(y_axis->style.grid_color[0] == 99);
 
     axes.struct_size = DVZ_STRUCT_SIZE(DvzPanelAxes2DDesc) - 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_axes_2d(panel, &axes));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_axes_2d(panel, &axes) == DVZ_ERROR);
 
     axes = dvz_panel_axes_2d_desc();
     axes.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_axes_2d(panel, &axes));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_axes_2d(panel, &axes) == DVZ_ERROR);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -3546,14 +3546,14 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     ANN(x_axis);
     ANN(y_axis);
-    AT(dvz_axis_set_grid(x_axis, true));
-    AT(dvz_axis_set_grid(y_axis, true));
+    AT(dvz_axis_set_grid(x_axis, true) == DVZ_OK);
+    AT(dvz_axis_set_grid(y_axis, true) == DVZ_OK);
 
     DvzAxisTickPolicy policy = dvz_axis_tick_policy();
     policy.target_count = 5;
     policy.minor_per_interval = 0;
-    AT(dvz_axis_set_tick_policy(x_axis, &policy));
-    AT(dvz_axis_set_tick_policy(y_axis, &policy));
+    AT(dvz_axis_set_tick_policy(x_axis, &policy) == DVZ_OK);
+    AT(dvz_axis_set_tick_policy(y_axis, &policy) == DVZ_OK);
 
     _scene_prepare_axis_visuals(figure);
 

@@ -62,10 +62,10 @@ DvzScenarioSpec dvz_composite_polygon_scenario(void);
 static bool _configure_panel(DvzPanel* panel)
 {
     ANN(panel);
-    if (!dvz_panel_set_padding(
+    if (dvz_panel_set_padding(
             panel, &(DvzPanelReserve){
                        .left_px = 24.0f, .right_px = 24.0f, .bottom_px = 18.0f,
-                       .top_px = 18.0f}))
+                       .top_px = 18.0f}) != DVZ_OK)
         return false;
     return example_configure_equal_aspect_panel(
         panel, (DvzDataDomain){.min = -2.18, .max = +3.06},

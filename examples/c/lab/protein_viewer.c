@@ -921,7 +921,7 @@ static void _apply_msaa(ProteinExampleState* state)
     DvzMsaaDesc desc = dvz_msaa_desc();
     desc.sample_count = sample_count;
     desc.alpha_to_coverage = state->msaa_alpha_to_coverage;
-    if (!dvz_panel_set_msaa(state->panel, &desc))
+    if (dvz_panel_set_msaa(state->panel, &desc) != DVZ_OK)
         dvz_fprintf(stderr, "dvz_panel_set_msaa() failed\n");
 }
 

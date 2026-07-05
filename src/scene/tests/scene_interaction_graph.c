@@ -363,11 +363,11 @@ int test_scene_grid_resolve_weights_fixed_and_spans(TstContext* suite, const Tst
     AT(dvz_grid_set_margins(
         grid, &(DvzPanelReserve){
                   .left_px = 40.0f, .right_px = 20.0f, .top_px = 10.0f,
-                  .bottom_px = 30.0f}));
-    AT(dvz_grid_set_gutter(grid, 10.0f, 20.0f));
-    AT(dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.0f));
-    AT(dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 2.0f));
-    AT(dvz_grid_set_col_size(grid, 2, DVZ_GRID_SIZE_FIXED_PX, 60.0f));
+                  .bottom_px = 30.0f}) == DVZ_OK);
+    AT(dvz_grid_set_gutter(grid, 10.0f, 20.0f) == DVZ_OK);
+    AT(dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.0f) == DVZ_OK);
+    AT(dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 2.0f) == DVZ_OK);
+    AT(dvz_grid_set_col_size(grid, 2, DVZ_GRID_SIZE_FIXED_PX, 60.0f) == DVZ_OK);
 
     DvzPanelDesc main = {0};
     AT(dvz_grid_resolve(
@@ -412,10 +412,10 @@ int test_scene_grid_resolve_rejects_invalid_inputs(TstContext* suite, const TstC
 
     AT(!dvz_figure_grid(figure, 0, 2));
     AT(!dvz_figure_grid(figure, 2, 0));
-    AT(!dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 0.0f));
-    AT(!dvz_grid_set_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, -1.0f));
-    AT(!dvz_grid_set_gutter(grid, -1.0f, 0.0f));
-    AT(!dvz_grid_set_margins(grid, &(DvzPanelReserve){.left_px = -1.0f}));
+    AT(dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 0.0f) == DVZ_ERROR);
+    AT(dvz_grid_set_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, -1.0f) == DVZ_ERROR);
+    AT(dvz_grid_set_gutter(grid, -1.0f, 0.0f) == DVZ_ERROR);
+    AT(dvz_grid_set_margins(grid, &(DvzPanelReserve){.left_px = -1.0f}) == DVZ_ERROR);
 
     DvzPanelDesc desc = {0};
     AT(!dvz_grid_resolve(
@@ -426,7 +426,7 @@ int test_scene_grid_resolve_rejects_invalid_inputs(TstContext* suite, const TstC
         &desc));
 
     AT(dvz_grid_set_margins(
-        grid, &(DvzPanelReserve){.left_px = 40.0f, .right_px = 40.0f}));
+        grid, &(DvzPanelReserve){.left_px = 40.0f, .right_px = 40.0f}) == DVZ_OK);
     AT(!dvz_grid_resolve(
         grid, 64, 64, (DvzGridCell){.row = 0, .col = 0, .row_span = 1, .col_span = 1},
         &desc));
@@ -451,7 +451,7 @@ int test_scene_grid_panel_recomputes_before_emit(TstContext* suite, const TstCas
     ANN(left);
     ANN(right);
 
-    AT(dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 60.0f));
+    AT(dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 60.0f) == DVZ_OK);
 
     float pos[3] = {0.0f, 0.0f, 0.0f};
     DvzColor col = {255, 255, 255, 255};
@@ -520,8 +520,8 @@ int test_scene_grid_panel_tracks_figure_resize(TstContext* suite, const TstCase*
     DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
     DvzGrid* grid = dvz_figure_grid(figure, 1, 2);
     ANN(grid);
-    AT(dvz_grid_set_gutter(grid, 10.0f, 0.0f));
-    AT(dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_FIXED_PX, 60.0f));
+    AT(dvz_grid_set_gutter(grid, 10.0f, 0.0f) == DVZ_OK);
+    AT(dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_FIXED_PX, 60.0f) == DVZ_OK);
 
     DvzPanel* data = dvz_grid_panel(grid, 0, 0);
     DvzPanel* colorbar = dvz_grid_panel(grid, 0, 1);
@@ -1174,7 +1174,7 @@ int test_scene_panel_border_creates_fixed_overlay(TstContext* suite, const TstCa
     AT(!border_out.visible);
     AT(!dvz_panel_border(NULL, &border_out));
     AT(!dvz_panel_border(panel, NULL));
-    AT(dvz_panel_set_border(panel, &border));
+    AT(dvz_panel_set_border(panel, &border) == DVZ_OK);
     AT(panel->visual_count == 1);
     ANN(panel->border_visual);
     AT(panel->visuals[0].visual == panel->border_visual);
@@ -1211,7 +1211,7 @@ int test_scene_panel_border_creates_fixed_overlay(TstContext* suite, const TstCa
 
     DvzVisual* before = panel->border_visual;
     border.inset_px = 8.0f;
-    AT(dvz_panel_set_border(panel, &border));
+    AT(dvz_panel_set_border(panel, &border) == DVZ_OK);
     AT(panel->visual_count == 1);
     AT(panel->border_visual == before);
     AT(dvz_panel_border(panel, &border_out));
@@ -1231,7 +1231,7 @@ int test_scene_panel_border_creates_fixed_overlay(TstContext* suite, const TstCa
     AT(!border_out.visible);
 
     border.visible = false;
-    AT(dvz_panel_set_border(panel, &border));
+    AT(dvz_panel_set_border(panel, &border) == DVZ_OK);
     AT(panel->visual_count == 0);
 
     dvz_scene_destroy(scene);
@@ -1253,10 +1253,10 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
                    .right_px = 4.0f,
                    .top_px = 6.0f,
                    .bottom_px = 2.0f,
-               }));
+               }) == DVZ_OK);
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){.left_px = 16.0f, .right_px = 9.6f, .bottom_px = 4.8f,
-                                  .top_px = 9.6f}));
+                                  .top_px = 9.6f}) == DVZ_OK);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.1f, 0.2f, 0.3f, 1.0f));
 
     float pos[3] = {1.5f, 0.0f, 0.0f};
@@ -1406,14 +1406,14 @@ int test_scene_panel_frame_snapshot_core(TstContext* suite, const TstCase* item)
                    .right_px = 6.0f,
                    .top_px = 8.0f,
                    .bottom_px = 4.0f,
-               }));
+               }) == DVZ_OK);
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){
                    .left_px = 20.0f,
                    .right_px = 12.0f,
                    .top_px = 16.0f,
                    .bottom_px = 10.0f,
-               }));
+               }) == DVZ_OK);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -5.0, 15.0) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 10.0, -10.0) == 0);
     DvzPanelView2DDesc view = dvz_panel_view2d_desc();
@@ -1529,7 +1529,7 @@ int test_scene_panel_frame_snapshot_guide_layouts(TstContext* suite, const TstCa
     DvzPanelAxes2DDesc axes = dvz_panel_axes_2d_desc();
     axes.x_label = "time";
     axes.y_label = "value";
-    AT(dvz_panel_set_axes_2d(panel, &axes));
+    AT(dvz_panel_set_axes_2d(panel, &axes) == DVZ_OK);
     const double x_ticks[] = {0.0, 0.5, 1.0};
     const char* x_labels[] = {"zero", "half", "one"};
     DvzAxisTicks ticks = {
@@ -1538,7 +1538,7 @@ int test_scene_panel_frame_snapshot_guide_layouts(TstContext* suite, const TstCa
         .values = x_ticks,
         .labels = x_labels,
     };
-    AT(dvz_axis_set_ticks(dvz_panel_axis(panel, DVZ_DIM_X), &ticks));
+    AT(dvz_axis_set_ticks(dvz_panel_axis(panel, DVZ_DIM_X), &ticks) == DVZ_OK);
 
     DvzGuideLineDesc line_desc = dvz_guide_line_desc();
     line_desc.orientation = DVZ_GUIDE_ORIENTATION_HORIZONTAL;
@@ -1703,8 +1703,8 @@ int test_scene_adjacent_panels_plot_scissor_no_bleed(TstContext* suite, const Ts
     DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
     DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
 
-    AT(dvz_panel_set_reserve(left, &(DvzPanelReserve){.right_px = 20.0f}));
-    AT(dvz_panel_set_reserve(right, &(DvzPanelReserve){.left_px = 20.0f}));
+    AT(dvz_panel_set_reserve(left, &(DvzPanelReserve){.right_px = 20.0f}) == DVZ_OK);
+    AT(dvz_panel_set_reserve(right, &(DvzPanelReserve){.left_px = 20.0f}) == DVZ_OK);
 
     DvzRect left_plot = {0};
     DvzRect right_plot = {0};

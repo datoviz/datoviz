@@ -267,16 +267,16 @@ void dvz_grid_destroy(DvzGrid* grid)
  * @param margins grid margins, or NULL for zero margins
  * @return whether the margins were accepted
  */
-bool dvz_grid_set_margins(DvzGrid* grid, const DvzPanelReserve* margins)
+DvzResult dvz_grid_set_margins(DvzGrid* grid, const DvzPanelReserve* margins)
 {
     if (grid == NULL)
-        return false;
+        return DVZ_ERROR;
     DvzPanelReserve next = margins != NULL ? *margins : (DvzPanelReserve){0};
     if (!_grid_margins_valid(&next))
-        return false;
+        return DVZ_ERROR;
     grid->margins = next;
     _scene_grid_mark_dirty(grid);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -290,14 +290,14 @@ bool dvz_grid_set_margins(DvzGrid* grid, const DvzPanelReserve* margins)
  * @param y_px vertical gutter in logical pixels
  * @return whether the gutters were accepted
  */
-bool dvz_grid_set_gutter(DvzGrid* grid, float x_px, float y_px)
+DvzResult dvz_grid_set_gutter(DvzGrid* grid, float x_px, float y_px)
 {
     if (grid == NULL || !isfinite(x_px) || !isfinite(y_px) || x_px < 0.0f || y_px < 0.0f)
-        return false;
+        return DVZ_ERROR;
     grid->gutter_x_px = x_px;
     grid->gutter_y_px = y_px;
     _scene_grid_mark_dirty(grid);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -312,13 +312,13 @@ bool dvz_grid_set_gutter(DvzGrid* grid, float x_px, float y_px)
  * @param value weight or fixed logical-pixel size
  * @return whether the size was accepted
  */
-bool dvz_grid_set_col_size(DvzGrid* grid, uint32_t col, DvzGridSizeMode mode, float value)
+DvzResult dvz_grid_set_col_size(DvzGrid* grid, uint32_t col, DvzGridSizeMode mode, float value)
 {
     if (grid == NULL || col >= grid->cols || !_grid_track_valid(mode, value))
-        return false;
+        return DVZ_ERROR;
     grid->col_sizes[col] = (DvzGridTrack){.mode = mode, .value = value};
     _scene_grid_mark_dirty(grid);
-    return true;
+    return DVZ_OK;
 }
 
 
@@ -333,13 +333,13 @@ bool dvz_grid_set_col_size(DvzGrid* grid, uint32_t col, DvzGridSizeMode mode, fl
  * @param value weight or fixed logical-pixel size
  * @return whether the size was accepted
  */
-bool dvz_grid_set_row_size(DvzGrid* grid, uint32_t row, DvzGridSizeMode mode, float value)
+DvzResult dvz_grid_set_row_size(DvzGrid* grid, uint32_t row, DvzGridSizeMode mode, float value)
 {
     if (grid == NULL || row >= grid->rows || !_grid_track_valid(mode, value))
-        return false;
+        return DVZ_ERROR;
     grid->row_sizes[row] = (DvzGridTrack){.mode = mode, .value = value};
     _scene_grid_mark_dirty(grid);
-    return true;
+    return DVZ_OK;
 }
 
 

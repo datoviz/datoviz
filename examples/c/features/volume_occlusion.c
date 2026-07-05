@@ -295,11 +295,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
     if (grid == NULL)
         goto error;
-    if (!dvz_grid_set_margins(
+    if (dvz_grid_set_margins(
             grid, &(DvzPanelReserve){
-                      .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}))
+                      .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}) != DVZ_OK)
         goto error;
-    if (!dvz_grid_set_gutter(grid, 30.0f, 0.0f))
+    if (dvz_grid_set_gutter(grid, 30.0f, 0.0f) != DVZ_OK)
         goto error;
 
     DvzPanel* plain = dvz_grid_panel(grid, 0, 0);

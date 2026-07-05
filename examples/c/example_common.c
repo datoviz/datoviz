@@ -546,14 +546,14 @@ bool example_configure_compact_grid(DvzGrid* grid, float gutter_x_px, float gutt
 {
     if (grid == NULL)
         return false;
-    if (!dvz_grid_set_margins(
+    if (dvz_grid_set_margins(
             grid,
             &(DvzPanelReserve){
-                .left_px = 56.0f, .right_px = 56.0f, .top_px = 56.0f, .bottom_px = 56.0f}))
+                .left_px = 56.0f, .right_px = 56.0f, .top_px = 56.0f, .bottom_px = 56.0f}) != DVZ_OK)
     {
         return false;
     }
-    return dvz_grid_set_gutter(grid, gutter_x_px, gutter_y_px);
+    return dvz_grid_set_gutter(grid, gutter_x_px, gutter_y_px) == DVZ_OK;
 }
 
 

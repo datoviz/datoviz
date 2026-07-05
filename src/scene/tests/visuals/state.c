@@ -1210,7 +1210,7 @@ int test_scene_panel_bounds_overlay_emit_runtime(TstContext* suite, const TstCas
 
     DvzMsaaDesc msaa = dvz_msaa_desc();
     msaa.sample_count = 4;
-    AT(dvz_panel_set_msaa(panel, &msaa));
+    AT(dvz_panel_set_msaa(panel, &msaa) == DVZ_OK);
 
     DvzVisual* spheres = dvz_sphere(scene, 0);
     ANN(spheres);
@@ -2332,11 +2332,11 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
 
     DvzPanelBorderDesc border_desc = dvz_panel_border_desc();
     border_desc.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_border(panel, &border_desc));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_border(panel, &border_desc) == DVZ_ERROR);
 
     border_desc = dvz_panel_border_desc();
     border_desc.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_border(panel, &border_desc));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_border(panel, &border_desc) == DVZ_ERROR);
 
     DvzQueryRequest request = dvz_query_request();
     request.struct_size = DVZ_STRUCT_SIZE(DvzQueryRequest) - 1;
@@ -2348,27 +2348,27 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
 
     DvzEdlDesc edl = dvz_edl_desc();
     edl.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_edl(panel, &edl));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_edl(panel, &edl) == DVZ_ERROR);
 
     edl = dvz_edl_desc();
     edl.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_edl(panel, &edl));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_edl(panel, &edl) == DVZ_ERROR);
 
     DvzMsaaDesc msaa = dvz_msaa_desc();
     msaa.struct_size = DVZ_STRUCT_SIZE(DvzMsaaDesc) - 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_msaa(panel, &msaa));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_msaa(panel, &msaa) == DVZ_ERROR);
 
     msaa = dvz_msaa_desc();
     msaa.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_msaa(panel, &msaa));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_msaa(panel, &msaa) == DVZ_ERROR);
 
     DvzSsaoDesc ssao = dvz_ssao_desc();
     ssao.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_ssao(panel, &ssao));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_ssao(panel, &ssao) == DVZ_ERROR);
 
     ssao = dvz_ssao_desc();
     ssao.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, !dvz_panel_set_ssao(panel, &ssao));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_ssao(panel, &ssao) == DVZ_ERROR);
 
     DvzVolumeOcclusionDesc volume_occlusion = dvz_volume_occlusion_desc();
     volume_occlusion.struct_size = DVZ_STRUCT_SIZE(DvzVolumeOcclusionDesc) - 1;

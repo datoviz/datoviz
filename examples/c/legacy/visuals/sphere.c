@@ -235,7 +235,7 @@ static void _apply_ssao(SsaoExampleState* state)
         .blur_enabled = state->blur_enabled,
         .debug_view = state->debug_view,
     };
-    if (!dvz_panel_set_ssao(state->panel, &desc))
+    if (dvz_panel_set_ssao(state->panel, &desc) != DVZ_OK)
         dvz_fprintf(stderr, "dvz_panel_set_ssao() failed\n");
 }
 
@@ -272,7 +272,7 @@ static void _apply_msaa(SsaoExampleState* state)
     DvzMsaaDesc desc = dvz_msaa_desc();
     desc.sample_count = sample_count;
     desc.alpha_to_coverage = state->msaa_alpha_to_coverage;
-    if (!dvz_panel_set_msaa(state->panel, &desc))
+    if (dvz_panel_set_msaa(state->panel, &desc) != DVZ_OK)
         dvz_fprintf(stderr, "dvz_panel_set_msaa() failed\n");
 }
 

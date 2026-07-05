@@ -853,7 +853,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     AT(dvz_panel_set_msaa(
-        panel, &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 4, .alpha_to_coverage = true}));
+        panel, &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 4, .alpha_to_coverage = true}) == DVZ_OK);
 
     DvzVisual* sphere = dvz_sphere(scene, 0);
     AT(sphere != NULL);
@@ -1004,7 +1004,7 @@ int test_scene_msaa_blended_overlay_runtime_lowering(TstContext* suite, const Ts
         &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc),
                        .enabled = true,
                        .sample_count = 4,
-                       .alpha_to_coverage = true}));
+                       .alpha_to_coverage = true}) == DVZ_OK);
 
     DvzVisual* sphere = dvz_sphere(scene, 0);
     AT(sphere != NULL);
@@ -1153,7 +1153,7 @@ int test_scene_msaa_ssao_blended_overlay_runtime_lowering(TstContext* suite, con
         &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc),
                        .enabled = true,
                        .sample_count = 16,
-                       .alpha_to_coverage = true}));
+                       .alpha_to_coverage = true}) == DVZ_OK);
     AT(_scene_technique_state_set_ssao(
         &panel->techniques,
         &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc),
@@ -1251,7 +1251,7 @@ int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase
     AT(panel != NULL);
     AT(dvz_panel_set_msaa(
         panel, &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 16,
-                              .alpha_to_coverage = true}));
+                              .alpha_to_coverage = true}) == DVZ_OK);
 
     DvzVisual* sphere = dvz_sphere(scene, 0);
     AT(sphere != NULL);
@@ -1388,7 +1388,7 @@ int test_scene_msaa_runtime_capability_disable_topology(TstContext* suite, const
     AT(panel != NULL);
     AT(dvz_panel_set_msaa(
         panel, &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 4,
-                              .alpha_to_coverage = true}));
+                              .alpha_to_coverage = true}) == DVZ_OK);
 
     DvzVisual* sphere = dvz_sphere(scene, 0);
     AT(sphere != NULL);
@@ -1515,7 +1515,7 @@ int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item)
         panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc),
                    .radius = 2.0f,
                    .strength = 55.0f,
-                   .depth_scale = 1.0f}));
+                   .depth_scale = 1.0f}) == DVZ_OK);
 
     DvzFramePlan* plan = dvz_frame_plan("figure.edl", 0);
     ANN(plan);
@@ -1666,7 +1666,7 @@ int test_scene_edl_blended_overlay_runtime_lowering(TstContext* suite, const Tst
     AT(dvz_panel_add_visual(panel, overlay, NULL) == 0);
 
     AT(dvz_panel_set_edl(
-        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
+        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}) == DVZ_OK);
 
     DvzFramePlan* plan = dvz_frame_plan("figure.edl.label", 0);
     ANN(plan);
@@ -1793,7 +1793,7 @@ int test_scene_edl_depth_producer_capabilities(TstContext* suite, const TstCase*
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
     AT(dvz_panel_set_edl(
-        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
+        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}) == DVZ_OK);
 
     DvzFramePlan* plan = dvz_frame_plan("figure.edl.depth_producers", 0);
     ANN(plan);
@@ -1858,7 +1858,7 @@ int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* i
            fixed_panel, fixed_visual,
            &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
     AT(dvz_panel_set_edl(
-        fixed_panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
+        fixed_panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}) == DVZ_OK);
 
     DvzFramePlan* fixed_plan = dvz_frame_plan("figure.edl.fixed", 0);
     ANN(fixed_plan);
@@ -1876,7 +1876,7 @@ int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* i
     AT(dvz_panel_add_visual(transparent_panel, transparent_point, NULL) == 0);
     AT(dvz_panel_set_edl(
         transparent_panel,
-        &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
+        &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}) == DVZ_OK);
 
     DvzFramePlan* transparent_plan = dvz_frame_plan("figure.edl.transparent", 0);
     ANN(transparent_plan);
@@ -2096,7 +2096,7 @@ int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     AT(dvz_panel_set_msaa(
-        panel, &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 4, .alpha_to_coverage = true}));
+        panel, &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 4, .alpha_to_coverage = true}) == DVZ_OK);
 
     DvzVisual* mesh = dvz_mesh(scene, 0);
     AT(mesh != NULL);

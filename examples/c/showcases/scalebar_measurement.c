@@ -560,10 +560,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 2, 2);
     EXAMPLE_CHECK(grid != NULL, "dvz_figure_grid() failed");
     ok = dvz_grid_set_margins(
-        grid, &(DvzPanelReserve){.left_px = 36.0f, .right_px = 30.0f, .top_px = 24.0f,
-                                 .bottom_px = 30.0f});
+             grid, &(DvzPanelReserve){.left_px = 36.0f, .right_px = 30.0f, .top_px = 24.0f,
+                                      .bottom_px = 30.0f}) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_margins() failed");
-    ok = dvz_grid_set_gutter(grid, 28.0f, 26.0f);
+    ok = dvz_grid_set_gutter(grid, 28.0f, 26.0f) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_gutter() failed");
 
     DvzPanel* overview = dvz_grid_panel_span(grid, 0, 0, 2, 1);

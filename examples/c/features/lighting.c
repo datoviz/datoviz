@@ -189,11 +189,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 3);
     if (grid == NULL)
         return false;
-    if (!dvz_grid_set_margins(
+    if (dvz_grid_set_margins(
             grid, &(DvzPanelReserve){
-                      .left_px = 34.0f, .right_px = 34.0f, .top_px = 40.0f, .bottom_px = 40.0f}))
+                      .left_px = 34.0f, .right_px = 34.0f, .top_px = 40.0f, .bottom_px = 40.0f}) != DVZ_OK)
         return false;
-    if (!dvz_grid_set_gutter(grid, 24.0f, 0.0f))
+    if (dvz_grid_set_gutter(grid, 24.0f, 0.0f) != DVZ_OK)
         return false;
 
     DvzCameraDesc camera = example_default_3d_camera_desc(1.0f);

@@ -816,13 +816,13 @@ DvzPanel* dvz_panel_full(DvzFigure* figure)
  * @param desc EDL descriptor, or NULL to disable
  * @return whether the panel EDL state was updated
  */
-bool dvz_panel_set_edl(DvzPanel* panel, const DvzEdlDesc* desc)
+DvzResult dvz_panel_set_edl(DvzPanel* panel, const DvzEdlDesc* desc)
 {
     ANN(panel);
     bool ok = _scene_technique_state_set_edl(&panel->techniques, desc);
     if (ok)
         _scene_notify_request_frame(panel->figure);
-    return ok;
+    return ok ? DVZ_OK : DVZ_ERROR;
 }
 
 
@@ -833,13 +833,13 @@ bool dvz_panel_set_edl(DvzPanel* panel, const DvzEdlDesc* desc)
  * @param desc MSAA descriptor, or NULL to disable
  * @return whether the panel MSAA state was updated
  */
-bool dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc)
+DvzResult dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc)
 {
     ANN(panel);
     bool ok = _scene_technique_state_set_msaa(&panel->techniques, desc);
     if (ok)
         _scene_notify_request_frame(panel->figure);
-    return ok;
+    return ok ? DVZ_OK : DVZ_ERROR;
 }
 
 
@@ -850,13 +850,13 @@ bool dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc)
  * @param desc SSAO descriptor, or NULL to disable
  * @return whether the panel SSAO state was updated
  */
-bool dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc)
+DvzResult dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc)
 {
     ANN(panel);
     bool ok = _scene_technique_state_set_ssao(&panel->techniques, desc);
     if (ok)
         _scene_notify_request_frame(panel->figure);
-    return ok;
+    return ok ? DVZ_OK : DVZ_ERROR;
 }
 
 

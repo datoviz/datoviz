@@ -193,16 +193,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!ok)
         return false;
 
-    ok = dvz_axis_set_grid(x_axis, true);
+    ok = dvz_axis_set_grid(x_axis, true) == DVZ_OK;
     if (!ok)
         return false;
-    ok = dvz_axis_set_grid(y_axis, true);
+    ok = dvz_axis_set_grid(y_axis, true) == DVZ_OK;
     if (!ok)
         return false;
-    ok = dvz_axis_set_label(x_axis, "time (s)");
+    ok = dvz_axis_set_label(x_axis, "time (s)") == DVZ_OK;
     if (!ok)
         return false;
-    ok = dvz_axis_set_label(y_axis, "signal");
+    ok = dvz_axis_set_label(y_axis, "signal") == DVZ_OK;
     if (!ok)
         return false;
 

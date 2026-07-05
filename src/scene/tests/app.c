@@ -1132,8 +1132,8 @@ static AppRgbaCapture _app_edl_point_capture(TstContext* suite, bool enabled)
     }
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
     if (enabled &&
-        !dvz_panel_set_edl(
-            panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 90.0f, .depth_scale = 1.0f}))
+        dvz_panel_set_edl(
+            panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 90.0f, .depth_scale = 1.0f}) != DVZ_OK)
     {
         dvz_scene_destroy(scene);
         return out;
@@ -1530,7 +1530,7 @@ int test_app_offscreen_small_view_clamps_layout(TstContext* suite, const TstCase
     AT(panel != NULL);
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){.left_px = 140.0f, .right_px = 80.0f, .bottom_px = 90.0f,
-                                        .top_px = 45.0f}));
+                                        .top_px = 45.0f}) == DVZ_OK);
 
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
@@ -3095,7 +3095,7 @@ int test_app_offscreen_points_edl_renders(TstContext* suite, const TstCase* item
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
     AT(dvz_panel_set_edl(
-        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 65.0f, .depth_scale = 1.0f}));
+        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 65.0f, .depth_scale = 1.0f}) == DVZ_OK);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -3111,7 +3111,7 @@ int test_app_offscreen_points_edl_renders(TstContext* suite, const TstCase* item
     ANN(canvas);
 
     dvz_app_run(app, 1);
-    AT(dvz_panel_set_edl(panel, NULL));
+    AT(dvz_panel_set_edl(panel, NULL) == DVZ_OK);
     dvz_app_run(app, 1);
 
     uint32_t width = 0, height = 0;
@@ -3359,7 +3359,7 @@ int test_app_offscreen_sphere_ssao_darkens_contact(TstContext* suite, const TstC
 
     AT(dvz_panel_set_ssao(
         panel, &(DvzSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSsaoDesc), .radius = 3.0f, .strength = 8.0f, .bias = 0.0f,
-                              .sample_count = 16}));
+                              .sample_count = 16}) == DVZ_OK);
     dvz_app_run(app, 1);
     uint32_t width1 = 0, height1 = 0;
     uint8_t* rgba1 = NULL;

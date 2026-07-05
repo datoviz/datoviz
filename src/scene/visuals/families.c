@@ -1193,21 +1193,21 @@ void dvz_panel_clear_border(DvzPanel* panel)
  * @param border the border descriptor, or NULL to clear
  * @return whether the border was updated
  */
-bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
+DvzResult dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
 {
     ANN(panel);
     if (!_panel_border_desc_validate(border))
-        return false;
+        return DVZ_ERROR;
     if (panel->figure == NULL || panel->figure->scene == NULL)
-        return false;
+        return DVZ_ERROR;
     DvzScene* scene = panel->figure->scene;
     if (!_scene_visual_mutation_allowed(scene, "set panel border"))
-        return false;
+        return DVZ_ERROR;
 
     if (border == NULL || !border->visible || border->width_px == 0.0f)
     {
         _panel_border_detach(panel);
-        return true;
+        return DVZ_OK;
     }
 
     vec3 starts[4] = {{0}};
@@ -1217,7 +1217,7 @@ bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
     if (!_panel_border_payload(panel, border, starts, ends, colors, widths))
     {
         log_error("dvz_panel_set_border: failed to resolve border geometry");
-        return false;
+        return DVZ_ERROR;
     }
 
     if (panel->border_visual == NULL)
@@ -1226,14 +1226,14 @@ bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
         if (visual == NULL)
         {
             log_error("dvz_panel_set_border: failed to allocate border visual");
-            return false;
+            return DVZ_ERROR;
         }
         if (dvz_segment_set_caps(visual, DVZ_SEGMENT_CAP_SQUARE, DVZ_SEGMENT_CAP_SQUARE) != 0 ||
             dvz_visual_set_depth_test(visual, false) != 0)
         {
             log_error("dvz_panel_set_border: failed to configure border visual");
             dvz_visual_destroy(visual);
-            return false;
+            return DVZ_ERROR;
         }
 
         DvzVisualDataUpdate updates[4] = {
@@ -1246,7 +1246,7 @@ bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
         {
             log_error("dvz_panel_set_border: failed to set border data");
             dvz_visual_destroy(visual);
-            return false;
+            return DVZ_ERROR;
         }
 
         if (_scene_panel_add_generated_visual(
@@ -1254,7 +1254,7 @@ bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
         {
             log_error("dvz_panel_set_border: failed to attach border visual");
             dvz_visual_destroy(visual);
-            return false;
+            return DVZ_ERROR;
         }
         panel->border_visual = visual;
     }
@@ -1269,14 +1269,14 @@ bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border)
         if (dvz_visual_set_data_many(panel->border_visual, updates, 4) != 0)
         {
             log_error("dvz_panel_set_border: failed to update border data");
-            return false;
+            return DVZ_ERROR;
         }
     }
 
     panel->border = *border;
     dvz_visual_set_visible(panel->border_visual, true);
     _scene_notify_request_frame(panel->figure);
-    return true;
+    return DVZ_OK;
 }
 
 

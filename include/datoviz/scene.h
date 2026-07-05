@@ -260,9 +260,9 @@ DVZ_EXPORT void dvz_grid_destroy(DvzGrid* grid);
  *
  * @param grid the grid
  * @param margins grid margins, or NULL for zero margins
- * @return whether the margins were accepted
+ * @return DVZ_OK if the margins were accepted, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_grid_set_margins(DvzGrid* grid, const DvzPanelReserve* margins);
+DVZ_EXPORT DvzResult dvz_grid_set_margins(DvzGrid* grid, const DvzPanelReserve* margins);
 
 
 /**
@@ -271,9 +271,9 @@ DVZ_EXPORT bool dvz_grid_set_margins(DvzGrid* grid, const DvzPanelReserve* margi
  * @param grid the grid
  * @param x_px horizontal gutter in logical pixels
  * @param y_px vertical gutter in logical pixels
- * @return whether the gutters were accepted
+ * @return DVZ_OK if the gutters were accepted, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_grid_set_gutter(DvzGrid* grid, float x_px, float y_px);
+DVZ_EXPORT DvzResult dvz_grid_set_gutter(DvzGrid* grid, float x_px, float y_px);
 
 
 /**
@@ -283,9 +283,9 @@ DVZ_EXPORT bool dvz_grid_set_gutter(DvzGrid* grid, float x_px, float y_px);
  * @param col zero-based column index
  * @param mode size mode
  * @param value weight or fixed logical-pixel size
- * @return whether the size was accepted
+ * @return DVZ_OK if the size was accepted, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool
+DVZ_EXPORT DvzResult
 dvz_grid_set_col_size(DvzGrid* grid, uint32_t col, DvzGridSizeMode mode, float value);
 
 
@@ -296,9 +296,9 @@ dvz_grid_set_col_size(DvzGrid* grid, uint32_t col, DvzGridSizeMode mode, float v
  * @param row zero-based row index
  * @param mode size mode
  * @param value weight or fixed logical-pixel size
- * @return whether the size was accepted
+ * @return DVZ_OK if the size was accepted, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool
+DVZ_EXPORT DvzResult
 dvz_grid_set_row_size(DvzGrid* grid, uint32_t row, DvzGridSizeMode mode, float value);
 
 
@@ -630,9 +630,9 @@ DVZ_EXPORT DvzPanel* dvz_panel_full(DvzFigure* figure);
  *
  * @param panel the panel
  * @param reserve pixel reservation descriptor, or NULL for zero reserve
- * @return whether the reservation was accepted
+ * @return DVZ_OK if the reservation was accepted, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_panel_set_reserve(DvzPanel* panel, const DvzPanelReserve* reserve);
+DVZ_EXPORT DvzResult dvz_panel_set_reserve(DvzPanel* panel, const DvzPanelReserve* reserve);
 
 
 /**
@@ -656,9 +656,9 @@ DVZ_EXPORT bool dvz_panel_get_reserve(const DvzPanel* panel, DvzPanelReserve* ou
  *
  * @param panel the panel
  * @param padding pixel padding descriptor, or NULL for zero padding
- * @return whether the padding was accepted
+ * @return DVZ_OK if the padding was accepted, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_panel_set_padding(DvzPanel* panel, const DvzPanelReserve* padding);
+DVZ_EXPORT DvzResult dvz_panel_set_padding(DvzPanel* panel, const DvzPanelReserve* padding);
 
 
 /**
@@ -1191,9 +1191,9 @@ DVZ_EXPORT DvzPanelBorderDesc dvz_panel_border_desc(void);
  *
  * @param panel the panel
  * @param border border descriptor, or NULL to clear
- * @return whether the border was updated
+ * @return DVZ_OK if the border was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border);
+DVZ_EXPORT DvzResult dvz_panel_set_border(DvzPanel* panel, const DvzPanelBorderDesc* border);
 
 
 /**
@@ -1231,9 +1231,9 @@ DVZ_EXPORT DvzEdlDesc dvz_edl_desc(void);
  *
  * @param panel the panel
  * @param desc EDL descriptor, or NULL to disable
- * @return whether the panel EDL state was updated
+ * @return DVZ_OK if the panel EDL state was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_panel_set_edl(DvzPanel* panel, const DvzEdlDesc* desc);
+DVZ_EXPORT DvzResult dvz_panel_set_edl(DvzPanel* panel, const DvzEdlDesc* desc);
 
 
 /**
@@ -1244,9 +1244,9 @@ DVZ_EXPORT bool dvz_panel_set_edl(DvzPanel* panel, const DvzEdlDesc* desc);
  *
  * @param panel the panel
  * @param desc MSAA descriptor, or NULL to disable
- * @return whether the panel MSAA state was updated
+ * @return DVZ_OK if the panel MSAA state was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc);
+DVZ_EXPORT DvzResult dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc);
 
 
 /**
@@ -1267,9 +1267,9 @@ DVZ_EXPORT DvzSsaoDesc dvz_ssao_desc(void);
  *
  * @param panel the panel
  * @param desc SSAO descriptor, or NULL to disable
- * @return whether the panel SSAO state was updated
+ * @return DVZ_OK if the panel SSAO state was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc);
+DVZ_EXPORT DvzResult dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc);
 
 
 /**
@@ -1487,9 +1487,9 @@ DVZ_EXPORT DvzPanelAxes2DDesc dvz_panel_axes_2d_desc(void);
  *
  * @param panel the panel
  * @param desc axes descriptor, or NULL for defaults
- * @return whether the axes were updated
+ * @return DVZ_OK if the axes were updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_panel_set_axes_2d(DvzPanel* panel, const DvzPanelAxes2DDesc* desc);
+DVZ_EXPORT DvzResult dvz_panel_set_axes_2d(DvzPanel* panel, const DvzPanelAxes2DDesc* desc);
 
 
 /**
@@ -1513,9 +1513,9 @@ DVZ_EXPORT DvzAxisStyle dvz_axis_style(void);
  *
  * @param axis the axis
  * @param visible whether the axis is visible
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_visible(DvzAxis* axis, bool visible);
+DVZ_EXPORT DvzResult dvz_axis_set_visible(DvzAxis* axis, bool visible);
 
 
 /**
@@ -1523,9 +1523,9 @@ DVZ_EXPORT bool dvz_axis_set_visible(DvzAxis* axis, bool visible);
  *
  * @param axis the axis
  * @param visible whether grid lines are visible
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_grid(DvzAxis* axis, bool visible);
+DVZ_EXPORT DvzResult dvz_axis_set_grid(DvzAxis* axis, bool visible);
 
 
 /**
@@ -1535,9 +1535,9 @@ DVZ_EXPORT bool dvz_axis_set_grid(DvzAxis* axis, bool visible);
  *
  * @param axis the axis
  * @param label label string, or NULL to clear
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_label(DvzAxis* axis, const char* label);
+DVZ_EXPORT DvzResult dvz_axis_set_label(DvzAxis* axis, const char* label);
 
 
 /**
@@ -1545,9 +1545,9 @@ DVZ_EXPORT bool dvz_axis_set_label(DvzAxis* axis, const char* label);
  *
  * @param axis the axis
  * @param policy tick policy, or NULL for defaults
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy);
+DVZ_EXPORT DvzResult dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy);
 
 
 /**
@@ -1559,9 +1559,9 @@ DVZ_EXPORT bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy*
  *
  * @param axis the axis
  * @param ticks explicit tick descriptor
- * @return whether the explicit ticks were stored
+ * @return DVZ_OK if the explicit ticks were stored, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_ticks(DvzAxis* axis, const DvzAxisTicks* ticks);
+DVZ_EXPORT DvzResult dvz_axis_set_ticks(DvzAxis* axis, const DvzAxisTicks* ticks);
 
 
 /**
@@ -1570,9 +1570,9 @@ DVZ_EXPORT bool dvz_axis_set_ticks(DvzAxis* axis, const DvzAxisTicks* ticks);
  * The axis returns to its automatic tick policy after this call.
  *
  * @param axis the axis
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_clear_ticks(DvzAxis* axis);
+DVZ_EXPORT DvzResult dvz_axis_clear_ticks(DvzAxis* axis);
 
 
 /**
@@ -1580,9 +1580,9 @@ DVZ_EXPORT bool dvz_axis_clear_ticks(DvzAxis* axis);
  *
  * @param axis the axis
  * @param style axis style, or NULL for defaults
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style);
+DVZ_EXPORT DvzResult dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style);
 
 
 /**
@@ -1597,9 +1597,9 @@ DVZ_EXPORT bool dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style);
  * @param right right margin
  * @param bottom bottom margin
  * @param top top margin
- * @return whether the margins were updated
+ * @return DVZ_OK if the margins were updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_plot_margins(
+DVZ_EXPORT DvzResult dvz_axis_set_plot_margins(
     DvzAxis* axis, float left, float right, float bottom, float top);
 
 
@@ -1610,9 +1610,9 @@ DVZ_EXPORT bool dvz_axis_set_plot_margins(
  *
  * @param axis the axis
  * @param units units object, or NULL to restore plain numeric formatting
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_units(DvzAxis* axis, DvzUnits* units);
+DVZ_EXPORT DvzResult dvz_axis_set_units(DvzAxis* axis, DvzUnits* units);
 
 
 /**
@@ -1620,9 +1620,9 @@ DVZ_EXPORT bool dvz_axis_set_units(DvzAxis* axis, DvzUnits* units);
  *
  * @param axis the axis
  * @param format datetime format, or NULL to restore numeric/unit formatting
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_datetime(DvzAxis* axis, DvzDateTimeFormat* format);
+DVZ_EXPORT DvzResult dvz_axis_set_datetime(DvzAxis* axis, DvzDateTimeFormat* format);
 
 
 /**
@@ -1633,9 +1633,9 @@ DVZ_EXPORT bool dvz_axis_set_datetime(DvzAxis* axis, DvzDateTimeFormat* format);
  * @param data1 second data coordinate
  * @param t0 timestamp corresponding to data0, in microseconds since Unix epoch UTC
  * @param t1 timestamp corresponding to data1, in microseconds since Unix epoch UTC
- * @return whether the mapping was updated
+ * @return DVZ_OK if the mapping was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT bool dvz_axis_set_datetime_range(
+DVZ_EXPORT DvzResult dvz_axis_set_datetime_range(
     DvzAxis* axis, double data0, double data1, DvzTimestamp t0, DvzTimestamp t1);
 
 

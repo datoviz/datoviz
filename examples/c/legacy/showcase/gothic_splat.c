@@ -611,7 +611,7 @@ int main(int argc, char** argv)
             .strength = 0.42f,
             .depth_scale = 0.70f,
         };
-        ok = dvz_panel_set_edl(panel, &edl);
+        ok = dvz_panel_set_edl(panel, &edl) == DVZ_OK;
         EXAMPLE_CHECK(ok, "dvz_panel_set_edl() failed");
     }
 

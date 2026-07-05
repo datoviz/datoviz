@@ -171,7 +171,7 @@ static void _apply_edl(EdlExampleState* state)
         .strength = state->strength,
         .depth_scale = state->depth_scale,
     };
-    if (!dvz_panel_set_edl(state->panel, &desc))
+    if (dvz_panel_set_edl(state->panel, &desc) != DVZ_OK)
         dvz_fprintf(stderr, "dvz_panel_set_edl() failed\n");
 }
 

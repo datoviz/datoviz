@@ -129,9 +129,10 @@ static bool _add_axes(DvzPanel* panel)
         return false;
     if (!example_graphite_cyan_apply_axis_style(y_axis, true, NULL))
         return false;
-    if (!dvz_axis_set_grid(x_axis, true) || !dvz_axis_set_grid(y_axis, true))
+    if (dvz_axis_set_grid(x_axis, true) != DVZ_OK || dvz_axis_set_grid(y_axis, true) != DVZ_OK)
         return false;
-    return dvz_axis_set_label(x_axis, "time") && dvz_axis_set_label(y_axis, "amplitude");
+    return dvz_axis_set_label(x_axis, "time") == DVZ_OK &&
+           dvz_axis_set_label(y_axis, "amplitude") == DVZ_OK;
 }
 
 

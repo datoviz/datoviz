@@ -119,11 +119,12 @@ static bool _add_axes(DvzPanel* panel)
     ticks.target_count = 5;
     ticks.min_pixel_spacing = 130.0f;
     ticks.minor_per_interval = 0;
-    if (!dvz_axis_set_tick_policy(x_axis, &ticks) || !dvz_axis_set_tick_policy(y_axis, &ticks))
+    if (dvz_axis_set_tick_policy(x_axis, &ticks) != DVZ_OK || dvz_axis_set_tick_policy(y_axis, &ticks) != DVZ_OK)
         return false;
-    if (!dvz_axis_set_grid(x_axis, true) || !dvz_axis_set_grid(y_axis, true))
+    if (dvz_axis_set_grid(x_axis, true) != DVZ_OK || dvz_axis_set_grid(y_axis, true) != DVZ_OK)
         return false;
-    return dvz_axis_set_label(x_axis, "domain x") && dvz_axis_set_label(y_axis, "domain y");
+    return dvz_axis_set_label(x_axis, "domain x") == DVZ_OK &&
+           dvz_axis_set_label(y_axis, "domain y") == DVZ_OK;
 }
 
 

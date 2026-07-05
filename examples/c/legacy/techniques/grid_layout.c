@@ -160,26 +160,26 @@ int main(int argc, char** argv)
     DvzGrid* grid = dvz_figure_grid(figure, 3, 4);
     EXAMPLE_CHECK(grid != NULL, "dvz_figure_grid() failed");
     bool ok = dvz_grid_set_margins(
-        grid, &(DvzPanelReserve){.left_px = 24.0f, .right_px = 24.0f, .top_px = 24.0f,
-                                 .bottom_px = 24.0f});
+                  grid, &(DvzPanelReserve){.left_px = 24.0f, .right_px = 24.0f,
+                                           .top_px = 24.0f, .bottom_px = 24.0f}) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_margins() failed");
-    ok = dvz_grid_set_gutter(grid, 12.0f, 12.0f);
+    ok = dvz_grid_set_gutter(grid, 12.0f, 12.0f) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_gutter() failed");
 
-    ok = dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.35f);
+    ok = dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.35f) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_col_size(col 0) failed");
-    ok = dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 0.95f);
+    ok = dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 0.95f) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_col_size(col 1) failed");
-    ok = dvz_grid_set_col_size(grid, 2, DVZ_GRID_SIZE_FIXED_PX, 210.0f);
+    ok = dvz_grid_set_col_size(grid, 2, DVZ_GRID_SIZE_FIXED_PX, 210.0f) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_col_size(col 2) failed");
-    ok = dvz_grid_set_col_size(grid, 3, DVZ_GRID_SIZE_FIXED_PX, 64.0f);
+    ok = dvz_grid_set_col_size(grid, 3, DVZ_GRID_SIZE_FIXED_PX, 64.0f) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_col_size(col 3) failed");
 
-    ok = dvz_grid_set_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 180.0f);
+    ok = dvz_grid_set_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 180.0f) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_row_size(row 0) failed");
-    ok = dvz_grid_set_row_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 1.45f);
+    ok = dvz_grid_set_row_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 1.45f) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_row_size(row 1) failed");
-    ok = dvz_grid_set_row_size(grid, 2, DVZ_GRID_SIZE_WEIGHT, 0.90f);
+    ok = dvz_grid_set_row_size(grid, 2, DVZ_GRID_SIZE_WEIGHT, 0.90f) == DVZ_OK;
     EXAMPLE_CHECK(ok, "dvz_grid_set_row_size(row 2) failed");
 
     DvzPanel* panels[PLOT_COUNT] = {

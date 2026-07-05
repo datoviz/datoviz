@@ -540,6 +540,17 @@ Completed checkpoints:
      `python3 tools/check_api_status.py`, `just build`, `just test grid`,
      `just docs-api-check`, `just ctypes-smoke`, `just ctypes-python-smoke`, and
      `git diff --check`.
+47. `api: return results from panel axis mutators`
+   - Changed grid layout setters, panel layout/chrome setters, and retained axis setters from
+     `bool` to `DvzResult`, preserving `bool` for accessors, predicates, and geometry resolution.
+   - Migrated examples, scene tests, wasm wrappers, and Python facade smoke expectations from
+     truthiness to explicit `DVZ_OK`/`DVZ_ERROR` handling.
+   - Validation passed: stale truthiness scan, `just ctypes`, `just ctypes-check`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`,
+     `python3 tools/check_api_status.py`, `just docs-api`, `just docs-api-check`,
+     `just build`, `just test axis`, `just test grid`, `just test scene/scene-graph`,
+     `just test fields`, `just test app`, `just test visuals`, `just ctypes-smoke`,
+     `just ctypes-python-smoke`, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn: none
 known at this checkpoint.
@@ -550,8 +561,8 @@ Next recommended checkpoints, in safe execution order:
    `dvz_<object>_set_<property>()` and object/selector/payload/count conventions recorded in
    `spec/api/PUBLIC_API_CONVENTIONS.md`. The polygon aggregate, singular polygon, graph mutator
    renames, plot/single-polygon payload-count argument ordering, and grid sizing setter names are
-   complete. Next audit text, labels/volume setters, and any other obvious retained-state mutators
-   before RC.
+   complete. Next audit text, labels/volume setters, compute/visual attr-buffer mutators, and any
+   other obvious retained-state mutators before RC.
 2. Split stable `window.h` from backend SPI so ordinary window users do not include backend
    registration, GLFW hooks, or wrap-surface helpers. This include-boundary split is complete:
    `window.h` no longer includes `window/backend.h`, `advanced.h` opts into both, and ctypes parses

@@ -178,11 +178,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 1, 2);
     if (grid == NULL)
         return false;
-    if (!dvz_grid_set_margins(
+    if (dvz_grid_set_margins(
             grid, &(DvzPanelReserve){
-                      .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}))
+                      .left_px = 42.0f, .right_px = 42.0f, .top_px = 38.0f, .bottom_px = 38.0f}) != DVZ_OK)
         return false;
-    if (!dvz_grid_set_gutter(grid, 30.0f, 0.0f))
+    if (dvz_grid_set_gutter(grid, 30.0f, 0.0f) != DVZ_OK)
         return false;
 
     DvzPanel* single = dvz_grid_panel(grid, 0, 0);
@@ -232,7 +232,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     msaa.enabled = true;
     msaa.sample_count = 8u;
     msaa.alpha_to_coverage = false;
-    return dvz_panel_set_msaa(multisample, &msaa);
+    return dvz_panel_set_msaa(multisample, &msaa) == DVZ_OK;
 }
 
 

@@ -819,7 +819,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     ANN(x_axis);
     DvzAxisStyle x_style = x_axis->style;
     x_style.reserve_px = 35.0f;
-    AT(dvz_axis_set_style(x_axis, &x_style));
+    AT(dvz_axis_set_style(x_axis, &x_style) == DVZ_OK);
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(dvz_panel_get_reserve(panel, &reserve));
     AT(fabsf(reserve.left_px - 32.0f) < 1e-6f);
@@ -1185,13 +1185,13 @@ int test_scene_colorbar_attached_respects_panel_padding(TstContext* suite, const
                    .right_px = 24.0f,
                    .top_px = 20.0f,
                    .bottom_px = 16.0f,
-               }));
+               }) == DVZ_OK);
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){
                    .left_px = 40.0f,
                    .top_px = 20.0f,
                    .bottom_px = 30.0f,
-               }));
+               }) == DVZ_OK);
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
@@ -1291,7 +1291,7 @@ int test_scene_colorbar_detached_placement(TstContext* suite, const TstCase* ite
                    .right_px = 20.0f,
                    .top_px = 10.0f,
                    .bottom_px = 30.0f,
-               }));
+               }) == DVZ_OK);
     DvzRect before = {0};
     AT(dvz_panel_plot_rect_px(panel, &before));
 
@@ -1367,7 +1367,7 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
     ANN(figure);
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
-    AT(dvz_panel_set_reserve(panel, &(DvzPanelReserve){.left_px = 24.0f}));
+    AT(dvz_panel_set_reserve(panel, &(DvzPanelReserve){.left_px = 24.0f}) == DVZ_OK);
 
     DvzScale* scale = dvz_scale(
         scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),

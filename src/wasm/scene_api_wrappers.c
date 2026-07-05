@@ -423,7 +423,7 @@ int dvz_wasm_api_axis_set_visible(uint32_t axis_handle, uint32_t visible)
     if (axis == NULL || axis->owner == NULL || axis->axis == NULL)
         return _fail(axis != NULL ? axis->owner : NULL, "invalid WASM axis handle");
     _clear_payload(axis->owner);
-    if (!dvz_axis_set_visible(axis->axis, visible != 0))
+    if (dvz_axis_set_visible(axis->axis, visible != 0) != DVZ_OK)
         return _fail(axis->owner, "WASM axis visibility update failed");
     return 0;
 }
@@ -437,7 +437,7 @@ int dvz_wasm_api_axis_set_grid(uint32_t axis_handle, uint32_t visible)
     if (axis == NULL || axis->owner == NULL || axis->axis == NULL)
         return _fail(axis != NULL ? axis->owner : NULL, "invalid WASM axis handle");
     _clear_payload(axis->owner);
-    if (!dvz_axis_set_grid(axis->axis, visible != 0))
+    if (dvz_axis_set_grid(axis->axis, visible != 0) != DVZ_OK)
         return _fail(axis->owner, "WASM axis grid update failed");
     return 0;
 }
@@ -451,7 +451,7 @@ int dvz_wasm_api_axis_set_label(uint32_t axis_handle, const char* label)
     if (axis == NULL || axis->owner == NULL || axis->axis == NULL || label == NULL)
         return _fail(axis != NULL ? axis->owner : NULL, "invalid WASM axis label");
     _clear_payload(axis->owner);
-    if (!dvz_axis_set_label(axis->axis, label))
+    if (dvz_axis_set_label(axis->axis, label) != DVZ_OK)
         return _fail(axis->owner, "WASM axis label update failed");
     return 0;
 }
@@ -466,7 +466,7 @@ int dvz_wasm_api_axis_set_plot_margins(
     if (axis == NULL || axis->owner == NULL || axis->axis == NULL)
         return _fail(axis != NULL ? axis->owner : NULL, "invalid WASM axis handle");
     _clear_payload(axis->owner);
-    if (!dvz_axis_set_plot_margins(axis->axis, left, right, bottom, top))
+    if (dvz_axis_set_plot_margins(axis->axis, left, right, bottom, top) != DVZ_OK)
         return _fail(axis->owner, "WASM axis plot margins update failed");
     return 0;
 }

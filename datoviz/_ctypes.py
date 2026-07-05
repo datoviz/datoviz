@@ -8016,10 +8016,10 @@ else:
  * The axis returns to its automatic tick policy after this call.
  *
  * @param axis the axis
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_clear_ticks.argtypes = [ctypes.POINTER(DvzAxis)]
-    dvz_axis_clear_ticks.restype = ctypes.c_bool
+    dvz_axis_clear_ticks.restype = ctypes.c_int32
 
 
 try:
@@ -8032,10 +8032,10 @@ else:
  *
  * @param axis the axis
  * @param format datetime format, or NULL to restore numeric/unit formatting
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_datetime.argtypes = [ctypes.POINTER(DvzAxis), ctypes.POINTER(DvzDateTimeFormat)]
-    dvz_axis_set_datetime.restype = ctypes.c_bool
+    dvz_axis_set_datetime.restype = ctypes.c_int32
 
 
 try:
@@ -8051,10 +8051,10 @@ else:
  * @param data1 second data coordinate
  * @param t0 timestamp corresponding to data0, in microseconds since Unix epoch UTC
  * @param t1 timestamp corresponding to data1, in microseconds since Unix epoch UTC
- * @return whether the mapping was updated
+ * @return DVZ_OK if the mapping was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_datetime_range.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_double, ctypes.c_double, ctypes.c_long, ctypes.c_long]
-    dvz_axis_set_datetime_range.restype = ctypes.c_bool
+    dvz_axis_set_datetime_range.restype = ctypes.c_int32
 
 
 try:
@@ -8067,10 +8067,10 @@ else:
  *
  * @param axis the axis
  * @param visible whether grid lines are visible
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_grid.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_bool]
-    dvz_axis_set_grid.restype = ctypes.c_bool
+    dvz_axis_set_grid.restype = ctypes.c_int32
 
 
 try:
@@ -8085,10 +8085,10 @@ else:
  *
  * @param axis the axis
  * @param label label string, or NULL to clear
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_label.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_char_p]
-    dvz_axis_set_label.restype = ctypes.c_bool
+    dvz_axis_set_label.restype = ctypes.c_int32
 
 
 try:
@@ -8108,10 +8108,10 @@ else:
  * @param right right margin
  * @param bottom bottom margin
  * @param top top margin
- * @return whether the margins were updated
+ * @return DVZ_OK if the margins were updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_plot_margins.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
-    dvz_axis_set_plot_margins.restype = ctypes.c_bool
+    dvz_axis_set_plot_margins.restype = ctypes.c_int32
 
 
 try:
@@ -8124,10 +8124,10 @@ else:
  *
  * @param axis the axis
  * @param style axis style, or NULL for defaults
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_style.argtypes = [ctypes.POINTER(DvzAxis), ctypes.POINTER(DvzAxisStyle)]
-    dvz_axis_set_style.restype = ctypes.c_bool
+    dvz_axis_set_style.restype = ctypes.c_int32
 
 
 try:
@@ -8140,10 +8140,10 @@ else:
  *
  * @param axis the axis
  * @param policy tick policy, or NULL for defaults
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_tick_policy.argtypes = [ctypes.POINTER(DvzAxis), ctypes.POINTER(DvzAxisTickPolicy)]
-    dvz_axis_set_tick_policy.restype = ctypes.c_bool
+    dvz_axis_set_tick_policy.restype = ctypes.c_int32
 
 
 try:
@@ -8160,10 +8160,10 @@ else:
  *
  * @param axis the axis
  * @param ticks explicit tick descriptor
- * @return whether the explicit ticks were stored
+ * @return DVZ_OK if the explicit ticks were stored, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_ticks.argtypes = [ctypes.POINTER(DvzAxis), ctypes.POINTER(DvzAxisTicks)]
-    dvz_axis_set_ticks.restype = ctypes.c_bool
+    dvz_axis_set_ticks.restype = ctypes.c_int32
 
 
 try:
@@ -8178,10 +8178,10 @@ else:
  *
  * @param axis the axis
  * @param units units object, or NULL to restore plain numeric formatting
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_units.argtypes = [ctypes.POINTER(DvzAxis), ctypes.POINTER(DvzUnits)]
-    dvz_axis_set_units.restype = ctypes.c_bool
+    dvz_axis_set_units.restype = ctypes.c_int32
 
 
 try:
@@ -8194,10 +8194,10 @@ else:
  *
  * @param axis the axis
  * @param visible whether the axis is visible
- * @return whether the axis was updated
+ * @return DVZ_OK if the axis was updated, DVZ_ERROR otherwise
  */"""
     dvz_axis_set_visible.argtypes = [ctypes.POINTER(DvzAxis), ctypes.c_bool]
-    dvz_axis_set_visible.restype = ctypes.c_bool
+    dvz_axis_set_visible.restype = ctypes.c_int32
 
 
 try:
@@ -18325,10 +18325,10 @@ else:
  * @param col zero-based column index
  * @param mode size mode
  * @param value weight or fixed logical-pixel size
- * @return whether the size was accepted
+ * @return DVZ_OK if the size was accepted, DVZ_ERROR otherwise
  */"""
     dvz_grid_set_col_size.argtypes = [ctypes.POINTER(DvzGrid), ctypes.c_uint32, ctypes.c_int, ctypes.c_float]
-    dvz_grid_set_col_size.restype = ctypes.c_bool
+    dvz_grid_set_col_size.restype = ctypes.c_int32
 
 
 try:
@@ -18342,10 +18342,10 @@ else:
  * @param grid the grid
  * @param x_px horizontal gutter in logical pixels
  * @param y_px vertical gutter in logical pixels
- * @return whether the gutters were accepted
+ * @return DVZ_OK if the gutters were accepted, DVZ_ERROR otherwise
  */"""
     dvz_grid_set_gutter.argtypes = [ctypes.POINTER(DvzGrid), ctypes.c_float, ctypes.c_float]
-    dvz_grid_set_gutter.restype = ctypes.c_bool
+    dvz_grid_set_gutter.restype = ctypes.c_int32
 
 
 try:
@@ -18358,10 +18358,10 @@ else:
  *
  * @param grid the grid
  * @param margins grid margins, or NULL for zero margins
- * @return whether the margins were accepted
+ * @return DVZ_OK if the margins were accepted, DVZ_ERROR otherwise
  */"""
     dvz_grid_set_margins.argtypes = [ctypes.POINTER(DvzGrid), ctypes.POINTER(DvzPanelReserve)]
-    dvz_grid_set_margins.restype = ctypes.c_bool
+    dvz_grid_set_margins.restype = ctypes.c_int32
 
 
 try:
@@ -18376,10 +18376,10 @@ else:
  * @param row zero-based row index
  * @param mode size mode
  * @param value weight or fixed logical-pixel size
- * @return whether the size was accepted
+ * @return DVZ_OK if the size was accepted, DVZ_ERROR otherwise
  */"""
     dvz_grid_set_row_size.argtypes = [ctypes.POINTER(DvzGrid), ctypes.c_uint32, ctypes.c_int, ctypes.c_float]
-    dvz_grid_set_row_size.restype = ctypes.c_bool
+    dvz_grid_set_row_size.restype = ctypes.c_int32
 
 
 try:
@@ -22427,10 +22427,10 @@ else:
  *
  * @param panel the panel
  * @param desc axes descriptor, or NULL for defaults
- * @return whether the axes were updated
+ * @return DVZ_OK if the axes were updated, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_axes_2d.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelAxes2DDesc)]
-    dvz_panel_set_axes_2d.restype = ctypes.c_bool
+    dvz_panel_set_axes_2d.restype = ctypes.c_int32
 
 
 try:
@@ -22489,10 +22489,10 @@ else:
  *
  * @param panel the panel
  * @param border border descriptor, or NULL to clear
- * @return whether the border was updated
+ * @return DVZ_OK if the border was updated, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_border.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelBorderDesc)]
-    dvz_panel_set_border.restype = ctypes.c_bool
+    dvz_panel_set_border.restype = ctypes.c_int32
 
 
 try:
@@ -22586,10 +22586,10 @@ else:
  *
  * @param panel the panel
  * @param desc EDL descriptor, or NULL to disable
- * @return whether the panel EDL state was updated
+ * @return DVZ_OK if the panel EDL state was updated, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_edl.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzEdlDesc)]
-    dvz_panel_set_edl.restype = ctypes.c_bool
+    dvz_panel_set_edl.restype = ctypes.c_int32
 
 
 try:
@@ -22605,10 +22605,10 @@ else:
  *
  * @param panel the panel
  * @param desc MSAA descriptor, or NULL to disable
- * @return whether the panel MSAA state was updated
+ * @return DVZ_OK if the panel MSAA state was updated, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_msaa.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzMsaaDesc)]
-    dvz_panel_set_msaa.restype = ctypes.c_bool
+    dvz_panel_set_msaa.restype = ctypes.c_int32
 
 
 try:
@@ -22625,10 +22625,10 @@ else:
  *
  * @param panel the panel
  * @param padding pixel padding descriptor, or NULL for zero padding
- * @return whether the padding was accepted
+ * @return DVZ_OK if the padding was accepted, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_padding.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelReserve)]
-    dvz_panel_set_padding.restype = ctypes.c_bool
+    dvz_panel_set_padding.restype = ctypes.c_int32
 
 
 try:
@@ -22645,10 +22645,10 @@ else:
  *
  * @param panel the panel
  * @param reserve pixel reservation descriptor, or NULL for zero reserve
- * @return whether the reservation was accepted
+ * @return DVZ_OK if the reservation was accepted, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_reserve.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzPanelReserve)]
-    dvz_panel_set_reserve.restype = ctypes.c_bool
+    dvz_panel_set_reserve.restype = ctypes.c_int32
 
 
 try:
@@ -22686,10 +22686,10 @@ else:
  *
  * @param panel the panel
  * @param desc SSAO descriptor, or NULL to disable
- * @return whether the panel SSAO state was updated
+ * @return DVZ_OK if the panel SSAO state was updated, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_ssao.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzSsaoDesc)]
-    dvz_panel_set_ssao.restype = ctypes.c_bool
+    dvz_panel_set_ssao.restype = ctypes.c_int32
 
 
 try:

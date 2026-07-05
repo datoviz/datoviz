@@ -134,9 +134,10 @@ static bool _add_axes(DvzPanel* panel)
         return false;
     if (!example_graphite_cyan_apply_axis_style(y_axis, true, NULL))
         return false;
-    if (!dvz_axis_set_grid(x_axis, true) || !dvz_axis_set_grid(y_axis, true))
+    if (dvz_axis_set_grid(x_axis, true) != DVZ_OK || dvz_axis_set_grid(y_axis, true) != DVZ_OK)
         return false;
-    return dvz_axis_set_label(x_axis, "x") && dvz_axis_set_label(y_axis, "signal");
+    return dvz_axis_set_label(x_axis, "x") == DVZ_OK &&
+           dvz_axis_set_label(y_axis, "signal") == DVZ_OK;
 }
 
 

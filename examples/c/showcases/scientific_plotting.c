@@ -191,7 +191,7 @@ static bool _add_axes(
     ticks.target_count = 6;
     ticks.min_pixel_spacing = 92.0f;
     ticks.minor_per_interval = 3;
-    if (!dvz_axis_set_tick_policy(x_axis, &ticks) || !dvz_axis_set_tick_policy(y_axis, &ticks))
+    if (dvz_axis_set_tick_policy(x_axis, &ticks) != DVZ_OK || dvz_axis_set_tick_policy(y_axis, &ticks) != DVZ_OK)
         return false;
 
     ExampleAxisStyleOptions style = example_graphite_cyan_axis_options();
@@ -205,13 +205,13 @@ static bool _add_axes(
         return false;
     if (!example_graphite_cyan_apply_axis_style(y_axis, true, &style))
         return false;
-    if (!dvz_axis_set_grid(x_axis, true) || !dvz_axis_set_grid(y_axis, show_y_axis))
+    if (dvz_axis_set_grid(x_axis, true) != DVZ_OK || dvz_axis_set_grid(y_axis, show_y_axis) != DVZ_OK)
         return false;
-    if (!dvz_axis_set_visible(y_axis, show_y_axis))
+    if (dvz_axis_set_visible(y_axis, show_y_axis) != DVZ_OK)
         return false;
-    if (x_label != NULL && !dvz_axis_set_label(x_axis, x_label))
+    if (x_label != NULL && dvz_axis_set_label(x_axis, x_label) != DVZ_OK)
         return false;
-    if (show_y_axis && y_label != NULL && !dvz_axis_set_label(y_axis, y_label))
+    if (show_y_axis && y_label != NULL && dvz_axis_set_label(y_axis, y_label) != DVZ_OK)
         return false;
     return true;
 }
@@ -234,7 +234,7 @@ static bool _configure_panel(DvzPanel* panel)
     border.color = color;
     border.width_px = 2.0f;
     border.inset_px = 1.0f;
-    return dvz_panel_set_border(panel, &border);
+    return dvz_panel_set_border(panel, &border) == DVZ_OK;
 }
 
 
@@ -516,11 +516,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzGrid* grid = dvz_figure_grid(ctx->figure, 2, 2);
     if (grid == NULL)
         return false;
-    if (!dvz_grid_set_margins(
+    if (dvz_grid_set_margins(
             grid, &(DvzPanelReserve){.left_px = 24.0f, .right_px = 24.0f, .top_px = 18.0f,
-                                     .bottom_px = 24.0f}))
+                                     .bottom_px = 24.0f}) != DVZ_OK)
         return false;
-    if (!dvz_grid_set_gutter(grid, 24.0f, 34.0f))
+    if (dvz_grid_set_gutter(grid, 24.0f, 34.0f) != DVZ_OK)
         return false;
 
     DvzPanel* correlogram = dvz_grid_panel(grid, 0, 0);
@@ -539,8 +539,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!_set_domain(stacked, 0.0, 10.0, -0.85, 31.85))
         return false;
 
-    if (!dvz_panel_set_reserve(
-            stacked, &(DvzPanelReserve){.left_px = 56.0f, .right_px = 16.0f}))
+    if (dvz_panel_set_reserve(
+            stacked, &(DvzPanelReserve){.left_px = 56.0f, .right_px = 16.0f}) != DVZ_OK)
         return false;
 
     if (!_add_autocorrelogram(ctx->scene, correlogram) ||

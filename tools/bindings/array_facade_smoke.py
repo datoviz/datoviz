@@ -90,11 +90,11 @@ def main() -> int:
         axis = dvz.dvz_panel_axis(panel, dvz.DvzDim.DVZ_DIM_X)
         if not axis:
             raise RuntimeError('dvz_panel_axis() failed')
-        if not dvz.dvz_axis_set_ticks(
+        if dvz.dvz_axis_set_ticks(
             axis, np.array([0.0, 1.0], dtype=np.float64), ['zero', 'one']
-        ):
+        ) != 0:
             raise RuntimeError('facade dvz_axis_set_ticks() failed')
-        if not dvz.dvz_axis_clear_ticks(axis):
+        if dvz.dvz_axis_clear_ticks(axis) != 0:
             raise RuntimeError('dvz_axis_clear_ticks() failed')
 
         scale_desc = dvz.dvz_scale_desc()

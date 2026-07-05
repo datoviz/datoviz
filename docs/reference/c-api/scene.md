@@ -1136,14 +1136,14 @@ _Declared in `include/datoviz/scene/arcball.h`:37._
 ### `dvz_axis_clear_ticks()`
 
 ```c title="dvz_axis_clear_ticks"
-_Bool dvz_axis_clear_ticks(
+DvzResult dvz_axis_clear_ticks(
     DvzAxis * axis
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the axis was updated |
+| return | `DvzResult` | DVZ_OK if the axis was updated, DVZ_ERROR otherwise |
 | `axis` | `DvzAxis *` | the axis |
 
 Clear explicit tick positions and labels for one panel-owned axis.
@@ -1157,7 +1157,7 @@ _Declared in `include/datoviz/scene.h`:1575._
 ### `dvz_axis_set_datetime()`
 
 ```c title="dvz_axis_set_datetime"
-_Bool dvz_axis_set_datetime(
+DvzResult dvz_axis_set_datetime(
     DvzAxis * axis,
     DvzDateTimeFormat * format
 );
@@ -1165,7 +1165,7 @@ _Bool dvz_axis_set_datetime(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the axis was updated |
+| return | `DvzResult` | DVZ_OK if the axis was updated, DVZ_ERROR otherwise |
 | `axis` | `DvzAxis *` | the axis |
 | `format` | `DvzDateTimeFormat *` | datetime format, or NULL to restore numeric/unit formatting |
 
@@ -1178,7 +1178,7 @@ _Declared in `include/datoviz/scene.h`:1625._
 ### `dvz_axis_set_datetime_range()`
 
 ```c title="dvz_axis_set_datetime_range"
-_Bool dvz_axis_set_datetime_range(
+DvzResult dvz_axis_set_datetime_range(
     DvzAxis * axis,
     double data0,
     double data1,
@@ -1189,7 +1189,7 @@ _Bool dvz_axis_set_datetime_range(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the mapping was updated |
+| return | `DvzResult` | DVZ_OK if the mapping was updated, DVZ_ERROR otherwise |
 | `axis` | `DvzAxis *` | the axis |
 | `data0` | `double` | first data coordinate |
 | `data1` | `double` | second data coordinate |
@@ -1205,7 +1205,7 @@ _Declared in `include/datoviz/scene.h`:1638._
 ### `dvz_axis_set_grid()`
 
 ```c title="dvz_axis_set_grid"
-_Bool dvz_axis_set_grid(
+DvzResult dvz_axis_set_grid(
     DvzAxis * axis,
     _Bool visible
 );
@@ -1213,7 +1213,7 @@ _Bool dvz_axis_set_grid(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the axis was updated |
+| return | `DvzResult` | DVZ_OK if the axis was updated, DVZ_ERROR otherwise |
 | `axis` | `DvzAxis *` | the axis |
 | `visible` | `_Bool` | whether grid lines are visible |
 
@@ -1226,7 +1226,7 @@ _Declared in `include/datoviz/scene.h`:1528._
 ### `dvz_axis_set_label()`
 
 ```c title="dvz_axis_set_label"
-_Bool dvz_axis_set_label(
+DvzResult dvz_axis_set_label(
     DvzAxis * axis,
     const char * label
 );
@@ -1234,7 +1234,7 @@ _Bool dvz_axis_set_label(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the axis was updated |
+| return | `DvzResult` | DVZ_OK if the axis was updated, DVZ_ERROR otherwise |
 | `axis` | `DvzAxis *` | the axis |
 | `label` | `const char *` | label string, or NULL to clear |
 
@@ -1249,7 +1249,7 @@ _Declared in `include/datoviz/scene.h`:1540._
 ### `dvz_axis_set_plot_margins()`
 
 ```c title="dvz_axis_set_plot_margins"
-_Bool dvz_axis_set_plot_margins(
+DvzResult dvz_axis_set_plot_margins(
     DvzAxis * axis,
     float left,
     float right,
@@ -1260,7 +1260,7 @@ _Bool dvz_axis_set_plot_margins(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the margins were updated |
+| return | `DvzResult` | DVZ_OK if the margins were updated, DVZ_ERROR otherwise |
 | `axis` | `DvzAxis *` | the axis |
 | `left` | `float` | left margin |
 | `right` | `float` | right margin |
@@ -1280,7 +1280,7 @@ _Declared in `include/datoviz/scene.h`:1602._
 ### `dvz_axis_set_style()`
 
 ```c title="dvz_axis_set_style"
-_Bool dvz_axis_set_style(
+DvzResult dvz_axis_set_style(
     DvzAxis * axis,
     const DvzAxisStyle * style
 );
@@ -1288,7 +1288,7 @@ _Bool dvz_axis_set_style(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the axis was updated |
+| return | `DvzResult` | DVZ_OK if the axis was updated, DVZ_ERROR otherwise |
 | `axis` | `DvzAxis *` | the axis |
 | `style` | `const DvzAxisStyle *` | axis style, or NULL for defaults |
 
@@ -1301,7 +1301,7 @@ _Declared in `include/datoviz/scene.h`:1585._
 ### `dvz_axis_set_tick_policy()`
 
 ```c title="dvz_axis_set_tick_policy"
-_Bool dvz_axis_set_tick_policy(
+DvzResult dvz_axis_set_tick_policy(
     DvzAxis * axis,
     const DvzAxisTickPolicy * policy
 );
@@ -1309,7 +1309,7 @@ _Bool dvz_axis_set_tick_policy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the axis was updated |
+| return | `DvzResult` | DVZ_OK if the axis was updated, DVZ_ERROR otherwise |
 | `axis` | `DvzAxis *` | the axis |
 | `policy` | `const DvzAxisTickPolicy *` | tick policy, or NULL for defaults |
 
@@ -1322,7 +1322,7 @@ _Declared in `include/datoviz/scene.h`:1550._
 ### `dvz_axis_set_ticks()`
 
 ```c title="dvz_axis_set_ticks"
-_Bool dvz_axis_set_ticks(
+DvzResult dvz_axis_set_ticks(
     DvzAxis * axis,
     const DvzAxisTicks * ticks
 );
@@ -1330,7 +1330,7 @@ _Bool dvz_axis_set_ticks(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the explicit ticks were stored |
+| return | `DvzResult` | DVZ_OK if the explicit ticks were stored, DVZ_ERROR otherwise |
 | `axis` | `DvzAxis *` | the axis |
 | `ticks` | `const DvzAxisTicks *` | explicit tick descriptor |
 
@@ -1347,7 +1347,7 @@ _Declared in `include/datoviz/scene.h`:1564._
 ### `dvz_axis_set_units()`
 
 ```c title="dvz_axis_set_units"
-_Bool dvz_axis_set_units(
+DvzResult dvz_axis_set_units(
     DvzAxis * axis,
     DvzUnits * units
 );
@@ -1355,7 +1355,7 @@ _Bool dvz_axis_set_units(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the axis was updated |
+| return | `DvzResult` | DVZ_OK if the axis was updated, DVZ_ERROR otherwise |
 | `axis` | `DvzAxis *` | the axis |
 | `units` | `DvzUnits *` | units object, or NULL to restore plain numeric formatting |
 
@@ -1370,7 +1370,7 @@ _Declared in `include/datoviz/scene.h`:1615._
 ### `dvz_axis_set_visible()`
 
 ```c title="dvz_axis_set_visible"
-_Bool dvz_axis_set_visible(
+DvzResult dvz_axis_set_visible(
     DvzAxis * axis,
     _Bool visible
 );
@@ -1378,7 +1378,7 @@ _Bool dvz_axis_set_visible(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the axis was updated |
+| return | `DvzResult` | DVZ_OK if the axis was updated, DVZ_ERROR otherwise |
 | `axis` | `DvzAxis *` | the axis |
 | `visible` | `_Bool` | whether the axis is visible |
 
@@ -3118,7 +3118,7 @@ _Declared in `include/datoviz/scene.h`:315._
 ### `dvz_grid_set_col_size()`
 
 ```c title="dvz_grid_set_col_size"
-_Bool dvz_grid_set_col_size(
+DvzResult dvz_grid_set_col_size(
     DvzGrid * grid,
     uint32_t col,
     DvzGridSizeMode mode,
@@ -3128,7 +3128,7 @@ _Bool dvz_grid_set_col_size(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the size was accepted |
+| return | `DvzResult` | DVZ_OK if the size was accepted, DVZ_ERROR otherwise |
 | `grid` | `DvzGrid *` | the grid |
 | `col` | `uint32_t` | zero-based column index |
 | `mode` | `DvzGridSizeMode` | size mode |
@@ -3143,7 +3143,7 @@ _Declared in `include/datoviz/scene.h`:289._
 ### `dvz_grid_set_gutter()`
 
 ```c title="dvz_grid_set_gutter"
-_Bool dvz_grid_set_gutter(
+DvzResult dvz_grid_set_gutter(
     DvzGrid * grid,
     float x_px,
     float y_px
@@ -3152,7 +3152,7 @@ _Bool dvz_grid_set_gutter(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the gutters were accepted |
+| return | `DvzResult` | DVZ_OK if the gutters were accepted, DVZ_ERROR otherwise |
 | `grid` | `DvzGrid *` | the grid |
 | `x_px` | `float` | horizontal gutter in logical pixels |
 | `y_px` | `float` | vertical gutter in logical pixels |
@@ -3166,7 +3166,7 @@ _Declared in `include/datoviz/scene.h`:276._
 ### `dvz_grid_set_margins()`
 
 ```c title="dvz_grid_set_margins"
-_Bool dvz_grid_set_margins(
+DvzResult dvz_grid_set_margins(
     DvzGrid * grid,
     const DvzPanelReserve * margins
 );
@@ -3174,7 +3174,7 @@ _Bool dvz_grid_set_margins(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the margins were accepted |
+| return | `DvzResult` | DVZ_OK if the margins were accepted, DVZ_ERROR otherwise |
 | `grid` | `DvzGrid *` | the grid |
 | `margins` | `const DvzPanelReserve *` | grid margins, or NULL for zero margins |
 
@@ -3187,7 +3187,7 @@ _Declared in `include/datoviz/scene.h`:265._
 ### `dvz_grid_set_row_size()`
 
 ```c title="dvz_grid_set_row_size"
-_Bool dvz_grid_set_row_size(
+DvzResult dvz_grid_set_row_size(
     DvzGrid * grid,
     uint32_t row,
     DvzGridSizeMode mode,
@@ -3197,7 +3197,7 @@ _Bool dvz_grid_set_row_size(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the size was accepted |
+| return | `DvzResult` | DVZ_OK if the size was accepted, DVZ_ERROR otherwise |
 | `grid` | `DvzGrid *` | the grid |
 | `row` | `uint32_t` | zero-based row index |
 | `mode` | `DvzGridSizeMode` | size mode |
@@ -5498,7 +5498,7 @@ _Declared in `include/datoviz/scene.h`:712._
 ### `dvz_panel_set_axes_2d()`
 
 ```c title="dvz_panel_set_axes_2d"
-_Bool dvz_panel_set_axes_2d(
+DvzResult dvz_panel_set_axes_2d(
     DvzPanel * panel,
     const DvzPanelAxes2DDesc * desc
 );
@@ -5506,7 +5506,7 @@ _Bool dvz_panel_set_axes_2d(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the axes were updated |
+| return | `DvzResult` | DVZ_OK if the axes were updated, DVZ_ERROR otherwise |
 | `panel` | `DvzPanel *` | the panel |
 | `desc` | `const DvzPanelAxes2DDesc *` | axes descriptor, or NULL for defaults |
 
@@ -5577,7 +5577,7 @@ _Declared in `include/datoviz/scene.h`:1173._
 ### `dvz_panel_set_border()`
 
 ```c title="dvz_panel_set_border"
-_Bool dvz_panel_set_border(
+DvzResult dvz_panel_set_border(
     DvzPanel * panel,
     const DvzPanelBorderDesc * border
 );
@@ -5585,7 +5585,7 @@ _Bool dvz_panel_set_border(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the border was updated |
+| return | `DvzResult` | DVZ_OK if the border was updated, DVZ_ERROR otherwise |
 | `panel` | `DvzPanel *` | the panel |
 | `border` | `const DvzPanelBorderDesc *` | border descriptor, or NULL to clear |
 
@@ -5700,7 +5700,7 @@ _Declared in `include/datoviz/scene.h`:1354._
 ### `dvz_panel_set_edl()`
 
 ```c title="dvz_panel_set_edl"
-_Bool dvz_panel_set_edl(
+DvzResult dvz_panel_set_edl(
     DvzPanel * panel,
     const DvzEdlDesc * desc
 );
@@ -5708,7 +5708,7 @@ _Bool dvz_panel_set_edl(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the panel EDL state was updated |
+| return | `DvzResult` | DVZ_OK if the panel EDL state was updated, DVZ_ERROR otherwise |
 | `panel` | `DvzPanel *` | the panel |
 | `desc` | `const DvzEdlDesc *` | EDL descriptor, or NULL to disable |
 
@@ -5725,7 +5725,7 @@ _Declared in `include/datoviz/scene.h`:1236._
 ### `dvz_panel_set_msaa()`
 
 ```c title="dvz_panel_set_msaa"
-_Bool dvz_panel_set_msaa(
+DvzResult dvz_panel_set_msaa(
     DvzPanel * panel,
     const DvzMsaaDesc * desc
 );
@@ -5733,7 +5733,7 @@ _Bool dvz_panel_set_msaa(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the panel MSAA state was updated |
+| return | `DvzResult` | DVZ_OK if the panel MSAA state was updated, DVZ_ERROR otherwise |
 | `panel` | `DvzPanel *` | the panel |
 | `desc` | `const DvzMsaaDesc *` | MSAA descriptor, or NULL to disable |
 
@@ -5749,7 +5749,7 @@ _Declared in `include/datoviz/scene.h`:1249._
 ### `dvz_panel_set_padding()`
 
 ```c title="dvz_panel_set_padding"
-_Bool dvz_panel_set_padding(
+DvzResult dvz_panel_set_padding(
     DvzPanel * panel,
     const DvzPanelReserve * padding
 );
@@ -5757,7 +5757,7 @@ _Bool dvz_panel_set_padding(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the padding was accepted |
+| return | `DvzResult` | DVZ_OK if the padding was accepted, DVZ_ERROR otherwise |
 | `panel` | `DvzPanel *` | the panel |
 | `padding` | `const DvzPanelReserve *` | pixel padding descriptor, or NULL for zero padding |
 
@@ -5774,7 +5774,7 @@ _Declared in `include/datoviz/scene.h`:661._
 ### `dvz_panel_set_reserve()`
 
 ```c title="dvz_panel_set_reserve"
-_Bool dvz_panel_set_reserve(
+DvzResult dvz_panel_set_reserve(
     DvzPanel * panel,
     const DvzPanelReserve * reserve
 );
@@ -5782,7 +5782,7 @@ _Bool dvz_panel_set_reserve(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the reservation was accepted |
+| return | `DvzResult` | DVZ_OK if the reservation was accepted, DVZ_ERROR otherwise |
 | `panel` | `DvzPanel *` | the panel |
 | `reserve` | `const DvzPanelReserve *` | pixel reservation descriptor, or NULL for zero reserve |
 
@@ -5824,7 +5824,7 @@ _Declared in `include/datoviz/scene.h`:1315._
 ### `dvz_panel_set_ssao()`
 
 ```c title="dvz_panel_set_ssao"
-_Bool dvz_panel_set_ssao(
+DvzResult dvz_panel_set_ssao(
     DvzPanel * panel,
     const DvzSsaoDesc * desc
 );
@@ -5832,7 +5832,7 @@ _Bool dvz_panel_set_ssao(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `_Bool` | whether the panel SSAO state was updated |
+| return | `DvzResult` | DVZ_OK if the panel SSAO state was updated, DVZ_ERROR otherwise |
 | `panel` | `DvzPanel *` | the panel |
 | `desc` | `const DvzSsaoDesc *` | SSAO descriptor, or NULL to disable |
 

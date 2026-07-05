@@ -475,10 +475,10 @@ static bool _configure_panel(DvzPanel* panel, const ChoroplethBundle* bundle)
     ANN(panel);
     ANN(bundle);
 
-    if (!dvz_panel_set_padding(
+    if (dvz_panel_set_padding(
             panel, &(DvzPanelReserve){
                        .left_px = 14.0f, .right_px = 42.0f, .bottom_px = 13.5f,
-                       .top_px = 28.5f}))
+                       .top_px = 28.5f}) != DVZ_OK)
         return false;
     return example_configure_equal_aspect_panel(
         panel, (DvzDataDomain){.min = bundle->xmin, .max = bundle->xmax},

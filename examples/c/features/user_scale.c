@@ -214,7 +214,7 @@ static bool _add_axes(DvzPanel* panel)
     axes.x_label = "x";
     axes.y_label = "amplitude";
 
-    if (!dvz_panel_set_axes_2d(panel, &axes))
+    if (dvz_panel_set_axes_2d(panel, &axes) != DVZ_OK)
         return false;
     return example_graphite_cyan_style_axes_2d(panel, NULL);
 }
