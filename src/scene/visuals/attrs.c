@@ -391,7 +391,7 @@ DvzResult dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, const D
     }
     bool point_pixel_scalar_color =
         strcmp(slot_name, "color") == 0 &&
-        (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL) &&
+        _visual_family_supports_scalar_color_scale(visual->type) &&
         dvz_visual_attr_format(visual, "color") == DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32;
     if (visual->ops == NULL || (!visual->ops->supports_scale && !point_pixel_scalar_color))
     {

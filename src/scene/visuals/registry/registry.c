@@ -222,7 +222,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .attr_alias_public = "diameter_px", .attr_alias_storage = "size",
      .item_range_attr_name = "position",
      .init_state = _scene_visual_init_point_style, .upload_material_params = true,
-     .supports_depth_cue = true, .sync_point_style_material = true},
+     .supports_scalar_color_scale = true, .supports_depth_cue = true,
+     .sync_point_style_material = true},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_PIXEL, "pixel", _scene_pixel_visual_lowering,
          _scene_visual_default_bounds, _scene_pixel_visual_bind_desc,
@@ -233,7 +234,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .attrs = PIXEL_ATTRS, .attr_count = DVZ_ARRAY_COUNT(PIXEL_ATTRS),
      .expected_attrs = "position, color, pixel_size_px, item_state",
      .attr_alias_public = "pixel_size_px", .attr_alias_storage = "size",
-     .upload_material_params = true, .supports_depth_cue = true},
+     .upload_material_params = true, .supports_scalar_color_scale = true,
+     .supports_depth_cue = true},
     {VISUAL_OPS_WITH_PASS(
          DVZ_VISUAL_TYPE_MARKER, "marker", _scene_marker_visual_lowering,
          _scene_visual_default_bounds, _scene_marker_visual_pass_caps,

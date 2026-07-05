@@ -109,6 +109,7 @@ struct DvzVisualFamilyOps
     bool panel_clip_rect;
     bool sampled_field_texture_upload;
     bool supports_scale;
+    bool supports_scalar_color_scale;
     bool categorical_scale;
     bool supports_material;
     bool supports_depth_cue;
