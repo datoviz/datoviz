@@ -1022,7 +1022,7 @@ int test_scene_background_color_creates_fixed_quad(TstContext* suite, const TstC
 
     /* First call: creates a hidden background visual at z_layer=-1, FIXED. */
     DvzColor bg_color = dvz_color_from_unit(0.1f, 0.2f, 0.3f, 1.0f);
-    dvz_panel_set_background_color(panel, bg_color);
+    AT(dvz_panel_set_background_color(panel, bg_color) == DVZ_OK);
     AT(panel->visual_count == 1);
     ANN(panel->background_visual);
     AT(panel->visuals[0].visual == panel->background_visual);
@@ -1039,7 +1039,8 @@ int test_scene_background_color_creates_fixed_quad(TstContext* suite, const TstC
 
     /* Second call with a different color: updates in place, no new visual. */
     DvzVisual* before = panel->background_visual;
-    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.9f, 0.8f, 0.7f, 1.0f));
+    AT(dvz_panel_set_background_color(panel, dvz_color_from_unit(0.9f, 0.8f, 0.7f, 1.0f))
+       == DVZ_OK);
     AT(panel->visual_count == 1);
     AT(panel->background_visual == before);
 
@@ -1142,7 +1143,7 @@ int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const
     AT(panel->visuals[0].z_layer == -1);
     AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
 
-    dvz_panel_clear_background(panel);
+    AT(dvz_panel_clear_background(panel) == DVZ_OK);
     AT(panel->visual_count == 0);
     AT(panel->background_visual == NULL);
     AT(panel->background_type == DVZ_PANEL_BACKGROUND_NONE);
@@ -1223,7 +1224,7 @@ int test_scene_panel_border_creates_fixed_overlay(TstContext* suite, const TstCa
     starts = (const float*)panel->border_visual->attrs[start_idx].data;
     AC(starts[0], -0.92f, 1e-6f);
 
-    dvz_panel_clear_border(panel);
+    AT(dvz_panel_clear_border(panel) == DVZ_OK);
     AT(panel->visual_count == 0);
     AT(panel->border_visual == NULL);
     AT(!panel->border.visible);
@@ -1257,7 +1258,8 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
     AT(dvz_panel_set_reserve(
         panel, &(DvzPanelReserve){.left_px = 16.0f, .right_px = 9.6f, .bottom_px = 4.8f,
                                   .top_px = 9.6f}) == DVZ_OK);
-    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.1f, 0.2f, 0.3f, 1.0f));
+    AT(dvz_panel_set_background_color(panel, dvz_color_from_unit(0.1f, 0.2f, 0.3f, 1.0f))
+       == DVZ_OK);
 
     float pos[3] = {1.5f, 0.0f, 0.0f};
     DvzColor col = {255, 255, 255, 255};

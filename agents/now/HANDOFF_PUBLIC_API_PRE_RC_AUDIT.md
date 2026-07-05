@@ -1174,6 +1174,75 @@ just docs-api-check
 
 Result: all passed.
 
+Validation for the panel/axis layout setter slice:
+
+```sh
+just ctypes
+just ctypes-check
+python3 tools/build_api_c.py
+python3 tools/build_api_c.py --check
+python3 tools/check_api_status.py
+just build
+just test axis
+just test scene/scene-graph
+just test app
+just test visuals
+just ctypes-smoke
+just ctypes-python-smoke
+just docs-api
+just docs-api-check
+git diff --check
+```
+
+Result: all passed.
+
+Validation for the scene buffer mutator slice:
+
+```sh
+just ctypes
+just ctypes-check
+python3 tools/build_api_c.py
+python3 tools/build_api_c.py --check
+python3 tools/check_api_status.py
+just build
+just test scene/scene-graph
+just test visuals
+just test app
+just test compute
+just example-c features/compute_buffer_animation --png
+just ctypes-smoke
+just ctypes-python-smoke
+just docs-api
+just docs-api-check
+git diff --check
+```
+
+Result: all passed. The compute-buffer example emitted `feature_compute_buffer_animation.png`;
+it was removed before staging.
+
+Validation for the panel/visual convenience mutator slice:
+
+```sh
+just ctypes
+just ctypes-check
+python3 tools/build_api_c.py
+python3 tools/build_api_c.py --check
+python3 tools/check_api_status.py
+just docs-api
+just docs-api-check
+just build
+just test scene/scene-graph
+just test visuals
+just test axis
+just test app
+just ctypes-smoke
+just ctypes-python-smoke
+```
+
+Result: all passed. This slice converted `dvz_panel_clear_background()`,
+`dvz_panel_set_background_color()`, `dvz_panel_clear_border()`, `dvz_panel_clear_view2d()`,
+`dvz_visual_set_visible()`, and `dvz_visual_clear_item_range()` from `void` to `DvzResult`.
+
 
 ## Validation Baseline For Future Agent
 

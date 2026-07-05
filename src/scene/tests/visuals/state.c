@@ -543,7 +543,7 @@ int test_scene_visual_item_range_api(TstContext* suite, const TstCase* item)
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_item_range(visual, 4, 1) == -1);
     AT(_captured_log_contains(suite, "exceeds logical item_count 4"));
 
-    dvz_visual_clear_item_range(visual);
+    AT(dvz_visual_clear_item_range(visual) == DVZ_OK);
     AT(dvz_visual_get_item_range(visual, &range));
     AT(range.first_item == 0);
     AT(range.item_count == 4);
@@ -908,7 +908,7 @@ int test_scene_panel_visual_bounds_and_union(TstContext* suite, const TstCase* i
     AT(dvz_panel_bounds(panel, DVZ_BOUNDS_SPACE_VISUAL, &bounds) == 0);
     AT(_scene_visuals_bounds_expect(&bounds, 2, -1.0, -1.0, 0.0, +1.0, +1.0, 0.0) == 0);
 
-    dvz_visual_set_visible(right, false);
+    AT(dvz_visual_set_visible(right, false) == DVZ_OK);
     AT(dvz_panel_bounds(panel, DVZ_BOUNDS_SPACE_VISUAL, &bounds) == 0);
     AT(_scene_visuals_bounds_expect(&bounds, 2, -1.0, -1.0, 0.0, 0.0, +1.0, 0.0) == 0);
 

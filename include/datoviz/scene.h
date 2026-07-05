@@ -1155,8 +1155,9 @@ DVZ_EXPORT bool dvz_panel_background(
  * Clear a panel background.
  *
  * @param panel the panel
+ * @return DVZ_OK if the background was cleared, DVZ_ERROR otherwise
  */
-DVZ_EXPORT void dvz_panel_clear_background(DvzPanel* panel);
+DVZ_EXPORT DvzResult dvz_panel_clear_background(DvzPanel* panel);
 
 
 /**
@@ -1169,8 +1170,9 @@ DVZ_EXPORT void dvz_panel_clear_background(DvzPanel* panel);
  *
  * @param panel the panel
  * @param color RGBA8 background color
+ * @return DVZ_OK if the background was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT void dvz_panel_set_background_color(DvzPanel* panel, DvzColor color);
+DVZ_EXPORT DvzResult dvz_panel_set_background_color(DvzPanel* panel, DvzColor color);
 
 
 /**
@@ -1210,8 +1212,9 @@ DVZ_EXPORT bool dvz_panel_border(const DvzPanel* panel, DvzPanelBorderDesc* out)
  * Clear a panel border.
  *
  * @param panel the panel
+ * @return DVZ_OK if the border was cleared, DVZ_ERROR otherwise
  */
-DVZ_EXPORT void dvz_panel_clear_border(DvzPanel* panel);
+DVZ_EXPORT DvzResult dvz_panel_clear_border(DvzPanel* panel);
 
 
 /**
@@ -1384,8 +1387,9 @@ DVZ_EXPORT DvzResult dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2DD
  * Clear a panel 2D view policy without changing the current axis domains.
  *
  * @param panel the panel
+ * @return DVZ_OK if the 2D view policy was cleared, DVZ_ERROR otherwise
  */
-DVZ_EXPORT void dvz_panel_clear_view2d(DvzPanel* panel);
+DVZ_EXPORT DvzResult dvz_panel_clear_view2d(DvzPanel* panel);
 
 /**
  * Return the current resolved panel VIEW extent before panzoom.
@@ -1730,8 +1734,9 @@ DVZ_EXPORT bool dvz_visual_validate(const DvzVisual* visual, DvzDiagnosticReport
  *
  * @param visual the visual
  * @param visible true to show, false to hide
+ * @return DVZ_OK if visibility was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT void dvz_visual_set_visible(DvzVisual* visual, bool visible);
+DVZ_EXPORT DvzResult dvz_visual_set_visible(DvzVisual* visual, bool visible);
 
 
 /**
@@ -2043,8 +2048,9 @@ dvz_visual_set_item_range(DvzVisual* visual, uint32_t first_item, uint32_t item_
  * Clear the active logical item range and restore full visual participation.
  *
  * @param visual the visual
+ * @return DVZ_OK if the item range was cleared, DVZ_ERROR otherwise
  */
-DVZ_EXPORT void dvz_visual_clear_item_range(DvzVisual* visual);
+DVZ_EXPORT DvzResult dvz_visual_clear_item_range(DvzVisual* visual);
 
 
 /**

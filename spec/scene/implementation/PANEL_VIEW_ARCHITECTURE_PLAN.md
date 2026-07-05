@@ -56,7 +56,7 @@ The release-candidate panel view API names are:
 ```c
 DvzPanelView2DDesc dvz_panel_view2d_desc(void);
 int dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2DDesc* view);
-void dvz_panel_clear_view2d(DvzPanel* panel);
+DvzResult dvz_panel_clear_view2d(DvzPanel* panel);
 bool dvz_panel_view2d_extent(DvzPanel* panel, float out[4]);
 ```
 

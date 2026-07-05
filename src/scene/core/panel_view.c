@@ -263,14 +263,15 @@ DvzResult dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2DDesc* desc)
  *
  * @param panel the panel
  */
-void dvz_panel_clear_view2d(DvzPanel* panel)
+DvzResult dvz_panel_clear_view2d(DvzPanel* panel)
 {
     if (panel == NULL)
-        return;
+        return DVZ_ERROR;
     panel->view2d_enabled = false;
     if (panel->active_view_kind == DVZ_PANEL_VIEW_KIND_2D)
         panel->active_view_kind = DVZ_PANEL_VIEW_KIND_NONE;
     _scene_panel_view_dirty(panel);
+    return DVZ_OK;
 }
 
 

@@ -286,7 +286,7 @@ int test_scene_point_item_range_empty_clear_no_reupload(TstContext* suite, const
     AT(draw2->u.draw.vertex_count == 2);
     _test_scene_stream_destroy(stream2);
 
-    dvz_visual_clear_item_range(visual);
+    AT(dvz_visual_clear_item_range(visual) == DVZ_OK);
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream3 = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
     ANN(stream3);
@@ -728,7 +728,8 @@ int test_scene_pending_render_work_clears_unlit_background(TstContext* suite, co
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
-    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.02f, 0.03f, 0.04f, 1.0f));
+    AT(dvz_panel_set_background_color(panel, dvz_color_from_unit(0.02f, 0.03f, 0.04f, 1.0f))
+       == DVZ_OK);
     AT(panel->background_visual != NULL);
     AT(_scene_figure_has_pending_render_work(figure));
 
@@ -770,7 +771,7 @@ int test_scene_hidden_visual_first_visible_later_uploads(TstContext* suite, cons
     AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
-    dvz_visual_set_visible(visual, false);
+    AT(dvz_visual_set_visible(visual, false) == DVZ_OK);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_wgsl = true;
@@ -783,7 +784,7 @@ int test_scene_hidden_visual_first_visible_later_uploads(TstContext* suite, cons
     AT(_stream_visual_write_buffer_count(stream1) == 0);
     _test_scene_stream_destroy(stream1);
 
-    dvz_visual_set_visible(visual, true);
+    AT(dvz_visual_set_visible(visual, true) == DVZ_OK);
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream2 = _test_scene_emit_stream(figure, &caps, &report);
     AT(dvz_diagnostic_report_count(&report) == 0);
@@ -847,7 +848,7 @@ int test_scene_hidden_indexed_mesh_first_visible_later_uploads(TstContext* suite
     AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
     AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
-    dvz_visual_set_visible(visual, false);
+    AT(dvz_visual_set_visible(visual, false) == DVZ_OK);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
@@ -860,7 +861,7 @@ int test_scene_hidden_indexed_mesh_first_visible_later_uploads(TstContext* suite
     AT(_stream_visual_write_buffer_count(stream1) == 0);
     _test_scene_stream_destroy(stream1);
 
-    dvz_visual_set_visible(visual, true);
+    AT(dvz_visual_set_visible(visual, true) == DVZ_OK);
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream2 = _test_scene_emit_stream(figure, &caps, &report);
     AT(dvz_diagnostic_report_count(&report) == 0);
@@ -979,7 +980,7 @@ int test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes(
     AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_WBOIT) == 0);
     AT(dvz_visual_set_depth_test(mesh, true) == 0);
     AT(dvz_visual_set_scene_occluder(mesh, true) == 0);
-    dvz_visual_set_visible(mesh, false);
+    AT(dvz_visual_set_visible(mesh, false) == DVZ_OK);
 
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
     AT(dvz_panel_add_visual(panel, slice, NULL) == 0);
@@ -1019,7 +1020,7 @@ int test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes(
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
     _test_scene_stream_destroy(stream0);
 
-    dvz_visual_set_visible(mesh, true);
+    AT(dvz_visual_set_visible(mesh, true) == DVZ_OK);
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream1 = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream1);

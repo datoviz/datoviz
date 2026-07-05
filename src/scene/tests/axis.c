@@ -2226,7 +2226,7 @@ static int test_panel_view2d(TstContext* suite, const TstCase* item)
     AT(fabs(max - 20.0) < 1e-9);
 
     AT(dvz_panel_set_view2d(panel, &view) == 0);
-    dvz_panel_clear_view2d(panel);
+    AT(dvz_panel_clear_view2d(panel) == DVZ_OK);
     AT(dvz_panel_set_reserve(panel, &(DvzPanelReserve){.right_px = 200.0f}) == DVZ_OK);
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
     AT(fabs(min - 10.0) < 1e-9);

@@ -969,15 +969,16 @@ DvzResult dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual, const DvzVisu
  *
  * @param panel the panel
  */
-void dvz_panel_clear_background(DvzPanel* panel)
+DvzResult dvz_panel_clear_background(DvzPanel* panel)
 {
     ANN(panel);
     if (panel->figure == NULL || panel->figure->scene == NULL)
-        return;
+        return DVZ_ERROR;
     DvzScene* scene = panel->figure->scene;
     if (!_scene_visual_mutation_allowed(scene, "clear panel background"))
-        return;
+        return DVZ_ERROR;
     _panel_background_detach(panel);
+    return DVZ_OK;
 }
 
 
@@ -1157,7 +1158,7 @@ bool dvz_panel_background(const DvzPanel* panel, DvzPanelBackgroundDesc* out)
  * @param panel the panel
  * @param color RGBA8 background color
  */
-void dvz_panel_set_background_color(DvzPanel* panel, DvzColor color)
+DvzResult dvz_panel_set_background_color(DvzPanel* panel, DvzColor color)
 {
     DvzPanelBackgroundDesc background = dvz_panel_background_desc();
     background.type = DVZ_PANEL_BACKGROUND_COLOR;
@@ -1165,7 +1166,7 @@ void dvz_panel_set_background_color(DvzPanel* panel, DvzColor color)
     background.color[1] = (float)color.g / 255.0f;
     background.color[2] = (float)color.b / 255.0f;
     background.color[3] = (float)color.a / 255.0f;
-    (void)dvz_panel_set_background(panel, &background);
+    return dvz_panel_set_background(panel, &background);
 }
 
 
@@ -1174,15 +1175,16 @@ void dvz_panel_set_background_color(DvzPanel* panel, DvzColor color)
  *
  * @param panel the panel
  */
-void dvz_panel_clear_border(DvzPanel* panel)
+DvzResult dvz_panel_clear_border(DvzPanel* panel)
 {
     ANN(panel);
     if (panel->figure == NULL || panel->figure->scene == NULL)
-        return;
+        return DVZ_ERROR;
     DvzScene* scene = panel->figure->scene;
     if (!_scene_visual_mutation_allowed(scene, "clear panel border"))
-        return;
+        return DVZ_ERROR;
     _panel_border_detach(panel);
+    return DVZ_OK;
 }
 
 
@@ -1414,11 +1416,12 @@ DvzId dvz_visual_id(const DvzVisual* visual)
  * @param visual the visual
  * @param visible whether the visual should be visible
  */
-void dvz_visual_set_visible(DvzVisual* visual, bool visible)
+DvzResult dvz_visual_set_visible(DvzVisual* visual, bool visible)
 {
     ANN(visual);
     visual->visible = visible;
     _scene_notify_visual_changed(visual);
+    return DVZ_OK;
 }
 
 

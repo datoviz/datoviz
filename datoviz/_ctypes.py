@@ -21955,9 +21955,10 @@ else:
  * Clear a panel background.
  *
  * @param panel the panel
+ * @return DVZ_OK if the background was cleared, DVZ_ERROR otherwise
  */"""
     dvz_panel_clear_background.argtypes = [ctypes.POINTER(DvzPanel)]
-    dvz_panel_clear_background.restype = None
+    dvz_panel_clear_background.restype = ctypes.c_int32
 
 
 try:
@@ -21969,9 +21970,10 @@ else:
  * Clear a panel border.
  *
  * @param panel the panel
+ * @return DVZ_OK if the border was cleared, DVZ_ERROR otherwise
  */"""
     dvz_panel_clear_border.argtypes = [ctypes.POINTER(DvzPanel)]
-    dvz_panel_clear_border.restype = None
+    dvz_panel_clear_border.restype = ctypes.c_int32
 
 
 try:
@@ -21983,9 +21985,10 @@ else:
  * Clear a panel 2D view policy without changing the current axis domains.
  *
  * @param panel the panel
+ * @return DVZ_OK if the 2D view policy was cleared, DVZ_ERROR otherwise
  */"""
     dvz_panel_clear_view2d.argtypes = [ctypes.POINTER(DvzPanel)]
-    dvz_panel_clear_view2d.restype = None
+    dvz_panel_clear_view2d.restype = ctypes.c_int32
 
 
 try:
@@ -22471,9 +22474,10 @@ else:
  *
  * @param panel the panel
  * @param color RGBA8 background color
+ * @return DVZ_OK if the background was updated, DVZ_ERROR otherwise
  */"""
     dvz_panel_set_background_color.argtypes = [ctypes.POINTER(DvzPanel), DvzColor]
-    dvz_panel_set_background_color.restype = None
+    dvz_panel_set_background_color.restype = ctypes.c_int32
 
 
 try:
@@ -30419,9 +30423,10 @@ else:
  * Clear the active logical item range and restore full visual participation.
  *
  * @param visual the visual
+ * @return DVZ_OK if the item range was cleared, DVZ_ERROR otherwise
  */"""
     dvz_visual_clear_item_range.argtypes = [ctypes.POINTER(DvzVisual)]
-    dvz_visual_clear_item_range.restype = None
+    dvz_visual_clear_item_range.restype = ctypes.c_int32
 
 
 try:
@@ -31120,9 +31125,10 @@ else:
  *
  * @param visual the visual
  * @param visible true to show, false to hide
+ * @return DVZ_OK if visibility was updated, DVZ_ERROR otherwise
  */"""
     dvz_visual_set_visible.argtypes = [ctypes.POINTER(DvzVisual), ctypes.c_bool]
-    dvz_visual_set_visible.restype = None
+    dvz_visual_set_visible.restype = ctypes.c_int32
 
 
 try:

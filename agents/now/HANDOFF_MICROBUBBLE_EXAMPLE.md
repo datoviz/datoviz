@@ -73,7 +73,7 @@ The retained visual item-range slice exists and is tested for `point`:
 
 ```c
 int  dvz_visual_set_item_range(DvzVisual* visual, uint32_t first_item, uint32_t item_count);
-void dvz_visual_clear_item_range(DvzVisual* visual);
+DvzResult dvz_visual_clear_item_range(DvzVisual* visual);
 bool dvz_visual_get_item_range(const DvzVisual* visual, DvzItemRange* out);
 ```
 
