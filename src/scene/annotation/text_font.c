@@ -56,7 +56,14 @@ static bool _font_desc_validate(const DvzFontDesc* desc)
 static DvzFont* _text_default_sdf_font(DvzScene* scene)
 {
     ANN(scene);
-    DvzFontDesc desc = scene->font_defaults.sans;
+    DvzFontDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzFontDesc),
+        .path = scene->font_defaults.sans_path,
+        .family = scene->font_defaults.sans_family,
+        .style = scene->font_defaults.sans_style,
+        .face_index = scene->font_defaults.sans_face_index,
+        .font_flags = scene->font_defaults.sans_font_flags,
+    };
     if (desc.family == NULL || desc.family[0] == '\0')
         desc.family = "Roboto";
     if (desc.style == NULL || desc.style[0] == '\0')
@@ -184,5 +191,4 @@ void dvz_font_destroy(DvzFont* font)
         return;
     _scene_font_release(font);
 }
-
 

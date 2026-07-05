@@ -76,19 +76,6 @@ static bool _volume_occlusion_desc_validate(const DvzVolumeOcclusionDesc* desc)
 }
 
 
-static bool _font_desc_validate(const DvzFontDesc* desc)
-{
-    if (desc == NULL)
-        return false;
-    if (!DVZ_STRUCT_VALID(desc, DvzFontDesc, DVZ_FONT_DESC_KNOWN_FLAGS))
-    {
-        log_error("invalid font descriptor ABI");
-        return false;
-    }
-    return true;
-}
-
-
 static bool _font_defaults_validate(const DvzFontDefaults* defaults)
 {
     if (defaults == NULL)
@@ -98,8 +85,6 @@ static bool _font_defaults_validate(const DvzFontDefaults* defaults)
         log_error("invalid font defaults ABI");
         return false;
     }
-    if (!_font_desc_validate(&defaults->sans) || !_font_desc_validate(&defaults->mono))
-        return false;
     return true;
 }
 

@@ -335,7 +335,7 @@ int test_scene_text_annotation_descriptor_abi_rejects_invalid_structs(
     AT_EXPECTED_ERROR_STRICT(suite, (dvz_scene_set_font_defaults(scene, &font_defaults), true));
 
     font_defaults = dvz_font_defaults();
-    font_defaults.sans.flags = 1;
+    font_defaults.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, (dvz_scene_set_font_defaults(scene, &font_defaults), true));
 
     DvzText* text = dvz_text(panel, 0);
@@ -3336,17 +3336,17 @@ int test_scene_font_defaults(TstContext* suite, const TstCase* item)
     DvzFontDefaults built_in = dvz_font_defaults();
     DvzTextStyle default_style = dvz_text_style();
     AT(default_style.size_px == 0.0f);
-    AT(strcmp(defaults.sans.family, built_in.sans.family) == 0);
+    AT(strcmp(defaults.sans_family, built_in.sans_family) == 0);
     AT(defaults.text_size_px == built_in.text_size_px);
 
     DvzFontDefaults custom = built_in;
-    custom.sans.family = "Scene Sans";
-    custom.sans.style = "Book";
+    custom.sans_family = "Scene Sans";
+    custom.sans_style = "Book";
     custom.text_size_px = 19.0f;
     dvz_scene_set_font_defaults(scene, &custom);
     defaults = dvz_scene_font_defaults(scene);
-    AT(strcmp(defaults.sans.family, "Scene Sans") == 0);
-    AT(strcmp(defaults.sans.style, "Book") == 0);
+    AT(strcmp(defaults.sans_family, "Scene Sans") == 0);
+    AT(strcmp(defaults.sans_style, "Book") == 0);
     AT(defaults.text_size_px == 19.0f);
 
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
@@ -3368,7 +3368,7 @@ int test_scene_font_defaults(TstContext* suite, const TstCase* item)
 
     dvz_scene_set_font_defaults(scene, NULL);
     defaults = dvz_scene_font_defaults(scene);
-    AT(strcmp(defaults.sans.family, built_in.sans.family) == 0);
+    AT(strcmp(defaults.sans_family, built_in.sans_family) == 0);
     AT(defaults.text_size_px == built_in.text_size_px);
 
     dvz_scene_destroy(scene);
@@ -3391,8 +3391,8 @@ int test_scene_text_sdf_default_font(TstContext* suite, const TstCase* item)
     DvzScene* scene = dvz_scene();
     ANN(scene);
     DvzFontDefaults defaults = dvz_scene_font_defaults(scene);
-    defaults.sans.family = "SDF Default";
-    defaults.sans.style = "Book";
+    defaults.sans_family = "SDF Default";
+    defaults.sans_style = "Book";
     defaults.text_size_px = 18.0f;
     dvz_scene_set_font_defaults(scene, &defaults);
 

@@ -548,8 +548,10 @@ _text_block_resolve_font_slot(DvzScene* scene, const DvzTextBlockLayout* layout,
     if (slot == DVZ_TEXT_BLOCK_FACE_BOLD_ITALIC && layout->bold_italic_font != NULL)
         return layout->bold_italic_font;
 
-    DvzFontDesc desc = scene->font_defaults.sans;
-    const char* family = desc.family != NULL && desc.family[0] != '\0' ? desc.family : "Roboto";
+    const char* family = scene->font_defaults.sans_family != NULL &&
+                                 scene->font_defaults.sans_family[0] != '\0' ?
+                             scene->font_defaults.sans_family :
+                             "Roboto";
     const char* style = "Regular";
     if (slot == DVZ_TEXT_BLOCK_FACE_BOLD)
         style = "Bold";
@@ -559,8 +561,10 @@ _text_block_resolve_font_slot(DvzScene* scene, const DvzTextBlockLayout* layout,
         style = "Bold Italic";
 
     const char* path = NULL;
-    if (slot == DVZ_TEXT_BLOCK_FACE_REGULAR && desc.path != NULL && desc.path[0] != '\0')
-        path = desc.path;
+    if (
+        slot == DVZ_TEXT_BLOCK_FACE_REGULAR && scene->font_defaults.sans_path != NULL &&
+        scene->font_defaults.sans_path[0] != '\0')
+        path = scene->font_defaults.sans_path;
     else if (slot != DVZ_TEXT_BLOCK_FACE_REGULAR)
         path = _text_block_known_font_path(family, style);
     if (slot != DVZ_TEXT_BLOCK_FACE_REGULAR && path == NULL)
@@ -568,6 +572,11 @@ _text_block_resolve_font_slot(DvzScene* scene, const DvzTextBlockLayout* layout,
     if (path != NULL && !_text_block_font_path_available(path))
         return NULL;
 
+    DvzFontDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzFontDesc),
+        .face_index = scene->font_defaults.sans_face_index,
+        .font_flags = scene->font_defaults.sans_font_flags,
+    };
     desc.path = path;
     desc.family = family;
     desc.style = style;

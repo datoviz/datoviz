@@ -6442,7 +6442,7 @@ font objects from this policy; ImGui fonts and scene text atlas fonts are not sh
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/font.h`:78._
+_Declared in `include/datoviz/font.h`:86._
 
 ### `dvz_font_desc()`
 
@@ -6458,7 +6458,7 @@ Return an empty font descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/font.h`:67._
+_Declared in `include/datoviz/font.h`:75._
 
 ## Gpu
 

@@ -474,9 +474,9 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
     ANN(explicit_figure);
 
     DvzAppConfig app_config = dvz_app_config();
-    app_config.font_defaults.sans.family = "App Sans";
-    app_config.font_defaults.sans.style = "Book";
-    app_config.font_defaults.mono.family = "App Mono";
+    app_config.font_defaults.sans_family = "App Sans";
+    app_config.font_defaults.sans_style = "Book";
+    app_config.font_defaults.mono_family = "App Mono";
     app_config.font_defaults.ui_size_px = 19.0f;
     app_config.font_defaults.mono_size_px = 17.0f;
     app_config.font_defaults.text_size_px = 23.0f;
@@ -527,12 +527,12 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
 
     DvzFontDefaults null_fonts = _dvz_gui_font_defaults(null_gui);
     DvzFontDefaults explicit_fonts = _dvz_gui_font_defaults(explicit_gui);
-    AT(strcmp(null_fonts.sans.family, "App Sans") == 0);
-    AT(strcmp(explicit_fonts.sans.family, "App Sans") == 0);
-    AT(strcmp(null_fonts.sans.style, "Book") == 0);
-    AT(strcmp(explicit_fonts.sans.style, "Book") == 0);
-    AT(strcmp(null_fonts.mono.family, "App Mono") == 0);
-    AT(strcmp(explicit_fonts.mono.family, "App Mono") == 0);
+    AT(strcmp(null_fonts.sans_family, "App Sans") == 0);
+    AT(strcmp(explicit_fonts.sans_family, "App Sans") == 0);
+    AT(strcmp(null_fonts.sans_style, "Book") == 0);
+    AT(strcmp(explicit_fonts.sans_style, "Book") == 0);
+    AT(strcmp(null_fonts.mono_family, "App Mono") == 0);
+    AT(strcmp(explicit_fonts.mono_family, "App Mono") == 0);
     AC(null_fonts.ui_size_px, 19.0f, 1e-6f);
     AC(explicit_fonts.ui_size_px, 19.0f, 1e-6f);
     AC(null_fonts.mono_size_px, 17.0f, 1e-6f);
