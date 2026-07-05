@@ -386,6 +386,20 @@ Completed checkpoints:
      `just test marker_api_and_emit_glsl`, `just ctypes-smoke`, `just docs-api-check`,
      `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, and
      `git diff --check`.
+36. `4a39999d9` `api: replace borrowed descriptor getters`
+   - Replaced `dvz_sampled_field_get_desc()` with copy-out
+     `dvz_sampled_field_info(const DvzSampledField*, DvzSampledFieldDesc* out)`.
+   - Replaced `dvz_scene_buffer_get_desc()` with copy-out
+     `dvz_scene_buffer_info(const DvzSceneBuffer*, DvzSceneBufferDesc* out)`.
+   - Migrated C callers, tests, generated raw `ctypes`, generated C API docs, `symbols.map`, and
+     the sampled-field API design note.
+   - Exported symbol delta: removed `dvz_sampled_field_get_desc` and
+     `dvz_scene_buffer_get_desc`; added `dvz_sampled_field_info` and
+     `dvz_scene_buffer_info`.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just build`,
+     `just test scene/fields`, `just test scene/text-atlas`, `just ctypes-smoke`,
+     `just docs-api-check`, `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`,
+     and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -644,22 +658,20 @@ Apply this especially to `dvz_visual_set_data_range()` and text batch setters.
 
 ### 8. Tighten Constness And Borrowed Ownership
 
-Status: sampled-field bind-only constness and text-atlas borrowed-field constness completed by
-`ed1f2a289`; scale binding constness completed by `4172b38bd`; marker symbol-set binding
-constness completed by `8ec409e7f`. Borrowed descriptor getter replacement remains open.
+Status: completed by `ed1f2a289`, `4172b38bd`, `8ec409e7f`, and `4a39999d9`.
 
-Bind-only APIs accept mutable resources, and descriptor getters expose borrowed internals.
+Bind-only APIs now use const resource arguments where ownership is not transferred, and public
+descriptor inspection no longer exposes borrowed internal pointers.
 
 References:
 
-- `include/datoviz/scene/field.h`: `dvz_sampled_field_get_desc()`
-- `include/datoviz/scene.h`: symbol-set bindings and `dvz_scene_buffer_get_desc()`
+- `include/datoviz/scene/field.h`: `dvz_sampled_field_info()`
+- `include/datoviz/scene.h`: `dvz_visual_set_scale()`, `dvz_marker_set_symbols()`,
+  `dvz_scene_buffer_info()`
 
 Preferred fix:
 
-- Replace borrowed descriptor getters with copy-out APIs such as
-  `bool dvz_sampled_field_info(const DvzSampledField*, DvzSampledFieldDesc* out)` and
-  `bool dvz_scene_buffer_info(const DvzSceneBuffer*, DvzSceneBufferDesc* out)`.
+- Done: borrowed resource bindings and descriptor inspection use const/copy-out contracts.
 
 
 ### 9. Clean Or Classify Advanced DRP2
