@@ -121,14 +121,27 @@ Completed checkpoints:
      `python3 tools/build_api_c.py --check`, `just build`, `just test scene/fields`,
      `just test scene/interaction`, `just spec-check`, stale-reference scan, and
      `git diff --check`.
+12. `977881068` `api: flatten panel axes descriptor`
+   - Removed nested `DvzAxisTickPolicy tick_policy`, `DvzAxisStyle x_style`, and
+     `DvzAxisStyle y_style` from `DvzPanelAxes2DDesc`.
+   - Kept `dvz_panel_set_axes_2d()` as the common X/Y axes helper: it now applies the default tick
+     policy plus grid-enabled default styles, sets labels, and enables both axes.
+   - Custom axis policy/style now stays on the existing explicit setters:
+     `dvz_axis_set_tick_policy()` and `dvz_axis_set_style()`.
+   - Exported symbol delta: no exported functions were added or removed; `DvzPanelAxes2DDesc` ABI
+     layout changed.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just build`, `just test axis`,
+     `just test scene/scene-graph`, `just spec-check`, stale-reference scan, and
+     `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
 - dirty `data` submodule state;
 - untracked `paper/paper.pdf`.
 
-Next recommended checkpoint: continue the descriptor-flattening campaign with
-`DvzPanelAxes2DDesc`, keeping it separate from the completed scale/scale-bar descriptor churn.
+Next recommended checkpoint: continue the descriptor-flattening campaign with annotation/label text
+style and placement, or a smaller low-risk style case such as `DvzSelectionVisualStyle`.
 
 
 ## Maintainer Decisions
