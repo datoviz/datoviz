@@ -20,9 +20,9 @@ Rework the docs into a coherent public website for Datoviz v0.4:
 5. no stale v0.3 compatibility promises, obsolete Python wrapper examples, or internal agent-note
    tone in public pages.
 
-First action: audit the current docs/site and produce a short maintainer-reviewable plan. Do not
-begin broad rewriting until the maintainer approves the IA, tone sample, gallery model, and
-release/install posture.
+The first-pass audit and tone-sample review have been completed. Continue in focused checkpoint
+passes, keep commits scoped, and ask for maintainer review after each batch that changes public
+voice or page structure.
 
 
 ## Approved Direction
@@ -117,10 +117,10 @@ They supersede earlier agent-facing wording when there is a conflict.
 Current public navigation in `mkdocs.yml`:
 
 ```text
-Home / Get Started / Examples / How-To / Reference / Internals / Contributing
+Home / Get Started / Examples / How-To / Reference / Advanced
 ```
 
-Preferred final navigation:
+Approved final navigation:
 
 ```text
 Home / Get Started / Examples / How-To / Reference / Advanced
@@ -263,11 +263,15 @@ may remain C-first where C is the source of truth.
 
 The accepted How-To tone sample is `docs/how-to/update-visual-data.md`: practical, beginner-facing,
 and explicit about arrays, attributes, batching, and update choices without leading with internals.
+Use it as the style target for the next How-To and feature-example rewrites. The tone should be
+clear enough for a first-time scientific user, but still professional: avoid both engine jargon and
+overly childish definitions.
 
 
 ## First-Pass Audit Snapshot
 
-Status: pending maintainer review before broad rewriting. Audit date: 2026-07-05.
+Status: reviewed and approved as the basis for the full documentation campaign. Audit date:
+2026-07-05.
 
 The read-only audit used subagents for disjoint slices: navigation/inventory,
 gallery/WebGPU metadata, first-user journey/snippets, and reference/status pages. The coordinator
@@ -276,8 +280,8 @@ repository hygiene.
 
 ### Confirmed Inventory
 
-1. `mkdocs.yml` still exposes seven top-level tabs: `Home`, `Get Started`, `Examples`, `How-To`,
-   `Reference`, `Internals`, and `Contributing`.
+1. `mkdocs.yml` exposes six top-level tabs: `Home`, `Get Started`, `Examples`, `How-To`,
+   `Reference`, and `Advanced`.
 2. Active nav contains 109 pages. Public-looking hidden candidates include
    `docs/start/choose-your-layer.md`, `docs/start/what-is-datoviz.md`,
    `docs/reference/project-status.md`, `docs/reference/visual-attributes.md`,
@@ -327,9 +331,9 @@ repository hygiene.
     agent-oriented material in `Advanced` contributor paths or the deterministic AI workflow page,
     not in primary public flow.
 
-### Proposed Approval Package
+### Approved Direction For Full Rewrite
 
-Approve this direction before broad rewriting:
+Use this direction for broad rewriting:
 
 1. **IA:** switch public nav to
    `Home / Get Started / Examples / How-To / Reference / Advanced`. Move contributor and release
