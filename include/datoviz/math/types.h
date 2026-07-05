@@ -38,16 +38,6 @@
 
 #define DVZ_EPSILON 1e-10
 
-#if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#endif
-static uint32_t _ZERO_OFFSET[3] = {0, 0, 0};
-#if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
-#define DVZ_ZERO_OFFSET _ZERO_OFFSET
-
 // Box
 #define DVZ_BOX_NDC                                                                               \
     (DvzBox) { -1, +1, -1, +1, -1, +1 }
@@ -146,8 +136,6 @@ static inline char* dvz_pretty_size(DvzSize size)
 }
 
 #define DVZ_ARRAY_COUNT(arr) sizeof((arr)) / sizeof((arr)[0])
-
-#define fsizeof(type, member) sizeof(((type*)0)->member)
 
 
 
