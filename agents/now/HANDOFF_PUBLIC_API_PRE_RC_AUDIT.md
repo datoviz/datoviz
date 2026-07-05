@@ -202,6 +202,18 @@ Completed checkpoints:
    - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
      `python3 tools/build_api_c.py --check`, `just build`, `just test scene/scene-graph`,
      `just spec-check`, stale-reference scan, and `git diff --check`.
+19. `cb58878f6` `api: flatten app font defaults config`
+   - Replaced nested `DvzFontDefaults font_defaults` in `DvzAppConfig` with scalar `font_*`
+     defaults fields.
+   - App creation and GUI creation reconstruct internal `DvzFontDefaults` values at the existing
+     scene/gui boundaries.
+   - Updated generated raw `ctypes`, generated C API docs, app/gui tests, and the null-default
+     invariant plan wording.
+   - Exported symbol delta: no exported functions were added or removed; `DvzAppConfig` ABI layout
+     changed.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just build`, `just test app`, `just test gui`,
+     `just spec-check`, stale-reference scan, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -263,7 +275,7 @@ Complete audit as of July 2026, using the criterion above:
 
 | Owner | Nested field(s) | Location | Preferred disposition |
 | --- | --- | --- | --- |
-| `DvzAppConfig` | `DvzFontDefaults font_defaults` | `include/datoviz/app.h:133` | Avoid deep defaults nesting. Prefer app/font default setters or a separate optional font-defaults config path. |
+| `DvzAppConfig` | `DvzFontDefaults font_defaults` | `include/datoviz/app.h:133` | Done in `cb58878f6`: flattened to scalar `font_*` defaults fields. |
 | `DvzFontDefaults` | `DvzFontDesc sans`, `DvzFontDesc mono` | `include/datoviz/font.h:42` | Done in `787982697`: flattened to prefixed scalar sans/mono font default fields. |
 | `DvzViewDesc` | `DvzViewSizeDesc size` | `include/datoviz/app.h:225` | Candidate exception only if `DvzViewSizeDesc` becomes a plain value record. Otherwise flatten or make view sizing a separate constructor/setter path. Remove duplicate legacy size fields while doing this. |
 | `DvzViewDesc` | `const DvzWindowExternalSurfaceInfo* external_surface` | `include/datoviz/app.h:225`, `include/datoviz/window/backend.h:91` | Pointer case, lower nesting risk but high backend-boundary risk. Move to backend/interop path during backend-neutral app API cleanup. |
