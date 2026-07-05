@@ -344,6 +344,16 @@ Completed checkpoints:
      `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`,
      `just docs-api-check`, `just build`, `just test scene/fields`, `just spec-check`, and
      `git diff --check`.
+32. `7d35e2066` `api: document retained text batch setters`
+   - Documented `dvz_text_set_items()` as the atomic retained-text collection replacement API.
+   - Documented the public text batch setters for strings, positions, offsets, anchors, sizes,
+     colors, and angles, including copied-before-return and item-count matching semantics.
+   - Added the missing `dvz_text_set_placement()` return contract.
+   - Regenerated raw `ctypes` docstrings and generated C API docs.
+   - Exported symbol delta: no exported functions or ABI signatures changed.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just ctypes-smoke`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`,
+     `just docs-api-check`, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -678,8 +688,6 @@ Preferred fix:
 - Rename `dvz_scalebar_*` to `dvz_scale_bar_*` for consistency with `DvzScaleBar`.
 - Normalize graph and polygon mutators to `*_set_*`, for example `dvz_graph_set_edges()` and
   `dvz_polygon_set_fill_color()`.
-- Document public text batch setters or remove them in favor of `dvz_text_set_items()` plus
-  single-item helpers.
 - Decide whether geometry factories should be `dvz_geom_*` or `dvz_geometry_*`, then keep one
   public naming family.
 - Split stable `window.h` from backend SPI if window APIs are meant to be user-facing; currently
