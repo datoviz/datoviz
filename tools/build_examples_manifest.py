@@ -37,6 +37,36 @@ def _primary_fields(entry: dict[str, Any]) -> dict[str, str]:
     return fields
 
 
+def _media_fields(example: build_gallery.Example) -> dict[str, Any]:
+    screenshot_expected = "screenshot" in example.validation
+    source = build_gallery.DEFAULT_IMAGE_DIR / example.lane / f"{example.id}.png"
+    site_asset = f"{build_gallery.DEFAULT_IMAGE_URL_BASE}/{example.lane}/{example.id}.webp"
+    status = "available" if screenshot_expected and source.exists() else "pending"
+    if not screenshot_expected:
+        status = "not-required"
+    return {
+        "screenshot": {
+            "expected": screenshot_expected,
+            "status": status,
+            "source": source.relative_to(ROOT).as_posix(),
+            "site_asset": site_asset,
+        }
+    }
+
+
+def _webgpu_fields(example: build_gallery.Example) -> dict[str, Any]:
+    item: dict[str, Any] = {
+        "webgpu_status": example.webgpu_status,
+        "webgpu_requirements": list(example.webgpu_requirements),
+    }
+    if example.webgpu:
+        item["webgpu"] = example.webgpu
+    if example.webgpu_route:
+        item["webgpu_route"] = example.webgpu_route
+        item["webgpu_site_route"] = example.webgpu_site_route
+    return item
+
+
 def _json_example(example: build_gallery.Example, entry: dict[str, Any]) -> dict[str, Any]:
     item: dict[str, Any] = {
         "id": example.id,
@@ -55,7 +85,10 @@ def _json_example(example: build_gallery.Example, entry: dict[str, Any]) -> dict
         "agent_copy_safe": example.agent_copy_safe,
         "tags": list(example.tags),
         "data": example.data,
+        "data_kind": str(example.data.get("kind", "")),
+        "media": _media_fields(example),
     }
+    item.update(_webgpu_fields(example))
     item.update(_primary_fields(entry))
     if example.dataset:
         item["dataset"] = example.dataset

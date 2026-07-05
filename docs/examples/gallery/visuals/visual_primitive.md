@@ -42,13 +42,9 @@ line and triangle topologies rendered with the retained primitive visual.
     - Status: `supported`
     - Source: [`examples/c/visuals/primitive.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/primitive.c)
     - Reference: [Primitive visual family](../../../reference/visual-families/primitive.md)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_primitive"><code>examples/webgpu/live.html?id=visual_primitive</code></a>
     - WebGPU requirements: `primitive`
-    - Build: `just example-c visuals/primitive`
-    - Smoke: `./build/examples/c/visuals/primitive --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -59,8 +55,6 @@ line and triangle topologies rendered with the retained primitive visual.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

@@ -31,20 +31,14 @@ arcball controller attached to a small 3D mesh.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/controller_arcball.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-planned`
     - WebGPU requirements: `controller`, `arcball`, `mesh`
-    - Build: `just example-c features/controller_arcball`
-    - Smoke: `./build/examples/c/features/controller_arcball --png`
-    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

@@ -41,13 +41,9 @@ linked temporal panels with a spanning summary panel.
     - Lane: `showcases`
     - Status: `supported`
     - Source: [`examples/c/showcases/panel_linked_axes.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/panel_linked_axes.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=linked_panels_axes_panzoom"><code>examples/webgpu/live.html?id=linked_panels_axes_panzoom</code></a>
     - WebGPU requirements: `panel-grid`, `linked-panels`, `axes`, `panzoom`, `path`
-    - Build: `just example-c showcases/panel_linked_axes`
-    - Smoke: `./build/examples/c/showcases/panel_linked_axes --png`
-    - Validation: `smoke+interaction`
 
     ### Tags
 
@@ -58,8 +54,6 @@ linked temporal panels with a spanning summary panel.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

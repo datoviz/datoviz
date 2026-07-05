@@ -31,19 +31,13 @@ quickstart scatter plot: 10 000 random colored points with pan/zoom.
     - Lane: `start`
     - Status: `supported`
     - Source: [`examples/c/start/scatter.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/start/scatter.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-deferred`
-    - Build: `just example-c start/scatter`
-    - Smoke: `./build/examples/c/start/scatter --png`
-    - Validation: `smoke+screenshot`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

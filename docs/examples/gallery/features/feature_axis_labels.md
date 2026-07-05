@@ -41,21 +41,15 @@ retained axis titles and tick-label placement with plot margins.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/axis_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axis_labels.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_axis_labels"><code>examples/webgpu/live.html?id=feature_axis_labels</code></a>
     - WebGPU requirements: `axes`, `text`, `labels`
-    - Build: `just example-c features/axis_labels`
-    - Smoke: `./build/examples/c/features/axis_labels --png`
-    - Validation: `smoke+screenshot`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

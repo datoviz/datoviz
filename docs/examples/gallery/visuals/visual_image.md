@@ -42,13 +42,9 @@ deterministic scalar sampled field rendered with the retained image visual.
     - Status: `supported`
     - Source: [`examples/c/visuals/image.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image.c)
     - Reference: [Image visual family](../../../reference/visual-families/image.md)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_image"><code>examples/webgpu/live.html?id=visual_image</code></a>
     - WebGPU requirements: `image`, `sampled-field`, `panzoom`
-    - Build: `just example-c visuals/image`
-    - Smoke: `./build/examples/c/visuals/image --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -59,8 +55,6 @@ deterministic scalar sampled field rendered with the retained image visual.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

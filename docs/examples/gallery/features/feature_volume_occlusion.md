@@ -31,20 +31,14 @@ side-by-side volume occluder attenuation on an embedded slice.
     - Lane: `features`
     - Status: `experimental`
     - Source: [`examples/c/features/volume_occlusion.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/volume_occlusion.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-deferred`
     - WebGPU requirements: `volume`, `scene-occlusion`
-    - Build: `just example-c features/volume_occlusion`
-    - Smoke: `./build/examples/c/features/volume_occlusion --png`
-    - Validation: `smoke+screenshot`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

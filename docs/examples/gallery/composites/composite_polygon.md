@@ -41,13 +41,9 @@ clean semantic polygon and polygon-set composites.
     - Lane: `composites`
     - Status: `supported`
     - Source: [`examples/c/composites/polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=composite_polygon"><code>examples/webgpu/live.html?id=composite_polygon</code></a>
     - WebGPU requirements: `composite`, `polygon-set`, `primitive`, `segment`, `panzoom`
-    - Build: `just example-c composites/polygon`
-    - Smoke: `./build/examples/c/composites/polygon --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -58,8 +54,6 @@ clean semantic polygon and polygon-set composites.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

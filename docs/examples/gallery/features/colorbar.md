@@ -41,13 +41,9 @@ deterministic scalar image with one retained continuous colorbar.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colorbar.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=colorbar"><code>examples/webgpu/live.html?id=colorbar</code></a>
     - WebGPU requirements: `colorbar`, `image`, `sampled-field`, `text`
-    - Build: `just example-c features/colorbar`
-    - Smoke: `./build/examples/c/features/colorbar --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -58,8 +54,6 @@ deterministic scalar image with one retained continuous colorbar.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

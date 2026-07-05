@@ -41,13 +41,9 @@ synthetic weather-like scalar and vector field showcase.
     - Lane: `showcases`
     - Status: `supported`
     - Source: [`examples/c/showcases/wind_field.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/wind_field.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcase_wind_field"><code>examples/webgpu/live.html?id=showcase_wind_field</code></a>
     - WebGPU requirements: `image`, `vector`, `path`, `colorbar`, `panzoom`
-    - Build: `just example-c showcases/wind_field`
-    - Smoke: `./build/examples/c/showcases/wind_field --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -58,8 +54,6 @@ synthetic weather-like scalar and vector field showcase.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

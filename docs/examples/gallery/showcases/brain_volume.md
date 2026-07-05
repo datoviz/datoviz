@@ -31,12 +31,8 @@ local Allen mouse brain RGBA volume and occluded slice.
     - Lane: `showcases`
     - Status: `prototype`
     - Source: [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-planned`
     - WebGPU requirements: `volume`, `texture-3d`, `arcball`
-    - Build: `just example-c showcases/brain_volume`
-    - Smoke: `./build/examples/c/showcases/brain_volume --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -60,8 +56,6 @@ local Allen mouse brain RGBA volume and occluded slice.
     | `prepared_source` | data/examples/allen_ibl/prepared/allen_mouse_brain_rgba.npy.gz |
     | `preprocessing` | python tools/data/prepare_brain_volume.py |
     | `provenance` | Prepared from Allen CCF anatomical and annotation volumes plus selected structure meshes into a compact RGBA volume consumed by the C showcase. The committed file is a prepared data-submodule artifact; upstream Allen terms remain the source license boundary. |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

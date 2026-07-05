@@ -41,21 +41,15 @@ unified retained marker hover and selection proof.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/picking.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/picking.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_picking"><code>examples/webgpu/live.html?id=feature_picking</code></a>
     - WebGPU requirements: `marker`, `panzoom`, `query-readback`, `frame-callbacks`
-    - Build: `just example-c features/picking`
-    - Smoke: `./build/examples/c/features/picking --png`
-    - Validation: `smoke+interaction`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

@@ -31,20 +31,14 @@ _Media pending._
     - Lane: `runtime`
     - Status: `experimental`
     - Source: [`examples/c/runtime/record_replay.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/record_replay.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `native-only`
     - WebGPU requirements: `native-capture`
-    - Build: `just example-c runtime/record_replay`
-    - Smoke: `./build/examples/c/runtime/record_replay --png`
-    - Validation: `smoke+capture`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

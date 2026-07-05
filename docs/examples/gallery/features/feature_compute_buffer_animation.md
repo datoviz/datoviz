@@ -41,13 +41,9 @@ scene compute pass with independent circular point motion.
     - Lane: `features`
     - Status: `experimental`
     - Source: [`examples/c/features/compute_buffer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/compute_buffer_animation.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_compute_buffer_animation"><code>examples/webgpu/live.html?id=feature_compute_buffer_animation</code></a>
     - WebGPU requirements: `scene-buffers`, `storage-buffers`, `scene-compute`, `continuous-frames`, `point`
-    - Build: `just example-c features/compute_buffer_animation`
-    - Smoke: `./build/examples/c/features/compute_buffer_animation --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -58,8 +54,6 @@ scene compute pass with independent circular point motion.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

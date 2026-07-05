@@ -6,7 +6,7 @@ Browse app lifecycle, native windowing, offscreen capture, recording, replay, an
 
 Coverage: 5 runtime examples (3 supported, 2 experimental).
 
-Each card links to a detail page with preview media, source code, and validation metadata.
+Each card links to a detail page with preview media, source code, and example metadata.
 
 ## Windows & Hosting
 

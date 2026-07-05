@@ -42,13 +42,9 @@ retained segment visual with independent endpoint-pair strokes and visual-wide c
     - Status: `supported`
     - Source: [`examples/c/visuals/segment.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/segment.c)
     - Reference: [Segment visual family](../../../reference/visual-families/segment.md)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_segment"><code>examples/webgpu/live.html?id=visual_segment</code></a>
     - WebGPU requirements: `segment`, `panzoom`
-    - Build: `just example-c visuals/segment`
-    - Smoke: `./build/examples/c/visuals/segment --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -59,8 +55,6 @@ retained segment visual with independent endpoint-pair strokes and visual-wide c
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

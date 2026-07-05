@@ -4,9 +4,9 @@
 
 Browse composed scenes demonstrating scientific workflows, real data, and polished demos.
 
-Coverage: 15 examples (11 supported, 1 experimental, 3 prototype).
+Coverage: 15 examples (10 supported, 4 experimental, 1 prototype).
 
-Each card links to a detail page with preview media, source code, and validation metadata.
+Each card links to a detail page with preview media, source code, and example metadata.
 
 ## Showcases
 
@@ -30,7 +30,7 @@ local Allen mouse brain RGBA volume and occluded slice.
 
 [![Embedding Atlas](../assets/gallery/v0.4/showcases/showcase_embedding_atlas.webp)](gallery/showcases/showcase_embedding_atlas.md)
 
-`supported` `showcases`<br><span>`scientific`, `synthetic`, `embedding`, `point`, `panzoom`, ...</span>
+`experimental` `showcases`<br><span>`scientific`, `synthetic`, `embedding`, `point`, `panzoom`, ...</span>
 
 interactive prepared AI embedding atlas.
 
@@ -78,7 +78,7 @@ linked image panels with one probe readout and shared colorbar.
 
 [![Lipid Brain Atlas](../assets/gallery/v0.4/showcases/showcase_lipid_brain_atlas.webp)](gallery/showcases/showcase_lipid_brain_atlas.md)
 
-`prototype` `showcases`<br><span>`scientific`, `real-data`, `lipid-atlas`, `image`, `sampled-field`, ...</span>
+`experimental` `showcases`<br><span>`scientific`, `real-data`, `lipid-atlas`, `image`, `sampled-field`, ...</span>
 
 section/channel lipid intensity showcase.
 
@@ -150,7 +150,7 @@ generated height-field mesh with a derived wireframe overlay.
 
 [![Synthetic Mouse](../assets/gallery/v0.4/showcases/showcase_synthetic_mouse.webp)](gallery/showcases/showcase_synthetic_mouse.md)
 
-`prototype` `showcases`<br><span>`scientific`, `synthetic`, `textured-mesh`, `animation`, `skeleton`, ...</span>
+`experimental` `showcases`<br><span>`scientific`, `synthetic`, `textured-mesh`, `animation`, `skeleton`, ...</span>
 
 animated textured mouse mesh with trajectory and skeleton trails.
 

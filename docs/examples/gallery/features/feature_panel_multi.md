@@ -41,21 +41,15 @@ multiple independent panels with panel-local panzoom controllers.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/panel_multi.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_multi.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_multi"><code>examples/webgpu/live.html?id=feature_panel_multi</code></a>
     - WebGPU requirements: `panel-grid`, `multi-panel`, `panzoom`, `point`
-    - Build: `just example-c features/panel_multi`
-    - Smoke: `./build/examples/c/features/panel_multi --png`
-    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

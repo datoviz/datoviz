@@ -42,13 +42,9 @@ deterministic 3D impostor-sphere cluster with depth, radius, and color variation
     - Status: `supported`
     - Source: [`examples/c/visuals/sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c)
     - Reference: [Sphere visual family](../../../reference/visual-families/sphere.md)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=sphere_impostor"><code>examples/webgpu/live.html?id=sphere_impostor</code></a>
     - WebGPU requirements: `sphere`, `arcball`
-    - Build: `just example-c visuals/sphere`
-    - Smoke: `./build/examples/c/visuals/sphere --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -59,8 +55,6 @@ deterministic 3D impostor-sphere cluster with depth, radius, and color variation
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

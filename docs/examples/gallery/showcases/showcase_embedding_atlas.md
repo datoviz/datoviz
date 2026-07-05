@@ -29,14 +29,10 @@ interactive prepared AI embedding atlas.
     - ID: `showcase_embedding_atlas`
     - Category: `showcase`
     - Lane: `showcases`
-    - Status: `supported`
+    - Status: `experimental`
     - Source: [`examples/c/showcases/embedding_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/embedding_atlas.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-planned`
     - WebGPU requirements: `point`, `panzoom`, `query-readback`, `selection`, `overlay`
-    - Build: `just example-c showcases/embedding_atlas`
-    - Smoke: `./build/examples/c/showcases/embedding_atlas --png`
-    - Validation: `smoke+interaction+screenshot`
 
     ### Tags
 
@@ -57,8 +53,6 @@ interactive prepared AI embedding atlas.
     | `license` | generated under repository license |
     | `preprocessing` | python tools/data/prepare_embedding_atlas.py --force |
     | `cache_prepared_path` | .cache/datoviz/examples/embedding_atlas/prepared |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

@@ -31,12 +31,8 @@ _Media pending._
     - Lane: `runtime`
     - Status: `experimental`
     - Source: [`examples/c/runtime/video_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/video_export.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `native-only`
     - WebGPU requirements: `native-capture`
-    - Build: `just example-c runtime/video_export`
-    - Smoke: `./build/examples/c/runtime/video_export --png`
-    - Validation: `smoke+optional-video`
 
     ### Tags
 
@@ -47,8 +43,6 @@ _Media pending._
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

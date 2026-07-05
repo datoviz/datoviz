@@ -41,21 +41,15 @@ retained sphere hover and click selection.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/selection_sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_sphere.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_selection_sphere"><code>examples/webgpu/live.html?id=feature_selection_sphere</code></a>
     - WebGPU requirements: `sphere`, `arcball`, `query-readback`, `frame-callbacks`
-    - Build: `just example-c features/selection_sphere`
-    - Smoke: `./build/examples/c/features/selection_sphere --png`
-    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

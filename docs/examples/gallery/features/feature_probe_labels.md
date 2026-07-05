@@ -31,20 +31,14 @@ categorical labels query proof with deterministic label-id readout.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/probe_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-planned`
     - WebGPU requirements: `labels`, `query-readback`, `panzoom`
-    - Build: `just example-c features/probe_labels`
-    - Smoke: `./build/examples/c/features/probe_labels --png`
-    - Validation: `smoke+readback+screenshot`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

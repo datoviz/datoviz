@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Public C examples in manifest: 109
-- Examples declaring screenshot validation: 93
+- Public C examples in manifest: 110
+- Examples declaring screenshot validation: 94
 - Examples that should have video or motion evidence: 7
 
 ## Commands
@@ -41,6 +41,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [Text Block](gallery/features/feature_text_block.md) | [`examples/c/features/text_block.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/text_block.c) | `supported` | `smoke+screenshot` |
 | [Overlay Card](gallery/features/feature_overlay_card.md) | [`examples/c/features/overlay_card.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/overlay_card.c) | `supported` | `smoke+screenshot` |
 | [Arcball Controller](gallery/features/feature_controller_arcball.md) | [`examples/c/features/controller_arcball.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c) | `supported` | `smoke+interaction+screenshot` |
+| [Manual Camera](gallery/features/feature_camera_manual.md) | [`examples/c/features/camera_manual.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/camera_manual.c) | `supported` | `smoke+interaction+screenshot` |
 | [Orientation Gizmo](gallery/features/feature_orientation_gizmo.md) | [`examples/c/features/orientation_gizmo.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/orientation_gizmo.c) | `supported` | `smoke+interaction+screenshot` |
 | [Reference Grid](gallery/features/feature_reference_grid.md) | [`examples/c/features/reference_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/reference_grid.c) | `supported` | `smoke+interaction+screenshot` |
 | [Bounds Overlay](gallery/features/feature_bounds_overlay.md) | [`examples/c/features/bounds_overlay.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bounds_overlay.c) | `diagnostic` | `smoke+screenshot` |
@@ -114,9 +115,9 @@ and should be committed through that submodule, not copied into the main reposit
 | [Protein](gallery/showcases/protein_arcball_viewer.md) | [`examples/c/showcases/protein.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/protein.c) | `supported` | `smoke+screenshot+manual` |
 | [Wind Field](gallery/showcases/showcase_wind_field.md) | [`examples/c/showcases/wind_field.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/wind_field.c) | `supported` | `smoke+screenshot` |
 | [GPU Particle Smoke](gallery/showcases/showcase_gpu_particle_smoke.md) | [`examples/c/showcases/gpu_particle_smoke.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c) | `experimental` | `smoke+screenshot` |
-| [Embedding Atlas](gallery/showcases/showcase_embedding_atlas.md) | [`examples/c/showcases/embedding_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/embedding_atlas.c) | `supported` | `smoke+interaction+screenshot` |
-| [Lipid Brain Atlas](gallery/showcases/showcase_lipid_brain_atlas.md) | [`examples/c/showcases/lipid_brain_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/lipid_brain_atlas.c) | `prototype` | `smoke+screenshot+video` |
-| [Synthetic Mouse](gallery/showcases/showcase_synthetic_mouse.md) | [`examples/c/showcases/synthetic_mouse.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/synthetic_mouse.c) | `prototype` | `smoke+screenshot+video` |
+| [Embedding Atlas](gallery/showcases/showcase_embedding_atlas.md) | [`examples/c/showcases/embedding_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/embedding_atlas.c) | `experimental` | `smoke+interaction+screenshot` |
+| [Lipid Brain Atlas](gallery/showcases/showcase_lipid_brain_atlas.md) | [`examples/c/showcases/lipid_brain_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/lipid_brain_atlas.c) | `experimental` | `smoke+screenshot+video` |
+| [Synthetic Mouse](gallery/showcases/showcase_synthetic_mouse.md) | [`examples/c/showcases/synthetic_mouse.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/synthetic_mouse.c) | `experimental` | `smoke+screenshot+video` |
 | [Surface Grid](gallery/showcases/showcase_surface_grid.md) | [`examples/c/showcases/surface_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c) | `supported` | `smoke+screenshot` |
 | [Allen Mouse Brain](gallery/showcases/brain_volume.md) | [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c) | `prototype` | `smoke+screenshot` |
 | [Point Cloud](gallery/showcases/point_cloud.md) | [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c) | `supported` | `smoke+screenshot` |

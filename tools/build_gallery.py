@@ -90,6 +90,7 @@ FEATURE_PAGE_GROUPS = (
         "feature_visibility",
     ]),
     ("Navigation", [
+        "feature_camera_manual",
         "feature_panzoom",
         "feature_controller_arcball",
         "feature_controller_turntable",
@@ -573,8 +574,6 @@ def render_example_details(example: Example, page_path: str | Path) -> list[str]
             f"[{example.title} visual family]"
             f"({site_relative_url(page_path, f'reference/visual-families/{visual_reference}.md')})"
         )
-    if example.agent_copy_safe is not None:
-        metadata.append(f"- Agent copy-safe: `{str(example.agent_copy_safe).lower()}`")
     if example.python_source is not None:
         metadata.append(
             f"- Python source: [`{example.python_source}`]({SOURCE_BASE_URL}/{example.python_source})",
@@ -589,26 +588,12 @@ def render_example_details(example: Example, page_path: str | Path) -> list[str]
         if example.webgpu_requirements:
             requirements = ", ".join(f"`{requirement}`" for requirement in example.webgpu_requirements)
             metadata.append(f"- WebGPU requirements: {requirements}")
-    metadata.extend(
-        [
-            f"- Build: `just example-c {example.rel_executable}`",
-            f"- Smoke: `./build/examples/c/{example.rel_executable} --png`",
-            f"- Validation: `{example.validation}`",
-        ]
-    )
-
     detail_lines = [*metadata, ""]
     if example.tags:
         detail_lines.extend(["### Tags", "", ", ".join(f"`{tag}`" for tag in example.tags), ""])
     append_detail_table(detail_lines, "Data", example.data)
     append_detail_table(detail_lines, "Dataset", example.dataset)
     append_detail_table(detail_lines, "Encoding", example.encoding)
-    detail_lines.extend(
-        [
-            "Generated media is prepared in the `data` submodule and linked from this page.",
-            "",
-        ]
-    )
     return ['??? info "Example details"', "", *indent_markdown(detail_lines), ""]
 
 
@@ -789,7 +774,7 @@ def render_page_intro(summary: str, coverage: str) -> list[str]:
         "",
         coverage,
         "",
-        "Each card links to a detail page with preview media, source code, and validation metadata.",
+        "Each card links to a detail page with preview media, source code, and example metadata.",
         "",
     ]
 

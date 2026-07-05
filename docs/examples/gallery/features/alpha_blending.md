@@ -41,21 +41,15 @@ retained primitive visual using per-vertex alpha and source-over blending.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/alpha_blending.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/alpha_blending.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=alpha_blending"><code>examples/webgpu/live.html?id=alpha_blending</code></a>
     - WebGPU requirements: `alpha-blending`, `primitive`
-    - Build: `just example-c features/alpha_blending`
-    - Smoke: `./build/examples/c/features/alpha_blending --png`
-    - Validation: `smoke+screenshot`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

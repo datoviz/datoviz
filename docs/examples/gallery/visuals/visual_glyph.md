@@ -42,13 +42,9 @@ low-level font atlas glyph quads, distinct from retained semantic text.
     - Status: `experimental`
     - Source: [`examples/c/visuals/glyph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/glyph.c)
     - Reference: [Font Atlas Glyphs visual family](../../../reference/visual-families/glyph.md)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_glyph"><code>examples/webgpu/live.html?id=visual_glyph</code></a>
     - WebGPU requirements: `glyph`, `glyph-atlas`, `sdf`
-    - Build: `just example-c visuals/glyph`
-    - Smoke: `./build/examples/c/visuals/glyph --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -59,8 +55,6 @@ low-level font atlas glyph quads, distinct from retained semantic text.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

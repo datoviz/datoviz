@@ -31,12 +31,8 @@ marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-deferred`
     - WebGPU requirements: `marker`, `symbol-set`, `glyph-atlas`
-    - Build: `just example-c features/marker_symbols`
-    - Smoke: `./build/examples/c/features/marker_symbols --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -47,8 +43,6 @@ marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

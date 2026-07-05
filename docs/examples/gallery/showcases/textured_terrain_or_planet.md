@@ -41,13 +41,9 @@ UV textured planet mesh via dvz_mesh + sampled fields.
     - Lane: `showcases`
     - Status: `supported`
     - Source: [`examples/c/showcases/textured_planet.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=textured_terrain_or_planet"><code>examples/webgpu/live.html?id=textured_terrain_or_planet</code></a>
     - WebGPU requirements: `mesh`, `sampled-field`, `texture`, `arcball`
-    - Build: `just example-c showcases/textured_planet`
-    - Smoke: `./build/examples/c/showcases/textured_planet --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -70,8 +66,6 @@ UV textured planet mesh via dvz_mesh + sampled fields.
     | `citation` | NASA Blue Marble Next Generation; USGS Astrogeology Mars Viking Colorized Global Mosaic 232m / Mars Digital Image Model 2.1. |
     | `preprocessing` | none; committed JPEG texture maps are loaded directly from data/assets/textures |
     | `provenance` | Earth uses NASA Blue Marble Next Generation texture assets; Mars uses the USGS Astrogeology/NASA Ames/JPL/USGS Viking MDIM 2.1 colorized global mosaic. The example can generate a procedural Earth fallback when the local Earth file is absent, but release gallery evidence should use the committed real texture assets. |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

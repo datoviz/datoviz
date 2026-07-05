@@ -29,14 +29,10 @@ animated textured mouse mesh with trajectory and skeleton trails.
     - ID: `showcase_synthetic_mouse`
     - Category: `showcase`
     - Lane: `showcases`
-    - Status: `prototype`
+    - Status: `experimental`
     - Source: [`examples/c/showcases/synthetic_mouse.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/synthetic_mouse.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-deferred`
     - WebGPU requirements: `textured-mesh`, `animation`, `reference-grid`, `arcball`, `video`
-    - Build: `just example-c showcases/synthetic_mouse`
-    - Smoke: `./build/examples/c/showcases/synthetic_mouse --png`
-    - Validation: `smoke+screenshot+video`
 
     ### Tags
 
@@ -57,8 +53,6 @@ animated textured mouse mesh with trajectory and skeleton trails.
     | `license` | generated fallback; upstream OSF terms require review for real assets |
     | `preprocessing` | python tools/data/prepare_synthetic_mouse.py --force |
     | `cache_prepared_path` | .cache/datoviz/examples/synthetic_mouse/prepared |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

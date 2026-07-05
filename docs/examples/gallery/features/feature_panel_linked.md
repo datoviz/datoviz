@@ -41,21 +41,15 @@ two panels linked on X panzoom extent with independent Y panzoom state.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/panel_linked.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_linked.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panel_linked"><code>examples/webgpu/live.html?id=feature_panel_linked</code></a>
     - WebGPU requirements: `panel-grid`, `linked-panels`, `panzoom`, `point`
-    - Build: `just example-c features/panel_linked`
-    - Smoke: `./build/examples/c/features/panel_linked --png`
-    - Validation: `smoke+interaction+screenshot`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

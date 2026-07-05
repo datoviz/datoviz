@@ -31,20 +31,14 @@ _Media pending._
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/path_join.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/path_join.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-planned`
     - WebGPU requirements: `path`
-    - Build: `just example-c features/path_join`
-    - Smoke: `./build/examples/c/features/path_join --png`
-    - Validation: `smoke+screenshot`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

@@ -31,12 +31,8 @@ deterministic brain-connectivity graph composite.
     - Lane: `composites`
     - Status: `supported`
     - Source: [`examples/c/composites/graph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-planned`
     - WebGPU requirements: `composite`, `marker`, `bezier-edges`, `path`, `panzoom`
-    - Build: `just example-c composites/graph`
-    - Smoke: `./build/examples/c/composites/graph --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -47,8 +43,6 @@ deterministic brain-connectivity graph composite.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

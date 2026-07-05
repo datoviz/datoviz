@@ -29,14 +29,10 @@ section/channel lipid intensity showcase.
     - ID: `showcase_lipid_brain_atlas`
     - Category: `showcase`
     - Lane: `showcases`
-    - Status: `prototype`
+    - Status: `experimental`
     - Source: [`examples/c/showcases/lipid_brain_atlas.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/lipid_brain_atlas.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-deferred`
     - WebGPU requirements: `image`, `sampled-field`, `colorbar`, `panzoom`, `video`
-    - Build: `just example-c showcases/lipid_brain_atlas`
-    - Smoke: `./build/examples/c/showcases/lipid_brain_atlas --png`
-    - Validation: `smoke+screenshot+video`
 
     ### Tags
 
@@ -61,8 +57,6 @@ section/channel lipid intensity showcase.
     | `cache_prepared_path` | .cache/datoviz/examples/lipid_brain_atlas/prepared |
     | `raw_cache_path` | $DVZ_DATASET_CACHE/lipid_brain_atlas/peaks.parquet |
     | `provenance` | The release gallery path uses deterministic synthetic prepared data unless the real Zenodo parquet is downloaded into the external dataset cache; raw downloads are not committed to the repository. |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

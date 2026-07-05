@@ -31,20 +31,14 @@ _Media pending._
     - Lane: `runtime`
     - Status: `supported`
     - Source: [`examples/c/runtime/multi_window.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/multi_window.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `native-only`
     - WebGPU requirements: `native-view`, `multi-window`
-    - Build: `just example-c runtime/multi_window`
-    - Smoke: `./build/examples/c/runtime/multi_window --png`
-    - Validation: `smoke+interaction`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

@@ -41,13 +41,9 @@ histogram, guide annotations, stacked traces, and error bands.
     - Lane: `showcases`
     - Status: `supported`
     - Source: [`examples/c/showcases/scientific_plotting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scientific_plotting.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=scientific_plotting_workflow"><code>examples/webgpu/live.html?id=scientific_plotting_workflow</code></a>
     - WebGPU requirements: `axes`, `primitive`, `segment`, `path`, `text`, `panzoom`
-    - Build: `just example-c showcases/scientific_plotting`
-    - Smoke: `./build/examples/c/showcases/scientific_plotting --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -58,8 +54,6 @@ histogram, guide annotations, stacked traces, and error bands.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

@@ -31,12 +31,8 @@ _Media pending._
     - Lane: `features`
     - Status: `experimental`
     - Source: [`examples/c/features/datetime_axis.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/datetime_axis.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-deferred`
     - WebGPU requirements: `axes`, `text`, `datetime`
-    - Build: `just example-c features/datetime_axis`
-    - Smoke: `./build/examples/c/features/datetime_axis --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -47,8 +43,6 @@ _Media pending._
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

@@ -31,12 +31,8 @@ diagnostic retained visual bounds in 2D and 3D panels.
     - Lane: `features`
     - Status: `diagnostic`
     - Source: [`examples/c/features/bounds_overlay.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bounds_overlay.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-planned`
     - WebGPU requirements: `bounds-overlay`, `point`, `sphere`, `overlay`
-    - Build: `just example-c features/bounds_overlay`
-    - Smoke: `./build/examples/c/features/bounds_overlay --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -47,8 +43,6 @@ diagnostic retained visual bounds in 2D and 3D panels.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

@@ -4,9 +4,9 @@
 
 Browse isolated examples for layout, navigation, adornments, rendering, interaction, animation, and diagnostics.
 
-Coverage: 68 feature examples (61 supported, 6 experimental, 1 diagnostic).
+Coverage: 69 feature examples (62 supported, 6 experimental, 1 diagnostic).
 
-Each card links to a detail page with preview media, source code, and validation metadata.
+Each card links to a detail page with preview media, source code, and example metadata.
 
 ## Scene & Layout
 
@@ -161,6 +161,18 @@ retained visual visibility toggled by a scene timer.
 ## Navigation
 
 <div class="grid cards" markdown="1">
+
+<div class="card" markdown="1">
+
+### [Manual Camera](gallery/features/feature_camera_manual.md)
+
+_Media pending._
+
+`supported` `features`
+
+explicit perspective-camera setup with eye, target, up, and clip planes.
+
+</div>
 
 <div class="card" markdown="1">
 

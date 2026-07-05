@@ -31,20 +31,14 @@ _Media pending._
     - Lane: `features`
     - Status: `experimental`
     - Source: [`examples/c/features/json_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/json_export.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `native-only`
     - WebGPU requirements: `diagnostics`
-    - Build: `just example-c features/json_export`
-    - Smoke: `./build/examples/c/features/json_export --png`
-    - Validation: `smoke+stdout`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

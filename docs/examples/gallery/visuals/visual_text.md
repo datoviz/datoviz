@@ -42,13 +42,9 @@ retained semantic text objects lowered to glyph visuals.
     - Status: `supported`
     - Source: [`examples/c/visuals/text.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c)
     - Reference: [Text visual family](../../../reference/visual-families/text.md)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visual_text"><code>examples/webgpu/live.html?id=visual_text</code></a>
     - WebGPU requirements: `text`, `glyph-atlas`
-    - Build: `just example-c visuals/text`
-    - Smoke: `./build/examples/c/visuals/text --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -59,8 +55,6 @@ retained semantic text objects lowered to glyph visuals.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

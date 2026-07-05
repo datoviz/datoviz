@@ -41,13 +41,9 @@ contiguous U.S. state population-density choropleth.
     - Lane: `showcases`
     - Status: `supported`
     - Source: [`examples/c/showcases/choropleth.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/choropleth.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=us_state_choropleth"><code>examples/webgpu/live.html?id=us_state_choropleth</code></a>
     - WebGPU requirements: `composite`, `polygon-set`, `colorbar`, `panzoom`
-    - Build: `just example-c showcases/choropleth`
-    - Smoke: `./build/examples/c/showcases/choropleth --png`
-    - Validation: `smoke+screenshot+manual`
 
     ### Tags
 
@@ -83,8 +79,6 @@ contiguous U.S. state population-density choropleth.
     | `position` | Census boundary rings projected with a spherical Albers equal-area transform and normalized into scene space |
     | `color` | log10 of Vintage 2025 resident population per Census ALAND square kilometer |
     | `topology` | each shapefile ring is rendered as one polygon-set region; interior holes are not preserved |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

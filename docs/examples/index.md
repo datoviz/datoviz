@@ -4,9 +4,9 @@
 
 Browse the generated Datoviz v0.4 example gallery.
 
-Coverage: 15 showcases, 17 visuals and composites, 68 feature examples, 5 runtime examples, and 3 advanced examples.
+Coverage: 15 showcases, 17 visuals and composites, 69 feature examples, 5 runtime examples, and 3 advanced examples.
 
-Each card links to a detail page with preview media, source code, and validation metadata.
+Each card links to a detail page with preview media, source code, and example metadata.
 
 ## Showcases
 
@@ -624,7 +624,7 @@ retained sphere hover and click selection.
 
 </div>
 
-[Browse all 68 feature examples](features.md) — controllers, adornments, interaction, animation, rendering, and more.
+[Browse all 69 feature examples](features.md) — controllers, adornments, interaction, animation, rendering, and more.
 
 ## Runtime & Capture
 

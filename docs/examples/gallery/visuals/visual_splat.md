@@ -32,12 +32,8 @@ retained Gaussian splat visual with deterministic screen-space ellipses.
     - Status: `experimental`
     - Source: [`examples/c/visuals/splat.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/splat.c)
     - Reference: [Splat visual family](../../../reference/visual-families/splat.md)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-deferred`
     - WebGPU requirements: `splat`, `alpha-blending`
-    - Build: `just example-c visuals/splat`
-    - Smoke: `./build/examples/c/visuals/splat --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -48,8 +44,6 @@ retained Gaussian splat visual with deterministic screen-space ellipses.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

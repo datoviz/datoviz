@@ -6,7 +6,7 @@ Browse low-level runtime, DRP2, and host-integration examples. These are not the
 
 Coverage: 3 examples (3 experimental).
 
-Each card links to a detail page with preview media, source code, and validation metadata.
+Each card links to a detail page with preview media, source code, and example metadata.
 
 ## Advanced
 

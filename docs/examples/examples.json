@@ -42,6 +42,28 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_basic_scene.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_basic_scene.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "point"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_basic_scene",
+        "requirements": [
+          "point"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_basic_scene",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_basic_scene",
       "primary_feature": "scene"
     },
     {
@@ -63,6 +85,30 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_panel_single.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_panel_single.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "panel",
+        "point"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_panel_single",
+        "requirements": [
+          "panel",
+          "point"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_panel_single",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_panel_single",
       "primary_feature": "panel-single"
     },
     {
@@ -84,6 +130,30 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_panel_grid.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_panel_grid.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "panel-grid",
+        "point"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_panel_grid",
+        "requirements": [
+          "panel-grid",
+          "point"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_panel_grid",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_panel_grid",
       "primary_feature": "panel-grid"
     },
     {
@@ -105,6 +175,34 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_panel_multi.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_panel_multi.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "panel-grid",
+        "multi-panel",
+        "panzoom",
+        "point"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_panel_multi",
+        "requirements": [
+          "panel-grid",
+          "multi-panel",
+          "panzoom",
+          "point"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_panel_multi",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_panel_multi",
       "primary_feature": "multi-panel"
     },
     {
@@ -126,6 +224,34 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_panel_linked.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_panel_linked.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "panel-grid",
+        "linked-panels",
+        "panzoom",
+        "point"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_panel_linked",
+        "requirements": [
+          "panel-grid",
+          "linked-panels",
+          "panzoom",
+          "point"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_panel_linked",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_panel_linked",
       "primary_feature": "linked-panels"
     },
     {
@@ -147,6 +273,34 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/path_axes_2d.png",
+          "site_asset": "/assets/gallery/v0.4/features/path_axes_2d.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "path",
+        "axes",
+        "text",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=path_axes_2d",
+        "requirements": [
+          "path",
+          "axes",
+          "text",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=path_axes_2d",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=path_axes_2d",
       "primary_feature": "axes-2d"
     },
     {
@@ -167,6 +321,31 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "pending",
+          "source": "data/gallery/v0.4/features/feature_coordinate_system.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_coordinate_system.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "mesh",
+        "reference-grid",
+        "text",
+        "controller"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "mesh",
+          "reference-grid",
+          "text",
+          "controller"
+        ]
       },
       "primary_feature": "coordinate-system"
     },
@@ -189,6 +368,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_axis_labels.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_axis_labels.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "axes",
+        "text",
+        "labels"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_axis_labels",
+        "requirements": [
+          "axes",
+          "text",
+          "labels"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_axis_labels",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_axis_labels",
       "primary_feature": "axis-labels"
     },
     {
@@ -210,6 +415,34 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "pending",
+          "source": "data/gallery/v0.4/features/feature_sampled_field_update.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_sampled_field_update.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "sampled-field",
+        "image",
+        "frame-callbacks",
+        "colormap"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_sampled_field_update",
+        "requirements": [
+          "sampled-field",
+          "image",
+          "frame-callbacks",
+          "colormap"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_sampled_field_update",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_sampled_field_update",
       "primary_feature": "sampled-field-update"
     },
     {
@@ -231,6 +464,30 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_text_block.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_text_block.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "text",
+        "glyph-atlas"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_text_block",
+        "requirements": [
+          "text",
+          "glyph-atlas"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_text_block",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_text_block",
       "primary_feature": "text-block"
     },
     {
@@ -252,6 +509,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_overlay_card.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_overlay_card.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "overlay",
+        "text",
+        "primitive"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_overlay_card",
+        "requirements": [
+          "overlay",
+          "text",
+          "primitive"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_overlay_card",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_overlay_card",
       "primary_feature": "overlay-card"
     },
     {
@@ -272,6 +555,29 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_controller_arcball.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_controller_arcball.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "controller",
+        "arcball",
+        "mesh"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "controller",
+          "arcball",
+          "mesh"
+        ]
       },
       "primary_feature": "controller-arcball"
     },
@@ -294,6 +600,31 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "pending",
+          "source": "data/gallery/v0.4/features/feature_camera_manual.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_camera_manual.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "camera",
+        "mesh",
+        "controller",
+        "arcball"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "camera",
+          "mesh",
+          "controller",
+          "arcball"
+        ]
+      },
       "primary_feature": "camera-manual"
     },
     {
@@ -315,6 +646,31 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_orientation_gizmo.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_orientation_gizmo.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "orientation-gizmo",
+        "overlay",
+        "mesh",
+        "controller"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "orientation-gizmo",
+          "overlay",
+          "mesh",
+          "controller"
+        ]
+      },
       "primary_feature": "orientation-gizmo"
     },
     {
@@ -335,6 +691,29 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_reference_grid.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_reference_grid.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "reference-grid",
+        "segment",
+        "controller"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "reference-grid",
+          "segment",
+          "controller"
+        ]
       },
       "primary_feature": "reference-grid"
     },
@@ -363,6 +742,31 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_bounds_overlay.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_bounds_overlay.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "bounds-overlay",
+        "point",
+        "sphere",
+        "overlay"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "bounds-overlay",
+          "point",
+          "sphere",
+          "overlay"
+        ]
+      },
       "primary_feature": "bounds-overlay"
     },
     {
@@ -384,6 +788,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_controller_fly.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_controller_fly.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "controller",
+        "fly",
+        "mesh"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_controller_fly",
+        "requirements": [
+          "controller",
+          "fly",
+          "mesh"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_controller_fly",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_controller_fly",
       "primary_feature": "controller-fly"
     },
     {
@@ -405,6 +835,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_controller_turntable.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_controller_turntable.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "controller",
+        "turntable",
+        "mesh"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_controller_turntable",
+        "requirements": [
+          "controller",
+          "turntable",
+          "mesh"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_controller_turntable",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_controller_turntable",
       "primary_feature": "controller-turntable"
     },
     {
@@ -425,6 +881,33 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_mesh_texture.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_mesh_texture.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "mesh",
+        "sampled-field",
+        "texture",
+        "arcball",
+        "material"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "mesh",
+          "sampled-field",
+          "texture",
+          "arcball",
+          "material"
+        ]
       },
       "primary_feature": "mesh-texture"
     },
@@ -447,6 +930,34 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_material_mesh.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_material_mesh.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "mesh",
+        "material",
+        "lighting",
+        "arcball"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_material_mesh",
+        "requirements": [
+          "mesh",
+          "material",
+          "lighting",
+          "arcball"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_material_mesh",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_material_mesh",
       "primary_feature": "material-mesh"
     },
     {
@@ -468,6 +979,34 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_lighting.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_lighting.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "sphere",
+        "material",
+        "lighting",
+        "arcball"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_lighting",
+        "requirements": [
+          "sphere",
+          "material",
+          "lighting",
+          "arcball"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_lighting",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_lighting",
       "primary_feature": "lighting"
     },
     {
@@ -488,6 +1027,32 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_user_scale.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_user_scale.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_requirements": [
+        "marker",
+        "panzoom",
+        "path",
+        "gui"
+      ],
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "marker",
+          "panzoom",
+          "path",
+          "gui"
+        ],
+        "reason": "the user-scale control is a native ImGui slider on a Datoviz app view"
       },
       "primary_feature": "user-scale"
     },
@@ -510,6 +1075,26 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/features/feature_gui_controls.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_gui_controls.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_requirements": [
+        "gui"
+      ],
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "gui"
+        ],
+        "reason": "Datoviz GUI controls require the native ImGui/GLFW app path"
+      },
       "primary_feature": "gui-controls"
     },
     {
@@ -530,6 +1115,28 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/features/feature_gui_viewport.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_gui_viewport.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_requirements": [
+        "gui",
+        "native-view"
+      ],
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "gui",
+          "native-view"
+        ],
+        "reason": "dockable GUI viewports require native ImGui and an offscreen native source view"
       },
       "primary_feature": "gui-viewport"
     },
@@ -552,6 +1159,26 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/features/feature_gui_cimgui.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_gui_cimgui.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_requirements": [
+        "gui"
+      ],
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "gui"
+        ],
+        "reason": "raw cimgui access requires the native ImGui app path"
+      },
       "primary_feature": "gui-cimgui"
     },
     {
@@ -573,6 +1200,34 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_animation_tracks.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_animation_tracks.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "mesh",
+        "frame-callbacks",
+        "controller",
+        "arcball"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_animation_tracks",
+        "requirements": [
+          "mesh",
+          "frame-callbacks",
+          "controller",
+          "arcball"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_animation_tracks",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_animation_tracks",
       "primary_feature": "animation-tracks"
     },
     {
@@ -598,6 +1253,36 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_compute_buffer_animation.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_compute_buffer_animation.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "scene-buffers",
+        "storage-buffers",
+        "scene-compute",
+        "continuous-frames",
+        "point"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_compute_buffer_animation",
+        "requirements": [
+          "scene-buffers",
+          "storage-buffers",
+          "scene-compute",
+          "continuous-frames",
+          "point"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_compute_buffer_animation",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_compute_buffer_animation",
       "primary_feature": "scene-compute-buffer"
     },
     {
@@ -618,6 +1303,25 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/technique_edl.png",
+          "site_asset": "/assets/gallery/v0.4/features/technique_edl.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_requirements": [
+        "depth-postprocess"
+      ],
+      "webgpu": {
+        "status": "webgpu-deferred",
+        "requirements": [
+          "depth-postprocess"
+        ]
       },
       "primary_feature": "edl"
     },
@@ -640,6 +1344,27 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/technique_ssao.png",
+          "site_asset": "/assets/gallery/v0.4/features/technique_ssao.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_requirements": [
+        "gbuffer",
+        "depth-postprocess"
+      ],
+      "webgpu": {
+        "status": "webgpu-deferred",
+        "requirements": [
+          "gbuffer",
+          "depth-postprocess"
+        ]
+      },
       "primary_feature": "ssao"
     },
     {
@@ -660,6 +1385,25 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/technique_msaa.png",
+          "site_asset": "/assets/gallery/v0.4/features/technique_msaa.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_requirements": [
+        "multisample"
+      ],
+      "webgpu": {
+        "status": "webgpu-deferred",
+        "requirements": [
+          "multisample"
+        ]
       },
       "primary_feature": "msaa"
     },
@@ -682,6 +1426,25 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/technique_depth_cue.png",
+          "site_asset": "/assets/gallery/v0.4/features/technique_depth_cue.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_requirements": [
+        "depth-cue"
+      ],
+      "webgpu": {
+        "status": "webgpu-deferred",
+        "requirements": [
+          "depth-cue"
+        ]
+      },
       "primary_feature": "depth-cue"
     },
     {
@@ -702,6 +1465,27 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/technique_transparency.png",
+          "site_asset": "/assets/gallery/v0.4/features/technique_transparency.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_requirements": [
+        "wboit",
+        "depth-peeling"
+      ],
+      "webgpu": {
+        "status": "webgpu-deferred",
+        "requirements": [
+          "wboit",
+          "depth-peeling"
+        ]
       },
       "primary_feature": "transparency-order"
     },
@@ -724,6 +1508,27 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_volume_occlusion.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_volume_occlusion.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_requirements": [
+        "volume",
+        "scene-occlusion"
+      ],
+      "webgpu": {
+        "status": "webgpu-deferred",
+        "requirements": [
+          "volume",
+          "scene-occlusion"
+        ]
+      },
       "primary_feature": "volume-occlusion"
     },
     {
@@ -745,6 +1550,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_guide_lines.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_guide_lines.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "segment",
+        "overlay",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_guide_lines",
+        "requirements": [
+          "segment",
+          "overlay",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_guide_lines",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_guide_lines",
       "primary_feature": "guide-lines"
     },
     {
@@ -766,6 +1597,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_guide_spans.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_guide_spans.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "primitive",
+        "overlay",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_guide_spans",
+        "requirements": [
+          "primitive",
+          "overlay",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_guide_spans",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_guide_spans",
       "primary_feature": "guide-spans"
     },
     {
@@ -787,6 +1644,34 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_bars_bands.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_bars_bands.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "primitive",
+        "segment",
+        "axes",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_bars_bands",
+        "requirements": [
+          "primitive",
+          "segment",
+          "axes",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_bars_bands",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_bars_bands",
       "primary_feature": "bars-bands"
     },
     {
@@ -807,6 +1692,26 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/runtime/feature_app_glfw.png",
+          "site_asset": "/assets/gallery/v0.4/runtime/feature_app_glfw.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_requirements": [
+        "native-view"
+      ],
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "native-view"
+        ],
+        "reason": "direct GLFW app lifecycle is native-only"
       },
       "primary_runtime": "app-glfw"
     },
@@ -829,6 +1734,28 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/runtime/feature_multi_window.png",
+          "site_asset": "/assets/gallery/v0.4/runtime/feature_multi_window.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_requirements": [
+        "native-view",
+        "multi-window"
+      ],
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "native-view",
+          "multi-window"
+        ],
+        "reason": "multiple native GLFW windows are native-only"
+      },
       "primary_runtime": "multi-window"
     },
     {
@@ -850,6 +1777,26 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "pending",
+          "source": "data/gallery/v0.4/runtime/feature_offscreen_capture.png",
+          "site_asset": "/assets/gallery/v0.4/runtime/feature_offscreen_capture.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_requirements": [
+        "native-capture"
+      ],
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "native-capture"
+        ],
+        "reason": "writes a native offscreen PNG through the app capture path"
+      },
       "primary_runtime": "offscreen-capture"
     },
     {
@@ -870,6 +1817,28 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/features/feature_input_events.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_input_events.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_requirements": [
+        "native-view",
+        "input-events"
+      ],
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "native-view",
+          "input-events"
+        ],
+        "reason": "demonstrates native hosted event injection APIs"
       },
       "primary_feature": "input-events"
     },
@@ -896,6 +1865,28 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/features/feature_view_size_policies.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_view_size_policies.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_requirements": [
+        "native-view",
+        "view-size-policy"
+      ],
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "native-view",
+          "view-size-policy"
+        ],
+        "reason": "demonstrates native window, framebuffer, and physical-size policies"
+      },
       "primary_feature": "view-size-policy"
     },
     {
@@ -916,6 +1907,26 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/runtime/feature_record_replay.png",
+          "site_asset": "/assets/gallery/v0.4/runtime/feature_record_replay.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_requirements": [
+        "native-capture"
+      ],
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "native-capture"
+        ],
+        "reason": "DVZR app recording and replay use native runtime capture plumbing"
       },
       "primary_runtime": "record-replay"
     },
@@ -938,6 +1949,27 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_visual_transform.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_visual_transform.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "visual-transform",
+        "mesh"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "visual-transform",
+          "mesh"
+        ]
+      },
       "primary_feature": "visual-transform"
     },
     {
@@ -958,6 +1990,29 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "pending",
+          "source": "data/gallery/v0.4/features/feature_panel_view2d.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_panel_view2d.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "panel-view",
+        "panzoom",
+        "point"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "panel-view",
+          "panzoom",
+          "point"
+        ]
       },
       "primary_feature": "panel-view2d"
     },
@@ -980,6 +2035,26 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/features/feature_json_export.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_json_export.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_requirements": [
+        "diagnostics"
+      ],
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "diagnostics"
+        ],
+        "reason": "scene JSON is a native diagnostic/fixture surface, not a live browser route"
+      },
       "primary_feature": "json-export"
     },
     {
@@ -1001,6 +2076,29 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_bezier_curve_path.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_bezier_curve_path.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "path",
+        "segment",
+        "marker"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "path",
+          "segment",
+          "marker"
+        ]
+      },
       "primary_feature": "bezier-curve-path"
     },
     {
@@ -1021,6 +2119,25 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "pending",
+          "source": "data/gallery/v0.4/features/feature_path_join.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_path_join.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "path"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "path"
+        ]
       },
       "primary_feature": "path-join"
     },
@@ -1048,7 +2165,37 @@
       ],
       "data": {
         "kind": "synthetic"
-      }
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/showcases/linked_panels_axes_panzoom.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/linked_panels_axes_panzoom.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "panel-grid",
+        "linked-panels",
+        "axes",
+        "panzoom",
+        "path"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=linked_panels_axes_panzoom",
+        "requirements": [
+          "panel-grid",
+          "linked-panels",
+          "axes",
+          "panzoom",
+          "path"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=linked_panels_axes_panzoom",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=linked_panels_axes_panzoom"
     },
     {
       "id": "linked_panels_probe_colorbar",
@@ -1076,7 +2223,39 @@
       ],
       "data": {
         "kind": "synthetic"
-      }
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/showcases/linked_panels_probe_colorbar.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/linked_panels_probe_colorbar.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "panel-grid",
+        "linked-panels",
+        "image",
+        "colorbar",
+        "query-readback",
+        "readout"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=linked_panels_probe_colorbar",
+        "requirements": [
+          "panel-grid",
+          "linked-panels",
+          "image",
+          "colorbar",
+          "query-readback",
+          "readout"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=linked_panels_probe_colorbar",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=linked_panels_probe_colorbar"
     },
     {
       "id": "scientific_plotting_workflow",
@@ -1104,7 +2283,39 @@
       ],
       "data": {
         "kind": "synthetic"
-      }
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/showcases/scientific_plotting_workflow.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/scientific_plotting_workflow.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "axes",
+        "primitive",
+        "segment",
+        "path",
+        "text",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=scientific_plotting_workflow",
+        "requirements": [
+          "axes",
+          "primitive",
+          "segment",
+          "path",
+          "text",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=scientific_plotting_workflow",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=scientific_plotting_workflow"
     },
     {
       "id": "scale_bar",
@@ -1125,6 +2336,33 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/scale_bar.png",
+          "site_asset": "/assets/gallery/v0.4/features/scale_bar.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "scale-bar",
+        "text",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=scale_bar",
+        "scenario_id": "feature_scalebar",
+        "requirements": [
+          "scale-bar",
+          "text",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=scale_bar",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=scale_bar",
       "primary_feature": "scale-bar"
     },
     {
@@ -1146,6 +2384,33 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/scalebar_units.png",
+          "site_asset": "/assets/gallery/v0.4/features/scalebar_units.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "scale-bar",
+        "text",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=scalebar_units",
+        "scenario_id": "feature_scalebar_units",
+        "requirements": [
+          "scale-bar",
+          "text",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=scalebar_units",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=scalebar_units",
       "primary_feature": "scalebar-units"
     },
     {
@@ -1171,7 +2436,37 @@
       ],
       "data": {
         "kind": "synthetic"
-      }
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/showcases/scalebar_measurement_workflow.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/scalebar_measurement_workflow.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "scale-bar",
+        "text",
+        "panel-grid",
+        "mesh",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=scalebar_measurement_workflow",
+        "requirements": [
+          "scale-bar",
+          "text",
+          "panel-grid",
+          "mesh",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=scalebar_measurement_workflow",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=scalebar_measurement_workflow"
     },
     {
       "id": "colorbar",
@@ -1197,6 +2492,35 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/colorbar.png",
+          "site_asset": "/assets/gallery/v0.4/features/colorbar.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "colorbar",
+        "image",
+        "sampled-field",
+        "text"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=colorbar",
+        "scenario_id": "feature_colorbar",
+        "requirements": [
+          "colorbar",
+          "image",
+          "sampled-field",
+          "text"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=colorbar",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=colorbar",
       "primary_feature": "colorbar"
     },
     {
@@ -1218,6 +2542,31 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/colormap_scale.png",
+          "site_asset": "/assets/gallery/v0.4/features/colormap_scale.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "colormap",
+        "point"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=colormap_scale",
+        "scenario_id": "feature_colormap_scale",
+        "requirements": [
+          "colormap",
+          "point"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=colormap_scale",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=colormap_scale",
       "primary_feature": "colormap-scale"
     },
     {
@@ -1239,6 +2588,35 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/annotation_readout.png",
+          "site_asset": "/assets/gallery/v0.4/features/annotation_readout.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "annotation",
+        "readout",
+        "text",
+        "point"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=annotation_readout",
+        "scenario_id": "feature_annotation_readout",
+        "requirements": [
+          "annotation",
+          "readout",
+          "text",
+          "point"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=annotation_readout",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=annotation_readout",
       "primary_feature": "annotation-readout"
     },
     {
@@ -1260,6 +2638,33 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/update_partial.png",
+          "site_asset": "/assets/gallery/v0.4/features/update_partial.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "buffer-update",
+        "point",
+        "frame-callbacks"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=update_partial",
+        "scenario_id": "feature_update_partial",
+        "requirements": [
+          "buffer-update",
+          "point",
+          "frame-callbacks"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=update_partial",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=update_partial",
       "primary_feature": "update-partial"
     },
     {
@@ -1281,6 +2686,34 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_update_visual_data.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_update_visual_data.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "buffer-update",
+        "visual-update",
+        "point",
+        "frame-callbacks"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_update_visual_data",
+        "requirements": [
+          "buffer-update",
+          "visual-update",
+          "point",
+          "frame-callbacks"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_update_visual_data",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_update_visual_data",
       "primary_feature": "update-visual-data"
     },
     {
@@ -1302,6 +2735,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_visibility.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_visibility.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "visual-visibility",
+        "point",
+        "frame-callbacks"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_visibility",
+        "requirements": [
+          "visual-visibility",
+          "point",
+          "frame-callbacks"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_visibility",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_visibility",
       "primary_feature": "visibility"
     },
     {
@@ -1323,6 +2782,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/technique_depth_test.png",
+          "site_asset": "/assets/gallery/v0.4/features/technique_depth_test.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "depth-test",
+        "point",
+        "controller"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=technique_depth_test",
+        "requirements": [
+          "depth-test",
+          "point",
+          "controller"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=technique_depth_test",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=technique_depth_test",
       "primary_feature": "depth-test"
     },
     {
@@ -1344,6 +2829,31 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/alpha_blending.png",
+          "site_asset": "/assets/gallery/v0.4/features/alpha_blending.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "alpha-blending",
+        "primitive"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=alpha_blending",
+        "scenario_id": "feature_alpha_blending",
+        "requirements": [
+          "alpha-blending",
+          "primitive"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=alpha_blending",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=alpha_blending",
       "primary_feature": "alpha-blending"
     },
     {
@@ -1365,6 +2875,31 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/panel_background.png",
+          "site_asset": "/assets/gallery/v0.4/features/panel_background.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "panel-background",
+        "primitive"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=panel_background",
+        "scenario_id": "feature_panel_background",
+        "requirements": [
+          "panel-background",
+          "primitive"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=panel_background",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=panel_background",
       "primary_feature": "panel-background"
     },
     {
@@ -1386,6 +2921,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/features/feature_panzoom.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_panzoom.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "controller",
+        "panzoom",
+        "point"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_panzoom",
+        "requirements": [
+          "controller",
+          "panzoom",
+          "point"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_panzoom",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_panzoom",
       "primary_feature": "controller-panzoom"
     },
     {
@@ -1407,6 +2968,33 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/image_probe.png",
+          "site_asset": "/assets/gallery/v0.4/features/image_probe.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "image",
+        "query-readback",
+        "frame-callbacks"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=image_probe",
+        "scenario_id": "feature_image_probe",
+        "requirements": [
+          "image",
+          "query-readback",
+          "frame-callbacks"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=image_probe",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=image_probe",
       "primary_feature": "image-probe"
     },
     {
@@ -1428,6 +3016,34 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/features/feature_picking.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_picking.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "marker",
+        "panzoom",
+        "query-readback",
+        "frame-callbacks"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_picking",
+        "requirements": [
+          "marker",
+          "panzoom",
+          "query-readback",
+          "frame-callbacks"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_picking",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_picking",
       "primary_feature": "picking"
     },
     {
@@ -1449,6 +3065,36 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_selection_pixel.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_selection_pixel.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "pixel",
+        "controller",
+        "panzoom",
+        "query-readback",
+        "frame-callbacks"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_selection_pixel",
+        "requirements": [
+          "pixel",
+          "controller",
+          "panzoom",
+          "query-readback",
+          "frame-callbacks"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_selection_pixel",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_selection_pixel",
       "primary_feature": "selection-pixel"
     },
     {
@@ -1470,6 +3116,34 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_selection_sphere.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_selection_sphere.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "sphere",
+        "arcball",
+        "query-readback",
+        "frame-callbacks"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_selection_sphere",
+        "requirements": [
+          "sphere",
+          "arcball",
+          "query-readback",
+          "frame-callbacks"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_selection_sphere",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_selection_sphere",
       "primary_feature": "selection-sphere"
     },
     {
@@ -1491,6 +3165,34 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_selection_mesh_instances.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_selection_mesh_instances.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "mesh",
+        "arcball",
+        "query-readback",
+        "frame-callbacks"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_selection_mesh_instances",
+        "requirements": [
+          "mesh",
+          "arcball",
+          "query-readback",
+          "frame-callbacks"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_selection_mesh_instances",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_selection_mesh_instances",
       "primary_feature": "selection-mesh-instances"
     },
     {
@@ -1512,6 +3214,34 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_isolines.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_isolines.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "mesh",
+        "segment",
+        "controller",
+        "arcball"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_isolines",
+        "requirements": [
+          "mesh",
+          "segment",
+          "controller",
+          "arcball"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_isolines",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_isolines",
       "primary_feature": "isolines"
     },
     {
@@ -1533,6 +3263,30 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_builtin_shapes_2d.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_builtin_shapes_2d.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "mesh",
+        "controller"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_builtin_shapes_2d",
+        "requirements": [
+          "mesh",
+          "controller"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_builtin_shapes_2d",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_builtin_shapes_2d",
       "primary_feature": "builtin-shapes-2d"
     },
     {
@@ -1554,6 +3308,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_builtin_shapes_3d.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_builtin_shapes_3d.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "mesh",
+        "controller",
+        "arcball"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_builtin_shapes_3d",
+        "requirements": [
+          "mesh",
+          "controller",
+          "arcball"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_builtin_shapes_3d",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_builtin_shapes_3d",
       "primary_feature": "builtin-shapes-3d"
     },
     {
@@ -1575,6 +3355,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_obj_loading.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_obj_loading.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "mesh",
+        "controller",
+        "arcball"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_obj_loading",
+        "requirements": [
+          "mesh",
+          "controller",
+          "arcball"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_obj_loading",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_obj_loading",
       "primary_feature": "obj-loading"
     },
     {
@@ -1595,6 +3401,29 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_probe_labels.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_probe_labels.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "labels",
+        "query-readback",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "labels",
+          "query-readback",
+          "panzoom"
+        ]
       },
       "primary_feature": "probe-labels"
     },
@@ -1621,6 +3450,30 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "pending",
+          "source": "data/gallery/v0.4/features/feature_datetime_axis.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_datetime_axis.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_requirements": [
+        "axes",
+        "text",
+        "datetime"
+      ],
+      "webgpu": {
+        "status": "webgpu-deferred",
+        "requirements": [
+          "axes",
+          "text",
+          "datetime"
+        ],
+        "reason": "datetime formatting is experimental and outside the RC browser subset"
+      },
       "primary_feature": "datetime-axis"
     },
     {
@@ -1642,6 +3495,30 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_timer_animation.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_timer_animation.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "point",
+        "frame-callbacks"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_timer_animation",
+        "requirements": [
+          "point",
+          "frame-callbacks"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_timer_animation",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_timer_animation",
       "primary_feature": "timer-animation"
     },
     {
@@ -1669,6 +3546,30 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_marker_symbols.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_marker_symbols.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_requirements": [
+        "marker",
+        "symbol-set",
+        "glyph-atlas"
+      ],
+      "webgpu": {
+        "status": "webgpu-deferred",
+        "requirements": [
+          "marker",
+          "symbol-set",
+          "glyph-atlas"
+        ],
+        "reason": "marker symbol-set and mixed atlas encoding parity are not in the RC WebGPU path yet"
+      },
       "primary_feature": "marker-symbols"
     },
     {
@@ -1695,6 +3596,34 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/feature_legend_categorical.png",
+          "site_asset": "/assets/gallery/v0.4/features/feature_legend_categorical.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "legend",
+        "categorical-scale",
+        "marker",
+        "text"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=feature_legend_categorical",
+        "requirements": [
+          "legend",
+          "categorical-scale",
+          "marker",
+          "text"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=feature_legend_categorical",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=feature_legend_categorical",
       "primary_feature": "legend-categorical"
     },
     {
@@ -1719,6 +3648,26 @@
       ],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/runtime/feature_video_export.png",
+          "site_asset": "/assets/gallery/v0.4/runtime/feature_video_export.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_requirements": [
+        "native-capture"
+      ],
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "native-capture"
+        ],
+        "reason": "video export uses native capture backends in v0.4"
       },
       "primary_runtime": "video-export"
     },
@@ -1745,6 +3694,31 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/visuals/point_2d.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/point_2d.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "point",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=point_2d",
+        "scenario_id": "visual_point",
+        "requirements": [
+          "point",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=point_2d",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=point_2d",
       "primary_visual": "point"
     },
     {
@@ -1770,6 +3744,30 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/visuals/visual_pixel.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/visual_pixel.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "pixel",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=visual_pixel",
+        "requirements": [
+          "pixel",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=visual_pixel",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_pixel",
       "primary_visual": "pixel"
     },
     {
@@ -1795,6 +3793,30 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/visuals/visual_marker.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/visual_marker.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "marker",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=visual_marker",
+        "requirements": [
+          "marker",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=visual_marker",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_marker",
       "primary_visual": "marker"
     },
     {
@@ -1819,6 +3841,28 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/visuals/visual_primitive.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/visual_primitive.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "primitive"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=visual_primitive",
+        "requirements": [
+          "primitive"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=visual_primitive",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_primitive",
       "primary_visual": "primitive"
     },
     {
@@ -1844,6 +3888,30 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/visuals/visual_segment.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/visual_segment.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "segment",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=visual_segment",
+        "requirements": [
+          "segment",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=visual_segment",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_segment",
       "primary_visual": "segment"
     },
     {
@@ -1870,6 +3938,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/visuals/visual_vector.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/visual_vector.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "vector",
+        "path",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=visual_vector",
+        "requirements": [
+          "vector",
+          "path",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=visual_vector",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_vector",
       "primary_visual": "vector"
     },
     {
@@ -1894,6 +3988,30 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/visuals/visual_path.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/visual_path.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "path",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=visual_path",
+        "requirements": [
+          "path",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=visual_path",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_path",
       "primary_visual": "path"
     },
     {
@@ -1919,6 +4037,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/visuals/visual_image.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/visual_image.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "image",
+        "sampled-field",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=visual_image",
+        "requirements": [
+          "image",
+          "sampled-field",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=visual_image",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_image",
       "primary_visual": "image"
     },
     {
@@ -1945,6 +4089,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/visuals/visual_mesh.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/visual_mesh.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "mesh",
+        "indexed-geometry",
+        "arcball"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=visual_mesh",
+        "requirements": [
+          "mesh",
+          "indexed-geometry",
+          "arcball"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=visual_mesh",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_mesh",
       "primary_visual": "mesh"
     },
     {
@@ -1970,6 +4140,30 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/visuals/sphere_impostor.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/sphere_impostor.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "sphere",
+        "arcball"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=sphere_impostor",
+        "requirements": [
+          "sphere",
+          "arcball"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=sphere_impostor",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=sphere_impostor",
       "primary_visual": "sphere"
     },
     {
@@ -1995,6 +4189,28 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/visuals/visual_splat.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/visual_splat.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_requirements": [
+        "splat",
+        "alpha-blending"
+      ],
+      "webgpu": {
+        "status": "webgpu-deferred",
+        "requirements": [
+          "splat",
+          "alpha-blending"
+        ],
+        "reason": "splat rendering is experimental and outside the RC browser subset"
+      },
       "primary_visual": "splat"
     },
     {
@@ -2019,6 +4235,30 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/visuals/visual_text.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/visual_text.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "text",
+        "glyph-atlas"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=visual_text",
+        "requirements": [
+          "text",
+          "glyph-atlas"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=visual_text",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_text",
       "primary_visual": "text"
     },
     {
@@ -2046,6 +4286,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/visuals/visual_glyph.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/visual_glyph.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "glyph",
+        "glyph-atlas",
+        "sdf"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=visual_glyph",
+        "requirements": [
+          "glyph",
+          "glyph-atlas",
+          "sdf"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=visual_glyph",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_glyph",
       "primary_visual": "glyph"
     },
     {
@@ -2072,6 +4338,32 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/visuals/visual_labels.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/visual_labels.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "labels",
+        "categorical-scale",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=visual_labels",
+        "requirements": [
+          "labels",
+          "categorical-scale",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=visual_labels",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=visual_labels",
       "primary_visual": "labels"
     },
     {
@@ -2100,6 +4392,31 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/visuals/volume.png",
+          "site_asset": "/assets/gallery/v0.4/visuals/volume.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "volume",
+        "sampled-field",
+        "texture-3d",
+        "arcball"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "volume",
+          "sampled-field",
+          "texture-3d",
+          "arcball"
+        ]
+      },
       "primary_visual": "volume"
     },
     {
@@ -2127,6 +4444,36 @@
       "data": {
         "kind": "synthetic"
       },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/composites/composite_polygon.png",
+          "site_asset": "/assets/gallery/v0.4/composites/composite_polygon.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "composite",
+        "polygon-set",
+        "primitive",
+        "segment",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=composite_polygon",
+        "requirements": [
+          "composite",
+          "polygon-set",
+          "primitive",
+          "segment",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=composite_polygon",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=composite_polygon",
       "primary_composite": "polygon"
     },
     {
@@ -2153,6 +4500,33 @@
       ],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/composites/composite_graph.png",
+          "site_asset": "/assets/gallery/v0.4/composites/composite_graph.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "composite",
+        "marker",
+        "bezier-edges",
+        "path",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "composite",
+          "marker",
+          "bezier-edges",
+          "path",
+          "panzoom"
+        ]
       },
       "primary_composite": "graph"
     },
@@ -2185,6 +4559,34 @@
       "data": {
         "kind": "prepared"
       },
+      "data_kind": "prepared",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/showcases/us_state_choropleth.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/us_state_choropleth.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "composite",
+        "polygon-set",
+        "colorbar",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=us_state_choropleth",
+        "requirements": [
+          "composite",
+          "polygon-set",
+          "colorbar",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=us_state_choropleth",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=us_state_choropleth",
       "dataset": {
         "name": "Contiguous U.S. state population density",
         "source": "U.S. Census Bureau 2024 cartographic state boundaries and Vintage 2025 state population estimates",
@@ -2230,6 +4632,34 @@
       "data": {
         "kind": "real"
       },
+      "data_kind": "real",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/showcases/protein_arcball_viewer.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/protein_arcball_viewer.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "sphere",
+        "arcball",
+        "material",
+        "real-data"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=protein_arcball_viewer",
+        "requirements": [
+          "sphere",
+          "arcball",
+          "material",
+          "real-data"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=protein_arcball_viewer",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=protein_arcball_viewer",
       "dataset": {
         "name": "RCSB PDB protein structure",
         "source": "https://files.rcsb.org/download/{pdb_id}.pdb",
@@ -2274,7 +4704,37 @@
       ],
       "data": {
         "kind": "synthetic"
-      }
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/showcases/showcase_wind_field.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/showcase_wind_field.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "image",
+        "vector",
+        "path",
+        "colorbar",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "requirements": [
+          "image",
+          "vector",
+          "path",
+          "colorbar",
+          "panzoom"
+        ],
+        "route": "examples/webgpu/live.html?id=showcase_wind_field"
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=showcase_wind_field",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcase_wind_field"
     },
     {
       "id": "showcase_gpu_particle_smoke",
@@ -2301,7 +4761,37 @@
       ],
       "data": {
         "kind": "simulated"
-      }
+      },
+      "data_kind": "simulated",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/showcases/showcase_gpu_particle_smoke.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/showcase_gpu_particle_smoke.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "scene-buffers",
+        "storage-buffers",
+        "scene-compute",
+        "point",
+        "alpha-blending"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=showcase_gpu_particle_smoke",
+        "requirements": [
+          "scene-buffers",
+          "storage-buffers",
+          "scene-compute",
+          "point",
+          "alpha-blending"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=showcase_gpu_particle_smoke",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcase_gpu_particle_smoke"
     },
     {
       "id": "showcase_embedding_atlas",
@@ -2330,6 +4820,34 @@
       ],
       "data": {
         "kind": "generated"
+      },
+      "data_kind": "generated",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/showcases/showcase_embedding_atlas.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/showcase_embedding_atlas.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "point",
+        "panzoom",
+        "query-readback",
+        "selection",
+        "overlay"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "point",
+          "panzoom",
+          "query-readback",
+          "selection",
+          "overlay"
+        ],
+        "reason": "requires prepared generated data; browser promotion must package data rather than use a runtime synthetic fallback"
       },
       "dataset": {
         "name": "Synthetic embedding atlas",
@@ -2366,6 +4884,34 @@
       ],
       "data": {
         "kind": "prepared"
+      },
+      "data_kind": "prepared",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/showcases/showcase_lipid_brain_atlas.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/showcase_lipid_brain_atlas.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_requirements": [
+        "image",
+        "sampled-field",
+        "colorbar",
+        "panzoom",
+        "video"
+      ],
+      "webgpu": {
+        "status": "webgpu-deferred",
+        "requirements": [
+          "image",
+          "sampled-field",
+          "colorbar",
+          "panzoom",
+          "video"
+        ],
+        "reason": "this showcase depends on prepared data and video-oriented gallery plumbing; no runtime synthetic fallback is allowed"
       },
       "dataset": {
         "name": "Lipid Brain Atlas peaks parquet",
@@ -2408,6 +4954,34 @@
       "data": {
         "kind": "generated"
       },
+      "data_kind": "generated",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/showcases/showcase_synthetic_mouse.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/showcase_synthetic_mouse.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_requirements": [
+        "textured-mesh",
+        "animation",
+        "reference-grid",
+        "arcball",
+        "video"
+      ],
+      "webgpu": {
+        "status": "webgpu-deferred",
+        "requirements": [
+          "textured-mesh",
+          "animation",
+          "reference-grid",
+          "arcball",
+          "video"
+        ],
+        "reason": "this showcase needs textured animation and video-oriented gallery plumbing beyond the RC browser subset"
+      },
       "dataset": {
         "name": "Synthetic mouse animation validation bundle",
         "source": "https://osf.io/h3ec5/",
@@ -2441,7 +5015,33 @@
       ],
       "data": {
         "kind": "synthetic"
-      }
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/showcases/showcase_surface_grid.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/showcase_surface_grid.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "mesh",
+        "segment",
+        "arcball"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=showcase_surface_grid",
+        "requirements": [
+          "mesh",
+          "segment",
+          "arcball"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=showcase_surface_grid",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=showcase_surface_grid"
     },
     {
       "id": "brain_volume",
@@ -2469,6 +5069,29 @@
       ],
       "data": {
         "kind": "prepared"
+      },
+      "data_kind": "prepared",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/showcases/brain_volume.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/brain_volume.webp"
+        }
+      },
+      "webgpu_status": "webgpu-planned",
+      "webgpu_requirements": [
+        "volume",
+        "texture-3d",
+        "arcball"
+      ],
+      "webgpu": {
+        "status": "webgpu-planned",
+        "requirements": [
+          "volume",
+          "texture-3d",
+          "arcball"
+        ]
       },
       "dataset": {
         "name": "Allen mouse brain RGBA volume",
@@ -2509,6 +5132,34 @@
       "data": {
         "kind": "prepared"
       },
+      "data_kind": "prepared",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/showcases/point_cloud.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/point_cloud.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_requirements": [
+        "pixel",
+        "dense-point-cloud",
+        "depth-postprocess",
+        "gui",
+        "fly"
+      ],
+      "webgpu": {
+        "status": "webgpu-deferred",
+        "requirements": [
+          "pixel",
+          "dense-point-cloud",
+          "depth-postprocess",
+          "gui",
+          "fly"
+        ],
+        "reason": "the public point-cloud showcase depends on large prepared data, native GUI controls, and EDL-style rendering"
+      },
       "dataset": {
         "name": "RESEPI GENM2X colorized benchmark point cloud",
         "source": "https://lidarpayload.com/sample-data/",
@@ -2543,6 +5194,34 @@
       "data": {
         "kind": "real"
       },
+      "data_kind": "real",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/showcases/textured_terrain_or_planet.png",
+          "site_asset": "/assets/gallery/v0.4/showcases/textured_terrain_or_planet.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_requirements": [
+        "mesh",
+        "sampled-field",
+        "texture",
+        "arcball"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=textured_terrain_or_planet",
+        "requirements": [
+          "mesh",
+          "sampled-field",
+          "texture",
+          "arcball"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=textured_terrain_or_planet",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=textured_terrain_or_planet",
       "dataset": {
         "name": "NASA Earth and Mars equirectangular texture maps",
         "source": "data/assets/textures/world.200412.3x5400x2700.jpg; data/assets/textures/earth.jpg; data/assets/textures/mars_viking_mdim21.jpg",
@@ -2576,6 +5255,28 @@
       ],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/advanced/advanced_raw_triangle_vklite.png",
+          "site_asset": "/assets/gallery/v0.4/advanced/advanced_raw_triangle_vklite.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_requirements": [
+        "vklite",
+        "canvas"
+      ],
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "vklite",
+          "canvas"
+        ],
+        "reason": "raw vklite command recording is a native runtime example"
       }
     },
     {
@@ -2601,6 +5302,28 @@
       ],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/advanced/advanced_raw_triangle_drp2.png",
+          "site_asset": "/assets/gallery/v0.4/advanced/advanced_raw_triangle_drp2.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_requirements": [
+        "drp2",
+        "vklite"
+      ],
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "drp2",
+          "vklite"
+        ],
+        "reason": "hand-written DRP2 native execution is a low-level runtime example"
       }
     },
     {
@@ -2626,6 +5349,30 @@
       ],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/advanced/advanced_external_surface_glfw.png",
+          "site_asset": "/assets/gallery/v0.4/advanced/advanced_external_surface_glfw.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_requirements": [
+        "native-view",
+        "external-surface",
+        "glfw"
+      ],
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "native-view",
+          "external-surface",
+          "glfw"
+        ],
+        "reason": "external Vulkan surfaces are native host-integration objects"
       }
     },
     {
@@ -2646,6 +5393,20 @@
       "tags": [],
       "data": {
         "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/start/start_scatter.png",
+          "site_asset": "/assets/gallery/v0.4/start/start_scatter.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_requirements": [],
+      "webgpu": {
+        "status": "webgpu-deferred"
       }
     }
   ]

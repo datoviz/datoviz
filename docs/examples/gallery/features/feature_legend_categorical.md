@@ -41,13 +41,9 @@ tentative retained categorical legend proof.
     - Lane: `features`
     - Status: `experimental`
     - Source: [`examples/c/features/legend_categorical.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_legend_categorical"><code>examples/webgpu/live.html?id=feature_legend_categorical</code></a>
     - WebGPU requirements: `legend`, `categorical-scale`, `marker`, `text`
-    - Build: `just example-c features/legend_categorical`
-    - Smoke: `./build/examples/c/features/legend_categorical --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -58,8 +54,6 @@ tentative retained categorical legend proof.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

@@ -31,12 +31,8 @@ RESEPI RGB LiDAR dense point cloud.
     - Lane: `showcases`
     - Status: `supported`
     - Source: [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-deferred`
     - WebGPU requirements: `pixel`, `dense-point-cloud`, `depth-postprocess`, `gui`, `fly`
-    - Build: `just example-c showcases/point_cloud`
-    - Smoke: `./build/examples/c/showcases/point_cloud --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -57,8 +53,6 @@ RESEPI RGB LiDAR dense point cloud.
     | `license` | Public RESEPI sample data; usage follows the source site's terms |
     | `preprocessing` | python tools/data/prepare_point_cloud.py --force |
     | `cache_prepared_path` | .cache/datoviz/examples/point_cloud/prepared |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

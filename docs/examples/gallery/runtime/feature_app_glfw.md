@@ -31,20 +31,14 @@ _Media pending._
     - Lane: `runtime`
     - Status: `supported`
     - Source: [`examples/c/runtime/app_glfw.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/app_glfw.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `native-only`
     - WebGPU requirements: `native-view`
-    - Build: `just example-c runtime/app_glfw`
-    - Smoke: `./build/examples/c/runtime/app_glfw --png`
-    - Validation: `smoke+interaction`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

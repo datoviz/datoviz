@@ -41,21 +41,15 @@ retained label annotation anchored to data.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/annotation_readout.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/annotation_readout.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=annotation_readout"><code>examples/webgpu/live.html?id=annotation_readout</code></a>
     - WebGPU requirements: `annotation`, `readout`, `text`, `point`
-    - Build: `just example-c features/annotation_readout`
-    - Smoke: `./build/examples/c/features/annotation_readout --png`
-    - Validation: `smoke+screenshot`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

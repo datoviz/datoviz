@@ -41,21 +41,15 @@ bind a panzoom controller to one panel with a simple 2D visual.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/panzoom.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_panzoom"><code>examples/webgpu/live.html?id=feature_panzoom</code></a>
     - WebGPU requirements: `controller`, `panzoom`, `point`
-    - Build: `just example-c features/panzoom`
-    - Smoke: `./build/examples/c/features/panzoom --png`
-    - Validation: `smoke+interaction`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
@@ -65,6 +59,6 @@ bind a panzoom controller to one panel with a simple 2D visual.
 <a href="../../../features">Features</a>
 </div>
 <div class="dvz-example-nav__siblings">
-<a href="../feature_visibility">Previous: Visual Visibility</a> · <a href="../feature_controller_arcball">Next: Arcball Controller</a>
+<a href="../feature_camera_manual">Previous: Manual Camera</a> · <a href="../feature_controller_arcball">Next: Arcball Controller</a>
 </div>
 </nav>

@@ -32,12 +32,8 @@ deterministic gyroid scalar field rendered with the retained volume visual.
     - Status: `supported`
     - Source: [`examples/c/visuals/volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/volume.c)
     - Reference: [Volume visual family](../../../reference/visual-families/volume.md)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-planned`
     - WebGPU requirements: `volume`, `sampled-field`, `texture-3d`, `arcball`
-    - Build: `just example-c visuals/volume`
-    - Smoke: `./build/examples/c/visuals/volume --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -48,8 +44,6 @@ deterministic gyroid scalar field rendered with the retained volume visual.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

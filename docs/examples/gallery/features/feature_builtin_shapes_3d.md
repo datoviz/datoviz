@@ -41,21 +41,15 @@ builtin 3D geometry builders rendered through retained meshes.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/builtin_shapes_3d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_3d.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_builtin_shapes_3d"><code>examples/webgpu/live.html?id=feature_builtin_shapes_3d</code></a>
     - WebGPU requirements: `mesh`, `controller`, `arcball`
-    - Build: `just example-c features/builtin_shapes_3d`
-    - Smoke: `./build/examples/c/features/builtin_shapes_3d --png`
-    - Validation: `smoke+screenshot`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

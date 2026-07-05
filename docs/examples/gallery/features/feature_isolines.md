@@ -41,21 +41,15 @@ CPU contour extraction rendered as retained segment overlays.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/isolines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/isolines.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_isolines"><code>examples/webgpu/live.html?id=feature_isolines</code></a>
     - WebGPU requirements: `mesh`, `segment`, `controller`, `arcball`
-    - Build: `just example-c features/isolines`
-    - Smoke: `./build/examples/c/features/isolines --png`
-    - Validation: `smoke+screenshot`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

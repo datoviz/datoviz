@@ -41,13 +41,9 @@ scale-aware overview, detail, and 3D measurement workflow.
     - Lane: `showcases`
     - Status: `supported`
     - Source: [`examples/c/showcases/scalebar_measurement.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scalebar_measurement.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=scalebar_measurement_workflow"><code>examples/webgpu/live.html?id=scalebar_measurement_workflow</code></a>
     - WebGPU requirements: `scale-bar`, `text`, `panel-grid`, `mesh`, `panzoom`
-    - Build: `just example-c showcases/scalebar_measurement`
-    - Smoke: `./build/examples/c/showcases/scalebar_measurement --png`
-    - Validation: `smoke+screenshot`
 
     ### Tags
 
@@ -58,8 +54,6 @@ scale-aware overview, detail, and 3D measurement workflow.
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

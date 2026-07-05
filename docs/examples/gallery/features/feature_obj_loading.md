@@ -41,21 +41,15 @@ Wavefront OBJ mesh loading through geom/fileio helpers.
     - Lane: `features`
     - Status: `supported`
     - Source: [`examples/c/features/obj_loading.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/obj_loading.c)
-    - Agent copy-safe: `true`
     - WebGPU status: `webgpu-live`
     - WebGPU live route: <a href="../../../webgpu/live.html?id=feature_obj_loading"><code>examples/webgpu/live.html?id=feature_obj_loading</code></a>
     - WebGPU requirements: `mesh`, `controller`, `arcball`
-    - Build: `just example-c features/obj_loading`
-    - Smoke: `./build/examples/c/features/obj_loading --png`
-    - Validation: `smoke+screenshot`
 
     ### Data
 
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">

@@ -31,12 +31,8 @@ _Media pending._
     - Lane: `advanced`
     - Status: `experimental`
     - Source: [`examples/c/advanced/external_surface_glfw.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/external_surface_glfw.c)
-    - Agent copy-safe: `false`
     - WebGPU status: `native-only`
     - WebGPU requirements: `native-view`, `external-surface`, `glfw`
-    - Build: `just example-c advanced/external_surface_glfw`
-    - Smoke: `./build/examples/c/advanced/external_surface_glfw --png`
-    - Validation: `native-smoke`
 
     ### Tags
 
@@ -47,8 +43,6 @@ _Media pending._
     | Field | Value |
     | --- | --- |
     | `kind` | synthetic |
-
-    Generated media is prepared in the `data` submodule and linked from this page.
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
