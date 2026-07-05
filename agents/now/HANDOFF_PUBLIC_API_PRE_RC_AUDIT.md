@@ -235,6 +235,15 @@ Completed checkpoints:
    - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
      `python3 tools/build_api_c.py --check`, `just build`, `just test app`, `just spec-check`,
      stale-reference scan, and `git diff --check`.
+22. `2eacad217` `api: make canvas flags atomic bits`
+   - Changed `DVZ_CANVAS_FLAGS_FPS` and `DVZ_CANVAS_FLAGS_MONITOR` from compound values that
+     implicitly included `DVZ_CANVAS_FLAGS_IMGUI` to independent bit flags.
+   - Updated generated raw `ctypes` and generated C API docs.
+   - Exported symbol delta: no exported functions were added or removed; `DvzCanvasFlags` enum
+     values changed before RC1.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just build`, `just test canvas`, `just spec-check`,
+     stale-reference scan, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -411,6 +420,8 @@ Preferred fix:
 
 
 ### 4. Make Canvas Flags Atomic Bit Flags
+
+Status: completed by `2eacad217`.
 
 `DVZ_CANVAS_FLAGS_FPS = 0x0003` and `DVZ_CANVAS_FLAGS_MONITOR = 0x0005` implicitly include
 `DVZ_CANVAS_FLAGS_IMGUI`.
