@@ -200,6 +200,147 @@ Landing and quickstart samples should show Python first, then C. Generated examp
 may remain C-first where C is the source of truth.
 
 
+## First-Pass Audit Snapshot
+
+Status: pending maintainer review before broad rewriting. Audit date: 2026-07-05.
+
+The read-only audit used subagents for disjoint slices: navigation/inventory,
+gallery/WebGPU metadata, first-user journey/snippets, and reference/status pages. The coordinator
+checked `mkdocs.yml`, generated gallery counts, WebGPU route alignment, public wording searches, and
+repository hygiene.
+
+### Confirmed Inventory
+
+1. `mkdocs.yml` still exposes seven top-level tabs: `Home`, `Get Started`, `Examples`, `How-To`,
+   `Reference`, `Internals`, and `Contributing`.
+2. Active nav contains 109 pages. Public-looking hidden candidates include
+   `docs/start/choose-your-layer.md`, `docs/start/what-is-datoviz.md`,
+   `docs/reference/project-status.md`, `docs/reference/visual-attributes.md`,
+   `docs/reference/queries.md`, and `docs/reference/errors-and-logging.md`.
+3. Excluded legacy trees remain under `docs/architecture/`, `docs/blog/`, `docs/discussions/`,
+   old `docs/gallery/`, `docs/guide/`, and `docs/tasks/`.
+4. `docs/reference/api_c.md` exists in the working tree but is neither in nav nor `not_in_nav`.
+   It is stale generated material and should be excluded, removed, or regenerated before it is ever
+   surfaced.
+5. `examples/c/MANIFEST.yaml` and `docs/examples/examples.json` contain 110 examples, while
+   `docs/examples/gallery/**/*.md` contains 109 generated detail pages. The missing detail page is
+   `docs/examples/gallery/features/feature_camera_manual.md`.
+
+### Main Findings
+
+1. **IA conflict:** the approved public IA is
+   `Home / Get Started / Examples / How-To / Reference / Advanced`, but current nav still has
+   top-level `Internals` and `Contributing`.
+2. **Reference discoverability:** `docs/reference/index.md` promotes pages that are hidden from
+   nav, including project status, visual attributes, queries, errors/logging, and DRP2 reference
+   material.
+3. **Release/install posture:** `docs/start/install.md`, `README.md`,
+   `docs/how-to/c-integration.md`, `docs/reference/build-options.md`, and
+   `docs/releases/v0.4.0rc1.md` mix source-only, post-wheel, and draft-RC language.
+4. **Public placeholders:** `docs/releases/v0.4.0rc1.md` still has `<fill ...>` fields and a
+   maintainer checklist while being reachable from public nav.
+5. **Snippet correctness:** `README.md` still uses the stale point attribute `"diameter"` instead
+   of `"diameter_px"`. Several Python/ctypes snippets are partial but look copyable because they use
+   undefined arrays or handles.
+6. **Generated API language:** generated C API pages leak `WIP` and `legacy path` wording from
+   public header comments. The generated C API table formatting also mishandles multiline return
+   descriptions.
+7. **Gallery generation drift:** generated overview pages and the WebGPU matrix are stale relative
+   to the manifest because `feature_camera_manual` is missing from generated detail output.
+8. **Gallery metadata gap:** `docs/examples/examples.json` lacks WebGPU status, route, requirement,
+   media, and data fields even though the manifest has that information.
+9. **WebGPU registry:** current `webgpu-live` rows are internally aligned: 66 manifest live entries,
+   66 `examples/webgpu/live_examples.js` entries, and no route-id mismatch found. However live route
+   JS does not carry manifest requirement metadata for route-level diagnostics.
+10. **Media posture:** generated public pages still expose `_Media pending._` on 22 detail pages and
+    multiple overview cards. `build/gallery-webp/v0.4` is empty in this checkout, and media checks
+    fail because screenshots are missing or not at the expected resolution.
+11. **Data submodule:** source screenshots and stale/orphan media are in `data/gallery/v0.4`.
+    Do not stage `data` changes or generated WebP/binary outputs without explicit approval.
+12. **Public/private tone:** generated example pages and visual-family pages expose
+    `Agent copy-safe`; `docs/start/choose-your-layer.md` speaks directly to coding agents. Keep
+    agent-oriented material in `Advanced` contributor paths or the deterministic AI workflow page,
+    not in primary public flow.
+
+### Proposed Approval Package
+
+Approve this direction before broad rewriting:
+
+1. **IA:** switch public nav to
+   `Home / Get Started / Examples / How-To / Reference / Advanced`. Move contributor and release
+   maintainer docs under `Advanced` or keep them secondary; remove top-level `Contributing`.
+   Rename `Internals` to `Advanced`.
+2. **Get Started tone sample:** make landing, install, and quickstart concise, public, and current:
+   Python direct-engine first, C second, no v0.3 compatibility promise, no hidden partial snippets
+   presented as runnable, and one clear install posture: source builds now; RC packages only when
+   actually published.
+3. **Examples model:** keep Examples as the centerpiece. One visual gets one minimal example, one
+   feature gets one minimal example, one showcase gets one polished composed story. Do not let
+   showcase pages replace minimal visual/feature coverage.
+4. **Gallery model:** change generated gallery pages through manifest metadata, templates, and
+   generators. Surface native/WebGPU status near the preview, move maintainer metadata such as
+   `Agent copy-safe` out of the primary public flow, make data prerequisites conditional on data
+   kind, and generate or explain media gaps before promotion.
+5. **WebGPU model:** keep live routes isolated at
+   `examples/webgpu/live.html?id=<example-id>`. Preserve the rule that browser JS is host glue for
+   canonical C examples or portable scenarios. Add requirement metadata to public JSON or live route
+   data if needed for diagnostics.
+6. **Reference model:** keep exact facts in Reference. Promote status, visual attributes, queries,
+   and errors/logging into nav or demote their index links. Keep DRP2 as advanced/internal context,
+   not a primary user surface. Fix generated API wording at header/generator source before
+   regenerating.
+7. **Release/install posture:** publish public release notes only as an honest RC draft with
+   remaining blanks explicitly marked as pre-publication metadata, or remove the draft from nav
+   until tag/publication. Reconcile README, install, C integration, build options, citation, and
+   RC notes as one commit.
+
+### Proposed Checkpoint Phases
+
+1. **Navigation checkpoint:** `mkdocs.yml`, reference index, and secondary contributor/release nav.
+   Validation: `git diff --check`, `mkdocs build --strict` when dependencies are available.
+2. **First-user checkpoint:** README, landing, install, quickstart, choose-your-layer, AI workflow,
+   C integration, build options, citation, and RC note posture. Validation: snippet/source checks
+   plus `git diff --check`.
+3. **Gallery generator checkpoint:** manifest/generator/json/template fixes, regenerate gallery
+   Markdown, confirm `feature_camera_manual`, move maintainer metadata, enrich JSON, and rerun
+   `python3 tools/check_example_manifests.py`.
+4. **Media checkpoint:** decide which missing media can be generated locally and which should be
+   explicitly labeled as pending with a concrete reason. Run `python3 tools/check_gallery_media.py`
+   and WebP dry run. Commit source changes only; do not commit `data` or binary WebP output unless
+   explicitly approved.
+5. **How-to/snippet checkpoint:** make partial snippets visibly partial or complete; fix Python,
+   raw `ctypes`, direct-engine, and visual-family examples against the active API.
+6. **Reference/API checkpoint:** fix source comments and C API generator formatting, regenerate API
+   docs, reconcile feature/status/project/parity pages, and run `just docs-api-check` if generation
+   is touched.
+7. **Final strict-site checkpoint:** run narrow validation, then full strict build if dependencies
+   and generated assets are available. Record skipped checks and environment blockers.
+
+### Audit Validation Evidence
+
+Commands run during audit:
+
+```sh
+git status --short
+git diff --cached --stat
+python3 tools/check_example_manifests.py
+node --check examples/webgpu/live_examples.js
+node --check examples/webgpu/live.js
+git diff --check
+```
+
+Expected audit failures reported by the gallery slice:
+
+```sh
+python3 tools/check_gallery_media.py
+python3 tools/build_gallery_webp.py --dry-run --strict --quiet-missing
+```
+
+`check_gallery_media.py` reports missing or invalid gallery screenshots. The WebP dry run reports
+many conversions available and missing source screenshots. These are release-media work items, not
+unexpected tool failures.
+
+
 ## Execution Plan
 
 After maintainer approval, work in checkpoint-sized phases:
