@@ -10,6 +10,16 @@ Start with a scene, add one figure, create a panel, attach at least one visual, 
 interactive or offscreen view. The scene owns figures, panels, controllers, and visuals; the app
 owns the runtime used to render them.
 
+Use the same object model from C and Python. In Python, prefer the top-level direct-engine facade
+with C-shaped names:
+
+```python
+import datoviz as dvz
+```
+
+That facade adapts NumPy arrays for declared dense-data calls. Use `datoviz.raw` only when you need
+exact generated `ctypes` pointer/count behavior.
+
 | Object | Role | Created by |
 | --- | --- | --- |
 | Scene | Root retained state: figures, visuals, controllers, scales, sampled fields, and diagnostics. | `dvz_scene()` |
@@ -35,23 +45,90 @@ Lifecycle checklist:
 
 ## Minimal Call Sequence
 
-```c
-DvzScene* scene = dvz_scene();
-DvzFigure* figure = dvz_figure(scene, width, height, 0);
-DvzPanel* panel = dvz_panel_full(figure);
+=== "Python"
 
-DvzVisual* visual = dvz_point(scene, 0);
-dvz_visual_set_data(visual, "position", pos, n);
-dvz_visual_set_data(visual, "color", color, n);
-dvz_visual_set_data(visual, "diameter_px", diameter_px, n);
-dvz_panel_add_visual(panel, visual, NULL);
+    ```python
+    import numpy as np
+    import datoviz as dvz
 
-DvzApp* app = dvz_app(scene);
-dvz_view_window(app, figure, width, height, "Datoviz");
-dvz_app_run(app, 0);
-dvz_app_destroy(app);
-dvz_scene_destroy(scene);
-```
+    width, height = 800, 600
+
+    positions = np.asarray(
+        [
+            [-0.45, -0.25, 0.0],
+            [0.00, 0.34, 0.0],
+            [0.45, -0.25, 0.0],
+        ],
+        dtype=np.float32,
+        order="C",
+    )
+    colors = np.asarray(
+        [
+            [0, 200, 255, 255],
+            [255, 210, 80, 255],
+            [255, 90, 110, 255],
+        ],
+        dtype=np.uint8,
+        order="C",
+    )
+    diameter_px = np.asarray([42.0, 58.0, 42.0], dtype=np.float32, order="C")
+
+    scene = dvz.dvz_scene()
+    app = None
+    try:
+        figure = dvz.dvz_figure(scene, width, height, 0)
+        panel = dvz.dvz_panel_full(figure)
+
+        visual = dvz.dvz_point(scene, 0)
+        dvz.dvz_visual_set_data(visual, "position", positions)
+        dvz.dvz_visual_set_data(visual, "color", colors)
+        dvz.dvz_visual_set_data(visual, "diameter_px", diameter_px)
+        dvz.dvz_panel_add_visual(panel, visual, None)
+
+        app = dvz.dvz_app(scene)
+        dvz.dvz_view_window(app, figure, width, height, "Datoviz")
+        dvz.dvz_app_run(app, 0)
+    finally:
+        if app is not None:
+            dvz.dvz_app_destroy(app)
+        dvz.dvz_scene_destroy(scene)
+    ```
+
+=== "C"
+
+    ```c
+    const uint32_t width = 800;
+    const uint32_t height = 600;
+    const uint32_t n = 3;
+
+    const vec3 positions[3] = {
+        {-0.45f, -0.25f, 0.0f},
+        {+0.00f, +0.34f, 0.0f},
+        {+0.45f, -0.25f, 0.0f},
+    };
+    const DvzColor colors[3] = {
+        {0, 200, 255, 255},
+        {255, 210, 80, 255},
+        {255, 90, 110, 255},
+    };
+    const float diameter_px[3] = {42.0f, 58.0f, 42.0f};
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, width, height, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+
+    DvzVisual* visual = dvz_point(scene, 0);
+    dvz_visual_set_data(visual, "position", positions, n);
+    dvz_visual_set_data(visual, "color", colors, n);
+    dvz_visual_set_data(visual, "diameter_px", diameter_px, n);
+    dvz_panel_add_visual(panel, visual, NULL);
+
+    DvzApp* app = dvz_app(scene);
+    dvz_view_window(app, figure, width, height, "Datoviz");
+    dvz_app_run(app, 0);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    ```
 
 Use `dvz_panel_full()` for a single viewport. Use panel-grid helpers only when the figure has
 multiple coordinated views.
@@ -66,8 +143,10 @@ adornments already exist.
 Destroy the app before destroying the scene. The app/runtime borrows scene and figure state while
 it renders; the scene is the longer-lived semantic owner.
 
-Keep CPU arrays alive until the corresponding `dvz_visual_set_data()` call has returned. Retained
-visual data is then owned by Datoviz.
+In C, keep CPU arrays alive until the corresponding `dvz_visual_set_data()` call has returned.
+Retained visual data is then owned by Datoviz. In Python, pass C-contiguous NumPy arrays with the
+dtype and shape required by the visual attribute; the direct-engine facade infers the item count for
+declared dense-data uploads.
 
 Uploading data does not make it visible. A visual appears only after `dvz_panel_add_visual()`
 attaches it to a panel.
@@ -96,6 +175,7 @@ cadence so the GPU can draw large batches efficiently.
 - [Open an interactive window](create-a-window.md)
 - [Render offscreen and capture](render-offscreen.md)
 - [Add visuals to a panel](add-a-visual.md)
+- [Use from Python](use-python.md)
 - [Create multiple panels](create-multiple-panels.md)
 - [Scene model](../explanation/scene-model.md)
 

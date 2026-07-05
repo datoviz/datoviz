@@ -1,9 +1,9 @@
 # AI-Assisted Workflow
 
 Datoviz v0.4 works well with coding assistants when the prompt includes current v0.4 context. The
-API is flat and consistent, but the public docs are still being reconciled for the release
-candidate. Use the Quickstart, one relevant How-To page, one canonical example, and one Reference
-page, then verify generated code against the local API.
+API is flat and consistent, and the best results come from giving the assistant one complete path:
+the Quickstart, one relevant How-To page, one canonical example, and one Reference page. Verify
+generated code against the local API before treating it as release-quality code.
 
 
 ## Why It Works
