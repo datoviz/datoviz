@@ -54,9 +54,9 @@ For Python, the normal v0.4 starting point is:
 import datoviz as dvz
 ```
 
-Datoviz v0.4 does not provide old high-level plotting helpers such as `datoviz.scatter()` or
-`datoviz.imshow()`. If an assistant generates those names, ask it to check the v0.4 documentation
-again.
+Datoviz v0.4 does not provide high-level plotting helpers such as `datoviz.scatter()` or
+`datoviz.imshow()`. That higher-level plotting interface belongs to VisPy2/GSP rather than
+Datoviz v0.4.
 
 
 ## A Useful Follow-Up

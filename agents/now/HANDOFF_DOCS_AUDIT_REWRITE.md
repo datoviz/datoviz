@@ -56,14 +56,17 @@ These rules are mandatory for public pages under `docs/` and for generated publi
 They supersede earlier agent-facing wording when there is a conflict.
 
 1. Write for beginner users first: primarily scientists who may know Python and data analysis, but
-   may not have much C, graphics, or systems-programming experience.
+   may not have much C, graphics, GPU, or visualization-engine experience. Treat them as competent
+   adults learning a new technical tool, not as children.
 2. Avoid internal/developer language on public pages unless the page is explicitly in `Advanced`.
    Do not lead with ownership, lifetimes, transport layers, renderer internals, DRP2, ABI details,
    or release-process notes on beginner pages.
 3. Explain the user outcome before the API. Start pages with what the user can do, what they will
    see, and which path to take.
-4. Prefer plain words over architecture shorthand. For example, explain "a panel is the area where
-   a plot is drawn" before using terms like viewport, retained state, lifecycle, or ownership.
+4. Prefer plain, professional language over architecture shorthand. Define terms in accessible
+   words, but do not oversimplify into vague phrases such as "the thing being drawn." For example,
+   explain that a panel is the drawing area inside a figure, and that a visual is a renderable
+   collection such as points, lines, an image, a mesh, or text labels.
 5. Do not make broad claims that are only approximately true. Say "most public functions use
    `dvz_...` names" rather than "every function follows one convention" unless verified.
 6. Keep Quickstart and first-user pages short and structured. Move side topics such as offscreen

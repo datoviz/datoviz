@@ -4,9 +4,8 @@ Datoviz is a GPU-powered visualization engine for scientific data. It helps you 
 interactive 2D and 3D views when ordinary plotting tools become too slow or too limited.
 
 Use Datoviz when you want to explore many points, images, meshes, volumes, annotations, or custom
-scientific scenes on a desktop GPU. The v0.4 documentation focuses on the current API: Python
-calls that stay close to the C API, native Vulkan rendering, and a small experimental WebGPU
-browser path.
+scientific scenes, either on the desktop with Vulkan, using C or Python bindings, or in the browser
+with experimental WebGPU support.
 
 <a href="examples/gallery/showcases/protein_arcball_viewer.md"><img src="assets/gallery/v0.4/showcases/protein_arcball_viewer.webp" alt="Protein Viewer" style="width:100%;border-radius:8px;margin:1.5rem 0 2rem;display:block;"></a>
 
