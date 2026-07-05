@@ -308,6 +308,17 @@ Completed checkpoints:
    - Validation passed: `just ctypes`, `just ctypes-check`, `just ctypes-smoke`,
      `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, `just docs-api-check`,
      `just build`, `just test math`, `just spec-check`, and `git diff --check`.
+29. `4fb4be416` `api: use unsigned dimensions for PPM reads`
+   - Changed `dvz_read_ppm()` width/height outputs from `int*` to `uint32_t*`, matching the PNG and
+     JPEG decode APIs.
+   - Tightened the PPM parser to zero outputs on entry, reject invalid dimensions, close files on
+     parse errors, and fail on short RGB payloads.
+   - Regenerated raw `ctypes` and generated C API docs.
+   - Exported symbol delta: no exported functions were added or removed; `dvz_read_ppm()` ABI
+     signature changed before RC1.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just ctypes-smoke`,
+     `python3 tools/build_api_c.py`, `python3 tools/build_api_c.py --check`, `just docs-api-check`,
+     `just build`, `just test fileio`, `just spec-check`, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -610,7 +621,8 @@ Preferred fix:
 Status: `dvz_load_jpeg()` byte-buffer argument order normalized by `52e38e358`, `DvzAlpha`
 replaced with a typedef by `2a340b51c`, and unprefixed math support macros plus the
 `_PRETTY_SIZE` buffer cleaned by `2ac43481c`; public `dvz_box_*` declarations without export were
-resolved by `bff88625d`. Other support-header leakage remains open.
+resolved by `bff88625d`; `dvz_read_ppm()` dimensions normalized by `4fb4be416`. Other
+support-header leakage remains open.
 
 Public support headers leak unprefixed macros, mutable TU-local buffers, test resources, and
 inconsistent byte-buffer signatures.
@@ -622,8 +634,7 @@ References:
 - `include/datoviz/math/box.h`: resolved by `bff88625d`; the public helper set is now exported and
   generated in raw `ctypes`/C docs
 - `include/datoviz/fileio/fileio.h`: `dvz_load_png(bytes, size)` versus
-  `dvz_load_jpeg(size, bytes)`, `int*` PPM dimensions, `unsigned long*` resource sizes,
-  `dvz_resource_testdata()`
+  `dvz_load_jpeg(size, bytes)`, `unsigned long*` resource sizes, `dvz_resource_testdata()`
 
 Preferred fix:
 
