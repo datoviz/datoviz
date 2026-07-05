@@ -416,6 +416,19 @@ Completed checkpoints:
      changed before RC1.
    - Validation passed: `just ctypes`, `just ctypes-check`, `just build`, `just test math`,
      `just docs-api-check`, `python3 tools/build_api_c.py --check`, and `git diff --check`.
+39. `643950728` `api: order visual range update arguments`
+   - Changed `dvz_visual_set_data_range()` from
+     `(visual, attr_name, data, first_item, item_count)` to
+     `(visual, attr_name, first_item, data, item_count)`, matching the object/selector/range/data
+     convention.
+   - Updated C callers, generated raw `ctypes`, generated array facade, array facade tests,
+     generated C API docs, examples, user docs, and GSP/spec notes.
+   - Exported symbol delta: no exported functions were added or removed; the
+     `dvz_visual_set_data_range()` ABI signature changed before RC1.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `just build`,
+     `just test partial_update`, `just test scene/visuals/state`, `just ctypes-smoke`,
+     `just ctypes-python-smoke`, `just docs-api-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, and `git diff --check`.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
@@ -655,11 +668,16 @@ Preferred fix:
 
 ### 7. Pick One Array/Count Argument Convention
 
+Status: `dvz_visual_set_data_range()` argument order normalized by `643950728`. Broader graph,
+polygon, plot, text, and low-level runtime conventions still need case-by-case API review before
+changing.
+
 Adjacent APIs mix `data, count` and `count, data`.
 
 References:
 
-- `include/datoviz/scene.h`: `dvz_visual_set_data()`, `dvz_visual_set_data_range()`
+- `include/datoviz/scene.h`: graph/polygon/range APIs beyond the completed
+  `dvz_visual_set_data_range()` cleanup
 - `include/datoviz/scene/plot.h`: bars and band setters
 - `include/datoviz/scene/text.h`: text batch setters
 
@@ -669,7 +687,8 @@ Preferred convention:
 object, selector, range-if-any, data pointer(s), count/size
 ```
 
-Apply this especially to `dvz_visual_set_data_range()` and text batch setters.
+Apply this to remaining APIs only after checking whether their count argument is a range selector,
+payload size, or object sizing operation.
 
 
 ### 8. Tighten Constness And Borrowed Ownership
