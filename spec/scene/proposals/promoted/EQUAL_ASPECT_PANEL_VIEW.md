@@ -36,8 +36,8 @@ DataSpace -> ViewSpace -> controller/panel view -> ClipSpace
 
 The implemented public API uses panel 2D view names as the release-candidate names:
 
-1. `DvzPanelView2D`, `DvzPanelView2DMode`, and `DvzPanelView2DAspect`;
-2. `dvz_panel_view2d()`, `dvz_panel_set_view2d()`, `dvz_panel_clear_view2d()`, and
+1. `DvzPanelView2DDesc`, `DvzPanelView2DMode`, and `DvzPanelView2DAspect`;
+2. `dvz_panel_view2d_desc()`, `dvz_panel_set_view2d()`, `dvz_panel_clear_view2d()`, and
    `dvz_panel_view2d_extent()`;
 3. domain-fit aliases are not part of the v0.4 release surface.
 

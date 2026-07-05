@@ -2158,8 +2158,8 @@ static int test_panel_view2d(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzPanelView2D view = dvz_panel_view2d();
-    AT(view.struct_size == DVZ_STRUCT_SIZE(DvzPanelView2D));
+    DvzPanelView2DDesc view = dvz_panel_view2d_desc();
+    AT(view.struct_size == DVZ_STRUCT_SIZE(DvzPanelView2DDesc));
     AT(view.mode == DVZ_PANEL_VIEW2D_CONTAIN);
     AT(view.aspect == DVZ_PANEL_VIEW2D_ASPECT_FREE);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 2.0) == 0);
@@ -2243,7 +2243,7 @@ static int test_panel_view2d(TstContext* suite, const TstCase* item)
     desc.domain_y[1] = +2.0;
     desc.has_domain_x = true;
     desc.has_domain_y = true;
-    AT(dvz_panel_set_view2d_desc(panel, &desc) == 0);
+    AT(dvz_panel_set_view2d(panel, &desc) == 0);
     DvzPanelView2DState state = {0};
     AT(dvz_panel_view2d_state(panel, &state));
     AT(state.struct_size == DVZ_STRUCT_SIZE(DvzPanelView2DState));
@@ -2279,7 +2279,7 @@ static int test_panel_view2d_reversed_domains(TstContext* suite, const TstCase* 
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
 
-    DvzPanelView2D view = dvz_panel_view2d();
+    DvzPanelView2DDesc view = dvz_panel_view2d_desc();
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 10.0, 0.0) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 1.0, -1.0) == 0);
     AT(dvz_panel_set_view2d(panel, &view) == 0);
@@ -3405,11 +3405,11 @@ int test_axis_descriptor_abi_rejects_invalid_structs(TstContext* suite, const Ts
     style.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, !dvz_axis_set_style(axis, &style));
 
-    DvzPanelView2D view = dvz_panel_view2d();
+    DvzPanelView2DDesc view = dvz_panel_view2d_desc();
     view.struct_size = 0;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_view2d(panel, &view) != 0);
 
-    view = dvz_panel_view2d();
+    view = dvz_panel_view2d_desc();
     view.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_view2d(panel, &view) != 0);
 
@@ -3536,7 +3536,7 @@ static int test_axis_equal_aspect_axis_alignment(TstContext* suite, const TstCas
     DvzPanel* panel = dvz_panel_full(figure);
     ANN(panel);
 
-    DvzPanelView2D view = dvz_panel_view2d();
+    DvzPanelView2DDesc view = dvz_panel_view2d_desc();
     view.mode = DVZ_PANEL_VIEW2D_CONTAIN;
     view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -1.0, +1.0) == 0);

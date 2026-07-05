@@ -164,7 +164,7 @@ Public headers:
 | File | Functions/types inspected |
 |---|---|
 | `include/datoviz/scene.h` | `dvz_scene`, `dvz_figure`, `dvz_panel`, `dvz_scene_set_capabilities`, `dvz_figure_emit_frame`, `DvzSceneFrameArtifact`, `dvz_figure_process_queries`, `dvz_visual_set_data`, `dvz_visual_set_data_many`, `dvz_visual_set_data_range`, `dvz_scene_buffer*`, `dvz_visual_set_buffer`, `dvz_visual_set_index_data`, `dvz_visual_set_attr_buffer`, visual constructors |
-| `include/datoviz/scene/types.h` | `DvzCapabilitySnapshot`, `DvzDiagnosticReport`, `DvzVisualTransformDesc`, `DvzVisualAttachDesc`, `DvzQueryRequest`, `DvzQueryResult`, `DvzSelectionItem`, `DvzDataDomain`, `DvzPanelView2D` |
+| `include/datoviz/scene/types.h` | `DvzCapabilitySnapshot`, `DvzDiagnosticReport`, `DvzVisualTransformDesc`, `DvzVisualAttachDesc`, `DvzQueryRequest`, `DvzQueryResult`, `DvzSelectionItem`, `DvzDataDomain`, `DvzPanelView2DDesc` |
 | `include/datoviz/scene/enums.h` | `DvzQueryStatus`, `DvzQueryProfile`, `DvzQueryValueKind`, `DvzQueryCapabilityFlag`, visual/target/coordinate enums |
 | `include/datoviz/scene/interaction.h` | `dvz_visual_set_query_capabilities`, `dvz_query_request`, `dvz_panel_query`, `dvz_scene_poll_query`, `dvz_panel_query_now`, interaction/selection/hover helpers |
 | `include/datoviz/scene/frame_plan.h` | `dvz_capability_snapshot`, `dvz_capability_snapshot_copy`, `DvzFramePlanCopyDesc`, diagnostic helpers |

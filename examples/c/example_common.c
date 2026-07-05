@@ -527,7 +527,7 @@ bool example_configure_equal_aspect_panel(
     if (dvz_panel_set_domain(panel, DVZ_DIM_Y, y.min, y.max) != 0)
         return false;
 
-    DvzPanelView2D view = dvz_panel_view2d();
+    DvzPanelView2DDesc view = dvz_panel_view2d_desc();
     view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
     view.padding = padding;
     return dvz_panel_set_view2d(panel, &view) == 0;

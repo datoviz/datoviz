@@ -31,7 +31,6 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-#define DVZ_PANEL_VIEW2D_KNOWN_FLAGS 0u
 #define DVZ_PANEL_VIEW2D_DESC_KNOWN_FLAGS 0u
 #define DVZ_PANEL_VIEW3D_DESC_KNOWN_FLAGS 0u
 
@@ -39,30 +38,6 @@
 static uint64_t _panel_view_next_revision(uint64_t revision)
 {
     return revision == UINT64_MAX ? 1 : revision + 1;
-}
-
-
-static bool _panel_view2d_validate(const DvzPanelView2D* view)
-{
-    if (view == NULL)
-        return true;
-    if (!DVZ_STRUCT_VALID(view, DvzPanelView2D, DVZ_PANEL_VIEW2D_KNOWN_FLAGS))
-    {
-        log_error("invalid panel 2D view ABI");
-        return false;
-    }
-    if (view->mode == DVZ_PANEL_VIEW2D_NONE)
-        return true;
-    if (view->mode != DVZ_PANEL_VIEW2D_CONTAIN)
-        return false;
-    if (view->aspect != DVZ_PANEL_VIEW2D_ASPECT_FREE &&
-        view->aspect != DVZ_PANEL_VIEW2D_ASPECT_EQUAL)
-        return false;
-    if (!isfinite(view->padding))
-        return false;
-    if (view->padding < 0.0)
-        return false;
-    return true;
 }
 
 
@@ -233,22 +208,6 @@ static bool _scene_panel_source_domains(
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-/**
- * Return the default panel 2D view descriptor.
- *
- * @return panel 2D view descriptor
- */
-DvzPanelView2D dvz_panel_view2d(void)
-{
-    return (DvzPanelView2D){
-        DVZ_STRUCT_INIT_FIELDS(DvzPanelView2D),
-        .mode = DVZ_PANEL_VIEW2D_CONTAIN,
-        .aspect = DVZ_PANEL_VIEW2D_ASPECT_FREE,
-        .padding = 0.0,
-    };
-}
-
-
 DvzPanelView2DDesc dvz_panel_view2d_desc(void)
 {
     return (DvzPanelView2DDesc){
@@ -264,33 +223,7 @@ DvzPanelView2DDesc dvz_panel_view2d_desc(void)
 }
 
 
-/**
- * Set a panel 2D view policy.
- *
- * @param panel the panel
- * @param view panel 2D view descriptor; NULL clears the view policy
- * @return 0 on success, -1 on validation error
- */
-DvzResult dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2D* view)
-{
-    if (panel == NULL)
-        return -1;
-    if (view == NULL)
-        return dvz_panel_set_view2d_desc(panel, NULL);
-    if (!_panel_view2d_validate(view))
-        return -1;
-    if (view->mode == DVZ_PANEL_VIEW2D_NONE)
-        return dvz_panel_set_view2d_desc(panel, NULL);
-
-    DvzPanelView2DDesc desc = dvz_panel_view2d_desc();
-    desc.mode = view->mode;
-    desc.aspect = view->aspect;
-    desc.padding = view->padding;
-    return dvz_panel_set_view2d_desc(panel, &desc);
-}
-
-
-DvzResult dvz_panel_set_view2d_desc(DvzPanel* panel, const DvzPanelView2DDesc* desc)
+DvzResult dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2DDesc* desc)
 {
     if (panel == NULL)
         return -1;
@@ -305,14 +238,9 @@ DvzResult dvz_panel_set_view2d_desc(DvzPanel* panel, const DvzPanelView2DDesc* d
     if (!_panel_view2d_desc_validate(desc))
         return -1;
     if (desc->mode == DVZ_PANEL_VIEW2D_NONE)
-        return dvz_panel_set_view2d_desc(panel, NULL);
+        return dvz_panel_set_view2d(panel, NULL);
 
-    panel->view2d = (DvzPanelView2D){
-        DVZ_STRUCT_INIT_FIELDS(DvzPanelView2D),
-        .mode = desc->mode,
-        .aspect = desc->aspect,
-        .padding = desc->padding,
-    };
+    panel->view2d = *desc;
     panel->view2d_enabled = true;
     panel->active_view_kind = DVZ_PANEL_VIEW_KIND_2D;
     if (desc->has_domain_x &&

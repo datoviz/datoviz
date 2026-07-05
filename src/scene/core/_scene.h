@@ -1949,7 +1949,7 @@ struct DvzPanel
     DvzPanelReserve reserve;
     DvzPanelReserve padding;
     bool view2d_enabled;
-    DvzPanelView2D view2d;
+    DvzPanelView2DDesc view2d;
     DvzId view2d_id;
     uint64_t view2d_revision;
     DvzDataDomain view2d_domain_x;

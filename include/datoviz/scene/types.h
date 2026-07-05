@@ -652,17 +652,6 @@ typedef enum
 } DvzPanelView2DAspect;
 
 
-struct DvzPanelView2D
-{
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzPanelView2DMode mode;
-    DvzPanelView2DAspect aspect;
-    double padding;
-};
-typedef struct DvzPanelView2D DvzPanelView2D;
-
-
 struct DvzPanelView2DDesc
 {
     uint32_t struct_size;

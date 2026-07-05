@@ -785,12 +785,6 @@ typedef struct DvzPanelFrameSnapshot DvzPanelFrameSnapshot;
 typedef struct DvzPanelReserve DvzPanelReserve;
 ```
 
-#### `DvzPanelView2D`
-
-```c
-typedef struct DvzPanelView2D DvzPanelView2D;
-```
-
 #### `DvzPanelView2DAspect`
 
 ```c
@@ -3010,18 +3004,6 @@ struct DvzPanelReserve {
     float right_px;
     float top_px;
     float bottom_px;
-};
-```
-
-#### `DvzPanelView2D`
-
-```c
-struct DvzPanelView2D {
-    uint32_t struct_size;
-    uint32_t flags;
-    DvzPanelView2DMode mode;
-    DvzPanelView2DAspect aspect;
-    double padding;
 };
 ```
 

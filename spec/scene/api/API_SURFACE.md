@@ -276,7 +276,7 @@ not part of the release surface:
 7. `dvz_panel_clear_domain_fit()`.
 
 The release-candidate names for the surviving view/framing surface are
-`DvzPanelView2D`, `dvz_panel_view2d()`, `dvz_panel_set_view2d()`,
+`DvzPanelView2DDesc`, `dvz_panel_view2d_desc()`, `dvz_panel_set_view2d()`,
 `dvz_panel_clear_view2d()`, and `dvz_panel_view2d_extent()`. The ownership split is fixed: source
 panel domains are not mutated to apply equal-aspect framing.
 

@@ -1416,7 +1416,7 @@ int test_scene_panel_frame_snapshot_core(TstContext* suite, const TstCase* item)
                }));
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -5.0, 15.0) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 10.0, -10.0) == 0);
-    DvzPanelView2D view = dvz_panel_view2d();
+    DvzPanelView2DDesc view = dvz_panel_view2d_desc();
     AT(dvz_panel_set_view2d(panel, &view) == 0);
     DvzPanelView2DState view_state = {0};
     AT(dvz_panel_view2d_state(panel, &view_state));
@@ -1896,7 +1896,7 @@ int test_scene_visual_data_coord_space_tracks_panel_view2d_resize(
     DvzFigure* figure = dvz_figure(scene, 100, 100, 0);
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
 
-    DvzPanelView2D view = dvz_panel_view2d();
+    DvzPanelView2DDesc view = dvz_panel_view2d_desc();
     view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, 5.0) == 0);
@@ -1955,7 +1955,7 @@ int test_scene_equal_aspect_view_and_panel_coord_spaces(TstContext* suite, const
     DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
 
-    DvzPanelView2D view = dvz_panel_view2d();
+    DvzPanelView2DDesc view = dvz_panel_view2d_desc();
     view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
     AT(dvz_panel_set_view2d(panel, &view) == 0);
 

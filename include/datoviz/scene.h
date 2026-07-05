@@ -1355,14 +1355,6 @@ DVZ_EXPORT DvzResult dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double mi
 
 
 /**
- * Return the default panel 2D view descriptor.
- *
- * @return panel 2D view descriptor
- */
-DVZ_EXPORT DvzPanelView2D dvz_panel_view2d(void);
-
-
-/**
  * Return the default revisioned panel 2D view descriptor.
  *
  * The descriptor owns both fitting policy and optional ordered DATA-domain endpoints. Reversed
@@ -1374,30 +1366,18 @@ DVZ_EXPORT DvzPanelView2DDesc dvz_panel_view2d_desc(void);
 
 
 /**
- * Set a panel 2D view policy.
- *
- * The panel view owns fitting, aspect, and padding policy for the panel's source data domains.
- * With DVZ_PANEL_VIEW2D_ASPECT_EQUAL, VIEW and DATA coordinates preserve equal X/Y screen scale
- * under the current plot rectangle. Set source limits with `dvz_panel_set_domain()`.
- *
- * @param panel the panel
- * @param view panel 2D view descriptor; NULL clears the view policy
- * @return 0 on success, -1 on validation error
- */
-DVZ_EXPORT DvzResult dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2D* view);
-
-
-/**
- * Set a revisioned panel 2D view descriptor.
+ * Set a panel 2D view descriptor.
  *
  * Passing NULL clears the active 2D view. Explicit descriptor domains are copied into the retained
  * view and synchronized to panel axes for compatibility.
+ * With DVZ_PANEL_VIEW2D_ASPECT_EQUAL, VIEW and DATA coordinates preserve equal X/Y screen scale
+ * under the current plot rectangle.
  *
  * @param panel the panel
  * @param desc panel 2D view descriptor, or NULL to clear
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT DvzResult dvz_panel_set_view2d_desc(DvzPanel* panel, const DvzPanelView2DDesc* desc);
+DVZ_EXPORT DvzResult dvz_panel_set_view2d(DvzPanel* panel, const DvzPanelView2DDesc* desc);
 
 
 /**

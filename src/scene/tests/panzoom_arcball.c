@@ -1178,7 +1178,7 @@ int test_controller_link_panzoom_extent_x_equal_aspect_panels(
     ANN(source_panel);
     ANN(target_panel);
 
-    DvzPanelView2D view = dvz_panel_view2d();
+    DvzPanelView2DDesc view = dvz_panel_view2d_desc();
     view.aspect = DVZ_PANEL_VIEW2D_ASPECT_EQUAL;
     AT(dvz_panel_set_view2d(source_panel, &view) == 0);
     AT(dvz_panel_set_view2d(target_panel, &view) == 0);
