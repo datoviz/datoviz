@@ -62,7 +62,7 @@ static uint32_t _render_pass_color_target_format(
         if (resource != NULL && resource->format != 0)
             return resource->format;
     }
-    return cfg != NULL ? _render_pass_scene_color_target_format(cfg) : 0;
+    return _render_pass_scene_color_target_format(cfg);
 }
 
 
@@ -1034,8 +1034,10 @@ bool _emitter_emit_scene_graph_renders(
             const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
             bool has_draws = batch != NULL;
             ok = ok && dvz_drp2_stream_begin_render_pass_region_clear(
-                           stream, pass_id, encoder_id, target_id, cr, cg, cb, ca, 0.0f, 0.0f,
-                           1.0f, 1.0f, clear_final);
+                           stream, pass_id, encoder_id, target_id, cr, cg, cb, ca,
+                           render->u.render.desc.x, render->u.render.desc.y,
+                           render->u.render.desc.width, render->u.render.desc.height,
+                           clear_final);
             ok = ok && _stream_apply_graph_color_ops(stream, graph_pass, scene_color_id, graph_targets);
             if (ok && graph_depth_id != 0)
                 ok = _stream_apply_graph_depth(stream, graph_pass, graph_depth_id);

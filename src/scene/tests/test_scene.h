@@ -803,6 +803,8 @@ int test_scene_frame_plan_node_reallocation_safe(TstContext* suite, const TstCas
 
 int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item);
 
+int test_scene_msaa_mixed_plain_panel_resolve_region(TstContext* suite, const TstCase* item);
+
 int test_scene_msaa_blended_overlay_runtime_lowering(TstContext* suite, const TstCase* item);
 
 int test_scene_msaa_ssao_blended_overlay_runtime_lowering(TstContext* suite, const TstCase* item);

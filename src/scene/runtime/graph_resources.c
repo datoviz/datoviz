@@ -849,8 +849,8 @@ bool _graph_prepare_render_color_targets(
             continue;
         uint64_t texture_id = 0;
         ok = _graph_resolve_texture_2d(
-            emitter, stream, plan, cfg, resource, width, height, DVZ_FORMAT_R8G8B8A8_UNORM,
-            &texture_id);
+            emitter, stream, plan, cfg, resource, width, height,
+            _render_pass_scene_color_target_format(cfg), &texture_id);
         ok = ok && _graph_runtime_targets_add(out, resource->id, texture_id);
     }
     return ok;

@@ -241,7 +241,6 @@ bool _scene_technique_emit_blended_frame_graph(
         DvzFrameGraphResource msaa_color = {0};
         dvz_strlcpy(msaa_color.id, msaa_color_id, sizeof(msaa_color.id));
         msaa_color.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        msaa_color.format = DVZ_FORMAT_R8G8B8A8_UNORM;
         msaa_color.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         msaa_color.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
         msaa_color.sample_count = sample_count;

@@ -88,7 +88,8 @@ uint32_t _render_pass_scene_color_target_format(const DvzFramePlanEmitConfig* cf
 {
     if (_render_pass_external_target_needs_encode(cfg))
         return DVZ_FORMAT_R8G8B8A8_UNORM;
-    return cfg != NULL ? cfg->color_target_format : 0;
+    return cfg != NULL && cfg->color_target_format != 0 ? cfg->color_target_format :
+                                                           DVZ_FORMAT_R8G8B8A8_UNORM;
 }
 
 
@@ -163,9 +164,7 @@ bool _render_pass_resolve_color_target(
         return false;
     uint32_t width = cfg != NULL && cfg->target_width > 0 ? cfg->target_width : 4;
     uint32_t height = cfg != NULL && cfg->target_height > 0 ? cfg->target_height : 4;
-    uint32_t format = cfg != NULL && cfg->color_target_format != 0 ?
-                          cfg->color_target_format :
-                          DVZ_FORMAT_R8G8B8A8_UNORM;
+    uint32_t format = _render_pass_scene_color_target_format(cfg);
     if (
         needs_create || resource->texture_width == 0 || resource->texture_height == 0 ||
         resource->texture_depth == 0)

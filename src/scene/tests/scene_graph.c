@@ -128,6 +128,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_gbuffer_runtime_lowering);
     TST_CASE(test_scene_frame_plan_node_reallocation_safe);
     TST_CASE(test_scene_msaa_runtime_lowering);
+    TST_CASE(test_scene_msaa_mixed_plain_panel_resolve_region);
     TST_CASE(test_scene_msaa_blended_overlay_runtime_lowering);
     TST_CASE(test_scene_msaa_ssao_blended_overlay_runtime_lowering);
     TST_CASE(test_scene_msaa_runtime_capability_lowering);

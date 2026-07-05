@@ -885,6 +885,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     }
     ANN(msaa_color);
     ANN(depth);
+    AT(msaa_color->format == 0);
     AT(msaa_color->sample_count == 4);
     AT(depth->sample_count == 4);
 
@@ -893,6 +894,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     AT(strcmp(pass->work_label, "opaque") == 0);
     AT(pass->color_attachment_count == 1);
     AT(strcmp(pass->color_attachments[0].resource_id, "figure_0_p0.msaa.color") == 0);
+    AT(pass->color_attachments[0].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
     AT(strcmp(pass->color_attachments[0].resolve_resource_id, "rt") == 0);
     AT(pass->color_attachments[0].resolve_mode == VK_RESOLVE_MODE_AVERAGE_BIT);
     AT(pass->has_depth_attachment);
@@ -902,6 +904,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.color_target_format = DVZ_FORMAT_B8G8R8A8_UNORM;
     cfg.target_width = 64;
     cfg.target_height = 64;
     caps = dvz_capability_snapshot();
@@ -930,6 +933,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
             {
                 msaa_texture_id = cmd->u.create_texture.id;
                 found_msaa_texture = cmd->u.create_texture.sample_count == 4 &&
+                                     cmd->u.create_texture.format == DVZ_FORMAT_B8G8R8A8_UNORM &&
                                      (cmd->u.create_texture.usage &
                                       DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0;
             }
@@ -951,6 +955,8 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
             found_resolve_pass =
                 found_resolve_pass ||
                 (cmd->u.begin_render_pass.texture_id == msaa_texture_id &&
+                 cmd->u.begin_render_pass.color_attachments[0].load_op ==
+                     DVZ_DRP2_ATTACHMENT_LOAD_CLEAR &&
                  cmd->u.begin_render_pass.color_attachments[0].resolve_texture_id != 0 &&
                  cmd->u.begin_render_pass.color_attachments[0].resolve_texture_id !=
                      msaa_texture_id &&
@@ -979,6 +985,105 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     return 0;
 }
 
+
+
+/**
+ * Verify an MSAA graph pass resolves only within its panel when mixed with plain panels.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_msaa_mixed_plain_panel_resolve_region(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 128, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    AT(left != NULL);
+    AT(right != NULL);
+    AT(dvz_panel_set_msaa(
+        right,
+        &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc),
+                       .enabled = true,
+                       .sample_count = 4}) == DVZ_OK);
+
+    DvzVisual* left_sphere = dvz_sphere(scene, 0);
+    DvzVisual* right_sphere = dvz_sphere(scene, 0);
+    AT(left_sphere != NULL);
+    AT(right_sphere != NULL);
+    vec3 position[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor color[1] = {{255, 128, 64, 255}};
+    float size[1] = {0.35f};
+    AT(dvz_visual_set_data(left_sphere, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(left_sphere, "color", color, 1) == 0);
+    AT(dvz_visual_set_data(left_sphere, "size", size, 1) == 0);
+    AT(dvz_visual_set_data(right_sphere, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(right_sphere, "color", color, 1) == 0);
+    AT(dvz_visual_set_data(right_sphere, "size", size, 1) == 0);
+    AT(dvz_panel_add_visual(left, left_sphere, NULL) == 0);
+    AT(dvz_panel_add_visual(right, right_sphere, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 128;
+    cfg.target_height = 64;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+
+    uint64_t msaa_texture_id = 0;
+    bool found_left_plain_pass = false;
+    bool found_right_msaa_pass = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_texture.id);
+            if (label != NULL && strcmp(label, "fig0_p1.msaa.color") == 0)
+                msaa_texture_id = cmd->u.create_texture.id;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+        {
+            found_left_plain_pass =
+                found_left_plain_pass ||
+                (cmd->u.begin_render_pass.texture_id != 0 &&
+                 cmd->u.begin_render_pass.texture_id != msaa_texture_id &&
+                 cmd->u.begin_render_pass.viewport[0] == 0.0f &&
+                 cmd->u.begin_render_pass.viewport[1] == 0.0f &&
+                 cmd->u.begin_render_pass.viewport[2] == 1.0f &&
+                 cmd->u.begin_render_pass.viewport[3] == 1.0f);
+            found_right_msaa_pass =
+                found_right_msaa_pass ||
+                (msaa_texture_id != 0 &&
+                 cmd->u.begin_render_pass.texture_id == msaa_texture_id &&
+                 cmd->u.begin_render_pass.color_attachments[0].resolve_texture_id != 0 &&
+                 cmd->u.begin_render_pass.viewport[0] == 0.5f &&
+                 cmd->u.begin_render_pass.viewport[1] == 0.0f &&
+                 cmd->u.begin_render_pass.viewport[2] == 0.5f &&
+                 cmd->u.begin_render_pass.viewport[3] == 1.0f);
+        }
+    }
+    AT(found_left_plain_pass);
+    AT(found_right_msaa_pass);
+
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
 
 
 /**
