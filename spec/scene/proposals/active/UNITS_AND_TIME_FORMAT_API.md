@@ -192,7 +192,7 @@ Custom ladders still use the explicit ladder API.
 ```c
 DvzUnitLadder* dvz_unit_ladder_create(DvzScene* scene, const char* canonical_unit);
 int dvz_unit_ladder_add(DvzUnitLadder* ladder, double factor, const char* label);
-void dvz_unit_ladder_clear(DvzUnitLadder* ladder);
+DvzResult dvz_unit_ladder_clear(DvzUnitLadder* ladder);
 ```
 
 Rules:
@@ -202,6 +202,7 @@ Rules:
 3. entries are sorted by factor before formatting, regardless of insertion order.
 4. duplicate labels or duplicate factors should replace the existing entry or fail with a clear
    diagnostic; choose one policy and test it.
+5. builtin ladders reject custom-entry mutation calls.
 
 
 ### Units Object

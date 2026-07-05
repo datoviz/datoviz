@@ -66,11 +66,12 @@ DVZ_EXPORT DvzResult dvz_unit_ladder_add(DvzUnitLadder* ladder, double factor, c
 /**
  * Clear all entries from a custom unit ladder.
  *
- * Builtin ladders ignore this call.
+ * Builtin ladders reject this call.
  *
  * @param ladder the ladder
+ * @return DVZ_OK when the ladder was cleared, DVZ_ERROR on error
  */
-DVZ_EXPORT void dvz_unit_ladder_clear(DvzUnitLadder* ladder);
+DVZ_EXPORT DvzResult dvz_unit_ladder_clear(DvzUnitLadder* ladder);
 
 
 /**

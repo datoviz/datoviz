@@ -28926,12 +28926,13 @@ else:
     dvz_unit_ladder_clear.__doc__ = """/**
  * Clear all entries from a custom unit ladder.
  *
- * Builtin ladders ignore this call.
+ * Builtin ladders reject this call.
  *
  * @param ladder the ladder
+ * @return DVZ_OK when the ladder was cleared, DVZ_ERROR on error
  */"""
     dvz_unit_ladder_clear.argtypes = [ctypes.POINTER(DvzUnitLadder)]
-    dvz_unit_ladder_clear.restype = None
+    dvz_unit_ladder_clear.restype = ctypes.c_int32
 
 
 try:

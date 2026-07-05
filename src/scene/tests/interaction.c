@@ -2336,6 +2336,10 @@ static int test_scene_units_formatting_core(TstContext* suite, const TstCase* it
     AT(dvz_unit_ladder_add(genome, 1e3, "kb") == 0);
     AT_EXPECTED_ERROR_STRICT(suite, dvz_unit_ladder_add(genome, 1e3, "kilobase") < 0);
     AT_EXPECTED_ERROR_STRICT(suite, dvz_unit_ladder_add(genome, 1e9, "kb") < 0);
+    AT(dvz_unit_ladder_clear(genome) == DVZ_OK);
+    AT(dvz_unit_ladder_add(genome, 1e6, "Mb") == 0);
+    AT(dvz_unit_ladder_add(genome, 1.0, "bp") == 0);
+    AT(dvz_unit_ladder_add(genome, 1e3, "kb") == 0);
 
     DvzUnits* bp = dvz_units_create(scene);
     ANN(bp);

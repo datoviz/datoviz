@@ -1312,6 +1312,26 @@ just ctypes-python-smoke
 Result: all passed. This slice converted stable animation clock/control helpers and retained
 interaction policy, selection, hover, and pinned-readout mutators from `void` to `DvzResult`.
 
+Validation for the unit ladder clear slice:
+
+```sh
+just build
+just ctypes
+just ctypes-check
+python3 tools/build_api_c.py
+python3 tools/build_api_c.py --check
+python3 tools/check_api_status.py
+just docs-api
+just docs-api-check
+just test scene/interaction
+just ctypes-smoke
+just ctypes-python-smoke
+```
+
+Result: all passed. This slice converted `dvz_unit_ladder_clear()` from `void` to `DvzResult`.
+Custom ladders clear successfully; builtin ladders reject custom-entry mutation calls, matching
+`dvz_unit_ladder_add()`.
+
 
 ## Validation Baseline For Future Agent
 
