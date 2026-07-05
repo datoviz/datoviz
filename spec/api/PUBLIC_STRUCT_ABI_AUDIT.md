@@ -132,6 +132,6 @@ unless the owning module wants them in the stable v0.4 surface:
 | --- | --- |
 | `DvzDrp2BindGroupLayoutEntry`, `DvzDrp2BindGroupEntry`, `DvzDrp2ColorAttachment`, `DvzDrp2ColorTarget` | DRP2 command data records; protocol versioning may be preferable to per-struct ABI prologues. |
 | `DvzVisualDataUpdate`, `DvzScaleCategory`, `DvzColormapStop` | Batch row elements; adding a prologue to every element would materially affect memory layout and upload ergonomics. |
-| `DvzDrp2RecordedFrame`, `DvzDrp2RawFallback` | Recording result/fallback records rather than caller-authored descriptors. |
+| `DvzDrp2RecordedFrame` | Recording result record rather than a caller-authored descriptor. |
 | `DvzStreamSinkBackend`, `DvzWindowBackendProcs`, `DvzWindowBackend`, `DvzWindowGlfwInputCallbacks` | Callback/vtable registration records. Keep their fixed layout for now; revisit only if the backend plugin surface becomes a versioned public extension API. |
 | `DvzImageBlit`, `DvzImageCopy`, `DvzSwapchainConfig` | Low-level vklite records currently used by value or internal paths; revisit only if promoted as stable public setup descriptors. |

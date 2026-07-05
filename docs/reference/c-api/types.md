@@ -7000,12 +7000,6 @@ typedef struct DvzDrp2PacketInfo DvzDrp2PacketInfo;
 typedef enum DvzDrp2PacketKind DvzDrp2PacketKind;
 ```
 
-#### `DvzDrp2RawFallback`
-
-```c
-typedef struct DvzDrp2RawFallback DvzDrp2RawFallback;
-```
-
 #### `DvzDrp2RecordedFrame`
 
 ```c
@@ -7357,15 +7351,6 @@ struct DvzDrp2PacketInfo {
     uint64_t arena_size;
     uint64_t resource_version;
     uint64_t frame_index;
-};
-```
-
-#### `DvzDrp2RawFallback`
-
-```c
-struct DvzDrp2RawFallback {
-    uint32_t command_index;
-    DvzDrp2CommandType command_type;
 };
 ```
 

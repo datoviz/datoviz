@@ -20,6 +20,7 @@
 #endif
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -3445,10 +3446,24 @@ int test_app_offscreen_records_dvzr_frames(TstContext* suite, const TstCase* ite
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
     AT(dvz_view_record_stop(win) == 0);
 
+    FILE* stream_file = fopen("/tmp/dvz_app_offscreen_recording.dvzr/stream.jsonl", "rb");
+    ANN(stream_file);
+    bool has_raw_fallback = false;
+    char line[4096] = {0};
+    while (fgets(line, sizeof(line), stream_file) != NULL)
+    {
+        if (strstr(line, "\"command_blob\":\"") != NULL)
+        {
+            has_raw_fallback = true;
+            break;
+        }
+    }
+    fclose(stream_file);
+    AT(!has_raw_fallback);
+
     DvzDrp2Recording* recording = dvz_drp2_recording_open(path);
     ANN(recording);
     AT(dvz_drp2_recording_frame_count(recording) == 3);
-    AT(dvz_drp2_recording_raw_fallback_count(recording) == 0);
     const DvzDrp2CommandStream* stream = dvz_drp2_recording_stream(recording);
     ANN(stream);
     AT(dvz_drp2_stream_count(stream) > 0);

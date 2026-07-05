@@ -17,13 +17,13 @@ Common workflows:
 - [Debug rendering](../../how-to/debug-rendering.md)
 - [DRP2 overview](../drp2/index.md)
 
-Functions: 134
+Functions: 132
 
 ## Symbol Groups
 
 | Group | Functions | Headers |
 | --- | ---: | --- |
-| [Drp2](#drp2) | 134 | 4 headers |
+| [Drp2](#drp2) | 132 | 4 headers |
 
 ??? info "Grouped symbol index"
 
@@ -50,8 +50,6 @@ Functions: 134
     | [`dvz_drp2_recording_info()`](#dvz_drp2_recording_info) | `include/datoviz/drp2/recording.h` |
     | [`dvz_drp2_recording_open()`](#dvz_drp2_recording_open) | `include/datoviz/drp2/recording.h` |
     | [`dvz_drp2_recording_playback()`](#dvz_drp2_recording_playback) | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recording_raw_fallback()`](#dvz_drp2_recording_raw_fallback) | `include/datoviz/drp2/recording.h` |
-    | [`dvz_drp2_recording_raw_fallback_count()`](#dvz_drp2_recording_raw_fallback_count) | `include/datoviz/drp2/recording.h` |
     | [`dvz_drp2_recording_read_stream()`](#dvz_drp2_recording_read_stream) | `include/datoviz/drp2/recording.h` |
     | [`dvz_drp2_recording_stream()`](#dvz_drp2_recording_stream) | `include/datoviz/drp2/recording.h` |
     | [`dvz_drp2_recording_write_stream()`](#dvz_drp2_recording_write_stream) | `include/datoviz/drp2/recording.h` |
@@ -360,7 +358,7 @@ Close a linear DRP2 recorder.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/drp2/recording.h`:110._
+_Declared in `include/datoviz/drp2/recording.h`:101._
 
 ### `dvz_drp2_recorder_open()`
 
@@ -381,7 +379,7 @@ Open a linear DRP2 recorder.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/drp2/recording.h`:89._
+_Declared in `include/datoviz/drp2/recording.h`:80._
 
 ### `dvz_drp2_recorder_write_stream()`
 
@@ -404,7 +402,7 @@ Append one timestamped command stream to a linear DRP2 recorder.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/drp2/recording.h`:100._
+_Declared in `include/datoviz/drp2/recording.h`:91._
 
 ### `dvz_drp2_recording_close()`
 
@@ -422,7 +420,7 @@ Close a loaded DRP2 recording.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/drp2/recording.h`:142._
+_Declared in `include/datoviz/drp2/recording.h`:133._
 
 ### `dvz_drp2_recording_execute_all()`
 
@@ -443,7 +441,7 @@ Execute all recorded frames in order against an existing DRP2 runtime.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/drp2/recording.h`:229._
+_Declared in `include/datoviz/drp2/recording.h`:199._
 
 ### `dvz_drp2_recording_execute_frame()`
 
@@ -466,7 +464,7 @@ Execute one recorded frame against an existing DRP2 runtime.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/drp2/recording.h`:217._
+_Declared in `include/datoviz/drp2/recording.h`:187._
 
 ### `dvz_drp2_recording_frame()`
 
@@ -487,7 +485,7 @@ Return one frame record from a loaded recording.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/drp2/recording.h`:172._
+_Declared in `include/datoviz/drp2/recording.h`:163._
 
 ### `dvz_drp2_recording_frame_count()`
 
@@ -506,7 +504,7 @@ Return the number of frame records in a loaded recording.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/drp2/recording.h`:161._
+_Declared in `include/datoviz/drp2/recording.h`:152._
 
 ### `dvz_drp2_recording_frame_stream()`
 
@@ -529,7 +527,7 @@ Payload bytes in the returned stream are copied and remain valid after the recor
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/drp2/recording.h`:206._
+_Declared in `include/datoviz/drp2/recording.h`:176._
 
 ### `dvz_drp2_recording_info()`
 
@@ -545,7 +543,7 @@ Return a default DRP2 recording info descriptor.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/drp2/recording.h`:78._
+_Declared in `include/datoviz/drp2/recording.h`:69._
 
 ### `dvz_drp2_recording_open()`
 
@@ -564,7 +562,7 @@ Open a linear DRP2 recording directory for indexed playback.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/drp2/recording.h`:134._
+_Declared in `include/datoviz/drp2/recording.h`:125._
 
 ### `dvz_drp2_recording_playback()`
 
@@ -587,47 +585,7 @@ Play a recording frame by frame, optionally pacing execution by recorded timesta
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/drp2/recording.h`:240._
-
-### `dvz_drp2_recording_raw_fallback()`
-
-```c title="dvz_drp2_recording_raw_fallback"
-const DvzDrp2RawFallback * dvz_drp2_recording_raw_fallback(
-    const DvzDrp2Recording * recording,
-    uint32_t fallback_index
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `const DvzDrp2RawFallback *` | the raw fallback record, valid until the recording is closed, or NULL |
-| `recording` | `const DvzDrp2Recording *` | loaded recording |
-| `fallback_index` | `uint32_t` | raw fallback index |
-
-Return one raw ABI-local fallback command record.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/drp2/recording.h`:193._
-
-### `dvz_drp2_recording_raw_fallback_count()`
-
-```c title="dvz_drp2_recording_raw_fallback_count"
-uint32_t dvz_drp2_recording_raw_fallback_count(
-    const DvzDrp2Recording * recording
-);
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| return | `uint32_t` | raw fallback count |
-| `recording` | `const DvzDrp2Recording *` | loaded recording |
-
-Return the number of raw ABI-local fallback command records in a loaded recording.
-
-Raw ctypes: emitted.
-
-_Declared in `include/datoviz/drp2/recording.h`:181._
+_Declared in `include/datoviz/drp2/recording.h`:210._
 
 ### `dvz_drp2_recording_read_stream()`
 
@@ -646,7 +604,7 @@ Read a linear DRP2 recording directory.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/drp2/recording.h`:250._
+_Declared in `include/datoviz/drp2/recording.h`:220._
 
 ### `dvz_drp2_recording_stream()`
 
@@ -665,7 +623,7 @@ Return the full reconstructed command stream owned by a loaded recording.
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/drp2/recording.h`:152._
+_Declared in `include/datoviz/drp2/recording.h`:143._
 
 ### `dvz_drp2_recording_write_stream()`
 
@@ -691,7 +649,7 @@ Unsupported commands fall back to ABI-local raw command blobs for development re
 
 Raw ctypes: emitted.
 
-_Declared in `include/datoviz/drp2/recording.h`:124._
+_Declared in `include/datoviz/drp2/recording.h`:115._
 
 ### `dvz_drp2_render_pipeline_desc()`
 
