@@ -429,15 +429,33 @@ Completed checkpoints:
      `just test partial_update`, `just test scene/visuals/state`, `just ctypes-smoke`,
      `just ctypes-python-smoke`, `just docs-api-check`, `python3 tools/build_api_c.py`,
      `python3 tools/build_api_c.py --check`, and `git diff --check`.
+40. `ce4aad096` `api: use size policy for view descriptors`
+   - Removed duplicate `logical_width`, `logical_height`, `framebuffer_width`, and
+     `framebuffer_height` fields from public `DvzViewDesc`.
+   - Kept view creation sizing on the existing `size_policy` and `size_*` descriptor fields, with
+     resolved logical/framebuffer dimensions now carried in private app state.
+   - Migrated app convenience constructors, scenario runner view creation, GUI viewport source
+     views, examples, focused tests, generated raw `ctypes`, generated C API docs, and planning
+     notes.
+   - Exported symbol delta: no exported functions were added or removed; `DvzViewDesc` ABI layout
+     changed before RC1.
+   - Validation passed: `just ctypes`, `just ctypes-check`, `python3 tools/build_api_c.py`,
+     `python3 tools/build_api_c.py --check`, `just build`, `just test view_desc`,
+     `just test offscreen_small`, `just test gui`, `just ctypes-smoke`, `just docs-api-check`,
+     and `git diff --check`.
+   - Validation caveat: `just test app/view_desc`, `just test app/offscreen_small_view_clamps_layout`,
+     and `just test scenario_runner` selected 0 tests with the current filter names; exact
+     `view_desc` and `offscreen_small` filters were rerun and passed.
 
 Current working-tree noise to leave untouched unless explicitly approved in the current turn:
 
 - dirty `data` submodule state;
 - untracked `paper/paper.pdf`.
 
-Next recommended checkpoint: choose whether to simplify `DvzViewDesc` size configuration further by
-removing the older duplicate `logical_*`/`framebuffer_*` scalar fields or adding a public helper for
-copying `DvzViewSizeDesc` values into the flattened descriptor.
+Next recommended checkpoint: remaining API cleanup is mostly case-by-case classification rather
+than safe mechanical editing. The best next decision is whether DRP2 fixture/JSON/base64/raw
+fallback APIs should remain public advanced/unstable surface or move behind diagnostics/test-only
+headers.
 
 
 ## Maintainer Decisions
@@ -494,7 +512,7 @@ Complete audit as of July 2026, using the criterion above:
 | --- | --- | --- | --- |
 | `DvzAppConfig` | `DvzFontDefaults font_defaults` | `include/datoviz/app.h:133` | Done in `cb58878f6`: flattened to scalar `font_*` defaults fields. |
 | `DvzFontDefaults` | `DvzFontDesc sans`, `DvzFontDesc mono` | `include/datoviz/font.h:42` | Done in `787982697`: flattened to prefixed scalar sans/mono font default fields. |
-| `DvzViewDesc` | `DvzViewSizeDesc size` | `include/datoviz/app.h:225` | Done in `29b84d068`: flattened to scalar `size_*` fields while retaining `DvzViewSizeDesc` as the reusable policy value record. Duplicate legacy size scalar fields remain for a separate view-size API simplification decision. |
+| `DvzViewDesc` | `DvzViewSizeDesc size` | `include/datoviz/app.h:225` | Done in `29b84d068`: flattened to scalar `size_*` fields while retaining `DvzViewSizeDesc` as the reusable policy value record. Follow-up `ce4aad096` removed the duplicate legacy logical/framebuffer descriptor fields, leaving `size_policy`/`size_*` as the single creation-size interface. |
 | `DvzViewDesc` | `const DvzWindowExternalSurfaceInfo* external_surface` | `include/datoviz/app.h:225`, `include/datoviz/window/backend.h:91` | Done in `a2d6863e5`: hosted surface creation uses `dvz_view_external_surface()` directly. |
 | `DvzOverlayCardDesc` | `const DvzOverlayCardStyle* style` | `include/datoviz/scene/overlay.h:67` | Done in `ebd35bb00`: creation no longer carries style; use `dvz_overlay_card_set_style()` after creation. |
 | `DvzPanelView3DDesc` | `DvzCameraDesc camera` | `include/datoviz/scene/types.h:704` | Done in `8642a2efd`: flattened to `DvzCameraView view` and `DvzCameraProjection projection`. |
