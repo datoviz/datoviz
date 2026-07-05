@@ -1307,8 +1307,9 @@ int test_app_offscreen(TstContext* suite, const TstCase* item)
     AT(win != NULL);
 
     AppRequestFrameProbe request_probe = {0};
-    dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
-    dvz_view_request_frame(win);
+    AT(dvz_view_set_request_frame_callback(
+           win, _app_request_frame_probe_callback, &request_probe) == DVZ_OK);
+    AT(dvz_view_request_frame(win) == DVZ_OK);
     AT(request_probe.calls == 1);
     AT(request_probe.last_window == win);
     AT(dvz_view_emit_resize(win, 64, 64, 64, 64, 1.0f, 1.0f) == 0);
@@ -1448,7 +1449,7 @@ int test_app_view_desc_offscreen_scale(TstContext* suite, const TstCase* item)
     AT(capture_height == 120);
     dvz_free(rgba);
 
-    dvz_view_set_user_scale(win, 2.0f);
+    AT(dvz_view_set_user_scale(win, 2.0f) == DVZ_OK);
     AT(fabsf(dvz_view_user_scale(win) - 2.0f) < 1e-6f);
     dvz_view_logical_size(win, &logical_width, &logical_height);
     dvz_view_framebuffer_size(win, &framebuffer_width, &framebuffer_height);
@@ -1655,7 +1656,8 @@ int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
     AT(!_dvz_view_scheduler_should_render(win, false, 0));
 
     AppRequestFrameProbe request_probe = {0};
-    dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
+    AT(dvz_view_set_request_frame_callback(
+           win, _app_request_frame_probe_callback, &request_probe) == DVZ_OK);
 
     float updated_size[1] = {16.0f};
     AT(dvz_visual_set_data(visual, "size", updated_size, 1) == 0);
@@ -1713,9 +1715,9 @@ int test_app_offscreen_frame_callback_enables_continuous_scheduler(
     AT(win != NULL);
 
     AT(!_dvz_app_has_continuous_work(app));
-    dvz_view_set_frame_callback(win, _app_empty_frame_callback, NULL);
+    AT(dvz_view_set_frame_callback(win, _app_empty_frame_callback, NULL) == DVZ_OK);
     AT(_dvz_app_has_continuous_work(app));
-    dvz_view_set_frame_callback(win, NULL, NULL);
+    AT(dvz_view_set_frame_callback(win, NULL, NULL) == DVZ_OK);
     AT(!_dvz_app_has_continuous_work(app));
 
     dvz_app_destroy(app);
@@ -2039,16 +2041,17 @@ int test_app_offscreen_render_enabled_gate(TstContext* suite, const TstCase* ite
     AT(dvz_view_render_enabled(win));
 
     AppRequestFrameProbe request_probe = {0};
-    dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
+    AT(dvz_view_set_request_frame_callback(
+           win, _app_request_frame_probe_callback, &request_probe) == DVZ_OK);
 
-    dvz_view_set_render_enabled(win, false);
+    AT(dvz_view_set_render_enabled(win, false) == DVZ_OK);
     AT(!dvz_view_render_enabled(win));
     AT(dvz_view_render_once(win) == 0);
     AT(request_probe.calls == 0);
     AT(timer_probe.calls == 0);
     AC(dvz_scene_clock_time(scene), 0.0, EPS);
 
-    dvz_view_set_render_enabled(win, true);
+    AT(dvz_view_set_render_enabled(win, true) == DVZ_OK);
     AT(dvz_view_render_enabled(win));
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
     AT(request_probe.calls >= 1);
@@ -3482,7 +3485,8 @@ int test_app_offscreen_records_dvzr_frames(TstContext* suite, const TstCase* ite
     DvzView* replay = dvz_view_offscreen(app, replay_figure, 64, 64);
     AT(replay != NULL);
     AT(dvz_view_replay_start(replay, path) == 0);
-    dvz_view_replay_set_paced(replay, false);
+    AT(dvz_view_replay_set_paced(replay, false) == DVZ_OK);
+    AT(dvz_view_replay_set_speed(replay, 0.0) == DVZ_ERROR);
     AT(dvz_view_replay_frame_count(replay) == 3);
     AT(dvz_view_render_once(replay) == DVZ_CANVAS_FRAME_READY);
 

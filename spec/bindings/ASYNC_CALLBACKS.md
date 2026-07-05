@@ -60,7 +60,7 @@ Add a minimal public app/view scheduling API:
 typedef void (*DvzViewPostCallback)(DvzView* view, void* user_data);
 
 int dvz_view_post(DvzView* view, DvzViewPostCallback callback, void* user_data);
-void dvz_view_wake(DvzView* view);
+DvzResult dvz_view_wake(DvzView* view);
 ```
 
 The post queue is thread-safe. Posted callbacks run on the Datoviz view/app owner thread, near the

@@ -151,7 +151,7 @@ Suggested API shape:
 ```c
 float dvz_view_device_scale(const DvzView* view);
 float dvz_view_user_scale(const DvzView* view);
-void dvz_view_set_user_scale(DvzView* view, float scale);
+DvzResult dvz_view_set_user_scale(DvzView* view, float scale);
 ```
 
 Scene-level defaults can be added later if multiple views should inherit one user preference.

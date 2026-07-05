@@ -4046,9 +4046,10 @@ void dvz_app_destroy(DvzApp* app)
 }
 
 
-void dvz_app_stop(DvzApp* app)
+DvzResult dvz_app_stop(DvzApp* app)
 {
-    ANN(app);
+    if (app == NULL)
+        return DVZ_ERROR;
     app->stop_requested = true;
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     if (app->window_host != NULL)
@@ -4061,6 +4062,7 @@ void dvz_app_stop(DvzApp* app)
         }
     }
 #endif
+    return DVZ_OK;
 }
 
 
@@ -5041,18 +5043,20 @@ float dvz_view_user_scale(const DvzView* win)
  * @param win the view
  * @param scale positive user scale
  */
-void dvz_view_set_user_scale(DvzView* win, float scale)
+DvzResult dvz_view_set_user_scale(DvzView* win, float scale)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
     if (!isfinite(scale) || scale <= 0.0f)
     {
         log_error("view user scale must be positive and finite");
-        return;
+        return DVZ_ERROR;
     }
     if (win->user_scale == scale)
-        return;
+        return DVZ_OK;
     win->user_scale = scale;
     _view_mark_dirty(win);
+    return DVZ_OK;
 }
 
 
@@ -5584,11 +5588,12 @@ DvzResult dvz_view_replay_stop(DvzView* win)
  * @param win the view
  * @param paced whether replay waits for recorded timestamps
  */
-void dvz_view_replay_set_paced(DvzView* win, bool paced)
+DvzResult dvz_view_replay_set_paced(DvzView* win, bool paced)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
     win->replay_paced = paced;
-    dvz_view_request_frame(win);
+    return dvz_view_request_frame(win);
 }
 
 
@@ -5599,14 +5604,14 @@ void dvz_view_replay_set_paced(DvzView* win, bool paced)
  * @param win the view
  * @param speed speed multiplier
  */
-void dvz_view_replay_set_speed(DvzView* win, double speed)
+DvzResult dvz_view_replay_set_speed(DvzView* win, double speed)
 {
-    ANN(win);
-    if (speed > 0)
-    {
-        win->replay_speed = speed;
-        dvz_view_request_frame(win);
-    }
+    if (win == NULL)
+        return DVZ_ERROR;
+    if (!(speed > 0))
+        return DVZ_ERROR;
+    win->replay_speed = speed;
+    return dvz_view_request_frame(win);
 }
 
 
@@ -5617,11 +5622,12 @@ void dvz_view_replay_set_speed(DvzView* win, double speed)
  * @param win the view
  * @param loop whether replay should loop
  */
-void dvz_view_replay_set_loop(DvzView* win, bool loop)
+DvzResult dvz_view_replay_set_loop(DvzView* win, bool loop)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
     win->replay_loop = loop;
-    dvz_view_request_frame(win);
+    return dvz_view_request_frame(win);
 }
 
 
@@ -5729,11 +5735,13 @@ DvzResult dvz_view_resize_scaled_xy(
  * @param win view to update
  * @param enabled whether rendering should be enabled
  */
-void dvz_view_set_render_enabled(DvzView* win, bool enabled)
+DvzResult dvz_view_set_render_enabled(DvzView* win, bool enabled)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
     win->render_enabled = enabled;
     _view_mark_dirty(win);
+    return DVZ_OK;
 }
 
 
@@ -5757,9 +5765,10 @@ bool dvz_view_render_enabled(const DvzView* win)
  *
  * @param win view requesting a frame
  */
-void dvz_view_request_frame(DvzView* win)
+DvzResult dvz_view_request_frame(DvzView* win)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
     _view_mark_dirty(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     if (win->app != NULL && win->app->window_host != NULL && win->window != NULL)
@@ -5767,6 +5776,7 @@ void dvz_view_request_frame(DvzView* win)
 #endif
     if (win->request_frame_callback != NULL)
         win->request_frame_callback(win, win->request_frame_user_data);
+    return DVZ_OK;
 }
 
 
@@ -5776,16 +5786,17 @@ void dvz_view_request_frame(DvzView* win)
  *
  * @param win view requesting scheduler attention
  */
-void dvz_view_wake(DvzView* win)
+DvzResult dvz_view_wake(DvzView* win)
 {
     if (win == NULL)
-        return;
+        return DVZ_ERROR;
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     if (win->app != NULL && win->app->window_host != NULL && win->window != NULL)
         dvz_window_host_request_frame(win->app->window_host, win->window);
 #endif
     if (win->request_frame_callback != NULL)
         win->request_frame_callback(win, win->request_frame_user_data);
+    return DVZ_OK;
 }
 
 
@@ -5830,22 +5841,26 @@ DvzResult dvz_view_post(DvzView* win, DvzViewPostCallback callback, void* user_d
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
  */
-void dvz_view_set_request_frame_callback(
+DvzResult dvz_view_set_request_frame_callback(
     DvzView* win, DvzViewRequestFrameCallback callback, void* user_data)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
     win->request_frame_callback = callback;
     win->request_frame_user_data = user_data;
+    return DVZ_OK;
 }
 
 
 
-void dvz_view_set_frame_callback(
+DvzResult dvz_view_set_frame_callback(
     DvzView* win, DvzViewFrameCallback callback, void* user_data)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
     win->frame_callback = callback;
     win->frame_user_data = user_data;
+    return DVZ_OK;
 }
 
 
@@ -5878,19 +5893,20 @@ DvzGui* dvz_view_gui(DvzView* win, const DvzGuiConfig* config)
 
 
 
-void dvz_view_set_gui_callback(
+DvzResult dvz_view_set_gui_callback(
     DvzView* win, DvzGuiCallback callback, void* user_data)
 {
-    ANN(win);
+    if (win == NULL)
+        return DVZ_ERROR;
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
-    if (win->gui != NULL)
-    {
-        _dvz_gui_set_callback(win->gui, callback, user_data);
-        dvz_view_request_frame(win);
-    }
+    if (win->gui == NULL)
+        return DVZ_ERROR;
+    _dvz_gui_set_callback(win->gui, callback, user_data);
+    return dvz_view_request_frame(win);
 #else
     (void)callback;
     (void)user_data;
+    return DVZ_ERROR;
 #endif
 }
 

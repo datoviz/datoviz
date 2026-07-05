@@ -1332,6 +1332,28 @@ Result: all passed. This slice converted `dvz_unit_ladder_clear()` from `void` t
 Custom ladders clear successfully; builtin ladders reject custom-entry mutation calls, matching
 `dvz_unit_ladder_add()`.
 
+Validation for the app/view control mutator slice:
+
+```sh
+just build
+just ctypes
+just ctypes-check
+python3 tools/build_api_c.py
+python3 tools/build_api_c.py --check
+python3 tools/check_api_status.py
+just docs-api
+just docs-api-check
+just test app
+just test gui
+just ctypes-smoke
+just ctypes-python-smoke
+```
+
+Result: all passed. This slice converted app/view stop, scheduling, replay-control, render-control,
+user-scale, and callback setters from `void` to `DvzResult`. A first parallel build/test attempt
+hit process-isolated exit-127 failures while the build was still relinking; sequential reruns of
+`just test app` and `just test gui` passed.
+
 
 ## Validation Baseline For Future Agent
 

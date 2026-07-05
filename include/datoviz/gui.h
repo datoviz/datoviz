@@ -145,8 +145,9 @@ DVZ_EXPORT DvzGui* dvz_view_gui(DvzView* view, const DvzGuiConfig* config);
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void
+DVZ_EXPORT DvzResult
 dvz_view_set_gui_callback(
     DvzView* view, DvzGuiCallback callback, void* user_data);
 

@@ -338,8 +338,9 @@ DVZ_EXPORT void dvz_app_destroy(DvzApp* app);
  * Request that a running app loop stops at the next scheduler checkpoint.
  *
  * @param app app whose run loop should stop
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_app_stop(DvzApp* app);
+DVZ_EXPORT DvzResult dvz_app_stop(DvzApp* app);
 
 
 /**
@@ -668,8 +669,9 @@ DVZ_EXPORT float dvz_view_user_scale(const DvzView* view);
  *
  * @param view the view
  * @param scale positive user scale
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_set_user_scale(DvzView* view, float scale);
+DVZ_EXPORT DvzResult dvz_view_set_user_scale(DvzView* view, float scale);
 
 
 /**
@@ -873,8 +875,9 @@ DVZ_EXPORT DvzResult dvz_view_replay_stop(DvzView* view);
  *
  * @param view the view
  * @param paced whether replay waits for recorded timestamps
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_replay_set_paced(DvzView* view, bool paced);
+DVZ_EXPORT DvzResult dvz_view_replay_set_paced(DvzView* view, bool paced);
 
 
 /**
@@ -884,8 +887,9 @@ DVZ_EXPORT void dvz_view_replay_set_paced(DvzView* view, bool paced);
  *
  * @param view the view
  * @param speed replay speed multiplier
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_replay_set_speed(DvzView* view, double speed);
+DVZ_EXPORT DvzResult dvz_view_replay_set_speed(DvzView* view, double speed);
 
 
 /**
@@ -895,8 +899,9 @@ DVZ_EXPORT void dvz_view_replay_set_speed(DvzView* view, double speed);
  *
  * @param view the view
  * @param loop whether the recording should loop
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_replay_set_loop(DvzView* view, bool loop);
+DVZ_EXPORT DvzResult dvz_view_replay_set_loop(DvzView* view, bool loop);
 
 
 /**
@@ -965,8 +970,9 @@ DVZ_EXPORT DvzResult dvz_view_resize_scaled_xy(
  *
  * @param view the view
  * @param enabled whether rendering should be enabled
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_set_render_enabled(DvzView* view, bool enabled);
+DVZ_EXPORT DvzResult dvz_view_set_render_enabled(DvzView* view, bool enabled);
 
 
 /**
@@ -985,8 +991,9 @@ DVZ_EXPORT bool dvz_view_render_enabled(const DvzView* view);
  * example QWindow::requestUpdate(), QWidget::update(), an SDL wakeup, or a Tk idle callback.
  *
  * @param view the view
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_request_frame(DvzView* view);
+DVZ_EXPORT DvzResult dvz_view_request_frame(DvzView* view);
 
 
 /**
@@ -997,8 +1004,9 @@ DVZ_EXPORT void dvz_view_request_frame(DvzView* view);
  * thread by dvz_view_render_once().
  *
  * @param view the view
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_wake(DvzView* view);
+DVZ_EXPORT DvzResult dvz_view_wake(DvzView* view);
 
 
 /**
@@ -1026,8 +1034,9 @@ dvz_view_post(DvzView* view, DvzViewPostCallback callback, void* user_data);
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void dvz_view_set_request_frame_callback(
+DVZ_EXPORT DvzResult dvz_view_set_request_frame_callback(
     DvzView* view, DvzViewRequestFrameCallback callback, void* user_data);
 
 
@@ -1041,8 +1050,9 @@ DVZ_EXPORT void dvz_view_set_request_frame_callback(
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
-DVZ_EXPORT void
+DVZ_EXPORT DvzResult
 dvz_view_set_frame_callback(
     DvzView* view, DvzViewFrameCallback callback, void* user_data);
 

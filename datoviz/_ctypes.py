@@ -7593,9 +7593,10 @@ else:
  * Request that a running app loop stops at the next scheduler checkpoint.
  *
  * @param app app whose run loop should stop
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_app_stop.argtypes = [ctypes.POINTER(DvzApp)]
-    dvz_app_stop.restype = None
+    dvz_app_stop.restype = ctypes.c_int32
 
 
 try:
@@ -29821,9 +29822,10 @@ else:
  *
  * @param view the view
  * @param loop whether the recording should loop
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_view_replay_set_loop.argtypes = [ctypes.POINTER(DvzView), ctypes.c_bool]
-    dvz_view_replay_set_loop.restype = None
+    dvz_view_replay_set_loop.restype = ctypes.c_int32
 
 
 try:
@@ -29836,9 +29838,10 @@ else:
  *
  * @param view the view
  * @param paced whether replay waits for recorded timestamps
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_view_replay_set_paced.argtypes = [ctypes.POINTER(DvzView), ctypes.c_bool]
-    dvz_view_replay_set_paced.restype = None
+    dvz_view_replay_set_paced.restype = ctypes.c_int32
 
 
 try:
@@ -29853,9 +29856,10 @@ else:
  *
  * @param view the view
  * @param speed replay speed multiplier
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_view_replay_set_speed.argtypes = [ctypes.POINTER(DvzView), ctypes.c_double]
-    dvz_view_replay_set_speed.restype = None
+    dvz_view_replay_set_speed.restype = ctypes.c_int32
 
 
 try:
@@ -29904,9 +29908,10 @@ else:
  * example QWindow::requestUpdate(), QWidget::update(), an SDL wakeup, or a Tk idle callback.
  *
  * @param view the view
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_view_request_frame.argtypes = [ctypes.POINTER(DvzView)]
-    dvz_view_request_frame.restype = None
+    dvz_view_request_frame.restype = ctypes.c_int32
 
 
 try:
@@ -30003,9 +30008,10 @@ else:
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     _dvz_view_set_frame_callback.argtypes = [ctypes.POINTER(DvzView), DvzViewFrameCallback, ctypes.c_void_p]
-    _dvz_view_set_frame_callback.restype = None
+    _dvz_view_set_frame_callback.restype = ctypes.c_int32
     def dvz_view_set_frame_callback(view, callback, user_data):
         callback = _callback_store_setter('dvz_view_set_frame_callback', DvzViewFrameCallback, view, callback)
         return _dvz_view_set_frame_callback(view, callback, user_data)
@@ -30028,9 +30034,10 @@ else:
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     _dvz_view_set_gui_callback.argtypes = [ctypes.POINTER(DvzView), DvzGuiCallback, ctypes.c_void_p]
-    _dvz_view_set_gui_callback.restype = None
+    _dvz_view_set_gui_callback.restype = ctypes.c_int32
     def dvz_view_set_gui_callback(view, callback, user_data):
         callback = _callback_store_setter('dvz_view_set_gui_callback', DvzGuiCallback, view, callback)
         return _dvz_view_set_gui_callback(view, callback, user_data)
@@ -30052,9 +30059,10 @@ else:
  *
  * @param view the view
  * @param enabled whether rendering should be enabled
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_view_set_render_enabled.argtypes = [ctypes.POINTER(DvzView), ctypes.c_bool]
-    dvz_view_set_render_enabled.restype = None
+    dvz_view_set_render_enabled.restype = ctypes.c_int32
 
 
 try:
@@ -30071,9 +30079,10 @@ else:
  * @param view the view
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     _dvz_view_set_request_frame_callback.argtypes = [ctypes.POINTER(DvzView), DvzViewRequestFrameCallback, ctypes.c_void_p]
-    _dvz_view_set_request_frame_callback.restype = None
+    _dvz_view_set_request_frame_callback.restype = ctypes.c_int32
     def dvz_view_set_request_frame_callback(view, callback, user_data):
         callback = _callback_store_setter('dvz_view_set_request_frame_callback', DvzViewRequestFrameCallback, view, callback)
         return _dvz_view_set_request_frame_callback(view, callback, user_data)
@@ -30092,9 +30101,10 @@ else:
  *
  * @param view the view
  * @param scale positive user scale
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_view_set_user_scale.argtypes = [ctypes.POINTER(DvzView), ctypes.c_float]
-    dvz_view_set_user_scale.restype = None
+    dvz_view_set_user_scale.restype = ctypes.c_int32
 
 
 try:
@@ -30269,9 +30279,10 @@ else:
  * thread by dvz_view_render_once().
  *
  * @param view the view
+ * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_view_wake.argtypes = [ctypes.POINTER(DvzView)]
-    dvz_view_wake.restype = None
+    dvz_view_wake.restype = ctypes.c_int32
 
 
 try:
