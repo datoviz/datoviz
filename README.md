@@ -4,24 +4,24 @@ Datoviz is a GPU-powered visualization engine for scientific data. It helps you 
 interactive 2D and 3D views when ordinary plotting tools become too slow or too limited.
 
 Use it when you need to display many points, images, meshes, volumes, annotations, or custom
-scientific scenes. Datoviz provides a C scene/app API, a low-level Python interface that accepts
-NumPy arrays for supported data uploads, native desktop rendering through Vulkan, and an
-experimental browser path through WebGPU/WASM.
+scientific scenes. In Python, use `import datoviz as dvz` and pass NumPy arrays to supported visual
+data uploads. For native applications, use the C scene/app API. Datoviz also provides native
+desktop rendering through Vulkan and an experimental browser path through WebGPU/WASM.
 
 
 ## Install
 
-Before v0.4 packages are published, build Datoviz from source for v0.4 testing. The current stable
-PyPI package is still the v0.3 line.
+For the v0.4 pre-RC documentation, build Datoviz from source unless the release notes name a v0.4
+package command for your platform. The current stable PyPI package may still be the v0.3 line.
 
-After v0.4 packages are published, the normal Python install command will be:
+After v0.4 packages are published, the normal Python install command is expected to be:
 
 ```sh
 pip install datoviz
 ```
 
-During release-candidate testing, use the exact command from the release notes. It may require a
-pre-release flag or an explicit version:
+During release-candidate testing, use the exact command from the release notes. If the package is
+published as a pre-release, that command may require `--pre` or an explicit version, for example:
 
 ```sh
 pip install --pre datoviz
@@ -104,8 +104,9 @@ dvz.run(scene, figure, title="Scatter plot")
 | Browser rendering for supported examples | experimental WebGPU/WASM subset |
 | High-level scientific plotting | VisPy2/GSP when that layer is available |
 
-Datoviz v0.4 is not a compatibility layer for the old Datoviz v0.3 Python plotting API. It is the
-lower-level engine that higher-level plotting projects can build on.
+Datoviz v0.4 is the lower-level rendering engine used when you need explicit control over scenes,
+visuals, data uploads, windows, and captures. For high-level plotting functions such as `scatter()`
+or `imshow()`, use VisPy2/GSP when that layer is available.
 
 See [Choose your layer](https://datoviz.org/start/choose-your-layer/) for more detail.
 

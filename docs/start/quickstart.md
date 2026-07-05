@@ -1,8 +1,7 @@
 # Quickstart: Rendering in 10 Minutes
 
-**Prerequisites:** Datoviz v0.4 installed from source or from a v0.4 release-candidate package. The
-stable PyPI package may still be the v0.3 line during the pre-RC phase, so check
-[Install](install.md) before using `pip install datoviz`.
+**Prerequisites:** Datoviz v0.4 installed from source or from a v0.4 package named in the release
+notes. During the pre-RC phase, check [Install](install.md) before using `pip install datoviz`.
 
 This page builds one complete visualization: 10,000 random points in an interactive window. You can
 drag to pan and scroll to zoom. No data files are needed.
@@ -136,7 +135,7 @@ upload the arrays to one point visual, then open the window.
 
 === "C"
 
-    From a source checkout, build and run the canonical quickstart example:
+    If you built from source, run the included C scatter example:
 
     ```sh
     just example-c start/scatter

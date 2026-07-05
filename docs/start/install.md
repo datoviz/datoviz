@@ -2,17 +2,19 @@
 
 These instructions target Datoviz v0.4.
 
-Before v0.4 packages are published, build Datoviz from source for v0.4 testing. The current stable
-PyPI package is still the v0.3 line and should not be used for these v0.4 docs.
+For the v0.4 pre-RC documentation, build Datoviz from source unless the release notes name a v0.4
+package command for your platform. The current stable PyPI package may still be the v0.3 line and
+should not be used for these v0.4 docs.
 
-After v0.4 packages are published, the normal Python install command will be:
+After v0.4 packages are published, the normal Python install command is expected to be:
 
 ```sh
 pip install datoviz
 ```
 
-During the release-candidate phase, use the exact command from the release notes. It may temporarily
-need a pre-release flag or an explicit version, for example:
+During the release-candidate phase, use the exact command from the release notes. If the package is
+published as a pre-release, that command may temporarily need `--pre` or an explicit version, for
+example:
 
 ```sh
 pip install --pre datoviz
@@ -45,6 +47,7 @@ system Python.
     python -m venv .venv
     source .venv/bin/activate
     python -m pip install --upgrade pip
+    # Example only: use the exact command from the release notes.
     pip install --pre datoviz
     ```
 
@@ -54,6 +57,7 @@ system Python.
     py -m venv .venv
     .\.venv\Scripts\Activate.ps1
     python -m pip install --upgrade pip
+    # Example only: use the exact command from the release notes.
     pip install --pre datoviz
     ```
 
@@ -232,7 +236,7 @@ You should see a window with colored points that you can pan and zoom. Continue 
 | Package path | v0.4 status |
 | --- | --- |
 | `pip install datoviz` | intended normal Python install command after v0.4 packages are published |
-| `pip install --pre datoviz` | possible RC command if the v0.4 package is published as a pre-release |
+| `pip install --pre datoviz` | example RC command only; use the exact command from the release notes |
 | Source build | available for development, C/C++ integration, and package validation |
 | C/C++ local integration | available from a source build |
 | vcpkg | planned package path after a stable release tag |

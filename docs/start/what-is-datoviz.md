@@ -1,34 +1,47 @@
 # What Is Datoviz?
 
-Datoviz v0.4 is a low-level rendering engine for scientific visualization. It is written primarily
-in C/C++ and exposes a C API for native applications, examples, backend integration, and runtime
-validation.
+Datoviz is a visualization engine for scientific data. It is useful when you need to draw large or
+interactive scenes directly: point clouds, images, meshes, volumes, annotations, linked panels, or
+offscreen screenshots.
 
-The active v0.4 stack is:
-
-1. `scene`: retained figures, panels, visuals, controllers, annotations, scales, and frame plans;
-2. `drp2`: backend-agnostic command streams and replayable render descriptions;
-3. `vklite` and `canvas`: Vulkan resource and frame execution helpers;
-4. `app`: a small presentation layer for offscreen and GLFW-backed views.
-
-Datoviz does not aim to provide the old high-level Python plotting API in v0.4. High-level
-scientific plotting belongs in VisPy2/GSP, with Datoviz as one rendering backend.
+The main idea is simple: build a scene from reusable visual objects, attach your data arrays to
+those visuals, then show the scene in a window or render it to an image.
 
 
-## Use Datoviz For
+## What You Build
 
-- native C rendering and embedding;
-- retained visual resources with explicit ownership;
-- offscreen rendering, capture, and validation;
-- low-level backend or adapter work;
-- DRP2 stream generation, replay, and portability experiments;
-- Python raw `ctypes` access for low-level smoke tests and integration.
+Most Datoviz examples use the same pieces:
+
+| Piece | What it means |
+| --- | --- |
+| Scene | The whole visualization. |
+| Figure | The image area, with a pixel size such as 800 by 600. |
+| Panel | A drawing area inside the figure. One figure can contain one panel or many panels. |
+| Visual | A renderable collection such as points, line segments, an image, a mesh, or text. |
+| Data arrays | NumPy arrays or C arrays attached to visual attributes such as position, color, or size. |
+| View | A window or offscreen target where the figure is rendered. |
+
+This structure is lower-level than a plotting function, but it gives you explicit control over what
+is drawn and how the scene is updated.
 
 
-## Use Another Layer For
+## When Datoviz Fits
 
-- high-level `plot()`, `scatter()`, or `imshow()` style scientific plotting;
-- publication-oriented static vector output;
-- Python-first object-oriented plotting workflows.
+Use Datoviz directly when you want to:
 
-Those workflows should target VisPy2/GSP or other plotting libraries.
+- display many points, images, meshes, volumes, or labels interactively;
+- update visual data over time without rebuilding the whole scene;
+- render native desktop windows or offscreen screenshots;
+- embed Datoviz in a C/C++ application;
+- write Python examples that pass NumPy arrays to the current v0.4 API.
+
+For high-level scientific plotting functions such as `scatter()`, `plot()`, or `imshow()`, use
+VisPy2/GSP when that layer is available. Datoviz v0.4 is the lower-level rendering engine that such
+interfaces can build on.
+
+
+## Where To Start
+
+Begin with the [Quickstart](quickstart.md) if you want to run a first example. Use
+[Choose your layer](choose-your-layer.md) if you are deciding between Python, C, browser examples,
+or lower-level integration paths.

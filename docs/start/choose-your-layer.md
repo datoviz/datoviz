@@ -15,7 +15,7 @@ visualization.
 | Render without a window, capture images, or integrate a native view | C `scene` and `app` APIs | supported by feature |
 | Call the C API from Python with exact generated signatures | `datoviz.raw` / raw `ctypes` | low-level supported path |
 | Run selected examples in the browser | WebGPU/WASM example routes | experimental subset |
-| Work on render streams, replay, or backend portability | DRP2/DVZR and runtime layers | advanced/unstable |
+| Work on advanced rendering, replay, or backend portability | Advanced rendering/runtime APIs | advanced/unstable |
 | Use high-level scientific plotting | VisPy2/GSP when available | external to Datoviz v0.4 |
 
 
@@ -36,8 +36,8 @@ comfortable with Python but need lower-level rendering control than a plotting l
 ## C Or C++
 
 Choose the C API when your application owns the window, rendering loop, offscreen target, capture
-path, or integration with another native system. The C examples are the executable source of truth
-for visual families, interaction, capture, and runtime behavior.
+path, or integration with another native system. The C examples show the supported native API
+patterns for visual families, interaction, capture, and runtime behavior.
 
 Most public C examples follow the same visible sequence:
 

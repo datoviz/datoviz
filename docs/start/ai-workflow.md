@@ -39,9 +39,10 @@ A good request says what should appear on screen. For example:
 | "export it" | "render one frame to a PNG without opening a window" |
 
 
-## What the Assistant Should Use
+## Optional Pages For Better Precision
 
-The assistant should browse the same public pages you use:
+The simple prompt above is enough to get started. For better precision, point the assistant to the
+same public pages you would use:
 
 - [Quickstart](quickstart.md) for the first complete Python and C examples.
 - [Examples](../examples/index.md) for working visual and feature examples.
@@ -54,9 +55,8 @@ For Python, the normal v0.4 starting point is:
 import datoviz as dvz
 ```
 
-Datoviz v0.4 does not provide high-level plotting helpers such as `datoviz.scatter()` or
-`datoviz.imshow()`. That higher-level plotting interface belongs to VisPy2/GSP rather than
-Datoviz v0.4.
+Datoviz v0.4 starts from scenes, visuals, and explicit data arrays. For high-level plotting helpers
+such as `scatter()` or `imshow()`, use VisPy2/GSP when that layer is available.
 
 
 ## A Useful Follow-Up
