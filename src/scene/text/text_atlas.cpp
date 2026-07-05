@@ -2496,7 +2496,7 @@ DvzTextAtlasInfo dvz_text_atlas_info(const DvzTextAtlas* atlas)
  * @param atlas the text atlas
  * @return sampled atlas field, or NULL
  */
-DvzSampledField* dvz_text_atlas_field(const DvzTextAtlas* atlas)
+const DvzSampledField* dvz_text_atlas_field(const DvzTextAtlas* atlas)
 {
     if (atlas == NULL)
         return NULL;

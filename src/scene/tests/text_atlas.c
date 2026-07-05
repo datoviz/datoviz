@@ -316,7 +316,7 @@ int test_scene_text_public_font_atlas_api(TstContext* suite, const TstCase* item
     AT(info.glyph_count >= 95);
     AT(info.channels == 4);
 
-    DvzSampledField* field = dvz_text_atlas_field(atlas);
+    const DvzSampledField* field = dvz_text_atlas_field(atlas);
     ANN(field);
     const DvzSampledFieldDesc* field_desc = dvz_sampled_field_get_desc(field);
     ANN(field_desc);

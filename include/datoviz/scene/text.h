@@ -155,7 +155,7 @@ DVZ_EXPORT DvzTextAtlasInfo dvz_text_atlas_info(const DvzTextAtlas* atlas);
  * @param atlas the text atlas
  * @return sampled atlas field, or NULL
  */
-DVZ_EXPORT DvzSampledField* dvz_text_atlas_field(const DvzTextAtlas* atlas);
+DVZ_EXPORT const DvzSampledField* dvz_text_atlas_field(const DvzTextAtlas* atlas);
 
 
 /**

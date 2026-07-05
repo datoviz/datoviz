@@ -8073,14 +8073,14 @@ _Declared in `include/datoviz/scene/text.h`:182._
 ### `dvz_text_atlas_field()`
 
 ```c title="dvz_text_atlas_field"
-DvzSampledField * dvz_text_atlas_field(
+const DvzSampledField * dvz_text_atlas_field(
     const DvzTextAtlas * atlas
 );
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `DvzSampledField *` | sampled atlas field, or NULL |
+| return | `const DvzSampledField *` | sampled atlas field, or NULL |
 | `atlas` | `const DvzTextAtlas *` | the text atlas |
 
 Return the sampled field containing the atlas texture.

@@ -305,7 +305,7 @@ DVZ_EXPORT const DvzSampledFieldDesc* dvz_sampled_field_get_desc(const DvzSample
  * @return true on success, false on error
  */
 DVZ_EXPORT bool dvz_visual_set_field(
-    DvzVisual* visual, const char* slot_name, DvzSampledField* field);
+    DvzVisual* visual, const char* slot_name, const DvzSampledField* field);
 
 
 EXTERN_C_OFF

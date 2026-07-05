@@ -124,10 +124,18 @@ void _scene_release_field_bindings(DvzSampledField* field)
  * @param field the sampled field, or NULL to clear the binding
  * @return true on success, false on error
  */
-bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledField* field)
+bool dvz_visual_set_field(
+    DvzVisual* visual, const char* slot_name, const DvzSampledField* field)
 {
     ANN(visual);
     ANN(slot_name);
+    union
+    {
+        const DvzSampledField* borrowed;
+        DvzSampledField* scene_owned;
+    } field_ptr = {.borrowed = field};
+    DvzSampledField* bound_field = field_ptr.scene_owned;
+
     if (field != NULL && field->scene != visual->scene)
     {
         log_error("cannot bind a sampled field from a different scene");
@@ -197,11 +205,11 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
     if (!_scene_visual_mutation_allowed(visual->scene, "bind sampled field"))
         return false;
 
-    if (_visual_family_state(visual)->field != field)
+    if (_visual_family_state(visual)->field != bound_field)
         _scene_release_visual_field(visual);
-    if (field != NULL)
+    if (bound_field != NULL)
     {
-        _visual_binding_assign(visual, DVZ_VISUAL_BINDING_FIELD, slot_name, field, false);
+        _visual_binding_assign(visual, DVZ_VISUAL_BINDING_FIELD, slot_name, bound_field, false);
         _scene_visual_texture_mark_clean(visual);
         _scene_visual_texture_mark_dirty(visual);
     }
